@@ -1,0 +1,22 @@
+# Zangband ego-item slots -> Angband 4.2 object types.
+#
+# Zangband identifies which items an ego can appear on by equipment slot (the
+# ES_* constants in its defines.h); 4.2 lists object types directly, and allows
+# several `type:` lines per ego. A slot therefore expands to one or more types.
+#
+# Slot numbers are from archive/zangband/src/defines.h around line 905.
+
+[slot]
+21 = { types = ["crown"], note = "ES_CROWN" }
+22 = { types = ["digger"], note = "ES_DIG" }
+23 = { types = ["shot", "arrow", "bolt"], note = "ES_AMMO — 4.2 splits ammunition by launcher" }
+24 = { types = ["sword", "polearm", "hafted"], note = "ES_WIELD — 4.2 splits melee weapons by class" }
+25 = { types = ["bow"], note = "ES_BOW" }
+28 = { types = ["amulet"], note = "ES_NECK" }
+29 = { types = ["light"], note = "ES_LITE" }
+30 = { types = ["soft armor", "hard armor", "dragon armor"], note = "ES_BODY — 4.2 splits body armour by weight class" }
+31 = { types = ["cloak"], note = "ES_OUTER" }
+32 = { types = ["shield"], note = "ES_ARM" }
+33 = { types = ["helm"], note = "ES_HEAD" }
+34 = { types = ["gloves"], note = "ES_HANDS" }
+35 = { types = ["boots"], note = "ES_FEET" }

@@ -707,6 +707,164 @@ def cmd_artifacts(args) -> int:
     return 0
 
 
+def cmd_egos(args) -> int:
+    """Convert Zangband-only ego types onto 4.2's ego_item model."""
+    import artifacts as art
+
+    def read(path: str) -> dict[str, zformat.Record]:
+        return {zformat.match_key(r.name): r for r in zformat.parse(path)}
+
+    old = read(str(ANGBAND281 / "e_info.txt"))
+    zang = read(str(ZANGBAND / "e_info.txt"))
+    existing = {e.key for e in aformat.parse(str(GAMEDATA / "ego_item.txt"))}
+
+    here = Path(__file__).resolve().parent
+    with (here / "objflagmap.toml").open("rb") as fh:
+        flagmap = art.ObjFlagMap(tomllib.load(fh))
+    with (here / "slotmap.toml").open("rb") as fh:
+        slots = {int(k): v for k, v in tomllib.load(fh).get("slot", {}).items()}
+
+    overrides = load_overrides().get("ego", {})
+
+    report = Report(
+        title="zconv — ego item conversion review",
+        source=str(ZANGBAND / "e_info.txt"),
+        target=str(GAMEDATA / "ego_item.txt"),
+        lethality="not applicable to ego items",
+    )
+    report.notes.append(
+        "Zangband identifies applicable items by equipment slot; 4.2 lists "
+        "object types. One slot therefore expands to several types — a weapon "
+        "ego becomes sword, polearm and hafted.")
+
+    entries: list[aformat.Entry] = []
+
+    for key, rec in sorted(
+            [(k, r) for k, r in zang.items()
+             if k not in old and k not in existing],
+            key=lambda kv: kv[1].index):
+        item = Converted(name=rec.name, source_index=rec.index)
+        entry = aformat.Entry()
+
+        extra = (rec.first("X") or "").split(":")
+        combat = (rec.first("C") or "").split(":")
+        world = (rec.first("W") or "").split(":")
+
+        try:
+            slot = int(extra[0])
+            rating = int(extra[1]) if len(extra) > 1 else 0
+        except (ValueError, IndexError):
+            report.skipped.append((rec.name, "unreadable X: line"))
+            continue
+
+        spec = slots.get(slot)
+        if not spec:
+            report.skipped.append((
+                rec.name, f"equipment slot {slot} has no 4.2 type mapping"))
+            continue
+
+        entry.set("name", rec.name)
+
+        cost = int(world[3]) if len(world) >= 4 else 0
+        depth = int(world[0]) if world and world[0].isdigit() else 0
+        rarity = int(world[1]) if len(world) > 1 and world[1].isdigit() else 1
+        entry.set("info", f"{cost}:{rating}")
+        commonness = max(1, min(100, round(100 / max(1, rarity))))
+        entry.set("alloc", f"{commonness}:{depth} to 127")
+
+        # 4.2 expresses an ego's combat bonuses as dice; Zangband stores the
+        # maximum each may roll to, which is the same thing said differently.
+        if len(combat) >= 3:
+            def dice(value: str) -> str:
+                n = int(value) if value.lstrip("-").isdigit() else 0
+                return f"d{n}" if n > 0 else "0"
+            entry.set("combat", f"{dice(combat[0])}:{dice(combat[1])}:"
+                                f"{dice(combat[2])}")
+        pval = 0
+        if len(combat) >= 4 and combat[3].lstrip("-").isdigit():
+            pval = int(combat[3])
+
+        for kind in spec["types"]:
+            entry.pairs.append(("type", kind))
+        item.fields["type"] = rules.Value(
+            ", ".join(spec["types"]), "CNT-07", rules.CONVERTED,
+            f"slot {slot} ({spec['note']})")
+
+        flags, values, brands, slays, curses = [], [], [], [], []
+        for flag in rec.flags():
+            disposition, reason = flagmap.disposition(flag)
+            if disposition == "value":
+                if flag in flagmap.value_pval:
+                    if pval:
+                        values.append(f"{flagmap.value_pval[flag]}[{pval}]")
+                    else:
+                        item.flag_dispositions.append((
+                            flag, "manual",
+                            "modifier flag with no pval on the source entry"))
+                else:
+                    fixed = flagmap.value_fixed[flag]
+                    values.append(f"{fixed['name']}[{fixed['level']}]")
+            elif disposition == "flag":
+                flags.append(flagmap.flag[flag])
+            elif disposition == "brand":
+                brands.append(flagmap.brand[flag])
+            elif disposition == "slay":
+                slays.append(flagmap.slay[flag])
+            elif disposition == "curse":
+                spec_curse = flagmap.curse[flag]
+                curses.append(f"{spec_curse['name']}:{spec_curse['power']}")
+            else:
+                item.flag_dispositions.append((flag, disposition, reason))
+
+        def dedupe(seq):
+            seen: dict[str, None] = {}
+            for value in seq:
+                seen.setdefault(value, None)
+            return list(seen)
+
+        if flags:
+            entry.set("flags", " | ".join(dedupe(flags)))
+        if values:
+            entry.set("values", " | ".join(dedupe(values)))
+        for brand in dedupe(brands):
+            entry.pairs.append(("brand", brand))
+        for slay in dedupe(slays):
+            entry.pairs.append(("slay", slay))
+        for curse in dedupe(curses):
+            entry.pairs.append(("curse", curse))
+
+        for field_name, value in overrides.get(key, {}).items():
+            entry.set(field_name, value)
+            item.overridden.append(field_name)
+
+        report.items.append(item)
+        entries.append(entry)
+
+    OUTDIR.mkdir(exist_ok=True)
+    report_path = OUTDIR / "egos.report.md"
+    report_path.write_text(report.render(), encoding="utf-8")
+    print(f"report:  {report_path.relative_to(ROOT)}")
+
+    if args.write:
+        data_path = OUTDIR / "ego_item.zangband.txt"
+        aformat.write(
+            str(data_path), entries,
+            preamble=(
+                "# ego_item.zangband.txt — generated by tools/zconv. "
+                "Do not hand-edit.\n"
+                "# Hand-tuned values belong in tools/zconv/overrides.toml "
+                "(BAL-12).\n"
+                f"# Source: {ZANGBAND / 'e_info.txt'}\n"
+            ),
+        )
+        print(f"data:    {data_path.relative_to(ROOT)}")
+    else:
+        print("data:    not written (pass --write)")
+
+    print(f"entries: {len(report.items)}   skipped: {len(report.skipped)}")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog="zconv", description="Convert Zangband data onto Angband 4.2's model.")
@@ -724,9 +882,14 @@ def main() -> int:
     arts.add_argument("--write", action="store_true",
                       help="write the data file as well as the report")
 
+    egos = sub.add_parser("egos", help="convert e_info.txt to 4.2 ego items")
+    egos.add_argument("--write", action="store_true",
+                      help="write the data file as well as the report")
+
     args = parser.parse_args()
     return {"analyse": cmd_analyse, "monsters": cmd_monsters,
-            "artifacts": cmd_artifacts}[args.command](args)
+            "artifacts": cmd_artifacts,
+            "egos": cmd_egos}[args.command](args)
 
 
 if __name__ == "__main__":

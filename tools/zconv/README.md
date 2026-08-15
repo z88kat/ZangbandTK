@@ -17,6 +17,7 @@ cd tools/zconv
 ./zconv.py monsters --write         # convert; write the data file too
 ./zconv.py monsters --theme-only    # DEC-19: Amber/Mythos/Chaos identity only
 ./zconv.py artifacts --write        # convert a_info.txt -> 4.2 artifacts
+./zconv.py egos --write             # convert e_info.txt -> 4.2 ego items
 ```
 
 Output lands in `out/` — `monsters.report.md` and `monster.zangband.txt`.
@@ -59,6 +60,7 @@ and BAL-10's "never silently dropped" rule is enforced by the tool.
 | `blowmap.toml` | Blow methods and effects outside 4.2's `blow_methods.txt` / `blow_effects.txt` vocabularies. |
 | `objflagmap.toml` | Object flags, split across 4.2's `flags:`, `values:`, `brand:`, `slay:` and `curse:` destinations. |
 | `basesubs.toml` | Base objects 4.2 retired, and the nearest surviving substitute. |
+| `slotmap.toml` | Zangband ego equipment slots, expanded to 4.2's object types. |
 
 ## Findings so far
 

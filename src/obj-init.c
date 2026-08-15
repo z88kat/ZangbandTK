@@ -2625,7 +2625,15 @@ struct parser *init_parse_ego(void) {
 }
 
 static errr run_parse_ego(struct parser *p) {
-	return parse_file_quit_not_found(p, "ego_item");
+	errr err = parse_file_quit_not_found(p, "ego_item");
+
+	if (err)
+		return err;
+
+	/* ZangbandZK (CNT-07): imported ego types — see run_parse_monster(). */
+	err = parse_file(p, "ego_item.zangband");
+
+	return (err == PARSE_ERROR_NO_FILE_FOUND) ? PARSE_ERROR_NONE : err;
 }
 
 static errr finish_parse_ego(struct parser *p) {
