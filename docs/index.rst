@@ -36,6 +36,8 @@ Angband is a very complex game, and it may be difficult to grasp everything at f
    :caption: ZangbandZK
 
    balance
+   monsters
+   objects
    wilderness
    towns
    quests
