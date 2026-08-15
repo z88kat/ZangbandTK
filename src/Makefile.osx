@@ -22,6 +22,11 @@ OPT ?= -O2
 # for consistency with older versions, use a lower case bundle ID
 BUNDLE_IDENTIFIER = org.zangbandzk.zangbandzk
 
+# ZangbandZK: the name shown in the Dock, menu bar and About box. Kept separate
+# from NAME, which still resolves the plist template and icon filenames that
+# vanilla ships under the Angband name.
+DISPLAY_NAME = ZangbandZK
+
 # ZangbandZK (DEC-22): Apple Silicon only. macOS Intel reaches legacy status in
 # September 2026, so there is no future in an x86_64 slice worth the build time
 # and bundle size. Vanilla builds universal here; we deliberately do not.
@@ -55,7 +60,7 @@ endif
 # Note that Makefile.inc sets VERSION, and so we must run version.sh after including Makefile.inc
 include Makefile.inc
 
-APPNAME = $(NAME).app
+APPNAME = $(DISPLAY_NAME).app
 EXE = $(PROGNAME)
 
 # For CFBundleShortVersionString and CFBundleVersion in Info.plist, Apple wants
@@ -186,7 +191,7 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	cp cocoa/CommandMenu.plist $(APPRES)/CommandMenu.plist
 	sed -e 's/\$$VERSION\$$/$(BUNDLE_VERSION)/' \
 		-e 's/\$$COPYRIGHT\$$/$(COPYRIGHT)/' \
-		-e 's/\$$NAME\$$/$(NAME)/' \
+		-e 's/\$$NAME\$$/$(DISPLAY_NAME)/' \
 		-e 's/\$$EXECUTABLE\$$/$(EXE)/' \
 		-e 's/\$$BUNDLE_VERSION\$$/$(BUNDLE_VERSION)/' \
 		-e 's/\$$BUNDLE_IDENTIFIER\$$/$(BUNDLE_IDENTIFIER)/' \
@@ -205,7 +210,7 @@ safe-install:
 	$(MAKE) -f Makefile.osx install CFLAGS="-DSAFE_DIRECTORY $(CFLAGS)"
 	sed -e 's/\$$VERSION\$$/$(BUNDLE_VERSION)/' \
 		-e 's/\$$COPYRIGHT\$$/$(COPYRIGHT)/' \
-		-e 's/\$$NAME\$$/$(NAME)/' \
+		-e 's/\$$NAME\$$/$(DISPLAY_NAME)/' \
 		-e 's/\$$EXECUTABLE\$$/$(EXE)/' \
 		-e 's/\$$BUNDLE_VERSION\$$/$(BUNDLE_VERSION)/' \
 		-e 's/\$$BUNDLE_IDENTIFIER\$$/$(BUNDLE_IDENTIFIER).$(BUNDLE_VERSION)/' \
