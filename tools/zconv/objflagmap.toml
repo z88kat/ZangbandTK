@@ -1,0 +1,153 @@
+# Zangband object flags -> Angband 4.2's object property model.
+#
+# The two models differ structurally, not just in naming. Zangband carries one
+# `pval` per item and a set of flags saying what it applies to; 4.2 gives every
+# property its own value, splits properties across `flags:`, `values:`,
+# `brand:`, `slay:` and `curse:` lines, and expresses immunity as resistance
+# level 3 rather than a separate flag.
+#
+# Dispositions follow flagmap.toml's convention: every flag is placed or
+# rejected with a reason, and the converter reports anything absent from here.
+
+# ------------------------------------------------- values scaled by pval
+# Emitted as values:NAME[pval]. Zangband applies its single pval to all of
+# these at once, which is why an item granting +4 STR also grants +4 DEX.
+
+[value_pval]
+STR = "STR"
+INT = "INT"
+WIS = "WIS"
+DEX = "DEX"
+CON = "CON"
+SPEED = "SPEED"
+STEALTH = "STEALTH"
+INFRA = "INFRA"
+BLOWS = "BLOWS"
+LITE = "LIGHT"
+XTRA_MIGHT = "MIGHT"
+XTRA_SHOTS = "SHOTS"
+
+# --------------------------------------------------- values at fixed level
+# Resistances are level 1; immunities are the same property at level 3.
+
+[value_fixed]
+RES_ACID   = { name = "RES_ACID",   level = 1 }
+RES_ELEC   = { name = "RES_ELEC",   level = 1 }
+RES_FIRE   = { name = "RES_FIRE",   level = 1 }
+RES_COLD   = { name = "RES_COLD",   level = 1 }
+RES_POIS   = { name = "RES_POIS",   level = 1 }
+RES_LITE   = { name = "RES_LIGHT",  level = 1 }
+RES_DARK   = { name = "RES_DARK",   level = 1 }
+RES_NETHER = { name = "RES_NETHER", level = 1 }
+RES_NEXUS  = { name = "RES_NEXUS",  level = 1 }
+RES_CHAOS  = { name = "RES_CHAOS",  level = 1 }
+RES_DISEN  = { name = "RES_DISEN",  level = 1 }
+IM_FIRE    = { name = "RES_FIRE",   level = 3 }
+IM_COLD    = { name = "RES_COLD",   level = 3 }
+IM_ELEC    = { name = "RES_ELEC",   level = 3 }
+
+# ------------------------------------------------------------------ flags
+# Boolean properties, emitted on the flags: line.
+
+[flag]
+SUST_STR = "SUST_STR"
+SUST_INT = "SUST_INT"
+SUST_WIS = "SUST_WIS"
+SUST_DEX = "SUST_DEX"
+SUST_CON = "SUST_CON"
+FREE_ACT = "FREE_ACT"
+SEE_INVIS = "SEE_INVIS"
+HOLD_LIFE = "HOLD_LIFE"
+REGEN = "REGEN"
+FEATHER = "FEATHER"
+SLOW_DIGEST = "SLOW_DIGEST"
+TELEPATHY = "TELEPATHY"
+BLESSED = "BLESSED"
+# Zangband treats these as resistances; 4.2 as protections, and as flags.
+RES_BLIND = "PROT_BLIND"
+RES_CONF = "PROT_CONF"
+RES_FEAR = "PROT_FEAR"
+
+# ----------------------------------------------------------------- brands
+
+[brand]
+BRAND_FIRE = "FIRE_3"
+BRAND_COLD = "COLD_3"
+BRAND_ELEC = "ELEC_3"
+BRAND_POIS = "POIS_3"
+BRAND_ACID = "ACID_3"
+
+# ------------------------------------------------------------------ slays
+
+[slay]
+SLAY_EVIL = "EVIL_2"
+SLAY_ANIMAL = "ANIMAL_2"
+SLAY_ORC = "ORC_3"
+SLAY_TROLL = "TROLL_3"
+SLAY_GIANT = "GIANT_3"
+SLAY_DEMON = "DEMON_3"
+SLAY_DRAGON = "DRAGON_3"
+SLAY_UNDEAD = "UNDEAD_3"
+KILL_DRAGON = "DRAGON_5"
+KILL_DEMON = "DEMON_5"
+KILL_UNDEAD = "UNDEAD_5"
+
+# ----------------------------------------------------------------- curses
+# 4.2 models curses as named entries with a power, rather than as flags.
+
+[curse]
+AGGRAVATE = { name = "siren", power = 30 }
+TELEPORT = { name = "teleportation", power = 30 }
+DRAIN_EXP = { name = "dullness", power = 30 }
+NO_TELE = { name = "anti-teleportation", power = 30 }
+NO_MAGIC = { name = "impair mana recovery", power = 30 }
+TY_CURSE = { name = "demon summon", power = 40 }
+DRAIN_STATS = { name = "weakness", power = 30 }
+
+# ---------------------------------------------------------------- rejects
+
+[reject]
+CHR = """4.2 removed charisma as a statistic in 4.2.0. Nothing to modify."""
+SUST_CHR = """See CHR. There is no charisma to sustain."""
+
+SP = """Grants bonus spell points. 4.2's object property model has no mana \
+modifier — its eleven mods are stealth, searching, infravision, tunnelling, \
+speed, damage reduction, blows, shots, might, moves and light."""
+
+INSTA_ART = """Marks an object kind as always generating as an artifact. \
+Meaningless on an entry that is already in artifact.txt."""
+
+SHOW_MODS = """Display hint controlling whether to-hit and to-dam are shown. \
+4.2 decides this itself from the object's kind."""
+
+HIDE_TYPE = """Display hint suppressing the pval description. 4.2 describes \
+each property separately, so there is nothing to hide."""
+
+CURSED = """A generic 'is cursed' marker. 4.2 has no such state — an object is \
+cursed by carrying named curses, which the specific curse flags supply."""
+
+AUTO_CURSE = """Re-curses itself when uncursed. 4.2's curse model has no \
+sticky curses; removal difficulty is a property of each named curse."""
+
+HEAVY_CURSE = """Curse severity tier. 4.2 expresses severity as the power \
+value on each named curse instead."""
+
+PERMA_CURSE = """Permanently cursed, never removable. 4.2 has no permanent \
+curse tier."""
+
+QUESTITEM = """Marks an item as a quest reward that cannot be sold. Belongs \
+with the quest system in M6, not with the object import."""
+
+# -------------------------------------------------------------- implement
+
+[implement]
+VAMPIRIC = { milestone = "M3", note = "Drains life on hit to heal the wielder. 4.2 has no vampiric brand." }
+CHAOTIC = { milestone = "M3", note = "Random chaos effect on hit. Core to the Chaos theme." }
+VORPAL = { milestone = "M3", note = "Chance of a devastating extra-damage cut. No 4.2 equivalent." }
+PASS_WALL = { milestone = "M3", note = "Wielder passes through walls. Large mechanical reach." }
+RETURN = { milestone = "M3", note = "Thrown weapon returns to the wielder." }
+THROW = { milestone = "M3", note = "Item is meant to be thrown; pairs with RETURN." }
+LUCK_10 = { milestone = "M3", note = "Improves luck. 4.2 has no luck statistic." }
+EASY_ENCHANT = { milestone = "M3", note = "Enchants more readily than its level suggests." }
+SENSE = { milestone = "M3", note = "Senses nearby monsters of a kind tied to the item." }
+ACTIVATE = { milestone = "M2", note = "Handled separately via act:/time: rather than as a flag." }

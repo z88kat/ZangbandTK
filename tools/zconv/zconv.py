@@ -501,6 +501,212 @@ def _zangband_curve(monsters: list[zformat.Monster]) -> rules.Curve:
     return rules.Curve.fit(fake)
 
 
+def cmd_artifacts(args) -> int:
+    """Convert Zangband-only artifacts onto 4.2's artifact model."""
+    import artifacts as art
+
+    def read(path: str) -> dict[str, zformat.Record]:
+        return {zformat.match_key(r.name): r for r in zformat.parse(path)}
+
+    old = read(str(ANGBAND281 / "a_info.txt"))
+    zang = read(str(ZANGBAND / "a_info.txt"))
+    existing = aformat.parse(str(GAMEDATA / "artifact.txt"))
+    existing_keys = {e.key for e in existing}
+
+    with (Path(__file__).resolve().parent / "objflagmap.toml").open("rb") as fh:
+        flagmap = art.ObjFlagMap(tomllib.load(fh))
+
+    kinds = art.build_kind_index(str(ZANGBAND / "k_info.txt"))
+    with (Path(__file__).resolve().parent / "basesubs.toml").open("rb") as fh:
+        basesubs = tomllib.load(fh).get("substitute", {})
+    bases = art.build_base_index(aformat.parse(str(GAMEDATA / "object.txt")))
+    overrides = load_overrides().get("artifact", {})
+
+    report = Report(
+        title="zconv — artifact conversion review",
+        source=str(ZANGBAND / "a_info.txt"),
+        target=str(GAMEDATA / "artifact.txt"),
+        lethality="not applicable to artifacts",
+    )
+
+    candidates = [(k, r) for k, r in zang.items()
+                  if k not in old and k not in existing_keys]
+    report.notes.append(
+        f"{len(candidates)} artifacts exist in Zangband but in neither Angband "
+        f"2.8.1 nor 4.2.6.")
+    report.notes.append(
+        "Zangband applies a single `pval` to every stat and modifier an item "
+        "grants, so an artifact giving +4 STR gives +4 to each of its other "
+        "modifiers too. That is Zangband's design, not a conversion artefact.")
+
+    entries: list[aformat.Entry] = []
+
+    for key, rec in sorted(candidates, key=lambda kv: kv[1].index):
+        item = Converted(name=rec.name, source_index=rec.index)
+        entry = aformat.Entry()
+
+        info = (rec.first("I") or "").split(":")
+        world = (rec.first("W") or "").split(":")
+        power = (rec.first("P") or "").split(":")
+
+        try:
+            tval, sval = int(info[0]), int(info[1])
+            pval = int(info[2]) if len(info) > 2 else 0
+        except (ValueError, IndexError):
+            report.skipped.append((rec.name, "unreadable I: line"))
+            continue
+
+        # Base object: tval:sval -> Zangband kind name -> 4.2 type and name.
+        kind_name = kinds.get((tval, sval))
+        kind_key = zformat.match_key(kind_name) if kind_name else ""
+        base = bases.get(kind_key)
+        substituted = None
+
+        # 4.2 retired several object kinds. Rather than lose the artifact,
+        # substitute the nearest surviving base of the same class.
+        if not base and kind_key in basesubs:
+            spec = basesubs[kind_key]
+            base = bases.get(zformat.match_key(spec["to"]))
+            if base and spec.get("type"):
+                base = (spec["type"], base[1])
+            substituted = spec
+
+        if not base:
+            report.skipped.append((
+                rec.name,
+                f"base object tval {tval} sval {sval} "
+                f"({kind_name or 'unknown kind'}) has no 4.2 equivalent and no "
+                "substitution is recorded in basesubs.toml"))
+            continue
+
+        entry.set("name", rec.name)
+        entry.set("base-object", f"{base[0]}:{base[1]}")
+        if substituted:
+            item.fields["base-object"] = rules.Value(
+                f"{base[0]}:{base[1]}", "CNT-06", rules.DERIVED,
+                f"'{kind_name}' has no 4.2 equivalent; substituted "
+                f"'{substituted['to']}' — {substituted['note']}")
+        else:
+            item.fields["base-object"] = rules.Value(
+                f"{base[0]}:{base[1]}", "CNT-06", rules.CONVERTED,
+                f"tval {tval} sval {sval} = '{kind_name}'")
+
+        if len(world) >= 4:
+            depth, rarity, weight, cost = (int(world[0]), int(world[1]),
+                                           int(world[2]), int(world[3]))
+            entry.set("level", depth)
+            entry.set("weight", weight)
+            entry.set("cost", cost)
+            # 4.2's alloc is commonness plus a depth range; Zangband's rarity
+            # is an inverse frequency, so commonness is its reciprocal.
+            commonness = max(1, min(100, round(100 / max(1, rarity))))
+            entry.set("alloc", f"{commonness}:{depth} to 100")
+            item.fields["alloc"] = rules.Value(
+                f"{commonness}:{depth} to 100", "CNT-06", rules.DERIVED,
+                f"Zangband rarity {rarity} inverted to commonness")
+
+        if len(power) >= 5:
+            entry.set("attack", f"{power[1]}:{power[2]}:{power[3]}")
+            entry.set("armor", f"{power[0]}:{power[4]}")
+
+        # Flag resolution across 4.2's five destinations.
+        flags, values, brands, slays, curses = [], [], [], [], []
+        for flag in rec.flags():
+            disposition, reason = flagmap.disposition(flag)
+            if disposition == "value":
+                if flag in flagmap.value_pval:
+                    if pval:
+                        values.append(f"{flagmap.value_pval[flag]}[{pval}]")
+                    else:
+                        item.flag_dispositions.append((
+                            flag, "manual",
+                            "modifier flag on an artifact with no pval; "
+                            "Zangband would grant nothing"))
+                else:
+                    spec = flagmap.value_fixed[flag]
+                    values.append(f"{spec['name']}[{spec['level']}]")
+            elif disposition == "flag":
+                flags.append(flagmap.flag[flag])
+            elif disposition == "brand":
+                brands.append(flagmap.brand[flag])
+            elif disposition == "slay":
+                slays.append(flagmap.slay[flag])
+            elif disposition == "curse":
+                spec = flagmap.curse[flag]
+                curses.append(f"{spec['name']}:{spec['power']}")
+            else:
+                item.flag_dispositions.append((flag, disposition, reason))
+
+        def dedupe(seq):
+            seen: dict[str, None] = {}
+            for value in seq:
+                seen.setdefault(value, None)
+            return list(seen)
+
+        if flags:
+            entry.set("flags", " | ".join(dedupe(flags)))
+        if values:
+            entry.set("values", " | ".join(dedupe(values)))
+        for brand in dedupe(brands):
+            entry.pairs.append(("brand", brand))
+        for slay in dedupe(slays):
+            entry.pairs.append(("slay", slay))
+        for curse in dedupe(curses):
+            entry.pairs.append(("curse", curse))
+
+        # Activation: Lua script -> 4.2's named vocabulary.
+        script = "\n".join(rec.all("L"))
+        if script:
+            activation, note = art.match_activation(script)
+            if activation:
+                entry.set("act", activation)
+                item.fields["act"] = rules.Value(activation, "CNT-06",
+                                                 rules.DERIVED, note)
+                timeout = art.match_timeout(script)
+                if timeout:
+                    entry.set("time", timeout)
+            else:
+                item.flag_dispositions.append((
+                    "ACTIVATE", "manual",
+                    "Lua activation with no matching 4.2 activation; the "
+                    "artifact is imported without one"))
+
+        entry.set("desc", f"An artifact of Zangband.")
+
+        for field_name, value in overrides.get(key, {}).items():
+            entry.set(field_name, value)
+            item.overridden.append(field_name)
+
+        report.items.append(item)
+        entries.append(entry)
+
+    OUTDIR.mkdir(exist_ok=True)
+    report_path = OUTDIR / "artifacts.report.md"
+    report_path.write_text(report.render(), encoding="utf-8")
+    print(f"report:  {report_path.relative_to(ROOT)}")
+
+    if args.write:
+        data_path = OUTDIR / "artifact.zangband.txt"
+        aformat.write(
+            str(data_path), entries,
+            preamble=(
+                "# artifact.zangband.txt — generated by tools/zconv. "
+                "Do not hand-edit.\n"
+                "# Hand-tuned values belong in tools/zconv/overrides.toml "
+                "(BAL-12).\n"
+                f"# Source: {ZANGBAND / 'a_info.txt'}\n"
+            ),
+        )
+        print(f"data:    {data_path.relative_to(ROOT)}")
+    else:
+        print("data:    not written (pass --write)")
+
+    print(f"entries: {len(report.items)}   skipped: {len(report.skipped)}   "
+          f"unresolved flags: "
+          f"{len({f for i in report.items for f, d, _ in i.flag_dispositions if d == 'unresolved'})}")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog="zconv", description="Convert Zangband data onto Angband 4.2's model.")
@@ -514,8 +720,13 @@ def main() -> int:
     monsters.add_argument("--theme-only", action="store_true",
                           help="DEC-19: only monsters with Amber/Mythos/Chaos identity")
 
+    arts = sub.add_parser("artifacts", help="convert a_info.txt to 4.2 artifacts")
+    arts.add_argument("--write", action="store_true",
+                      help="write the data file as well as the report")
+
     args = parser.parse_args()
-    return {"analyse": cmd_analyse, "monsters": cmd_monsters}[args.command](args)
+    return {"analyse": cmd_analyse, "monsters": cmd_monsters,
+            "artifacts": cmd_artifacts}[args.command](args)
 
 
 if __name__ == "__main__":

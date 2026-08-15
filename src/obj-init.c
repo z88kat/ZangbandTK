@@ -3061,7 +3061,19 @@ struct parser *init_parse_artifact(void) {
 }
 
 static errr run_parse_artifact(struct parser *p) {
-	return parse_file_quit_not_found(p, "artifact");
+	errr err = parse_file_quit_not_found(p, "artifact");
+
+	if (err)
+		return err;
+
+	/*
+	 * ZangbandZK (CNT-06): imported artifacts, kept in their own file for the
+	 * same reasons as the bestiary — see run_parse_monster().  Absence is not
+	 * an error.
+	 */
+	err = parse_file(p, "artifact.zangband");
+
+	return (err == PARSE_ERROR_NO_FILE_FOUND) ? PARSE_ERROR_NONE : err;
 }
 
 static errr finish_parse_artifact(struct parser *p) {

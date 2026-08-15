@@ -1,0 +1,37 @@
+# Base object substitutions for artifacts whose Zangband base does not exist
+# in Angband 4.2.
+#
+# 4.2 carries 375 object kinds against Angband 2.8.1's 436; several were
+# retired over the years. When an artifact's base is one of them, the artifact
+# would otherwise be dropped — which is the wrong trade, since the artifact is
+# the content worth having and its base object is incidental. Grayswandir
+# should not be lost for want of a Sabre.
+#
+# Substitutions preserve weapon class and rough weight. The artifact carries
+# its own damage dice, weight and cost from Zangband, so the base contributes
+# little beyond its type and name.
+#
+# Keys are the Zangband object kind name, normalised the way zformat.match_key
+# normalises: lowercased, leading "& " and trailing "~" removed.
+
+[substitute]
+
+# --- swords 4.2 retired -------------------------------------------------
+# A sabre is a light curved blade; the cutlass is 4.2's nearest.
+"sabre" = { to = "Cutlass", note = "light curved blade; 4.2 retired the sabre" }
+# The zweihander is 4.2's two-handed great sword.
+"two-handed sword" = { to = "Zweihander", note = "4.2's two-handed great sword" }
+
+# --- armour 4.2 retired -------------------------------------------------
+"pair of soft leather boots" = { to = "Pair of Leather Boots", note = "4.2 merged soft and plain leather boots" }
+"leather jacket" = { to = "Soft Leather Armour", note = "nearest soft armour by weight and class" }
+"filthy rag" = { to = "Robe", note = "4.2's lightest body covering" }
+"hagaromo" = { to = "Robe", note = "a feathered cloak-robe; 4.2 has no equivalent garment" }
+
+# --- items with no 4.2 counterpart at all -------------------------------
+# Zangband's generic ring and jewel bases exist so artifacts can attach to
+# them. 4.2 names every ring for its power, so there is no neutral ring to
+# use; the nearest neutral choice is an amulet of adornment, which exists
+# precisely to be a blank slate.
+"ring" = { to = "Adornment", type = "amulet", note = "4.2 has no generic ring base; adornment is its blank-slate jewellery" }
+"jewel" = { to = "Adornment", type = "amulet", note = "4.2 has no jewel base" }

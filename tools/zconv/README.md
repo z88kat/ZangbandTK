@@ -16,6 +16,7 @@ cd tools/zconv
 ./zconv.py monsters                 # convert; report only
 ./zconv.py monsters --write         # convert; write the data file too
 ./zconv.py monsters --theme-only    # DEC-19: Amber/Mythos/Chaos identity only
+./zconv.py artifacts --write        # convert a_info.txt -> 4.2 artifacts
 ```
 
 Output lands in `out/` — `monsters.report.md` and `monster.zangband.txt`.
@@ -56,6 +57,8 @@ and BAL-10's "never silently dropped" rule is enforced by the tool.
 | `flagmap.toml` | Every monster flag with no 4.2 name: renamed, converted to a field, rejected, deferred to a milestone, or queued for implementation. |
 | `basemap.toml` | Glyphs whose 4.2 `monster_base` template lives under a different display character. |
 | `blowmap.toml` | Blow methods and effects outside 4.2's `blow_methods.txt` / `blow_effects.txt` vocabularies. |
+| `objflagmap.toml` | Object flags, split across 4.2's `flags:`, `values:`, `brand:`, `slay:` and `curse:` destinations. |
+| `basesubs.toml` | Base objects 4.2 retired, and the nearest surviving substitute. |
 
 ## Findings so far
 
