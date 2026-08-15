@@ -88,6 +88,10 @@ struct angband_constants
 	uint16_t monster_group_max;	/**< Maximum size of a group */
 	uint16_t monster_group_dist;	/**< Max dist of a group from a related group */
 
+	/* Lethality scalars, read from constants.txt (ZangbandZK: BAL-13, BAL-14) */
+	uint16_t lethality_hp;		/**< Percent of base monster hit points */
+	uint16_t lethality_ac;		/**< Percent of base monster armour class */
+
 	/* Monster gameplay constants, read from constants.txt */
 	uint16_t glyph_hardness;	/**< How hard for a monster to break a glyph */
 	uint16_t repro_monster_rate;	/**< Monster reproduction rate-slower */

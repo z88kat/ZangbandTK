@@ -1753,6 +1753,28 @@ static errr run_parse_monster(struct parser *p) {
 	return parse_file_quit_not_found(p, "monster");
 }
 
+/**
+ * Scale a monster statistic by a lethality percentage (ZangbandZK: BAL-13).
+ *
+ * \param base is the value from the data file.
+ * \param percent is the scalar from constants.txt, as a percentage.
+ * \param floor is the lowest permitted result.  Hit points floor at 1, since a
+ * monster with none could not be fought; armour class floors at 0, which is
+ * meaningful where negative is not.
+ *
+ * A percentage of exactly 100 returns the base unchanged rather than
+ * round-tripping through the arithmetic, so that setting the scalars to 100
+ * gives bit-identical behaviour to vanilla Angband.  Non-positive base values
+ * are left alone: they carry meaning the scalar has no business reinterpreting.
+ */
+int mon_scale_lethality(int base, int percent, int floor)
+{
+	if (percent == 100 || base <= 0)
+		return base;
+
+	return MAX(floor, (base * percent) / 100);
+}
+
 static errr finish_parse_monster(struct parser *p) {
 	struct monster_race *r, *n;
 	size_t i;
@@ -1825,6 +1847,25 @@ static errr finish_parse_monster(struct parser *p) {
 		mem_free(r);
 	}
 	z_info->r_max += 1;
+
+	/*
+	 * ZangbandZK (BAL-13): apply the lethality scalars.
+	 *
+	 * Scaling 4.2's own values rather than importing Zangband's per-monster
+	 * numbers keeps 4.2's relative tuning between monsters intact while
+	 * adopting Zangband's absolute lethality.  Applied here, after every race
+	 * is in r_info, so it reaches vanilla and imported monsters alike and
+	 * nothing downstream has to know about it.
+	 */
+	for (i = 0; i < z_info->r_max; i++) {
+		struct monster_race *race = &r_info[i];
+
+		if (!race->name)
+			continue;
+		race->avg_hp = mon_scale_lethality(race->avg_hp,
+			z_info->lethality_hp, 1);
+		race->ac = mon_scale_lethality(race->ac, z_info->lethality_ac, 0);
+	}
 
 	/* Convert friend and shape names into race pointers */
 	for (i = 0; i < z_info->r_max; i++) {

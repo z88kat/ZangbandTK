@@ -20,9 +20,12 @@ OPT ?= -O2
 #DEBUGGED_ENTITLEMENT ?= yes
 
 # for consistency with older versions, use a lower case bundle ID
-BUNDLE_IDENTIFIER = org.rephial.angband
+BUNDLE_IDENTIFIER = org.zangbandzk.zangbandzk
 
-ARCHS = x86_64 arm64
+# ZangbandZK (DEC-22): Apple Silicon only. macOS Intel reaches legacy status in
+# September 2026, so there is no future in an x86_64 slice worth the build time
+# and bundle size. Vanilla builds universal here; we deliberately do not.
+ARCHS = arm64
 ARCHFLAGS = $(addprefix -arch ,$(ARCHS))
 OSXVERSFLAGS = -mmacosx-version-min=10.9
 WARNINGS = -W -Wall -Wextra -Wno-unused-parameter \

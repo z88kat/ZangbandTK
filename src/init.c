@@ -489,6 +489,41 @@ static enum parser_error parse_constants_mon_gen(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+/**
+ * ZangbandZK (BAL-13, BAL-14): the lethality scalars.
+ *
+ * Zangband's monsters carry roughly three quarters of vanilla's hit points and
+ * half its armour class.  Rather than importing Zangband's per-monster numbers
+ * — which would discard twenty-five years of relative tuning — we scale 4.2's
+ * own values by the measured deltas.  That keeps 4.2's balance *between*
+ * monsters while adopting Zangband's absolute lethality.
+ *
+ * These live in constants.txt because they are the project's primary balance
+ * dial and will be retuned during playtest; keeping them in data means that
+ * costs no rebuild.  Values are percentages of the base.
+ */
+static enum parser_error parse_constants_lethality(struct parser *p) {
+	struct angband_constants *z;
+	const char *label;
+	int value;
+
+	z = parser_priv(p);
+	label = parser_getsym(p, "label");
+	value = parser_getint(p, "value");
+
+	if (value <= 0)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	if (streq(label, "hit-points"))
+		z->lethality_hp = value;
+	else if (streq(label, "armor-class"))
+		z->lethality_ac = value;
+	else
+		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_constants_mon_play(struct parser *p) {
 	struct angband_constants *z;
 	const char *label;
@@ -953,6 +988,7 @@ static struct parser *init_parse_constants(void) {
 	parser_setpriv(p, z);
 	parser_reg(p, "level-max sym label int value", parse_constants_level_max);
 	parser_reg(p, "mon-gen sym label int value", parse_constants_mon_gen);
+	parser_reg(p, "lethality sym label int value", parse_constants_lethality);
 	parser_reg(p, "mon-play sym label int value", parse_constants_mon_play);
 	parser_reg(p, "dun-gen sym label int value", parse_constants_dun_gen);
 	parser_reg(p, "world sym label int value", parse_constants_world);

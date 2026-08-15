@@ -858,6 +858,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     message/message.c
     monster/attack.c
     monster/desc.c
+    monster/lethality.c
     monster/monster.c
     object/alloc.c
     object/attack.c
