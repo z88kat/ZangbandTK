@@ -78,3 +78,6 @@ tk9.0.4
 tools/zconv/out/
 __pycache__/
 *.pyc
+
+# documentation build virtualenv
+.venv-docs/
