@@ -1,0 +1,19 @@
+# zconv overrides — hand-tuned values, reapplied on every conversion run.
+#
+# BAL-12: conversion is re-runnable and deterministic. Hand-edits are recorded
+# here rather than applied to generated output directly, so that re-running the
+# converter never silently discards tuning work.
+#
+# Keys are the monster's comparison key: the name lowercased, with any leading
+# "& " and trailing "~" removed. Values replace whatever the converter chose,
+# and appear in the report's "Overrides applied" section.
+#
+# Example:
+#
+#   [monster."grand master mystic"]
+#   hit-points = 900
+#   depth = 40
+#
+# Empty by design — nothing has been playtested yet.
+
+[monster]

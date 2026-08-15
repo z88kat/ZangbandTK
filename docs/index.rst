@@ -32,6 +32,20 @@ Angband is a very complex game, and it may be difficult to grasp everything at f
    customize
 
 .. toctree::
+   :maxdepth: 2
+   :caption: ZangbandZK
+
+   balance
+   wilderness
+   towns
+   quests
+   realms
+   mutations
+   virtues
+   pets
+   nightmare
+
+.. toctree::
    :maxdepth: 1
    :caption: Meta
 

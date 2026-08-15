@@ -79,7 +79,15 @@ bool character_saved;
  * Magic bits at beginning of savefile
  */
 static const uint8_t savefile_magic[4] = { 83, 97, 118, 101 };
-static const uint8_t savefile_name[4] = { 'V', 'N', 'L', 'A' };
+/*
+ * Variant tag, checked alongside the magic by check_header().  ZangbandZK
+ * deliberately does not load Angband or Zangband savefiles (DEC-07): the
+ * player model, level persistence and world layout all diverge, and carrying
+ * compatibility code for saves that could never be meaningfully upgraded would
+ * constrain the format for no benefit.  Changing this tag from vanilla's
+ * 'VNLA' is what enforces that.
+ */
+static const uint8_t savefile_name[4] = { 'Z', 'Z', 'K', '1' };
 
 /* Some useful types */
 typedef int (*loader_t)(void);

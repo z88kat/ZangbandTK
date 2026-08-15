@@ -42,6 +42,12 @@ const char *buildver = VERSION_STRING;
  */
 const char *copyright =
 	"Copyright (c) 1987-2026 Angband contributors.\n"
+	"Copyright (c) 1997-2005 Zangband DevTeam.\n"
+	"Copyright (c) 2026 ZangbandZK contributors.\n"
+	"\n"
+	"ZangbandZK is a variant of Angband, rebuilding the spirit of Zangband\n"
+	"on a modern base.  It incorporates material from Zangband, which is\n"
+	"available under the Angband licence only.\n"
 	"\n"
 	"This work is free software; you can redistribute it and/or modify it\n"
 	"under the terms of either:\n"
