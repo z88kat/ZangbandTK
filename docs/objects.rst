@@ -52,6 +52,28 @@ Eighteen, including ``(Vampiric)``, ``(Chaotic)``, ``of Sharpness``,
 Ego items are where most players will actually meet Zangband's character.
 Artifacts are rare by design; a vampiric long sword is not.
 
+The Ancient and Foul Curse
+--------------------------
+
+Some equipment carries the Curse of Topi Ylinen, and you will know it: the item
+describes itself as ancient and foul.
+
+What makes it feared is not any single outcome but its shape. Roughly once every
+hundred turns, a cursed item stirs and one misfortune befalls you — monsters
+woken, something summoned, experience drained, paralysis, a statistic lost, or
+your memory torn away. But each of those has a chance of *falling through* to the
+next, and the next after that, so a woken monster can escalate into a summoning,
+into paralysis, into total amnesia, in a single visitation. When it finishes,
+there is a one-in-three chance it simply begins again.
+
+Free action does not make you immune to the paralysis. It gives you a saving
+throw, and shortens the paralysis if you fail.
+
+Sometimes the curse stirs and nothing happens at all.
+
+It is worth carrying cursed equipment only if what it gives you is worth this.
+Often it is.
+
 Activations
 -----------
 

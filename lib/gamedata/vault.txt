@@ -3966,3 +3966,43 @@ D:      @@@@^@@@@@;@@;@@@@@^@@@@
 D:         @@@@@;;;@*;;;@@@@@         
 D:             @@@@@@@@%@             
 D:                    %%%             
+
+
+### ZangbandZK vaults ###
+
+# Zangband's vault collection turned out not to be thematic content. Of its 125
+# vaults, the great majority are geometric shapes -- round, octagon, spiral,
+# maze -- or homages to NetHack, and Angband 4.2 already ships 161 vaults of
+# its own, more than Zangband had. Under C-3, which imports only genuinely
+# distinctive vaults, almost none qualified.
+#
+# This one does: a spiral named for Roger Zelazny, whose Amber novels are the
+# largest of Zangband's three literary overlays, and built by Topi Ylinen --
+# the same author the Ancient and Foul Curse is named after. It is the one
+# vault in the collection that carries Zangband's identity rather than a shape.
+
+name:Zelazny spiral
+type:Lesser vault
+rating:5
+rows:18
+columns:19
+min-depth:0
+max-depth:0
+D:%%%%%%%%%%%%%%%%%%%
+D:%.................%
+D:%.###############.%
+D:%.+,,,,,,,,,,,,,#.%
+D:%.###########,,,#.%
+D:%.#,,,,+..##,,,##.%
+D:%.#,,,##.##,,,##..%
+D:%.#,*##.##,,,##...%
+D:%.#&##.##,,,##.##.%
+D:%.###.##,,,##.###.%
+D:%.##.##,,,##.##&#.%
+D:%...##,,,##.##*,#.%
+D:%..##,,,##..+,,,#.%
+D:%.##,,,##########.%
+D:%.#,,,,,,,,,,,,,+.%
+D:%.###############.%
+D:%.................%
+D:%%%%%%%%%%%%%%%%%%%

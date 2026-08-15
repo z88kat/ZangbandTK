@@ -56,6 +56,16 @@ preserved.
 This is the least-tested part of the game. If something at a given depth feels
 badly out of place, that is worth reporting.
 
+Rooms full of them
+------------------
+
+Angband gathers monsters of a kind into pits and nests, and ZangbandZK's imports
+make three more of those possible:
+
+- **Forests** — ents, huorns and the older things of the wood
+- **The living dungeon** — sentient walls and the mists that drift between them
+- **Elemental** — spirits and elementals of the four elements
+
 Not yet implemented
 -------------------
 

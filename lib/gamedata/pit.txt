@@ -387,3 +387,32 @@ room:3
 alloc:1:40
 mon-base:elemental
 mon-base:vortex
+
+### ZangbandZK themes ###
+
+# Zangband's imports make three groupings viable that Angband alone could not
+# fill. Each draws on a monster base with enough members across enough depths
+# to populate a room without repeating itself: 31 trees, 32 elementals, and the
+# 12 wall monsters the import introduced.
+
+# Ents, huorns and the older things of the forest.
+name:Forest
+room:2
+alloc:2:35
+obj-rarity:10
+mon-base:tree
+
+# Sentient stone, drifting mists, and the things that live in the dungeon's
+# own structure. Uses the monster base ZangbandZK added.
+name:Living dungeon
+room:1
+alloc:3:41
+obj-rarity:15
+mon-base:wall monster
+
+# Spirits and elementals of the four elements.
+name:Elemental
+room:2
+alloc:2:40
+obj-rarity:10
+mon-base:elemental
