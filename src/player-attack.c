@@ -714,6 +714,58 @@ static const struct hit_types melee_hit_types[] = {
 /**
  * Attack the monster at the given location with a single blow.
  */
+/**
+ * Discharge a random effect of chaos into a struck monster (ZangbandZK).
+ *
+ * Zangband's chaotic weapons roll on a table of effects ranging from the
+ * trivial to the dramatic.  This keeps the spirit — unpredictability that
+ * occasionally rescues a fight and occasionally squanders one — while drawing
+ * only on mechanics 4.2 already has, so no new monster state is introduced.
+ *
+ * Teleporting the target away is deliberately included despite being a
+ * drawback: a chaotic weapon that only ever helps is not chaotic.
+ */
+static void chaotic_effect(struct player *p, struct monster *mon)
+{
+	char m_name[80];
+
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_TARG);
+
+	switch (randint0(6)) {
+		case 0:
+			if (mon_inc_timed(mon, MON_TMD_CONF, 5 + randint1(10),
+					MON_TMD_FLG_NOTIFY))
+				msg("Chaos swirls around %s!", m_name);
+			break;
+		case 1:
+			if (mon_inc_timed(mon, MON_TMD_FEAR, 5 + randint1(10),
+					MON_TMD_FLG_NOTIFY))
+				msg("%s recoils in terror!", m_name);
+			break;
+		case 2:
+			if (mon_inc_timed(mon, MON_TMD_SLOW, 5 + randint1(10),
+					MON_TMD_FLG_NOTIFY))
+				msg("%s slows, out of step with time!", m_name);
+			break;
+		case 3:
+			if (mon_inc_timed(mon, MON_TMD_STUN, 5 + randint1(10),
+					MON_TMD_FLG_NOTIFY))
+				msg("%s reels from the discharge!", m_name);
+			break;
+		case 4:
+			/* The drawback: your target is flung out of reach. */
+			msg("%s is swept away by chaos!", m_name);
+			effect_simple(EF_TELEPORT, source_monster(mon->midx), "40",
+						  0, 0, 0, 0, 0, NULL);
+			break;
+		default:
+			/* Most rolls are a flourish and nothing more. */
+			msg("Chaos plays across %s.", m_name);
+			break;
+	}
+}
+
+
 bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 {
 	size_t i;
@@ -731,6 +783,7 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	int splash = 0;
 	bool do_quake = false;
 	bool success = false;
+	bool vorpal = false;
 
 	char verb[20];
 	uint32_t msg_type = MSG_HIT;
@@ -811,6 +864,19 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 		dmg = o_melee_damage(p, mon, obj, b, s, &msg_type);
 	}
 
+	/*
+	 * ZangbandZK: a vorpal weapon sometimes cuts far deeper than the blow
+	 * warranted.  Applied after criticals and before the player's damage
+	 * bonus, so it multiplies the weapon's own contribution rather than the
+	 * flat additions, which is what makes it a property of the blade.
+	 */
+	if (dmg > 0 && obj && player_of_has(p, OF_VORPAL) &&
+			one_in_(z_info->vorpal_chance)) {
+		dmg *= z_info->vorpal_multiplier;
+		vorpal = true;
+		equip_learn_flag(p, OF_VORPAL);
+	}
+
 	/* Splash damage and earthquakes */
 	splash = (weight * dmg) / 100;
 	if (player_of_has(p, OF_IMPACT) && dmg > 50) {
@@ -860,6 +926,10 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 			msgt(msg_type, "You %s %s%s.", verb, m_name, dmg_text);
 	}
 
+	/* ZangbandZK: announce a vorpal cut after the blow it modified */
+	if (vorpal)
+		msgt(MSG_HIT, "Your weapon cuts deep into %s!", m_name);
+
 	/* Pre-damage side effects */
 	blow_side_effects(p, mon);
 
@@ -874,10 +944,31 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	}
 
 	if (!stop) {
-		if (p->timed[TMD_ATT_VAMP] && monster_is_living(mon)) {
+		/*
+		 * ZangbandZK: OF_VAMPIRIC gives permanently what TMD_ATT_VAMP gives
+		 * temporarily.  The drain is capped at the monster's remaining hit
+		 * points above, so a killing blow does not heal for the overkill.
+		 */
+		bool vampiric = p->timed[TMD_ATT_VAMP] ||
+			player_of_has(p, OF_VAMPIRIC);
+
+		if (vampiric && monster_is_living(mon)) {
+			if (player_of_has(p, OF_VAMPIRIC))
+				equip_learn_flag(p, OF_VAMPIRIC);
 			effect_simple(EF_HEAL_HP, source_player(), format("%d", drain),
 						  0, 0, 0, 0, 0, NULL);
 		}
+	}
+
+	/*
+	 * ZangbandZK: a chaotic weapon discharges an unpredictable effect into
+	 * whatever it strikes.  Rolled after damage so a killed monster is not
+	 * confused or teleported post-mortem.
+	 */
+	if (!stop && obj && player_of_has(p, OF_CHAOTIC) &&
+			one_in_(z_info->chaotic_chance)) {
+		equip_learn_flag(p, OF_CHAOTIC);
+		chaotic_effect(p, mon);
 	}
 
 	if (stop)

@@ -914,3 +914,75 @@ code:COLD
 power:43
 bindui:resist_ui_compact_0<COLD>:0
 
+
+### ZangbandZK melee properties ###
+
+# Zangband weapon mechanics with no Angband counterpart. All three are melee
+# properties identified on use, and all are suppressed on non-weapon types so
+# that random artifact generation cannot place them on a hat.
+
+name:vampiric
+type:flag
+subtype:melee
+id-type:on effect
+code:VAMPIRIC
+power:25
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:light:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
+msg:Your {name} drinks deep!
+desc:Drains life from living creatures to heal you
+
+name:vorpal
+type:flag
+subtype:melee
+id-type:on effect
+code:VORPAL
+power:20
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:light:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
+msg:Your {name} cuts deep into the flesh!
+desc:Sometimes cuts deeply for extra damage
+
+name:chaotic
+type:flag
+subtype:melee
+id-type:on effect
+code:CHAOTIC
+power:20
+type-mult:bow:0
+type-mult:ring:0
+type-mult:amulet:0
+type-mult:light:0
+type-mult:soft armor:0
+type-mult:hard armor:0
+type-mult:dragon armor:0
+type-mult:cloak:0
+type-mult:shield:0
+type-mult:helm:0
+type-mult:crown:0
+type-mult:gloves:0
+type-mult:boots:0
+msg:Your {name} writhes with chaos!
+desc:Unleashes a random effect of chaos on those it strikes

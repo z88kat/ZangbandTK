@@ -20,31 +20,6 @@ mon-gen:chance:500
 # Minimum number of monsters generated on a level
 mon-gen:level-min:14
 
-# === ZangbandZK lethality scalars ===
-#
-# The project's primary balance dial. Applied to every monster's base values at
-# load time, as a percentage.
-#
-# Zangband's monsters carry roughly three quarters of Angband's hit points and
-# half its armour class -- measured at 0.73x and 0.50x across the 450 monsters
-# Angband 2.8.1 and Zangband 2.7.5 share. Rather than importing Zangband's
-# per-monster numbers, which would discard twenty-five years of relative tuning,
-# we scale Angband 4.2's own values by those deltas. That preserves 4.2's
-# balance *between* monsters while adopting Zangband's absolute lethality.
-#
-# Note that this is the *only* mechanism by which ZangbandZK moves faster than
-# vanilla. Zangband's experience system turned out to be identical to Angband's
-# once the differing award formulae are accounted for, so pace comes from
-# monsters dying sooner rather than from inflated rewards.
-#
-# Set both to 100 to play at vanilla Angband lethality.
-
-# Percentage of base hit points every monster receives
-lethality:hit-points:73
-
-# Percentage of base armour class every monster receives
-lethality:armor-class:50
-
 # Number of townsfolk generated in the day */
 mon-gen:town-day:4
 
@@ -440,3 +415,47 @@ o-ranged-critical:chance-add-denominator:360
 o-ranged-critical-level:50:3:HIT_SUPERB
 o-ranged-critical-level:10:2:HIT_GREAT
 o-ranged-critical-level:1:1:HIT_GOOD
+
+
+#---------------------------------------------------------------------
+# ZangbandZK
+#---------------------------------------------------------------------
+
+# === ZangbandZK lethality scalars ===
+#
+# The project's primary balance dial. Applied to every monster's base values at
+# load time, as a percentage.
+#
+# Zangband's monsters carry roughly three quarters of Angband's hit points and
+# half its armour class -- measured at 0.73x and 0.50x across the 450 monsters
+# Angband 2.8.1 and Zangband 2.7.5 share. Rather than importing Zangband's
+# per-monster numbers, which would discard twenty-five years of relative tuning,
+# we scale Angband 4.2's own values by those deltas. That preserves 4.2's
+# balance *between* monsters while adopting Zangband's absolute lethality.
+#
+# Note that this is the *only* mechanism by which ZangbandZK moves faster than
+# vanilla. Zangband's experience system turned out to be identical to Angband's
+# once the differing award formulae are accounted for, so pace comes from
+# monsters dying sooner rather than from inflated rewards.
+#
+# Set both to 100 to play at vanilla Angband lethality.
+
+# Percentage of base hit points every monster receives
+lethality:hit-points:73
+
+# Percentage of base armour class every monster receives
+lethality:armor-class:50
+
+# === ZangbandZK melee weapon mechanics ===
+#
+# Frequencies for the three Zangband weapon properties Angband has no
+# counterpart for. Only playtest can settle these, so they live in data.
+
+# A vorpal weapon cuts deep on one blow in this many
+melee:vorpal-chance:6
+
+# ...and multiplies that blow's damage by this
+melee:vorpal-multiplier:2
+
+# A chaotic weapon discharges an effect on one blow in this many
+melee:chaotic-chance:7

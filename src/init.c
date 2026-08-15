@@ -524,6 +524,37 @@ static enum parser_error parse_constants_lethality(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+/**
+ * ZangbandZK: tuning for the Zangband melee weapon mechanics.
+ *
+ * Kept in data for the same reason as the lethality scalars — these are
+ * frequencies that only playtest can settle, and a rebuild to try a different
+ * vorpal rate is a rebuild wasted.
+ */
+static enum parser_error parse_constants_melee(struct parser *p) {
+	struct angband_constants *z;
+	const char *label;
+	int value;
+
+	z = parser_priv(p);
+	label = parser_getsym(p, "label");
+	value = parser_getint(p, "value");
+
+	if (value <= 0)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	if (streq(label, "vorpal-chance"))
+		z->vorpal_chance = value;
+	else if (streq(label, "vorpal-multiplier"))
+		z->vorpal_multiplier = value;
+	else if (streq(label, "chaotic-chance"))
+		z->chaotic_chance = value;
+	else
+		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_constants_mon_play(struct parser *p) {
 	struct angband_constants *z;
 	const char *label;
@@ -989,6 +1020,7 @@ static struct parser *init_parse_constants(void) {
 	parser_reg(p, "level-max sym label int value", parse_constants_level_max);
 	parser_reg(p, "mon-gen sym label int value", parse_constants_mon_gen);
 	parser_reg(p, "lethality sym label int value", parse_constants_lethality);
+	parser_reg(p, "melee sym label int value", parse_constants_melee);
 	parser_reg(p, "mon-play sym label int value", parse_constants_mon_play);
 	parser_reg(p, "dun-gen sym label int value", parse_constants_dun_gen);
 	parser_reg(p, "world sym label int value", parse_constants_world);

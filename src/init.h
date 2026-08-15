@@ -92,6 +92,11 @@ struct angband_constants
 	uint16_t lethality_hp;		/**< Percent of base monster hit points */
 	uint16_t lethality_ac;		/**< Percent of base monster armour class */
 
+	/* Zangband melee weapon mechanics, read from constants.txt */
+	uint16_t vorpal_chance;		/**< Vorpal cut is one chance in this */
+	uint16_t vorpal_multiplier;	/**< Damage multiplier on a vorpal cut */
+	uint16_t chaotic_chance;	/**< Chaotic effect is one chance in this */
+
 	/* Monster gameplay constants, read from constants.txt */
 	uint16_t glyph_hardness;	/**< How hard for a monster to break a glyph */
 	uint16_t repro_monster_rate;	/**< Monster reproduction rate-slower */

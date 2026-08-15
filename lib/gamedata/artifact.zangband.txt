@@ -371,7 +371,7 @@ cost:20000
 alloc:4:52 to 100
 attack:5d4:0:0
 armor:0:0
-flags:SUST_DEX
+flags:VORPAL | SUST_DEX
 values:DEX[2] | SPEED[2]
 desc:An artifact of Zangband.
 
@@ -383,7 +383,7 @@ cost:25000
 alloc:3:35 to 100
 attack:3d5:8:12
 armor:0:0
-flags:REGEN | SLOW_DIGEST | FREE_ACT | SEE_INVIS | SUST_CON | SUST_STR | SUST_INT | SUST_WIS | PROT_FEAR
+flags:CHAOTIC | REGEN | SLOW_DIGEST | FREE_ACT | SEE_INVIS | SUST_CON | SUST_STR | SUST_INT | SUST_WIS | PROT_FEAR
 values:STR[2] | CON[2] | RES_ELEC[1] | RES_LIGHT[1] | LIGHT[2] | SPEED[2] | RES_DARK[1] | RES_DISEN[1]
 brand:ELEC_3
 slay:EVIL_2
@@ -443,7 +443,7 @@ cost:35000
 alloc:3:80 to 100
 attack:4d5:32:32
 armor:0:0
-flags:FREE_ACT | SEE_INVIS | SLOW_DIGEST | REGEN
+flags:VORPAL | FREE_ACT | SEE_INVIS | SLOW_DIGEST | REGEN
 values:LIGHT[2] | SPEED[2] | STR[2] | DEX[2]
 slay:EVIL_2
 desc:An artifact of Zangband.
@@ -507,7 +507,7 @@ cost:3000
 alloc:5:35 to 100
 attack:1d8:16:20
 armor:0:0
-flags:SEE_INVIS
+flags:VAMPIRIC | SEE_INVIS
 values:STEALTH[4] | RES_POIS[1] | RES_DARK[1] | RES_NETHER[1]
 brand:POIS_3
 curse:dullness:30
@@ -521,7 +521,7 @@ cost:29000
 alloc:1:70 to 100
 attack:3d5:20:20
 armor:0:0
-flags:FREE_ACT | PROT_FEAR | PROT_BLIND | REGEN
+flags:FREE_ACT | VORPAL | PROT_FEAR | PROT_BLIND | REGEN
 values:LIGHT[3] | RES_FIRE[1] | INFRA[3] | RES_LIGHT[1]
 brand:FIRE_3
 slay:EVIL_2
@@ -538,7 +538,7 @@ cost:32000
 alloc:3:60 to 100
 attack:2d4:13:18
 armor:0:0
-flags:SUST_DEX | FREE_ACT | PROT_FEAR | FEATHER
+flags:CHAOTIC | SUST_DEX | FREE_ACT | PROT_FEAR | FEATHER
 values:DEX[2] | SPEED[2] | BLOWS[2] | RES_NEXUS[1] | RES_CHAOS[1]
 slay:EVIL_2
 curse:anti-teleportation:30
@@ -646,7 +646,7 @@ cost:15000
 alloc:4:20 to 100
 attack:4d5:13:14
 armor:0:0
-flags:BLESSED | FREE_ACT
+flags:VORPAL | BLESSED | FREE_ACT
 desc:An artifact of Zangband.
 
 name:'Stormbringer'
@@ -657,7 +657,7 @@ cost:20000
 alloc:100:95 to 100
 attack:6d6:16:16
 armor:0:0
-flags:FREE_ACT | HOLD_LIFE | PROT_CONF
+flags:VAMPIRIC | FREE_ACT | HOLD_LIFE | PROT_CONF
 values:STR[2] | CON[2] | RES_NEXUS[1] | RES_CHAOS[1] | RES_NETHER[1]
 curse:anti-teleportation:30
 desc:An artifact of Zangband.
@@ -670,7 +670,7 @@ cost:16000
 alloc:4:40 to 100
 attack:2d12:8:20
 armor:0:0
-flags:PROT_FEAR
+flags:PROT_FEAR | VAMPIRIC
 values:RES_FIRE[1] | RES_COLD[1] | RES_CHAOS[1] | STR[3]
 slay:ANIMAL_2
 act:CURE_SERIOUS
