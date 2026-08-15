@@ -393,3 +393,33 @@ type:polearm
 type:sword
 desc:makes it hard to hit anything
 
+
+# ZangbandZK (CNT-15): the Curse of Topi Ylinen.
+#
+# Zangband's most feared misfortune. The effect itself implements the cascade
+# and the repeat; see effect_handler_ANCIENT_CURSE. In Zangband, equipment
+# bearing it had a 1% chance per player turn of invoking it, which is roughly
+# one visitation per hundred turns per cursed item -- 1d100 here.
+name:ancient and foul
+type:digger
+type:hafted
+type:polearm
+type:sword
+type:bow
+type:boots
+type:gloves
+type:helm
+type:crown
+type:shield
+type:cloak
+type:soft armor
+type:hard armor
+type:dragon armor
+type:light
+type:amulet
+type:ring
+effect:ANCIENT_CURSE
+dice:1
+time:1d100
+msg:Your {name} is ancient and foul!
+desc:carries an ancient and foul curse

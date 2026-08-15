@@ -254,7 +254,7 @@ armor:2:0
 flags:HOLD_LIFE | PROT_CONF
 values:STR[2] | DEX[2] | RES_DISEN[1] | RES_NEXUS[1] | RES_FIRE[3] | RES_NETHER[1] | RES_CHAOS[1] | RES_POIS[1] | RES_COLD[3]
 curse:siren:30
-curse:demon summon:40
+curse:ancient and foul:40
 curse:teleportation:30
 desc:An artifact of Zangband.
 
@@ -360,7 +360,7 @@ flags:PROT_FEAR
 values:SPEED[10] | RES_FIRE[3] | RES_FIRE[1] | RES_DISEN[1] | LIGHT[10]
 brand:FIRE_3
 curse:siren:30
-curse:demon summon:40
+curse:ancient and foul:40
 desc:An artifact of Zangband.
 
 name:of Groo

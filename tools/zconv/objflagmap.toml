@@ -105,7 +105,7 @@ TELEPORT = { name = "teleportation", power = 30 }
 DRAIN_EXP = { name = "dullness", power = 30 }
 NO_TELE = { name = "anti-teleportation", power = 30 }
 NO_MAGIC = { name = "impair mana recovery", power = 30 }
-TY_CURSE = { name = "demon summon", power = 40 }
+TY_CURSE = { name = "ancient and foul", power = 40 }
 DRAIN_STATS = { name = "weakness", power = 30 }
 
 # ---------------------------------------------------------------- rejects
@@ -152,3 +152,45 @@ LUCK_10 = { milestone = "M3", note = "Improves luck. 4.2 has no luck statistic."
 EASY_ENCHANT = { milestone = "M3", note = "Enchants more readily than its level suggests." }
 SENSE = { milestone = "M3", note = "Senses nearby monsters of a kind tied to the item." }
 ACTIVATE = { milestone = "M2", note = "Handled separately via act:/time: rather than as a flag." }
+
+# ------------------------------------------------ ego-only object flags
+# Flags that appear on ego types rather than artifacts.
+
+[flag_ego]
+# 4.2 accepts these directly on the flags: line, parsing them into element info.
+IGNORE_ACID = "IGNORE_ACID"
+IGNORE_ELEC = "IGNORE_ELEC"
+IGNORE_FIRE = "IGNORE_FIRE"
+IGNORE_COLD = "IGNORE_COLD"
+# 4.2 has this exact flag, used by its own exploding ammunition.
+EXPLODE = "EXPLODE"
+
+[value_pval_ego]
+TUNNEL = "TUNNEL"
+
+# --------------------------------------------- random ability generation
+#
+# CNT-16 needs no implementation: 4.2 already generates random abilities at
+# object creation, via the kind flags below, and uses them on its own egos.
+# What Zangband's data does not record is *which* egos receive them — that
+# lives in spoilers/randabil.txt prose rather than in e_info.txt.
+#
+# Per that documentation, of the eighteen imported ego types only these two
+# grant random abilities.
+
+[rand_ability]
+"(Trump Weapon)" = { flags = ["RAND_POWER", "RAND_HI_RES"], note = "1-in-7 extra power, plus a chance of an extra resistance" }
+"(Chaotic)" = { flags = ["RAND_HI_RES"], note = "a chance of an extra resistance" }
+
+# ---------------------------------------- ego flags needing implementation
+
+[implement_ego]
+REFLECT = { milestone = "M3", note = "Reflects bolt spells back at the caster. Pairs with the monster REFLECTING flag, which is queued in flagmap.toml — both want one implementation." }
+SH_FIRE = { milestone = "M3", note = "Fiery aura damaging melee attackers. Pairs with the monster AURA_FIRE flag." }
+SH_ELEC = { milestone = "M3", note = "Electric aura damaging melee attackers. Pairs with the monster AURA_ELEC flag." }
+GHOUL_TOUCH = { milestone = "M3", note = "Paralysing touch. The entire identity of the (Ghoul Touch) ego." }
+
+[defer_ego]
+PATRON = { milestone = "M7", requirement = "PLR-05", note = "Behaves differently for a Chaos Warrior, whose patron takes an interest. Needs the class to exist." }
+WILD_SHOT = { milestone = "M4", requirement = "WLD-07", note = "Behaviour tied to wilderness terrain." }
+WILD_WALK = { milestone = "M4", requirement = "WLD-07", note = "Behaviour tied to wilderness terrain." }

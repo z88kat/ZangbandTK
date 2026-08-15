@@ -833,6 +833,17 @@ def cmd_egos(args) -> int:
         for curse in dedupe(curses):
             entry.pairs.append(("curse", curse))
 
+        # CNT-16: 4.2 generates random abilities itself, given the kind flags.
+        rand = flagmap.rand_ability.get(rec.name)
+        if rand:
+            existing_flags = entry.get("flags")
+            merged = ((existing_flags + " | ") if existing_flags else "") + \
+                " | ".join(rand["flags"])
+            entry.set("flags", merged)
+            item.fields["rand-ability"] = rules.Value(
+                " | ".join(rand["flags"]), "CNT-16", rules.CONVERTED,
+                rand["note"])
+
         for field_name, value in overrides.get(key, {}).items():
             entry.set(field_name, value)
             item.overridden.append(field_name)

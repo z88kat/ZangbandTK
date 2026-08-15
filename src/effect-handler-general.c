@@ -3648,3 +3648,163 @@ bool effect_handler_UNSCRAMBLE_STATS(effect_handler_context_t *context)
 	player_fix_scramble(player);
 	return true;
 }
+
+/**
+ * ------------------------------------------------------------------------
+ * The Ancient and Foul Curse (ZangbandZK: CNT-15)
+ * ------------------------------------------------------------------------ */
+
+/**
+ * One misfortune from the Curse of Topi Ylinen.
+ *
+ * \param p is the afflicted player.
+ * \param step selects which misfortune, indexing ANCIENT_CURSE_STEPS.
+ * \param stop is set when the curse must not repeat: Zangband halts the whole
+ * process once the player is paralysed or the greater demons are loose, on the
+ * grounds that either is quite enough for one visit.
+ */
+static void ancient_curse_step(struct player *p, int step, bool *stop)
+{
+	switch (step) {
+		case 0:
+			msg("You feel a malicious presence draw attention to you!");
+			effect_simple(EF_WAKE, source_player(), "0", 0, 0, 0, 0, 0, NULL);
+			break;
+
+		case 1:
+			msg("The air tears open!");
+			effect_simple(EF_SUMMON, source_player(), "3+1d3", 0, 0, 0, 0, 0,
+						  NULL);
+			break;
+
+		case 2:
+			msg("Something claws its way through!");
+			effect_simple(EF_SUMMON, source_player(), "1", 0, 0, 0, 0, 0, NULL);
+			break;
+
+		case 3:
+			msg("Your memories of hard-won experience fade.");
+			player_exp_lose(p, p->exp / 16, false);
+			break;
+
+		case 4:
+			/* Free action is a saving throw here, not an immunity. */
+			if (player_of_has(p, OF_FREE_ACT)) {
+				equip_learn_flag(p, OF_FREE_ACT);
+				if (one_in_(2)) {
+					msg("Your limbs lock for an instant, then free.");
+					(void) player_inc_timed(p, TMD_PARALYZED, randint1(3),
+											true, true, false);
+				} else {
+					msg("You shrug off a creeping paralysis.");
+					break;
+				}
+			} else {
+				msg("Your body seizes and will not answer!");
+				(void) player_inc_timed(p, TMD_PARALYZED, randint1(13),
+										true, true, false);
+			}
+			*stop = true;
+			break;
+
+		case 5:
+			msg("You feel diminished.");
+			(void) player_stat_dec(p, randint0(STAT_MAX), false);
+			break;
+
+		case 6:
+			msg("Your past is torn away from you!");
+			(void) player_inc_timed(p, TMD_AMNESIA, 20 + randint1(20), true,
+									true, false);
+			break;
+
+		case 7:
+			/* The deep dungeon's own answer: greater demons, and no reprieve. */
+			msg("The floor splits and something vast comes through!");
+			effect_simple(EF_SUMMON, source_player(), "2+1d3", 0, 0, 0, 0, 0,
+						  NULL);
+			*stop = true;
+			break;
+
+		default: {
+			/*
+			 * Every statistic, and each drain may drag the next down with it.
+			 * The 50% continuation is Zangband's, and is why this outcome is
+			 * feared out of proportion to its 2-in-27 chance.
+			 */
+			int stat;
+
+			msg("You feel your whole being unravelling!");
+			for (stat = 0; stat < STAT_MAX; stat++) {
+				do {
+					if (!player_stat_dec(p, stat, false))
+						break;
+				} while (one_in_(2));
+			}
+			break;
+		}
+	}
+}
+
+/**
+ * The Ancient and Foul Curse — the Curse of Topi Ylinen.
+ *
+ * Zangband's most feared misfortune, and its character comes entirely from its
+ * shape rather than from any single outcome.  One misfortune is chosen by
+ * weight; each of the first seven may then *fall through* to the next, so a
+ * mild result can escalate through summoning and paralysis into total amnesia
+ * in one visitation.  The whole process then has a one-in-three chance of
+ * beginning again.
+ *
+ * Implemented as an effect rather than inside the curse system because
+ * Zangband invokes it from six different places — cursed equipment, a failed
+ * chaos spell, the Trump Shuffle, a dungeon trap, a dying Amberite's blood
+ * curse, and a chaos patron's displeasure — and an effect can be reached from
+ * all of them.
+ *
+ * Weights are out of 27, from the original's documentation.  The remaining
+ * 1-in-27 is deliberate: sometimes the curse stirs and nothing comes of it.
+ */
+bool effect_handler_ANCIENT_CURSE(effect_handler_context_t *context)
+{
+	/* Cumulative weights, out of 27, for each step in ancient_curse_step(). */
+	static const int weight[] = { 4, 7, 11, 14, 19, 22, 23, 24, 26 };
+	const int steps = (int) N_ELEMENTS(weight);
+	/* The first seven may cascade into their successor. */
+	const int cascading = 7;
+	struct player *p = player;
+	bool stop = false;
+	int rounds = 0;
+
+	msg("You feel a malicious presence from beyond the world.");
+
+	do {
+		int roll = randint0(27);
+		int step = 0;
+
+		while (step < steps && roll >= weight[step])
+			step++;
+
+		/* The unclaimed 1-in-27: the curse passes without incident. */
+		if (step >= steps)
+			break;
+
+		ancient_curse_step(p, step, &stop);
+
+		/* Fall through to the next misfortune, and perhaps the one after. */
+		while (!stop && step < cascading && one_in_(6)) {
+			step++;
+			ancient_curse_step(p, step, &stop);
+		}
+
+		/*
+		 * Guard the repeat as well as testing it.  The one-in-three is
+		 * unbounded in principle, and a curse that empties a character sheet
+		 * because a random number generator had a run is a bug, not a feature.
+		 */
+		rounds++;
+	} while (!stop && rounds < 5 && one_in_(3));
+
+	context->ident = true;
+	return true;
+}

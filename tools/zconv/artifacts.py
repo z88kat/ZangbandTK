@@ -41,6 +41,13 @@ class ObjFlagMap:
         self.curse: dict[str, dict] = spec.get("curse", {})
         self.reject: dict[str, str] = spec.get("reject", {})
         self.implement: dict[str, dict] = spec.get("implement", {})
+        # Ego-only vocabulary, merged in so one disposition table serves both.
+        self.flag.update(spec.get("flag_ego", {}))
+        self.value_pval.update(spec.get("value_pval_ego", {}))
+        self.implement.update(spec.get("implement_ego", {}))
+        for name, entry in spec.get("defer_ego", {}).items():
+            self.implement.setdefault(name, entry)
+        self.rand_ability: dict[str, dict] = spec.get("rand_ability", {})
 
     def disposition(self, flag: str) -> tuple[str, str]:
         if flag in self.value_pval:
