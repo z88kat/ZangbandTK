@@ -1,0 +1,182 @@
+# Disposition of every Zangband monster flag with no direct Angband 4.2 name.
+#
+# BAL-10 requires that each is mapped, implemented, or explicitly rejected with
+# a reason — never silently dropped. This file is that record, and zconv reads
+# it, so the requirement is enforced by the tool rather than by good intentions.
+#
+# Dispositions:
+#   rename   — same meaning, different name in 4.2. Applied automatically.
+#   field    — 4.2 expresses this as a data field rather than a flag.
+#   reject   — has no meaning under 4.2's model. Dropped, with the reason why.
+#   defer    — real mechanic, but blocked on a milestone that has not landed.
+#   implement— real mechanic 4.2 lacks and we want. Needs code.
+#
+# Anything absent from this file is reported as unresolved.
+
+# ---------------------------------------------------------------- renames
+
+[rename]
+HURT_LITE = "HURT_LIGHT"
+RES_NETH  = "IM_NETHER"
+RES_NEXU  = "IM_NEXUS"
+RES_DISE  = "IM_DISEN"
+RES_PLAS  = "IM_PLASMA"
+RES_WATE  = "IM_WATER"
+ATTR_ANY  = "ATTR_RAND"
+GOOD      = "DROP_GOOD"
+
+# ------------------------------------------------------------------ fields
+
+# 4.2 carries monster light as an integer field rather than tiered flags.
+[field.LITE_1]
+key = "light"
+value = "1"
+note = "4.2 uses an integer light radius, not tiered flags"
+
+[field.LITE_2]
+key = "light"
+value = "2"
+note = "4.2 uses an integer light radius, not tiered flags"
+
+# Zangband's FRIENDS means 'appears in groups of its own kind'. 4.2 expresses
+# that as an explicit friends entry, which is what its own group monsters use.
+[field.FRIENDS]
+key = "friends"
+value = "100:2d6:Same"
+note = "4.2 models grouping as an explicit friends entry rather than a flag"
+
+# Zangband drop counts are dice; 4.2's are fixed counts. Mapped to the nearest
+# 4.2 flag, rounding to the dice maximum so drops are not quietly reduced.
+[field.DROP_1D2]
+key = "flag"
+value = "DROP_2"
+note = "1d2 items -> DROP_2, taking the dice maximum"
+
+[field.DROP_2D2]
+key = "flag"
+value = "DROP_4"
+note = "2d2 items -> DROP_4, taking the dice maximum"
+
+[field.DROP_3D2]
+key = "flag"
+value = "DROP_4"
+note = "3d2 items -> DROP_4, 4.2's ceiling"
+
+[field.DROP_4D2]
+key = "flag"
+value = "DROP_4"
+note = "4d2 items -> DROP_4, 4.2's ceiling"
+
+[field.DROP_90]
+key = "flag"
+value = "DROP_60"
+note = "4.2 offers DROP_20/40/60 only; 90% has no equivalent and 60 is nearest"
+
+# ------------------------------------------------------------------ rejects
+
+[reject]
+FORCE_MAXHP = """4.2 stores a single average hit point value rather than dice, \
+so there is no roll to force to its maximum. The flag is not merely unmapped \
+but meaningless under 4.2's model. Affects 221 monsters, all harmlessly."""
+
+DROP_CORPSE = """Zangband drops corpses and skeletons as objects, supporting \
+its corpse-raising and cooking mechanics. 4.2 has no corpse system, and DEC-04 \
+does not bring one into scope."""
+
+DROP_SKELETON = """See DROP_CORPSE. No corpse system in 4.2 and none in scope."""
+
+UNIQUE_7 = """Permits seven simultaneous copies of a 'unique'. Contradicts what \
+uniqueness means in 4.2, where UNIQUE governs both generation and death \
+handling. Affects one monster."""
+
+SILLY = """Marks joke monsters for a Zangband option that altered their \
+descriptions. No 4.2 equivalent and no requirement asks for one."""
+
+# -------------------------------------------------------------- deferred
+
+# Habitat: which dungeon types a monster belongs to. Meaningless until WLD-14
+# gives dungeons distinct character.
+[defer.dungeon_habitat]
+milestone = "M5"
+requirement = "WLD-14"
+note = "Per-dungeon habitat. Needs multiple dungeons with distinct character."
+flags = [
+  "DUN_CAVERN", "DUN_LAIR", "DUN_HORROR", "DUN_TOWER", "DUN_DARKWATER",
+  "DUN_TEMPLE", "DUN_MINE", "DUN_HELL", "DUN_GRAVE", "DUN_PLANAR",
+  "DUN_RUIN", "DUN_CITY",
+]
+
+# Habitat: which wilderness terrain a monster inhabits. Needs a wilderness.
+[defer.wilderness_habitat]
+milestone = "M4"
+requirement = "WLD-07"
+note = "Wilderness terrain habitat. Needs the overworld to exist."
+flags = [
+  "WILD_FOREST1", "WILD_FOREST2", "WILD_WASTE1", "WILD_WASTE2", "WILD_GRASS",
+  "WILD_OCEAN", "WILD_SHORE", "WILD_MOUNT1", "WILD_MOUNT2", "WILD_SWAMP1",
+  "WILD_SWAMP2", "WILD_TOWN",
+]
+
+[defer.movement]
+milestone = "M4"
+requirement = "WLD-09"
+note = """Movement over terrain 4.2's dungeons do not contain. Meaningless \
+until the wilderness introduces water and open air."""
+flags = ["CAN_FLY", "CAN_SWIM", "AQUATIC"]
+
+[defer.allegiance]
+milestone = "M10"
+requirement = "PLR-29"
+note = """Monsters that begin neither hostile nor tame. Requires the three-state \
+allegiance model; a boolean hostile flag cannot express it."""
+flags = ["FRIENDLY"]
+
+# ------------------------------------------------------------- implement
+
+[implement.RES_TELE]
+milestone = "M2"
+note = "Resists teleportation effects. Affects 102 monsters; cheap and self-contained."
+
+[implement.REFLECTING]
+milestone = "M2"
+note = "Reflects bolt spells back at the caster. Affects 22 monsters."
+
+[implement.AURA_FIRE]
+milestone = "M2"
+note = "Damages melee attackers with fire."
+
+[implement.AURA_COLD]
+milestone = "M2"
+note = "Damages melee attackers with cold."
+
+[implement.AURA_ELEC]
+milestone = "M2"
+note = "Damages melee attackers with electricity."
+
+[implement.CAN_SPEAK]
+milestone = "M2"
+note = """Monster taunts the player in messages. Pure flavour, but it is a lot \
+of Zangband's character and affects 89 monsters."""
+
+[implement.AMBERITE]
+milestone = "M2"
+note = """Marks the scions of Amber. Governs the S_AMBERITES summon and their \
+shared behaviour, so CNT-02's 'coherent set' requirement depends on it."""
+
+[implement.SHAPECHANGER]
+milestone = "M3"
+note = "Monster changes appearance at random. 4.2 has player shapes only."
+
+[implement.QUANTUM]
+milestone = "M3"
+note = "Monster teleports erratically when observed. One monster, pure novelty."
+
+# ------------------------------------------------- unresolvable by tooling
+
+# These need per-monster information the flag alone does not carry, so the
+# converter reports them for hand resolution rather than guessing.
+[manual]
+CHAR_MIMIC = "4.2's mimic: field needs a specific tval:sval the flag does not name."
+DROP_CHOSEN = "Drops a specific item; 4.2's drop: field needs the item named."
+ESCORT = "4.2's friends: field needs the escorting race named."
+ESCORTS = "As ESCORT, for larger groups."

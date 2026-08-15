@@ -1,0 +1,46 @@
+# Blow method and effect vocabulary, Zangband -> Angband 4.2.
+#
+# 4.2 defines its own vocabularies in blow_methods.txt and blow_effects.txt,
+# and rejects anything outside them at parse time. Zangband uses three methods
+# and six effects that 4.2 has no name for.
+#
+# Same discipline as flagmap.toml: every one is mapped or rejected with a
+# reason, and the converter reports what it did.
+
+# ------------------------------------------------------------------ methods
+
+[method]
+
+# A charging attack still lands as a blow; 4.2 draws no distinction.
+CHARGE = { to = "HIT", note = "4.2 has no charge method; the blow still lands" }
+
+# Suicide explosions. 4.2 has no explode method, and modelling one properly
+# means a death trigger rather than a blow. The damage is preserved; the
+# self-destruction is lost.
+EXPLODE = { to = "HIT", note = "4.2 has no explode method; damage preserved, self-destruction lost" }
+
+# Zangband's SHOW is a vocal performance — singing, chiefly. MOAN is 4.2's
+# nearest vocal attack.
+SHOW = { to = "MOAN", note = "vocal performance attack; MOAN is 4.2's nearest" }
+
+# ------------------------------------------------------------------ effects
+
+[effect]
+
+# Disease damages and poisons; 4.2 folds the two together.
+DISEASE = { to = "POISON", note = "4.2 has no separate disease effect" }
+
+# Drains experience to heal the attacker. 4.2 keeps the drain and drops the
+# healing, since no 4.2 blow effect feeds the monster.
+EXP_VAMP = { to = "EXP_40", note = "drain preserved; the attacker no longer heals from it" }
+
+# 4.2 removed charisma as a statistic in 4.2.0, so there is nothing to drain.
+# Falls back to plain damage rather than silently draining something else.
+LOSE_CHR = { to = "HURT", note = "4.2 has no charisma statistic; becomes plain damage" }
+
+# Time attacks in Angband's lineage cost the player levels and experience.
+TIME = { to = "EXP_40", note = "4.2 has no time blow effect; modelled as experience loss" }
+
+# These two are exact matches under different names.
+UN_BONUS = { to = "DISENCHANT", note = "same effect, different name" }
+UN_POWER = { to = "DRAIN_CHARGES", note = "same effect, different name" }

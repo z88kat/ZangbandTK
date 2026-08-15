@@ -1750,7 +1750,27 @@ struct parser *init_parse_monster(void) {
 }
 
 static errr run_parse_monster(struct parser *p) {
-	return parse_file_quit_not_found(p, "monster");
+	errr err = parse_file_quit_not_found(p, "monster");
+
+	if (err)
+		return err;
+
+	/*
+	 * ZangbandZK (CNT-01): the imported Zangband bestiary lives in its own
+	 * file rather than being merged into monster.txt.
+	 *
+	 * parse_file() accumulates into the same parser, so the two files build a
+	 * single race list.  Keeping them apart means tools/zconv can regenerate
+	 * its output without rewriting hand-maintained vanilla content, makes the
+	 * provenance of any given monster obvious, and lets the import be disabled
+	 * by removing one file.
+	 *
+	 * Absence is not an error: a build with no imported bestiary is a valid
+	 * configuration, and is what M0 and M1 shipped.
+	 */
+	err = parse_file(p, "monster.zangband");
+
+	return (err == PARSE_ERROR_NO_FILE_FOUND) ? PARSE_ERROR_NONE : err;
 }
 
 /**

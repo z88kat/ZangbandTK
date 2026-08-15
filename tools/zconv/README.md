@@ -45,6 +45,18 @@ Every converted field carries one. Anything below `converted` wants human eyes.
 - `derived` — computed from 4.2's own curve; plausible but unverified
 - `invented` — no basis in either source; the tool guessed
 
+## Companion mapping files
+
+Three data files record how Zangband's vocabulary translates to 4.2's. Keeping
+them as data rather than code means every decision is reviewable in one place,
+and BAL-10's "never silently dropped" rule is enforced by the tool.
+
+| File | Covers |
+|---|---|
+| `flagmap.toml` | Every monster flag with no 4.2 name: renamed, converted to a field, rejected, deferred to a milestone, or queued for implementation. |
+| `basemap.toml` | Glyphs whose 4.2 `monster_base` template lives under a different display character. |
+| `blowmap.toml` | Blow methods and effects outside 4.2's `blow_methods.txt` / `blow_effects.txt` vocabularies. |
+
 ## Findings so far
 
 **BAL-07 is resolved: the sleepiness scale did not change.** Across 434 shared monsters the

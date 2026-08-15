@@ -1,0 +1,44 @@
+# Glyph to monster_base mapping for Zangband monsters whose display character
+# has no template of that glyph in Angband 4.2.
+#
+# The converter normally infers `base:` from the glyph, since monster_base.txt
+# keys its templates that way. These are the cases where that fails, and where
+# an existing 4.2 template covers the concept under a different character.
+#
+# `glyph` controls whether the monster keeps its Zangband display character.
+# Keep it where the character *is* the point — a door mimic that displays as a
+# mimic rather than a door is not a door mimic. Drop it where 4.2's own symbol
+# is simply the better-organised choice, so imported monsters read consistently
+# with vanilla's.
+
+[map]
+
+# Floor-dwellers: space monsters, landmines, chaos tiles, the Colour out of
+# space. 4.2's lurker template is described as "weird monsters that look like
+# floor", which is exactly this.
+"." = { base = "lurker", keep_glyph = true }
+
+# Energy spheres: ball lightning, freezing sphere, jumping fireball. 4.2's
+# vortex template is "elemental objects which engulf and breathe their
+# element(s)". Vanilla's 'v' is clearer than Zangband's '*', which collides
+# with the symbol for gold.
+"*" = { base = "vortex", keep_glyph = false }
+
+# Ents and treeherds. 4.2's tree template describes itself as "Tree/Ent".
+"%" = { base = "tree", keep_glyph = false }
+
+# Standing water. Modelled as water elementals.
+"~" = { base = "elemental", keep_glyph = false }
+
+# Object and terrain impersonators. 4.2's mimic template already means
+# "monsters which pretend to be objects", and the disguise only works if the
+# monster shows the character of the thing it is pretending to be.
+"=" = { base = "mimic", keep_glyph = true }   # a Plain Gold Ring
+"(" = { base = "mimic", keep_glyph = true }   # cloaker, posing as a cloak
+"+" = { base = "mimic", keep_glyph = true }   # door mimic
+">" = { base = "mimic", keep_glyph = true }   # stairway to hell
+"{" = { base = "mimic", keep_glyph = true }   # Little Boy, Fat Man
+
+# Concepts 4.2 has no template for. Added to monster_base.txt by ZangbandZK.
+"#" = { base = "wall monster", keep_glyph = true }
+"|" = { base = "animated weapon", keep_glyph = true }

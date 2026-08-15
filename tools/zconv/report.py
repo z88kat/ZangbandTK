@@ -36,6 +36,10 @@ class Converted:
     fields: dict[str, Value] = field(default_factory=dict)
     unmapped_flags: list[str] = field(default_factory=list)
     overridden: list[str] = field(default_factory=list)
+    #: (flag, disposition, reason) for flags not carried into the output
+    flag_dispositions: list[tuple[str, str, str]] = field(default_factory=list)
+    #: notes about vocabulary translated between the two data models
+    translations: list[str] = field(default_factory=list)
 
     @property
     def worst(self) -> str:
@@ -126,23 +130,59 @@ class Report:
                       f"{value.note} |")
         w("")
 
-        # --- unmapped flags (BAL-10)
-        flag_counts: Counter[str] = Counter()
+        # --- flag resolution (BAL-10)
+        counts: Counter[str] = Counter()
+        reasons: dict[str, tuple[str, str]] = {}
         for item in self.items:
-            flag_counts.update(item.unmapped_flags)
-        w("## Unmapped flags")
+            for flag, disposition, reason in item.flag_dispositions:
+                counts[flag] += 1
+                reasons[flag] = (disposition, reason)
+            counts.update(item.unmapped_flags)
+            for flag in item.unmapped_flags:
+                reasons.setdefault(flag, ("unresolved", "no disposition recorded"))
+
+        w("## Flag resolution")
         w("")
-        if not flag_counts:
-            w("None. Every source flag mapped to a 4.2 equivalent.")
+        if not counts:
+            w("Every source flag was carried into the output, renamed, or converted "
+              "to a 4.2 field.")
         else:
-            w(f"**{len(flag_counts)} distinct flags have no 4.2 equivalent.** Per BAL-10 "
-              "each must be mapped, implemented, or explicitly rejected with a reason — "
-              "never silently dropped.")
+            by_disposition: dict[str, list[tuple[str, int, str]]] = {}
+            for flag, count in counts.items():
+                disposition, reason = reasons[flag]
+                by_disposition.setdefault(disposition, []).append((flag, count, reason))
+
+            unresolved = len(by_disposition.get("unresolved", []))
+            w(f"{len(counts)} distinct flags were not carried directly into the output. "
+              "Per BAL-10 each is mapped, implemented, or explicitly rejected with a "
+              "reason.")
             w("")
-            w("| Flag | Entries affected |")
-            w("|---|---:|")
-            for flag, count in sorted(flag_counts.items(), key=lambda kv: (-kv[1], kv[0])):
-                w(f"| `{flag}` | {count} |")
+            if unresolved:
+                w(f"⚠️ **{unresolved} flags have no recorded disposition.** Add them to "
+                  "`flagmap.toml` before accepting this conversion.")
+            else:
+                w("✅ **Every flag has a recorded disposition.**")
+            w("")
+
+            headings = {
+                "reject": "Rejected — no meaning under 4.2's model",
+                "defer": "Deferred — real mechanic, blocked on a milestone",
+                "implement": "To implement — mechanic 4.2 lacks and we want",
+                "manual": "Manual — needs information the flag does not carry",
+                "unresolved": "⚠️ Unresolved",
+            }
+            for disposition in ("unresolved", "manual", "implement", "defer", "reject"):
+                rows = by_disposition.get(disposition)
+                if not rows:
+                    continue
+                w(f"### {headings[disposition]}")
+                w("")
+                w("| Flag | Monsters | Reason |")
+                w("|---|---:|---|")
+                for flag, count, reason in sorted(rows, key=lambda r: (-r[1], r[0])):
+                    tidy = " ".join(reason.split())
+                    w(f"| `{flag}` | {count} | {tidy} |")
+                w("")
         w("")
 
         # --- overrides (BAL-12)

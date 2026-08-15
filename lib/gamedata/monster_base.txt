@@ -508,6 +508,31 @@ flags:OPEN_DOOR | BASH_DOOR | CLEAR_WEB
 flags:IM_COLD | IM_POIS | HURT_FIRE | NO_CONF | NO_SLEEP | NO_STUN
 desc:Zombie/Mummy
 
+##### ZangbandZK templates #####
+
+# Zangband monster classes with no Angband counterpart. Everything else it
+# adds was absorbed by an existing template: its floor-dwellers became lurkers,
+# its energy spheres vortices, its ents trees, its puddles elementals, and its
+# object and terrain impersonators mimics.
+
+# Sentient walls, drifting mists and rock-dwellers that hide in the dungeon's
+# own structure. Unlike lurkers they move, so they cannot share that template.
+name:wall monster
+glyph:#
+pain:1
+flags:COLD_BLOOD | EMPTY_MIND | CLEAR_WEB
+flags:NO_FEAR | NO_CONF | NO_SLEEP
+desc:Wall monster
+
+# Blades that hunt of their own volition. They pass for ordinary weapons on the
+# floor until approached, but unlike a mimic they pursue, so NEVER_MOVE is wrong.
+name:animated weapon
+glyph:|
+pain:1
+flags:COLD_BLOOD | EMPTY_MIND | NONLIVING
+flags:NO_FEAR | NO_CONF | NO_SLEEP | IM_POIS
+desc:Animated weapon
+
 ##### Special templates #####
 
 name:player
