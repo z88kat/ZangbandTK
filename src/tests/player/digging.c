@@ -180,7 +180,7 @@ static int test_autoswap_side_effects(void *state) {
 	player->cave->objects = mem_zalloc((cave->obj_max + 1)
 		* sizeof(struct object*));
 	player->cave->obj_max = cave->obj_max;
-	cave_illuminate(cave, true);
+	cave_illuminate(cave, true, true);
 	character_dungeon = true;
 	on_new_level();
 

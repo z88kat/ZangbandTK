@@ -939,6 +939,22 @@ int player_check_terrain_damage(struct player *p, struct loc grid, bool actual)
 		}
 	}
 
+	/*
+	 * Deep water, as in Zangband: you can wade in, but not while loaded down.
+	 * Floating over it costs nothing, and a traveller carrying no more than
+	 * half what they could is light enough to keep their head up.  Anyone
+	 * heavier is drowning, a little at a time, for as long as they stay in.
+	 */
+	if (square_isdeep(cave, grid)) {
+		if (player_of_has(p, OF_FEATHER)) {
+			if (actual) {
+				equip_learn_flag(p, OF_FEATHER);
+			}
+		} else if (p->upkeep->total_weight > weight_limit(&p->state) / 2) {
+			dam_taken += randint1(p->depth + 1);
+		}
+	}
+
 	return dam_taken;
 }
 
@@ -969,6 +985,13 @@ void player_take_terrain_damage(struct player *p, struct loc grid)
 		}
 		msg("%s%s", square_feat(cave, grid)->hurt_msg, dam_text);
 		inven_damage(p, PROJ_FIRE, dam_taken);
+	} else if (square_isdeep(cave, grid)) {
+		char dam_text[32] = "";
+
+		if (dam_reduced > 0 && OPT(p, show_damage)) {
+			strnfmt(dam_text, sizeof(dam_text), " (%d)", dam_reduced);
+		}
+		msg("%s%s", square_feat(cave, grid)->hurt_msg, dam_text);
 	}
 	take_hit(p, dam_reduced, square_feat(cave, grid)->die_msg);
 }

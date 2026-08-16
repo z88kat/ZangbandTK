@@ -551,8 +551,14 @@ void wiz_dark(struct chunk *c, struct player *p, bool full)
 
 /**
  * Light or Darken the town
+ *
+ * \param memorize records what the light falls on as known to the player.
+ * True for a town, where a resident may fairly be assumed to know the place.
+ * False for the wilderness surface (ZangbandZK): daylight there means you can
+ * see as far as the ground allows, not that you have been told what is over
+ * the next hill.
  */
-void cave_illuminate(struct chunk *c, bool daytime)
+void cave_illuminate(struct chunk *c, bool daytime, bool memorize)
 {
 	int y, x, i;
 
@@ -579,7 +585,7 @@ void cave_illuminate(struct chunk *c, bool daytime)
 			/* Only interesting grids at night */
 			if (daytime || !square_isfloor(c, grid)) {
 				sqinfo_on(square(c, grid)->info, SQUARE_GLOW);
-				if(light) square_memorize(c, grid);
+				if (light && memorize) square_memorize(c, grid);
 			} else if (!square_isbright(c, grid)) {
 				sqinfo_off(square(c, grid)->info, SQUARE_GLOW);
 				/* Like cave_unlight(), forget "boring" grids */

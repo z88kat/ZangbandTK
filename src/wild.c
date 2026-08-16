@@ -927,6 +927,36 @@ struct loc wild_town_start(struct wilderness *w, struct player *p)
 }
 
 /**
+ * Mark the town as known, and only the town (WLD-25).
+ *
+ * Angband knows the whole of depth zero from the first turn, which is right for
+ * a level that is nothing but a town: you live there.  The surface is not a
+ * town, and revealing all of it would give away the shape of the coast, where
+ * the forests are and where the mountains stand -- everything the overworld is
+ * meant to be walked to find out.
+ *
+ * So the town is known, as it was, and the country is not.  Beyond the town's
+ * edge the ordinary rules apply: you learn the world by looking at it.
+ */
+void wild_town_known(struct wilderness *w, struct player *p, struct chunk *c,
+					 struct loc offset)
+{
+	struct loc org = wild_town_origin(w);
+	struct loc grid;
+
+	for (grid.y = 0; grid.y < z_info->town_hgt; grid.y++)
+		for (grid.x = 0; grid.x < z_info->town_wid; grid.x++) {
+			struct loc dest = loc(org.x + grid.x - offset.x,
+								  org.y + grid.y - offset.y);
+
+			if (!square_in_bounds_fully(c, dest))
+				continue;
+
+			square_memorize(c, dest);
+		}
+}
+
+/**
  * Is this chunk the wilderness surface rather than a level?
  */
 bool wild_is_surface(const struct chunk *c)

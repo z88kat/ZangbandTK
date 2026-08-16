@@ -51,8 +51,8 @@ The seven kinds of country, and roughly what each is made of:
    * - Terrain
      - What you find there
    * - Ocean
-     - Deep water, impassable without the means to cross it. About a quarter of
-       the world, as in Zangband.
+     - Deep water. About a quarter of the world, as in Zangband. See
+       `Deep water`_ — it is crossed, not walled off.
    * - Shore
      - Sand and shallow water, with grass behind it.
    * - Grassland
@@ -65,6 +65,25 @@ The seven kinds of country, and roughly what each is made of:
      - Bare earth, rubble and rock.
    * - Mountains
      - Rock, broken by passes.
+
+.. _deep water:
+
+Deep water
+----------
+
+Deep water is not a fence. You can wade into it, as you could in Zangband, and
+what stops you is weight rather than the water.
+
+Carry no more than half what your strength allows and you keep your head above
+it and cross freely. Carry more than that and you begin to drown, a little each
+turn, for as long as you stay in — and the game asks you to confirm before you
+step in. Anything that lets you float over the ground carries you over water as
+well, at no cost and no matter what you are carrying.
+
+Nothing else can swim yet. Monsters treat deep water as terrain that will kill
+them and keep out of it, which makes water a reliable way of breaking pursuit.
+Zangband's swimming and aquatic monsters are recorded against the imported
+bestiary and waiting on the flag to drive them.
 
 Roads run between the places worth reaching. A road is safer and quicker than
 the country beside it, and it is a reliable way of finding a town: follow one
@@ -84,6 +103,19 @@ it centred further along, and you carry on walking. Your position in the world
 is what the game tracks; where you stand in the window is worked out from it.
 
 The one edge you can reach is the edge of the world itself, which is walled.
+
+What you know
+-------------
+
+You know your town. You have lived in it, and it is on your map from the first
+turn, all of it.
+
+You do not know the world. Angband hands you the whole of the town level as soon
+as you arrive, which is fair when the town level is all there is; doing the same
+here would hand you the coastline, the forests and the mountain ranges before
+you had taken a step. So beyond the town's edge the ordinary rules apply — you
+learn the world by looking at it, and daylight lets you see a long way across
+open ground but tells you nothing about what is behind the trees.
 
 Leaving the town
 ----------------

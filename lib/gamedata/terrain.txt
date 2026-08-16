@@ -419,17 +419,22 @@ flags:LOS | PROJECT | PASSABLE | OBJECT
 look-prefix:some
 desc:Shallow water, easily waded.
 
-# Deep water is impassable for now. Swimming is a monster capability Zangband
-# had and this does not yet -- CAN_SWIM is recorded against the imported
-# bestiary and waiting on it.
+# Deep water is crossed, not walled off, as in Zangband: wade in and you drown
+# a little each turn unless you float over it or travel light. Swimming is a
+# monster capability Zangband had and this does not yet -- CAN_SWIM is recorded
+# against the imported bestiary and waiting on it.
 code:DEEP_WATER
 name:deep water
 graphics:~:b
 priority:9
-flags:LOS | PROJECT
+flags:LOS | PROJECT | PASSABLE | DEEP
 look-prefix:some
-desc:Deep, open water.  You cannot swim.
-walk-msg:The water is too deep to cross.
+desc:Deep, open water.  You can wade in, but not while heavily laden.
+walk-msg:The water is deep, and you are carrying a great deal.  Really wade in? 
+run-msg:Deep water blocks your path.  Really wade in? 
+hurt-msg:You are drowning!
+die-msg:drowning
+confused-msg:flounders in deep water
 
 code:ROCK
 name:mountainside

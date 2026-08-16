@@ -2757,7 +2757,7 @@ struct chunk *town_gen(struct player *p, int min_height, int min_width,
 	}
 
 	/* Apply illumination */
-	cave_illuminate(c_new, is_daytime());
+	cave_illuminate(c_new, is_daytime(), true);
 
 	/* Make some residents */
 	for (i = 0; i < residents; i++) {

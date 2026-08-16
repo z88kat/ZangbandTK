@@ -1596,15 +1596,20 @@ void prepare_next_level(struct player *p)
 
 	/* Know the town */
 	if (!(p->depth)) {
-		cave_known(p);
-
-		/*
-		 * The surface is open country under an open sky: it takes the daylight
-		 * whether or not levels are persistent, which is the one case 4.2 was
-		 * lighting the town for.
-		 */
-		if (persist || wild_is_surface(cave)) {
-			cave_illuminate(cave, is_daytime());
+		if (wild_is_surface(cave)) {
+			/*
+			 * The surface is open country under an open sky, so it takes the
+			 * daylight whether or not levels are persistent -- but daylight is
+			 * not knowledge.  Only the town is known from the start; the rest
+			 * of the world has to be walked.
+			 */
+			cave_illuminate(cave, is_daytime(), false);
+			wild_town_known(wild, p, cave, p->wild_offset);
+		} else {
+			cave_known(p);
+			if (persist) {
+				cave_illuminate(cave, is_daytime(), true);
+			}
 		}
 	}
 

@@ -157,6 +157,51 @@ static int test_boundary_only_at_the_world_edge(void *state) {
 }
 
 /*
+ * The town is known from the start.  The world is not.
+ *
+ * Angband knows the whole of depth zero from the first turn, which is right
+ * when depth zero is nothing but a town.  On a surface it would hand the player
+ * the coastline, the forests and the mountains for free -- everything the
+ * overworld exists to be walked to find out.
+ */
+static int test_only_the_town_is_known(void *state) {
+	struct loc org = loc(wild_town_origin(wild).x - player->wild_offset.x,
+						 wild_town_origin(wild).y - player->wild_offset.y);
+	struct loc grid;
+	int unknown_outside = 0, outside = 0;
+
+	/* Every grid of the town is known. */
+	for (grid.y = org.y; grid.y < org.y + z_info->town_hgt; grid.y++)
+		for (grid.x = org.x; grid.x < org.x + z_info->town_wid; grid.x++) {
+			if (!square_in_bounds_fully(cave, grid)) continue;
+			require(square_isknown(cave, grid));
+		}
+
+	/* The country beyond it is mostly not. */
+	for (grid.y = 0; grid.y < cave->height; grid.y++)
+		for (grid.x = 0; grid.x < cave->width; grid.x++) {
+			if (grid.x >= org.x && grid.x < org.x + z_info->town_wid &&
+				grid.y >= org.y && grid.y < org.y + z_info->town_hgt)
+				continue;
+
+			outside++;
+			if (!square_isknown(cave, grid))
+				unknown_outside++;
+		}
+
+	require(outside > 0);
+
+	/*
+	 * Not "none of it": the player can see out of the town, and what they can
+	 * see is fairly theirs.  What must not happen is the whole world arriving
+	 * known, so the bar is that the great majority of it has not.
+	 */
+	require(unknown_outside > (outside * 9) / 10);
+
+	ok;
+}
+
+/*
  * The world survives a save and a load.
  *
  * The world map is not written to the savefile -- it regenerates from the seed
@@ -212,6 +257,7 @@ struct test tests[] = {
 	{ "world-position-matches-the-window", test_world_position_matches_the_window },
 	{ "town-can-be-walked-out-of", test_town_can_be_walked_out_of },
 	{ "boundary-only-at-the-world-edge", test_boundary_only_at_the_world_edge },
+	{ "only-the-town-is-known", test_only_the_town_is_known },
 	{ "world-position-survives-a-save", test_world_position_survives_a_save },
 	{ NULL, NULL }
 };

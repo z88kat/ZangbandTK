@@ -37,6 +37,7 @@
 #include "source.h"
 #include "target.h"
 #include "trap.h"
+#include "wild.h"
 #include "z-queue.h"
 
 uint16_t daycount = 0;
@@ -562,8 +563,11 @@ void process_world(struct chunk *c)
 				msg("The sun has fallen.");
 			}
 
-			/* Illuminate */
-			cave_illuminate(c, dawn);
+			/*
+			 * Illuminate.  On the surface the sun lights the world without
+			 * telling the player what is in it (ZangbandZK, WLD-25).
+			 */
+			cave_illuminate(c, dawn, !wild_is_surface(c));
 		}
 	} else {
 		/* Update the stores once a day (while in the dungeon).

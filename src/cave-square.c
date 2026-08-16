@@ -709,6 +709,14 @@ bool square_isbright(struct chunk *c, struct loc grid) {
 }
 
 /**
+ * True if the feature is deep enough to drown in (ZangbandZK).
+ */
+bool feat_is_deep(int feat)
+{
+	return tf_has(f_info[feat].flags, TF_DEEP);
+}
+
+/**
  * True if the cave square is fire-based.
  */
 bool square_isfiery(struct chunk *c, struct loc grid) {
@@ -729,7 +737,16 @@ bool square_islit(struct chunk *c, struct loc grid) {
  */
 bool square_isdamaging(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));
-	return feat_is_fiery(square(c, grid)->feat);
+	return feat_is_fiery(square(c, grid)->feat) ||
+		feat_is_deep(square(c, grid)->feat);
+}
+
+/**
+ * True if the cave square is deep enough to drown in (ZangbandZK).
+ */
+bool square_isdeep(struct chunk *c, struct loc grid) {
+	assert(square_in_bounds(c, grid));
+	return feat_is_deep(square(c, grid)->feat);
 }
 
 /**

@@ -1173,6 +1173,16 @@ void move_player(int dir, bool disarm)
 					player->upkeep->running = 0;
 					step = false;
 				}
+			} else if (square_isdeep(cave, grid)) {
+				/*
+				 * ZangbandZK: drowning is a trickle rather than a blow, so
+				 * the third-of-hit-points test never fires for it and the
+				 * player would wade in without being asked.  Ask whenever
+				 * the water would take anything at all.
+				 */
+				if (dam_taken) {
+					step = get_check(feat->walk_msg);
+				}
 			} else {
 				if (dam_taken > player->chp / 3) {
 					step = get_check(feat->walk_msg);

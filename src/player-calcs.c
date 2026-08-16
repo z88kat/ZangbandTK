@@ -1738,7 +1738,7 @@ int calc_blows(struct player *p, const struct object *obj,
 /**
  * Computes current weight limit.
  */
-static int weight_limit(struct player_state *state)
+int weight_limit(struct player_state *state)
 {
 	int i;
 

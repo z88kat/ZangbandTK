@@ -133,6 +133,8 @@ void wild_track_move(struct player *p, struct loc grid);
 
 struct loc wild_town_origin(const struct wilderness *w);
 struct loc wild_town_start(struct wilderness *w, struct player *p);
+void wild_town_known(struct wilderness *w, struct player *p, struct chunk *c,
+					 struct loc offset);
 void wild_town_free(void);
 
 #endif /* INCLUDED_WILD_H */
