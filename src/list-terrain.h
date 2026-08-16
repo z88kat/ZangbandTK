@@ -35,3 +35,14 @@ FEAT(GRANITE) /* granite wall */
 FEAT(PERM) /* permanent wall */
 FEAT(LAVA)
 FEAT(PASS_RUBBLE)
+
+/* ZangbandZK wilderness terrain (WLD-09) */
+FEAT(GRASS)      /* open grassland */
+FEAT(DIRT)       /* bare earth and waste */
+FEAT(SAND)       /* shore and beach */
+FEAT(TREE)       /* woodland; blocks sight */
+FEAT(MUD)        /* swamp and marsh */
+FEAT(WATER)      /* shallow water; wadeable */
+FEAT(DEEP_WATER) /* open sea */
+FEAT(ROCK)       /* mountainside; impassable */
+FEAT(ROAD)       /* made road between places */

@@ -9,14 +9,28 @@
 
 #include "unit-test.h"
 
+#include "cave.h"
+#include "init.h"
 #include "wild.h"
 
 int setup_tests(void **state) {
+	/*
+	 * Unit tests do not load game data, so supply the constants the
+	 * wilderness reads. cave_new() needs a monster capacity to size its
+	 * arrays from, and block generation needs the block dimensions.
+	 */
+	z_info = mem_zalloc(sizeof(struct angband_constants));
+	z_info->level_monster_max = 1024;
+	z_info->wild_blocks = 33;
+	z_info->wild_block_size = 16;
+	z_info->wild_cache_blocks = 25;
+
 	*state = NULL;
 	return 0;
 }
 
 int teardown_tests(void *state) {
+	mem_free(z_info);
 	return 0;
 }
 
@@ -175,6 +189,35 @@ static int test_world_is_plausible(void *state) {
 	ok;
 }
 
+/* Every terrain kind lays down a valid feature for every roll. */
+static int test_terrain_features(void *state) {
+	int terrain, roll;
+
+	for (terrain = 0; terrain < WILD_TERRAIN_MAX; terrain++) {
+		for (roll = 0; roll < 100; roll++) {
+			int feat = wild_terrain_feat(terrain, roll);
+
+			require(feat > FEAT_NONE);
+			require(feat < FEAT_MAX);
+		}
+	}
+
+	/* Each kind's commonest feature is the one that names it. */
+	require(wild_terrain_feat(WILD_TERRAIN_OCEAN, 0) == FEAT_DEEP_WATER);
+	require(wild_terrain_feat(WILD_TERRAIN_MOUNTAIN, 0) == FEAT_ROCK);
+	require(wild_terrain_feat(WILD_TERRAIN_FOREST, 0) == FEAT_TREE);
+
+	ok;
+}
+
+/*
+ * Note: the block cache and wild_block_chunk() are not unit-tested here. They
+ * call square_set_feat(), which reads f_info, and the unit-test harness does
+ * not load game data. They are exercised against the real data by the
+ * integration run instead — testing them here would mean faking terrain, which
+ * would prove only that the fake works.
+ */
+
 const char *suite_name = "cave/wild";
 struct test tests[] = {
 	{ "generation is deterministic", test_generation_is_deterministic },
@@ -183,5 +226,6 @@ struct test tests[] = {
 	{ "bounds are checked", test_bounds },
 	{ "terrain classification is total", test_classification },
 	{ "generated worlds are plausible", test_world_is_plausible },
+	{ "terrain features are valid", test_terrain_features },
 	{ NULL, NULL }
 };

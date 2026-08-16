@@ -353,3 +353,89 @@ desc:Ends LOS, stops missiles, bolts, and beams, and reduces the radius of ball
 desc: spells.  May dissolve or be tunnelled to normal floor, and can be walked
 desc: through by the player and monsters.
 
+
+### ZangbandZK wilderness terrain (WLD-09) ###
+
+# Angband's terrain is entirely a dungeon's: floor, walls, doors, stairs. The
+# overworld needs ground you can tell apart at a glance and that behaves
+# differently underfoot. These extend terrain.txt rather than introducing a
+# parallel feature system, so everything that already understands terrain --
+# line of sight, projection, pathfinding, the map display -- understands these
+# too without being told.
+#
+# Entries must appear in the same order as list-terrain.h.
+
+code:GRASS
+name:grass
+graphics:.:G
+priority:5
+flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | TORCH
+desc:Open grassland.  Easy going, and nothing to hide behind.
+
+code:DIRT
+name:bare earth
+graphics:.:u
+priority:5
+flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | TORCH
+desc:Bare earth, stony and dry.  Little grows here.
+
+code:SAND
+name:sand
+graphics:.:y
+priority:5
+flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | TORCH
+desc:Loose sand, at the edge of the water.
+
+# Trees block sight without blocking movement, which is what makes woodland
+# dangerous rather than merely slow.
+code:TREE
+name:tree
+graphics:*:g
+priority:12
+flags:PROJECT | PASSABLE | OBJECT
+look-prefix:a
+desc:A dense stand of trees.  You can push through, but you cannot see far.
+
+code:MUD
+name:mud
+graphics:.:U
+priority:6
+flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | TRAP
+look-prefix:some
+desc:Wet, sucking mud.  Heavy going.
+
+code:WATER
+name:shallow water
+graphics:~:B
+priority:8
+flags:LOS | PROJECT | PASSABLE | OBJECT
+look-prefix:some
+desc:Shallow water, easily waded.
+
+# Deep water is impassable for now. Swimming is a monster capability Zangband
+# had and this does not yet -- CAN_SWIM is recorded against the imported
+# bestiary and waiting on it.
+code:DEEP_WATER
+name:deep water
+graphics:~:b
+priority:9
+flags:LOS | PROJECT
+look-prefix:some
+desc:Deep, open water.  You cannot swim.
+walk-msg:The water is too deep to cross.
+
+code:ROCK
+name:mountainside
+graphics:^:s
+priority:14
+flags:ROCK | WALL | NO_SCENT | NO_FLOW
+look-prefix:a
+desc:Bare rock, too steep to climb.
+
+code:ROAD
+name:road
+graphics:.:W
+priority:7
+flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | TORCH
+look-prefix:a
+desc:A made road, running between places worth reaching.

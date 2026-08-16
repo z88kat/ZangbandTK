@@ -26,6 +26,7 @@
  */
 
 #include "angband.h"
+#include "cave.h"
 #include "init.h"
 #include "wild.h"
 
@@ -324,4 +325,238 @@ void wild_generate(struct wilderness *w)
 	mem_free(hgt);
 	mem_free(pop);
 	mem_free(law);
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * Turning a map block into ground you can walk on
+ * ------------------------------------------------------------------------ */
+
+/**
+ * The terrain feature a given wilderness kind lays down.
+ *
+ * Each block is mostly one thing with a scattering of others, which is what
+ * keeps open country from looking like graph paper.  \p roll is a value in
+ * 0..99 drawn from the block's own stream, so the mix is reproducible.
+ */
+int wild_terrain_feat(enum wild_terrain terrain, int roll)
+{
+	switch (terrain) {
+		case WILD_TERRAIN_OCEAN:
+			return (roll < 90) ? FEAT_DEEP_WATER : FEAT_WATER;
+
+		case WILD_TERRAIN_SHORE:
+			if (roll < 60) return FEAT_SAND;
+			if (roll < 85) return FEAT_WATER;
+			return FEAT_GRASS;
+
+		case WILD_TERRAIN_GRASS:
+			if (roll < 85) return FEAT_GRASS;
+			if (roll < 95) return FEAT_TREE;
+			return FEAT_DIRT;
+
+		case WILD_TERRAIN_FOREST:
+			if (roll < 70) return FEAT_TREE;
+			if (roll < 95) return FEAT_GRASS;
+			return FEAT_DIRT;
+
+		case WILD_TERRAIN_SWAMP:
+			if (roll < 55) return FEAT_MUD;
+			if (roll < 80) return FEAT_WATER;
+			if (roll < 95) return FEAT_TREE;
+			return FEAT_GRASS;
+
+		case WILD_TERRAIN_WASTE:
+			if (roll < 85) return FEAT_DIRT;
+			if (roll < 95) return FEAT_ROCK;
+			return FEAT_GRASS;
+
+		case WILD_TERRAIN_MOUNTAIN:
+			if (roll < 65) return FEAT_ROCK;
+			if (roll < 90) return FEAT_DIRT;
+			return FEAT_GRASS;
+
+		default:
+			return FEAT_GRASS;
+	}
+}
+
+/**
+ * Build the walkable chunk for one block of the world map (WLD-01, WLD-03).
+ *
+ * Generated entirely from the block's seed, so the same block always comes out
+ * the same however the player arrived at it.  The game's RNG state is saved and
+ * restored around this: generating scenery must not disturb the game's own
+ * random stream, or merely walking about would change every later roll.
+ */
+struct chunk *wild_block_chunk(struct wilderness *w, int x, int y)
+{
+	struct wild_block *block = wild_block_at(w, x, y);
+	int size = z_info->wild_block_size;
+	struct chunk *c;
+	struct loc grid;
+	bool saved_quick = Rand_quick;
+	uint32_t saved_value = Rand_value;
+
+	if (!block)
+		return NULL;
+
+	c = cave_new(size, size);
+	c->depth = 0;
+	c->name = string_make(format("wild:%d,%d", x, y));
+
+	Rand_quick = true;
+	Rand_value = wild_block_seed(w, x, y);
+
+	for (grid.y = 0; grid.y < size; grid.y++) {
+		for (grid.x = 0; grid.x < size; grid.x++) {
+			int feat = wild_terrain_feat(block->terrain, randint0(100));
+
+			square_set_feat(c, grid, feat);
+		}
+	}
+
+	/* A road runs east-west through the middle of any block it passes. */
+	if (block->info & (WILD_INFO_ROAD | WILD_INFO_TRACK)) {
+		grid.y = size / 2;
+		for (grid.x = 0; grid.x < size; grid.x++)
+			square_set_feat(c, grid, FEAT_ROAD);
+	}
+
+	Rand_quick = saved_quick;
+	Rand_value = saved_value;
+
+	return c;
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * The block cache (WLD-05)
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Blocks held in memory, with the coordinates they were generated for.
+ *
+ * A plain array rather than a hash: the cache is bounded at a few dozen entries
+ * by design, the working set is the blocks around the player, and a linear scan
+ * over that is faster than hashing.  This is deliberately not the mistake
+ * chunk_find_name() makes -- that scan is over an unbounded list and compares
+ * strings.
+ */
+struct wild_cache_entry {
+	struct chunk *chunk;
+	int x, y;
+	bool used;
+};
+
+static struct wild_cache_entry *wild_cache = NULL;
+static int wild_cache_size = 0;
+
+void wild_cache_free(void)
+{
+	int i;
+
+	if (!wild_cache)
+		return;
+
+	for (i = 0; i < wild_cache_size; i++)
+		if (wild_cache[i].used)
+			cave_free(wild_cache[i].chunk);
+
+	mem_free(wild_cache);
+	wild_cache = NULL;
+	wild_cache_size = 0;
+}
+
+void wild_cache_init(int capacity)
+{
+	wild_cache_free();
+	wild_cache_size = capacity;
+	wild_cache = mem_zalloc(capacity * sizeof(struct wild_cache_entry));
+}
+
+int wild_cache_count(void)
+{
+	int i, count = 0;
+
+	for (i = 0; i < wild_cache_size; i++)
+		if (wild_cache[i].used)
+			count++;
+
+	return count;
+}
+
+/**
+ * Fetch a block's chunk, generating it if it is not already resident.
+ */
+struct chunk *wild_cache_get(struct wilderness *w, int x, int y)
+{
+	int i, free_slot = -1;
+
+	if (!wild_in_bounds(w, x, y) || !wild_cache)
+		return NULL;
+
+	for (i = 0; i < wild_cache_size; i++) {
+		if (wild_cache[i].used) {
+			if (wild_cache[i].x == x && wild_cache[i].y == y)
+				return wild_cache[i].chunk;
+		} else if (free_slot < 0) {
+			free_slot = i;
+		}
+	}
+
+	/*
+	 * Full.  Callers trim by distance before the cache fills, so reaching here
+	 * means the working set outgrew the cache; evict the first slot rather than
+	 * failing, since a block is cheap to regenerate.
+	 */
+	if (free_slot < 0) {
+		cave_free(wild_cache[0].chunk);
+		wild_cache[0].used = false;
+		free_slot = 0;
+	}
+
+	wild_cache[free_slot].chunk = wild_block_chunk(w, x, y);
+	wild_cache[free_slot].x = x;
+	wild_cache[free_slot].y = y;
+	wild_cache[free_slot].used = true;
+
+	return wild_cache[free_slot].chunk;
+}
+
+/**
+ * Drop blocks that are no longer near the player (WLD-05).
+ *
+ * Distance is Chebyshev, matching the squared-off live area around the player
+ * rather than a circular one.  Deliberately simple: a block is cheap to
+ * regenerate, so evicting one needed again shortly costs little, and the cache
+ * exists to avoid regenerating on every step rather than to be clever.
+ */
+void wild_cache_trim(int centre_x, int centre_y)
+{
+	int radius = 1;
+	int i;
+
+	if (!wild_cache)
+		return;
+
+	/* Keep the largest square that comfortably fits the cache. */
+	while ((2 * (radius + 1) + 1) * (2 * (radius + 1) + 1) <= wild_cache_size)
+		radius++;
+
+	for (i = 0; i < wild_cache_size; i++) {
+		int dx, dy;
+
+		if (!wild_cache[i].used)
+			continue;
+
+		dx = ABS(wild_cache[i].x - centre_x);
+		dy = ABS(wild_cache[i].y - centre_y);
+
+		if (MAX(dx, dy) > radius) {
+			cave_free(wild_cache[i].chunk);
+			wild_cache[i].chunk = NULL;
+			wild_cache[i].used = false;
+		}
+	}
 }
