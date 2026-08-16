@@ -187,6 +187,37 @@ Resolutions reached under this principle are recorded in **DEC-19**. They were t
 and deliberately, and playtest outranks all of them — but they are decisions, not
 placeholders.
 
+**DEC-25 — Zangband is the reference, not the authority. Amber is the anchor.**
+
+Zangband was not a perfect game, and reproducing its mistakes faithfully would be a poor use
+of the effort. Where its execution falls short of its own intent, we follow the intent.
+
+The intent has a source. Zangband was built on Roger Zelazny's *Chronicles of Amber*, and
+that is the story the game is set inside: Amber the one true city; the Courts of Chaos at
+the other pole; Shadow, the infinity of worlds between them, which those of Amber's blood
+can walk and reshape as they travel; the Pattern and the Logrus as the ordering and
+unmaking principles; the Trumps as cards that carry you between them; and Oberon's
+quarrelling children.
+
+*How this is used.* When a taste question has no clear answer from Zangband — or when
+Zangband's answer is weak — the question becomes what serves that story. Three consequences
+worth naming now:
+
+- **The wilderness is Shadow.** An Amberite walking between worlds, the landscape shifting
+  as they go, is the central image of the books. That is a stronger reading of the overworld
+  than "a map between dungeons", and it is available for free — the surface already
+  generates from a seed and a position.
+- **The Amber material earns priority over the rest.** DEC-19's "theme first" already says
+  so for content; this says why. The princes, the Pattern, the Trump realm and the Courts
+  are the spine. Zangband's other borrowings — its NetHack vault homages, its cyberdemons,
+  Barney the dinosaur — are not, and nothing is lost by letting them go.
+- **Gaps may be filled from the books rather than from Zangband.** Where Zangband names
+  something from Amber but does little with it, we are free to do more, and the source
+  settles what "more" should look like.
+
+This sharpens DEC-18 rather than replacing it. Facts still get rigour; taste still gets
+judgment. What changes is that taste now has somewhere to appeal to.
+
 ---
 
 ## Upstream relationship
