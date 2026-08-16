@@ -113,13 +113,6 @@ void wild_free(struct wilderness *w);
 void wild_generate(struct wilderness *w);
 
 int wild_terrain_feat(enum wild_terrain terrain, int roll);
-struct chunk *wild_block_chunk(struct wilderness *w, int x, int y);
-
-void wild_cache_init(int capacity);
-void wild_cache_free(void);
-struct chunk *wild_cache_get(struct wilderness *w, int x, int y);
-void wild_cache_trim(int centre_x, int centre_y);
-int wild_cache_count(void);
 
 void wild_ensure(uint32_t seed);
 void wild_cleanup(void);

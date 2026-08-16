@@ -23,7 +23,7 @@ int setup_tests(void **state) {
 	z_info->level_monster_max = 1024;
 	z_info->wild_blocks = 33;
 	z_info->wild_block_size = 16;
-	z_info->wild_cache_blocks = 25;
+	z_info->wild_cache_blocks = 81;
 
 	*state = NULL;
 	return 0;
@@ -231,11 +231,10 @@ static int test_terrain_features(void *state) {
 }
 
 /*
- * Note: the block cache and wild_block_chunk() are not unit-tested here. They
- * call square_set_feat(), which reads f_info, and the unit-test harness does
- * not load game data. They are exercised against the real data by the
- * integration run instead — testing them here would mean faking terrain, which
- * would prove only that the fake works.
+ * Note: anything that calls square_set_feat() is not unit-tested here, since it
+ * reads f_info and the unit-test harness does not load game data. Those parts
+ * are covered against the real data by game/wild instead — testing them here
+ * would mean faking terrain, which would prove only that the fake works.
  */
 
 const char *suite_name = "cave/wild";

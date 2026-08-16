@@ -160,11 +160,64 @@ shrink it for testing without a rebuild is worth more than fidelity to a constan
 block_y)`.** Regenerating a block the player has not modified must produce identical
 terrain. Implements W-2.
 
-**WLD-04 — Only blocks modified by the player are persisted; the rest are regenerated.**
-The savefile stores the world seed, the modified-block set, and place metadata.
+**WLD-04 — The world remembers what the player changed, and forgets it over time.** The unit
+of persistence is the *change*, not the block: the savefile stores the world seed and a list
+of what has been left behind, and everything else regenerates.
 
-**WLD-05 — A bounded cache holds live blocks, evicting by distance from the player.**
-Zangband's `WILD_VIEW` of 9 × 9 blocks is the reference working set.
+> Amended from "only blocks modified by the player are persisted". Storing whole blocks was
+> the wrong unit — a block is 256 grids and a change is usually one of them — and, more
+> importantly, *permanent* persistence is the wrong model for an overworld. See WLD-04a.
+
+**WLD-04a — What is left in the wilderness decays.** Drop a sword in open country, walk
+away, and the longer you leave it the likelier it is that someone has found it. Come back to
+a monster you wounded and it has had time to heal.
+
+*Why this is the right model and not merely a nice one.* Three things fall out of it that
+permanent persistence does not give:
+
+- **It is more believable.** A world in which everything you drop stays exactly where you
+  dropped it forever is a world with nobody else in it.
+- **It bounds the store without an arbitrary cap.** Things decay out of the list, so the
+  list does not grow without limit and the savefile does not either. A fixed cap would have
+  to evict *something*, and evicting by decay is both cheaper and better-motivated than
+  evicting by age or distance.
+- **It is cheaper than the alternative.** Less has to be stored, and less has to be stored
+  accurately.
+
+*Decay is scaled by the land.* How fast something disappears depends on the block's
+population — the same parameter terrain and monster density already come from. A sword left
+outside a city gate is gone by morning; one dropped in a waste may lie there for a long
+while. This costs nothing, since the parameter is already carried on every block.
+
+*Angband already does the monster half of this.* `restore_monsters()`
+([mon-move.c:2007](../../src/mon-move.c)) regenerates monsters and wears off their timed
+effects in proportion to elapsed turns, on returning to a frozen persistent level. The
+mechanism is 4.2's own; what is new is applying it to the surface.
+
+**WLD-04b — Ordinary monsters are re-rolled rather than remembered; uniques are
+remembered.** A named monster you wounded and left must still exist, wherever it has got to
+— that is what makes a unique a unique. Everything else in open country is scenery, and
+scenery that regenerates is indistinguishable from scenery that recovered and wandered off,
+which is what the player would expect to have happened anyway.
+
+This is the cheap half of WLD-04a and it is deliberate rather than a shortcut: it keeps the
+store small, it needs no monster serialisation, and it produces the behaviour the model asks
+for.
+
+**WLD-05 — ~~A bounded cache holds live blocks, evicting by distance from the player~~.
+Withdrawn: the premise no longer holds, as with WLD-06.**
+
+Written when each block was to be its own `struct chunk`, generated and cached individually.
+The surface redesign (§7) made blocks the unit of *generation* rather than of level: the
+window builds its terrain directly from block data, and no per-block chunk is ever
+constructed. The cache was implemented, and then orphaned by the redesign without anyone
+noticing — `wild_cache_get()` and `wild_block_chunk()` had no callers outside their own
+file.
+
+Recorded rather than quietly deleted, for the same reason as WLD-06: the requirement was
+right for the design that prompted it, and correcting that design removed it. Zangband's
+`WILD_VIEW` of 9 × 9 blocks survives as the *window* size, which is what it was really
+describing.
 
 **WLD-06 — ~~`chunk_find_name()`'s linear scan must be replaced~~. Withdrawn: the premise
 no longer holds.**
