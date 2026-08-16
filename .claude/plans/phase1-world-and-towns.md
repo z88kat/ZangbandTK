@@ -428,3 +428,69 @@ would let existing loops run off the end. The change is:
 block must not carry a dungeon level's monster capacity. Every bound that
 currently reads `z_info->level_monster_max` against a specific chunk must read
 that chunk's own capacity instead.
+
+---
+
+## 7. Observed from ZangbandTK screenshots
+
+Recorded from the original running, not from source or documentation. Noted for
+M5; no action taken yet.
+
+### Towns are walled and moated, with gates
+
+Zangband's towns are **enclosed** — a stone wall with a water moat outside it —
+but not sealed the way Angband's town is. A road leaves through a gap in the
+wall and crosses the moat, running out into open country.
+
+This sits between the two models considered so far. The town is not a separate
+level reached by stairs, and it is not open ground either: it is an enclosed
+place *embedded in the continuous surface*, with a defined way in and out. A
+player walking the road leaves the town without any transition, but cannot
+simply stroll over the wall.
+
+> **Correction.** An earlier reading of a single screenshot concluded the town
+> had no wall at all. It does. The road out was visible; the wall was off the
+> edge of that view.
+
+### Buildings are entered, and hold named people
+
+The town hall is a building the player enters, presenting a named NPC and a
+menu:
+
+```
+Uldrik (Human)                              Mayor
+
+q) Request quest
+
+ESC) Exit building
+```
+
+Three things follow from this:
+
+- **WLD-16d is confirmed by the original.** Quest-giving is attached to a
+  building, and the building presents it as one option among several — exactly
+  the property-not-type model that requirement asks for.
+- **Buildings have occupants with names and roles**, not just services. That is
+  cheap flavour with real payoff, and it is how a town hall differs from a shop
+  in feel rather than only in function.
+- **The interaction is a menu, not a shop screen.** 4.2's store UI is built
+  around buying and selling; a building offering "request quest" needs a
+  different presentation. WLD-18 says services are terrain with an attached
+  action, and this is what that action looks like.
+
+### Town layout differs from Angband's
+
+Buildings are scattered at varying sizes rather than laid out in Angband's
+regular rows, and the road is the organising feature. `town_gen_layout()` in
+`gen-cave.c` is therefore less reusable for Zangband-style towns than WLD-13
+assumed — it places stores along streets on a grid, which is not this.
+
+### Still to compare
+
+The project owner intends a manual comparison pass against the original. Areas
+where screenshots have already shown more than the requirements capture:
+
+- The full building roster and what each one's menu offers
+- Town wall, gate and moat generation
+- Townsfolk: who wanders a town, and whether they differ by town type
+- The overworld's own furniture — dungeon entrances, roads, rivers as features
