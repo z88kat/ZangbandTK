@@ -390,6 +390,86 @@ static int test_what_you_drop_is_forgotten(void *state) {
 }
 
 /*
+ * A unique you wounded and left is still out there, and is better for the rest
+ * (WLD-04b).
+ *
+ * Ordinary monsters are re-rolled with the country, which reads as their having
+ * recovered and wandered off. A named monster cannot be treated that way: if it
+ * could, every unique in the wilderness would be a fresh one at full health,
+ * and nothing the player did to it would ever count.
+ */
+static int test_a_wounded_unique_is_remembered(void *state) {
+	struct monster_race *race = NULL;
+	struct monster_group_info info = { 0, 0 };
+	struct loc grid = player->grid;
+	struct monster *mon;
+	int i;
+
+	/* Any unique shallow enough to be placeable will do. */
+	for (i = 1; i < z_info->r_max; i++) {
+		if (!r_info[i].name) continue;
+		if (!rf_has(r_info[i].flags, RF_UNIQUE)) continue;
+		if (r_info[i].cur_num >= r_info[i].max_num) continue;
+		race = &r_info[i];
+		break;
+	}
+	require(race != NULL);
+
+	/* Somewhere near the player that will hold it. */
+	do {
+		grid.x++;
+		require(grid.x < cave->width - 1);
+	} while (!square_isempty(cave, grid) || square_isdamaging(cave, grid));
+
+	require(place_new_monster(cave, grid, race, false, false, info,
+							  ORIGIN_DROP));
+	mon = square_monster(cave, grid);
+	notnull(mon);
+	mon->hp = 1;
+
+	/* Walk away: the window scrolls, the surface goes. */
+	wild_harvest(wild, player, cave, player->wild_offset);
+	require(wild_unique_count(wild) > 0);
+
+	/*
+	 * Clear it off the surface the way tearing the level down would, so the
+	 * race's counter is free for it to be placed again.
+	 */
+	delete_monster(cave, grid);
+
+	/* Come back a long time later. */
+	{
+		struct wild_unique *seen;
+
+		for (seen = wild->uniques; seen; seen = seen->next)
+			seen->turn -= 10L * z_info->day_length;
+	}
+
+	wild_restore(wild, player, cave, player->wild_offset);
+	eq(wild_unique_count(wild), 0);
+
+	/* It is somewhere nearby, and it has had time to heal. */
+	{
+		bool found = false;
+		struct loc g;
+
+		for (g.y = grid.y - 8; g.y <= grid.y + 8 && !found; g.y++)
+			for (g.x = grid.x - 8; g.x <= grid.x + 8 && !found; g.x++) {
+				if (!square_in_bounds_fully(cave, g)) continue;
+				mon = square_monster(cave, g);
+				if (mon && mon->race == race) {
+					found = true;
+					require(mon->hp > 1);
+				}
+			}
+
+		require(found);
+	}
+
+	ok;
+}
+
+/*
  * The world survives a save and a load.
  *
  * The world map is not written to the savefile -- it regenerates from the seed
@@ -454,6 +534,7 @@ struct test tests[] = {
 	{ "the-wilderness-is-inhabited", test_the_wilderness_is_inhabited },
 	{ "what-you-drop-is-remembered", test_what_you_drop_is_remembered },
 	{ "what-you-drop-is-forgotten", test_what_you_drop_is_forgotten },
+	{ "a-wounded-unique-is-remembered", test_a_wounded_unique_is_remembered },
 	{ "world-position-survives-a-save", test_world_position_survives_a_save },
 	{ NULL, NULL }
 };

@@ -145,6 +145,25 @@ that "soon" means something different in settled country.
 What you are carrying is yours, of course, and so is anything you are standing
 on when the world scrolls beneath you.
 
+What you wounded
+----------------
+
+Ordinary monsters are not remembered. Walk far enough away and the country is
+repopulated rather than resumed — which amounts to the same thing as the ones
+you left having recovered and moved on, because that is what they would have
+done.
+
+Named monsters are remembered. Bring a unique to within an inch of its life,
+walk away, and it is still out there: the same one, still hurt, though it will
+have healed by the time you find it again and it will not be where you left it.
+It will also be awake and no longer afraid, so the second meeting is generally
+worse than the first.
+
+One consequence worth knowing. While you are underground, nothing is holding
+that unique's place in the world, so it is free to turn up in the dungeon
+instead. If it does, it is no longer in the wilderness, and the world quietly
+forgets it was ever there.
+
 What you know
 -------------
 
@@ -201,12 +220,6 @@ single staircase in it. Several towns of differing size and character — carryi
 different stores, so that a frontier village is not a city with the same eight
 shops — several dungeons with their own depth ranges, and the buildings and
 services that go in them are all milestone M5.
-
-**Monsters you leave are not the monsters you find.** Wound something, walk away
-far enough that the window is rebuilt, and the country is repopulated rather
-than resumed — which reads as the thing having recovered and wandered off, and
-mostly it should. What it should *not* do is apply to a named monster you nearly
-killed. Uniques are meant to be remembered and are not yet.
 
 **No overhead map.** There is no way to see the world except by walking it. The
 map display is M5.

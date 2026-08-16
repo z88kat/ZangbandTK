@@ -1571,6 +1571,42 @@ int rd_wilderness(void)
 		wild->relics = relic;
 	}
 
+	/* And the uniques met and not finished (WLD-04b). */
+	rd_u16b(&count);
+	for (i = 0; i < count; i++) {
+		struct wild_unique *seen;
+		struct monster_race *race;
+		char name[80];
+		uint16_t rx, ry;
+		int16_t hp;
+		int32_t left;
+
+		rd_string(name, sizeof(name));
+		rd_u16b(&rx);
+		rd_u16b(&ry);
+		rd_s16b(&hp);
+		rd_s32b(&left);
+
+		/*
+		 * A monster that no longer exists in the game data is dropped rather
+		 * than refused: the world has simply lost track of it, which is a
+		 * great deal better than declining to load the savefile.
+		 */
+		race = lookup_monster(name);
+		if (!race) {
+			note(format("Forgetting an unknown wilderness monster (%s)", name));
+			continue;
+		}
+
+		seen = mem_zalloc(sizeof *seen);
+		seen->race = race;
+		seen->grid = loc(rx, ry);
+		seen->hp = hp;
+		seen->turn = left;
+		seen->next = wild->uniques;
+		wild->uniques = seen;
+	}
+
 	return 0;
 }
 

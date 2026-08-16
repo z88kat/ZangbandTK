@@ -296,6 +296,13 @@ void wild_free(struct wilderness *w)
 		mem_free(relic);
 	}
 
+	while (w->uniques) {
+		struct wild_unique *seen = w->uniques;
+
+		w->uniques = seen->next;
+		mem_free(seen);
+	}
+
 	mem_free(w->map);
 	mem_free(w);
 }
@@ -336,6 +343,9 @@ static void wild_town_extent(int *bw, int *bh)
  */
 /** How far beyond the town's own land its surroundings are judged, in blocks. */
 #define WILD_TOWN_REACH		3
+
+/** How far a unique may have wandered from where the player left it. */
+#define WILD_UNIQUE_WANDER	5
 
 /**
  * Choose where the starting town stands (WLD-12).
@@ -965,6 +975,7 @@ void wild_harvest(struct wilderness *w, struct player *p, struct chunk *c,
 				  struct loc offset)
 {
 	struct loc grid;
+	int i;
 
 	if (!w || !c)
 		return;
@@ -1016,7 +1027,36 @@ void wild_harvest(struct wilderness *w, struct player *p, struct chunk *c,
 			}
 		}
 	}
+
+	/*
+	 * And the uniques (WLD-04b).  Recorded rather than copied: a monster is a
+	 * good deal more entangled than an object -- an index in the chunk, a slot
+	 * in a group, a pile of held objects -- and none of that needs preserving.
+	 * What has to survive is which one it was, where it was, and how badly the
+	 * player hurt it.  Everything else can be built again.
+	 *
+	 * The chunk's own teardown decrements each race's cur_num as it goes, so
+	 * the unique is properly un-placed and can be placed again on return.
+	 */
+	for (i = 1; i < cave_monster_max(c); i++) {
+		struct monster *mon = cave_monster(c, i);
+		struct wild_unique *seen;
+
+		if (!mon->race) continue;
+		if (!rf_has(mon->race->flags, RF_UNIQUE)) continue;
+
+		seen = mem_zalloc(sizeof *seen);
+		seen->race = mon->race;
+		seen->grid = loc(offset.x + mon->grid.x, offset.y + mon->grid.y);
+		seen->hp = mon->hp;
+		seen->turn = turn;
+		seen->next = w->uniques;
+		w->uniques = seen;
+	}
 }
+
+static void wild_restore_uniques(struct wilderness *w, struct player *p,
+								 struct chunk *c, struct loc offset);
 
 /**
  * Put back what is still there, and forget what is not (WLD-04a).
@@ -1059,6 +1099,69 @@ void wild_restore(struct wilderness *w, struct player *p, struct chunk *c,
 
 		mem_free(relic);
 	}
+
+	wild_restore_uniques(w, p, c, offset);
+}
+
+/**
+ * Put back the uniques that are still out there (WLD-04b).
+ *
+ * They have had time to recover, and time to move: a monster left alone for a
+ * night is neither where it was nor as hurt as it was.  It is also awake, and
+ * no longer afraid of anything that happened before, which makes a unique the
+ * player ran away from meaner on the second meeting than it was on the first.
+ */
+static void wild_restore_uniques(struct wilderness *w, struct player *p,
+								 struct chunk *c, struct loc offset)
+{
+	struct wild_unique **link = &w->uniques;
+
+	while (*link) {
+		struct wild_unique *seen = *link;
+		struct loc grid = loc(seen->grid.x - offset.x, seen->grid.y - offset.y);
+		struct monster_group_info info = { 0, 0 };
+		struct loc place;
+		int32_t elapsed = turn - seen->turn;
+		struct monster *mon;
+
+		/* Not on the live surface: leave it where the world remembers it. */
+		if (!square_in_bounds_fully(c, grid)) {
+			link = &seen->next;
+			continue;
+		}
+
+		*link = seen->next;
+
+		/* It has wandered a little way from where it was left. */
+		scatter(c, &place, grid, WILD_UNIQUE_WANDER, false);
+		if (!square_isempty(c, place) || square_isdamaging(c, place))
+			place = grid;
+
+		/*
+		 * Placement can fail, and one way it fails is worth naming: while the
+		 * player was below, this unique was free to be generated in the
+		 * dungeon, because nothing here was holding its cur_num.  If that has
+		 * happened it is no longer in the wilderness, and the world forgets it
+		 * rather than putting a second one out.
+		 */
+		if (square_isempty(c, place) && !square_isdamaging(c, place) &&
+			place_new_monster(c, place, seen->race, false, false, info,
+							  ORIGIN_DROP)) {
+			mon = square_monster(c, place);
+			if (mon) {
+				int regen = mon->maxhp / 100;
+
+				if (regen < 1) regen = 1;
+				if (rf_has(mon->race->flags, RF_REGENERATE)) regen *= 2;
+
+				mon->hp = seen->hp;
+				mon->hp += regen * (int) MIN(elapsed / 100, (int32_t) 10000);
+				mon->hp = MIN(mon->hp, mon->maxhp);
+			}
+		}
+
+		mem_free(seen);
+	}
 }
 
 int wild_relic_count(const struct wilderness *w)
@@ -1067,6 +1170,17 @@ int wild_relic_count(const struct wilderness *w)
 	int count = 0;
 
 	for (relic = w ? w->relics : NULL; relic; relic = relic->next)
+		count++;
+
+	return count;
+}
+
+int wild_unique_count(const struct wilderness *w)
+{
+	struct wild_unique *seen;
+	int count = 0;
+
+	for (seen = w ? w->uniques : NULL; seen; seen = seen->next)
 		count++;
 
 	return count;

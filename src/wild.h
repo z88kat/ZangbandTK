@@ -34,6 +34,7 @@
 #include "z-type.h"
 
 struct chunk;
+struct monster_race;
 struct object;
 struct player;
 
@@ -100,6 +101,22 @@ struct wild_relic {
 };
 
 /**
+ * A unique the player met in the wilderness and did not finish (WLD-04b).
+ *
+ * Only uniques. Ordinary monsters are re-rolled with the country, which reads
+ * as their having recovered and moved on -- which is what would have happened.
+ * A named monster is different: if you nearly killed it and walked away, it has
+ * to still be out there, and it has to be the one you wounded.
+ */
+struct wild_unique {
+	struct monster_race *race;	/**< Which one */
+	struct loc grid;			/**< Where in the world you left it */
+	int16_t hp;					/**< How badly hurt, when you left */
+	int32_t turn;				/**< The turn you left it */
+	struct wild_unique *next;
+};
+
+/**
  * The world map.
  */
 struct wilderness {
@@ -115,6 +132,9 @@ struct wilderness {
 
 	/** What the player has left lying about, most recent first (WLD-04). */
 	struct wild_relic *relics;
+
+	/** Uniques met and not finished (WLD-04b). */
+	struct wild_unique *uniques;
 };
 
 extern struct wilderness *wild;
@@ -147,6 +167,7 @@ void wild_harvest(struct wilderness *w, struct player *p, struct chunk *c,
 void wild_restore(struct wilderness *w, struct player *p, struct chunk *c,
 				  struct loc offset);
 int wild_relic_count(const struct wilderness *w);
+int wild_unique_count(const struct wilderness *w);
 
 struct loc wild_town_origin(const struct wilderness *w);
 struct loc wild_town_start(struct wilderness *w, struct player *p);

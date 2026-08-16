@@ -973,6 +973,7 @@ static void wr_traps_aux(struct chunk *c)
 void wr_wilderness(void)
 {
 	struct wild_relic *relic;
+	struct wild_unique *seen;
 	uint16_t count = 0;
 
 	wr_byte(player->in_wild ? 1 : 0);
@@ -996,6 +997,20 @@ void wr_wilderness(void)
 		wr_u16b(relic->grid.y);
 		wr_s32b(relic->turn);
 		wr_item(relic->obj);
+	}
+
+	/* And the uniques met and not finished (WLD-04b). */
+	count = 0;
+	for (seen = wild ? wild->uniques : NULL; seen; seen = seen->next)
+		count++;
+	wr_u16b(count);
+
+	for (seen = wild ? wild->uniques : NULL; seen; seen = seen->next) {
+		wr_string(seen->race->name);
+		wr_u16b(seen->grid.x);
+		wr_u16b(seen->grid.y);
+		wr_s16b(seen->hp);
+		wr_s32b(seen->turn);
 	}
 }
 
