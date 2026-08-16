@@ -1,7 +1,7 @@
 Monsters
 ========
 
-ZangbandZK's bestiary is Angband's, plus 389 creatures drawn from Zangband.
+ZangbandTK's bestiary is Angband's, plus 389 creatures drawn from Zangband.
 There are 1013 in total, and the additions are not evenly spread: shallow
 levels are much as you remember them, while the deep dungeon holds a great deal
 you will not.
@@ -10,7 +10,7 @@ Where the new monsters come from
 --------------------------------
 
 Angband's monsters are Tolkien's. Zangband layered three further sources on
-top, and those are what ZangbandZK imports.
+top, and those are what ZangbandTK imports.
 
 **Amber.** The scions of Roger Zelazny's Amber — Corwin, Julian, Fiona, Bleys,
 Gerard, Benedict and their kin — appear as deep uniques, along with their
@@ -26,7 +26,7 @@ throughout the depths.
 Monsters that are not what they appear
 --------------------------------------
 
-Zangband is fond of monsters that impersonate scenery, and ZangbandZK keeps
+Zangband is fond of monsters that impersonate scenery, and ZangbandTK keeps
 them. A weapon lying on the floor may be a **death sword**; a cloak may be a
 **cloaker**; a door may be a **door mimic**; a patch of floor may be something
 considerably worse. Two of these classes are new to this game and display as
@@ -59,7 +59,7 @@ badly out of place, that is worth reporting.
 Rooms full of them
 ------------------
 
-Angband gathers monsters of a kind into pits and nests, and ZangbandZK's imports
+Angband gathers monsters of a kind into pits and nests, and ZangbandTK's imports
 make three more of those possible:
 
 - **Forests** — ents, huorns and the older things of the wood

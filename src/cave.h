@@ -160,7 +160,7 @@ struct grid_data {
 
 /**
  * Smallest monster capacity any chunk receives, however small its area
- * (ZangbandZK: WLD-26).
+ * (ZangbandTK: WLD-26).
  */
 #define MONSTERS_MIN 16
 
@@ -210,7 +210,7 @@ struct chunk {
 
 	struct monster *monsters;
 	/**
-	 * Capacity of the monsters and monster_groups arrays (ZangbandZK: WLD-26).
+	 * Capacity of the monsters and monster_groups arrays (ZangbandTK: WLD-26).
 	 *
 	 * Vanilla allocates both at z_info->level_monster_max regardless of the
 	 * chunk's size, which costs 424 KB per chunk whatever its area.  That is

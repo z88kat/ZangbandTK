@@ -2651,7 +2651,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 /**
  * Build a town on its own, to be drawn into the wilderness surface (WLD-24).
  *
- * ZangbandZK's town is not a level of its own: it is part of the overworld, and
+ * ZangbandTK's town is not a level of its own: it is part of the overworld, and
  * walking out of it is walking rather than a level change.  The surface is
  * rebuilt whenever the player nears the edge of the live window, so the town
  * has to come out the same every time it is rebuilt -- hence the fixed stream,

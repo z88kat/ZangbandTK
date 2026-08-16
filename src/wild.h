@@ -1,8 +1,8 @@
 /**
  * \file wild.h
- * \brief The wilderness overworld (ZangbandZK)
+ * \brief The wilderness overworld (ZangbandTK)
  *
- * Angband is played in one dungeon beneath one town.  ZangbandZK is played
+ * Angband is played in one dungeon beneath one town.  ZangbandTK is played
  * across a generated overworld, following Zangband's design: a grid of blocks
  * whose terrain is chosen by position in a height/population/law parameter
  * space, laid out by a plasma fractal.
@@ -13,7 +13,7 @@
  * block's own coordinates, so the same block always regenerates identically
  * and only blocks the player has changed need storing (WLD-03, WLD-04).
  *
- * Copyright (c) 2026 ZangbandZK contributors
+ * Copyright (c) 2026 ZangbandTK contributors
  *
  * This work is free software; you can redistribute it and/or modify it under
  * the terms of either:

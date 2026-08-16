@@ -1175,7 +1175,7 @@ void move_player(int dir, bool disarm)
 				}
 			} else if (square_isdeep(cave, grid)) {
 				/*
-				 * ZangbandZK: drowning is a trickle rather than a blow, so
+				 * ZangbandTK: drowning is a trickle rather than a blow, so
 				 * the third-of-hit-points test never fires for it and the
 				 * player would wade in without being asked.  Ask whenever
 				 * the water would take anything at all.
@@ -1195,7 +1195,7 @@ void move_player(int dir, bool disarm)
 			monster_swap(player->grid, grid);
 
 			/*
-			 * ZangbandZK (WLD-23): on the overworld the player's world
+			 * ZangbandTK (WLD-23): on the overworld the player's world
 			 * position is the truth and their position on the live surface is
 			 * derived from it, so that the surface can be rebuilt beneath them
 			 * without disturbing where they are.
@@ -1276,7 +1276,7 @@ static bool do_cmd_walk_test(struct player *p, struct loc grid)
 			return true;
 		} else if (square_feat(cave, grid)->fidx == FEAT_WORLD_EDGE) {
 			/*
-			 * ZangbandZK: the end of a flat world.  It looks like open sea and
+			 * ZangbandTK: the end of a flat world.  It looks like open sea and
 			 * it is drawn like open sea, so being told it is a wall would be
 			 * both wrong and a poor joke to miss.
 			 */

@@ -365,7 +365,7 @@ struct chunk *cave_new(int height, int width) {
 	c->obj_max = OBJECT_LIST_SIZE - 1;
 
 	/*
-	 * ZangbandZK (WLD-26): size the monster arrays from this chunk's own area
+	 * ZangbandTK (WLD-26): size the monster arrays from this chunk's own area
 	 * rather than the global maximum.  Vanilla's density is roughly one monster
 	 * per twelve grids at the dungeon's 13,068, so a dungeon level still caps
 	 * at level_monster_max and is unaffected; a 16x16 wilderness block gets 21

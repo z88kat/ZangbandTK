@@ -6,7 +6,7 @@ records introduced by ``N:index:Name``, with subsequent single-letter tags
 carrying colon-separated fields.  Field *meaning* differs per file, so this
 module only tokenises; interpretation lives in the per-file readers below.
 
-Copyright (c) 2026 ZangbandZK contributors
+Copyright (c) 2026 ZangbandTK contributors
 
 This work is free software; you can redistribute it and/or modify it under the
 terms of either:

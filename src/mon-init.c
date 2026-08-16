@@ -1750,7 +1750,7 @@ struct parser *init_parse_monster(void) {
 }
 
 /**
- * How many races vanilla monster.txt contributed, before the ZangbandZK import
+ * How many races vanilla monster.txt contributed, before the ZangbandTK import
  * was appended.  Races are prepended to the parse list and copied out in
  * reverse, so r_info ends up in file order: vanilla occupies [0, this), and
  * the import everything above.  Used by the lethality scaling in
@@ -1770,7 +1770,7 @@ static errr run_parse_monster(struct parser *p) {
 		vanilla_race_count++;
 
 	/*
-	 * ZangbandZK (CNT-01): the imported Zangband bestiary lives in its own
+	 * ZangbandTK (CNT-01): the imported Zangband bestiary lives in its own
 	 * file rather than being merged into monster.txt.
 	 *
 	 * parse_file() accumulates into the same parser, so the two files build a
@@ -1788,7 +1788,7 @@ static errr run_parse_monster(struct parser *p) {
 }
 
 /**
- * Scale a monster statistic by a lethality percentage (ZangbandZK: BAL-13).
+ * Scale a monster statistic by a lethality percentage (ZangbandTK: BAL-13).
  *
  * \param base is the value from the data file.
  * \param percent is the scalar from constants.txt, as a percentage.
@@ -1883,7 +1883,7 @@ static errr finish_parse_monster(struct parser *p) {
 	z_info->r_max += 1;
 
 	/*
-	 * ZangbandZK (BAL-13): apply the lethality scalars.
+	 * ZangbandTK (BAL-13): apply the lethality scalars.
 	 *
 	 * The scalars exist to bring Angband's monsters down to Zangband's level:
 	 * Zangband's carried a median 0.73x the hit points and 0.50x the armour

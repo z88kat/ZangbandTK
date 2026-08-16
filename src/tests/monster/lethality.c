@@ -1,6 +1,6 @@
 /* monster/lethality
  *
- * Tests for the ZangbandZK lethality scalar (BAL-13, BAL-14) — the project's
+ * Tests for the ZangbandTK lethality scalar (BAL-13, BAL-14) — the project's
  * primary balance dial, applied to every monster's hit points and armour class
  * at load time.
  */

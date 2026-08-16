@@ -491,7 +491,7 @@ static enum parser_error parse_constants_mon_gen(struct parser *p) {
 }
 
 /**
- * ZangbandZK (BAL-13, BAL-14): the lethality scalars.
+ * ZangbandTK (BAL-13, BAL-14): the lethality scalars.
  *
  * Zangband's monsters carry roughly three quarters of vanilla's hit points and
  * half its armour class.  Rather than importing Zangband's per-monster numbers
@@ -531,14 +531,14 @@ static enum parser_error parse_constants_lethality(struct parser *p) {
 }
 
 /**
- * ZangbandZK: tuning for the Zangband melee weapon mechanics.
+ * ZangbandTK: tuning for the Zangband melee weapon mechanics.
  *
  * Kept in data for the same reason as the lethality scalars — these are
  * frequencies that only playtest can settle, and a rebuild to try a different
  * vorpal rate is a rebuild wasted.
  */
 /**
- * ZangbandZK: the wilderness dimensions (WLD-02).
+ * ZangbandTK: the wilderness dimensions (WLD-02).
  *
  * In data because the world's size is the project's largest performance and
  * generation risk, and being able to shrink it for testing without a rebuild is
@@ -1137,10 +1137,10 @@ static errr finish_parse_constants(struct parser *p) {
 	parser_destroy(p);
 
 	/*
-	 * ZangbandZK: supply defaults for any of our constants the file omitted.
+	 * ZangbandTK: supply defaults for any of our constants the file omitted.
 	 *
 	 * z_info is zero-allocated and nothing checks these for completeness, so a
-	 * constants.txt without the ZangbandZK block — an older installed data
+	 * constants.txt without the ZangbandTK block — an older installed data
 	 * directory, a stale copy, a package shipping vanilla data — would leave
 	 * them all zero.  That is not a harmless default: mon_scale_lethality()
 	 * reads 0 as "0 percent" and reduces every monster in the game to one hit
@@ -4737,7 +4737,7 @@ void cleanup_angband(void)
 		character_dungeon = false;
 	}
 
-	/* Free the world the cave sits under (ZangbandZK) */
+	/* Free the world the cave sits under (ZangbandTK) */
 	wild_cleanup();
 
 	monster_list_finalize();

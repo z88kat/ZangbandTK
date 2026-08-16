@@ -36,7 +36,7 @@ FEAT(PERM) /* permanent wall */
 FEAT(LAVA)
 FEAT(PASS_RUBBLE)
 
-/* ZangbandZK wilderness terrain (WLD-09) */
+/* ZangbandTK wilderness terrain (WLD-09) */
 FEAT(GRASS)      /* open grassland */
 FEAT(DIRT)       /* bare earth and waste */
 FEAT(SAND)       /* shore and beach */

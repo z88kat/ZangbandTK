@@ -354,7 +354,7 @@ desc: spells.  May dissolve or be tunnelled to normal floor, and can be walked
 desc: through by the player and monsters.
 
 
-### ZangbandZK wilderness terrain (WLD-09) ###
+### ZangbandTK wilderness terrain (WLD-09) ###
 
 # Angband's terrain is entirely a dungeon's: floor, walls, doors, stairs. The
 # overworld needs ground you can tell apart at a glance and that behaves

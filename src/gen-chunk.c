@@ -452,7 +452,7 @@ bool chunk_copy(struct chunk *dest, struct player *p, struct chunk *source,
 
 	/*
 	 * Copy monster groups.  Bounded by the source's capacity for the read and
-	 * the destination's for the write: since ZangbandZK sizes these arrays per
+	 * the destination's for the write: since ZangbandTK sizes these arrays per
 	 * chunk (WLD-26), the two need not be equal and the destination may be the
 	 * smaller.
 	 */

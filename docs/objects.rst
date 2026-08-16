@@ -1,7 +1,7 @@
 Objects
 =======
 
-ZangbandZK adds 51 artifacts and 18 ego types to Angband's, along with three
+ZangbandTK adds 51 artifacts and 18 ego types to Angband's, along with three
 weapon properties Angband has no equivalent for.
 
 Three new weapon properties
@@ -77,7 +77,7 @@ Often it is.
 Activations
 -----------
 
-Zangband scripted its artifact activations in a scripting language ZangbandZK
+Zangband scripted its artifact activations in a scripting language ZangbandTK
 does not carry. Each has been matched to the nearest Angband activation
 instead — an artifact that threw a fireball still throws a fireball, and its
 recharge time is preserved, but the effect is Angband's version rather than a

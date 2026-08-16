@@ -144,7 +144,7 @@ void dungeon_change_level(struct player *p, int dlev)
 	p->depth = dlev;
 
 	/*
-	 * ZangbandZK (WLD-24): depth zero is the surface of the world.  Arriving
+	 * ZangbandTK (WLD-24): depth zero is the surface of the world.  Arriving
 	 * there puts the player back where they left it -- p->wild_grid is not
 	 * disturbed by going below, so coming up returns them to the staircase
 	 * they went down.

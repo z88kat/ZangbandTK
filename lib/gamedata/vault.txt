@@ -3968,7 +3968,7 @@ D:             @@@@@@@@%@
 D:                    %%%             
 
 
-### ZangbandZK vaults ###
+### ZangbandTK vaults ###
 
 # Zangband's vault collection turned out not to be thematic content. Of its 125
 # vaults, the great majority are geometric shapes -- round, octagon, spiral,

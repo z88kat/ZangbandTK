@@ -493,7 +493,7 @@ void monster_groups_verify(struct chunk *c)
 {
 	int i;
 
-	/* Bounded by this chunk's capacity, not the global (ZangbandZK: WLD-26) */
+	/* Bounded by this chunk's capacity, not the global (ZangbandTK: WLD-26) */
 	for (i = 0; i < c->mon_size; i++) {
 		if (c->monster_groups[i]) {
 			struct monster_group *group = c->monster_groups[i];

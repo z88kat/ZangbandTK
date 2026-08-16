@@ -82,7 +82,7 @@ a reviewable report. Phase 1 docs updated from the documentation pass.
 ---
 
 ### M1 — Balance foundation
-*First playable ZangbandZK.*
+*First playable ZangbandTK.*
 
 - BAL-01 to BAL-07 — scale conversions: armour class ×9/8, dice→average hit points,
   `sleepiness` mapping, experience formula handling.

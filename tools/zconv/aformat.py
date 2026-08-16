@@ -5,7 +5,7 @@ Reader and writer for Angband 4.2 ``lib/gamedata`` files.
 entry.  Several keys legitimately repeat (``flags``, ``blow``, ``friends``,
 ``drop``), so entries keep an ordered list of pairs rather than a dict.
 
-Copyright (c) 2026 ZangbandZK contributors
+Copyright (c) 2026 ZangbandTK contributors
 
 This work is free software; you can redistribute it and/or modify it under the
 terms of either:

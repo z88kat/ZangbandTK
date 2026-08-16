@@ -508,7 +508,7 @@ flags:OPEN_DOOR | BASH_DOOR | CLEAR_WEB
 flags:IM_COLD | IM_POIS | HURT_FIRE | NO_CONF | NO_SLEEP | NO_STUN
 desc:Zombie/Mummy
 
-##### ZangbandZK templates #####
+##### ZangbandTK templates #####
 
 # Zangband monster classes with no Angband counterpart. Everything else it
 # adds was absorbed by an existing template: its floor-dwellers became lurkers,

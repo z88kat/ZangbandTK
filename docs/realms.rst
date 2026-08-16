@@ -9,6 +9,6 @@ The Realms of Magic
 
    Requirements this chapter must cover: PLR-08 to PLR-12, CNT-10
 
-Spellcasters in ZangbandZK choose realms of magic at birth, and that choice
+Spellcasters in ZangbandTK choose realms of magic at birth, and that choice
 defines the character as much as the class does. This chapter covers the seven
 realms and which classes may select them.

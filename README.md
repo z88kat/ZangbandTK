@@ -1,6 +1,11 @@
-# ZangbandZK
+# ZangbandTK
 
 **Rebuilding the spirit of Zangband on a modern Angband.**
+
+*The name is the original's, deliberately.* ZangbandTK was Tim Baker's Tcl/Tk
+front end to Zangband, and this is a rebuild of that game rather than a
+different one wearing its coat. Where the 2005 version is meant, it is called
+*the original* below.
 
 Zangband was one of the great Angband variants — a wilderness to cross, towns to
 visit, mutations, pets, chaos patrons, and a bestiary drawn from Roger Zelazny's
@@ -11,12 +16,12 @@ Angband did not stop. It is now at 4.2.6, with twenty years of better level
 generation, a real data-driven architecture, and a proper object property
 system that Zangband never had.
 
-ZangbandZK puts the first on top of the second. It is not a port: Zangband's
+ZangbandTK puts the first on top of the second. It is not a port: Zangband's
 2005 codebase is not what is worth preserving. Its *character* is.
 
-> **Status: early.** The game is playable and already feels different from
-> Angband, but the wilderness — Zangband's defining feature — does not exist
-> yet. See [Current state](#current-state).
+> **Status: early.** The game is playable, already feels different from Angband,
+> and has the wilderness — Zangband's defining feature — under it. There is a
+> long way to go. See [Current state](#current-state).
 
 ## Current state
 
@@ -39,10 +44,15 @@ ZangbandZK puts the first on top of the second. It is not a port: Zangband's
 - **Three weapon mechanics** Angband has no equivalent of: vampiric, vorpal and
   chaotic.
 - **The Ancient and Foul Curse**, with its cascade intact.
+- **A wilderness.** A world 2064 grids square, generated from a seed and never
+  stored, with the town standing in it and roads out of it. Terrain follows from
+  height, population and law; danger follows from law alone. Deep water can be
+  waded and drowned in, the world ends in open sea, and what you drop in the
+  country stays where you left it until somebody finds it.
 
-**Not yet:** the wilderness, multiple towns, quests, magic realms, mutations,
+**Not yet:** multiple towns and dungeons, quests, magic realms, mutations,
 virtues, pets, and nightmare mode. A Tcl/Tk front end is planned for a later
-phase, reviving the ZangbandTK interface on Tcl/Tk 9.
+phase, reviving the original's interface on Tcl/Tk 9.
 
 ## Building
 
@@ -61,8 +71,8 @@ cd src
 make -f Makefile.osx -j$(sysctl -n hw.activecpu)
 ```
 
-That produces `ZangbandZK.app` in the repository root. Double-click it, or
-`open ZangbandZK.app`.
+That produces `ZangbandTK.app` in the repository root. Double-click it, or
+`open ZangbandTK.app`.
 
 ### The tests
 
@@ -88,7 +98,7 @@ tool-specific environment you would rather not install into.
 
 ## Tuning it
 
-ZangbandZK's balance dials live in `lib/gamedata/constants.txt` and take effect
+ZangbandTK's balance dials live in `lib/gamedata/constants.txt` and take effect
 on restart, with no rebuild:
 
 ```
@@ -103,7 +113,7 @@ Setting both lethality values to `100` gives behaviour identical to vanilla
 Angband 4.2 — a supported configuration, and a useful comparison.
 
 Inside the app bundle the same file lives at
-`ZangbandZK.app/Contents/Resources/lib/gamedata/constants.txt`.
+`ZangbandTK.app/Contents/Resources/lib/gamedata/constants.txt`.
 
 ## Portability
 
@@ -147,14 +157,14 @@ waiting at the bottom of the dungeon.
 
 ## Licence
 
-ZangbandZK is available under the **Angband licence**:
+ZangbandTK is available under the **Angband licence**:
 
 > This software may be copied and distributed for educational, research, and not
 > for profit purposes provided that this copyright and statement are included in
 > all such copies. Other copyrights may also apply.
 
 Angband is dual-licensed under the GPL v2 *or* the Angband licence. Zangband was
-released under the Angband licence alone, and ZangbandZK incorporates Zangband
+released under the Angband licence alone, and ZangbandTK incorporates Zangband
 material, so the Angband licence is the option available here. In practice that
 means **non-commercial distribution** — the same terms Zangband itself carried.
 

@@ -1,6 +1,6 @@
 /* cave/wild
  *
- * Tests for the ZangbandZK wilderness world map (WLD-01 to WLD-03, WLD-07).
+ * Tests for the ZangbandTK wilderness world map (WLD-01 to WLD-03, WLD-07).
  *
  * The property that matters most is determinism: a block must generate
  * identically from the world seed and its coordinates, however the player

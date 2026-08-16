@@ -565,7 +565,7 @@ void process_world(struct chunk *c)
 
 			/*
 			 * Illuminate.  On the surface the sun lights the world without
-			 * telling the player what is in it (ZangbandZK, WLD-25).
+			 * telling the player what is in it (ZangbandTK, WLD-25).
 			 */
 			cave_illuminate(c, dawn, !wild_is_surface(c));
 		}

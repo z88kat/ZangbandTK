@@ -80,7 +80,7 @@ bool character_saved;
  */
 static const uint8_t savefile_magic[4] = { 83, 97, 118, 101 };
 /*
- * Variant tag, checked alongside the magic by check_header().  ZangbandZK
+ * Variant tag, checked alongside the magic by check_header().  ZangbandTK
  * deliberately does not load Angband or Zangband savefiles (DEC-07): the
  * player model, level persistence and world layout all diverge, and carrying
  * compatibility code for saves that could never be meaningfully upgraded would

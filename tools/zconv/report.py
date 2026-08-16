@@ -5,7 +5,7 @@ The data files are a side effect of an auditable process.  This module renders
 that audit: what was chosen, which requirement chose it, how confident the tool
 is, which flags it could not map, and every number it had to invent.
 
-Copyright (c) 2026 ZangbandZK contributors
+Copyright (c) 2026 ZangbandTK contributors
 
 This work is free software; you can redistribute it and/or modify it under the
 terms of either:

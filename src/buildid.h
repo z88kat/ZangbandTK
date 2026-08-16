@@ -19,7 +19,7 @@
 #ifndef BUILDID
 #define BUILDID
 
-#define VERSION_NAME	"ZangbandZK"
+#define VERSION_NAME	"ZangbandTK"
 
 extern const char *buildid;
 extern const char *buildver;

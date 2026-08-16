@@ -712,7 +712,7 @@ static const struct hit_types melee_hit_types[] = {
 };
 
 /**
- * Discharge a random effect of chaos into a struck monster (ZangbandZK).
+ * Discharge a random effect of chaos into a struck monster (ZangbandTK).
  *
  * Zangband's chaotic weapons roll on a table of effects ranging from the
  * trivial to the dramatic.  This keeps the spirit — unpredictability that
@@ -871,7 +871,7 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	}
 
 	/*
-	 * ZangbandZK: a vorpal weapon sometimes cuts far deeper than the blow
+	 * ZangbandTK: a vorpal weapon sometimes cuts far deeper than the blow
 	 * warranted.  Applied after criticals and before the player's damage
 	 * bonus, so it multiplies the weapon's own contribution rather than the
 	 * flat additions, which is what makes it a property of the blade.
@@ -895,7 +895,7 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	equip_learn_on_melee_attack(p);
 	learn_brand_slay_from_melee(p, obj, mon);
 
-	/* ZangbandZK: the vorpal cut itself, now that splash is settled */
+	/* ZangbandTK: the vorpal cut itself, now that splash is settled */
 	if (vorpal_cut) {
 		dmg *= z_info->vorpal_multiplier;
 		vorpal = true;
@@ -941,7 +941,7 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	}
 
 	/*
-	 * ZangbandZK: announce a vorpal cut after the blow it modified — but only
+	 * ZangbandTK: announce a vorpal cut after the blow it modified — but only
 	 * if the blow actually landed. A negative damage bonus can reduce a
 	 * doubled blow to nothing, and "You fail to harm the orc. Your weapon cuts
 	 * deep into the orc!" is nonsense.
@@ -964,7 +964,7 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 
 	if (!stop) {
 		/*
-		 * ZangbandZK: OF_VAMPIRIC gives permanently what TMD_ATT_VAMP gives
+		 * ZangbandTK: OF_VAMPIRIC gives permanently what TMD_ATT_VAMP gives
 		 * temporarily.  The drain is capped at the monster's remaining hit
 		 * points above, so a killing blow does not heal for the overkill.
 		 */
@@ -980,7 +980,7 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	}
 
 	/*
-	 * ZangbandZK: a chaotic weapon discharges an unpredictable effect into
+	 * ZangbandTK: a chaotic weapon discharges an unpredictable effect into
 	 * whatever it strikes.  Rolled after damage so a killed monster is not
 	 * confused or teleported post-mortem.
 	 */

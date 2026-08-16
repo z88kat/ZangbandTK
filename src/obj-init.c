@@ -2630,7 +2630,7 @@ static errr run_parse_ego(struct parser *p) {
 	if (err)
 		return err;
 
-	/* ZangbandZK (CNT-07): imported ego types — see run_parse_monster(). */
+	/* ZangbandTK (CNT-07): imported ego types — see run_parse_monster(). */
 	err = parse_file(p, "ego_item.zangband");
 
 	return (err == PARSE_ERROR_NO_FILE_FOUND) ? PARSE_ERROR_NONE : err;
@@ -3075,7 +3075,7 @@ static errr run_parse_artifact(struct parser *p) {
 		return err;
 
 	/*
-	 * ZangbandZK (CNT-06): imported artifacts, kept in their own file for the
+	 * ZangbandTK (CNT-06): imported artifacts, kept in their own file for the
 	 * same reasons as the bestiary — see run_parse_monster().  Absence is not
 	 * an error.
 	 */

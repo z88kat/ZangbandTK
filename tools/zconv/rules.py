@@ -5,7 +5,7 @@ Every rule returns a :class:`Value` carrying the requirement that produced it
 and a confidence level, so the review report (BAL-11) can state not just what
 the tool chose but why, and which numbers it had to invent.
 
-Copyright (c) 2026 ZangbandZK contributors
+Copyright (c) 2026 ZangbandTK contributors
 
 This work is free software; you can redistribute it and/or modify it under the
 terms of either:

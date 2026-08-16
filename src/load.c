@@ -1443,7 +1443,7 @@ static int rd_monsters_aux(struct chunk *c)
 	rd_u16b(&limit);
 	/*
 	 * Validate against this chunk's own capacity, not the global maximum.
-	 * ZangbandZK sizes the monster array per chunk (WLD-26), so the global is
+	 * ZangbandTK sizes the monster array per chunk (WLD-26), so the global is
 	 * no longer a safe bound on what will fit here — a savefile claiming more
 	 * monsters than the chunk can hold would overflow place_monster().
 	 */
@@ -1513,7 +1513,7 @@ static int rd_traps_aux(struct chunk *c)
 }
 
 /**
- * Read back where the player stands in the world (ZangbandZK, WLD-23).
+ * Read back where the player stands in the world (ZangbandTK, WLD-23).
  *
  * The world is rebuilt here rather than left to the next level change: the
  * surface itself comes back from the "dungeon" block, and the player can walk

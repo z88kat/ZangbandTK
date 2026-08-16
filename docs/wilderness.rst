@@ -1,7 +1,7 @@
 The Wilderness
 ==============
 
-Angband is played in a single dungeon beneath a single town. ZangbandZK is
+Angband is played in a single dungeon beneath a single town. ZangbandTK is
 played across a generated overworld, and the town stands on it.
 
 This is the change that most alters how the game feels from the first turn. You
@@ -197,7 +197,7 @@ earns its keep in a world in a way it never had to as a level of its own. It is
 what keeps the wilderness out of the market square, and it is what stops you
 seeing half a county from the staircase.
 
-What ZangbandZK adds is a way out on each of the four sides, cut through the rock
+What ZangbandTK adds is a way out on each of the four sides, cut through the rock
 where a road would meet the town: at the end of a street, not at a corner.
 
 Zangband's own towns were walled and moated, with locked gates. That is not
@@ -235,5 +235,5 @@ map display is M5.
 
 **Rivers and lakes are missing**, and the terrain is coarser than Zangband's.
 Zangband distinguished about thirty kinds of country, including impassable
-jungle, snow and lava; ZangbandZK currently has seven. Snow in particular
+jungle, snow and lava; ZangbandTK currently has seven. Snow in particular
 implies a climate axis the parameter space does not yet carry.

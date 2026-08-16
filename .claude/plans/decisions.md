@@ -1,4 +1,4 @@
-# ZangbandZK — Project Decision Log
+# ZangbandTK — Project Decision Log
 
 Settled decisions, with rationale. Referenced by the phase requirement docs. Amend rather
 than duplicate: if a decision changes, edit it here and note what it supersedes.
@@ -262,7 +262,7 @@ This is the path Zangband itself took from Angband 2.8.1.
 **DEC-26 — The town is part of the surface, not a level of its own.**
 
 Angband's town is a level: you generate it, you stand in it, and the only way
-out is the staircase. ZangbandZK's town is a patch of the overworld. It is drawn
+out is the staircase. ZangbandTK's town is a patch of the overworld. It is drawn
 into the live window wherever the window covers its position, and walking out of
 it is walking, not a level change.
 
@@ -469,7 +469,7 @@ incrementally from that base.
 feature family, each requirement numbered and traceable to the source that motivated it,
 with explicit exclusion lists.
 
-**DEC-17 — ZangbandZK ships its own manual, written into 4.2's existing Sphinx tree.**
+**DEC-17 — ZangbandTK ships its own manual, written into 4.2's existing Sphinx tree.**
 The game will differ from both Angband 4.2 and original Zangband in ways no existing
 document describes — a wilderness that 4.2's manual has no concept of, 4.2 classes that
 Zangband never had, and the balance decisions in DEC-08 through DEC-10 that match neither

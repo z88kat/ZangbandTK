@@ -1,6 +1,6 @@
 /**
  * \file wild.c
- * \brief The wilderness overworld (ZangbandZK)
+ * \brief The wilderness overworld (ZangbandTK)
  *
  * See wild.h for the design. This file lays out the world map: a plasma
  * fractal over height, population and law, then a terrain kind chosen from
@@ -11,7 +11,7 @@
  * coastlines — while the structures it fills are ours.
  *
  * Copyright (c) 1989, 1999 James E. Wilson, Robert A. Koeneke, Robert Ruehlmann
- * Copyright (c) 2026 ZangbandZK contributors
+ * Copyright (c) 2026 ZangbandTK contributors
  *
  * This work is free software; you can redistribute it and/or modify it under
  * the terms of either:

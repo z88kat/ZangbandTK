@@ -526,7 +526,7 @@ struct player {
 	int16_t depth;		/* Cur depth */
 
 	/**
-	 * Where the player is in the world (ZangbandZK: WLD-23).
+	 * Where the player is in the world (ZangbandTK: WLD-23).
 	 *
 	 * Angband tracks position as a depth and a grid within the current level,
 	 * because there is only ever one place to be at a given depth.  The

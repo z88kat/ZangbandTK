@@ -8,7 +8,7 @@ Zangband carries one ``pval`` and a set of flags saying what it applies to;
 its base object by numeric ``tval:sval``, where 4.2 names it in words, and
 scripts activations in Lua where 4.2 selects from a named vocabulary.
 
-Copyright (c) 2026 ZangbandZK contributors
+Copyright (c) 2026 ZangbandTK contributors
 
 This work is free software; you can redistribute it and/or modify it under the
 terms of either:

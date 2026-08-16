@@ -33,7 +33,7 @@ Angband is a very complex game, and it may be difficult to grasp everything at f
 
 .. toctree::
    :maxdepth: 2
-   :caption: ZangbandZK
+   :caption: ZangbandTK
 
    balance
    monsters

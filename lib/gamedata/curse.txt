@@ -394,7 +394,7 @@ type:sword
 desc:makes it hard to hit anything
 
 
-# ZangbandZK (CNT-15): the Curse of Topi Ylinen.
+# ZangbandTK (CNT-15): the Curse of Topi Ylinen.
 #
 # Zangband's most feared misfortune. The effect itself implements the cascade
 # and the repeat; see effect_handler_ANCIENT_CURSE. In Zangband, equipment

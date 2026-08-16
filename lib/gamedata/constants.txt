@@ -418,10 +418,10 @@ o-ranged-critical-level:1:1:HIT_GOOD
 
 
 #---------------------------------------------------------------------
-# ZangbandZK
+# ZangbandTK
 #---------------------------------------------------------------------
 
-# === ZangbandZK lethality scalars ===
+# === ZangbandTK lethality scalars ===
 #
 # The project's primary balance dial. Applied to every monster's base values at
 # load time, as a percentage.
@@ -433,7 +433,7 @@ o-ranged-critical-level:1:1:HIT_GOOD
 # we scale Angband 4.2's own values by those deltas. That preserves 4.2's
 # balance *between* monsters while adopting Zangband's absolute lethality.
 #
-# Note that this is the *only* mechanism by which ZangbandZK moves faster than
+# Note that this is the *only* mechanism by which ZangbandTK moves faster than
 # vanilla. Zangband's experience system turned out to be identical to Angband's
 # once the differing award formulae are accounted for, so pace comes from
 # monsters dying sooner rather than from inflated rewards.
@@ -446,7 +446,7 @@ lethality:hit-points:73
 # Percentage of base armour class every monster receives
 lethality:armor-class:50
 
-# === ZangbandZK melee weapon mechanics ===
+# === ZangbandTK melee weapon mechanics ===
 #
 # Frequencies for the three Zangband weapon properties Angband has no
 # counterpart for. Only playtest can settle these, so they live in data.
@@ -460,7 +460,7 @@ melee:vorpal-multiplier:2
 # A chaotic weapon discharges an effect on one blow in this many
 melee:chaotic-chance:7
 
-# === ZangbandZK wilderness ===
+# === ZangbandTK wilderness ===
 #
 # The overworld is a grid of blocks, each generated on demand from the world
 # seed and its own coordinates, and cached while the player is near it.

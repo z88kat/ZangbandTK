@@ -388,7 +388,7 @@ alloc:1:40
 mon-base:elemental
 mon-base:vortex
 
-### ZangbandZK themes ###
+### ZangbandTK themes ###
 
 # Zangband's imports make two groupings viable that Angband alone could not
 # fill: 31 trees, and the 12 wall monsters the import introduced.
@@ -406,7 +406,7 @@ obj-rarity:10
 mon-base:tree
 
 # Sentient stone, drifting mists, and the things that live in the dungeon's
-# own structure. Uses the monster base ZangbandZK added.
+# own structure. Uses the monster base ZangbandTK added.
 name:Living dungeon
 room:1
 alloc:3:41

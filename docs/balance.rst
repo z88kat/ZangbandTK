@@ -1,7 +1,7 @@
 How Balance Differs
 ===================
 
-ZangbandZK is built on Angband 4.2 and rebuilds the character of Zangband, a
+ZangbandTK is built on Angband 4.2 and rebuilds the character of Zangband, a
 variant whose development stopped in 2005. It matches neither of its ancestors
 exactly. This chapter states plainly how it differs from both, so that players
 arriving from either know what to expect.
@@ -9,11 +9,11 @@ arriving from either know what to expect.
 Monsters die sooner
 -------------------
 
-Every monster in ZangbandZK carries **73% of Angband's hit points** and **50% of
+Every monster in ZangbandTK carries **73% of Angband's hit points** and **50% of
 its armour class**.
 
 This is the single change that makes the game feel different, and it is the only
-mechanism by which ZangbandZK moves faster than vanilla Angband. Monsters die
+mechanism by which ZangbandTK moves faster than vanilla Angband. Monsters die
 sooner and are easier to hit, so encounters resolve faster and turn over more
 quickly. They also kill you sooner: a fight you would have survived in Angband
 by grinding it out is now decided in fewer turns, in whichever direction it was
@@ -27,7 +27,7 @@ Angband release it forked from.
 Why scale rather than import
 ----------------------------
 
-ZangbandZK does not use Zangband's own per-monster numbers for creatures that
+ZangbandTK does not use Zangband's own per-monster numbers for creatures that
 already exist in Angband. It scales Angband 4.2's numbers instead.
 
 Angband spent twenty-five years tuning the relationships *between* its monsters
@@ -45,7 +45,7 @@ fragile or fast for its depth.
 Experience is unchanged
 -----------------------
 
-ZangbandZK awards experience exactly as Angband 4.2 does. There is no
+ZangbandTK awards experience exactly as Angband 4.2 does. There is no
 multiplier, and levelling thresholds are untouched.
 
 This surprises people who remember Zangband as a faster game, so it is worth
@@ -73,7 +73,7 @@ with no rebuild required::
 
 They are percentages of each monster's base value. **Setting both to 100 gives
 behaviour identical to vanilla Angband 4.2**, which is a supported
-configuration — useful for comparison, and for players who want ZangbandZK's
+configuration — useful for comparison, and for players who want ZangbandTK's
 content at Angband's pacing.
 
 Lower values make the game faster and more lethal in both directions. There is
@@ -83,7 +83,7 @@ very low percentages compress the difference between weak and strong monsters.
 Savefiles
 ---------
 
-ZangbandZK does not load Angband or Zangband savefiles, and never will. The
+ZangbandTK does not load Angband or Zangband savefiles, and never will. The
 player model, level persistence and world layout all diverge too far for a
 converted character to be meaningful. Savefiles carry the tag ``ZZK1``, and the
 game will decline to open anything else rather than load it partially.

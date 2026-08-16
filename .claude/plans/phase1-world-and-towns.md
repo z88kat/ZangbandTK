@@ -638,7 +638,7 @@ different layout model.
 Zangband's `f_info.txt` carries **30 wilderness features** against the 9 added so
 far. Seen in play: *"The jungle is impassable."*
 
-| | Zangband | ZangbandZK |
+| | Zangband | ZangbandTK |
 |---|---|---|
 | Ground | sand, dirt, wet mud, dry mud, pebbles, patch of grass, long grass, snow | grass, dirt, sand, mud |
 | Vegetation | tree, pine tree, dead tree, snow-covered tree, submerged tree, bush, dead bush, **jungle** | tree |

@@ -1369,7 +1369,7 @@ void prepare_next_level(struct player *p)
 			}
 		} else {
 			/*
-			 * Save the town.  ZangbandZK's town is part of the surface rather
+			 * Save the town.  ZangbandTK's town is part of the surface rather
 			 * than a level of its own, so there is nothing to store when
 			 * leaving it: wild.c keeps the layout, and the surface is rebuilt
 			 * from the world seed.
@@ -1428,7 +1428,7 @@ void prepare_next_level(struct player *p)
 	/* Prepare the new level */
 	if (p->depth == 0) {
 		/*
-		 * ZangbandZK (WLD-24): the surface of the world, not a level.  Depth
+		 * ZangbandTK (WLD-24): the surface of the world, not a level.  Depth
 		 * zero is the overworld -- the town stands on it, and the country
 		 * around the town is the same map.  Crossing between them is walking,
 		 * not a level change, so the window onto the world is rebuilt only

@@ -3651,7 +3651,7 @@ bool effect_handler_UNSCRAMBLE_STATS(effect_handler_context_t *context)
 
 /**
  * ------------------------------------------------------------------------
- * The Ancient and Foul Curse (ZangbandZK: CNT-15)
+ * The Ancient and Foul Curse (ZangbandTK: CNT-15)
  * ------------------------------------------------------------------------ */
 
 /**

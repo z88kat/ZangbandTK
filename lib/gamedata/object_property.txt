@@ -915,7 +915,7 @@ power:43
 bindui:resist_ui_compact_0<COLD>:0
 
 
-### ZangbandZK melee properties ###
+### ZangbandTK melee properties ###
 
 # Zangband weapon mechanics with no Angband counterpart. All three are melee
 # properties identified on use, and all are suppressed on non-weapon types so

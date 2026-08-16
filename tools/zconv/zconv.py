@@ -12,7 +12,7 @@ Usage::
     ./zconv.py monsters           # convert r_info.txt -> monster.txt fragment
     ./zconv.py monsters --write   # ...and write the data file
 
-Copyright (c) 2026 ZangbandZK contributors
+Copyright (c) 2026 ZangbandTK contributors
 
 This work is free software; you can redistribute it and/or modify it under the
 terms of either:

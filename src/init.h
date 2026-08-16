@@ -21,7 +21,7 @@
 #include "object.h"
 
 /**
- * Upper bound for the ZangbandZK tuning constants (BAL-14).
+ * Upper bound for the ZangbandTK tuning constants (BAL-14).
  *
  * They are stored as uint16_t, and mon_scale_lethality() computes
  * `base * percent`, which must stay inside an int for the largest hit point
@@ -100,11 +100,11 @@ struct angband_constants
 	uint16_t monster_group_max;	/**< Maximum size of a group */
 	uint16_t monster_group_dist;	/**< Max dist of a group from a related group */
 
-	/* Lethality scalars, read from constants.txt (ZangbandZK: BAL-13, BAL-14) */
+	/* Lethality scalars, read from constants.txt (ZangbandTK: BAL-13, BAL-14) */
 	uint16_t lethality_hp;		/**< Percent of base monster hit points */
 	uint16_t lethality_ac;		/**< Percent of base monster armour class */
 
-	/* Wilderness, read from constants.txt (ZangbandZK: WLD-02) */
+	/* Wilderness, read from constants.txt (ZangbandTK: WLD-02) */
 	uint16_t wild_blocks;		/**< World width and height in blocks; 2^n+1 */
 	uint16_t wild_block_size;	/**< Width and height of a block, in grids */
 	uint16_t wild_cache_blocks;	/**< Blocks held in memory at once */

@@ -39,6 +39,6 @@
 ">" = { base = "mimic", keep_glyph = true }   # stairway to hell
 "{" = { base = "mimic", keep_glyph = true }   # Little Boy, Fat Man
 
-# Concepts 4.2 has no template for. Added to monster_base.txt by ZangbandZK.
+# Concepts 4.2 has no template for. Added to monster_base.txt by ZangbandTK.
 "#" = { base = "wall monster", keep_glyph = true }
 "|" = { base = "animated weapon", keep_glyph = true }

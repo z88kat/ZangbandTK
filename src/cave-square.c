@@ -709,7 +709,7 @@ bool square_isbright(struct chunk *c, struct loc grid) {
 }
 
 /**
- * True if the feature is deep enough to drown in (ZangbandZK).
+ * True if the feature is deep enough to drown in (ZangbandTK).
  */
 bool feat_is_deep(int feat)
 {
@@ -742,7 +742,7 @@ bool square_isdamaging(struct chunk *c, struct loc grid) {
 }
 
 /**
- * True if the cave square is deep enough to drown in (ZangbandZK).
+ * True if the cave square is deep enough to drown in (ZangbandTK).
  */
 bool square_isdeep(struct chunk *c, struct loc grid) {
 	assert(square_in_bounds(c, grid));

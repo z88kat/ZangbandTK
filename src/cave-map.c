@@ -554,7 +554,7 @@ void wiz_dark(struct chunk *c, struct player *p, bool full)
  *
  * \param memorize records what the light falls on as known to the player.
  * True for a town, where a resident may fairly be assumed to know the place.
- * False for the wilderness surface (ZangbandZK): daylight there means you can
+ * False for the wilderness surface (ZangbandTK): daylight there means you can
  * see as far as the ground allows, not that you have been told what is over
  * the next hill.
  */

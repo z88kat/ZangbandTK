@@ -958,7 +958,7 @@ static void wr_traps_aux(struct chunk *c)
 }
 
 /**
- * Where the player stands in the world (ZangbandZK, WLD-23).
+ * Where the player stands in the world (ZangbandTK, WLD-23).
  *
  * The world map itself is not written.  It regenerates exactly from the seed
  * the savefile already carries, so storing a thousand blocks of it would be

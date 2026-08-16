@@ -63,7 +63,7 @@ FEATHER = "FEATHER"
 SLOW_DIGEST = "SLOW_DIGEST"
 TELEPATHY = "TELEPATHY"
 BLESSED = "BLESSED"
-# ZangbandZK implementations — see src/player-attack.c and object_property.txt.
+# ZangbandTK implementations — see src/player-attack.c and object_property.txt.
 VAMPIRIC = "VAMPIRIC"
 VORPAL = "VORPAL"
 CHAOTIC = "CHAOTIC"
