@@ -364,10 +364,17 @@ desc: through by the player and monsters.
 # too without being told.
 #
 # Entries must appear in the same order as list-terrain.h.
+#
+# Glyphs match Zangband's own, taken from its f_info.txt: grass .:g, dirt .:u,
+# sand .:y, tree %:G, rock face ::u, shallow water ~:B, deep water ~:b. Note
+# that '%' and ':' mean magma vein and rubble in Angband's dungeon, and '*'
+# means a treasure vein -- but a player never sees dungeon and wilderness
+# terrain on the same map, and matching the original is what makes the
+# overworld read as Zangband's to anyone who played it.
 
 code:GRASS
 name:grass
-graphics:.:G
+graphics:.:g
 priority:5
 flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | TORCH
 desc:Open grassland.  Easy going, and nothing to hide behind.
@@ -390,7 +397,7 @@ desc:Loose sand, at the edge of the water.
 # dangerous rather than merely slow.
 code:TREE
 name:tree
-graphics:*:g
+graphics:%:G
 priority:12
 flags:PROJECT | PASSABLE | OBJECT
 look-prefix:a
@@ -426,7 +433,7 @@ walk-msg:The water is too deep to cross.
 
 code:ROCK
 name:mountainside
-graphics:^:s
+graphics:::u
 priority:14
 flags:ROCK | WALL | NO_SCENT | NO_FLOW
 look-prefix:a
