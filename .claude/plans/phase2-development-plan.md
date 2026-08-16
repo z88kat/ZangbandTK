@@ -150,7 +150,8 @@ reduced by DEC-20 — this is now an adaptation of a working generator, not an i
 *Towns, dungeons, buildings — the world becomes worth walking.*
 
 - WLD-10 to WLD-14 — multiple towns and dungeon entrances, size bands, inhabitant types,
-  fixed starting town, per-dungeon depth range and character.
+  fixed starting town, per-dungeon depth range and character. Includes **WLD-11a**, towns
+  differing in which stores they hold; WLD-13 is superseded by DEC-26 and drops out.
 - WLD-15 to WLD-18 — buildings placed by population/magic/law suitability; stores extending
   4.2's store system; services as terrain with attached actions.
 - WLD-25 — the overhead world map.
@@ -254,7 +255,7 @@ mutations, virtues.
 | M2 | BAL-09, BAL-10, CNT-01…CNT-04, CNT-06…CNT-09, CNT-11 | 11 |
 | M3 | CNT-13…CNT-16 | 4 |
 | M4 | WLD-01…WLD-09, WLD-23, WLD-24 | 11 |
-| M5 | WLD-10…WLD-18 (incl. WLD-16a–16d), WLD-25, CNT-05, CNT-12 | 16 |
+| M5 | WLD-10…WLD-18 (incl. WLD-11a, WLD-16a–16d; less WLD-13), WLD-25, CNT-05, CNT-12 | 16 |
 | M6 | WLD-19…WLD-22 | 4 |
 | M7 | PLR-01…PLR-07 | 7 |
 | M8 | PLR-13…PLR-21 | 9 |

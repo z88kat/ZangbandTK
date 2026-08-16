@@ -168,14 +168,25 @@ static int test_only_the_town_is_known(void *state) {
 	struct loc org = loc(wild_town_origin(wild).x - player->wild_offset.x,
 						 wild_town_origin(wild).y - player->wild_offset.y);
 	struct loc grid;
-	int unknown_outside = 0, outside = 0;
+	int unknown_outside = 0, outside = 0, shops = 0;
 
-	/* Every grid of the town is known. */
+	/*
+	 * The town is known: you have lived in it, and you know where the shops
+	 * are.  Tested on the shop entrances rather than over the rectangle, since
+	 * the rectangle is only the frame the town was generated in -- the rock
+	 * around the clearing is stripped, so much of it is now ordinary fields.
+	 */
 	for (grid.y = org.y; grid.y < org.y + z_info->town_hgt; grid.y++)
 		for (grid.x = org.x; grid.x < org.x + z_info->town_wid; grid.x++) {
 			if (!square_in_bounds_fully(cave, grid)) continue;
+			if (!square_isshop(cave, grid)) continue;
+
 			require(square_isknown(cave, grid));
+			shops++;
 		}
+
+	/* And there are shops to have known. */
+	require(shops > 0);
 
 	/* The country beyond it is mostly not. */
 	for (grid.y = 0; grid.y < cave->height; grid.y++)
@@ -250,6 +261,7 @@ static int test_world_position_survives_a_save(void *state) {
 
 	ok;
 }
+
 
 const char *suite_name = "game/wild";
 struct test tests[] = {

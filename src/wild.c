@@ -768,93 +768,97 @@ void wild_town_free(void)
 }
 
 /**
- * Open a way into the town along one line, if the layout has not left one.
+ * Strip the rock the town was carved out of.
  *
- * Angband's town is a starburst clearing with rock in the corners, which as a
- * standalone level did not matter -- the only way out was the staircase.  As
- * part of the overworld it matters a great deal: a player who cannot walk out
- * of the town is trapped in it.
+ * Angband 4.2's town is a starburst clearing blasted out of solid rock, with
+ * whatever rock the clearing did not reach left standing around it.  As a level
+ * of its own that is invisible -- the rock is the level's edge, and you never
+ * see it as anything else.  Dropped whole onto grassland it stops being an edge
+ * and becomes a wall: a ring of granite round the town, which is precisely the
+ * walled town this project is not trying to build.
  *
- * Digs from \p start in direction \p step until it meets ground that can
- * already be walked on, and lays a road back to the edge.  Gives up on meeting
- * a permanent wall: that is a store, and cutting a hole through the side of a
- * shop is not the way out of town.
+ * So the rock goes and the countryside takes its place.  What is left is 4.2's
+ * town exactly as 4.2 draws it -- the clearing, the streets, the shops, the
+ * ruins -- standing in open country instead of in a quarry.  It also settles
+ * the way out without cutting anything: the clearing meets the fields on every
+ * side, so you leave town by walking off the end of a street.
  *
- * \return true if this line now leads into the town.
+ * Found by flooding inwards from the town's border over rock and lava.  Ruins
+ * are built of granite too, but they stand inside the clearing with floor all
+ * round them, so the flood never reaches them and they survive.
  */
-static bool wild_town_gate(struct chunk *town, struct loc start, struct loc step,
-						   int limit)
-{
-	struct loc grid = start;
-	int i, reached = -1;
-
-	for (i = 0; i < limit; i++) {
-		if (!square_in_bounds_fully(town, grid))
-			return false;
-		if (square_isperm(town, grid))
-			return false;
-		if (square_ispassable(town, grid)) {
-			reached = i;
-			break;
-		}
-		grid = loc_sum(grid, step);
-	}
-
-	if (reached < 0)
-		return false;
-
-	grid = start;
-	for (i = 0; i < reached; i++) {
-		square_set_feat(town, grid, FEAT_ROAD);
-		grid = loc_sum(grid, step);
-	}
-
-	return true;
-}
-
-/**
- * Give the town a way in and out on each of its four sides.
- *
- * Tries the middle of each side first and works outwards, so the roads meet the
- * town where a road would: at the ends of its streets, not at its corners.
- *
- * The original's towns were walled, moated and gated, and the gates were locked
- * doors -- see the world requirements, §7.  That is M5's work, along with the
- * rest of the town's structure.  What matters now is only that the four ways
- * out exist for the walls to be built around later.
- */
-static void wild_town_open(struct chunk *town)
+static void wild_town_strip_rock(struct chunk *town)
 {
 	int w = town->width, h = town->height;
-	int i;
+	struct loc *queue = mem_zalloc((size_t) w * h * sizeof(struct loc));
+	bool *seen = mem_zalloc((size_t) w * h * sizeof(bool));
+	int head = 0, tail = 0;
+	struct loc grid;
 
-	for (i = 0; i < w - 2; i++) {
-		int x = w / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
+	/*
+	 * Rock, and the lava streamers run through it.  Both were laid down before
+	 * the clearing was cut, so both are part of the ground the town was made
+	 * from rather than part of the town.
+	 */
+	#define TOWN_IS_SURROUND(g) \
+		(square_isrock(town, (g)) || square_isfiery(town, (g)))
 
-		if (x < 1 || x > w - 2) continue;
-		if (wild_town_gate(town, loc(x, 1), loc(0, 1), h / 2)) break;
+	/* Start from every grid just inside the town's own boundary. */
+	for (grid.x = 1; grid.x < w - 1; grid.x++) {
+		struct loc top = loc(grid.x, 1), bottom = loc(grid.x, h - 2);
+
+		if (TOWN_IS_SURROUND(top) && !seen[1 * w + grid.x]) {
+			seen[1 * w + grid.x] = true;
+			queue[tail++] = top;
+		}
+		if (TOWN_IS_SURROUND(bottom) && !seen[(h - 2) * w + grid.x]) {
+			seen[(h - 2) * w + grid.x] = true;
+			queue[tail++] = bottom;
+		}
+	}
+	for (grid.y = 1; grid.y < h - 1; grid.y++) {
+		struct loc left = loc(1, grid.y), right = loc(w - 2, grid.y);
+
+		if (TOWN_IS_SURROUND(left) && !seen[grid.y * w + 1]) {
+			seen[grid.y * w + 1] = true;
+			queue[tail++] = left;
+		}
+		if (TOWN_IS_SURROUND(right) && !seen[grid.y * w + w - 2]) {
+			seen[grid.y * w + w - 2] = true;
+			queue[tail++] = right;
+		}
 	}
 
-	for (i = 0; i < w - 2; i++) {
-		int x = w / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
+	while (head < tail) {
+		struct loc here = queue[head++];
+		int dir;
 
-		if (x < 1 || x > w - 2) continue;
-		if (wild_town_gate(town, loc(x, h - 2), loc(0, -1), h / 2)) break;
+		for (dir = 0; dir < 8; dir++) {
+			struct loc next = loc(here.x + ddx_ddd[dir], here.y + ddy_ddd[dir]);
+
+			if (next.x < 1 || next.x > w - 2) continue;
+			if (next.y < 1 || next.y > h - 2) continue;
+			if (seen[next.y * w + next.x]) continue;
+			if (!TOWN_IS_SURROUND(next)) continue;
+
+			seen[next.y * w + next.x] = true;
+			queue[tail++] = next;
+		}
 	}
 
-	for (i = 0; i < h - 2; i++) {
-		int y = h / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
+	/*
+	 * FEAT_NONE marks a grid the town does not occupy.  The surface skips
+	 * those when it draws the town in, leaving whatever the world put there.
+	 */
+	for (grid.y = 1; grid.y < h - 1; grid.y++)
+		for (grid.x = 1; grid.x < w - 1; grid.x++)
+			if (seen[grid.y * w + grid.x])
+				square_set_feat(town, grid, FEAT_NONE);
 
-		if (y < 1 || y > h - 2) continue;
-		if (wild_town_gate(town, loc(1, y), loc(1, 0), w / 2)) break;
-	}
+	#undef TOWN_IS_SURROUND
 
-	for (i = 0; i < h - 2; i++) {
-		int y = h / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
-
-		if (y < 1 || y > h - 2) continue;
-		if (wild_town_gate(town, loc(w - 2, y), loc(-1, 0), w / 2)) break;
-	}
+	mem_free(seen);
+	mem_free(queue);
 }
 
 /**
@@ -869,7 +873,7 @@ static struct chunk *wild_town_chunk(struct wilderness *w, struct player *p)
 	if (!wild_town) {
 		wild_town = town_gen_wild(p, wild_block_seed(w, w->town_block.x,
 													w->town_block.y));
-		wild_town_open(wild_town);
+		wild_town_strip_rock(wild_town);
 	}
 
 	return wild_town;
@@ -878,9 +882,11 @@ static struct chunk *wild_town_chunk(struct wilderness *w, struct player *p)
 /**
  * Draw the town into the live surface, where the window covers it.
  *
- * The town's own outermost ring is skipped.  It is a permanent wall, and it
- * exists only because Angband levels need a boundary; on a surface that runs
- * past the town in every direction it would be a wall around nothing.
+ * Two kinds of grid are skipped.  The town's outermost ring is a permanent wall
+ * that exists only because Angband levels need a boundary, and on a surface
+ * that runs past the town in every direction it would be a wall around nothing.
+ * The rest are the grids wild_town_strip_rock() cleared, where the world's own
+ * terrain shows through.
  */
 static void wild_draw_town(struct wilderness *w, struct player *p,
 						   struct chunk *c, struct loc offset)
@@ -898,6 +904,8 @@ static void wild_draw_town(struct wilderness *w, struct player *p,
 								  org.y + grid.y - offset.y);
 
 			if (!square_in_bounds_fully(c, dest))
+				continue;
+			if (square_feat(town, grid)->fidx == FEAT_NONE)
 				continue;
 
 			square_set_feat(c, dest, square_feat(town, grid)->fidx);
@@ -941,6 +949,7 @@ struct loc wild_town_start(struct wilderness *w, struct player *p)
 void wild_town_known(struct wilderness *w, struct player *p, struct chunk *c,
 					 struct loc offset)
 {
+	struct chunk *town = wild_town_chunk(w, p);
 	struct loc org = wild_town_origin(w);
 	struct loc grid;
 
@@ -950,6 +959,10 @@ void wild_town_known(struct wilderness *w, struct player *p, struct chunk *c,
 								  org.y + grid.y - offset.y);
 
 			if (!square_in_bounds_fully(c, dest))
+				continue;
+
+			/* Only the town itself, not the fields it was dropped into. */
+			if (square_feat(town, grid)->fidx == FEAT_NONE)
 				continue;
 
 			square_memorize(c, dest);

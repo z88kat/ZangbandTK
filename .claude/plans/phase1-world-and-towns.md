@@ -209,12 +209,33 @@ constraints.
 town, city, castle, keyed on population) and six inhabitant types (villager, elves, dwarf,
 lizard, monster, abandoned) are the reference taxonomy.
 
+**WLD-11a — Towns differ in which stores they hold.** Not every town has a Black Market,
+and a frontier village should not carry the same eight shops as a city. Which stores stand
+in a town follows from its size band and its position in the parameter space — population
+argues for more of them, law for the respectable ones, lawlessness for the Black Market —
+so this is WLD-15's scoring applied to 4.2's store list rather than to a building
+catalogue.
+
+*Built through `town_gen_layout()`, not around it* (DEC-27). 4.2's town generator already
+walks `z_info->store_max` and places each store along a street; what it lacks is any reason
+to place fewer, or different ones. That is the change: a per-town store set, chosen once
+when the town is placed, that the generator loops over instead of over every store in the
+game.
+
+*Deferred to M5, and deliberately.* It needs several towns to mean anything — with one town
+the only visible effect would be a character whose home happens to lack a shop, which is
+WLD-12 saying no. Recorded here so that M5 builds it as variation between towns rather than
+as randomness within one.
+
 **WLD-12 — A designated starting town has a fixed store set.** Zangband's `START_STORE_NUM`
 is 7; 4.2 ships 8 stores. Rationale: the opening experience should not depend on procedural
-luck.
+luck. This is the exception WLD-11a is measured against: everywhere else varies, home does
+not.
 
-**WLD-13 — Each town is a named persistent chunk.** Uses the mechanism `chunk_list` already
-provides for 4.2's single town (§2.3).
+**WLD-13 — ~~Each town is a named persistent chunk~~. Superseded by DEC-26.** A town is not
+a level, so `chunk_list` has nothing to hold. Its layout regenerates from the world seed and
+its own position; what the player *changes* in it persists by the same mechanism as anything
+else on the surface (WLD-04), rather than by a mechanism of the town's own.
 
 **WLD-14 — Dungeon entrances carry their own depth range and character.** Zangband's
 `dun_type` ([types.h:1690](../../archive/zangband/src/types.h#L1690)) carries `min_level`,
@@ -448,7 +469,26 @@ that chunk's own capacity instead.
 Recorded from the original running, not from source or documentation. Noted for
 M5; no action taken yet.
 
-### Towns are walled and moated, with gates
+> **Read this section through DEC-27.** Much of what follows is a description of
+> *Angband 2.8.1's town wearing Zangband's paint*, because that is what Zangband
+> was built on. The observations are accurate; the conclusion "therefore build
+> this" does not follow, and where it was drawn below it has been struck through.
+> Angband 4.2's town is a considered redesign and it is the one we keep. What we
+> take from Zangband is what the town is *for* — that it stands in a wilderness,
+> that there are several of them, that they differ, and that the buildings in
+> them do things.
+
+### ~~Towns are walled and moated, with gates~~ — observed, not adopted
+
+**Not being built** (DEC-27). Walls, moats and gates around a rectangular grid of
+buildings are what Angband 2.8.1's town looked like; Zangband inherited the shape
+and dressed it. Angband 4.2 replaced that town wholesale with the starburst
+clearing, and 4.2's is the one we keep. What survives from the observation is
+only that the town sits in the country and has a way out of it — which the 4.2
+town gets for free once the rock its clearing was cut from is stripped away.
+
+The observation itself, kept because it is accurate and because a later feature
+may want it:
 
 Zangband's towns are **enclosed** — a stone wall with a water moat outside it —
 but not sealed the way Angband's town is. A road leaves through a gap in the
@@ -464,7 +504,12 @@ simply stroll over the wall.
 > had no wall at all. It does. The road out was visible; the wall was off the
 > edge of that view.
 
-### Town gates are locked doors
+### ~~Town gates are locked doors~~ — observed, not adopted
+
+**Not being built** (DEC-27), since there is no wall for a gate to sit in. The
+mechanic is still a good one and costs nothing to keep on the shelf: if some
+later place *should* be sealed — a walled dungeon town, a keep, the approach to
+somewhere that ought to be earned — this is how to do it.
 
 The gap in the town wall is not an opening but a **door**, and it can be locked:
 attempting to pass one gives *"You failed to unlock the door."*
@@ -504,12 +549,19 @@ Three things follow from this:
   different presentation. WLD-18 says services are terrain with an attached
   action, and this is what that action looks like.
 
-### Town layout differs from Angband's
+### ~~Town layout differs from Angband's~~ — and that is fine
 
 Buildings are scattered at varying sizes rather than laid out in Angband's
-regular rows, and the road is the organising feature. `town_gen_layout()` in
-`gen-cave.c` is therefore less reusable for Zangband-style towns than WLD-13
-assumed — it places stores along streets on a grid, which is not this.
+regular rows, and the road is the organising feature.
+
+The conclusion drawn from this — that `town_gen_layout()` is therefore not
+reusable — was wrong twice over. It compared Zangband against **2.8.1's** grid of
+rows, which 4.2 no longer has: 4.2's town scatters buildings along streets that
+radiate from a crossroads, which is much closer to what the screenshot shows than
+the thing being compared against. And under DEC-27 the comparison is not the
+point anyway. `town_gen_layout()` is the town generator, and what M5 adds to it
+is variation between towns — size, and which stores stand in them — not a
+different layout model.
 
 ### The terrain set is wider than WLD-09 assumed
 

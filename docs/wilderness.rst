@@ -120,13 +120,19 @@ open ground but tells you nothing about what is behind the trees.
 Leaving the town
 ----------------
 
-The town sits on the surface, in the same country as everything around it. There
-is no wall between the two.
+Walk. There is no wall, no gate and no transition.
 
-Angband's town is a clearing with rock at its corners, so the ways out are not
-evenly spaced around it — but there is a way out on each of the four sides, and
-a road leading away from it. If you cannot see one, walk around the inside of
-the town's edge until you do.
+The town is Angband 4.2's town — the same streets, the same shops, the same
+ruins and rubble — standing in open country rather than in a clearing blasted
+out of rock. Where 4.2 puts stone around its town, ZangbandZK puts fields, so
+the streets simply run out into them. Leaving is a matter of walking off the end
+of one.
+
+Zangband's own towns were walled and moated, with locked gates. That is not
+being copied: it is what Angband 2.8.1's town looked like, which is the game
+Zangband was built on, and 4.2 has replaced it with something better. What is
+taken from Zangband is the part that is actually a Zangband idea — that the town
+stands in a world you can walk out into.
 
 Going down
 ----------
@@ -147,9 +153,10 @@ Stated plainly, because a manual that only describes what works is not much use
 for judging what to expect:
 
 **One town, and one way underground.** The world holds a single town and the
-single staircase in it. Several towns of differing size and character, several
-dungeons with their own depth ranges, and the buildings and services that go in
-them are milestone M5.
+single staircase in it. Several towns of differing size and character — carrying
+different stores, so that a frontier village is not a city with the same eight
+shops — several dungeons with their own depth ranges, and the buildings and
+services that go in them are all milestone M5.
 
 **The wilderness is empty.** Nothing lives out there yet. Monsters in the
 countryside and around towns arrive with M5.

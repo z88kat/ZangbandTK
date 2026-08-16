@@ -289,6 +289,48 @@ be walked out of, and dropping it into open country produced a town with no exit
 through, one on each side, working outwards from the middle of each side and
 refusing to breach a shop wall. M5's walls and gates will be built around those.
 
+**DEC-27 — Zangband's ideas, Angband 4.2's implementation. Where Zangband merely
+looks like Angband 2.8.1, 4.2 wins.**
+
+Zangband was built on Angband 2.8.1, so a great deal of what Zangband *looks* like is
+simply what 2.8.1 looked like. Its town is a rectangular grid of shops because that is what
+2.8.1's town was; the walls, the moat and the gates are dressing on a 2.8.1 town. None of
+that is a Zangband idea. Reproducing it would not be rebuilding Zangband — it would be
+undoing twenty-five years of Angband and calling the result a variant.
+
+*The test.* For any feature taken from Zangband, ask: **is this an idea, or is it 2.8.1
+showing through?** Ideas are ported. Inherited appearance is not — 4.2's equivalent stands,
+and the Zangband idea is expressed through it.
+
+Worked through on the town, which is where this first bit:
+
+| | |
+|---|---|
+| **Idea — keep** | The town stands in a wilderness and you walk out of it. Several towns, differing in size and character. Buildings that do something, and people in them to take work from. Different towns carrying different stores. |
+| **2.8.1 showing through — drop** | Walls, moat and gates. Buildings on a rectangular grid. Anything whose only argument is "the screenshots look like that". |
+
+So the town is Angband 4.2's town — its starburst clearing, its streets, its ruins, its
+shops — standing in open country, with a way out. Not a walled compound with a portcullis.
+
+*What this cost, and what it corrected.* The first implementation blitted 4.2's town whole,
+including the rock its clearing was blasted out of, and then cut four roads through that
+rock so the player could leave. As a level of its own that rock is invisible — it is the
+level's boundary and never reads as anything else. Dropped onto grassland it became a ring
+of granite around the town: a walled town, arrived at by accident, and gated by hand. Both
+halves were wrong for the same reason. The rock is now stripped and the fields run up to
+the clearing, which removes the need for gates entirely — you leave town by walking off the
+end of a street.
+
+*Where this sharpens what came before.* DEC-25 says Zangband's execution is not the
+standard of correctness, and points taste at Amber when Zangband's answer is weak. DEC-27
+handles the case where Zangband's answer is not weak but *inherited*: it was right for the
+game it was built on, and that game is not this one. DEC-16's preference for the
+documentation over the source is the same instinct — intent outranks implementation.
+
+> Raised by the project owner while playing M4, and correctly: *"we would like to impose the
+> idea of zangband using angband 4.2 as a base, not to re-write back to the old 2.8 version
+> of angband."*
+
 ---
 
 ## Delivery
