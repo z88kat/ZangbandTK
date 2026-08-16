@@ -27,7 +27,9 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "game-world.h"
 #include "init.h"
+#include "player.h"
 #include "wild.h"
 
 struct wilderness *wild = NULL;
@@ -559,4 +561,153 @@ void wild_cache_trim(int centre_x, int centre_y)
 			wild_cache[i].used = false;
 		}
 	}
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * The wilderness surface (WLD-23, WLD-24)
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Make sure the world exists, generating it on first use.
+ *
+ * Generated once per game from a seed the savefile already carries, so a
+ * character always returns to the same world.
+ */
+void wild_ensure(uint32_t seed)
+{
+	if (wild)
+		return;
+
+	wild = wild_new(z_info->wild_blocks, seed ? seed : 1);
+	wild_generate(wild);
+	wild_cache_init(z_info->wild_cache_blocks);
+}
+
+/**
+ * How many blocks across the live surface is.
+ *
+ * Zangband kept 9x9 blocks live around the player.  Derived from the cache
+ * size so the two cannot disagree: the surface is the largest odd square that
+ * the cache can hold.
+ */
+static int wild_view_blocks(void)
+{
+	int view = 1;
+
+	while ((view + 2) * (view + 2) <= z_info->wild_cache_blocks)
+		view += 2;
+
+	return view;
+}
+
+/**
+ * The width of the world, in grids.
+ */
+int wild_world_grids(void)
+{
+	return wild ? wild->blocks * z_info->wild_block_size : 0;
+}
+
+/**
+ * Build the live wilderness surface around a world position (WLD-24).
+ *
+ * The overworld is one continuous surface, not a set of levels: a town and the
+ * forest beyond it are the same map, and walking between them is walking, not a
+ * level change.  Blocks are the unit of *generation* — each is laid out from
+ * its own seed — but the level the player stands on tiles a window of them
+ * together.
+ *
+ * \param centre is the world grid the window is built around.
+ * \param offset returns the world grid of the surface's top-left corner, so the
+ * caller can convert between world and level coordinates.
+ */
+struct chunk *wild_surface(struct wilderness *w, struct loc centre,
+						   struct loc *offset)
+{
+	int size = z_info->wild_block_size;
+	int view = wild_view_blocks();
+	int span = view * size;
+	int half = span / 2;
+	struct chunk *c;
+	struct loc grid;
+	int world_max = w->blocks * size;
+	int ox, oy;
+
+	/* Keep the window inside the world rather than off its edge. */
+	ox = MIN(MAX(centre.x - half, 0), MAX(0, world_max - span));
+	oy = MIN(MAX(centre.y - half, 0), MAX(0, world_max - span));
+
+	/* Align to block boundaries: blocks generate whole, not in pieces. */
+	ox -= ox % size;
+	oy -= oy % size;
+
+	c = cave_new(span, span);
+	c->depth = 0;
+	c->name = string_make("wilderness");
+
+	for (grid.y = 0; grid.y < span; grid.y++) {
+		for (grid.x = 0; grid.x < span; grid.x++) {
+			int wx = ox + grid.x, wy = oy + grid.y;
+			int bx = wx / size, by = wy / size;
+			struct wild_block *block = wild_block_at(w, bx, by);
+			int feat;
+
+			if (!block) {
+				/* Beyond the world's edge: impassable rock. */
+				square_set_feat(c, grid, FEAT_ROCK);
+				continue;
+			}
+
+			/*
+			 * Draw from a stream fixed by the block and the grid's position
+			 * within it, so a grid's terrain does not depend on which window
+			 * it happened to be drawn in.
+			 */
+			{
+				uint32_t h = wild_block_seed(w, bx, by);
+
+				h ^= (uint32_t) (wx % size) * 0x27220A95u;
+				h ^= (uint32_t) (wy % size) * 0x165667B1u;
+				h ^= h >> 15;
+				h *= 0x2545F491u;
+				h ^= h >> 13;
+
+				feat = wild_terrain_feat(block->terrain, h % 100);
+			}
+
+			square_set_feat(c, grid, feat);
+		}
+	}
+
+	/* Roads run east-west through the middle of the blocks that carry them. */
+	for (int by = 0; by < view; by++) {
+		for (int bx = 0; bx < view; bx++) {
+			struct wild_block *block =
+				wild_block_at(w, ox / size + bx, oy / size + by);
+
+			if (!block || !(block->info & (WILD_INFO_ROAD | WILD_INFO_TRACK)))
+				continue;
+
+			grid.y = by * size + size / 2;
+			for (grid.x = bx * size; grid.x < (bx + 1) * size; grid.x++)
+				square_set_feat(c, grid, FEAT_ROAD);
+		}
+	}
+
+	if (offset) {
+		offset->x = ox;
+		offset->y = oy;
+	}
+
+	/* Mark the blocks under the window as seen. */
+	for (int by = 0; by < view; by++)
+		for (int bx = 0; bx < view; bx++) {
+			struct wild_block *block =
+				wild_block_at(w, ox / size + bx, oy / size + by);
+			if (block)
+				block->info |= WILD_INFO_SEEN;
+		}
+
+	return c;
 }

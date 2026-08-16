@@ -46,6 +46,7 @@
 #include "player-quest.h"
 #include "player-util.h"
 #include "trap.h"
+#include "wild.h"
 #include "z-queue.h"
 #include "z-type.h"
 
@@ -1505,6 +1506,27 @@ void prepare_next_level(struct player *p)
 			chunk_list_remove(name);
 			chunk_list_remove(known_name);
 			string_free(known_name);
+		} else if (p->in_wild) {
+			/*
+			 * ZangbandZK (WLD-24): the player is on the overworld surface,
+			 * which is a window onto the world map rather than anything the
+			 * dungeon generator would produce.
+			 *
+			 * The surface is continuous: a town and the country beyond it are
+			 * the same map, and crossing between them is walking rather than a
+			 * level change. The window is rebuilt only when the player nears
+			 * its edge.
+			 */
+			struct loc offset;
+
+			wild_ensure(seed_flavor);
+			cave = wild_surface(wild, p->wild_grid, &offset);
+
+			/* Place the player at their world position within the window. */
+			p->grid = loc(p->wild_grid.x - offset.x, p->wild_grid.y - offset.y);
+			p->wild_offset = offset;
+
+			event_signal_flag(EVENT_GEN_LEVEL_END, true);
 		} else if (p->upkeep->arena_level) {
 			/* We're creating a new arena level */
 			cave = cave_generate(p, 6, 6);

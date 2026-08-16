@@ -34,6 +34,7 @@
 #include "z-type.h"
 
 struct chunk;
+struct player;
 
 /**
  * Terrain kinds a wilderness block may take.
@@ -113,5 +114,10 @@ void wild_cache_free(void);
 struct chunk *wild_cache_get(struct wilderness *w, int x, int y);
 void wild_cache_trim(int centre_x, int centre_y);
 int wild_cache_count(void);
+
+void wild_ensure(uint32_t seed);
+int wild_world_grids(void);
+struct chunk *wild_surface(struct wilderness *w, struct loc centre,
+						   struct loc *offset);
 
 #endif /* INCLUDED_WILD_H */

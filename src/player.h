@@ -525,6 +525,24 @@ struct player {
 	int16_t recall_depth;	/* Recall depth */
 	int16_t depth;		/* Cur depth */
 
+	/**
+	 * Where the player is in the world (ZangbandZK: WLD-23).
+	 *
+	 * Angband tracks position as a depth and a grid within the current level,
+	 * because there is only ever one place to be at a given depth.  The
+	 * overworld needs a third coordinate: which block of the world map the
+	 * player is standing in.
+	 *
+	 * `depth` still governs the dungeon.  `in_wild` says which of the two the
+	 * player is currently in, and `wild_grid` is only meaningful when it is
+	 * true — though it is kept across a dungeon visit, so leaving a dungeon
+	 * returns the player to the block they entered it from.
+	 */
+	bool in_wild;
+	struct loc wild_grid;
+	/** World grid of the live surface's top-left corner, when in_wild */
+	struct loc wild_offset;
+
 	int16_t max_lev;	/* Max level */
 	int16_t lev;		/* Cur level */
 
