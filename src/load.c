@@ -49,6 +49,7 @@
 #include "savefile.h"
 #include "store.h"
 #include "trap.h"
+#include "wild.h"
 #include "ui-term.h"
 
 /**
@@ -1508,6 +1509,35 @@ static int rd_traps_aux(struct chunk *c)
 	}
 
 	mem_free(trap);
+	return 0;
+}
+
+/**
+ * Read back where the player stands in the world (ZangbandZK, WLD-23).
+ *
+ * The world is rebuilt here rather than left to the next level change: the
+ * surface itself comes back from the "dungeon" block, and the player can walk
+ * on it straight away, which needs the world map in place to know when the
+ * window should scroll.
+ */
+int rd_wilderness(void)
+{
+	uint8_t in_wild;
+	uint16_t x, y, ox, oy;
+
+	rd_byte(&in_wild);
+	rd_u16b(&x);
+	rd_u16b(&y);
+	rd_u16b(&ox);
+	rd_u16b(&oy);
+
+	player->in_wild = (in_wild != 0);
+	player->wild_grid = loc(x, y);
+	player->wild_offset = loc(ox, oy);
+
+	if (player->in_wild)
+		wild_ensure(seed_flavor);
+
 	return 0;
 }
 

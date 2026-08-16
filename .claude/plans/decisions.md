@@ -257,6 +257,40 @@ This is the path Zangband itself took from Angband 2.8.1.
 
 ---
 
+## World
+
+**DEC-26 — The town is part of the surface, not a level of its own.**
+
+Angband's town is a level: you generate it, you stand in it, and the only way
+out is the staircase. ZangbandZK's town is a patch of the overworld. It is drawn
+into the live window wherever the window covers its position, and walking out of
+it is walking, not a level change.
+
+*Why it had to be settled.* The alternative — keeping the town a level and
+making its edge a transition to a wilderness level — would have worked and been
+less code. It was rejected because the seam would be visible: you would step
+from a town map onto a differently-shaped wilderness map, which is exactly what
+the original did not do. Zangband's town and the forest outside it are the same
+picture, and that continuity is most of what the overworld is for.
+
+*What it costs.* The town no longer persists through `chunk_list` as Angband's
+did, because it is not a level for `chunk_list` to hold. Its layout is instead
+generated deterministically from the world seed and its own position, so it
+comes back identically every time the window is rebuilt. What that does *not*
+recover is anything the player changed — a dropped object in town, or a
+townsperson killed. The wilderness has the same gap everywhere else on the
+surface, and WLD-04 closes it for all of them at once rather than the town
+needing a mechanism of its own.
+
+*One thing this forced.* Angband's town is a starburst clearing inside a
+permanent wall, with rock filling the corners. Nothing in it was ever meant to
+be walked out of, and dropping it into open country produced a town with no exit
+— which is what the project owner found on first play. Four ways out are now cut
+through, one on each side, working outwards from the middle of each side and
+refusing to breach a shop wall. M5's walls and gates will be built around those.
+
+---
+
 ## Delivery
 
 **DEC-12 — macOS ARM is the *delivery* target; the code stays portable.** Amended after

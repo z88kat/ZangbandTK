@@ -69,6 +69,7 @@
 #include "ui-entry.h"
 #include "ui-entry-init.h"
 #include "ui-visuals.h"
+#include "wild.h"
 
 bool play_again = false;
 
@@ -4718,6 +4719,9 @@ void cleanup_angband(void)
 		cave = NULL;
 		character_dungeon = false;
 	}
+
+	/* Free the world the cave sits under (ZangbandZK) */
+	wild_cleanup();
 
 	monster_list_finalize();
 	object_list_finalize();

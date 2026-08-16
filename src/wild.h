@@ -91,6 +91,12 @@ struct wilderness {
 	uint32_t seed;		/**< Seed every block's generation derives from */
 	int blocks;			/**< Width and height, in blocks */
 	struct wild_block *map;	/**< blocks * blocks entries, row-major */
+
+	/**
+	 * The block the starting town stands on (WLD-12).  One town for now;
+	 * WLD-10's several towns are M5's business, and will want a list here.
+	 */
+	struct loc town_block;
 };
 
 extern struct wilderness *wild;
@@ -116,11 +122,17 @@ void wild_cache_trim(int centre_x, int centre_y);
 int wild_cache_count(void);
 
 void wild_ensure(uint32_t seed);
+void wild_cleanup(void);
 int wild_world_grids(void);
 int wild_view_blocks(void);
-struct chunk *wild_surface(struct wilderness *w, struct loc centre,
-						   struct loc *offset);
+struct chunk *wild_surface(struct wilderness *w, struct player *p,
+						   struct loc centre, struct loc *offset);
+bool wild_is_surface(const struct chunk *c);
 bool wild_needs_recentre(struct player *p);
 void wild_track_move(struct player *p, struct loc grid);
+
+struct loc wild_town_origin(const struct wilderness *w);
+struct loc wild_town_start(struct wilderness *w, struct player *p);
+void wild_town_free(void);
 
 #endif /* INCLUDED_WILD_H */

@@ -765,7 +765,7 @@ static int calc_mon_feeling(struct chunk *c)
  * Find a cave_profile by name
  * \param name is the name of the cave_profile being looked for
  */
-static const struct cave_profile *find_cave_profile(const char *name)
+const struct cave_profile *find_cave_profile(const char *name)
 {
 	int i;
 
@@ -1368,8 +1368,14 @@ void prepare_next_level(struct player *p)
 				cave_store(p->cave, true, true);
 			}
 		} else {
-			/* Save the town */
-			if (!cave->depth && !chunk_find_name("Town")) {
+			/*
+			 * Save the town.  ZangbandZK's town is part of the surface rather
+			 * than a level of its own, so there is nothing to store when
+			 * leaving it: wild.c keeps the layout, and the surface is rebuilt
+			 * from the world seed.
+			 */
+			if (!cave->depth && !wild_is_surface(cave) &&
+				!chunk_find_name("Town")) {
 				cave_store(cave, false, false);
 			}
 
@@ -1411,7 +1417,52 @@ void prepare_next_level(struct player *p)
 	}
 
 	/* Prepare the new level */
-	if (persist) {
+	if (p->depth == 0) {
+		/*
+		 * ZangbandZK (WLD-24): the surface of the world, not a level.  Depth
+		 * zero is the overworld -- the town stands on it, and the country
+		 * around the town is the same map.  Crossing between them is walking,
+		 * not a level change, so the window onto the world is rebuilt only
+		 * when the player nears its edge.
+		 */
+		struct loc offset;
+		int i;
+
+		wild_ensure(seed_flavor);
+
+		/* A character who has never stood on the surface starts in the town. */
+		if (loc_eq(p->wild_grid, loc(0, 0)))
+			p->wild_grid = wild_town_start(wild, p);
+		p->in_wild = true;
+
+		event_signal_string(EVENT_GEN_LEVEL_START, "wilderness");
+		cave = wild_surface(wild, p, p->wild_grid, &offset);
+
+		/* Place the player at their world position within the window. */
+		p->wild_offset = offset;
+		p->grid = loc(p->wild_grid.x - offset.x, p->wild_grid.y - offset.y);
+		sanitize_player_loc(cave, p);
+		wild_track_move(p, p->grid);
+		player_place(cave, p, p->grid);
+
+		/*
+		 * Everything a level needs that the dungeon generator would otherwise
+		 * have done: the parallel chunk holding what the player knows, and the
+		 * turn the level came into being.
+		 */
+		p->cave = cave_new(cave->height, cave->width);
+		p->cave->depth = cave->depth;
+		p->cave->objects = mem_realloc(p->cave->objects,
+									   (cave->obj_max + 1)
+									   * sizeof(struct object *));
+		p->cave->obj_max = cave->obj_max;
+		for (i = 0; i <= p->cave->obj_max; i++)
+			p->cave->objects[i] = NULL;
+
+		cave->turn = turn;
+
+		event_signal_flag(EVENT_GEN_LEVEL_END, true);
+	} else if (persist) {
 		char *name = level_by_depth(p->depth)->name;
 		struct chunk *old_level = chunk_find_name(name);
 
@@ -1506,27 +1557,6 @@ void prepare_next_level(struct player *p)
 			chunk_list_remove(name);
 			chunk_list_remove(known_name);
 			string_free(known_name);
-		} else if (p->in_wild) {
-			/*
-			 * ZangbandZK (WLD-24): the player is on the overworld surface,
-			 * which is a window onto the world map rather than anything the
-			 * dungeon generator would produce.
-			 *
-			 * The surface is continuous: a town and the country beyond it are
-			 * the same map, and crossing between them is walking rather than a
-			 * level change. The window is rebuilt only when the player nears
-			 * its edge.
-			 */
-			struct loc offset;
-
-			wild_ensure(seed_flavor);
-			cave = wild_surface(wild, p->wild_grid, &offset);
-
-			/* Place the player at their world position within the window. */
-			p->grid = loc(p->wild_grid.x - offset.x, p->wild_grid.y - offset.y);
-			p->wild_offset = offset;
-
-			event_signal_flag(EVENT_GEN_LEVEL_END, true);
 		} else if (p->upkeep->arena_level) {
 			/* We're creating a new arena level */
 			cave = cave_generate(p, 6, 6);
@@ -1567,10 +1597,15 @@ void prepare_next_level(struct player *p)
 	/* Know the town */
 	if (!(p->depth)) {
 		cave_known(p);
-		if (persist) {
+
+		/*
+		 * The surface is open country under an open sky: it takes the daylight
+		 * whether or not levels are persistent, which is the one case 4.2 was
+		 * lighting the town for.
+		 */
+		if (persist || wild_is_surface(cave)) {
 			cave_illuminate(cave, is_daytime());
 		}
-
 	}
 
 	/* The dungeon is ready */

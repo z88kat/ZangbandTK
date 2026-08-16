@@ -2649,6 +2649,59 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 
 
 /**
+ * Build a town on its own, to be drawn into the wilderness surface (WLD-24).
+ *
+ * ZangbandZK's town is not a level of its own: it is part of the overworld, and
+ * walking out of it is walking rather than a level change.  The surface is
+ * rebuilt whenever the player nears the edge of the live window, so the town
+ * has to come out the same every time it is rebuilt -- hence the fixed stream,
+ * the same trick wild_block_chunk() uses for scenery.
+ *
+ * The layout code is Angband's, unchanged.  It places the player on the down
+ * staircase as a side effect, which is not wanted here: the surface does its
+ * own placing, in world coordinates.  That is undone before returning.
+ *
+ * \param p is the player, needed only by the layout code's player placement
+ * \param seed fixes the layout; the same seed always gives the same town
+ */
+struct chunk *town_gen_wild(struct player *p, uint32_t seed)
+{
+	struct chunk *c = cave_new(z_info->town_hgt, z_info->town_wid);
+	struct loc saved_grid = p->grid;
+	bool saved_quick = Rand_quick;
+	uint32_t saved_value = Rand_value;
+	struct dun_data *saved_dun = dun;
+	struct dun_data dun_body;
+
+	c->depth = 0;
+
+	/*
+	 * The layout code reads the generator's globals -- the lava streamers want
+	 * the profile's density and range.  Normally cave_generate() sets those up
+	 * before calling a builder; here nothing has, so do it and put back what
+	 * was there.
+	 */
+	memset(&dun_body, 0, sizeof dun_body);
+	dun = &dun_body;
+	dun->profile = find_cave_profile("town");
+
+	Rand_quick = true;
+	Rand_value = seed ? seed : 1;
+
+	town_gen_layout(c, p);
+
+	Rand_quick = saved_quick;
+	Rand_value = saved_value;
+	dun = saved_dun;
+
+	/* Undo the layout's player placement. */
+	square_set_mon(c, p->grid, 0);
+	p->grid = saved_grid;
+
+	return c;
+}
+
+/**
  * Town logic flow for generation of new town.
  * \param p is the player
  * \param min_height is the minimum expected height, in grids, for the level.

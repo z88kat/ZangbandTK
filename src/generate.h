@@ -318,6 +318,7 @@ extern struct room_template *room_templates;
 
 /* generate.c */
 void prepare_next_level(struct player *p);
+const struct cave_profile *find_cave_profile(const char *name);
 int get_room_builder_count(void);
 int get_room_builder_index_from_name(const char *name);
 const char *get_room_builder_name_from_index(int i);
@@ -327,6 +328,7 @@ const char *get_level_profile_name_from_index(int i);
 /* gen-cave.c */
 struct chunk *town_gen(struct player *p, int min_height, int min_width,
 	const char **p_error);
+struct chunk *town_gen_wild(struct player *p, uint32_t seed);
 struct chunk *classic_gen(struct player *p, int min_height, int min_width,
 	const char **p_error);
 struct chunk *labyrinth_gen(struct player *p, int min_height, int min_width,

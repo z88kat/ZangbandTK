@@ -28,6 +28,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "game-world.h"
+#include "generate.h"
 #include "init.h"
 #include "player.h"
 #include "wild.h"
@@ -284,6 +285,118 @@ void wild_free(struct wilderness *w)
 }
 
 /**
+ * How many blocks the town's footprint covers, in each direction.
+ *
+ * The town is a fixed rectangle of grids, so how many blocks it lies across
+ * depends on the block size.  A block of margin is added on every side: a town
+ * that runs right up to the edge of its blocks has nowhere for a road to leave
+ * from, and looks wrong butted against whatever the next block turns out to be.
+ */
+static void wild_town_extent(int *bw, int *bh)
+{
+	int size = z_info->wild_block_size;
+
+	*bw = (z_info->town_wid + size - 1) / size + 2;
+	*bh = (z_info->town_hgt + size - 1) / size + 2;
+}
+
+/**
+ * Choose where the starting town stands (WLD-12).
+ *
+ * Towns go where people would put them: dry, settled, orderly ground, with the
+ * whole footprint on land rather than half of it in the sea.  Ties go towards
+ * the middle of the world, so a new character does not begin in a corner with
+ * three quarters of the map behind them.
+ *
+ * Zangband scattered twenty towns across the map and used a minimum separation
+ * to keep them apart.  This places the one town the game currently has; the
+ * scoring is written so that adding the rest (WLD-10) is a matter of looping
+ * and excluding what has already been taken.
+ */
+static void wild_place_town(struct wilderness *w)
+{
+	int size = w->blocks;
+	int centre = size / 2;
+	int best = -1;
+	int bw, bh, x, y;
+
+	wild_town_extent(&bw, &bh);
+
+	for (y = bh; y < size - bh; y++) {
+		for (x = bw; x < size - bw; x++) {
+			struct wild_block *block = &w->map[y * size + x];
+			int score, dist, fx, fy;
+			bool ok = true;
+
+			switch (block->terrain) {
+				case WILD_TERRAIN_GRASS: score = 120; break;
+				case WILD_TERRAIN_FOREST: score = 90; break;
+				case WILD_TERRAIN_WASTE: score = 40; break;
+				default: continue;	/* sea, shore, swamp, mountain */
+			}
+
+			/* The whole footprint has to be land you could build on. */
+			for (fy = y - bh / 2; fy <= y + bh / 2 && ok; fy++)
+				for (fx = x - bw / 2; fx <= x + bw / 2 && ok; fx++) {
+					struct wild_block *f = wild_block_at(w, fx, fy);
+
+					if (!f || f->terrain == WILD_TERRAIN_OCEAN ||
+						f->terrain == WILD_TERRAIN_MOUNTAIN)
+						ok = false;
+				}
+			if (!ok) continue;
+
+			/* People and order both argue for a town being here. */
+			score += block->pop / 4 + block->law / 8;
+
+			/* All else equal, nearer the middle of the world. */
+			dist = MAX(ABS(x - centre), ABS(y - centre));
+			score -= dist * 2;
+
+			if (score > best) {
+				best = score;
+				w->town_block = loc(x, y);
+			}
+		}
+	}
+
+	/*
+	 * A world with no habitable land at all is possible in principle -- the
+	 * fractal could come out as ocean and mountain -- so fall back to the
+	 * middle rather than leaving the town at (0, 0), off the map's edge.
+	 */
+	if (best < 0)
+		w->town_block = loc(centre, centre);
+
+	/* Mark the footprint, and give the town a road to sit on. */
+	{
+		int fx, fy;
+
+		for (fy = w->town_block.y - bh / 2; fy <= w->town_block.y + bh / 2; fy++)
+			for (fx = w->town_block.x - bw / 2;
+				 fx <= w->town_block.x + bw / 2; fx++) {
+				struct wild_block *f = wild_block_at(w, fx, fy);
+
+				if (!f) continue;
+				f->place = 1;
+				f->info |= WILD_INFO_ROAD;
+			}
+	}
+}
+
+/**
+ * The world grid of the town rectangle's top-left corner.
+ */
+struct loc wild_town_origin(const struct wilderness *w)
+{
+	int size = z_info->wild_block_size;
+	int cx = w->town_block.x * size + size / 2;
+	int cy = w->town_block.y * size + size / 2;
+
+	return loc(cx - z_info->town_wid / 2, cy - z_info->town_hgt / 2);
+}
+
+/**
  * Lay out the world map (WLD-07, WLD-08).
  *
  * Three independent fractals give each block a position in parameter space,
@@ -321,6 +434,8 @@ void wild_generate(struct wilderness *w)
 		block->place = 0;
 		block->info = 0;
 	}
+
+	wild_place_town(w);
 
 	Rand_quick = false;
 
@@ -573,15 +688,37 @@ void wild_cache_trim(int centre_x, int centre_y)
  *
  * Generated once per game from a seed the savefile already carries, so a
  * character always returns to the same world.
+ *
+ * Keyed on the seed rather than merely on the world existing: one process can
+ * see several characters, through starting again after a death or through
+ * loading a different savefile, and each of them lives in a different world.
+ * Handing the second character the first one's world would be a hard fault to
+ * find, because everything about it would look right.
  */
 void wild_ensure(uint32_t seed)
 {
-	if (wild)
+	uint32_t use = seed ? seed : 1;
+
+	if (wild && wild->seed == use)
 		return;
 
-	wild = wild_new(z_info->wild_blocks, seed ? seed : 1);
+	wild_cleanup();
+
+	wild = wild_new(z_info->wild_blocks, use);
 	wild_generate(wild);
 	wild_cache_init(z_info->wild_cache_blocks);
+}
+
+/**
+ * Let go of the world.  Called when the game shuts down, and whenever a
+ * different world is about to be generated.
+ */
+void wild_cleanup(void)
+{
+	wild_town_free();
+	wild_cache_free();
+	wild_free(wild);
+	wild = NULL;
 }
 
 /**
@@ -610,6 +747,194 @@ int wild_world_grids(void)
 }
 
 /**
+ * ------------------------------------------------------------------------
+ * The town on the surface (WLD-24)
+ * ------------------------------------------------------------------------ */
+
+/**
+ * The town, generated once and kept for as long as the world lasts.
+ *
+ * Held here rather than in chunk_list because the town is not a level: it is a
+ * patch of the surface, drawn in wherever the live window happens to cover it.
+ */
+static struct chunk *wild_town = NULL;
+
+void wild_town_free(void)
+{
+	if (wild_town) {
+		cave_free(wild_town);
+		wild_town = NULL;
+	}
+}
+
+/**
+ * Open a way into the town along one line, if the layout has not left one.
+ *
+ * Angband's town is a starburst clearing with rock in the corners, which as a
+ * standalone level did not matter -- the only way out was the staircase.  As
+ * part of the overworld it matters a great deal: a player who cannot walk out
+ * of the town is trapped in it.
+ *
+ * Digs from \p start in direction \p step until it meets ground that can
+ * already be walked on, and lays a road back to the edge.  Gives up on meeting
+ * a permanent wall: that is a store, and cutting a hole through the side of a
+ * shop is not the way out of town.
+ *
+ * \return true if this line now leads into the town.
+ */
+static bool wild_town_gate(struct chunk *town, struct loc start, struct loc step,
+						   int limit)
+{
+	struct loc grid = start;
+	int i, reached = -1;
+
+	for (i = 0; i < limit; i++) {
+		if (!square_in_bounds_fully(town, grid))
+			return false;
+		if (square_isperm(town, grid))
+			return false;
+		if (square_ispassable(town, grid)) {
+			reached = i;
+			break;
+		}
+		grid = loc_sum(grid, step);
+	}
+
+	if (reached < 0)
+		return false;
+
+	grid = start;
+	for (i = 0; i < reached; i++) {
+		square_set_feat(town, grid, FEAT_ROAD);
+		grid = loc_sum(grid, step);
+	}
+
+	return true;
+}
+
+/**
+ * Give the town a way in and out on each of its four sides.
+ *
+ * Tries the middle of each side first and works outwards, so the roads meet the
+ * town where a road would: at the ends of its streets, not at its corners.
+ *
+ * The original's towns were walled, moated and gated, and the gates were locked
+ * doors -- see the world requirements, §7.  That is M5's work, along with the
+ * rest of the town's structure.  What matters now is only that the four ways
+ * out exist for the walls to be built around later.
+ */
+static void wild_town_open(struct chunk *town)
+{
+	int w = town->width, h = town->height;
+	int i;
+
+	for (i = 0; i < w - 2; i++) {
+		int x = w / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
+
+		if (x < 1 || x > w - 2) continue;
+		if (wild_town_gate(town, loc(x, 1), loc(0, 1), h / 2)) break;
+	}
+
+	for (i = 0; i < w - 2; i++) {
+		int x = w / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
+
+		if (x < 1 || x > w - 2) continue;
+		if (wild_town_gate(town, loc(x, h - 2), loc(0, -1), h / 2)) break;
+	}
+
+	for (i = 0; i < h - 2; i++) {
+		int y = h / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
+
+		if (y < 1 || y > h - 2) continue;
+		if (wild_town_gate(town, loc(1, y), loc(1, 0), w / 2)) break;
+	}
+
+	for (i = 0; i < h - 2; i++) {
+		int y = h / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
+
+		if (y < 1 || y > h - 2) continue;
+		if (wild_town_gate(town, loc(w - 2, y), loc(-1, 0), w / 2)) break;
+	}
+}
+
+/**
+ * The town's layout, built on first use.
+ *
+ * Seeded from the world seed and the town's position, so it belongs to this
+ * world and no other, and comes out identically however many times the surface
+ * is rebuilt around it.
+ */
+static struct chunk *wild_town_chunk(struct wilderness *w, struct player *p)
+{
+	if (!wild_town) {
+		wild_town = town_gen_wild(p, wild_block_seed(w, w->town_block.x,
+													w->town_block.y));
+		wild_town_open(wild_town);
+	}
+
+	return wild_town;
+}
+
+/**
+ * Draw the town into the live surface, where the window covers it.
+ *
+ * The town's own outermost ring is skipped.  It is a permanent wall, and it
+ * exists only because Angband levels need a boundary; on a surface that runs
+ * past the town in every direction it would be a wall around nothing.
+ */
+static void wild_draw_town(struct wilderness *w, struct player *p,
+						   struct chunk *c, struct loc offset)
+{
+	struct chunk *town = wild_town_chunk(w, p);
+	struct loc org = wild_town_origin(w);
+	struct loc grid;
+
+	if (!town)
+		return;
+
+	for (grid.y = 1; grid.y < town->height - 1; grid.y++)
+		for (grid.x = 1; grid.x < town->width - 1; grid.x++) {
+			struct loc dest = loc(org.x + grid.x - offset.x,
+								  org.y + grid.y - offset.y);
+
+			if (!square_in_bounds_fully(c, dest))
+				continue;
+
+			square_set_feat(c, dest, square_feat(town, grid)->fidx);
+		}
+}
+
+/**
+ * Where a new character starts: the town's down staircase.
+ *
+ * Returned in world coordinates, since that is what the player carries.  The
+ * staircase is found by looking for it rather than being remembered from
+ * generation, which is what Angband's own town code does on reload.
+ */
+struct loc wild_town_start(struct wilderness *w, struct player *p)
+{
+	struct chunk *town = wild_town_chunk(w, p);
+	struct loc org = wild_town_origin(w);
+	struct loc grid;
+
+	for (grid.y = 0; grid.y < town->height; grid.y++)
+		for (grid.x = 0; grid.x < town->width; grid.x++)
+			if (square_feat(town, grid)->fidx == FEAT_MORE)
+				return loc(org.x + grid.x, org.y + grid.y);
+
+	/* No staircase: start in the middle of the town and look for it. */
+	return loc(org.x + town->width / 2, org.y + town->height / 2);
+}
+
+/**
+ * Is this chunk the wilderness surface rather than a level?
+ */
+bool wild_is_surface(const struct chunk *c)
+{
+	return c && c->name && streq(c->name, "wilderness");
+}
+
+/**
  * Build the live wilderness surface around a world position (WLD-24).
  *
  * The overworld is one continuous surface, not a set of levels: a town and the
@@ -618,12 +943,13 @@ int wild_world_grids(void)
  * its own seed — but the level the player stands on tiles a window of them
  * together.
  *
+ * \param p is the player, needed to lay the town out on first use.
  * \param centre is the world grid the window is built around.
  * \param offset returns the world grid of the surface's top-left corner, so the
  * caller can convert between world and level coordinates.
  */
-struct chunk *wild_surface(struct wilderness *w, struct loc centre,
-						   struct loc *offset)
+struct chunk *wild_surface(struct wilderness *w, struct player *p,
+						   struct loc centre, struct loc *offset)
 {
 	int size = z_info->wild_block_size;
 	int view = wild_view_blocks();
@@ -693,6 +1019,38 @@ struct chunk *wild_surface(struct wilderness *w, struct loc centre,
 			for (grid.x = bx * size; grid.x < (bx + 1) * size; grid.x++)
 				square_set_feat(c, grid, FEAT_ROAD);
 		}
+	}
+
+	/*
+	 * Draw the town in.  It goes down after the terrain and the roads, so the
+	 * countryside runs up to its edge rather than through it.
+	 */
+	{
+		struct loc org = wild_town_origin(w);
+
+		if (org.x + z_info->town_wid > ox && org.x < ox + span &&
+			org.y + z_info->town_hgt > oy && org.y < oy + span)
+			wild_draw_town(w, p, c, loc(ox, oy));
+	}
+
+	/*
+	 * The world has an edge, and Angband levels expect a permanent boundary --
+	 * a great deal of code steps one grid outwards without checking.  Where the
+	 * window sits against the edge of the world, give it one.  Everywhere else
+	 * the window scrolls before the player can reach its border, so the border
+	 * is never stood next to and needs no wall.
+	 */
+	for (grid.x = 0; grid.x < span; grid.x++) {
+		if (oy == 0)
+			square_set_feat(c, loc(grid.x, 0), FEAT_PERM);
+		if (oy + span >= world_max)
+			square_set_feat(c, loc(grid.x, span - 1), FEAT_PERM);
+	}
+	for (grid.y = 0; grid.y < span; grid.y++) {
+		if (ox == 0)
+			square_set_feat(c, loc(0, grid.y), FEAT_PERM);
+		if (ox + span >= world_max)
+			square_set_feat(c, loc(span - 1, grid.y), FEAT_PERM);
 	}
 
 	if (offset) {

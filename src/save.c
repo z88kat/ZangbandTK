@@ -40,6 +40,7 @@
 #include "player-history.h"
 #include "player-timed.h"
 #include "trap.h"
+#include "wild.h"
 #include "ui-term.h"
 
 
@@ -954,6 +955,28 @@ static void wr_traps_aux(struct chunk *c)
 	dummy = mem_zalloc(sizeof(*dummy));
 	wr_trap(dummy);
 	mem_free(dummy);
+}
+
+/**
+ * Where the player stands in the world (ZangbandZK, WLD-23).
+ *
+ * The world map itself is not written.  It regenerates exactly from the seed
+ * the savefile already carries, so storing a thousand blocks of it would be
+ * storing a thing we can recompute -- which is the whole point of WLD-03.
+ * What cannot be recomputed is where the player got to, so that is what goes
+ * in.
+ *
+ * Its own block rather than an addition to an existing one, so that a savefile
+ * written before the wilderness existed still loads: a block that is not there
+ * is simply not read, and the player starts in the town as they used to.
+ */
+void wr_wilderness(void)
+{
+	wr_byte(player->in_wild ? 1 : 0);
+	wr_u16b(player->wild_grid.x);
+	wr_u16b(player->wild_grid.y);
+	wr_u16b(player->wild_offset.x);
+	wr_u16b(player->wild_offset.y);
 }
 
 void wr_dungeon(void)

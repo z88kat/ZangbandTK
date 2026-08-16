@@ -1,14 +1,138 @@
 The Wilderness
 ==============
 
+Angband is played in a single dungeon beneath a single town. ZangbandZK is
+played across a generated overworld, and the town stands on it.
+
+This is the change that most alters how the game feels from the first turn. You
+begin, as in Angband, on the down staircase in the middle of town, surrounded by
+shops. But the town does not end in a wall. Walk to its edge and you keep
+walking, out into whatever country the world put there.
+
 .. note::
 
-   **Not yet written.** This chapter is filled in by milestone **M4**
-   (see the Phase 2 development plan). Per DEC-17 a milestone is not complete
-   until its manual chapter is.
+   **Milestone M4.** The world generates, the town stands in it, and you can
+   walk out of the town and back into it. Several things stated in the Phase 1
+   requirements are not here yet, and are listed under `What is not here yet`_
+   at the end of this chapter rather than being quietly omitted.
 
-   Requirements this chapter must cover: WLD-01 to WLD-09, WLD-23 to WLD-25
+The world
+---------
 
-Angband is played in a single dungeon beneath a single town. ZangbandZK is
-played across a generated overworld. This chapter covers the world map, travel,
-terrain, and how dungeons are entered from it.
+The world is a square grid of **blocks**, each 16 by 16 grids. At the default
+size of 33 blocks across, that is a world of 528 by 528 grids — about a hundred
+and forty times the area of an Angband town.
+
+Every world is generated from a single seed, fixed when your character is
+created. That seed decides everything: where the sea is, where the mountains
+are, where your town stands. Two characters made from the same seed walk the
+same world. A character always returns to the world they were born in, because
+the seed is stored in the savefile and the world is rebuilt from it rather than
+saved.
+
+That is the reason the world can be as large as it is. Nothing about it is kept
+in the savefile except the seed and where you are standing.
+
+Terrain
+-------
+
+Each block has a position in a three-dimensional space — how high it stands, how
+settled it is, and how orderly. Terrain follows from that position rather than
+being chosen at random, which is why the world comes out looking like a place
+rather than like noise: coastlines run, forests mass together, and mountains
+form ranges.
+
+The seven kinds of country, and roughly what each is made of:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 80
+
+   * - Terrain
+     - What you find there
+   * - Ocean
+     - Deep water, impassable without the means to cross it. About a quarter of
+       the world, as in Zangband.
+   * - Shore
+     - Sand and shallow water, with grass behind it.
+   * - Grassland
+     - Open grass, scattered trees. The easiest country to cross.
+   * - Forest
+     - Mostly trees, with clearings.
+   * - Swamp
+     - Water, mud and scrub. Slow going.
+   * - Wasteland
+     - Bare earth, rubble and rock.
+   * - Mountains
+     - Rock, broken by passes.
+
+Roads run between the places worth reaching. A road is safer and quicker than
+the country beside it, and it is a reliable way of finding a town: follow one
+far enough and it will take you somewhere.
+
+Travel
+------
+
+You walk. There are no travel commands and no map transitions — the wilderness
+is one continuous surface, and you cross it a step at a time as you would cross
+a dungeon level.
+
+What the game keeps live around you is a **window** onto the world: nine blocks
+by nine, or 144 grids square. This is not a boundary you can see or reach. When
+you come within a block's width of the window's edge, the game quietly rebuilds
+it centred further along, and you carry on walking. Your position in the world
+is what the game tracks; where you stand in the window is worked out from it.
+
+The one edge you can reach is the edge of the world itself, which is walled.
+
+Leaving the town
+----------------
+
+The town sits on the surface, in the same country as everything around it. There
+is no wall between the two.
+
+Angband's town is a clearing with rock at its corners, so the ways out are not
+evenly spaced around it — but there is a way out on each of the four sides, and
+a road leading away from it. If you cannot see one, walk around the inside of
+the town's edge until you do.
+
+Going down
+----------
+
+The down staircase in the middle of town works exactly as it does in Angband:
+stand on it and press ``>``.
+
+Coming back up puts you where you went down. The world remembers where you left
+it, so a character who walked three days into the hills before finding a way
+underground comes back up in the hills, not in the town.
+
+.. _what is not here yet:
+
+What is not here yet
+--------------------
+
+Stated plainly, because a manual that only describes what works is not much use
+for judging what to expect:
+
+**One town, and one way underground.** The world holds a single town and the
+single staircase in it. Several towns of differing size and character, several
+dungeons with their own depth ranges, and the buildings and services that go in
+them are milestone M5.
+
+**The wilderness is empty.** Nothing lives out there yet. Monsters in the
+countryside and around towns arrive with M5.
+
+**What you leave behind does not stay.** Drop something on the surface, walk far
+enough that the window is rebuilt, and it is gone. The world regenerates
+faithfully — the same terrain, the same town, the same layout — but changes made
+to it are not yet recorded. This is the requirement the world design turns on
+(only blocks you have changed need storing) and it is the largest piece of M4
+still open.
+
+**No overhead map.** There is no way to see the world except by walking it. The
+map display is M5.
+
+**Rivers and lakes are missing**, and the terrain is coarser than Zangband's.
+Zangband distinguished about thirty kinds of country, including impassable
+jungle, snow and lava; ZangbandZK currently has seven. Snow in particular
+implies a climate axis the parameter space does not yet carry.
