@@ -142,6 +142,19 @@ content serves no one.
 `player_property.txt` rather than introducing a parallel flag system. Rationale: §2.4 — the
 representation already exists and is data-driven; only the acquisition path is new.
 
+**P-5 — Gender selection is not carried over.** Confirmed by project owner.
+Zangband asks the player to choose a gender at birth, as Angband 2.8.1 did;
+Angband 4.2 removed it. We follow 4.2.
+
+Rationale: it carries no mechanical weight in Zangband either — it selects
+pronouns and a few flavour strings — so reintroducing it would mean touching
+character creation, the savefile and every description path that refers to the
+player, for nothing that changes play. It belongs with `CHR`, which 4.2 also
+removed and which is already recorded as rejected: both are part of the
+2.8.1-era character model that Angband has since moved away from, and DEC-18
+holds that where we keep 4.2's approach over Zangband's it is usually the
+better engineering rather than a compromise.
+
 **P-4 — Pets are scoped as a monster-subsystem change, not a feature.** Phase 2 must plan
 it as such, with the hostility invariant addressed explicitly before any pet-granting
 content is written. Rationale: §2.6.
