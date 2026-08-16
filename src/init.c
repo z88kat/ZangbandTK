@@ -553,7 +553,12 @@ static enum parser_error parse_constants_wild(struct parser *p) {
 	label = parser_getsym(p, "label");
 	value = parser_getint(p, "value");
 
-	if (value <= 0 || value > LETHALITY_MAX)
+	/*
+	 * Bounded generously and on its own terms.  LETHALITY_MAX is a percentage
+	 * ceiling for the balance dials and means nothing here; the monster rarity
+	 * dials are odds against, and run into the tens of thousands.
+	 */
+	if (value <= 0 || value > WILD_VALUE_MAX)
 		return PARSE_ERROR_INVALID_VALUE;
 
 	if (streq(label, "blocks")) {
@@ -571,6 +576,10 @@ static enum parser_error parse_constants_wild(struct parser *p) {
 		z->wild_block_size = value;
 	} else if (streq(label, "cache-blocks")) {
 		z->wild_cache_blocks = value;
+	} else if (streq(label, "monster-rarity-day")) {
+		z->wild_mon_rarity_day = value;
+	} else if (streq(label, "monster-rarity-night")) {
+		z->wild_mon_rarity_night = value;
 	} else {
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 	}
@@ -1155,6 +1164,10 @@ static errr finish_parse_constants(struct parser *p) {
 		z_info->wild_block_size = 16;
 	if (!z_info->wild_cache_blocks)
 		z_info->wild_cache_blocks = 81;
+	if (!z_info->wild_mon_rarity_day)
+		z_info->wild_mon_rarity_day = 16000;
+	if (!z_info->wild_mon_rarity_night)
+		z_info->wild_mon_rarity_night = 10000;
 	if (check_critical_levels(z_info->m_crit_level_head)) {
 		plog("The cutoffs for melee criticals in constants.txt are "
 			"not strictly increasing.");

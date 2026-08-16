@@ -467,16 +467,42 @@ melee:chaotic-chance:7
 #
 # 'blocks' must be a power of two plus one: the plasma fractal that lays out
 # the world's height, population and law maps subdivides by halves and needs
-# both edges to land on a sample point. Zangband used 129 (2^7 + 1); DEC-19
-# starts us at a quarter of that linear dimension, 33 (2^5 + 1), which is a
-# world of 528x528 grids against Zangband's 2064x2064. Raise it once travel,
-# caching and generation are proven.
+# both edges to land on a sample point.
+#
+# Zangband's own 129 (2^7 + 1), a world of 2064x2064 grids. DEC-19 started this
+# at a quarter of that linear dimension on the grounds that the wilderness was
+# the project's largest memory risk -- but the measurement in the world
+# requirements, section 6, put the risk in block *contents*, and contents are
+# generated on demand and never stored. The map itself is six bytes a block:
+# 129x129 is 100KB, and generating it is three plasma fractals that do not
+# register on a clock. There was nothing to be bought by being small, and a
+# 528x528 world put the map edge a few minutes' walk from the town.
 
 # Width and height of the world, in blocks. Must be 2^n + 1.
-wild:blocks:33
+wild:blocks:129
 
 # Width and height of one wilderness block, in grids
 wild:block-size:16
 
 # Blocks held in memory at once. Zangband kept 9x9 live around the player.
 wild:cache-blocks:81
+
+# Wilderness monsters (CNT-05).
+#
+# Odds against any one grid of the live surface holding a monster, before the
+# land's own fertility is taken into account: the actual odds are this divided
+# by one plus the block's density, so barren country is close to empty and
+# living country is not. Monsters are bolder after dark.
+#
+# Zangband's figures were 32786 and 20000, and these are half of them -- twice
+# the density -- for a reason that is about our implementation rather than about
+# taste. Zangband rolled monsters into each block as the block came into
+# existence, and a walking player brought new blocks into existence constantly.
+# Our surface is one window that persists for a long walk and is re-rolled only
+# when it scrolls, so at Zangband's odds a player clears the six or so monsters
+# in view and then crosses a dead world until the window moves. Same odds, much
+# deader country. Halving them restores the encounter rate without touching the
+# thing the odds are actually for, which is making fertile land busier than
+# barren land.
+wild:monster-rarity-day:16000
+wild:monster-rarity-night:10000

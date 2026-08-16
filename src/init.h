@@ -29,6 +29,9 @@
  */
 #define LETHALITY_MAX 10000
 
+/** Upper bound for the wild: constants, which are odds and not percentages. */
+#define WILD_VALUE_MAX 1000000
+
 /* Define a level of severity for a non-O critical */
 struct critical_level {
 	struct critical_level *next;
@@ -105,6 +108,8 @@ struct angband_constants
 	uint16_t wild_blocks;		/**< World width and height in blocks; 2^n+1 */
 	uint16_t wild_block_size;	/**< Width and height of a block, in grids */
 	uint16_t wild_cache_blocks;	/**< Blocks held in memory at once */
+	uint32_t wild_mon_rarity_day;	/**< Odds against a grid holding a monster */
+	uint32_t wild_mon_rarity_night;	/**< The same after dark; monsters are bolder */
 
 	/* Zangband melee weapon mechanics, read from constants.txt */
 	uint16_t vorpal_chance;		/**< Vorpal cut is one chance in this */

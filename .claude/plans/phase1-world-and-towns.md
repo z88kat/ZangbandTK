@@ -196,6 +196,23 @@ the structures they write into are ours, per W-1.
 proportions — sea 1/4 of the map, 4 lakes, roads within `ROAD_DIST` 30 — are the reference
 values and belong in `constants.txt` per WLD-02.
 
+**WLD-08a — Danger in the wilderness is a function of law, and towns are placed to
+guarantee a survivable doorstep.** Zangband computed a block's monster depth as
+`MAX(1, (256 - law) / 4 - 5)` ([wild1.c:3418](../../archive/zangband/src/wild1.c#L3418)) and
+required `law > 230` of a town site
+([wild1.c:3328](../../archive/zangband/src/wild1.c#L3328)). The two are one mechanism: since
+law is laid down by a fractal and therefore varies smoothly, a town in lawful country sits
+in a wide patch of lawful country, and the danger gradient falls out rather than being
+imposed.
+
+*Measured.* With the danger formula in and the placement rule left out, a first-level
+character walking three blocks from the gate met monsters of dungeon depth **20 to 53**.
+With town siting scored on the mean danger within six blocks, the same measurement across
+eight worlds gave a town law of **206 to 247** and a mean surrounding danger of **1 to 6**,
+with danger climbing beyond it. A fixed `law > 230` threshold does *not* work here and was
+tried first: requiring a whole thirty-block footprint above a cutoff fails on most worlds,
+and relaxing the cutoff until something passes lands wherever the ladder stops.
+
 **WLD-09 — Wilderness terrain features are expressed in 4.2's `terrain.txt`**, extending it
 where Zangband has features 4.2 lacks. No parallel feature system.
 

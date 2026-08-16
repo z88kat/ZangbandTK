@@ -139,4 +139,9 @@ void wild_town_people(struct wilderness *w, struct player *p, struct chunk *c,
 					  struct loc offset);
 void wild_town_free(void);
 
+int wild_danger(struct wilderness *w, int x, int y);
+int wild_density(struct wilderness *w, int x, int y);
+void wild_populate(struct wilderness *w, struct player *p, struct chunk *c,
+				   struct loc offset);
+
 #endif /* INCLUDED_WILD_H */

@@ -302,6 +302,27 @@ static void wild_town_extent(int *bw, int *bh)
 }
 
 /**
+ * Towns stand where the law reaches.
+ *
+ * Zangband required `law > 230` of a town site
+ * ([wild1.c:3328](../../archive/zangband/src/wild1.c#L3328)), and it is not
+ * decoration: danger in the wilderness comes from law and nothing else (see
+ * wild_danger()), so where a town stands decides how survivable its doorstep
+ * is.  Measured without this, a new character walking three blocks out of town
+ * met monsters of dungeon depth 20 to 53.
+ *
+ * A fixed threshold turned out to be the wrong shape for it.  Requiring the
+ * whole footprint above a cutoff fails on most worlds -- thirty-odd blocks all
+ * lawful at once is a rare thing -- and relaxing the cutoff until something
+ * passes lands wherever the ladder happens to stop, which is not a choice at
+ * all.  Scoring the site on the worst danger within a short walk of it asks the
+ * question directly, always answers, and picks the safest doorstep the world
+ * has to offer rather than the first adequate one.
+ */
+/** How far beyond the town's own land its surroundings are judged, in blocks. */
+#define WILD_TOWN_REACH		3
+
+/**
  * Choose where the starting town stands (WLD-12).
  *
  * Towns go where people would put them: dry, settled, orderly ground, with the
@@ -318,15 +339,22 @@ static void wild_place_town(struct wilderness *w)
 {
 	int size = w->blocks;
 	int centre = size / 2;
-	int best = -1;
-	int bw, bh, x, y;
+	bool found = false;
+	int best = 0;
+	int bw, bh, reach, x, y;
 
 	wild_town_extent(&bw, &bh);
+
+	/* The footprint, plus a short walk beyond its edge. */
+	reach = MAX(bw, bh) / 2 + WILD_TOWN_REACH;
+
+	w->town_block = loc(centre, centre);
 
 	for (y = bh; y < size - bh; y++) {
 		for (x = bw; x < size - bw; x++) {
 			struct wild_block *block = &w->map[y * size + x];
 			int score, dist, fx, fy;
+			int sum = 0, count = 0;
 			bool ok = true;
 
 			switch (block->terrain) {
@@ -336,38 +364,59 @@ static void wild_place_town(struct wilderness *w)
 				default: continue;	/* sea, shore, swamp, mountain */
 			}
 
-			/* The whole footprint has to be land you could build on. */
-			for (fy = y - bh / 2; fy <= y + bh / 2 && ok; fy++)
-				for (fx = x - bw / 2; fx <= x + bw / 2 && ok; fx++) {
+			for (fy = y - reach; fy <= y + reach && ok; fy++)
+				for (fx = x - reach; fx <= x + reach && ok; fx++) {
 					struct wild_block *f = wild_block_at(w, fx, fy);
+					int d;
 
-					if (!f || f->terrain == WILD_TERRAIN_OCEAN ||
-						f->terrain == WILD_TERRAIN_MOUNTAIN)
+					if (!f) continue;
+
+					/* The town's own ground has to be buildable. */
+					if (ABS(fx - x) <= bw / 2 && ABS(fy - y) <= bh / 2 &&
+						(f->terrain == WILD_TERRAIN_OCEAN ||
+						 f->terrain == WILD_TERRAIN_MOUNTAIN)) {
 						ok = false;
+						continue;
+					}
+
+					d = wild_danger(w, fx, fy);
+					sum += d;
+					count++;
 				}
 			if (!ok) continue;
 
-			/* People and order both argue for a town being here. */
-			score += block->pop / 4 + block->law / 8;
+			/*
+			 * The dominant term, by a wide margin.  Everything else here is a
+			 * tie-break between sites that are already safe to walk out of.
+			 *
+			 * The mean and not the worst: over a window this size the worst
+			 * block is near the maximum almost everywhere, so it carries no
+			 * signal.  What distinguishes a good site from a bad one is
+			 * whether the whole neighbourhood is orderly, which is what the
+			 * mean measures.
+			 */
+			if (count)
+				score -= (sum / count) * 8;
+
+			score += block->pop / 4;
 
 			/* All else equal, nearer the middle of the world. */
 			dist = MAX(ABS(x - centre), ABS(y - centre));
 			score -= dist * 2;
 
-			if (score > best) {
+			/*
+			 * Scores are routinely negative -- the danger term is large and
+			 * subtracted -- so this tracks "have we seen any site at all"
+			 * separately rather than using a sentinel value that a real score
+			 * could fail to beat.
+			 */
+			if (!found || score > best) {
+				found = true;
 				best = score;
 				w->town_block = loc(x, y);
 			}
 		}
 	}
-
-	/*
-	 * A world with no habitable land at all is possible in principle -- the
-	 * fractal could come out as ocean and mountain -- so fall back to the
-	 * middle rather than leaving the town at (0, 0), off the map's edge.
-	 */
-	if (best < 0)
-		w->town_block = loc(centre, centre);
 
 	/* Mark the footprint, and give the town a road to sit on. */
 	{
@@ -1002,6 +1051,108 @@ void wild_town_people(struct wilderness *w, struct player *p, struct chunk *c,
 		if (pick_and_place_monster(c, grid, 0, true, true, ORIGIN_DROP))
 			placed++;
 	}
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * What lives out there (CNT-05)
+ * ------------------------------------------------------------------------ */
+
+/**
+ * How dangerous a block is, as an equivalent dungeon depth.
+ *
+ * Zangband's own figure, from set_mon_gen() in
+ * [wild1.c:3418](../../archive/zangband/src/wild1.c#L3418):
+ *
+ *     mon_gen = (256 - law) / 4;  mon_gen = MAX(1, mon_gen - 5);
+ *
+ * Law is the only input, which is the point: the wilderness is dangerous where
+ * nothing polices it.  Since law is laid down by a fractal it varies smoothly,
+ * so danger changes by degrees as you travel rather than by block, and a town
+ * placed in orderly country sits in a wide patch of orderly country.  That is
+ * what keeps the doorstep survivable -- not a safe radius bolted on afterwards.
+ */
+int wild_danger(struct wilderness *w, int x, int y)
+{
+	struct wild_block *block = wild_block_at(w, x, y);
+	int danger;
+
+	if (!block)
+		return 0;
+
+	/* A town is a town: nothing hunts in the market square. */
+	if (block->place)
+		return 0;
+
+	danger = (256 - block->law) / 4;
+
+	return MAX(1, danger - 5);
+}
+
+/**
+ * How much a block holds, as the divisor on the rarity roll.
+ *
+ * Zangband's `mon_prob`, again from
+ * [wild1.c:3422](../../archive/zangband/src/wild1.c#L3422): `pop / 16`.
+ *
+ * Population here is how much life the land supports rather than how many
+ * people live on it, so this says what it looks like it says -- lush country
+ * teems and barren country does not.
+ */
+int wild_density(struct wilderness *w, int x, int y)
+{
+	struct wild_block *block = wild_block_at(w, x, y);
+
+	if (!block || block->place)
+		return 0;
+
+	return block->pop / 16;
+}
+
+/**
+ * Put monsters on the wilderness surface (CNT-05).
+ *
+ * Rolled per grid rather than as a headcount, which is Zangband's method and
+ * has the property that matters: where the monsters are follows from what the
+ * land is, so a walk from farmland into the hills gets steadily worse without
+ * anything having to decide that it should.
+ *
+ * Half of them are asleep, as in
+ * [wild3.c:1450](../../archive/zangband/src/wild3.c#L1450).
+ *
+ * They are re-rolled whenever the window is rebuilt, so the country behind you
+ * is not the country you walked through.  That is the same gap everything else
+ * on the surface has, and WLD-04 closes it for all of them together.
+ */
+void wild_populate(struct wilderness *w, struct player *p, struct chunk *c,
+				   struct loc offset)
+{
+	int size = z_info->wild_block_size;
+	uint32_t rarity = is_daytime() ?
+		z_info->wild_mon_rarity_day : z_info->wild_mon_rarity_night;
+	struct loc grid;
+
+	for (grid.y = 0; grid.y < c->height; grid.y++)
+		for (grid.x = 0; grid.x < c->width; grid.x++) {
+			int bx = (offset.x + grid.x) / size;
+			int by = (offset.y + grid.y) / size;
+			int chance = rarity / (wild_density(w, bx, by) + 1);
+			int depth;
+
+			if (chance <= 0 || randint0(chance) != 0)
+				continue;
+
+			/* Not on the player's doorstep, and not in the sea or the fire. */
+			if (distance(grid, p->grid) < 8) continue;
+			if (!square_isempty(c, grid)) continue;
+			if (square_isdamaging(c, grid)) continue;
+
+			depth = wild_danger(w, bx, by);
+			if (!depth) continue;
+
+			pick_and_place_monster(c, grid, depth, one_in_(2), true,
+								   ORIGIN_DROP);
+		}
 }
 
 /**

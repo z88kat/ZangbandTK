@@ -20,8 +20,9 @@ The world
 ---------
 
 The world is a square grid of **blocks**, each 16 by 16 grids. At the default
-size of 33 blocks across, that is a world of 528 by 528 grids — about a hundred
-and forty times the area of an Angband town.
+size of 129 blocks across — Zangband's own — that is a world of 2064 by 2064
+grids, some two thousand times the area of an Angband town. You will not walk to
+the edge of it by accident.
 
 Every world is generated from a single seed, fixed when your character is
 created. That seed decides everything: where the sea is, where the mountains
@@ -104,6 +105,26 @@ is what the game tracks; where you stand in the window is worked out from it.
 
 The one edge you can reach is the edge of the world itself, which is walled.
 
+What lives there
+----------------
+
+The wilderness is inhabited, and how dangerous it is depends on one thing: how
+far the law reaches. Orderly country is quiet. Lawless country is not, and the
+worst of it is as dangerous as the deep dungeon.
+
+Your town is not placed at random. It stands in the most orderly ground the
+world has to offer, and because order spreads by contiguity, the country around
+it is orderly too. So the first hour is survivable, and the danger climbs as you
+walk away from home rather than waiting on the doorstep. If you want to know
+whether you have gone too far, the answer is usually that you have, and that you
+noticed a little late.
+
+How much lives there is a separate question, and depends on how much the land
+can support: a lush valley teems, a waste is bare. More things are abroad at
+night than by day.
+
+Monsters cannot swim, so deep water is a reliable way of breaking pursuit.
+
 What you know
 -------------
 
@@ -160,9 +181,6 @@ single staircase in it. Several towns of differing size and character — carryi
 different stores, so that a frontier village is not a city with the same eight
 shops — several dungeons with their own depth ranges, and the buildings and
 services that go in them are all milestone M5.
-
-**The wilderness is empty.** Nothing lives out there yet. Monsters in the
-countryside and around towns arrive with M5.
 
 **What you leave behind does not stay.** Drop something on the surface, walk far
 enough that the window is rebuilt, and it is gone. The world regenerates
