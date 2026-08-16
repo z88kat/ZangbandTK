@@ -452,6 +452,20 @@ simply stroll over the wall.
 > had no wall at all. It does. The road out was visible; the wall was off the
 > edge of that view.
 
+### Town gates are locked doors
+
+The gap in the town wall is not an opening but a **door**, and it can be locked:
+attempting to pass one gives *"You failed to unlock the door."*
+
+That is a better mechanic than it first appears. Leaving town becomes a small
+act rather than an automatic one, a character with poor disarming skill can be
+briefly penned in, and the wall means something — a walled town whose gate
+always stands open is scenery.
+
+It also fits 4.2 without any new machinery: doors, locks, unlocking, bashing and
+the skill checks behind them all already exist. WLD-10's town wall needs a
+`FEAT_CLOSED` in it and nothing more.
+
 ### Buildings are entered, and hold named people
 
 The town hall is a building the player enters, presenting a named NPC and a
