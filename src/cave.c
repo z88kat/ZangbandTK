@@ -364,11 +364,21 @@ struct chunk *cave_new(int height, int width) {
 	c->objects = mem_zalloc(OBJECT_LIST_SIZE * sizeof(struct object*));
 	c->obj_max = OBJECT_LIST_SIZE - 1;
 
-	c->monsters = mem_zalloc(z_info->level_monster_max *sizeof(struct monster));
+	/*
+	 * ZangbandZK (WLD-26): size the monster arrays from this chunk's own area
+	 * rather than the global maximum.  Vanilla's density is roughly one monster
+	 * per twelve grids at the dungeon's 13,068, so a dungeon level still caps
+	 * at level_monster_max and is unaffected; a 16x16 wilderness block gets 21
+	 * slots instead of 1024, and 26 KB instead of 437 KB.
+	 */
+	c->mon_size = MIN((int) z_info->level_monster_max,
+					  MAX(MONSTERS_MIN, (c->height * c->width) / 12));
+
+	c->monsters = mem_zalloc(c->mon_size * sizeof(struct monster));
 	c->mon_max = 1;
 	c->mon_current = -1;
 
-	c->monster_groups = mem_zalloc(z_info->level_monster_max *
+	c->monster_groups = mem_zalloc(c->mon_size *
 								   sizeof(struct monster_group*));
 
 	c->turn = turn;

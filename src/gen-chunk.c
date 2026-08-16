@@ -446,12 +446,18 @@ bool chunk_copy(struct chunk *dest, struct player *p, struct chunk *source,
 	}
 
 	/* Find max monster group id */
-	for (i = 1; i < z_info->level_monster_max; i++) {
+	for (i = 1; i < dest->mon_size; i++) {
 		if (dest->monster_groups[i]) max_group_id = i;
 	}
 
-	/* Copy monster groups */
-	for (i = 1; i < z_info->level_monster_max - max_group_id; i++) {
+	/*
+	 * Copy monster groups.  Bounded by the source's capacity for the read and
+	 * the destination's for the write: since ZangbandZK sizes these arrays per
+	 * chunk (WLD-26), the two need not be equal and the destination may be the
+	 * smaller.
+	 */
+	for (i = 1; i < source->mon_size &&
+			i + max_group_id < dest->mon_size; i++) {
 		struct monster_group *group = source->monster_groups[i];
 		struct mon_group_list_entry *entry;
 

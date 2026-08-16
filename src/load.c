@@ -1440,7 +1440,13 @@ static int rd_monsters_aux(struct chunk *c)
 
 	/* Read the monster count */
 	rd_u16b(&limit);
-	if (limit > z_info->level_monster_max) {
+	/*
+	 * Validate against this chunk's own capacity, not the global maximum.
+	 * ZangbandZK sizes the monster array per chunk (WLD-26), so the global is
+	 * no longer a safe bound on what will fit here — a savefile claiming more
+	 * monsters than the chunk can hold would overflow place_monster().
+	 */
+	if (limit > c->mon_size) {
 		note(format("Too many (%d) monster entries!", limit));
 		return (-1);
 	}

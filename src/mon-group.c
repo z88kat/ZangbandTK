@@ -210,7 +210,7 @@ int monster_group_index_new(struct chunk *c)
 {
 	int index;
 
-	for (index = 1; index < z_info->level_monster_max; index++) {
+	for (index = 1; index < c->mon_size; index++) {
 		if (!(c->monster_groups[index])) return index;
 	}
 
@@ -493,7 +493,8 @@ void monster_groups_verify(struct chunk *c)
 {
 	int i;
 
-	for (i = 0; i < z_info->level_monster_max; i++) {
+	/* Bounded by this chunk's capacity, not the global (ZangbandZK: WLD-26) */
+	for (i = 0; i < c->mon_size; i++) {
 		if (c->monster_groups[i]) {
 			struct monster_group *group = c->monster_groups[i];
 			struct mon_group_list_entry *entry = group->member_list;

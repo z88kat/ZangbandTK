@@ -608,7 +608,7 @@ void wipe_mon_list(struct chunk *c, struct player *p)
 	}
 
 	/* Delete all the monster groups */
-	for (i = 1; i < z_info->level_monster_max; i++) {
+	for (i = 1; i < c->mon_size; i++) {
 		if (c->monster_groups[i]) {
 			monster_group_free(c, c->monster_groups[i]);
 		}
@@ -648,7 +648,7 @@ int16_t mon_pop(struct chunk *c)
 	int m_idx;
 
 	/* Normal allocation */
-	if (cave_monster_max(c) < z_info->level_monster_max) {
+	if (cave_monster_max(c) < c->mon_size) {
 		/* Get the next hole */
 		m_idx = cave_monster_max(c);
 

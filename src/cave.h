@@ -158,6 +158,12 @@ struct grid_data {
 	bool hallucinate;
 };
 
+/**
+ * Smallest monster capacity any chunk receives, however small its area
+ * (ZangbandZK: WLD-26).
+ */
+#define MONSTERS_MIN 16
+
 struct square {
 	uint8_t feat;
 	bitflag *info;
@@ -203,6 +209,20 @@ struct chunk {
 	uint16_t obj_max;
 
 	struct monster *monsters;
+	/**
+	 * Capacity of the monsters and monster_groups arrays (ZangbandZK: WLD-26).
+	 *
+	 * Vanilla allocates both at z_info->level_monster_max regardless of the
+	 * chunk's size, which costs 424 KB per chunk whatever its area.  That is
+	 * invisible when only one level is live, but a 16x16 wilderness block is
+	 * 11.8 KB of grid data, so the fixed array would be 97% of it — and a block
+	 * with 256 grids cannot hold 1024 monsters in any case.
+	 *
+	 * Sized from the chunk's own area and capped at level_monster_max, so
+	 * dungeon levels are unchanged.  Anything bounding a loop over a specific
+	 * chunk's monsters must use this rather than the global.
+	 */
+	uint16_t mon_size;
 	uint16_t mon_max;
 	uint16_t mon_cnt;
 	int mon_current;

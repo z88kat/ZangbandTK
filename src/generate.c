@@ -1216,7 +1216,7 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 		}
 
 		/* Regenerate levels that overflow their maxima */
-		if (cave_monster_max(chunk) >= z_info->level_monster_max)
+		if (cave_monster_max(chunk) >= chunk->mon_size)
 			error = "too many monsters";
 
 		if (error) {

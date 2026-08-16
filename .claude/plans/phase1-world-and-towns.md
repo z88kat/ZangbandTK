@@ -362,6 +362,69 @@ distinct from the local view.
    Resolved from [bldg.c](../../archive/zangband/src/bldg.c) rather than `docs/town.txt` —
    the source showed only eight services were ever implemented, which the manual's shop
    list does not reveal.
-4. **Does `struct chunk` need a lightweight wilderness variant?** Risk §5.2. Answerable by
-   measuring a chunk's memory footprint against the target live-block count — worth doing
-   early in Phase 2, since it shapes W-1.
+4. ~~Does `struct chunk` need a lightweight wilderness variant?~~ **Measured. No — but one
+   allocation must become per-chunk.** See §6.
+
+---
+
+## 6. Measured: the chunk memory footprint
+
+M4 pre-work, answering open question 4. Measured on the real structures rather
+than estimated, with a probe compiled against the game's own headers.
+
+| | Bytes |
+|---|---:|
+| `struct chunk` itself | 144 |
+| `struct square` | 40 |
+| square info bitflags | 3 |
+| noise + scent heatmap, per grid | 4 |
+| **Total per grid** | **47** |
+| `struct monster` | 424 |
+
+Per-grid cost is modest. A 16 × 16 wilderness block needs **11.8 KB** of grid
+data and **1.6 KB** of fixed overhead. Ninety live blocks would be around 1.2 MB
+— entirely acceptable.
+
+### The problem is one fixed allocation
+
+`cave_new()` allocates the monster array at `z_info->level_monster_max`
+(1024) regardless of the chunk's size:
+
+```c
+c->monsters = mem_zalloc(z_info->level_monster_max * sizeof(struct monster));
+```
+
+That is **424 KB per chunk**, fixed. For a 16 × 16 wilderness block:
+
+| | 16 × 16 block |
+|---|---:|
+| Grid data | 11.8 KB |
+| Fixed overhead | 1.6 KB |
+| **Monster array** | **424.0 KB** |
+| **Total** | **437.4 KB** |
+
+**97% of a wilderness block would be an empty monster array sized for a full
+dungeon level** — one that cannot possibly be filled, since the block has only
+256 grids. At 81 live blocks (Zangband's 9 × 9 view) that is **35 MB**, of which
+34 MB is empty.
+
+### Decision: keep `struct chunk`, make the monster array per-chunk
+
+W-1 stands — no lightweight variant is needed, and the divergence one would
+cause is not worth it. What is needed is for the monster array to be sized from
+the chunk's own area, capped at `level_monster_max` so dungeon levels are
+unaffected.
+
+**This is wider than it looks.** `z_info->level_monster_max` is used as the
+array bound in eight places outside `cave_new` — `gen-chunk.c`, `generate.c`,
+`game-world.c`, `mon-group.c`, `load.c` — so shrinking the allocation alone
+would let existing loops run off the end. The change is:
+
+1. Add a capacity field to `struct chunk`.
+2. Size it from the chunk's area at allocation, capped at `level_monster_max`.
+3. Replace the eight external uses of the global with the per-chunk value.
+
+**WLD-26 — The monster array is sized per chunk, not per game.** A wilderness
+block must not carry a dungeon level's monster capacity. Every bound that
+currently reads `z_info->level_monster_max` against a specific chunk must read
+that chunk's own capacity instead.
