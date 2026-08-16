@@ -1045,6 +1045,17 @@ void wild_harvest(struct wilderness *w, struct player *p, struct chunk *c,
 		if (!mon->race) continue;
 		if (!rf_has(mon->race->flags, RF_UNIQUE)) continue;
 
+		/*
+		 * Only ones the player actually hurt.  An untouched unique is
+		 * indistinguishable from a freshly rolled one, so remembering it buys
+		 * nothing -- and it costs a good deal, because a remembered unique is
+		 * put back near where it was left, and where it was left is next to
+		 * the player if it happened to be following them.  Farmer Maggot
+		 * therefore reappeared at the player's elbow every time the window
+		 * scrolled, which is not what WLD-04b was for.
+		 */
+		if (mon->hp >= mon->maxhp) continue;
+
 		seen = mem_zalloc(sizeof *seen);
 		seen->race = mon->race;
 		seen->grid = loc(offset.x + mon->grid.x, offset.y + mon->grid.y);
@@ -1243,6 +1254,19 @@ int wild_density(struct wilderness *w, int x, int y)
 }
 
 /**
+ * Keep the townspeople in the town.
+ *
+ * Angband's depth-zero monsters are the town's own: beggars, drunks, urchins,
+ * scruffy dogs, and Farmer Maggot.  get_mon_num() will happily place a monster
+ * shallower than the level it is asked for, so without this the open country
+ * fills up with people who have no business being ten miles from anywhere.
+ */
+static bool wild_monster_ok(struct monster_race *race)
+{
+	return race->level > 0;
+}
+
+/**
  * Put monsters on the wilderness surface (CNT-05).
  *
  * Rolled per grid rather than as a headcount, which is Zangband's method and
@@ -1263,13 +1287,17 @@ void wild_populate(struct wilderness *w, struct player *p, struct chunk *c,
 	int size = z_info->wild_block_size;
 	uint32_t rarity = is_daytime() ?
 		z_info->wild_mon_rarity_day : z_info->wild_mon_rarity_night;
+	struct monster_group_info info = { 0, 0 };
 	struct loc grid;
+
+	get_mon_num_prep(wild_monster_ok);
 
 	for (grid.y = 0; grid.y < c->height; grid.y++)
 		for (grid.x = 0; grid.x < c->width; grid.x++) {
 			int bx = (offset.x + grid.x) / size;
 			int by = (offset.y + grid.y) / size;
 			int chance = rarity / (wild_density(w, bx, by) + 1);
+			struct monster_race *race;
 			int depth;
 
 			if (chance <= 0 || randint0(chance) != 0)
@@ -1283,9 +1311,19 @@ void wild_populate(struct wilderness *w, struct player *p, struct chunk *c,
 			depth = wild_danger(w, bx, by);
 			if (!depth) continue;
 
-			pick_and_place_monster(c, grid, depth, one_in_(2), true,
-								   ORIGIN_DROP);
+			race = get_mon_num(depth, depth);
+			if (!race) continue;
+
+			place_new_monster(c, grid, race, one_in_(2), true, info,
+							  ORIGIN_DROP);
 		}
+
+	/*
+	 * Put the allocation table back.  It is global state, and the very next
+	 * thing to run is wild_town_people(), which wants precisely the monsters
+	 * this filter excludes.
+	 */
+	get_mon_num_prep(NULL);
 }
 
 /**
@@ -1396,24 +1434,25 @@ struct chunk *wild_surface(struct wilderness *w, struct player *p,
 	}
 
 	/*
-	 * The world has an edge, and Angband levels expect a permanent boundary --
-	 * a great deal of code steps one grid outwards without checking.  Where the
-	 * window sits against the edge of the world, give it one, drawn as open sea
-	 * so that it reads as the world running out rather than as a wall in the
-	 * middle of the ocean.  Everywhere else the window scrolls before the
-	 * player can reach its border, so the border is never stood next to.
+	 * Every Angband level has an impassable boundary, and a great deal of code
+	 * relies on it without saying so: monster group placement, object drops and
+	 * others step outwards from a grid on the assumption that nothing can ever
+	 * be standing on the outermost ring.  The surface has to honour that, or it
+	 * gets walked off the edge of -- which it was, intermittently, by a monster
+	 * placed on the last column bringing its friends with it.
+	 *
+	 * So the ring is always there.  It is drawn as open sea because at the edge
+	 * of the world that is exactly what it is, and everywhere else the window
+	 * scrolls while the player is still further from it than they can see, so
+	 * it is never looked at.
 	 */
 	for (grid.x = 0; grid.x < span; grid.x++) {
-		if (oy == 0)
-			square_set_feat(c, loc(grid.x, 0), FEAT_WORLD_EDGE);
-		if (oy + span >= world_max)
-			square_set_feat(c, loc(grid.x, span - 1), FEAT_WORLD_EDGE);
+		square_set_feat(c, loc(grid.x, 0), FEAT_WORLD_EDGE);
+		square_set_feat(c, loc(grid.x, span - 1), FEAT_WORLD_EDGE);
 	}
 	for (grid.y = 0; grid.y < span; grid.y++) {
-		if (ox == 0)
-			square_set_feat(c, loc(0, grid.y), FEAT_WORLD_EDGE);
-		if (ox + span >= world_max)
-			square_set_feat(c, loc(span - 1, grid.y), FEAT_WORLD_EDGE);
+		square_set_feat(c, loc(0, grid.y), FEAT_WORLD_EDGE);
+		square_set_feat(c, loc(span - 1, grid.y), FEAT_WORLD_EDGE);
 	}
 
 	if (offset) {
@@ -1434,22 +1473,38 @@ struct chunk *wild_surface(struct wilderness *w, struct player *p,
 }
 
 /**
+ * How close the player may come to the window's border before it is rebuilt.
+ *
+ * Further than they can see, and by a margin.  The border carries the
+ * impassable ring every Angband level needs, and away from the edge of the
+ * world that ring is a fiction -- there is more country beyond it.  The player
+ * must never be in a position to look at it, so the trigger has to exceed
+ * max-sight rather than merely being "near the edge".
+ */
+static int wild_recentre_margin(void)
+{
+	return MAX(2 * z_info->wild_block_size, z_info->max_sight + 8);
+}
+
+/**
  * Should the live surface be rebuilt around the player?
  *
  * The window is nine blocks across, so the player can walk a long way before
- * running out of it.  Rebuilding is not free — it regenerates every block in
- * the window — so it happens when the player comes within a block's width of an
- * edge, not on every step across a block boundary.
+ * running out of it.  Rebuilding is not free -- it regenerates every block in
+ * the window -- so it happens on approaching the border, not on every step
+ * across a block boundary.
  *
  * Returns false when the window is already against the world's edge on that
- * side: there is nothing further to scroll to, and rebuilding would produce an
- * identical surface.
+ * side: there is nothing further to scroll to, rebuilding would produce an
+ * identical surface, and the ring there is the real edge of the world and is
+ * meant to be seen.
  */
 bool wild_needs_recentre(struct player *p)
 {
 	int size = z_info->wild_block_size;
 	int span = wild_view_blocks() * size;
 	int world_max = wild ? wild->blocks * size : 0;
+	int margin = wild_recentre_margin();
 	int lx = p->wild_grid.x - p->wild_offset.x;
 	int ly = p->wild_grid.y - p->wild_offset.y;
 
@@ -1457,15 +1512,15 @@ bool wild_needs_recentre(struct player *p)
 		return false;
 
 	/* Near the west or east edge, with world left in that direction. */
-	if (lx < size && p->wild_offset.x > 0)
+	if (lx < margin && p->wild_offset.x > 0)
 		return true;
-	if (lx >= span - size && p->wild_offset.x + span < world_max)
+	if (lx >= span - margin && p->wild_offset.x + span < world_max)
 		return true;
 
 	/* Near the north or south edge. */
-	if (ly < size && p->wild_offset.y > 0)
+	if (ly < margin && p->wild_offset.y > 0)
 		return true;
-	if (ly >= span - size && p->wild_offset.y + span < world_max)
+	if (ly >= span - margin && p->wild_offset.y + span < world_max)
 		return true;
 
 	return false;

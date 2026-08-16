@@ -126,6 +126,10 @@ How much lives there is a separate question, and depends on how much the land
 can support: a lush valley teems, a waste is bare. More things are abroad at
 night than by day.
 
+The town's own people stay in the town. Beggars, drunks, urchins and the like
+belong to the streets they were born on, and you will not meet them ten miles
+from anywhere.
+
 Monsters cannot swim, so deep water is a reliable way of breaking pursuit.
 
 What you leave behind
@@ -153,11 +157,16 @@ repopulated rather than resumed — which amounts to the same thing as the ones
 you left having recovered and moved on, because that is what they would have
 done.
 
-Named monsters are remembered. Bring a unique to within an inch of its life,
-walk away, and it is still out there: the same one, still hurt, though it will
-have healed by the time you find it again and it will not be where you left it.
-It will also be awake and no longer afraid, so the second meeting is generally
-worse than the first.
+Named monsters are remembered — if you hurt them. Bring a unique to within an
+inch of its life, walk away, and it is still out there: the same one, still
+hurt, though it will have healed by the time you find it again and it will not
+be where you left it. It will also be awake and no longer afraid, so the second
+meeting is generally worse than the first.
+
+One you never touched is not remembered, and does not need to be. It is
+indistinguishable from one the country rolls up fresh, and remembering it would
+only pin it to wherever it last stood — which, if it had been following you, is
+your elbow.
 
 One consequence worth knowing. While you are underground, nothing is holding
 that unique's place in the world, so it is free to turn up in the dungeon

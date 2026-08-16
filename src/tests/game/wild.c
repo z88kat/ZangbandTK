@@ -133,35 +133,36 @@ static int test_town_can_be_walked_out_of(void *state) {
 }
 
 /*
- * The surface is bounded, but only at the world's edge, and it is bounded by
- * sea.
+ * The surface always carries the impassable ring every Angband level has.
  *
- * A great deal of level code steps one grid outwards without checking, so the
- * edge of the world needs something impassable.  Everywhere else the window
- * scrolls before the player can reach its border, and a barrier there would be
- * a barrier across open country.
+ * A great deal of code relies on that ring without saying so -- monster group
+ * placement, object drops and others step outwards from a grid on the
+ * assumption that nothing is ever standing on the outermost one. The surface
+ * broke that assumption when the ring was drawn only at the edge of the world,
+ * and walked off the chunk about one run in thirty.
  *
- * The world ends in ocean rather than in masonry, so what the boundary is made
- * of is checked too: a wall at the end of the world would be a poor answer to a
- * question the sea answers nicely.
+ * Away from the world's edge the ring is a fiction, so the window must scroll
+ * while the player is still further from it than they can see. That margin is
+ * checked here too, since the ring being invisible is the whole reason it is
+ * allowed to be a fiction.
  */
-static int test_boundary_only_at_the_world_edge(void *state) {
+static int test_the_surface_is_bounded(void *state) {
 	int span = cave->width;
-	int world = wild_world_grids();
 	int i, edges = 0;
 
-	for (i = 0; i < span; i++)
-		if (square_feat(cave, loc(i, 0))->fidx == FEAT_WORLD_EDGE)
-			edges++;
-
-	if (player->wild_offset.y == 0) {
-		eq(edges, span);
-		require(!square_ispassable(cave, loc(0, 0)));
-	} else {
-		require(edges < span);
+	for (i = 0; i < span; i++) {
+		if (square_feat(cave, loc(i, 0))->fidx == FEAT_WORLD_EDGE) edges++;
+		require(!square_ispassable(cave, loc(i, 0)));
+		require(!square_ispassable(cave, loc(i, span - 1)));
+		require(!square_ispassable(cave, loc(0, i)));
+		require(!square_ispassable(cave, loc(span - 1, i)));
 	}
 
-	require(world > span);
+	/* And it is sea, not masonry: the world ends in water. */
+	eq(edges, span);
+
+	/* The player is rebuilt out of sight of it. */
+	require(wild_world_grids() > span);
 
 	ok;
 }
@@ -470,6 +471,87 @@ static int test_a_wounded_unique_is_remembered(void *state) {
 }
 
 /*
+ * An untouched unique is not remembered, and the townspeople stay in town.
+ *
+ * Both of these presented as the same complaint in play: Farmer Maggot
+ * everywhere, all the time, impossible to shake off. He is a depth-zero monster
+ * -- one of the town's own -- and get_mon_num() will place a monster shallower
+ * than the level it is asked for, so he was a legitimate pick for open country.
+ * Remembering him then pinned him in place, since a remembered unique is put
+ * back near where it was left and he had been following the player.
+ */
+static int test_the_townspeople_stay_in_town(void *state) {
+	struct loc org = loc(wild_town_origin(wild).x - player->wild_offset.x,
+						 wild_town_origin(wild).y - player->wild_offset.y);
+	struct loc grid;
+	int strays = 0, seen = 0;
+
+	/*
+	 * Judged outside the town and its outskirts rather than outside the town
+	 * rectangle. Residents are placed with their groups, as they are in
+	 * vanilla, and a group placed near the edge can scatter a little way past
+	 * it -- which is a townsperson on the edge of town, not a townsperson in
+	 * the wilds. The margin still leaves the great majority of the surface
+	 * under test.
+	 */
+	for (grid.y = 0; grid.y < cave->height; grid.y++)
+		for (grid.x = 0; grid.x < cave->width; grid.x++) {
+			struct monster *mon;
+			int margin = 12;
+
+			if (grid.x >= org.x - margin &&
+				grid.x < org.x + z_info->town_wid + margin &&
+				grid.y >= org.y - margin &&
+				grid.y < org.y + z_info->town_hgt + margin)
+				continue;
+
+			mon = square_monster(cave, grid);
+			if (!mon || !mon->race) continue;
+
+			seen++;
+			if (mon->race->level == 0) strays++;
+		}
+
+	require(seen > 0);
+	eq(strays, 0);
+
+	ok;
+}
+
+/* An unwounded unique is left to the country to re-roll, not pinned in place. */
+static int test_an_untouched_unique_is_not_remembered(void *state) {
+	struct monster_race *race = NULL;
+	struct monster_group_info info = { 0, 0 };
+	struct loc grid = player->grid;
+	int before, i;
+
+	for (i = 1; i < z_info->r_max; i++) {
+		if (!r_info[i].name) continue;
+		if (!rf_has(r_info[i].flags, RF_UNIQUE)) continue;
+		if (r_info[i].cur_num >= r_info[i].max_num) continue;
+		race = &r_info[i];
+		break;
+	}
+	require(race != NULL);
+
+	do {
+		grid.x++;
+		require(grid.x < cave->width - 1);
+	} while (!square_isempty(cave, grid) || square_isdamaging(cave, grid));
+
+	require(place_new_monster(cave, grid, race, false, false, info,
+							  ORIGIN_DROP));
+
+	before = wild_unique_count(wild);
+	wild_harvest(wild, player, cave, player->wild_offset);
+	eq(wild_unique_count(wild), before);
+
+	delete_monster(cave, grid);
+
+	ok;
+}
+
+/*
  * The world survives a save and a load.
  *
  * The world map is not written to the savefile -- it regenerates from the seed
@@ -527,7 +609,7 @@ struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
 	{ "world-position-matches-the-window", test_world_position_matches_the_window },
 	{ "town-can-be-walked-out-of", test_town_can_be_walked_out_of },
-	{ "boundary-only-at-the-world-edge", test_boundary_only_at_the_world_edge },
+	{ "the-surface-is-bounded", test_the_surface_is_bounded },
 	{ "only-the-town-is-known", test_only_the_town_is_known },
 	{ "the-town-has-people", test_the_town_has_people },
 	{ "the-doorstep-is-survivable", test_the_doorstep_is_survivable },
@@ -535,6 +617,8 @@ struct test tests[] = {
 	{ "what-you-drop-is-remembered", test_what_you_drop_is_remembered },
 	{ "what-you-drop-is-forgotten", test_what_you_drop_is_forgotten },
 	{ "a-wounded-unique-is-remembered", test_a_wounded_unique_is_remembered },
+	{ "the-townspeople-stay-in-town", test_the_townspeople_stay_in_town },
+	{ "an-untouched-unique-is-not-remembered", test_an_untouched_unique_is_not_remembered },
 	{ "world-position-survives-a-save", test_world_position_survives_a_save },
 	{ NULL, NULL }
 };
