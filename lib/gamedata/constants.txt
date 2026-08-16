@@ -506,3 +506,13 @@ wild:cache-blocks:81
 # barren land.
 wild:monster-rarity-day:16000
 wild:monster-rarity-night:10000
+
+# How long something you drop stays where you dropped it (WLD-04a), in days,
+# before the odds are even that somebody has walked off with it.
+#
+# This is the figure for the emptiest country there is. It falls with how many
+# people the land supports, so a sword left outside a city gate is gone by
+# morning and one dropped in a waste may lie there a good while. A half-life
+# rather than a deadline: most things go early and the occasional one survives
+# a remarkably long time, which is how lost property behaves.
+wild:relic-half-life:3

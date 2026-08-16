@@ -31,6 +31,7 @@
 #include "generate.h"
 #include "init.h"
 #include "mon-make.h"
+#include "obj-pile.h"
 #include "player.h"
 #include "wild.h"
 
@@ -286,6 +287,15 @@ void wild_free(struct wilderness *w)
 {
 	if (!w)
 		return;
+
+	while (w->relics) {
+		struct wild_relic *relic = w->relics;
+
+		w->relics = relic->next;
+		object_free(relic->obj);
+		mem_free(relic);
+	}
+
 	mem_free(w->map);
 	mem_free(w);
 }
@@ -890,6 +900,176 @@ void wild_town_people(struct wilderness *w, struct player *p, struct chunk *c,
 		if (pick_and_place_monster(c, grid, 0, true, true, ORIGIN_DROP))
 			placed++;
 	}
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * What the player leaves behind (WLD-04)
+ * ------------------------------------------------------------------------ */
+
+/**
+ * How long a thing lies where it was dropped, before the odds are even that
+ * somebody has walked off with it.
+ *
+ * Scaled by how many people the land supports, which is the same number terrain
+ * and monster density come from: a sword left outside a city gate is gone by
+ * morning, and one dropped in a waste may lie there a long while.
+ */
+static int32_t wild_relic_half_life(struct wilderness *w, struct loc grid)
+{
+	int size = z_info->wild_block_size;
+	struct wild_block *block = wild_block_at(w, grid.x / size, grid.y / size);
+	int32_t base = (int32_t) z_info->relic_half_life * 10L * z_info->day_length;
+	int pop = block ? block->pop : 0;
+
+	/* Empty country keeps its full patience; a city has almost none. */
+	return MAX(1, base / (1 + pop / 24));
+}
+
+/**
+ * Is a thing left at this spot still there, after this long?
+ *
+ * A half-life rather than a deadline: each half-life that passes halves the
+ * odds, so most things go early and the occasional one survives a remarkably
+ * long time, which is how lost property actually behaves.
+ */
+static bool wild_relic_survives(struct wilderness *w, struct loc grid,
+								int32_t elapsed)
+{
+	int32_t half = wild_relic_half_life(w, grid);
+	int chance = 1000;
+
+	if (elapsed <= 0)
+		return true;
+
+	while (elapsed >= half && chance > 0) {
+		chance /= 2;
+		elapsed -= half;
+	}
+
+	/* Taper across the part-completed half-life rather than stepping. */
+	chance -= (int) ((int64_t) (chance / 2) * elapsed / half);
+
+	return randint0(1000) < chance;
+}
+
+/**
+ * Take what is lying on the surface into the world's memory (WLD-04).
+ *
+ * Called before the surface is torn down, which happens whenever the window
+ * scrolls or the player goes below.  Objects are copied out rather than moved:
+ * a chunk's objects are addressed by index within it and carry a companion in
+ * the player's knowledge chunk, and both of those are about to be freed.
+ */
+void wild_harvest(struct wilderness *w, struct player *p, struct chunk *c,
+				  struct loc offset)
+{
+	struct loc grid;
+
+	if (!w || !c)
+		return;
+
+	for (grid.y = 0; grid.y < c->height; grid.y++) {
+		struct object *obj;
+
+		for (grid.x = 0; grid.x < c->width; grid.x++) {
+			/* What the player is standing on comes with them. */
+			if (loc_eq(grid, p->grid)) continue;
+
+			obj = square_object(c, grid);
+			while (obj) {
+				struct object *next = obj->next;
+				struct wild_relic *relic;
+				struct object *keep = object_new();
+
+				object_copy(keep, obj);
+
+				/*
+				 * The copy belongs to nothing: its index was the old chunk's,
+				 * and what the player knew of it lived in a chunk that is
+				 * about to go with it.
+				 */
+				keep->oidx = 0;
+				keep->known = NULL;
+				keep->grid = loc(0, 0);
+				keep->held_m_idx = 0;
+				keep->mimicking_m_idx = 0;
+
+				relic = mem_zalloc(sizeof *relic);
+				relic->grid = loc(offset.x + grid.x, offset.y + grid.y);
+				relic->turn = turn;
+				relic->obj = keep;
+				relic->next = w->relics;
+				w->relics = relic;
+
+				/*
+				 * Take the original off the surface as well as copying it.
+				 * In ordinary use the surface is freed a moment later and this
+				 * makes no difference; leaving it would mean the thing existed
+				 * twice for that moment, which is the sort of detail that
+				 * turns into a duplication bug the first time something else
+				 * runs in between.
+				 */
+				square_delete_object(c, grid, obj, false, false);
+
+				obj = next;
+			}
+		}
+	}
+}
+
+/**
+ * Put back what is still there, and forget what is not (WLD-04a).
+ *
+ * Called after the surface is built.  Anything outside the window stays in the
+ * world's memory untouched -- it is only judged when the player is in a
+ * position to look at it, which keeps the reckoning honest and costs nothing
+ * while they are elsewhere.
+ */
+void wild_restore(struct wilderness *w, struct player *p, struct chunk *c,
+				  struct loc offset)
+{
+	struct wild_relic **link;
+
+	if (!w || !c)
+		return;
+
+	link = &w->relics;
+	while (*link) {
+		struct wild_relic *relic = *link;
+		struct loc grid = loc(relic->grid.x - offset.x,
+							  relic->grid.y - offset.y);
+		bool dummy = true;
+
+		/* Not on the live surface: leave it in the world's memory. */
+		if (!square_in_bounds_fully(c, grid)) {
+			link = &relic->next;
+			continue;
+		}
+
+		*link = relic->next;
+
+		if (wild_relic_survives(w, relic->grid, turn - relic->turn) &&
+			square_isobjectholding(c, grid) &&
+			floor_carry(c, grid, relic->obj, &dummy)) {
+			list_object(c, relic->obj);
+		} else {
+			object_free(relic->obj);
+		}
+
+		mem_free(relic);
+	}
+}
+
+int wild_relic_count(const struct wilderness *w)
+{
+	struct wild_relic *relic;
+	int count = 0;
+
+	for (relic = w ? w->relics : NULL; relic; relic = relic->next)
+		count++;
+
+	return count;
 }
 
 /**

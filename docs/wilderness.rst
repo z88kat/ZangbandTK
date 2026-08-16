@@ -128,6 +128,23 @@ night than by day.
 
 Monsters cannot swim, so deep water is a reliable way of breaking pursuit.
 
+What you leave behind
+---------------------
+
+Drop something in the wilderness and it stays where you dropped it — for a
+while. The longer you leave it, the likelier it is that somebody has come along
+and found it, and how long that takes depends on where you left it. A sword
+dropped outside a busy town is gone by morning. One left in a waste may lie
+there a good while.
+
+It is a half-life rather than a deadline, so most things go early and the
+occasional one survives a remarkably long time. If you leave something valuable
+in the wilderness and mean to come back for it, come back soon, and remember
+that "soon" means something different in settled country.
+
+What you are carrying is yours, of course, and so is anything you are standing
+on when the world scrolls beneath you.
+
 What you know
 -------------
 
@@ -185,12 +202,11 @@ different stores, so that a frontier village is not a city with the same eight
 shops — several dungeons with their own depth ranges, and the buildings and
 services that go in them are all milestone M5.
 
-**What you leave behind does not stay.** Drop something on the surface, walk far
-enough that the window is rebuilt, and it is gone. The world regenerates
-faithfully — the same terrain, the same town, the same layout — but changes made
-to it are not yet recorded. This is the requirement the world design turns on
-(only blocks you have changed need storing) and it is the largest piece of M4
-still open.
+**Monsters you leave are not the monsters you find.** Wound something, walk away
+far enough that the window is rebuilt, and the country is repopulated rather
+than resumed — which reads as the thing having recovered and wandered off, and
+mostly it should. What it should *not* do is apply to a named monster you nearly
+killed. Uniques are meant to be remembered and are not yet.
 
 **No overhead map.** There is no way to see the world except by walking it. The
 map display is M5.

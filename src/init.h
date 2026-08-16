@@ -110,6 +110,7 @@ struct angband_constants
 	uint16_t wild_cache_blocks;	/**< Blocks held in memory at once */
 	uint32_t wild_mon_rarity_day;	/**< Odds against a grid holding a monster */
 	uint32_t wild_mon_rarity_night;	/**< The same after dark; monsters are bolder */
+	uint16_t relic_half_life;	/**< Days a dropped thing lies in empty country */
 
 	/* Zangband melee weapon mechanics, read from constants.txt */
 	uint16_t vorpal_chance;		/**< Vorpal cut is one chance in this */

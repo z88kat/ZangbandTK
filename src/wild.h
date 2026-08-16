@@ -34,6 +34,7 @@
 #include "z-type.h"
 
 struct chunk;
+struct object;
 struct player;
 
 /**
@@ -85,6 +86,20 @@ struct wild_block {
 };
 
 /**
+ * Something the player left lying in the world (WLD-04).
+ *
+ * Held in world coordinates and detached from any chunk, since the surface it
+ * was dropped on is torn down and rebuilt as the player walks.  The turn it was
+ * left is what decides whether it is still there when they come back.
+ */
+struct wild_relic {
+	struct loc grid;		/**< Where in the world it lies */
+	int32_t turn;			/**< The turn it was left there */
+	struct object *obj;		/**< The thing itself */
+	struct wild_relic *next;
+};
+
+/**
  * The world map.
  */
 struct wilderness {
@@ -97,6 +112,9 @@ struct wilderness {
 	 * WLD-10's several towns are M5's business, and will want a list here.
 	 */
 	struct loc town_block;
+
+	/** What the player has left lying about, most recent first (WLD-04). */
+	struct wild_relic *relics;
 };
 
 extern struct wilderness *wild;
@@ -123,6 +141,12 @@ struct chunk *wild_surface(struct wilderness *w, struct player *p,
 bool wild_is_surface(const struct chunk *c);
 bool wild_needs_recentre(struct player *p);
 void wild_track_move(struct player *p, struct loc grid);
+
+void wild_harvest(struct wilderness *w, struct player *p, struct chunk *c,
+				  struct loc offset);
+void wild_restore(struct wilderness *w, struct player *p, struct chunk *c,
+				  struct loc offset);
+int wild_relic_count(const struct wilderness *w);
 
 struct loc wild_town_origin(const struct wilderness *w);
 struct loc wild_town_start(struct wilderness *w, struct player *p);

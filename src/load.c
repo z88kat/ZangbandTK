@@ -1523,7 +1523,8 @@ static int rd_traps_aux(struct chunk *c)
 int rd_wilderness(void)
 {
 	uint8_t in_wild;
-	uint16_t x, y, ox, oy;
+	uint16_t x, y, ox, oy, count;
+	int i;
 
 	rd_byte(&in_wild);
 	rd_u16b(&x);
@@ -1535,8 +1536,40 @@ int rd_wilderness(void)
 	player->wild_grid = loc(x, y);
 	player->wild_offset = loc(ox, oy);
 
-	if (player->in_wild)
-		wild_ensure(seed_flavor);
+	/*
+	 * The world has to exist before anything can be put back into it, and it
+	 * regenerates from the seed rather than being read (WLD-03).
+	 */
+	wild_ensure(seed_flavor);
+
+	rd_u16b(&count);
+	for (i = 0; i < count; i++) {
+		struct wild_relic *relic;
+		struct object *obj;
+		uint16_t rx, ry;
+		int32_t left;
+
+		rd_u16b(&rx);
+		rd_u16b(&ry);
+		rd_s32b(&left);
+
+		obj = rd_item();
+		if (!obj) {
+			note("Error reading a wilderness object");
+			return -1;
+		}
+
+		/* It belongs to no chunk, and the player knows of it only by memory. */
+		obj->oidx = 0;
+		obj->known = NULL;
+
+		relic = mem_zalloc(sizeof *relic);
+		relic->grid = loc(rx, ry);
+		relic->turn = left;
+		relic->obj = obj;
+		relic->next = wild->relics;
+		wild->relics = relic;
+	}
 
 	return 0;
 }

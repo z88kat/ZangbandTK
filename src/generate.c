@@ -1379,6 +1379,15 @@ void prepare_next_level(struct player *p)
 				cave_store(cave, false, false);
 			}
 
+			/*
+			 * Take what the player left lying on the surface into the world's
+			 * memory (WLD-04), before the artifact sweep below decides it has
+			 * been lost.  It has not been lost; it is where they put it.
+			 */
+			if (wild_is_surface(cave)) {
+				wild_harvest(wild, p, cave, p->wild_offset);
+			}
+
 			/* Forget knowledge of old level */
 			if (p->cave) {
 				int x, y;
@@ -1464,6 +1473,9 @@ void prepare_next_level(struct player *p)
 		/* The town has people in it, and the country has its own (CNT-05). */
 		wild_populate(wild, p, cave, offset);
 		wild_town_people(wild, p, cave, offset);
+
+		/* And what the player left here is still here, or is not (WLD-04a). */
+		wild_restore(wild, p, cave, offset);
 
 		event_signal_flag(EVENT_GEN_LEVEL_END, true);
 	} else if (persist) {

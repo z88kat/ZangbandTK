@@ -22,6 +22,10 @@
 #include "generate.h"
 #include "init.h"
 #include "mon-make.h"
+#include "obj-make.h"
+#include "obj-pile.h"
+#include "obj-tval.h"
+#include "obj-util.h"
 #include "player.h"
 #include "player-birth.h"
 #include "savefile.h"
@@ -303,6 +307,89 @@ static int test_the_wilderness_is_inhabited(void *state) {
 }
 
 /*
+ * What you drop stays where you dropped it -- for a while (WLD-04, WLD-04a).
+ *
+ * The surface is torn down and rebuilt whenever the window scrolls, so anything
+ * left on it has to be taken into the world's memory and put back.  It also has
+ * to be forgotten eventually, or the world becomes a museum of everything the
+ * player ever discarded.
+ */
+static int test_what_you_drop_is_remembered(void *state) {
+	struct loc drop = loc(player->grid.x + 4, player->grid.y);
+	struct object *obj;
+	bool dummy = true;
+	int before;
+
+	/* Somewhere the player can actually put something down. */
+	while (!square_isobjectholding(cave, drop) ||
+		   square_object(cave, drop)) {
+		drop.x++;
+		require(drop.x < cave->width - 1);
+	}
+
+	obj = object_new();
+	object_prep(obj, lookup_kind(TV_FOOD, lookup_sval(TV_FOOD, "Ration of Food")),
+				0, RANDOMISE);
+	obj->number = 1;
+	require(floor_carry(cave, drop, obj, &dummy));
+	list_object(cave, obj);
+
+	before = wild_relic_count(wild);
+
+	/* Tear the surface down, as scrolling the window would. */
+	wild_harvest(wild, player, cave, player->wild_offset);
+	require(wild_relic_count(wild) > before);
+
+	/* And build it again, right away, so nothing has had time to go. */
+	wild_restore(wild, player, cave, player->wild_offset);
+	eq(wild_relic_count(wild), before);
+	notnull(square_object(cave, drop));
+
+	ok;
+}
+
+/*
+ * And it does not stay forever (WLD-04a).
+ *
+ * Harvested with the clock wound a long way back, so that the decay has had
+ * every chance to act.  The odds halve with each half-life, so after a great
+ * many of them the survival chance is nil rather than merely small -- which is
+ * what makes this testable without depending on the dice.
+ */
+static int test_what_you_drop_is_forgotten(void *state) {
+	struct loc drop = loc(player->grid.x + 4, player->grid.y);
+	struct wild_relic *relic;
+	struct object *obj;
+	bool dummy = true;
+
+	while (!square_isobjectholding(cave, drop) ||
+		   square_object(cave, drop)) {
+		drop.x++;
+		require(drop.x < cave->width - 1);
+	}
+
+	obj = object_new();
+	object_prep(obj, lookup_kind(TV_FOOD, lookup_sval(TV_FOOD, "Ration of Food")),
+				0, RANDOMISE);
+	obj->number = 1;
+	require(floor_carry(cave, drop, obj, &dummy));
+	list_object(cave, obj);
+
+	wild_harvest(wild, player, cave, player->wild_offset);
+	require(wild_relic_count(wild) > 0);
+
+	/* Age everything in the world's memory by a very long time. */
+	for (relic = wild->relics; relic; relic = relic->next)
+		relic->turn -= 10L * z_info->day_length * 1000L;
+
+	wild_restore(wild, player, cave, player->wild_offset);
+	eq(wild_relic_count(wild), 0);
+	null(square_object(cave, drop));
+
+	ok;
+}
+
+/*
  * The world survives a save and a load.
  *
  * The world map is not written to the savefile -- it regenerates from the seed
@@ -365,6 +452,8 @@ struct test tests[] = {
 	{ "the-town-has-people", test_the_town_has_people },
 	{ "the-doorstep-is-survivable", test_the_doorstep_is_survivable },
 	{ "the-wilderness-is-inhabited", test_the_wilderness_is_inhabited },
+	{ "what-you-drop-is-remembered", test_what_you_drop_is_remembered },
+	{ "what-you-drop-is-forgotten", test_what_you_drop_is_forgotten },
 	{ "world-position-survives-a-save", test_world_position_survives_a_save },
 	{ NULL, NULL }
 };

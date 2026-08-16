@@ -972,11 +972,31 @@ static void wr_traps_aux(struct chunk *c)
  */
 void wr_wilderness(void)
 {
+	struct wild_relic *relic;
+	uint16_t count = 0;
+
 	wr_byte(player->in_wild ? 1 : 0);
 	wr_u16b(player->wild_grid.x);
 	wr_u16b(player->wild_grid.y);
 	wr_u16b(player->wild_offset.x);
 	wr_u16b(player->wild_offset.y);
+
+	/*
+	 * What the player has left lying about the world (WLD-04).  The list needs
+	 * no cap, because everything in it decays out of it in time (WLD-04a).
+	 * Each entry carries the turn it was left, since that is what decides
+	 * whether it is still there when the player comes back.
+	 */
+	for (relic = wild ? wild->relics : NULL; relic; relic = relic->next)
+		count++;
+	wr_u16b(count);
+
+	for (relic = wild ? wild->relics : NULL; relic; relic = relic->next) {
+		wr_u16b(relic->grid.x);
+		wr_u16b(relic->grid.y);
+		wr_s32b(relic->turn);
+		wr_item(relic->obj);
+	}
 }
 
 void wr_dungeon(void)
