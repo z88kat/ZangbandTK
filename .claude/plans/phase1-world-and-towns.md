@@ -166,11 +166,23 @@ The savefile stores the world seed, the modified-block set, and place metadata.
 **WLD-05 — A bounded cache holds live blocks, evicting by distance from the player.**
 Zangband's `WILD_VIEW` of 9 × 9 blocks is the reference working set.
 
-**WLD-06 — `chunk_find_name()`'s linear scan must be replaced before the wilderness lands.**
-[gen-chunk.c:114](../../src/gen-chunk.c#L114) walks `chunk_list` comparing strings. That is
-fine for 4.2's single saved town and O(n) per lookup with hundreds of cached wilderness
-blocks. Rationale: a real defect introduced by the change of scale, not a pre-existing bug —
-4.2 is correct for the workload it has.
+**WLD-06 — ~~`chunk_find_name()`'s linear scan must be replaced~~. Withdrawn: the premise
+no longer holds.**
+
+This requirement was written when each wilderness block was to be its own level, cached in
+`chunk_list` — hundreds of entries, each lookup a linear walk comparing strings. The design
+has since changed: the wilderness is one continuous surface (§7), blocks are the unit of
+generation rather than of level, and they live in `wild.c`'s own bounded cache. The
+wilderness contributes roughly one entry to `chunk_list`, not hundreds.
+
+What remains is 4.2's original scan over stored levels, which accumulate only under
+persistent levels and only one per level visited. It is called from level preparation and
+savefile loading — never per turn — so at a few hundred entries on a cold path there is no
+problem to fix.
+
+Recorded rather than quietly dropped, because the reasoning is worth keeping: the defect was
+real for the design that prompted it, and correcting that design removed it. Optimising it
+now would be work against a problem that no longer exists, which DEC-18 asks us not to do.
 
 ### Terrain generation
 
