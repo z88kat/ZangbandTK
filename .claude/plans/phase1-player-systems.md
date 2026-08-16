@@ -55,6 +55,36 @@ The Zangband-only classes are not merely stat blocks. Chaos-Warrior has patron r
 Monk has martial arts progression and unarmed combat, Mindcrafter has an entirely separate
 psionic power list. Each carries real code.
 
+Class data, verified against the original's own character creation screen:
+
+| Class | STR | INT | WIS | DEX | CON | CHR | Hit die | Experience |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Warrior | +5 | -2 | -2 | +2 | +2 | -1 | 9 | 0% |
+| Mage | -5 | +3 | 0 | +1 | -2 | +1 | 0 | 30% |
+| Priest | -1 | -3 | +3 | -1 | 0 | +2 | 2 | 20% |
+| Rogue | +2 | +1 | -2 | +3 | +1 | -1 | 6 | 25% |
+| Ranger | +2 | +2 | 0 | +1 | +1 | +1 | 4 | 30% |
+| Paladin | +3 | -3 | +1 | 0 | +2 | +2 | 6 | 35% |
+| **Warrior-Mage** | +2 | +2 | 0 | +1 | 0 | +1 | 4 | 50% |
+| **Chaos-Warrior** | +2 | +1 | 0 | +1 | +2 | -2 | 6 | 35% |
+| **Monk** | +2 | -1 | +1 | +3 | +2 | +1 | 6 | 40% |
+| **Mindcrafter** | -1 | 0 | +3 | -1 | -1 | +2 | 2 | 25% |
+| **High-Mage** | -5 | +4 | 0 | 0 | -2 | +1 | 0 | 30% |
+
+> **These figures were wrong until checked against the original.** `player_class` places
+> sixteen skill fields between the stat adjustments and the hit die, where `player_race`
+> places eight, and the first extraction read the same offsets for both — producing hit dice
+> and experience factors taken from the middle of the skill block. The stat columns were
+> right throughout, being first in the struct.
+>
+> A useful reminder that BAL-08's rule — check the consuming code, do not infer from
+> position — applies to reading Zangband's tables as much as to converting its data. The
+> race figures in PLR-01 come from a struct whose layout was separately confirmed, and the
+> Amberite row was checked on screen.
+
+Note that CHR appears in both tables. 4.2 removed it (P-5's companion rejection), so those
+columns are recorded for fidelity and will be dropped on import.
+
 ### 2.3 Realms — the structural difference
 
 This is the one genuine architectural fork in this family.
@@ -72,6 +102,22 @@ In Zangband a Mage picks two realms from six, and that choice — not the class 
 defines the character. In 4.2 a class has one fixed spell progression and the realm is
 descriptive. Adopting Zangband's model means reworking how spells attach to characters, not
 adding spell content.
+
+Observed at the original's character creation:
+
+- **Realm choice is a birth step of its own**, after race and class, presented as a fourth
+  menu column alongside them.
+- **Which realms a class may take is restricted.** A Paladin is offered Life or Death only,
+  not the full seven. So realm availability is a property of the class, not a free choice —
+  which is what makes the combination meaningful rather than merely wide.
+- **The game explains the realms' character** at the point of choosing: *"Life and Sorcery
+  are protective, Chaos and Death are destructive. Nature has both defensive and offensive
+  spells."*
+
+That Paladin offers a realm choice at all is worth noting for **PLR-12**: the realm system
+reaches classes Angband and Zangband share, not only the five that are new. A Paladin in 4.2
+has a fixed divine progression; in Zangband they pick a side. Re-expressing 4.2's classes as
+realms is therefore not a tidying-up exercise — it changes shared classes too.
 
 ### 2.4 Mutations — no analogue in 4.2
 
