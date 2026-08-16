@@ -1461,6 +1461,9 @@ void prepare_next_level(struct player *p)
 
 		cave->turn = turn;
 
+		/* The town has people in it (WLD-24). */
+		wild_town_people(wild, p, cave, offset);
+
 		event_signal_flag(EVENT_GEN_LEVEL_END, true);
 	} else if (persist) {
 		char *name = level_by_depth(p->depth)->name;

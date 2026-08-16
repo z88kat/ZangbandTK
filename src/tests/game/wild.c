@@ -170,22 +170,16 @@ static int test_only_the_town_is_known(void *state) {
 	struct loc grid;
 	int unknown_outside = 0, outside = 0, shops = 0;
 
-	/*
-	 * The town is known: you have lived in it, and you know where the shops
-	 * are.  Tested on the shop entrances rather than over the rectangle, since
-	 * the rectangle is only the frame the town was generated in -- the rock
-	 * around the clearing is stripped, so much of it is now ordinary fields.
-	 */
+	/* Every grid of the town is known: you have lived in it. */
 	for (grid.y = org.y; grid.y < org.y + z_info->town_hgt; grid.y++)
 		for (grid.x = org.x; grid.x < org.x + z_info->town_wid; grid.x++) {
 			if (!square_in_bounds_fully(cave, grid)) continue;
-			if (!square_isshop(cave, grid)) continue;
 
 			require(square_isknown(cave, grid));
-			shops++;
+			if (square_isshop(cave, grid)) shops++;
 		}
 
-	/* And there are shops to have known. */
+	/* And it has shops in it. */
 	require(shops > 0);
 
 	/* The country beyond it is mostly not. */
@@ -208,6 +202,31 @@ static int test_only_the_town_is_known(void *state) {
 	 * known, so the bar is that the great majority of it has not.
 	 */
 	require(unknown_outside > (outside * 9) / 10);
+
+	ok;
+}
+
+/*
+ * The town has people in it.
+ *
+ * town_gen() places its residents itself, and the surface does not call it --
+ * it takes the town's terrain and draws that in.  The beggars and the scruffy
+ * dogs were lost that way once already, quietly, and were only found missing by
+ * walking the streets and noticing they were empty.
+ */
+static int test_the_town_has_people(void *state) {
+	struct loc org = loc(wild_town_origin(wild).x - player->wild_offset.x,
+						 wild_town_origin(wild).y - player->wild_offset.y);
+	struct loc grid;
+	int residents = 0;
+
+	for (grid.y = org.y; grid.y < org.y + z_info->town_hgt; grid.y++)
+		for (grid.x = org.x; grid.x < org.x + z_info->town_wid; grid.x++) {
+			if (!square_in_bounds_fully(cave, grid)) continue;
+			if (square_monster(cave, grid)) residents++;
+		}
+
+	require(residents > 0);
 
 	ok;
 }
@@ -263,6 +282,7 @@ static int test_world_position_survives_a_save(void *state) {
 }
 
 
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -270,6 +290,7 @@ struct test tests[] = {
 	{ "town-can-be-walked-out-of", test_town_can_be_walked_out_of },
 	{ "boundary-only-at-the-world-edge", test_boundary_only_at_the_world_edge },
 	{ "only-the-town-is-known", test_only_the_town_is_known },
+	{ "the-town-has-people", test_the_town_has_people },
 	{ "world-position-survives-a-save", test_world_position_survives_a_save },
 	{ NULL, NULL }
 };

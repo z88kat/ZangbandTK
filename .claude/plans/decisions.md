@@ -312,14 +312,19 @@ Worked through on the town, which is where this first bit:
 So the town is Angband 4.2's town — its starburst clearing, its streets, its ruins, its
 shops — standing in open country, with a way out. Not a walled compound with a portcullis.
 
-*What this cost, and what it corrected.* The first implementation blitted 4.2's town whole,
-including the rock its clearing was blasted out of, and then cut four roads through that
-rock so the player could leave. As a level of its own that rock is invisible — it is the
-level's boundary and never reads as anything else. Dropped onto grassland it became a ring
-of granite around the town: a walled town, arrived at by accident, and gated by hand. Both
-halves were wrong for the same reason. The rock is now stripped and the fields run up to
-the clearing, which removes the need for gates entirely — you leave town by walking off the
-end of a street.
+*Applied to the town, including one over-correction worth recording.* Reading this
+principle, the first response was to strip the rock 4.2's clearing is blasted out of, on the
+grounds that a ring of granite around a town standing in a field reads as a wall, and a
+walled town is the thing being avoided. That was wrong, and playing it showed why within
+minutes: the rock is not decoration. It is what keeps the wilderness out of the market
+square, and it is what stops line of sight at the edge of town. Removing it left the town
+open to anything that cared to walk in, and left a new character seeing half a county from
+the staircase.
+
+So the rock stays, and the roads go through it — 4.2's town, entire, with four ways out cut
+where a road would meet it. The principle was right; the inference drawn from it was not.
+**The test is whether a thing is a Zangband idea or 2.8.1 showing through, not whether it
+happens to resemble a wall.** 4.2's rock is 4.2's own, and it earns its place on function.
 
 *Where this sharpens what came before.* DEC-25 says Zangband's execution is not the
 standard of correctness, and points taste at Amber when Zangband's answer is weak. DEC-27

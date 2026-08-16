@@ -120,13 +120,16 @@ open ground but tells you nothing about what is behind the trees.
 Leaving the town
 ----------------
 
-Walk. There is no wall, no gate and no transition.
+Follow a road out. There is no gate and no transition — you just walk.
 
-The town is Angband 4.2's town — the same streets, the same shops, the same
-ruins and rubble — standing in open country rather than in a clearing blasted
-out of rock. Where 4.2 puts stone around its town, ZangbandZK puts fields, so
-the streets simply run out into them. Leaving is a matter of walking off the end
-of one.
+The town is Angband 4.2's town, entire: the same clearing, the same streets, the
+same shops, ruins and rubble, and the same rock standing around it. That rock
+earns its keep in a world in a way it never had to as a level of its own. It is
+what keeps the wilderness out of the market square, and it is what stops you
+seeing half a county from the staircase.
+
+What ZangbandZK adds is a way out on each of the four sides, cut through the rock
+where a road would meet the town: at the end of a street, not at a corner.
 
 Zangband's own towns were walled and moated, with locked gates. That is not
 being copied: it is what Angband 2.8.1's town looked like, which is the game
