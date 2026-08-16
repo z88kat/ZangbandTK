@@ -499,6 +499,41 @@ regular rows, and the road is the organising feature. `town_gen_layout()` in
 `gen-cave.c` is therefore less reusable for Zangband-style towns than WLD-13
 assumed — it places stores along streets on a grid, which is not this.
 
+### The terrain set is wider than WLD-09 assumed
+
+Zangband's `f_info.txt` carries **30 wilderness features** against the 9 added so
+far. Seen in play: *"The jungle is impassable."*
+
+| | Zangband | ZangbandZK |
+|---|---|---|
+| Ground | sand, dirt, wet mud, dry mud, pebbles, patch of grass, long grass, snow | grass, dirt, sand, mud |
+| Vegetation | tree, pine tree, dead tree, snow-covered tree, submerged tree, bush, dead bush, **jungle** | tree |
+| Water | shallow, deep, very deep | shallow, deep |
+| Rock | rock face, snow-covered rock face, rock, stone fence, solidified lava | mountainside |
+| Wet ground | swamp, thick swamp | *(mud)* |
+| Hazard | shallow lava, deep lava | — |
+
+Three things follow.
+
+**Vegetation is not one thing.** Zangband distinguishes woodland you can push
+through from **jungle, which blocks movement outright** — flagged `BLOCK`, and
+shown to the player as an impassable wall of green. That is a terrain type doing
+real work: it shapes where a traveller can go, which is what makes an overworld
+a place to navigate rather than a field to cross. One `FEAT_TREE` cannot express
+it.
+
+**Climate varies.** Snow-covered rock, snow-covered trees and plain snow imply
+the world has cold regions, which the current height/population/law parameter
+space has no axis for. Either a fourth parameter, or latitude derived from
+position — Zangband's own approach is worth checking before choosing.
+
+**Terrain carries hazards.** Shallow and deep lava sit in the same list as
+water. WLD-08's sea, lakes and rivers are only part of what the surface holds.
+
+None of this is hard — each is a `terrain.txt` entry and a line in
+`wild_terrain_feat()`. But WLD-09 currently reads as though the nine features
+added were the job, and they are closer to a third of it.
+
 ### Still to compare
 
 The project owner intends a manual comparison pass against the original. Areas
