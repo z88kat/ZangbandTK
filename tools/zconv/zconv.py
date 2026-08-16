@@ -101,6 +101,30 @@ def load_basemap() -> dict[str, dict]:
         return tomllib.load(handle).get("map", {})
 
 
+def load_spellmap() -> dict:
+    """Monster spell vocabulary translation."""
+    path = Path(__file__).resolve().parent / "spellmap.toml"
+    if not path.exists():
+        return {"rename": {}, "reject": {}, "defer": {}}
+    with path.open("rb") as handle:
+        spec = tomllib.load(handle)
+    return {"rename": spec.get("rename", {}), "reject": spec.get("reject", {}),
+            "defer": spec.get("defer", {})}
+
+
+def load_spell_vocabulary() -> set[str]:
+    """4.2's accepted monster spells, read from the source of truth."""
+    path = ROOT / "src" / "list-mon-spells.h"
+    if not path.exists():
+        return set()
+    names = set(re.findall(r"^RSF\(([A-Z0-9_]+)", 
+                           path.read_text(encoding="utf-8", errors="replace"),
+                           re.M))
+    names.discard("NONE")
+    names.discard("MAX")
+    return names
+
+
 def load_blowmap() -> dict[str, dict[str, dict]]:
     """Blow method and effect vocabulary translation."""
     path = Path(__file__).resolve().parent / "blowmap.toml"
@@ -221,7 +245,9 @@ def load_lethality() -> rules.Lethality:
                            ("lethality:armor-class", "ac_scale")):
             m = re.search(rf"^{re.escape(key)}:([0-9.]+)$", text, re.M)
             if m:
-                scalars[field] = float(m.group(1))
+                # constants.txt stores these as percentages; Lethality holds
+                # fractions.
+                scalars[field] = float(m.group(1)) / 100
     return rules.Lethality(**scalars)
 
 
@@ -291,6 +317,8 @@ def cmd_monsters(args) -> int:
     basemap = load_basemap()
     blowmap = load_blowmap()
     methods, effects = load_blow_vocabulary()
+    spellmap = load_spellmap()
+    valid_spells = load_spell_vocabulary()
     overrides = load_overrides().get("monster", {})
     lethality = load_lethality()
     mapping = rules.derive_sleep_mapping(old_by_key, new_by_key)
@@ -414,6 +442,38 @@ def cmd_monsters(args) -> int:
             if converted:
                 entry.pairs.append(("blow", converted))
 
+        # Spells (BAL-10 applies here too: nothing is dropped silently).
+        spells: list[str] = []
+        for spell in mon.spells:
+            if spell in valid_spells:
+                spells.append(spell)
+            elif spell in spellmap["rename"]:
+                spells.append(spellmap["rename"][spell])
+            elif spell in spellmap["reject"]:
+                item.flag_dispositions.append(
+                    (spell, "reject", spellmap["reject"][spell]))
+            elif spell in spellmap["defer"]:
+                spec = spellmap["defer"][spell]
+                item.flag_dispositions.append((
+                    spell, "defer",
+                    f"{spec['milestone']} ({spec['requirement']}): {spec['note']}"))
+            else:
+                item.flag_dispositions.append((
+                    spell, "unresolved",
+                    "no disposition recorded in spellmap.toml"))
+
+        if spells:
+            seen_spells: dict[str, None] = {}
+            for spell in spells:
+                seen_spells.setdefault(spell, None)
+            entry.set("spells", " | ".join(seen_spells))
+            # 4.2 states casting frequency as a percentage; Zangband as 1-in-N.
+            freq = mon.spell_freq or 10
+            entry.set("spell-freq", max(1, round(100 / freq)))
+            item.fields["spells"] = rules.Value(
+                len(seen_spells), "CNT-01", rules.CONVERTED,
+                f"1_IN_{freq} -> spell-freq {max(1, round(100 / freq))}")
+
         # Flag resolution (BAL-10). Every flag is carried across, renamed,
         # converted to a field, or recorded with the reason it was not.
         mapped: list[str] = []
@@ -476,8 +536,11 @@ def cmd_monsters(args) -> int:
         print("data:    not written (pass --write)")
 
     invented = sum(len(i.invented) for i in report.items)
+    unresolved = {f for i in report.items
+                  for f, disposition, _ in i.flag_dispositions
+                  if disposition == "unresolved"}
     print(f"entries: {len(report.items)}   invented values: {invented}   "
-          f"unmapped flags: {len({f for i in report.items for f in i.unmapped_flags})}")
+          f"unresolved flags: {len(unresolved)}")
     return 0
 
 
@@ -600,10 +663,18 @@ def cmd_artifacts(args) -> int:
             # 4.2's alloc is commonness plus a depth range; Zangband's rarity
             # is an inverse frequency, so commonness is its reciprocal.
             commonness = max(1, min(100, round(100 / max(1, rarity))))
-            entry.set("alloc", f"{commonness}:{depth} to 100")
+            # 4.2's allocation ceiling is 127, and min must never exceed max --
+            # an inverted range parses cleanly and silently makes the artifact
+            # ungeneratable for the life of the game.
+            alloc_max = 127
+            alloc_min = min(depth, alloc_max)
+            entry.set("alloc", f"{commonness}:{alloc_min} to {alloc_max}")
             item.fields["alloc"] = rules.Value(
-                f"{commonness}:{depth} to 100", "CNT-06", rules.DERIVED,
-                f"Zangband rarity {rarity} inverted to commonness")
+                f"{commonness}:{alloc_min} to {alloc_max}", "CNT-06",
+                rules.DERIVED,
+                f"Zangband rarity {rarity} inverted to commonness"
+                + (f"; source depth {depth} clamped to the {alloc_max} ceiling"
+                   if depth > alloc_max else ""))
 
         if len(power) >= 5:
             entry.set("attack", f"{power[1]}:{power[2]}:{power[3]}")

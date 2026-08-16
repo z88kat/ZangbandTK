@@ -1,0 +1,65 @@
+# Zangband monster spells -> Angband 4.2's spell vocabulary.
+#
+# Most names match exactly and need no entry here; 4.2 rejects anything outside
+# list-mon-spells.h at parse time, so this file covers only the differences.
+#
+# Same discipline as flagmap.toml: mapped, or rejected with a reason.
+
+[rename]
+# Spelling and naming drift.
+BR_LITE = "BR_LIGHT"
+BO_ICEE = "BO_ICE"
+
+# 4.2's "ainu" are Tolkien's angelic powers, which is what Zangband summoned.
+S_ANGEL = "S_AINU"
+
+# 4.2 replaced the four graded CAUSE_n spells with a single scaling WOUND.
+CAUSE_1 = "WOUND"
+CAUSE_2 = "WOUND"
+CAUSE_3 = "WOUND"
+CAUSE_4 = "WOUND"
+
+# 4.2 has no ant summon; its animal summon is the nearest category.
+S_ANT = "S_ANIMAL"
+
+# Cyberdemons are a Doom import Angband never had. Its greater demons are the
+# closest thing in weight class.
+S_CYBER = "S_HI_DEMON"
+
+# Animating the dead raises undead, which 4.2 expresses as a summon.
+ANIM_DEAD = "S_UNDEAD"
+
+# Zangband's rocket is a heavy physical projectile; 4.2's boulder is its
+# nearest, though notably weaker.
+ROCKET = "BOULDER"
+
+# Radiation attacks. 4.2 has no nuclear element; poison is the closest in both
+# damage type and feel.
+BA_NUKE = "BA_POIS"
+BR_NUKE = "BR_POIS"
+
+# Disintegration. 4.2 has no such breath; shards is the nearest destructive
+# physical breath it carries.
+BR_DISI = "BR_SHAR"
+
+# Zangband has a chaos ball; 4.2 has only the chaos breath. Mana is its nearest
+# untyped heavy ball, and preserves the "unresistable" character better than
+# substituting a resistable element.
+BA_CHAO = "BA_MANA"
+
+# 4.2 has no confusion breath. Chaos confuses as part of its effect and is the
+# nearest breath it carries.
+BR_CONF = "BR_CHAO"
+
+# The Hand of Doom deals a proportion of current hit points. 4.2's WOUND is its
+# closest single-target damage spell.
+HAND_DOOM = "WOUND"
+
+[reject]
+INVULNER = """Grants the monster temporary invulnerability. 4.2 has no monster \
+invulnerability state, and adding one would change how every fight against a \
+caster resolves."""
+
+[defer]
+ELDRITCH_HORROR = { milestone = "M3", requirement = "CNT-17", note = "The sanity blast. The requirement exists but the mechanic is not built yet, so the spell has nothing to call." }
+S_AMBERITES = { milestone = "M2", requirement = "CNT-02", note = "Summons the scions of Amber, which needs the AMBERITE flag that flagmap.toml still has queued for implementation." }

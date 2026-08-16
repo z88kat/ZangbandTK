@@ -1749,11 +1749,25 @@ struct parser *init_parse_monster(void) {
 	return p;
 }
 
+/**
+ * How many races vanilla monster.txt contributed, before the ZangbandZK import
+ * was appended.  Races are prepended to the parse list and copied out in
+ * reverse, so r_info ends up in file order: vanilla occupies [0, this), and
+ * the import everything above.  Used by the lethality scaling in
+ * finish_parse_monster(); see there for why the distinction matters.
+ */
+static int vanilla_race_count = 0;
+
 static errr run_parse_monster(struct parser *p) {
+	struct monster_race *race;
 	errr err = parse_file_quit_not_found(p, "monster");
 
 	if (err)
 		return err;
+
+	vanilla_race_count = 0;
+	for (race = parser_priv(p); race; race = race->next)
+		vanilla_race_count++;
 
 	/*
 	 * ZangbandZK (CNT-01): the imported Zangband bestiary lives in its own
@@ -1871,16 +1885,25 @@ static errr finish_parse_monster(struct parser *p) {
 	/*
 	 * ZangbandZK (BAL-13): apply the lethality scalars.
 	 *
-	 * Scaling 4.2's own values rather than importing Zangband's per-monster
-	 * numbers keeps 4.2's relative tuning between monsters intact while
-	 * adopting Zangband's absolute lethality.  Applied here, after every race
-	 * is in r_info, so it reaches vanilla and imported monsters alike and
-	 * nothing downstream has to know about it.
+	 * The scalars exist to bring Angband's monsters down to Zangband's level:
+	 * Zangband's carried a median 0.73x the hit points and 0.50x the armour
+	 * class of the Angband release it forked from.  Scaling 4.2's own values
+	 * keeps its relative tuning between monsters while adopting Zangband's
+	 * absolute lethality.
+	 *
+	 * Imported races are therefore *excluded*.  They already carry Zangband's
+	 * own numbers, which are by definition already at the level the scalars
+	 * are trying to reach — 4.2's experience values barely moved from 2.8.1's,
+	 * so Zangband's raw figures and scaled-down Angband figures land in the
+	 * same place.  Scaling them again would discount twice, leaving Great
+	 * Cthulhu at 0.73x of Zangband's Great Cthulhu rather than at parity.
 	 */
 	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
 
 		if (!race->name)
+			continue;
+		if ((int) i >= vanilla_race_count)
 			continue;
 		race->avg_hp = mon_scale_lethality(race->avg_hp,
 			z_info->lethality_hp, 1);

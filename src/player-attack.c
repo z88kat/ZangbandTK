@@ -712,9 +712,6 @@ static const struct hit_types melee_hit_types[] = {
 };
 
 /**
- * Attack the monster at the given location with a single blow.
- */
-/**
  * Discharge a random effect of chaos into a struck monster (ZangbandZK).
  *
  * Zangband's chaotic weapons roll on a table of effects ranging from the
@@ -729,7 +726,13 @@ static void chaotic_effect(struct player *p, struct monster *mon)
 {
 	char m_name[80];
 
-	monster_desc(m_name, sizeof(m_name), mon, MDESC_TARG);
+	/*
+	 * These messages put the monster at the head of a sentence, so it needs
+	 * the subjective case and a capital.  MDESC_TARG, which the surrounding
+	 * attack messages use, is objective and uncapitalised — correct for
+	 * "You hit the orc", wrong for "The orc recoils in terror!".
+	 */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD | MDESC_CAPITAL);
 
 	switch (randint0(6)) {
 		case 0:
@@ -766,6 +769,9 @@ static void chaotic_effect(struct player *p, struct monster *mon)
 }
 
 
+/**
+ * Attack the monster at the given location with a single blow.
+ */
 bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 {
 	size_t i;
@@ -869,13 +875,14 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	 * warranted.  Applied after criticals and before the player's damage
 	 * bonus, so it multiplies the weapon's own contribution rather than the
 	 * flat additions, which is what makes it a property of the blade.
+	 *
+	 * Deferred until after splash and the earthquake threshold are taken from
+	 * the unmultiplied damage: a vorpal cut is a deeper wound, not a heavier
+	 * impact, and it should not shake the dungeon down by crossing OF_IMPACT's
+	 * damage threshold that the same blow would otherwise have missed.
 	 */
-	if (dmg > 0 && obj && player_of_has(p, OF_VORPAL) &&
-			one_in_(z_info->vorpal_chance)) {
-		dmg *= z_info->vorpal_multiplier;
-		vorpal = true;
-		equip_learn_flag(p, OF_VORPAL);
-	}
+	bool vorpal_cut = (dmg > 0 && obj && player_of_has(p, OF_VORPAL) &&
+					   one_in_(z_info->vorpal_chance));
 
 	/* Splash damage and earthquakes */
 	splash = (weight * dmg) / 100;
@@ -887,6 +894,13 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	/* Learn by use */
 	equip_learn_on_melee_attack(p);
 	learn_brand_slay_from_melee(p, obj, mon);
+
+	/* ZangbandZK: the vorpal cut itself, now that splash is settled */
+	if (vorpal_cut) {
+		dmg *= z_info->vorpal_multiplier;
+		vorpal = true;
+		equip_learn_flag(p, OF_VORPAL);
+	}
 
 	/* Apply the player damage bonuses */
 	if (!OPT(p, birth_percent_damage)) {
@@ -926,8 +940,13 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 			msgt(msg_type, "You %s %s%s.", verb, m_name, dmg_text);
 	}
 
-	/* ZangbandZK: announce a vorpal cut after the blow it modified */
-	if (vorpal)
+	/*
+	 * ZangbandZK: announce a vorpal cut after the blow it modified — but only
+	 * if the blow actually landed. A negative damage bonus can reduce a
+	 * doubled blow to nothing, and "You fail to harm the orc. Your weapon cuts
+	 * deep into the orc!" is nonsense.
+	 */
+	if (vorpal && dmg > 0)
 		msgt(MSG_HIT, "Your weapon cuts deep into %s!", m_name);
 
 	/* Pre-damage side effects */
@@ -969,6 +988,15 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 			one_in_(z_info->chaotic_chance)) {
 		equip_learn_flag(p, OF_CHAOTIC);
 		chaotic_effect(p, mon);
+
+		/*
+		 * The effect may have flung the target clean off this grid.  Stop the
+		 * attack if so: py_attack() otherwise loops for the player's remaining
+		 * blows and re-reads a monster that is no longer there.  Vanilla guards
+		 * the same way after an earthquake.
+		 */
+		if (!square_monster(cave, grid))
+			stop = true;
 	}
 
 	if (stop)

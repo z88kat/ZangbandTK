@@ -511,7 +511,12 @@ static enum parser_error parse_constants_lethality(struct parser *p) {
 	label = parser_getsym(p, "label");
 	value = parser_getint(p, "value");
 
-	if (value <= 0)
+	/*
+	 * Reject out of range rather than truncating into the uint16_t field.  The
+	 * upper bound also keeps `base * percent` inside an int for the largest
+	 * hit point total in the game.
+	 */
+	if (value <= 0 || value > LETHALITY_MAX)
 		return PARSE_ERROR_INVALID_VALUE;
 
 	if (streq(label, "hit-points"))
@@ -540,7 +545,7 @@ static enum parser_error parse_constants_melee(struct parser *p) {
 	label = parser_getsym(p, "label");
 	value = parser_getint(p, "value");
 
-	if (value <= 0)
+	if (value <= 0 || value > LETHALITY_MAX)
 		return PARSE_ERROR_INVALID_VALUE;
 
 	if (streq(label, "vorpal-chance"))
@@ -1076,6 +1081,31 @@ static errr finish_parse_constants(struct parser *p) {
 
 	z_info = parser_priv(p);
 	parser_destroy(p);
+
+	/*
+	 * ZangbandZK: supply defaults for any of our constants the file omitted.
+	 *
+	 * z_info is zero-allocated and nothing checks these for completeness, so a
+	 * constants.txt without the ZangbandZK block — an older installed data
+	 * directory, a stale copy, a package shipping vanilla data — would leave
+	 * them all zero.  That is not a harmless default: mon_scale_lethality()
+	 * reads 0 as "0 percent" and reduces every monster in the game to one hit
+	 * point, and one_in_(0) is true on every call, so a vorpal weapon would
+	 * double every blow and a chaotic one discharge on every hit.
+	 *
+	 * The safe absent value for the lethality scalars is 100, which is exactly
+	 * vanilla Angband behaviour.
+	 */
+	if (!z_info->lethality_hp)
+		z_info->lethality_hp = 100;
+	if (!z_info->lethality_ac)
+		z_info->lethality_ac = 100;
+	if (!z_info->vorpal_chance)
+		z_info->vorpal_chance = 6;
+	if (!z_info->vorpal_multiplier)
+		z_info->vorpal_multiplier = 2;
+	if (!z_info->chaotic_chance)
+		z_info->chaotic_chance = 7;
 	if (check_critical_levels(z_info->m_crit_level_head)) {
 		plog("The cutoffs for melee criticals in constants.txt are "
 			"not strictly increasing.");

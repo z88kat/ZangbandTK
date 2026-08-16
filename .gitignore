@@ -74,7 +74,6 @@ build*/
 archive
 tcl9.0.4
 tk9.0.4
-.claude/plans/Idea.md
 tools/zconv/out/
 __pycache__/
 *.pyc

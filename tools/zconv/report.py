@@ -185,6 +185,33 @@ class Report:
                 w("")
         w("")
 
+        # --- vocabulary translation
+        translated = [(i.name, i.translations) for i in self.items
+                      if i.translations]
+        w("## Vocabulary translated")
+        w("")
+        if not translated:
+            w("None. Every method, effect and name existed in both models.")
+        else:
+            dropped = [(n, notes) for n, notes in translated
+                       if any("dropped" in note for note in notes)]
+            w(f"{len(translated)} entries used vocabulary that differs between "
+              "the two data models.")
+            w("")
+            if dropped:
+                w(f"⚠️ **{len(dropped)} entries had something dropped entirely** "
+                  "because no equivalent exists and none is mapped. Review these "
+                  "first — a monster that loses every blow is left unable to "
+                  "attack.")
+                w("")
+            w("| Entry | Translation |")
+            w("|---|---|")
+            for name, notes in translated:
+                for note in notes:
+                    mark = "⚠️ " if "dropped" in note else ""
+                    w(f"| {name} | {mark}{' '.join(note.split())} |")
+        w("")
+
         # --- overrides (BAL-12)
         overridden = [(i.name, i.overridden) for i in self.items if i.overridden]
         w("## Overrides applied")

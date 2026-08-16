@@ -160,7 +160,10 @@ ACTIVATION_PATTERNS: list[tuple[str, str, str]] = [
     (r"probing\(", "PROBING", "probing"),
     (r"restore_level\(", "RESTORE_EXP", "restore_level"),
     (r"do_res_stat\(", "RESTORE_ALL", "do_res_stat -> restore statistics"),
-    (r"aggravate_monsters\(", "CONFUSING", "aggravate -> no direct equivalent"),
+    # Deliberately absent: aggravate_monsters. 4.2 has no aggravation
+    # activation, and the nearest by name (CONFUSING) is a benefit where the
+    # original is a drawback. Better reported as unmatched than guessed at --
+    # this list exists to translate, not to approximate.
 ]
 
 

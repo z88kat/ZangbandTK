@@ -143,6 +143,9 @@ class Monster:
     mexp: int | None = None
     blows: list[str] = field(default_factory=list)
     flags: list[str] = field(default_factory=list)
+    spells: list[str] = field(default_factory=list)
+    #: Spell frequency as one-in-N, from the ``1_IN_n`` token on an ``S:`` line
+    spell_freq: int | None = None
     desc: str = ""
     symbol: str | None = None
     colour: str | None = None
@@ -155,6 +158,21 @@ class Monster:
 
 def _ints(payload: str) -> list[str]:
     return [p.strip() for p in payload.split(":")]
+
+
+#: ``1_IN_9`` on an ``S:`` line means the monster casts one turn in nine.
+_FREQ = re.compile(r"^1_IN_(\d+)$")
+
+
+def _tokens(payloads: list[str]) -> list[str]:
+    """Split pipe-separated tokens from a set of tagged lines, in file order."""
+    out: list[str] = []
+    for payload in payloads:
+        for token in payload.split("|"):
+            token = token.strip()
+            if token:
+                out.append(token)
+    return out
 
 
 def read_monsters(path: str) -> list[Monster]:
@@ -187,6 +205,18 @@ def read_monsters(path: str) -> list[Monster]:
 
         mon.blows = rec.all("B")
         mon.flags = rec.flags()
+
+        # Spells live on S: lines, sharing the F: lines' pipe-separated layout.
+        # One token is the casting frequency, written 1_IN_n; the rest name
+        # spells. Without this the imported bestiary is melee-only — every
+        # Mythos god and Amberite a silent bag of hit points.
+        for token in _tokens(rec.all("S")):
+            m = _FREQ.match(token)
+            if m:
+                mon.spell_freq = int(m.group(1))
+            elif token not in mon.spells:
+                mon.spells.append(token)
+
         mon.desc = " ".join(d.strip() for d in rec.all("D")).strip()
         out.append(mon)
 

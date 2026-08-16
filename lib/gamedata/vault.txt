@@ -3978,8 +3978,12 @@ D:                    %%%
 #
 # This one does: a spiral named for Roger Zelazny, whose Amber novels are the
 # largest of Zangband's three literary overlays, and built by Topi Ylinen --
-# the same author the Ancient and Foul Curse is named after. It is the one
-# vault in the collection that carries Zangband's identity rather than a shape.
+# the same author the Ancient and Foul Curse is named after.
+#
+# Glyphs are translated, not copied. The two formats share a legend in form but
+# not in meaning: Zangband's ',' is "monster up to 3 levels OOD and/or treasure
+# up to 7 levels OOD", which is 4.2's '4'. In 4.2, ',' is food -- copying the
+# vault verbatim filled it with 68 rations and left it empty of monsters.
 
 name:Zelazny spiral
 type:Lesser vault
@@ -3991,18 +3995,18 @@ max-depth:0
 D:%%%%%%%%%%%%%%%%%%%
 D:%.................%
 D:%.###############.%
-D:%.+,,,,,,,,,,,,,#.%
-D:%.###########,,,#.%
-D:%.#,,,,+..##,,,##.%
-D:%.#,,,##.##,,,##..%
-D:%.#,*##.##,,,##...%
-D:%.#&##.##,,,##.##.%
-D:%.###.##,,,##.###.%
-D:%.##.##,,,##.##&#.%
-D:%...##,,,##.##*,#.%
-D:%..##,,,##..+,,,#.%
-D:%.##,,,##########.%
-D:%.#,,,,,,,,,,,,,+.%
+D:%.+4444444444444#.%
+D:%.###########444#.%
+D:%.#4444+..##444##.%
+D:%.#444##.##444##..%
+D:%.#4&##.##444##...%
+D:%.#2##.##444##.##.%
+D:%.###.##444##.###.%
+D:%.##.##444##.##2#.%
+D:%...##444##.##&4#.%
+D:%..##444##..+444#.%
+D:%.##444##########.%
+D:%.#4444444444444+.%
 D:%.###############.%
 D:%.................%
 D:%%%%%%%%%%%%%%%%%%%

@@ -20,6 +20,15 @@
 #include "datafile.h"
 #include "object.h"
 
+/**
+ * Upper bound for the ZangbandZK tuning constants (BAL-14).
+ *
+ * They are stored as uint16_t, and mon_scale_lethality() computes
+ * `base * percent`, which must stay inside an int for the largest hit point
+ * total in the game.  Cap well below both limits.
+ */
+#define LETHALITY_MAX 10000
+
 /* Define a level of severity for a non-O critical */
 struct critical_level {
 	struct critical_level *next;

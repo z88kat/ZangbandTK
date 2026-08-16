@@ -145,6 +145,8 @@ depth:3
 rarity:1
 experience:8
 blow:SPORE:CONFUSE:1d4
+spells:BLINK
+spell-freq:50
 flags:NEVER_MOVE | STUPID | EMPTY_MIND | IM_POIS | NO_CONF | NO_SLEEP | NO_FEAR
 desc:Is it there or is it not?
 
@@ -215,6 +217,8 @@ experience:28
 blow:GAZE
 blow:GAZE
 blow:CRUSH
+spells:TPORT | BLINK | TELE_AWAY
+spell-freq:11
 flags:EVIL | IM_FIRE | IM_NETHER | IM_WATER | IM_PLASMA | IM_DISEN | IM_NEXUS | KILL_WALL
 desc:This unholy abomination will crush you. Flee while you can!
 
@@ -349,6 +353,8 @@ rarity:2
 experience:3
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
+spells:ARROW
+spell-freq:12
 light:1
 friends:100:2d6:Same
 flags:DROP_60 | OPEN_DOOR | BASH_DOOR
@@ -473,6 +479,8 @@ rarity:1
 experience:19
 blow:BITE:HURT:2d2
 blow:BITE:HURT:3d2
+spells:SCARE
+spell-freq:11
 flags:EVIL | ANIMAL
 desc:A ratlike creature with a humanlike face. "The bones of the tiny paws, it is rumoured, imply prehensile characteristics more typical of a diminutive monkey than a of a rat; while the small skull with its savage yellow fangs is of the utmost anomalousness, appearing from certain angles like a miniature, monstrously degrade parody of a human skull."
 
@@ -490,6 +498,8 @@ rarity:1
 experience:16
 blow:BITE:ACID:2d4
 blow:BITE:ACID:2d4
+spells:BR_ACID
+spell-freq:10
 flags:ANIMAL | EMPTY_MIND | KILL_ITEM | KILL_BODY
 desc:It is slowly making its way towards you, eating everything in its path...
 
@@ -508,6 +518,8 @@ experience:16
 blow:CLAW:HURT:1d2
 blow:CLAW:HURT:1d2
 blow:BITE:POISON
+spells:WOUND | S_UNDEAD
+spell-freq:10
 friends:100:2d6:Same
 flags:RAND_25 | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | EVIL | UNDEAD | IM_POIS | NO_CONF | NO_SLEEP | HURT_LIGHT
 desc:Frightening skeletal figures in black robes.
@@ -546,6 +558,8 @@ blow:HIT:HURT:1d5
 blow:HIT:HURT:1d5
 blow:TOUCH:EAT_GOLD
 blow:TOUCH:EAT_ITEM
+spells:ARROW | HEAL | TRAPS
+spell-freq:20
 flags:UNIQUE | MALE | FORCE_SLEEP | ONLY_ITEM | DROP_2 | DROP_GOOD | DROP_GREAT | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | EVIL
 desc:The legendary archer steals from the rich (you qualify).
 
@@ -845,6 +859,8 @@ rarity:1
 experience:15
 blow:CRUSH:HURT:1d8
 blow:CLAW:POISON:1d3
+spells:WOUND | SCARE
+spell-freq:8
 friends:100:2d6:Same
 flags:OPEN_DOOR | BASH_DOOR | HURT_LIGHT | NO_CONF | NO_SLEEP | UNDEAD | EVIL | NO_FEAR | IM_POIS | IM_COLD | COLD_BLOOD
 desc:"...the hand of a corpse -- bloodless and skeletal, and with impossibly long, cracked nails."
@@ -880,6 +896,8 @@ depth:14
 rarity:2
 experience:4
 blow:SPORE:CONFUSE:1d1
+spells:ARROW
+spell-freq:20
 flags:NEVER_MOVE | COLD_BLOOD | MULTIPLY | STUPID | EMPTY_MIND | NO_CONF | NO_SLEEP | NO_FEAR
 desc:It looks weird.
 
@@ -1021,6 +1039,8 @@ rarity:2
 experience:18
 blow:HIT:HURT:1d5
 blow:HIT:CONFUSE:1d3
+spells:BO_FIRE | BO_COLD | CONF
+spell-freq:20
 flags:DROP_60 | EVIL | ATTR_MULTI | ATTR_RAND
 desc:A vaguely humanoid form constantly changing its appearance.
 
@@ -1038,6 +1058,8 @@ rarity:3
 experience:50
 blow:BITE:HURT:6d1
 blow:BITE:HURT:7d1
+spells:BLINK
+spell-freq:12
 flags:BASH_DOOR | ANIMAL
 desc:It looks very cute, except for the razor sharp teeth. It moans ominously as it jumps at your throat!
 
@@ -1072,6 +1094,8 @@ rarity:1
 experience:11
 blow:HIT:HURT:1d7
 blow:HIT:HURT:1d7
+spells:BLINK | WOUND | MISSILE | CONF | SCARE
+spell-freq:12
 light:2
 flags:MALE | FORCE_SLEEP | DROP_60 | OPEN_DOOR | BASH_DOOR | EVIL
 desc:The shaman of a skaven tribe gets his powers from a mystic stone corrupted by chaos, called a Warp Stone.
@@ -1090,6 +1114,8 @@ rarity:1
 experience:13
 blow:GAZE:PARALYZE:1d2
 blow:GAZE:CONFUSE:1d2
+spells:HOLD | CONF
+spell-freq:12
 flags:IM_POIS | EVIL
 desc:A floating eye surrounded by number of smaller eyestalks. Its gaze seems mesmerizing.
 
@@ -1107,6 +1133,8 @@ rarity:1
 experience:24
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
+spells:ARROW
+spell-freq:12
 light:2
 flags:MALE | DROP_2 | OPEN_DOOR | BASH_DOOR
 desc:A warrior trained in melee as well as missile weapons.
@@ -1179,6 +1207,8 @@ experience:32
 blow:CLAW:HURT:1d3
 blow:CLAW:HURT:1d3
 blow:BUTT:HURT:1d6
+spells:HEAL | BLIND | DARKNESS | CONF | WOUND
+spell-freq:17
 flags:DROP_2 | ONLY_ITEM | OPEN_DOOR | BASH_DOOR | EVIL | IM_FIRE | ANIMAL
 desc:"Great greyish-white slippery things which could expand and contract at will, and whose principle shape... was that of a sort of toad without any eyes, but with a curious vibrating mass of short pink tentacles on the end of its blung, vague snout."
 
@@ -1234,6 +1264,8 @@ experience:27
 blow:CLAW:TERRIFY:1d6
 blow:CLAW:TERRIFY:1d6
 blow:BITE:CONFUSE:1d6
+spells:CONF | SCARE
+spell-freq:12
 friends:100:2d6:Same
 flags:OPEN_DOOR | BASH_DOOR | EVIL | DEMON | IM_FIRE | NO_FEAR | NO_CONF
 desc:An ugly screaming little demon servant of Tzeentch.
@@ -1335,6 +1367,8 @@ depth:26
 rarity:4
 experience:23
 blow:CRAWL:POISON:1d4
+spells:SCARE | CONF | BR_LIGHT
+spell-freq:14
 flags:NEVER_MOVE | MULTIPLY | EVIL | IM_POIS | EMPTY_MIND | NO_FEAR
 desc:A chaotic mass of pulsating flesh, mouths and eyes.
 
@@ -1370,6 +1404,8 @@ rarity:2
 experience:20
 blow:TOUCH:EAT_GOLD
 blow:TOUCH:EAT_FOOD
+spells:BLINK
+spell-freq:17
 friends:100:2d6:Same
 light:1
 flags:DROP_60 | ONLY_GOLD | RAND_50 | OPEN_DOOR | MALE | DROP_GOOD
@@ -1391,6 +1427,8 @@ blow:GAZE:PARALYZE
 blow:CLAW:DRAIN_CHARGES:3d5
 blow:CLAW:FIRE:3d5
 blow:BITE:DISENCHANT:2d5
+spells:BO_ACID | CONF | DRAIN_MANA
+spell-freq:17
 flags:NEVER_MOVE | DROP_60 | EVIL | IM_POIS | IM_FIRE | NO_FEAR | NO_CONF | NO_SLEEP | IM_DISEN
 desc:A creature like a giant purple Buddha with lots of teeth. It cleans them with the bones of sorcerors.
 
@@ -1408,6 +1446,8 @@ rarity:2
 experience:64
 blow:STING:HURT:1d10
 blow:BITE:HURT:1d10
+spells:HOLD | CONF | BO_COLD | HEAL | DARKNESS
+spell-freq:25
 flags:FEMALE | RAND_25 | DROP_60 | DROP_2 | IM_POIS | IM_COLD | IM_WATER | OPEN_DOOR | BASH_DOOR | EMPTY_MIND | EVIL
 desc:A giant snake-like figure with a woman's torso. Not as strong as other nagas, but more talented in magic.
 
@@ -1445,6 +1485,8 @@ experience:46
 blow:CLAW:POISON:2d5
 blow:CLAW:POISON:2d5
 blow:BUTT:HURT:3d5
+spells:SCARE | S_ANIMAL | WOUND | SLOW
+spell-freq:12
 flags:DROP_60 | OPEN_DOOR | BASH_DOOR | IM_COLD | EVIL | DEMON | UNDEAD | IM_POIS | NONLIVING
 desc:An unfortunate individual, who was killed by the incurable disease known as Nurgle's Rot, and was transformed into a rotting demon zombie. It has but one eye, and a single pale horn in its forehead.
 
@@ -1462,6 +1504,8 @@ rarity:1
 experience:50
 blow:BITE:HURT:1d6
 blow:BITE:HURT:1d6
+spells:BR_DARK
+spell-freq:20
 friends:100:2d6:Same
 flags:FORCE_SLEEP | BASH_DOOR | HURT_LIGHT | ANIMAL
 desc:A hole in the air in the shape of a huge hound.  No light falls upon its form.
@@ -1498,6 +1542,8 @@ rarity:2
 experience:56
 blow:STING:POISON:1d4
 blow:BITE:LOSE_STR:1d2
+spells:CONF | S_MONSTER | S_DEMON
+spell-freq:17
 flags:IM_POIS | IM_COLD | COLD_BLOOD | ANIMAL | EVIL | NO_SLEEP | NO_CONF
 desc:"They were pinkish things about five feet long; with crustaceous bodies bearing vast pairs of dorsal fins or membranous wings and several sets of articulate limbs, and with a sort of convoluted ellipsoid, covered with multitudes of very short antenna, where a head would ordinarily be..."
 
@@ -1571,6 +1617,8 @@ rarity:2
 experience:92
 blow:CLAW:HURT:2d6
 blow:CLAW:HURT:2d6
+spells:SCARE | CONF
+spell-freq:9
 flags:FORCE_SLEEP | ONLY_GOLD | DROP_2 | OPEN_DOOR | BASH_DOOR | ANIMAL
 desc:It will eat you if you cannot answer its riddle.
 
@@ -1653,6 +1701,8 @@ experience:30
 blow:HIT:POISON:3d4
 blow:HIT:CONFUSE:2d3
 blow:HIT:PARALYZE:2d3
+spells:BLIND | CONF | SCARE | WOUND | BO_COLD
+spell-freq:17
 flags:FORCE_SLEEP | NEVER_MOVE | EMPTY_MIND | COLD_BLOOD | NO_CONF | NO_SLEEP | NO_FEAR
 desc:A strange creature that disguises itself as a door to lure unsuspecting adventurers within reach of its venomous claws.
 
@@ -1687,6 +1737,8 @@ rarity:2
 experience:87
 blow:HIT:CONFUSE:3d5
 blow:HIT:EXP_20:1d5
+spells:MISSILE | BO_FIRE | CONF | TPORT
+spell-freq:12
 flags:DROP_2 | OPEN_DOOR | BASH_DOOR | NO_CONF | NO_SLEEP | EVIL | IM_FIRE | ATTR_RAND | ATTR_MULTI
 desc:A truly loathsome thing, twisted by chaos, it is a mixture of several different kinds of creature.
 
@@ -1704,6 +1756,8 @@ rarity:2
 experience:121
 blow:CLAW:CONFUSE:2d5
 blow:CLAW:CONFUSE:2d5
+spells:SCARE | S_DEMON | WOUND | CONF | BO_FIRE | BO_COLD
+spell-freq:12
 flags:DROP_60 | FEMALE | OPEN_DOOR | BASH_DOOR | NO_CONF | NO_SLEEP | EVIL | DEMON | IM_POIS | IM_FIRE
 desc:It is minor female demon, vaguely human-like, but with crab-like pincers instead of hands. She wears a rather indecent skimpy leather bikini, moves quickly and casts deadly spells!
 
@@ -1738,6 +1792,8 @@ rarity:1
 experience:45
 blow:STING:POISON:2d7
 blow:STING:POISON:2d7
+spells:TELE_TO | HEAL | SCARE | WOUND | BLIND | S_MONSTER
+spell-freq:17
 flags:ANIMAL | EVIL | IM_POIS
 desc:A devil ray of the depths, with priestly magic.
 
@@ -1878,6 +1934,8 @@ rarity:1
 experience:234
 blow:CLAW:HURT:3d9
 blow:CLAW:HURT:3d9
+spells:BA_FIRE | S_UNDEAD
+spell-freq:25
 flags:RAND_50 | EVIL | DEMON | FORCE_SLEEP | OPEN_DOOR | BASH_DOOR | POWERFUL | COLD_BLOOD | IM_FIRE | IM_NETHER | NO_CONF | NO_SLEEP | NONLIVING | NO_STUN
 desc:A pale, corpse-like lesser demon, who moves very fast and spawns evil everywhere.
 
@@ -1895,6 +1953,8 @@ rarity:1
 experience:120
 blow:BITE:POISON:5d5
 blow:BITE:POISON:5d5
+spells:BR_POIS
+spell-freq:14
 flags:EMPTY_MIND | BASH_DOOR | POWERFUL | IM_POIS | NO_STUN
 desc:This cute fish is among the most poisonous creatures there are.
 
@@ -1947,6 +2007,8 @@ rarity:3
 experience:59
 blow:BITE:POISON:5d5
 blow:BITE:POISON:5d5
+spells:BA_POIS | S_MONSTER | SCARE | HOLD | BO_POIS
+spell-freq:12
 friends:100:2d6:Same
 light:2
 flags:MALE | IM_POIS | IM_ACID | DROP_60 | DROP_2 | OPEN_DOOR | BASH_DOOR | EVIL
@@ -2004,6 +2066,8 @@ blow:KICK:HURT:5d2
 blow:HIT:HURT:5d1
 blow:KICK:HURT:5d5
 blow:HIT:HURT:5d1
+spells:BO_ELEC
+spell-freq:17
 light:2
 flags:MALE | DROP_60 | DROP_2 | OPEN_DOOR | BASH_DOOR | IM_FIRE | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
 desc:A green-garbed monk, trained in martial arts.
@@ -2041,6 +2105,8 @@ rarity:1
 experience:166
 blow:HIT:HURT:1d3
 blow:HIT:HURT:1d3
+spells:CONF | MISSILE | DARKNESS | BO_MANA
+spell-freq:20
 friends:100:2d6:Same
 flags:MALE | FORCE_SLEEP | ONLY_ITEM | DROP_2 | OPEN_DOOR | BASH_DOOR | EVIL | IM_POIS | HURT_LIGHT
 desc:A dark elven mage with spells of frightening destructive power.
@@ -2077,6 +2143,8 @@ experience:60
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
 blow:TOUCH:EXP_20
+spells:SCARE | DRAIN_MANA
+spell-freq:10
 flags:FORCE_SLEEP | RAND_25 | DROP_60 | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | EVIL | UNDEAD | IM_COLD | IM_POIS | HURT_LIGHT | NO_CONF | NO_SLEEP
 desc:It is a ghostly apparition with a humanoid form.
 
@@ -2096,6 +2164,8 @@ blow:HIT:HURT:3d6
 blow:HIT:HURT:3d6
 blow:HIT:DISENCHANT
 blow:TOUCH:EAT_GOLD
+spells:HEAL | HASTE | BO_FIRE
+spell-freq:12
 flags:UNIQUE | MALE | FORCE_SLEEP | ONLY_ITEM | DROP_60 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | EVIL | IM_FIRE | IM_COLD | NO_CONF | NO_SLEEP | IM_DISEN
 desc:This tiny night dwarf is as greedy for gold as his brother, Alberich.
 
@@ -2115,6 +2185,8 @@ blow:HIT:HURT:3d7
 blow:HIT:HURT:3d7
 blow:HIT:HURT:3d7
 blow:HIT:DISENCHANT
+spells:HEAL | HASTE | BO_FIRE
+spell-freq:12
 flags:UNIQUE | MALE | FORCE_SLEEP | ONLY_ITEM | DROP_60 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | EVIL | IM_FIRE | IM_COLD | NO_CONF | NO_SLEEP
 desc:Alberich's son, born of a mortal woman won with gold.
 
@@ -2187,6 +2259,8 @@ experience:192
 blow:GAZE:TERRIFY:1d4
 blow:GAZE:TERRIFY:1d4
 blow:CRUSH:HURT:44d1
+spells:TPORT | BLINK | TELE_AWAY
+spell-freq:11
 flags:EVIL | IM_FIRE | IM_POIS | IM_NETHER | IM_WATER | IM_PLASMA | IM_DISEN | IM_NEXUS | KILL_WALL
 desc:This creature just might crush you.
 
@@ -2225,6 +2299,8 @@ blow:GAZE:BLIND:8d8
 blow:TOUCH:TERRIFY
 blow:GAZE:EXP_40
 blow:TOUCH:EAT_ITEM
+spells:DRAIN_MANA | BLINK | BLIND | SCARE | CONF | S_UNDEAD | S_MONSTER | HEAL | TELE_AWAY | DARKNESS | S_HYDRA | TRAPS | FORGET | TELE_TO | SHRIEK
+spell-freq:25
 flags:ONLY_ITEM | DROP_60 | DROP_2 | DROP_GOOD | DROP_GREAT | CHAR_CLEAR | ATTR_CLEAR | INVISIBLE | COLD_BLOOD | NO_CONF | UNIQUE | NO_SLEEP | IM_FIRE | IM_ELEC | EMPTY_MIND | EVIL | SMART
 desc:What is It?
 
@@ -2262,6 +2338,8 @@ blow:TOUCH:DISENCHANT:1d10
 blow:TOUCH:DISENCHANT:1d10
 blow:TOUCH:DISENCHANT:1d10
 blow:TOUCH:DISENCHANT:1d10
+spells:DRAIN_MANA
+spell-freq:17
 flags:STUPID | WEIRD_MIND | IM_DISEN | IM_ACID | IM_POIS | NO_CONF
 desc:It looks like an anteater, and there is a static feeling crackling around its long trunk.
 
@@ -2313,6 +2391,8 @@ rarity:1
 experience:92
 blow:STING:POISON:2d8
 blow:STING:EXP_40:2d8
+spells:HEAL | SCARE | WOUND | BLIND | FORGET | HASTE
+spell-freq:17
 flags:ANIMAL | EVIL | IM_NETHER | IM_POIS
 desc:A devil ray of the depths, with vampiric powers.
 
@@ -2331,6 +2411,8 @@ experience:168
 blow:CLAW:COLD:2d4
 blow:CLAW:COLD:2d4
 blow:BUTT:HURT:2d9
+spells:BR_COLD | BO_ICE | BO_COLD | BA_COLD
+spell-freq:12
 flags:RAND_25 | DROP_60 | OPEN_DOOR | BASH_DOOR | IM_COLD | ANIMAL | EVIL
 desc:A creature with a sharp horn: "the hairy myth-thing of the Greenland ice, that walked sometimes on two legs, sometimes on four, and sometimes on six."
 
@@ -2350,6 +2432,8 @@ blow:GAZE:TERRIFY
 blow:HIT:POISON:6d6
 blow:CLAW:LOSE_CON
 blow:CLAW:LOSE_CON
+spells:TRAPS | WOUND | DARKNESS | S_UNDEAD | SCARE | SLOW | S_KIN
+spell-freq:20
 flags:UNIQUE | MALE | UNDEAD | EVIL | COLD_BLOOD | IM_POIS | IM_COLD | NO_FEAR | ONLY_ITEM | DROP_60 | DROP_GOOD | OPEN_DOOR | BASH_DOOR
 desc:He is out to have a revenge on you who have desecrated his tomb.
 
@@ -2385,6 +2469,8 @@ rarity:3
 experience:45
 blow:HIT:HURT:1d8
 blow:HIT:HURT:1d8
+spells:BLIND | CONF | TPORT
+spell-freq:12
 friends:100:2d6:Same
 light:2
 flags:MALE | BASH_DOOR | OPEN_DOOR
@@ -2406,6 +2492,8 @@ blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
+spells:BLIND | CONF | SCARE | FORGET
+spell-freq:33
 light:1
 flags:FORCE_SLEEP | NO_FEAR | ONLY_ITEM | DROP_2 | DROP_GOOD | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | IM_ACID | IM_POIS | NO_CONF | NO_SLEEP
 desc:A lesser angel wearing little more than a loincloth - its steely skin provides all the protection it needs.
@@ -2426,6 +2514,8 @@ blow:HIT:DISENCHANT:3d12
 blow:HIT:DISENCHANT:3d12
 blow:TOUCH:EAT_GOLD
 blow:TOUCH:EAT_GOLD
+spells:HEAL | SCARE | BO_ACID | BA_ACID | TPORT | S_MONSTER
+spell-freq:17
 flags:UNIQUE | MALE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | INVISIBLE | EVIL | IM_FIRE | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | IM_DISEN
 desc:Made invisible with his magic cap, the greedy dwarf plots for world domination through his riches.
 
@@ -2478,6 +2568,8 @@ rarity:2
 experience:224
 blow:ENGULF:FIRE:3d6
 blow:ENGULF:FIRE:3d6
+spells:BO_FIRE | BA_FIRE
+spell-freq:33
 flags:FORCE_SLEEP | BASH_DOOR | IM_FIRE | IM_POIS | DEMON | EVIL | IM_PLASMA | NO_CONF | NO_SLEEP | NO_FEAR | NONLIVING
 desc:It looks like an inverted mushroom, with two flexible arms.
 
@@ -2497,6 +2589,8 @@ blow:CRUSH:PARALYZE:3d5
 blow:CRUSH:PARALYZE:3d5
 blow:CRUSH:PARALYZE:3d5
 blow:CRUSH:PARALYZE:3d5
+spells:BA_FIRE | BA_ELEC | BA_POIS | HASTE | TRAPS | SHRIEK | HOLD | CONF
+spell-freq:20
 flags:FORCE_SLEEP | NO_FEAR | NEVER_MOVE | ONLY_GOLD | DROP_4 | EVIL | IM_POIS | NO_CONF | NO_SLEEP | IM_FIRE
 desc:This creature look like a pillar of rock. However, a closer inspection reveals a glaring eye and powerful tentacles, which crush its prey and feed it to the creature's hungry mouth.
 
@@ -2514,6 +2608,8 @@ rarity:1
 experience:64
 blow:HIT:HURT:1d8
 blow:HIT:HURT:1d8
+spells:SCARE
+spell-freq:17
 friends:100:2d6:Same
 flags:DROP_60 | OPEN_DOOR | BASH_DOOR | EVIL
 desc:Headless humanoid abominations created by a magical mutation.
@@ -2552,6 +2648,8 @@ experience:164
 blow:BITE:HURT:1d6
 blow:BITE:HURT:1d6
 blow:BITE:HURT:1d6
+spells:SCARE | HASTE
+spell-freq:17
 flags:ANIMAL | IM_ACID | EVIL
 desc:A scaly bird larger than an elephants, with a horse-like head.
 
@@ -2608,6 +2706,8 @@ blow:WAIL:DISENCHANT
 blow:WAIL:EXP_20
 blow:WAIL:EAT_GOLD
 blow:WAIL:EAT_ITEM
+spells:S_DEMON | SHRIEK
+spell-freq:7
 flags:COLD_BLOOD | EVIL | NO_CONF | NO_SLEEP | NO_FEAR | NONLIVING | UNDEAD | IM_FIRE | IM_POIS | EMPTY_MIND | NEVER_MOVE
 desc:Often found in graveyards.
 
@@ -2627,6 +2727,8 @@ blow:MOAN:LOSE_INT
 blow:MOAN:LOSE_WIS
 blow:HIT:EAT_GOLD
 blow:HIT:EAT_GOLD
+spells:SHRIEK | CONF | S_HYDRA | SLOW | BLIND | DRAIN_MANA | BA_POIS | BR_CHAO | FORGET | DARKNESS | BR_POIS
+spell-freq:33
 flags:DROP_2 | DROP_GOOD | DROP_GREAT | ONLY_ITEM | EVIL | MALE | SMART | ANIMAL | IM_POIS | NO_CONF | NO_SLEEP | UNIQUE | FORCE_SLEEP
 desc:The lovable purple reptile is making a guest appearance here.  Flee while you still can!
 
@@ -2645,6 +2747,8 @@ experience:312
 blow:BITE:PARALYZE:4d5
 blow:BITE:LOSE_DEX:4d5
 blow:BITE:LOSE_CON:4d5
+spells:BO_WATE | BO_COLD | BO_ICE | BO_MANA
+spell-freq:20
 flags:FORCE_SLEEP | DROP_GOOD | ANIMAL | IM_COLD | IM_POIS
 desc:Your mind is filled with admiration as you view this wondrous, magical seahorse.
 
@@ -2662,6 +2766,8 @@ rarity:3
 experience:308
 blow:HIT:CONFUSE:5d5
 blow:HIT:TERRIFY:5d5
+spells:BLIND | MIND_BLAST | HOLD | WOUND | FORGET | S_MONSTER
+spell-freq:12
 light:2
 flags:MALE | FORCE_SLEEP | DROP_60 | OPEN_DOOR | BASH_DOOR | SMART | EVIL
 desc:He is using his supernatural talents to bring about your destruction.
@@ -2737,6 +2843,8 @@ experience:511
 blow:SPIT:ACID:1d8
 blow:ENGULF:ACID:2d8
 blow:CRUSH:HURT:4d8
+spells:BR_ACID
+spell-freq:17
 flags:ANIMAL | EVIL | KILL_WALL | IM_ACID
 desc:A gigantic worm dripping with acid. "...even as he looked, one reared up several hundred feet and leveled a bleached, viscous end at him."
 
@@ -2756,6 +2864,8 @@ blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
 blow:HIT:HURT:3d5
+spells:HEAL | HASTE | BLIND | CONF | SCARE
+spell-freq:33
 light:1
 flags:FORCE_SLEEP | NO_FEAR | DROP_GOOD | ONLY_ITEM | DROP_2 | SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 desc:A lesser angel protected by an aura of holiness.  Its muscular form looks extremely powerful next to your own frail body.
@@ -2773,6 +2883,8 @@ depth:42
 rarity:6
 experience:90
 blow:HIT:CONFUSE:8d4
+spells:BLIND | CONF | SCARE | WOUND | BLINK | S_MONSTER
+spell-freq:25
 flags:ATTR_MULTI | ATTR_RAND | FORCE_SLEEP | NEVER_MOVE | MULTIPLY | EMPTY_MIND | COLD_BLOOD | NO_CONF | NO_SLEEP | NO_FEAR
 desc:It is a floor tile corrupted by chaos.
 
@@ -2792,6 +2904,8 @@ blow:CLAW:HURT:1d6
 blow:CLAW:HURT:1d6
 blow:BITE:POISON:1d20
 blow:CRUSH:HURT:2d9
+spells:BR_POIS
+spell-freq:14
 friends:100:2d6:Same
 flags:TROLL | EVIL | OPEN_DOOR | BASH_DOOR | IM_POIS | IM_ACID | REGENERATE
 desc:Pale, bald, fat, hairless troll creatures. Ugly beyond description. Not to mention how bad their breath smells...
@@ -2886,6 +3000,8 @@ experience:292
 blow:CRUSH:HURT:8d4
 blow:CRUSH:HURT:8d4
 blow:CRUSH:HURT:8d4
+spells:BR_ELEC | BR_ACID | BR_POIS
+spell-freq:12
 flags:IM_ACID | IM_WATER | ANIMAL | IM_COLD | MOVE_BODY
 desc:Besides being capable of dragging whole ships underwater, this creature can also harm you with ranged attacks.
 
@@ -2905,6 +3021,8 @@ blow:CLAW:LOSE_STR:3d4
 blow:CLAW:POISON:3d4
 blow:CLAW:POISON:3d4
 blow:BITE:PARALYZE:3d5
+spells:SCARE | HOLD | DARKNESS | S_UNDEAD
+spell-freq:14
 flags:DROP_60 | OPEN_DOOR | BASH_DOOR | FORCE_SLEEP | EVIL | UNDEAD | IM_POIS | IM_COLD | NO_CONF | NO_SLEEP | COLD_BLOOD | HURT_LIGHT
 desc:Flesh is falling off in chunks from this decaying abomination.
 
@@ -2923,6 +3041,8 @@ experience:756
 blow:BITE:HURT:2d5
 blow:CRUSH:HURT:2d10
 blow:CRUSH:HURT:2d10
+spells:S_UNDEAD | MIND_BLAST | WOUND | SCARE | BO_WATE | S_KIN
+spell-freq:20
 flags:UNIQUE | NONLIVING | ONLY_ITEM | DROP_60 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | EVIL | IM_COLD | IM_POIS | DEMON
 desc:A lizard-like Great Old One worshipped by the men of Sarnath.
 
@@ -2940,6 +3060,8 @@ rarity:5
 experience:450
 blow:HIT:HURT:11d8
 blow:HIT:HURT:11d8
+spells:ARROW
+spell-freq:12
 flags:FORCE_SLEEP | DROP_60 | TAKE_ITEM | BASH_DOOR | OPEN_DOOR | MOVE_BODY | EVIL | IM_POIS | IM_ACID | GIANT
 desc:Oh, no! Aaargh! It is the most unnatural, most disgusting creature imaginable: a two-eyed cyclops! This perversion of nature must be exterminated!
 
@@ -2959,6 +3081,8 @@ blow:KICK:HURT:8d1
 blow:HIT:HURT:8d1
 blow:KICK:HURT:8d4
 blow:HIT:HURT:8d1
+spells:HEAL
+spell-freq:14
 light:2
 flags:MALE | DROP_2 | OPEN_DOOR | BASH_DOOR | IM_FIRE | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
 desc:A monk in white robes.  He is skilled in martial arts.
@@ -2978,6 +3102,8 @@ experience:196
 blow:HIT:HURT:2d6
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
+spells:HOLD | SCARE | BLIND | WOUND | TRAPS | DARKNESS | FORGET | HASTE
+spell-freq:25
 flags:MALE | OPEN_DOOR | BASH_DOOR | TAKE_ITEM | DROP_60 | ONLY_ITEM | EVIL | IM_POIS | IM_COLD | NO_CONF | NO_SLEEP
 desc:An embodiment of all the cardinal vices, he beholds you scornfully.
 
@@ -2996,6 +3122,8 @@ experience:673
 blow:KICK:HURT:10d2
 blow:PUNCH:HURT:10d2
 blow:KICK:HURT:10d2
+spells:HEAL | S_SPIDER | BA_MANA | S_DEMON
+spell-freq:17
 light:1
 flags:MALE | FORCE_SLEEP | EVIL | ONLY_ITEM | DROP_60 | ATTR_RAND | INVISIBLE | OPEN_DOOR | BASH_DOOR | IM_ACID | IM_POIS | NO_CONF | NO_SLEEP
 desc:An adept of chaos, feared for his skill of invoking raw Logrus.
@@ -3052,6 +3180,8 @@ experience:373
 blow:WAIL:TERRIFY
 blow:TOUCH:EXP_40
 blow:CLAW:LOSE_INT:1d10
+spells:BLIND | HOLD | DRAIN_MANA | FORGET
+spell-freq:7
 flags:FORCE_SLEEP | RAND_25 | ONLY_ITEM | DROP_60 | DROP_2 | INVISIBLE | COLD_BLOOD | TAKE_ITEM | PASS_WALL | EVIL | UNDEAD | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | ATTR_MULTI | ATTR_RAND
 desc:An almost life-like creature which is nothing more than a phantom created by the Logrus.
 
@@ -3071,6 +3201,8 @@ blow:HIT:HURT:4d3
 blow:HIT:HURT:3d8
 blow:HIT:HURT:4d3
 blow:HIT:HURT:3d8
+spells:HEAL | HASTE | BLIND | SCARE | MIND_BLAST | BO_FIRE | S_MONSTERS
+spell-freq:33
 light:2
 flags:FORCE_SLEEP | NO_FEAR | DROP_GOOD | ONLY_ITEM | DROP_4 | SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_ACID | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 desc:It is an angel moving very quickly, wielding a holy war hammer and casting a volley of powerful spells in your direction.
@@ -3108,6 +3240,8 @@ blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
+spells:TPORT | BLINK | BA_MANA
+spell-freq:17
 light:1
 flags:UNIQUE | MALE | ONLY_ITEM | DROP_2 | DROP_GOOD | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | EVIL
 desc:A magical treatment has turned Jurt, an adept of Logrus, into a Living Trump.
@@ -3143,6 +3277,8 @@ experience:902
 blow:HIT:HURT:1d6
 blow:HIT:HURT:1d6
 blow:BITE:EXP_40:1d8
+spells:TELE_TO | HOLD | CONF | SCARE | WOUND | MIND_BLAST | FORGET | DARKNESS | BO_NETH
+spell-freq:17
 flags:FORCE_SLEEP | DROP_4 | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | REGENERATE | INVISIBLE | PASS_WALL | EVIL | UNDEAD | IM_COLD | IM_POIS | HURT_LIGHT | NO_CONF | NO_SLEEP
 desc:The oriental vampire is a mist-like creature.
 
@@ -3162,6 +3298,8 @@ blow:CLAW:LOSE_CON:1d6
 blow:CLAW:POISON:1d6
 blow:GAZE:EXP_40:3d4
 blow:GAZE:TERRIFY:1d4
+spells:HEAL | HASTE | BLIND | SCARE | S_UNDEAD | BA_POIS | BA_NETH | BA_COLD | DRAIN_MANA | MIND_BLAST | WOUND | DARKNESS | FORGET
+spell-freq:33
 flags:FORCE_SLEEP | NO_FEAR | EVIL | UNDEAD | COLD_BLOOD | ONLY_ITEM | DROP_2 | DROP_60 | SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 desc:Once a powerful ruler, now an even more powerful undead menace.
 
@@ -3199,6 +3337,8 @@ experience:529
 blow:CLAW:HURT:1d5
 blow:CLAW:HURT:1d5
 blow:BITE:HURT:2d6
+spells:BR_FIRE
+spell-freq:17
 friends:100:2d6:Same
 light:1
 flags:FORCE_SLEEP | ONLY_ITEM | DROP_60 | OPEN_DOOR | BASH_DOOR | EVIL | DRAGON | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
@@ -3219,6 +3359,8 @@ experience:217
 blow:CLAW:HURT:2d6
 blow:CLAW:HURT:2d6
 blow:BITE:HURT:1d6
+spells:BR_ELEC | BR_FIRE
+spell-freq:8
 friends:100:2d6:Same
 flags:DROP_60 | ONLY_GOLD | EVIL | DEMON | HURT_LIGHT | IM_POIS | IM_COLD | HURT_ROCK | NONLIVING
 desc:A weird demon creature with a stone-like skin.
@@ -3237,6 +3379,8 @@ rarity:4
 experience:33
 blow:TOUCH:EAT_GOLD
 blow:TOUCH:EAT_ITEM
+spells:BLINK | TPORT | TELE_TO | WOUND
+spell-freq:17
 friends:100:2d6:Same
 light:1
 flags:INVISIBLE | RAND_25 | TAKE_ITEM | COLD_BLOOD | HURT_LIGHT | EVIL | OPEN_DOOR | MALE
@@ -3274,6 +3418,8 @@ blow:TOUCH:TERRIFY
 blow:TOUCH:EXP_40
 blow:CLAW:LOSE_INT:5d5
 blow:CLAW:LOSE_WIS:5d5
+spells:BLIND | DRAIN_MANA | SCARE | BO_COLD | FORGET
+spell-freq:7
 flags:FORCE_SLEEP | RAND_25 | ONLY_ITEM | DROP_60 | DROP_2 | COLD_BLOOD | TAKE_ITEM | PASS_WALL | EVIL | UNDEAD | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 desc:A phantasmal apparition with no head
 
@@ -3328,6 +3474,8 @@ rarity:1
 experience:155
 blow:HIT:HURT:2d6
 blow:HIT:HURT:2d6
+spells:ARROW
+spell-freq:33
 friends:100:2d6:Same
 flags:OPEN_DOOR | DROP_60 | SMART | EVIL | IM_POIS | MALE
 desc:A rebel halfling who has rejected the halfling tradition of archery.
@@ -3387,6 +3535,8 @@ blow:TOUCH:EXP_80
 blow:TOUCH:EXP_40
 blow:CLAW:LOSE_INT:1d10
 blow:CLAW:LOSE_WIS:1d10
+spells:FORGET | MIND_BLAST
+spell-freq:20
 flags:FORCE_SLEEP | ONLY_ITEM | DROP_60 | INVISIBLE | COLD_BLOOD | PASS_WALL | EVIL | UNDEAD | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 desc:An almost life-like creature which is nothing more than a phantom created by the Pattern.
 
@@ -3404,6 +3554,8 @@ rarity:1
 experience:434
 blow:HIT:HURT:2d10
 blow:HIT:HURT:2d10
+spells:BO_FIRE
+spell-freq:25
 flags:FORCE_SLEEP | REGENERATE | DROP_60 | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | MOVE_BODY | EVIL | UNDEAD | HURT_LIGHT | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 desc:Back from the grave, to wreak vengeance upon the living. A gaunt, tall, skeletal figure wearing a ruined plate mail.
 
@@ -3419,6 +3571,8 @@ hearing:20
 depth:57
 rarity:4
 experience:1228
+spells:BO_ACID | BR_FIRE | BO_MANA | BR_COLD | BR_POIS | BO_WATE | BA_POIS | BR_NETH
+spell-freq:50
 flags:NEVER_MOVE | NEVER_BLOW | NONLIVING | FORCE_SLEEP | DROP_60 | DROP_GOOD | EVIL | COLD_BLOOD | EMPTY_MIND | NO_CONF | NO_FEAR | NO_SLEEP | IM_ACID | IM_COLD | IM_ELEC | HURT_FIRE | IM_NETHER
 desc:A sentient arcane tome casting spells with malevolent intent.
 
@@ -3470,6 +3624,8 @@ rarity:2
 experience:630
 blow:CLAW:HURT:5d6
 blow:CLAW:HURT:5d6
+spells:BLINK | DARKNESS | S_DEMON
+spell-freq:25
 flags:FORCE_SLEEP | PASS_WALL | INVISIBLE | IM_POIS | IM_ACID | IM_FIRE | NO_SLEEP | NO_CONF | NO_STUN | NONLIVING | EVIL | DEMON
 desc:An ugly demon with insect-like extremities and large bulbous eyes.
 
@@ -3489,6 +3645,8 @@ blow:CRUSH:HURT:4d6
 blow:CRUSH:HURT:4d6
 blow:CRUSH:HURT:4d6
 blow:TOUCH:LOSE_WIS
+spells:SCARE | TELE_AWAY | BA_POIS | WOUND | CONF | S_DEMON | S_UNDEAD
+spell-freq:25
 flags:FORCE_SLEEP | OPEN_DOOR | BASH_DOOR | NONLIVING | DEMON | IM_POIS | IM_ACID | NO_CONF | NO_SLEEP
 desc:"...some ridged barrel-shaped objects with thin horizontal arms radiating spoke-like from a central ring and with vertical knobs or bulbs projecting from the head and base of the barrel. Each of these knobs was the hub of a system of five long, flat, triangularly tapering arms arranged around it like the arms of a starfish."
 
@@ -3506,6 +3664,8 @@ rarity:2
 experience:263
 blow:HIT:HURT:2d6
 blow:HIT:HURT:2d6
+spells:HASTE | TPORT | TELE_TO | BLIND | HOLD | SCARE | WOUND | BO_NETH | MIND_BLAST | FORGET | S_UNDEAD | S_DEMON
+spell-freq:33
 flags:MALE | FORCE_SLEEP | ONLY_ITEM | DROP_60 | SMART | OPEN_DOOR | BASH_DOOR | EVIL
 desc:A gaunt figure, clothed in black robes.
 
@@ -3525,6 +3685,8 @@ blow:GAZE:EXP_40:4d8
 blow:GAZE:EXP_40:4d8
 blow:CRUSH:ACID:8d8
 blow:CRUSH:ACID:8d8
+spells:BLINK | SLOW | SCARE | DARKNESS | HEAL | S_UNDEAD | TPORT | TELE_AWAY | HASTE | S_MONSTER | DRAIN_MANA | S_DEMON | S_DRAGON | S_KIN
+spell-freq:33
 flags:FORCE_SLEEP | UNIQUE | NO_STUN | NO_CONF | NO_SLEEP | EVIL | IM_ACID | IM_FIRE | IM_POIS | IM_COLD | IM_NETHER | IM_WATER | IM_PLASMA | IM_DISEN | SMART | IM_NEXUS | NONLIVING | KILL_WALL | BASH_DOOR | DEMON | COLD_BLOOD | ANIMAL | DROP_GOOD | DROP_GREAT | ONLY_ITEM | DROP_2
 desc:This unholy abomination will crush you too. Flee while you can!
 
@@ -3544,6 +3706,8 @@ blow:HIT:HURT:6d6
 blow:HIT:HURT:6d6
 blow:HIT:HURT:3d8
 blow:HIT:HURT:3d8
+spells:TELE_TO | S_KIN
+spell-freq:25
 flags:UNIQUE | MALE | FORCE_SLEEP | ONLY_ITEM | DROP_2 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | EVIL | IM_ACID | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 desc:A Lord of Chaos famous for his skill at arms.
 
@@ -3582,6 +3746,8 @@ blow:CLAW:HURT:3d8
 blow:CLAW:HURT:3d8
 blow:BITE:HURT:5d5
 blow:BITE:HURT:5d5
+spells:BR_PLAS
+spell-freq:11
 light:1
 flags:EVIL | DRAGON | SMART | NO_CONF | NO_SLEEP | IM_FIRE | DROP_4 | BASH_DOOR | IM_PLASMA
 desc:It is a fast, deadly dragonoid creature. It was bred and trained in the Courts of Chaos for assassination.
@@ -3602,6 +3768,8 @@ blow:TOUCH:EXP_40
 blow:TOUCH:DRAIN_CHARGES
 blow:TOUCH:LOSE_DEX:2d10
 blow:TOUCH:LOSE_DEX:2d10
+spells:BLINK | TELE_TO | TELE_AWAY | TELE_LEVEL | WOUND | DRAIN_MANA | BRAIN_SMASH
+spell-freq:33
 flags:FORCE_SLEEP | DROP_60 | SMART | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | EVIL | UNDEAD | IM_COLD | IM_POIS | HURT_LIGHT | NO_CONF | NO_SLEEP
 desc:It is a skeletal form dressed in robes. It looks evil and devious...
 
@@ -3620,6 +3788,8 @@ experience:491
 blow:CLAW:HURT:3d7
 blow:CLAW:HURT:3d7
 blow:CRUSH:HURT:10d5
+spells:BR_CHAO
+spell-freq:11
 flags:FORCE_SLEEP | WEIRD_MIND | BASH_DOOR | ATTR_MULTI | ATTR_RAND | NO_CONF | NO_SLEEP | EVIL
 desc:"It had the appearance of a butterfly, but but a butterfly with wings so huge they blotted out the sun... it had a man's body, covered with hairs or feathers hued like a peacocks..."
 
@@ -3637,6 +3807,8 @@ rarity:2
 experience:396
 blow:TOUCH:EXP_40:3d4
 blow:TOUCH:EXP_40:3d4
+spells:SLOW | BR_TIME
+spell-freq:14
 flags:PASS_WALL | IM_POIS | IM_FIRE | NONLIVING | NO_CONF | NO_SLEEP | EVIL | EMPTY_MIND | KILL_ITEM | RAND_50
 desc:You have not seen it yet.
 
@@ -3655,6 +3827,8 @@ experience:373
 blow:CRUSH:PARALYZE:7d4
 blow:CRUSH:PARALYZE:7d4
 blow:CRUSH:PARALYZE:7d4
+spells:BR_WALL
+spell-freq:14
 flags:PASS_WALL | INVISIBLE | IM_DISEN | IM_POIS | IM_COLD | IM_ACID | NO_CONF | NO_SLEEP | EVIL
 desc:"They were only partly material and had the power of aerial motion, despite the absence of wings... Suggestions of monstrous plasticity and of temporary lapses of visibility..."
 
@@ -3670,6 +3844,8 @@ hearing:20
 depth:57
 rarity:4
 experience:456
+spells:CONF | HOLD | DRAIN_MANA | FORGET | MIND_BLAST | SHRIEK
+spell-freq:50
 flags:IM_POIS | IM_COLD | COLD_BLOOD | ANIMAL | EVIL | NO_SLEEP | NO_CONF | NEVER_BLOW
 desc:"Those huge lidless eyes which stared with hate at me, the jointed tendrils which seemed to twist from the head in cosmic rhythms, the ten legs, covered with black shining tentacles and folded into the pallid underbelly, and the semi-circular ridged wings covered with triangular scales -- all this cannot convey the soul-ripping horror of the shape which darted at me. I saw the three mouths of the thing move moistly, and then it was upon me."
 
@@ -3688,6 +3864,8 @@ experience:492
 blow:CRUSH:HURT:20d2
 blow:CRUSH:HURT:20d2
 blow:CRUSH:HURT:20d2
+spells:BRAIN_SMASH | CONF | SCARE | FORGET | TELE_TO | TELE_AWAY | SHRIEK
+spell-freq:11
 flags:FORCE_SLEEP | DROP_4 | BASH_DOOR | SMART | DROP_GOOD | NO_CONF | NO_SLEEP | IM_NEXUS | IM_DISEN
 desc:A vastly intelligent whale from the stars.
 
@@ -3706,6 +3884,8 @@ experience:2917
 blow:CLAW:POISON:8d4
 blow:CLAW:POISON:8d4
 blow:BITE:HURT:8d8
+spells:S_KIN | S_DEMON | BO_WATE | BA_WATE | BO_ACID | BA_ACID
+spell-freq:14
 flags:DROP_60 | DROP_2 | DROP_GOOD | ONLY_ITEM | BASH_DOOR | EVIL | DEMON | IM_FIRE | IM_COLD | IM_POIS | IM_WATER | UNIQUE | MALE | FORCE_SLEEP | POWERFUL | NO_CONF | NO_SLEEP
 desc:The king of the deep ones. "Vast, Polyphemous-like, and loathsome, it darted like a stupendous monster of nightmares..."
 
@@ -3724,6 +3904,8 @@ experience:3750
 blow:CLAW:POISON:8d4
 blow:CLAW:POISON:8d4
 blow:BITE:HURT:8d8
+spells:S_HYDRA | S_DEMON | DARKNESS | BA_WATE | BO_ACID | BA_ACID
+spell-freq:14
 flags:DROP_60 | DROP_2 | DROP_GOOD | ONLY_ITEM | BASH_DOOR | EVIL | DEMON | IM_FIRE | IM_COLD | IM_POIS | IM_WATER | UNIQUE | FEMALE | FORCE_SLEEP | POWERFUL | NO_CONF | NO_SLEEP
 desc:The queen of the deep ones. "Vast, Polyphemous-like, and loathsome, it darted like a stupendous monster of nightmares..."
 
@@ -3743,6 +3925,8 @@ blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:DRAIN_CHARGES:5d5
 blow:HIT:DISENCHANT:5d5
+spells:BO_FIRE | BO_COLD | HOLD | BO_MANA | S_MONSTER | TRAPS | BO_ICE | HEAL | BO_PLAS | BA_MANA
+spell-freq:50
 light:2
 flags:UNIQUE | MALE | FORCE_SLEEP | ONLY_ITEM | DROP_2 | DROP_GOOD | SMART | OPEN_DOOR | TAKE_ITEM | BASH_DOOR | EVIL
 desc:Mandor is one of the greatest Logrus Masters, a formidable magician.
@@ -3763,6 +3947,8 @@ blow:HIT:HURT:4d6
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:HURT:4d6
+spells:HEAL | HASTE | TELE_AWAY | CONF | BO_MANA | BO_PLAS | S_MONSTERS | S_AINU
+spell-freq:9
 light:2
 flags:FORCE_SLEEP | SMART | NO_FEAR | DROP_GOOD | ONLY_ITEM | DROP_4 | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_ACID | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 desc:It is an angel, fast and strong.  You are stunned by its extreme holiness and try to resist all desires to obey it.
@@ -3783,6 +3969,8 @@ blow:HIT:FIRE:6d6
 blow:HIT:FIRE:6d6
 blow:HIT:FIRE:6d6
 blow:HIT:FIRE:6d6
+spells:BO_PLAS | BA_FIRE
+spell-freq:25
 light:2
 flags:UNIQUE | FORCE_SLEEP | RAND_25 | EMPTY_MIND | MALE | KILL_ITEM | KILL_BODY | BASH_DOOR | POWERFUL | EVIL | IM_FIRE | NONLIVING | IM_POIS | NO_CONF | NO_SLEEP
 desc:A towering fire elemental, Loge burns everything beyond recognition.
@@ -3801,6 +3989,8 @@ rarity:20
 experience:763
 blow:STING:LOSE_STR:1d5
 blow:TOUCH:PARALYZE:3d4
+spells:BLIND | CONF | BO_FIRE
+spell-freq:14
 flags:FORCE_SLEEP | ONLY_ITEM | DROP_60 | OPEN_DOOR | BASH_DOOR | POWERFUL | EVIL | DEMON | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 desc:"Shocking and uncouth black things with smooth, oily, whale-like surfaces, unpleasant horns that curved inward toward each other, bat wings whose beating made no sound, ugly prehensile paws, and barbed tails that lashed needlessly and disquietingly. And worst of all, they never spoke or laughed, and never smiled because they had no faces at all to smile with, but only to a suggestive blankness where a face ought to be."
 
@@ -3819,6 +4009,8 @@ experience:1018
 blow:CLAW:HURT:11d2
 blow:CLAW:HURT:11d2
 blow:CLAW:HURT:22d1
+spells:BO_PLAS
+spell-freq:50
 flags:IM_POIS | OPEN_DOOR | BASH_DOOR | MALE | IM_PLASMA | NONLIVING | IM_FIRE | NO_CONF | NO_SLEEP | EVIL | DEMON
 desc:A minor demon lord with a goat's head, tough to kill.
 
@@ -3838,6 +4030,8 @@ blow:BITE:POISON:10d3
 blow:BITE:POISON:10d3
 blow:BITE:POISON:10d3
 blow:BITE:POISON:10d3
+spells:BR_POIS | BR_FIRE | SCARE | CONF
+spell-freq:20
 flags:FORCE_SLEEP | UNIQUE | ONLY_GOLD | DROP_2 | DROP_4 | BASH_DOOR | MOVE_BODY | EVIL | ANIMAL | IM_POIS
 desc:A strange reptilian hybrid with multiple heads dripping venom.
 
@@ -3857,6 +4051,8 @@ blow:KICK:HURT:24d1
 blow:HIT:HURT:24d1
 blow:CLAW:EXP_80:4d2
 blow:CLAW:LOSE_DEX:4d2
+spells:BLINK | TELE_TO | BLIND | HOLD | CONF | SCARE | WOUND | DRAIN_MANA | BRAIN_SMASH | S_UNDEAD
+spell-freq:33
 flags:FORCE_SLEEP | SMART | ONLY_ITEM | DROP_2 | DROP_4 | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | EVIL | UNDEAD | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 desc:A skeletal form wrapped in priestly robes.  Before its un-death, it was a monk in an evil order...
 
@@ -3876,6 +4072,8 @@ blow:TOUCH:FIRE:1d10
 blow:TOUCH:LOSE_WIS:1d10
 blow:TOUCH:FIRE:1d10
 blow:TOUCH:LOSE_INT:1d10
+spells:BLINK | TPORT | CONF | BA_FIRE | DRAIN_MANA | HASTE | BO_PLAS
+spell-freq:25
 light:1
 flags:FORCE_SLEEP | RAND_25 | EVIL | SMART | EMPTY_MIND | IM_PLASMA | KILL_ITEM | PASS_WALL | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_FEAR | NONLIVING | NO_STUN
 desc:It is a living entity of fire. Fire springs up wherever this creature touches.
@@ -3896,6 +4094,8 @@ blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
+spells:BO_ICE | BO_WATE | BA_COLD | BA_WATE
+spell-freq:25
 flags:UNIQUE | FEMALE | DROP_4 | ONLY_ITEM | DROP_GOOD | FORCE_SLEEP | RAND_25 | KILL_ITEM | KILL_BODY | BASH_DOOR | POWERFUL | EVIL | IM_POIS | NO_CONF | NO_SLEEP | NO_FEAR
 desc:The Queen of the Sea where the Pattern is reflected is a cunning diplomat and a dangerous foe. "A woman sat upon the throne... and her hair was green, though streaked with silver, and her eyes were round of moons of jade and her brows rose like the wings of olive gulls. Her mouth was small, her chin was small; her cheeks were high and wide and rounded. A circlet of white gold crossed her brow and there was a crystal necklace about her neck. At its tip there flashed a sapphire between her sweet bare breasts, whose nipples were also bare green. She wore scaled trunks of blue and a silver belt, and she held a scepter of pink coral in her hand and had a ring upon every finger, and each ring had a stone of a different blue within it. She did not smile..."
 
@@ -3914,6 +4114,8 @@ experience:1925
 blow:CRUSH:SHATTER:8d6
 blow:TOUCH:LOSE_CON:1d2
 blow:TOUCH:LOSE_CON:1d2
+spells:SCARE | CONF | HOLD | S_DEMON | MIND_BLAST | HEAL | HASTE | FORGET | BRAIN_SMASH
+spell-freq:20
 flags:IM_FIRE | IM_PLASMA | IM_COLD | IM_POIS | KILL_WALL | ONLY_GOLD | DROP_2 | DROP_4 | EVIL
 desc:"Flowing tentacles and a pulpy gray-black elongated sack of a body... no distinguishing features at all other than the reaching, groping tentacles. Or was there -- yes! -- a lump in the upper body of the thing... a container of sorts for the brain, ganglia, or whichever diseased organ governed this horror's loathsome life!"
 
@@ -3931,6 +4133,8 @@ rarity:2
 experience:724
 blow:ENGULF:CONFUSE:8d4
 blow:ENGULF:CONFUSE:8d4
+spells:BR_CHAO | BR_NEXU | BR_POIS
+spell-freq:17
 flags:FORCE_SLEEP | RAND_50 | RAND_25 | IM_NEXUS | IM_FIRE | IM_ELEC | EMPTY_MIND | BASH_DOOR | POWERFUL | ATTR_MULTI | ATTR_RAND | NO_CONF | NO_SLEEP | NO_FEAR | NONLIVING
 desc:A swirling spiral of mist, constantly changing its appearance.
 
@@ -3981,6 +4185,8 @@ rarity:2
 experience:4035
 blow:HIT:HURT:12d9
 blow:HIT:HURT:12d9
+spells:HEAL | TELE_TO | BLIND | CONF | WOUND | DARKNESS | FORGET | HOLD | S_MONSTER | S_MONSTERS | S_DEMON | TPORT | BA_NETH | MIND_BLAST | S_KIN
+spell-freq:50
 flags:MALE | REGENERATE | UNIQUE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | SMART | OPEN_DOOR | BASH_DOOR | EVIL | HURT_LIGHT | NO_CONF | NO_SLEEP | NO_STUN
 desc:One of the oldest and most powerful dark elves, Malekith is a master sorcerer devoted to evil. The left side of his face is pale, the other one is dark. His hair is long and white.
 
@@ -4055,6 +4261,8 @@ blow:GAZE:EXP_80
 blow:GAZE:PARALYZE
 blow:HIT:HURT:8d6
 blow:HIT:HURT:8d6
+spells:HOLD | SCARE | WOUND | BO_FIRE | BO_PLAS | BA_ACID | S_HYDRA
+spell-freq:50
 light:2
 flags:UNIQUE | FEMALE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | SMART | OPEN_DOOR | BASH_DOOR | EVIL | IM_ACID | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 desc:Brand's one-time mistress.  Her face could sink a thousand ships, but Brand is not too selective.
@@ -4074,6 +4282,8 @@ experience:632
 blow:CLAW:HURT:2d6
 blow:CLAW:HURT:2d6
 blow:CLAW:HURT:2d8
+spells:BLIND | S_DEMON | CONF | SCARE | DARKNESS
+spell-freq:50
 flags:FEMALE | FORCE_SLEEP | ONLY_ITEM | DROP_2 | OPEN_DOOR | BASH_DOOR | EVIL | NO_CONF | NO_SLEEP
 desc:This old crone is rumoured to be a witch of chaos... but you don't really believe in witches, do you?
 
@@ -4092,6 +4302,8 @@ experience:492
 blow:HIT:HURT:3d4
 blow:HIT:HURT:8d12
 blow:HIT:HURT:8d12
+spells:BLIND | CONF
+spell-freq:12
 friends:100:2d6:Same
 flags:FORCE_SLEEP | ONLY_ITEM | DROP_60 | OPEN_DOOR | BASH_DOOR | POWERFUL | NONLIVING | EVIL | DEMON | IM_FIRE | NO_CONF | NO_SLEEP
 desc:It is a demon swinging wildly with two clubs.
@@ -4111,6 +4323,8 @@ experience:808
 blow:CRUSH:HURT:33d2
 blow:CRUSH:HURT:33d2
 blow:CRUSH:HURT:33d2
+spells:BR_POIS | BA_WATE
+spell-freq:11
 flags:FORCE_SLEEP | IM_FIRE | DROP_4 | UNIQUE | WEIRD_MIND | BASH_DOOR | SMART | EVIL | IM_COLD | NO_CONF | NO_SLEEP | IM_WATER
 desc:A gargantuan mutant whale, who has grown legs that enable it to walk on dry land as well.
 
@@ -4130,6 +4344,8 @@ blow:CLAW:HURT:5d5
 blow:CLAW:HURT:5d5
 blow:HIT:LOSE_STR:4d4
 blow:TOUCH:EXP_80:8d1
+spells:WOUND | HOLD | SCARE | BLIND | BO_ACID | S_DEMON | FORGET | BO_NETH | MIND_BLAST | DARKNESS
+spell-freq:33
 flags:UNIQUE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | INVISIBLE | COLD_BLOOD | PASS_WALL | MOVE_BODY | NONLIVING | OPEN_DOOR | BASH_DOOR | IM_POIS | IM_COLD | DEMON | EVIL
 desc:A demon from the Courts of Chaos.  According to Corwin, 'it was well over six feet in height, with great branches of antlers growing out of its forehead.  Nude, its flesh was a uniform ash-gray in color.  It appeared to be sexless, and it had gray, leathery wings extending far out behind it'.
 
@@ -4149,6 +4365,8 @@ blow:GAZE:EXP_40:4d4
 blow:GAZE:EXP_40:4d4
 blow:HIT:HURT:8d6
 blow:HIT:HURT:8d6
+spells:TELE_TO | BLIND | SCARE | WOUND | BO_MANA | S_DEMON | BO_NETH
+spell-freq:33
 light:2
 flags:FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | NO_FEAR | EVIL | SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_FIRE | IM_COLD | IM_POIS | IM_NETHER
 desc:An angelic being who was mighty once but dared defy the Omnipotent to arms.
@@ -4168,6 +4386,8 @@ experience:198
 blow:HIT:HURT:4d8
 blow:HIT:HURT:4d8
 blow:HIT:HURT:4d8
+spells:SCARE | BA_POIS | BLIND
+spell-freq:17
 friends:100:2d6:Same
 flags:DROP_60 | OPEN_DOOR | BASH_DOOR | IM_POIS | EVIL
 desc:Giant headless humanoid abominations created by a magical mutation.
@@ -4188,6 +4408,8 @@ blow:HIT:FIRE:5d5
 blow:HIT:FIRE:5d5
 blow:GAZE:EXP_80
 blow:WAIL:TERRIFY
+spells:WOUND | BO_FIRE | BA_FIRE | BR_FIRE | BO_PLAS | DARKNESS | S_MONSTER | S_DEMON | S_UNDEAD | TPORT | BLINK | SCARE
+spell-freq:33
 light:1
 flags:UNIQUE | MALE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | POWERFUL | OPEN_DOOR | BASH_DOOR | MOVE_BODY | EVIL | UNDEAD | HURT_COLD | IM_POIS | IM_FIRE | IM_PLASMA | NO_CONF | NO_SLEEP
 desc:One of the Dark Judges, he has come to punish your crime of living. He looks like a skeleton enveloped in flames.
@@ -4227,6 +4449,8 @@ blow:HIT:POISON:5d5
 blow:HIT:POISON:5d5
 blow:TOUCH:LOSE_ALL
 blow:TOUCH:EXP_80
+spells:BLIND | SCARE | WOUND | BO_ACID | BO_NETH | BR_POIS | BR_NETH | BLINK | TPORT | S_UNDEAD | BO_POIS
+spell-freq:33
 flags:UNIQUE | MALE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | MOVE_BODY | EVIL | UNDEAD | HURT_FIRE | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 desc:Another Dark Judge, he is a rotting humanoid with a cow's skull as his head.
 
@@ -4244,6 +4468,8 @@ rarity:30
 experience:836
 blow:CLAW:LOSE_STR:3d4
 blow:BITE:EXP_20:3d4
+spells:BO_FIRE | S_DEMON | CONF
+spell-freq:11
 friends:100:2d6:Same
 flags:FORCE_SLEEP | ONLY_ITEM | DROP_2 | OPEN_DOOR | BASH_DOOR | POWERFUL | EVIL | DEMON | IM_FIRE | NO_CONF | NO_SLEEP
 desc:"There flapped rhythmically a horde of tame, trained, hybrid winged things... not altogether crows, nor moles, nor buzzards, nor ants, nor decomposed human beings, but something I cannot and must not recall."
@@ -4264,6 +4490,8 @@ blow:HIT:HURT:8d6
 blow:HIT:HURT:8d6
 blow:HIT:DISENCHANT:6d8
 blow:HIT:DISENCHANT:6d8
+spells:WOUND | BO_WATE | BO_MANA | BA_MANA
+spell-freq:50
 light:2
 flags:UNIQUE | MALE | FORCE_SLEEP | ONLY_ITEM | DROP_2 | DROP_GOOD | SMART | OPEN_DOOR | BASH_DOOR | IM_ACID | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 desc:The madman's son is a Logrus Master, almost as great a menace as his father.
@@ -4284,6 +4512,8 @@ blow:GAZE:TERRIFY:4d4
 blow:GAZE:TERRIFY:4d4
 blow:HIT:HURT:8d6
 blow:HIT:HURT:8d6
+spells:TELE_TO | BLIND | SCARE | WOUND | BO_MANA | S_AINU
+spell-freq:33
 light:2
 flags:FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | NO_FEAR | SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_ACID | IM_COLD | IM_ELEC | IM_POIS
 desc:Never a more heavenly being have you seen.  The very holiness of its presence makes you deeply respect it.  Few creatures can match the powers of an Archon; fewer still live to tell the tale after attacking one.
@@ -4304,6 +4534,8 @@ blow:HIT:ACID:2d4
 blow:HIT:ACID:2d4
 blow:CRUSH:HURT:3d4
 blow:BITE:ACID:6d6
+spells:BO_FIRE | BO_ACID | S_DEMON | MIND_BLAST | DARKNESS
+spell-freq:11
 flags:FORCE_SLEEP | NONLIVING | ONLY_ITEM | DROP_60 | REGENERATE | OPEN_DOOR | BASH_DOOR | POWERFUL | EVIL | DEMON | NO_CONF | NO_SLEEP | HURT_FIRE | IM_POIS
 desc:"...living things that oozed along stone channels... But they were not toads like Tsathoggua himself. Far worse -- they were amorphous lumps of viscous black slime that took temporary shapes for various purposes."
 
@@ -4322,6 +4554,8 @@ experience:1016
 blow:BITE:LOSE_DEX:1d3
 blow:BITE:POISON:1d3
 blow:CRUSH:HURT:9d4
+spells:BLIND | CONF | S_DEMON | BR_DARK
+spell-freq:11
 flags:FORCE_SLEEP | ONLY_ITEM | DROP_60 | OPEN_DOOR | BASH_DOOR | POWERFUL | EVIL | DEMON | HURT_LIGHT | IM_POIS | IM_FIRE | NO_CONF | NO_SLEEP
 desc:"And in the air there were great viperine creatures, which had curiously distorted heads, and grotesquely great clawed appendages, supporting themselves with ease by the aid of black rubbery wings of singularly monstrous dimensions."
 
@@ -4341,6 +4575,8 @@ blow:TOUCH:EXP_80
 blow:TOUCH:EXP_40
 blow:CLAW:LOSE_INT:1d10
 blow:CLAW:LOSE_WIS:1d10
+spells:BO_NETH
+spell-freq:12
 friends:100:2d6:Same
 flags:FORCE_SLEEP | ONLY_ITEM | DROP_60 | POWERFUL | REGENERATE | HURT_LIGHT | INVISIBLE | COLD_BLOOD | PASS_WALL | IM_NETHER | EVIL | DEMON | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 desc:A mighty spirit of darkness of vaguely humanoid form.  Razor-edged claws reach out to end your life as it glides towards you, seeking to suck the energy from your soul to feed its power.
@@ -4360,6 +4596,8 @@ experience:5167
 blow:BUTT:COLD:3d6
 blow:BUTT:FIRE:3d6
 blow:BUTT:ELEC:3d6
+spells:BA_WATE | BR_FIRE | BO_ICE | BA_ELEC | BA_COLD | WOUND | DRAIN_MANA | BRAIN_SMASH | S_UNDEAD
+spell-freq:50
 flags:FORCE_SLEEP | COLD_BLOOD | BASH_DOOR | EVIL | UNDEAD | POWERFUL | SMART | IM_FIRE | IM_COLD | IM_POIS | ONLY_ITEM | DROP_60 | DROP_GOOD | NO_CONF | NO_SLEEP
 desc:It is a huge, twisted grey skull floating through the air. Its cold eyes burn with hatred towards all who live.
 
@@ -4378,6 +4616,8 @@ experience:3684
 blow:ENGULF:HURT:10d8
 blow:ENGULF:HURT:10d8
 blow:ENGULF:HURT:10d8
+spells:BA_WATE
+spell-freq:20
 flags:EVIL | UNIQUE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | SMART | POWERFUL | MOVE_BODY | NEVER_MOVE | IM_ACID | IM_COLD | IM_WATER | IM_POIS | NO_CONF | NO_SLEEP | NO_STUN
 desc:A monstrous dweller of the depths; its hungry maw has been the doom of innumerable sailors!
 
@@ -4397,6 +4637,8 @@ blow:HIT:HURT:5d10
 blow:HIT:HURT:5d10
 blow:HIT:EAT_ITEM:2d10
 blow:HIT:EAT_ITEM:2d10
+spells:HEAL | BA_DARK | HASTE | CONF
+spell-freq:25
 flags:MALE | REGENERATE | NO_CONF | NO_SLEEP | NO_STUN | NO_FEAR | ONLY_ITEM | DROP_60 | DROP_GOOD | DROP_GREAT | UNIQUE | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | SMART | POWERFUL
 desc:Deriving his strength from the shadows, this king of thieves steals only for the challenge.
 
@@ -4415,6 +4657,8 @@ experience:2344
 blow:HIT:EXP_20:8d2
 blow:HIT:LOSE_STR:8d2
 blow:HIT:LOSE_CON:8d2
+spells:SHRIEK | S_HOUND
+spell-freq:20
 flags:MALE | ATTR_MULTI | UNDEAD | EVIL | FORCE_SLEEP | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | ONLY_ITEM | DROP_4 | SMART | OPEN_DOOR | BASH_DOOR | NO_STUN | NO_CONF | NO_SLEEP
 desc:An undead master of the vicious Zephyr hounds.
 
@@ -4453,6 +4697,8 @@ blow:GAZE:TERRIFY
 blow:GAZE:EXP_40
 blow:GAZE:EXP_40
 blow:GAZE:HURT:2d20
+spells:BLIND | HOLD | SCARE | WOUND | MIND_BLAST | BRAIN_SMASH | S_UNDEAD | DRAIN_MANA | FORGET
+spell-freq:33
 flags:UNIQUE | MALE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | INVISIBLE | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | MOVE_BODY | EVIL | UNDEAD | IM_FIRE | IM_COLD | IM_POIS | HURT_LIGHT | NO_CONF | NO_SLEEP
 desc:A Dark Judge, reputedly so frightening that his gaze can kill.
 
@@ -4472,6 +4718,8 @@ blow:CRUSH:HURT:5d6
 blow:CRUSH:HURT:5d6
 blow:BITE:LOSE_STR:1d6
 blow:BITE:LOSE_STR:1d6
+spells:BLIND | WOUND | S_DEMON | HEAL
+spell-freq:11
 flags:FORCE_SLEEP | ONLY_ITEM | DROP_60 | NONLIVING | OPEN_DOOR | BASH_DOOR | POWERFUL | HURT_LIGHT | EVIL | DEMON | IM_FIRE | NO_CONF | NO_SLEEP
 desc:"Something black in the road, something that wasn't a tree. Something big and black and ropy, just squatting there, waiting, with ropy arms squirming and reaching... It came crawling up the hillside... and it was the black thing of my dreams... that black, ropy, slimy jelly tree-thing out of the woods. It crawled up and it flowed up on its hoofs and mouths and snaky arms."
 
@@ -4489,6 +4737,8 @@ rarity:2
 experience:2846
 blow:TOUCH:LOSE_ALL:6d6
 blow:TOUCH:LOSE_ALL:6d6
+spells:DRAIN_MANA | BR_DISE | BR_NETH | TPORT
+spell-freq:11
 flags:FORCE_SLEEP | RAND_25 | INVISIBLE | PASS_WALL | ONLY_ITEM | DROP_4 | ATTR_MULTI | ATTR_RAND | CHAR_CLEAR | SMART | COLD_BLOOD | EVIL | IM_COLD | IM_FIRE | IM_ACID | IM_POIS | NO_STUN | NO_CONF | NO_SLEEP
 desc:"The shaft of phosphorescence from the well... was no longer shining out, it was pouring out; and as the shapeless stream of unplaceable colour left the well it seemed to flow directly into the sky."
 
@@ -4507,6 +4757,8 @@ experience:173
 blow:TOUCH:EXP_40:1d10
 blow:TOUCH:EAT_GOLD
 blow:TOUCH:EAT_ITEM
+spells:BLINK | TPORT | TELE_TO | WOUND | S_UNDEAD
+spell-freq:17
 friends:100:2d6:Same
 light:1
 flags:INVISIBLE | RAND_25 | TAKE_ITEM | COLD_BLOOD | SMART | HURT_LIGHT | EVIL | OPEN_DOOR | MALE | UNDEAD | IM_NETHER
@@ -4528,6 +4780,8 @@ blow:CRUSH:HURT:10d10
 blow:CRUSH:HURT:10d10
 blow:BITE:LOSE_CON:8d2
 blow:BITE:LOSE_CON:8d1
+spells:HOLD | WOUND | CONF | SCARE | FORGET | BRAIN_SMASH | MIND_BLAST | S_DEMON | S_MONSTERS
+spell-freq:17
 flags:UNIQUE | EVIL | DEMON | FORCE_SLEEP | NEVER_MOVE | POWERFUL | IM_FIRE | IM_COLD | IM_POIS | HURT_ROCK | NO_CONF | NO_SLEEP | NO_FEAR
 desc:"The ears were webbed and tentacled, the trunk terminated in a huge flaring disk at least a foot in diameter... Its forelimbs were bent stiffly at the elbow, and its hands... rested palms upward on its lap."
 
@@ -4546,6 +4800,8 @@ experience:2619
 blow:ENGULF:LOSE_CON:4d10
 blow:ENGULF:LOSE_CON:4d10
 blow:ENGULF:LOSE_CON:4d10
+spells:BR_WALL | TELE_AWAY | BR_GRAV | S_KIN | MIND_BLAST | BLIND | BLINK
+spell-freq:25
 flags:FORCE_SLEEP | PASS_WALL | INVISIBLE | DROP_4 | EVIL | OPEN_DOOR | BASH_DOOR | MOVE_BODY | POWERFUL | NONLIVING | SMART | IM_FIRE | IM_COLD | IM_POIS
 desc:"Invisible ones from the stars... They sometimes took forms... but existed as vortices of power in their natural state."
 
@@ -4565,6 +4821,8 @@ blow:HIT:COLD:12d12
 blow:HIT:COLD:12d12
 blow:HIT:COLD:12d12
 blow:HIT:COLD:12d12
+spells:HEAL | TELE_TO | S_KIN | BR_COLD
+spell-freq:33
 flags:UNIQUE | IM_COLD | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | MOVE_BODY | SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | EVIL | GIANT | MALE
 desc:A frost giant chieftain, unusually smart for a giant.
 
@@ -4583,6 +4841,8 @@ experience:12623
 blow:CLAW:HURT:40d1
 blow:TOUCH:EXP_40:1d50
 blow:TOUCH:EXP_40:1d50
+spells:BR_TIME | SLOW | HASTE | HEAL
+spell-freq:33
 flags:UNIQUE | IM_COLD | IM_NETHER | FORCE_SLEEP | ONLY_ITEM | DROP_2 | DROP_GOOD | KILL_BODY | DROP_GREAT | SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | EVIL | UNDEAD | DEMON | REGENERATE
 desc:"It was a figure no larger than a young child, but sere and shriveled as some millenial mummy. Its hairless head, its unfeatured face, borne on a neck of skeleton thinness, were lined with a thousand reticulated wrinkles. The body was like that of some monstrous, withered abortion that had never drawn breath. The pipy arms, ending in bony claws, were outhrust as if ankylosed in posture of an eternal dreadful groping."
 
@@ -4621,6 +4881,8 @@ blow:CLAW:POISON:10d5
 blow:CLAW:POISON:10d5
 blow:CLAW:EXP_40:10d1
 blow:GAZE:TERRIFY
+spells:BLIND | HOLD | SCARE | WOUND | BA_FIRE | BA_NETH | S_UNDEAD | S_MONSTERS | S_HI_UNDEAD | DRAIN_MANA
+spell-freq:33
 flags:UNIQUE | MALE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | SMART | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | MOVE_BODY | EVIL | UNDEAD | IM_ELEC | IM_COLD | HURT_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 desc:The most powerful Dark Judge, whose touch means death.
 
@@ -4639,6 +4901,8 @@ experience:1631
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d4
 blow:HIT:HURT:3d5
+spells:HEAL | BLIND | HOLD | WOUND | BRAIN_SMASH | S_UNDEAD | S_MONSTERS
+spell-freq:50
 light:2
 flags:MALE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | SMART | OPEN_DOOR | BASH_DOOR | EVIL | NO_CONF | NO_SLEEP
 desc:A dark priest of the highest order.  Powerful and evil, beware his many spells.
@@ -4677,6 +4941,8 @@ blow:HIT:DISENCHANT:4d8
 blow:HIT:DISENCHANT:4d8
 blow:HIT:LOSE_STR:4d6
 blow:HIT:LOSE_STR:4d6
+spells:TELE_TO | BLIND | HOLD | CONF | WOUND | DRAIN_MANA | MIND_BLAST | BA_NETH | S_UNDEAD
+spell-freq:33
 flags:FORCE_SLEEP | SMART | ONLY_ITEM | DROP_2 | DROP_GOOD | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | EVIL | UNDEAD | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | KILL_WALL | NO_FEAR
 desc:A humanoid form, black as night, advancing steadily and unstoppably.
 
@@ -4696,6 +4962,8 @@ blow:CRUSH:HURT:25d3
 blow:CRUSH:HURT:25d3
 blow:BITE:LOSE_DEX:2d10
 blow:BITE:LOSE_CON:2d10
+spells:S_MONSTER | SCARE | WOUND | S_HYDRA | S_SPIDER | BA_NETH | BA_POIS | BA_ACID | HOLD | MIND_BLAST
+spell-freq:20
 flags:UNIQUE | FORCE_SLEEP | RAND_25 | KILL_ITEM | BASH_DOOR | POWERFUL | EVIL | IM_ACID | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP | NO_FEAR
 desc:"A body shaped like a road-based, truncated cone. A flat, blunt, wedge-shaped, vaguely reptilian head surmounts this conical torso, and the head is almost entirely hidden behind swirling tresses. This hair, or beard and mane, consists of thickly carved and coiling ropes, like serpents or worms... Through this repulsive Medusa-mane of ropy tendrils, two fierce, serpent-like eyes glare in a horrible intermingling of cold, inhuman mockery and what I can only describe as gloating menace."
 
@@ -4715,6 +4983,8 @@ blow:HIT:TERRIFY:6d6
 blow:HIT:TERRIFY:6d6
 blow:HIT:EXP_80:4d6
 blow:HIT:EXP_80:4d6
+spells:SCARE | HOLD | DRAIN_MANA | BR_NETH
+spell-freq:17
 flags:MALE | ONLY_ITEM | DROP_2 | DROP_GOOD | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | MOVE_BODY | IM_NETHER | SMART | EVIL | UNDEAD | IM_COLD | IM_POIS | HURT_LIGHT | NO_CONF | NO_SLEEP
 desc:A tall black cloaked Ringwraith, radiating an aura of fear.
 
@@ -4751,6 +5021,8 @@ rarity:2
 experience:1159
 blow:HIT:HURT:3d12
 blow:HIT:HURT:3d12
+spells:HEAL
+spell-freq:8
 friends:100:2d6:Same
 light:2
 flags:IM_FIRE | IM_ELEC | IM_COLD | DROP_GOOD | IM_NETHER | IM_NEXUS | IM_DISEN | NO_SLEEP | NO_CONF | NO_FEAR | NO_STUN | DROP_2 | MALE | OPEN_DOOR | BASH_DOOR
@@ -4769,6 +5041,8 @@ depth:63
 rarity:6
 experience:149
 blow:HIT:HURT:20d3
+spells:BLINK | TPORT | TELE_TO
+spell-freq:17
 friends:100:2d6:Same
 light:1
 flags:RAND_25 | TAKE_ITEM | SMART | EVIL | OPEN_DOOR | MALE | NO_FEAR
@@ -4790,6 +5064,8 @@ blow:BITE:HURT:5d8
 blow:BITE:HURT:5d8
 blow:CRUSH:POISON:3d10
 blow:CRUSH:POISON:3d10
+spells:BR_FIRE | BR_ACID
+spell-freq:17
 flags:FORCE_SLEEP | IM_FIRE | IM_ACID | DRAGON | NO_CONF | NO_SLEEP | NO_FEAR
 desc:A huge aquatic dragon, its shell is as large as a small island. Some have called this creature a dragon-turtle.
 
@@ -4809,6 +5085,8 @@ blow:BITE:EXP_40:2d13
 blow:BITE:EXP_40:2d13
 blow:BITE:LOSE_STR:5d8
 blow:GAZE:TERRIFY
+spells:HOLD | SCARE | BR_NEXU | BR_POIS | BR_NETH
+spell-freq:17
 flags:FORCE_SLEEP | EVIL | UNDEAD | ANIMAL | IM_NEXUS | NO_CONF | NO_FEAR | NO_SLEEP | IM_POIS | IM_ACID | IM_COLD | ONLY_ITEM | DROP_4 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | MOVE_BODY
 desc:A deadly undead horror which looks like a skeletal tyrannosaurus surrounded by a sickly green glow.
 
@@ -4826,6 +5104,8 @@ rarity:20
 experience:18750
 blow:TOUCH:LOSE_ALL:1d166
 blow:TOUCH:LOSE_ALL:1d166
+spells:BR_POIS | S_DEMON | DARKNESS | S_UNDEAD | BR_NEXU | BR_CHAO | TELE_TO
+spell-freq:25
 flags:FORCE_SLEEP | NEVER_MOVE | REGENERATE | DROP_4 | DROP_GOOD | ONLY_ITEM | POWERFUL | EVIL | UNIQUE | SMART | IM_FIRE | IM_COLD | IM_ACID | IM_POIS
 desc:"There, about the pulsating body of the Ancient One, hugely winged reptilian creatures without faces cluttered and clutched at a multitude of blackly writhing, pendulous breasts! (Its eyes) moved quickly, independently -- sliding with vile viscosity over the whole rotten surface of Yib-Tstll's pulpy, glistening head!"
 
@@ -4844,6 +5124,8 @@ experience:7260
 blow:CLAW:LOSE_INT:5d10
 blow:CLAW:LOSE_WIS:5d10
 blow:BITE:CONFUSE:5d10
+spells:BR_WALL | TELE_AWAY | BR_GRAV | TELE_LEVEL | S_DEMON | S_UNDEAD | BRAIN_SMASH | HASTE | BLIND | BLINK | BR_INER | WOUND
+spell-freq:25
 flags:FORCE_SLEEP | PASS_WALL | UNIQUE | INVISIBLE | DROP_4 | DROP_GOOD | ONLY_ITEM | OPEN_DOOR | BASH_DOOR | MOVE_BODY | POWERFUL | EVIL | SMART | IM_FIRE | IM_COLD | IM_ELEC
 desc:The chief among the creatures known as Lloigor. Ghatanothoa has assumed a shape which is too horrible to describe: "Nothing I could say could even adumbrate the loathsome, unholy, non-human, extra-galactic horror and hatefulness and unutterabl evil of that forbidden spawn of black chaos, and illimitable night."
 
@@ -4899,6 +5181,8 @@ blow:CLAW:HURT:4d10
 blow:CLAW:HURT:4d10
 blow:BITE:FIRE:14d6
 blow:BITE:POISON:14d6
+spells:BR_FIRE | BR_POIS | SCARE | WOUND | CONF
+spell-freq:33
 light:2
 flags:UNIQUE | MALE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | BASH_DOOR | POWERFUL | MOVE_BODY | EVIL | DRAGON | IM_FIRE | NO_CONF | NO_SLEEP | IM_POIS
 desc:The mighty dragon of the Norse myth, Fafner was a giant who slew his brother to win a treasure hoard, and then transformed himself into a dragon, greedily watching over his hoard.
@@ -4936,6 +5220,8 @@ experience:8971
 blow:CRUSH:HURT:23d10
 blow:CRUSH:HURT:23d10
 blow:CRUSH:HURT:23d10
+spells:S_DEMON | SHRIEK | CONF | SCARE | MIND_BLAST | BLIND
+spell-freq:17
 flags:FORCE_SLEEP | UNIQUE | ONLY_ITEM | DROP_4 | DROP_GOOD | KILL_BODY | SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | EVIL
 desc:"The thing that crouched in the weird green dusk was a living mass of shuddering horror, a ghastly mountain of sensate, quivering flesh, whose tentacles, far-flung in the dim reaches of the subterranean cavern, emitted a strange humming sound, while from the depths of the creature's body came a weird and horrific undulation."
 
@@ -4955,6 +5241,8 @@ blow:BITE:FIRE:5d8
 blow:BITE:FIRE:5d8
 blow:CRUSH:HURT:3d15
 blow:CRUSH:HURT:3d15
+spells:BR_FIRE
+spell-freq:11
 flags:FORCE_SLEEP | ANIMAL | IM_FIRE | IM_ACID | IM_COLD | NO_CONF | NO_SLEEP | NO_FEAR
 desc:A great water-beast, with an almost unpenetrable skin.
 
@@ -4974,6 +5262,8 @@ blow:CLAW:HURT:7d13
 blow:CLAW:HURT:7d13
 blow:BITE:HURT:8d13
 blow:BITE:HURT:8d13
+spells:BR_NETH | BR_COLD | BR_DARK | S_HOUND | S_UNDEAD
+spell-freq:33
 flags:UNIQUE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | MOVE_BODY | IM_NETHER | ANIMAL | EVIL | IM_FIRE | NO_CONF | NO_SLEEP
 desc:Garm is a gigantic hound, whose job is to guard that none escapes the tortures of Hel, the Norse place of punishment for the wicked and cowardly dead.
 
@@ -5011,6 +5301,8 @@ blow:TOUCH:TERRIFY
 blow:CLAW:HURT:6d6
 blow:CLAW:HURT:6d6
 blow:CLAW:HURT:6d6
+spells:HOLD | BLINK | CONF | S_DEMON | BRAIN_SMASH | BR_NETH
+spell-freq:25
 flags:FORCE_SLEEP | NONLIVING | REGENERATE | IM_ACID | IM_COLD | IM_FIRE | NO_SLEEP | NO_STUN | NO_CONF | EVIL | DEMON | INVISIBLE | KILL_WALL | ONLY_ITEM | DROP_2 | DROP_GOOD
 desc:A loathsome, sturdy, winged, horned demon, with talons that could tear a stone wall down.
 
@@ -5030,6 +5322,8 @@ blow:HIT:FIRE:2d6
 blow:HIT:HURT:5d6
 blow:HIT:FIRE:6d2
 blow:HIT:HURT:6d5
+spells:BLIND | CONF | BRAIN_SMASH | BR_FIRE | BO_PLAS | BA_NETH | S_HI_UNDEAD | S_UNDEAD | S_DEMON
+spell-freq:25
 light:1
 flags:FORCE_SLEEP | ONLY_ITEM | DROP_2 | DROP_GOOD | NONLIVING | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | SMART | EVIL | DEMON | IM_FIRE | NO_CONF | NO_SLEEP | KILL_WALL
 desc:It is a massive humanoid demon wreathed in flames.
@@ -5050,6 +5344,8 @@ blow:GAZE:TERRIFY
 blow:BUTT:HURT:6d6
 blow:BITE:EXP_40
 blow:BITE:LOSE_CON
+spells:BLIND | CONF | BRAIN_SMASH | SCARE | S_UNDEAD | BA_NETH | FORGET | DRAIN_MANA | S_DEMON | WOUND | BA_COLD
+spell-freq:25
 flags:EVIL | DEMON | FORCE_SLEEP | ONLY_ITEM | DROP_2 | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | SMART | NONLIVING | NO_CONF | NO_SLEEP | HURT_LIGHT | IM_FIRE | IM_COLD
 desc:It is a demonic creature from the lowest hell, vaguely resembling a large black he-goat.
 
@@ -5069,6 +5365,8 @@ blow:HIT:SHATTER:8d8
 blow:HIT:SHATTER:8d8
 blow:BUTT:HURT:4d6
 blow:BUTT:HURT:4d6
+spells:BO_PLAS | BA_FIRE
+spell-freq:20
 flags:ONLY_ITEM | DROP_60 | DROP_GOOD | BASH_DOOR | STUPID | EVIL | IM_FIRE | FORCE_SLEEP
 desc:It is a belligrent minotaur with some destructive magical arsenal, armed with a hammer.
 
@@ -5106,6 +5404,8 @@ blow:HIT:HURT:10d5
 blow:HIT:HURT:10d5
 blow:HIT:HURT:10d5
 blow:HIT:EXP_80
+spells:BLIND | SCARE | WOUND | BA_NETH | BA_FIRE | BO_PLAS | S_MONSTERS
+spell-freq:20
 flags:FORCE_SLEEP | SMART | IM_FIRE | IM_COLD | IM_POIS | ONLY_ITEM | DROP_60 | IM_NETHER | IM_NEXUS | IM_PLASMA | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | EVIL
 desc:It is a humanoid form dressed in armour of ancient style.  From beneath its helmet, eyes glow with hellfire.
 
@@ -5125,6 +5425,8 @@ blow:HIT:EAT_GOLD:5d5
 blow:HIT:EAT_ITEM:5d5
 blow:SPIT:BLIND:10d5
 blow:DROOL:POISON:8d5
+spells:TRAPS
+spell-freq:17
 flags:UNIQUE | MALE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | IM_POIS | IM_FIRE | NO_CONF | NO_SLEEP | EVIL
 desc:He may not code worth a dime, but he certainly knows how to make money.
 
@@ -5144,6 +5446,8 @@ blow:HIT:HURT:5d5
 blow:TOUCH:LOSE_ALL:10d1
 blow:TOUCH:LOSE_ALL:10d1
 blow:HIT:EAT_GOLD
+spells:WOUND | HOLD | DRAIN_MANA | SCARE | BLIND | S_UNDEAD | S_HI_UNDEAD | S_HI_DRAGON | S_UNIQUE | BA_NETH | FORGET | TRAPS | BRAIN_SMASH | TELE_AWAY
+spell-freq:33
 light:1
 flags:UNIQUE | MALE | FORCE_SLEEP | SMART | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | NO_STUN | NO_SLEEP | NO_CONF | IM_ELEC | IM_POIS | IM_COLD | COLD_BLOOD
 desc:Why would anybody want to kill Santa Claus? To get all the presents, of course!
@@ -5164,6 +5468,8 @@ blow:BITE:PARALYZE:8d1
 blow:CRUSH:HURT:10d10
 blow:CRUSH:HURT:10d10
 blow:CRUSH:HURT:10d10
+spells:S_UNDEAD | S_DEMON | S_MONSTER | BLINK | BA_ACID | FORGET
+spell-freq:25
 flags:UNIQUE | REGENERATE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | SMART | OPEN_DOOR | BASH_DOOR | MOVE_BODY | EVIL | IM_ACID | IM_COLD | IM_POIS | HURT_LIGHT | NO_CONF | NO_SLEEP
 desc:"Then came pale movement in the well, and something clambered up from the dark, a bloated blanched oval supported on myriad fleshless legs. Eyes formed in the gelatinous oval and stared at him."
 
@@ -5183,6 +5489,8 @@ blow:CRUSH:HURT:12d12
 blow:CRUSH:HURT:12d12
 blow:GAZE:LOSE_WIS:5d10
 blow:GAZE:TERRIFY:5d10
+spells:S_DEMON | S_UNDEAD | S_KIN | SCARE | WOUND | TELE_AWAY | TPORT | BRAIN_SMASH | CONF
+spell-freq:50
 flags:UNIQUE | MALE | ATTR_MULTI | ATTR_RAND | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | SMART | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | MOVE_BODY | EVIL | UNDEAD | IM_ACID | IM_FIRE | IM_COLD | IM_POIS | HURT_LIGHT | NO_CONF | NO_SLEEP
 desc:The King in Yellow is an Avatar of Hastur: "He has no face, and is twice as tall as a man. He wears pointed shoes under his tattered, fantastically colored robes, and a streamer of silk appears to fall from the pointed tip of his hood. At times he appears to be winged; at others, haloed."
 
@@ -5202,6 +5510,8 @@ blow:BITE:POISON:10d10
 blow:BITE:ACID:10d10
 blow:BITE:POISON:10d10
 blow:BITE:CONFUSE:10d10
+spells:BR_ACID | BR_POIS | SCARE | S_UNDEAD | WOUND | S_DEMON
+spell-freq:33
 flags:DEMON | EVIL | NONLIVING | FORCE_SLEEP | ONLY_ITEM | DROP_2 | OPEN_DOOR | BASH_DOOR | SMART | POWERFUL | DROP_GOOD | KILL_BODY | IM_ACID | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP | KILL_ITEM
 desc:This disgusting demon resembles a shambling pile of rotting green flesh, with dozens of mouths drooling and leaving a trail of foul-smelling goo behind. Nurgle must be proud of himself for having created this atrocity!
 
@@ -5221,6 +5531,8 @@ blow:KICK:HURT:20d2
 blow:KICK:HURT:10d2
 blow:HIT:POISON:20d1
 blow:HIT:LOSE_ALL:15d1
+spells:HEAL | MIND_BLAST | BA_MANA | S_SPIDER | S_HOUND | S_DEMON
+spell-freq:50
 light:2
 flags:MALE | EVIL | FORCE_SLEEP | ONLY_ITEM | DROP_4 | ATTR_MULTI | ATTR_RAND | INVISIBLE | OPEN_DOOR | BASH_DOOR | SMART | POWERFUL | IM_ACID | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 desc:He is one of the few true masters of the art, being extremely skillful in all forms of unarmed combat and controlling the Logrus with disdainful ease.
@@ -5241,6 +5553,8 @@ blow:CRUSH:HURT:16d12
 blow:CRUSH:HURT:16d12
 blow:CRUSH:HURT:16d12
 blow:CRUSH:HURT:16d12
+spells:BLIND | CONF | SCARE | WOUND | BA_WATE | DARKNESS | BR_DARK | TELE_TO
+spell-freq:17
 flags:FORCE_SLEEP | ONLY_ITEM | DROP_2 | DROP_GOOD | BASH_DOOR | POWERFUL | MOVE_BODY | SMART | IM_WATER | EVIL | IM_ELEC | NO_CONF | NO_SLEEP | IM_POIS | IM_FIRE
 desc:An enormously fearsome and powerful inhabitant of the depths. It resembles a gargantuan octopus and its evil is almost tangible.
 
@@ -5259,6 +5573,8 @@ experience:18902
 blow:CLAW:CONFUSE:10d10
 blow:CLAW:CONFUSE:10d10
 blow:BITE:BLIND:12d12
+spells:MIND_BLAST | BA_MANA | SCARE | BRAIN_SMASH | DRAIN_MANA | S_HOUND | S_DEMON | S_DRAGON | TPORT | HASTE | CONF | TELE_AWAY | FORGET
+spell-freq:33
 flags:DEMON | EVIL | ATTR_MULTI | DROP_GOOD | MOVE_BODY | NONLIVING | FORCE_SLEEP | ONLY_ITEM | DROP_4 | INVISIBLE | OPEN_DOOR | BASH_DOOR | SMART | POWERFUL | IM_ACID | IM_FIRE | IM_ELEC | NO_CONF | NO_SLEEP
 desc:The most powerful of Tzeentch's servitors. This demon looks like a huge bird-creature, with the head of a predatory bird and fantastically multi-coloured wings.
 
@@ -5278,6 +5594,8 @@ blow:HIT:CONFUSE:10d10
 blow:HIT:TERRIFY:10d10
 blow:HIT:BLIND:10d10
 blow:HIT:TERRIFY:10d10
+spells:SCARE | BRAIN_SMASH | DRAIN_MANA | BR_CHAO | S_DEMON | S_UNDEAD | TPORT | HEAL | TELE_AWAY
+spell-freq:33
 flags:DEMON | EVIL | DROP_GOOD | NONLIVING | FORCE_SLEEP | ONLY_ITEM | DROP_4 | OPEN_DOOR | BASH_DOOR | SMART | POWERFUL | MOVE_BODY | IM_ACID | IM_FIRE | NO_CONF | NO_SLEEP
 desc:This demonic keeper of forbidden secrets looks like a hairless minotaur with extra arms, decorated with tattoos and nose rings. It is the embodiment of Slaanesh's perverted magic.
 
@@ -5297,6 +5615,8 @@ blow:CRUSH:SHATTER:55d2
 blow:CRUSH:SHATTER:55d2
 blow:TOUCH:LOSE_CON:1d2
 blow:TOUCH:LOSE_CON:1d2
+spells:SCARE | CONF | HOLD | S_DEMON | S_KIN | HEAL | HASTE | FORGET | BRAIN_SMASH | BR_DARK | BR_ACID | BR_DISE
+spell-freq:20
 flags:IM_FIRE | IM_PLASMA | IM_COLD | IM_POIS | KILL_WALL | ONLY_GOLD | DROP_4 | EVIL | SMART | UNIQUE
 desc:The most powerful and most evil of all Chthonians. "A great gray thing a mile long chanting and exuding strange acids... charging through the depths of the earth at a fantastic speed, in a dreadful fury... melting basaltic rocks like butter under a blowtorch."
 
@@ -5316,6 +5636,8 @@ blow:CLAW:LOSE_CON:8d12
 blow:CLAW:LOSE_CON:8d12
 blow:BITE:EXP_40:8d15
 blow:BITE:EXP_40:8d15
+spells:WOUND | BR_NETH | BR_COLD | BR_ACID | BR_POIS | S_DRAGON | S_UNDEAD
+spell-freq:20
 flags:UNIQUE | IM_NETHER | FORCE_SLEEP | SMART | ONLY_ITEM | DROP_4 | DROP_GOOD | IM_POIS | BASH_DOOR | POWERFUL | MOVE_BODY | IM_ACID | EVIL | DRAGON | IM_FIRE | NO_CONF | NO_SLEEP
 desc:In the bowels of Hel, the dread Nidhogg, a dragon blacker than the night, feasts on the essences of the dead.
 
@@ -5335,6 +5657,8 @@ blow:CRUSH:HURT:14d8
 blow:CRUSH:HURT:14d8
 blow:BITE:EXP_80:6d6
 blow:BITE:EXP_80:6d6
+spells:BLIND | HOLD | SCARE | WOUND | DRAIN_MANA | BRAIN_SMASH | BA_WATE | S_DEMON | HASTE | TPORT | TELE_AWAY | TELE_TO | HEAL | BR_DARK | BR_NETH
+spell-freq:33
 flags:UNIQUE | EVIL | UNDEAD | FORCE_SLEEP | SMART | ONLY_ITEM | DROP_4 | DROP_GOOD | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | POWERFUL | NONLIVING | IM_COLD | IM_POIS | HURT_LIGHT | NO_CONF | NO_SLEEP
 desc:Its form is partially that of a reptile, partially that of a gigantic octopus. It will destroy you.
 
@@ -5372,6 +5696,8 @@ blow:CRUSH:ACID:10d6
 blow:CRUSH:ACID:10d6
 blow:CRUSH:ACID:10d6
 blow:CRUSH:HURT:16d16
+spells:BRAIN_SMASH | MIND_BLAST | HASTE | TPORT | S_DEMON | S_UNDEAD | S_HI_UNDEAD | S_KIN | BR_DARK | BR_POIS | BR_ACID
+spell-freq:20
 flags:UNIQUE | FORCE_SLEEP | SMART | ONLY_ITEM | DROP_4 | DROP_GOOD | REGENERATE | KILL_ITEM | BASH_DOOR | EVIL | NO_CONF | NO_SLEEP | KILL_BODY | HURT_LIGHT | POWERFUL | IM_NETHER | NONLIVING | IM_ACID | IM_FIRE | IM_PLASMA | IM_POIS | IM_COLD
 desc:"...a little finger of blackness crept out from beneath its edge a great wave of iridescent blackness, neither liquid nor solid, a frightful gelatinous mass."
 
@@ -5391,6 +5717,8 @@ blow:CRUSH:HURT:13d13
 blow:CRUSH:FIRE:10d10
 blow:CRUSH:HURT:13d13
 blow:CRUSH:FIRE:10d10
+spells:BR_FIRE | S_DEMON | WOUND | BR_PLAS | BR_NETH | BRAIN_SMASH | S_UNDEAD | BA_DARK
+spell-freq:17
 flags:FORCE_SLEEP | UNIQUE | ONLY_ITEM | DROP_4 | DROP_GOOD | MOVE_BODY | SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | EVIL | DEMON | NONLIVING
 desc:"Higher already than the giants of the forest ringing it, the fifty-foot-thick column... sprouted a ring of tendrils, ruddy and golden and glittering overall with inclusions of quartz."
 
@@ -5410,6 +5738,8 @@ blow:HIT:CONFUSE:4d8
 blow:HIT:TERRIFY:5d6
 blow:HIT:PARALYZE:5d6
 blow:HIT:BLIND:4d8
+spells:HEAL | BLIND | CONF | SCARE | WOUND | BRAIN_SMASH | FORGET | S_MONSTERS | BA_MANA | BLINK | TPORT | TELE_TO | TELE_AWAY | S_DEMON
+spell-freq:25
 light:1
 flags:UNIQUE | MALE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | ATTR_MULTI | IM_DISEN | ATTR_RAND | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 desc:Once this now gnomish creature created the universe with the Jewel of Judgement - or so you have been told. There is little sanity left in his present form even if he still has the power. "He was a small man. Tiny, might be an even better word. He was around five feet tall and a hunchback. His hair and beard were as heavy as (Corwin's). The only distinguishing features in that great mass of fur were his long, hook nose and his almost black eyes, now squinted against the light... Dworkin: 'I am Oberon's prisoner.' Corwin: 'Oh? None of us knew that Dad had locked you up.' (Corwin) heard (Dworkin) weeping. 'Yes,' he said after a long time. 'He didn't trust me.' 'Why not?' 'I told him I'd thought of a way to destroy Amber. I described it to him, and he locked me in.'"
@@ -5430,6 +5760,8 @@ blow:TOUCH:CONFUSE:5d12
 blow:TOUCH:CONFUSE:5d12
 blow:TOUCH:CONFUSE:5d12
 blow:TOUCH:CONFUSE:5d12
+spells:TELE_AWAY | S_MONSTERS | TELE_LEVEL | BR_NEXU | TPORT | BLINK
+spell-freq:33
 flags:UNIQUE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | IM_ACID | IM_FIRE | IM_POIS | IM_COLD | NEVER_MOVE | IM_NEXUS | PASS_WALL | NO_CONF | NO_SLEEP | EVIL
 desc:"Not shapeless, but so complex that the eye could recognize no describable shape. There were hemispheres and shining metal, coupled by long plastic rods. The rods were of a flat gray color, so that he could not make out which were nearer; they merged into a flat mass from which protruded individual cylinders. As he looked at it, he had a curious feeling that eyes gleamed from between these rods; but wherever he glanced at the construction, he saw only the spaces between them."
 
@@ -5449,6 +5781,8 @@ blow:HIT:DISENCHANT:6d8
 blow:HIT:FIRE:4d6
 blow:HIT:HURT:10d10
 blow:HIT:HURT:10d10
+spells:TELE_TO | BLIND | BO_MANA | S_AINU | S_KIN
+spell-freq:50
 light:2
 flags:UNIQUE | MALE | NO_FEAR | DROP_GOOD | FORCE_SLEEP | SMART | ONLY_ITEM | DROP_4 | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 desc:Commanding a legion of angels, Raphael will destroy you for your sins.  He will crush you like the pitiful insignificant being he sees you to be. Your very soul will be taken into judgement by his supreme authority as he cleanses the world of evil.
@@ -5468,6 +5802,8 @@ experience:13544
 blow:HIT:EXP_40:6d6
 blow:HIT:EXP_40:8d8
 blow:HIT:EXP_40:10d10
+spells:BA_FIRE | BA_MANA | CONF | TPORT | S_DEMON | BR_CHAO
+spell-freq:25
 light:2
 flags:UNIQUE | MALE | FORCE_SLEEP | SMART | ONLY_ITEM | DROP_4 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | IM_NEXUS | IM_NETHER | EVIL | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 desc:He is one of the greatest warriors of chaos to walk the earth. His bloody blade has slain thousands and tens of thousands, and still hungers for more.
@@ -5488,6 +5824,8 @@ blow:HIT:DISENCHANT:6d8
 blow:HIT:DISENCHANT:6d8
 blow:HIT:TERRIFY:5d5
 blow:HIT:TERRIFY:5d5
+spells:HEAL | HASTE | TPORT | TELE_AWAY | BLIND | CONF | SCARE | WOUND | BRAIN_SMASH | FORGET | TRAPS | BA_FIRE | BO_FIRE | BO_PLAS | BO_MANA | S_MONSTER | S_AINU | S_DRAGON | S_KIN
+spell-freq:50
 light:2
 flags:UNIQUE | MALE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | SMART | OPEN_DOOR | BASH_DOOR | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 desc:The wizard who opposed Saruman, and in the end, was the only one of the Istari to succeed in his task. Gandalf is very wise and specializes in fire magic.
@@ -5508,6 +5846,8 @@ blow:HIT:DISENCHANT:6d8
 blow:HIT:DISENCHANT:6d8
 blow:HIT:CONFUSE:5d5
 blow:HIT:DRAIN_CHARGES:5d5
+spells:BLIND | CONF | TPORT | BLINK | BA_FIRE | BA_COLD | DRAIN_MANA | WOUND | BA_ACID | TELE_AWAY | MIND_BLAST | TRAPS | HEAL | HASTE | BRAIN_SMASH | BA_MANA | BA_DARK
+spell-freq:50
 light:2
 flags:UNIQUE | MALE | ATTR_MULTI | ATTR_RAND | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | SMART | OPEN_DOOR | BASH_DOOR | EVIL | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 desc:Brand sees himself as a hero, the god creator and absolute monarch of a future world. Unfortunately he needs to erase the existing world to make his new world. "...a figure both like Bleys and (Corwin). (Corwin's) features, though smaller, his eyes, Bleys' hair, beardless. He wore a riding suit of green and sat atop a white horse... There was a quality of both strength and weakness, questing and abandonment about him."
@@ -5528,6 +5868,8 @@ blow:HIT:EXP_40:6d6
 blow:HIT:EXP_40:6d6
 blow:HIT:LOSE_STR:4d6
 blow:GAZE:TERRIFY:4d6
+spells:HOLD | DRAIN_MANA | BLIND | S_UNDEAD | CONF | SCARE | TELE_TO | TPORT | BRAIN_SMASH | BA_NETH | DARKNESS | SHRIEK
+spell-freq:33
 flags:FORCE_SLEEP | ONLY_ITEM | DROP_4 | INVISIBLE | COLD_BLOOD | TAKE_ITEM | PASS_WALL | EVIL | UNDEAD | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 desc:An aura of hatred, cowardice and falsehood surrounds you as this cloaked figure floats towards you.
 
@@ -5547,6 +5889,8 @@ blow:CRUSH:HURT:15d15
 blow:CRUSH:HURT:15d15
 blow:CRUSH:HURT:15d15
 blow:CRUSH:HURT:15d15
+spells:BLIND | CONF | SCARE | WOUND | TELE_TO | TELE_AWAY | BA_WATE | DARKNESS | BR_DARK | BR_ACID | BR_POIS
+spell-freq:17
 flags:FORCE_SLEEP | ONLY_ITEM | DROP_2 | DROP_GOOD | BASH_DOOR | POWERFUL | MOVE_BODY | SMART | IM_WATER | EVIL | IM_ELEC | NO_CONF | NO_SLEEP | IM_POIS | IM_FIRE
 desc:An enormously fearsome and powerful inhabitant of the depths. It resembles a gargantuan octopus and its evil is almost tangible.
 
@@ -5566,6 +5910,8 @@ blow:HIT:CONFUSE:12d12
 blow:TOUCH:LOSE_DEX:2d12
 blow:HIT:BLIND:10d5
 blow:HIT:PARALYZE:15d1
+spells:TELE_TO | HEAL | S_KIN
+spell-freq:33
 flags:UNIQUE | FEMALE | FORCE_SLEEP | EVIL | ONLY_ITEM | DROP_2 | DROP_GOOD | INVISIBLE | OPEN_DOOR | BASH_DOOR | IM_FIRE | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 desc:"Beauty -- coolness -- aloofness -- philosophical repose -- self-sufficiency -- untamed mastery -- what else can we find these things with even half the perfection and completeness that mark their incarnation in the peerless and softly gliding cat?"
 
@@ -5585,6 +5931,8 @@ blow:BITE:EXP_40:8d8
 blow:BITE:EXP_40:8d8
 blow:HIT:CONFUSE:8d8
 blow:HIT:CONFUSE:8d8
+spells:BLIND | HOLD | SCARE | WOUND | DRAIN_MANA | BRAIN_SMASH | BA_NETH | S_KIN | DARKNESS | BA_DARK
+spell-freq:33
 flags:UNIQUE | MALE | FORCE_SLEEP | SMART | ONLY_ITEM | DROP_4 | DROP_GOOD | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | REGENERATE | EVIL | UNDEAD | IM_COLD | IM_POIS | HURT_LIGHT | NO_CONF | NO_SLEEP
 desc:The most feared of all vampires, the Prince of Darkness himself.
 
@@ -5604,6 +5952,8 @@ blow:GAZE:EXP_40:2d5
 blow:GAZE:PARALYZE:2d5
 blow:GAZE:LOSE_INT:2d6
 blow:GAZE:DRAIN_CHARGES:2d6
+spells:BLIND | CONF | SCARE | DRAIN_MANA | MIND_BLAST | FORGET | DARKNESS | BO_ACID | BO_FIRE | BO_COLD | S_KIN | BO_MANA
+spell-freq:50
 flags:FORCE_SLEEP | BASH_DOOR | FEMALE | SMART | EVIL | IM_POIS | NO_CONF | NO_SLEEP
 desc:A disembodied eye, surrounded by twelve smaller eyes on stalks. This is a beholder hive-mother, far more powerful than normal beholders.
 
@@ -5623,6 +5973,8 @@ blow:BITE:FIRE:5d12
 blow:BITE:FIRE:5d12
 blow:CRUSH:HURT:6d15
 blow:CRUSH:HURT:6d15
+spells:BR_FIRE | BR_ACID | BR_DARK | S_DRAGON | S_HYDRA | HEAL | CONF | DARKNESS
+spell-freq:11
 flags:FORCE_SLEEP | IM_FIRE | IM_COLD | IM_POIS | EVIL | DRAGON | NO_CONF | NO_SLEEP | NO_FEAR
 desc:An enormous, evil sea-dragon.
 
@@ -5642,6 +5994,8 @@ blow:CLAW:HURT:3d12
 blow:CLAW:HURT:3d12
 blow:CRUSH:HURT:8d12
 blow:CRUSH:HURT:8d12
+spells:BR_ELEC
+spell-freq:33
 flags:FORCE_SLEEP | ONLY_ITEM | DROP_2 | DROP_GOOD | BASH_DOOR | OPEN_DOOR | POWERFUL | MOVE_BODY | NO_CONF | NO_SLEEP | EVIL
 desc:This elemental creature is power incarnate; it looks like a huge polar bear with a huge gaping maw instead of a head.
 
@@ -5661,6 +6015,8 @@ blow:TOUCH:LOSE_ALL:2d25
 blow:GAZE:PARALYZE:1d20
 blow:GAZE:TERRIFY:1d20
 blow:GAZE:BLIND:1d20
+spells:BR_NEXU | BR_CHAO | HOLD | SLOW | BR_INER | BA_POIS | MIND_BLAST | BRAIN_SMASH | CONF | BLIND | TELE_TO | HEAL | TELE_AWAY | TELE_LEVEL | TPORT | S_UNDEAD | S_DEMON | DRAIN_MANA
+spell-freq:33
 flags:UNIQUE | MALE | ATTR_MULTI | IM_DISEN | IM_NEXUS | FORCE_SLEEP | EVIL | SMART | ONLY_ITEM | DROP_4 | DROP_GOOD | NO_SLEEP | NO_CONF | NO_STUN | IM_POIS | IM_COLD | IM_FIRE
 desc:"Young with the youth that is outside time, and with a beauteous bearded face, curved, smiling lips, Olympian brow; and dense locks waving and poppy-crowned."
 
@@ -5679,6 +6035,8 @@ experience:25581
 blow:STING:HURT:20d1
 blow:STING:POISON:20d1
 blow:CRUSH:HURT:3d20
+spells:BA_WATE | S_HYDRA | S_DRAGON | S_DEMON | SCARE | BLIND | CONF | WOUND | BR_POIS
+spell-freq:20
 flags:UNIQUE | ATTR_MULTI | IM_NEXUS | IM_WATER | REGENERATE | FORCE_SLEEP | EVIL | SMART | DEMON | ONLY_ITEM | DROP_4 | DROP_GOOD | NO_SLEEP | NO_CONF | NO_STUN | IM_POIS | IM_COLD | IM_ACID
 desc:"From an oval body protruded countless thin, pointed spines of multi-colored metal; at the more rounded end of the oval a circular, thick-lipped mouth formed the center of a spongy face, from which rose three yellow eyes on thin stalks. Around the underside of the body were many white pyramids, presumably used for locomotion. The diameter of the body must have been at least ten feet at its least wide..."
 
@@ -5697,6 +6055,8 @@ experience:31034
 blow:HIT:HURT:8d15
 blow:HIT:HURT:8d15
 blow:TOUCH:EAT_ITEM
+spells:SCARE | BLIND | CONF | TPORT | BLINK | TELE_AWAY | TELE_TO | TELE_LEVEL | BA_COLD | BA_FIRE | TRAPS | MIND_BLAST | S_MONSTERS
+spell-freq:33
 light:2
 flags:UNIQUE | MALE | FORCE_SLEEP | NO_CONF | NO_SLEEP | DROP_4 | DROP_GOOD | ONLY_ITEM | EVIL | IM_FIRE | IM_ELEC | SMART | REGENERATE | OPEN_DOOR | BASH_DOOR
 desc:This cunning Amberite is the master of subtle ploys. "...a fiery bearded, flame-crowned man, dressed all in red and orange, mainly of silk stuff, and he held a sword in his right hand and a glass of wine in his left, and the devil himself danced behind his eyes... His chin was light, but the beard covered it. His sword was inlaid with an elaborate filigree of a golden color. He wore two huge rings on his right hand and one on his left: an emerald, a ruby, and a sapphire, respectively."
@@ -5717,6 +6077,8 @@ blow:HIT:POISON:8d15
 blow:HIT:POISON:8d15
 blow:TOUCH:HURT
 blow:TOUCH:LOSE_CON
+spells:SCARE | BLIND | CONF | TPORT | BLINK | TELE_AWAY | TELE_TO | TRAPS | WOUND | BA_POIS | S_DEMON | S_MONSTERS
+spell-freq:33
 light:2
 flags:UNIQUE | FEMALE | ONLY_ITEM | FORCE_SLEEP | NO_CONF | NO_SLEEP | DROP_4 | DROP_GOOD | EVIL | IM_POIS | IM_ELEC | SMART | REGENERATE | OPEN_DOOR | BASH_DOOR
 desc:She is beautiful and deadly. "...I have always been very fond of Fiona. She is certainly the loveliest, most civilized of (all Amberites)."
@@ -5737,6 +6099,8 @@ blow:CLAW:HURT:8d12
 blow:CLAW:HURT:8d12
 blow:CLAW:HURT:8d12
 blow:BITE:ELEC:9d15
+spells:BR_ELEC | BR_GRAV | BR_LIGHT | S_DRAGON | S_HI_DRAGON | SCARE | BLIND
+spell-freq:33
 light:2
 flags:FORCE_SLEEP | IM_ELEC | DROP_GOOD | ONLY_ITEM | DROP_4 | BASH_DOOR | POWERFUL | MOVE_BODY | DRAGON | NO_CONF | NO_SLEEP
 desc:The mightiest elemental dragon of air, it can destroy you with ease.
@@ -5756,6 +6120,8 @@ experience:20349
 blow:HIT:HURT:9d15
 blow:HIT:HURT:9d15
 blow:HIT:LOSE_CON:1d30
+spells:TPORT | TELE_TO | ARROW | SHRIEK | SCARE | DARKNESS | S_ANIMAL | S_SPIDER | S_HOUND | S_HYDRA | TRAPS | BO_WATE | BO_ELEC
+spell-freq:25
 light:2
 flags:UNIQUE | MALE | FORCE_SLEEP | NO_CONF | NO_SLEEP | DROP_4 | DROP_GOOD | ONLY_ITEM | EVIL | IM_POIS | IM_ELEC | IM_COLD | SMART | REGENERATE | OPEN_DOOR | BASH_DOOR
 desc:Julian is at home in wild woodlands. He enjoys hunting a challenging prey: you. "Julian, dark hair hanging long, blue eyes containing neither passion nor compassion. He was dressed completely in scaled white armor, not silver or metallic-colored, but looking as if it had been enameled."
@@ -5776,6 +6142,8 @@ blow:CRUSH:ACID:8d12
 blow:CRUSH:FIRE:8d12
 blow:CRUSH:ELEC:8d12
 blow:CRUSH:POISON:10d14
+spells:BLIND | CONF | SCARE | BR_ACID | BR_FIRE | BR_COLD | BR_ELEC | BR_POIS | S_HI_DRAGON | S_MONSTERS
+spell-freq:50
 flags:ATTR_MULTI | UNIQUE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | EVIL | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 desc:An elephantine horror with five trunks, each capable of breathing destructive blasts of elements. It is said that it is better to face the fury of a thousand raging lions than the Norsa!
 
@@ -5795,6 +6163,8 @@ blow:CLAW:HURT:8d12
 blow:CRUSH:LOSE_STR:5d12
 blow:CLAW:HURT:8d12
 blow:CRUSH:ACID:5d12
+spells:S_DEMON | BR_ACID | S_UNDEAD | S_KIN | CONF | SCARE | MIND_BLAST | BR_CHAO
+spell-freq:20
 flags:EVIL | UNIQUE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP | IM_WATER
 desc:"An almost globular torso, with six long, sinuous limbs terminating in clab-like claws. From the upper end a subsidiary globe bulged forward bubble-like; its triangle of three staring, fishy eyes, its foot-long and evidently flexible proboscis, and a distended lateral system analogous to gills, suggested that it was a head."
 
@@ -5814,6 +6184,8 @@ blow:HIT:HURT:9d15
 blow:HIT:HURT:9d15
 blow:INSULT:EAT_ITEM:1d3
 blow:INSULT:EAT_GOLD:1d3
+spells:TPORT | TELE_TO | SCARE | DARKNESS | S_DRAGON | TRAPS | BO_WATE | BO_NETH | S_UNDEAD | S_DEMON | CONF | BO_ACID | FORGET | MIND_BLAST | WOUND
+spell-freq:25
 light:2
 flags:UNIQUE | MALE | OPEN_DOOR | BASH_DOOR | FORCE_SLEEP | NO_CONF | NO_SLEEP | DROP_4 | DROP_GOOD | ONLY_ITEM | EVIL | IM_POIS | IM_COLD | SMART | REGENERATE
 desc:Caine is perhaps the least reliable Amberite, always ready to ignore his pacts and promises when it suits him. "...the swarthy, dark-eyed countenance of Caine, dressed all in satin that was black and green, wearing a dark three-cornered hat set at a rakish angle, and a green plume of feathers trailing down in the back. He was standing in the profile, one arm akimbo, and toes of his boots curled upwards, and he wore an emerald-studded dagger at his belt... He was dark."
@@ -5833,6 +6205,8 @@ experience:24432
 blow:TOUCH:LOSE_ALL:6d16
 blow:TOUCH:EXP_40:6d16
 blow:TOUCH:DRAIN_CHARGES:6d16
+spells:BR_NETH | BRAIN_SMASH | SCARE | S_UNDEAD | S_HI_UNDEAD | DRAIN_MANA | HEAL
+spell-freq:20
 flags:PASS_WALL | NO_CONF | NO_SLEEP | NONLIVING | IM_ACID | SMART | EVIL | IM_COLD | IM_NETHER | NO_STUN | UNIQUE | REGENERATE
 desc:A black hole in the fabric of reality. It simply is not there.
 
@@ -5852,6 +6226,8 @@ blow:CRUSH:LOSE_ALL:5d6
 blow:CRUSH:ACID:5d6
 blow:CRUSH:LOSE_ALL:5d6
 blow:CRUSH:ACID:5d6
+spells:S_DEMON | S_MONSTERS | S_UNDEAD | HOLD | SCARE | MIND_BLAST | BR_ACID | BR_NETH | WOUND
+spell-freq:50
 flags:UNIQUE | FORCE_SLEEP | DROP_2 | ONLY_ITEM | DROP_GOOD | MOVE_BODY | SMART | BASH_DOOR | EVIL | IM_POIS | IM_ACID | IM_COLD | NO_CONF | NO_SLEEP
 desc:"...the formless bulking of a couchant mass. And the mass stirred a little... and put forth with infinite slothfulness a huge and toad-shaped head. And the head opened its eyes very slowly, as if half awakened from slumber, so that they were visible as two slits of oozing phosphor in the black browless face."
 
@@ -5869,6 +6245,8 @@ rarity:1
 experience:21348
 blow:HIT:SHATTER:15d15
 blow:HIT:SHATTER:15d15
+spells:HEAL | TPORT | TELE_TO | SCARE | BLIND | S_MONSTERS
+spell-freq:25
 light:2
 flags:UNIQUE | MALE | FORCE_SLEEP | NO_CONF | NO_SLEEP | KILL_WALL | DROP_4 | DROP_GOOD | ONLY_ITEM | EVIL | IM_POIS | IM_ACID | IM_FIRE | REGENERATE | OPEN_DOOR | BASH_DOOR
 desc:Gerard may not be quite as devious as the other Amberites, but he is certainly stronger than the rest of them put together. "...a big, powerful man... (He) resembled (Corwin) quite strongly, save that his jaw was heavier, and (Corwin) knew he was bigger than him, though slower. His strength was a thing out of legend. He wore a dressing gown of blue and gray clasped around the middle with a wide, black belt, and he stood laughing. About his neck, on a heavy cord, there hung a silver hunting horn. He wore a fringe beard and a light mustache. In his right hand he held a goblet of wine."
@@ -5889,6 +6267,8 @@ blow:BITE:POISON:3d9
 blow:BITE:LOSE_STR:3d9
 blow:STING:POISON:2d5
 blow:STING:LOSE_STR:2d5
+spells:SCARE | BLIND | CONF | HOLD | BR_POIS | DARKNESS | BA_DARK | BR_DARK | S_SPIDER | S_DEMON
+spell-freq:33
 flags:UNIQUE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | SMART | BASH_DOOR | MOVE_BODY | NONLIVING | ANIMAL | EVIL | IM_POIS | HURT_LIGHT | NO_CONF | NO_SLEEP
 desc:"...there was a kind of face on the squat ebon body, low down amid the several-jointed legs. The face peered up with a weird expression of doubt and inquiry..."
 
@@ -5908,6 +6288,8 @@ blow:TOUCH:LOSE_INT:1d20
 blow:BITE:HURT:40d1
 blow:TOUCH:LOSE_WIS:1d20
 blow:BITE:HURT:40d1
+spells:SCARE | BLIND | CONF | HOLD | HASTE | DRAIN_MANA | WOUND | DARKNESS | FORGET | S_DEMON | S_HOUND | TPORT | TELE_TO
+spell-freq:33
 flags:UNIQUE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | SMART | BASH_DOOR | MOVE_BODY | NONLIVING | EVIL | IM_POIS | NO_CONF | NO_SLEEP
 desc:"He saw why the shadow on the frosted pane yesterday had been headless and he screamed... but before he could scream out his protest his breath was cut off, as the hands descended on his face and the wed ret mouths opened in their palms."
 
@@ -5925,6 +6307,8 @@ rarity:1
 experience:10341
 blow:HIT:DISENCHANT:14d11
 blow:HIT:DRAIN_CHARGES:14d11
+spells:HEAL | TPORT | S_DEMON | BRAIN_SMASH | DRAIN_MANA | BR_PLAS
+spell-freq:25
 flags:FORCE_SLEEP | NO_CONF | NO_SLEEP | DROP_GOOD | DROP_2 | SMART | PASS_WALL | IM_NEXUS | IM_NETHER | NONLIVING | EVIL | IM_POIS | IM_ELEC | IM_COLD | IM_FIRE | DEMON
 desc:A huge demon who guards the cross-dimensional gateways.
 
@@ -5943,6 +6327,8 @@ experience:78723
 blow:HIT:HURT:10d15
 blow:HIT:HURT:10d15
 blow:HIT:EAT_ITEM:10d15
+spells:BLIND | S_MONSTER | DRAIN_MANA | S_MONSTERS | SCARE | CONF | TPORT | TELE_TO | WOUND | BO_ACID | HOLD | BA_FIRE | TRAPS | TELE_AWAY | BRAIN_SMASH | FORGET | BO_WATE | BO_NETH | DARKNESS | S_AINU | S_DEMON
+spell-freq:25
 light:2
 flags:UNIQUE | MALE | SMART | OPEN_DOOR | BASH_DOOR | FORCE_SLEEP | NO_CONF | NO_SLEEP | DROP_4 | DROP_GOOD | ONLY_ITEM | EVIL | IM_POIS | IM_ACID | IM_ELEC | REGENERATE
 desc:When Oberon disappeared, Eric seized the opportunity and claimed the throne, eliminating those who would have opposed him. "Handsome by anyone's standards, his hair was so dark, as to be almost blue. His beard curled around the mouth that always smiled, and he was dressed simply in a leather jacket and leggings, a plain cloak, high black boots, and he wore a red sword belt bearing a long silvery saber and clasped with a ruby, and his high cloak, collar round his head was lined with red and the trimmings of his sleeves matched it. His hands, thumbs hooked behind his belt, were terribly strong and prominent. A pair of black gloves jutted from his belt near his right tip."
@@ -5963,6 +6349,8 @@ blow:CLAW:POISON:8d10
 blow:CLAW:POISON:8d10
 blow:CRUSH:HURT:8d15
 blow:BITE:HURT:2d50
+spells:BR_POIS | BR_ACID | S_HYDRA | S_KIN | S_DEMON
+spell-freq:25
 flags:UNIQUE | MALE | SMART | ANIMAL | OPEN_DOOR | BASH_DOOR | FORCE_SLEEP | NO_CONF | NO_SLEEP | DROP_4 | DROP_GOOD | ONLY_ITEM | EVIL | IM_POIS | IM_ACID | IM_ELEC | REGENERATE
 desc:"The half-human father of serpents... the snake-god of the central plains tribes -- presumably the primal source of the more southerly Quetzalcoatl or Kukulcan -- was odd, half-anthropomorphic devil."
 
@@ -5981,6 +6369,8 @@ experience:9551
 blow:TOUCH:LOSE_ALL:10d10
 blow:TOUCH:DISENCHANT:10d10
 blow:TOUCH:DRAIN_CHARGES:10d10
+spells:BR_CHAO
+spell-freq:20
 flags:KILL_WALL | KILL_ITEM | KILL_BODY | NO_FEAR | FORCE_SLEEP | MULTIPLY | ATTR_MULTI | ATTR_RAND | DROP_60 | DROP_GOOD | POWERFUL | BASH_DOOR | IM_ELEC | IM_FIRE | IM_NEXUS | IM_POIS | IM_ACID | IM_PLASMA | IM_DISEN | COLD_BLOOD | NONLIVING | RAND_50
 desc:Summoned from the Courts of Chaos, it is a mass of sentient Logrus, spreading uncontrollably and destroying everything in its path.
 
@@ -6000,6 +6390,8 @@ blow:HIT:HURT:1d50
 blow:HIT:HURT:1d50
 blow:HIT:HURT:1d50
 blow:HIT:HURT:1d50
+spells:BOULDER
+spell-freq:25
 flags:RAND_25 | EVIL | DEMON | STUPID | DROP_4 | DROP_GOOD | ONLY_ITEM | IM_POIS | IM_FIRE | FORCE_SLEEP | NONLIVING
 desc:Reverbrant metal steps announce the arrival of this huge creature, half demon half machine. It has an unsurpassable firepower.
 
@@ -6018,6 +6410,8 @@ experience:82609
 blow:TOUCH:LOSE_ALL:50d1
 blow:TOUCH:EXP_40:50d1
 blow:TOUCH:DISENCHANT:50d1
+spells:WOUND | TELE_TO | HOLD | S_UNDEAD | S_HI_UNDEAD | S_HI_DRAGON | FORGET | SCARE | BLIND | BA_DARK | BA_NETH | HEAL
+spell-freq:33
 flags:UNIQUE | FEMALE | POWERFUL | FORCE_SLEEP | SMART | ONLY_ITEM | DROP_2 | DROP_GREAT | DROP_GOOD | INVISIBLE | OPEN_DOOR | BASH_DOOR | EVIL | IM_NETHER | IM_COLD | IM_POIS | IM_FIRE | NO_CONF | NO_SLEEP
 desc:The Norse ruler of Hel is a merciless queen, who ever hunts for more souls to add to her collection of tortured spirits. She arrives in an ominous green robe, a certain sign of impending doom, to claim as her own those who die an ignoble death.
 
@@ -6037,6 +6431,8 @@ blow:HIT:DISENCHANT:6d8
 blow:HIT:DRAIN_CHARGES:6d8
 blow:TOUCH:BLIND
 blow:TOUCH:CONFUSE
+spells:WOUND | TELE_TO | BA_FIRE | DRAIN_MANA | HOLD | TRAPS | BA_WATE | BO_PLAS | BA_NETH | BA_MANA | BA_DARK | S_HI_UNDEAD | S_UNDEAD
+spell-freq:50
 light:2
 flags:UNIQUE | MALE | POWERFUL | FORCE_SLEEP | SMART | ONLY_ITEM | DROP_2 | DROP_GREAT | DROP_GOOD | INVISIBLE | OPEN_DOOR | BASH_DOOR | EVIL | IM_FIRE | IM_COLD | IM_ELEC | NO_CONF | NO_SLEEP
 desc:Klingsor, whose hopeless effort to join the Knights of the Grail was thwarted, turned to black magic and became a deadly necromancer.
@@ -6056,6 +6452,8 @@ experience:28889
 blow:HIT:HURT:10d15
 blow:HIT:HURT:10d15
 blow:HIT:LOSE_CON:10d15
+spells:SCARE | CONF | TPORT | TELE_TO | S_MONSTER | DRAIN_MANA | WOUND | BO_ACID | BO_MANA | HOLD | BA_FIRE | BA_COLD | TRAPS | TELE_AWAY | HEAL | BRAIN_SMASH | BA_WATE | BA_NETH | FORGET | BO_WATE | BO_NETH | DARKNESS | S_MONSTERS | BO_PLAS | S_AINU
+spell-freq:25
 light:2
 flags:UNIQUE | MALE | SMART | OPEN_DOOR | BASH_DOOR | FORCE_SLEEP | NO_CONF | NO_SLEEP | DROP_4 | DROP_GOOD | ONLY_ITEM | EVIL | IM_COLD | IM_POIS | IM_ELEC | REGENERATE
 desc:Corwin is one of the most feared and respected Amberites; his skill and cunning are well known. "Green eyes, black hair, dressed in black and silver, yes. (Corwin) had on a cloak and it was slightly furled as by a wind. (He) had on black boots, like Eric's, and (he) too bore a blade, only (his) was heavier, though not quite as long as (Eric's). (He) had (his) gloves on and they were silver and scaled. The clasp at (his) neck was cast in the form of a silver rose."
@@ -6076,6 +6474,8 @@ blow:TOUCH:BLIND
 blow:TOUCH:FIRE:12d10
 blow:TOUCH:FIRE:12d10
 blow:TOUCH:FIRE:12d10
+spells:BR_FIRE | S_KIN
+spell-freq:25
 light:2
 flags:UNIQUE | IM_FIRE | IM_PLASMA | FORCE_SLEEP | NONLIVING | ONLY_ITEM | DROP_4 | SMART | EVIL | KILL_ITEM | KILL_BODY | NO_CONF | NO_SLEEP | NO_FEAR
 desc:"But even though we had shielded our eyes, it was impossible not to see the great amorphous shapes streaming skyward from the accursed place, nor the equally great being hovering like a cloud of living fire above the trees."
@@ -6096,6 +6496,8 @@ blow:HIT:HURT:15d15
 blow:HIT:HURT:15d15
 blow:HIT:HURT:15d15
 blow:HIT:HURT:15d15
+spells:SCARE | CONF | TPORT | TELE_TO | DRAIN_MANA | TRAPS | BRAIN_SMASH | TELE_AWAY | WOUND | S_MONSTERS | S_HI_DRAGON | S_DEMON | S_AINU | TELE_LEVEL | FORGET | HEAL
+spell-freq:25
 light:2
 flags:UNIQUE | MALE | SMART | OPEN_DOOR | BASH_DOOR | FORCE_SLEEP | NO_CONF | NO_SLEEP | DROP_4 | DROP_GOOD | ONLY_ITEM | EVIL | IM_COLD | IM_POIS | IM_ELEC | IM_FIRE | REGENERATE
 desc:In the field of combat Benedict rules supreme: with but one hand he was still superior to Corwin. "Benedict, tall and dour; thin of body, thin of face, wide of mind. He wore orange and yellow and brown and reminded me of haystacks and pumpkins and scarecrows and the Legend of Sleepy Hollow. He had a long, strong jaw and hazel eyes and brown hair that never curled. He stood beside a tan horse and leaned upon a lance about which was twined a rope of flowers. He seldom laughed."
@@ -6116,6 +6518,8 @@ blow:CRUSH:HURT:15d15
 blow:CRUSH:HURT:15d15
 blow:CRUSH:HURT:15d15
 blow:CRUSH:HURT:15d15
+spells:TELE_AWAY | BLIND | HOLD | SCARE | BRAIN_SMASH | BR_DARK | BA_DARK | BR_NETH | WOUND | FORGET | S_HI_UNDEAD | S_DEMON | S_MONSTERS | S_HYDRA
+spell-freq:33
 flags:UNIQUE | FORCE_SLEEP | SMART | ONLY_ITEM | DROP_4 | DROP_GOOD | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | MOVE_BODY | EVIL | DEMON | IM_ACID | IM_ELEC | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 desc:"...it was a gigantic eye staring down at them. Around the eye, the sky split; deep clefts opened through which the darkness began to ooze, a darkness blacker than the night, which crawled down as a set of slimy tentacles, taking on more form, more definite shape... something was standing, outlined against the black sky, something which had tentacles of darkness and a green-glowing eye."
 
@@ -6135,6 +6539,8 @@ blow:CLAW:COLD:12d12
 blow:CLAW:COLD:12d12
 blow:CRUSH:HURT:12d12
 blow:CRUSH:HURT:12d12
+spells:BO_MANA | SCARE | BR_COLD | S_DEMON | BO_ELEC | BA_ELEC | MIND_BLAST | WOUND | BA_MANA | BA_WATE | S_HI_UNDEAD | S_KIN
+spell-freq:33
 flags:UNIQUE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | INVISIBLE | OPEN_DOOR | BASH_DOOR | NONLIVING | EVIL | DEMON | IM_ACID | IM_FIRE | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 desc:The Wendigo, moving so fast that you can see little except two glowing eyes burning with hatred. "The stars had been blotted out... the great cloud which had obscured the the sky looked curiously like the outline of a great man. And... where the top of the cloud must have been, where the head of the thing should have been, there were two gleaming stars, burning bright -- like eyes!"
 
@@ -6153,6 +6559,8 @@ experience:12381
 blow:BITE:FIRE:3d12
 blow:BITE:FIRE:3d12
 blow:BITE:FIRE:3d12
+spells:BR_FIRE
+spell-freq:20
 friends:100:2d6:Same
 flags:FORCE_SLEEP | RAND_25 | BASH_DOOR | MOVE_BODY | ANIMAL | EVIL | IM_FIRE
 desc:It is a giant dog that glows with heat.  Flames pour from its nostrils.
@@ -6173,6 +6581,8 @@ blow:GAZE:EXP_40:1d15
 blow:GAZE:TERRIFY:1d15
 blow:TOUCH:FIRE:4d5
 blow:TOUCH:DRAIN_CHARGES:4d5
+spells:TELE_TO | SCARE | HOLD | BRAIN_SMASH | S_DEMON | S_HI_UNDEAD | S_UNDEAD | BR_FIRE | BR_NETH | S_HI_DEMON | WOUND
+spell-freq:33
 flags:MALE | UNIQUE | FORCE_SLEEP | OPEN_DOOR | BASH_DOOR | MOVE_BODY | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | IM_FIRE | IM_PLASMA | IM_NETHER | NO_CONF | NO_SLEEP | NONLIVING | EVIL | DEMON | IM_COLD | IM_POIS
 desc:A duke of hell, in the flesh.
 
@@ -6192,6 +6602,8 @@ blow:CLAW:POISON:5d10
 blow:CLAW:POISON:5d10
 blow:BITE:HURT:20d10
 blow:CRUSH:DISENCHANT:5d12
+spells:BR_DISE | BR_PLAS | BR_POIS | BR_ACID
+spell-freq:50
 flags:UNIQUE | FORCE_SLEEP | IM_PLASMA | IM_DISEN | ONLY_ITEM | DROP_4 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | EVIL | IM_FIRE | IM_COLD | NO_CONF | NO_SLEEP | IM_POIS
 desc:Godzilla rose from the contaminated sea. Fear its anger, for its devastation is unmatched!
 
@@ -6211,6 +6623,8 @@ blow:TOUCH:ACID:11d11
 blow:TOUCH:POISON:11d11
 blow:TOUCH:ACID:11d11
 blow:TOUCH:POISON:11d11
+spells:S_MONSTERS | S_DEMON | S_HI_DRAGON | S_HI_UNDEAD | HEAL | TELE_AWAY | TPORT | WOUND | BRAIN_SMASH | DRAIN_MANA | BR_POIS | BR_CHAO | BR_NEXU | S_UNDEAD
+spell-freq:17
 flags:ONLY_ITEM | DROP_2 | DROP_GOOD | DROP_GREAT | EVIL | UNIQUE | NEVER_MOVE | FORCE_SLEEP | IM_ACID | IM_POIS | IM_ELEC | IM_NETHER | IM_WATER | IM_NEXUS | NO_FEAR | NO_CONF | NO_SLEEP | DEMON | SMART | COLD_BLOOD | IM_DISEN | NO_STUN
 desc:"...in the pool [there was] a grayish, horrid mass that nearly choked it from rim to rim. Here, it seemed, was the ultimate source of all miscreation and abomination. For the gray mass quobbed and quivered, and swelled perpetually; and from it, in manifold fission, were spawned the anatomies that crept away on every side through the grotto."
 
@@ -6230,6 +6644,8 @@ blow:HIT:COLD:5d10
 blow:HIT:HURT:5d10
 blow:HIT:COLD:5d10
 blow:HIT:HURT:5d10
+spells:BR_COLD | BO_ICE | DARKNESS | HEAL | TELE_TO | S_KIN | S_HI_UNDEAD
+spell-freq:33
 flags:UNIQUE | FORCE_SLEEP | IM_NETHER | IM_WATER | MALE | ONLY_ITEM | DROP_4 | DROP_GOOD | EVIL | GIANT | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | TAKE_ITEM | IM_DISEN | IM_COLD | NO_CONF | NO_SLEEP | IM_POIS | HURT_FIRE | COLD_BLOOD
 desc:Ymir is one of the oldest beings there are. He looks like a giant humanoid made of ice.
 
@@ -6248,6 +6664,8 @@ experience:82418
 blow:HIT:BLIND:6d11
 blow:HIT:DISENCHANT:6d11
 blow:HIT:DRAIN_CHARGES:6d11
+spells:SHRIEK | HASTE | HEAL | DRAIN_MANA | TPORT | TELE_TO | TELE_AWAY | TELE_LEVEL | FORGET | S_HI_DEMON | S_DEMON | WOUND | S_HI_UNDEAD | S_UNIQUE | S_HI_DRAGON | BA_DARK | BA_MANA | S_UNDEAD
+spell-freq:33
 flags:UNIQUE | MALE | FORCE_SLEEP | IM_NETHER | IM_PLASMA | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | EVIL | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | TAKE_ITEM | IM_FIRE | NO_CONF | NO_SLEEP | IM_POIS | HURT_COLD | GIANT | REGENERATE
 desc:Loki, the god of mischief, is a nasty person. He will use every dirty trick in the book, and then some. In the end, his half-giant heritage is bound to show, as he will defect to the side of the giants and fight against the other gods of Asgard.
 
@@ -6267,6 +6685,8 @@ blow:CLAW:POISON:1d30
 blow:CLAW:ACID:1d30
 blow:TOUCH:DRAIN_CHARGES:1d10
 blow:CRUSH:DISENCHANT:2d33
+spells:SCARE | CONF | S_DEMON | S_UNDEAD | DRAIN_MANA | BR_ACID | BR_FIRE | TPORT | S_MONSTERS | BRAIN_SMASH | BR_NETH | HEAL | MIND_BLAST | BA_POIS
+spell-freq:33
 flags:RAND_25 | KILL_ITEM | OPEN_DOOR | BASH_DOOR | IM_NETHER | DROP_4 | ONLY_ITEM | FORCE_SLEEP | EVIL | DEMON | IM_POIS | IM_ACID | IM_ELEC | NONLIVING | POWERFUL | IM_FIRE | NO_CONF | DROP_GOOD
 desc:The last remnants of sanity threaten to leave your brain as you behold this titanic bat-winged, octopus-headed unholy abomination. "They all lay in stone houses in their great city of R'lyeh, preserved by the spells of mighty Cthulhu for a glorious resurrection when the stars and the earth might once more be ready..."
 
@@ -6286,6 +6706,8 @@ blow:HIT:FIRE:6d11
 blow:HIT:HURT:6d11
 blow:HIT:FIRE:6d11
 blow:HIT:HURT:6d11
+spells:BR_FIRE | BR_PLAS | BLIND | TELE_TO | S_KIN | S_HI_UNDEAD | WOUND | TELE_AWAY | S_HI_DEMON | S_DEMON
+spell-freq:20
 light:2
 flags:UNIQUE | FORCE_SLEEP | IM_NETHER | IM_PLASMA | MALE | ONLY_ITEM | DROP_4 | DROP_GOOD | EVIL | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | TAKE_ITEM | IM_FIRE | NO_CONF | NO_SLEEP | IM_POIS | HURT_COLD | GIANT | DEMON
 desc:Surtur is also one of the most ancient of all creatures. He is a demonic giant of fire, who is destined to set the nine worlds afire with his accursed sword of doom on the day of Ragnarok.
@@ -6306,6 +6728,8 @@ blow:CRUSH:HURT:12d12
 blow:CRUSH:HURT:12d12
 blow:GAZE:LOSE_INT:2d12
 blow:GAZE:LOSE_WIS:2d12
+spells:FORGET | HEAL | WOUND | BA_MANA | TPORT | TELE_AWAY | TELE_LEVEL | CONF | BLIND | BRAIN_SMASH | DRAIN_MANA | S_MONSTERS | S_KIN | S_HI_DEMON | S_HOUND | S_HYDRA | S_DEMON | S_UNIQUE | S_HI_UNDEAD | S_HI_DRAGON | S_UNDEAD
+spell-freq:50
 flags:ONLY_ITEM | DROP_60 | DROP_GOOD | DROP_GREAT | EVIL | UNIQUE | NEVER_MOVE | FORCE_SLEEP | IM_ACID | IM_POIS | IM_COLD | IM_ELEC | IM_NETHER | IM_WATER | IM_NEXUS | NO_FEAR | NO_CONF | NO_SLEEP | DEMON | SMART | COLD_BLOOD | IM_DISEN | NO_STUN
 desc:Shuma-Gorath is one of the immortal lords of chaos. The true form of this blasphemous horror is a huge, all-seeing eye surrounded by tentacles.
 
@@ -6325,6 +6749,8 @@ blow:HIT:HURT:2d50
 blow:HIT:HURT:2d50
 blow:HIT:HURT:2d50
 blow:HIT:HURT:2d50
+spells:BR_NEXU | BR_NETH | BR_COLD | BR_FIRE
+spell-freq:33
 light:2
 flags:RAND_25 | EVIL | DEMON | DROP_4 | DROP_GOOD | ONLY_ITEM | IM_POIS | IM_FIRE | FORCE_SLEEP | NONLIVING | IM_COLD | IM_ELEC | IM_NEXUS | IM_NETHER | IM_PLASMA | REGENERATE | UNIQUE
 desc:"A belching column of sick greenish flame... spouting volcanically from the depths profound and inconceivable, casting no shadows as healthy flame should, and coating the nitrous stone with a nasty, venomous verdigris. For all that seething combustion no warmth lay, but only the clamminess of death and corruption."
@@ -6345,6 +6771,8 @@ blow:HIT:HURT:2d40
 blow:HIT:HURT:2d40
 blow:HIT:HURT:2d40
 blow:HIT:HURT:2d40
+spells:BOULDER | S_HI_DEMON
+spell-freq:33
 flags:RAND_25 | EVIL | DEMON | DROP_2 | DROP_GOOD | ONLY_ITEM | DROP_GREAT | UNIQUE | IM_POIS | IM_FIRE | FORCE_SLEEP | NONLIVING
 desc:The mightiest of Cyberdemons, their lord and ruler.
 
@@ -6364,6 +6792,8 @@ blow:HIT:DISENCHANT:6d8
 blow:HIT:DISENCHANT:6d8
 blow:HIT:HURT:5d5
 blow:HIT:HURT:5d5
+spells:TPORT | BLIND | SCARE | WOUND | BRAIN_SMASH | BA_MANA | BO_MANA | BA_FIRE | S_MONSTERS | S_DEMON | S_HI_UNDEAD | S_UNDEAD
+spell-freq:33
 flags:UNIQUE | MALE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | SMART | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | EVIL | UNDEAD | IM_FIRE | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 desc:A stench of corruption and decay surrounds this sorcerer, who has clearly risen from the grave to continue his foul plots and schemes.
 
@@ -6382,6 +6812,8 @@ experience:56701
 blow:TOUCH:HURT:40d5
 blow:TOUCH:LOSE_CON:16d2
 blow:TOUCH:LOSE_CON:16d2
+spells:BO_MANA | BRAIN_SMASH | BA_MANA | S_MONSTERS | S_HI_DEMON | S_DEMON | S_HI_UNDEAD | S_HOUND | BR_MANA | BR_SHAR
+spell-freq:33
 flags:UNIQUE | SMART | PASS_WALL | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | ATTR_MULTI | ATTR_RAND | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | NONLIVING | EVIL | IM_ACID | IM_ELEC | IM_POIS | IM_FIRE | NO_CONF | NO_SLEEP
 desc:"Great globes of light massing towards the opening... the breaking apart of the nearest globes, and the protoplasmic flesh that flowed blackly outward to join together and form that eldritch, hideous horror from outer space... whose mask was a congeries of iridescent globes... who froths as primal slime in nuclear chaos forever beyond the nethermost outposts of space and time!"
 
@@ -6401,6 +6833,8 @@ blow:BITE:HURT:20d6
 blow:CLAW:HURT:3d3
 blow:CLAW:HURT:3d3
 blow:BITE:HURT:20d6
+spells:BR_DARK | BR_POIS | BR_COLD
+spell-freq:12
 flags:UNIQUE | FORCE_SLEEP | RAND_25 | ONLY_ITEM | DROP_60 | DROP_GOOD | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | KILL_BODY | ANIMAL | EVIL | IM_POIS | IM_FIRE | IM_COLD
 desc:The immensely huge wolf who would swallow the sun to satisfy its hunger and leave the Norse gods for the dessert.
 
@@ -6420,6 +6854,8 @@ blow:CRUSH:POISON:8d12
 blow:CRUSH:FIRE:8d12
 blow:CRUSH:ELEC:8d12
 blow:CRUSH:HURT:10d18
+spells:S_HI_DRAGON | S_DRAGON | S_KIN | BR_POIS | BR_ACID | BR_ELEC | BR_FIRE | BR_COLD | BR_NETH | BR_LIGHT | BR_DARK | BR_CHAO | BR_SOUN | BR_DISE | BR_NEXU | BR_TIME | BR_INER | BR_GRAV | BR_SHAR | BR_PLAS | BR_WALL | BR_MANA
+spell-freq:33
 light:2
 flags:FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | DRAGON | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP | IM_NETHER | IM_NEXUS | IM_PLASMA | IM_DISEN
 desc:The mightiest of all dragonkind, a great wyrm of power is seldom encountered in our world. It can crush stars with its might.
@@ -6440,6 +6876,8 @@ blow:CRUSH:LOSE_WIS:20d5
 blow:CRUSH:LOSE_INT:20d5
 blow:BITE:LOSE_STR:10d2
 blow:BITE:LOSE_CON:10d2
+spells:BO_MANA | BRAIN_SMASH | BA_DARK | S_MONSTERS | WOUND | HEAL | BR_CHAO | BR_POIS | BA_MANA | S_DEMON | S_HI_UNDEAD | S_UNIQUE | S_UNDEAD
+spell-freq:33
 flags:UNIQUE | FEMALE | ATTR_MULTI | FORCE_SLEEP | PASS_WALL | ATTR_RAND | ONLY_ITEM | DROP_4 | DROP_GOOD | NONLIVING | SMART | OPEN_DOOR | BASH_DOOR | REGENERATE | DEMON | EVIL | IM_ACID | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 desc:This horrendous outer god looks like a writhing cloudy mass filled with mouths and tentacles.
 
@@ -6457,6 +6895,8 @@ rarity:3
 experience:78351
 blow:HIT:HURT:2d66
 blow:HIT:HURT:2d66
+spells:TELE_AWAY | TELE_TO | TELE_LEVEL | TPORT | BO_MANA | BA_MANA | S_MONSTERS | HEAL | WOUND | HASTE | S_AINU | S_UNIQUE
+spell-freq:100
 flags:UNIQUE | MALE | FORCE_SLEEP | PASS_WALL | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_60 | DROP_GREAT | SMART | OPEN_DOOR | BASH_DOOR | REGENERATE | IM_ACID | IM_POIS | IM_FIRE | IM_ELEC | NO_CONF | NO_SLEEP | IM_NEXUS | IM_NETHER | IM_WATER
 desc:The hoary Lord of the Great Abyss seems a wizened man, but appearances can be deceiving.
 
@@ -6476,6 +6916,8 @@ blow:CRUSH:LOSE_CON:30d4
 blow:CRUSH:LOSE_STR:30d4
 blow:GAZE:LOSE_INT:1d50
 blow:GAZE:LOSE_WIS:1d50
+spells:TELE_AWAY | TELE_TO | TELE_LEVEL | TPORT | BR_NEXU | BA_MANA | BA_FIRE | S_MONSTERS | BRAIN_SMASH | MIND_BLAST | WOUND | HASTE | S_HI_UNDEAD | S_HI_DRAGON | S_UNDEAD | S_AINU | S_DEMON | HEAL | S_SPIDER | S_HOUND | S_HI_DEMON
+spell-freq:33
 flags:UNIQUE | NONLIVING | FORCE_SLEEP | PASS_WALL | DEMON | IM_NEXUS | ATTR_MULTI | ATTR_RAND | MALE | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | SMART | OPEN_DOOR | BASH_DOOR | REGENERATE | EVIL | IM_ACID | IM_POIS | IM_FIRE | NO_CONF | NO_SLEEP
 desc:Nyarlathothep is the messenger, the heart and the soul of the outer gods. He is a shapechanger capable of assuming thousands of nightmarish forms. One of them looks like this: "A tall, slim figure with the young face of an antique pharaoh, gay with prismatic robes and crowned with a pshent that glowed with inherent light... the fascination of a dark god or fallen archangel, and around whose eyes there lurked the languid sparkle of capricious humor."
 
@@ -6495,6 +6937,8 @@ blow:CRUSH:HURT:35d5
 blow:CRAWL:ACID:35d5
 blow:CRUSH:HURT:35d5
 blow:CRAWL:ACID:35d5
+spells:S_DEMON | BR_CHAO | BR_DISE | BR_MANA | BA_WATE | BR_SHAR
+spell-freq:20
 flags:UNIQUE | FORCE_SLEEP | DEMON | ATTR_MULTI | POWERFUL | ATTR_RAND | NONLIVING | KILL_ITEM | KILL_WALL | ONLY_ITEM | DROP_4 | DROP_GOOD | IM_DISEN | STUPID | OPEN_DOOR | BASH_DOOR | REGENERATE | EMPTY_MIND | EVIL | IM_ACID | IM_POIS | IM_FIRE | NO_CONF | NO_SLEEP
 desc:"That last amorphous blight of nethermost confusion which blasphemes and bubbles at the centre of all infinity -- the boundless daemon sultan Azathoth, whose name no lips dare speak aloud, and who gnaws hungrily in inconceivable, unlighted chambers beyond time amidst the muffled, maddening beating of vile drums and the thin monotonous whine of accursed flutes."
 
@@ -6513,6 +6957,8 @@ experience:202020
 blow:CRUSH:HURT:30d10
 blow:CRUSH:HURT:30d10
 blow:BITE:HURT:5d60
+spells:BA_WATE
+spell-freq:12
 flags:UNIQUE | FORCE_SLEEP | MOVE_BODY | KILL_WALL | IM_FIRE | IM_POIS | IM_ACID | IM_COLD | EVIL | IM_WATER | IM_PLASMA | IM_NEXUS | NO_STUN | REGENERATE | NO_CONF | NO_SLEEP
 desc:The Midgard Serpent is so huge that its body surrounds the world of mortal men. It can grind gods themselves to lifeless pulp.
 
@@ -6532,6 +6978,8 @@ blow:HIT:HURT:30d9
 blow:HIT:HURT:30d9
 blow:HIT:HURT:30d9
 blow:HIT:HURT:30d9
+spells:BR_SHAR | BO_MANA
+spell-freq:33
 flags:UNIQUE | NONLIVING | NO_FEAR | FORCE_SLEEP | MOVE_BODY | KILL_WALL | IM_FIRE | IM_ELEC | IM_POIS | IM_COLD | IM_NETHER | IM_WATER | IM_PLASMA | IM_NEXUS | NO_STUN | REGENERATE | NO_CONF | NO_SLEEP | EMPTY_MIND | COLD_BLOOD | BASH_DOOR
 desc:The Destroyer was built by the Norse deities to be their ultimate weapon against the space gods who had arrived to judge the world. Unfortunately, the Destroyer has gone berserk and is destroying everything it sees. The mystical Destroyer is nearly indestructible, and it is said that when it uses its power of complete disintegration, the day of Ragnarok is near.
 
@@ -6551,6 +6999,8 @@ blow:CRUSH:HURT:50d4
 blow:CLAW:DRAIN_CHARGES:15d2
 blow:CLAW:DISENCHANT:15d2
 blow:TOUCH:POISON:100d1
+spells:TPORT | SCARE | BLIND | MIND_BLAST | BRAIN_SMASH | DRAIN_MANA | BR_POIS | BR_ACID | BR_FIRE | CONF | DARKNESS | FORGET | S_HI_UNDEAD | BR_NETH | BR_CHAO | BR_DISE | BR_DARK | BR_PLAS | BR_NEXU | S_DEMON | S_HI_DEMON | S_KIN | BR_SHAR | WOUND | S_UNDEAD
+spell-freq:33
 flags:UNIQUE | DEMON | NONLIVING | FORCE_SLEEP | SMART | IM_PLASMA | IM_NEXUS | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | REGENERATE | IM_NETHER | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | IM_DISEN | EVIL | IM_FIRE | IM_POIS | IM_ELEC | IM_ACID | NO_CONF | NO_SLEEP
 desc:This creature is death incarnate. "A monster of vaguely anthropoid outline, but with an octopus-like head whose face was a mass of feelers, a scaly, rubbery-looking body, prodigious claws on hind fore feet, and long, narrow wings behind. This thing... was a somewhat bloated corpulence... It lumbered slobberingly into sight and gropingly squeezed its gelatinous green immensity through the black doorway... A mountain shambled or walked."
 
@@ -6570,6 +7020,8 @@ blow:KICK:DRAIN_CHARGES:13d13
 blow:KICK:DRAIN_CHARGES:12d12
 blow:BUTT:DISENCHANT:11d11
 blow:BITE:EXP_40:10d10
+spells:SHRIEK | BR_SOUN | BR_LIGHT | BR_INER | BR_TIME | BR_SHAR | BR_PLAS | BR_MANA | DRAIN_MANA | HEAL | HASTE | TELE_AWAY | BLINK | TPORT | FORGET | S_MONSTERS | S_HI_DRAGON | S_UNIQUE
+spell-freq:33
 light:1
 flags:UNIQUE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | IM_NETHER | IM_WATER | IM_PLASMA | IM_NEXUS | IM_DISEN | SMART | KILL_BODY | POWERFUL | BASH_DOOR | REGENERATE | NONLIVING | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | NO_CONF | NO_SLEEP | NO_FEAR | NO_STUN
 desc:The Unicorn of Order, who once stole an eye from the great Serpent of chaos, is watching the events unfold with growing distress. It regards you as a mortal meddling in the affairs of immortals, and attempts to eliminate you.
@@ -6590,6 +7042,8 @@ blow:HIT:DISENCHANT:12d12
 blow:HIT:DRAIN_CHARGES:12d12
 blow:HIT:CONFUSE:10d2
 blow:HIT:BLIND:10d2
+spells:TPORT | SCARE | BLIND | S_DEMON | S_AINU | S_MONSTERS | TELE_TO | CONF | BO_MANA | BA_FIRE | BRAIN_SMASH | BA_NETH | BO_ICE | WOUND | BA_WATE | BO_PLAS | TELE_LEVEL | TELE_AWAY | FORGET | DARKNESS | BA_MANA | S_HI_DRAGON | S_HI_UNDEAD | S_HI_DEMON
+spell-freq:50
 light:2
 flags:UNIQUE | QUESTOR | MALE | ATTR_MULTI | FORCE_SLEEP | FORCE_DEPTH | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | SMART | OPEN_DOOR | BASH_DOOR | MOVE_BODY | REGENERATE | EVIL | IM_FIRE | IM_COLD | IM_ELEC | POWERFUL | NO_CONF | NO_SLEEP | NO_FEAR
 desc:Oberon, the father or grandfather of most Amberites, is as powerful as ever. He is afraid that you will upset the balance and will not let you harm the Serpent of Chaos. "Oberon, Lord of Amber, stood before me in his green and his gold. High, wide and thick, his beard black and shot with silver, his hair the same. Green rings in gold settings and a blade of golden color."
@@ -6610,6 +7064,8 @@ blow:CRUSH:SHATTER:22d10
 blow:CRUSH:SHATTER:22d10
 blow:BITE:LOSE_ALL:10d12
 blow:TOUCH:DRAIN_CHARGES
+spells:S_MONSTERS | BR_CHAO | BA_MANA | BOULDER | BRAIN_SMASH | S_HI_DEMON | BR_NETH | HASTE | BR_MANA | S_HI_UNDEAD | S_HI_DRAGON | S_UNIQUE | BR_POIS | BR_SHAR | WOUND
+spell-freq:33
 light:1
 flags:UNIQUE | QUESTOR | ATTR_MULTI | ATTR_RAND | FORCE_SLEEP | FORCE_DEPTH | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | IM_NETHER | SMART | KILL_WALL | KILL_BODY | POWERFUL | REGENERATE | NONLIVING | EVIL | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP | NO_FEAR | NO_STUN
 desc:The Big Boss himself. Before the universe the Serpent was. The Unicorn of Order fought with Serpent and stole one of its eyes, known as the Jewel of Judgement. With the Jewel, Dworkin drew the Pattern and thus gave birth to the infinite worlds of shadow. Now the balance has been disrupted, the Pattern damaged, and all the shadow is being absorbed by the Serpent. Unless it is stopped, the word as we know it will come to an end, all order reverting to Primal Chaos.
@@ -6630,6 +7086,8 @@ blow:SPORE:LOSE_ALL:2d4
 blow:SPORE:DISENCHANT:2d4
 blow:SPORE:CONFUSE:2d4
 blow:SPORE:TERRIFY:2d4
+spells:BLINK | MIND_BLAST
+spell-freq:50
 friends:100:2d6:Same
 flags:NEVER_MOVE | STUPID | WEIRD_MIND | ATTR_MULTI | ATTR_RAND | MULTIPLY | IM_ACID | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP | NO_FEAR | NO_STUN
 desc:It is there and it is not.
@@ -6650,6 +7108,8 @@ blow:TOUCH:BLIND:5d5
 blow:TOUCH:DISENCHANT:10d10
 blow:TOUCH:LOSE_ALL:10d10
 blow:TOUCH:EXP_80:10d10
+spells:BR_NETH | BR_TIME | BA_MANA | BO_MANA | WOUND | HEAL | S_DEMON | S_HI_UNDEAD | S_HI_DRAGON | TPORT
+spell-freq:50
 flags:UNIQUE | FORCE_SLEEP | NEVER_MOVE | ONLY_ITEM | DROP_60 | DROP_GOOD | DROP_GREAT | INVISIBLE | COLD_BLOOD | SMART | EMPTY_MIND | REGENERATE | POWERFUL | EVIL | DEMON | NONLIVING | IM_ACID | IM_ELEC | IM_FIRE | IM_COLD | IM_POIS | IM_NETHER | IM_WATER | IM_PLASMA | IM_NEXUS | IM_DISEN | NO_FEAR | NO_CONF | NO_STUN | NO_SLEEP
 desc:It is a ring of immense power.  You can hardly believe you've finally found the One Ring!
 
@@ -6689,6 +7149,8 @@ blow:TOUCH:DRAIN_CHARGES:13d13
 blow:TOUCH:DISENCHANT:13d13
 blow:TOUCH:LOSE_ALL:13d13
 blow:TOUCH:CONFUSE:13d13
+spells:HEAL
+spell-freq:20
 flags:NEVER_MOVE | STUPID | NONLIVING | COLD_BLOOD | EMPTY_MIND | REGENERATE | KILL_BODY | EVIL | DEMON | IM_ELEC | IM_FIRE | IM_POIS | IM_NETHER | IM_WATER | IM_PLASMA | IM_NEXUS | IM_DISEN | NO_FEAR | NO_CONF | NO_STUN | NO_SLEEP
 desc:A thing like a massive, jet black oyster with four groping tendrils. Born of nether, it need not chase its prey, content to seeth in the darkness until some unfortunate creature wanders too close.
 
@@ -6704,6 +7166,8 @@ hearing:20
 depth:19
 rarity:2
 experience:61
+spells:ARROW
+spell-freq:100
 flags:NEVER_BLOW | RAND_25 | ANIMAL
 desc:A many legged scuttling thing, it spits pebbles with deadly force.
 
@@ -6758,6 +7222,8 @@ blow:KICK:HURT:7d1
 blow:HIT:EXP_10:7d2
 blow:KICK:HURT:7d4
 blow:HIT:EXP_10:7d2
+spells:BO_NETH
+spell-freq:11
 light:2
 flags:MALE | DROP_2 | OPEN_DOOR | BASH_DOOR | IM_COLD | IM_POIS | IM_NETHER | NO_FEAR | NO_CONF | NO_SLEEP
 desc:A monk in dusky robes trained in the most lethal martial arts.
@@ -6856,6 +7322,8 @@ depth:69
 rarity:100
 experience:44928
 blow:HIT:LOSE_ALL:50d100
+spells:HOLD
+spell-freq:10
 light:2
 flags:RAND_25 | EMPTY_MIND | FORCE_SLEEP | REGENERATE | BASH_DOOR | KILL_BODY | NONLIVING | IM_ACID | IM_ELEC | IM_FIRE | IM_COLD | IM_POIS | IM_NETHER | IM_WATER | IM_PLASMA | IM_DISEN | NO_FEAR | NO_STUN | NO_CONF | NO_SLEEP
 desc:A swirling, rotating red disk.  A funnel thrusts out, seeking the one who disturbed the Pattern.
@@ -6876,6 +7344,8 @@ blow:HIT:ELEC:3d10
 blow:BITE:HURT:1d22
 blow:HIT:COLD:3d10
 blow:BITE:HURT:1d22
+spells:BA_COLD | BO_ICE | BO_WATE | BA_ELEC
+spell-freq:14
 light:1
 flags:FORCE_SLEEP | DROP_4 | SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | MOVE_BODY | POWERFUL | IM_ACID | IM_COLD | IM_ELEC | TROLL | EVIL
 desc:The dungeon shakes as an enormous troll-form thunders into view, hurling ice and lightning in every direction.  It is thirty feet tall, has six heads, and is enraged at your impudence.
@@ -6896,6 +7366,8 @@ blow:CLAW:HURT:10d12
 blow:CLAW:HURT:10d12
 blow:CLAW:HURT:10d12
 blow:BITE:DISENCHANT:8d8
+spells:BR_NEXU | BR_NETH | BR_DISE | S_HI_DRAGON | SCARE | BLINK | SHRIEK
+spell-freq:33
 flags:EVIL | UNDEAD | ONLY_ITEM | DROP_4 | DROP_GOOD | POWERFUL | MOVE_BODY | PASS_WALL | INVISIBLE | DRAGON | NO_CONF | NO_SLEEP | IM_NETHER | IM_NEXUS | IM_DISEN
 desc:The tortured soul of a once powerful wyrm.
 
@@ -6912,6 +7384,8 @@ depth:90
 rarity:6
 experience:756
 blow:HIT:CONFUSE:3d4
+spells:BLINK | TPORT | BO_MANA | S_MONSTER | S_DEMON | S_HI_UNDEAD
+spell-freq:50
 friends:100:2d6:Same
 flags:ATTR_MULTI | ATTR_RAND | RAND_50 | RAND_25 | FORCE_SLEEP | MULTIPLY | HURT_ROCK | EMPTY_MIND | COLD_BLOOD | NO_CONF | NO_SLEEP | NO_FEAR
 desc:This is what happens to a mage when a powerful spell fails.
@@ -6932,6 +7406,8 @@ blow:TOUCH:EXP_40:1d16
 blow:TOUCH:DRAIN_CHARGES
 blow:TOUCH:LOSE_DEX:8d8
 blow:TOUCH:LOSE_INT:8d8
+spells:HEAL | BLINK | BLIND | CONF | WOUND | DARKNESS | S_UNDEAD | SHRIEK | TELE_AWAY | BA_DARK | DRAIN_MANA | S_MONSTER | S_DEMON | S_KIN
+spell-freq:50
 flags:MALE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | SMART | INVISIBLE | COLD_BLOOD | UNDEAD | EVIL | HURT_LIGHT | NO_CONF | NO_SLEEP
 desc:A dark elven figure that glows with an inner light.
 
@@ -6951,6 +7427,8 @@ blow:CLAW:HURT:3d3
 blow:BITE:DISENCHANT:3d12
 blow:CLAW:HURT:3d3
 blow:BITE:DISENCHANT:3d12
+spells:BR_DISE
+spell-freq:20
 friends:100:2d6:Same
 flags:FORCE_SLEEP | BASH_DOOR | IM_DISEN | ANIMAL | NO_CONF | NO_SLEEP
 desc:A field of static energy surrounds this hound. Its presence seems to dampen all other energies...
@@ -6971,6 +7449,8 @@ blow:BITE:HURT:25d1
 blow:BITE:HURT:25d1
 blow:BITE:HURT:25d1
 blow:CLAW:HURT:3d3
+spells:BR_MANA
+spell-freq:12
 friends:100:2d6:Same
 light:1
 flags:FORCE_SLEEP | OPEN_DOOR | BASH_DOOR | ANIMAL | NO_CONF | NO_SLEEP
@@ -6990,6 +7470,8 @@ rarity:2
 experience:454
 blow:CLAW:HURT:4d8
 blow:CLAW:HURT:8d4
+spells:BO_MANA
+spell-freq:20
 flags:DROP_2 | OPEN_DOOR | BASH_DOOR | IM_POIS | IM_ACID | IM_COLD | EVIL
 desc:A gaunt, vaguely humanoid torso merged with the form of a giant spider, ugly as sin. It screams horribly as it charges at you.
 
@@ -7008,6 +7490,8 @@ experience:23
 blow:CLAW:HURT:1d6
 blow:CLAW:HURT:1d6
 blow:BITE:ELEC:1d10
+spells:HEAL
+spell-freq:10
 friends:100:2d6:Same
 flags:ANIMAL | IM_ELEC | EVIL
 desc:A feline surrounded by a strange energy.
@@ -7042,6 +7526,8 @@ depth:31
 rarity:3
 experience:58
 blow:BITE:PARALYZE
+spells:BR_TIME | HASTE | SLOW
+spell-freq:20
 flags:FORCE_SLEEP | RAND_50 | RAND_25 | WEIRD_MIND | BASH_DOOR | ANIMAL
 desc:It wasn't there a second ago....
 
@@ -7079,6 +7565,8 @@ experience:627
 blow:CLAW:HURT:2d5
 blow:CLAW:HURT:2d5
 blow:BITE:HURT:2d8
+spells:BLINK | TPORT | TELE_TO | TELE_AWAY | TELE_LEVEL | BR_NEXU | BR_GRAV
+spell-freq:17
 flags:FORCE_SLEEP | ONLY_ITEM | DROP_2 | DROP_GOOD | INVISIBLE | ATTR_CLEAR | PASS_WALL | DRAGON | NO_CONF | NO_SLEEP | WEIRD_MIND | IM_NEXUS
 desc:A vaguely dragon-shaped distortion in the ether; it shimmers like a heat haze as you study it carefully.
 
@@ -7097,6 +7585,8 @@ experience:3114
 blow:CLAW:HURT:6d15
 blow:CLAW:HURT:6d15
 blow:BITE:HURT:8d15
+spells:BR_GRAV | BR_INER | BR_NEXU | BR_TIME | HASTE | SLOW | HOLD | BLINK | TPORT | TELE_TO | TELE_AWAY | TELE_LEVEL
+spell-freq:25
 flags:FORCE_SLEEP | ONLY_ITEM | DROP_4 | INVISIBLE | ATTR_CLEAR | DROP_GOOD | PASS_WALL | POWERFUL | MOVE_BODY | SMART | WEIRD_MIND | DRAGON | NO_CONF | NO_SLEEP | IM_NEXUS
 desc:This immense, vaguely dragon-shaped distortion in the ether has mastered the magics of both space and time.
 
