@@ -536,6 +536,47 @@ static enum parser_error parse_constants_lethality(struct parser *p) {
  * frequencies that only playtest can settle, and a rebuild to try a different
  * vorpal rate is a rebuild wasted.
  */
+/**
+ * ZangbandZK: the wilderness dimensions (WLD-02).
+ *
+ * In data because the world's size is the project's largest performance and
+ * generation risk, and being able to shrink it for testing without a rebuild is
+ * worth more than fidelity to any particular number.
+ */
+static enum parser_error parse_constants_wild(struct parser *p) {
+	struct angband_constants *z;
+	const char *label;
+	int value;
+
+	z = parser_priv(p);
+	label = parser_getsym(p, "label");
+	value = parser_getint(p, "value");
+
+	if (value <= 0 || value > LETHALITY_MAX)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	if (streq(label, "blocks")) {
+		/*
+		 * The plasma fractal subdivides by halves and must land on a sample
+		 * point at each step, so the map has to be 2^n + 1. Rejecting here
+		 * rather than at generation gives the error a file and line.
+		 */
+		int n = value - 1;
+
+		if (value < 3 || (n & (n - 1)) != 0)
+			return PARSE_ERROR_INVALID_VALUE;
+		z->wild_blocks = value;
+	} else if (streq(label, "block-size")) {
+		z->wild_block_size = value;
+	} else if (streq(label, "cache-blocks")) {
+		z->wild_cache_blocks = value;
+	} else {
+		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_constants_melee(struct parser *p) {
 	struct angband_constants *z;
 	const char *label;
@@ -1026,6 +1067,7 @@ static struct parser *init_parse_constants(void) {
 	parser_reg(p, "mon-gen sym label int value", parse_constants_mon_gen);
 	parser_reg(p, "lethality sym label int value", parse_constants_lethality);
 	parser_reg(p, "melee sym label int value", parse_constants_melee);
+	parser_reg(p, "wild sym label int value", parse_constants_wild);
 	parser_reg(p, "mon-play sym label int value", parse_constants_mon_play);
 	parser_reg(p, "dun-gen sym label int value", parse_constants_dun_gen);
 	parser_reg(p, "world sym label int value", parse_constants_world);
@@ -1106,6 +1148,12 @@ static errr finish_parse_constants(struct parser *p) {
 		z_info->vorpal_multiplier = 2;
 	if (!z_info->chaotic_chance)
 		z_info->chaotic_chance = 7;
+	if (!z_info->wild_blocks)
+		z_info->wild_blocks = 33;
+	if (!z_info->wild_block_size)
+		z_info->wild_block_size = 16;
+	if (!z_info->wild_cache_blocks)
+		z_info->wild_cache_blocks = 81;
 	if (check_critical_levels(z_info->m_crit_level_head)) {
 		plog("The cutoffs for melee criticals in constants.txt are "
 			"not strictly increasing.");

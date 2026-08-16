@@ -1,0 +1,108 @@
+/**
+ * \file wild.h
+ * \brief The wilderness overworld (ZangbandZK)
+ *
+ * Angband is played in one dungeon beneath one town.  ZangbandZK is played
+ * across a generated overworld, following Zangband's design: a grid of blocks
+ * whose terrain is chosen by position in a height/population/law parameter
+ * space, laid out by a plasma fractal.
+ *
+ * The world map is small and persistent — a few bytes per block, held for the
+ * life of the game and written to the savefile.  Block *contents* are not: a
+ * block's 16x16 grids are generated on demand from the world seed and the
+ * block's own coordinates, so the same block always regenerates identically
+ * and only blocks the player has changed need storing (WLD-03, WLD-04).
+ *
+ * Copyright (c) 2026 ZangbandZK contributors
+ *
+ * This work is free software; you can redistribute it and/or modify it under
+ * the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
+
+#ifndef INCLUDED_WILD_H
+#define INCLUDED_WILD_H
+
+#include "h-basic.h"
+#include "z-type.h"
+
+struct chunk;
+
+/**
+ * Terrain kinds a wilderness block may take.
+ *
+ * Zangband selected from 232 block types in w_info.txt by walking a decision
+ * tree over the parameter space.  This is the coarse classification that
+ * selection resolves to; the detailed types come later (WLD-07).
+ */
+enum wild_terrain {
+	WILD_TERRAIN_OCEAN = 0,
+	WILD_TERRAIN_SHORE,
+	WILD_TERRAIN_GRASS,
+	WILD_TERRAIN_FOREST,
+	WILD_TERRAIN_SWAMP,
+	WILD_TERRAIN_WASTE,
+	WILD_TERRAIN_MOUNTAIN,
+	WILD_TERRAIN_MAX
+};
+
+/**
+ * Flags on a wilderness block.
+ */
+#define WILD_INFO_ROAD		0x01	/* A road runs through this block */
+#define WILD_INFO_TRACK		0x02	/* A lesser track runs through it */
+#define WILD_INFO_MODIFIED	0x04	/* The player changed it; must persist */
+#define WILD_INFO_SEEN		0x08	/* The player has seen it on the map */
+
+/**
+ * One block of the world map.
+ *
+ * Deliberately small: the whole map is held in memory and written to the
+ * savefile, so this is multiplied by blocks squared.  At the default 33x33
+ * that is 1089 of these.
+ */
+struct wild_block {
+	uint8_t terrain;	/**< enum wild_terrain */
+	uint8_t place;		/**< Town or dungeon index here, 0 for none */
+	uint8_t info;		/**< WILD_INFO_* flags */
+
+	/**
+	 * Position in the parameter space terrain is chosen from.  Kept after
+	 * generation because roads, towns and dungeon placement all read them,
+	 * and because regenerating the fractal to recover them would be wasteful.
+	 */
+	uint8_t hgt;		/**< Height: ocean floor through mountain peak */
+	uint8_t pop;		/**< Population: wilderness through city */
+	uint8_t law;		/**< Law: bandit country through well-policed */
+};
+
+/**
+ * The world map.
+ */
+struct wilderness {
+	uint32_t seed;		/**< Seed every block's generation derives from */
+	int blocks;			/**< Width and height, in blocks */
+	struct wild_block *map;	/**< blocks * blocks entries, row-major */
+};
+
+extern struct wilderness *wild;
+
+/* wild.c */
+struct wild_block *wild_block_at(struct wilderness *w, int x, int y);
+bool wild_in_bounds(const struct wilderness *w, int x, int y);
+uint32_t wild_block_seed(const struct wilderness *w, int x, int y);
+enum wild_terrain wild_classify(int hgt, int pop, int law);
+const char *wild_terrain_name(enum wild_terrain terrain);
+
+struct wilderness *wild_new(int blocks, uint32_t seed);
+void wild_free(struct wilderness *w);
+void wild_generate(struct wilderness *w);
+
+#endif /* INCLUDED_WILD_H */

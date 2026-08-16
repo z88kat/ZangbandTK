@@ -459,3 +459,24 @@ melee:vorpal-multiplier:2
 
 # A chaotic weapon discharges an effect on one blow in this many
 melee:chaotic-chance:7
+
+# === ZangbandZK wilderness ===
+#
+# The overworld is a grid of blocks, each generated on demand from the world
+# seed and its own coordinates, and cached while the player is near it.
+#
+# 'blocks' must be a power of two plus one: the plasma fractal that lays out
+# the world's height, population and law maps subdivides by halves and needs
+# both edges to land on a sample point. Zangband used 129 (2^7 + 1); DEC-19
+# starts us at a quarter of that linear dimension, 33 (2^5 + 1), which is a
+# world of 528x528 grids against Zangband's 2064x2064. Raise it once travel,
+# caching and generation are proven.
+
+# Width and height of the world, in blocks. Must be 2^n + 1.
+wild:blocks:33
+
+# Width and height of one wilderness block, in grids
+wild:block-size:16
+
+# Blocks held in memory at once. Zangband kept 9x9 live around the player.
+wild:cache-blocks:81

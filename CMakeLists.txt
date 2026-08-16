@@ -299,6 +299,7 @@ add_library(OurCoreLib OBJECT
         src/ui-target.c
         src/ui-term.c
         src/ui-visuals.c
+    src/wild.c
         src/ui-wizard.c
         src/wiz-debug.c
         src/wiz-spoil.c
@@ -848,6 +849,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     artifact/name.c
     cave/find.c
     cave/scatter.c
+    cave/wild.c
     command/lookup.c
     effects/chain.c
     effects/destruction.c

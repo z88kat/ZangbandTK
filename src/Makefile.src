@@ -292,6 +292,7 @@ ANGFILES0 = \
 	ui-target.o \
 	ui-term.o \
 	ui-visuals.o \
+	wild.o \
 	ui-wizard.o \
 	wiz-debug.o \
 	wiz-spoil.o \

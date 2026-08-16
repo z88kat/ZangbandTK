@@ -1,3 +1,4 @@
 TESTPROGS += \
 	cave/find \
-	cave/scatter
+	cave/scatter \
+	cave/wild

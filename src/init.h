@@ -101,6 +101,11 @@ struct angband_constants
 	uint16_t lethality_hp;		/**< Percent of base monster hit points */
 	uint16_t lethality_ac;		/**< Percent of base monster armour class */
 
+	/* Wilderness, read from constants.txt (ZangbandZK: WLD-02) */
+	uint16_t wild_blocks;		/**< World width and height in blocks; 2^n+1 */
+	uint16_t wild_block_size;	/**< Width and height of a block, in grids */
+	uint16_t wild_cache_blocks;	/**< Blocks held in memory at once */
+
 	/* Zangband melee weapon mechanics, read from constants.txt */
 	uint16_t vorpal_chance;		/**< Vorpal cut is one chance in this */
 	uint16_t vorpal_multiplier;	/**< Damage multiplier on a vorpal cut */
