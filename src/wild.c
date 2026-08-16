@@ -591,7 +591,7 @@ void wild_ensure(uint32_t seed)
  * size so the two cannot disagree: the surface is the largest odd square that
  * the cache can hold.
  */
-static int wild_view_blocks(void)
+int wild_view_blocks(void)
 {
 	int view = 1;
 
@@ -710,4 +710,57 @@ struct chunk *wild_surface(struct wilderness *w, struct loc centre,
 		}
 
 	return c;
+}
+
+/**
+ * Should the live surface be rebuilt around the player?
+ *
+ * The window is nine blocks across, so the player can walk a long way before
+ * running out of it.  Rebuilding is not free — it regenerates every block in
+ * the window — so it happens when the player comes within a block's width of an
+ * edge, not on every step across a block boundary.
+ *
+ * Returns false when the window is already against the world's edge on that
+ * side: there is nothing further to scroll to, and rebuilding would produce an
+ * identical surface.
+ */
+bool wild_needs_recentre(struct player *p)
+{
+	int size = z_info->wild_block_size;
+	int span = wild_view_blocks() * size;
+	int world_max = wild ? wild->blocks * size : 0;
+	int lx = p->wild_grid.x - p->wild_offset.x;
+	int ly = p->wild_grid.y - p->wild_offset.y;
+
+	if (!wild)
+		return false;
+
+	/* Near the west or east edge, with world left in that direction. */
+	if (lx < size && p->wild_offset.x > 0)
+		return true;
+	if (lx >= span - size && p->wild_offset.x + span < world_max)
+		return true;
+
+	/* Near the north or south edge. */
+	if (ly < size && p->wild_offset.y > 0)
+		return true;
+	if (ly >= span - size && p->wild_offset.y + span < world_max)
+		return true;
+
+	return false;
+}
+
+/**
+ * Move the player one step across the world, keeping level and world position
+ * in step (WLD-23).
+ *
+ * The player's position is held in world coordinates; their position on the
+ * live surface is derived from it.  Keeping the world position as the truth
+ * means the surface can be rebuilt beneath them without their location being
+ * disturbed.
+ */
+void wild_track_move(struct player *p, struct loc grid)
+{
+	p->wild_grid.x = p->wild_offset.x + grid.x;
+	p->wild_grid.y = p->wild_offset.y + grid.y;
 }

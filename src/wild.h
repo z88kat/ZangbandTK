@@ -117,7 +117,10 @@ int wild_cache_count(void);
 
 void wild_ensure(uint32_t seed);
 int wild_world_grids(void);
+int wild_view_blocks(void);
 struct chunk *wild_surface(struct wilderness *w, struct loc centre,
 						   struct loc *offset);
+bool wild_needs_recentre(struct player *p);
+void wild_track_move(struct player *p, struct loc grid);
 
 #endif /* INCLUDED_WILD_H */
