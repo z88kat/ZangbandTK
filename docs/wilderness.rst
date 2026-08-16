@@ -103,7 +103,10 @@ you come within a block's width of the window's edge, the game quietly rebuilds
 it centred further along, and you carry on walking. Your position in the world
 is what the game tracks; where you stand in the window is worked out from it.
 
-The one edge you can reach is the edge of the world itself, which is walled.
+The one edge you can reach is the edge of the world itself. It is not walled.
+The land runs out into open sea some way before it, so what you find at the end
+of the world is more sea, running away past the point where the map stops. You
+can look out over it. You cannot sail it.
 
 What lives there
 ----------------

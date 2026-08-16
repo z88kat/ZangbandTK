@@ -436,6 +436,19 @@ hurt-msg:You are drowning!
 die-msg:drowning
 confused-msg:flounders in deep water
 
+# The edge of a flat world. Deep water to look at, and the same to sail towards,
+# but the map stops here: this is the ring the live surface gets where it meets
+# the boundary, in place of the permanent wall Angband levels normally carry.
+# Sight and spells pass over it, so what you see is open sea running away to the
+# horizon rather than anything you could mistake for masonry.
+code:WORLD_EDGE
+name:open sea
+graphics:~:b
+priority:9
+flags:LOS | PROJECT | PERMANENT | NO_SCENT | NO_FLOW
+look-prefix:the
+desc:Open sea, running away past the edge of the world.
+
 code:ROCK
 name:mountainside
 graphics:::u

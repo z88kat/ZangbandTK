@@ -129,26 +129,32 @@ static int test_town_can_be_walked_out_of(void *state) {
 }
 
 /*
- * The surface has the boundary Angband expects, but only at the world's edge.
+ * The surface is bounded, but only at the world's edge, and it is bounded by
+ * sea.
  *
  * A great deal of level code steps one grid outwards without checking, so the
- * edge of the world needs a permanent wall.  Everywhere else the window scrolls
- * before the player can reach its border, and a wall there would be a wall
- * across open country.
+ * edge of the world needs something impassable.  Everywhere else the window
+ * scrolls before the player can reach its border, and a barrier there would be
+ * a barrier across open country.
+ *
+ * The world ends in ocean rather than in masonry, so what the boundary is made
+ * of is checked too: a wall at the end of the world would be a poor answer to a
+ * question the sea answers nicely.
  */
 static int test_boundary_only_at_the_world_edge(void *state) {
 	int span = cave->width;
 	int world = wild_world_grids();
-	int i, walls = 0;
+	int i, edges = 0;
 
 	for (i = 0; i < span; i++)
-		if (square_isperm(cave, loc(i, 0)))
-			walls++;
+		if (square_feat(cave, loc(i, 0))->fidx == FEAT_WORLD_EDGE)
+			edges++;
 
 	if (player->wild_offset.y == 0) {
-		eq(walls, span);
+		eq(edges, span);
+		require(!square_ispassable(cave, loc(0, 0)));
 	} else {
-		require(walls < span);
+		require(edges < span);
 	}
 
 	require(world > span);

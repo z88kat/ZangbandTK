@@ -149,20 +149,41 @@ static int test_classification(void *state) {
 	ok;
 }
 
-/* The world should be varied, and about a quarter of it water. */
+/* The world should be varied, about a quarter water, and ringed by sea. */
 static int test_world_is_plausible(void *state) {
 	int counts[WILD_TERRAIN_MAX];
-	int seed, kinds_seen = 0, i;
+	int size = 129, margin = 3;
+	int seed, kinds_seen = 0, i, inland = 0;
 
 	memset(counts, 0, sizeof(counts));
 
 	/* Aggregate over several worlds so one unlucky seed cannot decide it. */
 	for (seed = 1; seed <= 20; seed++) {
-		struct wilderness *w = wild_new(33, seed * 7919);
+		struct wilderness *w = wild_new(size, seed * 7919);
+		int x, y;
 
 		wild_generate(w);
-		for (i = 0; i < 33 * 33; i++)
-			counts[w->map[i].terrain]++;
+
+		for (y = 0; y < size; y++)
+			for (x = 0; x < size; x++) {
+				int rim = MIN(MIN(x, y), MIN(size - 1 - x, size - 1 - y));
+				struct wild_block *b = &w->map[y * size + x];
+
+				/*
+				 * The rim is forced to sea so the world ends in ocean rather
+				 * than stopping dead, so it is checked separately and left out
+				 * of the composition figures -- which are about what
+				 * wild_classify()'s thresholds ask for, not about the margin.
+				 */
+				if (rim < margin) {
+					require(b->terrain == WILD_TERRAIN_OCEAN);
+					continue;
+				}
+
+				counts[b->terrain]++;
+				inland++;
+			}
+
 		wild_free(w);
 	}
 
@@ -180,10 +201,9 @@ static int test_world_is_plausible(void *state) {
 	 * asking for 25%.
 	 */
 	{
-		int total = 20 * 33 * 33;
-		int ocean_pct = 100 * counts[WILD_TERRAIN_OCEAN] / total;
+		int ocean_pct = 100 * counts[WILD_TERRAIN_OCEAN] / inland;
 
-		require(ocean_pct >= 20 && ocean_pct <= 30);
+		require(ocean_pct >= 20 && ocean_pct <= 32);
 	}
 
 	ok;

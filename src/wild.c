@@ -42,6 +42,11 @@ struct wilderness *wild = NULL;
 #define WILD_SEA_FRACTION 4
 
 /**
+ * How many blocks of open sea the world ends in, on every side.
+ */
+#define WILD_SEA_MARGIN 3
+
+/**
  * Names for the terrain kinds, for the map display and for diagnostics.
  */
 static const char *wild_terrain_names[WILD_TERRAIN_MAX] = {
@@ -476,6 +481,8 @@ void wild_generate(struct wilderness *w)
 
 	for (i = 0; i < count; i++) {
 		struct wild_block *block = &w->map[i];
+		int bx = i % size, by = i / size;
+		int rim = MIN(MIN(bx, by), MIN(size - 1 - bx, size - 1 - by));
 
 		block->hgt = (uint8_t) hgt[i];
 		block->pop = (uint8_t) pop[i];
@@ -483,6 +490,21 @@ void wild_generate(struct wilderness *w)
 		block->terrain = (uint8_t) wild_classify(hgt[i], pop[i], law[i]);
 		block->place = 0;
 		block->info = 0;
+
+		/*
+		 * The world ends in open sea (WLD-08).  Sail far enough west and you
+		 * run out of land, then out of world -- which is the honest shape for
+		 * a map that has to stop somewhere, and a good deal better than a wall
+		 * across the countryside.  The margin is wide enough that the boundary
+		 * is always reached across water and never abruptly out of a forest.
+		 */
+		if (rim < WILD_SEA_MARGIN) {
+			block->terrain = WILD_TERRAIN_OCEAN;
+			block->hgt = 0;
+		} else if (rim < WILD_SEA_MARGIN + 1 &&
+				   block->terrain != WILD_TERRAIN_OCEAN) {
+			block->terrain = WILD_TERRAIN_SHORE;
+		}
 	}
 
 	wild_place_town(w);
@@ -1209,8 +1231,8 @@ struct chunk *wild_surface(struct wilderness *w, struct player *p,
 			int feat;
 
 			if (!block) {
-				/* Beyond the world's edge: impassable rock. */
-				square_set_feat(c, grid, FEAT_ROCK);
+				/* Beyond the world's edge: open sea. */
+				square_set_feat(c, grid, FEAT_WORLD_EDGE);
 				continue;
 			}
 
@@ -1265,21 +1287,22 @@ struct chunk *wild_surface(struct wilderness *w, struct player *p,
 	/*
 	 * The world has an edge, and Angband levels expect a permanent boundary --
 	 * a great deal of code steps one grid outwards without checking.  Where the
-	 * window sits against the edge of the world, give it one.  Everywhere else
-	 * the window scrolls before the player can reach its border, so the border
-	 * is never stood next to and needs no wall.
+	 * window sits against the edge of the world, give it one, drawn as open sea
+	 * so that it reads as the world running out rather than as a wall in the
+	 * middle of the ocean.  Everywhere else the window scrolls before the
+	 * player can reach its border, so the border is never stood next to.
 	 */
 	for (grid.x = 0; grid.x < span; grid.x++) {
 		if (oy == 0)
-			square_set_feat(c, loc(grid.x, 0), FEAT_PERM);
+			square_set_feat(c, loc(grid.x, 0), FEAT_WORLD_EDGE);
 		if (oy + span >= world_max)
-			square_set_feat(c, loc(grid.x, span - 1), FEAT_PERM);
+			square_set_feat(c, loc(grid.x, span - 1), FEAT_WORLD_EDGE);
 	}
 	for (grid.y = 0; grid.y < span; grid.y++) {
 		if (ox == 0)
-			square_set_feat(c, loc(0, grid.y), FEAT_PERM);
+			square_set_feat(c, loc(0, grid.y), FEAT_WORLD_EDGE);
 		if (ox + span >= world_max)
-			square_set_feat(c, loc(span - 1, grid.y), FEAT_PERM);
+			square_set_feat(c, loc(span - 1, grid.y), FEAT_WORLD_EDGE);
 	}
 
 	if (offset) {

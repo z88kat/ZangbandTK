@@ -46,3 +46,4 @@ FEAT(WATER)      /* shallow water; wadeable */
 FEAT(DEEP_WATER) /* open sea */
 FEAT(ROCK)       /* mountainside; impassable */
 FEAT(ROAD)       /* made road between places */
+FEAT(WORLD_EDGE) /* the sea at the end of a flat world */

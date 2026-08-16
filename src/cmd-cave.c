@@ -1274,6 +1274,15 @@ static bool do_cmd_walk_test(struct player *p, struct loc grid)
 		} else if (square_iscloseddoor(cave, grid)) {
 			/* Door */
 			return true;
+		} else if (square_feat(cave, grid)->fidx == FEAT_WORLD_EDGE) {
+			/*
+			 * ZangbandZK: the end of a flat world.  It looks like open sea and
+			 * it is drawn like open sea, so being told it is a wall would be
+			 * both wrong and a poor joke to miss.
+			 */
+			msgt(MSG_HITWALL, "The sea runs on past the edge of the world.");
+			disturb(p);
+			return (false);
 		} else {
 			/* Wall */
 			msgt(MSG_HITWALL, "There is a wall in the way!");
