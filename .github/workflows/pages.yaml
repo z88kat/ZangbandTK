@@ -65,12 +65,17 @@ jobs:
       - name: Build
         run: make -C docs -j$(nproc) html
 
-      # Pages is already enabled on this repository with a custom domain, so
-      # this only reads the configuration back.  Do not add enablement here: it
-      # writes to the Pages configuration through the API, and there is nothing
-      # to gain from letting it near a custom domain that is already set.
+      # enablement makes this workflow the authoritative source for the site.
+      # It matters: with Pages set to deploy from a branch, GitHub ran Jekyll
+      # over the docs directory and published docs/README.md as the whole site,
+      # burying the built manual.  Forcing the source back to this workflow on
+      # every run means that cannot happen again without someone changing it
+      # back by hand.  The custom domain survives, and the CNAME file is copied
+      # into the artifact below in any case.
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       # The custom domain lives in the repository's Pages settings, and the
       # CNAME file at the top of the tree is what the settings page wrote there.
