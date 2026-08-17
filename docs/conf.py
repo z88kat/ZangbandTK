@@ -113,10 +113,16 @@ html_short_title = "ZangbandTK"
 # override is there so that a build can be pointed elsewhere without an edit.
 html_baseurl = os.environ.get("DOC_BASE_URL", "https://zangbandtk.com/")
 
-# The home page carries the site's own navigation and reads as a landing page,
-# so it gets no sidebar.  Every other page keeps the theme's default sidebar.
+# The theme's sidebar lists the documents below the current top-level section,
+# so on a page that has none it renders as an empty column.  The landing page and
+# the four standalone site pages are all leaves; give them the full width instead.
+# Every page within the manual has siblings and keeps the sidebar.
 html_sidebars = {
     "index": [],
+    "features": [],
+    "screenshots": [],
+    "download": [],
+    "releases": [],
 }
 
 

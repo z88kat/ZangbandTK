@@ -20,59 +20,73 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
 
    **Status: early.** The game is playable, already feels different from
    Angband, and has the wilderness — Zangband's defining feature — under it.
-   There is a long way to go. Development happens at `GitHub`_.
+   There is a long way to go, and :doc:`features` says exactly how far.
+   Development happens at `GitHub`_.
 
 .. _GitHub: https://github.com/z88kat/ZangbandTK
-
-If you have never played a roguelike before, start with :doc:`a-quick-demo`,
-then read :doc:`guide`. If you have played Angband, :doc:`balance` is the
-shortest account of what will kill you that would not have before.
-
-Much of :doc:`the manual <manual>` is inherited from Angband and describes
-mechanics ZangbandTK keeps unchanged. Where it and :doc:`differences` disagree,
-the latter is the authority.
 
 
 .. toctree::
    :maxdepth: 1
    :hidden:
 
-   start
-   manual
-   differences
-   meta
-   hacking/index
+   features
+   screenshots
+   download
+   releases
+   documentation
 
 
-Where to go
-===========
+Start here
+==========
 
 .. grid:: 1 2 2 2
    :gutter: 3
 
-   .. grid-item-card:: Getting Started
-      :link: start
+   .. grid-item-card:: Features
+      :link: features
       :link-type: doc
 
-      New to roguelikes, or new to this one. A walkthrough of a character's
-      first few minutes, then the players' guide.
+      What is in the game now — the wilderness, the bestiary, the lethality —
+      and what is still to come.
 
-   .. grid-item-card:: What's Different
-      :link: differences
+   .. grid-item-card:: Download
+      :link: download
       :link-type: doc
 
-      What ZangbandTK does that Angband does not: the wilderness, the
-      bestiary, the lethality.
+      No binaries yet. Two commands to build it from source on macOS, and what
+      to know before you start.
 
-   .. grid-item-card:: The Manual
-      :link: manual
+   .. grid-item-card:: Documentation
+      :link: documentation
       :link-type: doc
 
-      The reference: character creation, the dungeon, combat, commands and
-      options.
+      The manual, in four parts. Start with the demonstration if roguelikes are
+      new to you.
 
-   .. grid-item-card:: For Developers
-      :link: hacking/index
+   .. grid-item-card:: Release log
+      :link: releases
       :link-type: doc
 
-      Building from source, the data file layout, and debugging.
+      The development log, by milestone. M0 to M4 are complete.
+
+
+What makes it Zangband
+======================
+
+Three things, in the order you will notice them.
+
+**Monsters die sooner, and so do you.** Every monster carries 73% of Angband's
+hit points and 50% of its armour class — the measured difference between Zangband
+2.7.5 and the Angband it forked from. Fights resolve in fewer turns, in whichever
+direction they were going. :doc:`balance` is the full account.
+
+**There is a world, not a staircase.** A wilderness 2064 grids square, generated
+from a seed and never stored, with the town standing in it and roads out of it.
+Deep water can be waded and drowned in, the world ends in open sea, and what you
+drop in the country stays where you left it until somebody finds it.
+:doc:`wilderness` covers it.
+
+**The bestiary is not Tolkien's alone.** 389 monsters imported from Zangband,
+including the princes of Amber and the Mythos deities, alongside 51 artifacts and
+18 ego types. :doc:`monsters` and :doc:`objects` have the detail.
