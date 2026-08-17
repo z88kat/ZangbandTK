@@ -62,20 +62,6 @@ struct wilderness *wild = NULL;
 /** Wetter than this and the water is over your head. */
 #define WILD_WATER_DEEP 140
 
-/**
- * Names for the terrain kinds, for the map display and for diagnostics.
- */
-static const char *wild_terrain_names[WILD_TERRAIN_MAX] = {
-	"ocean", "shore", "grassland", "forest", "swamp", "wasteland", "mountains"
-};
-
-const char *wild_terrain_name(enum wild_terrain terrain)
-{
-	if (terrain >= WILD_TERRAIN_MAX)
-		return "unknown";
-	return wild_terrain_names[terrain];
-}
-
 bool wild_in_bounds(const struct wilderness *w, int x, int y)
 {
 	return w && x >= 0 && y >= 0 && x < w->blocks && y < w->blocks;
@@ -776,6 +762,31 @@ static void wild_place_town(struct wilderness *w)
 		}
 	}
 
+	/*
+	 * Nothing scored: either the world offers no buildable ground, or it is
+	 * too small for a town to fit in the first place.  Rather than leave the
+	 * town on the middle block whatever that turns out to be -- open sea, in
+	 * the case that found this -- take the driest, flattest block there is.
+	 */
+	if (!found) {
+		int best_hgt = -1;
+
+		for (y = 0; y < size; y++)
+			for (x = 0; x < size; x++) {
+				struct wild_block *b = &w->map[y * size + x];
+				int score;
+
+				if (b->terrain == WILD_TERRAIN_OCEAN) continue;
+				if (b->info & WILD_INFO_WATER) continue;
+
+				score = 255 - ABS((int) b->hgt - 128);
+				if (score > best_hgt) {
+					best_hgt = score;
+					w->town_block = loc(x, y);
+				}
+			}
+	}
+
 	/* Mark the footprint, and give the town a road to sit on. */
 	{
 		int fx, fy;
@@ -1324,9 +1335,6 @@ void wild_harvest(struct wilderness *w, struct player *p, struct chunk *c,
 		struct object *obj;
 
 		for (grid.x = 0; grid.x < c->width; grid.x++) {
-			/* What the player is standing on comes with them. */
-			if (loc_eq(grid, p->grid)) continue;
-
 			obj = square_object(c, grid);
 			while (obj) {
 				struct object *next = obj->next;
@@ -1440,11 +1448,14 @@ void wild_restore(struct wilderness *w, struct player *p, struct chunk *c,
 
 		*link = relic->next;
 
-		if (wild_relic_survives(w, relic->grid, turn - relic->turn) &&
-			square_isobjectholding(c, grid) &&
-			floor_carry(c, grid, relic->obj, &dummy)) {
-			list_object(c, relic->obj);
-		} else {
+		/*
+		 * floor_carry() lists the object itself, and on the path where it
+		 * merges the drop into a stack already on the floor it *frees* it.
+		 * Nothing may touch relic->obj after it returns true.
+		 */
+		if (!wild_relic_survives(w, relic->grid, turn - relic->turn) ||
+			!square_isobjectholding(c, grid) ||
+			!floor_carry(c, grid, relic->obj, &dummy)) {
 			object_free(relic->obj);
 		}
 
@@ -1501,13 +1512,20 @@ static void wild_restore_uniques(struct wilderness *w, struct player *p,
 			mon = square_monster(c, place);
 			if (mon) {
 				int regen = mon->maxhp / 100;
+				int healed;
 
 				if (regen < 1) regen = 1;
 				if (rf_has(mon->race->flags, RF_REGENERATE)) regen *= 2;
 
-				mon->hp = seen->hp;
-				mon->hp += regen * (int) MIN(elapsed / 100, (int32_t) 10000);
-				mon->hp = MIN(mon->hp, mon->maxhp);
+				/*
+				 * Clamped before it is stored, not after.  mon->hp is 16 bits
+				 * and the product is not: a wounded Morgoth left for a long
+				 * dungeon trip otherwise wraps to a negative and comes back
+				 * dying instead of healed.
+				 */
+				healed = seen->hp +
+					regen * (int) MIN(elapsed / 100, (int32_t) 10000);
+				mon->hp = (int16_t) MIN(healed, (int) mon->maxhp);
 			}
 		}
 
@@ -1667,6 +1685,44 @@ void wild_populate(struct wilderness *w, struct player *p, struct chunk *c,
 }
 
 /**
+ * Carry what the player knows of the world across a scroll of the window.
+ *
+ * The window is rebuilt from scratch whenever it moves, and the parallel chunk
+ * holding the player's knowledge is rebuilt with it.  Without this the map is
+ * wiped roughly every forty steps: everything explored goes unknown again, and
+ * since the surface deliberately does not memorise itself under daylight
+ * (WLD-25) there is nothing to put it back.
+ *
+ * Only the terrain is carried.  Known objects and traps live in the knowledge
+ * chunk's own arrays and are addressed by index within it, and they are not
+ * worth the entanglement -- what the player wants back is the shape of the
+ * country they walked through.
+ *
+ * \param from is the old knowledge chunk, \param from_offset its window's
+ * origin; \param to and \param to_offset the same for the new one.
+ */
+void wild_carry_knowledge(struct chunk *from, struct loc from_offset,
+						  struct chunk *to, struct loc to_offset)
+{
+	int dx = from_offset.x - to_offset.x;
+	int dy = from_offset.y - to_offset.y;
+	struct loc grid;
+
+	if (!from || !to)
+		return;
+
+	for (grid.y = 0; grid.y < to->height; grid.y++)
+		for (grid.x = 0; grid.x < to->width; grid.x++) {
+			struct loc was = loc(grid.x - dx, grid.y - dy);
+
+			if (was.x < 0 || was.x >= from->width) continue;
+			if (was.y < 0 || was.y >= from->height) continue;
+
+			to->squares[grid.y][grid.x].feat = from->squares[was.y][was.x].feat;
+		}
+}
+
+/**
  * Is this chunk the wilderness surface rather than a level?
  */
 bool wild_is_surface(const struct chunk *c)
@@ -1767,7 +1823,7 @@ struct chunk *wild_surface(struct wilderness *w, struct player *p,
 			struct wild_block *block =
 				wild_block_at(w, ox / size + bx, oy / size + by);
 
-			if (!block || !(block->info & (WILD_INFO_ROAD | WILD_INFO_TRACK)))
+			if (!block || !(block->info & WILD_INFO_ROAD))
 				continue;
 
 			grid.y = by * size + size / 2;
@@ -1814,15 +1870,6 @@ struct chunk *wild_surface(struct wilderness *w, struct player *p,
 		offset->x = ox;
 		offset->y = oy;
 	}
-
-	/* Mark the blocks under the window as seen. */
-	for (int by = 0; by < view; by++)
-		for (int bx = 0; bx < view; bx++) {
-			struct wild_block *block =
-				wild_block_at(w, ox / size + bx, oy / size + by);
-			if (block)
-				block->info |= WILD_INFO_SEEN;
-		}
 
 	return c;
 }

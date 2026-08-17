@@ -1348,14 +1348,32 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 void prepare_next_level(struct player *p)
 {
 	bool persist = OPT(p, birth_levels_persist) || p->upkeep->arena_level;
+	struct chunk *kept_known = NULL;
+	struct loc kept_offset = loc(0, 0);
 
 	/* Deal with any existing current level */
 	if (character_dungeon) {
 		assert (p->cave);
 
+		/*
+		 * Take what the player left lying on the surface into the world's
+		 * memory (WLD-04).  Before either teardown path, and before the
+		 * artifact sweep below decides anything among it has been lost -- it
+		 * has not been lost; it is where they put it.
+		 */
+		if (wild_is_surface(cave)) {
+			wild_harvest(wild, p, cave, p->wild_offset);
+		}
+
 		if (persist) {
-			/* Arenas don't get stored */
-			if (!cave->name || !streq(cave->name, "arena")) {
+			/*
+			 * Arenas don't get stored, and neither does the surface: it is not
+			 * a level, it regenerates from the world seed, and storing it
+			 * would file it under the town's name and leak a chunk pair into
+			 * chunk_list on every scroll of the window.
+			 */
+			if ((!cave->name || !streq(cave->name, "arena")) &&
+				!wild_is_surface(cave)) {
 				/* Tidy up */
 				compact_monsters(cave, 0);
 				if (!p->upkeep->arena_level) {
@@ -1377,15 +1395,6 @@ void prepare_next_level(struct player *p)
 			if (!cave->depth && !wild_is_surface(cave) &&
 				!chunk_find_name("Town")) {
 				cave_store(cave, false, false);
-			}
-
-			/*
-			 * Take what the player left lying on the surface into the world's
-			 * memory (WLD-04), before the artifact sweep below decides it has
-			 * been lost.  It has not been lost; it is where they put it.
-			 */
-			if (wild_is_surface(cave)) {
-				wild_harvest(wild, p, cave, p->wild_offset);
 			}
 
 			/* Forget knowledge of old level */
@@ -1412,8 +1421,18 @@ void prepare_next_level(struct player *p)
 					}
 				}
 
-				/* Free the known cave */
-				cave_free(p->cave);
+				/*
+				 * Free the known cave -- unless the player is only scrolling
+				 * the window, in which case what they know of the world is
+				 * kept and carried over to the rebuilt surface below.
+				 */
+				if (wild_is_surface(cave) && p->depth == 0 &&
+					!p->upkeep->arena_level) {
+					kept_known = p->cave;
+					kept_offset = p->wild_offset;
+				} else {
+					cave_free(p->cave);
+				}
 				p->cave = NULL;
 			}
 
@@ -1426,7 +1445,7 @@ void prepare_next_level(struct player *p)
 	}
 
 	/* Prepare the new level */
-	if (p->depth == 0) {
+	if (p->depth == 0 && !p->upkeep->arena_level) {
 		/*
 		 * ZangbandTK (WLD-24): the surface of the world, not a level.  Depth
 		 * zero is the overworld -- the town stands on it, and the country
@@ -1468,14 +1487,27 @@ void prepare_next_level(struct player *p)
 		for (i = 0; i <= p->cave->obj_max; i++)
 			p->cave->objects[i] = NULL;
 
+		/* What the player already knew of the world stays known (WLD-25). */
+		if (kept_known) {
+			wild_carry_knowledge(kept_known, kept_offset, p->cave, offset);
+			cave_free(kept_known);
+			kept_known = NULL;
+		}
+
 		cave->turn = turn;
 
-		/* The town has people in it, and the country has its own (CNT-05). */
+		/*
+		 * What the player left here comes back first (WLD-04, WLD-04b).  A
+		 * remembered unique has to reclaim its slot in the race's count before
+		 * wild_populate() can roll a fresh copy of it -- otherwise the random
+		 * roll wins, placement of the wounded one fails, and the damage the
+		 * player did is quietly thrown away.
+		 */
+		wild_restore(wild, p, cave, offset);
+
+		/* Then the town's people, and the country's own (CNT-05). */
 		wild_populate(wild, p, cave, offset);
 		wild_town_people(wild, p, cave, offset);
-
-		/* And what the player left here is still here, or is not (WLD-04a). */
-		wild_restore(wild, p, cave, offset);
 
 		event_signal_flag(EVENT_GEN_LEVEL_END, true);
 	} else if (persist) {
@@ -1628,6 +1660,10 @@ void prepare_next_level(struct player *p)
 			}
 		}
 	}
+
+	/* Paranoia: a kept map with nowhere to go is still a map to free. */
+	if (kept_known)
+		cave_free(kept_known);
 
 	/* The dungeon is ready */
 	character_dungeon = true;

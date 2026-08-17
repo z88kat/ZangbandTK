@@ -448,6 +448,7 @@ struct player_upkeep {
 	bool playing;			/* True if player is playing */
 	bool autosave;			/* True if autosave is pending */
 	bool generate_level;	/* True if level needs regenerating */
+	bool scroll_world;	/* ZangbandTK: the window moved, not the level */
 	bool only_partial;		/* True if only partial updates are needed */
 	bool dropping;			/* True if auto-drop is in progress */
 

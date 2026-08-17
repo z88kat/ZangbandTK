@@ -60,10 +60,7 @@ enum wild_terrain {
  * Flags on a wilderness block.
  */
 #define WILD_INFO_ROAD		0x01	/* A road runs through this block */
-#define WILD_INFO_TRACK		0x02	/* A lesser track runs through it */
-#define WILD_INFO_MODIFIED	0x04	/* The player changed it; must persist */
-#define WILD_INFO_SEEN		0x08	/* The player has seen it on the map */
-#define WILD_INFO_WATER		0x10	/* A river or lake runs through it */
+#define WILD_INFO_WATER		0x02	/* A river or lake runs through it */
 
 /**
  * One block of the world map.
@@ -145,7 +142,6 @@ struct wild_block *wild_block_at(struct wilderness *w, int x, int y);
 bool wild_in_bounds(const struct wilderness *w, int x, int y);
 uint32_t wild_block_seed(const struct wilderness *w, int x, int y);
 enum wild_terrain wild_classify(int hgt, int pop, int law);
-const char *wild_terrain_name(enum wild_terrain terrain);
 
 struct wilderness *wild_new(int blocks, uint32_t seed);
 void wild_free(struct wilderness *w);
@@ -161,6 +157,8 @@ int wild_view_blocks(void);
 struct chunk *wild_surface(struct wilderness *w, struct player *p,
 						   struct loc centre, struct loc *offset);
 bool wild_is_surface(const struct chunk *c);
+void wild_carry_knowledge(struct chunk *from, struct loc from_offset,
+						  struct chunk *to, struct loc to_offset);
 bool wild_needs_recentre(struct player *p);
 void wild_track_move(struct player *p, struct loc grid);
 

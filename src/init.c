@@ -573,8 +573,24 @@ static enum parser_error parse_constants_wild(struct parser *p) {
 			return PARSE_ERROR_INVALID_VALUE;
 		z->wild_blocks = value;
 	} else if (streq(label, "block-size")) {
+		/*
+		 * Blocks are halved to find their centre and their contents hashed by
+		 * position within them, so anything under a few grids gives nonsense
+		 * rather than a small world.
+		 */
+		if (value < 4 || value > 256)
+			return PARSE_ERROR_INVALID_VALUE;
 		z->wild_block_size = value;
 	} else if (streq(label, "cache-blocks")) {
+		/*
+		 * The live window is the largest odd square that fits in this, and it
+		 * has to be wider than twice the recentre margin -- otherwise the
+		 * margins meet in the middle, every step counts as "near an edge", and
+		 * the surface regenerates on each one.  Nine blocks is Zangband's
+		 * figure and the smallest that leaves room to walk.
+		 */
+		if (value < 81)
+			return PARSE_ERROR_INVALID_VALUE;
 		z->wild_cache_blocks = value;
 	} else if (streq(label, "monster-rarity-day")) {
 		z->wild_mon_rarity_day = value;

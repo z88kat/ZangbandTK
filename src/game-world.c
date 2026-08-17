@@ -1005,8 +1005,8 @@ void process_player(void)
  */
 void on_new_level(void)
 {
-	/* Arena levels are not really a level change */
-	if (!player->upkeep->arena_level) {
+	/* Arena levels, and scrolling the overworld, are not really level changes */
+	if (!player->upkeep->arena_level && !player->upkeep->scroll_world) {
 		/* Play ambient sound on change of level. */
 		play_ambient_sound();
 
@@ -1055,9 +1055,15 @@ void on_new_level(void)
 	/* Check the surroundings */
 	search(player);
 
-	/* Give player minimum energy to start a new level, but do not reduce
-	 * higher value from savefile for level in progress */
-	if (player->energy < z_info->move_energy)
+	/*
+	 * Give player minimum energy to start a new level, but do not reduce
+	 * higher value from savefile for level in progress.  Not when the
+	 * overworld window merely scrolled: the player has just spent a move, and
+	 * refunding it would make walking towards the edge of the window free.
+	 */
+	if (player->upkeep->scroll_world) {
+		/* nothing */
+	} else if (player->energy < z_info->move_energy)
 		player->energy = z_info->move_energy;
 }
 
@@ -1183,6 +1189,7 @@ void run_game_loop(void)
 			on_new_level();
 
 			player->upkeep->generate_level = false;
+			player->upkeep->scroll_world = false;
 
 			/* Kill arena monster */
 			if (arena) {

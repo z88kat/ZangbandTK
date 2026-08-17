@@ -1194,20 +1194,6 @@ void move_player(int dir, bool disarm)
 			/* Move player */
 			monster_swap(player->grid, grid);
 
-			/*
-			 * ZangbandTK (WLD-23): on the overworld the player's world
-			 * position is the truth and their position on the live surface is
-			 * derived from it, so that the surface can be rebuilt beneath them
-			 * without disturbing where they are.
-			 */
-			if (player->in_wild) {
-				wild_track_move(player, grid);
-
-				/* Scroll the world when they approach the window's edge. */
-				if (wild_needs_recentre(player))
-					player->upkeep->generate_level = true;
-			}
-
 			player_handle_post_move(player, true, false);
 			cmdq_push(CMD_AUTOPICKUP);
 			/*

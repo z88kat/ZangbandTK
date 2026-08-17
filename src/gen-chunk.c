@@ -407,11 +407,14 @@ bool chunk_copy(struct chunk *dest, struct player *p, struct chunk *source,
 		}
 	}
 
-	/* Monsters */
-	dest->mon_max += source->mon_max;
+	/*
+	 * Monsters.  Bounded against the destination's own capacity, which since
+	 * WLD-26 is sized per chunk and so need not match the source's.
+	 */
+	dest->mon_max = MIN(dest->mon_max + source->mon_max, dest->mon_size);
 	dest->mon_cnt += source->mon_cnt;
 	dest->num_repro += source->num_repro;
-	for (i = 1; i < source->mon_max; i++) {
+	for (i = 1; i < source->mon_max && mon_skip + i < dest->mon_size; i++) {
 		struct monster *source_mon = &source->monsters[i];
 		struct monster *dest_mon = &dest->monsters[mon_skip + i];
 

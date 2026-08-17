@@ -41,7 +41,7 @@ The sound files (wav) I believe we can re-use those too are in /archive/tk/sound
 
 There is a bunch of other stuff in /archive/tk/ but i am not sure if any of that is useful
 
-The original release of ZandbandTK can be found in /arhive/zandbandtk
+The original release of ZandbandTK can be found in /archive/zandbandtk
 
 Information and screenshots of the original release can be found at https://www.old-games.com/download/4122/zangbandtk
 
@@ -90,3 +90,27 @@ https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/chaospat
 https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/mutation.txt
 https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/tycurse.txt
 https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/nightmare.txt
+
+## Websites
+
+https://en.wikipedia.org/wiki/The_Chronicles_of_Amber
+
+## Game Info
+
+https://goldenageofgames.com/zangbandtk/
+
+## Playable
+
+https://dos.zone/zangband-dec-15-1994/
+
+## PC Adventure Game
+
+https://www.myabandonware.com/game/nine-princes-in-amber-c0
+https://gamefaqs.gamespot.com/pc/567479-nine-princes-in-amber/faqs/15640
+
+Yer, you going to need that walkthough.
+
+## Books
+
+https://www.amazon.co.uk/Chronicles-Amber-S-F-MASTERWORKS/dp/1473222168/
+https://www.amazon.co.uk/Second-Chronicles-Amber-S-F-MASTERWORKS/dp/147322215X/

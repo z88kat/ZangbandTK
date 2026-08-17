@@ -44,6 +44,7 @@
 #include "target.h"
 #include "trap.h"
 #include "ui-input.h"
+#include "wild.h"
 
 /**
  * Increment to the next or decrement to the preceeding level
@@ -1629,6 +1630,33 @@ void player_place(struct chunk *c, struct player *p, struct loc grid)
 void player_handle_post_move(struct player *p, bool eval_trap,
 		bool is_involuntary)
 {
+	/*
+	 * ZangbandTK (WLD-23): on the overworld the player's world position is the
+	 * truth and their position on the live surface is derived from it, so the
+	 * surface can be rebuilt beneath them without disturbing where they are.
+	 *
+	 * Here rather than in move_player() because walking is not the only way to
+	 * arrive somewhere.  Teleport, a trapdoor's landing, being thrown by a
+	 * monster and the rest all end here, and every one of them left the world
+	 * position stale when this was hooked to walking alone -- so the next
+	 * rebuild snapped the player back to wherever they had last walked.
+	 */
+	if (p->in_wild) {
+		wild_track_move(p, p->grid);
+
+		/*
+		 * Scroll the world when they approach the window's edge.  Flagged as a
+		 * scroll as well as a rebuild: the surface has to be regenerated, but
+		 * crossing an invisible line in open country is not a level change and
+		 * must not cancel the player's target or hand them a free turn's worth
+		 * of energy the way arriving on a new level does.
+		 */
+		if (wild_needs_recentre(p)) {
+			p->upkeep->generate_level = true;
+			p->upkeep->scroll_world = true;
+		}
+	}
+
 	/* Handle store doors, or notice objects */
 	if (square_isshop(cave, p->grid)) {
 		if (player_is_shapechanged(p)) {

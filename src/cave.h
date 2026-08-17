@@ -162,7 +162,17 @@ struct grid_data {
  * Smallest monster capacity any chunk receives, however small its area
  * (ZangbandTK: WLD-26).
  */
-#define MONSTERS_MIN 16
+/*
+ * The floor under a chunk's monster capacity (WLD-26).
+ *
+ * Not an arbitrary round number.  process_world() compacts when
+ * `cave_monster_count(c) + 32 > c->mon_size`, asks compact_monsters() for 64,
+ * and compact_monsters() loops until it has compacted that many -- it does not
+ * give up when there are fewer to be had.  A capacity at or below 96 therefore
+ * lets the test fire on a chunk that cannot possibly satisfy it, and the game
+ * hangs.  Sizing per chunk made that reachable: a 6x6 arena works out at 3.
+ */
+#define MONSTERS_MIN 128
 
 struct square {
 	uint8_t feat;

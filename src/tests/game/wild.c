@@ -28,6 +28,8 @@
 #include "obj-util.h"
 #include "player.h"
 #include "player-birth.h"
+#include "player-util.h"
+#include "mon-util.h"
 #include "savefile.h"
 #include "wild.h"
 #include "z-util.h"
@@ -552,6 +554,70 @@ static int test_an_untouched_unique_is_not_remembered(void *state) {
 }
 
 /*
+ * Teleporting on the surface does not rewind the player's position.
+ *
+ * The world position used to be updated only by walking, so any other
+ * displacement -- a phase door, a trapdoor's landing, being thrown by a monster
+ * -- left it stale, and the next rebuild snapped the player back to wherever
+ * they had last walked.
+ */
+static int test_displacement_keeps_the_world_position(void *state) {
+	struct loc from = player->grid;
+	struct loc to = loc(from.x + 9, from.y + 5);
+
+	while (!square_isempty(cave, to) || square_isdamaging(cave, to)) {
+		to.x++;
+		require(to.x < cave->width - 1);
+	}
+
+	/* Move the player the way an effect would, not the way walking does. */
+	monster_swap(player->grid, to);
+	player_handle_post_move(player, false, true);
+
+	eq(player->wild_grid.x, player->wild_offset.x + player->grid.x);
+	eq(player->wild_grid.y, player->wild_offset.y + player->grid.y);
+
+	/* Put them back. */
+	monster_swap(player->grid, from);
+	player_handle_post_move(player, false, true);
+
+	ok;
+}
+
+/*
+ * What the player has mapped survives the window scrolling.
+ *
+ * The knowledge chunk is rebuilt with the surface, so without carrying it over
+ * the map was wiped roughly every forty steps -- and since the surface does not
+ * memorise itself under daylight, nothing put it back.
+ */
+static int test_the_map_survives_a_scroll(void *state) {
+	struct chunk *known;
+	struct loc offset = player->wild_offset;
+	struct loc probe;
+	int feat, moved = 24;
+
+	/* Learn a grid the player would not otherwise know. */
+	probe = loc(player->grid.x + 20, player->grid.y);
+	require(square_in_bounds_fully(cave, probe));
+	square_memorize(cave, probe);
+	feat = square(player->cave, probe)->feat;
+	require(feat != FEAT_NONE);
+
+	/* Scroll the window along, as walking to its edge would. */
+	known = player->cave;
+	player->cave = cave_new(cave->height, cave->width);
+	wild_carry_knowledge(known, offset, player->cave,
+						 loc(offset.x + moved, offset.y));
+	cave_free(known);
+
+	/* The same world grid is still known, at its new place in the window. */
+	eq(square(player->cave, loc(probe.x - moved, probe.y))->feat, feat);
+
+	ok;
+}
+
+/*
  * The world survives a save and a load.
  *
  * The world map is not written to the savefile -- it regenerates from the seed
@@ -620,6 +686,8 @@ struct test tests[] = {
 	{ "a-wounded-unique-is-remembered", test_a_wounded_unique_is_remembered },
 	{ "the-townspeople-stay-in-town", test_the_townspeople_stay_in_town },
 	{ "an-untouched-unique-is-not-remembered", test_an_untouched_unique_is_not_remembered },
+	{ "displacement-keeps-the-world-position", test_displacement_keeps_the_world_position },
+	{ "the-map-survives-a-scroll", test_the_map_survives_a_scroll },
 	{ "world-position-survives-a-save", test_world_position_survives_a_save },
 	{ NULL, NULL }
 };
