@@ -107,6 +107,13 @@ if (html_theme == "".join(["@", "DOC_HTML_THEME", "@"]) or html_theme == ""):
 html_title = "ZangbandTK"
 html_short_title = "ZangbandTK"
 
+# Where the built site is served from, used for canonical link elements.  Sphinx
+# links between pages relatively, so this only matters to search engines and
+# only needs changing if the site moves to a domain of its own; the environment
+# override is there so that a build can be pointed elsewhere without an edit.
+html_baseurl = os.environ.get(
+    "DOC_BASE_URL", "https://z88kat.github.io/ZangbandTK/")
+
 # The home page carries the site's own navigation and reads as a landing page,
 # so it gets no sidebar.  Every other page keeps the theme's default sidebar.
 html_sidebars = {
