@@ -525,3 +525,9 @@ wild:relic-half-life:3
 # abandoned rather than moved, which is why there are usually fewer than asked.
 wild:rivers:4
 wild:lakes:4
+
+# How long a town gate stands open before it swings shut, in game turns. A
+# player at normal speed acts every ten of these, so 100 is about ten moves --
+# long enough to walk through and lead a packhorse, short enough that the gate
+# is shut again by the time anything follows you home.
+wild:gate-turns:100

@@ -1028,89 +1028,264 @@ void wild_town_free(void)
 }
 
 /**
- * Open a way into the town along one line.
+ * The town's gates, in the town chunk's own coordinates.
  *
- * Angband's town is a clearing blasted out of rock, and the rock that the
- * clearing did not reach is left standing around it.  As a level of its own
- * that never mattered -- the only way out was the staircase.  In a world it
- * matters twice over: it is what keeps the wilderness from wandering into the
- * market square, and it is what would trap the player inside if nothing were
- * cut through it.
- *
- * So the rock stays and the roads go through it.  Digs from \p start in
- * direction \p step until it meets ground that can already be walked on, and
- * lays a road back to the edge.  Gives up on meeting a permanent wall: that is
- * a store, and cutting a hole through the side of a shop is not a road.
- *
- * \return true if this line now leads into the town.
+ * Two tiles per side, so at most eight.  Held here rather than on the surface
+ * because the surface is rebuilt as the player walks and the town is not: the
+ * gates belong to the town, and where they are does not change.
  */
-static bool wild_town_gate(struct chunk *town, struct loc start, struct loc step,
-						   int limit)
-{
-	struct loc grid = start;
-	int i, reached = -1;
+#define WILD_TOWN_GATES 8
 
-	for (i = 0; i < limit; i++) {
-		if (!square_in_bounds_fully(town, grid))
-			return false;
-		if (square_isperm(town, grid))
-			return false;
-		if (square_ispassable(town, grid)) {
-			reached = i;
-			break;
-		}
-		grid = loc_sum(grid, step);
+static struct {
+	struct loc grid;		/**< Where in the town chunk */
+	int32_t opened;			/**< The turn it was found standing open */
+} wild_gates[WILD_TOWN_GATES];
+
+static int wild_gate_count = 0;
+
+/**
+ * Wall the town in.
+ *
+ * Angband's town is a starburst clearing blasted out of rock, and where the
+ * clearing happens to reach the edge of its rectangle it leaves a hole.  As a
+ * level of its own that never mattered.  On a surface it produces a town with
+ * ragged gaps in it several tiles wide -- which looks like nothing in
+ * particular, and lets anything at all walk in.
+ *
+ * So every way through the boundary is closed, and the gates below are cut
+ * deliberately.  Shop doorways and the staircase are left alone: a shop that
+ * happens to face the edge is still a shop, and bricking up the way down would
+ * be a poor joke.
+ */
+static void wild_town_wall(struct chunk *town)
+{
+	int w = town->width, h = town->height;
+	struct loc stairs_lost = loc(-1, -1);
+	int i;
+
+	#define TOWN_SEAL(g) \
+		do { \
+			struct loc _g = (g); \
+			if (square_ispassable(town, _g) && !square_isperm(town, _g) && \
+				!square_isshop(town, _g)) { \
+				if (square_isdownstairs(town, _g)) stairs_lost = _g; \
+				square_set_feat(town, _g, FEAT_GRANITE); \
+			} \
+		} while (0)
+
+	for (i = 1; i < w - 1; i++) {
+		TOWN_SEAL(loc(i, 1));
+		TOWN_SEAL(loc(i, h - 2));
+	}
+	for (i = 1; i < h - 1; i++) {
+		TOWN_SEAL(loc(1, i));
+		TOWN_SEAL(loc(w - 2, i));
 	}
 
-	if (reached < 0)
+	#undef TOWN_SEAL
+
+	/*
+	 * Angband puts the staircase against the north wall -- town_gen_layout()
+	 * starts looking at row 1 and takes the first floor it finds -- so it can
+	 * land on the boundary itself and be walled over.  Rather than make it an
+	 * exception to the sealing, which would leave a third way out of town
+	 * beside the gates, it is moved to the nearest floor inside.
+	 */
+	if (stairs_lost.x >= 0) {
+		int radius;
+
+		for (radius = 1; radius < MAX(w, h); radius++) {
+			bool placed = false;
+			int dx, dy;
+
+			for (dy = -radius; dy <= radius && !placed; dy++)
+				for (dx = -radius; dx <= radius && !placed; dx++) {
+					struct loc grid = loc(stairs_lost.x + dx,
+										  stairs_lost.y + dy);
+
+					if (!square_in_bounds_fully(town, grid)) continue;
+					if (grid.x < 2 || grid.x > w - 3) continue;
+					if (grid.y < 2 || grid.y > h - 3) continue;
+					if (!square_isfloor(town, grid)) continue;
+					if (square_isshop(town, grid)) continue;
+
+					square_set_feat(town, grid, FEAT_MORE);
+					placed = true;
+				}
+
+			if (placed) break;
+		}
+	}
+}
+
+/**
+ * Cut a gate two tiles wide through the town's boundary.
+ *
+ * Both tiles are driven inward until they meet ground that can be walked on,
+ * and the pair of grids in the boundary itself become closed doors.  Gives up
+ * on meeting a permanent wall -- that is a shop, and a gate through the side of
+ * somebody's shop is not a gate.
+ *
+ * \param start is the grid in the boundary to cut from.
+ * \param step is the direction inwards.
+ * \param across is the direction along the boundary, for the second tile.
+ * \return true if a gate now stands here.
+ */
+static bool wild_town_cut_gate(struct chunk *town, struct loc start,
+							   struct loc step, struct loc across, int limit)
+{
+	struct loc lane[2];
+	int reach[2];
+	int i, k, depth;
+
+	if (wild_gate_count + 2 > WILD_TOWN_GATES)
 		return false;
 
-	grid = start;
-	for (i = 0; i < reached; i++) {
-		square_set_feat(town, grid, FEAT_ROAD);
-		grid = loc_sum(grid, step);
+	lane[0] = start;
+	lane[1] = loc_sum(start, across);
+
+	for (i = 0; i < 2; i++) {
+		struct loc grid = lane[i];
+
+		reach[i] = -1;
+
+		for (k = 0; k < limit; k++) {
+			if (!square_in_bounds_fully(town, grid))
+				return false;
+			if (square_isperm(town, grid) || square_isshop(town, grid))
+				return false;
+			if (square_ispassable(town, grid)) {
+				reach[i] = k;
+				break;
+			}
+			grid = loc_sum(grid, step);
+		}
+
+		if (reach[i] < 0)
+			return false;
+	}
+
+	/* Drive both tiles as far as the deeper of the two needs. */
+	depth = MAX(reach[0], reach[1]);
+
+	for (i = 0; i < 2; i++) {
+		struct loc grid = lane[i];
+
+		for (k = 0; k < depth; k++) {
+			square_set_feat(town, grid, FEAT_ROAD);
+			grid = loc_sum(grid, step);
+		}
+	}
+
+	/* And hang the doors in the boundary itself. */
+	for (i = 0; i < 2; i++) {
+		square_set_feat(town, lane[i], FEAT_CLOSED);
+		wild_gates[wild_gate_count].grid = lane[i];
+		wild_gates[wild_gate_count].opened = 0;
+		wild_gate_count++;
 	}
 
 	return true;
 }
 
 /**
- * Give the town a road in and out on each of its four sides.
+ * Give the town one gate on each of its four sides.
  *
- * Tries the middle of each side first and works outwards, so a road meets the
- * town where a road would: at the end of a street, not at a corner.
+ * Tried from the middle of each side outwards, so a gate stands where a gate
+ * would: at the end of a street rather than in a corner.
  */
 static void wild_town_open(struct chunk *town)
 {
 	int w = town->width, h = town->height;
 	int i;
 
-	for (i = 0; i < w - 2; i++) {
+	wild_gate_count = 0;
+	wild_town_wall(town);
+
+	for (i = 0; i < w - 3; i++) {
 		int x = w / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
 
-		if (x < 1 || x > w - 2) continue;
-		if (wild_town_gate(town, loc(x, 1), loc(0, 1), h / 2)) break;
+		if (x < 1 || x > w - 3) continue;
+		if (wild_town_cut_gate(town, loc(x, 1), loc(0, 1), loc(1, 0), h / 2))
+			break;
 	}
 
-	for (i = 0; i < w - 2; i++) {
+	for (i = 0; i < w - 3; i++) {
 		int x = w / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
 
-		if (x < 1 || x > w - 2) continue;
-		if (wild_town_gate(town, loc(x, h - 2), loc(0, -1), h / 2)) break;
+		if (x < 1 || x > w - 3) continue;
+		if (wild_town_cut_gate(town, loc(x, h - 2), loc(0, -1), loc(1, 0),
+							   h / 2))
+			break;
 	}
 
-	for (i = 0; i < h - 2; i++) {
+	for (i = 0; i < h - 3; i++) {
 		int y = h / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
 
-		if (y < 1 || y > h - 2) continue;
-		if (wild_town_gate(town, loc(1, y), loc(1, 0), w / 2)) break;
+		if (y < 1 || y > h - 3) continue;
+		if (wild_town_cut_gate(town, loc(1, y), loc(1, 0), loc(0, 1), w / 2))
+			break;
 	}
 
-	for (i = 0; i < h - 2; i++) {
+	for (i = 0; i < h - 3; i++) {
 		int y = h / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
 
-		if (y < 1 || y > h - 2) continue;
-		if (wild_town_gate(town, loc(w - 2, y), loc(-1, 0), w / 2)) break;
+		if (y < 1 || y > h - 3) continue;
+		if (wild_town_cut_gate(town, loc(w - 2, y), loc(-1, 0), loc(0, 1),
+							   w / 2))
+			break;
+	}
+}
+
+/**
+ * Swing the town gates shut behind whoever went through them (WLD-10).
+ *
+ * A gate that stays open once opened is a hole with a door beside it.  This is
+ * called on the world tick: a gate found standing open is noted, and closed
+ * again once it has stood open long enough and nobody is in the doorway.
+ *
+ * Nothing hooks the act of opening.  The gate is simply looked at from time to
+ * time, which costs a handful of grid tests and works whoever opened it --
+ * player, monster, or a spell that blew it off its hinges.
+ */
+void wild_town_gates_tick(struct wilderness *w, struct chunk *c,
+						  struct loc offset)
+{
+	struct loc org = wild_town_origin(w);
+	int i;
+
+	for (i = 0; i < wild_gate_count; i++) {
+		struct loc grid = loc(org.x + wild_gates[i].grid.x - offset.x,
+							  org.y + wild_gates[i].grid.y - offset.y);
+
+		if (!square_in_bounds_fully(c, grid))
+			continue;
+
+		if (!square_isopendoor(c, grid)) {
+			/* Shut, or broken beyond shutting.  Either way, not our business. */
+			wild_gates[i].opened = 0;
+			continue;
+		}
+
+		if (!wild_gates[i].opened) {
+			wild_gates[i].opened = turn;
+			continue;
+		}
+
+		if (turn - wild_gates[i].opened < (int32_t) z_info->wild_gate_turns)
+			continue;
+
+		/* Not onto somebody standing in the gateway. */
+		if (square_monster(c, grid) || loc_eq(grid, player->grid))
+			continue;
+
+		square_close_door(c, grid);
+		square_memorize(c, grid);
+		square_light_spot(c, grid);
+		wild_gates[i].opened = 0;
+
+		if (square_isseen(c, grid))
+			msg("The town gate swings shut.");
 	}
 }
 

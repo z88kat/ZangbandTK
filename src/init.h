@@ -113,6 +113,7 @@ struct angband_constants
 	uint16_t relic_half_life;	/**< Days a dropped thing lies in empty country */
 	uint16_t wild_rivers;		/**< Square root of the river seed-point count */
 	uint16_t wild_lakes;		/**< How many lakes to attempt */
+	uint16_t wild_gate_turns;	/**< Game turns a town gate stands open */
 
 	/* Zangband melee weapon mechanics, read from constants.txt */
 	uint16_t vorpal_chance;		/**< Vorpal cut is one chance in this */

@@ -85,11 +85,14 @@ static int test_world_position_matches_the_window(void *state) {
 }
 
 /*
- * The town can be walked out of.
+ * The town can be got out of, and the way out is a gate.
  *
- * Floods outwards from the player across everything that can be walked on, and
- * requires that it escapes the town's rectangle.  A town whose only exit is the
- * staircase would pass every other test here and still be a trap.
+ * Floods outwards from the player across everything that can be walked on or
+ * opened, and requires that it escapes the town's rectangle. A town whose only
+ * exit is the staircase would pass every other test here and still be a trap.
+ *
+ * Closed doors count as passable because a gate is a door: the player opens it
+ * and walks through. What must not exist is a way out that is neither.
  */
 static int test_town_can_be_walked_out_of(void *state) {
 	struct loc org = loc(wild_town_origin(wild).x - player->wild_offset.x,
@@ -98,7 +101,7 @@ static int test_town_can_be_walked_out_of(void *state) {
 	bool *seen = mem_zalloc((size_t) w * h * sizeof(bool));
 	struct loc *queue = mem_zalloc((size_t) w * h * sizeof(struct loc));
 	int head = 0, tail = 0;
-	bool escaped = false;
+	bool escaped = false, through_a_door = false;
 
 	queue[tail++] = player->grid;
 	seen[player->grid.y * w + player->grid.x] = true;
@@ -119,7 +122,12 @@ static int test_town_can_be_walked_out_of(void *state) {
 
 			if (!square_in_bounds_fully(cave, next)) continue;
 			if (seen[next.y * w + next.x]) continue;
-			if (!square_ispassable(cave, next)) continue;
+
+			if (square_iscloseddoor(cave, next)) {
+				through_a_door = true;
+			} else if (!square_ispassable(cave, next)) {
+				continue;
+			}
 
 			seen[next.y * w + next.x] = true;
 			queue[tail++] = next;
@@ -130,6 +138,62 @@ static int test_town_can_be_walked_out_of(void *state) {
 	mem_free(seen);
 
 	require(escaped);
+	require(through_a_door);
+
+	ok;
+}
+
+/*
+ * The gates are two tiles wide, and they are the only way through the wall.
+ *
+ * Before this, the way out was wherever the starburst clearing happened to
+ * reach the edge of its rectangle -- gaps several tiles across, in no
+ * particular place, that anything could wander in through.
+ */
+static int test_the_town_gates_are_narrow(void *state) {
+	struct loc org = loc(wild_town_origin(wild).x - player->wild_offset.x,
+						 wild_town_origin(wild).y - player->wild_offset.y);
+	int wid = z_info->town_wid, hgt = z_info->town_hgt;
+	int i, doors = 0, holes = 0;
+
+	/* The boundary of the town's interior, all four sides. */
+	for (i = 1; i < wid - 1; i++) {
+		struct loc top = loc(org.x + i, org.y + 1);
+		struct loc bottom = loc(org.x + i, org.y + hgt - 2);
+
+		if (!square_in_bounds_fully(cave, top)) continue;
+
+		if (square_iscloseddoor(cave, top)) doors++;
+		else if (square_ispassable(cave, top) && !square_isshop(cave, top))
+			holes++;
+
+		if (!square_in_bounds_fully(cave, bottom)) continue;
+		if (square_iscloseddoor(cave, bottom)) doors++;
+		else if (square_ispassable(cave, bottom) && !square_isshop(cave, bottom))
+			holes++;
+	}
+	for (i = 1; i < hgt - 1; i++) {
+		struct loc left = loc(org.x + 1, org.y + i);
+		struct loc right = loc(org.x + wid - 2, org.y + i);
+
+		if (square_in_bounds_fully(cave, left)) {
+			if (square_iscloseddoor(cave, left)) doors++;
+			else if (square_ispassable(cave, left) && !square_isshop(cave, left))
+				holes++;
+		}
+		if (square_in_bounds_fully(cave, right)) {
+			if (square_iscloseddoor(cave, right)) doors++;
+			else if (square_ispassable(cave, right) && !square_isshop(cave, right))
+				holes++;
+		}
+	}
+
+	/* Gated, not merely holed. */
+	require(doors >= 2);
+
+	/* Two tiles a side, four sides, and nothing gets through anywhere else. */
+	require(doors <= 8);
+	eq(holes, 0);
 
 	ok;
 }
@@ -671,11 +735,13 @@ static int test_world_position_survives_a_save(void *state) {
 
 
 
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
 	{ "world-position-matches-the-window", test_world_position_matches_the_window },
 	{ "town-can-be-walked-out-of", test_town_can_be_walked_out_of },
+	{ "the-town-gates-are-narrow", test_the_town_gates_are_narrow },
 	{ "the-surface-is-bounded", test_the_surface_is_bounded },
 	{ "only-the-town-is-known", test_only_the_town_is_known },
 	{ "the-town-has-people", test_the_town_has_people },

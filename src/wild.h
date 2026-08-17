@@ -175,6 +175,8 @@ void wild_town_known(struct wilderness *w, struct player *p, struct chunk *c,
 					 struct loc offset);
 void wild_town_people(struct wilderness *w, struct player *p, struct chunk *c,
 					  struct loc offset);
+void wild_town_gates_tick(struct wilderness *w, struct chunk *c,
+						  struct loc offset);
 void wild_town_free(void);
 
 int wild_danger(struct wilderness *w, int x, int y);

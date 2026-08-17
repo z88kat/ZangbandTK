@@ -534,6 +534,10 @@ void process_world(struct chunk *c)
 {
 	int i, y, x;
 
+	/* ZangbandTK: the town gates swing shut behind whoever went through. */
+	if (player->in_wild && wild && wild_is_surface(c))
+		wild_town_gates_tick(wild, c, player->wild_offset);
+
 	/* Compact the monster list if we're approaching the limit */
 	if (cave_monster_count(c) + 32 > c->mon_size)
 		compact_monsters(c, 64);
