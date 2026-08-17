@@ -65,14 +65,20 @@ jobs:
       - name: Build
         run: make -C docs -j$(nproc) html
 
-      # enablement turns Pages on through the API if it is not already on, and
-      # sets its source to this workflow.  It is what makes the first run work
-      # without a visit to the repository settings; on later runs it finds Pages
-      # already configured and does nothing.
+      # Pages is already enabled on this repository with a custom domain, so
+      # this only reads the configuration back.  Do not add enablement here: it
+      # writes to the Pages configuration through the API, and there is nothing
+      # to gain from letting it near a custom domain that is already set.
       - name: Configure Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
+
+      # The custom domain lives in the repository's Pages settings, and the
+      # CNAME file at the top of the tree is what the settings page wrote there.
+      # A workflow deployment publishes only what it uploads, so carry the file
+      # into the artifact: without it the domain rests on the Pages setting
+      # alone, and a deployment that disagrees with that setting can drop it.
+      - name: Add CNAME
+        run: cp CNAME docs/_build/html/CNAME
 
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
