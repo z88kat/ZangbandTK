@@ -65,8 +65,14 @@ jobs:
       - name: Build
         run: make -C docs -j$(nproc) html
 
+      # enablement turns Pages on through the API if it is not already on, and
+      # sets its source to this workflow.  It is what makes the first run work
+      # without a visit to the repository settings; on later runs it finds Pages
+      # already configured and does nothing.
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
