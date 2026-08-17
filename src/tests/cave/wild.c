@@ -24,6 +24,8 @@ int setup_tests(void **state) {
 	z_info->wild_blocks = 33;
 	z_info->wild_block_size = 16;
 	z_info->wild_cache_blocks = 81;
+	z_info->wild_rivers = 4;
+	z_info->wild_lakes = 4;
 
 	*state = NULL;
 	return 0;
@@ -237,6 +239,107 @@ static int test_terrain_features(void *state) {
  * would mean faking terrain, which would prove only that the fake works.
  */
 
+/* The world has rivers in it, and they run rather than sit in puddles. */
+static int test_rivers_are_paths(void *state) {
+	struct wilderness *w = wild_new(65, 99991);
+	int size = 65, x, y;
+	int wet = 0, joined = 0;
+
+	wild_generate(w);
+
+	for (y = 0; y < size; y++)
+		for (x = 0; x < size; x++) {
+			int i, j, neighbours = 0;
+
+			if (!(w->map[y * size + x].info & WILD_INFO_WATER)) continue;
+			wet++;
+
+			for (j = -1; j <= 1; j++)
+				for (i = -1; i <= 1; i++) {
+					struct wild_block *n;
+
+					if (!i && !j) continue;
+					n = wild_block_at(w, x + i, y + j);
+					if (n && (n->info & WILD_INFO_WATER)) neighbours++;
+				}
+
+			if (neighbours) joined++;
+		}
+
+	/* There is water. */
+	require(wet > 0);
+
+	/*
+	 * And nearly all of it is joined to more of itself. A river drawn as a
+	 * line of blocks has every block touching another; scattered singletons
+	 * would mean the linking had failed and left ponds.
+	 */
+	require(joined * 10 >= wet * 9);
+
+	wild_free(w);
+	ok;
+}
+
+/*
+ * Water is drawn only where the map says there is water.
+ *
+ * This is a regression test with a specific fault behind it. The first attempt
+ * read the block flags as a field and interpolated them between block centres,
+ * which put a broad band of near-threshold values across the countryside: the
+ * result was a fourteen-grid-wide channel with open water speckled through the
+ * fields on either side of it. Drawing the flagged blocks as a path instead
+ * confines the water to the blocks that carry it.
+ */
+static int test_water_stays_in_its_blocks(void *state) {
+	struct wilderness *w = wild_new(65, 4242);
+	int size = z_info->wild_block_size;
+	int x, y, channel = 0;
+
+	wild_generate(w);
+
+	for (y = 0; y < 65 * size; y += 3)
+		for (x = 0; x < 65 * size; x += 3) {
+			struct wild_block *block = wild_block_at(w, x / size, y / size);
+			int wet = wild_water_at(w, x, y);
+
+			if (block && (block->info & WILD_INFO_WATER)) {
+				if (wet > 0) channel++;
+			} else {
+				eq(wet, 0);
+			}
+		}
+
+	/* And the channel is actually drawn, not merely permitted. */
+	require(channel > 0);
+
+	wild_free(w);
+	ok;
+}
+
+/* A town is not built in a river. */
+static int test_towns_keep_their_feet_dry(void *state) {
+	int seed;
+
+	for (seed = 1; seed <= 12; seed++) {
+		struct wilderness *w = wild_new(65, seed * 5077);
+		int x, y;
+
+		wild_generate(w);
+
+		for (y = 0; y < 65; y++)
+			for (x = 0; x < 65; x++) {
+				struct wild_block *b = &w->map[y * 65 + x];
+
+				if (!b->place) continue;
+				require(!(b->info & WILD_INFO_WATER));
+			}
+
+		wild_free(w);
+	}
+
+	ok;
+}
+
 const char *suite_name = "cave/wild";
 struct test tests[] = {
 	{ "generation is deterministic", test_generation_is_deterministic },
@@ -246,5 +349,8 @@ struct test tests[] = {
 	{ "terrain classification is total", test_classification },
 	{ "generated worlds are plausible", test_world_is_plausible },
 	{ "terrain features are valid", test_terrain_features },
+	{ "rivers are paths", test_rivers_are_paths },
+	{ "water stays in its blocks", test_water_stays_in_its_blocks },
+	{ "towns keep their feet dry", test_towns_keep_their_feet_dry },
 	{ NULL, NULL }
 };

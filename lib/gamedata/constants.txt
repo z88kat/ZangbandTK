@@ -516,3 +516,12 @@ wild:monster-rarity-night:10000
 # rather than a deadline: most things go early and the occasional one survives
 # a remarkably long time, which is how lost property behaves.
 wild:relic-half-life:3
+
+# Rivers and lakes (WLD-08), Zangband's own figures.
+#
+# Rivers start from this many points squared, spread evenly over the map: 4
+# gives 16 sources, each linked to its nearest neighbour and run downhill to the
+# sea. Lakes are attempts rather than results -- one that lands on the coast is
+# abandoned rather than moved, which is why there are usually fewer than asked.
+wild:rivers:4
+wild:lakes:4

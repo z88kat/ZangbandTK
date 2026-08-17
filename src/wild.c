@@ -47,6 +47,21 @@ struct wilderness *wild = NULL;
  */
 #define WILD_SEA_MARGIN 3
 
+/** A lake is shaped by a plasma fractal this many blocks across; 2^n + 1. */
+#define WILD_LAKE_SIZE 9
+
+/** Everything in a lake's fractal below this becomes water. */
+#define WILD_LAKE_CUT 96
+
+/** Grids wetter than this are water; the rest are the land they run through. */
+#define WILD_WATER_CUT 1
+
+/** Half the width of a river, in grids, before its banks are roughened. */
+#define WILD_RIVER_WIDTH 3
+
+/** Wetter than this and the water is over your head. */
+#define WILD_WATER_DEEP 140
+
 /**
  * Names for the terrain kinds, for the map display and for diagnostics.
  */
@@ -308,6 +323,323 @@ void wild_free(struct wilderness *w)
 }
 
 /**
+ * ------------------------------------------------------------------------
+ * Rivers and lakes (WLD-08)
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Mark a run of blocks between two points as carrying water.
+ *
+ * Ported from Zangband's link_river()
+ * ([wild1.c:2133](../../archive/zangband/src/wild1.c#L2133)).  A long span is
+ * halved at a point pushed sideways from the midpoint and each half drawn the
+ * same way, so the line arrives crooked; only short spans are drawn straight.
+ * That recursion is the whole trick, and it is why the rivers wander instead of
+ * ruling themselves across the map.
+ */
+static void wild_link_river(struct wilderness *w, int x1, int y1,
+							int x2, int y2)
+{
+	int dx = x2 - x1, dy = y2 - y1;
+	int length = MAX(ABS(dx), ABS(dy));
+	int l;
+
+	if (length > 6) {
+		int xn, yn, changex = 0, changey = 0;
+
+		dx /= 2;
+		dy /= 2;
+
+		/* Push the midpoint sideways, by up to half the span it turns on. */
+		if (dy) changex = randint1(ABS(dy)) - ABS(dy) / 2;
+		if (dx) changey = randint1(ABS(dx)) - ABS(dx) / 2;
+
+		xn = MIN(MAX(x1 + dx + changex, 0), w->blocks - 1);
+		yn = MIN(MAX(y1 + dy + changey, 0), w->blocks - 1);
+
+		wild_link_river(w, x1, y1, xn, yn);
+		wild_link_river(w, xn, yn, x2, y2);
+		return;
+	}
+
+	for (l = 0; l <= length; l++) {
+		struct wild_block *block;
+		int x = length ? x1 + l * (x2 - x1) / length : x1;
+		int y = length ? y1 + l * (y2 - y1) / length : y1;
+
+		block = wild_block_at(w, x, y);
+		if (block)
+			block->info |= WILD_INFO_WATER;
+	}
+}
+
+/**
+ * Run rivers down the map (WLD-08).
+ *
+ * Zangband's method
+ * ([wild1.c:2205](../../archive/zangband/src/wild1.c#L2205)): scatter source
+ * points evenly, sort them by height, and repeatedly join the highest unused
+ * one to whichever remaining point is nearest.  Water therefore runs downhill
+ * and towards the sea without anything having to model flow, and a point that
+ * turns out to be below sea level is struck off so that rivers end at the coast
+ * rather than fanning into deltas.
+ */
+static void wild_place_rivers(struct wilderness *w)
+{
+	int n = z_info->wild_rivers;
+	int count = n * n;
+	int *px = mem_zalloc(count * sizeof(int));
+	int *py = mem_zalloc(count * sizeof(int));
+	int sea = 256 / WILD_SEA_FRACTION;
+	int i, j, cur;
+
+	/* One source per cell of an n by n grid, placed at random within it. */
+	for (i = 0; i < count; i++) {
+		int lo = ((i % n) * w->blocks) / n;
+		int hi = lo + w->blocks / n - 1;
+
+		px[i] = rand_range(lo, MAX(lo, hi));
+
+		lo = ((i / n) * w->blocks) / n;
+		hi = lo + w->blocks / n - 1;
+		py[i] = rand_range(lo, MAX(lo, hi));
+	}
+
+	/* Highest first.  Insertion sort: there are sixteen of them. */
+	for (i = 1; i < count; i++) {
+		int hx = px[i], hy = py[i];
+		int h = w->map[hy * w->blocks + hx].hgt;
+
+		for (j = i; j > 0; j--) {
+			int ph = w->map[py[j - 1] * w->blocks + px[j - 1]].hgt;
+
+			if (ph >= h) break;
+			px[j] = px[j - 1];
+			py[j] = py[j - 1];
+		}
+		px[j] = hx;
+		py[j] = hy;
+	}
+
+	for (cur = 0; cur < count - 1; cur++) {
+		int best = -1, best_dist = 0;
+
+		/* Struck off: this source was below sea level and has been used. */
+		if (px[cur] < 0) continue;
+
+		/* Everything from here down is sea; there is no river left to run. */
+		if (w->map[py[cur] * w->blocks + px[cur]].hgt <= sea) break;
+
+		for (i = cur + 1; i < count; i++) {
+			int dx, dy, dist;
+
+			if (px[i] < 0) continue;
+
+			dx = px[i] - px[cur];
+			dy = py[i] - py[cur];
+			dist = MAX(ABS(dx), ABS(dy));
+
+			if (best < 0 || dist < best_dist) {
+				best = i;
+				best_dist = dist;
+			}
+		}
+
+		if (best < 0) break;
+
+		wild_link_river(w, px[cur], py[cur], px[best], py[best]);
+
+		/* A river that has reached the sea has finished. */
+		if (w->map[py[best] * w->blocks + px[best]].hgt <= sea)
+			px[best] = py[best] = -1;
+	}
+
+	mem_free(py);
+	mem_free(px);
+}
+
+/**
+ * Put lakes in the hollows (WLD-08).
+ *
+ * Zangband's method
+ * ([wild1.c:2344](../../archive/zangband/src/wild1.c#L2344)): a small plasma
+ * fractal dropped at a random spot, with everything under a cutoff becoming
+ * water, and the attempt abandoned rather than moved if any of it would land in
+ * the sea.  Attempts, not results -- a world with a lot of coast gets fewer
+ * lakes, which is the right answer.
+ */
+static void wild_place_lakes(struct wilderness *w)
+{
+	int size = WILD_LAKE_SIZE;
+	int *shape = mem_zalloc(size * size * sizeof(int));
+	int sea = 256 / WILD_SEA_FRACTION;
+	int attempt;
+
+	for (attempt = 0; attempt < z_info->wild_lakes; attempt++) {
+		int ox, oy, i, j;
+		bool clear = true;
+
+		if (w->blocks <= size) break;
+
+		wild_plasma(shape, size, 20);
+
+		ox = randint0(w->blocks - size);
+		oy = randint0(w->blocks - size);
+
+		/* Not if any of it would be at sea. */
+		for (j = 0; j < size && clear; j++)
+			for (i = 0; i < size && clear; i++) {
+				struct wild_block *block;
+
+				if (shape[j * size + i] > WILD_LAKE_CUT) continue;
+
+				block = wild_block_at(w, ox + i, oy + j);
+				if (!block || block->hgt <= sea)
+					clear = false;
+			}
+
+		if (!clear) continue;
+
+		for (j = 0; j < size; j++)
+			for (i = 0; i < size; i++) {
+				struct wild_block *block;
+
+				if (shape[j * size + i] > WILD_LAKE_CUT) continue;
+
+				block = wild_block_at(w, ox + i, oy + j);
+				if (block)
+					block->info |= WILD_INFO_WATER;
+			}
+	}
+
+	mem_free(shape);
+}
+
+/**
+ * Squared distance from a point to a line segment, in grid units.
+ *
+ * Integer throughout: the inputs are grid coordinates and the result is only
+ * ever compared against a squared width, so nothing is gained by leaving them.
+ */
+static int wild_dist2_to_segment(int px, int py, int ax, int ay, int bx, int by)
+{
+	int vx = bx - ax, vy = by - ay;
+	int wx = px - ax, wy = py - ay;
+	int len2 = vx * vx + vy * vy;
+	int dot, cx, cy;
+
+	if (len2 == 0)
+		return wx * wx + wy * wy;
+
+	dot = wx * vx + wy * vy;
+	if (dot <= 0)
+		return wx * wx + wy * wy;
+	if (dot >= len2) {
+		int ex = px - bx, ey = py - by;
+
+		return ex * ex + ey * ey;
+	}
+
+	/* Foot of the perpendicular, rounded to the nearest grid. */
+	cx = ax + (vx * dot) / len2;
+	cy = ay + (vy * dot) / len2;
+
+	return (px - cx) * (px - cx) + (py - cy) * (py - cy);
+}
+
+/**
+ * How wet a world grid is, from 0 (dry) to 255 (mid-channel).
+ *
+ * Zangband drew each water block by running a plasma fractal whose corners were
+ * weighted by which neighbouring blocks carried water, so that a river joined up
+ * across block boundaries and tapered into the land
+ * ([wild3.c:1588](../../archive/zangband/src/wild3.c#L1588)).  The idea is kept
+ * -- water is a field over the land rather than a terrain kind, and it is
+ * continuous across blocks -- but the mechanism is ours, because our grids are
+ * drawn from a hash of their own position and there is no per-block scratch
+ * buffer to run a fractal in (W-1).
+ *
+ * The flagged blocks are read as a *path*: each water block is joined to its
+ * water neighbours by a segment between their centres, and a grid is wet by how
+ * close it lies to the nearest such segment.  That is what makes a river a
+ * river.  An earlier attempt interpolated the flags as a field between block
+ * centres, which sounds equivalent and is not: a linear ramp from 255 to 0 over
+ * sixteen grids puts a broad band of near-threshold values across the
+ * countryside, so the result was a fourteen-grid-wide channel with speckles of
+ * open water scattered through the fields on either side.
+ *
+ * A block with water on most sides is not a river but the middle of a lake, and
+ * fills.
+ */
+int wild_water_at(struct wilderness *w, int x, int y)
+{
+	int size = z_info->wild_block_size;
+	int half = size / 2;
+	int bx = x / size, by = y / size;
+	struct wild_block *block = wild_block_at(w, bx, by);
+	int neighbours = 0, best = -1;
+	int width, jitter, i, j;
+	uint32_t h;
+
+	if (!block || !(block->info & WILD_INFO_WATER))
+		return 0;
+
+	/* The centre of this block, and of each neighbour, in world grids. */
+	for (j = -1; j <= 1; j++)
+		for (i = -1; i <= 1; i++) {
+			struct wild_block *n;
+			int d2;
+
+			if (!i && !j) continue;
+
+			n = wild_block_at(w, bx + i, by + j);
+			if (!n || !(n->info & WILD_INFO_WATER)) continue;
+
+			neighbours++;
+
+			d2 = wild_dist2_to_segment(x, y,
+									   bx * size + half, by * size + half,
+									   (bx + i) * size + half,
+									   (by + j) * size + half);
+
+			if (best < 0 || d2 < best)
+				best = d2;
+		}
+
+	/*
+	 * Ragged banks.  The width wobbles per grid rather than the wetness, so
+	 * the edge of the water is uneven without stray pools appearing in the
+	 * fields a bowshot away.
+	 */
+	h = (uint32_t) x * 0x27220A95u ^ (uint32_t) y * 0x165667B1u ^
+		(w ? w->seed : 0);
+	h ^= h >> 15;
+	h *= 0x2545F491u;
+	h ^= h >> 13;
+	jitter = (int) (h % 3) - 1;
+
+	/* Surrounded by water: this is the middle of a lake, not a bank. */
+	if (neighbours >= 5)
+		return 255;
+
+	/* Flagged but joined to nothing: a pool the size of the block's heart. */
+	if (best < 0) {
+		int dx = x - (bx * size + half), dy = y - (by * size + half);
+
+		best = dx * dx + dy * dy;
+	}
+
+	width = WILD_RIVER_WIDTH + jitter;
+	if (width < 1) width = 1;
+
+	if (best > width * width)
+		return 0;
+
+	/* Deepest mid-channel, shallowing towards the bank. */
+	return 255 - (int) ((int64_t) best * 255 / (width * width));
+}
+
+/**
  * How many blocks the town's footprint covers, in each direction.
  *
  * The town is a fixed rectangle of grids, so how many blocks it lies across
@@ -396,10 +728,11 @@ static void wild_place_town(struct wilderness *w)
 
 					if (!f) continue;
 
-					/* The town's own ground has to be buildable. */
+					/* The town's own ground has to be buildable and dry. */
 					if (ABS(fx - x) <= bw / 2 && ABS(fy - y) <= bh / 2 &&
 						(f->terrain == WILD_TERRAIN_OCEAN ||
-						 f->terrain == WILD_TERRAIN_MOUNTAIN)) {
+						 f->terrain == WILD_TERRAIN_MOUNTAIN ||
+						 (f->info & WILD_INFO_WATER))) {
 						ok = false;
 						continue;
 					}
@@ -526,6 +859,13 @@ void wild_generate(struct wilderness *w)
 			block->terrain = WILD_TERRAIN_SHORE;
 		}
 	}
+
+	/*
+	 * Water before towns, so that a town is not planted in a lake and the
+	 * placement scoring can steer clear of the wet ground.
+	 */
+	wild_place_rivers(w);
+	wild_place_lakes(w);
 
 	wild_place_town(w);
 
@@ -1400,6 +1740,21 @@ struct chunk *wild_surface(struct wilderness *w, struct player *p,
 				h ^= h >> 13;
 
 				feat = wild_terrain_feat(block->terrain, h % 100);
+			}
+
+			/*
+			 * Rivers and lakes are laid over the land they run through rather
+			 * than replacing its terrain kind, so a river through forest has
+			 * trees on its banks (WLD-08).  The sea needs none of this: it is
+			 * already water by classification.
+			 */
+			if (block->terrain != WILD_TERRAIN_OCEAN) {
+				int wet = wild_water_at(w, wx, wy);
+
+				if (wet > WILD_WATER_DEEP)
+					feat = FEAT_DEEP_WATER;
+				else if (wet >= WILD_WATER_CUT)
+					feat = FEAT_WATER;
 			}
 
 			square_set_feat(c, grid, feat);

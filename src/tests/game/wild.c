@@ -604,6 +604,7 @@ static int test_world_position_survives_a_save(void *state) {
 
 
 
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },

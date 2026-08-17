@@ -86,9 +86,24 @@ them and keep out of it, which makes water a reliable way of breaking pursuit.
 Zangband's swimming and aquatic monsters are recorded against the imported
 bestiary and waiting on the flag to drive them.
 
-Roads run between the places worth reaching. A road is safer and quicker than
-the country beside it, and it is a reliable way of finding a town: follow one
-far enough and it will take you somewhere.
+Rivers and lakes
+----------------
+
+Rivers rise in the high country and run downhill to the sea, and they wander on
+the way rather than ruling themselves across the map. A river is six or eight
+grids across with ragged banks, deep in the middle and shallow at the edges, so
+crossing one is a decision rather than a step: wade it lightly loaded, or go
+round, or find where it narrows.
+
+Lakes sit in hollows inland. There are not many — four are attempted per world
+and any that would have reached the coast is abandoned rather than moved, so a
+world with a lot of coastline has fewer of them.
+
+Towns are never built in water, though they are often built beside it.
+
+Roads are **not yet built**. There is a stub of road through the town, and it
+goes nowhere: a road connects one town to another, and there is only one town so
+far. That arrives with the rest of the towns.
 
 Travel
 ------
@@ -233,7 +248,9 @@ services that go in them are all milestone M5.
 **No overhead map.** There is no way to see the world except by walking it. The
 map display is M5.
 
-**Rivers and lakes are missing**, and the terrain is coarser than Zangband's.
-Zangband distinguished about thirty kinds of country, including impassable
-jungle, snow and lava; ZangbandTK currently has seven. Snow in particular
-implies a climate axis the parameter space does not yet carry.
+**Roads go nowhere**, as above — they need somewhere to go.
+
+**The terrain is coarser than Zangband's.** Zangband distinguished about thirty
+kinds of country, including impassable jungle, snow and lava; ZangbandTK
+currently has seven. Snow in particular implies a climate axis the parameter
+space does not yet carry.

@@ -249,6 +249,29 @@ the structures they write into are ours, per W-1.
 proportions — sea 1/4 of the map, 4 lakes, roads within `ROAD_DIST` 30 — are the reference
 values and belong in `constants.txt` per WLD-02.
 
+> **Sea, lakes and rivers are done. Roads are blocked, not skipped.** A road connects towns,
+> and there is one town; WLD-10 has to land before there is anything for a road to join. The
+> stub that exists — a line through the town's own blocks — should be replaced rather than
+> extended.
+>
+> *Rivers and lakes are ported from Zangband* under DEC-20:
+> [create_rivers()](../../archive/zangband/src/wild1.c#L2205) scatters sources evenly, sorts
+> them by height, and joins each to its nearest neighbour with a recursively-halved crooked
+> line, striking off any point below sea level so rivers end at the coast instead of fanning
+> into deltas. [create_lakes()](../../archive/zangband/src/wild1.c#L2344) drops a small
+> plasma fractal at a random spot and abandons the attempt if any of it would land in the
+> sea — attempts rather than results, so a world with a lot of coast gets fewer lakes.
+>
+> *How water is drawn is ours, and the first attempt was wrong.* Zangband ran a per-block
+> plasma fractal whose corners were weighted by the neighbouring blocks' water flags; we have
+> no per-block scratch buffer, since grids come from a hash of their own position (W-1). The
+> first attempt interpolated the flags as a field between block centres, which sounds
+> equivalent and is not: a linear ramp from full to nothing over sixteen grids leaves a broad
+> near-threshold band, so the result was a fourteen-grid channel with open water speckled
+> through the fields either side. Reading the flagged blocks as a **path** — each water block
+> joined to its water neighbours, wetness by distance to the nearest segment — gives a river
+> of controlled width with ragged banks, and nothing outside the blocks that carry it.
+
 **WLD-08a — Danger in the wilderness is a function of law, and towns are placed to
 guarantee a survivable doorstep.** Zangband computed a block's monster depth as
 `MAX(1, (256 - law) / 4 - 5)` ([wild1.c:3418](../../archive/zangband/src/wild1.c#L3418)) and

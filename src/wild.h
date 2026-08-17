@@ -63,6 +63,7 @@ enum wild_terrain {
 #define WILD_INFO_TRACK		0x02	/* A lesser track runs through it */
 #define WILD_INFO_MODIFIED	0x04	/* The player changed it; must persist */
 #define WILD_INFO_SEEN		0x08	/* The player has seen it on the map */
+#define WILD_INFO_WATER		0x10	/* A river or lake runs through it */
 
 /**
  * One block of the world map.
@@ -151,6 +152,7 @@ void wild_free(struct wilderness *w);
 void wild_generate(struct wilderness *w);
 
 int wild_terrain_feat(enum wild_terrain terrain, int roll);
+int wild_water_at(struct wilderness *w, int x, int y);
 
 void wild_ensure(uint32_t seed);
 void wild_cleanup(void);

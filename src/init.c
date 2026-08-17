@@ -582,6 +582,10 @@ static enum parser_error parse_constants_wild(struct parser *p) {
 		z->wild_mon_rarity_night = value;
 	} else if (streq(label, "relic-half-life")) {
 		z->relic_half_life = value;
+	} else if (streq(label, "rivers")) {
+		z->wild_rivers = value;
+	} else if (streq(label, "lakes")) {
+		z->wild_lakes = value;
 	} else {
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 	}
@@ -1172,6 +1176,10 @@ static errr finish_parse_constants(struct parser *p) {
 		z_info->wild_mon_rarity_night = 10000;
 	if (!z_info->relic_half_life)
 		z_info->relic_half_life = 3;
+	if (!z_info->wild_rivers)
+		z_info->wild_rivers = 4;
+	if (!z_info->wild_lakes)
+		z_info->wild_lakes = 4;
 	if (check_critical_levels(z_info->m_crit_level_head)) {
 		plog("The cutoffs for melee criticals in constants.txt are "
 			"not strictly increasing.");
