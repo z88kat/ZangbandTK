@@ -1,127 +1,117 @@
 /*
- * Wide-area style
+ * ZangbandTK site styling.
+ *
+ * This overrides the PyData Sphinx theme's design tokens rather than styling
+ * elements directly, so the theme keeps control of layout and only the palette
+ * and headings are ours.  It is loaded only when conf.py selects the PyData
+ * theme; a build overridden with DOC_HTML_THEME gets that theme unmodified.
+ *
+ * The palette is carried over from the older hand-rolled stylesheet: slate
+ * backgrounds, parchment gold accents, and Angband's white-on-black for
+ * anything monospaced.
  */
 
-/* Overall background */
-body {
-  background-color: rgb(29, 42, 50);
+/*
+ * Headings.  A serif face, in the spirit of the game's manual, with a long
+ * fallback chain because none of these ship everywhere.
+ */
+html {
+  --pst-font-family-heading: "Palatino Linotype", Palatino, Palladio,
+    "URW Palladio L", "Book Antiqua", Baskerville, "Bookman Old Style",
+    "Bitstream Charter", "Nimbus Roman No9 L", Garamond, "Apple Garamond",
+    "ITC Garamond Narrow", "New Century Schoolbook", "Century Schoolbook",
+    "Century Schoolbook L", Georgia, serif;
 }
 
-/* Nice heading fonts */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: "Palatino Linotype", Palatino, Palladio, "URW Palladio L",
-    "Book Antiqua", Baskerville, "Bookman Old Style", "Bitstream Charter",
-    "Nimbus Roman No9 L", Garamond, "Apple Garamond", "ITC Garamond Narrow",
-    "New Century Schoolbook", "Century Schoolbook", "Century Schoolbook L",
-    Georgia, serif;
+/*
+ * Light theme.  The dark palette's gold does not carry enough contrast against
+ * a white background, so links and accents move to a deeper amber here.
+ */
+html[data-theme="light"] {
+  --pst-color-primary: #7a5c14;
+  --pst-color-primary-highlight: #5c4410;
+  --pst-color-secondary: #8a6a2f;
+  --pst-color-secondary-highlight: #6b511f;
+
+  --pst-color-link: #7a5c14;
+  --pst-color-link-hover: #5c4410;
+  --pst-color-link-visited: #6b4a5c;
+
+  --pst-color-heading-color: #23323b;
+  --pst-color-inline-code: #6b4a10;
 }
 
-/* Link colours */
-a,
-.sphinxsidebar h3 a {
-  color: rgb(230, 200, 120);
+/*
+ * Dark theme.  This is the intended look.
+ */
+html[data-theme="dark"] {
+  --pst-color-background: rgb(29, 42, 50);
+  --pst-color-on-background: rgb(38, 53, 62);
+  --pst-color-surface: rgb(61, 80, 92);
+  --pst-color-on-surface: rgb(230, 230, 242);
+
+  --pst-color-primary: rgb(227, 186, 74);
+  --pst-color-primary-highlight: rgb(253, 229, 164);
+  --pst-color-secondary: rgb(230, 200, 120);
+  --pst-color-secondary-highlight: rgb(253, 229, 164);
+
+  --pst-color-link: rgb(230, 200, 120);
+  --pst-color-link-hover: rgb(253, 229, 164);
+  --pst-color-link-visited: #b29034;
+
+  --pst-color-text-base: rgb(230, 230, 242);
+  --pst-color-text-muted: rgb(176, 189, 198);
+  --pst-color-heading-color: rgb(253, 229, 164);
+
+  --pst-color-border: rgb(78, 96, 108);
+  --pst-color-inline-code: rgb(240, 214, 150);
+
+  /*
+   * Admonition accents.  The theme's defaults are fully saturated and read as
+   * web-framework blue and green against this palette; these are the same hues
+   * pulled toward the slate the page is built from.  Still distinguishable from
+   * each other and from the gold used for links, which is the point of them.
+   */
+  --pst-color-info: rgb(122, 162, 191);
+  --pst-color-note: rgb(122, 162, 191);
+  --pst-color-success: rgb(126, 168, 130);
+  --pst-color-warning: rgb(206, 154, 84);
+  --pst-color-danger: rgb(198, 112, 102);
 }
 
-a:visited {
-  color: #b29034;
+/*
+ * Monospaced text, white on black, as the game itself renders.  Dark theme
+ * only: in light mode the theme's own code styling keeps syntax highlighting
+ * legible, and a black slab would fight the rest of the page.
+ */
+html[data-theme="dark"] pre {
+  background-color: #000;
+  color: #fff;
+  border: 1px solid var(--pst-color-border);
 }
 
-/* Use white-on-black like Angband does */
-pre,
-tt {
-  background-color: black;
-  color: white;
+html[data-theme="dark"] code.docutils.literal,
+html[data-theme="dark"] code.literal {
+  background-color: #000;
+  border: 1px solid rgb(78, 96, 108);
+  padding: 0.1rem 0.3rem;
 }
 
+/*
+ * Definition lists are used heavily through the manual for command and option
+ * reference; the term deserves to stand out from its description.
+ */
 dt {
   font-weight: bold;
 }
 
+/*
+ * Sphinx puts each item of a non-simple list in its own paragraph, which the
+ * theme then spaces as if it were body text.  Tables have the same problem.
+ */
 ul.simple p,
-ol.simple p {
+ol.simple p,
+table p {
   margin-top: 0;
   margin-bottom: 0;
-}
-
-/*
- * Main page heading
- */
-header#pageheader {
-  background: #e3ba4a;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-  display: flex;
-  padding: 0.5rem 0.66rem;
-  justify-content: space-between;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-}
-
-#pageheader h1 {
-  font-size: 3rem;
-  margin: 0;
-  color: black;
-}
-
-#pageheader .version {
-  margin-left: 1rem;
-  font-style: italic;
-  color: #443a1f;
-}
-
-/*
- * Content area
- */
-.body {
-  background-color: rgb(61, 80, 92);
-  padding: 0.1rem 1rem;
-}
-
-.body h1 {
-  font-size: 200%;
-}
-
-/* Inline monospaced text */
-code.docutils.literal {
-  background-color: black;
-  padding: 0.3rem;
-  border: 1px solid #8e8080;
-}
-
-/* Remove huge padding on tables */
-table p {
-  margin: 0;
-}
-
-/* Weird-but-kind-of-nice styling?  Maybe use for h3? */
-h7 {
-  background: linear-gradient(
-    to right,
-    hsla(300, 13%, 42%, 1),
-    rgb(91, 119, 136)
-  );
-  padding: 0.3rem 0.3rem 0 0.3rem;
-}
-
-/*
- * Contents boxes
- */
-
-/* For inline contents boxes */
-.caption-text {
-  font-weight: bold;
-}
-
-/* Remove huge margins and ugly colour on contents boxes */
-.contents p {
-  margin: 0;
-}
-
-.topic {
-  background-color: inherit;
 }

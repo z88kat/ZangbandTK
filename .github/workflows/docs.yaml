@@ -26,13 +26,23 @@ jobs:
             docs
             scripts
 
-      # Need Sphinx (Python documentation tool).  To avoid extra work, do not
-      # bother with the 3rd party theme used to build the documents for
-      # release.  Need make and git as well.
+      # Need Sphinx (Python documentation tool) plus the theme and extensions
+      # the documents depend on, so install from docs/requirements.txt rather
+      # than from apt: the distribution's sphinx-common is both older than what
+      # conf.py expects and unaware of the extensions.  Need make and git too.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: docs/requirements.txt
+
       - name: Install Build Dependencies
         run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r docs/requirements.txt
           sudo apt-get update
-          sudo apt-get install sphinx-common make git
+          sudo apt-get install -y make git
 
       # If the pull request changes anything in docs, run the document
       # conversion to the end and fail on any warnings.  Need to fetch the
@@ -44,7 +54,7 @@ jobs:
             echo There are no changes in docs to check.
           else
             cd docs
-            make -j$(nproc) DOC_HTML_THEME=alabaster SPHINX_OPTS="-W --keep-going" html
+            make -j$(nproc) SPHINXOPTS="-W --keep-going" html
           fi
 
       # Archive the built documentation so it can be uploaded for review.

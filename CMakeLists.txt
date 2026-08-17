@@ -56,7 +56,7 @@ include(GNUInstallDirs)
 include(CMakeDependentOption)
 find_package(Sphinx)
 cmake_dependent_option(BUILD_DOC "Build the documentation" OFF "Sphinx_FOUND" OFF)
-set(DOC_HTML_THEME "" CACHE STRING "If set and not an empty string, it is the builtin Sphinx HTML theme to use in place of the default theme in conf.py (currently the better theme).")
+set(DOC_HTML_THEME "" CACHE STRING "If set and not an empty string, it is the builtin Sphinx HTML theme to use in place of the default theme in conf.py (currently the PyData theme).")
 
 # Allow the user to enable code coverage if the system supports it.
 include(src/cmake/modules/CheckCoverage.cmake)

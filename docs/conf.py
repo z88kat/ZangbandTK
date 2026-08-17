@@ -18,9 +18,13 @@ import os
 
 # -- Project information -----------------------------------------------------
 
-project = "Angband"
-copyright = "2026, Angband developers past and present"
-author = "Angband developers past and present"
+project = "ZangbandTK"
+copyright = (
+    "2026, ZangbandTK contributors; "
+    "Angband developers past and present; "
+    "Zangband developers past and present"
+)
+author = "ZangbandTK contributors"
 
 # The full version, including alpha/beta/rc tags
 # There's extra clutter here (and for the HTML theme) to allow conf.py to
@@ -48,7 +52,14 @@ master_doc = 'index'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = []
+#
+# myst_parser lets pages be written in Markdown as well as reStructuredText.
+# sphinx_design supplies the grids, cards and buttons used by the non-manual
+# pages of the site.
+extensions = [
+    "myst_parser",
+    "sphinx_design",
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -56,7 +67,10 @@ templates_path = ["_templates"]
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+#
+# README.md documents how to build these documents; it is not part of them,
+# and myst_parser would otherwise treat it as an orphaned source file.
+exclude_patterns = ["_build", "README.md", "Thumbs.db", ".DS_Store"]
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -64,7 +78,9 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 # Use one of Sphinx's builtin themes if set by the build system.  Otherwise
-# use the better theme, https://pypi.org/project/sphinx-better-theme/ .
+# use the PyData theme, https://pypi.org/project/pydata-sphinx-theme/ .  Its
+# top navigation bar is built from the top-level toctree in index.rst, which
+# is what lets the manual sit inside a wider site rather than being all of it.
 html_theme = "@DOC_HTML_THEME@"
 if (html_theme == "".join(["@", "DOC_HTML_THEME", "@"]) or html_theme == ""):
     if ("DOC_HTML_THEME" in os.environ
@@ -72,22 +88,29 @@ if (html_theme == "".join(["@", "DOC_HTML_THEME", "@"]) or html_theme == ""):
             and os.environ["DOC_HTML_THEME"] != "none"):
         html_theme = os.environ["DOC_HTML_THEME"]
     else:
-        from better import better_theme_path
-
-        html_theme_path = [better_theme_path]
-        html_theme = "better"
+        html_theme = "pydata_sphinx_theme"
         html_theme_options = {
-            "cssfiles": ["_static/style.css"],
-            "showheader": True,
-            "textcolor": "rgb(230, 230, 242)",
-            "headtextcolor": "rgb(253, 229, 164)",
+            "logo": {"text": "ZangbandTK"},
+            "navbar_align": "left",
+            "github_url": "https://github.com/z88kat/ZangbandTK",
+            "use_edit_page_button": False,
+            "show_prev_next": True,
+            "navigation_with_keys": False,
+            # The build id is a git describe string rather than a release
+            # number, so it is not worth a slot in the navigation bar.
+            "show_version_warning_banner": False,
+            "footer_start": ["copyright"],
+            "footer_end": [],
         }
+        html_css_files = ["style.css"]
 
-html_title = "The Angband Manual"
-html_short_title = "Home"
+html_title = "ZangbandTK"
+html_short_title = "ZangbandTK"
+
+# The home page carries the site's own navigation and reads as a landing page,
+# so it gets no sidebar.  Every other page keeps the theme's default sidebar.
 html_sidebars = {
-    "**": ["localtoc.html", "searchbox.html"],
-    "index": ["globaltoc.html", "searchbox.html"],
+    "index": [],
 }
 
 
