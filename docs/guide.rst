@@ -1,16 +1,26 @@
-===============================
- A Players' Guide to Angband 
-===============================
+==============================
+A Players' Guide to ZangbandTK
+==============================
 
 This guide assumes familiarity with the basic mechanics of the game. If you're
-completely new to Angband, check out the user's manual and just start playing,
+completely new to the game, check out the manual and just start playing,
 get into the dungeon and try, well, whatever seems to be prudent. You'll
 probably die rather quickly, but the following will make much more sense to you
 if you have just a little actual gameplay experience.
 
-This guide was written for Angband 3.5.0, and is now a little out of date
-(although the worst of the obsolete stuff has been cleaned out).  It is still
-a handy source of hints and advice; just don't take it as an authority.
+.. note::
+
+   **This guide is inherited, and it is older than the game.** It was written by
+   an Angband player for Angband 3.5.0 — several versions before the 4.2.6 that
+   ZangbandTK is built on — and has not been revised for ZangbandTK. It knows
+   nothing of the wilderness, and its judgement about when a fight is worth
+   taking is calibrated to Angband's monster numbers, which ZangbandTK changes
+   on purpose: every monster carries 73% of Angband's hit points and 50% of its
+   armour class, so fights resolve faster in both directions. Read
+   :doc:`balance` alongside it.
+
+   It is still a handy source of hints and habits. Just don't take it as an
+   authority.
 
 The basics
 ----------
