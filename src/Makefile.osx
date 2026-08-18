@@ -254,6 +254,14 @@ dist: install
 	cp -R -p "$(APPBNDL)" disttemp
 	cp borg/borg.txt disttemp
 
+# The disk image needs to explain itself.  This build is signed ad-hoc rather
+# than with a Developer ID, so the first launch is refused, and the wording macOS
+# uses -- that it "could not verify" the application "is free of malware" --
+# reads as an accusation rather than as the absence of a paid identity that it
+# actually is.  Somebody who has just downloaded a roguelike should not have to
+# work that out, or go looking on the website for it.
+	cp cocoa/dmg-readme.txt disttemp/README.txt
+
 # Sign the copy that goes into the image, ad-hoc, as a bundle.  The link step
 # already leaves a signature on the executable alone, and that is worse than
 # none: it declares sealed resources the bundle does not have, so macOS rejects

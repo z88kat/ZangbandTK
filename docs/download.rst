@@ -25,26 +25,41 @@ Mount the image and drag ``ZangbandTK.app`` wherever you keep applications.
 The first launch
 ----------------
 
+The first time you open ZangbandTK, macOS will refuse, with words to the effect
+that it *could not verify that ZangbandTK is free of malware that may harm your
+Mac or compromise your privacy*.
+
+That reads as an accusation, and it is not one. macOS is saying it cannot tell
+**who** made the application — not that it found anything wrong with it. Apple's
+Gatekeeper passes an application without comment only if it was signed with a
+paid Developer ID certificate and submitted to Apple for notarization.
+ZangbandTK is signed, but ad-hoc: the signature is valid and proves the bundle
+has not been altered since it was built, but it carries no registered developer
+identity, because this project has not bought one.
+
 .. important::
 
-   **Do not double-click it the first time.** Right-click (or Control-click) the
-   application and choose **Open**, then confirm at the prompt. macOS only asks
-   once; after that it opens normally.
+   **Open it once through System Settings.**
 
-The reason is worth stating plainly rather than leaving you to guess whether the
-download is broken. Apple's Gatekeeper only lets an application through without
-comment if it has been signed with a paid Developer ID certificate and submitted
-to Apple for notarization. ZangbandTK is signed, but ad-hoc — the signature is
-valid and proves the bundle has not been altered since it was built, but it
-carries no registered developer identity, and this project has not bought one.
+   1. Try to open ZangbandTK normally and let it be refused. Click *Done*. This
+      step is required — macOS does not offer the next one until something has
+      actually been blocked.
+   2. Open **System Settings → Privacy & Security**, and scroll down to
+      *Security*. There will be a line saying ZangbandTK was blocked.
+   3. Click **Open Anyway** and confirm with Touch ID or your password.
 
-macOS therefore refuses a plain double-click on a fresh download. Depending on
-the version it will say the application is damaged, or that it cannot be opened
-because the developer cannot be verified. Neither is what it appears to mean:
-nothing is damaged, and the check is about who signed it, not whether it works.
-Opening it from the context menu once is the supported way to say so.
+   macOS remembers, and afterwards the application opens by double-clicking like
+   any other.
 
-If you would rather clear the quarantine flag directly:
+.. note::
+
+   If you have done this on older versions of macOS, you may remember
+   right-clicking the application and choosing *Open*. Apple removed that
+   shortcut; on current macOS it no longer gets you past this, and System
+   Settings is the way.
+
+If you would rather clear the quarantine flag directly, this does the same job
+without needing the refused attempt first:
 
 .. code-block:: sh
 
@@ -59,8 +74,11 @@ Verifying it, if you would like to
 
 That should report ``valid on disk`` and ``satisfies its Designated
 Requirement``. This tells you the bundle is internally consistent and unmodified
-since it was built. It cannot tell you who built it — that is exactly what a
-Developer ID would add.
+since it was built. It cannot tell you who built it — which is exactly what a
+Developer ID would add, and exactly what macOS is complaining about.
+
+The disk image carries a ``README.txt`` saying all of this too, for anyone who
+downloads it without passing through this page.
 
 Building it from source
 =======================
