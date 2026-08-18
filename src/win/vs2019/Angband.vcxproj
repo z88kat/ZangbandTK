@@ -378,6 +378,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\z-type.c" />
     <ClCompile Include="src\z-util.c" />
     <ClCompile Include="src\z-virt.c" />
+    <ClCompile Include="src\wild.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\alloc.h" />
@@ -613,6 +614,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\z-type.h" />
     <ClInclude Include="src\z-util.h" />
     <ClInclude Include="src\z-virt.h" />
+    <ClInclude Include="src\wild.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="lib\icons\att-128.png" />

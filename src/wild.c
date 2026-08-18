@@ -1758,7 +1758,7 @@ int wild_danger(struct wilderness *w, int x, int y)
 		return 0;
 
 	/* A town is a town: nothing hunts in the market square. */
-	if (block->place)
+	if (wild_in_town(w, x, y))
 		return 0;
 
 	danger = (256 - block->law) / 4;
@@ -1780,7 +1780,7 @@ int wild_density(struct wilderness *w, int x, int y)
 {
 	struct wild_block *block = wild_block_at(w, x, y);
 
-	if (!block || block->place)
+	if (!block || wild_in_town(w, x, y))
 		return 0;
 
 	return block->pop / 16;
@@ -1986,6 +1986,36 @@ bool wild_seen(struct wilderness *w, int x, int y)
 }
 
 /**
+ * Is the town actually on this block?
+ *
+ * Distinct from the block's `place` mark, which covers the land reserved for
+ * the town when it was sited -- a margin of a block on every side, so that a
+ * town does not butt against whatever the next block turns out to be and so
+ * there is somewhere for a road to leave from.  That reserved area is 35 blocks
+ * against the town's own 15, and treating it as "town" made the overhead map
+ * paint a slab of masonry more than twice the size of the place, with the
+ * player standing in it while plainly out in the fields.
+ *
+ * `place` answers "is this land spoken for".  This answers "is the town here",
+ * which is the question the map and the monster placement are really asking.
+ */
+bool wild_in_town(struct wilderness *w, int bx, int by)
+{
+	int size = z_info->wild_block_size;
+	struct loc org;
+
+	if (!w || !wild_in_bounds(w, bx, by))
+		return false;
+
+	org = wild_town_origin(w);
+
+	return bx >= org.x / size &&
+		   bx <= (org.x + z_info->town_wid - 1) / size &&
+		   by >= org.y / size &&
+		   by <= (org.y + z_info->town_hgt - 1) / size;
+}
+
+/**
  * The terrain feature that stands for a whole block on the overhead map.
  *
  * Taken from the same table the ground itself is drawn from, so the map agrees
@@ -2000,7 +2030,7 @@ int wild_block_feat(struct wilderness *w, int x, int y)
 	if (!block)
 		return FEAT_NONE;
 
-	if (block->place)
+	if (wild_in_town(w, x, y))
 		return FEAT_PERM;
 	if (block->info & WILD_INFO_ROAD)
 		return FEAT_ROAD;

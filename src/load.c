@@ -1513,18 +1513,14 @@ static int rd_traps_aux(struct chunk *c)
 }
 
 /**
- * Read back where the player stands in the world (ZangbandTK, WLD-23).
+ * Read the base of the wilderness block: where the player stands in the world.
  *
- * The world is rebuilt here rather than left to the next level change: the
- * surface itself comes back from the "dungeon" block, and the player can walk
- * on it straight away, which needs the world map in place to know when the
- * window should scroll.
+ * Shared by both versions of the block, because it has never changed.
  */
-int rd_wilderness(void)
+static void rd_wilderness_base(void)
 {
 	uint8_t in_wild;
-	uint16_t x, y, ox, oy, count;
-	int i;
+	uint16_t x, y, ox, oy;
 
 	rd_byte(&in_wild);
 	rd_u16b(&x);
@@ -1537,11 +1533,61 @@ int rd_wilderness(void)
 	player->wild_offset = loc(ox, oy);
 
 	/*
-	 * The world has to exist before anything can be put back into it, and it
-	 * regenerates from the seed rather than being read (WLD-03).
+	 * The world is rebuilt here rather than left to the next level change: the
+	 * surface itself comes back from the "dungeon" block and the player can
+	 * walk on it straight away, which needs the world map in place to know when
+	 * the window should scroll.
 	 */
 	wild_ensure(seed_flavor);
+}
 
+/**
+ * Version 1 of the wilderness block.
+ *
+ * Version 1 shipped in three different layouts -- the base alone, then with
+ * relics appended, then with uniques -- all of them called version 1, which was
+ * a mistake: a savefile's shape cannot be told from its version, and reading
+ * past the end of a block calls quit() and takes the application down rather
+ * than declining the file.  Every character made before today did exactly that.
+ *
+ * Reading the base and stopping is safe for all three, because the base comes
+ * first in each and load_block() does not mind a loader leaving bytes unread.
+ * What is given up is a version-1 character's dropped items and wounded
+ * uniques, which is a far better trade than the savefile not opening.
+ *
+ * Length alone cannot separate them, incidentally: blocks are padded to a
+ * multiple of four bytes, and a section holding a count of zero is two bytes,
+ * so "are there bytes left" cannot distinguish a missing section from padding.
+ */
+int rd_wilderness_1(void)
+{
+	rd_wilderness_base();
+
+	note("Reading an older wilderness record; forgetting what was left lying about.");
+
+	return 0;
+}
+
+/**
+ * Read back where the player stands in the world, and what they have left in it
+ * (ZangbandTK, WLD-23, WLD-04, WLD-04b, WLD-25).
+ *
+ * The world map itself is not stored -- it regenerates exactly from the seed the
+ * savefile already carries, which is the point of WLD-03.  What cannot be
+ * recomputed is where the player went and what they did, so that is what is
+ * here.
+ *
+ * Anything added to this block in future goes on the *end*, and bumps the block
+ * version.  Inserting a field in the middle is what broke version 1.
+ */
+int rd_wilderness(void)
+{
+	uint16_t count;
+	int i;
+
+	rd_wilderness_base();
+
+	/* What the player left lying about (WLD-04). */
 	rd_u16b(&count);
 	for (i = 0; i < count; i++) {
 		struct wild_relic *relic;
@@ -1571,35 +1617,7 @@ int rd_wilderness(void)
 		wild->relics = relic;
 	}
 
-	/* Which blocks of the world the player has seen (WLD-25). */
-	{
-		uint16_t blocks;
-
-		rd_u16b(&blocks);
-		if (blocks) {
-			int total = (int) blocks * (int) blocks;
-
-			for (i = 0; i < total; i += 8) {
-				uint8_t byte, b;
-
-				rd_byte(&byte);
-				for (b = 0; b < 8 && i + b < total; b++) {
-					/*
-					 * Dropped rather than refused if the world has been
-					 * resized in constants.txt since the save: the map is a
-					 * convenience, and losing it is a far better outcome than
-					 * declining to load the character.
-					 */
-					if ((byte & (1 << b)) && blocks == wild->blocks)
-						wild->map[i + b].info |= WILD_INFO_SEEN;
-				}
-			}
-			if (blocks != wild->blocks)
-				note("The world has changed size; forgetting the map.");
-		}
-	}
-
-	/* And the uniques met and not finished (WLD-04b). */
+	/* The uniques met and not finished (WLD-04b). */
 	rd_u16b(&count);
 	for (i = 0; i < count; i++) {
 		struct wild_unique *seen;
@@ -1633,6 +1651,34 @@ int rd_wilderness(void)
 		seen->turn = left;
 		seen->next = wild->uniques;
 		wild->uniques = seen;
+	}
+
+	/* And which blocks of the world the player has seen (WLD-25). */
+	{
+		uint16_t blocks;
+
+		rd_u16b(&blocks);
+		if (blocks) {
+			int total = (int) blocks * (int) blocks;
+
+			for (i = 0; i < total; i += 8) {
+				uint8_t byte, b;
+
+				rd_byte(&byte);
+				for (b = 0; b < 8 && i + b < total; b++) {
+					/*
+					 * Dropped rather than refused if the world has been
+					 * resized in constants.txt since the save: the map is a
+					 * convenience, and losing it is a far better outcome than
+					 * declining to load the character.
+					 */
+					if ((byte & (1 << b)) && blocks == wild->blocks)
+						wild->map[i + b].info |= WILD_INFO_SEEN;
+				}
+			}
+			if (blocks != wild->blocks)
+				note("The world has changed size; forgetting the map.");
+		}
 	}
 
 	return 0;

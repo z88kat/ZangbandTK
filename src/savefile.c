@@ -127,7 +127,7 @@ static const struct {
 	{ "player spells", wr_player_spells, 1 },
 	{ "gear", wr_gear, 1 },
 	{ "stores", wr_stores, 1 },
-	{ "wilderness", wr_wilderness, 1 },
+	{ "wilderness", wr_wilderness, 2 },
 	{ "dungeon", wr_dungeon, 1 },
 	{ "objects", wr_objects, 1 },
 	{ "monsters", wr_monsters, 1 },
@@ -155,7 +155,8 @@ static const struct blockinfo loaders[] = {
 	{ "player spells", rd_player_spells, 1 },
 	{ "gear", rd_gear, 1 },	
 	{ "stores", rd_stores, 1 },	
-	{ "wilderness", rd_wilderness, 1 },
+	{ "wilderness", rd_wilderness_1, 1 },
+	{ "wilderness", rd_wilderness, 2 },
 	{ "dungeon", rd_dungeon, 1 },
 	{ "objects", rd_objects, 1 },	
 	{ "monsters", rd_monsters, 1 },
@@ -534,6 +535,7 @@ static loader_t find_loader(struct blockheader *b,
  */
 static bool load_block(ang_file *f, struct blockheader *b, loader_t loader)
 {
+
 	/* Allocate space for the buffer */
 	buffer = mem_alloc(b->size);
 	buffer_pos = 0;

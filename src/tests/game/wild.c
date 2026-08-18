@@ -731,6 +731,45 @@ static int test_scrolling_does_not_move_the_player(void *state) {
 }
 
 /*
+ * The land reserved for a town is not the town (WLD-25).
+ *
+ * A block's `place` mark covers the town plus a block of margin on every side,
+ * so a road has somewhere to leave from -- 35 blocks against the town's own 15.
+ * Treating that as "town" made the overhead map paint a slab of masonry more
+ * than twice the size of the place, with the player standing in it while
+ * plainly out in the fields, and silenced the monsters over all of it.
+ */
+static int test_reserved_land_is_not_the_town(void *state) {
+	int size = z_info->wild_block_size;
+	struct loc org = wild_town_origin(wild);
+	int x0 = org.x / size, x1 = (org.x + z_info->town_wid - 1) / size;
+	int y0 = org.y / size, y1 = (org.y + z_info->town_hgt - 1) / size;
+	int x, y, town = 0, reserved = 0;
+
+	for (y = 0; y < wild->blocks; y++)
+		for (x = 0; x < wild->blocks; x++) {
+			bool in = wild_in_town(wild, x, y);
+
+			if (in) town++;
+			if (wild_block_at(wild, x, y)->place) reserved++;
+
+			/* The town is exactly the blocks its rectangle touches. */
+			eq(in, (x >= x0 && x <= x1 && y >= y0 && y <= y1));
+
+			/* And only those draw as a town, or fall silent. */
+			if (!in && wild_block_at(wild, x, y)->place) {
+				require(wild_block_feat(wild, x, y) != FEAT_PERM);
+				require(wild_danger(wild, x, y) > 0);
+			}
+		}
+
+	require(town > 0);
+	require(reserved > town);
+
+	ok;
+}
+
+/*
  * The world survives a save and a load.
  *
  * The world map is not written to the savefile -- it regenerates from the seed
@@ -834,6 +873,7 @@ static int test_the_world_map_remembers_travel(void *state) {
 }
 
 
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -854,6 +894,7 @@ struct test tests[] = {
 	{ "the-map-survives-a-scroll", test_the_map_survives_a_scroll },
 	{ "scrolling-does-not-move-the-player", test_scrolling_does_not_move_the_player },
 	{ "the-world-map-remembers-travel", test_the_world_map_remembers_travel },
+	{ "reserved-land-is-not-the-town", test_reserved_land_is_not_the_town },
 	{ "world-position-survives-a-save", test_world_position_survives_a_save },
 	{ NULL, NULL }
 };

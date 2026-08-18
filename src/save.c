@@ -999,6 +999,20 @@ void wr_wilderness(void)
 		wr_item(relic->obj);
 	}
 
+	/* And the uniques met and not finished (WLD-04b). */
+	count = 0;
+	for (seen = wild ? wild->uniques : NULL; seen; seen = seen->next)
+		count++;
+	wr_u16b(count);
+
+	for (seen = wild ? wild->uniques : NULL; seen; seen = seen->next) {
+		wr_string(seen->race->name);
+		wr_u16b(seen->grid.x);
+		wr_u16b(seen->grid.y);
+		wr_s16b(seen->hp);
+		wr_s32b(seen->turn);
+	}
+
 	/*
 	 * Which blocks of the world the player has seen (WLD-25).  A bit each, so
 	 * the default 129x129 world costs about two kilobytes -- the map is the one
@@ -1020,20 +1034,6 @@ void wr_wilderness(void)
 		}
 	} else {
 		wr_u16b(0);
-	}
-
-	/* And the uniques met and not finished (WLD-04b). */
-	count = 0;
-	for (seen = wild ? wild->uniques : NULL; seen; seen = seen->next)
-		count++;
-	wr_u16b(count);
-
-	for (seen = wild ? wild->uniques : NULL; seen; seen = seen->next) {
-		wr_string(seen->race->name);
-		wr_u16b(seen->grid.x);
-		wr_u16b(seen->grid.y);
-		wr_s16b(seen->hp);
-		wr_s32b(seen->turn);
 	}
 }
 
