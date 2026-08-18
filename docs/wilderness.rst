@@ -189,6 +189,26 @@ that unique's place in the world, so it is free to turn up in the dungeon
 instead. If it does, it is no longer in the wilderness, and the world quietly
 forgets it was ever there.
 
+The world map
+-------------
+
+Press ``M`` on the surface and you get the overhead map of the world: one
+character per block, drawn from the same terrain the ground is drawn from, so
+what the map calls forest is what you walk into. Towns are picked out in white,
+and ``@`` is you. Direction keys scroll it; ``ESC`` closes it.
+
+The world is 129 blocks across and a screen is eighty columns, so the map pans
+rather than shrinking to fit. Squeezing a hundred and twenty-nine rows into
+twenty-two would lose the coastlines, which are the thing worth looking at.
+
+It shows only what you have seen. A new character knows the country around their
+town and nothing else, and the map fills in behind them as they travel — a block
+is sixteen grids and you can see twenty, so walking through a block reveals it
+and its neighbours. What you have uncovered is saved with the character.
+
+In the dungeon, ``M`` is the level map as it always was. There is no sky to see
+the world from down there.
+
 What you know
 -------------
 
@@ -253,9 +273,6 @@ single staircase in it. Several towns of differing size and character — carryi
 different stores, so that a frontier village is not a city with the same eight
 shops — several dungeons with their own depth ranges, and the buildings and
 services that go in them are all milestone M5.
-
-**No overhead map.** There is no way to see the world except by walking it. The
-map display is M5.
 
 **Roads go nowhere**, as above — they need somewhere to go.
 

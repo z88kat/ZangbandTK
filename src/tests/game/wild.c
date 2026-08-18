@@ -785,6 +785,55 @@ static int test_world_position_survives_a_save(void *state) {
 
 
 
+/*
+ * The world map records where the player has been, and only that (WLD-25).
+ *
+ * Knowledge for the map is per block, which is all a map drawing one character
+ * per block can show. A new character has seen the country around the town and
+ * nothing else; the map fills in behind them as they travel.
+ */
+static int test_the_world_map_remembers_travel(void *state) {
+	int size = z_info->wild_block_size;
+	struct loc home = loc(player->wild_grid.x / size, player->wild_grid.y / size);
+	int seen = 0, total = wild->blocks * wild->blocks, i;
+
+	/* Where they are standing is known, and so are its neighbours. */
+	require(wild_seen(wild, home.x, home.y));
+	require(wild_seen(wild, home.x + 1, home.y));
+	require(wild_seen(wild, home.x, home.y + 1));
+
+	/* Far away is not. */
+	require(!wild_seen(wild, home.x + 20, home.y + 20));
+
+	for (i = 0; i < total; i++)
+		if (wild->map[i].info & WILD_INFO_SEEN) seen++;
+
+	/* A handful of blocks, not a revealed world. */
+	require(seen > 0);
+	require(seen < 40);
+
+	/* Walking marks more of it. */
+	{
+		struct loc there = loc(player->wild_grid.x + size * 3,
+							   player->wild_grid.y);
+
+		wild_mark_seen(wild, there);
+		require(wild_seen(wild, there.x / size, there.y / size));
+	}
+
+	/* Every seen block has something to draw. */
+	for (i = 0; i < total; i++)
+		if (wild->map[i].info & WILD_INFO_SEEN) {
+			int feat = wild_block_feat(wild, i % wild->blocks, i / wild->blocks);
+
+			require(feat > FEAT_NONE);
+			require(feat < FEAT_MAX);
+		}
+
+	ok;
+}
+
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -804,6 +853,7 @@ struct test tests[] = {
 	{ "displacement-keeps-the-world-position", test_displacement_keeps_the_world_position },
 	{ "the-map-survives-a-scroll", test_the_map_survives_a_scroll },
 	{ "scrolling-does-not-move-the-player", test_scrolling_does_not_move_the_player },
+	{ "the-world-map-remembers-travel", test_the_world_map_remembers_travel },
 	{ "world-position-survives-a-save", test_world_position_survives_a_save },
 	{ NULL, NULL }
 };

@@ -29,9 +29,11 @@
 #include "trap.h"
 #include "ui-input.h"
 #include "ui-map.h"
+#include "wild.h"
 #include "ui-object.h"
 #include "ui-output.h"
 #include "ui-prefs.h"
+#include "ui-target.h"
 #include "ui-term.h"
 
 
@@ -891,11 +893,129 @@ void display_map(int *cy, int *cx)
  *
  * Note that the "player" is always displayed on the map.
  */
+/**
+ * Draw the overhead map of the world (WLD-25).
+ *
+ * One character per block, which is the resolution the knowledge is kept at and
+ * all a terminal can show: the world is 129 blocks across and a screen is
+ * eighty columns, so it pans rather than scaling -- squeezing 129 rows into
+ * twenty-two would lose the coastlines, which are the thing worth looking at.
+ *
+ * Only blocks the player has been near enough to see are drawn.  The rest is
+ * blank, and fills in as they travel.
+ *
+ * \param origin is the top-left block of the view, and is moved by the caller.
+ */
+static void display_world_map(struct loc origin)
+{
+	int size = z_info->wild_block_size;
+	int wid = Term->wid - 2, hgt = Term->hgt - 4;
+	struct loc here = loc(player->wild_grid.x / size,
+						  player->wild_grid.y / size);
+	int row, col;
+
+	Term_clear();
+
+	for (row = 0; row < hgt; row++) {
+		for (col = 0; col < wid; col++) {
+			int bx = origin.x + col, by = origin.y + row;
+			int feat, a;
+			wchar_t c;
+
+			if (!wild_in_bounds(wild, bx, by)) continue;
+			if (!wild_seen(wild, bx, by)) continue;
+
+			feat = wild_block_feat(wild, bx, by);
+			if (feat == FEAT_NONE) continue;
+
+			a = feat_x_attr[LIGHTING_LIT][feat];
+			c = feat_x_char[LIGHTING_LIT][feat];
+
+			/* A town is worth picking out of the country around it. */
+			if (wild_block_at(wild, bx, by)->place) a = COLOUR_L_WHITE;
+
+			Term_queue_char(Term, col + 1, row + 1, a, c, a, c);
+		}
+	}
+
+	/* Where the player is, if that part of the world is on screen. */
+	if (here.x >= origin.x && here.x < origin.x + wid &&
+		here.y >= origin.y && here.y < origin.y + hgt) {
+		Term_queue_char(Term, here.x - origin.x + 1, here.y - origin.y + 1,
+						COLOUR_WHITE, L'@', COLOUR_WHITE, L'@');
+	}
+
+	prt(format("World map -- you are at %d, %d of %d.  "
+			   "Direction keys scroll, ESC exits.",
+			   player->wild_grid.x, player->wild_grid.y,
+			   wild_world_grids()), Term->hgt - 1, 1);
+}
+
+/**
+ * Show the overhead map of the world, and let the player scroll about it.
+ */
+void do_cmd_view_world_map(void)
+{
+	int size = z_info->wild_block_size;
+	int wid = Term->wid - 2, hgt = Term->hgt - 4;
+	struct loc origin;
+
+	if (!wild) {
+		msg("You are not in the world.");
+		return;
+	}
+
+	/* Open on the player, as centred as the edges of the world allow. */
+	origin.x = MIN(MAX(player->wild_grid.x / size - wid / 2, 0),
+				   MAX(0, wild->blocks - wid));
+	origin.y = MIN(MAX(player->wild_grid.y / size - hgt / 2, 0),
+				   MAX(0, wild->blocks - hgt));
+
+	screen_save();
+
+	while (true) {
+		struct keypress key;
+		int dir;
+
+		display_world_map(origin);
+		Term_fresh();
+
+		key = inkey();
+		if (key.code == ESCAPE || key.code == 'q')
+			break;
+
+		dir = target_dir(key);
+		if (!dir)
+			continue;
+
+		origin.x = MIN(MAX(origin.x + ddx[dir] * 8, 0),
+					   MAX(0, wild->blocks - wid));
+		origin.y = MIN(MAX(origin.y + ddy[dir] * 4, 0),
+					   MAX(0, wild->blocks - hgt));
+	}
+
+	screen_load();
+}
+
+
 void do_cmd_view_map(void)
 {
 	int cy, cx;
 	uint8_t w, h;
 	const char *prompt = "Hit any key to continue";
+
+	/*
+	 * ZangbandTK: on the surface, the full map is the world map -- that is what
+	 * "M" is for out there, and a scaled copy of the live window is not much use
+	 * when the window is all you can see anyway.  No new key is taken: there are
+	 * only four unbound letters left and none of them says "world", and W is the
+	 * roguelike keyset's locate rather than a spare alias.
+	 */
+	if (player->in_wild && wild) {
+		do_cmd_view_world_map();
+		return;
+	}
+
 	if (Term->view_map_hook) {
 		(*(Term->view_map_hook))(Term);
 		return;

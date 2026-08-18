@@ -999,6 +999,29 @@ void wr_wilderness(void)
 		wr_item(relic->obj);
 	}
 
+	/*
+	 * Which blocks of the world the player has seen (WLD-25).  A bit each, so
+	 * the default 129x129 world costs about two kilobytes -- the map is the one
+	 * part of the world that cannot be recomputed from the seed, because it is
+	 * a record of where somebody went.
+	 */
+	if (wild) {
+		int total = wild->blocks * wild->blocks;
+		int i;
+
+		wr_u16b(wild->blocks);
+		for (i = 0; i < total; i += 8) {
+			uint8_t byte = 0, b;
+
+			for (b = 0; b < 8 && i + b < total; b++)
+				if (wild->map[i + b].info & WILD_INFO_SEEN)
+					byte |= 1 << b;
+			wr_byte(byte);
+		}
+	} else {
+		wr_u16b(0);
+	}
+
 	/* And the uniques met and not finished (WLD-04b). */
 	count = 0;
 	for (seen = wild ? wild->uniques : NULL; seen; seen = seen->next)

@@ -1571,6 +1571,34 @@ int rd_wilderness(void)
 		wild->relics = relic;
 	}
 
+	/* Which blocks of the world the player has seen (WLD-25). */
+	{
+		uint16_t blocks;
+
+		rd_u16b(&blocks);
+		if (blocks) {
+			int total = (int) blocks * (int) blocks;
+
+			for (i = 0; i < total; i += 8) {
+				uint8_t byte, b;
+
+				rd_byte(&byte);
+				for (b = 0; b < 8 && i + b < total; b++) {
+					/*
+					 * Dropped rather than refused if the world has been
+					 * resized in constants.txt since the save: the map is a
+					 * convenience, and losing it is a far better outcome than
+					 * declining to load the character.
+					 */
+					if ((byte & (1 << b)) && blocks == wild->blocks)
+						wild->map[i + b].info |= WILD_INFO_SEEN;
+				}
+			}
+			if (blocks != wild->blocks)
+				note("The world has changed size; forgetting the map.");
+		}
+	}
+
 	/* And the uniques met and not finished (WLD-04b). */
 	rd_u16b(&count);
 	for (i = 0; i < count; i++) {

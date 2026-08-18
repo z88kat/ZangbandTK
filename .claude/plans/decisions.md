@@ -257,6 +257,27 @@ This is the path Zangband itself took from Angband 2.8.1.
 
 ---
 
+## Versioning
+
+**DEC-28 — The version moves with the work, and lives in one place.**
+
+`src/buildid.h` holds `VERSION_STRING`, and `Makefile.src` reads it out with `sed`. It was
+written in both, each with a comment saying it must agree with the other, which is a
+standing invitation to drift — and the number reaches the player from both directions:
+the header feeds the title screen and the in-game copyright, the makefile feeds
+`Info.plist` and so the About panel.
+
+*The convention.* **Patch** for a fix or a small correction. **Minor** for a feature — a
+requirement landing, or a milestone piece. **Major** only for something that changes what
+the game is. Bumped in the same commit as the work, so that a screenshot or a release build
+identifies itself without anyone having to ask which build it was.
+
+Starting at **3.0.0**: Zangband's last release was 2.7.5-pre1 in 2005 and this line
+continues from there, not from the Angband 4.2.6 the code sits on. `BASE_VERSION_STRING`
+carries that separately so the About panel can say both.
+
+---
+
 ## World
 
 **DEC-26 — The town is part of the surface, not a level of its own.**

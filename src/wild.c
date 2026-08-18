@@ -1945,6 +1945,73 @@ void wild_settle_player(struct chunk *c, struct player *p)
 }
 
 /**
+ * ------------------------------------------------------------------------
+ * What the player has seen of the world (WLD-25)
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Note that the player has seen the country around a world position.
+ *
+ * Knowledge for the overhead map is kept per *block*, not per grid, because the
+ * map draws one character per block and that is all it can show.  A block is
+ * 16 grids and sight reaches 20, so standing anywhere in a block you can see
+ * into each of its neighbours: the whole three-by-three is marked.
+ *
+ * This is much the cheaper half of remembering the world.  The map wants 129 by
+ * 129 bits -- two kilobytes, saved outright.  Remembering the *detail* of
+ * country walked through is a separate and far larger problem, and is still
+ * open: walk out of the live window and back, and the grids come back unknown.
+ */
+void wild_mark_seen(struct wilderness *w, struct loc grid)
+{
+	int size = z_info->wild_block_size;
+	int bx = grid.x / size, by = grid.y / size;
+	int i, j;
+
+	if (!w) return;
+
+	for (j = -1; j <= 1; j++)
+		for (i = -1; i <= 1; i++) {
+			struct wild_block *block = wild_block_at(w, bx + i, by + j);
+
+			if (block) block->info |= WILD_INFO_SEEN;
+		}
+}
+
+bool wild_seen(struct wilderness *w, int x, int y)
+{
+	struct wild_block *block = wild_block_at(w, x, y);
+
+	return block && (block->info & WILD_INFO_SEEN);
+}
+
+/**
+ * The terrain feature that stands for a whole block on the overhead map.
+ *
+ * Taken from the same table the ground itself is drawn from, so the map agrees
+ * with the country: what the map calls forest is what you walk into.  A town,
+ * a road and water each outrank the terrain under them, in that order, since
+ * those are the things worth seeing on a map.
+ */
+int wild_block_feat(struct wilderness *w, int x, int y)
+{
+	struct wild_block *block = wild_block_at(w, x, y);
+
+	if (!block)
+		return FEAT_NONE;
+
+	if (block->place)
+		return FEAT_PERM;
+	if (block->info & WILD_INFO_ROAD)
+		return FEAT_ROAD;
+	if (block->info & WILD_INFO_WATER)
+		return FEAT_WATER;
+
+	/* Roll zero is each terrain's dominant feature. */
+	return wild_terrain_feat(block->terrain, 0);
+}
+
+/**
  * Is this chunk the wilderness surface rather than a level?
  */
 bool wild_is_surface(const struct chunk *c)
@@ -2163,4 +2230,7 @@ void wild_track_move(struct player *p, struct loc grid)
 {
 	p->wild_grid.x = p->wild_offset.x + grid.x;
 	p->wild_grid.y = p->wild_offset.y + grid.y;
+
+	/* And the world map fills in behind them (WLD-25). */
+	wild_mark_seen(wild, p->wild_grid);
 }
