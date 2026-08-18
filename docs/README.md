@@ -1,7 +1,9 @@
 # Building the documentation
 
-The manual is a Sphinx project. Read the Docs builds it from `.readthedocs.yaml`
-on push; to build it locally:
+The manual is a Sphinx project, and it is the whole of
+[zangbandtk.com](https://zangbandtk.com/) rather than just the manual part of it.
+`.github/workflows/pages.yaml` builds and publishes it on every push to `master`
+that touches `docs/`; to build it locally:
 
 ```sh
 # once — a dedicated virtualenv, kept out of the way of any other Python you

@@ -242,7 +242,6 @@ jobs:
           tar \
             --exclude .github \
             --exclude .gitignore \
-            --exclude .readthedocs.yaml \
             --exclude .travis.yml \
             -czvf ${archive_prefix}.tar.gz \
             ${archive_prefix}
