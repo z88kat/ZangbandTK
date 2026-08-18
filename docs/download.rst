@@ -4,12 +4,66 @@ Download
 
 .. warning::
 
-   **There are no binary releases yet.** The game is playable but early, and no
-   version has been tagged. To play it now, build it from source — it is two
-   commands and takes about a minute.
+   **The first release has not been tagged yet.** Until it is, the Releases page
+   below will be empty and building from source is the only way to play. The
+   instructions for both are here and will not change when it lands.
 
-Building it
-===========
+Getting the game
+================
+
+Releases are published on the project's `Releases page`_ as a disk image,
+``ZangbandTK-<version>-osx.dmg``. It contains the application, this manual in
+HTML, and the borg's documentation.
+
+.. _Releases page: https://github.com/z88kat/ZangbandTK/releases
+
+Requirements: **macOS on Apple Silicon**. Intel Macs are not supported; they
+reach legacy status in September 2026.
+
+Mount the image and drag ``ZangbandTK.app`` wherever you keep applications.
+
+The first launch
+----------------
+
+.. important::
+
+   **Do not double-click it the first time.** Right-click (or Control-click) the
+   application and choose **Open**, then confirm at the prompt. macOS only asks
+   once; after that it opens normally.
+
+The reason is worth stating plainly rather than leaving you to guess whether the
+download is broken. Apple's Gatekeeper only lets an application through without
+comment if it has been signed with a paid Developer ID certificate and submitted
+to Apple for notarization. ZangbandTK is signed, but ad-hoc — the signature is
+valid and proves the bundle has not been altered since it was built, but it
+carries no registered developer identity, and this project has not bought one.
+
+macOS therefore refuses a plain double-click on a fresh download. Depending on
+the version it will say the application is damaged, or that it cannot be opened
+because the developer cannot be verified. Neither is what it appears to mean:
+nothing is damaged, and the check is about who signed it, not whether it works.
+Opening it from the context menu once is the supported way to say so.
+
+If you would rather clear the quarantine flag directly:
+
+.. code-block:: sh
+
+   xattr -dr com.apple.quarantine /Applications/ZangbandTK.app
+
+Verifying it, if you would like to
+----------------------------------
+
+.. code-block:: sh
+
+   codesign --verify --strict --verbose=2 /Applications/ZangbandTK.app
+
+That should report ``valid on disk`` and ``satisfies its Designated
+Requirement``. This tells you the bundle is internally consistent and unmodified
+since it was built. It cannot tell you who built it — that is exactly what a
+Developer ID would add.
+
+Building it from source
+=======================
 
 Requirements
 ------------

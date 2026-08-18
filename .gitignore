@@ -1,4 +1,5 @@
 *.app
+*.dmg
 *.elf
 *.exe
 *.gcda

@@ -240,7 +240,10 @@ safe-install:
 		$(PLIST) > $(APPCONT)/Info.plist
 
 
-PACKAGE_NAME = $(NAME)-$(VERSION)
+# Named for the game, not for $(NAME), which is still Angband in Makefile.src
+# and has to stay that way: it names cocoa/Angband-Cocoa.xml and the Windows and
+# Nintendo binaries.  This is only what the disk image and its volume are called.
+PACKAGE_NAME = $(DISPLAY_NAME)-$(VERSION)
 
 # In the unlikely event that tar+zip isn't enough...
 
@@ -250,7 +253,38 @@ dist: install
 	(cd ../docs/_build/html && tar -cf - .) | (cd disttemp/Docs && tar -xf -)
 	cp -R -p "$(APPBNDL)" disttemp
 	cp borg/borg.txt disttemp
-	SetFile -a B disttemp/$(APPNAME)
+
+# Sign the copy that goes into the image, ad-hoc, as a bundle.  The link step
+# already leaves a signature on the executable alone, and that is worse than
+# none: it declares sealed resources the bundle does not have, so macOS rejects
+# it outright rather than treating it as merely unsigned.  A coherent signature
+# is what lets a user past Gatekeeper by opening the application from the
+# context menu once.
+#
+# Signing here rather than against $(APPBNDL) is deliberate.  This target
+# depends on install, and install copies the executable into the bundle every
+# time it runs, so a signature applied beforehand would not survive the trip.
+#
+# The xattr call is required, not defensive.  codesign refuses any bundle
+# carrying Finder information or a resource fork, and two kinds arrive on their
+# own: com.apple.FinderInfo, from the SetFile call in install, and
+# com.apple.provenance, which recent macOS attaches to files by itself.  Either
+# one fails the signature with "resource fork, Finder information, or similar
+# detritus not allowed".
+#
+# This is also why the disk image copy is no longer given the Finder bundle bit
+# by SetFile: that bit is Finder information, so setting it invalidates the
+# signature we just made, and the two cannot both be had.  Nothing is lost.  The
+# bundle bit mattered when Finder identified applications by it; a directory
+# named .app whose Info.plist declares CFBundlePackageType APPL needs no help.
+#
+# Ad-hoc is not notarization.  A downloaded image still carries the quarantine
+# attribute and still needs that first manual open, which docs/download.rst
+# explains.  Removing that step needs a Developer ID certificate and a
+# notarytool submission.
+	xattr -cr disttemp/$(APPNAME)
+	codesign --force --deep --sign - disttemp/$(APPNAME)
+	codesign --verify --strict disttemp/$(APPNAME)
 
 	@-rm ../"$(PACKAGE_NAME)-osx.dmg"
 
