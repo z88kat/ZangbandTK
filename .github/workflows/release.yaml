@@ -304,13 +304,21 @@ jobs:
       # itself, which is the only place it can be done: dist depends on install,
       # and install copies the executable into the bundle every time it runs, so
       # anything signed here would be overwritten on the way into the image.
+      # PACKAGE_NAME is passed in rather than left to the makefile to work out.
+      # It would derive it from scripts/version.sh, which is a git describe and
+      # so does not see a lightweight tag at all: tagging 3.1.1 without -a
+      # leaves describe returning angband-base-56-g8bb164cb0, the image is named
+      # after that, and the upload below then looks for a file that does not
+      # exist.  The release version decided in setup is the authority here, and
+      # this keeps the file's name and the name we go looking for in one place.
       - name: Create Mac Archive
         id: create_mac_archive
         run: |
+          package_name=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
           cd src
-          env OPT="-O2 -DNDEBUG -Werror" make -f Makefile.osx -j$(sysctl -n hw.activecpu) dist
-          archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}-osx
-          echo "archive_file=${archive_prefix}.dmg" >> $GITHUB_OUTPUT
+          env OPT="-O2 -DNDEBUG -Werror" make -f Makefile.osx \
+            -j$(sysctl -n hw.activecpu) PACKAGE_NAME="$package_name" dist
+          echo "archive_file=${package_name}-osx.dmg" >> $GITHUB_OUTPUT
 
       # Fail the release rather than publish an image whose signature is not
       # coherent, since that is indistinguishable to a user from a corrupt
