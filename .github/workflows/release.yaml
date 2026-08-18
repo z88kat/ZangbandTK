@@ -11,6 +11,14 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+-*'
   pull_request:
 
+# Creating a release writes to the repository, and the token does not get that
+# by default -- the repository hands workflows read-only contents unless they
+# ask, which is why publishing failed with "Resource not accessible by
+# integration" while every build job before it succeeded.  Ask at the job that
+# needs it rather than here, so nothing else in this file can write.
+permissions:
+  contents: read
+
 env:
     # Used as the name when uploading or downloading the artifact for passing
     # configuration data from the Setup job to those dependent on it.
@@ -353,6 +361,10 @@ jobs:
     needs: [ setup, source, mac ]
     name: Create GitHub Release
     runs-on: ubuntu-latest
+    # gh release create both makes the tag's release and uploads the files
+    # attached to it; both are writes to repository contents.
+    permissions:
+      contents: write
     steps:
       - name: Clone Project
         uses: actions/checkout@v6
