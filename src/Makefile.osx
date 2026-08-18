@@ -69,6 +69,11 @@ EXE = $(PROGNAME)
 # for the bundle identifiers.  Use the result of version.sh for the build ID
 # compiled into the rest of the code and in the package file name.
 BUNDLE_VERSION := ${VERSION}
+# Captured for the same reason, and it matters: COPYRIGHT is a recursive
+# assignment mentioning $(VERSION), so left to expand at point of use it would
+# pick up version.sh's `git describe` output and the About panel would read
+# "ZangbandTK angband-base-52-g7d0df8b19-dirty".
+BUNDLE_COPYRIGHT := ${COPYRIGHT}
 VERSION := $(shell ../scripts/version.sh)
 ifeq (${VERSION},)
 	VERSION := unknown
@@ -208,7 +213,7 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	cp cocoa/en.lproj/MainMenu.nib $(APPRES)/en.lproj/MainMenu.nib
 	cp cocoa/CommandMenu.plist $(APPRES)/CommandMenu.plist
 	sed -e 's/\$$VERSION\$$/$(BUNDLE_VERSION)/' \
-		-e 's/\$$COPYRIGHT\$$/$(COPYRIGHT)/' \
+		-e 's/\$$COPYRIGHT\$$/$(BUNDLE_COPYRIGHT)/' \
 		-e 's/\$$NAME\$$/$(DISPLAY_NAME)/' \
 		-e 's/\$$EXECUTABLE\$$/$(EXE)/' \
 		-e 's/\$$BUNDLE_VERSION\$$/$(BUNDLE_VERSION)/' \
@@ -227,7 +232,7 @@ vars:
 safe-install:
 	$(MAKE) -f Makefile.osx install CFLAGS="-DSAFE_DIRECTORY $(CFLAGS)"
 	sed -e 's/\$$VERSION\$$/$(BUNDLE_VERSION)/' \
-		-e 's/\$$COPYRIGHT\$$/$(COPYRIGHT)/' \
+		-e 's/\$$COPYRIGHT\$$/$(BUNDLE_COPYRIGHT)/' \
 		-e 's/\$$NAME\$$/$(DISPLAY_NAME)/' \
 		-e 's/\$$EXECUTABLE\$$/$(EXE)/' \
 		-e 's/\$$BUNDLE_VERSION\$$/$(BUNDLE_VERSION)/' \

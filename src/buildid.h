@@ -21,6 +21,30 @@
 
 #define VERSION_NAME	"ZangbandTK"
 
+/*
+ * ZangbandTK's own version, which is not Angband's.
+ *
+ * Zangband's last release was 2.7.5-pre1 in 2005, and this line continues from
+ * there rather than from the Angband 4.2.6 the code is built on.  Showing 4.2.6
+ * would claim to be the twenty-somethingth release of a game we are not.
+ *
+ * Deliberately not taken from BUILD_ID.  Both build systems set that from
+ * `git describe`, which here produces "angband-base-52-g7d0df8b19" -- a useful
+ * description of a source tree and no kind of version number, and it was what
+ * the title screen had been displaying.
+ *
+ * Must agree with VERSION in Makefile.src, which is what reaches Info.plist and
+ * so the About panel.
+ */
+#define VERSION_STRING	"3.0.0"
+
+/*
+ * The Angband release this is built on.  Shown alongside our own version so it
+ * is clear both what we are and what we came from.  Must agree with
+ * BASE_VERSION in Makefile.src.
+ */
+#define BASE_VERSION_STRING	"4.2.6"
+
 extern const char *buildid;
 extern const char *buildver;
 extern const char *copyright;

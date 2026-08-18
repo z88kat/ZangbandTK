@@ -495,15 +495,19 @@ wild:cache-blocks:81
 # living country is not. Monsters are bolder after dark.
 #
 # Zangband's figures were 32786 and 20000, and these are half of them -- twice
-# the density -- for a reason that is about our implementation rather than about
-# taste. Zangband rolled monsters into each block as the block came into
-# existence, and a walking player brought new blocks into existence constantly.
-# Our surface is one window that persists for a long walk and is re-rolled only
-# when it scrolls, so at Zangband's odds a player clears the six or so monsters
-# in view and then crosses a dead world until the window moves. Same odds, much
-# deader country. Halving them restores the encounter rate without touching the
-# thing the odds are actually for, which is making fertile land busier than
-# barren land.
+# the density -- for a reason about our implementation rather than about taste.
+# Our surface is one window that persists for a long walk and re-rolls only when
+# it scrolls, where Zangband rolled monsters into each block as the block came
+# into existence and a walking player made new blocks constantly. Same odds per
+# grid, much deader country.
+#
+# Measured, so the number is understood rather than guessed: about 15 monsters
+# over the 20,736 grids of the live window -- one per 1,400 grids, against a
+# sight radius covering about 1,250. So roughly one in view at a time, half of
+# them asleep. That is sparse on purpose. Open country should be emptier than a
+# dungeon, and a wilderness you cross without meeting anything is a wilderness.
+#
+# Lower these if it wants to be busier; 6000/4000 puts about three in view.
 wild:monster-rarity-day:16000
 wild:monster-rarity-night:10000
 

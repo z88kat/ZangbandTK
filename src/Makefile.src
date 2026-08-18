@@ -5,9 +5,20 @@
 # across a range of different makefiles, to cut down on maintenance.
 #
 
+# NAME is the upstream name and still resolves file names on disk -- the plist
+# template, the icon.  DISPLAY_NAME in Makefile.osx is what the player sees.
 NAME = Angband
-VERSION = 4.2.6
-COPYRIGHT = (c) 1995-2026 Angband contributors
+
+# ZangbandTK's own version.  Continues from Zangband 2.7.5-pre1 rather than from
+# the Angband release we are built on; see BASE_VERSION and src/buildid.h.  Must
+# agree with VERSION_STRING in buildid.h.
+VERSION = 3.0.0
+
+# The Angband release this is built on, shown in the About panel so that it is
+# clear what we are and what we came from.
+BASE_VERSION = 4.2.6
+
+COPYRIGHT = ZangbandTK $(VERSION), based on Angband $(BASE_VERSION). (c) 1987-2026 Angband contributors, (c) 1997-2005 Zangband DevTeam, (c) 2026 ZangbandTK contributors
 PROGNAME = angband
 
 HEADERS = \

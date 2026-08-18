@@ -19,20 +19,12 @@
 #include "buildid.h"
 
 /*
- * Allow the build system to generate version.h (and define
- * the HAVE_VERSION_H preprocessor macro) or get the version via the BUILD_ID
- * preprocessor macro.  If neither is available, use a sensible default.
+ * VERSION_STRING is ours, and comes from buildid.h.  Upstream took it from a
+ * generated version.h or from the BUILD_ID macro, both of which resolve to a
+ * `git describe` of the source tree; see buildid.h for why that is not what a
+ * player should be shown.  Both build systems still define BUILD_ID and nothing
+ * now reads it.
  */
-#ifdef HAVE_VERSION_H
-#include "version.h"
-#elif defined(BUILD_ID)
-#define STR(x) #x
-#define XSTR(x) STR(x)
-#define VERSION_STRING XSTR(BUILD_ID)
-#endif
-#ifndef VERSION_STRING
-#define VERSION_STRING "4.2.6"
-#endif
 
 const char *buildid = VERSION_NAME " " VERSION_STRING;
 const char *buildver = VERSION_STRING;
@@ -45,9 +37,10 @@ const char *copyright =
 	"Copyright (c) 1997-2005 Zangband DevTeam.\n"
 	"Copyright (c) 2026 ZangbandTK contributors.\n"
 	"\n"
-	"ZangbandTK is a variant of Angband, rebuilding the spirit of Zangband\n"
-	"on a modern base.  It incorporates material from Zangband, which is\n"
-	"available under the Angband licence only.\n"
+	"ZangbandTK " VERSION_STRING " is a variant of Angband " BASE_VERSION_STRING ",\n"
+	"rebuilding the spirit of Zangband on a modern base.  It incorporates\n"
+	"material from Zangband, which is available under the Angband licence\n"
+	"only.\n"
 	"\n"
 	"This work is free software; you can redistribute it and/or modify it\n"
 	"under the terms of either:\n"

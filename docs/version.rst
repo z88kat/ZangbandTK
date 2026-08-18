@@ -2,6 +2,23 @@
 Version Information
 ===================
 
+ZangbandTK
+==========
+
+**ZangbandTK 3.0.0**, built on **Angband 4.2.6**.
+
+The version continues from Zangband, whose last release was 2.7.5-pre1 in 2005,
+rather than from the Angband release the code sits on — calling ourselves 4.2.6
+would claim to be the twenty-somethingth release of a game we are not.
+
+Website: https://zangbandtk.com/
+
+The rest of this chapter is Angband's own history, kept because it is ours too:
+everything below the fork is what ZangbandTK is built out of.
+
+Angband
+=======
+
 Angband has been maintained and developed by a succession of volunteers since
 it was written in the early 1990s. The current maintainer is backwardsEric.
 
