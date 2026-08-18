@@ -114,9 +114,10 @@ a dungeon level.
 
 What the game keeps live around you is a **window** onto the world: nine blocks
 by nine, or 144 grids square. This is not a boundary you can see or reach. When
-you come within a block's width of the window's edge, the game quietly rebuilds
-it centred further along, and you carry on walking. Your position in the world
-is what the game tracks; where you stand in the window is worked out from it.
+you come within sight of the window's edge, the game quietly rebuilds it centred
+further along, and you carry on walking — you should not be able to tell it has
+happened. Your position in the world is what the game tracks; where you stand in
+the window is worked out from it, so scrolling cannot move you.
 
 The one edge you can reach is the edge of the world itself. It is not walled.
 The land runs out into open sea some way before it, so what you find at the end

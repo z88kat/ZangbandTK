@@ -682,6 +682,55 @@ static int test_the_map_survives_a_scroll(void *state) {
 }
 
 /*
+ * Scrolling the window does not move the player.
+ *
+ * The fault this defends against was reported from play: walk west out of town,
+ * the map jumps, a strip of country you have never seen appears, and the town is
+ * suddenly nowhere to be found. The cause was sanitize_player_loc(), which asks
+ * square_isarrivable() -- and that wants FLOOR or stairs. Trees and water are
+ * passable and are not floor, so a player standing among trees when the window
+ * scrolled counted as having arrived somewhere illegal and was flung to a random
+ * grid anywhere in the window. In a world this wooded, most of the time.
+ */
+static int test_scrolling_does_not_move_the_player(void *state) {
+	struct loc was, probe = loc(-1, -1), scan;
+
+	/* Find somewhere passable that is deliberately not floor: a tree. */
+	for (scan.y = 1; scan.y < cave->height - 1 && probe.x < 0; scan.y++)
+		for (scan.x = 1; scan.x < cave->width - 1; scan.x++) {
+			if (square_feat(cave, scan)->fidx != FEAT_TREE) continue;
+			if (square_monster(cave, scan)) continue;
+			probe = scan;
+			break;
+		}
+	require(probe.x >= 0);
+	require(!square_isfloor(cave, probe));
+	require(square_ispassable(cave, probe));
+
+	/* Stand there, and note where in the world that is. */
+	monster_swap(player->grid, probe);
+	player_handle_post_move(player, false, true);
+	was = player->wild_grid;
+
+	/*
+	 * Scroll the window through the real path, not a hand-rolled imitation of
+	 * it -- the fault was in which helper prepare_next_level() reached for, and
+	 * a test that called the right one itself would not have caught it.
+	 */
+	player->upkeep->generate_level = true;
+	player->upkeep->scroll_world = true;
+	prepare_next_level(player);
+	player->upkeep->generate_level = false;
+	player->upkeep->scroll_world = false;
+
+	/* Still in the same place in the world. */
+	eq(player->wild_grid.x, was.x);
+	eq(player->wild_grid.y, was.y);
+
+	ok;
+}
+
+/*
  * The world survives a save and a load.
  *
  * The world map is not written to the savefile -- it regenerates from the seed
@@ -754,6 +803,7 @@ struct test tests[] = {
 	{ "an-untouched-unique-is-not-remembered", test_an_untouched_unique_is_not_remembered },
 	{ "displacement-keeps-the-world-position", test_displacement_keeps_the_world_position },
 	{ "the-map-survives-a-scroll", test_the_map_survives_a_scroll },
+	{ "scrolling-does-not-move-the-player", test_scrolling_does_not_move_the_player },
 	{ "world-position-survives-a-save", test_world_position_survives_a_save },
 	{ NULL, NULL }
 };

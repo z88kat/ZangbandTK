@@ -157,6 +157,7 @@ int wild_view_blocks(void);
 struct chunk *wild_surface(struct wilderness *w, struct player *p,
 						   struct loc centre, struct loc *offset);
 bool wild_is_surface(const struct chunk *c);
+void wild_settle_player(struct chunk *c, struct player *p);
 void wild_carry_knowledge(struct chunk *from, struct loc from_offset,
 						  struct chunk *to, struct loc to_offset);
 bool wild_needs_recentre(struct player *p);

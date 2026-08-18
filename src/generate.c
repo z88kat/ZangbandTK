@@ -1469,7 +1469,7 @@ void prepare_next_level(struct player *p)
 		/* Place the player at their world position within the window. */
 		p->wild_offset = offset;
 		p->grid = loc(p->wild_grid.x - offset.x, p->wild_grid.y - offset.y);
-		sanitize_player_loc(cave, p);
+		wild_settle_player(cave, p);
 		wild_track_move(p, p->grid);
 		player_place(cave, p, p->grid);
 

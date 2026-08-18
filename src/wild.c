@@ -1898,6 +1898,53 @@ void wild_carry_knowledge(struct chunk *from, struct loc from_offset,
 }
 
 /**
+ * Set the player down where they already were.
+ *
+ * Scrolling the window is not arriving anywhere.  The player is standing where
+ * they were standing a moment ago, the terrain under them is generated from the
+ * world seed and so is identical, and the only thing that has changed is which
+ * part of the world the live surface covers.
+ *
+ * This exists because sanitize_player_loc() is the wrong tool for that job and
+ * was being used for it.  It asks square_isarrivable(), which wants FLOOR or
+ * stairs -- and trees and water are passable but are not floor.  So a player
+ * who happened to be standing among trees when the window scrolled was treated
+ * as having arrived somewhere illegal and flung to a random grid anywhere in
+ * the window: the map jumped, a strip of country they had never seen appeared,
+ * and the town was suddenly nowhere to be found.  In a world this wooded that
+ * is most of the time.
+ *
+ * The only case that genuinely needs handling is a grid that cannot be stood on
+ * at all, and the answer to that is the nearest one that can -- not a random
+ * one a hundred grids away.
+ */
+void wild_settle_player(struct chunk *c, struct player *p)
+{
+	int radius;
+
+	if (square_in_bounds_fully(c, p->grid) && square_ispassable(c, p->grid))
+		return;
+
+	for (radius = 1; radius < MAX(c->width, c->height); radius++) {
+		int dx, dy;
+
+		for (dy = -radius; dy <= radius; dy++)
+			for (dx = -radius; dx <= radius; dx++) {
+				struct loc grid = loc(p->grid.x + dx, p->grid.y + dy);
+
+				/* Only the ring at this radius; the inside has been tried. */
+				if (ABS(dx) != radius && ABS(dy) != radius) continue;
+				if (!square_in_bounds_fully(c, grid)) continue;
+				if (!square_isempty(c, grid)) continue;
+				if (square_isdamaging(c, grid)) continue;
+
+				p->grid = grid;
+				return;
+			}
+	}
+}
+
+/**
  * Is this chunk the wilderness surface rather than a level?
  */
 bool wild_is_surface(const struct chunk *c)
