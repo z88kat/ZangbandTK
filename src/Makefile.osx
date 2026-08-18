@@ -156,7 +156,12 @@ APPRES = $(APPCONT)/Resources
 # the subdirectories of lib/tiles and rebuild.
 PLIST = cocoa/$(NAME)-Cocoa.xml
 
-ICONFILES = cocoa/$(NAME)_Icons.icns cocoa/Save.icns cocoa/Edit.icns cocoa/Data.icns
+# The application icon is named for DISPLAY_NAME, not NAME, because the plist's
+# CFBundleIconFile is filled in from DISPLAY_NAME -- see the sed in install
+# below.  Naming it from NAME meant the plist asked for ZangbandTK_Icons and the
+# file installed was Angband_Icons, so the application had no icon at all.  The
+# document icons keep their upstream names; nothing references them by ours.
+ICONFILES = cocoa/$(DISPLAY_NAME)_Icons.icns cocoa/Save.icns cocoa/Edit.icns cocoa/Data.icns
 
 LIBFILES = \
   ../lib/gamedata/*.txt \
