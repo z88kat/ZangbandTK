@@ -32,11 +32,15 @@ function cp_unix2dos {
 mkdir -p $DIR
 cd $DIR
 
-mkdir docs
-mkdir docs/_sources
-mkdir docs/_sources/hacking
-mkdir docs/_static
-mkdir docs/hacking
+# Mirror whatever directory structure the built manual actually has, rather
+# than listing it here.  The theme decides that structure and changes it when
+# the theme changes: the current one keeps its assets in _static/styles,
+# _static/scripts, _static/vendor and _sphinx_design_static, none of which the
+# fixed list that used to be here knew about, so packaging stopped at the first
+# copy into a directory that did not exist.
+(cd ../docs/_build/html && find . -type d -print) | while read d ; do
+	mkdir -p "docs/$d"
+done
 mkdir lib
 mkdir lib/gamedata
 mkdir lib/customize
@@ -67,6 +71,11 @@ cp ../*.dll .
 
 cp_unix2dos ../changes.txt changes.txt
 cp_unix2dos ../src/borg/borg.txt lib/user/borg.txt
+
+# Somebody who unzips this meets SmartScreen before they meet the game, and the
+# wording it uses does not distinguish "we do not know who signed this" from
+# "we found something wrong with it".  Say which it is, on the way past.
+cp_unix2dos ../src/win/zip-readme.txt README.txt
 
 # Assumes that all the converted files in docs have names that don't contain
 # spaces or other characters that the shell uses as field separators.
