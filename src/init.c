@@ -604,6 +604,8 @@ static enum parser_error parse_constants_wild(struct parser *p) {
 		z->wild_lakes = value;
 	} else if (streq(label, "gate-turns")) {
 		z->wild_gate_turns = value;
+	} else if (streq(label, "towns")) {
+		z->wild_towns = value;
 	} else {
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 	}
@@ -1200,6 +1202,8 @@ static errr finish_parse_constants(struct parser *p) {
 		z_info->wild_lakes = 4;
 	if (!z_info->wild_gate_turns)
 		z_info->wild_gate_turns = 100;
+	if (!z_info->wild_towns)
+		z_info->wild_towns = 12;
 	if (check_critical_levels(z_info->m_crit_level_head)) {
 		plog("The cutoffs for melee criticals in constants.txt are "
 			"not strictly increasing.");

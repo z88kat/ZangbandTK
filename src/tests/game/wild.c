@@ -325,8 +325,8 @@ static int test_the_doorstep_is_survivable(void *state) {
 	int reach = 6;
 	int sum = 0, count = 0, x, y;
 
-	for (y = wild->town_block.y - reach; y <= wild->town_block.y + reach; y++)
-		for (x = wild->town_block.x - reach; x <= wild->town_block.x + reach; x++) {
+	for (y = wild->towns[0].block.y - reach; y <= wild->towns[0].block.y + reach; y++)
+		for (x = wild->towns[0].block.x - reach; x <= wild->towns[0].block.x + reach; x++) {
 			if (!wild_in_bounds(wild, x, y)) continue;
 			sum += wild_danger(wild, x, y);
 			count++;
@@ -740,30 +740,30 @@ static int test_scrolling_does_not_move_the_player(void *state) {
  * plainly out in the fields, and silenced the monsters over all of it.
  */
 static int test_reserved_land_is_not_the_town(void *state) {
-	int size = z_info->wild_block_size;
-	struct loc org = wild_town_origin(wild);
-	int x0 = org.x / size, x1 = (org.x + z_info->town_wid - 1) / size;
-	int y0 = org.y / size, y1 = (org.y + z_info->town_hgt - 1) / size;
 	int x, y, town = 0, reserved = 0;
 
 	for (y = 0; y < wild->blocks; y++)
 		for (x = 0; x < wild->blocks; x++) {
-			bool in = wild_in_town(wild, x, y);
+			int idx = wild_town_at(wild, x, y);
 
-			if (in) town++;
+			if (idx >= 0) town++;
 			if (wild_block_at(wild, x, y)->place) reserved++;
 
-			/* The town is exactly the blocks its rectangle touches. */
-			eq(in, (x >= x0 && x <= x1 && y >= y0 && y <= y1));
-
-			/* And only those draw as a town, or fall silent. */
-			if (!in && wild_block_at(wild, x, y)->place) {
+			/* Only a block a town actually stands on draws as a town... */
+			if (idx < 0 && wild_block_at(wild, x, y)->place) {
 				require(wild_block_feat(wild, x, y) != FEAT_PERM);
+
+				/* ...or falls silent. */
 				require(wild_danger(wild, x, y) > 0);
 			}
 		}
 
 	require(town > 0);
+
+	/*
+	 * Every town reserves a block of margin on each side, so the land spoken
+	 * for is always larger than the towns standing on it.
+	 */
 	require(reserved > town);
 
 	ok;
@@ -791,8 +791,8 @@ static int test_world_position_survives_a_save(void *state) {
 
 	require(savefile_save("Test-wild"));
 
-	town_x = wild->town_block.x;
-	town_y = wild->town_block.y;
+	town_x = wild->towns[0].block.x;
+	town_y = wild->towns[0].block.y;
 
 	play_again = true;
 	wipe_mon_list(cave, player);
@@ -811,8 +811,8 @@ static int test_world_position_survives_a_save(void *state) {
 
 	/* The world came back the same, rather than being generated afresh. */
 	notnull(wild);
-	eq(wild->town_block.x, town_x);
-	eq(wild->town_block.y, town_y);
+	eq(wild->towns[0].block.x, town_x);
+	eq(wild->towns[0].block.y, town_y);
 
 	file_delete("Test-wild");
 
@@ -874,6 +874,48 @@ static int test_the_world_map_remembers_travel(void *state) {
 
 
 
+/**
+ * The town on the ground holds exactly the trades the world says it holds.
+ *
+ * struct wild_town::stores is only a promise until the generator keeps it, and
+ * the two halves are written in different files.  This is the test that ties
+ * them together: every shop door standing in the starting village is one the
+ * village was given, and every trade it was given has a door.
+ */
+static int test_the_town_holds_the_trades_it_was_given(void *state) {
+	struct loc org = loc(wild_town_origin(wild).x - player->wild_offset.x,
+						 wild_town_origin(wild).y - player->wild_offset.y);
+	uint16_t promised = wild->towns[0].stores, found = 0;
+	struct loc grid;
+	int n;
+
+	for (grid.y = org.y; grid.y < org.y + z_info->town_hgt; grid.y++)
+		for (grid.x = org.x; grid.x < org.x + z_info->town_wid; grid.x++) {
+			int shop;
+
+			if (!square_in_bounds_fully(cave, grid)) continue;
+
+			shop = square_shopnum(cave, grid);
+			if (shop >= 0 && shop < 16) found |= 1u << shop;
+		}
+
+	require(promised != 0);
+	require(found == promised);
+
+	/* And the starting village is the one that is fixed rather than drawn. */
+	require(promised & (1u << WILD_STORE_GENERAL));
+	require(promised & (1u << WILD_STORE_BOOK));
+	require(promised & (1u << WILD_STORE_ALCHEMY));
+	require(promised & (1u << WILD_STORE_HOME));
+
+	/* Nothing it was not given: no armoury, no weaponsmith, no black market. */
+	for (n = 0; n < 16; n++)
+		if (!(promised & (1u << n)))
+			require(!(found & (1u << n)));
+
+	ok;
+}
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -883,6 +925,7 @@ struct test tests[] = {
 	{ "the-surface-is-bounded", test_the_surface_is_bounded },
 	{ "only-the-town-is-known", test_only_the_town_is_known },
 	{ "the-town-has-people", test_the_town_has_people },
+	{ "the-town-holds-the-trades-it-was-given", test_the_town_holds_the_trades_it_was_given },
 	{ "the-doorstep-is-survivable", test_the_doorstep_is_survivable },
 	{ "the-wilderness-is-inhabited", test_the_wilderness_is_inhabited },
 	{ "what-you-drop-is-remembered", test_what_you_drop_is_remembered },

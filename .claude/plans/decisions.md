@@ -620,6 +620,43 @@ descriptions already do better. Detail in WLD-16c.
 
 ## Open
 
+**DEC-29 — The starting village is the poorest place in the world, and that is the
+scale everything else is read against.**
+
+WLD-11a asks that towns differ in which stores they hold; WLD-12 asks that the
+starting town be fixed rather than drawn. Both are satisfiable at once only if
+the fixed set is a *small* one, and it took a survey of forty generated worlds to
+see why.
+
+*What the measurement showed.* With the starting village provisioned at six of
+the eight shops, the ladder above it had nowhere to go. Making a town richer than
+home meant seven shops, and a city eight — and with only eight shops in the game,
+seven-of-eight and eight-of-eight leave at most one choice each. Across forty
+worlds every single town held the identical seven, and every city the identical
+eight. The size bands were real; the variation WLD-11a asks for was not there at
+all.
+
+*The decision.* The starting village holds four: general store, alchemist,
+bookseller, home. That is the playability floor and nothing above it — food and
+light, cure light wounds, somewhere to store a pack, and a spellbook, because no
+class begins with one (a mage starts with a rapier and a torch). The armoury and
+the weaponsmith move out of the starting village and become the first reason to
+travel.
+
+That buys room for a ladder with slack in it: village three or four trades, town
+five or six, city six or seven, great city seven or eight, with the count inside
+each band drawn from the block's own seed and the choice of trades scored against
+population and law. The same forty-world survey then showed four distinct shop
+sets among villages, three among towns and four among cities, with the black
+market in about two great cities in five.
+
+*The cost, recorded honestly.* A character can no longer buy armour or a better
+weapon before the first dive. That is a real increase in early difficulty and it
+was chosen, not stumbled into: it is what makes the wilderness a place you have a
+reason to cross. If it plays badly, `WILD_VILLAGE_STORES` in [wild.c](../../src/wild.c)
+is the one line to change.
+
+
 Nothing is currently blocked. All questions raised during Phase 1 planning are resolved or
 explicitly scheduled below.
 

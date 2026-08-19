@@ -535,3 +535,8 @@ wild:lakes:4
 # long enough to walk through and lead a packhorse, short enough that the gate
 # is shut again by the time anything follows you home.
 wild:gate-turns:100
+
+# How many towns to place (WLD-10). Zangband's reference is 20; twelve on a
+# 129-block world leaves them a good walk apart without the map feeling empty.
+# The first is always the starting village, and is always the smallest band.
+wild:towns:12

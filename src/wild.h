@@ -116,6 +116,46 @@ struct wild_unique {
 };
 
 /**
+ * How many towns the world may hold (WLD-10).
+ */
+#define WILD_TOWNS_MAX 24
+
+/**
+ * One town.
+ *
+ * Zangband ran four size bands keyed on population -- small, town, city,
+ * castle.  Ours are the same idea: the starting town is the smallest there is,
+ * and bigger places are something to travel towards, since they hold shops the
+ * village does not (WLD-11, WLD-11a).
+ */
+/*
+ * Store indices.
+ *
+ * build_store() takes a store index and finds the terrain whose shopnum is one
+ * more than it; shopnums are handed out in f_info order, which is the order the
+ * shop features appear in list-terrain.h, which is the order the entries appear
+ * in store.txt.  Named here rather than written as bare numbers, and checked by
+ * a test rather than trusted.
+ */
+enum {
+	WILD_STORE_GENERAL = 0,
+	WILD_STORE_ARMOR,
+	WILD_STORE_WEAPON,
+	WILD_STORE_BOOK,
+	WILD_STORE_ALCHEMY,
+	WILD_STORE_MAGIC,
+	WILD_STORE_BLACK,
+	WILD_STORE_HOME
+};
+
+struct wild_town {
+	struct loc block;	/**< The block it centres on */
+	uint16_t wid, hgt;	/**< Its size, in grids */
+	uint16_t stores;	/**< Bit per store index: which ones it holds */
+	uint8_t band;		/**< 0 village, 1 town, 2 city, 3 great city */
+};
+
+/**
  * The world map.
  */
 struct wilderness {
@@ -123,11 +163,9 @@ struct wilderness {
 	int blocks;			/**< Width and height, in blocks */
 	struct wild_block *map;	/**< blocks * blocks entries, row-major */
 
-	/**
-	 * The block the starting town stands on (WLD-12).  One town for now;
-	 * WLD-10's several towns are M5's business, and will want a list here.
-	 */
-	struct loc town_block;
+	/** The towns, the first of which is where the player starts (WLD-12). */
+	struct wild_town towns[WILD_TOWNS_MAX];
+	int town_count;
 
 	/** What the player has left lying about, most recent first (WLD-04). */
 	struct wild_relic *relics;
@@ -176,7 +214,10 @@ void wild_restore(struct wilderness *w, struct player *p, struct chunk *c,
 int wild_relic_count(const struct wilderness *w);
 int wild_unique_count(const struct wilderness *w);
 
+int wild_town_count(const struct wilderness *w);
+struct loc wild_town_origin_of(const struct wilderness *w, int town);
 struct loc wild_town_origin(const struct wilderness *w);
+int wild_town_at(struct wilderness *w, int bx, int by);
 struct loc wild_town_start(struct wilderness *w, struct player *p);
 void wild_town_known(struct wilderness *w, struct player *p, struct chunk *c,
 					 struct loc offset);

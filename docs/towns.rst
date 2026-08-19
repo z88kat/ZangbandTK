@@ -3,12 +3,96 @@ Towns and Services
 
 .. note::
 
-   **Not yet written.** This chapter is filled in by milestone **M5**
-   (see the Phase 2 development plan). Per DEC-17 a milestone is not complete
+   **Partly written.** The places themselves are in (WLD-10, WLD-11 size bands,
+   WLD-11a, WLD-12); the inhabitant types and the Zangband buildings are filled
+   in by the rest of milestone **M5**. Per DEC-17 a milestone is not complete
    until its manual chapter is.
 
-   Requirements this chapter must cover: WLD-10 to WLD-18, WLD-16a to WLD-16d
+   Requirements still to cover here: WLD-11 inhabitant types, WLD-14 to WLD-18,
+   WLD-16a to WLD-16d.
 
-The world holds several towns, which differ in size, inhabitants and the
-buildings they support. This chapter covers what you will find in them and what
-each service does.
+The world holds a dozen places, not one. They differ in how much ground they
+cover, how many trades they keep, and which trades those are, so that walking to
+a town you have not seen before is worth the road.
+
+Where places stand
+------------------
+
+A town needs settled country. The world map carries a population and a law value
+for every block of it, and places are sited where both run high and the ground is
+dry -- never in water, never on a mountain, and never within twelve blocks of
+another town. Lawless country is where the ruins and the monsters are, and it is
+mostly empty of towns for that reason.
+
+The size bands
+--------------
+
+Four sizes, keyed on the population of the country around them:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 18 16 66
+
+   * - Band
+     - Size
+     - What it is
+   * - Village
+     - 66 x 22
+     - A hamlet. Three or four trades, no more.
+   * - Town
+     - 88 x 26
+     - Five or six trades, and always more than the village you started in.
+   * - City
+     - 110 x 30
+     - Six or seven. The magic shop is usually here.
+   * - Great city
+     - 132 x 34
+     - Seven or eight. The black market, when there is one, is here.
+
+The village you begin in is the smallest place in the world, deliberately. It is
+the reference the others are larger than.
+
+Which shops a place keeps
+-------------------------
+
+Not every place carries all eight shops. How many it keeps follows from its size
+band; *which* ones it keeps follows from the country around it:
+
+- the **armoury** and the **weaponsmith** follow people and order;
+- the **bookseller** gathers where it is safe to gather, so lawless country
+  sometimes has none at all;
+- the **alchemist** follows population;
+- the **magic shop** wants both people and law, which is why it is a city trade;
+- the **black market** keeps out of the light, and appears where law is thin and
+  people are many -- which is rare, and worth the walk.
+
+Two towns of the same size need not hold the same shops. The choice is made once,
+when the world is generated, from the world seed and the town's own position, so
+a given world always has the same places in it however you reach them.
+
+Your home village
+-----------------
+
+The village you start in is the one exception (WLD-12). Its shops are fixed
+rather than drawn: a **general store**, an **alchemist**, a **bookseller** and
+your **home**. That is what nobody can begin without -- food and light, a potion
+of cure light wounds, somewhere to leave what will not fit in your pack, and a
+spellbook, since no class starts with one.
+
+It has no armoury and no weaponsmith. Those are in the next town along, and
+finding them is the first thing the world asks of you.
+
+Walls and gates
+---------------
+
+Every place is walled, with gates no more than two grids wide. A gate has a door
+on each grid; you open it to pass through, and it swings shut behind you after a
+while. Monsters do not walk in through an open gate as a matter of course, but a
+gate you leave standing open is a gate.
+
+Finding your way
+----------------
+
+Press ``M`` on the surface for the world map. It shows only the country you have
+travelled near, and colours each place by its band -- village, town, city, great
+city -- so you can tell from across the map which way to walk for a magic shop.

@@ -2495,11 +2495,11 @@ static void build_ruin(struct chunk *c, struct loc xroads, struct loc lot, int l
 					/* Avoid placing rubble next to a store */
 					(x > lot_west || x == 2 ||
 					!square_isperm(c, loc(x-1, y))) &&
-					(x < lot_east || x == z_info->town_wid-2 ||
+					(x < lot_east || x == c->width - 2 ||
 					!square_isperm(c, loc(x+1, y))) &&
 					(y > lot_north || y == 2 ||
 					!square_isperm(c, loc(x, y-1))) &&
-					(y < lot_south || y == z_info-> town_hgt-2 ||
+					(y < lot_south || y == c->height - 2 ||
 					!square_isperm(c, loc(x, y+1)))) {
 				square_set_feat(c, loc(x,y), FEAT_PASS_RUBBLE);
 			}
@@ -2512,7 +2512,7 @@ static void build_ruin(struct chunk *c, struct loc xroads, struct loc lot, int l
  * \param c is the current chunk
  * \param p is the player
  */
-static void town_gen_layout(struct chunk *c, struct player *p)
+static void town_gen_layout(struct chunk *c, struct player *p, uint16_t shops)
 {
 	int n, x, y;
 	struct loc grid, pgrid, xroads;
@@ -2525,7 +2525,7 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 	bool success = false;
 
 	int max_store_y = 0;
-	int min_store_x = z_info->town_wid;
+	int min_store_x = c->width;
 	int max_store_x = 0;
 
 	/* divide the town into lots */
@@ -2558,13 +2558,12 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 		}
 
 		/* Stairs along north wall */
-		pgrid.x = rand_spread(z_info->town_wid / 2,
-			z_info->town_wid / 6);
+		pgrid.x = rand_spread(c->width / 2, c->width / 6);
 		pgrid.y = 1;
-		while (!square_isfloor(c, pgrid) && (pgrid.y < z_info->town_hgt / 4)) {
+		while (!square_isfloor(c, pgrid) && (pgrid.y < c->height / 4)) {
 			pgrid.y++;
 		}
-		if (pgrid.y >= z_info->town_hgt / 4) continue;
+		if (pgrid.y >= c->height / 4) continue;
 
 
 		/* no lava next to stairs */
@@ -2577,21 +2576,24 @@ static void town_gen_layout(struct chunk *c, struct player *p)
 		}
 
 		xroads.x = pgrid.x;
-		xroads.y = z_info->town_hgt / 2
-				- randint0(z_info->town_hgt / 4)
-				+ randint0(z_info->town_hgt / 8);
+		xroads.y = c->height / 2
+				- randint0(c->height / 4)
+				+ randint0(c->height / 8);
 
 
 		int lot_min_x = -1 * xroads.x / lot_wid;
-		int lot_max_x = (z_info->town_wid - xroads.x) / lot_wid;
+		int lot_max_x = (c->width - xroads.x) / lot_wid;
 		int lot_min_y = -1 * xroads.y / lot_hgt;
-		int lot_max_y = (z_info->town_hgt - xroads.y) / lot_hgt;
+		int lot_max_y = (c->height - xroads.y) / lot_hgt;
 
 		/* place stores along the streets */
 		num_attempts = 0;
-		for (n = 0; n < z_info->store_max; n++) {
+		for (n = 0; n < (int) z_info->store_max; n++) {
 			struct loc store_lot;
 			bool found_spot = false;
+
+			/* Only the shops this town holds (WLD-11a). */
+			if (n < 16 && !(shops & (1u << n))) continue;
 			while (!found_spot && num_attempts < max_attempts) {
 				num_attempts++;
 				if (randint0(2)) {
@@ -2664,9 +2666,10 @@ static void town_gen_layout(struct chunk *c, struct player *p)
  * \param p is the player, needed only by the layout code's player placement
  * \param seed fixes the layout; the same seed always gives the same town
  */
-struct chunk *town_gen_wild(struct player *p, uint32_t seed)
+struct chunk *town_gen_wild(struct player *p, uint32_t seed,
+	int wid, int hgt, uint16_t shops)
 {
-	struct chunk *c = cave_new(z_info->town_hgt, z_info->town_wid);
+	struct chunk *c = cave_new(hgt, wid);
 	struct loc saved_grid = p->grid;
 	bool saved_quick = Rand_quick;
 	uint32_t saved_value = Rand_value;
@@ -2688,7 +2691,7 @@ struct chunk *town_gen_wild(struct player *p, uint32_t seed)
 	Rand_quick = true;
 	Rand_value = seed ? seed : 1;
 
-	town_gen_layout(c, p);
+	town_gen_layout(c, p, shops);
 
 	Rand_quick = saved_quick;
 	Rand_value = saved_value;
@@ -2730,8 +2733,8 @@ struct chunk *town_gen(struct player *p, int min_height, int min_width,
 	if (!c_old) {
 		c_new->depth = p->depth;
 
-		/* Build stuff */
-		town_gen_layout(c_new, p);
+		/* Build stuff -- vanilla's town holds every shop there is. */
+		town_gen_layout(c_new, p, 0xffff);
 	} else {
 		/* Copy from the chunk list, remove the old one */
 		c_new->depth = c_old->depth;

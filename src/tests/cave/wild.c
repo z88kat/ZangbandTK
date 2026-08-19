@@ -13,6 +13,16 @@
 #include "init.h"
 #include "wild.h"
 
+/** How many trades a set of store bits names. */
+static int trades_in(uint16_t stores) {
+	int n, count = 0;
+
+	for (n = 0; n < 16; n++)
+		if (stores & (1u << n)) count++;
+
+	return count;
+}
+
 int setup_tests(void **state) {
 	/*
 	 * Unit tests do not load game data, so supply the constants the
@@ -26,6 +36,8 @@ int setup_tests(void **state) {
 	z_info->wild_cache_blocks = 81;
 	z_info->wild_rivers = 4;
 	z_info->wild_lakes = 4;
+	z_info->wild_towns = 12;
+	z_info->store_max = 8;
 
 	*state = NULL;
 	return 0;
@@ -340,6 +352,99 @@ static int test_towns_keep_their_feet_dry(void *state) {
 	ok;
 }
 
+
+/**
+ * Larger places keep more trades, and the starting village keeps fewest.
+ *
+ * The village the character begins in is the reference the world is built
+ * against: it is the smallest band, and it holds only what nobody can start
+ * without.  Everything else is a reason to travel.
+ */
+static int test_bigger_places_keep_more_trades(void *state) {
+	int seed;
+
+	for (seed = 1; seed <= 20; seed++) {
+		struct wilderness *w = wild_new(129, seed * 7717 + 3);
+		int i, start_trades;
+
+		wild_generate(w);
+		require(w->town_count > 0);
+
+		/* The character always starts in a village. */
+		require(w->towns[0].band == 0);
+		start_trades = trades_in(w->towns[0].stores);
+
+		for (i = 0; i < w->town_count; i++) {
+			struct wild_town *town = &w->towns[i];
+			int trades = trades_in(town->stores);
+
+			/* A band's size and its trades rise together. */
+			require(town->band >= 0 && town->band <= 3);
+			if (i > 0 && town->band > 0)
+				require(trades > start_trades);
+			require(trades <= (int) z_info->store_max);
+
+			/* Larger bands stand on more ground. */
+			if (town->band > w->towns[0].band) {
+				require(town->wid > w->towns[0].wid);
+				require(town->hgt > w->towns[0].hgt);
+			}
+
+			/* Nowhere is without somewhere to buy food or leave a pack. */
+			require(town->stores & (1u << WILD_STORE_GENERAL));
+			require(town->stores & (1u << WILD_STORE_HOME));
+		}
+
+		/*
+		 * No class begins with a spellbook, so the starting village must sell
+		 * one -- and a potion of cure light wounds.
+		 */
+		require(w->towns[0].stores & (1u << WILD_STORE_BOOK));
+		require(w->towns[0].stores & (1u << WILD_STORE_ALCHEMY));
+
+		wild_free(w);
+	}
+
+	ok;
+}
+
+/**
+ * Two places of the same size need not keep the same trades (WLD-11a).
+ */
+static int test_trades_vary_between_places(void *state) {
+	uint16_t seen[64];
+	int seed, n = 0, distinct = 0;
+
+	for (seed = 1; seed <= 20 && n < 64; seed++) {
+		struct wilderness *w = wild_new(129, seed * 4409 + 11);
+		int i;
+
+		wild_generate(w);
+
+		/* Gather the trades of every place that is not the start. */
+		for (i = 1; i < w->town_count && n < 64; i++)
+			seen[n++] = w->towns[i].stores;
+
+		wild_free(w);
+	}
+
+	require(n > 8);
+
+	for (seed = 0; seed < n; seed++) {
+		int j;
+		bool first = true;
+
+		for (j = 0; j < seed; j++)
+			if (seen[j] == seen[seed]) first = false;
+		if (first) distinct++;
+	}
+
+	/* Not one set of shops repeated across the whole world. */
+	require(distinct > 2);
+
+	ok;
+}
+
 const char *suite_name = "cave/wild";
 struct test tests[] = {
 	{ "generation is deterministic", test_generation_is_deterministic },
@@ -352,5 +457,7 @@ struct test tests[] = {
 	{ "rivers are paths", test_rivers_are_paths },
 	{ "water stays in its blocks", test_water_stays_in_its_blocks },
 	{ "towns keep their feet dry", test_towns_keep_their_feet_dry },
+	{ "bigger places keep more trades", test_bigger_places_keep_more_trades },
+	{ "trades vary between places", test_trades_vary_between_places },
 	{ NULL, NULL }
 };

@@ -906,6 +906,20 @@ void display_map(int *cy, int *cx)
  *
  * \param origin is the top-left block of the view, and is moved by the caller.
  */
+/**
+ * How each band of place shows on the world map.
+ *
+ * Ordered as wild_town_bands is, smallest first, so a glance at the map says
+ * which way a character would walk to find a magic shop.
+ */
+static const uint8_t wild_town_band_attr[] = {
+	COLOUR_L_UMBER, COLOUR_YELLOW, COLOUR_L_GREEN, COLOUR_L_BLUE
+};
+
+static const char *wild_town_band_name[] = {
+	"village", "town", "city", "great city"
+};
+
 static void display_world_map(struct loc origin)
 {
 	int size = z_info->wild_block_size;
@@ -931,8 +945,17 @@ static void display_world_map(struct loc origin)
 			a = feat_x_attr[LIGHTING_LIT][feat];
 			c = feat_x_char[LIGHTING_LIT][feat];
 
-			/* A town is worth picking out of the country around it. */
-			if (wild_block_at(wild, bx, by)->place) a = COLOUR_L_WHITE;
+			/*
+			 * A town is worth picking out of the country around it, and how
+			 * large it is worth telling from across the map: it is what
+			 * decides whether the walk is worth making.
+			 */
+			if (wild_block_at(wild, bx, by)->place) {
+				int town = wild_town_at(wild, bx, by);
+
+				a = (town >= 0) ? wild_town_band_attr[wild->towns[town].band]
+					: COLOUR_L_WHITE;
+			}
 
 			Term_queue_char(Term, col + 1, row + 1, a, c, a, c);
 		}
@@ -949,6 +972,20 @@ static void display_world_map(struct loc origin)
 			   "Direction keys scroll, ESC exits.",
 			   player->wild_grid.x, player->wild_grid.y,
 			   wild_world_grids()), Term->hgt - 1, 1);
+
+	/* Name the colours, or they say nothing. */
+	{
+		int band, at = 1;
+
+		c_put_str(COLOUR_WHITE, "Places:", Term->hgt - 2, at);
+		at += 8;
+
+		for (band = 0; band < 4; band++) {
+			c_put_str(wild_town_band_attr[band], wild_town_band_name[band],
+					  Term->hgt - 2, at);
+			at += strlen(wild_town_band_name[band]) + 2;
+		}
+	}
 }
 
 /**

@@ -626,19 +626,156 @@ int wild_water_at(struct wilderness *w, int x, int y)
 }
 
 /**
- * How many blocks the town's footprint covers, in each direction.
+ * The size of each band of town, in grids (WLD-11).
  *
- * The town is a fixed rectangle of grids, so how many blocks it lies across
- * depends on the block size.  A block of margin is added on every side: a town
- * that runs right up to the edge of its blocks has nowhere for a road to leave
- * from, and looks wrong butted against whatever the next block turns out to be.
+ * The first is Angband's own town, and is the smallest there is: the player
+ * starts in a village, and everything else they find is bigger.  Nothing here
+ * exceeds the live surface, which is 144 grids square.
  */
-static void wild_town_extent(int *bw, int *bh)
+static const struct { uint16_t wid, hgt; } wild_town_bands[] = {
+	{  66, 22 },	/* village -- Angband's town, and where the player starts */
+	{  88, 26 },	/* town */
+	{ 110, 30 },	/* city */
+	{ 132, 34 },	/* great city */
+};
+
+#define WILD_TOWN_BANDS ((int) N_ELEMENTS(wild_town_bands))
+
+
+/**
+ * What the starting village keeps.
+ *
+ * The village is the smallest place in the world -- it is the reference the
+ * other bands are larger than -- so it holds only what a character cannot begin
+ * without: somewhere to buy food and light, somewhere to buy a potion of cure
+ * light wounds, somewhere to store what will not fit in a pack, and a
+ * bookseller.
+ *
+ * The bookseller is here for a reason worth recording: no class begins with a
+ * spellbook.  A mage starts with a rapier and a torch, so a village without one
+ * would leave every caster unable to learn a spell until they had walked to
+ * another town.
+ *
+ * What it does *not* hold -- the armoury, the weaponsmith, the magic shop, the
+ * black market -- is what makes a larger town worth the walk.
+ */
+#define WILD_VILLAGE_STORES \
+	((1u << WILD_STORE_GENERAL) | (1u << WILD_STORE_BOOK) | \
+	 (1u << WILD_STORE_ALCHEMY) | (1u << WILD_STORE_HOME))
+
+/**
+ * How many blocks a town of this size covers, in each direction.
+ *
+ * A block of margin is added on every side: a town that runs right up to the
+ * edge of its blocks has nowhere for a road to leave from, and looks wrong
+ * butted against whatever the next block turns out to be.
+ */
+static void wild_town_extent_of(const struct wild_town *town, int *bw, int *bh)
 {
 	int size = z_info->wild_block_size;
 
-	*bw = (z_info->town_wid + size - 1) / size + 2;
-	*bh = (z_info->town_hgt + size - 1) / size + 2;
+	*bw = (town->wid + size - 1) / size + 2;
+	*bh = (town->hgt + size - 1) / size + 2;
+}
+
+/**
+ * The largest footprint any town can have, for keeping clear of the map edges.
+ */
+static void wild_town_extent(int *bw, int *bh)
+{
+	struct wild_town biggest = { { 0, 0 },
+		wild_town_bands[WILD_TOWN_BANDS - 1].wid,
+		wild_town_bands[WILD_TOWN_BANDS - 1].hgt, 0, 0 };
+
+	wild_town_extent_of(&biggest, bw, bh);
+}
+
+static int wild_town_popcount(uint16_t v)
+{
+	int n = 0;
+
+	while (v) { n += v & 1; v >>= 1; }
+
+	return n;
+}
+
+/**
+ * Choose which stores a town holds (WLD-11a).
+ *
+ * Not every town has a black market, and a frontier village should not carry
+ * the same shops as a city.  How many follows from the size band; which ones
+ * follows from the land, which is WLD-15's scoring applied to 4.2's store list
+ * rather than to a building catalogue.
+ *
+ * The general store and the home are in every town: one sells food and light,
+ * the other is where the player's belongings live, and a town without either is
+ * a town nobody would stop at.
+ */
+static uint16_t wild_town_stores(struct wilderness *w, int bx, int by, int band)
+{
+	struct wild_block *block = wild_block_at(w, bx, by);
+	uint16_t held = (1u << WILD_STORE_GENERAL) | (1u << WILD_STORE_HOME);
+	int pop = block ? block->pop : 128;
+	int law = block ? block->law : 128;
+	uint32_t seed = wild_block_seed(w, bx, by);
+	int guard = 0;
+	int want;
+
+	/*
+	 * How many trades a place can keep.  Every band overlaps the next only at
+	 * its edges, so a town always out-stocks the starting village and a great
+	 * city usually out-stocks a town -- but the count is drawn from the place
+	 * itself, so two towns of the same size need not keep the same trades.
+	 */
+	switch (band) {
+		case 0:  want = 3; break;   /* hamlet */
+		case 1:  want = 5; break;   /* town */
+		case 2:  want = 6; break;   /* city */
+		default: want = 7; break;   /* great city */
+	}
+	want += (int) ((seed >> 24) & 1);
+
+	/* Weight each remaining store by what the place is like. */
+	while (guard++ < 100) {
+		int best = -1, best_score = -1, n;
+
+		for (n = 0; n < (int) z_info->store_max && n < 16; n++) {
+			int score;
+
+			if (held & (1u << n)) continue;
+
+			switch (n) {
+				/* Arms and armour follow people and order. */
+				case WILD_STORE_ARMOR:
+				case WILD_STORE_WEAPON: score = 60 + pop / 8 + law / 16; break;
+				/* Learning gathers where it is safe to gather. */
+				case WILD_STORE_BOOK:   score = 40 + law / 4; break;
+				case WILD_STORE_ALCHEMY: score = 55 + pop / 8; break;
+				case WILD_STORE_MAGIC:  score = 20 + pop / 6 + law / 8; break;
+				/* And the black market keeps out of the light. */
+				case WILD_STORE_BLACK:  score = 10 + (255 - law) / 4 + pop / 8; break;
+				default:           score = 30; break;
+			}
+
+			/*
+			 * Trades that score alike -- the armoury and the weaponsmith --
+			 * would otherwise always fall the same way round, and every hamlet
+			 * in the world would keep an armoury and no weaponsmith.  Let the
+			 * place itself break the tie.  Reproducible: the same block of the
+			 * same world always favours the same trades.
+			 */
+			score += (int) ((seed >> (n * 3)) & 7);
+
+			if (score > best_score) { best_score = score; best = n; }
+		}
+
+		if (best < 0) break;
+		held |= 1u << best;
+
+		if (wild_town_popcount(held) >= want) break;
+	}
+
+	return held;
 }
 
 /**
@@ -659,117 +796,186 @@ static void wild_town_extent(int *bw, int *bh)
  * question directly, always answers, and picks the safest doorstep the world
  * has to offer rather than the first adequate one.
  */
-/** How far beyond the town's own land its surroundings are judged, in blocks. */
 #define WILD_TOWN_REACH		3
 
 /** How far a unique may have wandered from where the player left it. */
 #define WILD_UNIQUE_WANDER	5
 
+/** No two towns closer than this, in blocks. */
+#define WILD_TOWN_APART		12
+
 /**
- * Choose where the starting town stands (WLD-12).
+ * Score a site for a town, or return a large negative if it will not do.
  *
- * Towns go where people would put them: dry, settled, orderly ground, with the
- * whole footprint on land rather than half of it in the sea.  Ties go towards
- * the middle of the world, so a new character does not begin in a corner with
- * three quarters of the map behind them.
- *
- * Zangband scattered twenty towns across the map and used a minimum separation
- * to keep them apart.  This places the one town the game currently has; the
- * scoring is written so that adding the rest (WLD-10) is a matter of looping
- * and excluding what has already been taken.
+ * The dominant term is the danger within a short walk, because that is what
+ * decides whether the doorstep is survivable.  Everything else is a tie-break
+ * between sites that are already safe to walk out of.
  */
-static void wild_place_town(struct wilderness *w)
+static int wild_town_score(struct wilderness *w, int x, int y,
+						   const struct wild_town *shape)
 {
-	int size = w->blocks;
-	int centre = size / 2;
-	bool found = false;
-	int best = 0;
-	int bw, bh, reach, x, y;
+	struct wild_block *block = wild_block_at(w, x, y);
+	int centre = w->blocks / 2;
+	int score, sum = 0, count = 0, dist, fx, fy, bw, bh, reach;
 
-	wild_town_extent(&bw, &bh);
+	if (!block) return -100000;
 
-	/* The footprint, plus a short walk beyond its edge. */
+	switch (block->terrain) {
+		case WILD_TERRAIN_GRASS: score = 120; break;
+		case WILD_TERRAIN_FOREST: score = 90; break;
+		case WILD_TERRAIN_WASTE: score = 40; break;
+		default: return -100000;	/* sea, shore, swamp, mountain */
+	}
+
+	wild_town_extent_of(shape, &bw, &bh);
 	reach = MAX(bw, bh) / 2 + WILD_TOWN_REACH;
 
-	w->town_block = loc(centre, centre);
+	for (fy = y - reach; fy <= y + reach; fy++)
+		for (fx = x - reach; fx <= x + reach; fx++) {
+			struct wild_block *f = wild_block_at(w, fx, fy);
 
-	for (y = bh; y < size - bh; y++) {
-		for (x = bw; x < size - bw; x++) {
-			struct wild_block *block = &w->map[y * size + x];
-			int score, dist, fx, fy;
-			int sum = 0, count = 0;
-			bool ok = true;
+			if (!f) continue;
 
-			switch (block->terrain) {
-				case WILD_TERRAIN_GRASS: score = 120; break;
-				case WILD_TERRAIN_FOREST: score = 90; break;
-				case WILD_TERRAIN_WASTE: score = 40; break;
-				default: continue;	/* sea, shore, swamp, mountain */
-			}
+			/* The town's own ground has to be buildable and dry. */
+			if (ABS(fx - x) <= bw / 2 && ABS(fy - y) <= bh / 2 &&
+				(f->terrain == WILD_TERRAIN_OCEAN ||
+				 f->terrain == WILD_TERRAIN_MOUNTAIN ||
+				 (f->info & WILD_INFO_WATER) || f->place))
+				return -100000;
 
-			for (fy = y - reach; fy <= y + reach && ok; fy++)
-				for (fx = x - reach; fx <= x + reach && ok; fx++) {
-					struct wild_block *f = wild_block_at(w, fx, fy);
-					int d;
+			sum += wild_danger(w, fx, fy);
+			count++;
+		}
 
-					if (!f) continue;
+	/*
+	 * The mean and not the worst: over a window this size the worst block is
+	 * near the maximum almost everywhere, so it carries no signal.  What
+	 * distinguishes a good site from a bad one is whether the whole
+	 * neighbourhood is orderly, which is what the mean measures.
+	 */
+	if (count) score -= (sum / count) * 8;
 
-					/* The town's own ground has to be buildable and dry. */
-					if (ABS(fx - x) <= bw / 2 && ABS(fy - y) <= bh / 2 &&
-						(f->terrain == WILD_TERRAIN_OCEAN ||
-						 f->terrain == WILD_TERRAIN_MOUNTAIN ||
-						 (f->info & WILD_INFO_WATER))) {
-						ok = false;
-						continue;
-					}
+	score += block->pop / 4;
 
-					d = wild_danger(w, fx, fy);
-					sum += d;
-					count++;
+	/* All else equal, nearer the middle of the world. */
+	dist = MAX(ABS(x - centre), ABS(y - centre));
+	score -= dist * 2;
+
+	return score;
+}
+
+/**
+ * Mark the ground a town stands on as spoken for, and give it a road.
+ */
+static void wild_town_claim(struct wilderness *w, const struct wild_town *town)
+{
+	int bw, bh, fx, fy;
+
+	wild_town_extent_of(town, &bw, &bh);
+
+	for (fy = town->block.y - bh / 2; fy <= town->block.y + bh / 2; fy++)
+		for (fx = town->block.x - bw / 2; fx <= town->block.x + bw / 2; fx++) {
+			struct wild_block *f = wild_block_at(w, fx, fy);
+
+			if (!f) continue;
+			f->place = 1;
+			f->info |= WILD_INFO_ROAD;
+		}
+}
+
+/**
+ * Put the towns on the map (WLD-10, WLD-11, WLD-12).
+ *
+ * The village goes first and gets the best doorstep the world has, because that
+ * is where the player begins and the first hour has to be survivable.  The rest
+ * are then placed in turn, each on the best remaining site far enough from the
+ * others, and each sized by how settled its country is -- so the great cities
+ * end up where the people are, which is where you would expect to find them.
+ */
+static void wild_place_towns(struct wilderness *w)
+{
+	int size = w->blocks;
+	int bw, bh, want = z_info->wild_towns;
+	int x, y, n;
+
+	wild_town_extent(&bw, &bh);
+	w->town_count = 0;
+
+	if (want > WILD_TOWNS_MAX) want = WILD_TOWNS_MAX;
+
+	for (n = 0; n < want; n++) {
+		struct wild_town town;
+		int best = 0, band;
+		bool found = false;
+
+		memset(&town, 0, sizeof(town));
+
+		for (y = bh; y < size - bh; y++)
+			for (x = bw; x < size - bw; x++) {
+				struct wild_block *block = &w->map[y * size + x];
+				int score, i;
+				bool crowded = false;
+
+				/* Towns keep their distance from one another. */
+				for (i = 0; i < w->town_count; i++)
+					if (MAX(ABS(x - w->towns[i].block.x),
+							ABS(y - w->towns[i].block.y)) < WILD_TOWN_APART)
+						crowded = true;
+				if (crowded) continue;
+
+				/*
+				 * The village is the smallest band there is; every other town
+				 * is sized by how settled its country is.
+				 */
+				band = 0;
+				if (n > 0) {
+					if (block->pop > 200) band = 3;
+					else if (block->pop > 150) band = 2;
+					else if (block->pop > 100) band = 1;
 				}
-			if (!ok) continue;
 
-			/*
-			 * The dominant term, by a wide margin.  Everything else here is a
-			 * tie-break between sites that are already safe to walk out of.
-			 *
-			 * The mean and not the worst: over a window this size the worst
-			 * block is near the maximum almost everywhere, so it carries no
-			 * signal.  What distinguishes a good site from a bad one is
-			 * whether the whole neighbourhood is orderly, which is what the
-			 * mean measures.
-			 */
-			if (count)
-				score -= (sum / count) * 8;
+				town.wid = wild_town_bands[band].wid;
+				town.hgt = wild_town_bands[band].hgt;
 
-			score += block->pop / 4;
+				score = wild_town_score(w, x, y, &town);
+				if (score <= -100000) continue;
 
-			/* All else equal, nearer the middle of the world. */
-			dist = MAX(ABS(x - centre), ABS(y - centre));
-			score -= dist * 2;
-
-			/*
-			 * Scores are routinely negative -- the danger term is large and
-			 * subtracted -- so this tracks "have we seen any site at all"
-			 * separately rather than using a sentinel value that a real score
-			 * could fail to beat.
-			 */
-			if (!found || score > best) {
-				found = true;
-				best = score;
-				w->town_block = loc(x, y);
+				if (!found || score > best) {
+					found = true;
+					best = score;
+					w->towns[w->town_count].block = loc(x, y);
+					w->towns[w->town_count].band = band;
+					w->towns[w->town_count].wid = town.wid;
+					w->towns[w->town_count].hgt = town.hgt;
+				}
 			}
+
+		if (!found) break;
+
+		{
+			struct wild_town *placed = &w->towns[w->town_count];
+
+			placed->stores = (w->town_count == 0) ? WILD_VILLAGE_STORES
+				: wild_town_stores(w, placed->block.x, placed->block.y,
+								   placed->band);
+			wild_town_claim(w, placed);
+			w->town_count++;
 		}
 	}
 
 	/*
-	 * Nothing scored: either the world offers no buildable ground, or it is
-	 * too small for a town to fit in the first place.  Rather than leave the
-	 * town on the middle block whatever that turns out to be -- open sea, in
-	 * the case that found this -- take the driest, flattest block there is.
+	 * A world with nowhere habitable at all is possible in principle, and a
+	 * character has to start somewhere.  Put the village on the driest, flattest
+	 * block there is rather than leaving it at (0, 0), off the map's edge.
 	 */
-	if (!found) {
+	if (!w->town_count) {
 		int best_hgt = -1;
+
+		w->towns[0].block = loc(size / 2, size / 2);
+		w->towns[0].wid = wild_town_bands[0].wid;
+		w->towns[0].hgt = wild_town_bands[0].hgt;
+		w->towns[0].band = 0;
+		w->towns[0].stores = WILD_VILLAGE_STORES;
 
 		for (y = 0; y < size; y++)
 			for (x = 0; x < size; x++) {
@@ -779,40 +985,95 @@ static void wild_place_town(struct wilderness *w)
 				if (b->terrain == WILD_TERRAIN_OCEAN) continue;
 				if (b->info & WILD_INFO_WATER) continue;
 
+				/*
+				 * And nor may the ground it would stand on: this path exists
+				 * for a world with nowhere good, not for a town in a lake.
+				 */
+				{
+					int fx, fy, bw2, bh2;
+					bool wet = false;
+
+					wild_town_extent_of(&w->towns[0], &bw2, &bh2);
+					for (fy = y - bh2 / 2; fy <= y + bh2 / 2 && !wet; fy++)
+						for (fx = x - bw2 / 2; fx <= x + bw2 / 2 && !wet; fx++) {
+							struct wild_block *f = wild_block_at(w, fx, fy);
+
+							if (f && (f->info & WILD_INFO_WATER)) wet = true;
+						}
+					if (wet) continue;
+				}
+
 				score = 255 - ABS((int) b->hgt - 128);
 				if (score > best_hgt) {
 					best_hgt = score;
-					w->town_block = loc(x, y);
+					w->towns[0].block = loc(x, y);
 				}
 			}
-	}
 
-	/* Mark the footprint, and give the town a road to sit on. */
-	{
-		int fx, fy;
-
-		for (fy = w->town_block.y - bh / 2; fy <= w->town_block.y + bh / 2; fy++)
-			for (fx = w->town_block.x - bw / 2;
-				 fx <= w->town_block.x + bw / 2; fx++) {
-				struct wild_block *f = wild_block_at(w, fx, fy);
-
-				if (!f) continue;
-				f->place = 1;
-				f->info |= WILD_INFO_ROAD;
-			}
+		wild_town_claim(w, &w->towns[0]);
+		w->town_count = 1;
 	}
 }
 
 /**
- * The world grid of the town rectangle's top-left corner.
+ * The world grid of a town rectangle's top-left corner.
  */
-struct loc wild_town_origin(const struct wilderness *w)
+struct loc wild_town_origin_of(const struct wilderness *w, int town)
 {
 	int size = z_info->wild_block_size;
-	int cx = w->town_block.x * size + size / 2;
-	int cy = w->town_block.y * size + size / 2;
+	const struct wild_town *t;
+	int cx, cy;
 
-	return loc(cx - z_info->town_wid / 2, cy - z_info->town_hgt / 2);
+	if (!w || town < 0 || town >= w->town_count)
+		return loc(0, 0);
+
+	t = &w->towns[town];
+	cx = t->block.x * size + size / 2;
+	cy = t->block.y * size + size / 2;
+
+	return loc(cx - t->wid / 2, cy - t->hgt / 2);
+}
+
+/** The starting village, which is where the player begins. */
+struct loc wild_town_origin(const struct wilderness *w)
+{
+	return wild_town_origin_of(w, 0);
+}
+
+int wild_town_count(const struct wilderness *w)
+{
+	return w ? w->town_count : 0;
+}
+
+/**
+ * Which town, if any, stands on this block.
+ *
+ * Distinct from the block's `place` mark, which covers the land reserved when
+ * the town was sited -- a margin of a block on every side, so that a town does
+ * not butt against whatever the next block turns out to be and so there is
+ * somewhere for a road to leave from.  `place` answers "is this land spoken
+ * for".  This answers "is a town here", which is the question the map and the
+ * monster placement are really asking.
+ */
+int wild_town_at(struct wilderness *w, int bx, int by)
+{
+	int size = z_info->wild_block_size;
+	int i;
+
+	if (!w || !wild_in_bounds(w, bx, by))
+		return -1;
+
+	for (i = 0; i < w->town_count; i++) {
+		struct loc org = wild_town_origin_of(w, i);
+
+		if (bx >= org.x / size &&
+			bx <= (org.x + w->towns[i].wid - 1) / size &&
+			by >= org.y / size &&
+			by <= (org.y + w->towns[i].hgt - 1) / size)
+			return i;
+	}
+
+	return -1;
 }
 
 /**
@@ -878,7 +1139,7 @@ void wild_generate(struct wilderness *w)
 	wild_place_rivers(w);
 	wild_place_lakes(w);
 
-	wild_place_town(w);
+	wild_place_towns(w);
 
 	Rand_quick = false;
 
@@ -1017,14 +1278,17 @@ int wild_world_grids(void)
  * Held here rather than in chunk_list because the town is not a level: it is a
  * patch of the surface, drawn in wherever the live window happens to cover it.
  */
-static struct chunk *wild_town = NULL;
+static struct chunk *wild_town[WILD_TOWNS_MAX];
 
 void wild_town_free(void)
 {
-	if (wild_town) {
-		cave_free(wild_town);
-		wild_town = NULL;
-	}
+	int i;
+
+	for (i = 0; i < WILD_TOWNS_MAX; i++)
+		if (wild_town[i]) {
+			cave_free(wild_town[i]);
+			wild_town[i] = NULL;
+		}
 }
 
 /**
@@ -1039,9 +1303,9 @@ void wild_town_free(void)
 static struct {
 	struct loc grid;		/**< Where in the town chunk */
 	int32_t opened;			/**< The turn it was found standing open */
-} wild_gates[WILD_TOWN_GATES];
+} wild_gates[WILD_TOWNS_MAX][WILD_TOWN_GATES];
 
-static int wild_gate_count = 0;
+static int wild_gate_count[WILD_TOWNS_MAX];
 
 /**
  * Wall the town in.
@@ -1131,14 +1395,14 @@ static void wild_town_wall(struct chunk *town)
  * \param across is the direction along the boundary, for the second tile.
  * \return true if a gate now stands here.
  */
-static bool wild_town_cut_gate(struct chunk *town, struct loc start,
+static bool wild_town_cut_gate(struct chunk *town, int idx, struct loc start,
 							   struct loc step, struct loc across, int limit)
 {
 	struct loc lane[2];
 	int reach[2];
 	int i, k, depth;
 
-	if (wild_gate_count + 2 > WILD_TOWN_GATES)
+	if (wild_gate_count[idx] + 2 > WILD_TOWN_GATES)
 		return false;
 
 	lane[0] = start;
@@ -1180,9 +1444,9 @@ static bool wild_town_cut_gate(struct chunk *town, struct loc start,
 	/* And hang the doors in the boundary itself. */
 	for (i = 0; i < 2; i++) {
 		square_set_feat(town, lane[i], FEAT_CLOSED);
-		wild_gates[wild_gate_count].grid = lane[i];
-		wild_gates[wild_gate_count].opened = 0;
-		wild_gate_count++;
+		wild_gates[idx][wild_gate_count[idx]].grid = lane[i];
+		wild_gates[idx][wild_gate_count[idx]].opened = 0;
+		wild_gate_count[idx]++;
 	}
 
 	return true;
@@ -1194,19 +1458,20 @@ static bool wild_town_cut_gate(struct chunk *town, struct loc start,
  * Tried from the middle of each side outwards, so a gate stands where a gate
  * would: at the end of a street rather than in a corner.
  */
-static void wild_town_open(struct chunk *town)
+static void wild_town_open(struct chunk *town, int idx)
 {
 	int w = town->width, h = town->height;
 	int i;
 
-	wild_gate_count = 0;
+	wild_gate_count[idx] = 0;
 	wild_town_wall(town);
 
 	for (i = 0; i < w - 3; i++) {
 		int x = w / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
 
 		if (x < 1 || x > w - 3) continue;
-		if (wild_town_cut_gate(town, loc(x, 1), loc(0, 1), loc(1, 0), h / 2))
+		if (wild_town_cut_gate(town, idx, loc(x, 1), loc(0, 1), loc(1, 0),
+							   h / 2))
 			break;
 	}
 
@@ -1214,7 +1479,7 @@ static void wild_town_open(struct chunk *town)
 		int x = w / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
 
 		if (x < 1 || x > w - 3) continue;
-		if (wild_town_cut_gate(town, loc(x, h - 2), loc(0, -1), loc(1, 0),
+		if (wild_town_cut_gate(town, idx, loc(x, h - 2), loc(0, -1), loc(1, 0),
 							   h / 2))
 			break;
 	}
@@ -1223,7 +1488,8 @@ static void wild_town_open(struct chunk *town)
 		int y = h / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
 
 		if (y < 1 || y > h - 3) continue;
-		if (wild_town_cut_gate(town, loc(1, y), loc(1, 0), loc(0, 1), w / 2))
+		if (wild_town_cut_gate(town, idx, loc(1, y), loc(1, 0), loc(0, 1),
+							   w / 2))
 			break;
 	}
 
@@ -1231,7 +1497,7 @@ static void wild_town_open(struct chunk *town)
 		int y = h / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
 
 		if (y < 1 || y > h - 3) continue;
-		if (wild_town_cut_gate(town, loc(w - 2, y), loc(-1, 0), loc(0, 1),
+		if (wild_town_cut_gate(town, idx, loc(w - 2, y), loc(-1, 0), loc(0, 1),
 							   w / 2))
 			break;
 	}
@@ -1251,41 +1517,49 @@ static void wild_town_open(struct chunk *town)
 void wild_town_gates_tick(struct wilderness *w, struct chunk *c,
 						  struct loc offset)
 {
-	struct loc org = wild_town_origin(w);
-	int i;
+	int town;
 
-	for (i = 0; i < wild_gate_count; i++) {
-		struct loc grid = loc(org.x + wild_gates[i].grid.x - offset.x,
-							  org.y + wild_gates[i].grid.y - offset.y);
+	for (town = 0; town < wild_town_count(w); town++) {
+		struct loc org = wild_town_origin_of(w, town);
+		int i;
 
-		if (!square_in_bounds_fully(c, grid))
-			continue;
+		/* Only a town whose gates have been built has gates to shut. */
+		if (!wild_town[town]) continue;
 
-		if (!square_isopendoor(c, grid)) {
-			/* Shut, or broken beyond shutting.  Either way, not our business. */
-			wild_gates[i].opened = 0;
-			continue;
+		for (i = 0; i < wild_gate_count[town]; i++) {
+			struct loc grid = loc(org.x + wild_gates[town][i].grid.x - offset.x,
+								  org.y + wild_gates[town][i].grid.y - offset.y);
+
+			if (!square_in_bounds_fully(c, grid))
+				continue;
+
+			if (!square_isopendoor(c, grid)) {
+				/* Shut, or broken beyond shutting.  Not our business. */
+				wild_gates[town][i].opened = 0;
+				continue;
+			}
+
+			if (!wild_gates[town][i].opened) {
+				wild_gates[town][i].opened = turn;
+				continue;
+			}
+
+			if (turn - wild_gates[town][i].opened <
+				(int32_t) z_info->wild_gate_turns)
+				continue;
+
+			/* Not onto somebody standing in the gateway. */
+			if (square_monster(c, grid) || loc_eq(grid, player->grid))
+				continue;
+
+			square_close_door(c, grid);
+			square_memorize(c, grid);
+			square_light_spot(c, grid);
+			wild_gates[town][i].opened = 0;
+
+			if (square_isseen(c, grid))
+				msg("The town gate swings shut.");
 		}
-
-		if (!wild_gates[i].opened) {
-			wild_gates[i].opened = turn;
-			continue;
-		}
-
-		if (turn - wild_gates[i].opened < (int32_t) z_info->wild_gate_turns)
-			continue;
-
-		/* Not onto somebody standing in the gateway. */
-		if (square_monster(c, grid) || loc_eq(grid, player->grid))
-			continue;
-
-		square_close_door(c, grid);
-		square_memorize(c, grid);
-		square_light_spot(c, grid);
-		wild_gates[i].opened = 0;
-
-		if (square_isseen(c, grid))
-			msg("The town gate swings shut.");
 	}
 }
 
@@ -1296,15 +1570,22 @@ void wild_town_gates_tick(struct wilderness *w, struct chunk *c,
  * world and no other, and comes out identically however many times the surface
  * is rebuilt around it.
  */
-static struct chunk *wild_town_chunk(struct wilderness *w, struct player *p)
+static struct chunk *wild_town_chunk(struct wilderness *w, struct player *p,
+									 int idx)
 {
-	if (!wild_town) {
-		wild_town = town_gen_wild(p, wild_block_seed(w, w->town_block.x,
-													w->town_block.y));
-		wild_town_open(wild_town);
+	if (idx < 0 || idx >= w->town_count)
+		return NULL;
+
+	if (!wild_town[idx]) {
+		const struct wild_town *town = &w->towns[idx];
+
+		wild_town[idx] = town_gen_wild(p,
+			wild_block_seed(w, town->block.x, town->block.y),
+			town->wid, town->hgt, town->stores);
+		wild_town_open(wild_town[idx], idx);
 	}
 
-	return wild_town;
+	return wild_town[idx];
 }
 
 /**
@@ -1319,23 +1600,34 @@ static struct chunk *wild_town_chunk(struct wilderness *w, struct player *p)
 static void wild_draw_town(struct wilderness *w, struct player *p,
 						   struct chunk *c, struct loc offset)
 {
-	struct chunk *town = wild_town_chunk(w, p);
-	struct loc org = wild_town_origin(w);
-	struct loc grid;
+	int idx;
 
-	if (!town)
-		return;
+	for (idx = 0; idx < wild_town_count(w); idx++) {
+		struct loc org = wild_town_origin_of(w, idx);
+		struct chunk *town;
+		struct loc grid;
 
-	for (grid.y = 1; grid.y < town->height - 1; grid.y++)
-		for (grid.x = 1; grid.x < town->width - 1; grid.x++) {
-			struct loc dest = loc(org.x + grid.x - offset.x,
-								  org.y + grid.y - offset.y);
+		/* Only the towns this window actually covers. */
+		if (org.x + w->towns[idx].wid <= offset.x ||
+			org.x >= offset.x + c->width ||
+			org.y + w->towns[idx].hgt <= offset.y ||
+			org.y >= offset.y + c->height)
+			continue;
 
-			if (!square_in_bounds_fully(c, dest))
-				continue;
+		town = wild_town_chunk(w, p, idx);
+		if (!town) continue;
 
-			square_set_feat(c, dest, square_feat(town, grid)->fidx);
-		}
+		for (grid.y = 1; grid.y < town->height - 1; grid.y++)
+			for (grid.x = 1; grid.x < town->width - 1; grid.x++) {
+				struct loc dest = loc(org.x + grid.x - offset.x,
+									  org.y + grid.y - offset.y);
+
+				if (!square_in_bounds_fully(c, dest))
+					continue;
+
+				square_set_feat(c, dest, square_feat(town, grid)->fidx);
+			}
+	}
 }
 
 /**
@@ -1347,7 +1639,7 @@ static void wild_draw_town(struct wilderness *w, struct player *p,
  */
 struct loc wild_town_start(struct wilderness *w, struct player *p)
 {
-	struct chunk *town = wild_town_chunk(w, p);
+	struct chunk *town = wild_town_chunk(w, p, 0);
 	struct loc org = wild_town_origin(w);
 	struct loc grid;
 
@@ -1378,8 +1670,13 @@ void wild_town_known(struct wilderness *w, struct player *p, struct chunk *c,
 	struct loc org = wild_town_origin(w);
 	struct loc grid;
 
-	for (grid.y = 0; grid.y < z_info->town_hgt; grid.y++)
-		for (grid.x = 0; grid.x < z_info->town_wid; grid.x++) {
+	/*
+	 * Only the village.  The player has lived there and knows every street of
+	 * it; the other towns are somewhere to find, and they arrive on the map the
+	 * same way the rest of the world does -- by being walked to.
+	 */
+	for (grid.y = 0; grid.y < w->towns[0].hgt; grid.y++)
+		for (grid.x = 0; grid.x < w->towns[0].wid; grid.x++) {
 			struct loc dest = loc(org.x + grid.x - offset.x,
 								  org.y + grid.y - offset.y);
 
@@ -1412,29 +1709,38 @@ void wild_town_people(struct wilderness *w, struct player *p, struct chunk *c,
 {
 	int residents = is_daytime() ?
 		z_info->town_monsters_day : z_info->town_monsters_night;
-	struct loc org = loc(wild_town_origin(w).x - offset.x,
-						 wild_town_origin(w).y - offset.y);
-	int placed = 0, tries = 0;
+	int idx;
 
-	/* Only when the town is actually on the live surface. */
-	if (org.x + z_info->town_wid <= 0 || org.x >= c->width ||
-		org.y + z_info->town_hgt <= 0 || org.y >= c->height)
-		return;
+	for (idx = 0; idx < wild_town_count(w); idx++) {
+		struct loc org = loc(wild_town_origin_of(w, idx).x - offset.x,
+							 wild_town_origin_of(w, idx).y - offset.y);
+		int wid = w->towns[idx].wid, hgt = w->towns[idx].hgt;
+		int placed = 0, tries = 0;
+		int want;
 
-	while (placed < residents && tries < residents * 50) {
-		struct loc grid = loc(org.x + randint0(z_info->town_wid),
-							  org.y + randint0(z_info->town_hgt));
+		/* Only when the town is actually on the live surface. */
+		if (org.x + wid <= 0 || org.x >= c->width ||
+			org.y + hgt <= 0 || org.y >= c->height)
+			continue;
 
-		tries++;
+		/* A city has more people in its streets than a village does. */
+		want = residents + residents * w->towns[idx].band / 2;
 
-		if (!square_in_bounds_fully(c, grid)) continue;
-		if (!square_isempty(c, grid)) continue;
+		while (placed < want && tries < want * 50) {
+			struct loc grid = loc(org.x + randint0(wid),
+								  org.y + randint0(hgt));
 
-		/* Not on the doorstep: leave the player room to arrive. */
-		if (distance(grid, p->grid) < 3) continue;
+			tries++;
 
-		if (pick_and_place_monster(c, grid, 0, true, true, ORIGIN_DROP))
-			placed++;
+			if (!square_in_bounds_fully(c, grid)) continue;
+			if (!square_isempty(c, grid)) continue;
+
+			/* Not on the doorstep: leave the player room to arrive. */
+			if (distance(grid, p->grid) < 3) continue;
+
+			if (pick_and_place_monster(c, grid, 0, true, true, ORIGIN_DROP))
+				placed++;
+		}
 	}
 }
 
@@ -1986,33 +2292,11 @@ bool wild_seen(struct wilderness *w, int x, int y)
 }
 
 /**
- * Is the town actually on this block?
- *
- * Distinct from the block's `place` mark, which covers the land reserved for
- * the town when it was sited -- a margin of a block on every side, so that a
- * town does not butt against whatever the next block turns out to be and so
- * there is somewhere for a road to leave from.  That reserved area is 35 blocks
- * against the town's own 15, and treating it as "town" made the overhead map
- * paint a slab of masonry more than twice the size of the place, with the
- * player standing in it while plainly out in the fields.
- *
- * `place` answers "is this land spoken for".  This answers "is the town here",
- * which is the question the map and the monster placement are really asking.
+ * Is any town on this block?
  */
 bool wild_in_town(struct wilderness *w, int bx, int by)
 {
-	int size = z_info->wild_block_size;
-	struct loc org;
-
-	if (!w || !wild_in_bounds(w, bx, by))
-		return false;
-
-	org = wild_town_origin(w);
-
-	return bx >= org.x / size &&
-		   bx <= (org.x + z_info->town_wid - 1) / size &&
-		   by >= org.y / size &&
-		   by <= (org.y + z_info->town_hgt - 1) / size;
+	return wild_town_at(w, bx, by) >= 0;
 }
 
 /**
