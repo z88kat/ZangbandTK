@@ -361,16 +361,16 @@ static errr term_win_init(term_win *s, int w, int h)
 	s->c = mem_zalloc_alt(h * sizeof(wchar_t*));
 
 	/* Make the window content arrays */
-	s->va = mem_zalloc_alt(h * w * sizeof(int));
-	s->vc = mem_zalloc_alt(h * w * sizeof(wchar_t));
+	s->va = mem_zalloc_alt((size_t)h * w * sizeof(int));
+	s->vc = mem_zalloc_alt((size_t)h * w * sizeof(wchar_t));
 
 	/* Make the terrain access arrays */
 	s->ta = mem_zalloc_alt(h * sizeof(int*));
 	s->tc = mem_zalloc_alt(h * sizeof(wchar_t*));
 
 	/* Make the terrain content arrays */
-	s->vta = mem_zalloc_alt(h * w * sizeof(int));
-	s->vtc = mem_zalloc_alt(h * w * sizeof(wchar_t));
+	s->vta = mem_zalloc_alt((size_t)h * w * sizeof(int));
+	s->vtc = mem_zalloc_alt((size_t)h * w * sizeof(wchar_t));
 
 	/* Prepare the window access arrays */
 	for (y = 0; y < h; y++) {

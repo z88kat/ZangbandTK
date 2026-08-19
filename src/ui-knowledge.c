@@ -4405,14 +4405,9 @@ static void lookup_symbol(keycode_t key, char *buf, size_t max)
 				if (len > 2 && k_info[i].name[0] == '<'
 						&& k_info[i].name[len - 1]
 						== '>') {
-					char *extract = mem_alloc(len);
-
-					(void)my_strcpy(extract,
-						k_info[i].name + 1, len);
-					extract[len - 2] = '\0';
-					strnfmt(buf, max, "%s - %s.", key_utf8,
-						extract);
-					mem_free(extract);
+					strnfmt(buf, max, "%s - %.*s.",
+						key_utf8, (int)(len - 2),
+						k_info[i].name + 1);
 				} else {
 					strnfmt(buf, max, "%s - %s.", key_utf8,
 						k_info[i].name);

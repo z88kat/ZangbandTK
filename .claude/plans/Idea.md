@@ -114,3 +114,11 @@ Yer, you going to need that walkthough.
 
 https://www.amazon.co.uk/Chronicles-Amber-S-F-MASTERWORKS/dp/1473222168/
 https://www.amazon.co.uk/Second-Chronicles-Amber-S-F-MASTERWORKS/dp/147322215X/
+
+## Release
+
+To cut the release
+
+git push origin master
+git tag 3.1.0
+git push origin 3.1.0

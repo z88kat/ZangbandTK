@@ -3,6 +3,12 @@ name: documents
 on:
   pull_request:
 
+# These jobs only read the repository to build it, so hold the token
+# down to that rather than taking whatever the repository's default
+# happens to be.
+permissions:
+  contents: read
+
 env:
     # Used as the name when uploading or downloading the artifact with the
     # converted document files.
