@@ -90,9 +90,33 @@ on each grid; you open it to pass through, and it swings shut behind you after a
 while. Monsters do not walk in through an open gate as a matter of course, but a
 gate you leave standing open is a gate.
 
+Roads
+-----
+
+The towns are joined by roads, and following one is how you find the next place.
+
+A road is routed rather than drawn: it takes the cheapest way across the
+country, so it runs down the valleys, keeps out of the swamp and goes round a
+mountain instead of over it. It keeps to the land, too -- if two towns end up on
+either side of an inland sea a causeway is built, but that is the exception, not
+a short cut across every bay.
+
+Every town is on the network. The roads are laid as a spanning tree over the
+towns first, so there is always a road out of your home village, and following
+roads from it reaches every other town in the world. On top of that, any two
+towns within thirty blocks of each other get a road directly between them, so
+settled country ends up with a network rather than a single thread.
+
+If you are lost, find a road and walk along it. It goes somewhere.
+
 Finding your way
 ----------------
 
 Press ``M`` on the surface for the world map. It shows only the country you have
 travelled near, and colours each place by its band -- village, town, city, great
 city -- so you can tell from across the map which way to walk for a magic shop.
+Roads you have seen are drawn on it too.
+
+What you have explored is remembered while you are down in the dungeon, so
+coming back up puts you in a town you know rather than one you have to learn
+again.

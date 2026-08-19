@@ -1024,6 +1024,55 @@ static int test_a_distant_town_is_drawn(void *state) {
 	ok;
 }
 
+/**
+ * What the player knows of the surface survives a trip to the dungeon (WLD-25).
+ *
+ * The surface is rebuilt from the world seed every time it is returned to, and
+ * the parallel chunk holding what has been seen is rebuilt empty with it.
+ * generate_level() carried that knowledge across a window scroll in a local,
+ * which cannot survive a dungeon level in between -- so walking into town,
+ * going down the stairs and coming back up found the town unexplored.  wild.c
+ * holds it instead.
+ *
+ * This exercises the holding, which is the part that was missing.  The two
+ * calls in generate_level() that hand it over and take it back are not
+ * reachable from this harness.
+ */
+static int test_the_map_survives_the_dungeon(void *state) {
+	struct loc offset = player->wild_offset;
+	struct chunk *known, *back;
+	struct loc taken = loc(-1, -1);
+	struct loc probe;
+	int feat;
+
+	/* Learn a grid the player would not otherwise know. */
+	probe = loc(player->grid.x + 20, player->grid.y);
+	require(square_in_bounds_fully(cave, probe));
+	square_memorize(cave, probe);
+	feat = square(player->cave, probe)->feat;
+	require(feat != FEAT_NONE);
+
+	/* Going below hands the knowledge over rather than dropping it. */
+	known = cave_new(cave->height, cave->width);
+	wild_carry_knowledge(player->cave, offset, known, offset);
+	require(square(known, probe)->feat == feat);
+	wild_keep_knowledge(known, offset);
+
+	/* Coming back up takes it, at the offset it was left at. */
+	back = wild_take_knowledge(&taken);
+	notnull(back);
+	eq(taken.x, offset.x);
+	eq(taken.y, offset.y);
+	eq(square(back, probe)->feat, feat);
+
+	/* And it is handed over once, not held onto. */
+	require(wild_take_knowledge(NULL) == NULL);
+
+	cave_free(back);
+
+	ok;
+}
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -1045,6 +1094,7 @@ struct test tests[] = {
 	{ "an-untouched-unique-is-not-remembered", test_an_untouched_unique_is_not_remembered },
 	{ "displacement-keeps-the-world-position", test_displacement_keeps_the_world_position },
 	{ "the-map-survives-a-scroll", test_the_map_survives_a_scroll },
+	{ "the-map-survives-the-dungeon", test_the_map_survives_the_dungeon },
 	{ "scrolling-does-not-move-the-player", test_scrolling_does_not_move_the_player },
 	{ "the-world-map-remembers-travel", test_the_world_map_remembers_travel },
 	{ "reserved-land-is-not-the-town", test_reserved_land_is_not_the_town },

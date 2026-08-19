@@ -445,6 +445,137 @@ static int test_trades_vary_between_places(void *state) {
 	ok;
 }
 
+
+
+/**
+ * Every town can be walked to from the village, along roads (WLD-08).
+ *
+ * This is the property the player actually needs.  A world with roads in it is
+ * no use if the road out of the village goes nowhere: what matters is that
+ * following roads from home reaches every other town in the world.
+ */
+static int test_roads_join_every_town(void *state) {
+	int seed;
+
+	int wet = 0, dry = 0;
+
+	for (seed = 1; seed <= 12; seed++) {
+		struct wilderness *w = wild_new(129, seed * 7717);
+		bool *seen;
+		int *queue;
+		int head = 0, tail = 0, i;
+
+		wild_generate(w);
+		require(w->town_count > 1);
+
+		seen = mem_zalloc(129 * 129 * sizeof(*seen));
+		queue = mem_zalloc(129 * 129 * sizeof(*queue));
+
+		/* Flood out from the village, across road blocks only. */
+		{
+			int start = w->towns[0].block.y * 129 + w->towns[0].block.x;
+
+			require(wild_road_at(w, w->towns[0].block.x, w->towns[0].block.y));
+			seen[start] = true;
+			queue[tail++] = start;
+		}
+
+		while (head < tail) {
+			int node = queue[head++];
+			int bx = node % 129, by = node / 129;
+			static const int dx[4] = { -1, 1, 0, 0 };
+			static const int dy[4] = { 0, 0, -1, 1 };
+
+			for (i = 0; i < 4; i++) {
+				int nx = bx + dx[i], ny = by + dy[i], next;
+
+				if (!wild_in_bounds(w, nx, ny)) continue;
+				if (!wild_road_at(w, nx, ny)) continue;
+
+				next = ny * 129 + nx;
+				if (seen[next]) continue;
+
+				seen[next] = true;
+				queue[tail++] = next;
+			}
+		}
+
+		/* Every town is on the network the village is on. */
+		for (i = 0; i < w->town_count; i++) {
+			int b = w->towns[i].block.y * 129 + w->towns[i].block.x;
+
+			require(wild_road_at(w, w->towns[i].block.x, w->towns[i].block.y));
+			require(seen[b]);
+		}
+
+		for (i = 0; i < 129 * 129; i++)
+			if (w->map[i].info & WILD_INFO_ROAD) {
+				if (w->map[i].terrain == WILD_TERRAIN_OCEAN) wet++;
+				else dry++;
+			}
+
+		mem_free(queue);
+		mem_free(seen);
+		wild_free(w);
+	}
+
+	/*
+	 * Roads keep to the land.  A causeway is allowed, because two towns can end
+	 * up on either side of an inland sea and joining them matters more than
+	 * keeping their feet dry -- but it is the exception the sea is opened for,
+	 * not a short cut across every bay.  Measured over these twelve worlds:
+	 * one of them needs a causeway, of twelve blocks, out of some three
+	 * thousand road blocks in all.
+	 */
+	require(dry > 1000);
+	require(wet * 50 < dry);
+
+	ok;
+}
+
+/**
+ * Roads take the trouble to go round things (WLD-08).
+ *
+ * A road is worth following because it goes somewhere sensible.  Routed rather
+ * than drawn straight, it should cross far less mountain and swamp than the
+ * country it runs through holds.
+ */
+static int test_roads_avoid_bad_ground(void *state) {
+	int road_rough = 0, road_all = 0, world_rough = 0, world_all = 0;
+	int seed, i;
+
+	for (seed = 1; seed <= 12; seed++) {
+		struct wilderness *w = wild_new(129, seed * 7717);
+
+		wild_generate(w);
+
+		for (i = 0; i < 129 * 129; i++) {
+			bool rough = w->map[i].terrain == WILD_TERRAIN_MOUNTAIN ||
+						 w->map[i].terrain == WILD_TERRAIN_SWAMP;
+
+			/* The sea is not ground a road would ever want, so leave it out. */
+			if (w->map[i].terrain == WILD_TERRAIN_OCEAN) continue;
+
+			world_all++;
+			if (rough) world_rough++;
+
+			if (w->map[i].info & WILD_INFO_ROAD) {
+				road_all++;
+				if (rough) road_rough++;
+			}
+		}
+
+		wild_free(w);
+	}
+
+	require(road_all > 100);
+
+	/* Measured: roads run about a fifth as much rough ground as the land holds. */
+	require(road_rough * world_all * 2 < world_rough * road_all);
+
+	ok;
+}
+
 const char *suite_name = "cave/wild";
 struct test tests[] = {
 	{ "generation is deterministic", test_generation_is_deterministic },
@@ -459,5 +590,7 @@ struct test tests[] = {
 	{ "towns keep their feet dry", test_towns_keep_their_feet_dry },
 	{ "bigger places keep more trades", test_bigger_places_keep_more_trades },
 	{ "trades vary between places", test_trades_vary_between_places },
+	{ "roads join every town", test_roads_join_every_town },
+	{ "roads avoid bad ground", test_roads_avoid_bad_ground },
 	{ NULL, NULL }
 };

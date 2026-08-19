@@ -192,6 +192,7 @@ int wild_water_at(struct wilderness *w, int x, int y);
 void wild_mark_seen(struct wilderness *w, struct loc grid);
 bool wild_seen(struct wilderness *w, int x, int y);
 bool wild_in_town(struct wilderness *w, int bx, int by);
+bool wild_road_at(struct wilderness *w, int bx, int by);
 int wild_block_feat(struct wilderness *w, int x, int y);
 
 void wild_ensure(uint32_t seed);
@@ -226,6 +227,8 @@ void wild_town_people(struct wilderness *w, struct player *p, struct chunk *c,
 void wild_town_gates_tick(struct wilderness *w, struct chunk *c,
 						  struct loc offset);
 void wild_town_free(void);
+void wild_keep_knowledge(struct chunk *known, struct loc offset);
+struct chunk *wild_take_knowledge(struct loc *offset);
 
 int wild_danger(struct wilderness *w, int x, int y);
 int wild_density(struct wilderness *w, int x, int y);

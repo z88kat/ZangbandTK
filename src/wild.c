@@ -37,6 +37,10 @@
 
 struct wilderness *wild = NULL;
 
+/** What the player knows of the surface, held while they are off it (WLD-25). */
+static struct chunk *wild_known = NULL;
+static struct loc wild_known_offset = { 0, 0 };
+
 /**
  * Sea covers roughly this fraction of the world, as in Zangband.
  */
@@ -879,7 +883,6 @@ static void wild_town_claim(struct wilderness *w, const struct wild_town *town)
 
 			if (!f) continue;
 			f->place = 1;
-			f->info |= WILD_INFO_ROAD;
 		}
 }
 
@@ -1077,6 +1080,257 @@ int wild_town_at(struct wilderness *w, int bx, int by)
 }
 
 /**
+ * ------------------------------------------------------------------------
+ * Roads (WLD-08)
+ * ------------------------------------------------------------------------ */
+
+/**
+ * What it costs to carry a road across a block.
+ *
+ * Roads are not drawn straight.  They are routed, at the cost of a shortest
+ * path across the block map, so they run down valleys, keep out of the swamp
+ * and go round a mountain rather than over it -- which is what makes a road
+ * worth following rather than merely worth looking at.
+ */
+static int wild_road_cost(const struct wild_block *block)
+{
+	int cost;
+
+	if (!block)
+		return 10000;
+
+	switch (block->terrain) {
+		case WILD_TERRAIN_GRASS:    cost = 2; break;
+		case WILD_TERRAIN_WASTE:    cost = 3; break;
+		case WILD_TERRAIN_FOREST:   cost = 5; break;
+		case WILD_TERRAIN_SHORE:    cost = 6; break;
+		case WILD_TERRAIN_SWAMP:    cost = 14; break;
+		case WILD_TERRAIN_MOUNTAIN: cost = 25; break;
+
+		/* Roads do not go to sea, except where there is no other way. */
+		default:                    cost = 500; break;
+	}
+
+	/* A river or a lake wants a ford or a bridge, which is work. */
+	if (block->info & WILD_INFO_WATER)
+		cost += 18;
+
+	/* Where a road already runs, another costs nothing: roads share. */
+	if (block->info & WILD_INFO_ROAD)
+		cost = 1;
+
+	return cost;
+}
+
+/**
+ * Lay a road between two blocks, by the cheapest way across the country.
+ *
+ * Dijkstra over the block map with a binary heap.  The world is generated once,
+ * and 129 x 129 blocks is small, so the cost of doing this properly is not
+ * worth avoiding -- and a road that visibly avoids the mountains reads as a
+ * road, where a straight line drawn over them does not.
+ */
+static bool wild_route_road(struct wilderness *w, struct loc from, struct loc to,
+							bool by_sea)
+{
+	int size = w->blocks, count = size * size;
+	int32_t *dist = mem_zalloc(count * sizeof(*dist));
+	int *prev = mem_zalloc(count * sizeof(*prev));
+	bool *done = mem_zalloc(count * sizeof(*done));
+	int *hnode = mem_zalloc((4 * count + 8) * sizeof(*hnode));
+	int32_t *hcost = mem_zalloc((4 * count + 8) * sizeof(*hcost));
+	int hn = 0;
+	int start = from.y * size + from.x, goal = to.y * size + to.x;
+	int i, at;
+
+	for (i = 0; i < count; i++) {
+		dist[i] = INT32_MAX;
+		prev[i] = -1;
+	}
+
+	#define ROAD_PUSH(_node, _cost) \
+		do { \
+			int _i = hn++; \
+			hnode[_i] = (_node); \
+			hcost[_i] = (_cost); \
+			while (_i > 0) { \
+				int _p = (_i - 1) / 2; \
+				int _tn; \
+				int32_t _tc; \
+				if (hcost[_p] <= hcost[_i]) break; \
+				_tn = hnode[_p]; hnode[_p] = hnode[_i]; hnode[_i] = _tn; \
+				_tc = hcost[_p]; hcost[_p] = hcost[_i]; hcost[_i] = _tc; \
+				_i = _p; \
+			} \
+		} while (0)
+
+	dist[start] = 0;
+	ROAD_PUSH(start, 0);
+
+	while (hn > 0) {
+		int node = hnode[0];
+		int j = 0;
+
+		/* Pop the cheapest. */
+		hn--;
+		hnode[0] = hnode[hn];
+		hcost[0] = hcost[hn];
+		for (;;) {
+			int l = 2 * j + 1, r = l + 1, m = j, tn;
+			int32_t tc;
+
+			if (l < hn && hcost[l] < hcost[m]) m = l;
+			if (r < hn && hcost[r] < hcost[m]) m = r;
+			if (m == j) break;
+			tn = hnode[m]; hnode[m] = hnode[j]; hnode[j] = tn;
+			tc = hcost[m]; hcost[m] = hcost[j]; hcost[j] = tc;
+			j = m;
+		}
+
+		if (done[node]) continue;
+		done[node] = true;
+		if (node == goal) break;
+
+		{
+			int bx = node % size, by = node / size;
+			static const int dx[4] = { -1, 1, 0, 0 };
+			static const int dy[4] = { 0, 0, -1, 1 };
+
+			for (i = 0; i < 4; i++) {
+				int nx = bx + dx[i], ny = by + dy[i], next;
+				int32_t step;
+
+				if (nx < 0 || ny < 0 || nx >= size || ny >= size) continue;
+
+				next = ny * size + nx;
+				if (done[next]) continue;
+
+				/* Keep to the land unless this is the causeway pass. */
+				if (!by_sea && w->map[next].terrain == WILD_TERRAIN_OCEAN)
+					continue;
+
+				step = dist[node] + wild_road_cost(&w->map[next]);
+				if (step >= dist[next]) continue;
+
+				dist[next] = step;
+				prev[next] = node;
+				ROAD_PUSH(next, step);
+			}
+		}
+	}
+
+	#undef ROAD_PUSH
+
+	/* Walk the path back and mark it, if one was found at all. */
+	{
+		bool reached = (goal == start) || done[goal] || prev[goal] >= 0;
+
+		if (reached)
+			for (at = goal; at >= 0; at = prev[at])
+				w->map[at].info |= WILD_INFO_ROAD;
+
+		mem_free(hcost);
+		mem_free(hnode);
+		mem_free(done);
+		mem_free(prev);
+		mem_free(dist);
+
+		return reached;
+	}
+}
+
+/**
+ * Lay a road, keeping to the land if the land allows it.
+ *
+ * Two towns can end up on either side of an inland sea, and then there is no
+ * road between them that does not get its feet wet.  Rather than let every
+ * road take a short cut across a bay because the water happened to be cheaper
+ * than the hills, the sea is closed off entirely and only opened when the first
+ * attempt finds no way round at all.
+ */
+static void wild_lay_road(struct wilderness *w, struct loc from, struct loc to)
+{
+	if (!wild_route_road(w, from, to, false))
+		(void) wild_route_road(w, from, to, true);
+}
+
+/**
+ * Join the towns up with roads (WLD-08).
+ *
+ * Two passes.  The first builds a minimum spanning tree over the towns, which
+ * is what guarantees the thing the player actually needs: that there is a road
+ * out of the village, and that following roads reaches every other town in the
+ * world.  The second adds a road between any two towns closer than
+ * `wild:road-dist` blocks -- Zangband's ROAD_DIST, kept as the reference value
+ * -- so that settled country ends up with a network rather than a single thread
+ * through it.
+ */
+static void wild_place_roads(struct wilderness *w)
+{
+	int n = w->town_count;
+	bool *joined;
+	int i, j;
+
+	if (n < 2)
+		return;
+
+	joined = mem_zalloc(n * sizeof(*joined));
+	joined[0] = true;
+
+	/* Prim's: grow the tree from the village, nearest town first. */
+	for (i = 1; i < n; i++) {
+		int best_from = -1, best_to = -1, best = 0;
+		int a, b;
+
+		for (a = 0; a < n; a++) {
+			if (!joined[a]) continue;
+
+			for (b = 0; b < n; b++) {
+				int d;
+
+				if (joined[b]) continue;
+
+				d = MAX(ABS(w->towns[a].block.x - w->towns[b].block.x),
+						ABS(w->towns[a].block.y - w->towns[b].block.y));
+
+				if (best_from < 0 || d < best) {
+					best = d;
+					best_from = a;
+					best_to = b;
+				}
+			}
+		}
+
+		if (best_to < 0) break;
+
+		wild_lay_road(w, w->towns[best_from].block, w->towns[best_to].block);
+		joined[best_to] = true;
+	}
+
+	mem_free(joined);
+
+	/* And the short hops between neighbours, for a network rather than a tree. */
+	for (i = 0; i < n; i++)
+		for (j = i + 1; j < n; j++) {
+			int d = MAX(ABS(w->towns[i].block.x - w->towns[j].block.x),
+						ABS(w->towns[i].block.y - w->towns[j].block.y));
+
+			if (d <= (int) z_info->wild_road_dist)
+				wild_lay_road(w, w->towns[i].block, w->towns[j].block);
+		}
+}
+
+/**
+ * Does a road run through this block?
+ */
+bool wild_road_at(struct wilderness *w, int bx, int by)
+{
+	struct wild_block *block = wild_block_at(w, bx, by);
+
+	return block && (block->info & WILD_INFO_ROAD);
+}
+
+/**
  * Lay out the world map (WLD-07, WLD-08).
  *
  * Three independent fractals give each block a position in parameter space,
@@ -1140,6 +1394,7 @@ void wild_generate(struct wilderness *w)
 	wild_place_lakes(w);
 
 	wild_place_towns(w);
+	wild_place_roads(w);
 
 	Rand_quick = false;
 
@@ -1238,6 +1493,11 @@ void wild_ensure(uint32_t seed)
  */
 void wild_cleanup(void)
 {
+	if (wild_known) {
+		cave_free(wild_known);
+		wild_known = NULL;
+	}
+
 	wild_town_free();
 	wild_free(wild);
 	wild = NULL;
@@ -1752,6 +2012,50 @@ void wild_town_people(struct wilderness *w, struct player *p, struct chunk *c,
 				placed++;
 		}
 	}
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * What the player knows of the surface (WLD-25)
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Hold on to what the player knows of the surface while they are off it.
+ *
+ * The surface is not a level: it is rebuilt from the world seed whenever it is
+ * returned to, and the parallel chunk holding what the player has seen is
+ * rebuilt empty with it.  Within a single rebuild -- scrolling the window --
+ * generate_level() carries that knowledge across in a local.  A trip to the
+ * dungeon is two rebuilds with a level in between, so the local could not
+ * survive it, and a character who walked into town, went down the stairs and
+ * came back up found the town unexplored.
+ *
+ * So the knowledge is kept here instead, where it outlives the call.  Takes
+ * ownership of the chunk.
+ */
+void wild_keep_knowledge(struct chunk *known, struct loc offset)
+{
+	if (wild_known && wild_known != known)
+		cave_free(wild_known);
+
+	wild_known = known;
+	wild_known_offset = offset;
+}
+
+/**
+ * Take back what was kept, or NULL if nothing was.  Ownership passes to the
+ * caller, which must free it.
+ */
+struct chunk *wild_take_knowledge(struct loc *offset)
+{
+	struct chunk *known = wild_known;
+
+	if (known && offset)
+		*offset = wild_known_offset;
+
+	wild_known = NULL;
+
+	return known;
 }
 
 /**
@@ -2430,18 +2734,37 @@ struct chunk *wild_surface(struct wilderness *w, struct player *p,
 		}
 	}
 
-	/* Roads run east-west through the middle of the blocks that carry them. */
+	/*
+	 * Roads run from the middle of a block to the middle of each neighbouring
+	 * block that carries one, so a routed road comes out joined up wherever it
+	 * turns.  Drawing every road block as an east-west line, as the stub did,
+	 * would leave a road that bends north into a row of disconnected dashes.
+	 */
 	for (int by = 0; by < view; by++) {
 		for (int bx = 0; bx < view; bx++) {
-			struct wild_block *block =
-				wild_block_at(w, ox / size + bx, oy / size + by);
+			int wx = ox / size + bx, wy = oy / size + by;
+			int cx = bx * size + size / 2, cy = by * size + size / 2;
 
-			if (!block || !(block->info & WILD_INFO_ROAD))
+			if (!wild_road_at(w, wx, wy))
 				continue;
 
-			grid.y = by * size + size / 2;
-			for (grid.x = bx * size; grid.x < (bx + 1) * size; grid.x++)
-				square_set_feat(c, grid, FEAT_ROAD);
+			square_set_feat(c, loc(cx, cy), FEAT_ROAD);
+
+			if (wild_road_at(w, wx - 1, wy))
+				for (grid.x = bx * size; grid.x <= cx; grid.x++)
+					square_set_feat(c, loc(grid.x, cy), FEAT_ROAD);
+
+			if (wild_road_at(w, wx + 1, wy))
+				for (grid.x = cx; grid.x < (bx + 1) * size; grid.x++)
+					square_set_feat(c, loc(grid.x, cy), FEAT_ROAD);
+
+			if (wild_road_at(w, wx, wy - 1))
+				for (grid.y = by * size; grid.y <= cy; grid.y++)
+					square_set_feat(c, loc(cx, grid.y), FEAT_ROAD);
+
+			if (wild_road_at(w, wx, wy + 1))
+				for (grid.y = cy; grid.y < (by + 1) * size; grid.y++)
+					square_set_feat(c, loc(cx, grid.y), FEAT_ROAD);
 		}
 	}
 

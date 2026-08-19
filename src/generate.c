@@ -1426,8 +1426,7 @@ void prepare_next_level(struct player *p)
 				 * the window, in which case what they know of the world is
 				 * kept and carried over to the rebuilt surface below.
 				 */
-				if (wild_is_surface(cave) && p->depth == 0 &&
-					!p->upkeep->arena_level) {
+				if (wild_is_surface(cave) && !p->upkeep->arena_level) {
 					kept_known = p->cave;
 					kept_offset = p->wild_offset;
 				} else {
@@ -1487,7 +1486,15 @@ void prepare_next_level(struct player *p)
 		for (i = 0; i <= p->cave->obj_max; i++)
 			p->cave->objects[i] = NULL;
 
-		/* What the player already knew of the world stays known (WLD-25). */
+		/*
+		 * What the player already knew of the world stays known (WLD-25) --
+		 * whether they merely scrolled the window, in which case it is in hand,
+		 * or went down to the dungeon and came back, in which case wild.c has
+		 * been holding it.
+		 */
+		if (!kept_known)
+			kept_known = wild_take_knowledge(&kept_offset);
+
 		if (kept_known) {
 			wild_carry_knowledge(kept_known, kept_offset, p->cave, offset);
 			cave_free(kept_known);
@@ -1662,8 +1669,12 @@ void prepare_next_level(struct player *p)
 	}
 
 	/* Paranoia: a kept map with nowhere to go is still a map to free. */
+	/*
+	 * Not consumed, which means this call did not end on the surface: the
+	 * player has gone below.  Keep it for when they come back up.
+	 */
 	if (kept_known)
-		cave_free(kept_known);
+		wild_keep_knowledge(kept_known, kept_offset);
 
 	/* The dungeon is ready */
 	character_dungeon = true;

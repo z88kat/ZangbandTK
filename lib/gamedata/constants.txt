@@ -530,6 +530,14 @@ wild:relic-half-life:3
 wild:rivers:4
 wild:lakes:4
 
+# How near two towns must be, in blocks, to get a road directly between them
+# (WLD-08). Zangband's ROAD_DIST is 30 and that is kept as the reference. Every
+# town is already reachable: the roads are laid as a spanning tree over the
+# towns first, so there is always a road out of the village that leads to all
+# the rest. This value only decides how much of a *network* the settled parts
+# of the world get on top of that.
+wild:road-dist:30
+
 # How long a town gate stands open before it swings shut, in game turns. A
 # player at normal speed acts every ten of these, so 100 is about ten moves --
 # long enough to walk through and lead a packhorse, short enough that the gate
