@@ -1436,7 +1436,17 @@ static bool wild_town_cut_gate(struct chunk *town, int idx, struct loc start,
 		struct loc grid = lane[i];
 
 		for (k = 0; k < depth; k++) {
-			square_set_feat(town, grid, FEAT_ROAD);
+			/*
+			 * Carve rock only.  The two tiles of a gate are driven to the
+			 * deeper of the two depths, so the shallower one runs on past
+			 * ground that was already open -- and paving that over destroyed
+			 * whatever stood on it.  The town's down staircase is the casualty
+			 * that matters: wild_town_wall() moves it inside when the north
+			 * wall lands on it, which puts it exactly in the north gate's path,
+			 * and about one town in fifty lost its staircase this way.
+			 */
+			if (!square_ispassable(town, grid))
+				square_set_feat(town, grid, FEAT_ROAD);
 			grid = loc_sum(grid, step);
 		}
 	}
@@ -2436,16 +2446,17 @@ struct chunk *wild_surface(struct wilderness *w, struct player *p,
 	}
 
 	/*
-	 * Draw the town in.  It goes down after the terrain and the roads, so the
-	 * countryside runs up to its edge rather than through it.
+	 * Draw the towns in.  They go down after the terrain and the roads, so the
+	 * countryside runs up to their edges rather than through them.
+	 *
+	 * Unconditionally: wild_draw_town() tests each town against the window
+	 * itself.  This call used to be wrapped in a test of its own, against the
+	 * *starting village's* rectangle -- so once the player walked far enough
+	 * west that the window no longer covered home, no town was drawn at all.
+	 * Walking towards another town made it vanish as the window scrolled, which
+	 * read from inside as being teleported into open country.
 	 */
-	{
-		struct loc org = wild_town_origin(w);
-
-		if (org.x + z_info->town_wid > ox && org.x < ox + span &&
-			org.y + z_info->town_hgt > oy && org.y < oy + span)
-			wild_draw_town(w, p, c, loc(ox, oy));
-	}
+	wild_draw_town(w, p, c, loc(ox, oy));
 
 	/*
 	 * Every Angband level has an impassable boundary, and a great deal of code

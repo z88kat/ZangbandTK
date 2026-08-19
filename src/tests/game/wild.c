@@ -916,6 +916,114 @@ static int test_the_town_holds_the_trades_it_was_given(void *state) {
 	ok;
 }
 
+/**
+ * A town larger than the starting village is built across the whole of itself.
+ *
+ * get_lot_bounds() clamped every lot to z_info->town_wid/hgt, which describe the
+ * starting village and nothing else.  The layout loop retries until all its
+ * shops land, so a larger town still got its full complement -- crammed into the
+ * western strip the clamp allowed, with everything beyond it left as bare floor.
+ * Walking in from the east found an empty field inside the walls.
+ *
+ * So presence is not the property to test.  Reach is: something the town was
+ * built out of has to stand beyond where the old clamp could put it.
+ */
+static int test_a_large_town_is_built(void *state) {
+	int reach_x = 0, reach_y = 0, seed;
+
+	for (seed = 0; seed < 8; seed++) {
+		struct chunk *town = town_gen_wild(player, 8191 + seed * 977,
+										   132, 34, 0xffff);
+		uint16_t found = 0;
+		struct loc grid;
+
+		require(town);
+		require(town->width == 132 && town->height == 34);
+
+		for (grid.y = 1; grid.y < town->height - 1; grid.y++)
+			for (grid.x = 1; grid.x < town->width - 1; grid.x++) {
+				int shop = square_shopnum(town, grid);
+
+				if (shop >= 0 && shop < 16) found |= 1u << shop;
+
+				/*
+				 * Shop doors alone.  The rock a ruin is built from cannot be
+				 * told from the rock the clearing was cut out of, so it would
+				 * not measure what is being asked.
+				 */
+				if (shop >= 0) {
+					reach_x = MAX(reach_x, grid.x);
+					reach_y = MAX(reach_y, grid.y);
+				}
+			}
+
+		/* Every trade it was given still stands in it. */
+		require(found != 0);
+
+		cave_free(town);
+	}
+
+	/*
+	 * Beyond the old clamp, which could never reach past town_wid - 3 or
+	 * town_hgt - 3.  Measured rather than guessed: over these eight seeds the
+	 * fixed code reaches x=116, y=24 in a 132x34 town, and the clamped code
+	 * stops dead at x=61, y=17.  The thresholds sit between the two.
+	 */
+	require(reach_x > z_info->town_wid + 4);
+	require(reach_y > z_info->town_hgt - 2);
+
+	ok;
+}
+
+/**
+ * A town away from home is drawn onto the surface that covers it.
+ *
+ * The call that draws towns into the live window used to be wrapped in a test
+ * against the starting village's rectangle, so once the player walked far
+ * enough that the window no longer covered home, no town was drawn at all --
+ * including the one being walked into.  Approaching another town made it
+ * disappear as the window scrolled.
+ */
+static int test_a_distant_town_is_drawn(void *state) {
+	int idx;
+
+	require(wild_town_count(wild) > 1);
+
+	for (idx = 1; idx < wild_town_count(wild); idx++) {
+		struct loc org = wild_town_origin_of(wild, idx);
+		struct loc centre = loc(org.x + wild->towns[idx].wid / 2,
+								org.y + wild->towns[idx].hgt / 2);
+		struct loc offset;
+		struct chunk *c;
+		struct loc grid;
+		int shops = 0, stairs = 0;
+
+		/* A window centred on that town, with home nowhere near it. */
+		c = wild_surface(wild, player, centre, &offset);
+		require(c);
+
+		for (grid.y = 0; grid.y < c->height; grid.y++)
+			for (grid.x = 0; grid.x < c->width; grid.x++)
+				if (square_isshop(c, grid)) shops++;
+				else if (square_isdownstairs(c, grid)) stairs++;
+
+
+		/* The town is there, with its trades in it. */
+		require(shops > 0);
+
+		/*
+		 * And it kept its staircase.  wild_town_wall() moves the staircase
+		 * inside when the north wall lands on it, which puts it in the north
+		 * gate's path; a gate that paved over open ground took it with it.
+		 */
+		require(stairs > 0);
+
+		cave_free(c);
+	}
+
+	ok;
+}
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -926,6 +1034,8 @@ struct test tests[] = {
 	{ "only-the-town-is-known", test_only_the_town_is_known },
 	{ "the-town-has-people", test_the_town_has_people },
 	{ "the-town-holds-the-trades-it-was-given", test_the_town_holds_the_trades_it_was_given },
+	{ "a-large-town-is-built", test_a_large_town_is_built },
+	{ "a-distant-town-is-drawn", test_a_distant_town_is_drawn },
 	{ "the-doorstep-is-survivable", test_the_doorstep_is_survivable },
 	{ "the-wilderness-is-inhabited", test_the_wilderness_is_inhabited },
 	{ "what-you-drop-is-remembered", test_what_you_drop_is_remembered },

@@ -2231,6 +2231,15 @@ struct chunk *cavern_gen(struct player *p, int min_height, int min_width,
 
 /**
  * Get the bounds of a town lot.
+ *
+ * ZangbandTK: the far edges are clamped to the chunk being laid out rather than
+ * to z_info->town_wid/hgt.  Those constants describe the starting village and
+ * nothing else; measuring every town against them truncated every lot east or
+ * south of the crossroads in a town larger than the village, so lot_is_clear()
+ * rejected them and the shops were never built.  A town band above the village
+ * came out as an empty walled field.
+ *
+ * @param c - the chunk the town is being laid out in
  * @param xroads - the location of the town crossroads
  * @param lot - the lot location, indexed from the nw corner
  * @param lot_wid - lot width for the town
@@ -2240,7 +2249,7 @@ struct chunk *cavern_gen(struct player *p, int min_height, int min_width,
  * @param east - a pointer to put the maximum x coord of the lot
  * @param south - a pointer to put the maximum y coord of the lot
  */
-static void get_lot_bounds(struct loc xroads, struct loc lot,
+static void get_lot_bounds(struct chunk *c, struct loc xroads, struct loc lot,
 		int lot_wid, int lot_hgt,
 		int *west, int *north, int *east, int *south) {
 
@@ -2255,18 +2264,18 @@ static void get_lot_bounds(struct loc xroads, struct loc lot,
 
 	if (lot.x < 0) {
 		*west = MAX(2, xroads.x - 1 + (lot.x) * lot_wid);
-		*east = MIN(z_info->town_wid - 3, xroads.x - 2 + (lot.x + 1) * lot_wid);
+		*east = MIN(c->width - 3, xroads.x - 2 + (lot.x + 1) * lot_wid);
 	} else {
 		*west = MAX(2, xroads.x + 2 + (lot.x - 1) * lot_wid);
-		*east = MIN(z_info->town_wid - 3, xroads.x + 1 + (lot.x) * lot_wid);
+		*east = MIN(c->width - 3, xroads.x + 1 + (lot.x) * lot_wid);
 	}
 
 	if (lot.y < 0) {
 		*north = MAX(2, xroads.y + (lot.y) * lot_hgt);
-		*south = MIN(z_info->town_hgt - 3, xroads.y - 1 + (lot.y + 1) * lot_hgt);
+		*south = MIN(c->height - 3, xroads.y - 1 + (lot.y + 1) * lot_hgt);
 	} else {
 		*north = MAX(2, xroads.y + 2 + (lot.y - 1) * lot_hgt);
-		*south = MIN(z_info->town_hgt - 3, xroads.y + 1 + (lot.y) * lot_hgt);
+		*south = MIN(c->height - 3, xroads.y + 1 + (lot.y) * lot_hgt);
 	}
 }
 
@@ -2274,7 +2283,7 @@ static bool lot_is_clear(struct chunk *c, struct loc xroads, struct loc lot,
 		int lot_wid, int lot_hgt) {
 	struct loc nw_corner, se_corner, probe;
 
-	get_lot_bounds(xroads, lot, lot_wid, lot_hgt,
+	get_lot_bounds(c, xroads, lot, lot_wid, lot_hgt,
 		&nw_corner.x, &nw_corner.y, &se_corner.x, &se_corner.y);
 
 	if (se_corner.x - nw_corner.x < lot_wid - 1 || se_corner.y - nw_corner.y < lot_hgt - 1) {
@@ -2296,7 +2305,7 @@ static bool lot_has_shop(struct chunk *c, struct loc xroads, struct loc lot,
 		int lot_wid, int lot_hgt) {
 	struct loc nw_corner, se_corner, probe;
 
-	get_lot_bounds(xroads, lot, lot_wid, lot_hgt, &nw_corner.x, &nw_corner.y,
+	get_lot_bounds(c, xroads, lot, lot_wid, lot_hgt, &nw_corner.x, &nw_corner.y,
 			&se_corner.x, &se_corner.y);
 
 	for (probe.x = nw_corner.x; probe.x <= se_corner.x; probe.x++) {
@@ -2329,7 +2338,7 @@ static void build_store(struct chunk *c, int n, struct loc xroads,
 
 	int build_w, build_n, build_e, build_s;
 
-	get_lot_bounds(xroads, lot, lot_wid, lot_hgt, &lot_w, &lot_n, &lot_e,
+	get_lot_bounds(c, xroads, lot, lot_wid, lot_hgt, &lot_w, &lot_n, &lot_e,
 		&lot_s);
 
 	if (lot.x < -1 || lot.x > 1) {
@@ -2462,7 +2471,7 @@ static void build_ruin(struct chunk *c, struct loc xroads, struct loc lot, int l
 	int lot_west, lot_north, lot_east, lot_south;
 	int wid, hgt;
 
-	get_lot_bounds(xroads, lot, lot_wid, lot_hgt, &lot_west, &lot_north,
+	get_lot_bounds(c, xroads, lot, lot_wid, lot_hgt, &lot_west, &lot_north,
 		&lot_east, &lot_south);
 
 	if (lot_east - lot_west < 1 || lot_south - lot_north < 1) return;
