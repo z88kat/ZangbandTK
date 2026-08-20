@@ -2073,6 +2073,21 @@ void wild_keep_knowledge(struct chunk *known, struct loc offset)
 }
 
 /**
+ * Look at what is being held, without taking it.
+ *
+ * For the savefile: a character who saves while down in the dungeon has their
+ * knowledge of the surface here and nowhere else, so this is the only place it
+ * can be written from.  Ownership stays with wild.c.
+ */
+struct chunk *wild_held_knowledge(struct loc *offset)
+{
+	if (wild_known && offset)
+		*offset = wild_known_offset;
+
+	return wild_known;
+}
+
+/**
  * Take back what was kept, or NULL if nothing was.  Ownership passes to the
  * caller, which must free it.
  */

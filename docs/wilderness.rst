@@ -31,8 +31,10 @@ same world. A character always returns to the world they were born in, because
 the seed is stored in the savefile and the world is rebuilt from it rather than
 saved.
 
-That is the reason the world can be as large as it is. Nothing about it is kept
-in the savefile except the seed and where you are standing.
+That is the reason the world can be as large as it is. What the savefile keeps is
+the seed, where you are standing, and the handful of things that genuinely cannot
+be recomputed from a seed: what you have dropped, which named monsters you have
+wounded, and where you have been.
 
 Terrain
 -------
@@ -271,6 +273,12 @@ stand on it and press ``>``.
 Coming back up puts you where you went down. The world remembers where you left
 it, so a character who walked three days into the hills before finding a way
 underground comes back up in the hills, not in the town.
+
+It remembers what you had explored, too. The surface is taken down while you are
+below and rebuilt from the seed when you return, and what you had learned of it
+is carried across that — including across saving and reloading while you are
+still underground. A character who walks into a town, goes down the stairs and
+comes back up a week later finds the town as they left it, not blank.
 
 .. _what is not here yet:
 

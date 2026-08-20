@@ -657,6 +657,57 @@ reason to cross. If it plays badly, `WILD_VILLAGE_STORES` in [wild.c](../../src/
 is the one line to change.
 
 
+**DEC-30 — The drift away from Amber is a defect to be removed, not a legacy to be kept.**
+
+DEC-25 made Amber the anchor for taste: where Zangband's answer was weak, the
+question became what serves Zelazny's *Chronicles of Amber*. This goes further,
+and states it as the project's goal rather than as a tie-breaker.
+
+*The problem.* Zangband began as an Amber game and did not stay one. Over its
+development it accumulated Lovecraft, Tolkien, and a scattering of other
+role-playing material, until the Amber spine was one theme among many rather
+than the thing the game was about. The result is muddled: a world that is
+nominally Shadow, walked by a nominal Amberite, populated by everything.
+
+*The goal.* Bring it back. The Amber material is the game -- Amber the one true
+city, the Courts of Chaos at the other pole, Shadow between them, the Pattern and
+the Logrus, the Trumps, Oberon's quarrelling children. Everything else is
+present on sufferance and has to earn its place against that.
+
+*What this changes in practice.*
+
+- **Imports are filtered, not merely prioritised.** DEC-19 puts theme first and
+  DEC-25 gives Amber priority; this says the rest is a candidate for removal, not
+  just for going last. When a monster, artifact, or building exists only because
+  some other setting had one, the default is to drop it rather than to port it.
+- **It applies retroactively.** Content already imported is in scope. The
+  bestiary, the artifacts and the building list were brought across before this
+  was stated, and should be read again against it.
+- **It does not license invention without discipline.** DEC-18 still stands:
+  facts get rigour. Filling a gap from the novels is legitimate; inventing Amber
+  material that contradicts them is not, and neither is stripping a mechanic that
+  works merely because its flavour is borrowed. Reskin before deleting where the
+  mechanic is sound.
+- **Angband's own inheritance is not the target.** DEC-27 keeps 4.2 as the base,
+  and 4.2 is a Tolkien game at root. The aim is not to purge every non-Amber name
+  from a codebase built on Angband -- it is that *ZangbandTK's own additions* pull
+  towards Amber rather than away from it.
+
+> Stated by the project owner: *"My goal is to bring ZangbandTK back to Roger
+> Zelazny's Amber novels, the original concept but somehow got diverted from this
+> goal mixing Lovecraft, Tolken, and probably bunch of other RPG's. It got a bit
+> muddled over time. I would to turn this back toward the Amber novels."*
+
+*The source.* Ten novels in two series -- the Corwin cycle (*Nine Princes in
+Amber*, *The Guns of Avalon*, *Sign of the Unicorn*, *The Hand of Oberon*, *The
+Courts of Chaos*) and the Merlin cycle (*Trumps of Doom*, *Blood of Amber*, *Sign
+of Chaos*, *Knight of Shadows*, *Prince of Chaos*).
+[The Chronicles of Amber](https://en.wikipedia.org/wiki/The_Chronicles_of_Amber)
+is the summary to work from where the novels themselves are not to hand; it is
+the reference the project owner pointed at, and it carries the cast, the
+geography and the mechanics of Pattern, Logrus, Trump and Shadow-walking.
+
+
 Nothing is currently blocked. All questions raised during Phase 1 planning are resolved or
 explicitly scheduled below.
 

@@ -1580,7 +1580,13 @@ int rd_wilderness_1(void)
  * Anything added to this block in future goes on the *end*, and bumps the block
  * version.  Inserting a field in the middle is what broke version 1.
  */
-int rd_wilderness(void)
+/**
+ * The body shared by versions 2 and 3 of the block.
+ *
+ * Version 3 appends what the player knows of the surface, so everything before
+ * it is read the same way and the older savefile simply stops sooner.
+ */
+static int rd_wilderness_body(void)
 {
 	uint16_t count;
 	int i;
@@ -1679,6 +1685,45 @@ int rd_wilderness(void)
 			if (blocks != wild->blocks)
 				note("The world has changed size; forgetting the map.");
 		}
+	}
+
+	return 0;
+}
+
+int rd_wilderness_2(void)
+{
+	return rd_wilderness_body();
+}
+
+int rd_wilderness(void)
+{
+	uint8_t held;
+
+	if (rd_wilderness_body())
+		return -1;
+
+	/*
+	 * What the player knows of the surface, if they saved while off it (WLD-25).
+	 *
+	 * On the surface this lives in player->cave and rd_dungeon() reads it.  Down
+	 * in the dungeon the surface is not loaded at all, so the only copy is the
+	 * one wild.c was holding when the game was saved.
+	 */
+	rd_byte(&held);
+
+	if (held) {
+		struct chunk *known = NULL;
+		uint16_t ox, oy;
+
+		rd_u16b(&ox);
+		rd_u16b(&oy);
+
+		if (rd_dungeon_aux(&known)) {
+			note("Error reading the remembered surface");
+			return -1;
+		}
+
+		wild_keep_knowledge(known, loc(ox, oy));
 	}
 
 	return 0;

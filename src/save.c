@@ -1035,6 +1035,29 @@ void wr_wilderness(void)
 	} else {
 		wr_u16b(0);
 	}
+
+	/*
+	 * And what the player knows of the surface at grid resolution, if they are
+	 * not standing on it.
+	 *
+	 * On the surface this is player->cave and wr_dungeon() has already written
+	 * it.  Down in the dungeon the surface has been taken down and only wild.c
+	 * still holds what was learned of it -- so without this, a character who
+	 * saved below and came back up found the town unexplored, which is the same
+	 * fault as losing it across a dungeon trip, one layer further out.
+	 */
+	{
+		struct loc offset = loc(0, 0);
+		struct chunk *known = wild_held_knowledge(&offset);
+
+		wr_byte(known ? 1 : 0);
+
+		if (known) {
+			wr_u16b(offset.x);
+			wr_u16b(offset.y);
+			wr_dungeon_aux(known);
+		}
+	}
 }
 
 void wr_dungeon(void)

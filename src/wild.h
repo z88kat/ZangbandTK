@@ -230,6 +230,7 @@ void wild_town_gates_tick(struct wilderness *w, struct chunk *c,
 void wild_town_free(void);
 void wild_keep_knowledge(struct chunk *known, struct loc offset);
 struct chunk *wild_take_knowledge(struct loc *offset);
+struct chunk *wild_held_knowledge(struct loc *offset);
 
 int wild_danger(struct wilderness *w, int x, int y);
 int wild_density(struct wilderness *w, int x, int y);

@@ -4,17 +4,24 @@ Release log
 
 .. note::
 
-   **No version has been released yet.** There are no tags and no binaries. What
-   follows is the development log, grouped by the milestones the work is
-   organised into, newest first. When there is a release to announce, it will
-   appear here.
+   **3.1.1 is the first release**, tagged on 18 August 2026 — a macOS disk image
+   and a source archive, on the `Releases page`_. What follows is the development
+   log, grouped by the milestones the work is organised into, newest first, with
+   everything done since that tag under *Unreleased*.
 
    This page covers ZangbandTK only. For Angband's own long history, which this
    game is built on, see :doc:`version`.
 
+.. _Releases page: https://github.com/z88kat/ZangbandTK/releases
+
 Development is tracked by milestone. **M0 to M4 are complete** and M5 is under
 way; see :doc:`features` for what that adds up to in the game, and for what the
 rest of M5 onward will bring.
+
+Version numbers move with the work — patch for a fix, minor for a feature,
+bumped in the commit that does it — so a build can be identified from its title
+bar. They begin at 3.0.0, continuing Zangband's own line from 2.7.5-pre1 rather
+than the Angband 4.2.6 the code sits on.
 
 
 Unreleased
@@ -23,13 +30,15 @@ Unreleased
 M5 in progress: towns and roads — 19 to 20 August 2026
 ------------------------------------------------------
 
-Version numbering starts here, so a build can be identified from its title bar.
-
 - **3.3.1** — The in-game help caught up with the game: it points at
   zangbandtk.com rather than Angband's manual, ``M`` is described as showing the
   world map out of doors, and the symbol list learned the overworld — grass,
   trees, water, mountainside, road — along with a note that not every town holds
   all eight shops.
+- Also in 3.3.1: the overworld window scrolls rather than jumping the view
+  across. A rebuild re-anchored both axes when only one had asked for it, and
+  threw the panel away and chose it afresh, so a long walk west appeared to drop
+  the character a dozen rows they had never walked.
 - **3.3.0** — Roads (WLD-08). The towns are joined by routed roads that follow
   the valleys and go round the mountains; every town is reachable from the
   starting village along them. The overworld map is also remembered across a trip
@@ -43,6 +52,45 @@ Version numbering starts here, so a build can be identified from its title bar.
 - **3.2.0** — A dozen places in four sizes (WLD-10, WLD-11, WLD-11a, WLD-12),
   keeping different trades according to the country around them. The starting
   village became the smallest place in the world, deliberately: see DEC-29.
+- Releases gained a **Windows zip** beside the disk image: a 32-bit build,
+  packaged with the manual and a ``README.txt`` for SmartScreen. Windows had been
+  dropped from the release as untested; the mingw cross build, MSBuild, MSYS2 and
+  Cygwin all pass now.
+
+3.1.1 — the first release, 18 August 2026
+=========================================
+
+Tagged at the end of M5's first day, so everything below it shipped in it: M0 to
+M4 complete, and M5 begun. CI builds the release from the tag.
+
+M5 begins: the world map and the front door — 18 August 2026
+------------------------------------------------------------
+
+- **3.1.1** — Four faults: the Visual Studio project had never been told about
+  the wilderness source, so the one build system that lists its sources by hand
+  would not link; no savefile would open, because three additions to the
+  wilderness block had all been left at version 1, so its shape could not be told
+  from its version; and the world map and the menu each had one of their own.
+- **3.1.0** — An overhead map of the world (WLD-25). ``M`` out of doors draws the
+  whole world, one character to a block, from the same table the ground is drawn
+  from, so what the map calls forest is what you walk into. It pans rather than
+  scales, because squeezing 129 rows into 22 would lose the coastlines. In the
+  dungeon ``M`` is still the level map.
+- **3.0.0** — The game's own name and version on the title screen and in the
+  About panel, in place of Angband's and in place of the ``git describe`` string
+  the build systems had been handing it, and an icon of its own, cleaned up from
+  Zangband's.
+- **The town has gates.** The boundary is sealed and four gateways are cut, one
+  per side, each two tiles wide with doors that swing shut, in place of the ragged
+  holes Angband's starburst clearing happened to leave.
+- **Releases are cut from a tag.** CI builds a disk image whose bundle is signed
+  ad-hoc and verifies that signature before publishing, with the source archive
+  beside it. Ad-hoc signing is not notarization, so the first launch has to be
+  allowed by hand once — :doc:`download` says how.
+- Fixes: the 14 issues a code review turned up before M5 started, and a window
+  scroll that moved the player with it.
+- The players' guide became this game's rather than Angband's, and the unused
+  Read the Docs configuration went.
 
 Documentation and site — 17 August 2026
 ---------------------------------------

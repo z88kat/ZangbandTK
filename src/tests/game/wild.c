@@ -1162,6 +1162,63 @@ static int test_the_window_reports_its_travel(void *state) {
 }
 
 
+
+/**
+ * What the player knows of the surface survives being saved from below (WLD-25).
+ *
+ * Standing on the surface, this is player->cave and wr_dungeon() writes it.
+ * Down in the dungeon the surface has been taken down and only wild.c still
+ * holds what was learned of it -- so a character who saved below and came back
+ * up found the town unexplored.  That is the same fault as losing the map across
+ * a dungeon trip, one layer further out: through the savefile rather than
+ * through generate_level().
+ */
+static int test_the_map_survives_a_save_from_below(void *state) {
+	struct loc probe = loc(player->grid.x + 12, player->grid.y + 4);
+	struct loc offset = player->wild_offset;
+	struct loc taken = loc(-1, -1);
+	struct chunk *back;
+	int feat;
+
+	require(square_in_bounds_fully(cave, probe));
+	square_memorize(cave, probe);
+	feat = square(player->cave, probe)->feat;
+	require(feat != FEAT_NONE);
+
+	/* Going below hands the knowledge to wild.c, which is where a save finds it. */
+	{
+		struct chunk *known = cave_new(cave->height, cave->width);
+
+		wild_carry_knowledge(player->cave, offset, known, offset);
+		require(square(known, probe)->feat == feat);
+		wild_keep_knowledge(known, offset);
+	}
+
+	require(savefile_save("Test-know"));
+
+	play_again = true;
+	wipe_mon_list(cave, player);
+	cleanup_angband();
+	chunk_list_max = 0;
+	init_angband();
+	play_again = false;
+
+	require(savefile_load("Test-know", false));
+
+	/* It came back, at the offset it was left at, with the grid still known. */
+	back = wild_take_knowledge(&taken);
+	notnull(back);
+	eq(taken.x, offset.x);
+	eq(taken.y, offset.y);
+	require(square_in_bounds_fully(back, probe));
+	eq(square(back, probe)->feat, feat);
+
+	cave_free(back);
+	file_delete("Test-know");
+
+	ok;
+}
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -1190,5 +1247,6 @@ struct test tests[] = {
 	{ "the-world-map-remembers-travel", test_the_world_map_remembers_travel },
 	{ "reserved-land-is-not-the-town", test_reserved_land_is_not_the_town },
 	{ "world-position-survives-a-save", test_world_position_survives_a_save },
+	{ "the-map-survives-a-save-from-below", test_the_map_survives_a_save_from_below },
 	{ NULL, NULL }
 };
