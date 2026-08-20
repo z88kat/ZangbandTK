@@ -72,6 +72,7 @@ What else is on this disk image
   ZangbandTK.app   The game.
   Docs/            The manual, in HTML. Open Docs/index.html in a browser.
   borg.txt         Documentation for the borg, the automatic player.
+  LICENSE.md       The licence this game is distributed under.
   README.txt       This file.
 
 

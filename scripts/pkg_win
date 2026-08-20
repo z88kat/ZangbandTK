@@ -77,6 +77,11 @@ cp_unix2dos ../src/borg/borg.txt lib/user/borg.txt
 # "we found something wrong with it".  Say which it is, on the way past.
 cp_unix2dos ../src/win/zip-readme.txt README.txt
 
+# The Angband licence asks that the copyright and statement travel with every
+# copy.  Converted like the other text files, so Notepad is not handed a file
+# with Unix line endings.
+cp_unix2dos ../LICENSE.md LICENSE.md
+
 # Assumes that all the converted files in docs have names that don't contain
 # spaces or other characters that the shell uses as field separators.
 # First copy the ones that will benefit from newline conversion; then

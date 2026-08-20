@@ -65,6 +65,7 @@ What is in this folder
   lib\user\borg.txt  Documentation for the borg, the automatic player.
   changes.txt      Angband's changelog, which this game is built on. For
                    ZangbandTK's own history see the Release log on the site.
+  LICENSE.md       The licence this game is distributed under.
   README.txt       This file.
 
 

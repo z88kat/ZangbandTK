@@ -262,6 +262,11 @@ dist: install
 # work that out, or go looking on the website for it.
 	cp cocoa/dmg-readme.txt disttemp/README.txt
 
+# The Angband licence asks that the copyright and statement travel with every
+# copy, so the licence goes in the image rather than only in the repository and
+# the manual.
+	cp ../LICENSE.md disttemp/LICENSE.md
+
 # Sign the copy that goes into the image, ad-hoc, as a bundle.  The link step
 # already leaves a signature on the executable alone, and that is worse than
 # none: it declares sealed resources the bundle does not have, so macOS rejects
