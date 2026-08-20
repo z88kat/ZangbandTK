@@ -2,10 +2,10 @@ Symbols On Your Map
 ===================
 
 Symbols on your map can be broken down into three categories: Features of
-the dungeon such as walls, floor, doors, and traps; Objects which can be
-picked up such as treasure, weapons, magical devices, etc; and creatures
-which may or may not move about the dungeon, but are mostly harmful to your
-character's well being.
+the world such as walls, floor, doors, traps, and the open country between
+the towns; Objects which can be picked up such as treasure, weapons,
+magical devices, etc; and creatures which may or may not move about, but
+are mostly harmful to your character's well being.
 
 Some symbols are used to represent more than one type of entity, and some
 symbols are used to represent entities in more than one category. The "@"
@@ -33,6 +33,12 @@ Features that do not block line of sight
 >  A staircase down              8  Entrance to your Home
 #  A pool of lava
 
+Not every town holds all eight.  A village keeps three or four trades, a
+town five or six, a city or a great city more; which ones it keeps depends
+on the country around it.  Your home village is the smallest of them, and
+has neither an armoury nor a weapon smith -- those are in the next town
+along.
+
 
 Features that block line of sight
 ---------------------------------
@@ -41,6 +47,32 @@ Features that block line of sight
 +  A closed door                 %  A mineral vein
 +  A locked door                 *  A mineral vein with treasure
 :  A pile of rubble              :  A pile of passable rubble
+
+
+Out of doors
+------------
+
+Most of these are told apart by colour rather than by symbol, so the "slash"
+command ('/') is worth using freely until you know them.  Several share a
+symbol with something you will already know from below ground -- a stand of
+trees is drawn like a mineral vein, and a mountainside like a pile of
+rubble.
+
+.  Open grassland (green)      %  A stand of trees (light green)
+.  Bare earth (brown)          :  Mountainside, impassable (brown)
+.  Sand, by the water          ~  Shallow water; wadeable (light blue)
+.  Mud; heavy going            ~  Deep water and open sea (blue)
+.  A made road (white)
+
+
+The road is worth following.  Roads run between the towns, so if you are
+lost in open country, find one and walk along it -- it goes somewhere.  Deep
+water can be waded into, but not while heavily laden, and the sea at the
+edge of the world is the edge of the world.
+
+Towns stand behind walls, with gates no more than two grids wide.  A gate is
+a closed door ('+') in the wall; open it to pass through, and it will swing
+shut behind you after a while.
 
 
 Objects

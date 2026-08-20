@@ -101,9 +101,21 @@ world with a lot of coastline has fewer of them.
 
 Towns are never built in water, though they are often built beside it.
 
-Roads are **not yet built**. There is a stub of road through the town, and it
-goes nowhere: a road connects one town to another, and there is only one town so
-far. That arrives with the rest of the towns.
+Roads join the towns. A road is routed rather than drawn straight: it takes the
+cheapest way across the country, so it runs down the valleys, keeps out of the
+swamp and goes round a mountain instead of over it. It keeps to the land as well
+-- two towns on either side of an inland sea get a causeway, but that is the
+exception the sea is opened for, not a short cut across every bay.
+
+Every town is on the network. The roads are laid as a spanning tree over the
+towns first, so there is always a road out of the starting village and following
+roads from it reaches every other town in the world; then any two towns within
+``wild:road-dist`` blocks of each other get a road directly between them, so
+settled country ends up with a network rather than a single thread. About one
+block of the world in a hundred carries a road.
+
+If you are lost, find a road and walk along it. It goes somewhere.
+:doc:`towns` covers what you will find at the other end.
 
 Travel
 ------

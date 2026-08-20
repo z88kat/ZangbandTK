@@ -27,7 +27,7 @@ when the autoexplore_commands option is on.
   j    -                               J    -
   k    Ignore an item                  K    Toggle ignore
   l    Look around                     L    Locate player on map
-  m    Cast a spell                    M    Display map of entire level
+  m    Cast a spell                    M    Map of level, or of the world
   n    Repeat previous command         N    -
   o    Open a door or chest            O    -
   p    - (see above)                   P    -

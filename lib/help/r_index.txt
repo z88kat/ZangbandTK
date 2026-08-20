@@ -1,6 +1,11 @@
 This is a short in-game reference to available commands and the symbols
 you might encounter in-game.  For more detailed help, please see:
 
+   https://zangbandtk.com/
+
+ZangbandTK is built on Angband 4.2, whose own manual still covers most of
+what the two have in common:
+
    https://angband.readthedocs.io/en/latest/
 
 

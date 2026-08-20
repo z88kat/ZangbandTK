@@ -27,7 +27,7 @@ when the autoexplore_commands option is on.
   j    (walk - south)                  J    (run - south)
   k    (walk - north)                  K    (run - north)
   l    (walk - east)                   L    (run - east)
-  m    Cast a spell                    M    Display map of entire level
+  m    Cast a spell                    M    Map of level, or of the world
   n    (walk - south east)             N    (run - south east)
   o    Open a door or chest            O    Toggle ignore
   p    - (see above)                   P    Browse a book

@@ -12,13 +12,37 @@ Release log
    This page covers ZangbandTK only. For Angband's own long history, which this
    game is built on, see :doc:`version`.
 
-Development is tracked by milestone. **M0 to M4 are complete**; see
-:doc:`features` for what that adds up to in the game, and for what M5 onward will
-bring.
+Development is tracked by milestone. **M0 to M4 are complete** and M5 is under
+way; see :doc:`features` for what that adds up to in the game, and for what the
+rest of M5 onward will bring.
 
 
 Unreleased
 ==========
+
+M5 in progress: towns and roads — 19 to 20 August 2026
+------------------------------------------------------
+
+Version numbering starts here, so a build can be identified from its title bar.
+
+- **3.3.1** — The in-game help caught up with the game: it points at
+  zangbandtk.com rather than Angband's manual, ``M`` is described as showing the
+  world map out of doors, and the symbol list learned the overworld — grass,
+  trees, water, mountainside, road — along with a note that not every town holds
+  all eight shops.
+- **3.3.0** — Roads (WLD-08). The towns are joined by routed roads that follow
+  the valleys and go round the mountains; every town is reachable from the
+  starting village along them. The overworld map is also remembered across a trip
+  to the dungeon, which it was not before: coming back up put you in a town you
+  had to learn again.
+- **3.2.1** — Three faults that made a town away from home unusable. Larger towns
+  came out as empty fields inside their walls, because every building lot was
+  clamped to the starting village's size; no town was drawn at all once the window
+  no longer covered home; and about one town in fifty lost its down staircase to
+  the gate-cutting.
+- **3.2.0** — A dozen places in four sizes (WLD-10, WLD-11, WLD-11a, WLD-12),
+  keeping different trades according to the country around them. The starting
+  village became the smallest place in the world, deliberately: see DEC-29.
 
 Documentation and site — 17 August 2026
 ---------------------------------------
