@@ -52,6 +52,7 @@
 #include "ui-object.h"
 #include "ui-obj-list.h"
 #include "ui-output.h"
+#include "wild.h"
 #include "ui-player.h"
 #include "ui-prefs.h"
 #include "ui-store.h"
@@ -2508,12 +2509,33 @@ static void repeated_command_display(game_event_type type,
 static void new_level_display_update(game_event_type type,
 									 game_event_data *data, void *user)
 {
-	/* Enforce illegal panel */
-	Term->offset_y = z_info->dungeon_hgt;
-	Term->offset_x = z_info->dungeon_wid;
+	if (player->upkeep->scroll_world) {
+		/*
+		 * ZangbandTK: the overworld window moved; the level did not change.
+		 * The panel is addressed within the chunk and the chunk has just been
+		 * rebuilt under it, so shift the panel by as far as the window
+		 * travelled and the same country stays in the same place on screen.
+		 *
+		 * Without this the panel was thrown away and chosen afresh, which
+		 * centres it on the player -- and a character who happened to be near
+		 * the top or bottom of the panel when a step west triggered the
+		 * rebuild appeared to drop several rows down the screen mid-stride.
+		 */
+		struct loc scroll = wild_scroll_delta();
 
-	/* Choose panel */
-	verify_panel();
+		modify_panel(Term, Term->offset_y + scroll.y,
+					 Term->offset_x + scroll.x);
+
+		/* And then the ordinary rules, in case that left them near an edge. */
+		verify_panel();
+	} else {
+		/* Enforce illegal panel */
+		Term->offset_y = z_info->dungeon_hgt;
+		Term->offset_x = z_info->dungeon_wid;
+
+		/* Choose panel */
+		verify_panel();
+	}
 
 	/* Clear */
 	Term_clear();

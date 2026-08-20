@@ -37,6 +37,20 @@
 
 struct wilderness *wild = NULL;
 
+/**
+ * The window the surface was last built at.
+ *
+ * A rebuild is triggered by either axis nearing its edge, but it used to
+ * re-anchor both -- so walking a long way due west re-centred the window
+ * vertically as well, in whole blocks, and the character jumped a dozen rows up
+ * or down the screen without having moved north or south at all.
+ */
+static struct loc wild_window = { 0, 0 };
+static bool wild_window_set = false;
+
+/** How far the window moved when it was last rebuilt, in grids. */
+static struct loc wild_scroll = { 0, 0 };
+
 /** What the player knows of the surface, held while they are off it (WLD-25). */
 static struct chunk *wild_known = NULL;
 static struct loc wild_known_offset = { 0, 0 };
@@ -1321,6 +1335,19 @@ static void wild_place_roads(struct wilderness *w)
 }
 
 /**
+ * How far the window moved, in grids, when the surface was last rebuilt.
+ *
+ * The display addresses the panel in coordinates within the chunk, and a
+ * rebuild replaces the chunk under it.  Shifting the panel by this keeps the
+ * same country in the same place on screen, so that scrolling the world is
+ * invisible rather than a jump.
+ */
+struct loc wild_scroll_delta(void)
+{
+	return wild_scroll;
+}
+
+/**
  * Does a road run through this block?
  */
 bool wild_road_at(struct wilderness *w, int bx, int by)
@@ -1493,6 +1520,9 @@ void wild_ensure(uint32_t seed)
  */
 void wild_cleanup(void)
 {
+	wild_window_set = false;
+	wild_scroll = loc(0, 0);
+
 	if (wild_known) {
 		cave_free(wild_known);
 		wild_known = NULL;
@@ -2648,6 +2678,44 @@ bool wild_is_surface(const struct chunk *c)
 }
 
 /**
+ * How close the player may come to the window's border before it is rebuilt.
+ *
+ * Further than they can see, and by a margin.  The border carries the
+ * impassable ring every Angband level needs, and away from the edge of the
+ * world that ring is a fiction -- there is more country beyond it.  The player
+ * must never be in a position to look at it, so the trigger has to exceed
+ * max-sight rather than merely being "near the edge".
+ */
+static int wild_recentre_margin(void)
+{
+	return MAX(2 * z_info->wild_block_size, z_info->max_sight + 8);
+}
+
+/**
+ * Is the player far enough from both edges of this axis to leave it alone?
+ *
+ * Mirrors wild_needs_recentre(), which is what decides a rebuild is due: an
+ * axis that would not have called for one on its own does not get moved by one
+ * the other axis called for.
+ */
+static bool wild_axis_settled(int centre, int origin, int span, int margin,
+							  int world_max)
+{
+	int local = centre - origin;
+
+	/* It has to be inside the old window before anything else. */
+	if (local < 0 || local >= span)
+		return false;
+
+	if (local < margin && origin > 0)
+		return false;
+	if (local >= span - margin && origin + span < world_max)
+		return false;
+
+	return true;
+}
+
+/**
  * Build the live wilderness surface around a world position (WLD-24).
  *
  * The overworld is one continuous surface, not a set of levels: a town and the
@@ -2680,6 +2748,36 @@ struct chunk *wild_surface(struct wilderness *w, struct player *p,
 	/* Align to block boundaries: blocks generate whole, not in pieces. */
 	ox -= ox % size;
 	oy -= oy % size;
+
+	/*
+	 * Then leave alone whichever axis did not need moving.  A rebuild is
+	 * triggered by either axis nearing the window's edge and used to re-anchor
+	 * both, so a long walk due west re-centred the window vertically too --
+	 * and since the window aligns to whole blocks, the character's row within
+	 * it jumped by up to a block without their having moved north or south.
+	 * From inside, the character appeared to drop a dozen tiles down the
+	 * screen mid-stride.
+	 */
+	if (wild_window_set) {
+		int margin = wild_recentre_margin();
+
+		if (wild_axis_settled(centre.x, wild_window.x, span, margin, world_max))
+			ox = wild_window.x;
+		if (wild_axis_settled(centre.y, wild_window.y, span, margin, world_max))
+			oy = wild_window.y;
+	}
+
+	/*
+	 * How far the window moved, so the display can follow it.  The panel is
+	 * addressed in coordinates within the chunk, and the chunk has just been
+	 * rebuilt underneath it: without this the view jumps by however far the
+	 * window travelled.
+	 */
+	wild_scroll = wild_window_set ? loc(wild_window.x - ox, wild_window.y - oy)
+								  : loc(0, 0);
+
+	wild_window = loc(ox, oy);
+	wild_window_set = true;
 
 	c = cave_new(span, span);
 	c->depth = 0;
@@ -2811,19 +2909,6 @@ struct chunk *wild_surface(struct wilderness *w, struct player *p,
 	return c;
 }
 
-/**
- * How close the player may come to the window's border before it is rebuilt.
- *
- * Further than they can see, and by a margin.  The border carries the
- * impassable ring every Angband level needs, and away from the edge of the
- * world that ring is a fiction -- there is more country beyond it.  The player
- * must never be in a position to look at it, so the trigger has to exceed
- * max-sight rather than merely being "near the edge".
- */
-static int wild_recentre_margin(void)
-{
-	return MAX(2 * z_info->wild_block_size, z_info->max_sight + 8);
-}
 
 /**
  * Should the live surface be rebuilt around the player?

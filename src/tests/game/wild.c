@@ -1073,6 +1073,95 @@ static int test_the_map_survives_the_dungeon(void *state) {
 	ok;
 }
 
+/**
+ * Walking east or west does not shift the world up or down.
+ *
+ * A rebuild is triggered by either axis nearing the window's edge, and used to
+ * re-anchor both.  Since the window aligns to whole blocks, re-anchoring an
+ * axis the player had merely drifted along moved them by up to a block within
+ * the chunk -- so a character walking due west appeared to drop a dozen tiles
+ * down the screen mid-stride, having never moved north or south.
+ */
+static int test_walking_sideways_keeps_the_row(void *state) {
+	int size = z_info->wild_block_size;
+	int span = wild_view_blocks() * size;
+	struct loc here = player->wild_grid;
+	struct loc first, second;
+	struct chunk *a, *b;
+	int drift = size + 4;
+
+	/*
+	 * Start well inside the world, so that neither axis is against an edge and
+	 * clamping is not what keeps the offset still.
+	 */
+	here.x = span * 3 + size * 5 + 7;
+	here.y = span * 3 + size * 5 + 3;
+
+	a = wild_surface(wild, player, here, &first);
+	notnull(a);
+	cave_free(a);
+
+	/*
+	 * Walk west until the window must follow, going round things on the way --
+	 * which is what makes a character drift north and south while heading in a
+	 * single direction.  The drift is more than a block, because the window
+	 * aligns to whole blocks and a smaller one would be absorbed by that and
+	 * prove nothing.
+	 */
+	here.x = first.x + 1;
+	here.y -= drift;
+
+	b = wild_surface(wild, player, here, &second);
+	notnull(b);
+	cave_free(b);
+
+	/* The window follows them west... */
+	require(second.x < first.x);
+
+	/* ...and does not move at all in the axis they did not walk out of. */
+	eq(second.y, first.y);
+
+	ok;
+}
+
+/**
+ * The window reports how far it moved, so the display can follow it (WLD-25).
+ *
+ * The panel is addressed in coordinates within the chunk, and a rebuild
+ * replaces the chunk under it.  Shifting the panel by exactly this keeps the
+ * same country in the same place on screen; getting it wrong is the difference
+ * between scrolling the world and appearing to jump across it.
+ */
+static int test_the_window_reports_its_travel(void *state) {
+	int size = z_info->wild_block_size;
+	int span = wild_view_blocks() * size;
+	struct loc here = loc(span * 3 + size * 5 + 7, span * 3 + size * 5 + 3);
+	struct loc first, second, moved;
+	struct chunk *a, *b;
+
+	a = wild_surface(wild, player, here, &first);
+	notnull(a);
+	cave_free(a);
+
+	/* Far enough that both axes have to move. */
+	here.x -= span;
+	here.y -= span;
+
+	b = wild_surface(wild, player, here, &second);
+	notnull(b);
+	cave_free(b);
+
+	require(second.x != first.x);
+	require(second.y != first.y);
+
+	moved = wild_scroll_delta();
+	eq(moved.x, first.x - second.x);
+	eq(moved.y, first.y - second.y);
+
+	ok;
+}
+
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -1096,6 +1185,8 @@ struct test tests[] = {
 	{ "the-map-survives-a-scroll", test_the_map_survives_a_scroll },
 	{ "the-map-survives-the-dungeon", test_the_map_survives_the_dungeon },
 	{ "scrolling-does-not-move-the-player", test_scrolling_does_not_move_the_player },
+	{ "walking-sideways-keeps-the-row", test_walking_sideways_keeps_the_row },
+	{ "the-window-reports-its-travel", test_the_window_reports_its_travel },
 	{ "the-world-map-remembers-travel", test_the_world_map_remembers_travel },
 	{ "reserved-land-is-not-the-town", test_reserved_land_is_not_the_town },
 	{ "world-position-survives-a-save", test_world_position_survives_a_save },

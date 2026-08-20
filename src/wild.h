@@ -193,6 +193,7 @@ void wild_mark_seen(struct wilderness *w, struct loc grid);
 bool wild_seen(struct wilderness *w, int x, int y);
 bool wild_in_town(struct wilderness *w, int bx, int by);
 bool wild_road_at(struct wilderness *w, int bx, int by);
+struct loc wild_scroll_delta(void);
 int wild_block_feat(struct wilderness *w, int x, int y);
 
 void wild_ensure(uint32_t seed);
