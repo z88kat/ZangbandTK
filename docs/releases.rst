@@ -5,7 +5,8 @@ Release log
 .. note::
 
    **3.1.1 is the first release**, tagged on 18 August 2026 — a macOS disk image
-   and a source archive, on the `Releases page`_. What follows is the development
+   and a source archive, on the `Releases page`_. It is marked a pre-release, as
+   every release will be while the game is early. What follows is the development
    log, grouped by the milestones the work is organised into, newest first, with
    everything done since that tag under *Unreleased*.
 
@@ -30,6 +31,15 @@ Unreleased
 M5 in progress: towns and roads — 19 to 20 August 2026
 ------------------------------------------------------
 
+- **3.4.1** — A town wall you were standing next to was invisible if you were
+  standing in trees. Angband lights a wall only if the grid between it and you
+  carries light onto its face, which assumes anything blocking sight is a wall
+  nobody can stand in; ZangbandTK's trees are passable and block sight, so the
+  grid you occupied was judged to block the light. Only the stretches of wall
+  with grass in front of them lit up, which is what made it puzzling.
+- **3.4.0** — What you know of the surface now survives a save made while you are
+  underground, not just a dungeon trip within one session. The savefile's
+  wilderness block goes to version 3; older saves still load.
 - **3.3.1** — The in-game help caught up with the game: it points at
   zangbandtk.com rather than Angband's manual, ``M`` is described as showing the
   world map out of doors, and the symbol list learned the overworld — grass,

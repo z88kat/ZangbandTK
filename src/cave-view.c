@@ -540,6 +540,27 @@ static bool glow_can_light_wall(struct chunk *c, struct player *p,
 	if (loc_eq(pn, wgrid)) return true;
 
 	/*
+	 * ZangbandTK: if the player is standing in the grid next to the wall,
+	 * they can see it, whatever they are standing in.
+	 *
+	 * The test below asks whether the grid between the wall and the player
+	 * carries light onto it, which assumes anything blocking sight is a wall
+	 * nobody can occupy.  ZangbandTK's wilderness broke that assumption: a
+	 * stand of trees is PASSABLE without LOS, so a character standing in a
+	 * wood beside a town wall was told the intervening grid -- the one they
+	 * were standing in -- did not let light through, and the wall they were
+	 * touching was never lit, never seen and never remembered.  It appeared
+	 * only when they walked into it.  Only parts of a wall vanished, which is
+	 * what made it puzzling: the stretches with grass in front of them lit
+	 * normally.
+	 *
+	 * (Vanilla has the same latent case with passable rubble.  It is rare
+	 * enough underground never to have been noticed; in a forest it is
+	 * everywhere.)
+	 */
+	if (loc_eq(pn, p->grid)) return true;
+
+	/*
 	 * If the grid in the direction of the player is not a wall and is
 	 * glowing, it'll illuminate the wall.
 	 */

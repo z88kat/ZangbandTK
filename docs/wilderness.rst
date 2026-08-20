@@ -236,6 +236,10 @@ you had taken a step. So beyond the town's edge the ordinary rules apply — you
 learn the world by looking at it, and daylight lets you see a long way across
 open ground but tells you nothing about what is behind the trees.
 
+Trees are the one piece of terrain here that Angband had no equivalent for: you
+can walk into them, and you cannot see through them. Standing in a wood you see
+your own surroundings and very little else, which is the point of a wood.
+
 Leaving the town
 ----------------
 

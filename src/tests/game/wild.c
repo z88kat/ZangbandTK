@@ -1219,6 +1219,57 @@ static int test_the_map_survives_a_save_from_below(void *state) {
 	ok;
 }
 
+
+/**
+ * A wall you are standing next to is visible, even from inside a wood.
+ *
+ * Angband lights a wall only if the grid between it and the player carries
+ * light onto its face, which assumes anything blocking sight is a wall nobody
+ * can stand in.  ZangbandTK's trees are PASSABLE without LOS, so a character
+ * standing in a wood beside a town wall was told the grid they were standing in
+ * did not let light through: the wall was never lit, never seen and never
+ * remembered, and appeared only when they walked into it.  Only the stretches
+ * with grass in front of them lit normally, which is what made it puzzling.
+ */
+static int test_a_wall_is_seen_from_inside_a_wood(void *state) {
+	struct loc mid = loc(cave->width / 2, cave->height / 2);
+	struct loc wall = loc(mid.x, mid.y + 1);
+	struct loc away = loc(mid.x, mid.y - 40);
+	struct loc grid;
+	int dx, dy;
+
+	require(square_in_bounds_fully(cave, wall));
+	require(square_in_bounds_fully(cave, away));
+
+	/* A clearing with a wall across its south side, and trees in front. */
+	for (dy = -3; dy <= 3; dy++)
+		for (dx = -3; dx <= 3; dx++) {
+			grid = loc(mid.x + dx, mid.y + dy);
+			square_set_feat(cave, grid, (dy == 1) ? FEAT_PERM : FEAT_TREE);
+		}
+
+	/* Out of sight of it to begin with, so the walk up is what reveals it. */
+	square_set_feat(cave, away, FEAT_GRASS);
+	player->grid = away;
+	square_forget(cave, wall);
+	sqinfo_off(square(cave, wall)->info, SQUARE_SEEN);
+	cave_illuminate(cave, true, false);
+	update_view(cave, player);
+	require(!square_isseen(cave, wall));
+
+	/* Now stand in the trees, right against the wall. */
+	player->grid = mid;
+	cave_illuminate(cave, true, false);
+	update_view(cave, player);
+
+	/* Daylight reaches it, it is seen, and walking away will not unlearn it. */
+	require(square_light(cave, wall) > 0);
+	require(square_isseen(cave, wall));
+	require(square_isknown(cave, wall));
+
+	ok;
+}
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -1248,5 +1299,6 @@ struct test tests[] = {
 	{ "reserved-land-is-not-the-town", test_reserved_land_is_not_the_town },
 	{ "world-position-survives-a-save", test_world_position_survives_a_save },
 	{ "the-map-survives-a-save-from-below", test_the_map_survives_a_save_from_below },
+	{ "a-wall-is-seen-from-inside-a-wood", test_a_wall_is_seen_from_inside_a_wood },
 	{ NULL, NULL }
 };
