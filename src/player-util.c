@@ -104,9 +104,9 @@ int dungeon_get_next_level(struct player *p, int dlev, int added)
  */
 bool player_enter_dungeon_here(struct player *p)
 {
-	struct loc world = loc(p->grid.x + p->wild_offset.x,
-						   p->grid.y + p->wild_offset.y);
-	int idx = wild_dungeon_at(wild, world);
+	struct loc world_grid = loc(p->grid.x + p->wild_offset.x,
+								p->grid.y + p->wild_offset.y);
+	int idx = wild_dungeon_at(wild, world_grid);
 	const struct dun_type *type;
 
 	if (idx >= 0) {

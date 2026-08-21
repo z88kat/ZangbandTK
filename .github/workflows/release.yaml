@@ -181,7 +181,7 @@ jobs:
       # cmake, gcc, ninja and libx11-dev are for configuring and building; git
       # is for scripts/version.sh.
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip

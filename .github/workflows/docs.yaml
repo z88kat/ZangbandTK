@@ -37,7 +37,7 @@ jobs:
       # than from apt: the distribution's sphinx-common is both older than what
       # conf.py expects and unaware of the extensions.  Need make and git too.
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip

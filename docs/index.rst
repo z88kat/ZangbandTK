@@ -54,8 +54,8 @@ Start here
       :link: download
       :link-type: doc
 
-      No binaries yet. Two commands to build it from source on macOS, and what
-      to know before you start.
+      3.1.1 as a disk image for macOS, or two commands to build it from source,
+      and what to know before you start.
 
    .. grid-item-card:: Documentation
       :link: documentation
@@ -68,7 +68,8 @@ Start here
       :link: releases
       :link-type: doc
 
-      The development log, by milestone. M0 to M4 are complete.
+      The first release is 3.1.1. The log runs by milestone: M0 to M4 are
+      complete, and M5 is under way.
 
 
 What makes it Zangband

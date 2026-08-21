@@ -1,0 +1,390 @@
+Run echo "=== dosbox.log ==="
+  echo "=== dosbox.log ==="
+  [ -f dosbox.log ] && cat dosbox.log || echo "(dosbox.log not found)"
+  shell: /usr/bin/bash -e {0}
+=== dosbox.log ===
+LOG: Early LOG Init complete
+LOG: DOSBox-X's working directory: /home/runner/work/ZangbandTK/ZangbandTK
+LOG: Logging init: beginning logging proper. This is the end of the early init logging
+LOG: Logging: No logfile was given. All further logging will be discarded.
+LOG:          0 DEBUG MISC:Logging init complete
+LOG: DOSBox-X version 2024.03.01 Commit 02f36ba (Linux SDL2 64-bit)
+LOG:          0       MISC:Copyright 2011-2024 The DOSBox-X Team. Project maintainer: joncampbell123 (The Great Codeholio). DOSBox-X published under GNU GPL.
+LOG:          0 DEBUG GUI:SDL 1.2.14 hack: SDL_DISABLE_LOCK_KEYS=1
+LOG: SDL: version 2.30.0, Video offscreen, Audio alsa
+LOG:          0       GUI:Press Ctrl-F10 to capture/release mouse, Alt-F10 for configuration.
+LOG: Host keyboard layout is now  ()
+LOG: Mapper keyboard layout is now  ()
+LOG:          0 DEBUG MISC:Initializing SDL joystick subsystem...
+LOG:          0 DEBUG MISC:SDL reports 0 joysticks
+LOG:          0 DEBUG GUI:Starting GUI
+LOG:          0 DEBUG GUI:This version compiled against SDL 2.x
+LOG:          0 DEBUG GUI:SDL2 version 2.30.0
+LOG: SDL2 reports desktop display mode 1024 x 768
+LOG: The default output for the video system: opengl
+LOG:          0 DEBUG MISC:Early init (renderer): xBRZ options
+LOG: WARNING: SDL2 unable to create GL context
+LOG: Could not initialize OpenGL, switching back to surface
+LOG: Configured windowposition: -
+LOG: SDL: Current window pixel format: SDL_PIXELFORMAT_RGB888
+LOG: SDL: You are running in 24 bpp mode, this will slow down things!
+LOG:          0 DEBUG MISC:SDL video mode: 640x400 (clip 0x0 with upper-left at 0x0) 32bpp
+LOG:          0 DEBUG MISC:   red: shift=16 mask=0x00ff0000
+LOG:          0 DEBUG MISC:   green: shift=8 mask=0x0000ff00
+LOG:          0 DEBUG MISC:   blue: shift=0 mask=0x000000ff
+LOG:          0 DEBUG MISC:   alpha: shift=0 mask=0x00000000
+LOG: Screen report: Method 'None' (-1.000 x -1.000 pixels) at (0.000 x 0.000) (-1.000 x -1.000 mm) (-0.039 x -0.039 in) (-1.000 x -1.000 DPI)
+LOG:          0 DEBUG MISC:MAPPER starting up
+LOG:          0 DEBUG MISC:Initializing tick loop management
+LOG:          0 DEBUG MISC:DOSBOX-X RealInit: loading settings and initializing
+LOG: ISA BCLK: 8333333.333Hz (25000000/3)
+LOG:          0 DEBUG MISC:Initializing renderer
+LOG: monopal: green,
+LOG:          0 DEBUG MISC:Initializing screenshot and A/V capture system
+LOG: Active save slot: 1 [Empty]
+LOG: USING AVI+ZMBV
+LOG:          0 DEBUG MISC:Initializing I/O port handler system
+LOG:          0 DEBUG MISC:HARDWARE_Init: initializing
+LOG:          0 DEBUG MISC:Initializing address limit/gate system
+LOG:          0 DEBUG MISC:Memory: address_bits=32 alias_pagemask=fffff
+LOG:          0 DEBUG MISC:Initializing memory access array (page handler callback system). mem_alias_pagemask=fffff
+LOG:          0 DEBUG MISC:Initializing A20 gate emulation
+LOG:          0 DEBUG MISC:Initializing PS/2 port 92h emulation
+LOG:          0 DEBUG MISC:Initializing RAM emulation (system memory)
+LOG: Max 3670016 sz 16384
+LOG: Final 16384
+LOG:          0 DEBUG MISC:Memory: 4096 pages (16384KB) of RAM, 4096 (16384KB) reported to OS, 1048576 (0x100000) (4194304KB) pages of memory handlers
+LOG:          0 DEBUG MISC:Initializing DMA controller emulation
+LOG:          0 DEBUG MISC:Init_PIC()
+LOG:          0 DEBUG MISC:TIMER_Init()
+LOG:          0 DEBUG MISC:Initializing PCI bus emulation
+LOG:          0 DEBUG MISC:Initializing paging system (CPU linear -> physical mapping system)
+LOG:          0 DEBUG MISC:Initializing CMOS/RTC
+LOG:          0 DEBUG MISC:CMOS sync to 2026-08-21 06:28:21
+LOG:          0 DEBUG MISC:Initializing ROM BIOS
+LOG:          0 DEBUG BIOS:ROM BIOS range: 0xF0000-0xFFFFF
+LOG:          0 DEBUG BIOS:ROM BIOS range according to minimum size: 0xF0000-0xFFFFF
+LOG:          0 DEBUG BIOS:ROM BIOS also mapping alias to 0xffff0000-0xffffffff
+LOG:          0 DEBUG BIOS:getMemory in 'ROM BIOS' (0x00022 bytes,"BIOS ID string",align=1,mustbe=0xfe00e) = 0xfe00e
+LOG:          0 DEBUG BIOS:getMemory in 'ROM BIOS' (0x00014 bytes,"BIOS version string",align=1,mustbe=0xfe061) = 0xfe061
+LOG:          0 DEBUG BIOS:getMemory in 'ROM BIOS' (0x00400 bytes,"BIOS 8x8 font (first 128 chars)",align=1,mustbe=0xffa6e) = 0xffa6e
+LOG:          0 DEBUG MISC:Initializing DOSBox callback instruction system
+LOG:          0 DEBUG BIOS:getMemory in 'ROM BIOS' (0x01600 bytes,"DOSBox callback area",align=4,mustbe=0x00000) = 0xfca00
+LOG:          0 DEBUG BIOS:getMemory in 'ROM BIOS' (0x0000e bytes,"DOSBox vm86 hack",align=4,mustbe=0x00000) = 0xfc9f0
+LOG:          0 DEBUG CPU:Callback area starts at f000:ca00
+LOG:          0 DEBUG MISC:Init_VGABIOS: Initializing VGA BIOS and parsing its settings
+LOG:          0 DEBUG MISC:Initializing Voodoo/3DFX emulation
+LOG:          0 DEBUG MISC:PROGRAMS_Init(): initializing Z: drive .COM stub and program management
+LOG:          0 DEBUG MISC:Initializing PC speaker
+LOG:          0 DEBUG MISC:Initializing Tandy voice emulation
+LOG:          0 DEBUG MISC:Initializing MPU401 emulation
+LOG:          0 DEBUG MISC:Initializing DOSBox audio mixer
+ALSA lib confmisc.c:855:(parse_card) cannot find card '0'
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_card_inum returned error: No such file or directory
+ALSA lib confmisc.c:422:(snd_func_concat) error evaluating strings
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_concat returned error: No such file or directory
+ALSA lib confmisc.c:1342:(snd_func_refer) error evaluating name
+ALSA lib conf.c:5208:(_snd_config_evaluate) function snd_func_refer returned error: No such file or directory
+ALSA lib conf.c:5731:(snd_config_expand) Evaluate error: No such file or directory
+ALSA lib pcm.c:2721:(snd_pcm_open_noupdate) Unknown PCM default
+LOG:          0 DEBUG MISC:MIXER:Can't open audio: ALSA: Couldn't open audio device: No such file or directory , running in nosound mode.
+LOG:          0 DEBUG MISC:Mixer: sample_accurate=0 blocksize=1024 sdl_rate=48000Hz mixer_rate=48000Hz channels=2 samples=1024 min/max/need=0/0/0 per_ms=48 0/1000 samples prebuffer=1200
+LOG:          0 DEBUG MISC:Initializing MIDI emulation
+ALSA lib seq_hw.c:528:(snd_seq_hw_open) open /dev/snd/seq failed: No such file or directory
+LOG:          0 WARN  MISC:ALSA:Can't open sequencer
+LOG: SDLNet_TCP_Open: Couldn't connect to remote host
+LOG: TiMidity: can't open control connection (host=127.0.0.1, port=7777)
+LOG: MIDI:fluidsynth: SoundFont not specified, and no system SoundFont found
+LOG: MIDI:synth: Specify .SF2 sound font file with midiconfig=
+LOG: MT32: failed to locate ROMs.
+LOG: MT32 emulation requires the PCM and CONTROL ROM files.
+LOG: To eliminate this error message, check the DOSBox-X wiki.
+LOG: The ROM files are: CM32L_CONTROL.ROM and CM32L_PCM.ROM or MT32_CONTROL.ROM and MT32_PCM.ROM
+LOG: MIDI:Opened device:none
+LOG: Pentium CMPXCHG8B emulation is enabled
+LOG:          0 DEBUG MISC:Initializing FPU
+LOG:          0       FPU:FPU core: x86 FPU
+LOG:          0 DEBUG FPU:FPU32 selftest passed
+LOG:          0 DEBUG FPU:FPU64 selftest passed
+LOG:          0 DEBUG FPU:FPU80 selftest passed
+LOG:          0 DEBUG MISC:Initializing VGA
+LOG:          0 DEBUG MISC:Render scaler maximum resolution is 1920 x 1440
+LOG:          0 DEBUG MISC:Initializing floppy controller emulation
+LOG:          0 DEBUG MISC:Initializing keyboard emulation
+LOG:          0 DEBUG MISC:Initializing Sound Blaster emulation
+LOG:          0 DEBUG MISC:Initializing joystick emulation
+LOG:          0 DEBUG MISC:Initializing PS/1 sound emulation
+LOG:          0 DEBUG MISC:Initializing Disney Sound Source emulation
+LOG:          0 DEBUG MISC:Initializing Gravis Ultrasound emulation
+LOG:          0 DEBUG MISC:Initializing IDE controllers
+LOG:          0 DEBUG MISC:Initializing INNOVA emulation
+LOG:          0 DEBUG MISC:Initializing BIOS
+LOG:          0 DEBUG MISC:Initializing serial port emulation
+LOG:          0 DEBUG MISC:Initializing dongle emulation
+LOG:          0 DEBUG MISC:Initializing parallel port emulation
+LOG:          0 DEBUG MISC:Initializing NE2000 network card emulation
+LOG:          0 DEBUG MISC:MEM_A20_Enable(1)
+LOG:          0 DEBUG DOSMISC:Initializing DOS kernel (DOS_Init)
+LOG:          0 DEBUG DOSMISC:sizeof(union bootSector) = 2048
+LOG:          0 DEBUG DOSMISC:sizeof(struct FAT_BootSector) = 2048
+LOG:          0 DEBUG DOSMISC:sizeof(direntry) = 32
+LOG:          0 DEBUG DOSMISC:Initializing DOS drives
+LOG:          0 DEBUG DOSMISC:Initializing DOS keyboard layout emulation
+LOG:          0 DEBUG MOUSE:Initializing mouse interface emulation
+LOG:          0 DEBUG MISC:Initializing XMS extended memory services
+LOG:          0 DEBUG MISC:Initializing EMS expanded memory services
+LOG:          0 DEBUG MISC:Initializing AUTOEXEC.BAT emulation
+LOG:          0 DEBUG MISC:Initializing IPX emulation
+LOG:          0 DEBUG MISC:Initializing MSCDEX.EXE emulation
+LOG:          0 DEBUG MISC:Initializing memory handle array (EMS/XMS handle management). mem_pages=1000
+LOG:          0 DEBUG MISC:Initializing DOSBox-X mapper
+LOG:          0 DEBUG MISC:Joystick type != none, SDL reports 0 sticks
+LOG:          0 DEBUG MISC:Dispatching VM event Power On
+LOG:          0 DEBUG MISC:Calling event Power On handler (0x55584e8259b0) 'TIMER_OnPowerOn'
+LOG:          0 DEBUG MISC:TIMER_OnPowerOn(): Reinitializing PIT timer emulation
+LOG:          0 DEBUG MISC:Calling event Power On handler (0x55584e81dab0) 'PCI_OnPowerOn'
+LOG:          0 DEBUG MISC:InitializePCI(): reinitializing PCI bus emulation
+LOG:          0 DEBUG MISC:Calling event Power On handler (0x55584e882360) 'VOODOO_OnPowerOn'
+LOG:          0 DEBUG MISC:Initializing Voodoo/3DFX PCI device
+LOG: VOODOO LFB now at d0000000
+LOG:          0 DEBUG MISC:MEM_CalloutObject::Install added device with page=0xd0000 mem_mask=0xff000 rangemask=0xfff aliasmask=0xfffff
+LOG:          0 DEBUG MISC:Calling event Power On handler (0x55584e808510) 'JOYSTICK_OnPowerOn'
+LOG:          0 DEBUG MISC:Allocating joystick emulation
+LOG:          0 DEBUG MISC:Calling event Power On handler (0x55584e5d9310) 'BIOS_OnPowerOn'
+LOG:          0 DEBUG BIOS:getMemory in 'ROM BIOS' (0x00003 bytes,"BIOS default reset location (JMP)",align=1,mustbe=0xfe05b) = 0xfe05b
+LOG:          0 DEBUG BIOS:getMemory in 'ROM BIOS' (0x00040 bytes,"BIOS default reset location (CODE)",align=1,mustbe=0x00000) = 0xfc9b0
+LOG:          0 DEBUG BIOS:getMemory in 'ROM BIOS' (0x00001 bytes,"BIOS default handler location",align=1,mustbe=0xfff53) = 0xfff53
+LOG:          0 DEBUG BIOS:getMemory in 'ROM BIOS' (0x00001 bytes,"BIOS default INT5 location",align=1,mustbe=0xfff54) = 0xfff54
+LOG:          0 DEBUG BIOS:getMemory in 'ROM BIOS' (0x00013 bytes,"BIOS default IRQ0 location",align=1,mustbe=0xffea5) = 0xffea5
+LOG:          0 DEBUG BIOS:getMemory in 'ROM BIOS' (0x00020 bytes,"BIOS default IRQ1 location",align=1,mustbe=0xfe987) = 0xfe987
+LOG:          0 DEBUG BIOS:getMemory in 'ROM BIOS' (0x00007 bytes,"BIOS default IRQ2-7 location",align=1,mustbe=0xfff55) = 0xfff55
+LOG:          0 DEBUG BIOS:getMemory in 'ROM BIOS' (0x00009 bytes,"BIOS default IRQ8-15 location",align=1,mustbe=0xfe880) = 0xfe880
+LOG:          0 DEBUG BIOS:getMemory in 'ROM BIOS' (0x00006 bytes,"IBM ROM BASIC entry point",align=1,mustbe=0xf8db0) = 0xf8db0
+LOG:          0 DEBUG BIOS:getMemory in 'ROM BIOS' (0x00006 bytes,"IBM ROM BASIC entry point",align=1,mustbe=0xfac79) = 0xfac79
+LOG:          0 DEBUG MISC:Calling event Power On handler (0x55584e5ff050) 'SERIAL_OnPowerOn'
+LOG:          0 DEBUG MISC:Reinitializing serial emulation
+LOG: Serial1: BASE 3f8h
+LOG: Serial2: BASE 2f8h
+LOG:          0 DEBUG MISC:Calling event Power On handler (0x55584e60f2f0) 'PARALLEL_OnPowerOn'
+LOG:          0 DEBUG MISC:Reinitializing parallel port emulation
+LOG: Parallel1: BASE 378h
+LOG:          0 DEBUG MISC:Dispatching VM event Reset
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e802d90) 'IO_Reset'
+LOG:          0 DEBUG IO:I/O 8-bit delay 1020ns
+LOG:          0 DEBUG IO:I/O 16-bit delay 660ns
+LOG:          0 DEBUG IO:I/O 32-bit delay 1320ns
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e814660) 'A20Gate_OnReset'
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e80c8a0) 'PS2Port92_OnReset'
+LOG:          0 DEBUG MISC:Port 92h installed, emulating PS/2 system control port A
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e7d04f0) 'DMA_Reset'
+LOG:          0 DEBUG MISC:DMA_Reset(): reinitializing DMA controller(s)
+LOG:          0 DEBUG DMA_CONTROL:DMA channel 0. DMA16_PAGESHIFT=0 DMA16_ADDRMASK=0xffff
+LOG:          0 DEBUG DMA_CONTROL:DMA channel 1. DMA16_PAGESHIFT=0 DMA16_ADDRMASK=0xffff
+LOG:          0 DEBUG DMA_CONTROL:DMA channel 2. DMA16_PAGESHIFT=0 DMA16_ADDRMASK=0xffff
+LOG:          0 DEBUG DMA_CONTROL:DMA channel 3. DMA16_PAGESHIFT=0 DMA16_ADDRMASK=0xffff
+LOG:          0 DEBUG DMA_CONTROL:DMA channel 4. DMA16_PAGESHIFT=1 DMA16_ADDRMASK=0x1ffff
+LOG:          0 DEBUG DMA_CONTROL:DMA channel 5. DMA16_PAGESHIFT=1 DMA16_ADDRMASK=0x1ffff
+LOG:          0 DEBUG DMA_CONTROL:DMA channel 6. DMA16_PAGESHIFT=1 DMA16_ADDRMASK=0x1ffff
+LOG:          0 DEBUG DMA_CONTROL:DMA channel 7. DMA16_PAGESHIFT=1 DMA16_ADDRMASK=0x1ffff
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e81eb90) 'PIC_Reset'
+LOG:          0 DEBUG MISC:PIC: Ignore cascade in service=0
+LOG:          0 DEBUG MISC:PIC_Reset(): reinitializing PIC controller (cascade=2)
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e868900) 'CMOS_Reset'
+LOG:          0 DEBUG MISC:CMOS_Reset(): reinitializing CMOS/RTC controller
+LOG:          0       PIT:RTC Timer at 1024.00 hz
+LOG:          0       PIT:RTC Timer at 1024.00 hz
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e818900) 'PCSPEAKER_OnReset'
+LOG:          0 DEBUG MISC:Allocating PC speaker emulation
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e828650) 'TANDYSOUND_OnReset'
+LOG:          0 DEBUG MISC:Allocating Tandy speaker emulation
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e86e900) 'MPU401_Reset'
+LOG:          0 DEBUG MISC:Allocating MPU401 emulation
+LOG: MPU-401 Registering I/O ports as if IBM PC MPU-401 at base 330h
+LOG:          0       MISC:MPU IRQ 9
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e8bead0) 'CPU_OnReset'
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e839fd0) 'VGA_Reset'
+LOG:          0 DEBUG MISC:VGA_Reset() reinitializing VGA emulation
+LOG:          0 DEBUG VGA:S3 linear framebuffer at 0xe0000000 by default as PCI
+LOG: Memory I/O complexity optimization enabled aka option 'memory io optimization 1'. If the game or demo is unable to draw to the screen properly, set the option to false.
+LOG: The 'scanline render on demand' option is available and may provide a modest boost in video render performance if set to true.
+LOG:          0 DEBUG VGA:VGA memory I/O delay 0ns
+LOG:          0       VGA:Video RAM: 2048KB
+LOG:          0 DEBUG MISC:SDL video mode: 640x400 (clip 0x0 with upper-left at 0x0) 32bpp
+LOG:          0 DEBUG MISC:   red: shift=16 mask=0x00ff0000
+LOG:          0 DEBUG MISC:   green: shift=8 mask=0x0000ff00
+LOG:          0 DEBUG MISC:   blue: shift=0 mask=0x000000ff
+LOG:          0 DEBUG MISC:   alpha: shift=0 mask=0x00000000
+LOG: Screen report: Method 'None' (-1.000 x -1.000 pixels) at (0.000 x 0.000) (-1.000 x -1.000 mm) (-0.039 x -0.039 in) (-1.000 x -1.000 DPI)
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e5c04c0) 'ISAPNP_Cfg_Reset'
+LOG:          0 DEBUG MISC:Initializing ISA PnP emulation
+LOG:          0 DEBUG MISC:APM BIOS allow: real=1 pm16=1 pm32=1 version=1.2
+LOG: Allocated APM BIOS pm entry point at f000:ce20
+LOG: Writing code to fce20
+LOG: Writing code to fce40
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e894fc0) 'FDC_OnReset'
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e8110b0) 'KEYBOARD_OnReset'
+LOG:          0 DEBUG MISC:Keyboard reinitializing
+LOG:          0       KEYBOARD:Keyboard AUX emulation enabled
+LOG:          0 DEBUG KEYBOARD:Keyboard LEDs: SCR=0 NUM=0 CAPS=0
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e82c9c0) 'SBLASTER_OnReset'
+LOG:          0 DEBUG MISC:Allocating Sound Blaster emulation
+LOG:          0       SBLASTER:DSP:Reset
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e889830) 'PS1SOUND_OnReset'
+LOG:          0 DEBUG MISC:Allocating PS/1 sound emulation
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e8734d0) 'GUS_OnReset'
+LOG:          0 DEBUG MISC:Allocating GUS emulation
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e8959a0) 'IDE_OnReset'
+LOG:          0 DEBUG MISC:Initializing IDE controller 0
+LOG:          0 DEBUG MISC:Initializing IDE controller 1
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e87e490) 'INNOVA_OnReset'
+LOG:          0 DEBUG MISC:Allocating Innova emulation
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e5f68a0) 'SERIAL_OnReset'
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e87b310) 'DONGLE_OnReset'
+LOG:          0 DEBUG MISC:Allocating parallel dongle emulation
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e60c390) 'PARALLEL_OnReset'
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e87f340) 'NE2K_OnReset'
+LOG:          0 DEBUG MISC:Allocating NE2000 emulation
+LOG:          0 DEBUG MISC:Sorry, NE2000 allocation failed to load
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e47e9c0) 'DOS_OnReset'
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e5226d0) 'DOS_KeyboardLayout_ShutDown'
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e5f55b0) 'MOUSE_OnReset'
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e59a7c0) 'XMS_ShutDown'
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e5a0b10) 'EMS_ShutDown'
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e562b50) 'AUTOEXEC_ShutDown'
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e879900) 'IPX_OnReset'
+LOG:          0 DEBUG MISC:Calling event Reset handler (0x55584e51efc0) 'MSCDEX_ShutDown'
+LOG:          0 DEBUG MISC:Dispatching VM event Reset Complete
+LOG:          0 DEBUG MISC:Calling event Reset Complete handler (0x55584e5d9590) 'BIOS_OnResetComplete'
+LOG: Screen report: Method 'None' (-1.000 x -1.000 pixels) at (0.000 x 0.000) (-1.000 x -1.000 mm) (-0.039 x -0.039 in) (-1.000 x -1.000 DPI)
+LOG:          3 DEBUG MISC:BIOS: executing POST routine
+LOG:          3 DEBUG MISC:BIOS: POST stack set to 0000:7ffc
+LOG:          3 DEBUG MISC:Dispatching VM event BIOS Init
+LOG:          3 DEBUG MISC:INT 10h reinitializing
+LOG:          3 DEBUG MISC:INT 10: initializing EGA/VGA state
+LOG:          3 DEBUG MISC:Redirecting INT 10h to point at the VGA BIOS
+LOG:          3 DEBUG BIOS:getMemory in 'ROM BIOS' (0x00058 bytes,"BIOS video table (INT 1Dh)",align=1,mustbe=0x00000) = 0xfc958
+LOG:          3 DEBUG MISC:INT 10: VGA bios used 12804 / 16384 memory
+LOG:          3 DEBUG MISC:VGA BIOS occupies segment 0xc000-0xc3ff
+LOG:          3       INT10:Set Video Mode 3
+LOG:          3       VGA:Blinking 8
+LOG:          3       PIT:RTC Timer at 1024.00 hz
+LOG:          3       MOUSE:INT 15H PS/2 emulation enabled
+LOG:          3 DEBUG BIOS:getMemory in 'ROM BIOS' (0x00010 bytes,"BIOS configuration (INT 15h AH=0xC0)",align=16,mustbe=0x00000) = 0xfc940
+LOG:          3 DEBUG MISC:Registered ISA PnP read port at 0x20b
+LOG:          3 DEBUG BIOS:getMemory in 'ROM BIOS' (0x00021 bytes,"ISA Plug & Play BIOS struct",align=16,mustbe=0x00000) = 0xfc910
+LOG: ISA Plug & Play BIOS enabled
+LOG:          4 DEBUG MISC:BIOS VIDEO ROM SCAN found VGA BIOS (size=16384)
+LOG: VGA ROM BIOS init callback
+LOG:          8       INT10:Set Video Mode 3
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page c4
+LOG:         13 DEBUG MISC:MEM slow path page=c4: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page c5
+LOG:         13 DEBUG MISC:MEM slow path page=c5: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page c6
+LOG:         13 DEBUG MISC:MEM slow path page=c6: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page c7
+LOG:         13 DEBUG MISC:MEM slow path page=c7: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page c8
+LOG:         13 DEBUG MISC:MEM slow path page=c8: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page c9
+LOG:         13 DEBUG MISC:MEM slow path page=c9: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page ca
+LOG:         13 DEBUG MISC:MEM slow path page=ca: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page cb
+LOG:         13 DEBUG MISC:MEM slow path page=cb: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page cc
+LOG:         13 DEBUG MISC:MEM slow path page=cc: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page cd
+LOG:         13 DEBUG MISC:MEM slow path page=cd: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page ce
+LOG:         13 DEBUG MISC:MEM slow path page=ce: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page cf
+LOG:         13 DEBUG MISC:MEM slow path page=cf: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page d0
+LOG:         13 DEBUG MISC:MEM slow path page=d0: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page d1
+LOG:         13 DEBUG MISC:MEM slow path page=d1: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page d2
+LOG:         13 DEBUG MISC:MEM slow path page=d2: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page d3
+LOG:         13 DEBUG MISC:MEM slow path page=d3: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page d4
+LOG:         13 DEBUG MISC:MEM slow path page=d4: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page d5
+LOG:         13 DEBUG MISC:MEM slow path page=d5: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page d6
+LOG:         13 DEBUG MISC:MEM slow path page=d6: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page d7
+LOG:         13 DEBUG MISC:MEM slow path page=d7: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page d8
+LOG:         13 DEBUG MISC:MEM slow path page=d8: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page d9
+LOG:         13 DEBUG MISC:MEM slow path page=d9: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page da
+LOG:         13 DEBUG MISC:MEM slow path page=da: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page db
+LOG:         13 DEBUG MISC:MEM slow path page=db: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page dc
+LOG:         13 DEBUG MISC:MEM slow path page=dc: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page dd
+LOG:         13 DEBUG MISC:MEM slow path page=dd: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page de
+LOG:         13 DEBUG MISC:MEM slow path page=de: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page df
+LOG:         13 DEBUG MISC:MEM slow path page=df: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page e0
+LOG:         13 DEBUG MISC:MEM slow path page=e0: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page e1
+LOG:         13 DEBUG MISC:MEM slow path page=e1: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page e2
+LOG:         13 DEBUG MISC:MEM slow path page=e2: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page e3
+LOG:         13 DEBUG MISC:MEM slow path page=e3: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page e4
+LOG:         13 DEBUG MISC:MEM slow path page=e4: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page e5
+LOG:         13 DEBUG MISC:MEM slow path page=e5: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page e6
+LOG:         13 DEBUG MISC:MEM slow path page=e6: device matches=0
+LOG:         13 WARN  MISC:MEM_SlowPath called within system RAM at page e7
+LOG:  492379746       DOSMISC:DOS:MS-DOS 7+ long file name support call A0
+LOG:  492388138       FILES:file search attributes 37 name c:/angband/lib/customiz/Coion.prf
+LOG:  492389968       FILES:file search attributes 8 name c:/angband/lib/customiz/Coion.prf
+LOG:  492394333       FILES:file search attributes 21 name ./lib/user/Coion.prf
+LOG:  492395864       FILES:file search attributes 21 name .
+LOG:  492397573       FILES:file search attributes 21 name ./lib
+LOG:  492399421       FILES:file search attributes 21 name ./lib/user
+LOG:  492401610       FILES:file search attributes 21 name ./lib/user/Coion.prf
+LOG:  492402936       FILES:file open command 0 file ./lib/user/Coion.prf
+LOG:  492405598       FILES:file search attributes 21 name ./lib/user/Coion.prf
+LOG:  492407129       FILES:file search attributes 21 name .
+LOG:  492408838       FILES:file search attributes 21 name ./lib
+LOG:  492410686       FILES:file search attributes 21 name ./lib/user
+LOG:  492412875       FILES:file search attributes 21 name ./lib/user/Coion.prf
+LOG:  492416665       DOSMISC:DOS:MS-DOS 7+ long file name support call A0
+LOG:  492422055       FILES:file search attributes 21 name ./lib/user/Coion.prf
+LOG:  492427494       FILES:file search attributes 21 name ./lib/customiz/Dosuser.prf
+LOG:  492429061       FILES:file search attributes 21 name .
+LOG:  492430806       FILES:file search attributes 21 name ./lib
+LOG:  492432834       FILES:file search attributes 21 name ./lib/customiz
+LOG:  492435293       FILES:file search attributes 21 name ./lib/customiz/Dosuser.prf
+LOG:  492437865       FILES:file search attributes 21 name ./lib/customiz
+LOG:  492439360       FILES:file search attributes 21 name .
+LOG:  492441033       FILES:file search attributes 21 name ./lib
+LOG:  492443037       FILES:file search attributes 21 name ./lib/customiz
+LOG:  492446524       DOSMISC:DOS:MS-DOS 7+ long file name support call A0
+LOG:  492455143       FILES:file search attributes 37 name c:/angband/lib/customiz/Dosuser.prf
+LOG:  492457007       FILES:file search attributes 8 name c:/angband/lib/customiz/Dosuser.prf
+LOG:  492461496       FILES:file search attributes 21 name ./lib/user/Dosuser.prf
+LOG:  492463039       FILES:file search attributes 21 name .
+LOG:  492464760       FILES:file search attributes 21 name ./lib
+LOG:  492466620       FILES:file search attributes 21 name ./lib/user
+LOG:  492468899       FILES:file search attributes 21 name ./lib/user/Dosuser.prf
+LOG:  492470297       FILES:file open command 0 file ./lib/user/Dosuser.prf
+LOG:  492473016       FILES:file search attributes 21 name ./lib/user/Dosuser.prf
+LOG:  492474559       FILES:file search attributes 21 name .
+LOG:  492476280       FILES:file search attributes 21 name ./lib
+LOG:  492478140       FILES:file search attributes 21 name ./lib/user
+LOG:  492480419       FILES:file search attributes 21 name ./lib/user/Dosuser.prf
+LOG:  492484325       DOSMISC:DOS:MS-DOS 7+ long file name support call A0
+LOG:  492489897       FILES:file search attributes 21 name ./lib/user/Dosuser.prf

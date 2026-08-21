@@ -9,6 +9,10 @@
 I used to play zangband when i was a student. Sadly development stopped back in 2004.
 I would like to re-build zangbandtk (tk/tcl version) based on the current sources of angband.
 
+One of my goals is to bring ZangbandTK back to Roger Zelazny’s Amber novels, the original concept but somehow got diverted from this goal mixing Lovecraft, Tolken, and probably bunch of other RPG's. I would to turn this back toward the Amber novels.
+
+https://en.wikipedia.org/wiki/The_Chronicles_of_Amber
+
 ## What to do
 
 Make a development plan. I would take a clean room approach to deveopment and create a development plan. Using that plan against the current code we re-build the "spirt" of zangband. So this not a direct port or code comparison against the current release. It is a determination of the differences, creating a development requirements, writing a development plan and then running that against the current angband source (which is here in this project). Once we have that I would like to apply tk/tcl to finally build ZangbandTK, using the latest release of tk/tcl
@@ -122,3 +126,9 @@ To cut the release
 git push origin master
 git tag 3.1.0
 git push origin 3.1.0
+
+## Pre-Release
+
+git push origin master
+git tag -a 3.4.0-rc1 -m "Windows build test"
+git push origin 3.4.0-rc1
