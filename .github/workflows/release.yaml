@@ -40,13 +40,17 @@ env:
     # the source archive.
     SRC_ARCHIVE_ARTIFACT: release-src-archive
     # Used as the name when uploading or downloading the artifact for passing
-    # the name of the Windows archive.
-    WIN_ARTIFACT: release-win
-    # Used as the path for the file with the name of the Windows archive in it.
-    WIN_ARTIFACT_PATH: release-win.txt
+    # the name of the 32-bit Windows archive.
+    WIN32_ARTIFACT: release-win32
+    # Used as the path for the file with the name of the 32-bit Windows archive.
+    WIN32_ARTIFACT_PATH: release-win32.txt
     # Used as the name when uploading or downloading the artifact holding
-    # the Windows archive.
-    WIN_ARCHIVE_ARTIFACT: release-win-archive
+    # the 32-bit Windows archive.
+    WIN32_ARCHIVE_ARTIFACT: release-win32-archive
+    # The same three, for the 64-bit Windows archive.
+    WIN64_ARTIFACT: release-win64
+    WIN64_ARTIFACT_PATH: release-win64.txt
+    WIN64_ARCHIVE_ARTIFACT: release-win64-archive
     # Used as the name when uploading or downloading the artifact for passing
     # the name of the Mac archive.
     MAC_ARTIFACT: release-mac
@@ -111,13 +115,28 @@ jobs:
               version=`scripts/version.sh`
           fi
           echo "version=$version" >> $GITHUB_OUTPUT
-          prerelease=`echo $version | awk '/^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$/ { print "false" ; exit 0 } ; { print "true"; exit 0 } ;'`
+          # Every release is a prerelease, for now.  This used to be decided by
+          # the shape of the version -- a plain X.Y.Z was a full release and
+          # anything else a prerelease -- which describes the tag rather than the
+          # state of the game.  3.1.1 has not been played through, has known bugs
+          # and has whole Zangband features still missing, and GitHub's
+          # prerelease badge is the one place somebody sees that before they
+          # download.  When there is a version worth standing behind without the
+          # qualification, restore the test:
+          #   prerelease=`echo $version | awk '/^[0-9]+\.[0-9]+\.[0-9]+$/ { print "false" ; exit 0 } ; { print "true"; exit 0 } ;'`
+          prerelease=true
           echo "prerelease=$prerelease" >> $GITHUB_OUTPUT
-          # Mark anything that isn't a prerelease as a draft.
-          draft=true
-          if test x$prerelease = xtrue ; then
-              draft=false
-          fi
+          # Nothing is drafted.  Upstream drafts a final release so that a
+          # human can write its notes before anybody sees it, and publishes
+          # prereleases outright -- which is the wrong way round for a project
+          # whose download page sends people to the Releases page.  3.1.1 was
+          # built, signed, verified and attached, and then sat invisible to
+          # everyone without push access: a draft is hidden however public the
+          # repository is, so the page the manual points at looked empty and the
+          # asset URLs answered 404.  The body comes from --generate-notes when
+          # the release is made, and the written account of a version is the
+          # release log in the manual.
+          draft=false
           echo "draft=$draft" >> $GITHUB_OUTPUT
 
       # The quoting here may be too simple-minded:  what if there are single
@@ -277,9 +296,9 @@ jobs:
           path: ${{ steps.create_source_archive.outputs.archive_file }}
           retention-days: 1
 
-  windows:
+  windows32:
     needs: [setup, docconvert]
-    name: Windows
+    name: Windows (32-bit)
     runs-on: ubuntu-22.04
     steps:
       - name: Download Artifact with Configuration Information
@@ -348,24 +367,139 @@ jobs:
             ${{ steps.store_config.outputs.name }}.exe
           cp build/game/libpng12.dll build/game/zlib1.dll .
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
-          echo "archive_file=${archive_prefix}-win.zip" >> $GITHUB_OUTPUT
-          scripts/pkg_win $archive_prefix ${archive_prefix}-win.zip
+          echo "archive_file=${archive_prefix}-win32.zip" >> $GITHUB_OUTPUT
+          scripts/pkg_win $archive_prefix ${archive_prefix}-win32.zip
 
       - name: Create Artifact with Windows Archive Path
         run: |
-          echo archive_path= '${{ steps.create_windows_archive.outputs.archive_file }}' > $WIN_ARTIFACT_PATH
+          echo archive_path= '${{ steps.create_windows_archive.outputs.archive_file }}' > $WIN32_ARTIFACT_PATH
 
       - name: Upload Artifact with Windows Archive Path
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.WIN_ARTIFACT }}
-          path: ${{ env.WIN_ARTIFACT_PATH }}
+          name: ${{ env.WIN32_ARTIFACT }}
+          path: ${{ env.WIN32_ARTIFACT_PATH }}
           retention-days: 1
 
       - name: Upload Windows Archive as Artifact
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ env.WIN_ARCHIVE_ARTIFACT }}
+          name: ${{ env.WIN32_ARCHIVE_ARTIFACT }}
+          path: ${{ steps.create_windows_archive.outputs.archive_file }}
+          retention-days: 1
+
+  windows64:
+    needs: [setup, docconvert]
+    name: Windows (64-bit)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      # Built on a Windows runner under MSYS2 rather than cross-compiled on
+      # Ubuntu like the 32-bit one.  The reason is libpng: the bundled PNG and
+      # zlib in src/win/dll are 32-bit binaries and cannot be linked into a
+      # 64-bit executable, and Ubuntu has no cross-built libpng for
+      # x86_64-w64-mingw32 to use in their place.  MSYS2 packages one, so
+      # pkg-config finds it and CMake's own non-bundled path does the rest.
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-libpng
+            mingw-w64-x86_64-pkgconf
+            git
+            zip
+
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
+          echo "name=$name" >> $GITHUB_OUTPUT
+          prog=`sed -E -n -e 's/prog= //p' $CONFIG_ARTIFACT_PATH`
+          echo "prog=$prog" >> $GITHUB_OUTPUT
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      # Need commit history and tags for scripts/version.sh to work as expected
+      # so use 0 for fetch-depth.
+      - name: Clone Project
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download Artifact with Converted Documents
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.DOC_ARTIFACT }}
+
+      # scripts/pkg_win reads the built manual out of docs/_build/html.
+      - name: Extract Converted Documents
+        run: |
+          tar -xf ${{ env.DOC_ARTIFACT_PATH }}
+
+      # Static linking is not a size preference, it is what makes the zip
+      # correct.  CMake's PNG detection reports no runtime DLLs for a
+      # pkg-config library -- it says as much in a comment: it does not attempt
+      # to guess them -- so a dynamically linked build would need libpng,
+      # zlib, libwinpthread and whatever else they pull in copied out of
+      # /mingw64/bin by hand, and any one of them missed is a download that
+      # will not start.  Linked in, there is nothing to miss.
+      - name: Create Windows Archive
+        id: create_windows_archive
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror" \
+            -DSUPPORT_WINDOWS_FRONTEND=ON \
+            -DSUPPORT_STATIC_LINKING=ON
+          cmake --build build --parallel
+          # Renamed for the same reason as the 32-bit build: it is built as
+          # angband.exe, after the CMake project name, and nobody should have
+          # to work out which file to run.
+          cp build/game/${{ steps.store_config.outputs.prog }}.exe \
+            ${{ steps.store_config.outputs.name }}.exe
+          archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+          echo "archive_file=${archive_prefix}-win64.zip" >> $GITHUB_OUTPUT
+          scripts/pkg_win $archive_prefix ${archive_prefix}-win64.zip
+
+      # Confirm the executable really is 64-bit and really is self-contained,
+      # rather than trusting the build flags to have meant what they said.
+      - name: Check the Executable
+        run: |
+          file ${{ steps.store_config.outputs.name }}.exe
+          file ${{ steps.store_config.outputs.name }}.exe | grep -q "x86-64"
+          if objdump -p ${{ steps.store_config.outputs.name }}.exe |
+              grep -E "DLL Name: (libpng|zlib|libwinpthread|libgcc)" ; then
+            echo "Executable depends on a MinGW DLL that is not in the zip." >&2
+            exit 1
+          fi
+
+      - name: Create Artifact with Windows Archive Path
+        run: |
+          echo archive_path= '${{ steps.create_windows_archive.outputs.archive_file }}' > $WIN64_ARTIFACT_PATH
+
+      - name: Upload Artifact with Windows Archive Path
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.WIN64_ARTIFACT }}
+          path: ${{ env.WIN64_ARTIFACT_PATH }}
+          retention-days: 1
+
+      - name: Upload Windows Archive as Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.WIN64_ARCHIVE_ARTIFACT }}
           path: ${{ steps.create_windows_archive.outputs.archive_file }}
           retention-days: 1
 
@@ -458,7 +592,7 @@ jobs:
 
   release:
     if: github.event_name == 'push'
-    needs: [ setup, source, windows, mac ]
+    needs: [ setup, source, windows32, windows64, mac ]
     name: Create GitHub Release
     runs-on: ubuntu-latest
     # gh release create both makes the tag's release and uploads the files
@@ -502,21 +636,37 @@ jobs:
         with:
           name: ${{ env.SRC_ARCHIVE_ARTIFACT }}
 
-      - name: Download Artifact with Windows Archive Path
+      - name: Download Artifact with 32-bit Windows Archive Path
         uses: actions/download-artifact@v8
         with:
-          name: ${{ env.WIN_ARTIFACT }}
+          name: ${{ env.WIN32_ARTIFACT }}
 
-      - name: Extract Windows Archive Path and Store in Step Outputs
-        id: store_win
+      - name: Extract 32-bit Windows Archive Path and Store in Step Outputs
+        id: store_win32
         run: |
-          archive_path=`sed -E -n -e 's/archive_path= //p' $WIN_ARTIFACT_PATH`
+          archive_path=`sed -E -n -e 's/archive_path= //p' $WIN32_ARTIFACT_PATH`
           echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
 
-      - name: Download Artifact with Windows Archive
+      - name: Download Artifact with 32-bit Windows Archive
         uses: actions/download-artifact@v8
         with:
-          name: ${{ env.WIN_ARCHIVE_ARTIFACT }}
+          name: ${{ env.WIN32_ARCHIVE_ARTIFACT }}
+
+      - name: Download Artifact with 64-bit Windows Archive Path
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.WIN64_ARTIFACT }}
+
+      - name: Extract 64-bit Windows Archive Path and Store in Step Outputs
+        id: store_win64
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' $WIN64_ARTIFACT_PATH`
+          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with 64-bit Windows Archive
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.WIN64_ARCHIVE_ARTIFACT }}
 
       - name: Download Artifact with Mac Archive Path
         uses: actions/download-artifact@v8
@@ -542,7 +692,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           release_tag="${{ steps.store_config.outputs.version }}"
-          options="-t $release_tag"
+          options="-t $release_tag --generate-notes"
           test x"${{ steps.store_config.outputs.draft }}" = xtrue && options="$options -d"
           test x"${{ steps.store_config.outputs.prerelease }}" = xtrue && options="$options -p"
-          gh release create $release_tag ${{ steps.store_src.outputs.archive_path }} ${{ steps.store_win.outputs.archive_path }} ${{ steps.store_mac.outputs.archive_path }} $options
+          gh release create $release_tag \
+            ${{ steps.store_src.outputs.archive_path }} \
+            ${{ steps.store_win64.outputs.archive_path }} \
+            ${{ steps.store_win32.outputs.archive_path }} \
+            ${{ steps.store_mac.outputs.archive_path }} \
+            $options

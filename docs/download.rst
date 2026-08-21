@@ -2,25 +2,43 @@
 Download
 ========
 
-.. warning::
-
-   **The first release has not been tagged yet.** Until it is, the Releases page
-   below will be empty and building from source is the only way to play. The
-   instructions for both are here and will not change when it lands.
-
 Getting the game
 ================
 
-Releases are published on the project's `Releases page`_ as a disk image,
-``ZangbandTK-<version>-osx.dmg``. It contains the application, this manual in
-HTML, and the borg's documentation.
+Releases are published on the project's `Releases page`_. A release carries three
+files:
+
+- ``ZangbandTK-<version>-osx.dmg`` — the macOS disk image: the application, this
+  manual in HTML, and the borg's documentation.
+- ``ZangbandTK-<version>-win64.zip`` — the Windows build, 64-bit, with the same
+  manual beside it. A single executable: libpng and zlib are linked in, so there
+  are no DLLs to keep track of. **Prefer this one.**
+- ``ZangbandTK-<version>-win32.zip`` — a 32-bit Windows build, for older machines
+  and older Windows. It runs on 64-bit Windows too, and needs the two DLLs beside
+  the executable.
+- ``ZangbandTK-<version>.tar.gz`` — the source, with the build system already
+  generated.
 
 .. _Releases page: https://github.com/z88kat/ZangbandTK/releases
 
-Requirements: **macOS on Apple Silicon**. Intel Macs are not supported; they
-reach legacy status in September 2026.
+The first release is **3.1.1**, from 18 August 2026. It was cut before the
+Windows builds were packaged, so it holds the disk image and the source archive
+only; the zips appear from the release after it. The 32-bit zip was named
+``-win.zip`` for one release before the 64-bit build arrived and both were named
+for their architecture.
 
-Mount the image and drag ``ZangbandTK.app`` wherever you keep applications.
+Every release is marked a **pre-release**, and will be for as long as the game is
+early. CI builds, signs and verifies each one, but no version is played through
+before it is tagged: there are known bugs and unfinished features, and the badge
+on the Releases page says so before you download rather than after.
+
+The disk image requires **macOS on Apple Silicon**. Intel Macs are not
+supported; they reach legacy status in September 2026. The Windows zip is built
+and packaged by CI but nobody plays the game on Windows here, so read `Other
+platforms`_ before you rely on it.
+
+The rest of this page is macOS. Mount the image and drag ``ZangbandTK.app``
+wherever you keep applications.
 
 The first launch
 ----------------
@@ -145,9 +163,15 @@ of what will kill you that would not have before.
 Other platforms
 ===============
 
-macOS is the delivery target. The code is kept portable and Angband's CI covers
-Linux and Windows builds, but **neither is tested here**. If you build on either,
-reports are welcome.
+macOS is what the game is developed and played on. Windows is built and packaged
+by CI as well — the mingw cross build, MSBuild, MSYS2 and Cygwin all pass — in
+both architectures: the 32-bit build cross-compiled with mingw, the 64-bit one on
+a Windows runner under MSYS2, because the bundled PNG and zlib that the 32-bit
+build links against are 32-bit binaries with no 64-bit counterpart to hand. Both
+zips carry a ``README.txt`` for SmartScreen, which greets an unsigned executable
+much as Gatekeeper does above. Nobody plays the game on Windows here,
+though, so it is **untested in play**. Linux builds in CI and is untested in the
+same way. Reports from either are welcome.
 
 
 Licence

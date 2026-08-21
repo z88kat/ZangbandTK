@@ -19,7 +19,11 @@ folder and Windows restricts writing there.
 
 Then run ZangbandTK.exe.
 
-This is a 32-bit build. It runs on 64-bit Windows perfectly well.
+Releases carry two Windows builds, and the name of the zip says which one you
+have. The 64-bit build (win64) is the one to prefer; it is a single executable
+with nothing beside it to keep track of. The 32-bit build (win32) is there for
+older machines and older Windows, and runs on 64-bit Windows perfectly well
+too.
 
 
 Windows will warn you, once
@@ -67,6 +71,10 @@ What is in this folder
                    ZangbandTK's own history see the Release log on the site.
   LICENSE.md       The licence this game is distributed under.
   README.txt       This file.
+
+The 32-bit build also has libpng12.dll and zlib1.dll beside the executable, and
+needs them. The 64-bit build has no DLLs: everything is linked into the
+executable.
 
 
 Before you start

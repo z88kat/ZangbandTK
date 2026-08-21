@@ -65,7 +65,14 @@ touch lib/user/save/delete.me lib/user/scores/delete.me \
       lib/user/archive/delete.me lib/user/panic/delete.me
 
 cp ../*.exe .
-cp ../*.dll .
+
+# The DLLs are optional.  A statically linked build -- which is how the 64-bit
+# build is made, because pkg-config libraries come with no list of the runtime
+# DLLs they need -- has none at all, and an unmatched glob under errexit would
+# stop the packaging dead.
+for f in ../*.dll ; do
+	if test -e "$f" ; then cp "$f" . ; fi
+done
 
 # Copy the readmes and suchlike, converting to DOS line endings on the way
 
