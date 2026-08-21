@@ -133,6 +133,44 @@ And each has a **character**: its own floor underfoot, and its own preference in
 how its levels are laid out, so the caverns under Kolvir are caverns and the city
 in the sky is a maze.
 
+What lives there
+----------------
+
+Each dungeon is home to some kinds of creature and not others, and most of what
+you meet is what lives there. The Caverns of Kolvir run to trolls, giants and
+golems; Tir-na Nog'th to vortices, wraiths and ghosts; Arden to animals and
+trees. Something from elsewhere turns up now and then — a dungeon is not sealed —
+but it is the exception, and measurement puts it at rather less than a fifth of
+what is met.
+
+This is worth knowing before you dive. A dungeon whose inhabitants you are badly
+equipped for is more dangerous than its depth suggests; one you are well equipped
+for is less. Fire is a poor idea in Arden.
+
+Zangband said this by putting a habitat flag for each of its dungeons on every
+one of its nine hundred monsters. ZangbandTK says it through Angband 4.2's own
+taxonomy instead — the monster *kinds* a dungeon is home to, and the flags it
+claims — which is a dozen lines per dungeon rather than a flag field on a
+thousand monsters, and covers the monsters Angband brought as well as the ones
+Zangband did. What it cannot express is that one particular creature belongs in
+one particular place; that is a finer grain than this mechanism has.
+
+What is found there
+-------------------
+
+Each dungeon runs to its own kind of treasure, weighted across four rough
+proportions: coin and jewellery, arms and armour, wands and potions and scrolls,
+and useful gear.
+
+Rebma is rich and Garnath is not. The Grove of the Unicorn and Tir-na Nog'th
+yield around three quarters magic and almost nothing to fight with, against a
+game-wide half and a fifth. The Caverns of Kolvir, being a mine, yield tools.
+
+Nothing is impossible anywhere — a sword can still be found in the Grove. It is
+a matter of proportion, and of where it is worth going to look. The proportions
+change *what* a dungeon yields and not *how much*: a lopsided dungeon is not a
+poorer one.
+
 .. list-table:: The dungeons of the world
    :header-rows: 1
    :widths: 34 16 50

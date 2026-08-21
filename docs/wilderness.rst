@@ -306,10 +306,13 @@ drawn from the same list. Zangband's six kinds of townsfolk — villagers, elves
 dwarves, lizardfolk, monsters, and towns simply abandoned — are the rest of
 milestone M5, along with the buildings and services that go in them.
 
-**Dungeons have no character below the surface yet.** Each has its own depth
-range, its own floor and its own shape (see :doc:`dungeon`), but the monsters and
-the treasure in it are chosen by depth alone. What lives in the Courts of Chaos
-should not be what lives in Arden.
+**Dungeon character is broad rather than particular.** Each dungeon has its own
+depth range, floor, shape, inhabitants and kind of treasure (see :doc:`dungeon`),
+but the inhabitants are named by the kinds of creature that live there — trolls,
+wraiths, vortices — rather than by individual monsters. Zangband set a habitat
+flag per dungeon on each of its nine hundred monsters; this says the same thing
+in a dozen lines per dungeon, and covers the monsters Angband brought as well,
+but it cannot say that one particular creature belongs in one particular place.
 
 **The terrain is coarser than Zangband's.** Zangband distinguished about thirty
 kinds of country, including impassable jungle, snow and lava; ZangbandTK

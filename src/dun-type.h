@@ -26,9 +26,13 @@
 #define INCLUDED_DUN_TYPE_H
 
 #include "h-basic.h"
+#include "monster.h"
 
 /** The most dungeons a world may hold. */
 #define DUN_TYPE_MAX 24
+
+/** The most monster bases one dungeon may name as its own. */
+#define DUN_DWELLERS_MAX 12
 
 /**
  * What a dungeon tends to yield (CNT-12).
@@ -70,6 +74,25 @@ struct dun_type {
 	uint8_t height;		/**< The height of ground it is found in */
 
 	struct obj_theme theme;	/**< What it tends to yield (CNT-12) */
+
+	/**
+	 * What lives in it (CNT-05).
+	 *
+	 * Zangband carried a habitat flag per dungeon on every one of its nine
+	 * hundred monsters, and a monster without the flag could not appear at all.
+	 * Expressed here through 4.2's own taxonomy instead -- the monster bases and
+	 * flags a dungeon is home to -- which says the same thing in a dozen lines
+	 * per dungeon rather than a flag field on a thousand monsters, and covers
+	 * the monsters Angband brought as well as the ones Zangband did.
+	 *
+	 * A preference rather than a wall: a monster from somewhere else is rare
+	 * here, not impossible, so a dungeon can never run out of things to put in
+	 * itself at a depth where its own kinds are thin.
+	 */
+	struct monster_base *dwellers[DUN_DWELLERS_MAX];
+	int dweller_count;
+	bitflag dweller_flags[RF_SIZE];
+	bool has_dwellers;
 	bool has_theme;		/**< False if it was given no theme, so none applies */
 
 	int floor;			/**< Terrain its floors are made of, or FEAT_NONE */
@@ -84,5 +107,6 @@ int dun_type_count(void);
 struct dun_type *dun_type_by_index(int idx);
 struct dun_type *dun_type_by_name(const char *name);
 int obj_theme_weight(const struct obj_theme *theme, int tval);
+bool dun_type_dwells(const struct dun_type *type, const struct monster_race *race);
 
 #endif /* INCLUDED_DUN_TYPE_H */

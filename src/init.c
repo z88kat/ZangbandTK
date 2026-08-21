@@ -1372,6 +1372,32 @@ static enum parser_error parse_dungeon_theme(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_dungeon_dweller(struct parser *p) {
+	struct dun_type *d = parser_priv(p);
+	const char *what = parser_getsym(p, "what");
+	const char *name = parser_getstr(p, "name");
+
+	if (!d) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	if (streq(what, "base")) {
+		struct monster_base *base = lookup_monster_base(name);
+
+		if (!base) return PARSE_ERROR_INVALID_MONSTER_BASE;
+		if (d->dweller_count >= DUN_DWELLERS_MAX)
+			return PARSE_ERROR_TOO_MANY_ENTRIES;
+
+		d->dwellers[d->dweller_count++] = base;
+	} else if (streq(what, "flag")) {
+		if (grab_flag(d->dweller_flags, RF_SIZE, r_info_flags, name))
+			return PARSE_ERROR_INVALID_FLAG;
+	} else {
+		return PARSE_ERROR_INVALID_VALUE;
+	}
+
+	d->has_dwellers = true;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_dungeon_floor(struct parser *p) {
 	struct dun_type *d = parser_priv(p);
 	int feat;
@@ -1425,6 +1451,7 @@ static struct parser *init_parse_dungeon(void) {
 	parser_reg(p, "place int rarity int pop int height", parse_dungeon_place);
 	parser_reg(p, "theme int treasure int combat int magic int tools",
 			   parse_dungeon_theme);
+	parser_reg(p, "dweller sym what str name", parse_dungeon_dweller);
 	parser_reg(p, "floor str floor", parse_dungeon_floor);
 	parser_reg(p, "profile str profile", parse_dungeon_profile);
 	parser_reg(p, "desc str desc", parse_dungeon_desc);
@@ -1486,6 +1513,29 @@ struct file_parser dungeon_parser = {
 	finish_parse_dungeon,
 	cleanup_dungeon
 };
+
+/**
+ * Does this monster belong in this dungeon (CNT-05)?
+ *
+ * By its base -- a tree, a canine, a major demon -- or by a flag the dungeon
+ * claims, so that "everything undead" costs one line rather than a list.
+ */
+bool dun_type_dwells(const struct dun_type *type, const struct monster_race *race)
+{
+	int i;
+
+	if (!type || !race || !type->has_dwellers)
+		return true;
+
+	if (flag_is_inter(race->flags, type->dweller_flags, RF_SIZE))
+		return true;
+
+	for (i = 0; i < type->dweller_count; i++)
+		if (race->base == type->dwellers[i])
+			return true;
+
+	return false;
+}
 
 /** How many dungeons the game data defines. */
 int dun_type_count(void)
@@ -4845,7 +4895,6 @@ static struct {
 	{ "ui entries", &ui_entry_parser },
 	{ "player properties", &player_property_parser },
 	{ "features", &feat_parser },
-	{ "dungeons", &dungeon_parser },
 	{ "object bases", &object_base_parser },
 	{ "slays", &slay_parser },
 	{ "brands", &brand_parser },
@@ -4869,6 +4918,7 @@ static struct {
 	{ "blow effects", &eff_parser },
 	{ "monster spells", &mon_spell_parser },
 	{ "monsters", &monster_parser },
+	{ "dungeons", &dungeon_parser },
 	{ "monster pits" , &pit_parser },
 	{ "monster lore" , &lore_parser },
 	{ "traps", &trap_parser },

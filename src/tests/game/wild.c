@@ -1579,6 +1579,205 @@ static int test_the_theme_mapping_is_total(void *state) {
 	ok;
 }
 
+
+/** The share of monsters met at this depth that the dungeon is home to. */
+static int dwell_sample(struct dun_type *ty, int depth, int rolls) {
+	int at_home = 0, got = 0, i;
+
+	player->dungeon = ty ? ty->index + 1 : 0;
+
+	for (i = 0; i < rolls; i++) {
+		struct monster_race *r = get_mon_num(depth, depth);
+
+		if (!r) continue;
+		got++;
+		if (ty && dun_type_dwells(ty, r)) at_home++;
+	}
+
+	player->dungeon = 0;
+
+	return got ? (100 * at_home) / got : -1;
+}
+
+/**
+ * A dungeon is mostly inhabited by the things that live in it (CNT-05).
+ *
+ * Zangband carried a habitat flag for each of its dungeons on every one of its
+ * nine hundred monsters.  Expressed here through 4.2's own monster bases and
+ * flags instead, which says the same thing in a dozen lines per dungeon and
+ * covers the monsters Angband brought as well as the ones Zangband did.
+ *
+ * Measured over 3000 rolls at depth 40: the Caverns of Kolvir give trolls 20%,
+ * giants 11%; Tir-na Nog'th gives vortices 17%, wraiths 11%; against a base
+ * distribution whose commonest kinds are people at 9% and dragons at 7%.
+ */
+static int test_a_dungeon_has_its_own_inhabitants(void *state) {
+	struct dun_type *kolvir = dun_type_by_name("The Caverns of Kolvir");
+	struct dun_type *tir = dun_type_by_name("Tir-na Nog'th");
+	int home_kolvir, home_tir, cross;
+
+	notnull(kolvir);
+	notnull(tir);
+
+	/* In its own dungeon, most of what is met belongs there. */
+	home_kolvir = dwell_sample(kolvir, 40, 2000);
+	home_tir = dwell_sample(tir, 40, 2000);
+	require(home_kolvir > 40);
+	require(home_tir > 40);
+
+	/*
+	 * And the two are genuinely different places: measured against Kolvir's
+	 * list, what Tir-na Nog'th turns up is largely foreign.  Trolls and giants
+	 * are not what walks a city in the sky.
+	 */
+	player->dungeon = tir->index + 1;
+	{
+		int i, foreign = 0, got = 0;
+
+		for (i = 0; i < 2000; i++) {
+			struct monster_race *r = get_mon_num(40, 40);
+
+			if (!r) continue;
+			got++;
+			if (!dun_type_dwells(kolvir, r)) foreign++;
+		}
+		cross = got ? (100 * foreign) / got : -1;
+	}
+	player->dungeon = 0;
+
+	require(cross > 70);
+
+	ok;
+}
+
+/**
+ * A dungeon can always be populated (CNT-05).
+ *
+ * Walks every dungeon from its shallowest level to its deepest and requires
+ * that each can produce a monster.
+ *
+ * Note what this does and does not show.  Zangband zeroed the probability of
+ * every monster without the dungeon's habitat flag; ZangbandTK scales it down
+ * instead, so that a dungeon whose own kinds are thin at some depth still has
+ * something to fall back on.  Setting the stranger share to zero and running
+ * this test does *not* fail, so the hard filter would in fact work against the
+ * data as it stands -- the alloc table offers every monster up to the current
+ * depth, which is a wide enough pool that a dungeon is never actually empty.
+ * The soft filter is kept for two reasons that are not this one: it survives
+ * data changes that would thin a habitat out, and an occasional stranger a long
+ * way from home is better flavour than a dungeon that is hermetically sealed.
+ */
+static int test_a_dungeon_can_always_be_populated(void *state) {
+	int idx;
+
+	for (idx = 0; idx < dun_type_count(); idx++) {
+		struct dun_type *ty = dun_type_by_index(idx);
+		int depth;
+
+		notnull(ty);
+
+		for (depth = ty->min_depth; depth <= ty->max_depth; depth++) {
+			int i;
+
+			player->dungeon = idx + 1;
+
+			/*
+			 * Several rolls per level: one success could be luck, and it is
+			 * the systematic emptiness that would matter.
+			 */
+			for (i = 0; i < 8; i++) {
+				struct monster_race *r = get_mon_num(depth, depth);
+
+				if (!r) {
+					printf("%s has nothing to put on level %d\n",
+						ty->name, depth);
+				}
+				notnull(r);
+			}
+
+			player->dungeon = 0;
+		}
+	}
+
+	ok;
+}
+
+/**
+ * Every dungeon claims a share of the bestiary that means something (CNT-05).
+ *
+ * A habitat that matches most of the game is not a habitat.  This caught a real
+ * mistake, and the way it caught it is worth recording: Garnath was given the
+ * EVIL flag, which is 564 of the 1013 monsters.  Its commonest inhabitants came
+ * out as dragons and townspeople -- exactly what any other dungeon gives -- and
+ * measuring what share of the bestiary it claimed did *not* find the fault,
+ * because within Garnath's own depths EVIL plus its bases came to about half,
+ * which is not obviously wrong.
+ *
+ * What does find it is the breadth of the individual flags claimed.  ANIMAL is
+ * 288 monsters and a forest may fairly say it is full of animals; EVIL is over
+ * half of everything and says nothing at all.
+ */
+static int test_every_dungeon_claims_a_workable_share(void *state) {
+	int idx, total = 0, i;
+
+	for (i = 1; i < z_info->r_max; i++)
+		if (r_info[i].name) total++;
+
+	require(total > 100);
+
+	for (idx = 0; idx < dun_type_count(); idx++) {
+		struct dun_type *ty = dun_type_by_index(idx);
+		int own = 0, eligible = 0, share, flag;
+
+		notnull(ty);
+		require(ty->has_dwellers);
+
+		/* No single flag may stand for a great part of the bestiary. */
+		for (flag = 1; flag < RF_MAX; flag++) {
+			int matched = 0;
+
+			if (!rf_has(ty->dweller_flags, flag)) continue;
+
+			for (i = 1; i < z_info->r_max; i++)
+				if (r_info[i].name && rf_has(r_info[i].flags, flag))
+					matched++;
+
+			if (matched * 100 > total * 40)
+				printf("%s claims a flag matching %d of %d monsters\n",
+					ty->name, matched, total);
+
+			require(matched * 100 <= total * 40);
+		}
+
+		/* And it must be home to some of what it will meet, but not all. */
+		for (i = 1; i < z_info->r_max; i++) {
+			struct monster_race *r = &r_info[i];
+
+			if (!r->name || r->level <= 0) continue;
+			if (r->level < ty->min_depth || r->level > ty->max_depth) continue;
+
+			eligible++;
+			if (dun_type_dwells(ty, r)) own++;
+		}
+
+		require(eligible > 0);
+		share = (100 * own) / eligible;
+
+		if (share < 5 || share > 60)
+			printf("%s is home to %d%% of the %d monsters at its depths\n",
+				ty->name, share, eligible);
+
+		/*
+		 * Measured range with the data as it stands: 8% (Faiella-Bionin) to
+		 * 46% (Arden, which is a forest and may fairly claim the animals).
+		 */
+		require(share >= 5);
+		require(share <= 60);
+	}
+
+	ok;
+}
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -1616,5 +1815,8 @@ struct test tests[] = {
 	{ "a-dungeon-theme-shifts-what-it-yields", test_a_dungeon_theme_shifts_what_it_yields },
 	{ "a-theme-does-not-reduce-what-is-found", test_a_theme_does_not_reduce_what_is_found },
 	{ "the-theme-mapping-is-total", test_the_theme_mapping_is_total },
+	{ "a-dungeon-has-its-own-inhabitants", test_a_dungeon_has_its_own_inhabitants },
+	{ "a-dungeon-can-always-be-populated", test_a_dungeon_can_always_be_populated },
+	{ "every-dungeon-claims-a-workable-share", test_every_dungeon_claims_a_workable_share },
 	{ NULL, NULL }
 };

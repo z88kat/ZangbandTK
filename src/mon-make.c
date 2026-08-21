@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "alloc.h"
 #include "game-world.h"
+#include "dun-type.h"
 #include "init.h"
 #include "mon-group.h"
 #include "mon-lore.h"
@@ -193,6 +194,33 @@ static struct monster_race *get_mon_race_aux(long total,
 }
 
 /**
+ * How much less likely a monster is here if it does not live here (CNT-05).
+ *
+ * A share rather than nothing at all.  Zangband zeroed the probability of any
+ * monster without the dungeon's habitat flag, which makes a dungeon that has
+ * run out of its own kinds -- at a depth where they are thin, or once the
+ * uniques among them are dead -- unable to produce anything.  A share keeps a
+ * dungeon's own inhabitants overwhelmingly the ones met while leaving the
+ * generator something to fall back on.
+ */
+#define DUN_STRANGER_SHARE 12
+
+/**
+ * The dungeon this level belongs to, or NULL if it is not in one (CNT-05).
+ */
+static const struct dun_type *mon_dungeon_here(int generated_level)
+{
+	const struct dun_type *type;
+
+	if (generated_level <= 0) return NULL;
+	if (!player || !player->dungeon) return NULL;
+
+	type = dun_type_by_index(player->dungeon - 1);
+
+	return (type && type->has_dwellers) ? type : NULL;
+}
+
+/**
  * Chooses a monster race that seems appropriate to the given level
  *
  * \param generated_level is the level to use when choosing the race.
@@ -226,6 +254,7 @@ struct monster_race *get_mon_num(int generated_level, int current_level)
 	alloc_entry *table = alloc_race_table;
 	time_t cur_time = time(NULL);
 	struct tm *date = localtime(&cur_time);
+	const struct dun_type *dungeon = mon_dungeon_here(generated_level);
 
 	/* Occasionally produce a nastier monster in the dungeon */
 	if (generated_level > 0 && one_in_(z_info->ood_monster_chance))
@@ -263,6 +292,15 @@ struct monster_race *get_mon_num(int generated_level, int current_level)
 
 		/* Accept */
 		table[i].prob3 = table[i].prob2;
+
+		/*
+		 * ZangbandTK (CNT-05): a dungeon is home to some kinds of monster and
+		 * not others.  Scaled down rather than refused, so that what walks the
+		 * Courts of Chaos is not what walks in Arden, without the generator
+		 * ever being left with nothing it is allowed to place.
+		 */
+		if (dungeon && !dun_type_dwells(dungeon, race))
+			table[i].prob3 = (table[i].prob3 * DUN_STRANGER_SHARE) / 100;
 
 		/* Total */
 		total += table[i].prob3;

@@ -78,6 +78,31 @@ Each has a floor of its own underfoot, and its own preference in how its
 levels are laid out, so the caverns under Kolvir are caverns and the city in
 the sky is a maze.
 
-What lives in them, and what is found in them, still follows depth alone.
-That is not finished work: what walks the Courts of Chaos should not be what
-walks in Arden.
+
+What lives there
+----------------
+
+Each dungeon is home to some kinds of creature and not others, and what you
+meet is mostly what lives there.  The Caverns of Kolvir are full of trolls
+and giants; Tir-na Nog'th has vortices, wraiths and ghosts; Arden is animals
+and trees.  Something from elsewhere turns up now and then -- a dungeon is
+not sealed -- but it is the exception.
+
+This is worth knowing before you dive.  A dungeon whose inhabitants you are
+badly equipped for is more dangerous than its depth suggests, and one you are
+well equipped for is less.  Fire is a poor idea in Arden.
+
+
+What is found there
+-------------------
+
+Each dungeon runs to its own kind of treasure, in four rough proportions:
+coin and jewellery, arms and armour, wands and potions and scrolls, and
+useful gear.
+
+Rebma is rich and Garnath is not.  The Grove of the Unicorn and Tir-na
+Nog'th turn up three times the usual magic and almost nothing to fight
+with.  The Caverns of Kolvir, being a mine, turn up tools.
+
+Nothing is impossible anywhere -- a sword can still be found in the Grove.
+It is a matter of proportion, and of where it is worth going to look.

@@ -63,6 +63,9 @@ towns standing in it, roads between them, and thirteen dungeons opening off it.
 - **Thirteen dungeons**, Amber's own places, each covering its own range of
   depths and ending at the bottom of it -- so going deeper means crossing the
   world to find one that reaches deeper (:doc:`dungeon`).
+- Each dungeon has **its own inhabitants** and **its own kind of treasure**: the
+  Caverns of Kolvir are trolls and giants and tools, Tir-na Nog'th is wraiths
+  and vortices and three times the usual magic.
 
 Monsters, objects and magic
 ---------------------------
@@ -133,9 +136,10 @@ in when the milestone lands.
      - M11
      - :doc:`nightmare`
 
-Multiple dungeons have arrived (:doc:`dungeon`), but what lives in them and what
-is found in them still follows depth alone; a dungeon's own monsters and treasure
-are the rest of M5.
+Multiple dungeons have arrived (:doc:`dungeon`), each with its own inhabitants
+and its own kind of treasure. What is left of M5 is the towns' side of the same
+idea — the six kinds of townsfolk — and the buildings and services that stand in
+them.
 
 A **Tcl/Tk front end** is planned for a later phase, reviving the original's
 interface on Tcl/Tk 9. There is an irony in it: the original ZangbandTK

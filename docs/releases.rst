@@ -31,6 +31,13 @@ Unreleased
 M5 in progress: towns and roads — 19 to 20 August 2026
 ------------------------------------------------------
 
+- **3.7.0** — Each dungeon is now home to its own kinds of creature (CNT-05).
+  The Caverns of Kolvir run to trolls and giants, Tir-na Nog'th to wraiths and
+  vortices, Arden to animals and trees. A stranger from elsewhere turns up now
+  and then, at rather less than a fifth of what is met.
+- **3.6.0** — Each dungeon yields its own kind of treasure (CNT-12). Rebma is
+  rich, Garnath is not, the Grove of the Unicorn runs to magic and the Caverns of
+  Kolvir to tools. What a dungeon yields changes; how much does not.
 - **3.5.1** — The in-game manual learned the dungeons: a page of its own listing
   all thirteen with their depths, the rule that a dungeon ends at its bottom, and
   how recall behaves per dungeon. The symbol list gained the ``>`` of a dungeon
