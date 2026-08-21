@@ -92,6 +92,9 @@ if (html_theme == "".join(["@", "DOC_HTML_THEME", "@"]) or html_theme == ""):
         html_theme_options = {
             "logo": {"text": "ZangbandTK"},
             "navbar_align": "left",
+            # Six top-level sections; without this the sixth is hidden
+            # behind a "More" dropdown, and it would be Documentation.
+            "header_links_before_dropdown": 6,
             "github_url": "https://github.com/z88kat/ZangbandTK",
             "use_edit_page_button": False,
             "show_prev_next": True,
@@ -123,6 +126,7 @@ html_sidebars = {
     "screenshots": [],
     "download": [],
     "releases": [],
+    "diary": [],
 }
 
 

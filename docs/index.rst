@@ -34,6 +34,7 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
    screenshots
    download
    releases
+   diary
    documentation
 
 
