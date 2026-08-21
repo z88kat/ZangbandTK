@@ -57,15 +57,17 @@ ifneq ($(autoconf),)
 CFLAGS += -DHAVE_CONFIG_H
 endif
 
-# Note that Makefile.inc sets VERSION, and so we must run version.sh after including Makefile.inc
+# Note that Makefile.version sets VERSION, and so we must run version.sh after
+# including it
 include Makefile.inc
+include Makefile.version
 
 APPNAME = $(DISPLAY_NAME).app
 EXE = $(PROGNAME)
 
 # For CFBundleShortVersionString and CFBundleVersion in Info.plist, Apple wants
 # up to three integers separated by periods.  Versions given by version.sh
-# can have extra stuff beyond that so use VERSION as set by Makefile.inc
+# can have extra stuff beyond that so use VERSION as set by Makefile.version
 # for the bundle identifiers.  Use the result of version.sh for the build ID
 # compiled into the rest of the code and in the package file name.
 BUNDLE_VERSION := ${VERSION}

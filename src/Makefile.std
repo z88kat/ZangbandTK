@@ -112,6 +112,7 @@ default: install
 include Makefile.inc
 
 # Version info
+include Makefile.version
 EXE = $(PROGNAME)
 
 

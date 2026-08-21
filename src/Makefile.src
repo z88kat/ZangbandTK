@@ -9,18 +9,9 @@
 # template, the icon.  DISPLAY_NAME in Makefile.osx is what the player sees.
 NAME = Angband
 
-# ZangbandTK's own version and the Angband release it is built on.
-#
-# Both are read out of buildid.h rather than written here as well.  They were
-# written in both places, with a comment in each saying it must agree with the
-# other, which is a standing invitation to drift -- and the version reaches the
-# player from both directions: buildid.h feeds the title screen and the in-game
-# copyright, this file feeds Info.plist and so the About panel.  One source, and
-# it is the header, because that is the one the C has to have.
-VERSION = $(shell sed -n 's/^\#define VERSION_STRING[[:space:]]*"\(.*\)"/\1/p' buildid.h)
-BASE_VERSION = $(shell sed -n 's/^\#define BASE_VERSION_STRING[[:space:]]*"\(.*\)"/\1/p' buildid.h)
-
-COPYRIGHT = ZangbandTK $(VERSION), based on Angband $(BASE_VERSION). (c) 1987-2026 Angband contributors, (c) 1997-2005 Zangband DevTeam, (c) 2026 ZangbandTK contributors
+# The version and the copyright line live in Makefile.version, which is included
+# by the makefiles that need them.  Nothing here may use $(shell): this file is
+# read by nmake too, and nmake has no such function.
 PROGNAME = angband
 
 HEADERS = \
