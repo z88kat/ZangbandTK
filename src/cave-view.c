@@ -520,6 +520,30 @@ static bool source_can_light_wall(struct chunk *c, struct player *p,
 }
 
 /**
+ * Does daylight reach a wall's face across this grid?
+ *
+ * Angband asks this with square_allowslos(), on the assumption that anything
+ * blocking sight is a wall nobody can stand in or walk through.  ZangbandTK's
+ * wilderness broke that assumption: a stand of trees is PASSABLE without LOS,
+ * so a town wall with trees in front of it was judged to have no light on its
+ * face -- never lit, never seen, never remembered.  It appeared only when the
+ * player walked into it, and only the stretches of wall with grass in front of
+ * them lit normally, which is what made it puzzling to look at.
+ *
+ * Light passes through a wood; sight does not travel far through one.  Those are
+ * different questions, and this is the first of them.  Whether the player can
+ * *see* the lit face is still decided by the view calculation, which trees do
+ * obstruct.
+ *
+ * (Vanilla has the same case with passable rubble.  It is rare enough
+ * underground never to have been noticed; in a forest it is everywhere.)
+ */
+static bool wall_lit_across(struct chunk *c, struct loc grid)
+{
+	return square_allowslos(c, grid) || square_ispassable(c, grid);
+}
+
+/**
  * Help calc_lighting():  check for whether a wall marked with SQUARE_GLOW
  * can appear to be lit, as viewed by the player regardless of line-of-sight
  * details.
@@ -540,31 +564,10 @@ static bool glow_can_light_wall(struct chunk *c, struct player *p,
 	if (loc_eq(pn, wgrid)) return true;
 
 	/*
-	 * ZangbandTK: if the player is standing in the grid next to the wall,
-	 * they can see it, whatever they are standing in.
-	 *
-	 * The test below asks whether the grid between the wall and the player
-	 * carries light onto it, which assumes anything blocking sight is a wall
-	 * nobody can occupy.  ZangbandTK's wilderness broke that assumption: a
-	 * stand of trees is PASSABLE without LOS, so a character standing in a
-	 * wood beside a town wall was told the intervening grid -- the one they
-	 * were standing in -- did not let light through, and the wall they were
-	 * touching was never lit, never seen and never remembered.  It appeared
-	 * only when they walked into it.  Only parts of a wall vanished, which is
-	 * what made it puzzling: the stretches with grass in front of them lit
-	 * normally.
-	 *
-	 * (Vanilla has the same latent case with passable rubble.  It is rare
-	 * enough underground never to have been noticed; in a forest it is
-	 * everywhere.)
-	 */
-	if (loc_eq(pn, p->grid)) return true;
-
-	/*
 	 * If the grid in the direction of the player is not a wall and is
 	 * glowing, it'll illuminate the wall.
 	 */
-	if (square_allowslos(c, pn) && square_isglow(c, pn)) return true;
+	if (wall_lit_across(c, pn) && square_isglow(c, pn)) return true;
 
 	/*
 	 * Try the two neighboring squares adjacent to the one in the direction
@@ -576,13 +579,13 @@ static bool glow_can_light_wall(struct chunk *c, struct player *p,
 		if (pn.y != wgrid.y) {
 			chk.x = pn.x;
 			chk.y = wgrid.y;
-			if (square_allowslos(c, chk) &&
+			if (wall_lit_across(c, chk) &&
 					square_isglow(c, chk) &&
 					source_can_light_wall(c, p, chk, wgrid))
 				return true;
 			chk.x = wgrid.x;
 			chk.y = pn.y;
-			if (square_allowslos(c, chk) &&
+			if (wall_lit_across(c, chk) &&
 					square_isglow(c, chk) &&
 					source_can_light_wall(c, p, chk, wgrid))
 				return true;
@@ -590,13 +593,13 @@ static bool glow_can_light_wall(struct chunk *c, struct player *p,
 			chk.x = pn.x;
 			chk.y = wgrid.y - 1;
 			if (square_in_bounds(c, chk) &&
-					square_allowslos(c, chk) &&
+					wall_lit_across(c, chk) &&
 					square_isglow(c, chk) &&
 					source_can_light_wall(c, p, chk, wgrid))
 				return true;
 			chk.y = wgrid.y + 1;
 			if (square_in_bounds(c, chk) &&
-					square_allowslos(c, chk) &&
+					wall_lit_across(c, chk) &&
 					square_isglow(c, chk) &&
 					source_can_light_wall(c, p, chk, wgrid))
 				return true;
@@ -604,12 +607,12 @@ static bool glow_can_light_wall(struct chunk *c, struct player *p,
 	} else {
 		chk.y = pn.y;
 		chk.x = wgrid.x - 1;
-		if (square_in_bounds(c, chk) && square_allowslos(c, chk) &&
+		if (square_in_bounds(c, chk) && wall_lit_across(c, chk) &&
 				square_isglow(c, chk) &&
 				source_can_light_wall(c, p, chk, wgrid))
 			return true;
 		chk.x = wgrid.x + 1;
-		if (square_in_bounds(c, chk) && square_allowslos(c, chk) &&
+		if (square_in_bounds(c, chk) && wall_lit_across(c, chk) &&
 				square_isglow(c, chk) &&
 				source_can_light_wall(c, p, chk, wgrid))
 			return true;

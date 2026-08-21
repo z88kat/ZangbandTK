@@ -1296,14 +1296,17 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 
 		if (!kind) break;
 
-		/*
-		 * Kept as a fallback so that a theme changes what a level yields
-		 * without changing how much: if every attempt is turned down, the
-		 * first thing offered is taken rather than nothing at all.
-		 */
-		if (!fallback) fallback = kind;
-
 		if (theme && randint0(100) >= obj_theme_weight(theme, kind->tval)) {
+			/*
+			 * Kept as a fallback so that a theme changes what a level yields
+			 * without changing how much: if every attempt is turned down for
+			 * not suiting, the first such thing is taken rather than nothing.
+			 *
+			 * Only for theme rejections.  A book the player cannot read is
+			 * refused by 4.2 on purpose, and falling back to one would hand
+			 * warriors spellbooks at the unfiltered rate.
+			 */
+			if (!fallback) fallback = kind;
 			kind = NULL;
 			tries--;
 			continue;

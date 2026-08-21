@@ -213,7 +213,20 @@ static const struct dun_type *mon_dungeon_here(int generated_level)
 	const struct dun_type *type;
 
 	if (generated_level <= 0) return NULL;
-	if (!player || !player->dungeon) return NULL;
+
+	/*
+	 * The player has to be in a dungeon, not merely to have been in one.
+	 * player->dungeon is deliberately not cleared on coming back up, because
+	 * word of recall has to know where to return to -- so on its own it says
+	 * nothing about where the player is standing now.
+	 *
+	 * That mattered: wild_populate() asks for monsters at the block's danger
+	 * level, which is above zero, so testing only the level filled the open
+	 * country with whatever lived in the last dungeon visited.  A walk home
+	 * from the Courts of Chaos left demons in the fields.
+	 */
+	if (!player || player->in_wild || player->depth <= 0) return NULL;
+	if (!player->dungeon) return NULL;
 
 	type = dun_type_by_index(player->dungeon - 1);
 

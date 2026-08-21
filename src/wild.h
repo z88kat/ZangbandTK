@@ -217,6 +217,7 @@ int wild_dungeon_at(struct wilderness *w, struct loc grid);
 bool wild_dungeon_in_block(struct wilderness *w, int bx, int by);
 struct wild_dungeon *wild_dungeon_by_index(struct wilderness *w, int idx);
 struct loc wild_scroll_delta(void);
+void wild_adopt_window(struct loc offset);
 int wild_block_feat(struct wilderness *w, int x, int y);
 
 void wild_ensure(uint32_t seed);

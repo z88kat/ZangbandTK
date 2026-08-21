@@ -950,11 +950,17 @@ static void display_world_map(struct loc origin)
 			 * large it is worth telling from across the map: it is what
 			 * decides whether the walk is worth making.
 			 */
-			if (wild_block_at(wild, bx, by)->place) {
+			{
 				int town = wild_town_at(wild, bx, by);
 
-				a = (town >= 0) ? wild_town_band_attr[wild->towns[town].band]
-					: COLOUR_L_WHITE;
+				if (town >= 0) {
+					a = wild_town_band_attr[wild->towns[town].band];
+				} else if (wild_dungeon_in_block(wild, bx, by)) {
+					a = COLOUR_L_RED;
+				} else if (wild_block_at(wild, bx, by)->place) {
+					/* The margin a town or a dungeon reserves around itself. */
+					a = COLOUR_L_WHITE;
+				}
 			}
 
 			Term_queue_char(Term, col + 1, row + 1, a, c, a, c);
@@ -985,6 +991,8 @@ static void display_world_map(struct loc origin)
 					  Term->hgt - 2, at);
 			at += strlen(wild_town_band_name[band]) + 2;
 		}
+
+		c_put_str(COLOUR_L_RED, "dungeon", Term->hgt - 2, at);
 	}
 }
 

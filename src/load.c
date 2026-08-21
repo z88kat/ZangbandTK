@@ -1540,6 +1540,16 @@ static void rd_wilderness_base(void)
 	 * the window should scroll.
 	 */
 	wild_ensure(seed_flavor);
+
+	/*
+	 * And tell the wilderness which window the player is standing in.  The
+	 * surface comes back from the "dungeon" block rather than being generated,
+	 * so wild_surface() is never called on load and would otherwise not learn
+	 * the offset until the first rebuild -- by which time it has already
+	 * re-anchored both axes and told the display the window had not moved.
+	 */
+	if (player->in_wild)
+		wild_adopt_window(player->wild_offset);
 }
 
 /**

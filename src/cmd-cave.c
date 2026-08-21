@@ -103,6 +103,7 @@ void do_cmd_go_up(struct command *cmd)
 void do_cmd_go_down(struct command *cmd)
 {
 	int descend_to;
+	const struct dun_type *entering = NULL;
 
 	/* Verify stairs */
 	if (!square_isdownstairs(cave, player->grid)) {
@@ -115,14 +116,23 @@ void do_cmd_go_down(struct command *cmd)
 	}
 
 	/*
-	 * ZangbandTK (WLD-14): which dungeon this is has to be settled before the
-	 * target depth is worked out, since the dungeon is what decides the range
-	 * of depths the target is allowed to fall in.
+	 * ZangbandTK (WLD-14): which dungeon these stairs lead into.  Settled
+	 * before the target depth, since the dungeon decides it -- but not acted on
+	 * until every way of refusing the descent has been passed, below.
 	 */
-	if (player->in_wild && !player_enter_dungeon_here(player))
-		return;
+	if (player->in_wild) {
+		entering = player_dungeon_at_stairs(player);
 
-	descend_to = dungeon_get_next_level(player, player->depth, 1);
+		if (!entering) {
+			msg("There is nowhere to go down to.");
+			return;
+		}
+
+		/* Entering a dungeon arrives at its shallowest level. */
+		descend_to = entering->min_depth;
+	} else {
+		descend_to = dungeon_get_next_level(player, player->depth, 1);
+	}
 
 	/* Paranoia, no descent from z_info->max_depth - 1 */
 	if (player->depth == z_info->max_depth - 1) {
@@ -134,7 +144,7 @@ void do_cmd_go_down(struct command *cmd)
 	 * A dungeon ends at its deepest level.  Say so, and say what to do about
 	 * it, rather than silently refusing to move.
 	 */
-	if (descend_to <= player->depth && player->depth > 0) {
+	if (!entering && descend_to <= player->depth && player->depth > 0) {
 		const struct dun_type *type = player->dungeon
 			? dun_type_by_index(player->dungeon - 1) : NULL;
 
@@ -155,6 +165,16 @@ void do_cmd_go_down(struct command *cmd)
 
 	/* Take a turn */
 	player->upkeep->energy_use = z_info->move_energy;
+
+	/*
+	 * Past every refusal, so it is safe to say where the player now belongs.
+	 * player->dungeon outlives the visit -- word of recall reads it -- so it
+	 * must not be set by a descent that did not happen.
+	 */
+	if (entering) {
+		player->dungeon = entering->index + 1;
+		msg("%s", entering->desc ? entering->desc : entering->name);
+	}
 
 	/* Success */
 	msgt(MSG_STAIRS_DOWN, "You enter a maze of down staircases.");

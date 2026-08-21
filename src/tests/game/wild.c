@@ -1268,6 +1268,42 @@ static int test_a_wall_is_seen_from_inside_a_wood(void *state) {
 	require(square_isseen(cave, wall));
 	require(square_isknown(cave, wall));
 
+	/*
+	 * And at a distance, not only when touching it.  The first fix for this
+	 * was a special case for the player's own grid, which left a wall two
+	 * grids off behind trees still invisible while the same wall behind grass
+	 * was plain to see -- the same inconsistency, one grid further out.  The
+	 * view calculation already puts such a wall in the field of view; it was
+	 * only the light that was missing.
+	 */
+	{
+		int away;
+
+		for (away = 2; away <= 4; away++) {
+			struct loc far_wall = loc(mid.x, mid.y + away);
+			int a, b;
+
+			/* Trees everywhere, and the wall further out through them. */
+			for (a = -5; a <= 5; a++)
+				for (b = -5; b <= 5; b++)
+					square_set_feat(cave, loc(mid.x + a, mid.y + b), FEAT_TREE);
+
+			square_set_feat(cave, far_wall, FEAT_PERM);
+			square_forget(cave, far_wall);
+			sqinfo_off(square(cave, far_wall)->info, SQUARE_SEEN);
+
+			player->grid = mid;
+			cave_illuminate(cave, true, false);
+			update_view(cave, player);
+
+			if (!square_isseen(cave, far_wall))
+				printf("a wall %d grids off through trees is not seen\n", away);
+
+			require(square_light(cave, far_wall) > 0);
+			require(square_isseen(cave, far_wall));
+		}
+	}
+
 	ok;
 }
 
@@ -1583,8 +1619,17 @@ static int test_the_theme_mapping_is_total(void *state) {
 /** The share of monsters met at this depth that the dungeon is home to. */
 static int dwell_sample(struct dun_type *ty, int depth, int rolls) {
 	int at_home = 0, got = 0, i;
+	bool was_wild = player->in_wild;
+	int was_depth = player->depth;
 
+	/*
+	 * Stand the player in the dungeon, not merely name it: the habitat applies
+	 * to a character who is underground, so that it cannot leak into the open
+	 * country they walk home across.
+	 */
 	player->dungeon = ty ? ty->index + 1 : 0;
+	player->in_wild = false;
+	player->depth = depth;
 
 	for (i = 0; i < rolls; i++) {
 		struct monster_race *r = get_mon_num(depth, depth);
@@ -1595,6 +1640,8 @@ static int dwell_sample(struct dun_type *ty, int depth, int rolls) {
 	}
 
 	player->dungeon = 0;
+	player->in_wild = was_wild;
+	player->depth = was_depth;
 
 	return got ? (100 * at_home) / got : -1;
 }
@@ -1631,6 +1678,8 @@ static int test_a_dungeon_has_its_own_inhabitants(void *state) {
 	 * are not what walks a city in the sky.
 	 */
 	player->dungeon = tir->index + 1;
+	player->in_wild = false;
+	player->depth = 40;
 	{
 		int i, foreign = 0, got = 0;
 
@@ -1644,6 +1693,8 @@ static int test_a_dungeon_has_its_own_inhabitants(void *state) {
 		cross = got ? (100 * foreign) / got : -1;
 	}
 	player->dungeon = 0;
+	player->in_wild = true;
+	player->depth = 0;
 
 	require(cross > 70);
 
@@ -1680,6 +1731,8 @@ static int test_a_dungeon_can_always_be_populated(void *state) {
 			int i;
 
 			player->dungeon = idx + 1;
+			player->in_wild = false;
+			player->depth = depth;
 
 			/*
 			 * Several rolls per level: one success could be luck, and it is
@@ -1696,6 +1749,8 @@ static int test_a_dungeon_can_always_be_populated(void *state) {
 			}
 
 			player->dungeon = 0;
+			player->in_wild = true;
+			player->depth = 0;
 		}
 	}
 
@@ -1778,6 +1833,221 @@ static int test_every_dungeon_claims_a_workable_share(void *state) {
 	ok;
 }
 
+
+/**
+ * Every dungeon can be entered at its own mouth, and left again (WLD-14).
+ *
+ * The depth clamp treated "above the top of this dungeon" as one case when it
+ * is two.  Going up it means out, to the surface.  Going down it means the
+ * mouth -- and clamping that to the surface made eleven of the thirteen
+ * dungeons impossible to enter: stepping onto the mouth of the Abyss asked for
+ * depth 1, which is above its top of 90, and got depth 0 back, so the player
+ * spent a move and stayed where they were.
+ *
+ * The earlier test for this checked only the first dungeon in the file, which
+ * starts at depth 1 and was therefore the single case that worked.  This walks
+ * all of them.
+ */
+static int test_every_dungeon_can_be_entered_and_left(void *state) {
+	int idx;
+
+	require(dun_type_count() > 1);
+
+	for (idx = 0; idx < dun_type_count(); idx++) {
+		struct dun_type *ty = dun_type_by_index(idx);
+		int in, out, deeper, floor_of_it;
+
+		notnull(ty);
+		player->dungeon = idx + 1;
+
+		/* Stepping onto its mouth from the surface reaches its top level. */
+		in = dungeon_get_next_level(player, 0, 1);
+		if (in != ty->min_depth)
+			printf("%s (%d-%d) is entered at depth %d\n", ty->name,
+				ty->min_depth, ty->max_depth, in);
+		eq(in, ty->min_depth);
+
+		/* Going up from its top level reaches the surface, not its top again. */
+		out = dungeon_get_next_level(player, ty->min_depth, -1);
+		eq(out, 0);
+
+		/* Going down inside it descends, as far as its bottom and no further. */
+		if (ty->max_depth > ty->min_depth) {
+			deeper = dungeon_get_next_level(player, ty->min_depth, 1);
+			require(deeper > ty->min_depth);
+			require(deeper <= ty->max_depth);
+		}
+
+		floor_of_it = dungeon_get_next_level(player, ty->max_depth, 1);
+		eq(floor_of_it, ty->max_depth);
+
+		player->dungeon = 0;
+	}
+
+	ok;
+}
+
+/**
+ * A dungeon's inhabitants stay in their dungeon (CNT-05).
+ *
+ * player->dungeon is not cleared when the player comes back up -- word of recall
+ * needs it -- so it says where they were, not where they are.  The habitat test
+ * originally keyed off the requested monster level alone, and wild_populate()
+ * asks at the block's danger level, which is above zero.  So a character who
+ * had been down the Courts of Chaos came up to find the fields full of demons.
+ */
+static int test_a_habitat_does_not_leak_into_the_country(void *state) {
+	struct dun_type *courts = dun_type_by_name("The Courts of Chaos");
+	int at_home_below, at_home_above, i;
+	int got;
+
+	notnull(courts);
+
+	/* Down in the Courts, most of what is met belongs to the Courts. */
+	player->dungeon = courts->index + 1;
+	player->in_wild = false;
+	player->depth = 80;
+
+	at_home_below = 0;
+	got = 0;
+	for (i = 0; i < 1500; i++) {
+		struct monster_race *r = get_mon_num(80, 80);
+
+		if (!r) continue;
+		got++;
+		if (dun_type_dwells(courts, r)) at_home_below++;
+	}
+	require(got > 500);
+	at_home_below = (100 * at_home_below) / got;
+
+	/*
+	 * Back on the surface, having been there: the country is populated at its
+	 * own danger level, and owes the Courts nothing.
+	 */
+	player->in_wild = true;
+	player->depth = 0;
+
+	at_home_above = 0;
+	got = 0;
+	for (i = 0; i < 1500; i++) {
+		struct monster_race *r = get_mon_num(80, 80);
+
+		if (!r) continue;
+		got++;
+		if (dun_type_dwells(courts, r)) at_home_above++;
+	}
+	require(got > 500);
+	at_home_above = (100 * at_home_above) / got;
+
+	player->dungeon = 0;
+
+	if (at_home_above * 2 > at_home_below)
+		printf("the Courts' own kinds are %d%% of what is met underground "
+			   "and %d%% of what is met on the surface\n",
+			at_home_below, at_home_above);
+
+	/* Far less of it above ground than below. */
+	require(at_home_above * 2 < at_home_below);
+
+	ok;
+}
+
+/**
+ * The window survives a save, so the first scroll after loading does not jump.
+ *
+ * wild_window and wild_scroll are worked out when a window is built.  A
+ * character loaded on the surface has their offset restored from the savefile
+ * without wild_surface() ever running, so neither was set: the first rebuild
+ * re-anchored both axes and reported no movement to the display, reintroducing
+ * both of the bugs they exist to prevent -- on the first scroll after every
+ * load.
+ */
+static int test_the_window_survives_a_save(void *state) {
+	int size = z_info->wild_block_size;
+	int span = wild_view_blocks() * size;
+	struct loc here, first, second;
+	struct chunk *a, *b;
+
+	/* Stand well inside the world and build a window there. */
+	here = loc(span * 4 + size * 3 + 5, span * 4 + size * 3 + 5);
+	a = wild_surface(wild, player, here, &first);
+	notnull(a);
+	cave_free(a);
+
+	player->wild_grid = here;
+	player->wild_offset = first;
+	player->in_wild = true;
+
+	require(savefile_save("Test-window"));
+
+	play_again = true;
+	wipe_mon_list(cave, player);
+	cleanup_angband();
+	chunk_list_max = 0;
+	init_angband();
+	play_again = false;
+
+	require(savefile_load("Test-window", false));
+
+	/*
+	 * Now walk west far enough that the window must follow.  The axis that did
+	 * not need to move must stay put -- which it can only do if the loaded
+	 * offset was adopted.
+	 */
+	here = player->wild_grid;
+	here.x = player->wild_offset.x + 1;
+
+	b = wild_surface(wild, player, here, &second);
+	notnull(b);
+	cave_free(b);
+
+	require(second.x < first.x);
+	eq(second.y, first.y);
+
+	/* And the display is told how far it moved, rather than being told nothing. */
+	eq(wild_scroll_delta().x, first.x - second.x);
+	require(wild_scroll_delta().x != 0);
+
+	file_delete("Test-window");
+
+	ok;
+}
+
+/**
+ * The village band and the town constants agree (WLD-11).
+ *
+ * wild_town_bands[0] is 66x22 and so are world:town-wid and world:town-hgt in
+ * constants.txt.  That is not a coincidence -- the starting village *is*
+ * Angband's town, at Angband's size -- but the two are written down separately,
+ * so a change to one would leave the other behind.  Deriving the band from the
+ * constants would be worse: it would let a large town-wid invert the size ladder
+ * silently.  So they are checked against each other instead.
+ */
+static int test_the_village_is_angbands_town_size(void *state) {
+	int i;
+
+	require(wild_town_count(wild) > 0);
+	eq(wild->towns[0].band, 0);
+	eq(wild->towns[0].wid, z_info->town_wid);
+	eq(wild->towns[0].hgt, z_info->town_hgt);
+
+	/* And every larger band really is larger, in both directions. */
+	for (i = 1; i < wild_town_count(wild); i++) {
+		struct wild_town *town = &wild->towns[i];
+
+		if (town->band == 0) {
+			eq(town->wid, z_info->town_wid);
+			eq(town->hgt, z_info->town_hgt);
+		} else {
+			require(town->wid > z_info->town_wid);
+			require(town->hgt > z_info->town_hgt);
+		}
+	}
+
+	ok;
+}
+
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -1805,7 +2075,9 @@ struct test tests[] = {
 	{ "the-window-reports-its-travel", test_the_window_reports_its_travel },
 	{ "the-world-map-remembers-travel", test_the_world_map_remembers_travel },
 	{ "reserved-land-is-not-the-town", test_reserved_land_is_not_the_town },
+	{ "the-village-is-angbands-town-size", test_the_village_is_angbands_town_size },
 	{ "world-position-survives-a-save", test_world_position_survives_a_save },
+	{ "the-window-survives-a-save", test_the_window_survives_a_save },
 	{ "the-map-survives-a-save-from-below", test_the_map_survives_a_save_from_below },
 	{ "a-wall-is-seen-from-inside-a-wood", test_a_wall_is_seen_from_inside_a_wood },
 	{ "every-dungeon-opens-somewhere", test_every_dungeon_opens_somewhere },
@@ -1816,7 +2088,9 @@ struct test tests[] = {
 	{ "a-theme-does-not-reduce-what-is-found", test_a_theme_does_not_reduce_what_is_found },
 	{ "the-theme-mapping-is-total", test_the_theme_mapping_is_total },
 	{ "a-dungeon-has-its-own-inhabitants", test_a_dungeon_has_its_own_inhabitants },
+	{ "a-habitat-does-not-leak-into-the-country", test_a_habitat_does_not_leak_into_the_country },
 	{ "a-dungeon-can-always-be-populated", test_a_dungeon_can_always_be_populated },
 	{ "every-dungeon-claims-a-workable-share", test_every_dungeon_claims_a_workable_share },
+	{ "every-dungeon-can-be-entered-and-left", test_every_dungeon_can_be_entered_and_left },
 	{ NULL, NULL }
 };

@@ -2533,9 +2533,7 @@ static void town_gen_layout(struct chunk *c, struct player *p, uint16_t shops)
 	int num_attempts = 0;
 	bool success = false;
 
-	int max_store_y = 0;
-	int min_store_x = c->width;
-	int max_store_x = 0;
+	int max_store_y, min_store_x, max_store_x;
 
 	/* divide the town into lots */
 	uint16_t lot_hgt = 4, lot_wid = 6;
@@ -2545,6 +2543,18 @@ static void town_gen_layout(struct chunk *c, struct player *p, uint16_t shops)
 		SQUARE_NONE, true);
 
 	while (!success) {
+		/*
+		 * Reset per attempt.  These are declared once and used after the loop
+		 * to carve the streets, so a discarded attempt's shop extents used to
+		 * survive into the one that succeeded and the streets were cut through
+		 * the wrong part of the town.  Upstream Angband has the same fault;
+		 * skipping stores a town does not hold (WLD-11a) makes an attempt fail
+		 * more often, which is what brought it within reach.
+		 */
+		max_store_y = 0;
+		min_store_x = c->width;
+		max_store_x = 0;
+
 		/* Initialize to ROCK for build_streamer precondition */
 		for (grid.y = 1; grid.y < c->height - 1; grid.y++)
 			for (grid.x = 1; grid.x < c->width - 1; grid.x++) {

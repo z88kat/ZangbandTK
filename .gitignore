@@ -29,6 +29,9 @@ angband.smdh
 autom4te.cache/
 cmake-build-debug/
 config.log
+
+# Captured CI output has been committed here by accident before.
+.claude/plans/*.log
 config.status
 configure
 Debug/

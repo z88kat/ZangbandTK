@@ -884,7 +884,13 @@ static int wild_town_score(struct wilderness *w, int x, int y,
 }
 
 /**
- * Mark the ground a town stands on as spoken for, and give it a road.
+ * Mark the ground a town stands on, and a block of margin around it, as spoken
+ * for.
+ *
+ * It used to flag those blocks as carrying a road as well.  That was WLD-08's
+ * stub, which the requirement asked to be replaced rather than extended, and
+ * wild_place_roads() replaced it: roads are now routed between towns instead of
+ * being a ring around each one.
  */
 static void wild_town_claim(struct wilderness *w, const struct wild_town *town)
 {
@@ -995,8 +1001,15 @@ static void wild_place_towns(struct wilderness *w)
 		w->towns[0].band = 0;
 		w->towns[0].stores = WILD_VILLAGE_STORES;
 
-		for (y = 0; y < size; y++)
-			for (x = 0; x < size; x++) {
+		/*
+		 * Inside the same margin the placement loop above keeps.  Without it a
+		 * town could be claimed at block 0,0, and wild_town_origin_of() would
+		 * put its top-left corner at a negative world grid -- off the map, with
+		 * the block index truncating towards zero so that block -1 tested as
+		 * inside the town.
+		 */
+		for (y = bh; y < size - bh; y++)
+			for (x = bw; x < size - bw; x++) {
 				struct wild_block *b = &w->map[y * size + x];
 				int score;
 
@@ -1317,18 +1330,37 @@ static int wild_road_cost(const struct wild_block *block)
  * worth avoiding -- and a road that visibly avoids the mountains reads as a
  * road, where a straight line drawn over them does not.
  */
-static bool wild_route_road(struct wilderness *w, struct loc from, struct loc to,
-							bool by_sea)
+/**
+ * Scratch for wild_route_road(), owned by wild_place_roads().
+ *
+ * Half a megabyte of it on a 129-block world, and a world is laid with up to
+ * seventy roads: allocating and freeing it per road cost more than the routing
+ * did.  Allocated once around the whole job instead, and cleared per road.
+ */
+struct wild_road_scratch {
+	int32_t *dist;
+	int *prev;
+	bool *done;
+	int *hnode;
+	int32_t *hcost;
+	int count;
+};
+
+static bool wild_route_road(struct wilderness *w, struct wild_road_scratch *s,
+							struct loc from, struct loc to, bool by_sea)
 {
 	int size = w->blocks, count = size * size;
-	int32_t *dist = mem_zalloc(count * sizeof(*dist));
-	int *prev = mem_zalloc(count * sizeof(*prev));
-	bool *done = mem_zalloc(count * sizeof(*done));
-	int *hnode = mem_zalloc((4 * count + 8) * sizeof(*hnode));
-	int32_t *hcost = mem_zalloc((4 * count + 8) * sizeof(*hcost));
+	int32_t *dist = s->dist;
+	int *prev = s->prev;
+	bool *done = s->done;
+	int *hnode = s->hnode;
+	int32_t *hcost = s->hcost;
 	int hn = 0;
+
 	int start = from.y * size + from.x, goal = to.y * size + to.x;
 	int i, at;
+
+	memset(done, 0, count * sizeof(*done));
 
 	for (i = 0; i < count; i++) {
 		dist[i] = INT32_MAX;
@@ -1416,12 +1448,6 @@ static bool wild_route_road(struct wilderness *w, struct loc from, struct loc to
 			for (at = goal; at >= 0; at = prev[at])
 				w->map[at].info |= WILD_INFO_ROAD;
 
-		mem_free(hcost);
-		mem_free(hnode);
-		mem_free(done);
-		mem_free(prev);
-		mem_free(dist);
-
 		return reached;
 	}
 }
@@ -1435,10 +1461,11 @@ static bool wild_route_road(struct wilderness *w, struct loc from, struct loc to
  * than the hills, the sea is closed off entirely and only opened when the first
  * attempt finds no way round at all.
  */
-static void wild_lay_road(struct wilderness *w, struct loc from, struct loc to)
+static void wild_lay_road(struct wilderness *w, struct wild_road_scratch *s,
+						  struct loc from, struct loc to)
 {
-	if (!wild_route_road(w, from, to, false))
-		(void) wild_route_road(w, from, to, true);
+	if (!wild_route_road(w, s, from, to, false))
+		(void) wild_route_road(w, s, from, to, true);
 }
 
 /**
@@ -1455,11 +1482,20 @@ static void wild_lay_road(struct wilderness *w, struct loc from, struct loc to)
 static void wild_place_roads(struct wilderness *w)
 {
 	int n = w->town_count;
+	int count = w->blocks * w->blocks;
+	struct wild_road_scratch scratch;
 	bool *joined;
 	int i, j;
 
 	if (n < 2)
 		return;
+
+	scratch.count = count;
+	scratch.dist = mem_zalloc(count * sizeof(*scratch.dist));
+	scratch.prev = mem_zalloc(count * sizeof(*scratch.prev));
+	scratch.done = mem_zalloc(count * sizeof(*scratch.done));
+	scratch.hnode = mem_zalloc((4 * count + 8) * sizeof(*scratch.hnode));
+	scratch.hcost = mem_zalloc((4 * count + 8) * sizeof(*scratch.hcost));
 
 	joined = mem_zalloc(n * sizeof(*joined));
 	joined[0] = true;
@@ -1490,7 +1526,8 @@ static void wild_place_roads(struct wilderness *w)
 
 		if (best_to < 0) break;
 
-		wild_lay_road(w, w->towns[best_from].block, w->towns[best_to].block);
+		wild_lay_road(w, &scratch, w->towns[best_from].block,
+					  w->towns[best_to].block);
 		joined[best_to] = true;
 	}
 
@@ -1503,8 +1540,33 @@ static void wild_place_roads(struct wilderness *w)
 						ABS(w->towns[i].block.y - w->towns[j].block.y));
 
 			if (d <= (int) z_info->wild_road_dist)
-				wild_lay_road(w, w->towns[i].block, w->towns[j].block);
+				wild_lay_road(w, &scratch, w->towns[i].block,
+							  w->towns[j].block);
 		}
+
+	mem_free(scratch.hcost);
+	mem_free(scratch.hnode);
+	mem_free(scratch.done);
+	mem_free(scratch.prev);
+	mem_free(scratch.dist);
+}
+
+/**
+ * Adopt a window the game did not build in this process (WLD-24).
+ *
+ * wild_window is what lets a rebuild leave alone the axis that did not need
+ * moving, and wild_scroll is what lets the display follow the axis that did.
+ * Both are worked out when a window is built -- so after loading a character
+ * who was standing on the surface, neither had been set: the game had restored
+ * p->wild_offset without ever calling wild_surface().  The first scroll after
+ * every load therefore re-anchored both axes and told the display the window
+ * had not moved, which is precisely the jump the two of them exist to prevent.
+ */
+void wild_adopt_window(struct loc offset)
+{
+	wild_window = offset;
+	wild_window_set = true;
+	wild_scroll = loc(0, 0);
 }
 
 /**
@@ -2116,6 +2178,15 @@ struct loc wild_town_start(struct wilderness *w, struct player *p)
 	struct chunk *town = wild_town_chunk(w, p, 0);
 	struct loc org = wild_town_origin(w);
 	struct loc grid;
+
+	/*
+	 * A world with no town in it has no staircase to start on.  Should not
+	 * happen -- wild_place_towns() has a fallback of its own -- but the middle
+	 * of the world is a better answer than a crash.
+	 */
+	if (!town)
+		return loc(w->blocks * z_info->wild_block_size / 2,
+				   w->blocks * z_info->wild_block_size / 2);
 
 	for (grid.y = 0; grid.y < town->height; grid.y++)
 		for (grid.x = 0; grid.x < town->width; grid.x++)

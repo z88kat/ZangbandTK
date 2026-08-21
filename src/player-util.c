@@ -79,8 +79,20 @@ int dungeon_get_next_level(struct player *p, int dlev, int added)
 		if (type) {
 			if (target_level > type->max_depth)
 				target_level = type->max_depth;
+
+			/*
+			 * Above the top of the dungeon means two different things
+			 * depending on which way the player is travelling, and conflating
+			 * them made every dungeon that does not start at depth one
+			 * impossible to enter: stepping onto its mouth asked for depth 1,
+			 * which is above its top, and got the surface back.
+			 *
+			 * Going down, it means the mouth of the dungeon -- arrive at its
+			 * shallowest level.  Going up, it means out -- arrive on the
+			 * surface.
+			 */
 			if (target_level < type->min_depth)
-				target_level = 0;
+				target_level = (added > 0) ? type->min_depth : 0;
 		}
 	}
 
@@ -93,55 +105,48 @@ int dungeon_get_next_level(struct player *p, int dlev, int added)
 }
 
 /**
- * Settle which dungeon the player is about to go down into (WLD-14).
+ * Which dungeon the stairs under the player lead into (WLD-14).
  *
  * Two ways down exist on the surface.  A dungeon's own mouth leads into that
  * dungeon.  The staircase in the middle of a town leads into the shallowest
  * dungeon there is, so that a new character has somewhere to go from the first
  * turn without having to cross the world to find it.
  *
- * \return false if there is nothing to go down into, having said so.
+ * Answers the question without acting on it.  Going down can still be refused
+ * after this -- by the force-descent confirmation, among others -- and an
+ * earlier version set player->dungeon and announced the arrival here, so a
+ * refused descent left the player standing on the surface with the game
+ * believing they were somewhere else.  Word of recall and the depth clamp both
+ * read that, so the mistake outlived the keypress.
+ *
+ * \return the dungeon, or NULL if there is nothing to go down into.
  */
-bool player_enter_dungeon_here(struct player *p)
+const struct dun_type *player_dungeon_at_stairs(struct player *p)
 {
-	struct loc world_grid = loc(p->grid.x + p->wild_offset.x,
-								p->grid.y + p->wild_offset.y);
-	int idx = wild_dungeon_at(wild, world_grid);
-	const struct dun_type *type;
+	struct loc world = loc(p->grid.x + p->wild_offset.x,
+						   p->grid.y + p->wild_offset.y);
+	int idx = wild_dungeon_at(wild, world);
 
 	if (idx >= 0) {
 		struct wild_dungeon *mouth = wild_dungeon_by_index(wild, idx);
 
-		p->dungeon = mouth->type + 1;
-	} else {
-		/*
-		 * A town staircase.  The shallowest dungeon, by the depth it starts
-		 * at -- not merely the first in the file, so that reordering
-		 * dungeon.txt cannot quietly drop a new character into the Abyss.
-		 */
+		return dun_type_by_index(mouth->type);
+	}
+
+	/*
+	 * A town staircase.  The shallowest dungeon, by the depth it starts at --
+	 * not merely the first in the file, so that reordering dungeon.txt cannot
+	 * quietly drop a new character into the Abyss.
+	 */
+	{
 		const struct dun_type *best = NULL, *d;
 
 		for (d = dun_types; d; d = d->next)
 			if (!best || d->min_depth < best->min_depth)
 				best = d;
 
-		if (!best) {
-			msg("There is nowhere to go down to.");
-			return false;
-		}
-
-		p->dungeon = best->index + 1;
+		return best;
 	}
-
-	type = dun_type_by_index(p->dungeon - 1);
-	if (!type) {
-		msg("There is nowhere to go down to.");
-		return false;
-	}
-
-	msg("%s", type->desc ? type->desc : type->name);
-
-	return true;
 }
 
 /**
