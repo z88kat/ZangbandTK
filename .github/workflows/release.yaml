@@ -332,13 +332,13 @@ jobs:
         run: |
           cd src
           env CFLAGS="-Werror" make -f Makefile.blocksds -j$(nproc)
-          test -e angband.nds
+          test -e ZangbandTK.nds
 
       - name: Upload the ROM
         uses: actions/upload-artifact@v6
         with:
           name: release-nds-rom
-          path: src/angband.nds
+          path: src/ZangbandTK.nds
           retention-days: 1
 
   n3ds:
@@ -413,7 +413,7 @@ jobs:
           for d in gamedata help screens customize ; do
             cp -R lib/$d zangbandtk/lib/
           done
-          mv angband.nds ${archive_prefix}.nds
+          mv ZangbandTK.nds ${archive_prefix}.nds
           mv angband.3dsx ${archive_prefix}.3dsx
           sed -e "s/<version>/${{ steps.store_config.outputs.version }}/g" \
             src/nds/card-readme.txt > README.txt

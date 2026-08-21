@@ -22,12 +22,15 @@ export ZFILES           :=      $(ZFILES)
 # User config
 # ===========
 
-NAME			:= $(PROGNAME)
+# Named for this game rather than for $(PROGNAME), which is angband: that
+# variable names the executable and is left alone, but the ROM is what somebody
+# sees in their flashcart menu and it should not say Angband.
+NAME			:= ZangbandTK
 
-GAME_TITLE		:= Angband
-GAME_DESCRIPTION	:= Dungeon exploration
-GAME_AUTHOR		:= The Angband team
-GAME_ICON		:= nds/att-32.png
+GAME_TITLE		:= ZangbandTK
+GAME_DESCRIPTION	:= Zangband on a modern Angband
+GAME_AUTHOR		:= ZangbandTK contributors
+GAME_ICON		:= nds/zangbandtk-32.png
 
 # Source code paths
 # -----------------

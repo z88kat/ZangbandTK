@@ -48,10 +48,10 @@ GFXBUILD	:=	$(BUILD)
 #GFXBUILD	:=	$(ROMFS)/gfx
 
 # Application information
-APP_TITLE	:=	Angband
-APP_DESCRIPTION	:=	A free, single-player dungeon exploration game.
-APP_AUTHOR	:=	The Angband team
-ICON		:=	nds/att-48.png
+APP_TITLE	:=	ZangbandTK
+APP_DESCRIPTION	:=	Zangband rebuilt on a modern Angband.
+APP_AUTHOR	:=	ZangbandTK contributors
+ICON		:=	nds/zangbandtk-48.png
 
 #---------------------------------------------------------------------------------
 # options for code generation

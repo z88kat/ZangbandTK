@@ -206,6 +206,17 @@ always got that folder one level too deep.
 It is text mode: no tilesets and no sound, which is why it is a small download
 where the others are twenty megabytes larger.
 
+.. important::
+
+   **"Unable to access filesystem" is a DLDI problem, not a broken download.**
+   Homebrew on a DS needs a driver for the particular card it runs from, written
+   into the ROM — DLDI patching. Flashcarts like the R4, and loaders such as
+   TWiLight Menu++ or the Homebrew Menu, do this for you as they launch, and a
+   DSi or 3DS running from its own SD card does not need it at all. Launching the
+   ``.nds`` directly, or in an emulator, generally does: patch it with
+   ``dlditool <driver>.dldi ZangbandTK.nds``, using the driver for the card in
+   question. The ``README.txt`` in the zip goes through this.
+
 There is **one save slot**, at ``/zangbandtk/lib/save/PLAYER``. That is this
 port's limitation, not the game's.
 

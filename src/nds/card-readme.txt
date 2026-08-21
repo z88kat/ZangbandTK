@@ -35,6 +35,40 @@ reason: the folder is one level too deep. The path on the card has to be
 exactly /zangbandtk/lib/gamedata, and so on.
 
 
+"Unable to access filesystem"
+-----------------------------
+
+If the game stops at "Error initializing FAT drivers" and then "Unable to
+access filesystem", it has not failed to find its data -- it has failed to
+reach the card at all, before looking. This is about DLDI, and it is not
+something wrong with the download.
+
+Homebrew on a DS needs a small driver for the particular card it is running
+from, and that driver has to be written into the ROM. This is called DLDI
+patching. Where you stand depends on how you are launching it:
+
+  Most flashcarts and homebrew menus do it for you. R4 and similar cards,
+  and loaders like TWiLight Menu++ or the Homebrew Menu, patch DLDI as they
+  launch. If you use one of those, this section does not apply to you.
+
+  A DSi or 3DS launching from its own SD card does not need DLDI at all.
+  The 3DS build in this zip is the easier route on that hardware.
+
+  Launching the .nds directly, or in an emulator, usually does need it. Patch
+  the ROM with the driver for your card using dlditool, which comes with
+  devkitPro:
+
+    dlditool <driver>.dldi ZangbandTK.nds
+
+  In an emulator, the driver has to match the card the emulator pretends to
+  be -- mpcf.dldi for DeSmuME's GBA Movie Player, r4tf.dldi for an emulated
+  R4 -- and the emulator's filesystem support has to be turned on and pointed
+  at the folder holding "zangbandtk".
+
+melonDS in DSi mode with an SD card image avoids the whole business, because
+then the game uses the DSi's SD card the way real DSi hardware would.
+
+
 Saving
 ------
 
