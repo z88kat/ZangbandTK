@@ -5,8 +5,8 @@ Download
 Getting the game
 ================
 
-Releases are published on the project's `Releases page`_. A release carries three
-files:
+Releases are published on the project's `Releases page`_. A release carries a
+build for each platform, and the source:
 
 - ``ZangbandTK-<version>-osx.dmg`` — the macOS disk image: the application, this
   manual in HTML, and the borg's documentation.
@@ -16,6 +16,10 @@ files:
 - ``ZangbandTK-<version>-win32.zip`` — a 32-bit Windows build, for older machines
   and older Windows. It runs on 64-bit Windows too, and needs the two DLLs beside
   the executable.
+- ``ZangbandTK-<version>-linux64.AppImage`` — the Linux build, 64-bit. One file:
+  make it executable and run it. Carries three front ends, chosen with ``-m``:
+  ``-msdl2`` for tiles, ``-mx11`` for a plain window, and ``-mgcu`` to play in a
+  terminal with no display at all.
 - ``ZangbandTK-<version>.tar.gz`` — the source, with the build system already
   generated.
 
@@ -160,6 +164,30 @@ what. If you have played Angband before, :doc:`balance` is the shortest account
 of what will kill you that would not have before.
 
 
+Linux
+=====
+
+The AppImage needs no installation and nothing installed alongside it:
+
+.. code-block:: sh
+
+   chmod +x ZangbandTK-<version>-linux64.AppImage
+   ./ZangbandTK-<version>-linux64.AppImage
+
+It bundles its own SDL2, X11 and ncurses libraries, so it does not care which
+distribution it is on, and it is built against an older glibc than the current
+one deliberately so that it runs on more than just the newest releases. Older
+distributions may need ``libfuse2`` installed for AppImages to mount; failing
+that, ``--appimage-extract`` unpacks it into a directory you can run from.
+
+Saves go to ``~/.angband/ZangbandTK``, outside the image, which is read only.
+That path is inherited from Angband and kept so that nothing has to move later.
+
+There is no 32-bit Linux build. Ubuntu dropped the i386 archive in 19.10, Fedora
+and Arch dropped 32-bit years ago, and the source archive covers anyone still
+running it.
+
+
 Other platforms
 ===============
 
@@ -169,9 +197,13 @@ both architectures: the 32-bit build cross-compiled with mingw, the 64-bit one o
 a Windows runner under MSYS2, because the bundled PNG and zlib that the 32-bit
 build links against are 32-bit binaries with no 64-bit counterpart to hand. Both
 zips carry a ``README.txt`` for SmartScreen, which greets an unsigned executable
-much as Gatekeeper does above. Nobody plays the game on Windows here,
-though, so it is **untested in play**. Linux builds in CI and is untested in the
-same way. Reports from either are welcome.
+much as Gatekeeper does above. Linux is packaged the same way, as an
+AppImage.
+
+Nobody plays the game on either here, though, so both are **untested in play**:
+CI proves they build, start and can read their own data, which is not the same as
+having been played through. Reports from either are especially welcome for that
+reason.
 
 
 Licence

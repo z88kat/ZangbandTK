@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=ZangbandTK
+GenericName=Roguelike game
+Comment=Rebuilding the spirit of Zangband on a modern Angband
+Exec=zangbandtk
+TryExec=zangbandtk
+Icon=zangbandtk
+Terminal=false
+Type=Application
+Categories=Game;RolePlaying;
+Keywords=roguelike;dungeon;angband;zangband;amber;

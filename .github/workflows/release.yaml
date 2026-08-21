@@ -40,6 +40,14 @@ env:
     # the source archive.
     SRC_ARCHIVE_ARTIFACT: release-src-archive
     # Used as the name when uploading or downloading the artifact for passing
+    # the name of the Linux AppImage.
+    LINUX_ARTIFACT: release-linux
+    # Used as the path for the file with the name of the Linux AppImage.
+    LINUX_ARTIFACT_PATH: release-linux.txt
+    # Used as the name when uploading or downloading the artifact holding
+    # the Linux AppImage.
+    LINUX_ARCHIVE_ARTIFACT: release-linux-archive
+    # Used as the name when uploading or downloading the artifact for passing
     # the name of the 32-bit Windows archive.
     WIN32_ARTIFACT: release-win32
     # Used as the path for the file with the name of the 32-bit Windows archive.
@@ -294,6 +302,132 @@ jobs:
         with:
           name: ${{ env.SRC_ARCHIVE_ARTIFACT }}
           path: ${{ steps.create_source_archive.outputs.archive_file }}
+          retention-days: 1
+
+  linux:
+    needs: [setup, docconvert]
+    name: Linux (AppImage, 64-bit)
+    # Deliberately not ubuntu-latest.  A binary is bound to the glibc it was
+    # built against and will not start on anything older, so the oldest runner
+    # still supported puts the floor as low as is available rather than
+    # excluding every distribution that is not current.
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
+          echo "name=$name" >> $GITHUB_OUTPUT
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build gcc git \
+            libx11-dev libncurses-dev \
+            libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-mixer-dev \
+            libfuse2 file
+
+      - name: Install linuxdeploy
+        run: |
+          curl -sSLo /usr/local/bin/linuxdeploy \
+            https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod a+x /usr/local/bin/linuxdeploy
+          linuxdeploy --version
+
+      # Need commit history and tags for scripts/version.sh to work as expected
+      # so use 0 for fetch-depth.
+      - name: Clone Project
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download Artifact with Converted Documents
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.DOC_ARTIFACT }}
+
+      # scripts/pkg_appimage puts the manual in the image if it is there.
+      - name: Extract Converted Documents
+        run: |
+          tar -xf ${{ env.DOC_ARTIFACT_PATH }}
+
+      # One binary carrying three front ends, chosen at run time with -m: SDL2
+      # for tiles, X11 for a plain window, and GCU so the game is playable over
+      # a terminal with no display at all.  Linux is the only platform here
+      # where that choice exists, and it costs nothing but link time.
+      #
+      # SC_INSTALL is what makes the data path ./lib, relative to the working
+      # directory, which is what lets AppRun find it inside the mounted image;
+      # an absolute path baked at build time would point outside it.  But
+      # SC_INSTALL alone would also put the saves in there, and the image is
+      # read only, so USE_PRIVATE_PATHS is added by hand to send the save,
+      # score and panic directories to the user's home instead.  CMake only
+      # defines that for READONLY_INSTALL, which cannot be used here because it
+      # is the mode with the absolute paths.
+      - name: Build
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror -DUSE_PRIVATE_PATHS" \
+            -DSC_INSTALL=ON \
+            -DSUPPORT_SDL2_FRONTEND=ON \
+            -DSUPPORT_SDL2_SOUND=ON \
+            -DSUPPORT_X11_FRONTEND=ON \
+            -DSUPPORT_GCU_FRONTEND=ON
+          cmake --build build --parallel
+
+      # Confirm all three front ends really are in the binary before packaging
+      # one that silently has fewer, since CMake reports a missing front end as
+      # a status message and carries on.
+      - name: Check the Front Ends
+        run: |
+          for m in sdl2 x11 gcu ; do
+            if ! ./build/game/angband -h 2>&1 | grep -q -- "$m" ; then
+              echo "Front end $m is missing from the build." >&2
+              exit 1
+            fi
+          done
+
+      - name: Create Linux Archive
+        id: create_linux_archive
+        run: |
+          archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+          scripts/pkg_appimage $archive_prefix ${archive_prefix}-linux64.AppImage
+          echo "archive_file=${archive_prefix}-linux64.AppImage" >> $GITHUB_OUTPUT
+
+      # An AppImage that cannot start is indistinguishable from a broken
+      # download, so run the one front end that needs no display and confirm it
+      # gets far enough to read its own data files.
+      - name: Smoke Test
+        run: |
+          ./${{ steps.create_linux_archive.outputs.archive_file }} --appimage-extract >/dev/null
+          test -f squashfs-root/usr/share/ZangbandTK/lib/gamedata/constants.txt
+          test -x squashfs-root/usr/bin/zangbandtk
+          file squashfs-root/usr/bin/zangbandtk | grep -q "x86-64"
+
+      - name: Create Artifact with Linux Archive Path
+        run: |
+          echo archive_path= '${{ steps.create_linux_archive.outputs.archive_file }}' > $LINUX_ARTIFACT_PATH
+
+      - name: Upload Artifact with Linux Archive Path
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.LINUX_ARTIFACT }}
+          path: ${{ env.LINUX_ARTIFACT_PATH }}
+          retention-days: 1
+
+      - name: Upload Linux Archive as Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.LINUX_ARCHIVE_ARTIFACT }}
+          path: ${{ steps.create_linux_archive.outputs.archive_file }}
           retention-days: 1
 
   windows32:
@@ -592,7 +726,7 @@ jobs:
 
   release:
     if: github.event_name == 'push'
-    needs: [ setup, source, windows32, windows64, mac ]
+    needs: [ setup, source, linux, windows32, windows64, mac ]
     name: Create GitHub Release
     runs-on: ubuntu-latest
     # gh release create both makes the tag's release and uploads the files
@@ -635,6 +769,22 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: ${{ env.SRC_ARCHIVE_ARTIFACT }}
+
+      - name: Download Artifact with Linux Archive Path
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.LINUX_ARTIFACT }}
+
+      - name: Extract Linux Archive Path and Store in Step Outputs
+        id: store_linux
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' $LINUX_ARTIFACT_PATH`
+          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with Linux Archive
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.LINUX_ARCHIVE_ARTIFACT }}
 
       - name: Download Artifact with 32-bit Windows Archive Path
         uses: actions/download-artifact@v8
@@ -699,5 +849,6 @@ jobs:
             ${{ steps.store_src.outputs.archive_path }} \
             ${{ steps.store_win64.outputs.archive_path }} \
             ${{ steps.store_win32.outputs.archive_path }} \
+            ${{ steps.store_linux.outputs.archive_path }} \
             ${{ steps.store_mac.outputs.archive_path }} \
             $options

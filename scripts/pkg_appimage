@@ -1,0 +1,121 @@
+#!/bin/bash
+#
+# Build a Linux AppImage from a self-contained build of the game.
+#
+# Use in the root directory of the game, like so:
+#    scripts/pkg_appimage ZangbandTK-3.5.1 [output.AppImage]
+#
+# Expects:
+#   - a self-contained build in build/game: the executable beside its lib
+#     directory, which is what a CMake build with SC_INSTALL produces.  The
+#     executable must also have been compiled with USE_PRIVATE_PATHS, or it
+#     will try to write saves inside the image, which is read only.
+#   - linuxdeploy on PATH, which bundles the shared libraries and packs the
+#     result.  https://github.com/linuxdeploy/linuxdeploy
+#
+set -o errexit
+
+if [ $# -ne 1 ] && [ $# -ne 2 ]; then
+	sed -n -e '3,16p' "$0" | sed -e 's/^# \{0,1\}//'
+	exit 1
+fi
+
+NAME=$1
+if [ $# -eq 1 ]; then
+	OUT=$NAME-linux64.AppImage
+else
+	OUT=$2
+fi
+
+if ! command -v linuxdeploy >/dev/null 2>&1 ; then
+	echo "linuxdeploy is not on PATH.  See the comment at the top of this script." >&2
+	exit 1
+fi
+
+if [ ! -x build/game/angband ]; then
+	echo "No self-contained build found at build/game/angband." >&2
+	echo "Configure with SC_INSTALL and build before running this." >&2
+	exit 1
+fi
+
+APPDIR=AppDir
+rm -rf "$APPDIR" "$OUT"
+
+# The game's own data.  This does not go in usr/lib: that is where linuxdeploy
+# puts the bundled shared libraries, and the game's lib directory would collide
+# with them.  usr/share is where read-only data belongs in any case.
+DATA=$APPDIR/usr/share/ZangbandTK
+mkdir -p "$DATA"
+cp -R build/game/lib "$DATA/lib"
+
+# The licence travels with every copy, which is what the Angband licence asks
+# for, and the manual comes along because it is small and it contains the
+# licence chapter.
+mkdir -p "$APPDIR/usr/share/doc/ZangbandTK"
+cp LICENSE.md "$APPDIR/usr/share/doc/ZangbandTK/"
+if [ -d docs/_build/html ]; then
+	cp -R docs/_build/html "$APPDIR/usr/share/doc/ZangbandTK/manual"
+fi
+
+# Named for the game rather than for the CMake project, which is still Angband
+# because it also names the install paths.  Nobody running this should have to
+# know that.
+cp build/game/angband "$APPDIR/zangbandtk-bin"
+
+# The game resolves its data as ./lib, relative to the working directory, so
+# AppRun has to be in the data directory before it execs.  It cannot simply run
+# from the executable's own directory the way the disk image does.
+cat > "$APPDIR/AppRun" <<'APPRUN'
+#!/bin/sh
+HERE="$(dirname "$(readlink -f "$0")")"
+# usr/lib is where linuxdeploy puts everything it bundles, including the codecs
+# SDL2_image and SDL2_mixer reach by dlopen.  Those are found through the loader
+# path rather than by being linked, so without this the game runs but the
+# tilesets and the sounds do not.
+export LD_LIBRARY_PATH="$HERE/usr/lib:$LD_LIBRARY_PATH"
+cd "$HERE/usr/share/ZangbandTK"
+exec "$HERE/usr/bin/zangbandtk" "$@"
+APPRUN
+chmod a+x "$APPDIR/AppRun"
+
+# SDL2_image and SDL2_mixer reach their format support through dlopen, which
+# linuxdeploy cannot see by following the link-time dependencies, so the codecs
+# the game actually needs are named here: PNG for the tilesets, and the audio
+# formats for the sounds.  Missing ones are skipped rather than fatal, because
+# which of them a distribution ships as separate libraries varies.
+EXTRA_LIBS=""
+for pattern in libpng16 libjpeg libwebp libvorbisfile libvorbis libogg \
+		libmpg123 libopusfile libopus libFLAC ; do
+	for found in /usr/lib/x86_64-linux-gnu/$pattern.so.* ; do
+		if [ -e "$found" ]; then
+			EXTRA_LIBS="$EXTRA_LIBS --library=$found"
+			break
+		fi
+	done
+done
+
+linuxdeploy \
+	--appdir "$APPDIR" \
+	--executable "$APPDIR/zangbandtk-bin" \
+	--desktop-file lib/icons/zangbandtk.desktop \
+	--icon-file lib/icons/zangbandtk.png \
+	--custom-apprun "$APPDIR/AppRun" \
+	$EXTRA_LIBS
+
+# linuxdeploy copies the executable into usr/bin under the name it was given, so
+# put it where AppRun expects and drop the staging copy.
+mv "$APPDIR/usr/bin/zangbandtk-bin" "$APPDIR/usr/bin/zangbandtk"
+rm -f "$APPDIR/zangbandtk-bin"
+
+# linuxdeploy names its output from the desktop file, so find whatever it wrote
+# rather than guessing at the name.
+linuxdeploy --appdir "$APPDIR" --output appimage
+built=`ls -1 ./*.AppImage | head -n 1`
+if [ -z "$built" ]; then
+	echo "linuxdeploy reported success but produced no AppImage." >&2
+	exit 1
+fi
+test "$built" = "./$OUT" || mv "$built" "$OUT"
+
+rm -rf "$APPDIR"
+echo "Wrote $OUT"
