@@ -312,11 +312,65 @@ jobs:
           path: ${{ steps.create_source_archive.outputs.archive_file }}
           retention-days: 1
 
-  nintendo:
+  nds:
     needs: [setup]
-    name: Nintendo DS and 3DS
+    name: Nintendo DS
+    runs-on: ubuntu-latest
+    # BlocksDS, not devkitARM.  Makefile.blocksds reaches into
+    # /opt/blocksds/core for mkfatimg and ndstool, which the devkitARM image
+    # does not carry; the 3DS build below needs devkitARM and does not have
+    # BlocksDS.  Two toolchains, so two jobs.
+    container: skylyrac/blocksds:slim-latest
+    steps:
+      - name: Clone Project
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Build
+        shell: bash
+        run: |
+          cd src
+          env CFLAGS="-Werror" make -f Makefile.blocksds -j$(nproc)
+          test -e angband.nds
+
+      - name: Upload the ROM
+        uses: actions/upload-artifact@v6
+        with:
+          name: release-nds-rom
+          path: src/angband.nds
+          retention-days: 1
+
+  n3ds:
+    needs: [setup]
+    name: Nintendo 3DS
     runs-on: ubuntu-latest
     container: devkitpro/devkitarm
+    steps:
+      - name: Clone Project
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Build
+        shell: bash
+        run: |
+          cd src
+          env CFLAGS="-Werror" make -f Makefile.3ds -j$(nproc)
+          test -e angband.3dsx
+
+      - name: Upload the Executable
+        uses: actions/upload-artifact@v6
+        with:
+          name: release-3ds-exe
+          path: src/angband.3dsx
+          retention-days: 1
+
+  nintendo:
+    needs: [setup, nds, n3ds]
+    name: Nintendo Archive
+    # Only assembling a zip, so no toolchain container is needed here.
+    runs-on: ubuntu-latest
     steps:
       - name: Download Artifact with Configuration Information
         uses: actions/download-artifact@v8
@@ -325,73 +379,42 @@ jobs:
 
       - name: Extract Configuration Information and Store in Step Outputs
         id: store_config
-        shell: bash
         run: |
           name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
           echo "name=$name" >> $GITHUB_OUTPUT
-          prog=`sed -E -n -e 's/prog= //p' $CONFIG_ARTIFACT_PATH`
-          echo "prog=$prog" >> $GITHUB_OUTPUT
           version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
           echo "version=$version" >> $GITHUB_OUTPUT
 
-      # Need commit history and tags for scripts/version.sh to work as expected
-      # so use 0 for fetch-depth.
       - name: Clone Project
         uses: actions/checkout@v6
+
+      - name: Download the ROM
+        uses: actions/download-artifact@v8
         with:
-          fetch-depth: 0
+          name: release-nds-rom
 
-      # Unlike every other platform here, this one does not want the manual:
-      # the DS reads its files off the card and nobody is going to browse HTML
-      # on it, so the docs job is not a dependency and the manual is not
-      # shipped.  The licence is, because the licence has to travel.
-      - name: Install Packaging Dependencies
-        shell: bash
-        run: |
-          apt-get update && apt-get install -y zip
+      - name: Download the 3DS Executable
+        uses: actions/download-artifact@v8
+        with:
+          name: release-3ds-exe
 
-      - name: Build Nintendo DS
-        shell: bash
-        run: |
-          cd src
-          env CFLAGS="-Werror" make -f Makefile.blocksds -j$(nproc)
-          test -e ${{ steps.store_config.outputs.prog }}.nds
-
-      - name: Set up 3DS Packaging Tools
-        shell: bash
-        run: |
-          apt-get install -y build-essential automake autoconf autotools-dev
-          git clone -b cxi-stuff https://github.com/devkitPro/3dstools/
-          cd 3dstools
-          ./autogen.sh && ./configure && make -j$(nproc) install
-
-      - name: Build Nintendo 3DS
-        shell: bash
-        run: |
-          cd src
-          env CFLAGS="-Werror" make -f Makefile.3ds -j$(nproc)
-          test -e ${{ steps.store_config.outputs.prog }}.3dsx
-
-      # The data the card needs, and only that.  lib is 24 MB, of which 19 MB
-      # is tilesets and 3.2 MB is audio, and this is a text build that can use
-      # neither -- copying all of it, as this job used to, made a 24 MB download
-      # that was 22 MB of files the DS cannot open.
+      # The data the card needs, and only that.  lib is 24 MB, of which 19 MB is
+      # tilesets and 3.2 MB is audio, and this is a text build that can open
+      # neither -- copying all of it, as the job this replaces did, made a 24 MB
+      # download that was 22 MB of files the DS would never read.
       #
-      # The folder is named for the game because main-nds.c looks for its data
-      # at /zangbandtk/lib on the card.
+      # The folder is named for the game because main-nds.c looks for its data at
+      # /zangbandtk/lib on the card, and both builds share that file.
       - name: Create Nintendo Archive
         id: create_nintendo_archive
-        shell: bash
         run: |
           archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
-          mkdir -p zangbandtk/lib
+          mkdir -p zangbandtk/lib/user/save
           for d in gamedata help screens customize ; do
             cp -R lib/$d zangbandtk/lib/
           done
-          mkdir -p zangbandtk/lib/user/save
-          cp src/${{ steps.store_config.outputs.prog }}.nds ${archive_prefix}.nds
-          cp src/${{ steps.store_config.outputs.prog }}.3dsx ${archive_prefix}.3dsx
-          cp LICENSE.md .
+          mv angband.nds ${archive_prefix}.nds
+          mv angband.3dsx ${archive_prefix}.3dsx
           sed -e "s/<version>/${{ steps.store_config.outputs.version }}/g" \
             src/nds/card-readme.txt > README.txt
           zip -9 -r ${archive_prefix}-nintendo.zip \
@@ -401,7 +424,6 @@ jobs:
           ls -lh ${archive_prefix}-nintendo.zip
 
       - name: Create Artifact with Nintendo Archive Path
-        shell: bash
         run: |
           echo archive_path= '${{ steps.create_nintendo_archive.outputs.archive_file }}' > $NIN_ARTIFACT_PATH
 

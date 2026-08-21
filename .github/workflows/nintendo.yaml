@@ -88,6 +88,19 @@ jobs:
           make -f Makefile.blocksds -j$(nproc)
           popd
 
+      # Keep the ROM.  This job proved the DS build compiles and then threw away
+      # the only thing anyone could test with, so trying a change on hardware or
+      # in an emulator meant cutting a release first.  Now every run leaves a ROM
+      # to download.  The data files are not here: the game reads those off the
+      # card, and a release carries them.
+      - name: Upload the ROM
+        uses: actions/upload-artifact@v6
+        with:
+          name: zangbandtk-nds-rom
+          path: src/angband.nds
+          if-no-files-found: error
+          retention-days: 14
+
 #  nds:
 #    name: Nintendo DS
 #    runs-on: ubuntu-latest
