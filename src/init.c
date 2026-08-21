@@ -1344,6 +1344,34 @@ static enum parser_error parse_dungeon_place(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_dungeon_theme(struct parser *p) {
+	struct dun_type *d = parser_priv(p);
+	int treasure = parser_getint(p, "treasure");
+	int combat = parser_getint(p, "combat");
+	int magic = parser_getint(p, "magic");
+	int tools = parser_getint(p, "tools");
+
+	if (!d) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	if (treasure < 0 || treasure > 100 || combat < 0 || combat > 100 ||
+		magic < 0 || magic > 100 || tools < 0 || tools > 100)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	/*
+	 * All four at zero would be a dungeon that yields nothing at all, which is
+	 * a data mistake rather than a design choice worth allowing.
+	 */
+	if (!(treasure + combat + magic + tools))
+		return PARSE_ERROR_INVALID_VALUE;
+
+	d->theme.treasure = treasure;
+	d->theme.combat = combat;
+	d->theme.magic = magic;
+	d->theme.tools = tools;
+	d->has_theme = true;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_dungeon_floor(struct parser *p) {
 	struct dun_type *d = parser_priv(p);
 	int feat;
@@ -1395,6 +1423,8 @@ static struct parser *init_parse_dungeon(void) {
 	parser_reg(p, "name str name", parse_dungeon_name);
 	parser_reg(p, "depth int min int max", parse_dungeon_depth);
 	parser_reg(p, "place int rarity int pop int height", parse_dungeon_place);
+	parser_reg(p, "theme int treasure int combat int magic int tools",
+			   parse_dungeon_theme);
 	parser_reg(p, "floor str floor", parse_dungeon_floor);
 	parser_reg(p, "profile str profile", parse_dungeon_profile);
 	parser_reg(p, "desc str desc", parse_dungeon_desc);

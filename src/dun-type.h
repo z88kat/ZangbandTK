@@ -31,6 +31,25 @@
 #define DUN_TYPE_MAX 24
 
 /**
+ * What a dungeon tends to yield (CNT-12).
+ *
+ * Four independent weights, each a percentage: given an object the ordinary
+ * rules would have produced, this is the chance of keeping it.  So a dungeon
+ * with magic 60 and combat 20 turns up three times as many wands as swords
+ * relative to the base allocation, without any object being impossible
+ * anywhere.
+ *
+ * They are written summing to 100 for legibility, but nothing requires it:
+ * they are separate probabilities, not shares of one.
+ */
+struct obj_theme {
+	uint8_t treasure;	/**< Chests, crowns, rings, amulets, gold */
+	uint8_t combat;		/**< Weapons, launchers, ammunition, armour */
+	uint8_t magic;		/**< Wands, staves, rods, scrolls, potions, books */
+	uint8_t tools;		/**< Diggers, lights, flasks, food */
+};
+
+/**
  * A kind of dungeon.
  *
  * Loaded from dungeon.txt, in the order it appears there; the order is the
@@ -50,6 +69,9 @@ struct dun_type {
 	uint8_t pop;		/**< The population of country it is found in */
 	uint8_t height;		/**< The height of ground it is found in */
 
+	struct obj_theme theme;	/**< What it tends to yield (CNT-12) */
+	bool has_theme;		/**< False if it was given no theme, so none applies */
+
 	int floor;			/**< Terrain its floors are made of, or FEAT_NONE */
 	char *profile;		/**< Cave profile it prefers, or NULL for any */
 
@@ -61,5 +83,6 @@ extern struct dun_type *dun_types;
 int dun_type_count(void);
 struct dun_type *dun_type_by_index(int idx);
 struct dun_type *dun_type_by_name(const char *name);
+int obj_theme_weight(const struct obj_theme *theme, int tval);
 
 #endif /* INCLUDED_DUN_TYPE_H */

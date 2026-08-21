@@ -18,6 +18,13 @@
 # depth      : shallowest : deepest.  A dungeon ends at its deepest level; to
 #              go further down you must find another dungeon that reaches
 #              deeper.  Deliberately: it is what the world is for.
+# theme      : treasure : combat : magic : tools.  What the dungeon tends to
+#              yield, as four percentages: given an object the ordinary rules
+#              would have produced, each is the chance of keeping one of that
+#              kind.  So magic 60 against combat 20 turns up three wands for
+#              every sword, relative to the usual allocation, without making
+#              any object impossible anywhere.  Written summing to 100 for
+#              legibility; nothing requires it.
 # place      : rarity : population : height.  Rarity weights how often a world
 #              holds this dungeon at all.  Population and height say what
 #              country its entrance is found in -- 0 is empty wilderness or
@@ -33,6 +40,7 @@
 
 name:The Vaults of Amber
 depth:1:15
+theme:40:25:15:20
 place:1:220:140
 floor:open floor
 profile:classic
@@ -40,6 +48,7 @@ desc:Cellars, and older cellars beneath those, under the one true city.
 
 name:Arden
 depth:1:20
+theme:15:40:10:35
 place:1:90:60
 floor:bare earth
 profile:lair
@@ -47,6 +56,7 @@ desc:Julian's forest, and whatever Julian keeps in it.
 
 name:Faiella-Bionin
 depth:8:30
+theme:30:20:30:20
 place:2:70:10
 floor:sand
 profile:modified
@@ -54,6 +64,7 @@ desc:The stairway to Rebma, running down beneath the sea.
 
 name:Garnath
 depth:15:40
+theme:10:40:30:20
 place:1:40:40
 floor:bare earth
 profile:cavern
@@ -61,6 +72,7 @@ desc:The valley Corwin's blood cursed, where the Black Road runs.
 
 name:The Caverns of Kolvir
 depth:20:45
+theme:25:25:15:35
 place:2:120:220
 floor:bare earth
 profile:cavern
@@ -68,6 +80,7 @@ desc:The mountain Amber stands on is hollow further down than anyone has gone.
 
 name:Rebma
 depth:25:50
+theme:45:15:30:10
 place:3:60:5
 floor:open floor
 profile:modified
@@ -75,6 +88,7 @@ desc:Amber's reflection, drowned, and its stairs still walked.
 
 name:The Grove of the Unicorn
 depth:30:55
+theme:20:10:55:15
 place:4:80:150
 floor:grass
 profile:lair
@@ -82,6 +96,7 @@ desc:Somewhere in here something is watching, and it is not hostile.
 
 name:Tir-na Nog'th
 depth:35:65
+theme:30:10:55:5
 place:4:150:255
 floor:open floor
 profile:labyrinth
@@ -89,6 +104,7 @@ desc:The city in the sky, which is only there by moonlight, and is not quite rea
 
 name:A Broken Pattern
 depth:40:75
+theme:15:25:50:10
 place:3:30:90
 floor:bare earth
 profile:moria
@@ -96,6 +112,7 @@ desc:A shadow where the Pattern is flawed, and the flaw is spreading.
 
 name:Thelbane
 depth:55:90
+theme:25:35:35:5
 place:3:110:200
 floor:open floor
 profile:modified
@@ -103,6 +120,7 @@ desc:The black tower at the Courts, cut from a single stone.
 
 name:The Keep of the Four Worlds
 depth:60:95
+theme:20:20:55:5
 place:4:100:170
 floor:open floor
 profile:classic
@@ -110,6 +128,7 @@ desc:Four elements, one fortress, and a sorcerer who wanted all of it.
 
 name:The Courts of Chaos
 depth:75:110
+theme:20:40:35:5
 place:5:20:30
 floor:bare earth
 profile:cavern
@@ -117,6 +136,7 @@ desc:The far pole of everything. Order thins out here, and then stops.
 
 name:The Abyss
 depth:90:127
+theme:30:35:30:5
 place:6:0:0
 floor:bare earth
 profile:hard centre

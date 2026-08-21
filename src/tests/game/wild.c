@@ -1433,6 +1433,152 @@ static int test_the_first_dungeon_is_reachable(void *state) {
 	ok;
 }
 
+
+/** Which of a theme's four axes an object type is counted under. */
+static int theme_axis_of(int tval) {
+	switch (tval) {
+		case TV_CHEST: case TV_CROWN: case TV_AMULET: case TV_RING:
+		case TV_GOLD: case TV_DRAG_ARMOR: return 0;			/* treasure */
+		case TV_SHOT: case TV_ARROW: case TV_BOLT: case TV_BOW:
+		case TV_HAFTED: case TV_POLEARM: case TV_SWORD: case TV_BOOTS:
+		case TV_GLOVES: case TV_HELM: case TV_SHIELD: case TV_CLOAK:
+		case TV_SOFT_ARMOR: case TV_HARD_ARMOR: return 1;	/* combat */
+		case TV_STAFF: case TV_WAND: case TV_ROD: case TV_SCROLL:
+		case TV_POTION: case TV_MAGIC_BOOK: case TV_PRAYER_BOOK:
+		case TV_NATURE_BOOK: case TV_SHADOW_BOOK: case TV_OTHER_BOOK:
+			return 2;										/* magic */
+		case TV_DIGGING: case TV_LIGHT: case TV_FLASK: case TV_FOOD:
+		case TV_MUSHROOM: return 3;							/* tools */
+		default: return -1;
+	}
+}
+
+/** Generate objects at depth 40 in the named dungeon; tally them by axis. */
+static int theme_sample(const char *dungeon, int *axis, int rolls) {
+	struct chunk *c = cave_new(20, 20);
+	struct dun_type *ty = dungeon ? dun_type_by_name(dungeon) : NULL;
+	int made = 0, i;
+
+	c->depth = 40;
+	player->dungeon = ty ? ty->index + 1 : 0;
+
+	for (i = 0; i < 4; i++) axis[i] = 0;
+
+	for (i = 0; i < rolls; i++) {
+		struct object *obj = make_object(c, 40, false, false, false, NULL, 0);
+		int a;
+
+		if (!obj) continue;
+		made++;
+		a = theme_axis_of(obj->tval);
+		if (a >= 0) axis[a]++;
+		object_delete(c, NULL, &obj);
+	}
+
+	player->dungeon = 0;
+	cave_free(c);
+
+	return made;
+}
+
+/**
+ * A dungeon's theme shifts what it yields (CNT-12).
+ *
+ * This is what WLD-14 needs to be perceptible: thirteen dungeons that differ
+ * only in their floor are thirteen of the same dungeon.  Zangband weighted the
+ * base allocation by object type; 4.2's allocation is a precomputed cumulative
+ * table that cannot be reweighted, so the same distribution is reached by
+ * turning down objects that do not suit -- which is arithmetically the same
+ * thing.
+ *
+ * Measured over 4000 rolls at depth 40: against a baseline of treasure 19%,
+ * combat 22%, magic 50%, tools 8%, the Grove of the Unicorn gives magic 79%
+ * and combat 7%, and Rebma gives treasure 32%.
+ */
+static int test_a_dungeon_theme_shifts_what_it_yields(void *state) {
+	int rolls = 4000;
+	int plain[4], magical[4], rich[4], warlike[4];
+	int made;
+
+	made = theme_sample(NULL, plain, rolls);
+	require(made > rolls / 2);
+
+	/* The Grove is a magic dungeon: more magic, and much less to fight with. */
+	made = theme_sample("The Grove of the Unicorn", magical, rolls);
+	require(made > rolls / 2);
+	require(magical[2] > plain[2]);
+	require(magical[1] * 2 < plain[1]);
+
+	/* Rebma is a treasure dungeon. */
+	made = theme_sample("Rebma", rich, rolls);
+	require(made > rolls / 2);
+	require(rich[0] > plain[0]);
+
+	/* Garnath is a combat dungeon. */
+	made = theme_sample("Garnath", warlike, rolls);
+	require(made > rolls / 2);
+	require(warlike[1] > plain[1]);
+	require(warlike[0] < plain[0]);
+
+	ok;
+}
+
+/**
+ * A theme changes what a level yields, not how much (CNT-12).
+ *
+ * Turning objects down has to leave the count alone, or a themed dungeon would
+ * quietly be a poorer one.  make_object() keeps the first thing it was offered
+ * and falls back to it when every attempt is refused.
+ */
+static int test_a_theme_does_not_reduce_what_is_found(void *state) {
+	int rolls = 2000;
+	int plain[4], picky[4];
+	int made_plain, made_picky;
+
+	made_plain = theme_sample(NULL, plain, rolls);
+
+	/* Tir-na Nog'th has the most lopsided theme in the file. */
+	made_picky = theme_sample("Tir-na Nog'th", picky, rolls);
+
+	require(made_plain > rolls / 2);
+
+	/* Within a few per cent of each other, rather than merely "some". */
+	require(made_picky * 100 > made_plain * 95);
+
+	ok;
+}
+
+/**
+ * Every kind of object belongs to one of the theme's four axes (CNT-12).
+ *
+ * The mapping is a switch over object types, so a type added later would fall
+ * through to the default and be weighted by an average nobody chose.  This is
+ * the test that says so at the time rather than leaving it to be noticed.
+ */
+static int test_the_theme_mapping_is_total(void *state) {
+	/* Four distinct weights, none of them equal to their own average. */
+	struct obj_theme probe = { 8, 24, 56, 72 };
+	int average = (8 + 24 + 56 + 72) / 4;
+	int tval;
+
+	for (tval = 1; tval < TV_MAX; tval++) {
+		int w = obj_theme_weight(&probe, tval);
+
+		/*
+		 * Every type must come out as one of the four, or as the sum the
+		 * dragon scale mail case deliberately gives.  Landing on the average
+		 * means it fell through the switch.
+		 */
+		if (w == average) {
+			printf("object type %d (%s) is not in the theme mapping\n",
+				tval, tval_find_name(tval));
+		}
+		require(w != average);
+	}
+
+	ok;
+}
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -1467,5 +1613,8 @@ struct test tests[] = {
 	{ "a-dungeon-has-a-bottom", test_a_dungeon_has_a_bottom },
 	{ "each-dungeon-remembers-its-own-depth", test_each_dungeon_remembers_its_own_depth },
 	{ "the-first-dungeon-is-reachable", test_the_first_dungeon_is_reachable },
+	{ "a-dungeon-theme-shifts-what-it-yields", test_a_dungeon_theme_shifts_what_it_yields },
+	{ "a-theme-does-not-reduce-what-is-found", test_a_theme_does_not_reduce_what_is_found },
+	{ "the-theme-mapping-is-total", test_the_theme_mapping_is_total },
 	{ NULL, NULL }
 };

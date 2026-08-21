@@ -20,6 +20,7 @@
 #include "alloc.h"
 #include "cave.h"
 #include "effects.h"
+#include "dun-type.h"
 #include "init.h"
 #include "obj-chest.h"
 #include "obj-curse.h"
@@ -1147,6 +1148,104 @@ struct object_kind *get_obj_num(int level, bool good, int tval)
 
 
 /**
+ * How much a dungeon with this theme wants an object of this kind (CNT-12).
+ *
+ * Zangband's mapping, in [object2.c](../archive/zangband/src/object2.c)'s
+ * kind_is_theme(), brought across onto 4.2's list of object types.  Zangband
+ * gave the leftover weight to skeletons, broken bottles and junk; 4.2 has no
+ * such objects, so there is no leftover to give and the four weights stand on
+ * their own.
+ *
+ * \return a percentage: the chance of keeping an object of this type.
+ */
+int obj_theme_weight(const struct obj_theme *theme, int tval)
+{
+	if (!theme) return 100;
+
+	switch (tval) {
+		/* Things worth carrying out for their own sake. */
+		case TV_CHEST:
+		case TV_CROWN:
+		case TV_AMULET:
+		case TV_RING:
+		case TV_GOLD:
+			return theme->treasure;
+
+		/* Dragon scale mail is both, as it was in Zangband. */
+		case TV_DRAG_ARMOR:
+			return MIN(100, theme->treasure + theme->combat);
+
+		/* Things to fight with and things to be hit in. */
+		case TV_SHOT:
+		case TV_ARROW:
+		case TV_BOLT:
+		case TV_BOW:
+		case TV_HAFTED:
+		case TV_POLEARM:
+		case TV_SWORD:
+		case TV_BOOTS:
+		case TV_GLOVES:
+		case TV_HELM:
+		case TV_SHIELD:
+		case TV_CLOAK:
+		case TV_SOFT_ARMOR:
+		case TV_HARD_ARMOR:
+			return theme->combat;
+
+		/* Things with charges, doses or pages. */
+		case TV_STAFF:
+		case TV_WAND:
+		case TV_ROD:
+		case TV_SCROLL:
+		case TV_POTION:
+		case TV_MAGIC_BOOK:
+		case TV_PRAYER_BOOK:
+		case TV_NATURE_BOOK:
+		case TV_SHADOW_BOOK:
+		case TV_OTHER_BOOK:
+			return theme->magic;
+
+		/* Things brought along rather than sought. */
+		case TV_DIGGING:
+		case TV_LIGHT:
+		case TV_FLASK:
+		case TV_FOOD:
+		case TV_MUSHROOM:
+			return theme->tools;
+
+		/*
+		 * Anything the list above has not caught.  Zangband returned zero
+		 * here, which would mean a kind of object added later could never
+		 * appear in any themed dungeon and nothing would say so.  An average
+		 * of the four weights lets it through at an unremarkable rate instead.
+		 */
+		default:
+			return (theme->treasure + theme->combat + theme->magic +
+					theme->tools) / 4;
+	}
+}
+
+/**
+ * The theme of the dungeon this level belongs to, or NULL for none (CNT-12).
+ *
+ * The surface has no theme -- it is not in a dungeon -- and neither has a level
+ * generated for a character who has never gone down.  Note that stores get
+ * their stock through get_obj_num() directly rather than through make_object(),
+ * so a dungeon's theme does not reach into the shops.
+ */
+static const struct obj_theme *obj_theme_here(struct chunk *c)
+{
+	const struct dun_type *type;
+
+	if (!c || c->depth <= 0) return NULL;
+	if (!player || !player->dungeon) return NULL;
+
+	type = dun_type_by_index(player->dungeon - 1);
+
+	return (type && type->has_theme) ? &type->theme : NULL;
+}
+
+/**
  * Attempt to make an object
  *
  * \param c is the current dungeon level.
@@ -1163,8 +1262,9 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 		bool extra_roll, int32_t *value, int tval)
 {
 	int base, tries = 3;
-	struct object_kind *kind = NULL;
+	struct object_kind *kind = NULL, *fallback = NULL;
 	struct object *new_obj;
+	const struct obj_theme *theme = obj_theme_here(c);
 
 	/* Try to make a special artifact */
 	if (one_in_(good ? 10 : 1000)) {
@@ -1181,18 +1281,45 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 	/* Base level for the object */
 	base = (good ? (lev + 10) : lev);
 
-	/* Try to choose an object kind; reject most books the player can't read */
+	/*
+	 * A themed dungeon needs more attempts than the three the book test wants,
+	 * since it is turning down a good proportion of what it is offered.
+	 */
+	if (theme) tries = 20;
+
+	/*
+	 * Try to choose an object kind; reject most books the player can't read,
+	 * and objects the dungeon has no taste for (CNT-12).
+	 */
 	while (tries) {
 		kind = get_obj_num(base, good || great, tval);
-		if (kind && tval_is_book_k(kind) && !obj_kind_can_browse(kind)) {
+
+		if (!kind) break;
+
+		/*
+		 * Kept as a fallback so that a theme changes what a level yields
+		 * without changing how much: if every attempt is turned down, the
+		 * first thing offered is taken rather than nothing at all.
+		 */
+		if (!fallback) fallback = kind;
+
+		if (theme && randint0(100) >= obj_theme_weight(theme, kind->tval)) {
+			kind = NULL;
+			tries--;
+			continue;
+		}
+
+		if (tval_is_book_k(kind) && !obj_kind_can_browse(kind)) {
 			if (one_in_(5)) break;
 			kind = NULL;
 			tries--;
 			continue;
-		} else {
-			break;
 		}
+
+		break;
 	}
+
+	if (!kind) kind = fallback;
 	if (!kind)
 		return NULL;
 
