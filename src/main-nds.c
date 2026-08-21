@@ -604,18 +604,27 @@ errr init_nds(void)
  *
  * This function is used to keep the "path" variable off the stack.
  */
+/*
+ * Where the game's data lives on the card, for both the DS and the 3DS: they
+ * share this file.  Named for this game rather than for Angband, so that a
+ * ZangbandTK card can sit beside an Angband one without either finding the
+ * other's data files or writing over its saves.  A card that already has the
+ * data under /angband will need it moved.
+ */
+#define NDS_GAME_DIR "/zangbandtk/lib/"
+
 static void init_files(void)
 {
 	char path[1024];
 
 	/* Prepare the path */
-	strcpy(path, "/angband/lib/");
+	strcpy(path, NDS_GAME_DIR);
 
 	/* Pass the paths to the game */
 	init_file_paths(path, path, path);
 
 	/* Set the savefile path to a well-known value */
-	strcpy(savefile, "/angband/lib/save/PLAYER");
+	strcpy(savefile, NDS_GAME_DIR "save/PLAYER");
 
 	/* Create all the missing required directories */
 	create_needed_dirs();

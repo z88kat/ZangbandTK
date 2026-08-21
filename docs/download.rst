@@ -20,6 +20,8 @@ build for each platform, and the source:
   make it executable and run it. Carries three front ends, chosen with ``-m``:
   ``-msdl2`` for tiles, ``-mx11`` for a plain window, and ``-mgcu`` to play in a
   terminal with no display at all.
+- ``ZangbandTK-<version>-nintendo.zip`` — the Nintendo DS ROM and the 3DS build,
+  with the data the card needs. Text mode, no tiles or sound.
 - ``ZangbandTK-<version>.tar.gz`` — the source, with the build system already
   generated.
 
@@ -188,6 +190,41 @@ and Arch dropped 32-bit years ago, and the source archive covers anyone still
 running it.
 
 
+Nintendo DS and 3DS
+===================
+
+Yes, really. The DS build is inherited from Angband, and it works well enough to
+be worth shipping — but it is the least tested build here by a wide margin.
+
+The game reads its data from the card rather than from inside the ROM, so both
+halves of the zip matter: copy the ``zangbandtk`` folder to the **root** of the
+SD card, so the data sits at ``/zangbandtk/lib/``, and put the ``.nds`` wherever
+your flashcart keeps its ROMs. On a 3DS the ``.3dsx`` goes in ``/3ds/`` for the
+Homebrew Launcher. A game that starts and then cannot find its files has almost
+always got that folder one level too deep.
+
+It is text mode: no tilesets and no sound, which is why it is a small download
+where the others are twenty megabytes larger.
+
+There is **one save slot**, at ``/zangbandtk/lib/save/PLAYER``. That is this
+port's limitation, not the game's.
+
+.. note::
+
+   **The DS has 4 MB of memory**, and ZangbandTK asks more of it than Angband
+   does: 1013 monsters against Angband's 624 or so. The wilderness is not the
+   problem — the whole world costs about 98 KB, because it is generated from a
+   seed as you walk rather than stored — but the bestiary is real. If memory runs
+   out it will happen while loading, before character creation.
+
+   If you have a RAM expansion pak in Slot-2, this port knows how to use it, and
+   that is the first thing to try.
+
+   The card path changed from ``/angband/`` to ``/zangbandtk/`` so that a card
+   can hold both games without either finding the other's saves. A card set up
+   before that needs its folder renamed.
+
+
 Other platforms
 ===============
 
@@ -200,7 +237,11 @@ zips carry a ``README.txt`` for SmartScreen, which greets an unsigned executable
 much as Gatekeeper does above. Linux is packaged the same way, as an
 AppImage.
 
-Nobody plays the game on either here, though, so both are **untested in play**:
+The DS and 3DS builds come from
+Angband's own ports and are packaged the same way.
+
+Nobody plays the game on any of them here, though, so all are **untested in
+play**:
 CI proves they build, start and can read their own data, which is not the same as
 having been played through. Reports from either are especially welcome for that
 reason.
