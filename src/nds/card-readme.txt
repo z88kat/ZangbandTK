@@ -91,8 +91,12 @@ twenty megabytes and the DS can use none of it.
 The world is smaller here than on the other platforms, and deliberately. A DS
 has 4 MB of memory, and the desktop world does not fit: the game would load,
 reach character creation and then run out of memory generating the surface. So
-this build gets a 520x520 world with one town, where the desktop gets 2064x2064
+this build gets a 260x260 world with one town, where the desktop gets 2064x2064
 and a dozen. All thirteen dungeons are still out there to be found.
+
+The live area around you is also smaller, about a screen, so the surface is
+rebuilt as you walk. That is why walking may pause where the desktop builds
+do not.
 
 If you would rather have the full-size world and see how far you get, the
 settings are in zangbandtk/lib/gamedata/constants.txt on the card -- look for

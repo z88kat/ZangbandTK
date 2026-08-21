@@ -208,8 +208,9 @@ where the others are twenty megabytes larger.
 
 **The world is smaller here, deliberately.** A DS has 4 MB of memory and the
 desktop world does not fit in it — the game loads, reaches character creation and
-then runs out of memory generating the surface. So this build ships a 520×520
-world with one town, against 2064×2064 and a dozen elsewhere. All thirteen
+then runs out of memory generating the surface. So this build ships a 260×260
+world with one town, against 2064×2064 and a dozen elsewhere, and a live area of
+about one screen — which means the surface is rebuilt as you walk. All thirteen
 dungeons are still placed. The settings live in ``constants.txt`` on the card, so
 anyone who wants to try the full-size world can, without rebuilding anything.
 

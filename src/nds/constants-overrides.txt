@@ -19,11 +19,21 @@
 
 # The live chunk is (largest odd square fitting cache-blocks) x block-size, so
 # with cache-blocks floored at 81 the only lever on its size is block-size.
-# Halving it to 8 takes the pair of chunks from about 1.8 MB to about 450 KB.
 #
-# It is not lowered further. Blocks are the unit towns and dungeons are placed
-# in, and 4-grid blocks leave nothing sensible for a town to stand in.
-wild:block-size:8
+# 4, not 8, and that was measured rather than reasoned. 8 gives a 72x72 chunk,
+# about 450 KB for the pair against the desktop's 1.8 MB, and it still runs out
+# of memory; 4 gives 36x36, about 110 KB, and works. So the free heap after the
+# data is loaded is only a few hundred KB, and the game's own data -- roughly
+# 1.5 MB of text parsed into structs and strings, of which the bestiary is the
+# largest part -- is what occupies the machine. The world was never the main
+# tenant, only the part that pushed it over.
+#
+# The cost of 4 is that the live surface is about one DS screen, so it
+# regenerates as the player walks. That is the trade this build makes. Freeing
+# a few hundred KB elsewhere -- trimming room templates and vaults for this
+# build, or giving cave_new() one allocation for all of a chunk's square.info
+# instead of one per grid -- would buy back 8.
+wild:block-size:4
 
 # World size, which is a separate matter from the chunk: this sizes the block
 # map, six bytes an entry, and the road routing. 65 gives a 520x520 grid world
