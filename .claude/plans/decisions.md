@@ -708,6 +708,45 @@ the reference the project owner pointed at, and it carries the cast, the
 geography and the mechanics of Pattern, Logrus, Trump and Shadow-walking.
 
 
+**DEC-31 — The dungeons are Amber's places, and a dungeon has a bottom.**
+
+WLD-14 asks that dungeon entrances carry their own depth range and character.
+Two decisions inside that were not settled by the requirement.
+
+*What the dungeons are.* Zangband's twelve dungeon types are generic categories
+-- lair, temple, tower, ruin, grave, cavern, mine, city, and so on -- with no
+connection to Amber at all. Under DEC-30 that is drift, and the categories are
+the least interesting thing about them. They are replaced by thirteen of
+Zelazny's places, which cover the same mechanical ground and carry the story
+instead of ignoring it: the Vaults of Amber, Arden, Faiella-Bionin, Garnath, the
+Caverns of Kolvir, Rebma, the Grove of the Unicorn, Tir-na Nog'th, a Broken
+Pattern, Thelbane, the Keep of the Four Worlds, the Courts of Chaos, and the
+Abyss. The ladder runs from the cellars under the city out through Shadow to the
+Courts and over the edge, which is the shape of the books.
+
+*A dungeon ends.* Its deepest level is the deepest it has; there is no way down
+from there and the game says so. To go further you leave, cross the world and
+find a dungeon that reaches deeper.
+
+The alternative was a soft ceiling -- descend past a dungeon's range and it stops
+applying its own character -- which never blocks a character but makes the depth
+ranges nearly meaningless. The hard floor was chosen because it is the only
+version in which the world is load-bearing: without it, the wilderness is
+scenery on the way to a staircase that would have worked anyway.
+
+*What keeps that from being a wall.* Every dungeon in the game data gets a mouth
+in every world, so the ladder has no gap -- rarity decides the order sites are
+chosen in, never whether a dungeon exists. The ranges overlap generously (the
+Vaults reach 15, Arden 20, Faiella-Bionin starts at 8), so there is always more
+than one way onward. Most mouths open on or near a road. And the starting
+village's staircase leads into the shallowest dungeon, so nothing has to be found
+before the first descent. A test asserts that every depth from 1 to the deepest
+is covered by some dungeon.
+
+> Both decisions were put to the project owner, who took the hard floor and the
+> village staircase.
+
+
 Nothing is currently blocked. All questions raised during Phase 1 planning are resolved or
 explicitly scheduled below.
 

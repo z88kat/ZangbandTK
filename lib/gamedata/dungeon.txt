@@ -1,0 +1,123 @@
+# File: dungeon.txt
+#
+# The dungeons of the world (WLD-14).
+#
+# Angband has one dungeon and depth is the only thing that tells level 40 from
+# level 4.  Here there are several, each covering a range of depths, each with
+# a floor of its own, and each with a bottom you have to leave it to get past.
+# That is what makes finding a new one worth the walk.
+#
+# These are Amber's places, per DEC-30: Zelazny's geography rather than the
+# assortment of Lovecraft, Tolkien and general fantasy that Zangband's own
+# dungeon list had drifted into.  The ladder runs from the cellars under the
+# city out through Shadow to the Courts of Chaos and the Abyss beyond them.
+#
+# === Understanding dungeon.txt ===
+#
+# name       : the dungeon's name, as the player sees it
+# depth      : shallowest : deepest.  A dungeon ends at its deepest level; to
+#              go further down you must find another dungeon that reaches
+#              deeper.  Deliberately: it is what the world is for.
+# place      : rarity : population : height.  Rarity weights how often a world
+#              holds this dungeon at all.  Population and height say what
+#              country its entrance is found in -- 0 is empty wilderness or
+#              sea level, 255 is a city or a mountain peak.
+# floor      : the terrain its floors are made of, by name from terrain.txt.
+#              Must carry the FLOOR flag, or nothing can be dropped on it and
+#              no stair can be placed; "mud" is deliberately not used, since it
+#              is heavy going and unlit and a whole dungeon of it is a punishment
+#              rather than a character.
+# profile    : the cave profile it prefers, by name from dungeon_profile.txt.
+#              Omit to let the ordinary rules choose.
+# desc       : one line, shown on arriving.
+
+name:The Vaults of Amber
+depth:1:15
+place:1:220:140
+floor:open floor
+profile:classic
+desc:Cellars, and older cellars beneath those, under the one true city.
+
+name:Arden
+depth:1:20
+place:1:90:60
+floor:bare earth
+profile:lair
+desc:Julian's forest, and whatever Julian keeps in it.
+
+name:Faiella-Bionin
+depth:8:30
+place:2:70:10
+floor:sand
+profile:modified
+desc:The stairway to Rebma, running down beneath the sea.
+
+name:Garnath
+depth:15:40
+place:1:40:40
+floor:bare earth
+profile:cavern
+desc:The valley Corwin's blood cursed, where the Black Road runs.
+
+name:The Caverns of Kolvir
+depth:20:45
+place:2:120:220
+floor:bare earth
+profile:cavern
+desc:The mountain Amber stands on is hollow further down than anyone has gone.
+
+name:Rebma
+depth:25:50
+place:3:60:5
+floor:open floor
+profile:modified
+desc:Amber's reflection, drowned, and its stairs still walked.
+
+name:The Grove of the Unicorn
+depth:30:55
+place:4:80:150
+floor:grass
+profile:lair
+desc:Somewhere in here something is watching, and it is not hostile.
+
+name:Tir-na Nog'th
+depth:35:65
+place:4:150:255
+floor:open floor
+profile:labyrinth
+desc:The city in the sky, which is only there by moonlight, and is not quite real.
+
+name:A Broken Pattern
+depth:40:75
+place:3:30:90
+floor:bare earth
+profile:moria
+desc:A shadow where the Pattern is flawed, and the flaw is spreading.
+
+name:Thelbane
+depth:55:90
+place:3:110:200
+floor:open floor
+profile:modified
+desc:The black tower at the Courts, cut from a single stone.
+
+name:The Keep of the Four Worlds
+depth:60:95
+place:4:100:170
+floor:open floor
+profile:classic
+desc:Four elements, one fortress, and a sorcerer who wanted all of it.
+
+name:The Courts of Chaos
+depth:75:110
+place:5:20:30
+floor:bare earth
+profile:cavern
+desc:The far pole of everything. Order thins out here, and then stops.
+
+name:The Abyss
+depth:90:127
+place:6:0:0
+floor:bare earth
+profile:hard centre
+desc:Past the Courts there is an edge, and past the edge there is this.

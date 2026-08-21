@@ -113,14 +113,88 @@ Monsters
 ``z``     Zombie/Mummy        ``Z``    Zephyr Hound
 =====   ===================   =====  ====================================
 
+The Dungeons
+============
+
+Angband has one dungeon, and depth is the only thing that tells its fortieth
+level from its fourth. ZangbandTK has several, and they are places.
+
+Each dungeon covers a **range of depths**, and it ends at the bottom of that
+range. When you reach the deepest level of a dungeon there is no way further
+down from it; to go deeper you must leave, cross the world, and find a dungeon
+that reaches deeper. This is deliberate, and it is what the world is for.
+
+Each also remembers **its own depth**. Word of recall returns you to how far down
+you had got in the dungeon you were last in — not to the deepest level you have
+ever reached anywhere, which might be on the far side of the world and, worse,
+deeper than the dungeon you are standing on goes.
+
+And each has a **character**: its own floor underfoot, and its own preference in
+how its levels are laid out, so the caverns under Kolvir are caverns and the city
+in the sky is a maze.
+
+.. list-table:: The dungeons of the world
+   :header-rows: 1
+   :widths: 34 16 50
+
+   * - Dungeon
+     - Depths
+     - What it is
+   * - The Vaults of Amber
+     - 1–15
+     - Cellars, and older cellars beneath those, under the one true city.
+   * - Arden
+     - 1–20
+     - Julian's forest, and whatever Julian keeps in it.
+   * - Faiella-Bionin
+     - 8–30
+     - The stairway to Rebma, running down beneath the sea.
+   * - Garnath
+     - 15–40
+     - The valley Corwin's blood cursed, where the Black Road runs.
+   * - The Caverns of Kolvir
+     - 20–45
+     - The mountain Amber stands on is hollow further down than anyone has gone.
+   * - Rebma
+     - 25–50
+     - Amber's reflection, drowned, and its stairs still walked.
+   * - The Grove of the Unicorn
+     - 30–55
+     - Something in here is watching, and it is not hostile.
+   * - Tir-na Nog'th
+     - 35–65
+     - The city in the sky, which is only there by moonlight.
+   * - A Broken Pattern
+     - 40–75
+     - A shadow where the Pattern is flawed, and the flaw is spreading.
+   * - Thelbane
+     - 55–90
+     - The black tower at the Courts, cut from a single stone.
+   * - The Keep of the Four Worlds
+     - 60–95
+     - Four elements, one fortress, and a sorcerer who wanted all of it.
+   * - The Courts of Chaos
+     - 75–110
+     - The far pole of everything. Order thins out here, and then stops.
+   * - The Abyss
+     - 90–127
+     - Past the Courts there is an edge, and past the edge there is this.
+
+Where a dungeon opens follows from the country: the Caverns of Kolvir open high
+in settled land, the Abyss in empty lowland. Most open on or near a road, since a
+dungeon nobody can find is a dungeon nobody uses. The staircase in your home
+village leads into the Vaults of Amber, so you need not find anything before your
+first descent.
+
 The Town Level
 ==============
 
-The town level is where you will begin your adventure. The town consists of
-eight buildings (each with an entrance), some townspeople, and a wall which
-surrounds the town and may contain streams of lava. The first time you are
-in town it will be daytime, but note that the sun rises and falls (rather
-instantly) as time passes.
+The town level is where you will begin your adventure. A town consists of its
+shops (each with an entrance), some townspeople, and a wall around it with gates
+in it. The first time you are in town it will be daytime, but note that the sun
+rises and falls (rather instantly) as time passes.
+
+Not every town holds all eight shops — see :doc:`towns`.
 
 Townspeople
 ===========

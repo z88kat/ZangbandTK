@@ -457,6 +457,15 @@ flags:ROCK | WALL | NO_SCENT | NO_FLOW
 look-prefix:a
 desc:Bare rock, too steep to climb.
 
+code:DUNGEON
+name:dungeon entrance
+graphics:>:v
+priority:25
+flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | STAIR | DOWNSTAIR
+flags:EASY | TORCH
+look-prefix:the
+desc:The mouth of a dungeon.  Stand on it and press '>' to go down.
+
 code:ROAD
 name:road
 graphics:.:W

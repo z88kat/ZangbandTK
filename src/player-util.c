@@ -37,6 +37,7 @@
 #include "player-quest.h"
 #include "player-spell.h"
 #include "player-timed.h"
+#include "dun-type.h"
 #include "player-util.h"
 #include "project.h"
 #include "score.h"
@@ -66,12 +67,125 @@ int dungeon_get_next_level(struct player *p, int dlev, int added)
 	/* Don't allow levels above the town */
 	if (target_level < 0) target_level = 0;
 
+	/*
+	 * ZangbandTK (WLD-14): a dungeon covers a range of depths and ends at the
+	 * bottom of it.  There is no way deeper from there -- to go further down
+	 * you leave and find a dungeon that reaches deeper, which is what the world
+	 * is for.  Going up past the top of one brings you out onto the surface.
+	 */
+	if (p->dungeon && target_level > 0) {
+		const struct dun_type *type = dun_type_by_index(p->dungeon - 1);
+
+		if (type) {
+			if (target_level > type->max_depth)
+				target_level = type->max_depth;
+			if (target_level < type->min_depth)
+				target_level = 0;
+		}
+	}
+
 	/* Check intermediate levels for quests */
 	for (i = dlev; i <= target_level; i++) {
 		if (is_quest(p, i)) return i;
 	}
 
 	return target_level;
+}
+
+/**
+ * Settle which dungeon the player is about to go down into (WLD-14).
+ *
+ * Two ways down exist on the surface.  A dungeon's own mouth leads into that
+ * dungeon.  The staircase in the middle of a town leads into the shallowest
+ * dungeon there is, so that a new character has somewhere to go from the first
+ * turn without having to cross the world to find it.
+ *
+ * \return false if there is nothing to go down into, having said so.
+ */
+bool player_enter_dungeon_here(struct player *p)
+{
+	struct loc world = loc(p->grid.x + p->wild_offset.x,
+						   p->grid.y + p->wild_offset.y);
+	int idx = wild_dungeon_at(wild, world);
+	const struct dun_type *type;
+
+	if (idx >= 0) {
+		struct wild_dungeon *mouth = wild_dungeon_by_index(wild, idx);
+
+		p->dungeon = mouth->type + 1;
+	} else {
+		/*
+		 * A town staircase.  The shallowest dungeon, by the depth it starts
+		 * at -- not merely the first in the file, so that reordering
+		 * dungeon.txt cannot quietly drop a new character into the Abyss.
+		 */
+		const struct dun_type *best = NULL, *d;
+
+		for (d = dun_types; d; d = d->next)
+			if (!best || d->min_depth < best->min_depth)
+				best = d;
+
+		if (!best) {
+			msg("There is nowhere to go down to.");
+			return false;
+		}
+
+		p->dungeon = best->index + 1;
+	}
+
+	type = dun_type_by_index(p->dungeon - 1);
+	if (!type) {
+		msg("There is nowhere to go down to.");
+		return false;
+	}
+
+	msg("%s", type->desc ? type->desc : type->name);
+
+	return true;
+}
+
+/**
+ * How deep the player has got in the dungeon they are in (WLD-14).
+ *
+ * Kept on the dungeon's mouth rather than on the player, because it is a fact
+ * about the dungeon: each one remembers how far down it has been explored, and
+ * word of recall takes the player back to their own depth in the one they were
+ * last in rather than to the deepest they have ever been anywhere.
+ */
+void player_note_dungeon_depth(struct player *p)
+{
+	int i;
+
+	if (!p->dungeon || !wild)
+		return;
+
+	for (i = 0; i < wild_dungeon_count(wild); i++) {
+		struct wild_dungeon *mouth = wild_dungeon_by_index(wild, i);
+
+		if (mouth->type != p->dungeon - 1) continue;
+		if (p->depth > mouth->max_depth) mouth->max_depth = p->depth;
+		break;
+	}
+}
+
+/**
+ * The depth word of recall should return the player to (WLD-14).
+ */
+int player_dungeon_recall_depth(struct player *p)
+{
+	int i;
+
+	if (!p->dungeon || !wild)
+		return p->max_depth;
+
+	for (i = 0; i < wild_dungeon_count(wild); i++) {
+		struct wild_dungeon *mouth = wild_dungeon_by_index(wild, i);
+
+		if (mouth->type == p->dungeon - 1)
+			return mouth->max_depth;
+	}
+
+	return p->max_depth;
 }
 
 /**

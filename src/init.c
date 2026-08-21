@@ -34,6 +34,7 @@
 #include "game-world.h"
 #include "generate.h"
 #include "hint.h"
+#include "dun-type.h"
 #include "init.h"
 #include "message.h"
 #include "mon-init.h"
@@ -1280,6 +1281,220 @@ void init_game_constants(void)
 static void cleanup_game_constants(void)
 {
 	cleanup_parser(&constants_parser);
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * Initialize dungeons (WLD-14)
+ * ------------------------------------------------------------------------ */
+struct dun_type *dun_types = NULL;
+
+static enum parser_error parse_dungeon_name(struct parser *p) {
+	struct dun_type *last = parser_priv(p);
+	struct dun_type *d = mem_zalloc(sizeof *d);
+
+	d->name = string_make(parser_getstr(p, "name"));
+	d->floor = FEAT_NONE;
+	d->rarity = 1;
+
+	if (last) {
+		d->index = last->index + 1;
+		last->next = d;
+	} else {
+		d->index = 0;
+		dun_types = d;
+	}
+
+	if (d->index >= DUN_TYPE_MAX)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+
+	parser_setpriv(p, d);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_dungeon_depth(struct parser *p) {
+	struct dun_type *d = parser_priv(p);
+	int min = parser_getint(p, "min"), max = parser_getint(p, "max");
+
+	if (!d) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/*
+	 * A dungeon must have at least one level, must start below the surface --
+	 * depth zero is the world, not a dungeon -- and must end inside the range
+	 * the game knows how to generate.
+	 */
+	if (min < 1 || max < min || max >= z_info->max_depth)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	d->min_depth = min;
+	d->max_depth = max;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_dungeon_place(struct parser *p) {
+	struct dun_type *d = parser_priv(p);
+	int rarity = parser_getint(p, "rarity");
+
+	if (!d) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (rarity < 1) return PARSE_ERROR_INVALID_VALUE;
+
+	d->rarity = rarity;
+	d->pop = parser_getint(p, "pop");
+	d->height = parser_getint(p, "height");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_dungeon_floor(struct parser *p) {
+	struct dun_type *d = parser_priv(p);
+	int feat;
+
+	if (!d) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	feat = lookup_feat(parser_getstr(p, "floor"));
+	if (feat < 0) return PARSE_ERROR_INVALID_VALUE;
+
+	/*
+	 * Checked here rather than trusted: a floor without the FLOOR flag takes
+	 * no objects and no staircase, so a dungeon floored with it would generate
+	 * levels that could not be left.
+	 */
+	if (!tf_has(f_info[feat].flags, TF_FLOOR))
+		return PARSE_ERROR_INVALID_VALUE;
+
+	d->floor = feat;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_dungeon_profile(struct parser *p) {
+	struct dun_type *d = parser_priv(p);
+
+	if (!d) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	/*
+	 * Not resolved to a profile here: the cave profiles are parsed after this
+	 * file, so the name is kept and looked up when a level is generated.
+	 */
+	string_free(d->profile);
+	d->profile = string_make(parser_getstr(p, "profile"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_dungeon_desc(struct parser *p) {
+	struct dun_type *d = parser_priv(p);
+
+	if (!d) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	d->desc = string_append(d->desc, parser_getstr(p, "desc"));
+	return PARSE_ERROR_NONE;
+}
+
+static struct parser *init_parse_dungeon(void) {
+	struct parser *p = parser_new();
+
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_dungeon_name);
+	parser_reg(p, "depth int min int max", parse_dungeon_depth);
+	parser_reg(p, "place int rarity int pop int height", parse_dungeon_place);
+	parser_reg(p, "floor str floor", parse_dungeon_floor);
+	parser_reg(p, "profile str profile", parse_dungeon_profile);
+	parser_reg(p, "desc str desc", parse_dungeon_desc);
+	return p;
+}
+
+static errr run_parse_dungeon(struct parser *p) {
+	return parse_file_quit_not_found(p, "dungeon");
+}
+
+static errr finish_parse_dungeon(struct parser *p) {
+	struct dun_type *d;
+	int count = 0;
+
+	parser_destroy(p);
+
+	/*
+	 * A world with no dungeon in it is a world with nowhere to go, and the
+	 * starting town's staircase would lead nowhere.  Better to say so at
+	 * startup than to find out on the stairs.
+	 */
+	for (d = dun_types; d; d = d->next) {
+		count++;
+
+		if (!d->min_depth) {
+			plog_fmt("Dungeon '%s' has no depth range", d->name);
+			return PARSE_ERROR_MISSING_FIELD;
+		}
+	}
+
+	if (!count) {
+		plog("No dungeons defined");
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static void cleanup_dungeon(void) {
+	struct dun_type *d = dun_types;
+
+	while (d) {
+		struct dun_type *old = d;
+
+		string_free(d->name);
+		string_free(d->desc);
+		string_free(d->profile);
+		d = d->next;
+		mem_free(old);
+	}
+
+	dun_types = NULL;
+}
+
+struct file_parser dungeon_parser = {
+	"dungeon",
+	init_parse_dungeon,
+	run_parse_dungeon,
+	finish_parse_dungeon,
+	cleanup_dungeon
+};
+
+/** How many dungeons the game data defines. */
+int dun_type_count(void)
+{
+	struct dun_type *d;
+	int n = 0;
+
+	for (d = dun_types; d; d = d->next) n++;
+
+	return n;
+}
+
+/** The dungeon at this place in the list, or NULL. */
+struct dun_type *dun_type_by_index(int idx)
+{
+	struct dun_type *d;
+
+	for (d = dun_types; d; d = d->next)
+		if (d->index == idx) return d;
+
+	return NULL;
+}
+
+/**
+ * The dungeon of this name, or NULL.
+ *
+ * The savefile stores names rather than indices, so that adding a dungeon to
+ * dungeon.txt does not silently move a character into a different one.
+ */
+struct dun_type *dun_type_by_name(const char *name)
+{
+	struct dun_type *d;
+
+	if (!name) return NULL;
+
+	for (d = dun_types; d; d = d->next)
+		if (streq(d->name, name)) return d;
+
+	return NULL;
 }
 
 /**
@@ -4600,6 +4815,7 @@ static struct {
 	{ "ui entries", &ui_entry_parser },
 	{ "player properties", &player_property_parser },
 	{ "features", &feat_parser },
+	{ "dungeons", &dungeon_parser },
 	{ "object bases", &object_base_parser },
 	{ "slays", &slay_parser },
 	{ "brands", &brand_parser },

@@ -33,6 +33,7 @@
 #include "mon-make.h"
 #include "obj-pile.h"
 #include "player.h"
+#include "dun-type.h"
 #include "wild.h"
 
 struct wilderness *wild = NULL;
@@ -1095,6 +1096,178 @@ int wild_town_at(struct wilderness *w, int bx, int by)
 
 /**
  * ------------------------------------------------------------------------
+ * Where the dungeons open (WLD-14)
+ * ------------------------------------------------------------------------ */
+
+/**
+ * How far apart dungeon mouths are kept, in blocks.
+ *
+ * Closer than the towns are, since a dungeon is a door rather than a place and
+ * two of them within sight of each other is not absurd -- but far enough that
+ * the world does not end up with the whole ladder of them in one valley, which
+ * is exactly what happened when this was not enforced.
+ */
+#define WILD_DUNGEON_APART 8
+
+/**
+ * How well this block suits a dungeon of this kind.
+ *
+ * The same idea the towns are sited by: each dungeon names the population and
+ * height of country its mouth is found in, and the world is searched for the
+ * block that matches best.  So the Caverns of Kolvir open high in settled
+ * country and the Abyss opens in empty lowland, without either being placed by
+ * hand.
+ */
+static int wild_dungeon_score(struct wilderness *w, int bx, int by,
+							  const struct dun_type *type)
+{
+	struct wild_block *block = wild_block_at(w, bx, by);
+	int score = 1000;
+
+	if (!block)
+		return -100000;
+
+	/* Not in the sea, and not on ground already spoken for. */
+	if (block->terrain == WILD_TERRAIN_OCEAN) return -100000;
+	if (block->info & WILD_INFO_WATER) return -100000;
+	if (block->place) return -100000;
+
+	/* Nor where another dungeon has already opened, or too near one. */
+	for (int i = 0; i < w->dungeon_count; i++)
+		if (MAX(ABS(bx - w->dungeons[i].block.x),
+				ABS(by - w->dungeons[i].block.y)) < WILD_DUNGEON_APART)
+			return -100000;
+
+	/* How near the country is to what this dungeon wants. */
+	score -= ABS((int) block->pop - (int) type->pop);
+	score -= ABS((int) block->hgt - (int) type->height);
+
+	/*
+	 * A road past the door is worth something: a dungeon nobody can find is a
+	 * dungeon nobody uses, and the roads are how the world is navigated.
+	 */
+	if (block->info & WILD_INFO_ROAD) score += 120;
+
+	return score;
+}
+
+/**
+ * Open the dungeons in the world (WLD-10, WLD-14).
+ *
+ * Every dungeon defined in dungeon.txt gets a mouth, so that the depth ladder
+ * has no gap in it -- a world missing the dungeon that covers depths 40 to 75
+ * would be a world a character could not get past depth 40 in.  Rarity decides
+ * the order they are placed in, not whether they are placed at all: the best
+ * sites go to the ones that are particular about where they are.
+ */
+static void wild_place_dungeons(struct wilderness *w)
+{
+	int size = w->blocks;
+	int bsize = z_info->wild_block_size;
+	int placed = 0, rarity;
+
+	w->dungeon_count = 0;
+
+	/* Commonest first, so the choosiest dungeons are not left the scraps. */
+	for (rarity = 1; rarity <= 255 && placed < WILD_DUNGEONS_MAX; rarity++) {
+		struct dun_type *type;
+
+		for (type = dun_types; type; type = type->next) {
+			int best = 0, bx = -1, by = -1;
+			int x, y;
+
+			if (type->rarity != rarity) continue;
+			if (placed >= WILD_DUNGEONS_MAX) break;
+
+			for (y = 1; y < size - 1; y++)
+				for (x = 1; x < size - 1; x++) {
+					int score = wild_dungeon_score(w, x, y, type);
+
+					if (score <= -100000) continue;
+					if (bx < 0 || score > best) {
+						best = score;
+						bx = x;
+						by = y;
+					}
+				}
+
+			if (bx < 0) continue;
+
+			w->dungeons[placed].block = loc(bx, by);
+			w->dungeons[placed].type = type->index;
+			w->dungeons[placed].max_depth = 0;
+
+			/*
+			 * The mouth sits at the middle of its block, which is where a road
+			 * through the block runs, so a road leads to the door rather than
+			 * past it.
+			 */
+			w->dungeons[placed].grid = loc(bx * bsize + bsize / 2,
+										   by * bsize + bsize / 2);
+
+			w->map[by * size + bx].place = 1;
+			placed++;
+
+			/*
+			 * Kept in step as we go, not set at the end: the site score reads
+			 * it to keep the mouths apart, and with it left at zero until the
+			 * last one every dungeon in the world piled into the same valley.
+			 */
+			w->dungeon_count = placed;
+		}
+	}
+}
+
+int wild_dungeon_count(const struct wilderness *w)
+{
+	return w ? w->dungeon_count : 0;
+}
+
+struct wild_dungeon *wild_dungeon_by_index(struct wilderness *w, int idx)
+{
+	if (!w || idx < 0 || idx >= w->dungeon_count)
+		return NULL;
+
+	return &w->dungeons[idx];
+}
+
+/**
+ * Does a dungeon open anywhere in this block?
+ *
+ * The map draws whole blocks, so it asks by block; the surface and the stairs
+ * ask by grid, since standing next to a dungeon's mouth is not standing on it.
+ */
+bool wild_dungeon_in_block(struct wilderness *w, int bx, int by)
+{
+	int i;
+
+	if (!w) return false;
+
+	for (i = 0; i < w->dungeon_count; i++)
+		if (w->dungeons[i].block.x == bx && w->dungeons[i].block.y == by)
+			return true;
+
+	return false;
+}
+
+/**
+ * Which dungeon opens at this world grid, or -1 for none.
+ */
+int wild_dungeon_at(struct wilderness *w, struct loc grid)
+{
+	int i;
+
+	if (!w) return -1;
+
+	for (i = 0; i < w->dungeon_count; i++)
+		if (loc_eq(w->dungeons[i].grid, grid))
+			return i;
+
+	return -1;
+}
+
+/**
+ * ------------------------------------------------------------------------
  * Roads (WLD-08)
  * ------------------------------------------------------------------------ */
 
@@ -1422,6 +1595,7 @@ void wild_generate(struct wilderness *w)
 
 	wild_place_towns(w);
 	wild_place_roads(w);
+	wild_place_dungeons(w);
 
 	Rand_quick = false;
 
@@ -2675,6 +2849,8 @@ int wild_block_feat(struct wilderness *w, int x, int y)
 
 	if (wild_in_town(w, x, y))
 		return FEAT_PERM;
+	if (wild_dungeon_in_block(w, x, y))
+		return FEAT_DUNGEON;
 	if (block->info & WILD_INFO_ROAD)
 		return FEAT_ROAD;
 	if (block->info & WILD_INFO_WATER)
@@ -2893,6 +3069,21 @@ struct chunk *wild_surface(struct wilderness *w, struct player *p,
 	 * read from inside as being teleported into open country.
 	 */
 	wild_draw_town(w, p, c, loc(ox, oy));
+
+	/*
+	 * And the dungeon mouths (WLD-14), last of the furniture, so that neither a
+	 * road nor a town's rock can be laid over the one thing in the block the
+	 * player came to find.
+	 */
+	for (int i = 0; i < w->dungeon_count; i++) {
+		struct loc at = loc(w->dungeons[i].grid.x - ox,
+							w->dungeons[i].grid.y - oy);
+
+		if (at.x < 1 || at.y < 1 || at.x >= span - 1 || at.y >= span - 1)
+			continue;
+
+		square_set_feat(c, at, FEAT_DUNGEON);
+	}
 
 	/*
 	 * Every Angband level has an impassable boundary, and a great deal of code

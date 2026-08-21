@@ -31,6 +31,7 @@
 #include "player-util.h"
 #include "mon-util.h"
 #include "savefile.h"
+#include "dun-type.h"
 #include "wild.h"
 #include "z-util.h"
 
@@ -1270,6 +1271,168 @@ static int test_a_wall_is_seen_from_inside_a_wood(void *state) {
 	ok;
 }
 
+
+/**
+ * Every dungeon in the game data opens somewhere in the world (WLD-14).
+ *
+ * The depth ladder must have no gap in it.  A world missing the dungeon that
+ * covers depths 40 to 75 is a world a character cannot get past depth 40 in, so
+ * rarity decides the order the mouths are sited in, never whether a dungeon is
+ * present at all.
+ */
+static int test_every_dungeon_opens_somewhere(void *state) {
+	bool seen[DUN_TYPE_MAX] = { false };
+	struct dun_type *type;
+	int i, deepest = 0;
+
+	require(dun_type_count() > 0);
+	eq(wild_dungeon_count(wild), dun_type_count());
+
+	for (i = 0; i < wild_dungeon_count(wild); i++) {
+		struct wild_dungeon *mouth = wild_dungeon_by_index(wild, i);
+		struct wild_block *block;
+		int j;
+
+		notnull(dun_type_by_index(mouth->type));
+
+		/* One mouth each, and no two in the same place. */
+		require(mouth->type < DUN_TYPE_MAX);
+		require(!seen[mouth->type]);
+		seen[mouth->type] = true;
+
+		for (j = 0; j < i; j++)
+			require(!loc_eq(mouth->grid, wild_dungeon_by_index(wild, j)->grid));
+
+		/* Not in the sea, and not in a lake. */
+		block = wild_block_at(wild, mouth->block.x, mouth->block.y);
+		notnull(block);
+		require(block->terrain != WILD_TERRAIN_OCEAN);
+		require(!(block->info & WILD_INFO_WATER));
+
+		/* The mouth is where the map says the dungeon is. */
+		eq(wild_dungeon_at(wild, mouth->grid), i);
+		require(wild_dungeon_in_block(wild, mouth->block.x, mouth->block.y));
+	}
+
+	/*
+	 * And between them they reach the bottom, by an unbroken chain: no depth
+	 * from the first level down is out of reach of some dungeon.
+	 */
+	for (type = dun_types; type; type = type->next)
+		if (type->max_depth > deepest) deepest = type->max_depth;
+
+	for (i = 1; i <= deepest; i++) {
+		bool covered = false;
+
+		for (type = dun_types; type; type = type->next)
+			if (i >= type->min_depth && i <= type->max_depth) covered = true;
+
+		require(covered);
+	}
+
+	ok;
+}
+
+/**
+ * A dungeon ends at its own bottom, not at the bottom of the game (WLD-14).
+ */
+static int test_a_dungeon_has_a_bottom(void *state) {
+	struct dun_type *type;
+
+	for (type = dun_types; type; type = type->next) {
+		player->dungeon = type->index + 1;
+
+		/* At its deepest level, there is no way further down. */
+		player->depth = type->max_depth;
+		require(dungeon_get_next_level(player, player->depth, 1)
+				<= type->max_depth);
+
+		/* Part way down, there is. */
+		if (type->max_depth > type->min_depth) {
+			player->depth = type->min_depth;
+			require(dungeon_get_next_level(player, player->depth, 1)
+					> type->min_depth);
+		}
+
+		/* And going up from the top of it comes out onto the surface. */
+		player->depth = type->min_depth;
+		eq(dungeon_get_next_level(player, player->depth, -1), 0);
+	}
+
+	player->dungeon = 0;
+	player->depth = 0;
+
+	ok;
+}
+
+/**
+ * Each dungeon remembers its own depth, for recall (WLD-14).
+ *
+ * Word of recall has to return the player to where they were in the dungeon
+ * they were last in.  Sending them to the deepest level they have reached
+ * anywhere could drop them into a dungeon on the far side of the world, or
+ * below the bottom of the one they are standing on.
+ */
+static int test_each_dungeon_remembers_its_own_depth(void *state) {
+	struct wild_dungeon *first = wild_dungeon_by_index(wild, 0);
+	struct wild_dungeon *second = wild_dungeon_by_index(wild, 1);
+	struct dun_type *ta, *tb;
+
+	notnull(first);
+	notnull(second);
+	ta = dun_type_by_index(first->type);
+	tb = dun_type_by_index(second->type);
+	notnull(ta);
+	notnull(tb);
+
+	/* Go down the first one a way. */
+	player->dungeon = first->type + 1;
+	player->depth = ta->min_depth + 1;
+	player_note_dungeon_depth(player);
+	eq(first->max_depth, ta->min_depth + 1);
+
+	/* The second knows nothing of it. */
+	eq(second->max_depth, 0);
+	player->dungeon = second->type + 1;
+	eq(player_dungeon_recall_depth(player), 0);
+
+	/* And the first still remembers when we come back to it. */
+	player->dungeon = first->type + 1;
+	eq(player_dungeon_recall_depth(player), ta->min_depth + 1);
+
+	/* Going no deeper does not lower what it remembers. */
+	player->depth = ta->min_depth;
+	player_note_dungeon_depth(player);
+	eq(first->max_depth, ta->min_depth + 1);
+
+	first->max_depth = 0;
+	player->dungeon = 0;
+	player->depth = 0;
+
+	ok;
+}
+
+/**
+ * The world puts a way down within reach of the character who starts in it.
+ *
+ * The town staircase leads into the shallowest dungeon there is, so a new
+ * character has somewhere to go from the first turn.  What must not happen is
+ * that the shallowest dungeon starts below the depth a first-level character
+ * can survive.
+ */
+static int test_the_first_dungeon_is_reachable(void *state) {
+	struct dun_type *type, *shallowest = NULL;
+
+	for (type = dun_types; type; type = type->next)
+		if (!shallowest || type->min_depth < shallowest->min_depth)
+			shallowest = type;
+
+	notnull(shallowest);
+	eq(shallowest->min_depth, 1);
+
+	ok;
+}
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -1300,5 +1463,9 @@ struct test tests[] = {
 	{ "world-position-survives-a-save", test_world_position_survives_a_save },
 	{ "the-map-survives-a-save-from-below", test_the_map_survives_a_save_from_below },
 	{ "a-wall-is-seen-from-inside-a-wood", test_a_wall_is_seen_from_inside_a_wood },
+	{ "every-dungeon-opens-somewhere", test_every_dungeon_opens_somewhere },
+	{ "a-dungeon-has-a-bottom", test_a_dungeon_has_a_bottom },
+	{ "each-dungeon-remembers-its-own-depth", test_each_dungeon_remembers_its_own_depth },
+	{ "the-first-dungeon-is-reachable", test_the_first_dungeon_is_reachable },
 	{ NULL, NULL }
 };

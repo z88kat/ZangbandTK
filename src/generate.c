@@ -33,6 +33,7 @@
 #include "game-event.h"
 #include "game-input.h"
 #include "game-world.h"
+#include "dun-type.h"
 #include "generate.h"
 #include "init.h"
 #include "mon-make.h"
@@ -836,6 +837,25 @@ static const struct cave_profile *choose_profile(struct player *p)
 		if (profile) return profile;
 	}
 
+	/*
+	 * ZangbandTK (WLD-14): a dungeon has a shape of its own.  Each names the
+	 * cave profile it prefers -- caverns for Kolvir, a labyrinth for the city
+	 * in the sky -- and gets it wherever the profile is willing to be used at
+	 * this depth.  A profile asked for above its own minimum level is declined
+	 * rather than forced: its builder is entitled to assume the depth it says
+	 * it wants, and Arden's first level is not the place to find out otherwise.
+	 */
+	if (p->depth > 0 && p->dungeon) {
+		const struct dun_type *type = dun_type_by_index(p->dungeon - 1);
+
+		if (type && type->profile) {
+			const struct cave_profile *want = find_cave_profile(type->profile);
+
+			if (want && want->min_level <= p->depth)
+				return want;
+		}
+	}
+
 	/* Make the profile choice */
 	if (p->depth == 0) {
 		profile = find_cave_profile("town");
@@ -1188,6 +1208,28 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 					place_new_monster(chunk, grid, q->race, true, true, info,
 									  ORIGIN_DROP);
 				}
+			}
+		}
+
+		/*
+		 * ZangbandTK (WLD-14): floor the level in whatever this dungeon is
+		 * floored with.  Done after the builder rather than inside it, so that
+		 * every builder gets it without any of them having to know about
+		 * dungeons -- and only plain floor is repainted, so a builder's own
+		 * lava, water, rubble and shop entrances stay as it laid them.
+		 */
+		if (p->depth > 0 && p->dungeon) {
+			const struct dun_type *type = dun_type_by_index(p->dungeon - 1);
+
+			if (type && type->floor != FEAT_NONE
+					&& type->floor != FEAT_FLOOR) {
+				for (y = 0; y < chunk->height; y++)
+					for (x = 0; x < chunk->width; x++) {
+						struct loc grid = loc(x, y);
+
+						if (square(chunk, grid)->feat == FEAT_FLOOR)
+							square_set_feat(chunk, grid, type->floor);
+					}
 			}
 		}
 

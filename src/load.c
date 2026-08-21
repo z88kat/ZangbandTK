@@ -49,6 +49,7 @@
 #include "savefile.h"
 #include "store.h"
 #include "trap.h"
+#include "dun-type.h"
 #include "wild.h"
 #include "ui-term.h"
 
@@ -1695,20 +1696,16 @@ int rd_wilderness_2(void)
 	return rd_wilderness_body();
 }
 
-int rd_wilderness(void)
+/**
+ * Read what the player knows of the surface, held while they are off it.
+ *
+ * Appended by version 3 of the block, and last in every version since, so that
+ * anything added later goes in front of it rather than after.
+ */
+static int rd_wilderness_knowledge(void)
 {
 	uint8_t held;
 
-	if (rd_wilderness_body())
-		return -1;
-
-	/*
-	 * What the player knows of the surface, if they saved while off it (WLD-25).
-	 *
-	 * On the surface this lives in player->cave and rd_dungeon() reads it.  Down
-	 * in the dungeon the surface is not loaded at all, so the only copy is the
-	 * one wild.c was holding when the game was saved.
-	 */
 	rd_byte(&held);
 
 	if (held) {
@@ -1727,6 +1724,76 @@ int rd_wilderness(void)
 	}
 
 	return 0;
+}
+
+/**
+ * Read how far the player has got down each dungeon (WLD-14).
+ *
+ * Where the dungeons open is not stored: it follows from the world seed and
+ * dungeon.txt by the same scoring every time.  What is stored is the progress,
+ * by name, so that adding a dungeon does not move a character into another one.
+ */
+static void rd_wilderness_dungeons(void)
+{
+	char name[80];
+	uint16_t count;
+	int i;
+
+	rd_string(name, sizeof(name));
+	if (name[0]) {
+		struct dun_type *type = dun_type_by_name(name);
+
+		/*
+		 * A dungeon that is no longer in the game data leaves the character on
+		 * the surface rather than inside something that does not exist.
+		 */
+		if (type) {
+			player->dungeon = type->index + 1;
+		} else {
+			note(format("Forgetting an unknown dungeon (%s)", name));
+			player->dungeon = 0;
+		}
+	}
+
+	rd_u16b(&count);
+	for (i = 0; i < count; i++) {
+		struct dun_type *type;
+		uint8_t depth;
+		int j;
+
+		rd_string(name, sizeof(name));
+		rd_byte(&depth);
+
+		type = dun_type_by_name(name);
+		if (!type) continue;
+
+		for (j = 0; j < wild_dungeon_count(wild); j++) {
+			struct wild_dungeon *mouth = wild_dungeon_by_index(wild, j);
+
+			if (mouth->type == type->index) {
+				mouth->max_depth = depth;
+				break;
+			}
+		}
+	}
+}
+
+int rd_wilderness_3(void)
+{
+	if (rd_wilderness_body())
+		return -1;
+
+	return rd_wilderness_knowledge();
+}
+
+int rd_wilderness(void)
+{
+	if (rd_wilderness_body())
+		return -1;
+
+	rd_wilderness_dungeons();
+
+	return rd_wilderness_knowledge();
 }
 
 int rd_dungeon(void)

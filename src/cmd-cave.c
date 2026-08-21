@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "cmd-core.h"
 #include "cmds.h"
+#include "dun-type.h"
 #include "game-event.h"
 #include "game-input.h"
 #include "game-world.h"
@@ -101,7 +102,7 @@ void do_cmd_go_up(struct command *cmd)
  */
 void do_cmd_go_down(struct command *cmd)
 {
-	int descend_to = dungeon_get_next_level(player, player->depth, 1);
+	int descend_to;
 
 	/* Verify stairs */
 	if (!square_isdownstairs(cave, player->grid)) {
@@ -113,9 +114,33 @@ void do_cmd_go_down(struct command *cmd)
 		return;
 	}
 
+	/*
+	 * ZangbandTK (WLD-14): which dungeon this is has to be settled before the
+	 * target depth is worked out, since the dungeon is what decides the range
+	 * of depths the target is allowed to fall in.
+	 */
+	if (player->in_wild && !player_enter_dungeon_here(player))
+		return;
+
+	descend_to = dungeon_get_next_level(player, player->depth, 1);
+
 	/* Paranoia, no descent from z_info->max_depth - 1 */
 	if (player->depth == z_info->max_depth - 1) {
 		msg("The dungeon does not appear to extend deeper");
+		return;
+	}
+
+	/*
+	 * A dungeon ends at its deepest level.  Say so, and say what to do about
+	 * it, rather than silently refusing to move.
+	 */
+	if (descend_to <= player->depth && player->depth > 0) {
+		const struct dun_type *type = player->dungeon
+			? dun_type_by_index(player->dungeon - 1) : NULL;
+
+		msg("%s goes no deeper than this.",
+			type ? type->name : "This dungeon");
+		msg("To go further down you must find a dungeon that reaches deeper.");
 		return;
 	}
 

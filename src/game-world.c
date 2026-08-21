@@ -809,6 +809,20 @@ void process_world(struct chunk *c)
 			} else {
 				msgt(MSG_TPLEVEL, "You feel yourself yanked downwards!");
 				player_set_recall_depth(player);
+
+				/*
+				 * Back into the dungeon they were last in, at their own depth
+				 * in it (WLD-14) -- not to the deepest level they have reached
+				 * anywhere, which might be in a dungeon on the far side of the
+				 * world and, worse, deeper than this one goes.
+				 */
+				{
+					int back = player_dungeon_recall_depth(player);
+
+					if (back > 0 && !OPT(player, birth_force_descend))
+						player->recall_depth = back;
+				}
+
 				dungeon_change_level(player, player->recall_depth);
 			}
 		}
@@ -1031,6 +1045,14 @@ void on_new_level(void)
 	/* Track maximum dungeon level */
 	if (player->max_depth < player->depth)
 		player->max_depth = player->recall_depth = player->depth;
+
+	/*
+	 * And how far down this particular dungeon has been got (WLD-14).  Each
+	 * remembers its own depth, so recall returns the player to where they were
+	 * in the dungeon they were last in rather than to the deepest they have
+	 * ever been anywhere.
+	 */
+	player_note_dungeon_depth(player);
 
 	/* Flush messages */
 	event_signal(EVENT_MESSAGE_FLUSH);

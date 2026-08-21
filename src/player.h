@@ -524,6 +524,14 @@ struct player {
 
 	int16_t max_depth;	/* Max depth */
 	int16_t recall_depth;	/* Recall depth */
+
+	/**
+	 * ZangbandTK (WLD-14): the dungeon they are in, or were last in, as one
+	 * more than its index in dungeon.txt; zero for a character who has never
+	 * gone down.  Not cleared on returning to the surface, because word of
+	 * recall has to know which dungeon to take them back to.
+	 */
+	uint8_t dungeon;
 	int16_t depth;		/* Cur depth */
 
 	/**

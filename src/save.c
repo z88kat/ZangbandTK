@@ -40,6 +40,7 @@
 #include "player-history.h"
 #include "player-timed.h"
 #include "trap.h"
+#include "dun-type.h"
 #include "wild.h"
 #include "ui-term.h"
 
@@ -1046,6 +1047,39 @@ void wr_wilderness(void)
 	 * saved below and came back up found the town unexplored, which is the same
 	 * fault as losing it across a dungeon trip, one layer further out.
 	 */
+	/*
+	 * The dungeons (WLD-14).
+	 *
+	 * Where they open is not saved: it follows from the world seed and
+	 * dungeon.txt by the same scoring every time, so it comes back on its own.
+	 * What cannot be recomputed is how far down each of them the player has
+	 * got, and which one they were last in -- both stored by name, so that
+	 * adding a dungeon to dungeon.txt does not move a character into a
+	 * different one.
+	 */
+	{
+		struct dun_type *here = player->dungeon
+			? dun_type_by_index(player->dungeon - 1) : NULL;
+		uint16_t count = 0;
+		int i;
+
+		wr_string(here ? here->name : "");
+
+		for (i = 0; i < wild_dungeon_count(wild); i++)
+			if (wild_dungeon_by_index(wild, i)->max_depth) count++;
+		wr_u16b(count);
+
+		for (i = 0; i < wild_dungeon_count(wild); i++) {
+			struct wild_dungeon *mouth = wild_dungeon_by_index(wild, i);
+			struct dun_type *type = dun_type_by_index(mouth->type);
+
+			if (!mouth->max_depth) continue;
+
+			wr_string(type ? type->name : "");
+			wr_byte(mouth->max_depth);
+		}
+	}
+
 	{
 		struct loc offset = loc(0, 0);
 		struct chunk *known = wild_held_knowledge(&offset);

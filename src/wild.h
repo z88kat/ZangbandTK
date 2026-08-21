@@ -120,6 +120,9 @@ struct wild_unique {
  */
 #define WILD_TOWNS_MAX 24
 
+/** The most dungeon entrances a world may hold. */
+#define WILD_DUNGEONS_MAX 24
+
 /**
  * One town.
  *
@@ -148,6 +151,19 @@ enum {
 	WILD_STORE_HOME
 };
 
+/**
+ * A dungeon's mouth, somewhere in the world (WLD-14).
+ *
+ * The dungeon itself is defined in dungeon.txt; this is only where the way in
+ * happens to be, and how deep the player has got down it.
+ */
+struct wild_dungeon {
+	struct loc block;		/**< The block it opens in */
+	struct loc grid;		/**< Which grid of that block, in world coordinates */
+	uint8_t type;			/**< Index into dungeon.txt's list */
+	uint8_t max_depth;		/**< The deepest level reached, for recall */
+};
+
 struct wild_town {
 	struct loc block;	/**< The block it centres on */
 	uint16_t wid, hgt;	/**< Its size, in grids */
@@ -164,6 +180,9 @@ struct wilderness {
 	struct wild_block *map;	/**< blocks * blocks entries, row-major */
 
 	/** The towns, the first of which is where the player starts (WLD-12). */
+	struct wild_dungeon dungeons[WILD_DUNGEONS_MAX];
+	int dungeon_count;
+
 	struct wild_town towns[WILD_TOWNS_MAX];
 	int town_count;
 
@@ -193,6 +212,10 @@ void wild_mark_seen(struct wilderness *w, struct loc grid);
 bool wild_seen(struct wilderness *w, int x, int y);
 bool wild_in_town(struct wilderness *w, int bx, int by);
 bool wild_road_at(struct wilderness *w, int bx, int by);
+int wild_dungeon_count(const struct wilderness *w);
+int wild_dungeon_at(struct wilderness *w, struct loc grid);
+bool wild_dungeon_in_block(struct wilderness *w, int bx, int by);
+struct wild_dungeon *wild_dungeon_by_index(struct wilderness *w, int idx);
 struct loc wild_scroll_delta(void);
 int wild_block_feat(struct wilderness *w, int x, int y);
 

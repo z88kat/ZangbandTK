@@ -272,7 +272,15 @@ Going down
 ----------
 
 The down staircase in the middle of town works exactly as it does in Angband:
-stand on it and press ``>``.
+stand on it and press ``>``. It leads into the shallowest dungeon there is, so
+that a new character has somewhere to go from the first turn.
+
+It is not the only way down. Dungeon mouths are scattered across the world, drawn
+as a ``>`` like any staircase, and each leads into a dungeon of its own with its
+own range of depths. :doc:`dungeon` covers what that means; the short version is
+that a dungeon has a bottom, and getting past it means finding another one.
+Roads help: most mouths open on or near a road, because a dungeon nobody can find
+is a dungeon nobody uses.
 
 Coming back up puts you where you went down. The world remembers where you left
 it, so a character who walked three days into the hills before finding a way
@@ -292,13 +300,16 @@ What is not here yet
 Stated plainly, because a manual that only describes what works is not much use
 for judging what to expect:
 
-**One town, and one way underground.** The world holds a single town and the
-single staircase in it. Several towns of differing size and character — carrying
-different stores, so that a frontier village is not a city with the same eight
-shops — several dungeons with their own depth ranges, and the buildings and
-services that go in them are all milestone M5.
+**Towns have no inhabitants of their own kind.** A village and a great city
+differ in size and in the trades they keep, but the people in the streets are
+drawn from the same list. Zangband's six kinds of townsfolk — villagers, elves,
+dwarves, lizardfolk, monsters, and towns simply abandoned — are the rest of
+milestone M5, along with the buildings and services that go in them.
 
-**Roads go nowhere**, as above — they need somewhere to go.
+**Dungeons have no character below the surface yet.** Each has its own depth
+range, its own floor and its own shape (see :doc:`dungeon`), but the monsters and
+the treasure in it are chosen by depth alone. What lives in the Courts of Chaos
+should not be what lives in Arden.
 
 **The terrain is coarser than Zangband's.** Zangband distinguished about thirty
 kinds of country, including impassable jungle, snow and lava; ZangbandTK
