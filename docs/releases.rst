@@ -31,6 +31,15 @@ Unreleased
 M5 in progress: towns and roads — 19 to 20 August 2026
 ------------------------------------------------------
 
+- **3.5.1** — The in-game manual learned the dungeons: a page of its own listing
+  all thirteen with their depths, the rule that a dungeon ends at its bottom, and
+  how recall behaves per dungeon. The symbol list gained the ``>`` of a dungeon
+  mouth out in the open.
+- **3.5.0** — Thirteen dungeons (WLD-14), Amber's own places, each covering a
+  range of depths and ending at the bottom of it. Each remembers how far down it
+  has been explored, so recall returns you to the dungeon you were last in. Each
+  has its own floor and its own preferred layout. The savefile's wilderness block
+  goes to version 4; older saves still load.
 - **3.4.1** — A town wall you were standing next to was invisible if you were
   standing in trees. Angband lights a wall only if the grid between it and you
   carries light onto its face, which assumes anything blocking sight is a wall

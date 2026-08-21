@@ -44,8 +44,8 @@ A wilderness
 ------------
 
 Zangband's defining feature, and the largest piece of work in the game so far. A
-world **2064 grids square**, generated from a seed and never stored, with the
-town standing in it and roads leading out.
+world **2064 grids square**, generated from a seed and never stored, with a dozen
+towns standing in it, roads between them, and thirteen dungeons opening off it.
 
 - Terrain follows from height, population and law; danger follows from law alone.
 - The surface is one continuous sheet that scrolls as you walk, not a set of
@@ -56,6 +56,13 @@ town standing in it and roads leading out.
 - What you drop in the country stays where you left it until somebody finds it,
   and the world forgets what you left in time.
 - A unique you wounded and walked away from is still out there, still wounded.
+- **A dozen towns** in four sizes, keeping different trades depending on the
+  country around them (:doc:`towns`).
+- **Roads** joining the towns, routed round the mountains and out of the swamps,
+  so following one gets you somewhere.
+- **Thirteen dungeons**, Amber's own places, each covering its own range of
+  depths and ending at the bottom of it -- so going deeper means crossing the
+  world to find one that reaches deeper (:doc:`dungeon`).
 
 Monsters, objects and magic
 ---------------------------
@@ -126,7 +133,9 @@ in when the milestone lands.
      - M11
      - :doc:`nightmare`
 
-Multiple dungeons are also still to come.
+Multiple dungeons have arrived (:doc:`dungeon`), but what lives in them and what
+is found in them still follows depth alone; a dungeon's own monsters and treasure
+are the rest of M5.
 
 A **Tcl/Tk front end** is planned for a later phase, reviving the original's
 interface on Tcl/Tk 9. There is an irony in it: the original ZangbandTK

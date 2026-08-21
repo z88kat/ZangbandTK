@@ -62,13 +62,17 @@ rubble.
 .  Bare earth (brown)          :  Mountainside, impassable (brown)
 .  Sand, by the water          ~  Shallow water; wadeable (light blue)
 .  Mud; heavy going            ~  Deep water and open sea (blue)
-.  A made road (white)
+.  A made road (white)         >  The mouth of a dungeon (violet)
 
 
 The road is worth following.  Roads run between the towns, so if you are
 lost in open country, find one and walk along it -- it goes somewhere.  Deep
 water can be waded into, but not while heavily laden, and the sea at the
 edge of the world is the edge of the world.
+
+A '>' out in the open is the mouth of one of the world's dungeons rather than
+an ordinary staircase.  Each leads somewhere different and only so deep; see
+'dungeons.txt'.
 
 Towns stand behind walls, with gates no more than two grids wide.  A gate is
 a closed door ('+') in the wall; open it to pass through, and it will swing

@@ -1,5 +1,5 @@
-This is a short in-game reference to available commands and the symbols
-you might encounter in-game.  For more detailed help, please see:
+This is a short in-game reference to the commands, the symbols you will meet
+and the dungeons of the world.  For more detailed help, please see:
 
    https://zangbandtk.com/
 
@@ -13,6 +13,7 @@ Please choose one of the following help files:
 
     (a) Available commands
     (b) Available symbols
+    (c) The dungeons of the world
 
 
 
@@ -26,3 +27,5 @@ Browser/help commands:
 .. menu:: [a] r_comm.txt
 
 .. menu:: [b] symbols.txt
+
+.. menu:: [c] dungeons.txt

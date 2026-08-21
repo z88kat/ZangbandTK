@@ -1,0 +1,83 @@
+The Dungeons
+============
+
+Angband has one dungeon, and depth is the only thing that tells its fortieth
+level from its fourth.  Here there are thirteen, and they are places.
+
+
+A dungeon has a bottom
+----------------------
+
+Each dungeon covers a range of depths, and it ends at the bottom of that
+range.  When you reach its deepest level there is no way further down from
+it.  To go deeper you must leave, cross the world, and find a dungeon that
+reaches deeper than the one you are in.
+
+That is the point of the world.  It is also why the ranges overlap: there is
+always more than one way onward, and you are never left with nowhere to go.
+
+The staircase in the middle of your home village leads into the shallowest
+dungeon there is, so you can start going down on the first turn without
+finding anything first.
+
+
+Each remembers its own depth
+----------------------------
+
+Word of recall takes you back to how far down you had got in the dungeon you
+were last in -- not to the deepest level you have ever reached anywhere.
+That level might be in a dungeon on the far side of the world, and might be
+deeper than the dungeon you are standing on goes.
+
+
+Finding one
+-----------
+
+A dungeon's mouth is drawn as a '>' out in the open country, like any
+staircase.  Most of them open on or near a road, so following roads is how
+you find them; they show on the world map ('M') once you have been near them.
+
+Where a dungeon opens follows from the country around it.  The Caverns of
+Kolvir open high in settled land; the Abyss opens in empty lowland.
+
+
+The dungeons
+------------
+
+                                  Depths
+   The Vaults of Amber              1-15   Cellars, and older cellars beneath
+                                           those, under the one true city.
+   Arden                            1-20   Julian's forest, and whatever
+                                           Julian keeps in it.
+   Faiella-Bionin                   8-30   The stairway to Rebma, running
+                                           down beneath the sea.
+   Garnath                         15-40   The valley Corwin's blood cursed,
+                                           where the Black Road runs.
+   The Caverns of Kolvir           20-45   The mountain Amber stands on is
+                                           hollow further down than anyone
+                                           has gone.
+   Rebma                           25-50   Amber's reflection, drowned, and
+                                           its stairs still walked.
+   The Grove of the Unicorn        30-55   Something in here is watching, and
+                                           it is not hostile.
+   Tir-na Nog'th                   35-65   The city in the sky, which is only
+                                           there by moonlight.
+   A Broken Pattern                40-75   A shadow where the Pattern is
+                                           flawed, and the flaw is spreading.
+   Thelbane                        55-90   The black tower at the Courts, cut
+                                           from a single stone.
+   The Keep of the Four Worlds     60-95   Four elements, one fortress, and a
+                                           sorcerer who wanted all of it.
+   The Courts of Chaos            75-110   The far pole of everything.  Order
+                                           thins out here, and then stops.
+   The Abyss                      90-127   Past the Courts there is an edge,
+                                           and past the edge there is this.
+
+
+Each has a floor of its own underfoot, and its own preference in how its
+levels are laid out, so the caverns under Kolvir are caverns and the city in
+the sky is a maze.
+
+What lives in them, and what is found in them, still follows depth alone.
+That is not finished work: what walks the Courts of Chaos should not be what
+walks in Arden.
