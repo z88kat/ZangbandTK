@@ -1,0 +1,66 @@
+#!/bin/bash
+#
+# Apply the Nintendo builds' constant overrides to a copy of constants.txt.
+#
+# Use in the root directory of the game, like so:
+#    scripts/nds_constants <constants.txt to rewrite in place>
+#
+# The overrides live in src/nds/constants-overrides.txt, one full entry to a
+# line, and each replaces the entry with the same key.  A key that is not found
+# is an error rather than a no-op: if an entry is renamed upstream, this should
+# stop the build and not quietly hand a 4 MB machine a value sized for a
+# desktop.
+#
+set -o errexit
+
+if [ $# -ne 1 ]; then
+	sed -n -e '3,13p' "$0" | sed -e 's/^# \{0,1\}//'
+	exit 1
+fi
+
+TARGET=$1
+OVERRIDES=src/nds/constants-overrides.txt
+
+if [ ! -f "$TARGET" ]; then
+	echo "No such file: $TARGET" >&2
+	exit 1
+fi
+if [ ! -f "$OVERRIDES" ]; then
+	echo "No such file: $OVERRIDES.  Run this from the top of the tree." >&2
+	exit 1
+fi
+
+applied=0
+while IFS= read -r line ; do
+	# Skip comments and blank lines.
+	case "$line" in
+		''|\#*) continue ;;
+	esac
+
+	# The key is everything up to the last colon; the value is the rest.
+	key=${line%:*}
+
+	if ! grep -q "^${key}:" "$TARGET" ; then
+		echo "Override key not found in $TARGET: ${key}" >&2
+		echo "It has probably been renamed.  Fix $OVERRIDES to match." >&2
+		exit 1
+	fi
+
+	# The replacement is applied with awk rather than sed so that the value
+	# needs no escaping.
+	awk -v key="$key" -v repl="$line" '
+		index($0, key ":") == 1 { print repl; next }
+		{ print }
+	' "$TARGET" > "$TARGET.new"
+	mv "$TARGET.new" "$TARGET"
+
+	echo "  ${line}"
+	applied=$((applied + 1))
+done < "$OVERRIDES"
+
+if [ "$applied" -eq 0 ]; then
+	echo "No overrides applied; $OVERRIDES has no entries." >&2
+	exit 1
+fi
+
+echo "Applied $applied override(s) to $TARGET"

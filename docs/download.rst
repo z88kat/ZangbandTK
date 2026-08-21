@@ -206,6 +206,13 @@ always got that folder one level too deep.
 It is text mode: no tilesets and no sound, which is why it is a small download
 where the others are twenty megabytes larger.
 
+**The world is smaller here, deliberately.** A DS has 4 MB of memory and the
+desktop world does not fit in it — the game loads, reaches character creation and
+then runs out of memory generating the surface. So this build ships a 520×520
+world with one town, against 2064×2064 and a dozen elsewhere. All thirteen
+dungeons are still placed. The settings live in ``constants.txt`` on the card, so
+anyone who wants to try the full-size world can, without rebuilding anything.
+
 .. important::
 
    **"Unable to access filesystem" is a DLDI problem, not a broken download.**

@@ -413,6 +413,13 @@ jobs:
           for d in gamedata help screens customize ; do
             cp -R lib/$d zangbandtk/lib/
           done
+          # The DS has 4 MB and the desktop world does not fit in it: the game
+          # loads, reaches character creation and then fails generating the
+          # surface.  These overrides shrink the live chunk, the world and the
+          # town count for this build only; the reasons are in the file.  It
+          # fails the build if an entry has been renamed rather than shipping a
+          # value the machine cannot hold.
+          scripts/nds_constants zangbandtk/lib/gamedata/constants.txt
           mv ZangbandTK.nds ${archive_prefix}.nds
           mv angband.3dsx ${archive_prefix}.3dsx
           sed -e "s/<version>/${{ steps.store_config.outputs.version }}/g" \

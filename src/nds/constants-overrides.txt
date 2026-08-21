@@ -1,0 +1,41 @@
+# Constants overridden for the Nintendo DS and 3DS builds.
+#
+# Each line is a full entry from lib/gamedata/constants.txt and replaces the
+# entry with the same key. scripts/nds_constants applies them and fails if a key
+# is not found, so renaming one of these upstream breaks the build rather than
+# silently shipping the desktop value to a machine that cannot hold it.
+#
+# Why any of this is needed: the DS has 4 MB of main memory, and the desktop
+# defaults do not fit in it. Measured on the CI-built ROM under melonDS, the game
+# loads its data, reaches character creation, and then fails with "Out of
+# memory!" while generating the surface.
+#
+# The cost is the live surface chunk, and it is paid twice: cave_generate()
+# builds the chunk and then allocates p->cave, the player's known map, at the
+# same dimensions. At the desktop settings that is 144x144 grids each, about
+# 1.8 MB for the pair, in a heap of roughly 3.2 MB that already holds 1013
+# monster races. cave_new() also takes a separate allocation per grid for
+# square.info, so the grid count costs allocator overhead as well as bytes.
+
+# The live chunk is (largest odd square fitting cache-blocks) x block-size, so
+# with cache-blocks floored at 81 the only lever on its size is block-size.
+# Halving it to 8 takes the pair of chunks from about 1.8 MB to about 450 KB.
+#
+# It is not lowered further. Blocks are the unit towns and dungeons are placed
+# in, and 4-grid blocks leave nothing sensible for a town to stand in.
+wild:block-size:8
+
+# World size, which is a separate matter from the chunk: this sizes the block
+# map, six bytes an entry, and the road routing. 65 gives a 520x520 grid world
+# for 25 KB of map, against 2064x2064 and 100 KB at the desktop's 129 -- and
+# routing over 4,225 nodes instead of 16,641, which matters because it is a
+# Dijkstra per road on a 67 MHz ARM9.
+wild:blocks:65
+
+# One town: the starting village and nothing else. A dozen towns on a 520x520
+# world would be crowded, and roads are routed between towns, so this also
+# removes nearly all of the routing work rather than merely shrinking it.
+#
+# The thirteen dungeons are unaffected -- they come from dungeon.txt and are
+# still scattered across the world, which is the point of having a world.
+wild:towns:1

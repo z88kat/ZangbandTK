@@ -88,6 +88,17 @@ This is a text-mode build. There are no tilesets and no sound, which is why the
 download is small: the graphics and audio in the other releases come to over
 twenty megabytes and the DS can use none of it.
 
+The world is smaller here than on the other platforms, and deliberately. A DS
+has 4 MB of memory, and the desktop world does not fit: the game would load,
+reach character creation and then run out of memory generating the surface. So
+this build gets a 520x520 world with one town, where the desktop gets 2064x2064
+and a dozen. All thirteen dungeons are still out there to be found.
+
+If you would rather have the full-size world and see how far you get, the
+settings are in zangbandtk/lib/gamedata/constants.txt on the card -- look for
+wild:blocks, wild:block-size and wild:towns, and the comments around them.
+Nothing needs rebuilding; the game reads that file at startup.
+
 The DS has 4 MB of memory, and ZangbandTK asks more of it than Angband does --
 1013 monsters against Angband's 624 or so, and a wilderness on top. The
 wilderness is the cheap part, about 98 KB for the whole world, because it is
