@@ -31,6 +31,47 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+21 August 2026 — the DS, and what a 4 MB machine is actually short of
+=====================================================================
+
+Parked, and worth writing down properly because it got further than I expected
+and then stopped for a reason I did not expect.
+
+It builds, and it runs. Under an emulator the ROM boots, reads its data off the
+card, loads all 1013 monsters, makes a character and generates a world. On a
+machine with four megabytes. I had assumed the wilderness would be what killed
+it, and the wilderness turned out to be the cheapest thing in the game: the
+whole world map is 129 by 129 blocks of six bytes each, about 98 KB, because
+terrain comes from a seed as you walk rather than being stored.
+
+What the DS is short of is not the world. It is the game. About 1.5 MB of text in
+lib/gamedata, parsed into structs and strings — the bestiary being most of it —
+leaves only a few hundred kilobytes free. The live surface chunk is what tips it
+over, and it is allocated twice, because after building the level the game
+allocates the player's *known* map at the same size. Worse, ``cave_new`` takes a
+separate allocation per grid for that grid's flags, so a 144x144 surface is
+20,736 allocations whose headers cost more than the flags they hold.
+
+So the DS gets a smaller world: 260x260 grids, one town, all thirteen dungeons
+still out there. That is three lines in a constants file, applied to this build
+only, and the file is on the card — so the numbers came out of bisecting on real
+data rather than out of my arithmetic, which was wrong twice on the way.
+
+Then it failed on the actual hardware, with "Unable to access filesystem". That
+is DLDI: homebrew needs a driver for the specific card it runs from patched into
+the ROM. Which would be a small thing, except that the first ROM I sent to the
+DS had already been patched — by the emulator, which rewrites the file in place
+and had stamped its own driver into it. A pristine ROM says "Default (No
+interface)" and is 902,656 bytes; after melonDS had opened it, the same file said
+"melonDS DLDI driver" and was padded to a megabyte. I had staged the test ROM
+next to the thing I was treating as the deliverable, so the emulator quietly
+edited the deliverable.
+
+The lesson I will actually keep from the day: never flash a ROM an emulator has
+opened. The one I will probably have to learn again: I was confident three times
+about a machine I cannot run, and each time it was a measurement on the card that
+put me right, not more reading of the source.
+
 21 August 2026 — Windows, twice
 ===============================
 
