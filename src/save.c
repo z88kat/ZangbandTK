@@ -1060,14 +1060,14 @@ void wr_wilderness(void)
 	{
 		struct dun_type *here = player->dungeon
 			? dun_type_by_index(player->dungeon - 1) : NULL;
-		uint16_t count = 0;
+		uint16_t entered = 0;
 		int i;
 
 		wr_string(here ? here->name : "");
 
 		for (i = 0; i < wild_dungeon_count(wild); i++)
-			if (wild_dungeon_by_index(wild, i)->max_depth) count++;
-		wr_u16b(count);
+			if (wild_dungeon_by_index(wild, i)->max_depth) entered++;
+		wr_u16b(entered);
 
 		for (i = 0; i < wild_dungeon_count(wild); i++) {
 			struct wild_dungeon *mouth = wild_dungeon_by_index(wild, i);
