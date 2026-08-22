@@ -2048,6 +2048,159 @@ static int test_the_village_is_angbands_town_size(void *state) {
 }
 
 
+
+/**
+ * The road on the ground is continuous across block boundaries (WLD-08).
+ *
+ * The block map says which blocks carry a road; the drawing turns that into
+ * grids, joining the middle of a block to the middle of each neighbouring block
+ * that carries one.  Those are two different things, and a road that is
+ * connected on the map but broken on the ground is no use for walking along --
+ * which is the whole point of it.  The stub drew every road block as an
+ * east-west line, which would have left a road that turns north as a column of
+ * disconnected dashes.
+ */
+static int test_the_road_is_continuous_on_the_ground(void *state) {
+	int size = z_info->wild_block_size;
+	int seams[2] = { 0, 0 }, broken = 0;
+	int axis;
+
+	/*
+	 * Both directions.  East-west alone proves nothing: the stub drew every
+	 * road block as a full east-west line, so it passed that check while
+	 * leaving a road that turns north as a column of disconnected dashes.
+	 */
+	for (axis = 0; axis < 2; axis++) {
+		int bx, by;
+
+		for (by = 1; by < wild->blocks - 2 && seams[axis] < 20; by++)
+			for (bx = 1; bx < wild->blocks - 2 && seams[axis] < 20; bx++) {
+				int nx = bx + (axis ? 0 : 1), ny = by + (axis ? 1 : 0);
+				struct loc offset;
+				struct chunk *c;
+				int k;
+				bool gap = false;
+
+				if (!wild_road_at(wild, bx, by)) continue;
+				if (!wild_road_at(wild, nx, ny)) continue;
+
+				/* A town or a dungeon mouth is drawn over the road on purpose. */
+				if (wild_block_at(wild, bx, by)->place) continue;
+				if (wild_block_at(wild, nx, ny)->place) continue;
+
+				c = wild_surface(wild, player,
+								 loc(bx * size + size, by * size + size),
+								 &offset);
+				notnull(c);
+
+				/* Walk from one block's middle to the next one's. */
+				for (k = 0; k <= size; k++) {
+					struct loc g = axis
+						? loc(bx * size + size / 2 - offset.x,
+							  by * size + size / 2 + k - offset.y)
+						: loc(bx * size + size / 2 + k - offset.x,
+							  by * size + size / 2 - offset.y);
+
+					if (!square_in_bounds_fully(c, g) ||
+						square(c, g)->feat != FEAT_ROAD) {
+						gap = true;
+						break;
+					}
+				}
+
+				cave_free(c);
+				seams[axis]++;
+
+				if (gap) {
+					broken++;
+					if (broken <= 3)
+						printf("the road breaks between blocks %d,%d and "
+							   "%d,%d (%s)\n", bx, by, nx, ny,
+							axis ? "north-south" : "east-west");
+				}
+			}
+	}
+
+	/* There has to be some road of each kind to have checked, and none broken. */
+	require(seams[0] > 3);
+	require(seams[1] > 3);
+	eq(broken, 0);
+
+	ok;
+}
+
+
+/**
+ * Every town and every dungeon can be walked to along roads (WLD-08, WLD-14).
+ *
+ * This is the property the world has to have for its size to be usable.  A
+ * dungeon nobody can find is a dungeon nobody uses -- and measurement said
+ * that was the case: before the mouths were given roads of their own, six of
+ * the thirteen happened to sit on one and the rest were between eleven and
+ * sixty-two blocks away, which is up to a thousand grids of open country to
+ * search with nothing to follow.
+ *
+ * Siting cannot fix that.  A dungeon stands in the kind of country it belongs
+ * in, and the deep ones belong a long way from any town.  So the road goes to
+ * them instead.
+ */
+static int test_roads_reach_every_place(void *state) {
+	int blocks = wild->blocks;
+	bool *seen = mem_zalloc(blocks * blocks * sizeof(*seen));
+	int *queue = mem_zalloc(blocks * blocks * sizeof(*queue));
+	int head = 0, tail = 0, i;
+	int start;
+
+	require(wild_town_count(wild) > 1);
+	require(wild_dungeon_count(wild) > 0);
+
+	/* Flood out from the village the character starts in, across roads only. */
+	start = wild->towns[0].block.y * blocks + wild->towns[0].block.x;
+	require(wild_road_at(wild, wild->towns[0].block.x, wild->towns[0].block.y));
+	seen[start] = true;
+	queue[tail++] = start;
+
+	while (head < tail) {
+		int node = queue[head++];
+		int bx = node % blocks, by = node / blocks;
+		static const int dx[4] = { -1, 1, 0, 0 };
+		static const int dy[4] = { 0, 0, -1, 1 };
+
+		for (i = 0; i < 4; i++) {
+			int nx = bx + dx[i], ny = by + dy[i], next;
+
+			if (!wild_road_at(wild, nx, ny)) continue;
+			next = ny * blocks + nx;
+			if (seen[next]) continue;
+			seen[next] = true;
+			queue[tail++] = next;
+		}
+	}
+
+	for (i = 0; i < wild_town_count(wild); i++) {
+		struct wild_town *town = &wild->towns[i];
+
+		if (!seen[town->block.y * blocks + town->block.x])
+			printf("town %d is not on the road network\n", i);
+		require(seen[town->block.y * blocks + town->block.x]);
+	}
+
+	for (i = 0; i < wild_dungeon_count(wild); i++) {
+		struct wild_dungeon *mouth = wild_dungeon_by_index(wild, i);
+		struct dun_type *ty = dun_type_by_index(mouth->type);
+
+		if (!seen[mouth->block.y * blocks + mouth->block.x])
+			printf("%s is not on the road network\n",
+				ty ? ty->name : "a dungeon");
+		require(seen[mouth->block.y * blocks + mouth->block.x]);
+	}
+
+	mem_free(queue);
+	mem_free(seen);
+
+	ok;
+}
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -2092,5 +2245,7 @@ struct test tests[] = {
 	{ "a-dungeon-can-always-be-populated", test_a_dungeon_can_always_be_populated },
 	{ "every-dungeon-claims-a-workable-share", test_every_dungeon_claims_a_workable_share },
 	{ "every-dungeon-can-be-entered-and-left", test_every_dungeon_can_be_entered_and_left },
+	{ "the-road-is-continuous-on-the-ground", test_the_road_is_continuous_on_the_ground },
+	{ "roads-reach-every-place", test_roads_reach_every_place },
 	{ NULL, NULL }
 };

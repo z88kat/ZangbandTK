@@ -101,13 +101,24 @@ mountain instead of over it. It keeps to the land, too -- if two towns end up on
 either side of an inland sea a causeway is built, but that is the exception, not
 a short cut across every bay.
 
-Every town is on the network. The roads are laid as a spanning tree over the
-towns first, so there is always a road out of your home village, and following
-roads from it reaches every other town in the world. On top of that, any two
-towns within thirty blocks of each other get a road directly between them, so
-settled country ends up with a network rather than a single thread.
+Every town **and every dungeon** is on the network. The roads are laid as a
+spanning tree over the towns first, so there is always a road out of your home
+village and following it reaches every other town. Any two towns within thirty
+blocks of each other then get a road directly between them, so settled country
+ends up with a network rather than a single thread. Finally every dungeon mouth
+gets a spur to the nearest town.
 
-If you are lost, find a road and walk along it. It goes somewhere.
+That last part is not decoration. Measured before it existed, six of the thirteen
+dungeon mouths happened to sit on a road and the rest were between eleven and
+sixty-two blocks from one — up to a thousand grids of open country to search with
+nothing to follow. Better siting cannot fix it: a dungeon stands in the kind of
+country it belongs in, and the deep ones belong a long way from any town. So the
+road goes to them instead.
+
+About three per cent of the world is road.
+
+If you are lost, find a road and walk along it. It goes somewhere — a town, or a
+way down.
 
 Finding your way
 ----------------

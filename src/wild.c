@@ -1155,12 +1155,6 @@ static int wild_dungeon_score(struct wilderness *w, int bx, int by,
 	score -= ABS((int) block->pop - (int) type->pop);
 	score -= ABS((int) block->hgt - (int) type->height);
 
-	/*
-	 * A road past the door is worth something: a dungeon nobody can find is a
-	 * dungeon nobody uses, and the roads are how the world is navigated.
-	 */
-	if (block->info & WILD_INFO_ROAD) score += 120;
-
 	return score;
 }
 
@@ -1544,6 +1538,39 @@ static void wild_place_roads(struct wilderness *w)
 							  w->towns[j].block);
 		}
 
+	/*
+	 * And a spur to every dungeon mouth.
+	 *
+	 * Measured before this existed: six of the thirteen mouths happened to sit
+	 * on a road and the rest were between eleven and sixty-two blocks from one
+	 * -- up to a thousand grids of open country to search with nothing to
+	 * follow.  Since a dungeon is sited by the kind of country it belongs in,
+	 * and the deep ones belong in empty country a long way from any town, that
+	 * is not something better siting can fix.  A road to the door can.
+	 *
+	 * Routed to the nearest town rather than to the nearest road: blocks that
+	 * already carry a road cost almost nothing to cross, so the spur runs to
+	 * the network by the shortest way and then follows it, which is the same
+	 * answer without having to search for the road first.
+	 */
+	for (i = 0; i < w->dungeon_count; i++) {
+		struct loc mouth = w->dungeons[i].block;
+		int best = -1, nearest = 0;
+
+		for (j = 0; j < n; j++) {
+			int d = MAX(ABS(w->towns[j].block.x - mouth.x),
+						ABS(w->towns[j].block.y - mouth.y));
+
+			if (best < 0 || d < nearest) {
+				nearest = d;
+				best = j;
+			}
+		}
+
+		if (best >= 0)
+			wild_lay_road(w, &scratch, w->towns[best].block, mouth);
+	}
+
 	mem_free(scratch.hcost);
 	mem_free(scratch.hnode);
 	mem_free(scratch.done);
@@ -1655,9 +1682,14 @@ void wild_generate(struct wilderness *w)
 	wild_place_rivers(w);
 	wild_place_lakes(w);
 
+	/*
+	 * Towns, then the dungeons that open between them, then the roads that
+	 * join all of it up.  The roads go last because they are laid to reach the
+	 * places -- a dungeon mouth nobody can find is a dungeon nobody uses.
+	 */
 	wild_place_towns(w);
-	wild_place_roads(w);
 	wild_place_dungeons(w);
+	wild_place_roads(w);
 
 	Rand_quick = false;
 

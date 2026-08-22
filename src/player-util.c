@@ -123,9 +123,9 @@ int dungeon_get_next_level(struct player *p, int dlev, int added)
  */
 const struct dun_type *player_dungeon_at_stairs(struct player *p)
 {
-	struct loc world = loc(p->grid.x + p->wild_offset.x,
+	struct loc wgrid = loc(p->grid.x + p->wild_offset.x,
 						   p->grid.y + p->wild_offset.y);
-	int idx = wild_dungeon_at(wild, world);
+	int idx = wild_dungeon_at(wild, wgrid);
 
 	if (idx >= 0) {
 		struct wild_dungeon *mouth = wild_dungeon_by_index(wild, idx);

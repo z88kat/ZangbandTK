@@ -34,11 +34,15 @@ Finding one
 -----------
 
 A dungeon's mouth is drawn as a '>' out in the open country, like any
-staircase.  Most of them open on or near a road, so following roads is how
-you find them; they show on the world map ('M') once you have been near them.
+staircase.  Every one of them has a road to its door, so following roads is
+how you find them; they show on the world map ('M') once you have been near
+them, in red.
 
 Where a dungeon opens follows from the country around it.  The Caverns of
-Kolvir open high in settled land; the Abyss opens in empty lowland.
+Kolvir open high in settled land; the Abyss opens in empty lowland, which is
+a long way from anywhere -- so the road to it is long, but it is there.
+
+Follow a road far enough and it ends at a town or at a dungeon.
 
 
 The dungeons
