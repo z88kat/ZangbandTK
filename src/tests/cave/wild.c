@@ -576,6 +576,108 @@ static int test_roads_avoid_bad_ground(void *state) {
 	ok;
 }
 
+
+/**
+ * Towns differ in who lives in them, and the starting one never does (WLD-11).
+ *
+ * Zangband declared six kinds of inhabitant and implemented three; the elves,
+ * dwarves and lizardfolk appear once each in its whole source, in their own
+ * #define, and nowhere else.  What is here is the three it gave behaviour to
+ * plus beasts, which is both what its code supports and what DEC-30 asks for --
+ * the three it named and never built are the generic fantasy the game is being
+ * steered away from.
+ *
+ * Measured over twenty worlds, 240 towns: villagers 148, beasts 57, monsters
+ * 24, abandoned 11.
+ */
+static int test_towns_differ_in_who_lives_there(void *state) {
+	int tally[WILD_FOLK_MAX];
+	int seed, i, towns = 0;
+
+	for (i = 0; i < WILD_FOLK_MAX; i++) tally[i] = 0;
+
+	for (seed = 1; seed <= 20; seed++) {
+		struct wilderness *w = wild_new(129, seed * 7717);
+
+		wild_generate(w);
+		require(w->town_count > 0);
+
+		/*
+		 * The character's own village always has people in it.  Not a matter of
+		 * odds: WLD-12 says the opening must not depend on procedural luck.
+		 */
+		if (w->towns[0].folk != WILD_FOLK_VILLAGER)
+			printf("world %d starts the character in a %s town\n", seed,
+				wild_folk_name(w->towns[0].folk));
+		eq(w->towns[0].folk, WILD_FOLK_VILLAGER);
+
+		for (i = 0; i < w->town_count; i++) {
+			require(w->towns[i].folk < WILD_FOLK_MAX);
+			tally[w->towns[i].folk]++;
+			towns++;
+		}
+
+		wild_free(w);
+	}
+
+	require(towns > 100);
+
+	/* Every kind occurs: a kind that never happens is dead code. */
+	for (i = 0; i < WILD_FOLK_MAX; i++) {
+		if (!tally[i])
+			printf("no town anywhere is %s\n", wild_folk_name(i));
+		require(tally[i] > 0);
+	}
+
+	/* Most towns are ordinary ones. */
+	require(tally[WILD_FOLK_VILLAGER] * 2 > towns);
+
+	/*
+	 * And the ones that are not are the minority they should be.  A third of
+	 * the world's towns held by monsters -- which is what the first threshold
+	 * gave -- means a third of the player's shopping is a fight.
+	 */
+	require(tally[WILD_FOLK_MONSTER] * 4 < towns);
+	require(tally[WILD_FOLK_ABANDONED] * 8 < towns);
+
+	ok;
+}
+
+/**
+ * A great city holds out where a hamlet does not (WLD-11).
+ *
+ * Which is the obvious reading, and also the one that costs the player least:
+ * losing a village of four trades is a nuisance, losing the only great city
+ * within reach takes the magic shop and the black market with it.
+ */
+static int test_bigger_towns_are_harder_to_take(void *state) {
+	int taken[4] = { 0, 0, 0, 0 }, total[4] = { 0, 0, 0, 0 };
+	int seed, i;
+
+	for (seed = 1; seed <= 25; seed++) {
+		struct wilderness *w = wild_new(129, seed * 4409);
+
+		wild_generate(w);
+
+		/* Skip town zero: it is villagers by fiat, not by country. */
+		for (i = 1; i < w->town_count; i++) {
+			total[w->towns[i].band]++;
+			if (w->towns[i].folk == WILD_FOLK_MONSTER)
+				taken[w->towns[i].band]++;
+		}
+
+		wild_free(w);
+	}
+
+	/* Villages are taken; great cities much less often. */
+	require(total[0] > 20);
+	require(total[3] > 20);
+	require(taken[0] > 0);
+	require(taken[0] * total[3] > taken[3] * total[0]);
+
+	ok;
+}
+
 const char *suite_name = "cave/wild";
 struct test tests[] = {
 	{ "generation is deterministic", test_generation_is_deterministic },
@@ -592,5 +694,7 @@ struct test tests[] = {
 	{ "trades vary between places", test_trades_vary_between_places },
 	{ "roads join every town", test_roads_join_every_town },
 	{ "roads avoid bad ground", test_roads_avoid_bad_ground },
+	{ "towns differ in who lives there", test_towns_differ_in_who_lives_there },
+	{ "bigger towns are harder to take", test_bigger_towns_are_harder_to_take },
 	{ NULL, NULL }
 };

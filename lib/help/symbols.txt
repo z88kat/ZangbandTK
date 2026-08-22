@@ -74,6 +74,12 @@ A '>' out in the open is the mouth of one of the world's dungeons rather than
 an ordinary staircase.  Each leads somewhere different and only so deep; see
 'dungeons.txt'.
 
+Not every town has people in it.  Most do; about one in four has been emptied
+and taken back by animals, one in ten is held by monsters, and one in twenty
+stands empty with its shops still in it.  Law decides it: a town in country
+nobody polices has more often than not fallen, and a large town holds out
+longer than a hamlet.  Your own village always has people in it.
+
 Towns stand behind walls, with gates no more than two grids wide.  A gate is
 a closed door ('+') in the wall; open it to pass through, and it will swing
 shut behind you after a while.

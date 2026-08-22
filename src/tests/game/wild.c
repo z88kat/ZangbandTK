@@ -2201,6 +2201,100 @@ static int test_roads_reach_every_place(void *state) {
 	ok;
 }
 
+
+/** Count the monsters standing in town zero, by what kind of thing they are. */
+static void folk_tally(int *people, int *beasts, int *others) {
+	struct loc org = loc(wild_town_origin(wild).x - player->wild_offset.x,
+						 wild_town_origin(wild).y - player->wild_offset.y);
+	struct loc grid;
+
+	*people = 0;
+	*beasts = 0;
+	*others = 0;
+
+	for (grid.y = org.y; grid.y < org.y + wild->towns[0].hgt; grid.y++)
+		for (grid.x = org.x; grid.x < org.x + wild->towns[0].wid; grid.x++) {
+			struct monster *mon;
+			const char *base;
+
+			if (!square_in_bounds_fully(cave, grid)) continue;
+
+			mon = square_monster(cave, grid);
+			if (!mon || !mon->race || !mon->race->base) continue;
+
+			base = mon->race->base->name;
+
+			if (streq(base, "townsfolk") || streq(base, "person") ||
+				streq(base, "humanoid"))
+				++*people;
+			else if (rf_has(mon->race->flags, RF_ANIMAL))
+				++*beasts;
+			else
+				++*others;
+		}
+}
+
+/**
+ * Who is put in a town's streets follows who lives there (WLD-11).
+ *
+ * Tested by changing what town zero is and filling it again, because town zero
+ * is the only town reliably inside the live window and it is villagers by fiat.
+ *
+ * Note what is *not* tested: that a villager town contains no animals at all.
+ * It does contain some, and correctly -- Angband's filthy street urchin carries
+ * "friends:50:2d1:Scrawny cat" and "friends:50:2d1:Scruffy little dog", and
+ * named companions are placed by name rather than drawn from the allocator, so
+ * no filter reaches them.  Urchins with a stray cat and a scruffy dog is the
+ * game's own joke and belongs in a village.  Measured either way, a villager
+ * town comes out with about seventy people and somewhere between nought and
+ * thirteen animals whether the filter is applied or not, so purity would have
+ * been a test that agreed with a filter that did nothing.
+ */
+static int test_a_towns_streets_follow_its_inhabitants(void *state) {
+	int was = wild->towns[0].folk;
+	int p0, b0, o0, p1, b1, o1, i;
+
+	eq(was, WILD_FOLK_VILLAGER);
+
+	/* Villagers: filling the streets adds people. */
+	folk_tally(&p0, &b0, &o0);
+	for (i = 0; i < 8; i++)
+		wild_town_people(wild, player, cave, player->wild_offset);
+	folk_tally(&p1, &b1, &o1);
+
+	require(p1 - p0 > 10);
+	require(p1 - p0 > b1 - b0);
+
+	/* Beasts: filling them adds animals, and hardly any people. */
+	wild->towns[0].folk = WILD_FOLK_BEAST;
+	folk_tally(&p0, &b0, &o0);
+	for (i = 0; i < 8; i++)
+		wild_town_people(wild, player, cave, player->wild_offset);
+	folk_tally(&p1, &b1, &o1);
+
+	if (b1 - b0 <= p1 - p0)
+		printf("a beast town gained %d animals and %d people\n",
+			b1 - b0, p1 - p0);
+
+	require(b1 - b0 > 10);
+	require(b1 - b0 > (p1 - p0) * 2);
+
+	/* Abandoned: filling them adds nobody. */
+	wild->towns[0].folk = WILD_FOLK_ABANDONED;
+	folk_tally(&p0, &b0, &o0);
+	for (i = 0; i < 8; i++)
+		wild_town_people(wild, player, cave, player->wild_offset);
+	folk_tally(&p1, &b1, &o1);
+
+	eq(p1, p0);
+	eq(b1, b0);
+	eq(o1, o0);
+
+	wild->towns[0].folk = was;
+
+	ok;
+}
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -2210,6 +2304,7 @@ struct test tests[] = {
 	{ "the-surface-is-bounded", test_the_surface_is_bounded },
 	{ "only-the-town-is-known", test_only_the_town_is_known },
 	{ "the-town-has-people", test_the_town_has_people },
+	{ "a-towns-streets-follow-its-inhabitants", test_a_towns_streets_follow_its_inhabitants },
 	{ "the-town-holds-the-trades-it-was-given", test_the_town_holds_the_trades_it_was_given },
 	{ "a-large-town-is-built", test_a_large_town_is_built },
 	{ "a-distant-town-is-drawn", test_a_distant_town_is_drawn },

@@ -704,7 +704,7 @@ static void wild_town_extent(int *bw, int *bh)
 {
 	struct wild_town biggest = { { 0, 0 },
 		wild_town_bands[WILD_TOWN_BANDS - 1].wid,
-		wild_town_bands[WILD_TOWN_BANDS - 1].hgt, 0, 0 };
+		wild_town_bands[WILD_TOWN_BANDS - 1].hgt, 0, 0, 0 };
 
 	wild_town_extent_of(&biggest, bw, bh);
 }
@@ -908,6 +908,69 @@ static void wild_town_claim(struct wilderness *w, const struct wild_town *town)
 }
 
 /**
+ * Who lives in the town on this block (WLD-11).
+ *
+ * Law decides it, mostly.  A town needs settled country to stand in at all, so
+ * every site has some law to it -- but the range across the towns of a world
+ * runs from about 170 to 255, and the bottom of that is country nobody is
+ * policing.  A town there has more often than not been taken.
+ *
+ * Population is the second axis, as it is for the trades: a place the land can
+ * barely support is a place the animals get back.
+ *
+ * The starting village is always villagers.  WLD-12 says the opening should not
+ * depend on procedural luck, and beginning in a town held by monsters is the
+ * worst luck the world could deal.
+ */
+static int wild_town_folk(struct wilderness *w, int bx, int by, bool starting,
+						  int band)
+{
+	struct wild_block *block = wild_block_at(w, bx, by);
+	uint32_t seed = wild_block_seed(w, bx, by);
+	int law = block ? block->law : 255;
+	int pop = block ? block->pop : 128;
+
+	if (starting || !block)
+		return WILD_FOLK_VILLAGER;
+
+	/*
+	 * Lawless country: the town is held by whatever took it.  A larger place
+	 * holds out longer -- a great city can defend itself where a hamlet cannot
+	 * -- which is both the obvious reading and the one that costs the player
+	 * less: losing a village of four trades is a nuisance, losing the only
+	 * great city within reach is the black market and the magic shop gone.
+	 */
+	if (law < 185 - band * 15)
+		return WILD_FOLK_MONSTER;
+
+	/*
+	 * Or emptied entirely.  Rare, and not tied to either axis: a town stands
+	 * empty for reasons the parameter space does not carry -- a plague, a war,
+	 * a shadow that went wrong -- so it is drawn from the block's own seed.
+	 */
+	if (((seed >> 9) & 15) == 0)
+		return WILD_FOLK_ABANDONED;
+
+	/* Thinly peopled country: emptied once, and the animals moved back in. */
+	if (pop < 110)
+		return WILD_FOLK_BEAST;
+
+	return WILD_FOLK_VILLAGER;
+}
+
+/** What to call a town's inhabitants, for the manual and for tests. */
+const char *wild_folk_name(int folk)
+{
+	switch (folk) {
+		case WILD_FOLK_VILLAGER:  return "villagers";
+		case WILD_FOLK_BEAST:     return "beasts";
+		case WILD_FOLK_MONSTER:   return "monsters";
+		case WILD_FOLK_ABANDONED: return "abandoned";
+		default:                  return "?";
+	}
+}
+
+/**
  * Put the towns on the map (WLD-10, WLD-11, WLD-12).
  *
  * The village goes first and gets the best doorstep the world has, because that
@@ -982,6 +1045,8 @@ static void wild_place_towns(struct wilderness *w)
 			placed->stores = (w->town_count == 0) ? WILD_VILLAGE_STORES
 				: wild_town_stores(w, placed->block.x, placed->block.y,
 								   placed->band);
+			placed->folk = wild_town_folk(w, placed->block.x, placed->block.y,
+										  w->town_count == 0, placed->band);
 			wild_town_claim(w, placed);
 			w->town_count++;
 		}
@@ -1000,6 +1065,7 @@ static void wild_place_towns(struct wilderness *w)
 		w->towns[0].hgt = wild_town_bands[0].hgt;
 		w->towns[0].band = 0;
 		w->towns[0].stores = WILD_VILLAGE_STORES;
+		w->towns[0].folk = WILD_FOLK_VILLAGER;
 
 		/*
 		 * Inside the same margin the placement loop above keeps.  Without it a
@@ -2265,6 +2331,56 @@ void wild_town_known(struct wilderness *w, struct player *p, struct chunk *c,
 }
 
 /**
+ * Which inhabitants wild_town_people() is placing just now.
+ *
+ * Global because get_mon_num_prep() takes a bare function pointer, which is how
+ * the wilderness monster filter works too.
+ */
+static int wild_folk_wanted = WILD_FOLK_VILLAGER;
+
+/**
+ * Would this monster be found living in a town of the current kind (WLD-11)?
+ */
+static bool wild_folk_ok(struct monster_race *race)
+{
+	if (!race || !race->base)
+		return false;
+
+	/* Nothing may be the only copy of itself: uniques are not street life. */
+	if (rf_has(race->flags, RF_UNIQUE))
+		return false;
+
+	switch (wild_folk_wanted) {
+		case WILD_FOLK_VILLAGER:
+			/*
+			 * People.  Angband's town list is almost all one base, so this is
+			 * mostly a matter of excluding the animals that share it -- and the
+			 * beggars, drunks and merchants are exactly the crowd that was
+			 * being lost before WLD-24 put them back.
+			 */
+			return streq(race->base->name, "townsfolk") ||
+				   streq(race->base->name, "person") ||
+				   streq(race->base->name, "humanoid");
+
+		case WILD_FOLK_BEAST:
+			return rf_has(race->flags, RF_ANIMAL) ||
+				   streq(race->base->name, "feline") ||
+				   streq(race->base->name, "canine") ||
+				   streq(race->base->name, "bird") ||
+				   streq(race->base->name, "rodent") ||
+				   streq(race->base->name, "quadruped");
+
+		case WILD_FOLK_MONSTER:
+			/* Anything that is not a person, and would not be missed. */
+			return !streq(race->base->name, "townsfolk") &&
+				   !streq(race->base->name, "person");
+
+		default:
+			return false;
+	}
+}
+
+/**
  * Put the townspeople back on the streets (WLD-24).
  *
  * Angband's town_gen() places its residents itself, and the surface never calls
@@ -2293,15 +2409,40 @@ void wild_town_people(struct wilderness *w, struct player *p, struct chunk *c,
 							 wild_town_origin_of(w, idx).y - offset.y);
 		int wid = w->towns[idx].wid, hgt = w->towns[idx].hgt;
 		int placed = 0, tries = 0;
-		int want;
+		int want, depth = 0;
 
 		/* Only when the town is actually on the live surface. */
 		if (org.x + wid <= 0 || org.x >= c->width ||
 			org.y + hgt <= 0 || org.y >= c->height)
 			continue;
 
+		/*
+		 * A town nobody lives in has nobody in its streets (WLD-11).
+		 *
+		 * Not what empties it -- wild_folk_ok() accepts nothing for an
+		 * abandoned town, so the loop below would place nobody in any case.
+		 * This saves it several hundred failed attempts at doing so.
+		 */
+		if (w->towns[idx].folk == WILD_FOLK_ABANDONED)
+			continue;
+
 		/* A city has more people in its streets than a village does. */
 		want = residents + residents * w->towns[idx].band / 2;
+
+		/*
+		 * A town held by monsters is not held by many of them, and they are
+		 * dangerous rather than numerous.  Drawn from the depth the country
+		 * around the town would give, so a monster town in mild country is a
+		 * milder one.
+		 */
+		if (w->towns[idx].folk == WILD_FOLK_MONSTER) {
+			want = 1 + want / 3;
+			depth = MAX(1, wild_danger(w, w->towns[idx].block.x,
+									   w->towns[idx].block.y));
+		}
+
+		wild_folk_wanted = w->towns[idx].folk;
+		get_mon_num_prep(wild_folk_ok);
 
 		while (placed < want && tries < want * 50) {
 			struct loc grid = loc(org.x + randint0(wid),
@@ -2315,9 +2456,15 @@ void wild_town_people(struct wilderness *w, struct player *p, struct chunk *c,
 			/* Not on the doorstep: leave the player room to arrive. */
 			if (distance(grid, p->grid) < 3) continue;
 
-			if (pick_and_place_monster(c, grid, 0, true, true, ORIGIN_DROP))
+			if (pick_and_place_monster(c, grid, depth, true, true, ORIGIN_DROP))
 				placed++;
 		}
+
+		/*
+		 * Put the allocation table back before the next town, and before
+		 * anything else asks it for a monster.
+		 */
+		get_mon_num_prep(NULL);
 	}
 }
 

@@ -82,6 +82,47 @@ spellbook, since no class starts with one.
 It has no armoury and no weaponsmith. Those are in the next town along, and
 finding them is the first thing the world asks of you.
 
+Who lives there
+---------------
+
+A town is not always people.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 14 66
+
+   * - Inhabitants
+     - How often
+     - What you find
+   * - Villagers
+     - about 3 in 5
+     - Beggars, drunks, merchants, mercenaries, the odd rogue. An ordinary town.
+   * - Beasts
+     - about 1 in 4
+     - Emptied once, and the animals moved back in. The shops still stand.
+   * - Monsters
+     - about 1 in 10
+     - Taken, and still held. Fewer of them than a town has people, and
+       dangerous in proportion to the country around it.
+   * - Abandoned
+     - about 1 in 20
+     - Nobody at all. The streets and the shops are exactly as they were.
+
+Law decides it, mostly — a town in country nobody polices has more often than
+not been taken — with population second: land that can barely support a town is
+land the animals get back. A **larger town holds out longer**, so a great city is
+much less likely to have fallen than a hamlet, which is both the obvious reading
+and the one that costs you least: a village of four trades is a nuisance to lose,
+the only great city within reach takes the magic shop and the black market with
+it.
+
+Your home village always has people in it. That is fixed rather than rolled: the
+opening should not depend on luck.
+
+A town that has been taken still trades. Its shops are doors in walls rather than
+shopkeepers, so you can walk in past whatever is holding the place — which is
+either a convenience or an oddity depending on how you look at it.
+
 Walls and gates
 ---------------
 

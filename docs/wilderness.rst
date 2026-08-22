@@ -300,11 +300,15 @@ What is not here yet
 Stated plainly, because a manual that only describes what works is not much use
 for judging what to expect:
 
-**Towns have no inhabitants of their own kind.** A village and a great city
-differ in size and in the trades they keep, but the people in the streets are
-drawn from the same list. Zangband's six kinds of townsfolk — villagers, elves,
-dwarves, lizardfolk, monsters, and towns simply abandoned — are the rest of
-milestone M5, along with the buildings and services that go in them.
+**Towns have no buildings of their own beyond shops.** A village and a great city
+differ in size, in the trades they keep and in who lives in them (see
+:doc:`towns`), but neither has anything to visit that is not a shop. Zangband's
+services — the magetower's teleport network, the enchanter, the recharger, the
+healer, the inn — are the rest of milestone M5.
+
+Of Zangband's six kinds of townsfolk, four are built and two of the others were
+never built by Zangband either: the elf, dwarf and lizardfolk types exist in its
+source only as unused constants (DEC-31).
 
 **Dungeon character is broad rather than particular.** Each dungeon has its own
 depth range, floor, shape, inhabitants and kind of treasure (see :doc:`dungeon`),

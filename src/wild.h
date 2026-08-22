@@ -152,6 +152,29 @@ enum {
 };
 
 /**
+ * Who lives in a town (WLD-11).
+ *
+ * Zangband declared six kinds -- villager, elves, dwarf, lizard, monster,
+ * abandoned -- and implemented three.  TOWN_MONST_ELVES, _DWARF and _LIZARD
+ * appear exactly once each in the whole of its source, in their own #define,
+ * and are referenced nowhere else; every ordinary town it built was a villager
+ * town.  So the taxonomy the requirement calls a reference was three unused
+ * constants -- and under DEC-30 they are also the generic fantasy filler the
+ * game is being steered away from rather than towards.
+ *
+ * What is here instead: the three Zangband gave behaviour to, and beasts in
+ * place of the three it did not.  A shadow of Amber standing empty, or with
+ * something living in it that should not be, is what the books are full of.
+ */
+enum wild_folk {
+	WILD_FOLK_VILLAGER = 0,	/**< People, going about their business */
+	WILD_FOLK_BEAST,		/**< Emptied once, and the animals moved in */
+	WILD_FOLK_MONSTER,		/**< Taken, and still held */
+	WILD_FOLK_ABANDONED,	/**< Nobody at all */
+	WILD_FOLK_MAX
+};
+
+/**
  * A dungeon's mouth, somewhere in the world (WLD-14).
  *
  * The dungeon itself is defined in dungeon.txt; this is only where the way in
@@ -169,6 +192,7 @@ struct wild_town {
 	uint16_t wid, hgt;	/**< Its size, in grids */
 	uint16_t stores;	/**< Bit per store index: which ones it holds */
 	uint8_t band;		/**< 0 village, 1 town, 2 city, 3 great city */
+	uint8_t folk;		/**< enum wild_folk: who lives there (WLD-11) */
 };
 
 /**
@@ -212,6 +236,7 @@ void wild_mark_seen(struct wilderness *w, struct loc grid);
 bool wild_seen(struct wilderness *w, int x, int y);
 bool wild_in_town(struct wilderness *w, int bx, int by);
 bool wild_road_at(struct wilderness *w, int bx, int by);
+const char *wild_folk_name(int folk);
 int wild_dungeon_count(const struct wilderness *w);
 int wild_dungeon_at(struct wilderness *w, struct loc grid);
 bool wild_dungeon_in_block(struct wilderness *w, int bx, int by);

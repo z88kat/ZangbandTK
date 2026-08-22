@@ -27,11 +27,15 @@ build for each platform, and the source:
 
 .. _Releases page: https://github.com/z88kat/ZangbandTK/releases
 
-The first release is **3.1.1**, from 18 August 2026. It was cut before the
-Windows builds were packaged, so it holds the disk image and the source archive
-only; the zips appear from the release after it. The 32-bit zip was named
-``-win.zip`` for one release before the 64-bit build arrived and both were named
-for their architecture.
+Take the newest release on that page. The :doc:`release log <releases>` says what
+each version changed, and the game is moving quickly enough that the difference
+between two of them is worth reading.
+
+Two notes for anyone reaching for an older one. The first release, **3.1.1** from
+18 August 2026, was cut before the Windows builds were packaged, so it carries the
+disk image and the source archive and nothing else. And for one release after that
+the 32-bit zip was named ``-win.zip``, before the 64-bit build arrived and both
+were named for their architecture.
 
 Every release is marked a **pre-release**, and will be for as long as the game is
 early. CI builds, signs and verifies each one, but no version is played through
@@ -39,9 +43,12 @@ before it is tagged: there are known bugs and unfinished features, and the badge
 on the Releases page says so before you download rather than after.
 
 The disk image requires **macOS on Apple Silicon**. Intel Macs are not
-supported; they reach legacy status in September 2026. The Windows zip is built
-and packaged by CI but nobody plays the game on Windows here, so read `Other
-platforms`_ before you rely on it.
+supported; they reach legacy status in September 2026.
+
+The Windows, Linux and Nintendo builds are built, packaged and smoke-tested by
+CI, but the game is developed and played on macOS here and none of the others is
+played through before a release is tagged. Read `Other platforms`_ before you rely
+on one.
 
 The rest of this page is macOS. Mount the image and drag ``ZangbandTK.app``
 wherever you keep applications.

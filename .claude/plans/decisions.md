@@ -747,6 +747,56 @@ is covered by some dungeon.
 > village staircase.
 
 
+**DEC-31 — Zangband's six town inhabitant types were three unused constants.
+Four kinds are built instead, and the three it never wrote are dropped.**
+
+WLD-11 calls Zangband's six kinds of townsfolk -- villager, elves, dwarf,
+lizard, monster, abandoned -- "the reference taxonomy". Reading the source
+before building it: `TOWN_MONST_ELVES`, `TOWN_MONST_DWARF` and
+`TOWN_MONST_LIZARD` appear **exactly once each in the whole of Zangband**, in
+their own `#define` in [wild.h](../../archive/zangband/src/wild.h#L61), and are
+referenced nowhere else. `set_mon_wild_values()`
+([wild1.c:3092](../../archive/zangband/src/wild1.c#L3092)) opens with *"This
+function is very rudimentary at the moment"*, handles villager, abandoned and
+monster, and carries the comment *"Add in other probabilities in here for the
+other TOWN_MONST_XXX types"*. Every ordinary town it placed was a villager
+town.
+
+So the taxonomy was a plan, not a feature. This is the same shape as the Chaos
+Tower under WLD-16c: documented or declared, never implemented, and the
+requirement inherited the declaration rather than the behaviour.
+
+*What is built.* Four kinds. The three Zangband gave behaviour to --
+**villagers**, **monsters**, **abandoned** -- and **beasts** in place of the
+three it did not: a town emptied once, with the animals moved back into it.
+
+*Why beasts rather than the elves and dwarves.* Two reasons that agree.
+Mechanically, 4.2 has no town-level elves, dwarves or lizardfolk to draw on --
+the level-zero pool is 25 monsters, 19 of them one `townsfolk` base, with a
+single elf that is a Christmas joke -- so those three kinds would need a
+content import before they meant anything. And under DEC-30 they are precisely
+the generic fantasy the game is being steered away from: a town of dwarves is
+Tolkien furniture, where a shadow of Amber standing empty, or holding something
+that should not be there, is what the novels are full of.
+
+*Measured, and tuned once on the measurement.* Law decides it mostly, with
+population second and a seeded roll for the empty ones. The first thresholds
+gave 32% monster towns over twenty worlds, which means a third of the player's
+shopping is a fight, and it took great cities as readily as hamlets. Scaling
+the threshold by size band -- a great city holds out where a hamlet cannot --
+gives villagers 62%, beasts 24%, monsters 10%, abandoned 5%, and leaves the
+places that carry the magic shop and the black market standing.
+
+*The starting village is always villagers*, by fiat, per WLD-12: the opening
+must not depend on procedural luck, and beginning in a town held by monsters is
+the worst luck the world could deal.
+
+*Known gap, recorded rather than hidden.* A town held by monsters still trades.
+Its shops are terrain with an action behind them, not people, so walking in
+past the monsters works. Whether a taken town should refuse to sell is a
+question for WLD-17 when the store system is next opened.
+
+
 Nothing is currently blocked. All questions raised during Phase 1 planning are resolved or
 explicitly scheduled below.
 

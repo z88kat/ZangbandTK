@@ -31,6 +31,12 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 21 August 2026
 ----------------------------------------------------------------
 
+- **3.9.0** — Towns differ in who lives in them (WLD-11): about three in five
+  have people, one in four has been emptied and taken back by animals, one in ten
+  is held by monsters, and one in twenty stands empty with its shops intact. Law
+  decides it, and a large town holds out longer than a hamlet. Your home village
+  always has people in it. The download page also caught up with the fact that
+  there are Windows, Linux and Nintendo builds now, not just a macOS image.
 - **3.8.0** — Every dungeon mouth now has a road to its door. Six of the thirteen
   happened to sit on one; the rest were between eleven and sixty-two blocks away,
   which is up to a thousand grids of open country to search with nothing to

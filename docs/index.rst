@@ -55,8 +55,8 @@ Start here
       :link: download
       :link-type: doc
 
-      3.1.1 as a disk image for macOS, or two commands to build it from source,
-      and what to know before you start.
+      A disk image for macOS, zips for Windows, an AppImage for Linux — or two
+      commands to build it from source.
 
    .. grid-item-card:: Documentation
       :link: documentation
@@ -69,8 +69,8 @@ Start here
       :link: releases
       :link-type: doc
 
-      The first release is 3.1.1. The log runs by milestone: M0 to M4 are
-      complete, and M5 is under way.
+      What changed in each version, by milestone. M0 to M4 are complete and M5
+      is under way.
 
 
 What makes it Zangband
