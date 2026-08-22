@@ -704,7 +704,7 @@ static void wild_town_extent(int *bw, int *bh)
 {
 	struct wild_town biggest = { { 0, 0 },
 		wild_town_bands[WILD_TOWN_BANDS - 1].wid,
-		wild_town_bands[WILD_TOWN_BANDS - 1].hgt, 0, 0, 0, NULL };
+		wild_town_bands[WILD_TOWN_BANDS - 1].hgt, 0, 0, 0, NULL, 0, 0 };
 
 	wild_town_extent_of(&biggest, bw, bh);
 }
@@ -971,6 +971,38 @@ const char *wild_folk_name(int folk)
 }
 
 /**
+ * Which services a town keeps (WLD-15, WLD-16).
+ *
+ * The same idea the trades are chosen by: score the building against the country
+ * and the size of the place.  A magetower is the work of people with the leisure
+ * and the order to build one, so it wants population and law both -- and it is
+ * no use in a town nobody can reach, which is why the smallest band never has
+ * one.  A town that has fallen has one only in the sense that the building is
+ * still standing.
+ */
+static uint16_t wild_town_services(struct wilderness *w, int bx, int by,
+								   int band, int folk)
+{
+	struct wild_block *block = wild_block_at(w, bx, by);
+	uint16_t held = 0;
+	int score;
+
+	if (!block || band < 1)
+		return 0;
+
+	/* Nobody is running a teleport network out of a town held by monsters. */
+	if (folk == WILD_FOLK_MONSTER || folk == WILD_FOLK_ABANDONED)
+		return 0;
+
+	score = block->pop / 3 + block->law / 4 + band * 20;
+
+	if (score > 130)
+		held |= 1u << WILD_SERVICE_MAGETOWER;
+
+	return held;
+}
+
+/**
  * Put the towns on the map (WLD-10, WLD-11, WLD-12).
  *
  * The village goes first and gets the best doorstep the world has, because that
@@ -1047,6 +1079,9 @@ static void wild_place_towns(struct wilderness *w)
 								   placed->band);
 			placed->folk = wild_town_folk(w, placed->block.x, placed->block.y,
 										  w->town_count == 0, placed->band);
+			placed->services = wild_town_services(w, placed->block.x,
+												  placed->block.y,
+												  placed->band, placed->folk);
 			wild_town_claim(w, placed);
 			w->town_count++;
 		}
@@ -1172,6 +1207,7 @@ int wild_town_at(struct wilderness *w, int bx, int by)
 
 	return -1;
 }
+
 
 /**
  * Give the towns their names (WLD-11).
@@ -1434,6 +1470,39 @@ int wild_town_here(struct wilderness *w, struct loc grid)
 	}
 
 	return -1;
+}
+
+/**
+ * Note that the player has been inside this town (WLD-16c).
+ *
+ * The magetower carries people between places they already know, so it needs to
+ * know which those are.  For a town that means having stood in it -- seeing it
+ * across a field is not the same as having been there, and the first crossing
+ * of the world should stay worth making.
+ */
+void wild_note_visit(struct wilderness *w, struct loc grid)
+{
+	int idx = wild_town_here(w, grid);
+
+	if (idx >= 0)
+		w->towns[idx].visited = 1;
+}
+
+/**
+ * Has the player found this dungeon's mouth (WLD-16c)?
+ *
+ * Seeing it is enough, which is a lower bar than a town asks -- a mouth is a
+ * staircase in a field and there is nothing to be inside of.  Answered from the
+ * block map the world map already keeps, so it needs no state of its own and
+ * comes back from a savefile with everything else the player has seen.
+ */
+bool wild_dungeon_found(struct wilderness *w, int idx)
+{
+	struct wild_dungeon *mouth = wild_dungeon_by_index(w, idx);
+
+	if (!mouth) return false;
+
+	return wild_seen(w, mouth->block.x, mouth->block.y);
 }
 
 /**
@@ -2329,7 +2398,7 @@ static struct chunk *wild_town_chunk(struct wilderness *w, struct player *p,
 
 		wild_town[idx] = town_gen_wild(p,
 			wild_block_seed(w, town->block.x, town->block.y),
-			town->wid, town->hgt, town->stores);
+			town->wid, town->hgt, town->stores, town->services);
 		wild_town_open(wild_town[idx], idx);
 	}
 
@@ -2580,6 +2649,81 @@ void wild_town_people(struct wilderness *w, struct player *p, struct chunk *c,
 		 */
 		get_mon_num_prep(NULL);
 	}
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * The magetower's network (WLD-16c)
+ * ------------------------------------------------------------------------ */
+
+/**
+ * Gather the places the magetower will carry the player to.
+ *
+ * Towns they have stood in, and dungeon mouths they have seen -- the two
+ * different bars are deliberate.  A town is somewhere you have been; a mouth is
+ * a staircase in a field, with nothing to be inside of, so seeing it is enough.
+ *
+ * The town the player is standing in is left out: there is nothing to buy.
+ *
+ * \param w is the world.
+ * \param from is the player's world position.
+ * \param dest receives the destinations, in world grids.
+ * \param max is how many it has room for.
+ * \return how many were found.
+ */
+int wild_travel_places(struct wilderness *w, struct loc from,
+					   struct wild_place *dest, int max)
+{
+	int here = wild_town_here(w, from);
+	int found = 0;
+	int i;
+
+	if (!w) return 0;
+
+	for (i = 0; i < w->town_count && found < max; i++) {
+		struct loc org = wild_town_origin_of(w, i);
+
+		if (!w->towns[i].visited) continue;
+		if (i == here) continue;
+
+		dest[found].grid = loc(org.x + w->towns[i].wid / 2,
+							   org.y + w->towns[i].hgt / 2);
+		dest[found].name = w->towns[i].name;
+		dest[found].what = wild_band_name(w->towns[i].band);
+		dest[found].cost = wild_travel_cost(w, from, dest[found].grid);
+		found++;
+	}
+
+	for (i = 0; i < w->dungeon_count && found < max; i++) {
+		struct wild_dungeon *mouth = wild_dungeon_by_index(w, i);
+		struct dun_type *type = dun_type_by_index(mouth->type);
+
+		if (!wild_dungeon_found(w, i)) continue;
+
+		dest[found].grid = mouth->grid;
+		dest[found].name = type ? type->name : "a dungeon";
+		dest[found].what = "dungeon";
+		dest[found].cost = wild_travel_cost(w, from, dest[found].grid);
+		found++;
+	}
+
+	return found;
+}
+
+/**
+ * What the mages charge to carry somebody this far (WLD-16c).
+ *
+ * By the block, not the grid, so the number is legible and a step across a
+ * town does not cost anything worth counting.
+ */
+int32_t wild_travel_cost(struct wilderness *w, struct loc from, struct loc to)
+{
+	int size = z_info->wild_block_size;
+	int blocks = MAX(ABS(to.x - from.x), ABS(to.y - from.y)) / size;
+
+	(void) w;
+
+	return (int32_t) MAX(1, blocks) * (int32_t) z_info->wild_travel_cost;
 }
 
 /**
@@ -3536,4 +3680,7 @@ void wild_track_move(struct player *p, struct loc grid)
 
 	/* And the world map fills in behind them (WLD-25). */
 	wild_mark_seen(wild, p->wild_grid);
+
+	/* And a town they walk into becomes somewhere they can be carried back to. */
+	wild_note_visit(wild, p->wild_grid);
 }

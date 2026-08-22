@@ -31,6 +31,12 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 21 August 2026
 ----------------------------------------------------------------
 
+- **3.11.0** — The magetower (WLD-16c), and with it the mechanism services are
+  built on (WLD-18): a building is a door with behaviour behind it. Walk into a
+  tower and the mages will carry you to a town you have stood in or a dungeon
+  mouth you have seen, for a fare that rises with the distance. About a third of
+  towns keep one — never a village, never a town that has fallen. The savefile's
+  wilderness block goes to version 5; all twenty existing saves still load.
 - **3.10.0** — Towns have names, and the status line shows the one you are
   standing in. Where Angband said ``Town`` at depth zero — which here meant the
   whole world, market square and empty moorland alike — it now names the place, or

@@ -74,6 +74,11 @@ A '>' out in the open is the mouth of one of the world's dungeons rather than
 an ordinary staircase.  Each leads somewhere different and only so deep; see
 'dungeons.txt'.
 
+A '9' in a town is a magetower.  Walk in and the mages will carry you to a
+town you have stood in or a dungeon mouth you have seen, for a fee that rises
+with the distance.  Not every town has one: never a village, and never a town
+that has fallen.  You must be standing in a tower to use one.
+
 Every town has a name, and the status line shows it while you are inside the
 walls -- where Angband showed "Town".  Outside one it says "wilderness",
 which is what depth zero mostly is.  A name from the lawless list, like

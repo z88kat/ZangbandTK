@@ -1788,10 +1788,48 @@ static void rd_wilderness_dungeons(void)
 	}
 }
 
+/**
+ * Which towns the player has stood in (WLD-16c).
+ *
+ * By name, so that adding a name to town.txt cannot hand a character somewhere
+ * they have never been.  A name the world no longer has is dropped: the map is a
+ * convenience and losing part of it beats refusing to load the character.
+ */
+static void rd_wilderness_visits(void)
+{
+	uint16_t count;
+	int i;
+
+	rd_u16b(&count);
+
+	for (i = 0; i < count; i++) {
+		char name[80];
+		int j;
+
+		rd_string(name, sizeof(name));
+
+		for (j = 0; j < wild_town_count(wild); j++)
+			if (wild->towns[j].name && streq(wild->towns[j].name, name)) {
+				wild->towns[j].visited = 1;
+				break;
+			}
+	}
+}
+
 int rd_wilderness_3(void)
 {
 	if (rd_wilderness_body())
 		return -1;
+
+	return rd_wilderness_knowledge();
+}
+
+int rd_wilderness_4(void)
+{
+	if (rd_wilderness_body())
+		return -1;
+
+	rd_wilderness_dungeons();
 
 	return rd_wilderness_knowledge();
 }
@@ -1802,6 +1840,7 @@ int rd_wilderness(void)
 		return -1;
 
 	rd_wilderness_dungeons();
+	rd_wilderness_visits();
 
 	return rd_wilderness_knowledge();
 }

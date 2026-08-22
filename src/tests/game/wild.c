@@ -934,7 +934,7 @@ static int test_a_large_town_is_built(void *state) {
 
 	for (seed = 0; seed < 8; seed++) {
 		struct chunk *town = town_gen_wild(player, 8191 + seed * 977,
-										   132, 34, 0xffff);
+										   132, 34, 0xffff, 0);
 		uint16_t found = 0;
 		struct loc grid;
 
@@ -2476,6 +2476,167 @@ static int test_town_names_come_back_the_same(void *state) {
 	ok;
 }
 
+
+/**
+ * A magetower stands where a magetower would be built (WLD-15, WLD-16).
+ *
+ * Scored on the country and the size of the place, as the trades are: it is the
+ * work of people with the leisure and the order to build one, so it wants
+ * population and law both.  Never in a village, since a tower nobody can reach
+ * is no use, and never in a town that has fallen -- nobody is running a teleport
+ * network out of somewhere held by monsters.
+ */
+static int test_a_magetower_stands_where_it_should(void *state) {
+	int seed, with = 0, towns = 0;
+
+	for (seed = 1; seed <= 10; seed++) {
+		struct wilderness *w = wild_new(129, seed * 7717);
+		int i;
+
+		wild_generate(w);
+
+		for (i = 0; i < w->town_count; i++) {
+			struct wild_town *town = &w->towns[i];
+			bool has = (town->services & (1u << WILD_SERVICE_MAGETOWER)) != 0;
+
+			towns++;
+			if (has) with++;
+
+			/* Never in the smallest band. */
+			if (has && town->band < 1)
+				printf("a village keeps a magetower\n");
+			if (has) require(town->band >= 1);
+
+			/* Nor anywhere that has fallen. */
+			if (has && (town->folk == WILD_FOLK_MONSTER ||
+						town->folk == WILD_FOLK_ABANDONED))
+				printf("a %s town keeps a magetower\n",
+					wild_folk_name(town->folk));
+			if (has) require(town->folk != WILD_FOLK_MONSTER);
+			if (has) require(town->folk != WILD_FOLK_ABANDONED);
+		}
+
+		wild_free(w);
+	}
+
+	/* Some, but not most: measured at about a third. */
+	require(with > 0);
+	require(with * 2 < towns);
+
+	ok;
+}
+
+/**
+ * The magetower carries you to places you already know (WLD-16c).
+ *
+ * Two different bars, deliberately.  A town has to have been stood in -- seeing
+ * it across a field is not being there, and the first crossing of the world
+ * should stay worth making.  A dungeon mouth only has to have been seen, since
+ * it is a staircase in a field with nothing to be inside of.
+ */
+static int test_the_tower_offers_only_known_places(void *state) {
+	struct wild_place places[WILD_TOWNS_MAX + WILD_DUNGEONS_MAX];
+	struct loc org = wild_town_origin_of(wild, 0);
+	/*
+	 * Asked from the middle of the starting village rather than from wherever
+	 * the player happens to be: earlier tests in this suite move them about,
+	 * and this is a question about the world, not about them.
+	 */
+	struct loc from = loc(org.x + wild->towns[0].wid / 2,
+						  org.y + wild->towns[0].hgt / 2);
+	int before, after, i;
+
+	/* Forget everything, so the starting state is known. */
+	for (i = 0; i < wild_town_count(wild); i++)
+		wild->towns[i].visited = 0;
+
+	before = wild_travel_places(wild, from, places,
+								(int) N_ELEMENTS(places));
+
+	/* Nothing is offered until somewhere has been visited. */
+	for (i = 0; i < before; i++)
+		require(streq(places[i].what, "dungeon"));
+
+	/* Mark a town other than this one as visited; it appears. */
+	{
+		int other = -1;
+
+		for (i = 0; i < wild_town_count(wild); i++)
+			if (i != wild_town_here(wild, from)) { other = i; break; }
+
+		require(other >= 0);
+		wild->towns[other].visited = 1;
+
+		after = wild_travel_places(wild, from, places,
+								   (int) N_ELEMENTS(places));
+		eq(after, before + 1);
+	}
+
+	/* The town the player is standing in is never offered. */
+	{
+		int here = wild_town_here(wild, from);
+
+		require(here >= 0);
+		wild->towns[here].visited = 1;
+
+		after = wild_travel_places(wild, from, places,
+								   (int) N_ELEMENTS(places));
+
+		for (i = 0; i < after; i++)
+			require(!streq(places[i].what, "dungeon") ||
+					!loc_eq(places[i].grid, from));
+
+		/* Marking where we already are adds nothing to travel to. */
+		eq(after, before + 1);
+	}
+
+	ok;
+}
+
+/**
+ * The fare rises with the distance (WLD-16c).
+ */
+static int test_the_fare_rises_with_the_distance(void *state) {
+	int size = z_info->wild_block_size;
+	struct loc from = loc(size * 40, size * 40);
+	int32_t near_fare = wild_travel_cost(wild, from, loc(size * 45, size * 40));
+	int32_t far_fare = wild_travel_cost(wild, from, loc(size * 90, size * 40));
+
+	/* Nothing is free... */
+	require(near_fare > 0);
+
+	/* ...and the long way costs more, in proportion. */
+	require(far_fare > near_fare * 5);
+
+	/* A step within one block still costs the minimum rather than nothing. */
+	require(wild_travel_cost(wild, from, loc(from.x + 2, from.y)) > 0);
+
+	ok;
+}
+
+/**
+ * Walking into a town is what makes it a destination (WLD-16c).
+ */
+static int test_walking_into_a_town_is_remembered(void *state) {
+	struct loc org = wild_town_origin_of(wild, 0);
+	struct loc middle = loc(org.x + wild->towns[0].wid / 2,
+							org.y + wild->towns[0].hgt / 2);
+	int i;
+
+	for (i = 0; i < wild_town_count(wild); i++)
+		wild->towns[i].visited = 0;
+
+	/* Somewhere out in the country marks nothing. */
+	wild_note_visit(wild, loc(org.x, org.y - 40));
+	eq(wild->towns[0].visited, 0);
+
+	/* Standing in the town marks it. */
+	wild_note_visit(wild, middle);
+	eq(wild->towns[0].visited, 1);
+
+	ok;
+}
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -2526,5 +2687,9 @@ struct test tests[] = {
 	{ "roads-reach-every-place", test_roads_reach_every_place },
 	{ "towns-have-names", test_towns_have_names },
 	{ "town-names-come-back-the-same", test_town_names_come_back_the_same },
+	{ "a-magetower-stands-where-it-should", test_a_magetower_stands_where_it_should },
+	{ "the-tower-offers-only-known-places", test_the_tower_offers_only_known_places },
+	{ "the-fare-rises-with-the-distance", test_the_fare_rises_with_the_distance },
+	{ "walking-into-a-town-is-remembered", test_walking_into_a_town_is_remembered },
 	{ NULL, NULL }
 };

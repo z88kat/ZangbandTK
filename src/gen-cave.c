@@ -66,6 +66,7 @@
 #include "game-event.h"
 #include "game-world.h"
 #include "generate.h"
+#include "wild.h"
 #include "init.h"
 #include "mon-group.h"
 #include "mon-make.h"
@@ -2328,10 +2329,17 @@ static bool lot_has_shop(struct chunk *c, struct loc xroads, struct loc lot,
  * \param lot_wid is the width, in grids, for the store
  * \param lot_hgt is the height, in grids, for the store
  */
-static void build_store(struct chunk *c, int n, struct loc xroads,
+/**
+ * Build a building on a town lot, with the given terrain as its door.
+ *
+ * Was build_store(), which found the shop feature from a store index at the end.
+ * A service is the same building with a different door behind it -- WLD-18 says
+ * so in as many words -- so the geometry is shared and only the door differs.
+ */
+static void build_lot_building(struct chunk *c, int door_feat,
+						struct loc xroads,
 						struct loc lot, int lot_wid, int lot_hgt)
 {
-	int feat;
 	struct loc door;
 
 	int lot_w, lot_n, lot_e, lot_s;
@@ -2461,10 +2469,23 @@ static void build_store(struct chunk *c, int n, struct loc xroads,
 	/* Build an invulnerable rectangular building */
 	fill_rectangle(c, build_n, build_w, build_s, build_e, FEAT_PERM, SQUARE_NONE);
 
-	/* Clear previous contents, add a store door */
+	/* Clear previous contents, and put the door in */
+	square_set_feat(c, door, door_feat);
+}
+
+/**
+ * Build a shop on a town lot.  The store index picks the door.
+ */
+static void build_store(struct chunk *c, int n, struct loc xroads,
+						struct loc lot, int lot_wid, int lot_hgt)
+{
+	int feat;
+
 	for (feat = 0; feat < FEAT_MAX; feat++)
-		if (feat_is_shop(feat) && (f_info[feat].shopnum == n + 1))
-			square_set_feat(c, door, feat);
+		if (feat_is_shop(feat) && (f_info[feat].shopnum == n + 1)) {
+			build_lot_building(c, feat, xroads, lot, lot_wid, lot_hgt);
+			return;
+		}
 }
 
 static void build_ruin(struct chunk *c, struct loc xroads, struct loc lot, int lot_wid, int lot_hgt) {
@@ -2521,7 +2542,8 @@ static void build_ruin(struct chunk *c, struct loc xroads, struct loc lot, int l
  * \param c is the current chunk
  * \param p is the player
  */
-static void town_gen_layout(struct chunk *c, struct player *p, uint16_t shops)
+static void town_gen_layout(struct chunk *c, struct player *p, uint16_t shops,
+		uint16_t services)
 {
 	int n, x, y;
 	struct loc grid, pgrid, xroads;
@@ -2661,6 +2683,38 @@ static void town_gen_layout(struct chunk *c, struct player *p, uint16_t shops)
 	fill_rectangle(c, xroads.y, min_store_x,
 		xroads.y + 1, max_store_x, FEAT_FLOOR, SQUARE_NONE);
 
+	/*
+	 * ZangbandTK (WLD-16, WLD-18): the town's services.  A service is a door in
+	 * a wall with behaviour behind it, exactly as a shop is, so it is built the
+	 * same way -- on a lot off one of the streets.  Placed after the shops so it
+	 * takes ground they did not want, and after the streets are cut so it is not
+	 * built across one.
+	 */
+	if (services & (1u << WILD_SERVICE_MAGETOWER)) {
+		struct loc lot;
+		bool built = false;
+		int attempt;
+
+		for (attempt = 0; attempt < 60 && !built; attempt++) {
+			if (randint0(2)) {
+				lot.x = rand_range(-1 * xroads.x / lot_wid,
+								   (c->width - xroads.x) / lot_wid);
+				lot.y = randint0(2) ? 1 : -1;
+			} else {
+				lot.x = randint0(2) ? 1 : -1;
+				lot.y = rand_range(-1 * xroads.y / lot_hgt,
+								   (c->height - xroads.y) / lot_hgt);
+			}
+
+			if (!lot.x || !lot.y) continue;
+			if (!lot_is_clear(c, xroads, lot, lot_wid, lot_hgt)) continue;
+
+			build_lot_building(c, FEAT_MAGETOWER, xroads, lot, lot_wid,
+							   lot_hgt);
+			built = true;
+		}
+	}
+
 	/* Clear previous contents, add down stairs */
 	square_set_feat(c, pgrid, FEAT_MORE);
 
@@ -2686,7 +2740,7 @@ static void town_gen_layout(struct chunk *c, struct player *p, uint16_t shops)
  * \param seed fixes the layout; the same seed always gives the same town
  */
 struct chunk *town_gen_wild(struct player *p, uint32_t seed,
-	int wid, int hgt, uint16_t shops)
+	int wid, int hgt, uint16_t shops, uint16_t services)
 {
 	struct chunk *c = cave_new(hgt, wid);
 	struct loc saved_grid = p->grid;
@@ -2710,7 +2764,7 @@ struct chunk *town_gen_wild(struct player *p, uint32_t seed,
 	Rand_quick = true;
 	Rand_value = seed ? seed : 1;
 
-	town_gen_layout(c, p, shops);
+	town_gen_layout(c, p, shops, services);
 
 	Rand_quick = saved_quick;
 	Rand_value = saved_value;
@@ -2753,7 +2807,7 @@ struct chunk *town_gen(struct player *p, int min_height, int min_width,
 		c_new->depth = p->depth;
 
 		/* Build stuff -- vanilla's town holds every shop there is. */
-		town_gen_layout(c_new, p, 0xffff);
+		town_gen_layout(c_new, p, 0xffff, 0);
 	} else {
 		/* Copy from the chunk list, remove the old one */
 		c_new->depth = c_old->depth;

@@ -2797,6 +2797,7 @@ static void ui_enter_world(game_event_type type, game_event_data *data,
 
 	/* Enter a store */
 	event_add_handler(EVENT_ENTER_STORE, enter_store, NULL);
+	event_add_handler(EVENT_ENTER_MAGETOWER, ui_enter_magetower, NULL);
 
 	/* Display an explosion */
 	event_add_handler(EVENT_EXPLOSION, display_explosion, NULL);

@@ -538,6 +538,14 @@ wild:lakes:4
 # of the world get on top of that.
 wild:road-dist:30
 
+# What the magetower charges to carry you, in gold per block travelled
+# (WLD-16c). Distance is measured across the block map, so a hop to the next
+# valley is cheap and crossing the world is not. At 15 a twenty-block trip is
+# 300 gold, which is real money to a character of level five and nothing to one
+# of level thirty -- which is the right shape: the network is a convenience you
+# grow into, not a way past the early game.
+wild:travel-cost:15
+
 # How long a town gate stands open before it swings shut, in game turns. A
 # player at normal speed acts every ten of these, so 100 is about ten moves --
 # long enough to walk through and lead a packhorse, short enough that the gate

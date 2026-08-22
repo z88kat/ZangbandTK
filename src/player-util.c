@@ -1776,6 +1776,18 @@ void player_handle_post_move(struct player *p, bool eval_trap,
 		}
 	}
 
+	/*
+	 * ZangbandTK (WLD-16c, WLD-18): a service building is a door with behaviour
+	 * behind it, entered the way a shop is.  Signalled rather than called, since
+	 * what happens next is a menu and the game side does not own menus.
+	 */
+	if (square(cave, p->grid)->feat == FEAT_MAGETOWER) {
+		disturb(p);
+		if (is_involuntary) cmdq_flush();
+		event_signal(EVENT_ENTER_MAGETOWER);
+		return;
+	}
+
 	/* Handle store doors, or notice objects */
 	if (square_isshop(cave, p->grid)) {
 		if (player_is_shapechanged(p)) {

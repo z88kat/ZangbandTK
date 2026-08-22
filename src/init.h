@@ -114,6 +114,7 @@ struct angband_constants
 	uint16_t wild_rivers;		/**< Square root of the river seed-point count */
 	uint16_t wild_lakes;		/**< How many lakes to attempt */
 	uint16_t wild_road_dist;	/**< Blocks within which two towns get a road */
+	uint16_t wild_travel_cost;	/**< Magetower charge, gold per block */
 	uint16_t wild_gate_turns;	/**< Game turns a town gate stands open */
 	uint16_t wild_towns;		/**< How many towns to place in the world */
 

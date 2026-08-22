@@ -164,6 +164,19 @@ struct town_names {
 extern struct town_names town_names;
 
 /**
+ * The services a town may keep (WLD-16, WLD-16c).
+ *
+ * Buildings with behaviour behind them, as against shops, which 4.2's store
+ * system already handles.  Zangband had eight with implemented behaviour and
+ * WLD-16c kept six of them; the quest giver waits for M6 and the Chaos Tower
+ * for M8, since neither has anything to do before those exist.
+ */
+enum wild_service {
+	WILD_SERVICE_MAGETOWER = 0,	/**< Travel between places already found */
+	WILD_SERVICE_MAX
+};
+
+/**
  * Who lives in a town (WLD-11).
  *
  * Zangband declared six kinds -- villager, elves, dwarf, lizard, monster,
@@ -206,6 +219,8 @@ struct wild_town {
 	uint8_t band;		/**< 0 village, 1 town, 2 city, 3 great city */
 	uint8_t folk;		/**< enum wild_folk: who lives there (WLD-11) */
 	const char *name;	/**< What it is called (WLD-11) */
+	uint16_t services;	/**< Bit per enum wild_service (WLD-16) */
+	uint8_t visited;	/**< The player has stood inside it (WLD-16c) */
 };
 
 /**
@@ -252,6 +267,20 @@ bool wild_road_at(struct wilderness *w, int bx, int by);
 const char *wild_folk_name(int folk);
 const char *wild_band_name(int band);
 int wild_town_here(struct wilderness *w, struct loc grid);
+void wild_note_visit(struct wilderness *w, struct loc grid);
+bool wild_dungeon_found(struct wilderness *w, int idx);
+
+/** Somewhere the magetower will carry the player (WLD-16c). */
+struct wild_place {
+	struct loc grid;		/**< Where it is, in world grids */
+	const char *name;		/**< What it is called */
+	const char *what;		/**< What kind of place it is */
+	int32_t cost;			/**< What the journey costs, in gold */
+};
+
+int wild_travel_places(struct wilderness *w, struct loc from,
+					   struct wild_place *dest, int max);
+int32_t wild_travel_cost(struct wilderness *w, struct loc from, struct loc to);
 int wild_dungeon_count(const struct wilderness *w);
 int wild_dungeon_at(struct wilderness *w, struct loc grid);
 bool wild_dungeon_in_block(struct wilderness *w, int bx, int by);

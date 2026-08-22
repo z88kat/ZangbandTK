@@ -1080,6 +1080,28 @@ void wr_wilderness(void)
 		}
 	}
 
+	/*
+	 * Which towns the player has stood in (WLD-16c).
+	 *
+	 * Where the towns are follows from the seed, but whether somebody has been
+	 * inside one does not, and the magetower will only carry them to places
+	 * they know.  Stored by name for the same reason the dungeons are: adding a
+	 * name to town.txt must not hand a character somewhere they have never been.
+	 */
+	{
+		uint16_t seen_towns = 0;
+		int i;
+
+		for (i = 0; i < wild_town_count(wild); i++)
+			if (wild->towns[i].visited) seen_towns++;
+		wr_u16b(seen_towns);
+
+		for (i = 0; i < wild_town_count(wild); i++) {
+			if (!wild->towns[i].visited) continue;
+			wr_string(wild->towns[i].name ? wild->towns[i].name : "");
+		}
+	}
+
 	{
 		struct loc offset = loc(0, 0);
 		struct chunk *known = wild_held_knowledge(&offset);

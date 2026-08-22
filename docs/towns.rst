@@ -154,6 +154,36 @@ A town that has been taken still trades. Its shops are doors in walls rather tha
 shopkeepers, so you can walk in past whatever is holding the place — which is
 either a convenience or an oddity depending on how you look at it.
 
+The magetower
+-------------
+
+Some towns keep a tower of the mages, drawn ``9``. Walk into it and they will
+carry you to somewhere you already know, for a fee.
+
+**Where they are.** Never in a village — a tower nobody can reach is no use —
+and never in a town that has fallen, since nobody runs a teleport network out of
+somewhere held by monsters. Otherwise it is scored on population and law the way
+the trades are, so it is the cities that have them: about a third of towns, in
+practice.
+
+**Where it will take you.** Two different bars, deliberately:
+
+- a **town** has to have been *stood in*. Seeing it across a field is not having
+  been there, and the first crossing of the world should stay worth making.
+- a **dungeon mouth** only has to have been *seen*. It is a staircase in a field
+  with nothing to be inside of.
+
+**What it costs.** Gold, by the distance: ``wild:travel-cost`` in
+``constants.txt`` is the fare per block, 15 by default. A twenty-block hop is 300
+gold, which is real money at level five and nothing at level thirty — which is
+the right shape. The network is a convenience you grow into, not a way past the
+early game. You cannot travel on credit; if you are short, the mages tell you the
+price and you walk.
+
+You have to be standing in a tower to use one, so a village with no tower is a
+place you walk out of. Getting back from a dungeon mouth is your problem — that
+is what Word of Recall is for.
+
 Walls and gates
 ---------------
 

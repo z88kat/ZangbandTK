@@ -457,6 +457,14 @@ flags:ROCK | WALL | NO_SCENT | NO_FLOW
 look-prefix:a
 desc:Bare rock, too steep to climb.
 
+code:MAGETOWER
+name:magetower
+graphics:9:v
+priority:20
+flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY | TORCH
+look-prefix:the
+desc:A tower of the mages, who will carry you to places you already know.
+
 code:DUNGEON
 name:dungeon entrance
 graphics:>:v

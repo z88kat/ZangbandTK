@@ -29,6 +29,7 @@
 #include "trap.h"
 #include "ui-input.h"
 #include "ui-map.h"
+#include "ui-menu.h"
 #include "wild.h"
 #include "ui-object.h"
 #include "ui-output.h"
@@ -990,6 +991,105 @@ static void display_world_map(struct loc origin)
 
 		c_put_str(COLOUR_L_RED, "dungeon", Term->hgt - 2, at);
 	}
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * The magetower (WLD-16c)
+ * ------------------------------------------------------------------------ */
+
+/** The most destinations the tower will offer at once. */
+#define TRAVEL_MAX (WILD_TOWNS_MAX + WILD_DUNGEONS_MAX)
+
+/**
+ * Offer the player a journey, and make it if they take one.
+ *
+ * Zangband's magetower linked the towns a character had visited.  The rule here
+ * is the same idea with the two bars WLD-16c settled on: a town has to have been
+ * stood in, a dungeon mouth only seen -- and the fare rises with the distance,
+ * so the network is a convenience rather than a way of skipping the world.
+ *
+ * Nothing here is free: a character with no gold is told the price and sent
+ * away, which is the whole point of a fare.
+ */
+static void magetower_travel(void)
+{
+	struct wild_place places[TRAVEL_MAX];
+	struct loc from = loc(player->grid.x + player->wild_offset.x,
+						  player->grid.y + player->wild_offset.y);
+	struct menu *m;
+	char *labels;
+	int count, chosen, i;
+
+	count = wild_travel_places(wild, from, places, TRAVEL_MAX);
+
+	if (!count) {
+		msg("The mages can carry you to places you have already been.");
+		msg("You have not been anywhere else yet.");
+		return;
+	}
+
+	m = menu_dynamic_new();
+	if (!m) return;
+
+	labels = string_make(lower_case);
+	m->selections = labels;
+
+	for (i = 0; i < count; i++) {
+		char line[80];
+
+		strnfmt(line, sizeof(line), "%-24s %-11s %6d au",
+				places[i].name ? places[i].name : "somewhere",
+				places[i].what, (int) places[i].cost);
+
+		/* One more than the index, so that zero can mean "no thank you". */
+		menu_dynamic_add_label(m, line, 0, i + 1, labels);
+	}
+
+	menu_dynamic_add_label(m, "Stay here", 'q', 0, labels);
+
+	screen_save();
+	menu_dynamic_calc_location(m, 0, 0);
+	region_erase_bordered(&m->boundary);
+	prt(format("The mages will carry you.  You have %d au.", player->au), 0, 0);
+
+	chosen = menu_dynamic_select(m);
+
+	menu_dynamic_free(m);
+	string_free(labels);
+	screen_load();
+
+	if (chosen <= 0 || chosen > count) return;
+
+	chosen--;
+
+	if (player->au < places[chosen].cost) {
+		msg("The journey to %s costs %d au, and you have %d.",
+			places[chosen].name, (int) places[chosen].cost, player->au);
+		return;
+	}
+
+	player->au -= places[chosen].cost;
+
+	msg("The mages carry you to %s.", places[chosen].name);
+
+	/*
+	 * Set where in the world the player now is and have the surface rebuilt
+	 * around it.  Flagged as a scroll of the window rather than a level change,
+	 * as walking to the edge of the window is: this is travel across the
+	 * overworld, not a descent, and it must not cancel the player's target or
+	 * hand them a free turn's energy.
+	 */
+	player->wild_grid = places[chosen].grid;
+	player->upkeep->generate_level = true;
+	player->upkeep->scroll_world = true;
+	player->upkeep->energy_use = z_info->move_energy;
+}
+
+/** Somebody walked into the magetower. */
+void ui_enter_magetower(game_event_type type, game_event_data *data, void *user)
+{
+	magetower_travel();
 }
 
 /**
