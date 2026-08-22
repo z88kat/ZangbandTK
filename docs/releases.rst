@@ -28,9 +28,22 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
-M5 in progress: towns and roads — 19 to 20 August 2026
-------------------------------------------------------
+M5 in progress: towns, roads and dungeons — 19 to 21 August 2026
+----------------------------------------------------------------
 
+- **3.8.0** — Every dungeon mouth now has a road to its door. Six of the thirteen
+  happened to sit on one; the rest were between eleven and sixty-two blocks away,
+  which is up to a thousand grids of open country to search with nothing to
+  follow. Better siting could not fix it — the deep dungeons belong a long way
+  from any town — so the road goes to them instead.
+- **3.7.1** — A code review of the whole milestone, and it found that **eleven of
+  the thirteen dungeons could not be entered**: the depth clamp treated "above
+  the top of this dungeon" as one case when it is two, so stepping onto the mouth
+  of the Abyss asked for depth 1, found it above the top of 90, and returned the
+  surface. Also: a dungeon's inhabitants followed the player home into the open
+  country, the object theme was defeating Angband's rejection of unreadable
+  spellbooks, and the fix for walls behind trees only worked when touching them.
+  Fifteen findings in all.
 - **3.7.0** — Each dungeon is now home to its own kinds of creature (CNT-05).
   The Caverns of Kolvir run to trolls and giants, Tir-na Nog'th to wraiths and
   vortices, Arden to animals and trees. A stranger from elsewhere turns up now
