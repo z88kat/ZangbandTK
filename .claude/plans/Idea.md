@@ -130,5 +130,5 @@ git push origin 3.1.0
 ## Pre-Release
 
 git push origin master
-git tag -a 3.4.0-rc1 -m "Windows build test"
-git push origin 3.4.0-rc1
+git tag -a 3.5.1-rc1 -m "Windows build test"
+git push origin 3.5.1-rc1

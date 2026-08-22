@@ -30,6 +30,10 @@ NAME			:= ZangbandTK
 GAME_TITLE		:= ZangbandTK
 GAME_DESCRIPTION	:= Zangband on a modern Angband
 GAME_AUTHOR		:= ZangbandTK contributors
+# The DS icon is 4bpp: ndstool decodes this PNG to RGBA, truncates each channel
+# to 5 bits and every pixel with alpha below 0x80 to one transparent entry, and
+# then wants at most 16 colours left. That leaves 15 opaque ones, so keep the
+# file quantised: a full-colour PNG with soft edges fails the build outright.
 GAME_ICON		:= nds/zangbandtk-32.png
 
 # Source code paths
