@@ -1285,6 +1285,97 @@ static void cleanup_game_constants(void)
 
 /**
  * ------------------------------------------------------------------------
+ * Initialize town names (WLD-11)
+ * ------------------------------------------------------------------------ */
+struct town_names town_names = { NULL, 0, NULL, 0 };
+
+static enum parser_error parse_town_name(struct parser *p) {
+	const char *which = parser_getsym(p, "which");
+	const char *name = parser_getstr(p, "name");
+	char ***list;
+	int *count;
+
+	if (streq(which, "settled")) {
+		list = &town_names.settled;
+		count = &town_names.settled_count;
+	} else if (streq(which, "lawless")) {
+		list = &town_names.lawless;
+		count = &town_names.lawless_count;
+	} else {
+		return PARSE_ERROR_INVALID_VALUE;
+	}
+
+	*list = mem_realloc(*list, (*count + 1) * sizeof(**list));
+	(*list)[*count] = string_make(name);
+	++*count;
+
+	return PARSE_ERROR_NONE;
+}
+
+static struct parser *init_parse_town(void) {
+	struct parser *p = parser_new();
+
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name sym which str name", parse_town_name);
+	return p;
+}
+
+static errr run_parse_town(struct parser *p) {
+	return parse_file_quit_not_found(p, "town");
+}
+
+static errr finish_parse_town(struct parser *p) {
+	parser_destroy(p);
+
+	/*
+	 * A world may hold as many towns as wild:towns asks for, and each wants a
+	 * name of its own, so there has to be at least that many to draw from --
+	 * otherwise two towns share a name and the player cannot tell which one a
+	 * quest or a road is talking about.
+	 */
+	if (town_names.settled_count + town_names.lawless_count <
+			(int) z_info->wild_towns) {
+		plog_fmt("Only %d town names for up to %d towns",
+			town_names.settled_count + town_names.lawless_count,
+			(int) z_info->wild_towns);
+		return PARSE_ERROR_TOO_FEW_ENTRIES;
+	}
+
+	if (!town_names.settled_count || !town_names.lawless_count) {
+		plog("Town names are needed for both settled and lawless country");
+		return PARSE_ERROR_MISSING_FIELD;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static void cleanup_town(void) {
+	int i;
+
+	for (i = 0; i < town_names.settled_count; i++)
+		string_free(town_names.settled[i]);
+	for (i = 0; i < town_names.lawless_count; i++)
+		string_free(town_names.lawless[i]);
+
+	mem_free(town_names.settled);
+	mem_free(town_names.lawless);
+
+	town_names.settled = NULL;
+	town_names.lawless = NULL;
+	town_names.settled_count = 0;
+	town_names.lawless_count = 0;
+}
+
+struct file_parser town_parser = {
+	"town",
+	init_parse_town,
+	run_parse_town,
+	finish_parse_town,
+	cleanup_town
+};
+
+/**
+ * ------------------------------------------------------------------------
  * Initialize dungeons (WLD-14)
  * ------------------------------------------------------------------------ */
 struct dun_type *dun_types = NULL;
@@ -4919,6 +5010,7 @@ static struct {
 	{ "monster spells", &mon_spell_parser },
 	{ "monsters", &monster_parser },
 	{ "dungeons", &dungeon_parser },
+	{ "town names", &town_parser },
 	{ "monster pits" , &pit_parser },
 	{ "monster lore" , &lore_parser },
 	{ "traps", &trap_parser },

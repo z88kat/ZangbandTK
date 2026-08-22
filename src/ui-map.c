@@ -916,10 +916,6 @@ static const uint8_t wild_town_band_attr[] = {
 	COLOUR_L_UMBER, COLOUR_YELLOW, COLOUR_L_GREEN, COLOUR_L_BLUE
 };
 
-static const char *wild_town_band_name[] = {
-	"village", "town", "city", "great city"
-};
-
 static void display_world_map(struct loc origin)
 {
 	int size = z_info->wild_block_size;
@@ -987,9 +983,9 @@ static void display_world_map(struct loc origin)
 		at += 8;
 
 		for (band = 0; band < 4; band++) {
-			c_put_str(wild_town_band_attr[band], wild_town_band_name[band],
+			c_put_str(wild_town_band_attr[band], wild_band_name(band),
 					  Term->hgt - 2, at);
-			at += strlen(wild_town_band_name[band]) + 2;
+			at += strlen(wild_band_name(band)) + 2;
 		}
 
 		c_put_str(COLOUR_L_RED, "dungeon", Term->hgt - 2, at);

@@ -519,11 +519,34 @@ static void prt_speed(int row, int col)
 
 static int fmt_depth(char buf[], int max)
 {
-	if (!player->depth)
-		my_strcpy(buf, "Town", max);
-	else
+	if (!player->depth) {
+		/*
+		 * ZangbandTK: depth zero is the whole world, not a town, so "Town" was
+		 * wrong nearly everywhere it appeared -- it said the same thing a
+		 * thousand grids out in open country as it did in the market square.
+		 *
+		 * Name the place instead.  Standing in one, its size, which is also
+		 * what says how much of a town it is worth stopping at: a village
+		 * keeps four trades and a great city keeps all eight.
+		 */
+		int town = player->in_wild
+			? wild_town_here(wild, loc(player->grid.x + player->wild_offset.x,
+									   player->grid.y + player->wild_offset.y))
+			: -1;
+
+		if (town >= 0 && wild->towns[town].name)
+			my_strcpy(buf, wild->towns[town].name, max);
+		else if (town >= 0)
+			my_strcpy(buf, wild_band_name(wild->towns[town].band), max);
+		else if (player->in_wild)
+			my_strcpy(buf, "wilderness", max);
+		else
+			my_strcpy(buf, "Town", max);
+	} else {
 		strnfmt(buf, max, "%d' (L%d)",
 		        player->depth * 50, player->depth);
+	}
+
 	return strlen(buf);
 }
 

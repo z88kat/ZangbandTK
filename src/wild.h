@@ -152,6 +152,18 @@ enum {
 };
 
 /**
+ * The names a world's towns are drawn from, loaded from town.txt (WLD-11).
+ */
+struct town_names {
+	char **settled;			/**< Names for governed country */
+	int settled_count;
+	char **lawless;			/**< Names for country that has fallen */
+	int lawless_count;
+};
+
+extern struct town_names town_names;
+
+/**
  * Who lives in a town (WLD-11).
  *
  * Zangband declared six kinds -- villager, elves, dwarf, lizard, monster,
@@ -193,6 +205,7 @@ struct wild_town {
 	uint16_t stores;	/**< Bit per store index: which ones it holds */
 	uint8_t band;		/**< 0 village, 1 town, 2 city, 3 great city */
 	uint8_t folk;		/**< enum wild_folk: who lives there (WLD-11) */
+	const char *name;	/**< What it is called (WLD-11) */
 };
 
 /**
@@ -237,6 +250,8 @@ bool wild_seen(struct wilderness *w, int x, int y);
 bool wild_in_town(struct wilderness *w, int bx, int by);
 bool wild_road_at(struct wilderness *w, int bx, int by);
 const char *wild_folk_name(int folk);
+const char *wild_band_name(int band);
+int wild_town_here(struct wilderness *w, struct loc grid);
 int wild_dungeon_count(const struct wilderness *w);
 int wild_dungeon_at(struct wilderness *w, struct loc grid);
 bool wild_dungeon_in_block(struct wilderness *w, int bx, int by);

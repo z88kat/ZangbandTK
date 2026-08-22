@@ -2295,6 +2295,187 @@ static int test_a_towns_streets_follow_its_inhabitants(void *state) {
 	ok;
 }
 
+/**
+ * The status line names the place, not the level (WLD-11).
+ *
+ * Depth zero is the whole world here rather than a town, so the "Town" Angband
+ * shows there was wrong nearly everywhere it appeared: it said the same thing a
+ * thousand grids out in open country as it did in the market square.  Standing
+ * in a place it now names its size, which is also the useful thing to know
+ * before walking in -- a village keeps four trades and a great city all eight.
+ */
+static int test_the_status_line_names_the_place(void *state) {
+	struct loc world = loc(player->grid.x + player->wild_offset.x,
+						   player->grid.y + player->wild_offset.y);
+	int here = wild_town_here(wild, world);
+	int i;
+
+	/* The character starts in the village, so that is what it should say. */
+	require(here >= 0);
+	eq(here, 0);
+	require(streq(wild_band_name(wild->towns[here].band), "village"));
+
+	/* A grid well outside any town is in no town. */
+	{
+		struct loc away = loc(world.x, world.y);
+		bool found = false;
+
+		for (i = 200; i < 900 && !found; i += 50) {
+			away.y = world.y + i;
+			if (away.y >= wild_world_grids()) break;
+			if (wild_town_here(wild, away) < 0) found = true;
+		}
+
+		require(found);
+	}
+
+	/* Every band has a word, and they are all different. */
+	for (i = 0; i < 4; i++) {
+		int j;
+
+		require(strlen(wild_band_name(i)) > 0);
+
+		/* Short enough for the field the status line puts it in. */
+		require(strlen(wild_band_name(i)) < 13);
+
+		for (j = 0; j < i; j++)
+			require(!streq(wild_band_name(i), wild_band_name(j)));
+	}
+
+	/*
+	 * And the answer is grid-precise, not block-precise: the block test counts
+	 * ground outside the wall, which is not the same question.
+	 */
+	{
+		struct loc org = wild_town_origin_of(wild, 0);
+		struct loc corner = loc(org.x - 1, org.y - 1);
+
+		if (corner.x >= 0 && corner.y >= 0)
+			require(wild_town_here(wild, corner) < 0);
+	}
+
+	ok;
+}
+
+
+/** Is this one of the names town.txt lists for country that has fallen? */
+static bool name_is_lawless(const char *name) {
+	int i;
+
+	for (i = 0; i < town_names.lawless_count; i++)
+		if (streq(name, town_names.lawless[i])) return true;
+
+	return false;
+}
+
+/**
+ * Towns have names, and no two in a world share one (WLD-11).
+ *
+ * Zangband named its towns and this did not, which was a real gap against the
+ * reference rather than something Zangband left undone.  Its own scheme was a
+ * generated elvish name with a size suffix -- "-ville", " Dun", "-ton",
+ * "-ford" -- which is a name generator for Middle-earth; DEC-30 points the
+ * other way, so the names are curated in town.txt instead.
+ *
+ * What a place is called also says something about it: a town that has fallen or
+ * stands empty takes its name from the lawless list.
+ */
+static int test_towns_have_names(void *state) {
+	int seed;
+
+	require(town_names.settled_count > 0);
+	require(town_names.lawless_count > 0);
+
+	/* Enough names to go round, which the parser also insists on. */
+	require(town_names.settled_count + town_names.lawless_count >=
+			(int) z_info->wild_towns);
+
+	for (seed = 1; seed <= 12; seed++) {
+		struct wilderness *w = wild_new(129, seed * 7717);
+		int i, j, fallen = 0, fallen_named = 0;
+
+		wild_generate(w);
+		require(w->town_count > 1);
+
+		for (i = 0; i < w->town_count; i++) {
+			struct wild_town *town = &w->towns[i];
+			bool has_fallen = (town->folk == WILD_FOLK_MONSTER ||
+							   town->folk == WILD_FOLK_ABANDONED);
+
+			/* Every town is called something. */
+			if (!town->name)
+				printf("town %d of world %d has no name\n", i, seed);
+			notnull(town->name);
+
+			/* And nothing else in the world is called that. */
+			for (j = 0; j < i; j++) {
+				if (streq(town->name, w->towns[j].name))
+					printf("world %d has two towns called %s\n", seed,
+						town->name);
+				require(!streq(town->name, w->towns[j].name));
+			}
+
+			/*
+			 * A fallen town takes a lawless name while any is free.  Counted
+			 * rather than required of each: with six lawless names and a world
+			 * that happens to have seven fallen towns, the seventh borrows.
+			 */
+			if (has_fallen) {
+				fallen++;
+				if (name_is_lawless(town->name)) fallen_named++;
+			}
+		}
+
+		if (fallen > 0 && fallen <= town_names.lawless_count) {
+			if (fallen_named != fallen)
+				printf("world %d: %d fallen towns, %d with lawless names\n",
+					seed, fallen, fallen_named);
+			eq(fallen_named, fallen);
+		}
+
+		wild_free(w);
+	}
+
+	ok;
+}
+
+/**
+ * A world always calls its towns the same thing (WLD-11).
+ *
+ * The names are not saved: the world regenerates from its seed, so they have to
+ * come back identical or a character would come home to somewhere else.
+ */
+static int test_town_names_come_back_the_same(void *state) {
+	char *first[WILD_TOWNS_MAX];
+	struct wilderness *w;
+	int count, i;
+
+	w = wild_new(129, 90210);
+	wild_generate(w);
+	count = w->town_count;
+	require(count > 1);
+	for (i = 0; i < count; i++)
+		first[i] = string_make(w->towns[i].name);
+	wild_free(w);
+
+	/* The same seed, built again from nothing. */
+	w = wild_new(129, 90210);
+	wild_generate(w);
+	eq(w->town_count, count);
+	for (i = 0; i < count; i++) {
+		if (!streq(first[i], w->towns[i].name))
+			printf("town %d was %s and is now %s\n", i, first[i],
+				w->towns[i].name);
+		require(streq(first[i], w->towns[i].name));
+	}
+	wild_free(w);
+
+	for (i = 0; i < count; i++)
+		string_free(first[i]);
+
+	ok;
+}
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -2305,6 +2486,7 @@ struct test tests[] = {
 	{ "only-the-town-is-known", test_only_the_town_is_known },
 	{ "the-town-has-people", test_the_town_has_people },
 	{ "a-towns-streets-follow-its-inhabitants", test_a_towns_streets_follow_its_inhabitants },
+	{ "the-status-line-names-the-place", test_the_status_line_names_the_place },
 	{ "the-town-holds-the-trades-it-was-given", test_the_town_holds_the_trades_it_was_given },
 	{ "a-large-town-is-built", test_a_large_town_is_built },
 	{ "a-distant-town-is-drawn", test_a_distant_town_is_drawn },
@@ -2342,5 +2524,7 @@ struct test tests[] = {
 	{ "every-dungeon-can-be-entered-and-left", test_every_dungeon_can_be_entered_and_left },
 	{ "the-road-is-continuous-on-the-ground", test_the_road_is_continuous_on_the_ground },
 	{ "roads-reach-every-place", test_roads_reach_every_place },
+	{ "towns-have-names", test_towns_have_names },
+	{ "town-names-come-back-the-same", test_town_names_come_back_the_same },
 	{ NULL, NULL }
 };

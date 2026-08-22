@@ -704,7 +704,7 @@ static void wild_town_extent(int *bw, int *bh)
 {
 	struct wild_town biggest = { { 0, 0 },
 		wild_town_bands[WILD_TOWN_BANDS - 1].wid,
-		wild_town_bands[WILD_TOWN_BANDS - 1].hgt, 0, 0, 0 };
+		wild_town_bands[WILD_TOWN_BANDS - 1].hgt, 0, 0, 0, NULL };
 
 	wild_town_extent_of(&biggest, bw, bh);
 }
@@ -1174,6 +1174,77 @@ int wild_town_at(struct wilderness *w, int bx, int by)
 }
 
 /**
+ * Give the towns their names (WLD-11).
+ *
+ * A settled town takes a name from the settled list, one that has fallen or
+ * stands empty from the lawless list -- so what a place is called says something
+ * about it before you arrive.
+ *
+ * No two towns in a world share a name: a road or a quest that names a town has
+ * to mean one place.  Where a list runs short the other is borrowed from rather
+ * than a name being repeated, and if both run out the town keeps NULL and is
+ * described by its size alone, which is what the status line did before names
+ * existed.
+ *
+ * Drawn from the world seed and nothing else, so a character always comes home
+ * to the same names.  Which also means reordering town.txt renames every town of
+ * every existing world -- said so in the file.
+ */
+static void wild_name_towns(struct wilderness *w)
+{
+	bool *used_settled = NULL, *used_lawless = NULL;
+	int i;
+
+	if (town_names.settled_count > 0)
+		used_settled = mem_zalloc(town_names.settled_count *
+								  sizeof(*used_settled));
+	if (town_names.lawless_count > 0)
+		used_lawless = mem_zalloc(town_names.lawless_count *
+								  sizeof(*used_lawless));
+
+	for (i = 0; i < w->town_count; i++) {
+		struct wild_town *town = &w->towns[i];
+		bool fallen = (town->folk == WILD_FOLK_MONSTER ||
+					   town->folk == WILD_FOLK_ABANDONED);
+		uint32_t seed = wild_block_seed(w, town->block.x, town->block.y);
+		int pass;
+
+		town->name = NULL;
+
+		/*
+		 * The list its character calls for first; then the other one, rather
+		 * than leaving a town nameless while names go spare.
+		 */
+		for (pass = 0; pass < 2 && !town->name; pass++) {
+			bool lawless = fallen ? (pass == 0) : (pass == 1);
+			char **list = lawless ? town_names.lawless : town_names.settled;
+			bool *used = lawless ? used_lawless : used_settled;
+			int count = lawless ? town_names.lawless_count
+							    : town_names.settled_count;
+			int k;
+
+			if (!count || !used) continue;
+
+			/* From the town's own seed, then the next free one along. */
+			for (k = 0; k < count; k++) {
+				int at = (int) ((seed >> 3) % (uint32_t) count);
+
+				at = (at + k) % count;
+
+				if (used[at]) continue;
+
+				used[at] = true;
+				town->name = list[at];
+				break;
+			}
+		}
+	}
+
+	mem_free(used_lawless);
+	mem_free(used_settled);
+}
+
+/**
  * ------------------------------------------------------------------------
  * Where the dungeons open (WLD-14)
  * ------------------------------------------------------------------------ */
@@ -1321,6 +1392,48 @@ bool wild_dungeon_in_block(struct wilderness *w, int bx, int by)
 			return true;
 
 	return false;
+}
+
+/**
+ * What to call a place of this size (WLD-11).
+ *
+ * One table, read by the status line and by the world map's legend, so that the
+ * word the player sees standing in a town is the word the map used to describe
+ * it from a distance.
+ */
+const char *wild_band_name(int band)
+{
+	switch (band) {
+		case 0:  return "village";
+		case 1:  return "town";
+		case 2:  return "city";
+		case 3:  return "great city";
+		default: return "place";
+	}
+}
+
+/**
+ * Which town this world grid is inside, or -1 for none.
+ *
+ * Grid-precise, unlike wild_town_at(), which answers by block and so counts a
+ * grid in the same block as the town but outside its wall.  The status line
+ * needs the exact question: standing at the gate is not standing in the market.
+ */
+int wild_town_here(struct wilderness *w, struct loc grid)
+{
+	int i;
+
+	if (!w) return -1;
+
+	for (i = 0; i < w->town_count; i++) {
+		struct loc org = wild_town_origin_of(w, i);
+
+		if (grid.x >= org.x && grid.x < org.x + w->towns[i].wid &&
+			grid.y >= org.y && grid.y < org.y + w->towns[i].hgt)
+			return i;
+	}
+
+	return -1;
 }
 
 /**
@@ -1754,6 +1867,7 @@ void wild_generate(struct wilderness *w)
 	 * places -- a dungeon mouth nobody can find is a dungeon nobody uses.
 	 */
 	wild_place_towns(w);
+	wild_name_towns(w);
 	wild_place_dungeons(w);
 	wild_place_roads(w);
 

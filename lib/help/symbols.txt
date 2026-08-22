@@ -74,6 +74,11 @@ A '>' out in the open is the mouth of one of the world's dungeons rather than
 an ordinary staircase.  Each leads somewhere different and only so deep; see
 'dungeons.txt'.
 
+Every town has a name, and the status line shows it while you are inside the
+walls -- where Angband showed "Town".  Outside one it says "wilderness",
+which is what depth zero mostly is.  A name from the lawless list, like
+Sawall or Hendrake, is a place that has fallen: not somewhere to shop.
+
 Not every town has people in it.  Most do; about one in four has been emptied
 and taken back by animals, one in ten is held by monsters, and one in twenty
 stands empty with its shops still in it.  Law decides it: a town in country

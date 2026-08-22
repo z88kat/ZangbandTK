@@ -31,6 +31,12 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 21 August 2026
 ----------------------------------------------------------------
 
+- **3.10.0** — Towns have names, and the status line shows the one you are
+  standing in. Where Angband said ``Town`` at depth zero — which here meant the
+  whole world, market square and empty moorland alike — it now names the place, or
+  says ``wilderness``. A place in governed country and a place that has fallen
+  draw their names from different lists, so what somewhere is called tells you
+  something before you arrive.
 - **3.9.0** — Towns differ in who lives in them (WLD-11): about three in five
   have people, one in four has been emptied and taken back by animals, one in ten
   is held by monsters, and one in twenty stands empty with its shops intact. Law

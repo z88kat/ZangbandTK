@@ -82,6 +82,37 @@ spellbook, since no class starts with one.
 It has no armoury and no weaponsmith. Those are in the next town along, and
 finding them is the first thing the world asks of you.
 
+What they are called
+--------------------
+
+Every town has a name, and the status line shows it while you are inside its
+walls — where Angband showed ``Town``, which here was wrong nearly everywhere it
+appeared: depth zero is the whole world, so it said the same thing a thousand
+grids out in open country as it did in a market square. Outside a town it now
+says ``wilderness``; inside one it says the name.
+
+The name tells you something. A place in governed country takes its name from one
+list, a place that has fallen or stands empty from another — so *Sawall* is not
+somewhere to go shopping. No two towns in a world share a name, and a world always
+calls its towns the same thing, since the names come from its seed rather than
+from the savefile.
+
+.. note::
+
+   **On the names themselves.** Zangband generated them: an elvish name from
+   Angband's syllable tables with a size suffix hung on it — ``-ville`` for a
+   hamlet, then ``Dun``, ``-ton``, ``-ford``. That is a name generator for
+   Middle-earth, and DEC-30 points this game at Amber, so the names are curated
+   in ``lib/gamedata/town.txt`` instead.
+
+   The sourcing is recorded honestly in that file. The agreed reference for the
+   setting yields almost no place names — Amber, Castle Amber, Tir-na Nog'th, the
+   Forest of Arden, Avalon, the Courts of Chaos, and four of those are already
+   dungeons. So only *Avalon* is confirmed from it. The rest are believed to be
+   Zelazny's, from the Chronicles, but have not been checked against the books.
+   Nothing in the list is invented. If one of them is wrong it is wrong in that
+   one file, and deleting the line is the whole fix.
+
 Who lives there
 ---------------
 
