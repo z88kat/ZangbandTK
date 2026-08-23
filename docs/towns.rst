@@ -216,10 +216,12 @@ town to run anything.
    lamplight or waits, and waiting a hundred turns at a time with ``R`` is not
    waiting, it is bookkeeping.
 
-   Zangband's inn also carried a nightmare vision, which WLD-16c judged a real
-   effect worth keeping. It is **not** built: Angband 4.2 has no equivalent to
-   port, so it would have to be written rather than brought across, and that is
-   its own piece of work.
+   Zangband's inn also carried a nightmare vision. It is **not** built yet, and
+   when it is it will not be Zangband's: what that actually did was a sanity
+   blast — draining wits, inflicting amnesia, sometimes granting a mutation — in
+   service of the game's Lovecraft material, which this one is deliberately
+   moving away from. The dream is worth keeping and the machinery behind it is
+   not.
 
 The magetower
 -------------

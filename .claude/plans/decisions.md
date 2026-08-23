@@ -544,7 +544,7 @@ data-file and source analysis had entirely missed:
 | BAL-15…BAL-17 | Nightmare mode — an irreversible birth option and difficulty system |
 | CNT-15 | The Ancient and Foul Curse, and its cascade |
 | CNT-16 | Random object abilities at generation time |
-| **CNT-17** | **Eldritch Horrors** — sanity blasting: INT/WIS drain, fear, confusion, amnesia, and mutation |
+| ~~**CNT-17**~~ | ~~**Eldritch Horrors** — sanity blasting~~ **Dropped by DEC-32.** The Mythos path is closed; the inn's nightmare is built without it. |
 | PLR-29 | Allegiance is three-state — hostile, friendly, pet — not a boolean |
 | **PLR-30** | **Pets cost mana upkeep** scaling with total pet levels |
 | **PLR-31** | **Experience only for the killing blow** — pets earn the player nothing |
@@ -797,6 +797,45 @@ past the monsters works. Whether a taken town should refuse to sell is a
 question for WLD-17 when the store system is next opened.
 
 
+**DEC-32 — CNT-17 is dropped. The Mythos path is closed, and the nightmare does
+not need it.**
+
+CNT-17 asked for Zangband's sanity blasting: Eldritch Horrors that drain
+intelligence and wisdom on sight, inflict fear, confusion and amnesia, and can
+grant a mutation. Its stated rationale was that this is *"the mechanic that
+makes the Mythos content of §2 mean something"*.
+
+*Rejected.* DEC-30 points the game at Amber and calls the accumulated Lovecraft
+drift a defect. A mechanic whose entire purpose is to make that drift matter
+pulls the other way -- and building it would mean an insanity system, an
+amnesia effect, a mutation trigger and a monster flag, all in service of content
+the project is trying to reduce. That is the kitchen sink: adding everything
+anyone can think of, in the hope that more is better.
+
+> Decided by the project owner: *"I don't want to go down the Mythos path. It
+> would just mean we throw the kitchen sink into the game adding everything we
+> can think of. I like to keep it focused on the core objective of Amber. So i
+> would not do the sanity blast of CNT-17. But we should keep the nightmare
+> feature and add later."*
+
+*What this costs, stated honestly.* The Mythos monsters are already imported --
+DEC-02's "theme first" curation took everything carrying Amber, Mythos or Chaos
+identity, and the bestiary holds Nyarlathotep and Azathoth among the rest.
+Without CNT-17 they are large monsters with evocative names, which is precisely
+the criticism CNT-17 was written to answer. That is accepted rather than solved:
+under DEC-30 the answer is fewer of them, not a mechanic to justify them. Whether
+to actually remove any is a content pass nobody has scheduled, and this decision
+does not order one.
+
+*The nightmare survives, decoupled.* Zangband reached its sanity blast through
+the inn's bed, so the two arrived together and looked like one feature. They are
+not. A night's sleep that shows you something is Zelazny's own furniture --
+Tir-na Nog'th is a city seen only by moonlight and is already a dungeon here --
+and it can be built out of what 4.2 already has, without an insanity system.
+Recorded as a follow-up below, with the constraint that it must not reintroduce
+CNT-17 by the back door.
+
+
 Nothing is currently blocked. All questions raised during Phase 1 planning are resolved or
 explicitly scheduled below.
 
@@ -820,19 +859,26 @@ Deferred to their own platforms (DEC-21):
 
 Outstanding follow-ups raised while building, rather than while planning:
 
-- **The inn's nightmare vision** (WLD-16c). The bed is built; the nightmare is
-  not. Zangband's `have_nightmare()` is a **sanity blast** reached through a bed
-  rather than through a line of sight — a saving throw against a power drawn
-  from a deep monster's hit dice, and on failure a race-dependent effect plus
-  the monster's `ELDRITCH_HORROR` lore. That is **CNT-17**, which appears in no
-  milestone, so the nightmare is blocked on an unscheduled requirement rather
-  than merely unfinished. Building it alone would mean writing a sanity mechanic
-  that fires nowhere else.
-- **CNT-17 wants re-reading against DEC-30.** Its rationale is that sanity
-  blasting is what makes the Mythos content mean something; DEC-30 says that
-  content is drift to be removed. The mechanic may survive where the
-  justification does not — a night in Shadow that shows you something you cannot
-  unsee is Zelazny's, and Tir-na Nog'th is already a dungeon here.
+- **The inn's nightmare** (WLD-16c). The bed is built; the dream is not. It is
+  no longer blocked on anything: DEC-32 drops CNT-17, so the nightmare is to be
+  built out of what 4.2 already has rather than on top of a sanity system.
+  Zangband's version picked a monster from the deepest part of the bestiary and
+  rolled a saving throw against its hit dice; that shape is reusable, and 4.2's
+  timed effects will carry the consequence.
+
+  Two directions, either or both, for whoever takes it:
+
+  - **A bad night.** A failed save leaves the character afraid, confused or
+    hallucinating for a while — 4.2 has all three already. The dream names what
+    it showed, so the message does the work the mechanic would otherwise have to.
+  - **A true dream.** More interesting and more Zelazny: the dream shows you
+    somewhere real. Reveal a dungeon mouth or a town on the world map that the
+    character has not found. The Pattern and the Trumps both work by showing
+    people places; an inn in Shadow is a fair place for that to happen, and it
+    turns a night's rest into something worth paying for beyond the daylight.
+
+  The constraint from DEC-32: no insanity, no amnesia, no mutation trigger. If a
+  design needs those, it is CNT-17 wearing a hat.
 
 Verification work carried into Phase 2:
 

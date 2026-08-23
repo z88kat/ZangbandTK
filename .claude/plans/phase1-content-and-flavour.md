@@ -169,7 +169,13 @@ effect in the chain, which may itself cascade. After the chain resolves there is
 cyberdemon summon. Rationale: the cascade *is* the mechanic; implemented as a flat random
 effect it becomes unremarkable.
 
-**CNT-17 — Eldritch Horrors blast sanity on sight.** From `docs/monster.txt` (DEC-16), and
+**CNT-17 — ~~Eldritch Horrors blast sanity on sight~~. Dropped by DEC-32.** The Mythos
+path is closed: a mechanic whose purpose is to make the Lovecraft content matter pulls
+against DEC-30, which calls that content drift. The inn's nightmare, which Zangband reached
+through this, is kept and built without it. What follows is the original entry, left because
+the reasoning it records is still the argument against the decision.
+
+From `docs/monster.txt` (DEC-16), and
 missing from every earlier draft of this document. Certain monsters are *"so fearsome to
 look upon"* that merely seeing them may temporarily drain intelligence or wisdom, or inflict
 fear, confusion or amnesia. Per `spoilers/mutation.txt` a sanity blast can also **grant a

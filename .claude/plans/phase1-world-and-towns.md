@@ -406,35 +406,29 @@ implemented behaviour, assessed:
 > ported — the documentation describes the behaviour, and no source implements it. Schedule
 > with M8 (mutations) rather than M5, since it is useless before PLR-13 exists.
 
-> **The inn's nightmare is outstanding, and depends on a requirement nothing
-> schedules.** The bed is built and works: it sells a night's sleep, only after
-> dark, and wakes the player at dawn. The nightmare is not, and reading
-> [bldg.c](../../archive/zangband/src/bldg.c#L22) says why it cannot simply be
-> ported.
+> **The inn's nightmare is outstanding, and is no longer blocked.** The bed is
+> built and works: it sells a night's sleep, only after dark, and wakes the
+> player at dawn.
 >
-> `have_nightmare()` picks a monster from the deepest part of the bestiary,
-> filtered to the ones fit to appear in a nightmare, and works a *power* from its
-> hit dice — plus fifty if it is unique, minus fifty if it comes in packs. The
-> player then makes a saving throw. Pass, and *"X chases you through your
-> dreams"* and nothing else happens. Fail, and *"You behold the [horrific]
-> visage of X!"*, the monster's `ELDRITCH_HORROR` lore is marked as learned, and
-> a race-dependent switch does the damage.
+> Zangband reached its sanity blast through that bed, so the two arrived together
+> and looked like one feature. `have_nightmare()`
+> ([bldg.c](../../archive/zangband/src/bldg.c#L22)) picks a monster from the
+> deepest part of the bestiary, works a *power* from its hit dice — plus fifty if
+> unique, minus fifty if it comes in packs — and rolls a saving throw. Pass, and
+> *"X chases you through your dreams"*. Fail, and *"You behold the [horrific]
+> visage of X!"*, the monster's `ELDRITCH_HORROR` lore is marked learned, and a
+> race-dependent switch does the damage.
 >
-> That is not a bad dream with a message attached. It is Zangband's **sanity
-> blast**, reached through a bed instead of through a line of sight — which is
-> **CNT-17**, and CNT-17 appears in no milestone in
-> [phase2-development-plan.md](phase2-development-plan.md). So the nightmare is
-> blocked on an unscheduled requirement, and building it alone would mean
-> writing a sanity mechanic that only ever fires in an inn.
+> That second half is **CNT-17**, and DEC-32 drops it: the Mythos path is closed.
+> So the nightmare is to be built from what 4.2 already has — its timed effects
+> will carry a bad night, and the world map will carry a true one — and not on
+> top of an insanity system. Zangband's shape is still reusable; its payload is
+> not.
 >
-> *And CNT-17 itself now wants re-reading against DEC-30.* Its stated rationale
-> is that sanity blasting is "the mechanic that makes the Mythos content of §2
-> *mean* something" — and DEC-30 says the Mythos content is drift to be removed
-> rather than made to mean something. The mechanic may well survive that reading
-> where its justification does not: a night's sleep in Shadow that shows you
-> something you cannot unsee is Zelazny's own furniture, and Tir-na Nog'th is
-> already in the game as a dungeon. Deciding which is a taste question for
-> whoever schedules CNT-17.
+> Sketched directions and the constraint are recorded in
+> [decisions.md](decisions.md) under the outstanding follow-ups. The constraint,
+> briefly: no insanity, no amnesia, no mutation trigger. A design needing those
+> is CNT-17 wearing a hat.
 
 **WLD-16d — Quest-giving is a property any building may carry, not a building type.** The
 "quest giver" in WLD-16c is a *capability*, not a distinct building. Zangband already worked
