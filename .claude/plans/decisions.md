@@ -818,6 +818,22 @@ Deferred to their own platforms (DEC-21):
   [scripts/](../../scripts/) but no macOS equivalent, so a `.app` bundling step is new work
   whenever distribution matters. Single-architecture under DEC-22, which simplifies it.
 
+Outstanding follow-ups raised while building, rather than while planning:
+
+- **The inn's nightmare vision** (WLD-16c). The bed is built; the nightmare is
+  not. Zangband's `have_nightmare()` is a **sanity blast** reached through a bed
+  rather than through a line of sight — a saving throw against a power drawn
+  from a deep monster's hit dice, and on failure a race-dependent effect plus
+  the monster's `ELDRITCH_HORROR` lore. That is **CNT-17**, which appears in no
+  milestone, so the nightmare is blocked on an unscheduled requirement rather
+  than merely unfinished. Building it alone would mean writing a sanity mechanic
+  that fires nowhere else.
+- **CNT-17 wants re-reading against DEC-30.** Its rationale is that sanity
+  blasting is what makes the Mythos content mean something; DEC-30 says that
+  content is drift to be removed. The mechanic may survive where the
+  justification does not — a night in Shadow that shows you something you cannot
+  unsee is Zelazny's, and Tir-na Nog'th is already a dungeon here.
+
 Verification work carried into Phase 2:
 
 - Measure `struct chunk`'s memory footprint against the wilderness live-block target

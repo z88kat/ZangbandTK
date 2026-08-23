@@ -178,7 +178,7 @@ Each is a ``+`` in a colour of its own, and each charges.
      - town and up
      - Binds wounds (4 gold a hit point), cures poison, cuts, stunning,
        blindness and confusion (60), restores drained stats (400), restores lost
-       experience (400). Only offers what you actually need.
+       levels (400). Only offers what you actually need.
    * - Magesmith
      - city and up
      - Puts magic on a weapon or a suit of armour, 250 gold a go.
@@ -191,6 +191,18 @@ Nothing in a town is free. The prices are in ``constants.txt`` and are pitched s
 a character of level five feels them and one of level thirty does not, which is
 the same shape as the magetower's fare: a service is a use for gold, and gold
 stops being scarce.
+
+.. note::
+
+   **On "lost levels".** Some attacks drain experience rather than hit points —
+   undead touches, nether, a few traps. The message is *"You feel your life
+   draining away"*, or *"slipping away"* if you have Hold Life, which halves it.
+
+   Since your level is computed from your experience, draining it can take a
+   level off you, and with it hit points, spell points and access to spells.
+   The game remembers the most experience you have ever had, so the loss is
+   recoverable: the healer puts you back to your peak, as a Potion of Restore
+   Life Levels does. What it cannot give back is experience you never earned.
 
 A town that has fallen has none of them. Nobody is running a teleport network or
 an inn out of somewhere held by monsters, and there is nobody in an abandoned

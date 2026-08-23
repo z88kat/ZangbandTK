@@ -1153,7 +1153,8 @@ static void service_healer(void)
 		menu_dynamic_add_label(m, format("%-28s %5d au", "Restore your strength",
 			(int) z_info->restore_cost), 0, HEAL_STATS, labels);
 	if (player->exp < player->max_exp)
-		menu_dynamic_add_label(m, format("%-28s %5d au", "Restore your memory",
+		menu_dynamic_add_label(m, format("%-28s %5d au",
+			"Restore your lost levels",
 			(int) z_info->restore_cost), 0, HEAL_EXP, labels);
 
 	menu_dynamic_add_label(m, "Nothing today", 'q', 0, labels);
@@ -1199,6 +1200,15 @@ static void service_healer(void)
 			break;
 
 		case HEAL_EXP:
+			/*
+			 * Drained experience, not anything to do with memory -- which is
+			 * what this was called at first, and was the wrong game's idiom.
+			 * Angband calls it life force: a blow that drains it says "You feel
+			 * your life draining away", and restoring it says "You feel your
+			 * life energies returning".  What it costs the player is levels,
+			 * since level is computed from experience, so that is what the
+			 * healer offers to put back.
+			 */
 			if (!service_pay(z_info->restore_cost, "That"))
 				return;
 			effect_simple(EF_RESTORE_EXP, source_player(), "0", 0, 0, 0, 0, 0,

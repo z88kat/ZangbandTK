@@ -82,7 +82,8 @@ A '+' in a town is a service: something with a person behind the door rather
 than goods on a shelf.  They are told apart by colour, and the "slash" command
 ('/') will name one.
 
-  green   healer      binds wounds, cures ailments, restores what is drained
+  green   healer      binds wounds, cures ailments, restores drained stats
+                          and levels lost to life-draining attacks
   brown   inn         a bed until morning, which only helps at night
   red     magesmith   puts magic on a weapon or a suit of armour
   blue    recharger   puts charges back in a wand or a staff

@@ -390,7 +390,7 @@ implemented behaviour, assessed:
 | **Recharge** | `building_recharge()` — restore wand and staff charges | **Keep.** Utility plus gold sink. |
 | **Healer** | `building_healer()` — cure and restore | **Keep.** Utility. |
 | **Quest giver** | `build_has_quest()`, `build_cmd_quest()` | **Keep — not optional.** WLD-19 to WLD-22 need somewhere to take quests from. |
-| **Inn** | `inn_rest()`, plus the nightmare vision in `have_nightmare()` | **Keep.** Resting itself duplicates 4.2's, but the nightmare vision is a real effect, and an inn gives a town somewhere to *be* rather than only somewhere to shop. |
+| **Inn** | `inn_rest()`, plus the nightmare vision in `have_nightmare()` | **Keep.** Resting itself duplicates 4.2's, but the nightmare vision is a real effect, and an inn gives a town somewhere to *be* rather than only somewhere to shop. *The bed is built (M5); the nightmare is not — see below.* |
 | **Weaponmaster** | `compare_weapons()` — hit and critical probability tables | **Cut.** 4.2's object descriptions already show damage, blows and probabilities, and show them better. Redundant on a modern base. |
 | **Casino** | Four gambling minigames — in-between, craps, wheel, dice slots (~270 lines) | **Cut.** A money faucet and sink with no other mechanical consequence. Nothing else in the game reads its outcome. |
 
@@ -405,6 +405,36 @@ implemented behaviour, assessed:
 > passes that test comfortably. **Keep it**, but note it must be *written* rather than
 > ported — the documentation describes the behaviour, and no source implements it. Schedule
 > with M8 (mutations) rather than M5, since it is useless before PLR-13 exists.
+
+> **The inn's nightmare is outstanding, and depends on a requirement nothing
+> schedules.** The bed is built and works: it sells a night's sleep, only after
+> dark, and wakes the player at dawn. The nightmare is not, and reading
+> [bldg.c](../../archive/zangband/src/bldg.c#L22) says why it cannot simply be
+> ported.
+>
+> `have_nightmare()` picks a monster from the deepest part of the bestiary,
+> filtered to the ones fit to appear in a nightmare, and works a *power* from its
+> hit dice — plus fifty if it is unique, minus fifty if it comes in packs. The
+> player then makes a saving throw. Pass, and *"X chases you through your
+> dreams"* and nothing else happens. Fail, and *"You behold the [horrific]
+> visage of X!"*, the monster's `ELDRITCH_HORROR` lore is marked as learned, and
+> a race-dependent switch does the damage.
+>
+> That is not a bad dream with a message attached. It is Zangband's **sanity
+> blast**, reached through a bed instead of through a line of sight — which is
+> **CNT-17**, and CNT-17 appears in no milestone in
+> [phase2-development-plan.md](phase2-development-plan.md). So the nightmare is
+> blocked on an unscheduled requirement, and building it alone would mean
+> writing a sanity mechanic that only ever fires in an inn.
+>
+> *And CNT-17 itself now wants re-reading against DEC-30.* Its stated rationale
+> is that sanity blasting is "the mechanic that makes the Mythos content of §2
+> *mean* something" — and DEC-30 says the Mythos content is drift to be removed
+> rather than made to mean something. The mechanic may well survive that reading
+> where its justification does not: a night's sleep in Shadow that shows you
+> something you cannot unsee is Zelazny's own furniture, and Tir-na Nog'th is
+> already in the game as a dungeon. Deciding which is a taste question for
+> whoever schedules CNT-17.
 
 **WLD-16d — Quest-giving is a property any building may carry, not a building type.** The
 "quest giver" in WLD-16c is a *capability*, not a distinct building. Zangband already worked

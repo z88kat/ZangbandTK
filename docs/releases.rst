@@ -31,6 +31,10 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 21 August 2026
 ----------------------------------------------------------------
 
+- **3.13.1** — The healer's "restore your memory" is now "restore your lost
+  levels", which is what it actually does — Angband calls it life force, and
+  memory was another game's idiom. The manual explains what drains it and what
+  losing it costs you.
 - **3.13.0** — WLD-16c finished: the inn, the healer, the magesmith and the
   recharger join the magetower. A town has an inn, a healer and a magetower; a
   city adds the magesmith and the recharger; a town that has fallen has none of
