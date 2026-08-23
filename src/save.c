@@ -1111,6 +1111,13 @@ void wr_wilderness(void)
 		}
 	}
 
+	/*
+	 * How the held surface below is encoded.  Stated here rather than taken
+	 * from the "dungeon" block, which is written after this one: a reader that
+	 * waited for it would decode this chunk with a plane count of zero.
+	 */
+	wr_byte(SQUARE_SIZE);
+
 	{
 		struct loc offset = loc(0, 0);
 		struct chunk *known = wild_held_knowledge(&offset);

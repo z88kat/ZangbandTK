@@ -3541,6 +3541,14 @@ static int test_every_service_held_is_built(void *state) {
 
 const char *suite_name = "game/wild";
 struct test tests[] = {
+	/*
+	 * First on purpose.  This is the only test that loads a savefile holding a
+	 * remembered surface, and the bug it guards against only bites on the first
+	 * load in a process -- load.c's record of how many info planes a chunk was
+	 * written with is static, and any earlier test that loaded a savefile left
+	 * it set, so from anywhere further down the list this passed either way.
+	 */
+	{ "the-map-survives-a-save-from-below", test_the_map_survives_a_save_from_below },
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
 	{ "world-position-matches-the-window", test_world_position_matches_the_window },
 	{ "town-can-be-walked-out-of", test_town_can_be_walked_out_of },
@@ -3572,7 +3580,6 @@ struct test tests[] = {
 	{ "the-village-is-angbands-town-size", test_the_village_is_angbands_town_size },
 	{ "world-position-survives-a-save", test_world_position_survives_a_save },
 	{ "the-window-survives-a-save", test_the_window_survives_a_save },
-	{ "the-map-survives-a-save-from-below", test_the_map_survives_a_save_from_below },
 	{ "a-wall-is-seen-from-inside-a-wood", test_a_wall_is_seen_from_inside_a_wood },
 	{ "every-dungeon-opens-somewhere", test_every_dungeon_opens_somewhere },
 	{ "a-dungeon-has-a-bottom", test_a_dungeon_has_a_bottom },

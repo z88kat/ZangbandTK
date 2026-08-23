@@ -102,6 +102,7 @@ int rd_wilderness_1(void);
 int rd_wilderness_2(void);
 int rd_wilderness_3(void);
 int rd_wilderness_4(void);
+int rd_wilderness_5(void);
 int rd_wilderness(void);
 int rd_dungeon(void);
 int rd_chunks(void);

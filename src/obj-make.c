@@ -1304,9 +1304,15 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 			 *
 			 * Only for theme rejections.  A book the player cannot read is
 			 * refused by 4.2 on purpose, and falling back to one would hand
-			 * warriors spellbooks at the unfiltered rate.
+			 * warriors spellbooks at the unfiltered rate -- so an unreadable
+			 * book is not eligible to be the fallback either.  It is tested
+			 * here rather than by moving the check above the theme roll, which
+			 * would take books out of the theme weighting altogether.
 			 */
-			if (!fallback) fallback = kind;
+			if (!fallback && !(tval_is_book_k(kind) &&
+							   !obj_kind_can_browse(kind)))
+				fallback = kind;
+
 			kind = NULL;
 			tries--;
 			continue;

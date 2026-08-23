@@ -1041,11 +1041,22 @@ static void drop_find_grid(const struct player *p, struct chunk *c,
 			int num_ignored = 0;
 			int score;
 
-			/* Lots of reasons to say no */
+			/*
+			 * Lots of reasons to say no.
+			 *
+			 * Tested on whether the grid will hold an object rather than on
+			 * whether it is floor.  In Angband the two are the same set; in
+			 * ZangbandTK they are not, because a tree and a shallow stream are
+			 * PASSABLE and OBJECT but not FLOOR.  A character standing in a
+			 * wood who dropped something -- or whose pack overflowed -- had
+			 * their own grid rejected here, so the object appeared a square or
+			 * two away, and where no floor grid was in reach and in sight it
+			 * was destroyed instead.
+			 */
 			if ((dist > 10) ||
 				!square_in_bounds_fully(c, try) ||
 				!los(c, start, try) ||
-				!square_isfloor(c, try) ||
+				!square_isobjectholding(c, try) ||
 				square_istrap(c, try))
 				continue;
 

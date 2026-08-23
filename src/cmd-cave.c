@@ -154,8 +154,17 @@ void do_cmd_go_down(struct command *cmd)
 		return;
 	}
 
-	/* Warn a force_descend player if they're going to a quest level */
-	if (OPT(player, birth_force_descend)) {
+	/*
+	 * Warn a force_descend player if they're going to a quest level.
+	 *
+	 * Not when stepping into a dungeon from the surface: that arrival depth is
+	 * the dungeon's own shallowest level, chosen above, and force descent has
+	 * no say in it.  Recomputing it here dropped the player in at max_depth + 1
+	 * clamped against the range of the dungeon they were *leaving*, which for a
+	 * deep character could be scores of levels below the bottom of the one they
+	 * were walking into.
+	 */
+	if (!entering && OPT(player, birth_force_descend)) {
 		descend_to = dungeon_get_next_level(player,
 			player->max_depth, 1);
 		if (is_quest(player, descend_to) &&

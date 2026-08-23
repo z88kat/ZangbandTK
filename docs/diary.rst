@@ -31,6 +31,82 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+23 August 2026 — a review, and the save that was already broken
+===============================================================
+
+Before starting anything new I ran a review over everything this project has added
+to Angband — about 23,000 lines against the ``angband-base`` tag. Thirteen findings
+came back. Twelve were the kind you expect. The first one was not, and the reason
+it survived this long is the part worth writing down.
+
+**A green test suite was hiding it.** Saving below ground and then loading in a
+fresh process decoded the remembered surface as garbage. The mechanism: ``load.c``
+keeps the number of ``SQUARE_*`` info planes a chunk was written with in a
+file-static, and the only thing that sets it is the *dungeon* block. The
+*wilderness* block is written first, and it also decodes a chunk — the surface the
+player is holding while they are underground. So on the first load in a process it
+ran with a plane count of zero, skipped the info planes entirely, and read terrain
+out of the middle of them. Depending on the file that is a wrong map, a heap write
+past ``feat_count``, or ``quit("Broken savefile")``.
+
+There *is* a test for this. ``the-map-survives-a-save-from-below`` does an honest
+round trip — save, ``cleanup_angband``, ``init_angband``, load — and it passed. It
+passed because two earlier tests in the array had already loaded a savefile, and
+``cleanup_angband`` does not reset a static in ``load.c``. From anywhere except the
+front of the list the test could not fail. I moved it to the front, watched it
+fail, fixed the bug, watched it pass, and left it at the front with a comment
+saying why the position is load-bearing. Cross-test static leakage will hide the
+next bug of this shape too, and the only defence is a test that runs before
+anything else has warmed the state up.
+
+The fix threads the plane count through as a parameter instead of leaving it
+ambient, and adds version 6 of the wilderness block, which records it. Versions 3
+to 5 pass the compile-time ``SQUARE_SIZE``, which is what those files were always
+written with — the count simply went unrecorded — so existing saves are repaired
+rather than invalidated.
+
+**Making town placement fast without moving anybody's towns.** A profile said 60%
+of world generation was ``wild_in_town``, called once per block of a 17×17 window,
+for every candidate block in the world, for every town placed — each call walking
+the town list and recomputing origins. Replacing that walk with a block index took
+the ``cave/wild`` suite from 80 seconds to 37.
+
+The nervous part is that worlds are regenerated from their seed on load. Change how
+a town is scored and every existing character's towns move underneath them. Passing
+tests would not have told me that, because the tests check that towns are
+*plausible*, not that they are in the same place as yesterday. So I compiled both
+implementations side by side, had every call compute both answers and abort on any
+disagreement, and ran the whole suite. No mismatches. That is the check I would
+have skipped if I were in a hurry, and it is the only one that actually answered
+the question.
+
+**The bug the review did not find.** While verifying, ``player/inven-wield`` failed
+once in a sweep. I assumed I had broken it, stashed everything, and found it failing
+5 times in 100 runs on untouched code — so, not mine, and older than the review.
+Chasing it turned up something real: ``drop_find_grid`` picks where a dropped object
+lands by asking ``square_isfloor``. In Angband floor and object-holding are the same
+set of terrain. Here they are not, because a tree and a shallow stream are
+``PASSABLE`` and ``OBJECT`` and deliberately not ``FLOOR``. So a character standing
+in a wood who dropped something — or whose pack overflowed — had their own square
+rejected, and the item turned up a square or two away; and where no floor square was
+both in reach and in line of sight, and trees block sight, it was destroyed. The
+test was standing in a tree about one run in twenty.
+
+That is the third time a passable non-floor terrain has broken an upstream
+assumption that nothing in the wilderness would be walkable and not floor — the
+first was trees not lighting walls, which is already in this diary. Worth a sweep of
+the remaining ``square_isfloor`` calls sometime, on the assumption there are more.
+
+**What I got wrong.** My first pass at the spellbook fix moved the unreadable-book
+test above the theme roll, which reads better and is wrong: it takes books out of
+the theme weighting altogether. Backed it out for a guard on the fallback
+assignment, which changes nothing except the one case that was broken. And one of
+the thirteen findings I rejected — ``prt_daylight`` writing four characters and
+returning six is not a bug, it is a fixed-width field so the rest of the status line
+does not shift two columns when the sun comes up.
+
+1025/1025 unit tests and 5/5 integration tests pass.
+
 23 August 2026 — the lotus, and five places to forget
 =====================================================
 

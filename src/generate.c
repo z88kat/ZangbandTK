@@ -1426,6 +1426,33 @@ void prepare_next_level(struct player *p)
 				/* Save level and known level */
 				cave_store(cave, false, true);
 				cave_store(p->cave, true, true);
+			} else if (wild_is_surface(cave)) {
+				/*
+				 * Nothing stored the surface, so this path owns it and has to
+				 * take it down -- the same way the non-persistent path below
+				 * does.  Left undone, persistent levels leaked a chunk pair on
+				 * every scroll of the window, wiped the player's map of the
+				 * world every few dozen steps because the known surface was
+				 * never carried over, and abandoned the monster list so that a
+				 * unique standing in open country kept its cur_num for the rest
+				 * of the game and could never be generated again.
+				 *
+				 * No artifact sweep: wild_harvest() above already took every
+				 * object on the ground into the world's memory, where it stays
+				 * until the player comes back for it.
+				 */
+				if (p->cave) {
+					if (!p->upkeep->arena_level) {
+						kept_known = p->cave;
+						kept_offset = p->wild_offset;
+					} else {
+						cave_free(p->cave);
+					}
+					p->cave = NULL;
+				}
+
+				cave_clear(cave, p);
+				cave = NULL;
 			}
 		} else {
 			/*

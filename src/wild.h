@@ -269,6 +269,19 @@ struct wilderness {
 	struct wild_town towns[WILD_TOWNS_MAX];
 	int town_count;
 
+	/**
+	 * Which town stands on each block, as index + 1, with 0 for none.
+	 *
+	 * An index over the towns rather than a fact about them: wild_town_at()
+	 * answered by walking the town list and recomputing each town's origin,
+	 * and wild_town_score() asks it once per block of a 17x17 window for every
+	 * candidate block in the world, for every town it places.  Rebuilt from the
+	 * town list by wild_town_at() itself whenever the two disagree, so nothing
+	 * that adds a town has to remember it exists.
+	 */
+	int16_t *town_at;	/**< blocks * blocks entries, row-major */
+	int towns_indexed;	/**< how many towns town_at has been filled for */
+
 	/** What the player has left lying about, most recent first (WLD-04). */
 	struct wild_relic *relics;
 
@@ -361,6 +374,7 @@ void wild_keep_knowledge(struct chunk *known, struct loc offset);
 struct chunk *wild_take_knowledge(struct loc *offset);
 struct chunk *wild_held_knowledge(struct loc *offset);
 
+int wild_block_danger(const struct wild_block *block);
 int wild_danger(struct wilderness *w, int x, int y);
 int wild_density(struct wilderness *w, int x, int y);
 void wild_populate(struct wilderness *w, struct player *p, struct chunk *c,

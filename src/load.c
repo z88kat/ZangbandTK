@@ -62,6 +62,14 @@
 
 /**
  * Dungeon constants
+ *
+ * How many SQUARE_* info planes each terrain chunk in this savefile was written
+ * with.  Recorded by the "dungeon" block and needed again by "chunks", which
+ * follows it, so it has to outlive the call that reads it.  Every chunk reader
+ * is handed the count explicitly rather than reading it from here: a block that
+ * decodes a chunk *before* the dungeon block has set this -- as the wilderness
+ * block does, since it is written first -- would otherwise skip the info planes
+ * entirely and read terrain out of the middle of them.
  */
 static uint8_t square_size = 0;
 
@@ -1309,7 +1317,7 @@ int rd_stores_1(void) { return rd_stores_aux(rd_item, false); }
  * After loading the monsters, the objects being held by monsters are
  * linked directly into those monsters.
  */
-static int rd_dungeon_aux(struct chunk **c)
+static int rd_dungeon_aux(struct chunk **c, uint8_t planes)
 {
 	struct chunk *c1;
 	int i, n, y, x;
@@ -1320,6 +1328,16 @@ static int rd_dungeon_aux(struct chunk **c)
 	uint8_t tmp8u;
 	uint16_t tmp16u;
 	char name[100];
+
+	/*
+	 * A chunk is never written with no info planes, so being asked to read one
+	 * that way means the caller does not know how the file was written and the
+	 * decode below would silently take info bytes for terrain.  Refuse instead.
+	 */
+	if (!planes) {
+		note("Savefile chunk read with no square info planes");
+		return -1;
+	}
 
 	/* Header info */
 	rd_string(name, sizeof(name));
@@ -1334,7 +1352,7 @@ static int rd_dungeon_aux(struct chunk **c)
 	c1->name = string_make(name);
 
     /* Run length decoding of cave->squares[y][x].info */
-	for (n = 0; n < square_size; n++) {
+	for (n = 0; n < planes; n++) {
 		/* Load the dungeon data */
 		for (x = y = 0; y < c1->height; ) {
 			/* Grab RLE info */
@@ -1393,12 +1411,12 @@ static int rd_dungeon_aux(struct chunk **c)
 		rd_byte(&tmp8u);
 		while (tmp8u != 0xff) {
 			struct connector *current = mem_zalloc(sizeof *current);
-			current->info = mem_zalloc(square_size * sizeof(bitflag));
+			current->info = mem_zalloc(planes * sizeof(bitflag));
 			current->grid.x = tmp8u;
 			rd_byte(&tmp8u);
 			current->grid.y = tmp8u;
 			rd_byte(&current->feat);
-			for (n = 0; n < square_size; n++) {
+			for (n = 0; n < planes; n++) {
 				rd_byte(&current->info[n]);
 			}
 			current->next = c1->join;
@@ -1750,7 +1768,7 @@ int rd_wilderness_2(void)
  * Appended by version 3 of the block, and last in every version since, so that
  * anything added later goes in front of it rather than after.
  */
-static int rd_wilderness_knowledge(void)
+static int rd_wilderness_knowledge(uint8_t planes)
 {
 	uint8_t held;
 
@@ -1763,7 +1781,7 @@ static int rd_wilderness_knowledge(void)
 		rd_u16b(&ox);
 		rd_u16b(&oy);
 
-		if (rd_dungeon_aux(&known)) {
+		if (rd_dungeon_aux(&known, planes)) {
 			note("Error reading the remembered surface");
 			return -1;
 		}
@@ -1859,7 +1877,7 @@ int rd_wilderness_3(void)
 	if (rd_wilderness_body())
 		return -1;
 
-	return rd_wilderness_knowledge();
+	return rd_wilderness_knowledge(SQUARE_SIZE);
 }
 
 /**
@@ -1897,7 +1915,7 @@ int rd_wilderness_4(void)
 
 	rd_wilderness_dungeons();
 
-	if (rd_wilderness_knowledge())
+	if (rd_wilderness_knowledge(SQUARE_SIZE))
 		return -1;
 
 	rd_wilderness_visits_before_5();
@@ -1905,7 +1923,16 @@ int rd_wilderness_4(void)
 	return 0;
 }
 
-int rd_wilderness(void)
+/**
+ * Version 5 of the block, which did not record how the held surface was written.
+ *
+ * It was always written with the compile-time SQUARE_SIZE planes -- the count
+ * simply went unrecorded, because the reader took it from the "dungeon" block,
+ * which is written *after* this one and so had not been read yet.  Passing
+ * SQUARE_SIZE here reads those files correctly; version 6 states the count so
+ * that changing SQUARE_SIZE does not quietly invalidate saves.
+ */
+int rd_wilderness_5(void)
 {
 	if (rd_wilderness_body())
 		return -1;
@@ -1913,7 +1940,22 @@ int rd_wilderness(void)
 	rd_wilderness_dungeons();
 	rd_wilderness_visits();
 
-	return rd_wilderness_knowledge();
+	return rd_wilderness_knowledge(SQUARE_SIZE);
+}
+
+int rd_wilderness(void)
+{
+	uint8_t planes;
+
+	if (rd_wilderness_body())
+		return -1;
+
+	rd_wilderness_dungeons();
+	rd_wilderness_visits();
+
+	rd_byte(&planes);
+
+	return rd_wilderness_knowledge(planes);
 }
 
 int rd_dungeon(void)
@@ -1938,7 +1980,7 @@ int rd_dungeon(void)
 		return (0);
 	}
 
-	if (rd_dungeon_aux(&cave))
+	if (rd_dungeon_aux(&cave, square_size))
 		return 1;
 
 	/* Ignore illegal dungeons */
@@ -1958,7 +2000,7 @@ int rd_dungeon(void)
 	character_dungeon = true;
 
 	/* Read known cave */
-	if (rd_dungeon_aux(&player->cave)) {
+	if (rd_dungeon_aux(&player->cave, square_size)) {
 		return 1;
 	}
 	player->cave->depth = depth;
@@ -2044,7 +2086,7 @@ int rd_chunks(void)
 		struct chunk *c = NULL;
 
 		/* Read the dungeon */
-		if (rd_dungeon_aux(&c))
+		if (rd_dungeon_aux(&c, square_size))
 			return -1;
 
 		/* Read the objects */

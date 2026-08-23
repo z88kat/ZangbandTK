@@ -1023,7 +1023,7 @@ static void magetower_travel(void)
 						  player->grid.y + player->wild_offset.y);
 	struct menu *m;
 	char *labels;
-	int count, chosen, i;
+	int count, chosen, i, j;
 
 	count = wild_travel_places(wild, from, places, TRAVEL_MAX);
 
@@ -1036,7 +1036,37 @@ static void magetower_travel(void)
 	m = menu_dynamic_new();
 	if (!m) return;
 
-	labels = string_make(lower_case);
+	/*
+	 * A key for every destination, then the quit key, then the terminator.
+	 *
+	 * Sized from the menu rather than from lower_case: its 26 letters are
+	 * fewer than the destinations a well-travelled character can be offered,
+	 * and menu_dynamic_add_label() writes label_list[m->count] for any entry
+	 * given a key, so the "Stay here" row landed past the end of the 27-byte
+	 * buffer -- over the terminator at 26 destinations, and over the heap
+	 * beyond it after that.  all_letters holds 52, comfortably more than the
+	 * TRAVEL_MAX the destination list is already capped at.
+	 *
+	 * 'q' is skipped when handing out destination keys so that it means one
+	 * thing.  The selection scan takes the first match in the string, so a
+	 * destination holding 'q' -- the seventeenth, with the old alphabet -- was
+	 * chosen by the key meant to decline the journey.
+	 */
+	labels = mem_zalloc(count + 2);
+	for (i = 0, j = 0; i < count; i++, j++) {
+		while (all_letters[j] == 'q') j++;
+
+		/*
+		 * Cannot happen while TRAVEL_MAX stays below the 51 non-'q' letters
+		 * all_letters holds, but bounded rather than asserted: raising the
+		 * town or dungeon maximum should cost a few rows their shortcut key,
+		 * not run off the end of the alphabet.
+		 */
+		if (!all_letters[j]) break;
+
+		labels[i] = all_letters[j];
+	}
+	labels[count] = 'q';
 	m->selections = labels;
 
 	for (i = 0; i < count; i++) {
@@ -1061,7 +1091,7 @@ static void magetower_travel(void)
 	chosen = menu_dynamic_select(m);
 
 	menu_dynamic_free(m);
-	string_free(labels);
+	mem_free(labels);
 	screen_load();
 
 	if (chosen <= 0 || chosen > count) return;
@@ -1249,8 +1279,25 @@ static void service_inn(void)
 	 * Sleep until the sun comes up.  Turned forward rather than rested,
 	 * because resting is a thing monsters can interrupt and this is a room with
 	 * a door on it.
+	 *
+	 * The world still has to be run as the clock passes it, on the same ten
+	 * turn beat as the main loop, or the night is not a night: winding `turn`
+	 * on by itself digested no food, let no poison or cut or blessing run down,
+	 * and healed nothing, so a character could buy a bed while starving and
+	 * poisoned and wake at dawn exactly as they lay down.
 	 */
 	while (!is_daytime()) {
+		if (!(turn % 10)) {
+			process_world(cave);
+
+			notice_stuff(player);
+			handle_stuff(player);
+
+			/* A night can be survived or not: poison and hunger both bite. */
+			if (player->is_dead || !player->upkeep->playing)
+				return;
+		}
+
 		turn++;
 		player->upkeep->update |= PU_BONUS;
 	}

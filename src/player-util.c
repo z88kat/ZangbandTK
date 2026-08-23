@@ -1785,10 +1785,18 @@ void player_handle_post_move(struct player *p, bool eval_trap,
 	if (wild_service_at(cave, p->grid) >= 0) {
 		disturb(p);
 		if (is_involuntary) cmdq_flush();
-		event_signal(EVENT_ENTER_SERVICE);
 
-		/* The turn is taken by whatever the building does, or not at all. */
+		/*
+		 * Cleared before the building is entered, not after.  The turn is taken
+		 * by whatever the building does -- each service charges its own -- and
+		 * stepping onto the door of one the player then declines costs nothing.
+		 * Clearing this afterwards instead wiped the charge every service had
+		 * just made, so healing, enchanting, resting and travelling all took no
+		 * game time at all and nothing else in the world got a turn.
+		 */
 		p->upkeep->energy_use = 0;
+
+		event_signal(EVENT_ENTER_SERVICE);
 		return;
 	}
 

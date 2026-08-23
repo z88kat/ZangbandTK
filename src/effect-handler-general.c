@@ -3721,8 +3721,8 @@ static void ancient_curse_step(struct player *p, int step, bool *stop)
 		case 7:
 			/* The deep dungeon's own answer: greater demons, and no reprieve. */
 			msg("The floor splits and something vast comes through!");
-			effect_simple(EF_SUMMON, source_player(), "2+1d3", 0, 0, 0, 0, 0,
-						  NULL);
+			effect_simple(EF_SUMMON, source_player(), "2+1d3",
+						  summon_name_to_idx("HI_DEMON"), 0, 0, 0, 0, NULL);
 			*stop = true;
 			break;
 

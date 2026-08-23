@@ -32,7 +32,9 @@
 #include "init.h"
 #include "mon-make.h"
 #include "obj-pile.h"
+#include "obj-util.h"
 #include "player.h"
+#include "player-history.h"
 #include "dun-type.h"
 #include "player-calcs.h"
 #include "wild.h"
@@ -56,6 +58,20 @@ static struct loc wild_scroll = { 0, 0 };
 /** What the player knows of the surface, held while they are off it (WLD-25). */
 static struct chunk *wild_known = NULL;
 static struct loc wild_known_offset = { 0, 0 };
+
+/**
+ * Which town the status line was last told about; -2 for "not yet told".
+ *
+ * At file scope with the rest of the surface's state, and cleared by
+ * wild_cleanup() with the rest of it, because it belongs to a world rather than
+ * to the process.  Left inside wild_track_move() as a function static it
+ * outlived the character it described: dying in the starting village and
+ * beginning another one there left this reading 0 for the new character too, so
+ * their first step matched and never asked for the redraw, and the status line
+ * kept the dead character's location until something else happened to redraw
+ * it.  Loading a second savefile in one session did the same.
+ */
+static int wild_shown_town = -2;
 
 /**
  * Sea covers roughly this fraction of the world, as in Zangband.
@@ -300,6 +316,7 @@ struct wilderness *wild_new(int blocks, uint32_t seed)
 	w->blocks = blocks;
 	w->seed = seed;
 	w->map = mem_zalloc((size_t) blocks * blocks * sizeof(struct wild_block));
+	w->town_at = mem_zalloc((size_t) blocks * blocks * sizeof(*w->town_at));
 
 	return w;
 }
@@ -324,6 +341,7 @@ void wild_free(struct wilderness *w)
 		mem_free(seen);
 	}
 
+	mem_free(w->town_at);
 	mem_free(w->map);
 	mem_free(w);
 }
@@ -1292,6 +1310,20 @@ static void wild_place_towns(struct wilderness *w)
 				}
 			}
 
+		/*
+		 * The same services the ordinary path would have given it.  Asked for
+		 * last, once the block is settled, because wild_town_services() reads
+		 * the block it is told about -- and asked for at all because without
+		 * it this village had none, magetower included, and WLD-12 promises
+		 * every character a tower to leave home from.  A starting village with
+		 * no tower is one the player has to walk out of on foot, across a world
+		 * that had nowhere habitable in it.
+		 */
+		w->towns[0].services = wild_town_services(w, w->towns[0].block.x,
+												  w->towns[0].block.y,
+												  w->towns[0].band,
+												  w->towns[0].folk, true);
+
 		wild_town_claim(w, &w->towns[0]);
 		w->town_count = 1;
 	}
@@ -1328,6 +1360,51 @@ int wild_town_count(const struct wilderness *w)
 }
 
 /**
+ * Bring the block index up to date with the town list.
+ *
+ * Towns are only ever appended -- wild_place_towns() sites one, claims its
+ * ground and then counts it -- so the usual case is filling in the blocks of
+ * the towns added since the last call, which costs one town footprint apiece.
+ * The count going backwards means the world is being placed again from the
+ * start, and the index is thrown away rather than unpicked.
+ *
+ * A block is recorded for the first town that covers it, which is what the
+ * list walk this replaces returned.  In practice no two towns can overlap:
+ * every site is rejected if its footprint touches ground already claimed, and
+ * a claim reaches a block further than the town itself does.
+ */
+static void wild_town_index(struct wilderness *w)
+{
+	int size = z_info->wild_block_size;
+
+	if (w->towns_indexed > w->town_count) {
+		memset(w->town_at, 0,
+			   (size_t) w->blocks * w->blocks * sizeof(*w->town_at));
+		w->towns_indexed = 0;
+	}
+
+	while (w->towns_indexed < w->town_count) {
+		int i = w->towns_indexed;
+		struct loc org = wild_town_origin_of(w, i);
+		int x0 = org.x / size, x1 = (org.x + w->towns[i].wid - 1) / size;
+		int y0 = org.y / size, y1 = (org.y + w->towns[i].hgt - 1) / size;
+		int bx, by;
+
+		for (by = y0; by <= y1; by++)
+			for (bx = x0; bx <= x1; bx++) {
+				int at;
+
+				if (!wild_in_bounds(w, bx, by)) continue;
+
+				at = by * w->blocks + bx;
+				if (!w->town_at[at]) w->town_at[at] = (int16_t) (i + 1);
+			}
+
+		w->towns_indexed++;
+	}
+}
+
+/**
  * Which town, if any, stands on this block.
  *
  * Distinct from the block's `place` mark, which covers the land reserved when
@@ -1339,23 +1416,12 @@ int wild_town_count(const struct wilderness *w)
  */
 int wild_town_at(struct wilderness *w, int bx, int by)
 {
-	int size = z_info->wild_block_size;
-	int i;
-
 	if (!w || !wild_in_bounds(w, bx, by))
 		return -1;
 
-	for (i = 0; i < w->town_count; i++) {
-		struct loc org = wild_town_origin_of(w, i);
+	wild_town_index(w);
 
-		if (bx >= org.x / size &&
-			bx <= (org.x + w->towns[i].wid - 1) / size &&
-			by >= org.y / size &&
-			by <= (org.y + w->towns[i].hgt - 1) / size)
-			return i;
-	}
-
-	return -1;
+	return w->town_at[by * w->blocks + bx] - 1;
 }
 
 
@@ -2244,6 +2310,7 @@ void wild_cleanup(void)
 {
 	wild_window_set = false;
 	wild_scroll = loc(0, 0);
+	wild_shown_town = -2;
 
 	if (wild_known) {
 		cave_free(wild_known);
@@ -2990,8 +3057,17 @@ void wild_town_people(struct wilderness *w, struct player *p, struct chunk *c,
 		 */
 		if (w->towns[idx].folk == WILD_FOLK_MONSTER) {
 			want = 1 + want / 3;
-			depth = MAX(1, wild_danger(w, w->towns[idx].block.x,
-									   w->towns[idx].block.y));
+
+			/*
+			 * wild_block_danger(), not wild_danger(): the latter returns zero
+			 * for any block inside a town, and a town's own block is always
+			 * inside one, so this used to clamp to depth 1 every time and fill
+			 * a town held by monsters -- in lawless country, no less -- with
+			 * the weakest creatures in the game.
+			 */
+			depth = MAX(1, wild_block_danger(
+				wild_block_at(w, w->towns[idx].block.x,
+							  w->towns[idx].block.y)));
 		}
 
 		wild_folk_wanted = w->towns[idx].folk;
@@ -3310,6 +3386,36 @@ static void wild_restore_uniques(struct wilderness *w, struct player *p,
 								 struct chunk *c, struct loc offset);
 
 /**
+ * Give up an object the world could not hand back.
+ *
+ * An artifact has to be released as well as freed, or it is gone from the game
+ * for good: aup_info[].created stays set, and nothing will ever roll it again.
+ * The dungeon has a rule for this already -- an artifact the player never
+ * identified goes back in the pool, one they knew they had is spent -- and a
+ * relic that rotted in a field is the same case as a level left behind, so it
+ * is judged the same way.
+ *
+ * wild_harvest() takes the surface's floor objects into the world's memory
+ * *before* prepare_next_level() sweeps the level for artifacts, which is what
+ * makes this necessary: nothing left outdoors is ever seen by that sweep.
+ */
+static void wild_relic_lost(struct player *p, struct object *obj)
+{
+	if (obj->artifact) {
+		bool found = obj_is_known_artifact(obj);
+
+		if ((p && OPT(p, birth_lose_arts)) || found) {
+			if (p) history_lose_artifact(p, obj->artifact);
+			mark_artifact_created(obj->artifact, true);
+		} else {
+			mark_artifact_created(obj->artifact, false);
+		}
+	}
+
+	object_free(obj);
+}
+
+/**
  * Put back what is still there, and forget what is not (WLD-04a).
  *
  * Called after the surface is built.  Anything outside the window stays in the
@@ -3348,7 +3454,7 @@ void wild_restore(struct wilderness *w, struct player *p, struct chunk *c,
 		if (!wild_relic_survives(w, relic->grid, turn - relic->turn) ||
 			!square_isobjectholding(c, grid) ||
 			!floor_carry(c, grid, relic->obj, &dummy)) {
-			object_free(relic->obj);
+			wild_relic_lost(p, relic->obj);
 		}
 
 		mem_free(relic);
@@ -3465,22 +3571,32 @@ int wild_unique_count(const struct wilderness *w)
  * so danger changes by degrees as you travel rather than by block, and a town
  * placed in orderly country sits in a wide patch of orderly country.  That is
  * what keeps the doorstep survivable -- not a safe radius bolted on afterwards.
+ *
+ * Split in two, because the town exemption is not always what the caller wants.
+ * wild_danger() answers "how dangerous is it to stand here", which in a town is
+ * not at all; wild_block_danger() answers "what danger does this country carry",
+ * which a town standing on it does not change.  Anything asking about a town's
+ * own block has to use the second, or it gets the exemption back as its answer.
  */
-int wild_danger(struct wilderness *w, int x, int y)
+int wild_block_danger(const struct wild_block *block)
 {
-	struct wild_block *block = wild_block_at(w, x, y);
 	int danger;
 
 	if (!block)
 		return 0;
 
+	danger = (256 - block->law) / 4;
+
+	return MAX(1, danger - 5);
+}
+
+int wild_danger(struct wilderness *w, int x, int y)
+{
 	/* A town is a town: nothing hunts in the market square. */
 	if (wild_in_town(w, x, y))
 		return 0;
 
-	danger = (256 - block->law) / 4;
-
-	return MAX(1, danger - 5);
+	return wild_block_danger(wild_block_at(w, x, y));
 }
 
 /**
@@ -4130,11 +4246,10 @@ void wild_track_move(struct player *p, struct loc grid)
 	 * longer there.
 	 */
 	{
-		static int shown = -2;
 		int now = wild_town_here(wild, p->wild_grid);
 
-		if (now != shown) {
-			shown = now;
+		if (now != wild_shown_town) {
+			wild_shown_town = now;
 			p->upkeep->redraw |= PR_DEPTH;
 		}
 	}
