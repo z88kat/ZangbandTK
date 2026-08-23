@@ -367,8 +367,31 @@ bucket:**
 | Bucket | Count | Work |
 |---|---:|---|
 | Already in 4.2 | ~8 | Free. General Store, Armoury, Weapon, Book, Alchemy, Magic, Black Market and Home all map directly onto [store.txt](../../lib/gamedata/store.txt). |
-| New shops | ~17 | Data. Jeweler, Fletcher, Swordsman, Shieldsman, Axeman, Milliner, Statue Store, Figurine Store, Clothes Store, Ammo Supplies, Supplies Store, Warrior Hall, Heavy Armoury, Scroll Store, Potion Store, Magic Store, Rare Book Store. |
-| New **services** | **8, not ~15** | Code, one at a time. See WLD-16c. |
+| New shops | ~~~17~~ **0** | **None, by DEC-33.** Checked one at a time against 4.2's stock lists, every one of the seventeen sells a narrower selection of goods those eight already carry -- or needs object types 4.2 does not have. The variation passes to WLD-16a's quality ladder. |
+| New **services** | **8, not ~15** | Code, one at a time. See WLD-16c. **Done in M5**, less the quest giver (M6) and the Chaos Tower (M8). |
+
+> **Resolved, and this is what resolving it looked like.** The seventeen were
+> counted from names, and names are what deceived: *Swordsman*, *Axeman*,
+> *Shieldsman*, *Milliner*, *Clothes Store*, *Heavy Armoury* and *Warrior Hall*
+> are all subsets of 4.2's Armoury and Weaponsmith, which between them already
+> stock swords, polearms, hafted, shields, helms, crowns, gloves, boots, cloaks
+> and all three weights of body armour. The *Fletcher* and *Ammo Supplies* are a
+> subset of one shelf of the Weaponsmith, which already carries `bow`, `shot`,
+> `arrow` and `bolt`. The *Potion*, *Scroll* and *Magic* stores are subsets of
+> the Alchemist and the Magic shop; the *Rare Book Store* is what the Black
+> Market is for, since it stocks anything.
+>
+> Two failed for a different reason. The *Jeweler* has nothing mundane to sell:
+> every ring and amulet in 4.2 is a significant magic item, so a jeweller is a
+> second Black Market, and DEC-29 made the Black Market the reason to travel.
+> The *Statue* and *Figurine* stores need `TV_STATUE` and `TV_FIGURINE`, which
+> 4.2 has not got -- inventing them is content invention, not porting.
+>
+> None of which says Zangband was wrong to have them. It was built on 2.8.1,
+> whose Armoury and Weaponsmith were far thinner, and subdividing them bought
+> real choice at the time. 4.2 spent twenty-five years merging that choice back
+> into fewer, better-stocked shops, and this project sits on 4.2 (DEC-27).
+
 
 > **Correction.** An earlier draft of this table listed ~15 service buildings by name. That
 > was wrong: it counted every exotic *name* in `t_info.txt` as a service. Checking
@@ -447,6 +470,12 @@ differs from a lawful city's. Not scheduled; recorded so M5 and M6 do not design
 
 **WLD-17 — Stores reuse 4.2's store system.** [store.txt](../../lib/gamedata/store.txt) and
 `src/store.c` are extended with new store types rather than replaced. Implements W-3.
+
+> **Met, with nothing to add.** DEC-33 found no new store types worth having, so
+> the instruction stands and has nothing to instruct: the eight 4.2 ships are the
+> eight, and WLD-16a's quality ladder varies them through the same file. The
+> requirement was written to forbid replacing 4.2's store system with Zangband's;
+> that has not happened and will not.
 
 **WLD-18 — Service buildings are implemented as 4.2 terrain with an attached action**, not
 as fields. Implements W-3.

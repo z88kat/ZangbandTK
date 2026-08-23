@@ -818,6 +818,24 @@ anyone can think of, in the hope that more is better.
 > would not do the sanity blast of CNT-17. But we should keep the nightmare
 > feature and add later."*
 
+*And the positive case for it, which is stronger than the negative one and was
+missing from DEC-30.* The Mythos is not merely off-theme here, it is **common**.
+Lovecraft was what everybody was reaching for in the nineties, and the ground has
+been worked over by every roguelike, board game and shooter since; a Zangband
+that leans on it is a Zangband competing on the most crowded pitch there is.
+Amber is the opposite: it is the one thing Zangband had that nobody else has
+built on, before or since.
+
+> *"people were very much into lovecraft and the Mythos world back in the 90s
+> its already been done to death and does not make this game unique. My guess
+> they just added that in the game as it was interesting at the time. I think
+> what makes zangband unique is leaning on the Amber series of novels which has
+> not been done elsewhere."*
+
+That reframes the whole of DEC-30. The reason to cut the drift is not tidiness
+and not fidelity for its own sake -- it is that the drift is the part of the game
+anyone could have written, and Amber is the part nobody else did.
+
 *What this costs, stated honestly.* The Mythos monsters are already imported --
 DEC-02's "theme first" curation took everything carrying Amber, Mythos or Chaos
 identity, and the bestiary holds Nyarlathotep and Azathoth among the rest.
@@ -834,6 +852,57 @@ Tir-na Nog'th is a city seen only by moonlight and is already a dungeon here --
 and it can be built out of what 4.2 already has, without an insanity system.
 Recorded as a follow-up below, with the constraint that it must not reintroduce
 CNT-17 by the back door.
+
+
+**DEC-33 — WLD-16b's seventeen new shops are none. The variation belongs to the
+quality ladder, not to a longer list of doors.**
+
+WLD-16b divided Zangband's building types by implementation cost and put roughly
+seventeen in a bucket marked *"new shops -- data"*: Jeweler, Fletcher, Swordsman,
+Shieldsman, Axeman, Milliner, Statue Store, Figurine Store, Clothes Store, Ammo
+Supplies, Supplies Store, Warrior Hall, Heavy Armoury, Scroll Store, Potion
+Store, Magic Store, Rare Book Store.
+
+Checked one at a time against 4.2's actual stock lists in
+[store.txt](../../lib/gamedata/store.txt), and against Zangband's own building
+list in [t_info.txt](../../archive/zangband/lib/edit/t_info.txt), **none of them
+survives.**
+
+| Zangband shop | What became of it |
+|---|---|
+| Swordsman, Axeman, Shieldsman, Milliner, Clothes Store, Heavy Armoury, Warrior Hall | Strict subsets of 4.2's **Armoury** and **Weaponsmith**, which already stock swords, polearms, hafted, shields, helms, crowns, gloves, boots, cloaks, soft, hard and dragon armour |
+| Fletcher, Ammo Supplies | The Weaponsmith already stocks `bow`, `shot`, `arrow` and `bolt`. A fletcher would sell a subset of one shelf |
+| Potion Store, Scroll Store, Magic Store | Subsets of the **Alchemist** and **Magic shop** |
+| Rare Book Store | The **Bookseller** stocks each realm's town book; anything deeper is what the **Black Market** is for, and it already stocks anything |
+| Supplies Store, Grocer, Flea Market | Subsets of the **General Store** |
+| Jeweler (+ Copper, Silver, Gold, Rare) | 4.2 has **no mundane jewellery**. Every ring and amulet in the game is a significant magic item, so a jeweller would be a second Black Market -- and DEC-29 made the Black Market the reason to travel |
+| Statue Store, Figurine Store | Need `TV_STATUE` and `TV_FIGURINE`, which 4.2 does not have. Content invention, not porting |
+| Temple (+ Large, High, Hidden) | A 2.8.1 shop 4.2 removed on purpose. DEC-27: where Zangband merely looks like 2.8.1, 4.2 wins |
+| Library | WLD-16b already established it has no implementation anywhere in Zangband |
+
+*So WLD-16b is closed by finishing its own job.* It asked for a classification by
+implementation cost; the classification says the cost is nil, because the work is
+not wanted. Seventeen shops selling narrower selections of goods eight shops
+already carry is the kitchen sink again -- the same instinct DEC-32 refused in
+the Mythos, in a different coat. A great city with twenty-five doors is not a
+richer city, it is a longer walk.
+
+*What this hands to WLD-16a.* All of it. The variation Zangband got from 113
+building entries has to come from **building type x quality** applied to the
+eight that exist -- an *Arcane Weapon Smith* in a lawful magical city where a
+frontier village has a plain one. That was already WLD-16a's argument; this
+decision removes the alternative, so the ladder is now the only thing standing
+between eight shops and eight identical shops.
+
+*And to WLD-17.* Nothing. It asked that new store types extend
+[store.txt](../../lib/gamedata/store.txt) rather than replace it, which is still
+the right instruction and now has nothing to instruct. It is met by the quality
+ladder using the same file.
+
+*What is deliberately not concluded.* That Zangband was wrong to have them. It
+was built on 2.8.1, whose Armoury and Weaponsmith were far thinner; subdividing
+them added real choice at the time. 4.2 spent twenty-five years merging that
+choice back into fewer, better-stocked shops, and this project sits on 4.2.
 
 
 Nothing is currently blocked. All questions raised during Phase 1 planning are resolved or
