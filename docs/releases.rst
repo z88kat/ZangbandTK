@@ -31,6 +31,13 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 21 August 2026
 ----------------------------------------------------------------
 
+- **3.13.0** — WLD-16c finished: the inn, the healer, the magesmith and the
+  recharger join the magetower. A town has an inn, a healer and a magetower; a
+  city adds the magesmith and the recharger; a town that has fallen has none of
+  them. All of them charge, with the prices in ``constants.txt``. The inn is the
+  one that earns its keep here more than it would in Angband — daylight is what
+  reveals the overworld, so a bed until morning beats waiting a hundred turns at
+  a time.
 - **3.12.2** — The magetower's menu had to be dismissed once for every shop you
   had visited that game. Its handler was registered where the game re-registers
   it on leaving a store, and nothing removes handlers before adding them, so they

@@ -2878,6 +2878,101 @@ static int test_the_surface_knows_the_hour(void *state) {
 	ok;
 }
 
+/**
+ * A town's services are built into it, and are the ones it holds (WLD-16c).
+ *
+ * struct wild_town::services is only a promise until the generator keeps it, and
+ * the two are written in different files -- the same gap the shops had, and
+ * caught the same way: build the town and look for the doors.
+ */
+static int test_a_towns_services_are_built(void *state) {
+	int idx, checked = 0;
+
+	for (idx = 0; idx < wild_town_count(wild) && checked < 6; idx++) {
+		struct wild_town *town = &wild->towns[idx];
+		struct chunk *c;
+		struct loc g;
+		uint16_t found = 0;
+		int s;
+
+		if (!town->services) continue;
+
+		c = town_gen_wild(player,
+						  wild_block_seed(wild, town->block.x, town->block.y),
+						  town->wid, town->hgt, town->stores, town->services);
+		notnull(c);
+
+		for (g.y = 0; g.y < c->height; g.y++)
+			for (g.x = 0; g.x < c->width; g.x++) {
+				int at = wild_service_at(c, g);
+
+				if (at >= 0) found |= 1u << at;
+			}
+
+		/* Everything it was given stands in it... */
+		for (s = 0; s < WILD_SERVICE_MAX; s++)
+			if ((town->services & (1u << s)) && !(found & (1u << s)))
+				printf("%s has no %s built\n",
+					town->name ? town->name : "a town", wild_service_name(s));
+
+		eq(found & town->services, town->services);
+
+		/* ...and nothing it was not. */
+		eq(found & ~town->services, 0);
+
+		cave_free(c);
+		checked++;
+	}
+
+	require(checked > 1);
+
+	ok;
+}
+
+/**
+ * The services a town holds follow its size, and say so plainly (WLD-16c).
+ */
+static int test_services_follow_the_size(void *state) {
+	int seed;
+
+	for (seed = 1; seed <= 10; seed++) {
+		struct wilderness *w = wild_new(129, seed * 7717);
+		int i;
+
+		wild_generate(w);
+
+		for (i = 1; i < w->town_count; i++) {
+			struct wild_town *town = &w->towns[i];
+			bool fallen = (town->folk == WILD_FOLK_MONSTER ||
+						   town->folk == WILD_FOLK_ABANDONED);
+
+			/* Nothing at all in a village, or anywhere that has fallen. */
+			if (town->band < 1 || fallen) {
+				eq(town->services, 0);
+				continue;
+			}
+
+			/* A town: a way out, a bed, and somebody to mend you. */
+			require(town->services & (1u << WILD_SERVICE_MAGETOWER));
+			require(town->services & (1u << WILD_SERVICE_HEALER));
+			require(town->services & (1u << WILD_SERVICE_INN));
+
+			/* A city adds the magesmith and the recharger; a town has neither. */
+			if (town->band >= 2) {
+				require(town->services & (1u << WILD_SERVICE_ENCHANT));
+				require(town->services & (1u << WILD_SERVICE_RECHARGE));
+			} else {
+				require(!(town->services & (1u << WILD_SERVICE_ENCHANT)));
+				require(!(town->services & (1u << WILD_SERVICE_RECHARGE)));
+			}
+		}
+
+		wild_free(w);
+	}
+
+	ok;
+}
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -2930,6 +3025,8 @@ struct test tests[] = {
 	{ "towns-have-names", test_towns_have_names },
 	{ "town-names-come-back-the-same", test_town_names_come_back_the_same },
 	{ "a-magetower-stands-where-it-should", test_a_magetower_stands_where_it_should },
+	{ "a-towns-services-are-built", test_a_towns_services_are_built },
+	{ "services-follow-the-size", test_services_follow_the_size },
 	{ "the-tower-offers-only-known-places", test_the_tower_offers_only_known_places },
 	{ "the-fare-rises-with-the-distance", test_the_fare_rises_with_the_distance },
 	{ "walking-into-a-town-is-remembered", test_walking_into_a_town_is_remembered },

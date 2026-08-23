@@ -2690,28 +2690,41 @@ static void town_gen_layout(struct chunk *c, struct player *p, uint16_t shops,
 	 * takes ground they did not want, and after the streets are cut so it is not
 	 * built across one.
 	 */
-	if (services & (1u << WILD_SERVICE_MAGETOWER)) {
-		struct loc lot;
-		bool built = false;
-		int attempt;
+	{
+		static const struct { int service, feat; } buildings[] = {
+			{ WILD_SERVICE_MAGETOWER, FEAT_MAGETOWER },
+			{ WILD_SERVICE_HEALER,    FEAT_HEALER },
+			{ WILD_SERVICE_INN,       FEAT_INN },
+			{ WILD_SERVICE_ENCHANT,   FEAT_MAGESMITH },
+			{ WILD_SERVICE_RECHARGE,  FEAT_RECHARGER },
+		};
+		size_t s;
 
-		for (attempt = 0; attempt < 60 && !built; attempt++) {
-			if (randint0(2)) {
-				lot.x = rand_range(-1 * xroads.x / lot_wid,
-								   (c->width - xroads.x) / lot_wid);
-				lot.y = randint0(2) ? 1 : -1;
-			} else {
-				lot.x = randint0(2) ? 1 : -1;
-				lot.y = rand_range(-1 * xroads.y / lot_hgt,
-								   (c->height - xroads.y) / lot_hgt);
+		for (s = 0; s < N_ELEMENTS(buildings); s++) {
+			struct loc lot;
+			bool built = false;
+			int attempt;
+
+			if (!(services & (1u << buildings[s].service))) continue;
+
+			for (attempt = 0; attempt < 60 && !built; attempt++) {
+				if (randint0(2)) {
+					lot.x = rand_range(-1 * xroads.x / lot_wid,
+									   (c->width - xroads.x) / lot_wid);
+					lot.y = randint0(2) ? 1 : -1;
+				} else {
+					lot.x = randint0(2) ? 1 : -1;
+					lot.y = rand_range(-1 * xroads.y / lot_hgt,
+									   (c->height - xroads.y) / lot_hgt);
+				}
+
+				if (!lot.x || !lot.y) continue;
+				if (!lot_is_clear(c, xroads, lot, lot_wid, lot_hgt)) continue;
+
+				build_lot_building(c, buildings[s].feat, xroads, lot, lot_wid,
+								   lot_hgt);
+				built = true;
 			}
-
-			if (!lot.x || !lot.y) continue;
-			if (!lot_is_clear(c, xroads, lot, lot_wid, lot_hgt)) continue;
-
-			build_lot_building(c, FEAT_MAGETOWER, xroads, lot, lot_wid,
-							   lot_hgt);
-			built = true;
 		}
 	}
 

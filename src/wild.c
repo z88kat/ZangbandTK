@@ -1006,23 +1006,31 @@ static uint16_t wild_town_services(struct wilderness *w, int bx, int by,
 		return 0;
 
 	/*
-	 * Anything above a village keeps one.
+	 * By size, and stated plainly.
 	 *
-	 * This was scored on population and law against a threshold, in the same
-	 * style as the trades -- and the scoring was worse than useless, because it
-	 * was not legible.  Measured on a real world: every one of its band-one
-	 * towns scored between 112 and 126 against a threshold of 130, so a "town"
-	 * never had a tower and only cities did, which nothing told the player.
-	 * Walking into two towns in a row and finding no tower in either is how it
-	 * was reported.
+	 * The magetower was scored on population and law against a threshold at
+	 * first, in the same style as the trades -- and the scoring was worse than
+	 * useless, because it was not legible.  Measured on a real world: every one
+	 * of its band-one towns scored between 112 and 126 against a threshold of
+	 * 130, so a "town" never had a tower and only cities did, which nothing
+	 * told the player.  Walking into two towns in a row and finding no tower in
+	 * either is how it was reported.
 	 *
-	 * A rule the player can hold in their head is worth more here than
-	 * variation they cannot see the shape of: bigger than a village, and still
-	 * standing, means there is a way out.  What is lost is the sense that a
-	 * magetower is a city's privilege; what is gained is being able to plan a
-	 * journey.
+	 * So these are laid out by band instead.  A rule the player can hold in
+	 * their head is worth more than variation they cannot see the shape of:
+	 *
+	 *   town         a way out, a bed, and somebody to mend you
+	 *   city         and a magesmith, and somebody to recharge a wand
+	 *   great city   the same; there is nothing left to add yet
 	 */
 	held |= 1u << WILD_SERVICE_MAGETOWER;
+	held |= 1u << WILD_SERVICE_HEALER;
+	held |= 1u << WILD_SERVICE_INN;
+
+	if (band >= 2) {
+		held |= 1u << WILD_SERVICE_ENCHANT;
+		held |= 1u << WILD_SERVICE_RECHARGE;
+	}
 
 	return held;
 }
@@ -1471,6 +1479,42 @@ const char *wild_band_name(int band)
 		case 2:  return "city";
 		case 3:  return "great city";
 		default: return "place";
+	}
+}
+
+/**
+ * What a service is called, for the manual and for messages.
+ */
+const char *wild_service_name(int service)
+{
+	switch (service) {
+		case WILD_SERVICE_MAGETOWER: return "magetower";
+		case WILD_SERVICE_HEALER:    return "healer";
+		case WILD_SERVICE_INN:       return "inn";
+		case WILD_SERVICE_ENCHANT:   return "magesmith";
+		case WILD_SERVICE_RECHARGE:  return "recharger";
+		default:                     return "building";
+	}
+}
+
+/**
+ * Which service the player is standing on, or -1 for none (WLD-18).
+ *
+ * A service is a door with behaviour behind it, so the terrain is the record of
+ * which one it is -- there is nothing else to look it up in.
+ */
+int wild_service_at(struct chunk *c, struct loc grid)
+{
+	if (!c || !square_in_bounds_fully(c, grid))
+		return -1;
+
+	switch (square(c, grid)->feat) {
+		case FEAT_MAGETOWER: return WILD_SERVICE_MAGETOWER;
+		case FEAT_HEALER:    return WILD_SERVICE_HEALER;
+		case FEAT_INN:       return WILD_SERVICE_INN;
+		case FEAT_MAGESMITH: return WILD_SERVICE_ENCHANT;
+		case FEAT_RECHARGER: return WILD_SERVICE_RECHARGE;
+		default:             return -1;
 	}
 }
 

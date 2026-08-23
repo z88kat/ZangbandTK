@@ -173,6 +173,10 @@ extern struct town_names town_names;
  */
 enum wild_service {
 	WILD_SERVICE_MAGETOWER = 0,	/**< Travel between places already found */
+	WILD_SERVICE_HEALER,		/**< Cure, heal, and restore what is drained */
+	WILD_SERVICE_INN,			/**< Rest until morning */
+	WILD_SERVICE_ENCHANT,		/**< The magesmith: put magic on an item */
+	WILD_SERVICE_RECHARGE,		/**< Put charges back in a wand or a staff */
 	WILD_SERVICE_MAX
 };
 
@@ -266,6 +270,8 @@ bool wild_in_town(struct wilderness *w, int bx, int by);
 bool wild_road_at(struct wilderness *w, int bx, int by);
 const char *wild_folk_name(int folk);
 const char *wild_band_name(int band);
+const char *wild_service_name(int service);
+int wild_service_at(struct chunk *c, struct loc grid);
 int wild_town_here(struct wilderness *w, struct loc grid);
 void wild_note_visit(struct wilderness *w, struct loc grid);
 bool wild_dungeon_found(struct wilderness *w, int idx);

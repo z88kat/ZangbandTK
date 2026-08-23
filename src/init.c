@@ -607,6 +607,18 @@ static enum parser_error parse_constants_wild(struct parser *p) {
 		z->wild_road_dist = value;
 	} else if (streq(label, "travel-cost")) {
 		z->wild_travel_cost = value;
+	} else if (streq(label, "heal-cost")) {
+		z->heal_cost = value;
+	} else if (streq(label, "ailment-cost")) {
+		z->ailment_cost = value;
+	} else if (streq(label, "restore-cost")) {
+		z->restore_cost = value;
+	} else if (streq(label, "inn-cost")) {
+		z->inn_cost = value;
+	} else if (streq(label, "enchant-cost")) {
+		z->enchant_cost = value;
+	} else if (streq(label, "recharge-cost")) {
+		z->recharge_cost = value;
 	} else if (streq(label, "gate-turns")) {
 		z->wild_gate_turns = value;
 	} else if (streq(label, "towns")) {
@@ -1209,6 +1221,12 @@ static errr finish_parse_constants(struct parser *p) {
 		z_info->wild_road_dist = 30;
 	if (!z_info->wild_travel_cost)
 		z_info->wild_travel_cost = 15;
+	if (!z_info->heal_cost) z_info->heal_cost = 4;
+	if (!z_info->ailment_cost) z_info->ailment_cost = 60;
+	if (!z_info->restore_cost) z_info->restore_cost = 400;
+	if (!z_info->inn_cost) z_info->inn_cost = 25;
+	if (!z_info->enchant_cost) z_info->enchant_cost = 250;
+	if (!z_info->recharge_cost) z_info->recharge_cost = 120;
 	if (!z_info->wild_gate_turns)
 		z_info->wild_gate_turns = 100;
 	if (!z_info->wild_towns)

@@ -465,6 +465,38 @@ flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY | TORCH
 look-prefix:the
 desc:A tower of the mages, who will carry you to places you already know.
 
+code:HEALER
+name:healer
+graphics:+:g
+priority:20
+flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY | TORCH
+look-prefix:the
+desc:A healer, who will mend what ails you for gold.
+
+code:INN
+name:inn
+graphics:+:u
+priority:20
+flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY | TORCH
+look-prefix:the
+desc:An inn.  A bed until morning, which is a long time coming at night.
+
+code:MAGESMITH
+name:magesmith
+graphics:+:r
+priority:20
+flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY | TORCH
+look-prefix:the
+desc:A magesmith, who will put magic on a weapon or a suit of armour.
+
+code:RECHARGER
+name:rechargers
+graphics:+:b
+priority:20
+flags:LOS | PROJECT | PASSABLE | PERMANENT | INTERESTING | EASY | TORCH
+look-prefix:the
+desc:A shop that puts charges back into a wand or a staff.
+
 code:DUNGEON
 name:dungeon entrance
 graphics:>:v

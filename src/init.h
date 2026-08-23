@@ -115,6 +115,12 @@ struct angband_constants
 	uint16_t wild_lakes;		/**< How many lakes to attempt */
 	uint16_t wild_road_dist;	/**< Blocks within which two towns get a road */
 	uint16_t wild_travel_cost;	/**< Magetower charge, gold per block */
+	uint16_t heal_cost;		/**< Healer's charge per hit point */
+	uint16_t ailment_cost;	/**< Healer's charge to cure every ailment */
+	uint16_t restore_cost;	/**< Healer's charge to restore stats or memory */
+	uint16_t inn_cost;		/**< A bed at the inn until morning */
+	uint16_t enchant_cost;	/**< The magesmith's charge */
+	uint16_t recharge_cost;	/**< The recharger's charge */
 	uint16_t wild_gate_turns;	/**< Game turns a town gate stands open */
 	uint16_t wild_towns;		/**< How many towns to place in the world */
 

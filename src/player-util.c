@@ -1781,10 +1781,13 @@ void player_handle_post_move(struct player *p, bool eval_trap,
 	 * behind it, entered the way a shop is.  Signalled rather than called, since
 	 * what happens next is a menu and the game side does not own menus.
 	 */
-	if (square(cave, p->grid)->feat == FEAT_MAGETOWER) {
+	if (wild_service_at(cave, p->grid) >= 0) {
 		disturb(p);
 		if (is_involuntary) cmdq_flush();
-		event_signal(EVENT_ENTER_MAGETOWER);
+		event_signal(EVENT_ENTER_SERVICE);
+
+		/* The turn is taken by whatever the building does, or not at all. */
+		p->upkeep->energy_use = 0;
 		return;
 	}
 

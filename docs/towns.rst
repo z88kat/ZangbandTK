@@ -154,6 +154,61 @@ A town that has been taken still trades. Its shops are doors in walls rather tha
 shopkeepers, so you can walk in past whatever is holding the place — which is
 either a convenience or an oddity depending on how you look at it.
 
+Services
+--------
+
+Buildings with something behind the door, as against shops, which sell things.
+Each is a ``+`` in a colour of its own, and each charges.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 16 64
+
+   * - Building
+     - Found in
+     - What it does
+   * - Magetower
+     - town and up
+     - Carries you to somewhere you already know. See below.
+   * - Inn
+     - town and up
+     - A bed until morning, for 25 gold. Only sells you one at night — the
+       innkeeper will tell you to travel while it is light otherwise.
+   * - Healer
+     - town and up
+     - Binds wounds (4 gold a hit point), cures poison, cuts, stunning,
+       blindness and confusion (60), restores drained stats (400), restores lost
+       experience (400). Only offers what you actually need.
+   * - Magesmith
+     - city and up
+     - Puts magic on a weapon or a suit of armour, 250 gold a go.
+   * - Recharger
+     - city and up
+     - Puts charges back in a wand or a staff, 120 gold. It can still fail and
+       destroy the item — that is the ordinary recharging risk, not a swindle.
+
+Nothing in a town is free. The prices are in ``constants.txt`` and are pitched so
+a character of level five feels them and one of level thirty does not, which is
+the same shape as the magetower's fare: a service is a use for gold, and gold
+stops being scarce.
+
+A town that has fallen has none of them. Nobody is running a teleport network or
+an inn out of somewhere held by monsters, and there is nobody in an abandoned
+town to run anything.
+
+.. note::
+
+   **The inn earns its keep here in a way it would not in Angband.** Resting
+   duplicates a command the game already has — but daylight is what reveals the
+   overworld, so a character who arrives somewhere at dusk either gropes about by
+   lamplight or waits, and waiting a hundred turns at a time with ``R`` is not
+   waiting, it is bookkeeping.
+
+   Zangband's inn also carried a nightmare vision, which WLD-16c judged a real
+   effect worth keeping. It is **not** built: Angband 4.2 has no equivalent to
+   port, so it would have to be written rather than brought across, and that is
+   its own piece of work.
+
 The magetower
 -------------
 

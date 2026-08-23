@@ -286,19 +286,20 @@ static int test_cheat_options_are_paired(void *state) {
 	ok;
 }
 
-static int magetower_signals;
+static int service_signals;
 
-static void count_magetower_entry(game_event_type type, game_event_data *data,
+static void count_service_entry(game_event_type type, game_event_data *data,
 								  void *user)
 {
-	magetower_signals++;
+	service_signals++;
 }
 
 /**
  * Registering a handler twice makes the event fire twice (WLD-16c).
  *
  * event_add_handler() prepends without checking, so a handler registered from
- * somewhere that runs more than once stacks up.  The magetower's was registered
+ * somewhere that runs more than once stacks up.  The service handler was
+ * registered
  * in ui_enter_world(), and EVENT_ENTER_WORLD is signalled when a game starts
  * *and* every time the player leaves a store -- so after three shops the tower's
  * menu opened four times and had to be dismissed four times.  Reported as
@@ -311,31 +312,31 @@ static void count_magetower_entry(game_event_type type, game_event_data *data,
  */
 static int test_event_handlers_stack(void *state) {
 	/* Twice registered, twice called. */
-	event_remove_handler_type(EVENT_ENTER_MAGETOWER);
-	magetower_signals = 0;
-	event_add_handler(EVENT_ENTER_MAGETOWER, count_magetower_entry, NULL);
-	event_add_handler(EVENT_ENTER_MAGETOWER, count_magetower_entry, NULL);
-	event_signal(EVENT_ENTER_MAGETOWER);
-	eq(magetower_signals, 2);
+	event_remove_handler_type(EVENT_ENTER_SERVICE);
+	service_signals = 0;
+	event_add_handler(EVENT_ENTER_SERVICE, count_service_entry, NULL);
+	event_add_handler(EVENT_ENTER_SERVICE, count_service_entry, NULL);
+	event_signal(EVENT_ENTER_SERVICE);
+	eq(service_signals, 2);
 
 	/* Remove-then-add, however often it is run, leaves exactly one. */
-	event_remove_handler_type(EVENT_ENTER_MAGETOWER);
+	event_remove_handler_type(EVENT_ENTER_SERVICE);
 	{
 		int i;
 
 		for (i = 0; i < 4; i++) {
-			event_remove_handler(EVENT_ENTER_MAGETOWER,
-								 count_magetower_entry, NULL);
-			event_add_handler(EVENT_ENTER_MAGETOWER,
-							  count_magetower_entry, NULL);
+			event_remove_handler(EVENT_ENTER_SERVICE,
+								 count_service_entry, NULL);
+			event_add_handler(EVENT_ENTER_SERVICE,
+							  count_service_entry, NULL);
 		}
 	}
 
-	magetower_signals = 0;
-	event_signal(EVENT_ENTER_MAGETOWER);
-	eq(magetower_signals, 1);
+	service_signals = 0;
+	event_signal(EVENT_ENTER_SERVICE);
+	eq(service_signals, 1);
 
-	event_remove_handler_type(EVENT_ENTER_MAGETOWER);
+	event_remove_handler_type(EVENT_ENTER_SERVICE);
 
 	ok;
 }

@@ -49,3 +49,7 @@ FEAT(ROAD)       /* made road between places */
 FEAT(WORLD_EDGE) /* the sea at the end of a flat world */
 FEAT(DUNGEON)    /* the mouth of a named dungeon (WLD-14) */
 FEAT(MAGETOWER)  /* a tower that carries you between places (WLD-16c) */
+FEAT(HEALER)     /* somebody who will mend you, for gold (WLD-16c) */
+FEAT(INN)        /* a bed until morning (WLD-16c) */
+FEAT(MAGESMITH)  /* puts magic on an item (WLD-16c) */
+FEAT(RECHARGER)  /* puts charges back in a wand (WLD-16c) */

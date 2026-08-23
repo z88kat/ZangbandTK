@@ -78,6 +78,18 @@ The status line says "Day" or "Night" while you are above ground.  It matters:
 daylight is what reveals the country, and at night you see as far as your lamp
 and no further, which looks like an empty map until the sun comes up.
 
+A '+' in a town is a service: something with a person behind the door rather
+than goods on a shelf.  They are told apart by colour, and the "slash" command
+('/') will name one.
+
+  green   healer      binds wounds, cures ailments, restores what is drained
+  brown   inn         a bed until morning, which only helps at night
+  red     magesmith   puts magic on a weapon or a suit of armour
+  blue    recharger   puts charges back in a wand or a staff
+
+A town has a healer, an inn and a magetower; a city adds the magesmith and the
+recharger.  A town that has fallen has none of them.  All of them charge.
+
 A '9' in a town is a magetower.  Walk in and the mages will carry you to a
 town you have stood in or a dungeon mouth you have seen, for a fee that rises
 with the distance.  Anything above a village has one, unless it has fallen --

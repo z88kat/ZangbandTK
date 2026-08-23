@@ -546,6 +546,23 @@ wild:road-dist:30
 # grow into, not a way past the early game.
 wild:travel-cost:15
 
+# What the town services charge (WLD-16c). All in gold.
+#
+# heal-cost is per hit point restored, so mending a scratch is pennies and
+# mending a near-death is not. The rest are flat: curing every ailment at once,
+# restoring every drained stat at once, restoring lost experience, a bed at the
+# inn until morning, one enchantment from the magesmith, one recharge.
+#
+# Pitched so that a character of level five feels them and one of level thirty
+# does not, which is the same shape as the magetower's fare: a service is a use
+# for gold, and gold stops being scarce.
+wild:heal-cost:4
+wild:ailment-cost:60
+wild:restore-cost:400
+wild:inn-cost:25
+wild:enchant-cost:250
+wild:recharge-cost:120
+
 # How long a town gate stands open before it swings shut, in game turns. A
 # player at normal speed acts every ten of these, so 100 is about ten moves --
 # long enough to walk through and lead a packhorse, short enough that the gate

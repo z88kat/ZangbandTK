@@ -2838,8 +2838,8 @@ static void ui_enter_world(game_event_type type, game_event_data *data,
 	 * duplicates away.  That will not do here: the menu has to stay available
 	 * for the next tower, and there may be no shop in between to re-register it.
 	 */
-	event_remove_handler(EVENT_ENTER_MAGETOWER, ui_enter_magetower, NULL);
-	event_add_handler(EVENT_ENTER_MAGETOWER, ui_enter_magetower, NULL);
+	event_remove_handler(EVENT_ENTER_SERVICE, ui_enter_service, NULL);
+	event_add_handler(EVENT_ENTER_SERVICE, ui_enter_service, NULL);
 
 	/* Display an explosion */
 	event_add_handler(EVENT_EXPLOSION, display_explosion, NULL);

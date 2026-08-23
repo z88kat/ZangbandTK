@@ -27,8 +27,12 @@
 #include "obj-util.h"
 #include "player-timed.h"
 #include "trap.h"
-#include "ui-input.h"
 #include "ui-map.h"
+#include "effects.h"
+#include "game-world.h"
+#include "player-calcs.h"
+#include "game-input.h"
+#include "ui-input.h"
 #include "ui-menu.h"
 #include "wild.h"
 #include "ui-object.h"
@@ -1087,10 +1091,209 @@ static void magetower_travel(void)
 	player->upkeep->energy_use = z_info->move_energy;
 }
 
-/** Somebody walked into the magetower. */
-void ui_enter_magetower(game_event_type type, game_event_data *data, void *user)
+/**
+ * Charge the player, if they can pay.
+ *
+ * \return false if they cannot, having said so.  Nothing in a town is free:
+ * that is what makes the services a use for gold rather than a menu of wishes.
+ */
+static bool service_pay(int32_t price, const char *what)
 {
-	magetower_travel();
+	if (player->au < price) {
+		msg("%s costs %d au, and you have %d.", what, (int) price,
+			(int) player->au);
+		return false;
+	}
+
+	player->au -= price;
+	player->upkeep->redraw |= PR_GOLD;
+
+	return true;
+}
+
+/**
+ * The healer: mend what is broken, for gold (WLD-16c).
+ *
+ * Priced by what it is worth rather than by a flat fee -- a cut is a trifle and
+ * a drained constitution is not -- and each is offered only when there is
+ * something to do, so the menu says what is wrong with you as much as what it
+ * will cost.
+ */
+static void service_healer(void)
+{
+	enum { HEAL_WOUNDS = 1, HEAL_AILMENTS, HEAL_STATS, HEAL_EXP };
+	struct menu *m;
+	char *labels;
+	int chosen;
+	bool ailing = false, drained = false;
+	int missing = player->mhp - player->chp;
+	int i;
+
+	for (i = 0; i < TMD_MAX; i++)
+		if (i == TMD_POISONED || i == TMD_CUT || i == TMD_STUN ||
+			i == TMD_BLIND || i == TMD_CONFUSED)
+			if (player->timed[i]) ailing = true;
+
+	for (i = 0; i < STAT_MAX; i++)
+		if (player->stat_cur[i] < player->stat_max[i]) drained = true;
+
+	m = menu_dynamic_new();
+	if (!m) return;
+
+	labels = string_make(lower_case);
+	m->selections = labels;
+
+	if (missing > 0)
+		menu_dynamic_add_label(m, format("%-28s %5d au", "Bind your wounds",
+			(int) (missing * z_info->heal_cost)), 0, HEAL_WOUNDS, labels);
+	if (ailing)
+		menu_dynamic_add_label(m, format("%-28s %5d au", "Cure what ails you",
+			(int) z_info->ailment_cost), 0, HEAL_AILMENTS, labels);
+	if (drained)
+		menu_dynamic_add_label(m, format("%-28s %5d au", "Restore your strength",
+			(int) z_info->restore_cost), 0, HEAL_STATS, labels);
+	if (player->exp < player->max_exp)
+		menu_dynamic_add_label(m, format("%-28s %5d au", "Restore your memory",
+			(int) z_info->restore_cost), 0, HEAL_EXP, labels);
+
+	menu_dynamic_add_label(m, "Nothing today", 'q', 0, labels);
+
+	screen_save();
+	menu_dynamic_calc_location(m, 0, 0);
+	region_erase_bordered(&m->boundary);
+	prt(format("The healer looks you over.  You have %d au.",
+		(int) player->au), 0, 0);
+
+	chosen = menu_dynamic_select(m);
+
+	menu_dynamic_free(m);
+	string_free(labels);
+	screen_load();
+
+	switch (chosen) {
+		case HEAL_WOUNDS:
+			if (!service_pay(missing * z_info->heal_cost, "Binding your wounds"))
+				return;
+			effect_simple(EF_HEAL_HP, source_player(), "1000", 0, 0, 0, 0, 0,
+						  NULL);
+			msg("You are made whole.");
+			break;
+
+		case HEAL_AILMENTS:
+			if (!service_pay(z_info->ailment_cost, "That"))
+				return;
+			for (i = 0; i < TMD_MAX; i++)
+				if (i == TMD_POISONED || i == TMD_CUT || i == TMD_STUN ||
+					i == TMD_BLIND || i == TMD_CONFUSED)
+					player_clear_timed(player, i, true, false);
+			msg("You feel better.");
+			break;
+
+		case HEAL_STATS:
+			if (!service_pay(z_info->restore_cost, "That"))
+				return;
+			for (i = 0; i < STAT_MAX; i++)
+				effect_simple(EF_RESTORE_STAT, source_player(), "0", i, 0, 0,
+							  0, 0, NULL);
+			msg("You feel like yourself again.");
+			break;
+
+		case HEAL_EXP:
+			if (!service_pay(z_info->restore_cost, "That"))
+				return;
+			effect_simple(EF_RESTORE_EXP, source_player(), "0", 0, 0, 0, 0, 0,
+						  NULL);
+			break;
+
+		default:
+			return;
+	}
+
+	player->upkeep->energy_use = z_info->move_energy;
+}
+
+/**
+ * The inn: a bed until morning (WLD-16c).
+ *
+ * Which earns its keep here in a way it would not in Angband.  Daylight is what
+ * reveals the overworld, so a character who arrives somewhere at dusk either
+ * gropes about by lamplight or waits -- and waiting a hundred turns at a time
+ * with the rest command is not waiting, it is bookkeeping.
+ */
+static void service_inn(void)
+{
+	int32_t price = z_info->inn_cost;
+
+	if (is_daytime()) {
+		msg("The innkeeper says you would do better to travel while it is light.");
+		return;
+	}
+
+	if (!get_check(format("A bed until morning for %d au? ", (int) price)))
+		return;
+
+	if (!service_pay(price, "A bed"))
+		return;
+
+	/*
+	 * Sleep until the sun comes up.  Turned forward rather than rested,
+	 * because resting is a thing monsters can interrupt and this is a room with
+	 * a door on it.
+	 */
+	while (!is_daytime()) {
+		turn++;
+		player->upkeep->update |= PU_BONUS;
+	}
+
+	msg("You wake to daylight.");
+
+	cave_illuminate(cave, true, !wild_is_surface(cave));
+	player->upkeep->redraw |= (PR_STATUS | PR_MAP);
+	player->upkeep->energy_use = z_info->move_energy;
+}
+
+/**
+ * The magesmith, and the recharger (WLD-16c).
+ *
+ * Both are the same shape: take the fee, then run the effect Angband already
+ * has, which does its own asking about which item is meant.  Zangband wrote its
+ * own item prompts and its own enchanting arithmetic; there is no reason to,
+ * and DEC-27 says as much -- the idea is a shop that will improve your gear,
+ * and 4.2 has the machinery for improving gear.
+ */
+static void service_effect(const char *what, int effect, int32_t price)
+{
+	if (!get_check(format("%s for %d au? ", what, (int) price)))
+		return;
+
+	if (!service_pay(price, what))
+		return;
+
+	effect_simple(effect, source_player(), "0", 0, 0, 0, 0, 0, NULL);
+	player->upkeep->energy_use = z_info->move_energy;
+}
+
+/** Somebody walked into a service building. */
+void ui_enter_service(game_event_type type, game_event_data *data, void *user)
+{
+	switch (wild_service_at(cave, player->grid)) {
+		case WILD_SERVICE_MAGETOWER: magetower_travel(); break;
+		case WILD_SERVICE_HEALER:    service_healer(); break;
+		case WILD_SERVICE_INN:       service_inn(); break;
+
+		case WILD_SERVICE_ENCHANT:
+			service_effect("Have an item enchanted", EF_ENCHANT,
+						   z_info->enchant_cost);
+			break;
+
+		case WILD_SERVICE_RECHARGE:
+			service_effect("Have a wand or staff recharged", EF_RECHARGE,
+						   z_info->recharge_cost);
+			break;
+
+		default:
+			break;
+	}
 }
 
 /**
