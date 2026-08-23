@@ -160,11 +160,15 @@ The magetower
 Some towns keep a tower of the mages, drawn ``9``. Walk into it and they will
 carry you to somewhere you already know, for a fee.
 
-**Where they are.** Never in a village — a tower nobody can reach is no use —
-and never in a town that has fallen, since nobody runs a teleport network out of
-somewhere held by monsters. Otherwise it is scored on population and law the way
-the trades are, so it is the cities that have them: about a third of towns, in
-practice.
+**Where they are.** **Your home village always has one**, whatever its size says.
+Every journey begins at home, and a network you cannot leave from has one node
+fewer than it needs — without it you would have to walk to a city before you
+could travel anywhere at all, every time.
+
+Elsewhere: never in a village, and never in a town that has fallen, since nobody
+runs a teleport network out of somewhere held by monsters. Otherwise it is scored
+on population and law the way the trades are, so it is the cities that have them —
+about a third of towns.
 
 **Where it will take you.** Your home village always counts, from the first turn.
 Beyond that, two different bars, deliberately:

@@ -2495,7 +2495,15 @@ static int test_a_magetower_stands_where_it_should(void *state) {
 
 		wild_generate(w);
 
-		for (i = 0; i < w->town_count; i++) {
+		/*
+		 * The starting village always has one, whatever its size and country
+		 * say: every journey begins at home, and a network you cannot leave
+		 * from has one node fewer than it needs.  So it is exempt from the
+		 * rules below rather than a counter-example to them.
+		 */
+		require(w->towns[0].services & (1u << WILD_SERVICE_MAGETOWER));
+
+		for (i = 1; i < w->town_count; i++) {
 			struct wild_town *town = &w->towns[i];
 			bool has = (town->services & (1u << WILD_SERVICE_MAGETOWER)) != 0;
 
@@ -2633,6 +2641,14 @@ static int test_walking_into_a_town_is_remembered(void *state) {
 	/* Standing in the town marks it. */
 	wild_note_visit(wild, middle);
 	eq(wild->towns[0].visited, 1);
+
+	/*
+	 * And leave it set.  The starting village counting as visited is a fact
+	 * about the world rather than something this test owns, and a later test
+	 * checks it -- clearing the flags and walking away broke that one.
+	 */
+	for (i = 0; i < wild_town_count(wild); i++)
+		if (i == 0) wild->towns[i].visited = 1;
 
 	ok;
 }

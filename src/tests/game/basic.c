@@ -13,6 +13,7 @@
 #include "init.h"
 #include "mon-make.h"
 #include "savefile.h"
+#include "option.h"
 #include "player.h"
 #include "player-birth.h"
 #include "player-timed.h"
@@ -250,8 +251,44 @@ static int test_drop_eat(void *state) {
 	ok;
 }
 
+/**
+ * Every cheat option is followed by the score option that records it.
+ *
+ * option_set() marks a cheat as used by setting the *next* option along:
+ *
+ *     if (val && option_is_cheat(opt))
+ *         player->opts.opt[opt + 1] = true;
+ *
+ * so the pairing is positional, and inserting an option between a cheat and its
+ * score twin would silently stop the cheat being recorded -- or mark the wrong
+ * thing.  Nothing said so before; ZangbandTK added a cheat to that list and had
+ * to rely on it.
+ */
+static int test_cheat_options_are_paired(void *state) {
+	int i, cheats = 0;
+
+	for (i = 0; i < OPT_MAX; i++) {
+		if (option_type(i) != OP_CHEAT) continue;
+
+		cheats++;
+
+		if (i + 1 >= OPT_MAX || option_type(i + 1) != OP_SCORE)
+			printf("cheat option '%s' is not followed by a score option\n",
+				option_name(i));
+
+		require(i + 1 < OPT_MAX);
+		require(option_type(i + 1) == OP_SCORE);
+	}
+
+	/* And there are some, so this is not passing by finding nothing. */
+	require(cheats > 1);
+
+	ok;
+}
+
 const char *suite_name = "game/basic";
 struct test tests[] = {
+	{ "cheat options are paired", test_cheat_options_are_paired },
 	{ "newgame", test_newgame },
 	{ "loadgame", test_loadgame },
 	{ "stairs1", test_stairs1 },

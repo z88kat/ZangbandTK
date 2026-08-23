@@ -204,6 +204,25 @@ static bool option_toggle_handle(struct menu *m, const ui_event *event,
 		return false;
 	}
 
+	/*
+	 * ZangbandTK: one cheat does something rather than being something.  It is
+	 * here, among the other cheats, rather than on a keystroke of its own,
+	 * because this is the screen somebody goes looking for a cheat in.
+	 *
+	 * Switched on it hands over the gold and switches itself back off, since
+	 * there is no state to keep -- but option_set() has already marked the
+	 * paired score option, so the record that a cheat was used survives.
+	 */
+	if (player->opts.opt[oid] && streq(option_name(oid), "cheat_gold")) {
+		screen_load();
+		do_cmd_wiz_gain_gold(NULL);
+		screen_save();
+		clear_from(0);
+
+		player->opts.opt[oid] = false;
+		menu_refresh(m, false);
+	}
+
 	if (next) {
 		m->cursor++;
 		m->cursor = (m->cursor + m->filter_count) % m->filter_count;

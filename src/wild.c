@@ -34,6 +34,7 @@
 #include "obj-pile.h"
 #include "player.h"
 #include "dun-type.h"
+#include "player-calcs.h"
 #include "wild.h"
 
 struct wilderness *wild = NULL;
@@ -981,11 +982,22 @@ const char *wild_folk_name(int folk)
  * still standing.
  */
 static uint16_t wild_town_services(struct wilderness *w, int bx, int by,
-								   int band, int folk)
+								   int band, int folk, bool starting)
 {
 	struct wild_block *block = wild_block_at(w, bx, by);
 	uint16_t held = 0;
 	int score;
+
+	/*
+	 * The starting village always has a tower, whatever its size and country
+	 * would say.  Every journey begins at home, and a network you cannot leave
+	 * from is a network with one fewer node than it needs: without this the
+	 * player has to walk to a city before they can travel anywhere at all,
+	 * every time.  The same reasoning as WLD-12's fixed store set -- the
+	 * opening should not turn on procedural luck.
+	 */
+	if (starting)
+		return 1u << WILD_SERVICE_MAGETOWER;
 
 	if (!block || band < 1)
 		return 0;
@@ -1081,7 +1093,8 @@ static void wild_place_towns(struct wilderness *w)
 										  w->town_count == 0, placed->band);
 			placed->services = wild_town_services(w, placed->block.x,
 												  placed->block.y,
-												  placed->band, placed->folk);
+												  placed->band, placed->folk,
+												  w->town_count == 0);
 			wild_town_claim(w, placed);
 			w->town_count++;
 		}
@@ -3848,4 +3861,21 @@ void wild_track_move(struct player *p, struct loc grid)
 
 	/* And a town they walk into becomes somewhere they can be carried back to. */
 	wild_note_visit(wild, p->wild_grid);
+
+	/*
+	 * The status line names the place the player is standing in, so it has to
+	 * be redrawn when that changes.  It is flagged on a level change and
+	 * nothing else, so walking out of a town left its name on the screen with
+	 * open country all around -- which read as being in a town that was no
+	 * longer there.
+	 */
+	{
+		static int shown = -2;
+		int now = wild_town_here(wild, p->wild_grid);
+
+		if (now != shown) {
+			shown = now;
+			p->upkeep->redraw |= PR_DEPTH;
+		}
+	}
 }

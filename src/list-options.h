@@ -71,6 +71,10 @@ OP(cheat_live,            "Cheat: Allow player to avoid death",
 CHEAT, false)
 OP(score_live,            "Score: Allow player to avoid death",
 SCORE, false)
+OP(cheat_gold,            "Cheat: Take gold (select to be asked how much)",
+CHEAT, false)
+OP(score_gold,            "Score: Took gold",
+SCORE, false)
 OP(birth_randarts,        "Generate a new, random artifact set",
 BIRTH, false)
 OP(birth_connect_stairs,  "Generate connected stairs",

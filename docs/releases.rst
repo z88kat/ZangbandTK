@@ -31,6 +31,11 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 21 August 2026
 ----------------------------------------------------------------
 
+- **3.11.2** — Your home village always has a magetower now: travel was
+  unusable from the one place every journey starts. The status line also refreshes
+  the place name as you walk out of a town, where before it kept showing the town
+  you had left. And the gold cheat is in the cheat options screen (``=`` then
+  ``x``) as well as the debug menu.
 - **3.11.1** — Three things found by playing. Roads reached towns but often
   stopped at a blank wall with the gate up to twenty-six grids along it, which is
   a dead end from where you are standing; the gate is now cut where the road
