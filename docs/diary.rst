@@ -31,6 +31,59 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+23 August 2026 — the lotus, and five places to forget
+=====================================================
+
+The first thing in this project that is not a port. Everything until now came out
+of Zangband's source with a decision attached about whether to keep it; this came
+out of a one-line note in the ideas file: *"Lotus Leaves. Eat them and you forget
+everything in 5 turns... you feel a little dizzy.. where am i ...."*
+
+Two things about building it were worth the day.
+
+**"Forget everything" is five features, not one.** Angband keeps knowledge in five
+unrelated places and there is no switch that covers them: the level map is per-grid
+known terrain, the world map is a flag per block plus a visited flag per town, the
+monster memory is a lore struct per race, item identification is an aware flag per
+kind, and spells are a learned bit per spell plus an order array. Four of the five
+already had the function I needed — ``square_forget``, ``wipe_monster_lore``, and
+so on — which is the good news; the bad news is that the failure mode of a feature
+like this is quietly forgetting to forget one of them, and nothing in play would
+tell you which. So the test checks all five explicitly rather than checking that
+the function ran.
+
+**The exception matters more than the rule.** My first pass forgot the world map
+entirely, which is obviously right and quietly ruinous: the magetower's
+destination list is built from the places the player has found, so a character who
+has forgotten every place has a blank map, no fast travel, and nothing to walk
+towards. Not a setback — a lost save. There is already a requirement that says the
+starting village is always known (WLD-12) and a test that enforces it, so the
+constraint was sitting there waiting; I just had not connected it to the new thing.
+Home stays known, and the nine blocks around it, or the village is a name with no
+ground under it.
+
+That the exception is also exactly right for the source material is luck rather
+than design. Corwin opens the first novel with no memory and one certainty: that
+there is a place called Amber and he is of it. I did not set out to reproduce that.
+I set out to stop the item bricking saves, and it turned out the thing that keeps
+the game playable is the thing the novel opens on.
+
+**The delay is the feature.** An item that took your memory the moment you ate it
+would be an ordinary bad mushroom, one of a dozen. Five turns of "you feel a little
+dizzy..." and then "Where am I?" is a mistake you have time to understand and no
+time to undo. Mechanically it is a timed effect that does nothing at all — a fuse —
+with the whole of the behaviour hanging off the turn it expires.
+
+One other thing fell out. Chasing whether my new test had broken a neighbour, I
+found a test that had been failing about one run in five all along: it walks the
+view window sideways and asserts the other axis holds still. True — unless the
+character started within a margin of the window's edge, which block alignment
+decides, in which case the other axis scrolls for the correct reason and the test
+calls a working scroll broken. Third time this week a test has been measuring
+something that could not move, or asserting something that was only sometimes true.
+The pattern I should have learned by now: when a test is flaky, suspect the
+assertion before the code.
+
 23 August 2026 — the axis that had nothing left to say
 ======================================================
 

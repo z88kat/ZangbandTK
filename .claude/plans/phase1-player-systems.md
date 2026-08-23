@@ -292,6 +292,39 @@ removes its opposite.
 readily, Imps horns, Mindflayers tentacles, Yeeks shriek, Beastmen polymorph self. Cheap to
 implement and a meaningful differentiator between the new races of PLR-01.
 
+**PLR-40 — Knowledge is a thing that can be lost.** A consumable exists that takes
+everything the character knows: the map underfoot, the world map and every place on it,
+the monster memory, what every flavoured item is, and every spell learned. Not from
+Zangband — it is new, and it earns its place on DEC-30's terms: the first Amber novel
+opens on a man with no memory who knows only that there is a place called Amber and that
+he belongs to it. That is the one thing this leaves behind.
+
+> **Built.** A mushroom, `Lotus` in [object.txt](../../lib/gamedata/object.txt), which
+> looks like every other unidentified mushroom until it has been eaten once. It sets a
+> five-turn timed effect that does nothing at all; the forgetting happens when the fuse
+> runs out, in the `TMD_LOTUS` case of `process_world()`.
+>
+> *The delay is the design.* An item that took your memory the instant you ate it would be
+> an ordinary bad potion. One that takes it five turns later — "you feel a little dizzy..."
+> and then, five turns on, "Where am I?" — is a mistake you have time to understand and no
+> time to undo.
+>
+> *What it will not take.* No experience, no levels, no items, and not the starting village.
+> Everything it takes is recoverable by playing, and nothing is recoverable quickly, which
+> makes the cost hours rather than a run. The exception for home is not kindness: WLD-12
+> makes the starting village always known, the magetower travels only to places the player
+> has found, and a character who has forgotten every place including the one they began in
+> has a blank map, no fast travel and nowhere to aim for. That is a lost save, not a
+> setback. The nine blocks around home stay on the map too, or the village would be a name
+> with no ground under it.
+>
+> *Five kinds of knowledge in five places*, since Angband has no single switch for it:
+> `square_forget()` per grid, `wild_forget_knowledge()`, `wipe_monster_lore()` per race,
+> `kind->aware` per flavoured kind, and `PY_SPELL_LEARNED` per spell. Guarded by
+> the-lotus-forgets-the-world, which checks all five rather than trusting one call, because
+> the failure mode here is quietly forgetting to forget something and nothing in play would
+> say which.
+
 ### Virtues
 
 **PLR-18 — The 18 virtues are tracked per character** (§2.5).

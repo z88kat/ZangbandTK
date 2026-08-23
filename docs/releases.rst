@@ -31,6 +31,20 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.15.0** — PLR-40, and the first thing in this project that is not a port of
+  anything: **the lotus**. A mushroom that looks like any other until you have
+  eaten one, and five turns after you do, you forget everything — the map under
+  your feet, the world map and every place on it, every monster you had learned,
+  what all your potions are, and every spell you knew. It takes nothing you
+  cannot earn back and nothing comes back quickly, so the cost is hours rather
+  than a character. You always still know where home is, because the magetower
+  only travels to places you have found and a character who had forgotten
+  everywhere would have nowhere to go. The idea is Zelazny's: the first Amber
+  novel opens on a man with no memory who knows only that there is a place called
+  Amber and that he belongs to it. Also fixes a test that failed about one run in
+  five for a correct reason — it walked the window and asserted the other axis
+  held still, which is only true if the character did not start near the window's
+  edge, and block alignment decides that.
 - **3.14.1** — The manual now says that there is only one house. Every town keeps
   a home and they are all the same one, so what you leave in your village is on
   the shelf when you open the door in a city four days' walk away. Asked from

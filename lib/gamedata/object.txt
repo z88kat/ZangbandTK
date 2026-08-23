@@ -696,6 +696,21 @@ desc:It makes you very stealthy for a short while.
 
 ##### Weapons #####
 
+name:Lotus
+type:mushroom
+graphics:,:g
+level:3
+weight:1
+cost:0
+alloc:8:3 to 100
+pile:60:1d3
+power:0
+effect:TIMED_SET:LOTUS
+dice:5
+effect:NOURISH:INC_BY
+dice:5
+desc:Sweet, and slow, and it takes everything you know away with it.
+
 ### Swords ###
 
 name:& Dagger~

@@ -25,6 +25,7 @@
 #include "init.h"
 #include "mon-predicate.h"
 #include "obj-chest.h"
+#include "mon-lore.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
 #include "obj-knowledge.h"
@@ -1930,3 +1931,82 @@ bool player_has_monster_in_view(const struct player *p)
 	}
 	return false;
 }
+
+/**
+ * Forget everything the character knows (ZangbandTK, PLR-40).
+ *
+ * What the lotus does when its five turns are up.  Five separate kinds of
+ * knowledge, because Angband keeps them in five places and there is no single
+ * switch:
+ *
+ *  - the map of the level underfoot, grid by grid;
+ *  - the world map, and every town and dungeon mouth on it, except home;
+ *  - what has been learned about every monster;
+ *  - what every flavoured thing is, so the potions go back to being coloured
+ *    liquids and have to be drunk to find out again;
+ *  - and every spell learned, which must be studied again from the book.
+ *
+ * All of it is recoverable by playing, and none of it is recoverable quickly.
+ * That is the intended shape: the cost of eating a strange mushroom is hours,
+ * not a dead character.  It takes nothing that cannot be got back -- no
+ * experience, no levels, no items -- because a consumable that could end a run
+ * outright is a consumable nobody ever eats twice, and this one is worth eating
+ * once.
+ *
+ * The name is the Odyssey's, but the shape is Zelazny's: the first Amber novel
+ * opens on a man with no memory who knows only that there is a place called
+ * Amber and that he belongs to it.  Hence the one exception -- see
+ * wild_forget_knowledge().
+ */
+void player_forget_the_world(struct player *p)
+{
+	int i;
+
+	/* The ground you are standing on. */
+	if (cave && p->cave) {
+		struct loc grid;
+
+		for (grid.y = 0; grid.y < cave->height; grid.y++)
+			for (grid.x = 0; grid.x < cave->width; grid.x++) {
+				if (!square_in_bounds(cave, grid)) continue;
+				square_forget(cave, grid);
+			}
+	}
+
+	/* The world, less the place you started from. */
+	if (wild) wild_forget_knowledge(wild);
+
+	/* Everything you had learned about what lives here. */
+	for (i = 0; i < z_info->r_max; i++) {
+		struct monster_race *race = &r_info[i];
+
+		if (!race->name) continue;
+		wipe_monster_lore(race, get_lore(race));
+	}
+
+	/*
+	 * And what things are.  Only the flavoured kinds: a sword is still visibly a
+	 * sword to a man who cannot remember his own name, and pretending otherwise
+	 * would be forgetting the language rather than the game.
+	 */
+	for (i = 0; i < z_info->k_max; i++) {
+		struct object_kind *kind = &k_info[i];
+
+		if (kind->flavor) kind->aware = false;
+	}
+
+	/* The spells, which the book will have to teach you again. */
+	if (p->spell_flags) {
+		int num_spells = p->class->magic.total_spells;
+
+		for (i = 0; i < num_spells; i++) {
+			p->spell_flags[i] &= ~PY_SPELL_LEARNED;
+			p->spell_order[i] = 99;
+		}
+	}
+
+	p->upkeep->update |= (PU_SPELLS | PU_MONSTERS | PU_UPDATE_VIEW);
+	p->upkeep->redraw |= (PR_MAP | PR_STUDY | PR_OBJECT | PR_MONSTER |
+						  PR_EQUIP | PR_INVEN);
+}
+

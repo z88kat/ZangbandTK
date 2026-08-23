@@ -19,15 +19,19 @@
 #include "cave.h"
 #include "game-event.h"
 #include "game-world.h"
+#include "effects.h"
 #include "generate.h"
 #include "init.h"
+#include "mon-lore.h"
 #include "mon-make.h"
+#include "obj-desc.h"
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player.h"
 #include "player-birth.h"
+#include "player-timed.h"
 #include "player-util.h"
 #include "mon-util.h"
 #include "savefile.h"
@@ -1099,6 +1103,22 @@ static int test_walking_sideways_keeps_the_row(void *state) {
 	here.x = span * 3 + size * 5 + 7;
 	here.y = span * 3 + size * 5 + 3;
 
+	a = wild_surface(wild, player, here, &first);
+	notnull(a);
+	cave_free(a);
+
+	/*
+	 * Then stand at the window's vertical centre and settle there.
+	 *
+	 * Without this the test was world-dependent and failed about one run in
+	 * five, for a correct reason: the window aligns to whole blocks, so where
+	 * the character sits inside it depends on the world, and an axis scrolls
+	 * when they come within a margin of its edge.  Starting close to the north
+	 * edge, the northward drift below legitimately moved the y axis, and the
+	 * test read a working scroll as a broken one.  The centre is the one place
+	 * a drift of a block and a bit is guaranteed not to reach an edge.
+	 */
+	here.y = first.y + span / 2;
 	a = wild_surface(wild, player, here, &first);
 	notnull(a);
 	cave_free(a);
@@ -3127,6 +3147,156 @@ static int test_the_quality_ladder_is_a_ladder(void *state) {
 }
 
 /**
+ * The lotus is a mushroom you cannot tell from any other until you eat one
+ * (PLR-40).
+ *
+ * The trap is the point: it has to be indistinguishable on the floor and named
+ * once it has been eaten, or it is either unfair or harmless.  Mushrooms are
+ * flavoured in 4.2, which gives both halves for free -- but the naming of
+ * flavoured items goes through enough indirection to be worth checking rather
+ * than assuming.
+ */
+static int test_the_lotus_is_an_unknown_mushroom(void *state) {
+	struct object_kind *kind = lookup_kind(TV_MUSHROOM,
+										   lookup_sval(TV_MUSHROOM, "Lotus"));
+	char unknown[80], known[80];
+	bool was_aware;
+
+	notnull(kind);
+	notnull(kind->flavor);
+	was_aware = kind->aware;
+
+	kind->aware = false;
+	object_kind_name(unknown, sizeof(unknown), kind, false);
+
+	kind->aware = true;
+	object_kind_name(known, sizeof(known), kind, false);
+
+	printf("LOTUS unknown \"%s\"  known \"%s\"\n", unknown, known);
+
+	/* Unknown, it says nothing about what it is... */
+	require(!strstr(unknown, "Lotus"));
+
+	/* ...and known, it does. */
+	require(strstr(known, "Lotus") != NULL);
+
+	/* It sets the fuse rather than acting at once. */
+	notnull(kind->effect);
+	eq(kind->effect->index, EF_TIMED_SET);
+	eq(kind->effect->subtype, TMD_LOTUS);
+
+	kind->aware = was_aware;
+
+	ok;
+}
+
+/**
+ * The lotus forgets everything, and leaves home (PLR-40).
+ *
+ * Five kinds of knowledge in five different places, so this checks all five
+ * rather than trusting that one function touched them all -- the failure mode of
+ * a feature like this is quietly forgetting to forget something, and nothing in
+ * play would tell you which of the five it was.
+ */
+static int test_the_lotus_forgets_the_world(void *state) {
+	struct monster_race *race = NULL;
+	struct object_kind *flavoured = NULL;
+	int i, seen = 0, aware = 0, known = 0;
+
+	/* Give the character something to lose. */
+	for (i = 0; i < wild->blocks * wild->blocks; i++)
+		wild->map[i].info |= WILD_INFO_SEEN;
+	for (i = 0; i < wild_town_count(wild); i++)
+		wild->towns[i].visited = 1;
+
+	for (i = 0; i < z_info->r_max; i++)
+		if (r_info[i].name) { race = &r_info[i]; break; }
+	notnull(race);
+	get_lore(race)->sights = 7;
+	get_lore(race)->tkills = 3;
+
+	for (i = 0; i < z_info->k_max; i++)
+		if (k_info[i].flavor) { flavoured = &k_info[i]; break; }
+	notnull(flavoured);
+	flavoured->aware = true;
+
+	if (player->spell_flags && player->class->magic.total_spells) {
+		player->spell_flags[0] |= PY_SPELL_LEARNED;
+		player->spell_order[0] = 0;
+	}
+
+	player_forget_the_world(player);
+
+	/* The world map is blank... */
+	for (i = 0; i < wild->blocks * wild->blocks; i++)
+		if (wild->map[i].info & WILD_INFO_SEEN) seen++;
+
+	/* ...except the nine blocks around home, which WLD-12 keeps known. */
+	eq(seen, 9);
+	eq(wild->towns[0].visited, 1);
+	for (i = 1; i < wild_town_count(wild); i++)
+		eq(wild->towns[i].visited, 0);
+
+	/* The monsters are strangers again. */
+	eq(get_lore(race)->sights, 0);
+	eq(get_lore(race)->tkills, 0);
+
+	/* And so is everything in a bottle. */
+	for (i = 0; i < z_info->k_max; i++)
+		if (k_info[i].flavor && k_info[i].aware) aware++;
+	eq(aware, 0);
+
+	/* The spells are gone from the book of the head. */
+	if (player->spell_flags && player->class->magic.total_spells) {
+		for (i = 0; i < player->class->magic.total_spells; i++)
+			if (player->spell_flags[i] & PY_SPELL_LEARNED) known++;
+		eq(known, 0);
+		eq(player->spell_order[0], 99);
+	}
+
+	/* Put the world back for the tests that follow. */
+	for (i = 0; i < wild_town_count(wild); i++)
+		if (i == 0) wild->towns[i].visited = 1;
+
+	ok;
+}
+
+/**
+ * A character who has forgotten everything can still get home (PLR-40, WLD-12).
+ *
+ * The reason the exception exists.  The magetower's list is built from the places
+ * the player has found, so forgetting all of them leaves a character with no fast
+ * travel, no destination and a blank map -- which is not a setback, it is a lost
+ * save.  The first Amber novel opens on a man with no memory who knows only that
+ * there is a place called Amber; that is the amount of knowledge this leaves.
+ */
+static int test_the_lotus_leaves_a_way_home(void *state) {
+	int i, dests;
+
+	for (i = 0; i < wild->blocks * wild->blocks; i++)
+		wild->map[i].info |= WILD_INFO_SEEN;
+	for (i = 0; i < wild_town_count(wild); i++)
+		wild->towns[i].visited = 1;
+
+	wild_forget_knowledge(wild);
+
+	/* Exactly one place left to go, and it is home. */
+	dests = 0;
+	for (i = 0; i < wild_town_count(wild); i++)
+		if (wild->towns[i].visited) dests++;
+	eq(dests, 1);
+	eq(wild->towns[0].visited, 1);
+
+	/* And its ground is on the map, so it is somewhere rather than a name. */
+	require(wild_seen(wild, wild->towns[0].block.x, wild->towns[0].block.y));
+
+	for (i = 0; i < wild_town_count(wild); i++)
+		if (i == 0) wild->towns[i].visited = 1;
+
+	ok;
+}
+
+/**
  * There is one home in the world, and every town's home door opens onto it
  * (WLD-11a, WLD-16a).
  *
@@ -3431,6 +3601,9 @@ struct test tests[] = {
 	{ "no-road-goes-nowhere", test_no_road_goes_nowhere },
 	{ "the-road-runs-up-to-a-gate", test_the_road_runs_up_to_a_gate },
 	{ "the-quality-ladder-is-a-ladder", test_the_quality_ladder_is_a_ladder },
+	{ "the-lotus-is-an-unknown-mushroom", test_the_lotus_is_an_unknown_mushroom },
+	{ "the-lotus-forgets-the-world", test_the_lotus_forgets_the_world },
+	{ "the-lotus-leaves-a-way-home", test_the_lotus_leaves_a_way_home },
 	{ "there-is-one-home-in-the-world", test_there_is_one_home_in_the_world },
 	{ "a-better-shop-deals-in-better-goods", test_a_better_shop_deals_in_better_goods },
 	{ "every-service-held-is-built", test_every_service_held_is_built },

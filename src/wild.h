@@ -303,6 +303,7 @@ int wild_store_quality(struct wilderness *w, int town, int store);
 const char *wild_quality_name(int tier);
 int wild_town_here(struct wilderness *w, struct loc grid);
 void wild_note_visit(struct wilderness *w, struct loc grid);
+void wild_forget_knowledge(struct wilderness *w);
 bool wild_dungeon_found(struct wilderness *w, int idx);
 
 /** Somewhere the magetower will carry the player (WLD-16c). */

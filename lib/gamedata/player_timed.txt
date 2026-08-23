@@ -569,3 +569,19 @@ grade:G:10000:FrAct:Your limbs fill with energy!
 on-end:Your limbs return to normal.
 on-increase:Your limbs feel more energetic!
 flag-synonym:FREE_ACT:1
+
+# ZangbandTK (PLR-40): the lotus fuse.
+#
+# This effect does nothing at all while it runs.  It is a countdown, and what
+# happens is in game-world.c when it reaches zero: everything the character knows
+# is forgotten.  Five turns of feeling a little dizzy, and then you are somebody
+# standing somewhere with no idea which somewhere it is.
+#
+# The delay is the whole point.  An item that took your memory the instant you ate
+# it would be a bad potion; one that takes it five turns later is a mistake you
+# have time to understand and no time to undo.
+name:LOTUS
+desc:lotus
+grade:o:5:Lotus:You feel a little dizzy...
+on-end:Where am I?
+msgt:GENERIC

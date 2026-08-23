@@ -3667,6 +3667,49 @@ void wild_settle_player(struct chunk *c, struct player *p)
  * ------------------------------------------------------------------------ */
 
 /**
+ * Forget the world map, except where home is (ZangbandTK, PLR-40).
+ *
+ * What the lotus takes.  Every block the player has seen goes back to unseen, so
+ * the world map is blank again, every town is unvisited, and since a dungeon
+ * mouth counts as found when its block has been seen, the ways down are lost with
+ * everything else.
+ *
+ * Home is the exception, and not out of kindness: WLD-12 makes the starting
+ * village always known, the magetower's list is built from what the player has
+ * found, and a character who has forgotten every place including the one they
+ * started in has no way to travel anywhere and nothing to walk towards.  The
+ * blocks around it stay seen too, or the village would be a name on an otherwise
+ * empty map with no ground around it.
+ *
+ * Corwin begins the first novel with no memory and one certainty -- that there is
+ * a place called Amber and he is of it.  That is the shape of this.
+ */
+void wild_forget_knowledge(struct wilderness *w)
+{
+	int i, x, y;
+	struct loc home;
+
+	if (!w || !w->town_count) return;
+
+	for (i = 0; i < w->blocks * w->blocks; i++)
+		w->map[i].info &= ~WILD_INFO_SEEN;
+
+	for (i = 0; i < w->town_count; i++)
+		w->towns[i].visited = 0;
+
+	/* And put home back. */
+	home = w->towns[0].block;
+	w->towns[0].visited = 1;
+
+	for (y = home.y - 1; y <= home.y + 1; y++)
+		for (x = home.x - 1; x <= home.x + 1; x++) {
+			struct wild_block *block = wild_block_at(w, x, y);
+
+			if (block) block->info |= WILD_INFO_SEEN;
+		}
+}
+
+/**
  * Note that the player has seen the country around a world position.
  *
  * Knowledge for the overhead map is kept per *block*, not per grid, because the

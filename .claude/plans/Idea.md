@@ -137,4 +137,19 @@ git push origin 3.5.1-rc1
 
 Lotus Leaves. Eat them and you forget everything in 5 turns, so the map is forgotten, monsters, potions, spells, everything.
 
-... you feel a little dizzy.. where am i ....
+... you feel a little dizzy.. your memory begins fade...
+...where am i ....
+
+healer can become the cure
+
+## NSD Build
+
+We are limited by RAM on the NDS. Here is my idea.
+
+We abandon the wilderness build. The doors are locked by "magic" and cannot be opened until the elipse of the sun.
+
+We still make all towns and dungeons available. But to travel to them you enter the mage tower. All towns and dungeons are available for travel, you still have to pay the travel costs, so you cannot travel immediately without a bit of work to gain gold.
+
+This means we still keep the flavour of zangband, but without the wilderness. Except!
+
+I have a RAM pack, so i your one those lucky guys who have a RAM pack we could consider to make a special build which includes the wilderness (its an eplise of sun when you plugin the ram pack - and down the correct rom!)

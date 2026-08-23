@@ -322,6 +322,20 @@ static void decrease_timeouts(void)
 				break;
 			}
 
+			/*
+			 * ZangbandTK (PLR-40): the lotus fuse burning down.  The effect does
+			 * nothing while it runs; the whole of it happens here, on the turn it
+			 * would expire.  Handled before the decrement below, because after
+			 * it the timer is zero and there is nothing left to recognise.
+			 */
+			case TMD_LOTUS:
+			{
+				if (player->timed[i] <= decr) {
+					player_forget_the_world(player);
+				}
+				break;
+			}
+
 			case TMD_COMMAND:
 			{
 				struct monster *mon = get_commanded_monster();
