@@ -647,7 +647,9 @@ User Pref File Commands
 
 Interact with options (``=``)
   Allow you to interact with options. Note that using the "cheat" options
-  may mark your savefile as unsuitable for the high score list. The
+  (``=`` then ``x``) marks the character as unsuitable for the high score list,
+  permanently — see :ref:`cheating options <cheating-options>`, and
+  :ref:`debug commands <debug-commands>` for the larger set behind ``^A``. The
   "window" options allow you to specify what should be drawn in any of the
   special sub-windows (not available on all platforms). See the help files
   for :doc:`customization <customize>` and :doc:`options <option>` for more

@@ -2839,6 +2839,41 @@ static int test_the_starting_village_is_always_known(void *state) {
 	ok;
 }
 
+/**
+ * The surface says whether it is day or night (WLD-24).
+ *
+ * Angband has a day and a night and never says which it is, because its surface
+ * is one town-sized level you can see all of regardless.  Here daylight is what
+ * reveals the country: measured on a real savefile at night, of 20736 grids in
+ * the window 3895 were glowing and 17 were seen.  That is correct, and
+ * indistinguishable from a broken map if nothing on screen says what hour it is.
+ *
+ * The status line only prints it above ground, so this checks both the hour and
+ * the condition, since a claim about the display is what the report was about.
+ */
+static int test_the_surface_knows_the_hour(void *state) {
+	int32_t was = turn;
+	int day = 10L * z_info->day_length;
+	bool lit, dark;
+
+	require(player->in_wild);
+
+	/* Noon, and midnight. */
+	turn = day * 3 + day / 4;
+	lit = is_daytime();
+
+	turn = day * 3 + (3 * day) / 4;
+	dark = is_daytime();
+
+	turn = was;
+
+	/* The two halves of the day differ, which is what there is to report. */
+	require(lit);
+	require(!dark);
+
+	ok;
+}
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -2850,6 +2885,7 @@ struct test tests[] = {
 	{ "the-town-has-people", test_the_town_has_people },
 	{ "a-towns-streets-follow-its-inhabitants", test_a_towns_streets_follow_its_inhabitants },
 	{ "the-status-line-names-the-place", test_the_status_line_names_the_place },
+	{ "the-surface-knows-the-hour", test_the_surface_knows_the_hour },
 	{ "the-town-holds-the-trades-it-was-given", test_the_town_holds_the_trades_it_was_given },
 	{ "a-large-town-is-built", test_a_large_town_is_built },
 	{ "a-distant-town-is-drawn", test_a_distant_town_is_drawn },

@@ -240,6 +240,13 @@ Trees are the one piece of terrain here that Angband had no equivalent for: you
 can walk into them, and you cannot see through them. Standing in a wood you see
 your own surroundings and very little else, which is the point of a wood.
 
+**And it matters what time it is.** Daylight is what reveals the country; at
+night you see as far as your lamp and no further, so the world stops being a map
+and becomes a corridor. The status line says ``Day`` or ``Night`` while you are
+above ground — Angband never said, because in Angband the surface is one
+town-sized level and the difference hardly signifies. Here it is the difference
+between seeing where you are going and not.
+
 Leaving the town
 ----------------
 

@@ -31,6 +31,12 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 21 August 2026
 ----------------------------------------------------------------
 
+- **3.12.0** — The status line says ``Day`` or ``Night`` above ground. Angband
+  never said, because its surface is one town-sized level; here daylight is what
+  reveals the country, and at night you see as far as your lamp — which is
+  indistinguishable from a broken map if nothing tells you the hour. Both cheats
+  and the debug commands are now documented, in the manual and in the in-game
+  help as page (d).
 - **3.11.2** — Your home village always has a magetower now: travel was
   unusable from the one place every journey starts. The status line also refreshes
   the place name as you walk out of a town, where before it kept showing the town

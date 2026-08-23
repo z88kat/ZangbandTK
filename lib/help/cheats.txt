@@ -1,0 +1,65 @@
+Cheats and Debug Commands
+=========================
+
+Two sets of them, for two different jobs.  Both cost the character its place
+on the high score list, permanently, and neither can be taken back.
+
+
+The cheat options
+-----------------
+
+Press '=' then 'x'.  These change how the game behaves.
+
+  Peek into monster creation    say what is being created, and where
+  Peek into dungeon creation    the same for rooms
+  Peek into something else      other debugging messages
+  Allow player to avoid death   do not die
+  Take gold                     asks an amount and hands it over
+
+The last is ZangbandTK's own.  The magetower charges a fare by the distance,
+and there was no way to find out whether the fares were sensible without a
+purse to test them with.
+
+It behaves as a button rather than a switch: select it, give an amount, and it
+turns itself back off again.  The record that a cheat was used stays.
+
+
+The debug commands
+------------------
+
+Press '^A' -- control-A.  The game asks once whether you mean it, and marks
+the character from then on.
+
+These change the state of your game rather than the way it behaves.  There are
+a great many, in submenus chosen with the movement keys rather than by letter:
+
+  Items           create an object, an artifact, everything of a kind
+  Player          cure everything, make powerful, gain gold ($), edit stats
+  Teleport        to a location, at random, or jump to a level
+  Effects         detect everything, map the area, run an effect
+  Summon          a named monster, or a random one
+  Files           dumps of the game's own data
+  Statistics      generate levels in bulk and count what turns up
+  Query           ask about a square, a monster, a keystroke
+  Miscellaneous   the rest
+
+There are no guard rails.  Jumping a first-level character to level one
+hundred will work, and then the character will die there.
+
+
+What it costs
+-------------
+
+A cheat option sets a hidden twin the moment it is used, and the twin is never
+unset.  On death the game says:
+
+    Score not registered for cheaters.
+
+The debug commands mark the character in a different place, and say:
+
+    Score not registered for wizards.
+
+Turning a cheat back off does not undo either.  The record is of having used
+it, not of having it switched on -- which is the point.  Nothing else about
+the character is affected: it plays exactly as it did, and the savefile is
+not otherwise marked.

@@ -572,6 +572,14 @@ void process_world(struct chunk *c)
 			 * telling the player what is in it (ZangbandTK, WLD-25).
 			 */
 			cave_illuminate(c, dawn, !wild_is_surface(c));
+
+			/*
+			 * And the status line says which it is now (ZangbandTK).  Nothing
+			 * else would redraw it, and on a surface the size of a world the
+			 * difference is the difference between seeing the country and
+			 * seeing as far as your lamp.
+			 */
+			player->upkeep->redraw |= PR_STATUS;
 		}
 	} else {
 		/* Update the stores once a day (while in the dungeon).

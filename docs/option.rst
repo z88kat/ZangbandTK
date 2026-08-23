@@ -251,8 +251,19 @@ To-damage is a percentage of dice (experimental) ``birth_percent_damage``
   adds 5% to the value of the damage dice. This option is currently not
   very balanced.
 
+.. _cheating-options:
+
 Cheating options
 ================
+
+Press ``=`` then ``x``. These are for testing the game and for looking at how it
+works from the inside — not for winning it.
+
+**Using any of them ends the character's chances of a score.** Each cheat has a
+hidden twin that is set the moment the cheat is used and is never unset, and on
+death the game says *"Score not registered for cheaters."* Turning the cheat back
+off afterwards does not undo that: the record is of having used it, not of having
+it on.
 
 Peek into monster creation ``cheat_hear``
   Cheaters never win. But they can peek at monster creation.
@@ -265,6 +276,36 @@ Peek into something else ``cheat_xtra``
 
 Allow player to avoid death ``cheat_live``
    Cheaters never win. But they can cheat death.
+
+Take gold ``cheat_gold``
+  Asks how much and puts it in your pocket. This one is ZangbandTK's, added
+  because the :doc:`magetower <towns>` charges a fare and there was no way to
+  test whether the fares were sensible without a purse to test them with.
+
+  It is a button rather than a switch: select it, give an amount, and it turns
+  itself back off. The record that a cheat was used stays.
+
+.. _debug-commands:
+
+Debug commands
+==============
+
+A second and much larger set, reached with ``^A`` — control-A. The game asks for
+confirmation the first time, and the character is marked from then on: on death
+it says *"Score not registered for wizards."*
+
+These are not options but commands, grouped into submenus — *Items*, *Player*,
+*Teleport*, *Effects*, *Summon*, *Files*, *Statistics*, *Query*,
+*Miscellaneous* — chosen with the movement keys rather than by letter. Between
+them they will create an item, jump to a level, summon a named monster, detect
+everything nearby, cure everything, gain gold (``$``), and edit the character's
+stats and experience.
+
+They are development tools and there are no guard rails on them: jumping a
+first-level character to depth 100 will work, and then kill them.
+
+Worth knowing which of the two you want. The cheat options change how the game
+*behaves*; the debug commands change the *state of your game* directly.
 
 Window flags
 ============

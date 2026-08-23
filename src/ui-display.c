@@ -1148,6 +1148,32 @@ static size_t prt_level_feeling(int row, int col)
 }
 
 /**
+ * Print whether it is day or night, on the surface (WLD-24).
+ *
+ * Angband has a day and a night and never says which it is, because in Angband
+ * the surface is one town-sized level you can see all of at once and the
+ * difference hardly signifies.  Here the surface is the world, and daylight is
+ * what reveals it: at night a character sees as far as their lamp and no
+ * further, which looks exactly like a fault in the map if nothing on the screen
+ * says what time it is.
+ *
+ * Shown only above ground.  Underground the hour still governs what the town
+ * does, but the player has nothing to see by either way.
+ */
+static size_t prt_daylight(int row, int col)
+{
+	if (!player->in_wild)
+		return 0;
+
+	if (is_daytime())
+		c_put_str(COLOUR_YELLOW, "Day ", row, col);
+	else
+		c_put_str(COLOUR_L_DARK, "Night ", row, col);
+
+	return 6;
+}
+
+/**
  * Prints player grid light level
  */
 static size_t prt_light(int row, int col)
@@ -1318,8 +1344,9 @@ static size_t prt_unignore(int row, int col)
 typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
-{ prt_level_feeling, prt_light, prt_moves, prt_unignore, prt_recall,
-  prt_descent, prt_state, prt_study, prt_tmd, prt_dtrap, prt_terrain };
+{ prt_level_feeling, prt_daylight, prt_light, prt_moves, prt_unignore,
+  prt_recall, prt_descent, prt_state, prt_study, prt_tmd, prt_dtrap,
+  prt_terrain };
 
 
 static void update_statusline_aux(int row, int col)

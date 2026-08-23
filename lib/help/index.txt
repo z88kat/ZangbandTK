@@ -14,6 +14,7 @@ Please choose one of the following help files:
     (a) Available commands
     (b) Available symbols
     (c) The dungeons of the world
+    (d) Cheats and debug commands
 
 
 
@@ -29,3 +30,5 @@ Browser/help commands:
 .. menu:: [b] symbols.txt
 
 .. menu:: [c] dungeons.txt
+
+.. menu:: [d] cheats.txt
