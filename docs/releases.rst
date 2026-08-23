@@ -31,6 +31,13 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 21 August 2026
 ----------------------------------------------------------------
 
+- **3.11.1** — Three things found by playing. Roads reached towns but often
+  stopped at a blank wall with the gate up to twenty-six grids along it, which is
+  a dead end from where you are standing; the gate is now cut where the road
+  arrives, and the last stretch of road is drawn up to it. The magetower did not
+  offer your own village, because the visited flag was only set by taking a step
+  and your steps were taken before the flag existed. And ``^A`` ``$`` puts gold
+  in your pocket, for testing things that cost money.
 - **3.11.0** — The magetower (WLD-16c), and with it the mechanism services are
   built on (WLD-18): a building is a door with behaviour behind it. Walk into a
   tower and the mages will carry you to a town you have stood in or a dungeon

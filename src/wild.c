@@ -2270,6 +2270,73 @@ static bool wild_town_cut_gate(struct chunk *town, int idx, struct loc start,
 }
 
 /**
+ * Where a road arrives at one side of a town, in the town's own coordinates.
+ *
+ * Roads are drawn along the middle of the blocks that carry them, so a road
+ * coming in from the north runs down the centre column of some block.  The gates
+ * were cut at the middle of each side regardless, and a town is up to eight
+ * blocks across -- so a road arriving along a block column two over from the
+ * middle left the traveller at a blank wall with the gate twenty-six grids
+ * along it.  Measured before this existed: half the towns of a world had their
+ * road arrive within two grids of a gate and the rest between sixteen and
+ * twenty-six, which is the block size and multiples of it.
+ *
+ * So the gate goes where the road comes in.  That is also the right way round:
+ * a town does not put its gate somewhere and hope a road turns up.
+ *
+ * \param side is 0 north, 1 south, 2 west, 3 east.
+ * \return the coordinate along that side, or -1 if no road arrives there.
+ */
+static int wild_town_road_gate(struct wilderness *w, int idx, int side)
+{
+	int size = z_info->wild_block_size;
+	struct loc org = wild_town_origin_of(w, idx);
+	int wid = w->towns[idx].wid, hgt = w->towns[idx].hgt;
+	int bx0 = org.x / size, bx1 = (org.x + wid - 1) / size;
+	int by0 = org.y / size, by1 = (org.y + hgt - 1) / size;
+	int b;
+
+	if (side < 2) {
+		/* North or south: look for a road in the block row beyond. */
+		int outside = (side == 0) ? by0 - 1 : by1 + 1;
+		int inside = (side == 0) ? by0 : by1;
+
+		for (b = bx0; b <= bx1; b++) {
+			int local;
+
+			if (!wild_road_at(w, b, outside)) continue;
+			if (!wild_road_at(w, b, inside)) continue;
+
+			/*
+			 * Clamped rather than rejected.  A town's rectangle is centred on
+			 * its block and so does not line up with block boundaries, which
+			 * means the centre of an edge block can fall outside the town
+			 * altogether.  Refusing those sent the gate back to the middle of
+			 * the side, which is the worst answer; the corner nearest the road
+			 * is much the better one.
+			 */
+			local = b * size + size / 2 - org.x;
+			return MAX(1, MIN(local, wid - 3));
+		}
+	} else {
+		int outside = (side == 2) ? bx0 - 1 : bx1 + 1;
+		int inside = (side == 2) ? bx0 : bx1;
+
+		for (b = by0; b <= by1; b++) {
+			int local;
+
+			if (!wild_road_at(w, outside, b)) continue;
+			if (!wild_road_at(w, inside, b)) continue;
+
+			local = b * size + size / 2 - org.y;
+			return MAX(1, MIN(local, hgt - 3));
+		}
+	}
+
+	return -1;
+}
+
+/**
  * Give the town one gate on each of its four sides.
  *
  * Tried from the middle of each side outwards, so a gate stands where a gate
@@ -2278,45 +2345,54 @@ static bool wild_town_cut_gate(struct chunk *town, int idx, struct loc start,
 static void wild_town_open(struct chunk *town, int idx)
 {
 	int w = town->width, h = town->height;
-	int i;
+	int i, side;
 
 	wild_gate_count[idx] = 0;
 	wild_town_wall(town);
 
-	for (i = 0; i < w - 3; i++) {
-		int x = w / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
+	/*
+	 * Each side in turn, working outwards from where its road arrives -- or
+	 * from the middle, if nothing was paved to that side.  A town wants a way
+	 * out on every side whether or not anybody built a road to it.
+	 *
+	 * Outwards from the road rather than merely trying the road first: the
+	 * cutter refuses a spot with a shop behind it, and falling back to the
+	 * middle of the side then put the gate as far from the traveller as it
+	 * could.  Measured: trying the road alone left one town in twelve with its
+	 * gate twelve to seventeen grids from where the road stopped.
+	 */
+	for (side = 0; side < 4; side++) {
+		int road = wild ? wild_town_road_gate(wild, idx, side) : -1;
+		int span = (side < 2) ? w : h;
+		int from = (road >= 0) ? road : span / 2;
 
-		if (x < 1 || x > w - 3) continue;
-		if (wild_town_cut_gate(town, idx, loc(x, 1), loc(0, 1), loc(1, 0),
-							   h / 2))
-			break;
-	}
+		for (i = 0; i < span - 3; i++) {
+			int at = from + ((i % 2) ? -((i + 1) / 2) : (i / 2));
+			bool cut;
 
-	for (i = 0; i < w - 3; i++) {
-		int x = w / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
+			if (at < 1 || at > span - 3) continue;
 
-		if (x < 1 || x > w - 3) continue;
-		if (wild_town_cut_gate(town, idx, loc(x, h - 2), loc(0, -1), loc(1, 0),
-							   h / 2))
-			break;
-	}
+			switch (side) {
+				case 0:
+					cut = wild_town_cut_gate(town, idx, loc(at, 1),
+											 loc(0, 1), loc(1, 0), h / 2);
+					break;
+				case 1:
+					cut = wild_town_cut_gate(town, idx, loc(at, h - 2),
+											 loc(0, -1), loc(1, 0), h / 2);
+					break;
+				case 2:
+					cut = wild_town_cut_gate(town, idx, loc(1, at),
+											 loc(1, 0), loc(0, 1), w / 2);
+					break;
+				default:
+					cut = wild_town_cut_gate(town, idx, loc(w - 2, at),
+											 loc(-1, 0), loc(0, 1), w / 2);
+					break;
+			}
 
-	for (i = 0; i < h - 3; i++) {
-		int y = h / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
-
-		if (y < 1 || y > h - 3) continue;
-		if (wild_town_cut_gate(town, idx, loc(1, y), loc(1, 0), loc(0, 1),
-							   w / 2))
-			break;
-	}
-
-	for (i = 0; i < h - 3; i++) {
-		int y = h / 2 + ((i % 2) ? -((i + 1) / 2) : (i / 2));
-
-		if (y < 1 || y > h - 3) continue;
-		if (wild_town_cut_gate(town, idx, loc(w - 2, y), loc(-1, 0), loc(0, 1),
-							   w / 2))
-			break;
+			if (cut) break;
+		}
 	}
 }
 
@@ -2406,6 +2482,92 @@ static struct chunk *wild_town_chunk(struct wilderness *w, struct player *p,
 }
 
 /**
+ * Run the road up to the town's gates (WLD-08).
+ *
+ * A road is routed to a town's middle block and the gates are cut where it
+ * arrives, which puts the two together most of the time -- but not always: the
+ * gate cutter refuses a spot with a shop behind it, and a town's rectangle does
+ * not line up with the blocks the road is drawn along.  When they miss, the road
+ * stopped at a blank wall and the traveller had to walk the perimeter to find a
+ * way in.  Reported from play as walking a long road to a dead end, which is
+ * exactly what it was.
+ *
+ * So the last stretch is drawn here instead of being left to chance: from each
+ * gate, out through the ring the town does not draw, and then along the outside
+ * of the wall until it meets the road that came for it.  Bounded by the length
+ * of that side, and drawn only if a road is actually found -- a gate on a side
+ * nobody paved stays a gate onto open country.
+ */
+static void wild_draw_town_approach(struct wilderness *w, struct chunk *c,
+									int idx, struct loc offset)
+{
+	struct loc org = wild_town_origin_of(w, idx);
+	int wid = w->towns[idx].wid, hgt = w->towns[idx].hgt;
+	int i;
+
+	for (i = 0; i < wild_gate_count[idx]; i++) {
+		struct loc gate = wild_gates[idx][i].grid;
+		struct loc step = loc(0, 0), along;
+		struct loc at;
+		int reach, dir;
+
+		/* Which wall it is in, and so which way is out. */
+		if (gate.y <= 1) step = loc(0, -1);
+		else if (gate.y >= hgt - 2) step = loc(0, 1);
+		else if (gate.x <= 1) step = loc(-1, 0);
+		else if (gate.x >= wid - 2) step = loc(1, 0);
+		else continue;
+
+		along = loc(step.y, step.x);
+
+		/* Out to the edge of the town's ground, paving as we go. */
+		at = loc(org.x + gate.x - offset.x, org.y + gate.y - offset.y);
+
+		for (reach = 0; reach < 3; reach++) {
+			struct loc next = loc(at.x + step.x, at.y + step.y);
+
+			if (!square_in_bounds_fully(c, next)) break;
+			if (!square_ispassable(c, next)) break;
+
+			at = next;
+			if (square(c, at)->feat != FEAT_ROAD)
+				square_set_feat(c, at, FEAT_ROAD);
+		}
+
+		/* Then along the wall, each way, until the road turns up. */
+		for (dir = -1; dir <= 1; dir += 2) {
+			struct loc walk = at;
+			int span = (step.x ? hgt : wid);
+			int k;
+
+			for (k = 0; k < span; k++) {
+				struct loc next = loc(walk.x + along.x * dir,
+									  walk.y + along.y * dir);
+
+				if (!square_in_bounds_fully(c, next)) break;
+				if (!square_ispassable(c, next)) break;
+
+				walk = next;
+
+				if (square(c, walk)->feat == FEAT_ROAD) {
+					/* Found it: pave what we walked over to get here. */
+					struct loc back = at;
+					int j;
+
+					for (j = 0; j <= k; j++) {
+						if (square(c, back)->feat != FEAT_ROAD)
+							square_set_feat(c, back, FEAT_ROAD);
+						back = loc(back.x + along.x * dir,
+								   back.y + along.y * dir);
+					}
+					break;
+				}
+			}
+		}
+	}
+}
+
+/**
  * Draw the town into the live surface, where the window covers it.
  *
  * The town's outermost ring is skipped.  It is a permanent wall, and it exists
@@ -2444,6 +2606,9 @@ static void wild_draw_town(struct wilderness *w, struct player *p,
 
 				square_set_feat(c, dest, square_feat(town, grid)->fidx);
 			}
+
+		/* And bring the road up to its gates (WLD-08). */
+		wild_draw_town_approach(w, c, idx, offset);
 	}
 }
 

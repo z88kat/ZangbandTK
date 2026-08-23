@@ -2637,6 +2637,192 @@ static int test_walking_into_a_town_is_remembered(void *state) {
 	ok;
 }
 
+
+/**
+ * No road goes nowhere (WLD-08).
+ *
+ * Every end of the road network is a town or a dungeon mouth.  A road that
+ * simply stops in open country is a road somebody built to nowhere, and the
+ * player walking it has no way to know it was never going to arrive.
+ */
+static int test_no_road_goes_nowhere(void *state) {
+	int seed;
+
+	for (seed = 1; seed <= 6; seed++) {
+		struct wilderness *w = wild_new(129, seed * 7717);
+		int x, y, roads = 0, ends = 0;
+
+		wild_generate(w);
+
+		for (y = 0; y < w->blocks; y++)
+			for (x = 0; x < w->blocks; x++) {
+				static const int dx[4] = { -1, 1, 0, 0 };
+				static const int dy[4] = { 0, 0, -1, 1 };
+				int i, neighbours = 0;
+
+				if (!wild_road_at(w, x, y)) continue;
+				roads++;
+
+				for (i = 0; i < 4; i++)
+					if (wild_road_at(w, x + dx[i], y + dy[i])) neighbours++;
+
+				if (neighbours > 1) continue;
+
+				ends++;
+
+				if (wild_town_at(w, x, y) < 0 &&
+					!wild_dungeon_in_block(w, x, y))
+					printf("world %d: a road ends at block %d,%d, which is "
+						   "neither a town nor a dungeon\n", seed, x, y);
+
+				require(wild_town_at(w, x, y) >= 0 ||
+						wild_dungeon_in_block(w, x, y));
+			}
+
+		require(roads > 100);
+		require(ends > 0);
+		wild_free(w);
+	}
+
+	ok;
+}
+
+/**
+ * The road runs up to a gate, not to a blank wall (WLD-08).
+ *
+ * Reported from play: walking a road a long way and coming to a dead end.  It
+ * was not a dead end at block level -- every road ends at a town -- but on the
+ * ground the road stopped at the wall and the gate could be twenty-five grids
+ * along it, which amounts to the same thing when you are standing there.
+ *
+ * Measured before the fix: about half the towns of a world had their road arrive
+ * within two grids of a gate, and the rest between twelve and twenty-six.  Two
+ * changes together: the gate is cut where the road arrives rather than at the
+ * middle of the side, and the last stretch of road is drawn from each gate out
+ * along the wall until it meets the road that came for it.
+ */
+static int test_the_road_runs_up_to_a_gate(void *state) {
+	int idx, checked = 0, worst = 0;
+
+	require(wild_town_count(wild) > 1);
+
+	for (idx = 0; idx < wild_town_count(wild); idx++) {
+		struct loc org = wild_town_origin_of(wild, idx);
+		struct loc centre = loc(org.x + wild->towns[idx].wid / 2,
+								org.y + wild->towns[idx].hgt / 2);
+		struct loc offset;
+		struct chunk *c = wild_surface(wild, player, centre, &offset);
+		struct loc gates[32];
+		struct loc g;
+		int w = wild->towns[idx].wid, h = wild->towns[idx].hgt;
+		int gate_count = 0, best = 9999;
+
+		notnull(c);
+
+		/* Every gate, once. */
+		for (g.y = org.y; g.y < org.y + h; g.y++)
+			for (g.x = org.x; g.x < org.x + w; g.x++) {
+				struct loc at = loc(g.x - offset.x, g.y - offset.y);
+
+				if (!square_in_bounds_fully(c, at)) continue;
+				if (!square_iscloseddoor(c, at) && !square_isopendoor(c, at))
+					continue;
+				if (gate_count < (int) N_ELEMENTS(gates)) gates[gate_count++] = g;
+			}
+
+		/*
+		 * The nearest gate to where the road network arrives -- which is what
+		 * the traveller has to walk.  Measured on the ring outside the town's
+		 * ground, since the town's own outer ring keeps whatever the road
+		 * drawing left there and would flatter the answer.
+		 */
+		for (g.y = org.y - 1; g.y <= org.y + h; g.y++)
+			for (g.x = org.x - 1; g.x <= org.x + w; g.x++) {
+				struct loc out = loc(g.x - offset.x, g.y - offset.y);
+				bool edge = (g.x == org.x - 1 || g.x == org.x + w ||
+							 g.y == org.y - 1 || g.y == org.y + h);
+				int k;
+
+				if (!edge) continue;
+				if (!square_in_bounds_fully(c, out)) continue;
+				if (square(c, out)->feat != FEAT_ROAD) continue;
+
+				for (k = 0; k < gate_count; k++) {
+					int d = distance(g, gates[k]);
+
+					if (d < best) best = d;
+				}
+			}
+
+		cave_free(c);
+
+		/* A town no road reaches at all is a separate matter, tested above. */
+		if (best == 9999 || !gate_count) continue;
+
+		checked++;
+		if (best > worst) worst = best;
+
+		if (best > 4)
+			printf("%s: the road leaves you %d grids from the nearest gate\n",
+				wild->towns[idx].name ? wild->towns[idx].name : "a town", best);
+
+		/*
+		 * Within a few grids.  Measured before the gates were cut where the
+		 * roads arrive: about half the towns of a world were within two and the
+		 * rest between twelve and twenty-six, which is the block size and
+		 * multiples of it.
+		 */
+		require(best <= 4);
+	}
+
+	require(checked > 1);
+
+	ok;
+}
+
+/**
+ * The village a character began in is always somewhere they have been (WLD-16c).
+ *
+ * Reported from play: standing in a magetower with two towns behind them and
+ * neither offered.  The visited flag was only ever set by taking a step, and
+ * this character's steps into their own village were taken in an earlier version
+ * that had no flag to set -- so the savefile faithfully recorded that they had
+ * been nowhere.
+ *
+ * Every character begins on the starting village's staircase, so this is a fact
+ * about the game rather than something to be recorded and possibly missed.  Set
+ * on loading as well as on generating a surface, because loading a character who
+ * is standing on the surface does not generate one: the level comes back from
+ * the savefile.
+ */
+static int test_the_starting_village_is_always_known(void *state) {
+	struct wild_place places[WILD_TOWNS_MAX + WILD_DUNGEONS_MAX];
+	struct loc org = wild_town_origin_of(wild, 1);
+	struct loc from;
+	int n, i;
+	bool offered = false;
+
+	require(wild_town_count(wild) > 1);
+
+	/* It counts as visited without anybody having walked anywhere. */
+	eq(wild->towns[0].visited, 1);
+
+	/* And so it is offered, asked from somewhere that is not it. */
+	from = loc(org.x + wild->towns[1].wid / 2, org.y + wild->towns[1].hgt / 2);
+	n = wild_travel_places(wild, from, places, (int) N_ELEMENTS(places));
+
+	for (i = 0; i < n; i++)
+		if (wild->towns[0].name && places[i].name &&
+			streq(places[i].name, wild->towns[0].name))
+			offered = true;
+
+	if (!offered)
+		printf("the starting village is not offered from elsewhere\n");
+	require(offered);
+
+	ok;
+}
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -2691,5 +2877,8 @@ struct test tests[] = {
 	{ "the-tower-offers-only-known-places", test_the_tower_offers_only_known_places },
 	{ "the-fare-rises-with-the-distance", test_the_fare_rises_with_the_distance },
 	{ "walking-into-a-town-is-remembered", test_walking_into_a_town_is_remembered },
+	{ "the-starting-village-is-always-known", test_the_starting_village_is_always_known },
+	{ "no-road-goes-nowhere", test_no_road_goes_nowhere },
+	{ "the-road-runs-up-to-a-gate", test_the_road_runs_up_to_a_gate },
 	{ NULL, NULL }
 };

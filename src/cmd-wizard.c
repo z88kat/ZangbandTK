@@ -1163,6 +1163,44 @@ void do_cmd_wiz_edit_player_exp(struct command *cmd)
 
 
 /**
+ * Put gold in the player's pocket (CMD_WIZ_GAIN_GOLD).  Takes no arguments.
+ *
+ * ZangbandTK: "Edit player" will do this, but only after tabbing through every
+ * stat first, and "Make powerful" hands over a million gold along with maxing
+ * the character, which is no use for testing something that costs money.  This
+ * asks for an amount and adds it, so it can be used twice.
+ *
+ * The default is 5000, which is a few magetower journeys: enough to see whether
+ * the fares are sensible, which is what it was added for.
+ */
+void do_cmd_wiz_gain_gold(struct command *cmd)
+{
+	char s[80];
+	long amount;
+
+	strnfmt(s, sizeof(s), "%d", 5000);
+
+	if (!get_string("Gold to gain: ", s, sizeof(s)) ||
+			!get_long_from_string(s, &amount))
+		return;
+
+	if (amount < 0) {
+		msg("Nothing happens.");
+		return;
+	}
+
+	/* Kept inside a signed 32-bit purse, as the editing command is. */
+	if (amount > (long)((1UL << 31) - 1) - (long)player->au)
+		player->au = (int32_t)((1UL << 31) - 1);
+	else
+		player->au += (int32_t)amount;
+
+	msg("You have %d au.", player->au);
+
+	player->upkeep->redraw |= PR_GOLD;
+}
+
+/**
  * Edit the player's amount of gold (CMD_WIZ_EDIT_PLAYER_GOLD).  Takes no
  * arguments from cmd.
  */

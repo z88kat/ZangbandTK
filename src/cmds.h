@@ -106,6 +106,7 @@ void do_cmd_wiz_detect_all_monsters(struct command *cmd);
 void do_cmd_wiz_dump_level_map(struct command *cmd);
 void do_cmd_wiz_edit_player_exp(struct command *cmd);
 void do_cmd_wiz_edit_player_gold(struct command *cmd);
+void do_cmd_wiz_gain_gold(struct command *cmd);
 void do_cmd_wiz_edit_player_start(struct command *cmd);
 void do_cmd_wiz_edit_player_stat(struct command *cmd);
 void do_cmd_wiz_hit_all_los(struct command *cmd);

@@ -166,7 +166,8 @@ somewhere held by monsters. Otherwise it is scored on population and law the way
 the trades are, so it is the cities that have them: about a third of towns, in
 practice.
 
-**Where it will take you.** Two different bars, deliberately:
+**Where it will take you.** Your home village always counts, from the first turn.
+Beyond that, two different bars, deliberately:
 
 - a **town** has to have been *stood in*. Seeing it across a field is not having
   been there, and the first crossing of the world should stay worth making.

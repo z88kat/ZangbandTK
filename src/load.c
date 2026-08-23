@@ -1550,6 +1550,21 @@ static void rd_wilderness_base(void)
 	 */
 	if (player->in_wild)
 		wild_adopt_window(player->wild_offset);
+
+	/*
+	 * The starting village always counts as visited (WLD-16c).  Every character
+	 * begins on its staircase, so this is a fact about the game rather than
+	 * something to be recorded and possibly missed -- and it was being missed:
+	 * the flag was only ever set by taking a step, so a character whose steps
+	 * were taken before the flag existed was told by the magetower that they
+	 * had been nowhere, their own village included.
+	 *
+	 * Set here rather than only where the surface is generated, because loading
+	 * a character standing on the surface does not generate one: the level comes
+	 * back from the savefile.
+	 */
+	if (wild_town_count(wild) > 0)
+		wild->towns[0].visited = 1;
 }
 
 /**
@@ -1824,6 +1839,34 @@ int rd_wilderness_3(void)
 	return rd_wilderness_knowledge();
 }
 
+/**
+ * Work out which towns an older character must have been to (WLD-16c).
+ *
+ * Savefiles before version 5 carry no visited flags, so a character loaded from
+ * one had been nowhere as far as the magetower was concerned -- including their
+ * own village, which they had certainly been to.  Reported from play: standing
+ * in a tower with two towns behind them and neither offered.
+ *
+ * Recovered from what the savefile does hold.  The starting village is where
+ * every character begins, so that one is certain.  Beyond it, a town whose
+ * ground the player has seen is one they have plausibly been to, which is a
+ * more generous reading than the rule for new travel -- but the alternative is
+ * telling somebody who has crossed half a world that they have been nowhere.
+ */
+static void rd_wilderness_visits_before_5(void)
+{
+	int i;
+
+	if (!wild) return;
+
+	if (wild_town_count(wild) > 0)
+		wild->towns[0].visited = 1;
+
+	for (i = 1; i < wild_town_count(wild); i++)
+		if (wild_seen(wild, wild->towns[i].block.x, wild->towns[i].block.y))
+			wild->towns[i].visited = 1;
+}
+
 int rd_wilderness_4(void)
 {
 	if (rd_wilderness_body())
@@ -1831,7 +1874,12 @@ int rd_wilderness_4(void)
 
 	rd_wilderness_dungeons();
 
-	return rd_wilderness_knowledge();
+	if (rd_wilderness_knowledge())
+		return -1;
+
+	rd_wilderness_visits_before_5();
+
+	return 0;
 }
 
 int rd_wilderness(void)

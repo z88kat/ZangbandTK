@@ -1515,6 +1515,26 @@ void prepare_next_level(struct player *p)
 		player_place(cave, p, p->grid);
 
 		/*
+		 * And the town they are standing in counts as visited (WLD-16c).
+		 * wild_track_move() does this too, but only on a step: a character who
+		 * has just been born, or has just come up the stairs, has not taken one
+		 * yet, and their own village was not on the magetower's list until they
+		 * happened to walk a pace inside it.
+		 */
+		wild_note_visit(wild, p->wild_grid);
+
+		/*
+		 * And the starting village always is, whatever the savefile says.
+		 * Every character begins there -- wild_town_start() puts them on its
+		 * staircase -- so it is not a thing to be recorded and possibly missed.
+		 * A character who had walked half the world was being told by the
+		 * magetower that they had been nowhere, because the flag was only ever
+		 * set on a step and their steps were taken before it existed.
+		 */
+		if (wild_town_count(wild) > 0)
+			wild->towns[0].visited = 1;
+
+		/*
 		 * Everything a level needs that the dungeon generator would otherwise
 		 * have done: the parallel chunk holding what the player knows, and the
 		 * turn the level came into being.
