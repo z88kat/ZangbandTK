@@ -31,6 +31,10 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 21 August 2026
 ----------------------------------------------------------------
 
+- **3.12.1** — Every town above a village keeps a magetower, unless it has
+  fallen. It was scored on population and law before, and the scoring turned out
+  to put every *town* just under the threshold — so only cities had one, and
+  nothing said so. Eleven of twelve towns on a measured world now have one.
 - **3.12.0** — The status line says ``Day`` or ``Night`` above ground. Angband
   never said, because its surface is one town-sized level; here daylight is what
   reveals the country, and at night you see as far as your lamp — which is

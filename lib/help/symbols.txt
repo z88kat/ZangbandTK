@@ -80,8 +80,8 @@ and no further, which looks like an empty map until the sun comes up.
 
 A '9' in a town is a magetower.  Walk in and the mages will carry you to a
 town you have stood in or a dungeon mouth you have seen, for a fee that rises
-with the distance.  Not every town has one: never a village, and never a town
-that has fallen.  You must be standing in a tower to use one.
+with the distance.  Anything above a village has one, unless it has fallen --
+and your own village always does.  You must be standing in a tower to use one.
 
 Every town has a name, and the status line shows it while you are inside the
 walls -- where Angband showed "Town".  Outside one it says "wilderness",

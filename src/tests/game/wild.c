@@ -2510,7 +2510,7 @@ static int test_a_magetower_stands_where_it_should(void *state) {
 			towns++;
 			if (has) with++;
 
-			/* Never in the smallest band. */
+			/* Never in a village other than the starting one. */
 			if (has && town->band < 1)
 				printf("a village keeps a magetower\n");
 			if (has) require(town->band >= 1);
@@ -2527,9 +2527,13 @@ static int test_a_magetower_stands_where_it_should(void *state) {
 		wild_free(w);
 	}
 
-	/* Some, but not most: measured at about a third. */
+	/*
+	 * Most of them.  Anything above a village keeps one, so what is left out is
+	 * the villages and the towns that have fallen -- measured at eleven of
+	 * twelve on one world, the twelfth being an abandoned town.
+	 */
 	require(with > 0);
-	require(with * 2 < towns);
+	require(with * 2 > towns);
 
 	ok;
 }

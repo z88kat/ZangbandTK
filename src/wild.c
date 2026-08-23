@@ -986,7 +986,6 @@ static uint16_t wild_town_services(struct wilderness *w, int bx, int by,
 {
 	struct wild_block *block = wild_block_at(w, bx, by);
 	uint16_t held = 0;
-	int score;
 
 	/*
 	 * The starting village always has a tower, whatever its size and country
@@ -1006,10 +1005,24 @@ static uint16_t wild_town_services(struct wilderness *w, int bx, int by,
 	if (folk == WILD_FOLK_MONSTER || folk == WILD_FOLK_ABANDONED)
 		return 0;
 
-	score = block->pop / 3 + block->law / 4 + band * 20;
-
-	if (score > 130)
-		held |= 1u << WILD_SERVICE_MAGETOWER;
+	/*
+	 * Anything above a village keeps one.
+	 *
+	 * This was scored on population and law against a threshold, in the same
+	 * style as the trades -- and the scoring was worse than useless, because it
+	 * was not legible.  Measured on a real world: every one of its band-one
+	 * towns scored between 112 and 126 against a threshold of 130, so a "town"
+	 * never had a tower and only cities did, which nothing told the player.
+	 * Walking into two towns in a row and finding no tower in either is how it
+	 * was reported.
+	 *
+	 * A rule the player can hold in their head is worth more here than
+	 * variation they cannot see the shape of: bigger than a village, and still
+	 * standing, means there is a way out.  What is lost is the sense that a
+	 * magetower is a city's privilege; what is gained is being able to plan a
+	 * journey.
+	 */
+	held |= 1u << WILD_SERVICE_MAGETOWER;
 
 	return held;
 }

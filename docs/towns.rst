@@ -160,15 +160,30 @@ The magetower
 Some towns keep a tower of the mages, drawn ``9``. Walk into it and they will
 carry you to somewhere you already know, for a fee.
 
-**Where they are.** **Your home village always has one**, whatever its size says.
-Every journey begins at home, and a network you cannot leave from has one node
-fewer than it needs — without it you would have to walk to a city before you
-could travel anywhere at all, every time.
+**Where they are.** Anything above a village keeps one, unless it has fallen —
+nobody runs a teleport network out of somewhere held by monsters, and there is
+nobody in an abandoned town to run one. So: towns, cities and great cities yes;
+other villages no.
 
-Elsewhere: never in a village, and never in a town that has fallen, since nobody
-runs a teleport network out of somewhere held by monsters. Otherwise it is scored
-on population and law the way the trades are, so it is the cities that have them —
-about a third of towns.
+**Your home village always has one** whatever its size, because every journey
+begins at home and a network you cannot leave from has one node fewer than it
+needs.
+
+In practice that is most of the world's towns — eleven of twelve on a world
+measured, the twelfth being abandoned.
+
+.. note::
+
+   This was scored on population and law at first, in the same style as the
+   trades, and the scoring was worse than useless because it was not legible.
+   Measured on a real world, every one of its band-one *towns* scored just under
+   the threshold, so a town never had a tower and only cities did — and nothing
+   told the player that. Walking into two towns in a row and finding no tower in
+   either is how it was reported.
+
+   A rule you can hold in your head is worth more than variation you cannot see
+   the shape of. What is lost is the sense that a magetower is a city's
+   privilege; what is gained is being able to plan a journey.
 
 **Where it will take you.** Your home village always counts, from the first turn.
 Beyond that, two different bars, deliberately:
