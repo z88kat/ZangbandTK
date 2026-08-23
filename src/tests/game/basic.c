@@ -286,9 +286,64 @@ static int test_cheat_options_are_paired(void *state) {
 	ok;
 }
 
+static int magetower_signals;
+
+static void count_magetower_entry(game_event_type type, game_event_data *data,
+								  void *user)
+{
+	magetower_signals++;
+}
+
+/**
+ * Registering a handler twice makes the event fire twice (WLD-16c).
+ *
+ * event_add_handler() prepends without checking, so a handler registered from
+ * somewhere that runs more than once stacks up.  The magetower's was registered
+ * in ui_enter_world(), and EVENT_ENTER_WORLD is signalled when a game starts
+ * *and* every time the player leaves a store -- so after three shops the tower's
+ * menu opened four times and had to be dismissed four times.  Reported as
+ * needing to press q repeatedly.
+ *
+ * The store above it does not have this trouble because cmd-cave.c sweeps all
+ * handlers of its type the moment it signals.  That will not do for the tower,
+ * which has to still be there for the next one, so the registration removes
+ * before it adds.  This is the arithmetic that makes both statements true.
+ */
+static int test_event_handlers_stack(void *state) {
+	/* Twice registered, twice called. */
+	event_remove_handler_type(EVENT_ENTER_MAGETOWER);
+	magetower_signals = 0;
+	event_add_handler(EVENT_ENTER_MAGETOWER, count_magetower_entry, NULL);
+	event_add_handler(EVENT_ENTER_MAGETOWER, count_magetower_entry, NULL);
+	event_signal(EVENT_ENTER_MAGETOWER);
+	eq(magetower_signals, 2);
+
+	/* Remove-then-add, however often it is run, leaves exactly one. */
+	event_remove_handler_type(EVENT_ENTER_MAGETOWER);
+	{
+		int i;
+
+		for (i = 0; i < 4; i++) {
+			event_remove_handler(EVENT_ENTER_MAGETOWER,
+								 count_magetower_entry, NULL);
+			event_add_handler(EVENT_ENTER_MAGETOWER,
+							  count_magetower_entry, NULL);
+		}
+	}
+
+	magetower_signals = 0;
+	event_signal(EVENT_ENTER_MAGETOWER);
+	eq(magetower_signals, 1);
+
+	event_remove_handler_type(EVENT_ENTER_MAGETOWER);
+
+	ok;
+}
+
 const char *suite_name = "game/basic";
 struct test tests[] = {
 	{ "cheat options are paired", test_cheat_options_are_paired },
+	{ "event handlers stack", test_event_handlers_stack },
 	{ "newgame", test_newgame },
 	{ "loadgame", test_loadgame },
 	{ "stairs1", test_stairs1 },

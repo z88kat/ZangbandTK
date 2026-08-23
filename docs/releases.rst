@@ -31,6 +31,10 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 21 August 2026
 ----------------------------------------------------------------
 
+- **3.12.2** — The magetower's menu had to be dismissed once for every shop you
+  had visited that game. Its handler was registered where the game re-registers
+  it on leaving a store, and nothing removes handlers before adding them, so they
+  stacked.
 - **3.12.1** — Every town above a village keeps a magetower, unless it has
   fallen. It was scored on population and law before, and the scoring turned out
   to put every *town* just under the threshold — so only cities had one, and

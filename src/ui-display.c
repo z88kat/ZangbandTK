@@ -2824,6 +2824,21 @@ static void ui_enter_world(game_event_type type, game_event_data *data,
 
 	/* Enter a store */
 	event_add_handler(EVENT_ENTER_STORE, enter_store, NULL);
+
+	/*
+	 * Enter a magetower (ZangbandTK, WLD-16c).  Removed before it is added,
+	 * because this function runs more than once: EVENT_ENTER_WORLD is signalled
+	 * when a game starts *and* every time the player leaves a store.  Without
+	 * this the handler stacked up, and the tower's menu then opened once per
+	 * copy -- so somebody who had been round three shops had to dismiss it four
+	 * times.
+	 *
+	 * The store above does not need this because cmd-cave.c calls
+	 * event_remove_handler_type() the moment it signals, which sweeps the
+	 * duplicates away.  That will not do here: the menu has to stay available
+	 * for the next tower, and there may be no shop in between to re-register it.
+	 */
+	event_remove_handler(EVENT_ENTER_MAGETOWER, ui_enter_magetower, NULL);
 	event_add_handler(EVENT_ENTER_MAGETOWER, ui_enter_magetower, NULL);
 
 	/* Display an explosion */
