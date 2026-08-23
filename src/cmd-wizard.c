@@ -1195,7 +1195,7 @@ void do_cmd_wiz_gain_gold(struct command *cmd)
 	else
 		player->au += (int32_t)amount;
 
-	msg("You have %d au.", player->au);
+	msg("You have %d au.", (int) player->au);
 
 	player->upkeep->redraw |= PR_GOLD;
 }

@@ -1051,7 +1051,8 @@ static void magetower_travel(void)
 	screen_save();
 	menu_dynamic_calc_location(m, 0, 0);
 	region_erase_bordered(&m->boundary);
-	prt(format("The mages will carry you.  You have %d au.", player->au), 0, 0);
+	prt(format("The mages will carry you.  You have %d au.", (int) player->au),
+		0, 0);
 
 	chosen = menu_dynamic_select(m);
 
@@ -1065,7 +1066,7 @@ static void magetower_travel(void)
 
 	if (player->au < places[chosen].cost) {
 		msg("The journey to %s costs %d au, and you have %d.",
-			places[chosen].name, (int) places[chosen].cost, player->au);
+			places[chosen].name, (int) places[chosen].cost, (int) player->au);
 		return;
 	}
 
