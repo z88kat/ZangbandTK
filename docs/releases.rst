@@ -31,6 +31,18 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.16.0** — PLR-41: **the inn's dream**, which closes the last open item from
+  DEC-32. Zangband's inn carried a nightmare that reached the sanity blast we
+  dropped; the dream survives it. Sleep and you may see a true dream, which puts
+  the nearest place you have not found onto the world map — it tells you where to
+  walk and does not carry you there, because the magetower goes only to places
+  you have actually stood in. Or you may have a dark dream, and be hunted through
+  your sleep by something you have met: hold your nerve and you merely remember
+  it, fail and you wake frightened or confused. Which you get depends on the law
+  of the town, so a well-ordered city is a good place to sleep and a frontier town
+  is not. The constraint from DEC-32 held: no insanity, no amnesia, no mutation
+  trigger. It is also the exact mirror of the lotus — that takes places off your
+  map, this puts one on.
 - **3.15.0** — PLR-40, and the first thing in this project that is not a port of
   anything: **the lotus**. A mushroom that looks like any other until you have
   eaten one, and five turns after you do, you forget everything — the map under

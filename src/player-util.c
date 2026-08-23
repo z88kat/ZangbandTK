@@ -1941,6 +1941,134 @@ bool player_has_monster_in_view(const struct player *p)
 }
 
 /**
+ * A night's sleep at the inn, and what it shows you (PLR-41, WLD-16c).
+ *
+ * Zangband's inn carried a nightmare: have_nightmare() took a monster from the
+ * deepest part of the bestiary, worked a power out of its hit dice, and on a
+ * failed save blasted the character's sanity -- draining intelligence and wisdom,
+ * inflicting amnesia, and sometimes granting a mutation.  DEC-32 dropped that
+ * whole path and kept the dream, with one constraint: no insanity, no amnesia,
+ * no mutation trigger.  So this is built out of what 4.2 already has.
+ *
+ * Three kinds of night, and which one you get depends on where you sleep:
+ *
+ *  - **A true dream** shows you a place you have not found, and puts it on the
+ *    world map.  This is the reason to pay for a bed on a night you could have
+ *    walked through.
+ *  - **A dark dream** sets something hunting you through your sleep.  On a failed
+ *    save you wake frightened or confused; on a made one you merely remember it.
+ *  - **Dreamless sleep**, which is most nights.
+ *
+ * Keyed on the town's law, because the alternative -- a flat roll -- would make
+ * every inn in the world the same inn, and there is a whole parameter space here
+ * saying how settled a place is.  A lawful city gives visions; a town on the edge
+ * of what is governed gives you a bad night.  Note that a town which has fallen
+ * has no inn at all, so the truly lawless end of the range never comes up.
+ *
+ * The dark dream draws from monsters the player has actually met, which is a
+ * change from Zangband's "deepest thing in the bestiary" and a better one: a
+ * dream about something you have never encountered is a table lookup, and one
+ * about the thing that nearly killed you last week is a dream.  It also scales
+ * itself -- a new character dreams of what a new character has seen.
+ */
+void player_dream_chances(int law, int *bright, int *dark)
+{
+	/*
+	 * Measured against the law an inn can actually stand in, which is roughly
+	 * 155 to 254 -- a town below that has fallen and keeps no services at all.
+	 * Over that range a true dream runs from about one night in ten to one in
+	 * four, and a dark one from one in four down to almost never.  See
+	 * the-inn-dreams-by-the-law in tests/game/wild.c.
+	 */
+	if (bright) *bright = MAX(0, (law - 100) / 6);
+	if (dark) *dark = MAX(0, (255 - law) / 4);
+}
+
+void player_night_dream(struct player *p)
+{
+	struct wild_block *block = NULL;
+	int town, law = 200, roll, true_chance, dark_chance;
+
+	if (!wild) return;
+
+	town = wild_town_here(wild, loc(p->grid.x + p->wild_offset.x,
+									p->grid.y + p->wild_offset.y));
+	if (town >= 0)
+		block = wild_block_at(wild, wild->towns[town].block.x,
+							  wild->towns[town].block.y);
+	if (block) law = block->law;
+
+	player_dream_chances(law, &true_chance, &dark_chance);
+
+	roll = randint0(100);
+
+	if (roll < true_chance) {
+		bool down = false;
+		const char *name = wild_reveal_nearest(wild, p->wild_grid, &down);
+
+		if (name) {
+			if (down)
+				msg("You dream of a stair going down out of the world, and wake knowing where %s lies.",
+					name);
+			else
+				msg("You dream of walls and a gate, and wake knowing where %s stands.",
+					name);
+			p->upkeep->redraw |= PR_MAP;
+			return;
+		}
+
+		/* Nothing left to be shown; fall through to an ordinary night. */
+	}
+
+	if (roll >= 100 - dark_chance) {
+		struct monster_race *race = NULL;
+		int i, draws;
+
+		/*
+		 * The deepest of three draws from what the player has met, so the dream
+		 * leans towards the worst thing they know without always naming it.
+		 */
+		for (draws = 0; draws < 3; draws++) {
+			struct monster_race *pick = NULL;
+			int seen = 0;
+
+			for (i = 1; i < z_info->r_max; i++) {
+				struct monster_race *r = &r_info[i];
+
+				if (!r->name) continue;
+				if (!get_lore(r)->sights) continue;
+
+				/* Reservoir sampling: one uniform pick in a single pass. */
+				seen++;
+				if (one_in_(seen)) pick = r;
+			}
+
+			if (!pick) break;
+			if (!race || pick->level > race->level) race = pick;
+		}
+
+		if (race) {
+			if (randint0(100) < p->state.skills[SKILL_SAVE]) {
+				msg("%s chases you through your dreams.", race->name);
+			} else {
+				msg("You dream of %s, and wake with your heart going.",
+					race->name);
+
+				if (one_in_(2))
+					player_inc_timed(p, TMD_AFRAID, 10 + randint1(10), true,
+									 true, true);
+				else
+					player_inc_timed(p, TMD_CONFUSED, 5 + randint1(5), true,
+									 true, true);
+			}
+			return;
+		}
+	}
+
+	/* Most nights are just a night. */
+}
+
+/**
  * Forget everything the character knows (ZangbandTK, PLR-40).
  *
  * What the lotus does when its five turns are up.  Five separate kinds of

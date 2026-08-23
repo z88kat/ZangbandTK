@@ -928,7 +928,14 @@ Deferred to their own platforms (DEC-21):
 
 Outstanding follow-ups raised while building, rather than while planning:
 
-- **The inn's nightmare** (WLD-16c). The bed is built; the dream is not. It is
+- ~~**The inn's nightmare** (WLD-16c).~~ **Built, as PLR-41.** Both directions
+  below were taken: a bad night on a failed save, and a true dream that reveals a
+  place. Weighted by the town's law, so a frontier inn gives nightmares and a
+  lawful city gives visions. The constraint held -- no insanity, no amnesia, no
+  mutation trigger; the failed save spends 4.2's own fear and confusion. What
+  follows is the original note, kept because the reasoning is what shaped it.
+
+  The bed is built; the dream is not. It is
   no longer blocked on anything: DEC-32 drops CNT-17, so the nightmare is to be
   built out of what 4.2 already has rather than on top of a sanity system.
   Zangband's version picked a monster from the deepest part of the bestiary and

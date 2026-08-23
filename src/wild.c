@@ -3783,6 +3783,87 @@ void wild_settle_player(struct chunk *c, struct player *p)
  * ------------------------------------------------------------------------ */
 
 /**
+ * Put the nearest place the player has not found onto the world map (PLR-41).
+ *
+ * What a true dream at the inn shows you.  A place counts as found when its block
+ * has been seen, the same test the world map and the dungeon list already use, so
+ * this marks the block and the place appears where it stands.
+ *
+ * It marks the block *seen* and not the town *visited*, and the difference is the
+ * whole honesty of the thing: seen is "you know it is there", visited is "you have
+ * stood in it", and the magetower carries you only to the latter.  A dream tells
+ * you where to walk.  It does not carry you.
+ *
+ * The nearest, rather than a random one, because a vision of somewhere on the far
+ * side of the world is a curiosity and one of somewhere three days' walk away is a
+ * plan.  Repeated nights therefore open the map outwards from where the player is,
+ * which is the order they would have explored it in anyway.
+ *
+ * \param from is a world grid -- where the dreamer is sleeping.
+ * \param down is set true if the place is a dungeon mouth rather than a town.
+ * \return the place's name, or NULL if there is nothing left to find.
+ */
+const char *wild_reveal_nearest(struct wilderness *w, struct loc from, bool *down)
+{
+	int size = z_info->wild_block_size;
+	struct loc here = loc(from.x / size, from.y / size);
+	struct wild_block *block;
+	const char *name = NULL;
+	struct loc best = loc(0, 0);
+	int best_dist = -1;
+	bool best_down = false;
+	int i;
+
+	if (!w) return NULL;
+
+	for (i = 0; i < w->town_count; i++) {
+		struct wild_town *town = &w->towns[i];
+		int dist;
+
+		if (wild_seen(w, town->block.x, town->block.y)) continue;
+
+		/* Somewhere else.  A dream about the room you are asleep in is not one. */
+		if (loc_eq(town->block, here)) continue;
+
+		dist = distance(here, town->block);
+		if (best_dist < 0 || dist < best_dist) {
+			best_dist = dist;
+			best = town->block;
+			best_down = false;
+			name = town->name ? town->name : wild_band_name(town->band);
+		}
+	}
+
+	for (i = 0; i < w->dungeon_count; i++) {
+		struct wild_dungeon *mouth = &w->dungeons[i];
+		struct dun_type *type = dun_type_by_index(mouth->type);
+		int dist;
+
+		if (wild_seen(w, mouth->block.x, mouth->block.y)) continue;
+		if (loc_eq(mouth->block, here)) continue;
+
+		dist = distance(here, mouth->block);
+		if (best_dist < 0 || dist < best_dist) {
+			best_dist = dist;
+			best = mouth->block;
+			best_down = true;
+			name = (type && type->name) ? type->name : "a way down";
+		}
+	}
+
+	if (!name) return NULL;
+
+	block = wild_block_at(w, best.x, best.y);
+	if (!block) return NULL;
+
+	block->info |= WILD_INFO_SEEN;
+
+	if (down) *down = best_down;
+
+	return name;
+}
+
+/**
  * Forget the world map, except where home is (ZangbandTK, PLR-40).
  *
  * What the lotus takes.  Every block the player has seen goes back to unseen, so

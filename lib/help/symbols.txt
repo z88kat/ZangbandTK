@@ -95,7 +95,8 @@ than goods on a shelf.  They are told apart by colour, and the "slash" command
 
   green   healer      binds wounds, cures ailments, restores drained stats
                           and levels lost to life-draining attacks
-  brown   inn         a bed until morning, which only helps at night
+  brown   inn         a bed until morning, and sometimes a dream --
+                          a place you had not found, or a bad night
   red     magesmith   puts magic on a weapon or a suit of armour
   blue    recharger   puts charges back in a wand or a staff
 

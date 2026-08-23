@@ -3147,6 +3147,133 @@ static int test_the_quality_ladder_is_a_ladder(void *state) {
 }
 
 /**
+ * The inn's dreams follow the law of the place you sleep in (PLR-41).
+ *
+ * The point of keying them on the town rather than rolling flat is that every inn
+ * in the world would otherwise be the same inn, when there is a whole parameter
+ * space here saying how settled a place is.  A lawful city gives visions; a town
+ * on the edge of what is governed gives you a bad night.
+ */
+static int test_the_inn_dreams_by_the_law(void *state) {
+	int law, last_bright = -1, last_dark = 999;
+
+	/*
+	 * 155 upwards, because that is where an inn can stand: below it the town has
+	 * fallen (wild_town_folk) and keeps no services at all, so the lawless end of
+	 * the range never comes up and need not be defended.
+	 */
+	for (law = 155; law <= 255; law += 5) {
+		int bright, dark;
+
+		player_dream_chances(law, &bright, &dark);
+
+		/* Visions rise with order... */
+		require(bright >= last_bright);
+
+		/* ...and bad nights fall away with it. */
+		require(dark <= last_dark);
+
+		/* Neither is ever a certainty, and they cannot both happen. */
+		require(bright + dark < 100);
+
+		last_bright = bright;
+		last_dark = dark;
+	}
+
+	/* And the two ends actually differ, or the law is decorative. */
+	{
+		int frontier_bright, frontier_dark, city_bright, city_dark;
+
+		player_dream_chances(155, &frontier_bright, &frontier_dark);
+		player_dream_chances(254, &city_bright, &city_dark);
+
+		printf("DREAM frontier %d%% true / %d%% dark, city %d%% / %d%%\n",
+			   frontier_bright, frontier_dark, city_bright, city_dark);
+
+		require(city_bright > frontier_bright * 2);
+		require(frontier_dark > city_dark * 2);
+
+		/* A bed is worth buying even on the frontier. */
+		require(frontier_bright > 0);
+	}
+
+	ok;
+}
+
+/**
+ * A true dream shows you the nearest place you have not found, and does not
+ * carry you there (PLR-41).
+ *
+ * The second half is the one worth defending.  A place is *seen* -- you know it
+ * is there and it is on the world map -- but not *visited*, and the magetower
+ * only travels to places you have stood in.  Marking it visited would turn a
+ * night's sleep into free passage to anywhere in the world, which is a different
+ * and much worse feature.
+ */
+static int test_a_true_dream_shows_the_nearest_place(void *state) {
+	struct wilderness *w = wild_new(129, 4409 * 7);
+	int size = z_info->wild_block_size;
+	struct loc from;
+	const char *name;
+	bool down = false;
+	int i, seen = 0, nearest = -1, revealed = 0, guard = 0;
+
+	wild_generate(w);
+
+	/* A character who has found nothing at all. */
+	for (i = 0; i < w->blocks * w->blocks; i++)
+		w->map[i].info &= ~WILD_INFO_SEEN;
+	for (i = 0; i < w->town_count; i++)
+		w->towns[i].visited = 0;
+
+	from = loc(w->towns[0].block.x * size + size / 2,
+			   w->towns[0].block.y * size + size / 2);
+
+	/* What the nearest unfound place actually is. */
+	for (i = 0; i < w->town_count; i++) {
+		int d = distance(w->towns[0].block, w->towns[i].block);
+		if (i && (nearest < 0 || d < nearest)) nearest = d;
+	}
+	for (i = 0; i < w->dungeon_count; i++) {
+		int d = distance(w->towns[0].block, w->dungeons[i].block);
+		if (nearest < 0 || d < nearest) nearest = d;
+	}
+	require(nearest >= 0);
+
+	name = wild_reveal_nearest(w, from, &down);
+	notnull(name);
+
+	/* Exactly one block was put on the map... */
+	for (i = 0; i < w->blocks * w->blocks; i++)
+		if (w->map[i].info & WILD_INFO_SEEN) seen++;
+	eq(seen, 1);
+
+	/* ...and it is the nearest one there was. */
+	for (i = 0; i < w->blocks * w->blocks; i++)
+		if (w->map[i].info & WILD_INFO_SEEN) {
+			struct loc block = loc(i % w->blocks, i / w->blocks);
+			eq(distance(w->towns[0].block, block), nearest);
+		}
+
+	/* Knowing where it is is not having been there. */
+	for (i = 0; i < w->town_count; i++)
+		eq(w->towns[i].visited, 0);
+
+	/* Keep dreaming and the map fills; then there is nothing left to show. */
+	while (guard++ < 200) {
+		if (!wild_reveal_nearest(w, from, &down)) break;
+		revealed++;
+	}
+	require(guard < 200);
+	require(revealed > 0);
+	require(wild_reveal_nearest(w, from, &down) == NULL);
+
+	wild_free(w);
+
+	ok;
+}
+
+/**
  * The lotus is a mushroom you cannot tell from any other until you eat one
  * (PLR-40).
  *
@@ -3608,6 +3735,8 @@ struct test tests[] = {
 	{ "no-road-goes-nowhere", test_no_road_goes_nowhere },
 	{ "the-road-runs-up-to-a-gate", test_the_road_runs_up_to_a_gate },
 	{ "the-quality-ladder-is-a-ladder", test_the_quality_ladder_is_a_ladder },
+	{ "the-inn-dreams-by-the-law", test_the_inn_dreams_by_the_law },
+	{ "a-true-dream-shows-the-nearest-place", test_a_true_dream_shows_the_nearest_place },
 	{ "the-lotus-is-an-unknown-mushroom", test_the_lotus_is_an_unknown_mushroom },
 	{ "the-lotus-forgets-the-world", test_the_lotus_forgets_the_world },
 	{ "the-lotus-leaves-a-way-home", test_the_lotus_leaves_a_way_home },

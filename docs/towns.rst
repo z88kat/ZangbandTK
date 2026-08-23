@@ -224,7 +224,8 @@ Each is a ``+`` in a colour of its own, and each charges.
    * - Inn
      - town and up
      - A bed until morning, for 25 gold. Only sells you one at night — the
-       innkeeper will tell you to travel while it is light otherwise.
+       innkeeper will tell you to travel while it is light otherwise. And you
+       may dream. See below.
    * - Healer
      - town and up
      - Binds wounds (4 gold a hit point), cures poison, cuts, stunning,
@@ -237,6 +238,48 @@ Each is a ``+`` in a colour of its own, and each charges.
      - city and up
      - Puts charges back in a wand or a staff, 120 gold. It can still fail and
        destroy the item — that is the ordinary recharging risk, not a swindle.
+
+What you dream at the inn
+-------------------------
+
+A bed is not only a way of skipping the night. Some nights you dream, and what
+you dream depends on where you are sleeping.
+
+**A true dream shows you a place.** The nearest town or dungeon mouth you have
+not yet found appears on the world map, and you wake knowing its name and where
+it stands. This is the reason to pay for a bed on a night you could have walked
+through.
+
+It shows you where the place is. It does not take you there — the magetower
+carries you only to places you have actually stood in, and a dream is not a
+visit. You still have to make the walk, but you now know which way to walk, which
+is the hard part.
+
+**A dark dream sets something hunting you.** It will be something you have met:
+whatever you have seen and remember, leaning towards the worst of it. If you
+hold your nerve you merely remember the thing in the morning. If you do not, you
+wake frightened or confused, and it wears off. A character who has met nothing
+memorable yet has nothing to dream about.
+
+**Which you get depends on the law of the town.** A lawful city is a good place to
+sleep and a frontier town is not:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 30 30
+
+   * - Where you sleep
+     - A true dream
+     - A dark dream
+   * - A town at the edge of what is governed
+     - about 1 night in 11
+     - about 1 night in 4
+   * - A well-ordered city
+     - about 1 night in 4
+     - almost never
+
+Most nights, in either, are just a night. And a town that has fallen has no inn
+at all, so the worst country never gets the chance to give you the worst dreams.
 
 Nothing in a town is free. The prices are in ``constants.txt`` and are pitched so
 a character of level five feels them and one of level thirty does not, which is

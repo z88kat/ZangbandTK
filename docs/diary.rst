@@ -107,6 +107,55 @@ does not shift two columns when the sun comes up.
 
 1025/1025 unit tests and 5/5 integration tests pass.
 
+23 August 2026 — the dream, which is the lotus backwards
+========================================================
+
+The inn's nightmare has been on the follow-up list since DEC-32 dropped the
+Mythos path, and it went in this afternoon largely because building the lotus
+yesterday had already built most of it. The lotus takes places off the world map;
+the dream puts one on. Same machinery, opposite sign. If I had done these in the
+other order the second one would have been the cheap one.
+
+Two decisions in it worth keeping.
+
+**Seen, not visited.** The obvious implementation of "a dream shows you a town"
+is to mark the town as known, and Angband's own flags make it easy to mark the
+wrong one. This world has two: a block can be *seen*, which puts it on the world
+map, and a town can be *visited*, which is what the magetower's destination list
+is built from. Marking visited would have made a night's sleep into free passage
+to anywhere in the world — the single most valuable thing in the game, for 25
+gold, from a building in every town. Seen is the honest one: the dream tells you
+where to walk. You still walk.
+
+I would like to say I saw that coming. What actually happened is that I wrote the
+distinction down two days ago while documenting the magetower, and it was still
+close enough to hand to catch me before I typed it.
+
+**The dream is about something you have met.** Zangband picked from the deepest
+part of the bestiary, which is where its sanity blast wanted to point — the horror
+you have never seen is the scarier one if the mechanic is "look at an unspeakable
+thing and lose your mind". Without that mechanic it reads differently: a dream
+about a monster you have never encountered is a table lookup with a name in it. So
+this draws from what the character has actually seen, deepest of three draws. It
+scales itself for free — a new character has met almost nothing and dreams of
+almost nothing — and it means the thing that nearly killed you last week is the
+thing that comes back at night, which is what a bad dream is.
+
+The weighting is by the town's law, and that came from asking why every inn in the
+world should be the same inn when there is a whole parameter space sitting there
+saying how settled a place is. A frontier town gives you nightmares one night in
+four and visions one in eleven; a lawful city inverts it. A town below about 155
+law has fallen and keeps no services at all, so the genuinely lawless end never
+comes up and did not need defending.
+
+One test caught something I would have shipped. With every block cleared to
+unseen, the reveal offered the character the town they were *asleep in* — nearest
+unfound place, distance zero, technically correct. It cannot happen in play,
+because walking into a town marks its block seen, so this is a bug that only
+exists under a test's artificial conditions. I fixed it anyway: a dream about the
+room you are sleeping in is not a dream, and a function that can only be trusted
+when its caller is careful is one I will misuse later.
+
 23 August 2026 — the lotus, and five places to forget
 =====================================================
 

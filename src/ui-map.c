@@ -31,6 +31,7 @@
 #include "effects.h"
 #include "game-world.h"
 #include "player-calcs.h"
+#include "player-util.h"
 #include "game-input.h"
 #include "ui-input.h"
 #include "ui-menu.h"
@@ -1303,6 +1304,14 @@ static void service_inn(void)
 	}
 
 	msg("You wake to daylight.");
+
+	/*
+	 * And what the night showed you (PLR-41).  After the waking message, because
+	 * the dream is what you remember once you are awake, and before the turn is
+	 * charged, so that a dream which leaves you frightened has left you
+	 * frightened by the time you can act.
+	 */
+	player_night_dream(player);
 
 	cave_illuminate(cave, true, !wild_is_surface(cave));
 	player->upkeep->redraw |= (PR_STATUS | PR_MAP);

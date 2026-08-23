@@ -125,5 +125,7 @@ void disturb(struct player *p);
 void search(struct player *p);
 bool player_has_monster_in_view(const struct player *p);
 void player_forget_the_world(struct player *p);
+void player_night_dream(struct player *p);
+void player_dream_chances(int law, int *bright, int *dark);
 
 #endif /* !PLAYER_UTIL_H */

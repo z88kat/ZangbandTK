@@ -325,6 +325,42 @@ he belongs to it. That is the one thing this leaves behind.
 > the failure mode here is quietly forgetting to forget something and nothing in play would
 > say which.
 
+**PLR-41 — A night at the inn shows the sleeper something.** Zangband's inn carried
+`have_nightmare()`, which is the half of DEC-32 that survived: the dream stays, the sanity
+blast does not. Built from 4.2's own effects, with the constraint that it must not
+reintroduce CNT-17 by the back door — no insanity, no amnesia, no mutation trigger.
+
+> **Built.** Three kinds of night, weighted by the law of the town slept in, because a flat
+> roll would make every inn in the world the same inn when there is a parameter space here
+> saying how settled a place is.
+>
+> | | frontier town (law 155) | lawful city (law 254) |
+> |---|---:|---:|
+> | a true dream | 9% | 25% |
+> | a dark dream | 25% | 0% |
+>
+> Law below about 155 never comes up: a town that far gone has fallen (`wild_town_folk`) and
+> keeps no services at all, so there is no inn to sleep in.
+>
+> *A true dream* puts the nearest place the character has not found onto the world map. It
+> marks the block **seen**, not the town **visited** — the magetower travels only to places
+> the player has stood in, so a dream tells you where to walk and does not carry you.
+> Marking it visited would turn a night's sleep into free passage to anywhere in the world.
+> Nearest rather than random, because a vision of the far side of the world is a curiosity
+> and one of somewhere three days away is a plan; repeated nights therefore open the map
+> outwards, which is the order it would have been explored in anyway.
+>
+> *A dark dream* draws from monsters the player has actually met — the deepest of three
+> draws — which is a change from Zangband's "deepest thing in the bestiary" and a better
+> one: a dream about something never encountered is a table lookup. It also scales itself,
+> and a new character who has met nothing dreams of nothing. On a made save the dream is
+> only remembered; on a failed one the sleeper wakes afraid or confused, both 4.2 timed
+> effects and neither of them CNT-17.
+>
+> This is the mirror of PLR-40, and deliberately: the lotus takes places off the map and the
+> dream puts one on. Tir-na Nog'th is a city seen only by moonlight and is already a dungeon
+> here, so a night's sleep showing you somewhere is the setting's own furniture.
+
 ### Virtues
 
 **PLR-18 — The 18 virtues are tracked per character** (§2.5).
