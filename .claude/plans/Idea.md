@@ -142,7 +142,7 @@ Lotus Leaves. Eat them and you forget everything in 5 turns, so the map is forgo
 
 healer can become the cure
 
-## NSD Build
+## NDS Build
 
 We are limited by RAM on the NDS. Here is my idea.
 
@@ -150,6 +150,10 @@ We abandon the wilderness build. The doors are locked by "magic" and cannot be o
 
 We still make all towns and dungeons available. But to travel to them you enter the mage tower. All towns and dungeons are available for travel, you still have to pay the travel costs, so you cannot travel immediately without a bit of work to gain gold.
 
-This means we still keep the flavour of zangband, but without the wilderness. Except!
+This means we still keep the flavour of zangband, but without the wilderness. The wilderness is a lot of wondering around which maybe you don't want to do on the handheld anyway. Just jump in.
 
-I have a RAM pack, so i your one those lucky guys who have a RAM pack we could consider to make a special build which includes the wilderness (its an eplise of sun when you plugin the ram pack - and down the correct rom!)
+This might allow us to make a stable NSD build.
+
+Note: There is a problem, the font on the NDS looks like crap, its really blury and hard to read. At first i just figured it was the emulator, but on the hardware its the same, so whatever font we using, it does not work. It also appears we are not using the full width of the screen. But I have to check that again.
+
+But... I have a RAM pack we could consider to make a special build which includes the wilderness (its an eplise of sun when you plugin the ram pack - and down the correct rom!), if the wilderness fits with the ram pack? Something we have to test.

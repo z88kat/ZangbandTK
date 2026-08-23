@@ -29,11 +29,14 @@ LIBS = -lpc
 
 
 # Extract CFLAGS and LIBS from the system definitions
-CFLAGS += $(INCLUDES) -DUSE_IBM -DSHORT_DEFAULT_OPTION_FILENAMES
+# USE_TEST builds the scripted front end in main-test.c alongside the DOS one,
+# so that CI can drive the game from a file instead of typing at it.  See the
+# smoke test in .github/workflows/dos.yaml.
+CFLAGS += $(INCLUDES) -DUSE_IBM -DUSE_TEST -DSHORT_DEFAULT_OPTION_FILENAMES
 
 # Object definitions
-MAINOBJS = main-ibm.o main.o
-OBJS = $(BASEOBJS) main-ibm.o main-stats.o main.o
+MAINOBJS = main-ibm.o main-test.o main.o
+OBJS = $(BASEOBJS) main-ibm.o main-stats.o main-test.o main.o
 
 
 

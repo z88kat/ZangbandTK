@@ -45,37 +45,38 @@ jobs:
           unzip $projname.zip -d dosroot
 
       - name: DOS runtime smoke test
-        timeout-minutes: 5
+        timeout-minutes: 3
         run: |
           projname=$(cd src && make -f Makefile.ibm print-project-name | sed -En 's/^our-project-name=//p')
           exename=$(cd src && make -f Makefile.ibm print-executable-name | sed -En 's/^our-executable-name=//p' | tr "[:lower:]" "[:upper:]")
 
-          # The queued keys play a character from birth to grave: Enter clears
-          # the splash, '@' takes the birth menu's "Finish with random
-          # choices", Enter accepts the confirmation, and '^' 'x' is Ctrl-X,
-          # save and quit -- '^' being a control prefix in the main command
-          # loop, see src/ui-input.c.
+          # The game is driven from a script rather than typed at.  main-test.c
+          # is a front end that reads a command per line from stdin -- the same
+          # one tests/run-test uses -- and the DOS build carries it because
+          # Makefile.ibm defines USE_TEST.  So the whole thing is a redirect,
+          # and there is no timing in it anywhere.
           #
-          # Offering that quit once, at ten seconds, is not enough, and not
-          # because ten seconds is too soon: keys wait in the BIOS buffer
-          # whether the game is reading them or not.  It is that they get
-          # spent.  Every -more- prompt spends exactly one key, and the game
-          # empties the buffer outright whenever it flushes input (see
-          # TERM_XTRA_FLUSH in src/main-ibm.c).  So a '^' vanishes into
-          # whatever the game has to say to a new character -- and it has more
-          # to say than it used to -- leaving 'x' to arrive alone as a command
-          # that quits nothing.  Then the game plays on for as long as you let
-          # it, which is how this became a two-minute timeout with an empty
-          # log rather than a failure.
+          # It used to queue keystrokes into DOSBox-X and play a character from
+          # birth to grave, which took ninety seconds and broke whenever the
+          # game gained something to say at startup: every -more- prompt spends
+          # one queued key, and Ctrl-X is typed as '^' then 'x', so a message
+          # arriving at the wrong moment would swallow the '^' and leave the
+          # 'x' to land alone as a command that quit nothing.  The game then
+          # played on until the step timed out, with an empty log.  Six runs
+          # failed that way in August 2026.  Nothing here can fail like that,
+          # because nothing here is a keystroke.
           #
-          # So: clear the prompts with Escape, then send the pair, and keep
-          # offering it.  'escape' is addkey's name for that key -- 'esc' is
-          # AUTOTYPE's and addkey silently declines the whole line.
+          # The script and the expected output are tests/birth/Hu-Wa, shared
+          # with the native end-to-end tests so the two cannot drift apart.
+          cp tests/birth/Hu-Wa/input dosroot/$projname/SMOKE.TXT
+
           cat > dosbox.conf << EOF
           [sdl]
           fullscreen=false
           [dosbox]
           machine=svga_s3
+          [mixer]
+          nosound=true
           [cpu]
           core=normal
           cycles=auto
@@ -84,38 +85,30 @@ jobs:
           c:
           BIN\CWSDPMI.EXE
           cd $projname
-          echo "Queue keys to create DOSUSER and exit" >> ..\OUT.LOG
-          addkey p500 Enter @ Enter
-          addkey p15000 escape escape ^ x
-          addkey p30000 escape escape ^ x
-          addkey p60000 escape escape ^ x
-          addkey p90000 escape escape ^ x
-          addkey p120000 escape escape ^ x
-          addkey p150000 escape escape ^ x
-          addkey p151000 escape escape
-          echo "Run $exename" >> ..\OUT.LOG
-          $exename >> ..\OUT.LOG
-          echo "$exename finished" >> ..\OUT.LOG
+          $exename -mtest < SMOKE.TXT >> ..\OUT.LOG
+          echo DOS-SMOKE-DONE >> ..\OUT.LOG
           EOF
 
-          rm -f dosbox.log dosroot/OUT.LOG dosroot/$projname/lib/save/DOSUSER
+          rm -f dosbox.log dosroot/OUT.LOG
 
           # Bound the emulator here rather than leaving it to the step's own
           # timeout.  A step killed from outside says nothing about why: the
           # checks below never run and neither log is ever read.
-          timeout 240 dosbox-x -debug -conf dosbox.conf -nogui -exit > dosbox.log 2>&1 \
-            || echo "dosbox-x exited $? (124 means it outlasted the four-minute bound)"
+          timeout 120 dosbox-x -debug -conf dosbox.conf -nogui -exit > dosbox.log 2>&1 \
+            || echo "dosbox-x exited $? (124 means it outlasted the two-minute bound)"
 
-          echo "=== Save Directory ==="
-          ls -l dosroot/$projname/lib/save || echo "(save directory not found)"
-
-          if [ ! -f dosroot/OUT.LOG ] || ! grep -q "$exename finished" dosroot/OUT.LOG; then
-            echo "ERROR: OUT.LOG missing or $exename did not finish"
+          if ! grep -q DOS-SMOKE-DONE dosroot/OUT.LOG 2>/dev/null ; then
+            echo "ERROR: $exename did not finish"
             exit 1
           fi
 
-          if [ ! -f dosroot/$projname/lib/save/DOSUSER ]; then
-            echo "ERROR: DOSUSER save file missing"
+          # Everything the game printed, without the marker or DOS's carriage
+          # returns, has to be exactly what the script is supposed to produce.
+          # Being able to name its own race and class means the data files were
+          # found and parsed -- which is the part 8.3 filenames break.
+          sed -e '/DOS-SMOKE-DONE/d' -e 's/\r$//' dosroot/OUT.LOG > smoke.out
+          if ! diff -u tests/birth/Hu-Wa/output smoke.out ; then
+            echo "ERROR: $exename did not produce the expected output"
             exit 1
           fi
 
