@@ -22,6 +22,9 @@ build for each platform, and the source:
   terminal with no display at all.
 - ``ZangbandTK-<version>-nintendo.zip`` — the Nintendo DS ROM and the 3DS build,
   with the data the card needs. Text mode, no tiles or sound.
+- ``ZangbandTK-<version>-dos.zip`` — the DOS build, for a 386 or better with a
+  DPMI host. Text mode, CP437, and the manual as plain text beside it. Needs
+  ``CWSDPMI.EXE``, which is not in the zip; see `DOS`_.
 - ``ZangbandTK-<version>.tar.gz`` — the source, with the build system already
   generated.
 
@@ -45,10 +48,10 @@ on the Releases page says so before you download rather than after.
 The disk image requires **macOS on Apple Silicon**. Intel Macs are not
 supported; they reach legacy status in September 2026.
 
-The Windows, Linux and Nintendo builds are built, packaged and smoke-tested by
-CI, but the game is developed and played on macOS here and none of the others is
-played through before a release is tagged. Read `Other platforms`_ before you rely
-on one.
+The Windows, Linux, Nintendo and DOS builds are built, packaged and smoke-tested
+by CI, but the game is developed and played on macOS here and none of the others
+is played through before a release is tagged. Read `Other platforms`_ before you
+rely on one.
 
 The rest of this page is macOS. Mount the image and drag ``ZangbandTK.app``
 wherever you keep applications.
@@ -251,6 +254,45 @@ port's limitation, not the game's.
    before that needs its folder renamed.
 
 
+DOS
+===
+
+A 32-bit protected-mode build, cross-compiled with DJGPP. It wants a 386 or
+better, and it will run under DOSBox, DOSBox-X, or on the real thing.
+
+.. important::
+
+   **The zip does not contain a DPMI host, and the game will not start without
+   one.** A DJGPP program runs in protected mode and needs something to put the
+   processor there. Under Windows or on a DOS with a DPMI server already loaded
+   there is nothing to do. Otherwise fetch ``CWSDPMI.EXE`` — it is a separate
+   package, from `sandmann.dotster.com <https://sandmann.dotster.com/cwsdpmi/>`_
+   — and run it once before the game, or leave it in the same directory and it
+   will be found. This is how DJGPP programs have always been distributed; it is
+   not something missing from the build.
+
+Unpack the zip and the game is in a folder called ``angband``, and the
+executable is ``ANGBAND.EXE``. That is not a mistake: DOS filenames are eight
+characters and the internal project name is still Angband, the same name that
+gives the game its data paths on every other platform.
+
+Which is also why the data files are not named quite as they are elsewhere.
+Anything whose name is too long for DOS is shortened when the archive is built
+— ``monster_spell.txt`` becomes ``monster2.txt``, the Zangband bestiary becomes
+``monster3.txt`` — and the build asks for the short names to match. Nothing is
+left out. The manual's own text files keep their long names, since nothing but a
+reader ever opens them, so on a filesystem without long filename support expect
+those to arrive truncated.
+
+Text is CP437, converted when the archive is built, so the box-drawing and the
+accented letters are the ones the code page actually has.
+
+CI builds this on every push and then plays it: a character is created under
+DOSBox-X and saved, which proves the build starts, finds its data files and can
+write to its save directory. Nobody has played it through, and it has not been
+tried on real hardware — if you do, that is a report worth having.
+
+
 Other platforms
 ===============
 
@@ -264,7 +306,8 @@ much as Gatekeeper does above. Linux is packaged the same way, as an
 AppImage.
 
 The DS and 3DS builds come from
-Angband's own ports and are packaged the same way.
+Angband's own ports and are packaged the same way. The DOS build is a DJGPP
+cross build, smoke-tested under DOSBox-X on every push.
 
 Nobody plays the game on any of them here, though, so all are **untested in
 play**:

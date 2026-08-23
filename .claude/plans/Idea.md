@@ -132,3 +132,9 @@ git push origin 3.1.0
 git push origin master
 git tag -a 3.5.1-rc1 -m "Windows build test"
 git push origin 3.5.1-rc1
+
+## Follow up Ideas
+
+Lotus Leaves. Eat them and you forget everything in 5 turns, so the map is forgotten, monsters, potions, spells, everything.
+
+... you feel a little dizzy.. where am i ....

@@ -75,6 +75,14 @@ env:
     # Used as the name when uploading or downloading the artifact holding
     # the Mac archive.
     MAC_ARCHIVE_ARTIFACT: release-mac-archive
+    # Used as the name when uploading or downloading the artifact for passing
+    # the name of the DOS archive.
+    DOS_ARTIFACT: release-dos
+    # Used as the path for the file with the name of the DOS archive.
+    DOS_ARTIFACT_PATH: release-dos.txt
+    # Used as the name when uploading or downloading the artifact holding
+    # the DOS archive.
+    DOS_ARCHIVE_ARTIFACT: release-dos-archive
 
 jobs:
   setup:
@@ -868,9 +876,150 @@ jobs:
           path: ${{ steps.create_mac_archive.outputs.archive_file }}
           retention-days: 1
 
+  dos:
+    # Only setup: this job builds its own text manual rather than taking the
+    # docconvert job's HTML, so waiting on docconvert would be waiting for
+    # nothing.
+    needs: [setup]
+    name: DOS (DJGPP)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
+          echo "name=$name" >> $GITHUB_OUTPUT
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make zip
+
+      # Need commit history and tags for scripts/version.sh to work as expected
+      # so use 0 for fetch-depth.  Everything that unpacks into the working
+      # directory has to come after this, since checking out cleans it.
+      - name: Clone Project
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # The text manual is built here rather than taken from the docconvert
+      # job, which produces HTML: a machine that cannot run a browser wants
+      # the plain text, and Makefile.ibm's dist target looks for it in
+      # docs/_build/text.  It copies whatever it finds there with a || true,
+      # so getting this wrong ships an empty docs directory and says nothing.
+      # Both steps are after the checkout -- setup-python's cache key is a
+      # file in the repository, so it cannot run before there is one.
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: docs/requirements.txt
+
+      - name: Install Sphinx for the Manual
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r docs/requirements.txt
+
+      # The same cross-compiler the DOS Cross-compiler workflow builds with,
+      # pinned to the same release, so a tagged build and a push build are the
+      # same compiler.
+      - name: Install the DJGPP Cross-compiler
+        run: |
+          archive=djgpp-linux64-gcc1210.tar.bz2
+          wget --no-verbose "https://github.com/andrewwutw/build-djgpp/releases/download/v3.3/$archive"
+          bunzip2 -c "$archive" | tar -xBf -
+          rm "$archive"
+
+      # Makefile.ibm's own docs target, which is the one that knows to ask for
+      # the text builder and to do it with a theme that is always installed.
+      - name: Build the Manual as Text
+        run: |
+          cd src
+          make -f Makefile.ibm docs
+
+      # The default target runs edit first, which rewrites data file names in
+      # the source to fit 8.3.  That mutates the working tree, which is fine
+      # on a runner and is why this is not something to run in a checkout you
+      # care about.
+      - name: Build
+        run: |
+          PATH="$PATH":"`pwd`/djgpp/bin"
+          cd src
+          make -f Makefile.ibm -j$(nproc)
+          make -f Makefile.ibm -j$(nproc) dist
+
+      - name: Create DOS Archive
+        id: create_dos_archive
+        run: |
+          projname=$(cd src && make -f Makefile.ibm print-project-name | sed -En 's/^our-project-name=//p')
+          archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+          mv $projname.zip ${archive_prefix}-dos.zip
+          echo "archive_file=${archive_prefix}-dos.zip" >> $GITHUB_OUTPUT
+          echo "projname=$projname" >> $GITHUB_OUTPUT
+
+      # Whether the game runs under DOS is settled by the DOS Cross-compiler
+      # workflow, which drives a character to its grave under DOSBox-X on every
+      # push.  What is checked here is what that workflow never looks at: that
+      # the zip somebody downloads has the executable, the game data and the
+      # manual in it.  Each of the three has been silently absent at some
+      # point -- the manual most easily, since dist copies it with a || true.
+      - name: Smoke Test
+        run: |
+          unzip -q ${{ steps.create_dos_archive.outputs.archive_file }} -d unpacked
+          root=unpacked/${{ steps.create_dos_archive.outputs.projname }}
+          exe=$root/$(cd src && make -f Makefile.ibm print-executable-name | sed -En 's/^our-executable-name=//p')
+          test -f "$exe"
+          file "$exe" | grep -qi "MS-DOS"
+          test -f $root/lib/gamedata/dungeon.txt
+          test -f $root/lib/gamedata/constant.txt
+          test -f $root/lib/help/dungeons.txt
+          test -n "$(ls -A $root/docs)"
+          # The game opens its data and help files by name, so a name DOS
+          # cannot represent is a file the game cannot read -- and it does not
+          # always complain: three gamedata files were parsed with a
+          # tolerant parse_file, so DOS quietly ran without the Zangband
+          # bestiary for as long as their names were too long.  Checked here
+          # rather than trusted, and only for the two directories read by
+          # name; lib/customiz carries front-end prefs DOS never asks for.
+          for d in lib/gamedata lib/help ; do
+            find $root/$d -type f -printf '%f\n' | awk -F. -v d="$d" '
+              { base = $1 ; ext = (NF > 1) ? $NF : "" }
+              NF > 2 || length(base) > 8 || length(ext) > 3 {
+                print "not 8.3: " d "/" $0 ; bad = 1
+              }
+              END { exit (bad ? 1 : 0) }'
+          done
+
+      - name: Create Artifact with DOS Archive Path
+        run: |
+          echo archive_path= '${{ steps.create_dos_archive.outputs.archive_file }}' > $DOS_ARTIFACT_PATH
+
+      - name: Upload Artifact with DOS Archive Path
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.DOS_ARTIFACT }}
+          path: ${{ env.DOS_ARTIFACT_PATH }}
+          retention-days: 1
+
+      - name: Upload DOS Archive as Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.DOS_ARCHIVE_ARTIFACT }}
+          path: ${{ steps.create_dos_archive.outputs.archive_file }}
+          retention-days: 1
+
   release:
     if: github.event_name == 'push'
-    needs: [ setup, source, nintendo, linux, windows32, windows64, mac ]
+    needs: [ setup, source, nintendo, linux, windows32, windows64, mac, dos ]
     name: Create GitHub Release
     runs-on: ubuntu-latest
     # gh release create both makes the tag's release and uploads the files
@@ -994,6 +1143,22 @@ jobs:
         with:
           name: ${{ env.MAC_ARCHIVE_ARTIFACT }}
 
+      - name: Download Artifact with DOS Archive Path
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.DOS_ARTIFACT }}
+
+      - name: Extract DOS Archive Path and Store in Step Outputs
+        id: store_dos
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' $DOS_ARTIFACT_PATH`
+          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with DOS Archive
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.DOS_ARCHIVE_ARTIFACT }}
+
       # Use the gh CLI,  https://cli.github.com/manual/gh_release_create , to
       # create the release.  Requires a checked out repository, thus the
       # checkout step prior to retrieving the artifacts.
@@ -1012,4 +1177,5 @@ jobs:
             ${{ steps.store_linux.outputs.archive_path }} \
             ${{ steps.store_nin.outputs.archive_path }} \
             ${{ steps.store_mac.outputs.archive_path }} \
+            ${{ steps.store_dos.outputs.archive_path }} \
             $options
