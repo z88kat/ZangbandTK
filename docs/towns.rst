@@ -3,13 +3,13 @@ Towns and Services
 
 .. note::
 
-   **Partly written.** The places themselves are in (WLD-10, WLD-11 size bands,
-   WLD-11a, WLD-12); the inhabitant types and the Zangband buildings are filled
-   in by the rest of milestone **M5**. Per DEC-17 a milestone is not complete
-   until its manual chapter is.
+   **Written.** Milestone **M5** is complete and this chapter covers it: WLD-10
+   to WLD-12, WLD-14 to WLD-18, and WLD-16a to WLD-16c.
 
-   Requirements still to cover here: WLD-11 inhabitant types, WLD-14 to WLD-18,
-   WLD-16a to WLD-16d.
+   One requirement is deliberately outstanding. **WLD-16d** makes quest-giving a
+   property any building may carry rather than a building type of its own; it is
+   designed and nothing here forecloses it, but there are no quests to give until
+   milestone **M6**, so there is nothing yet to describe.
 
 The world holds a dozen places, not one. They differ in how much ground they
 cover, how many trades they keep, and which trades those are, so that walking to

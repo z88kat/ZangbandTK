@@ -329,15 +329,22 @@ What is not here yet
 Stated plainly, because a manual that only describes what works is not much use
 for judging what to expect:
 
-**Towns have no buildings of their own beyond shops.** A village and a great city
-differ in size, in the trades they keep and in who lives in them (see
-:doc:`towns`), but neither has anything to visit that is not a shop. Zangband's
-services — the magetower's teleport network, the enchanter, the recharger, the
-healer, the inn — are the rest of milestone M5.
+**There are no quests.** Nothing in the world asks anything of you: you walk, you
+find, you go down. Quests are milestone M6, and the design already allows for
+quest-giving to be a property any building carries rather than a building type of
+its own, so the inn and the magetower are candidates to hand them out. Until then
+the world is somewhere to explore rather than somewhere with anything to say.
 
-Of Zangband's six kinds of townsfolk, four are built and two of the others were
-never built by Zangband either: the elf, dwarf and lizardfolk types exist in its
-source only as unused constants (DEC-31).
+**Two kinds of townsfolk are missing, and were always missing.** Of Zangband's
+six, four are built; the elf, dwarf and lizardfolk types exist in its own source
+only as unused constants, so there is nothing to port and nothing was lost
+(DEC-31).
+
+**The inn sells a bed but not a dream.** Zangband's inn carried a nightmare
+vision, and that is not built. It is not blocked on anything — it will be made out
+of effects the game already has, and possibly out of showing you somewhere real on
+the world map, which is a more Zelazny thing for a night in a strange inn to do
+than a saving throw (DEC-32).
 
 **Dungeon character is broad rather than particular.** Each dungeon has its own
 depth range, floor, shape, inhabitants and kind of treasure (see :doc:`dungeon`),
