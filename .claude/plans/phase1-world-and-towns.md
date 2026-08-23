@@ -403,6 +403,14 @@ idea.
 > now also makes that many extra draws from the shop's own stock list and keeps the deepest,
 > which takes the widest-ranging shop in the game from a mean stock level of 9 to 12.
 >
+> *Your house is exempt, and that exemption is load-bearing.* Every town keeps a home
+> (WLD-11a gives every town a general store and a home whatever else it draws), and they are
+> all the same house: the restock below skips `FEAT_HOME`. Asked from play, which is a fair
+> sign the machinery reads the other way. The alternative — a house per town — strands a
+> character's spare gear in whichever village they were standing in when they outgrew it,
+> days of walking away, with nothing in the game to say which village. Guarded by
+> there-is-one-home-in-the-world.
+>
 > *One shop per trade, not one per town.* There is a single `struct store` per trade in the
 > whole game, so every town showed the same shelves — true and invisible while there was one
 > town. A shop is now restocked when the player takes their custom to a different town, at

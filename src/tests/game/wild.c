@@ -3127,6 +3127,63 @@ static int test_the_quality_ladder_is_a_ladder(void *state) {
 }
 
 /**
+ * There is one home in the world, and every town's home door opens onto it
+ * (WLD-11a, WLD-16a).
+ *
+ * Asked from play: leave something in your house, walk to another town, open the
+ * house there -- is it the same house?  It is, and the answer matters enough to
+ * pin down, because the machinery around it says otherwise.  Every town holds a
+ * home, and a shop's shelves are restocked when the player carries their custom
+ * to a different town.  Home is exempt from that, deliberately: a per-town home
+ * would strand a character's spare gear in whichever village they happened to be
+ * standing in when they outgrew it, four days' walk away and unreachable except
+ * on foot, and nothing in the game would tell them which village it was.
+ *
+ * So the exemption is load-bearing, and this is what would catch its removal.
+ */
+static int test_there_is_one_home_in_the_world(void *state) {
+	struct store *home = NULL;
+	struct object *obj;
+	int n;
+
+	for (n = 0; n < (int) z_info->store_max; n++)
+		if (stores[n].feat == FEAT_HOME) home = &stores[n];
+	notnull(home);
+
+	/* Every town has one to walk into, whatever else it keeps. */
+	for (n = 0; n < wild_town_count(wild); n++)
+		require(wild->towns[n].stores & (1u << WILD_STORE_HOME));
+
+	/* Leave something on the shelf. */
+	obj = object_new();
+	object_prep(obj, lookup_kind(TV_FOOD, 1), 1, RANDOMISE);
+	obj->known = object_new();
+	obj->number = 1;
+	pile_insert(&home->stock, obj);
+	home->stock_num = 1;
+
+	/*
+	 * Now arrive from somewhere else entirely.  stock_town is what the restock
+	 * keys on, so setting it to a town this is not is the strongest form of the
+	 * question: an ordinary shop would empty its shelves here.
+	 */
+	home->stock_town = wild_town_count(wild) - 1;
+	store_enter(home);
+
+	/* Still there. */
+	eq(home->stock_num, 1);
+	notnull(home->stock);
+
+	/* Clean up after ourselves; the suite shares these stores. */
+	object_pile_free(NULL, NULL, home->stock);
+	home->stock = NULL;
+	home->stock_num = 0;
+	home->stock_town = 0;
+
+	ok;
+}
+
+/**
  * A better shop deals in better goods (WLD-16a).
  *
  * The tier has to be worth travelling for, and the only way to tell is to look
@@ -3374,6 +3431,7 @@ struct test tests[] = {
 	{ "no-road-goes-nowhere", test_no_road_goes_nowhere },
 	{ "the-road-runs-up-to-a-gate", test_the_road_runs_up_to_a_gate },
 	{ "the-quality-ladder-is-a-ladder", test_the_quality_ladder_is_a_ladder },
+	{ "there-is-one-home-in-the-world", test_there_is_one_home_in_the_world },
 	{ "a-better-shop-deals-in-better-goods", test_a_better_shop_deals_in_better_goods },
 	{ "every-service-held-is-built", test_every_service_held_is_built },
 	{ NULL, NULL }

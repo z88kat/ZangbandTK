@@ -31,6 +31,13 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.14.1** — The manual now says that there is only one house. Every town keeps
+  a home and they are all the same one, so what you leave in your village is on
+  the shelf when you open the door in a city four days' walk away. Asked from
+  play, which is fair warning that the machinery reads the other way: a *shop* in
+  another town is another shop and is stocked afresh. A house per town would
+  strand your spare gear wherever you happened to be standing when you outgrew
+  it, so the house travels with you and the only cost of leaving is the walk back.
 - **3.14.0** — WLD-15 and WLD-16a: shops come at a standard as well as a trade.
   A plain *Weapon Smiths*, or an *Advanced*, *Expert* or *Arcane* one, written
   above the door. A better shop draws its goods from the deeper end of what that

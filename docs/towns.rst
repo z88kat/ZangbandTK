@@ -114,6 +114,25 @@ spellbook, since no class starts with one.
 It has no armoury and no weaponsmith. Those are in the next town along, and
 finding them is the first thing the world asks of you.
 
+Your house
+----------
+
+**There is one house, and every town's front door opens onto it.** Every town in
+the world keeps a home, whatever else it does or does not carry — but they are all
+the same house. Leave a sword in your village, walk four days to a great city,
+open the door there, and the sword is on the shelf.
+
+This is deliberate, and it is the one place where a shop and your house behave
+differently. A *shop's* shelves are restocked when you carry your custom to
+another town, because a weaponsmith in another town is another weaponsmith. Your
+house is not another house. The alternative — a house per town — would strand your
+spare gear in whichever village you happened to be standing in when you outgrew
+it, days of walking away, with nothing in the game to remind you which village it
+was.
+
+So the house travels with you, and the only cost of walking away from it is the
+walk back.
+
 What they are called
 --------------------
 

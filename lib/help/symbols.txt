@@ -102,6 +102,10 @@ than goods on a shelf.  They are told apart by colour, and the "slash" command
 A town has a healer, an inn and a magetower; a city adds the magesmith and the
 recharger.  A town that has fallen has none of them.  All of them charge.
 
+Every town has a home, and there is only one house: whichever town you open
+it in, you see what you left there.  A shop in another town is another shop
+and is stocked afresh; your house is not another house.
+
 Shops come at a standard as well as a trade, and it is written above the door:
 a plain "Weapon Smiths", or an "Advanced", "Expert" or "Arcane" one.  A better
 shop deals in deeper goods, puts better magic on them, and keeps a
