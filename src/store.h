@@ -64,11 +64,30 @@ struct store {
 	int turnover;
 	int normal_stock_min;
 	int normal_stock_max;
+
+	/**
+	 * ZangbandTK (WLD-15, WLD-16a): which town this shop's stock belongs to,
+	 * and how good the shop is there.
+	 *
+	 * There is one struct store per trade in the whole game, not one per town,
+	 * so a weaponsmith's shelves are the same shelves wherever the player walks
+	 * in.  That was invisible while there was one town.  With a world of them it
+	 * means a shop is restocked when the player carries their custom to a
+	 * different town -- and restocked at *that* town's tier, which is what makes
+	 * the quality ladder something you can see.
+	 *
+	 * Keyed on the town rather than on entering the door, deliberately: leaving
+	 * a shop and walking back in must not re-roll the shelves.
+	 */
+	int stock_town;
+	int quality;
 };
 
 extern struct store *stores;
 
 struct store *store_at(struct chunk *c, struct loc grid);
+void store_enter(struct store *s);
+void store_stock_at_quality(struct store *s, int tier);
 void store_init(void);
 void free_stores(void);
 void store_stock_list(struct store *store, struct object **list, int n);

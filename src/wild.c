@@ -731,6 +731,122 @@ static int wild_town_popcount(uint16_t v)
  * the other is where the player's belongings live, and a town without either is
  * a town nobody would stop at.
  */
+/**
+ * The adjective for a quality tier, or NULL for the plain trade (WLD-16a).
+ */
+const char *wild_quality_name(int tier)
+{
+	if (tier <= 0 || tier > quality_tier_count) return NULL;
+
+	return quality_tiers[tier - 1].name;
+}
+
+/**
+ * How good a town's shop of a given trade is (WLD-15, WLD-16a).
+ *
+ * Zangband scored every building on population, magic and law plus a rarity,
+ * and that scoring is the whole point of the quality ladder: an arcane
+ * weaponsmith you have to travel to find is worth having, and one in every town
+ * is wallpaper.  So the tier comes out of the country the town stands in.
+ *
+ * Which axis matters depends on the trade, because the ladders are not the same
+ * ladder.  A magic shop or a bookseller climbs on magic -- that is what there is
+ * more of to sell.  Arms and armour climb on people and on order, since a
+ * smith needs a town that can keep him busy and a road the steel can arrive by,
+ * with magic counting for something because the top of that ladder is
+ * enchanted.  A general store climbs on people alone: there is no arcane bread.
+ *
+ * The band counts too -- a great city is a better place to trade than a village
+ * whatever the country is like -- and the block's own seed breaks ties, so two
+ * equally favoured towns need not come out the same.
+ *
+ * Returns 0 for the plain trade, up to quality_tier_count.
+ *
+ * \param town is the index into w->towns, since town 0 is a special case.
+ * \param store is a WILD_STORE_* index.
+ */
+int wild_store_quality(struct wilderness *w, int town, int store)
+{
+	struct wild_town *t;
+	struct wild_block *block;
+	uint32_t seed;
+	int pop, law, magic, score, tier;
+
+	if (!w || town < 0 || town >= w->town_count) return 0;
+	if (!quality_tier_count) return 0;
+
+	/*
+	 * Home has no stock to be better, and the black market is already the top
+	 * of every ladder -- it sells whatever it likes at whatever depth the
+	 * player has reached, so a tier on top of that would be a second opinion
+	 * about the same thing.
+	 */
+	if (store == WILD_STORE_HOME || store == WILD_STORE_BLACK) return 0;
+
+	/*
+	 * And home town is plain, by WLD-12.  The opening should not depend on
+	 * procedural luck in either direction: a character who starts next to an
+	 * arcane weaponsmith has a different game from one who does not, and
+	 * neither of them chose it.
+	 */
+	if (town == 0) return 0;
+
+	t = &w->towns[town];
+	block = wild_block_at(w, t->block.x, t->block.y);
+	if (!block) return 0;
+
+	pop = block->pop;
+	law = block->law;
+	magic = block->magic;
+	seed = wild_block_seed(w, t->block.x, t->block.y);
+
+	switch (store) {
+		case WILD_STORE_MAGIC:
+		case WILD_STORE_BOOK:
+			score = magic * 3 / 4 + pop / 4;
+			break;
+		case WILD_STORE_ALCHEMY:
+			score = magic / 2 + pop / 2;
+			break;
+		case WILD_STORE_WEAPON:
+		case WILD_STORE_ARMOR:
+			score = pop / 2 + law / 4 + magic / 4;
+			break;
+		default:
+			score = pop * 3 / 4 + law / 4;
+			break;
+	}
+
+	/* Size tells, and so does the place itself. */
+	score += t->band * 10;
+	score += (int) ((seed >> (store * 3 + 5)) & 31) - 16;
+
+	/*
+	 * Thresholds taken from the measured distribution rather than guessed, at
+	 * its 60th, 85th and 97th centiles, over 40 worlds and 1,872 shops.  Guessed
+	 * first, and the guess was badly wrong: 190/160/130 put a quarter of every
+	 * trade in the world on the top rung, and the tiers came out in the wrong
+	 * order because everything above the highest threshold piles into it.
+	 *
+	 * The reason the guess failed is worth keeping.  Towns are *sited* on law
+	 * (WLD-08a), so law at a town block is not a free variable: measured over
+	 * 479 towns it runs 104 to 254 with a mean of 208, which is nearly a
+	 * constant offset rather than an axis.  Population spans its whole range and
+	 * magic is very close to uniform, because nothing selects for it -- so those
+	 * two are what actually decide the tier, and it was magic being the only
+	 * untouched axis that made it worth adding one.
+	 *
+	 * See the-quality-ladder-is-a-ladder in tests/game/wild.c, which fails if
+	 * this flattens out at either end.
+	 */
+	if (score >= 261) tier = 3;
+	else if (score >= 225) tier = 2;
+	else if (score >= 183) tier = 1;
+	else tier = 0;
+
+	return MIN(tier, quality_tier_count);
+}
+
 static uint16_t wild_town_stores(struct wilderness *w, int bx, int by, int band)
 {
 	struct wild_block *block = wild_block_at(w, bx, by);
@@ -1950,10 +2066,15 @@ bool wild_road_at(struct wilderness *w, int bx, int by)
 /**
  * Lay out the world map (WLD-07, WLD-08).
  *
- * Three independent fractals give each block a position in parameter space,
- * and its terrain follows from that.  Height is the roughest, since coastlines
- * and mountain ranges should be ragged; population and law vary more smoothly,
- * because settlement and order spread by contiguity.
+ * Four independent fractals give each block a position in parameter space, and
+ * its terrain follows from the first three.  Height is the roughest, since
+ * coastlines and mountain ranges should be ragged; population, law and magic
+ * vary more smoothly, because settlement, order and whatever magic is all
+ * spread by contiguity.
+ *
+ * Magic takes no part in choosing terrain -- it is what WLD-15 scores buildings
+ * on, so it decides what stands in a town rather than what the country looks
+ * like.  A place can be steeped in it and look like ordinary farmland.
  *
  * Reproducible: seeded from the world seed, so the same seed always yields the
  * same world.
@@ -1965,6 +2086,7 @@ void wild_generate(struct wilderness *w)
 	int *hgt = mem_zalloc(count * sizeof(int));
 	int *pop = mem_zalloc(count * sizeof(int));
 	int *law = mem_zalloc(count * sizeof(int));
+	int *magic = mem_zalloc(count * sizeof(int));
 	int i;
 
 	/* World generation draws from a stream fixed by the world seed alone. */
@@ -1974,6 +2096,7 @@ void wild_generate(struct wilderness *w)
 	wild_plasma(hgt, size, 24);
 	wild_plasma(pop, size, 12);
 	wild_plasma(law, size, 12);
+	wild_plasma(magic, size, 12);
 
 	for (i = 0; i < count; i++) {
 		struct wild_block *block = &w->map[i];
@@ -1983,6 +2106,7 @@ void wild_generate(struct wilderness *w)
 		block->hgt = (uint8_t) hgt[i];
 		block->pop = (uint8_t) pop[i];
 		block->law = (uint8_t) law[i];
+		block->magic = (uint8_t) magic[i];
 		block->terrain = (uint8_t) wild_classify(hgt[i], pop[i], law[i]);
 		block->place = 0;
 		block->info = 0;
@@ -2025,6 +2149,7 @@ void wild_generate(struct wilderness *w)
 	mem_free(hgt);
 	mem_free(pop);
 	mem_free(law);
+	mem_free(magic);
 }
 
 /**

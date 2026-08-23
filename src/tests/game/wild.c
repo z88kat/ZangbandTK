@@ -31,6 +31,7 @@
 #include "player-util.h"
 #include "mon-util.h"
 #include "savefile.h"
+#include "store.h"
 #include "dun-type.h"
 #include "wild.h"
 #include "z-util.h"
@@ -3067,6 +3068,182 @@ static int test_a_road_is_wide_enough_to_see(void *state) {
 
 
 /**
+ * The quality ladder is a ladder, and it is climbed rather than handed out
+ * (WLD-15, WLD-16a).
+ *
+ * The mechanism only pays off if the tiers are actually rare at the top: an
+ * arcane weaponsmith is worth walking to find, and one in every town is
+ * wallpaper.  So this measures the shape of the distribution over enough worlds
+ * to be a distribution, and fails if it flattens out at either end -- all plain
+ * (the ladder does nothing) or top-heavy (the ladder means nothing).
+ */
+static int test_the_quality_ladder_is_a_ladder(void *state) {
+	int counts[8] = { 0 };
+	int seed, total = 0, top;
+
+	for (seed = 1; seed <= 40; seed++) {
+		struct wilderness *w = wild_new(129, seed * 4409);
+		int i;
+
+		wild_generate(w);
+
+		for (i = 0; i < wild_town_count(w); i++) {
+			int n;
+
+			for (n = 0; n < (int) z_info->store_max && n < 16; n++) {
+				int tier;
+
+				if (!(w->towns[i].stores & (1u << n))) continue;
+
+				tier = wild_store_quality(w, i, n);
+				require(tier >= 0 && tier <= quality_tier_count);
+				counts[tier]++;
+				total++;
+
+				/* Home is plain, by WLD-12 and by having no stock to vary. */
+				if (i == 0) eq(tier, 0);
+			}
+		}
+
+		wild_free(w);
+	}
+
+	require(total > 0);
+	for (top = 0; top <= quality_tier_count; top++)
+		printf("QUALITY tier %d: %4d of %4d (%d%%)\n", top, counts[top], total,
+			   counts[top] * 100 / total);
+
+	/* Every rung is reached, or a rung is data nothing selects. */
+	for (top = 0; top <= quality_tier_count; top++)
+		require(counts[top] > 0);
+
+	/* Plain is the common case... */
+	require(counts[0] * 2 > total);
+
+	/* ...and the top of the ladder is somewhere you travel to. */
+	require(counts[quality_tier_count] * 10 < total);
+
+	ok;
+}
+
+/**
+ * A better shop deals in better goods (WLD-16a).
+ *
+ * The tier has to be worth travelling for, and the only way to tell is to look
+ * at what ends up on the shelves.  The tier is added to the level goods are
+ * generated at, which object_prep() and apply_magic() both work from, so a
+ * higher tier should buy deeper kinds and better magic on them rather than just
+ * a longer word on the sign.
+ */
+static int test_a_better_shop_deals_in_better_goods(void *state) {
+	struct store *s = NULL;
+	int i, n, plain = 0, plain_n = 0, arcane = 0, arcane_n = 0;
+	int plain_plus = 0, arcane_plus = 0;
+
+	/*
+	 * The shop with the widest range of goods, whichever that is -- picking one
+	 * by name would test store.txt as much as the ladder, and the first shop
+	 * with any turnover at all is the general store, whose entire stock is food
+	 * and torches.  There is no deep end of that table to bias towards, which
+	 * is exactly the measurement that caught this the first time round.
+	 */
+	for (n = 0; n < (int) z_info->store_max; n++) {
+		size_t k;
+		int lo = 999, hi = -1, spread, best = -1;
+
+		if (!stores[n].turnover || !stores[n].normal_num) continue;
+		if (stores[n].feat == FEAT_STORE_BLACK) continue;
+
+		for (k = 0; k < stores[n].normal_num; k++) {
+			int lv = stores[n].normal_table[k]->level;
+			if (lv < lo) lo = lv;
+			if (lv > hi) hi = lv;
+		}
+
+		spread = hi - lo;
+		if (s) {
+			size_t j;
+			int slo = 999, shi = -1;
+			for (j = 0; j < s->normal_num; j++) {
+				int lv = s->normal_table[j]->level;
+				if (lv < slo) slo = lv;
+				if (lv > shi) shi = lv;
+			}
+			best = shi - slo;
+		}
+		if (spread > best) s = &stores[n];
+	}
+
+	notnull(s);
+	require(quality_tier_count > 0);
+
+	/* Enough restockings that one lucky shelf cannot carry the result. */
+	for (i = 0; i < 20; i++) {
+		struct object *obj;
+
+		store_stock_at_quality(s, 0);
+		for (obj = s->stock; obj; obj = obj->next) {
+			plain += obj->kind->level;
+			plain_n++;
+		}
+
+		store_stock_at_quality(s, quality_tier_count);
+		for (obj = s->stock; obj; obj = obj->next) {
+			arcane += obj->kind->level;
+			arcane_n++;
+		}
+	}
+
+	require(plain_n > 0 && arcane_n > 0);
+
+	printf("QUALITY %s: plain level %d over %d items; %s level %d over %d\n",
+		   f_info[s->feat].name, plain / plain_n, plain_n,
+		   wild_quality_name(quality_tier_count), arcane / arcane_n, arcane_n);
+
+	/* The top of the ladder deals in deeper kinds than the bottom of it... */
+	require(arcane / arcane_n > plain / plain_n);
+
+	/* ...and keeps a fuller shelf. */
+	require(arcane_n > plain_n);
+
+	/*
+	 * The other half of what the tier buys is better magic on the goods, since
+	 * the raised level is what apply_magic() works from.  Measured across every
+	 * ordinary shop rather than the one above, because only some of them sell
+	 * anything that *can* carry a plus -- the widest range of stock in the game
+	 * belongs to the alchemist, and a potion has no to-hit to improve.  Object
+	 * value is no proxy either: a deeper potion is not a dearer one, and the
+	 * measurement came out flat.
+	 */
+	for (n = 0; n < (int) z_info->store_max; n++) {
+		struct store *shop = &stores[n];
+
+		if (!shop->turnover || !shop->normal_num) continue;
+		if (shop->feat == FEAT_STORE_BLACK) continue;
+
+		for (i = 0; i < 20; i++) {
+			struct object *obj;
+
+			store_stock_at_quality(shop, 0);
+			for (obj = shop->stock; obj; obj = obj->next)
+				plain_plus += obj->to_h + obj->to_d + obj->to_a;
+
+			store_stock_at_quality(shop, quality_tier_count);
+			for (obj = shop->stock; obj; obj = obj->next)
+				arcane_plus += obj->to_h + obj->to_d + obj->to_a;
+		}
+	}
+
+	printf("QUALITY plusses on the shelves: plain %d, %s %d\n", plain_plus,
+		   wild_quality_name(quality_tier_count), arcane_plus);
+
+	require(plain_plus > 0);
+	require(arcane_plus > plain_plus);
+
+	ok;
+}
+
+/**
  * Every service a town holds is standing when the town is built (WLD-16c).
  *
  * This one found a real fault and is kept at a size that would find it again.
@@ -3196,6 +3373,8 @@ struct test tests[] = {
 	{ "the-starting-village-is-always-known", test_the_starting_village_is_always_known },
 	{ "no-road-goes-nowhere", test_no_road_goes_nowhere },
 	{ "the-road-runs-up-to-a-gate", test_the_road_runs_up_to_a_gate },
+	{ "the-quality-ladder-is-a-ladder", test_the_quality_ladder_is_a_ladder },
+	{ "a-better-shop-deals-in-better-goods", test_a_better_shop_deals_in_better_goods },
 	{ "every-service-held-is-built", test_every_service_held_is_built },
 	{ NULL, NULL }
 };

@@ -70,6 +70,38 @@ Two towns of the same size need not hold the same shops. The choice is made once
 when the world is generated, from the world seed and the town's own position, so
 a given world always has the same places in it however you reach them.
 
+How good a shop is
+------------------
+
+A shop is not only a trade, it is a trade at a standard, and the standard is on
+the sign: a plain **Weapon Smiths**, or an **Advanced**, **Expert** or **Arcane**
+one. Three rungs above plain, and they mean something —
+
+- the goods are drawn from the deeper end of what that trade sells;
+- there is better magic on them, which is where the real difference lies: an
+  arcane shop's shelves carry roughly three times the plusses of a plain one's;
+- and the shelves are fuller, so there is more to choose from.
+
+Which rung a shop gets comes from the country the town stands in, scored once when
+the world is made. Magic is what mostly decides it — for a magic shop or a
+bookseller almost entirely, and for arms and armour it is people and order first
+with magic behind them, since the top of that ladder is enchanted steel. A general
+store climbs on people alone; there is no arcane bread.
+
+It is deliberately rare. Measured across a great many worlds, seven shops in ten
+are plain and one in fifty is arcane, so the top of the ladder is somewhere you
+travel to rather than something your nearest city happens to have.
+
+Two exceptions. The **black market** has no rung, because it is already the top of
+every ladder — it will sell you anything, pitched at how deep you have been. And
+your **home village** is plain, whatever the country around it says: a character
+who happened to start next to an arcane weaponsmith would be playing a different
+game, and would not have chosen it.
+
+One consequence worth knowing: a trade's shelves are restocked when you carry your
+custom to a *different* town, at that town's standard. Walking out of a shop and
+back in does not change what is in it.
+
 Your home village
 -----------------
 

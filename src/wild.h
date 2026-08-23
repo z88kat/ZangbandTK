@@ -83,6 +83,18 @@ struct wild_block {
 	uint8_t hgt;		/**< Height: ocean floor through mountain peak */
 	uint8_t pop;		/**< Population: wilderness through city */
 	uint8_t law;		/**< Law: bandit country through well-policed */
+
+	/**
+	 * Magic: how thick the country is with it (WLD-15).
+	 *
+	 * Zangband scored a building on population, magic and law, and we had the
+	 * first and third already.  Its own fractal, so it varies smoothly and
+	 * independently -- a lawful, populous, mundane city and a thinly settled
+	 * place steeped in magic are both worlds this can build.  Costs nothing to
+	 * carry: the world map is never written to a savefile, it regenerates from
+	 * the seed (WLD-03).
+	 */
+	uint8_t magic;
 };
 
 /**
@@ -150,6 +162,21 @@ enum {
 	WILD_STORE_BLACK,
 	WILD_STORE_HOME
 };
+
+/**
+ * One rung of the shop quality ladder, loaded from quality.txt (WLD-16a).
+ *
+ * Tier 0 is the plain trade and has no record: the array holds what is above
+ * it, so tier n is quality_tiers[n - 1].
+ */
+struct quality_tier {
+	char *name;		/**< Adjective put in front of the trade's own name */
+	int level;		/**< Added to the level its goods are generated at */
+	int stock;		/**< Extra slots on the shelves */
+};
+
+extern struct quality_tier *quality_tiers;
+extern int quality_tier_count;
 
 /**
  * The names a world's towns are drawn from, loaded from town.txt (WLD-11).
@@ -272,6 +299,8 @@ const char *wild_folk_name(int folk);
 const char *wild_band_name(int band);
 const char *wild_service_name(int service);
 int wild_service_at(struct chunk *c, struct loc grid);
+int wild_store_quality(struct wilderness *w, int town, int store);
+const char *wild_quality_name(int tier);
 int wild_town_here(struct wilderness *w, struct loc grid);
 void wild_note_visit(struct wilderness *w, struct loc grid);
 bool wild_dungeon_found(struct wilderness *w, int idx);

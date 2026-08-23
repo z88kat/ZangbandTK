@@ -37,6 +37,7 @@
 #include "player-history.h"
 #include "player-util.h"
 #include "store.h"
+#include "wild.h"
 #include "target.h"
 #include "ui-display.h"
 #include "ui-input.h"
@@ -347,6 +348,19 @@ static void store_display_frame(struct store_context *ctx)
 		/* Normal stores */
 		const char *store_name = f_info[store->feat].name;
 		const char *owner_name = proprietor->name;
+
+		/*
+		 * ZangbandTK (WLD-16a): the quality tier goes on the sign, since it is
+		 * the only way the player can tell an Expert weaponsmith from a plain
+		 * one without pricing every item on the shelf.
+		 */
+		const char *quality = wild_quality_name(store->quality);
+		char titled[80];
+
+		if (quality) {
+			strnfmt(titled, sizeof(titled), "%s %s", quality, store_name);
+			store_name = titled;
+		}
 
 		/* Put the owner name */
 		put_str(owner_name, ctx->scr_places_y[LOC_OWNER], 1);

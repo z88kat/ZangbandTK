@@ -31,8 +31,64 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+23 August 2026 — the axis that had nothing left to say
+======================================================
+
+WLD-15 asks for buildings scored on the same parameter space as terrain, which in
+Zangband meant population, magic and law. Our world map had population and law
+and no magic, so I read the requirement as: add the missing fractal, wire up the
+scoring, done. A formality.
+
+It was not a formality, and finding out why was the useful part of the day.
+
+I wrote the scoring, guessed thresholds that looked sensible, and measured. A
+quarter of every shop in the world came out on the top rung, and the tiers came
+out in the wrong order — more arcane shops than expert ones. The order is easy to
+explain: everything above the highest cutoff piles into the top bucket, so if the
+cutoff is too low the top rung swallows the tail. The quarter needed a real
+answer, so I measured the axes themselves at the 479 town blocks in 40 worlds.
+
+Law runs 104 to 254 with a mean of 208. It is not an axis at a town; it is a
+constant with a little noise on it. Of course it is — WLD-08a *sites* towns on
+law, so by the time there is a town to score, law has already been asked its
+question and given its answer. Population survives, because the size bands are
+cut from it and villages are real places. And magic is very nearly uniform,
+because nothing anywhere selects for it.
+
+So the axis I had thought of as the formality is the only one with anything left
+to say, and the two I already had were mostly spent. That is worth writing down
+as a general shape: a parameter you have already used to *choose* something
+cannot then be used to *vary* it. It has no variance left where you are looking.
+
+The other mistake was smaller and more embarrassing. A tier raises the level the
+goods are generated at, and I asserted that this makes a better shop sell better
+things. It does not. The level reaches ``apply_magic()``, so it buys better magic
+on the item — real, and worth about three times the plusses at the top rung — but
+which *kind* of item a shop sells comes out of ``store.txt``, and nothing in that
+list depends on level. So an arcane shop's shelves were exactly as deep as a
+plain one's. A long word on the sign with nothing behind it, which is the precise
+failure WLD-16a exists to avoid.
+
+The test that caught it nearly failed to. It picked "the first shop with any
+turnover", which is the general store, whose entire stock is food and torches:
+there is no deep end of that table to bias towards, so the measurement was flat
+whether the code worked or not. Picking the widest-ranging shop instead — the
+alchemist, levels 1 to 40 — made the difference visible immediately. Two days
+running now, a test has been weak in the same way: measuring something that could
+not move.
+
+Then object value turned out to be a bad proxy too. A deeper potion is not a
+dearer potion, so the alchemist's shelves are worth the same at every rung. The
+magic shows up only on things that can carry a plus, which the alchemist does not
+sell, so that half of the claim is measured across every shop instead of one.
+Three metrics before one of them meant what I wanted it to mean.
+
+Ended at 70 / 18 / 8 / 2 per cent, thresholds taken from centiles of the measured
+distribution rather than chosen. 113 hand-authored building types replaced by
+three records and a score.
+
 23 August 2026 — a road you can see, and a building that was demolished
-======================================================================
+=======================================================================
 
 Two faults from the same afternoon, and the second one taught me more.
 

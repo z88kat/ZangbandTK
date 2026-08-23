@@ -1195,7 +1195,14 @@ int rd_gear(void)
 /**
  * Read store contents
  */
-static int rd_stores_aux(rd_item_t rd_item_version)
+/**
+ * \param with_quality is whether the savefile carries which town each shop's
+ * stock belongs to and what tier it was stocked at (ZangbandTK, WLD-16a).
+ * Version 1 savefiles do not; those shops keep their stock and are treated as
+ * belonging to the starting village, so the first visit to a shop anywhere else
+ * restocks it, which is what would have happened anyway.
+ */
+static int rd_stores_aux(rd_item_t rd_item_version, bool with_quality)
 {
 	int i;
 	uint16_t tmp16u;
@@ -1219,6 +1226,21 @@ static int rd_stores_aux(rd_item_t rd_item_version)
 		/* XXX: refactor into store.c */
 		if (store) {
 			store->owner = store_ownerbyidx(store, own);
+			store->stock_town = 0;
+			store->quality = 0;
+		}
+
+		if (with_quality) {
+			uint16_t town;
+			uint8_t quality;
+
+			rd_u16b(&town);
+			rd_byte(&quality);
+
+			if (store) {
+				store->stock_town = town;
+				store->quality = quality;
+			}
 		}
 
 		/* Read the items */
@@ -1266,7 +1288,8 @@ static int rd_stores_aux(rd_item_t rd_item_version)
 /**
  * Read the stores - wrapper functions
  */
-int rd_stores(void) { return rd_stores_aux(rd_item); }
+int rd_stores(void) { return rd_stores_aux(rd_item, true); }
+int rd_stores_1(void) { return rd_stores_aux(rd_item, false); }
 
 
 /**

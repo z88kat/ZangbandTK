@@ -949,6 +949,47 @@ Outstanding follow-ups raised while building, rather than while planning:
   The constraint from DEC-32: no insanity, no amnesia, no mutation trigger. If a
   design needs those, it is CNT-17 wearing a hat.
 
+**DEC-34 — The quality ladder is scored on magic, because magic is the only axis
+a town has not already been chosen for. Home and the Black Market are exempt.**
+
+WLD-15 asks for buildings placed "by suitability in the same parameter space as
+terrain", which Zangband scored on population, magic and law. Our block map had
+population and law and no magic, so the obvious reading is that magic was the
+missing piece and adding it was a formality. It was not a formality: it turned out
+to be the *only* axis with anything left to say.
+
+Measured over 479 towns in 40 worlds, at the block each town stands on:
+
+| Axis | min | p10 | median | p90 | max | mean |
+|---|---:|---:|---:|---:|---:|---:|
+| law | 104 | 165 | 213 | 242 | 254 | 208 |
+| population | 5 | 34 | 139 | 226 | 252 | 135 |
+| magic | 0 | 22 | 130 | 221 | 253 | 125 |
+
+Law is not a free variable at a town: WLD-08a *sites* towns on it, so by the time
+there is a town to score, law has already been selected for and reads as a
+constant offset with a little noise. Population survives as an axis because the
+size bands are cut from it and villages are real. Magic is very close to uniform,
+because nothing anywhere selects for it — which is precisely why it discriminates.
+
+So the ladder leans on magic and population, with law contributing little, and
+that is a feature rather than a compromise: law decided *whether there is a town
+at all*, and asking it a second question would only get the same answer back.
+
+**The exemptions.** Home has no stock to be better. The Black Market is already
+the top of every ladder — it stocks anything, at a level keyed to how deep the
+player has been — so a tier on top of it is a second opinion about the same
+thing, and DEC-29 already made it the reason to travel. The starting village is
+plain by WLD-12: a character who happens to begin next to an arcane weaponsmith
+is playing a different game from one who does not, and neither of them chose it.
+
+**Thresholds are measured, not chosen.** Guessed first, and the guess put a
+quarter of every shop in the world on the top rung, with the tiers coming out in
+the wrong order — everything above the highest cutoff piles into it. Taken from
+the 60th, 85th and 97th centiles of the measured score distribution instead, the
+ladder runs 70 / 18 / 8 / 2 per cent, so the top rung is one shop in fifty and
+worth walking to find.
+
 Verification work carried into Phase 2:
 
 - Measure `struct chunk`'s memory footprint against the wilderness live-block target

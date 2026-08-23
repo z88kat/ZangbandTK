@@ -97,6 +97,7 @@ int rd_player_hp(void);
 int rd_player_spells(void);
 int rd_gear(void);
 int rd_stores(void);
+int rd_stores_1(void);
 int rd_wilderness_1(void);
 int rd_wilderness_2(void);
 int rd_wilderness_3(void);

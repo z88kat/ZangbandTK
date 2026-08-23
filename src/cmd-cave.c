@@ -1663,6 +1663,12 @@ void do_cmd_hold(struct command *cmd)
 			return;
 		}
 		disturb(player);
+		/*
+		 * ZangbandTK (WLD-16a): the shelves belong to the town the player is
+		 * standing in, so ask before the display does.
+		 */
+		store_enter(store_at(cave, player->grid));
+
 		event_signal(EVENT_ENTER_STORE);
 		event_remove_handler_type(EVENT_ENTER_STORE);
 		event_signal(EVENT_USE_STORE);

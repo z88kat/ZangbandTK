@@ -40,6 +40,7 @@
 #include "player-history.h"
 #include "player-spell.h"
 #include "store.h"
+#include "wild.h"
 #include "target.h"
 #include "debug.h"
 
@@ -349,6 +350,11 @@ void store_reset(void) {
 		object_pile_free(NULL, NULL, s->stock);
 		s->stock_k = NULL;
 		s->stock = NULL;
+
+		/* A new character starts at home, and home is plain (WLD-12). */
+		s->stock_town = 0;
+		s->quality = 0;
+
 		if (s->feat == FEAT_HOME)
 			continue;
 		for (j = 0; j < 10; j++)
@@ -1145,8 +1151,34 @@ static bool black_market_ok(const struct object *obj)
  */
 static struct object_kind *store_get_choice(struct store *store)
 {
+	struct object_kind *kind;
+	int draws;
+
 	/* Choose a random entry from the store's table */
-	return store->normal_table[randint0(store->normal_num)];
+	kind = store->normal_table[randint0(store->normal_num)];
+
+	/*
+	 * ZangbandTK (WLD-16a): a better shop deals in deeper goods.
+	 *
+	 * The tier already raises the level the item is *generated* at, which buys
+	 * better magic on it -- but not a better item, because the kind comes from
+	 * the store's own table in store.txt and nothing there depends on level.
+	 * Measured: with only the generation level raised, the mean kind level on an
+	 * arcane shop's shelves came out no higher than a plain one's, which is a
+	 * long word on the sign and nothing behind it.
+	 *
+	 * So the tier draws more than once and keeps the deepest, which biases
+	 * towards the far end of the table the shop already stocks without letting
+	 * it sell anything it should not.  A plain shop draws once and is unchanged.
+	 */
+	for (draws = MIN(store->quality, quality_tier_count); draws > 0; draws--) {
+		struct object_kind *other =
+			store->normal_table[randint0(store->normal_num)];
+
+		if (other->level > kind->level) kind = other;
+	}
+
+	return kind;
 }
 
 
@@ -1166,6 +1198,20 @@ static bool store_create_random(struct store *store)
 	} else {
 		min_level = 1;
 		max_level = z_info->store_magic_level + MAX(player->max_depth - 20, 0);
+	}
+
+	/*
+	 * ZangbandTK (WLD-16a): a better shop deals in better goods.  The level is
+	 * what object_prep() and apply_magic() below both work from, so raising it
+	 * buys deeper kinds *and* better magic on them -- which is the whole of what
+	 * "Expert" and "Arcane" mean on the sign outside.  The floor comes up with
+	 * the ceiling, or an arcane shop still keeps a shelf of iron spikes.
+	 */
+	if (store->quality > 0 && store->quality <= quality_tier_count) {
+		int bonus = quality_tiers[store->quality - 1].level;
+
+		min_level += bonus / 2;
+		max_level += bonus;
 	}
 
 	if (min_level > 55) min_level = 55;
@@ -1397,6 +1443,16 @@ static void store_maint(struct store *s)
 		int min = s->normal_stock_min + s->always_num;
 		int max = s->normal_stock_max + s->always_num;
 
+		/*
+		 * ZangbandTK (WLD-16a): a better shop keeps a fuller shelf.  Both ends
+		 * move, so the tier raises what is always there rather than only what
+		 * might be -- the stock array grows to suit in store_create_item().
+		 */
+		if (s->quality > 0 && s->quality <= quality_tier_count) {
+			min += quality_tiers[s->quality - 1].stock;
+			max += quality_tiers[s->quality - 1].stock;
+		}
+
 		/* Buy a few items */
 
 		/* Keep stock between specified min and max slots */
@@ -1414,6 +1470,63 @@ static void store_maint(struct store *s)
 				(f_info[s->feat].name) ? f_info[s->feat].name :
 				format("store %d", f_info[s->feat].shopnum));
 	}
+}
+
+/**
+ * Take a shop's custom in the town the player is actually standing in
+ * (ZangbandTK, WLD-15, WLD-16a).
+ *
+ * There is one struct store per trade in the whole game, so without this every
+ * town shows the same shelves -- which was true and invisible while there was
+ * one town, and is neither now.  Entering a shop in a town whose stock is not
+ * the stock currently loaded restocks it, at that town's quality tier.
+ *
+ * Keyed on the town and not on opening the door, so that walking out and back
+ * in does not re-roll the shelves.  Walking to another town and back does, which
+ * is a long enough journey that 4.2 would have restocked on the turn count
+ * anyway.
+ */
+void store_enter(struct store *s)
+{
+	int town, tier;
+
+	if (!s || !wild || !player->in_wild) return;
+
+	/* Home is the player's own, and it travels with them. */
+	if (s->feat == FEAT_HOME) return;
+
+	town = wild_town_here(wild, loc(player->grid.x + player->wild_offset.x,
+									player->grid.y + player->wild_offset.y));
+	if (town < 0) return;
+
+	tier = wild_store_quality(wild, town, f_info[s->feat].shopnum - 1);
+
+	if (s->stock_town == town && s->quality == tier) return;
+
+	s->stock_town = town;
+	store_stock_at_quality(s, tier);
+}
+
+/**
+ * Clear a shop's shelves and stock them again at a given quality tier
+ * (ZangbandTK, WLD-16a).
+ */
+void store_stock_at_quality(struct store *s, int tier)
+{
+	int i;
+
+	if (!s || s->feat == FEAT_HOME) return;
+
+	s->quality = tier;
+
+	s->stock_num = 0;
+	object_pile_free(NULL, NULL, s->stock_k);
+	object_pile_free(NULL, NULL, s->stock);
+	s->stock_k = NULL;
+	s->stock = NULL;
+
+	for (i = 0; i < 10; i++)
+		store_maint(s);
 }
 
 /**

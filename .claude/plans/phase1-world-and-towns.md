@@ -358,6 +358,19 @@ Zangband's `wild_building_type` scores each building on population, magic and la
 rarity. Rationale: this is what makes a lawful city and a frontier village feel different,
 and it is a small mechanism with a large payoff.
 
+> **Done in M5**, together with WLD-16a, which is the thing it selects between.
+>
+> *Magic is a fourth fractal on the block map.* Population and law were there; magic was
+> not, and adding it is what made the scoring worth having rather than a formality — see
+> DEC-34 for the measurement. Free to carry: the world map is never written to a savefile,
+> it regenerates from the seed (WLD-03), so a fourth byte per block costs nothing but the
+> fractal.
+>
+> *Which axis matters depends on the trade.* A magic shop or a bookseller climbs on magic;
+> arms and armour on population and order with magic counting for the enchanted top of that
+> ladder; a general store on population alone, there being no arcane bread. The band counts,
+> and the block's own seed breaks ties, so two equally favoured towns need not match.
+
 **WLD-16 — Buildings are one of general, store, or service.** Zangband's `BT_GENERAL` /
 `BT_STORE` / `BT_BUILD` split.
 
@@ -375,6 +388,31 @@ large lawful magical city drawing *Arcane Weapon Smiths* where a frontier villag
 plain *Weapon Smiths* is the entire payoff of that mechanism. Removing the ladder would keep
 the machinery and lose its purpose; hand-authoring it would pay 113 entries for a two-axis
 idea.
+
+> **Done in M5.** Three rungs above plain — Advanced, Expert, Arcane — in
+> [quality.txt](../../lib/gamedata/quality.txt), each carrying a level bonus and extra shelf
+> slots, applying to any trade. Adding a fourth rung is adding a record; nothing in the code
+> counts them. 113 hand-authored entries replaced by 3 records and a score.
+>
+> *What a tier does, and the part that did not work first time.* It raises the level the
+> goods are generated at, which is what `apply_magic()` works from — measured, the top rung
+> carries about three times the plusses of a plain shop. It does **not** thereby sell deeper
+> goods, and that was the trap: which kind a shop stocks comes from `store.txt` and nothing
+> in that list depends on level, so with only the level raised an arcane shop's shelves came
+> out no deeper than a plain one's. A long word on the sign and nothing behind it. The tier
+> now also makes that many extra draws from the shop's own stock list and keeps the deepest,
+> which takes the widest-ranging shop in the game from a mean stock level of 9 to 12.
+>
+> *One shop per trade, not one per town.* There is a single `struct store` per trade in the
+> whole game, so every town showed the same shelves — true and invisible while there was one
+> town. A shop is now restocked when the player takes their custom to a different town, at
+> that town's tier, keyed on the town rather than on opening the door so that walking out and
+> back in cannot re-roll the shelves. Which town a shop's stock belongs to is saved (stores
+> block version 2), or reloading would restock the shop the player was standing in.
+>
+> *Measured shape of the ladder:* 70 / 18 / 8 / 2 per cent across 2,527 shops in 40 worlds.
+> Thresholds taken from centiles of the measured score rather than guessed; the guess was out
+> by a factor of ten at the top. See DEC-34.
 
 **WLD-16b — The 40 concepts divide by implementation cost, and should be scheduled by
 bucket:**

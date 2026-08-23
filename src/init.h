@@ -309,6 +309,7 @@ extern struct file_parser trap_parser;
 extern struct file_parser world_parser;
 extern struct file_parser dungeon_parser;
 extern struct file_parser town_parser;
+extern struct file_parser quality_parser;
 
 errr grab_effect_data(struct parser *p, struct effect *effect);
 extern void init_file_paths(const char *config, const char *lib, const char *data);

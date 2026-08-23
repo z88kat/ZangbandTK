@@ -1,0 +1,49 @@
+# File: quality.txt
+#
+# The quality ladder a shop is drawn from (WLD-15, WLD-16a).
+#
+# Zangband's t_info.txt listed 113 building types, and roughly 73 of them were
+# not distinct ideas at all -- they were rungs on a ladder.  Weapon Smiths,
+# Advanced Weapon Smiths, Expert Weapon Smiths, Deep Weapon Smiths, Arcane
+# Weapon Smiths, Unique Weapon Smiths: one shop and six tiers, hand-authored six
+# times over.  Potion stores ran the same ladder with different adjectives, and
+# so did the jeweller, the temple and the rest.
+#
+# WLD-16a says to generate the ladder instead of enumerating it, so the tiers
+# live here once and apply to any trade.  Which tier a given town's shop gets is
+# scored from the country around it (WLD-15) -- population, law and magic -- so
+# an arcane weaponsmith is something you travel to find rather than something
+# every town happens to have.
+#
+# Tier 0 is the plain trade and is deliberately not listed: a shop with no
+# adjective is the common case, and the file describes what is above it.
+#
+# name   the adjective put in front of the trade's own name
+# level  added to the level the goods are generated at, which is what
+#        apply_magic() works from -- so a higher tier puts better magic on what
+#        it sells.  Measured over every ordinary shop, the top rung carries about
+#        three times the plusses of a plain one
+# stock  extra slots on the shelves
+#
+# The tier *number* does one more thing that no field here controls: it is how
+# many extra draws the shop makes from its own stock list, keeping the deepest.
+# Raising the generation level alone does not buy deeper goods, because which
+# kind a shop sells comes from store.txt and nothing in that list depends on
+# level -- measured, and the arcane shop's shelves came out no deeper than the
+# plain one's.  With the draws, the widest-ranging shop in the game goes from a
+# mean stock level of 9 to 12.
+#
+# The three below are the ladder as it stands.  Adding a fourth rung is adding
+# a record here; nothing in the code counts them.
+
+name:Advanced
+level:8
+stock:1
+
+name:Expert
+level:18
+stock:2
+
+name:Arcane
+level:30
+stock:3

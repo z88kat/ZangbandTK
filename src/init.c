@@ -1307,6 +1307,95 @@ static void cleanup_game_constants(void)
 
 /**
  * ------------------------------------------------------------------------
+ * Initialize the shop quality ladder (WLD-16a)
+ * ------------------------------------------------------------------------ */
+struct quality_tier *quality_tiers = NULL;
+int quality_tier_count = 0;
+
+static enum parser_error parse_quality_name(struct parser *p) {
+	quality_tiers = mem_realloc(quality_tiers,
+								(quality_tier_count + 1) * sizeof(*quality_tiers));
+	quality_tiers[quality_tier_count].name =
+		string_make(parser_getstr(p, "name"));
+	quality_tiers[quality_tier_count].level = 0;
+	quality_tiers[quality_tier_count].stock = 0;
+	++quality_tier_count;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_quality_level(struct parser *p) {
+	if (!quality_tier_count) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	quality_tiers[quality_tier_count - 1].level = parser_getint(p, "level");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_quality_stock(struct parser *p) {
+	if (!quality_tier_count) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	quality_tiers[quality_tier_count - 1].stock = parser_getint(p, "stock");
+
+	return PARSE_ERROR_NONE;
+}
+
+static struct parser *init_parse_quality(void) {
+	struct parser *p = parser_new();
+
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_quality_name);
+	parser_reg(p, "level int level", parse_quality_level);
+	parser_reg(p, "stock int stock", parse_quality_stock);
+	return p;
+}
+
+static errr run_parse_quality(struct parser *p) {
+	return parse_file_quit_not_found(p, "quality");
+}
+
+static errr finish_parse_quality(struct parser *p) {
+	int i;
+
+	parser_destroy(p);
+
+	/*
+	 * The ladder has to climb.  A rung that stocks no better than the one
+	 * below it is a name with nothing behind it, which is the fault WLD-16a
+	 * exists to avoid -- Zangband hand-authored 73 of those.
+	 */
+	for (i = 1; i < quality_tier_count; i++) {
+		if (quality_tiers[i].level <= quality_tiers[i - 1].level) {
+			plog_fmt("Quality tier '%s' is no better than '%s'",
+					 quality_tiers[i].name, quality_tiers[i - 1].name);
+			return PARSE_ERROR_INVALID_VALUE;
+		}
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static void cleanup_quality(void) {
+	int i;
+
+	for (i = 0; i < quality_tier_count; i++)
+		string_free(quality_tiers[i].name);
+
+	mem_free(quality_tiers);
+	quality_tiers = NULL;
+	quality_tier_count = 0;
+}
+
+struct file_parser quality_parser = {
+	"quality",
+	init_parse_quality,
+	run_parse_quality,
+	finish_parse_quality,
+	cleanup_quality
+};
+
+/**
+ * ------------------------------------------------------------------------
  * Initialize town names (WLD-11)
  * ------------------------------------------------------------------------ */
 struct town_names town_names = { NULL, 0, NULL, 0 };
@@ -5033,6 +5122,7 @@ static struct {
 	{ "monsters", &monster_parser },
 	{ "dungeons", &dungeon_parser },
 	{ "town names", &town_parser },
+	{ "shop quality", &quality_parser },
 	{ "monster pits" , &pit_parser },
 	{ "monster lore" , &lore_parser },
 	{ "traps", &trap_parser },

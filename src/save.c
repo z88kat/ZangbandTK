@@ -758,6 +758,15 @@ void wr_stores(void)
 		/* Save the stock size */
 		wr_byte(store->stock_num);
 
+		/*
+		 * Which town these shelves belong to, and the tier they were stocked at
+		 * (ZangbandTK, WLD-15, WLD-16a).  Without this a reloaded character
+		 * would find the shop they were standing in restocked under them, at a
+		 * tier the sign outside did not claim.
+		 */
+		wr_u16b((uint16_t) MAX(store->stock_town, 0));
+		wr_byte((uint8_t) store->quality);
+
 		/* Save the stock */
 		for (obj = store->stock; obj; obj = obj->next) {
 			wr_item(obj->known);

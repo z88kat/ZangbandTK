@@ -1803,6 +1803,12 @@ void player_handle_post_move(struct player *p, bool eval_trap,
 		if (is_involuntary) {
 			cmdq_flush();
 		}
+		/*
+		 * ZangbandTK (WLD-16a): the shelves belong to the town the player is
+		 * standing in, so ask before the display does.
+		 */
+		store_enter(store_at(cave, p->grid));
+
 		event_signal(EVENT_ENTER_STORE);
 		event_remove_handler_type(EVENT_ENTER_STORE);
 		event_signal(EVENT_USE_STORE);

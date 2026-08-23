@@ -247,6 +247,28 @@ above ground — Angband never said, because in Angband the surface is one
 town-sized level and the difference hardly signifies. Here it is the difference
 between seeing where you are going and not.
 
+Day and night
+-------------
+
+The whole cycle is **10,000 turns**, half of it light and half of it dark, so
+night lasts **5,000 turns** from the sun falling to the sun rising. Get caught
+out at random and you are looking at about 2,500.
+
+That is 5,000 turns *of yours*, at normal speed. The world keeps its clock in
+game turns — 100,000 of them to the cycle — and a character at normal speed acts
+once every ten. Being fast does not shorten the night; it shortens your share of
+it, so at +10 speed the same night costs you around 2,500 moves. Being slow costs
+you more.
+
+**The clock runs underground.** Only the message and the relighting are held back
+while you are below; time itself passes at the same rate wherever you are. So a
+long dungeon trip changes what you climb out into, and surfacing into darkness
+after going down in daylight is normal rather than a fault.
+
+Waiting it out is not realistic — 5,000 turns of resting is not a plan. That is
+what the inn is for: it sells you a bed only after dark, and takes you straight
+to dawn for 25 gold. See :doc:`towns`.
+
 Leaving the town
 ----------------
 

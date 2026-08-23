@@ -31,6 +31,20 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.14.0** — WLD-15 and WLD-16a: shops come at a standard as well as a trade.
+  A plain *Weapon Smiths*, or an *Advanced*, *Expert* or *Arcane* one, written
+  above the door. A better shop draws its goods from the deeper end of what that
+  trade sells, puts better magic on them — about three times the plusses at the
+  top rung — and keeps a fuller shelf. Which rung a town's shop gets is scored
+  from the country around it, and mostly from magic, which is a new fourth
+  parameter on the world map: population and law were already there, but towns
+  are *sited* on law, so law had nothing left to say. Seven shops in ten are
+  plain and one in fifty is arcane. Zangband hand-authored 113 building types to
+  get this, about 73 of them rungs on a ladder; here it is three records in
+  ``quality.txt`` and a score. One thing you may notice as a side effect: a
+  trade's shelves are restocked when you carry your custom to a different town,
+  so towns no longer all show the same stock. Walking out and back in does not
+  re-roll it.
 - **3.13.2** — Roads are three grids wide. One grid was invisible where a road
   turned a corner in the block you were standing in, and a road that turns read
   as a road that ends — reported from play as a road that "appears to end at the
