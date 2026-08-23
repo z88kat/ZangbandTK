@@ -2893,7 +2893,6 @@ static int test_a_towns_services_are_built(void *state) {
 		struct chunk *c;
 		struct loc g;
 		uint16_t found = 0;
-		int s;
 
 		if (!town->services) continue;
 
@@ -2910,11 +2909,6 @@ static int test_a_towns_services_are_built(void *state) {
 			}
 
 		/* Everything it was given stands in it... */
-		for (s = 0; s < WILD_SERVICE_MAX; s++)
-			if ((town->services & (1u << s)) && !(found & (1u << s)))
-				printf("%s has no %s built\n",
-					town->name ? town->name : "a town", wild_service_name(s));
-
 		eq(found & town->services, town->services);
 
 		/* ...and nothing it was not. */
@@ -2973,6 +2967,174 @@ static int test_services_follow_the_size(void *state) {
 	ok;
 }
 
+/**
+ * A road is wide enough to see, and a turn reads as a turn (WLD-08).
+ *
+ * Reported from play: a long walk down a road that "ends at the beach".  It did
+ * not end -- it turned ninety degrees south in the very block the player was
+ * standing in, and ran on across a causeway to a dungeon.  But a road one grid
+ * wide puts a corner at a single square of floor at right angles to the way you
+ * are going, and there is no reason for anybody to look at it.
+ *
+ * So a road is three grids wide.  This checks the width, and checks a corner has
+ * width in both directions rather than only along the way the player came.
+ */
+static int test_a_road_is_wide_enough_to_see(void *state) {
+	int size = z_info->wild_block_size;
+	int bx, by, checked = 0, corners = 0;
+
+	/*
+	 * The whole map, not the first dozen blocks: a corner is what the second
+	 * half of this test is about, and twelve blocks of a straight run would
+	 * pass it while proving nothing.
+	 */
+	for (by = 1; by < wild->blocks - 1; by++)
+		for (bx = 1; bx < wild->blocks - 1; bx++) {
+			struct loc offset;
+			struct chunk *c;
+			int cx, cy, k, across;
+			bool turn;
+
+			if (!wild_road_at(wild, bx, by)) continue;
+			if (wild_block_at(wild, bx, by)->place) continue;
+
+			/* Only a straight east-west run, or a corner: skip junctions. */
+			turn = (wild_road_at(wild, bx - 1, by) &&
+					wild_road_at(wild, bx, by + 1) &&
+					!wild_road_at(wild, bx + 1, by));
+
+			if (!turn && !(wild_road_at(wild, bx - 1, by) &&
+						   wild_road_at(wild, bx + 1, by)))
+				continue;
+
+			/* Enough straight runs; keep looking only for corners after that. */
+			if (!turn && checked >= 12) continue;
+
+			c = wild_surface(wild, player,
+							 loc(bx * size + size / 2, by * size + size / 2),
+							 &offset);
+			notnull(c);
+
+			cx = bx * size + size / 2 - offset.x;
+			cy = by * size + size / 2 - offset.y;
+
+			/* Three grids across, measured through the middle. */
+			across = 0;
+			for (k = -3; k <= 3; k++) {
+				struct loc g = loc(cx, cy + k);
+
+				if (square_in_bounds_fully(c, g) &&
+					square(c, g)->feat == FEAT_ROAD)
+					across++;
+			}
+
+			if (across < 3)
+				printf("the road at block %d,%d is only %d grids wide\n",
+					bx, by, across);
+			require(across >= 3);
+
+			/* At a corner, the leg going away is as wide as the one coming in. */
+			if (turn) {
+				int down = 0;
+
+				for (k = -1; k <= 1; k++) {
+					struct loc g = loc(cx + k, cy + 3);
+
+					if (square_in_bounds_fully(c, g) &&
+						square(c, g)->feat == FEAT_ROAD)
+						down++;
+				}
+
+				if (down < 3)
+					printf("the turn at block %d,%d is only %d grids wide\n",
+						bx, by, down);
+				require(down >= 3);
+				corners++;
+			}
+
+			cave_free(c);
+			checked++;
+		}
+
+	require(checked > 3);
+
+	/* And at least one of them was a corner, or the corner half proved nothing. */
+	if (!corners) printf("no corner was found to check\n");
+	require(corners > 0);
+
+	ok;
+}
+
+
+/**
+ * Every service a town holds is standing when the town is built (WLD-16c).
+ *
+ * This one found a real fault and is kept at a size that would find it again.
+ * Services are placed on lots off the streets, before the shops; the ruin pass
+ * that follows skips a lot that already has a building on it -- but it asked
+ * feat_is_shop(), and a magetower is not a shop.  So the town's data promised a
+ * magetower, the generator built one, and a ruin was built on top of it.  About
+ * one service in ten went missing that way, and in a village, where the ruins
+ * have the run of the place, one in six.
+ *
+ * Chasing it took four wrong turns -- more lots, an earlier pass, a systematic
+ * sweep instead of random guesses, all of which moved the number around without
+ * fixing anything -- because the assumption was that placement was failing to
+ * find room.  It never failed once: instrumenting the failure to find a lot
+ * printed nothing at all.  The building was going up and being demolished.
+ *
+ * Every band, because the bands differ in how much room the ruins are left with
+ * and the village is the worst case, not the largest city.
+ */
+static int test_every_service_held_is_built(void *state) {
+	static const struct {
+		const char *name;
+		int wid, hgt;
+		uint16_t shops, services;
+	} bands[] = {
+		{ "village",    66,  22, 0x8d, 0x01 },
+		{ "town",       88,  22, 0x9f, 0x07 },
+		{ "city",       110, 26, 0xff, 0x1f },
+		{ "great city", 132, 34, 0xff, 0x1f },
+	};
+	size_t b;
+	int missing = 0;
+
+	for (b = 0; b < N_ELEMENTS(bands); b++) {
+		int seed;
+
+		for (seed = 0; seed < 20; seed++) {
+			struct chunk *c = town_gen_wild(player, 991 + seed * 37,
+											bands[b].wid, bands[b].hgt,
+											bands[b].shops, bands[b].services);
+			struct loc g;
+			uint16_t found = 0;
+			int s;
+
+			notnull(c);
+
+			for (g.y = 0; g.y < c->height; g.y++)
+				for (g.x = 0; g.x < c->width; g.x++) {
+					int at = wild_service_at(c, g);
+					if (at >= 0) found |= 1u << at;
+				}
+
+			for (s = 0; s < WILD_SERVICE_MAX; s++)
+				if ((bands[b].services & (1u << s)) && !(found & (1u << s))) {
+					printf("%s seed %d has no %s built\n", bands[b].name,
+						   seed, wild_service_name(s));
+					missing++;
+				}
+
+			cave_free(c);
+		}
+	}
+
+	eq(missing, 0);
+
+	ok;
+}
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	{ "start-is-on-the-surface", test_start_is_on_the_surface },
@@ -3021,6 +3183,7 @@ struct test tests[] = {
 	{ "every-dungeon-claims-a-workable-share", test_every_dungeon_claims_a_workable_share },
 	{ "every-dungeon-can-be-entered-and-left", test_every_dungeon_can_be_entered_and_left },
 	{ "the-road-is-continuous-on-the-ground", test_the_road_is_continuous_on_the_ground },
+	{ "a-road-is-wide-enough-to-see", test_a_road_is_wide_enough_to_see },
 	{ "roads-reach-every-place", test_roads_reach_every_place },
 	{ "towns-have-names", test_towns_have_names },
 	{ "town-names-come-back-the-same", test_town_names_come_back_the_same },
@@ -3033,5 +3196,6 @@ struct test tests[] = {
 	{ "the-starting-village-is-always-known", test_the_starting_village_is_always_known },
 	{ "no-road-goes-nowhere", test_no_road_goes_nowhere },
 	{ "the-road-runs-up-to-a-gate", test_the_road_runs_up_to_a_gate },
+	{ "every-service-held-is-built", test_every_service_held_is_built },
 	{ NULL, NULL }
 };

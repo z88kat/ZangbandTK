@@ -31,6 +31,54 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+23 August 2026 — a road you can see, and a building that was demolished
+======================================================================
+
+Two faults from the same afternoon, and the second one taught me more.
+
+The road first. "The road appears to end at the beach. That was really a long
+walk." It did not end; it turned. A road was one grid wide, and a one-grid road
+that turns a right angle in the block you happen to be standing in is a single
+square of floor at right angles to the way you are going. There is nothing to
+see. Roads are three grids wide now with their corners squared off, which is not
+a cosmetic change but the difference between a road that reads as a road and one
+that reads as a dead end. It cost about three per cent of the world in paving.
+
+The second was services silently missing from towns — the magetower that was
+promised and was not there. I chased that number for a long time and every step
+was wrong in the same way.
+
+I assumed placement was running out of room, because a service needs a clear lot
+off a street and the shops and the ruins take most of them. So I made more lots
+available. Then I moved the services earlier, ahead of the ruins. Then I replaced
+sixty random guesses with a systematic sweep of every lot. Then I moved them
+ahead of the shops too. Each change moved the failure rate — 65 per cent, then
+43, then 48, then 8, then 5 with the largest cities at 11 — and I read the
+movement as progress. It was not progress. It was noise on twenty-four samples,
+and I had been reading a random walk as a trend for four rounds.
+
+What ended it was giving up on the theory and instrumenting the thing I believed:
+print a line whenever placement fails to find a lot. It printed nothing. Not
+once, in any band. Every service was being built. The ruin pass that runs
+afterwards skips a lot that already has a building on it — by asking
+``feat_is_shop()``, and a magetower is not a shop. So the generator built the
+magetower and then built a ruin on top of it.
+
+Two lines to fix. Zero failures in 2,100 towns afterwards.
+
+The lesson is not "instrument earlier", which I already knew. It is that I never
+checked the premise. "Placement is failing" was never measured; it was inferred
+from services being absent, and absent has two causes — never built, or built and
+destroyed. I spent four rounds optimising the half of the search space the bug
+was not in, and the measurements I took along the way were all consistent with
+that, because a random walk is consistent with anything.
+
+One more thing worth keeping: the test I wrote to protect the fix passed on the
+first seed range I tried while the bug was still live. Twenty-four villages, all
+green, on a lucky seed. The version that actually catches it walks every band,
+because the village — small, and left to the ruins — is the worst case, not the
+great city I had assumed.
+
 21 August 2026 — the DS, and what a 4 MB machine is actually short of
 =====================================================================
 

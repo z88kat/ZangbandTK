@@ -2302,7 +2302,7 @@ static bool lot_is_clear(struct chunk *c, struct loc xroads, struct loc lot,
 	return true;
 }
 
-static bool lot_has_shop(struct chunk *c, struct loc xroads, struct loc lot,
+static bool lot_has_building(struct chunk *c, struct loc xroads, struct loc lot,
 		int lot_wid, int lot_hgt) {
 	struct loc nw_corner, se_corner, probe;
 
@@ -2311,7 +2311,18 @@ static bool lot_has_shop(struct chunk *c, struct loc xroads, struct loc lot,
 
 	for (probe.x = nw_corner.x; probe.x <= se_corner.x; probe.x++) {
 		for (probe.y = nw_corner.y; probe.y <= se_corner.y; probe.y++) {
+			/*
+			 * A shop or a service (WLD-16).  Was shops only, and the ruin pass
+			 * that uses this then built rubble over services that had already
+			 * been placed -- so the town's data promised a magetower, the
+			 * generator built one, and a ruin replaced it.  That is the whole of
+			 * the "service silently missing" fault: nothing failed to find a
+			 * lot, it was demolished afterwards.
+			 */
 			if (feat_is_shop(square(c, probe)->feat)) {
+				return true;
+			}
+			if (wild_service_at(c, probe) >= 0) {
 				return true;
 			}
 		}
@@ -2627,6 +2638,91 @@ static void town_gen_layout(struct chunk *c, struct player *p, uint16_t shops,
 		int lot_min_y = -1 * xroads.y / lot_hgt;
 		int lot_max_y = (c->height - xroads.y) / lot_hgt;
 
+		/*
+		 * ZangbandTK (WLD-16, WLD-18): the town's services.  A service is a door
+		 * in a wall with behaviour behind it, exactly as a shop is, so it is
+		 * built the same way -- on a lot off one of the streets.
+		 *
+		 * Before the shops, and before the ruins.
+		 *
+		 * Placed last, a service competed with eight shops and four lots in
+		 * five of rubble for whatever street frontage was left, and about one
+		 * service in ten was silently never built -- which is what made the
+		 * starting village's magetower go missing even after WLD-12 promised
+		 * it.  Moving the block earlier and sweeping every lot instead of
+		 * guessing at sixty both helped and neither fixed it.
+		 *
+		 * First, then.  There are only ever five of them and the shops have a
+		 * safety net this does not: if the store loop runs out of room the whole
+		 * layout is thrown away and generated again, so a town that cannot fit
+		 * its shops around its services simply becomes a different town.
+		 */
+		{
+		static const struct { int service, feat; } buildings[] = {
+			{ WILD_SERVICE_MAGETOWER, FEAT_MAGETOWER },
+			{ WILD_SERVICE_HEALER,    FEAT_HEALER },
+			{ WILD_SERVICE_INN,       FEAT_INN },
+			{ WILD_SERVICE_ENCHANT,   FEAT_MAGESMITH },
+			{ WILD_SERVICE_RECHARGE,  FEAT_RECHARGER },
+		};
+		size_t s;
+
+		/*
+		 * Every lot along a street, gathered once, then walked from a random
+		 * place in the list.
+		 *
+		 * Sixty random guesses is what this did first, and in a village -- which
+		 * has few lots and has just given most of them to its shops -- guessing
+		 * misses.  Measured: 65 per cent of services never built in a village,
+		 * 9 per cent in a town, and moving the whole block earlier only traded
+		 * the failures between bands.  A list cannot miss what is there.
+		 */
+		{
+			struct loc lots[256];
+			int lot_count = 0, first, i;
+
+			for (i = lot_min_x; i <= lot_max_x && lot_count < 250; i++) {
+				if (!i) continue;
+				lots[lot_count++] = loc(i, -1);
+				lots[lot_count++] = loc(i, 1);
+			}
+			for (i = lot_min_y; i <= lot_max_y && lot_count < 250; i++) {
+				if (!i) continue;
+				lots[lot_count++] = loc(-1, i);
+				lots[lot_count++] = loc(1, i);
+			}
+
+			first = lot_count ? randint0(lot_count) : 0;
+
+			for (s = 0; s < N_ELEMENTS(buildings); s++) {
+				int k;
+
+				if (!(services & (1u << buildings[s].service))) continue;
+
+				for (k = 0; k < lot_count; k++) {
+					struct loc lot = lots[(first + k) % lot_count];
+
+					if (!lot_is_clear(c, xroads, lot, lot_wid, lot_hgt))
+						continue;
+
+					/*
+					 * Widen the street extents to reach it.  These are what the
+					 * two fill_rectangle() calls at the end use to cut the
+					 * streets, and counting only shops left a service out past
+					 * the last shop with a door onto unquarried rock.
+					 */
+					max_store_y = MAX(max_store_y, xroads.y + lot_hgt * lot.y);
+					min_store_x = MIN(min_store_x, xroads.x + lot_wid * lot.x);
+					max_store_x = MAX(max_store_x, xroads.x + lot_wid * lot.x);
+
+					build_lot_building(c, buildings[s].feat, xroads, lot,
+									   lot_wid, lot_hgt);
+					break;
+				}
+			}
+		}
+		}
+
 		/* place stores along the streets */
 		num_attempts = 0;
 		for (n = 0; n < (int) z_info->store_max; n++) {
@@ -2667,7 +2763,8 @@ static void town_gen_layout(struct chunk *c, struct player *p, uint16_t shops,
 				if (y == 0) continue;
 				if (randint0(100) > ruins_percent) continue;
 				if (one_in_(2) &&
-					!lot_has_shop(c, xroads, loc(x, y), lot_wid, lot_hgt)) {
+					!lot_has_building(c, xroads, loc(x, y), lot_wid,
+									  lot_hgt)) {
 					build_ruin(c, xroads, loc(x, y), lot_wid, lot_hgt);
 				}
 			}
@@ -2682,51 +2779,6 @@ static void town_gen_layout(struct chunk *c, struct player *p, uint16_t shops,
 
 	fill_rectangle(c, xroads.y, min_store_x,
 		xroads.y + 1, max_store_x, FEAT_FLOOR, SQUARE_NONE);
-
-	/*
-	 * ZangbandTK (WLD-16, WLD-18): the town's services.  A service is a door in
-	 * a wall with behaviour behind it, exactly as a shop is, so it is built the
-	 * same way -- on a lot off one of the streets.  Placed after the shops so it
-	 * takes ground they did not want, and after the streets are cut so it is not
-	 * built across one.
-	 */
-	{
-		static const struct { int service, feat; } buildings[] = {
-			{ WILD_SERVICE_MAGETOWER, FEAT_MAGETOWER },
-			{ WILD_SERVICE_HEALER,    FEAT_HEALER },
-			{ WILD_SERVICE_INN,       FEAT_INN },
-			{ WILD_SERVICE_ENCHANT,   FEAT_MAGESMITH },
-			{ WILD_SERVICE_RECHARGE,  FEAT_RECHARGER },
-		};
-		size_t s;
-
-		for (s = 0; s < N_ELEMENTS(buildings); s++) {
-			struct loc lot;
-			bool built = false;
-			int attempt;
-
-			if (!(services & (1u << buildings[s].service))) continue;
-
-			for (attempt = 0; attempt < 60 && !built; attempt++) {
-				if (randint0(2)) {
-					lot.x = rand_range(-1 * xroads.x / lot_wid,
-									   (c->width - xroads.x) / lot_wid);
-					lot.y = randint0(2) ? 1 : -1;
-				} else {
-					lot.x = randint0(2) ? 1 : -1;
-					lot.y = rand_range(-1 * xroads.y / lot_hgt,
-									   (c->height - xroads.y) / lot_hgt);
-				}
-
-				if (!lot.x || !lot.y) continue;
-				if (!lot_is_clear(c, xroads, lot, lot_wid, lot_hgt)) continue;
-
-				build_lot_building(c, buildings[s].feat, xroads, lot, lot_wid,
-								   lot_hgt);
-				built = true;
-			}
-		}
-	}
 
 	/* Clear previous contents, add down stairs */
 	square_set_feat(c, pgrid, FEAT_MORE);

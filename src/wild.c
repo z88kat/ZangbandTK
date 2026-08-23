@@ -1330,6 +1330,16 @@ static void wild_name_towns(struct wilderness *w)
 #define WILD_DUNGEON_APART 8
 
 /**
+ * How far a road reaches either side of its centre line, in grids.
+ *
+ * One means three grids wide.  A road one grid wide can be walked straight past
+ * -- and was: a road that turned a right angle in the block the player stood in
+ * read as a road that ended at the beach, because a one-grid corner is a single
+ * square of floor at right angles to the way you are going.
+ */
+#define WILD_ROAD_HALF 1
+
+/**
  * How well this block suits a dungeon of this kind.
  *
  * The same idea the towns are sited by: each dungeon names the population and
@@ -3771,32 +3781,57 @@ struct chunk *wild_surface(struct wilderness *w, struct player *p,
 	 * block that carries one, so a routed road comes out joined up wherever it
 	 * turns.  Drawing every road block as an east-west line, as the stub did,
 	 * would leave a road that bends north into a row of disconnected dashes.
+	 *
+	 * Three grids wide, not one.  A road one grid wide is a road you can walk
+	 * straight past: reported from play as a road that "ends at the beach",
+	 * where in fact it turned ninety degrees south in the block the player was
+	 * standing in and carried on to a dungeon.  A one-grid corner is a single
+	 * square of floor at right angles to the way you are going, and there is no
+	 * reason for the player to look at it.  Three grids makes a road something
+	 * you can see the shape of from a distance, and makes a turn read as a turn.
 	 */
 	for (int by = 0; by < view; by++) {
 		for (int bx = 0; bx < view; bx++) {
 			int wx = ox / size + bx, wy = oy / size + by;
 			int cx = bx * size + size / 2, cy = by * size + size / 2;
+			int lane;
 
 			if (!wild_road_at(w, wx, wy))
 				continue;
 
-			square_set_feat(c, loc(cx, cy), FEAT_ROAD);
+			#define ROAD_PAVE(_gx, _gy) \
+				do { \
+					struct loc _g = loc((_gx), (_gy)); \
+					if (square_in_bounds_fully(c, _g)) \
+						square_set_feat(c, _g, FEAT_ROAD); \
+				} while (0)
 
-			if (wild_road_at(w, wx - 1, wy))
-				for (grid.x = bx * size; grid.x <= cx; grid.x++)
-					square_set_feat(c, loc(grid.x, cy), FEAT_ROAD);
+			for (lane = -WILD_ROAD_HALF; lane <= WILD_ROAD_HALF; lane++) {
+				/* The junction at the middle, so every turn is squared off. */
+				int across;
 
-			if (wild_road_at(w, wx + 1, wy))
-				for (grid.x = cx; grid.x < (bx + 1) * size; grid.x++)
-					square_set_feat(c, loc(grid.x, cy), FEAT_ROAD);
+				for (across = -WILD_ROAD_HALF; across <= WILD_ROAD_HALF;
+					 across++)
+					ROAD_PAVE(cx + lane, cy + across);
 
-			if (wild_road_at(w, wx, wy - 1))
-				for (grid.y = by * size; grid.y <= cy; grid.y++)
-					square_set_feat(c, loc(cx, grid.y), FEAT_ROAD);
+				if (wild_road_at(w, wx - 1, wy))
+					for (grid.x = bx * size; grid.x <= cx; grid.x++)
+						ROAD_PAVE(grid.x, cy + lane);
 
-			if (wild_road_at(w, wx, wy + 1))
-				for (grid.y = cy; grid.y < (by + 1) * size; grid.y++)
-					square_set_feat(c, loc(cx, grid.y), FEAT_ROAD);
+				if (wild_road_at(w, wx + 1, wy))
+					for (grid.x = cx; grid.x < (bx + 1) * size; grid.x++)
+						ROAD_PAVE(grid.x, cy + lane);
+
+				if (wild_road_at(w, wx, wy - 1))
+					for (grid.y = by * size; grid.y <= cy; grid.y++)
+						ROAD_PAVE(cx + lane, grid.y);
+
+				if (wild_road_at(w, wx, wy + 1))
+					for (grid.y = cy; grid.y < (by + 1) * size; grid.y++)
+						ROAD_PAVE(cx + lane, grid.y);
+			}
+
+			#undef ROAD_PAVE
 		}
 	}
 

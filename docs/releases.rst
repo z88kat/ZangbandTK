@@ -28,9 +28,20 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
-M5 in progress: towns, roads and dungeons — 19 to 21 August 2026
+M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.13.2** — Roads are three grids wide. One grid was invisible where a road
+  turned a corner in the block you were standing in, and a road that turns read
+  as a road that ends — reported from play as a road that "appears to end at the
+  beach" after a long walk. Corners are squared off so a turn looks like a turn.
+  Also: a service building could be promised and then demolished. The generator
+  places services on lots off the streets and the ruin pass that follows skips
+  lots that already have a building — but it only recognised shops, so a ruin
+  could be built on top of a freshly built magetower. That is what made the
+  magetower go missing from towns that said they had one: about one service in
+  ten, and one in six in a village. Services also now have a street cut up to
+  them, which previously only shops did.
 - **3.13.1** — The healer's "restore your memory" is now "restore your lost
   levels", which is what it actually does — Angband calls it life force, and
   memory was another game's idiom. The manual explains what drains it and what

@@ -65,10 +65,13 @@ rubble.
 .  A made road (white)         >  The mouth of a dungeon (violet)
 
 
-The road is worth following.  Roads run between the towns, so if you are
-lost in open country, find one and walk along it -- it goes somewhere.  Deep
-water can be waded into, but not while heavily laden, and the sea at the
-edge of the world is the edge of the world.
+The road is worth following.  Roads run between the towns and out to every
+dungeon mouth, so if you are lost in open country, find one and walk along
+it -- it goes somewhere.  A road is three grids wide and its corners are
+squared off, so where it turns it still looks like a road; if it seems to
+stop, look around before believing it.  Deep water can be waded into, but
+not while heavily laden, and the sea at the edge of the world is the edge of
+the world.
 
 A '>' out in the open is the mouth of one of the world's dungeons rather than
 an ordinary staircase.  Each leads somewhere different and only so deep; see

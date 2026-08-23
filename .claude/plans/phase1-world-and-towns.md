@@ -249,10 +249,25 @@ the structures they write into are ours, per W-1.
 proportions — sea 1/4 of the map, 4 lakes, roads within `ROAD_DIST` 30 — are the reference
 values and belong in `constants.txt` per WLD-02.
 
-> **Sea, lakes and rivers are done. Roads are blocked, not skipped.** A road connects towns,
-> and there is one town; WLD-10 has to land before there is anything for a road to join. The
-> stub that exists — a line through the town's own blocks — should be replaced rather than
-> extended.
+> **Done in M5.** Sea, lakes and rivers first; roads once WLD-10 gave them something to join.
+> A road is *routed*, not drawn: Dijkstra over the block map with a cost per terrain, so it
+> follows the valleys, avoids swamp, goes round mountains and keeps to the land unless a
+> causeway is the only way across. The network is a spanning tree over the towns — so there is
+> always a road out of the starting village that reaches every other town — plus a direct road
+> between any two towns within `ROAD_DIST` of each other, plus a spur from every dungeon mouth
+> to its nearest town.
+>
+> *Every dungeon, not just every town.* Measured before the spurs existed: six of thirteen
+> dungeon mouths happened to sit on a road and the rest were 11 to 62 blocks from one, which
+> is up to a thousand grids of open country to search with nothing to follow. Siting cannot
+> fix that — a dungeon stands in the country it belongs in, and the deep ones belong far from
+> anywhere — so the road goes to it.
+>
+> *A road is three grids wide.* One grid was the first attempt and it is not visible: where a
+> one-grid road turns a right angle in the block the player is standing in, the corner is a
+> single square of floor at right angles to the way they are going, and it reads as a road
+> that stopped. Reported from play as a road that "appears to end at the beach" after a long
+> walk. Three wide with squared corners; about three per cent of the world is paving.
 >
 > *Rivers and lakes are ported from Zangband* under DEC-20:
 > [create_rivers()](../../archive/zangband/src/wild1.c#L2205) scatters sources evenly, sorts
@@ -428,6 +443,25 @@ implemented behaviour, assessed:
 > passes that test comfortably. **Keep it**, but note it must be *written* rather than
 > ported — the documentation describes the behaviour, and no source implements it. Schedule
 > with M8 (mutations) rather than M5, since it is useless before PLR-13 exists.
+
+> **A service can be promised and not built, and once was.** Worth recording because the
+> failure was invisible from the town's data: `wild_town_services()` granted the town a
+> magetower, the savefile said it had one, the world map said so, and there was no magetower on
+> the ground. Reported from play twice, in two different towns.
+>
+> The cause was not placement. Services go on a lot off one of the streets, before the shops,
+> and the ruin pass that follows skips any lot that already has a building on it — by asking
+> `feat_is_shop()`, and a service is not a shop. So the generator built the magetower and then
+> built a ruin over it. About one service in ten went missing that way, and one in six in a
+> village, where the ruins have the most lots to themselves.
+>
+> Four rounds of work went into the wrong half of the problem first — more lots, an earlier
+> pass, a systematic sweep instead of sixty random guesses — because "placement is failing" was
+> inferred from the service being absent rather than measured. Absent has two causes. When the
+> failure to find a lot was finally instrumented it never fired once, in any band: the building
+> always went up. Guarded by `every-service-held-is-built`, which walks every band because the
+> *village* is the worst case, not the great city — and by the first version of that test
+> passing on a lucky seed range while the bug was still live.
 
 > **The inn's nightmare is outstanding, and is no longer blocked.** The bed is
 > built and works: it sells a night's sleep, only after dark, and wakes the
