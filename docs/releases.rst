@@ -31,6 +31,18 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.21.2** — **The sidebar says what kind of place you are in, and whether it
+  has fallen.** Under the name: ``village``, ``town``, ``city``, ``great city``
+  — and in red, ``city, taken`` for one held by monsters, ``town, wild`` for one
+  the animals have taken back, ``village, empty`` for one that simply stands
+  there. A fallen town keeps its shops but no services at all, so it reads as a
+  large well-supplied city with no inn, no healer and no magetower and nothing
+  said why; the only clue was its name coming from the lawless list, which no
+  player should have to know. Reported twice from play, once as "there is no mage
+  tower in this town" and once as "not many stores in this great city, no inn, no
+  healer" — both correct behaviour, both invisible. The line was added at 3.21.0
+  and never actually appeared: the sidebar drops rows whose priority exceeds the
+  terminal height less two, and it had been given the lowest priority of all.
 - **3.21.1** — **Your world is your world again.** Adding the magic fractal at
   3.14.0 put one more draw into the middle of the shared world-seed stream, which
   shifted every draw after it — so every existing character's world was quietly

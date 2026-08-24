@@ -567,6 +567,7 @@ static int fmt_depth(char buf[], int max)
 static void prt_place(int row, int col)
 {
 	char buf[32] = "";
+	uint8_t attr = COLOUR_SLATE;
 
 	if (!player->depth && player->in_wild && wild) {
 		int town = wild_town_here(wild,
@@ -578,11 +579,46 @@ static void prt_place(int row, int col)
 		 * size shown there already, and saying "village" twice is worse than
 		 * saying it once.
 		 */
-		if (town >= 0 && wild->towns[town].name)
-			my_strcpy(buf, wild_band_name(wild->towns[town].band), sizeof(buf));
+		if (town >= 0 && wild->towns[town].name) {
+			const char *band = wild_band_name(wild->towns[town].band);
+			const char *state = NULL;
+
+			/*
+			 * And whether it has fallen, which matters more than the size does.
+			 *
+			 * A taken town keeps its shops -- they are doors in walls, and
+			 * whatever holds the place does not mind you shopping -- but it
+			 * keeps no services at all.  So a fallen city reads as a large,
+			 * well-supplied city with no inn, no healer and no magetower, and
+			 * nothing said why.  The only clue was its name coming from the
+			 * lawless list in town.txt, which no player should have to know.
+			 * Reported from play twice before this line existed.
+			 */
+			switch (wild->towns[town].folk) {
+				case WILD_FOLK_BEAST:     state = "wild";  break;
+				case WILD_FOLK_MONSTER:   state = "taken"; break;
+				case WILD_FOLK_ABANDONED: state = "empty"; break;
+				default: break;
+			}
+
+			if (!state) {
+				my_strcpy(buf, band, sizeof(buf));
+			} else if (strlen(band) + strlen(state) + 2 <= 13) {
+				strnfmt(buf, sizeof(buf), "%s, %s", band, state);
+				attr = COLOUR_RED;
+			} else {
+				/*
+				 * One line, thirteen characters: "great city, taken" does not
+				 * fit and the half worth keeping is the half that says not to
+				 * bother stopping.
+				 */
+				my_strcpy(buf, state, sizeof(buf));
+				attr = COLOUR_RED;
+			}
+		}
 	}
 
-	c_put_str(COLOUR_SLATE, format("%-13s", buf), row, col);
+	c_put_str(attr, format("%-13s", buf), row, col);
 }
 
 /**
@@ -889,7 +925,14 @@ static const struct side_handler_t
 	{ NULL,        22, 0 },
 	{ prt_speed,   13, EVENT_PLAYERSPEED }, /* Slow (-NN) / Fast (+NN) */
 	{ prt_depth,   14, EVENT_DUNGEONLEVEL }, /* Lev NNN / NNNN ft */
-	{ prt_place,   23, EVENT_DUNGEONLEVEL }, /* village / town / city */
+	/*
+	 * Priority 15, not 23.  The sidebar drops rows whose priority is greater
+	 * than the terminal height less two, so 23 was discarded on every screen
+	 * shorter than 25 lines and was the first thing dropped on every screen
+	 * taller -- it never appeared at all.  Sitting just behind the depth line
+	 * it shares, which is 14.
+	 */
+	{ prt_place,   15, EVENT_DUNGEONLEVEL }, /* village / town / city */
 };
 
 

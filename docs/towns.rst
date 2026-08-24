@@ -201,6 +201,11 @@ it.
 Your home village always has people in it. That is fixed rather than rolled: the
 opening should not depend on luck.
 
+**The sidebar tells you.** Under the place's name it says what kind of place it
+is — ``village``, ``town``, ``city``, ``great city`` — and if it has fallen it
+says so in red: ``city, taken``, ``town, wild``, ``village, empty``. Worth
+reading before you walk the streets looking for an inn that was never there.
+
 A town that has been taken still trades. Its shops are doors in walls rather than
 shopkeepers, so you can walk in past whatever is holding the place — which is
 either a convenience or an oddity depending on how you look at it.
