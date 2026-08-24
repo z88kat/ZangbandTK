@@ -3440,21 +3440,21 @@ static int test_a_road_out_of_a_gate_goes_somewhere(void *state) {
 		   towns, reached, stubs);
 
 	/*
-	 * Bounded rather than zero, and the number is the honest one.
+	 * Zero, and it took two fixes to earn that.
 	 *
 	 * The gate stubs this test was written for are gone by construction: the
 	 * approach paves nothing until it has found the road, so it cannot leave a
 	 * spur that goes nowhere.  Before that, 147 of 508 gates left one.
 	 *
-	 * What remains is nought to three isolated grids across all 48 towns,
-	 * varying between runs, and they are *not* gate stubs -- their cause is not
-	 * yet known.  Asserting zero here would be asserting something that is not
-	 * true and would fail about one run in three, so this asserts what is: the
-	 * fault is gone as a systematic thing.  At better than one gate in four the
-	 * old behaviour clears this bound by a wide margin.
+	 * That left nought to three stranded grids across forty-eight towns, which
+	 * this test bounded rather than asserted while their cause was unknown.  It
+	 * is known now: a road is routed *to* a town, so its last stretch runs over
+	 * ground the town is then drawn on top of, and the wall and gate can strand
+	 * a grid of paving just outside them.  wild_sweep_stranded_road() takes it
+	 * up.  See that function for why it is taken up rather than joined up.
 	 */
 	require(towns > 0);
-	require(stubs * 8 < towns);
+	eq(stubs, 0);
 
 	/*
 	 * And the towns are still on the network, which is the point of it: paving

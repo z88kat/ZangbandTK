@@ -2892,6 +2892,66 @@ static void wild_draw_town_approach(struct wilderness *w, struct chunk *c,
 }
 
 /**
+ * Take up any paving that leads nowhere (WLD-08).
+ *
+ * A road is routed to a town, so the last stretch of it runs across the ground
+ * the town then gets drawn on top of.  The town wins -- it is drawn second, and
+ * its wall and its gate replace whatever was there -- and that can leave a grid
+ * or two of road stranded just outside the wall with nothing but wall, door and
+ * street around it.
+ *
+ * Measured: nought to three grids across forty-eight towns, so it is rare, and
+ * it is also exactly the thing the gate fix was for.  A single square of paving
+ * in open ground is a road that goes nowhere, which is the one thing a road must
+ * never be.
+ *
+ * Taken up rather than joined up: the grid is stranded because the town is
+ * standing where the rest of its road used to be, and there is nothing to join
+ * it to.  It becomes whatever its neighbours are.
+ */
+static void wild_sweep_stranded_road(struct chunk *c)
+{
+	struct loc grid;
+
+	for (grid.y = 1; grid.y < c->height - 1; grid.y++)
+		for (grid.x = 1; grid.x < c->width - 1; grid.x++) {
+			int dir, roads = 0, best = FEAT_NONE, best_seen = 0;
+			int counts[FEAT_MAX];
+
+			if (square(c, grid)->feat != FEAT_ROAD) continue;
+
+			memset(counts, 0, sizeof(counts));
+
+			for (dir = 0; dir < 8; dir++) {
+				struct loc n = loc_sum(grid, ddgrid_ddd[dir]);
+				int feat;
+
+				if (!square_in_bounds_fully(c, n)) continue;
+
+				feat = square(c, n)->feat;
+				if (feat == FEAT_ROAD) { roads++; continue; }
+
+				/*
+				 * Only ground worth standing on: a stranded grid is usually
+				 * hemmed in by the town's own wall, and turning the road into
+				 * more wall would close the gate it sits outside.
+				 */
+				if (!square_ispassable(c, n)) continue;
+
+				if (++counts[feat] > best_seen) {
+					best_seen = counts[feat];
+					best = feat;
+				}
+			}
+
+			if (roads) continue;
+			if (best == FEAT_NONE) continue;
+
+			square_set_feat(c, grid, best);
+		}
+}
+
+/**
  * Draw the town into the live surface, where the window covers it.
  *
  * The town's outermost ring is skipped.  It is a permanent wall, and it exists
@@ -2934,6 +2994,8 @@ static void wild_draw_town(struct wilderness *w, struct player *p,
 		/* And bring the road up to its gates (WLD-08). */
 		wild_draw_town_approach(w, c, idx, offset);
 	}
+
+	wild_sweep_stranded_road(c);
 }
 
 /**

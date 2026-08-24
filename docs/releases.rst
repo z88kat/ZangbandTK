@@ -31,6 +31,13 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.21.3** — **No more stranded paving.** A road is routed *to* a town, so its
+  last stretch runs across ground the town is then drawn on top of — and the wall
+  and gate could leave a grid of paving stranded just outside them, with nothing
+  but wall, door and street around it. Nought to three grids across forty-eight
+  towns, which is rare and is still a road that goes nowhere. They are taken up
+  now rather than joined up, because the town is standing where the rest of that
+  road used to be.
 - **3.21.2** — **The sidebar says what kind of place you are in, and whether it
   has fallen.** Under the name: ``village``, ``town``, ``city``, ``great city``
   — and in red, ``city, taken`` for one held by monsters, ``town, wild`` for one
