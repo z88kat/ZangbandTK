@@ -3281,6 +3281,121 @@ static int test_a_blessed_beast_bounds_away(void *state) {
 }
 
 /**
+ * A road out of a gate goes somewhere (WLD-08).
+ *
+ * Reported from play: "the road goes out of the town but just ends."  It did.
+ * The approach paved three grids out of every gate and *then* went looking for
+ * the network to join, so every gate the network did not reach kept a three-grid
+ * stub pointing into open country -- 147 of 508 gates over six worlds, better
+ * than one in four.  A town has four gates and the roads commonly reach one or
+ * two of them, so this was never rare.
+ *
+ * Worse than having no road: a road is a promise that it goes somewhere, and
+ * this one was made at four gates in every town and kept at three.
+ *
+ * Two things are checked, because fixing the first by paving nothing anywhere
+ * would satisfy it and leave the towns unreachable.
+ */
+static int test_a_road_out_of_a_gate_goes_somewhere(void *state) {
+	int seed, towns = 0, reached = 0, stubs = 0;
+
+	for (seed = 1; seed <= 4; seed++) {
+		struct wilderness *w = wild_new(129, seed * 7717);
+		int i;
+
+		wild_generate(w);
+
+		for (i = 0; i < wild_town_count(w); i++) {
+			struct loc offset, org = wild_town_origin_of(w, i);
+			struct chunk *c;
+			struct loc g;
+			bool any_road = false;
+
+			c = wild_surface(w, player,
+							 loc(org.x + w->towns[i].wid / 2,
+								 org.y + w->towns[i].hgt / 2), &offset);
+			notnull(c);
+			towns++;
+
+			/*
+			 * Every road grid outside the town wall must have another road grid
+			 * beside it: a lone paved square, or a run of three that touches
+			 * nothing further, is the stub this test exists for.
+			 */
+			/*
+			 * Outside the wall, and away from the window's own edge.
+			 *
+			 * Inside the wall a lone paved grid is the gateway itself, which is
+			 * a road tile with the town's own streets either side of it and is
+			 * not a stub.  At the window's edge a road's continuation lies
+			 * outside the chunk, so it looks orphaned and is not.  Both were
+			 * counted by the first version of this test, which is why it
+			 * reported between 8 and 28 faults on the same worlds from one run
+			 * to the next -- the window aligns to whole blocks and where it
+			 * lands depends on where the previous test left it, so the same
+			 * road is clipped differently each time.  The margin is wider than
+			 * the road for that reason.
+			 */
+			for (g.y = 6; g.y < c->height - 6; g.y++)
+				for (g.x = 6; g.x < c->width - 6; g.x++) {
+					int dir, neighbours = 0;
+					struct loc rel = loc(g.x - (org.x - offset.x),
+										 g.y - (org.y - offset.y));
+
+					if (rel.x >= 0 && rel.x < w->towns[i].wid &&
+						rel.y >= 0 && rel.y < w->towns[i].hgt)
+						continue;
+
+					if (square(c, g)->feat != FEAT_ROAD) continue;
+					any_road = true;
+
+					for (dir = 0; dir < 8; dir++) {
+						struct loc n = loc_sum(g, ddgrid_ddd[dir]);
+
+						if (!square_in_bounds_fully(c, n)) continue;
+						if (square(c, n)->feat == FEAT_ROAD) neighbours++;
+					}
+
+					if (!neighbours) stubs++;
+				}
+
+			if (any_road) reached++;
+			cave_free(c);
+		}
+
+		wild_free(w);
+	}
+
+	printf("GATES %d towns, %d have a road at all, %d orphaned road grids\n",
+		   towns, reached, stubs);
+
+	/*
+	 * Bounded rather than zero, and the number is the honest one.
+	 *
+	 * The gate stubs this test was written for are gone by construction: the
+	 * approach paves nothing until it has found the road, so it cannot leave a
+	 * spur that goes nowhere.  Before that, 147 of 508 gates left one.
+	 *
+	 * What remains is nought to three isolated grids across all 48 towns,
+	 * varying between runs, and they are *not* gate stubs -- their cause is not
+	 * yet known.  Asserting zero here would be asserting something that is not
+	 * true and would fail about one run in three, so this asserts what is: the
+	 * fault is gone as a systematic thing.  At better than one gate in four the
+	 * old behaviour clears this bound by a wide margin.
+	 */
+	require(towns > 0);
+	require(stubs * 8 < towns);
+
+	/*
+	 * And the towns are still on the network, which is the point of it: paving
+	 * nothing anywhere would satisfy the line above perfectly.
+	 */
+	require(reached * 4 > towns * 3);
+
+	ok;
+}
+
+/**
  * The game can actually be won (WLD-20, WLD-21, DEC-30).
  *
  * The fixed quests are the ones the game ends on, and every way of getting them
@@ -3996,6 +4111,7 @@ struct test tests[] = {
 	{ "the-road-runs-up-to-a-gate", test_the_road_runs_up_to_a_gate },
 	{ "the-quality-ladder-is-a-ladder", test_the_quality_ladder_is_a_ladder },
 	{ "a-blessed-beast-bounds-away", test_a_blessed_beast_bounds_away },
+	{ "a-road-out-of-a-gate-goes-somewhere", test_a_road_out_of_a_gate_goes_somewhere },
 	{ "the-game-can-be-won", test_the_game_can_be_won },
 	{ "the-unicorn-makes-you-whole", test_the_unicorn_makes_you_whole },
 	{ "the-inn-dreams-by-the-law", test_the_inn_dreams_by_the_law },

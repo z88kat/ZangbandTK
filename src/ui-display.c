@@ -551,6 +551,41 @@ static int fmt_depth(char buf[], int max)
 }
 
 /**
+ * Prints what kind of place the character is standing in (ZangbandTK, WLD-11).
+ *
+ * On its own line under the name, because the two together do not fit: the
+ * sidebar field is thirteen characters and "Weirmonken" is ten of them before
+ * "great city" is added to it.
+ *
+ * Worth the line.  How big a place is says what is in it -- a village keeps
+ * three or four trades and no services at all unless it is the one you started
+ * in, a city keeps the magesmith and the recharger -- and the name alone says
+ * none of that.  Asked for from play, having stood in a village wondering where
+ * its magetower was: there was never going to be one, and nothing on the screen
+ * said so.
+ */
+static void prt_place(int row, int col)
+{
+	char buf[32] = "";
+
+	if (!player->depth && player->in_wild && wild) {
+		int town = wild_town_here(wild,
+								  loc(player->grid.x + player->wild_offset.x,
+									  player->grid.y + player->wild_offset.y));
+
+		/*
+		 * Only when the line above is showing a name.  A town with none has its
+		 * size shown there already, and saying "village" twice is worse than
+		 * saying it once.
+		 */
+		if (town >= 0 && wild->towns[town].name)
+			my_strcpy(buf, wild_band_name(wild->towns[town].band), sizeof(buf));
+	}
+
+	c_put_str(COLOUR_SLATE, format("%-13s", buf), row, col);
+}
+
+/**
  * Prints depth in stat area
  */
 static void prt_depth(int row, int col)
@@ -854,6 +889,7 @@ static const struct side_handler_t
 	{ NULL,        22, 0 },
 	{ prt_speed,   13, EVENT_PLAYERSPEED }, /* Slow (-NN) / Fast (+NN) */
 	{ prt_depth,   14, EVENT_DUNGEONLEVEL }, /* Lev NNN / NNNN ft */
+	{ prt_place,   23, EVENT_DUNGEONLEVEL }, /* village / town / city */
 };
 
 

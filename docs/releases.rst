@@ -31,6 +31,19 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.21.0** — **A road out of a gate goes somewhere.** Reported from play: the
+  road leaves the town and just stops. It did. The approach paved three grids out
+  of every gate and *then* went looking for the road network to join, so every
+  gate the network did not reach kept a stub pointing into open country —
+  measured, 147 of 508 gates over six worlds, better than one in four. A town has
+  four gates and the roads commonly reach one or two, so this was never rare, and
+  it is worse than having no road at all: a road is a promise that it goes
+  somewhere. Nothing is paved now until the join is found.
+  Also, **the sidebar says what kind of place you are in** — village, town, city
+  or great city, under the name. How big a place is says what is in it: a village
+  keeps three or four trades and no services at all unless it is the one you
+  started in. The name alone said none of that, so standing in a village
+  wondering where its magetower was is a question the screen can now answer.
 - **3.20.0** — **The game ends in Amber now.** Angband is won by killing Sauron
   and then Morgoth; ZangbandTK is won by killing Oberon and then the Serpent of
   Chaos, at the bottom of the Courts of Chaos. That is Zangband's own
