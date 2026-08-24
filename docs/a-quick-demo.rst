@@ -2,11 +2,11 @@
 A quick demonstration
 =====================
 
-Angband is a very complex game, so you may want to try the following quick
+ZangbandTK is a very complex game, so you may want to try the following quick
 demonstration. The following instructions are for demonstration purposes only,
 and so they are intentionally boring.
 
-For this demo, we will assume that you have never played Angband before,
+For this demo, we will assume that you have never played ZangbandTK before,
 that you have not requested any special "sub-windows", that you have not
 requested any special "graphics" modes, that you have a "numeric keypad" on
 your computer, and that you are using the default options, including, in
@@ -34,7 +34,7 @@ placed into the "town".
 
 You should now be looking at the basic dungeon interaction screen. To the
 left is some information about your character. To the right is an overhead
-view of the town. Nothing happens in Angband while the game is waiting for
+view of the town. Nothing happens in ZangbandTK while the game is waiting for
 you to specify a command, so take a good look at the town. You will see a
 variety of symbols on the screen. Each symbol normally represents a terrain
 feature, an object, or a monster. The ``@`` symbol is special, it
@@ -43,9 +43,10 @@ given symbol represents. Press "/" then ``@`` now to verify the meaning of
 the ``@`` symbol.
 
 The solid blocks (which may be ``#`` symbols on some systems) around the
-edge of the town represent the walls that surround the town. You cannot
-leave the town above ground, although some games derived from Angband
-(called "variants") have an overground element.
+edge of the town represent the walls that surround the town. You *can* walk
+out of them: unlike Angband, where the town is the whole of the surface,
+ZangbandTK has a world outside the walls and the gates are how you reach it.
+See :doc:`wilderness`.
 
 The rectangular blocks of walls with a number on the edge represent stores.
 The number is the entrance to the store.  The ``.`` symbols represent the
@@ -246,7 +247,7 @@ press ``v``, ``b``, ``'`` to throw a flask of oil at the nearest monster.
 To drop an item from your inventory, press ``d`` plus the index of that
 item. You can use the '^X' key to quit and save the game.
 
-You now know enough to play a quick game of Angband. There is a lot more
+You now know enough to play a quick game of ZangbandTK. There is a lot more
 for you to learn, including how to interpret information about your
 character, how to create different kinds of characters, how to determine
 which equipment to wield/wear, how to use various kinds of objects, and how

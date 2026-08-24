@@ -5,7 +5,7 @@ Attacking monsters
 Attacking and Being Attacked
 ============================
 
-Attacking is simple in Angband. If you move into a creature, you attack it.
+Attacking is simple in ZangbandTK. If you move into a creature, you attack it.
 You can attack from a distance by firing a missile or by magical means
 (such as aiming a wand). Creatures attack in the same way. If they move
 into you, they attack you. Some creatures can also cast spells from a
@@ -52,11 +52,11 @@ other types of monsters differently.
 Monster Memories
 ================
 
-There are hundreds of different creatures in the pits of Angband, many of
+There are hundreds of different creatures in the pits of ZangbandTK, many of
 which have the same letter symbol and color on the screen. The exact
 species of a creature can be discovered by |``l``ooking| at it. It is also
 very difficult to keep track of the capabilities of various creatures.
-Luckily, Angband automatically keeps track of your experiences with a
+Luckily, ZangbandTK automatically keeps track of your experiences with a
 particular creature. This feature is called the monster memory. Your
 monster memory recalls the particular attacks of each creature (whether or
 not technically a monster) which you have suffered, as well as recalling if
@@ -99,13 +99,13 @@ to dig your best digging tool will automatically be used.
 
 Weapons have two main magical characteristics, their enchanted ability to
 hit and their enchanted ability to do damage, expressed as '(+#,+#)'. A
-normal weapon would be '(+0,+0)'. Many weapons in Angband have bonuses to
+normal weapon would be '(+0,+0)'. Many weapons in ZangbandTK have bonuses to
 hit and/or to damage.
 
 .. index::
    single: blows; upper limit
 
-Angband assumes that your youth in the rough environment near the dungeons
+ZangbandTK assumes that your youth in the rough environment near the dungeons
 has taught you the relative merits of different weapons, and displays as
 part of their description the damage dice which define their capabilities.
 Any damage enchantment is added to the dice roll for that weapon. The dice
@@ -171,7 +171,7 @@ as a miss, and is described as a miss. Second, good armor will absorb
 some of the damage that your character would have taken from normal
 attacks. Third, acid damage is reduced by wearing body armor (but the
 armor may be damaged instead). It is obvious that a high armor class is
-vital for surviving the deeper levels of Angband.
+vital for surviving the deeper levels of ZangbandTK.
 
 .. index::
    single: armour class; equipment values

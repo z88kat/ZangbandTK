@@ -19,6 +19,7 @@
 
 #include "angband.h"
 #include "cmds.h"
+#include "wild.h"
 #include "effects.h"
 #include "game-input.h"
 #include "generate.h"
@@ -1198,6 +1199,66 @@ void do_cmd_wiz_gain_gold(struct command *cmd)
 	msg("You have %d au.", (int) player->au);
 
 	player->upkeep->redraw |= PR_GOLD;
+}
+
+/**
+ * Give the player a great many hit points (CMD_WIZ_GAIN_HP).  Takes no
+ * arguments from cmd.
+ *
+ * Written into player_hp[] rather than straight into mhp, because mhp is
+ * recomputed from that array and the character's constitution every time
+ * bonuses are calculated -- setting it directly would last until the next step
+ * they took.  Every level's entry is set, so the total survives levelling up.
+ */
+void do_cmd_wiz_gain_hp(struct command *cmd)
+{
+	char s[80];
+	long amount;
+	int i;
+
+	strnfmt(s, sizeof(s), "%d", 999);
+
+	if (!get_string("Hit points to have: ", s, sizeof(s)) ||
+			!get_long_from_string(s, &amount))
+		return;
+
+	if (amount < 1) {
+		msg("Nothing happens.");
+		return;
+	}
+
+	if (amount > 30000) amount = 30000;
+
+	for (i = 0; i < PY_MAX_LEVEL; i++)
+		player->player_hp[i] = (int16_t) amount;
+
+	player->upkeep->update |= (PU_HP);
+	update_stuff(player);
+
+	player->chp = player->mhp;
+	player->chp_frac = 0;
+
+	msg("You have %d hit points.", (int) player->mhp);
+
+	player->upkeep->redraw |= (PR_HP);
+}
+
+/**
+ * Put every place in the world on the map (CMD_WIZ_KNOW_PLACES).  Takes no
+ * arguments from cmd.
+ */
+void do_cmd_wiz_know_places(struct command *cmd)
+{
+	if (!wild) {
+		msg("There is no world to know.");
+		return;
+	}
+
+	wild_know_all_places(wild);
+
+	msg("You know every place in the world.");
+
+	player->upkeep->redraw |= (PR_MAP);
 }
 
 /**

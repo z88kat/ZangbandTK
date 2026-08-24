@@ -2,7 +2,7 @@
 Customising the game
 ====================
 
-Angband allows you to change various aspects of the game to suit your tastes.  These include:
+ZangbandTK allows you to change various aspects of the game to suit your tastes.  These include:
 
 * Options - which let you change interface or gameplay behaviour
 * :ref:`Ignoring items <ignoring>` and :ref:`inscribing items <inscribing>` to change how the game treats them
@@ -24,7 +24,7 @@ while playing.
 User Pref Files
 ===============
 
-User pref files are Angband's way of saving and loading certain settings.
+User pref files are ZangbandTK's way of saving and loading certain settings.
 They can store:
 
 * Altered visual appearances for game entities
@@ -77,14 +77,14 @@ You may also enter single user pref commands directly, using the special "Enter 
 user pref command" command, activated by pressing ``"``.
 
 You may have to use the redraw command (``^r``) after changing certain of the
-aspects of the game to allow Angband to adapt to your changes.
+aspects of the game to allow ZangbandTK to adapt to your changes.
 
 .. _ignoring:
 
 Ignoring items
 ==============
 
-Angband allows you to ignore specific items that you don't want to see anymore. These items are marked 'ignored' and any similar items are hidden from view. The easiest way to ignore an item is with the ``k`` (or ``^d``) command; the object is dropped and then hidden from view.  When ignoring an object, you will be given a choice of ignoring just that object, or all objects like it in some way. If you accidentally ignore an item or find yourself in a situation where you want to see if a previously ignored item is available nearby, one way to handle that is to turn off ignoring for all items with the ``K`` (or ``O``) command, go to the item you want, unignore it with the ``k`` (or ``^d``) command, and then turn on ignoring again with the ``K`` (or ``O``) command. When ignoring has been turned off for all items, you will see ``Unignoring`` in the status line at the bottom of the screen.
+ZangbandTK allows you to ignore specific items that you don't want to see anymore. These items are marked 'ignored' and any similar items are hidden from view. The easiest way to ignore an item is with the ``k`` (or ``^d``) command; the object is dropped and then hidden from view.  When ignoring an object, you will be given a choice of ignoring just that object, or all objects like it in some way. If you accidentally ignore an item or find yourself in a situation where you want to see if a previously ignored item is available nearby, one way to handle that is to turn off ignoring for all items with the ``K`` (or ``O``) command, go to the item you want, unignore it with the ``k`` (or ``^d``) command, and then turn on ignoring again with the ``K`` (or ``O``) command. When ignoring has been turned off for all items, you will see ``Unignoring`` in the status line at the bottom of the screen.
 
 The entire ignoring system can also be accessed from the options menu (``=``) by choosing ``i`` for ``Item ignoring setup``.  This allows ignore settings for non-wearable items, and quality and ego ignore settings (described below) for wearable items, to be viewed or changed.
 
@@ -213,7 +213,7 @@ There are a variety of subwindow choices and you should experiment to see which 
 Keymaps
 =======
 
-You can set up keymaps in Angband, which allow you to map a single keypress, the trigger, to a series of keypresses, the action.  For example you might map the key F1 to "maa" (the keypresses to cast "Magic Missile" as a spellcaster).  This can speed up access to commonly-used features.  To bypass a keymap that's been assigned to a key, press ``\`` before pressing the key.
+You can set up keymaps in ZangbandTK, which allow you to map a single keypress, the trigger, to a series of keypresses, the action.  For example you might map the key F1 to "maa" (the keypresses to cast "Magic Missile" as a spellcaster).  This can speed up access to commonly-used features.  To bypass a keymap that's been assigned to a key, press ``\`` before pressing the key.
 
 To set up keymaps, go to the options menu (``=``) and select "Edit keymaps" (``e``).  There, you can check if a key triggers a keymap:  select "Query a keymap" (``c``) and then press the key to check.  You can also remove an existing keymap:  select "Remove a keymap" (``e``) and then press the key that trigger the keymap to be removed.  To add a new keymap (or overwrite an existing one), select "Create a keymap" (``d``), it will then prompt you for the key that triggers the keymap.  After pressing the trigger key, you'll be prompted for the keymap's action, the series of keypresses that'll be generated when the trigger key is pressed.  If you make a mistake while entering the keypresses for the action, press ``Control-u`` to erase the keypresses already entered for the action.  Once you've finished entering the keypresses for the action, press ``=`` to end the sequence; you'll then be prompted for whether to keep the newly entered keymap.
 
@@ -259,7 +259,7 @@ example::
 	keymap-input:0:[F1]
 	keymap-input:1:[F1]
 
-Angband uses a few built-in keymaps.  These are for the movement keys (they are mapped to ``;`` plus the number, e.g. ``5`` -> ``;5``), amongst others.  You can see the full list in pref.prf, but they shouldn't impact you in any way.
+ZangbandTK uses a few built-in keymaps.  These are for the movement keys (they are mapped to ``;`` plus the number, e.g. ``5`` -> ``;5``), amongst others.  You can see the full list in pref.prf, but they shouldn't impact you in any way.
 
 A keymap's action can include multiple commands.  For instance, a priest who has inscribed the first spellbook with '@m1' could have a keymap with the action
 of 'm1dm1f' to cast Bless and Heroism.  Such keymaps can abort early without completing the remaining commands if:
@@ -372,7 +372,7 @@ With the X11 front end, the number of windows opened is set by the '-n' option
 on the command line, i.e. running ``./angband -mx11 -- -n4`` will open the
 main window and subwindows one through three if the executable is in the
 current working directory.  To control the font, placement, and size used for
-each of the windows, set environment variables before running Angband.  Those
+each of the windows, set environment variables before running ZangbandTK.  Those
 environment variables for window 'z' where 'z' is an integer between 0 (the
 main window) and 7 are:
 

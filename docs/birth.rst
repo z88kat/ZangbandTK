@@ -2,8 +2,8 @@
 Creating a Character
 ====================
 
-Angband is a roleplaying game, in which you, the player, control a
-character in the world of Angband. Perhaps the most important thing you
+ZangbandTK is a roleplaying game, in which you, the player, control a
+character in the world of ZangbandTK. Perhaps the most important thing you
 control is the birth of your character, in which you choose or allow to be
 chosen various attributes that will affect the future life of your
 character.
@@ -141,7 +141,7 @@ sought after.
 Races
 =====
 
-There are eleven different races that you can choose to play in Angband.  
+There are eleven different races that you can choose to play in ZangbandTK.  
 Each race has its own adjustments to a character's stats and abilities. 
 Most races also have intrinsic abilities.  The bonuses to statistics and 
 the experience penalty will be displayed next to the races as you move 
@@ -478,7 +478,7 @@ Infravision
   is cool or cold, infravision will not allow the player to see walls and
   objects. Infravision will allow a character to see any warm-blooded
   creatures up to a certain distance. This ability works equally well with
-  or without a light source. However, some of Angband's creatures are
+  or without a light source. However, some of ZangbandTK's creatures are
   cold-blooded, and will not be detected unless lit up by a light source.
   All non-human races have innate infravision. Humans (including Dunedain)
   cannot gain infravision unless it is magically enhanced. Infravision does

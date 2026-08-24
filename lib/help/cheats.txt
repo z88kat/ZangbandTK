@@ -15,13 +15,28 @@ Press '=' then 'x'.  These change how the game behaves.
   Peek into something else      other debugging messages
   Allow player to avoid death   do not die
   Take gold                     asks an amount and hands it over
+  Take hit points               asks a number and sets them there
+  Know every place              every town and dungeon on the map at once
 
-The last is ZangbandTK's own.  The magetower charges a fare by the distance,
-and there was no way to find out whether the fares were sensible without a
-purse to test them with.
+The last three are ZangbandTK's own, and all three exist because this game is
+wider than Angband and testing it means getting about it.
 
-It behaves as a button rather than a switch: select it, give an amount, and it
-turns itself back off again.  The record that a cheat was used stays.
+  Take gold        the magetower charges a fare by the distance, and there was
+                   no way to know whether the fares were sensible without a
+                   purse to test them with.
+  Take hit points  written into the character's hit dice rather than straight
+                   into the total, so it survives levelling up and the next
+                   step taken.  Useful for walking through country that would
+                   otherwise kill you before you reach the test.
+  Know every place
+                   the mages carry you only to towns you have stood in and to
+                   dungeon mouths you have seen, so reaching a particular town
+                   means walking there first.  This puts the whole world on
+                   the map, which makes the magetower a way to get anywhere.
+
+All three behave as buttons rather than switches: select one, answer if it
+asks, and it turns itself back off again.  The record that a cheat was used
+stays.
 
 
 The debug commands
@@ -34,7 +49,8 @@ These change the state of your game rather than the way it behaves.  There are
 a great many, in submenus chosen with the movement keys rather than by letter:
 
   Items           create an object, an artifact, everything of a kind
-  Player          cure everything, make powerful, gain gold ($), edit stats
+  Player          cure everything, make powerful, gain gold ($), gain hit
+                      points ('i'), know every place ('k'), edit stats
   Teleport        to a location, at random, or jump to a level
   Effects         detect everything, map the area, run an effect
   Summon          a named monster, or a random one

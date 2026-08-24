@@ -2,7 +2,7 @@
 Exploring the Dungeon
 =====================
 
-After you have created your character, you will begin your Angband
+After you have created your character, you will begin your ZangbandTK
 adventure. Symbols appearing on your screen will represent the dungeon's
 walls, floor, objects, features, and creatures lurking about. In order to
 direct your character through their adventure, you will enter single
@@ -466,7 +466,7 @@ two manners, depending upon your current location. If read within the
 dungeon, it will teleport you back to town. If read in town, it will
 teleport you back down to the deepest level of the dungeon which your
 character has previously been on. This makes the scroll very useful for
-getting back to the deeper levels of Angband. Once the scroll has been read
+getting back to the deeper levels of ZangbandTK. Once the scroll has been read
 it takes a while for the spell to act, so don't expect it to save you in a
 crisis. During this time the word 'recall' will appear on the bottom of the
 screen below the dungeon. Reading a second scroll before the first takes

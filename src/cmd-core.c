@@ -147,6 +147,8 @@ static const struct command_info game_cmds[] =
 	{ CMD_WIZ_EDIT_PLAYER_EXP, "change the player's experience", do_cmd_wiz_edit_player_exp, false, false, 0 },
 	{ CMD_WIZ_EDIT_PLAYER_GOLD, "change the player's gold", do_cmd_wiz_edit_player_gold, false, false, 0 },
 	{ CMD_WIZ_GAIN_GOLD, "give the player gold", do_cmd_wiz_gain_gold, false, false, 0 },
+	{ CMD_WIZ_GAIN_HP, "give the player hit points", do_cmd_wiz_gain_hp, false, false, 0 },
+	{ CMD_WIZ_KNOW_PLACES, "know every place", do_cmd_wiz_know_places, false, false, 0 },
 	{ CMD_WIZ_EDIT_PLAYER_START, "start editing the player", do_cmd_wiz_edit_player_start, false, false, 0 },
 	{ CMD_WIZ_EDIT_PLAYER_STAT, "edit one of the player's stats", do_cmd_wiz_edit_player_stat, false, false, 0 },
 	{ CMD_WIZ_HIT_ALL_LOS, "hit all monsters in LOS", do_cmd_wiz_hit_all_los, false, false, 0 },

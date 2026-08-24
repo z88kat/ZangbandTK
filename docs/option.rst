@@ -27,7 +27,7 @@ to make it easier to get to a well-known state for all of those options.
 They are:  's' to save the current selections so that they will be used
 as the starting point for future characters, 'r' to reset the current
 selections to the defaults for a new character, and 'x' to reset the
-current selections to the Angband maintainer's defaults for the user
+current selections to the ZangbandTK maintainer's defaults for the user
 interface options.
 
 Rogue-like commands ``rogue_like_commands``
@@ -157,7 +157,7 @@ well-known state for all of the birth options.  They are:  's' to save the
 current selections so that they will be used as the starting point for
 future characters, 'r' to reset the current selections to the defaults
 for a new character, and 'x' to reset the current selections to the
-Angband maintainer's defaults for the birth options.
+ZangbandTK maintainer's defaults for the birth options.
 
 Generate a new, random artifact set ``birth_randarts``
   A different set of artifacts will be created, in place of the standard
@@ -284,6 +284,23 @@ Take gold ``cheat_gold``
 
   It is a button rather than a switch: select it, give an amount, and it turns
   itself back off. The record that a cheat was used stays.
+
+Take hit points ``cheat_hp``
+  Asks how many and sets them there. Written into the character's hit dice
+  rather than straight into the total, so it survives levelling up and the next
+  step taken — putting it into the total alone would last until the game next
+  recalculated bonuses, which is almost immediately.
+
+  For walking through country that would otherwise kill you on the way to
+  whatever you actually meant to test.
+
+Know every place ``cheat_places``
+  Puts every town and every dungeon mouth in the world on the map at once.
+
+  The :doc:`magetower <towns>` carries you only to towns you have stood in and
+  dungeon mouths you have seen, so testing anything that happens in a particular
+  town means walking there first. With this, the magetower becomes a way of
+  getting anywhere in the world immediately.
 
 .. _debug-commands:
 

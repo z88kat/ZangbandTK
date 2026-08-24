@@ -3978,6 +3978,29 @@ const char *wild_reveal_nearest(struct wilderness *w, struct loc from, bool *dow
 }
 
 /**
+ * Know every place there is (ZangbandTK, cheat).
+ *
+ * The inverse of wild_forget_knowledge(), and it exists for testing: the
+ * magetower carries the player only to towns they have stood in and dungeon
+ * mouths they have seen, so trying anything that happens in a particular town
+ * means walking there first.  This marks every town visited and every block
+ * seen, which puts the whole world on the map and every place on the tower's
+ * list.
+ */
+void wild_know_all_places(struct wilderness *w)
+{
+	int i;
+
+	if (!w) return;
+
+	for (i = 0; i < w->blocks * w->blocks; i++)
+		w->map[i].info |= WILD_INFO_SEEN;
+
+	for (i = 0; i < w->town_count; i++)
+		w->towns[i].visited = 1;
+}
+
+/**
  * Forget the world map, except where home is (ZangbandTK, PLR-40).
  *
  * What the lotus takes.  Every block the player has seen goes back to unseen, so

@@ -4,8 +4,8 @@
 Playing the Game
 ================
 
-Most of your interaction with Angband will take the form of "commands".
-Every Angband command consists of an "underlying command" plus a variety of
+Most of your interaction with ZangbandTK will take the form of "commands".
+Every ZangbandTK command consists of an "underlying command" plus a variety of
 optional or required arguments, such as a repeat count, a direction, or the
 index of an inventory object. Commands are normally specified by typing a
 series of keypresses, from which the underlying command is extracted, along
@@ -297,11 +297,11 @@ machine, causing unexpected results. In general, these special keys are
 control keys, and often, you can disable their special effects.
 
 If you are playing on a UNIX or similar system, then 'Ctrl-c' will
-interrupt Angband. The second and third interrupt will induce a warning
+interrupt ZangbandTK. The second and third interrupt will induce a warning
 bell, and the fourth will induce both a warning bell and a special message,
-since the fifth will either quit without saving (if Angband was compiled
+since the fifth will either quit without saving (if ZangbandTK was compiled
 without the SETGID option which puts the save files in a shared location for
-all users) or kill your character (if Angband was compiled with the SETGID
+all users) or kill your character (if ZangbandTK was compiled with the SETGID
 option). Also, 'Ctrl-z' will suspend the game, and return you to the original
 command shell, until you resume the game with the 'fg' command. The 'Ctrl-\\'
 and 'Ctrl-d' and 'Ctrl-s' keys should not be intercepted.
@@ -315,7 +315,7 @@ Pressing backslash (``\``) before a command will bypass all keymaps, and
 the next keypress will be interpreted as an "underlying command" key,
 unless it is a caret (``^``), in which case the keypress after that will be
 turned into a control-key and interpreted as a command in the underlying
-Angband keyset. The backslash key is useful for creating actions which are
+ZangbandTK keyset. The backslash key is useful for creating actions which are
 not affected by any keymap definitions that may be in force, for example,
 the sequence ``\`` + ``.`` + ``6`` will always mean "run east", even if the
 ``.`` key has been mapped to a different underlying command.

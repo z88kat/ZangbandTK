@@ -75,6 +75,14 @@ OP(cheat_gold,            "Cheat: Take gold (select to be asked how much)",
 CHEAT, false)
 OP(score_gold,            "Score: Took gold",
 SCORE, false)
+OP(cheat_hp,              "Cheat: Take hit points (select to be asked how many)",
+CHEAT, false)
+OP(score_hp,              "Score: Took hit points",
+SCORE, false)
+OP(cheat_places,          "Cheat: Know every place in the world",
+CHEAT, false)
+OP(score_places,          "Score: Knew every place",
+SCORE, false)
 OP(birth_randarts,        "Generate a new, random artifact set",
 BIRTH, false)
 OP(birth_connect_stairs,  "Generate connected stairs",

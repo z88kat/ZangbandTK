@@ -262,6 +262,8 @@ struct cmd_info cmd_debug_player[] =
 	{ "Rerate hitpoints", { 'h' }, CMD_WIZ_RERATE, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Edit player", { 'e' }, CMD_WIZ_EDIT_PLAYER_START, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Gain gold", { '$' }, CMD_WIZ_GAIN_GOLD, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Gain hit points", { 'i' }, CMD_WIZ_GAIN_HP, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Know every place", { 'k' }, CMD_WIZ_KNOW_PLACES, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Learn object kinds", { 'l' }, CMD_NULL, wiz_learn_all_object_kinds, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Recall monster", { 'r' }, CMD_WIZ_RECALL_MONSTER, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Erase monster recall", { 'W' }, CMD_WIZ_WIPE_RECALL, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },

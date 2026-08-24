@@ -31,6 +31,17 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.22.0** — **Two more cheats, for testing a world you have to walk across.**
+  ``=`` then ``x``: *Take hit points* asks a number and sets them there — written
+  into the character's hit dice rather than the total, so it survives levelling
+  and the next step taken — and *Know every place* puts every town and dungeon
+  mouth on the map at once, which turns the magetower into a way of getting
+  anywhere. Both are also on the debug menu (``^A``), as ``i`` and ``k``.
+  Also: **the manual stops calling this game Angband.** Forty of the forty-seven
+  references audited became ZangbandTK. The FAQ's development section is cut —
+  it described the *Angband* project's process and pointed anyone who wanted to
+  help at the wrong project. And the quick demo no longer tells new players they
+  cannot leave the town, which has been the opposite of true since M5.
 - **3.21.3** — **No more stranded paving.** A road is routed *to* a town, so its
   last stretch runs across ground the town is then drawn on top of — and the wall
   and gate could leave a grid of paving stranded just outside them, with nothing

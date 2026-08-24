@@ -321,12 +321,12 @@ Inscribe an object (``{``)
   displayed inside curly braces after the object description. The
   inscription is limited to the particular object (or stack) and is not
   automatically transferred to all similar objects. Under certain
-  circumstances, Angband will display "fake" inscriptions on certain
+  circumstances, ZangbandTK will display "fake" inscriptions on certain
   objects ('tried', 'empty') when appropriate. These "fake" inscriptions
   remain all the time, even if the player chooses to add a "real" inscription
   on top of it later.
 
-  In addition, Angband will place the inscription '??' on an object for you
+  In addition, ZangbandTK will place the inscription '??' on an object for you
   if the object has a property (or "rune") that you have not learned yet.
   This inscription will remain until you know all the runes on the object.
 
@@ -631,12 +631,12 @@ Save and Quit ('Ctrl-x')
   with the same options and such.
 
 Save ('Ctrl-s')
-  This command saves the game but doesn't exit Angband. Use this frequently
+  This command saves the game but doesn't exit ZangbandTK. Use this frequently
   if you are paranoid about having your computer crash (or your power go
   out) while you are playing.
 
 Retire (``Q``)
-  Retires your character and exits Angband. You will be prompted to make sure
+  Retires your character and exits ZangbandTK. You will be prompted to make sure
   you really want to do this, and then asked to verify that choice. The
   only thing that can be done with a retired character's save file is to
   start the game from the beginning.  You will have the option to reuse
@@ -675,7 +675,7 @@ Help Commands
 =============
 
 Help (``?``)
-  Brings up the Angband on-line help system. Note that the help files are
+  Brings up the ZangbandTK on-line help system. Note that the help files are
   just text files in a particular format, and that other help files may be
   available on the Net. In particular, there are a variety of spoiler files
   which do not come with the standard distribution. Check the place you got
@@ -705,7 +705,7 @@ Identify Symbol (``/``)
   any point will exit this command.
 
 Game Version (``V``)
-  This command will tell you what version of Angband you are using. For
+  This command will tell you what version of ZangbandTK you are using. For
   more information, see the 'version.txt' help file.
 
 Extra Commands
@@ -737,11 +737,11 @@ machine, causing unexpected results. In general, these special keys are
 control keys, and often, you can disable their special effects.
 
 If you are playing on a UNIX or similar system, then Ctrl-c will interrupt
-Angband. The second and third interrupt will induce a warning bell, and the
+ZangbandTK. The second and third interrupt will induce a warning bell, and the
 fourth will induce both a warning bell and a special message, since the
-fifth will either quit without saving (if Angband was compiled without the
+fifth will either quit without saving (if ZangbandTK was compiled without the
 SETGID option which puts the save files in a shared location for all users)
-or kill your character (if Angband was compiled with the SETGID option).
+or kill your character (if ZangbandTK was compiled with the SETGID option).
 Also, 'Ctrl-z' will suspend the game, and return you to the original command
 shell, until you resume the game with the 'fg' command. The 'Ctrl-\\' and
 'Ctrl-d' and 'Ctrl-s' keys should not be intercepted.

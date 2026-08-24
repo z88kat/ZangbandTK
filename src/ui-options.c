@@ -223,6 +223,26 @@ static bool option_toggle_handle(struct menu *m, const ui_event *event,
 		menu_refresh(m, false);
 	}
 
+	if (player->opts.opt[oid] && streq(option_name(oid), "cheat_hp")) {
+		screen_load();
+		do_cmd_wiz_gain_hp(NULL);
+		screen_save();
+		clear_from(0);
+
+		player->opts.opt[oid] = false;
+		menu_refresh(m, false);
+	}
+
+	if (player->opts.opt[oid] && streq(option_name(oid), "cheat_places")) {
+		screen_load();
+		do_cmd_wiz_know_places(NULL);
+		screen_save();
+		clear_from(0);
+
+		player->opts.opt[oid] = false;
+		menu_refresh(m, false);
+	}
+
 	if (next) {
 		m->cursor++;
 		m->cursor = (m->cursor + m->filter_count) % m->filter_count;
