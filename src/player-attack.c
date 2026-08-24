@@ -806,6 +806,34 @@ static void py_touch_blessed(struct player *p, struct monster *mon)
 			msg("You touch %s, and feel briefly weightless.", m_name);
 		}
 
+		/*
+		 * A unique blessed beast gives more than a beast does: everything the
+		 * healer in a town sells, at once and for nothing.  The strength comes
+		 * from the monster being unique rather than from a second flag, because
+		 * that is what the difference *is* -- there are deer, and there is the
+		 * Unicorn, and one of them is not a kind of thing.
+		 */
+		if (rf_has(mon->race->flags, RF_UNIQUE)) {
+			static const int ails[] = {
+				TMD_POISONED, TMD_CUT, TMD_STUN, TMD_BLIND, TMD_CONFUSED,
+				TMD_AFRAID, TMD_IMAGE
+			};
+			size_t a;
+			int stat;
+
+			for (a = 0; a < N_ELEMENTS(ails); a++)
+				player_clear_timed(p, ails[a], false, false);
+
+			for (stat = 0; stat < STAT_MAX; stat++)
+				effect_simple(EF_RESTORE_STAT, source_player(), "0", stat, 0, 0,
+							  0, 0, NULL);
+
+			effect_simple(EF_RESTORE_EXP, source_player(), "0", 0, 0, 0, 0, 0,
+						  NULL);
+
+			msg("Everything that was wrong with you is not wrong any more.");
+		}
+
 		/* Learn what it is, since it has just demonstrated it. */
 		if (monster_is_visible(mon))
 			rf_on(get_lore(mon->race)->flags, RF_BLESSING);

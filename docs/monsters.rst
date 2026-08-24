@@ -92,3 +92,20 @@ You can kill it, if you want to. It carries nothing and is worth no experience,
 and it will not fight back.
 
 Deer are uncommon and live in quiet country. Finding one is luck, not a plan.
+
+And there is one of them that is not a deer.
+
+**The Unicorn of Amber** is silver-white, watches you with an interest you have
+not earned, and is always about to leave. She is the oldest thing in Amber and
+there is exactly one of her in the world.
+
+Walk into her and she makes you whole. Not your wounds only — everything the
+healer in a town will sell you and charge for: the poison, the cuts, the
+stunning, the blindness, the confusion, the fear, your drained stats, and the
+levels a life-draining touch took off you. All of it, at once, for nothing.
+
+Once. Then she goes about her business, and if you find her again she will shy
+from your hand like any other beast.
+
+She will not fight you, and killing her is possible and is exactly the sort of
+thing the Courts would do.

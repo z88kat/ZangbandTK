@@ -20,3 +20,27 @@ experience:0
 flags:BLESSING | ANIMAL | NEVER_BLOW | NO_FEAR | NO_SLEEP | RAND_25
 desc:A white deer, too still and too unafraid of you.  Walk into it and it will
 desc: heal what ails you and bound away; it will not do so twice.
+
+# The Unicorn of Amber (DEC-30).  She is Amber's emblem and its oldest
+# presence, glimpsed at moments that matter and gone again; in the novels she
+# is always "she", and always leaving.  Being unique is what makes her
+# blessing the greater one -- see py_touch_blessed().
+name:Unicorn of Amber
+base:quadruped
+color:W
+speed:140
+hit-points:1500
+light:2
+hearing:80
+armor-class:120
+sleepiness:0
+depth:5
+rarity:7
+experience:0
+flags:UNIQUE | FEMALE | BLESSING | NEVER_BLOW
+flags:NO_FEAR | NO_SLEEP | NO_CONF | NO_STUN | NO_HOLD | NO_SLOW
+flags:EMPTY_MIND
+desc:Silver-white and impossible, watching you with an interest you have not
+desc: earned.  She is the oldest thing in Amber and she is always about to
+desc: leave.  Walk into her and she will make you whole -- once, and then she
+desc: is gone about her business.

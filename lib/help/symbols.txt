@@ -101,7 +101,8 @@ bed at the inn.
 Not everything is there to be fought.  A white deer ('q', white) will heal
 you if you walk into it, and then bound away out of reach.  It does that
 once and never again, and it is not worth killing -- it carries nothing and
-is worth no experience.
+is worth no experience.  There is said to be something in the world that
+gives a good deal more than a deer does, and only once.
 
 
 Objects

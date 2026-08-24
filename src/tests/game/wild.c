@@ -3245,26 +3245,109 @@ static int test_a_blessed_beast_bounds_away(void *state) {
 	 * measuring the worst of thirty bounds is what settled the number.
 	 */
 	{
-		int touch, worst = 999;
+		int touch, worst = 999, measured = 0;
 
 		for (touch = 0; touch < 30; touch++) {
 			struct loc was = mon->grid;
 			int d;
 
-			player->grid = loc(was.x - 1, was.y);
-			if (!square_isempty(cave, player->grid))
-				player->grid = loc(was.x + 1, was.y);
-			if (!square_isempty(cave, player->grid)) continue;
-
+			/*
+			 * Touched from where the player stands, without walking round to be
+			 * beside it: how far the beast bounds does not depend on which side
+			 * the hand came from, and needing an empty grid next to it made this
+			 * depend on where the last bound happened to land.  Measured that
+			 * way it skipped between two and thirty of the touches from one run
+			 * to the next, and on a run where it skipped all of them it reported
+			 * the sentinel it started from and passed having measured nothing.
+			 * The adjacent case is the touch above; this is the distance.
+			 */
 			player->energy = z_info->move_energy;
 			py_attack(player, was);
 
 			d = distance(mon->grid, was);
 			if (d < worst) worst = d;
+			measured++;
 		}
 
-		printf("DEER worst bound of thirty: %d grids\n", worst);
+		printf("DEER worst of %d bounds: %d grids\n", measured, worst);
+
+		/* It has to have actually bounded, or this measures nothing. */
+		eq(measured, 30);
 		require(worst >= 5);
+	}
+
+	ok;
+}
+
+/**
+ * The Unicorn gives the greater blessing (CNT-20, DEC-30).
+ *
+ * There are deer, and there is the Unicorn, and the difference is not a matter
+ * of degree -- so the strength of a blessing comes from the beast being unique
+ * rather than from a second flag.  She undoes everything the healer in a town
+ * sells: the wounds, the ailments, the drained stats and the levels lost to
+ * life-draining.  Once.
+ */
+static int test_the_unicorn_makes_you_whole(void *state) {
+	struct monster_race *race = NULL;
+	struct monster *mon;
+	struct loc grid = player->grid;
+	struct monster_group_info info = { 0, 0 };
+	int i;
+
+	for (i = 1; i < z_info->r_max; i++)
+		if (r_info[i].name && rf_has(r_info[i].flags, RF_BLESSING) &&
+			rf_has(r_info[i].flags, RF_UNIQUE)) {
+			race = &r_info[i];
+			break;
+		}
+	notnull(race);
+
+	do {
+		grid.x++;
+		require(grid.x < cave->width - 1);
+	} while (!square_isempty(cave, grid) || square_isdamaging(cave, grid));
+
+	require(place_new_monster(cave, grid, race, false, false, info,
+							  ORIGIN_DROP));
+	mon = square_monster(cave, grid);
+	notnull(mon);
+
+	player->upkeep->update |= PU_BONUS;
+	update_stuff(player);
+	require(player->state.num_blows > 0);
+
+	/* A character in every kind of trouble at once. */
+	player->chp = 1;
+	player_inc_timed(player, TMD_POISONED, 40, false, false, false);
+	player_inc_timed(player, TMD_BLIND, 40, false, false, false);
+	player_inc_timed(player, TMD_CONFUSED, 40, false, false, false);
+	player_inc_timed(player, TMD_AFRAID, 40, false, false, false);
+	player->stat_cur[STAT_STR] = player->stat_max[STAT_STR] - 3;
+	require(player->timed[TMD_POISONED] > 0);
+	require(player->stat_cur[STAT_STR] < player->stat_max[STAT_STR]);
+
+	player->energy = z_info->move_energy;
+	py_attack(player, grid);
+
+	/* Whole again, in every sense the healer charges for. */
+	eq(player->chp, player->mhp);
+	eq(player->timed[TMD_POISONED], 0);
+	eq(player->timed[TMD_BLIND], 0);
+	eq(player->timed[TMD_CONFUSED], 0);
+	eq(player->timed[TMD_AFRAID], 0);
+	eq(player->stat_cur[STAT_STR], player->stat_max[STAT_STR]);
+
+	/* And she is not killed by it. */
+	require(mon->hp > 0);
+
+	/* Once.  A second touch restores nothing. */
+	player->chp = 1;
+	player->grid = loc(mon->grid.x - 1, mon->grid.y);
+	if (square_isempty(cave, player->grid)) {
+		player->energy = z_info->move_energy;
+		py_attack(player, mon->grid);
+		eq(player->chp, 1);
 	}
 
 	ok;
@@ -3860,6 +3943,7 @@ struct test tests[] = {
 	{ "the-road-runs-up-to-a-gate", test_the_road_runs_up_to_a_gate },
 	{ "the-quality-ladder-is-a-ladder", test_the_quality_ladder_is_a_ladder },
 	{ "a-blessed-beast-bounds-away", test_a_blessed_beast_bounds_away },
+	{ "the-unicorn-makes-you-whole", test_the_unicorn_makes_you_whole },
 	{ "the-inn-dreams-by-the-law", test_the_inn_dreams_by_the_law },
 	{ "a-true-dream-shows-the-nearest-place", test_a_true_dream_shows_the_nearest_place },
 	{ "the-lotus-is-an-unknown-mushroom", test_the_lotus_is_an_unknown_mushroom },

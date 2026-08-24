@@ -158,6 +158,19 @@ crawler's.
 >
 > *Open for tuning:* `rarity:4` at `depth:1`. A full heal per beast is a lucky find at that
 > rarity and would become a strategy if they were common; the knob is in the data file.
+>
+> **And the Unicorn of Amber**, which is what the deer turned out to be for. She carries the
+> same `BLESSING` flag and is `UNIQUE`, and *that* is what makes her blessing the greater
+> one — no second flag, because being unique is what the difference actually is: there are
+> deer, and there is the Unicorn, and one of them is not a kind of thing. She undoes
+> everything the town healer sells at once and for nothing: wounds, poison, cuts, stunning,
+> blindness, confusion, fear, drained stats, and levels lost to life-draining. Once.
+>
+> Worth noting against DEC-30, since it is the first content in this project written *from*
+> the novels rather than filtered out of Zangband. She is Amber's emblem, she is "she"
+> throughout the books, and she is always leaving — which is the mechanic. The general flag
+> came first and the character fitted it; that is the right order, and it means the next one
+> costs a data record.
 
 ### Artifacts and ego items
 

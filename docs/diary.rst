@@ -107,6 +107,55 @@ does not shift two columns when the sun comes up.
 
 1025/1025 unit tests and 5/5 integration tests pass.
 
+24 August 2026 — the Unicorn, and a test that measured nothing twice
+====================================================================
+
+The deer became the Unicorn, which was the owner's call and the right one. I had
+noticed the resemblance while building the deer and said so rather than acting on
+it, because renaming somebody else's idea is not my decision; the answer came back
+"yes, let's do that", and it cost one data record and eight lines of code. That
+ratio is the whole argument for building the general thing first. The `BLESSING`
+flag did not know about unicorns, and the Unicorn needed no flag of her own.
+
+What makes her blessing greater is that she is `UNIQUE`. Not a second flag —
+being unique *is* the difference. There are deer, and there is the Unicorn, and
+one of those is not a kind of thing.
+
+The rest of the day was two failures, one mine and one interesting.
+
+**The x86 one.** The deer test killed the whole `game/wild` suite on Linux and on
+msys2 with "Suite died: Floating-point exception", while passing here. That is an
+integer division by zero: `py_attack()` divides the turn's energy by the number of
+blows, and the test suite had never called `calc_bonuses()`, so blows was zero.
+x86 traps it and kills the process; this Mac's ARM quietly yields zero. So the
+test passed locally for the *same reason* it crashed elsewhere.
+
+And then, fixing it, the second half: with blows computed correctly the energy per
+blow became non-zero, and a test character has no energy, so `py_attack()` never
+swung at all and the heal never fired. The test had only ever reached the monster
+*because* of the bug — zero energy is always enough for a blow that costs nothing.
+The green tick had been resting on undefined behaviour from the moment I wrote it.
+
+I also learned that CI runs `alltests` and I had been running `allunittests`. The
+difference is the front-end tests. Two different targets, one of which I had never
+run, for however many weeks.
+
+**The vacuous one, twice in a day.** The deer test measures the worst of thirty
+bounds. To touch the beast it walked the player to a grid beside it — and when no
+adjacent grid was free it skipped that touch. Once the Unicorn was also standing
+in the level, it skipped between two and thirty of them depending on where the
+last bound landed, and on the runs where it skipped all thirty it reported the
+sentinel it had initialised the minimum to and passed, having measured nothing.
+999 is greater than 5.
+
+The fix was to stop walking round the beast at all: how far it bounds does not
+depend on which side the hand came from. But the lesson is the counter. A loop
+that can skip every iteration and still assert successfully is not a test, and I
+have now written that same shape three times this week — a road test that scanned
+too few blocks, a shop test whose shop had no deep end, and this. What they have
+in common is a measurement with no floor under it. The counter is one line and it
+is the line that turns a silent pass into a failure.
+
 24 August 2026 — a deer, and where a monster comes from
 =======================================================
 

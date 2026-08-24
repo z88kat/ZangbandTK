@@ -31,6 +31,14 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.18.0** — **The Unicorn of Amber.** Silver-white, watching you with an
+  interest you have not earned, and always about to leave — there is one of her
+  in the world. Walk into her and she makes you whole: not your wounds only, but
+  everything the town healer sells and charges for, at once and for nothing.
+  Once, and then she is gone about her business. She carries the same flag the
+  white deer does; being *unique* is what makes the blessing the greater one,
+  which is the difference itself rather than a second mechanic. The first content
+  here written from the Amber novels rather than filtered out of Zangband.
 - **3.17.0** — CNT-20: **not everything is there to be fought.** A white deer
   stands too still and too unafraid of you; walk into it and it heals you —
   everything, whatever you were down to — then bounds away ten grids and carries
