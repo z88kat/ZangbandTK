@@ -31,6 +31,15 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.22.1** — **The place line actually appears now.** Third attempt, and the
+  first two failed for two different reasons. It was given the lowest priority
+  in the sidebar, so it was dropped on any screen shorter than 25 lines (fixed
+  at 3.21.2) — and then it still did not show, because the sidebar was already
+  full: a 24-line terminal spends the top row on messages and the bottom on the
+  status line, leaving twenty-two, and there were twenty-three entries. The
+  priority filter passed it and the row counter ran it off the bottom, where it
+  was drawn underneath the status line and instantly covered. A blank spacer row
+  has been given up to make room.
 - **3.22.0** — **Two more cheats, for testing a world you have to walk across.**
   ``=`` then ``x``: *Take hit points* asks a number and sets them there — written
   into the character's hit dice rather than the total, so it survives levelling

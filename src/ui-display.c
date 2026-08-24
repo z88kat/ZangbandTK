@@ -922,7 +922,16 @@ static const struct side_handler_t
 	{ NULL,        21, 0 },
 	{ prt_health,  12, EVENT_MONSTERHEALTH },
 	{ NULL,        20, 0 },
-	{ NULL,        22, 0 },
+	/*
+	 * A blank row was here.  It has been given up to make room for the place
+	 * line below, because the sidebar was already full: on a 24-line terminal
+	 * the top row carries messages and the bottom row the status line, leaving
+	 * twenty-two for the sidebar, and there were twenty-three entries.  The
+	 * priority filter let the new one through -- it is only dropped when the
+	 * screen is shorter than its priority -- and then the row counter ran it off
+	 * the bottom, underneath the status line, where it was drawn and instantly
+	 * covered.  Reported from play as still not showing, twice, and correctly.
+	 */
 	{ prt_speed,   13, EVENT_PLAYERSPEED }, /* Slow (-NN) / Fast (+NN) */
 	{ prt_depth,   14, EVENT_DUNGEONLEVEL }, /* Lev NNN / NNNN ft */
 	/*
