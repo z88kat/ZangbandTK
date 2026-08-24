@@ -128,6 +128,37 @@ Zangband's bestiary uses 118 distinct flag tokens.
 **CNT-05 — Town and wilderness monsters are imported** to populate WLD-11's six inhabitant
 types. This row is gated on the world existing.
 
+**CNT-20 — Not every creature is there to be fought.** A monster may carry a blessing
+instead of a threat: walking into it heals the toucher and it bounds away. Neither Angband's
+nor Zangband's — this is ZangbandTK's own, and it fits DEC-30's aim, since a numinous beast
+that appears, gives something and is gone is Amber's furniture rather than a dungeon
+crawler's.
+
+> **Built.** The `BLESSING` race flag, and a **white deer** in
+> [monster.zangbandtk.txt](../../lib/gamedata/monster.zangbandtk.txt) — a third bestiary
+> file, since a ZangbandTK original belongs neither in Angband's `monster.txt` nor in the
+> generated `monster.zangband.txt`, and the loader's own comment argues for keeping
+> provenance visible.
+>
+> *Once per beast, and that is the whole of the balance.* A full heal for nothing is worth
+> having; one that can be had again by following the beast and touching it a second time is
+> a character who never buys a potion again. The beast remembers, in `mflag`, which is
+> written to the savefile with the rest of the monster — so reloading does not wipe the
+> memory either. A second touch only sends it bounding off again.
+>
+> *Before the fear check*, so a character too frightened to swing can still be blessed —
+> which is when they most want it, and better than being told they are too afraid to touch a
+> deer. It is not killed and not removed: it goes on living in the world, with nothing more
+> to give.
+>
+> *Ten grids, not five.* The teleport effect picks the grid whose distance best approximates
+> what is asked and varies it by up to a quarter either way, so asking for the five it is
+> meant to clear lands short about half the time. Measured at ten, the worst of thirty bounds
+> is nine.
+>
+> *Open for tuning:* `rarity:4` at `depth:1`. A full heal per beast is a lucky find at that
+> rarity and would become a strategy if they were common; the knob is in the data file.
+
 ### Artifacts and ego items
 
 **CNT-06 — The 51 Zangband-only artifacts are imported**, including the Amber artifacts of

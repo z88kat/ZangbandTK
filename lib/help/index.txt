@@ -13,8 +13,9 @@ Please choose one of the following help files:
 
     (a) Available commands
     (b) Available symbols
-    (c) The dungeons of the world
-    (d) Cheats and debug commands
+    (c) Towns and services
+    (d) The dungeons of the world
+    (e) Cheats and debug commands
 
 
 
@@ -29,6 +30,8 @@ Browser/help commands:
 
 .. menu:: [b] symbols.txt
 
-.. menu:: [c] dungeons.txt
+.. menu:: [c] towns.txt
 
-.. menu:: [d] cheats.txt
+.. menu:: [d] dungeons.txt
+
+.. menu:: [e] cheats.txt

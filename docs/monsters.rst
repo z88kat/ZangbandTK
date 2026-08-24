@@ -76,3 +76,19 @@ ability to taunt you. Monsters possessing them behave as though they do not.
 A further group of abilities depends on the wilderness, which does not exist
 yet: which terrain a monster prefers, which dungeons it inhabits, and whether it
 can fly or swim.
+
+Not everything is there to be fought
+------------------------------------
+
+A **white deer** is a ``q`` in white, standing too still and too unafraid of
+you. Walk into it and it heals you — everything, whatever you were down to — and
+then bounds away a good ten grids and carries on grazing.
+
+It does that once. Follow it and touch it again and it shies from your hand and
+bounds off, and that is all. The beast remembers, and so does your savefile, so
+reloading does not persuade it either.
+
+You can kill it, if you want to. It carries nothing and is worth no experience,
+and it will not fight back.
+
+Deer are uncommon and live in quiet country. Finding one is luck, not a plan.

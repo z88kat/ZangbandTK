@@ -89,51 +89,19 @@ so a long trip down can put you back on the surface after dark.  Resting it
 out is 5,000 turns of resting; the inn is the answer, and it sells a bed only
 once it is dark.
 
-A '+' in a town is a service: something with a person behind the door rather
-than goods on a shelf.  They are told apart by colour, and the "slash" command
-('/') will name one.
+A '+' in a town is a service -- a healer, an inn, a magesmith, a recharger --
+and a '9' is a magetower.  A town has a healer, an inn and a magetower; a city
+adds the other two.  Shops come at a standard as well as a trade, written
+above the door, and there is only one house however many towns you open it in.
+Towns stand behind walls with gates you open like doors.
 
-  green   healer      binds wounds, cures ailments, restores drained stats
-                          and levels lost to life-draining attacks
-  brown   inn         a bed until morning, and sometimes a dream --
-                          a place you had not found, or a bad night
-  red     magesmith   puts magic on a weapon or a suit of armour
-  blue    recharger   puts charges back in a wand or a staff
+All of that is 'towns.txt', which also covers what you may dream if you buy a
+bed at the inn.
 
-A town has a healer, an inn and a magetower; a city adds the magesmith and the
-recharger.  A town that has fallen has none of them.  All of them charge.
-
-Every town has a home, and there is only one house: whichever town you open
-it in, you see what you left there.  A shop in another town is another shop
-and is stocked afresh; your house is not another house.
-
-Shops come at a standard as well as a trade, and it is written above the door:
-a plain "Weapon Smiths", or an "Advanced", "Expert" or "Arcane" one.  A better
-shop deals in deeper goods, puts better magic on them, and keeps a
-fuller shelf.
-Seven in ten are plain and one in fifty is arcane, so the good ones are worth
-travelling for.  The black market has no standard -- it is already the top of
-every ladder -- and your home village is always plain.
-
-A '9' in a town is a magetower.  Walk in and the mages will carry you to a
-town you have stood in or a dungeon mouth you have seen, for a fee that rises
-with the distance.  Anything above a village has one, unless it has fallen --
-and your own village always does.  You must be standing in a tower to use one.
-
-Every town has a name, and the status line shows it while you are inside the
-walls -- where Angband showed "Town".  Outside one it says "wilderness",
-which is what depth zero mostly is.  A name from the lawless list, like
-Sawall or Hendrake, is a place that has fallen: not somewhere to shop.
-
-Not every town has people in it.  Most do; about one in four has been emptied
-and taken back by animals, one in ten is held by monsters, and one in twenty
-stands empty with its shops still in it.  Law decides it: a town in country
-nobody polices has more often than not fallen, and a large town holds out
-longer than a hamlet.  Your own village always has people in it.
-
-Towns stand behind walls, with gates no more than two grids wide.  A gate is
-a closed door ('+') in the wall; open it to pass through, and it will swing
-shut behind you after a while.
+Not everything is there to be fought.  A white deer ('q', white) will heal
+you if you walk into it, and then bound away out of reach.  It does that
+once and never again, and it is not worth killing -- it carries nothing and
+is worth no experience.
 
 
 Objects

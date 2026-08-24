@@ -1783,6 +1783,10 @@ static errr run_parse_monster(struct parser *p) {
 	 * configuration, and is what M0 and M1 shipped.
 	 */
 	err = parse_file(p, "monster.zangband");
+	if (err && err != PARSE_ERROR_NO_FILE_FOUND) return err;
+
+	/* And a third for monsters that are neither Angband's nor Zangband's. */
+	err = parse_file(p, "monster.zangbandtk");
 
 	return (err == PARSE_ERROR_NO_FILE_FOUND) ? PARSE_ERROR_NONE : err;
 }

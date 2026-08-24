@@ -1,0 +1,22 @@
+# monster.zangbandtk.txt
+#
+# Monsters that are ZangbandTK's own -- neither Angband's (monster.txt) nor
+# imported from Zangband (monster.zangband.txt, which tools/zconv generates and
+# nobody hand-edits).  Kept apart for the same reason those two are: so that the
+# provenance of any given monster is obvious from the file it is in.
+
+name:white deer
+base:quadruped
+color:w
+speed:130
+hit-points:30
+hearing:40
+smell:20
+armor-class:30
+sleepiness:0
+depth:1
+rarity:4
+experience:0
+flags:BLESSING | ANIMAL | NEVER_BLOW | NO_FEAR | NO_SLEEP | RAND_25
+desc:A white deer, too still and too unafraid of you.  Walk into it and it will
+desc: heal what ails you and bound away; it will not do so twice.

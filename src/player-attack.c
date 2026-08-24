@@ -772,6 +772,58 @@ static void chaotic_effect(struct player *p, struct monster *mon)
 /**
  * Attack the monster at the given location with a single blow.
  */
+/**
+ * Walking into a blessed beast (ZangbandTK, CNT-20).
+ *
+ * Some creatures are not to be fought.  Touch one and it heals you and bounds
+ * away; there is no attack, no damage either way, and it is not angered.
+ *
+ * Once per beast, and that is the whole of the balance.  A full heal for nothing
+ * is worth having; a full heal for nothing that can be had again by walking after
+ * it and touching it a second time is a character who never needs a potion again.
+ * So the beast remembers -- in mflag, which is written to the savefile with the
+ * rest of the monster, so reloading does not wipe the memory either -- and a
+ * second touch only sends it bounding off again.
+ *
+ * It is deliberately not killed and not removed.  It goes on living in the world
+ * and you can meet it again; it simply has nothing more to give you.
+ */
+static void py_touch_blessed(struct player *p, struct monster *mon)
+{
+	char m_name[80];
+	bool given = mflag_has(mon->mflag, MFLAG_GAVE_BLESSING);
+
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
+
+	if (!given) {
+		mflag_on(mon->mflag, MFLAG_GAVE_BLESSING);
+
+		if (p->chp < p->mhp) {
+			p->chp = p->mhp;
+			p->upkeep->redraw |= (PR_HP);
+			msg("You touch %s, and your hurts close over.", m_name);
+		} else {
+			msg("You touch %s, and feel briefly weightless.", m_name);
+		}
+
+		/* Learn what it is, since it has just demonstrated it. */
+		if (monster_is_visible(mon))
+			rf_on(get_lore(mon->race)->flags, RF_BLESSING);
+	} else {
+		msg("%s shies away from your hand.", m_name);
+	}
+
+	/*
+	 * And away.  Ten rather than the five the beast is meant to clear, because
+	 * the teleport effect picks the grid whose distance best *approximates* what
+	 * is asked and then varies it by up to a quarter either way -- asking for
+	 * five would land short of five about half the time.  Measured at ten: the
+	 * worst of thirty bounds is nine grids.  See a-blessed-beast-bounds-away.
+	 */
+	effect_simple(EF_TELEPORT, source_monster(mon->midx), "10", 0, 0, 0,
+				  mon->grid.y, mon->grid.x, NULL);
+}
+
 bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 {
 	size_t i;
@@ -805,6 +857,19 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	if (monster_is_visible(mon)) {
 		monster_race_track(p->upkeep, mon->race);
 		health_track(p->upkeep, mon);
+	}
+
+	/*
+	 * ZangbandTK (CNT-20): some things are not fought.  Before the fear check,
+	 * so a character too frightened to swing can still be blessed -- which is
+	 * when they are most likely to want it, and a good deal better than being
+	 * told they are too afraid to touch a deer.
+	 */
+	if (rf_has(mon->race->flags, RF_BLESSING)) {
+		py_touch_blessed(p, mon);
+
+		/* Reported as a kill so the attack loop stops after the one touch. */
+		return true;
 	}
 
 	/* Handle player fear (only for invisible monsters) */

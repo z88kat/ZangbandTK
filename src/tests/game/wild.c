@@ -30,6 +30,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player.h"
+#include "player-attack.h"
 #include "player-birth.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -3147,6 +3148,104 @@ static int test_the_quality_ladder_is_a_ladder(void *state) {
 }
 
 /**
+ * Walking into a blessed beast heals you and sends it bounding away (CNT-20).
+ *
+ * And once only.  A full heal for nothing is worth having; a full heal for
+ * nothing that can be had again by following the beast and touching it a second
+ * time is a character who never buys a potion again, so the beast remembers.
+ */
+static int test_a_blessed_beast_bounds_away(void *state) {
+	struct monster_race *race = NULL;
+	struct monster *mon;
+	struct loc grid = player->grid, first;
+	struct monster_group_info info = { 0, 0 };
+	int i, hurt;
+
+	for (i = 1; i < z_info->r_max; i++)
+		if (r_info[i].name && rf_has(r_info[i].flags, RF_BLESSING)) {
+			race = &r_info[i];
+			break;
+		}
+	notnull(race);
+
+	/* Somewhere beside the player that will hold it. */
+	do {
+		grid.x++;
+		require(grid.x < cave->width - 1);
+	} while (!square_isempty(cave, grid) || square_isdamaging(cave, grid));
+
+	require(place_new_monster(cave, grid, race, false, false, info,
+							  ORIGIN_DROP));
+	mon = square_monster(cave, grid);
+	notnull(mon);
+	first = mon->grid;
+
+	/* A character in a bad way. */
+	player->chp = 1;
+	hurt = player->mhp - player->chp;
+	require(hurt > 0);
+
+	py_attack(player, grid);
+
+	/* Healed... */
+	eq(player->chp, player->mhp);
+
+	/* ...and gone from where it stood, by a good way. */
+	notnull(mon->race);
+	require(distance(mon->grid, first) >= 5);
+
+	/* It is not dead.  It has simply left. */
+	require(mon->hp > 0);
+
+	/* A second touch gives nothing. */
+	player->chp = 1;
+	first = mon->grid;
+
+	/* Stand next to it again rather than chase it across the level. */
+	player->grid = loc(first.x - 1, first.y);
+	if (!square_isempty(cave, player->grid)) {
+		player->grid = loc(first.x + 1, first.y);
+	}
+	py_attack(player, first);
+
+	eq(player->chp, 1);
+
+	/* But it still bounds away from the hand. */
+	require(distance(mon->grid, first) >= 5);
+
+	/*
+	 * And it always does.  The teleport effect picks the grid whose distance
+	 * best approximates what is asked and then varies it by up to a quarter
+	 * either way, so "at least five" is not something asking for five would
+	 * deliver -- it lands short about half the time.  Asking for ten and
+	 * measuring the worst of thirty bounds is what settled the number.
+	 */
+	{
+		int touch, worst = 999;
+
+		for (touch = 0; touch < 30; touch++) {
+			struct loc was = mon->grid;
+			int d;
+
+			player->grid = loc(was.x - 1, was.y);
+			if (!square_isempty(cave, player->grid))
+				player->grid = loc(was.x + 1, was.y);
+			if (!square_isempty(cave, player->grid)) continue;
+
+			py_attack(player, was);
+
+			d = distance(mon->grid, was);
+			if (d < worst) worst = d;
+		}
+
+		printf("DEER worst bound of thirty: %d grids\n", worst);
+		require(worst >= 5);
+	}
+
+	ok;
+}
+
+/**
  * The inn's dreams follow the law of the place you sleep in (PLR-41).
  *
  * The point of keying them on the town rather than rolling flat is that every inn
@@ -3735,6 +3834,7 @@ struct test tests[] = {
 	{ "no-road-goes-nowhere", test_no_road_goes_nowhere },
 	{ "the-road-runs-up-to-a-gate", test_the_road_runs_up_to_a_gate },
 	{ "the-quality-ladder-is-a-ladder", test_the_quality_ladder_is_a_ladder },
+	{ "a-blessed-beast-bounds-away", test_a_blessed_beast_bounds_away },
 	{ "the-inn-dreams-by-the-law", test_the_inn_dreams_by_the_law },
 	{ "a-true-dream-shows-the-nearest-place", test_a_true_dream_shows_the_nearest_place },
 	{ "the-lotus-is-an-unknown-mushroom", test_the_lotus_is_an_unknown_mushroom },

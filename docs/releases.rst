@@ -31,6 +31,17 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.17.0** — CNT-20: **not everything is there to be fought.** A white deer
+  stands too still and too unafraid of you; walk into it and it heals you —
+  everything, whatever you were down to — then bounds away ten grids and carries
+  on grazing. Once per deer, and the deer remembers, savefile included, so
+  following it about does not work. It will not fight back, carries nothing and
+  is worth no experience. They are uncommon and live in quiet country, so finding
+  one is luck rather than a plan. Neither Angband's nor Zangband's — it goes in a
+  third bestiary file so its provenance stays obvious.
+  Also: the in-game manual gains a **Towns and services** page, which is where the
+  inn's dreams, the shop quality ladder and the one-house rule now live properly
+  rather than crammed into the symbol reference.
 - **3.16.0** — PLR-41: **the inn's dream**, which closes the last open item from
   DEC-32. Zangband's inn carried a nightmare that reached the sanity blast we
   dropped; the dream survives it. Sleep and you may see a true dream, which puts
@@ -113,7 +124,7 @@ M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
   reveals the country, and at night you see as far as your lamp — which is
   indistinguishable from a broken map if nothing tells you the hour. Both cheats
   and the debug commands are now documented, in the manual and in the in-game
-  help as page (d).
+  help as page (e).
 - **3.11.2** — Your home village always has a magetower now: travel was
   unusable from the one place every journey starts. The status line also refreshes
   the place name as you walk out of a town, where before it kept showing the town

@@ -76,7 +76,7 @@ edit:
 	@touch langinfo.h
 	@sed -i generate.c -e 's/"dungeon_profile"/"dungeon_"/' -e 's/"room_template"/"room_tem"/'
 	@sed -i init.c -e 's/"constants"/"constant"/' -e 's/"customize"/"customiz"/' -e 's/"player_property"/"player_p"/'
-	@sed -i mon-init.c -e 's/"blow_effects"/"blow_eff"/' -e 's/"blow_methods"/"blow_met"/' -e 's/"monster_base"/"monster_"/' -e 's/"monster_spell"/"monster2"/' -e 's/"monster\.zangband"/"monster3"/'
+	@sed -i mon-init.c -e 's/"blow_effects"/"blow_eff"/' -e 's/"blow_methods"/"blow_met"/' -e 's/"monster_base"/"monster_"/' -e 's/"monster_spell"/"monster2"/' -e 's/"monster\.zangbandtk"/"monster4"/' -e 's/"monster\.zangband"/"monster3"/'
 	@sed -i obj-chest.c -e 's/"chest_trap"/"chest_tr"/'
 	@sed -i obj-init.c -e 's/"activation"/"activati"/' -e 's/"object_base"/"object_b"/' -e 's/"object_property"/"object_p"/' -e 's/"projection"/"projecti"/' -e 's/"artifact\.zangband"/"artifac2"/' -e 's/"ego_item\.zangband"/"ego_ite2"/'
 	@sed -i player-timed.c -e 's/"player_timed"/"player_t"/' -e 's/"player timed effects"/"player_t"/'
@@ -118,6 +118,7 @@ dist:
 	@mv $(TMPDIR)/lib/gamedata/monster_base.txt $(TMPDIR)/lib/gamedata/monster_.txt
 	@mv $(TMPDIR)/lib/gamedata/monster_spell.txt $(TMPDIR)/lib/gamedata/monster2.txt
 	@mv $(TMPDIR)/lib/gamedata/monster.zangband.txt $(TMPDIR)/lib/gamedata/monster3.txt
+	@mv $(TMPDIR)/lib/gamedata/monster.zangbandtk.txt $(TMPDIR)/lib/gamedata/monster4.txt
 	@mv $(TMPDIR)/lib/gamedata/old_class.txt $(TMPDIR)/lib/gamedata/old_clas.txt
 	@mv $(TMPDIR)/lib/gamedata/object_base.txt $(TMPDIR)/lib/gamedata/object_b.txt
 	@mv $(TMPDIR)/lib/gamedata/object_property.txt $(TMPDIR)/lib/gamedata/object_p.txt

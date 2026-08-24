@@ -1,0 +1,131 @@
+Towns and Services
+==================
+
+Angband has one town and it is a shop counter.  Here there are a dozen or so
+places, they differ from one another, and some of them have gone bad.
+
+
+What stands in a town
+---------------------
+
+Shops are the letters and numbers you know from Angband.  A '+' is a service:
+something with a person behind the door rather than goods on a shelf.  They
+are told apart by colour, and the "slash" command ('/') will name one.
+
+  green   healer      binds wounds, cures ailments, restores drained stats
+                          and levels lost to life-draining attacks
+  brown   inn         a bed until morning, and sometimes a dream
+  red     magesmith   puts magic on a weapon or a suit of armour
+  blue    recharger   puts charges back in a wand or a staff
+
+A '9' is a magetower.  Walk in and the mages will carry you to a town you have
+stood in or a dungeon mouth you have seen, for a fee that rises with the
+distance.  You must be standing in a tower to use one.
+
+A town has a healer, an inn and a magetower; a city adds the magesmith and the
+recharger.  A town that has fallen has none of them.  Anything above a village
+has a magetower, and your own village always does.  All of them charge.
+
+
+A night at the inn
+------------------
+
+The inn sells you a bed until morning, and only after dark -- by day the
+innkeeper will tell you to travel while it is light.  It is the answer to a
+night in the wilderness: daylight is what reveals the country, night lasts
+5,000 turns, and resting that out is 5,000 turns of resting.
+
+But a bed is not only a way of skipping the night.  Some nights you dream.
+
+A TRUE DREAM shows you a place.  The nearest town or dungeon mouth you have
+not yet found appears on the world map, and you wake knowing its name and
+where it stands.  This is the reason to buy a bed on a night you could have
+walked through.
+
+It shows you where the place is.  It does not take you there.  The magetower
+carries you only to places you have actually stood in, and a dream is not a
+visit -- so you still have to make the walk.  You now know which way, which
+is the hard part.
+
+A DARK DREAM sets something hunting you through your sleep.  It will be
+something you have met: whatever you have seen and remember, leaning towards
+the worst of it.  Hold your nerve and you merely remember the thing in the
+morning.  Fail, and you wake frightened or confused, and it wears off.  A
+character who has not met anything memorable yet has nothing to dream about.
+
+Which you get depends on the law of the town you sleep in.  A well-ordered
+city is a good place to sleep and a frontier town is not:
+
+  a town at the edge of what is governed   true 1 night in 11, dark 1 in 4
+  a well-ordered city                      true 1 night in 4,  dark almost
+                                                                   never
+
+Most nights, in either, are just a night.  And a town that has fallen has no
+inn at all, so the worst country never gets the chance to give you the worst
+dreams.
+
+
+How good a shop is
+------------------
+
+Shops come at a standard as well as a trade, and it is written above the door:
+a plain "Weapon Smiths", or an "Advanced", "Expert" or "Arcane" one.  A better
+shop deals in deeper goods, puts better magic on them, and keeps a fuller
+shelf.  Seven in ten are plain and one in fifty is arcane, so the good ones
+are worth travelling for.
+
+The black market has no standard -- it is already the top of every ladder --
+and your home village is always plain.
+
+A trade's shelves are restocked when you take your custom to a different town.
+Walking out of a shop and back in does not change what is in it.
+
+
+Your house
+----------
+
+Every town has a home, and there is only one house: whichever town you open it
+in, you see what you left there.  A shop in another town is another shop and
+is stocked afresh; your house is not another house.
+
+
+Which shops a place keeps
+-------------------------
+
+Not every place carries all eight.  How many it keeps follows from its size;
+which ones it keeps follows from the country around it.  The armoury and the
+weaponsmith follow people and order, the bookseller gathers where it is safe
+to gather, the magic shop wants both people and law, and the black market
+keeps out of the light -- it appears where law is thin and people are many,
+which is rare and worth the walk.
+
+Your own village is the exception.  Its shops are fixed rather than drawn: a
+general store, an alchemist, a bookseller and your home.  It has no armoury
+and no weaponsmith; those are in the next town along.
+
+
+Names, and towns that have gone bad
+-----------------------------------
+
+Every town has a name, and the status line shows it while you are inside the
+walls -- where Angband showed "Town".  Outside one it says "wilderness", which
+is what depth zero mostly is.  A name from the lawless list, like Sawall or
+Hendrake, is a place that has fallen: not somewhere to shop.
+
+Not every town has people in it.  Most do; about one in four has been emptied
+and taken back by animals, one in ten is held by monsters, and one in twenty
+stands empty with its shops still in it.  Law decides it: a town in country
+nobody polices has more often than not fallen, and a large town holds out
+longer than a hamlet.  Your own village always has people in it.
+
+A town that has been taken still trades.  Its shops are doors in walls rather
+than shopkeepers, so you can walk in past whatever is holding the place -- but
+it keeps no services, and whatever is holding it is still there.
+
+
+Walls and gates
+---------------
+
+Towns stand behind walls, with gates no more than two grids wide.  A gate is a
+closed door ('+') in the wall; open it to pass through, and it will swing shut
+behind you after a while.
