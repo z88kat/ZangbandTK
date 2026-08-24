@@ -3281,6 +3281,76 @@ static int test_a_blessed_beast_bounds_away(void *state) {
 }
 
 /**
+ * A world seed keeps producing the same world (WLD-03).
+ *
+ * The world is never written to a savefile; it regenerates from the seed, and a
+ * character's knowledge of it is stored by *name* -- which towns they have
+ * visited, which dungeons they have found.  So if generation changes, an
+ * existing character wakes up in a rearranged world and their knowledge is
+ * silently dropped on the floor, because the names no longer match anything.
+ *
+ * That is not hypothetical.  Adding the magic fractal for WLD-15 put one more
+ * draw in the middle of the shared world-seed stream, which shifted every draw
+ * after it: rivers, lakes, towns, their names, their sizes, the dungeons and the
+ * roads. Every existing character's world was quietly replaced. It surfaced as a
+ * magetower that had gone empty -- the savefile recorded a visit to a great city
+ * called Helgram, the regenerated world had no such place, and the visit was
+ * discarded on load, so the mages would carry the character nowhere.
+ *
+ * This pins one seed's world so that never happens quietly again.  If a change
+ * to generation breaks this test, the test is doing its job: either the change
+ * belongs on a stream of its own, the way magic now is, or it really does mean
+ * every existing character gets a new world and somebody should say so out loud.
+ */
+static int test_a_seed_keeps_its_world(void *state) {
+	static const struct { const char *name; int x, y, band; } expect[] = {
+		{ "Weirmonken", 36,  66, 0 },
+		{ "Kashfa",     55,  83, 0 },
+		{ "Sawall",     54,  71, 0 },
+		{ "Eregnor",   105,  15, 1 },
+		{ "Deiga",      51,   5, 1 },
+		{ "Ghenesh",    11, 123, 3 },
+		{ "Helgram",    24,  65, 3 },
+		{ "Avalon",     69,   8, 0 },
+		{ "Lorraine",   28, 118, 2 },
+		{ "Chantris",   92,  13, 0 },
+		{ "Amblerash",  12,  59, 3 },
+		{ "Begma",      66, 103, 0 },
+	};
+	struct wilderness *w = wild_new(129, 44428972);
+	int i;
+
+	wild_generate(w);
+
+	eq(wild_town_count(w), (int) N_ELEMENTS(expect));
+
+	for (i = 0; i < wild_town_count(w); i++) {
+		notnull(w->towns[i].name);
+
+		if (!streq(w->towns[i].name, expect[i].name) ||
+			w->towns[i].block.x != expect[i].x ||
+			w->towns[i].block.y != expect[i].y ||
+			w->towns[i].band != expect[i].band)
+			printf("town %d is %s at %d,%d band %d; was %s at %d,%d band %d\n",
+				   i, w->towns[i].name, w->towns[i].block.x,
+				   w->towns[i].block.y, w->towns[i].band, expect[i].name,
+				   expect[i].x, expect[i].y, expect[i].band);
+
+		require(streq(w->towns[i].name, expect[i].name));
+		eq(w->towns[i].block.x, expect[i].x);
+		eq(w->towns[i].block.y, expect[i].y);
+		eq(w->towns[i].band, expect[i].band);
+	}
+
+	/* The dungeons move with everything else, so count them too. */
+	eq(w->dungeon_count, 13);
+
+	wild_free(w);
+
+	ok;
+}
+
+/**
  * A road out of a gate goes somewhere (WLD-08).
  *
  * Reported from play: "the road goes out of the town but just ends."  It did.
@@ -4111,6 +4181,7 @@ struct test tests[] = {
 	{ "the-road-runs-up-to-a-gate", test_the_road_runs_up_to_a_gate },
 	{ "the-quality-ladder-is-a-ladder", test_the_quality_ladder_is_a_ladder },
 	{ "a-blessed-beast-bounds-away", test_a_blessed_beast_bounds_away },
+	{ "a-seed-keeps-its-world", test_a_seed_keeps_its_world },
 	{ "a-road-out-of-a-gate-goes-somewhere", test_a_road_out_of_a_gate_goes_somewhere },
 	{ "the-game-can-be-won", test_the_game_can_be_won },
 	{ "the-unicorn-makes-you-whole", test_the_unicorn_makes_you_whole },

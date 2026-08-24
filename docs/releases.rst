@@ -31,6 +31,18 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.21.1** — **Your world is your world again.** Adding the magic fractal at
+  3.14.0 put one more draw into the middle of the shared world-seed stream, which
+  shifted every draw after it — so every existing character's world was quietly
+  replaced: different rivers, different towns in different places with different
+  names. The world is never saved (it regenerates from the seed) and what you know
+  of it is stored by *name*, so a character who had walked to a great city called
+  Helgram was loaded into a world with no such place, and the visit was discarded.
+  That is why the magetower took your money and carried you nowhere: the
+  destination it offered had ceased to exist. Magic now draws from a stream of its
+  own and the shared one is left exactly as it was, so worlds made before 3.14.0
+  come back the way they were. Characters made *between* 3.14.0 and here will
+  shift once more, back to their original world.
 - **3.21.0** — **A road out of a gate goes somewhere.** Reported from play: the
   road leaves the town and just stops. It did. The approach paved three grids out
   of every gate and *then* went looking for the road network to join, so every

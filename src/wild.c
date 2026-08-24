@@ -2165,7 +2165,30 @@ void wild_generate(struct wilderness *w)
 	wild_plasma(hgt, size, 24);
 	wild_plasma(pop, size, 12);
 	wild_plasma(law, size, 12);
-	wild_plasma(magic, size, 12);
+	/*
+	 * Magic runs on a stream of its own, and that is not a detail.
+	 *
+	 * Every draw here comes from one stream seeded by the world seed, so a
+	 * fractal added to the middle of this sequence shifts every draw after it
+	 * and the whole world comes out different -- different rivers, different
+	 * towns, in different places, with different names.  Which is what happened
+	 * when this line was first added between law and the rest: every existing
+	 * character's world was quietly rearranged under them, and a savefile that
+	 * recorded a visit to a town called Helgram was loaded into a world with no
+	 * such place.  The visit was dropped on the floor, because town knowledge is
+	 * stored by name.
+	 *
+	 * Taking magic from its own stream and putting the shared one back leaves
+	 * every other draw exactly where it was, so worlds made before magic existed
+	 * still come out the way they did.
+	 */
+	{
+		uint32_t keep = Rand_value;
+
+		Rand_value = w->seed ^ 0x9E3779B9;
+		wild_plasma(magic, size, 12);
+		Rand_value = keep;
+	}
 
 	for (i = 0; i < count; i++) {
 		struct wild_block *block = &w->map[i];
