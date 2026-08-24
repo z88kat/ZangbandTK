@@ -3466,6 +3466,63 @@ static int test_a_road_out_of_a_gate_goes_somewhere(void *state) {
 }
 
 /**
+ * Quest-giving is carried by a building, and only where there is one (WLD-16d).
+ *
+ * The point of the requirement is that it is a *property*, not a building type:
+ * whichever door has it hands out work, and moving it is a line of code rather
+ * than a new building, a new door and a new terrain.  What this defends is that
+ * it is attached to a service the town actually has -- a town promising work
+ * behind a door it does not possess is a town nobody can take work from.
+ */
+static int test_work_is_offered_where_there_is_a_door(void *state) {
+	int seed, giving = 0, towns = 0;
+
+	for (seed = 1; seed <= 8; seed++) {
+		struct wilderness *w = wild_new(129, seed * 4409);
+		int i;
+
+		wild_generate(w);
+
+		for (i = 0; i < wild_town_count(w); i++) {
+			struct wild_town *tn = &w->towns[i];
+			int s;
+
+			towns++;
+
+			for (s = 0; s < WILD_SERVICE_MAX; s++) {
+				if (!wild_gives_quests(w, i, s)) continue;
+
+				/* The door it is behind has to be one the town has. */
+				require(tn->services & (1u << s));
+				giving++;
+			}
+
+			/*
+			 * A town held by monsters or standing empty keeps no services at
+			 * all, so there is no door for work to be behind.  A town the
+			 * animals have taken back does keep them -- wild_town_services()
+			 * only empties the other two -- so it is not checked here.
+			 */
+			if (tn->folk == WILD_FOLK_MONSTER ||
+				tn->folk == WILD_FOLK_ABANDONED)
+				eq(tn->quest_givers, 0);
+		}
+
+		wild_free(w);
+	}
+
+	printf("QUESTS %d towns, %d with work to offer\n", towns, giving);
+
+	/* Somebody is hiring, or this tests nothing. */
+	require(giving > 0);
+
+	/* And not everybody: a village keeps no inn, so work is worth walking to. */
+	require(giving < towns);
+
+	ok;
+}
+
+/**
  * The game can actually be won (WLD-20, WLD-21, DEC-30).
  *
  * The fixed quests are the ones the game ends on, and every way of getting them
@@ -3481,9 +3538,14 @@ static int test_a_road_out_of_a_gate_goes_somewhere(void *state) {
 static int test_the_game_can_be_won(void *state) {
 	int i, fixed = 0;
 
-	require(z_info->quest_max > 0);
+	require(z_info->quest_fixed > 0);
 
-	for (i = 0; i < (int) z_info->quest_max; i++) {
+	/*
+	 * The fixed ones only.  The list has room past them for work taken from a
+	 * building (WLD-16d), and those slots are empty until somebody fills one --
+	 * they are not quests the game ends on and they have no name yet.
+	 */
+	for (i = 0; i < (int) z_info->quest_fixed; i++) {
 		const struct quest *q = &player->quests[i];
 		const struct dun_type *type;
 
@@ -4183,6 +4245,7 @@ struct test tests[] = {
 	{ "a-blessed-beast-bounds-away", test_a_blessed_beast_bounds_away },
 	{ "a-seed-keeps-its-world", test_a_seed_keeps_its_world },
 	{ "a-road-out-of-a-gate-goes-somewhere", test_a_road_out_of_a_gate_goes_somewhere },
+	{ "work-is-offered-where-there-is-a-door", test_work_is_offered_where_there_is_a_door },
 	{ "the-game-can-be-won", test_the_game_can_be_won },
 	{ "the-unicorn-makes-you-whole", test_the_unicorn_makes_you_whole },
 	{ "the-inn-dreams-by-the-law", test_the_inn_dreams_by_the_law },

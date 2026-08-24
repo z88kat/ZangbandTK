@@ -80,6 +80,8 @@ struct angband_constants
 	uint16_t equip_slots_max;	/**< Maximum number of player equipment slots */
 	uint16_t profile_max;	/**< Maximum number of cave_profiles */
 	uint16_t quest_max;	/**< Maximum number of quests */
+	uint16_t quest_slots;	/**< How many quests may be taken at once (WLD-16d) */
+	uint16_t quest_fixed;	/**< How many come from quest.txt (WLD-16d) */
 	uint16_t projection_max;	/**< Maximum number of projection types */
 	uint16_t calculation_max;	/**< Maximum number of object power calculations */
 	uint16_t property_max;	/**< Maximum number of object properties */

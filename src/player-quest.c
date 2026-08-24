@@ -119,14 +119,23 @@ static errr finish_parse_quest(struct parser *p) {
 		quest = quest->next;
 	}
 
+	/*
+	 * ZangbandTK (WLD-16d): and room for the quests that are taken rather than
+	 * shipped.  The list is a fixed array, so the slots have to exist before
+	 * anybody can be given anything; the ones past the file are empty and
+	 * untaken until a building fills one in.
+	 */
+	z_info->quest_fixed = z_info->quest_max;
+	z_info->quest_max += z_info->quest_slots;
+
 	/* Allocate the direct access list and copy the data to it */
 	quests = mem_zalloc(z_info->quest_max * sizeof(*quest));
-	count = z_info->quest_max - 1;
+	count = z_info->quest_fixed - 1;
 	for (quest = parser_priv(p); quest; quest = next, count--) {
 		memcpy(&quests[count], quest, sizeof(*quest));
 		quests[count].index = count;
 		next = quest->next;
-		if (count < z_info->quest_max - 1)
+		if (count < z_info->quest_fixed - 1)
 			quests[count].next = &quests[count + 1];
 		else
 			quests[count].next = NULL;
@@ -200,6 +209,16 @@ void player_quests_reset(struct player *p)
 	p->quests = mem_zalloc(z_info->quest_max * sizeof(struct quest));
 
 	for (i = 0; i < z_info->quest_max; i++) {
+		/*
+		 * The slots past the file are empty until something is taken into one
+		 * (WLD-16d).  string_make(NULL) would be a name of its own.
+		 */
+		if (i >= z_info->quest_fixed) {
+			p->quests[i].state = QUEST_UNTAKEN;
+			p->quests[i].fixed = false;
+			continue;
+		}
+
 		p->quests[i].name = string_make(quests[i].name);
 		p->quests[i].level = quests[i].level;
 		p->quests[i].race = quests[i].race;
@@ -262,6 +281,75 @@ static void build_quest_stairs(struct player *p, struct loc grid)
 /**
  * Check if this (now dead) monster is a quest monster, and act appropriately
  */
+/**
+ * Take a quest into the first free slot (ZangbandTK, WLD-16d).
+ *
+ * \return the quest, or NULL when the character is already carrying as many as
+ * the list has room for.
+ */
+struct quest *quest_take(struct player *p, const char *name,
+						 struct monster_race *race, int number)
+{
+	int i;
+
+	for (i = z_info->quest_fixed; i < z_info->quest_max; i++) {
+		struct quest *q = &p->quests[i];
+
+		if (q->state != QUEST_UNTAKEN) continue;
+
+		string_free(q->name);
+		q->name = string_make(name);
+		q->race = race;
+		q->cur_num = 0;
+		q->max_num = number;
+		q->level = 0;
+		q->dungeon = 0;
+		q->fixed = false;
+		q->state = QUEST_TAKEN;
+
+		return q;
+	}
+
+	return NULL;
+}
+
+/**
+ * A quest the character has taken and not yet handed back (WLD-16d).
+ *
+ * \param done selects between one that is finished and waiting to be reported
+ * and one still being worked on.
+ */
+struct quest *quest_carried(struct player *p, bool done)
+{
+	int i;
+
+	for (i = z_info->quest_fixed; i < z_info->quest_max; i++) {
+		struct quest *q = &p->quests[i];
+
+		if (q->fixed) continue;
+		if (q->state == (done ? QUEST_COMPLETE : QUEST_TAKEN)) return q;
+	}
+
+	return NULL;
+}
+
+/**
+ * Report a quest done, and free its slot (WLD-16d).
+ */
+void quest_hand_back(struct player *p, struct quest *q)
+{
+	(void) p;
+
+	if (!q) return;
+
+	string_free(q->name);
+	q->name = NULL;
+	q->race = NULL;
+	q->cur_num = 0;
+	q->max_num = 0;
+	q->state = QUEST_UNTAKEN;
+}
+
 bool quest_check(struct player *p, const struct monster *m)
 {
 	int i, unfinished = 0;
@@ -271,10 +359,16 @@ bool quest_check(struct player *p, const struct monster *m)
 	for (i = 0; i < z_info->quest_max; i++) {
 		struct quest *q = &p->quests[i];
 
-		/* Note completed quests */
-		if (cave->depth == q->level && m->race == q->race &&
-			q->state == QUEST_TAKEN &&
-			(!q->dungeon || q->dungeon == p->dungeon)) {
+		/*
+		 * Note completed quests.  A fixed quest is a place as much as a
+		 * monster -- the Serpent is at the bottom of the Courts of Chaos and
+		 * nowhere else -- but a bounty taken from a townsman is about the
+		 * creature, and it counts wherever you find one (WLD-16d).
+		 */
+		if (m->race == q->race && q->state == QUEST_TAKEN &&
+			(!q->fixed ||
+			 (cave->depth == q->level &&
+			  (!q->dungeon || q->dungeon == p->dungeon)))) {
 			q->cur_num++;
 
 			if (q->cur_num == q->max_num) {

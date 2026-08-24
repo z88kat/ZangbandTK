@@ -548,6 +548,31 @@ reworking each time. It costs nothing now and forecloses nothing.
 pairs well with WLD-11's town inhabitant types — who is drinking in a frontier village inn
 differs from a lawful city's. Not scheduled; recorded so M5 and M6 do not design it out.
 
+> **Built (M6).** `quest_givers` on `struct wild_town`, a bit per service, and
+> `wild_gives_quests()` asks it. `ui_enter_service()` runs the work before the building's own
+> business, so walking into an inn that is hiring offers the job before it offers a bed —
+> and nothing in that path knows what an inn is. Moving the property to the magetower in
+> `wild_town_quest_givers()` is one line, and the magetower starts commissioning retrievals.
+>
+> *The inn carries it, and the reason is not arbitrary.* It is where people who have been
+> somewhere else are sitting — and a town that has fallen keeps no services, so the work
+> dries up exactly where you would expect it to without a rule saying so. Measured: 46 towns
+> in 96 have work to offer, so it is worth walking to and not everywhere.
+>
+> *The quest list gained room.* `quest.txt` sizes the array, and everything in it is a quest
+> the game is *won* by. Work taken from a building goes in a slot past those —
+> `wild:quest-slots` in `constants.txt`, eight of them — and the slot is freed when the job
+> is handed back. Guarded by work-never-overwrites-the-endgame, since the two live in one
+> array and a bounty written over Oberon would either end the game for killing three orcs or
+> quietly make the ending unreachable.
+>
+> *What it gives is a bounty*, which is the cheapest of WLD-19's six types and the only one
+> needing nothing the game has not got — so it is the one that proves the WLD-20 lifecycle
+> end to end: taken, carried, completed by killing, reported, paid. The other five are
+> WLD-19. One simplification to revisit there: the work can be handed back at any hiring
+> building rather than the one that gave it, because recording the giver means another
+> savefile field and the bounty did not need it to be tested.
+
 **WLD-17 — Stores reuse 4.2's store system.** [store.txt](../../lib/gamedata/store.txt) and
 `src/store.c` are extended with new store types rather than replaced. Implements W-3.
 

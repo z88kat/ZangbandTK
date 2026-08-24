@@ -27,6 +27,10 @@ bool is_quest(struct player *p, int level);
 void player_quests_reset(struct player *p);
 void player_quests_free(struct player *p);
 bool quest_check(struct player *p, const struct monster *m);
+struct quest *quest_take(struct player *p, const char *name,
+						 struct monster_race *race, int number);
+struct quest *quest_carried(struct player *p, bool done);
+void quest_hand_back(struct player *p, struct quest *q);
 extern struct file_parser quests_parser;
 
 

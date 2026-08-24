@@ -599,6 +599,8 @@ static enum parser_error parse_constants_wild(struct parser *p) {
 		z->wild_mon_rarity_night = value;
 	} else if (streq(label, "relic-half-life")) {
 		z->relic_half_life = value;
+	} else if (streq(label, "quest-slots")) {
+		z->quest_slots = value;
 	} else if (streq(label, "rivers")) {
 		z->wild_rivers = value;
 	} else if (streq(label, "lakes")) {

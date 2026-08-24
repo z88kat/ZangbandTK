@@ -31,6 +31,16 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.23.0** — WLD-16d: **somebody will give you work.** Walk into an inn that
+  is hiring and you are offered a job before you are offered a bed: kill so many
+  of a creature, come back, be paid. Quest-giving is a *property* a building
+  carries rather than a building of its own — nothing in that path knows what an
+  inn is, and moving it to the magetower is one line. The inn has it because that
+  is where people who have been somewhere else are sitting, and because a town
+  that has fallen keeps no services, so the work dries up exactly where you would
+  expect without a rule saying so. About half the towns in a world are hiring.
+  The quest list gained eight slots for work taken this way, kept strictly apart
+  from the two quests the game is won by.
 - **3.22.1** — **The place line actually appears now.** Third attempt, and the
   first two failed for two different reasons. It was given the lowest priority
   in the sidebar, so it was dropped on any screen shorter than 25 lines (fixed

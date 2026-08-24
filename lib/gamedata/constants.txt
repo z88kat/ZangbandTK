@@ -521,6 +521,13 @@ wild:monster-rarity-night:10000
 # a remarkably long time, which is how lost property behaves.
 wild:relic-half-life:3
 
+# How many quests a character may have running at once (WLD-16d).
+#
+# Room in the quest list beyond the fixed ones from quest.txt, which are the
+# quests the game is *won* by and are not taken from anybody. A quest taken from
+# a building goes in one of these, and is freed again when it is handed back.
+wild:quest-slots:8
+
 # Rivers and lakes (WLD-08), Zangband's own figures.
 #
 # Rivers start from this many points squared, spread evenly over the map: 4

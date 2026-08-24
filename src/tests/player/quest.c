@@ -23,6 +23,14 @@ int setup_tests(void **state) {
 	z_info = mem_zalloc(sizeof(struct angband_constants));
 	z_info->pack_size = 23;
 	z_info->quest_max = 1;
+	/*
+	 * One quest, and it is a fixed one: quest_fixed is how many of the list
+	 * come from quest.txt, and everything past it is a slot for work taken
+	 * from a building (WLD-16d).
+	 */
+	z_info->quest_fixed = 1;
+	z_info->quest_slots = 4;
+	z_info->quest_max += z_info->quest_slots;
 	z_info->quiver_size = 10;
 	quests = &test_quest;
 	player_init(p);
@@ -161,11 +169,89 @@ static int test_winning_counts_only_fixed_quests(void *state) {
 	ok;
 }
 
+/**
+ * Work is taken into a slot, carried, and handed back (WLD-16d).
+ *
+ * The slots past quest.txt are what makes a quest something that can be
+ * accepted at all.  Without them the list holds only the quests the game is won
+ * by, which nobody hands out and nobody hands back.
+ */
+static int test_work_is_taken_and_handed_back(void *state) {
+	struct player *p = state;
+	struct quest *q;
+
+	player_quests_reset(p);
+
+	/* Nothing carried to begin with. */
+	null(quest_carried(p, false));
+	null(quest_carried(p, true));
+
+	q = quest_take(p, "3 orcs", &test_r_human, 3);
+	notnull(q);
+
+	/* It went into a slot past the fixed ones, and it is not one of them. */
+	require(q->index >= 0);
+	require(!q->fixed);
+	eq(q->state, QUEST_TAKEN);
+	eq(q->max_num, 3);
+	eq(q->cur_num, 0);
+
+	/* Carried, and not yet done. */
+	require(quest_carried(p, false) == q);
+	null(quest_carried(p, true));
+
+	/* Done, and waiting to be reported. */
+	q->state = QUEST_COMPLETE;
+	null(quest_carried(p, false));
+	require(quest_carried(p, true) == q);
+
+	/* Handed back, and the slot is free again. */
+	quest_hand_back(p, q);
+	eq(q->state, QUEST_UNTAKEN);
+	null(q->name);
+	null(quest_carried(p, false));
+	null(quest_carried(p, true));
+
+	ok;
+}
+
+/**
+ * Taking work never touches the quests the game ends on (WLD-16d, WLD-20).
+ *
+ * The two live in one array, and the fixed ones are at the front.  A bounty
+ * written over Oberon would end the game the moment the character killed three
+ * orcs -- or, worse, quietly make the ending unreachable.
+ */
+static int test_work_never_overwrites_the_endgame(void *state) {
+	struct player *p = state;
+	int i, taken = 0;
+
+	player_quests_reset(p);
+
+	/* Fill every slot there is, and then some. */
+	for (i = 0; i < (int) z_info->quest_max + 4; i++)
+		if (quest_take(p, "work", &test_r_human, 1)) taken++;
+
+	/* Never more than the slots past the fixed quests. */
+	eq(taken, (int) (z_info->quest_max - z_info->quest_fixed));
+
+	/* And the fixed ones are untouched. */
+	for (i = 0; i < (int) z_info->quest_fixed; i++) {
+		require(p->quests[i].fixed);
+		eq(p->quests[i].state, QUEST_TAKEN);
+		require(streq(p->quests[i].name, quests[i].name));
+	}
+
+	ok;
+}
+
 const char *suite_name = "player/quest";
 struct test tests[] = {
 	{ "a-fixed-quest-starts-taken", test_a_fixed_quest_starts_taken },
 	{ "a-level-stops-being-a-quest-when-finished",
 	  test_a_level_stops_being_a_quest_when_finished },
+	{ "work-is-taken-and-handed-back", test_work_is_taken_and_handed_back },
+	{ "work-never-overwrites-the-endgame", test_work_never_overwrites_the_endgame },
 	{ "the-town-is-never-a-quest", test_the_town_is_never_a_quest },
 	{ "winning-counts-only-fixed-quests", test_winning_counts_only_fixed_quests },
 	{ NULL, NULL }

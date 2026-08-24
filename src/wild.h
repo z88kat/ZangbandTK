@@ -251,6 +251,16 @@ struct wild_town {
 	uint8_t folk;		/**< enum wild_folk: who lives there (WLD-11) */
 	const char *name;	/**< What it is called (WLD-11) */
 	uint16_t services;	/**< Bit per enum wild_service (WLD-16) */
+
+	/**
+	 * Which of its buildings hand out work (WLD-16d).
+	 *
+	 * A bit per enum wild_service, and a *property* rather than a building of
+	 * its own: Zangband resolved quests against whichever building the player
+	 * was standing in, so the inn, the magetower and anything added later can
+	 * all carry it without the quest system knowing what a building is.
+	 */
+	uint16_t quest_givers;
 	uint8_t visited;	/**< The player has stood inside it (WLD-16c) */
 };
 
@@ -312,6 +322,7 @@ const char *wild_folk_name(int folk);
 const char *wild_band_name(int band);
 const char *wild_service_name(int service);
 int wild_service_at(struct chunk *c, struct loc grid);
+bool wild_gives_quests(struct wilderness *w, int town, int service);
 int wild_store_quality(struct wilderness *w, int town, int store);
 const char *wild_quality_name(int tier);
 int wild_town_here(struct wilderness *w, struct loc grid);

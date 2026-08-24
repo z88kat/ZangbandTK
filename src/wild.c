@@ -721,9 +721,16 @@ static void wild_town_extent_of(const struct wild_town *town, int *bw, int *bh)
  */
 static void wild_town_extent(int *bw, int *bh)
 {
-	struct wild_town biggest = { { 0, 0 },
-		wild_town_bands[WILD_TOWN_BANDS - 1].wid,
-		wild_town_bands[WILD_TOWN_BANDS - 1].hgt, 0, 0, 0, NULL, 0, 0 };
+	/*
+	 * Only the size matters here; named fields so that adding one to the struct
+	 * does not silently leave it uninitialised, which is what -Wmissing-field-
+	 * initializers is for.
+	 */
+	struct wild_town biggest = {
+		.block = { 0, 0 },
+		.wid = wild_town_bands[WILD_TOWN_BANDS - 1].wid,
+		.hgt = wild_town_bands[WILD_TOWN_BANDS - 1].hgt,
+	};
 
 	wild_town_extent_of(&biggest, bw, bh);
 }
@@ -749,6 +756,40 @@ static int wild_town_popcount(uint16_t v)
  * the other is where the player's belongings live, and a town without either is
  * a town nobody would stop at.
  */
+/**
+ * Does this building in this town hand out work (WLD-16d)?
+ */
+bool wild_gives_quests(struct wilderness *w, int town, int service)
+{
+	if (!w || town < 0 || town >= w->town_count) return false;
+	if (service < 0 || service >= WILD_SERVICE_MAX) return false;
+
+	return (w->towns[town].quest_givers & (1u << service)) != 0;
+}
+
+/**
+ * Which of a town's buildings hand out work (WLD-16d).
+ *
+ * A property, not a building type.  Zangband's quest giver was not a "quest
+ * giver's hut" -- build_has_quest() asked whichever building the player had
+ * walked into, so any of them could carry it.  Keeping that shape means the
+ * magetower commissioning a retrieval, or a temple offering a pilgrimage, costs
+ * a line here rather than a new building and a new door and a new terrain.
+ *
+ * The inn, for now, and for a reason: it is where people who have been somewhere
+ * else are sitting, and a town that has fallen has no inn -- so the work dries
+ * up exactly where you would expect it to, without a rule saying so.
+ */
+static uint16_t wild_town_quest_givers(uint16_t services)
+{
+	uint16_t givers = 0;
+
+	if (services & (1u << WILD_SERVICE_INN))
+		givers |= 1u << WILD_SERVICE_INN;
+
+	return givers;
+}
+
 /**
  * The adjective for a quality tier, or NULL for the plain trade (WLD-16a).
  */
@@ -1250,6 +1291,7 @@ static void wild_place_towns(struct wilderness *w)
 												  placed->block.y,
 												  placed->band, placed->folk,
 												  w->town_count == 0);
+			placed->quest_givers = wild_town_quest_givers(placed->services);
 			wild_town_claim(w, placed);
 			w->town_count++;
 		}

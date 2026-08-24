@@ -31,6 +31,7 @@
 #include "effects.h"
 #include "game-world.h"
 #include "player-calcs.h"
+#include "player-quest.h"
 #include "player-util.h"
 #include "game-input.h"
 #include "ui-input.h"
@@ -1254,6 +1255,95 @@ static void service_healer(void)
 }
 
 /**
+ * Work offered over the bar (ZangbandTK, WLD-16d).
+ *
+ * Quest-giving is a property a building carries, not a building of its own, so
+ * this runs before whatever the building itself does -- walk into an inn that
+ * has work and you are offered it before you are offered a bed.  Nothing here
+ * knows it is an inn; move the property to the magetower in
+ * wild_town_quest_givers() and the magetower starts commissioning retrievals.
+ *
+ * What is offered is a bounty: kill so many of a creature, come back, be paid.
+ * It is the cheapest of Zangband's six quest types to build and the only one
+ * that needs nothing the game has not got, so it is the one that proves the
+ * lifecycle end to end.  The other five are WLD-19.
+ *
+ * \return true if the building's own business should be skipped.
+ */
+static bool quest_giver_business(int town)
+{
+	struct quest *done = quest_carried(player, true);
+	struct quest *doing = quest_carried(player, false);
+	struct monster_race *race = NULL;
+	char name[80];
+	int number, reward, tries;
+
+	/* Pay for what has been finished. */
+	if (done) {
+		reward = done->max_num * (done->race ? done->race->level + 1 : 1) * 20;
+		reward = MAX(reward, 20);
+
+		msg("\"That's the %s dealt with. Here's what we promised.\"",
+			done->name ? done->name : "business");
+		msg("You are paid %d au.", reward);
+
+		player->au += reward;
+		player->upkeep->redraw |= PR_GOLD;
+
+		quest_hand_back(player, done);
+		return true;
+	}
+
+	/* Or ask after what is still owed. */
+	if (doing) {
+		msg("\"You're still owing us %s -- %d of %d done.\"",
+			doing->name ? doing->name : "that business",
+			doing->cur_num, doing->max_num);
+		return true;
+	}
+
+	/*
+	 * Or offer something.  Drawn near the character's own depth so the work is
+	 * neither trivial nor suicidal, and only creatures that are not unique --
+	 * there is one of each of those and a bounty on it could be unfulfillable.
+	 */
+	for (tries = 0; tries < 200 && !race; tries++) {
+		struct monster_race *pick =
+			&r_info[randint0(z_info->r_max ? z_info->r_max : 1)];
+
+		if (!pick->name) continue;
+		if (rf_has(pick->flags, RF_UNIQUE)) continue;
+		if (pick->level < 1) continue;
+		if (pick->level > player->max_depth + 4) continue;
+
+		race = pick;
+	}
+
+	if (!race) {
+		msg("\"Nothing needs doing that you could help with.\"");
+		return true;
+	}
+
+	number = 3 + randint0(5);
+
+	strnfmt(name, sizeof(name), "%d %s", number, race->plural ? race->plural :
+			race->name);
+
+	if (!get_check(format("\"There's %s wanting killing. Take the work? \"",
+						  name)))
+		return true;
+
+	if (!quest_take(player, name, race, number)) {
+		msg("\"You've enough on your plate already.\"");
+		return true;
+	}
+
+	msg("\"Come back when it's done.\"");
+
+	return true;
+}
+
+/**
  * The inn: a bed until morning (WLD-16c).
  *
  * Which earns its keep here in a way it would not in Angband.  Daylight is what
@@ -1342,7 +1432,24 @@ static void service_effect(const char *what, int effect, int32_t price)
 /** Somebody walked into a service building. */
 void ui_enter_service(game_event_type type, game_event_data *data, void *user)
 {
-	switch (wild_service_at(cave, player->grid)) {
+	int service = wild_service_at(cave, player->grid);
+
+	/*
+	 * Work first, if this building carries it (WLD-16d).  A property of the
+	 * building rather than a building of its own, so this asks the town which
+	 * of its doors has work behind it rather than checking for a quest hut.
+	 */
+	if (service >= 0 && player->in_wild && wild) {
+		int town = wild_town_here(wild,
+								  loc(player->grid.x + player->wild_offset.x,
+									  player->grid.y + player->wild_offset.y));
+
+		if (wild_gives_quests(wild, town, service) &&
+			quest_giver_business(town))
+			return;
+	}
+
+	switch (service) {
 		case WILD_SERVICE_MAGETOWER: magetower_travel(); break;
 		case WILD_SERVICE_HEALER:    service_healer(); break;
 		case WILD_SERVICE_INN:       service_inn(); break;
