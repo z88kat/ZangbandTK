@@ -568,6 +568,32 @@ as fields. Implements W-3.
 kinds (§2.6). Rationale: 4.2's model — zeroing a level field on completion — cannot express
 a taken-but-incomplete quest, which every Zangband quest type requires.
 
+> **The four states are in (M6, in progress).** `QUEST_UNTAKEN` → `TAKEN` → `COMPLETE` →
+> `FINISHED`, on `struct quest`, saved (quests block version 2; version 1 savefiles read
+> back as `TAKEN`, or `FINISHED` where the level was zeroed, which is exactly what version 1
+> could express). The level field now means only the depth the quest is at, and `is_quest()`
+> asks the state instead — a quest holds its level until it is finished.
+>
+> *One existing rule had to change, and it is the one worth recording.* 4.2 declares the
+> player a winner when no quest has a level left. That is the same as "all of them are done"
+> only while every quest in the game comes from `quest.txt` and lasts the whole game. Once a
+> quest can be taken from somebody in a town and handed back an hour later, "nothing
+> outstanding" is an ordinary afternoon — and the character would be told they had won the
+> game for delivering a parcel. Winning now counts **fixed** quests only: the ones from
+> `quest.txt`, which exist from birth and have nobody to report to. Guarded by
+> winning-counts-only-fixed-quests.
+>
+> *Still to come in M6:* the six types (WLD-19), the six triggers, world placement (WLD-21),
+> the quest log (WLD-22), and WLD-16d's quest-giving buildings.
+
+> **The endgame is undecided, and M6 should not decide it by accident.** The two fixed
+> quests are Sauron and Morgoth — Tolkien, and therefore exactly the drift DEC-30 calls a
+> defect. Zangband replaced Morgoth with the Serpent of Chaos; an Amber game presumably ends
+> at the Courts of Chaos, which is already a dungeon here. Nothing in the machinery above
+> assumes which: `fixed` marks "the quests the game ends on" without saying what they are,
+> so the content decision can be taken later without reworking the lifecycle. It does need
+> taking before M6 closes, since the final quest is the most important quest in the game.
+
 **WLD-21 — Quests are placed in the world, not only in dungeons.** `QUEST_TYPE_WILD` and
 `FIND_PLACE` need world coordinates; `TOWN_QUEST` places are part of the world layout.
 

@@ -413,6 +413,14 @@ void wr_quests(void)
 	for (i = 0; i < z_info->quest_max; i++) {
 		wr_byte(player->quests[i].level);
 		wr_u16b(player->quests[i].cur_num);
+
+		/*
+		 * How far along it is (ZangbandTK, WLD-20).  Version 1 said this by
+		 * zeroing the level, which cannot tell a quest that was accepted and
+		 * not finished from one never taken.
+		 */
+		wr_byte(player->quests[i].state);
+		wr_byte(player->quests[i].fixed ? 1 : 0);
 	}
 }
 

@@ -133,6 +133,22 @@ enum {
 /**
  * Structure for the "quests"
  */
+/**
+ * Where a quest has got to (ZangbandTK, WLD-20).
+ *
+ * Zangband's four states.  4.2 has none: its two quests exist from birth and are
+ * marked done by zeroing the level they live on, which cannot say "accepted and
+ * not yet finished" -- and every quest type worth having needs to say exactly
+ * that.  The level field now means only what it says, the depth the quest is at,
+ * and this says how far along it is.
+ */
+enum quest_state {
+	QUEST_UNTAKEN = 0,	/**< It is out there; nobody has accepted it */
+	QUEST_TAKEN,		/**< Accepted, and not yet done */
+	QUEST_COMPLETE,		/**< The thing was done; the giver has not been told */
+	QUEST_FINISHED		/**< Told, paid, and closed */
+};
+
 struct quest
 {
 	struct quest *next;
@@ -142,6 +158,14 @@ struct quest
 	struct monster_race *race;	/* Monster race */
 	int cur_num;			/* Number killed (unused) */
 	int max_num;			/* Number required (unused) */
+
+	/**
+	 * ZangbandTK (WLD-20).  `fixed` marks the quests that come from quest.txt
+	 * and exist from birth -- the ones the game is won by finishing.  Everything
+	 * else is taken from somebody and does not end anything.
+	 */
+	uint8_t state;			/* enum quest_state */
+	bool fixed;
 };
 
 /**

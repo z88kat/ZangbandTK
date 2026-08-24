@@ -630,7 +630,14 @@ int rd_object_memory(void)
 
 
 
-int rd_quests(void)
+/**
+ * \param with_state is whether the savefile carries each quest's lifecycle state
+ * (ZangbandTK, WLD-20).  Version 1 savefiles do not: there, a quest with its
+ * level zeroed is one that was completed, and every other quest is one the
+ * character is still on.  That is exactly the information version 1 could hold,
+ * and reading it back this way loses nothing it ever knew.
+ */
+static int rd_quests_aux(bool with_state)
 {
 	int i;
 	uint16_t tmp16u;
@@ -649,10 +656,26 @@ int rd_quests(void)
 		rd_byte(&player->quests[i].level);
 		rd_u16b(&cur_num);
 		player->quests[i].cur_num = cur_num;
+
+		if (with_state) {
+			uint8_t state, fixed;
+
+			rd_byte(&state);
+			rd_byte(&fixed);
+			player->quests[i].state = state;
+			player->quests[i].fixed = (fixed != 0);
+		} else {
+			player->quests[i].fixed = true;
+			player->quests[i].state = player->quests[i].level
+				? QUEST_TAKEN : QUEST_FINISHED;
+		}
 	}
 
 	return 0;
 }
+
+int rd_quests(void) { return rd_quests_aux(true); }
+int rd_quests_1(void) { return rd_quests_aux(false); }
 
 
 /**

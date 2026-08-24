@@ -917,6 +917,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     player/pathfind.c
     player/playerstat.c
     player/pscore.c
+    player/quest.c
     player/timed.c
     player/util.c
     trivial/trivial.c

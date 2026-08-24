@@ -31,6 +31,15 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.19.0** — M6 begins: **quests have a lifecycle.** Untaken, taken, complete,
+  finished — four states, saved with the character. Angband has two quests, both
+  alive from birth, and records one as done by zeroing the depth it lives at;
+  that says everything about a quest which can only be finished and nothing about
+  one you accept, carry around, and hand back. Nothing is player-visible yet: this
+  is the floor the rest of M6 stands on. One existing rule did change, though —
+  winning now counts only the quests the game ends on, because "you have no
+  outstanding quests" stops meaning "you have finished the game" the moment a
+  townsman can give you an errand.
 - **3.18.0** — **The Unicorn of Amber.** Silver-white, watching you with an
   interest you have not earned, and always about to leave — there is one of her
   in the world. Walk into her and she makes you whole: not your wounds only, but
