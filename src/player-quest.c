@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 #include "datafile.h"
+#include "dun-type.h"
 #include "init.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -65,6 +66,24 @@ static enum parser_error parse_quest_race(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+/**
+ * Which dungeon the quest is in (ZangbandTK, WLD-21).
+ */
+static enum parser_error parse_quest_dungeon(struct parser *p) {
+	struct quest *h = parser_priv(p);
+	const char *name = parser_getstr(p, "name");
+	struct dun_type *type;
+
+	if (!h) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	type = dun_type_by_name(name);
+	if (!type) return PARSE_ERROR_INVALID_VALUE;
+
+	h->dungeon = type->index + 1;
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_quest_number(struct parser *p) {
 	struct quest *q = parser_priv(p);
 	assert(q);
@@ -80,6 +99,7 @@ struct parser *init_parse_quest(void) {
 	parser_reg(p, "level uint level", parse_quest_level);
 	parser_reg(p, "race str race", parse_quest_race);
 	parser_reg(p, "number uint number", parse_quest_number);
+	parser_reg(p, "dungeon str name", parse_quest_dungeon);
 	return p;
 }
 
@@ -149,10 +169,21 @@ bool is_quest(struct player *p, int level)
 	 * the same thing by zeroing the level, which worked while completion was the
 	 * only state a quest could reach.
 	 */
-	for (i = 0; i < z_info->quest_max; i++)
-		if (p->quests[i].level == level &&
-			p->quests[i].state != QUEST_FINISHED)
-			return true;
+	for (i = 0; i < z_info->quest_max; i++) {
+		const struct quest *q = &p->quests[i];
+
+		if (q->level != level) continue;
+		if (q->state == QUEST_FINISHED) continue;
+
+		/*
+		 * And in the right dungeon (ZangbandTK, WLD-21).  Without this, the
+		 * hundredth level of the Abyss would hold the player the way the
+		 * hundredth level of the Courts does, with nothing on it to kill.
+		 */
+		if (q->dungeon && q->dungeon != p->dungeon) continue;
+
+		return true;
+	}
 
 	return false;
 }
@@ -173,6 +204,7 @@ void player_quests_reset(struct player *p)
 		p->quests[i].level = quests[i].level;
 		p->quests[i].race = quests[i].race;
 		p->quests[i].max_num = quests[i].max_num;
+		p->quests[i].dungeon = quests[i].dungeon;
 
 		/*
 		 * The quests from quest.txt are the ones the game is won by finishing,
@@ -241,7 +273,8 @@ bool quest_check(struct player *p, const struct monster *m)
 
 		/* Note completed quests */
 		if (cave->depth == q->level && m->race == q->race &&
-			q->state == QUEST_TAKEN) {
+			q->state == QUEST_TAKEN &&
+			(!q->dungeon || q->dungeon == p->dungeon)) {
 			q->cur_num++;
 
 			if (q->cur_num == q->max_num) {

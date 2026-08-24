@@ -31,6 +31,17 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.20.0** — **The game ends in Amber now.** Angband is won by killing Sauron
+  and then Morgoth; ZangbandTK is won by killing Oberon and then the Serpent of
+  Chaos, at the bottom of the Courts of Chaos. That is Zangband's own
+  replacement, and it was already the right one — the Serpent is Zelazny's, and
+  the bestiary's description of it has been sitting there all along: *"The Unicorn
+  of Order fought with Serpent and stole one of its eyes, known as the Jewel of
+  Judgement. With the Jewel, Dworkin drew the Pattern."* The Unicorn went in
+  yesterday; this is the other half of her. Quests now also name the dungeon they
+  are in, because a depth no longer names a place: the Courts run 75 to 110 and
+  the Abyss 90 to 127, so depth 100 is two different places and the ending would
+  otherwise have been completable in the wrong one.
 - **3.19.0** — M6 begins: **quests have a lifecycle.** Untaken, taken, complete,
   finished — four states, saved with the character. Angband has two quests, both
   alive from birth, and records one as done by zeroing the depth it lives at;

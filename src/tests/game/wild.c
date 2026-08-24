@@ -33,6 +33,7 @@
 #include "player-attack.h"
 #include "player-birth.h"
 #include "player-timed.h"
+#include "player-quest.h"
 #include "player-util.h"
 #include "mon-util.h"
 #include "savefile.h"
@@ -3280,6 +3281,58 @@ static int test_a_blessed_beast_bounds_away(void *state) {
 }
 
 /**
+ * The game can actually be won (WLD-20, WLD-21, DEC-30).
+ *
+ * The fixed quests are the ones the game ends on, and every way of getting them
+ * wrong is silent.  A quest whose dungeon does not reach its depth cannot be
+ * completed and nothing says so; a quest naming a monster the bestiary does not
+ * hold cannot be completed either; and a quest with no dungeon at all is
+ * completable in whichever of the deep dungeons the player happens to be in,
+ * which is not the same game.
+ *
+ * These are cheap to check and were expensive to notice: the endgame is the one
+ * part of the game nobody plays through by accident.
+ */
+static int test_the_game_can_be_won(void *state) {
+	int i, fixed = 0;
+
+	require(z_info->quest_max > 0);
+
+	for (i = 0; i < (int) z_info->quest_max; i++) {
+		const struct quest *q = &player->quests[i];
+		const struct dun_type *type;
+
+		notnull(q->name);
+
+		/* It names a monster that exists. */
+		notnull(q->race);
+
+		/* It names a dungeon. */
+		require(q->dungeon > 0);
+		type = dun_type_by_index(q->dungeon - 1);
+		notnull(type);
+
+		/* And that dungeon goes deep enough to hold it, and starts above it. */
+		if (q->level > type->max_depth || q->level < type->min_depth)
+			printf("QUEST %s wants depth %d, but %s runs %d to %d\n",
+				   q->name, q->level, type->name, type->min_depth,
+				   type->max_depth);
+		require(q->level <= type->max_depth);
+		require(q->level >= type->min_depth);
+
+		/* The character is on it from the start, and it ends the game. */
+		require(q->fixed);
+		eq(q->state, QUEST_TAKEN);
+
+		fixed++;
+	}
+
+	require(fixed > 0);
+
+	ok;
+}
+
+/**
  * The Unicorn gives the greater blessing (CNT-20, DEC-30).
  *
  * There are deer, and there is the Unicorn, and the difference is not a matter
@@ -3943,6 +3996,7 @@ struct test tests[] = {
 	{ "the-road-runs-up-to-a-gate", test_the_road_runs_up_to_a_gate },
 	{ "the-quality-ladder-is-a-ladder", test_the_quality_ladder_is_a_ladder },
 	{ "a-blessed-beast-bounds-away", test_a_blessed_beast_bounds_away },
+	{ "the-game-can-be-won", test_the_game_can_be_won },
 	{ "the-unicorn-makes-you-whole", test_the_unicorn_makes_you_whole },
 	{ "the-inn-dreams-by-the-law", test_the_inn_dreams_by_the_law },
 	{ "a-true-dream-shows-the-nearest-place", test_a_true_dream_shows_the_nearest_place },

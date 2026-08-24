@@ -1,18 +1,38 @@
 # quest.txt
+#
+# The fixed quests: the ones a character is on from birth, and the ones the game
+# is won by finishing.  Quests taken from somebody in a town are not here -- they
+# are created as the game runs and are not what the ending counts (WLD-20).
+#
+# ZangbandTK's ending is Amber's (DEC-30).  Angband ends at Sauron and Morgoth,
+# which is Tolkien and is exactly the drift this project treats as a defect;
+# Zangband replaced them with Oberon and the Serpent, and that replacement was
+# already the right one -- the Serpent is Zelazny's, not a generic dark lord.
+# From the bestiary's own description of it: "The Unicorn of Order fought with
+# Serpent and stole one of its eyes, known as the Jewel of Judgement.  With the
+# Jewel, Dworkin drew the Pattern and thus gave birth to the infinite worlds of
+# shadow."  The Unicorn is in this game (CNT-20); this is the other half of her.
+#
+# Sauron and Morgoth remain in the bestiary as deep uniques.  Whether to remove
+# them is a content pass nobody has scheduled, and this file does not order one.
+#
+# name    : the quest, as the player sees it
+# level   : the depth it is completed at
+# dungeon : which dungeon that depth is in, by name from dungeon.txt.  Angband
+#           needs no such line, having one dungeon; here the Courts of Chaos run
+#           75 to 110 and the Abyss 90 to 127, so a depth alone names two places
+#           and would let the ending happen in the wrong one.
+# race    : the monster whose death completes it
+# number  : how many of them
 
-# This file contains the fixed (and only) quests.  The current system is that
-# a copy of these is made into the player data at birth, and the level field
-# in that copy is zeroed when the quest is completed.  This system could be
-# improved; it could also be easily adapted to add more fixed quests (by adding
-# to this file).  It would also only require fairly small game code changes to
-# allow other quests to be added as a result of game events.
-
-name:Sauron
+name:Oberon
 level:99
-race:Sauron, the Sorcerer
+dungeon:The Courts of Chaos
+race:Oberon, King of Amber
 number:1
 
-name:Morgoth
+name:The Serpent of Chaos
 level:100
-race:Morgoth, Lord of Darkness
+dungeon:The Courts of Chaos
+race:The Serpent of Chaos
 number:1

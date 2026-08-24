@@ -166,6 +166,17 @@ struct quest
 	 */
 	uint8_t state;			/* enum quest_state */
 	bool fixed;
+
+	/**
+	 * Which dungeon it is in, as index + 1, or 0 for "any" (WLD-21).
+	 *
+	 * Angband has one dungeon, so a depth names a place.  Here it does not: the
+	 * Courts of Chaos run from 75 to 110 and the Abyss from 90 to 127, so depth
+	 * 100 is two different places and a quest that named only the depth would be
+	 * completable in the wrong one -- or worse, would make an ordinary level of
+	 * the Abyss behave like a quest level with nothing on it to kill.
+	 */
+	uint8_t dungeon;
 };
 
 /**
