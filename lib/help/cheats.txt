@@ -46,18 +46,70 @@ Press '^A' -- control-A.  The game asks once whether you mean it, and marks
 the character from then on.
 
 These change the state of your game rather than the way it behaves.  There are
-a great many, in submenus chosen with the movement keys rather than by letter:
+forty-four of them in nine submenus.  Choose a submenu with the movement keys,
+then a command by its letter.
 
-  Items           create an object, an artifact, everything of a kind
-  Player          cure everything, make powerful, gain gold ($), gain hit
-                      points ('i'), know every place ('k'), edit stats
-  Teleport        to a location, at random, or jump to a level
-  Effects         detect everything, map the area, run an effect
-  Summon          a named monster, or a random one
-  Files           dumps of the game's own data
-  Statistics      generate levels in bulk and count what turns up
-  Query           ask about a square, a monster, a keystroke
-  Miscellaneous   the rest
+  Items
+     c   Create an object
+     C   Create an artifact
+     V   Create all from tval
+     g   Acquire good
+     v   Acquire great
+     o   Play with item
+
+  Player
+     a   Cure everything
+     A   Make powerful
+     x   Increase experience
+     h   Rerate hitpoints
+     e   Edit player
+     $   Gain gold
+     i   Gain hit points
+     k   Know every place
+     l   Learn object kinds
+     r   Recall monster
+     W   Erase monster recall
+
+  Teleport
+     b   To location
+     p   Random near
+     t   Random far
+     j   Jump to a level
+
+  Effects
+     d   Detect all nearby
+     u   Detect all monsters
+     m   Map local area
+     H   Hit all in LOS
+     E   Perform an effect
+     G   Graphics demo
+
+  Summon
+     n   Summon specific
+     s   Summon random
+
+  Files
+     "   Create spoilers
+     M   Write map
+
+  Statistics
+     S   Objects and monsters
+     P   Pits
+     D   Disconnected levels
+     f   Obj/mon alternate key
+
+  Query
+     F   Feature
+     q   Square flag
+     _   Noise and scent
+     L   Keystroke log
+
+  Miscellaneous
+     w   Wizard light level
+     T   Create a trap
+     z   Banish nearby monsters
+     >   Push objects from square
+     X   Quit without saving
 
 There are no guard rails.  Jumping a first-level character to level one
 hundred will work, and then the character will die there.

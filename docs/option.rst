@@ -311,18 +311,267 @@ A second and much larger set, reached with ``^A`` — control-A. The game asks f
 confirmation the first time, and the character is marked from then on: on death
 it says *"Score not registered for wizards."*
 
-These are not options but commands, grouped into submenus — *Items*, *Player*,
-*Teleport*, *Effects*, *Summon*, *Files*, *Statistics*, *Query*,
-*Miscellaneous* — chosen with the movement keys rather than by letter. Between
-them they will create an item, jump to a level, summon a named monster, detect
-everything nearby, cure everything, gain gold (``$``), and edit the character's
-stats and experience.
+These are not options but commands. There are forty-four of them in nine
+submenus: pick a submenu with the movement keys, then a command by its letter.
 
-They are development tools and there are no guard rails on them: jumping a
-first-level character to depth 100 will work, and then kill them.
+They are development tools and there are no guard rails. Nothing asks whether
+you are sure.
 
-Worth knowing which of the two you want. The cheat options change how the game
-*behaves*; the debug commands change the *state of your game* directly.
+Worth knowing which of the two sets you want. The cheat options change how the
+game *behaves*; the debug commands change the *state of your game* directly.
+
+Commands marked ★ are ZangbandTK's. The rest are Angband's, and are documented
+here because they were not documented anywhere.
+
+Items
+~~~~~
+
+Making things out of nothing.
+
+.. list-table::
+   :widths: 8 32 60
+   :header-rows: 1
+
+   * - Key
+     - Command
+     - Notes
+   * - ``c``
+     - Create an object
+     - 
+   * - ``C``
+     - Create an artifact
+     - 
+   * - ``V``
+     - Create all from tval
+     - 
+   * - ``g``
+     - Acquire good
+     - 
+   * - ``v``
+     - Acquire great
+     - 
+   * - ``o``
+     - Play with item
+     - Repeatedly regenerates one item so you can see its spread of outcomes.
+
+Player
+~~~~~~
+
+Changing the character directly.
+
+.. list-table::
+   :widths: 8 32 60
+   :header-rows: 1
+
+   * - Key
+     - Command
+     - Notes
+   * - ``a``
+     - Cure everything
+     - 
+   * - ``A``
+     - Make powerful
+     - 
+   * - ``x``
+     - Increase experience
+     - 
+   * - ``h``
+     - Rerate hitpoints
+     - 
+   * - ``e``
+     - Edit player
+     - 
+   * - ``$``
+     - Gain gold ★
+     - The magetower charges a fare by distance, and there was no way to test whether the fares were sensible without a purse.
+   * - ``i``
+     - Gain hit points ★
+     - Written into the character's hit dice rather than the total, so it survives levelling and the next step taken.
+   * - ``k``
+     - Know every place ★
+     - Every town visited and every block seen, which turns the magetower into a way of getting anywhere at once.
+   * - ``l``
+     - Learn object kinds
+     - 
+   * - ``r``
+     - Recall monster
+     - 
+   * - ``W``
+     - Erase monster recall
+     - 
+
+Teleport
+~~~~~~~~
+
+Going somewhere without walking.
+
+.. list-table::
+   :widths: 8 32 60
+   :header-rows: 1
+
+   * - Key
+     - Command
+     - Notes
+   * - ``b``
+     - To location
+     - 
+   * - ``p``
+     - Random near
+     - 
+   * - ``t``
+     - Random far
+     - 
+   * - ``j``
+     - Jump to a level
+     - No guard rails: a first-level character can jump to depth 100, and will die there.
+
+Effects
+~~~~~~~
+
+Firing off game effects by hand.
+
+.. list-table::
+   :widths: 8 32 60
+   :header-rows: 1
+
+   * - Key
+     - Command
+     - Notes
+   * - ``d``
+     - Detect all nearby
+     - 
+   * - ``u``
+     - Detect all monsters
+     - 
+   * - ``m``
+     - Map local area
+     - 
+   * - ``H``
+     - Hit all in LOS
+     - 
+   * - ``E``
+     - Perform an effect
+     - 
+   * - ``G``
+     - Graphics demo
+     - 
+
+Summon
+~~~~~~
+
+Putting monsters in front of you.
+
+.. list-table::
+   :widths: 8 32 60
+   :header-rows: 1
+
+   * - Key
+     - Command
+     - Notes
+   * - ``n``
+     - Summon specific
+     - 
+   * - ``s``
+     - Summon random
+     - 
+
+Files
+~~~~~
+
+Writing things out to disk.
+
+.. list-table::
+   :widths: 8 32 60
+   :header-rows: 1
+
+   * - Key
+     - Command
+     - Notes
+   * - ``"``
+     - Create spoilers
+     - Writes the object, artifact and monster lists to files.
+   * - ``M``
+     - Write map
+     - 
+
+Statistics
+~~~~~~~~~~
+
+Generating a great many levels and counting what comes out.
+
+.. list-table::
+   :widths: 8 32 60
+   :header-rows: 1
+
+   * - Key
+     - Command
+     - Notes
+   * - ``S``
+     - Objects and monsters
+     - Generates hundreds of levels and tallies what comes out. This is where the :doc:`balance` figures came from, and it is not quick.
+   * - ``P``
+     - Pits
+     - 
+   * - ``D``
+     - Disconnected levels
+     - 
+   * - ``f``
+     - Obj/mon alternate key
+     - 
+
+Query
+~~~~~
+
+Asking the game what it thinks is where.
+
+.. list-table::
+   :widths: 8 32 60
+   :header-rows: 1
+
+   * - Key
+     - Command
+     - Notes
+   * - ``F``
+     - Feature
+     - 
+   * - ``q``
+     - Square flag
+     - 
+   * - ``_``
+     - Noise and scent
+     - 
+   * - ``L``
+     - Keystroke log
+     - 
+
+Miscellaneous
+~~~~~~~~~~~~~
+
+The rest.
+
+.. list-table::
+   :widths: 8 32 60
+   :header-rows: 1
+
+   * - Key
+     - Command
+     - Notes
+   * - ``w``
+     - Wizard light level
+     - 
+   * - ``T``
+     - Create a trap
+     - 
+   * - ``z``
+     - Banish nearby monsters
+     - 
+   * - ``>``
+     - Push objects from square
+     - 
+   * - ``X``
+     - Quit without saving
+     - Exactly that, with no confirmation.
+
 
 Window flags
 ============

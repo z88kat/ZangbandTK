@@ -31,6 +31,12 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.23.1** — **All forty-four debug commands are written down**, in the manual
+  and in the in-game help, by submenu and by key. They were never documented
+  anywhere — the manual named the nine submenus and gave five examples, and the
+  in-game page did the same, so the only way to find out what ``^A`` could do was
+  to open every menu and look. Generated from the source rather than transcribed,
+  so it is right. The three ZangbandTK added are marked.
 - **3.23.0** — WLD-16d: **somebody will give you work.** Walk into an inn that
   is hiring and you are offered a job before you are offered a bed: kill so many
   of a creature, come back, be paid. Quest-giving is a *property* a building
