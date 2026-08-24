@@ -3180,10 +3180,33 @@ static int test_a_blessed_beast_bounds_away(void *state) {
 	notnull(mon);
 	first = mon->grid;
 
+	/*
+	 * Work out the character's bonuses before swinging at anything.
+	 *
+	 * py_attack() divides the turn's energy by state.num_blows, and in a suite
+	 * that has never called calc_bonuses() that is zero.  On x86 an integer
+	 * division by zero raises SIGFPE and kills the process; on this Mac's ARM it
+	 * quietly yields zero, so the test passed locally and killed the whole suite
+	 * on Linux and on msys2 with "Suite died".  A real game always has bonuses
+	 * calculated by this point -- the gap was in the setup here, not the game.
+	 */
+	player->upkeep->update |= PU_BONUS;
+	update_stuff(player);
+	require(player->state.num_blows > 0);
+
 	/* A character in a bad way. */
 	player->chp = 1;
 	hurt = player->mhp - player->chp;
 	require(hurt > 0);
+
+	/*
+	 * And a turn to spend.  py_attack() swings only while there is energy left
+	 * for another blow, so a character with none never reaches the monster --
+	 * which is what happened once the division above was fixed: the test had
+	 * been passing because num_blows of zero made the energy per blow zero too,
+	 * and zero energy is always enough for a blow that costs nothing.
+	 */
+	player->energy = z_info->move_energy;
 
 	py_attack(player, grid);
 
@@ -3206,6 +3229,7 @@ static int test_a_blessed_beast_bounds_away(void *state) {
 	if (!square_isempty(cave, player->grid)) {
 		player->grid = loc(first.x + 1, first.y);
 	}
+	player->energy = z_info->move_energy;
 	py_attack(player, first);
 
 	eq(player->chp, 1);
@@ -3232,6 +3256,7 @@ static int test_a_blessed_beast_bounds_away(void *state) {
 				player->grid = loc(was.x + 1, was.y);
 			if (!square_isempty(cave, player->grid)) continue;
 
+			player->energy = z_info->move_energy;
 			py_attack(player, was);
 
 			d = distance(mon->grid, was);
