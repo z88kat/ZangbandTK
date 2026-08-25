@@ -65,7 +65,14 @@ cp build/game/angband "$APPDIR/zangbandtk-bin"
 # The game resolves its data as ./lib, relative to the working directory, so
 # AppRun has to be in the data directory before it execs.  It cannot simply run
 # from the executable's own directory the way the disk image does.
-cat > "$APPDIR/AppRun" <<'APPRUN'
+#
+# It is written outside the AppDir because linuxdeploy installs a custom AppRun
+# by deleting AppDir/AppRun and then copying the file it was given into its
+# place.  Given AppDir/AppRun itself, it deletes the source and then fails to
+# copy a file that is no longer there.
+APPRUN_DIR=`mktemp -d`
+trap 'rm -rf "$APPRUN_DIR"' EXIT
+cat > "$APPRUN_DIR/AppRun" <<'APPRUN'
 #!/bin/sh
 HERE="$(dirname "$(readlink -f "$0")")"
 # usr/lib is where linuxdeploy puts everything it bundles, including the codecs
@@ -76,7 +83,7 @@ export LD_LIBRARY_PATH="$HERE/usr/lib:$LD_LIBRARY_PATH"
 cd "$HERE/usr/share/ZangbandTK"
 exec "$HERE/usr/bin/zangbandtk" "$@"
 APPRUN
-chmod a+x "$APPDIR/AppRun"
+chmod a+x "$APPRUN_DIR/AppRun"
 
 # SDL2_image and SDL2_mixer reach their format support through dlopen, which
 # linuxdeploy cannot see by following the link-time dependencies, so the codecs
@@ -99,7 +106,7 @@ linuxdeploy \
 	--executable "$APPDIR/zangbandtk-bin" \
 	--desktop-file lib/icons/zangbandtk.desktop \
 	--icon-file lib/icons/zangbandtk.png \
-	--custom-apprun "$APPDIR/AppRun" \
+	--custom-apprun "$APPRUN_DIR/AppRun" \
 	$EXTRA_LIBS
 
 # linuxdeploy copies the executable into usr/bin under the name it was given, so
@@ -109,7 +116,12 @@ rm -f "$APPDIR/zangbandtk-bin"
 
 # linuxdeploy names its output from the desktop file, so find whatever it wrote
 # rather than guessing at the name.
-linuxdeploy --appdir "$APPDIR" --output appimage
+#
+# The custom AppRun is named again here: without it this pass installs the
+# default one, which runs the executable straight out of usr/bin and leaves the
+# game looking for its lib directory in whatever directory it was started from.
+linuxdeploy --appdir "$APPDIR" --custom-apprun "$APPRUN_DIR/AppRun" \
+	--output appimage
 built=`ls -1 ./*.AppImage | head -n 1`
 if [ -z "$built" ]; then
 	echo "linuxdeploy reported success but produced no AppImage." >&2

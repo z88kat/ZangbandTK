@@ -51,9 +51,14 @@ int main(int argc, char ** argv) {
 //---------------------------------------------------------------------------------
 
 	// Setup the FIFO system
-	initClockIRQ();
 	irqInit();
 	fifoInit();
+
+	// Start the RTC tracking interrupt.  This has to come after irqInit(),
+	// which clears the interrupt table, or the handler it installs would be
+	// thrown away again.  Timer 3 is the one the libnds ARM7 template gives
+	// it, and nothing else on this side uses a timer.
+	initClockIRQTimer(3);
 
 	// Initialize touch (offset, scaling, etc.)
 	touchInit();

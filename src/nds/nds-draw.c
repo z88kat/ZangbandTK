@@ -187,5 +187,4 @@ void nds_raw_print(const char *str)
 		}
 	}
 	nds_draw_char(x, y, 219, NDS_WHITE_PIXEL, NDS_BLACK_PIXEL);
-	fflush(0);
 }
