@@ -135,25 +135,36 @@ git push origin 3.5.1-rc1
 
 ## Follow up Ideas
 
-Lotus Leaves. Eat them and you forget everything in 5 turns, so the map is forgotten, monsters, potions, spells, everything.
-
-... you feel a little dizzy.. your memory begins fade...
-...where am i ....
-
-healer can become the cure
+Deers are magical. When you bump into one, your HP is restored and it jumps away 5 tiles.
 
 ## NDS Build
 
 We are limited by RAM on the NDS. Here is my idea.
 
-We abandon the wilderness build. The doors are locked by "magic" and cannot be opened until the elipse of the sun.
+We abandon the wilderness build. The doors are locked by "magic" and cannot be opened until the "elipse of the moon".
 
-We still make all towns and dungeons available. But to travel to them you enter the mage tower. All towns and dungeons are available for travel, you still have to pay the travel costs, so you cannot travel immediately without a bit of work to gain gold.
+We make all towns and dungeons available via the mage towsers. All towns and dungeons are available for travel at the start of the game, you still have to pay the travel costs, so you cannot travel immediately without a bit of work to gain gold. We can make cities more expensive then towns, deeper dungeons more expensive then shorter ones.
 
-This means we still keep the flavour of zangband, but without the wilderness. The wilderness is a lot of wondering around which maybe you don't want to do on the handheld anyway. Just jump in.
+This means we still keep the flavour of zangband, but without the wilderness. It's a trade-off.
 
-This might allow us to make a stable NSD build.
+This "might" allow us to make a stable NSD build. It is something to investigate.
 
-Note: There is a problem, the font on the NDS looks like crap, its really blury and hard to read. At first i just figured it was the emulator, but on the hardware its the same, so whatever font we using, it does not work. It also appears we are not using the full width of the screen. But I have to check that again.
+But, we might still be able to support wilderness with additional hardware. I have a RAM pack we could consider to make a special build which includes the wilderness for the "ram pack" edition. We need to evaluate if the wilderness fits into memory with the ram pack?
 
-But... I have a RAM pack we could consider to make a special build which includes the wilderness (its an eplise of sun when you plugin the ram pack - and down the correct rom!), if the wilderness fits with the ram pack? Something we have to test.
+Note: There is a bug, the font on the NDS looks like crap, its really blury and hard to read. At first i just figured it was the emulator, but on the hardware its the same, so whatever font we using, it does not work. I checked the original angband NDS release, it has the same problem, so it is not something we have introduced. It looks broken at source. It also appears we are not using the full width of the screen (again broken in angband).
+
+## Spectrum Next Build
+
+https://en.wikipedia.org/wiki/ZX_Spectrum_Next
+https://wiki.specnext.dev/Specifications
+https://www.specnext.com/category/resources/resources_coding/
+
+Is this even viable to build a version of ZangbandTK for the spectrum next.
+
+The spectrum next has more proceessing power and memory then the original spectrum.
+
+## Commmadore 64
+
+Maybe a step too far. There was actually a build of angband for the commadore 64 the original sources are here:
+
+./archive/AngbandPlus64
