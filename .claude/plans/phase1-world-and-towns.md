@@ -572,9 +572,12 @@ differs from a lawful city's. Not scheduled; recorded so M5 and M6 do not design
 > *What it gives is a bounty*, which is the cheapest of WLD-19's six types and the only one
 > needing nothing the game has not got — so it is the one that proves the WLD-20 lifecycle
 > end to end: taken, carried, completed by killing, reported, paid. The other five are
-> WLD-19. One simplification to revisit there: the work can be handed back at any hiring
-> building rather than the one that gave it, because recording the giver means another
-> savefile field and the bounty did not need it to be tested.
+> WLD-19. **Work is handed back at any hiring building, and that is the design rather than a
+> shortcut.** It began as one -- recording the giver means another savefile field -- but the
+> owner settled it the better way: whoever wanted the job done happens to be drinking in this
+> inn too. The alternative is a character who finished a job in the wrong half of the world
+> walking back across it to be paid, which is not an interesting journey, and a coincidence
+> of that size is what the novels run on.
 
 **WLD-17 — Stores reuse 4.2's store system.** [store.txt](../../lib/gamedata/store.txt) and
 `src/store.c` are extended with new store types rather than replaced. Implements W-3.

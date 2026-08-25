@@ -37,7 +37,9 @@ a creature, come back, and be paid for it.
 
 You can carry a few jobs at once.  Press 'J' for the list of what you have
 taken on and how far along each one is.  Walk back into any building that
-hires and it will tell you, or pay you if you are done.
+hires and it will tell you, or pay you if you are done -- not only the one
+that sent you.  By remarkable good fortune, whoever wanted the job done is
+drinking in this inn as well.
 
 If you take something you cannot finish, walk back in and they will offer to
 let you off it.  A job you can never be rid of is worse than no job at all.

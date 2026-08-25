@@ -12,9 +12,12 @@ page is the honest inventory: what is in the game now, and what is not.
 
       Angband 4.2.6
 
-   .. grid-item-card:: Platform
+   .. grid-item-card:: Platforms
 
-      macOS on Apple Silicon
+      macOS, Windows, Linux, DOS, Nintendo DS and 3DS.
+
+      Developed and played on macOS; the rest are built and smoke-tested by CI
+      but not played through. See :doc:`download`.
 
    .. grid-item-card:: Playable
 

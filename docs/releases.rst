@@ -31,6 +31,14 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.26.1** — The features page said the platform was **macOS on Apple
+  Silicon**, full stop, which has not been true for some time: the game is built
+  and packaged for Windows, Linux, DOS, the Nintendo DS and the 3DS as well, and
+  the page is the first thing a visitor reads. It now says so, with the honest
+  caveat that only macOS is actually played through. And reporting a job at any
+  building that hires is now written down as the design rather than apologised
+  for as a shortcut: whoever wanted the work done happens to be drinking in this
+  inn too, which beats walking back across the world to be paid.
 - **3.26.0** — **All six kinds of work, and the features page catches up.** The
   three that were missing are written: a killing at a named depth of a named
   dungeon (only dungeons you have found, only depths that dungeon reaches), a

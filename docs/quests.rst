@@ -80,12 +80,15 @@ taking work on a guess a reasonable thing to do.
 There is no penalty at present beyond the walk back. Whether the trade should
 remember, and charge you for it later, is not decided.
 
-.. note::
+Work is reported at *any* building that hires, not only the one that sent you.
+Walk into an inn four days away with the job done and somebody there will settle
+up — by remarkable good fortune, the very person who wanted it is drinking in
+this one too.
 
-   Work can currently be reported at *any* building that hires, not only the one
-   that gave it to you. That is a simplification: recording which building sent
-   you means another field in the savefile, and the bounty did not need it to
-   prove the machinery worked. It will tighten up.
+That is a small mercy and a deliberate one. The alternative is a character who
+finished a job in the wrong half of the world walking back across it to be paid,
+which is not an interesting journey. It is also the sort of coincidence the
+novels are built on.
 
 What the game is won by
 -----------------------
