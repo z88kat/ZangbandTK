@@ -54,6 +54,20 @@ You can carry several jobs at once. Any building that hires will tell you how fa
 along you are, or pay you when you are done — the reward scales with what you
 were asked to kill and how many of them.
 
+Giving up
+---------
+
+Walk into a building that hires while you owe it something and it will list what
+you are carrying and offer to let you off. Pick a job, confirm, and it is gone.
+
+This matters more than it sounds. Without it, a bounty on something twenty levels
+deeper than you can survive occupies one of your slots until the character dies —
+taken, impossible to finish, impossible to be rid of. Giving up is what makes
+taking work on a guess a reasonable thing to do.
+
+There is no penalty at present beyond the walk back. Whether the trade should
+remember, and charge you for it later, is not decided.
+
 .. note::
 
    Work can currently be reported at *any* building that hires, not only the one

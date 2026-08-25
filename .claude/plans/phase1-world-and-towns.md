@@ -623,8 +623,16 @@ a taken-but-incomplete quest, which every Zangband quest type requires.
 > `quest.txt`, which exist from birth and have nobody to report to. Guarded by
 > winning-counts-only-fixed-quests.
 >
-> *Still to come in M6:* the six types (WLD-19), the six triggers, world placement (WLD-21),
-> the quest log (WLD-22), and WLD-16d's quest-giving buildings.
+> *And a job can be given up*, which the four states did not originally allow for. M6's exit
+> asks that a quest can be taken, tracked, completed **and failed**, and nothing could fail:
+> a bounty on something twenty levels too deep held a slot until the character died. Handing
+> it back over the counter is the failing. Every carried job is listed rather than only the
+> first, because being able to give up only the oldest is not a choice. Guarded by
+> a-job-can-be-given-up, which checks the slot is usable again afterwards.
+>
+> *Still to come in M6:* three of the six types — a kill at a named dungeon depth, clearing
+> open country, and fetching a particular object — and the simplification that lets work be
+> reported at any hiring building rather than the one that gave it.
 
 > **The endgame is undecided, and M6 should not decide it by accident.** The two fixed
 > quests are Sauron and Morgoth — Tolkien, and therefore exactly the drift DEC-30 calls a

@@ -31,6 +31,13 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.25.0** — **A job can be given up.** Walk into a building that hires while
+  you owe it something and it lists what you are carrying and offers to let you
+  off. This is the fourth thing the lifecycle had to be able to say and could not:
+  M6 asks that a quest can be taken, tracked, completed *and failed*, and until
+  now a bounty on something twenty levels too deep held one of your slots until
+  the character died — taken, impossible to finish, impossible to be rid of. Every
+  carried job is listed, not just the oldest. No penalty beyond the walk back.
 - **3.24.2** — **Screenshots, at last, and they cannot go stale.** The
   :doc:`screenshots` page shows the whole world of one game — 129 blocks of sea,
   coast, forest and mountain with the towns and dungeon mouths on it — and the

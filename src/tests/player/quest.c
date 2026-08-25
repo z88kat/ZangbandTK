@@ -320,6 +320,45 @@ static int test_a_kill_finishes_only_killing_work(void *state) {
 	ok;
 }
 
+/**
+ * A job can be given up, and the slot comes back (WLD-20).
+ *
+ * The fourth thing the lifecycle has to be able to say. Without it a bounty on
+ * something too deep for the character occupies a slot until they die: taken,
+ * never completable, never removable. M6's exit asks that a quest can be taken,
+ * tracked, completed *and failed*, and this is the failing.
+ */
+static int test_a_job_can_be_given_up(void *state) {
+	struct player *p = state;
+	struct quest *q;
+	int slots = (int) (z_info->quest_max - z_info->quest_fixed);
+	int i, taken = 0;
+
+	player_quests_reset(p);
+
+	q = quest_take(p, QUEST_BOUNTY, "9 things too deep", &test_r_human, 9);
+	notnull(q);
+	q->cur_num = 2;
+
+	/* Given up, it is gone: no name, no progress, no state. */
+	quest_hand_back(p, q);
+
+	eq(q->state, QUEST_UNTAKEN);
+	eq(q->cur_num, 0);
+	eq(q->max_num, 0);
+	null(q->name);
+	null(quest_carried(p, false));
+
+	/* And the slot is usable again, which is the point of giving up. */
+	for (i = 0; i < slots; i++)
+		if (quest_take(p, QUEST_BOUNTY, "more work", &test_r_human, 1))
+			taken++;
+
+	eq(taken, slots);
+
+	ok;
+}
+
 const char *suite_name = "player/quest";
 struct test tests[] = {
 	{ "a-fixed-quest-starts-taken", test_a_fixed_quest_starts_taken },
@@ -329,6 +368,7 @@ struct test tests[] = {
 	{ "work-never-overwrites-the-endgame", test_work_never_overwrites_the_endgame },
 	{ "arriving-finishes-an-errand", test_arriving_finishes_an_errand },
 	{ "a-kill-finishes-only-killing-work", test_a_kill_finishes_only_killing_work },
+	{ "a-job-can-be-given-up", test_a_job_can_be_given_up },
 	{ "the-town-is-never-a-quest", test_the_town_is_never_a_quest },
 	{ "winning-counts-only-fixed-quests", test_winning_counts_only_fixed_quests },
 	{ NULL, NULL }

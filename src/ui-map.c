@@ -1346,6 +1346,81 @@ static bool quest_offer_place(int to)
 }
 
 /**
+ * What the character still owes this trade, and the chance to give it back
+ * (ZangbandTK, WLD-20).
+ *
+ * A quest that can be taken and never given up is a quest that follows the
+ * character to the grave: take a bounty on something too deep for you and the
+ * slot is gone for good.  So the fourth thing the lifecycle has to be able to say
+ * is that a job ended badly, and handing it back over the counter is how.
+ *
+ * Every job is listed rather than only the first, because a character can carry
+ * several and being able to give up only the oldest is not a choice.
+ */
+static bool quest_giver_owed(void)
+{
+	struct menu *m;
+	char *labels;
+	int chosen, i, listed = 0;
+	int slot[16];
+
+	m = menu_dynamic_new();
+	if (!m) return true;
+
+	labels = string_make(lower_case);
+	m->selections = labels;
+
+	for (i = z_info->quest_fixed;
+		 i < z_info->quest_max && listed < (int) N_ELEMENTS(slot); i++) {
+		struct quest *q = &player->quests[i];
+		char line[80];
+
+		if (q->state != QUEST_TAKEN || q->fixed) continue;
+
+		if (q->type == QUEST_BOUNTY || q->type == QUEST_WILD ||
+			q->type == QUEST_DUNGEON)
+			strnfmt(line, sizeof(line), "%-34s %d of %d",
+					q->name ? q->name : "that business", q->cur_num,
+					q->max_num);
+		else
+			strnfmt(line, sizeof(line), "%s", q->name ? q->name :
+					"that business");
+
+		slot[listed] = i;
+		menu_dynamic_add_label(m, line, 0, listed + 1, labels);
+		listed++;
+	}
+
+	menu_dynamic_add_label(m, "Nothing today", 'q', 0, labels);
+
+	screen_save();
+	menu_dynamic_calc_location(m, 0, 0);
+	region_erase_bordered(&m->boundary);
+	prt("\"You're still owing us. Giving any of it up?\"", 0, 0);
+
+	chosen = menu_dynamic_select(m);
+
+	menu_dynamic_free(m);
+	string_free(labels);
+	screen_load();
+
+	if (chosen <= 0 || chosen > listed) return true;
+
+	{
+		struct quest *q = &player->quests[slot[chosen - 1]];
+
+		if (!get_check(format("Give up %s? ", q->name ? q->name :
+							  "that business")))
+			return true;
+
+		msg("\"Suit yourself. We'll find somebody else.\"");
+		quest_hand_back(player, q);
+	}
+
+	return true;
+}
+
+/**
  * Work offered over the bar (ZangbandTK, WLD-16d).
  *
  * Quest-giving is a property a building carries, not a building of its own, so
@@ -1385,13 +1460,9 @@ static bool quest_giver_business(int town)
 		return true;
 	}
 
-	/* Or ask after what is still owed. */
-	if (doing) {
-		msg("\"You're still owing us %s -- %d of %d done.\"",
-			doing->name ? doing->name : "that business",
-			doing->cur_num, doing->max_num);
-		return true;
-	}
+	/* Or ask after what is still owed, and offer to be let off it. */
+	if (doing)
+		return quest_giver_owed();
 
 	/*
 	 * Or offer something.  Which kind depends on what there is to offer: an
