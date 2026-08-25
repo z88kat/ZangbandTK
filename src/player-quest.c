@@ -328,6 +328,32 @@ struct quest *quest_take(struct player *p, int type, const char *name,
  * \param town is the index of the town the player is standing in, or -1.
  * \return true if anything was completed.
  */
+bool quest_check_item(struct player *p, const struct object *obj)
+{
+	bool any = false;
+	int i;
+
+	if (!obj || !obj->kind) return false;
+
+	for (i = z_info->quest_fixed; i < z_info->quest_max; i++) {
+		struct quest *q = &p->quests[i];
+
+		if (q->state != QUEST_TAKEN) continue;
+		if (q->type != QUEST_FIND_ITEM) continue;
+		if (q->kind != obj->kind) continue;
+
+		q->cur_num += obj->number;
+		if (q->cur_num >= q->max_num) {
+			q->cur_num = q->max_num;
+			q->state = QUEST_COMPLETE;
+			any = true;
+			msg("%s: done.", q->name ? q->name : "That errand");
+		}
+	}
+
+	return any;
+}
+
 bool quest_check_arrival(struct player *p, int town)
 {
 	bool any = false;

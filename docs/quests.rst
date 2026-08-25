@@ -41,6 +41,18 @@ look at it. This is the only kind of work that gives you knowledge of the world
 rather than asking for it back, and it pairs well with a magetower — once you
 have stood in a place, the mages will carry you there again.
 
+**A killing down a particular dungeon.** Not just the creature but the place: so
+many of them, at a named depth of a named dungeon. Only dungeons you have already
+found, and only depths that dungeon actually reaches — a job at a depth its
+dungeon does not go to could never be done.
+
+**A killing in the open.** The same, but it counts only what dies above ground.
+What you kill underground is nobody's business.
+
+**Fetching something.** Bring a particular thing back. It is finished by having
+it, and the check is on your pack rather than on the floor — buying it, or taking
+it out of a chest, is fetching it just as much as finding it lying about.
+
 Carrying and reporting
 ----------------------
 
@@ -96,11 +108,8 @@ it has one dungeon, so a depth is a place. Here the Courts of Chaos run from 75
 to 110 and the Abyss from 90 to 127, so depth 100 is two different places — and
 without naming the dungeon the ending could have been reached in the wrong one.
 
-Not here yet
-------------
-
-Three of Zangband's six kinds of work are not built: killing something at a named
-depth of a named dungeon, clearing a stretch of open country, and being sent to
-find a particular object. The machinery is there — each is a value in the same
-enumeration and a check in the same two places — but the errands themselves are
-not written.
+All six of Zangband's kinds of work are now written. Which one you are offered
+depends on what the world can supply: an errand to another town needs another
+town, a job down a particular dungeon needs one you have found, and there is no
+sense sending you to look at a place you are standing in. Every kind falls back
+to a bounty, which needs nothing but a bestiary.

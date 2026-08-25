@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "dun-type.h"
 #include "cave.h"
 #include "grafmode.h"
 #include "init.h"
@@ -1421,6 +1422,168 @@ static bool quest_giver_owed(void)
 }
 
 /**
+ * A creature the character could be sent after (WLD-19).
+ *
+ * \param deepest bounds how nasty it may be.
+ * \param type, if given, restricts it to what dwells in that dungeon.
+ */
+static struct monster_race *quest_pick_race(int deepest,
+											const struct dun_type *type)
+{
+	struct monster_race *race = NULL;
+	int tries;
+
+	for (tries = 0; tries < 400 && !race; tries++) {
+		struct monster_race *pick =
+			&r_info[randint0(z_info->r_max ? z_info->r_max : 1)];
+
+		if (!pick->name) continue;
+		if (rf_has(pick->flags, RF_UNIQUE)) continue;
+		if (pick->level < 1 || pick->level > deepest) continue;
+		if (type && !dun_type_dwells(type, pick)) continue;
+
+		race = pick;
+	}
+
+	return race;
+}
+
+/**
+ * Name a number of a creature, pluralising where the bestiary does not.
+ */
+static void quest_name_kills(char *buf, size_t len, int number,
+							 const struct monster_race *race)
+{
+	if (race->plural)
+		strnfmt(buf, len, "%d %s", number, race->plural);
+	else
+		strnfmt(buf, len, "%d %ss", number, race->name);
+}
+
+/**
+ * Offer a killing sent to a particular dungeon (WLD-19, QUEST_DUNGEON).
+ *
+ * Only dungeons the character has found, and only depths the dungeon actually
+ * reaches -- a job at a depth its dungeon does not go to could never be done,
+ * which is the fault the-game-can-be-won guards the ending against.
+ */
+static bool quest_offer_dungeon(void)
+{
+	struct dun_type *type = NULL;
+	struct monster_race *race;
+	struct quest *q;
+	char name[80], line[120];
+	int i, seen = 0, depth, number;
+
+	for (i = 0; i < dun_type_count(); i++) {
+		if (!wild_dungeon_found(wild, i)) continue;
+		if (one_in_(++seen)) type = dun_type_by_index(i);
+	}
+
+	if (!type) return false;
+
+	depth = rand_range(type->min_depth, type->max_depth);
+	if (depth > player->max_depth + 6) depth = player->max_depth + 6;
+	if (depth < type->min_depth) depth = type->min_depth;
+
+	race = quest_pick_race(depth + 2, type);
+	if (!race) return false;
+
+	number = 2 + randint0(3);
+	quest_name_kills(name, sizeof(name), number, race);
+
+	strnfmt(line, sizeof(line), "\"%s, down in %s. Take the work? \"", name,
+			type->name);
+
+	if (!get_check(line)) return true;
+
+	q = quest_take(player, QUEST_DUNGEON, name, race, number);
+	if (!q) {
+		msg("\"You've enough on your plate already.\"");
+		return true;
+	}
+
+	q->level = depth;
+	q->dungeon = type->index + 1;
+
+	msg("\"%s, level %d. Mind how you go.\"", type->name, depth);
+
+	return true;
+}
+
+/**
+ * Offer a killing to be done above ground (WLD-19, QUEST_WILD).
+ */
+static bool quest_offer_wild(void)
+{
+	struct monster_race *race = quest_pick_race(player->max_depth + 3, NULL);
+	struct quest *q;
+	char name[80];
+	int number;
+
+	if (!race) return false;
+
+	/* Rolled once.  Naming one number and asking for another is a swindle. */
+	number = 2 + randint0(3);
+	quest_name_kills(name, sizeof(name), number, race);
+
+	if (!get_check(format("\"%s, out in the open country. Take it? \"", name)))
+		return true;
+
+	q = quest_take(player, QUEST_WILD, name, race, number);
+	if (!q) {
+		msg("\"You've enough on your plate already.\"");
+		return true;
+	}
+
+	msg("\"Above ground, mind. What dies underground is nobody's business.\"");
+
+	return true;
+}
+
+/**
+ * Offer to fetch something (WLD-19, QUEST_FIND_ITEM).
+ */
+static bool quest_offer_item(void)
+{
+	struct object_kind *kind = NULL;
+	struct quest *q;
+	char name[80];
+	int tries;
+
+	for (tries = 0; tries < 400 && !kind; tries++) {
+		struct object_kind *pick =
+			&k_info[randint0(z_info->k_max ? z_info->k_max : 1)];
+
+		if (!pick->name) continue;
+		if (pick->alloc_min > player->max_depth + 5) continue;
+		if (!pick->alloc_max) continue;
+		if (tval_is_money_k(pick)) continue;
+
+		kind = pick;
+	}
+
+	if (!kind) return false;
+
+	strnfmt(name, sizeof(name), "fetch %s", kind->name);
+
+	if (!get_check(format("\"We're wanting %s brought in. Take it? \"",
+						  kind->name)))
+		return true;
+
+	q = quest_take(player, QUEST_FIND_ITEM, name, NULL, 1);
+	if (!q) {
+		msg("\"You've enough on your plate already.\"");
+		return true;
+	}
+
+	q->kind = kind;
+	msg("\"Bring it here and we'll see you right.\"");
+
+	return true;
+}
+
+/**
  * Work offered over the bar (ZangbandTK, WLD-16d).
  *
  * Quest-giving is a property a building carries, not a building of its own, so
@@ -1471,14 +1634,31 @@ static bool quest_giver_business(int town)
 	 */
 	{
 		int elsewhere = quest_giver_somewhere_else(town, &unknown);
-		int kind = randint0(3);
+		int roll;
 
-		if (kind != 0 && elsewhere < 0) kind = 0;
+		/*
+		 * Six kinds, offered as the world allows: an errand to another town
+		 * needs another town, a job down a particular dungeon needs one the
+		 * character has found, and there is no sense sending anybody to a place
+		 * they are standing in.  Each falls back to the bounty, which needs
+		 * nothing but a bestiary.
+		 */
+		for (roll = randint0(5); roll > 0; roll--) {
+			switch (roll) {
+				case 4: if (unknown >= 0) return quest_offer_place(unknown);
+						break;
+				case 3: if (elsewhere >= 0)
+							return quest_offer_delivery(elsewhere);
+						break;
+				case 2: if (quest_offer_dungeon()) return true;
+						break;
+				case 1: if (quest_offer_item()) return true;
+						break;
+				default: break;
+			}
+		}
 
-		if (kind == 2 && unknown >= 0)
-			return quest_offer_place(unknown);
-		if (kind >= 1)
-			return quest_offer_delivery(elsewhere);
+		if (one_in_(3) && quest_offer_wild()) return true;
 	}
 
 	for (tries = 0; tries < 200 && !race; tries++) {

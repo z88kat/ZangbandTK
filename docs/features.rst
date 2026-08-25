@@ -57,15 +57,52 @@ towns standing in it, roads between them, and thirteen dungeons opening off it.
   and the world forgets what you left in time.
 - A unique you wounded and walked away from is still out there, still wounded.
 - **A dozen towns** in four sizes, keeping different trades depending on the
-  country around them (:doc:`towns`).
-- **Roads** joining the towns, routed round the mountains and out of the swamps,
-  so following one gets you somewhere.
+  country around them, and named from Amber (:doc:`towns`). Some have fallen —
+  held by monsters, taken back by animals, or simply standing empty — and the
+  sidebar says which, because a fallen town keeps its shops and none of its
+  services.
+- **Roads** joining the towns *and every dungeon mouth*, routed round the
+  mountains and out of the swamps, so following one always gets you somewhere.
 - **Thirteen dungeons**, Amber's own places, each covering its own range of
   depths and ending at the bottom of it -- so going deeper means crossing the
   world to find one that reaches deeper (:doc:`dungeon`).
 - Each dungeon has **its own inhabitants** and **its own kind of treasure**: the
   Caverns of Kolvir are trolls and giants and tools, Tir-na Nog'th is wraiths
   and vortices and three times the usual magic.
+
+Towns worth walking to
+----------------------
+
+A town is somewhere to do things, not a row of shop doors (:doc:`towns`).
+
+- **Five services**: a magetower that carries you to places you have been for a
+  fare by distance, an inn that sells a bed until morning, a healer, a magesmith
+  and a recharger. Which of them a place keeps follows from its size, and a town
+  that has fallen keeps none.
+- **A night at the inn may show you something** — a place you have not found,
+  put on your map, or a bad dream about something you have met. Which, depends on
+  how well governed the town is.
+- **Shops come at a standard as well as a trade**: a plain Weapon Smiths, or an
+  Advanced, Expert or Arcane one, deeper-stocked and better enchanted. Seven in
+  ten are plain and one in fifty is arcane, so the good ones are worth travelling
+  for.
+- **One house.** Every town has a home and they are all the same home: what you
+  leave in your village is on the shelf in a city four days away.
+
+Quests
+------
+
+Work you are offered, accept, carry about and hand back (:doc:`quests`).
+
+- **Six kinds**: a bounty on a creature, a killing at a named depth of a named
+  dungeon, a killing in the open country, carrying word to another town, going to
+  look at a place nobody here has been, and fetching a particular thing.
+- **Quest-giving is a property a building carries**, not a building of its own.
+  The inn has it; moving it to the magetower is a line of code.
+- Press ``J`` for what you have taken on. Give up anything you cannot finish by
+  walking back in and handing it back.
+- **The game ends in Amber**: Oberon, and then the Serpent of Chaos, at the
+  bottom of the Courts of Chaos — not Sauron and Morgoth.
 
 Monsters, objects and magic
 ---------------------------
@@ -79,6 +116,12 @@ Monsters, objects and magic
   chaotic.
 - **The Ancient and Foul Curse**, with its cascade intact.
 - Random object abilities, pit themes and vaults.
+- **The Unicorn of Amber**, who makes you whole once and is then gone about her
+  business, and a **white deer** that heals you and bounds away. Not everything
+  in the world is there to be fought.
+- **The lotus**, a mushroom that takes everything you know — the map, the world,
+  the monsters, what your potions are, the spells you had learned — five turns
+  after you eat it.
 
 See :doc:`monsters` and :doc:`objects` for the detail.
 
@@ -114,12 +157,9 @@ in when the milestone lands.
    * - Feature
      - Milestone
      - Chapter
-   * - Multiple towns and services
-     - M5
-     - :doc:`towns`
-   * - Quests
-     - M6
-     - :doc:`quests`
+   * - Races and classes
+     - M7
+     - :doc:`birth`
    * - Mutations
      - M8
      - :doc:`mutations`
@@ -136,10 +176,10 @@ in when the milestone lands.
      - M11
      - :doc:`nightmare`
 
-Multiple dungeons have arrived (:doc:`dungeon`), each with its own inhabitants
-and its own kind of treasure. What is left of M5 is the towns' side of the same
-idea — the six kinds of townsfolk — and the buildings and services that stand in
-them.
+The world is finished. Towns, services, roads, dungeons and quests have all
+landed, which was Phase 2's world work; what comes next is the character rather
+than the place — twenty-one races, five classes, and racial powers, none of which
+Angband has a mechanism for.
 
 A **Tcl/Tk front end** is planned for a later phase, reviving the original's
 interface on Tcl/Tk 9. There is an irony in it: the original ZangbandTK

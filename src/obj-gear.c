@@ -29,6 +29,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
+#include "player-quest.h"
 #include "player-util.h"
 
 static const struct slot_info {
@@ -821,6 +822,14 @@ void inven_item_charges(struct object *obj)
 void inven_carry(struct player *p, struct object *obj, bool absorb,
 				 bool message)
 {
+	/*
+	 * ZangbandTK (WLD-19): somebody may have asked for one of these.  Hooked to
+	 * the pack rather than to the floor, so it counts what the character
+	 * actually walked off with -- buying it, or taking it from a chest, is
+	 * fetching it just as much as finding it on the ground is.
+	 */
+	quest_check_item(p, obj);
+
 	bool combining = false;
 
 	/* Check for combining, if appropriate */

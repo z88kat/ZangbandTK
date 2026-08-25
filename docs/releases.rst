@@ -31,6 +31,15 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.26.0** — **All six kinds of work, and the features page catches up.** The
+  three that were missing are written: a killing at a named depth of a named
+  dungeon (only dungeons you have found, only depths that dungeon reaches), a
+  killing that counts only above ground, and fetching a particular thing —
+  finished by having it, checked against your pack, so buying it or taking it
+  from a chest counts as fetching it. Which kind you are offered depends on what
+  the world can supply, and every one falls back to a bounty, which needs nothing
+  but a bestiary. The features page had been claiming towns and quests were still
+  to come since before either landed; it now describes the game as it is.
 - **3.25.0** — **A job can be given up.** Walk into a building that hires while
   you owe it something and it lists what you are carrying and offers to let you
   off. This is the fourth thing the lifecycle had to be able to say and could not:

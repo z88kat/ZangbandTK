@@ -359,6 +359,73 @@ static int test_a_job_can_be_given_up(void *state) {
 	ok;
 }
 
+/**
+ * Fetching something is finished by having it (WLD-19, QUEST_FIND_ITEM).
+ *
+ * Hooked to the pack rather than to the floor, so buying the thing or taking it
+ * out of a chest counts as fetching it, which it plainly is.
+ */
+static int test_fetching_is_finished_by_having_it(void *state) {
+	struct player *p = state;
+	struct quest *q;
+	struct object wanted, other;
+
+	player_quests_reset(p);
+
+	memset(&wanted, 0, sizeof(wanted));
+	memset(&other, 0, sizeof(other));
+	wanted.kind = &test_longsword;
+	wanted.number = 1;
+	other.kind = &test_torch;
+	other.number = 1;
+
+	q = quest_take(p, QUEST_FIND_ITEM, "fetch a long sword", NULL, 1);
+	notnull(q);
+	q->kind = &test_longsword;
+
+	/* Something else does not finish it. */
+	require(!quest_check_item(p, &other));
+	eq(q->state, QUEST_TAKEN);
+
+	/* The thing asked for does. */
+	require(quest_check_item(p, &wanted));
+	eq(q->state, QUEST_COMPLETE);
+
+	/* And says so once, however many more turn up. */
+	require(!quest_check_item(p, &wanted));
+
+	ok;
+}
+
+/**
+ * A killing above ground is not finished underground (WLD-19, QUEST_WILD).
+ *
+ * The distinction is the whole of what separates this from a bounty: a bounty
+ * counts the creature wherever it dies, and this one counts only what dies in
+ * the open. Checked here as the predicate quest_check() applies, since the real
+ * one needs a live cave and a dead monster.
+ */
+static int test_open_country_work_counts_only_above_ground(void *state) {
+	struct player *p = state;
+	struct quest *q;
+	bool counts;
+
+	player_quests_reset(p);
+
+	q = quest_take(p, QUEST_WILD, "3 wolves", &test_r_human, 3);
+	notnull(q);
+
+	p->depth = 5;
+	counts = !(!q->fixed && q->type == QUEST_WILD && p->depth > 0);
+	require(!counts);
+
+	p->depth = 0;
+	counts = !(!q->fixed && q->type == QUEST_WILD && p->depth > 0);
+	require(counts);
+
+	ok;
+}
+
 const char *suite_name = "player/quest";
 struct test tests[] = {
 	{ "a-fixed-quest-starts-taken", test_a_fixed_quest_starts_taken },
@@ -369,6 +436,8 @@ struct test tests[] = {
 	{ "arriving-finishes-an-errand", test_arriving_finishes_an_errand },
 	{ "a-kill-finishes-only-killing-work", test_a_kill_finishes_only_killing_work },
 	{ "a-job-can-be-given-up", test_a_job_can_be_given_up },
+	{ "fetching-is-finished-by-having-it", test_fetching_is_finished_by_having_it },
+	{ "open-country-work-counts-only-above-ground", test_open_country_work_counts_only_above_ground },
 	{ "the-town-is-never-a-quest", test_the_town_is_never_a_quest },
 	{ "winning-counts-only-fixed-quests", test_winning_counts_only_fixed_quests },
 	{ NULL, NULL }
