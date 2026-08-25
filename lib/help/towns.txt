@@ -15,7 +15,8 @@ are told apart by colour, and the "slash" command ('/') will name one.
   green   healer      binds wounds, cures ailments, restores drained stats
                           and levels lost to life-draining attacks
   brown   inn         a bed until morning, and sometimes a dream
-  red     magesmith   puts magic on a weapon or a suit of armour
+  red     magesmith   puts magic on a weapon (to hit and to wound)
+                          or on a suit of armour; it asks which
   blue    recharger   puts charges back in a wand or a staff
 
 A '9' is a magetower.  Walk in and the mages will carry you to a town you have

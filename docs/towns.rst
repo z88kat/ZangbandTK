@@ -238,11 +238,14 @@ Each is a ``+`` in a colour of its own, and each charges.
        levels (400). Only offers what you actually need.
    * - Magesmith
      - city and up
-     - Puts magic on a weapon or a suit of armour, 250 gold a go.
+     - Puts magic on a weapon or a suit of armour, 250 gold a go. Asks which
+       first: a weapon gets both its to-hit and its to-damage, which is why it
+       costs twice what a scroll of one or the other does.
    * - Recharger
      - city and up
-     - Puts charges back in a wand or a staff, 120 gold. It can still fail and
-       destroy the item — that is the ordinary recharging risk, not a swindle.
+     - Puts charges back in a wand or a staff, 120 gold, at the same strength
+       as a scroll of Recharging. It can still fail and destroy the item — that
+       is the ordinary recharging risk, not a swindle.
 
 Work
 ----

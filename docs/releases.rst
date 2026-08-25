@@ -31,6 +31,15 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.23.2** — **The magesmith and the recharger did nothing for your money.**
+  Both were handed a dice string of ``"0"`` and no subtype. Zero is not a small
+  amount, it is nothing: the enchant effect tests its subtype as a set of bit
+  flags and zero matches none of them, so the magesmith took the fee and did not
+  so much as ask which item — and the recharger asked for the item and then
+  worked at strength zero, the worst odds in the game. The magesmith now asks
+  whether you want a weapon or a suit of armour before naming its price, and a
+  weapon gets both to-hit and to-damage. The recharger works at the strength of
+  a scroll of Recharging.
 - **3.23.1** — **All forty-four debug commands are written down**, in the manual
   and in the in-game help, by submenu and by key. They were never documented
   anywhere — the manual named the nine submenus and gave five examples, and the

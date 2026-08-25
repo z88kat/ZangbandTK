@@ -28,6 +28,7 @@
 #include "player-timed.h"
 #include "trap.h"
 #include "ui-map.h"
+#include "effect-handler.h"
 #include "effects.h"
 #include "game-world.h"
 #include "player-calcs.h"
@@ -1417,7 +1418,20 @@ static void service_inn(void)
  * and DEC-27 says as much -- the idea is a shop that will improve your gear,
  * and 4.2 has the machinery for improving gear.
  */
-static void service_effect(const char *what, int effect, int32_t price)
+/**
+ * Run one of the services that is simply an effect, for a fee (WLD-16c).
+ *
+ * \param dice is what the effect works from -- how many points of enchantment,
+ * how much recharging strength.  It was "0" for both services here, and zero is
+ * not a small amount, it is nothing: ENCHANT tests its subtype as a set of bit
+ * flags and zero matches none of them, so the magesmith took the fee and did not
+ * so much as ask which item; RECHARGE asked for the item and then worked at
+ * strength zero, which is the worst odds the game has.  Both were reported from
+ * play as taking the money and doing nothing.
+ * \param subtype selects which kind, and matters for the same reason.
+ */
+static void service_effect(const char *what, int effect, int32_t price,
+						   const char *dice, int subtype)
 {
 	if (!get_check(format("%s for %d au? ", what, (int) price)))
 		return;
@@ -1425,8 +1439,52 @@ static void service_effect(const char *what, int effect, int32_t price)
 	if (!service_pay(price, what))
 		return;
 
-	effect_simple(effect, source_player(), "0", 0, 0, 0, 0, 0, NULL);
+	effect_simple(effect, source_player(), dice, subtype, 0, 0, 0, 0, NULL);
 	player->upkeep->energy_use = z_info->move_energy;
+}
+
+/**
+ * The magesmith: put magic on a weapon or a suit of armour (WLD-16c).
+ *
+ * Asked which before the fee is named, because the two are different work and
+ * the player should know what they are buying.  A weapon gets both its to-hit
+ * and its to-damage, which is why this costs twice what a scroll of one or the
+ * other does.
+ */
+static void service_enchant(void)
+{
+	struct menu *m;
+	char *labels;
+	int chosen;
+
+	m = menu_dynamic_new();
+	if (!m) return;
+
+	labels = string_make(lower_case);
+	m->selections = labels;
+
+	menu_dynamic_add_label(m, "A weapon, to hit and to wound", 0, ENCH_TOBOTH,
+						   labels);
+	menu_dynamic_add_label(m, "A suit of armour", 0, ENCH_TOAC, labels);
+	menu_dynamic_add_label(m, "Nothing today", 'q', 0, labels);
+
+	screen_save();
+	menu_dynamic_calc_location(m, 0, 0);
+	region_erase_bordered(&m->boundary);
+	prt(format("The magesmith will work for %d au.  You have %d.",
+			   (int) z_info->enchant_cost, (int) player->au), 0, 0);
+
+	chosen = menu_dynamic_select(m);
+
+	menu_dynamic_free(m);
+	string_free(labels);
+	screen_load();
+
+	if (chosen != ENCH_TOBOTH && chosen != ENCH_TOAC) return;
+
+	service_effect(chosen == ENCH_TOAC ? "Enchanting your armour"
+									   : "Enchanting your weapon",
+				   EF_ENCHANT, z_info->enchant_cost, "1", chosen);
 }
 
 /** Somebody walked into a service building. */
@@ -1455,13 +1513,17 @@ void ui_enter_service(game_event_type type, game_event_data *data, void *user)
 		case WILD_SERVICE_INN:       service_inn(); break;
 
 		case WILD_SERVICE_ENCHANT:
-			service_effect("Have an item enchanted", EF_ENCHANT,
-						   z_info->enchant_cost);
+			service_enchant();
 			break;
 
 		case WILD_SERVICE_RECHARGE:
+			/*
+			 * Strength six, the same as a scroll of Recharging, which is what
+			 * the recharger is standing in for.  It can still fail and destroy
+			 * the item; that is the ordinary risk and not a swindle.
+			 */
 			service_effect("Have a wand or staff recharged", EF_RECHARGE,
-						   z_info->recharge_cost);
+						   z_info->recharge_cost, "6", 0);
 			break;
 
 		default:
