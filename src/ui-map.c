@@ -1429,8 +1429,16 @@ static bool quest_giver_business(int town)
 
 	number = 3 + randint0(5);
 
-	strnfmt(name, sizeof(name), "%d %s", number, race->plural ? race->plural :
-			race->name);
+	/*
+	 * "6 small kobold" is what this said before.  monster.txt carries a plural
+	 * only for the names that need one -- ninety-six of them, the irregulars --
+	 * so everything else takes a plain "s", which is what the field being
+	 * optional means.
+	 */
+	if (race->plural)
+		strnfmt(name, sizeof(name), "%d %s", number, race->plural);
+	else
+		strnfmt(name, sizeof(name), "%d %ss", number, race->name);
 
 	if (!get_check(format("\"There's %s wanting killing. Take the work? \"",
 						  name)))

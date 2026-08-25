@@ -637,7 +637,7 @@ int rd_object_memory(void)
  * character is still on.  That is exactly the information version 1 could hold,
  * and reading it back this way loses nothing it ever knew.
  */
-static int rd_quests_aux(bool with_state, bool with_type)
+static int rd_quests_aux(bool with_state, bool with_type, bool with_max)
 {
 	int i;
 	uint16_t tmp16u;
@@ -685,6 +685,43 @@ static int rd_quests_aux(bool with_state, bool with_type)
 				string_free(player->quests[i].name);
 				player->quests[i].name = name[0] ? string_make(name) : NULL;
 			}
+
+			if (with_max) {
+				uint16_t max_num;
+
+				rd_u16b(&max_num);
+				if (!player->quests[i].fixed)
+					player->quests[i].max_num = max_num;
+			} else if (!player->quests[i].fixed &&
+					   player->quests[i].state != QUEST_UNTAKEN) {
+				/*
+				 * Version 3 kept the name but not how many were asked for, so a
+				 * bounty came back as "0 of 0" and could never be finished --
+				 * the count starts at one and never reaches zero.  There is
+				 * nothing to reconstruct it from.
+				 */
+				note("Forgetting a quest whose terms were not recorded.");
+				player->quests[i].state = QUEST_UNTAKEN;
+				player->quests[i].cur_num = 0;
+				string_free(player->quests[i].name);
+				player->quests[i].name = NULL;
+			}
+		} else if (!player->quests[i].fixed) {
+			/*
+			 * A savefile from before version 3 kept a taken quest's state but
+			 * not its name or how many were asked for, so there is no way to
+			 * say what it was or when it would be done.  Better to drop it than
+			 * to leave the character owing "that business -- 0 of 0", which is
+			 * what it looked like, and which could never be finished.
+			 */
+			if (player->quests[i].state != QUEST_UNTAKEN)
+				note("Forgetting a quest taken before this version.");
+
+			player->quests[i].state = QUEST_UNTAKEN;
+			player->quests[i].cur_num = 0;
+			player->quests[i].max_num = 0;
+			string_free(player->quests[i].name);
+			player->quests[i].name = NULL;
 		}
 
 		if (!with_state) {
@@ -697,9 +734,10 @@ static int rd_quests_aux(bool with_state, bool with_type)
 	return 0;
 }
 
-int rd_quests(void) { return rd_quests_aux(true, true); }
-int rd_quests_2(void) { return rd_quests_aux(true, false); }
-int rd_quests_1(void) { return rd_quests_aux(false, false); }
+int rd_quests(void) { return rd_quests_aux(true, true, true); }
+int rd_quests_3(void) { return rd_quests_aux(true, true, false); }
+int rd_quests_2(void) { return rd_quests_aux(true, false, false); }
+int rd_quests_1(void) { return rd_quests_aux(false, false, false); }
 
 
 /**

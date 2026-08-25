@@ -31,6 +31,16 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.24.1** — **A quest remembers how many it asked for.** It said *"6 small
+  kobold — 0 of 0 done"*, and both halves of that were wrong. Angband never
+  stored the target count, because its two quests come from ``quest.txt`` and
+  only progress had to be remembered; work taken from a building has nowhere
+  else to keep it, so it came back as nought of nought — and could never be
+  finished either, since the count starts at one and never reaches zero. Saved
+  now, in quests block version 4. A job taken under 3.24.0 cannot be
+  reconstructed and is dropped on load with a note rather than left owing
+  something impossible. And the plural: ``monster.txt`` carries one only for the
+  ninety-six names that need it, so everything else now takes a plain "s".
 - **3.24.0** — **Quests you can see, and errands that are not killing.** Two new
   kinds of work: carry word to a named town, and go and look at a place nobody
   here has been. Both are finished by *arriving*, which needed a trigger of its

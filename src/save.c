@@ -430,6 +430,16 @@ void wr_quests(void)
 		wr_byte(player->quests[i].type);
 		wr_byte(player->quests[i].town);
 		wr_string(player->quests[i].name ? player->quests[i].name : "");
+
+		/*
+		 * How many were asked for.  Angband never stored this: its two quests
+		 * come from quest.txt, so the number is in the file and the savefile
+		 * only had to remember progress.  Work taken from a building has
+		 * nowhere else to keep it, and without this it came back as "0 of 0"
+		 * -- which cannot be finished either, since the count starts at one
+		 * and never equals zero.
+		 */
+		wr_u16b(player->quests[i].max_num);
 	}
 }
 
