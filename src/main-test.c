@@ -279,7 +279,16 @@ static errr term_text_test(int x, int y, int n, int a, const wchar_t *s) {
 static void term_data_link(int i) {
 	term *t = &td.t;
 
-	term_init(t, 80, 24, 256);
+	{
+		/*
+		 * Eighty by twenty-four unless asked otherwise.  The world map draws as
+		 * much of the world as the terminal will hold, so capturing all of it in
+		 * one frame wants a terminal no player would use.
+		 */
+		const char *w = getenv("ZTK_TERM_W"), *h = getenv("ZTK_TERM_H");
+
+		term_init(t, w ? atoi(w) : 80, h ? atoi(h) : 24, 256);
+	}
 
 	t->init_hook = term_init_test;
 	t->nuke_hook = term_nuke_test;
@@ -314,7 +323,12 @@ errr init_test(int argc, char *argv[]) {
 	 * Reset savefile set by main.c:  don't want it to interfere with the
 	 * test.
 	 */
-	savefile[0] = '\0';
+	/*
+	 * Normally cleared so a stray savefile cannot interfere with a test.  Kept
+	 * when ZTK_SAVEFILE is set, which is how scripts/screenshot drives a real
+	 * character headlessly to capture the manual's pictures.
+	 */
+	if (!getenv("ZTK_SAVEFILE")) savefile[0] = '\0';
 
 	term_data_link(0);
 	return 0;

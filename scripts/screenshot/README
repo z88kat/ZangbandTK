@@ -1,0 +1,31 @@
+Capturing the manual's pictures
+===============================
+
+The game draws characters with colour attributes, so a picture of the screen can
+be the screen: these are captured from the running game and emitted as SVG, in
+Angband's own palette, at whatever size the reader zooms to.
+
+    scripts/screenshot/take.sh <savefile-name>
+
+The savefile is a character of your own, in the game's save directory. It is
+never written to -- a copy is used.
+
+How it works, in three steps:
+
+  1. The test front end (-mtest) is driven headlessly with the character loaded.
+     It prints every character, position and colour the game draws.
+  2. capture.py replays that stream into a grid, honouring clears and wipes, and
+     snapshots the screen each time the game asks for input.
+  3. tosvg.py renders one of those frames, using the palette read straight out
+     of src/z-color.c.
+
+Two environment variables set the scene, and both only do what the debug menu
+already offers a player:
+
+  ZTK_SHOT       know every place, so the world map is not mostly blank
+  ZTK_SHOT_MAP   open the world map
+  ZTK_TERM_W/H   a terminal larger than a player's, so the whole world fits
+  ZTK_SAVEFILE   let -mtest load a savefile at all
+
+Regenerating a picture runs the current code, so these cannot drift from the
+game the way a folder of PNGs does.

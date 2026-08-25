@@ -31,6 +31,15 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.24.2** — **Screenshots, at last, and they cannot go stale.** The
+  :doc:`screenshots` page shows the whole world of one game — 129 blocks of sea,
+  coast, forest and mountain with the towns and dungeon mouths on it — and the
+  surface with a town standing in it. Both are captured from the running game
+  rather than drawn: the test front end reports every character, position and
+  colour the game puts on screen, and a script replays that into SVG using the
+  palette read out of ``z-color.c``. Regenerating them runs the current code, so
+  they cannot drift the way a folder of old PNGs does. Two debug commands set the
+  scene, and neither does anything a player could not do from ``^A``.
 - **3.24.1** — **A quest remembers how many it asked for.** It said *"6 small
   kobold — 0 of 0 done"*, and both halves of that were wrong. Angband never
   stored the target count, because its two quests come from ``quest.txt`` and

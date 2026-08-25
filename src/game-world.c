@@ -37,6 +37,7 @@
 #include "source.h"
 #include "target.h"
 #include "trap.h"
+#include "ui-map.h"
 #include "wild.h"
 #include "z-queue.h"
 
@@ -1143,6 +1144,21 @@ static void on_leave_level(void) {
  */
 void run_game_loop(void)
 {
+	/*
+	 * The screenshot harness (scripts/screenshot).  Nothing here runs unless the
+	 * environment asks for it, and it only does what a player could do from the
+	 * debug menu: know every place, then open the world map.  It exists so the
+	 * manual's pictures are captured from the running game rather than kept as
+	 * images that quietly go out of date.
+	 */
+	{
+		static int once = 0;
+
+		if (!once++ && getenv("ZTK_SHOT")) {
+			wild_know_all_places(wild);
+			if (getenv("ZTK_SHOT_MAP")) do_cmd_view_world_map();
+		}
+	}
 	/* Tidy up after the player's command */
 	process_player_cleanup();
 

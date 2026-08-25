@@ -2,44 +2,65 @@
 Screenshots
 ===========
 
-.. note::
+These are captured from the running game, not drawn. ZangbandTK renders as
+characters with colour attributes, so what you see below *is* the screen — every
+glyph in the position and colour the game put it in, at any size you care to
+zoom to.
 
-   **No screenshots yet.** The two images in the repository's ``screenshots/``
-   directory came with the Angband base and show Angband 4.2.6 — its title screen
-   and a dungeon level. Neither shows ZangbandTK, so neither is published here.
+The world
+=========
 
-   Captures of the actual game will replace this page.
+The whole of one world, seen from the overhead map. A game generates this from a
+single seed and it comes back the same every time (:doc:`wilderness`).
 
-What will be here
-=================
+.. image:: screenshots/world-map.svg
+   :alt: The overhead map of a whole ZangbandTK world, 129 blocks square, showing
+         sea, coast, forest, mountain and open country, with towns and dungeon
+         mouths marked.
+   :width: 100%
 
-The game renders as Angband 4.2 does, so a dungeon level looks much as Angband's
-does and is not worth a page of its own. What is worth showing is what Angband
-cannot show:
+Blue is sea and light blue the shallows you can wade. Green is grassland, light
+green forest, umber the mountains that are impassable. The ``@`` is the character
+and ``>`` a dungeon mouth. The towns show as blocks rather than points, because
+they are: a great city is 132 grids across, which is most of nine blocks.
 
-**The wilderness.** A continuous surface 2064 grids square, scrolling as you
-walk, with terrain following from height, population and law. This is the single
-image that says what ZangbandTK is.
+This is the map with everything known. In play you see only what you have been
+near — the map fills in behind you as you walk, and that is most of what the
+:doc:`magetower <towns>` is for.
 
-**The town standing in the world**, with roads leading out of it, rather than
-sitting on a level of its own.
+The surface
+===========
 
-**The coast**, where the world ends in open sea, and the deep water that can be
-waded into and drowned in.
+Not a town level with a wilderness somewhere else. The same map, scrolling as you
+walk, with the town standing in it.
 
-**The bestiary**, showing monsters Angband does not have: the princes of Amber
-and the Mythos deities, at the point of being recalled or fought.
+.. image:: screenshots/the-surface.svg
+   :alt: The wilderness surface with a walled town in it, its numbered shops
+         visible through the gate, roads leading away, and open country around.
+   :width: 100%
 
-**A vampiric or chaotic weapon** discharging, since those three weapon mechanics
-have no Angband equivalent.
+The numbers are shops and the ``+`` symbols are services — an inn, a healer, a
+magesmith. The road leaves by the gate and goes somewhere: every town and every
+dungeon mouth in the world is on the network, which is how you find the next one.
 
-Until then, :doc:`features` describes all of this in words, and
-:doc:`wilderness` covers the world in detail.
+Walk far enough in any direction and the window scrolls; walk far enough west and
+you run out of land, then out of world.
 
-Taking your own
-===============
+How these were made
+===================
 
-If you build the game — see :doc:`download` — Angband's screenshot command
-captures the current screen to a file in your user directory. Screenshots of the
-wilderness, in particular, would be a welcome contribution; they can be attached
-to an issue on `GitHub <https://github.com/z88kat/ZangbandTK/issues>`_.
+With the game's own renderer, driven headlessly. The test front end writes every
+character, position and colour the game draws; a small script replays that into a
+grid and emits SVG using Angband's own palette. Two of the debug commands set the
+scene — *Know every place* to fill the map in, and a larger terminal than a player
+would normally use so the whole world fits in one frame.
+
+That means these cannot drift from the game. They are not screenshots of a build
+somebody had lying about; regenerating them runs the current code.
+
+Still to come
+=============
+
+**The coast and deep water**, which is worth a picture of its own. **The
+bestiary**, showing the monsters Angband does not have. **A vampiric or chaotic
+weapon** discharging, since those mechanics have no Angband equivalent.
