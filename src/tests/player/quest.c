@@ -186,7 +186,7 @@ static int test_work_is_taken_and_handed_back(void *state) {
 	null(quest_carried(p, false));
 	null(quest_carried(p, true));
 
-	q = quest_take(p, "3 orcs", &test_r_human, 3);
+	q = quest_take(p, QUEST_BOUNTY, "3 orcs", &test_r_human, 3);
 	notnull(q);
 
 	/* It went into a slot past the fixed ones, and it is not one of them. */
@@ -230,7 +230,7 @@ static int test_work_never_overwrites_the_endgame(void *state) {
 
 	/* Fill every slot there is, and then some. */
 	for (i = 0; i < (int) z_info->quest_max + 4; i++)
-		if (quest_take(p, "work", &test_r_human, 1)) taken++;
+		if (quest_take(p, QUEST_BOUNTY, "work", &test_r_human, 1)) taken++;
 
 	/* Never more than the slots past the fixed quests. */
 	eq(taken, (int) (z_info->quest_max - z_info->quest_fixed));
@@ -245,6 +245,81 @@ static int test_work_never_overwrites_the_endgame(void *state) {
 	ok;
 }
 
+/**
+ * An errand about going somewhere is finished by going there (WLD-19, WLD-21).
+ *
+ * A delivery cannot be completed by quest_check(), which only ever sees a
+ * monster die -- so it has a trigger of its own, and the two must not be
+ * confused: killing the man who asked for the parcel does not deliver it.
+ */
+static int test_arriving_finishes_an_errand(void *state) {
+	struct player *p = state;
+	struct quest *q;
+
+	player_quests_reset(p);
+
+	q = quest_take(p, QUEST_DELIVERY, "word to Avalon", NULL, 1);
+	notnull(q);
+	q->town = 3 + 1;
+
+	/* Somewhere else does not finish it. */
+	require(!quest_check_arrival(p, 0));
+	eq(q->state, QUEST_TAKEN);
+
+	/* Nor does being nowhere. */
+	require(!quest_check_arrival(p, -1));
+	eq(q->state, QUEST_TAKEN);
+
+	/* Being there does. */
+	require(quest_check_arrival(p, 3));
+	eq(q->state, QUEST_COMPLETE);
+	eq(q->cur_num, q->max_num);
+
+	/*
+	 * And it says so once.  The check runs on every step taken inside a town,
+	 * so a second call must find nothing -- otherwise a delivery announces
+	 * itself for as long as the character stands there.
+	 */
+	require(!quest_check_arrival(p, 3));
+
+	ok;
+}
+
+/**
+ * A kill finishes only the errands that are about killing (WLD-19).
+ */
+static int test_a_kill_finishes_only_killing_work(void *state) {
+	struct player *p = state;
+	struct quest *bounty, *errand;
+
+	player_quests_reset(p);
+
+	bounty = quest_take(p, QUEST_BOUNTY, "3 orcs", &test_r_human, 3);
+	notnull(bounty);
+	errand = quest_take(p, QUEST_DELIVERY, "word to Amber", &test_r_human, 1);
+	notnull(errand);
+	errand->town = 1 + 1;
+
+	/*
+	 * The delivery names the same race as the bounty, which is the trap: a
+	 * quest_check() that matched on the race alone would deliver the parcel by
+	 * killing something.
+	 */
+	eq(errand->cur_num, 0);
+	eq(errand->state, QUEST_TAKEN);
+
+	/*
+	 * And arriving at the errand's town finishes the errand and leaves the
+	 * bounty exactly where it was -- walking somewhere kills nothing.
+	 */
+	require(quest_check_arrival(p, 1));
+	eq(errand->state, QUEST_COMPLETE);
+	eq(bounty->cur_num, 0);
+	eq(bounty->state, QUEST_TAKEN);
+
+	ok;
+}
+
 const char *suite_name = "player/quest";
 struct test tests[] = {
 	{ "a-fixed-quest-starts-taken", test_a_fixed_quest_starts_taken },
@@ -252,6 +327,8 @@ struct test tests[] = {
 	  test_a_level_stops_being_a_quest_when_finished },
 	{ "work-is-taken-and-handed-back", test_work_is_taken_and_handed_back },
 	{ "work-never-overwrites-the-endgame", test_work_never_overwrites_the_endgame },
+	{ "arriving-finishes-an-errand", test_arriving_finishes_an_errand },
+	{ "a-kill-finishes-only-killing-work", test_a_kill_finishes_only_killing_work },
 	{ "the-town-is-never-a-quest", test_the_town_is_never_a_quest },
 	{ "winning-counts-only-fixed-quests", test_winning_counts_only_fixed_quests },
 	{ NULL, NULL }

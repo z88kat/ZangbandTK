@@ -1762,7 +1762,22 @@ void player_handle_post_move(struct player *p, bool eval_trap,
 	 * rebuild snapped the player back to wherever they had last walked.
 	 */
 	if (p->in_wild) {
+		int here = wild_town_here(wild, loc(p->grid.x + p->wild_offset.x,
+											p->grid.y + p->wild_offset.y));
+
 		wild_track_move(p, p->grid);
+
+		/*
+		 * Being somewhere finishes the errands that were about getting there
+		 * (WLD-19, WLD-21).  This runs on every step taken inside the town, not
+		 * only on the one that crossed the wall, and that is fine: completing a
+		 * quest moves it off QUEST_TAKEN, so the second step finds nothing to
+		 * do and says nothing.  Cheaper than remembering where the last step
+		 * was, and it cannot miss an arrival that happened some other way --
+		 * being carried there by the mages, for one.
+		 */
+		if (here >= 0)
+			quest_check_arrival(p, here);
 
 		/*
 		 * Scroll the world when they approach the window's edge.  Flagged as a

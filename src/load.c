@@ -637,7 +637,7 @@ int rd_object_memory(void)
  * character is still on.  That is exactly the information version 1 could hold,
  * and reading it back this way loses nothing it ever knew.
  */
-static int rd_quests_aux(bool with_state)
+static int rd_quests_aux(bool with_state, bool with_type)
 {
 	int i;
 	uint16_t tmp16u;
@@ -664,7 +664,30 @@ static int rd_quests_aux(bool with_state)
 			rd_byte(&fixed);
 			player->quests[i].state = state;
 			player->quests[i].fixed = (fixed != 0);
-		} else {
+		}
+
+		if (with_type) {
+			uint8_t type, town;
+			char name[80];
+
+			rd_byte(&type);
+			rd_byte(&town);
+			rd_string(name, sizeof(name));
+
+			player->quests[i].type = type;
+			player->quests[i].town = town;
+
+			/*
+			 * Work taken from a building is named when it is taken, so its name
+			 * lives in the savefile rather than in quest.txt.
+			 */
+			if (!player->quests[i].fixed) {
+				string_free(player->quests[i].name);
+				player->quests[i].name = name[0] ? string_make(name) : NULL;
+			}
+		}
+
+		if (!with_state) {
 			player->quests[i].fixed = true;
 			player->quests[i].state = player->quests[i].level
 				? QUEST_TAKEN : QUEST_FINISHED;
@@ -674,8 +697,9 @@ static int rd_quests_aux(bool with_state)
 	return 0;
 }
 
-int rd_quests(void) { return rd_quests_aux(true); }
-int rd_quests_1(void) { return rd_quests_aux(false); }
+int rd_quests(void) { return rd_quests_aux(true, true); }
+int rd_quests_2(void) { return rd_quests_aux(true, false); }
+int rd_quests_1(void) { return rd_quests_aux(false, false); }
 
 
 /**

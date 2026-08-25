@@ -592,6 +592,18 @@ as fields. Implements W-3.
 
 **WLD-19 — The quest system supports Zangband's six quest types**, per §2.6.
 
+> **Three of six built (M6).** `enum quest_type` holds all six; the errands written are
+> the bounty (kill so many, anywhere), the delivery (carry word to a named town) and the
+> find-place (go and look at somewhere nobody here has been). The other three — a kill at a
+> named depth of a named dungeon, clearing open country, and fetching a particular object —
+> are values in the same enumeration and checks in the same two places; what is missing is
+> the errands, not the machinery.
+>
+> *The kill check now asks what kind of quest it is looking at*, which it did not have to
+> while every quest was about killing. A delivery that named a monster would otherwise have
+> been completed by killing one, which is the sort of thing that works for months and then
+> reads as nonsense in play. Guarded by a-kill-finishes-only-killing-work.
+
 **WLD-20 — Quests have an explicit lifecycle and event triggers.** Four states, six trigger
 kinds (§2.6). Rationale: 4.2's model — zeroing a level field on completion — cannot express
 a taken-but-incomplete quest, which every Zangband quest type requires.
@@ -625,8 +637,27 @@ a taken-but-incomplete quest, which every Zangband quest type requires.
 **WLD-21 — Quests are placed in the world, not only in dungeons.** `QUEST_TYPE_WILD` and
 `FIND_PLACE` need world coordinates; `TOWN_QUEST` places are part of the world layout.
 
+> **Built (M6).** A quest carries the dungeon it is in and the town it points at. The
+> dungeon matters because a depth is no longer a place — the Courts of Chaos run 75 to 110
+> and the Abyss 90 to 127, so the ending could have been reached in the wrong one. The town
+> matters because a delivery and a find-place are finished by *being somewhere*, which
+> `quest_check()` can never notice: it only ever sees a monster die. So arrival is a trigger
+> of its own, hooked into the post-move handler, and it is idempotent — it runs on every
+> step taken inside a town and completing a quest moves it off `QUEST_TAKEN`, so the second
+> step finds nothing and says nothing.
+
 **WLD-22 — Quest state persists across saves and is presented to the player.**
 `QUEST_FLAG_KNOWN` implies a player-visible quest log.
+
+> **Built (M6).** `J` shows what the character has taken on, how far along each is, and
+> where the travelling ones point. Persisted in the quests block, version 3: the state and
+> whether it is fixed at version 2, and the kind, the town it points at and its name at
+> version 3 — the name because work taken from a building is named when it is taken and so
+> has nowhere else to live.
+>
+> *The fixed quests are deliberately not listed.* A character is on those from birth without
+> being told, and putting "kill the Serpent of Chaos" at the top of a first-level
+> character's list gives away the ending and is not news.
 
 ### Cross-cutting
 

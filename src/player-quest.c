@@ -287,7 +287,7 @@ static void build_quest_stairs(struct player *p, struct loc grid)
  * \return the quest, or NULL when the character is already carrying as many as
  * the list has room for.
  */
-struct quest *quest_take(struct player *p, const char *name,
+struct quest *quest_take(struct player *p, int type, const char *name,
 						 struct monster_race *race, int number)
 {
 	int i;
@@ -299,11 +299,14 @@ struct quest *quest_take(struct player *p, const char *name,
 
 		string_free(q->name);
 		q->name = string_make(name);
+		q->type = type;
 		q->race = race;
+		q->kind = NULL;
 		q->cur_num = 0;
 		q->max_num = number;
 		q->level = 0;
 		q->dungeon = 0;
+		q->town = 0;
 		q->fixed = false;
 		q->state = QUEST_TAKEN;
 
@@ -311,6 +314,42 @@ struct quest *quest_take(struct player *p, const char *name,
 	}
 
 	return NULL;
+}
+
+/**
+ * Somebody arrived somewhere (ZangbandTK, WLD-19, WLD-21).
+ *
+ * Zangband's WILD_ENTER and FIND_SHOP triggers, which are the same event here:
+ * the player is standing in a town they were sent to.  A delivery is done when
+ * the word arrives, and finding a place is done by being in it -- neither of
+ * them is a thing you kill, and neither can be noticed by quest_check(), which
+ * only ever sees a monster die.
+ *
+ * \param town is the index of the town the player is standing in, or -1.
+ * \return true if anything was completed.
+ */
+bool quest_check_arrival(struct player *p, int town)
+{
+	bool any = false;
+	int i;
+
+	if (town < 0) return false;
+
+	for (i = z_info->quest_fixed; i < z_info->quest_max; i++) {
+		struct quest *q = &p->quests[i];
+
+		if (q->state != QUEST_TAKEN) continue;
+		if (q->type != QUEST_DELIVERY && q->type != QUEST_FIND_PLACE) continue;
+		if (q->town != town + 1) continue;
+
+		q->cur_num = q->max_num;
+		q->state = QUEST_COMPLETE;
+		any = true;
+
+		msg("%s: done.", q->name ? q->name : "That errand");
+	}
+
+	return any;
 }
 
 /**
@@ -365,8 +404,21 @@ bool quest_check(struct player *p, const struct monster *m)
 		 * nowhere else -- but a bounty taken from a townsman is about the
 		 * creature, and it counts wherever you find one (WLD-16d).
 		 */
+		/*
+		 * A kill completes the kinds of quest that are about killing, and only
+		 * those: a delivery is not finished by killing the man who asked for it
+		 * (ZangbandTK, WLD-19).
+		 */
+		if (!q->fixed && q->type != QUEST_BOUNTY && q->type != QUEST_DUNGEON &&
+			q->type != QUEST_WILD)
+			continue;
+
+		/* A wild bounty counts only what is killed above ground. */
+		if (!q->fixed && q->type == QUEST_WILD && p->depth > 0)
+			continue;
+
 		if (m->race == q->race && q->state == QUEST_TAKEN &&
-			(!q->fixed ||
+			(!(q->fixed || q->type == QUEST_DUNGEON) ||
 			 (cave->depth == q->level &&
 			  (!q->dungeon || q->dungeon == p->dungeon)))) {
 			q->cur_num++;

@@ -1256,6 +1256,96 @@ static void service_healer(void)
 }
 
 /**
+ * Somewhere else to be sent (WLD-19, WLD-21).
+ *
+ * \param town is where the player is standing, which is no use as a destination.
+ * \param unknown is set to a place they have *not* found, if there is one --
+ * that is what a find-place errand is for, and it is the only kind of quest that
+ * hands out knowledge of the world rather than asking for it back.
+ * \return a town they have been to and could carry word to, or -1.
+ */
+static int quest_giver_somewhere_else(int town, int *unknown)
+{
+	int i, known = -1, blind = -1, seen = 0, unseen = 0;
+
+	*unknown = -1;
+
+	for (i = 0; i < wild_town_count(wild); i++) {
+		if (i == town) continue;
+
+		if (wild->towns[i].visited) {
+			/* Reservoir sampling, so the same town is not always chosen. */
+			if (one_in_(++seen)) known = i;
+		} else if (one_in_(++unseen)) {
+			blind = i;
+		}
+	}
+
+	*unknown = blind;
+
+	return known;
+}
+
+/**
+ * Offer to carry word to a town the player has been to (WLD-19).
+ */
+static bool quest_offer_delivery(int to)
+{
+	struct quest *q;
+	char name[80];
+
+	if (to < 0) return false;
+
+	strnfmt(name, sizeof(name), "word to %s",
+			wild->towns[to].name ? wild->towns[to].name : "the next town");
+
+	if (!get_check(format("\"Carry %s? \"", name)))
+		return true;
+
+	q = quest_take(player, QUEST_DELIVERY, name, NULL, 1);
+	if (!q) {
+		msg("\"You've enough on your plate already.\"");
+		return true;
+	}
+
+	q->town = to + 1;
+	msg("\"They'll be expecting you.\"");
+
+	return true;
+}
+
+/**
+ * Offer to go and look at somewhere nobody here has seen (WLD-19).
+ */
+static bool quest_offer_place(int to)
+{
+	struct quest *q;
+	char name[80];
+
+    if (to < 0) return false;
+
+	strnfmt(name, sizeof(name), "find %s",
+			wild->towns[to].name ? wild->towns[to].name : "the place");
+
+	if (!get_check(format("\"There's talk of a place called %s, and nobody's "
+						  "been. Go and look? \"",
+						  wild->towns[to].name ? wild->towns[to].name :
+						  "somewhere")))
+		return true;
+
+	q = quest_take(player, QUEST_FIND_PLACE, name, NULL, 1);
+	if (!q) {
+		msg("\"You've enough on your plate already.\"");
+		return true;
+	}
+
+	q->town = to + 1;
+	msg("\"Come back and tell us what you find.\"");
+
+	return true;
+}
+
+/**
  * Work offered over the bar (ZangbandTK, WLD-16d).
  *
  * Quest-giving is a property a building carries, not a building of its own, so
@@ -1277,7 +1367,7 @@ static bool quest_giver_business(int town)
 	struct quest *doing = quest_carried(player, false);
 	struct monster_race *race = NULL;
 	char name[80];
-	int number, reward, tries;
+	int number, reward, tries, unknown = -1;
 
 	/* Pay for what has been finished. */
 	if (done) {
@@ -1304,10 +1394,22 @@ static bool quest_giver_business(int town)
 	}
 
 	/*
-	 * Or offer something.  Drawn near the character's own depth so the work is
-	 * neither trivial nor suicidal, and only creatures that are not unique --
-	 * there is one of each of those and a bounty on it could be unfulfillable.
+	 * Or offer something.  Which kind depends on what there is to offer: an
+	 * errand to another town needs another town to send you to, and there is no
+	 * point sending somebody to a place they are standing in.
 	 */
+	{
+		int elsewhere = quest_giver_somewhere_else(town, &unknown);
+		int kind = randint0(3);
+
+		if (kind != 0 && elsewhere < 0) kind = 0;
+
+		if (kind == 2 && unknown >= 0)
+			return quest_offer_place(unknown);
+		if (kind >= 1)
+			return quest_offer_delivery(elsewhere);
+	}
+
 	for (tries = 0; tries < 200 && !race; tries++) {
 		struct monster_race *pick =
 			&r_info[randint0(z_info->r_max ? z_info->r_max : 1)];
@@ -1334,7 +1436,7 @@ static bool quest_giver_business(int town)
 						  name)))
 		return true;
 
-	if (!quest_take(player, name, race, number)) {
+	if (!quest_take(player, QUEST_BOUNTY, name, race, number)) {
 		msg("\"You've enough on your plate already.\"");
 		return true;
 	}
@@ -1529,6 +1631,58 @@ void ui_enter_service(game_event_type type, game_event_data *data, void *user)
 		default:
 			break;
 	}
+}
+
+/**
+ * What the character has taken on, and how far along it is (WLD-22).
+ *
+ * Zangband's QUEST_FLAG_KNOWN implies a list the player can read, and until this
+ * existed the only way to find out what you owed was to walk back into a
+ * building that hires and be told -- which is a long way to go to answer "what
+ * was I supposed to be doing?"
+ *
+ * The quests the game is won by are not listed.  A character is on those from
+ * birth without being told, and putting "kill the Serpent of Chaos" at the top
+ * of every character's to-do list from level one gives away the ending and is
+ * not, in any useful sense, news.
+ */
+void do_cmd_quest_log(void)
+{
+	textblock *tb = textblock_new();
+	int i, shown = 0;
+
+	for (i = z_info->quest_fixed; i < z_info->quest_max; i++) {
+		struct quest *q = &player->quests[i];
+		const char *where = NULL;
+
+		if (q->state == QUEST_UNTAKEN || q->fixed) continue;
+
+		if (q->town && wild && q->town - 1 < wild_town_count(wild))
+			where = wild->towns[q->town - 1].name;
+
+		textblock_append_c(tb, COLOUR_L_UMBER, "%s", q->name ? q->name :
+						   "Something or other");
+
+		if (q->state == QUEST_COMPLETE) {
+			textblock_append_c(tb, COLOUR_L_GREEN, "  -- done");
+			textblock_append(tb, ", report it at any place that hires.");
+		} else if (q->type == QUEST_BOUNTY || q->type == QUEST_WILD ||
+				   q->type == QUEST_DUNGEON) {
+			textblock_append(tb, "  -- %d of %d.", q->cur_num, q->max_num);
+		} else if (where) {
+			textblock_append(tb, "  -- %s.", where);
+		}
+
+		textblock_append(tb, "\n\n");
+		shown++;
+	}
+
+	if (!shown)
+		textblock_append(tb, "You have taken nothing on.\n\nSomebody in a "
+						 "town may have work: the inn is the place to ask.\n");
+
+	textui_textblock_show(tb, SCREEN_REGION, "Things you have taken on");
+	textblock_free(tb);
 }
 
 /**

@@ -421,6 +421,15 @@ void wr_quests(void)
 		 */
 		wr_byte(player->quests[i].state);
 		wr_byte(player->quests[i].fixed ? 1 : 0);
+
+		/*
+		 * What kind of errand it is and where it points (WLD-19, WLD-21).  A
+		 * delivery that forgot which town was expecting it could never be
+		 * finished, and the character would carry it for ever.
+		 */
+		wr_byte(player->quests[i].type);
+		wr_byte(player->quests[i].town);
+		wr_string(player->quests[i].name ? player->quests[i].name : "");
 	}
 }
 

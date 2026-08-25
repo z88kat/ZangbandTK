@@ -31,6 +31,17 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.24.0** — **Quests you can see, and errands that are not killing.** Two new
+  kinds of work: carry word to a named town, and go and look at a place nobody
+  here has been. Both are finished by *arriving*, which needed a trigger of its
+  own — the existing check only ever sees a monster die, so a delivery that named
+  a monster would have been completed by killing one. And ``J`` now shows what
+  you have taken on, how far along each job is, and where the travelling ones
+  point; until now the only way to find out was to walk back into an inn and ask.
+  The quests the game is won by are deliberately not in that list: you are on
+  those from birth, and "kill the Serpent of Chaos" at the top of a first-level
+  character's list gives away the ending and tells you nothing you can act on.
+  The manual gains its :doc:`quests` chapter.
 - **3.23.3** — **Roads are two grids wide, not three.** Three was the fix for a
   one-grid road being invisible where it turned, and it worked — but it read as a
   motorway running across the country. Two keeps what the widening was for: a

@@ -35,8 +35,14 @@ Some buildings hand out work.  The inn is the one that does for now: walk in
 and you may be offered a job before you are offered a bed -- kill so many of
 a creature, come back, and be paid for it.
 
-You can carry a few jobs at once.  Walk back into any building that hires and
-it will tell you how far along you are, or pay you if you are done.
+You can carry a few jobs at once.  Press 'J' for the list of what you have
+taken on and how far along each one is.  Walk back into any building that
+hires and it will tell you, or pay you if you are done.
+
+Not all work is killing.  You may be asked to carry word to another town,
+which is finished by arriving; or to go and look at a place nobody here has
+been, which is the only work that gives you a piece of the world rather than
+asking for one back.
 
 Not every town is hiring.  A village keeps no inn, and a town that has fallen
 keeps no services at all, so work is one more thing worth travelling for.

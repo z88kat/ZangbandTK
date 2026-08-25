@@ -149,6 +149,23 @@ enum quest_state {
 	QUEST_FINISHED		/**< Told, paid, and closed */
 };
 
+/**
+ * What a quest asks of you (ZangbandTK, WLD-19).
+ *
+ * Zangband's six, named for what they mean here rather than transliterated.
+ * The type decides which trigger can complete it, which is why they are one
+ * enumeration rather than a flag per kind of goal.
+ */
+enum quest_type {
+	QUEST_BOUNTY = 0,	/**< Kill so many of a creature, anywhere */
+	QUEST_DUNGEON,		/**< Kill one, at a named depth of a named dungeon */
+	QUEST_WILD,			/**< Kill so many of a creature above ground */
+	QUEST_DELIVERY,		/**< Carry word to a named town */
+	QUEST_FIND_PLACE,	/**< Reach somewhere you have not been */
+	QUEST_FIND_ITEM,	/**< Come back carrying a particular thing */
+	QUEST_TYPE_MAX
+};
+
 struct quest
 {
 	struct quest *next;
@@ -177,6 +194,18 @@ struct quest
 	 * the Abyss behave like a quest level with nothing on it to kill.
 	 */
 	uint8_t dungeon;
+
+	/**
+	 * What kind of quest it is, and where it points (WLD-19, WLD-21).
+	 *
+	 * `town` is an index into the world's towns, plus one, or zero for none --
+	 * a delivery names who is expecting you and a find-place names where. A
+	 * quest that lives in the world rather than at a depth is the whole reason
+	 * WLD-21 exists: Angband's quests only ever needed a number.
+	 */
+	uint8_t type;
+	uint8_t town;
+	struct object_kind *kind;	/**< What to come back with, for FIND_ITEM */
 };
 
 /**

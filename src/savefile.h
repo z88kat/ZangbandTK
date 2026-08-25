@@ -90,6 +90,7 @@ int rd_monster_memory(void);
 int rd_object_memory(void);
 int rd_quests(void);
 int rd_quests_1(void);
+int rd_quests_2(void);
 int rd_artifacts(void);
 int rd_player(void);
 int rd_ignore(void);
