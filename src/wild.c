@@ -1554,14 +1554,22 @@ static void wild_name_towns(struct wilderness *w)
 #define WILD_DUNGEON_APART 8
 
 /**
- * How far a road reaches either side of its centre line, in grids.
+ * How many grids across a road is.
  *
- * One means three grids wide.  A road one grid wide can be walked straight past
- * -- and was: a road that turned a right angle in the block the player stood in
- * read as a road that ended at the beach, because a one-grid corner is a single
- * square of floor at right angles to the way you are going.
+ * One is not enough, and that is measured rather than guessed: a road one grid
+ * wide can be walked straight past, because where it turns a right angle in the
+ * block you are standing in the corner is a single square of floor at right
+ * angles to the way you are going.  Reported from play as a road that "appears
+ * to end at the beach" after a long walk.
+ *
+ * Three was the first answer and read as a highway.  Two is enough to see a turn
+ * as a turn -- the corner is a two-by-two block of paving -- and looks like a
+ * road rather than a motorway, which is what it is meant to be.
+ *
+ * The lanes run from the block's centre line outwards on one side, the same side
+ * every time, so a road stays a road where two of them meet.
  */
-#define WILD_ROAD_HALF 1
+#define WILD_ROAD_WIDE 2
 
 /** How far out of a gate the approach reaches before looking for the road. */
 #define WILD_APPROACH_REACH 3
@@ -4350,12 +4358,11 @@ struct chunk *wild_surface(struct wilderness *w, struct player *p,
 						square_set_feat(c, _g, FEAT_ROAD); \
 				} while (0)
 
-			for (lane = -WILD_ROAD_HALF; lane <= WILD_ROAD_HALF; lane++) {
+			for (lane = 0; lane < WILD_ROAD_WIDE; lane++) {
 				/* The junction at the middle, so every turn is squared off. */
 				int across;
 
-				for (across = -WILD_ROAD_HALF; across <= WILD_ROAD_HALF;
-					 across++)
+				for (across = 0; across < WILD_ROAD_WIDE; across++)
 					ROAD_PAVE(cx + lane, cy + across);
 
 				if (wild_road_at(w, wx - 1, wy))

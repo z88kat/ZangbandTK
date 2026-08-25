@@ -31,6 +31,12 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.23.3** — **Roads are two grids wide, not three.** Three was the fix for a
+  one-grid road being invisible where it turned, and it worked — but it read as a
+  motorway running across the country. Two keeps what the widening was for: a
+  corner is a two-by-two block of paving, which is enough to see a turn as a
+  turn. Routing is untouched, so the same three blocks in a hundred carry a road;
+  there is simply a third less paving on them.
 - **3.23.2** — **The magesmith and the recharger did nothing for your money.**
   Both were handed a dice string of ``"0"`` and no subtype. Zero is not a small
   amount, it is nothing: the enchant effect tests its subtype as a set of bit

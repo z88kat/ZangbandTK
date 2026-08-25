@@ -429,15 +429,15 @@ nothing to follow. Better siting cannot fix it: a dungeon stands in the kind of
 country it belongs in, and the deep ones belong a long way from any town. So the
 road goes to them instead.
 
-A road is three grids wide. That is not for looks: a road one grid wide can be
-walked straight past. Where one turns a right angle in the block you are standing
-in, a single-grid corner is one square of floor at right angles to the way you
-are going, and the road reads as though it stopped — the first report of this was
-a road that "appears to end at the beach" after a long walk, when in fact it
-turned. Three grids wide, with the corners squared off, and a turn looks like a
-turn.
+A road is two grids wide. That is not for looks, and it is not arbitrary either.
+One grid is too few: where a road turns a right angle in the block you are
+standing in, a single-grid corner is one square of floor at right angles to the
+way you are going, and the road reads as though it stopped — the first report of
+this was a road that "appears to end at the beach" after a long walk, when in
+fact it had turned. Two grids makes a corner a two-by-two block of paving, which
+reads as a turn. Three was tried first and looked like a motorway.
 
-About three per cent of the world is road.
+About three blocks in a hundred have a road through them.
 
 If you are lost, find a road and walk along it. It goes somewhere — a town, or a
 way down.

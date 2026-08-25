@@ -263,11 +263,14 @@ values and belong in `constants.txt` per WLD-02.
 > fix that — a dungeon stands in the country it belongs in, and the deep ones belong far from
 > anywhere — so the road goes to it.
 >
-> *A road is three grids wide.* One grid was the first attempt and it is not visible: where a
+> *A road is two grids wide.* One grid was the first attempt and is not visible: where a
 > one-grid road turns a right angle in the block the player is standing in, the corner is a
 > single square of floor at right angles to the way they are going, and it reads as a road
 > that stopped. Reported from play as a road that "appears to end at the beach" after a long
-> walk. Three wide with squared corners; about three per cent of the world is paving.
+> walk. Three was the second attempt and read as a motorway — also reported. Two makes the
+> corner a two-by-two block of paving, which is enough to see a turn as a turn. Measured:
+> 2.9 per cent of blocks carry a road, which the width does not change, since routing is
+> what decides it.
 >
 > *Rivers and lakes are ported from Zangband* under DEC-20:
 > [create_rivers()](../../archive/zangband/src/wild1.c#L2205) scatters sources evenly, sorts

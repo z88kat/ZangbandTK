@@ -3041,7 +3041,14 @@ static int test_a_road_is_wide_enough_to_see(void *state) {
 			cx = bx * size + size / 2 - offset.x;
 			cy = by * size + size / 2 - offset.y;
 
-			/* Three grids across, measured through the middle. */
+			/*
+			 * Two grids across, measured through the middle.  Two rather than
+			 * one because a one-grid road cannot be seen to turn; two rather
+			 * than the three it was first built at because three reads as a
+			 * motorway.  The scan is wider than the road so that finding it
+			 * does not depend on which side of the centre line the lanes
+			 * happen to fall on.
+			 */
 			across = 0;
 			for (k = -3; k <= 3; k++) {
 				struct loc g = loc(cx, cy + k);
@@ -3051,16 +3058,16 @@ static int test_a_road_is_wide_enough_to_see(void *state) {
 					across++;
 			}
 
-			if (across < 3)
+			if (across < 2)
 				printf("the road at block %d,%d is only %d grids wide\n",
 					bx, by, across);
-			require(across >= 3);
+			require(across >= 2);
 
 			/* At a corner, the leg going away is as wide as the one coming in. */
 			if (turn) {
 				int down = 0;
 
-				for (k = -1; k <= 1; k++) {
+				for (k = -2; k <= 2; k++) {
 					struct loc g = loc(cx + k, cy + 3);
 
 					if (square_in_bounds_fully(c, g) &&
@@ -3068,10 +3075,10 @@ static int test_a_road_is_wide_enough_to_see(void *state) {
 						down++;
 				}
 
-				if (down < 3)
+				if (down < 2)
 					printf("the turn at block %d,%d is only %d grids wide\n",
 						bx, by, down);
-				require(down >= 3);
+				require(down >= 2);
 				corners++;
 			}
 
