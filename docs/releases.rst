@@ -31,6 +31,15 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.27.1** — **The nine new races are described**, and the four turned down are
+  described too. :doc:`birth` had still been saying there were eleven races; there
+  are twenty. Each of the new ones now says what it is and what it costs, with a
+  note that the experience figure is not a formality here the way it is in
+  Angband. And there is a short section on **Half-Ogre, Half-Giant, Cyclops and
+  Dark-Elf**, which are not coming: the first three are Half-Troll with one
+  resistance swapped, and the last is a dearer Elf. "It exists in the original" is
+  not on its own a reason to carry something, and somebody noticing they are
+  missing deserves the reasoning rather than a gap.
 - **3.27.0** — M7 begins: **nine new races.** Amberite, Beastman, Yeek,
   Draconian, Mindflayer, Vampire, Golem, Sprite and Half-Titan, bringing the
   total to twenty. Curated rather than imported wholesale — of Zangband's

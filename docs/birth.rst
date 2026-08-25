@@ -141,11 +141,16 @@ sought after.
 Races
 =====
 
-There are eleven different races that you can choose to play in ZangbandTK.  
-Each race has its own adjustments to a character's stats and abilities. 
-Most races also have intrinsic abilities.  The bonuses to statistics and 
-the experience penalty will be displayed next to the races as you move 
-to select one.
+There are twenty different races that you can choose to play in ZangbandTK —
+Angband's eleven, and nine more brought over from Zangband. Each race has its own
+adjustments to a character's stats and abilities. Most races also have intrinsic
+abilities.  The bonuses to statistics and the experience penalty will be
+displayed next to the races as you move to select one.
+
+Watch the experience cost in particular. Angband gives nearly every race 120 and
+treats the number as a formality; Zangband used it as the price of being
+something unusual, and those prices are kept. An Amberite costs 225 and a
+Half-Titan 255, which is to say they level at less than half a human's pace.
 
 .. _Human:
 
@@ -265,6 +270,99 @@ Kobold
   intelligence. And while their constitution makes them tough, it still
   cannot prevent the fact that they are not the biggest of creatures, and
   have few hit points.
+
+The races below are Zangband's, and are new to ZangbandTK.
+
+.. _Amberite:
+
+Amberite
+  Of Amber's own blood, and it shows: an Amberite is better than a human at
+  very nearly everything, heals unnaturally fast, and cannot have its
+  constitution drained. All of which is paid for at the counter — an Amberite
+  costs 225 experience for every level, the second dearest thing you can be.
+
+.. _Beastman:
+
+Beastman
+  Chaos-touched and born wrong. Strong and hardy, dull and clumsy, and
+  resistant to sound and confusion because it is already used to both. In
+  Zangband a Beastman also acquired mutations as it levelled; that waits for
+  the mutation system.
+
+.. _Yeek:
+
+Yeek
+  Feeble, cowardly, and aware of it. Weak, fragile, poor in a fight and
+  resistant to acid. The one thing in its favour is that it is cheap: a Yeek
+  levels at the same rate as a human, which is the only kindness it is shown.
+
+.. _Draconian:
+
+Draconian
+  Winged, and descended from something that mattered. Strong, hardy, quick and
+  clever, it glides rather than falls and resists fire. In Zangband a Draconian
+  gained a different breath weapon every five levels; that waits for racial
+  powers.
+
+.. _Mindflayer:
+
+Mindflayer
+  All mind and no body: brilliant and wise, physically wretched, with excellent
+  infravision and the sight to see what is invisible. Zangband granted it no
+  resistances at all, because its entire identity is psionic — which arrives
+  with the Mindcrafter.
+
+.. _Vampire:
+
+Vampire
+  A bargain rather than a gift. Strong and clever, holds its life against
+  draining, resists poison, cold and nether, and is *immune* to darkness — and
+  is hurt by light, which is most of the world, most of the time. Vampires have
+  keen infravision and digest slowly.
+
+.. _Golem:
+
+Golem
+  Not alive. Enormously strong and tough, extremely stupid, immune to poison,
+  never held or paralysed, sees the invisible, barely eats — and is hurt by
+  cold. A blunt instrument that costs 200 to swing.
+
+.. _Sprite:
+
+Sprite
+  Tiny, quick-witted and airborne. Feeble in a fight, excellent at everything
+  requiring fingers or attention, and it falls slowly. Zangband quickened
+  Sprites at level nine; a race in this game cannot yet be given speed, so that
+  waits for racial powers.
+
+.. _Half-Titan:
+
+Half-Titan
+  The most expensive thing you can be born as, at 255. Vastly strong, tough,
+  clumsy, and resistant to chaos — which, given what it is descended from, is
+  less a resistance than a family trait.
+
+Races we decided against
+------------------------
+
+Zangband has twenty-one races Angband does not. Nine are above. Four have been
+looked at and turned down, and it is worth saying why, because "it exists in the
+original" is not on its own a reason to carry something:
+
+**Half-Ogre, Half-Giant and Cyclops.** All three are Half-Troll — which this game
+already has — with one resistance swapped. Half-Ogre resists dark, Half-Giant
+shards, Cyclops sound; their stat lines are within a point or two of the
+Half-Troll's and of each other. Three more entries on the birth menu buying one
+resistance each is not a choice, it is a longer list.
+
+**Dark-Elf.** A better Elf for a higher price: the same shape, with more
+intelligence and dexterity and the ability to see the invisible, at 150 instead
+of 120. A legitimate piece of design, and not a new idea — everything it does,
+an Elf already does.
+
+The rest — Barbarian, Klackon, Nibelung, Imp, and the four undead races — are not
+rejected, only waiting. The undead in particular want one mechanism between them
+and should arrive together when it exists.
 
 Classes
 =======

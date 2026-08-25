@@ -1020,9 +1020,33 @@ Nine are in, chosen for having a mechanical identity of their own or Amber's:
 | Sprite | Flies |
 | Half-Titan | 255, the top of the ladder |
 
-Deferred, not rejected: Barbarian, Half-Ogre, Half-Giant, Cyclops, Klackon,
-Nibelung, Dark-Elf, Imp, Skeleton, Zombie, Spectre, Ghoul. The four undead want
-one mechanism between them and should arrive together when it exists.
+*Four are rejected outright*, on the evidence rather than on taste. Asked which of
+the twelve were worth having, the numbers answered for these:
+
+| Rejected | Because |
+|---|---|
+| Half-Ogre | Half-Troll (`+4 -4 -2 -4 +3`, hd 12) with dark resistance: `+3 -1 -1 -1 +3`, hd 12 |
+| Half-Giant | Half-Troll with shard resistance and one more hit die |
+| Cyclops | Half-Troll with sound resistance |
+| Dark-Elf | An Elf with more INT and DEX and see-invisible, at 150 instead of 120 |
+
+Three of the four are the same race with the resistance swapped, and the fourth
+is a dearer Elf. Adding them lengthens the birth menu — which already scrolls on a
+24-line terminal — without adding a decision to make. Recorded in the manual under
+"Races we decided against", because *it exists in the original* is not on its own
+a reason to carry something, and the next person to notice they are missing
+deserves the reasoning rather than a gap.
+
+*Eight are deferred, not rejected*: Barbarian, Klackon, Nibelung, Imp, Skeleton,
+Zombie, Spectre, Ghoul. Three of those have a real case — Barbarian is strong
+*and* dextrous, which nothing else here is; Klackon is innately fast; Nibelung
+carries the only disenchantment resistance in the game. The four undead want one
+mechanism between them and should arrive together when it exists.
+
+*One correction to the original filing.* Barbarian was first grouped with the
+big-and-strong variants and should not have been: at `+3 -2 -1 +1 +2` it has
+positive dexterity, which no other strong race does. Grouping by impression rather
+than by the numbers is exactly what the measurement was supposed to prevent.
 
 *The mapping was measured.* Ten races appear in both games, which makes the
 question answerable rather than a matter of taste:
