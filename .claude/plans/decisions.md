@@ -997,6 +997,55 @@ the 60th, 85th and 97th centiles of the measured score distribution instead, the
 ladder runs 70 / 18 / 8 / 2 per cent, so the top rung is one shop in fifty and
 worth walking to find.
 
+**DEC-35 — Nine of Zangband's twenty-one races, curated on character rather than
+imported wholesale. And the mapping between the two games is measured, not guessed.**
+
+PLR-01 asks for the 21 races 4.2 does not have. Taking all of them would repeat the
+mistake DEC-32 refused for the Mythos: four are undead needing a mechanism 4.2 has
+not got, and several are close variants of races already present — Half-Ogre,
+Half-Giant and Cyclops all sit beside Half-Troll; Dark-Elf beside Elf; Nibelung
+beside Dwarf.
+
+Nine are in, chosen for having a mechanical identity of their own or Amber's:
+
+| Race | Why |
+|---|---|
+| Amberite | The flagship. Amber's own blood, and `expfact` 225 says so |
+| Beastman | Born mutated, which is what M8 is about |
+| Yeek | Zangband's own joke, and inseparable from it |
+| Draconian | A breath weapon, and 250 to be one |
+| Mindflayer | Psionics — pairs with the Mindcrafter (PLR-06) |
+| Vampire | Immune to dark, hurt by light: a bargain rather than a bonus |
+| Golem | Not living. Nothing gets in, and the cold gets to it |
+| Sprite | Flies |
+| Half-Titan | 255, the top of the ladder |
+
+Deferred, not rejected: Barbarian, Half-Ogre, Half-Giant, Cyclops, Klackon,
+Nibelung, Dark-Elf, Imp, Skeleton, Zombie, Spectre, Ghoul. The four undead want
+one mechanism between them and should arrive together when it exists.
+
+*The mapping was measured.* Ten races appear in both games, which makes the
+question answerable rather than a matter of taste:
+
+| Field | Finding | What was done |
+|---|---|---|
+| stats, hit dice | identical in 8 of 10 | copied |
+| disarm, device, save, stealth | identical in 7 to 9 of 10 | copied |
+| search | differs with no pattern; 4.2 redesigned it race by race | copied |
+| melee, shoot | 4.2 widened the spread, roughly double | doubled |
+| experience | 4.2 flattened nearly everything to 120; Zangband ran 100 to 255 | Zangband's kept |
+
+The experience factor is the one that matters and the one PLR-01 already argued
+for: 4.2 treats it as a formality and Zangband treated it as the balance dial.
+Keeping Zangband's is what makes a Half-Titan slow to level and an Amberite dear.
+
+Charisma is dropped throughout — Zangband has six stats and 4.2 has five.
+
+*What is not yet expressible.* Zangband gated several racial gifts on level: the
+Draconian's breath changes every five levels, the Sprite quickens at nine, the
+Yeek's acid resistance becomes immunity at nineteen. A 4.2 race is a flat set of
+flags, so those wait for PLR-02, which is the mechanism for exactly this.
+
 Verification work carried into Phase 2:
 
 - Measure `struct chunk`'s memory footprint against the wilderness live-block target

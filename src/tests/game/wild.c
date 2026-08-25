@@ -3530,6 +3530,68 @@ static int test_work_is_offered_where_there_is_a_door(void *state) {
 }
 
 /**
+ * Every race is playable, and the ported ones kept their character (PLR-01).
+ *
+ * A race file that will not parse takes the whole game down with it -- when
+ * RES_CONFU was written for a resistance that 4.2 keeps as an object flag,
+ * nineteen unrelated suites died at once with "Cannot initialize player races",
+ * which says nothing about what is wrong or where.
+ *
+ * This asks the questions the parser cannot: that the ported races are actually
+ * there, that their experience factors were kept rather than flattened to 4.2's
+ * 120, and that nothing has a hit die or a cost that would make it unplayable.
+ */
+static int test_every_race_is_playable(void *state) {
+	static const struct { const char *name; int exp; } ported[] = {
+		{ "Amberite",   225 },
+		{ "Beastman",   140 },
+		{ "Yeek",       100 },
+		{ "Draconian",  250 },
+		{ "Mindflayer", 140 },
+		{ "Vampire",    200 },
+		{ "Golem",      200 },
+		{ "Sprite",     175 },
+		{ "Half-Titan", 255 },
+	};
+	struct player_race *r;
+	size_t i;
+	int found = 0, total = 0;
+
+	for (r = races; r; r = r->next) {
+		total++;
+
+		notnull(r->name);
+
+		/* Nothing unplayable: a race with no hit die cannot be rolled up. */
+		require(r->r_mhp > 0);
+		require(r->r_exp > 0);
+
+		for (i = 0; i < N_ELEMENTS(ported); i++)
+			if (streq(r->name, ported[i].name)) {
+				/*
+				 * The experience factor is the race's design, not drift --
+				 * 4.2 flattened nearly everything to 120 and Zangband used
+				 * this as its balance dial, which is what makes a Half-Titan
+				 * expensive to be.
+				 */
+				if (r->r_exp != ported[i].exp)
+					printf("%s costs %d, expected %d\n", r->name, r->r_exp,
+						   ported[i].exp);
+				eq(r->r_exp, ported[i].exp);
+				found++;
+			}
+	}
+
+	/* All nine arrived... */
+	eq(found, (int) N_ELEMENTS(ported));
+
+	/* ...on top of the eleven 4.2 ships. */
+	eq(total, 11 + (int) N_ELEMENTS(ported));
+
+	ok;
+}
+
+/**
  * The game can actually be won (WLD-20, WLD-21, DEC-30).
  *
  * The fixed quests are the ones the game ends on, and every way of getting them
@@ -4253,6 +4315,7 @@ struct test tests[] = {
 	{ "a-seed-keeps-its-world", test_a_seed_keeps_its_world },
 	{ "a-road-out-of-a-gate-goes-somewhere", test_a_road_out_of_a_gate_goes_somewhere },
 	{ "work-is-offered-where-there-is-a-door", test_work_is_offered_where_there_is_a_door },
+	{ "every-race-is-playable", test_every_race_is_playable },
 	{ "the-game-can-be-won", test_the_game_can_be_won },
 	{ "the-unicorn-makes-you-whole", test_the_unicorn_makes_you_whole },
 	{ "the-inn-dreams-by-the-law", test_the_inn_dreams_by_the_law },

@@ -298,3 +298,231 @@ age:15:10
 height:37:4
 weight:65:5
 values:RES_POIS[1]
+
+# ---------------------------------------------------------------------------
+# ZangbandTK's races (PLR-01)
+#
+# Zangband kept its races in C rather than a data file, so these are ported by
+# hand from tables.c and files.c.  Nine of its twenty-one, curated rather than
+# imported wholesale: several of the rest are close variants of races already
+# here, and four are undead wanting a mechanism 4.2 has not got.
+#
+# How the numbers were arrived at, since it is not a straight copy.  Ten races
+# appear in both games, so the mapping could be measured rather than guessed:
+#
+#   stats, hit dice           identical in 8 of 10.  Copied.
+#   disarm, device, save,     identical in 7 to 9 of 10.  Copied.
+#   stealth
+#   search                    differs with no pattern -- 4.2 redesigned it race
+#                             by race.  Copied, as good an anchor as any.
+#   melee, shoot              4.2 widened the spread, by roughly double.  So
+#                             doubled here.
+#   experience                4.2 flattened nearly every race to 120; Zangband
+#                             ranged 100 to 255 and used it as its balance dial.
+#                             Kept, which is what makes a Half-Titan expensive.
+#
+# Charisma is dropped: Zangband has six stats and 4.2 has five.
+# ---------------------------------------------------------------------------
+
+# Amber's own blood: it heals fast and does not weaken.
+name:Amberite
+stats:1:2:2:2:3
+skill-disarm-phys:4
+skill-disarm-magic:4
+skill-device:5
+skill-save:5
+skill-stealth:2
+skill-search:3
+skill-melee:12
+skill-shoot:0
+skill-throw:0
+skill-dig:0
+hitdie:10
+exp:225
+infravision:0
+history:1
+age:20:20
+height:70:6
+weight:150:20
+obj-flags:SUST_CON | REGEN
+
+# Chaos-touched. The mutations it is born with wait for M8.
+name:Beastman
+stats:2:-2:-1:-1:2
+skill-disarm-phys:-5
+skill-disarm-magic:-5
+skill-device:-2
+skill-save:-1
+skill-stealth:-1
+skill-search:-1
+skill-melee:18
+skill-shoot:10
+skill-throw:10
+skill-dig:0
+hitdie:11
+exp:140
+infravision:0
+history:1
+age:20:20
+height:70:6
+weight:150:20
+obj-flags:PROT_CONF
+values:RES_SOUND[1]
+
+# Feeble, and knows it.
+name:Yeek
+stats:-2:1:1:1:-2
+skill-disarm-phys:2
+skill-disarm-magic:2
+skill-device:4
+skill-save:10
+skill-stealth:3
+skill-search:5
+skill-melee:-10
+skill-shoot:-10
+skill-throw:-10
+skill-dig:0
+hitdie:7
+exp:100
+infravision:2
+history:1
+age:20:20
+height:70:6
+weight:150:20
+values:RES_ACID[1]
+
+# Zangband gave it a different breath every five levels; here it has its wings and its fire, and the breath waits for PLR-02.
+name:Draconian
+stats:2:1:1:1:2
+skill-disarm-phys:-2
+skill-disarm-magic:-2
+skill-device:5
+skill-save:3
+skill-stealth:0
+skill-search:1
+skill-melee:10
+skill-shoot:10
+skill-throw:10
+skill-dig:0
+hitdie:11
+exp:250
+infravision:2
+history:1
+age:20:20
+height:70:6
+weight:150:20
+obj-flags:FEATHER
+values:RES_FIRE[1]
+
+# Zangband granted it nothing at all: its whole identity is psionics, which is PLR-06.
+name:Mindflayer
+stats:-3:4:4:0:-2
+skill-disarm-phys:10
+skill-disarm-magic:10
+skill-device:25
+skill-save:15
+skill-stealth:2
+skill-search:5
+skill-melee:-16
+skill-shoot:-10
+skill-throw:-10
+skill-dig:0
+hitdie:9
+exp:140
+infravision:4
+history:1
+age:20:20
+height:70:6
+weight:150:20
+obj-flags:SEE_INVIS
+
+# Immune to the dark and hurt by the light, which is the bargain.
+name:Vampire
+stats:3:3:-1:-1:1
+skill-disarm-phys:4
+skill-disarm-magic:4
+skill-device:10
+skill-save:10
+skill-stealth:4
+skill-search:1
+skill-melee:10
+skill-shoot:0
+skill-throw:0
+skill-dig:0
+hitdie:11
+exp:200
+infravision:5
+history:1
+age:20:20
+height:70:6
+weight:150:20
+obj-flags:HOLD_LIFE | SLOW_DIGEST
+values:RES_DARK[3] | RES_NETHER[1] | RES_POIS[1] | RES_COLD[1] | RES_LIGHT[-1]
+
+# Not living. Nothing gets into it, and the cold gets to it.
+name:Golem
+stats:4:-5:-5:-2:4
+skill-disarm-phys:-5
+skill-disarm-magic:-5
+skill-device:-5
+skill-save:10
+skill-stealth:-1
+skill-search:-1
+skill-melee:20
+skill-shoot:0
+skill-throw:0
+skill-dig:0
+hitdie:12
+exp:200
+infravision:4
+history:1
+age:20:20
+height:70:6
+weight:150:20
+obj-flags:SEE_INVIS | FREE_ACT | HOLD_LIFE | SLOW_DIGEST
+values:RES_POIS[3] | RES_COLD[-1]
+
+# Flies. Zangband quickened it at level nine; speed is not something a 4.2 race can be given, so that waits for PLR-02.
+name:Sprite
+stats:-4:3:3:3:-2
+skill-disarm-phys:10
+skill-disarm-magic:10
+skill-device:10
+skill-save:10
+skill-stealth:4
+skill-search:10
+skill-melee:-16
+skill-shoot:0
+skill-throw:0
+skill-dig:0
+hitdie:7
+exp:175
+infravision:4
+history:1
+age:20:20
+height:70:6
+weight:150:20
+obj-flags:FEATHER
+values:RES_LIGHT[1]
+
+# The most expensive thing you can be born as: 255.
+name:Half-Titan
+stats:5:1:1:-2:3
+skill-disarm-phys:-5
+skill-disarm-magic:-5
+skill-device:5
+skill-save:2
+skill-stealth:-2
+skill-search:1
+skill-melee:26
+skill-shoot:0
+skill-throw:0
+skill-dig:0
+hitdie:14
+exp:255
+infravision:0
+history:1
+age:20:20
+height:70:6
+weight:150:20
+values:RES_CHAOS[1]

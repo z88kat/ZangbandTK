@@ -36,7 +36,7 @@
  * Must agree with VERSION in Makefile.src, which is what reaches Info.plist and
  * so the About panel.
  */
-#define VERSION_STRING	"3.26.1"
+#define VERSION_STRING	"3.27.0"
 
 /*
  * The Angband release this is built on.  Shown alongside our own version so it

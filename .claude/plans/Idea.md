@@ -124,8 +124,8 @@ https://www.amazon.co.uk/Second-Chronicles-Amber-S-F-MASTERWORKS/dp/147322215X/
 To cut the release
 
 git push origin master
-git tag 3.1.0
-git push origin 3.1.0
+git tag 3.24.1
+git push origin 3.24.1
 
 ## Pre-Release
 
@@ -135,7 +135,9 @@ git push origin 3.5.1-rc1
 
 ## Follow up Ideas
 
-Deers are magical. When you bump into one, your HP is restored and it jumps away 5 tiles.
+Sometimes walking over the wilderness feels like a slog, trying to discover the world. Its dangeous too.
+
+Knowing the map helps, a lot. Maybe we can add map "fragments" which can be found to reveal a part of the overworld map, or you can just buy those "fragments" in a shop (for a high price). This then reveals part of the map.
 
 ## NDS Build
 

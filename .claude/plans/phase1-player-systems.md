@@ -216,6 +216,15 @@ content is written. Rationale: §2.6.
 the exotic races — Half-Titan 255, Draconian 250, Amberite 225 — makes these values part of
 the race's design, not drift).
 
+> **Nine of the twenty-one are in (M7), curated rather than imported — see DEC-35.** Stats,
+> hit dice and four of the seven skills transfer verbatim, which was measured against the ten
+> races the two games share rather than assumed. Experience factors are Zangband's, which is
+> the point of the requirement: 4.2 flattened nearly every race to 120 and Zangband used the
+> number as its balance dial.
+>
+> Guarded by every-race-is-playable, which exists because a race file that will not parse
+> takes nineteen unrelated suites down with it and says only "Cannot initialize player races".
+
 **PLR-02 — Races may grant activatable powers.** Reproduces
 [racial.c](../../archive/zangband/src/racial.c). 4.2 has no per-race activatable ability
 mechanism; this is new.

@@ -31,6 +31,17 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.27.0** — M7 begins: **nine new races.** Amberite, Beastman, Yeek,
+  Draconian, Mindflayer, Vampire, Golem, Sprite and Half-Titan, bringing the
+  total to twenty. Curated rather than imported wholesale — of Zangband's
+  twenty-one, four are undead wanting a mechanism the game has not got and
+  several are close variants of races already here. The mapping between the two
+  games was *measured*, not guessed: ten races appear in both, and against those
+  the stats, hit dice, disarm, device, save and stealth transfer verbatim, while
+  4.2 turns out to have widened melee and archery by roughly double and flattened
+  nearly every race's experience cost to 120. Zangband's costs are kept, which is
+  what makes an Amberite dear at 225 and a Half-Titan the most expensive thing
+  you can be born as at 255.
 - **3.26.1** — The features page said the platform was **macOS on Apple
   Silicon**, full stop, which has not been true for some time: the game is built
   and packaged for Windows, Linux, DOS, the Nintendo DS and the 3DS as well, and
