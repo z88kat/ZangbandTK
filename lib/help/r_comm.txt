@@ -45,9 +45,9 @@ when the autoexplore_commands option is on.
   @    Center map                      ^b   (alter - south west)
   #    -                               ^c   (special - break)
   $    -                               ^d   Ignore an item
-  %    -                               ^e   Toggle inven/equip window
+  %    Things you have taken on        ^e   Toggle inven/equip window
   ^    (special - control key)         ^f   Repeat level feeling
-  &    -                               ^g   Do autopickup
+  &    Use a racial power              ^g   Do autopickup
   *    Target monster or location      ^h   (alter - west)
   (    -                               ^i   (special - tab)
   )    Dump screen to a file           ^j   (alter - south)

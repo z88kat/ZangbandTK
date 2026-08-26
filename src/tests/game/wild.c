@@ -3541,6 +3541,151 @@ static int test_work_is_offered_where_there_is_a_door(void *state) {
  * there, that their experience factors were kept rather than flattened to 4.2's
  * 120, and that nothing has a hit die or a cost that would make it unplayable.
  */
+/**
+ * PLR-02: the racial powers came off Zangband's own table, and this pins the
+ * numbers so a later edit to p_race.txt cannot quietly reprice them.
+ */
+static int test_a_race_keeps_its_power(void *state) {
+	static const struct {
+		const char *race; const char *power;
+		int level; int cost; int stat; int fail;
+	} table[] = {
+		{ "Amberite",   "shift into shadow",       30, 50, STAT_INT, 50 },
+		{ "Amberite",   "walk the Pattern",        40, 75, STAT_WIS, 50 },
+		{ "Half-Titan", "examine your foes",       35, 20, STAT_STR, 12 },
+		{ "Yeek",       "scream",                  15, 15, STAT_WIS, 10 },
+		{ "Draconian",  "breathe like a dragon",   15, 25, STAT_CON, 12 },
+		{ "Mindflayer", "blast a mind",            15, 12, STAT_INT, 14 },
+		{ "Golem",      "turn to stone",           20, 15, STAT_CON,  8 },
+		{ "Vampire",    "drink blood",              5, 10, STAT_CON,  9 },
+		{ "Sprite",     "throw sleeping dust",     12, 12, STAT_INT, 15 },
+	};
+	struct player_race *r;
+	struct player_power *power;
+	size_t i;
+	int found = 0, carrying = 0;
+
+	for (r = races; r; r = r->next) {
+		if (r->powers) carrying++;
+
+		for (power = r->powers; power; power = power->next) {
+			/* Nothing half-parsed: a power with no effect would do nothing. */
+			notnull(power->name);
+			notnull(power->effect);
+			require(power->level >= 1 && power->level <= 50);
+			require(power->cost > 0);
+			require(power->stat >= 0 && power->stat < STAT_MAX);
+			require(power->fail >= 0 && power->fail <= 100);
+
+			for (i = 0; i < N_ELEMENTS(table); i++) {
+				if (!streq(r->name, table[i].race)) continue;
+				if (!streq(power->name, table[i].power)) continue;
+
+				eq(power->level, table[i].level);
+				eq(power->cost, table[i].cost);
+				eq(power->stat, table[i].stat);
+				eq(power->fail, table[i].fail);
+				found++;
+			}
+		}
+	}
+
+	/* Every row arrived. */
+	eq(found, (int) N_ELEMENTS(table));
+
+	/*
+	 * Nine powers across eight races -- the Amberite has two, being the one
+	 * bloodline the game is about.  The ninth race we ported, the Beastman,
+	 * deliberately has none: in Zangband its whole character was involuntary
+	 * mutation rather than anything it could choose to do.
+	 */
+	eq(carrying, 8);
+
+	ok;
+}
+
+/**
+ * Trying and failing costs the mana; being told you cannot try does not.  This
+ * is the whole reason player_use_power() reports those two cases differently,
+ * and the reason ui-map.c asks for a direction before calling it.
+ */
+static int test_a_refused_power_is_free(void *state) {
+	struct player_race *r;
+	struct player_power *power = NULL;
+	int before;
+
+	for (r = races; r; r = r->next)
+		if (streq(r->name, "Mindflayer")) power = r->powers;
+	notnull(power);
+
+	player->race = r;
+	player->msp = 100;
+
+	/* Too junior for it. */
+	player->lev = power->level - 1;
+	player->csp = 100;
+	before = player->csp;
+	require(!player_use_power(player, power, 0));
+	eq(player->csp, before);
+
+	/* Old enough, but nothing left to spend. */
+	player->lev = power->level;
+	player->csp = power->cost - 1;
+	before = player->csp;
+	require(!player_use_power(player, power, 0));
+	eq(player->csp, before);
+
+	/*
+	 * Able and paid up.  Whether the roll goes for or against, the mana is
+	 * gone -- that is what makes a bad attempt sting.
+	 */
+	player->csp = power->cost;
+	require(player_use_power(player, power, 0));
+	eq(player->csp, 0);
+
+	ok;
+}
+
+/**
+ * The failure chance has to stay a chance: never certain, never free, and it
+ * has to reward the two things the player can actually do about it -- gain
+ * levels, and raise the stat the power leans on.
+ */
+static int test_practice_makes_a_power_surer(void *state) {
+	struct player_race *r;
+	struct player_power *power = NULL;
+	int fresh, seasoned, lev;
+
+	for (r = races; r; r = r->next)
+		if (streq(r->name, "Draconian")) power = r->powers;
+	notnull(power);
+
+	player->csp = 100;
+	player->msp = 100;
+
+	/* Bounded across the whole range of a career, not just in the middle. */
+	for (lev = 1; lev <= 50; lev++) {
+		player->lev = lev;
+		require(player_power_chance(player, power) >= 5);
+		require(player_power_chance(player, power) <= 95);
+	}
+
+	player->lev = power->level;
+	fresh = player_power_chance(player, power);
+	player->lev = 50;
+	seasoned = player_power_chance(player, power);
+
+	/* Twenty levels of practice has to show. */
+	require(seasoned < fresh);
+
+	/* And so does being short of mana, which is a separate penalty. */
+	player->lev = power->level;
+	player->csp = 0;
+	require(player_power_chance(player, power) >= fresh);
+
+	ok;
+}
+
 static int test_every_race_is_playable(void *state) {
 	static const struct { const char *name; int exp; } ported[] = {
 		{ "Amberite",   225 },
@@ -4326,5 +4471,8 @@ struct test tests[] = {
 	{ "there-is-one-home-in-the-world", test_there_is_one_home_in_the_world },
 	{ "a-better-shop-deals-in-better-goods", test_a_better_shop_deals_in_better_goods },
 	{ "every-service-held-is-built", test_every_service_held_is_built },
+	{ "a-race-keeps-its-power", test_a_race_keeps_its_power },
+	{ "a-refused-power-is-free", test_a_refused_power_is_free },
+	{ "practice-makes-a-power-surer", test_practice_makes_a_power_surer },
 	{ NULL, NULL }
 };

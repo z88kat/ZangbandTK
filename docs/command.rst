@@ -283,6 +283,20 @@ Cast a spell (``m`` in both keysets)
   or confused while casting, and, unless you are a necromancer, there must be
   some light present. This command takes some energy.
 
+Use a racial power (``N``) or Use a racial power (``&``)
+  Nine of the twenty races carry something they can do by blood rather than by
+  study: an Amberite can walk into shadow, a Draconian can breathe, a Vampire
+  can drink. This command lists what your race can do, what each costs, and
+  how likely each is to fail, and lets you pick one. See
+  :ref:`Racial powers <racial-powers>` for the full list.
+
+  A power draws on spell points like a spell, so a warrior of the right race
+  has a small pool of mana that exists only to feed it. The listed failure
+  chance falls as you gain levels past the level the power arrives at, and
+  falls further as you raise the stat it leans on. Failing still costs the
+  mana; being told you are too junior, or too spent, costs nothing. This
+  command takes some energy.
+
 Object Manipulation Commands
 ============================
 

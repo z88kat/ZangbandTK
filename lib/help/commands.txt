@@ -24,11 +24,11 @@ when the autoexplore_commands option is on.
   g    Get objects on floor            G    Gain new spells/prayers
   h    Fire default ammo at target     H    -
   i    List contents of pack           I    Inspect an item
-  j    -                               J    -
+  j    -                               J    Things you have taken on
   k    Ignore an item                  K    Toggle ignore
   l    Look around                     L    Locate player on map
   m    Cast a spell                    M    Map of level, or of the world
-  n    Repeat previous command         N    -
+  n    Repeat previous command         N    Use a racial power
   o    Open a door or chest            O    -
   p    - (see above)                   P    -
   q    Quaff a potion                  Q    Retire character & quit

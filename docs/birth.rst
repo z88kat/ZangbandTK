@@ -342,6 +342,49 @@ Half-Titan
   clumsy, and resistant to chaos — which, given what it is descended from, is
   less a resistance than a family trait.
 
+.. _racial-powers:
+
+Racial powers
+-------------
+
+Eight of these nine races can do something no amount of study will teach, and
+press ``N`` to do it. The Amberite can do two things, which is the point of
+being an Amberite; the Beastman can do nothing, because in Zangband its whole
+character was mutation happening *to* it rather than anything it chose.
+
+================ ========================= =====  ====  =====  =======
+Race             Power                     Level  Mana  Stat   Failure
+================ ========================= =====  ====  =====  =======
+Amberite         shift into shadow            30    50  INT        50%
+Amberite         walk the Pattern             40    75  WIS        50%
+Vampire          drink blood                   5    10  CON         9%
+Sprite           throw sleeping dust          12    12  INT        15%
+Yeek             scream                       15    15  WIS        10%
+Draconian        breathe like a dragon        15    25  CON        12%
+Mindflayer       blast a mind                 15    12  INT        14%
+Golem            turn to stone                20    15  CON         8%
+Half-Titan       examine your foes            35    20  STR        12%
+================ ========================= =====  ====  =====  =======
+
+The level is when the power arrives; before it, the character simply cannot.
+The mana comes out of the same pool spells do, so a Warrior of one of these
+races has a small reserve of spell points that exists for no other purpose.
+
+The failure figure is the chance at exactly the level the power arrives, with
+an average stat. Both of the things you can do about it help: every level past
+that one takes three points off, and every point of the stat it leans on takes
+off more. Trying with too little mana left makes it markedly worse. Failing
+still spends the mana — being told you are too junior, or too spent to try at
+all, does not.
+
+The two Amberite powers are the two halves of the family. *Shifting into
+shadow* moves you a long way and leaves you briefly blind, arriving where you
+did not quite intend, which is what shadow-walking is. *Walking the Pattern*
+is the older and harder thing: at level 40 and 75 mana it undoes poison,
+blindness, confusion, stunning, cuts, fear and hallucination, restores every
+drained stat, and gives back lost experience. It is expensive because it is
+the Pattern.
+
 Races we decided against
 ------------------------
 

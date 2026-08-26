@@ -345,6 +345,33 @@ age:20:20
 height:70:6
 weight:150:20
 obj-flags:SUST_CON | REGEN
+power:shift into shadow
+power-level:30
+power-cost:50
+power-stat:INT
+power-fail:50
+power-effect:TELEPORT
+power-dice:40
+power-effect:TIMED_INC:BLIND
+power-dice:2+1d4
+power:walk the Pattern
+power-level:40
+power-cost:75
+power-stat:WIS
+power-fail:50
+power-effect:CURE:POISONED
+power-effect:CURE:BLIND
+power-effect:CURE:CONFUSED
+power-effect:CURE:STUN
+power-effect:CURE:CUT
+power-effect:CURE:AFRAID
+power-effect:CURE:IMAGE
+power-effect:RESTORE_STAT:STR
+power-effect:RESTORE_STAT:INT
+power-effect:RESTORE_STAT:WIS
+power-effect:RESTORE_STAT:DEX
+power-effect:RESTORE_STAT:CON
+power-effect:RESTORE_EXP
 
 # Chaos-touched. The mutations it is born with wait for M8.
 name:Beastman
@@ -390,6 +417,12 @@ age:20:20
 height:70:6
 weight:150:20
 values:RES_ACID[1]
+power:scream
+power-level:15
+power-cost:15
+power-stat:WIS
+power-fail:10
+power-effect:PROJECT_LOS:TURN_ALL
 
 # Zangband gave it a different breath every five levels; here it has its wings and its fire, and the breath waits for PLR-02.
 name:Draconian
@@ -413,6 +446,14 @@ height:70:6
 weight:150:20
 obj-flags:FEATHER
 values:RES_FIRE[1]
+power:breathe like a dragon
+power-level:15
+power-cost:25
+power-stat:CON
+power-fail:12
+power-effect:BREATH:FIRE:20
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 3 / 2
 
 # Zangband granted it nothing at all: its whole identity is psionics, which is PLR-06.
 name:Mindflayer
@@ -435,6 +476,14 @@ age:20:20
 height:70:6
 weight:150:20
 obj-flags:SEE_INVIS
+power:blast a mind
+power-level:15
+power-cost:12
+power-stat:INT
+power-fail:14
+power-effect:BOLT:MANA
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
 
 # Immune to the dark and hurt by the light, which is the bargain.
 name:Vampire
@@ -458,6 +507,17 @@ height:70:6
 weight:150:20
 obj-flags:HOLD_LIFE | SLOW_DIGEST
 values:RES_DARK[3] | RES_NETHER[1] | RES_POIS[1] | RES_COLD[1] | RES_LIGHT[-1]
+power:drink blood
+power-level:5
+power-cost:10
+power-stat:CON
+power-fail:9
+power-effect:BOLT:NETHER
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+power-effect:HEAL_HP
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:/ 2
 
 # Not living. Nothing gets into it, and the cold gets to it.
 name:Golem
@@ -481,6 +541,13 @@ height:70:6
 weight:150:20
 obj-flags:SEE_INVIS | FREE_ACT | HOLD_LIFE | SLOW_DIGEST
 values:RES_POIS[3] | RES_COLD[-1]
+power:turn to stone
+power-level:20
+power-cost:15
+power-stat:CON
+power-fail:8
+power-effect:TIMED_INC:STONESKIN
+power-dice:30+1d20
 
 # Flies. Zangband quickened it at level nine; speed is not something a 4.2 race can be given, so that waits for PLR-02.
 name:Sprite
@@ -504,6 +571,12 @@ height:70:6
 weight:150:20
 obj-flags:FEATHER
 values:RES_LIGHT[1]
+power:throw sleeping dust
+power-level:12
+power-cost:12
+power-stat:INT
+power-fail:15
+power-effect:PROJECT_LOS:SLEEP_ALL
 
 # The most expensive thing you can be born as: 255.
 name:Half-Titan
@@ -526,3 +599,10 @@ age:20:20
 height:70:6
 weight:150:20
 values:RES_CHAOS[1]
+
+power:examine your foes
+power-level:35
+power-cost:20
+power-stat:STR
+power-fail:12
+power-effect:PROBE

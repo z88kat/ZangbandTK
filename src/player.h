@@ -231,6 +231,29 @@ struct player_body {
 };
 
 /**
+ * A thing a race can do, on purpose (ZangbandTK, PLR-02).
+ *
+ * 4.2 has no per-race activatable ability: a race is a set of adjustments and
+ * flags, and everything a character *does* comes from a class spell, an object
+ * or a shape.  Zangband's races could act -- a Draconian breathes, a Vampire
+ * bites, an Amberite walks the Pattern -- and racial.c is a switch on the race
+ * doing it directly.  This is that, made data.
+ *
+ * Costed the way Zangband costed it: a level before it can be used at all, mana
+ * to use it, a stat it leans on, and a failure rate.  A race may have several --
+ * the Amberite has two, thirty levels apart.
+ */
+struct player_power {
+	struct player_power *next;
+	char *name;
+	struct effect *effect;
+	int level;			/**< Character level before it can be used */
+	int cost;			/**< Mana it takes */
+	int stat;			/**< Which stat makes it more reliable */
+	int fail;			/**< Base failure, in percent */
+};
+
+/**
  * Player race info
  */
 struct player_race {
@@ -264,6 +287,8 @@ struct player_race {
 	struct history_chart *history;
 
 	struct element_info el_info[ELEM_MAX]; /**< Resists */
+
+	struct player_power *powers;	/**< What the race can do (PLR-02) */
 };
 
 /**

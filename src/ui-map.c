@@ -1945,6 +1945,89 @@ void do_cmd_quest_log(void)
 }
 
 /**
+ * Use one of the character's racial powers (ZangbandTK, PLR-02).
+ *
+ * A menu rather than a key each, because a race may have several and Angband has
+ * no letters to spare -- the Amberite has two, thirty levels apart.  Powers the
+ * character is not yet old enough for are listed and greyed rather than hidden,
+ * so a Draconian knows at level one that it will breathe eventually.
+ */
+void do_cmd_racial_power(void)
+{
+	struct player_power *powers[16];
+	struct menu *m;
+	char *labels;
+	int count = 0, chosen, i;
+	struct player_power *power;
+
+	for (power = player->race->powers; power && count < 16; power = power->next)
+		powers[count++] = power;
+
+	if (!count) {
+		msg("Your kind has no special power.");
+		return;
+	}
+
+	m = menu_dynamic_new();
+	if (!m) return;
+
+	labels = string_make(lower_case);
+	m->selections = labels;
+
+	for (i = 0; i < count; i++) {
+		char line[80];
+
+		if (player->lev < powers[i]->level)
+			strnfmt(line, sizeof(line), "%-24s  level %d", powers[i]->name,
+					powers[i]->level);
+		else
+			strnfmt(line, sizeof(line), "%-24s  %d sp, %d%% to fail",
+					powers[i]->name, powers[i]->cost,
+					player_power_chance(player, powers[i]));
+
+		menu_dynamic_add_label(m, line, 0, i + 1, labels);
+	}
+
+	menu_dynamic_add_label(m, "Nothing", 'q', 0, labels);
+
+	screen_save();
+	menu_dynamic_calc_location(m, 0, 0);
+	region_erase_bordered(&m->boundary);
+	prt(format("You are %s, and have %d of %d spell points.",
+			   player->race->name, player->csp, player->msp), 0, 0);
+
+	chosen = menu_dynamic_select(m);
+
+	menu_dynamic_free(m);
+	string_free(labels);
+	screen_load();
+
+	if (chosen <= 0 || chosen > count) return;
+
+	power = powers[chosen - 1];
+
+	if (player->lev < power->level) {
+		msg("You are not yet able to do that.");
+		return;
+	}
+
+	{
+		int dir = 0;
+
+		/*
+		 * Ask where, if the power goes somewhere.  Asked here rather than left
+		 * to the effect, because a power the player then declines to aim must
+		 * not have cost them the mana.
+		 */
+		if (effect_aim(power->effect) && !get_aim_dir(&dir))
+			return;
+
+		if (player_use_power(player, power, dir))
+			player->upkeep->energy_use = z_info->move_energy;
+	}
+}
+
+/**
  * Show the overhead map of the world, and let the player scroll about it.
  */
 void do_cmd_view_world_map(void)

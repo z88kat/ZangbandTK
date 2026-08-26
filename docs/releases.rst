@@ -31,6 +31,22 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.28.0** — **Racial powers** (PLR-02). Eight of the nine new races can now do
+  something no class teaches, on ``N``: an Amberite shifts into shadow and walks
+  the Pattern, a Vampire drinks blood, a Draconian breathes, a Golem turns to
+  stone, a Yeek screams, a Sprite throws sleeping dust, a Mindflayer blasts a
+  mind, a Half-Titan sizes up what it is looking at. Level, mana, governing stat
+  and failure chance are Zangband's own numbers rather than new ones, and a test
+  holds them there. Powers draw on spell points, so a Warrior of one of these
+  races has a small pool of mana that exists only to feed them; failing spends it,
+  being refused does not. The Beastman has no power on purpose — its character
+  was mutation, which is not a thing you choose to do.
+
+  Two commands also gained the **roguelike keyset** bindings they should have had:
+  the racial power is ``&`` there and the quest log ``%``, because ``N`` and ``J``
+  are both running keys in that keyset and the commands were reachable only from
+  the ``Enter`` menu. There is no letter left to give them — between the two
+  keysets every letter and every usable control key in the game is already taken.
 - **3.27.1** — **The nine new races are described**, and the four turned down are
   described too. :doc:`birth` had still been saying there were eleven races; there
   are twenty. Each of the new ones now says what it is and what it costs, with a

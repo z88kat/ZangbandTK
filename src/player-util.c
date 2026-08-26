@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "cmd-core.h"
 #include "game-input.h"
+#include "effects.h"
 #include "game-world.h"
 #include "generate.h"
 #include "init.h"
@@ -1953,6 +1954,80 @@ bool player_has_monster_in_view(const struct player *p)
 		}
 	}
 	return false;
+}
+
+/**
+ * How likely a racial power is to fail (ZangbandTK, PLR-02).
+ *
+ * The same shape as a spell's chance: the base rate from the data, easier the
+ * further past its level the character is, harder if they are hurt or afraid,
+ * and floored so nothing is ever certain.  Leaning on a stat the way Zangband
+ * did -- a Draconian's breath on constitution, a Mindflayer's blast on
+ * intelligence -- so the power belongs to the body it comes out of.
+ */
+int player_power_chance(struct player *p, const struct player_power *power)
+{
+	int chance;
+
+	if (!power) return 100;
+
+	chance = power->fail;
+
+	/* Practice tells. */
+	chance -= 3 * (p->lev - power->level);
+
+	/*
+	 * And so does having the stat it draws on.  Straight off the stat index
+	 * rather than through spell-casting's adjustment table, which is private to
+	 * player-spell.c and is about spell *points* rather than reliability.
+	 */
+	chance -= (p->state.stat_ind[power->stat] - 10) / 2;
+
+	/* Not enough left in the tank makes it harder, as casting does. */
+	if (p->csp < power->cost)
+		chance += 5 * (power->cost - p->csp);
+
+	if (p->timed[TMD_AFRAID]) chance += 20;
+
+	return MAX(MIN(chance, 95), 5);
+}
+
+/**
+ * Use one of the character's racial powers (ZangbandTK, PLR-02).
+ *
+ * \return false if it could not be attempted at all, which is different from
+ * being attempted and failing -- the first costs nothing.
+ */
+bool player_use_power(struct player *p, struct player_power *power, int dir)
+{
+	bool ident = false;
+
+	if (!power || !power->effect) return false;
+
+	if (p->lev < power->level) {
+		msg("You are not yet able to do that.");
+		return false;
+	}
+
+	if (p->csp < power->cost) {
+		msg("You have not the strength left.");
+		return false;
+	}
+
+	/* Paid whether it works or not, which is what makes failure cost. */
+	p->csp -= power->cost;
+	p->upkeep->redraw |= (PR_MANA);
+
+	if (randint0(100) < player_power_chance(p, power)) {
+		event_signal(EVENT_INPUT_FLUSH);
+		msg("You try to %s, and fail.", power->name);
+		return true;
+	}
+
+	effect_do(power->effect, source_player(), NULL, &ident, true, dir, 0, 0,
+			  NULL);
+
+	return true;
 }
 
 /**

@@ -31,6 +31,46 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+26 August 2026 — nine powers, and a keyboard with nothing left on it
+====================================================================
+
+Racial powers went in today (PLR-02): nine things a character can do because of
+what it is rather than what it studied. The table is Zangband's own, lifted out
+of ``tables.c`` in the archived source rather than reinvented — level, mana cost,
+governing stat and failure chance, all nine rows. A Vampire drinks blood at level
+5 for 10 mana; an Amberite walks the Pattern at 40 for 75. I would not have
+guessed those numbers as well as the original did, and there is a unit test now
+whose only job is to stop a later edit quietly repricing them.
+
+The mechanism was straightforward. Getting the *data* to parse was four rounds of
+being wrong in a row, and three of them were my own tooling. First every
+``power*`` directive came back "undefined", which was a stale test binary — the
+unit-test targets are not in ``all``, a trap this project has now walked into
+enough times that it should probably be written on the wall. Then an effect took
+a radius it did not want. Then ``power-dice:$P`` — which I had simply invented.
+Angband's dice syntax has no "player level" token; what it has is a named
+placeholder bound by a separate ``expr:`` line, which is how class spells scale.
+So the race parser grew a ``power-expr`` to match, and a Draconian's breath is
+``$B`` bound to ``PLAYER_LEVEL:* 3 / 2``.
+
+Then the part I did not expect. The command needed a key, and I had given it
+``N``. In the roguelike keyset ``N`` is run-southeast — one of the eight running
+letters — so the keymap swallows it and the command is reachable only from the
+Enter menu. Which was also true of ``J``, the quest log I added a few days ago
+and never checked. Angband handles this with a second key per command, the
+roguelike alternative, and I had left it zero on both.
+
+So: find a free letter. There isn't one. I enumerated every key bound in the
+command tables against every keymap in ``pref.prf`` and the intersection is
+empty — all fifty-two letters are spoken for in one keyset or the other, and so
+is every usable control key. Twenty-odd years of accreted commands have filled
+the keyboard exactly. The nine survivors are punctuation, so the roguelike
+bindings are ``&`` for a racial power and ``%`` for the quest log. Not mnemonic,
+and I do not think there is a version of this that is. It is a real constraint on
+how much more this game can grow sideways, and worth knowing about now rather
+than the fifth time I add a command.
+
+
 23 August 2026 — a review, and the save that was already broken
 ===============================================================
 

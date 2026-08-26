@@ -3529,6 +3529,172 @@ static enum parser_error parse_p_race_values(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
 }
 
+/**
+ * A thing the race can do (ZangbandTK, PLR-02).
+ *
+ * Each `power:` opens a new one, and the lines after it -- level, cost, stat,
+ * fail, and any number of effects -- belong to it, the same way a record's lines
+ * belong to the record.  A race may declare several.
+ */
+static enum parser_error parse_p_race_power(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	struct player_power *power, *last;
+
+	if (!r) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	power = mem_zalloc(sizeof(*power));
+	power->name = string_make(parser_getstr(p, "name"));
+	power->stat = STAT_STR;
+
+	if (r->powers) {
+		for (last = r->powers; last->next; last = last->next)
+			;
+		last->next = power;
+	} else {
+		r->powers = power;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+/** The power currently being described, which is the last one declared. */
+static struct player_power *parse_p_race_last_power(struct player_race *r) {
+	struct player_power *power = r ? r->powers : NULL;
+
+	while (power && power->next) power = power->next;
+
+	return power;
+}
+
+static enum parser_error parse_p_race_power_level(struct parser *p) {
+	struct player_power *power = parse_p_race_last_power(parser_priv(p));
+
+	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	power->level = parser_getint(p, "level");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_power_cost(struct parser *p) {
+	struct player_power *power = parse_p_race_last_power(parser_priv(p));
+
+	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	power->cost = parser_getint(p, "cost");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_power_fail(struct parser *p) {
+	struct player_power *power = parse_p_race_last_power(parser_priv(p));
+
+	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	power->fail = parser_getint(p, "fail");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_power_stat(struct parser *p) {
+	struct player_power *power = parse_p_race_last_power(parser_priv(p));
+	int stat;
+
+	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	stat = stat_name_to_idx(parser_getsym(p, "stat"));
+	if (stat < 0) return PARSE_ERROR_INVALID_VALUE;
+
+	power->stat = stat;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_power_effect(struct parser *p) {
+	struct player_power *power = parse_p_race_last_power(parser_priv(p));
+	struct effect *effect, *new_effect;
+
+	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	new_effect = mem_zalloc(sizeof(*new_effect));
+	if (power->effect) {
+		effect = power->effect;
+		while (effect->next) effect = effect->next;
+		effect->next = new_effect;
+	} else {
+		power->effect = new_effect;
+	}
+
+	return grab_effect_data(p, new_effect);
+}
+
+static enum parser_error parse_p_race_power_dice(struct parser *p) {
+	struct player_power *power = parse_p_race_last_power(parser_priv(p));
+	struct effect *effect;
+	dice_t *dice;
+	const char *string;
+
+	if (!power || !power->effect) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	effect = power->effect;
+	while (effect->next) effect = effect->next;
+
+	dice = dice_new();
+	if (!dice) return PARSE_ERROR_INVALID_DICE;
+
+	string = parser_getstr(p, "dice");
+	if (!dice_parse_string(dice, string)) {
+		dice_free(dice);
+		return PARSE_ERROR_NOT_RANDOM;
+	}
+
+	dice_free(effect->dice);
+	effect->dice = dice;
+
+	return PARSE_ERROR_NONE;
+}
+
+/**
+ * Bind a name in a power's dice to something about the character (PLR-02).
+ *
+ * The same shape as a class spell's `expr:`, and needed for the same reason: a
+ * Draconian's breath and a Mindflayer's blast scale with level in Zangband, and
+ * without this they would be flat numbers that stop mattering.
+ */
+static enum parser_error parse_p_race_power_expr(struct parser *p) {
+	struct player_power *power = parse_p_race_last_power(parser_priv(p));
+	struct effect *effect;
+	expression_t *expression;
+	expression_base_value_f function;
+	const char *name, *base, *expr;
+	enum parser_error result;
+
+	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	effect = power->effect;
+	if (!effect) return PARSE_ERROR_NONE;
+	while (effect->next) effect = effect->next;
+	if (!effect->dice) return PARSE_ERROR_NONE;
+
+	name = parser_getsym(p, "name");
+	base = parser_getsym(p, "base");
+	expr = parser_getstr(p, "expr");
+
+	expression = expression_new();
+	if (!expression) return PARSE_ERROR_INVALID_EXPRESSION;
+
+	function = effect_value_base_by_name(base);
+	expression_set_base_value(expression, function);
+
+	if (expression_add_operations_string(expression, expr) < 0)
+		result = PARSE_ERROR_BAD_EXPRESSION_STRING;
+	else if (dice_bind_expression(effect->dice, name, expression) < 0)
+		result = PARSE_ERROR_UNBOUND_EXPRESSION;
+	else
+		result = PARSE_ERROR_NONE;
+
+	expression_free(expression);
+
+	return result;
+}
+
 static struct parser *init_parse_p_race(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -3554,6 +3720,16 @@ static struct parser *init_parse_p_race(void) {
 	parser_reg(p, "obj-flags ?str flags", parse_p_race_obj_flags);
 	parser_reg(p, "player-flags ?str flags", parse_p_race_play_flags);
 	parser_reg(p, "values str values", parse_p_race_values);
+	parser_reg(p, "power str name", parse_p_race_power);
+	parser_reg(p, "power-level int level", parse_p_race_power_level);
+	parser_reg(p, "power-cost int cost", parse_p_race_power_cost);
+	parser_reg(p, "power-stat sym stat", parse_p_race_power_stat);
+	parser_reg(p, "power-fail int fail", parse_p_race_power_fail);
+	parser_reg(p, "power-effect sym eff ?sym type ?int radius ?int other",
+			   parse_p_race_power_effect);
+	parser_reg(p, "power-dice str dice", parse_p_race_power_dice);
+	parser_reg(p, "power-expr sym name sym base str expr",
+			   parse_p_race_power_expr);
 	return p;
 }
 
@@ -3580,7 +3756,20 @@ static void cleanup_p_race(void)
 	struct player_race *next;
 
 	while (p) {
+		struct player_power *power = p->powers;
+
 		next = p->next;
+
+		/* And whatever the race could do (PLR-02). */
+		while (power) {
+			struct player_power *pnext = power->next;
+
+			string_free(power->name);
+			free_effect(power->effect);
+			mem_free(power);
+			power = pnext;
+		}
+
 		string_free((char *)p->name);
 		mem_free(p);
 		p = next;
