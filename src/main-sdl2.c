@@ -5767,6 +5767,51 @@ static struct font *make_font(const struct sdlpui_window *window,
 	return font;
 }
 
+#ifdef __EMSCRIPTEN__
+/**
+ * Size a rect to as many whole cells of the given size as the window will hold,
+ * and centre it there.  Only for the main term.
+ *
+ * The font then decides how large the game looks and the window decides how
+ * much of it there is, which is what the desktop builds do with a window the
+ * player has sized.
+ *
+ * Sizing the term to the *minimum* instead was wrong, and wrong in a way worth
+ * recording: MIN_ROWS_MAIN is 24, which is vanilla Angband's floor, and this
+ * game's birth screen lists nine more races than vanilla's.  At exactly 24 rows
+ * that list was cut off after Draconian, with five races below the fold and no
+ * way to reach them -- a font setting that quietly removed content from the
+ * game.
+ *
+ * Whole cells, because a partial cell is drawn as nothing: taking the window's
+ * rect entire left a strip of dead pixels along two edges.  Rounding down to
+ * the cell and centring what is left puts the same thin margin on all four
+ * sides, which reads as a border rather than as a gap.
+ *
+ * This exists for the browser alone, and not out of caution.  On a desktop the
+ * player sets size and position with Size and Move and both are saved, so
+ * overriding them would be wrong.  In a page there is neither control, no way
+ * to place or scale the term by hand, and so nothing to override.
+ */
+static void fill_window_with_cells(const struct sdlpui_window *window,
+		int cell_w, int cell_h, SDL_Rect *rect)
+{
+	int cols = (window->inner_rect.w - 2 * DEFAULT_BORDER) / cell_w;
+	int rows = (window->inner_rect.h - 2 * DEFAULT_BORDER) / cell_h;
+
+	if (cols < MIN_COLS_MAIN) {
+		cols = MIN_COLS_MAIN;
+	}
+	if (rows < MIN_ROWS_MAIN) {
+		rows = MIN_ROWS_MAIN;
+	}
+	rect->w = cols * cell_w + 2 * DEFAULT_BORDER;
+	rect->h = rows * cell_h + 2 * DEFAULT_BORDER;
+	rect->x = window->inner_rect.x + (window->inner_rect.w - rect->w) / 2;
+	rect->y = window->inner_rect.y + (window->inner_rect.h - rect->h) / 2;
+}
+#endif /* __EMSCRIPTEN__ */
+
 static bool reload_font(struct subwindow *subwindow,
 		const struct font_info *info)
 {
@@ -5788,43 +5833,18 @@ static bool reload_font(struct subwindow *subwindow,
 		new_font->ttf.glyph.w, new_font->ttf.glyph.h, &min_w, &min_h);
 #ifdef __EMSCRIPTEN__
 	/*
-	 * Size the term to exactly what the new font needs -- an eighty by
-	 * twenty-four terminal at the new glyph size -- and centre it.  Changing
-	 * the font is then the one control over how big the game looks, and it
-	 * works in both directions.
-	 *
-	 * Neither half can be left to the code above.
-	 *
-	 * The size cannot, because is_usable_font_for_subwindow() starts from
-	 * the rect the term already has and only shrinks it when the new font
-	 * is too big to fit inside it.  A smaller font always fits, so the term
-	 * kept whatever size it had: it grew for a larger font and never came
-	 * back down, leaving small text in the corner of a box sized for the
-	 * font before it.
-	 *
-	 * The position cannot, because coerce_rect_in_rect() below moves a rect
-	 * only as far as it must to be inside the window, which puts a grown
-	 * term hard against the window's right and bottom edges.
-	 *
-	 * Both are done here rather than for every front end because they are
-	 * only unambiguously right here.  On a desktop the player sets the size
-	 * and position with Size and Move and both are saved, so overriding
-	 * them on a font change would be wrong.  In a page there is neither
-	 * control, no way to place or scale the term by hand, and so nothing to
-	 * override.
-	 *
-	 * Filling the window instead was the obvious alternative and was worse.
-	 * A small font then buys a terminal far wider than eighty columns, and
-	 * every screen the game lays out to a fixed size -- the splash, birth,
-	 * the option pages -- draws in the top-left corner of a great expanse
-	 * of black.
+	 * Neither the size nor the position can be left to the code around
+	 * this.  is_usable_font_for_subwindow() starts from the rect the term
+	 * already has and only ever shrinks it to fit a larger font, so the term
+	 * grew for a bigger font and never came back down for a smaller one.
+	 * coerce_rect_in_rect() below moves a rect only as far as it must to be
+	 * inside the window, which is to say into a corner.
 	 */
-	subwindow->sizing_rect.w = min_w;
-	subwindow->sizing_rect.h = min_h;
-	subwindow->sizing_rect.x = subwindow->window->inner_rect.x
-		+ (subwindow->window->inner_rect.w - min_w) / 2;
-	subwindow->sizing_rect.y = subwindow->window->inner_rect.y
-		+ (subwindow->window->inner_rect.h - min_h) / 2;
+	if (subwindow->index == MAIN_SUBWINDOW) {
+		fill_window_with_cells(subwindow->window,
+			new_font->ttf.glyph.w, new_font->ttf.glyph.h,
+			&subwindow->sizing_rect);
+	}
 #endif
 	coerce_rect_in_rect(&subwindow->sizing_rect,
 		&subwindow->window->inner_rect, min_w, min_h);
@@ -6971,6 +6991,20 @@ static void load_subwindow(struct sdlpui_window *window,
 		subwindow->stored_rect = tmp_rect;
 	}
 
+#ifdef __EMSCRIPTEN__
+	/*
+	 * Also on the way in, not only when the font is changed.  The size here
+	 * comes from the saved configuration, which in a page is a size chosen
+	 * for whatever viewport the last session happened to have -- or, for a
+	 * configuration written by a build that sized the term to the minimum, a
+	 * size that cuts the birth screen off.  Neither is worth honouring when
+	 * the window it has to fit is known.
+	 */
+	if (subwindow->index == MAIN_SUBWINDOW) {
+		fill_window_with_cells(window, subwindow->font->ttf.glyph.w,
+			subwindow->font->ttf.glyph.h, &subwindow->full_rect);
+	}
+#endif
 	if (!adjust_subwindow_geometry(window, subwindow)) {
 		quit_fmt("cannot adjust geometry of subwindow %u in window %u",
 				subwindow->index, window->index);
