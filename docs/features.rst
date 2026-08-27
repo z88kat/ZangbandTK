@@ -129,6 +129,26 @@ Monsters, objects and magic
 
 See :doc:`monsters` and :doc:`objects` for the detail.
 
+Races, classes and racial powers
+--------------------------------
+
+- **Twenty races**, up from Angband's eleven. Amberite, Draconian, Vampire,
+  Mindflayer, Golem, Sprite, Half-Titan, Yeek and Beastman. Curated rather than
+  imported wholesale, and four of Zangband's were turned down on the evidence.
+- **Experience cost as a real dial.** Angband flattened nearly every race to 120
+  per cent; Zangband ran 100 to 255 and priced races with it. Zangband's figures
+  are kept, so a Half-Titan is genuinely slow to level.
+- **Racial powers**, on ``N`` — a mechanism Angband has no equivalent of. Eight
+  of the nine new races can do something no class teaches, from a Vampire
+  drinking blood at level 5 to an Amberite walking the Pattern at 40. Paid for
+  in mana, or in hit points where there is none.
+- **The Monk**, and **martial arts** with it: seventeen unarmed techniques,
+  eight strikes a turn at the top, and the only class in the game that is
+  punished for wearing armour. Angband's answer for an empty weapon slot is one
+  point of damage; a Monk does roughly eight times as much over a hundred blows.
+
+See :doc:`characters` for what is different, and :doc:`birth` for the tables.
+
 Tunable without a rebuild
 -------------------------
 
@@ -161,7 +181,7 @@ in when the milestone lands.
    * - Feature
      - Milestone
      - Chapter
-   * - Races and classes
+   * - Four more classes
      - M7
      - :doc:`birth`
    * - Mutations
@@ -180,10 +200,12 @@ in when the milestone lands.
      - M11
      - :doc:`nightmare`
 
-The world is finished. Towns, services, roads, dungeons and quests have all
-landed, which was Phase 2's world work; what comes next is the character rather
-than the place — twenty-one races, five classes, and racial powers, none of which
-Angband has a mechanism for.
+The world is finished — towns, services, roads, dungeons and quests all landed,
+which was Phase 2's world work — and the character is under way. Nine races,
+racial powers and the Monk are in; the Chaos-Warrior's patrons, the Mindcrafter's
+psionics, and the two classes defined by which magic realms they may choose are
+not. After that come mutations and virtues, neither of which Angband has a
+mechanism for.
 
 A **Tcl/Tk front end** is planned for a later phase, reviving the original's
 interface on Tcl/Tk 9. There is an irony in it: the original ZangbandTK

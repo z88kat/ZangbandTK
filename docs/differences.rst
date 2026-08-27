@@ -13,6 +13,7 @@ so at the top where that is the case.
    :maxdepth: 2
 
    balance
+   characters
    monsters
    objects
    wilderness

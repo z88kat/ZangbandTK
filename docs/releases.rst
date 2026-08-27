@@ -31,6 +31,15 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.29.1** — **"What's Different" has a Races and Classes page.** The largest
+  visible difference between this game and Angband — twenty races instead of
+  eleven, powers a race can use, a class that fights better with nothing in its
+  hands — was described in the reference manual and nowhere in the section whose
+  whole job is to say what is different. It has a page now. The features page
+  lists races, powers and the Monk under what is in the game rather than under
+  what is coming, and the four stat and ability tables in :doc:`birth` are
+  generated from the data files instead of typed, having silently stopped at
+  Angband's eleven races and nine classes.
 - **3.29.0** — **The Monk, and martial arts** (PLR-03/PLR-04). The tenth class,
   and the first from Zangband. A Monk fighting bare-handed climbs a ladder of
   seventeen techniques — a punch at level 1, a crushing blow at 48 — throwing two
