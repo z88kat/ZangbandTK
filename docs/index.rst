@@ -32,6 +32,7 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
 
    features
    screenshots
+   play
    download
    releases
    diary
@@ -50,6 +51,13 @@ Start here
 
       What is in the game now — the wilderness, the bestiary, the lethality —
       and what is still to come.
+
+   .. grid-item-card:: Play in the browser
+      :link: play
+      :link-type: doc
+
+      The real game, compiled to WebAssembly. Nothing to install, and it saves
+      where you left off.
 
    .. grid-item-card:: Download
       :link: download

@@ -64,8 +64,18 @@
 /**
  * OPTION: Create and use a hidden directory in the users home directory
  * for storing pref files and character dumps.
+ *
+ * Emscripten is excluded for the same reason DJGPP is: it looks like Unix to
+ * the preprocessor -- h-basic.h defines UNIX from __unix__, which emcc sets --
+ * but there is no home directory behind it.  A browser has none at all, and
+ * under node the packaged filesystem has none either, so "~" expanded to
+ * nothing and the game quit at startup trying to create "/ZangbandTK".
+ * Falling through to the datapath branch puts user, save and scores under
+ * lib/, which is where the wasm build wants them anyway: that is the subtree
+ * the browser build mounts on IndexedDB to make savefiles survive a reload.
  */
-#if defined(UNIX) && !defined(MACH_O_CARBON) && !defined(PRIVATE_USER_PATH) && !defined(DJGPP)
+#if defined(UNIX) && !defined(MACH_O_CARBON) && !defined(PRIVATE_USER_PATH) \
+		&& !defined(DJGPP) && !defined(__EMSCRIPTEN__)
 # define PRIVATE_USER_PATH "~/.angband"
 #endif
 

@@ -1,0 +1,109 @@
+<!doctype html>
+<!--
+  Shell page for the wasm build.
+
+  Emscripten's stock shell was doing more harm than good here: it carries its
+  own branding, a "Resize canvas" checkbox, a "Lock/hide mouse pointer"
+  checkbox and a Fullscreen button, none of which mean anything for this game,
+  and the Fullscreen button was a second way into a mode the game itself no
+  longer offers.  This is the same page with all of that taken out.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZangbandTK</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;              /* the canvas is the page; nothing scrolls */
+    background: #0a0a0c;
+    color: #d8d5d0;
+    font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif;
+  }
+  #frame {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* No width or height here on purpose.  Emscripten sets the canvas's own
+     width and height attributes from the size SDL asks for; giving it a CSS
+     size as well would scale that pixel grid and blur every glyph. */
+  canvas {
+    display: block;
+    border: 0;
+    background: #000;
+    outline: none;                 /* focused for keys, but no focus ring */
+  }
+  #loading {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background: #0a0a0c;
+  }
+  #loading.done { display: none; }
+  #title { font-size: 1.1rem; letter-spacing: 0.02em; color: #c9a227; }
+  #status { color: #8d8a93; font-size: 0.9rem; }
+  progress { width: 18rem; height: 0.4rem; }
+</style>
+</head>
+<body>
+
+<div id="frame">
+  <canvas id="canvas" tabindex="0" oncontextmenu="event.preventDefault()"></canvas>
+</div>
+
+<div id="loading">
+  <div id="title">ZangbandTK</div>
+  <div id="status">Loading…</div>
+  <progress id="progress" value="0" max="100"></progress>
+</div>
+
+<script>
+  var canvasEl = document.getElementById('canvas');
+  var loadingEl = document.getElementById('loading');
+  var statusEl = document.getElementById('status');
+  var progressEl = document.getElementById('progress');
+
+  var Module = {
+    canvas: canvasEl,
+    // Emscripten reports progress as "text (n/total)"; anything else is a
+    // plain message, and an empty string means it has finished.
+    setStatus: function (text) {
+      var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+      if (m) {
+        statusEl.textContent = m[1].trim();
+        progressEl.value = parseInt(m[2], 10) * 100 / parseInt(m[4], 10);
+        progressEl.style.visibility = '';
+      } else {
+        statusEl.textContent = text;
+        progressEl.style.visibility = text ? 'hidden' : '';
+      }
+      if (!text) {
+        loadingEl.className = 'done';
+      }
+    },
+    printErr: function (text) { console.error(text); }
+  };
+
+  // Keys go to the canvas, not the document, so it has to hold focus -- and it
+  // has to get it back after anything else on the page takes it.
+  window.addEventListener('load', function () { canvasEl.focus(); });
+  canvasEl.addEventListener('mousedown', function () { canvasEl.focus(); });
+
+  window.onerror = function (msg) {
+    Module.setStatus('Something went wrong: ' + msg);
+  };
+</script>
+
+{{{ SCRIPT }}}
+
+</body>
+</html>

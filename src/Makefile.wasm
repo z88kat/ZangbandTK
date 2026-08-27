@@ -1,0 +1,215 @@
+#
+# File: Makefile.wasm
+#
+# WebAssembly build of ZangbandTK, via Emscripten and the SDL2 frontend.
+#
+# Objects go into a directory of their own rather than beside the sources.  The
+# native builds (Makefile.osx above all) leave their .o files in src/, and a
+# wasm object with the same name is not a stale object, it is an object for the
+# wrong architecture -- it does not fail to link, it fails to link with pages of
+# nothing-makes-sense.  So: OBJDIR, and the two builds never see each other.
+#
+
+OBJDIR  = wasm-obj
+WASMDIR = ../build-wasm
+# Written at the foot of this file; see the note there.
+FLAGS_STAMP = $(OBJDIR)/flags.stamp
+
+all: $(WASMDIR)/zangbandtk.html
+
+# The toolchain is addressed directly rather than through emsdk_env.sh, which
+# refuses to run: it insists on python 3.10 and the copy emsdk vendors is 3.9.
+# emcc itself does not care, so sourcing that script is a step that can only
+# fail.  Point EMSDK elsewhere on the command line if the SDK moves.
+EMSDK ?= /Users/steven/Development/GitHub/emsdk
+export EM_CONFIG ?= $(EMSDK)/.emscripten
+# The bundled node's directory carries its version, which differs between SDK
+# installs, so find it rather than naming it -- CI installs its own copy.
+EMSDK_NODE_BIN := $(firstword $(wildcard $(EMSDK)/node/*/bin))
+export PATH := $(EMSDK)/upstream/emscripten:$(EMSDK_NODE_BIN):$(PATH)
+
+CC = $(EMSDK)/upstream/emscripten/emcc
+OPT ?= -O2
+
+# The four Emscripten SDL2 ports.  These flags are needed when compiling as
+# well as when linking: it is the compile-time flag that makes emcc fetch and
+# build the port, and put its headers on the include path.
+SDL2_PORTS = -sUSE_SDL=2 -sUSE_SDL_IMAGE=2 -sUSE_SDL_TTF=2
+SDL2_PORTS += -sSDL2_IMAGE_FORMATS='["png","bmp"]'
+
+WARNINGS = -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers
+# main-sdl2.c drops the secondary-term controls in this build (see the
+# __EMSCRIPTEN__ guards there), which leaves the handlers behind them with no
+# callers.  Silencing the warning is the small price: guarding each orphaned
+# function in turn cascades into its helpers, and forking the frontend that
+# heavily would cost more at every upstream merge than the dead code costs
+# here -- wasm-ld strips it from the binary regardless.
+WARNINGS += -Wno-unused-function
+# gnu99 rather than the c99 the other targets use, because EM_ASM refuses to
+# expand under -std=c*.  gnu99 is c99 plus GNU extensions -- nothing the game
+# relies on is taken away -- and the alternative, emscripten_run_script, works
+# by eval and would break the moment the page is served with a CSP.
+JUST_C = -std=gnu99
+# SOUND is deliberately not defined.  Every sound path in main-sdl2.c sits
+# behind SOUND_SDL2, so leaving it out compiles the mixer, the audio device and
+# the SDL Details audio panel away entirely -- and drops lib/sounds, 3.2MB of
+# the page load, for a feature nobody wants firing out loud in an office.
+# The core's "Use sound" option still appears in the in-game options menu with
+# nothing behind it; removing that means touching shared option handling, so it
+# is left alone.
+CFLAGS = -I. $(OPT) $(WARNINGS) -DUSE_SDL2 -DHAVE_MKSTEMP $(SDL2_PORTS)
+
+# Temporary keyboard diagnostics: build with KEYTRACE=1 to have every keydown
+# and text-input event logged to the browser console, showing the SDL keysym,
+# the scancode, and what the frontend decided to send the game.  Off by default.
+ifeq ($(KEYTRACE),1)
+CFLAGS += -DZBTK_KEY_TRACE
+endif
+
+# ASYNCIFY is the whole reason this build is possible.  term_xtra_event() in
+# main-sdl2.c blocks -- it spins on SDL_Delay() until a key arrives -- and a
+# browser tab that never returns to its event loop never receives a key, so
+# without this the game would hang on the first prompt, forever.  Asyncify
+# rewrites the wasm so the blocking call can unwind the stack and resume.
+ASYNCIFY = -sASYNCIFY -sASYNCIFY_STACK_SIZE=131072
+
+# EXIT_RUNTIME=0 keeps the filesystem standing after the game calls exit().
+# Emscripten's exitRuntime() tears down in the order ATEXIT, FS.quit(),
+# IDBFS.quit(), and only then calls the exit callback -- so by the time anything
+# gets to hear about the exit, the mount holding the savefile is gone, and
+# FS.syncfs() is asynchronous besides.  Leaving the runtime up lets quit_hook's
+# explicit hand-off (see main-sdl2.c) flush at its own pace and put a panel on
+# the page instead of leaving a dead black canvas.
+LDFLAGS = $(SDL2_PORTS) $(ASYNCIFY) \
+	-sALLOW_MEMORY_GROWTH=1 \
+	-sINITIAL_MEMORY=268435456 \
+	-sSTACK_SIZE=5242880 \
+	-sEXIT_RUNTIME=0 \
+	-sFORCE_FILESYSTEM=1 \
+	-lidbfs.js \
+	--pre-js wasm/pre.js \
+	--shell-file wasm/shell.html \
+	--preload-file $(WASMDIR)/lib@/lib
+
+include Makefile.src
+
+BASEOBJS = $(ANGFILES) $(ZFILES)
+ALLOBJS  = $(BASEOBJS) $(BASEMAINFILES) $(SDL2MAINFILES)
+OBJS     = $(addprefix $(OBJDIR)/,$(ALLOBJS))
+
+# The data the game cannot start without, staged into a tree the file packager
+# turns into one .data file.  Deliberately not all of lib/: shockbolt is 17MB of
+# tiles and the sounds another 3.2MB, and neither belongs in a first page load.
+LIBDIRS = gamedata screens help customize fonts icons user
+TILESETS = old nomad adam-bolt
+
+$(WASMDIR)/lib.stamp:
+	@mkdir -p $(WASMDIR)/lib
+	@for d in $(LIBDIRS); do \
+		mkdir -p $(WASMDIR)/lib/$$d; \
+		cp -R ../lib/$$d/. $(WASMDIR)/lib/$$d/ 2>/dev/null || true; \
+		rm -f $(WASMDIR)/lib/$$d/Makefile; \
+	done
+	@mkdir -p $(WASMDIR)/lib/tiles
+	@cp ../lib/tiles/list.txt $(WASMDIR)/lib/tiles/ 2>/dev/null || true
+	@for t in $(TILESETS); do \
+		cp -R ../lib/tiles/$$t $(WASMDIR)/lib/tiles/ 2>/dev/null || true; \
+	done
+	@mkdir -p $(WASMDIR)/lib/save $(WASMDIR)/lib/scores
+	@touch $@
+	@echo "     STAGE lib -> $(WASMDIR)/lib ($$(du -sh $(WASMDIR)/lib | cut -f1))"
+
+$(WASMDIR)/zangbandtk.html: $(OBJS) $(WASMDIR)/lib.stamp wasm/shell.html wasm/pre.js
+	@printf "%10s %s\n" LINK $@
+	@$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS)
+
+DEPFLAGS = -MMD -MP
+
+$(OBJDIR)/%.o : %.c Makefile.wasm $(FLAGS_STAMP)
+	@mkdir -p $(dir $@)
+	@printf "%10s %-32s\n" CC $<
+	@$(CC) $(JUST_C) $(CFLAGS) $(DEPFLAGS) -c -o $@ $<
+
+-include $(OBJS:.o=.d)
+
+clean:
+	-rm -rf $(OBJDIR) $(WASMDIR)
+
+.PHONY: all clean
+
+#
+# The stdio test frontend, built for node rather than the browser.
+#
+# This exists to answer "does the game work under wasm?" separately from "does
+# the rendering work?".  main-test.c needs no canvas, no SDL and no window, so
+# it runs under node, which means the repository's own test suite can be pointed
+# at a wasm build -- and a wasm build that passes tests/ has proved its game
+# core, its gamedata parsing and its savefile handling on the new architecture
+# without a browser being involved at all.
+#
+TESTOBJDIR = wasm-obj-test
+TESTOBJS = $(addprefix $(TESTOBJDIR)/,$(BASEOBJS) $(BASEMAINFILES) $(TESTMAINFILES))
+TESTCFLAGS = -I. $(OPT) $(WARNINGS) -DUSE_TEST -DHAVE_MKSTEMP
+
+# NODERAWFS gives the wasm the real filesystem instead of a packaged one, so
+# "./lib/" resolves the same way it does for a native build.  Run from the
+# repository root.
+TESTLDFLAGS = $(ASYNCIFY) -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=268435456 \
+	-sSTACK_SIZE=5242880 -sNODERAWFS=1 -sEXIT_RUNTIME=1
+
+test-exe: $(WASMDIR)/zangbandtk-test
+
+$(WASMDIR)/zangbandtk-test: $(TESTOBJS)
+	@mkdir -p $(WASMDIR)
+	@printf "%10s %s\n" LINK $@.js
+	@$(CC) $(TESTCFLAGS) -o $@.js $(TESTOBJS) $(TESTLDFLAGS)
+	@printf '#!/bin/sh\nexec node "%s" "$$@"\n' "$$(cd $(WASMDIR) && pwd)/zangbandtk-test.js" > $@
+	@chmod +x $@
+
+$(TESTOBJDIR)/%.o : %.c Makefile.wasm $(FLAGS_STAMP)
+	@mkdir -p $(dir $@)
+	@printf "%10s %-32s\n" CC $<
+	@$(CC) $(JUST_C) $(TESTCFLAGS) $(DEPFLAGS) -c -o $@ $<
+
+-include $(TESTOBJS:.o=.d)
+
+.PHONY: test-exe
+
+# Emscripten output cannot be opened as a file:// URL -- the fetch of the .wasm
+# and the .data is a cross-origin request from a file page, and the browser
+# refuses it.  It has to come over http, however locally.
+PORT ?= 8402
+
+serve: all
+	@echo "ZangbandTK at http://localhost:$(PORT)/zangbandtk.html"
+	@cd $(WASMDIR) && python3 -m http.server $(PORT)
+
+.PHONY: serve
+
+
+#
+# Flag change detection.
+#
+# Objects must be rebuilt when the *flags* change, not only when this makefile's
+# text does.  KEYTRACE=1 alters CFLAGS without altering any file on disk, so
+# without this an object compiled the other way survives untouched and the flag
+# appears to do nothing at all.
+#
+# Done at parse time rather than as a rule: a stamp rule needs a prerequisite
+# that is always out of date to be re-checked, and make then treats the stamp as
+# remade and rebuilds every object on every run, whether the flags moved or not.
+# Here the stamp is only replaced when its contents actually differ, so its
+# timestamp -- and so the rebuild -- follows the flags and nothing else.
+#
+# $(file) writes the signature directly rather than through a shell, which
+# matters because the flags contain both kinds of quote; see SDL2_IMAGE_FORMATS.
+# Only bare directory names are ever passed to $(shell) below.
+#
+# This block has to come last: it reads TESTCFLAGS and TESTLDFLAGS, which the
+# test-frontend section above defines.
+#
+_mkdirs := $(shell mkdir -p $(OBJDIR) $(TESTOBJDIR))
+_write  := $(file >$(OBJDIR)/flags.new,$(CC) $(JUST_C) $(CFLAGS) $(DEPFLAGS) \
+	$(TESTCFLAGS) $(LDFLAGS) $(TESTLDFLAGS))
+_swap   := $(shell cmp -s $(OBJDIR)/flags.new $(FLAGS_STAMP) \
+	|| mv $(OBJDIR)/flags.new $(FLAGS_STAMP); rm -f $(OBJDIR)/flags.new)
