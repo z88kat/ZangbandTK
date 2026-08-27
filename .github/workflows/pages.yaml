@@ -12,14 +12,30 @@ name: pages
 # deploy-pages) rather than committing to a gh-pages branch.  The artifact is
 # served exactly as uploaded, with no Jekyll pass, so no .nojekyll file is
 # needed to protect Sphinx's _static directory.
+#
+# This workflow also builds the WebAssembly version and puts it in the site
+# under /play/, which is why a documentation workflow now needs a C toolchain.
+# It is here rather than in a workflow of its own because a Pages artifact
+# deployment replaces the whole site: a second workflow publishing just the game
+# would take the manual down, and one publishing just the manual would take the
+# game down.  One artifact, built in one place.
+#
+# The browser build needs no special response headers -- it is built with
+# Asyncify rather than threads, so it wants neither COOP nor COEP, and Pages
+# cannot set those anyway.
 
 on:
   push:
     branches:
       - master
-    # Only the documentation and the version script affect the built site.
+    # What affects the built site.  src and lib are in the list because the
+    # site now carries the game: lib is baked into the .data file the page
+    # downloads, so a change to the game's data has to be republished just as a
+    # change to its code does.
     paths:
       - 'docs/**'
+      - 'src/**'
+      - 'lib/**'
       - 'scripts/version.sh'
       - '.github/workflows/pages.yaml'
   # Allow publishing by hand, which is also how the very first deployment is
@@ -37,6 +53,12 @@ permissions:
 concurrency:
   group: pages
   cancel-in-progress: false
+
+# Pinned rather than "latest": this is the version the browser build was
+# developed and tested against, and an SDK that moves under the build is an
+# outage on the live site rather than a failed run on somebody's branch.
+env:
+  EMSDK_VERSION: 3.1.51
 
 jobs:
   build:
@@ -64,6 +86,52 @@ jobs:
 
       - name: Build
         run: make -C docs -j$(nproc) html
+
+      # The SDK is about a gigabyte and takes minutes to install, so cache it
+      # against its version.  Installed by hand rather than through a
+      # third-party action: this job can deploy to the live site, and that is
+      # not a permission to hand to an action that is not ours.
+      - name: Cache Emscripten SDK
+        id: cache-emsdk
+        uses: actions/cache@v4
+        with:
+          path: emsdk
+          key: emsdk-${{ runner.os }}-${{ env.EMSDK_VERSION }}
+
+      - name: Install Emscripten SDK
+        if: steps.cache-emsdk.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 https://github.com/emscripten-core/emsdk.git
+          cd emsdk
+          ./emsdk install "$EMSDK_VERSION"
+          ./emsdk activate "$EMSDK_VERSION"
+
+      - name: Build for the browser
+        run: |
+          make -C src -f Makefile.wasm -j$(nproc) \
+            EMSDK="$GITHUB_WORKSPACE/emsdk"
+
+      # The same test suite the native builds run, against the wasm binary,
+      # through node.  It needs no browser, and it is the difference between
+      # publishing a game and publishing a page that loads.
+      - name: Test the browser build
+        run: |
+          make -C src -f Makefile.wasm -j$(nproc) test-exe \
+            EMSDK="$GITHUB_WORKSPACE/emsdk"
+          ./run-tests build-wasm/zangbandtk-test
+
+      # index.html so the address is /play/ and not /play/zangbandtk.html.  The
+      # page asks for the other three files by relative name, so renaming only
+      # the page is safe.
+      - name: Add the browser build to the site
+        run: |
+          mkdir -p docs/_build/html/play
+          cp build-wasm/zangbandtk.js \
+             build-wasm/zangbandtk.wasm \
+             build-wasm/zangbandtk.data \
+             docs/_build/html/play/
+          cp build-wasm/zangbandtk.html docs/_build/html/play/index.html
+          ls -l docs/_build/html/play
 
       # enablement makes this workflow the authoritative source for the site.
       # It matters: with Pages set to deploy from a branch, GitHub ran Jekyll

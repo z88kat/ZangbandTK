@@ -2,6 +2,12 @@
 Download
 ========
 
+.. tip::
+
+   To try the game rather than keep it, there is nothing to download at all:
+   :doc:`play it in the browser <play>`. Come back here for a build that saves
+   to a file you own.
+
 Getting the game
 ================
 

@@ -29,6 +29,9 @@
 #include "SDL_mixer.h"
 #endif
 #include "SDL_revision.h"
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 #include "main.h"
 #include "buildid.h"
@@ -474,6 +477,13 @@ struct my_app {
 	 * expense of not handling some keyboard layouts properly
 	 */
 	bool kp_as_mod;
+	/**
+	 * true if the keydown for the keystroke being processed produced a key
+	 * for the game (or was taken by a dialog), and so the text input event
+	 * that follows it must not produce one as well.  See handle_key() and
+	 * handle_text_input().
+	 */
+	bool keydown_consumed;
 	/** true if details about the SDL environment are to be logged. */
 	bool print_sdl_details;
 
@@ -550,7 +560,8 @@ static void wait_anykey(struct my_app *a);
 static void keyboard_event_to_angband_key(const SDL_KeyboardEvent *key,
 		bool kp_as_mod, keycode_t *ch, uint8_t *mods);
 static void textinput_event_to_angband_key(const SDL_TextInputEvent *key,
-		bool kp_as_mod, keycode_t *ch, uint8_t *mods);
+		bool kp_as_mod, bool keydown_consumed, keycode_t *ch,
+		uint8_t *mods);
 static void recreate_textures(struct my_app *a, bool all);
 
 /* Global variables. */
@@ -1513,7 +1524,12 @@ static SDL_bool handle_shortcut_editor_textin(struct sdlpui_dialog *d,
 	if (pse->changing_shortcut == -1) {
 		return sdlpui_dialog_handle_textin(d, w, e);
 	}
-	textinput_event_to_angband_key(e, w->app->kp_as_mod, &ch, &mods);
+	/*
+	 * true, so this keeps suppressing exactly what it always did: the
+	 * shortcut editor's own keydown handler above has already recorded
+	 * anything the keydown could see.
+	 */
+	textinput_event_to_angband_key(e, w->app->kp_as_mod, true, &ch, &mods);
 	if (ch) {
 		char keypress_desc[40];
 		struct keypress tmp[2];
@@ -3387,10 +3403,20 @@ static struct sdlpui_dialog *handle_menu_button(struct sdlpui_control *ctrl,
 			SDLPUI_HOR_LEFT, handle_menu_terms,
 			SDLPUI_CHILD_MENU_RIGHT, (int)i, SDL_FALSE);
 	}
+#ifndef __EMSCRIPTEN__
+	/*
+	 * Not offered in the browser.  Fullscreen there is the page's
+	 * Fullscreen API rather than a window manager's, and it brought two
+	 * problems with it: the browser reserves Escape to leave fullscreen,
+	 * and Escape is one of the most-used keys in the game; and entering
+	 * and leaving resizes the canvas, which relays out the term each time.
+	 * The canvas already fills the viewport, so there was little to gain.
+	 */
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_menu_toggle(c, "Fullscreen", SDLPUI_HOR_LEFT,
 		handle_menu_fullscreen, 0, SDL_FALSE,
 		window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP);
+#endif /* !__EMSCRIPTEN__ */
 	if (window->index == MAIN_WINDOW) {
 		c = sdlpui_get_simple_menu_next_unused(result,
 			SDLPUI_MFLG_NONE);
@@ -3401,11 +3427,19 @@ static struct sdlpui_dialog *handle_menu_button(struct sdlpui_control *ctrl,
 			SDLPUI_MFLG_NONE);
 		sdlpui_create_menu_button(c, "Menu Shortcuts...",
 			SDLPUI_HOR_LEFT, handle_menu_shortcuts, 0, SDL_FALSE);
+#ifndef __EMSCRIPTEN__
+		/*
+		 * This submenu opens and closes additional operating-system
+		 * windows.  A page has one canvas and no way to ask for a
+		 * second, so there is nothing here for the browser build to
+		 * open.
+		 */
 		c = sdlpui_get_simple_menu_next_unused(result,
 			SDLPUI_MFLG_NONE);
 		sdlpui_create_submenu_button(c, "Windows", SDLPUI_HOR_LEFT,
 			handle_menu_windows, SDLPUI_CHILD_MENU_RIGHT, 0,
 			SDL_FALSE);
+#endif /* !__EMSCRIPTEN__ */
 	}
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_menu_button(c, "About...", SDLPUI_HOR_LEFT,
@@ -4556,6 +4590,14 @@ static bool handle_key(struct my_app *a, const SDL_KeyboardEvent *key)
 	if (a->w_key && a->w_key->d_key && a->w_key->d_key->ftb->handle_key
 			&& (*a->w_key->d_key->ftb->handle_key)(a->w_key->d_key,
 				a->w_key, key)) {
+		if (key->state == SDL_PRESSED) {
+			a->keydown_consumed = true;
+		}
+#ifdef ZBTK_KEY_TRACE
+		printf("KEY  sym=%d scan=%d -> eaten by dialog\n",
+			(int)key->keysym.sym, (int)key->keysym.scancode);
+		fflush(stdout);
+#endif
 		return true;
 	}
 
@@ -4574,9 +4616,28 @@ static bool handle_key(struct my_app *a, const SDL_KeyboardEvent *key)
 	 * user.
 	 */
 	keyboard_event_to_angband_key(key, a->kp_as_mod, &ch, &mods);
+	/*
+	 * Tell the text input event that follows whether this keystroke has
+	 * already been dealt with.  Non-zero ch means it has, whether it went
+	 * to the game or was claimed as a menu shortcut.
+	 */
+	a->keydown_consumed = (ch != 0);
+#ifdef ZBTK_KEY_TRACE
+	printf("KEY  sym=%d scan=%d keymod=0x%04x kp_as_mod=%d -> ch=%d ('%c') "
+		"mods=0x%02x\n", (int)key->keysym.sym, (int)key->keysym.scancode,
+		(unsigned)key->keysym.mod, (int)a->kp_as_mod, (int)ch,
+		(ch >= 32 && ch < 127) ? (char)ch : '?', (unsigned)mods);
+	fflush(stdout);
+#endif
 	if (ch) {
 		if (!trigger_menu_shortcut(a, ch, mods)) {
 			Term_keypress(ch, mods);
+		} else {
+#ifdef ZBTK_KEY_TRACE
+			printf("KEY  ch=%d taken as a menu shortcut, not sent to game\n",
+				(int)ch);
+			fflush(stdout);
+#endif
 		}
 		return true;
 	}
@@ -4584,15 +4645,26 @@ static bool handle_key(struct my_app *a, const SDL_KeyboardEvent *key)
 }
 
 static void textinput_event_to_angband_key(const SDL_TextInputEvent *input,
-		bool kp_as_mod, keycode_t *ch, uint8_t *mods)
+		bool kp_as_mod, bool keydown_consumed, keycode_t *ch,
+		uint8_t *mods)
 {
 	*ch = sdlpui_utf8_to_codepoint(input->text);
 
 	/*
 	 * Do not handle any characters that can be produced by the keypad if
 	 * they were handled in keyboard_event_to_angband_key.
+	 *
+	 * That "if" used to go unchecked, and dropping these characters
+	 * unconditionally lost any of them that the keydown had not in fact
+	 * handled.  Which ones those are depends on the keyboard layout: the
+	 * shifted half of keyboard_event_to_angband_key knows only two keys,
+	 * and says so, so on a layout where '=' is Shift+0 the keydown produced
+	 * nothing, the text input arrived with a perfectly good '=', and it was
+	 * thrown away here -- leaving the options screen unreachable, with no
+	 * clue as to why.  Now the two halves agree, and each character is
+	 * handled exactly once by whichever of them can actually see it.
 	 */
-	if (kp_as_mod) {
+	if (kp_as_mod && keydown_consumed) {
 		switch (*ch) {
 			case '0':
 			case '1':
@@ -4633,7 +4705,16 @@ static bool handle_text_input(struct my_app *a, const SDL_TextInputEvent *input)
 		return true;
 	}
 
-	textinput_event_to_angband_key(input, a->kp_as_mod, &ch, &mods);
+	textinput_event_to_angband_key(input, a->kp_as_mod, a->keydown_consumed,
+		&ch, &mods);
+	/* One text input per keydown; do not let the answer go stale. */
+	a->keydown_consumed = false;
+#ifdef ZBTK_KEY_TRACE
+	printf("TEXT text='%s' -> ch=%d ('%c') mods=0x%02x%s\n", input->text,
+		(int)ch, (ch >= 32 && ch < 127) ? (char)ch : '?', (unsigned)mods,
+		ch ? "" : "  [DROPPED]");
+	fflush(stdout);
+#endif
 
 	if (!ch) {
 		return false;
@@ -5667,7 +5748,9 @@ static bool reload_font(struct subwindow *subwindow,
 {
 	struct font *new_font =
 		make_font(subwindow->window, info->name, info->size);
+#ifndef __EMSCRIPTEN__
 	int min_w, min_h;
+#endif
 
 	if (new_font == NULL) {
 		return false;
@@ -5679,10 +5762,29 @@ static bool reload_font(struct subwindow *subwindow,
 		return false;
 	}
 
+#ifdef __EMSCRIPTEN__
+	/*
+	 * Give the term the whole window, so a larger font buys legibility by
+	 * costing rows and columns -- the way a terminal behaves.
+	 *
+	 * is_usable_font_for_subwindow() has just replaced sizing_rect with the
+	 * *minimum* rect this font needs, and on a desktop that is reasonable:
+	 * the term keeps a modest size inside a window the player can drag
+	 * bigger.  In a page there is nothing to drag, and coercing that
+	 * minimum back inside the window pushes its right and bottom edges
+	 * flush against the window's, so a bigger font left the term anchored
+	 * to the bottom-right corner with wallpaper filling the space above and
+	 * to the left of it.  Taking the whole inner rect is safe here without
+	 * a further check, because the call above already rejected any font
+	 * whose minimum does not fit inside it.
+	 */
+	subwindow->sizing_rect = subwindow->window->inner_rect;
+#else
 	get_minimum_subwindow_size(subwindow->index == MAIN_SUBWINDOW,
 		new_font->ttf.glyph.w, new_font->ttf.glyph.h, &min_w, &min_h);
 	coerce_rect_in_rect(&subwindow->sizing_rect,
 		&subwindow->window->inner_rect, min_w, min_h);
+#endif
 
 	free_font(subwindow->font);
 	subwindow->font = new_font;
@@ -6054,17 +6156,36 @@ static void handle_button_open_subwindow(struct sdlpui_control *ctrl,
 static void load_status_bar(struct sdlpui_window *window)
 {
 	struct sdlpui_control *c;
+#ifndef __EMSCRIPTEN__
 	unsigned int i;
+#endif
 	int w, h;
 
 	window->status_bar = sdlpui_start_simple_menu(NULL, NULL,
+#ifdef __EMSCRIPTEN__
+		/* Just Menu; see below for what is not here. */
+		1,
+#else
 		2 + N_ELEMENTS(window->subwindows)
-		+ ((window->index == MAIN_WINDOW) ? 1 : 0), SDL_FALSE, SDL_TRUE,
-		NULL, NULL, 0);
+		+ ((window->index == MAIN_WINDOW) ? 1 : 0),
+#endif
+		SDL_FALSE, SDL_TRUE, NULL, NULL, 0);
 	c = sdlpui_get_simple_menu_next_unused(window->status_bar,
 		SDLPUI_MFLG_NONE);
 	sdlpui_create_submenu_button(c, "Menu", SDLPUI_HOR_CENTER,
 		handle_menu_button, SDLPUI_CHILD_MENU_BELOW, 0, SDL_FALSE);
+#ifndef __EMSCRIPTEN__
+	/*
+	 * The numbered buttons open the secondary terms -- messages, inventory
+	 * and the rest -- and the "A" beside them stands for the main term.
+	 * Neither is offered in the browser, because a secondary term cannot
+	 * be shown there: SDL2 compiled to wasm draws into the page's single
+	 * canvas, and opening a term asks the window to grow to fit it, which
+	 * a canvas will not do.  The buttons were therefore live and did
+	 * nothing, which is worse than not being there.  The "A" goes with
+	 * them: it exists for symmetry with the numbered buttons, and on its
+	 * own it labels a choice that no longer has an alternative.
+	 */
 	if (window->index == MAIN_WINDOW) {
 		/*
 		 * For symmetry with the other windows, give the main window
@@ -6087,6 +6208,15 @@ static void load_status_bar(struct sdlpui_window *window)
 			SDLPUI_HOR_CENTER, handle_button_open_subwindow,
 			(int)i, SDL_FALSE, subw && subw->visible);
 	}
+#endif /* !__EMSCRIPTEN__ */
+#ifndef __EMSCRIPTEN__
+	/*
+	 * Move and Size drag a term around inside the window and resize it.
+	 * The browser build gives the one term the whole window and keeps it
+	 * there, so moving it could only uncover wallpaper and resizing it
+	 * could only undo that -- and the fields these fill stay NULL, which
+	 * the two places that read them already allow for.
+	 */
 	c = sdlpui_get_simple_menu_next_unused(window->status_bar,
 		SDLPUI_MFLG_END_GRAVITY);
 	window->move_button = c;
@@ -6099,6 +6229,7 @@ static void load_status_bar(struct sdlpui_window *window)
 	sdlpui_create_menu_toggle(c, "Size", SDLPUI_HOR_CENTER,
 		handle_button_movesize, 1, SDL_FALSE,
 		window->size_state.active);
+#endif /* !__EMSCRIPTEN__ */
 	sdlpui_complete_simple_menu(window->status_bar, window);
 	if (window->status_bar->ftb->query_minimum_size) {
 		(*window->status_bar->ftb->query_minimum_size)(
@@ -6300,14 +6431,31 @@ static bool choose_pixelformat(struct sdlpui_window *window,
 static void start_window(struct sdlpui_window *window)
 {
 	int minw, minh;
+	/*
+	 * Flags to strip before the window is created.  In the browser that is
+	 * the fullscreen pair, and stripping them is the whole of not offering
+	 * fullscreen -- taking the menu entry away is not enough on its own.
+	 * Emscripten's SDL2 turns a fullscreen window flag into
+	 * emscripten_request_fullscreen_strategy() with its defer flag set, so
+	 * a window merely *created* fullscreen makes the page jump to
+	 * fullscreen on the player's first click or keystroke, and back out
+	 * again on the next Escape.  The flags have to be stripped from the
+	 * saved configuration too, or a config written before this stops being
+	 * a preference and becomes a trap.
+	 */
+	const Uint32 stripped_flags =
+#ifdef __EMSCRIPTEN__
+		SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN;
+#else
+		0;
+#endif
+	Uint32 window_flags;
 
 	assert(!window->loaded);
 
 	if (window->config == NULL) {
-		window->window = SDL_CreateWindow(VERSION_NAME,
-				window->full_rect.x, window->full_rect.y,
-				window->full_rect.w, window->full_rect.h,
-				SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_RESIZABLE);
+		window_flags = (SDL_WINDOW_FULLSCREEN_DESKTOP
+			| SDL_WINDOW_RESIZABLE) & ~stripped_flags;
 	} else {
 		/*
 		 * For newer configuration files, stored_rect will have the
@@ -6315,7 +6463,13 @@ static void start_window(struct sdlpui_window *window)
 		 * only save the size for whatever mode (fullscreen, not
 		 * fullscreen) the game was in so those will already have the
 		 * right size in full_rect.
+		 *
+		 * The test is on the configuration's own flags, not the
+		 * stripped ones: whether to take stored_rect is a question
+		 * about how the size was saved, and stays the same question
+		 * even where fullscreen is no longer offered.
 		 */
+		window_flags = window->config->window_flags & ~stripped_flags;
 		if (window->config->window_flags
 				& SDL_WINDOW_FULLSCREEN_DESKTOP) {
 			if (window->stored_rect.w &&
@@ -6326,11 +6480,37 @@ static void start_window(struct sdlpui_window *window)
 				window->stored_rect = tmp_rect;
 			}
 		}
-		window->window = SDL_CreateWindow(VERSION_NAME,
-				window->full_rect.x, window->full_rect.y,
-				window->full_rect.w, window->full_rect.h,
-				window->config->window_flags);
 	}
+
+#ifdef __EMSCRIPTEN__
+	/*
+	 * The canvas is the window, and the viewport is the only size worth
+	 * having, so take it directly and ignore whatever was saved.
+	 *
+	 * Not merely a preference: a saved size cannot be trusted here.  The
+	 * display mode Emscripten reports is the whole screen rather than the
+	 * viewport, and a configuration written while the window was fullscreen
+	 * can carry a windowed rect that was never once used -- 0 wide -- which
+	 * on the next run is a window too narrow to hold even the menu bar, and
+	 * a fatal error before the game is on screen.
+	 */
+	{
+		const int vw = EM_ASM_INT({ return window.innerWidth | 0; });
+		const int vh = EM_ASM_INT({ return window.innerHeight | 0; });
+
+		if (vw > 0 && vh > 0) {
+			window->full_rect.x = 0;
+			window->full_rect.y = 0;
+			window->full_rect.w = vw;
+			window->full_rect.h = vh;
+		}
+	}
+#endif
+
+	window->window = SDL_CreateWindow(VERSION_NAME,
+			window->full_rect.x, window->full_rect.y,
+			window->full_rect.w, window->full_rect.h,
+			window_flags);
 	assert(window->window != NULL);
 
 	if (window->config == NULL) {
@@ -7238,6 +7418,29 @@ static void quit_hook(const char *s)
 	free_globals(&g_app);
 	close_graphics_modes();
 	quit_systems();
+
+#ifdef __EMSCRIPTEN__
+	/*
+	 * Quitting a native build closes a window.  Quitting in a browser used
+	 * to leave the page sitting there showing a black rectangle: quit_systems
+	 * above calls SDL_Quit, which destroys the renderer, and nothing was
+	 * left to draw or to tell the player what had happened.
+	 *
+	 * This is the only moment when both of the things needed to end tidily
+	 * are still true -- the savefile has been written, and the IndexedDB
+	 * mount holding it is still up.  It deliberately does not use
+	 * Emscripten's own exit callback: exitRuntime() calls IDBFS.quit()
+	 * before that callback fires, and FS.syncfs() is asynchronous, so a
+	 * flush started there could not finish even if the mount had survived.
+	 * Makefile.wasm sets EXIT_RUNTIME=0 to keep the runtime standing so the
+	 * flush this triggers has as long as it needs.
+	 */
+	EM_ASM({
+		if (Module.zbtkOnQuit) {
+			Module.zbtkOnQuit();
+		}
+	});
+#endif
 }
 
 static bool sdl2_deny_disconnect(void)
@@ -7904,6 +8107,20 @@ static enum parser_error config_subwindow_window(struct parser *parser)
 	if (parser_hasval(parser, "vis")) {
 		subwindow->visible = (parser_getint(parser, "vis") != 0);
 	}
+#ifdef __EMSCRIPTEN__
+	/*
+	 * A configuration written before the secondary terms were withdrawn --
+	 * or by a native build sharing the same file -- can ask for them back.
+	 * They cannot be shown in a page, and there is no longer a button to
+	 * dismiss one, so a restored term would be an unreachable obstruction.
+	 * Forced here rather than by refusing the record, so that the directives
+	 * that follow it still parse against an initialised subwindow instead of
+	 * failing the whole configuration.
+	 */
+	if (subwindow->index != MAIN_SUBWINDOW) {
+		subwindow->visible = false;
+	}
+#endif
 	subwindow->window = window;
 	attach_subwindow_to_window(window, subwindow);
 

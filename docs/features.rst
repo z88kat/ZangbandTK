@@ -14,10 +14,11 @@ page is the honest inventory: what is in the game now, and what is not.
 
    .. grid-item-card:: Platforms
 
-      macOS, Windows, Linux, DOS, Nintendo DS and 3DS.
+      macOS, Windows, Linux, DOS, Nintendo DS, 3DS and the browser.
 
       Developed and played on macOS; the rest are built and smoke-tested by CI
-      but not played through. See :doc:`download`.
+      but not played through. See :doc:`download`, or :doc:`play` to start
+      without installing anything.
 
    .. grid-item-card:: Playable
 

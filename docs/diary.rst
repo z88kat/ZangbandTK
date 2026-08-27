@@ -31,6 +31,81 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+27 August 2026 — the game in a browser tab, and four things that were wrong
+===========================================================================
+
+ZangbandTK runs in a browser now, at `zangbandtk.com/play <https://zangbandtk.com/play/>`_.
+Not emulated and not on a server: the same C, compiled to WebAssembly, executed
+by the browser directly. I had assumed this would be the hard port, after the
+Nintendo DS. It was the easy one.
+
+Every source file compiled to wasm on the first attempt — the core, the borg, all
+eight thousand lines of the SDL2 front end — and the repository's own test suite
+passed against the wasm binary through node before I had looked at a single pixel.
+That last part turned out to matter more than anything else I did today: it
+separated "does the game work" from "does the *drawing* work", and every real bug
+after that was in the second half.
+
+Two things I expected to break did not. The packaged fonts are Windows ``.fon``
+bitmaps opened through ``TTF_OpenFont``, which means FreeType's WinFNT driver has
+to exist in the Emscripten build of SDL2_ttf; it does, with correct metrics. And
+the front end blocks while waiting for a key — it spins on ``SDL_Delay`` until
+one arrives — which in a browser is a tab that never returns to its event loop
+and so never receives the key it is waiting for. Asyncify rewrites the compiled
+binary so a blocking call can unwind and resume, and Emscripten's SDL2 already
+maps ``SDL_Delay`` onto it. The one thing I was sure would need rewriting needed
+a compiler flag.
+
+Then the four that were wrong.
+
+**A home directory that was not there.** Emscripten defines ``__unix__``, so
+``h-basic.h`` defined ``UNIX``, so the game went looking for ``~/.angband`` and
+quit trying to create ``/ZangbandTK``. DOS had already been excluded from that
+branch for the same reason years ago; the browser joins it.
+
+**The ``=`` key did nothing.** This is the one I want to remember, because I
+reasoned my way to the right answer, talked myself out of it, and then had to
+measure. The front end routes ``=``, the digits and ``- + . / *`` through the
+keydown handler rather than through text input, and drops them from text input to
+avoid handling them twice. So ``=`` going missing looked like exactly that
+suppression — except the digits worked, which seemed to rule it out. It did not.
+On this keyboard ``=`` is Shift+0, and the shifted half of that handler knows two
+keys in total and says as much in a comment: "Does not match every keyboard
+layout, unfortunately." No match, nothing produced, and then text input arrived
+with a perfectly good ``=`` and threw it away. The suppression's own comment says
+it should drop a character *if the keydown handled it*; it never checked. It does
+now, and this is not a browser bug — it is every non-US layout on desktop SDL2
+too, and it should go upstream.
+
+**Fullscreen jumping in and out.** Removing the menu entry did nothing, because
+the cause was the window being *created* with ``SDL_WINDOW_FULLSCREEN_DESKTOP``.
+Emscripten turns that into ``emscripten_request_fullscreen_strategy`` with its
+defer flag set, so the page leapt to fullscreen at the player's first keystroke
+and fell back out at the next Escape, forever.
+
+**A window nought pixels wide, which was mine.** Stripping that flag also skipped
+the branch just underneath it, the one that swaps in the stored fullscreen size —
+so the window took a windowed size that had never once been used, because the
+window had always been created fullscreen. Zero. Fatal before anything drew, on a
+config written by an earlier build of the same afternoon. The lesson is not about
+fullscreen: it is that a saved size cannot be trusted in a page at all. It takes
+the viewport now and ignores what was stored.
+
+The browser version is deliberately the smaller game. No sound — compiled out,
+which also keeps three megabytes of samples out of the download, and nobody wants
+this firing out loud in an office. One terminal, because a page has one canvas and
+no way to ask for a second, so the buttons that would have opened the message and
+inventory windows are gone rather than present and inert. No fullscreen. Three
+tilesets instead of five. Eight megabytes to start, once.
+
+It publishes from the same workflow as this manual, which is not tidiness but
+necessity: a Pages deployment replaces the whole site, so a second workflow
+publishing only the game would take the documentation down, and the reverse.
+One artifact. And because it builds from master rather than from a tag, ``/play/``
+is now the newest ZangbandTK in existence and the least settled — which is the
+right trade for something you reach by clicking a link.
+
+
 26 August 2026 — nine powers, and a keyboard with nothing left on it
 ====================================================================
 

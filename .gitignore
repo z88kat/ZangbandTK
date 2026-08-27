@@ -84,3 +84,8 @@ __pycache__/
 
 # documentation build virtualenv
 .venv-docs/
+
+# Emscripten object trees; the wasm artefacts land in build-wasm/, matched by
+# the build*/ rule above.
+src/wasm-obj/
+src/wasm-obj-test/
