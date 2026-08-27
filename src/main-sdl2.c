@@ -5772,9 +5772,7 @@ static bool reload_font(struct subwindow *subwindow,
 {
 	struct font *new_font =
 		make_font(subwindow->window, info->name, info->size);
-#ifndef __EMSCRIPTEN__
 	int min_w, min_h;
-#endif
 
 	if (new_font == NULL) {
 		return false;
@@ -5786,29 +5784,50 @@ static bool reload_font(struct subwindow *subwindow,
 		return false;
 	}
 
-#ifdef __EMSCRIPTEN__
-	/*
-	 * Give the term the whole window, so a larger font buys legibility by
-	 * costing rows and columns -- the way a terminal behaves.
-	 *
-	 * is_usable_font_for_subwindow() has just replaced sizing_rect with the
-	 * *minimum* rect this font needs, and on a desktop that is reasonable:
-	 * the term keeps a modest size inside a window the player can drag
-	 * bigger.  In a page there is nothing to drag, and coercing that
-	 * minimum back inside the window pushes its right and bottom edges
-	 * flush against the window's, so a bigger font left the term anchored
-	 * to the bottom-right corner with wallpaper filling the space above and
-	 * to the left of it.  Taking the whole inner rect is safe here without
-	 * a further check, because the call above already rejected any font
-	 * whose minimum does not fit inside it.
-	 */
-	subwindow->sizing_rect = subwindow->window->inner_rect;
-#else
 	get_minimum_subwindow_size(subwindow->index == MAIN_SUBWINDOW,
 		new_font->ttf.glyph.w, new_font->ttf.glyph.h, &min_w, &min_h);
+#ifdef __EMSCRIPTEN__
+	/*
+	 * Size the term to exactly what the new font needs -- an eighty by
+	 * twenty-four terminal at the new glyph size -- and centre it.  Changing
+	 * the font is then the one control over how big the game looks, and it
+	 * works in both directions.
+	 *
+	 * Neither half can be left to the code above.
+	 *
+	 * The size cannot, because is_usable_font_for_subwindow() starts from
+	 * the rect the term already has and only shrinks it when the new font
+	 * is too big to fit inside it.  A smaller font always fits, so the term
+	 * kept whatever size it had: it grew for a larger font and never came
+	 * back down, leaving small text in the corner of a box sized for the
+	 * font before it.
+	 *
+	 * The position cannot, because coerce_rect_in_rect() below moves a rect
+	 * only as far as it must to be inside the window, which puts a grown
+	 * term hard against the window's right and bottom edges.
+	 *
+	 * Both are done here rather than for every front end because they are
+	 * only unambiguously right here.  On a desktop the player sets the size
+	 * and position with Size and Move and both are saved, so overriding
+	 * them on a font change would be wrong.  In a page there is neither
+	 * control, no way to place or scale the term by hand, and so nothing to
+	 * override.
+	 *
+	 * Filling the window instead was the obvious alternative and was worse.
+	 * A small font then buys a terminal far wider than eighty columns, and
+	 * every screen the game lays out to a fixed size -- the splash, birth,
+	 * the option pages -- draws in the top-left corner of a great expanse
+	 * of black.
+	 */
+	subwindow->sizing_rect.w = min_w;
+	subwindow->sizing_rect.h = min_h;
+	subwindow->sizing_rect.x = subwindow->window->inner_rect.x
+		+ (subwindow->window->inner_rect.w - min_w) / 2;
+	subwindow->sizing_rect.y = subwindow->window->inner_rect.y
+		+ (subwindow->window->inner_rect.h - min_h) / 2;
+#endif
 	coerce_rect_in_rect(&subwindow->sizing_rect,
 		&subwindow->window->inner_rect, min_w, min_h);
-#endif
 
 	free_font(subwindow->font);
 	subwindow->font = new_font;
