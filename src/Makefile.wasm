@@ -101,7 +101,13 @@ OBJS     = $(addprefix $(OBJDIR)/,$(ALLOBJS))
 # turns into one .data file.  Deliberately not all of lib/: shockbolt is 17MB of
 # tiles and the sounds another 3.2MB, and neither belongs in a first page load.
 LIBDIRS = gamedata screens help customize fonts icons user
-TILESETS = old nomad adam-bolt
+
+# Shockbolt is left out and cannot sensibly be put back: 17MB of tiles, more
+# than twice everything else here together.  Gervais is 1.3MB and earns its
+# place.  Nothing needs saying in list.txt about the ones missing -- grafmode.c
+# offers only the tilesets it can find, so this list is the only place the
+# choice is made.
+TILESETS = old nomad adam-bolt gervais
 
 $(WASMDIR)/lib.stamp:
 	@mkdir -p $(WASMDIR)/lib

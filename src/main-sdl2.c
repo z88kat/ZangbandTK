@@ -3376,9 +3376,17 @@ static struct sdlpui_dialog *handle_menu_terms(struct sdlpui_control *ctrl,
 	sdlpui_create_menu_toggle(c, "Borders", SDLPUI_HOR_LEFT,
 		handle_menu_borders, tag, SDL_FALSE,
 		subwindow->borders.visible);
+#ifndef __EMSCRIPTEN__
+	/*
+	 * "Top" keeps a term above the others where they overlap, which
+	 * sort_to_top() decides by comparing always_top between subwindows.
+	 * With one term there is nothing for it to be above.  Borders stays:
+	 * it draws a frame around the term and does so perfectly well here.
+	 */
 	c = sdlpui_get_simple_menu_next_unused(result, SDLPUI_MFLG_NONE);
 	sdlpui_create_menu_toggle(c, "Top", SDLPUI_HOR_LEFT,
 		handle_menu_top, tag, SDL_FALSE, subwindow->always_top);
+#endif /* !__EMSCRIPTEN__ */
 	sdlpui_complete_simple_menu(result, window);
 	result->rect.x = ul_x_win;
 	result->rect.y = ul_y_win;
@@ -6416,7 +6424,22 @@ static void load_window(struct sdlpui_window *window)
 	}
 	load_default_window_icon(window);
 	if (window->graphics.id != GRAPHICS_NONE) {
-		load_graphics(window, get_graphics_mode(window->graphics.id));
+		graphics_mode *mode = get_graphics_mode(window->graphics.id);
+
+		/*
+		 * A saved configuration can name a tileset this build does not
+		 * have, and load_graphics() dereferences the mode at once.  A
+		 * crash before anything is drawn is the worst way to fail, and
+		 * carrying on without tiles is a perfectly good way, so check.
+		 */
+		if (mode) {
+			load_graphics(window, mode);
+		} else {
+			plog_fmt("Window %u wanted tileset %d, which is not "
+				"installed; starting without tiles.",
+				window->index, (int)window->graphics.id);
+			window->graphics.id = GRAPHICS_NONE;
+		}
 	}
 
 	render_clear(window, NULL, &window->color);

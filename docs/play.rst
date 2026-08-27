@@ -14,9 +14,9 @@ open.
 What it costs to start
 ======================
 
-About 8 MB on the first visit, cached afterwards: roughly 4.6 MB of compiled
-code, 2.5 MB of game data — the monsters, objects, dungeon profiles, the help
-files and three tilesets — and a little glue. A progress bar runs while it
+About 9 MB on the first visit, cached afterwards: roughly 4.6 MB of compiled
+code, 3.8 MB of game data — the monsters, objects, dungeon profiles, the help
+files and four tilesets — and a little glue. A progress bar runs while it
 arrives.
 
 Savefiles
@@ -52,9 +52,11 @@ nothing.
 Escape for leaving fullscreen — which is a key this game needs far too often to
 lend out.
 
-**Two tilesets instead of five.** Adam Bolt, Nomad and the original 8×8, which
-between them are under a megabyte. Shockbolt's set is 17 MB on its own and does
-not belong in a page load.
+**Four tilesets of the six.** The original 8×8, Adam Bolt's, Nomad's and David
+Gervais', which between them are a little over two megabytes. Shockbolt's two
+modes are left out: that set is 17 MB on its own, more than twice everything
+else the page carries, and does not belong in a page load. They are not listed
+in the menu either — the game offers only the tilesets it can actually find.
 
 Everything else is the whole game: the same wilderness, the same bestiary, the
 same lethality, the same savefile format.
