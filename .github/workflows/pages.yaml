@@ -15,6 +15,9 @@ name: pages
 #
 # This workflow also builds the WebAssembly version and puts it in the site
 # under /play/, which is why a documentation workflow now needs a C toolchain.
+# wasm.yaml is its gate, in the same way docs.yaml is the gate for the manual:
+# that one builds and tests the browser version on pull requests, and this one
+# publishes what it approved.
 # It is here rather than in a workflow of its own because a Pages artifact
 # deployment replaces the whole site: a second workflow publishing just the game
 # would take the manual down, and one publishing just the manual would take the
