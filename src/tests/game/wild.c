@@ -23,6 +23,7 @@
 #include "generate.h"
 #include "init.h"
 #include "mon-lore.h"
+#include "obj-gear.h"
 #include "mon-make.h"
 #include "obj-desc.h"
 #include "obj-make.h"
@@ -41,6 +42,43 @@
 #include "dun-type.h"
 #include "wild.h"
 #include "z-util.h"
+
+/**
+ * Find somewhere near the player that will hold a monster.
+ *
+ * Three tests need this and all three used to walk east from the player until
+ * they found a square or hit the edge of the map, which fails whenever the
+ * character happens to be standing with a wall, a lake or the map edge to its
+ * right.  That made them fail perhaps one run in five -- the kind of flake that
+ * gets rerun rather than read.  Searching outward in rings finds a square if
+ * one exists anywhere nearby, which on an open wilderness map it always does.
+ */
+static bool find_open_grid_near(struct loc from, struct loc *out) {
+	int radius;
+
+	for (radius = 1; radius <= 8; radius++) {
+		int dy, dx;
+
+		for (dy = -radius; dy <= radius; dy++)
+			for (dx = -radius; dx <= radius; dx++) {
+				struct loc try;
+
+				/* Only the ring itself; the inside was covered already. */
+				if (ABS(dy) != radius && ABS(dx) != radius) continue;
+
+				try = loc(from.x + dx, from.y + dy);
+
+				if (!square_in_bounds_fully(cave, try)) continue;
+				if (!square_isempty(cave, try)) continue;
+				if (square_isdamaging(cave, try)) continue;
+
+				*out = try;
+				return true;
+			}
+	}
+
+	return false;
+}
 
 static void println(const char *str) {
 	printf("%s\n", str);
@@ -491,10 +529,7 @@ static int test_a_wounded_unique_is_remembered(void *state) {
 	require(race != NULL);
 
 	/* Somewhere near the player that will hold it. */
-	do {
-		grid.x++;
-		require(grid.x < cave->width - 1);
-	} while (!square_isempty(cave, grid) || square_isdamaging(cave, grid));
+	require(find_open_grid_near(player->grid, &grid));
 
 	require(place_new_monster(cave, grid, race, false, false, info,
 							  ORIGIN_DROP));
@@ -608,10 +643,7 @@ static int test_an_untouched_unique_is_not_remembered(void *state) {
 	}
 	require(race != NULL);
 
-	do {
-		grid.x++;
-		require(grid.x < cave->width - 1);
-	} while (!square_isempty(cave, grid) || square_isdamaging(cave, grid));
+	require(find_open_grid_near(player->grid, &grid));
 
 	require(place_new_monster(cave, grid, race, false, false, info,
 							  ORIGIN_DROP));
@@ -3155,6 +3187,7 @@ static int test_the_quality_ladder_is_a_ladder(void *state) {
 	ok;
 }
 
+
 /**
  * Walking into a blessed beast heals you and sends it bounding away (CNT-20).
  *
@@ -3177,10 +3210,7 @@ static int test_a_blessed_beast_bounds_away(void *state) {
 	notnull(race);
 
 	/* Somewhere beside the player that will hold it. */
-	do {
-		grid.x++;
-		require(grid.x < cave->width - 1);
-	} while (!square_isempty(cave, grid) || square_isdamaging(cave, grid));
+	require(find_open_grid_near(player->grid, &grid));
 
 	require(place_new_monster(cave, grid, race, false, false, info,
 							  ORIGIN_DROP));
@@ -3605,44 +3635,93 @@ static int test_a_race_keeps_its_power(void *state) {
 }
 
 /**
- * Trying and failing costs the mana; being told you cannot try does not.  This
- * is the whole reason player_use_power() reports those two cases differently,
- * and the reason ui-map.c asks for a direction before calling it.
+ * Trying costs; being told you cannot try does not.  This is why
+ * player_use_power() reports those two cases differently, and why ui-map.c asks
+ * for a direction before calling it rather than leaving it to the effect.
  */
 static int test_a_refused_power_is_free(void *state) {
-	struct player_race *r;
-	struct player_power *power = NULL;
+	struct player_race *r, *mindflayer = NULL;
+	const struct player_race *keep_race = player->race;
+	struct player_power *power;
 	int before;
 
 	for (r = races; r; r = r->next)
-		if (streq(r->name, "Mindflayer")) power = r->powers;
+		if (streq(r->name, "Mindflayer")) mindflayer = r;
+	notnull(mindflayer);
+	power = mindflayer->powers;
 	notnull(power);
 
-	player->race = r;
+	player->race = mindflayer;
 	player->msp = 100;
+	player->mhp = 100;
 
 	/* Too junior for it. */
 	player->lev = power->level - 1;
 	player->csp = 100;
+	player->chp = 100;
 	before = player->csp;
 	require(!player_use_power(player, power, 0));
 	eq(player->csp, before);
+	eq(player->chp, 100);
 
-	/* Old enough, but nothing left to spend. */
+	/* Old enough, and paid up.  The price is variable, so bound it. */
 	player->lev = power->level;
-	player->csp = power->cost - 1;
-	before = player->csp;
-	require(!player_use_power(player, power, 0));
-	eq(player->csp, before);
-
-	/*
-	 * Able and paid up.  Whether the roll goes for or against, the mana is
-	 * gone -- that is what makes a bad attempt sting.
-	 */
-	player->csp = power->cost;
 	require(player_use_power(player, power, 0));
-	eq(player->csp, 0);
+	require(player->csp <= 100 - power->cost / 2);
+	require(player->csp >= 100 - power->cost);
+	eq(player->chp, 100);
 
+	/* Nothing left in either pool. */
+	player->csp = 0;
+	player->chp = power->cost - 1;
+	before = player->chp;
+	require(!player_use_power(player, power, 0));
+	eq(player->chp, before);
+
+
+	player->race = keep_race;
+	ok;
+}
+
+/**
+ * The one that matters: a character with no spells at all can still use what
+ * its blood gives it.
+ *
+ * calc_mana() returns early with a maximum of zero for any class whose book
+ * list is empty, which is most of them -- Warrior, Rogue, Blackguard, Monk.
+ * Reading the cost only from spell points would have meant a Draconian Warrior
+ * could never once breathe.  Zangband's answer is that the price comes out of
+ * the character instead, and this holds that open.
+ */
+static int test_blood_pays_when_mana_cannot(void *state) {
+	struct player_race *r, *draconian = NULL;
+	const struct player_race *keep_race = player->race;
+	struct player_power *power;
+
+	for (r = races; r; r = r->next)
+		if (streq(r->name, "Draconian")) draconian = r;
+	notnull(draconian);
+	power = draconian->powers;
+	notnull(power);
+
+	player->race = draconian;
+	player->lev = power->level;
+
+	/* A warrior's pool: there isn't one. */
+	player->msp = 0;
+	player->csp = 0;
+	player->mhp = 100;
+	player->chp = 100;
+
+	require(player_use_power(player, power, 0));
+
+	/* It happened, and it was paid for out of the only pool there is. */
+	eq(player->csp, 0);
+	require(player->chp < 100);
+	require(player->chp >= 100 - power->cost);
+
+
+	player->race = keep_race;
 	ok;
 }
 
@@ -3652,12 +3731,14 @@ static int test_a_refused_power_is_free(void *state) {
  * levels, and raise the stat the power leans on.
  */
 static int test_practice_makes_a_power_surer(void *state) {
-	struct player_race *r;
-	struct player_power *power = NULL;
+	struct player_race *r, *draconian = NULL;
+	struct player_power *power;
 	int fresh, seasoned, lev;
 
 	for (r = races; r; r = r->next)
-		if (streq(r->name, "Draconian")) power = r->powers;
+		if (streq(r->name, "Draconian")) draconian = r;
+	notnull(draconian);
+	power = draconian->powers;
 	notnull(power);
 
 	player->csp = 100;
@@ -3682,6 +3763,364 @@ static int test_practice_makes_a_power_surer(void *state) {
 	player->lev = power->level;
 	player->csp = 0;
 	require(player_power_chance(player, power) >= fresh);
+
+	ok;
+}
+
+/**
+ * PLR-03/PLR-04: the Monk arrived, and its unarmed ladder came with it.
+ */
+static int test_the_monk_has_a_ladder(void *state) {
+	struct player_class *c, *monk = NULL;
+	struct class_blow *blow;
+	int rungs = 0, last_level = 0;
+
+	for (c = classes; c; c = c->next)
+		if (streq(c->name, "Monk")) monk = c;
+	notnull(monk);
+
+	/* The whole point of the class is that it can fight with nothing. */
+	require(pf_has(monk->pflags, PF_MARTIAL_ARTS));
+	notnull(monk->blows);
+
+	for (blow = monk->blows; blow; blow = blow->next) {
+		rungs++;
+
+		notnull(blow->desc);
+		require(blow->dd > 0 && blow->ds > 0);
+		require(blow->level >= 1 && blow->level <= 50);
+		require(blow->chance >= 0 && blow->chance <= 100);
+
+		/*
+		 * A ladder, not a bag: each rung arrives later than the last and is
+		 * no easier to land.  player_pick_blow() keeps the highest-level
+		 * strike it drew, which is only a sensible rule if higher means
+		 * better.
+		 */
+		require(blow->level >= last_level);
+		last_level = blow->level;
+
+		if (blow->effect == MA_STUN) require(blow->power > 0);
+	}
+
+	/* Zangband's seventeen, from a punch to a crushing blow. */
+	eq(rungs, 17);
+
+	/* And the top of the ladder really is the top. */
+	blow = monk->blows;
+	while (blow->next) blow = blow->next;
+	require(blow->dd * blow->ds > monk->blows->dd * monk->blows->ds * 8);
+
+	ok;
+}
+
+/**
+ * A Monk's bare hands are its weapon, so the blows have to arrive.
+ *
+ * This is the requirement PLR-04 actually states -- unarmed as a progression
+ * rather than as a penalty -- and it is worth a test because 4.2's own answer
+ * for an empty weapon slot is a flat 1 damage and no criticals at all.
+ */
+static int test_bare_hands_are_a_progression(void *state) {
+	struct player_class *c, *monk = NULL;
+	const struct player_class *keep = player->class;
+	int weapon_slot = slot_by_name(player, "weapon");
+	struct object *held = slot_object(player, weapon_slot);
+	int novice, master, bare_ac, armed;
+
+	for (c = classes; c; c = c->next)
+		if (streq(c->name, "Monk")) monk = c;
+	notnull(monk);
+
+	player->class = monk;
+	player->lev = 50;
+	player->upkeep->update |= PU_BONUS;
+	update_stuff(player);
+
+	/*
+	 * A Monk holding something is just a poor warrior: the ladder is only
+	 * reached with the weapon slot empty, which is the trade the class is
+	 * built on and worth asserting rather than assuming.
+	 */
+	armed = player->state.num_blows;
+
+	/* Put the weapon down. */
+	player->body.slots[weapon_slot].obj = NULL;
+
+	player->lev = 1;
+	player->upkeep->update |= PU_BONUS;
+	update_stuff(player);
+	novice = player->state.num_blows;
+
+	player->lev = 50;
+	player->upkeep->update |= PU_BONUS;
+	update_stuff(player);
+	master = player->state.num_blows;
+	bare_ac = player->state.to_a;
+
+	/* Two at the start, eight at the end -- num_blows is held at 100x. */
+	eq(novice, 200);
+	eq(master, 800);
+
+	/* And more than the same character got out of the weapon it put down. */
+	require(master > armed);
+
+	/*
+	 * More than a Warrior gets out of any weapon either, which is the point:
+	 * the class gives up the whole object system in exchange for this.
+	 */
+	require(master > monk->max_attacks * 100);
+
+	/* Nothing worn, so the character is not burdened and is paid for it. */
+	require(!player->state.monk_armour);
+
+	/*
+	 * The body slot alone is worth 3*lev/2, so a bare Grand Master carries at
+	 * least 75 points of armour class it never had to find.
+	 */
+	require(bare_ac >= 75);
+
+	/* Put everything back for whatever runs next. */
+	player->body.slots[weapon_slot].obj = held;
+	player->class = keep;
+	player->upkeep->update |= PU_BONUS;
+	update_stuff(player);
+
+	ok;
+}
+
+/**
+ * Armour is the Monk's whole cost, so being over the limit has to bite.
+ *
+ * The trade only means something if it is enforced in both directions, and the
+ * threshold is Zangband's: ten pounds plus four tenths of a pound per level,
+ * counted over the six armour slots.  Real armour is put on the character here
+ * rather than the flag being forced, because the weighing is the part that
+ * could be wrong.
+ */
+static int test_armour_takes_the_balance(void *state) {
+	struct player_class *c, *monk = NULL;
+	const struct player_class *keep = player->class;
+	int weapon_slot = slot_by_name(player, "weapon");
+	int body_slot = slot_by_name(player, "body");
+	struct object *held = slot_object(player, weapon_slot);
+	struct object *worn = slot_object(player, body_slot);
+	struct object *plate;
+	struct object_kind *kind;
+	int light_blows, light_ac, light_toh;
+
+	for (c = classes; c; c = c->next)
+		if (streq(c->name, "Monk")) monk = c;
+	notnull(monk);
+
+	kind = lookup_kind(TV_HARD_ARMOR,
+					   lookup_sval(TV_HARD_ARMOR, "Full Plate Armour"));
+	notnull(kind);
+
+	player->class = monk;
+	player->lev = 20;
+	player->body.slots[weapon_slot].obj = NULL;
+	player->body.slots[body_slot].obj = NULL;
+	player->upkeep->update |= PU_BONUS;
+	update_stuff(player);
+
+	/* Bare: the ladder, the bonuses, and no burden. */
+	require(!player->state.monk_armour);
+	light_blows = player->state.num_blows;
+	light_ac = player->state.to_a;
+	light_toh = player->state.to_h;
+	require(light_blows > 200);
+	require(light_ac >= (player->lev * 3) / 2);
+	require(light_toh >= player->lev / 3);
+
+	/* Now put on something a monk has no business wearing. */
+	plate = object_new();
+	object_prep(plate, kind, 0, RANDOMISE);
+	plate->known = object_new();
+	plate->number = 1;
+	player->body.slots[body_slot].obj = plate;
+	player->upkeep->update |= PU_BONUS;
+	update_stuff(player);
+
+	/* Full plate is well past ten pounds plus four tenths per level. */
+	require(object_weight_one(plate) > 100 + player->lev * 4);
+	require(player->state.monk_armour);
+
+	/* Half the blows... */
+	eq(player->state.num_blows, light_blows / 2);
+
+	/* ...and the to-hit and bare-slot armour bonuses withdrawn with them. */
+	require(player->state.to_h < light_toh);
+	require(player->state.to_a < light_ac);
+
+	/* Put everything back for whatever runs next. */
+	player->body.slots[body_slot].obj = worn;
+	player->body.slots[weapon_slot].obj = held;
+	object_delete(NULL, NULL, &plate);
+	player->class = keep;
+	player->upkeep->update |= PU_BONUS;
+	update_stuff(player);
+
+	ok;
+}
+
+/**
+ * The claim PLR-04 actually makes: unarmed is a progression, not a penalty.
+ *
+ * 4.2's answer for an empty weapon slot is melee_damage() returning a flat 1
+ * with criticals skipped outright, so any character fighting bare does one
+ * point a blow.  A Monk has to do very much better than that, or the class is
+ * just a Warrior who lost its sword.
+ */
+static int test_a_monk_hits_harder_than_a_bare_fist(void *state) {
+	struct player_class *c, *monk = NULL;
+	const struct player_class *keep = player->class;
+	struct monster_race *race = NULL;
+	struct monster *mon;
+	struct loc grid = player->grid;
+	struct monster_group_info info = { 0, 0 };
+	int weapon_slot = slot_by_name(player, "weapon");
+	struct object *held = slot_object(player, weapon_slot);
+	int i, r, bare = 0, martial = 0;
+
+	for (c = classes; c; c = c->next)
+		if (streq(c->name, "Monk")) monk = c;
+	notnull(monk);
+
+	/* Something with enough hit points to be punched a hundred times. */
+	for (r = 1; r < z_info->r_max; r++)
+		if (r_info[r].name && r_info[r].avg_hp > 500 &&
+				!rf_has(r_info[r].flags, RF_UNIQUE) &&
+				!rf_has(r_info[r].flags, RF_BLESSING)) {
+			race = &r_info[r];
+			break;
+		}
+	notnull(race);
+
+	require(find_open_grid_near(player->grid, &grid));
+
+	require(place_new_monster(cave, grid, race, false, false, info,
+							  ORIGIN_DROP));
+	mon = square_monster(cave, grid);
+	notnull(mon);
+
+	/* Put the weapon down and stop being afraid of anything. */
+	player->body.slots[weapon_slot].obj = NULL;
+	player->timed[TMD_AFRAID] = 0;
+	player->lev = 50;
+
+	/* First as the class the character already was, fighting bare. */
+	player->upkeep->update |= PU_BONUS;
+	update_stuff(player);
+	for (i = 0; i < 100; i++) {
+		int before;
+
+		/* A blow can finish it, and then the pointer is stale. */
+		mon = square_monster(cave, grid);
+		if (!mon) {
+			require(place_new_monster(cave, grid, race, false, false, info,
+									  ORIGIN_DROP));
+			mon = square_monster(cave, grid);
+			notnull(mon);
+		}
+
+		mon->hp = mon->maxhp;
+		before = mon->hp;
+
+		py_attack(player, grid);
+
+		mon = square_monster(cave, grid);
+		bare += mon ? before - mon->hp : before;
+	}
+
+	/* Then as a Monk, with the same hands. */
+	player->class = monk;
+	player->upkeep->update |= PU_BONUS;
+	update_stuff(player);
+	for (i = 0; i < 100; i++) {
+		int before;
+
+		/* A blow can finish it, and then the pointer is stale. */
+		mon = square_monster(cave, grid);
+		if (!mon) {
+			require(place_new_monster(cave, grid, race, false, false, info,
+									  ORIGIN_DROP));
+			mon = square_monster(cave, grid);
+			notnull(mon);
+		}
+
+		mon->hp = mon->maxhp;
+		before = mon->hp;
+
+		py_attack(player, grid);
+
+		mon = square_monster(cave, grid);
+		martial += mon ? before - mon->hp : before;
+	}
+
+	/*
+	 * Trained hands against untrained ones.  The margin is deliberately loose
+	 * -- both figures are rolled, and the strike drawn varies by design -- but
+	 * the gap it is asserting is enormous, so a factor of three is a floor
+	 * that a working implementation clears without difficulty.
+	 */
+	printf("MONK %d damage over 100 blows, bare-handed %d\n", martial, bare);
+	require(martial > bare * 3);
+
+	player->body.slots[weapon_slot].obj = held;
+	player->class = keep;
+	player->upkeep->update |= PU_BONUS;
+	update_stuff(player);
+	if (square_monster(cave, grid)) delete_monster(cave, grid);
+
+	ok;
+}
+
+/**
+ * The mapping from Zangband's class table was measured, not guessed, and this
+ * holds the Monk on the numbers that measurement produced.
+ */
+static int test_the_monk_keeps_zangbands_numbers(void *state) {
+	struct player_class *c, *monk = NULL;
+
+	for (c = classes; c; c = c->next)
+		if (streq(c->name, "Monk")) monk = c;
+	notnull(monk);
+
+	/* Stats, straight across; Zangband's charisma has nowhere to go. */
+	eq(monk->c_adj[STAT_STR], 2);
+	eq(monk->c_adj[STAT_INT], -1);
+	eq(monk->c_adj[STAT_WIS], 1);
+	eq(monk->c_adj[STAT_DEX], 3);
+	eq(monk->c_adj[STAT_CON], 2);
+
+	/* Hit dice, copied; disarm and device bases, copied. */
+	eq(monk->c_mhp, 6);
+	eq(monk->c_skills[SKILL_DISARM_PHYS], 45);
+	eq(monk->c_skills[SKILL_DEVICE], 32);
+	eq(monk->c_skills[SKILL_SAVE], 28);
+
+	/*
+	 * The experience factor is the one that carries weight.  4.2 leaves it at
+	 * zero for all nine of its classes; Zangband ran 0 to 40 and used it as
+	 * the balance dial.  Keeping Zangband's is the same call PLR-01 made for
+	 * races, and it is what makes a Monk slow to level.
+	 */
+	eq(monk->c_exp, 40);
+
+	{
+		struct player_class *other;
+		int flat = 0, total = 0;
+
+		for (other = classes; other; other = other->next) {
+			total++;
+			if (other->c_exp == 0) flat++;
+		}
+
+		/* Fourteen classes, and the Monk is the only one that costs. */
+		eq(total, 10);
+		eq(flat, 9);
+	}
 
 	ok;
 }
@@ -3817,10 +4256,7 @@ static int test_the_unicorn_makes_you_whole(void *state) {
 		}
 	notnull(race);
 
-	do {
-		grid.x++;
-		require(grid.x < cave->width - 1);
-	} while (!square_isempty(cave, grid) || square_isdamaging(cave, grid));
+	require(find_open_grid_near(player->grid, &grid));
 
 	require(place_new_monster(cave, grid, race, false, false, info,
 							  ORIGIN_DROP));
@@ -4473,6 +4909,13 @@ struct test tests[] = {
 	{ "every-service-held-is-built", test_every_service_held_is_built },
 	{ "a-race-keeps-its-power", test_a_race_keeps_its_power },
 	{ "a-refused-power-is-free", test_a_refused_power_is_free },
+	{ "blood-pays-when-mana-cannot", test_blood_pays_when_mana_cannot },
 	{ "practice-makes-a-power-surer", test_practice_makes_a_power_surer },
+	{ "the-monk-has-a-ladder", test_the_monk_has_a_ladder },
+	{ "bare-hands-are-a-progression", test_bare_hands_are_a_progression },
+	{ "armour-takes-the-balance", test_armour_takes_the_balance },
+	{ "a-monk-hits-harder-than-a-bare-fist", test_a_monk_hits_harder_than_a_bare_fist },
+	{ "the-monk-keeps-zangbands-numbers", test_the_monk_keeps_zangbands_numbers },
+
 	{ NULL, NULL }
 };

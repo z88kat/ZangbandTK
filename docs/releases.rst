@@ -31,6 +31,30 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.29.0** — **The Monk, and martial arts** (PLR-03/PLR-04). The tenth class,
+  and the first from Zangband. A Monk fighting bare-handed climbs a ladder of
+  seventeen techniques — a punch at level 1, a crushing blow at 48 — throwing two
+  strikes a turn at the start and eight by the end, which is more than a Warrior
+  gets from any weapon. Some techniques stun; a knee doubles a male opponent up;
+  a kick to the ankle leaves anything that walks limping. Against 4.2's own
+  handling of an empty weapon slot — one point of damage, no criticals — a Monk
+  measures about eight times the damage over a hundred blows.
+
+  Armour is the whole cost. Over ten pounds plus four tenths per level across the
+  six armour slots and the strikes halve, the to-hit and damage bonuses go, and
+  the armour class paid for empty slots stops. Under it, an empty body slot alone
+  is worth three points of armour for every two levels. Zangband's numbers
+  throughout; the class mapping from Zangband's table to 4.2's was measured
+  against the six classes both games share rather than guessed, and the Monk keeps
+  Zangband's experience factor, which makes it the only class in the game that
+  costs extra to level.
+- **3.28.1** — **Racial powers work for classes that have no magic** — which is
+  most of them. Powers took their cost from spell points, and a class with no
+  spellbooks has a maximum of zero, so a Draconian Warrior could never breathe and
+  a Mindflayer Rogue could never blast. Zangband's rule applies: short of mana,
+  the price comes out of hit points instead, and the menu says which before you
+  commit. The failure chance was also clamped in the wrong order and could be
+  reported above 100 per cent for a character with a poor governing stat.
 - **3.28.0** — **Racial powers** (PLR-02). Eight of the nine new races can now do
   something no class teaches, on ``N``: an Amberite shifts into shadow and walks
   the Pattern, a Vampire drinks blood, a Draconian breathes, a Golem turns to

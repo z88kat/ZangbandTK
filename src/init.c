@@ -5007,6 +5007,86 @@ static enum parser_error parse_class_desc(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+/**
+ * One rung of a class's unarmed ladder (ZangbandTK, PLR-04).
+ *
+ *	blow:<level>:<chance>:<dice>:<effect>:<power>:<message>
+ *
+ * The message takes one %s, which is the target.  Effect is NONE, KNEE, SLOW or
+ * STUN, and power is the stun magnitude STUN uses and the others ignore.
+ */
+static enum parser_error parse_class_blow(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	struct class_blow *blow, *last;
+	const char *effect;
+	const char *dice;
+
+	if (!c) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	blow = mem_zalloc(sizeof(*blow));
+	blow->level = parser_getint(p, "level");
+	blow->chance = parser_getint(p, "chance");
+	blow->power = parser_getint(p, "power");
+
+	dice = parser_getsym(p, "dice");
+	if (sscanf(dice, "%dd%d", &blow->dd, &blow->ds) != 2 ||
+			blow->dd < 1 || blow->ds < 1) {
+		mem_free(blow);
+		return PARSE_ERROR_INVALID_DICE;
+	}
+
+	effect = parser_getsym(p, "effect");
+	if (streq(effect, "NONE")) {
+		blow->effect = MA_NONE;
+	} else if (streq(effect, "KNEE")) {
+		blow->effect = MA_KNEE;
+	} else if (streq(effect, "SLOW")) {
+		blow->effect = MA_SLOW;
+	} else if (streq(effect, "STUN")) {
+		blow->effect = MA_STUN;
+	} else {
+		mem_free(blow);
+		return PARSE_ERROR_INVALID_VALUE;
+	}
+
+	/*
+	 * The message is handed to strnfmt() with the target's name, so it has to
+	 * be exactly one %s and nothing else.  Checked here rather than trusted,
+	 * because a slip in the data file would otherwise be a crash in melee.
+	 */
+	{
+		const char *desc = parser_getstr(p, "desc");
+		const char *c;
+		int subs = 0;
+
+		for (c = desc; *c; c++) {
+			if (*c != '%') continue;
+			if (c[1] == '%') { c++; continue; }
+			if (c[1] != 's') { mem_free(blow); return PARSE_ERROR_INVALID_VALUE; }
+			subs++;
+			c++;
+		}
+
+		if (subs != 1) {
+			mem_free(blow);
+			return PARSE_ERROR_INVALID_VALUE;
+		}
+
+		blow->desc = string_make(desc);
+	}
+
+	/* Kept in file order, which is the order they are written in: easiest. */
+	if (c->blows) {
+		for (last = c->blows; last->next; last = last->next)
+			;
+		last->next = blow;
+	} else {
+		c->blows = blow;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
 static struct parser *init_parse_class(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -5050,6 +5130,8 @@ static struct parser *init_parse_class(void) {
 	parser_reg(p, "expr sym name sym base str expr", parse_class_expr);
 	parser_reg(p, "effect-msg str text", parse_class_effect_msg);
 	parser_reg(p, "desc str desc", parse_class_desc);
+	parser_reg(p, "blow int level int chance sym dice sym effect int power "
+			   "str desc", parse_class_blow);
 	return p;
 }
 
@@ -5080,7 +5162,19 @@ static void cleanup_class(void)
 	int i, j;
 
 	while (c) {
+		struct class_blow *blow = c->blows;
+
 		next = c->next;
+
+		/* And the unarmed ladder, if the class has one (PLR-04). */
+		while (blow) {
+			struct class_blow *bnext = blow->next;
+
+			string_free(blow->desc);
+			mem_free(blow);
+			blow = bnext;
+		}
+
 		item = c->start_items;
 		while(item) {
 			item_next = item->next;

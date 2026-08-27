@@ -35,6 +35,8 @@ bool spell_okay_to_cast(const struct player *p, int spell_index);
 bool spell_okay_to_study(const struct player *p, int spell_index);
 bool spell_okay_to_browse(const struct player *p, int spell_index);
 int16_t spell_chance(int spell_index);
+int spell_stat_adjust(struct player *p, int stat);
+int spell_stat_minfail(struct player *p, int stat);
 void spell_learn(int spell_index);
 bool spell_cast(int spell_index, int dir, struct command *cmd);
 

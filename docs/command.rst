@@ -290,12 +290,13 @@ Use a racial power (``N``) or Use a racial power (``&``)
   how likely each is to fail, and lets you pick one. See
   :ref:`Racial powers <racial-powers>` for the full list.
 
-  A power draws on spell points like a spell, so a warrior of the right race
-  has a small pool of mana that exists only to feed it. The listed failure
-  chance falls as you gain levels past the level the power arrives at, and
-  falls further as you raise the stat it leans on. Failing still costs the
-  mana; being told you are too junior, or too spent, costs nothing. This
-  command takes some energy.
+  A power draws on spell points like a spell. A character with no spells at
+  all — a warrior, a rogue, a monk — pays in hit points instead, at the same
+  price, and the menu says which before you commit. The listed failure chance
+  falls as you gain levels past the level the power arrives at, and falls
+  further as you raise the stat it leans on. Failing still costs the price;
+  being told you are too junior, too confused, or too spent costs nothing.
+  This command takes some energy.
 
 Object Manipulation Commands
 ============================

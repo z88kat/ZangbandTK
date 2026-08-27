@@ -1689,6 +1689,101 @@ int calc_unlocking_chance(const struct player *p, int lock_power,
 	return MAX(2, skill - 4 * lock_power);
 }
 
+
+/**
+ * What armour costs a martial artist, and what going without it is worth
+ * (ZangbandTK, PLR-04).
+ *
+ * Zangband's Monk is not a character who happens to have no weapon; it is a
+ * character whose weapon is itself, and the whole class is built on that trade.
+ * Wear little and you strike more often, hit harder, and gain armour class for
+ * each slot you left empty.  Wear too much and the balance goes: the blows
+ * halve and every one of those bonuses stops.
+ *
+ * The threshold is Zangband's -- ten pounds plus four tenths of a pound per
+ * level, counted over the six armour slots only.  A weapon, a shield, a light
+ * and jewellery do not weigh on it, and a shield is checked here because the
+ * arm slot is one of the six you are rewarded for leaving empty.
+ */
+static bool martial_armour_burdens(struct player *p,
+								   struct player_state *state)
+{
+	static const char *worn[] = {
+		"body", "head", "arm", "back", "hands", "feet"
+	};
+	int weight = 0;
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(worn); i++) {
+		struct object *obj = equipped_item_by_slot_name(p, worn[i]);
+
+		if (obj) weight += object_weight_one(obj);
+	}
+
+	return weight > 100 + p->lev * 4;
+}
+
+/**
+ * The armour class a martial artist gets for each slot left bare (PLR-04).
+ *
+ * The body is worth by far the most, and the slots that arrive later are worth
+ * less -- which is Zangband saying that a Monk's defence is having nothing in
+ * the way, and that going bare-chested is the substantive version of that.
+ */
+static void calc_martial_ac(struct player *p, struct player_state *state)
+{
+	int lev = p->lev;
+	int bonus = 0;
+
+	if (!equipped_item_by_slot_name(p, "body"))
+		bonus += (lev * 3) / 2;
+	if (!equipped_item_by_slot_name(p, "back") && lev > 15)
+		bonus += (lev - 13) / 3;
+	if (!equipped_item_by_slot_name(p, "arm") && lev > 10)
+		bonus += (lev - 8) / 3;
+	if (!equipped_item_by_slot_name(p, "head") && lev > 4)
+		bonus += (lev - 2) / 3;
+	if (!equipped_item_by_slot_name(p, "hands"))
+		bonus += lev / 2;
+	if (!equipped_item_by_slot_name(p, "feet"))
+		bonus += lev / 3;
+
+	state->to_a += bonus;
+}
+
+/**
+ * How many times a martial artist strikes, and how well (PLR-04).
+ *
+ * Two at the start and one more at each of six rungs, so a Grand Master throws
+ * eight -- more than a Warrior gets from any weapon, which is the point.  Being
+ * over the armour limit halves it and cancels the to-hit and damage bonus with
+ * it, so armour costs a Monk roughly half of everything at once.
+ */
+static void calc_martial_blows(struct player *p, struct player_state *state,
+							   int extra_blows)
+{
+	int blows = 2;
+
+	if (p->lev > 9)  blows++;
+	if (p->lev > 14) blows++;
+	if (p->lev > 24) blows++;
+	if (p->lev > 34) blows++;
+	if (p->lev > 44) blows++;
+	if (p->lev > 49) blows++;
+
+	if (state->monk_armour) {
+		blows /= 2;
+	} else {
+		state->to_h += p->lev / 3;
+		state->to_d += p->lev / 3;
+
+		calc_martial_ac(p, state);
+	}
+
+	/* num_blows is held at 100x throughout 4.2. */
+	state->num_blows = blows * 100 + extra_blows * 100;
+}
+
 /**
  * Calculate the blows a player would get.
  *
@@ -2288,6 +2383,10 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	}
 
 
+	/* Too much armour to fight bare-handed? (PLR-04) */
+	state->monk_armour = pf_has(state->pflags, PF_MARTIAL_ARTS)
+		&& martial_armour_burdens(p, state);
+
 	/* Analyze weapon */
 	state->heavy_wield = false;
 	state->bless_wield = false;
@@ -2313,6 +2412,9 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 			state->to_d += 2;
 			state->bless_wield = true;
 		}
+	} else if (pf_has(state->pflags, PF_MARTIAL_ARTS)) {
+		/* Bare hands, and trained to use them (PLR-04) */
+		calc_martial_blows(p, state, extra_blows);
 	} else {
 		/* Unarmed */
 		state->num_blows = calc_blows(p, NULL, state, extra_blows);
@@ -2430,6 +2532,14 @@ static void update_bonuses(struct player *p)
 				msg("You have no trouble wielding your weapon.");
 			else
 				msg("You feel relieved to put down your heavy weapon.");	
+		}
+
+		/* Take note when the armour starts getting in the way (PLR-04) */
+		if (p->state.monk_armour != state.monk_armour) {
+			if (state.monk_armour)
+				msg("The weight of your armour disrupts your balance.");
+			else
+				msg("You regain your balance.");
 		}
 
 		/* Take note when "illegal weapon" changes */

@@ -1967,29 +1967,45 @@ bool player_has_monster_in_view(const struct player *p)
  */
 int player_power_chance(struct player *p, const struct player_power *power)
 {
-	int chance;
+	int chance, minfail;
 
 	if (!power) return 100;
 
 	chance = power->fail;
 
-	/* Practice tells. */
+	/* Practice tells, exactly as it does for a spell. */
 	chance -= 3 * (p->lev - power->level);
 
-	/*
-	 * And so does having the stat it draws on.  Straight off the stat index
-	 * rather than through spell-casting's adjustment table, which is private to
-	 * player-spell.c and is about spell *points* rather than reliability.
-	 */
-	chance -= (p->state.stat_ind[power->stat] - 10) / 2;
+	/* And so does the stat it draws on, off the same table spells use. */
+	chance -= spell_stat_adjust(p, power->stat);
 
-	/* Not enough left in the tank makes it harder, as casting does. */
+	/*
+	 * Reaching past what is left is harder.  This stays even though a short
+	 * character can now pay in blood instead (see player_use_power) -- the
+	 * penalty is for the strain of reaching, not for the bookkeeping.
+	 */
 	if (p->csp < power->cost)
 		chance += 5 * (power->cost - p->csp);
 
 	if (p->timed[TMD_AFRAID]) chance += 20;
 
-	return MAX(MIN(chance, 95), 5);
+	/*
+	 * Floor first and cap second, which is the order spell_chance() uses and
+	 * matters more than it looks: a hopeless stat gives a minimum failure of
+	 * 99, and clamping the other way round returns it unaltered and hands the
+	 * caller a percentage above 100.
+	 */
+	minfail = spell_stat_minfail(p, power->stat);
+	if (minfail < 5) minfail = 5;
+
+	if (chance < minfail) chance = minfail;
+	if (chance > 95) chance = 95;
+
+	/* Stunning is applied after the floor, again as casting does it. */
+	if (p->timed[TMD_STUN] > 50) chance += 25;
+	else if (p->timed[TMD_STUN]) chance += 15;
+
+	return MIN(chance, 95);
 }
 
 /**
@@ -2001,6 +2017,8 @@ int player_power_chance(struct player *p, const struct player_power *power)
 bool player_use_power(struct player *p, struct player_power *power, int dir)
 {
 	bool ident = false;
+	bool use_hp;
+	int paid;
 
 	if (!power || !power->effect) return false;
 
@@ -2009,14 +2027,36 @@ bool player_use_power(struct player *p, struct player_power *power, int dir)
 		return false;
 	}
 
-	if (p->csp < power->cost) {
+	if (p->timed[TMD_CONFUSED]) {
+		msg("You are too confused.");
+		return false;
+	}
+
+	/*
+	 * Short of mana, the price is paid in blood.  This is Zangband's rule and
+	 * it is the only reason the whole feature works: a Warrior, a Rogue or a
+	 * Monk has no spells at all, so calc_mana() leaves them with a maximum of
+	 * zero, and without this a Draconian Warrior could never once breathe.
+	 */
+	use_hp = (p->csp < power->cost);
+
+	if (use_hp && p->chp < power->cost) {
 		msg("You have not the strength left.");
 		return false;
 	}
 
-	/* Paid whether it works or not, which is what makes failure cost. */
-	p->csp -= power->cost;
-	p->upkeep->redraw |= (PR_MANA);
+	/* Zangband charges a variable price, so a power is never quite budgeted. */
+	paid = randint1(power->cost - power->cost / 2) + power->cost / 2;
+
+	if (use_hp) {
+		take_hit(p, paid, "concentrating too hard");
+
+		/* Killed by the effort; there is nothing left to resolve. */
+		if (p->is_dead) return true;
+	} else {
+		p->csp -= paid;
+		p->upkeep->redraw |= (PR_MANA);
+	}
 
 	if (randint0(100) < player_power_chance(p, power)) {
 		event_signal(EVENT_INPUT_FLUSH);

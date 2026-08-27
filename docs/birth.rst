@@ -367,15 +367,25 @@ Half-Titan       examine your foes            35    20  STR        12%
 ================ ========================= =====  ====  =====  =======
 
 The level is when the power arrives; before it, the character simply cannot.
-The mana comes out of the same pool spells do, so a Warrior of one of these
-races has a small reserve of spell points that exists for no other purpose.
+
+The cost comes out of spell points where there are any — and where there are
+not, it comes out of you. A Warrior, a Rogue, a Blackguard and a Monk have no
+mana at all, and for them a racial power is paid for in hit points instead, at
+the same price. That is Zangband's rule and it is what keeps the powers worth
+having whatever you chose to be; the menu tells you which pool a power is about
+to take from before you commit to it. The amount is not fixed either: it is
+somewhere between half the listed cost and all of it.
 
 The failure figure is the chance at exactly the level the power arrives, with
 an average stat. Both of the things you can do about it help: every level past
-that one takes three points off, and every point of the stat it leans on takes
-off more. Trying with too little mana left makes it markedly worse. Failing
-still spends the mana — being told you are too junior, or too spent to try at
-all, does not.
+that one takes three points off, and the stat it leans on takes off more — off
+the same table that decides how reliably a spell is cast, so a power behaves
+like a spell in the ways you would expect it to. Reaching past what is left in
+the pool makes it markedly worse, and being stunned worse still. However short
+the stat, the chance never gets worse than 95 per cent.
+
+Failing still costs the price — being told you are too junior, too confused, or
+too spent to try at all does not.
 
 The two Amberite powers are the two halves of the family. *Shifting into
 shadow* moves you a long way and leaves you briefly blind, arriving where you
@@ -526,6 +536,64 @@ Blackguard
   is legendary, with a blackguard in full cry nigh on impossible to kill.
   Blackguards scorn skills apart from slaughter, and require strength and
   intelligence (or rat-cunning) to thrive in the dungeon.
+
+The class below is Zangband's, and is new to ZangbandTK.
+
+.. _Monk:
+
+Monk
+  A Monk carries no weapon because it does not need one. Where every other
+  class fighting bare-handed does a single point of damage a blow, a Monk
+  strikes with a trained technique — and strikes far more often than a Warrior
+  with a sword ever will. It is dextrous, quick, poor with a bow it has no
+  reason to carry, and expensive: a Monk costs 40 per cent more experience
+  for every level, which is Zangband's price for what the class can do.
+
+  A Monk is the one class in the game that is punished for wearing armour. See
+  :ref:`Martial arts <martial-arts>` for what it gains by going without, and
+  what it loses by not.
+
+.. _martial-arts:
+
+Martial arts
+------------
+
+The Monk's unarmed attack is a ladder of seventeen techniques, from a punch at
+level 1 to a crushing blow at 48. Each one arrives at its own level and has its
+own difficulty, and what you throw is decided fresh every time you swing: the
+character gets one attempt per seven levels, each attempt turns up a technique
+at random, and the best of the ones that come off is the one that lands.
+
+So a novice punches and kicks, and a Grand Master usually — but not reliably —
+lands something from the top of the ladder. Being stunned or confused takes
+away the choosing, and you throw whatever came up. Three of the techniques do
+something beyond damage: a knee doubles a male opponent up, a kick to the ankle
+leaves anything that walks limping, and most of the upper ladder stuns.
+
+The number of strikes goes up with level as well — two at first, eight by the
+end, which is more than a Warrior gets out of any weapon in the game.
+
+**What armour costs.** Add up what the character is wearing on its body, head,
+arm, back, hands and feet. If that comes to more than ten pounds plus another
+four tenths of a pound per level — thirty pounds at level 50 — the Monk is
+carrying too much, and:
+
+- the number of strikes is halved,
+- the bonus to hit and to damage is withdrawn, and
+- the armour class for empty slots stops being paid.
+
+You are told when it happens: *the weight of your armour disrupts your balance*.
+
+**What going without pays.** Under the limit, every armour slot left empty is
+worth armour class in its own right, and the body slot is worth far more than
+the rest put together — three points for every two levels, so 75 at level 50.
+The back, arm and head slots only start paying at levels 15, 10 and 4. A Monk
+who wears nothing is not undefended; it is defended by having nothing in the
+way.
+
+Wielding a weapon has no penalty attached to it. It simply switches all of the
+above off, because the ladder is only reached with empty hands — which in
+practice is the sharpest penalty in the game.
 
 Stats
 =====

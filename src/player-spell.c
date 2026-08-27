@@ -359,6 +359,21 @@ bool spell_okay_to_browse(const struct player *p, int spell_index)
 }
 
 /**
+ * The same two adjustments, for anything that is spell-like without being a
+ * spell -- racial powers (PLR-02).  Exposed here rather than duplicated so a
+ * power and a spell price a stat identically.
+ */
+int spell_stat_adjust(struct player *p, int stat)
+{
+	return adj_mag_stat[p->state.stat_ind[stat]];
+}
+
+int spell_stat_minfail(struct player *p, int stat)
+{
+	return adj_mag_fail[p->state.stat_ind[stat]];
+}
+
+/**
  * Spell failure adjustment by casting stat level
  */
 static int fail_adjust(struct player *p, const struct class_spell *spell)

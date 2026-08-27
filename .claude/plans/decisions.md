@@ -1070,6 +1070,54 @@ Draconian's breath changes every five levels, the Sprite quickens at nine, the
 Yeek's acid resistance becomes immunity at nineteen. A 4.2 race is a flat set of
 flags, so those wait for PLR-02, which is the mechanism for exactly this.
 
+### DEC-36 — The Monk, and a class mapping that was measured (PLR-03/PLR-04)
+
+Zangband has five classes 4.2 does not. The Monk is the first, taken because its
+identity is entirely self-contained — no realms, no patrons, nothing waiting on
+another milestone.
+
+*The mapping was measured*, the same way PLR-01's was. Six classes appear in both
+games (Warrior, Mage, Priest, Rogue, Ranger, Paladin), which makes the conversion
+answerable rather than a matter of taste:
+
+| Field | Finding | What was done |
+|---|---|---|
+| stats, hit dice | close, and 4.2 retuned a few | copied |
+| disarm base, device base, save base | identical in 5 of 6 | copied |
+| device *incr* | identical in 6 of 6 | copied |
+| save *incr* | 4.2 runs 0.41–0.44 of Zangband's, very tight | × 0.42 |
+| search base | 4.2 runs exactly 0.62 in 5 of 6 | × 0.62 |
+| search incr | Zangband's `x_srh` is 0 for every class; 4.2 uses 12–16 | no source — class-typical value |
+| melee base | 4.2 runs ~3.1× | × 3.1 |
+| melee incr | 4.2 runs ~0.56× | × 0.56 |
+| shoot base | 4.2 runs ~3.45×, and varies widely | × 3.45 |
+| shoot incr | 4.2 runs ~0.94× | copied |
+| disarm-magic | 4.2 split one Zangband skill in two; equal to phys in 2 of 6 | copied from phys |
+| throw | equal to shoot in 4 of 6 | copied from shoot |
+| experience | 4.2 leaves it at **0** for all nine of its classes; Zangband ran 0–40 | Zangband's kept |
+
+The two clean results are worth noting: `c_srh → search` lands on 0.62 in five of
+six, and `x_dev → device incr` is 1.00 in six of six. Those are not coincidences —
+they are 4.2 having deliberately rescaled one skill and left the other alone.
+
+*The experience factor is kept*, which makes the Monk the only class in the game
+that costs anything. That is the same call PLR-01 made for races and for the same
+reason: 4.2 treats the field as a formality, Zangband used it as the balance dial,
+and a Monk that levels as fast as a Warrior is not paying for eight unarmed blows.
+
+*Charisma is dropped*, as it is throughout.
+
+*What the Monk does not yet have.* In Zangband it casts, choosing between Life and
+Nature. Realm selection is PLR-08, two milestones out, so it ships as a pure
+martial class; adding a `magic:` block later takes nothing away from it.
+
+*One defect found while building it.* PLR-02's racial powers read their cost from
+spell points only, and `calc_mana()` returns a maximum of zero for any class with
+no spellbooks — Warrior, Rogue, Blackguard, and now Monk. A Draconian Warrior
+could never once have breathed. Zangband's own answer is that a character short of
+mana pays in hit points, which is both the fix and the reason the feature works at
+all for the classes that need it most.
+
 Verification work carried into Phase 2:
 
 - Measure `struct chunk`'s memory footprint against the wilderness live-block target

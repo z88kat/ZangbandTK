@@ -106,6 +106,63 @@ is now the newest ZangbandTK in existence and the least settled — which is the
 right trade for something you reach by clicking a link.
 
 
+27 August 2026 — the Monk, and a test that had been lying for a week
+=====================================================================
+
+The Monk went in today, which meant building martial arts from nothing: 4.2's
+answer for an empty weapon slot is one point of damage a blow with criticals
+explicitly skipped, and Zangband's Monk is a character whose weapon *is* itself.
+Seventeen techniques on a ladder, two to eight strikes a turn, armour class for
+every slot left empty, and all of it withdrawn the moment you put on plate.
+
+I measured the class mapping rather than guessing it, the way PLR-01 did for
+races. Six classes exist in both games, and comparing them field by field gave
+conversion factors instead of taste — two of which came back suspiciously clean.
+Zangband's searching skill maps to 4.2's at exactly 0.62 in five of the six, and
+the device *increment* is 1.00 in all six. That is 4.2 having deliberately
+rescaled one and left the other untouched, and it is the kind of thing you only
+see if you look.
+
+Then the interesting part, which is the part I got wrong.
+
+Building the Monk I noticed it would be a class with no spellbooks, and went to
+check what that meant for the racial powers I shipped yesterday. It meant they
+did not work. ``calc_mana()`` returns a maximum of zero for any class with an
+empty book list, powers read their cost from spell points, and so a Draconian
+Warrior could never once breathe. Nine of the fourteen classes were locked out
+of a feature I had documented as working for exactly them. Zangband's own answer
+turns out to be that a character short of mana pays in hit points instead, which
+is both the fix and, I suspect, why Zangband wrote it that way in the first
+place.
+
+That was mine and it was recent. The next one was worse.
+
+My Monk test kept segfaulting, and I spent a while convinced the fault was in
+the new martial arts code. It was not — it was in the tests I wrote yesterday,
+which do this:
+
+.. code-block:: c
+
+   for (r = races; r; r = r->next)
+       if (streq(r->name, "Mindflayer")) power = r->powers;
+   player->race = r;
+
+The loop never breaks. By the time it exits ``r`` is ``NULL``, so every one of
+those tests had been setting the player's race to nothing at all. They passed —
+``player_use_power()`` never reads the race — and they left a null pointer behind
+for whatever ran next. Nothing ran next until today.
+
+Three more flakes fell out of the same afternoon: two older tests that placed a
+monster by walking east from the player until they found a free square, which
+fails whenever the character is standing near a wall. They had been failing
+roughly one run in five and I had been rerunning them. They now search outward
+in rings, which is what they should always have done.
+
+None of that is glamorous. But a test that passes while asserting nothing is
+worse than no test, because it occupies the space where a real one would go —
+and I wrote four of them in a row without noticing.
+
+
 26 August 2026 — nine powers, and a keyboard with nothing left on it
 ====================================================================
 

@@ -1981,8 +1981,14 @@ void do_cmd_racial_power(void)
 			strnfmt(line, sizeof(line), "%-24s  level %d", powers[i]->name,
 					powers[i]->level);
 		else
-			strnfmt(line, sizeof(line), "%-24s  %d sp, %d%% to fail",
+			/*
+			 * "hp" rather than "sp" when there is not enough mana, because
+			 * that is what it will actually take out of you -- and for a
+			 * Warrior or a Monk it is the only thing it ever takes.
+			 */
+			strnfmt(line, sizeof(line), "%-24s  %d %s, %d%% to fail",
 					powers[i]->name, powers[i]->cost,
+					player->csp < powers[i]->cost ? "hp" : "sp",
 					player_power_chance(player, powers[i]));
 
 		menu_dynamic_add_label(m, line, 0, i + 1, labels);
@@ -1993,8 +1999,12 @@ void do_cmd_racial_power(void)
 	screen_save();
 	menu_dynamic_calc_location(m, 0, 0);
 	region_erase_bordered(&m->boundary);
-	prt(format("You are %s, and have %d of %d spell points.",
-			   player->race->name, player->csp, player->msp), 0, 0);
+	if (player->msp)
+		prt(format("You are %s, and have %d of %d spell points.",
+				   player->race->name, player->csp, player->msp), 0, 0);
+	else
+		prt(format("You are %s, and pay for this out of your own hide.",
+				   player->race->name), 0, 0);
 
 	chosen = menu_dynamic_select(m);
 

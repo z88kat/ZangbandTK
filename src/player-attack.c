@@ -769,9 +769,100 @@ static void chaotic_effect(struct player *p, struct monster *mon)
 }
 
 
+
 /**
- * Attack the monster at the given location with a single blow.
+ * Choose which strike a martial artist throws (ZangbandTK, PLR-04).
+ *
+ * Zangband's rule, and it is a nice one.  A Monk gets one attempt per seven
+ * levels, each attempt draws a strike at random from the whole ladder, and a
+ * strike is rejected if it is above the character's level or if `randint1(lev)`
+ * comes in under its difficulty.  The best of what survives is thrown.
+ *
+ * So a low Monk almost always punches, and a Grand Master usually -- but not
+ * reliably -- lands something from the top of the ladder.  It is a skill that
+ * shows itself unevenly, which is the right feel for one.
+ *
+ * Being stunned or confused withholds the "keep the best" step, so a rattled
+ * Monk throws whatever came up last instead of choosing.
  */
+static struct class_blow *player_pick_blow(struct player *p)
+{
+	struct class_blow *best = p->class->blows;
+	struct class_blow *pick = best;
+	int attempts = (p->lev < 7) ? 1 : p->lev / 7;
+	int i, count = 0;
+
+	for (pick = p->class->blows; pick; pick = pick->next) count++;
+	if (!count) return NULL;
+
+	for (i = 0; i < attempts; i++) {
+		struct class_blow *candidate;
+		int guard = 0;
+
+		/* Draw until something the character could actually throw comes up. */
+		do {
+			int choice = randint0(count);
+
+			candidate = p->class->blows;
+			while (choice--) candidate = candidate->next;
+		} while ((candidate->level > p->lev ||
+				  randint1(p->lev) < candidate->chance) && ++guard < 100);
+
+		/* The first rung is always available, so this is belt and braces. */
+		if (candidate->level > p->lev) continue;
+
+		if (candidate->level > best->level &&
+				!p->timed[TMD_STUN] && !p->timed[TMD_CONFUSED])
+			best = candidate;
+		else
+			candidate = best;
+	}
+
+	return best;
+}
+
+/**
+ * What a martial strike does past the damage it deals (PLR-04).
+ *
+ * Called only when the target lived through the blow, because none of it means
+ * anything to something already dead.  4.2's own mon_inc_timed() decides what
+ * resists -- rather than Zangband's hand-rolled tally of unique and undead and
+ * no-sleep -- so the game's existing rules about what can be stunned or slowed
+ * hold here too.
+ */
+static void martial_side_effect(struct player *p, struct monster *mon,
+								struct class_blow *blow, const char *m_name)
+{
+	switch (blow->effect) {
+		case MA_KNEE:
+			/* Zangband aimed this where it would land; so does this. */
+			if (rf_has(mon->race->flags, RF_MALE)) {
+				msg("%s moans in agony!", m_name);
+				mon_inc_timed(mon, MON_TMD_STUN, randint1(13) + 7, 0);
+			}
+			break;
+
+		case MA_SLOW:
+			/* A kick to the ankle is wasted on anything that does not walk. */
+			if (!rf_has(mon->race->flags, RF_NEVER_MOVE) &&
+					!rf_has(mon->race->flags, RF_UNIQUE) &&
+					randint1(p->lev) > mon->race->avg_hp / 5) {
+				msg("%s starts limping.", m_name);
+				mon_inc_timed(mon, MON_TMD_SLOW, randint1(10) + 5, 0);
+			}
+			break;
+
+		case MA_STUN:
+			mon_inc_timed(mon, MON_TMD_STUN,
+						  blow->power / 2 + randint1(blow->power
+													 - blow->power / 2), 0);
+			break;
+
+		default:
+			break;
+	}
+}
+
 /**
  * Walking into a blessed beast (ZangbandTK, CNT-20).
  *
@@ -875,6 +966,9 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	uint32_t msg_type = MSG_HIT;
 	int j, b, s, weight, dmg;
 
+	/* The strike thrown, if this is a martial artist fighting bare (PLR-04) */
+	struct class_blow *ma_blow = NULL;
+
 	/* Default to punching */
 	my_strcpy(verb, "punch", sizeof(verb));
 
@@ -933,6 +1027,9 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 		my_strcpy(verb, "hit", sizeof(verb));
 	} else {
 		weight = 0;
+
+		if (player_has(p, PF_MARTIAL_ARTS) && p->class->blows)
+			ma_blow = player_pick_blow(p);
 	}
 
 	/* Best attack from all slays or brands on all non-launcher equipment */
@@ -952,7 +1049,23 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	improve_attack_modifier(p, NULL, mon, &b, &s, verb, false);
 
 	/* Get the damage */
-	if (!OPT(p, birth_percent_damage)) {
+	if (ma_blow) {
+		/*
+		 * A trained strike, which is a weapon in every way that matters here:
+		 * it rolls real dice and it crits.  Zangband weighted the critical by
+		 * `lev * randint1(10)` and passed the strike's own level where a
+		 * weapon's to-hit would go, so a harder technique crits like a better
+		 * blade.  Both kept.
+		 */
+		dmg = damroll(ma_blow->dd, ma_blow->ds);
+		if (s) {
+			dmg *= slays[s].multiplier;
+		} else if (b) {
+			dmg *= get_monster_brand_multiplier(mon, &brands[b], false);
+		}
+		dmg = critical_melee(p, mon, p->lev * randint1(10), ma_blow->level,
+							 dmg, &msg_type);
+	} else if (!OPT(p, birth_percent_damage)) {
 		dmg = melee_damage(mon, obj, b, s);
 		/* For now, exclude criticals on unarmed combat */
 		if (obj) {
@@ -1017,8 +1130,26 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 		my_strcpy(verb, "fail to harm", sizeof(verb));
 	}
 
+	/*
+	 * A martial strike carries its own sentence -- "You hit the orc with a
+	 * flying kick." -- which the generic "You <verb> <target>" cannot express,
+	 * and the naming of the technique is half of what the class is for.
+	 */
+	if (ma_blow && dmg > 0) {
+		char blow_msg[120];
+
+		strnfmt(blow_msg, sizeof(blow_msg), ma_blow->desc, m_name);
+
+		if (OPT(p, show_damage))
+			msgt(msg_type, "%s (%d)", blow_msg, dmg);
+		else
+			msgt(msg_type, "%s", blow_msg);
+	}
+
 	for (i = 0; i < N_ELEMENTS(melee_hit_types); i++) {
 		const char *dmg_text = "";
+
+		if (ma_blow && dmg > 0) break;
 
 		if (msg_type != melee_hit_types[i].msg_type)
 			continue;
@@ -1048,6 +1179,10 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	/* Damage, check for hp drain, fear and death */
 	drain = MIN(mon->hp, dmg);
 	stop = mon_take_hit(mon, p, dmg, fear, NULL);
+
+	/* What the strike did beyond the damage, to something still standing */
+	if (ma_blow && !stop && dmg > 0)
+		martial_side_effect(p, mon, ma_blow, m_name);
 
 	/* Small chance of bloodlust side-effects */
 	if (p->timed[TMD_BLOODLUST] && one_in_(50)) {
@@ -1188,6 +1323,7 @@ static bool attempt_shield_bash(struct player *p, struct monster *mon, bool *fea
 
 	return false;
 }
+
 
 /**
  * Attack the monster at the given location

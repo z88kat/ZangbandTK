@@ -394,6 +394,41 @@ struct class_magic {
 /**
  * Player class info
  */
+/**
+ * One strike in a class's unarmed progression (ZangbandTK, PLR-04).
+ *
+ * 4.2 treats fighting without a weapon as a penalty: melee_damage() returns a
+ * flat 1 and criticals are skipped outright.  For a Monk that is the wrong
+ * shape entirely -- bare hands are the class's weapon, and Zangband gave them a
+ * ladder of seventeen strikes from a punch to a Crushing Blow.
+ *
+ * `level` is when the strike becomes available and `chance` is how hard it is
+ * to land even then; together they are what stops a level 50 Monk from simply
+ * always throwing its best.  `level` doubles as the strike's to-hit weight in
+ * the critical calculation, which is Zangband's own trick: a harder technique
+ * crits like a better weapon.
+ */
+struct class_blow {
+	struct class_blow *next;
+	char *desc;			/**< Message, with one %s for the target */
+	int level;			/**< Character level before it can be thrown */
+	int chance;			/**< Difficulty; see player_pick_blow() */
+	int dd;				/**< Damage dice */
+	int ds;				/**< Damage sides */
+	int effect;			/**< One of the MA_* below */
+	int power;			/**< Stun magnitude, for MA_STUN */
+};
+
+/**
+ * What a strike does beyond damage (PLR-04).
+ */
+enum {
+	MA_NONE = 0,
+	MA_KNEE,		/**< Vs. a male target: doubles up, and is stunned */
+	MA_SLOW,		/**< Vs. anything that walks: slows it */
+	MA_STUN			/**< Stuns, by `power` */
+};
+
 struct player_class {
 	struct player_class *next;
 	const char *name;
@@ -419,6 +454,8 @@ struct player_class {
 	struct start_item *start_items; /**< Starting inventory */
 
 	struct class_magic magic;	/**< Magic spells */
+
+	struct class_blow *blows;	/**< Unarmed progression (PLR-04) */
 };
 
 /**
@@ -520,6 +557,7 @@ struct player_state {
 	bool bless_wield;	/**< Blessed (or blunt) weapon */
 
 	bool cumber_armor;	/**< Mana draining armor */
+	bool monk_armour;	/**< Too much armour for martial arts (PLR-04) */
 
 	bitflag flags[OF_SIZE];					/**< Status flags from race and items */
 	bitflag pflags[PF_SIZE];				/**< Player intrinsic flags */
