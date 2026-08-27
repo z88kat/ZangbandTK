@@ -48,5 +48,7 @@
 extern const char *buildid;
 extern const char *buildver;
 extern const char *copyright;
+extern const char *copyright_brief;
+extern const char *homepage;
 
 #endif /* BUILDID */

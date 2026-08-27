@@ -2204,7 +2204,7 @@ static void show_about(struct sdlpui_window *window, int x, int y)
 	if (!window->infod) {
 		char path[4096];
 		SDL_Texture *texture;
-		const char *copyright_eol;
+		const char *line;
 
 		window->infod = sdlpui_start_simple_info("Ok", NULL,
 			recreate_about_dialog_textures, 0);
@@ -2216,28 +2216,35 @@ static void show_about(struct sdlpui_window *window, int x, int y)
 			DEFAULT_XTRA_BORDER, DEFAULT_XTRA_BORDER);
 		sdlpui_simple_info_add_label(window->infod, buildid,
 			SDLPUI_HOR_CENTER);
-		copyright_eol = SDL_strstr(copyright, "\n");
-		if (copyright_eol) {
-			char *line = SDL_malloc((size_t)(copyright_eol
-				- copyright) + 1);
+		/*
+		 * Every credit line, one label each.  This took only the first
+		 * line of copyright, which after the rebranding is Angband's
+		 * line by itself -- so the dialog credited Angband, omitted
+		 * both Zangband and ZangbandTK, and then sent the player to
+		 * Angband's homepage and Angband's forum.  copyright_brief is
+		 * those lines without the licence that follows them, and sits
+		 * beside copyright in buildid.c so the two cannot drift.
+		 */
+		line = copyright_brief;
+		while (*line) {
+			const char *eol = SDL_strchr(line, '\n');
+			size_t len = (eol) ? (size_t)(eol - line)
+				: SDL_strlen(line);
+			char *buf = SDL_malloc(len + 1);
 
-			if (line) {
-				(void)SDL_strlcpy(line, copyright,
-					(size_t)(copyright_eol - copyright)
-					+ 1);
+			if (buf) {
+				(void)SDL_strlcpy(buf, line, len + 1);
 				sdlpui_simple_info_add_label(window->infod,
-					line, SDLPUI_HOR_CENTER);
-				SDL_free(line);
+					buf, SDLPUI_HOR_CENTER);
+				SDL_free(buf);
 			}
-		} else {
-			sdlpui_simple_info_add_label(window->infod, copyright,
-				SDLPUI_HOR_CENTER);
+			if (!eol) {
+				break;
+			}
+			line = eol + 1;
 		}
 		sdlpui_simple_info_add_label(window->infod,
-			"See http://www.rephial.org", SDLPUI_HOR_CENTER);
-		sdlpui_simple_info_add_label(window->infod,
-			"Visit our forum at https://angband.live/forums/",
-			SDLPUI_HOR_CENTER);
+			format("See %s", homepage), SDLPUI_HOR_CENTER);
 		sdlpui_complete_simple_info(window->infod, window);
 		window->infod->pop_callback = hide_about;
 		window->infod->rect.x = x;
@@ -3423,10 +3430,19 @@ static struct sdlpui_dialog *handle_menu_button(struct sdlpui_control *ctrl,
 		sdlpui_create_menu_toggle(c, "Send Keypad Modifier",
 			SDLPUI_HOR_LEFT, handle_menu_kp_mod, 0, SDL_FALSE,
 			window->app->kp_as_mod);
+#ifndef __EMSCRIPTEN__
+		/*
+		 * This binds a key to give a window's menu bar the keyboard,
+		 * which is worth having when there are several windows to
+		 * reach.  There is one here and no way to make another, so the
+		 * shortcut it edits would move the keyboard to the menu bar it
+		 * was already on.
+		 */
 		c = sdlpui_get_simple_menu_next_unused(result,
 			SDLPUI_MFLG_NONE);
 		sdlpui_create_menu_button(c, "Menu Shortcuts...",
 			SDLPUI_HOR_LEFT, handle_menu_shortcuts, 0, SDL_FALSE);
+#endif /* !__EMSCRIPTEN__ */
 #ifndef __EMSCRIPTEN__
 		/*
 		 * This submenu opens and closes additional operating-system
