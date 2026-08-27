@@ -32,10 +32,30 @@ const char *buildver = VERSION_STRING;
 /**
  * Link a copyright message into the executable
  */
+/*
+ * The credit lines, in one place because two things want them: `copyright`
+ * below, which is the whole notice, and `copyright_brief`, which is these lines
+ * alone for the About dialogs -- they have room for a few lines and not for the
+ * licence.  Written twice, they would drift, and the one that drifts is the one
+ * nobody reads until it is wrong in front of a player.
+ */
+#define COPYRIGHT_LINES \
+	"Copyright (c) 1987-2026 Angband contributors.\n" \
+	"Copyright (c) 1997-2005 Zangband DevTeam.\n" \
+	"Copyright (c) 2026 ZangbandTK contributors."
+
+const char *copyright_brief = COPYRIGHT_LINES;
+
+/*
+ * Where to find the project.  The About dialogs used to name Angband's own
+ * homepage and forum, which is where an unbranded variant sends its players by
+ * default and exactly the wrong place to send ours.
+ */
+const char *homepage = "https://zangbandtk.com";
+
 const char *copyright =
-	"Copyright (c) 1987-2026 Angband contributors.\n"
-	"Copyright (c) 1997-2005 Zangband DevTeam.\n"
-	"Copyright (c) 2026 ZangbandTK contributors.\n"
+	COPYRIGHT_LINES
+	"\n"
 	"\n"
 	"ZangbandTK " VERSION_STRING " is a variant of Angband " BASE_VERSION_STRING ",\n"
 	"rebuilding the spirit of Zangband on a modern base.  It incorporates\n"

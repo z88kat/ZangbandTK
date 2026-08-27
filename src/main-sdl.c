@@ -1637,7 +1637,8 @@ static void AboutDraw(sdl_Window *win)
 {
 	SDL_Rect rc;
 	SDL_Rect icon;
-	const char *copyright_eol;
+	const char *line;
+	int y;
 
 	RECT(0, 0, win->width, win->height, &rc);
 
@@ -1651,26 +1652,34 @@ static void AboutDraw(sdl_Window *win)
 	}
 	sdl_WindowText(win, AltUnselColour, 20, 150,
 		format("You are playing %s", buildid));
-	copyright_eol = SDL_strstr(copyright, "\n");
-	if (copyright_eol) {
-		char *line = SDL_malloc((size_t)(copyright_eol
-			- copyright) + 1);
+	/* Every credit line, not just the first; see show_about in main-sdl2.c. */
+	y = 160;
+	line = copyright_brief;
+	while (*line) {
+		const char *eol = SDL_strchr(line, '\n');
+		size_t len = (eol) ? (size_t)(eol - line) : SDL_strlen(line);
+		char *buf = SDL_malloc(len + 1);
 
-		(void)SDL_strlcpy(line, copyright,
-			(size_t)(copyright_eol - copyright) + 1);
-		sdl_WindowText(win, AltUnselColour, 20, 160, line);
-		SDL_free(line);
-	} else {
-		sdl_WindowText(win, AltUnselColour, 20, 160, copyright);
+		if (buf) {
+			(void)SDL_strlcpy(buf, line, len + 1);
+			sdl_WindowText(win, AltUnselColour, 20, y, buf);
+			SDL_free(buf);
+		}
+		y += 10;
+		if (!eol) {
+			break;
+		}
+		line = eol + 1;
 	}
-	sdl_WindowText(win, AltUnselColour, 20, 170,
-		"See http://www.rephial.org");
+	sdl_WindowText(win, AltUnselColour, 20, y,
+		format("See %s", homepage));
 }
 
 static void AboutActivate(sdl_Button *sender)
 {
 	int width = 350;
-	int height = 210;
+	/* Tall enough for all three credit lines and the address below them. */
+	int height = 240;
 
 	sdl_WindowInit(&PopUp, width, height, AppWin, StatusBar.font.req);
 	PopUp.left = (AppWin->w / 2) - width / 2;
