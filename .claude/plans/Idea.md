@@ -133,6 +133,105 @@ git push origin master
 git tag -a 3.5.1-rc1 -m "Windows build test"
 git push origin 3.5.1-rc1
 
+## Amber m´Material
+
+https://adrp.proboards.com
+
+The Betancourt Prequels:
+
+1. The Dawn of Amber (2002)
+2. Chaos and Amber (2003)
+3. To Rule in Amber (2004)
+4. Shadows of Amber (2005)
+5. Sword of Chaos (never written)
+
+The Zelazny novels:
+THE CORWIN BOOKS:
+
+1. Nine Princes in Amber (1970)
+2. The Guns of Avalon (1972)
+3. Sign of the Unicorn (1975)
+4. The Hand of Oberon (1976)
+5. The Courts of Chaos (1978)
+   THE MERLIN BOOKS:
+6. The Trumps of Doom (1985)
+7. Sign of Chaos (1986)
+8. Blood of Amber (1987)
+9. Knight of Shadows (1989)
+10. Prince of Chaos (1991)
+
+The Zelazny Short Stories:
+
+1. Prolog to "The Trumps of Doom" (Merlin POV; 1985)
+2. The Salesman's Tale (Luke POV; 1994)
+3. Coming to a Cord (Frakir POV; 1995)
+4. The Shroudling and the Guisel (Merlin POV; 1995)
+5. Blue Horse, Dancing Mountains (Corwin POV; 1995)
+6. Hall of Mirrors (Corwin POVl; 1996)
+
+Other RZ Amber Writings of Interest:
+
+1. Introduction to the Graphic Novel "Nine Princes in Amber"
+2. Introduction to "Seven No-Trump"
+3. Introduction to "The Black Road War"
+
+Amber Diceless Role Playing:
+ADRP Core Rulebook (1991)
+++ ADPR Core Rulebook -- PDF
+
+Shadow Knight (1993)
+++ Shadow Knight -- PDF
+
+Rebma Sourcebook (never printed)
+
+Amberzine #1 (March 1992)
+Amberzine #2 (August 1992)
+Amberzine #3 (April 1993)
+Amberzine #4 (August 1993)
+Amberzine #5 (November 1993)
+Amberzine #6 (February 1994)
+Amberzine #7 (July 1994)
+Amberzine #8 (November 1995)
+Amberzine #9 (January 1996)
+Amberzine #10 (October 1997)
+Amberzine #11 (May 2001)
+Amberzine #12 (March 2005)
+
+Comic Books:
+
+1. Nine Princes in Amber #1/3 (1996)
+2. Nine Princes in Amber #2/3
+3. Nine Princes in Amber #3/3
+4. The Guns of Avalon #1/3
+5. The Guns of Avalon #2/3
+6. The Guns of Avalon #3/3
+
+Magazines:
+Review of ADRP (Pyramid #2)
+Review of Shadow Knight (Pyramid #6)
+
+"An Interview with designer Erick Wujcik" (Dangerous Journeys #1 / 1992)
+"A short history of Amber Diceless Role Playing" (Dangerous Journeys #2 / 1992)
+
+"Child's Play I" (Shadus #33 / 1996?)
+"Child's Play II" (Shadus #34 / 1996?)
+
+"The InQuest world guide to Amber" (InQuest / May 1997)
+
+Miscellaneous:
+The Illustrated Roger Zelazny (1978)
+
+Le Tarot d'Ambre (Tarot Deck / 1994)
+English Translation book (never published)
+
+Roger Zelazny's Visual Guide to Castle Amber (Randall / 1988)
+"Seven No-Trump" Crossroads Adventure (Randall / 1988)
+"The Black Road War" Combat Command (Randall / 1988)
+
+The Complete Amber Sourcebook (Krulik / 1996)
+
+Amber Minister of the Interior Geologic Survey Map (date unknown)
+
 ## Follow up Ideas
 
 Sometimes walking over the wilderness feels like a slog, trying to discover the world. Its dangeous too.
@@ -154,6 +253,10 @@ This "might" allow us to make a stable NSD build. It is something to investigate
 But, we might still be able to support wilderness with additional hardware. I have a RAM pack we could consider to make a special build which includes the wilderness for the "ram pack" edition. We need to evaluate if the wilderness fits into memory with the ram pack?
 
 Note: There is a bug, the font on the NDS looks like crap, its really blury and hard to read. At first i just figured it was the emulator, but on the hardware its the same, so whatever font we using, it does not work. I checked the original angband NDS release, it has the same problem, so it is not something we have introduced. It looks broken at source. It also appears we are not using the full width of the screen (again broken in angband).
+
+## 3DS Build
+
+We follow the same principles that work with the NDS.
 
 ## Spectrum Next Build
 
