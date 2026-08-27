@@ -1,0 +1,108 @@
+name: wasm
+
+# Build the WebAssembly version and run the test suite against it.
+#
+# This is the gate for the browser build, in the same relationship to
+# pages.yaml as docs.yaml is: this one runs on pull requests and must pass
+# before a change lands, and pages.yaml publishes afterwards what the gate has
+# already approved.  Without it the browser build would first be exercised by
+# CI on master, where a failure is a site that cannot be republished rather than
+# a red mark on somebody's branch.
+#
+# It runs the repository's own tests, not just the compiler.  main-test.c needs
+# no canvas, no window and no SDL, so the wasm binary runs under node, and the
+# same tests that gate the native builds gate this one.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+    paths:
+      - 'src/**'
+      - 'lib/**'
+      - 'tests/**'
+      - 'run-tests'
+      - '.github/workflows/wasm.yaml'
+
+# Reads the repository to build it and nothing else.
+permissions:
+  contents: read
+
+# Keep in step with pages.yaml, which publishes what this approves: gating one
+# version and shipping another would defeat the point of gating.
+env:
+  EMSDK_VERSION: 3.1.51
+
+jobs:
+  wasm:
+    name: WebAssembly
+    runs-on: ubuntu-latest
+    steps:
+      # Need the full history: buildid comes from scripts/version.sh, which is
+      # a git describe against the tags.
+      - name: Clone Project
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # The SDK is about a gigabyte and takes minutes to install, so cache it
+      # against its version.  Installed by hand rather than through a
+      # third-party action, to keep the toolchain the same here as in
+      # pages.yaml, where an action is not something to hand the deploy
+      # permission to.
+      - name: Cache Emscripten SDK
+        id: cache-emsdk
+        uses: actions/cache@v4
+        with:
+          path: emsdk
+          key: emsdk-${{ runner.os }}-${{ env.EMSDK_VERSION }}
+
+      - name: Install Emscripten SDK
+        if: steps.cache-emsdk.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 https://github.com/emscripten-core/emsdk.git
+          cd emsdk
+          ./emsdk install "$EMSDK_VERSION"
+          ./emsdk activate "$EMSDK_VERSION"
+
+      - name: Build
+        run: |
+          make -C src -f Makefile.wasm -j$(nproc) \
+            EMSDK="$GITHUB_WORKSPACE/emsdk"
+
+      - name: Test
+        run: |
+          make -C src -f Makefile.wasm -j$(nproc) test-exe \
+            EMSDK="$GITHUB_WORKSPACE/emsdk"
+          ./run-tests build-wasm/zangbandtk-test
+
+      # A page that cannot find its own files is not caught by compiling or by
+      # the tests, so check the four things the deployment actually consists of
+      # are present and not empty.
+      - name: Check the deployable files
+        run: |
+          for f in zangbandtk.html zangbandtk.js zangbandtk.wasm \
+                   zangbandtk.data; do
+            if [ ! -s "build-wasm/$f" ]; then
+              echo "missing or empty: build-wasm/$f" >&2
+              exit 1
+            fi
+          done
+          ls -l build-wasm/zangbandtk.*
+
+      # The desktop SDL2 front end shares main-sdl2.c with the browser build,
+      # and every browser-only change in it sits behind __EMSCRIPTEN__.  Compile
+      # it with that undefined so the other side of each of those guards is
+      # built too; otherwise a break there would not surface until somebody
+      # built for a desktop.
+      - name: Compile the non-Emscripten side of main-sdl2.c
+        run: |
+          "$GITHUB_WORKSPACE/emsdk/upstream/emscripten/emcc" \
+            -std=gnu99 -I src -O0 \
+            -DUSE_SDL2 -DHAVE_MKSTEMP \
+            -sUSE_SDL=2 -sUSE_SDL_IMAGE=2 -sUSE_SDL_TTF=2 \
+            -Wall -Wextra -Wno-unused-parameter \
+            -Wno-missing-field-initializers -Wno-unused-function \
+            -U__EMSCRIPTEN__ \
+            -c src/main-sdl2.c -o /tmp/main-sdl2-native.o
