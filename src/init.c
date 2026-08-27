@@ -5056,15 +5056,15 @@ static enum parser_error parse_class_blow(struct parser *p) {
 	 */
 	{
 		const char *desc = parser_getstr(p, "desc");
-		const char *c;
+		const char *s;
 		int subs = 0;
 
-		for (c = desc; *c; c++) {
-			if (*c != '%') continue;
-			if (c[1] == '%') { c++; continue; }
-			if (c[1] != 's') { mem_free(blow); return PARSE_ERROR_INVALID_VALUE; }
+		for (s = desc; *s; s++) {
+			if (*s != '%') continue;
+			if (s[1] == '%') { s++; continue; }
+			if (s[1] != 's') { mem_free(blow); return PARSE_ERROR_INVALID_VALUE; }
 			subs++;
-			c++;
+			s++;
 		}
 
 		if (subs != 1) {
