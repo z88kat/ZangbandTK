@@ -369,9 +369,9 @@ Half-Titan       examine your foes            35    20  STR        12%
 The level is when the power arrives; before it, the character simply cannot.
 
 The cost comes out of spell points where there are any — and where there are
-not, it comes out of you. A Warrior, a Rogue, a Blackguard and a Monk have no
-mana at all, and for them a racial power is paid for in hit points instead, at
-the same price. That is Zangband's rule and it is what keeps the powers worth
+not, it comes out of you. Two classes have no mana at all, the Warrior and the
+Monk, and for them a racial power is always paid for in hit points instead, at
+the same price. So can anyone else who has run their pool down far enough. That is Zangband's rule and it is what keeps the powers worth
 having whatever you chose to be; the menu tells you which pool a power is about
 to take from before you commit to it. The amount is not fixed either: it is
 somewhere between half the listed cost and all of it.
@@ -801,21 +801,30 @@ adjusted for constitution).
    single: hit dice; base from race
    single: infravision; racial bonus
 
-================ ===  ===  ===  ===  ===  =========  ========  ====== 
-      Race       STR  INT  WIS  DEX  CON  HD (base)  XP/level  Infra
-================ ===  ===  ===  ===  ===  =========  ========  ======
-      Human        0    0    0    0    0      10        100%   None
-      Half-Elf     0   +1   -1   +1   -1      10        120%   20'
-      Elf         -1   +2   -1   +1   -1       9        120%   30'
-      Hobbit      -2   +2   +1   +3   +2       7        120%   40'
-      Gnome       -1   +2    0   +2   +1       8        120%   40'
-      Dwarf       +2   -3   +2   -2   +2      11        120%   50'
-      Half-Orc    +2   -1    0    0   +1      10        120%   30'
-      Half-Troll  +4   -4   -2   -4   +3      12        120%   30'
-      Dunadan     +1   +2   +2   +2   +3      10        120%   None
-      High-Elf    +1   +3   -1   +3   +1      10        145%   40'
-      Kobold      -1   -1    0   +2   +2       8        120%   50'
-================ ===  ===  ===  ===  ===  =========  ========  ======
+============== ===== ===== ===== ===== ===== =========== ========== =======
+     Race       STR   INT   WIS   DEX   CON   HD (base)   XP/level   Infra
+============== ===== ===== ===== ===== ===== =========== ========== =======
+    Human        0     0     0     0     0        10        100%      None
+   Half-Elf      0     +1    -1    +1    -1       10        120%      20'
+     Elf         -1    +2    -1    +1    -1       9         120%      30'
+    Hobbit       -2    +2    +1    +3    +2       7         120%      40'
+    Gnome        -1    +2    0     +2    +1       8         120%      40'
+    Dwarf        +2    -3    +2    -2    +2       11        120%      50'
+   Half-Orc      +2    -1    0     0     +1       10        120%      30'
+  Half-Troll     +4    -4    -2    -4    +3       12        120%      30'
+   Dunadan       +1    +2    +2    +2    +3       10        120%      None
+   High-Elf      +1    +3    -1    +3    +1       10        145%      40'
+    Kobold       -1    -1    0     +2    +2       8         120%      50'
+   Amberite      +1    +2    +2    +2    +3       10        225%      None
+   Beastman      +2    -2    -1    -1    +2       11        140%      None
+     Yeek        -2    +1    +1    +1    -2       7         100%      20'
+  Draconian      +2    +1    +1    +1    +2       11        250%      20'
+  Mindflayer     -3    +4    +4    0     -2       9         140%      40'
+   Vampire       +3    +3    -1    -1    +1       11        200%      50'
+    Golem        +4    -5    -5    -2    +4       12        200%      40'
+    Sprite       -4    +3    +3    +3    -2       7         175%      40'
+  Half-Titan     +5    +1    +1    -2    +3       14        255%      None
+============== ===== ===== ===== ===== ===== =========== ========== =======
 
 
 .. index::
@@ -826,19 +835,20 @@ adjusted for constitution).
    single: constitution; class bonus
    single: hit dice; class bonus
 
-================= ===  ===  ===  ===  ===  ==========
-      Class       STR  INT  WIS  DEX  CON  HD (bonus)
-================= ===  ===  ===  ===  ===  ==========
-      Warrior      +3   -2   -2   +2   +2       9
-      Mage         -3   +3   +0   +0   -2       0
-      Druid        -2   +0   +3   -2   +0       2
-      Priest       -1   -3   +3   -1   +1       2
-      Necromancer  -3   +3   +0   +0   -2       2
-      Paladin      +1   -3   +1   -1   +2       6
-      Rogue        +0   +1   -3   +3   -1       4
-      Ranger       +0   +0   +2   +1   -1       5
-      Blackguard   +2   +0   -3   +0   +2       8
-================= ===  ===  ===  ===  ===  ==========
+============== ===== ===== ===== ===== ===== ============ ==========
+    Class       STR   INT   WIS   DEX   CON   HD (bonus)   XP/level
+============== ===== ===== ===== ===== ===== ============ ==========
+   Warrior       +3    -2    -2    +2    +2       9          none
+     Mage        -3    +3    +0    +0    -2       0          none
+    Druid        -2    +0    +3    -2    +0       2          none
+    Priest       -1    -3    +3    -1    +1       2          none
+ Necromancer     -3    +3    +0    +0    -2       2          none
+   Paladin       +1    -3    +1    -1    +2       6          none
+    Rogue        +0    +1    -3    +3    -1       4          none
+    Ranger       +0    +0    +2    +1    -1       5          none
+  Blackguard     +2    +0    -3    +0    +2       8          none
+     Monk        +2    -1    +1    +3    +2       6          +40%
+============== ===== ===== ===== ===== ===== ============ ==========
  
 Ability Tables
 ==============
@@ -853,21 +863,30 @@ Ability Tables
    single: shooting skill; racial bonus
    single: throwing skill; racial bonus
 
-============ =======  =======  ======  =====  =======  ======  ======  =====
-  Race       DisarmP  DisarmM  Device   Save  Stealth  Search   Fight   Bows
-============ =======  =======  ======  =====  =======  ======  ======  ===== 
-  Human         0        0        0       0       0       0       0       0
-  Half-Elf      2        2        3       3       1       3      -1       5
-  Elf           5        5        6       6       2       6      -5      15
-  Hobbit       15       15       18      18       4       6     -10      20
-  Gnome        10       10       22      12       3       4      -8      12
-  Dwarf         2        2        9       9      -1       2      15       0
-  Half-Orc     -3       -3       -3      -3      -1      -3      12      -5
-  Half-Troll   -5       -5       -8      -8      -2      -9      20     -10
-  Dunadan       4        4        5       5       1       3      15      10
-  High-Elf      4        4       20      20       2      10      10      25
-  Kobold       10       10        5       0       3      10      -5      10
-============ =======  =======  ======  =====  =======  ======  ======  =====
+============== ========= ========= ======== ====== ========= ======== ======= ======
+     Race       DisarmP   DisarmM   Device   Save   Stealth   Search   Fight   Bows
+============== ========= ========= ======== ====== ========= ======== ======= ======
+    Human          0         0        0       0        0        0        0      0
+   Half-Elf        2         2        3       3        1        3        -1     5
+     Elf           5         5        6       6        2        6        -5     15
+    Hobbit         15        15       18      18       4        6       -10     20
+    Gnome          10        10       22      12       3        4        -8     12
+    Dwarf          2         2        9       9        -1       2        15     0
+   Half-Orc        -3        -3       -3      -3       -1       -3       12     -5
+  Half-Troll       -5        -5       -8      -8       -2       -9       20    -10
+   Dunadan         4         4        5       5        1        3        15     10
+   High-Elf        4         4        20      20       2        10       10     25
+    Kobold         10        10       5       0        3        10       -5     10
+   Amberite        4         4        5       5        2        3        12     0
+   Beastman        -5        -5       -2      -1       -1       -1       18     10
+     Yeek          2         2        4       10       3        5       -10    -10
+  Draconian        -2        -2       5       3        0        1        10     10
+  Mindflayer       10        10       25      15       2        5       -16    -10
+   Vampire         4         4        10      10       4        1        10     0
+    Golem          -5        -5       -5      10       -1       -1       20     0
+    Sprite         10        10       10      10       4        10      -16     0
+  Half-Titan       -5        -5       5       2        -2       1        26     0
+============== ========= ========= ======== ====== ========= ======== ======= ======
 
 
 .. index::
@@ -880,19 +899,20 @@ Ability Tables
    single: shooting skill; class bonus
    single: throwing skill; class bonus
 
-============   ======= ======= ======= ======= ======= =======  ======= =======
- Class         DisarmP DisarmM Device   Save   Stealth Search    Fight   Bows
-============   ======= ======= ======= ======= ======= =======  ======= =======
- Warrior       25(+15) 20(+10) 18(+7)  18(+10)  0(+0)  10(+12)  70(+45) 55(+45)
- Mage          30(+10) 35(+12) 36(+13) 30(+9)   2(+0)  10(+12)  35(+15) 20(+15)
- Druid         30(+10) 30(+10) 24(+10) 30(+10)  3(+0)  12(+12)  45(+20) 40(+30)
- Priest        25(+12) 25(+12) 30(+10) 32(+12)  2(+0)  10(+14)  45(+20) 35(+20)
- Necromancer   30(+10) 35(+12) 36(+13) 30(+9)   2(+0)  10(+12)  35(+25) 20(+15)
- Paladin       20(+15) 20(+10) 24(+10) 25(+11)  0(+0)  10(+12)  65(+40) 50(+30)
- Rogue         45(+20) 45(+20) 32(+10) 28(+10)  3(+1)  20(+16)  35(+45) 66(+30)
- Ranger        40(+15) 30(+10) 28(+10) 32(+10)  3(+0)  15(+15)  60(+40) 72(+45)
- Blackguard    20(+15) 20(+10) 24(+10) 18(+10) -1(-1)   8(+10)  65(+40) 35(+15)
-============   ======= ======= ======= ======= ======= =======  ======= =======
+============== ========= ========= ========= ========= ========= ========= ========= =========
+    Class       DisarmP   DisarmM    Device     Save    Stealth    Search    Fight      Bows
+============== ========= ========= ========= ========= ========= ========= ========= =========
+   Warrior      25(+15)   20(+10)    18(+7)   18(+10)    0(+0)    10(+12)   70(+45)   55(+45)
+     Mage       30(+10)   35(+12)   36(+13)    30(+9)    2(+0)    10(+12)   35(+15)   20(+15)
+    Druid       30(+10)   30(+10)   24(+10)   30(+10)    3(+0)    12(+12)   45(+20)   40(+30)
+    Priest      25(+12)   25(+12)   30(+10)   32(+12)    2(+0)    10(+14)   45(+20)   35(+20)
+ Necromancer    30(+10)   35(+12)   36(+13)    30(+9)    2(+0)    10(+12)   35(+25)   20(+15)
+   Paladin      20(+15)   20(+10)   24(+10)   25(+11)    0(+0)    10(+12)   65(+40)   50(+30)
+    Rogue       45(+20)   45(+20)   32(+10)   28(+10)    3(+1)    20(+16)   35(+45)   66(+30)
+    Ranger      40(+15)   30(+10)   28(+10)   32(+10)    3(+0)    15(+15)   60(+40)   72(+45)
+  Blackguard    20(+15)   20(+10)   24(+10)   18(+10)    -1(-1)    8(+10)   65(+40)   35(+15)
+     Monk       45(+22)   45(+22)   32(+11)   28(+11)    3(+0)    10(+12)   37(+17)   48(+24)
+============== ========= ========= ========= ========= ========= ========= ========= =========
 
 For character classes, there are two figures: the first figure is the base
 level of the skill, while the second figure (in parentheses) is the bonus

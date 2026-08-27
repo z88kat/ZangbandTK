@@ -2034,9 +2034,10 @@ bool player_use_power(struct player *p, struct player_power *power, int dir)
 
 	/*
 	 * Short of mana, the price is paid in blood.  This is Zangband's rule and
-	 * it is the only reason the whole feature works: a Warrior, a Rogue or a
-	 * Monk has no spells at all, so calc_mana() leaves them with a maximum of
-	 * zero, and without this a Draconian Warrior could never once breathe.
+	 * it is the only reason the whole feature works for everyone: the Warrior
+	 * and the Monk have no spells at all, so calc_mana() leaves them with a
+	 * maximum of zero, and without this a Draconian Warrior could never once
+	 * breathe.  Anyone who has spent their pool is in the same position.
 	 */
 	use_hp = (p->csp < power->cost);
 

@@ -3688,10 +3688,11 @@ static int test_a_refused_power_is_free(void *state) {
  * its blood gives it.
  *
  * calc_mana() returns early with a maximum of zero for any class whose book
- * list is empty, which is most of them -- Warrior, Rogue, Blackguard, Monk.
- * Reading the cost only from spell points would have meant a Draconian Warrior
- * could never once breathe.  Zangband's answer is that the price comes out of
- * the character instead, and this holds that open.
+ * list is empty -- the Warrior and the Monk -- and any character at all can
+ * spend their pool down to nothing.  Reading the cost only from spell points
+ * would have meant a Draconian Warrior could never once breathe.  Zangband's
+ * answer is that the price comes out of the character instead, and this holds
+ * that open.
  */
 static int test_blood_pays_when_mana_cannot(void *state) {
 	struct player_race *r, *draconian = NULL;

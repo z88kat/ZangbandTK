@@ -129,11 +129,16 @@ Building the Monk I noticed it would be a class with no spellbooks, and went to
 check what that meant for the racial powers I shipped yesterday. It meant they
 did not work. ``calc_mana()`` returns a maximum of zero for any class with an
 empty book list, powers read their cost from spell points, and so a Draconian
-Warrior could never once breathe. Nine of the fourteen classes were locked out
-of a feature I had documented as working for exactly them. Zangband's own answer
-turns out to be that a character short of mana pays in hit points instead, which
-is both the fix and, I suspect, why Zangband wrote it that way in the first
-place.
+Warrior could never once breathe. Zangband's own answer turns out to be that a
+character short of mana pays in hit points instead, which is both the fix and, I
+suspect, why Zangband wrote it that way in the first place.
+
+*Corrected the same day:* I first wrote here that this locked out nine of
+fourteen classes. There are ten classes, and only two of them — Warrior and
+Monk — have no spellbooks at all. I had assumed the fighting classes did not
+cast, and in 4.2 the Rogue, the Ranger, the Paladin and the Blackguard all do.
+The defect was real and the fix is right; the number was me not checking a claim
+that happened to flatter the size of what I had just fixed.
 
 That was mine and it was recent. The next one was worse.
 

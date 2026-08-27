@@ -48,13 +48,13 @@ M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
   against the six classes both games share rather than guessed, and the Monk keeps
   Zangband's experience factor, which makes it the only class in the game that
   costs extra to level.
-- **3.28.1** — **Racial powers work for classes that have no magic** — which is
-  most of them. Powers took their cost from spell points, and a class with no
-  spellbooks has a maximum of zero, so a Draconian Warrior could never breathe and
-  a Mindflayer Rogue could never blast. Zangband's rule applies: short of mana,
-  the price comes out of hit points instead, and the menu says which before you
-  commit. The failure chance was also clamped in the wrong order and could be
-  reported above 100 per cent for a character with a poor governing stat.
+- **3.28.1** — **Racial powers work without mana.** Powers took their cost from
+  spell points only, and the two classes with no spellbooks — Warrior and Monk —
+  have a maximum of zero, so a Draconian Warrior could never once breathe. Any
+  character who had spent their pool was in the same position. Zangband's rule
+  applies: short of mana, the price comes out of hit points instead, and the menu
+  says which before you commit. The failure chance was also clamped in the wrong
+  order and could be reported above 100 per cent for a poor governing stat.
 - **3.28.0** — **Racial powers** (PLR-02). Eight of the nine new races can now do
   something no class teaches, on ``N``: an Amberite shifts into shadow and walks
   the Pattern, a Vampire drinks blood, a Draconian breathes, a Golem turns to

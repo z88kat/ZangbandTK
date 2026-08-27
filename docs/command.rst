@@ -290,9 +290,10 @@ Use a racial power (``N``) or Use a racial power (``&``)
   how likely each is to fail, and lets you pick one. See
   :ref:`Racial powers <racial-powers>` for the full list.
 
-  A power draws on spell points like a spell. A character with no spells at
-  all — a warrior, a rogue, a monk — pays in hit points instead, at the same
-  price, and the menu says which before you commit. The listed failure chance
+  A power draws on spell points like a spell. A character with none left — and
+  a warrior or a monk never has any, having no spells at all — pays in hit
+  points instead, at the same price, and the menu says which before you
+  commit. The listed failure chance
   falls as you gain levels past the level the power arrives at, and falls
   further as you raise the stat it leans on. Failing still costs the price;
   being told you are too junior, too confused, or too spent costs nothing.
