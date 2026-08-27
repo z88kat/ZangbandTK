@@ -102,20 +102,51 @@ static struct parser *init_parse_grafmode(void) {
 	return p;
 }
 
+/**
+ * Test whether a parsed graphics mode's tileset is actually on disk.
+ *
+ * list.txt describes the tilesets a full installation has, which is not always
+ * the set a particular build ships: the WebAssembly build leaves out the large
+ * ones, because Shockbolt alone is 17MB and no page load wants it.  A mode
+ * whose image is missing used to be offered in the menu like any other and then
+ * kill the game when chosen -- load_graphics() reaches the missing file and
+ * quits -- so the check belongs here, once, before the mode is offered at all.
+ */
+static bool grafmode_is_installed(const graphics_mode *mode)
+{
+	char path[1024];
+
+	if (mode->grafID == GRAPHICS_NONE) {
+		return true;
+	}
+	path_build(path, sizeof(path), mode->path, mode->file);
+	return file_exists(path);
+}
+
 static errr finish_parse_grafmode(struct parser *p) {
 	graphics_mode *mode, *n;
 	int max = 0;
 	int count = 0;
 	int i;
 	
-	/* See how many graphics modes we have and what the highest index is */
+	/*
+	 * See how many usable graphics modes we have and what the highest index
+	 * is.  The highest index counts every mode that was described, installed
+	 * or not, because graphics_mode_high_id sizes arrays that other front
+	 * ends index by mode id.
+	 */
 	if (p) {
 		mode = parser_priv(p);
 		while (mode) {
 			if (mode->grafID > max) {
 				max = mode->grafID;
 			}
-			count++;
+			if (grafmode_is_installed(mode)) {
+				count++;
+			} else {
+				plog_fmt("Tileset '%s' is not installed; "
+					"not offering it.", mode->menuname);
+			}
 			mode = mode->pNext;
 		}
 	}
@@ -127,10 +158,23 @@ static errr finish_parse_grafmode(struct parser *p) {
 
 	graphics_modes = mem_zalloc(sizeof(graphics_mode) * (count+1));
 	if (p) {
+		/*
+		 * Filled back to front because the parsed list is in reverse
+		 * order.  The index steps only for a mode that is kept, so a
+		 * missing tileset leaves no gap.
+		 */
+		i = count - 1;
 		mode = parser_priv(p);
-		for (i = count-1; i >= 0; i--, mode = mode->pNext) {
-			memcpy(&(graphics_modes[i]), mode, sizeof(graphics_mode));
-			graphics_modes[i].pNext = &(graphics_modes[i+1]);
+		while (mode) {
+			if (grafmode_is_installed(mode)) {
+				assert(i >= 0);
+				memcpy(&(graphics_modes[i]), mode,
+					sizeof(graphics_mode));
+				graphics_modes[i].pNext =
+					&(graphics_modes[i+1]);
+				--i;
+			}
+			mode = mode->pNext;
 		}
 	}
 
