@@ -231,6 +231,42 @@ struct player_body {
 };
 
 /**
+ * What a Lord of Chaos does to the servant who pleases or displeases it
+ * (ZangbandTK, PLR-05).
+ *
+ * Defined once and referenced by code from each Lord's ladder, because nine
+ * Lords drawing on the same two dozen favours and punishments would otherwise
+ * mean nine copies of every effect.
+ */
+struct patron_reward {
+	struct patron_reward *next;
+	char *code;			/**< What a patron's ladder refers to it by */
+	char *message;		/**< Said when it happens; one %s, the Lord's name */
+	struct effect *effect;
+};
+
+#define PATRON_LADDER 20
+
+/**
+ * A Lord of the Courts of Chaos (ZangbandTK, PLR-05; DEC-38).
+ *
+ * The ladder is a severity ordering, worst first: slot 0 is the Lord at its
+ * most offended and slot 19 at its most generous.  The roll that indexes it
+ * normally skips the bottom of the ladder, so cruelty is uncommon without ever
+ * being off the table -- which is Zangband's structure, and is what makes a
+ * patron feel like a temperament rather than a lookup.
+ */
+struct patron {
+	struct patron *next;
+	char *name;
+	char *title;
+	char *text;								/**< Who they are */
+	struct patron_reward *ladder[PATRON_LADDER];
+	int nladder;							/**< Filled during parsing */
+	char *ladder_codes[PATRON_LADDER];		/**< Resolved after the file */
+};
+
+/**
  * A thing a race can do, on purpose (ZangbandTK, PLR-02).
  *
  * 4.2 has no per-race activatable ability: a race is a set of adjustments and
@@ -665,6 +701,7 @@ struct player_upkeep {
 struct player {
 	const struct player_race *race;
 	const struct player_class *class;
+	const struct patron *patron;	/**< The Lord of Chaos served (PLR-05) */
 
 	struct loc grid;	/* Player location */
 	struct loc old_grid;/* Player location before leaving for an arena */
@@ -798,6 +835,7 @@ extern struct player_body *bodies;
 extern struct player_race *races;
 extern struct player_shape *shapes;
 extern struct player_class *classes;
+extern struct patron *patrons;
 extern struct player_ability *player_abilities;
 extern struct magic_realm *realms;
 

@@ -197,6 +197,9 @@ classes.
   one system**. PLR-21 is a gate: if nothing consumes virtues, cut them rather than ship
   inert numbers.
 - Use `spoilers/mutation.txt` (DEC-16) to select, rather than guessing from flag names.
+- **Carried over from M7 (DEC-38):** the Chaos-Warrior's patron rewards have a
+  one-in-six branch that grants a mutation, left as a deliberate gap when PLR-05
+  was built. Fill it in when PLR-13 exists.
 
 **Exit:** mutations acquirable and visible; virtues doing something. Manual chapters:
 mutations, virtues.

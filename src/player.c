@@ -26,6 +26,7 @@
 #include "player-quest.h"
 #include "player-spell.h"
 #include "player-timed.h"
+#include "player-util.h"
 #include "randname.h"
 #include "z-color.h"
 #include "z-util.h"
@@ -255,6 +256,9 @@ static void adjust_level(struct player *p, bool verbose)
 		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_WIS, 0, 0, 0, 0, NULL);
 		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_DEX, 0, 0, 0, 0, NULL);
 		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_CON, 0, 0, 0, 0, NULL);
+
+		/* Whatever owns you notices (ZangbandTK, PLR-05) */
+		patron_bestow_reward(p);
 	}
 
 	while ((p->max_lev < PY_MAX_LEVEL) &&

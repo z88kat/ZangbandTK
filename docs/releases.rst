@@ -31,6 +31,27 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.31.0** — **The Chaos-Warrior, and nine Lords of Chaos** (PLR-03/PLR-05).
+  The twelfth class, and the only one that belongs to somebody. Sworn at birth to
+  a Lord it did not choose and cannot leave, and every level it gains the Lord
+  decides how it feels: a full healing, a raised stat, experience, an object out
+  of nothing — or a cursed weapon, a ruined stat, monsters dropped on top of you,
+  or the level destroyed around you. Your Lord is on the character sheet in red,
+  because it is not a credential.
+
+  **Level 13 is three times as dangerous as any other**, and nothing in the game
+  says so. Every other thirteenth level is twice as dangerous; every fourteenth is
+  the safest a Chaos-Warrior ever gets.
+
+  **The nine Lords are Zelazny's.** Zangband's sixteen were Moorcock's Elric gods
+  plus Khorne, Slaanesh, Nurgle and Tzeentch from Warhammer, and not one had any
+  connection to Amber — the clearest case of drift in the game. They are replaced
+  by Swayvill, Suhuy, Mandor, Dara, Gramble, Jurt, Despil, Borel and Gilva, four
+  of whom already walk around in the bestiary. See DEC-38.
+
+  Polymorph uses the game's own shapechanges rather than Zangband's version,
+  which permanently mangled the character; and one reward in six was a mutation,
+  which is left as a deliberate gap until M8.
 - **3.30.0** — **The Mindcrafter, and psionics** (PLR-03/PLR-06). The eleventh
   class. Twelve powers that arrive by level rather than out of a book, on ``N``
   alongside anything the character's race can do — from Neural Blast at level 1

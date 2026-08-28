@@ -147,6 +147,11 @@ Races, classes and racial powers
   punished for wearing armour. Angband's answer for an empty weapon slot is one
   point of damage a blow; measured over a hundred blows, a Monk does about fifty
   times as much.
+- **The Chaos-Warrior**, which is the only class in the game that belongs to
+  somebody. Sworn at birth to one of nine Lords of the Courts of Chaos, and every
+  level gained the Lord decides how it feels — a healing, a raised stat, an object
+  out of nothing, or a cursed weapon and monsters on top of you. Level 13 is
+  three times as dangerous as any other, and nothing in the game says so.
 - **The Mindcrafter**, and **psionics**: twelve powers that arrive by level
   rather than out of a book, most of which grow into something else as the
   character does. With them comes a kind of damage Angband has no equivalent of
@@ -187,7 +192,7 @@ in when the milestone lands.
    * - Feature
      - Milestone
      - Chapter
-   * - Three more classes
+   * - Two more classes
      - M7
      - :doc:`birth`
    * - Mutations
@@ -208,10 +213,9 @@ in when the milestone lands.
 
 The world is finished — towns, services, roads, dungeons and quests all landed,
 which was Phase 2's world work — and the character is under way. Nine races,
-racial powers, the Monk and the Mindcrafter are in. The Chaos-Warrior's sixteen
-patrons are not, and neither are the two classes defined by which magic realms
-they may choose. After those come mutations and virtues, neither of which
-Angband has a mechanism for.
+racial powers, the Monk, the Mindcrafter and the Chaos-Warrior are in. What is
+not: the two classes defined by which magic realms they may choose. After those
+come mutations and virtues, neither of which Angband has a mechanism for.
 
 A **Tcl/Tk front end** is planned for a later phase, reviving the original's
 interface on Tcl/Tk 9. There is an irony in it: the original ZangbandTK

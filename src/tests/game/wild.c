@@ -2370,15 +2370,29 @@ static int test_the_status_line_names_the_place(void *state) {
 	eq(here, 0);
 	require(streq(wild_band_name(wild->towns[here].band), "village"));
 
-	/* A grid well outside any town is in no town. */
+	/*
+	 * A grid well outside any town is in no town.
+	 *
+	 * Searched in all four directions rather than only south, which is what
+	 * this used to do: a start village near the southern edge ran off the world
+	 * before it found open country and the test failed, perhaps one run in ten.
+	 */
 	{
-		struct loc away = loc(world.x, world.y);
 		bool found = false;
 
 		for (i = 200; i < 900 && !found; i += 50) {
-			away.y = world.y + i;
-			if (away.y >= wild_world_grids()) break;
-			if (wild_town_here(wild, away) < 0) found = true;
+			int d;
+			static const int dy[] = { 1, -1, 0, 0 };
+			static const int dx[] = { 0, 0, 1, -1 };
+
+			for (d = 0; d < 4 && !found; d++) {
+				struct loc away = loc(world.x + dx[d] * i, world.y + dy[d] * i);
+
+				if (away.y < 0 || away.y >= wild_world_grids()) continue;
+				if (away.x < 0 || away.x >= wild_world_grids()) continue;
+
+				if (wild_town_here(wild, away) < 0) found = true;
+			}
 		}
 
 		require(found);
@@ -4242,6 +4256,199 @@ static int test_psionics_are_paid_for(void *state) {
 }
 
 /**
+ * PLR-05/DEC-38: nine Lords of the Courts, each with a full ladder.
+ */
+static int test_the_lords_of_chaos_are_all_there(void *state) {
+	static const char *lords[] = {
+		"Swayvill", "Suhuy", "Mandor", "Dara", "Gramble",
+		"Jurt", "Despil", "Borel", "Gilva"
+	};
+	struct patron *patron;
+	size_t i;
+	int count = 0, found = 0;
+
+	notnull(patrons);
+
+	for (patron = patrons; patron; patron = patron->next) {
+		int slot;
+
+		count++;
+
+		notnull(patron->name);
+		notnull(patron->title);
+		notnull(patron->text);
+
+		/*
+		 * Every rung resolved.  The ladder is written as codes and matched to
+		 * rewards after the file is read, so an unresolved entry would be a
+		 * null dereference the first time that Lord felt anything.
+		 */
+		for (slot = 0; slot < PATRON_LADDER; slot++) {
+			notnull(patron->ladder[slot]);
+			notnull(patron->ladder[slot]->message);
+		}
+
+		for (i = 0; i < N_ELEMENTS(lords); i++)
+			if (streq(patron->name, lords[i])) found++;
+	}
+
+	/* Zelazny's nine, and nobody from Moorcock or Warhammer. */
+	eq(count, (int) N_ELEMENTS(lords));
+	eq(found, (int) N_ELEMENTS(lords));
+
+	ok;
+}
+
+/**
+ * The ladder has to be a ladder, or the roll that indexes it means nothing.
+ *
+ * gain-level rewards pick a slot and normally skip the bottom quarter, which
+ * only makes cruelty rare if the cruelty is in fact at the bottom.  A Lord whose
+ * table was written in the wrong order would quietly be handing out full heals
+ * as punishments.
+ */
+static int test_a_patrons_ladder_runs_worst_to_best(void *state) {
+	struct patron *patron;
+
+	for (patron = patrons; patron; patron = patron->next) {
+		int slot, harm_low = 0, harm_high = 0;
+
+		for (slot = 0; slot < PATRON_LADDER; slot++) {
+			const char *code = patron->ladder[slot]->code;
+			bool harmful = streq(code, "WRATH") || streq(code, "HURT") ||
+				streq(code, "PISS_OFF") || streq(code, "CURSE_WP") ||
+				streq(code, "CURSE_AR") || streq(code, "LOSE_ABL") ||
+				streq(code, "RUIN_ABL") || streq(code, "LOSE_EXP") ||
+				streq(code, "SUMMON_M") || streq(code, "H_SUMMON") ||
+				streq(code, "DESTRUCT");
+
+			if (!harmful) continue;
+
+			if (slot < PATRON_LADDER / 2) harm_low++;
+			else harm_high++;
+		}
+
+		/* Everything unpleasant sits in the bottom half of every ladder. */
+		if (harm_high)
+			printf("%s has %d harmful rewards in its top half\n",
+				   patron->name, harm_high);
+		eq(harm_high, 0);
+
+		/* And every Lord can be displeased, or it is not a patron at all. */
+		require(harm_low > 0);
+	}
+
+	ok;
+}
+
+/**
+ * Only a Chaos-Warrior is owned, and it is owned from birth.
+ */
+static int test_only_a_chaos_warrior_is_owned(void *state) {
+	struct player_class *c, *chaos = NULL, *warrior = NULL;
+	const struct player_class *keep = player->class;
+	const struct patron *keep_patron = player->patron;
+	int i, distinct = 0;
+	const struct patron *seen[16];
+
+	for (c = classes; c; c = c->next) {
+		if (streq(c->name, "Chaos-Warrior")) chaos = c;
+		if (streq(c->name, "Warrior")) warrior = c;
+	}
+	notnull(chaos);
+	notnull(warrior);
+
+	require(pf_has(chaos->pflags, PF_CHAOS_PATRON));
+	require(!pf_has(warrior->pflags, PF_CHAOS_PATRON));
+
+	/* A Warrior answers to nobody. */
+	player->class = warrior;
+	patron_choose(player);
+	null(player->patron);
+
+	/*
+	 * A Chaos-Warrior always has one, and which one varies -- the point of
+	 * nine Lords is that two characters are not the same character.
+	 */
+	memset(seen, 0, sizeof(seen));
+	player->class = chaos;
+
+	for (i = 0; i < 200; i++) {
+		int j;
+		bool known = false;
+
+		patron_choose(player);
+		notnull(player->patron);
+
+		for (j = 0; j < distinct; j++)
+			if (seen[j] == player->patron) known = true;
+
+		if (!known && distinct < (int) N_ELEMENTS(seen))
+			seen[distinct++] = player->patron;
+	}
+
+	/* Over two hundred births, all nine should have come up. */
+	eq(distinct, 9);
+
+	player->class = keep;
+	player->patron = keep_patron;
+
+	ok;
+}
+
+/**
+ * Thirteen is an unlucky level, and the roll is where that lives.
+ *
+ * Zangband weighted the reward roll so cruelty is uncommon -- one chance in six
+ * of reaching the bottom quarter of the ladder, where everything genuinely
+ * unpleasant is -- except that the odds swing with the level reached: one in two
+ * at thirteen, one in three at every other thirteenth, and one in twelve at
+ * every fourteenth. It is a superstition a player can learn, it is invisible
+ * from inside the game, and it would survive being silently lost.
+ *
+ * The roll is measured directly rather than through its consequences.  Watching
+ * hit points instead was the first attempt and it was a bad test: most of the
+ * cruel outcomes do not cost hit points at all, several of the kind ones
+ * recalculate the maximum, and the two levels came out fifteen apart in four
+ * hundred -- a difference far too small to tell from noise.
+ */
+static int test_thirteen_is_an_unlucky_level(void *state) {
+	const int trials = 4000;
+	const int floor_slot = PATRON_LADDER / 4;
+	int lev, low[51];
+
+	memset(low, 0, sizeof(low));
+
+	for (lev = 1; lev <= 50; lev++) {
+		int i;
+
+		player->lev = lev;
+
+		for (i = 0; i < trials; i++)
+			if (patron_roll_slot(player) < floor_slot) low[lev]++;
+	}
+
+	printf("PATRON bottom-of-ladder rolls per %d: lev13 %d, lev20 %d, "
+		   "lev26 %d, lev28 %d\n",
+		   trials, low[13], low[20], low[26], low[28]);
+
+	/*
+	 * Thirteen is the worst year of a Chaos-Warrior's life.  Expected rates
+	 * are 1/2, 1/6, 1/3 and 1/12 of the nasty roll, and the margins between
+	 * them are wide enough that these hold comfortably over four thousand.
+	 */
+	require(low[13] > low[26]);		/* 1/2 beats 1/3   */
+	require(low[26] > low[20]);		/* 1/3 beats 1/6   */
+	require(low[20] > low[28]);		/* 1/6 beats 1/12  */
+
+	/* And no level is ever entirely safe, or the ladder's floor is dead. */
+	for (lev = 1; lev <= 50; lev++)
+		require(low[lev] > 0);
+
+	ok;
+}
+
+/**
  * The mapping from Zangband's class table was measured, not guessed, and this
  * holds the Monk on the numbers that measurement produced.
  */
@@ -4274,21 +4481,41 @@ static int test_the_monk_keeps_zangbands_numbers(void *state) {
 	eq(monk->c_exp, 40);
 
 	{
+		/*
+		 * The rule rather than the count, so this does not need editing every
+		 * time a class lands: all nine of Angband's own classes are free, and
+		 * every class brought over from Zangband costs, which is the whole
+		 * point of keeping a field 4.2 leaves at zero.
+		 */
+		static const char *angbands[] = {
+			"Warrior", "Mage", "Druid", "Priest", "Necromancer",
+			"Paladin", "Rogue", "Ranger", "Blackguard"
+		};
 		struct player_class *other;
-		int flat = 0, total = 0;
+		int ported = 0;
 
 		for (other = classes; other; other = other->next) {
-			total++;
-			if (other->c_exp == 0) flat++;
+			size_t k;
+			bool inherited = false;
+
+			for (k = 0; k < N_ELEMENTS(angbands); k++)
+				if (streq(other->name, angbands[k])) inherited = true;
+
+			if (inherited) {
+				if (other->c_exp != 0)
+					printf("%s should be free, costs %d\n", other->name,
+						   other->c_exp);
+				eq(other->c_exp, 0);
+			} else {
+				if (other->c_exp <= 0)
+					printf("%s is ported and should cost\n", other->name);
+				require(other->c_exp > 0);
+				ported++;
+			}
 		}
 
-		/*
-		 * Eleven classes.  All nine of 4.2's are free; the two brought over
-		 * from Zangband are the only ones that cost, which is the whole point
-		 * of keeping the field.
-		 */
-		eq(total, 11);
-		eq(flat, 9);
+		/* And there is at least one of ours, or the rule proves nothing. */
+		require(ported > 0);
 	}
 
 	ok;
@@ -5088,6 +5315,10 @@ struct test tests[] = {
 	{ "the-mindcrafter-thinks-for-itself", test_the_mindcrafter_thinks_for_itself },
 	{ "a-power-grows-with-the-character", test_a_power_grows_with_the_character },
 	{ "psionics-are-paid-for", test_psionics_are_paid_for },
+	{ "the-lords-of-chaos-are-all-there", test_the_lords_of_chaos_are_all_there },
+	{ "a-patrons-ladder-runs-worst-to-best", test_a_patrons_ladder_runs_worst_to_best },
+	{ "only-a-chaos-warrior-is-owned", test_only_a_chaos_warrior_is_owned },
+	{ "thirteen-is-an-unlucky-level", test_thirteen_is_an_unlucky_level },
 
 	{ NULL, NULL }
 };

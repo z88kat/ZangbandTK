@@ -2109,6 +2109,85 @@ bool player_power_aims(struct player *p, const struct player_power *power)
 }
 
 /**
+ * A Lord of Chaos takes notice of its servant (ZangbandTK, PLR-05).
+ *
+ * Fired on every level gained, which is the whole relationship: a Chaos-Warrior
+ * does not petition its patron and cannot refuse it.  The Lord simply looks up
+ * from time to time and decides how it feels.
+ *
+ * The roll is Zangband's, and its shape is the point.  The ladder runs worst to
+ * best and the roll normally skips the bottom quarter of it, so cruelty is
+ * uncommon -- except that the odds of reaching down there swing with the level
+ * reached.  At thirteen it is three times as likely as usual, at every
+ * thirteenth level twice, and at every fourteenth it is half.  A superstition,
+ * in other words, and one the player can eventually learn.
+ */
+int patron_roll_slot(const struct player *p)
+{
+	int nasty = 6;
+
+	if (p->lev == 13) nasty = 2;
+	else if (!(p->lev % 13)) nasty = 3;
+	else if (!(p->lev % 14)) nasty = 12;
+
+	/*
+	 * A generous roll cannot reach the bottom quarter of the ladder at all,
+	 * which is where everything genuinely unpleasant lives; a nasty one can
+	 * land anywhere.
+	 */
+	if (one_in_(nasty)) return randint0(PATRON_LADDER);
+
+	return rand_range(PATRON_LADDER / 4, PATRON_LADDER - 1);
+}
+
+void patron_bestow_reward(struct player *p)
+{
+	const struct patron_reward *reward;
+	bool ident = false;
+	int slot;
+
+	if (!p->patron) return;
+
+	slot = patron_roll_slot(p);
+
+	reward = p->patron->ladder[slot];
+	if (!reward) return;
+
+	msg(reward->message, p->patron->name);
+
+	if (reward->effect)
+		effect_do(reward->effect, source_player(), NULL, &ident, true, 0,
+				  0, 0, NULL);
+
+	/*
+	 * PLR-05 note: Zangband replaced one reward in six with a mutation.
+	 * Mutations are M8 (PLR-13 to PLR-17) and the branch is deliberately not
+	 * here -- see DEC-38.  It goes in when there are mutations to grant.
+	 */
+}
+
+/**
+ * Choose which Lord of the Courts a character is sworn to (PLR-05).
+ */
+void patron_choose(struct player *p)
+{
+	struct patron *patron;
+	int count = 0, pick;
+
+	p->patron = NULL;
+
+	if (!pf_has(p->class->pflags, PF_CHAOS_PATRON)) return;
+
+	for (patron = patrons; patron; patron = patron->next) count++;
+	if (!count) return;
+
+	pick = randint0(count);
+	for (patron = patrons; patron && pick; patron = patron->next) pick--;
+
+	p->patron = patron;
+}
+
+/**
  * A night's sleep at the inn, and what it shows you (PLR-41, WLD-16c).
  *
  * Zangband's inn carried a nightmare: have_nightmare() took a monster from the

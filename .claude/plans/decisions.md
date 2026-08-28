@@ -1157,6 +1157,81 @@ back, so it is damage only for now. Psychometry is a full identify at every
 level rather than pseudo-identification below 25, because 4.2 removed
 pseudo-identification.
 
+### DEC-38 — A Chaos-Warrior serves a Lord of the Courts, not Khorne (PLR-05)
+
+Zangband's sixteen Chaos-Warrior patrons are Slortar, Mabelode, Chardros,
+Hionhurn, Xiombarg, Pyaray, Balaan, Arioch, Eequor, Narjhan, Balo and Khaine --
+Moorcock's Elric gods -- plus Khorne, Slaanesh, Nurgle and Tzeentch, who are
+Warhammer. Not one has any connection to Amber. Under DEC-30 this is exactly the
+drift the project exists to undo, and it is far cheaper to decide before
+importing sixteen names than after.
+
+*What was chosen.* Named Lords of the Courts of Chaos, over three alternatives:
+
+- **The Houses** (Sawall, Hendrake, Helgram, Chanicut, Minobee) were rejected
+  because they are already the lawless town names. A patron and a town with the
+  same name is a collision unless the link is made deliberate, which is a
+  separate design question and not this one.
+- **The Pattern and the Logrus alone** are the most canonically exact answer --
+  both are sentient and both compete for a person's allegiance in the Merlin
+  cycle -- but two patrons is thin at birth, where the whole point of the
+  mechanic is that a new character feels different.
+- **Both poles**, swearing to Order or Chaos, is the most Amber option of all and
+  is a larger class than PLR-05 describes. Left open: nothing here forecloses it.
+
+A named Lord wins because Zangband's mechanic is a *capricious personal
+relationship*. A person can be pleased, bored or offended; a House or a
+Principle cannot, and the reward and punishment messages are half of what the
+class is.
+
+*The roster*, nine Lords, verified against the character list rather than
+recalled:
+
+| Lord | House | What they are |
+|---|---|---|
+| Swayvill | -- | King of Chaos, dying slowly of Eric's curse |
+| Suhuy | Sawall | Keeper of the Logrus; taught Merlin and Mandor |
+| Mandor | Sawall | Machiavellian manipulator; Merlin's stepbrother |
+| Dara | Helgram | Great-granddaughter of Benedict, Merlin's mother |
+| Gramble | Sawall | Rim Duke, ally of the King |
+| Jurt | Sawall | Violent and jealous, Merlin's half-brother |
+| Despil | Sawall | Jurt's brother, who avoids a fight |
+| Borel | Hendrake | Duke and master of arms; Dara's fencing instructor |
+| Gilva | Hendrake | Warrior-maiden |
+
+Nine rather than sixteen. Four -- Mandor, Jurt, Borel and the Serpent -- are
+already uniques in the bestiary, so a character can be gifted by a patron it may
+later meet and kill.
+
+*Two names I nearly used and did not.* Tmer, Tubble and Bances are not in the
+reference, and were dropped rather than written in from recollection: DEC-18
+says facts get rigour, and a patron roster is a fact. Two others were corrected
+by checking -- Suhuy is of House Sawall and Keeper of the Logrus, not Hendrake,
+and Dara is of House Helgram, not Sawall.
+
+*Polymorph uses 4.2's shapechanges rather than a ported do_poly_self().*
+Zangband's version permanently mangles the character -- it changes race and
+layers on mutations, irreversibly. 4.2 already has a shapechange system with
+eight forms, driven by an effect that takes a shape name as data, so a patron's
+"Thou needst a new form, mortal!" costs no new code at all. It also has better
+mechanical bite for the same flavour: gear merges into the body, so every
+equipment bonus and all casting go until the character changes back, and the
+change back is always one keystroke away -- any blocked action offers it -- so a
+patron cannot strand anyone.
+
+*Mutations are a deliberate gap until M8.* One roll in six replaces a patron's
+reward with a mutation, and PLR-13 to PLR-17 do not exist yet. That branch is
+left as a hole rather than substituted with something else, because a
+substitute would have to be removed again. **When M8 lands, gain_level_reward's
+mutation branch must be filled in** -- it is listed against PLR-13 in the M8
+milestone for that reason.
+
+*The tension worth keeping.* The Serpent of Chaos is already the endgame. A
+warrior sworn to a Lord of the Courts who must finally kill the Serpent is not
+an inconsistency to be designed away -- it is the shape of the Merlin cycle, and
+the patron's reaction to that ending is a thing the class can eventually say
+something about.
+
 Verification work carried into Phase 2:
 
 - Measure `struct chunk`'s memory footprint against the wilderness live-block target

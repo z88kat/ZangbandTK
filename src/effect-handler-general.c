@@ -923,6 +923,32 @@ bool effect_handler_GAIN_EXP(effect_handler_context_t *context)
 }
 
 /**
+ * Take experience away (ZangbandTK, PLR-05).
+ *
+ * 4.2 has GAIN_EXP and no mirror of it: losing experience happens, but only
+ * from inside monster attacks and traps, never from a data-driven effect.  A
+ * Chaos-Warrior's patron needs to be able to say "thou hast learned nothing"
+ * and mean it, and there is nothing specific to patrons here -- a trap or a
+ * monster spell could use it equally well.
+ */
+bool effect_handler_LOSE_EXP(effect_handler_context_t *context)
+{
+	int amount = effect_calculate_value(context, false);
+
+	if (player->exp > 0 && !player_of_has(player, OF_HOLD_LIFE)) {
+		msg("You feel your memories fade.");
+		player_exp_lose(player, amount / 2, false);
+	} else if (player_of_has(player, OF_HOLD_LIFE)) {
+		equip_learn_flag(player, OF_HOLD_LIFE);
+		msg("You feel your memories fade for a moment, but they return.");
+	}
+
+	context->ident = true;
+
+	return true;
+}
+
+/**
  * Drain some light from the player's light source, if possible
  */
 bool effect_handler_DRAIN_LIGHT(effect_handler_context_t *context)

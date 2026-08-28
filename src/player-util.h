@@ -128,6 +128,9 @@ void player_forget_the_world(struct player *p);
 int player_power_chance(struct player *p, const struct player_power *power);
 bool player_use_power(struct player *p, struct player_power *power, int dir);
 bool player_power_aims(struct player *p, const struct player_power *power);
+int patron_roll_slot(const struct player *p);
+void patron_bestow_reward(struct player *p);
+void patron_choose(struct player *p);
 void player_night_dream(struct player *p);
 void player_dream_chances(int law, int *bright, int *dark);
 

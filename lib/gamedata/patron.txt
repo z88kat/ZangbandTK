@@ -1,0 +1,199 @@
+# File: patron.txt
+#
+# The Lords of the Courts of Chaos, whom a Chaos-Warrior serves (ZangbandTK,
+# PLR-05).  See DEC-38 for why these nine and not Zangband's sixteen: its roster
+# was Moorcock's Elric gods plus four Warhammer ones, and not one of them had
+# anything to do with Amber.
+#
+# Two kinds of record.  `reward:` defines what a favour or a punishment does,
+# once; `patron:` names a Lord and lists twenty rewards by code.  The list is a
+# severity ladder running worst to best -- slot 1 is the Lord at its most
+# offended and slot 20 at its most generous -- and the roll that indexes it
+# normally avoids the bottom four.  That is Zangband's structure, kept because it
+# is what makes a patron feel like a mood rather than a dice table.
+#
+# === Fields ===
+# reward:<code>:<message>    the code rewards are referenced by, and what is said
+# reward-effect:...          as elsewhere; several may follow
+# reward-dice:<dice>
+# reward-expr:<name>:<base>:<expr>
+#
+# patron:<name>
+# patron-title:<title>
+# patron-desc:<text>
+# patron-rewards:<code>|<code>|...   exactly twenty, worst first
+
+
+########## What a Lord can do to you ##########
+
+reward:IGNORE:%s is silent.
+
+reward:WRATH:The voice of %s booms out: 'Thou art a worm.'
+reward-effect:DAMAGE
+reward-dice:$B
+reward-expr:B:PLAYER_LEVEL:* 4
+
+reward:HURT:The voice of %s booms out: 'Suffer, mortal!'
+reward-effect:DAMAGE
+reward-dice:$B
+reward-expr:B:PLAYER_LEVEL:* 2
+
+reward:PISS_OFF:The voice of %s booms out: 'Thou hast angered me.'
+reward-effect:TIMED_INC:AFRAID
+reward-dice:20+1d20
+reward-effect:TIMED_INC:CONFUSED
+reward-dice:10+1d10
+
+reward:CURSE_WP:The voice of %s booms out: 'Thou reliest too much on thy weapon.'
+reward-effect:CURSE_WEAPON
+
+reward:CURSE_AR:The voice of %s booms out: 'Thou reliest too much on thine armour.'
+reward-effect:CURSE_ARMOR
+
+reward:LOSE_ABL:The voice of %s booms out: 'I grow tired of thee, mortal.'
+reward-effect:DRAIN_STAT:STR
+
+reward:RUIN_ABL:The voice of %s booms out: 'Thou needst a lesson in humility!'
+reward-effect:LOSE_RANDOM_STAT:STR
+
+reward:LOSE_EXP:The voice of %s booms out: 'Thou hast learned nothing.'
+reward-effect:LOSE_EXP
+reward-dice:$B
+reward-expr:B:PLAYER_LEVEL:* 200
+
+reward:SUMMON_M:The voice of %s booms out: 'My pets, destroy this fool!'
+reward-effect:SUMMON:MONSTER
+reward-dice:1d5
+
+reward:H_SUMMON:The voice of %s booms out: 'Death to the arrogant!'
+reward-effect:SUMMON:MONSTER
+reward-dice:2d4
+
+reward:DESTRUCT:The voice of %s booms out: 'Death and destruction! This pleaseth me!'
+reward-effect:DESTRUCTION
+reward-dice:15
+
+reward:POLY_SLF:The voice of %s booms out: 'Thou needst a new form, mortal!'
+reward-effect:SHAPECHANGE:bat
+
+reward:POLY_BEAST:The voice of %s booms out: 'Walk on four legs a while.'
+reward-effect:SHAPECHANGE:bear
+
+reward:POLY_WOLF:The voice of %s booms out: 'Run with my hounds, mortal.'
+reward-effect:SHAPECHANGE:warg
+
+reward:HEAL_FUL:The voice of %s booms out: 'Rise, my servant!'
+reward-effect:HEAL_HP
+reward-dice:5000
+reward-effect:CURE:POISONED
+reward-effect:CURE:BLIND
+reward-effect:CURE:CONFUSED
+reward-effect:CURE:STUN
+reward-effect:CURE:CUT
+reward-effect:CURE:AFRAID
+
+reward:GAIN_EXP:The voice of %s booms out: 'Thou hast done well, mortal.'
+reward-effect:GAIN_EXP
+reward-dice:$B
+reward-expr:B:PLAYER_LEVEL:* 100
+
+reward:GAIN_ABL:The voice of %s booms out: 'Stand, mortal, and be stronger.'
+reward-effect:RESTORE_STAT:STR
+reward-effect:GAIN_STAT:STR
+
+reward:AUGM_ABL:The voice of %s booms out: 'Receive this modest gift from me!'
+reward-effect:GAIN_STAT:STR
+reward-effect:GAIN_STAT:INT
+reward-effect:GAIN_STAT:WIS
+reward-effect:GAIN_STAT:DEX
+reward-effect:GAIN_STAT:CON
+
+reward:GOOD_OBJ:The voice of %s whispers: 'Use my gift wisely.'
+reward-effect:ACQUIRE
+reward-dice:1
+
+reward:GREA_OBJ:The voice of %s booms out: 'Use my gift wisely.'
+reward-effect:ACQUIRE
+reward-dice:2
+
+reward:CHAOS_WP:The voice of %s booms out: 'Thy deed hath earned thee a worthy blade.'
+reward-effect:ACQUIRE
+reward-dice:1
+
+reward:DISPEL_C:You feel the power of %s withdraw.
+reward-effect:PROJECT_LOS:DISP_ALL
+reward-dice:$B
+reward-expr:B:PLAYER_LEVEL:* 4
+
+reward:BANISH:The voice of %s booms out: 'Let me relieve thee of thine oppressors.'
+reward-effect:MASS_BANISH
+reward-dice:$B
+reward-expr:B:PLAYER_LEVEL:* 4
+
+
+########## The Lords themselves ##########
+
+patron:Swayvill
+patron-title:King of Chaos
+patron-desc:The King of the Courts, dying by inches of the curse Eric of Amber
+patron-desc: laid on him at Patternfall. His favour is real but erratic; a
+patron-desc: sovereign with little time left rewards loyalty and has no patience
+patron-desc: at all for ambition.
+patron-rewards:WRATH|CURSE_WP|CURSE_AR|RUIN_ABL|LOSE_ABL|IGNORE|IGNORE|IGNORE|POLY_SLF|HEAL_FUL|GAIN_ABL|GAIN_ABL|GAIN_EXP|GOOD_OBJ|GOOD_OBJ|CHAOS_WP|GREA_OBJ|AUGM_ABL|AUGM_ABL|GREA_OBJ
+
+patron:Suhuy
+patron-title:Keeper of the Logrus
+patron-desc:Master of the Logrus and teacher to both Merlin and Mandor, and a
+patron-desc: friendly adversary of Dworkin himself. The gentlest of the nine: he
+patron-desc: is interested in what you learn, and a student who disappoints him
+patron-desc: is ignored rather than punished.
+patron-rewards:PISS_OFF|LOSE_EXP|POLY_SLF|IGNORE|IGNORE|IGNORE|IGNORE|GAIN_EXP|GAIN_EXP|HEAL_FUL|GAIN_ABL|GOOD_OBJ|GAIN_EXP|GAIN_ABL|GOOD_OBJ|GREA_OBJ|AUGM_ABL|GREA_OBJ|AUGM_ABL|AUGM_ABL
+
+patron:Mandor
+patron-title:of House Sawall
+patron-desc:Merlin's stepbrother and the subtlest man in the Courts, who has
+patron-desc: never once done a kindness without a reason. His gifts are generous
+patron-desc: and none of them are free; when he is displeased, what he takes is
+patron-desc: usually something you were relying on.
+patron-rewards:CURSE_WP|CURSE_AR|LOSE_EXP|POLY_SLF|IGNORE|IGNORE|POLY_BEAST|GOOD_OBJ|GAIN_EXP|HEAL_FUL|GOOD_OBJ|GAIN_ABL|CHAOS_WP|GOOD_OBJ|GREA_OBJ|GAIN_ABL|GREA_OBJ|AUGM_ABL|GREA_OBJ|AUGM_ABL
+
+patron:Dara
+patron-title:of House Helgram
+patron-desc:Great-granddaughter of Benedict of Amber, mother of Merlin, and the
+patron-desc: most dangerous ambition in the Courts. She spends her servants on
+patron-desc: the dynasty and is lavish with those who advance it.
+patron-rewards:WRATH|RUIN_ABL|CURSE_WP|H_SUMMON|SUMMON_M|IGNORE|IGNORE|POLY_SLF|HEAL_FUL|GAIN_ABL|BANISH|GAIN_EXP|CHAOS_WP|GOOD_OBJ|GAIN_ABL|GREA_OBJ|AUGM_ABL|GREA_OBJ|AUGM_ABL|GREA_OBJ
+
+patron:Gramble
+patron-title:Duke of Sawall
+patron-desc:A Rim Duke and the King's man, orthodox where the rest of his House
+patron-desc: is not. He rewards plain service plainly and dislikes cleverness.
+patron-rewards:HURT|CURSE_AR|LOSE_ABL|SUMMON_M|IGNORE|IGNORE|IGNORE|POLY_BEAST|GAIN_EXP|HEAL_FUL|GAIN_ABL|GOOD_OBJ|BANISH|GAIN_ABL|CHAOS_WP|GOOD_OBJ|GREA_OBJ|AUGM_ABL|GREA_OBJ|AUGM_ABL
+
+patron:Jurt
+patron-title:the Jealous
+patron-desc:Merlin's half-brother, violent and envious and entirely without
+patron-desc: self-control. The worst master in the Courts: he will turn on a
+patron-desc: servant for doing well as readily as for failing.
+patron-rewards:WRATH|WRATH|HURT|PISS_OFF|H_SUMMON|RUIN_ABL|DESTRUCT|SUMMON_M|POLY_SLF|POLY_WOLF|IGNORE|IGNORE|HEAL_FUL|GAIN_ABL|GAIN_EXP|CHAOS_WP|GOOD_OBJ|GREA_OBJ|GAIN_ABL|AUGM_ABL
+
+patron:Despil
+patron-title:of House Sawall
+patron-desc:Jurt's brother, who has spent his life declining to be drawn into
+patron-desc: anything. He is a mild and inattentive master, and mostly he is
+patron-desc: simply not thinking about you.
+patron-rewards:PISS_OFF|LOSE_EXP|POLY_SLF|IGNORE|IGNORE|IGNORE|IGNORE|IGNORE|IGNORE|GAIN_EXP|HEAL_FUL|GAIN_EXP|GOOD_OBJ|GAIN_ABL|GOOD_OBJ|GAIN_ABL|GREA_OBJ|GOOD_OBJ|GREA_OBJ|AUGM_ABL
+
+patron:Borel
+patron-title:Master of Arms of Hendrake
+patron-desc:Duke of Hendrake, the finest blade in the Courts and the man who
+patron-desc: taught Dara to fence. He cares about one thing, which is how well
+patron-desc: you fight, and he is generous with steel to those who fight well.
+patron-rewards:WRATH|CURSE_WP|HURT|LOSE_ABL|IGNORE|IGNORE|POLY_BEAST|DISPEL_C|GAIN_ABL|HEAL_FUL|CHAOS_WP|GAIN_EXP|CHAOS_WP|GOOD_OBJ|GAIN_ABL|CHAOS_WP|GREA_OBJ|AUGM_ABL|GREA_OBJ|AUGM_ABL
+
+patron:Gilva
+patron-title:Warrior-Maiden of Hendrake
+patron-desc:Of Hendrake, which is the House that makes soldiers. Direct where
+patron-desc: Sawall is subtle: she says what she wants, and what she wants is
+patron-desc: that you go and kill something.
+patron-rewards:HURT|PISS_OFF|CURSE_AR|SUMMON_M|IGNORE|IGNORE|POLY_WOLF|DISPEL_C|GAIN_EXP|HEAL_FUL|GAIN_ABL|BANISH|CHAOS_WP|GAIN_ABL|GOOD_OBJ|CHAOS_WP|GREA_OBJ|AUGM_ABL|GREA_OBJ|AUGM_ABL

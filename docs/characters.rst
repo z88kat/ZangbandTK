@@ -118,12 +118,38 @@ is a mind there to hurt: a golem, a mould or an animated weapon is completely
 unaffected however hard it is hit, and a strange or feeble mind takes a third.
 Against anything else, nothing resists it. See :ref:`Psionics <psionics>`.
 
+The Chaos-Warrior, and who owns it
+----------------------------------
+
+The third of Zangband's classes, and the only one in the game that belongs to
+somebody.
+
+At birth a Chaos-Warrior is sworn to one of nine Lords of the Courts of Chaos.
+It does not choose which, it cannot leave, and every time it gains a level its
+Lord looks up and decides how it feels about the servant it has. Usually that is
+a gift — a healing, a raised stat, experience, an object out of nothing. Sometimes
+it is a cursed weapon, a ruined stat, monsters dropped on top of you, or the
+level destroyed around you. The class fights nearly as well as a Warrior and is
+otherwise unremarkable, because the class *is* the relationship.
+
+**And thirteen is an unlucky level.** The odds of the cruel end of the repertoire
+are normally about one in six; on reaching level 13 they are one in two. Every
+other thirteenth level is one in three, and every fourteenth is one in twelve —
+the safest a Chaos-Warrior ever gets. It is nowhere in the interface and a player
+can only learn it by living through it.
+
+**The nine Lords are Zelazny's.** This is the clearest case in the game of the
+drift this project exists to undo. Zangband's sixteen patrons were Moorcock's
+Elric gods — Slortar, Arioch, Xiombarg, Mabelode — with Khorne, Slaanesh, Nurgle
+and Tzeentch from Warhammer among them, and not one had any connection to Amber.
+They are replaced by Swayvill the King of Chaos, Suhuy who keeps the Logrus,
+Mandor, Dara, Gramble, Jurt, Despil, Borel and Gilva. Four of them are already
+walking around in the bestiary, so you can be gifted by a Lord you later meet.
+
 Still to come
 -------------
 
-Three of Zangband's classes are not in yet. The Chaos-Warrior wants its sixteen
-patrons — and a decision about who a Chaos-Warrior actually serves in a game
-about Amber, since Zangband's roster is Moorcock and Warhammer. The Warrior-Mage
-and High-Mage are defined by which realms they may choose, so those two wait on
-:doc:`realms`. Eight more races are waiting too, four of them undead, which want
-one mechanism between them and should arrive together.
+Two of Zangband's classes are not in yet: the Warrior-Mage and the High-Mage,
+both defined by which realms they may choose, so both waiting on :doc:`realms`.
+Eight more races are waiting too, four of them undead, which want one mechanism
+between them and should arrive together.

@@ -743,6 +743,200 @@ int rd_quests_1(void) { return rd_quests_aux(false, false, false); }
 /**
  * Read the player information
  */
+int rd_player_1(void)
+{
+	int i;
+	uint8_t tmp8u, num;
+	uint8_t stat_max = 0;
+	char buf[80];
+	struct player_race *r;
+	struct player_shape *s;
+	struct player_class *c;
+
+	rd_string(player->full_name, sizeof(player->full_name));
+	rd_string(player->died_from, 80);
+	player->history = mem_zalloc(250);
+	rd_string(player->history, 250);
+
+	/* Player race */
+	rd_string(buf, sizeof(buf));
+	for (r = races; r; r = r->next) {
+		if (streq(r->name, buf)) {
+			player->race = r;
+			break;
+		}
+	}
+
+	/* Verify player race */
+	if (!player->race) {
+		note(format("Invalid player race (%s).", buf));
+		return -1;
+	}
+
+	/* Player shape */
+	rd_string(buf, sizeof(buf));
+	for (s = shapes; s; s = s->next) {
+		if (streq(s->name, buf)) {
+			player->shape = s;
+			break;
+		}
+	}
+
+	/* If no player shape recorded, set to normal and hope for the best */
+	if (!player->shape) {
+		note(format("Invalid player shape (%s).", buf));
+		return -1;
+	}
+
+	/* Saves before PLR-05 recorded no patron. */
+	player->patron = NULL;
+
+	/* Player class */
+	rd_string(buf, sizeof(buf));
+	for (c = classes; c; c = c->next) {
+		if (streq(c->name, buf)) {
+			player->class = c;
+			break;
+		}
+	}
+
+	if (!player->class) {
+		note(format("Invalid player class (%s).", buf));
+		return -1;
+	}
+
+	/* Numeric name suffix */
+	rd_byte(&player->opts.name_suffix);
+
+	/* Special Race/Class info */
+	rd_byte(&player->hitdie);
+	rd_byte(&player->expfact);
+
+	/* Age/Height/Weight */
+	rd_s16b(&player->age);
+	rd_s16b(&player->ht);
+	rd_s16b(&player->wt);
+
+	/* Read the stat info */
+	rd_byte(&stat_max);
+	if (stat_max > STAT_MAX) {
+		note(format("Too many stats (%d).", stat_max));
+		return -1;
+	}
+
+	for (i = 0; i < stat_max; i++) rd_s16b(&player->stat_max[i]);
+	for (i = 0; i < stat_max; i++) rd_s16b(&player->stat_cur[i]);
+	for (i = 0; i < stat_max; i++) rd_s16b(&player->stat_map[i]);
+	for (i = 0; i < stat_max; i++) rd_s16b(&player->stat_birth[i]);
+
+	rd_s16b(&player->ht_birth);
+	rd_s16b(&player->wt_birth);
+	strip_bytes(2);
+	rd_s32b(&player->au_birth);
+
+	/* Player body */
+	rd_string(buf, sizeof(buf));
+	player->body.name = string_make(buf);
+	rd_u16b(&player->body.count);
+	if (player->body.count > z_info->equip_slots_max) {
+		note(format("Too many (%u) body parts!", player->body.count));
+		return (-1);
+	}
+
+	player->body.slots = mem_zalloc(player->body.count *
+									sizeof(struct equip_slot));
+	for (i = 0; i < player->body.count; i++) {
+		rd_u16b(&player->body.slots[i].type);
+		rd_string(buf, sizeof(buf));
+		player->body.slots[i].name = string_make(buf);
+	}
+
+	strip_bytes(4);
+
+	rd_s32b(&player->au);
+
+	rd_s32b(&player->max_exp);
+	rd_s32b(&player->exp);
+	rd_u16b(&player->exp_frac);
+
+	rd_s16b(&player->lev);
+
+	/* Verify player level */
+	if ((player->lev < 1) || (player->lev > PY_MAX_LEVEL)) {
+		note(format("Invalid player level (%d).", player->lev));
+		return (-1);
+	}
+
+	rd_s16b(&player->mhp);
+	rd_s16b(&player->chp);
+	rd_u16b(&player->chp_frac);
+
+	rd_s16b(&player->msp);
+	rd_s16b(&player->csp);
+	rd_u16b(&player->csp_frac);
+
+	rd_s16b(&player->max_lev);
+	rd_s16b(&player->max_depth);
+	rd_s16b(&player->recall_depth);
+
+	/* Repair maximum player level */
+	if (player->max_lev < player->lev) player->max_lev = player->lev;
+
+	/* Repair maximum dungeon level */
+	if (player->max_depth < 0) player->max_depth = 1;
+	if (player->recall_depth <= 0) player->recall_depth = player->max_depth;
+
+	/* Reset cause of death */
+	if (player->chp >= 0)
+		my_strcpy(player->died_from, "(alive and well)",
+				  sizeof(player->died_from));
+
+	/* More info */
+	rd_byte(&tmp8u);
+	player->old_grid.y = tmp8u;
+	rd_byte(&tmp8u);
+	player->old_grid.x = tmp8u;
+	strip_bytes(4);
+	rd_byte(&player->skip_cmd_coercion);
+	rd_byte(&player->unignoring);
+	rd_s16b(&player->deep_descent);
+
+	/* Read the flags */
+	rd_s16b(&player->energy);
+	rd_s16b(&player->word_recall);
+
+	/* Find the number of timed effects */
+	rd_byte(&num);
+
+	if (num <= TMD_MAX) {
+		/* Read all the effects */
+		for (i = 0; i < num; i++)
+			rd_s16b(&player->timed[i]);
+
+		/* Initialize any entries not read */
+		if (num < TMD_MAX)
+			memset(player->timed + num, 0, (TMD_MAX - num) * sizeof(int16_t));
+	} else {
+		/* Probably in trouble anyway */
+		for (i = 0; i < TMD_MAX; i++)
+			rd_s16b(&player->timed[i]);
+
+		/* Discard unused entries */
+		strip_bytes(2 * (num - TMD_MAX));
+		note("Discarded unsupported timed effects");
+	}
+
+	/* Total energy used so far */
+	rd_u32b(&player->total_energy);
+	/* # of turns spent resting */
+	rd_u32b(&player->resting_turn);
+
+	/* Future use */
+	strip_bytes(32);
+
+	return 0;
+}
+
 int rd_player(void)
 {
 	int i;
@@ -786,6 +980,25 @@ int rd_player(void)
 	if (!player->shape) {
 		note(format("Invalid player shape (%s).", buf));
 		return -1;
+	}
+
+	/*
+	 * The Lord of Chaos served (ZangbandTK, PLR-05).  An empty string is the
+	 * normal case -- only a Chaos-Warrior has one -- and a name that no longer
+	 * exists in patron.txt leaves the character unowned rather than refusing
+	 * to load, since losing a patron is survivable and losing a save is not.
+	 */
+	rd_string(buf, sizeof(buf));
+	player->patron = NULL;
+	if (buf[0]) {
+		struct patron *pa;
+
+		for (pa = patrons; pa; pa = pa->next)
+			if (streq(pa->name, buf)) player->patron = pa;
+
+		if (!player->patron)
+			note(format("Unknown chaos patron (%s); the character is unowned.",
+						buf));
 	}
 
 	/* Player class */

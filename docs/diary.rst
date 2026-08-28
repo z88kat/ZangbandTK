@@ -106,6 +106,59 @@ is now the newest ZangbandTK in existence and the least settled — which is the
 right trade for something you reach by clicking a link.
 
 
+29 August 2026 — nine Lords, and a test that measured the wrong thing
+=====================================================================
+
+The Chaos-Warrior, which completes every class in M7 that is not waiting on the
+realm system. It is the only class in the game that belongs to somebody: sworn at
+birth to a Lord it did not choose and cannot leave, and every level it gains the
+Lord looks up and decides how it feels.
+
+The interesting part was not the mechanism. It was the roster.
+
+Zangband's sixteen patrons are Slortar, Mabelode, Chardros, Hionhurn, Xiombarg,
+Pyaray, Balaan, Arioch, Eequor, Narjhan, Balo and Khaine — Moorcock's Elric gods
+— plus Khorne, Slaanesh, Nurgle and Tzeentch, who are Warhammer. Not one of them
+has anything to do with Amber. It is the single clearest example of the drift
+this whole project exists to undo, and it would have cost nothing to import all
+sixteen and notice in a year.
+
+So: nine Lords of the Courts of Chaos instead. Swayvill, Suhuy, Mandor, Dara,
+Gramble, Jurt, Despil, Borel, Gilva. And I went and checked them rather than
+writing down what I remembered, which was the right call, because I had two of
+them wrong — I had Suhuy in House Hendrake and Dara in Sawall, and they are
+Sawall and Helgram respectively. Three more names I was fairly confident about,
+Tmer, Tubble and Bances, are not in the reference at all, so they are not in the
+game. DEC-18 says facts get rigour and a patron roster is a fact.
+
+The rest was routine, apart from one thing worth writing down about testing.
+
+I wanted to pin Zangband's nicest piece of malice: the odds of your patron
+turning cruel are normally one in six, but on reaching level 13 they are one in
+two. It is nowhere in the interface — the only way to learn it is to live through
+it — so it would survive being silently lost, which is exactly what a test is
+for.
+
+My first attempt ran four hundred level-ups at 13 and four hundred at 20 and
+counted how often the character lost hit points. It passed: 73 against 58. And it
+was a bad test, for two reasons I should have seen before writing it. Most of the
+cruel outcomes do not cost hit points at all — a cursed weapon, a drained stat,
+a summoned pack — so it was blind to most of what it claimed to measure. And
+several of the *kind* outcomes recalculate maximum hit points, so it was counting
+things that were not damage. Fifteen apart in four hundred is noise wearing a
+result's clothing, and I would have shipped it.
+
+What it should have measured was the roll, so I gave the roll its own function
+and measured that directly: 528, 336, 174 and 84 out of four thousand at levels
+13, 26, 20 and 28 — which is one half, one third, one sixth and one twelfth of a
+quarter, to three figures. No ambiguity, no flake, and it fails loudly if anyone
+ever flattens the curve.
+
+That is three tests in three days that were green while asserting nothing much.
+The pattern in all of them is the same: I measured a consequence when I could
+have measured the cause.
+
+
 28 August 2026 — a projection for the mind, and a stale binary for the fifth time
 =================================================================================
 

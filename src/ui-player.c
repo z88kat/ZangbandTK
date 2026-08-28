@@ -692,11 +692,20 @@ static const uint8_t colour_table[] =
 
 
 static struct panel *get_panel_topleft(void) {
-	struct panel *p = panel_allocate(6);
+	struct panel *p = panel_allocate(player->patron ? 7 : 6);
 
 	panel_line(p, COLOUR_L_BLUE, "Name", "%s", player->full_name);
 	panel_line(p, COLOUR_L_BLUE, "Race",	"%s", player->race->name);
 	panel_line(p, COLOUR_L_BLUE, "Class", "%s", player->class->name);
+
+	/*
+	 * Who owns you (ZangbandTK, PLR-05).  Shown in red because it is not a
+	 * credential -- a Chaos-Warrior did not choose its Lord and cannot leave
+	 * it, and every level it gains the Lord decides how it feels about that.
+	 */
+	if (player->patron)
+		panel_line(p, COLOUR_L_RED, "Patron", "%s", player->patron->name);
+
 	panel_line(p, COLOUR_L_BLUE, "Title", "%s", show_title());
 	panel_line(p, COLOUR_L_BLUE, "HP", "%d/%d", player->chp, player->mhp);
 	panel_line(p, COLOUR_L_BLUE, "SP", "%d/%d", player->csp, player->msp);

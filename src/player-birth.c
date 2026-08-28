@@ -995,6 +995,13 @@ void player_generate(struct player *p, const struct player_race *r,
 	/* Experience factor */
 	p->expfact = p->race->r_exp + p->class->c_exp;
 
+	/*
+	 * And who owns you, if anything does (ZangbandTK, PLR-05).  Chosen here
+	 * rather than offered: a Chaos-Warrior does not pick its Lord, and the
+	 * whole character of the relationship is that it was not consulted.
+	 */
+	patron_choose(p);
+
 	/* Hitdice */
 	p->hitdie = p->race->r_mhp + p->class->c_mhp;
 

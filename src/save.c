@@ -457,6 +457,17 @@ void wr_player(void)
 	/* Race/Class/Gender/Spells */
 	wr_string(player->race->name);
 	wr_string(player->shape->name);
+	/*
+	 * The Lord of Chaos served, by name (ZangbandTK, PLR-05).  By name rather
+	 * than by index for the same reason towns and dungeons are: the roster is
+	 * data, and inserting a Lord into patron.txt must not silently rebind every
+	 * existing character to a different master.
+	 *
+	 * Written here, between the shape and the class, to match the order
+	 * rd_player() reads them in.
+	 */
+	wr_string(player->patron ? player->patron->name : "");
+
 	wr_string(player->class->name);
 	wr_byte(player->opts.name_suffix);
 

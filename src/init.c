@@ -3795,6 +3795,300 @@ static enum parser_error parse_p_race_power_expr(struct parser *p) {
 							parser_getstr(p, "expr"));
 }
 
+/**
+ * The Lords of the Courts of Chaos (ZangbandTK, PLR-05).
+ *
+ * Two record kinds in one file.  `reward:` blocks come first and define what
+ * each favour or punishment does; `patron:` blocks name a Lord and list twenty
+ * of those codes, worst first.  The codes are resolved into pointers once the
+ * whole file has been read, so a Lord may refer to a reward defined after it.
+ */
+struct patron *patrons = NULL;
+static struct patron_reward *patron_rewards = NULL;
+
+/** Whether the last record read was a reward or a Lord. */
+static bool patron_in_reward = false;
+
+struct patron_reward *patron_reward_by_code(const char *code) {
+	struct patron_reward *r;
+
+	for (r = patron_rewards; r; r = r->next)
+		if (streq(r->code, code)) return r;
+
+	return NULL;
+}
+
+static struct patron_reward *patron_last_reward(void) {
+	struct patron_reward *r = patron_rewards;
+
+	while (r && r->next) r = r->next;
+
+	return r;
+}
+
+static struct patron *patron_last(void) {
+	struct patron *pa = patrons;
+
+	while (pa && pa->next) pa = pa->next;
+
+	return pa;
+}
+
+static enum parser_error parse_patron_reward(struct parser *p) {
+	struct patron_reward *reward = mem_zalloc(sizeof(*reward));
+	struct patron_reward *last = patron_last_reward();
+
+	reward->code = string_make(parser_getsym(p, "code"));
+	reward->message = string_make(parser_getstr(p, "message"));
+
+	if (patron_reward_by_code(reward->code)) {
+		string_free(reward->code);
+		string_free(reward->message);
+		mem_free(reward);
+		return PARSE_ERROR_INVALID_VALUE;
+	}
+
+	if (last) {
+		last->next = reward;
+	} else {
+		patron_rewards = reward;
+	}
+
+	patron_in_reward = true;
+	parser_setpriv(p, reward);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_patron_reward_effect(struct parser *p) {
+	struct patron_reward *reward = patron_last_reward();
+	struct effect *effect, *new_effect;
+
+	if (!reward || !patron_in_reward) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	new_effect = mem_zalloc(sizeof(*new_effect));
+	if (reward->effect) {
+		effect = reward->effect;
+		while (effect->next) effect = effect->next;
+		effect->next = new_effect;
+	} else {
+		reward->effect = new_effect;
+	}
+
+	return grab_effect_data(p, new_effect);
+}
+
+static struct effect *patron_last_effect(void) {
+	struct patron_reward *reward = patron_last_reward();
+	struct effect *effect = reward ? reward->effect : NULL;
+
+	while (effect && effect->next) effect = effect->next;
+
+	return effect;
+}
+
+static enum parser_error parse_patron_reward_dice(struct parser *p) {
+	struct effect *effect = patron_last_effect();
+	dice_t *dice;
+
+	if (!effect || !patron_in_reward) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	dice = dice_new();
+	if (!dice) return PARSE_ERROR_INVALID_DICE;
+
+	if (!dice_parse_string(dice, parser_getstr(p, "dice"))) {
+		dice_free(dice);
+		return PARSE_ERROR_NOT_RANDOM;
+	}
+
+	dice_free(effect->dice);
+	effect->dice = dice;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_patron_reward_expr(struct parser *p) {
+	struct effect *effect = patron_last_effect();
+	expression_t *expression;
+	expression_base_value_f function;
+	enum parser_error result;
+
+	if (!effect || !patron_in_reward) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!effect->dice) return PARSE_ERROR_NONE;
+
+	expression = expression_new();
+	if (!expression) return PARSE_ERROR_INVALID_EXPRESSION;
+
+	function = effect_value_base_by_name(parser_getsym(p, "base"));
+	expression_set_base_value(expression, function);
+
+	if (expression_add_operations_string(expression,
+										 parser_getstr(p, "expr")) < 0)
+		result = PARSE_ERROR_BAD_EXPRESSION_STRING;
+	else if (dice_bind_expression(effect->dice, parser_getsym(p, "name"),
+								  expression) < 0)
+		result = PARSE_ERROR_UNBOUND_EXPRESSION;
+	else
+		result = PARSE_ERROR_NONE;
+
+	expression_free(expression);
+
+	return result;
+}
+
+static enum parser_error parse_patron_name(struct parser *p) {
+	struct patron *patron = mem_zalloc(sizeof(*patron));
+	struct patron *last = patron_last();
+
+	patron->name = string_make(parser_getstr(p, "name"));
+
+	if (last) {
+		last->next = patron;
+	} else {
+		patrons = patron;
+	}
+
+	patron_in_reward = false;
+	parser_setpriv(p, patron);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_patron_title(struct parser *p) {
+	struct patron *patron = patron_last();
+
+	if (!patron || patron_in_reward) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	string_free(patron->title);
+	patron->title = string_make(parser_getstr(p, "title"));
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_patron_desc(struct parser *p) {
+	struct patron *patron = patron_last();
+
+	if (!patron || patron_in_reward) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	patron->text = string_append(patron->text, parser_getstr(p, "desc"));
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_patron_ladder(struct parser *p) {
+	struct patron *patron = patron_last();
+	char *list, *code;
+	int n = 0;
+
+	if (!patron || patron_in_reward) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	list = string_make(parser_getstr(p, "rewards"));
+
+	for (code = strtok(list, "| "); code; code = strtok(NULL, "| ")) {
+		if (n >= PATRON_LADDER) {
+			string_free(list);
+			return PARSE_ERROR_TOO_MANY_ENTRIES;
+		}
+		patron->ladder_codes[n++] = string_make(code);
+	}
+
+	string_free(list);
+
+	/*
+	 * Exactly twenty, because the roll that indexes this assumes the whole
+	 * ladder is there.  A short list would silently give some Lord a run of
+	 * nothing at the generous end, which is the sort of thing nobody would
+	 * notice for months.
+	 */
+	if (n != PATRON_LADDER) return PARSE_ERROR_INVALID_VALUE;
+
+	patron->nladder = n;
+
+	return PARSE_ERROR_NONE;
+}
+
+static struct parser *init_parse_patron(void) {
+	struct parser *p = parser_new();
+
+	parser_setpriv(p, NULL);
+	patron_in_reward = false;
+
+	parser_reg(p, "reward sym code str message", parse_patron_reward);
+	parser_reg(p, "reward-effect sym eff ?sym type ?int radius ?int other",
+			   parse_patron_reward_effect);
+	parser_reg(p, "reward-dice str dice", parse_patron_reward_dice);
+	parser_reg(p, "reward-expr sym name sym base str expr",
+			   parse_patron_reward_expr);
+	parser_reg(p, "patron str name", parse_patron_name);
+	parser_reg(p, "patron-title str title", parse_patron_title);
+	parser_reg(p, "patron-desc str desc", parse_patron_desc);
+	parser_reg(p, "patron-rewards str rewards", parse_patron_ladder);
+
+	return p;
+}
+
+static errr run_parse_patron(struct parser *p) {
+	return parse_file_quit_not_found(p, "patron");
+}
+
+static errr finish_parse_patron(struct parser *p) {
+	struct patron *patron;
+	int i;
+
+	/* Resolve every ladder entry, now that all the rewards have been read. */
+	for (patron = patrons; patron; patron = patron->next) {
+		for (i = 0; i < PATRON_LADDER; i++) {
+			patron->ladder[i] = patron_reward_by_code(patron->ladder_codes[i]);
+
+			if (!patron->ladder[i]) {
+				parser_destroy(p);
+				return PARSE_ERROR_INVALID_VALUE;
+			}
+		}
+	}
+
+	parser_destroy(p);
+
+	return 0;
+}
+
+static void cleanup_patron(void) {
+	struct patron *patron = patrons;
+	struct patron_reward *reward = patron_rewards;
+
+	while (patron) {
+		struct patron *next = patron->next;
+		int i;
+
+		for (i = 0; i < PATRON_LADDER; i++)
+			string_free(patron->ladder_codes[i]);
+
+		string_free(patron->name);
+		string_free(patron->title);
+		string_free(patron->text);
+		mem_free(patron);
+		patron = next;
+	}
+	patrons = NULL;
+
+	while (reward) {
+		struct patron_reward *next = reward->next;
+
+		string_free(reward->code);
+		string_free(reward->message);
+		free_effect(reward->effect);
+		mem_free(reward);
+		reward = next;
+	}
+	patron_rewards = NULL;
+}
+
+struct file_parser patron_parser = {
+	"patron",
+	init_parse_patron,
+	run_parse_patron,
+	finish_parse_patron,
+	cleanup_patron
+};
+
 static struct parser *init_parse_p_race(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -5620,6 +5914,7 @@ static struct {
 	{ "dungeons", &dungeon_parser },
 	{ "town names", &town_parser },
 	{ "shop quality", &quality_parser },
+	{ "chaos patrons", &patron_parser },
 	{ "monster pits" , &pit_parser },
 	{ "monster lore" , &lore_parser },
 	{ "traps", &trap_parser },

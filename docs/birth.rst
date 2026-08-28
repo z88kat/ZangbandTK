@@ -565,6 +565,17 @@ Mindcrafter
 
   See :ref:`Psionics <psionics>` for the list.
 
+.. _Chaos-Warrior:
+
+Chaos-Warrior
+  A Chaos-Warrior is a fighter who belongs to somebody. At birth it is sworn to
+  one of the nine Lords of the Courts of Chaos — it does not choose which, and
+  it cannot leave — and every time it gains a level its Lord looks up and
+  decides how it feels. Usually that is a gift. Sometimes it is not.
+
+  It fights nearly as well as a Warrior and is otherwise unremarkable, which is
+  the point: the class is the relationship. See :ref:`Patrons <patrons>`.
+
 .. _martial-arts:
 
 Martial arts
@@ -653,6 +664,53 @@ kind of damage Angband does not have. It asks whether there is a mind to hurt:
 anything that has none — a golem, a mould, an animated weapon — is completely
 unaffected however hard it is hit, and creatures with strange or feeble minds
 take a third of the damage. Against everything else, nothing resists it at all.
+
+.. _patrons:
+
+Patrons
+-------
+
+The nine Lords are Zelazny's, not Zangband's. The original's sixteen patrons
+were Moorcock's Elric gods with four Warhammer ones among them, and not one of
+them had anything to do with Amber.
+
+=========== ============================ ==================================
+Lord        Title                        Temperament
+=========== ============================ ==================================
+Swayvill    King of Chaos                Erratic; rewards loyalty, punishes
+                                         ambition
+Suhuy       Keeper of the Logrus         The gentlest; ignores rather than
+                                         punishes
+Mandor      of House Sawall              Generous, and nothing is free
+Dara        of House Helgram             Lavish to those who serve the
+                                         dynasty
+Gramble     Duke of Sawall               Plain rewards for plain service
+Jurt        the Jealous                  The worst master in the Courts
+Despil      of House Sawall              Mild, and mostly not thinking
+                                         about you
+Borel       Master of Arms of Hendrake   Cares only how well you fight
+Gilva       Warrior-Maiden of Hendrake   Direct; wants you to go and kill
+                                         something
+=========== ============================ ==================================
+
+Your Lord is shown on the character sheet, in red, because it is not a
+credential.
+
+**What can happen.** At the generous end: a full healing, experience, a restored
+or raised stat, all five stats at once, or an object pulled out of nothing. In
+the middle, nothing at all — a Lord who is not thinking about you is a good Lord.
+At the bad end: your weapon or armour cursed, a stat drained or ruined,
+experience lost, monsters summoned on top of you, the level destroyed around you,
+or simply damage, which at a high level can kill.
+
+Some Lords will also give you a different shape for a while. Your gear merges
+into your body when that happens, so you lose every bonus it carried and cannot
+cast until you change back — which you may do whenever you like.
+
+**Thirteen is an unlucky level.** The odds of your Lord reaching into the cruel
+end of its repertoire are normally about one in six. On reaching level 13 they
+are one in two. On every other thirteenth level they are one in three. On every
+fourteenth they are one in twelve, which is the safest a Chaos-Warrior ever gets.
 
 Stats
 =====
