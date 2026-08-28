@@ -553,6 +553,18 @@ Monk
   :ref:`Martial arts <martial-arts>` for what it gains by going without, and
   what it loses by not.
 
+.. _Mindcrafter:
+
+Mindcrafter
+  A Mindcrafter has no spellbooks and will never find any. Its craft is twelve
+  psionic powers that arrive as it grows, and it does not study them — it simply
+  becomes able to do them. Wisdom is what makes them work. It is physically
+  frail, with the second worst hit dice in the game, and its attacks reach for
+  minds rather than bodies, which makes it formidable against most things and
+  useless against a golem.
+
+  See :ref:`Psionics <psionics>` for the list.
+
 .. _martial-arts:
 
 Martial arts
@@ -594,6 +606,53 @@ way.
 Wielding a weapon has no penalty attached to it. It simply switches all of the
 above off, because the ladder is only reached with empty hands — which in
 practice is the sharpest penalty in the game.
+
+.. _psionics:
+
+Psionics
+--------
+
+The Mindcrafter's twelve powers are on ``N``, alongside anything the character's
+race can do. They cost mana, they can fail, and Wisdom governs both how much
+mana there is and how reliably a power works.
+
+They are deliberately **not a realm of magic**. There is no book to find, no
+spell to learn, nothing to choose at birth, and nothing that can be taken from
+you: a Mindcrafter's powers arrive purely by level.
+
+=========================== ===== ===== =======
+Power                       Level  Mana  Failure
+=========================== ===== ===== =======
+Blast a mind                    1     1     15%
+See what is coming              2     1     20%
+Shift a short way               3     2     25%
+Shift a long way                7     6     35%
+Dominate a mind                 9     7     50%
+Pulverise                      11     7     30%
+Armour your mind               13    12     50%
+Read an object                 15    12     60%
+Send out a mind wave           18    10     45%
+Channel adrenaline             23    15     50%
+Drain a mind                   25    10     40%
+Loose a telekinetic wave       28    20     45%
+=========================== ===== ===== =======
+
+**A power is rarely one thing.** Most of these grow into something else as the
+character does, and keep growing for the whole career. *See what is coming*
+starts as a way to spot monsters at level 2; by 5 it finds traps and doors, by
+15 it sees the invisible, by 20 it maps the level, from 25 to 39 it grants
+telepathy, by 30 it detects everything there is, and at 45 it lights the entire
+level. It is the same power on the same key throughout.
+
+Others switch rather than accumulate. *Shift a long way* adds banishment at 30.
+*Dominate a mind* stops being aimed at one creature and takes everything in
+sight. *Channel adrenaline* gives heroism until 35 and berserk strength after.
+
+**Minds, not bodies.** Four of the powers attack with psionic force, which is a
+kind of damage Angband does not have. It asks whether there is a mind to hurt:
+anything that has none — a golem, a mould, an animated weapon — is completely
+unaffected however hard it is hit, and creatures with strange or feeble minds
+take a third of the damage. Against everything else, nothing resists it at all.
 
 Stats
 =====

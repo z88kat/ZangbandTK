@@ -1118,6 +1118,45 @@ could never once have breathed. Zangband's own answer is that a character short 
 mana pays in hit points, which is both the fix and the reason the feature works at
 all for the classes that need it most.
 
+### DEC-37 — Psionics are a power list, and psionic force is a new projection (PLR-06)
+
+The Mindcrafter is the second Zangband class taken, chosen because its identity
+needs nothing from another milestone. Two decisions came out of building it.
+
+*Psionics are not a realm, and the code says so.* PLR-06 asks for "a power list
+independent of the realm system", and the temptation was to express the twelve
+powers as a bookless realm because 4.2's spell machinery already has level, mana,
+failure and effects. That was rejected. A realm in 4.2 implies books, and books
+imply things to find, lose and choose between — none of which a Mindcrafter has.
+So the class carries a power list of the same kind PLR-02 gave races, and
+`powers:WIS:1` names the stat that feeds it. `calc_mana()` grew a branch for
+this: mana is normally derived from the realms a class's books belong to, and a
+class with no books had a maximum of zero.
+
+*Powers gained level bands.* Zangband's powers are rarely one thing — Precognition
+detects monsters at 2, finds traps at 5, sees invisibility at 15, maps at 20,
+grants telepathy from 25 to 39, detects everything at 30 and lights the level at
+45. 4.2's effect chain has no notion of when a link applies, so `power-when` was
+added: a group of effects and the level range it is good for. Eight of the twelve
+powers need it. This applies to racial powers too, and is where a Draconian's
+breath changing every five levels can eventually go — the gap PLR-01 recorded as
+"not yet expressible".
+
+*Psionic force is a new projection.* Every damaging type 4.2 has is an element,
+resisted by a flag or by armour. Zangband's `GF_PSI` is not: it asks whether
+there is a mind to hurt. That is the Mindcrafter's whole character, so
+`PROJ_MON_PSI` was added rather than approximated with mana or force damage.
+`EMPTY_MIND` is complete immunity and `WEIRD_MIND` or `STUPID` takes a third,
+both read off flags 4.2 already keeps for telepathy — which is the same question
+asked the other way round. `MON_DRAIN`, which spares the nonliving, is the
+existing pattern it was written against.
+
+*What was approximated.* Zangband's Psychic Drain returns energy to the caster on
+a hit; 4.2's effect system has no way for an effect to give the player a turn
+back, so it is damage only for now. Psychometry is a full identify at every
+level rather than pseudo-identification below 25, because 4.2 removed
+pseudo-identification.
+
 Verification work carried into Phase 2:
 
 - Measure `struct chunk`'s memory footprint against the wilderness live-block target

@@ -95,11 +95,35 @@ Over the weight limit and the strikes halve and every bonus withdraws; under it,
 each empty armour slot is worth armour class in its own right. See
 :ref:`Martial arts <martial-arts>`.
 
+The Mindcrafter, and psionics
+-----------------------------
+
+The second of Zangband's classes, and the opposite kind of thing to the Monk.
+
+A Mindcrafter has no spellbooks and will never find any. Its craft is twelve
+powers that arrive as it levels — and they are deliberately **not a realm of
+magic**: nothing to study, nothing to choose at birth, nothing that can be
+taken away. That distinction is the whole requirement, not a detail of how it
+was built.
+
+Most of the twelve grow into something else as the character does, which is
+worth knowing because it is unlike anything in Angband. *See what is coming*
+spots monsters at level 2, finds traps and doors at 5, sees invisibility at 15,
+maps the level at 20, grants telepathy from 25, detects everything at 30 and
+lights the whole level at 45 — one power, one key, for a whole career.
+
+**And psionic force is a new kind of damage.** Every damaging type Angband has
+is an element, resisted with a flag or with armour. This one asks whether there
+is a mind there to hurt: a golem, a mould or an animated weapon is completely
+unaffected however hard it is hit, and a strange or feeble mind takes a third.
+Against anything else, nothing resists it. See :ref:`Psionics <psionics>`.
+
 Still to come
 -------------
 
-Four of Zangband's classes are not in yet. The Chaos-Warrior wants its sixteen
-patrons, the Mindcrafter its psionics, and the Warrior-Mage and High-Mage are
-defined by which realms they may choose — so those two wait on
+Three of Zangband's classes are not in yet. The Chaos-Warrior wants its sixteen
+patrons — and a decision about who a Chaos-Warrior actually serves in a game
+about Amber, since Zangband's roster is Moorcock and Warhammer. The Warrior-Mage
+and High-Mage are defined by which realms they may choose, so those two wait on
 :doc:`realms`. Eight more races are waiting too, four of them undead, which want
 one mechanism between them and should arrive together.

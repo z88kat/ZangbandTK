@@ -3601,7 +3601,8 @@ static int test_a_race_keeps_its_power(void *state) {
 		for (power = r->powers; power; power = power->next) {
 			/* Nothing half-parsed: a power with no effect would do nothing. */
 			notnull(power->name);
-			notnull(power->effect);
+			notnull(power->effects);
+			notnull(power->effects->effect);
 			require(power->level >= 1 && power->level <= 50);
 			require(power->cost > 0);
 			require(power->stat >= 0 && power->stat < STAT_MAX);
@@ -4016,22 +4017,24 @@ static int test_a_monk_hits_harder_than_a_bare_fist(void *state) {
 	for (i = 0; i < 100; i++) {
 		int before;
 
-		/* A blow can finish it, and then the pointer is stale. */
+		/*
+		 * Topped up past anything one turn can get through, so the target
+		 * never dies.  It matters: when it did die the count stopped at its
+		 * maximum hit points, which silently truncated the martial figure --
+		 * the one being measured -- and left the comparison swinging between
+		 * five and forty thousand from run to run.
+		 */
 		mon = square_monster(cave, grid);
-		if (!mon) {
-			require(place_new_monster(cave, grid, race, false, false, info,
-									  ORIGIN_DROP));
-			mon = square_monster(cave, grid);
-			notnull(mon);
-		}
-
+		notnull(mon);
+		mon->maxhp = 32000;
 		mon->hp = mon->maxhp;
 		before = mon->hp;
 
 		py_attack(player, grid);
 
 		mon = square_monster(cave, grid);
-		bare += mon ? before - mon->hp : before;
+		notnull(mon);
+		bare += before - mon->hp;
 	}
 
 	/* Then as a Monk, with the same hands. */
@@ -4041,38 +4044,199 @@ static int test_a_monk_hits_harder_than_a_bare_fist(void *state) {
 	for (i = 0; i < 100; i++) {
 		int before;
 
-		/* A blow can finish it, and then the pointer is stale. */
+		/*
+		 * Topped up past anything one turn can get through, so the target
+		 * never dies.  It matters: when it did die the count stopped at its
+		 * maximum hit points, which silently truncated the martial figure --
+		 * the one being measured -- and left the comparison swinging between
+		 * five and forty thousand from run to run.
+		 */
 		mon = square_monster(cave, grid);
-		if (!mon) {
-			require(place_new_monster(cave, grid, race, false, false, info,
-									  ORIGIN_DROP));
-			mon = square_monster(cave, grid);
-			notnull(mon);
-		}
-
+		notnull(mon);
+		mon->maxhp = 32000;
 		mon->hp = mon->maxhp;
 		before = mon->hp;
 
 		py_attack(player, grid);
 
 		mon = square_monster(cave, grid);
-		martial += mon ? before - mon->hp : before;
+		notnull(mon);
+		martial += before - mon->hp;
 	}
 
 	/*
-	 * Trained hands against untrained ones.  The margin is deliberately loose
-	 * -- both figures are rolled, and the strike drawn varies by design -- but
-	 * the gap it is asserting is enormous, so a factor of three is a floor
-	 * that a working implementation clears without difficulty.
+	 * Trained hands against untrained ones.  Measured, this runs at about
+	 * fifty to one -- eight strikes a turn of real dice with criticals, against
+	 * two blows of a flat point each.  Ten is asserted rather than fifty
+	 * because both figures are rolled and the strike drawn varies by design,
+	 * but it is far enough above what an unarmed non-Monk can reach that a
+	 * regression could not slip under it.
 	 */
 	printf("MONK %d damage over 100 blows, bare-handed %d\n", martial, bare);
-	require(martial > bare * 3);
+	require(martial > bare * 10);
 
 	player->body.slots[weapon_slot].obj = held;
 	player->class = keep;
 	player->upkeep->update |= PU_BONUS;
 	update_stuff(player);
 	if (square_monster(cave, grid)) delete_monster(cave, grid);
+
+	ok;
+}
+
+/**
+ * PLR-06: the Mindcrafter's psionics are a power list, not a realm.
+ *
+ * The distinction is the requirement, not a detail: there are no books to find,
+ * nothing to study and no realm to choose, so the class has to carry its powers
+ * itself and name the stat that feeds them.
+ */
+static int test_the_mindcrafter_thinks_for_itself(void *state) {
+	struct player_class *c, *mind = NULL;
+	struct player_power *power;
+	int count = 0, last_level = 0;
+
+	for (c = classes; c; c = c->next)
+		if (streq(c->name, "Mindcrafter")) mind = c;
+	notnull(mind);
+
+	/* No books at all -- that is what makes it not a realm. */
+	eq(mind->magic.total_spells, 0);
+	eq(mind->magic.num_books, 0);
+
+	/* And so the class names its own casting stat, or it could never spend. */
+	eq(mind->power_stat, STAT_WIS);
+	require(mind->power_first >= 1);
+
+	notnull(mind->powers);
+
+	for (power = mind->powers; power; power = power->next) {
+		struct power_effect *band;
+		int bands = 0;
+
+		count++;
+
+		notnull(power->name);
+		notnull(power->effects);
+		eq(power->stat, STAT_WIS);
+		require(power->level >= 1 && power->level <= 50);
+		require(power->cost > 0);
+		require(power->fail > 0 && power->fail <= 100);
+
+		/* A ladder, like the Monk's: each power arrives after the last. */
+		require(power->level >= last_level);
+		last_level = power->level;
+
+		for (band = power->effects; band; band = band->next) {
+			bands++;
+			notnull(band->effect);
+			require(band->from >= 0);
+			require(band->to == 0 || band->to >= band->from);
+		}
+
+		require(bands > 0);
+	}
+
+	/* Zangband's twelve, from Neural Blast at 1 to Telekinetic Wave at 28. */
+	eq(count, 12);
+	eq(mind->powers->level, 1);
+	eq(last_level, 28);
+
+	ok;
+}
+
+/**
+ * A power that grows into something else has to actually grow.
+ *
+ * Precognition is the one that does this most: it detects monsters at 2, adds
+ * traps and doors at 5, invisibility at 15, maps the level at 20, grants
+ * telepathy from 25 to 39, detects everything from 30 and lights the whole
+ * level at 45.  If the bands were not filtered by level a novice would get all
+ * of it at once, which is the bug this is here to catch.
+ */
+static int test_a_power_grows_with_the_character(void *state) {
+	struct player_class *c, *mind = NULL;
+	struct player_power *power, *precog = NULL;
+	struct power_effect *band;
+	int novice = 0, master = 0;
+
+	for (c = classes; c; c = c->next)
+		if (streq(c->name, "Mindcrafter")) mind = c;
+	notnull(mind);
+
+	for (power = mind->powers; power; power = power->next)
+		if (streq(power->name, "see what is coming")) precog = power;
+	notnull(precog);
+
+	/* It has to be banded at all, or there is nothing to test. */
+	require(precog->effects->next != NULL);
+
+	for (band = precog->effects; band; band = band->next) {
+		if (band->from <= 2 && (!band->to || band->to >= 2)) novice++;
+		if (band->from <= 50 && (!band->to || band->to >= 50)) master++;
+	}
+
+	/* Both get something... */
+	require(novice > 0);
+	require(master > 0);
+
+	/* ...but the trainee gets markedly less of it. */
+	require(master > novice);
+
+	ok;
+}
+
+/**
+ * A class with no books still has to have something to spend.
+ *
+ * This is the change calc_mana() needed for PLR-06, and the reason it needed
+ * it: mana is derived from the realms a class's spellbooks belong to, and a
+ * Mindcrafter has no books, so the general case returns a maximum of zero and
+ * the class could never use the one thing it has.  A Warrior returning zero is
+ * still correct -- it has nothing to spend it on -- so both are checked here.
+ */
+static int test_psionics_are_paid_for(void *state) {
+	struct player_class *c, *mind = NULL, *warrior = NULL;
+	const struct player_class *keep = player->class;
+	int mindful, martial;
+
+	for (c = classes; c; c = c->next) {
+		if (streq(c->name, "Mindcrafter")) mind = c;
+		if (streq(c->name, "Warrior")) warrior = c;
+	}
+	notnull(mind);
+	notnull(warrior);
+
+	player->lev = 20;
+
+	player->class = mind;
+	player->upkeep->update |= PU_BONUS;
+	update_stuff(player);
+	mindful = player->msp;
+
+	player->class = warrior;
+	player->upkeep->update |= PU_BONUS;
+	update_stuff(player);
+	martial = player->msp;
+
+	/* The Mindcrafter can spend; the Warrior has nothing to spend it on. */
+	require(mindful > 0);
+	eq(martial, 0);
+
+	/*
+	 * And enough of it to matter: the most expensive power on the list costs
+	 * 20, and a class that could never afford its own top power would be a
+	 * worse bug than having no mana at all.
+	 */
+	player->class = mind;
+	player->lev = 50;
+	player->upkeep->update |= PU_BONUS;
+	update_stuff(player);
+	require(player->msp >= 20);
+
+	player->class = keep;
+	player->upkeep->update |= PU_BONUS;
+	update_stuff(player);
 
 	ok;
 }
@@ -4118,8 +4282,12 @@ static int test_the_monk_keeps_zangbands_numbers(void *state) {
 			if (other->c_exp == 0) flat++;
 		}
 
-		/* Fourteen classes, and the Monk is the only one that costs. */
-		eq(total, 10);
+		/*
+		 * Eleven classes.  All nine of 4.2's are free; the two brought over
+		 * from Zangband are the only ones that cost, which is the whole point
+		 * of keeping the field.
+		 */
+		eq(total, 11);
 		eq(flat, 9);
 	}
 
@@ -4917,6 +5085,9 @@ struct test tests[] = {
 	{ "armour-takes-the-balance", test_armour_takes_the_balance },
 	{ "a-monk-hits-harder-than-a-bare-fist", test_a_monk_hits_harder_than_a_bare_fist },
 	{ "the-monk-keeps-zangbands-numbers", test_the_monk_keeps_zangbands_numbers },
+	{ "the-mindcrafter-thinks-for-itself", test_the_mindcrafter_thinks_for_itself },
+	{ "a-power-grows-with-the-character", test_a_power_grows_with_the_character },
+	{ "psionics-are-paid-for", test_psionics_are_paid_for },
 
 	{ NULL, NULL }
 };

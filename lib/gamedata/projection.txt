@@ -696,3 +696,16 @@ blind-desc:something
 obvious:1
 color:White
 
+# ZangbandTK (PLR-06): the Mindcrafter's attack, which is on minds rather than
+# on bodies.  Angband has no projection like it -- every damaging type it has is
+# an element something resists with armour or a flag.  This one asks whether
+# there is anything there to hurt: a golem or a mould has nothing, and takes
+# nothing, however hard it is hit.
+code:MON_PSI
+type:monster
+desc:assaults the minds of monsters
+player-desc:psionic force
+blind-desc:something
+obvious:1
+wake:1
+color:Violet

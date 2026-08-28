@@ -192,7 +192,7 @@ struct cmd_info cmd_info[] =
 	 * two commands would be reachable only through the Enter menu.
 	 */
 	{ "Things you have taken on", { 'J', '%' }, CMD_NULL, do_cmd_quest_log, NULL, 0, NULL, NULL, NULL, 0 },
-	{ "Use a racial power", { 'N', '&' }, CMD_NULL, do_cmd_racial_power, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Use a power", { 'N', '&' }, CMD_NULL, do_cmd_racial_power, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Repeat level feeling", { KTRL('F') }, CMD_NULL, do_cmd_feeling, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Show previous message", { KTRL('O') }, CMD_NULL, do_cmd_message_one, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Show previous messages", { KTRL('P') }, CMD_NULL, do_cmd_messages, NULL, 0, NULL, NULL, NULL, 0 }

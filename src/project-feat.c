@@ -674,6 +674,11 @@ static void project_feature_handler_MON_CRUSH(project_feature_handler_context_t 
 {
 }
 
+/* Psionic force leaves the room exactly as it found it (PLR-06) */
+static void project_feature_handler_MON_PSI(project_feature_handler_context_t *context)
+{
+}
+
 static const project_feature_handler_f feature_handlers[] = {
 	#define ELEM(a) project_feature_handler_##a,
 	#include "list-elements.h"

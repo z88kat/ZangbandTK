@@ -1801,3 +1801,248 @@ blow:37:35:6d8:STUN:10:You hit %s with an iron fist.
 blow:41:35:7d8:STUN:12:You hit %s with a flying kick.
 blow:45:35:7d10:STUN:16:You hit %s with a dragon fist.
 blow:48:35:7d12:STUN:18:You hit %s with a crushing blow.
+
+
+############### MINDCRAFTER ###############
+# ZangbandTK (PLR-03/PLR-06).  Numbers converted by the DEC-36 mapping, and the
+# twelve powers are Zangband's own mind.c table -- level, mana and failure rate
+# unaltered.
+#
+# The psionics are deliberately NOT a magic realm: no books, nothing to find,
+# nothing to study.  A Mindcrafter learns by being one.  `powers:WIS:1` is what
+# says so -- it tells calc_mana() where the mana comes from in the absence of
+# any realm to read it out of.
+#
+# Several powers change what they do as the character grows, which is what the
+# `power-when` bands are for: the level range a group of effects applies over.
+name:Mindcrafter
+stats:-1:0:3:-1:-1
+skill-disarm-phys:30:15
+skill-disarm-magic:30:15
+skill-device:30:10
+skill-save:30:10
+skill-stealth:3:0
+skill-search:14:12
+skill-melee:46:17
+skill-shoot:52:20
+skill-throw:52:20
+skill-dig:0:0
+hitdie:2
+exp:25
+max-attacks:4
+min-weight:35
+strength-multiplier:3
+equip:food:Ration of Food:3:5:none
+equip:light:Wooden Torch:1:3:none
+equip:potion:Cure Light Wounds:1:1:none
+equip:soft armour:Soft Leather Armour:1:1:none
+equip:scroll:Word of Recall:1:1:birth_no_recall
+player-flags:CHOOSE_SPELLS
+powers:WIS:1
+title:Trainee
+title:Acolyte
+title:Adept
+title:Immaculate
+title:Contemplator
+title:Mentalist
+title:Psychic
+title:Psionicist
+title:Esper
+title:Mindmaster
+
+power:blast a mind
+power-level:1
+power-cost:1
+power-stat:WIS
+power-fail:15
+power-effect:BOLT_OR_BEAM:MON_PSI
+power-dice:$Dd$S
+power-expr:D:PLAYER_LEVEL:- 1 / 4 + 3
+power-expr:S:PLAYER_LEVEL:/ 15 + 3
+
+power:see what is coming
+power-level:2
+power-cost:1
+power-stat:WIS
+power-fail:20
+power-when:1:29
+power-effect:DETECT_VISIBLE_MONSTERS
+power-dice:22
+power-when:5:29
+power-effect:DETECT_TRAPS
+power-dice:22
+power-effect:DETECT_DOORS
+power-dice:22
+power-when:15:29
+power-effect:DETECT_INVISIBLE_MONSTERS
+power-dice:22
+power-when:20:44
+power-effect:MAP_AREA
+power-dice:30
+power-when:25:39
+power-effect:TIMED_INC:TELEPATHY
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+power-when:30:0
+power-effect:DETECT_VISIBLE_MONSTERS
+power-dice:22
+power-effect:DETECT_INVISIBLE_MONSTERS
+power-dice:22
+power-effect:DETECT_TRAPS
+power-dice:22
+power-effect:DETECT_DOORS
+power-dice:22
+power-effect:DETECT_STAIRS
+power-dice:22
+power-effect:DETECT_GOLD
+power-dice:22
+power-effect:DETECT_OBJECTS
+power-dice:22
+power-when:45:0
+power-effect:LIGHT_LEVEL
+
+power:shift a short way
+power-level:3
+power-cost:2
+power-stat:WIS
+power-fail:25
+power-effect:TELEPORT
+power-dice:10
+
+power:shift a long way
+power-level:7
+power-cost:6
+power-stat:WIS
+power-fail:35
+power-when:30:0
+power-effect:PROJECT_LOS:AWAY_ALL
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+power-when:1:0
+power-effect:TELEPORT
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 5
+
+power:dominate a mind
+power-level:9
+power-cost:7
+power-stat:WIS
+power-fail:50
+power-when:1:29
+power-effect:BALL:MON_HOLD:0
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+power-when:30:0
+power-effect:PROJECT_LOS:MON_HOLD
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+
+power:pulverise
+power-level:11
+power-cost:7
+power-stat:WIS
+power-fail:30
+power-when:1:20
+power-effect:BALL:SOUND:0
+power-dice:$Dd8
+power-expr:D:PLAYER_LEVEL:- 5 / 4 + 8
+power-when:21:0
+power-effect:BALL:SOUND:2
+power-dice:$Dd8
+power-expr:D:PLAYER_LEVEL:- 5 / 4 + 8
+
+power:armour your mind
+power-level:13
+power-cost:12
+power-stat:WIS
+power-fail:50
+power-effect:TIMED_INC:SHIELD
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+power-when:17:0
+power-effect:TIMED_INC:OPP_ACID
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+power-when:21:0
+power-effect:TIMED_INC:OPP_FIRE
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+power-when:25:0
+power-effect:TIMED_INC:OPP_COLD
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+power-when:29:0
+power-effect:TIMED_INC:OPP_ELEC
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+power-when:33:0
+power-effect:TIMED_INC:OPP_POIS
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+
+power:read an object
+power-level:15
+power-cost:12
+power-stat:WIS
+power-fail:60
+power-effect:IDENTIFY
+
+power:send out a mind wave
+power-level:18
+power-cost:10
+power-stat:WIS
+power-fail:45
+power-when:1:24
+power-effect:SPOT:MON_PSI:3
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 3 / 2
+power-when:25:0
+power-effect:PROJECT_LOS_AWARE:MON_PSI
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 3
+
+power:channel adrenaline
+power-level:23
+power-cost:15
+power-stat:WIS
+power-fail:50
+power-effect:CURE:AFRAID
+power-effect:CURE:STUN
+power-effect:HEAL_HP
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+power-when:1:34
+power-effect:TIMED_INC:HERO
+power-dice:10+1d$B
+power-expr:B:PLAYER_LEVEL:* 3 / 2
+power-when:35:0
+power-effect:TIMED_INC:SHERO
+power-dice:10+1d$B
+power-expr:B:PLAYER_LEVEL:* 3 / 2
+power-when:1:0
+power-effect:TIMED_INC:FAST
+power-dice:10+1d$B
+power-expr:B:PLAYER_LEVEL:* 3 / 2
+
+power:drain a mind
+power-level:25
+power-cost:10
+power-stat:WIS
+power-fail:40
+power-effect:BALL:MON_PSI:0
+power-dice:$Dd6
+power-expr:D:PLAYER_LEVEL:/ 2
+
+power:loose a telekinetic wave
+power-level:28
+power-cost:20
+power-stat:WIS
+power-fail:45
+power-when:1:39
+power-effect:SPOT:FORCE:4
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 3
+power-when:40:0
+power-effect:SPOT:FORCE:8
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 4

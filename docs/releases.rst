@@ -31,6 +31,28 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.30.0** — **The Mindcrafter, and psionics** (PLR-03/PLR-06). The eleventh
+  class. Twelve powers that arrive by level rather than out of a book, on ``N``
+  alongside anything the character's race can do — from Neural Blast at level 1
+  to a telekinetic wave at 28. Deliberately not a realm of magic: nothing to
+  study, nothing to choose at birth, nothing that can be taken away.
+
+  Most of the twelve **grow into something else** as the character does, which
+  needed a mechanism Angband has no equivalent of. *See what is coming* spots
+  monsters at level 2, finds traps and doors at 5, sees invisibility at 15, maps
+  the level at 20, grants telepathy from 25, detects everything at 30 and lights
+  the whole level at 45 — one power, one key, for an entire career. Racial powers
+  gained the same ability, which is where a Draconian's breath changing with
+  level can now go.
+
+  And **psionic force**, a kind of damage the game did not have. Every damaging
+  type Angband has is an element resisted by a flag or by armour; this one asks
+  whether there is a mind there to hurt. A golem, a mould or an animated weapon
+  is completely unaffected however hard it is hit; a strange or feeble mind takes
+  a third. Against anything else nothing resists it at all.
+
+  The ``N`` command is now **Use a power** rather than *Use a racial power*, since
+  it lists both.
 - **3.29.1** — **"What's Different" has a Races and Classes page.** The largest
   visible difference between this game and Angband — twenty races instead of
   eleven, powers a race can use, a class that fights better with nothing in its

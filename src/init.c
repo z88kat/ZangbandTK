@@ -3530,116 +3530,122 @@ static enum parser_error parse_p_race_values(struct parser *p) {
 }
 
 /**
- * A thing the race can do (ZangbandTK, PLR-02).
+ * Powers, shared between races (PLR-02) and classes (PLR-06).
  *
- * Each `power:` opens a new one, and the lines after it -- level, cost, stat,
- * fail, and any number of effects -- belong to it, the same way a record's lines
- * belong to the record.  A race may declare several.
+ * Both declare them the same way and mean the same thing by them, so the
+ * parsing lives here once and each parser passes in the list it owns:
+ *
+ *	power:<name>          opens a new one
+ *	power-level:<n>       character level before it can be used
+ *	power-cost:<n>        mana, or hit points where there is no mana
+ *	power-stat:<STAT>     what makes it more reliable
+ *	power-fail:<n>        base failure, in percent
+ *	power-when:<from>:<to>  opens a level band; everything after belongs to it
+ *	power-effect:...      appended to the current band
+ *	power-dice:<dice>     dice for the last effect
+ *	power-expr:...        binds a name in those dice
  */
-static enum parser_error parse_p_race_power(struct parser *p) {
-	struct player_race *r = parser_priv(p);
-	struct player_power *power, *last;
+static struct player_power *power_last(struct player_power *head) {
+	while (head && head->next) head = head->next;
 
-	if (!r) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	return head;
+}
 
-	power = mem_zalloc(sizeof(*power));
-	power->name = string_make(parser_getstr(p, "name"));
+static struct power_effect *power_last_band(struct player_power *power) {
+	struct power_effect *band = power ? power->effects : NULL;
+
+	while (band && band->next) band = band->next;
+
+	return band;
+}
+
+/** The effect a `power-dice` or `power-expr` line is talking about. */
+static struct effect *power_last_effect(struct player_power *power) {
+	struct power_effect *band = power_last_band(power);
+	struct effect *effect = band ? band->effect : NULL;
+
+	while (effect && effect->next) effect = effect->next;
+
+	return effect;
+}
+
+static enum parser_error power_parse_new(struct player_power **head,
+										 const char *name) {
+	struct player_power *power = mem_zalloc(sizeof(*power));
+	struct player_power *last = power_last(*head);
+
+	power->name = string_make(name);
 	power->stat = STAT_STR;
 
-	if (r->powers) {
-		for (last = r->powers; last->next; last = last->next)
-			;
+	if (last) {
 		last->next = power;
 	} else {
-		r->powers = power;
+		*head = power;
 	}
 
 	return PARSE_ERROR_NONE;
 }
 
-/** The power currently being described, which is the last one declared. */
-static struct player_power *parse_p_race_last_power(struct player_race *r) {
-	struct player_power *power = r ? r->powers : NULL;
-
-	while (power && power->next) power = power->next;
-
-	return power;
-}
-
-static enum parser_error parse_p_race_power_level(struct parser *p) {
-	struct player_power *power = parse_p_race_last_power(parser_priv(p));
+static enum parser_error power_parse_when(struct player_power *power,
+										  int from, int to) {
+	struct power_effect *band, *last;
 
 	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
-	power->level = parser_getint(p, "level");
+	if (from < 0 || to < 0) return PARSE_ERROR_INVALID_VALUE;
+	if (to && to < from) return PARSE_ERROR_INVALID_VALUE;
+
+	band = mem_zalloc(sizeof(*band));
+	band->from = from;
+	band->to = to;
+
+	last = power_last_band(power);
+	if (last) {
+		last->next = band;
+	} else {
+		power->effects = band;
+	}
 
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_p_race_power_cost(struct parser *p) {
-	struct player_power *power = parse_p_race_last_power(parser_priv(p));
-
-	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
-	power->cost = parser_getint(p, "cost");
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_p_race_power_fail(struct parser *p) {
-	struct player_power *power = parse_p_race_last_power(parser_priv(p));
-
-	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
-	power->fail = parser_getint(p, "fail");
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_p_race_power_stat(struct parser *p) {
-	struct player_power *power = parse_p_race_last_power(parser_priv(p));
-	int stat;
-
-	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	stat = stat_name_to_idx(parser_getsym(p, "stat"));
-	if (stat < 0) return PARSE_ERROR_INVALID_VALUE;
-
-	power->stat = stat;
-
-	return PARSE_ERROR_NONE;
-}
-
-static enum parser_error parse_p_race_power_effect(struct parser *p) {
-	struct player_power *power = parse_p_race_last_power(parser_priv(p));
+static enum parser_error power_parse_effect(struct player_power *power,
+											struct parser *p) {
+	struct power_effect *band;
 	struct effect *effect, *new_effect;
 
 	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
 
+	/* Effects before any `power-when` belong to a band that always applies. */
+	if (!power->effects) {
+		enum parser_error drop = power_parse_when(power, 0, 0);
+
+		if (drop != PARSE_ERROR_NONE) return drop;
+	}
+
+	band = power_last_band(power);
 	new_effect = mem_zalloc(sizeof(*new_effect));
-	if (power->effect) {
-		effect = power->effect;
+
+	if (band->effect) {
+		effect = band->effect;
 		while (effect->next) effect = effect->next;
 		effect->next = new_effect;
 	} else {
-		power->effect = new_effect;
+		band->effect = new_effect;
 	}
 
 	return grab_effect_data(p, new_effect);
 }
 
-static enum parser_error parse_p_race_power_dice(struct parser *p) {
-	struct player_power *power = parse_p_race_last_power(parser_priv(p));
-	struct effect *effect;
+static enum parser_error power_parse_dice(struct player_power *power,
+										  const char *string) {
+	struct effect *effect = power_last_effect(power);
 	dice_t *dice;
-	const char *string;
 
-	if (!power || !power->effect) return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	effect = power->effect;
-	while (effect->next) effect = effect->next;
+	if (!effect) return PARSE_ERROR_MISSING_RECORD_HEADER;
 
 	dice = dice_new();
 	if (!dice) return PARSE_ERROR_INVALID_DICE;
 
-	string = parser_getstr(p, "dice");
 	if (!dice_parse_string(dice, string)) {
 		dice_free(dice);
 		return PARSE_ERROR_NOT_RANDOM;
@@ -3652,30 +3658,22 @@ static enum parser_error parse_p_race_power_dice(struct parser *p) {
 }
 
 /**
- * Bind a name in a power's dice to something about the character (PLR-02).
+ * Bind a name in a power's dice to something about the character.
  *
  * The same shape as a class spell's `expr:`, and needed for the same reason: a
  * Draconian's breath and a Mindflayer's blast scale with level in Zangband, and
  * without this they would be flat numbers that stop mattering.
  */
-static enum parser_error parse_p_race_power_expr(struct parser *p) {
-	struct player_power *power = parse_p_race_last_power(parser_priv(p));
-	struct effect *effect;
+static enum parser_error power_parse_expr(struct player_power *power,
+										  const char *name, const char *base,
+										  const char *expr) {
+	struct effect *effect = power_last_effect(power);
 	expression_t *expression;
 	expression_base_value_f function;
-	const char *name, *base, *expr;
 	enum parser_error result;
 
 	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
-
-	effect = power->effect;
-	if (!effect) return PARSE_ERROR_NONE;
-	while (effect->next) effect = effect->next;
-	if (!effect->dice) return PARSE_ERROR_NONE;
-
-	name = parser_getsym(p, "name");
-	base = parser_getsym(p, "base");
-	expr = parser_getstr(p, "expr");
+	if (!effect || !effect->dice) return PARSE_ERROR_NONE;
 
 	expression = expression_new();
 	if (!expression) return PARSE_ERROR_INVALID_EXPRESSION;
@@ -3693,6 +3691,108 @@ static enum parser_error parse_p_race_power_expr(struct parser *p) {
 	expression_free(expression);
 
 	return result;
+}
+
+/** Free a power list, whoever owns it. */
+static void power_free(struct player_power *power) {
+	while (power) {
+		struct player_power *pnext = power->next;
+		struct power_effect *band = power->effects;
+
+		while (band) {
+			struct power_effect *bnext = band->next;
+
+			free_effect(band->effect);
+			mem_free(band);
+			band = bnext;
+		}
+
+		string_free(power->name);
+		mem_free(power);
+		power = pnext;
+	}
+}
+
+/* ---- the race's copies of the above (PLR-02) ---- */
+
+static enum parser_error parse_p_race_power(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+
+	if (!r) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	return power_parse_new(&r->powers, parser_getstr(p, "name"));
+}
+
+static enum parser_error parse_p_race_power_level(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	struct player_power *power = r ? power_last(r->powers) : NULL;
+
+	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	power->level = parser_getint(p, "level");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_power_cost(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	struct player_power *power = r ? power_last(r->powers) : NULL;
+
+	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	power->cost = parser_getint(p, "cost");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_power_fail(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	struct player_power *power = r ? power_last(r->powers) : NULL;
+
+	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	power->fail = parser_getint(p, "fail");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_power_stat(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	struct player_power *power = r ? power_last(r->powers) : NULL;
+	int stat;
+
+	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	stat = stat_name_to_idx(parser_getsym(p, "stat"));
+	if (stat < 0) return PARSE_ERROR_INVALID_VALUE;
+	power->stat = stat;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_power_when(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+
+	return power_parse_when(r ? power_last(r->powers) : NULL,
+							parser_getint(p, "from"), parser_getint(p, "to"));
+}
+
+static enum parser_error parse_p_race_power_effect(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+
+	return power_parse_effect(r ? power_last(r->powers) : NULL, p);
+}
+
+static enum parser_error parse_p_race_power_dice(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+
+	return power_parse_dice(r ? power_last(r->powers) : NULL,
+							parser_getstr(p, "dice"));
+}
+
+static enum parser_error parse_p_race_power_expr(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+
+	return power_parse_expr(r ? power_last(r->powers) : NULL,
+							parser_getsym(p, "name"), parser_getsym(p, "base"),
+							parser_getstr(p, "expr"));
 }
 
 static struct parser *init_parse_p_race(void) {
@@ -3728,6 +3828,7 @@ static struct parser *init_parse_p_race(void) {
 	parser_reg(p, "power-effect sym eff ?sym type ?int radius ?int other",
 			   parse_p_race_power_effect);
 	parser_reg(p, "power-dice str dice", parse_p_race_power_dice);
+	parser_reg(p, "power-when int from int to", parse_p_race_power_when);
 	parser_reg(p, "power-expr sym name sym base str expr",
 			   parse_p_race_power_expr);
 	return p;
@@ -3756,19 +3857,10 @@ static void cleanup_p_race(void)
 	struct player_race *next;
 
 	while (p) {
-		struct player_power *power = p->powers;
-
 		next = p->next;
 
 		/* And whatever the race could do (PLR-02). */
-		while (power) {
-			struct player_power *pnext = power->next;
-
-			string_free(power->name);
-			free_effect(power->effect);
-			mem_free(power);
-			power = pnext;
-		}
+		power_free(p->powers);
 
 		string_free((char *)p->name);
 		mem_free(p);
@@ -5087,6 +5179,111 @@ static enum parser_error parse_class_blow(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+/* ---- the class's copies (PLR-06) ---- */
+
+/**
+ * `powers:<stat>:<first level>` says the class carries a power list instead of
+ * spellbooks, and where the mana for it comes from.
+ *
+ * calc_mana() reads the casting stat out of the realms a class's books belong
+ * to, and a class with no books has no realms, so a power-list class has to
+ * name its stat itself or it would have nothing to spend.
+ */
+static enum parser_error parse_class_powers(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	int stat;
+
+	if (!c) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	stat = stat_name_to_idx(parser_getsym(p, "stat"));
+	if (stat < 0) return PARSE_ERROR_INVALID_VALUE;
+
+	c->power_stat = stat;
+	c->power_first = parser_getint(p, "first");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_class_power(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+
+	if (!c) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	return power_parse_new(&c->powers, parser_getstr(p, "name"));
+}
+
+static enum parser_error parse_class_power_level(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	struct player_power *power = c ? power_last(c->powers) : NULL;
+
+	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	power->level = parser_getint(p, "level");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_class_power_cost(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	struct player_power *power = c ? power_last(c->powers) : NULL;
+
+	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	power->cost = parser_getint(p, "cost");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_class_power_fail(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	struct player_power *power = c ? power_last(c->powers) : NULL;
+
+	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	power->fail = parser_getint(p, "fail");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_class_power_stat(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	struct player_power *power = c ? power_last(c->powers) : NULL;
+	int stat;
+
+	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	stat = stat_name_to_idx(parser_getsym(p, "stat"));
+	if (stat < 0) return PARSE_ERROR_INVALID_VALUE;
+	power->stat = stat;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_class_power_when(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+
+	return power_parse_when(c ? power_last(c->powers) : NULL,
+							parser_getint(p, "from"), parser_getint(p, "to"));
+}
+
+static enum parser_error parse_class_power_effect(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+
+	return power_parse_effect(c ? power_last(c->powers) : NULL, p);
+}
+
+static enum parser_error parse_class_power_dice(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+
+	return power_parse_dice(c ? power_last(c->powers) : NULL,
+							parser_getstr(p, "dice"));
+}
+
+static enum parser_error parse_class_power_expr(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+
+	return power_parse_expr(c ? power_last(c->powers) : NULL,
+							parser_getsym(p, "name"), parser_getsym(p, "base"),
+							parser_getstr(p, "expr"));
+}
+
 static struct parser *init_parse_class(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -5132,6 +5329,18 @@ static struct parser *init_parse_class(void) {
 	parser_reg(p, "desc str desc", parse_class_desc);
 	parser_reg(p, "blow int level int chance sym dice sym effect int power "
 			   "str desc", parse_class_blow);
+	parser_reg(p, "powers sym stat int first", parse_class_powers);
+	parser_reg(p, "power str name", parse_class_power);
+	parser_reg(p, "power-level int level", parse_class_power_level);
+	parser_reg(p, "power-cost int cost", parse_class_power_cost);
+	parser_reg(p, "power-stat sym stat", parse_class_power_stat);
+	parser_reg(p, "power-fail int fail", parse_class_power_fail);
+	parser_reg(p, "power-when int from int to", parse_class_power_when);
+	parser_reg(p, "power-effect sym eff ?sym type ?int radius ?int other",
+			   parse_class_power_effect);
+	parser_reg(p, "power-dice str dice", parse_class_power_dice);
+	parser_reg(p, "power-expr sym name sym base str expr",
+			   parse_class_power_expr);
 	return p;
 }
 
@@ -5165,6 +5374,9 @@ static void cleanup_class(void)
 		struct class_blow *blow = c->blows;
 
 		next = c->next;
+
+		/* And its power list, if it carries one (PLR-06). */
+		power_free(c->powers);
 
 		/* And the unarmed ladder, if the class has one (PLR-04). */
 		while (blow) {

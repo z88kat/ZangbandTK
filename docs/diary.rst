@@ -106,6 +106,56 @@ is now the newest ZangbandTK in existence and the least settled — which is the
 right trade for something you reach by clicking a link.
 
 
+28 August 2026 — a projection for the mind, and a stale binary for the fifth time
+=================================================================================
+
+The Mindcrafter, which is the opposite kind of class to the Monk: no weapon
+worth speaking of, no armour worth speaking of, and twelve powers that arrive
+purely by being what it is.
+
+Two things needed building rather than importing.
+
+The first was **level bands**. I had assumed a power was one effect chain and
+built PLR-02 that way. Zangband's are not. Precognition detects monsters at level
+2, finds traps and doors at 5, sees the invisible at 15, maps the level at 20,
+grants telepathy from 25 to 39, detects everything at 30, and lights the entire
+level at 45 — one power, on one key, for a whole career, becoming something else
+underneath you. 4.2's effect chain runs start to finish with no notion of when a
+link applies, so powers grew ``power-when``: a group of effects and the levels it
+is good for. Eight of the twelve need it. Pleasingly, this is also exactly the
+mechanism PLR-01 said was missing for the Draconian's breath changing every five
+levels, so a gap I recorded three days ago closed itself as a side effect.
+
+The second was **a projection for psionic force**. Every damaging type Angband
+has is an element — you resist it with a flag or with armour. ``GF_PSI`` is not
+that. It asks whether there is a mind there to hurt, and where there is none it
+does nothing at all, however hard you hit. I could have approximated it with mana
+damage and nobody would have filed a bug, but it is the entire character of the
+class, so ``PROJ_MON_PSI`` went in properly. The nice part is that 4.2 already
+keeps the flags for it: ``EMPTY_MIND`` and ``WEIRD_MIND`` exist for telepathy,
+which is the same question asked the other way round — can this thing be
+perceived as a mind? Twenty-six monsters carry each. So a golem is immune to a
+Mindcrafter and always was, in data written for something else entirely.
+
+And then, for what I am fairly sure is the fifth time in this project: eighteen
+test suites reported *Cannot initialize player classes*, I read the error as a
+real parse failure in data I had just written, and it was stale binaries. The
+unit-test targets are not in ``all``. ``cmake --build build`` does not touch
+them. I know this. It is written in an earlier entry on this page. I still lost
+several minutes to it, and the tell was there in the message — "undefined
+directive" means the parser does not know a keyword, which for data that parses
+fine elsewhere in the same tree can only mean two different binaries.
+
+One thing I did catch. The Monk damage test I wrote yesterday was reporting
+figures that swung between five and forty thousand run to run, and I had let it
+pass because the assertion cleared anyway. The cause was that a dying monster
+capped the count at its own hit points, which truncated the martial figure — the
+one being measured — and never touched the bare-handed one. Topping the target up
+past anything one turn can reach made it exact, and the real ratio is about fifty
+to one rather than the eight I had reported. A test can be green and still be
+lying about the number it prints.
+
+
 27 August 2026 — the Monk, and a test that had been lying for a week
 =====================================================================
 

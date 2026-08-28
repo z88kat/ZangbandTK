@@ -2016,11 +2016,12 @@ int player_power_chance(struct player *p, const struct player_power *power)
  */
 bool player_use_power(struct player *p, struct player_power *power, int dir)
 {
+	struct power_effect *band;
 	bool ident = false;
 	bool use_hp;
 	int paid;
 
-	if (!power || !power->effect) return false;
+	if (!power || !power->effects) return false;
 
 	if (p->lev < power->level) {
 		msg("You are not yet able to do that.");
@@ -2065,10 +2066,46 @@ bool player_use_power(struct player *p, struct player_power *power, int dir)
 		return true;
 	}
 
-	effect_do(power->effect, source_player(), NULL, &ident, true, dir, 0, 0,
-			  NULL);
+	/*
+	 * Run every band the character has grown into.  A power the player has
+	 * carried since level 2 may by now be doing four things it did not used
+	 * to; the bands it has outgrown are simply skipped.
+	 */
+	for (band = power->effects; band; band = band->next) {
+		if (p->lev < band->from) continue;
+		if (band->to && p->lev > band->to) continue;
+
+		/*
+		 * The beam chance matters to BOLT_OR_BEAM, which is what a
+		 * Mindcrafter's Neural Blast is: Zangband beamed it on
+		 * `randint1(100) < plev * 2`, and this is that same curve handed to
+		 * 4.2's own machinery rather than reimplemented beside it.
+		 */
+		effect_do(band->effect, source_player(), NULL, &ident, true, dir,
+				  p->lev * 2, 0, NULL);
+	}
 
 	return true;
+}
+
+/**
+ * Whether using this power will ask the player where to point it (PLR-02).
+ *
+ * Only the bands that will actually fire are consulted, because a power that
+ * aims at level 9 and stops aiming at 30 must stop asking at 30 too.
+ */
+bool player_power_aims(struct player *p, const struct player_power *power)
+{
+	const struct power_effect *band;
+
+	for (band = power ? power->effects : NULL; band; band = band->next) {
+		if (p->lev < band->from) continue;
+		if (band->to && p->lev > band->to) continue;
+
+		if (effect_aim(band->effect)) return true;
+	}
+
+	return false;
 }
 
 /**

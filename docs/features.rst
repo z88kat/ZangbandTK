@@ -145,7 +145,13 @@ Races, classes and racial powers
 - **The Monk**, and **martial arts** with it: seventeen unarmed techniques,
   eight strikes a turn at the top, and the only class in the game that is
   punished for wearing armour. Angband's answer for an empty weapon slot is one
-  point of damage; a Monk does roughly eight times as much over a hundred blows.
+  point of damage a blow; measured over a hundred blows, a Monk does about fifty
+  times as much.
+- **The Mindcrafter**, and **psionics**: twelve powers that arrive by level
+  rather than out of a book, most of which grow into something else as the
+  character does. With them comes a kind of damage Angband has no equivalent of
+  — psionic force, which asks whether there is a mind there to hurt and does
+  nothing at all to a golem.
 
 See :doc:`characters` for what is different, and :doc:`birth` for the tables.
 
@@ -181,7 +187,7 @@ in when the milestone lands.
    * - Feature
      - Milestone
      - Chapter
-   * - Four more classes
+   * - Three more classes
      - M7
      - :doc:`birth`
    * - Mutations
@@ -202,10 +208,10 @@ in when the milestone lands.
 
 The world is finished — towns, services, roads, dungeons and quests all landed,
 which was Phase 2's world work — and the character is under way. Nine races,
-racial powers and the Monk are in; the Chaos-Warrior's patrons, the Mindcrafter's
-psionics, and the two classes defined by which magic realms they may choose are
-not. After that come mutations and virtues, neither of which Angband has a
-mechanism for.
+racial powers, the Monk and the Mindcrafter are in. The Chaos-Warrior's sixteen
+patrons are not, and neither are the two classes defined by which magic realms
+they may choose. After those come mutations and virtues, neither of which
+Angband has a mechanism for.
 
 A **Tcl/Tk front end** is planned for a later phase, reviving the original's
 interface on Tcl/Tk 9. There is an irony in it: the original ZangbandTK

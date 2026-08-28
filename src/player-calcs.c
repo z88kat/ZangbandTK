@@ -1481,19 +1481,33 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 {
 	int i, msp, levels, cur_wgt, max_wgt; 
 
-	/* Must be literate */
-	if (!p->class->magic.total_spells) {
+	int stat_ind;
+
+	if (p->class->magic.total_spells) {
+		/* Literate: the mana comes off the realms the books belong to. */
+		levels = (p->lev - p->class->magic.spell_first) + 1;
+		stat_ind = average_spell_stat(p, state);
+	} else if (p->class->powers) {
+		/*
+		 * Not literate, but not empty either (ZangbandTK, PLR-06).  A
+		 * Mindcrafter's psionics are a power list rather than a realm, so
+		 * there are no books and therefore no realms to read a stat out of --
+		 * the class names its own, and without this branch the class would be
+		 * given a maximum of zero and could never use the one thing it has.
+		 */
+		levels = (p->lev - p->class->power_first) + 1;
+		stat_ind = state->stat_ind[p->class->power_stat];
+	} else {
+		/* Nothing to spend it on. */
 		p->msp = 0;
 		p->csp = 0;
 		p->csp_frac = 0;
 		return;
 	}
 
-	/* Extract "effective" player level */
-	levels = (p->lev - p->class->magic.spell_first) + 1;
 	if (levels > 0) {
 		msp = 1;
-		msp += adj_mag_mana[average_spell_stat(p, state)] * levels / 100;
+		msp += adj_mag_mana[stat_ind] * levels / 100;
 	} else {
 		levels = 0;
 		msp = 0;

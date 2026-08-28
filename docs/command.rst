@@ -283,12 +283,14 @@ Cast a spell (``m`` in both keysets)
   or confused while casting, and, unless you are a necromancer, there must be
   some light present. This command takes some energy.
 
-Use a racial power (``N``) or Use a racial power (``&``)
-  Nine of the twenty races carry something they can do by blood rather than by
-  study: an Amberite can walk into shadow, a Draconian can breathe, a Vampire
-  can drink. This command lists what your race can do, what each costs, and
-  how likely each is to fail, and lets you pick one. See
-  :ref:`Racial powers <racial-powers>` for the full list.
+Use a power (``N``) or Use a power (``&``)
+  Some characters can do things no spellbook teaches. Eight of the twenty races
+  carry something they can do by blood — an Amberite walks into shadow, a
+  Draconian breathes, a Vampire drinks — and the Mindcrafter's entire craft is a
+  list of twelve psionic powers rather than a realm of magic. This command lists
+  everything your character can call on from either source, what each costs, and
+  how likely each is to fail. See :ref:`Racial powers <racial-powers>` and
+  :ref:`Psionics <psionics>`.
 
   A power draws on spell points like a spell. A character with none left — and
   a warrior or a monk never has any, having no spells at all — pays in hit

@@ -28,7 +28,7 @@ when the autoexplore_commands option is on.
   k    Ignore an item                  K    Toggle ignore
   l    Look around                     L    Locate player on map
   m    Cast a spell                    M    Map of level, or of the world
-  n    Repeat previous command         N    Use a racial power
+  n    Repeat previous command         N    Use a power
   o    Open a door or chest            O    -
   p    - (see above)                   P    -
   q    Quaff a potion                  Q    Retire character & quit

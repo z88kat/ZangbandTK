@@ -1954,17 +1954,27 @@ void do_cmd_quest_log(void)
  */
 void do_cmd_racial_power(void)
 {
-	struct player_power *powers[16];
+	struct player_power *powers[32];
 	struct menu *m;
 	char *labels;
 	int count = 0, chosen, i;
 	struct player_power *power;
 
-	for (power = player->race->powers; power && count < 16; power = power->next)
+	/*
+	 * Blood first, then training.  A Mindflayer Mindcrafter has both, and the
+	 * two lists are the same kind of thing to the player even though one comes
+	 * from PLR-02 and the other from PLR-06.
+	 */
+	for (power = player->race->powers;
+			power && count < (int) N_ELEMENTS(powers); power = power->next)
+		powers[count++] = power;
+
+	for (power = player->class->powers;
+			power && count < (int) N_ELEMENTS(powers); power = power->next)
 		powers[count++] = power;
 
 	if (!count) {
-		msg("Your kind has no special power.");
+		msg("You have no power to call on.");
 		return;
 	}
 
@@ -2000,11 +2010,12 @@ void do_cmd_racial_power(void)
 	menu_dynamic_calc_location(m, 0, 0);
 	region_erase_bordered(&m->boundary);
 	if (player->msp)
-		prt(format("You are %s, and have %d of %d spell points.",
-				   player->race->name, player->csp, player->msp), 0, 0);
+		prt(format("You are a %s %s, and have %d of %d spell points.",
+				   player->race->name, player->class->name,
+				   player->csp, player->msp), 0, 0);
 	else
-		prt(format("You are %s, and pay for this out of your own hide.",
-				   player->race->name), 0, 0);
+		prt(format("You are a %s %s, and pay for this out of your own hide.",
+				   player->race->name, player->class->name), 0, 0);
 
 	chosen = menu_dynamic_select(m);
 
@@ -2029,7 +2040,7 @@ void do_cmd_racial_power(void)
 		 * to the effect, because a power the player then declines to aim must
 		 * not have cost them the mana.
 		 */
-		if (effect_aim(power->effect) && !get_aim_dir(&dir))
+		if (player_power_aims(player, power) && !get_aim_dir(&dir))
 			return;
 
 		if (player_use_power(player, power, dir))

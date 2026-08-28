@@ -1009,6 +1009,40 @@ static void project_monster_handler_MON_CRUSH(project_monster_handler_context_t 
 	}
 }
 
+/**
+ * Psionic assault (ZangbandTK, PLR-06).
+ *
+ * The Mindcrafter's whole attack, and the reason it needed a projection of its
+ * own: this does not burn or freeze anything, it reaches for a mind.  Where
+ * there is none it does nothing at all -- a golem, a mould and an animated
+ * sword are simply not there to be hurt -- and where the mind is strange it
+ * lands badly.  Both readings come off flags 4.2 already keeps for telepathy,
+ * which is the same question asked the other way round: can this thing be
+ * perceived as a mind?
+ */
+static void project_monster_handler_MON_PSI(project_monster_handler_context_t *context)
+{
+	if (context->seen) {
+		context->obvious = true;
+		rf_on(context->lore->flags, RF_EMPTY_MIND);
+		rf_on(context->lore->flags, RF_WEIRD_MIND);
+	}
+
+	if (rf_has(context->mon->race->flags, RF_EMPTY_MIND)) {
+		/* Nothing there. */
+		context->hurt_msg = MON_MSG_UNAFFECTED;
+		context->obvious = false;
+		context->dam = 0;
+		return;
+	}
+
+	if (rf_has(context->mon->race->flags, RF_WEIRD_MIND) ||
+			rf_has(context->mon->race->flags, RF_STUPID)) {
+		/* Something there, but not much of it, and not shaped like yours. */
+		context->dam /= 3;
+	}
+}
+
 static const project_monster_handler_f monster_handlers[] = {
 	#define ELEM(a) project_monster_handler_##a,
 	#include "list-elements.h"

@@ -243,10 +243,30 @@ struct player_body {
  * to use it, a stat it leans on, and a failure rate.  A race may have several --
  * the Amberite has two, thirty levels apart.
  */
+/**
+ * One band of a power's behaviour (ZangbandTK, PLR-06).
+ *
+ * A Zangband power is rarely one thing.  A Mindcrafter's Precognition detects
+ * monsters at level 2, adds traps and doors at 5, invisibility at 15, maps the
+ * level at 20 and lights the whole of it at 45 -- one power the character keeps
+ * for its entire career, growing into something else as it goes.  4.2's effect
+ * chain runs start to finish with no notion of when a link applies, so the
+ * banding lives out here: each group carries the levels it is good for, and
+ * player_use_power() runs the ones the character has grown into.
+ *
+ * `to` of zero means no upper bound, which is the common case.
+ */
+struct power_effect {
+	struct power_effect *next;
+	struct effect *effect;
+	int from;			/**< Character level this band starts at */
+	int to;				/**< And stops at; 0 for open-ended */
+};
+
 struct player_power {
 	struct player_power *next;
 	char *name;
-	struct effect *effect;
+	struct power_effect *effects;
 	int level;			/**< Character level before it can be used */
 	int cost;			/**< Mana it takes */
 	int stat;			/**< Which stat makes it more reliable */
@@ -456,6 +476,15 @@ struct player_class {
 	struct class_magic magic;	/**< Magic spells */
 
 	struct class_blow *blows;	/**< Unarmed progression (PLR-04) */
+
+	/*
+	 * A power list the class carries instead of spellbooks (PLR-06).  The
+	 * Mindcrafter's psionics are not a realm and are deliberately not one:
+	 * they are learned by being what you are, not by reading.
+	 */
+	struct player_power *powers;
+	int power_stat;				/**< Stat the list draws on */
+	int power_first;			/**< Level the list starts paying mana for */
 };
 
 /**
