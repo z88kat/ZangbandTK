@@ -1,0 +1,9 @@
+{
+race: "Human",
+class: "Warrior",
+mapName: "Angband",
+dLvl: "0",
+cLvl: "1",
+isDead: "0",
+killedBy: "(alive and well)"
+}

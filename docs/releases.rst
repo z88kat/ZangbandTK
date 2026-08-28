@@ -31,6 +31,19 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.31.1** — **A Mindcrafter has mana again.** It never had any: the armour
+  allowance before mana starts draining is read out of a class's magic block, a
+  Mindcrafter has no magic block, and its own starting armour then cancelled more
+  mana than the class had. It began the game unable to pay for anything and
+  stayed that way for fifty levels, paying for every power in blood. The sidebar
+  compounded it by refusing to show spell points to a class without spellbooks,
+  so there was nothing on screen to say what was wrong. Both fixed, and *has
+  mana* is now one question asked in one place rather than three sites guessing
+  from spellbooks. Found from a player's screenshot.
+
+  The manual also gains a **third screenshot**: a Sprite Mindcrafter's power
+  list, showing what a character can do that came out of neither a book nor a
+  shop.
 - **3.31.0** — **The Chaos-Warrior, and nine Lords of Chaos** (PLR-03/PLR-05).
   The twelfth class, and the only one that belongs to somebody. Sworn at birth to
   a Lord it did not choose and cannot leave, and every level it gains the Lord

@@ -92,6 +92,7 @@ bool player_get_resume_normal_shape(struct player *p, struct command *cmd);
 void player_resume_normal_shape(struct player *p);
 bool player_is_shapechanged(const struct player *p);
 bool player_is_trapsafe(const struct player *p);
+bool player_has_mana(const struct player *p);
 bool player_can_cast(const struct player *p, bool show_msg);
 bool player_can_study(const struct player *p, bool show_msg);
 bool player_can_read(const struct player *p, bool show_msg);

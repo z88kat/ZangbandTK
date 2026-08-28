@@ -336,8 +336,7 @@ static void prt_sp(int row, int col)
 	uint8_t color = player_sp_attr(player);
 
 	/* Do not show mana unless we should have some */
-	if (!player->class->magic.total_spells
-			|| (player->lev < player->class->magic.spell_first)) {
+	if (!player_has_mana(player)) {
 		/*
 		 * But clear if experience drain may have left no points after
 		 * having points.
@@ -795,8 +794,7 @@ static int prt_sp_short(int row, int col)
 	uint8_t color = player_sp_attr(player);
 
 	/* Do not show mana unless we should have some */
-	if (!player->class->magic.total_spells
-			|| (player->lev < player->class->magic.spell_first))
+	if (!player_has_mana(player))
 		return 0;
 
 	put_str("SP:", row, col);

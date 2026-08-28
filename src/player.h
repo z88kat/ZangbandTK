@@ -521,6 +521,7 @@ struct player_class {
 	struct player_power *powers;
 	int power_stat;				/**< Stat the list draws on */
 	int power_first;			/**< Level the list starts paying mana for */
+	int power_weight;			/**< Armour it can carry before mana suffers */
 };
 
 /**

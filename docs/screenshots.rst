@@ -46,6 +46,33 @@ dungeon mouth in the world is on the network, which is how you find the next one
 Walk far enough in any direction and the window scrolls; walk far enough west and
 you run out of land, then out of world.
 
+What a character can do
+=======================
+
+A Sprite Mindcrafter at the start of its career, with the power list open on
+``N``. Everything on it is on one key, and none of it came out of a book.
+
+.. image:: screenshots/powers.svg
+   :alt: The power menu of a Sprite Mindcrafter, listing one racial power and
+         twelve psionic ones with the level each arrives at and the chance of
+         failing, over a view of the wilderness outside a village.
+   :width: 100%
+
+The first entry is the race's, not the class's — a Sprite throws sleeping dust,
+and will be able to at level 12. The other twelve are the Mindcrafter's psionics
+(:ref:`Psionics <psionics>`), listed with the level each arrives at, and for the
+ones already available, the cost and the chance of failing. This character is
+level 1, so only *blast a mind* can be used at all.
+
+It says ``1 hp`` rather than ``1 sp`` because this character has spent its mana
+and has not slept since. A power takes spell points where there are any and hit
+points where there are not, and the menu tells you which before you commit —
+which for a Warrior or a Monk, who have no mana at all, is always blood.
+
+The sidebar names the place and its size, *Lorraine, village*, and the status
+line says *Day*. Both are ZangbandTK's: Angband has neither a world for a town
+to sit in nor a time of day for it to be.
+
 How these were made
 ===================
 
@@ -63,4 +90,5 @@ Still to come
 
 **The coast and deep water**, which is worth a picture of its own. **The
 bestiary**, showing the monsters Angband does not have. **A vampiric or chaotic
-weapon** discharging, since those mechanics have no Angband equivalent.
+weapon** discharging, since those mechanics have no Angband equivalent. **A
+Chaos-Warrior's patron** rewarding or punishing it on a level gained.

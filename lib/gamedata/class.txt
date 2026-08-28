@@ -1809,7 +1809,7 @@ blow:48:35:7d12:STUN:18:You hit %s with a crushing blow.
 # unaltered.
 #
 # The psionics are deliberately NOT a magic realm: no books, nothing to find,
-# nothing to study.  A Mindcrafter learns by being one.  `powers:WIS:1` is what
+# nothing to study.  A Mindcrafter learns by being one.  `powers:WIS:1:350` is what
 # says so -- it tells calc_mana() where the mana comes from in the absence of
 # any realm to read it out of.
 #
@@ -1838,7 +1838,7 @@ equip:potion:Cure Light Wounds:1:1:none
 equip:soft armour:Soft Leather Armour:1:1:none
 equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:CHOOSE_SPELLS
-powers:WIS:1
+powers:WIS:1:350
 title:Trainee
 title:Acolyte
 title:Adept

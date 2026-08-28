@@ -5494,6 +5494,7 @@ static enum parser_error parse_class_powers(struct parser *p) {
 
 	c->power_stat = stat;
 	c->power_first = parser_getint(p, "first");
+	c->power_weight = parser_getint(p, "weight");
 
 	return PARSE_ERROR_NONE;
 }
@@ -5623,7 +5624,8 @@ static struct parser *init_parse_class(void) {
 	parser_reg(p, "desc str desc", parse_class_desc);
 	parser_reg(p, "blow int level int chance sym dice sym effect int power "
 			   "str desc", parse_class_blow);
-	parser_reg(p, "powers sym stat int first", parse_class_powers);
+	parser_reg(p, "powers sym stat int first int weight",
+			   parse_class_powers);
 	parser_reg(p, "power str name", parse_class_power);
 	parser_reg(p, "power-level int level", parse_class_power_level);
 	parser_reg(p, "power-cost int cost", parse_class_power_cost);

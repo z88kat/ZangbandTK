@@ -106,6 +106,44 @@ is now the newest ZangbandTK in existence and the least settled — which is the
 right trade for something you reach by clicking a link.
 
 
+29 August 2026 — a screenshot that was a bug report
+===================================================
+
+Steven sent a screenshot of a Sprite Mindcrafter to go in the manual. It is a
+nice picture: the power list open, twelve psionic powers and the race's own
+sleeping dust, the village outside. I nearly just cropped it and wrote a caption.
+
+The header line reads *"You are a Sprite Mindcrafter, and pay for this out of
+your own hide."* — which is a sentence I wrote, for the case where a character
+has no mana at all. A Mindcrafter is a caster. It should never have seen it.
+
+``calc_mana()`` reads the weight of armour a character may wear before mana
+starts draining out of ``p->class->magic.spell_weight``. A Mindcrafter has no
+magic block, so that is zero, so *all* its armour counts against it — and its own
+starting soft leather weighs eight pounds, which cancels eight points of mana
+from a class that has about two at level 1. It began the game with nothing to
+spend and stayed that way, paying for every power in blood, for fifty levels.
+
+I had written a test for exactly this, and the test passed. Twice, in fact:
+it passed before the fix and after it. It checked a Mindcrafter at levels 20 and
+50, where losing eight points of a large pool is invisible, and it never put any
+armour on the character. Making it dress at level 1 made it fail immediately,
+with 0 mana where 1 was needed — and I only checked that the test could fail by
+putting the broken line back and watching it go red, which is a habit I should
+have already.
+
+Then the same assumption again, one layer up: the sidebar would not draw the SP
+row, because ``prt_sp`` also asks whether the class has spellbooks. So the mana
+existed, and nothing on screen said so. Three places were guessing at "does this
+character have mana" from "does this class have books", which used to be the same
+question and stopped being one the moment PLR-06 landed. It is one function now.
+
+The screenshot is in the manual, regenerated from the fixed build, and it says
+*"and have 0 of 2 spell points"*. Worth noting for its own sake: a player's
+screenshot was a better bug report than my test suite, and the bug was three days
+old.
+
+
 29 August 2026 — nine Lords, and a test that measured the wrong thing
 =====================================================================
 

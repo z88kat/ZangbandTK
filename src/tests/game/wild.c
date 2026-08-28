@@ -4248,6 +4248,58 @@ static int test_psionics_are_paid_for(void *state) {
 	update_stuff(player);
 	require(player->msp >= 20);
 
+	/*
+	 * Wearing its own starting armour, which is the case that was actually
+	 * broken and which this test used to miss entirely by leaving the
+	 * character undressed.  calc_mana() reads the armour allowance out of the
+	 * class's magic block, a power-list class has no magic block, and eight
+	 * pounds of soft leather then cancelled more mana than the class ever had
+	 * -- so a Mindcrafter began the game unable to pay for anything and stayed
+	 * that way for fifty levels.
+	 */
+	{
+		int body_slot = slot_by_name(player, "body");
+		struct object *worn = slot_object(player, body_slot);
+		struct object *leather = object_new();
+		struct object_kind *kind = lookup_kind(TV_SOFT_ARMOR,
+			lookup_sval(TV_SOFT_ARMOR, "Soft Leather Armour"));
+		int dressed;
+
+		notnull(kind);
+		object_prep(leather, kind, 0, RANDOMISE);
+		leather->known = object_new();
+		leather->number = 1;
+
+		player->body.slots[body_slot].obj = leather;
+
+		/*
+		 * At level 1, which is where this actually bit.  The armour costs a
+		 * flat eight points of mana, which a fiftieth-level Mindcrafter never
+		 * notices and a first-level one cannot survive: it has about two, so
+		 * the class started the game with nothing to spend and paid for its
+		 * own first power in blood.  Checking a high level only -- which is
+		 * what this test did before -- sails straight past that.
+		 */
+		player->lev = 1;
+		player->upkeep->update |= PU_BONUS;
+		update_stuff(player);
+		dressed = player->msp;
+
+		/* Enough for Neural Blast, which costs one and arrives at level 1. */
+		if (dressed < 1)
+			printf("a dressed level 1 Mindcrafter has %d mana\n", dressed);
+		require(dressed >= 1);
+
+		/* And at fifty it can still afford its dearest power. */
+		player->lev = 50;
+		player->upkeep->update |= PU_BONUS;
+		update_stuff(player);
+		require(player->msp >= 20);
+
+		player->body.slots[body_slot].obj = worn;
+		object_delete(NULL, NULL, &leather);
+	}
+
 	player->class = keep;
 	player->upkeep->update |= PU_BONUS;
 	update_stuff(player);

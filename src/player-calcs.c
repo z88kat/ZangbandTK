@@ -1534,7 +1534,15 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 	}
 
 	/* Determine the weight allowance */
-	max_wgt = p->class->magic.spell_weight;
+	/*
+	 * How much armour may be worn before mana suffers.  A power-list class has
+	 * no magic block to read this out of, and reading zero from it was a real
+	 * bug: a Mindcrafter's own starting armour weighs eight pounds, which
+	 * cancelled more mana than the class ever had, so it began the game unable
+	 * to pay for anything and stayed that way at every level.
+	 */
+	max_wgt = p->class->magic.total_spells
+		? p->class->magic.spell_weight : p->class->power_weight;
 
 	/* Heavy armor penalizes mana */
 	if (((cur_wgt - max_wgt) / 10) > 0) {

@@ -1237,6 +1237,25 @@ bool player_is_trapsafe(const struct player *p)
  * \param show_msg should be set to true if a failure message should be
  * displayed.
  */
+/**
+ * Whether the character has a pool of spell points at all (ZangbandTK, PLR-06).
+ *
+ * 4.2 treats "has spellbooks" and "has mana" as the same question, because
+ * until now they were.  A Mindcrafter has mana and no books, and every place
+ * that asked the old question got the wrong answer about it -- the mana was
+ * calculated with a zero armour allowance and then never displayed.
+ */
+bool player_has_mana(const struct player *p)
+{
+	if (p->class->magic.total_spells)
+		return p->lev >= p->class->magic.spell_first;
+
+	if (p->class->powers)
+		return p->lev >= p->class->power_first;
+
+	return false;
+}
+
 bool player_can_cast(const struct player *p, bool show_msg)
 {
 	if (!p->class->magic.total_spells) {
