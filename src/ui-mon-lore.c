@@ -132,6 +132,9 @@ void lore_description(textblock *tb, const struct monster_race *race,
 
 	/* Describe the special properties of the monster */
 	lore_append_abilities(tb, race, lore, known_flags);
+
+	/* ZangbandTK (CNT-04): what it is wrapped in, and what bounces off it */
+	lore_append_aura(tb, race, lore, known_flags);
 	lore_append_awareness(tb, race, lore, known_flags);
 	lore_append_friends(tb, race, lore, known_flags);
 

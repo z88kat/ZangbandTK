@@ -199,6 +199,7 @@ add_library(OurCoreLib OBJECT
         src/load.c
         src/message.c
         src/mon-attack.c
+        src/mon-aura.c
         src/mon-blows.c
         src/mon-desc.c
         src/mon-group.c
@@ -861,6 +862,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     game/wild.c
     message/message.c
     monster/amberite.c
+    monster/aura.c
     monster/attack.c
     monster/desc.c
     monster/lethality.c

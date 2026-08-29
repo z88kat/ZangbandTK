@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "effects.h"
 #include "generate.h"
+#include "mon-aura.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"
@@ -1376,6 +1377,11 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
  *
  * Effects on grids which are memorized but not in view are also seen.
  */
+/**
+ * Whether we are already inside a reflected bolt (ZangbandTK, CNT-04).
+ */
+static bool mon_reflecting = false;
+
 void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 			   int flg, bool *did_hit, bool *was_obvious)
 {
@@ -1437,6 +1443,46 @@ void project_m(struct source origin, int r, struct loc grid, int dam, int typ,
 	lore = get_lore(mon->race);
 	context.mon = mon;
 	context.lore = lore;
+
+	/*
+	 * ZangbandTK (CNT-04): some things bounce bolts.  A ball or a breath has a
+	 * radius and is not reflected; a single bolt is, nine times in ten, and it
+	 * goes to a grid beside whoever fired it rather than back at them.  The
+	 * guard stops a bolt bouncing between two reflectors for ever.
+	 */
+	if (!mon_reflecting && aura_bolt_reflects(rf_has(mon->race->flags,
+			RF_REFLECTING), r)) {
+		struct loc origin_grid, bounce;
+		bool have_origin = false;
+
+		if (monster_is_visible(mon)) {
+			rf_on(lore->flags, RF_REFLECTING);
+			msg("The attack bounces!");
+		}
+
+		if (origin.what == SRC_PLAYER) {
+			origin_grid = player->grid;
+			have_origin = true;
+		} else if (origin.what == SRC_MONSTER) {
+			struct monster *caster = cave_monster(cave,
+												  origin.which.monster);
+			if (caster && caster->race) {
+				origin_grid = caster->grid;
+				have_origin = true;
+			}
+		}
+
+		if (have_origin && aura_reflect_target(origin_grid, &bounce)) {
+			mon_reflecting = true;
+			project(source_monster(m_idx), 0, bounce, dam, typ,
+					PROJECT_STOP | PROJECT_KILL, 0, 0, NULL);
+			mon_reflecting = false;
+		}
+
+		*did_hit = true;
+		*was_obvious = monster_is_visible(mon);
+		return;
+	}
 
 	/* See visible monsters */
 	if (monster_is_camouflaged(mon)) {

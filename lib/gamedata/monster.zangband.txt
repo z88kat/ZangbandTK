@@ -1627,7 +1627,7 @@ depth:23
 rarity:1
 experience:57
 blow:HIT:COLD:8d8
-flags:FORCE_SLEEP | EMPTY_MIND | IM_COLD | NO_FEAR | NO_CONF | NO_SLEEP | NONLIVING
+flags:FORCE_SLEEP | EMPTY_MIND | AURA_COLD | IM_COLD | NO_FEAR | NO_CONF | NO_SLEEP | NONLIVING
 desc:The embodiment of cold.
 
 name:jumping fireball
@@ -1643,7 +1643,7 @@ rarity:1
 experience:29
 blow:HIT:FIRE:8d8
 light:2
-flags:FORCE_SLEEP | EMPTY_MIND | IM_FIRE | NO_FEAR | NO_CONF | NO_SLEEP | NONLIVING
+flags:FORCE_SLEEP | EMPTY_MIND | AURA_FIRE | IM_FIRE | NO_FEAR | NO_CONF | NO_SLEEP | NONLIVING
 desc:The embodiment of heat.
 
 name:ball lightning
@@ -1659,7 +1659,7 @@ rarity:1
 experience:83
 blow:HIT:ELEC:8d8
 light:2
-flags:FORCE_SLEEP | EMPTY_MIND | IM_ELEC | NO_FEAR | NO_CONF | NO_SLEEP | NONLIVING
+flags:FORCE_SLEEP | EMPTY_MIND | AURA_ELEC | IM_ELEC | NO_FEAR | NO_CONF | NO_SLEEP | NONLIVING
 desc:A crackling ball of energy.
 
 name:swamp thing
@@ -2288,7 +2288,7 @@ blow:GAZE:EXP_40
 blow:TOUCH:EAT_ITEM
 spells:DRAIN_MANA | BLINK | BLIND | SCARE | CONF | S_UNDEAD | S_MONSTER | HEAL | TELE_AWAY | DARKNESS | S_HYDRA | TRAPS | FORGET | TELE_TO | SHRIEK
 spell-freq:25
-flags:ONLY_ITEM | DROP_60 | DROP_2 | DROP_GOOD | DROP_GREAT | CHAR_CLEAR | ATTR_CLEAR | INVISIBLE | COLD_BLOOD | NO_CONF | UNIQUE | NO_SLEEP | CAN_SPEAK | IM_FIRE | IM_ELEC | EMPTY_MIND | EVIL | SMART | RES_TELE
+flags:ONLY_ITEM | DROP_60 | DROP_2 | DROP_GOOD | DROP_GREAT | CHAR_CLEAR | ATTR_CLEAR | INVISIBLE | COLD_BLOOD | NO_CONF | UNIQUE | NO_SLEEP | CAN_SPEAK | REFLECTING | IM_FIRE | IM_ELEC | EMPTY_MIND | EVIL | SMART | RES_TELE
 desc:What is It?
 
 name:xiclotlan
@@ -2399,7 +2399,7 @@ blow:CLAW:COLD:2d4
 blow:BUTT:HURT:2d9
 spells:BR_COLD | BO_ICE | BO_COLD | BA_COLD
 spell-freq:12
-flags:RAND_25 | DROP_60 | OPEN_DOOR | BASH_DOOR | IM_COLD | ANIMAL | EVIL
+flags:RAND_25 | DROP_60 | OPEN_DOOR | BASH_DOOR | AURA_COLD | IM_COLD | ANIMAL | EVIL
 desc:A creature with a sharp horn: "the hairy myth-thing of the Greenland ice, that walked sometimes on two legs, sometimes on four, and sometimes on six."
 
 name:Kharis the Powerslave
@@ -2556,7 +2556,7 @@ blow:ENGULF:FIRE:3d6
 blow:ENGULF:FIRE:3d6
 spells:BO_FIRE | BA_FIRE
 spell-freq:33
-flags:FORCE_SLEEP | BASH_DOOR | IM_FIRE | IM_POIS | DEMON | EVIL | IM_PLASMA | NO_CONF | NO_SLEEP | NO_FEAR | NONLIVING
+flags:FORCE_SLEEP | BASH_DOOR | IM_FIRE | IM_POIS | AURA_FIRE | DEMON | EVIL | IM_PLASMA | NO_CONF | NO_SLEEP | NO_FEAR | NONLIVING
 desc:It looks like an inverted mushroom, with two flexible arms.
 
 name:roper
@@ -2791,7 +2791,7 @@ blow:CRUSH:HURT:2d10
 blow:CRUSH:HURT:2d10
 blow:CRUSH:HURT:2d10
 blow:CRUSH:HURT:2d10
-flags:FORCE_SLEEP | KILL_BODY | KILL_ITEM | UNIQUE | EMPTY_MIND | COLD_BLOOD | BASH_DOOR | IM_FIRE | IM_COLD | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP | NONLIVING | RES_TELE
+flags:FORCE_SLEEP | KILL_BODY | KILL_ITEM | UNIQUE | REFLECTING | EMPTY_MIND | COLD_BLOOD | BASH_DOOR | IM_FIRE | IM_COLD | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP | NONLIVING | RES_TELE
 desc:It looks like a huge spiked roller. It was designed to keep this dungeon clean, and you are the biggest spot of dirt in sight.
 
 name:deep one
@@ -3187,7 +3187,7 @@ blow:HIT:HURT:3d8
 spells:HEAL | HASTE | BLIND | SCARE | MIND_BLAST | BO_FIRE | S_MONSTERS
 spell-freq:33
 light:2
-flags:FORCE_SLEEP | NO_FEAR | DROP_GOOD | ONLY_ITEM | DROP_4 | RES_TELE | SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_ACID | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
+flags:FORCE_SLEEP | NO_FEAR | DROP_GOOD | ONLY_ITEM | DROP_4 | REFLECTING | RES_TELE | SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_ACID | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 desc:It is an angel moving very quickly, wielding a holy war hammer and casting a volley of powerful spells in your direction.
 
 name:night stalker
@@ -3226,7 +3226,7 @@ blow:HIT:HURT:5d5
 spells:TPORT | BLINK | BA_MANA
 spell-freq:17
 light:1
-flags:UNIQUE | MALE | CAN_SPEAK | ONLY_ITEM | DROP_2 | DROP_GOOD | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | EVIL
+flags:UNIQUE | MALE | CAN_SPEAK | AURA_ELEC | ONLY_ITEM | DROP_2 | DROP_GOOD | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | EVIL
 desc:A magical treatment has turned Jurt, an adept of Logrus, into a Living Trump.
 
 name:gas spore
@@ -3382,7 +3382,7 @@ depth:55
 rarity:2
 experience:355
 blow:HIT:SHATTER:100d2
-flags:FORCE_SLEEP | UNIQUE | EMPTY_MIND | COLD_BLOOD | BASH_DOOR | IM_FIRE | IM_COLD | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP | NONLIVING | RES_TELE
+flags:FORCE_SLEEP | UNIQUE | REFLECTING | EMPTY_MIND | COLD_BLOOD | BASH_DOOR | IM_FIRE | IM_COLD | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP | NONLIVING | RES_TELE
 desc:A shining machine of death and destruction.
 
 name:headless ghost
@@ -3931,7 +3931,7 @@ blow:HIT:HURT:4d6
 spells:HEAL | HASTE | TELE_AWAY | CONF | BO_MANA | BO_PLAS | S_MONSTERS | S_AINU
 spell-freq:9
 light:2
-flags:FORCE_SLEEP | SMART | NO_FEAR | DROP_GOOD | ONLY_ITEM | DROP_4 | RES_TELE | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_ACID | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
+flags:FORCE_SLEEP | SMART | NO_FEAR | DROP_GOOD | ONLY_ITEM | DROP_4 | REFLECTING | RES_TELE | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_ACID | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 desc:It is an angel, fast and strong.  You are stunned by its extreme holiness and try to resist all desires to obey it.
 
 name:Loge, Spirit of Fire
@@ -3953,7 +3953,7 @@ blow:HIT:FIRE:6d6
 spells:BO_PLAS | BA_FIRE
 spell-freq:25
 light:2
-flags:UNIQUE | FORCE_SLEEP | RAND_25 | EMPTY_MIND | CAN_SPEAK | MALE | KILL_ITEM | KILL_BODY | BASH_DOOR | POWERFUL | EVIL | IM_FIRE | NONLIVING | IM_POIS | NO_CONF | NO_SLEEP
+flags:UNIQUE | FORCE_SLEEP | RAND_25 | EMPTY_MIND | CAN_SPEAK | MALE | AURA_FIRE | KILL_ITEM | KILL_BODY | BASH_DOOR | POWERFUL | EVIL | IM_FIRE | NONLIVING | IM_POIS | NO_CONF | NO_SLEEP
 desc:A towering fire elemental, Loge burns everything beyond recognition.
 
 name:nightgaunt
@@ -4056,7 +4056,7 @@ blow:TOUCH:LOSE_INT:1d10
 spells:BLINK | TPORT | CONF | BA_FIRE | DRAIN_MANA | HASTE | BO_PLAS
 spell-freq:25
 light:1
-flags:FORCE_SLEEP | RAND_25 | EVIL | SMART | EMPTY_MIND | IM_PLASMA | KILL_ITEM | PASS_WALL | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_FEAR | NONLIVING | NO_STUN
+flags:FORCE_SLEEP | RAND_25 | EVIL | SMART | EMPTY_MIND | AURA_FIRE | IM_PLASMA | KILL_ITEM | PASS_WALL | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP | NO_FEAR | NONLIVING | NO_STUN
 desc:It is a living entity of fire. Fire springs up wherever this creature touches.
 
 name:Moire, Queen of Rebma
@@ -4116,7 +4116,7 @@ blow:ENGULF:CONFUSE:8d4
 blow:ENGULF:CONFUSE:8d4
 spells:BR_CHAO | BR_NEXU | BR_POIS
 spell-freq:17
-flags:FORCE_SLEEP | RAND_50 | RAND_25 | IM_NEXUS | IM_FIRE | IM_ELEC | EMPTY_MIND | BASH_DOOR | POWERFUL | ATTR_MULTI | ATTR_RAND | NO_CONF | NO_SLEEP | NO_FEAR | NONLIVING
+flags:FORCE_SLEEP | RAND_50 | RAND_25 | IM_NEXUS | AURA_ELEC | IM_FIRE | IM_ELEC | EMPTY_MIND | BASH_DOOR | POWERFUL | ATTR_MULTI | ATTR_RAND | NO_CONF | NO_SLEEP | NO_FEAR | NONLIVING
 desc:A swirling spiral of mist, constantly changing its appearance.
 
 name:spawn of ubbo-sathla
@@ -4133,7 +4133,7 @@ rarity:5
 experience:258
 blow:CRUSH:ACID:8d4
 blow:CRUSH:ACID:8d4
-flags:FORCE_SLEEP | ATTR_MULTI | ATTR_RAND | MULTIPLY | EVIL | RAND_25 | IM_NEXUS | IM_FIRE | IM_ELEC | EMPTY_MIND | BASH_DOOR | POWERFUL | KILL_BODY | NO_CONF | NO_SLEEP
+flags:FORCE_SLEEP | ATTR_MULTI | ATTR_RAND | MULTIPLY | EVIL | RAND_25 | IM_NEXUS | AURA_ELEC | IM_FIRE | IM_ELEC | EMPTY_MIND | BASH_DOOR | POWERFUL | KILL_BODY | NO_CONF | NO_SLEEP
 desc:Weird, jelly like creatures. No two look the same.
 
 name:Fat Man
@@ -4149,7 +4149,7 @@ depth:62
 rarity:2
 experience:500
 blow:HIT:SHATTER:200d2
-flags:FORCE_SLEEP | UNIQUE | EMPTY_MIND | COLD_BLOOD | BASH_DOOR | IM_FIRE | IM_COLD | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP | NONLIVING | RES_TELE
+flags:FORCE_SLEEP | UNIQUE | REFLECTING | EMPTY_MIND | COLD_BLOOD | BASH_DOOR | IM_FIRE | IM_COLD | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP | NONLIVING | RES_TELE
 desc:A shining machine of death and destruction.
 
 name:Malekith the Accursed
@@ -4348,7 +4348,7 @@ blow:HIT:HURT:8d6
 spells:TELE_TO | BLIND | SCARE | WOUND | BO_MANA | S_DEMON | BO_NETH
 spell-freq:33
 light:2
-flags:FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | NO_FEAR | EVIL | SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_FIRE | IM_COLD | IM_POIS | RES_TELE | IM_NETHER
+flags:FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | NO_FEAR | EVIL | REFLECTING | SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_FIRE | IM_COLD | IM_POIS | RES_TELE | IM_NETHER
 desc:An angelic being who was mighty once but dared defy the Omnipotent to arms.
 
 name:giant headless
@@ -4495,7 +4495,7 @@ blow:HIT:HURT:8d6
 spells:TELE_TO | BLIND | SCARE | WOUND | BO_MANA | S_AINU
 spell-freq:33
 light:2
-flags:FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | NO_FEAR | SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_ACID | IM_COLD | IM_ELEC | IM_POIS | RES_TELE
+flags:FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | NO_FEAR | REFLECTING | SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_ACID | IM_COLD | IM_ELEC | IM_POIS | RES_TELE
 desc:Never a more heavenly being have you seen.  The very holiness of its presence makes you deeply respect it.  Few creatures can match the powers of an Archon; fewer still live to tell the tale after attacking one.
 
 name:formless spawn of tsathoggua
@@ -4578,7 +4578,7 @@ blow:BUTT:FIRE:3d6
 blow:BUTT:ELEC:3d6
 spells:BA_WATE | BR_FIRE | BO_ICE | BA_ELEC | BA_COLD | WOUND | DRAIN_MANA | BRAIN_SMASH | S_UNDEAD
 spell-freq:50
-flags:FORCE_SLEEP | COLD_BLOOD | BASH_DOOR | EVIL | UNDEAD | POWERFUL | SMART | IM_FIRE | IM_COLD | IM_POIS | RES_TELE | ONLY_ITEM | DROP_60 | DROP_GOOD | NO_CONF | NO_SLEEP
+flags:FORCE_SLEEP | REFLECTING | COLD_BLOOD | BASH_DOOR | EVIL | UNDEAD | POWERFUL | SMART | IM_FIRE | IM_COLD | IM_POIS | RES_TELE | ONLY_ITEM | DROP_60 | DROP_GOOD | NO_CONF | NO_SLEEP
 desc:It is a huge, twisted grey skull floating through the air. Its cold eyes burn with hatred towards all who live.
 
 name:Charybdis
@@ -4657,7 +4657,7 @@ blow:BUTT:HURT:6d6
 blow:CRUSH:HURT:8d6
 blow:CRUSH:HURT:8d6
 blow:BUTT:HURT:6d6
-flags:BASH_DOOR | KILL_ITEM | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | DEMON | NO_CONF | NO_SLEEP | NO_FEAR | NONLIVING | EVIL
+flags:BASH_DOOR | REFLECTING | KILL_ITEM | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | DEMON | NO_CONF | NO_SLEEP | NO_FEAR | NONLIVING | EVIL
 desc:A great, vicious beast whose flesh is made of steel and whose blood is fire. It charges at you ignoring everything else.
 
 name:Judge Fear
@@ -4802,7 +4802,7 @@ blow:HIT:COLD:12d12
 blow:HIT:COLD:12d12
 spells:HEAL | TELE_TO | S_KIN | BR_COLD
 spell-freq:33
-flags:UNIQUE | IM_COLD | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | MOVE_BODY | SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | EVIL | GIANT | MALE
+flags:UNIQUE | IM_COLD | AURA_COLD | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | MOVE_BODY | SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | EVIL | GIANT | MALE
 desc:A frost giant chieftain, unusually smart for a giant.
 
 name:Quachil Uttaus, Treader of the Dust
@@ -5004,7 +5004,7 @@ spells:HEAL
 spell-freq:8
 friends:100:2d6:Same
 light:2
-flags:IM_FIRE | IM_ELEC | IM_COLD | DROP_GOOD | IM_NETHER | IM_NEXUS | IM_DISEN | RES_TELE | NO_SLEEP | NO_CONF | NO_FEAR | NO_STUN | DROP_2 | MALE | OPEN_DOOR | BASH_DOOR
+flags:IM_FIRE | IM_ELEC | IM_COLD | DROP_GOOD | IM_NETHER | IM_NEXUS | IM_DISEN | RES_TELE | NO_SLEEP | NO_CONF | NO_FEAR | NO_STUN | DROP_2 | REFLECTING | MALE | OPEN_DOOR | BASH_DOOR
 desc:Fighting for a good cause, and they consider you an agent of the devil.
 
 name:leprechaun fanatic
@@ -5282,7 +5282,7 @@ blow:CLAW:HURT:6d6
 blow:CLAW:HURT:6d6
 spells:HOLD | BLINK | CONF | S_DEMON | BRAIN_SMASH | BR_NETH
 spell-freq:25
-flags:FORCE_SLEEP | NONLIVING | REGENERATE | IM_ACID | IM_COLD | IM_FIRE | NO_SLEEP | NO_STUN | NO_CONF | EVIL | DEMON | INVISIBLE | KILL_WALL | ONLY_ITEM | DROP_2 | DROP_GOOD
+flags:FORCE_SLEEP | AURA_FIRE | NONLIVING | REGENERATE | IM_ACID | IM_COLD | IM_FIRE | NO_SLEEP | NO_STUN | NO_CONF | EVIL | DEMON | INVISIBLE | KILL_WALL | ONLY_ITEM | DROP_2 | DROP_GOOD
 desc:A loathsome, sturdy, winged, horned demon, with talons that could tear a stone wall down.
 
 name:balrog
@@ -5304,7 +5304,7 @@ blow:HIT:HURT:6d5
 spells:BLIND | CONF | BRAIN_SMASH | BR_FIRE | BO_PLAS | BA_NETH | S_HI_UNDEAD | S_UNDEAD | S_DEMON
 spell-freq:25
 light:1
-flags:FORCE_SLEEP | ONLY_ITEM | DROP_2 | DROP_GOOD | NONLIVING | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | SMART | EVIL | DEMON | IM_FIRE | NO_CONF | NO_SLEEP | KILL_WALL
+flags:FORCE_SLEEP | AURA_FIRE | ONLY_ITEM | DROP_2 | DROP_GOOD | NONLIVING | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | SMART | EVIL | DEMON | IM_FIRE | NO_CONF | NO_SLEEP | KILL_WALL
 desc:It is a massive humanoid demon wreathed in flames.
 
 name:goat of mendes
@@ -5428,7 +5428,7 @@ blow:HIT:EAT_GOLD
 spells:WOUND | HOLD | DRAIN_MANA | SCARE | BLIND | S_UNDEAD | S_HI_UNDEAD | S_HI_DRAGON | S_UNIQUE | BA_NETH | FORGET | TRAPS | BRAIN_SMASH | TELE_AWAY
 spell-freq:33
 light:1
-flags:UNIQUE | MALE | CAN_SPEAK | FORCE_SLEEP | SMART | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | NO_STUN | NO_SLEEP | NO_CONF | IM_ELEC | IM_POIS | IM_COLD | COLD_BLOOD | RES_TELE
+flags:UNIQUE | MALE | CAN_SPEAK | REFLECTING | FORCE_SLEEP | SMART | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | NO_STUN | NO_SLEEP | NO_CONF | IM_ELEC | IM_POIS | IM_COLD | COLD_BLOOD | RES_TELE
 desc:Why would anybody want to kill Santa Claus? To get all the presents, of course!
 
 name:Eihort, the Thing in the Labyrinth
@@ -5637,7 +5637,7 @@ blow:BITE:EXP_80:6d6
 blow:BITE:EXP_80:6d6
 spells:BLIND | HOLD | SCARE | WOUND | DRAIN_MANA | BRAIN_SMASH | BA_WATE | S_DEMON | HASTE | TPORT | TELE_AWAY | TELE_TO | HEAL | BR_DARK | BR_NETH
 spell-freq:33
-flags:UNIQUE | EVIL | UNDEAD | FORCE_SLEEP | SMART | CAN_SPEAK | ONLY_ITEM | DROP_4 | DROP_GOOD | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | POWERFUL | NONLIVING | IM_COLD | IM_POIS | HURT_LIGHT | NO_CONF | NO_SLEEP | RES_TELE
+flags:UNIQUE | EVIL | UNDEAD | FORCE_SLEEP | SMART | CAN_SPEAK | AURA_ELEC | ONLY_ITEM | DROP_4 | DROP_GOOD | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | POWERFUL | NONLIVING | IM_COLD | IM_POIS | HURT_LIGHT | NO_CONF | NO_SLEEP | RES_TELE
 desc:Its form is partially that of a reptile, partially that of a gigantic octopus. It will destroy you.
 
 name:bloodthirster
@@ -5740,7 +5740,7 @@ blow:TOUCH:CONFUSE:5d12
 blow:TOUCH:CONFUSE:5d12
 spells:TELE_AWAY | S_MONSTERS | TELE_LEVEL | BR_NEXU | TPORT | BLINK
 spell-freq:33
-flags:UNIQUE | CAN_SPEAK | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | IM_ACID | IM_FIRE | IM_POIS | IM_COLD | NEVER_MOVE | IM_NEXUS | PASS_WALL | NO_CONF | NO_SLEEP | EVIL
+flags:UNIQUE | CAN_SPEAK | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | IM_ACID | IM_FIRE | IM_POIS | IM_COLD | NEVER_MOVE | IM_NEXUS | REFLECTING | PASS_WALL | NO_CONF | NO_SLEEP | EVIL
 desc:"Not shapeless, but so complex that the eye could recognize no describable shape. There were hemispheres and shining metal, coupled by long plastic rods. The rods were of a flat gray color, so that he could not make out which were nearer; they merged into a flat mass from which protruded individual cylinders. As he looked at it, he had a curious feeling that eyes gleamed from between these rods; but wherever he glanced at the construction, he saw only the spaces between them."
 
 name:Raphael, the Messenger
@@ -5762,7 +5762,7 @@ blow:HIT:HURT:10d10
 spells:TELE_TO | BLIND | BO_MANA | S_AINU | S_KIN
 spell-freq:50
 light:2
-flags:UNIQUE | MALE | CAN_SPEAK | NO_FEAR | DROP_GOOD | FORCE_SLEEP | SMART | RES_TELE | ONLY_ITEM | DROP_4 | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
+flags:UNIQUE | MALE | CAN_SPEAK | NO_FEAR | DROP_GOOD | FORCE_SLEEP | SMART | AURA_ELEC | REFLECTING | RES_TELE | ONLY_ITEM | DROP_4 | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 desc:Commanding a legion of angels, Raphael will destroy you for your sins.  He will crush you like the pitiful insignificant being he sees you to be. Your very soul will be taken into judgement by his supreme authority as he cleanses the world of evil.
 
 name:Artsi the Champion of Chaos
@@ -5805,7 +5805,7 @@ blow:HIT:TERRIFY:5d5
 spells:HEAL | HASTE | TPORT | TELE_AWAY | BLIND | CONF | SCARE | WOUND | BRAIN_SMASH | FORGET | TRAPS | BA_FIRE | BO_FIRE | BO_PLAS | BO_MANA | S_MONSTER | S_AINU | S_DRAGON | S_KIN
 spell-freq:50
 light:2
-flags:UNIQUE | MALE | CAN_SPEAK | FORCE_SLEEP | RES_TELE | ONLY_ITEM | DROP_4 | DROP_GOOD | SMART | OPEN_DOOR | BASH_DOOR | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
+flags:UNIQUE | MALE | CAN_SPEAK | FORCE_SLEEP | REFLECTING | RES_TELE | ONLY_ITEM | DROP_4 | DROP_GOOD | SMART | OPEN_DOOR | BASH_DOOR | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 desc:The wizard who opposed Saruman, and in the end, was the only one of the Istari to succeed in his task. Gandalf is very wise and specializes in fire magic.
 
 name:Brand, Mad Visionary of Amber
@@ -6078,7 +6078,7 @@ blow:BITE:ELEC:9d15
 spells:BR_ELEC | BR_GRAV | BR_LIGHT | S_DRAGON | S_HI_DRAGON | SCARE | BLIND
 spell-freq:33
 light:2
-flags:FORCE_SLEEP | IM_ELEC | DROP_GOOD | ONLY_ITEM | DROP_4 | BASH_DOOR | POWERFUL | MOVE_BODY | DRAGON | NO_CONF | NO_SLEEP | RES_TELE
+flags:FORCE_SLEEP | AURA_ELEC | AURA_COLD | IM_ELEC | DROP_GOOD | ONLY_ITEM | DROP_4 | BASH_DOOR | POWERFUL | MOVE_BODY | DRAGON | NO_CONF | NO_SLEEP | RES_TELE
 desc:The mightiest elemental dragon of air, it can destroy you with ease.
 
 name:Julian, Master of Arden Forest
@@ -6120,7 +6120,7 @@ blow:CRUSH:ELEC:8d12
 blow:CRUSH:POISON:10d14
 spells:BLIND | CONF | SCARE | BR_ACID | BR_FIRE | BR_COLD | BR_ELEC | BR_POIS | S_HI_DRAGON | S_MONSTERS
 spell-freq:50
-flags:ATTR_MULTI | UNIQUE | CAN_SPEAK | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | EVIL | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
+flags:ATTR_MULTI | UNIQUE | CAN_SPEAK | AURA_FIRE | AURA_ELEC | AURA_COLD | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | EVIL | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 desc:An elephantine horror with five trunks, each capable of breathing destructive blasts of elements. It is said that it is better to face the fury of a thousand raging lions than the Norsa!
 
 name:Rhan-Tegoth
@@ -6141,7 +6141,7 @@ blow:CLAW:HURT:8d12
 blow:CRUSH:ACID:5d12
 spells:S_DEMON | BR_ACID | S_UNDEAD | S_KIN | CONF | SCARE | MIND_BLAST | BR_CHAO
 spell-freq:20
-flags:EVIL | UNIQUE | CAN_SPEAK | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP | IM_WATER
+flags:EVIL | UNIQUE | CAN_SPEAK | AURA_FIRE | AURA_ELEC | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP | IM_WATER
 desc:"An almost globular torso, with six long, sinuous limbs terminating in clab-like claws. From the upper end a subsidiary globe bulged forward bubble-like; its triangle of three staring, fishy eyes, its foot-long and evidently flexible proboscis, and a distended lateral system analogous to gills, suggested that it was a head."
 
 name:Caine, the Conspirator
@@ -6347,7 +6347,7 @@ blow:TOUCH:DISENCHANT:10d10
 blow:TOUCH:DRAIN_CHARGES:10d10
 spells:BR_CHAO
 spell-freq:20
-flags:KILL_WALL | KILL_ITEM | KILL_BODY | NO_FEAR | FORCE_SLEEP | MULTIPLY | ATTR_MULTI | ATTR_RAND | DROP_60 | DROP_GOOD | POWERFUL | BASH_DOOR | IM_ELEC | IM_FIRE | IM_NEXUS | IM_POIS | IM_ACID | IM_PLASMA | IM_DISEN | COLD_BLOOD | NONLIVING | RAND_50
+flags:KILL_WALL | KILL_ITEM | KILL_BODY | NO_FEAR | FORCE_SLEEP | MULTIPLY | ATTR_MULTI | ATTR_RAND | DROP_60 | DROP_GOOD | POWERFUL | AURA_ELEC | AURA_FIRE | AURA_COLD | BASH_DOOR | IM_ELEC | IM_FIRE | IM_NEXUS | IM_POIS | IM_ACID | IM_PLASMA | IM_DISEN | COLD_BLOOD | NONLIVING | RAND_50
 desc:Summoned from the Courts of Chaos, it is a mass of sentient Logrus, spreading uncontrollably and destroying everything in its path.
 
 name:cyberdemon
@@ -6453,7 +6453,7 @@ blow:TOUCH:FIRE:12d10
 spells:BR_FIRE | S_KIN
 spell-freq:25
 light:2
-flags:UNIQUE | RES_TELE | IM_FIRE | IM_PLASMA | FORCE_SLEEP | NONLIVING | ONLY_ITEM | DROP_4 | SMART | EVIL | KILL_ITEM | KILL_BODY | NO_CONF | NO_SLEEP | NO_FEAR
+flags:UNIQUE | RES_TELE | AURA_FIRE | IM_FIRE | IM_PLASMA | FORCE_SLEEP | NONLIVING | ONLY_ITEM | DROP_4 | SMART | EVIL | KILL_ITEM | KILL_BODY | NO_CONF | NO_SLEEP | NO_FEAR
 desc:"But even though we had shielded our eyes, it was impossible not to see the great amorphous shapes streaming skyward from the accursed place, nor the equally great being hovering like a cloud of living fire above the trees."
 
 name:Benedict, the Ideal Warrior
@@ -6517,7 +6517,7 @@ blow:CRUSH:HURT:12d12
 blow:CRUSH:HURT:12d12
 spells:BO_MANA | SCARE | BR_COLD | S_DEMON | BO_ELEC | BA_ELEC | MIND_BLAST | WOUND | BA_MANA | BA_WATE | S_HI_UNDEAD | S_KIN
 spell-freq:33
-flags:UNIQUE | CAN_SPEAK | RES_TELE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | INVISIBLE | OPEN_DOOR | BASH_DOOR | NONLIVING | EVIL | DEMON | IM_ACID | IM_FIRE | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
+flags:UNIQUE | CAN_SPEAK | RES_TELE | FORCE_SLEEP | AURA_COLD | ONLY_ITEM | DROP_4 | DROP_GOOD | AURA_ELEC | INVISIBLE | OPEN_DOOR | BASH_DOOR | NONLIVING | EVIL | DEMON | IM_ACID | IM_FIRE | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 desc:The Wendigo, moving so fast that you can see little except two glowing eyes burning with hatred. "The stars had been blotted out... the great cloud which had obscured the the sky looked curiously like the outline of a great man. And... where the top of the cloud must have been, where the head of the thing should have been, there were two gleaming stars, burning bright -- like eyes!"
 
 name:hell hound of julian
@@ -6538,7 +6538,7 @@ blow:BITE:FIRE:3d12
 spells:BR_FIRE
 spell-freq:20
 friends:100:2d6:Same
-flags:FORCE_SLEEP | RAND_25 | BASH_DOOR | MOVE_BODY | ANIMAL | EVIL | IM_FIRE
+flags:FORCE_SLEEP | RAND_25 | AURA_FIRE | BASH_DOOR | MOVE_BODY | ANIMAL | EVIL | IM_FIRE
 desc:It is a giant dog that glows with heat.  Flames pour from its nostrils.
 
 name:Mephistopheles, Lord of Hell
@@ -6559,7 +6559,7 @@ blow:TOUCH:FIRE:4d5
 blow:TOUCH:DRAIN_CHARGES:4d5
 spells:TELE_TO | SCARE | HOLD | BRAIN_SMASH | S_DEMON | S_HI_UNDEAD | S_UNDEAD | BR_FIRE | BR_NETH | S_HI_DEMON | WOUND
 spell-freq:33
-flags:MALE | UNIQUE | CAN_SPEAK | FORCE_SLEEP | OPEN_DOOR | BASH_DOOR | MOVE_BODY | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | IM_FIRE | IM_PLASMA | IM_NETHER | NO_CONF | NO_SLEEP | NONLIVING | EVIL | DEMON | IM_COLD | IM_POIS
+flags:MALE | UNIQUE | CAN_SPEAK | FORCE_SLEEP | OPEN_DOOR | BASH_DOOR | MOVE_BODY | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | IM_FIRE | IM_PLASMA | IM_NETHER | AURA_FIRE | NO_CONF | NO_SLEEP | NONLIVING | EVIL | DEMON | IM_COLD | IM_POIS
 desc:A duke of hell, in the flesh.
 
 name:Godzilla
@@ -6622,7 +6622,7 @@ blow:HIT:COLD:5d10
 blow:HIT:HURT:5d10
 spells:BR_COLD | BO_ICE | DARKNESS | HEAL | TELE_TO | S_KIN | S_HI_UNDEAD
 spell-freq:33
-flags:UNIQUE | CAN_SPEAK | FORCE_SLEEP | RES_TELE | IM_NETHER | IM_WATER | MALE | ONLY_ITEM | DROP_4 | DROP_GOOD | EVIL | GIANT | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | TAKE_ITEM | IM_DISEN | IM_COLD | NO_CONF | NO_SLEEP | IM_POIS | HURT_FIRE | COLD_BLOOD
+flags:UNIQUE | CAN_SPEAK | FORCE_SLEEP | RES_TELE | IM_NETHER | IM_WATER | MALE | ONLY_ITEM | DROP_4 | DROP_GOOD | EVIL | GIANT | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | TAKE_ITEM | IM_DISEN | IM_COLD | NO_CONF | NO_SLEEP | IM_POIS | HURT_FIRE | COLD_BLOOD | AURA_COLD
 desc:Ymir is one of the oldest beings there are. He looks like a giant humanoid made of ice.
 
 name:Loki the Trickster
@@ -6642,7 +6642,7 @@ blow:HIT:DISENCHANT:6d11
 blow:HIT:DRAIN_CHARGES:6d11
 spells:SHRIEK | HASTE | HEAL | DRAIN_MANA | TPORT | TELE_TO | TELE_AWAY | TELE_LEVEL | FORGET | S_HI_DEMON | S_DEMON | WOUND | S_HI_UNDEAD | S_UNIQUE | S_HI_DRAGON | BA_DARK | BA_MANA | S_AMBERITES | S_UNDEAD
 spell-freq:33
-flags:UNIQUE | MALE | FORCE_SLEEP | RES_TELE | IM_NETHER | IM_PLASMA | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | EVIL | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | TAKE_ITEM | CAN_SPEAK | IM_FIRE | NO_CONF | NO_SLEEP | IM_POIS | HURT_COLD | GIANT | REGENERATE
+flags:UNIQUE | MALE | FORCE_SLEEP | RES_TELE | IM_NETHER | IM_PLASMA | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | EVIL | AURA_FIRE | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | TAKE_ITEM | CAN_SPEAK | IM_FIRE | NO_CONF | NO_SLEEP | IM_POIS | HURT_COLD | GIANT | REGENERATE
 desc:Loki, the god of mischief, is a nasty person. He will use every dirty trick in the book, and then some. In the end, his half-giant heritage is bound to show, as he will defect to the side of the giants and fight against the other gods of Asgard.
 
 name:star-spawn of cthulhu
@@ -6685,7 +6685,7 @@ blow:HIT:HURT:6d11
 spells:BR_FIRE | BR_PLAS | BLIND | TELE_TO | S_KIN | S_HI_UNDEAD | WOUND | TELE_AWAY | S_HI_DEMON | S_DEMON
 spell-freq:20
 light:2
-flags:UNIQUE | FORCE_SLEEP | RES_TELE | IM_NETHER | IM_PLASMA | MALE | ONLY_ITEM | DROP_4 | DROP_GOOD | EVIL | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | TAKE_ITEM | CAN_SPEAK | IM_FIRE | NO_CONF | NO_SLEEP | IM_POIS | HURT_COLD | GIANT | DEMON
+flags:UNIQUE | FORCE_SLEEP | RES_TELE | IM_NETHER | IM_PLASMA | MALE | ONLY_ITEM | DROP_4 | DROP_GOOD | EVIL | AURA_FIRE | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | TAKE_ITEM | CAN_SPEAK | IM_FIRE | NO_CONF | NO_SLEEP | IM_POIS | HURT_COLD | GIANT | DEMON
 desc:Surtur is also one of the most ancient of all creatures. He is a demonic giant of fire, who is destined to set the nine worlds afire with his accursed sword of doom on the day of Ragnarok.
 
 name:Shuma-Gorath
@@ -6728,7 +6728,7 @@ blow:HIT:HURT:2d50
 spells:BR_NEXU | BR_NETH | BR_COLD | BR_FIRE
 spell-freq:33
 light:2
-flags:RAND_25 | EVIL | DEMON | DROP_4 | DROP_GOOD | ONLY_ITEM | RES_TELE | IM_POIS | IM_FIRE | FORCE_SLEEP | NONLIVING | IM_COLD | IM_ELEC | IM_NEXUS | IM_NETHER | IM_PLASMA | REGENERATE | UNIQUE
+flags:RAND_25 | EVIL | DEMON | AURA_FIRE | AURA_COLD | DROP_4 | DROP_GOOD | ONLY_ITEM | RES_TELE | IM_POIS | IM_FIRE | FORCE_SLEEP | NONLIVING | IM_COLD | IM_ELEC | IM_NEXUS | IM_NETHER | IM_PLASMA | REGENERATE | UNIQUE
 desc:"A belching column of sick greenish flame... spouting volcanically from the depths profound and inconceivable, casting no shadows as healthy flame should, and coating the nitrous stone with a nasty, venomous verdigris. For all that seething combustion no warmth lay, but only the clamminess of death and corruption."
 
 name:Oremorj the Cyberdemon Lord
@@ -6790,7 +6790,7 @@ blow:TOUCH:LOSE_CON:16d2
 blow:TOUCH:LOSE_CON:16d2
 spells:BO_MANA | BRAIN_SMASH | BA_MANA | S_MONSTERS | S_HI_DEMON | S_DEMON | S_HI_UNDEAD | S_HOUND | BR_MANA | BR_SHAR
 spell-freq:33
-flags:UNIQUE | CAN_SPEAK | SMART | RES_TELE | PASS_WALL | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | ATTR_MULTI | ATTR_RAND | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | NONLIVING | EVIL | IM_ACID | IM_ELEC | IM_POIS | IM_FIRE | NO_CONF | NO_SLEEP
+flags:UNIQUE | CAN_SPEAK | SMART | RES_TELE | PASS_WALL | FORCE_SLEEP | AURA_ELEC | AURA_FIRE | ONLY_ITEM | DROP_4 | DROP_GOOD | ATTR_MULTI | ATTR_RAND | AURA_COLD | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | NONLIVING | EVIL | IM_ACID | IM_ELEC | IM_POIS | IM_FIRE | NO_CONF | NO_SLEEP
 desc:"Great globes of light massing towards the opening... the breaking apart of the nearest globes, and the protoplasmic flesh that flowed blackly outward to join together and form that eldritch, hideous horror from outer space... whose mask was a congeries of iridescent globes... who froths as primal slime in nuclear chaos forever beyond the nethermost outposts of space and time!"
 
 name:Fenris Wolf
@@ -6833,7 +6833,7 @@ blow:CRUSH:HURT:10d18
 spells:S_HI_DRAGON | S_DRAGON | S_KIN | BR_POIS | BR_ACID | BR_ELEC | BR_FIRE | BR_COLD | BR_NETH | BR_LIGHT | BR_DARK | BR_CHAO | BR_SOUN | BR_DISE | BR_NEXU | BR_TIME | BR_INER | BR_GRAV | BR_SHAR | BR_PLAS | BR_WALL | BR_MANA
 spell-freq:33
 light:2
-flags:FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | DRAGON | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP | IM_NETHER | IM_NEXUS | IM_PLASMA | IM_DISEN | RES_TELE
+flags:FORCE_SLEEP | REFLECTING | AURA_FIRE | AURA_ELEC | AURA_COLD | ONLY_ITEM | DROP_4 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | DRAGON | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP | IM_NETHER | IM_NEXUS | IM_PLASMA | IM_DISEN | RES_TELE
 desc:The mightiest of all dragonkind, a great wyrm of power is seldom encountered in our world. It can crush stars with its might.
 
 name:Shub-Niggurath, Black Goat of the Woods
@@ -6854,7 +6854,7 @@ blow:BITE:LOSE_STR:10d2
 blow:BITE:LOSE_CON:10d2
 spells:BO_MANA | BRAIN_SMASH | BA_DARK | S_MONSTERS | WOUND | HEAL | BR_CHAO | BR_POIS | BA_MANA | S_DEMON | S_HI_UNDEAD | S_UNIQUE | S_UNDEAD
 spell-freq:33
-flags:UNIQUE | CAN_SPEAK | FEMALE | RES_TELE | ATTR_MULTI | FORCE_SLEEP | PASS_WALL | ATTR_RAND | ONLY_ITEM | DROP_4 | DROP_GOOD | NONLIVING | SMART | OPEN_DOOR | BASH_DOOR | REGENERATE | DEMON | EVIL | IM_ACID | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
+flags:UNIQUE | CAN_SPEAK | FEMALE | AURA_ELEC | RES_TELE | ATTR_MULTI | FORCE_SLEEP | PASS_WALL | ATTR_RAND | ONLY_ITEM | DROP_4 | DROP_GOOD | NONLIVING | SMART | OPEN_DOOR | BASH_DOOR | REGENERATE | DEMON | AURA_COLD | EVIL | IM_ACID | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 desc:This horrendous outer god looks like a writhing cloudy mass filled with mouths and tentacles.
 
 name:Nodens, Lord of the Great Abyss
@@ -6894,7 +6894,7 @@ blow:GAZE:LOSE_INT:1d50
 blow:GAZE:LOSE_WIS:1d50
 spells:TELE_AWAY | TELE_TO | TELE_LEVEL | TPORT | BR_NEXU | BA_MANA | BA_FIRE | S_MONSTERS | BRAIN_SMASH | MIND_BLAST | WOUND | HASTE | S_HI_UNDEAD | S_HI_DRAGON | S_UNDEAD | S_AINU | S_DEMON | HEAL | S_SPIDER | S_HOUND | S_HI_DEMON
 spell-freq:33
-flags:UNIQUE | CAN_SPEAK | RES_TELE | NONLIVING | FORCE_SLEEP | PASS_WALL | DEMON | IM_NEXUS | ATTR_MULTI | ATTR_RAND | MALE | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | SMART | OPEN_DOOR | BASH_DOOR | REGENERATE | EVIL | IM_ACID | IM_POIS | IM_FIRE | NO_CONF | NO_SLEEP
+flags:UNIQUE | CAN_SPEAK | RES_TELE | NONLIVING | FORCE_SLEEP | PASS_WALL | DEMON | IM_NEXUS | ATTR_MULTI | ATTR_RAND | MALE | AURA_ELEC | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | SMART | OPEN_DOOR | BASH_DOOR | REGENERATE | AURA_COLD | EVIL | IM_ACID | IM_POIS | IM_FIRE | NO_CONF | NO_SLEEP
 desc:Nyarlathothep is the messenger, the heart and the soul of the outer gods. He is a shapechanger capable of assuming thousands of nightmarish forms. One of them looks like this: "A tall, slim figure with the young face of an antique pharaoh, gay with prismatic robes and crowned with a pshent that glowed with inherent light... the fascination of a dark god or fallen archangel, and around whose eyes there lurked the languid sparkle of capricious humor."
 
 name:Azathoth, Seething Nuclear Chaos
@@ -6915,7 +6915,7 @@ blow:CRUSH:HURT:35d5
 blow:CRAWL:ACID:35d5
 spells:S_DEMON | BR_CHAO | BR_DISE | BR_MANA | BA_WATE | BR_SHAR
 spell-freq:20
-flags:UNIQUE | RES_TELE | FORCE_SLEEP | DEMON | ATTR_MULTI | POWERFUL | ATTR_RAND | NONLIVING | KILL_ITEM | KILL_WALL | ONLY_ITEM | DROP_4 | DROP_GOOD | IM_DISEN | STUPID | OPEN_DOOR | BASH_DOOR | REGENERATE | EMPTY_MIND | EVIL | IM_ACID | IM_POIS | IM_FIRE | NO_CONF | NO_SLEEP
+flags:UNIQUE | RES_TELE | FORCE_SLEEP | DEMON | AURA_FIRE | AURA_ELEC | ATTR_MULTI | POWERFUL | ATTR_RAND | NONLIVING | KILL_ITEM | KILL_WALL | AURA_COLD | ONLY_ITEM | DROP_4 | DROP_GOOD | IM_DISEN | STUPID | OPEN_DOOR | BASH_DOOR | REGENERATE | EMPTY_MIND | EVIL | IM_ACID | IM_POIS | IM_FIRE | NO_CONF | NO_SLEEP
 desc:"That last amorphous blight of nethermost confusion which blasphemes and bubbles at the centre of all infinity -- the boundless daemon sultan Azathoth, whose name no lips dare speak aloud, and who gnaws hungrily in inconceivable, unlighted chambers beyond time amidst the muffled, maddening beating of vile drums and the thin monotonous whine of accursed flutes."
 
 name:Jormungand the Midgard Serpent
@@ -6956,7 +6956,7 @@ blow:HIT:HURT:30d9
 blow:HIT:HURT:30d9
 spells:BR_SHAR | BO_MANA
 spell-freq:33
-flags:UNIQUE | NONLIVING | NO_FEAR | FORCE_SLEEP | MOVE_BODY | KILL_WALL | IM_FIRE | IM_ELEC | IM_POIS | IM_COLD | IM_NETHER | IM_WATER | IM_PLASMA | IM_NEXUS | NO_STUN | REGENERATE | NO_CONF | NO_SLEEP | EMPTY_MIND | COLD_BLOOD | BASH_DOOR
+flags:UNIQUE | NONLIVING | NO_FEAR | FORCE_SLEEP | REFLECTING | MOVE_BODY | KILL_WALL | IM_FIRE | IM_ELEC | IM_POIS | IM_COLD | IM_NETHER | IM_WATER | IM_PLASMA | IM_NEXUS | NO_STUN | REGENERATE | NO_CONF | NO_SLEEP | EMPTY_MIND | COLD_BLOOD | BASH_DOOR
 desc:The Destroyer was built by the Norse deities to be their ultimate weapon against the space gods who had arrived to judge the world. Unfortunately, the Destroyer has gone berserk and is destroying everything it sees. The mystical Destroyer is nearly indestructible, and it is said that when it uses its power of complete disintegration, the day of Ragnarok is near.
 
 name:Great Cthulhu
@@ -6999,7 +6999,7 @@ blow:BITE:EXP_40:10d10
 spells:SHRIEK | BR_SOUN | BR_LIGHT | BR_INER | BR_TIME | BR_SHAR | BR_PLAS | BR_MANA | DRAIN_MANA | HEAL | HASTE | TELE_AWAY | BLINK | TPORT | FORGET | S_MONSTERS | S_HI_DRAGON | S_AMBERITES | S_UNIQUE
 spell-freq:33
 light:1
-flags:UNIQUE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | IM_NETHER | IM_WATER | IM_PLASMA | IM_NEXUS | IM_DISEN | SMART | KILL_BODY | POWERFUL | BASH_DOOR | REGENERATE | NONLIVING | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | NO_CONF | NO_SLEEP | NO_FEAR | NO_STUN | RES_TELE
+flags:UNIQUE | FORCE_SLEEP | REFLECTING | AURA_COLD | AURA_ELEC | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | IM_NETHER | IM_WATER | IM_PLASMA | IM_NEXUS | IM_DISEN | SMART | KILL_BODY | POWERFUL | BASH_DOOR | REGENERATE | NONLIVING | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | NO_CONF | NO_SLEEP | NO_FEAR | NO_STUN | RES_TELE
 desc:The Unicorn of Order, who once stole an eye from the great Serpent of chaos, is watching the events unfold with growing distress. It regards you as a mortal meddling in the affairs of immortals, and attempts to eliminate you.
 
 name:Oberon, King of Amber
@@ -7021,7 +7021,7 @@ blow:HIT:BLIND:10d2
 spells:TPORT | SCARE | BLIND | S_DEMON | S_AINU | S_MONSTERS | TELE_TO | CONF | BO_MANA | BA_FIRE | BRAIN_SMASH | BA_NETH | BO_ICE | WOUND | BA_WATE | BO_PLAS | TELE_LEVEL | TELE_AWAY | FORGET | DARKNESS | BA_MANA | S_HI_DRAGON | S_HI_UNDEAD | S_AMBERITES | S_HI_DEMON
 spell-freq:50
 light:2
-flags:UNIQUE | QUESTOR | MALE | CAN_SPEAK | ATTR_MULTI | AMBERITE | RES_TELE | FORCE_SLEEP | FORCE_DEPTH | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | SMART | OPEN_DOOR | BASH_DOOR | MOVE_BODY | REGENERATE | EVIL | IM_FIRE | IM_COLD | IM_ELEC | POWERFUL | NO_CONF | NO_SLEEP | NO_FEAR
+flags:UNIQUE | QUESTOR | MALE | CAN_SPEAK | ATTR_MULTI | AMBERITE | RES_TELE | FORCE_SLEEP | FORCE_DEPTH | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | REFLECTING | AURA_FIRE | AURA_ELEC | SMART | OPEN_DOOR | BASH_DOOR | MOVE_BODY | REGENERATE | EVIL | IM_FIRE | IM_COLD | IM_ELEC | POWERFUL | NO_CONF | NO_SLEEP | NO_FEAR
 desc:Oberon, the father or grandfather of most Amberites, is as powerful as ever. He is afraid that you will upset the balance and will not let you harm the Serpent of Chaos. "Oberon, Lord of Amber, stood before me in his green and his gold. High, wide and thick, his beard black and shot with silver, his hair the same. Green rings in gold settings and a blade of golden color."
 
 name:The Serpent of Chaos
@@ -7043,7 +7043,7 @@ blow:TOUCH:DRAIN_CHARGES
 spells:S_MONSTERS | BR_CHAO | BA_MANA | BOULDER | BRAIN_SMASH | S_HI_DEMON | BR_NETH | HASTE | BR_MANA | S_HI_UNDEAD | S_HI_DRAGON | S_UNIQUE | S_AMBERITES | BR_POIS | BR_SHAR | WOUND
 spell-freq:33
 light:1
-flags:UNIQUE | QUESTOR | CAN_SPEAK | ATTR_MULTI | ATTR_RAND | FORCE_SLEEP | FORCE_DEPTH | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | IM_NETHER | SMART | KILL_WALL | KILL_BODY | POWERFUL | REGENERATE | NONLIVING | EVIL | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP | NO_FEAR | NO_STUN | RES_TELE
+flags:UNIQUE | QUESTOR | CAN_SPEAK | ATTR_MULTI | ATTR_RAND | FORCE_SLEEP | FORCE_DEPTH | REFLECTING | AURA_FIRE | AURA_ELEC | AURA_COLD | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | IM_NETHER | SMART | KILL_WALL | KILL_BODY | POWERFUL | REGENERATE | NONLIVING | EVIL | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP | NO_FEAR | NO_STUN | RES_TELE
 desc:The Big Boss himself. Before the universe the Serpent was. The Unicorn of Order fought with Serpent and stole one of its eyes, known as the Jewel of Judgement. With the Jewel, Dworkin drew the Pattern and thus gave birth to the infinite worlds of shadow. Now the balance has been disrupted, the Pattern damaged, and all the shadow is being absorbed by the Serpent. Unless it is stopped, the word as we know it will come to an end, all order reverting to Primal Chaos.
 
 name:quantum dot
@@ -7086,7 +7086,7 @@ blow:TOUCH:LOSE_ALL:10d10
 blow:TOUCH:EXP_80:10d10
 spells:BR_NETH | BR_TIME | BA_MANA | BO_MANA | WOUND | HEAL | S_DEMON | S_HI_UNDEAD | S_HI_DRAGON | TPORT
 spell-freq:50
-flags:UNIQUE | FORCE_SLEEP | NEVER_MOVE | ONLY_ITEM | DROP_60 | DROP_GOOD | DROP_GREAT | INVISIBLE | COLD_BLOOD | SMART | EMPTY_MIND | REGENERATE | POWERFUL | EVIL | DEMON | NONLIVING | IM_ACID | IM_ELEC | IM_FIRE | IM_COLD | IM_POIS | RES_TELE | IM_NETHER | IM_WATER | IM_PLASMA | IM_NEXUS | IM_DISEN | NO_FEAR | NO_CONF | NO_STUN | NO_SLEEP
+flags:UNIQUE | FORCE_SLEEP | NEVER_MOVE | ONLY_ITEM | DROP_60 | DROP_GOOD | DROP_GREAT | REFLECTING | INVISIBLE | COLD_BLOOD | SMART | EMPTY_MIND | REGENERATE | POWERFUL | AURA_FIRE | EVIL | DEMON | NONLIVING | IM_ACID | IM_ELEC | IM_FIRE | IM_COLD | IM_POIS | RES_TELE | IM_NETHER | IM_WATER | IM_PLASMA | IM_NEXUS | IM_DISEN | NO_FEAR | NO_CONF | NO_STUN | NO_SLEEP
 desc:It is a ring of immense power.  You can hardly believe you've finally found the One Ring!
 
 name:lourph
@@ -7127,7 +7127,7 @@ blow:TOUCH:LOSE_ALL:13d13
 blow:TOUCH:CONFUSE:13d13
 spells:HEAL
 spell-freq:20
-flags:NEVER_MOVE | STUPID | NONLIVING | COLD_BLOOD | EMPTY_MIND | REGENERATE | KILL_BODY | EVIL | DEMON | IM_ELEC | IM_FIRE | IM_POIS | RES_TELE | IM_NETHER | IM_WATER | IM_PLASMA | IM_NEXUS | IM_DISEN | NO_FEAR | NO_CONF | NO_STUN | NO_SLEEP
+flags:NEVER_MOVE | STUPID | NONLIVING | COLD_BLOOD | EMPTY_MIND | REGENERATE | KILL_BODY | AURA_COLD | EVIL | DEMON | IM_ELEC | IM_FIRE | IM_POIS | RES_TELE | IM_NETHER | IM_WATER | IM_PLASMA | IM_NEXUS | IM_DISEN | NO_FEAR | NO_CONF | NO_STUN | NO_SLEEP
 desc:A thing like a massive, jet black oyster with four groping tendrils. Born of nether, it need not chase its prey, content to seeth in the darkness until some unfortunate creature wanders too close.
 
 name:culverin
@@ -7301,7 +7301,7 @@ blow:HIT:LOSE_ALL:50d100
 spells:HOLD
 spell-freq:10
 light:2
-flags:RAND_25 | EMPTY_MIND | FORCE_SLEEP | REGENERATE | BASH_DOOR | KILL_BODY | NONLIVING | IM_ACID | IM_ELEC | IM_FIRE | IM_COLD | IM_POIS | RES_TELE | IM_NETHER | IM_WATER | IM_PLASMA | IM_DISEN | NO_FEAR | NO_STUN | NO_CONF | NO_SLEEP
+flags:RAND_25 | EMPTY_MIND | REFLECTING | FORCE_SLEEP | REGENERATE | AURA_ELEC | BASH_DOOR | KILL_BODY | NONLIVING | IM_ACID | IM_ELEC | IM_FIRE | IM_COLD | IM_POIS | RES_TELE | IM_NETHER | IM_WATER | IM_PLASMA | IM_DISEN | NO_FEAR | NO_STUN | NO_CONF | NO_SLEEP
 desc:A swirling, rotating red disk.  A funnel thrusts out, seeking the one who disturbed the Pattern.
 
 name:storm troll
@@ -7469,7 +7469,7 @@ blow:BITE:ELEC:1d10
 spells:HEAL
 spell-freq:10
 friends:100:2d6:Same
-flags:ANIMAL | IM_ELEC | EVIL
+flags:ANIMAL | IM_ELEC | AURA_ELEC | EVIL
 desc:A feline surrounded by a strange energy.
 
 name:iridescent worm mass

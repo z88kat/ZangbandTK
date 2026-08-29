@@ -67,6 +67,10 @@ BLESSED = "BLESSED"
 VAMPIRIC = "VAMPIRIC"
 VORPAL = "VORPAL"
 CHAOTIC = "CHAOTIC"
+# And the wearer's side of the monster auras and reflection — see src/mon-aura.c.
+REFLECT = "REFLECT"
+SH_FIRE = "SH_FIRE"
+SH_ELEC = "SH_ELEC"
 # Zangband treats these as resistances; 4.2 as protections, and as flags.
 RES_BLIND = "PROT_BLIND"
 RES_CONF = "PROT_CONF"
@@ -185,9 +189,6 @@ TUNNEL = "TUNNEL"
 # ---------------------------------------- ego flags needing implementation
 
 [implement_ego]
-REFLECT = { milestone = "M3", note = "Reflects bolt spells back at the caster. Pairs with the monster REFLECTING flag, which is queued in flagmap.toml — both want one implementation." }
-SH_FIRE = { milestone = "M3", note = "Fiery aura damaging melee attackers. Pairs with the monster AURA_FIRE flag." }
-SH_ELEC = { milestone = "M3", note = "Electric aura damaging melee attackers. Pairs with the monster AURA_ELEC flag." }
 GHOUL_TOUCH = { milestone = "M3", note = "Paralysing touch. The entire identity of the (Ghoul Touch) ego." }
 
 [defer_ego]

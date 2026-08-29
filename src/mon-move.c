@@ -205,6 +205,23 @@ static bool monster_hates_grid(struct monster *mon, struct loc grid)
 		return true;
 	}
 
+	/*
+	 * And a burning thing will not wade in (ZangbandTK, CNT-04).  The part of
+	 * AURA_FIRE nobody would guess from the name: Zangband's cave_passable_mon()
+	 * returns a move chance of zero for shallow water, so a fire aura is a
+	 * movement restriction as well as a weapon
+	 * ([melee2.c:311](../archive/zangband/src/melee2.c#L311)).  It was dead
+	 * weight in a game whose only water was a vault decoration; here there is a
+	 * sea, and a coastline is somewhere a fire elemental will not follow you.
+	 *
+	 * Only the shallows, as in the original.  Deep water is already refused
+	 * above for anything that cannot swim.
+	 */
+	if (rf_has(mon->race->flags, RF_AURA_FIRE) &&
+		square_iswater(cave, grid)) {
+		return true;
+	}
+
 	return false;
 }
 

@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "effects.h"
 #include "init.h"
+#include "mon-aura.h"
 #include "mon-desc.h"
 #include "mon-predicate.h"
 #include "mon-util.h"
@@ -803,6 +804,11 @@ static const project_player_handler_f player_handlers[] = {
  *
  * We assume the player is aware of some effect, and always return "true".
  */
+/**
+ * Whether we are already inside a reflected bolt (ZangbandTK, CNT-09).
+ */
+static bool reflecting = false;
+
 bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 			   int power, bool self)
 {
@@ -846,6 +852,33 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 
 		case SRC_MONSTER: {
 			struct monster *mon = cave_monster(cave, origin.which.monster);
+			struct loc bounce;
+
+			/*
+			 * ZangbandTK (CNT-09): a bolt may come straight back off the
+			 * player.  Only a bolt -- a ball or a breath has a radius and
+			 * cannot be reflected -- and it fails one time in ten.  It does
+			 * not return to the caster but to a grid beside it, which is why
+			 * a reflected bolt so often misses the thing that fired it.
+			 *
+			 * `reflecting` stops the bounce being bounced again: without it
+			 * two reflectors facing each other would volley until the stack
+			 * ran out.
+			 */
+			if (!reflecting && aura_bolt_reflects(player_of_has(player,
+					OF_REFLECT), r)) {
+				equip_learn_flag(player, OF_REFLECT);
+				msg(blind ? "Something bounces!" : "The attack bounces!");
+
+				if (aura_reflect_target(mon->grid, &bounce)) {
+					reflecting = true;
+					project(source_player(), 0, bounce, dam, typ,
+							PROJECT_STOP | PROJECT_KILL, 0, 0, NULL);
+					reflecting = false;
+				}
+
+				return true;
+			}
 
 			/* Check it is visible */
 			if (!monster_is_visible(mon))

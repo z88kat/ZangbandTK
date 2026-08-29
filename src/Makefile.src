@@ -196,6 +196,7 @@ ANGFILES0 = \
 	load.o \
 	message.o \
 	mon-attack.o \
+	mon-aura.o \
 	mon-blows.o \
 	mon-desc.o \
 	mon-group.o \

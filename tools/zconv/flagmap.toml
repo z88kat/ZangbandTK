@@ -133,22 +133,6 @@ flags = ["FRIENDLY"]
 
 # ------------------------------------------------------------- implement
 
-[implement.REFLECTING]
-milestone = "M2"
-note = "Reflects bolt spells back at the caster. Affects 22 monsters."
-
-[implement.AURA_FIRE]
-milestone = "M2"
-note = "Damages melee attackers with fire."
-
-[implement.AURA_COLD]
-milestone = "M2"
-note = "Damages melee attackers with cold."
-
-[implement.AURA_ELEC]
-milestone = "M2"
-note = "Damages melee attackers with electricity."
-
 [implement.SHAPECHANGER]
 milestone = "M3"
 note = "Monster changes appearance at random. 4.2 has player shapes only."

@@ -986,3 +986,32 @@ type-mult:gloves:0
 type-mult:boots:0
 msg:Your {name} writhes with chaos!
 desc:Unleashes a random effect of chaos on those it strikes
+
+# ZangbandTK (CNT-09): the wearer's side of the monster auras and reflection.
+# See src/mon-aura.c.  Misc abilities rather than melee properties -- they are
+# worn and they answer what strikes you, so they belong on armour rather than
+# on a weapon.
+
+name:reflection
+type:flag
+subtype:misc ability
+id-type:on effect
+code:REFLECT
+power:10
+desc:Bounces bolt spells back at whoever cast them
+
+name:fiery aura
+type:flag
+subtype:misc ability
+id-type:on effect
+code:SH_FIRE
+power:8
+desc:Burns those who strike you in melee
+
+name:electric aura
+type:flag
+subtype:misc ability
+id-type:on effect
+code:SH_ELEC
+power:8
+desc:Shocks those who strike you in melee

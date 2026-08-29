@@ -1054,6 +1054,62 @@ void lore_append_movement(textblock *tb, const struct monster_race *race,
  * \param known_flags is the preprocessed bitfield of race flags known to the
  *        player.
  */
+/**
+ * Auras and reflection (ZangbandTK, CNT-04).
+ *
+ * Described in prose rather than added to the list of one-word properties,
+ * because that is how Zangband said it and because "surrounded by flames" tells
+ * a player what to expect in a way that "fire" in a list does not
+ * ([monster1.c:619](../archive/zangband/src/monster1.c#L619)).  The pairings are
+ * the original's: fire and lightning together, ice and lightning together, and
+ * each on its own.
+ */
+void lore_append_aura(textblock *tb, const struct monster_race *race,
+					  const struct monster_lore *lore,
+					  bitflag known_flags[RF_SIZE])
+{
+	monster_sex_t msex = MON_SEX_NEUTER;
+	const char *pronoun;
+	bool fire, cold, elec;
+
+	assert(tb && race && lore);
+
+	msex = lore_monster_sex(race);
+	pronoun = lore_pronoun_nominative(msex, true);
+
+	fire = rf_has(known_flags, RF_AURA_FIRE);
+	cold = rf_has(known_flags, RF_AURA_COLD);
+	elec = rf_has(known_flags, RF_AURA_ELEC);
+
+	if (fire && elec) {
+		textblock_append(tb, "%s is surrounded by ", pronoun);
+		textblock_append_c(tb, COLOUR_YELLOW, "flames and electricity");
+		textblock_append(tb, ".  ");
+	} else if (cold && elec) {
+		textblock_append(tb, "%s is surrounded by ", pronoun);
+		textblock_append_c(tb, COLOUR_YELLOW, "ice and electricity");
+		textblock_append(tb, ".  ");
+	} else if (fire) {
+		textblock_append(tb, "%s is surrounded by ", pronoun);
+		textblock_append_c(tb, COLOUR_YELLOW, "flames");
+		textblock_append(tb, ".  ");
+	} else if (cold) {
+		textblock_append(tb, "%s is surrounded by ", pronoun);
+		textblock_append_c(tb, COLOUR_YELLOW, "ice");
+		textblock_append(tb, ".  ");
+	} else if (elec) {
+		textblock_append(tb, "%s is surrounded by ", pronoun);
+		textblock_append_c(tb, COLOUR_YELLOW, "electricity");
+		textblock_append(tb, ".  ");
+	}
+
+	if (rf_has(known_flags, RF_REFLECTING)) {
+		textblock_append(tb, "%s ", pronoun);
+		textblock_append_c(tb, COLOUR_YELLOW, "reflects bolt spells");
+		textblock_append(tb, ".  ");
+	}
+}
+
 void lore_append_toughness(textblock *tb, const struct monster_race *race,
 						   const struct monster_lore *lore,
 						   bitflag known_flags[RF_SIZE])

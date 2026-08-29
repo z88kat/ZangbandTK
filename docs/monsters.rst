@@ -111,6 +111,32 @@ It applies to every way the game has of moving a monster against its will — th
 teleport-other effects, the blink a nexus attack causes, and the shove of a
 gravity attack — so there is no side door.
 
+Things it is a mistake to touch
+-------------------------------
+
+Fifty-nine of the imported monsters are wrapped in something. Strike one in
+melee and it answers: ``You are suddenly very hot!``, ``very cold``, or ``You
+get zapped!``, and the damage rises with how big the monster is and how deep it
+lives. Immunity to the element stops it dead; resistance only blunts it. Some
+carry two at once, and the recall says so — *surrounded by flames and
+electricity*.
+
+The one thing worth knowing before you meet a coast: **a monster wrapped in fire
+will not enter water**. Not the deep sea and not the shallows. It is the oldest
+tactical fact in this game that Zangband wrote down and never got to use, having
+no water worth the name; here there is a shoreline, and stepping into it is a
+way to break off a fight you are losing.
+
+Twenty-two others reflect bolt spells. Not balls, not breaths — a single bolt,
+and about nine times in ten. The bolt does not come back at you: it goes to a
+grid *beside* you, so it may well miss, and it may equally well hit something
+standing next to you.
+
+You can have all three yourself. A shield **of Reflection**, a cloak **of
+Immolation** or **of Electricity** does for a monster exactly what the monster's
+aura does to you, on the same terms — a monster immune to the element shrugs it
+off, and your reflected bolt scatters beside whatever cast it.
+
 How dangerous are they?
 -----------------------
 
@@ -140,13 +166,15 @@ make three more of those possible:
 Not yet implemented
 -------------------
 
-Some imported monsters carry abilities that are recorded but not yet active:
-reflecting bolt spells and damaging auras. Monsters possessing them behave as
-though they do not.
+Two imported abilities are recorded but not yet active: changing shape at
+random, and teleporting erratically when watched. Between them they affect six
+monsters, and those monsters behave as though they do not have them.
 
-A further group of abilities depends on the wilderness, which does not exist
-yet: which terrain a monster prefers, which dungeons it inhabits, and whether it
-can fly or swim.
+Zangband also tagged every monster with the terrain it prefers and the dungeons
+it belongs in. Those tags are unused here, because this game decides both
+questions a different way — a dungeon lists the *kinds* of creature that live in
+it, and a fish is kept in the water by being a fish. The tags are recorded
+against the monsters rather than thrown away, in case that ever changes.
 
 Things that live in the water
 -----------------------------

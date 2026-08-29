@@ -25,6 +25,7 @@
 #include "effects.h"
 #include "init.h"
 #include "mon-attack.h"
+#include "mon-aura.h"
 #include "mon-blows.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
@@ -648,6 +649,16 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 				damage = context.damage;
 			} else {
 				msg("ERROR: Effect handler not found for %s.", effect->name);
+			}
+
+			/*
+			 * ZangbandTK (CNT-09): the wearer's own aura answers a blow that
+			 * landed.  After the effect, so the monster's attack is described
+			 * before the burn it earned, and only while the player lives --
+			 * armour on a corpse does not retaliate.
+			 */
+			if (!p->is_dead) {
+				player_aura_touch(p, mon);
 			}
 
 			/* Don't cut or stun if player is dead */

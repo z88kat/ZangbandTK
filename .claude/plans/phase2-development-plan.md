@@ -110,6 +110,11 @@ rebuild. Manual chapter: how balance differs from both ancestors.
   kind, the `S_AMBERITES` summon and the blood curse a dying one lays on its killer.
 - CNT-06 to CNT-09 — artifacts and ego items, translated into 4.2's `object_property`,
   `brand`, `slay` and `curse` structures.
+- **The M2 flag group is closed.** `AMBERITE`, `CAN_SPEAK`, `RES_TELE`, `REFLECTING` and
+  the three auras are implemented, and with them the ego flags `REFLECT`, `SH_FIRE` and
+  `SH_ELEC` — the same three mechanisms seen from the wearer's side, which is why they were
+  built together. Nothing tagged M2 remains in `flagmap.toml` or `objflagmap.toml`; what is
+  left in either is M3 (`SHAPECHANGER`, `QUANTUM`, `GHOUL_TOUCH`).
 - CNT-11 — remaining Zangband-only objects.
 - Theme-first curation throughout, per DEC-19.
 

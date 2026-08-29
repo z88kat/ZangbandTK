@@ -1,1 +1,1 @@
-TESTPROGS += monster/amberite monster/attack monster/desc monster/lethality monster/monster monster/restele monster/speech
+TESTPROGS += monster/amberite monster/attack monster/aura monster/desc monster/lethality monster/monster monster/restele monster/speech

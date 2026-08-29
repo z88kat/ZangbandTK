@@ -55,4 +55,12 @@ OF(MULTIPLY_WEIGHT, "MulWg")
 OF(VAMPIRIC, " Vamp")
 OF(VORPAL, "Vorpl")
 OF(CHAOTIC, "Chaos")
+/*
+ * ZangbandTK (CNT-09): the wearer's side of the monster flags above.  Appended
+ * for the same reason -- object flags are written to the savefile as a bitfield
+ * and an inserted one would shift every flag after it.
+ */
+OF(REFLECT, "Reflc")
+OF(SH_FIRE, "ShFir")
+OF(SH_ELEC, "ShElc")
 OF(MAX, "")

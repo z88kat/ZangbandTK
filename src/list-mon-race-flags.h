@@ -112,4 +112,14 @@ RF(CAN_SPEAK,	RFT_OBV,		"")
  * lore stores known flags by position.
  */
 RF(RES_TELE,	RFT_PROT,		"teleported")
+/*
+ * ZangbandTK (CNT-04).  Bolts bounce off it, and it burns, freezes or shocks
+ * whoever touches it.  RFT_NOTE because the lore describes them in prose --
+ * "surrounded by flames" -- rather than in a list of one-word properties.
+ * Appended, like the three above, because lore stores flags by position.
+ */
+RF(REFLECTING,	RFT_NOTE,		"")
+RF(AURA_FIRE,	RFT_NOTE,		"")
+RF(AURA_COLD,	RFT_NOTE,		"")
+RF(AURA_ELEC,	RFT_NOTE,		"")
 /* end flags */

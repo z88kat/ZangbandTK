@@ -24,6 +24,7 @@
 #include "game-input.h"
 #include "generate.h"
 #include "init.h"
+#include "mon-aura.h"
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"
@@ -1205,6 +1206,16 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 			effect_simple(EF_HEAL_HP, source_player(), format("%d", drain),
 						  0, 0, 0, 0, 0, NULL);
 		}
+	}
+
+	/*
+	 * ZangbandTK (CNT-04): some things burn, freeze or shock whoever touches
+	 * them.  Only if the blow did not kill it -- a corpse has stopped being
+	 * hot -- and after the damage, so the exchange reads in the order it
+	 * happened.
+	 */
+	if (!stop) {
+		monster_aura_touch(p, mon);
 	}
 
 	/*
