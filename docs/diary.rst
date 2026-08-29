@@ -107,7 +107,7 @@ right trade for something you reach by clicking a link.
 
 
 29 August 2026 — an empty sea, and a pointer that outlived its data
-==================================================================
+===================================================================
 
 Steven walked the coast looking for the fish I had just fixed and found none. He
 was right, and I had shipped a half-fix: I gave the aquatic monsters a proper

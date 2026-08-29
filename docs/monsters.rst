@@ -77,6 +77,21 @@ A further group of abilities depends on the wilderness, which does not exist
 yet: which terrain a monster prefers, which dungeons it inhabits, and whether it
 can fly or swim.
 
+Things that live in the water
+-----------------------------
+
+Twenty-four of the imported monsters are aquatic, drawn as ``N``, and they are
+the only creatures in the game with a place of their own to live. They are in the
+open sea and the shallows, in the flooded dungeons beneath Amber — Faiella-Bionin
+and Rebma — and nowhere else at all. A shark cannot come ashore.
+
+They arrived badly. Zangband drew its aquatic monsters with ``l`` and Angband
+draws *trees* with ``l``, so the import gave every fish, whale and kraken in the
+game the character of a tree: unable to feel fear, unable to be confused,
+regenerating, and — because dungeons choose their inhabitants by kind — living in
+the forest of Arden. That is fixed, and the fixing is why they now have a letter
+of their own.
+
 Not everything is there to be fought
 ------------------------------------
 

@@ -31,6 +31,19 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.33.1** — **The open sea, and the manual catching up with it.** The first
+  pass at populating the water only filled the shallows: deep water is damaging
+  terrain and the generator refused it outright, so the ocean proper stayed
+  empty. Deep water now names ``IM_WATER`` as the flag a creature needs to be in
+  it — exactly as lava names ``IM_FIRE`` — so fish live there and everything else
+  still keeps out. The player is unaffected; their drowning was always decided by
+  what they carry.
+
+  :doc:`wilderness` said *"nothing else can swim yet"*, which had stopped being
+  true, and :doc:`monsters` said nothing about the aquatic monsters at all. Both
+  now describe what lives in the sea, that it is never tame however orderly the
+  coast, and that the waterline is a line in both directions — a shark cannot
+  follow you onto the beach.
 - **3.33.0** — **There are fish in the sea.** Reported from play: walking the
   coast turned up nothing. It turned out the sea held nothing whatever — not just
   no fish, no monsters at all. ``wild_populate()`` asked ``square_isempty()`` of

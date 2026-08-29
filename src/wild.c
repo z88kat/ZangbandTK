@@ -3889,9 +3889,8 @@ void wild_populate(struct wilderness *w, struct player *p, struct chunk *c,
 				if (chance <= 0 || randint0(chance) != 0)
 					continue;
 
-				/* Not on the player's doorstep, and not in the fire. */
+				/* Not on the player's doorstep. */
 				if (distance(grid, p->grid) < 8) continue;
-				if (square_isdamaging(c, grid)) continue;
 
 				if (sea) {
 					/*
@@ -3901,8 +3900,9 @@ void wild_populate(struct wilderness *w, struct player *p, struct chunk *c,
 					 */
 					if (!square_is_monster_walkable(c, grid)) continue;
 					if (square_monster(c, grid)) continue;
-				} else if (!square_isempty(c, grid)) {
-					continue;
+				} else {
+					if (!square_isempty(c, grid)) continue;
+					if (square_isdamaging(c, grid)) continue;
 				}
 
 				depth = wild_danger(w, bx, by);
@@ -3922,6 +3922,19 @@ void wild_populate(struct wilderness *w, struct player *p, struct chunk *c,
 
 				race = get_mon_num(depth, depth);
 				if (!race) continue;
+
+				/*
+				 * Deep water is damaging terrain, and drowns whatever cannot
+				 * live in it.  Asked of the chosen race rather than of the
+				 * grid up front, because the open sea is exactly where the
+				 * things that can live there belong -- refusing the square
+				 * outright, which is what this did at first, left every fish
+				 * in the shallows and the whole ocean empty.
+				 */
+				if (square_isdamaging(c, grid) &&
+						!rf_has(race->flags,
+								square_feat(c, grid)->resist_flag))
+					continue;
 
 				place_new_monster(c, grid, race, one_in_(2), true, info,
 								  ORIGIN_DROP);

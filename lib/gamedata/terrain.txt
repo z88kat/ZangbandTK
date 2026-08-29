@@ -428,6 +428,12 @@ name:deep water
 graphics:~:b
 priority:9
 flags:LOS | PROJECT | PASSABLE | DEEP
+# What can be in it without drowning.  Lava names IM_FIRE the same way, and the
+# effect is the same in both directions: creatures of the water are at home in
+# the open sea, and everything else keeps out of it -- which is what makes deep
+# water a way of breaking pursuit.  The player is unaffected either way; their
+# drowning is decided by what they are carrying.
+resist-flag:IM_WATER
 look-prefix:some
 desc:Deep, open water.  You can wade in, but not while heavily laden.
 walk-msg:The water is deep, and you are carrying a great deal.  Really wade in? 

@@ -83,10 +83,15 @@ turn, for as long as you stay in — and the game asks you to confirm before you
 step in. Anything that lets you float over the ground carries you over water as
 well, at no cost and no matter what you are carrying.
 
-Nothing else can swim yet. Monsters treat deep water as terrain that will kill
-them and keep out of it, which makes water a reliable way of breaking pursuit.
-Zangband's swimming and aquatic monsters are recorded against the imported
-bestiary and waiting on the flag to drive them.
+**Most things cannot follow you in.** Deep water drowns whatever is not built for
+it, and a monster that would drown keeps out — so wading is a reliable way of
+breaking pursuit from almost anything that walks. Almost: a few dozen creatures
+are at home in water and will come after you, and everything that lives in the
+sea is already there.
+
+Nothing that swims can come ashore, either. A shark cannot follow you onto the
+beach any more than a wolf can follow you into the deep, so the waterline is a
+line both ways.
 
 Rivers and lakes
 ----------------
@@ -159,6 +164,20 @@ night than by day.
 The town's own people stay in the town. Beggars, drunks, urchins and the like
 belong to the streets they were born on, and you will not meet them ten miles
 from anywhere.
+
+**The sea is inhabited too**, and by its own kind. Piranha and swordfish in the
+shallows, then barracuda, hammerheads and white sharks, and out in the deep the
+things that eat those: killer whales, giant squid and the krakens. They keep to
+the water and nothing else keeps to it with them.
+
+Two things about the sea are not like the land. It is never tame — the danger of
+open water does not fall away near an orderly coast, because law is a measure of
+how well a country is policed and nobody polices the sea. And it is never empty
+in the way a waste is: the emptiness of the land is measured by what it can grow,
+which says nothing about what swims.
+
+None of it can reach you on the sand. The sea is dangerous to enter, not
+dangerous to stand beside.
 
 Monsters cannot swim, so deep water is a reliable way of breaking pursuit.
 
