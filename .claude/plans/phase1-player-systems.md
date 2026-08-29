@@ -146,13 +146,30 @@ race and class.
 
 ### 2.5 Virtues — no analogue in 4.2
 
-18 virtues ([defines.h:4923](../../archive/zangband/src/defines.h#L4923)): Compassion,
-Honour, Justice, Sacrifice, Knowledge, Faith, Enlightenment, Enchantment, Chance, Nature,
-Harmony, Vitality, Unlife, Patience, Temperance, Diligence, Valour, Individualism.
+A pool of 18 virtues ([defines.h:4923](../../archive/zangband/src/defines.h#L4923)):
+Compassion, Honour, Justice, Sacrifice, Knowledge, Faith, Enlightenment, Mysticism, Chance,
+Nature, Harmony, Vitality, Unlife, Patience, Temperance, Diligence, Valour, Individualism.
+
+Slot 8 is *Mysticism*, which is the string a player saw
+([avatar.c:30](../../archive/zangband/src/avatar.c#L30)); its constant is `V_ENCHANT`
+([defines.h:4930](../../archive/zangband/src/defines.h#L4930)). This document previously
+listed the constant name.
+
+**A character carries eight of the eighteen, not all of them.** `MAX_PLAYER_VIRTUES` is 8
+against `MAX_VIRTUE` 18 ([defines.h:4942](../../archive/zangband/src/defines.h#L4942)), and
+`get_virtues()` fills the eight slots by class, then race, then each realm, deduplicates
+them, and pads whatever is left with weighted-random draws. A Chaos-Warrior gets Chance and
+Individualism; a Monk gets Faith, Harmony, Temperance and Patience; an Amberite gets Honour;
+a Yeek gets Sacrifice. Which virtues a character has is part of who they are.
 
 Only 412 lines, but the accounting is invasive: virtues move in response to kills, spell
-use, item use and other actions scattered across the codebase. The cost is in the call
-sites, not the module.
+use, item use and other actions scattered across the codebase — **168 `chg_virtue()` call
+sites across 18 files**. The cost is in the call sites, not the module.
+
+> **Zangband never read them.** Outside `avatar.c` nothing in 2.7.5-pre1 branches on a
+> virtue value: 168 writers, zero gameplay readers, and the knowledge-menu display commented
+> out. See DEC-39, which records the decision to keep virtues anyway and what that commits
+> us to.
 
 ### 2.6 Pets — the highest-risk item in the project
 
@@ -280,9 +297,15 @@ powers from PLR-02.
 `spoilers/mutation.txt` (DEC-16): the Chaos *Polymorph Self* spell; the Polymorph Self
 mutation itself; failing a Chaos spell; failing a Death spell from the Necronomicon; being
 hit by Chaos or Toxic Waste without chaos resistance; a Chaos Patron's level-up reward; the
-"Chaos deities give you gifts" mutation; being sanity-blasted by an Eldritch Horror
-(CNT-17); and being a Beastman (PLR-36). Rationale: mutations are meant to arrive through
-chaos exposure, not from a generic random source — the delivery mechanism is the flavour.
+"Chaos deities give you gifts" mutation; and being a Beastman (PLR-36). Rationale: mutations
+are meant to arrive through chaos exposure, not from a generic random source — the delivery
+mechanism is the flavour.
+
+> **One documented path is deliberately absent.** Zangband also granted mutations on being
+> sanity-blasted by an Eldritch Horror. That path went with CNT-17, dropped by DEC-32 and
+> confirmed closed by the project owner: sanity is not being implemented, and it is not part
+> of the Amber chronicles. The remaining eight paths are all chaos exposure of one kind or
+> another, which is the flavour this requirement is actually about.
 
 **PLR-35 — Mutations are removed only through the documented paths:** a potion of New Life,
 the Trump *Shuffle* spell, acquiring a cancelling mutation (PLR-37), the mutation-removal
@@ -372,17 +395,28 @@ reintroduce CNT-17 by the back door — no insanity, no amnesia, no mutation tri
 
 ### Virtues
 
-**PLR-18 — The 18 virtues are tracked per character** (§2.5).
+**PLR-18 — Each character tracks 8 virtues, drawn from a pool of 18** (§2.5), selected at
+birth by class, then race, then realm, deduplicated and padded with weighted-random draws.
+The selection mechanism is part of the feature, not an implementation detail: which virtues
+a character has distinguishes it as much as the values do. Corrected by DEC-39 — this
+requirement previously said all 18 were tracked, which the source does not support.
 
 **PLR-19 — Virtue values change in response to player actions** — kills, spell use, item
 use, quest outcomes.
 
 **PLR-20 — Virtues are displayed to the player** and persist in the savefile.
 
-**PLR-21 — At least one system consumes virtues.** Rationale: tracked-but-inert numbers are
-not a feature. Zangband ties virtues to Chaos-Warrior patron behaviour and some artifact and
-spell outcomes; if none of those consumers land, PLR-18 to PLR-20 should be cut rather than
-shipped as decoration.
+**PLR-21 — At least one system reads a virtue value and behaves differently because of it.**
+Rationale: tracked-but-inert numbers are not a feature. **If nothing consumes virtues,
+PLR-18 to PLR-20 are cut rather than shipped as decoration** — the gate is on any consumer
+at all, not on a particular one.
+
+> This requirement previously named three consumers — Chaos-Warrior patron behaviour,
+> artifact outcomes and spell outcomes — and made the cut conditional on all three failing.
+> All three were checked against the source and **none of them read virtues**; Zangband had
+> no consumers whatsoever. Restated in the general form by DEC-39, which also records the
+> decision to keep virtues and the two candidate consumers under consideration (the patron
+> ladder and the inn dream). Whatever is built is new design under DEC-30, not a port.
 
 ### Pets
 

@@ -1232,6 +1232,90 @@ an inconsistency to be designed away -- it is the shape of the Merlin cycle, and
 the patron's reaction to that ending is a thing the class can eventually say
 something about.
 
+### DEC-39 — Virtues are kept, and the consumer is ours to invent (PLR-18 to PLR-21)
+
+Confirmed by project owner: *"it's a good feature that never made it to code, so
+let's take that up."*
+
+*What the source says, and it is worse than the documentation suggested.* PLR-21
+was written as a gate -- if nothing consumes virtues, cut them rather than ship
+inert numbers -- on the assumption that Zangband had consumers to restore. It had
+none. Read against [avatar.c](../../archive/zangband/src/avatar.c) and the rest of
+2.7.5-pre1:
+
+| Question | Answer in the source |
+|---|---|
+| Writers | **168** `chg_virtue()` call sites across 18 files -- `effects.c` 32, `xtra2.c` 20, `cmd5.c` 19, `spells1.c` 13 |
+| Readers | **None.** Outside `avatar.c` the arrays are touched only by birth ([birth.c:1628](../../archive/zangband/src/birth.c#L1628)), the savefile ([load.c:1431](../../archive/zangband/src/load.c#L1431), [save.c:1014](../../archive/zangband/src/save.c#L1014)), three display paths, one writer ([xtra2.c:93](../../archive/zangband/src/xtra2.c#L93)), and a Lua binding |
+| Player-visible | The knowledge-menu entry is **commented out** -- *"Display virtues option is always left out"* ([cmd4.c:4214](../../archive/zangband/src/cmd4.c#L4214)) |
+| Lua | `l-player.pkg:234` exposes the arrays; no shipped script reads them, the same pattern DEC-24 found with the buildings |
+
+Nothing in the game ever branched on a virtue value. The feature was accounting
+with the display switched off, which also explains why no official document covers
+it: by the time the manuals were written there was nothing to see. There is no
+virtue spoiler among DEC-16's 34 documents.
+
+*All three consumers PLR-21 named are wrong.* The requirement said Zangband ties
+virtues to "Chaos-Warrior patron behaviour and some artifact and spell outcomes".
+`gain_level_reward()` ([xtra2.c:3093](../../archive/zangband/src/xtra2.c#L3093),
+478 lines) reads player level, the `TR_PATRON` flag, the patron index and chance,
+and contains no reference to a virtue or to alignment. `artifact.c` and the
+`spells*.c` files appear in the virtue grep only as *writers*. The documentation
+was accurate where the requirement was not: `docs/charattr.txt` says the reward
+depends on "the Patron Demon ... and chance", and `spoilers/chaospat.txt` gives the
+full selection procedure with no virtue term.
+
+*Not to be confused with alignment.* Zangband does have a consumed moral axis and
+it is not this one. `p_ptr->align` is set from the alignment of the player's pets
+([xtra1.c:3338](../../archive/zangband/src/xtra1.c#L3338)) and read to keep summons
+from bringing in their enemies
+([monster2.c:2384](../../archive/zangband/src/monster2.c#L2384)). That belongs to
+M10, not here.
+
+*The decision.* Keep virtues, and take the feature further than Zangband did. Two
+consequences to accept in the open:
+
+1. **Any consumer we add is new design under DEC-30, not restoration.** There is
+   nothing to port. That does not make it illegitimate -- DEC-30's test is whether
+   it serves the character of the thing -- but it must not be written up as
+   fidelity work, and BAL-08's habit of checking the consuming code before trusting
+   a number has nothing to check here.
+2. **The gate in PLR-21 still binds.** Keeping virtues is a commitment to building
+   a consumer, not a ruling that the gate no longer applies. If no consumer is
+   built, PLR-18 to PLR-20 still come out.
+
+*What is worth keeping exactly as it was.* The one part of the original that did
+work is the birth-time selection. A character carries **eight** virtues, not
+eighteen (`MAX_PLAYER_VIRTUES` 8 against `MAX_VIRTUE` 18,
+[defines.h:4942](../../archive/zangband/src/defines.h#L4942)), chosen by class,
+then race, then each realm, deduplicated, then padded with weighted-random draws
+(`get_virtues()`). A Chaos-Warrior gets Chance and Individualism; a Monk gets
+Faith, Harmony, Temperance and Patience; an Amberite gets Honour; a Yeek gets
+Sacrifice. Which virtues a character has is itself part of who they are, it costs
+a birth-time table, and PLR-18 has been corrected to say so.
+
+*One name corrected.* Slot 8's constant is `V_ENCHANT`
+([defines.h:4930](../../archive/zangband/src/defines.h#L4930)) but the string a
+player saw is **Mysticism** ([avatar.c:30](../../archive/zangband/src/avatar.c#L30)).
+The requirement document had taken the constant name.
+
+**Open: which system consumes virtues.** Deliberately not settled here -- it is a
+design choice rather than a finding, and both candidates are cheap enough that it
+can wait for M8 to start. Recorded so it is not rediscovered:
+
+- **The patron ladder.** `patron_roll_slot()` reads only player level today. A
+  virtue term biasing the roll fits the fiction exactly -- a Lord that watches how
+  its servant behaves -- and is a few lines. Chaos-Warriors only, so it satisfies
+  the gate for one class in twelve.
+- **The inn dream.** `player_night_dream()` (PLR-41) already derives two chances
+  from a parameter and is available to every character. A virtue term on the true-
+  and dark-dream chances is the same shape, universal, and sits well with DEC-33's
+  reading of the dream as a Trump-like vision.
+
+Whichever lands decides how many of the eighteen need to move at all. Eighteen
+counters with accounting on every kill, spell and item is most of the cost, and a
+consumer that reads four of them does not justify the other fourteen.
+
 Verification work carried into Phase 2:
 
 - Measure `struct chunk`'s memory footprint against the wilderness live-block target

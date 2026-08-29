@@ -9,5 +9,15 @@ Virtues
 
    Requirements this chapter must cover: PLR-18 to PLR-21
 
-Your conduct is tracked across eighteen virtues, which respond to how you play
-and are read by other systems in the game.
+Your character will be measured against eight virtues, chosen for it at birth
+from a pool of eighteen by its class, its race and the magic it studies, and
+shifted by how you play — what you kill, what you spend, what you leave alone.
+
+.. note::
+
+   **What virtues will be good for is not settled yet.** Zangband tracked them and
+   never read them: the values moved, and nothing in the game ever consulted one.
+   ZangbandTK keeps the feature on the condition that something does (PLR-21), and
+   DEC-39 records the candidates. This chapter says what they will do once that is
+   decided — and if nothing ends up reading them, virtues come out rather than
+   ship as decoration.

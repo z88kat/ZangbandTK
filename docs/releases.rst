@@ -15,9 +15,11 @@ Release log
 
 .. _Releases page: https://github.com/z88kat/ZangbandTK/releases
 
-Development is tracked by milestone. **M0 to M4 are complete** and M5 is under
-way; see :doc:`features` for what that adds up to in the game, and for what the
-rest of M5 onward will bring.
+Development is tracked by milestone. **M0 to M6 are complete** — which is all of
+Phase 2's world work — and **M7 is done but for two classes**, the Warrior-Mage
+and the High-Mage, which are defined by their choice of magic realm and so wait
+for M9. **M8, mutations and virtues, is next.** See :doc:`features` for what that
+adds up to in the game, and for what the rest will bring.
 
 Version numbers move with the work — patch for a fix, minor for a feature,
 bumped in the commit that does it — so a build can be identified from its title
@@ -28,8 +30,8 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
-M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
-----------------------------------------------------------------
+M7: races and classes — 25 to 29 August 2026
+----------------------------------------------
 
 - **3.33.0** — **There are fish in the sea.** Reported from play: walking the
   coast turned up nothing. It turned out the sea held nothing whatever — not just
@@ -241,6 +243,10 @@ M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
   nearly every race's experience cost to 120. Zangband's costs are kept, which is
   what makes an Amberite dear at 225 and a Half-Titan the most expensive thing
   you can be born as at 255.
+
+M6: quests — 24 to 25 August 2026
+-----------------------------------
+
 - **3.26.1** — The features page said the platform was **macOS on Apple
   Silicon**, full stop, which has not been true for some time: the game is built
   and packaged for Windows, Linux, DOS, the Nintendo DS and the 3DS as well, and
@@ -410,6 +416,10 @@ M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
   winning now counts only the quests the game ends on, because "you have no
   outstanding quests" stops meaning "you have finished the game" the moment a
   townsman can give you an errand.
+
+M5: towns, roads and dungeons — 19 to 24 August 2026
+------------------------------------------------------
+
 - **3.18.0** — **The Unicorn of Amber.** Silver-white, watching you with an
   interest you have not earned, and always about to leave — there is one of her
   in the world. Walk into her and she makes you whole: not your wounds only, but
