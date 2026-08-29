@@ -106,6 +106,57 @@ is now the newest ZangbandTK in existence and the least settled — which is the
 right trade for something you reach by clicking a link.
 
 
+29 August 2026 — an empty sea, and a pointer that outlived its data
+==================================================================
+
+Steven walked the coast looking for the fish I had just fixed and found none. He
+was right, and I had shipped a half-fix: I gave the aquatic monsters a proper
+base and put them in two dungeons, and never once asked whether anything spawns
+in the wilderness sea.
+
+Nothing does. Nothing ever did. ``wild_populate()`` asks ``square_isempty()`` of
+each grid, that calls ``square_isfloor()``, and neither depth of water carries
+the FLOOR flag — so every square of ocean in the world was refused, for every
+monster, since the day the wilderness was written. My own comment on the line
+even said "not in the sea or the fire", as though it were a decision.
+
+The fix is two passes, land and water, each with its own filter. Then three
+things in a row that were each individually reasonable and collectively made the
+sea useless:
+
+The **density** is read from the block's population, and population measures what
+the land supports. Open water scores near zero, so the ocean was the emptiest
+place in the world — twelve times emptier than farmland. It has its own figure
+now.
+
+The **danger** is derived from law, and law measures how well the country is
+policed. Nobody polices the sea. A calm bay off a lawful city came out at danger
+three, and the shallowest fish in the game is a swordfish at eight, so those
+waters were empty however long you swam in them. There is a floor now, and it is
+safe to walk past because fish cannot come ashore.
+
+And they *could* come ashore, at first. A shoal arrives through
+``place_friends()``, which scatters its members around the leader without
+knowing or caring what they are, so one piranha in ten ended up flapping on the
+beach. That check belongs in ``place_new_monster_one()``, where every path goes
+through it — summons and escorts have the same shape.
+
+The bug that cost the most, though, was mine and was three lines long:
+
+.. code-block:: c
+
+   static struct monster_base *fish = NULL;
+   if (!fish) fish = lookup_monster_base("fish");
+   return race && fish && race->base == fish;
+
+A perfectly ordinary cache. The monster data is freed and reparsed whenever the
+game reloads it, so the cached pointer outlives the thing it points at and then
+matches nothing — the filter accepted fish on the first call and none after. I
+watched an allocation table with two hundred eligible entries report zero, three
+times, before I thought to ask what was being compared rather than what was doing
+the comparing.
+
+
 29 August 2026 — sharks in the forest of Arden
 ==============================================
 

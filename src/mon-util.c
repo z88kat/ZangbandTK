@@ -143,6 +143,25 @@ struct monster_race *lookup_monster(const char *name)
 /**
  * Return the monster base matching the given name.
  */
+/**
+ * Whether this is a creature of the water (ZangbandTK).
+ *
+ * Asked of the base rather than a flag because the base is what the distinction
+ * already is: 4.2 has no aquatic flag, and adding one would mean marking two
+ * dozen monsters that already say what they are by the company they keep.
+ */
+bool monster_is_aquatic(const struct monster_race *race)
+{
+	/*
+	 * By name, and deliberately not cached.  Holding the base pointer in a
+	 * static looks like the obvious saving and is wrong: the monster data is
+	 * freed and reparsed whenever the game reloads it, so the cached pointer
+	 * outlives what it pointed at and then matches nothing at all -- which
+	 * showed up as an ocean that stayed empty however many fish were in it.
+	 */
+	return race && race->base && streq(race->base->name, "fish");
+}
+
 struct monster_base *lookup_monster_base(const char *name)
 {
 	struct monster_base *base;

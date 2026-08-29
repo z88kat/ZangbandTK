@@ -152,6 +152,7 @@ void get_mon_num_prep(bool (*get_mon_num_hook)(struct monster_race *race))
 {
 	int i;
 
+
 	/* Scan the allocation table */
 	for (i = 0; i < alloc_race_size; i++) {
 		alloc_entry *entry = &alloc_race_table[i];
@@ -1148,6 +1149,15 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 	/* Prevent monsters from being placed where they cannot walk, but allow
 	 * other feature types */
 	if (!square_is_monster_walkable(c, grid)) return false;
+
+	/*
+	 * And a fish is not put on dry land, whoever asked (ZangbandTK).  Here
+	 * rather than in the wilderness generator because that is not the only
+	 * caller: a shoal arrives through place_friends(), which scatters its
+	 * members around the leader and would happily leave one flapping on the
+	 * beach.  Summons and escorts have the same shape.
+	 */
+	if (monster_is_aquatic(race) && !square_iswater(c, grid)) return false;
 
 	/* No creation on glyphs */
 	if (square_iswarded(c, grid) || square_isdecoyed(c, grid)) return false;

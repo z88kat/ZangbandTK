@@ -192,6 +192,18 @@ static bool monster_hates_grid(struct monster *mon, struct loc grid)
 		!rf_has(mon->race->flags, square_feat(cave, grid)->resist_flag)) {
 		return true;
 	}
+
+	/*
+	 * And a shark will not come ashore (ZangbandTK).  Water is passable, so
+	 * without this a kraken would think a meadow as good as the sea and go
+	 * for a walk in it -- the terrain check above only refuses what actively
+	 * hurts, and dry land does not hurt a fish, it simply is not where a fish
+	 * belongs.
+	 */
+	if (monster_is_aquatic(mon->race) && !square_iswater(cave, grid)) {
+		return true;
+	}
+
 	return false;
 }
 

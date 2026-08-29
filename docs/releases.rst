@@ -31,6 +31,21 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.33.0** — **There are fish in the sea.** Reported from play: walking the
+  coast turned up nothing. It turned out the sea held nothing whatever — not just
+  no fish, no monsters at all. ``wild_populate()`` asked ``square_isempty()`` of
+  each grid, that asks for a floor, and neither depth of water carries the FLOOR
+  flag, so every square of ocean was refused. The wilderness now populates in two
+  passes, land and water, each drawing from its own kind.
+
+  Three things had to be true for it to feel right. The sea has **a density of
+  its own**, because the population parameter measures what the *land* supports
+  and left open water the emptiest place in the world. It has **a danger floor**,
+  because danger derives from how well the country is policed and nobody polices
+  the sea — a calm bay off a lawful city had nothing in it, the shallowest fish
+  being a swordfish at depth eight. And **fish cannot leave the water**, whether
+  by swimming ashore or by being scattered there as a shoal, so a character who
+  stays on the sand is in no danger at all.
 - **3.32.1** — **Sharks are no longer trees.** Zangband drew its aquatic
   monsters with ``l`` and Angband draws trees with ``l``, so the import gave
   every fish, shark, whale, squid and kraken in the game the tree's base — and a

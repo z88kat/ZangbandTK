@@ -4657,6 +4657,75 @@ static int test_a_patron_waits_until_the_level_is_settled(void *state) {
 }
 
 /**
+ * There are fish in the sea, and only fish.
+ *
+ * The sea used to hold nothing whatever.  wild_populate() asked
+ * square_isempty() of each grid, that asks square_isfloor(), and neither depth
+ * of water carries the FLOOR flag -- so every square of ocean was refused, and
+ * a player could walk a coastline for an hour and meet nothing.  It was not
+ * even specific to fish; the whole sea was sterile.
+ */
+static int test_the_sea_has_fish_in_it(void *state) {
+	struct monster_base *fish = lookup_monster_base("fish");
+	struct loc coast, grid;
+	int water = 0, on_water = 0, aquatic = 0, land_in_sea = 0, tries;
+
+	notnull(fish);
+	require(wild_find_coast(wild, loc(player->grid.x + player->wild_offset.x,
+									  player->grid.y + player->wild_offset.y),
+							60, &coast));
+
+	/*
+	 * Populate the shoreline repeatedly.  One window is a small sample and the
+	 * spawn is deliberately sparse, so this counts over several.
+	 */
+	for (tries = 0; tries < 25; tries++) {
+		struct loc offset;
+		struct chunk *c;
+
+		player->wild_grid = coast;
+		c = wild_surface(wild, player, player->wild_grid, &offset);
+		notnull(c);
+
+		wild_populate(wild, player, c, offset);
+
+		for (grid.y = 0; grid.y < c->height; grid.y++)
+			for (grid.x = 0; grid.x < c->width; grid.x++) {
+				struct monster *mon = square_monster(c, grid);
+
+				if (square_iswater(c, grid)) water++;
+				if (!mon) continue;
+
+				if (square_iswater(c, grid)) {
+					on_water++;
+					if (mon->race->base == fish) aquatic++;
+				} else if (mon->race->base == fish) {
+					land_in_sea++;
+				}
+			}
+
+		cave_free(c);
+	}
+
+	printf("SEA %d water grids, %d monsters on them, %d of those fish\n",
+		   water, on_water, aquatic);
+
+	/* The shoreline really is one. */
+	require(water > 100);
+
+	/* Something lives out there now. */
+	require(on_water > 0);
+
+	/* And everything out there is a fish... */
+	eq(on_water, aquatic);
+
+	/* ...while no fish is flopping about on the grass. */
+	eq(land_in_sea, 0);
+
+	ok;
+}
+
+/**
  * A shark is not a tree.
  *
  * Zangband drew its aquatic monsters with 'l' and Angband 4.2 draws trees with
@@ -5629,6 +5698,7 @@ struct test tests[] = {
 	{ "thirteen-is-an-unlucky-level", test_thirteen_is_an_unlucky_level },
 	{ "a-power-that-needs-a-number-has-one", test_a_power_that_needs_a_number_has_one },
 	{ "a-shark-is-not-a-tree", test_a_shark_is_not_a_tree },
+	{ "the-sea-has-fish-in-it", test_the_sea_has_fish_in_it },
 	{ "a-patron-waits-until-the-level-is-settled", test_a_patron_waits_until_the_level_is_settled },
 
 	{ NULL, NULL }

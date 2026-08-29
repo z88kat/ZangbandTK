@@ -31,6 +31,7 @@
 #include "generate.h"
 #include "init.h"
 #include "mon-make.h"
+#include "mon-util.h"
 #include "obj-pile.h"
 #include "obj-util.h"
 #include "player.h"
@@ -3784,6 +3785,22 @@ int wild_density(struct wilderness *w, int x, int y)
 }
 
 /**
+ * How much life open water carries, as the divisor on the rarity roll.
+ *
+ * Chosen to put the sea somewhere between poor and good farmland rather than
+ * below the bare mountains, which is where reading it off the population
+ * parameter had left it.
+ */
+#define WILD_SEA_DENSITY 24
+
+/**
+ * And how dangerous, at the least.  The shallowest aquatic monster the game has
+ * is a swordfish at eight; below that the sea is empty however much of it there
+ * is.
+ */
+#define WILD_SEA_DEPTH 8
+
+/**
  * Keep the townspeople in the town.
  *
  * Angband's depth-zero monsters are the town's own: beggars, drunks, urchins,
@@ -3793,7 +3810,20 @@ int wild_density(struct wilderness *w, int x, int y)
  */
 static bool wild_monster_ok(struct monster_race *race)
 {
-	return race->level > 0;
+	return race->level > 0 && !monster_is_aquatic(race);
+}
+
+/**
+ * And keep everything else out of the sea.
+ *
+ * The counterpart to the above: a water grid takes fish and nothing else.  Two
+ * passes with two filters rather than one pass deciding per grid, because
+ * get_mon_num_prep() rebuilds the whole allocation table and doing that once
+ * per square of ocean would be absurd.
+ */
+static bool wild_water_monster_ok(struct monster_race *race)
+{
+	return race->level > 0 && monster_is_aquatic(race);
 }
 
 /**
@@ -3819,34 +3849,84 @@ void wild_populate(struct wilderness *w, struct player *p, struct chunk *c,
 		z_info->wild_mon_rarity_day : z_info->wild_mon_rarity_night;
 	struct monster_group_info info = { 0, 0 };
 	struct loc grid;
+	int pass;
 
-	get_mon_num_prep(wild_monster_ok);
+	/*
+	 * Twice: once over the land and once over the water.  The sea used to be
+	 * empty of everything, because square_isempty() is false for water -- it
+	 * asks for a floor, and neither depth of water carries the FLOOR flag --
+	 * so a player could walk a coastline for an hour and meet nothing at all.
+	 */
+	for (pass = 0; pass < 2; pass++) {
+		bool sea = (pass == 1);
 
-	for (grid.y = 0; grid.y < c->height; grid.y++)
-		for (grid.x = 0; grid.x < c->width; grid.x++) {
-			int bx = (offset.x + grid.x) / size;
-			int by = (offset.y + grid.y) / size;
-			int chance = rarity / (wild_density(w, bx, by) + 1);
-			struct monster_race *race;
-			int depth;
+		get_mon_num_prep(sea ? wild_water_monster_ok : wild_monster_ok);
 
-			if (chance <= 0 || randint0(chance) != 0)
-				continue;
+		for (grid.y = 0; grid.y < c->height; grid.y++)
+			for (grid.x = 0; grid.x < c->width; grid.x++) {
+				int bx = (offset.x + grid.x) / size;
+				int by = (offset.y + grid.y) / size;
+				int density = wild_density(w, bx, by);
+				int chance;
+				struct monster_race *race;
+				int depth;
+				bool water = square_iswater(c, grid);
 
-			/* Not on the player's doorstep, and not in the sea or the fire. */
-			if (distance(grid, p->grid) < 8) continue;
-			if (!square_isempty(c, grid)) continue;
-			if (square_isdamaging(c, grid)) continue;
+				if (water != sea) continue;
 
-			depth = wild_danger(w, bx, by);
-			if (!depth) continue;
+				/*
+				 * The sea gets a density of its own rather than the block's.
+				 * wild_density() reads the population parameter, and that
+				 * measures how much the *land* supports -- which for open
+				 * water is nearly nothing, so the ocean came out the emptiest
+				 * place in the world.  A sea is not empty; it simply holds
+				 * things that are no use to a farmer.
+				 */
+				if (sea) density = MAX(density, WILD_SEA_DENSITY);
 
-			race = get_mon_num(depth, depth);
-			if (!race) continue;
+				chance = rarity / (density + 1);
 
-			place_new_monster(c, grid, race, one_in_(2), true, info,
-							  ORIGIN_DROP);
-		}
+				if (chance <= 0 || randint0(chance) != 0)
+					continue;
+
+				/* Not on the player's doorstep, and not in the fire. */
+				if (distance(grid, p->grid) < 8) continue;
+				if (square_isdamaging(c, grid)) continue;
+
+				if (sea) {
+					/*
+					 * Water is not a floor, so the usual emptiness test says
+					 * no to every square of it.  Ask what actually matters
+					 * instead: can something stand here, and is it free?
+					 */
+					if (!square_is_monster_walkable(c, grid)) continue;
+					if (square_monster(c, grid)) continue;
+				} else if (!square_isempty(c, grid)) {
+					continue;
+				}
+
+				depth = wild_danger(w, bx, by);
+				if (!depth) continue;
+
+				/*
+				 * And the sea is never tame.  Danger is derived from the
+				 * block's law, which measures how well the country is
+				 * policed -- nobody polices open water, and the shallowest
+				 * thing living in it is a swordfish at eight, so a calm bay
+				 * off a lawful city came out with nothing in it at all.
+				 *
+				 * The floor is safe to walk past: fish cannot leave the
+				 * water, so this threatens only a character who wades in.
+				 */
+				if (sea) depth = MAX(depth, WILD_SEA_DEPTH);
+
+				race = get_mon_num(depth, depth);
+				if (!race) continue;
+
+				place_new_monster(c, grid, race, one_in_(2), true, info,
+								  ORIGIN_DROP);
+			}
+	}
 
 	/*
 	 * Put the allocation table back.  It is global state, and the very next

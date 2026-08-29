@@ -594,6 +594,19 @@ bool square_isno_stairs(struct chunk *c, struct loc grid) {
 /**
  * True if the square is open (a floor square not occupied by a monster).
  */
+/**
+ * True if the square is water of either depth (ZangbandTK).
+ *
+ * The sea is passable but is not a floor, which is the distinction that used to
+ * leave it empty of monsters: every "is this square usable" test in the game
+ * asks for a floor.
+ */
+bool square_iswater(struct chunk *c, struct loc grid) {
+	int feat = square(c, grid)->feat;
+
+	return feat == FEAT_WATER || feat == FEAT_DEEP_WATER;
+}
+
 bool square_isopen(struct chunk *c, struct loc grid) {
 	return square_isfloor(c, grid) && !square(c, grid)->mon;
 }

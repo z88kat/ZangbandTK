@@ -58,9 +58,14 @@ Walk far enough west and the land runs out.
 
 The sea is real terrain, not a wall drawn at the edge of the map. Shallow water
 can be waded; deep water can be waded too, but not while heavily laden — the game
-asks before it lets you try, and there are things living in it. The world has a
-coast on every side, because the fractal that makes the land is bounded by ocean
-rather than by an invisible barrier.
+asks before it lets you try. The world has a coast on every side, because the
+fractal that makes the land is bounded by ocean rather than by an invisible
+barrier.
+
+The ``N`` glyphs out on the water are fish, and they are the reason to think
+twice about wading. They cannot come ashore, so a character who stays on the sand
+is in no danger from them at all — but the sea is never tame, whatever the law is
+like on the land beside it.
 
 What a character can do
 =======================

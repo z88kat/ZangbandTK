@@ -353,6 +353,7 @@ bool square_isdtrap(struct chunk *c, struct loc grid);
 bool square_isno_stairs(struct chunk *c, struct loc grid);
 
 /* SQUARE BEHAVIOR PREDICATES */
+bool square_iswater(struct chunk *c, struct loc grid);
 bool square_isopen(struct chunk *c, struct loc grid);
 bool square_isempty(struct chunk *c, struct loc grid);
 bool square_isarrivable(struct chunk *c, struct loc grid);
