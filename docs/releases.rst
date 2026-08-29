@@ -31,6 +31,18 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.31.4** — **Four crashes left behind by the tileset filtering.** Dropping
+  uninstalled tilesets from the list made ``get_graphics_mode()`` return nothing
+  for an id that used to resolve — which is the point — but four places had never
+  had to consider that. ``reset_visuals()``, shared by every front end, asserted
+  on the result and then dereferenced it, and an assertion is no check at all
+  once ``NDEBUG`` is set. In the SDL front end, ``sdl_BuildTileset()``
+  dereferenced it outright; the saved configuration was read straight into
+  ``use_graphics`` with nothing checking the tileset existed; and the loop that
+  binds the current mode matched a tileset by its **position in the list** rather
+  than its id, so a missing low-numbered tileset silently selected the wrong one.
+
+  The Cocoa and Windows front ends were already safe, and were left alone.
 - **3.31.3** — **A review of M7, and eleven fixes.** Five of the findings were
   things the game did silently and wrongly: a **Yeek's scream and a Sprite's
   sleeping dust did nothing at all** — projected with no dice, so a power of

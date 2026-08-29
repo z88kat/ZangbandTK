@@ -1409,7 +1409,23 @@ void reset_visuals(bool load_prefs)
 		graphics_mode *mode = get_graphics_mode(use_graphics);
 		char buf[2014];
 
-		assert(mode);
+		/*
+		 * A tileset that is described in list.txt but not installed is now
+		 * dropped when the list is parsed, so this lookup can come back empty
+		 * where it never used to -- a saved configuration naming a tileset
+		 * this build does not ship, which is ordinary on a partial install and
+		 * normal in the browser build.  It used to be an assertion, which is
+		 * no check at all once NDEBUG is set: the next line would dereference
+		 * NULL.  Carry on without tiles instead, which is what the front ends
+		 * fall back to anyway.
+		 */
+		if (!mode) {
+			plog_fmt("Graphics mode %d is not installed; using text.",
+					 use_graphics);
+			use_graphics = GRAPHICS_NONE;
+			process_pref_file("font.prf", false, false);
+			return;
+		}
 
 		/* Build path to the pref file */
 		path_build(buf, sizeof buf, mode->path, mode->pref);

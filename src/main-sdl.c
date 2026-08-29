@@ -4071,7 +4071,20 @@ static errr load_prefs(void)
 		} else if (strstr(buf, "Fullscreen")) {
 			fullscreen = atoi(s);
 		} else if (strstr(buf, "Graphics")) {
-			use_graphics = atoi(s);
+			/*
+			 * Only if the build actually has it.  A saved configuration
+			 * outlives an installation that drops a tileset, and everything
+			 * downstream of use_graphics assumes the mode can be looked up.
+			 */
+			int want = atoi(s);
+
+			if (want && !get_graphics_mode(want)) {
+				plog_fmt("Graphics mode %d is not installed; using text.",
+						 want);
+				want = GRAPHICS_NONE;
+			}
+
+			use_graphics = want;
 			if (use_graphics) arg_graphics = true;
 		} else if (strstr(buf, "TileWidth")) {
 			tile_width = atoi(s);
@@ -5382,7 +5395,15 @@ static errr sdl_BuildTileset(term_window *win)
 	if (!GfxSurface) return (1);
 
 	info = get_graphics_mode(use_graphics);
-	if (info->grafID == 0) return (1);
+
+	/*
+	 * A tileset described in list.txt but not installed is dropped when the
+	 * list is parsed, so this can be NULL for a configuration naming one this
+	 * build does not ship.  load_gfx() tolerates that and returns early, which
+	 * leaves the GfxSurface check above satisfied by a stale surface, so
+	 * without this the next line dereferences NULL.
+	 */
+	if (!info || info->grafID == 0) return (1);
 
 	/* Calculate the number of tiles across & down*/
 	ta = GfxSurface->w / info->cell_width;
@@ -5827,14 +5848,25 @@ static void init_gfx(void)
 				graphics_modes[i].file[0] = 0;
 			}
 
-			if ((i + 1) == use_graphics) {
+			/*
+			 * Matched on the mode's own id rather than its position.  The two
+			 * used to be the same because the list held every mode described;
+			 * it now holds only the installed ones, so a missing low-numbered
+			 * tileset shifts everything after it and (i + 1) picks the wrong
+			 * one -- silently, and for a tileset the player did not choose.
+			 */
+			if (graphics_modes[i].grafID == use_graphics) {
 				current_graphics_mode = &(graphics_modes[i]);
 			}
 		}
 	} while (graphics_modes[i++].grafID != 0); 
 
-	/* Check availability (default to no graphics) */
-	if (!current_graphics_mode->file[0]) {
+	/*
+	 * Check availability (default to no graphics).  current_graphics_mode is
+	 * left NULL when the configuration names a tileset that is not in the
+	 * list at all, which is now reachable and used to be a dereference.
+	 */
+	if (!current_graphics_mode || !current_graphics_mode->file[0]) {
 		use_graphics = GRAPHICS_NONE;
 		arg_graphics = false;
 		tile_width = 1;
