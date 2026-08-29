@@ -62,7 +62,11 @@ phase, reviving the original's interface on Tcl/Tk 9.
   status in September 2026).
 - **Xcode command line tools** — `xcode-select --install`
 - **CMake** — only to run the test suite. `brew install cmake`
-- **Python 3.11+** — only for the data conversion tools
+- **Python 3.11+** — only for the data conversion tools. macOS ships 3.9, which
+  has no `tomllib`; `brew install python@3.13` adds `python3.13` beside it
+  without displacing the system `python3`. Name it explicitly when running the
+  tools — `python3.13 tools/zconv/zconv.py analyse`. See
+  [tools/zconv/README.md](tools/zconv/README.md).
 
 ### The game
 

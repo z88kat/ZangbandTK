@@ -12,17 +12,23 @@ flags* sections before accepting anything it generates.
 ```sh
 cd tools/zconv
 
-./zconv.py analyse                  # derive scales, write nothing
-./zconv.py monsters                 # convert; report only
-./zconv.py monsters --write         # convert; write the data file too
-./zconv.py monsters --theme-only    # DEC-19: Amber/Mythos/Chaos identity only
-./zconv.py artifacts --write        # convert a_info.txt -> 4.2 artifacts
-./zconv.py egos --write             # convert e_info.txt -> 4.2 ego items
+python3.13 zconv.py analyse                # derive scales, write nothing
+python3.13 zconv.py monsters               # convert; report only
+python3.13 zconv.py monsters --write       # convert; write the data file too
+python3.13 zconv.py monsters --theme-only  # DEC-19: Amber/Mythos/Chaos identity only
+python3.13 zconv.py artifacts --write      # convert a_info.txt -> 4.2 artifacts
+python3.13 zconv.py egos --write           # convert e_info.txt -> 4.2 ego items
 ```
 
 Output lands in `out/` — `monsters.report.md` and `monster.zangband.txt`.
 
 Requires Python 3.11+ (for `tomllib`). No third-party dependencies.
+
+Name the interpreter explicitly rather than running `./zconv.py`. The shebang says
+`python3`, and on macOS that is the system 3.9, which has no `tomllib` — so the bare
+`./zconv.py` fails with `ModuleNotFoundError` however many newer Pythons are installed.
+`brew install python@3.13` puts `python3.13` on the path beside the system one without
+displacing it, which is the same separation `.venv-docs` keeps for the manual.
 
 ## What it implements
 
