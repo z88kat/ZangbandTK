@@ -317,15 +317,13 @@ struct quest *quest_take(struct player *p, int type, const char *name,
 }
 
 /**
- * Somebody arrived somewhere (ZangbandTK, WLD-19, WLD-21).
+ * Somebody came back carrying something (ZangbandTK, WLD-19, QUEST_FIND_ITEM).
  *
- * Zangband's WILD_ENTER and FIND_SHOP triggers, which are the same event here:
- * the player is standing in a town they were sent to.  A delivery is done when
- * the word arrives, and finding a place is done by being in it -- neither of
- * them is a thing you kill, and neither can be noticed by quest_check(), which
- * only ever sees a monster die.
+ * Zangband's FIND_OBJECT trigger.  Checked as the thing enters the pack rather
+ * than off the floor, so buying it, or taking it out of a chest, is fetching it
+ * just as much as finding it lying about.
  *
- * \param town is the index of the town the player is standing in, or -1.
+ * \param obj is what has just been picked up.
  * \return true if anything was completed.
  */
 bool quest_check_item(struct player *p, const struct object *obj)
@@ -354,6 +352,18 @@ bool quest_check_item(struct player *p, const struct object *obj)
 	return any;
 }
 
+/**
+ * Somebody arrived somewhere (ZangbandTK, WLD-19, WLD-21).
+ *
+ * Zangband's WILD_ENTER and FIND_SHOP triggers, which are the same event here:
+ * the player is standing in a town they were sent to.  A delivery is done when
+ * the word arrives, and finding a place is done by being in it -- neither of
+ * them is a thing you kill, and neither can be noticed by quest_check(), which
+ * only ever sees a monster die.
+ *
+ * \param town is the index of the town the player is standing in, or -1.
+ * \return true if anything was completed.
+ */
 bool quest_check_arrival(struct player *p, int town)
 {
 	bool any = false;

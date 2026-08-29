@@ -426,6 +426,61 @@ static int test_open_country_work_counts_only_above_ground(void *state) {
 	ok;
 }
 
+/**
+ * A killing down a named dungeon is about the place too (WLD-19, WLD-21,
+ * QUEST_DUNGEON).
+ *
+ * The one kind of work that names both a depth and a dungeon, and the reason
+ * WLD-21 exists: Angband has one dungeon, so a depth is a place, and here it is
+ * not. The Courts of Chaos run from 75 to 110 and the Abyss from 90 to 127, so
+ * depth 100 is two different places -- and a job that checked only the number
+ * would be finished in the wrong one. Checked as the predicate quest_check()
+ * applies, the way open-country work is, since the real one needs a live cave
+ * and a dead monster.
+ */
+static int test_dungeon_work_wants_the_right_dungeon(void *state) {
+	struct player *p = state;
+	struct quest *q;
+	bool counts;
+	int depth;
+
+	player_quests_reset(p);
+
+	q = quest_take(p, QUEST_DUNGEON, "3 things in the Abyss", &test_r_human, 3);
+	notnull(q);
+
+	q->level = 100;
+	q->dungeon = 2;
+
+	/* The named dungeon, at the named depth. */
+	depth = 100;
+	p->dungeon = 2;
+	counts = !(q->fixed || q->type == QUEST_DUNGEON) ||
+		(depth == q->level && (!q->dungeon || q->dungeon == p->dungeon));
+	require(counts);
+
+	/* The named dungeon, the wrong depth. */
+	depth = 99;
+	counts = !(q->fixed || q->type == QUEST_DUNGEON) ||
+		(depth == q->level && (!q->dungeon || q->dungeon == p->dungeon));
+	require(!counts);
+
+	/* The right depth, in the wrong dungeon -- the WLD-21 case. */
+	depth = 100;
+	p->dungeon = 1;
+	counts = !(q->fixed || q->type == QUEST_DUNGEON) ||
+		(depth == q->level && (!q->dungeon || q->dungeon == p->dungeon));
+	require(!counts);
+
+	/* A job naming no dungeon takes the depth wherever it is found. */
+	q->dungeon = 0;
+	counts = !(q->fixed || q->type == QUEST_DUNGEON) ||
+		(depth == q->level && (!q->dungeon || q->dungeon == p->dungeon));
+	require(counts);
+
+	ok;
+}
+
 const char *suite_name = "player/quest";
 struct test tests[] = {
 	{ "a-fixed-quest-starts-taken", test_a_fixed_quest_starts_taken },
@@ -438,6 +493,7 @@ struct test tests[] = {
 	{ "a-job-can-be-given-up", test_a_job_can_be_given_up },
 	{ "fetching-is-finished-by-having-it", test_fetching_is_finished_by_having_it },
 	{ "open-country-work-counts-only-above-ground", test_open_country_work_counts_only_above_ground },
+	{ "dungeon-work-wants-the-right-dungeon", test_dungeon_work_wants_the_right_dungeon },
 	{ "the-town-is-never-a-quest", test_the_town_is_never_a_quest },
 	{ "winning-counts-only-fixed-quests", test_winning_counts_only_fixed_quests },
 	{ NULL, NULL }

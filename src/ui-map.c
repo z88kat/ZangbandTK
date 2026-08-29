@@ -1592,10 +1592,12 @@ static bool quest_offer_item(void)
  * knows it is an inn; move the property to the magetower in
  * wild_town_quest_givers() and the magetower starts commissioning retrievals.
  *
- * What is offered is a bounty: kill so many of a creature, come back, be paid.
- * It is the cheapest of Zangband's six quest types to build and the only one
- * that needs nothing the game has not got, so it is the one that proves the
- * lifecycle end to end.  The other five are WLD-19.
+ * All six of Zangband's kinds are offered here (WLD-19), chosen by what the
+ * world can supply: an errand to another town needs another town, a job down a
+ * particular dungeon needs one the character has found, and nobody is sent to
+ * look at the place they are standing in.  Every kind falls back to the bounty
+ * -- kill so many of a creature, come back, be paid -- which needs nothing but
+ * a bestiary and so can always be offered.
  *
  * \return true if the building's own business should be skipped.
  */

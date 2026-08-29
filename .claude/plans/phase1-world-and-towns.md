@@ -595,12 +595,17 @@ as fields. Implements W-3.
 
 **WLD-19 — The quest system supports Zangband's six quest types**, per §2.6.
 
-> **Three of six built (M6).** `enum quest_type` holds all six; the errands written are
-> the bounty (kill so many, anywhere), the delivery (carry word to a named town) and the
-> find-place (go and look at somewhere nobody here has been). The other three — a kill at a
-> named depth of a named dungeon, clearing open country, and fetching a particular object —
-> are values in the same enumeration and checks in the same two places; what is missing is
-> the errands, not the machinery.
+> **All six built (M6), released as 3.26.0.** The bounty (kill so many, anywhere), the
+> delivery (carry word to a named town), the find-place (go and look at somewhere nobody
+> here has been), a kill at a named depth of a named dungeon, clearing open country, and
+> fetching a particular object. Offered by `quest_giver_business()` as the world allows —
+> an errand to another town needs another town, a dungeon job needs one the character has
+> found — each falling back to the bounty, which needs nothing but a bestiary.
+>
+> *This note said "three of six" for four days after the other three landed*, which is worth
+> recording rather than quietly overwriting: an audit read the note instead of the code and
+> reported the milestone half-finished. The requirement documents describe what is wanted;
+> when they also carry progress, the progress is what goes stale.
 >
 > *The kill check now asks what kind of quest it is looking at*, which it did not have to
 > while every quest was about killing. A delivery that named a monster would otherwise have

@@ -171,6 +171,11 @@ different from each other. Manual chapters: the wilderness, towns and services.
 
 **Exit:** quests can be taken, tracked, completed and failed. Manual chapter: quests.
 
+> **Complete.** All four requirements are delivered and all six quest types are offered and
+> completable, the last three released as 3.26.0. The manual chapter is written
+> ([quests.rst](../../docs/quests.rst)) and every type is covered by
+> [src/tests/player/quest.c](../../src/tests/player/quest.c). Nothing in M6 is outstanding.
+
 > Phase 2's world work is complete here. Third major play checkpoint, and the point at
 > which the game stops resembling Angband-with-extras.
 
