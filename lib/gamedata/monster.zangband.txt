@@ -273,9 +273,8 @@ flags:ANIMAL
 desc:Larger than a crow, pitch black.
 
 name:piranha
-base:tree
+base:fish
 color:B
-glyph:l
 speed:120
 hit-points:8
 armor-class:11
@@ -323,9 +322,8 @@ flags:MALE | DROP_60 | RAND_50 | OPEN_DOOR | BASH_DOOR | EVIL | ORC | HURT_LIGHT
 desc:A pathetic breed of tiny snaga-like creatures. They are running wild and screaming all the time!
 
 name:swordfish
-base:tree
+base:fish
 color:W
-glyph:l
 speed:120
 hit-points:22
 armor-class:17
@@ -378,9 +376,8 @@ flags:ANIMAL | WEIRD_MIND | RAND_25
 desc:Yech! The disgusting thing only wants your blood!
 
 name:barracuda
-base:tree
+base:fish
 color:b
-glyph:l
 speed:120
 hit-points:30
 armor-class:34
@@ -902,9 +899,8 @@ flags:NEVER_MOVE | COLD_BLOOD | MULTIPLY | STUPID | EMPTY_MIND | NO_CONF | NO_SL
 desc:It looks weird.
 
 name:giant piranha
-base:tree
+base:fish
 color:B
-glyph:l
 speed:120
 hit-points:27
 armor-class:22
@@ -1140,9 +1136,8 @@ flags:MALE | DROP_2 | OPEN_DOOR | BASH_DOOR
 desc:A warrior trained in melee as well as missile weapons.
 
 name:ixitxachitl
-base:tree
+base:fish
 color:s
-glyph:l
 speed:110
 hit-points:45
 armor-class:17
@@ -1452,9 +1447,8 @@ flags:FEMALE | RAND_25 | DROP_60 | DROP_2 | IM_POIS | IM_COLD | IM_WATER | OPEN_
 desc:A giant snake-like figure with a woman's torso. Not as strong as other nagas, but more talented in magic.
 
 name:giant octopus
-base:tree
+base:fish
 color:v
-glyph:l
 speed:105
 hit-points:133
 armor-class:34
@@ -1586,9 +1580,8 @@ flags:MALE | IM_ACID | DROP_60 | OPEN_DOOR | BASH_DOOR | EVIL
 desc:Intelligent lizard beings from the depths.
 
 name:hammerhead
-base:tree
+base:fish
 color:b
-glyph:l
 speed:115
 hit-points:66
 armor-class:34
@@ -1707,9 +1700,8 @@ flags:FORCE_SLEEP | NEVER_MOVE | EMPTY_MIND | COLD_BLOOD | NO_CONF | NO_SLEEP | 
 desc:A strange creature that disguises itself as a door to lure unsuspecting adventurers within reach of its venomous claws.
 
 name:white shark
-base:tree
+base:fish
 color:W
-glyph:l
 speed:120
 hit-points:46
 armor-class:28
@@ -1779,9 +1771,8 @@ flags:NEVER_MOVE | IM_COLD | COLD_BLOOD | IM_ACID | NO_FEAR | IM_POIS | NO_CONF 
 desc:A sentient section of wall.
 
 name:ixitxachitl priest
-base:tree
+base:fish
 color:s
-glyph:l
 speed:110
 hit-points:42
 armor-class:22
@@ -1886,9 +1877,8 @@ flags:RAND_25 | OPEN_DOOR | BASH_DOOR | ANIMAL | EVIL
 desc:It is a tracker; half human, half beast.
 
 name:whale
-base:tree
+base:fish
 color:G
-glyph:l
 speed:110
 hit-points:232
 armor-class:28
@@ -1940,9 +1930,8 @@ flags:RAND_50 | EVIL | DEMON | FORCE_SLEEP | OPEN_DOOR | BASH_DOOR | POWERFUL | 
 desc:A pale, corpse-like lesser demon, who moves very fast and spawns evil everywhere.
 
 name:globefish
-base:tree
+base:fish
 color:w
-glyph:l
 speed:110
 hit-points:81
 armor-class:17
@@ -1977,9 +1966,8 @@ flags:DROP_60 | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | EVIL | ANIMAL | UNDEAD | IM
 desc:A mummified, undead great avian creature, who now serves as a steed for mighty undead creatures.
 
 name:killer whale
-base:tree
+base:fish
 color:w
-glyph:l
 speed:115
 hit-points:136
 armor-class:29
@@ -2226,9 +2214,8 @@ flags:PASS_WALL | NO_SLEEP | COLD_BLOOD | NONLIVING | NO_FEAR | EMPTY_MIND
 desc:A creature that is half real, half illusion.
 
 name:great white shark
-base:tree
+base:fish
 color:w
-glyph:l
 speed:120
 hit-points:238
 armor-class:39
@@ -2378,9 +2365,8 @@ flags:RAND_25 | WEIRD_MIND | BASH_DOOR | ANIMAL
 desc:A giant beetle with poisonous mandibles.
 
 name:vampiric ixitxachitl
-base:tree
+base:fish
 color:D
-glyph:l
 speed:110
 hit-points:200
 armor-class:28
@@ -2733,9 +2719,8 @@ flags:DROP_2 | DROP_GOOD | DROP_GREAT | ONLY_ITEM | EVIL | MALE | SMART | ANIMAL
 desc:The lovable purple reptile is making a guest appearance here.  Flee while you still can!
 
 name:seahorse
-base:tree
+base:fish
 color:o
-glyph:l
 speed:120
 hit-points:216
 armor-class:34
@@ -2930,9 +2915,8 @@ flags:EMPTY_MIND | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | EVIL | ANIMAL | UNDEAD |
 desc:It is the skeleton of a tyrannosaurus, animated by dark dweomers.
 
 name:Jaws
-base:tree
+base:fish
 color:w
-glyph:l
 speed:120
 hit-points:336
 armor-class:45
@@ -2986,9 +2970,8 @@ flags:FORCE_SLEEP | DROP_60 | TAKE_ITEM | BASH_DOOR | OPEN_DOOR | EVIL | IM_POIS
 desc:A hideous, beastly, four-armed unclean giant: "...large as a barrel... The eyes jutted two inches from each side, shaded by bony protuberances overgrown of the mouth. That mouth had great yellow fangs and ran from the top to the tally."
 
 name:giant squid
-base:tree
+base:fish
 color:g
-glyph:l
 speed:110
 hit-points:300
 armor-class:45
@@ -3813,9 +3796,8 @@ flags:PASS_WALL | IM_POIS | IM_FIRE | NONLIVING | NO_CONF | NO_SLEEP | EVIL | EM
 desc:You have not seen it yet.
 
 name:flying polyp
-base:tree
+base:fish
 color:R
-glyph:l
 speed:115
 hit-points:140
 armor-class:39
@@ -3850,9 +3832,8 @@ flags:IM_POIS | IM_COLD | COLD_BLOOD | ANIMAL | EVIL | NO_SLEEP | NO_CONF | NEVE
 desc:"Those huge lidless eyes which stared with hate at me, the jointed tendrils which seemed to twist from the head in cosmic rhythms, the ten legs, covered with black shining tentacles and folded into the pallid underbelly, and the semi-circular ridged wings covered with triangular scales -- all this cannot convey the soul-ripping horror of the shape which darted at me. I saw the three mouths of the thing move moistly, and then it was upon me."
 
 name:sky whale
-base:tree
+base:fish
 color:B
-glyph:l
 speed:110
 hit-points:326
 armor-class:42
@@ -4309,9 +4290,8 @@ flags:FORCE_SLEEP | ONLY_ITEM | DROP_60 | OPEN_DOOR | BASH_DOOR | POWERFUL | NON
 desc:It is a demon swinging wildly with two clubs.
 
 name:Giganto the Gargantuan
-base:tree
+base:fish
 color:s
-glyph:l
 speed:110
 hit-points:767
 armor-class:39
@@ -4602,9 +4582,8 @@ flags:FORCE_SLEEP | COLD_BLOOD | BASH_DOOR | EVIL | UNDEAD | POWERFUL | SMART | 
 desc:It is a huge, twisted grey skull floating through the air. Its cold eyes burn with hatred towards all who live.
 
 name:Charybdis
-base:tree
+base:fish
 color:r
-glyph:l
 speed:120
 hit-points:1421
 armor-class:56
@@ -5538,9 +5517,8 @@ flags:MALE | EVIL | FORCE_SLEEP | ONLY_ITEM | DROP_4 | ATTR_MULTI | ATTR_RAND | 
 desc:He is one of the few true masters of the art, being extremely skillful in all forms of unarmed combat and controlling the Logrus with disdainful ease.
 
 name:lesser kraken
-base:tree
+base:fish
 color:G
-glyph:l
 speed:120
 hit-points:1260
 armor-class:84
@@ -5874,9 +5852,8 @@ flags:FORCE_SLEEP | ONLY_ITEM | DROP_4 | INVISIBLE | COLD_BLOOD | TAKE_ITEM | PA
 desc:An aura of hatred, cowardice and falsehood surrounds you as this cloaked figure floats towards you.
 
 name:greater kraken
-base:tree
+base:fish
 color:G
-glyph:l
 speed:120
 hit-points:1428
 armor-class:70
@@ -6021,9 +5998,8 @@ flags:UNIQUE | MALE | ATTR_MULTI | IM_DISEN | IM_NEXUS | FORCE_SLEEP | EVIL | SM
 desc:"Young with the youth that is outside time, and with a beauteous bearded face, curved, smiling lips, Olympian brow; and dense locks waving and poppy-crowned."
 
 name:Glaaki
-base:tree
+base:fish
 color:g
-glyph:l
 speed:130
 hit-points:1849
 armor-class:84

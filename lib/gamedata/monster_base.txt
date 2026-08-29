@@ -409,6 +409,19 @@ flags:SPIRIT | CLEAR_WEB
 desc:Townsfolk
 
 # High hitpoints and armor class
+# ZangbandTK: Zangband's aquatic monsters, which arrived wearing this base by
+# accident.  Its glyph was 'l' there and 'l' is a tree here, so the import gave
+# every shark, whale and kraken in the game a tree's flags -- immunity to fear
+# and to confusion, and regeneration -- and put them in Arden.  'N' is the only
+# letter the game has left; '~' would have been the obvious choice and is the
+# worst available, being both the chest mimic's glyph and the water these
+# things swim in.
+name:fish
+glyph:N
+pain:2
+flags:CLEAR_WEB | COLD_BLOOD | IM_WATER
+desc:Fish/Aquatic
+
 name:tree
 glyph:l
 pain:9

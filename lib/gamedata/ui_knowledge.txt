@@ -181,6 +181,9 @@ mcat-include-base:skeleton
 monster-category:Snakes
 mcat-include-base:snake
 
+monster-category:Fish/Aquatic
+mcat-include-base:fish
+
 monster-category:Trees/Ents
 mcat-include-base:tree
 

@@ -106,6 +106,45 @@ is now the newest ZangbandTK in existence and the least settled — which is the
 right trade for something you reach by clicking a link.
 
 
+29 August 2026 — sharks in the forest of Arden
+==============================================
+
+I set out to give the imported monsters tiles and found a barracuda borrowing a
+tree's picture. That was not the tile script being stupid. The barracuda has
+``base:tree``.
+
+Zangband drew aquatic monsters with ``l``. Angband 4.2 draws trees with ``l``.
+Whoever did the import carried the glyph across and the base came with it, so
+every fish, shark, whale, squid, seahorse and kraken in this game — twenty-four
+of them — has been a tree.
+
+I nearly filed it as cosmetic. It is not, and the reason is one line in
+``mon-init.c``: ``rf_union(r->flags, r->base->flags)``. A base's flags are
+inherited by every monster wearing it, and a white shark declares nothing but
+``ANIMAL``. So every one of them has been **immune to fear, immune to confusion,
+and regenerating**, and nobody could have worked out why. Then, because dungeon
+dwellers are matched by base, Arden — Zelazny's forest, the one Corwin rides
+through — has been spawning great white sharks. The Grove of the Unicorn too. The
+Forest monster pit could fill with krakens.
+
+The fix is small: a new base, twenty-four records changed, a bestiary category.
+The ents stay trees. And Faiella-Bionin, the stairway that runs down beneath the
+sea, and Rebma, the drowned city, now have fish in them, which they should have
+had from the day they were written.
+
+The glyph was the only real decision and there was almost nothing to decide with.
+``N`` is the last free letter in the entire game. ``~`` is the obvious choice and
+the worst available: it is the chest mimic's glyph and it is the water these
+things swim in, so a shark would be invisible against the sea.
+
+Two things I want to remember. The first is that this was found by accident,
+while doing something else, by looking at one odd-looking output line — and I
+had been about to explain it away as a quirk of my matching heuristic. The
+second is the shape it shares with the powers that did nothing: the data parsed,
+every field was valid, every number was Zangband's own, and the meaning was
+wrong. Three times this week now. Valid is not correct.
+
+
 29 August 2026 — a review, and five things that did nothing
 ===========================================================
 

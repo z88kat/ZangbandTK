@@ -87,6 +87,7 @@ dweller:base:reptile
 dweller:base:jelly
 dweller:base:worm
 dweller:base:eye
+dweller:base:fish
 place:2:70:10
 floor:sand
 profile:modified
@@ -130,6 +131,7 @@ dweller:base:wraith
 dweller:base:person
 dweller:base:jelly
 dweller:base:snake
+dweller:base:fish
 place:3:60:5
 floor:open floor
 profile:modified

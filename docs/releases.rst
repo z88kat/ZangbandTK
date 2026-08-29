@@ -31,6 +31,23 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.32.1** — **Sharks are no longer trees.** Zangband drew its aquatic
+  monsters with ``l`` and Angband draws trees with ``l``, so the import gave
+  every fish, shark, whale, squid and kraken in the game the tree's base — and a
+  base's flags are inherited. All twenty-four were **immune to fear, immune to
+  confusion, and regenerating**, and because dungeon dwellers are matched by base,
+  **Arden and the Grove of the Unicorn were spawning great white sharks** while
+  the Forest monster pit could fill with krakens. The bestiary filed whales under
+  *Trees/Ents*.
+
+  There is now a **Fish/Aquatic** base — glyph ``N``, the last free letter in the
+  game — and the twenty-four have moved to it. The ents stayed where they were.
+  **Faiella-Bionin**, the stairway beneath the sea, and **Rebma**, the drowned
+  city, have fish in them for the first time.
+
+  They lose their tiles in the process: they had been borrowing tree pictures,
+  and there is no aquatic monster in Angband to borrow from, so they render as
+  text until somebody draws them.
 - **3.32.0** — **The imported monsters have tiles.** All 391 monsters ZangbandTK
   adds were missing from every one of the five tilesets, so in graphics mode a
   chaos hound, a serpent man and a death sword all rendered as bare letters among

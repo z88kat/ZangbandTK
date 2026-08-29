@@ -4657,6 +4657,106 @@ static int test_a_patron_waits_until_the_level_is_settled(void *state) {
 }
 
 /**
+ * A shark is not a tree.
+ *
+ * Zangband drew its aquatic monsters with 'l' and Angband 4.2 draws trees with
+ * 'l', so the import gave every fish, shark, whale, squid and kraken in the game
+ * `base:tree`.  That was not cosmetic.  Base flags are unioned into each monster
+ * (mon-init.c), and a white shark declares only ANIMAL, so all twenty-four of
+ * them inherited the tree's NO_FEAR, NO_CONF and REGENERATE -- unscareable,
+ * unconfusable and healing.  Dwellers are matched by base, so Arden and the
+ * Grove of the Unicorn spawned great white sharks among the trees, and the
+ * Forest monster pit could fill with krakens.
+ *
+ * Nothing noticed for the same reason nothing noticed the powers that did
+ * nothing: the data parsed, and every number in it was Zangband's.
+ */
+static int test_a_shark_is_not_a_tree(void *state) {
+	/*
+	 * The plain ones, which declare nothing but ANIMAL, so anything else they
+	 * carry can only have come from the base.  The greater kraken is left out
+	 * on purpose: it declares NO_CONF itself, being a large and magical thing,
+	 * and that is Zangband's own design rather than the accident.
+	 */
+	static const char *aquatic[] = {
+		"white shark", "great white shark", "killer whale",
+		"piranha", "barracuda"
+	};
+	struct monster_base *fish = lookup_monster_base("fish");
+	struct monster_base *tree = lookup_monster_base("tree");
+	size_t i;
+	int j, forest = 0;
+
+	notnull(fish);
+	notnull(tree);
+
+	/* The base itself, which is where the wrong flags came from. */
+	require(!rf_has(fish->flags, RF_NO_FEAR));
+	require(!rf_has(fish->flags, RF_NO_CONF));
+	require(!rf_has(fish->flags, RF_REGENERATE));
+	require(rf_has(fish->flags, RF_IM_WATER));
+	require(rf_has(fish->flags, RF_COLD_BLOOD));
+
+	/* And the tree still has them, because a tree should. */
+	require(rf_has(tree->flags, RF_NO_FEAR));
+
+	for (i = 0; i < N_ELEMENTS(aquatic); i++) {
+		struct monster_race *race = lookup_monster(aquatic[i]);
+
+		notnull(race);
+		require(race->base == fish);
+
+		/*
+		 * The three that were doing real damage.  A shark may be frightened
+		 * and confused like anything else alive, and does not knit itself
+		 * back together.
+		 */
+		require(!rf_has(race->flags, RF_NO_FEAR));
+		require(!rf_has(race->flags, RF_NO_CONF));
+		require(!rf_has(race->flags, RF_REGENERATE));
+
+		/* And it still belongs in water. */
+		require(rf_has(race->flags, RF_IM_WATER));
+	}
+
+	/* The ents are trees, and stayed trees. */
+	{
+		struct monster_race *ent = lookup_monster("ent");
+
+		notnull(ent);
+		require(ent->base == tree);
+	}
+
+	/* No forest spawns fish, and the drowned places do. */
+	for (j = 0; j < dun_type_count(); j++) {
+		struct dun_type *dun = dun_type_by_index(j);
+		int k;
+		bool has_tree = false, has_fish = false;
+
+		if (!dun || !dun->name) continue;
+
+		for (k = 0; k < dun->dweller_count; k++) {
+			if (dun->dwellers[k] == tree) has_tree = true;
+			if (dun->dwellers[k] == fish) has_fish = true;
+		}
+
+		if (has_tree) require(!has_fish);
+
+		if (streq(dun->name, "Faiella-Bionin") || streq(dun->name, "Rebma")) {
+			if (!has_fish)
+				printf("%s has no fish in it\n", dun->name);
+			require(has_fish);
+			forest++;
+		}
+	}
+
+	/* Both of the drowned places were found and checked. */
+	eq(forest, 2);
+
+	ok;
+}
+
+/**
  * The mapping from Zangband's class table was measured, not guessed, and this
  * holds the Monk on the numbers that measurement produced.
  */
@@ -5528,6 +5628,7 @@ struct test tests[] = {
 	{ "only-a-chaos-warrior-is-owned", test_only_a_chaos_warrior_is_owned },
 	{ "thirteen-is-an-unlucky-level", test_thirteen_is_an_unlucky_level },
 	{ "a-power-that-needs-a-number-has-one", test_a_power_that_needs_a_number_has_one },
+	{ "a-shark-is-not-a-tree", test_a_shark_is_not_a_tree },
 	{ "a-patron-waits-until-the-level-is-settled", test_a_patron_waits_until_the_level_is_settled },
 
 	{ NULL, NULL }

@@ -44,8 +44,6 @@ monster:ball lightning:0x92:0xAA
 monster:balrog:0x8D:0xB9
 # as glabrezu
 monster:baron of hell:0x8D:0xA1
-# as old forest tree (colour differs)
-monster:barracuda:0x93:0xb1
 # as night mare (colour differs)
 monster:beast of nurgle:0x93:0x9C
 # as jabberwock (colour differs)
@@ -164,8 +162,6 @@ monster:fire vampire:0x94:0xB5
 monster:flamer of tzeentch:0x8E:0xD6
 # as wolf chieftain (colour differs)
 monster:fleshhound of khorne:0x8F:0xD6
-# as hasty ent (colour differs)
-monster:flying polyp:0x93:0xb5
 # as skeleton troll (colour differs)
 monster:flying skull:0x94:0xAA
 # as bile demon (colour differs)
@@ -186,20 +182,12 @@ monster:ghoulking:0x91:0xB4
 monster:giant headless:0x91:0x8E
 # as disenchanter worm mass
 monster:giant leech:0x91:0x96
-# as huorn (colour differs)
-monster:giant octopus:0x93:0xb2
-# as Old Man Willow (colour differs)
-monster:giant piranha:0x93:0xb4
 # as nether worm mass (colour differs)
 monster:giant slug:0x91:0x96
-# as old forest tree
-monster:giant squid:0x93:0xb1
 # as giant black dragon fly (colour differs)
 monster:giant time fly:0x91:0xBA
 # as spotted jelly
 monster:gibbering mouther:0x8F:0x90
-# as huorn (colour differs)
-monster:globefish:0x93:0xb2
 # as mûmak
 monster:gnoph-keh:0x91:0xBD
 # as werebear
@@ -210,14 +198,10 @@ monster:great dimensional wyrm:0x8C:0xB0
 monster:great eagle:0x91:0x8C
 # as hezrou
 monster:great unclean one:0x8D:0xA0
-# as huorn (colour differs)
-monster:great white shark:0x93:0xb2
 # as great wyrm of thunder
 monster:great wyrm of power:0x8E:0xA2
 # as vrock
 monster:greater hell-beast:0x8D:0x9F
-# as huorn
-monster:greater kraken:0x93:0xb2
 # as mummified chieftain (colour differs)
 monster:greater mummy:0x91:0xB4
 # as tengu (colour differs)
@@ -228,8 +212,6 @@ monster:grid bug:0x8F:0xAA
 monster:gug:0x8D:0xD1
 # as Bullroarer the Hobbit
 monster:halfling slinger:0x95:0x80
-# as Old Man Willow (colour differs)
-monster:hammerhead:0x93:0xb4
 # as griffon
 monster:headless:0x91:0x8E
 # as moaning spirit
@@ -266,10 +248,6 @@ monster:irish wolfhound of flora:0x8F:0xD2
 monster:iron lich:0x94:0x8E
 # as paladin
 monster:ivory monk:0x84:0xA7
-# as Old Man Willow
-monster:ixitxachitl:0x93:0xb4
-# as Old Man Willow
-monster:ixitxachitl priest:0x93:0xb4
 # as patriarch
 monster:jade monk:0x84:0x9F
 # as giant roc
@@ -286,8 +264,6 @@ monster:keeper of secrets:0x93:0x99
 monster:killer bee:0x8F:0xB0
 # as killer fire beetle
 monster:killer crimson beetle:0x93:0x95
-# as huorn (colour differs)
-monster:killer whale:0x93:0xb2
 # as Ulfast, Son of Ulfang
 monster:knight archer:0x95:0x8A
 # as nether wraith
@@ -302,8 +278,6 @@ monster:leprechaun fanatic:0x8D:0x81
 monster:lesser black reaver:0x94:0x93
 # as vrock
 monster:lesser hell-beast:0x8D:0x9F
-# as huorn
-monster:lesser kraken:0x93:0xb2
 # as great storm wyrm
 monster:leviathan:0x8C:0xA1
 # as stiffbeard sorcerer
@@ -372,8 +346,6 @@ monster:phantom beast:0x94:0x81
 monster:phantom warrior:0x94:0x96
 # as nruling
 monster:pink horror:0x8D:0xA4
-# as old forest tree (colour differs)
-monster:piranha:0x93:0xb1
 # as ghoul (colour differs)
 monster:plaguebearer of nurgle:0x94:0xBF
 # as white jelly (colour differs)
@@ -402,8 +374,6 @@ monster:rust monster:0x93:0xA1
 monster:sand-dweller:0x8D:0xA5
 # as Rogrog the Black Troll (colour differs)
 monster:sea troll:0x95:0xA0
-# as hasty ent (colour differs)
-monster:seahorse:0x93:0xb5
 # as Maia of Oromë
 monster:seraph:0x8E:0xB8
 # as king cobra
@@ -438,8 +408,6 @@ monster:skaven shaman:0x8D:0x99
 monster:skeletal tyrannosaurus:0x91:0x89
 # as sky dragon
 monster:sky drake:0x8C:0xA4
-# as hasty ent (colour differs)
-monster:sky whale:0x93:0xb5
 # as cave orc
 monster:snaga sapper:0x8D:0x94
 # as cave orc
@@ -468,8 +436,6 @@ monster:star-spawn of cthulhu:0x8F:0xC3
 monster:storm troll:0x95:0xA0
 # as gorgimaera (colour differs)
 monster:swamp thing:0x93:0x9E
-# as old forest tree (colour differs)
-monster:swordfish:0x93:0xb1
 # as death knight
 monster:tax collector:0x84:0x9D
 # as lurker
@@ -488,8 +454,6 @@ monster:undead mass:0x8F:0x8D
 monster:unmaker:0x8F:0x9A
 # as abyss worm mass (colour differs)
 monster:unstable worm mass:0x91:0xc0
-# as black-hearted huorn (colour differs)
-monster:vampiric ixitxachitl:0x93:0xb3
 # as night lizard
 monster:vlasta:0x93:0x8F
 # as Shelob, Spider of Darkness (colour differs)
@@ -508,12 +472,8 @@ monster:warp drake:0x8C:0xA7
 monster:warrior of the dawn:0x84:0x9E
 # as Huan, Wolfhound of the Valar
 monster:weir:0x8F:0xD9
-# as huorn
-monster:whale:0x93:0xb2
 # as cave bear (colour differs)
 monster:white deer:0x93:0xA2
-# as huorn (colour differs)
-monster:white shark:0x93:0xb2
 # as giant white mouse (colour differs)
 monster:wild rabbit:0x8D:0x98
 # as acolyte

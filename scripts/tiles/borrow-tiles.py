@@ -76,10 +76,20 @@ def read_monsters(filename):
     return out
 
 
-def read_prf_chain(directory, filename, seen=None):
-    """Every monster:name:attr:char in a prf and the files it includes."""
+def read_prf_chain(directory, filename, seen=None, skip_generated=True):
+    """
+    Every monster:name:attr:char in a prf and the files it includes.
+
+    The generated file is skipped by default, because the tileset's own prf now
+    includes it: without that, a second run sees everything the first run wrote
+    as art that already exists, decides there is nothing left to do, and empties
+    the file it wrote yesterday.
+    """
     if seen is None:
         seen = set()
+
+    if skip_generated and os.path.basename(filename) == OUTPUT:
+        return {}
 
     path = os.path.join(TILES, directory, filename)
     if path in seen or not os.path.exists(path):
@@ -98,7 +108,8 @@ def read_prf_chain(directory, filename, seen=None):
                 continue
 
             if line.startswith('%:'):
-                tiles.update(read_prf_chain(directory, line[2:].strip(), seen))
+                tiles.update(read_prf_chain(directory, line[2:].strip(), seen,
+                                            skip_generated))
 
     return tiles
 
