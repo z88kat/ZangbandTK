@@ -4,6 +4,13 @@
 #include "unit-test-data.h"
 #include "test-utils.h"
 
+/*
+ * This suite's own savefile.  Named for the process so that two copies running
+ * at once do not load each other's game (the name used to be a bare "Test1",
+ * which game/mage.c also deletes).
+ */
+static char savename[64];
+
 #include <stdio.h>
 #include "cave.h"
 #include "cmd-core.h"
@@ -76,11 +83,13 @@ int setup_tests(void **state) {
 	create_needed_dirs();
 #endif
 
+	test_savefile_name(savename, sizeof(savename), "Test1");
+
 	return 0;
 }
 
 int teardown_tests(void *state) {
-	file_delete("Test1");
+	file_delete(savename);
 	wipe_mon_list(cave, player);
 	cleanup_angband();
 	return 0;
@@ -99,10 +108,10 @@ static int test_newgame(void *state) {
 	eq(player->timed[TMD_FOOD], PY_FOOD_FULL - 1);
 
 	/* Should be all set up to save properly now */
-	eq(savefile_save("Test1"), true);
+	eq(savefile_save(savename), true);
 
 	/* Make sure it saved properly */
-	eq(file_exists("Test1"), true);
+	eq(file_exists(savename), true);
 
 	ok;
 }
@@ -111,7 +120,7 @@ static int test_loadgame(void *state) {
 	reset_before_load();
 
 	/* Try loading the just-saved game */
-	eq(savefile_load("Test1", false), true);
+	eq(savefile_load(savename, false), true);
 
 	eq(player->is_dead, false);
 	notnull(cave);
@@ -125,7 +134,7 @@ static int test_stairs1(void *state) {
 	reset_before_load();
 
 	/* Load the saved game */
-	eq(savefile_load("Test1", false), true);
+	eq(savefile_load(savename, false), true);
 
 	/* Perform normal set up after loading. */
 	require(character_dungeon);
@@ -145,7 +154,7 @@ static int test_stairs2(void *state) {
 	reset_before_load();
 
 	/* Load the saved game */
-	eq(savefile_load("Test1", false), true);
+	eq(savefile_load(savename, false), true);
 
 	/* Perform normal set up after loading. */
 	require(character_dungeon);
@@ -185,7 +194,7 @@ static int test_drop_pickup(void *state) {
 	reset_before_load();
 
 	/* Load the saved game */
-	eq(savefile_load("Test1", false), true);
+	eq(savefile_load(savename, false), true);
 
 	/* Perform normal set up after loading. */
 	require(character_dungeon);
@@ -219,7 +228,7 @@ static int test_drop_eat(void *state) {
 	reset_before_load();
 
 	/* Load the saved game */
-	eq(savefile_load("Test1", false), true);
+	eq(savefile_load(savename, false), true);
 	num = player->upkeep->inven[0]->number;
 
 	/* Perform normal set up after loading. */

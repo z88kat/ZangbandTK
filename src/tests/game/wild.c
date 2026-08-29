@@ -85,6 +85,8 @@ static void println(const char *str) {
 }
 
 int setup_tests(void **state) {
+	uint32_t seed;
+
 	plog_aux = println;
 
 	set_file_paths();
@@ -93,8 +95,25 @@ int setup_tests(void **state) {
 	create_needed_dirs();
 #endif
 
+	/*
+	 * Every test below runs against whatever world this seed produced, and
+	 * until now that was a different world every run -- which makes a test that
+	 * fails once in fifty impossible to look at, because the world it failed on
+	 * is gone.  The seed is chosen here rather than left to Rand_init() so that
+	 * it can be reported, and set from ZTK_TEST_SEED to get that world back.
+	 */
+	seed = test_seed_rng();
+
 	require(player_make_simple(NULL, NULL, "Wanderer"));
 	prepare_next_level(player);
+
+	/*
+	 * Both numbers, because they answer different questions: the seed is what
+	 * reproduces this run, and seed_flavor is what the world was built from, so
+	 * two runs reporting the same one are looking at the same map.
+	 */
+	printf("SEED %u world %u -- replay with ZTK_TEST_SEED=%u\n",
+		   (unsigned) seed, (unsigned) seed_flavor, (unsigned) seed);
 
 	return 0;
 }
@@ -824,12 +843,15 @@ static int test_world_position_survives_a_save(void *state) {
 	struct loc grid = player->wild_grid;
 	struct loc offset = player->wild_offset;
 	int town_x, town_y;
+	char save[64];
+
+	test_savefile_name(save, sizeof(save), "Test-wild");
 
 	/* Walk a little first, so the position saved is not the starting one. */
 	player->wild_grid.x = grid.x + 3;
 	player->wild_grid.y = grid.y + 2;
 
-	require(savefile_save("Test-wild"));
+	require(savefile_save(save));
 
 	town_x = wild->towns[0].block.x;
 	town_y = wild->towns[0].block.y;
@@ -841,7 +863,7 @@ static int test_world_position_survives_a_save(void *state) {
 	init_angband();
 	play_again = false;
 
-	require(savefile_load("Test-wild", false));
+	require(savefile_load(save, false));
 
 	require(player->in_wild);
 	eq(player->wild_grid.x, grid.x + 3);
@@ -854,7 +876,7 @@ static int test_world_position_survives_a_save(void *state) {
 	eq(wild->towns[0].block.x, town_x);
 	eq(wild->towns[0].block.y, town_y);
 
-	file_delete("Test-wild");
+	file_delete(save);
 
 	ok;
 }
@@ -1235,6 +1257,9 @@ static int test_the_map_survives_a_save_from_below(void *state) {
 	struct loc taken = loc(-1, -1);
 	struct chunk *back;
 	int feat;
+	char save[64];
+
+	test_savefile_name(save, sizeof(save), "Test-know");
 
 	require(square_in_bounds_fully(cave, probe));
 	square_memorize(cave, probe);
@@ -1250,7 +1275,7 @@ static int test_the_map_survives_a_save_from_below(void *state) {
 		wild_keep_knowledge(known, offset);
 	}
 
-	require(savefile_save("Test-know"));
+	require(savefile_save(save));
 
 	play_again = true;
 	wipe_mon_list(cave, player);
@@ -1259,7 +1284,7 @@ static int test_the_map_survives_a_save_from_below(void *state) {
 	init_angband();
 	play_again = false;
 
-	require(savefile_load("Test-know", false));
+	require(savefile_load(save, false));
 
 	/* It came back, at the offset it was left at, with the grid still known. */
 	back = wild_take_knowledge(&taken);
@@ -1270,7 +1295,7 @@ static int test_the_map_survives_a_save_from_below(void *state) {
 	eq(square(back, probe)->feat, feat);
 
 	cave_free(back);
-	file_delete("Test-know");
+	file_delete(save);
 
 	ok;
 }
@@ -2022,6 +2047,9 @@ static int test_the_window_survives_a_save(void *state) {
 	int span = wild_view_blocks() * size;
 	struct loc here, first, second;
 	struct chunk *a, *b;
+	char save[64];
+
+	test_savefile_name(save, sizeof(save), "Test-window");
 
 	/* Stand well inside the world and build a window there. */
 	here = loc(span * 4 + size * 3 + 5, span * 4 + size * 3 + 5);
@@ -2033,7 +2061,7 @@ static int test_the_window_survives_a_save(void *state) {
 	player->wild_offset = first;
 	player->in_wild = true;
 
-	require(savefile_save("Test-window"));
+	require(savefile_save(save));
 
 	play_again = true;
 	wipe_mon_list(cave, player);
@@ -2042,7 +2070,7 @@ static int test_the_window_survives_a_save(void *state) {
 	init_angband();
 	play_again = false;
 
-	require(savefile_load("Test-window", false));
+	require(savefile_load(save, false));
 
 	/*
 	 * Now walk west far enough that the window must follow.  The axis that did
@@ -2063,7 +2091,7 @@ static int test_the_window_survives_a_save(void *state) {
 	eq(wild_scroll_delta().x, first.x - second.x);
 	require(wild_scroll_delta().x != 0);
 
-	file_delete("Test-window");
+	file_delete(save);
 
 	ok;
 }

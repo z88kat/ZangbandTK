@@ -46,7 +46,15 @@ int setup_tests(void **state) {
 }
 
 int teardown_tests(void *state) {
-	file_delete("Test1");
+	/*
+	 * This suite writes no savefile; the delete is left over from when the name
+	 * was shared with game/basic.c, and now names only what this process could
+	 * have written.
+	 */
+	char savename[64];
+
+	test_savefile_name(savename, sizeof(savename), "Test1");
+	file_delete(savename);
 	wipe_mon_list(cave, player);
 	cleanup_angband();
 	return 0;

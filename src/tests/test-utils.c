@@ -15,6 +15,58 @@
 #include "test-utils.h"
 #include "unit-test.h"
 #include "z-util.h"
+#include "z-form.h"
+#include "z-rand.h"
+
+#ifdef UNIX
+#include <unistd.h>
+#elif defined(_WIN32)
+#include <windows.h>
+#endif
+
+/**
+ * This process's id, or 0 where there is no way to ask.
+ */
+static int test_process_id(void)
+{
+#ifdef UNIX
+	return (int) getpid();
+#elif defined(_WIN32)
+	return (int) GetCurrentProcessId();
+#else
+	return 0;
+#endif
+}
+
+uint32_t test_seed_rng(void)
+{
+	uint32_t seed;
+	const char *forced = getenv("ZTK_TEST_SEED");
+
+	if (forced && forced[0]) {
+		seed = (uint32_t) strtoul(forced, NULL, 10);
+	} else {
+		/*
+		 * Not the clock alone.  Two copies started in the same second would
+		 * otherwise draw the same world, which is exactly the case a
+		 * concurrent run is meant to spread out.
+		 */
+		seed = (uint32_t) time(NULL) ^ ((uint32_t) test_process_id() << 16);
+	}
+
+	/*
+	 * After init_angband(), deliberately.  Rand_init() has already seeded from
+	 * the clock by then, and this replaces that choice with one we can report.
+	 */
+	Rand_state_init(seed);
+
+	return seed;
+}
+
+void test_savefile_name(char *buf, size_t len, const char *stem)
+{
+	strnfmt(buf, len, "%s-%d", stem, test_process_id());
+}
 
 #if defined(SOUND_SDL) || defined(SOUND_SDL2)
 #include "sound.h"
