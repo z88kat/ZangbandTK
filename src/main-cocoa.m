@@ -1972,6 +1972,13 @@ static BOOL graphics_will_be_enabled(void)
  */
 static BOOL game_in_progress = NO;
 
+/**
+ * Set when File->Open has been chosen but the panel that picks the savefile
+ * has not been put up yet.  See openGame: for why those are two separate
+ * things.
+ */
+static BOOL open_panel_requested = NO;
+
 
 #pragma mark Prototypes
 static BOOL redraw_for_tiles_or_term0_font(void);
@@ -5746,7 +5753,15 @@ static void cocoa_reinit(void)
     }
 }
 
-- (IBAction)openGame:sender
+/**
+ * Put the panel that chooses a savefile up, and start the game if one is
+ * picked.
+ *
+ * Only ever call this from beginGame's loop below, with nothing else of ours
+ * on the stack.  It cannot live in openGame:, where it plainly belongs, for
+ * the reason given there.
+ */
+- (void)runOpenPanel
 {
     @autoreleasepool {
 	BOOL selectedSomething = NO;
@@ -5797,6 +5812,34 @@ static void cocoa_reinit(void)
 	    game_in_progress = YES;
 	}
     }
+}
+
+/**
+ * Note that the player wants to open a savefile and let beginGame's loop put
+ * the panel up once it is safe to.
+ *
+ * Running the panel from here instead hangs the game.  The menu click arrives
+ * while beginGame is blocked inside nextEventMatchingMask, and AppKit runs the
+ * entire menu session -- the tracking, the dismissal and this action -- from
+ * inside that dequeue rather than from the sendEvent: below it.  So this runs
+ * with the event machinery still in flight, and the nested run loop NSOpenPanel
+ * spins to wait for the process that draws the panel never gets to service the
+ * reply.  The wait then never ends: no panel appears, the game stops answering,
+ * and it has to be killed.
+ *
+ * newGame: has never had the problem because it only sets a flag, which is now
+ * all this does too.
+ */
+- (IBAction)openGame:sender
+{
+    open_panel_requested = YES;
+
+    /*
+     * The menu has already eaten the click, so without this the loop would sit
+     * in nextEventMatchingMask waiting for an unrelated event before it looked
+     * at the flag.
+     */
+    wakeup_event_loop();
 }
 
 - (IBAction)saveGame:sender
@@ -5892,6 +5935,16 @@ static void cocoa_reinit(void)
 	@autoreleasepool {
 	    NSEvent *event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantFuture] inMode:NSDefaultRunLoopMode dequeue:YES];
 	    if (event) [NSApp sendEvent:event];
+
+	    /*
+	     * Not in openGame: itself.  By this point the menu session that ran
+	     * that action has finished and the event that started it is out of
+	     * the queue, so the panel can spin the nested run loop it needs.
+	     */
+	    if (open_panel_requested) {
+		open_panel_requested = NO;
+		[self runOpenPanel];
+	    }
 	}
     }
 

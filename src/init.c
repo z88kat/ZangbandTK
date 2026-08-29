@@ -3809,7 +3809,7 @@ static struct patron_reward *patron_rewards = NULL;
 /** Whether the last record read was a reward or a Lord. */
 static bool patron_in_reward = false;
 
-struct patron_reward *patron_reward_by_code(const char *code) {
+static struct patron_reward *patron_reward_by_code(const char *code) {
 	struct patron_reward *r;
 
 	for (r = patron_rewards; r; r = r->next)
