@@ -153,11 +153,6 @@ note = "Damages melee attackers with cold."
 milestone = "M2"
 note = "Damages melee attackers with electricity."
 
-[implement.CAN_SPEAK]
-milestone = "M2"
-note = """Monster taunts the player in messages. Pure flavour, but it is a lot \
-of Zangband's character and affects 89 monsters."""
-
 [implement.SHAPECHANGER]
 milestone = "M3"
 note = "Monster changes appearance at random. 4.2 has player shapes only."

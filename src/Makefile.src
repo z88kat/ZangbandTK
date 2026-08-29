@@ -206,6 +206,7 @@ ANGFILES0 = \
 	mon-move.o \
 	mon-msg.o \
 	mon-predicate.o \
+	mon-speech.o \
 	mon-spell.o \
 	mon-summon.o \
 	mon-timed.o \

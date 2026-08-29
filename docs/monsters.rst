@@ -64,6 +64,30 @@ out of the books, where a dying prince's curse is a real and lasting weapon —
 Corwin lays one on Eric at the end of *Nine Princes in Amber*, and it outlives
 them both.
 
+Monsters that talk
+------------------
+
+Eighty-nine of the imported monsters have something to say. They speak in a
+fight, roughly one turn in eight and only when you can see them; they say
+something different once they have turned and run; and they have a last word
+when they die. It is Zangband's own writing, and it is a large part of why its
+dungeon felt inhabited rather than stocked.
+
+There is one thing in it that is not flavour. When a **unique** that could talk
+dies, about one time in ten it turns out there was a price on its head:
+
+.. code-block:: text
+
+   There was a price on Robin Hood, the Outlaw's head.
+   Robin Hood, the Outlaw was wanted for smuggling.
+   You collect a reward of 4750 gold pieces.
+
+The reward scales with the monster's level and runs from 250 gold to 32,000, so
+a deep unique that happened to be wanted is worth a great deal more than its
+drop. There is no way to seek this out — you cannot tell in advance which
+monsters were wanted, and the same monster is not always wanted twice — but it
+is a reason to read what the dead say rather than scroll past it.
+
 How dangerous are they?
 -----------------------
 
@@ -94,8 +118,8 @@ Not yet implemented
 -------------------
 
 Some imported monsters carry abilities that are recorded but not yet active:
-resistance to teleportation, reflecting bolt spells, damaging auras, and the
-ability to taunt you. Monsters possessing them behave as though they do not.
+resistance to teleportation, reflecting bolt spells, and damaging auras.
+Monsters possessing them behave as though they do not.
 
 A further group of abilities depends on the wilderness, which does not exist
 yet: which terrain a monster prefers, which dungeons it inhabits, and whether it

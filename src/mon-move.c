@@ -35,6 +35,7 @@
 #include "mon-make.h"
 #include "mon-move.h"
 #include "mon-predicate.h"
+#include "mon-speech.h"
 #include "mon-spell.h"
 #include "mon-util.h"
 #include "mon-timed.h"
@@ -1527,6 +1528,13 @@ static void monster_turn(struct monster *mon)
 	/* Get the monster name */
 	monster_desc(m_name, sizeof(m_name), mon,
 		MDESC_CAPITAL | MDESC_IND_HID | MDESC_COMMA);
+
+	/*
+	 * Some of them talk while they do it (ZangbandTK, CNT-04).  At the top of
+	 * the turn rather than the bottom, so a monster that dies to a trap or
+	 * finishes its turn out of sight has still had its say.
+	 */
+	monster_speak(mon);
 
 	/* If we're in a web, deal with that */
 	if (square_iswebbed(cave, mon->grid)) {

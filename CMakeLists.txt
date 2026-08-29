@@ -209,6 +209,7 @@ add_library(OurCoreLib OBJECT
         src/mon-move.c
         src/mon-msg.c
         src/mon-predicate.c
+        src/mon-speech.c
         src/mon-spell.c
         src/mon-summon.c
         src/mon-timed.c
@@ -864,6 +865,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     monster/desc.c
     monster/lethality.c
     monster/monster.c
+    monster/speech.c
     object/alloc.c
     object/attack.c
     object/info.c

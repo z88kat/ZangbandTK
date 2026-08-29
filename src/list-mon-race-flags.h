@@ -98,4 +98,11 @@ RF(NO_SLOW,		RFT_PROT,		"slowed")
  * after it in a savefile already written.
  */
 RF(AMBERITE,	RFT_RACE_N,		"Amberite")
+/*
+ * ZangbandTK (CNT-04).  The monster has something to say -- in a fight, when it
+ * turns to run, and when it dies.  No lore line, because Zangband gave it none:
+ * you find out a thing can talk by hearing it.  Appended for the same savefile
+ * reason as AMBERITE above.
+ */
+RF(CAN_SPEAK,	RFT_OBV,		"")
 /* end flags */

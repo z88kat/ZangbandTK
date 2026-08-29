@@ -42,6 +42,7 @@
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "mon-msg.h"
+#include "mon-speech.h"
 #include "mon-summon.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -5913,6 +5914,73 @@ struct file_parser hints_parser = {
 
 /**
  * ------------------------------------------------------------------------
+ * Initialize what a monster says (ZangbandTK, CNT-04)
+ * ------------------------------------------------------------------------ */
+
+struct monster_speech mon_speech;
+
+static enum parser_error parse_speech_line(struct parser *p, const char *key)
+{
+	struct monster_speech_pool *pool = monster_speech_pool(&mon_speech, key);
+	const char *text = parser_getstr(p, "text");
+
+	if (!pool) return PARSE_ERROR_INTERNAL;
+
+	pool->line = mem_realloc(pool->line, (pool->count + 1) * sizeof(*pool->line));
+	pool->line[pool->count++] = string_make(text);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_speech_speak(struct parser *p) {
+	return parse_speech_line(p, "speak");
+}
+
+static enum parser_error parse_speech_fear(struct parser *p) {
+	return parse_speech_line(p, "fear");
+}
+
+static enum parser_error parse_speech_death(struct parser *p) {
+	return parse_speech_line(p, "death");
+}
+
+static enum parser_error parse_speech_crime(struct parser *p) {
+	return parse_speech_line(p, "crime");
+}
+
+static struct parser *init_parse_speech(void) {
+	struct parser *p = parser_new();
+	parser_reg(p, "speak str text", parse_speech_speak);
+	parser_reg(p, "fear str text", parse_speech_fear);
+	parser_reg(p, "death str text", parse_speech_death);
+	parser_reg(p, "crime str text", parse_speech_crime);
+	return p;
+}
+
+static errr run_parse_speech(struct parser *p) {
+	return parse_file_quit_not_found(p, "monster_speech");
+}
+
+static errr finish_parse_speech(struct parser *p) {
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_speech(void)
+{
+	monster_speech_free(&mon_speech);
+}
+
+struct file_parser speech_parser = {
+	"monster_speech",
+	init_parse_speech,
+	run_parse_speech,
+	finish_parse_speech,
+	cleanup_speech
+};
+
+/**
+ * ------------------------------------------------------------------------
  * Game data initialization
  * ------------------------------------------------------------------------ */
 
@@ -5964,6 +6032,7 @@ static struct {
 	{ "quests", &quests_parser },
 	{ "flavours", &flavor_parser },
 	{ "hints", &hints_parser },
+	{ "monster speech", &speech_parser },
 	{ "random names", &names_parser }
 };
 

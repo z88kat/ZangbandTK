@@ -27,6 +27,7 @@
 #include "mon-make.h"
 #include "mon-msg.h"
 #include "mon-predicate.h"
+#include "mon-speech.h"
 #include "mon-spell.h"
 #include "mon-summon.h"
 #include "mon-timed.h"
@@ -1144,6 +1145,20 @@ static void player_kill_monster(struct monster *mon, struct player *p,
 		/* Update lore and tracking */
 		lore_update(mon->race, lore);
 		monster_race_track(p->upkeep, mon->race);
+	}
+
+	/*
+	 * Some monsters have something to say about it (ZangbandTK, CNT-04), and a
+	 * unique that could talk may turn out to have been wanted for something.
+	 * Before the blood curse, so that an Amberite gets its last word in before
+	 * the curse lands rather than after.
+	 */
+	if (rf_has(mon->race->flags, RF_CAN_SPEAK)) {
+		char spoke_name[80];
+
+		monster_desc(spoke_name, sizeof(spoke_name), mon, MDESC_CAPITAL);
+		monster_speak_death(mon, spoke_name);
+		monster_claim_bounty(p, mon, spoke_name);
 	}
 
 	/*
