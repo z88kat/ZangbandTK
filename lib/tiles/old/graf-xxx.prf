@@ -1536,3 +1536,6 @@ monster:Multi-hued hound:0xA2:0x83
 
 # Load the flavored objects
 %:flvr-xxx.prf
+
+# Load ZangbandTK's stand-in tiles (generated)
+%:graf-ztk.prf

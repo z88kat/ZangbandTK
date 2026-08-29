@@ -1464,3 +1464,6 @@ GF:GRAVITY | INERTIA:135:0x82:0xB7
 
 # Load the flavored objects
 %:flvr-shb.prf
+
+# Load ZangbandTK's stand-in tiles (generated)
+%:graf-ztk.prf

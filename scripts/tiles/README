@@ -1,0 +1,55 @@
+Tiles for monsters Angband does not have
+========================================
+
+ZangbandTK adds 391 monsters to Angband's 624, and none of them appear in any
+of the five tilesets that ship with the game.  In graphics mode they used to
+render as ASCII letters among the pictures.
+
+    scripts/tiles/borrow-tiles.py            regenerate
+    scripts/tiles/borrow-tiles.py --dry-run  report without writing
+    scripts/tiles/borrow-tiles.py --check    verify what was written
+
+It writes graf-ztk.prf into each tileset's directory and adds one %: line to
+the tileset's own prf so it is loaded last.  Nothing hand-authored is touched,
+and a generated line only ever covers a monster that had no tile at all.
+
+How a tile is chosen
+--------------------
+
+The monster must share a `base:` with an Angband monster the tileset already
+draws -- a snake never borrows from a dog.  Sharing the `color:` too is much
+better, because colour is most of what a small tile says.  Nearest `depth:`
+breaks the tie, and that part matters: without it Bloodfang the Wolf borrowed a
+scruffy little dog.
+
+Uniques are left alone
+----------------------
+
+Deliberately, and it is the most important thing here.  A borrowed tile is a
+fair stand-in for a common monster and a lie about a named one -- and the lie
+is bad in a specific way.  Matched on base and depth, Oberon of Amber, Dworkin
+Barimen and Mandor all come out wearing the Mouth of Sauron's face.  For a game
+whose whole purpose is to move away from that, three Amber princes in Tolkien's
+clothing is worse than no picture at all.  An ASCII letter says "not drawn
+yet".  A wrong portrait says something false.
+
+The 122 imported uniques therefore render as text until somebody draws them.
+
+Two ways this goes wrong quietly
+--------------------------------
+
+`lookup_monster()` falls back to a substring match, so a misspelled name binds
+to whatever happens to contain it.  And the renderer takes the cell index
+modulo the sheet size, so an out-of-range coordinate draws a different picture
+instead of failing.  Neither produces an error message.
+
+Both are avoided by construction -- names are read from the data files and
+coordinates are copied verbatim from lines the tileset already uses -- and
+--check is what proves it.
+
+Replacing a placeholder with real art
+-------------------------------------
+
+Delete the monster's line from graf-ztk.prf and add a proper mapping to the
+tileset's own prf.  Re-running the script will not put it back: it only writes
+lines for monsters that have no tile from any other file.

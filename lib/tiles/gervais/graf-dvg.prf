@@ -1533,3 +1533,6 @@ GF:CHAOS:135:0x81:0xA3
 
 # Load the flavored objects
 %:flvr-dvg.prf
+
+# Load ZangbandTK's stand-in tiles (generated)
+%:graf-ztk.prf

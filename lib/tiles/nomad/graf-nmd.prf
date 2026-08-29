@@ -1522,3 +1522,6 @@ monster:Father Christmas:0x0D:0x68
 
 # Load the flavored objects
 %:flvr-nmd.prf
+
+# Load ZangbandTK's stand-in tiles (generated)
+%:graf-ztk.prf

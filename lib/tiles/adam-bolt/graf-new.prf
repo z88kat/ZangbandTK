@@ -1553,3 +1553,6 @@ monster:dúnadan of Angmar:0xB2:0x82
 # Load the flavored objects
 %:flvr-new.prf
 
+
+# Load ZangbandTK's stand-in tiles (generated)
+%:graf-ztk.prf
