@@ -105,7 +105,9 @@ rebuild. Manual chapter: how balance differs from both ancestors.
 
 - BAL-09, BAL-10 — curve calibration for imported monsters; unmapped flag reporting.
 - CNT-01 to CNT-04 — the monster import, Amber and Mythos unique sets, flag resolution
-  across 118 distinct flag tokens.
+  across 118 distinct flag tokens. **CNT-02 is closed by the `AMBERITE` flag**: the twelve
+  arrived with the import, but nothing connected them until the flag gave them a shared
+  kind, the `S_AMBERITES` summon and the blood curse a dying one lays on its killer.
 - CNT-06 to CNT-09 — artifacts and ego items, translated into 4.2's `object_property`,
   `brand`, `slay` and `curse` structures.
 - CNT-11 — remaining Zangband-only objects.

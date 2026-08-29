@@ -101,6 +101,15 @@ uniques:0
 race-flag:DEMON
 desc:demons
 
+# ZangbandTK (CNT-02): the scions of Amber, called to their own.  Uniques are
+# allowed because every Amberite is one -- there is only one Benedict -- so a
+# summon that refused uniques would summon nobody at all.
+name:AMBERITE
+msgt:SUM_UNIQUE
+uniques:1
+race-flag:AMBERITE
+desc:the Lords of Amber
+
 name:UNDEAD
 msgt:SUM_UNDEAD
 uniques:0

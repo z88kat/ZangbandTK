@@ -1146,6 +1146,38 @@ static void player_kill_monster(struct monster *mon, struct player *p,
 		monster_race_track(p->upkeep, mon->race);
 	}
 
+	/*
+	 * A dying Amberite lays a blood curse on whoever killed it (ZangbandTK,
+	 * CNT-02).
+	 *
+	 * Zangband filed this under "Don't kill Amberites": half the time, killing
+	 * one of Oberon's blood costs more than the fight did.  The equipment is
+	 * cursed and the Ancient and Foul Curse is invoked two to four times over
+	 * ([xtra2.c:1103](../archive/zangband/src/xtra2.c#L1103)).  It is the one
+	 * behaviour the twelve share, and what makes them a family rather than
+	 * twelve separate uniques -- and it is the books' own: Corwin curses Eric
+	 * with his dying breath at the end of *Nine Princes in Amber*.
+	 *
+	 * Here rather than in monster_death(), which 4.2 also reaches when one
+	 * monster kills another.  A curse for a fight the player took no part in
+	 * would be a misfortune with no visible cause.
+	 */
+	if (rf_has(mon->race->flags, RF_AMBERITE) && one_in_(2)) {
+		struct source origin = source_monster(mon->midx);
+		char killed_name[80];
+		int curses = rand_range(2, 4);
+
+		monster_desc(killed_name, sizeof(killed_name), mon, MDESC_CAPITAL);
+		msg("%s puts a terrible blood curse on you!", killed_name);
+
+		effect_simple(EF_CURSE_WEAPON, origin, "0", 0, 0, 0, 0, 0, NULL);
+		effect_simple(EF_CURSE_ARMOR, origin, "0", 0, 0, 0, 0, 0, NULL);
+
+		while (curses--) {
+			effect_simple(EF_ANCIENT_CURSE, origin, "0", 0, 0, 0, 0, 0, NULL);
+		}
+	}
+
 	/* Delete the monster */
 	delete_monster_idx(cave, mon->midx);
 }

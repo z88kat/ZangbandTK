@@ -90,4 +90,12 @@ RF(NO_CONF,		RFT_PROT,		"confused")
 RF(NO_SLEEP,	RFT_PROT,		"slept")
 RF(NO_HOLD,		RFT_PROT,		"held")
 RF(NO_SLOW,		RFT_PROT,		"slowed")
+/*
+ * ZangbandTK (CNT-02).  A scion of Amber: the twelve of Oberon's blood, which
+ * is a kind of creature here rather than a label.  Appended rather than filed
+ * with the other RFT_RACE_N flags because a monster's known flags are stored by
+ * position in the lore, and inserting one in the middle would shift every flag
+ * after it in a savefile already written.
+ */
+RF(AMBERITE,	RFT_RACE_N,		"Amberite")
 /* end flags */

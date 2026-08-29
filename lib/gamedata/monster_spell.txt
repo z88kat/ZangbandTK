@@ -1232,3 +1232,13 @@ lore:summon uniques
 lore-color-base:Light Red
 message-vis:{name} summons {pronoun} servants.
 message-invis:You hear powerful things appear nearby!
+
+name:S_AMBERITES
+msgt:SUM_UNIQUE
+hit:100
+effect:SUMMON:AMBERITE
+dice:4
+lore:summon Lords of Amber
+lore-color-base:Light Red
+message-vis:{name} summons the blood of Amber!
+message-invis:You hear regal voices nearby!

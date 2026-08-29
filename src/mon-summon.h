@@ -40,6 +40,7 @@ struct summon {
 
 /** Variables **/
 extern struct monster_base *kin_base;
+extern struct summon *summons;
 extern struct file_parser summon_parser;
 
 /** Functions **/

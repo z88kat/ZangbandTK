@@ -158,11 +158,6 @@ milestone = "M2"
 note = """Monster taunts the player in messages. Pure flavour, but it is a lot \
 of Zangband's character and affects 89 monsters."""
 
-[implement.AMBERITE]
-milestone = "M2"
-note = """Marks the scions of Amber. Governs the S_AMBERITES summon and their \
-shared behaviour, so CNT-02's 'coherent set' requirement depends on it."""
-
 [implement.SHAPECHANGER]
 milestone = "M3"
 note = "Monster changes appearance at random. 4.2 has player shapes only."

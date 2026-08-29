@@ -60,10 +60,17 @@ Zangband's identity is three literary overlays on Angband's Tolkien base. This i
 "the spirit of Zangband" concretely means in content terms.
 
 **Amber (Roger Zelazny).** The largest overlay: 34 Amberite references in the bestiary plus
-the princes of Amber as uniques — Benedict, Corwin, Eric, Julian, Caine, Gerard, Fiona,
-Bleys, Brand, Random. It reaches into artifacts (*Grayswandir*, *Frakir*) and ego types
+the princes of Amber as uniques. Twelve carry Zangband's `AMBERITE` flag, and they are the
+set: **Oberon, Benedict, Corwin, Eric, Caine, Gerard, Julian, Bleys, Fiona, Brand, Dworkin
+and Rinaldo**. It reaches into artifacts (*Grayswandir*, *Frakir*) and ego types
 (*Pattern Weapon*, *Trump Weapon*), and into the magic system as the Trump realm. Amber is
 not decoration in Zangband; it is load-bearing.
+
+> *This list previously named Random and omitted Oberon, Dworkin and Rinaldo.* It had been
+> written from the novels rather than from `r_info.txt`, and **Random is not in Zangband's
+> bestiary at all** — checked, not assumed. The roster above is the twelve the flag is
+> actually on, which is the same mistake DEC-38 caught in the patron list and the same fix:
+> a roster is a fact, so it gets looked up.
 
 **Cthulhu Mythos (Lovecraft).** Nyarlathotep, Hastur, Shub-Niggurath, Azathoth, Yog-Sothoth,
 Tsathoggua as deep uniques.
@@ -118,6 +125,17 @@ BAL-09 and the global lethality scalar of BAL-13 applied.
 **CNT-02 — The Amber uniques are present as a coherent set** — the princes named in §2,
 with the relationships and relative power that make them recognisable rather than a scatter
 of similar uniques.
+
+> **Met.** The twelve arrived with M2, at their own depths and their own strengths, which
+> covered *relative power*. What they did not have until now was anything connecting them:
+> no shared kind, no group summon, nothing they did as a family. On the requirement's own
+> words they were precisely "a scatter of similar uniques" — thirty-four Amber references in
+> the bestiary and no Amber in the code.
+>
+> The `AMBERITE` flag closes that. They are a kind the lore names, the `S_AMBERITES` summon
+> calls its own, and a dying one lays a blood curse on whoever killed it. Guarded by
+> [monster/amberite](../../src/tests/monster/amberite.c), which fails if the set is not
+> exactly twelve.
 
 **CNT-03 — The Mythos uniques are present as deep-level encounters** (§2).
 

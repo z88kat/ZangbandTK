@@ -859,6 +859,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     game/mage.c
     game/wild.c
     message/message.c
+    monster/amberite.c
     monster/attack.c
     monster/desc.c
     monster/lethality.c

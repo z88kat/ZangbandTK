@@ -4474,6 +4474,7 @@ spells:WOUND | BO_WATE | BO_MANA | BA_MANA
 spell-freq:50
 light:2
 flags:UNIQUE | MALE | FORCE_SLEEP | ONLY_ITEM | DROP_2 | DROP_GOOD | SMART | OPEN_DOOR | BASH_DOOR | IM_ACID | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
+flags:AMBERITE
 desc:The madman's son is a Logrus Master, almost as great a menace as his father.
 
 name:archon
@@ -5720,6 +5721,7 @@ spells:HEAL | BLIND | CONF | SCARE | WOUND | BRAIN_SMASH | FORGET | S_MONSTERS |
 spell-freq:25
 light:1
 flags:UNIQUE | MALE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | ATTR_MULTI | IM_DISEN | ATTR_RAND | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
+flags:AMBERITE
 desc:Once this now gnomish creature created the universe with the Jewel of Judgement - or so you have been told. There is little sanity left in his present form even if he still has the power. "He was a small man. Tiny, might be an even better word. He was around five feet tall and a hunchback. His hair and beard were as heavy as (Corwin's). The only distinguishing features in that great mass of fur were his long, hook nose and his almost black eyes, now squinted against the light... Dworkin: 'I am Oberon's prisoner.' Corwin: 'Oh? None of us knew that Dad had locked you up.' (Corwin) heard (Dworkin) weeping. 'Yes,' he said after a long time. 'He didn't trust me.' 'Why not?' 'I told him I'd thought of a way to destroy Amber. I described it to him, and he locked me in.'"
 
 name:Daoloth, the Render of the Veils
@@ -5828,6 +5830,7 @@ spells:BLIND | CONF | TPORT | BLINK | BA_FIRE | BA_COLD | DRAIN_MANA | WOUND | B
 spell-freq:50
 light:2
 flags:UNIQUE | MALE | ATTR_MULTI | ATTR_RAND | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | SMART | OPEN_DOOR | BASH_DOOR | EVIL | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
+flags:AMBERITE
 desc:Brand sees himself as a hero, the god creator and absolute monarch of a future world. Unfortunately he needs to erase the existing world to make his new world. "...a figure both like Bleys and (Corwin). (Corwin's) features, though smaller, his eyes, Bleys' hair, beardless. He wore a riding suit of green and sat atop a white horse... There was a quality of both strength and weakness, questing and abandonment about him."
 
 name:shadowlord
@@ -6035,6 +6038,7 @@ spells:SCARE | BLIND | CONF | TPORT | BLINK | TELE_AWAY | TELE_TO | TELE_LEVEL |
 spell-freq:33
 light:2
 flags:UNIQUE | MALE | FORCE_SLEEP | NO_CONF | NO_SLEEP | DROP_4 | DROP_GOOD | ONLY_ITEM | EVIL | IM_FIRE | IM_ELEC | SMART | REGENERATE | OPEN_DOOR | BASH_DOOR
+flags:AMBERITE
 desc:This cunning Amberite is the master of subtle ploys. "...a fiery bearded, flame-crowned man, dressed all in red and orange, mainly of silk stuff, and he held a sword in his right hand and a glass of wine in his left, and the devil himself danced behind his eyes... His chin was light, but the beard covered it. His sword was inlaid with an elaborate filigree of a golden color. He wore two huge rings on his right hand and one on his left: an emerald, a ruby, and a sapphire, respectively."
 
 name:Fiona the Sorceress
@@ -6057,6 +6061,7 @@ spells:SCARE | BLIND | CONF | TPORT | BLINK | TELE_AWAY | TELE_TO | TRAPS | WOUN
 spell-freq:33
 light:2
 flags:UNIQUE | FEMALE | ONLY_ITEM | FORCE_SLEEP | NO_CONF | NO_SLEEP | DROP_4 | DROP_GOOD | EVIL | IM_POIS | IM_ELEC | SMART | REGENERATE | OPEN_DOOR | BASH_DOOR
+flags:AMBERITE
 desc:She is beautiful and deadly. "...I have always been very fond of Fiona. She is certainly the loveliest, most civilized of (all Amberites)."
 
 name:sky drake
@@ -6100,6 +6105,7 @@ spells:TPORT | TELE_TO | ARROW | SHRIEK | SCARE | DARKNESS | S_ANIMAL | S_SPIDER
 spell-freq:25
 light:2
 flags:UNIQUE | MALE | FORCE_SLEEP | NO_CONF | NO_SLEEP | DROP_4 | DROP_GOOD | ONLY_ITEM | EVIL | IM_POIS | IM_ELEC | IM_COLD | SMART | REGENERATE | OPEN_DOOR | BASH_DOOR
+flags:AMBERITE
 desc:Julian is at home in wild woodlands. He enjoys hunting a challenging prey: you. "Julian, dark hair hanging long, blue eyes containing neither passion nor compassion. He was dressed completely in scaled white armor, not silver or metallic-colored, but looking as if it had been enameled."
 
 name:The Norsa
@@ -6164,6 +6170,7 @@ spells:TPORT | TELE_TO | SCARE | DARKNESS | S_DRAGON | TRAPS | BO_WATE | BO_NETH
 spell-freq:25
 light:2
 flags:UNIQUE | MALE | OPEN_DOOR | BASH_DOOR | FORCE_SLEEP | NO_CONF | NO_SLEEP | DROP_4 | DROP_GOOD | ONLY_ITEM | EVIL | IM_POIS | IM_COLD | SMART | REGENERATE
+flags:AMBERITE
 desc:Caine is perhaps the least reliable Amberite, always ready to ignore his pacts and promises when it suits him. "...the swarthy, dark-eyed countenance of Caine, dressed all in satin that was black and green, wearing a dark three-cornered hat set at a rakish angle, and a green plume of feathers trailing down in the back. He was standing in the profile, one arm akimbo, and toes of his boots curled upwards, and he wore an emerald-studded dagger at his belt... He was dark."
 
 name:Null the Living Void
@@ -6225,6 +6232,7 @@ spells:HEAL | TPORT | TELE_TO | SCARE | BLIND | S_MONSTERS
 spell-freq:25
 light:2
 flags:UNIQUE | MALE | FORCE_SLEEP | NO_CONF | NO_SLEEP | KILL_WALL | DROP_4 | DROP_GOOD | ONLY_ITEM | EVIL | IM_POIS | IM_ACID | IM_FIRE | REGENERATE | OPEN_DOOR | BASH_DOOR
+flags:AMBERITE
 desc:Gerard may not be quite as devious as the other Amberites, but he is certainly stronger than the rest of them put together. "...a big, powerful man... (He) resembled (Corwin) quite strongly, save that his jaw was heavier, and (Corwin) knew he was bigger than him, though slower. His strength was a thing out of legend. He wore a dressing gown of blue and gray clasped around the middle with a wide, black belt, and he stood laughing. About his neck, on a heavy cord, there hung a silver hunting horn. He wore a fringe beard and a light mustache. In his right hand he held a goblet of wine."
 
 name:Atlach-Nacha, the Spider God
@@ -6307,6 +6315,7 @@ spells:BLIND | S_MONSTER | DRAIN_MANA | S_MONSTERS | SCARE | CONF | TPORT | TELE
 spell-freq:25
 light:2
 flags:UNIQUE | MALE | SMART | OPEN_DOOR | BASH_DOOR | FORCE_SLEEP | NO_CONF | NO_SLEEP | DROP_4 | DROP_GOOD | ONLY_ITEM | EVIL | IM_POIS | IM_ACID | IM_ELEC | REGENERATE
+flags:AMBERITE
 desc:When Oberon disappeared, Eric seized the opportunity and claimed the throne, eliminating those who would have opposed him. "Handsome by anyone's standards, his hair was so dark, as to be almost blue. His beard curled around the mouth that always smiled, and he was dressed simply in a leather jacket and leggings, a plain cloak, high black boots, and he wore a red sword belt bearing a long silvery saber and clasped with a ruby, and his high cloak, collar round his head was lined with red and the trimmings of his sleeves matched it. His hands, thumbs hooked behind his belt, were terribly strong and prominent. A pair of black gloves jutted from his belt near his right tip."
 
 name:Yig, Father of Serpents
@@ -6432,6 +6441,7 @@ spells:SCARE | CONF | TPORT | TELE_TO | S_MONSTER | DRAIN_MANA | WOUND | BO_ACID
 spell-freq:25
 light:2
 flags:UNIQUE | MALE | SMART | OPEN_DOOR | BASH_DOOR | FORCE_SLEEP | NO_CONF | NO_SLEEP | DROP_4 | DROP_GOOD | ONLY_ITEM | EVIL | IM_COLD | IM_POIS | IM_ELEC | REGENERATE
+flags:AMBERITE
 desc:Corwin is one of the most feared and respected Amberites; his skill and cunning are well known. "Green eyes, black hair, dressed in black and silver, yes. (Corwin) had on a cloak and it was slightly furled as by a wind. (He) had on black boots, like Eric's, and (he) too bore a blade, only (his) was heavier, though not quite as long as (Eric's). (He) had (his) gloves on and they were silver and scaled. The clasp at (his) neck was cast in the form of a silver rose."
 
 name:Cthugha, the Living Flame
@@ -6476,6 +6486,7 @@ spells:SCARE | CONF | TPORT | TELE_TO | DRAIN_MANA | TRAPS | BRAIN_SMASH | TELE_
 spell-freq:25
 light:2
 flags:UNIQUE | MALE | SMART | OPEN_DOOR | BASH_DOOR | FORCE_SLEEP | NO_CONF | NO_SLEEP | DROP_4 | DROP_GOOD | ONLY_ITEM | EVIL | IM_COLD | IM_POIS | IM_ELEC | IM_FIRE | REGENERATE
+flags:AMBERITE
 desc:In the field of combat Benedict rules supreme: with but one hand he was still superior to Corwin. "Benedict, tall and dour; thin of body, thin of face, wide of mind. He wore orange and yellow and brown and reminded me of haystacks and pumpkins and scarecrows and the Legend of Sleepy Hollow. He had a long, strong jaw and hazel eyes and brown hair that never curled. He stood beside a tan horse and leaned upon a lance about which was twined a rope of flowers. He seldom laughed."
 
 name:Cyaegha
@@ -6640,7 +6651,7 @@ experience:82418
 blow:HIT:BLIND:6d11
 blow:HIT:DISENCHANT:6d11
 blow:HIT:DRAIN_CHARGES:6d11
-spells:SHRIEK | HASTE | HEAL | DRAIN_MANA | TPORT | TELE_TO | TELE_AWAY | TELE_LEVEL | FORGET | S_HI_DEMON | S_DEMON | WOUND | S_HI_UNDEAD | S_UNIQUE | S_HI_DRAGON | BA_DARK | BA_MANA | S_UNDEAD
+spells:SHRIEK | HASTE | HEAL | DRAIN_MANA | TPORT | TELE_TO | TELE_AWAY | TELE_LEVEL | FORGET | S_HI_DEMON | S_DEMON | WOUND | S_HI_UNDEAD | S_UNIQUE | S_HI_DRAGON | BA_DARK | BA_MANA | S_UNDEAD | S_AMBERITES
 spell-freq:33
 flags:UNIQUE | MALE | FORCE_SLEEP | IM_NETHER | IM_PLASMA | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | EVIL | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY | TAKE_ITEM | IM_FIRE | NO_CONF | NO_SLEEP | IM_POIS | HURT_COLD | GIANT | REGENERATE
 desc:Loki, the god of mischief, is a nasty person. He will use every dirty trick in the book, and then some. In the end, his half-giant heritage is bound to show, as he will defect to the side of the giants and fight against the other gods of Asgard.
@@ -6996,7 +7007,7 @@ blow:KICK:DRAIN_CHARGES:13d13
 blow:KICK:DRAIN_CHARGES:12d12
 blow:BUTT:DISENCHANT:11d11
 blow:BITE:EXP_40:10d10
-spells:SHRIEK | BR_SOUN | BR_LIGHT | BR_INER | BR_TIME | BR_SHAR | BR_PLAS | BR_MANA | DRAIN_MANA | HEAL | HASTE | TELE_AWAY | BLINK | TPORT | FORGET | S_MONSTERS | S_HI_DRAGON | S_UNIQUE
+spells:SHRIEK | BR_SOUN | BR_LIGHT | BR_INER | BR_TIME | BR_SHAR | BR_PLAS | BR_MANA | DRAIN_MANA | HEAL | HASTE | TELE_AWAY | BLINK | TPORT | FORGET | S_MONSTERS | S_HI_DRAGON | S_UNIQUE | S_AMBERITES
 spell-freq:33
 light:1
 flags:UNIQUE | FORCE_SLEEP | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | IM_NETHER | IM_WATER | IM_PLASMA | IM_NEXUS | IM_DISEN | SMART | KILL_BODY | POWERFUL | BASH_DOOR | REGENERATE | NONLIVING | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | NO_CONF | NO_SLEEP | NO_FEAR | NO_STUN
@@ -7018,10 +7029,11 @@ blow:HIT:DISENCHANT:12d12
 blow:HIT:DRAIN_CHARGES:12d12
 blow:HIT:CONFUSE:10d2
 blow:HIT:BLIND:10d2
-spells:TPORT | SCARE | BLIND | S_DEMON | S_AINU | S_MONSTERS | TELE_TO | CONF | BO_MANA | BA_FIRE | BRAIN_SMASH | BA_NETH | BO_ICE | WOUND | BA_WATE | BO_PLAS | TELE_LEVEL | TELE_AWAY | FORGET | DARKNESS | BA_MANA | S_HI_DRAGON | S_HI_UNDEAD | S_HI_DEMON
+spells:TPORT | SCARE | BLIND | S_DEMON | S_AINU | S_MONSTERS | TELE_TO | CONF | BO_MANA | BA_FIRE | BRAIN_SMASH | BA_NETH | BO_ICE | WOUND | BA_WATE | BO_PLAS | TELE_LEVEL | TELE_AWAY | FORGET | DARKNESS | BA_MANA | S_HI_DRAGON | S_HI_UNDEAD | S_HI_DEMON | S_AMBERITES
 spell-freq:50
 light:2
 flags:UNIQUE | QUESTOR | MALE | ATTR_MULTI | FORCE_SLEEP | FORCE_DEPTH | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | SMART | OPEN_DOOR | BASH_DOOR | MOVE_BODY | REGENERATE | EVIL | IM_FIRE | IM_COLD | IM_ELEC | POWERFUL | NO_CONF | NO_SLEEP | NO_FEAR
+flags:AMBERITE
 desc:Oberon, the father or grandfather of most Amberites, is as powerful as ever. He is afraid that you will upset the balance and will not let you harm the Serpent of Chaos. "Oberon, Lord of Amber, stood before me in his green and his gold. High, wide and thick, his beard black and shot with silver, his hair the same. Green rings in gold settings and a blade of golden color."
 
 name:The Serpent of Chaos
@@ -7040,7 +7052,7 @@ blow:CRUSH:SHATTER:22d10
 blow:CRUSH:SHATTER:22d10
 blow:BITE:LOSE_ALL:10d12
 blow:TOUCH:DRAIN_CHARGES
-spells:S_MONSTERS | BR_CHAO | BA_MANA | BOULDER | BRAIN_SMASH | S_HI_DEMON | BR_NETH | HASTE | BR_MANA | S_HI_UNDEAD | S_HI_DRAGON | S_UNIQUE | BR_POIS | BR_SHAR | WOUND
+spells:S_MONSTERS | BR_CHAO | BA_MANA | BOULDER | BRAIN_SMASH | S_HI_DEMON | BR_NETH | HASTE | BR_MANA | S_HI_UNDEAD | S_HI_DRAGON | S_UNIQUE | BR_POIS | BR_SHAR | WOUND | S_AMBERITES
 spell-freq:33
 light:1
 flags:UNIQUE | QUESTOR | ATTR_MULTI | ATTR_RAND | FORCE_SLEEP | FORCE_DEPTH | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | IM_NETHER | SMART | KILL_WALL | KILL_BODY | POWERFUL | REGENERATE | NONLIVING | EVIL | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP | NO_FEAR | NO_STUN

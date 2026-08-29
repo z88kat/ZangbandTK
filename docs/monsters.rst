@@ -12,10 +12,14 @@ Where the new monsters come from
 Angband's monsters are Tolkien's. Zangband layered three further sources on
 top, and those are what ZangbandTK imports.
 
-**Amber.** The scions of Roger Zelazny's Amber — Corwin, Julian, Fiona, Bleys,
-Gerard, Benedict and their kin — appear as deep uniques, along with their
-servants and creatures. They are among the most dangerous things in the game and
-are meant to be met late.
+**Amber.** The scions of Roger Zelazny's Amber appear as deep uniques, along with
+their servants and creatures. They are among the most dangerous things in the
+game and are meant to be met late. There are twelve of Oberon's blood — Oberon
+himself, Benedict, Corwin, Eric, Caine, Gerard, Julian, Bleys, Fiona, Brand,
+Dworkin and Rinaldo — and the game treats them as a family rather than as twelve
+separate uniques. Look one up and its recall calls it an *Amberite*; some things
+in the depths can call the whole house down on you at once; and see
+:ref:`blood-curse` below for what killing one may cost.
 
 **The Cthulhu Mythos.** Nyarlathotep, Hastur, Shub-Niggurath and Tsathoggua
 dwell at the bottom of the dungeon, attended by formless spawn and dark young.
@@ -39,6 +43,26 @@ Angband has no symbol for them:
 The rest borrow Angband's own symbols where its bestiary already had a suitable
 class: floating spheres display as vortices, ents as trees, standing water as
 elementals.
+
+.. _blood-curse:
+
+The blood curse of Amber
+------------------------
+
+Killing one of Oberon's blood is not free. About half the time, a dying Amberite
+lays a blood curse on whoever killed it: your equipment is cursed, and the
+Ancient and Foul Curse falls on you two to four times over. That curse is the
+worst thing in the game — see :doc:`objects` — and having it arrive several times
+in a row, at the end of a fight you only just won, is how a good character dies.
+
+It is worth knowing before you pick the fight rather than after. There is no way
+to prevent it and no saving throw against it; the only choice is whether to make
+the kill at all, and whether to make it in a state fit to survive the aftermath.
+
+Zangband filed this under a two-word comment: *don't kill Amberites*. It comes
+out of the books, where a dying prince's curse is a real and lasting weapon —
+Corwin lays one on Eric at the end of *Nine Princes in Amber*, and it outlives
+them both.
 
 How dangerous are they?
 -----------------------
