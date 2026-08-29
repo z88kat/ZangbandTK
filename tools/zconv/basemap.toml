@@ -42,3 +42,16 @@
 # Concepts 4.2 has no template for. Added to monster_base.txt by ZangbandTK.
 "#" = { base = "wall monster", keep_glyph = true }
 "|" = { base = "animated weapon", keep_glyph = true }
+
+# Fish, sharks, whales, squid and krakens.  The one entry here that corrects a
+# glyph both games use and disagree about: Zangband drew aquatic monsters with
+# 'l' and 4.2 draws *trees* with 'l', so inferring the base from the character
+# gave all twenty-four of them the tree template -- and a base's flags are
+# inherited, so every shark in the game was immune to fear, immune to confusion
+# and regenerating, and Arden could spawn great whites because dungeons pick
+# their inhabitants by base.
+#
+# The glyph is dropped rather than kept.  These are not pretending to be
+# anything, and 4.2 had no aquatic template at all, so ZangbandTK's own carries
+# 'N' -- the last free letter in the game.
+"l" = { base = "fish", keep_glyph = false }

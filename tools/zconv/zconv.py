@@ -385,16 +385,23 @@ def cmd_monsters(args) -> int:
         # 'base' is mandatory in 4.2 — all 624 of its own monsters carry one.
         # Normally inferable from the glyph; basemap.toml covers the glyphs
         # whose 4.2 template lives under a different display character.
+        #
+        # basemap is consulted *before* the glyph is inferred from, because the
+        # interesting cases are the ones where inference does not fail loudly
+        # but succeeds wrongly.  Both games draw with 'l' and disagree about
+        # what it means -- aquatic here, trees there -- so an inference-first
+        # order silently made every shark a tree and never consulted the entry
+        # written to prevent exactly that.
         keep_glyph = True
-        if mon.symbol and mon.symbol in bases:
-            record("base", rules.Value(bases[mon.symbol], "CNT-01", rules.CONVERTED,
-                                       f"inferred from glyph '{mon.symbol}'"))
-        elif mon.symbol and mon.symbol in basemap:
+        if mon.symbol and mon.symbol in basemap:
             spec = basemap[mon.symbol]
             keep_glyph = spec.get("keep_glyph", True)
             record("base", rules.Value(spec["base"], "CNT-01", rules.CONVERTED,
                                        f"glyph '{mon.symbol}' mapped to 4.2's "
                                        f"'{spec['base']}' template"))
+        elif mon.symbol and mon.symbol in bases:
+            record("base", rules.Value(bases[mon.symbol], "CNT-01", rules.CONVERTED,
+                                       f"inferred from glyph '{mon.symbol}'"))
         elif mon.symbol:
             record("base", rules.Value("person", "CNT-01", rules.INVENTED,
                                        f"glyph '{mon.symbol}' has no 4.2 monster_base "
