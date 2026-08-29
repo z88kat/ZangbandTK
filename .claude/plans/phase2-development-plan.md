@@ -184,8 +184,16 @@ different from each other. Manual chapters: the wilderness, towns and services.
   progression, Mindcrafter with psionics, High-Mage.
 - PLR-07 — retain Druid, Necromancer, Blackguard.
 
-**Exit:** all races and classes playable. Manual chapters: character creation, races,
-classes.
+**Exit:** all races and classes playable, less the two deferred below. Manual chapters:
+character creation, races, classes.
+
+> **Two of PLR-03's five classes are deferred to M9.** The Monk, Mindcrafter and
+> Chaos-Warrior are done (DEC-36, DEC-37, DEC-38), each chosen because its identity needs
+> nothing from another milestone. The **Warrior-Mage** and the **High-Mage** are the two
+> defined by which magic realms they may choose, so they cannot be built before PLR-08 and
+> PLR-09 exist. They move to M9 and are listed there; M7 closes without them rather than
+> staying open across two milestones. Nine races landed rather than twenty-one, per DEC-35's
+> curation — PLR-01 is met as amended, not partially.
 
 ---
 
@@ -193,9 +201,20 @@ classes.
 
 - PLR-13 to PLR-17 — three mutation groups, runtime acquisition and loss, represented as
   player properties, exposed in a power list and the character sheet.
-- PLR-18 to PLR-21 — 18 virtues, tracked, displayed, persisted, **and consumed by at least
-  one system**. PLR-21 is a gate: if nothing consumes virtues, cut them rather than ship
-  inert numbers.
+- PLR-34 to PLR-38 — the documented acquisition and removal paths, Beastmen gaining
+  mutations by design, the seven mutually cancelling groups, and race-weighted probability.
+  These came out of the M0 documentation pass and were missing from this plan; PLR-36 and
+  PLR-38 tie directly back to M7's races. PLR-34 no longer carries the Eldritch Horror
+  path — CNT-17 is closed (DEC-32, confirmed by the project owner).
+- PLR-18 to PLR-21 — 8 virtues per character drawn from a pool of 18, selected at birth,
+  tracked, displayed, persisted, **and consumed by at least one system**. PLR-21 is a gate:
+  if nothing consumes virtues, cut them rather than ship inert numbers. **DEC-39 commits to
+  keeping virtues and leaves the consumer open** — the patron ladder and the inn dream are
+  the recorded candidates. Note that Zangband shipped virtues inert, so there is nothing to
+  port: whatever consumer lands is new design under DEC-30.
+- **The Chaos Tower** (WLD-16c, DEC-24) — the mutation-removal building service, the seventh
+  service and the only one not delivered in M5. It has no handler in 2.7.5's `bldg.c`, so it
+  is written rather than ported, and it is one of PLR-35's removal paths.
 - Use `spoilers/mutation.txt` (DEC-16) to select, rather than guessing from flag names.
 - **Carried over from M7 (DEC-38):** the Chaos-Warrior's patron rewards have a
   one-in-six branch that grants a mutation, left as a deliberate gap when PLR-05
@@ -213,10 +232,14 @@ mutations, virtues.
   and extended, savefile and display, and **4.2's existing class progressions re-expressed
   as realms** so retained classes work within the system rather than beside it.
 - CNT-10 — realm spellbooks, gated on which realms land.
+- **Carried over from M7:** the remainder of PLR-03 — the **Warrior-Mage** and the
+  **High-Mage**, the two classes defined by which realms they may choose. They were deferred
+  out of M7 because neither can be built before PLR-08 and PLR-09 exist.
 - Life realm content comes from [archive/zangband/](../../archive/zangband/); its spoiler is
   the one unarchivable document (DEC-16).
 
-**Exit:** a Mage's realm choice defines the character. Manual chapter: the magic system.
+**Exit:** a Mage's realm choice defines the character, and every class in PLR-03 is
+playable. Manual chapter: the magic system.
 
 > PLR-12 is the trap here. Half-implementing this leaves the game with two magic systems.
 
@@ -260,14 +283,22 @@ mutations, virtues.
 | M4 | WLD-01…WLD-09, WLD-23, WLD-24 | 11 |
 | M5 | WLD-10…WLD-18 (incl. WLD-11a, WLD-16a–16d; less WLD-13), WLD-25, CNT-05, CNT-12 | 16 |
 | M6 | WLD-19…WLD-22 | 4 |
-| M7 | PLR-01…PLR-07 | 7 |
-| M8 | PLR-13…PLR-21 | 9 |
+| M7 | PLR-01…PLR-07 (less the two classes deferred to M9) | 7 |
+| M8 | PLR-13…PLR-21, PLR-34…PLR-38 (+ the Chaos Tower, WLD-16c) | 14 |
 | M9 | PLR-08…PLR-12, CNT-10 | 6 |
 | M10 | PLR-22…PLR-28 | 7 |
 | M11 | BAL-15…BAL-17 | 3 |
-| | **Total** | **89** |
+| | **Total** | **94** |
 
-BAL-08 is a standing rule rather than a milestone deliverable, accounting for the 90th.
+BAL-08 is a standing rule rather than a milestone deliverable, accounting for the 95th.
+
+> **Seven requirements remain unassigned**, all of them from the M0 documentation pass, which
+> this table was never updated for. **PLR-29 to PLR-33** are pet requirements and belong with
+> M10 — PLR-30 and PLR-31 in particular are the reason pets are not overpowered, so M10 must
+> not be sized without them. **PLR-40** (knowledge is a thing that can be lost) has no
+> milestone. **PLR-41** (a night at the inn shows the sleeper something) was in fact built in
+> M5 alongside the inn and needs recording as done rather than scheduling. Assigning these is
+> a separate pass and is not attempted here.
 
 ---
 
