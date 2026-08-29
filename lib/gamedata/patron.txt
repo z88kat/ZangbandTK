@@ -70,8 +70,7 @@ reward-effect:SUMMON:MONSTER
 reward-dice:2d4
 
 reward:DESTRUCT:The voice of %s booms out: 'Death and destruction! This pleaseth me!'
-reward-effect:DESTRUCTION
-reward-dice:15
+reward-effect:DESTRUCTION:LIGHT:15
 
 reward:POLY_SLF:The voice of %s booms out: 'Thou needst a new form, mortal!'
 reward-effect:SHAPECHANGE:bat

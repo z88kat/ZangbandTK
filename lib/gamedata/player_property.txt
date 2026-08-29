@@ -300,3 +300,19 @@ bindui:resist_ui_compact_0:0:-1
 name:Vulnerability
 desc:You are vulnerable to
 value:-1
+
+type:player
+code:MARTIAL_ARTS
+name:Martial Arts
+desc:You fight better with nothing in your hands.  Bare-handed you climb a
+desc: ladder of seventeen techniques, striking more often than any weapon
+desc: allows, and every armour slot you leave empty is worth armour class in
+desc: its own right.  Carry too much armour and the balance goes: your blows
+desc: halve and the bonuses stop.
+
+type:player
+code:CHAOS_PATRON
+name:Sworn to Chaos
+desc:You belong to one of the Lords of the Courts of Chaos.  You did not
+desc: choose which and you cannot leave.  Each time you gain a level your
+desc: Lord takes notice of you, and decides how it feels about what it owns.

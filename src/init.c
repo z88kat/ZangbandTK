@@ -3839,7 +3839,35 @@ static enum parser_error parse_patron_reward(struct parser *p) {
 	struct patron_reward *last = patron_last_reward();
 
 	reward->code = string_make(parser_getsym(p, "code"));
-	reward->message = string_make(parser_getstr(p, "message"));
+
+	/*
+	 * The message is handed to msg() with the Lord's name, so like a martial
+	 * blow's it has to be exactly one %s and nothing else.  Checked rather
+	 * than trusted: a second conversion here reads an argument that was never
+	 * passed.
+	 */
+	{
+		const char *m = parser_getstr(p, "message");
+		const char *c;
+		int subs = 0;
+
+		for (c = m; *c; c++) {
+			if (*c != '%') continue;
+			if (c[1] == '%') { c++; continue; }
+			if (c[1] != 's') { string_free(reward->code); mem_free(reward);
+				return PARSE_ERROR_INVALID_VALUE; }
+			subs++;
+			c++;
+		}
+
+		if (subs != 1) {
+			string_free(reward->code);
+			mem_free(reward);
+			return PARSE_ERROR_INVALID_VALUE;
+		}
+
+		reward->message = string_make(m);
+	}
 
 	if (patron_reward_by_code(reward->code)) {
 		string_free(reward->code);
@@ -4035,6 +4063,18 @@ static errr finish_parse_patron(struct parser *p) {
 
 	/* Resolve every ladder entry, now that all the rewards have been read. */
 	for (patron = patrons; patron; patron = patron->next) {
+		/*
+		 * A patron whose `patron-rewards` line is missing or misspelled never
+		 * reached parse_patron_ladder, so its codes are all NULL -- which
+		 * without this check reaches strcmp(x, NULL) and takes the game down
+		 * during data loading, before there is any UI to say why.  The short
+		 * list is already rejected; the absent one was not.
+		 */
+		if (patron->nladder != PATRON_LADDER) {
+			parser_destroy(p);
+			return PARSE_ERROR_MISSING_FIELD;
+		}
+
 		for (i = 0; i < PATRON_LADDER; i++) {
 			patron->ladder[i] = patron_reward_by_code(patron->ladder_codes[i]);
 

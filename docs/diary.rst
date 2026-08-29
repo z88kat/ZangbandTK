@@ -106,6 +106,49 @@ is now the newest ZangbandTK in existence and the least settled — which is the
 right trade for something you reach by clicking a link.
 
 
+29 August 2026 — a review, and five things that did nothing
+===========================================================
+
+Ran a review over the whole of M7 — about five thousand lines of new mechanism,
+the races and their powers, martial arts, psionics, patrons, a new projection.
+Fifteen findings. One I rejected, three belong to Steven's graphics work rather
+than mine, and eleven were real.
+
+Five of them shared a shape, and it is a shape worth naming. A Yeek's scream did
+nothing. A Sprite's sleeping dust did nothing. A patron's *destruction* levelled
+exactly one grid — the one the player was standing on. A Draconian's breath was a
+needle at a fifth of its range. Two of the Mindcrafter's level bands were the
+same band. In every case the character paid the full price, the game printed the
+message, and nothing happened.
+
+They are all the same mistake: a number in the wrong slot, or no number at all.
+``effect_calculate_value()`` returns zero for an effect with no dice, and for a
+projection zero does not mean "a little" — it means "nothing". A ball with radius
+zero is quietly given a radius of two, so my two carefully banded Pulverise
+entries were identical. ``BREATH:FIRE:20`` puts the 20 in the radius slot, not
+the arc slot, because that is the parameter order; every other breath in the game
+data is written ``BREATH:FIRE:0:30`` and I did not look at one.
+
+None of this is visible from inside the game and none of it was caught by a test,
+because my tests all checked that the data *parsed* and that the levels and costs
+were Zangband's. Parsing is not the same as working. There is now one test that
+walks every power on every race, every power on every class, and every rung of
+every patron's ladder, and fails if an effect that means nothing without a value
+was not given one. Reintroducing the Yeek bug makes it say so by name.
+
+The structural one was worse. A patron's reward is handed out on gaining a level,
+and two rungs on every ladder grant or drain experience — both of which call back
+into the very loop that was calling them. A kill worth several levels at once
+could recurse, hand out a reward per re-entry, and announce the same level twice.
+Zangband deferred the reward out of the loop and I had not wondered why. Now I
+know why.
+
+The lesson I want to keep is the one about parsing. Four days of building
+data-driven mechanisms, and my instinct each time was to test that the file
+loaded and the numbers matched the source. Not one of those tests would have
+noticed that half the powers did nothing when used.
+
+
 29 August 2026 — a screenshot that was a bug report
 ===================================================
 

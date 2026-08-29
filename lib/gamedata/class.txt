@@ -1929,7 +1929,7 @@ power-cost:7
 power-stat:WIS
 power-fail:50
 power-when:1:29
-power-effect:BALL:MON_HOLD:0
+power-effect:BALL:MON_HOLD:1
 power-dice:$B
 power-expr:B:PLAYER_LEVEL:+ 0
 power-when:30:0
@@ -1943,7 +1943,7 @@ power-cost:7
 power-stat:WIS
 power-fail:30
 power-when:1:20
-power-effect:BALL:SOUND:0
+power-effect:BALL:SOUND:1
 power-dice:$Dd8
 power-expr:D:PLAYER_LEVEL:- 5 / 4 + 8
 power-when:21:0

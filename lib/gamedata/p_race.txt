@@ -423,6 +423,8 @@ power-cost:15
 power-stat:WIS
 power-fail:10
 power-effect:PROJECT_LOS:TURN_ALL
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
 
 # Zangband gave it a different breath every five levels; here it has its wings and its fire, and the breath waits for PLR-02.
 name:Draconian
@@ -451,7 +453,7 @@ power-level:15
 power-cost:25
 power-stat:CON
 power-fail:12
-power-effect:BREATH:FIRE:20
+power-effect:BREATH:FIRE:0:30
 power-dice:$B
 power-expr:B:PLAYER_LEVEL:* 3 / 2
 
@@ -577,6 +579,8 @@ power-cost:12
 power-stat:INT
 power-fail:15
 power-effect:PROJECT_LOS:SLEEP_ALL
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
 
 # The most expensive thing you can be born as: 255.
 name:Half-Titan

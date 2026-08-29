@@ -510,7 +510,9 @@ void wiz_learn_all_monsters(void)
 {
 	int i;
 
-	for (i = 1; i < z_info->r_max; i++) {
+	/* From zero: r_info[0] is a monster like any other, and every other loop
+	 * over the bestiary in the game starts there. */
+	for (i = 0; i < z_info->r_max; i++) {
 		struct monster_race *race = &r_info[i];
 
 		if (!race->name) continue;

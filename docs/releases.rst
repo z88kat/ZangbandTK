@@ -31,6 +31,28 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.31.3** — **A review of M7, and eleven fixes.** Five of the findings were
+  things the game did silently and wrongly: a **Yeek's scream and a Sprite's
+  sleeping dust did nothing at all** — projected with no dice, so a power of
+  zero, paid for in full; a **patron's** *destruction* levelled one grid instead
+  of fifteen; a **Draconian's breath** had its arc written into the radius slot,
+  making it a needle-thin cone at a fifth of its range; and two of the
+  **Mindcrafter's** level bands were identical, because a ball with radius zero
+  is given a radius of two.
+
+  The worst was structural: **a patron's reward was handed out from inside the
+  level-up loop**, and two rungs on every ladder grant or drain experience — both
+  of which call back into that loop. A single kill worth several levels could
+  recurse. It now waits until the level has settled, which is what Zangband did
+  and why.
+
+  Also: a patron with no reward list crashed during loading rather than
+  reporting a parse error; patron messages are now validated as format strings
+  the way martial-arts messages already were; *Learn all monsters* skipped the
+  first monster in the bestiary; the two new class abilities had no descriptions,
+  so a Monk was never told it fights unarmed and a Chaos-Warrior was never told
+  it was owned; and the version-1 savefile reader was a verbatim copy of the
+  version-2 one, which is now one body with a flag.
 - **3.31.2** — **A picture of the coast**, and the machinery to take it. The
   capture harness can now stand a character on a waterline before the first level
   is built, which is where it has to happen: asking for a new level mid-turn is

@@ -227,6 +227,8 @@ static void adjust_level(struct player *p, bool verbose)
 
 	handle_stuff(p);
 
+	bool owed_reward = false;
+
 	while ((p->lev > 1) &&
 	       (p->exp < (player_exp[p->lev-2] * p->expfact / 100L)))
 		p->lev--;
@@ -257,13 +259,24 @@ static void adjust_level(struct player *p, bool verbose)
 		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_DEX, 0, 0, 0, 0, NULL);
 		effect_simple(EF_RESTORE_STAT, source_none(), "0", STAT_CON, 0, 0, 0, 0, NULL);
 
-		/* Whatever owns you notices (ZangbandTK, PLR-05) */
-		patron_bestow_reward(p);
+		/*
+		 * Whatever owns you notices (ZangbandTK, PLR-05) -- but not from in
+		 * here.  A patron's favours include granting and draining experience,
+		 * and both of those call back into this function: granting re-enters
+		 * the promotion loop below, draining runs the demotion loop above
+		 * while this one is mid-iteration.  Zangband deferred the reward for
+		 * the same reason and fired it once per batch of levels, not once per
+		 * level, and this does the same.
+		 */
+		owed_reward = true;
 	}
 
 	while ((p->max_lev < PY_MAX_LEVEL) &&
 	       (p->max_exp >= (player_exp[p->max_lev-1] * p->expfact / 100L)))
 		p->max_lev++;
+
+	/* Now that the level is settled, and re-entering here is safe. */
+	if (owed_reward) patron_bestow_reward(p);
 
 	p->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
 	p->upkeep->redraw |= (PR_LEV | PR_TITLE | PR_EXP | PR_STATS);

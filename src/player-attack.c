@@ -782,8 +782,10 @@ static void chaotic_effect(struct player *p, struct monster *mon)
  * reliably -- lands something from the top of the ladder.  It is a skill that
  * shows itself unevenly, which is the right feel for one.
  *
- * Being stunned or confused withholds the "keep the best" step, so a rattled
- * Monk throws whatever came up last instead of choosing.
+ * Being stunned or confused withholds the "keep the best" step entirely, so a
+ * rattled Monk is left with the opening rung -- a punch -- however senior it
+ * is.  That is Zangband's behaviour and it is a real penalty, not an
+ * oversight: the technique is the part that needs a clear head.
  */
 static struct class_blow *player_pick_blow(struct player *p)
 {
@@ -814,8 +816,6 @@ static struct class_blow *player_pick_blow(struct player *p)
 		if (candidate->level > best->level &&
 				!p->timed[TMD_STUN] && !p->timed[TMD_CONFUSED])
 			best = candidate;
-		else
-			candidate = best;
 	}
 
 	return best;
