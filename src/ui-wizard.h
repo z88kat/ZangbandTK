@@ -14,6 +14,7 @@ void wiz_create_item(bool art);
 void wiz_create_nonartifact(void);
 void wiz_display_keylog(void);
 void wiz_learn_all_object_kinds(void);
+void wiz_learn_all_monsters(void);
 void wiz_phase_door(void);
 void wiz_proj_demo(void);
 void wiz_teleport(void);

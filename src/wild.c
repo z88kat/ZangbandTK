@@ -4037,6 +4037,62 @@ const char *wild_reveal_nearest(struct wilderness *w, struct loc from, bool *dow
  * seen, which puts the whole world on the map and every place on the tower's
  * list.
  */
+/**
+ * Find a waterline: a shore block with open sea beside it (ZangbandTK).
+ *
+ * Written for the manual's picture of the coast, and kept in the wilderness
+ * rather than in the capture harness because it is a question about the world
+ * -- where does the land stop? -- and the harness should not have to know how
+ * blocks are classified to ask it.
+ *
+ * The grid returned is on the boundary rather than in the middle of the shore
+ * block, so a window centred there has land on one side and sea on the other.
+ *
+ * \return false if no coast lies within `reach` blocks.
+ */
+bool wild_find_coast(struct wilderness *w, struct loc from, int reach,
+					 struct loc *out)
+{
+	static const int ny[] = { 1, -1, 0, 0 };
+	static const int nx[] = { 0, 0, 1, -1 };
+	int size = z_info->wild_block_size;
+	int bx = from.x / size, by = from.y / size;
+	int r;
+
+	for (r = 1; r <= reach; r++) {
+		int dy, dx;
+
+		for (dy = -r; dy <= r; dy++)
+			for (dx = -r; dx <= r; dx++) {
+				struct wild_block *b;
+				int i;
+
+				/* Only the ring; the inside was covered by a smaller r. */
+				if (ABS(dy) != r && ABS(dx) != r) continue;
+				if (!wild_in_bounds(w, bx + dx, by + dy)) continue;
+
+				b = wild_block_at(w, bx + dx, by + dy);
+				if (!b || b->terrain != WILD_TERRAIN_SHORE) continue;
+
+				for (i = 0; i < 4; i++) {
+					struct wild_block *n;
+
+					if (!wild_in_bounds(w, bx + dx + nx[i], by + dy + ny[i]))
+						continue;
+
+					n = wild_block_at(w, bx + dx + nx[i], by + dy + ny[i]);
+					if (!n || n->terrain != WILD_TERRAIN_OCEAN) continue;
+
+					*out = loc((bx + dx) * size + size / 2 + nx[i] * (size / 2),
+							   (by + dy) * size + size / 2 + ny[i] * (size / 2));
+					return true;
+				}
+			}
+	}
+
+	return false;
+}
+
 void wild_know_all_places(struct wilderness *w)
 {
 	int i;

@@ -22,6 +22,7 @@
 #include "game-input.h"
 #include "grafmode.h"
 #include "init.h"
+#include "mon-lore.h"
 #include "obj-desc.h"
 #include "obj-make.h"
 #include "obj-pile.h"
@@ -495,6 +496,29 @@ void wiz_learn_all_object_kinds(void)
 	cmd_set_arg_number(cmdq_peek(), "level", 100);
 }
 
+
+/**
+ * Learn every monster in the bestiary (ZangbandTK).
+ *
+ * The companion to "learn object kinds", which 4.2 has and which this did not.
+ * Useful for the same reasons -- checking that an imported monster reads well,
+ * and that its lore says what it should -- and it is what the manual's picture
+ * of the bestiary is taken through, since a page showing the four monsters a
+ * young character has met would say nothing about what is in the game.
+ */
+void wiz_learn_all_monsters(void)
+{
+	int i;
+
+	for (i = 1; i < z_info->r_max; i++) {
+		struct monster_race *race = &r_info[i];
+
+		if (!race->name) continue;
+		cheat_monster_lore(race, get_lore(race));
+	}
+
+	msg("You know the whole bestiary.");
+}
 
 /**
  * Shim for ui-game.c to set up CMD_WIZ_TELEPORT_RANDOM for short distances.

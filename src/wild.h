@@ -329,6 +329,8 @@ int wild_town_here(struct wilderness *w, struct loc grid);
 void wild_note_visit(struct wilderness *w, struct loc grid);
 void wild_forget_knowledge(struct wilderness *w);
 void wild_know_all_places(struct wilderness *w);
+bool wild_find_coast(struct wilderness *w, struct loc from, int reach,
+					 struct loc *out);
 const char *wild_reveal_nearest(struct wilderness *w, struct loc from,
 								bool *down);
 bool wild_dungeon_found(struct wilderness *w, int idx);

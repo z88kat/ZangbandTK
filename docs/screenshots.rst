@@ -46,6 +46,22 @@ dungeon mouth in the world is on the network, which is how you find the next one
 Walk far enough in any direction and the window scrolls; walk far enough west and
 you run out of land, then out of world.
 
+The coast
+=========
+
+Walk far enough west and the land runs out.
+
+.. image:: screenshots/the-coast.svg
+   :alt: The wilderness at a shoreline, with open sea filling the left of the
+         view, the waterline running down the middle and grassland on the
+         right, the character standing on the shore.
+
+The sea is real terrain, not a wall drawn at the edge of the map. Shallow water
+can be waded; deep water can be waded too, but not while heavily laden — the game
+asks before it lets you try, and there are things living in it. The world has a
+coast on every side, because the fractal that makes the land is bounded by ocean
+rather than by an invisible barrier.
+
 What a character can do
 =======================
 
@@ -88,7 +104,9 @@ somebody had lying about; regenerating them runs the current code.
 Still to come
 =============
 
-**The coast and deep water**, which is worth a picture of its own. **The
-bestiary**, showing the monsters Angband does not have. **A vampiric or chaotic
-weapon** discharging, since those mechanics have no Angband equivalent. **A
-Chaos-Warrior's patron** rewarding or punishing it on a level gained.
+**The bestiary**, showing the monsters Angband does not have — the capture can
+reach the knowledge browser but not yet scroll it to a useful page. **A vampiric
+or chaotic weapon** discharging, since those mechanics have no Angband
+equivalent. **A Chaos-Warrior's patron** rewarding or punishing it on a level
+gained. The last two need a fight and a level-up staged, which the harness cannot
+do yet.

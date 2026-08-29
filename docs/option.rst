@@ -390,6 +390,9 @@ Changing the character directly.
    * - ``k``
      - Know every place ★
      - Every town visited and every block seen, which turns the magetower into a way of getting anywhere at once.
+   * - ``B``
+     - Learn all monsters ★
+     - Fills in the whole bestiary, so every monster's recall reads as though you had met and killed it. The companion to *Learn object kinds*, and what the manual's picture of the bestiary is taken through.
    * - ``l``
      - Learn object kinds
      - 

@@ -38,6 +38,7 @@
 #include "target.h"
 #include "trap.h"
 #include "ui-map.h"
+#include "ui-wizard.h"
 #include "wild.h"
 #include "z-queue.h"
 
@@ -1157,6 +1158,9 @@ void run_game_loop(void)
 		if (!once++ && getenv("ZTK_SHOT")) {
 			wild_know_all_places(wild);
 			if (getenv("ZTK_SHOT_MAP")) do_cmd_view_world_map();
+
+			/* Know the whole bestiary, for the picture of it. */
+			if (getenv("ZTK_SHOT_LORE")) wiz_learn_all_monsters();
 		}
 	}
 	/* Tidy up after the player's command */

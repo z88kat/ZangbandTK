@@ -45,6 +45,7 @@
 #include "ui-help.h"
 #include "ui-init.h"
 #include "ui-input.h"
+#include "wild.h"
 #include "ui-keymap.h"
 #include "ui-knowledge.h"
 #include "ui-map.h"
@@ -275,6 +276,7 @@ struct cmd_info cmd_debug_player[] =
 	{ "Gain hit points", { 'i' }, CMD_WIZ_GAIN_HP, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Know every place", { 'k' }, CMD_WIZ_KNOW_PLACES, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Learn object kinds", { 'l' }, CMD_NULL, wiz_learn_all_object_kinds, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	{ "Learn all monsters", { 'B' }, CMD_NULL, wiz_learn_all_monsters, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Recall monster", { 'r' }, CMD_WIZ_RECALL_MONSTER, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Erase monster recall", { 'W' }, CMD_WIZ_WIPE_RECALL, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 };
@@ -766,6 +768,31 @@ static bool start_game(bool new_game)
 
 	/* Save not required yet. */
 	player->upkeep->autosave = false;
+
+	/*
+	 * ZangbandTK: stand the character on a coast before the first level is
+	 * built, for the manual's picture of it (see scripts/screenshot).  It has
+	 * to happen here rather than on a later turn: asking for a new level
+	 * mid-turn is honoured by the full game loop and not by the headless test
+	 * front end the pictures are captured through.
+	 */
+	if (getenv("ZTK_SHOT_COAST")) {
+		struct loc coast;
+
+		wild_ensure(seed_flavor);
+		if (wild_find_coast(wild, player->wild_grid, 60, &coast)) {
+			player->wild_grid = coast;
+
+			/*
+			 * And have the surface rebuilt there.  A loaded save arrives with
+			 * its level already in hand, so without this the character is
+			 * moved and then shown the map it came from.  Safe for the
+			 * wilderness specifically: it is regenerated from the world seed
+			 * every time and never stored, so nothing is lost by rebuilding.
+			 */
+			character_dungeon = false;
+		}
+	}
 
 	/* Enter the level, generating a new one if needed */
 	if (!character_dungeon) {

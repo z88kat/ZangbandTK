@@ -31,6 +31,12 @@ Unreleased
 M5 in progress: towns, roads and dungeons — 19 to 23 August 2026
 ----------------------------------------------------------------
 
+- **3.31.2** — **A picture of the coast**, and the machinery to take it. The
+  capture harness can now stand a character on a waterline before the first level
+  is built, which is where it has to happen: asking for a new level mid-turn is
+  honoured by the full game loop and ignored by the headless front end the
+  pictures are captured through. Adds a **Learn all monsters** debug command
+  (``B``), the companion to *Learn object kinds* that 4.2 has and this did not.
 - **3.31.1** — **A Mindcrafter has mana again.** It never had any: the armour
   allowance before mana starts draining is read out of a class's magic block, a
   Mindcrafter has no magic block, and its own starting armour then cancelled more

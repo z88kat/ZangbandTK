@@ -29,6 +29,12 @@ keys | ZTK_SAVEFILE=1 ZTK_SHOT=1 ZTK_TERM_W=110 ZTK_TERM_H=34 \
 python3 "$here/tosvg.py" /tmp/ztk-wild.txt 8 "$out/the-surface.svg" \
 	"The wilderness surface, scrolling as you walk"
 
+# The coast, which needs the character stood on a waterline first.
+keys | ZTK_SAVEFILE=1 ZTK_SHOT=1 ZTK_SHOT_COAST=1 ZTK_TERM_W=100 ZTK_TERM_H=32 \
+	"$game" -mtest -uShotDbg > /tmp/ztk-coast.txt 2>&1
+python3 "$here/tosvg.py" /tmp/ztk-coast.txt -1 "$out/the-coast.svg" \
+	"The coast, where the land runs out"
+
 rm -f "$root/lib/save/ShotDbg"
 rmdir "$root/lib/save" 2>/dev/null || true
 echo "written to $out"
