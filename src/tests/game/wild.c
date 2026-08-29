@@ -4501,6 +4501,162 @@ static int test_thirteen_is_an_unlucky_level(void *state) {
 }
 
 /**
+ * Effects that mean nothing with a value of zero.
+ *
+ * Not every effect needs dice -- CURE, IDENTIFY, MAP_AREA and the rest do their
+ * work regardless -- so this is the curated list of the ones where a missing
+ * value silently turns the whole thing into a no-op.
+ */
+static const int effects_needing_a_value[] = {
+	EF_PROJECT_LOS, EF_PROJECT_LOS_AWARE, EF_BALL, EF_BREATH, EF_SPOT,
+	EF_BOLT, EF_BEAM, EF_BOLT_OR_BEAM, EF_DAMAGE, EF_HEAL_HP,
+	EF_TIMED_INC, EF_MON_TIMED_INC, EF_LOSE_EXP, EF_GAIN_EXP, EF_TELEPORT
+};
+
+/** \return how many effects in the chain need a value but were given none. */
+static int chain_missing_values(const struct effect *effect, const char *who,
+								const char *what, int *checked) {
+	int bare = 0;
+
+	for (; effect; effect = effect->next) {
+		size_t k;
+
+		for (k = 0; k < N_ELEMENTS(effects_needing_a_value); k++) {
+			if (effect->index != effects_needing_a_value[k]) continue;
+
+			(*checked)++;
+
+			if (!effect->dice) {
+				printf("%s: \"%s\" uses effect %d with no dice\n",
+					   who, what, effect->index);
+				bare++;
+			}
+		}
+	}
+
+	return bare;
+}
+
+/**
+ * An effect that needs a number has to have been given one.
+ *
+ * This is the general form of four separate bugs found in one review, all of
+ * them silent: a Yeek's scream and a Sprite's sleeping dust were PROJECT_LOS
+ * with no dice, so they projected a power of zero and did nothing at all; a
+ * patron's DESTRUCTION had its radius written into the dice; a Draconian's
+ * breath had its arc written into the radius.  In every case the character paid
+ * the full price and the game reported success.
+ *
+ * effect_calculate_value() returns zero for an effect with no dice, and for
+ * these effects zero means "nothing happens" rather than "a little happens" --
+ * so there is no way to notice from inside the game.
+ */
+static int test_a_power_that_needs_a_number_has_one(void *state) {
+	struct player_race *r;
+	struct player_class *c;
+	struct patron *patron;
+	int checked = 0, bare = 0;
+
+	for (r = races; r; r = r->next) {
+		struct player_power *power;
+
+		for (power = r->powers; power; power = power->next) {
+			struct power_effect *band;
+
+			for (band = power->effects; band; band = band->next)
+				bare += chain_missing_values(band->effect, r->name,
+											 power->name, &checked);
+		}
+	}
+
+	for (c = classes; c; c = c->next) {
+		struct player_power *power;
+
+		for (power = c->powers; power; power = power->next) {
+			struct power_effect *band;
+
+			for (band = power->effects; band; band = band->next)
+				bare += chain_missing_values(band->effect, c->name,
+											 power->name, &checked);
+		}
+	}
+
+	for (patron = patrons; patron; patron = patron->next) {
+		int slot;
+
+		for (slot = 0; slot < PATRON_LADDER; slot++)
+			bare += chain_missing_values(patron->ladder[slot]->effect,
+										 patron->name,
+										 patron->ladder[slot]->code, &checked);
+	}
+
+	/* The check has to have found something to check, or it proves nothing. */
+	require(checked > 20);
+	eq(bare, 0);
+
+	ok;
+}
+
+/**
+ * A patron's reward must not be handed out from inside the level-up loop.
+ *
+ * Two of the rungs on every ladder grant or drain experience, and both of those
+ * call back into adjust_level(): granting re-enters the promotion loop, and
+ * draining runs the demotion loop while the promotion loop is part-way through
+ * an iteration.  A single kill worth several levels could therefore recurse,
+ * hand out a reward per re-entry, and print "Welcome to level N" more than once
+ * for the same N.
+ */
+static int test_a_patron_waits_until_the_level_is_settled(void *state) {
+	struct player_class *c, *chaos = NULL;
+	const struct player_class *keep = player->class;
+	const struct patron *keep_patron = player->patron;
+	struct patron *pa;
+	int i;
+
+	for (c = classes; c; c = c->next)
+		if (streq(c->name, "Chaos-Warrior")) chaos = c;
+	notnull(chaos);
+
+	player->class = chaos;
+	player->mhp = 30000;
+	player->msp = 0;
+
+	/*
+	 * Every Lord in turn, and a jump of many levels at once, which is the
+	 * shape that used to recurse.  If the reward is still fired from inside
+	 * the loop this either runs away or lands on an impossible level.
+	 */
+	for (pa = patrons, i = 0; pa; pa = pa->next, i++) {
+		player->patron = pa;
+		player->lev = 1;
+		player->max_lev = 1;
+		player->exp = 0;
+		player->max_exp = 0;
+		player->chp = player->mhp;
+
+		player_exp_gain(player, 60000);
+
+		/* Sane, and inside the range the game allows. */
+		require(player->lev >= 1);
+		require(player->lev <= PY_MAX_LEVEL);
+		require(player->max_lev >= player->lev);
+	}
+
+	require(i == 9);
+
+	player->class = keep;
+	player->patron = keep_patron;
+	player->lev = 1;
+	player->exp = 0;
+	player->max_exp = 0;
+	player->upkeep->update |= PU_BONUS | PU_HP;
+	update_stuff(player);
+
+	ok;
+}
+
+/**
  * The mapping from Zangband's class table was measured, not guessed, and this
  * holds the Monk on the numbers that measurement produced.
  */
@@ -5371,6 +5527,8 @@ struct test tests[] = {
 	{ "a-patrons-ladder-runs-worst-to-best", test_a_patrons_ladder_runs_worst_to_best },
 	{ "only-a-chaos-warrior-is-owned", test_only_a_chaos_warrior_is_owned },
 	{ "thirteen-is-an-unlucky-level", test_thirteen_is_an_unlucky_level },
+	{ "a-power-that-needs-a-number-has-one", test_a_power_that_needs_a_number_has_one },
+	{ "a-patron-waits-until-the-level-is-settled", test_a_patron_waits_until_the_level_is_settled },
 
 	{ NULL, NULL }
 };
