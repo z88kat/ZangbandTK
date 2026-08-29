@@ -133,10 +133,6 @@ flags = ["FRIENDLY"]
 
 # ------------------------------------------------------------- implement
 
-[implement.RES_TELE]
-milestone = "M2"
-note = "Resists teleportation effects. Affects 102 monsters; cheap and self-contained."
-
 [implement.REFLECTING]
 milestone = "M2"
 note = "Reflects bolt spells back at the caster. Affects 22 monsters."

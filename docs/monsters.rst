@@ -88,6 +88,29 @@ drop. There is no way to seek this out — you cannot tell in advance which
 monsters were wanted, and the same monster is not always wanted twice — but it
 is a reason to read what the dead say rather than scroll past it.
 
+Monsters that will not be moved
+-------------------------------
+
+A hundred and two of the imported monsters resist being teleported. This is the
+answer to a tactic Angband lets you rely on: *Teleport Other* removes anything
+inconvenient, and against these it may simply fail.
+
+It is not a flat immunity, and the difference matters:
+
+- A **unique** that has it is *unaffected*, every time. If you were planning to
+  teleport Oberon out of the way and fight his escort, plan something else.
+- **Anything else** gets a saving throw, and a heavy monster makes it more often
+  than a light one. The same creature may be shifted one turn and stand its
+  ground the next, so a failed attempt is worth repeating — up to a point.
+
+You will see ``is unaffected!`` for the first and ``resists!`` for the second,
+which is how you tell which you are dealing with. The distinction is recorded in
+the monster's recall once you have seen it happen: *cannot be teleported*.
+
+It applies to every way the game has of moving a monster against its will — the
+teleport-other effects, the blink a nexus attack causes, and the shove of a
+gravity attack — so there is no side door.
+
 How dangerous are they?
 -----------------------
 
@@ -118,8 +141,8 @@ Not yet implemented
 -------------------
 
 Some imported monsters carry abilities that are recorded but not yet active:
-resistance to teleportation, reflecting bolt spells, and damaging auras.
-Monsters possessing them behave as though they do not.
+reflecting bolt spells and damaging auras. Monsters possessing them behave as
+though they do not.
 
 A further group of abilities depends on the wilderness, which does not exist
 yet: which terrain a monster prefers, which dungeons it inhabits, and whether it

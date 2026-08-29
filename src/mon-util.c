@@ -163,6 +163,63 @@ bool monster_is_aquatic(const struct monster_race *race)
 	return race && race->base && streq(race->base->name, "fish");
 }
 
+/**
+ * The saving throw a non-unique gets against being teleported (CNT-04).
+ *
+ * Zangband rolled `hdice * 2 > randint1(150)`, and 4.2 has no hdice: BAL-06
+ * converted every monster's `NdM` to a single average-hit-points integer, so
+ * the number the original tested is gone.  Rescaled rather than guessed, per
+ * BAL-08.  Over the 147 Zangband monsters carrying the flag, average hit points
+ * come to a median of 33.5 per hit die, so a threshold of 150 x 33.5 puts the
+ * curve back where it was: a monster of 1000 average hit points resists about
+ * two times in five, which is what thirty hit dice did in the original.
+ *
+ * Rounded to 5000.  The spread behind that median is wide -- the dice run from
+ * d1 to d504 -- so this reproduces the shape of the curve rather than any
+ * individual monster's exact odds.
+ */
+#define RES_TELE_SAVE 5000
+
+/**
+ * Whether this monster shrugs off being moved by force (ZangbandTK, CNT-04).
+ *
+ * Not the flat immunity the name suggests.  A unique that has the flag is
+ * simply unaffected; anything else gets the saving throw above, so a big thing
+ * usually stays put and a small one usually does not
+ * ([spells1.c:1374](../archive/zangband/src/spells1.c#L1374)).  Even the
+ * heaviest non-unique in the original only made it about three times in four.
+ *
+ * The original rolled against 150 where a spell was doing the teleporting and
+ * against 100 for a weapon brand or a monster casting it at another monster --
+ * an inconsistency with no evident reason behind it.  150 is the one carried
+ * over, because the projection path is all of what this guards.
+ *
+ * \param seen is whether the player can watch it happen, and so learn the flag.
+ * \param unaffected, if given, is set when the monster shrugged it off outright
+ * rather than making a save, which is a different message.
+ */
+bool monster_resists_teleport(struct monster *mon, bool seen, bool *unaffected)
+{
+	struct monster_race *race = mon ? mon->race : NULL;
+
+	if (unaffected) *unaffected = false;
+	if (!race) return false;
+	if (!rf_has(race->flags, RF_RES_TELE)) return false;
+
+	if (rf_has(race->flags, RF_UNIQUE)) {
+		if (seen) rf_on(get_lore(race)->flags, RF_RES_TELE);
+		if (unaffected) *unaffected = true;
+		return true;
+	}
+
+	if (race->avg_hp * 2 > randint1(RES_TELE_SAVE)) {
+		if (seen) rf_on(get_lore(race)->flags, RF_RES_TELE);
+		return true;
+	}
+
+	return false;
+}
+
 struct monster_base *lookup_monster_base(const char *name)
 {
 	struct monster_base *base;

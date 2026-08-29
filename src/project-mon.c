@@ -1276,11 +1276,28 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 		}
 	} else if (context->teleport_distance > 0) {
 		char dice[5];
-		strnfmt(dice, sizeof(dice), "%d", context->teleport_distance);
-		effect_simple(EF_TELEPORT, context->origin, dice, 0, 0, 0,
-					  context->grid.y, context->grid.x, NULL);
+		bool unaffected = false;
 
-		/* Wake the monster up, don't notice the player */
+		/*
+		 * Some things will not be moved (ZangbandTK, CNT-04).  Checked here
+		 * rather than in each handler because this is where every way of
+		 * teleporting a monster converges -- the AWAY_* projections, a nexus
+		 * blink, and the shove a gravity attack gives -- so one test covers
+		 * them all and cannot be forgotten by the next one added.
+		 */
+		if (monster_resists_teleport(mon, context->seen, &unaffected)) {
+			if (context->seen) {
+				add_monster_message(mon, unaffected ? MON_MSG_UNAFFECTED
+									: MON_MSG_RESIST, false);
+				context->obvious = true;
+			}
+		} else {
+			strnfmt(dice, sizeof(dice), "%d", context->teleport_distance);
+			effect_simple(EF_TELEPORT, context->origin, dice, 0, 0, 0,
+						  context->grid.y, context->grid.x, NULL);
+		}
+
+		/* Awake either way, and not noticing the player either way. */
 		monster_wake(mon, false, 0);
 	} else {
 		for (int i = 0; i < MON_TMD_MAX; i++) {

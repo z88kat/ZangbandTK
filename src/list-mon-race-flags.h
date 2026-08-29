@@ -105,4 +105,11 @@ RF(AMBERITE,	RFT_RACE_N,		"Amberite")
  * reason as AMBERITE above.
  */
 RF(CAN_SPEAK,	RFT_OBV,		"")
+/*
+ * ZangbandTK (CNT-04).  Hard to move by force.  RFT_PROT with the other
+ * immunities, since that is what it reads as in the lore -- "cannot be
+ * teleported" beside "cannot be slept".  Appended, like the two above, because
+ * lore stores known flags by position.
+ */
+RF(RES_TELE,	RFT_PROT,		"teleported")
 /* end flags */
