@@ -119,10 +119,28 @@ called Amber, and that he is of it.
 you swallowed it would be an ordinary bad mushroom. Five turns is long enough to
 work out what you have done and not long enough to do anything about it.
 
+Four more from Zangband
+-----------------------
+
+**Returning.** A thrown weapon comes back to your hand, nineteen throws in
+twenty. The twentieth is what keeps it a weapon you can lose.
+
+**Luck.** Improves your saving throw. Zangband wrote this as a flat value
+rather than a bonus, which made a lucky novice better at shrugging things off
+than an unlucky veteran; here it is the bonus the name promises.
+
+**A ghoul's touch.** What you strike falls asleep — but only if you strike it
+bare-handed. Gloves of this kind are for someone who fights with their hands,
+and putting a weapon in them turns the property off entirely.
+
+**Easily enchanted.** Takes twice as many enchantment attempts, and an artifact
+so made does not get its usual chance to resist being enchanted at all.
+
 Not yet implemented
 -------------------
 
-A handful of Zangband object properties are recorded but inactive: weapons that
-return when thrown, items that let you pass through walls, and properties tied
-to luck, which Angband has no equivalent of. Items carrying them work in every
-other respect.
+One Zangband object property is recorded but inactive: passing through walls.
+Angband has no form of player wall-movement to hang it on — not a spell, not a
+temporary state, nothing — so carrying it would mean building wall-phasing for
+the player rather than reading a flag. Items with it work in every other
+respect.

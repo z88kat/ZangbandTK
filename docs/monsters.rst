@@ -158,6 +158,18 @@ fifth is Dworkin, who drew the Pattern and lost his mind doing it. In this game
 he is both a shapechanger and one of Amber's blood, and he is the only monster
 who is both.
 
+The one that may not be there
+-----------------------------
+
+There is a single **quantum monster** in the game, and it is a poor thing to
+rely on. Half of what you swing at it passes through — not a miss you can
+improve on with skill, simply an attack that did not happen. It takes only half
+its own turns. And now and then it stops existing: no death, no corpse, no
+experience, just an absence where it was.
+
+You cannot be sent to kill one, which is deliberate: a quest whose target can
+evaporate is a quest that cannot be finished.
+
 How dangerous are they?
 -----------------------
 
@@ -186,10 +198,6 @@ make three more of those possible:
 
 Not yet implemented
 -------------------
-
-One imported ability is recorded but not yet active: teleporting erratically
-when watched. It affects one monster, and that monster behaves as though it does
-not have it.
 
 Zangband also tagged every monster with the terrain it prefers and the dungeons
 it belongs in. Those tags are unused here, because this game decides both

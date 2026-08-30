@@ -23,7 +23,7 @@ weight:2
 cost:7500
 alloc:4:80 to 127
 flags:SEE_INVIS
-values:STR[1] | INT[1] | WIS[1] | DEX[1] | CON[1] | STEALTH[1] | RES_POIS[1]
+values:STR[1] | INT[1] | WIS[1] | DEX[1] | CON[1] | STEALTH[1] | RES_POIS[1] | SEARCH[1]
 act:DRAIN_LIFE2
 time:100+d100
 desc:An artifact of Zangband.
@@ -58,7 +58,7 @@ cost:135000
 alloc:33:70 to 127
 attack:1d4:-1:0
 armor:28:20
-flags:SEE_INVIS | HOLD_LIFE | PROT_FEAR
+flags:LUCK_10 | SEE_INVIS | HOLD_LIFE | PROT_FEAR
 values:WIS[4] | INT[4] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1] | RES_NETHER[1] | RES_DARK[1]
 slay:EVIL_2
 act:HERO
@@ -159,8 +159,8 @@ cost:0
 alloc:20:35 to 127
 attack:1d3:25:25
 armor:5:10
-flags:SEE_INVIS | PROT_FEAR | FREE_ACT
-values:INT[-1] | WIS[-1] | RES_COLD[3] | RES_DISEN[1] | RES_ACID[1] | RES_COLD[1] | RES_POIS[1]
+flags:SEE_INVIS | PROT_FEAR | FREE_ACT | EASY_ENCHANT
+values:INT[-1] | WIS[-1] | SEARCH[-1] | RES_COLD[3] | RES_DISEN[1] | RES_ACID[1] | RES_COLD[1] | RES_POIS[1]
 curse:impair mana recovery:30
 curse:teleportation:30
 act:MON_SCARE
@@ -201,6 +201,7 @@ cost:5000
 alloc:2:9 to 127
 attack:0d0:0:0
 armor:1:4
+flags:EASY_ENCHANT
 values:DEX[2] | STEALTH[2] | RES_LIGHT[1]
 desc:An artifact of Zangband.
 
@@ -212,7 +213,7 @@ cost:11000
 alloc:1:17 to 127
 attack:0d0:0:0
 armor:1:18
-flags:FREE_ACT
+flags:LUCK_10 | FREE_ACT
 values:DEX[3] | RES_ACID[1] | RES_FIRE[1] | RES_COLD[1]
 act:RECHARGE
 time:70
@@ -226,6 +227,7 @@ cost:7000
 alloc:17:17 to 127
 attack:0d0:6:6
 armor:1:6
+flags:EASY_ENCHANT
 values:STR[3] | CON[3]
 desc:An artifact of Zangband.
 
@@ -292,8 +294,8 @@ cost:15000
 alloc:1:35 to 127
 attack:2d4:10:15
 armor:0:5
-flags:FREE_ACT | SUST_DEX | SEE_INVIS
-values:DEX[4] | STEALTH[4] | RES_DARK[1]
+flags:FREE_ACT | SUST_DEX | SEE_INVIS | THROWING
+values:DEX[4] | STEALTH[4] | SEARCH[4] | RES_DARK[1]
 brand:POIS_3
 slay:EVIL_2
 slay:TROLL_3
@@ -308,7 +310,7 @@ cost:25000
 alloc:2:17 to 127
 attack:2d4:6:9
 armor:0:0
-flags:SEE_INVIS | SLOW_DIGEST | REGEN
+flags:SEE_INVIS | SLOW_DIGEST | REGEN | THROWING
 values:DEX[2] | SPEED[2] | BLOWS[2] | RES_COLD[1]
 brand:COLD_3
 brand:POIS_3
@@ -342,7 +344,7 @@ alloc:1:35 to 127
 attack:2d5:12:16
 armor:0:0
 flags:PROT_FEAR | SLOW_DIGEST
-values:RES_ELEC[1] | LIGHT[4] | RES_FIRE[1] | RES_POIS[1]
+values:SEARCH[4] | RES_ELEC[1] | LIGHT[4] | RES_FIRE[1] | RES_POIS[1]
 brand:ELEC_3
 slay:ORC_3
 slay:DRAGON_5
@@ -456,7 +458,7 @@ cost:29000
 alloc:2:26 to 127
 attack:1d20:15:25
 armor:0:5
-flags:FREE_ACT | SLOW_DIGEST | BLESSED
+flags:FREE_ACT | SLOW_DIGEST | BLESSED | THROWING | RETURN
 values:INT[4] | WIS[4] | RES_FIRE[1] | RES_ELEC[1] | RES_LIGHT[1] | LIGHT[4]
 brand:FIRE_3
 brand:ELEC_3
@@ -475,8 +477,8 @@ cost:25000
 alloc:2:26 to 127
 attack:1d10:15:15
 armor:0:0
-flags:HOLD_LIFE | PROT_FEAR | FEATHER | SEE_INVIS | BLESSED
-values:INT[4] | WIS[4] | INFRA[4] | RES_FIRE[1] | RES_LIGHT[1] | LIGHT[4]
+flags:HOLD_LIFE | PROT_FEAR | FEATHER | SEE_INVIS | BLESSED | THROWING
+values:INT[4] | WIS[4] | INFRA[4] | SEARCH[4] | RES_FIRE[1] | RES_LIGHT[1] | LIGHT[4]
 brand:FIRE_3
 slay:GIANT_3
 slay:EVIL_2
@@ -493,7 +495,7 @@ cost:30000
 alloc:8:26 to 127
 attack:1d10:11:13
 armor:0:0
-flags:SEE_INVIS
+flags:SEE_INVIS | THROWING
 values:STEALTH[3] | RES_DARK[1] | INFRA[3] | RES_COLD[1]
 brand:COLD_3
 slay:UNDEAD_3
@@ -508,7 +510,7 @@ alloc:5:35 to 127
 attack:1d8:16:20
 armor:0:0
 flags:VAMPIRIC | SEE_INVIS
-values:STEALTH[4] | RES_POIS[1] | RES_DARK[1] | RES_NETHER[1]
+values:STEALTH[4] | SEARCH[4] | RES_POIS[1] | RES_DARK[1] | RES_NETHER[1]
 brand:POIS_3
 curse:dullness:30
 desc:An artifact of Zangband.
@@ -580,7 +582,7 @@ alloc:1:52 to 127
 attack:1d30:10:13
 armor:0:0
 flags:HOLD_LIFE | SEE_INVIS
-values:INT[4] | WIS[4] | LIGHT[4] | RES_FIRE[1] | RES_NETHER[1]
+values:INT[4] | WIS[4] | SEARCH[4] | LIGHT[4] | RES_FIRE[1] | RES_NETHER[1]
 brand:FIRE_3
 slay:EVIL_2
 slay:TROLL_3
@@ -622,7 +624,7 @@ alloc:5:25 to 127
 attack:0d0:35:15
 armor:0:0
 flags:SUST_DEX | PROT_BLIND | SEE_INVIS
-values:DEX[4] | INFRA[4] | LIGHT[4] | MIGHT[4] | SHOTS[4]
+values:DEX[4] | SEARCH[4] | INFRA[4] | LIGHT[4] | MIGHT[4] | SHOTS[4]
 desc:An artifact of Zangband.
 
 name:'Soulless One'
@@ -646,7 +648,7 @@ cost:15000
 alloc:4:20 to 127
 attack:4d5:13:14
 armor:0:0
-flags:VORPAL | BLESSED | FREE_ACT
+flags:VORPAL | LUCK_10 | BLESSED | FREE_ACT | EASY_ENCHANT
 desc:An artifact of Zangband.
 
 name:'Stormbringer'

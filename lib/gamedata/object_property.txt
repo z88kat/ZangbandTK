@@ -1015,3 +1015,38 @@ id-type:on effect
 code:SH_ELEC
 power:8
 desc:Shocks those who strike you in melee
+
+# ZangbandTK (CNT-09): the last of the Zangband object flags.  See
+# src/mon-aura.c for the auras above and src/player-attack.c for these.
+
+name:ghoul touch
+type:flag
+subtype:melee
+id-type:on effect
+code:GHOUL_TOUCH
+power:12
+desc:Sends what you strike bare-handed to sleep
+
+name:returning
+type:flag
+subtype:throw
+id-type:on effect
+code:RETURN
+power:10
+desc:Comes back to your hand when thrown
+
+name:luck
+type:flag
+subtype:misc ability
+id-type:on wield
+code:LUCK_10
+power:8
+desc:Improves your saving throw
+
+name:easily enchanted
+type:flag
+subtype:misc ability
+id-type:on effect
+code:EASY_ENCHANT
+power:4
+desc:Takes enchantment more readily than its make suggests

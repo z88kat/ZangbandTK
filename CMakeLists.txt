@@ -865,6 +865,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     monster/aura.c
     monster/attack.c
     monster/desc.c
+    monster/lastflags.c
     monster/lethality.c
     monster/monster.c
     monster/restele.c

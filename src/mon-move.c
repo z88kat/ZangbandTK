@@ -1530,6 +1530,17 @@ static void monster_turn_grab_objects(struct monster *mon, const char *m_name,
  * Technically, need to check for monster in the way combined
  * with that monster being in a wall (or door?) XXX
  */
+/**
+ * How often a quantum monster simply ceases (ZangbandTK, CNT-04).
+ *
+ * Zangband rolled `one_in_((m_idx % 100) + 10)`, which is not a probability so
+ * much as an artefact: m_idx is the monster's slot in the level's array, so the
+ * same creature was more or less durable depending on what order the level
+ * happened to be populated in.  Nothing about the monster is in that number.
+ * Fixed here at the middle of the range it spanned, which is 10 to 109.
+ */
+#define QUANTUM_VANISH 60
+
 static void monster_turn(struct monster *mon)
 {
 	struct monster_lore *lore = get_lore(mon->race);
@@ -1552,6 +1563,27 @@ static void monster_turn(struct monster *mon)
 	 * finishes its turn out of sight has still had its say.
 	 */
 	monster_speak(mon);
+
+	/*
+	 * And a quantum monster is only doubtfully there (ZangbandTK, CNT-04).
+	 * Half its turns it does not take, and now and then it stops existing --
+	 * not death, no experience, no drop, just an absence where it was
+	 * ([melee2.c:2765](../archive/zangband/src/melee2.c#L2765)).  Zangband
+	 * spared its questors, and so does this: a quest that could evaporate is
+	 * a quest that cannot be finished.
+	 */
+	if (rf_has(mon->race->flags, RF_QUANTUM)) {
+		if (one_in_(QUANTUM_VANISH) && !rf_has(mon->race->flags, RF_QUESTOR)) {
+			if (monster_is_visible(mon)) {
+				msg("%s suddenly is not there.", m_name);
+			}
+
+			delete_monster_idx(cave, mon->midx);
+			return;
+		}
+
+		if (one_in_(2)) return;
+	}
 
 	/* If we're in a web, deal with that */
 	if (square_iswebbed(cave, mon->grid)) {

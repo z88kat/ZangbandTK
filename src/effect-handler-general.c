@@ -294,7 +294,12 @@ static bool enchant_score(int16_t *score, bool is_artifact)
 static bool enchant2(struct object *obj, int16_t *score)
 {
 	bool result = false;
-	bool is_artifact = obj->artifact ? true : false;
+	/*
+	 * ZangbandTK (CNT-09): an easily enchanted artifact does not get its
+	 * resistance roll.  That is the other half of OF_EASY_ENCHANT, and the
+	 * half that matters on the only things it appears on.
+	 */
+	bool is_artifact = obj->artifact && !of_has(obj->flags, OF_EASY_ENCHANT);
 	if (enchant_score(score, is_artifact)) result = true;
 	return result;
 }
@@ -326,6 +331,15 @@ static bool enchant(struct object *obj, int n, int eflag)
 
 	/* Missiles are easy to enchant */
 	if (tval_is_ammo(obj)) prob = prob / 20;
+
+	/*
+	 * ZangbandTK (CNT-09): and so is anything made to take it.  Twice the
+	 * attempts, and the artifact's resistance waived in enchant2() below --
+	 * both halves of the original
+	 * ([spells3.c:1706](../archive/zangband/src/spells3.c#L1706)).  4.2's
+	 * artifacts resist half the time, so there is something there to waive.
+	 */
+	if (of_has(obj->flags, OF_EASY_ENCHANT)) n *= 2;
 
 	/* Try "n" times */
 	for (i = 0; i < n; i++)

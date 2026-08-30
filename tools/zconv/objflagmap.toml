@@ -21,6 +21,9 @@ DEX = "DEX"
 CON = "CON"
 SPEED = "SPEED"
 STEALTH = "STEALTH"
+# Zangband's data files call the searching skill SENSE; its own C calls the same
+# flag TR_SEARCH.  Not a monster-sensing power, whatever the name suggests.
+SENSE = "SEARCH"
 INFRA = "INFRA"
 BLOWS = "BLOWS"
 LITE = "LIGHT"
@@ -71,6 +74,14 @@ CHAOTIC = "CHAOTIC"
 REFLECT = "REFLECT"
 SH_FIRE = "SH_FIRE"
 SH_ELEC = "SH_ELEC"
+# The last of them — see src/player-attack.c, src/player-calcs.c and the
+# enchant handler in src/effect-handler-general.c.
+GHOUL_TOUCH = "GHOUL_TOUCH"
+RETURN = "RETURN"
+LUCK_10 = "LUCK_10"
+EASY_ENCHANT = "EASY_ENCHANT"
+# 4.2 has this one already, under its own name: an item meant to be thrown.
+THROW = "THROWING"
 # Zangband treats these as resistances; 4.2 as protections, and as flags.
 RES_BLIND = "PROT_BLIND"
 RES_CONF = "PROT_CONF"
@@ -149,12 +160,12 @@ with the quest system in M6, not with the object import."""
 # -------------------------------------------------------------- implement
 
 [implement]
-PASS_WALL = { milestone = "M3", note = "Wielder passes through walls. Large mechanical reach." }
-RETURN = { milestone = "M3", note = "Thrown weapon returns to the wielder." }
-THROW = { milestone = "M3", note = "Item is meant to be thrown; pairs with RETURN." }
-LUCK_10 = { milestone = "M3", note = "Improves luck. 4.2 has no luck statistic." }
-EASY_ENCHANT = { milestone = "M3", note = "Enchants more readily than its level suggests." }
-SENSE = { milestone = "M3", note = "Senses nearby monsters of a kind tied to the item." }
+# Blocked, not merely unbuilt.  Zangband gated the player's movement into walls
+# on `tim.wraith_form || TR_PASS_WALL` (cmd1.c:2301) and 4.2 has neither: its
+# only PASS_WALL is the monster race flag, and the player can never enter a
+# wall by any route.  Carrying this means giving the player wall-phasing --
+# movement, line of sight, the lot -- rather than reading a flag.
+PASS_WALL = { milestone = "M3", note = "Wielder passes through walls. Needs player wall-movement, which 4.2 has no form of." }
 ACTIVATE = { milestone = "M2", note = "Handled separately via act:/time: rather than as a flag." }
 
 # ------------------------------------------------ ego-only object flags
@@ -188,8 +199,6 @@ TUNNEL = "TUNNEL"
 
 # ---------------------------------------- ego flags needing implementation
 
-[implement_ego]
-GHOUL_TOUCH = { milestone = "M3", note = "Paralysing touch. The entire identity of the (Ghoul Touch) ego." }
 
 [defer_ego]
 # All three of these named a blocker that has since shipped, so they are waiting

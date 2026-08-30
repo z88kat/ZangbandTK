@@ -33,6 +33,33 @@ Unreleased
 M2 and M3: the flags that were left — 29 to 30 August 2026
 ------------------------------------------------------------
 
+- **3.39.0** — **The last of Zangband's flags, and two that were never
+  flags at all.** ``QUANTUM``: one monster that half your blows pass through,
+  that takes half its turns, and that now and then simply stops existing.
+  ``GHOUL_TOUCH``: what you strike bare-handed falls asleep. ``RETURN``: a
+  thrown weapon comes back nineteen times in twenty. ``LUCK_10``: a better
+  saving throw. ``EASY_ENCHANT``: twice the enchantment attempts, and no
+  artifact resistance.
+
+  Two of the eight turned out not to be mechanisms. ``SENSE`` is Zangband's
+  data-file name for the searching skill — its own C calls the same flag
+  ``TR_SEARCH`` — and ``THROW`` is an item meant to be thrown, which Angband
+  already has as ``THROWING``. Both had been filed as things to build on the
+  strength of their names, and both were being dropped from the conversion
+  instead: the rename alone restores a search bonus to eight artifacts and two
+  egos.
+
+  ``PASS_WALL`` is refused rather than deferred. Angband has no form of player
+  wall-movement to hang it on, so carrying it would mean building wall-phasing
+  rather than reading a flag.
+
+  **That is the end of the flag work.** ``flagmap.toml`` has nothing left to
+  implement at all, and ``objflagmap.toml`` has only ``PASS_WALL``, kept there
+  with its reason rather than pretended away. Everything else in either is
+  deferred: the pet allegiance model, which is M10, three ego flags whose
+  blockers have since shipped, and the habitat tags, which this game answers
+  another way.
+
 - **3.38.1** — **Three build lists that had stopped matching the tree.** The
   Visual Studio project, which is hand-listed, had never heard of two of the
   files below and failed to link on Windows; the DOS package had no 8.3 name for

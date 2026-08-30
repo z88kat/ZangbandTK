@@ -129,4 +129,10 @@ RF(AURA_ELEC,	RFT_NOTE,		"")
  * the same savefile reason as the flags above.
  */
 RF(SHAPECHANGER,RFT_DISP,		"")
+/*
+ * ZangbandTK (CNT-04).  A creature that is only doubtfully there: half of what
+ * is swung at it passes through, it moves only half the time, and it may simply
+ * stop existing.  RFT_NOTE because the lore says it in prose.
+ */
+RF(QUANTUM,	RFT_NOTE,		"")
 /* end flags */

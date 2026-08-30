@@ -21,6 +21,7 @@ alloc:10:18 to 127
 combat:0:0:0
 type:light
 flags:SEE_INVIS | PROT_BLIND
+values:SEARCH[6]
 
 name:of Radiance
 info:0:13
@@ -57,6 +58,7 @@ info:0:22
 alloc:25:40 to 127
 combat:d6:d6:0
 type:gloves
+flags:GHOUL_TOUCH
 
 name:of Levitation
 info:0:7
@@ -102,7 +104,7 @@ type:sword
 type:polearm
 type:hafted
 flags:FREE_ACT | REGEN | SLOW_DIGEST | RAND_POWER | RAND_HI_RES
-values:RES_NEXUS[1]
+values:SEARCH[2] | RES_NEXUS[1]
 slay:EVIL_2
 curse:teleportation:30
 
@@ -132,6 +134,7 @@ alloc:100:0 to 127
 type:shot
 type:arrow
 type:bolt
+flags:RETURN
 
 name:of Explosion
 info:0:10

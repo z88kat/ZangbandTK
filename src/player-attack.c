@@ -1009,6 +1009,17 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	/* See if the player hit */
 	success = test_hit(chance_of_melee_hit(p, obj, mon), mon->race->ac);
 
+	/*
+	 * ZangbandTK (CNT-04): half of what is swung at a quantum monster passes
+	 * through it, before the to-hit roll is consulted at all.  Zangband wrote
+	 * this as part of the hit test rather than as an evasion bonus, and the
+	 * difference shows: no amount of skill improves it
+	 * ([cmd1.c:1063](../archive/zangband/src/cmd1.c#L1063)).
+	 */
+	if (success && rf_has(mon->race->flags, RF_QUANTUM) && one_in_(2)) {
+		success = false;
+	}
+
 	/* If a miss, skip this hit */
 	if (!success) {
 		msgt(MSG_MISS, "You miss %s.", m_name);
@@ -1206,6 +1217,26 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 			effect_simple(EF_HEAL_HP, source_player(), format("%d", drain),
 						  0, 0, 0, 0, 0, NULL);
 		}
+	}
+
+	/*
+	 * ZangbandTK (CNT-09): a ghoul's touch sends what it lands on to sleep.
+	 *
+	 * Bare-handed only -- Zangband checked that no weapon was wielded before
+	 * arming it at all, so gloves of this kind are for someone who fights with
+	 * their hands ([cmd1.c:1444](../archive/zangband/src/cmd1.c#L1444)).
+	 *
+	 * The original rolled its own saving throw, on the monster's hit dice
+	 * against the player's level.  4.2 has no hit dice -- BAL-06 replaced them
+	 * -- but it does have its own save for exactly this, on the monster's level
+	 * and the size of the effect, and it honours NO_SLEEP and gives uniques a
+	 * second roll.  So the save is 4.2's rather than a rescaling of a number
+	 * that no longer exists.
+	 */
+	if (!stop && !obj && player_of_has(p, OF_GHOUL_TOUCH)) {
+		equip_learn_flag(p, OF_GHOUL_TOUCH);
+		mon_inc_timed(mon, MON_TMD_SLEEP, 25 + randint1(p->lev / 2),
+					  MON_TMD_FLG_NOTIFY);
 	}
 
 	/*
@@ -1575,6 +1606,23 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 	/* Terminate piercing */
 	if (p->timed[TMD_POWERSHOT]) {
 		player_clear_timed(p, TMD_POWERSHOT, true, false);
+	}
+
+	/*
+	 * ZangbandTK (CNT-09): unless it comes back.  Nineteen throws in twenty,
+	 * which is the original's number -- the twentieth is what stops a returning
+	 * weapon being a weapon you never have to pick up
+	 * ([cmd2.c:2215](../archive/zangband/src/cmd2.c#L2215)).  Checked before
+	 * breakage, because a weapon that returned did not also shatter.
+	 */
+	if (missile && of_has(missile->flags, OF_RETURN) && randint0(100) < 95) {
+		char o_name[80];
+
+		object_desc(o_name, sizeof(o_name), missile, ODESC_BASE, p);
+		msg("The %s returns to your hand.", o_name);
+		object_learn_on_use(p, missile);
+		inven_carry(p, missile, true, true);
+		return;
 	}
 
 	/* Drop (or break) near that location */

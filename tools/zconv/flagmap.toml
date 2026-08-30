@@ -134,10 +134,6 @@ flags = ["FRIENDLY"]
 
 # ------------------------------------------------------------- implement
 
-[implement.QUANTUM]
-milestone = "M3"
-note = "Monster teleports erratically when observed. One monster, pure novelty."
-
 # ------------------------------------------------- unresolvable by tooling
 
 # These need per-monster information the flag alone does not carry, so the

@@ -2358,6 +2358,17 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	state->skills[SKILL_DISARM_MAGIC] += adj_int_dis[state->stat_ind[STAT_INT]];
 	state->skills[SKILL_DEVICE] += adj_int_dev[state->stat_ind[STAT_INT]];
 	state->skills[SKILL_SAVE] += adj_wis_sav[state->stat_ind[STAT_WIS]];
+
+	/*
+	 * ZangbandTK (CNT-09): luck helps you shrug things off.  Zangband wrote
+	 * `skills[SKILL_SAV] = 10`, an assignment rather than a bonus, which set
+	 * the saving throw to a flat ten and so made a lucky low-level character
+	 * better at saving than a high-level one without it
+	 * ([xtra1.c:2343](../archive/zangband/src/xtra1.c#L2343)).  Read as the
+	 * bonus it plainly meant to be, since the flag's own name promises an
+	 * improvement rather than a ceiling.
+	 */
+	if (of_has(state->flags, OF_LUCK_10)) state->skills[SKILL_SAVE] += 10;
 	state->skills[SKILL_DIGGING] += adj_str_dig[state->stat_ind[STAT_STR]];
 	for (i = 0; i < SKILL_MAX; i++)
 		state->skills[i] += (p->class->x_skills[i] * p->lev / 10);
