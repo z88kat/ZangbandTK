@@ -1553,6 +1553,25 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 		msp -= ((cur_wgt - max_wgt) / 10);
 	}
 
+	/*
+	 * And the bonus mana, after the encumbrance penalty and not subject to it
+	 * ([xtra1.c:1868](../archive/zangband/src/xtra1.c#L1868), whose comment
+	 * says so in as many words).
+	 *
+	 * Per casting level, not flat: a Ring of Wizardry with a pval of one is
+	 * worth one point at the level its wearer learned to cast and thirty at
+	 * level thirty. That is the part of `SP` the name does not tell you, and
+	 * it is why the ring is worth a slot at all.
+	 */
+	for (i = 0; i < p->body.count; i++) {
+		struct object *obj_local = slot_object(p, i);
+
+		if (obj_local) {
+			msp += obj_local->modifiers[OBJ_MOD_MANA]
+				* p->obj_k->modifiers[OBJ_MOD_MANA] * levels;
+		}
+	}
+
 	/* Mana can never be negative */
 	if (msp < 0) msp = 0;
 

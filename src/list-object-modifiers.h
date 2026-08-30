@@ -19,3 +19,8 @@ OBJ_MOD(MIGHT)
 OBJ_MOD(LIGHT)
 OBJ_MOD(DAM_RED)
 OBJ_MOD(MOVES)
+/*
+ * ZangbandTK (CNT-11): bonus spell points, per casting level rather than flat.
+ * Appended -- modifiers are written to the savefile by position.
+ */
+OBJ_MOD(MANA)

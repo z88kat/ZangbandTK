@@ -209,6 +209,13 @@ type-mult:gloves:0
 type-mult:boots:0
 bindui:movement_speed_ui_compact_0:0
 
+name:spell points
+type:mod
+code:MANA
+power:14
+mult:5
+desc:Increases your maximum mana, by this much for every level you can cast at
+
 name:light
 type:mod
 code:LIGHT

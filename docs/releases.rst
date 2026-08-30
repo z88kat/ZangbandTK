@@ -33,6 +33,40 @@ Unreleased
 M2: the rest of Zangband's objects — 30 August 2026
 ---------------------------------------------------
 
+- **3.42.0** — **Three of the objects CNT-11 held back, and two that stay
+  held.** A **Ring of Wizardry** needed a mana modifier, which Angband's object
+  model did not have; ``MANA`` is appended to the eleven it did. The pval is
+  mana *per casting level* rather than a flat bonus
+  (``msp += sp_bonus * levels``), which is the part of ``SP`` its name does not
+  tell you and the reason the ring is worth a finger at all.
+
+  A **Rod of Havoc** turned out to need no code. ``call_chaos()`` picks one of
+  thirty damage types and throws it, and ``effect:RANDOM`` chooses one of the
+  effects that follow it — so the whole table is a data entry. 25 of the thirty
+  elements exist here; the shapes that could not be expressed, and the five
+  elements that do not exist, are named in the conversion report rather than
+  approximated.
+
+  A **Scroll of Mundanity** strips an item back to the plain thing it was made
+  as. Zangband reset the fields one at a time; 4.2 keeps an item's power in
+  runes and curses as well as numbers, and ``object_prep()`` rebuilds all of it
+  from the kind — the same operation, in one call.
+
+  **A Scroll of Artifact Creation is not built, and the reason is the
+  savefile.** Angband stores an artifact by name and builds ``a_info`` from
+  ``artifact.txt`` at startup, so one invented during play would not exist when
+  the character was loaded again. **A Wand of Rockets stays held** for the
+  reason it was held before: its damage is its own element, ``el_info[]`` is
+  written to the savefile by position, and the change reaches every object and
+  monster in the game for the sake of one wand.
+
+  **A Scroll of Rumour is waiting on a decision, not on code.** Zangband's 647
+  rumours are in the archive and ``hints.txt`` is already the same shape, so
+  the mechanism is a morning. A good many of the lines name things this game
+  does not have or contradict what it does, and a scroll whose purpose is to
+  tell the player something true is the wrong place to ship text that is false
+  — which makes it curation under DEC-19 rather than conversion.
+
 - **3.41.0** — **Three flags that were waiting on nobody, and two that were
   waiting on more than they said.** ``CAN_FLY`` and ``CAN_SWIM`` reach 117 and
   91 imported monsters. Angband gates damaging terrain on one resistance flag

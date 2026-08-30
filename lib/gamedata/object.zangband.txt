@@ -190,6 +190,86 @@ attack:1d8:0:0
 armor:0:0
 desc:Yes, it is an arrow.  Surely you can do better than this twig.
 
+name:Havoc
+type:rod
+graphics:-:d
+level:95
+weight:15
+cost:30000
+alloc:12:75 to 100
+attack:0d0:0:0
+armor:0:0
+flags:EASY_KNOW
+effect:RANDOM
+dice:33
+effect:BALL:ELEC:3
+dice:150
+effect:BALL:POIS:3
+dice:150
+effect:BALL:ACID:3
+dice:150
+effect:BALL:COLD:3
+dice:150
+effect:BALL:FIRE:3
+dice:150
+effect:BALL:MISSILE:3
+dice:150
+effect:BALL:ARROW:3
+dice:150
+effect:BALL:PLASMA:3
+dice:150
+effect:BALL:HOLY_ORB:3
+dice:150
+effect:BALL:WATER:3
+dice:150
+effect:BALL:LIGHT:3
+dice:150
+effect:BALL:DARK:3
+dice:150
+effect:BALL:FORCE:3
+dice:150
+effect:BALL:INERTIA:3
+dice:150
+effect:BALL:MANA:3
+dice:150
+effect:BALL:METEOR:3
+dice:150
+effect:BALL:ICE:3
+dice:150
+effect:BALL:CHAOS:3
+dice:150
+effect:BALL:NETHER:3
+dice:150
+effect:BALL:DISEN:3
+dice:150
+effect:BALL:SHARD:3
+dice:150
+effect:BALL:SOUND:3
+dice:150
+effect:BALL:NEXUS:3
+dice:150
+effect:BALL:TIME:3
+dice:150
+effect:BALL:GRAVITY:3
+dice:150
+effect:BEAM:ELEC
+dice:150
+effect:BEAM:POIS
+dice:150
+effect:BEAM:ACID
+dice:150
+effect:BEAM:COLD
+dice:150
+effect:BEAM:FIRE
+dice:150
+effect:BEAM:MISSILE
+dice:150
+effect:BEAM:ARROW
+dice:150
+effect:BEAM:PLASMA
+dice:150
+desc:This rod calls forth a random attack.
+
 name:Pesticide
 type:rod
 graphics:-:d
@@ -806,6 +886,17 @@ armor:0:0
 flags:VORPAL
 desc:You don't dare testing this blade on your fingernail, it is so sharp.
 
+name:Mundanity
+type:scroll
+graphics:?:d
+level:23
+weight:5
+cost:0
+alloc:10:23 to 100
+flags:EASY_KNOW
+effect:MUNDANE
+desc:Your objects seem very ordinary all of a sudden.
+
 name:& T-shirt~
 type:soft armor
 graphics:~:w
@@ -835,6 +926,16 @@ cost:500
 alloc:20:15 to 100
 flags:STRANGE_LUCK | EASY_KNOW
 desc:Odd things happen to the wearer of this ring.
+
+name:Wizardry
+type:ring
+graphics:=:d
+level:60
+weight:2
+cost:2500
+alloc:50:75 to 100
+values:MANA[1+M2]
+desc:Wearing this ring seems to clarify your mind.
 
 name:Protection from Evil
 type:amulet

@@ -28,6 +28,9 @@ INFRA = "INFRA"
 BLOWS = "BLOWS"
 XTRA_MIGHT = "MIGHT"
 XTRA_SHOTS = "SHOTS"
+# Bonus spell points, and the pval is per casting level rather than flat --
+# which is 4.2's reading of a modifier too. See src/player-calcs.c.
+SP = "MANA"
 
 # --------------------------------------------------- values at fixed level
 # Resistances are level 1; immunities are the same property at level 3.
@@ -141,10 +144,6 @@ DRAIN_STATS = { name = "weakness", power = 30 }
 [reject]
 CHR = """4.2 removed charisma as a statistic in 4.2.0. Nothing to modify."""
 SUST_CHR = """See CHR. There is no charisma to sustain."""
-
-SP = """Grants bonus spell points. 4.2's object property model has no mana \
-modifier — its eleven mods are stealth, searching, infravision, tunnelling, \
-speed, damage reduction, blows, shots, might, moves and light."""
 
 INSTA_ART = """Marks an object kind as always generating as an artifact. \
 Meaningless on an entry that is already in artifact.txt."""

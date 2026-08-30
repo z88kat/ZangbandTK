@@ -129,32 +129,30 @@ would be worse than not having it.""" }
 artifact during play. 4.2 generates its random artifacts once, at birth, from \
 the savefile seed; there is no path that makes one mid-game.""" }
 
-"70:23" = { name = "Mundanity", why = "no 4.2 effect", note = """\
-`mundane_spell()` strips an item of ego and artifact status, leaving the base \
-object. 4.2 has no effect that removes runes, an ego or an artifact from an \
-object.""" }
-
-"66:28" = { name = "Havoc", why = "no 4.2 effect", note = """`call_chaos()` \
-rolls on a table of 26 chaos effects (spells2.c). 4.2's WONDER is a random \
-effect table too, but a different one, so substituting it would make a \
-different rod. The table itself is the content.""" }
-
 "65:29" = { name = "Rockets", why = "no 4.2 element", note = """`GF_ROCKET` \
 is its own damage type: it stuns unless the target resists sound, and is \
 halved by shard resistance (spells1.c:3535). 4.2 has no rocket element, and \
 adding one means an entry in list-elements.h -- which is indexed into \
-`el_info[]` and written to the savefile by position.""" }
+`el_info[]` and written to the savefile by position (save.c:177), for every \
+object and every monster. Held deliberately: the wand is one item and the \
+change reaches every savefile in the game.""" }
 
-"45:54" = { name = "Wizardry", why = "no mana modifier", note = """Grants \
-bonus spell points through the `SP` flag. See objflagmap.toml's rejection of \
-`SP`: 4.2's object model has eleven modifiers and mana is not among them. The \
-ring is nothing else -- no resistance, no stat -- so there is no reduced \
-version worth having.""" }
-
-"70:51" = { name = "Rumour", why = "no rumour table", note = """Prints a line \
-from `lib/file/rumors.txt`, which is Zangband's own list and is not shipped \
-here. 4.2 has `hints.txt`, but it is Angband's text, read only for the \
-birth screen, and there is no effect that displays one.""" }
+"70:51" = { name = "Rumour", why = "content curation", note = """Prints a line \
+from Zangband's `lib/file/rumors.txt`, which the archive has: 647 of them. \
+\
+The mechanism is the easy half and is not what this is waiting for. 4.2's \
+`hints.txt` is the same shape -- a flat list of one-line strings, parsed into \
+a linked list -- so a `rumor.txt` beside it and an effect that picks one is a \
+morning's work. \
+\
+The content is the half that needs a decision. Much of the list is generic \
+roguelike advice that travels fine, but a good deal of it names things this \
+game does not have or contradicts what it does: an Amulet of Doom that is now \
+an Amulet of Destruction, wresting a last charge from an empty wand, which 4.2 \
+removed, monsters that were never imported. A scroll whose whole purpose is to \
+tell the player something true about the game is the wrong place to ship text \
+that is false about it, and deciding which lines survive is curation under \
+DEC-19 rather than conversion.""" }
 
 # ------------------------------------------------------------- effects
 #
@@ -191,6 +189,93 @@ Logrus.""" }
     "effect:BALL:POIS:3",
     "dice:8",
 ], note = "`fire_ball(GF_POIS, dir, 8, 3)`, unchanged." }
+
+"66:28" = { name = "Havoc", lines = [
+    "effect:RANDOM",
+    "dice:33",
+    "effect:BALL:ELEC:3",
+    "dice:150",
+    "effect:BALL:POIS:3",
+    "dice:150",
+    "effect:BALL:ACID:3",
+    "dice:150",
+    "effect:BALL:COLD:3",
+    "dice:150",
+    "effect:BALL:FIRE:3",
+    "dice:150",
+    "effect:BALL:MISSILE:3",
+    "dice:150",
+    "effect:BALL:ARROW:3",
+    "dice:150",
+    "effect:BALL:PLASMA:3",
+    "dice:150",
+    "effect:BALL:HOLY_ORB:3",
+    "dice:150",
+    "effect:BALL:WATER:3",
+    "dice:150",
+    "effect:BALL:LIGHT:3",
+    "dice:150",
+    "effect:BALL:DARK:3",
+    "dice:150",
+    "effect:BALL:FORCE:3",
+    "dice:150",
+    "effect:BALL:INERTIA:3",
+    "dice:150",
+    "effect:BALL:MANA:3",
+    "dice:150",
+    "effect:BALL:METEOR:3",
+    "dice:150",
+    "effect:BALL:ICE:3",
+    "dice:150",
+    "effect:BALL:CHAOS:3",
+    "dice:150",
+    "effect:BALL:NETHER:3",
+    "dice:150",
+    "effect:BALL:DISEN:3",
+    "dice:150",
+    "effect:BALL:SHARD:3",
+    "dice:150",
+    "effect:BALL:SOUND:3",
+    "dice:150",
+    "effect:BALL:NEXUS:3",
+    "dice:150",
+    "effect:BALL:TIME:3",
+    "dice:150",
+    "effect:BALL:GRAVITY:3",
+    "dice:150",
+    "effect:BEAM:ELEC",
+    "dice:150",
+    "effect:BEAM:POIS",
+    "dice:150",
+    "effect:BEAM:ACID",
+    "dice:150",
+    "effect:BEAM:COLD",
+    "dice:150",
+    "effect:BEAM:FIRE",
+    "dice:150",
+    "effect:BEAM:MISSILE",
+    "dice:150",
+    "effect:BEAM:ARROW",
+    "dice:150",
+    "effect:BEAM:PLASMA",
+    "dice:150",
+], note = """`call_chaos()` picks one of thirty damage types and throws it, as \
+a ball of radius 3 or -- one time in four -- as a beam, both at 150 \
+(spells2.c:3522). 4.2 shares 25 of the thirty elements; the five it has not \
+got are CONFUSION, ROCKET, NUKE, HELL_FIRE and DISINTEGRATE. Two of \
+Zangband's three delivery shapes are dropped with them: the one-in-six that \
+fires in all eight directions at once, and the one-in-three that detonates a \
+radius-8 blast on the reader. `effect:RANDOM` chooses one of the effects that \
+follow it, which is one effect and not a branch, so the shapes it cannot \
+express are named here rather than approximated.""" }
+
+"70:23" = { name = "Mundanity", lines = [
+    "effect:MUNDANE",
+], note = """`mundane_spell()` resets an object to its kind -- no artifact, no \
+ego, base dice, base armour, base weight, and the identification forgotten \
+with them. It is indiscriminate and the message says nothing beforehand, which \
+is Zangband's doing and is kept. 4.2 keeps an item's power in runes and curses \
+as well as numbers, and `object_prep()` rebuilds all of it at once.""" }
 
 "75:62" = { name = "Invulnerability", lines = [
     "effect:TIMED_INC:INVULN",

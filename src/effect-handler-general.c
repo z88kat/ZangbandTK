@@ -3805,6 +3805,60 @@ static void ancient_curse_step(struct player *p, int step, bool *stop)
  * Weights are out of 27, from the original's documentation.  The remaining
  * 1-in-27 is deliberate: sometimes the curse stirs and nothing comes of it.
  */
+/**
+ * Strip an item back to what it was made as (ZangbandTK, CNT-11).
+ *
+ * Zangband's `mundane_spell()` ([spells3.c:2217](../archive/zangband/src/spells3.c#L2217))
+ * resets an object to its kind: no artifact, no ego, base dice, base armour,
+ * base weight, base pval, and the identification forgotten with them. It is
+ * mostly a curse-removal of last resort -- there is no other way to be rid of
+ * a sticky artifact -- and it is indiscriminate, which is the point. Nothing
+ * in the message warns you what you are about to lose.
+ *
+ * 4.2 keeps an object's power in more places than 2.8.1 did: runes and curses
+ * as well as the numbers. `object_prep()` rebuilds all of it from the kind,
+ * which is the same operation Zangband was performing field by field.
+ */
+bool effect_handler_MUNDANE(effect_handler_context_t *context)
+{
+	struct object *obj;
+	char o_name[80];
+	const char *q = "Make what mundane? ";
+	const char *s = "You have nothing to strip.";
+	int itemmode = (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR);
+	int number;
+
+	context->ident = true;
+
+	if (context->cmd) {
+		if (cmd_get_item(context->cmd, "tgtitem", &obj, q, s, NULL,
+						 itemmode)) {
+			return false;
+		}
+	} else if (!get_item(&obj, q, s, 0, NULL, itemmode)) {
+		return false;
+	}
+
+	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE, player);
+	msg("There is a bright flash of light! Your %s is a %s once more.",
+		o_name, obj->kind->name);
+
+	/*
+	 * `object_prep()` clears the whole structure, so the stack size has to
+	 * survive it by hand -- a scroll read over five arrows must not leave one.
+	 */
+	number = obj->number;
+	object_prep(obj, obj->kind, 0, MINIMISE);
+	obj->number = number;
+	obj->known = obj->known ? obj->known : NULL;
+
+	player->upkeep->update |= (PU_BONUS | PU_INVEN);
+	player->upkeep->notice |= (PN_COMBINE);
+	player->upkeep->redraw |= (PR_INVEN | PR_EQUIP);
+
+	return true;
+}
+
 bool effect_handler_ANCIENT_CURSE(effect_handler_context_t *context)
 {
 	/* Cumulative weights, out of 27, for each step in ancient_curse_step(). */

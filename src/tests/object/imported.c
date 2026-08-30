@@ -23,6 +23,7 @@
 #include "player-birth.h"
 #include "player-calcs.h"
 #include "player-luck.h"
+#include "effects.h"
 #include "player-util.h"
 #include "test-utils.h"
 
@@ -180,18 +181,21 @@ static int test_every_flavoured_tval_has_enough_flavours(void *state) {
 /**
  * The objects that were deferred are not in the game.
  *
- * Nineteen kinds were held back for a mechanism 4.2 has not got: ten statues
- * and a figurine whose names interpolate a monster, a wand and a figurine that
- * make pets, a potion that cures mutations, and five more. Each was a decision
- * with a reason recorded in objmap.toml, and a later edit that quietly imports
- * one anyway would give the game a Wand of Tame Monster that does nothing.
+ * Kinds held back for a mechanism 4.2 has not got: ten statues and a figurine
+ * whose names interpolate a monster, a wand and a figurine that make pets, a
+ * potion that cures mutations, and the rest. Each was a decision with a reason
+ * recorded in objmap.toml, and a later edit that quietly imports one anyway
+ * would give the game a Wand of Tame Monster that does nothing.
+ *
+ * The list shrinks as the mechanisms arrive, and this test is meant to fail
+ * when it does -- the Ring of Wizardry left it the day mana became something
+ * an object could modify.
  */
 static int test_the_deferred_objects_are_absent(void *state) {
 	null(kind_named(TV_WAND, "Tame Monster"));
 	null(kind_named(TV_POTION, "New Life"));
 	null(kind_named(TV_SCROLL, "Artifact Creation"));
-	null(kind_named(TV_RING, "Wizardry"));
-	null(kind_named(TV_ROD, "Havoc"));
+	null(kind_named(TV_WAND, "Rockets"));
 
 	ok;
 }
@@ -583,6 +587,78 @@ static int test_a_borrowed_lord_is_kinder(void *state) {
 	ok;
 }
 
+/**
+ * A Ring of Wizardry is worth more the further you have come.
+ *
+ * The part of `SP` its name does not tell you: Zangband adds
+ * `sp_bonus * levels` ([xtra1.c:1869](../archive/zangband/src/xtra1.c#L1869)),
+ * so the pval is mana *per casting level* and not a flat bonus. A ring with a
+ * pval of one is worth one point to a novice and thirty to a veteran, which is
+ * the whole reason it is worth a finger.
+ *
+ * Read from the data rather than a live character, because the arithmetic that
+ * would prove the scaling needs a caster of two different levels and the value
+ * here is the one that would be wrong: a flat reading would still put a number
+ * in the modifier and still look right.
+ */
+static int test_wizardry_grants_mana(void *state) {
+	struct object_kind *ring = kind_named(TV_RING, "Wizardry");
+
+	notnull(ring);
+	require(ring->modifiers[OBJ_MOD_MANA].base > 0
+			|| ring->modifiers[OBJ_MOD_MANA].m_bonus > 0);
+
+	ok;
+}
+
+/**
+ * The Rod of Havoc rolls on a table rather than doing one thing.
+ *
+ * `call_chaos()` picks one of thirty damage types and throws it
+ * ([spells2.c:3522](../archive/zangband/src/spells2.c#L3522)). 4.2 can express
+ * that in the data file alone: `effect:RANDOM` with a count chooses one of the
+ * effects that follow it, which is how Angband's own Wafer of Rations picks a
+ * nourishment.
+ *
+ * The count is asserted, not merely the presence of an effect, because the
+ * failure worth catching is a table that lost most of its entries and still
+ * works -- a rod that always throws lightning is a rod, just not this one.
+ */
+static int test_havoc_rolls_on_a_table(void *state) {
+	struct object_kind *rod = kind_named(TV_ROD, "Havoc");
+	struct effect *effect;
+	int n = 0;
+
+	notnull(rod);
+	notnull(rod->effect);
+	eq(rod->effect->index, EF_RANDOM);
+
+	for (effect = rod->effect->next; effect; effect = effect->next) n++;
+
+	/* Twenty-five elements as balls, eight of them again as beams. */
+	eq(n, 33);
+
+	ok;
+}
+
+/**
+ * A Scroll of Mundanity has something to do.
+ *
+ * The effect is the whole of the object -- there is no flag, no value and no
+ * damage on it -- so a conversion that dropped the effect line would leave a
+ * scroll that reads and does nothing, and nothing else about the entry would
+ * look wrong.
+ */
+static int test_mundanity_has_its_effect(void *state) {
+	struct object_kind *scroll = kind_named(TV_SCROLL, "Mundanity");
+
+	notnull(scroll);
+	notnull(scroll->effect);
+	eq(scroll->effect->index, EF_MUNDANE);
+
+	ok;
+}
+
 const char *suite_name = "object/imported";
 struct test tests[] = {
 	{ "the-imported-kinds-are-there", test_the_imported_kinds_are_there },
@@ -609,5 +685,8 @@ struct test tests[] = {
 	{ "a-lord-notices-three-different-ways",
 	  test_a_lord_notices_three_different_ways },
 	{ "a-borrowed-lord-is-kinder", test_a_borrowed_lord_is_kinder },
+	{ "wizardry-grants-mana", test_wizardry_grants_mana },
+	{ "havoc-rolls-on-a-table", test_havoc_rolls_on_a_table },
+	{ "mundanity-has-its-effect", test_mundanity_has_its_effect },
 	{ NULL, NULL }
 };

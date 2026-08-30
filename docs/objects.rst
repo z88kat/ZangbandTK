@@ -1,7 +1,7 @@
 Objects
 =======
 
-ZangbandTK adds 82 object kinds, 51 artifacts and 17 ego types to Angband's,
+ZangbandTK adds 85 object kinds, 51 artifacts and 17 ego types to Angband's,
 along with three weapon properties Angband has no equivalent for.
 
 Three new weapon properties
@@ -67,7 +67,19 @@ you stand, which is a drawback until the day something tries to teleport you
 away. A **Ring of Lordly Protection** is what its name suggests. An **Amulet of
 Destruction** is not.
 
+A **Ring of Wizardry** gives a caster more mana — and the number on it is per
+level you can cast at, not a flat bonus, so it is worth a little to a novice
+and a great deal to someone who has been at it a while.
+
 A **Ring of Fate** deserves its own paragraph, below.
+
+Among the consumables: a **Rod of Havoc**, which picks one of twenty-five
+damage types and throws it at whatever you aimed at, as a ball or occasionally
+as a beam, and is never twice the same rod. And a **Scroll of Mundanity**,
+which strips an item back to the plain thing it was made as — no artifact, no
+ego, base dice, base armour, and the identification forgotten with them. It is
+the only way to be rid of something that will not come off, and it is
+indiscriminate: nothing warns you what you are about to lose.
 
 Some care went into what *not* to import. Zangband renamed a good deal of what
 it inherited from Angband — its Ring of Skill is Angband's Ring of Accuracy,
@@ -233,14 +245,14 @@ each for want of a mechanism rather than out of preference:
 - **A Wand of Tame Monster**, for the same reason: it makes a pet.
 - **A Potion of New Life**, which re-rolls your hit points and cures every
   mutation. Neither mechanism exists yet.
-- **Scrolls of Artifact Creation and Mundanity**, which respectively make an
-  artifact out of an ordinary item and strip an item back to an ordinary one.
-  Angband has no effect that does either.
-- **A Rod of Havoc**, which rolls on a table of twenty-six chaos effects that
-  would have to be written before the rod means anything.
+- **A Scroll of Artifact Creation**, which makes a new artifact out of an
+  ordinary item during play. Angband generates its random artifacts once, at
+  birth, and stores an artifact in the savefile by name — so one invented
+  mid-game would not be there when the character was loaded again.
 - **A Wand of Rockets**, whose damage is its own element — it stuns, and shard
   resistance halves it — and adding an element changes the savefile layout.
-- **A Ring of Wizardry**, which grants bonus spell points. Angband has eleven
-  object modifiers and mana is not among them, and the ring is nothing else.
-- **A Scroll of Rumour**, which reads from a list of rumours that is not
-  shipped here.
+- **A Scroll of Rumour**, and this one is waiting on a decision rather than on
+  code. Zangband's 647 rumours are in the archive and Angband already has the
+  machinery to hold a list like it, but a good many of them name things this
+  game does not have or contradict what it does. A scroll whose whole purpose
+  is to tell you something true is the wrong place for text that is not.
