@@ -3260,6 +3260,9 @@ static int test_a_blessed_beast_bounds_away(void *state) {
 	notnull(mon);
 	first = mon->grid;
 
+	/* This is about the beast, not about the cooldown a touch leaves behind. */
+	player_clear_timed(player, TMD_BLESSED_BEAST, false, false);
+
 	/*
 	 * Work out the character's bonuses before swinging at anything.
 	 *
@@ -3695,6 +3698,16 @@ static int test_a_refused_power_is_free(void *state) {
 	notnull(power);
 
 	player->race = mindflayer;
+
+	/*
+	 * Clear what other tests left lying about.  These used to pass only
+	 * because the Unicorn test ahead of them cured every ailment the suite had
+	 * accumulated as a side effect of its own blessing -- so when the Unicorn
+	 * stopped blessing, three unrelated tests failed at once.
+	 */
+	player_clear_timed(player, TMD_CONFUSED, false, false);
+	player_clear_timed(player, TMD_AFRAID, false, false);
+	player_clear_timed(player, TMD_STUN, false, false);
 	player->msp = 100;
 	player->mhp = 100;
 
@@ -3749,6 +3762,16 @@ static int test_blood_pays_when_mana_cannot(void *state) {
 	notnull(power);
 
 	player->race = draconian;
+
+	/*
+	 * Clear what other tests left lying about.  These used to pass only
+	 * because the Unicorn test ahead of them cured every ailment the suite had
+	 * accumulated as a side effect of its own blessing -- so when the Unicorn
+	 * stopped blessing, three unrelated tests failed at once.
+	 */
+	player_clear_timed(player, TMD_CONFUSED, false, false);
+	player_clear_timed(player, TMD_AFRAID, false, false);
+	player_clear_timed(player, TMD_STUN, false, false);
 	player->lev = power->level;
 
 	/* A warrior's pool: there isn't one. */
@@ -4724,6 +4747,83 @@ static int test_a_patron_waits_until_the_level_is_settled(void *state) {
 }
 
 /**
+ * A second deer does not heal you, and that is the whole of the balance.
+ *
+ * Reported from play: a white deer followed the character about, healing them
+ * to full every few paces, forever.  The beast did remember -- but the memory
+ * was kept on the animal, and an ordinary deer is not a unique, so the
+ * wilderness destroys and re-rolls it every time the map around the player is
+ * rebuilt.  A fresh deer has forgotten, and deer are common at depth 1.
+ *
+ * So the memory is on the character now.  This places two separate beasts and
+ * touches both.
+ */
+static int test_a_second_beast_gives_nothing(void *state) {
+	struct monster_race *race = NULL;
+	struct monster_group_info info = { 0, 0 };
+	struct loc first, second;
+	int i, healed_by;
+
+	for (i = 1; i < z_info->r_max; i++)
+		if (r_info[i].name && rf_has(r_info[i].flags, RF_BLESSING) &&
+				!rf_has(r_info[i].flags, RF_UNIQUE)) {
+			race = &r_info[i];
+			break;
+		}
+	notnull(race);
+
+	player->upkeep->update |= PU_BONUS;
+	update_stuff(player);
+	player_clear_timed(player, TMD_BLESSED_BEAST, false, false);
+
+	require(find_open_grid_near(player->grid, &first));
+	require(place_new_monster(cave, first, race, false, false, info,
+							  ORIGIN_DROP));
+
+	/* Hurt, and touched: healed. */
+	player->chp = 1;
+	py_attack(player, first);
+	eq(player->chp, player->mhp);
+	healed_by = player->mhp;
+
+	/* The gift is still on the character. */
+	require(player->timed[TMD_BLESSED_BEAST] > 0);
+
+	/*
+	 * Now a different animal entirely -- not the same one moved, which is what
+	 * the old memory would have caught, but the fresh one the wilderness rolls
+	 * a few paces later.
+	 */
+	if (square_monster(cave, first)) delete_monster(cave, first);
+	require(find_open_grid_near(player->grid, &second));
+	require(place_new_monster(cave, second, race, false, false, info,
+							  ORIGIN_DROP));
+
+	player->chp = 1;
+	py_attack(player, second);
+
+	/* It shied away, and the character is as hurt as they were. */
+	eq(player->chp, 1);
+	require(healed_by > 1);
+
+	/* And once the gift has faded, the next beast gives again. */
+	player_clear_timed(player, TMD_BLESSED_BEAST, false, false);
+	if (square_monster(cave, second)) delete_monster(cave, second);
+	require(find_open_grid_near(player->grid, &second));
+	require(place_new_monster(cave, second, race, false, false, info,
+							  ORIGIN_DROP));
+
+	player->chp = 1;
+	py_attack(player, second);
+	eq(player->chp, player->mhp);
+
+	if (square_monster(cave, second)) delete_monster(cave, second);
+	player_clear_timed(player, TMD_BLESSED_BEAST, false, false);
+
+	ok;
+}
+
+/**
  * There are fish in the sea, and only fish.
  *
  * The sea used to hold nothing whatever.  wild_populate() asked
@@ -5108,6 +5208,9 @@ static int test_the_unicorn_makes_you_whole(void *state) {
 	require(player->state.num_blows > 0);
 
 	/* A character in every kind of trouble at once. */
+	/* The Unicorn is being tested, not the cooldown a deer left behind. */
+	player_clear_timed(player, TMD_BLESSED_BEAST, false, false);
+
 	player->chp = 1;
 	player_inc_timed(player, TMD_POISONED, 40, false, false, false);
 	player_inc_timed(player, TMD_BLIND, 40, false, false, false);
@@ -5764,6 +5867,7 @@ struct test tests[] = {
 	{ "only-a-chaos-warrior-is-owned", test_only_a_chaos_warrior_is_owned },
 	{ "thirteen-is-an-unlucky-level", test_thirteen_is_an_unlucky_level },
 	{ "a-power-that-needs-a-number-has-one", test_a_power_that_needs_a_number_has_one },
+	{ "a-second-beast-gives-nothing", test_a_second_beast_gives_nothing },
 	{ "a-shark-is-not-a-tree", test_a_shark_is_not_a_tree },
 	{ "the-sea-has-fish-in-it", test_the_sea_has_fish_in_it },
 	{ "a-patron-waits-until-the-level-is-settled", test_a_patron_waits_until_the_level_is_settled },

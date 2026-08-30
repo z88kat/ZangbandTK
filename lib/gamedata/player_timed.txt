@@ -585,3 +585,14 @@ desc:lotus
 grade:o:5:Lotus:You feel a little dizzy...
 on-end:Where am I?
 msgt:GENERIC
+
+# ZangbandTK (CNT-20): how long a blessed beast's gift stays on you, and for
+# that long no other beast will give you a second.  It carries no effect of its
+# own -- it is a memory, kept on the character because it cannot be kept on the
+# animal: an ordinary deer is rolled fresh every time the map around you is
+# rebuilt, so a mark on the deer is forgotten within a few dozen paces.
+name:BLESSED_BEAST
+desc:blessed
+grade:G:1:Blessed:A blessing settles on you.
+on-end:The blessing fades, and the beasts of the country notice.
+msgt:GENERIC

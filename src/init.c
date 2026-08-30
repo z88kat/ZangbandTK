@@ -735,6 +735,8 @@ static enum parser_error parse_constants_world(struct parser *p) {
 		z->max_depth = value;
 	else if (streq(label, "day-length"))
 		z->day_length = value;
+	else if (streq(label, "blessing-turns"))
+		z->blessing_turns = value;
 	else if (streq(label, "dungeon-hgt"))
 		z->dungeon_hgt = value;
 	else if (streq(label, "dungeon-wid"))

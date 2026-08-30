@@ -451,6 +451,12 @@ lethality:armor-class:50
 # Frequencies for the three Zangband weapon properties Angband has no
 # counterpart for. Only playtest can settle these, so they live in data.
 
+# How long a blessed beast's gift lingers, in turns.  For that long no other
+# beast will give you another, which is what stops a full heal for nothing from
+# being a full heal whenever you like: white deer are common, and the memory
+# cannot live on the animal.
+world:blessing-turns:500
+
 # A vorpal weapon cuts deep on one blow in this many
 melee:vorpal-chance:6
 

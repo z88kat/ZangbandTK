@@ -888,12 +888,22 @@ static void martial_side_effect(struct player *p, struct monster *mon,
  * Some creatures are not to be fought.  Touch one and it heals you and bounds
  * away; there is no attack, no damage either way, and it is not angered.
  *
- * Once per beast, and that is the whole of the balance.  A full heal for nothing
- * is worth having; a full heal for nothing that can be had again by walking after
- * it and touching it a second time is a character who never needs a potion again.
- * So the beast remembers -- in mflag, which is written to the savefile with the
- * rest of the monster, so reloading does not wipe the memory either -- and a
- * second touch only sends it bounding off again.
+ * Once in a while, and that is the whole of the balance.  A full heal for
+ * nothing is worth having; a full heal for nothing that can be had again by
+ * walking after it is a character who never needs a potion again.
+ *
+ * The memory is kept in two places because one is not enough.  The beast itself
+ * remembers, which stops the animal in front of you from giving twice.  That was
+ * the whole of it at first and it did not work: an ordinary white deer is not a
+ * unique, so it is destroyed and rolled again every time the map around the
+ * player is rebuilt, and a deer that has forgotten will bless you again a dozen
+ * paces later -- reported from play as a deer that followed the character about
+ * healing them forever.  Deer are common; teleporting one further away only
+ * fetches another.
+ *
+ * So the character remembers too, for `blessing-turns`, and while that lasts
+ * every beast shies away.  That is the part that actually holds, and it is a
+ * gift with a memory rather than a fountain.
  *
  * It is deliberately not killed and not removed.  It goes on living in the world
  * and you can meet it again; it simply has nothing more to give you.
@@ -901,12 +911,15 @@ static void martial_side_effect(struct player *p, struct monster *mon,
 static void py_touch_blessed(struct player *p, struct monster *mon)
 {
 	char m_name[80];
-	bool given = mflag_has(mon->mflag, MFLAG_GAVE_BLESSING);
+	bool given = mflag_has(mon->mflag, MFLAG_GAVE_BLESSING) ||
+		p->timed[TMD_BLESSED_BEAST];
 
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);
 
 	if (!given) {
 		mflag_on(mon->mflag, MFLAG_GAVE_BLESSING);
+		player_set_timed(p, TMD_BLESSED_BEAST, z_info->blessing_turns, false,
+						 false);
 
 		if (p->chp < p->mhp) {
 			p->chp = p->mhp;

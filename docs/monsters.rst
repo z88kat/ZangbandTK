@@ -227,9 +227,15 @@ A **white deer** is a ``q`` in white, standing too still and too unafraid of
 you. Walk into it and it heals you — everything, whatever you were down to — and
 then bounds away a good ten grids and carries on grazing.
 
-It does that once. Follow it and touch it again and it shies from your hand and
-bounds off, and that is all. The beast remembers, and so does your savefile, so
-reloading does not persuade it either.
+It does that once, and then no beast will do it again for a while — about five
+hundred turns, during which you are carrying a blessing and every deer you meet
+shies from your hand. Follow the one that blessed you and it will not oblige; nor
+will the next one you find. Reloading does not persuade them either, because what
+remembers is you.
+
+That is deliberate and it is the whole of the balance. A full heal for nothing is
+worth having. A full heal for nothing that can be had again a dozen paces later
+is a character who never needs a potion, and deer are common.
 
 You can kill it, if you want to. It carries nothing and is worth no experience,
 and it will not fight back.

@@ -151,6 +151,7 @@ struct angband_constants
 	/* World shape constants, read from constants.txt */
 	uint16_t max_depth;	/* Maximum dungeon level */
 	uint16_t day_length;	/* Number of turns from dawn to dawn */
+	uint16_t blessing_turns;	/* How long a blessed beast's gift lingers */
 	uint16_t dungeon_hgt;	/**< Maximum number of vertical grids on a level */
 	uint16_t dungeon_wid;	/**< Maximum number of horizontical grids on a level */
 	uint16_t town_hgt;	/**< Maximum number of vertical grids in the town */

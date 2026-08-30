@@ -251,6 +251,7 @@ each for want of a mechanism rather than out of preference:
   mid-game would not be there when the character was loaded again.
 - **A Wand of Rockets**, whose damage is its own element — it stuns, and shard
   resistance halves it — and adding an element changes the savefile layout.
+
 One more is not waiting at all. **The Scroll of Rumour is dropped**, not
 deferred. Zangband's 647 rumours are in the archive and Angband already has the
 machinery to hold a list like it, so the mechanism was never the obstacle — but

@@ -318,6 +318,17 @@ M2 and M3: the flags that were left — 29 to 30 August 2026
 M7: races and classes — 25 to 29 August 2026
 ----------------------------------------------
 
+- **3.33.2** — **The white deer is no longer a healing fountain.** Reported from
+  play: a deer followed the character about, healing them to full every few
+  paces, forever. The beast did remember — but the memory was kept on the animal,
+  and an ordinary deer is not a unique, so the wilderness destroys and re-rolls it
+  every time the map around the player is rebuilt. A fresh deer has forgotten, and
+  at depth 1 with rarity 4 there is always another one.
+
+  The memory is now kept on the character as well, for ``world:blessing-turns``
+  (500 by default, and tunable without a rebuild). While it lasts every beast
+  shies away. The Unicorn was never affected — she is unique, so the wilderness
+  brings her back with her memory intact.
 - **3.33.1** — **The open sea, and the manual catching up with it.** The first
   pass at populating the water only filled the shallows: deep water is damaging
   terrain and the generator refused it outright, so the ocean proper stayed
