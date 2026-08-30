@@ -36,6 +36,35 @@ Savefile compatibility — 30 August 2026
 M8: mutations — 31 August 2026
 ------------------------------
 
+- **3.47.0** — **Twenty-three mutation powers, and nine honest gaps**
+  (PLR-16). The activatable mutations join the same list as racial and class
+  powers, after them, and use the same machinery — the same failure roll
+  against a stat, the same fall back to hit points when the mana is short.
+
+  There is no mechanical route from Zangband's ``mutation_power_aux()`` to a
+  4.2 effect chain: it is nine hundred lines of hand-written C in which every
+  power calls whatever it happens to need. So the translations live in
+  ``tools/zconv/mutmap.toml``, one judgement per mutation, each carrying the
+  source line it was read off and what the translation costs — and the
+  converter emits them, so ``mutation.txt`` stays generated.
+
+  **Nine cannot be expressed and say so.** Telekinesis, swapping places,
+  sensing curses, the Midas touch, growing molds, weighing magic, sterility and
+  the launcher all need machinery 4.2 has not got, and building it to carry one
+  mutation would be the wrong way round in most cases; Polymorph Self is
+  deferred to the acquisition paths it belongs to rather than away. All nine
+  appear in the power list marked *not yet* rather than being hidden, because
+  the character sheet describes them and a player would come looking.
+
+  Level-scaled radii became ``power-when`` bands, which is what DEC-37 added
+  them for: Zangband's spit-acid radius is ``1 + level / 30``, so it is one
+  band to level 29 and another after, not an average.
+
+  **Twelve descriptions were advertising charisma**, which 4.2 removed in
+  4.2.0. A silly squeak read "(-4 CHR)" and is in fact inert; warts read
+  "(-2 CHR, +5 AC)" when only the armour was real. The converter now takes out
+  the charisma term and the punctuation holding it in place, and nothing else.
+
 - **3.46.0** — **The thirty-two standing mutations act** (PLR-14, PLR-15,
   PLR-17). A continuous mutation is now simply true of your character: stats,
   armour, speed, searching, stealth, saving throw, resistances,

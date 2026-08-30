@@ -14,6 +14,14 @@ weight:4
 desc:You can spit acid.
 gain:You gain the ability to spit acid.
 lose:You lose the ability to spit acid.
+power-when:1:29
+power-effect:BALL:ACID:1
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+power-when:30:0
+power-effect:BALL:ACID:2
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
 
 name:BR_FIRE
 kind:activatable
@@ -26,6 +34,14 @@ weight:3
 desc:You can breathe fire.
 gain:You gain the ability to breathe fire.
 lose:You lose the ability to breathe fire.
+power-when:20:39
+power-effect:BALL:FIRE:2
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-when:40:0
+power-effect:BALL:FIRE:3
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
 
 name:HYPN_GAZE
 kind:activatable
@@ -39,6 +55,7 @@ values:WIS[-1]
 desc:Your gaze is hypnotic (-1 WIS).
 gain:Your eyes look mesmerizing...
 lose:Your eyes look uninteresting.
+power-effect:COMMAND
 
 name:TELEKINES
 kind:activatable
@@ -64,6 +81,9 @@ weight:3
 desc:You can teleport at will.
 gain:You gain the power of teleportation at will.
 lose:You lose the power of teleportation at will.
+power-effect:TELEPORT
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 4 + 10
 
 name:MIND_BLST
 kind:activatable
@@ -77,6 +97,9 @@ values:STR[-1]
 desc:You can Mind Blast your enemies (-1 STR).
 gain:You gain the power of Mind Blast.
 lose:You lose the power of Mind Blast.
+power-effect:BOLT:MON_PSI
+power-dice:$Dd3
+power-expr:D:PLAYER_LEVEL:- 1 / 5 + 3
 
 name:RADIATION
 kind:activatable
@@ -90,6 +113,18 @@ values:CON[-1]
 desc:You can emit hard radiation at will (-1 CON).
 gain:You start emitting hard radiation.
 lose:You stop emitting hard radiation.
+power-when:15:19
+power-effect:SPHERE:POIS:3
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-when:20:39
+power-effect:SPHERE:POIS:4
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-when:40:0
+power-effect:SPHERE:POIS:5
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
 
 name:VAMPIRISM
 kind:activatable
@@ -102,6 +137,12 @@ weight:2
 desc:You can drain life from a foe like a vampire.
 gain:You become vampiric.
 lose:You are no longer vampiric.
+power-effect:BOLT:NETHER
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:HEAL_HP
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
 
 name:SMELL_MET
 kind:activatable
@@ -114,6 +155,7 @@ weight:3
 desc:You can smell nearby precious metal.
 gain:You smell a metallic odor.
 lose:You no longer smell a metallic odor.
+power-effect:DETECT_GOLD
 
 name:SMELL_MON
 kind:activatable
@@ -126,6 +168,7 @@ weight:4
 desc:You can smell nearby monsters.
 gain:You smell filthy monsters.
 lose:You no longer smell filthy monsters.
+power-effect:DETECT_VISIBLE_MONSTERS
 
 name:BLINK
 kind:activatable
@@ -138,6 +181,8 @@ weight:3
 desc:You can teleport yourself short distances.
 gain:You gain the power of minor teleportation.
 lose:You lose the power of minor teleportation.
+power-effect:TELEPORT
+power-dice:10
 
 name:EAT_ROCK
 kind:activatable
@@ -150,6 +195,8 @@ weight:2
 desc:You can consume solid rock.
 gain:The walls look delicious.
 lose:The walls look unappetizing.
+power-effect:ALTER:KILL_WALL
+power-effect:NOURISH:INC_TO:5000
 
 name:SWAP_POS
 kind:activatable
@@ -171,9 +218,13 @@ stat:CON
 difficulty:16
 power:Shriek
 weight:3
-desc:You can emit a horrible shriek. (-1 CHR)
+desc:You can emit a horrible shriek.
 gain:Your vocal cords get much tougher.
 lose:Your vocal cords get much weaker.
+power-effect:SPHERE:SOUND:8
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:WAKE
 
 name:ILLUMINE
 kind:activatable
@@ -187,6 +238,10 @@ values:STEALTH[-1]
 desc:You can emit bright light (-2 stealth).
 gain:You can light up rooms with your presence.
 lose:You can no longer light up rooms with your presence.
+power-effect:LIGHT_AREA
+power-effect:SPHERE:LIGHT_WEAK:2
+power-dice:2d$S
+power-expr:S:PLAYER_LEVEL:/ 2
 
 name:DET_CURSE
 kind:activatable
@@ -212,6 +267,11 @@ values:WIS[-1]
 desc:You can drive yourself into a berserk frenzy (-1 WIS).
 gain:You feel a controlled rage.
 lose:You no longer feel a controlled rage.
+power-effect:HEAL_HP
+power-dice:30
+power-effect:TIMED_INC:SHERO
+power-dice:25+1d25
+power-effect:CURE:AFRAID
 
 name:POLYMORPH
 kind:activatable
@@ -235,7 +295,7 @@ power:Midas touch
 weight:2
 requires:gold
 values:WIS[-1]
-desc:You can turn ordinary items to gold (-1 WIS, -1 CHR).
+desc:You can turn ordinary items to gold (-1 WIS).
 gain:You gain the Midas touch.
 lose:You lose the Midas touch.
 
@@ -263,6 +323,58 @@ save:-10
 desc:You can harden yourself to the ravages of the elements.
 gain:You feel like you can protect yourself.
 lose:You feel like you might be vulnerable.
+power-when:10:0
+power-effect:RANDOM
+power-dice:5
+power-effect:TIMED_INC:OPP_ACID
+power-dice:20+1d20
+power-effect:TIMED_INC:OPP_ELEC
+power-dice:20+1d20
+power-effect:TIMED_INC:OPP_FIRE
+power-dice:20+1d20
+power-effect:TIMED_INC:OPP_COLD
+power-dice:20+1d20
+power-effect:TIMED_INC:OPP_POIS
+power-dice:20+1d20
+power-when:20:0
+power-effect:RANDOM
+power-dice:5
+power-effect:TIMED_INC:OPP_ACID
+power-dice:20+1d20
+power-effect:TIMED_INC:OPP_ELEC
+power-dice:20+1d20
+power-effect:TIMED_INC:OPP_FIRE
+power-dice:20+1d20
+power-effect:TIMED_INC:OPP_COLD
+power-dice:20+1d20
+power-effect:TIMED_INC:OPP_POIS
+power-dice:20+1d20
+power-when:30:0
+power-effect:RANDOM
+power-dice:5
+power-effect:TIMED_INC:OPP_ACID
+power-dice:20+1d20
+power-effect:TIMED_INC:OPP_ELEC
+power-dice:20+1d20
+power-effect:TIMED_INC:OPP_FIRE
+power-dice:20+1d20
+power-effect:TIMED_INC:OPP_COLD
+power-dice:20+1d20
+power-effect:TIMED_INC:OPP_POIS
+power-dice:20+1d20
+power-when:40:0
+power-effect:RANDOM
+power-dice:5
+power-effect:TIMED_INC:OPP_ACID
+power-dice:20+1d20
+power-effect:TIMED_INC:OPP_ELEC
+power-dice:20+1d20
+power-effect:TIMED_INC:OPP_FIRE
+power-dice:20+1d20
+power-effect:TIMED_INC:OPP_COLD
+power-dice:20+1d20
+power-effect:TIMED_INC:OPP_POIS
+power-dice:20+1d20
 
 name:EARTHQUAKE
 kind:activatable
@@ -276,6 +388,7 @@ values:WIS[-1]
 desc:You can bring down the dungeon around your ears (-1 WIS).
 gain:You gain the ability to wreck the dungeon.
 lose:You lose the ability to wreck the dungeon.
+power-effect:EARTHQUAKE:NONE:10
 
 name:EAT_MAGIC
 kind:activatable
@@ -288,6 +401,7 @@ weight:1
 desc:You can consume magic energy for your own use.
 gain:Your magic items look delicious.
 lose:Your magic items no longer look delicious.
+power-effect:TAP_DEVICE
 
 name:WEIGH_MAG
 kind:activatable
@@ -325,6 +439,10 @@ weight:2
 desc:You can run for your life after hitting something.
 gain:You suddenly understand how thieves feel.
 lose:You no longer feel jumpy.
+power-effect:MOVE_ATTACK
+power-dice:1
+power-effect:TELEPORT
+power-dice:30
 
 name:DAZZLE
 kind:activatable
@@ -338,6 +456,15 @@ values:STEALTH[-1]
 desc:You can emit confusing, blinding radiation (-1 stealth).
 gain:You gain the ability to emit dazzling lights.
 lose:You lose the ability to emit dazzling lights.
+power-effect:PROJECT_LOS:MON_STUN
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 4
+power-effect:PROJECT_LOS:MON_CONF
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 4
+power-effect:PROJECT_LOS:TURN_ALL
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 4
 
 name:LASER_EYE
 kind:activatable
@@ -351,6 +478,9 @@ values:SEARCH[-2]
 desc:Your eyes can fire laser beams (-2 sensing).
 gain:Your eyes burn for a moment.
 lose:Your eyes burn for a moment, then feel soothed.
+power-effect:BEAM:LIGHT_WEAK
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
 
 name:RECALL
 kind:activatable
@@ -363,6 +493,7 @@ weight:2
 desc:You can travel between town and the depths.
 gain:You feel briefly homesick, but it passes.
 lose:You feel briefly homesick.
+power-effect:RECALL
 
 name:BANISH
 kind:activatable
@@ -375,6 +506,9 @@ weight:1
 desc:You can send evil creatures directly to Hell.
 gain:You feel a holy wrath fill you.
 lose:You no longer feel a holy wrath.
+power-effect:BOLT:AWAY_EVIL
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 4
 
 name:COLD_TOUCH
 kind:activatable
@@ -388,6 +522,9 @@ values:DEX[-1]
 desc:You can freeze things with a touch (-1 DEX).
 gain:Your hands get very cold.
 lose:Your hands warm up.
+power-effect:BOLT:COLD
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
 
 name:LAUNCHER
 kind:activatable
@@ -453,7 +590,7 @@ lose:You are no longer subject to uncontrollable flatulence.
 name:SCOR_TAIL
 kind:melee
 weight:2
-desc:You have a scorpion tail (poison, 3d7, -3 CHR).
+desc:You have a scorpion tail (poison, 3d7).
 gain:You grow a scorpion tail!
 lose:You lose your scorpion tail!
 
@@ -514,7 +651,7 @@ lose:You feel the world's a brighter place.
 name:TRUNK
 kind:melee
 weight:2
-desc:You have an elephantine trunk (dam 1d4, -1 CHR).
+desc:You have an elephantine trunk (dam 1d4).
 gain:Your nose grows into an elephant-like trunk.
 lose:Your nose returns to a normal length.
 
@@ -530,7 +667,7 @@ name:TENTACLES
 kind:melee
 weight:1
 values:DEX[1]
-desc:You have evil looking tentacles (dam 2d5, +1 DEX, -2 CHR).
+desc:You have evil looking tentacles (dam 2d5, +1 DEX).
 gain:Evil-looking tentacles sprout from your sides.
 lose:Your tentacles vanish from your sides.
 
@@ -718,7 +855,7 @@ kind:continuous
 weight:3
 values:CON[-2]
 flags:HOLD_LIFE
-desc:Your flesh is rotting (-2 CON, -1 CHR).
+desc:Your flesh is rotting (-2 CON).
 gain:Your flesh is afflicted by a rotting disease!
 lose:Your flesh is no longer afflicted by a rotting disease!
 
@@ -726,7 +863,7 @@ name:SILLY_VOI
 kind:continuous
 weight:2
 requires:mutations:3
-desc:Your voice is a silly squeak (-4 CHR).
+desc:Your voice is a silly squeak.
 gain:Your voice turns into a ridiculous squeak!
 lose:Your voice returns to normal.
 
@@ -734,7 +871,7 @@ name:BLANK_FAC
 kind:continuous
 weight:2
 flags:SEE_INVIS
-desc:Your face is featureless (-1 CHR).
+desc:Your face is featureless.
 gain:Your face becomes completely featureless!
 lose:Your facial features return.
 
@@ -749,7 +886,7 @@ name:XTRA_EYES
 kind:continuous
 weight:3
 values:SEARCH[3]
-desc:You have an extra pair of eyes (+3 sensing, -1 CHR).
+desc:You have an extra pair of eyes (+3 sensing).
 gain:You grow an extra pair of eyes!
 lose:Your extra eyes vanish!
 
@@ -816,7 +953,7 @@ name:WART_SKIN
 kind:continuous
 weight:3
 armour:5
-desc:Your skin is covered with warts (-2 CHR, +5 AC).
+desc:Your skin is covered with warts (+5 AC).
 gain:Disgusting warts appear everywhere on you!
 lose:Your warts disappear!
 
@@ -824,7 +961,7 @@ name:SCALES
 kind:continuous
 weight:3
 armour:10
-desc:Your skin has turned into scales (-1 CHR, +10 AC).
+desc:Your skin has turned into scales (+10 AC).
 gain:Your skin turns into black scales!
 lose:Your scales vanish!
 
@@ -842,7 +979,7 @@ kind:continuous
 weight:2
 values:CON[-1]
 flags:FEATHER
-desc:You have wings (+3 CHR, -1 CON).
+desc:You have wings (-1 CON).
 gain:You grow a pair of wings.
 lose:Your wings fall off.
 

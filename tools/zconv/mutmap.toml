@@ -1,0 +1,283 @@
+# Activatable mutations: what each one does, in 4.2's effect language.
+#
+# The other converter tables record *dispositions* -- whether a flag is taken,
+# refused or deferred. This one records a *translation*, because there is no
+# mechanical route from Zangband's `mutation_power_aux()` to 4.2's effect
+# chains. That function is nine hundred lines of hand-written C in which every
+# power calls whatever it needs: `fire_ball(GF_ACID, dir, lvl, 1 + lvl / 30)`,
+# `drain_gain_life()`, `do_cmd_throw_aux(2 + lvl / 30)`. Nothing about it
+# parses into data.
+#
+# So each entry below is a judgement, and each carries the source line it was
+# read off and a note saying what the translation costs. `defer` marks the ones
+# 4.2 cannot express, with the reason -- and those are still real mutations:
+# they are gained, described, saved and shed like any other, and the power list
+# says so rather than pretending they are not there.
+#
+# Level-scaled radii are handled with `when` bands, which is what DEC-37 added
+# them for. Zangband's spit-acid radius is `1 + level / 30`, so it is radius 1
+# to level 29 and radius 2 after -- two bands, not an approximation.
+#
+# Source: archive/zangband/src/mutation.c, mutation_power_aux() at line 837.
+
+[SPIT_ACID]
+line = 850
+note = "Radius 1 + level/30, so it widens once, at 30."
+bands = [
+  { from = 1, to = 29, effects = [
+    "BALL:ACID:1", "dice:$B", "expr:B:PLAYER_LEVEL:+ 0" ] },
+  { from = 30, to = 0, effects = [
+    "BALL:ACID:2", "dice:$B", "expr:B:PLAYER_LEVEL:+ 0" ] },
+]
+
+[BR_FIRE]
+line = 859
+note = "Twice level in damage, radius 1 + level/20, so it widens at 40."
+bands = [
+  { from = 20, to = 39, effects = [
+    "BALL:FIRE:2", "dice:$B", "expr:B:PLAYER_LEVEL:* 2" ] },
+  { from = 40, to = 0, effects = [
+    "BALL:FIRE:3", "dice:$B", "expr:B:PLAYER_LEVEL:* 2" ] },
+]
+
+[HYPN_GAZE]
+line = 868
+note = """charm_monster() in Zangband, COMMAND in 4.2. Both take a monster \
+over; Zangband keeps it as a permanent pet and 4.2 commands it for a while, \
+because 4.2 has no pets."""
+effects = [ "COMMAND" ]
+
+[TELEKINES]
+line = 877
+defer = """fetch() has no equivalent. 4.2 has no effect that pulls a distant \
+object to the player -- the closest, TELEPORT_TO, moves the player instead, \
+which is the opposite of what telekinesis is for."""
+
+[VTELEPORT]
+line = 886
+note = "Range 10 + 4 x level, which is a long way at depth."
+effects = [ "TELEPORT", "dice:$B", "expr:B:PLAYER_LEVEL:* 4 + 10" ]
+
+[MIND_BLST]
+line = 891
+note = """GF_PSI is PROJ_MON_PSI, which DEC-37 added for the Mindcrafter and \
+which exists for exactly this: damage that asks whether there is a mind to \
+hurt rather than what the target is wearing."""
+effects = [ "BOLT:MON_PSI", "dice:$Dd3", "expr:D:PLAYER_LEVEL:- 1 / 5 + 3" ]
+
+[RADIATION]
+line = 905
+note = """GF_NUKE is Zangband's toxic waste, which 4.2 does not have; POIS is \
+the element it was built out of. Centred on the player, so SPHERE rather than \
+BALL -- this one is not aimed."""
+bands = [
+  { from = 15, to = 19, effects = [
+    "SPHERE:POIS:3", "dice:$B", "expr:B:PLAYER_LEVEL:* 2" ] },
+  { from = 20, to = 39, effects = [
+    "SPHERE:POIS:4", "dice:$B", "expr:B:PLAYER_LEVEL:* 2" ] },
+  { from = 40, to = 0, effects = [
+    "SPHERE:POIS:5", "dice:$B", "expr:B:PLAYER_LEVEL:* 2" ] },
+]
+
+[VAMPIRISM]
+line = 911
+note = """Following the Vampire race's own `drink blood` power, which PLR-02 \
+mapped from this same code: a nether bolt that heals what it drains. The \
+mutation bites an adjacent monster and feeds you as well; the feeding is \
+dropped, because 4.2's NOURISH cannot be made conditional on the bite having \
+landed and a power that fed you whether or not you hit would be strictly \
+better than Zangband's."""
+effects = [
+  "BOLT:NETHER", "dice:$B", "expr:B:PLAYER_LEVEL:* 2",
+  "HEAL_HP", "dice:$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+
+[SMELL_MET]
+line = 957
+effects = [ "DETECT_GOLD" ]
+
+[SMELL_MON]
+line = 962
+effects = [ "DETECT_VISIBLE_MONSTERS" ]
+
+[BLINK]
+line = 967
+effects = [ "TELEPORT", "dice:10" ]
+
+[EAT_ROCK]
+line = 972
+note = """Zangband digs the wall, eats it and steps into the space, and the \
+food depends on what the wall was made of -- 3000 for rubble, 5000 for a vein, \
+10000 for granite. 4.2's ALTER cannot report back what it removed, so this \
+takes the middle figure. The step into the space is dropped: no 4.2 effect \
+moves the player one square, and walking into the hole costs a turn you would \
+have spent anyway."""
+effects = [ "ALTER:KILL_WALL", "NOURISH:INC_TO:5000" ]
+
+[SWAP_POS]
+line = 1062
+defer = """teleport_swap() exchanges the player and a monster. 4.2 has \
+TELEPORT_TO, which moves the player to the target and leaves the monster where \
+it is -- so the player arrives inside a square that is still occupied. The \
+mechanic is a swap or it is nothing."""
+
+[SHRIEK]
+line = 1070
+note = """A sound ball centred on you, plus waking everything -- the second \
+half is the point, and is why this is a bad idea as often as a good one."""
+effects = [
+  "SPHERE:SOUND:8", "dice:$B", "expr:B:PLAYER_LEVEL:* 2",
+  "WAKE" ]
+
+[ILLUMINE]
+line = 1076
+note = """lite_area() both lights and hurts light-sensitive monsters, which in \
+4.2 is two effects -- the same pair the Light Room spell uses."""
+effects = [ "LIGHT_AREA", "SPHERE:LIGHT_WEAK:2", "dice:2d$S",
+            "expr:S:PLAYER_LEVEL:/ 2" ]
+
+[DET_CURSE]
+line = 1081
+defer = """Marks every cursed object in the pack as felt-cursed. 4.2 has no \
+pseudo-identification to mark: curses are runes, learned by carrying and using \
+the object, and there is no hidden cursed-or-not bit for this to reveal."""
+
+[BERSERK]
+line = 1096
+note = """The 30 hit points are Zangband's, and only paid when not already \
+berserk; 4.2's HEAL_HP has no such condition, so the heal is unconditional and \
+slightly kinder than Zangband on a re-cast."""
+effects = [
+  "HEAL_HP", "dice:30",
+  "TIMED_INC:SHERO", "dice:25+1d25",
+  "CURE:AFRAID" ]
+
+[POLYMORPH]
+line = 1105
+defer = """do_poly_self() is the Polymorph Self mechanic, which is one of \
+PLR-34's acquisition paths rather than a power in its own right -- it rerolls \
+the character's mutations, and it needs the acquisition and removal paths that \
+Phase 5 builds. Deferred to there, not away."""
+
+[MIDAS_TCH]
+line = 1110
+defer = """alchemy() turns a chosen object into gold at a fraction of its \
+value. 4.2 has no effect that destroys an object for money, and inventing one \
+here would be inventing an economy mechanic to hang one mutation on."""
+
+[GROW_MOLD]
+line = 1115
+defer = """Summons eight *pet* molds around the player, as a wall. 4.2's \
+SUMMON produces hostile monsters, so the honest translation of this power \
+would surround the character with eight enemies -- the exact opposite of what \
+it is for. 4.2 has no pets."""
+
+[RESIST]
+line = 1126
+note = """Zangband rolls for each element in turn against a count of level/10, \
+so a low-level character gets one resistance and a high-level one gets most of \
+five. Expressed as bands of one-random-of-five: each band the character has \
+grown into fires once, and a repeat simply refreshes that duration. The shape \
+is right even though the individual rolls are not the same rolls. Note this \
+power also carries a permanent -10 saving throw, which is in mutation.txt as \
+`save` and applies whether or not it is ever used."""
+bands = [
+  { from = 10, to = 0, effects = [
+    "RANDOM", "dice:5",
+    "TIMED_INC:OPP_ACID", "dice:20+1d20",
+    "TIMED_INC:OPP_ELEC", "dice:20+1d20",
+    "TIMED_INC:OPP_FIRE", "dice:20+1d20",
+    "TIMED_INC:OPP_COLD", "dice:20+1d20",
+    "TIMED_INC:OPP_POIS", "dice:20+1d20" ] },
+  { from = 20, to = 0, effects = [
+    "RANDOM", "dice:5",
+    "TIMED_INC:OPP_ACID", "dice:20+1d20",
+    "TIMED_INC:OPP_ELEC", "dice:20+1d20",
+    "TIMED_INC:OPP_FIRE", "dice:20+1d20",
+    "TIMED_INC:OPP_COLD", "dice:20+1d20",
+    "TIMED_INC:OPP_POIS", "dice:20+1d20" ] },
+  { from = 30, to = 0, effects = [
+    "RANDOM", "dice:5",
+    "TIMED_INC:OPP_ACID", "dice:20+1d20",
+    "TIMED_INC:OPP_ELEC", "dice:20+1d20",
+    "TIMED_INC:OPP_FIRE", "dice:20+1d20",
+    "TIMED_INC:OPP_COLD", "dice:20+1d20",
+    "TIMED_INC:OPP_POIS", "dice:20+1d20" ] },
+  { from = 40, to = 0, effects = [
+    "RANDOM", "dice:5",
+    "TIMED_INC:OPP_ACID", "dice:20+1d20",
+    "TIMED_INC:OPP_ELEC", "dice:20+1d20",
+    "TIMED_INC:OPP_FIRE", "dice:20+1d20",
+    "TIMED_INC:OPP_COLD", "dice:20+1d20",
+    "TIMED_INC:OPP_POIS", "dice:20+1d20" ] },
+]
+
+[EARTHQUAKE]
+line = 1156
+effects = [ "EARTHQUAKE:NONE:10" ]
+
+[EAT_MAGIC]
+line = 1161
+note = """TAP_DEVICE is 4.2's own version of this and predates the port: drain \
+a staff or a wand for mana. Zangband also drains rods, which 4.2 does not."""
+effects = [ "TAP_DEVICE" ]
+
+[WEIGH_MAG]
+line = 1217
+defer = """report_magics() prints how many turns are left on each of your \
+timed effects. 4.2 shows them on the status line continuously, so this power \
+would tell the player something already on screen."""
+
+[STERILITY]
+line = 1223
+defer = """Stops every breeding monster on the level from breeding, at the \
+cost of 17-34 hit points. 4.2 tracks breeding with `num_repro` against \
+`repro_monster_max`, so the mechanic is there, but no effect reaches it and \
+adding one to carry a single mutation is a change to monster generation \
+made from the wrong end."""
+
+[PANIC_HIT]
+line = 1231
+note = """Hit an adjacent monster and immediately teleport away. MOVE_ATTACK \
+lets the player close up to four squares first, which is more generous than \
+Zangband's strictly-adjacent version and is 4.2's nearest existing shape."""
+effects = [ "MOVE_ATTACK", "dice:1", "TELEPORT", "dice:30" ]
+
+[DAZZLE]
+line = 1253
+note = "Stun, confuse and frighten everything you can see, all at four x level."
+effects = [
+  "PROJECT_LOS:MON_STUN", "dice:$B", "expr:B:PLAYER_LEVEL:* 4",
+  "PROJECT_LOS:MON_CONF", "dice:$B", "expr:B:PLAYER_LEVEL:* 4",
+  "PROJECT_LOS:TURN_ALL", "dice:$B", "expr:B:PLAYER_LEVEL:* 4" ]
+
+[LASER_EYE]
+line = 1260
+note = "GF_LITE is a light beam; 4.2's LIGHT_WEAK is the projection that hurts."
+effects = [ "BEAM:LIGHT_WEAK", "dice:$B", "expr:B:PLAYER_LEVEL:* 2" ]
+
+[RECALL]
+line = 1266
+effects = [ "RECALL" ]
+
+[BANISH]
+line = 1271
+note = """Zangband deletes one adjacent evil non-unique outright. 4.2's BANISH \
+effect is a different thing entirely -- it clears the level of a symbol you \
+choose, at a price in hit points -- so this uses an aimed AWAY_EVIL instead. \
+The monster leaves either way; in Zangband it is gone from the game and here \
+it is somewhere else on the level."""
+effects = [ "BOLT:AWAY_EVIL", "dice:$B", "expr:B:PLAYER_LEVEL:* 4" ]
+
+[COLD_TOUCH]
+line = 1305
+note = """Adjacent only in Zangband, which checks the square before firing; a \
+4.2 bolt travels until it hits something. At level 2 and two mana this is the \
+first thing most mutated characters ever do."""
+effects = [ "BOLT:COLD", "dice:$B", "expr:B:PLAYER_LEVEL:* 2" ]
+
+[LAUNCHER]
+line = 1327
+defer = """do_cmd_throw_aux(2 + level/30) throws an object with a damage \
+multiplier. 4.2's throwing is a command rather than an effect -- there is \
+nothing for a power to invoke, and the multiplier has no home in the object's \
+own damage calculation."""

@@ -33,6 +33,7 @@
 #include "effects.h"
 #include "game-world.h"
 #include "player-calcs.h"
+#include "player-mutation.h"
 #include "player-quest.h"
 #include "player-util.h"
 #include "game-input.h"
@@ -1987,10 +1988,12 @@ void do_cmd_quest_log(void)
 void do_cmd_racial_power(void)
 {
 	struct player_power *powers[32];
+	const struct mutation *pending[32];
 	struct menu *m;
 	char *labels;
-	int count = 0, chosen, i;
+	int count = 0, waiting = 0, chosen, i;
 	struct player_power *power;
+	const struct mutation *mut;
 
 	/*
 	 * Blood first, then training.  A Mindflayer Mindcrafter has both, and the
@@ -2004,6 +2007,30 @@ void do_cmd_racial_power(void)
 	for (power = player->class->powers;
 			power && count < (int) N_ELEMENTS(powers); power = power->next)
 		powers[count++] = power;
+
+	/*
+	 * And then chaos (PLR-16). Last, because blood and training are things a
+	 * character chose and a mutation is not -- and because the list is stable
+	 * that way: gaining a mutation appends rather than shuffling the letters
+	 * of the powers already there.
+	 */
+	for (mut = mutations; mut; mut = mut->next) {
+		if (!player_has_mutation(player, mut)) continue;
+		if (mut->kind != MUTATION_KIND_ACTIVATABLE) continue;
+
+		if (mut->action) {
+			if (count < (int) N_ELEMENTS(powers)) powers[count++] = mut->action;
+		} else if (waiting < (int) N_ELEMENTS(pending)) {
+			/*
+			 * Nine of the thirty-two have no 4.2 equivalent yet. They are
+			 * listed anyway, and refuse when chosen: the character sheet
+			 * already describes them, so a player who has grown a Midas touch
+			 * will come here looking for it, and silence would read as a bug
+			 * rather than as an honest gap.
+			 */
+			pending[waiting++] = mut;
+		}
+	}
 
 	if (!count) {
 		msg("You have no power to call on.");
@@ -2036,6 +2063,14 @@ void do_cmd_racial_power(void)
 		menu_dynamic_add_label(m, line, 0, i + 1, labels);
 	}
 
+	for (i = 0; i < waiting; i++) {
+		char line[80];
+
+		strnfmt(line, sizeof(line), "%-24s  not yet",
+				pending[i]->power ? pending[i]->power : pending[i]->name);
+		menu_dynamic_add_label(m, line, 0, count + i + 1, labels);
+	}
+
 	menu_dynamic_add_label(m, "Nothing", 'q', 0, labels);
 
 	screen_save();
@@ -2055,7 +2090,12 @@ void do_cmd_racial_power(void)
 	string_free(labels);
 	screen_load();
 
-	if (chosen <= 0 || chosen > count) return;
+	if (chosen <= 0 || chosen > count + waiting) return;
+
+	if (chosen > count) {
+		msg("Chaos has given you that, and this game cannot yet use it.");
+		return;
+	}
 
 	power = powers[chosen - 1];
 

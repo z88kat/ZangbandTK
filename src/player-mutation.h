@@ -72,6 +72,17 @@ struct mutation {
 	int armour;		/**< Armour class, which is not a modifier in 4.2 */
 	int save;		/**< Saving throw, likewise */
 	int save_scale;	/**< ...plus level over this, if set */
+
+	/**
+	 * What an activatable mutation does, if 4.2 can express it (PLR-16).
+	 *
+	 * The same `struct player_power` a race or a class carries, because to
+	 * the player it is the same kind of thing -- it appears in the same list,
+	 * costs mana or blood the same way, and fails against a stat the same
+	 * way. Null for the nine whose Zangband implementation has no 4.2
+	 * equivalent; those are still gained, described and saved.
+	 */
+	struct player_power *action;
 	int16_t el_info[ELEM_MAX];
 	bitflag flags[OF_SIZE];
 };

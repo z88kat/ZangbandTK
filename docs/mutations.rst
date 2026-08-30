@@ -10,11 +10,9 @@ something breathed — and what you get is what the roll gives you.
 
 .. note::
 
-   **Under construction.** The model is built and the standing changes act: the
-   ninety-six exist, they are gained and lost, they cancel one another,
-   Beastmen mutate on their own, and a continuous mutation changes your
-   character the moment you have it. The powers and the ones that fire on their
-   own are being written next.
+   **Under construction.** The model is built, the standing changes act, and
+   the powers can be invoked. What is left is the mutations that fire on their
+   own and the ones that are extra attacks.
 
 The four kinds
 --------------
@@ -49,6 +47,53 @@ does nothing.
 are not a caster. Spitting acid, breathing fire, eating rock, turning objects
 to gold, teleporting at will. Thirty-two, each with its own level, price, and
 a stat it is rolled against.
+
+They appear in the same list as your racial and class powers, after them, and
+work the same way — the same failure roll, the same fall back to hit points
+when you are short of mana. Some grow with you: spitting acid throws a wider
+ball from level 30, breathing fire from level 40, and hardening yourself
+against the elements resists more of them the higher you go.
+
+**Nine of the thirty-two cannot be used yet.** They are listed with *not yet*
+beside them rather than hidden, because your character sheet describes them and
+you would come looking. What they need is machinery Angband 4.2 does not have,
+and in most cases inventing it to carry one mutation would be the wrong way
+round:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 24 76
+
+   * - Mutation
+     - What it needs
+   * - Telekinesis
+     - Pulling a distant object to you. 4.2 can move *you* to a place; it
+       cannot bring a thing to you.
+   * - Swap position
+     - Exchanging places with a monster. 4.2's nearest move puts you in a
+       square that is still occupied.
+   * - Sense curses
+     - Something hidden to reveal. 4.2 has no pseudo-identification; curses are
+       runes you learn by carrying the thing.
+   * - Polymorph self
+     - The Polymorph Self mechanic, which is coming with the acquisition paths.
+       Deferred to there, not away.
+   * - Midas touch
+     - Turning an object into gold. There is no such thing in 4.2, and adding
+       one is an economy change.
+   * - Grow mold
+     - Eight *friendly* molds. 4.2 has no pets, so the faithful translation
+       would surround you with eight enemies.
+   * - Weigh magic
+     - Reporting how long your effects have left. 4.2 puts that on the status
+       line already.
+   * - Sterility
+     - Stopping every breeder on the level. The counter exists; no effect
+       reaches it.
+   * - Launcher
+     - A throwing multiplier. Throwing is a command in 4.2, not something a
+       power can invoke.
+
 
 **Random.** Things that happen to you without being asked for. Berserker fits,
 a body that brews its own alcohol, attracting demons, occasionally becoming
@@ -119,3 +164,12 @@ Barely at all, which is what makes them matter:
    here. What mutations cost you instead is that you do not choose them:
    twelve of the continuous ones are simply bad, and being resilient or able to
    eat rock makes you hungrier. See DEC-45.
+
+A note on the descriptions
+--------------------------
+
+Twelve mutations advertised a change to your charisma, and there is no charisma
+in Angband 4.2 — the stat was removed in 4.2.0. Those descriptions have had the
+charisma taken out of them and nothing else changed, so a squeaky voice now
+reads as a squeaky voice and warts read as *+5 AC*, which is what they actually
+are. Anything else the description claims is real.

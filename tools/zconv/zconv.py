@@ -1776,6 +1776,78 @@ def _mutation_effects() -> tuple[dict, dict]:
     return values, flags
 
 
+def _drop_charisma(desc: str) -> str:
+    """Take charisma out of a mutation's description.
+
+    Twelve of the ninety-six advertise a charisma change, and 4.2 removed the
+    stat in 4.2.0. Left alone these tell the player about an effect that
+    cannot happen: a silly squeak reads "(-4 CHR)" and is in fact inert, and
+    warts read "(-2 CHR, +5 AC)" when only the armour is real.
+
+    Editing generated text is worth being uneasy about, so this does the least
+    it can: it removes the charisma term and whatever punctuation held it in
+    place, and touches nothing else. A parenthetical left empty is dropped
+    whole.
+    """
+    def clean(match: re.Match) -> str:
+        parts = [t.strip() for t in match.group(1).split(",")]
+        kept = [t for t in parts if "CHR" not in t]
+        return "(%s)" % ", ".join(kept) if kept else ""
+
+    out = re.sub(r"\(([^()]*CHR[^()]*)\)", clean, desc)
+
+    # "You can emit a horrible shriek. (-1 CHR)" leaves a trailing space.
+    return re.sub(r"\s+([.,])", r"\1", out).strip()
+
+
+def _mutation_powers() -> tuple[dict, dict]:
+    """What each activatable mutation does, from `mutmap.toml`.
+
+    The other tables record dispositions; this one records a translation.
+    There is no mechanical route from `mutation_power_aux()` to a 4.2 effect
+    chain -- it is nine hundred lines of hand-written C in which every power
+    calls whatever it happens to need -- so each mapping is a judgement, made
+    once, written down with the source line it came off and what the
+    translation costs. Nine of the thirty-two cannot be expressed at all and
+    carry the reason instead.
+
+    Returns the emitted lines per mutation, and the deferrals per mutation.
+    """
+    path = Path(__file__).resolve().parent / "mutmap.toml"
+    table = tomllib.loads(path.read_text(encoding="utf-8"))
+
+    lines: dict[str, list[str]] = {}
+    deferred: dict[str, str] = {}
+
+    for code, spec in table.items():
+        if "defer" in spec:
+            deferred[code] = " ".join(spec["defer"].split())
+            continue
+
+        out: list[str] = []
+        bands = spec.get("bands")
+        if bands is None:
+            bands = [{"from": 0, "to": 0, "effects": spec["effects"]}]
+
+        for band in bands:
+            # A single always-on band needs no `when:` at all; the parser
+            # opens one for the first effect it sees.
+            if len(bands) > 1 or band["from"] or band["to"]:
+                out.append("power-when:%d:%d" % (band["from"], band["to"]))
+
+            for item in band["effects"]:
+                if item.startswith("dice:"):
+                    out.append("power-" + item)
+                elif item.startswith("expr:"):
+                    out.append("power-" + item)
+                else:
+                    out.append("power-effect:" + item)
+
+        lines[code] = out
+
+    return lines, deferred
+
+
 def cmd_mutations(args) -> int:
     """Convert Zangband's mutation table to 4.2 data (PLR-13 to PLR-17)."""
     text = (ZANGBAND.parent.parent / "src" / "tables.c").read_text(
@@ -1785,6 +1857,7 @@ def cmd_mutations(args) -> int:
 
     weights, gates = _mutation_weights()
     effects, gained_flags = _mutation_effects()
+    powers, undone = _mutation_powers()
 
     report = Report(
         title="zconv — mutation conversion review",
@@ -1874,9 +1947,21 @@ def cmd_mutations(args) -> int:
         if code in gained_flags:
             entry.set("flags", " | ".join(gained_flags[code]))
 
-        entry.set("desc", desc)
+        entry.set("desc", _drop_charisma(desc))
         entry.set("gain", gain)
         entry.set("lose", lose)
+
+        # The power itself, last, because an effect chain is long and reads
+        # better after the thing it belongs to.  Appended pair by pair rather
+        # than through set(), which replaces: a chain is many `power-effect`
+        # lines and they all have to survive.
+        for line in powers.get(code, []):
+            key, _, value = line.partition(":")
+            entry.pairs.append((key, value))
+
+        if code in undone:
+            item.fields["power-effect"] = rules.Value(
+                "deferred", "PLR-16", rules.DERIVED, undone[code])
 
         report.items.append(item)
         entries.append(entry)
@@ -1886,6 +1971,14 @@ def cmd_mutations(args) -> int:
     report.notes.append(
         "Selection weights total %d, which is the 1d193 the switch rolls."
         % sum(weights.values()))
+    report.notes.append(
+        "Powers: %d of the 32 activatable mutations are expressed as 4.2 "
+        "effect chains; %d cannot be and carry their reason instead. The "
+        "translations are in mutmap.toml, one judgement per mutation, each "
+        "with the mutation_power_aux() line it was read off."
+        % (len(powers), len(undone)))
+    for code in sorted(undone):
+        report.notes.append("  deferred -- %s: %s" % (code, undone[code]))
 
     OUTDIR.mkdir(exist_ok=True)
     report_path = OUTDIR / "mutations.report.md"

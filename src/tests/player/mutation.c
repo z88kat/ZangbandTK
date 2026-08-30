@@ -515,6 +515,193 @@ static int test_the_two_charisma_mutations_are_inert(void *state) {
 	ok;
 }
 
+/**
+ * Every activatable mutation either has a power or has a reason.
+ *
+ * Twenty-three of the thirty-two are expressible as 4.2 effect chains and nine
+ * are not, and the split is asserted as a count so that neither side can drift
+ * quietly. A mutation that lost its effect chain to a converter change would
+ * still parse, still appear in the power list, and do nothing when invoked --
+ * which is exactly what the nine deferred ones look like, so counting is the
+ * only way to tell them apart.
+ *
+ * The nine are named here rather than counted, because "nine are deferred" is
+ * a fact about a decision and should fail if somebody implements one without
+ * saying so.
+ */
+static int test_the_activatable_split_is_what_was_decided(void *state) {
+	static const char *const deferred[] = {
+		"TELEKINES", "SWAP_POS", "DET_CURSE", "POLYMORPH", "MIDAS_TCH",
+		"GROW_MOLD", "WEIGH_MAG", "STERILITY", "LAUNCHER"
+	};
+	const struct mutation *m;
+	int with = 0, without = 0;
+	size_t i;
+
+	for (m = mutations; m; m = m->next) {
+		if (m->kind != MUTATION_KIND_ACTIVATABLE) continue;
+
+		if (m->action) with++; else without++;
+	}
+
+	eq(with, 23);
+	eq(without, 9);
+
+	for (i = 0; i < N_ELEMENTS(deferred); i++) {
+		m = mutation_by_name(deferred[i]);
+
+		notnull(m);
+		null(m->action);
+	}
+
+	/* And nothing that is not activatable has a power. */
+	for (m = mutations; m; m = m->next) {
+		if (m->kind == MUTATION_KIND_ACTIVATABLE) continue;
+
+		null(m->action);
+	}
+
+	ok;
+}
+
+/**
+ * A power carries the mutation's own level, cost, stat and failure.
+ *
+ * The effect chains come from `mutmap.toml` and everything else comes from
+ * Zangband's table, so the join between the two is where a power would end up
+ * with a plausible chain and a level of zero -- usable from level one, free,
+ * and never failing. Checked against three mutations at different ends of the
+ * range.
+ */
+static int test_a_power_is_built_from_its_mutation(void *state) {
+	static const struct {
+		const char *name;
+		int level, cost, stat, fail;
+	} expect[] = {
+		{ "COLD_TOUCH", 2, 2, STAT_CON, 11 },
+		{ "SPIT_ACID", 9, 9, STAT_DEX, 15 },
+		{ "BANISH", 25, 25, STAT_WIS, 18 },
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(expect); i++) {
+		const struct mutation *m = mutation_by_name(expect[i].name);
+
+		notnull(m);
+		notnull(m->action);
+		notnull(m->action->effects);
+		eq(m->action->level, expect[i].level);
+		eq(m->action->cost, expect[i].cost);
+		eq(m->action->stat, expect[i].stat);
+		eq(m->action->fail, expect[i].fail);
+	}
+
+	ok;
+}
+
+/**
+ * Spitting acid widens at level thirty, and not before.
+ *
+ * Zangband's radius is `1 + level / 30`, which 4.2 cannot write as a scaling
+ * radius -- a ball's radius is a fixed number on the effect line. The answer
+ * is `power-when` bands, which DEC-37 added for exactly this. Asserted as two
+ * bands with the boundary in the right place, because a single band would be
+ * the obvious simplification and would make a level-9 character spit as wide
+ * as a level-50 one.
+ */
+static int test_a_level_scaled_radius_became_two_bands(void *state) {
+	const struct mutation *m = mutation_by_name("SPIT_ACID");
+	const struct power_effect *first, *second;
+
+	notnull(m);
+	notnull(m->action);
+
+	first = m->action->effects;
+	notnull(first);
+	eq(first->from, 1);
+	eq(first->to, 29);
+	notnull(first->effect);
+	eq(first->effect->radius, 1);
+
+	second = first->next;
+	notnull(second);
+	eq(second->from, 30);
+	eq(second->to, 0);
+	notnull(second->effect);
+	eq(second->effect->radius, 2);
+
+	null(second->next);
+
+	ok;
+}
+
+/**
+ * A mutation's power appears in the list only while the character has it.
+ *
+ * The list is built fresh from race, class and mutations each time it opens,
+ * so the failure worth catching is a power that stays after the mutation that
+ * brought it has been shed -- a character who lost their fire breath in a
+ * cancelling pair and can still breathe.
+ */
+static int test_a_power_arrives_and_leaves_with_its_mutation(void *state) {
+	const struct mutation *acid = mutation_by_name("SPIT_ACID");
+	const struct mutation *m;
+	int held;
+
+	notnull(acid);
+	flag_wipe(player->mutations, MUT_SIZE);
+
+	held = 0;
+	for (m = mutations; m; m = m->next) {
+		if (m->action && player_has_mutation(player, m)) held++;
+	}
+	eq(held, 0);
+
+	require(player_gain_mutation(player, acid));
+
+	held = 0;
+	for (m = mutations; m; m = m->next) {
+		if (m->action && player_has_mutation(player, m)) held++;
+	}
+	eq(held, 1);
+
+	require(player_lose_mutation(player, acid));
+
+	held = 0;
+	for (m = mutations; m; m = m->next) {
+		if (m->action && player_has_mutation(player, m)) held++;
+	}
+	eq(held, 0);
+
+	ok;
+}
+
+/**
+ * No mutation still advertises a stat the game does not have.
+ *
+ * Twelve of the ninety-six descriptions named a charisma change, and 4.2
+ * removed the stat in 4.2.0. Editing generated text is worth being uneasy
+ * about, so the converter does the least it can -- takes out the charisma term
+ * and the punctuation holding it, and nothing else -- and this pins the
+ * result. A silly squeak that still reads "(-4 CHR)" is telling the player
+ * about an effect that cannot happen.
+ */
+static int test_no_description_promises_charisma(void *state) {
+	const struct mutation *m;
+
+	for (m = mutations; m; m = m->next) {
+		notnull(m->desc);
+		require(!strstr(m->desc, "CHR"));
+
+		/* And nothing was left with a dangling bracket or a stray comma. */
+		require(!strstr(m->desc, "()"));
+		require(!strstr(m->desc, " ."));
+		require(!strstr(m->desc, ", )"));
+	}
+
+	ok;
+}
+
 const char *suite_name = "player/mutation";
 struct test tests[] = {
 	{ "all-ninety-six-are-here", test_all_ninety_six_are_here },
@@ -541,5 +728,15 @@ struct test tests[] = {
 	  test_the_elemental_bodies_are_auras_only },
 	{ "the-two-charisma-mutations-are-inert",
 	  test_the_two_charisma_mutations_are_inert },
+	{ "the-activatable-split-is-what-was-decided",
+	  test_the_activatable_split_is_what_was_decided },
+	{ "a-power-is-built-from-its-mutation",
+	  test_a_power_is_built_from_its_mutation },
+	{ "a-level-scaled-radius-became-two-bands",
+	  test_a_level_scaled_radius_became_two_bands },
+	{ "a-power-arrives-and-leaves-with-its-mutation",
+	  test_a_power_arrives_and_leaves_with_its_mutation },
+	{ "no-description-promises-charisma",
+	  test_no_description_promises_charisma },
 	{ NULL, NULL }
 };

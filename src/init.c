@@ -4564,6 +4564,70 @@ static enum parser_error parse_mutation_lose(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+/**
+ * The mutation's power, made on first mention.
+ *
+ * A mutation's level, cost, stat and failure are already on the record by the
+ * time its effects arrive -- they come out of Zangband's table rather than out
+ * of mutmap.toml -- so the power is filled in from those rather than from
+ * `power-level` lines of its own. `difficulty` becomes `fail` directly, which
+ * is the reading PLR-02 took for the racial powers: Zangband's own success
+ * roll is a different shape entirely, and the Vampire's `drink blood` already
+ * ships with this mutation's 9 as its failure percentage.
+ *
+ * Made here rather than in the effect parser because a power whose radius
+ * changes with level opens with `power-when` and not with `power-effect`.
+ */
+static struct player_power *mutation_power(struct mutation *m) {
+	if (!m) return NULL;
+
+	if (!m->action) {
+		m->action = mem_zalloc(sizeof(*m->action));
+		m->action->name = string_make(m->power ? m->power : m->name);
+		m->action->level = m->level;
+		m->action->cost = m->cost;
+		m->action->stat = m->stat;
+		m->action->fail = m->difficulty;
+	}
+
+	return m->action;
+}
+
+static enum parser_error parse_mutation_power_when(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	return power_parse_when(mutation_power(m), parser_getint(p, "from"),
+							parser_getint(p, "to"));
+}
+
+static enum parser_error parse_mutation_power_effect(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	return power_parse_effect(mutation_power(m), p);
+}
+
+static enum parser_error parse_mutation_power_dice(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m || !m->action) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	return power_parse_dice(m->action, parser_getstr(p, "dice"));
+}
+
+static enum parser_error parse_mutation_power_expr(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m || !m->action) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	return power_parse_expr(m->action, parser_getsym(p, "name"),
+							parser_getsym(p, "base"),
+							parser_getstr(p, "expr"));
+}
+
 static enum parser_error parse_mutation_armour(struct parser *p) {
 	struct mutation *m = parser_priv(p);
 
@@ -4652,6 +4716,12 @@ static struct parser *init_parse_mutation(void) {
 	parser_reg(p, "armour int armour", parse_mutation_armour);
 	parser_reg(p, "save int save", parse_mutation_save);
 	parser_reg(p, "save-scale int scale", parse_mutation_save_scale);
+	parser_reg(p, "power-when int from int to", parse_mutation_power_when);
+	parser_reg(p, "power-effect sym eff ?sym type ?int radius ?int other",
+			   parse_mutation_power_effect);
+	parser_reg(p, "power-dice str dice", parse_mutation_power_dice);
+	parser_reg(p, "power-expr sym name sym base str expr",
+			   parse_mutation_power_expr);
 	parser_reg(p, "values str values", parse_mutation_values);
 	parser_reg(p, "flags str flags", parse_mutation_flags);
 	parser_reg(p, "power str power", parse_mutation_power);
@@ -4700,6 +4770,7 @@ static void cleanup_mutation(void) {
 		string_free(m->gain);
 		string_free(m->lose);
 		string_free(m->power);
+		power_free(m->action);
 		mem_free(m);
 		m = next;
 	}
