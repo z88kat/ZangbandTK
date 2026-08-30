@@ -36,6 +36,7 @@
 #include "hint.h"
 #include "dun-type.h"
 #include "init.h"
+#include "player-mutation.h"
 #include "player-virtue.h"
 #include "message.h"
 #include "mon-init.h"
@@ -3351,6 +3352,43 @@ static enum parser_error parse_class_virtues(struct parser *p) {
 	return grab_virtues(p, c->virtues, MAX_CLASS_VIRTUES);
 }
 
+/*
+ * A mutation this race tends towards, and how strongly (PLR-38).
+ *
+ * `mutation-affinity:HYPN_GAZE:7` is a Vampire: when a mutation is rolled,
+ * six times in ten it is that one instead. The numbers differ per race and
+ * the spoiler does not say so -- a Beastman takes polymorph self only one
+ * time in ten ([mutation.c:552](../archive/zangband/src/mutation.c#L552)).
+ */
+static enum parser_error parse_p_race_mutation(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+
+	if (!r) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	r->mutation_affinity = string_make(parser_getsym(p, "code"));
+	r->mutation_chance = parser_getint(p, "chance");
+
+	return PARSE_ERROR_NONE;
+}
+
+/*
+ * How readily this race mutates on its own (PLR-36).
+ *
+ * `mutation-rate:1:20` is a Beastman: one mutation at character creation and
+ * a 20% chance at every level after. It is the only race in Zangband that
+ * mutates without being made to, and the spoiler leads with it.
+ */
+static enum parser_error parse_p_race_mutation_rate(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+
+	if (!r) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	r->mutation_birth = parser_getint(p, "birth");
+	r->mutation_per_level = parser_getint(p, "level");
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_p_race_virtues(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 
@@ -4203,6 +4241,8 @@ static struct parser *init_parse_p_race(void) {
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_p_race_name);
 	parser_reg(p, "virtues str virtues", parse_p_race_virtues);
+	parser_reg(p, "mutation-affinity sym code int chance", parse_p_race_mutation);
+	parser_reg(p, "mutation-rate int birth int level", parse_p_race_mutation_rate);
 	parser_reg(p, "stats int str int int int wis int dex int con", parse_p_race_stats);
 	parser_reg(p, "skill-disarm-phys int disarm", parse_p_race_skill_disarm_phys);
 	parser_reg(p, "skill-disarm-magic int disarm", parse_p_race_skill_disarm_magic);
@@ -4381,6 +4421,221 @@ static void cleanup_realm(void)
 		p = next;
 	}
 }
+
+/**
+ * Chaos mutations (ZangbandTK, PLR-13).
+ *
+ * The one Zangband system that never had a data file: its 96 mutations are a
+ * C array in tables.c and their selection weighting is the shape of a switch
+ * statement. `zconv mutations` reads both and writes mutation.txt, which this
+ * parses.
+ */
+struct mutation *mutations = NULL;
+
+static enum parser_error parse_mutation_name(struct parser *p) {
+	struct mutation *h = parser_priv(p);
+	struct mutation *m = mem_zalloc(sizeof(*m));
+
+	m->next = h;
+	m->name = string_make(parser_getstr(p, "name"));
+	m->stat = -1;
+	parser_setpriv(p, m);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mutation_kind(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+	const char *kind = parser_getstr(p, "kind");
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	if (streq(kind, "activatable")) m->kind = MUTATION_KIND_ACTIVATABLE;
+	else if (streq(kind, "random")) m->kind = MUTATION_KIND_RANDOM;
+	else if (streq(kind, "continuous")) m->kind = MUTATION_KIND_CONTINUOUS;
+	else if (streq(kind, "melee")) m->kind = MUTATION_KIND_MELEE;
+	else return PARSE_ERROR_INVALID_VALUE;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mutation_level(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	m->level = parser_getint(p, "level");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mutation_cost(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	m->cost = parser_getint(p, "cost");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mutation_stat(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	m->stat = stat_name_to_idx(parser_getsym(p, "stat"));
+	if (m->stat < 0) return PARSE_ERROR_INVALID_SPELL_STAT;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mutation_difficulty(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	m->difficulty = parser_getint(p, "difficulty");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mutation_chance(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	m->chance = parser_getint(p, "chance");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mutation_weight(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	m->weight = parser_getint(p, "weight");
+	return PARSE_ERROR_NONE;
+}
+
+/*
+ * A prerequisite, of which Zangband has exactly three and documents none:
+ * the Midas touch wants a thousand gold per level in hand, and a silly voice
+ * and elemental vulnerability want three mutations already
+ * ([mutation.c:150](../archive/zangband/src/mutation.c#L150)).
+ */
+static enum parser_error parse_mutation_requires(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+	const char *req = parser_getstr(p, "requires");
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	if (streq(req, "gold")) {
+		m->gate = MUTATION_GATE_GOLD;
+	} else if (!strncmp(req, "mutations:", 10)) {
+		m->gate = MUTATION_GATE_MUTATIONS;
+		m->gate_value = atoi(req + 10);
+	} else {
+		return PARSE_ERROR_INVALID_VALUE;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mutation_power(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	m->power = string_make(parser_getstr(p, "power"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mutation_desc(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	m->desc = string_append(m->desc, parser_getstr(p, "desc"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mutation_gain(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	m->gain = string_append(m->gain, parser_getstr(p, "gain"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mutation_lose(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	m->lose = string_append(m->lose, parser_getstr(p, "lose"));
+	return PARSE_ERROR_NONE;
+}
+
+static struct parser *init_parse_mutation(void) {
+	struct parser *p = parser_new();
+
+	parser_setpriv(p, NULL);
+	parser_reg(p, "name str name", parse_mutation_name);
+	parser_reg(p, "kind str kind", parse_mutation_kind);
+	parser_reg(p, "level int level", parse_mutation_level);
+	parser_reg(p, "cost int cost", parse_mutation_cost);
+	parser_reg(p, "stat sym stat", parse_mutation_stat);
+	parser_reg(p, "difficulty int difficulty", parse_mutation_difficulty);
+	parser_reg(p, "chance int chance", parse_mutation_chance);
+	parser_reg(p, "weight int weight", parse_mutation_weight);
+	parser_reg(p, "requires str requires", parse_mutation_requires);
+	parser_reg(p, "power str power", parse_mutation_power);
+	parser_reg(p, "desc str desc", parse_mutation_desc);
+	parser_reg(p, "gain str gain", parse_mutation_gain);
+	parser_reg(p, "lose str lose", parse_mutation_lose);
+
+	return p;
+}
+
+static errr run_parse_mutation(struct parser *p) {
+	return parse_file_quit_not_found(p, "mutation");
+}
+
+static errr finish_parse_mutation(struct parser *p) {
+	struct mutation *m, *n;
+	unsigned int count = 0;
+
+	/* The list is built backwards; number it in file order. */
+	for (m = parser_priv(p); m; m = m->next) count++;
+
+	if (count > MUTATION_MAX) {
+		quit_fmt("mutation.txt has %u entries; MUTATION_MAX is %d.",
+				 count, MUTATION_MAX);
+	}
+
+	mutations = parser_priv(p);
+	for (m = mutations, n = NULL; m; m = m->next) {
+		m->midx = --count;
+		n = m;
+	}
+	(void) n;
+
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_mutation(void) {
+	struct mutation *m = mutations;
+
+	while (m) {
+		struct mutation *next = m->next;
+
+		string_free(m->name);
+		string_free(m->desc);
+		string_free(m->gain);
+		string_free(m->lose);
+		string_free(m->power);
+		mem_free(m);
+		m = next;
+	}
+	mutations = NULL;
+}
+
+struct file_parser mutation_parser = {
+	"mutation",
+	init_parse_mutation,
+	run_parse_mutation,
+	finish_parse_mutation,
+	cleanup_mutation
+};
 
 struct file_parser realm_parser = {
 	"realm",
@@ -6109,6 +6364,7 @@ static struct {
 	{ "town names", &town_parser },
 	{ "shop quality", &quality_parser },
 	{ "chaos patrons", &patron_parser },
+	{ "mutations", &mutation_parser },
 	{ "monster pits" , &pit_parser },
 	{ "monster lore" , &lore_parser },
 	{ "traps", &trap_parser },

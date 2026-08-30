@@ -38,6 +38,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player-birth.h"
+#include "player-mutation.h"
 #include "player-virtue.h"
 #include "player-calcs.h"
 #include "player-history.h"
@@ -1003,6 +1004,20 @@ void player_generate(struct player *p, const struct player_race *r,
 	 */
 	patron_choose(p);
 	virtues_select(p);
+
+	/*
+	 * And a Beastman is born already changed (PLR-36).  One at creation, and
+	 * a one-in-five chance at every level after -- the race's whole identity,
+	 * and the reason it exists.
+	 */
+	flag_wipe(p->mutations, MUT_SIZE);
+	if (p->race) {
+		int born;
+
+		for (born = 0; born < p->race->mutation_birth; born++) {
+			(void) player_mutate(p);
+		}
+	}
 
 	/* Hitdice */
 	p->hitdie = p->race->r_mhp + p->class->c_mhp;

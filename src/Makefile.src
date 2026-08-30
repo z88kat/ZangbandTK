@@ -238,6 +238,7 @@ ANGFILES0 = \
 	player-class.o \
 	player-history.o \
 	player-luck.o \
+	player-mutation.o \
 	player-path.o \
 	player-properties.o \
 	player-quest.o \

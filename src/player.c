@@ -26,6 +26,7 @@
 #include "player-quest.h"
 #include "player-spell.h"
 #include "player-timed.h"
+#include "player-mutation.h"
 #include "player-util.h"
 #include "randname.h"
 #include "z-color.h"
@@ -277,6 +278,20 @@ static void adjust_level(struct player *p, bool verbose)
 
 	/* Now that the level is settled, and re-entering here is safe. */
 	if (owed_reward && patron_owes_reward(p)) patron_bestow_reward(p);
+
+	/*
+	 * And a Beastman keeps changing (PLR-36).  One level in five, which is
+	 * the race's identity rather than a hazard of it -- the spoiler leads
+	 * with this and nothing else about Beastmen matters as much.
+	 *
+	 * Once per batch of levels rather than once per level, for the same
+	 * re-entrancy reason the patron reward above is: a mutation moves stats,
+	 * and moving a stat comes back through here.
+	 */
+	if (owed_reward && p->race && p->race->mutation_per_level
+			&& randint0(100) < p->race->mutation_per_level) {
+		(void) player_mutate(p);
+	}
 
 	p->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
 	p->upkeep->redraw |= (PR_LEV | PR_TITLE | PR_EXP | PR_STATS);

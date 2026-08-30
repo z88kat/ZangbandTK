@@ -33,6 +33,38 @@ Unreleased
 Savefile compatibility — 30 August 2026
 ----------------------------------------
 
+M8: mutations — 31 August 2026
+------------------------------
+
+- **3.45.0** — **Ninety-six mutations, and the model that carries them**
+  (PLR-13, PLR-36, PLR-37, PLR-38). Zangband built mutations with no data file
+  at all: the table is a C array in ``tables.c`` and the selection weighting
+  exists only as the widths of the case runs in a switch. ``zconv mutations``
+  reads both and writes ``mutation.txt``, so this is generated like everything
+  else rather than hand-copied.
+
+  Reading the source rather than the spoiler turned up three things the
+  documentation never mentions. **Three mutations have prerequisites** — the
+  Midas touch wants a thousand gold per level in hand, and a silly voice and
+  elemental vulnerability want three mutations already, which is chaos
+  compounding on itself. **The race affinities are not uniform**: a Vampire
+  takes hypnotic gaze six times in ten and a Beastman polymorph self only one
+  in ten. And **the regeneration penalty the spoiler warns about is not in
+  2.7.5** — it was a 2.2.2d mechanic its authors removed, and reinstating it
+  would not be finishing an unfinished feature (DEC-45).
+
+  Four kinds rather than the plan's three: the five melee mutations sit in the
+  same machine word as the random ones and behave nothing like them (DEC-44).
+
+  Charisma bites again. Three activatable mutations cast off ``CHR``, which 4.2
+  removed in 4.2.0; all three work on a mind rather than the world — the
+  spoiler compares hypnotic gaze to the Mindcrafter's Domination by name — so
+  they cast off wisdom here, recorded as a substitution in the conversion
+  report.
+
+  The savefile block is written and read by name and by count, and the player
+  block goes to version 4 with three older loaders kept.
+
 M8: the virtues, finished — 30 August 2026
 ------------------------------------------
 

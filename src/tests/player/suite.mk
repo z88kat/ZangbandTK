@@ -3,6 +3,7 @@ TESTPROGS += player/birth \
              player/combine-pack \
              player/digging \
              player/history \
+             player/mutation \
              player/inven-carry-num \
              player/inven-wield \
              player/pathfind \

@@ -24,6 +24,7 @@
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "monster.h"
+#include "player-mutation.h"
 #include "player-virtue.h"
 #include "object.h"
 #include "obj-desc.h"
@@ -483,6 +484,27 @@ void wr_player(void)
 	for (i = 0; i < MAX_PLAYER_VIRTUES; i++) {
 		wr_string(virtue_code(player->vir_types[i]));
 		wr_s16b(player->virtues[i]);
+	}
+
+	/*
+	 * And what chaos has made of them (ZangbandTK, PLR-13).
+	 *
+	 * By name and by count, for the reasons the virtues above are: the bit a
+	 * mutation occupies is its position in mutation.txt, which is a load-order
+	 * detail, and a reader that loops to its own compile-time constant is how
+	 * thirty-five savefiles stopped loading once already.
+	 */
+	{
+		const struct mutation *mut;
+		uint16_t carried = 0;
+
+		for (mut = mutations; mut; mut = mut->next) {
+			if (player_has_mutation(player, mut)) carried++;
+		}
+		wr_u16b(carried);
+		for (mut = mutations; mut; mut = mut->next) {
+			if (player_has_mutation(player, mut)) wr_string(mut->name);
+		}
 	}
 
 	wr_string(player->class->name);

@@ -387,6 +387,8 @@ power-effect:RESTORE_EXP
 
 # Chaos-touched. The mutations it is born with wait for M8.
 name:Beastman
+mutation-affinity:POLYMORPH:2
+mutation-rate:1:20
 virtues:CHANCE
 stats:2:-2:-1:-1:2
 skill-disarm-phys:-5
@@ -411,6 +413,7 @@ values:RES_SOUND[1]
 
 # Feeble, and knows it.
 name:Yeek
+mutation-affinity:SHRIEK:7
 virtues:SACRIFICE
 stats:-2:1:1:1:-2
 skill-disarm-phys:2
@@ -474,6 +477,7 @@ power-expr:B:PLAYER_LEVEL:* 3 / 2
 
 # Zangband granted it nothing at all: its whole identity is psionics, which is PLR-06.
 name:Mindflayer
+mutation-affinity:TENTACLES:7
 virtues:ENLIGHTEN
 stats:-3:4:4:0:-2
 skill-disarm-phys:10
@@ -505,6 +509,7 @@ power-expr:B:PLAYER_LEVEL:+ 0
 
 # Immune to the dark and hurt by the light, which is the bargain.
 name:Vampire
+mutation-affinity:HYPN_GAZE:7
 virtues:UNLIFE
 stats:3:3:-1:-1:1
 skill-disarm-phys:4

@@ -318,6 +318,9 @@ struct player_power {
  * this game's, sized to the longest list any of them needs -- the Paladin's
  * four.
  */
+#define MUTATION_MAX		128
+#define MUT_SIZE		FLAG_SIZE(MUTATION_MAX)
+
 #define MAX_PLAYER_VIRTUES	8
 #define MAX_CLASS_VIRTUES	4
 #define MAX_RACE_VIRTUES	2
@@ -327,6 +330,10 @@ struct player_race {
 	struct player_race *next;
 	const char *name;
 	int virtues[MAX_RACE_VIRTUES];	/**< Virtues this race brings (PLR-19) */
+	char *mutation_affinity;	/**< A mutation this race tends to (PLR-38) */
+	int mutation_chance;		/**< ...this often in ten, when one is rolled */
+	int mutation_birth;			/**< Mutations granted at birth (PLR-36) */
+	int mutation_per_level;		/**< Percent chance of one per level gained */
 
 	unsigned int ridx;
 
@@ -726,6 +733,16 @@ struct player {
 	 */
 	uint8_t vir_types[MAX_PLAYER_VIRTUES];
 	int16_t virtues[MAX_PLAYER_VIRTUES];
+
+	/**
+	 * What chaos has made of this character (PLR-13).
+	 *
+	 * A flag set rather than Zangband's three 32-bit words: the three groups
+	 * are what fits in a `u32b` and not a fact about mutations (DEC-44).
+	 * Written to the savefile by name, so the bit an entry occupies is a
+	 * detail of load order and not something a character depends on.
+	 */
+	bitflag mutations[MUT_SIZE];
 
 	struct loc grid;	/* Player location */
 	struct loc old_grid;/* Player location before leaving for an arena */

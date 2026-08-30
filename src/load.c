@@ -25,6 +25,7 @@
 #include "mon-group.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "player-mutation.h"
 #include "player-virtue.h"
 #include "mon-spell.h"
 #include "mon-util.h"
@@ -783,7 +784,8 @@ int rd_quests_1(void) { return rd_quests_aux(false, false, false); }
  * nothing to catch it being made once.  rd_quests_aux() above is the same
  * shape for the same reason.
  */
-static int rd_player_aux(bool with_patron, bool with_virtues)
+static int rd_player_aux(bool with_patron, bool with_virtues,
+						 bool with_mutations)
 {
 	int i;
 	uint8_t tmp8u, num;
@@ -880,6 +882,29 @@ static int rd_player_aux(bool with_patron, bool with_virtues)
 					player->virtues[i] = value;
 					break;
 				}
+			}
+		}
+	}
+
+	/*
+	 * The mutations (ZangbandTK, PLR-13).  The count is the savefile's, and a
+	 * name that no longer exists in mutation.txt is dropped with a note rather
+	 * than refusing the save -- losing a mutation is survivable.
+	 */
+	flag_wipe(player->mutations, MUT_SIZE);
+	if (with_mutations) {
+		uint16_t carried, n;
+
+		rd_u16b(&carried);
+		for (n = 0; n < carried; n++) {
+			const struct mutation *mut;
+
+			rd_string(buf, sizeof(buf));
+			mut = mutation_by_name(buf);
+			if (mut) {
+				flag_on(player->mutations, MUT_SIZE, mut->midx + 1);
+			} else {
+				note(format("Unknown mutation (%s); it is gone.", buf));
 			}
 		}
 	}
@@ -1030,9 +1055,10 @@ static int rd_player_aux(bool with_patron, bool with_virtues)
 	return 0;
 }
 
-int rd_player_1(void) { return rd_player_aux(false, false); }
-int rd_player_2(void) { return rd_player_aux(true, false); }
-int rd_player(void) { return rd_player_aux(true, true); }
+int rd_player_1(void) { return rd_player_aux(false, false, false); }
+int rd_player_2(void) { return rd_player_aux(true, false, false); }
+int rd_player_3(void) { return rd_player_aux(true, true, false); }
+int rd_player(void) { return rd_player_aux(true, true, true); }
 
 
 

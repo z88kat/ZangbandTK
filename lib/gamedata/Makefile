@@ -6,7 +6,7 @@ FILES = activation.txt artifact.txt artifact.zangband.txt body.txt blow_methods.
  dungeon.txt dungeon_profile.txt ego_item.txt ego_item.zangband.txt \
  flavor.txt flavor.zangband.txt hints.txt history.txt \
  monster.txt monster.zangband.txt monster.zangbandtk.txt monster_base.txt \
- monster_speech.txt monster_spell.txt \
+ monster_speech.txt monster_spell.txt mutation.txt \
  names.txt object.txt object.zangband.txt \
  object_base.txt object_property.txt old_class.txt p_race.txt pain.txt \
  patron.txt pit.txt \

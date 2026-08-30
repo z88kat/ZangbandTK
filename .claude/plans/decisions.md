@@ -73,6 +73,18 @@ what was meant. Requirements derived from them should cite the document.
 > zero bytes at every snapshot tried from 2005 to 2022. The Life realm content is
 > recoverable from [archive/zangband/](../../archive/zangband/) instead. Note also that
 > `web.archive.org` cannot be retrieved through WebFetch in this environment; `curl` works.
+>
+> **Re-checked 2026-08-31, and the 2022 snapshots are not what they look like.** Fetching
+> `spoilers/mutation.txt` at the archived timestamp in [Idea.md](Idea.md) returns a
+> *domain-parking page*: zangband.org had expired by June 2022, and the Wayback Machine
+> forwards the 2022-05-27 capture to a later one that holds the squatter's placeholder. The
+> original availability check followed those redirects and counted a 200 as content.
+>
+> Two things fix it. Query the CDX index for a capture that predates the expiry —
+> `https://web.archive.org/cdx/search/cdx?url=zangband.org/spoilers/mutation.txt&fl=timestamp,statuscode,length`
+> — and fetch with the `id_` modifier after the timestamp, which returns the archived bytes
+> without the Wayback wrapper: `.../web/20120807174819id_/http://zangband.org/...`. The 2012
+> captures are good. **Any spoiler fetched from a 2022 timestamp should be re-checked.**
 
 **DEC-20 — Clean-room is dropped. Zangband's source may be read, ported and adapted.**
 Supersedes the clean-room framing in [Idea.md](Idea.md), at the project owner's direction.
@@ -1513,3 +1525,71 @@ that only ever fell.
 **Consequence.** The accounting is coarser than Zangband's and covers the same
 ground. If a third consumer arrives wanting a virtue nobody moves much, the
 answer is another hook rather than another 160.
+
+---
+
+### DEC-44 — Mutations are grouped by behaviour, not by bitfield (PLR-13)
+
+PLR-13 names three groups, from §2.4: activatable, behavioural/random, and
+permanent physical. Those are Zangband's `MUT1`, `MUT2` and `MUT3`, and they
+are a **storage layout** — thirty-two flags is what fits in a `u32b`, and
+nothing else is meant by the division.
+
+`spoilers/mutation.txt` describes **four** kinds, and they are what a player
+meets: activatable, randomly activating, continuous, and *melee-attack*. The
+five melee mutations — scorpion tail, horns, beak, trunk, tentacles — live in
+`MUT2` beside the random effects and behave nothing like them: they are extra
+blows in the attack round, not things that fire on their own timer.
+
+**Four kinds are implemented**, the spoiler's. Coverage is identical either
+way — all 96 arrive — so this changes only how they are grouped in the data
+file, on the character sheet, and in the code that runs them. DEC-16 makes the
+documentation a first-class source for intent, and PLR-13 names its groups by
+behaviour rather than by word boundary, so the spoiler is the better reading of
+what that requirement is about.
+
+PLR-37 settles it independently: its seven cancelling groups include "beak /
+trunk", so the melee mutations are in scope and are treated as a set already.
+
+---
+
+### DEC-45 — The mutation regeneration penalty is not ported (PLR-13)
+
+`spoilers/mutation.txt` opens its effects section with a warning:
+
+> Zangband 2.2.2d introduced a penalty for having too many mutations. The
+> first few are free but thereafter your regeneration rate is reduced as
+> further mutations are added. Beastmen are largely exempted from this but,
+> strangely, Chaos Warriors are not.
+
+**It is not in 2.7.5-pre1.** `count_mutations()` has exactly two callers in the
+whole source, both of them prerequisite checks inside the selection switch
+([mutation.c:374](../../archive/zangband/src/mutation.c#L374) and
+[mutation.c:462](../../archive/zangband/src/mutation.c#L462)), and nothing in
+`process_world()` scales `regen_amount` by a mutation count. The spoiler
+documents a mechanic that Zangband added in 2.2.2d and had removed again by the
+version this project ports.
+
+*Why that settles it.* DEC-20 makes the source the authority on algorithm and
+the documentation the authority on intent, and here they disagree about
+**existence** rather than detail. Building it would not be finishing an
+unfinished feature, which is what this milestone is for; it would be
+reinstating one its authors reverted. The standing discipline in every
+comparable case — a flag with no mechanism, an object with no effect — has been
+to decline rather than invent.
+
+*And mutations are not free without it.* Two costs survive in 2.7.5 and are
+ported:
+
+- **Food.** Resilience and rock-eating each add 20% to what the character
+  burns; the wasting disease takes 50% off, which is not a kindness
+  ([dungeon.c:1334](../../archive/zangband/src/dungeon.c#L1334)).
+- **The roll itself.** Twelve of the 32 continuous mutations are simply bad —
+  puny, moronic, albino, rotting flesh, a silly voice, a blank face, short
+  legs, arthritis, bad luck, elemental vulnerability, extra noise, extra fat —
+  and nothing lets a character choose. Mutation is a gamble, and that is the
+  balance.
+
+**Consequence.** If play shows mutations are too cheap, the penalty is a small
+thing to add later and this entry says where it came from. It is not being
+skipped for cost.

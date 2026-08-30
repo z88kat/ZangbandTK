@@ -308,6 +308,7 @@ extern struct file_parser names_parser;
 extern struct file_parser player_property_parser;
 extern struct file_parser p_race_parser;
 extern struct file_parser realm_parser;
+extern struct file_parser mutation_parser;
 extern struct file_parser shape_parser;
 extern struct file_parser trap_parser;
 extern struct file_parser world_parser;

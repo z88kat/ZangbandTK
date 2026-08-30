@@ -240,6 +240,7 @@ add_library(OurCoreLib OBJECT
         src/player-class.c
         src/player-history.c
         src/player-luck.c
+        src/player-mutation.c
         src/player-path.c
         src/player-properties.c
         src/player-quest.c
@@ -928,6 +929,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     player/history.c
     player/inven-carry-num.c
     player/inven-wield.c
+    player/mutation.c
     player/pathfind.c
     player/playerstat.c
     player/pscore.c

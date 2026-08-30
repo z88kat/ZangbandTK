@@ -1583,6 +1583,186 @@ def cmd_objects(args) -> int:
     return 0
 
 
+#: The five mutations Zangband delivers as a melee blow rather than as a
+#: power or a standing change. They sit in MUT2 with the random effects
+#: because a bitfield has only three sets to give, not because they behave
+#: alike -- spoilers/mutation.txt lists them as a kind of their own, and that
+#: is the grouping a player sees. See DEC-44.
+_MELEE = {"SCOR_TAIL", "HORNS", "BEAK", "TRUNK", "TENTACLES"}
+
+#: `mutation_type`, as tables.c writes it.
+_ENTRY = re.compile(
+    r'\{\s*(MUT[123]_[A-Z0-9_]+)\s*,\s*"((?:[^"\\]|\\.)*)"\s*,'
+    r'\s*"((?:[^"\\]|\\.)*)"\s*,\s*"((?:[^"\\]|\\.)*)"\s*,'
+    r'\s*"((?:[^"\\]|\\.)*)"\s*,\s*(-?\d+)\s*,\s*(-?\d+)\s*,'
+    r'\s*(A_[A-Z]+|-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)\s*\}', re.S)
+
+
+def _mutation_weights() -> tuple[dict[int, int], dict[int, str]]:
+    """How often each mutation comes up, and what it needs first.
+
+    Zangband rolls 1d193 over a switch and maps the result onto one of the 96
+    ([mutation.c:57](../archive/zangband/src/mutation.c#L57)). The spread is
+    the weighting -- "not all mutations are equally likely although the
+    variance is small", as the spoiler puts it -- and the widths of the case
+    runs are the only place it is written down.
+
+    Three of the 96 sit inside an `if` rather than beside their cases, which
+    the spoiler does not mention at all: the Midas Touch needs a thousand gold
+    per level in hand, and a silly voice and elemental vulnerability need three
+    mutations already. Reading the switch rather than the table is the only way
+    to find them.
+    """
+    text = (ZANGBAND.parent.parent / "src" / "mutation.c").read_text(
+        encoding="utf-8", errors="replace")
+    start = text.index("switch (choose_mut ? choose_mut : randint1(193))")
+    body = text[start:text.index("\n\t\t}\n", start)]
+
+    weights: dict[int, int] = {}
+    gates: dict[int, str] = {}
+    for chunk in re.split(r"\n(?=\t{3}case\s)", body):
+        cases = re.findall(r"case\s+(\d+):", chunk)
+        target = re.search(r"num\s*=\s*(\d+);", chunk)
+        if not cases or not target:
+            continue
+        num = int(target.group(1))
+        weights[num] = weights.get(num, 0) + len(cases)
+        if re.search(r"if\s*\(p_ptr->au\s*>=", chunk):
+            gates[num] = "gold"
+        else:
+            need = re.search(r"count_mutations\(\)\s*>=\s*(\d+)", chunk)
+            if need:
+                gates[num] = "mutations:%s" % need.group(1)
+
+    return weights, gates
+
+
+def cmd_mutations(args) -> int:
+    """Convert Zangband's mutation table to 4.2 data (PLR-13 to PLR-17)."""
+    text = (ZANGBAND.parent.parent / "src" / "tables.c").read_text(
+        encoding="utf-8", errors="replace")
+    start = text.index("const mutation_type mutations[")
+    found = _ENTRY.findall(text[start:text.index("\n};", start)])
+
+    weights, gates = _mutation_weights()
+
+    report = Report(
+        title="zconv — mutation conversion review",
+        source=str(ZANGBAND.parent.parent / "src" / "tables.c"),
+        target=str(GAMEDATA / "mutation.txt"),
+        lethality="not applicable to mutations",
+    )
+    report.notes.append(
+        "Mutations are the one Zangband system with no data file of its own: "
+        "the table is C, in tables.c, and the selection weighting is the shape "
+        "of a switch statement in mutation.c. Both are read here, because "
+        "neither on its own is the whole of it.")
+    report.notes.append(
+        "The three groups are a bitfield layout -- 32 flags will not fit in "
+        "more than 32 bits -- and the four kinds below are what the player "
+        "meets. The five melee mutations live in the same set as the random "
+        "ones and behave nothing like them (DEC-44).")
+
+    entries: list[aformat.Entry] = []
+    kinds: dict[str, int] = {}
+
+    for index, row in enumerate(found):
+        (flag, desc, gain, lose, power,
+         level, cost, stat, diff, chance) = row
+        group, code = flag.split("_", 1)
+
+        if group == "MUT1":
+            kind = "activatable"
+        elif group == "MUT3":
+            kind = "continuous"
+        elif code in _MELEE:
+            kind = "melee"
+        else:
+            kind = "random"
+        kinds[kind] = kinds.get(kind, 0) + 1
+
+        item = Converted(name=code, source_index=index)
+        entry = aformat.Entry()
+        entry.set("name", code)
+        entry.set("kind", kind)
+
+        if kind == "activatable":
+            stat_name = stat[2:] if stat.startswith("A_") else stat
+            entry.set("level", int(level))
+            entry.set("cost", int(cost))
+
+            # 4.2 removed charisma in 4.2.0 and three of these cast off it.
+            # All three work on a mind rather than on the world -- the spoiler
+            # compares hypnotic gaze to the Mindcrafter's Domination by name --
+            # and wisdom is what 4.2 asks of that kind of power.
+            if stat_name == "CHR":
+                stat_name = "WIS"
+                item.fields["stat"] = rules.Value(
+                    "WIS", "PLR-13", rules.DERIVED,
+                    "cast off CHR, which 4.2 has not got; these three are "
+                    "mind-affecting powers and WIS is 4.2's stat for those")
+
+            entry.set("stat", stat_name)
+            entry.set("difficulty", int(diff))
+            entry.set("power", power)
+        elif kind == "random" and int(chance):
+            # tables.c stores hundredths: 30 is the spoiler's "1 in 3000".
+            entry.set("chance", int(chance) * 100)
+            item.fields["chance"] = rules.Value(
+                str(int(chance) * 100), "PLR-13", rules.CONVERTED,
+                "tables.c stores this in hundredths; %s means one turn in %d"
+                % (chance, int(chance) * 100))
+
+        entry.set("weight", weights.get(index, 0))
+        if index in gates:
+            entry.set("requires", gates[index])
+            item.fields["requires"] = rules.Value(
+                gates[index], "PLR-13", rules.CONVERTED,
+                "gated inside the selection switch rather than beside its "
+                "cases, and undocumented in the spoiler")
+
+        entry.set("desc", desc)
+        entry.set("gain", gain)
+        entry.set("lose", lose)
+
+        report.items.append(item)
+        entries.append(entry)
+
+    report.notes.append(
+        "Kinds: " + ", ".join("%d %s" % (n, k) for k, n in sorted(kinds.items())))
+    report.notes.append(
+        "Selection weights total %d, which is the 1d193 the switch rolls."
+        % sum(weights.values()))
+
+    OUTDIR.mkdir(exist_ok=True)
+    report_path = OUTDIR / "mutations.report.md"
+    report_path.write_text(report.render(), encoding="utf-8")
+    print("report:  %s" % report_path.relative_to(ROOT))
+
+    if args.write:
+        data_path = OUTDIR / "mutation.txt"
+        aformat.write(
+            str(data_path), entries,
+            preamble=(
+                "# mutation.txt — generated by tools/zconv. Do not hand-edit.\n"
+                "# Hand-tuned values belong in tools/zconv/overrides.toml "
+                "(BAL-12).\n"
+                "# Source: %s\n"
+                "# Weights and prerequisites: %s\n"
+                % (source_of(ZANGBAND.parent.parent / "src" / "tables.c"),
+                   source_of(ZANGBAND.parent.parent / "src" / "mutation.c"))
+            ),
+        )
+        print("data:    %s" % data_path.relative_to(ROOT))
+    else:
+        print("data:    not written (pass --write)")
+
+    print("entries: %d   %s" % (len(entries),
+                                "  ".join("%s %d" % (k, n)
+                                          for k, n in sorted(kinds.items()))))
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog="zconv", description="Convert Zangband data onto Angband 4.2's model.")
@@ -1609,11 +1789,17 @@ def main() -> int:
     objects.add_argument("--write", action="store_true",
                          help="write the data file as well as the report")
 
+    mutations = sub.add_parser("mutations",
+                               help="convert the mutation table to 4.2 data")
+    mutations.add_argument("--write", action="store_true",
+                           help="write the data file as well as the report")
+
     args = parser.parse_args()
     return {"analyse": cmd_analyse, "monsters": cmd_monsters,
             "artifacts": cmd_artifacts,
             "egos": cmd_egos,
-            "objects": cmd_objects}[args.command](args)
+            "objects": cmd_objects,
+            "mutations": cmd_mutations}[args.command](args)
 
 
 if __name__ == "__main__":

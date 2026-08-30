@@ -298,6 +298,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\player-class.c" />
     <ClCompile Include="src\player-history.c" />
     <ClCompile Include="src\player-luck.c" />
+    <ClCompile Include="src\player-mutation.c" />
     <ClCompile Include="src\player-path.c" />
     <ClCompile Include="src\player-properties.c" />
     <ClCompile Include="src\player-quest.c" />
@@ -540,6 +541,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\player-calcs.h" />
     <ClInclude Include="src\player-history.h" />
     <ClInclude Include="src\player-luck.h" />
+    <ClInclude Include="src\player-mutation.h" />
     <ClInclude Include="src\player-path.h" />
     <ClInclude Include="src\player-properties.h" />
     <ClInclude Include="src\player-quest.h" />

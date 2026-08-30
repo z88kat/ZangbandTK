@@ -313,7 +313,11 @@ that are not scheduled are listed under it with a reason each.
 | M7 | PLR-01…PLR-07 | 7 |
 | M8 | PLR-13…PLR-21, PLR-34…PLR-38 (+ the Chaos Tower, the last row of WLD-16c) | 14 |
 
-**M8 progress:** PLR-18 to PLR-21 are done — virtues, their selection, their writers and
+**M8 progress:** mutations are under way. Phase 1 landed the model — all 96, generated out
+of `tables.c` by `zconv mutations`, with the roll, the nine cancelling pairs, race
+affinity, Beastman birth-and-per-level, and a savefile block. What they *do* comes next.
+
+PLR-18 to PLR-21 are done — virtues, their selection, their writers and
 their two consumers. That was the milestone's gate: DEC-39 kept the feature on condition
 that something read it, and two things now do. What remains of M8 is mutations
 (PLR-13…PLR-17), the virtue-adjacent PLR-34…PLR-38, and the Chaos Tower.
