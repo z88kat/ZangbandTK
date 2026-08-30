@@ -108,19 +108,26 @@ cd build && make alltests
 941 unit tests and 5 integration tests. They should all pass; if they do not,
 that is a bug worth reporting.
 
-The ordinary build above is permissive. Every Linux CI job configures with
-`-Werror`, so a warning that scrolls past locally is fatal there — which has
-twice let a defect reach master. Before pushing, build the way CI does:
+**Both build commands above are permissive, and CI runs neither of them that
+way.** The macOS job builds with `env OPT="-Werror"`; every Linux job
+configures CMake with `-Werror`. A warning that scrolls past here is fatal
+there, which has let defects reach master. Before pushing:
 
 ```sh
-scripts/check-build           # configure and build with CI's flags
+scripts/check-build           # both builds, with CI's flags
 scripts/check-build --tests   # ...and run the unit tests after
 ```
 
 Its exit code is the answer; it does not print a verdict for you to read past.
-It uses whatever `cc` is, which on macOS is clang rather than CI's GCC, so a
-clean run is necessary and not sufficient — GCC diagnoses some things clang
-does not.
+
+It runs *both* build systems because CI does and they are not
+interchangeable: `Makefile.osx` asks for `-Wshadow`, `-Wwrite-strings`,
+`-Wmissing-prototypes`, `-Wnested-externs` and `-Wunused-macros`, CMake asks
+for `-pedantic`, and they compile to different C standards. A defect can pass
+either alone.
+
+The one thing it cannot see is `-Wlogical-op`, which two CI jobs ask for and
+which GCC has and clang does not.
 
 Adding a source file or a data file also means telling the build inputs that
 are maintained by hand — the Visual Studio project, the DOS 8.3 renames, the

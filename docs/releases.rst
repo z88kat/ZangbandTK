@@ -36,6 +36,26 @@ Savefile compatibility — 30 August 2026
 M8: the virtues, finished — 30 August 2026
 ------------------------------------------
 
+- **3.44.2** — **The gate covers the build it was missing, and 3.44.1's
+  account of the gap was wrong.** That entry framed the residual risk as
+  clang against CI's GCC. It is not: the **macOS** CI job builds with
+  ``env OPT="-Werror" make -f Makefile.osx`` and the same clang on this machine
+  rejects the bad pointer exactly as GCC did. There was never a parity problem
+  to reason about — the local build was the identical compiler run without the
+  flag that makes a warning fatal.
+
+  So ``scripts/check-build`` now runs **both** build systems, because CI does
+  and they are not interchangeable. ``Makefile.osx`` asks for ``-Wshadow``,
+  ``-Wwrite-strings``, ``-Wmissing-prototypes``, ``-Wnested-externs`` and
+  ``-Wunused-macros``; CMake asks for ``-pedantic``; and they compile to
+  different C standards, c99 against gnu99. A defect can pass either alone.
+  Both are clean over the whole tree — 214 sources each, and the same 214.
+
+  This also collapses the two failures of the last day into one. The grep that
+  did not match ``error:`` and the build that was not asked for ``-Werror``
+  are the same mistake twice: the compiler was reporting a problem and the
+  local check was not reading the answer.
+
 - **3.44.1** — **A pointer of the wrong type, and the gate that should have
   caught it.** ``virtue_note_kill()`` passed a ``monster_race`` to
   ``monster_is_living()``, which takes a ``monster``. Clang built it and the
