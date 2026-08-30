@@ -35,6 +35,7 @@ stat:WIS
 difficulty:18
 power:Hypnotic gaze
 weight:2
+values:WIS[-1]
 desc:Your gaze is hypnotic (-1 WIS).
 gain:Your eyes look mesmerizing...
 lose:Your eyes look uninteresting.
@@ -47,6 +48,7 @@ stat:WIS
 difficulty:14
 power:Telekinesis
 weight:2
+values:CON[-1]
 desc:You are telekinetic (-1 CON).
 gain:You gain the ability to move objects telekinetically.
 lose:You lose the ability to move objects telekinetically.
@@ -71,6 +73,7 @@ stat:WIS
 difficulty:15
 power:Mind blast
 weight:2
+values:STR[-1]
 desc:You can Mind Blast your enemies (-1 STR).
 gain:You gain the power of Mind Blast.
 lose:You lose the power of Mind Blast.
@@ -83,6 +86,7 @@ stat:CON
 difficulty:14
 power:Emit radiation
 weight:2
+values:CON[-1]
 desc:You can emit hard radiation at will (-1 CON).
 gain:You start emitting hard radiation.
 lose:You stop emitting hard radiation.
@@ -179,6 +183,7 @@ stat:INT
 difficulty:10
 power:Illuminate area
 weight:3
+values:STEALTH[-1]
 desc:You can emit bright light (-2 stealth).
 gain:You can light up rooms with your presence.
 lose:You can no longer light up rooms with your presence.
@@ -203,6 +208,7 @@ stat:STR
 difficulty:14
 power:Berserk
 weight:3
+values:WIS[-1]
 desc:You can drive yourself into a berserk frenzy (-1 WIS).
 gain:You feel a controlled rage.
 lose:You no longer feel a controlled rage.
@@ -228,6 +234,7 @@ difficulty:12
 power:Midas touch
 weight:2
 requires:gold
+values:WIS[-1]
 desc:You can turn ordinary items to gold (-1 WIS, -1 CHR).
 gain:You gain the Midas touch.
 lose:You lose the Midas touch.
@@ -252,6 +259,7 @@ stat:CON
 difficulty:12
 power:Resist elements
 weight:3
+save:-10
 desc:You can harden yourself to the ravages of the elements.
 gain:You feel like you can protect yourself.
 lose:You feel like you might be vulnerable.
@@ -264,6 +272,7 @@ stat:STR
 difficulty:16
 power:Earthquake
 weight:3
+values:WIS[-1]
 desc:You can bring down the dungeon around your ears (-1 WIS).
 gain:You gain the ability to wreck the dungeon.
 lose:You lose the ability to wreck the dungeon.
@@ -300,6 +309,7 @@ stat:WIS
 difficulty:15
 power:Sterilize
 weight:1
+values:INT[-1]
 desc:You can cause mass impotence (-1 INT).
 gain:You can give everything around you a headache.
 lose:You hear a massed sigh of relief.
@@ -324,6 +334,7 @@ stat:WIS
 difficulty:8
 power:Dazzle
 weight:3
+values:STEALTH[-1]
 desc:You can emit confusing, blinding radiation (-1 stealth).
 gain:You gain the ability to emit dazzling lights.
 lose:You lose the ability to emit dazzling lights.
@@ -336,6 +347,7 @@ stat:WIS
 difficulty:9
 power:Laser eye
 weight:3
+values:SEARCH[-2]
 desc:Your eyes can fire laser beams (-2 sensing).
 gain:Your eyes burn for a moment.
 lose:Your eyes burn for a moment, then feel soothed.
@@ -372,6 +384,7 @@ stat:CON
 difficulty:11
 power:Cold touch
 weight:2
+values:DEX[-1]
 desc:You can freeze things with a touch (-1 DEX).
 gain:Your hands get very cold.
 lose:Your hands warm up.
@@ -384,6 +397,7 @@ stat:STR
 difficulty:6
 power:Throw object
 weight:2
+values:DEX[-1]
 desc:You can hurl objects with great force (-1 DEX).
 gain:Your throwing arm feels much stronger.
 lose:Your throwing arm feels much weaker.
@@ -515,6 +529,7 @@ lose:You stop attracting animals.
 name:TENTACLES
 kind:melee
 weight:1
+values:DEX[1]
 desc:You have evil looking tentacles (dam 2d5, +1 DEX, -2 CHR).
 gain:Evil-looking tentacles sprout from your sides.
 lose:Your tentacles vanish from your sides.
@@ -539,6 +554,7 @@ name:WRAITH
 kind:random
 chance:3000
 weight:1
+values:CON[-3]
 desc:You fade in and out of physical reality (-3 CON).
 gain:You start to fade in and out of the physical world.
 lose:You are firmly in the physical world.
@@ -586,6 +602,7 @@ lose:Your stomach stops roiling.
 name:CHAOS_GIFT
 kind:random
 weight:2
+flags:PATRON
 desc:Chaos deities give you gifts.
 gain:You attract the notice of a chaos deity!
 lose:You lose the attention of the chaos deities.
@@ -610,6 +627,7 @@ name:INVULN
 kind:random
 chance:5000
 weight:1
+values:WIS[-2]
 desc:You occasionally feel invincible (-2 WIS).
 gain:You are blessed with fits of invulnerability.
 lose:You are no longer blessed with fits of invulnerability.
@@ -641,6 +659,7 @@ lose:Your feet shrink to their former size.
 name:HYPER_STR
 kind:continuous
 weight:3
+values:STR[4] | INT[-1] | WIS[-1]
 desc:You are superhumanly strong (+4 STR, -1 INT, -1 WIS).
 gain:You turn into a superhuman he-man!
 lose:Your muscles revert to normal.
@@ -648,6 +667,7 @@ lose:Your muscles revert to normal.
 name:PUNY
 kind:continuous
 weight:3
+values:STR[-4] | DEX[2]
 desc:You are puny (+2 DEX, -4 STR).
 gain:Your muscles wither away...
 lose:Your muscles revert to normal.
@@ -655,6 +675,7 @@ lose:Your muscles revert to normal.
 name:HYPER_INT
 kind:continuous
 weight:3
+values:INT[4] | WIS[4] | RES_ELEC[-1]
 desc:Your brain is a living computer (+4 INT/WIS).
 gain:Your brain evolves into a living computer!
 lose:Your brain reverts to normal.
@@ -662,6 +683,8 @@ lose:Your brain reverts to normal.
 name:MORONIC
 kind:continuous
 weight:3
+values:INT[-4] | WIS[-4]
+flags:PROT_FEAR | PROT_CONF
 desc:You are moronic (-4 INT/WIS).
 gain:Your brain withers away...
 lose:Your brain reverts to normal.
@@ -669,6 +692,7 @@ lose:Your brain reverts to normal.
 name:RESILIENT
 kind:continuous
 weight:2
+values:CON[4]
 desc:You are very resilient (+4 CON).
 gain:You become extraordinarily resilient.
 lose:You become ordinarily resilient again.
@@ -676,6 +700,7 @@ lose:You become ordinarily resilient again.
 name:XTRA_FAT
 kind:continuous
 weight:2
+values:CON[2] | SPEED[-2]
 desc:You are extremely fat (+2 CON, -2 speed).
 gain:You become sickeningly fat!
 lose:You benefit from a miracle diet!
@@ -683,6 +708,7 @@ lose:You benefit from a miracle diet!
 name:ALBINO
 kind:continuous
 weight:2
+values:CON[-4] | RES_DARK[1]
 desc:You are albino (-4 CON).
 gain:You turn into an albino! You feel frail...
 lose:You are no longer an albino!
@@ -690,6 +716,8 @@ lose:You are no longer an albino!
 name:FLESH_ROT
 kind:continuous
 weight:3
+values:CON[-2]
+flags:HOLD_LIFE
 desc:Your flesh is rotting (-2 CON, -1 CHR).
 gain:Your flesh is afflicted by a rotting disease!
 lose:Your flesh is no longer afflicted by a rotting disease!
@@ -705,6 +733,7 @@ lose:Your voice returns to normal.
 name:BLANK_FAC
 kind:continuous
 weight:2
+flags:SEE_INVIS
 desc:Your face is featureless (-1 CHR).
 gain:Your face becomes completely featureless!
 lose:Your facial features return.
@@ -719,6 +748,7 @@ lose:You stop projecting a reassuring image.
 name:XTRA_EYES
 kind:continuous
 weight:3
+values:SEARCH[3]
 desc:You have an extra pair of eyes (+3 sensing, -1 CHR).
 gain:You grow an extra pair of eyes!
 lose:Your extra eyes vanish!
@@ -726,6 +756,8 @@ lose:Your extra eyes vanish!
 name:MAGIC_RES
 kind:continuous
 weight:2
+save:15
+save-scale:5
 desc:You are resistant to magic.
 gain:You become resistant to magic.
 lose:You become susceptible to magic again.
@@ -733,6 +765,7 @@ lose:You become susceptible to magic again.
 name:XTRA_NOIS
 kind:continuous
 weight:3
+values:STEALTH[-3]
 desc:You make a lot of strange noise (-3 stealth).
 gain:You start making strange noise!
 lose:You stop making strange noise!
@@ -740,6 +773,7 @@ lose:You stop making strange noise!
 name:INFRAVIS
 kind:continuous
 weight:3
+values:INFRA[3]
 desc:You have remarkable infravision (+3).
 gain:Your infravision is improved.
 lose:Your infravision is degraded.
@@ -747,6 +781,7 @@ lose:Your infravision is degraded.
 name:XTRA_LEGS
 kind:continuous
 weight:2
+values:DEX[-1] | SPEED[3]
 desc:You have an extra pair of legs (+3 speed, -1 DEX).
 gain:You grow an extra pair of legs!
 lose:Your extra legs disappear!
@@ -754,6 +789,7 @@ lose:Your extra legs disappear!
 name:SHORT_LEG
 kind:continuous
 weight:2
+values:CON[1] | SPEED[-3]
 desc:Your legs are short stubs (+1 CON, -3 speed).
 gain:Your legs turn into short stubs!
 lose:Your legs lengthen to normal.
@@ -761,6 +797,8 @@ lose:Your legs lengthen to normal.
 name:ELEC_TOUC
 kind:continuous
 weight:2
+values:CON[-1]
+flags:SH_ELEC
 desc:Electricity is running through your veins (-1 CON).
 gain:Electricity starts running through you!
 lose:Electricity stops running through you.
@@ -768,6 +806,8 @@ lose:Electricity stops running through you.
 name:FIRE_BODY
 kind:continuous
 weight:2
+values:DEX[-1] | LIGHT[1]
+flags:SH_FIRE
 desc:Your body is enveloped in flames (-1 DEX).
 gain:Your body is enveloped in flames!
 lose:Your body is no longer enveloped in flames.
@@ -775,6 +815,7 @@ lose:Your body is no longer enveloped in flames.
 name:WART_SKIN
 kind:continuous
 weight:3
+armour:5
 desc:Your skin is covered with warts (-2 CHR, +5 AC).
 gain:Disgusting warts appear everywhere on you!
 lose:Your warts disappear!
@@ -782,6 +823,7 @@ lose:Your warts disappear!
 name:SCALES
 kind:continuous
 weight:3
+armour:10
 desc:Your skin has turned into scales (-1 CHR, +10 AC).
 gain:Your skin turns into black scales!
 lose:Your scales vanish!
@@ -789,6 +831,8 @@ lose:Your scales vanish!
 name:IRON_SKIN
 kind:continuous
 weight:2
+armour:25
+values:DEX[-3]
 desc:Your skin is made of steel (-3 DEX, +25 AC).
 gain:Your skin turns to steel!
 lose:Your skin reverts to flesh!
@@ -796,6 +840,8 @@ lose:Your skin reverts to flesh!
 name:WINGS
 kind:continuous
 weight:2
+values:CON[-1]
+flags:FEATHER
 desc:You have wings (+3 CHR, -1 CON).
 gain:You grow a pair of wings.
 lose:Your wings fall off.
@@ -803,6 +849,7 @@ lose:Your wings fall off.
 name:FEARLESS
 kind:continuous
 weight:3
+flags:PROT_FEAR
 desc:You are completely fearless.
 gain:You become completely fearless.
 lose:You begin to feel fear again.
@@ -810,6 +857,7 @@ lose:You begin to feel fear again.
 name:REGEN
 kind:continuous
 weight:2
+flags:REGEN
 desc:You are regenerating.
 gain:You start regenerating.
 lose:You stop regenerating.
@@ -817,6 +865,8 @@ lose:You stop regenerating.
 name:ESP
 kind:continuous
 weight:2
+values:CON[-1]
+flags:TELEPATHY
 desc:You are telepathic (-1 CON).
 gain:You develop a telepathic ability!
 lose:You lose your telepathic ability!
@@ -824,6 +874,7 @@ lose:You lose your telepathic ability!
 name:LIMBER
 kind:continuous
 weight:3
+values:DEX[3] | STR[-1]
 desc:Your body is very limber (+3 DEX, -1 STR).
 gain:Your muscles become limber.
 lose:Your muscles stiffen.
@@ -831,6 +882,7 @@ lose:Your muscles stiffen.
 name:ARTHRITIS
 kind:continuous
 weight:3
+values:DEX[-3]
 desc:Your joints ache constantly (-3 DEX).
 gain:Your joints suddenly hurt.
 lose:Your joints stop hurting.
@@ -846,6 +898,7 @@ name:VULN_ELEM
 kind:continuous
 weight:1
 requires:mutations:3
+values:RES_ACID[-1] | RES_ELEC[-1] | RES_FIRE[-1] | RES_COLD[-1]
 desc:You are susceptible to damage from the elements.
 gain:You feel strangely exposed.
 lose:You feel less exposed.
@@ -853,6 +906,8 @@ lose:You feel less exposed.
 name:MOTION
 kind:continuous
 weight:3
+values:STEALTH[1]
+flags:FREE_ACT
 desc:Your movements are precise and forceful (+1 stealth).
 gain:You move with new assurance.
 lose:You move with less assurance.

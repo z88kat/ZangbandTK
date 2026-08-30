@@ -288,6 +288,65 @@ bool player_mutate(struct player *p)
 }
 
 /**
+ * What the continuous mutations make of the character (PLR-15).
+ *
+ * Modelled on `calc_shapechange()`, and for the same reason: a mutation is a
+ * standing change to the body rather than something worn, so it lands on the
+ * state directly and not through an equipment slot. Vulnerabilities are
+ * deferred into `vuln[]` exactly as a shape's are, because `calc_bonuses()`
+ * applies them after every resistance is in and a vulnerability applied early
+ * would be cancelled by a resistance found later.
+ *
+ * The values are read out of `mutation_effect()`
+ * ([mutation.c:1771](../archive/zangband/src/mutation.c#L1771)) rather than
+ * out of the spoiler, which gives only the headline of each. Hyper-strength is
+ * "+4 STR" in the documentation and +4 STR, -1 INT, -1 WIS in the source; a
+ * moronic mind is "-4 INT/WIS" and never mentioned as making the character
+ * immune to fear and confusion. Building from the documentation would have
+ * made every bad mutation kinder than Zangband's and every good one better.
+ *
+ * Two mutations do nothing here and are meant to. A silly voice and an
+ * illusory normal appearance moved nothing but charisma, which 4.2 removed in
+ * 4.2.0; both are still gained, described and saved, and both are inert.
+ */
+void player_apply_mutations(struct player *p, struct player_state *state,
+							bool vuln[ELEM_MAX])
+{
+	const struct mutation *m;
+	int i;
+
+	for (m = mutations; m; m = m->next) {
+		if (!player_has_mutation(p, m)) continue;
+
+		state->to_a += m->armour;
+
+		state->skills[SKILL_SAVE] += m->save;
+		if (m->save_scale) {
+			state->skills[SKILL_SAVE] += p->lev / m->save_scale;
+		}
+
+		for (i = 0; i < STAT_MAX; i++) {
+			state->stat_add[i] += m->modifiers[i];
+		}
+
+		state->skills[SKILL_STEALTH] += m->modifiers[OBJ_MOD_STEALTH];
+		state->skills[SKILL_SEARCH] += m->modifiers[OBJ_MOD_SEARCH] * 5;
+		state->see_infra += m->modifiers[OBJ_MOD_INFRA];
+		state->speed += m->modifiers[OBJ_MOD_SPEED];
+
+		of_union(state->flags, m->flags);
+
+		for (i = 0; i < ELEM_MAX; i++) {
+			if (m->el_info[i] == -1) {
+				vuln[i] = true;
+			} else if (m->el_info[i] > state->el_info[i].res_level) {
+				state->el_info[i].res_level = m->el_info[i];
+			}
+		}
+	}
+}
+
+/**
  * The regeneration penalty, which is zero (DEC-45).
  *
  * `spoilers/mutation.txt` warns that mutations past the first few slow a

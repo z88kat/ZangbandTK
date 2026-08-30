@@ -10,11 +10,11 @@ something breathed — and what you get is what the roll gives you.
 
 .. note::
 
-   **Under construction.** The model is built: the ninety-six exist, they are
-   gained and lost, they cancel one another, and Beastmen mutate on their own.
-   What they *do* is being written next — the standing changes first, then the
-   powers, then the ones that fire on their own. Until those land, a mutation
-   is recorded on your character and does not yet act.
+   **Under construction.** The model is built and the standing changes act: the
+   ninety-six exist, they are gained and lost, they cancel one another,
+   Beastmen mutate on their own, and a continuous mutation changes your
+   character the moment you have it. The powers and the ones that fire on their
+   own are being written next.
 
 The four kinds
 --------------
@@ -22,6 +22,28 @@ The four kinds
 **Continuous.** Simply true of you from the moment you have them. Superhuman
 strength, a moronic mind, skin turned to steel, wings, a rotting body, good
 luck, bad luck. Thirty-two of them, and twelve are purely bad.
+
+These act on your character directly, the way a shapechange does rather than
+the way a ring does — there is nothing to wear and nothing to take off. They
+show up on your character sheet under **Mutations**, and in your stats,
+armour, speed, saving throw and resistances without being labelled.
+
+.. warning::
+
+   **A mutation is rarely only what it is called.** Superhuman strength is
+   +4 STR and also -1 INT and -1 WIS; being puny is -4 STR and *+2 DEX*; a
+   moronic mind is -4 INT and -4 WIS and makes you immune to fear and
+   confusion; iron skin is +25 AC and -3 DEX. The Zangband spoiler gives the
+   headline of each and stops, and the headline is generally the good half.
+   What this game implements is what Zangband's code did, which is harsher on
+   the good mutations and kinder on the bad ones.
+
+Two of the thirty-two do nothing at all. A silly voice and an illusory normal
+appearance changed only your charisma, and there is no charisma in Angband
+4.2 — the stat was removed in 4.2.0. You can still gain them, they are still
+described on your sheet, and they have no effect. They were left in rather than
+dropped because a mutation that vanishes from a savefile is worse than one that
+does nothing.
 
 **Activatable.** Powers you invoke, at a cost in mana — or in blood, if you
 are not a caster. Spitting acid, breathing fire, eating rock, turning objects

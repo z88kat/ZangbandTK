@@ -35,6 +35,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
+#include "player-mutation.h"
 #include "player-spell.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -2166,6 +2167,9 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	/* Add shapechange info */
 	calc_shapechange(state, vuln, p->shape, &extra_blows, &extra_shots,
 		&extra_might, &extra_moves);
+
+	/* And what chaos has made of the character (PLR-15) */
+	player_apply_mutations(p, state, vuln);
 
 	/* Now deal with vulnerabilities */
 	for (i = 0; i < ELEM_MAX; i++) {

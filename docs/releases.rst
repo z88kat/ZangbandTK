@@ -36,6 +36,37 @@ Savefile compatibility — 30 August 2026
 M8: mutations — 31 August 2026
 ------------------------------
 
+- **3.46.0** — **The thirty-two standing mutations act** (PLR-14, PLR-15,
+  PLR-17). A continuous mutation is now simply true of your character: stats,
+  armour, speed, searching, stealth, saving throw, resistances,
+  vulnerabilities and object flags all land through ``calc_bonuses()`` the way
+  a shapechange does, and the character dump gains a **[Mutations]** section.
+
+  The modifiers come out of ``mutation_effect()`` rather than out of
+  ``spoilers/mutation.txt``, and the difference is not small. The spoiler gives
+  the headline of each mutation and stops, and the headline is generally the
+  good half: superhuman strength is "+4 STR" there and +4 STR, -1 INT, -1 WIS
+  in the code; being puny is "-4 STR" and also **+2 DEX**; a moronic mind is
+  "-4 INT/WIS" and never mentioned as conferring immunity to fear and
+  confusion; iron skin is +25 AC and -3 DEX rather than -1. Built from the
+  documentation, every good mutation would have been better than Zangband's and
+  every bad one kinder.
+
+  Two things needed measuring rather than assuming. Zangband's stealth and
+  searching skills are on the *same* scale as 4.2's — of the nineteen races
+  both games share, stealth is identical for seventeen and searching for
+  twelve — but ``calc_bonuses()`` multiplies ``OBJ_MOD_SEARCH`` by five on its
+  way into the skill and leaves stealth alone, so extra eyes are ``SEARCH[3]``
+  and not ``SEARCH[15]``. And saving throws are a skill in both games but not
+  an object modifier in 4.2, so they get their own field — with a scale as well
+  as an amount, because magic resistance is ``15 + level/5``.
+
+  **Two mutations are inert and are meant to be.** A silly voice and an
+  illusory normal appearance moved charisma and nothing else, and 4.2 removed
+  charisma in 4.2.0. Both are still gained, described and saved; neither does
+  anything. Left in rather than dropped, because a mutation that disappears
+  from a savefile is worse than one that does nothing.
+
 - **3.45.0** — **Ninety-six mutations, and the model that carries them**
   (PLR-13, PLR-36, PLR-37, PLR-38). Zangband built mutations with no data file
   at all: the table is a C array in ``tables.c`` and the selection weighting

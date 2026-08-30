@@ -27,6 +27,7 @@
 #include "obj-util.h"
 #include "player.h"
 #include "player-calcs.h"
+#include "player-mutation.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "store.h"
@@ -1106,6 +1107,27 @@ void write_character_dump(ang_file *fff)
 				  virtue_describe(player->virtues[i]), virtue_name(virtue));
 	}
 	file_putf(fff, "\n");
+
+	/*
+	 * And what chaos has made of them (PLR-17).
+	 *
+	 * Omitted entirely when there is nothing to say, because most characters
+	 * never gain one and an empty heading reads as a bug. Zangband printed the
+	 * descriptions in the order the flags happen to sit in three machine words;
+	 * this prints them in the order of `mutation.txt`, which is the same order,
+	 * and says so here rather than making the next reader check.
+	 */
+	if (player_mutation_total(player) > 0) {
+		const struct mutation *mut;
+
+		file_putf(fff, "  [Mutations]\n\n");
+		for (mut = mutations; mut; mut = mut->next) {
+			if (!player_has_mutation(player, mut)) continue;
+
+			file_putf(fff, "%s\n", mut->desc);
+		}
+		file_putf(fff, "\n");
+	}
 
 	/* Dump the equipment */
 	file_putf(fff, "  [Character Equipment]\n\n");

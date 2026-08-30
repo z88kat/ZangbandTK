@@ -4564,6 +4564,78 @@ static enum parser_error parse_mutation_lose(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_mutation_armour(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	m->armour = parser_getint(p, "armour");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mutation_save(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	m->save = parser_getint(p, "save");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mutation_save_scale(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (parser_getint(p, "scale") <= 0) return PARSE_ERROR_INVALID_VALUE;
+	m->save_scale = parser_getint(p, "scale");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mutation_values(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+	char *s, *t;
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	s = string_make(parser_getstr(p, "values"));
+	t = strtok(s, " |");
+	while (t) {
+		int value = 0, index = 0;
+		bool found = false;
+
+		if (!grab_index_and_int(&value, &index, obj_mods, "", t)) {
+			found = true;
+			m->modifiers[index] = value;
+		}
+		if (!grab_index_and_int(&value, &index, list_element_names, "RES_",
+								t)) {
+			found = true;
+			m->el_info[index] = value;
+		}
+		if (!found) break;
+
+		t = strtok(NULL, " |");
+	}
+	string_free(s);
+
+	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mutation_flags(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+	char *s, *t;
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	s = string_make(parser_getstr(p, "flags"));
+	t = strtok(s, " |");
+	while (t) {
+		if (grab_flag(m->flags, OF_SIZE, list_obj_flag_names, t)) break;
+		t = strtok(NULL, " |");
+	}
+	string_free(s);
+
+	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
 static struct parser *init_parse_mutation(void) {
 	struct parser *p = parser_new();
 
@@ -4577,6 +4649,11 @@ static struct parser *init_parse_mutation(void) {
 	parser_reg(p, "chance int chance", parse_mutation_chance);
 	parser_reg(p, "weight int weight", parse_mutation_weight);
 	parser_reg(p, "requires str requires", parse_mutation_requires);
+	parser_reg(p, "armour int armour", parse_mutation_armour);
+	parser_reg(p, "save int save", parse_mutation_save);
+	parser_reg(p, "save-scale int scale", parse_mutation_save_scale);
+	parser_reg(p, "values str values", parse_mutation_values);
+	parser_reg(p, "flags str flags", parse_mutation_flags);
 	parser_reg(p, "power str power", parse_mutation_power);
 	parser_reg(p, "desc str desc", parse_mutation_desc);
 	parser_reg(p, "gain str gain", parse_mutation_gain);

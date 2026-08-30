@@ -16,6 +16,7 @@
 #include "init.h"
 #include "player.h"
 #include "player-birth.h"
+#include "player-calcs.h"
 #include "player-mutation.h"
 #include "test-utils.h"
 
@@ -283,6 +284,237 @@ static int test_an_unknown_mutation_is_survivable(void *state) {
 	ok;
 }
 
+/**
+ * What the source says a mutation does, not what the spoiler says.
+ *
+ * The whole reason Phase 2 reads `mutation_effect()` rather than
+ * `spoilers/mutation.txt` is that the spoiler gives the headline and drops the
+ * rest. These four are the cases where the difference is largest, and each is
+ * asserted on the part the documentation omits as well as the part it gives:
+ * a test that only checked "+4 STR" would pass against a build that had
+ * quietly lost the intelligence and wisdom that come with it.
+ */
+static int test_the_source_is_richer_than_the_spoiler(void *state) {
+	const struct mutation *m;
+
+	/* "+4 STR", and also -1 INT and -1 WIS. */
+	m = mutation_by_name("HYPER_STR");
+	notnull(m);
+	eq(m->modifiers[STAT_STR], 4);
+	eq(m->modifiers[STAT_INT], -1);
+	eq(m->modifiers[STAT_WIS], -1);
+
+	/* "-4 STR", and also *+2* DEX -- being puny makes you nimbler. */
+	m = mutation_by_name("PUNY");
+	notnull(m);
+	eq(m->modifiers[STAT_STR], -4);
+	eq(m->modifiers[STAT_DEX], 2);
+
+	/* "-4 INT/WIS", and a moron cannot be frightened or confused. */
+	m = mutation_by_name("MORONIC");
+	notnull(m);
+	eq(m->modifiers[STAT_INT], -4);
+	eq(m->modifiers[STAT_WIS], -4);
+	require(of_has(m->flags, OF_PROT_FEAR));
+	require(of_has(m->flags, OF_PROT_CONF));
+
+	/* "+25 AC", and -3 DEX, which the spoiler puts at -1. */
+	m = mutation_by_name("IRON_SKIN");
+	notnull(m);
+	eq(m->armour, 25);
+	eq(m->modifiers[STAT_DEX], -3);
+
+	ok;
+}
+
+/**
+ * The searching bonus survived the change of scale.
+ *
+ * `calc_bonuses()` multiplies `OBJ_MOD_SEARCH` by five on its way into the
+ * skill and leaves `OBJ_MOD_STEALTH` alone. Extra eyes are +15 searching in
+ * Zangband, so the modifier has to be 3; taken literally it would have been
+ * +75, and nothing about a large searching skill looks wrong on a character
+ * sheet. Stealth is asserted beside it because it is the case that must *not*
+ * be divided.
+ */
+static int test_the_searching_bonus_kept_its_size(void *state) {
+	const struct mutation *eyes = mutation_by_name("XTRA_EYES");
+	const struct mutation *noise = mutation_by_name("XTRA_NOIS");
+
+	notnull(eyes);
+	notnull(noise);
+
+	eq(eyes->modifiers[OBJ_MOD_SEARCH], 3);
+	eq(noise->modifiers[OBJ_MOD_STEALTH], -3);
+
+	ok;
+}
+
+/**
+ * Magic resistance grows with the character, and resisting elements costs.
+ *
+ * The two saving-throw mutations, and they are the only things in the
+ * calculation block that are not object properties. Magic resistance is
+ * `15 + level/5`, which is why the data file carries a scale as well as a
+ * flat amount; the elemental resistance power carries a permanent -10, which
+ * is the one continuous effect that belongs to an *activatable* mutation and
+ * would be easy to lose by only reading the continuous ones.
+ */
+static int test_saving_throws_scale_and_cost(void *state) {
+	const struct mutation *res = mutation_by_name("MAGIC_RES");
+	const struct mutation *elem = mutation_by_name("RESIST");
+
+	notnull(res);
+	eq(res->save, 15);
+	eq(res->save_scale, 5);
+
+	notnull(elem);
+	eq(elem->save, -10);
+	eq(elem->save_scale, 0);
+
+	ok;
+}
+
+/**
+ * A mutation reaches the character's state, and leaves when it does.
+ *
+ * The end-to-end check: parsed, applied by `calc_bonuses()`, and gone again.
+ * Asserted as a difference from the same character without it rather than
+ * against an absolute, so the test does not have to know what a Tester's
+ * unmutated speed and armour happen to be.
+ *
+ * Scales rather than iron skin for the armour, deliberately. Iron skin is +25
+ * AC and -3 DEX, and the dexterity costs a point of armour back on its way
+ * through `adj_dex_ta[]` -- so the honest total is +24 and an assertion of +25
+ * fails for a reason that has nothing wrong with it. Scales are +10 and
+ * nothing else, which tests the path without testing arithmetic that belongs
+ * to a different part of the game.
+ */
+static int test_a_mutation_reaches_the_character(void *state) {
+	const struct mutation *fat = mutation_by_name("XTRA_FAT");
+	const struct mutation *scales = mutation_by_name("SCALES");
+	int base_speed, base_ac;
+
+	notnull(fat);
+	notnull(scales);
+	flag_wipe(player->mutations, MUT_SIZE);
+
+	calc_bonuses(player, &player->state, false, true);
+	base_speed = player->state.speed;
+	base_ac = player->state.to_a;
+
+	require(player_gain_mutation(player, fat));
+	require(player_gain_mutation(player, scales));
+	calc_bonuses(player, &player->state, false, true);
+	eq(player->state.speed, base_speed - 2);
+	eq(player->state.to_a, base_ac + 10);
+
+	require(player_lose_mutation(player, fat));
+	require(player_lose_mutation(player, scales));
+	calc_bonuses(player, &player->state, false, true);
+	eq(player->state.speed, base_speed);
+	eq(player->state.to_a, base_ac);
+
+	ok;
+}
+
+/**
+ * Elemental vulnerability is not lost on the way through.
+ *
+ * Vulnerabilities are the half of the element handling that is easy to get
+ * wrong, because `calc_bonuses()` defers them into `vuln[]` and applies them
+ * only once every resistance is in. A vulnerability written straight into
+ * `el_info` would be overwritten by any resistance found later in the same
+ * pass, and the character would simply not be vulnerable -- which looks like
+ * nothing at all.
+ *
+ * All four at once, because this mutation is the only one that has any, and
+ * because a loop that applied the first and stopped would still pass on acid.
+ */
+static int test_a_vulnerability_is_not_lost_on_the_way(void *state) {
+	static const int elems[] = { ELEM_ACID, ELEM_ELEC, ELEM_FIRE, ELEM_COLD };
+	const struct mutation *vuln = mutation_by_name("VULN_ELEM");
+	int base[N_ELEMENTS(elems)];
+	size_t i;
+
+	notnull(vuln);
+	flag_wipe(player->mutations, MUT_SIZE);
+
+	calc_bonuses(player, &player->state, false, true);
+	for (i = 0; i < N_ELEMENTS(elems); i++) {
+		base[i] = player->state.el_info[elems[i]].res_level;
+	}
+
+	require(player_gain_mutation(player, vuln));
+	calc_bonuses(player, &player->state, false, true);
+	for (i = 0; i < N_ELEMENTS(elems); i++) {
+		eq(player->state.el_info[elems[i]].res_level, base[i] - 1);
+	}
+
+	flag_wipe(player->mutations, MUT_SIZE);
+
+	ok;
+}
+
+/**
+ * A body of fire and a touch of lightning are auras, not resistances.
+ *
+ * Worth its own test because the natural assumption is the other way round:
+ * being made of fire sounds like it should resist cold, and it does not.
+ * Zangband gives these two an aura and a point of light and nothing else, and
+ * a "helpful" resistance added here would be a mechanic this game invented.
+ */
+static int test_the_elemental_bodies_are_auras_only(void *state) {
+	const struct mutation *fire = mutation_by_name("FIRE_BODY");
+	const struct mutation *elec = mutation_by_name("ELEC_TOUC");
+	int j;
+
+	notnull(fire);
+	notnull(elec);
+
+	require(of_has(fire->flags, OF_SH_FIRE));
+	require(of_has(elec->flags, OF_SH_ELEC));
+
+	eq(fire->modifiers[OBJ_MOD_LIGHT], 1);
+
+	for (j = 0; j < ELEM_MAX; j++) {
+		eq(fire->el_info[j], 0);
+		eq(elec->el_info[j], 0);
+	}
+
+	ok;
+}
+
+/**
+ * Two mutations do nothing, and that is the correct answer.
+ *
+ * A silly voice and an illusory normal appearance moved charisma and nothing
+ * else, and 4.2 removed charisma in 4.2.0. They are still gained, still
+ * described, still saved, and have no effect -- which is worth pinning,
+ * because "this mutation does nothing" is indistinguishable from "the
+ * converter dropped this mutation's effects" unless somebody wrote down which
+ * of the two it was.
+ */
+static int test_the_two_charisma_mutations_are_inert(void *state) {
+	static const char *const inert[] = { "SILLY_VOI", "ILL_NORM" };
+	size_t i;
+	int j;
+
+	for (i = 0; i < N_ELEMENTS(inert); i++) {
+		const struct mutation *m = mutation_by_name(inert[i]);
+
+		notnull(m);
+		eq(m->armour, 0);
+		eq(m->save, 0);
+		require(of_is_empty(m->flags));
+
+		for (j = 0; j < OBJ_MOD_MAX; j++) eq(m->modifiers[j], 0);
+		for (j = 0; j < ELEM_MAX; j++) eq(m->el_info[j], 0);
+	}
+
+	ok;
+}
+
 const char *suite_name = "player/mutation";
 struct test tests[] = {
 	{ "all-ninety-six-are-here", test_all_ninety_six_are_here },
@@ -296,5 +528,18 @@ struct test tests[] = {
 	{ "a-beastman-is-born-mutated", test_a_beastman_is_born_mutated },
 	{ "an-unknown-mutation-is-survivable",
 	  test_an_unknown_mutation_is_survivable },
+	{ "the-source-is-richer-than-the-spoiler",
+	  test_the_source_is_richer_than_the_spoiler },
+	{ "the-searching-bonus-kept-its-size",
+	  test_the_searching_bonus_kept_its_size },
+	{ "saving-throws-scale-and-cost", test_saving_throws_scale_and_cost },
+	{ "a-mutation-reaches-the-character",
+	  test_a_mutation_reaches_the_character },
+	{ "a-vulnerability-is-not-lost-on-the-way",
+	  test_a_vulnerability_is_not_lost_on_the_way },
+	{ "the-elemental-bodies-are-auras-only",
+	  test_the_elemental_bodies_are_auras_only },
+	{ "the-two-charisma-mutations-are-inert",
+	  test_the_two_charisma_mutations_are_inert },
 	{ NULL, NULL }
 };

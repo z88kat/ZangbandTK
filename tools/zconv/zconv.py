@@ -1637,6 +1637,145 @@ def _mutation_weights() -> tuple[dict[int, int], dict[int, str]]:
     return weights, gates
 
 
+#: Zangband's player flags as 4.2's object properties.
+#:
+#: Most land one-for-one. `CANT_EAT` and `MUTATE` are behaviours rather than
+#: properties -- one stops the character eating ordinary food, the other makes
+#: the Courts take an interest -- and are carried by the code that runs them
+#: rather than as a flag. Charisma and its sustain go nowhere: 4.2 removed the
+#: stat in 4.2.0.
+_MUT_FLAG = {
+    "RES_FEAR": "PROT_FEAR", "RES_CONF": "PROT_CONF",
+    "HOLD_LIFE": "HOLD_LIFE", "SEE_INVIS": "SEE_INVIS",
+    "SH_ELEC": "SH_ELEC", "SH_FIRE": "SH_FIRE",
+    "FEATHER": "FEATHER", "REGEN": "REGEN",
+    "TELEPATHY": "TELEPATHY", "FREE_ACT": "FREE_ACT",
+    "PATRON": "PATRON",
+}
+
+#: And the ones 4.2 keeps as a value rather than a flag. A vulnerability is a
+#: negative resistance level.
+_MUT_VALUE = {
+    "RES_DARK": ("RES_DARK", 1), "LITE": ("LIGHT", 1),
+    "HURT_ACID": ("RES_ACID", -1), "HURT_ELEC": ("RES_ELEC", -1),
+    "HURT_FIRE": ("RES_FIRE", -1), "HURT_COLD": ("RES_COLD", -1),
+}
+
+#: Zangband's skills as 4.2's modifiers, where 4.2 kept one.
+#:
+#: `SKILL_FOS` is frequency-of-search, which 4.2 dropped when searching became
+#: automatic; `SKILL_SNS` is the searching skill proper. A mutation that moves
+#: both gets the one that survived.
+#: Zangband's skills as 4.2's modifiers, where 4.2 kept one.
+#:
+#: `SKILL_FOS` is frequency-of-search, which 4.2 dropped when searching became
+#: automatic; `SKILL_SNS` is the searching skill proper. A mutation that moves
+#: both gets the one that survived.
+#:
+#: The scales are the same, which is worth having checked rather than assumed:
+#: of the nineteen races both games share, stealth is identical for seventeen
+#: and the searching skill for twelve, and the races that differ are ones 4.2
+#: retuned for itself. But `calc_bonuses()` multiplies `OBJ_MOD_SEARCH` by five
+#: on its way into the skill and leaves `OBJ_MOD_STEALTH` alone, so a searching
+#: bonus has to be divided by five to survive the trip and a stealth one does
+#: not. Taken literally, extra eyes would have been +75 rather than +15.
+_MUT_SKILL = {"SNS": ("SEARCH", 5), "STL": ("STEALTH", 1)}
+
+_MUT_CALC = re.compile(
+    r"if \(p_ptr->muta[123] & MUT[123]_([A-Z0-9_]+)\)\s*\{(.*?)\n\t\}", re.S)
+_MUT_FLAGS_BLOCK = re.compile(
+    r"if \(p_ptr->muta[123] & MUT[123]_([A-Z0-9_]+)\)\s*\{(.*?)\n\t\t\}", re.S)
+
+
+def _mutation_effects() -> tuple[dict, dict]:
+    """What each continuous mutation actually does.
+
+    In two places, and neither of them is the documentation. The stat, skill,
+    armour and speed changes are a run of `if` blocks in
+    [mutation.c:1877](../archive/zangband/src/mutation.c#L1877); the flags are
+    a second run in `player_flags()`
+    ([files.c:1269](../archive/zangband/src/files.c#L1269)), which is the real
+    accumulator and not a display path -- whatever the commented-out
+    `SET_FLAG` lines beside the stat changes might suggest.
+
+    The spoiler gives only the headline of each, and the difference matters in
+    both directions. It calls hyper-strength "+4 STR" where the source also
+    takes an intelligence and a wisdom; it calls a moronic mind "-4 INT/WIS"
+    and never mentions that a moron cannot be frightened or confused. Building
+    from it would have made every bad mutation worse than Zangband's and every
+    good one better.
+    """
+    root = ZANGBAND.parent.parent / "src"
+
+    mutc = (root / "mutation.c").read_text(encoding="utf-8", errors="replace")
+    # `mutation_effect()` and nothing else: the same flag names appear in the
+    # gain and lose paths higher up the file, at a different indentation, and
+    # anchoring on one of them picks up a message rather than a modifier.
+    start = mutc.index("void mutation_effect(void)")
+    calc = mutc[start:mutc.index(chr(10) + "}" + chr(10), start)]
+
+    values: dict[str, list[str]] = {}
+    for block in _MUT_CALC.finditer(calc):
+        code, body = block.group(1), block.group(2)
+        out: list[str] = []
+
+        for stat, sign, amount in re.findall(
+                r"stat\[A_([A-Z]+)\]\.add ([-+])= (\d+)", body):
+            if stat == "CHR":
+                continue
+            out.append("%s[%s%s]" % (stat, "-" if sign == "-" else "", amount))
+        for sign, amount in re.findall(r"pspeed ([-+])= (\d+)", body):
+            out.append("SPEED[%s%s]" % ("-" if sign == "-" else "", amount))
+        for skill, sign, amount in re.findall(
+                r"skills\[SKILL_([A-Z]+)\] ([-+])= \(?(\d+)", body):
+            if skill not in _MUT_SKILL:
+                continue
+            label, scale = _MUT_SKILL[skill]
+            assert int(amount) % scale == 0, (code, skill, amount)
+            out.append("%s[%s%d]" % (label, "-" if sign == "-" else "",
+                                     int(amount) // scale))
+
+        # Saving throws are a skill in both games but not an object modifier in
+        # 4.2, so they get their own field rather than a value. Magic
+        # resistance scales with level, which is why the field is a pair.
+        save = re.search(r"skills\[SKILL_SAV\] ([-+])= \(?(\d+)", body)
+        if save:
+            out.append("@SAVE:%s%s"
+                       % ("-" if save.group(1) == "-" else "", save.group(2)))
+        scaled = re.search(r"skills\[SKILL_SAV\].*p_ptr->lev / (\d+)", body)
+        if scaled:
+            out.append("@SAVE_SCALE:%s" % scaled.group(1))
+        for sign, amount in re.findall(r"see_infra ([-+])= (\d+)", body):
+            out.append("INFRA[%s%s]" % ("-" if sign == "-" else "", amount))
+
+        armour = re.search(r"to_a ([-+])= (\d+)", body)
+        if armour:
+            # Armour class is `to_a` rather than a modifier, so it gets its own
+            # line in the data file. Carried alongside the values.
+            out.append("@ARMOUR:%s%s"
+                       % ("-" if armour.group(1) == "-" else "",
+                          armour.group(2)))
+        if out:
+            values[code] = out
+
+    files = (root / "files.c").read_text(encoding="utf-8", errors="replace")
+    start = files.index("void player_flags(object_flags *of_ptr)")
+    fbody = files[start:files.index(chr(10) + "}" + chr(10), start)]
+
+    flags: dict[str, list[str]] = {}
+    for block in _MUT_FLAGS_BLOCK.finditer(fbody):
+        code = block.group(1)
+        for name in re.findall(r"SET_FLAG\(of_ptr, TR_([A-Z0-9_]+)\)",
+                               block.group(2)):
+            if name in _MUT_FLAG:
+                flags.setdefault(code, []).append(_MUT_FLAG[name])
+            elif name in _MUT_VALUE:
+                label, level = _MUT_VALUE[name]
+                values.setdefault(code, []).append("%s[%d]" % (label, level))
+
+    return values, flags
+
+
 def cmd_mutations(args) -> int:
     """Convert Zangband's mutation table to 4.2 data (PLR-13 to PLR-17)."""
     text = (ZANGBAND.parent.parent / "src" / "tables.c").read_text(
@@ -1645,6 +1784,7 @@ def cmd_mutations(args) -> int:
     found = _ENTRY.findall(text[start:text.index("\n};", start)])
 
     weights, gates = _mutation_weights()
+    effects, gained_flags = _mutation_effects()
 
     report = Report(
         title="zconv — mutation conversion review",
@@ -1720,6 +1860,19 @@ def cmd_mutations(args) -> int:
                 gates[index], "PLR-13", rules.CONVERTED,
                 "gated inside the selection switch rather than beside its "
                 "cases, and undocumented in the spoiler")
+
+        if code in effects:
+            vals = [v for v in effects[code] if not v.startswith("@ARMOUR:")]
+            for tag, field in (("@ARMOUR:", "armour"), ("@SAVE:", "save"),
+                               ("@SAVE_SCALE:", "save-scale")):
+                got = [v for v in effects[code] if v.startswith(tag)]
+                if got:
+                    entry.set(field, int(got[0].split(":")[1]))
+            vals = [v for v in vals if not v.startswith("@")]
+            if vals:
+                entry.set("values", " | ".join(vals))
+        if code in gained_flags:
+            entry.set("flags", " | ".join(gained_flags[code]))
 
         entry.set("desc", desc)
         entry.set("gain", gain)

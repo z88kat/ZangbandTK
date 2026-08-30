@@ -19,6 +19,7 @@
 #ifndef PLAYER_MUTATION_H
 #define PLAYER_MUTATION_H
 
+#include "object.h"
 #include "player.h"
 
 /**
@@ -65,6 +66,14 @@ struct mutation {
 
 	int gate;			/**< A prerequisite, or none */
 	int gate_value;
+
+	/** What a continuous mutation is simply true of (PLR-15). */
+	int modifiers[OBJ_MOD_MAX];
+	int armour;		/**< Armour class, which is not a modifier in 4.2 */
+	int save;		/**< Saving throw, likewise */
+	int save_scale;	/**< ...plus level over this, if set */
+	int16_t el_info[ELEM_MAX];
+	bitflag flags[OF_SIZE];
 };
 
 extern struct mutation *mutations;
@@ -81,5 +90,7 @@ bool player_lose_random_mutation(struct player *p);
 const struct mutation *mutation_roll(const struct player *p);
 bool player_mutate(struct player *p);
 int mutation_regen_penalty(const struct player *p);
+void player_apply_mutations(struct player *p, struct player_state *state,
+							bool vuln[ELEM_MAX]);
 
 #endif /* !PLAYER_MUTATION_H */
