@@ -135,4 +135,13 @@ RF(SHAPECHANGER,RFT_DISP,		"")
  * stop existing.  RFT_NOTE because the lore says it in prose.
  */
 RF(QUANTUM,	RFT_NOTE,		"")
+/*
+ * ZangbandTK (CNT-04): how a creature crosses water and fire it is not immune
+ * to.  Angband gates damaging terrain on one resistance flag named by the
+ * terrain itself, which answers "can it survive this" but not "can it stay out
+ * of it" -- a raven does not resist deep water, it flies over it.  Appended,
+ * as ever: race flags are written to the savefile by position.
+ */
+RF(CAN_FLY,	RFT_NOTE,		"")
+RF(CAN_SWIM,	RFT_NOTE,		"")
 /* end flags */

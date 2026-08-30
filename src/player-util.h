@@ -131,6 +131,8 @@ bool player_use_power(struct player *p, struct player_power *power, int dir);
 bool player_power_aims(struct player *p, const struct player_power *power);
 int patron_roll_slot(const struct player *p);
 void patron_bestow_reward(struct player *p);
+struct patron *patron_random(void);
+bool patron_owes_reward(const struct player *p);
 void patron_choose(struct player *p);
 void player_night_dream(struct player *p);
 void player_dream_chances(int law, int *bright, int *dark);

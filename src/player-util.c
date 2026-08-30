@@ -2156,6 +2156,19 @@ int patron_roll_slot(const struct player *p)
 	else if (!(p->lev % 14)) nasty = 12;
 
 	/*
+	 * A Lord that was never yours is half as likely to be cruel
+	 * ([xtra2.c:3114](../archive/zangband/src/xtra2.c#L3114)).
+	 *
+	 * Read the direction carefully -- it is the opposite of what the fiction
+	 * suggests.  Zangband writes `nasty_chance *= 2` for a character without
+	 * the patron flag, and `nasty_chance` is the denominator of a one-in-N
+	 * roll, so doubling it *halves* the cruelty.  A Lord with no claim on you
+	 * is glancing over, not keeping accounts: the borrowed reward is a smaller
+	 * thing in both directions.
+	 */
+	if (!p->patron) nasty *= 2;
+
+	/*
 	 * A generous roll cannot reach the bottom quarter of the ladder at all,
 	 * which is where everything genuinely unpleasant lives; a nasty one can
 	 * land anywhere.
@@ -2167,18 +2180,19 @@ int patron_roll_slot(const struct player *p)
 
 void patron_bestow_reward(struct player *p)
 {
+	const struct patron *lord = p->patron ? p->patron : patron_random();
 	const struct patron_reward *reward;
 	bool ident = false;
 	int slot;
 
-	if (!p->patron) return;
+	if (!lord) return;
 
 	slot = patron_roll_slot(p);
 
-	reward = p->patron->ladder[slot];
+	reward = lord->ladder[slot];
 	if (!reward) return;
 
-	msg(reward->message, p->patron->name);
+	msg(reward->message, lord->name);
 
 	if (reward->effect)
 		effect_do(reward->effect, source_player(), NULL, &ident, true, 0,
@@ -2196,20 +2210,53 @@ void patron_bestow_reward(struct player *p)
  */
 void patron_choose(struct player *p)
 {
-	struct patron *patron;
-	int count = 0, pick;
-
 	p->patron = NULL;
 
 	if (!pf_has(p->class->pflags, PF_CHAOS_PATRON)) return;
 
+	p->patron = patron_random();
+}
+
+/**
+ * One of the Lords of the Courts, chosen at random.
+ *
+ * Used both to swear a Chaos-Warrior at birth and to supply a Lord for someone
+ * who has attracted attention without being sworn to anyone -- and in the
+ * second case it is rolled afresh each time, deliberately. Zangband picked a
+ * random patron on the spot for that character
+ * ([xtra2.c:3117](../archive/zangband/src/xtra2.c#L3117)); the point of the
+ * borrowed Lord is that it is not yours and not the same one twice.
+ */
+struct patron *patron_random(void)
+{
+	struct patron *patron;
+	int count = 0, pick;
+
 	for (patron = patrons; patron; patron = patron->next) count++;
-	if (!count) return;
+	if (!count) return NULL;
 
 	pick = randint0(count);
 	for (patron = patrons; patron && pick; patron = patron->next) pick--;
 
-	p->patron = patron;
+	return patron;
+}
+
+/**
+ * Whether anything is watching this character closely enough to reward them
+ * for reaching a new level (PLR-05, CNT-07).
+ *
+ * Three ways in, and Zangband's own condition is the first two together
+ * ([xtra2.c:102](../archive/zangband/src/xtra2.c#L102)): sworn to a Lord, or
+ * carrying something that has drawn one's eye, or -- one level in seven --
+ * simply unlucky enough to be noticed. The last of those is the fifth thing
+ * `STRANGE_LUCK` does, and the only one that is not about critical hits.
+ */
+bool patron_owes_reward(const struct player *p)
+{
+	if (p->patron) return true;
+	if (of_has(p->state.flags, OF_PATRON)) return true;
+
+	return of_has(p->state.flags, OF_STRANGE_LUCK) && one_in_(7);
 }
 
 /**

@@ -61,18 +61,13 @@ combat:d6:d6:0
 type:gloves
 flags:GHOUL_TOUCH
 
-name:of the Wild
-info:0:5
-alloc:25:0 to 127
-type:boots
-
 name:(Chaotic)
 info:0:28
 alloc:17:0 to 127
 type:sword
 type:polearm
 type:hafted
-flags:CHAOTIC | IGNORE_ELEC | IGNORE_ACID | IGNORE_FIRE | RAND_HI_RES
+flags:CHAOTIC | PATRON | IGNORE_ELEC | IGNORE_ACID | IGNORE_FIRE | RAND_HI_RES
 values:RES_CHAOS[1]
 
 name:of Sharpness

@@ -188,9 +188,23 @@ static bool monster_can_move(struct monster *mon, struct loc grid)
  */
 static bool monster_hates_grid(struct monster *mon, struct loc grid)
 {
-	/* Only some creatures can handle damaging terrain */
+	/*
+	 * Only some creatures can handle damaging terrain.
+	 *
+	 * Angband names one resistance flag per terrain and asks whether the
+	 * monster has it, which answers "can it survive this" and not "can it
+	 * keep out of it".  Zangband asked the second question too
+	 * ([monster2.c:498](../archive/zangband/src/monster2.c#L498)): a thing
+	 * that swims crosses deep water without being a fish, and a thing that
+	 * flies crosses anything without touching it at all.  117 of the imported
+	 * monsters fly and 91 swim, and without this a raven will not cross a
+	 * river.
+	 */
 	if (square_isdamaging(cave, grid) &&
-		!rf_has(mon->race->flags, square_feat(cave, grid)->resist_flag)) {
+		!rf_has(mon->race->flags, square_feat(cave, grid)->resist_flag) &&
+		!rf_has(mon->race->flags, RF_CAN_FLY) &&
+		!(square_iswater(cave, grid)
+		  && rf_has(mon->race->flags, RF_CAN_SWIM))) {
 		return true;
 	}
 
@@ -201,7 +215,8 @@ static bool monster_hates_grid(struct monster *mon, struct loc grid)
 	 * hurts, and dry land does not hurt a fish, it simply is not where a fish
 	 * belongs.
 	 */
-	if (monster_is_aquatic(mon->race) && !square_iswater(cave, grid)) {
+	if (monster_is_aquatic(mon->race) && !square_iswater(cave, grid)
+			&& !rf_has(mon->race->flags, RF_CAN_FLY)) {
 		return true;
 	}
 

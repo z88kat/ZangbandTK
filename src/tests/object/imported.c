@@ -23,6 +23,7 @@
 #include "player-birth.h"
 #include "player-calcs.h"
 #include "player-luck.h"
+#include "player-util.h"
 #include "test-utils.h"
 
 int setup_tests(void **state) {
@@ -488,6 +489,100 @@ static int test_the_deep_imports_reach_the_bottom(void *state) {
 	ok;
 }
 
+/**
+ * A Lord takes an interest in three different ways.
+ *
+ * Zangband's condition for a level reward is `TR_PATRON || (one_in_(7) &&
+ * TR_STRANGE_LUCK)` ([xtra2.c:102](../archive/zangband/src/xtra2.c#L102)), and
+ * the second half of it was missed when `STRANGE_LUCK` was built: the Ring of
+ * Fate has five effects, four of them about critical hits, and this is the
+ * fifth. Reading the flag as a combat property alone left a quarter of the
+ * patron system unreachable by anyone who is not a Chaos-Warrior.
+ *
+ * The three ways in are asserted separately, because they are three different
+ * mistakes: forgetting the item flag, forgetting the luck branch, and breaking
+ * the class that already worked.
+ */
+static int test_a_lord_notices_three_different_ways(void *state) {
+	const struct patron *born_to = player->patron;
+	int i, noticed = 0;
+
+	of_off(player->state.flags, OF_PATRON);
+	of_off(player->state.flags, OF_STRANGE_LUCK);
+
+	/* Sworn to one: always, and this is what already worked. */
+	player->patron = patron_random();
+	notnull(player->patron);
+	require(patron_owes_reward(player));
+
+	/* Sworn to nobody and carrying nothing: never. */
+	player->patron = NULL;
+	require(!patron_owes_reward(player));
+
+	/* Carrying something that draws an eye: always. */
+	of_on(player->state.flags, OF_PATRON);
+	require(patron_owes_reward(player));
+	of_off(player->state.flags, OF_PATRON);
+
+	/* Merely unlucky: about one level in seven, so sample it. */
+	of_on(player->state.flags, OF_STRANGE_LUCK);
+	for (i = 0; i < 2000; i++) {
+		if (patron_owes_reward(player)) noticed++;
+	}
+	of_off(player->state.flags, OF_STRANGE_LUCK);
+	require(noticed > 100);
+	require(noticed < 600);
+
+	player->patron = born_to;
+
+	ok;
+}
+
+/**
+ * A Lord that was never yours is kinder.
+ *
+ * The other half of the same code, and the direction is a trap. Zangband writes
+ * `nasty_chance *= 2` for a character without the patron flag
+ * ([xtra2.c:3114](../archive/zangband/src/xtra2.c#L3114)), and `nasty_chance`
+ * is the denominator of a one-in-N roll — so doubling it *halves* how often the
+ * roll reaches the bottom quarter of the ladder, where everything genuinely
+ * unpleasant lives. The first version of this test asserted the opposite,
+ * because "a Lord with no reason to be kind" is the reading the fiction
+ * invites and the code says otherwise.
+ */
+static int test_a_borrowed_lord_is_kinder(void *state) {
+	const struct patron *born_to = player->patron;
+	int i, sworn_low = 0, borrowed_low = 0;
+	int floor_slot = PATRON_LADDER / 4;
+
+	player->lev = 20;
+
+	player->patron = patron_random();
+	notnull(player->patron);
+	for (i = 0; i < 4000; i++) {
+		if (patron_roll_slot(player) < floor_slot) sworn_low++;
+	}
+
+	player->patron = NULL;
+	for (i = 0; i < 4000; i++) {
+		if (patron_roll_slot(player) < floor_slot) borrowed_low++;
+	}
+
+	player->patron = born_to;
+
+	/*
+	 * A margin, not merely "fewer". The doubling takes the nasty roll from one
+	 * in six to one in twelve, so the sworn character should reach the bottom
+	 * of the ladder about twice as often as the borrower. Asking only for
+	 * "fewer" would make the test a coin flip if the doubling were removed,
+	 * since both sides would then sample the same distribution.
+	 */
+	require(borrowed_low > 0);
+	require(sworn_low * 2 > borrowed_low * 3);
+
+	ok;
+}
+
 const char *suite_name = "object/imported";
 struct test tests[] = {
 	{ "the-imported-kinds-are-there", test_the_imported_kinds_are_there },
@@ -511,5 +606,8 @@ struct test tests[] = {
 	  test_every_kind_can_actually_be_generated },
 	{ "the-deep-imports-reach-the-bottom",
 	  test_the_deep_imports_reach_the_bottom },
+	{ "a-lord-notices-three-different-ways",
+	  test_a_lord_notices_three_different_ways },
+	{ "a-borrowed-lord-is-kinder", test_a_borrowed_lord_is_kinder },
 	{ NULL, NULL }
 };

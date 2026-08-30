@@ -75,4 +75,6 @@ OF(EASY_ENCHANT, "EasEn")
 OF(NO_MAGIC, "NoMag")
 OF(STRANGE_LUCK, "WrdLk")
 OF(PSI_CRIT, "PsiCr")
+/* ZangbandTK (CNT-07): a Lord of the Courts takes an interest.  Appended. */
+OF(PATRON, "Patrn")
 OF(MAX, "")

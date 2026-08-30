@@ -45,8 +45,8 @@ value are unchanged.
 New ego types
 -------------
 
-Eighteen, including ``(Vampiric)``, ``(Chaotic)``, ``of Sharpness``,
-``(Ghoul Touch)``, ``of Immolation``, ``of the Wild``, and the Amber-flavoured
+Seventeen, including ``(Vampiric)``, ``(Chaotic)``, ``of Sharpness``,
+``(Ghoul Touch)``, ``of Immolation``, and the Amber-flavoured
 ``(Trump Weapon)`` and ``(Pattern Weapon)``.
 
 Ego items are where most players will actually meet Zangband's character.
@@ -176,7 +176,11 @@ and putting a weapon in them turns the property off entirely.
 **Easily enchanted.** Takes twice as many enchantment attempts, and an artifact
 so made does not get its usual chance to resist being enchanted at all.
 
-**Weird luck.** The Ring of Fate's property, described above. Both edges of it.
+**Weird luck.** The Ring of Fate's property, described above. Both edges of it —
+and a third thing besides: once in about seven levels gained, something in the
+Courts of Chaos notices you and hands down a reward. It will not be a Lord of
+your own, and one that was never yours is gentler than one that is — a passing
+interest rather than a claim.
 
 **Magic-powered criticals.** A weapon that spends your mana to land critical
 hits, and to make the ones it lands worse — one to three points each time. The
@@ -187,6 +191,15 @@ makes it a warrior's weapon only in the hands of a warrior who casts.
 cost: the spell simply does not happen. Studying and browsing still work, so
 you can keep learning spells you are unable to use.
 
+**A chaos patron.** Carried by the ``(Chaotic)`` ego. A Lord of the Courts
+takes an interest in whoever holds it, and every level you gain from then on
+brings a reward — the same ladder a Chaos-Warrior climbs, from the genuinely
+generous down to the actively hostile. Wearing one is not the same as being
+sworn to one, and the difference runs the way you would not guess: a Lord with
+no claim on you is *less* likely to reach for the bottom of the ladder, not
+more. It is glancing over rather than keeping accounts, and the borrowed reward
+is a smaller thing in both directions.
+
 Not yet implemented
 -------------------
 
@@ -195,6 +208,18 @@ Angband has no form of player wall-movement to hang it on — not a spell, not a
 temporary state, nothing — so carrying it would mean building wall-phasing for
 the player rather than reading a flag. Items with it work in every other
 respect.
+
+Two more object properties are recorded and inactive, and both are the same
+kind of case: each cancels a penalty this game does not impose. ``WILD_SHOT``
+ignores the cover a monster gets from standing in trees, and Angband has no
+terrain term in its combat at all. ``WILD_WALK`` removes the extra effort of
+climbing a mountain and the poison of wading a swamp — but here a mountainside
+is a wall rather than slow ground, and there is no swamp terrain. Building
+either flag alone would do nothing; building what they cancel is a change to
+how the wilderness plays rather than a conversion of a flag. One ego,
+``of the Wild``, waits with them: every property it had was ``WILD_WALK``, so
+importing it would have put a pair of boots in the game that granted nothing at
+all.
 
 Nineteen of Zangband's object kinds are likewise recorded but not imported,
 each for want of a mechanism rather than out of preference:

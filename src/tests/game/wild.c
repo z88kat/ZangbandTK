@@ -4520,9 +4520,21 @@ static int test_only_a_chaos_warrior_is_owned(void *state) {
 static int test_thirteen_is_an_unlucky_level(void *state) {
 	const int trials = 4000;
 	const int floor_slot = PATRON_LADDER / 4;
+	const struct patron *keep = player->patron;
 	int lev, low[51];
 
 	memset(low, 0, sizeof(low));
+
+	/*
+	 * Measured on a character sworn to a Lord, and pinned rather than
+	 * inherited.  The roll halves its cruelty for anyone who is *not* sworn
+	 * (CNT-07), so a suite whose player happens not to be a Chaos-Warrior
+	 * samples a different set of rates from the one named above -- which is
+	 * how this test started failing about one run in eight without anything
+	 * here changing.
+	 */
+	player->patron = patron_random();
+	notnull(player->patron);
 
 	for (lev = 1; lev <= 50; lev++) {
 		int i;
@@ -4545,6 +4557,8 @@ static int test_thirteen_is_an_unlucky_level(void *state) {
 	require(low[13] > low[26]);		/* 1/2 beats 1/3   */
 	require(low[26] > low[20]);		/* 1/3 beats 1/6   */
 	require(low[20] > low[28]);		/* 1/6 beats 1/12  */
+
+	player->patron = keep;
 
 	/* And no level is ever entirely safe, or the ladder's floor is dead. */
 	for (lev = 1; lev <= 50; lev++)

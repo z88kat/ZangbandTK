@@ -276,7 +276,7 @@ static void adjust_level(struct player *p, bool verbose)
 		p->max_lev++;
 
 	/* Now that the level is settled, and re-entering here is safe. */
-	if (owed_reward) patron_bestow_reward(p);
+	if (owed_reward && patron_owes_reward(p)) patron_bestow_reward(p);
 
 	p->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
 	p->upkeep->redraw |= (PR_LEV | PR_TITLE | PR_EXP | PR_STATS);

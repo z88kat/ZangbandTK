@@ -1043,6 +1043,14 @@ code:LUCK_10
 power:8
 desc:Improves your saving throw
 
+name:chaos patron
+type:flag
+subtype:misc ability
+id-type:on wield
+code:PATRON
+power:12
+desc:Attracts the attention of a Lord of the Courts of Chaos
+
 name:anti-magic shell
 type:flag
 subtype:bad

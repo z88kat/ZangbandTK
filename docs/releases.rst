@@ -33,6 +33,42 @@ Unreleased
 M2: the rest of Zangband's objects — 30 August 2026
 ---------------------------------------------------
 
+- **3.41.0** — **Three flags that were waiting on nobody, and two that were
+  waiting on more than they said.** ``CAN_FLY`` and ``CAN_SWIM`` reach 117 and
+  91 imported monsters. Angband gates damaging terrain on one resistance flag
+  named by the terrain — deep water asks for ``IM_WATER`` — which answers
+  whether a creature can survive a grid and not whether it can keep out of one.
+  A raven does not resist drowning; it never touches the surface. Until now
+  every bird and every swimmer in the import was stopped by the first river it
+  met, which is invisible from the outside, because a monster that will not
+  cross simply goes somewhere else.
+
+  ``PATRON`` gives a Lord of the Courts an interest in whoever carries it,
+  which the ``(Chaotic)`` ego does. Building it turned up something missing
+  from work already shipped: Zangband's condition for a level reward is
+  ``TR_PATRON || (one_in_(7) && TR_STRANGE_LUCK)``, and the Ring of Fate's
+  fifth effect — the only one that is not about critical hits — had been left
+  out when ``STRANGE_LUCK`` was built two versions ago. It is in now.
+
+  **The cruelty runs the opposite way to the fiction.** Zangband writes
+  ``nasty_chance *= 2`` for a character with no patron of their own, and that
+  is the denominator of a one-in-N roll, so a Lord that was never yours is
+  *half* as likely to reach the bottom of the ladder. This shipped backwards
+  first, and the test written alongside it asserted the backwards version —
+  caught because the wrong direction collapsed two of the four rates in an
+  older test onto each other and made it fail about one run in eight.
+
+  **``WILD_SHOT`` and ``WILD_WALK`` are not built, and the reason they were
+  recorded as unblocked was wrong.** Both cancel a terrain penalty, and this
+  game imposes neither: there is no terrain term anywhere in Angband's combat
+  for ``WILD_SHOT`` to waive, and ``WILD_WALK`` removes the cost of climbing a
+  mountainside that is a wall here rather than slow ground, and the poison of a
+  swamp that is not a terrain type at all. The blocker was never the wilderness
+  arriving. One ego goes with them: ``of the Wild`` had ``WILD_WALK`` and
+  nothing else, so it was reaching the game as boots that granted nothing.
+  The converter now drops any ego left with no property at all, by rule rather
+  than by name, so it returns on its own the day the flag is built.
+
 - **3.40.3** — **Bookkeeping that had drifted far enough to mislead.** The
   requirement coverage table accounted for 91 of the 109 requirements and said
   in a footnote that seven were unassigned. Rebuilt rather than patched, with

@@ -865,6 +865,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     monster/amberite.c
     monster/aura.c
     monster/attack.c
+    monster/crossing.c
     monster/desc.c
     monster/imported.c
     monster/lastflags.c

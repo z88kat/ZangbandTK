@@ -252,3 +252,15 @@ from your hand like any other beast.
 
 She will not fight you, and killing her is possible and is exactly the sort of
 thing the Courts would do.
+
+Things that fly, and things that swim
+-------------------------------------
+
+Deep water stops most creatures, and it is meant to: wading out of reach is one
+of the few ways to break a pursuit in open country. It does not stop everything.
+117 of the imported monsters fly and 91 swim, and those cross the water after
+you — a raven does not resist drowning, it simply never touches the surface.
+
+What flies also crosses lava, which is the same rule seen from the other side.
+And a creature of the water stays in the water unless it can also fly, so the
+sea is a wall for the shark in both directions.

@@ -97,6 +97,9 @@ RES_FEAR = "PROT_FEAR"
 NO_MAGIC = "NO_MAGIC"
 STRANGE_LUCK = "STRANGE_LUCK"
 PSI_CRIT = "PSI_CRIT"
+# A Lord of the Courts takes an interest in whoever wears this, not only in the
+# Chaos-Warrior who was born to one.  See src/player-util.c.
+PATRON = "PATRON"
 
 # ----------------------------------------------------------------- brands
 
@@ -221,8 +224,23 @@ EASY_KNOW = "EASY_KNOW"
 
 
 [defer_ego]
-# All three of these named a blocker that has since shipped, so they are waiting
-# on nothing but somebody picking them up.
-PATRON = { milestone = "M7", requirement = "PLR-05", note = "Behaves differently for a Chaos Warrior, whose patron takes an interest. The class exists as of M7, so this is unblocked." }
-WILD_SHOT = { milestone = "M4", requirement = "WLD-07", note = "Behaviour tied to wilderness terrain. The wilderness exists as of M4, so this is unblocked." }
-WILD_WALK = { milestone = "M4", requirement = "WLD-07", note = "Behaviour tied to wilderness terrain. The wilderness exists as of M4, so this is unblocked." }
+# These two were recorded as unblocked because the wilderness they need shipped
+# in M4. That was the wrong blocker. Each cancels a terrain penalty, and this
+# game has neither penalty to cancel -- so the flag is not waiting on somebody
+# picking it up, it is waiting on a mechanic nobody has scheduled.
+WILD_SHOT = { milestone = "M4", requirement = "WLD-07", note = """Ignores the \
+cover a monster gets from standing in trees: Zangband adds `r_ptr->ac / 5 + 5` \
+to a monster's armour in forest and skips it for a ranger \
+(cmd2.c:2587). 4.2 has no terrain term in its combat at all, and this game's \
+`tree` is passable, sight-blocking and nothing else. Building the flag alone \
+does nothing; building what it cancels changes every fight fought in woodland, \
+which is a design decision rather than a conversion.""" }
+WILD_WALK = { milestone = "M4", requirement = "WLD-07", note = """Two terrain \
+penalties, neither of which exists here. It removes the +10 energy that \
+walking onto mountain, obelisk or boulder costs (cmd1.c:2388) -- but this \
+game's `mountainside` is ROCK | WALL, impassable rather than slow, so there is \
+no cost to remove. And it prevents swamp poisoning (dungeon.c:1136), where \
+this game has no swamp terrain: `WILD_TERRAIN_SWAMP` is a biome the road \
+router avoids, and the grids it lays are mud and grass. `terrain.txt` has no \
+movement-cost or damage-over-terrain vocabulary for either half to attach \
+to.""" }

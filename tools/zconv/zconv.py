@@ -1003,6 +1003,29 @@ def cmd_egos(args) -> int:
             entry.set(field_name, value)
             item.overridden.append(field_name)
 
+        # An ego that grants nothing is not an ego.
+        #
+        # Every property Zangband gave it may have been dropped along the way,
+        # and what reaches the game is then a name and a price: `of the Wild`
+        # arrived as a pair of boots with no flag, no value, no slay and no
+        # combat bonus, because the one flag it carries needs a terrain penalty
+        # this game has not got. That is worse than leaving it out, because it
+        # still generates and still reads like a find.
+        #
+        # A rule rather than a list, so that the day WILD_WALK is built the ego
+        # comes back on its own.
+        if not any(k in ("flags", "values", "combat", "brand", "slay", "curse",
+                         "act", "min-values")
+                   for k, _ in entry.pairs):
+            report.deferred.append((
+                rec.name, "a property to grant",
+                "Every property this ego carries was dropped: %s. What is left "
+                "is a name and an allocation, which would generate and be worth "
+                "nothing. It returns by itself when any of them is built."
+                % (", ".join(sorted(f for f, _, _ in item.flag_dispositions))
+                   or "it had none to begin with")))
+            continue
+
         report.items.append(item)
         entries.append(entry)
 
