@@ -415,6 +415,79 @@ static int test_no_two_artifacts_share_a_name(void *state) {
 	ok;
 }
 
+/**
+ * Every object kind has a row of the allocation table it can appear in.
+ *
+ * `alloc_init_objects()` builds one row per depth from 0 to
+ * `obj-make:max-depth`, and `get_obj_num()` clamps every request into that
+ * range (obj-make.c:1127). A kind whose whole allocation band lies below the
+ * last row is never reachable: there is no level at which `lev >= alloc_min`
+ * can be true. Nothing reports it, because the kind parses and the game runs.
+ *
+ * Zangband's dungeon went deeper than 4.2's table does, so its own depths do
+ * not survive the crossing unaltered. Its Potion of Invulnerability sits at
+ * 105 and arrived as `alloc:11:105 to 105`, which is five rows past the end of
+ * a hundred-row table -- a potion in the data that no game could ever produce.
+ *
+ * Asserted for the whole object list rather than for that one potion, and
+ * against the game's own constant rather than a literal 100, so that moving
+ * the constant cannot quietly strand a kind on either side.
+ */
+static int test_every_kind_can_actually_be_generated(void *state) {
+	int i, stranded = 0;
+
+	for (i = 0; i < z_info->k_max; i++) {
+		struct object_kind *kind = &k_info[i];
+
+		if (!kind->name) continue;
+		/* Artifact bases and their dummies are never rolled for. */
+		if (kf_has(kind->kind_flags, KF_INSTA_ART)) continue;
+		if (!kind->alloc_prob) continue;
+
+		if (kind->alloc_min > z_info->max_obj_depth) stranded++;
+		if (kind->alloc_min > kind->alloc_max) stranded++;
+	}
+
+	eq(stranded, 0);
+
+	ok;
+}
+
+/**
+ * And the deep imports are reachable at the bottom of the dungeon.
+ *
+ * The other half of the same fix, and the half that would still be wrong if
+ * the clamp had been written as "drop anything too deep" instead. All three of
+ * Zangband's below-100 objects should be findable in the deep game, not
+ * discarded from it: the table's last row is the row every deeper level is
+ * clamped into, so an object living there is available for the whole of the
+ * bottom of the dungeon rather than on one level of it.
+ */
+static int test_the_deep_imports_reach_the_bottom(void *state) {
+	static const char *deep[] = { "Invulnerability", "Lordly Protection",
+								  "& Diamond Edge~" };
+	size_t n;
+
+	for (n = 0; n < N_ELEMENTS(deep); n++) {
+		struct object_kind *kind = NULL;
+		int i;
+
+		for (i = 0; i < z_info->k_max; i++) {
+			if (k_info[i].name && !my_stricmp(k_info[i].name, deep[n])) {
+				kind = &k_info[i];
+				break;
+			}
+		}
+
+		notnull(kind);
+		require(kind->alloc_prob > 0);
+		require(kind->alloc_min <= z_info->max_obj_depth);
+		require(kind->alloc_max >= z_info->max_obj_depth);
+	}
+
+	ok;
+}
+
 const char *suite_name = "object/imported";
 struct test tests[] = {
 	{ "the-imported-kinds-are-there", test_the_imported_kinds_are_there },
@@ -434,5 +507,9 @@ struct test tests[] = {
 	{ "no-ego-duplicates-an-angband-ego",
 	  test_no_ego_duplicates_an_angband_ego },
 	{ "no-two-artifacts-share-a-name", test_no_two_artifacts_share_a_name },
+	{ "every-kind-can-actually-be-generated",
+	  test_every_kind_can_actually_be_generated },
+	{ "the-deep-imports-reach-the-bottom",
+	  test_the_deep_imports_reach_the_bottom },
 	{ NULL, NULL }
 };

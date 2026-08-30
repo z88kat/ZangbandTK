@@ -33,6 +33,29 @@ Unreleased
 M2: the rest of Zangband's objects — 30 August 2026
 ---------------------------------------------------
 
+- **3.40.2** — **A potion that no game could ever have produced.** Angband
+  builds one row of its object allocation table per dungeon level, from zero to
+  ``obj-make:max-depth``, and clamps every request into that range. Zangband's
+  dungeon went deeper than the table does, so its Potion of Invulnerability
+  arrived at ``alloc:11:105 to 105`` — five rows past the end of a hundred-row
+  table, present in the data and unreachable in play. Two more objects had
+  ranges that ran past the end without being stranded by it. The converter now
+  clamps both ends of every allocation band to the table's last row, reading
+  the ceiling from the game's own ``constants.txt`` rather than carrying a copy
+  of the number.
+
+  **The deeper half of this was investigated and not done.** The dungeons run
+  to 127 while the object table stops at 100, so the bottom 27 levels generate
+  their loot from the depth-100 row — which reads like a bug and is not one.
+  Widening the table means every object whose range ends at 100 stops being
+  generated below it, and that is 343 of the 434 kinds that have an allocation
+  line: **nothing at all would be generated at depth 127**. "To 100" is
+  Angband's way of writing "to the bottom" throughout its own data, and the
+  clamp is what implements it. The flat deep end is not the table being too
+  short; it is that no object in either game is authored below depth 80.
+  Changing it means authoring deeper objects, which is content rather than a
+  fix.
+
 - **3.40.1** — **Three imports that were Angband's own content under new
   names.** CNT-11 found that comparing object kinds by name let Zangband's
   renames through as if they were new; the same scrutiny applied to the

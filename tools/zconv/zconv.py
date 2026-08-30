@@ -92,6 +92,24 @@ def load_bases() -> dict[str, str]:
     return bases
 
 
+def load_obj_max_depth() -> int:
+    """The deepest row of 4.2's object allocation table, from the game's data.
+
+    `obj-make:max-depth` is the height of the table `alloc_init_objects()`
+    builds, and `get_obj_num()` clamps every request to it (obj-make.c:1127).
+    An object whose allocation range lies wholly above it can never be chosen
+    -- there is no row of the table it appears in -- and nothing reports that,
+    because the object parses and the game starts.
+
+    Read here rather than written down so the converter cannot drift from the
+    game it is generating for.
+    """
+    text = (GAMEDATA / "constants.txt").read_text(encoding="utf-8",
+                                                  errors="replace")
+    match = re.search(r"^obj-make:max-depth:(\d+)", text, re.M)
+    return int(match.group(1)) if match else 100
+
+
 def load_renames() -> dict[str, dict]:
     """Records Zangband renamed rather than added, per file.
 
@@ -1102,6 +1120,7 @@ def cmd_objects(args) -> int:
     with (here / "objmap.toml").open("rb") as fh:
         objmap = tomllib.load(fh)
 
+    ceiling = load_obj_max_depth()
     types = {int(k): v for k, v in objmap.get("type", {}).items()}
     renames = objmap.get("rename", {})
     rejects = objmap.get("reject", {})
@@ -1281,12 +1300,22 @@ def cmd_objects(args) -> int:
                     continue
             if depths:
                 commonness = max(1, min(100, round(100 / max(1, rarities[0]))))
-                lo, hi = max(1, min(depths)), max(100, max(depths))
-                entry.set("alloc", "%d:%d to %d" % (commonness, lo, min(hi, 127)))
+                # Both ends are clamped to the allocation table's last row.
+                # Angband's own data reads "to 100" throughout and means "to
+                # the bottom"; Zangband's dungeon went deeper than 4.2's table
+                # does, so a band it puts at 105 has to come back to the
+                # ceiling or the object has no row to be found in at all.
+                lo = min(max(1, min(depths)), ceiling)
+                hi = ceiling
+                entry.set("alloc", "%d:%d to %d" % (commonness, lo, hi))
+                note = ("Zangband allocation %s; rarity %d at the first band "
+                        "inverted to commonness" % (" ".join(alloc), rarities[0]))
+                if min(depths) > ceiling:
+                    note += ("; source band at depth %d is below the object "
+                             "table's last row (%d) and was brought up to it"
+                             % (min(depths), ceiling))
                 item.fields["alloc"] = rules.Value(
-                    entry.get("alloc"), "CNT-11", rules.DERIVED,
-                    "Zangband allocation %s; rarity %d at the first band "
-                    "inverted to commonness" % (" ".join(alloc), rarities[0]))
+                    entry.get("alloc"), "CNT-11", rules.DERIVED, note)
 
         # Zangband gives every kind a P: line whether or not it means anything:
         # the Amulet of Destruction is recorded with 7d7 damage dice it can
