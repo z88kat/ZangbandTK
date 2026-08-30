@@ -658,20 +658,42 @@ def cmd_artifacts(args) -> int:
                   and zformat.match_key(r.name) not in existing_keys]
 
     # 4.2 restores an artifact from a savefile by name (load.c:149), taking the
-    # first exact match, so it cannot carry two of one name. Where Zangband has
-    # two, one is kept and the other is deferred with its reason rather than
-    # being lost to whichever the reader happened to overwrite.
-    for key, spec in sorted(collisions.items()):
-        clash = [r for k, r in candidates if k == key]
+    # first exact match, so it cannot carry two of one name -- a character would
+    # come back holding the other one. Zangband could: it saved an artifact
+    # index (save.c:605), so two of its artifacts sharing a suffix cost it
+    # nothing, and its display put the base object in front of the name anyway.
+    #
+    # Every duplicate among the candidates is found here, not only the ones
+    # named in renames.toml. A pair nobody has ruled on is a problem rather than
+    # a decision, and is reported as one: importing both would parse cleanly and
+    # go wrong later, in somebody's savefile.
+    seen_keys: dict[str, list] = {}
+    for key, rec in candidates:
+        seen_keys.setdefault(key, []).append(rec)
+
+    for key, clash in sorted(seen_keys.items()):
         if len(clash) < 2:
             continue
-        for rec in clash:
-            if rec.index != spec["keep"]:
-                report.deferred.append((
-                    "%s (index %d)" % (rec.name, rec.index),
-                    "a name of its own", spec["why"]))
+
+        spec = collisions.get(key)
+        if spec:
+            keep = spec["keep"]
+            for rec in clash:
+                if rec.index != keep:
+                    report.skipped.append((
+                        "%s (index %d)" % (rec.name, rec.index), spec["why"]))
+        else:
+            keep = min(r.index for r in clash)
+            report.skipped.append((
+                "%s (indices %s)" % (clash[0].name,
+                                     ", ".join(str(r.index) for r in clash)),
+                "UNRESOLVED: %d artifacts share this name and 4.2 restores an "
+                "artifact from a savefile by name, so it can carry only one. "
+                "The lowest index was kept arbitrarily. Give the others a name "
+                "or rule on them in renames.toml." % len(clash)))
+
         candidates = [(k, r) for k, r in candidates
-                      if k != key or r.index == spec["keep"]]
+                      if k != key or r.index == keep]
     report.notes.append(
         f"{len(candidates)} artifacts exist in Zangband but in neither Angband "
         f"2.8.1 nor 4.2.6.")

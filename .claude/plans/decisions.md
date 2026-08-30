@@ -1398,3 +1398,59 @@ alternative is 647 individual judgements for one flavour scroll.
 **Consequence.** CNT-11's deferred list drops from 16 to 15. The scroll is not
 in the game and is not waiting for anything. If Zangband's rumours are ever
 wanted, they are wanted as new writing rather than as an import.
+
+---
+
+### DEC-42 — The Incandescent Globe of Sawall is dropped (CNT-06)
+
+Confirmed by project owner: *"Drop it."* — the name collision is not worth
+resolving for one artifact.
+
+Recorded as a rejection rather than a deferral, and for the same reason as
+DEC-41: the deferred list reads as a queue and this is not in one. It sits in
+`renames.toml`'s `[artifact_collision]` with the ruling written down, and the
+converter reports it under *Skipped* beside the other refusals.
+
+*It is a real artifact, not a fragment.* Zangband has two called "of Sawall":
+
+| | Index 7 | Index 33 |
+|---|---|---|
+| What | Incandescent Globe (a light) | Hard Leather Cap (a helm) |
+| Depth / cost | 35, 4,000 | 52, 10,000 |
+| Powers | +3 infravision, a fire aura, an electric aura, light | +3 INT/WIS/CHR, sustains all three, resist blindness, +18 AC |
+
+Neither is a draft of the other. Both auras the Globe carries were built in the
+M2/M3 flag work, so it would have converted intact and would have been the only
+Zangband artifact light in a game that has three.
+
+*Why they collide, and why only here.* Zangband saved an artifact by **index**
+([save.c:605](../../archive/zangband/src/save.c#L605)) and displayed it as base
+object plus suffix, so "The Incandescent Globe of Sawall" and "The Hard Leather
+Cap of Sawall" were unambiguous on screen and on disk. 4.2 writes the suffix
+alone into the savefile and reads it back with `lookup_artifact_name`, which
+returns the first exact match — two of one name means a character can come back
+holding the other. Angband 2.8.1 has no duplicate artifact names at all;
+Zangband introduced the only two in the line, and the other pair ("of the
+Dwarves") is inherited from 2.8.1 and never an import candidate.
+
+Some sign it was a slip on Zangband's part rather than a design: its other
+place-names take one artifact each, "of Amber" and "of Chaos" among them.
+Sawall is the only House with two.
+
+*A rename was available and was declined.* Sawall is a House of the Courts of
+Chaos, and three of the nine patrons in
+[patron.txt](../../lib/gamedata/patron.txt) belong to it — **Mandor**,
+**Gramble** and **Despil** — so the Globe could have taken a name from the
+established roster without inventing a word. The owner's judgement was that one
+artifact does not justify the question. Recorded here so that the option is
+visible to anyone who revisits it, rather than looking like an oversight.
+
+*Why the Cap is the one kept.* Originally by accident: a name-keyed read let
+the later record overwrite the earlier. It stays kept on purpose now, because
+it is the one already shipped and renaming a shipped artifact makes every
+savefile holding it refuse to load
+([load.c:149](../../src/load.c#L149)). On merit the Globe is arguably the
+better survivor — the Cap lost CHR and SUST_CHR in conversion, 4.2 having no
+charisma — but that is not worth a broken savefile.
+
+**Consequence.** The artifact count stays at 51. CNT-06 has nothing outstanding.

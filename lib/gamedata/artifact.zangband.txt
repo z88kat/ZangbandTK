@@ -569,7 +569,7 @@ alloc:6:35 to 127
 attack:1d18:3:5
 armor:0:0
 flags:SEE_INVIS
-values:INT[2] | RES_DARK[1] | RES_LIGHT[1] | LIGHT[1]
+values:INT[2] | MANA[2] | RES_DARK[1] | RES_LIGHT[1] | LIGHT[1]
 desc:An artifact of Zangband.
 
 name:of Gandalf

@@ -70,28 +70,35 @@ to a Ring of Levitation, which CNT-11 caught by slot.""" }
 
 [artifact]
 
-# --------------------------------------------------- artifacts that collide
+# ------------------------------------------ artifacts ruled out by name
 #
-# Not renames: two Zangband artifacts that share one name as far as 4.2 is
-# concerned, which it cannot carry. Kept here so the converter defers the
-# second with a reason rather than dropping it silently, which is what a
-# name-keyed read was doing.
+# Not renames: Zangband artifacts that share a name with another of its own,
+# which 4.2 cannot carry. It restores an artifact from a savefile by name
+# (obj-util.c:520, load.c:149) and takes the first exact match, so two of one
+# name means a character can come back holding the other. Zangband was free of
+# this because it saved an artifact *index* (save.c:605), and its display put
+# the base object in front of the suffix, so both read distinctly in play.
+#
+# `keep` names the index that is imported. The other is refused, not deferred:
+# these entries record a decision taken, and the converter reports them under
+# Skipped so nobody reads them as a queue.
+#
+# A duplicate that is *not* listed here is a different thing -- an unresolved
+# problem rather than a decision -- and cmd_artifacts reports it as one.
 
 [artifact_collision]
-"of sawall" = { keep = 33, why = """Zangband has two artifacts called "of \
-Sawall": an Incandescent Globe (index 7) and a Hard Leather Cap (index 33). \
-Zangband shows the base object in the name, so both read distinctly in play. \
-4.2 cannot: it writes an artifact's name into the savefile and restores it \
-with `lookup_artifact_name`, which takes the first exact match \
-(obj-util.c:520, load.c:149), so two artifacts of one name means a saved \
-character comes back holding the wrong one. Index 33 is kept because it is the \
-one already shipped; giving index 7 a distinct name is a content decision, not \
-a conversion one.
-
-Index 7 is blocked twice over, and only this half is a conversion problem. Its \
-base object is Zangband's Incandescent Globe, which 4.2 has not got and \
-basesubs.toml has no substitution for, so the converter skips it for that as \
-well. That second reason is soft: 4.2 writes a dummy object record for any \
-artifact base it lacks (obj-init.c:113), which is exactly how it carries its \
-own Phial, Star and Arkenstone, so the base would look after itself. The name \
-is the part that needs a decision.""" }
+"of sawall" = { keep = 33, why = """Rejected by DEC-42. Zangband has two \
+artifacts called "of Sawall": the Incandescent Globe (index 7, a light: +3 \
+infravision, a fire aura, an electric aura) and the Hard Leather Cap (index \
+33, a helm: +3 INT/WIS/CHR, three sustains, resist blindness). Both are real \
+artifacts and neither is a draft of the other. Sawall is a House of the Courts \
+of Chaos, and naming two artifacts after the House rather than after anyone in \
+it is what put them in each other's way -- Zangband's other place-names, "of \
+Amber" and "of Chaos", have one artifact each. \
+\
+Renaming the Globe was available and was declined: three of the nine Chaos \
+patrons in patron.txt are of that House -- Mandor, Gramble and Despil -- so a \
+name was there for the taking without inventing anything. The judgement was \
+that resolving a name collision is not worth it for one artifact. The Cap is \
+kept because it is the one already shipped, and changing that would break \
+every savefile holding it.""" }

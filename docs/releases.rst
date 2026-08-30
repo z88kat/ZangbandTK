@@ -33,6 +33,26 @@ Unreleased
 Savefile compatibility — 30 August 2026
 ----------------------------------------
 
+- **3.43.1** — **The Incandescent Globe of Sawall is dropped** (DEC-42).
+  Zangband has two artifacts of that name — a light and a helm, both real, and
+  neither a draft of the other. It could carry both because it saved an
+  artifact by index and put the base object in front of the name; Angband saves
+  the name alone and takes the first match, so a character could come back
+  holding the wrong one. Renaming was available — three of the nine Chaos
+  patrons are of House Sawall — and was declined as not worth it for one
+  artifact. The helm stays, because it is the one already shipped and renaming
+  a shipped artifact makes every savefile holding it refuse to load. The count
+  stays at 51.
+
+  The converter now finds *any* duplicate name among the candidates rather than
+  only the one it was told about, and reports an unruled pair as a problem
+  instead of quietly importing both.
+
+  One artifact also gained a property it should have had a version ago: the
+  Staff **of the Wandering Wizard** carries Zangband's ``SP``, which became a
+  mana modifier in 3.42.0 — the artifact file was not regenerated at the time,
+  so it had been sitting on a mapping that existed and was not applied.
+
 - **3.43.0** — **A character who has cheated says so.** ``Cheat``, in red, at
   the left of the status line, for as long as that character exists.
 
