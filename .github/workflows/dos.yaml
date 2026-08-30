@@ -44,6 +44,26 @@ jobs:
           unzip csdpmi7b.zip -d dosroot
           unzip $projname.zip -d dosroot
 
+      - name: Check packaged names are 8.3
+        run: |
+          # release.yaml already asserts this on the release archive, but only
+          # there -- so a name DOS cannot represent reached master and showed up
+          # as an empty smoke.out, which says nothing about why.  The same check
+          # here turns that into the filename.
+          #
+          # It has bitten twice: three gamedata files once parsed with a tolerant
+          # parse_file and DOS quietly ran without the Zangband bestiary, and
+          # monster_speech.txt later failed loudly because its parser is strict.
+          projname=$(cd src && make -f Makefile.ibm print-project-name | sed -En 's/^our-project-name=//p')
+          for d in lib/gamedata lib/help ; do
+            find dosroot/$projname/$d -type f -printf '%f\n' | awk -F. -v d="$d" '
+              { base = $1 ; ext = (NF > 1) ? $NF : "" }
+              NF > 2 || length(base) > 8 || length(ext) > 3 {
+                print "not 8.3: " d "/" $0 ; bad = 1
+              }
+              END { exit (bad ? 1 : 0) }'
+          done
+
       - name: DOS runtime smoke test
         timeout-minutes: 3
         run: |
