@@ -1468,6 +1468,41 @@ bool player_can_refuel_prereq(void)
 }
 
 /**
+ * Whether any of the game's own cheating options has been turned on.
+ *
+ * Each has a hidden twin of type OP_SCORE which is set when the cheat is used
+ * and never unset, so this is a record of having cheated rather than of
+ * cheating now.
+ */
+bool player_used_cheat_option(const struct player *p)
+{
+	int j;
+
+	for (j = 0; j < OPT_MAX; ++j) {
+		if (option_type(j) != OP_SCORE)
+			continue;
+		if (p->opts.opt[j])
+			return true;
+	}
+
+	return false;
+}
+
+/**
+ * Whether this character is disqualified from the high score list.
+ *
+ * There are two separate records of it -- `noscore` for wizard mode, the debug
+ * commands and the borg, and the OP_SCORE options for the cheats on the options
+ * screen -- and enter_score() has always checked both.  It is one question, so
+ * it is asked in one place: the status indicator and the score list cannot
+ * drift apart into disagreeing about whether a character was played straight.
+ */
+bool player_has_cheated(const struct player *p)
+{
+	return p->noscore != 0 || player_used_cheat_option(p);
+}
+
+/**
  * Prerequisite function for command. See struct cmd_info in ui-input.h and
  * it's use in ui-game.c.
  */
@@ -1477,8 +1512,9 @@ bool player_can_debug_prereq(void)
 		return true;
 	}
 	if (confirm_debug()) {
-		/* Mark savefile */
+		/* Mark savefile, and say so on the status line from here on */
 		player->noscore |= NOSCORE_DEBUG;
+		player->upkeep->redraw |= (PR_STATUS);
 		return true;
 	}
 	return false;

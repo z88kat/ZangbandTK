@@ -33,6 +33,24 @@ Unreleased
 Savefile compatibility — 30 August 2026
 ----------------------------------------
 
+- **3.43.0** — **A character who has cheated says so.** ``Cheat``, in red, at
+  the left of the status line, for as long as that character exists.
+
+  The game has always known. ``noscore`` is set the moment wizard mode is
+  entered or a debug command is used, the cheat options each have a hidden twin
+  set the moment they are turned on, and neither is ever cleared — that is what
+  bars the character from the high score list. None of it showed on screen, so a
+  character being walked about invulnerable looked exactly like one that had
+  earned its way.
+
+  Which is where this came from. A screenshot of a level 6 character with 1012
+  hit points, sent to report a stalking deer, read as a possible bug in hit
+  point calculation; it was wizard mode, and the game could have said so.
+
+  Both records are now asked through one function, ``player_has_cheated()``,
+  which the score list uses too — so the indicator and the scoring cannot drift
+  into disagreeing about whether a character was played straight.
+
 - **3.42.3** — **The white deer bounds out of earshot.** Reported from play a
   second time, as *still stalking me*. The blessing itself was fixed in 3.33.2
   and was working: the deer gave its gift once and shied away from every touch

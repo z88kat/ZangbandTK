@@ -265,6 +265,12 @@ death the game says *"Score not registered for cheaters."* Turning the cheat bac
 off afterwards does not undo that: the record is of having used it, not of having
 it on.
 
+ZangbandTK also says so at the time. A character who has used any of these — or
+wizard mode, or the debug commands — carries **Cheat** in red at the left of the
+status line, for as long as that character exists. It is not a punishment; it is
+so that a screenshot of a character walking about invulnerable is not mistaken
+for a bug report about hit points, which is exactly what happened once.
+
 Peek into monster creation ``cheat_hear``
   Cheaters never win. But they can peek at monster creation.
 

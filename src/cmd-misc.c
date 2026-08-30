@@ -63,8 +63,8 @@ void do_cmd_wizard(void)
 	/* Update monsters */
 	player->upkeep->update |= (PU_MONSTERS);
 
-	/* Redraw "title" */
-	player->upkeep->redraw |= (PR_TITLE);
+	/* Redraw "title", and the status line that now says Cheat */
+	player->upkeep->redraw |= (PR_TITLE | PR_STATUS);
 }
 
 /**

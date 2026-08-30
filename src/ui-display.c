@@ -1413,6 +1413,33 @@ static size_t prt_tmd(int row, int col)
 /**
  * Print "unignoring" status
  */
+/**
+ * Say so, plainly, when the character is not being played straight.
+ *
+ * `noscore` is already the game's own record of this -- it is what makes a
+ * character ineligible for the high score list, it is set the moment wizard
+ * mode is entered or a debug command is used, and it is written to the savefile
+ * and never cleared.  All it has never done is show on screen, so a character
+ * being walked about invulnerable looks exactly like one that earned its way,
+ * and a screenshot of it is easy to read as a bug report.
+ *
+ * Which is where this came from: a level 6 character with 1012 hit points,
+ * reported as a stalking deer, investigated as a possible hit point bug, and
+ * explained by "I was using the cheats".  The game knew.  It just was not
+ * saying.
+ */
+static size_t prt_cheat(int row, int col)
+{
+	if (player_has_cheated(player)) {
+		const char *str = "Cheat";
+		c_put_str(COLOUR_L_RED, str, row, col);
+		return strlen(str) + 1;
+	}
+
+	return 0;
+}
+
+
 static size_t prt_unignore(int row, int col)
 {
 	if (player->unignoring) {
@@ -1430,9 +1457,9 @@ static size_t prt_unignore(int row, int col)
 typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
-{ prt_level_feeling, prt_daylight, prt_light, prt_moves, prt_unignore,
-  prt_recall, prt_descent, prt_state, prt_study, prt_tmd, prt_dtrap,
-  prt_terrain };
+{ prt_cheat, prt_level_feeling, prt_daylight, prt_light, prt_moves,
+  prt_unignore, prt_recall, prt_descent, prt_state, prt_study, prt_tmd,
+  prt_dtrap, prt_terrain };
 
 
 static void update_statusline_aux(int row, int col)

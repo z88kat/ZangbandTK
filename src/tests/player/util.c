@@ -4,6 +4,7 @@
 #include "unit-test-data.h"
 #include "player-birth.h"
 #include "player-quest.h"
+#include "option.h"
 #include "player-util.h"
 
 int setup_tests(void **state) {
@@ -239,9 +240,64 @@ static int test_adjust_sp_precise(void *state) {
 	ok;
 }
 
+
+/**
+ * A character that has cheated says so, by either of the two records of it.
+ *
+ * There are two, kept separately and for different reasons: `noscore` for
+ * wizard mode, the debug commands and the borg, and the hidden OP_SCORE twin of
+ * each option on the cheat screen.  enter_score() has always consulted both, and
+ * the status indicator asks the same question through the same function, so this
+ * pins the pair together.  If a third way to cheat is ever added and only one of
+ * them learns about it, a character can be barred from the score list while the
+ * screen still says they were playing straight -- or, worse, the other way
+ * round.
+ */
+static int test_player_has_cheated(void *state) {
+	struct player *p = state;
+	int j, score_opt = -1;
+
+	/* Straight, to start with. */
+	p->noscore = 0;
+	for (j = 0; j < OPT_MAX; ++j)
+		if (option_type(j) == OP_SCORE)
+			p->opts.opt[j] = false;
+	require(!player_has_cheated(p));
+
+	/* Wizard mode marks the character, and turning it back off does not
+	 * unmark them -- the record is of having used it. */
+	p->noscore |= NOSCORE_WIZARD;
+	require(player_has_cheated(p));
+	p->noscore = 0;
+	require(!player_has_cheated(p));
+
+	/* So do the debug commands. */
+	p->noscore |= NOSCORE_DEBUG;
+	require(player_has_cheated(p));
+	p->noscore = 0;
+
+	/* And so does any one of the cheat options, by its score twin. */
+	for (j = 0; j < OPT_MAX; ++j) {
+		if (option_type(j) != OP_SCORE) continue;
+		score_opt = j;
+
+		require(!player_has_cheated(p));
+		p->opts.opt[j] = true;
+		require(player_used_cheat_option(p));
+		require(player_has_cheated(p));
+		p->opts.opt[j] = false;
+	}
+
+	/* There is at least one, or the loop above tested nothing. */
+	require(score_opt >= 0);
+
+	ok;
+}
+
 const char *suite_name = "player/util";
 struct test tests[] = {
 	{ "adjust_hp_precise", test_adjust_hp_precise },
 	{ "adjust_sp_precise", test_adjust_sp_precise },
+	{ "player_has_cheated", test_player_has_cheated },
 	{ NULL, NULL }
 };

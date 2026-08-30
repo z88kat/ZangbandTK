@@ -19,6 +19,7 @@
 #include "buildid.h"
 #include "game-world.h"
 #include "init.h"
+#include "player-util.h"
 #include "score.h"
 
 
@@ -271,15 +272,8 @@ void build_score(struct high_score *entry, const struct player *p,
  */
 void enter_score(const struct player *p, const time_t *death_time)
 {
-	int j;
-
 	/* Cheaters are not scored */
-	for (j = 0; j < OPT_MAX; ++j) {
-		if (option_type(j) != OP_SCORE)
-			continue;
-		if (!p->opts.opt[j])
-			continue;
-
+	if (player_used_cheat_option(p)) {
 		msg("Score not registered for cheaters.");
 		event_signal(EVENT_MESSAGE_FLUSH);
 		return;
