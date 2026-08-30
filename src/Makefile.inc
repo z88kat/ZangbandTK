@@ -418,6 +418,18 @@ depgen:
  list-mon-spells.h mon-desc.h mon-lore.h z-textblock.h mon-spell.h \
  mon-util.h mon-msg.h list-mon-message.h obj-knowledge.h player-timed.h \
  list-player-timed.h player-util.h project.h list-projections.h
+./mon-aura.o: mon-aura.c angband.h h-basic.h z-bitflag.h z-form.h z-virt.h \
+ z-color.h z-util.h z-rand.h config.h game-event.h z-type.h message.h \
+ list-message.h player.h guid.h obj-properties.h z-file.h list-tvals.h \
+ list-object-flags.h list-kind-flags.h list-stats.h \
+ list-object-modifiers.h object.h z-quark.h z-dice.h z-expression.h \
+ list-elements.h list-origins.h option.h list-options.h \
+ list-player-flags.h cave.h list-square-flags.h list-terrain-flags.h \
+ list-terrain.h mon-aura.h monster.h target.h mon-predicate.h \
+ mon-timed.h list-mon-timed.h mon-blows.h list-mon-temp-flags.h \
+ list-mon-race-flags.h list-mon-spells.h mon-desc.h mon-lore.h \
+ z-textblock.h mon-util.h mon-msg.h list-mon-message.h obj-knowledge.h \
+ player-calcs.h player-util.h cmd-core.h
 ./mon-blows.o: mon-blows.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h z-type.h \
  message.h list-message.h player.h guid.h obj-properties.h z-file.h \
@@ -549,6 +561,17 @@ depgen:
  mon-timed.h list-mon-timed.h mon-blows.h list-mon-temp-flags.h \
  list-mon-race-flags.h list-mon-spells.h mon-spell.h mon-util.h mon-msg.h \
  list-mon-message.h
+./mon-speech.o: mon-speech.c angband.h h-basic.h z-bitflag.h z-form.h \
+ z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h z-type.h \
+ message.h list-message.h player.h guid.h obj-properties.h z-file.h \
+ list-tvals.h list-object-flags.h list-kind-flags.h list-stats.h \
+ list-object-modifiers.h object.h z-quark.h z-dice.h z-expression.h \
+ list-elements.h list-origins.h option.h list-options.h \
+ list-player-flags.h cave.h list-square-flags.h list-terrain-flags.h \
+ list-terrain.h mon-desc.h monster.h target.h mon-predicate.h \
+ mon-timed.h list-mon-timed.h mon-blows.h list-mon-temp-flags.h \
+ list-mon-race-flags.h list-mon-spells.h mon-speech.h mon-util.h \
+ mon-msg.h list-mon-message.h player-calcs.h
 ./mon-spell.o: mon-spell.c angband.h h-basic.h z-bitflag.h z-form.h \
  z-virt.h z-color.h z-util.h z-rand.h config.h game-event.h z-type.h \
  message.h list-message.h player.h guid.h obj-properties.h z-file.h \

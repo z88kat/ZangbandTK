@@ -333,6 +333,9 @@
     <ClCompile Include="src\mon-attack.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\mon-aura.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\mon-blows.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -361,6 +364,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\mon-predicate.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\mon-speech.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\mon-spell.c">
@@ -902,6 +908,9 @@
     <ClInclude Include="src\debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\dun-type.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\effect-handler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1037,6 +1046,9 @@
     <ClInclude Include="src\mon-attack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\mon-aura.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\mon-blows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1065,6 +1077,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\mon-predicate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mon-speech.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\mon-spell.h">
@@ -1356,6 +1371,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\z-virt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\wild.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\win\readdib.h">

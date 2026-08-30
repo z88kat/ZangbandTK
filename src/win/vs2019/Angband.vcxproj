@@ -257,6 +257,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\main-win.c" />
     <ClCompile Include="src\message.c" />
     <ClCompile Include="src\mon-attack.c" />
+    <ClCompile Include="src\mon-aura.c" />
     <ClCompile Include="src\mon-blows.c" />
     <ClCompile Include="src\mon-desc.c" />
     <ClCompile Include="src\mon-group.c" />
@@ -267,6 +268,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\mon-move.c" />
     <ClCompile Include="src\mon-msg.c" />
     <ClCompile Include="src\mon-predicate.c" />
+    <ClCompile Include="src\mon-speech.c" />
     <ClCompile Include="src\mon-spell.c" />
     <ClCompile Include="src\mon-summon.c" />
     <ClCompile Include="src\mon-timed.c" />
@@ -448,6 +450,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\config.h" />
     <ClInclude Include="src\datafile.h" />
     <ClInclude Include="src\debug.h" />
+    <ClInclude Include="src\dun-type.h" />
     <ClInclude Include="src\effect-handler.h" />
     <ClInclude Include="src\effects-info.h" />
     <ClInclude Include="src\effects.h" />
@@ -493,6 +496,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\list-ui-entry-renderers.h" />
     <ClInclude Include="src\message.h" />
     <ClInclude Include="src\mon-attack.h" />
+    <ClInclude Include="src\mon-aura.h" />
     <ClInclude Include="src\mon-blows.h" />
     <ClInclude Include="src\mon-desc.h" />
     <ClInclude Include="src\mon-group.h" />
@@ -503,6 +507,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\mon-move.h" />
     <ClInclude Include="src\mon-msg.h" />
     <ClInclude Include="src\mon-predicate.h" />
+    <ClInclude Include="src\mon-speech.h" />
     <ClInclude Include="src\mon-spell.h" />
     <ClInclude Include="src\mon-summon.h" />
     <ClInclude Include="src\mon-timed.h" />
