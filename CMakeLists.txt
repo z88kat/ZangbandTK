@@ -860,6 +860,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     effects/info.c
     game/basic.c
     game/mage.c
+    game/saves.c
     game/wild.c
     message/message.c
     monster/amberite.c

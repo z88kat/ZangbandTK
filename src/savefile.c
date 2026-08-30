@@ -198,6 +198,12 @@ static uint32_t buffer_check;
  */
 void note(const char *message)
 {
+	/* ZTK_SAVE_TRACE also echoes the loader's own notes, so a savefile that
+	 * refuses to load says why on stderr even when no UI is listening. */
+	if (getenv("ZTK_SAVE_TRACE")) {
+		fprintf(stderr, "NOTE %s\n", message);
+		fflush(stderr);
+	}
 	event_signal_message(EVENT_INITSTATUS, MSG_BIRTH, message);
 }
 
@@ -585,6 +591,14 @@ static bool try_load(ang_file *f, const struct blockinfo *local_loaders)
 	/* Get the next block header */
 	while ((err = next_blockheader(f, &b)) == 0) {
 		loader_t loader = find_loader(&b, local_loaders);
+		/* Set ZTK_SAVE_TRACE to see each block go by.  A savefile that
+		 * kills the process names the block it died in and nothing else
+		 * has to be guessed at. */
+		if (getenv("ZTK_SAVE_TRACE")) {
+			fprintf(stderr, "BLOCK %s v%u size %u\n", b.name,
+					(unsigned) b.version, (unsigned) b.size);
+			fflush(stderr);
+		}
 		if (!loader) {
 			note("Savefile block can't be read.");
 			note("Maybe try and load the savefile in an earlier version of Angband.");

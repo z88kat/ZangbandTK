@@ -31,6 +31,64 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+30 August 2026 — every old character stopped loading, and it was not what I thought
+====================================================================================
+
+Steven put thirty-five of his savefiles into ``tests/saves`` and said, reasonably,
+that not breaking them matters. I wrote a suite that loads every one of them. It
+failed on the first file, and then he told me the app itself terminated when he
+tried to open Amanwe. So this was not a test being fussy — it was every character
+he had ever played, gone.
+
+My first diagnosis was wrong, and wrong in an expensive direction. I saw that the
+``misc`` savefile block writes arrays sized by counts that come from the data
+files — how many object flags, elements, brands, slays, curses there are — and
+that four commits the day before had changed exactly those counts. I concluded
+the block had no version mechanism, that the format was structurally fragile, and
+that the fix was to version it and keep a reader for the old layout. I said so
+with more confidence than I had earned.
+
+The counts are already in the savefile. Every one of them is written out and read
+back during the object-memory block, into file-static variables the later readers
+use. ``rd_item`` uses them. ``rd_ego`` uses them. ``rd_misc`` does not — it loops
+to ``OF_SIZE``, ``OBJ_MOD_MAX`` and ``ELEM_MAX``, the values compiled into *this*
+build, and reads past the end of anything written by a build with fewer. Three
+identifiers. The format was fine; one function had never been brought into line
+with the rest of the file, and nothing had ever changed a count before, so nobody
+found out.
+
+That is the second time on this project that a structural explanation turned out
+to be a typo, and both times the structural explanation was mine. It is a
+comfortable kind of wrong: it makes the problem important and the fix large, and
+it does not require reading the neighbouring function.
+
+Fixing it moved the failure rather than ending it, which is how I found the other
+three. All of them are the same defect wearing different clothes — *the savefile
+names something this build no longer has*:
+
+``rd_monster_memory`` skipped the read that advances its loop when a monster had
+been removed, so it span on the same name, four bytes at a time, until it fell
+off the end of the buffer. ``rd_monster`` treated a vanished race as fatal to the
+entire load — and that is what actually killed most of the corpus, because
+``raving lunatic`` and ``hobo`` do not exist any more and eleven characters had
+met one. ``rd_trap`` dereferences the trap kind it just looked up without
+checking it, and ``rd_ignore`` calls ``quit()`` outright over an autoinscription
+on an object kind that has been renamed. Those last two have not fired yet. They
+are waiting for the first trap or object I rename.
+
+The monster fix had a trap in it I nearly walked into. Dropping a monster leaves
+a hole in the array, and a hole loads perfectly well — it crashes the *next save*
+instead, because ``wr_monster`` reads the race of every slot from 1 to
+``mon_max``. So the survivors are renumbered as they are placed, carrying their
+held objects and mimic back-references with them. The suite now loads each
+character, saves it to a scratch file and loads it again, because loading alone
+would have passed and left that waiting.
+
+Thirty-five of thirty-five load. What I am keeping from this is not the fix. It
+is that I had a working diagnosis, a plausible mechanism and a plan, and the
+actual bug was three identifiers away in a function I had read past twice.
+
+
 27 August 2026 — the game in a browser tab, and four things that were wrong
 ===========================================================================
 

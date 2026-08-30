@@ -280,8 +280,10 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 	rd_string(race_name, sizeof(race_name));
 	mon->race = lookup_monster(race_name);
 	if (!mon->race) {
+		/* The race has been renamed or removed since this save was
+		 * written.  Read the rest of the record anyway - the stream
+		 * must stay aligned - and let the caller drop the monster. */
 		note(format("Monster race %s no longer exists!", race_name));
-		return false;
 	}
 	rd_string(race_name, sizeof(race_name));
 	if (streq(race_name, "none")) {
@@ -359,6 +361,28 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 		delete_monster(c, mon->grid);
 	}
 
+	/* A monster with no race will not be placed, so let go of anything it
+	 * was carrying rather than leaving it orphaned in the chunk. */
+	if (!mon->race) {
+		struct object *obj = mon->held_obj;
+
+		/* Whatever it was pretending to be is just an object again */
+		if (mon->mimicked_obj) {
+			mon->mimicked_obj->mimicking_m_idx = 0;
+			mon->mimicked_obj = NULL;
+		}
+
+		while (obj) {
+			struct object *next = obj->next;
+
+			if (obj->oidx) c->objects[obj->oidx] = NULL;
+			if (obj->known) object_delete(NULL, NULL, &obj->known);
+			object_delete(NULL, NULL, &obj);
+			obj = next;
+		}
+		mon->held_obj = NULL;
+	}
+
 	return true;
 }
 
@@ -374,8 +398,10 @@ static void rd_trap(struct trap *trap)
 
 	rd_string(buf, sizeof(buf));
 	if (buf[0]) {
+		/* The kind may have been renamed or removed since this save was
+		 * written, in which case the caller drops the trap. */
 		trap->kind = lookup_trap(buf);
-		trap->t_idx = trap->kind->tidx;
+		if (trap->kind) trap->t_idx = trap->kind->tidx;
 	}
 	rd_byte(&tmp8u);
 	trap->grid.y = tmp8u;
@@ -534,18 +560,22 @@ int rd_monster_memory(void)
 	while (!streq(buf, "No more monsters")) {
 		struct monster_race *race = lookup_monster(buf);
 
-		/* Get the kill and theft counts, skip if monster invalid */
+		/* Get the kill and theft counts */
 		rd_u16b(&nkill);
 		rd_u16b(&ntheft);
-		if (!race) continue;
 
-		/* Store the kill count, ensure dead uniques stay dead */
-		l_list[race->ridx].pkills = nkill;
-		if (rf_has(race->flags, RF_UNIQUE) && nkill)
-			race->max_num = 0;
+		/* Keep them, unless the monster has since been renamed or
+		 * removed - in which case its memory is simply dropped.  Do
+		 * not skip the read below, or the loop never advances. */
+		if (race) {
+			/* Store the kill count, ensure dead uniques stay dead */
+			l_list[race->ridx].pkills = nkill;
+			if (rf_has(race->flags, RF_UNIQUE) && nkill)
+				race->max_num = 0;
 
-		/* Store the theft count */
-		l_list[race->ridx].thefts = ntheft;
+			/* Store the theft count */
+			l_list[race->ridx].thefts = ntheft;
+		}
 
 		/* Look for the next monster */
 		rd_string(buf, sizeof(buf));
@@ -1036,10 +1066,11 @@ int rd_ignore(void)
 		rd_string(tmp, sizeof(tmp));
 		sval = lookup_sval(tval, tmp);
 		k = lookup_kind(tval, sval);
-		if (!k)
-			quit_fmt("lookup_kind(%d, %d) failed", tval, sval);
 		rd_string(tmp, sizeof(tmp));
-		k->note_aware = quark_add(tmp);
+		/* Read the inscription either way - the stream must stay
+		 * aligned - but an object kind that no longer exists simply
+		 * loses it, rather than taking the game down with it */
+		if (k) k->note_aware = quark_add(tmp);
 	}
 
 	/* Read the current number of unaware object auto-inscriptions */
@@ -1056,10 +1087,8 @@ int rd_ignore(void)
 		rd_string(tmp, sizeof(tmp));
 		sval = lookup_sval(tval, tmp);
 		k = lookup_kind(tval, sval);
-		if (!k)
-			quit_fmt("lookup_kind(%d, %d) failed", tval, sval);
 		rd_string(tmp, sizeof(tmp));
-		k->note_unaware = quark_add(tmp);
+		if (k) k->note_unaware = quark_add(tmp);
 	}
 
 	/* Read the current number of rune auto-inscriptions */
@@ -1121,17 +1150,19 @@ int rd_misc(void)
 	}
 
 	/* Property knowledge */
-	/* Flags */
-	for (i = 0; i < OF_SIZE; i++)
+	/* Flags.  Use the counts the savefile declared, not our own - a save
+	 * written before a flag, modifier or element was added holds fewer
+	 * entries than we have room for, and the rest stay unknown. */
+	for (i = 0; i < of_size; i++)
 		rd_byte(&player->obj_k->flags[i]);
 
 	/* Modifiers */
-	for (i = 0; i < OBJ_MOD_MAX; i++) {
+	for (i = 0; i < obj_mod_max; i++) {
 		rd_s16b(&player->obj_k->modifiers[i]);
 	}
 
 	/* Elements */
-	for (i = 0; i < ELEM_MAX; i++) {
+	for (i = 0; i < elem_max; i++) {
 		rd_s16b(&player->obj_k->el_info[i].res_level);
 		rd_byte(&player->obj_k->el_info[i].flags);
 	}
@@ -1595,7 +1626,7 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
  */
 static int rd_monsters_aux(struct chunk *c)
 {
-	int i;
+	int i, next;
 	uint16_t limit;
 
 	/* Only if the player's alive */
@@ -1616,9 +1647,10 @@ static int rd_monsters_aux(struct chunk *c)
 	}
 
 	/* Read the monsters */
-	for (i = 1; i < limit; i++) {
+	for (i = 1, next = 1; i < limit; i++) {
 		struct monster *mon;
 		struct monster monster_body;
+		struct object *obj;
 
 		/* Get local monster */
 		mon = &monster_body;
@@ -1630,8 +1662,23 @@ static int rd_monsters_aux(struct chunk *c)
 			return (-1);
 		}
 
+		/* Its race is gone from the game; leave it out */
+		if (!mon->race) continue;
+
+		/*
+		 * Close up behind anything left out above.  The array must have
+		 * no holes in it - saving walks every slot from 1 to mon_max and
+		 * reads the race of each - so the survivors are renumbered as
+		 * they are placed, taking their back-references with them.
+		 */
+		mon->midx = next++;
+		for (obj = mon->held_obj; obj; obj = obj->next)
+			obj->held_m_idx = mon->midx;
+		if (mon->mimicked_obj)
+			mon->mimicked_obj->mimicking_m_idx = mon->midx;
+
 		/* Place monster in dungeon */
-		if (place_monster(c, mon->grid, mon, 0) != i) {
+		if (place_monster(c, mon->grid, mon, 0) != mon->midx) {
 			note(format("Cannot place monster %d", i));
 			return (-1);
 		}
@@ -1658,7 +1705,11 @@ static int rd_traps_aux(struct chunk *c)
 		grid = trap->grid;
 		if (loc_is_zero(grid))
 			break;
-		else {
+		else if (!trap->kind) {
+			/* Its kind is gone from the game, and everything that
+			 * walks a trap list expects to find one; leave it out */
+			mem_free(trap);
+		} else {
 			/* Put the trap at the front of the grid trap list */
 			trap->next = square_trap(c, grid);
 			square_set_trap(c, grid, trap);
