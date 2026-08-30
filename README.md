@@ -37,10 +37,10 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
 - **Zangband's lethality.** Every monster carries 73% of Angband's hit points
   and 50% of its armour class — the measured difference between Zangband 2.7.5
   and the Angband it forked from. Monsters die sooner and hit more often.
-- **389 imported monsters**, including the princes of Amber and the Mythos
+- **387 imported monsters**, including the princes of Amber and the Mythos
   deities. 1013 in total.
 - **51 artifacts**, including Grayswandir and Frakir.
-- **18 ego types**, including `(Vampiric)`, `(Chaotic)` and `(Trump Weapon)`.
+- **17 ego types**, including `(Vampiric)`, `(Chaotic)` and `(Trump Weapon)`.
 - **Three weapon mechanics** Angband has no equivalent of: vampiric, vorpal and
   chaotic.
 - **The Ancient and Foul Curse**, with its cascade intact.

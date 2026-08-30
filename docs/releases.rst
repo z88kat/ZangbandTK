@@ -33,6 +33,51 @@ Unreleased
 M2: the rest of Zangband's objects — 30 August 2026
 ---------------------------------------------------
 
+- **3.40.1** — **Three imports that were Angband's own content under new
+  names.** CNT-11 found that comparing object kinds by name let Zangband's
+  renames through as if they were new; the same scrutiny applied to the
+  monster, artifact and ego imports found three more, and each file needed a
+  different notion of identity to find them.
+
+  Ego indices are 98.9% stable between Angband 2.8.1 and Zangband, so the index
+  *is* identity there, and the single divergence was a rename: ``of
+  Levitation`` is Angband's ``of Slow Descent`` — same slot, same lone
+  ``FEATHER`` flag — which Angband still ships. Artifact indices are 69%
+  stable, and every one of the 35 divergences turned out to be Zangband putting
+  one of its own artifacts in an inherited numbered slot: Frakir for the Ring of
+  Barahir, the Crown of Chaos for the Crown of Morgoth. Those are replacements,
+  not renames, and were correctly imported. **The artifact row is clean.**
+
+  Monster indices are 0.5% stable — Zangband renumbered the whole bestiary — so
+  identity had to come from somewhere else, and what survives a rename is the
+  *description*, which is hand-written prose. 33 imported monsters keep a 2.8.1
+  monster's paragraph word for word. Thirty-one of those are Zangband writing a
+  much deeper monster on inherited text, or boilerplate that several Angband
+  monsters already shared. Two were renames: ``hobo`` is the boil-covered
+  wretch and ``raving lunatic`` is the village idiot, identical in glyph,
+  colour, speed, armour, depth and experience, and both still in Angband under
+  the older name.
+
+  **The bestiary is 387 imported monsters rather than 389, and there are 17 ego
+  types rather than 18.** The total of 1013 has not moved, because it was
+  already two out of date.
+
+  One artifact was also being lost silently rather than skipped. Zangband has
+  two called "of Sawall", and the converter read artifacts into a dictionary
+  keyed by name, so one overwrote the other. It now reads them as a list and
+  defers the second with the reason recorded: Angband writes an artifact's name
+  into the savefile and reads it back with the first exact match, so it cannot
+  carry two of one name. Giving that one a name of its own is a content
+  decision rather than a conversion one.
+
+  .. warning::
+
+     **A savefile holding a hobo, a raving lunatic, or an item of Levitation
+     will refuse to load.** Angband stores monsters and egos in savefiles by
+     name and reports "Monster race ... no longer exists!" when the name has
+     gone. The failure is loud rather than silent, but the character is not
+     recoverable without putting the entries back.
+
 - **3.40.0** — **Eighty-two object kinds, and the three properties they needed.**
   Zangband's own objects, which until now were the one part of its content that
   had not come across: thirteen swords, nine polearms, eight hafted weapons,

@@ -1,0 +1,97 @@
+# Records Zangband renamed rather than added (CNT-01, CNT-06, CNT-07).
+#
+# CNT-11 found this in the object data: Zangband renamed 26 of the kinds it
+# inherited from Angband 2.8.1 without changing what they are, and 4.2 still
+# ships ten of them under the older name, so importing by name puts two of each
+# in the game. Objects have a structural key -- an object kind is its
+# (tval, sval) slot -- and comparing slots finds the renames on its own.
+#
+# The other three files have no such key, and each needs a different answer:
+#
+#   e_info  Indices are 98.9% stable between 2.8.1 and Zangband (86 of 87
+#           shared indices carry the same name), so the index is a usable
+#           identity and the one divergence is a rename. It is below.
+#
+#   a_info  Indices are 69% stable. The 35 divergences are Zangband replacing
+#           Tolkien artifacts with its own in the same numbered slot -- Frakir
+#           for the Ring of Barahir, the Crown of Chaos for the Crown of
+#           Morgoth. None has identical content, so none is a rename; they are
+#           new artifacts and are correctly imported.
+#
+#   r_info  Indices are 0.5% stable: Zangband renumbered the whole bestiary,
+#           and the index carries no meaning across versions. What does carry
+#           is the *description*, which is hand-written prose -- a monster
+#           keeping its paragraph word for word while changing its name is the
+#           signature of a rename. 33 pairs share a description; all but two
+#           turned out to be Zangband writing a deeper monster on inherited
+#           prose (its Balrog is level 63 against 2.8.1's Lesser Balrog at 44),
+#           or 2.8.1 boilerplate shared by several monsters at once, as the
+#           three mimics share theirs. The two that are renames are below.
+#
+# Entries here are skipped by the converter, with the 4.2 name they duplicate
+# named in the report. Anything listed must be a record that is the *same
+# thing* under a new name -- not a slot Zangband re-used for something else,
+# which is new content.
+
+# ------------------------------------------------------------- monsters
+# Keyed by the Zangband name, lowercased the way zformat.match_key does.
+
+[monster]
+"hobo" = { to = "boil-covered wretch", evidence = """Identical in every field \
+2.8.1 records -- symbol `t`, colour `g`, speed 110, 1d2 hit points, AC 1, \
+level 0, no experience -- and the same description word for word: "Ugly \
+doesn't begin to describe him." The only differences are three flags Zangband \
+adds to every town monster it touched (DROP_CORPSE, DROP_SKELETON, \
+WILD_TOWN).""" }
+
+"raving lunatic" = { to = "village idiot", evidence = """Same symbol, colour, \
+speed, AC, level and experience, and the same description word for word: \
+"Drooling and comical, but then, what do you expect?" Zangband reshuffled the \
+hit dice from 4d4 to 1d12 and added its town flags; nothing else moved.""" }
+
+# ------------------------------------------------------------------ egos
+# Keyed by the Zangband name.
+
+[ego]
+"of levitation" = { to = "of Slow Descent", evidence = """Ego index 56 in both \
+files, which is identity here: the same slot (X:35:7) and the same single flag \
+(FEATHER), on the same item type. 4.2 still ships it as `of Slow Descent`. \
+Zangband renamed it for the same reason it renamed the Ring of Feather Falling \
+to a Ring of Levitation, which CNT-11 caught by slot.""" }
+
+# -------------------------------------------------------------- artifacts
+#
+# Empty, and that is the finding: every artifact Zangband put in an inherited
+# slot differs from what was there, so all 35 are replacements rather than
+# renames. The nearest to a rename is index 34, where the Crown of Chaos has
+# the Crown of Morgoth's stats exactly -- but Zangband made it cursed,
+# permanently cursed, anti-teleport and a quest item, which is a different
+# object wearing the same numbers.
+
+[artifact]
+
+# --------------------------------------------------- artifacts that collide
+#
+# Not renames: two Zangband artifacts that share one name as far as 4.2 is
+# concerned, which it cannot carry. Kept here so the converter defers the
+# second with a reason rather than dropping it silently, which is what a
+# name-keyed read was doing.
+
+[artifact_collision]
+"of sawall" = { keep = 33, why = """Zangband has two artifacts called "of \
+Sawall": an Incandescent Globe (index 7) and a Hard Leather Cap (index 33). \
+Zangband shows the base object in the name, so both read distinctly in play. \
+4.2 cannot: it writes an artifact's name into the savefile and restores it \
+with `lookup_artifact_name`, which takes the first exact match \
+(obj-util.c:520, load.c:149), so two artifacts of one name means a saved \
+character comes back holding the wrong one. Index 33 is kept because it is the \
+one already shipped; giving index 7 a distinct name is a content decision, not \
+a conversion one.
+
+Index 7 is blocked twice over, and only this half is a conversion problem. Its \
+base object is Zangband's Incandescent Globe, which 4.2 has not got and \
+basesubs.toml has no substitution for, so the converter skips it for that as \
+well. That second reason is soft: 4.2 writes a dummy object record for any \
+artifact base it lacks (obj-init.c:113), which is exactly how it carries its \
+own Phial, Star and Arkenstone, so the base would look after itself. The name \
+is the part that needs a decision.""" }

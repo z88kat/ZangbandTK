@@ -92,6 +92,20 @@ def load_bases() -> dict[str, str]:
     return bases
 
 
+def load_renames() -> dict[str, dict]:
+    """Records Zangband renamed rather than added, per file.
+
+    See renames.toml: each of r_info, a_info and e_info needs a different
+    notion of identity, and none of them has the (tval, sval) slot that made
+    the object renames findable by structure alone.
+    """
+    path = Path(__file__).resolve().parent / "renames.toml"
+    if not path.exists():
+        return {}
+    with path.open("rb") as handle:
+        return tomllib.load(handle)
+
+
 def load_basemap() -> dict[str, dict]:
     """Glyphs whose 4.2 template lives under a different display character."""
     path = Path(__file__).resolve().parent / "basemap.toml"
@@ -325,8 +339,10 @@ def cmd_monsters(args) -> int:
     curve_42 = rules.Curve.fit(new)
     curve_z = _zangband_curve(zang)
 
+    renames = load_renames().get("monster", {})
     candidates = [m for m in zang
-                  if m.key not in old_by_key and m.key not in new_by_key]
+                  if m.key not in old_by_key and m.key not in new_by_key
+                  and m.key not in renames]
     if args.theme_only:
         themed = [m for m in candidates if is_themed(m)]
     else:
@@ -338,6 +354,11 @@ def cmd_monsters(args) -> int:
         target=str(GAMEDATA / "monster.txt"),
         lethality=lethality.describe(),
     )
+    for key, spec in sorted(renames.items()):
+        report.skipped.append((
+            key, "Zangband's name for Angband's '%s', which 4.2 still ships. %s"
+            % (spec["to"], spec["evidence"])))
+
     report.notes.append(
         f"{len(candidates)} monsters exist in Zangband but in neither Angband 2.8.1 "
         f"nor 4.2.6."
@@ -575,13 +596,15 @@ def cmd_artifacts(args) -> int:
     """Convert Zangband-only artifacts onto 4.2's artifact model."""
     import artifacts as art
 
-    def read(path: str) -> dict[str, zformat.Record]:
-        return {zformat.match_key(r.name): r for r in zformat.parse(path)}
-
-    old = read(str(ANGBAND281 / "a_info.txt"))
-    zang = read(str(ZANGBAND / "a_info.txt"))
+    # Artifacts are read as a list, not a name-keyed dict. Zangband has two
+    # called "of Sawall" and two called "of the Dwarves", and keying by name
+    # silently dropped one of each -- one of which was a candidate for import.
+    old = {zformat.match_key(r.name)
+           for r in zformat.parse(str(ANGBAND281 / "a_info.txt"))}
+    zang = list(zformat.parse(str(ZANGBAND / "a_info.txt")))
     existing = aformat.parse(str(GAMEDATA / "artifact.txt"))
     existing_keys = {e.key for e in existing}
+    collisions = load_renames().get("artifact_collision", {})
 
     with (Path(__file__).resolve().parent / "objflagmap.toml").open("rb") as fh:
         flagmap = art.ObjFlagMap(tomllib.load(fh))
@@ -599,8 +622,25 @@ def cmd_artifacts(args) -> int:
         lethality="not applicable to artifacts",
     )
 
-    candidates = [(k, r) for k, r in zang.items()
-                  if k not in old and k not in existing_keys]
+    candidates = [(zformat.match_key(r.name), r) for r in zang
+                  if zformat.match_key(r.name) not in old
+                  and zformat.match_key(r.name) not in existing_keys]
+
+    # 4.2 restores an artifact from a savefile by name (load.c:149), taking the
+    # first exact match, so it cannot carry two of one name. Where Zangband has
+    # two, one is kept and the other is deferred with its reason rather than
+    # being lost to whichever the reader happened to overwrite.
+    for key, spec in sorted(collisions.items()):
+        clash = [r for k, r in candidates if k == key]
+        if len(clash) < 2:
+            continue
+        for rec in clash:
+            if rec.index != spec["keep"]:
+                report.deferred.append((
+                    "%s (index %d)" % (rec.name, rec.index),
+                    "a name of its own", spec["why"]))
+        candidates = [(k, r) for k, r in candidates
+                      if k != key or r.index == spec["keep"]]
     report.notes.append(
         f"{len(candidates)} artifacts exist in Zangband but in neither Angband "
         f"2.8.1 nor 4.2.6.")
@@ -795,6 +835,7 @@ def cmd_egos(args) -> int:
     old = read(str(ANGBAND281 / "e_info.txt"))
     zang = read(str(ZANGBAND / "e_info.txt"))
     existing = {e.key for e in aformat.parse(str(GAMEDATA / "ego_item.txt"))}
+    renames = load_renames().get("ego", {})
 
     here = Path(__file__).resolve().parent
     with (here / "objflagmap.toml").open("rb") as fh:
@@ -817,9 +858,14 @@ def cmd_egos(args) -> int:
 
     entries: list[aformat.Entry] = []
 
+    for key, spec in sorted(renames.items()):
+        report.skipped.append((
+            key, "Zangband's name for Angband's '%s', which 4.2 still ships. %s"
+            % (spec["to"], spec["evidence"])))
+
     for key, rec in sorted(
             [(k, r) for k, r in zang.items()
-             if k not in old and k not in existing],
+             if k not in old and k not in existing and k not in renames],
             key=lambda kv: kv[1].index):
         item = Converted(name=rec.name, source_index=rec.index)
         entry = aformat.Entry()

@@ -1,7 +1,7 @@
 Objects
 =======
 
-ZangbandTK adds 82 object kinds, 51 artifacts and 18 ego types to Angband's,
+ZangbandTK adds 82 object kinds, 51 artifacts and 17 ego types to Angband's,
 along with three weapon properties Angband has no equivalent for.
 
 Three new weapon properties

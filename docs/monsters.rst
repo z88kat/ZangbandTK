@@ -1,7 +1,7 @@
 Monsters
 ========
 
-ZangbandTK's bestiary is Angband's, plus 389 creatures drawn from Zangband.
+ZangbandTK's bestiary is Angband's, plus 387 creatures drawn from Zangband.
 There are 1013 in total, and the additions are not evenly spread: shallow
 levels are much as you remember them, while the deep dungeon holds a great deal
 you will not.

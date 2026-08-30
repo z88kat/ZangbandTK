@@ -350,6 +350,71 @@ static int test_an_immunity_outlives_its_resistance(void *state) {
 	ok;
 }
 
+/**
+ * No imported ego is an Angband ego under another name.
+ *
+ * Ego indices are 98.9% stable between Angband 2.8.1 and Zangband -- 86 of the
+ * 87 they share carry the same ego -- which makes the index a usable identity
+ * and makes the single divergence worth looking at. It was a rename: Zangband's
+ * `of Levitation` is 2.8.1's `of Slow Descent`, same slot, same lone FEATHER
+ * flag, and Angband still ships it under the older name. The pair matches the
+ * Ring of Levitation and Ring of Feather Falling that CNT-11 found among the
+ * objects, which is what prompted looking here at all.
+ */
+static int test_no_ego_duplicates_an_angband_ego(void *state) {
+	int i, levitation = 0, slow_descent = 0;
+
+	for (i = 0; i < z_info->e_max; i++) {
+		if (!e_info[i].name) continue;
+		if (!my_stricmp(e_info[i].name, "of Levitation")) levitation++;
+		if (!my_stricmp(e_info[i].name, "of Slow Descent")) slow_descent++;
+	}
+
+	eq(levitation, 0);
+	eq(slow_descent, 1);
+
+	ok;
+}
+
+/**
+ * No two artifacts share a name.
+ *
+ * Not tidiness: Angband writes an artifact's name into the savefile and reads
+ * it back with `lookup_artifact_name`, which returns the first exact match
+ * (obj-util.c:520, load.c:149). Two artifacts of one name means a saved
+ * character can come back holding the other one.
+ *
+ * Zangband has two called "of Sawall" -- an Incandescent Globe and a Hard
+ * Leather Cap, which read distinctly there because Zangband shows the base
+ * object in the name. Only one is imported, and the converter now defers the
+ * other with that reason written down instead of losing it to whichever the
+ * reader happened to overwrite.
+ *
+ * This is an invariant rather than a test of that deferral: the second Sawall
+ * is blocked by its base object as well, so removing the deferral does not
+ * currently produce a clash. It is here because the clash is the thing that
+ * would be expensive to find later -- a savefile that comes back wrong -- and
+ * the next person to give that artifact a base is one edit away from it.
+ */
+static int test_no_two_artifacts_share_a_name(void *state) {
+	int i, j, clashes = 0;
+
+	for (i = 0; i < z_info->a_max; i++) {
+		if (!a_info[i].name) continue;
+
+		for (j = i + 1; j < z_info->a_max; j++) {
+			if (!a_info[j].name) continue;
+			if (my_stricmp(a_info[i].name, a_info[j].name)) continue;
+
+			clashes++;
+		}
+	}
+
+	eq(clashes, 0);
+
+	ok;
+}
+
 const char *suite_name = "object/imported";
 struct test tests[] = {
 	{ "the-imported-kinds-are-there", test_the_imported_kinds_are_there },
@@ -366,5 +431,8 @@ struct test tests[] = {
 	{ "a-light-radius-is-not-a-pval", test_a_light_radius_is_not_a_pval },
 	{ "an-immunity-outlives-its-resistance",
 	  test_an_immunity_outlives_its_resistance },
+	{ "no-ego-duplicates-an-angband-ego",
+	  test_no_ego_duplicates_an_angband_ego },
+	{ "no-two-artifacts-share-a-name", test_no_two_artifacts_share_a_name },
 	{ NULL, NULL }
 };

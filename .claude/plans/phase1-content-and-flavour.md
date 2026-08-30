@@ -20,9 +20,9 @@ added under the same name.
 
 | | 2.8.1 | Zangband | 4.2.6 | Zangband-only, absent from 4.2 |
 |---|---:|---:|---:|---:|
-| Monsters | 537 | 884 | 624 | **389** |
+| Monsters | 537 | 884 | 624 | **387** |
 | Artifacts | 113 | 129 | 138 | **51** |
-| Ego items | 80 | 99 | 79 | **18** |
+| Ego items | 80 | 99 | 79 | **17** |
 | Objects | 359 | 473 | 330 | **135** |
 | Vaults | 11 | 125 | 161 | not compared |
 
@@ -43,8 +43,23 @@ Roughly **590 pieces of content** with no counterpart in 4.2. That is the import
 > An object kind's identity in these files is its `(tval, sval)` slot, and comparing slots
 > is what the converter does. By that measure the object row's 135 is 82 imported, 28
 > spellbooks for CNT-10, 19 deferred for want of a mechanism, 16 artifact bases and 10
-> renames. The same doubt now applies to the monster and artifact rows, which have still
-> not had this scrutiny.
+> renames.
+>
+> **The monster, artifact and ego rows have now had the same scrutiny, and each needed a
+> different notion of identity** — see `tools/zconv/renames.toml`. Ego indices are 98.9%
+> stable across the two versions, so the index is identity and the one divergence was a
+> rename: `of Levitation` is Angband's `of Slow Descent`, which 4.2 still ships. Artifact
+> indices are 69% stable, and all 35 divergences turned out to be Zangband replacing a
+> Tolkien artifact with one of its own in the same numbered slot — replacements, not
+> renames, and correctly imported. Monster indices are 0.5% stable: Zangband renumbered
+> the whole bestiary, so identity had to come from the *description*, which is
+> hand-written prose. 33 monsters keep a 2.8.1 monster's paragraph word for word; 31 are
+> Zangband writing a deeper monster on inherited text or 2.8.1 boilerplate shared by
+> several monsters at once, and two were renames — `hobo` and `raving lunatic`, which
+> Angband still ships as the boil-covered wretch and the village idiot.
+>
+> Three duplicates in total, now excluded: two monsters and one ego. The artifact row is
+> clean.
 
 ### 1.1 The object delta is not mostly spellbooks
 
@@ -137,7 +152,7 @@ vaults than Zangband did, so only genuinely distinctive Zangband vaults earn the
 
 ### Bestiary
 
-**CNT-01 — The 389 Zangband-only monsters are imported**, with statistics assigned per
+**CNT-01 — The 387 Zangband-only monsters are imported**, with statistics assigned per
 BAL-09 and the global lethality scalar of BAL-13 applied.
 
 **CNT-02 — The Amber uniques are present as a coherent set** — the princes named in §2,

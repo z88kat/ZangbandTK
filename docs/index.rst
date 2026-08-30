@@ -97,6 +97,6 @@ Deep water can be waded and drowned in, the world ends in open sea, and what you
 drop in the country stays where you left it until somebody finds it.
 :doc:`wilderness` covers it.
 
-**The bestiary is not Tolkien's alone.** 389 monsters imported from Zangband,
+**The bestiary is not Tolkien's alone.** 387 monsters imported from Zangband,
 including the princes of Amber and the Mythos deities, alongside 51 artifacts and
-18 ego types. :doc:`monsters` and :doc:`objects` have the detail.
+17 ego types. :doc:`monsters` and :doc:`objects` have the detail.

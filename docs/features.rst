@@ -111,10 +111,10 @@ Work you are offered, accept, carry about and hand back (:doc:`quests`).
 Monsters, objects and magic
 ---------------------------
 
-- **389 imported monsters**, including the princes of Amber and the Mythos
+- **387 imported monsters**, including the princes of Amber and the Mythos
   deities. 1013 in total.
 - **51 artifacts**, including Grayswandir and Frakir.
-- **18 ego types**, including ``(Vampiric)``, ``(Chaotic)`` and
+- **17 ego types**, including ``(Vampiric)``, ``(Chaotic)`` and
   ``(Trump Weapon)``.
 - **Three weapon mechanics** Angband has no equivalent of: vampiric, vorpal and
   chaotic.

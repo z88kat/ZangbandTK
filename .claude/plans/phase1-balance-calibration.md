@@ -203,7 +203,9 @@ Two interactions with decisions already taken:
 
 ### 2.9 New content
 
-389 monsters exist in Zangband but in neither 2.8.1 nor 4.2.6 — the actual content to port.
+387 monsters exist in Zangband but in neither 2.8.1 nor 4.2.6 — the actual content to port.
+(Measured at 389 until the identity pass behind CNT-11 found two that Zangband had renamed
+rather than added; see `tools/zconv/renames.toml`.)
 By depth band: 0–9:29, 10–19:44, 20–29:36, 30–39:39, 40–49:34, 50–59:60, 60–69:50,
 70–79:32, 80–89:21, 90–99:39, 100+:5.
 
@@ -233,7 +235,7 @@ Zangband decoration. Resolved by scaling 4.2's own values by Zangband's measured
 tuning between monsters while adopting Zangband's *absolute* lethality. Confirmed by project
 owner. Implemented by BAL-13.
 
-**D-3 — Zangband-only content is calibrated onto 4.2's curve.** The 389 monsters in §2.9
+**D-3 — Zangband-only content is calibrated onto 4.2's curve.** The 387 monsters in §2.9
 have no 4.2 counterpart to inherit from. Their absolute numbers are derived from 4.2's own
 curve; Zangband's numbers are used only as a *relative* signal of role.
 

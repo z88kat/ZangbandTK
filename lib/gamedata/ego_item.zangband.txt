@@ -61,12 +61,6 @@ combat:d6:d6:0
 type:gloves
 flags:GHOUL_TOUCH
 
-name:of Levitation
-info:0:7
-alloc:25:30 to 127
-type:boots
-flags:FEATHER
-
 name:of the Wild
 info:0:5
 alloc:25:0 to 127
