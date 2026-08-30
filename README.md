@@ -89,6 +89,16 @@ cd build && make alltests
 941 unit tests and 5 integration tests. They should all pass; if they do not,
 that is a bug worth reporting.
 
+Adding a source file or a data file also means telling the build inputs that
+are maintained by hand — the Visual Studio project, the DOS 8.3 renames, the
+install list. `scripts/check-build-lists` compares them against the tree and
+names anything missing; CI runs it on every push, but it needs only a checkout,
+so it is quicker to run it yourself:
+
+```sh
+scripts/check-build-lists
+```
+
 ### The manual
 
 ```sh

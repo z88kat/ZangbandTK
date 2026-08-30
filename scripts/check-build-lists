@@ -1,0 +1,95 @@
+#!/usr/bin/env python3
+#
+# Check the build files that are maintained by hand against what is on disk.
+#
+# Several of this project's build inputs enumerate their contents rather than
+# globbing, and each is only exercised by a CI job that runs late: the Visual
+# Studio project fails at link, the DOS package fails at the smoke test, and the
+# autotools install list fails only if somebody installs.  Every one of them has
+# been found stale, more than once, with files missing from several commits back.
+#
+# Run from the top of the tree, no arguments.  Exits non-zero and says what is
+# missing.  Nothing here reads a compiler or a platform, so it runs anywhere.
+
+import os
+import re
+import sys
+
+FAIL = []
+
+
+def check(name, missing, note=""):
+    if missing:
+        FAIL.append((name, sorted(missing), note))
+
+
+def read(path):
+    with open(path, encoding="utf-8", errors="replace") as handle:
+        return handle.read()
+
+
+# The Visual Studio project is hand-listed, and its .filters has to carry the
+# same entries or the solution view loses the file.  Two front ends are absent
+# on purpose: Windows builds main-win.c and nothing else.
+proj = read("src/win/vs2019/Angband.vcxproj")
+filt = read("src/win/vs2019/Angband.vcxproj.filters")
+entries = lambda t: set(re.findall(r'<Cl(?:Compile|Include) Include="([^"]+)"', t))
+
+built = {m + ".c" for m in re.findall(r"^\t([\w\-]+)\.o", read("src/Makefile.src"), re.M)}
+listed_c = {p.rsplit("\\", 1)[-1] for p in entries(proj) if p.endswith(".c")}
+check("vcxproj is missing sources built by Makefile.src",
+      built - listed_c - {"main-sdl2.c"}, "a front end Windows does not build")
+
+heads = {f for f in os.listdir("src") if f.endswith(".h")}
+listed_h = {p.rsplit("\\", 1)[-1] for p in entries(proj) if p.endswith(".h")}
+check("vcxproj is missing headers", heads - listed_h - {"main.h"},
+      "belongs to the front ends Windows does not build")
+
+check("vcxproj entries absent from .filters", entries(proj) - entries(filt))
+check("filters entries absent from vcxproj", entries(filt) - entries(proj))
+
+# DOS cannot open a name longer than 8.3, so Makefile.ibm rewrites the sources
+# to ask for short names and renames the data files to match.  The two halves
+# have to agree, and the way to test that is to do what the build does.
+ibm = read("src/Makefile.ibm")
+subs = {}
+for src_file, args in re.findall(r"^\t@sed -i (\S+\.c) (.*)$", ibm, re.M):
+    for was, now in re.findall(r"-e 's/\"([^\"]+)\"/\"([^\"]+)\"/'", args):
+        subs[was.replace("\\.", ".")] = now
+renames = {a: b for a, b in re.findall(
+    r"/lib/gamedata/([\w.\-]+\.txt) \$\(TMPDIR\)/lib/gamedata/([\w.\-]+\.txt)", ibm)}
+
+packaged = {renames.get(f, f) for f in os.listdir("lib/gamedata") if f.endswith(".txt")}
+short = lambda f: len(f.rsplit(".", 1)[0]) <= 8 and len(f.rsplit(".", 1)[-1]) <= 3
+check("gamedata names DOS cannot open, after Makefile.ibm's renames",
+      {f for f in packaged if not short(f)},
+      "add an mv to the dist target and a sed to the edit target")
+check("Makefile.ibm renames a gamedata file that is not there",
+      set(renames) - set(os.listdir("lib/gamedata")))
+
+# Every name the game asks for has to survive that rewriting and still exist.
+asked = set()
+for f in os.listdir("src"):
+    if f.endswith(".c"):
+        asked |= set(re.findall(
+            r'parse_file(?:_quit_not_found)?\s*\(\s*\w+\s*,\s*"([^"]+)"', read("src/" + f)))
+check("gamedata the DOS build asks for and would not find",
+      {subs.get(a, a) + ".txt" for a in asked} - packaged - {"lore.txt", "randart.txt"},
+      "written at runtime rather than shipped")
+
+# And the autotools install list, which decides what `make install` ships.
+files = re.search(r"^FILES\s*=\s*(.*?)(?=^\w|\Z)", read("lib/gamedata/Makefile"), re.M | re.S)
+install = set(re.findall(r"[\w.\-]+\.txt", files.group(1)))
+on_disk = {f for f in os.listdir("lib/gamedata") if f.endswith(".txt")}
+check("lib/gamedata/Makefile will not install", on_disk - install)
+check("lib/gamedata/Makefile installs what is not there", install - on_disk)
+
+for name, items, note in FAIL:
+    print("%s:" % name)
+    for i in items:
+        print("    %s" % i)
+    if note:
+        print("  (known exceptions: %s)" % note)
+print("build lists: %d check%s failed" % (len(FAIL), "" if len(FAIL) == 1 else "s")
+      if FAIL else "build lists: all consistent")
+sys.exit(1 if FAIL else 0)

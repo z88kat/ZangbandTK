@@ -12,6 +12,21 @@ permissions:
   contents: read
 
 jobs:
+  build-lists:
+    name: Build lists
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Project
+        uses: actions/checkout@v6
+
+      # Several build inputs enumerate their contents by hand, and each is
+      # otherwise only exercised by a job that runs late -- the Visual Studio
+      # project at link, the DOS package at its smoke test, the install list
+      # only if somebody installs.  This needs nothing but a checkout, so a gap
+      # fails here in seconds rather than there in minutes.
+      - name: Check hand-maintained build lists
+        run: scripts/check-build-lists
+
   tests:
     name: Tests
     runs-on: ubuntu-latest
