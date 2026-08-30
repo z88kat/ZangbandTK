@@ -26,7 +26,6 @@ STEALTH = "STEALTH"
 SENSE = "SEARCH"
 INFRA = "INFRA"
 BLOWS = "BLOWS"
-LITE = "LIGHT"
 XTRA_MIGHT = "MIGHT"
 XTRA_SHOTS = "SHOTS"
 
@@ -34,6 +33,10 @@ XTRA_SHOTS = "SHOTS"
 # Resistances are level 1; immunities are the same property at level 3.
 
 [value_fixed]
+# Zangband's LITE is a boolean: `if (FLAG(o_ptr, TR_LITE)) p_ptr->cur_lite++`
+# (xtra1.c:2024). It is not scaled by pval, and reading it as one gave the
+# Crown of Chaos a light radius of 125.
+LITE       = { name = "LIGHT",      level = 1 }
 RES_ACID   = { name = "RES_ACID",   level = 1 }
 RES_ELEC   = { name = "RES_ELEC",   level = 1 }
 RES_FIRE   = { name = "RES_FIRE",   level = 1 }
@@ -45,9 +48,12 @@ RES_NETHER = { name = "RES_NETHER", level = 1 }
 RES_NEXUS  = { name = "RES_NEXUS",  level = 1 }
 RES_CHAOS  = { name = "RES_CHAOS",  level = 1 }
 RES_DISEN  = { name = "RES_DISEN",  level = 1 }
+RES_SOUND  = { name = "RES_SOUND",  level = 1 }
+RES_SHARDS = { name = "RES_SHARD",  level = 1 }
 IM_FIRE    = { name = "RES_FIRE",   level = 3 }
 IM_COLD    = { name = "RES_COLD",   level = 3 }
 IM_ELEC    = { name = "RES_ELEC",   level = 3 }
+IM_POIS    = { name = "RES_POIS",   level = 3 }
 
 # ------------------------------------------------------------------ flags
 # Boolean properties, emitted on the flags: line.
@@ -86,6 +92,11 @@ THROW = "THROWING"
 RES_BLIND = "PROT_BLIND"
 RES_CONF = "PROT_CONF"
 RES_FEAR = "PROT_FEAR"
+# Three more ZangbandTK implementations, added for the object import (CNT-11).
+# See src/player-attack.c, src/player-util.c and src/cmd-cave.c.
+NO_MAGIC = "NO_MAGIC"
+STRANGE_LUCK = "STRANGE_LUCK"
+PSI_CRIT = "PSI_CRIT"
 
 # ----------------------------------------------------------------- brands
 
@@ -119,7 +130,6 @@ AGGRAVATE = { name = "siren", power = 30 }
 TELEPORT = { name = "teleportation", power = 30 }
 DRAIN_EXP = { name = "dullness", power = 30 }
 NO_TELE = { name = "anti-teleportation", power = 30 }
-NO_MAGIC = { name = "impair mana recovery", power = 30 }
 TY_CURSE = { name = "ancient and foul", power = 40 }
 DRAIN_STATS = { name = "weakness", power = 30 }
 
@@ -182,6 +192,16 @@ EXPLODE = "EXPLODE"
 
 [value_pval_ego]
 TUNNEL = "TUNNEL"
+
+# --------------------------------------------------- kind-only flags
+# 4.2's *kind* flags, which live in a different set from object flags and are
+# only legal on an object kind. The artifact and ego parsers read `flags:` into
+# the object-flag set alone, so these are read by the object converter only --
+# which costs nothing, since Zangband puts none of them on an artifact or ego.
+
+[flag_kind]
+# 4.2 has this one under the same name, and uses it on 22 of its own kinds.
+EASY_KNOW = "EASY_KNOW"
 
 # --------------------------------------------- random ability generation
 #

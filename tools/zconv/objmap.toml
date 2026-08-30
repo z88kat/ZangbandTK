@@ -1,0 +1,225 @@
+# Zangband object kinds -> Angband 4.2's object.txt (CNT-11).
+#
+# Object *flags* are mapped by objflagmap.toml, shared with the artifact and
+# ego converters. This file holds what is specific to whole object kinds:
+# which tval becomes which 4.2 type, which kinds 4.2 already has under another
+# name, which are deferred for want of a mechanism, and how the Lua on a
+# consumable becomes a 4.2 effect.
+#
+# Keys are "tval:sval", not names. An object kind's identity in these files is
+# its slot: Zangband has 59 names that collide with another of its own kinds
+# (two Amulets and Rings of Sensing, three Copper coins), and keying by name
+# silently loses 80 of its 553 records. `name = ` on each entry is there to be
+# read, not matched.
+
+# ---------------------------------------------------------------- types
+# Zangband's tval numbers to 4.2's type names. The two games agree on every
+# number they share; 4.2 has no type for figurines or statues, which is dealt
+# with under "defers" below.
+
+[type]
+16 = "shot"
+17 = "arrow"
+18 = "bolt"
+19 = "bow"
+20 = "digger"
+21 = "hafted"
+22 = "polearm"
+23 = "sword"
+30 = "boots"
+31 = "gloves"
+32 = "helm"
+33 = "crown"
+34 = "shield"
+35 = "cloak"
+36 = "soft armor"
+37 = "hard armor"
+38 = "dragon armor"
+39 = "light"
+40 = "amulet"
+45 = "ring"
+55 = "staff"
+65 = "wand"
+66 = "rod"
+70 = "scroll"
+75 = "potion"
+77 = "flask"
+80 = "food"
+
+# --------------------------------------------------------------- renames
+#
+# Zangband renamed 26 object kinds it inherited from Angband 2.8.1 without
+# changing what they are. 4.2 still ships all ten of the non-spellbook ones
+# under the older name, so importing them would put a second Ring of Accuracy
+# in the game called a Ring of Skill.
+#
+# This is the same trap as the `&`/`~` normalisation recorded in
+# phase1-content-and-flavour.md §1, one level deeper: normalising the article
+# markers makes the names comparable, but two games can still call one object
+# by two names. Comparing slots rather than names is what catches these.
+#
+# Only kinds that are the same *object* belong here. Zangband also re-used four
+# slots for something different -- an Amulet of Berserk Strength where 2.8.1
+# had Adornment, a Wand of Tame Monster where it had Lightning Bolts -- and
+# those are new content, not renames.
+
+[rename]
+"17:2"  = { name = "Sheaf Arrow", to = "Seeker Arrow" }
+"18:1"  = { name = "Steel Bolt", to = "Bolt" }
+"38:10" = { name = "Pseudo Dragon Scale Mail", to = "Shining Dragon Scale Mail", note = "4.2 gives it the DRAGON_SHINING activation, which breathes light or darkness exactly as Zangband's Lua does" }
+"40:5"  = { name = "Sensing", to = "Searching", note = "SENSE is Zangband's data-file name for the searching skill" }
+"45:23" = { name = "Sensing", to = "Searching" }
+"45:7"  = { name = "Levitation", to = "Feather Falling" }
+"45:28" = { name = "Skill", to = "Accuracy", note = "both roll a to-hit bonus and nothing else" }
+"45:29" = { name = "Combat", to = "Damage", note = "both roll a to-dam bonus and nothing else" }
+"70:17" = { name = "Enchant Weapon Skill", to = "Enchant Weapon To-Hit" }
+"70:18" = { name = "Enchant Weapon Deadliness", to = "Enchant Weapon To-Dam" }
+
+# --------------------------------------------------------------- rejects
+#
+# Nothing is listed here: the one category that needed rejecting -- Zangband's
+# artifact bases -- is caught by a rule rather than by name, since seven of the
+# rings it applies to are all called "Ring". See the INSTA_ART test in
+# cmd_objects.
+
+[reject]
+
+# ---------------------------------------------------------------- defers
+#
+# Kinds whose defining property has no 4.2 mechanism. Each names what is
+# missing rather than being quietly dropped, and none is a case where a
+# substitute would be the same item.
+
+[defer]
+
+# The ten statues are one decision, not ten. Zangband's statue is a monster
+# rendered in a material: the `#` in the name is replaced by the monster's name
+# and `pval` holds its race index (object2.c:3179). 4.2 object names are fixed
+# strings and `struct object` has no monster reference, so a Wooden Statue
+# without the interpolation is a 200-pound piece of wood with no content in it.
+"9:0" = { name = "Wooden Statue of #", why = "statue" }
+"9:1" = { name = "Clay Statue of #", why = "statue" }
+"9:2" = { name = "Stone Statue of #", why = "statue" }
+"9:3" = { name = "Iron Statue of #", why = "statue" }
+"9:4" = { name = "Copper Statue of #", why = "statue" }
+"9:5" = { name = "Silver Statue of #", why = "statue" }
+"9:6" = { name = "Golden Statue of #", why = "statue" }
+"9:7" = { name = "Ivory Statue of #", why = "statue" }
+"9:8" = { name = "Mithril Statue of #", why = "statue" }
+"9:9" = { name = "Ornate Statue of #", why = "statue" }
+
+"8:0" = { name = "Magical Figurine of #", why = "pets", note = """Thrown, it \
+breaks and summons the monster named in its `pval` as a pet \
+(cmd2.c:2209 -- `summon_named_creature(x, y, o_ptr->pval, FALSE, FALSE, TRUE)`, \
+where the last argument is `pet`). Both halves are missing: the monster in the \
+name, as with the statues, and the pet.""" }
+
+"65:17" = { name = "Tame Monster", why = "pets", note = """`charm_monster(dir, 45)` \
+-- the monster becomes a pet. Without pets the wand has nothing to do; \
+4.2's confusion and hold effects are a different item.""" }
+
+"75:63" = { name = "New Life", why = "mutations", note = """`do_cmd_rerate()` \
+re-rolls the character's hit dice and `cure_all_mutations()` strips every \
+mutation. 4.2 fixes hit points at birth and has no rerate command, and \
+mutations are unbuilt. Importing it as a potion that does nothing at all \
+would be worse than not having it.""" }
+
+"70:52" = { name = "Artifact Creation", why = "no 4.2 effect", note = """\
+`artifact_scroll()` turns an ordinary item in the pack into a random \
+artifact during play. 4.2 generates its random artifacts once, at birth, from \
+the savefile seed; there is no path that makes one mid-game.""" }
+
+"70:23" = { name = "Mundanity", why = "no 4.2 effect", note = """\
+`mundane_spell()` strips an item of ego and artifact status, leaving the base \
+object. 4.2 has no effect that removes runes, an ego or an artifact from an \
+object.""" }
+
+"66:28" = { name = "Havoc", why = "no 4.2 effect", note = """`call_chaos()` \
+rolls on a table of 26 chaos effects (spells2.c). 4.2's WONDER is a random \
+effect table too, but a different one, so substituting it would make a \
+different rod. The table itself is the content.""" }
+
+"65:29" = { name = "Rockets", why = "no 4.2 element", note = """`GF_ROCKET` \
+is its own damage type: it stuns unless the target resists sound, and is \
+halved by shard resistance (spells1.c:3535). 4.2 has no rocket element, and \
+adding one means an entry in list-elements.h -- which is indexed into \
+`el_info[]` and written to the savefile by position.""" }
+
+"45:54" = { name = "Wizardry", why = "no mana modifier", note = """Grants \
+bonus spell points through the `SP` flag. See objflagmap.toml's rejection of \
+`SP`: 4.2's object model has eleven modifiers and mana is not among them. The \
+ring is nothing else -- no resistance, no stat -- so there is no reduced \
+version worth having.""" }
+
+"70:51" = { name = "Rumour", why = "no rumour table", note = """Prints a line \
+from `lib/file/rumors.txt`, which is Zangband's own list and is not shipped \
+here. 4.2 has `hints.txt`, but it is Angband's text, read only for the \
+birth screen, and there is no effect that displays one.""" }
+
+# ------------------------------------------------------------- effects
+#
+# The Lua on a consumable, as 4.2 effect lines. Each entry is the list of
+# `key:value` pairs to append to the entry, in order; `dice:` and the rest
+# follow the effect they belong to, exactly as in object.txt.
+#
+# Damage figures are Zangband's own. Its `fire_ball(GF_x, dir, dam, rad)`
+# passes damage that the projection then divides by distance from the centre,
+# so 350 at the centre of a radius-4 ball is not 350 to everything in it.
+
+[effect]
+
+"70:50" = { name = "Logrus", lines = [
+    "effect:BALL:CHAOS:4",
+    "dice:400",
+    "effect:DAMAGE",
+    "dice:150+d151",
+], note = """`fire_ball(GF_CHAOS, 0, 400, 4)` centred on the reader, then \
+`take_hit(rand_range(150, 300))` unless chaos-resistant. 4.2 has no \
+conditional self-damage, so the second half is unconditional -- see the note \
+in the report.""" }
+
+"70:48" = { name = "Fire", lines = [
+    "effect:BALL:FIRE:4",
+    "dice:350",
+    "effect:DAMAGE",
+    "dice:100+d101",
+], note = """`fire_ball(GF_FIRE, 0, 350, 4)`, then `take_hit(rand_range(100, \
+200))` unless the reader's fire resistance is good enough. Same caveat as \
+Logrus.""" }
+
+"66:12" = { name = "Pesticide", lines = [
+    "effect:BALL:POIS:3",
+    "dice:8",
+], note = "`fire_ball(GF_POIS, dir, 8, 3)`, unchanged." }
+
+"75:62" = { name = "Invulnerability", lines = [
+    "effect:TIMED_INC:INVULN",
+    "dice:6+d8",
+], note = "`inc_invuln(rand_range(7, 14))`; 6+d8 is 7 to 14." }
+
+"75:9" = { name = "Booze", lines = [
+    "effect:TIMED_INC:CONFUSED",
+    "dice:14+d21",
+    "effect:TIMED_INC:IMAGE",
+    "dice:149+d151",
+    "effect:TIMED_INC:AMNESIA",
+    "dice:20",
+    "effect:TELEPORT",
+    "dice:100",
+], note = """Confusion 15-35 unless resistant, hallucination 150-300 on a \
+1-in-2 unless chaos-resistant, and on a 1-in-13 the memorable part: forget the \
+level and wake up 100 grids away. 4.2 has no probability gate on an effect \
+line, so the rare branch is here at full odds and the report says so.""" }
+
+"80:33" = { name = "Strip of Venison", lines = [
+    "effect:NOURISH:INC_TO",
+    "dice:8",
+], note = """Zangband's Lua only prints \"That tastes good.\"; the food value \
+is the kind's `pval`, which 4.2 expresses as a NOURISH effect. 8 matches \
+4.2's own Strip of Beef Jerky, the object this replaced.""" }
+
+# --------------------------------------------------------------- messages
+# `msg:` lines for kinds whose Lua printed something on use.
+
+[message]
+"80:33" = "That tastes good."

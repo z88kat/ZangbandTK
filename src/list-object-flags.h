@@ -68,4 +68,11 @@ OF(GHOUL_TOUCH, "Ghoul")
 OF(RETURN, "Retrn")
 OF(LUCK_10, " Luck")
 OF(EASY_ENCHANT, "EasEn")
+/*
+ * ZangbandTK (CNT-11): the three the object import needed.  Appended, as above.
+ * STRANGE_LUCK is not a luck bonus -- see src/player-attack.c.
+ */
+OF(NO_MAGIC, "NoMag")
+OF(STRANGE_LUCK, "WrdLk")
+OF(PSI_CRIT, "PsiCr")
 OF(MAX, "")

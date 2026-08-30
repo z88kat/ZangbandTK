@@ -5826,7 +5826,20 @@ static struct parser *init_parse_flavor(void) {
 }
 
 static errr run_parse_flavor(struct parser *p) {
-	return parse_file_quit_not_found(p, "flavor");
+	errr err = parse_file_quit_not_found(p, "flavor");
+
+	if (err)
+		return err;
+
+	/*
+	 * ZangbandTK (CNT-11): the extra ring and amulet flavours the imported
+	 * kinds need.  4.2 gives every kind of a flavoured tval its own flavour
+	 * and quits if the pool runs dry, so importing fifteen rings into a
+	 * game with thirty-nine ring flavours for thirty rings needs more.
+	 */
+	err = parse_file(p, "flavor.zangband");
+
+	return (err == PARSE_ERROR_NO_FILE_FOUND) ? PARSE_ERROR_NONE : err;
 }
 
 static errr finish_parse_flavor(struct parser *p) {

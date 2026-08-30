@@ -2181,7 +2181,15 @@ struct parser *init_parse_object(void) {
 }
 
 static errr run_parse_object(struct parser *p) {
-	return parse_file_quit_not_found(p, "object");
+	errr err = parse_file_quit_not_found(p, "object");
+
+	if (err)
+		return err;
+
+	/* ZangbandTK (CNT-11): imported object kinds — see run_parse_monster(). */
+	err = parse_file(p, "object.zangband");
+
+	return (err == PARSE_ERROR_NO_FILE_FOUND) ? PARSE_ERROR_NONE : err;
 }
 
 static errr finish_parse_object(struct parser *p) {

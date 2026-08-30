@@ -25,6 +25,7 @@
 #include "effects.h"
 #include "init.h"
 #include "mon-attack.h"
+#include "player-luck.h"
 #include "mon-aura.h"
 #include "mon-blows.h"
 #include "mon-desc.h"
@@ -499,6 +500,14 @@ static int monster_critical(random_value dice, int rlev, int dam)
 {
 	int max = 0;
 	int total = randcalc(dice, rlev, MAXIMISE);
+
+	/*
+	 * Luck isn't always good for you: weird luck sharpens the monster's
+	 * criticals as well as the player's, by scaling the damage the test
+	 * below is judged against
+	 * ([melee1.c:28](../archive/zangband/src/melee1.c#L28)).
+	 */
+	dam = luck_monster_crit(player, dam);
 
 	/* Must do at least 95% of perfect */
 	if (dam < total * 19 / 20) return (0);

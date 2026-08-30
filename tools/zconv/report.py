@@ -61,6 +61,8 @@ class Report:
     items: list[Converted] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
     skipped: list[tuple[str, str]] = field(default_factory=list)
+    #: (entry, what is missing, why) for entries held back rather than dropped
+    deferred: list[tuple[str, str, str]] = field(default_factory=list)
 
     def render(self) -> str:
         out: list[str] = []
@@ -235,6 +237,19 @@ class Report:
             w("|---|---|")
             for name, reason in self.skipped:
                 w(f"| {name} | {reason} |")
+            w("")
+
+        if self.deferred:
+            w("## Deferred")
+            w("")
+            w("Entries whose defining property has no equivalent in 4.2. Each")
+            w("is held for the mechanism it needs rather than imported in a")
+            w("reduced form that would not be the same object.")
+            w("")
+            w("| Entry | Needs | Why |")
+            w("|---|---|---|")
+            for name, needs, why in self.deferred:
+                w(f"| {name} | {needs} | {why} |")
             w("")
 
         if self.notes:

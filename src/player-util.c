@@ -40,6 +40,7 @@
 #include "player-spell.h"
 #include "player-timed.h"
 #include "dun-type.h"
+#include "player-luck.h"
 #include "player-util.h"
 #include "project.h"
 #include "score.h"
@@ -1276,6 +1277,11 @@ bool player_can_cast(const struct player *p, bool show_msg)
 		if (show_msg) {
 			msg("You are too confused!");
 		}
+		return false;
+	}
+
+	/* An anti-magic shell stops casting, but not studying or browsing. */
+	if (player_magic_blocked(p, show_msg)) {
 		return false;
 	}
 

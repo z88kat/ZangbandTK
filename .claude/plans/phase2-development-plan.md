@@ -119,7 +119,12 @@ rebuild. Manual chapter: how balance differs from both ancestors.
   > object flags in `objflagmap.toml`'s own `[implement]` block, which is a second
   > section in a second file. Counting flags belongs in the flagmaps, which the
   > converter reads and cannot be wrong about; a plan that restates them drifts.
-- CNT-11 — remaining Zangband-only objects.
+- **CNT-11 is done** (3.40.0) — 82 object kinds imported by `zconv objects`, with 19
+  deferred, 16 refused as artifact bases and 10 recognised as renames of objects 4.2
+  already has. It needed three more object properties (`STRANGE_LUCK`, `PSI_CRIT`,
+  `NO_MAGIC`) and corrected the §1 object count in
+  [phase1-content-and-flavour.md](phase1-content-and-flavour.md), which had been measured
+  by name.
 - Theme-first curation throughout, per DEC-19.
 
 **Exit:** Amber, Mythos and Chaos content in play at calibrated stats; conversion report

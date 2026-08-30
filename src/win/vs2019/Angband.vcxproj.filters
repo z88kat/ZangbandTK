@@ -453,6 +453,9 @@
     <ClCompile Include="src\player-history.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\player-luck.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\player-path.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1170,6 +1173,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\player-history.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\player-luck.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\player-path.h">

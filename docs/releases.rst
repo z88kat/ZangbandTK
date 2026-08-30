@@ -30,6 +30,56 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+M2: the rest of Zangband's objects — 30 August 2026
+---------------------------------------------------
+
+- **3.40.0** — **Eighty-two object kinds, and the three properties they needed.**
+  Zangband's own objects, which until now were the one part of its content that
+  had not come across: thirteen swords, nine polearms, eight hafted weapons,
+  nineteen pieces of armour, twenty-eight rings and amulets, and the
+  consumables among them that Angband has an effect for. A new ``objects``
+  subcommand in ``zconv`` produces them, and the data file it writes is
+  generated rather than edited, like the other three.
+
+  **The count in the plan was measured by name, and names lie.** Zangband
+  renamed twenty-six of the objects it inherited from Angband 2.8.1 without
+  changing what they are — its Ring of Skill is Angband's Ring of Accuracy, its
+  Scroll of Enchant Weapon Deadliness is Enchant Weapon To-Dam, its Ring of
+  Levitation is Feather Falling — and ten of those are still in Angband today
+  under the older name. Importing by name puts both in the game. The converter
+  compares the slot an object occupies instead, which is its actual identity,
+  and that also settles the reverse case: four slots where Zangband kept the
+  number and put a different object in it, which *are* new content.
+
+  Sixteen more were refused for being artifact bases rather than objects. Seven
+  of them are called "Ring", exist only so an artifact has something to hang on,
+  and importing one puts a plain ring in front of the dummy the Ring of Barahir
+  needs — after which ``artifact.txt`` will not parse.
+
+  **A Ring of Fate is not a lucky charm.** Its ``STRANGE_LUCK`` sharpens every
+  melee critical by half again, including the ones monsters land on you, and
+  gives one monster in thirteen a chance of arriving from up to forty levels
+  deeper than the floor should allow. Zangband's own comment on the third of its
+  four effects reads "Luck isn't always good for you...". Also new:
+  ``PSI_CRIT``, which spends one to three mana per critical and does nothing on
+  an empty pool, and ``NO_MAGIC``, which stops you casting outright.
+
+  Nineteen objects were deferred with the reason recorded, not dropped: ten
+  statues and a figurine whose names interpolate a monster Angband objects
+  cannot refer to, two more that need pets, and the rest waiting on mutations, a
+  chaos-effect table, a mana modifier, a rumour list, or an element that cannot
+  be added without changing the savefile layout.
+
+  Three older faults surfaced on the way, all in shared conversion tables and
+  all now fixed in the generator. Zangband's ``LITE`` is a boolean ``+1`` light
+  radius, not one of the properties its single pval scales — read as one, it had
+  been giving the Crown of Chaos a light radius of **125**, and thirteen other
+  artifacts too much. ``NO_MAGIC`` on an artifact had been mapped to Angband's
+  *impair mana recovery* curse, which is a different thing and is not even legal
+  on an amulet. And an item carrying both an immunity and a resistance to the
+  same element emitted both, in that order, so Angband's parser assigned the
+  weaker one last and quietly downgraded the immunity.
+
 M2 and M3: the flags that were left — 29 to 30 August 2026
 ------------------------------------------------------------
 

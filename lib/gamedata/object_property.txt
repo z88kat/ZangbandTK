@@ -1043,6 +1043,30 @@ code:LUCK_10
 power:8
 desc:Improves your saving throw
 
+name:anti-magic shell
+type:flag
+subtype:bad
+id-type:on wield
+code:NO_MAGIC
+power:-30
+desc:Stops you casting spells altogether
+
+name:weird luck
+type:flag
+subtype:misc ability
+id-type:on wield
+code:STRANGE_LUCK
+power:5
+desc:Sharpens your critical hits, and everything else's
+
+name:magic-powered criticals
+type:flag
+subtype:melee
+id-type:on wield
+code:PSI_CRIT
+power:15
+desc:Spends mana to land critical hits
+
 name:easily enchanted
 type:flag
 subtype:misc ability

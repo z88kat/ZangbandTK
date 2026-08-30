@@ -724,7 +724,7 @@ def cmd_artifacts(args) -> int:
         if flags:
             entry.set("flags", " | ".join(dedupe(flags)))
         if values:
-            entry.set("values", " | ".join(dedupe(values)))
+            entry.set("values", " | ".join(dedupe_values(values)))
         for brand in dedupe(brands):
             entry.pairs.append(("brand", brand))
         for slay in dedupe(slays):
@@ -903,7 +903,7 @@ def cmd_egos(args) -> int:
         if flags:
             entry.set("flags", " | ".join(dedupe(flags)))
         if values:
-            entry.set("values", " | ".join(dedupe(values)))
+            entry.set("values", " | ".join(dedupe_values(values)))
         for brand in dedupe(brands):
             entry.pairs.append(("brand", brand))
         for slay in dedupe(slays):
@@ -954,6 +954,502 @@ def cmd_egos(args) -> int:
     return 0
 
 
+
+def dedupe_values(values: list[str]) -> list[str]:
+    """Collapse a `values:` list to one entry per property, strongest first.
+
+    Zangband can give one item both an immunity and a resistance to the same
+    element -- Stormbringer carries IM_FIRE and RES_FIRE together -- and both
+    map onto the same 4.2 property at different levels. 4.2 parses the line
+    left to right and assigns, so `RES_FIRE[3] | RES_FIRE[1]` ends at 1 and
+    the immunity is silently downgraded to a resistance. Keeping the strongest
+    is what the source item meant.
+    """
+    best: dict[str, str] = {}
+    for value in values:
+        name, _, rest = value.partition("[")
+        level = rest.rstrip("]")
+        if name in best:
+            was = best[name].partition("[")[2].rstrip("]")
+            if was.isdigit() and level.isdigit() and int(level) <= int(was):
+                continue
+        best[name] = value
+    return list(best.values())
+
+
+#: Zangband's TERM_ colour constants as 4.2's colour names.
+_TERM_COLOUR = {
+    "TERM_DARK": "Dark", "TERM_WHITE": "White", "TERM_SLATE": "Slate",
+    "TERM_ORANGE": "Orange", "TERM_RED": "Red", "TERM_GREEN": "Green",
+    "TERM_BLUE": "Blue", "TERM_UMBER": "Umber", "TERM_L_DARK": "Light Dark",
+    "TERM_L_WHITE": "Light Slate", "TERM_VIOLET": "Violet",
+    "TERM_YELLOW": "Yellow", "TERM_L_RED": "Light Red",
+    "TERM_L_GREEN": "Light Green", "TERM_L_BLUE": "Light Blue",
+    "TERM_L_UMBER": "Light Umber",
+}
+
+
+def zangband_flavours(kind: str) -> list[tuple[str, str]]:
+    """Read one of Zangband's flavour tables out of its C source.
+
+    Ring and amulet flavours are the one part of Zangband's object data that
+    never reached a data file: they are two parallel C arrays in flavor.c, an
+    adjective and a colour at the same index. 4.2 keeps the same information in
+    flavor.txt, so the arrays convert directly -- and they have to, because
+    importing twenty-four rings and amulets into a game with 39 ring flavours
+    for 45 rings makes it quit at startup ("Not enough flavors for tval 21").
+    """
+    source = (ROOT / "archive" / "zangband" / "src" / "flavor.c").read_text(
+        encoding="utf-8", errors="replace")
+
+    def table(name: str) -> list[str]:
+        match = re.search(r"%s\[[A-Z_]+\]\s*=\s*\{(.*?)\};" % name, source, re.S)
+        if not match:
+            return []
+        body = re.sub(r"/\*.*?\*/", "", match.group(1), flags=re.S)
+        return [t.strip().strip('"') for t in body.split(",") if t.strip()]
+
+    return list(zip(table("%s_adj" % kind), table("%s_col" % kind)))
+
+
+#: Zangband's generation-time scripts, as 4.2 random expressions.
+#
+# `L:MAKE:` runs when the object is created, and its commonest job is to scale
+# the pval with depth: `object.pval = 1 + m_bonus(object.pval, level)` gives a
+# Ring of the Cat between +1 and +4 depending on how deep it was found. 4.2
+# writes the same thing as a random expression in the value itself -- `1+M4`
+# is a base of 1 plus an m_bonus roll to 4 -- so the scaling survives the
+# conversion instead of freezing at the ceiling.
+_MAKE_PVAL = [
+    (re.compile(r"object\.pval\s*=\s*(\d+)\s*\+\s*m_bonus\(object\.pval,\s*level\)"),
+     lambda m, pval: "%s+M%d" % (m.group(1), pval)),
+    (re.compile(r"object\.pval\s*=\s*randint1\((\d+)\)\s*\+\s*m_bonus\(object\.pval,\s*level\)"),
+     lambda m, pval: "d%sM%d" % (m.group(1), pval)),
+]
+
+#: And the same for the armour bonus, which 4.2 also takes as an expression.
+_MAKE_TOA = [
+    (re.compile(r"object\.to_a\s*=\s*rand_range\((\d+),\s*(\d+)\)\s*\+\s*m_bonus\((\d+),\s*level\)"),
+     lambda m: "%s+d%dM%s" % (m.group(1), int(m.group(2)) - int(m.group(1)) + 1,
+                              m.group(3))),
+    (re.compile(r"object\.to_a\s*=\s*object\.to_a\s*\+\s*randint1\((\d+)\)\s*\+\s*m_bonus\((\d+),\s*level\)"),
+     lambda m: "d%sM%s" % (m.group(1), m.group(2))),
+]
+
+#: Shared by all ten statues, which are one decision rather than ten.
+STATUE_NOTE = (
+    "Zangband's statue is a monster rendered in a material: the `#` in the "
+    "name is replaced by the monster's name and `pval` holds its race index "
+    "(object2.c:3179). 4.2 object names are fixed strings and `struct object` "
+    "has no monster reference, so the statue without its monster is a lump of "
+    "material with no content in it."
+)
+
+
+def cmd_objects(args) -> int:
+    """Convert Zangband-only object kinds onto 4.2's object.txt model (CNT-11)."""
+    import artifacts as art
+
+    here = Path(__file__).resolve().parent
+    with (here / "objflagmap.toml").open("rb") as fh:
+        flagmap = art.ObjFlagMap(tomllib.load(fh))
+    with (here / "objmap.toml").open("rb") as fh:
+        objmap = tomllib.load(fh)
+
+    types = {int(k): v for k, v in objmap.get("type", {}).items()}
+    renames = objmap.get("rename", {})
+    rejects = objmap.get("reject", {})
+    defers = objmap.get("defer", {})
+    effects = objmap.get("effect", {})
+    messages = objmap.get("message", {})
+    overrides = load_overrides().get("object", {})
+
+    def by_slot(path: str) -> dict[tuple[int, int], zformat.Record]:
+        """Index kinds by (tval, sval).
+
+        Not by name: Zangband gives 59 of its names to more than one kind --
+        two Amulets of Sensing, three Copper coins -- and a name-keyed read
+        silently drops 80 of its 553 records.  The slot is the identity.
+        """
+        out: dict[tuple[int, int], zformat.Record] = {}
+        for rec in zformat.parse(path):
+            info = (rec.first("I") or "").split(":")
+            if len(info) < 2:
+                continue
+            try:
+                slot = (int(info[0]), int(info[1]))
+            except ValueError:
+                continue
+            if rec.name and zformat.match_key(rec.name) != "something":
+                out[slot] = rec
+        return out
+
+    zang = by_slot(str(ZANGBAND / "k_info.txt"))
+    old = by_slot(str(ANGBAND281 / "k_info.txt"))
+
+    # 4.2 identifies a kind by type and name together: it has a Potion of
+    # Resistance and an Amulet of Resistance, which are different objects.
+    present: set[tuple[str, str]] = set()
+    kind_type = ""
+    for entry in aformat.parse(str(GAMEDATA / "object.txt")):
+        kind_type = entry.get("type") or ""
+        present.add((kind_type, entry.key))
+
+    BOOKS = set(range(90, 97))
+
+    report = Report(
+        title="zconv — object kind conversion review",
+        source=str(ZANGBAND / "k_info.txt"),
+        target=str(GAMEDATA / "object.txt"),
+        lethality="not applicable to object kinds",
+    )
+    report.notes.append(
+        "Kinds are compared by (tval, sval) rather than by name. Zangband "
+        "renamed 26 of the kinds it inherited from Angband 2.8.1, so a "
+        "name-based comparison reports a Ring of Skill as new content when "
+        "4.2 already ships it as a Ring of Accuracy.")
+    report.notes.append(
+        "Zangband applies one `pval` to every modifier flag an object carries, "
+        "as it does for artifacts. An object granting +2 INT and WIS grants +2 "
+        "to both because it cannot express anything else.")
+
+    entries: list[aformat.Entry] = []
+    counts = {"spellbook": 0, "inherited": 0, "present": 0, "renamed": 0,
+              "rejected": 0, "deferred": 0}
+
+    for slot, rec in sorted(zang.items(), key=lambda kv: kv[1].index):
+        key = "%d:%d" % slot
+        tval, _sval = slot
+
+        if tval in BOOKS:
+            counts["spellbook"] += 1
+            continue
+
+        if key in rejects:
+            counts["rejected"] += 1
+            report.skipped.append((rec.name, rejects[key]["why"]))
+            continue
+
+        # An INSTA_ART kind is not an object. It exists so an artifact has
+        # something to hang on, is never generated in its own right, and in
+        # Zangband is often not even named -- seven of them are just "Ring".
+        # 4.2 writes a dummy kind for any artifact base it lacks
+        # (obj-init.c:113), so importing these does not fill a gap; it puts a
+        # plain Ring in front of the dummy that the Ring of Barahir needs, and
+        # artifact.txt then fails to parse.
+        if "INSTA_ART" in rec.flags():
+            counts["rejected"] += 1
+            report.skipped.append((
+                rec.name,
+                "INSTA_ART: an artifact base rather than an object kind, and "
+                "4.2 supplies its own (obj-init.c:113)"))
+            continue
+
+        if key in renames:
+            counts["renamed"] += 1
+            spec = renames[key]
+            report.skipped.append((
+                rec.name,
+                "Zangband's name for Angband's '%s', which 4.2 still ships%s"
+                % (spec["to"],
+                   "; " + spec["note"] if spec.get("note") else "")))
+            continue
+
+        if key in defers:
+            counts["deferred"] += 1
+            spec = defers[key]
+            note = spec.get("note",
+                             STATUE_NOTE if spec["why"] == "statue" else "")
+            # The ten statues share one reason; saying it ten times buries it.
+            if note and any(note == n for _, _, n in report.deferred):
+                note = "As above."
+            report.deferred.append((rec.name, spec["why"], note))
+            continue
+
+        obj_type = types.get(tval)
+        if obj_type is None:
+            counts["inherited"] += 1
+            continue
+
+        if (obj_type, zformat.match_key(rec.name)) in present:
+            counts["present"] += 1
+            continue
+
+
+        # A slot Zangband inherited and left alone is Angband's object, not
+        # Zangband's, even where 4.2 has since retired it. A slot it re-used
+        # for something else -- an Amulet of Berserk Strength where 2.8.1 had
+        # Adornment -- is new content, and reaches the conversion below. The
+        # difference is the name, which is why [rename] has to say which of
+        # the two a renamed slot is.
+        if (slot in old
+                and zformat.match_key(old[slot].name)
+                == zformat.match_key(rec.name)):
+            counts["inherited"] += 1
+            continue
+
+        if slot in old:
+            item_note = ("Zangband re-used 2.8.1's slot for '%s'; this is a "
+                         "different object, not a rename" % old[slot].name)
+        else:
+            item_note = ""
+
+        item = Converted(name=rec.name, source_index=rec.index)
+        entry = aformat.Entry()
+        if item_note:
+            item.translations.append(item_note)
+
+        info = (rec.first("I") or "").split(":")
+        pval = int(info[2]) if len(info) > 2 else 0
+
+        entry.set("name", rec.name)
+        entry.set("type", obj_type)
+
+        graphics = (rec.first("G") or "").split(":")
+        if len(graphics) >= 2:
+            entry.set("graphics", "%s:%s" % (graphics[0], graphics[1]))
+
+        world = (rec.first("W") or "").split(":")
+        if len(world) >= 4:
+            entry.set("level", int(world[0]))
+            entry.set("weight", int(world[2]))
+            entry.set("cost", int(world[3]))
+
+        # Zangband's A: line is up to four "depth/rarity" pairs; 4.2 has one
+        # commonness and a depth range. 2.8.1 turned rarity into a weight as
+        # `100 / rarity` (init2.c:2284), and 4.2 uses the weight directly.
+        #
+        # Which band's rarity to use matters. Taking the commonest of them
+        # makes a No-dachi -- A:61/3:80/1, rare at 61 and certain by 80 --
+        # as common at 61 as it is at 80. The first band is the one at the
+        # object's own level, and is the closer read of a single number.
+        alloc = [p for p in (rec.first("A") or "").split(":") if p]
+        if alloc:
+            depths, rarities = [], []
+            for pair in alloc:
+                depth, _, rarity = pair.partition("/")
+                try:
+                    depths.append(int(depth))
+                    rarities.append(int(rarity) if rarity else 1)
+                except ValueError:
+                    continue
+            if depths:
+                commonness = max(1, min(100, round(100 / max(1, rarities[0]))))
+                lo, hi = max(1, min(depths)), max(100, max(depths))
+                entry.set("alloc", "%d:%d to %d" % (commonness, lo, min(hi, 127)))
+                item.fields["alloc"] = rules.Value(
+                    entry.get("alloc"), "CNT-11", rules.DERIVED,
+                    "Zangband allocation %s; rarity %d at the first band "
+                    "inverted to commonness" % (" ".join(alloc), rarities[0]))
+
+        # Zangband gives every kind a P: line whether or not it means anything:
+        # the Amulet of Destruction is recorded with 7d7 damage dice it can
+        # never use. 4.2 writes `attack:0d0:0:0` on everything that is not a
+        # weapon, so the dice go and the to-hit and to-dam penalties stay.
+        power = (rec.first("P") or "").split(":")
+        WEAPONS = {"shot", "arrow", "bolt", "bow", "digger", "hafted",
+                   "polearm", "sword"}
+        if len(power) >= 5:
+            dice = power[1] if obj_type in WEAPONS else "0d0"
+            if dice != power[1]:
+                item.translations.append(
+                    "damage dice %s dropped: Zangband records them on every "
+                    "kind, and a %s cannot use them" % (power[1], obj_type))
+            entry.set("attack", "%s:%s:%s" % (dice, power[2], power[3]))
+            to_a = power[4]
+            for pattern, render in _MAKE_TOA:
+                match = pattern.search("\n".join(rec.all("L")))
+                if match:
+                    to_a = render(match)
+                    item.translations.append(
+                        "armour bonus scales with depth: `%s` becomes `%s`"
+                        % (match.group(0).strip(), to_a))
+                    break
+            entry.set("armor", "%s:%s" % (power[0], to_a))
+
+        # What L:MAKE: does to the pval, as a 4.2 random expression, so that a
+        # ring found at depth is worth more than one found at the gate.
+        script = "\n".join(rec.all("L"))
+        pval_expr = str(pval)
+        for pattern, render in _MAKE_PVAL:
+            match = pattern.search(script)
+            if match:
+                pval_expr = render(match, pval)
+                item.translations.append(
+                    "pval scales with depth: `%s` becomes `%s`"
+                    % (match.group(0), pval_expr))
+                break
+
+        flags, values, brands, slays, curses = [], [], [], [], []
+        for flag in rec.flags():
+            if flag in flagmap.flag_kind:
+                flags.append(flagmap.flag_kind[flag])
+                continue
+            disposition, reason = flagmap.disposition(flag)
+            if disposition == "value":
+                if flag in flagmap.value_pval:
+                    if pval:
+                        values.append("%s[%s]"
+                                      % (flagmap.value_pval[flag], pval_expr))
+                    else:
+                        item.flag_dispositions.append((
+                            flag, "manual",
+                            "modifier flag on a kind with no pval; Zangband "
+                            "would grant nothing"))
+                else:
+                    spec = flagmap.value_fixed[flag]
+                    values.append("%s[%d]" % (spec["name"], spec["level"]))
+            elif disposition == "flag":
+                flags.append(flagmap.flag[flag])
+            elif disposition == "brand":
+                brands.append(flagmap.brand[flag])
+            elif disposition == "slay":
+                slays.append(flagmap.slay[flag])
+            elif disposition == "curse":
+                spec = flagmap.curse[flag]
+                curses.append("%s:%d" % (spec["name"], spec["power"]))
+            else:
+                item.flag_dispositions.append((flag, disposition, reason))
+
+        def dedupe(seq):
+            seen: dict[str, None] = {}
+            for value in seq:
+                seen.setdefault(value, None)
+            return list(seen)
+
+        if flags:
+            entry.set("flags", " | ".join(dedupe(flags)))
+        if values:
+            entry.set("values", " | ".join(dedupe_values(values)))
+        for brand in dedupe(brands):
+            entry.pairs.append(("brand", brand))
+        for slay in dedupe(slays):
+            entry.pairs.append(("slay", slay))
+        for curse in dedupe(curses):
+            entry.pairs.append(("curse", curse))
+
+        if key in messages:
+            entry.set("msg", messages[key])
+
+        if key in effects:
+            spec = effects[key]
+            for line in spec["lines"]:
+                tag, _, value = line.partition(":")
+                entry.pairs.append((tag, value))
+            item.fields["effect"] = rules.Value(
+                spec["lines"][0].partition(":")[2], "CNT-11", rules.DERIVED,
+                spec.get("note", ""))
+        elif [line for line in rec.all("L") if line.startswith("USE")]:
+            item.flag_dispositions.append((
+                "L:USE", "manual",
+                "carries Lua that objmap.toml has no effect translation for"))
+        elif "add_ego_power" in script:
+            item.flag_dispositions.append((
+                "add_ego_power", "manual",
+                "rolls a random extra ability at creation. 4.2 has the same "
+                "idea in KF_RAND_POWER and KF_RAND_HI_RES, but reads them from "
+                "the ego only (obj-make.c:398), never from a kind, so putting "
+                "one here would parse and do nothing."))
+
+        desc = " ".join(d.strip() for d in rec.all("D"))
+        entry.set("desc", desc if desc else "An object of Zangband.")
+
+        for field_name, value in overrides.get(key, {}).items():
+            entry.set(field_name, value)
+            item.overridden.append(field_name)
+
+        report.items.append(item)
+        entries.append(entry)
+
+    report.notes.append(
+        "Skipped without a line each: %d spellbook kinds (CNT-10, gated on the "
+        "magic realms in M9), %d kinds 4.2 already has under the same name, and "
+        "%d Angband kinds that 4.2 retired and Zangband did not add."
+        % (counts["spellbook"], counts["present"], counts["inherited"]))
+
+    OUTDIR.mkdir(exist_ok=True)
+    report_path = OUTDIR / "objects.report.md"
+    report_path.write_text(report.render(), encoding="utf-8")
+    print("report:  %s" % report_path.relative_to(ROOT))
+
+    # 4.2 quits at startup if a tval has more kinds than flavours, and the
+    # rings and amulets above take both pools past their limit. Zangband has
+    # its own longer lists; the ones 4.2 does not already carry make up the
+    # difference, and are its content rather than an invention.
+    have = {tval: set() for tval in ("ring", "amulet")}
+    tval_now = ""
+    for line in (GAMEDATA / "flavor.txt").read_text(
+            encoding="utf-8", errors="replace").splitlines():
+        if line.startswith("kind:"):
+            tval_now = line.split(":")[1]
+        elif tval_now in have and line.startswith(("flavor:", "fixed:")):
+            have[tval_now].add(line.rsplit(":", 1)[-1].strip().casefold())
+
+    flavours: list[tuple[str, str, str, str]] = []
+    for kind, glyph in (("ring", "="), ("amulet", '"')):
+        for adjective, colour in zangband_flavours(kind):
+            if adjective.casefold() in have[kind]:
+                continue
+            if any(a == adjective for _, _, a, _ in flavours):
+                continue
+            flavours.append((kind, glyph, adjective,
+                             _TERM_COLOUR.get(colour, "White")))
+    report.notes.append(
+        "%d ring and %d amulet flavours were taken from Zangband's flavor.c, "
+        "being those 4.2 does not already have. Without them the game will not "
+        "start: 4.2 requires at least one flavour per kind of a flavoured tval."
+        % (sum(1 for k, _, _, _ in flavours if k == "ring"),
+           sum(1 for k, _, _, _ in flavours if k == "amulet")))
+
+    if args.write:
+        data_path = OUTDIR / "object.zangband.txt"
+        aformat.write(
+            str(data_path), entries,
+            preamble=(
+                "# object.zangband.txt — generated by tools/zconv. "
+                "Do not hand-edit.\n"
+                "# Hand-tuned values belong in tools/zconv/overrides.toml "
+                "(BAL-12).\n"
+                "# Source: %s\n" % (ZANGBAND / "k_info.txt")
+            ),
+        )
+        print("data:    %s" % data_path.relative_to(ROOT))
+
+        # Flavour indices continue above the highest flavor.txt uses, since
+        # the two files share one list and an index is an identity.
+        base = 1 + max(int(n) for n in re.findall(
+            r"^(?:flavor|fixed):(\d+)", (GAMEDATA / "flavor.txt").read_text(
+                encoding="utf-8", errors="replace"), re.M))
+        flavour_path = OUTDIR / "flavor.zangband.txt"
+        lines = [
+            "# flavor.zangband.txt — generated by tools/zconv. "
+            "Do not hand-edit.",
+            "# Source: %s" % (ROOT / "archive" / "zangband" / "src" / "flavor.c"),
+            "#",
+            "# Zangband's ring and amulet flavours that 4.2 does not have. The",
+            "# imported kinds need them: 4.2 assigns one flavour per kind and",
+            "# quits if it runs out.",
+        ]
+        last = ""
+        for offset, (kind, glyph, adjective, colour) in enumerate(flavours):
+            if kind != last:
+                lines += ["", "kind:%s:%s" % (kind, glyph)]
+                last = kind
+            lines.append("flavor:%d:%s:%s" % (base + offset, colour, adjective))
+        flavour_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        print("data:    %s" % flavour_path.relative_to(ROOT))
+    else:
+        print("data:    not written (pass --write)")
+
+    print("entries: %d   renamed: %d   rejected: %d   deferred: %d   "
+          "unresolved flags: %d"
+          % (len(report.items), counts["renamed"], counts["rejected"],
+             counts["deferred"],
+             len({f for i in report.items
+                  for f, d, _ in i.flag_dispositions if d == "unresolved"})))
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog="zconv", description="Convert Zangband data onto Angband 4.2's model.")
@@ -975,10 +1471,16 @@ def main() -> int:
     egos.add_argument("--write", action="store_true",
                       help="write the data file as well as the report")
 
+    objects = sub.add_parser("objects",
+                             help="convert k_info.txt to 4.2 object kinds")
+    objects.add_argument("--write", action="store_true",
+                         help="write the data file as well as the report")
+
     args = parser.parse_args()
     return {"analyse": cmd_analyse, "monsters": cmd_monsters,
             "artifacts": cmd_artifacts,
-            "egos": cmd_egos}[args.command](args)
+            "egos": cmd_egos,
+            "objects": cmd_objects}[args.command](args)
 
 
 if __name__ == "__main__":

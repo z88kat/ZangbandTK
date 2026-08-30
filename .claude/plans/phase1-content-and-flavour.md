@@ -33,13 +33,31 @@ Roughly **590 pieces of content** with no counterpart in 4.2. That is the import
 > comparing — without that, the figure inflates from 135 to 166. Any conversion tooling must
 > normalise the same way, and the monster and artifact rows should be re-checked for
 > equivalent formatting differences before the counts are treated as final.
+>
+> **And that is not sufficient, as CNT-11 found.** Normalising the markers makes two names
+> comparable; it does not make them the same object. Zangband renamed 26 of the kinds it
+> inherited from 2.8.1 without changing what they are — Ring of Skill for Ring of Accuracy,
+> Enchant Weapon Deadliness for Enchant Weapon To-Dam, Levitation for Feather Falling — and
+> 4.2 still ships ten of the non-spellbook ones under the older name. It also re-used four
+> slots for a *different* object, which the same comparison misses in the other direction.
+> An object kind's identity in these files is its `(tval, sval)` slot, and comparing slots
+> is what the converter does. By that measure the object row's 135 is 82 imported, 28
+> spellbooks for CNT-10, 19 deferred for want of a mechanism, 16 artifact bases and 10
+> renames. The same doubt now applies to the monster and artifact rows, which have still
+> not had this scrutiny.
 
-### 1.1 The object delta is mostly spellbooks
+### 1.1 The object delta is not mostly spellbooks
 
-The 135 Zangband-only objects are dominated by realm spellbooks — *Armageddon Tome*, *Black
+*This section originally read "The object delta is mostly spellbooks". CNT-11 measured it
+and it is not: of the 135, only 28 are realm spellbooks. The rest — 107 slots — is the
+larger half, and is what CNT-11 imported. The claim below stands for the spellbooks
+themselves and for the gate on them; the "dominated by" reading did not survive contact
+with the data.*
+
+The realm spellbooks among them — *Armageddon Tome*, *Black
 Channels*, *Black Mass*, *Blessings of the Grail*, *Book of the Unicorn*, *Call of the
-Wild*, *Cantrips for Beginners*. That is a direct consequence of Zangband's seven-realm
-magic system, and it means **this row is gated on PLR-08/PLR-09** in
+Wild*, *Cantrips for Beginners* — are a direct consequence of Zangband's seven-realm
+magic system, and it means **that part of the row is gated on PLR-08/PLR-09** in
 [phase1-player-systems.md](phase1-player-systems.md). The realm system is committed
 (DEC-19), so the gate is on *which* realms land and when — books for a realm that does not
 exist have nothing to contain. Sequencing puts both in M9.
@@ -213,7 +231,11 @@ properties**, extending the data files rather than special-casing in code.
 gated: books for realms that do not exist must not be imported.
 
 **CNT-11 — Non-spellbook Zangband-only objects are imported**, subject to the name
-normalisation caveat in §1.
+normalisation caveat in §1. ✅ **Met** (3.40.0). 82 kinds imported by
+`zconv objects`; 19 deferred with a recorded reason, 16 refused as artifact bases and 10
+recognised as Zangband's renames of objects 4.2 already ships. Three new object
+properties — `STRANGE_LUCK`, `PSI_CRIT`, `NO_MAGIC` — were built for it. The §1 caveat is
+amended above: name normalisation is necessary and not sufficient.
 
 ### Effects found in the official documentation
 
@@ -280,7 +302,9 @@ monster groupings.
    data entry. It is not: 118 monster flag tokens and an entire object property model
    separate the two formats, and BAL-08 requires each be checked against its consuming code.
 3. **Name matching is unreliable** (§1 caveat). The object count moved by 23% under
-   normalisation. Monsters and artifacts have not had the same scrutiny.
+   normalisation, and CNT-11 later found normalisation alone still wrong: comparing by
+   `(tval, sval)` slot rather than by name moved it again, in both directions. Monsters and
+   artifacts have not had the same scrutiny.
 4. **Volume invites shallow review.** 590 entries is more than anyone will carefully
    read. BAL-11's conversion report is the only realistic control.
 

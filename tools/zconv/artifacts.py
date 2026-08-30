@@ -48,6 +48,9 @@ class ObjFlagMap:
         for name, entry in spec.get("defer_ego", {}).items():
             self.implement.setdefault(name, entry)
         self.rand_ability: dict[str, dict] = spec.get("rand_ability", {})
+        #: 4.2's *kind* flags, legal on an object kind and nowhere else, so
+        #: they stay out of the shared tables above. See [flag_kind].
+        self.flag_kind: dict[str, str] = spec.get("flag_kind", {})
 
     def disposition(self, flag: str) -> tuple[str, str]:
         if flag in self.value_pval:

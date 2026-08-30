@@ -1,8 +1,8 @@
 Objects
 =======
 
-ZangbandTK adds 51 artifacts and 18 ego types to Angband's, along with three
-weapon properties Angband has no equivalent for.
+ZangbandTK adds 82 object kinds, 51 artifacts and 18 ego types to Angband's,
+along with three weapon properties Angband has no equivalent for.
 
 Three new weapon properties
 ---------------------------
@@ -51,6 +51,46 @@ Eighteen, including ``(Vampiric)``, ``(Chaotic)``, ``of Sharpness``,
 
 Ego items are where most players will actually meet Zangband's character.
 Artifacts are rare by design; a vampiric long sword is not.
+
+New objects
+-----------
+
+Eighty-two of Zangband's own object kinds, which is most of what it had that
+Angband does not: thirteen swords including the **Diamond Edge** and the
+**Psiblade**, nine polearms, eight hafted weapons, nineteen pieces of armour
+from the **T-shirt** to the feathered **Hagaromo**, and twenty-eight rings and
+amulets.
+
+The jewellery is where the interesting things are. An **Amulet of Anti-Magic**
+stops you casting at all; an **Amulet of Anti-Teleportation** roots you where
+you stand, which is a drawback until the day something tries to teleport you
+away. A **Ring of Lordly Protection** is what its name suggests. An **Amulet of
+Destruction** is not.
+
+A **Ring of Fate** deserves its own paragraph, below.
+
+Some care went into what *not* to import. Zangband renamed a good deal of what
+it inherited from Angband — its Ring of Skill is Angband's Ring of Accuracy,
+its Scroll of Enchant Weapon Deadliness is Enchant Weapon To-Dam — and
+importing those by name would have put two of each in the game under two names.
+They are compared by the slot they occupy rather than by what they are called,
+so the ten renamed ones are recognised as things Angband already has.
+
+The Ring of Fate
+----------------
+
+It sounds like a lucky charm. It is not, quite.
+
+What it actually does is sharpen every critical hit in the game by half again —
+**including the ones landed on you**. And roughly one monster in thirteen
+generated while you wear it comes from deeper than the level should produce,
+sometimes forty levels deeper.
+
+So it is a good ring for a character who kills things quickly and a very bad
+one for a character who does not, and it will eventually introduce you to
+something you were not ready for. Zangband's own source comments the third of
+its four effects with "Luck isn't always good for you...", which is the whole
+item in six words.
 
 The Ancient and Foul Curse
 --------------------------
@@ -119,8 +159,8 @@ called Amber, and that he is of it.
 you swallowed it would be an ordinary bad mushroom. Five turns is long enough to
 work out what you have done and not long enough to do anything about it.
 
-Four more from Zangband
------------------------
+Seven more from Zangband
+------------------------
 
 **Returning.** A thrown weapon comes back to your hand, nineteen throws in
 twenty. The twentieth is what keeps it a weapon you can lose.
@@ -136,6 +176,17 @@ and putting a weapon in them turns the property off entirely.
 **Easily enchanted.** Takes twice as many enchantment attempts, and an artifact
 so made does not get its usual chance to resist being enchanted at all.
 
+**Weird luck.** The Ring of Fate's property, described above. Both edges of it.
+
+**Magic-powered criticals.** A weapon that spends your mana to land critical
+hits, and to make the ones it lands worse — one to three points each time. The
+**Psiblade** carries it. With an empty mana pool it does nothing at all, which
+makes it a warrior's weapon only in the hands of a warrior who casts.
+
+**An anti-magic shell.** You cannot cast. Not a reduced chance, not a higher
+cost: the spell simply does not happen. Studying and browsing still work, so
+you can keep learning spells you are unable to use.
+
 Not yet implemented
 -------------------
 
@@ -144,3 +195,27 @@ Angband has no form of player wall-movement to hang it on — not a spell, not a
 temporary state, nothing — so carrying it would mean building wall-phasing for
 the player rather than reading a flag. Items with it work in every other
 respect.
+
+Nineteen of Zangband's object kinds are likewise recorded but not imported,
+each for want of a mechanism rather than out of preference:
+
+- **Ten statues and a figurine.** A Zangband statue is a monster rendered in
+  a material — the name reads *Mithril Statue of a Balrog* — and the figurine
+  is thrown to break and release the creature as a pet. Angband's object names
+  are fixed text and an object cannot refer to a monster, so a statue here
+  would be a heavy lump with the interesting part missing. The figurine needs
+  pets as well.
+- **A Wand of Tame Monster**, for the same reason: it makes a pet.
+- **A Potion of New Life**, which re-rolls your hit points and cures every
+  mutation. Neither mechanism exists yet.
+- **Scrolls of Artifact Creation and Mundanity**, which respectively make an
+  artifact out of an ordinary item and strip an item back to an ordinary one.
+  Angband has no effect that does either.
+- **A Rod of Havoc**, which rolls on a table of twenty-six chaos effects that
+  would have to be written before the rod means anything.
+- **A Wand of Rockets**, whose damage is its own element — it stuns, and shard
+  resistance halves it — and adding an element changes the savefile layout.
+- **A Ring of Wizardry**, which grants bonus spell points. Angband has eleven
+  object modifiers and mana is not among them, and the ring is nothing else.
+- **A Scroll of Rumour**, which reads from a list of rumours that is not
+  shipped here.

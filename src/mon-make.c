@@ -24,6 +24,7 @@
 #include "mon-group.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "player-luck.h"
 #include "mon-predicate.h"
 #include "mon-timed.h"
 #include "mon-util.h"
@@ -274,6 +275,14 @@ struct monster_race *get_mon_num(int generated_level, int current_level)
 	if (generated_level > 0 && one_in_(z_info->ood_monster_chance))
 		generated_level += MIN(generated_level / 4 + 2,
 			z_info->ood_monster_amount);
+
+	/*
+	 * And weird luck produces one on its own account, which is not capped
+	 * the way 4.2's own rule above is: a Ring of Fate can put something
+	 * forty levels deep in front of you
+	 * ([monster2.c:782](../archive/zangband/src/monster2.c#L782)).
+	 */
+	if (generated_level > 0) generated_level += luck_depth_boost(player);
 
 	total = 0L;
 

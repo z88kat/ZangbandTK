@@ -239,6 +239,7 @@ add_library(OurCoreLib OBJECT
         src/player-calcs.c
         src/player-class.c
         src/player-history.c
+        src/player-luck.c
         src/player-path.c
         src/player-properties.c
         src/player-quest.c
@@ -873,6 +874,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     monster/speech.c
     object/alloc.c
     object/attack.c
+    object/imported.c
     object/info.c
     object/pile.c
     object/slays.c

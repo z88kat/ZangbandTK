@@ -41,6 +41,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-attack.h"
+#include "player-luck.h"
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -397,13 +398,14 @@ static int o_critical_shot(const struct player *p,
  *
  * Factor in weapon weight, total plusses, player level.
  */
-static int critical_melee(const struct player *p,
+static int critical_melee(struct player *p,
 		const struct monster *monster,
 		int weight, int plus,
 		int dam, uint32_t *msg_type)
 {
 	int to_h = p->state.to_h + plus;
 	int chance, new_dam;
+	bool psi;
 
 	if (is_debuffed(monster)) {
 		to_h += z_info->m_crit_debuff_toh;
@@ -415,13 +417,19 @@ static int critical_melee(const struct player *p,
 			* p->state.skills[SKILL_TO_HIT_MELEE]
 		+ z_info->m_crit_chance_offset;
 
-	if (randint1(z_info->m_crit_chance_range) > chance
+	/* Weird luck sharpens the odds; a psiblade offers a second way in. */
+	chance = luck_crit_scale(p, chance);
+	psi = psi_crit_armed(p);
+
+	if ((randint1(z_info->m_crit_chance_range) > chance
+			&& !(psi && psi_crit_fires()))
 			|| !z_info->m_crit_level_head) {
 		*msg_type = MSG_HIT;
 		new_dam = dam;
 	} else {
-		int power = z_info->m_crit_power_weight_scl * weight
-			+ randint1(z_info->m_crit_power_random);
+		int power = luck_crit_scale(p,
+			z_info->m_crit_power_weight_scl * weight
+			+ randint1(z_info->m_crit_power_random));
 		const struct critical_level *this_l = z_info->m_crit_level_head;
 
 		while (power >= this_l->cutoff && this_l->next) {
@@ -429,6 +437,9 @@ static int critical_melee(const struct player *p,
 		}
 		*msg_type = this_l->msgt;
 		new_dam = this_l->add + this_l->mult * dam;
+
+		/* The psiblade pays for the critical and deepens it. */
+		if (psi) new_dam = dam + (new_dam - dam) * psi_crit_spend(p);
 	}
 
 	return new_dam;
@@ -437,12 +448,13 @@ static int critical_melee(const struct player *p,
 /**
  * Determine O-combat damage for critical hits from melee.
  */
-static int o_critical_melee(const struct player *p,
+static int o_critical_melee(struct player *p,
 		const struct monster *monster,
 		const struct object *obj, uint32_t *msg_type)
 {
 	int power = chance_of_melee_hit_base(p, obj);
 	int chance_num, chance_den, add_dice;
+	bool psi;
 
 	if (is_debuffed(monster)) {
 		power += z_info->o_m_crit_debuff_toh;
@@ -452,10 +464,13 @@ static int o_critical_melee(const struct player *p,
 		/ z_info->o_m_crit_power_toh_scl_den;
 
 	/* Test for critical hit:  chance is a * power / (b * power + c) */
-	chance_num = power * z_info->o_m_crit_chance_power_scl_num;
+	chance_num = luck_crit_scale(p,
+		power * z_info->o_m_crit_chance_power_scl_num);
 	chance_den = power * z_info->o_m_crit_chance_power_scl_den
 		+ z_info->o_m_crit_chance_add_den;
-	if (randint1(chance_den) <= chance_num && z_info->o_m_crit_level_head) {
+	psi = psi_crit_armed(p);
+	if (((randint1(chance_den) <= chance_num) || (psi && psi_crit_fires()))
+			&& z_info->o_m_crit_level_head) {
 		/* Determine level of critical hit. */
 		const struct o_critical_level *this_l =
 			z_info->o_m_crit_level_head;
@@ -465,6 +480,9 @@ static int o_critical_melee(const struct player *p,
 		}
 		add_dice = this_l->added_dice;
 		*msg_type = this_l->msgt;
+
+		/* The psiblade pays for the critical and deepens it. */
+		if (psi) add_dice *= psi_crit_spend(p);
 	} else {
 		add_dice = 0;
 		*msg_type = MSG_SHOOT_HIT;
