@@ -81,6 +81,9 @@ interface on Tcl/Tk 9.
   status in September 2026).
 - **Xcode command line tools** — `xcode-select --install`
 - **CMake** — only to run the test suite. `brew install cmake`
+- **GCC** — only for `scripts/check-build`'s third pass, which reproduces what
+  CI's Linux runners see. `brew install gcc` lands it as `gcc-16` beside the
+  system clang; nothing else in the build uses it and `cc` stays clang.
 - **Python 3.11+** — only for the data conversion tools. macOS ships 3.9, which
   has no `tomllib`; `brew install python@3.13` adds `python3.13` beside it
   without displacing the system `python3`. Name it explicitly when running the
@@ -120,14 +123,24 @@ scripts/check-build --tests   # ...and run the unit tests after
 
 Its exit code is the answer; it does not print a verdict for you to read past.
 
-It runs *both* build systems because CI does and they are not
-interchangeable: `Makefile.osx` asks for `-Wshadow`, `-Wwrite-strings`,
-`-Wmissing-prototypes`, `-Wnested-externs` and `-Wunused-macros`, CMake asks
-for `-pedantic`, and they compile to different C standards. A defect can pass
-either alone.
+It runs three builds, because CI runs all three shapes and none of them
+subsumes another:
 
-The one thing it cannot see is `-Wlogical-op`, which two CI jobs ask for and
-which GCC has and clang does not.
+| | Compiler | Adds |
+|---|---|---|
+| `Makefile.osx` | clang | `-Wshadow`, `-Wwrite-strings`, `-Wmissing-prototypes`, `-Wnested-externs`, `-Wunused-macros`; c99 |
+| CMake | clang | `-pedantic`; gnu99; builds and runs the unit tests |
+| CMake | GCC | `-Wlogical-op`, and everything else GCC sees that clang does not |
+
+A defect can pass any two of them. `depth > 0 \|\| depth > 0` is an error to
+GCC and silent to clang; a pointer of the wrong type is fatal to both, and was
+caught by neither until the flags were being passed.
+
+The GCC pass needs Homebrew's compiler — `brew install gcc`, which lands as
+`gcc-16` beside the system clang without displacing it. `cc` stays clang,
+which is what the macOS build and CI's macOS job both use. Override with
+`GCC=/path/to/gcc scripts/check-build` if yours is elsewhere; without one the
+script says so and exits non-zero rather than quietly skipping the pass.
 
 Adding a source file or a data file also means telling the build inputs that
 are maintained by hand — the Visual Studio project, the DOS 8.3 renames, the

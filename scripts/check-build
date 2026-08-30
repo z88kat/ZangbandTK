@@ -2,13 +2,20 @@
 #
 # Build the way CI builds, and let the exit code say whether it worked.
 #
-# Two build systems, because CI runs both and they are not interchangeable.
-# The macOS job builds the game through src/Makefile.osx; the Linux jobs
-# configure CMake with -Werror and also build and run the unit tests. Their
-# warning sets differ in both directions -- Makefile.osx asks for -Wshadow,
-# -Wwrite-strings, -Wmissing-prototypes, -Wnested-externs and -Wunused-macros,
-# CMake asks for -pedantic -- and they compile to different C standards, c99
-# against gnu99. A defect can pass either one alone.
+# Three builds, because CI runs all three shapes and none of them subsumes
+# another.
+#
+#   1. The macOS job, which builds the game through src/Makefile.osx with
+#      clang. Asks for -Wshadow, -Wwrite-strings, -Wmissing-prototypes,
+#      -Wnested-externs and -Wunused-macros; compiles to c99.
+#   2. The Linux -Werror jobs, in their CMake shape with clang here. Asks for
+#      -pedantic; compiles to gnu99; and builds and runs the unit tests, which
+#      Makefile.osx does not.
+#   3. The same again with GCC, because the Linux runners use GCC and it sees
+#      things clang does not -- `depth > 0 || depth > 0` is an error to GCC
+#      and silent to clang.
+#
+# A defect can pass any two of the three.
 #
 # What made this necessary: `make -f Makefile.osx` and `cmake -S . -B build`
 # both default to permissive, and CI passes -Werror to both. A pointer of the
@@ -36,23 +43,65 @@ fi
 
 JOBS=$(sysctl -n hw.activecpu 2>/dev/null || nproc 2>/dev/null || echo 4)
 
+# Homebrew's GCC, kept beside the system clang rather than displacing it --
+# the same arrangement as python3.13 and .venv-docs. `cc` stays clang, which
+# is what the macOS build below wants and what CI's macOS job uses.
+GCC=${GCC:-/opt/homebrew/bin/gcc-16}
+
+LOG=$(mktemp -t check-build)
+trap 'rm -f "$LOG"' EXIT
+
+# Quiet while it works, and everything it said the moment it does not.
+#
+# A gate that hides the diagnostic is only half a gate: the first version of
+# this script sent the build output to /dev/null, so a failure gave an exit
+# code and no reason -- which is how the compiler ends up talking to nobody
+# again, by a third route.
+run() {
+	if ! "$@" >"$LOG" 2>&1; then
+		cat "$LOG" >&2
+		exit 1
+	fi
+}
+
 # --- the macOS job, verbatim -------------------------------------------
 #
 # OPT replaces the default -O2 rather than adding to it, which is what CI
 # does and so is what this does.
 echo "check-build: building the game (Makefile.osx, OPT=-Werror)"
-( cd src && env OPT="-Werror" make -f Makefile.osx -j"$JOBS" >/dev/null )
+run sh -c "cd src && env OPT=-Werror make -f Makefile.osx -j$JOBS"
 
 # --- the Linux test job's configuration --------------------------------
 #
-# -Wvla because two of the CI jobs ask for it. -Wlogical-op, which those same
-# jobs also ask for, is GCC-only and clang has not got it -- one of the few
-# things CI can see that this cannot.
+# -Wvla because two of the CI jobs ask for it. -Wlogical-op goes to the GCC
+# pass below, clang not having it.
 echo "check-build: building the tests (CMake, -Werror)"
-cmake -S . -B build-strict -G Ninja \
+run cmake -S . -B build-strict -G Ninja \
 	-DCMAKE_C_FLAGS="-Werror -Wvla" \
-	-DSUPPORT_TEST_FRONTEND=ON >/dev/null
-cmake --build build-strict --parallel >/dev/null
+	-DSUPPORT_TEST_FRONTEND=ON
+run cmake --build build-strict --parallel
+
+# --- and the same again under GCC ---------------------------------------
+#
+# The Linux runners compile with GCC; everything above is clang. -Wvla and
+# -Wlogical-op come from the two statistics jobs, which ask for them and do
+# *not* pass -Werror -- so CI prints those warnings and builds on regardless.
+# They are errors here. That is one step stricter than CI deliberately, and
+# affordable because the tree is clean of both: a flag CI turns on to surface
+# logic bugs is worth stopping for, where -Wshadow (which fires on a dozen
+# places in the existing test suite that every CI job builds happily) is not.
+if [ -x "$GCC" ]; then
+	echo "check-build: building again with GCC ($($GCC -dumpversion))"
+	run cmake -S . -B build-gcc -G Ninja \
+		-DCMAKE_C_COMPILER="$GCC" \
+		-DCMAKE_C_FLAGS="-Werror -Wvla -Wlogical-op" \
+		-DSUPPORT_TEST_FRONTEND=ON
+	run cmake --build build-gcc --parallel
+else
+	echo "check-build: no GCC at $GCC -- skipping the GCC pass" >&2
+	echo "check-build:   brew install gcc, then re-run" >&2
+	exit 3
+fi
 
 if [ "$1" = "--tests" ]; then
 	echo "check-build: running the unit tests"

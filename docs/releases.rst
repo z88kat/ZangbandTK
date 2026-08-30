@@ -36,6 +36,29 @@ Savefile compatibility — 30 August 2026
 M8: the virtues, finished — 30 August 2026
 ------------------------------------------
 
+- **3.44.3** — **The last gap between the local gate and CI is closed, and it
+  found nothing.** Homebrew's GCC now sits beside the system clang as
+  ``gcc-16`` — not as ``cc``, which stays clang for the macOS build the way
+  ``python3.13`` sits beside the system Python. ``scripts/check-build`` runs a
+  third pass with it, at ``-Werror -Wvla -Wlogical-op``.
+
+  **The whole tree is clean under it**: 214 sources, zero warnings, zero
+  errors. ``-Wlogical-op`` turned up no real defects, which is worth saying
+  plainly rather than dressing up.
+
+  The pass earns its place all the same, and this was checked rather than
+  assumed. ``depth > 0 || depth > 0`` is an error to GCC and *silent* to clang
+  with ``-Werror`` — introduced deliberately, the clang builds returned 0 and
+  the GCC build returned 1. One nuance: the two CI jobs that ask for
+  ``-Wlogical-op`` do **not** pass ``-Werror``, so CI prints such a warning and
+  builds on. Locally it stops the gate. That is one step stricter than CI on
+  purpose, and affordable only because the tree is clean of it.
+
+  Also fixed: the script sent build output to ``/dev/null``, so a failure gave
+  an exit code and no reason — the compiler talking to nobody again, by a third
+  route. It is quiet while it works and prints everything the moment it does
+  not.
+
 - **3.44.2** — **The gate covers the build it was missing, and 3.44.1's
   account of the gap was wrong.** That entry framed the residual risk as
   clang against CI's GCC. It is not: the **macOS** CI job builds with
