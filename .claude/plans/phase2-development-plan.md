@@ -113,8 +113,12 @@ rebuild. Manual chapter: how balance differs from both ancestors.
 - **The M2 flag group is closed.** `AMBERITE`, `CAN_SPEAK`, `RES_TELE`, `REFLECTING` and
   the three auras are implemented, and with them the ego flags `REFLECT`, `SH_FIRE` and
   `SH_ELEC` — the same three mechanisms seen from the wearer's side, which is why they were
-  built together. Nothing tagged M2 remains in `flagmap.toml` or `objflagmap.toml`; what is
-  left in either is M3 (`SHAPECHANGER`, `QUANTUM`, `GHOUL_TOUCH`).
+  built together. Nothing tagged M2 remains in either flagmap.
+  > *That sentence used to go on to say what was left, and named three flags.* It was
+  > wrong within a day — `SHAPECHANGER` shipped, and it had never counted the six
+  > object flags in `objflagmap.toml`'s own `[implement]` block, which is a second
+  > section in a second file. Counting flags belongs in the flagmaps, which the
+  > converter reads and cannot be wrong about; a plan that restates them drifts.
 - CNT-11 — remaining Zangband-only objects.
 - Theme-first curation throughout, per DEC-19.
 
@@ -307,10 +311,11 @@ BAL-08 is a standing rule rather than a milestone deliverable, accounting for th
 > **Seven requirements remain unassigned**, all of them from the M0 documentation pass, which
 > this table was never updated for. **PLR-29 to PLR-33** are pet requirements and belong with
 > M10 — PLR-30 and PLR-31 in particular are the reason pets are not overpowered, so M10 must
-> not be sized without them. **PLR-40** (knowledge is a thing that can be lost) has no
-> milestone. **PLR-41** (a night at the inn shows the sleeper something) was in fact built in
-> M5 alongside the inn and needs recording as done rather than scheduling. Assigning these is
-> a separate pass and is not attempted here.
+> not be sized without them. **PLR-40** (knowledge is a thing that can be lost) and
+> **PLR-41** (a night at the inn shows the sleeper something) were both built in M5 and need
+> recording as done rather than scheduling — as do **CNT-20** (not everything is there to be
+> fought) and **WLD-26** (the monster array is sized per chunk), which this table has never
+> mentioned at all. Assigning these is a separate pass and is not attempted here.
 
 ---
 

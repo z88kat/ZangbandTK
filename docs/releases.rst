@@ -30,6 +30,44 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+M2 and M3: the flags that were left — 29 to 30 August 2026
+------------------------------------------------------------
+
+- **3.38.1** — **Three build lists that had stopped matching the tree.** The
+  Visual Studio project, which is hand-listed, had never heard of two of the
+  files below and failed to link on Windows; the DOS package had no 8.3 name for
+  ``monster_speech.txt`` and quit during init, printing nothing; and the
+  autotools install list had been missing four data files since M2. All three
+  are now compared against the tree by ``scripts/check-build-lists``, which runs
+  on every push rather than in the job that happens to break.
+- **3.38.0** — **Five monsters that will not hold still.** ``SHAPECHANGER``:
+  the chaos shapechanger, the lord of chaos, the unmaker, Nyarlathotep and
+  Dworkin are drawn as some other creature each time the display refreshes, and
+  about one time in twenty-five as an object. Nothing about them changes but the
+  glyph. Zangband nested the check inside the multi-hued draw, so the flag does
+  nothing at all without ``ATTR_MULTI`` — all five carry it, which is why that
+  never showed.
+- **3.37.0** — **Things that burn you back, and things that bounce.**
+  ``REFLECTING`` and the three auras, with the ego flags ``REFLECT``,
+  ``SH_FIRE`` and ``SH_ELEC`` that are the same mechanisms from the wearer's
+  side. Strike something wrapped in fire and it burns you; a bolt aimed at a
+  reflector comes back, nine times in ten, to a grid beside whoever fired it.
+  And a monster wrapped in fire will not enter water — a movement rule hidden
+  inside a damage flag, and one Zangband never got to use for want of a sea.
+- **3.36.0** — **A hundred and two monsters decline to be teleported.**
+  ``RES_TELE``, which is not the flat immunity it sounds like: a unique that has
+  it is unaffected outright, and anything else gets a saving throw on its size.
+  *Teleport Other* is no longer a reliable way to remove an inconvenience.
+- **3.35.0** — **Eighty-nine monsters have something to say.** ``CAN_SPEAK``:
+  they speak in a fight, differently once they have turned to run, and once more
+  when they die. And a unique that could talk turns out, one death in ten, to
+  have been wanted for something — the bounty is real gold on a curve reaching
+  32,000, which the flag report had filed as pure flavour.
+- **3.34.0** — **The blood of Amber is a family.** ``AMBERITE`` gives the twelve
+  a shared kind, the ``S_AMBERITES`` summon, and a blood curse laid on whoever
+  kills one. Until now they were twelve separate uniques with nothing joining
+  them, which is what CNT-02 asked them not to be.
+
 M7: races and classes — 25 to 29 August 2026
 ----------------------------------------------
 

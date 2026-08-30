@@ -28,7 +28,7 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
 | | |
 |---|---|
 | **Base** | Angband 4.2.6 |
-| **Platform** | macOS on Apple Silicon (see [Portability](#portability)) |
+| **Platform** | macOS, Windows, Linux, DOS, Nintendo DS, 3DS and the browser (see [Portability](#portability)) |
 | **Playable** | Yes |
 | **Savefiles** | Not compatible with Angband or Zangband, and never will be |
 
@@ -49,10 +49,25 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
   height, population and law; danger follows from law alone. Deep water can be
   waded and drowned in, the world ends in open sea, and what you drop in the
   country stays where you left it until somebody finds it.
+- **Towns and dungeons.** Several towns, differing in size, in who lives in them
+  and in which trades they hold, joined by routed roads; thirteen dungeons, each
+  with its own depth range, its own inhabitants and its own kind of treasure.
+  Six building services, including an inn that sells a night's sleep and the
+  dreams that come with it.
+- **Quests.** All six of Zangband's kinds, taken from somebody in a town,
+  carried, and handed back for payment — a bounty, a delivery, a place to find,
+  a killing at a named depth of a named dungeon, a killing in the open, and a
+  thing to fetch.
+- **Nine races and four classes** from Zangband: Amberite, Beastman, Yeek,
+  Draconian, Mindflayer, Vampire, Golem, Sprite and Half-Titan; the Monk with
+  unarmed progression, the Mindcrafter with psionics, and the Chaos-Warrior
+  sworn at birth to one of nine Lords of the Courts of Chaos. Races may have
+  activatable powers, which Angband has no mechanism for.
 
-**Not yet:** multiple towns and dungeons, quests, magic realms, mutations,
-virtues, pets, and nightmare mode. A Tcl/Tk front end is planned for a later
-phase, reviving the original's interface on Tcl/Tk 9.
+**Not yet:** mutations, virtues, magic realms, pets, and nightmare mode — and
+the two classes defined by which realm they choose, which wait for the realms.
+A Tcl/Tk front end is planned for a later phase, reviving the original's
+interface on Tcl/Tk 9.
 
 ## Building
 
@@ -131,8 +146,12 @@ Inside the app bundle the same file lives at
 
 ## Portability
 
-macOS is the delivery target, but the code is kept portable and Angband's CI
-covers Linux and Windows builds. Neither is tested by us yet.
+macOS is the delivery target, and the one the game is developed and played on.
+The rest are built by our own CI on every push — Windows by both MSBuild and
+nmake, Linux, Cygwin, MSYS2, DOS, the Nintendo DS and 3DS, and WebAssembly for
+the browser. DOS goes further and runs the game under DOSBox from a script,
+which is what catches a data file it cannot open. None of them is played
+through, so *builds* is a stronger claim than *works*.
 
 There is some irony here: the original ZangbandTK supported Windows and X11 and
 never supported macOS at all, so the Tcl/Tk front end will be the *new* port

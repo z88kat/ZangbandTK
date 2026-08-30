@@ -99,7 +99,7 @@ descriptions. No 4.2 equivalent and no requirement asks for one."""
 [defer.dungeon_habitat]
 milestone = "M5"
 requirement = "WLD-14"
-note = "Per-dungeon habitat. Needs multiple dungeons with distinct character."
+note = "Per-dungeon habitat. M5 delivered the dungeons, so the stated blocker is gone -- but ZangbandTK picks a dungeon's inhabitants by monster base rather than by these flags, so they may never be needed."
 flags = [
   "DUN_CAVERN", "DUN_LAIR", "DUN_HORROR", "DUN_TOWER", "DUN_DARKWATER",
   "DUN_TEMPLE", "DUN_MINE", "DUN_HELL", "DUN_GRAVE", "DUN_PLANAR",
@@ -110,7 +110,7 @@ flags = [
 [defer.wilderness_habitat]
 milestone = "M4"
 requirement = "WLD-07"
-note = "Wilderness terrain habitat. Needs the overworld to exist."
+note = "Wilderness terrain habitat. M4 delivered the overworld, so the stated blocker is gone -- but the wilderness populates from its own density and danger, not from these flags."
 flags = [
   "WILD_FOREST1", "WILD_FOREST2", "WILD_WASTE1", "WILD_WASTE2", "WILD_GRASS",
   "WILD_OCEAN", "WILD_SHORE", "WILD_MOUNT1", "WILD_MOUNT2", "WILD_SWAMP1",
@@ -120,8 +120,9 @@ flags = [
 [defer.movement]
 milestone = "M4"
 requirement = "WLD-09"
-note = """Movement over terrain 4.2's dungeons do not contain. Meaningless \
-until the wilderness introduces water and open air."""
+note = """Movement over terrain 4.2's dungeons do not contain.  M4 introduced \
+the water, and AQUATIC's effect arrived with it -- a fish is kept in the sea by \
+its base, not by this flag.  CAN_FLY and CAN_SWIM remain unbuilt and unblocked."""
 flags = ["CAN_FLY", "CAN_SWIM", "AQUATIC"]
 
 [defer.allegiance]
