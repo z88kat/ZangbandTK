@@ -245,6 +245,7 @@ ANGFILES0 = \
 	player-spell.o \
 	player-timed.o \
 	player-util.o \
+	player-virtue.o \
 	player.o \
 	project.o \
 	project-feat.o \

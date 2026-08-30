@@ -42,6 +42,7 @@
 #include "dun-type.h"
 #include "player-luck.h"
 #include "player-util.h"
+#include "player-virtue.h"
 #include "project.h"
 #include "score.h"
 #include "store.h"
@@ -2185,7 +2186,7 @@ bool player_power_aims(struct player *p, const struct player_power *power)
  */
 int patron_roll_slot(const struct player *p)
 {
-	int nasty = 6;
+	int nasty = 6, favour;
 
 	if (p->lev == 13) nasty = 2;
 	else if (!(p->lev % 13)) nasty = 3;
@@ -2203,6 +2204,23 @@ int patron_roll_slot(const struct player *p)
 	 * thing in both directions.
 	 */
 	if (!p->patron) nasty *= 2;
+
+	/*
+	 * And what the Courts make of how you have behaved (PLR-21).
+	 *
+	 * The first of the two things that read a virtue, and the reason the
+	 * counters exist at all. A Lord of Chaos is not impressed by a well-run
+	 * life: what it recognises is Chance and Individualism, and what wearies
+	 * it is Harmony and Temperance. The four are summed and the roll shifts
+	 * one step for every forty points -- so a character who has lived
+	 * chaotically for a long time is meaningfully safer at the Lord's hands
+	 * than one who has not, and neither can move it far. A character measured
+	 * against none of the four reads zero for all of them and is where they
+	 * were.
+	 */
+	favour = virtue_value(p, V_CHANCE) + virtue_value(p, V_INDIVIDUALISM)
+		- virtue_value(p, V_HARMONY) - virtue_value(p, V_TEMPERANCE);
+	nasty = MAX(1, nasty + favour / 40);
 
 	/*
 	 * A generous roll cannot reach the bottom quarter of the ladder at all,
@@ -2354,6 +2372,23 @@ void player_night_dream(struct player *p)
 	if (block) law = block->law;
 
 	player_dream_chances(law, &true_chance, &dark_chance);
+
+	/*
+	 * And what the sleeper brings to it (PLR-21).
+	 *
+	 * The second consumer. DEC-33 reads the inn dream as a Trump-like vision,
+	 * and a vision is clearer to someone who has spent their life looking:
+	 * Enlightenment and Knowledge make a true dream likelier, Unlife and
+	 * Chance make a dark one likelier. Applied on top of the law of the place
+	 * rather than instead of it, so where you sleep still matters most and
+	 * `player_dream_chances()` stays the pure function of law it was.
+	 */
+	true_chance = MAX(0, true_chance
+					  + (virtue_value(p, V_ENLIGHTEN)
+						 + virtue_value(p, V_KNOWLEDGE)) / 20);
+	dark_chance = MAX(0, dark_chance
+					  + (virtue_value(p, V_UNLIFE)
+						 + virtue_value(p, V_CHANCE)) / 20);
 
 	roll = randint0(100);
 

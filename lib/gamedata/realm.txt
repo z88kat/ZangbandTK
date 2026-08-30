@@ -8,24 +8,28 @@
 
 
 name:arcane
+virtues:ENCHANT | KNOWLEDGE
 stat:INT
 verb:cast
 spell-noun:spell
 book-noun:magic book
 
 name:divine
+virtues:VITALITY | COMPASSION
 stat:WIS
 verb:recite
 spell-noun:prayer
 book-noun:prayer book
 
 name:nature
+virtues:NATURE | HARMONY
 stat:WIS
 verb:chant
 spell-noun:verse
 book-noun:nature book
 
 name:shadow
+virtues:UNLIFE | CHANCE
 stat:INT
 verb:perform
 spell-noun:ritual

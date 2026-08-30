@@ -24,6 +24,7 @@
 #include "mon-lore.h"
 #include "mon-make.h"
 #include "monster.h"
+#include "player-virtue.h"
 #include "object.h"
 #include "obj-desc.h"
 #include "obj-knowledge.h"
@@ -467,6 +468,22 @@ void wr_player(void)
 	 * rd_player() reads them in.
 	 */
 	wr_string(player->patron ? player->patron->name : "");
+
+	/*
+	 * The virtues this character is measured against (ZangbandTK, PLR-18).
+	 *
+	 * Written by count, and by name rather than by index.  The count first,
+	 * so a save made when a character carried eight still reads if that number
+	 * ever changes -- a reader that loops to its own compile-time constant is
+	 * how thirty-five test savefiles stopped loading once before.  By name for
+	 * the same reason as the patron above: the roster is a list in a header
+	 * and inserting a virtue must not rebind every existing character.
+	 */
+	wr_byte(MAX_PLAYER_VIRTUES);
+	for (i = 0; i < MAX_PLAYER_VIRTUES; i++) {
+		wr_string(virtue_code(player->vir_types[i]));
+		wr_s16b(player->virtues[i]);
+	}
 
 	wr_string(player->class->name);
 	wr_byte(player->opts.name_suffix);

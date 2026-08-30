@@ -33,6 +33,58 @@ Unreleased
 Savefile compatibility — 30 August 2026
 ----------------------------------------
 
+M8: the virtues, finished — 30 August 2026
+------------------------------------------
+
+- **3.44.0** — **Zangband's unfinished feature, finished** (PLR-18 to PLR-21).
+  Topi Ylinen wrote the virtue system in 1998 and it never worked: by 2.7.5-pre1
+  there were **168 places that wrote a virtue and none that read one**, and the
+  knowledge screen that would have shown them was commented out with the note
+  *"Display virtues option is always left out"*. Eight counters per character,
+  moving with everything they did, and nothing looked at them for seven years.
+
+  The selection is kept because it is the part that did real work: a character
+  is measured against **eight of eighteen**, chosen at birth by class, then
+  race, then the realm they cast from, deduplicated, and padded from a weighted
+  table. Two Warriors of different blood are asked different questions. The
+  tables live in ``class.txt``, ``p_race.txt`` and ``realm.txt`` rather than in
+  a switch statement, so what a Necromancer is measured against is legible
+  without reading C.
+
+  **Two things read them, which is the whole point.** A Lord of the Courts of
+  Chaos reaches for the bottom of its reward ladder less often for a character
+  strong in Chance and Individualism, and more often for one strong in Harmony
+  and Temperance — a Lord of Chaos is not impressed by a well-run life. And the
+  dream at the inn runs truer for Enlightenment and Knowledge and darker for
+  Unlife and Chance. Both sit on mechanisms that already existed.
+
+  **The writers are sized by coverage rather than by census** (DEC-43). Porting
+  all 169 of Zangband's nudges was one option and porting only what the two
+  consumers read was the other; this is neither. The rule is that *every virtue
+  a character can be given must be one their play can move*, because a Warrior
+  carrying eight counters that nothing moves and nothing reads is the condition
+  Zangband shipped in, reached by a different road. Nine hook sites cover all
+  eighteen: what you kill, striking something asleep, a chaotic weapon
+  discharging, digging and clearing trees, hasting, making yourself
+  invulnerable, enchanting, mapping a level you have not walked, and collecting
+  a bounty.
+
+  One substitution, marked as one. Zangband's death block asks three times
+  whether the dead thing was ``GOOD``, and 4.2 has no such flag — nor is it
+  recoverable, Zangband having put it on 230 monsters running from Farmer
+  Maggot to Mughash the Kobold Lord. ``monster_is_living()`` stands in on the
+  unique branches only; the rest is dropped rather than approximated. Without
+  it Unlife would have had no writer that raises it, and a Necromancer would
+  carry a counter that only ever fell.
+
+  The savefile block is written and read **by count**, and the player block goes
+  to version 3 with version 2 kept as a loader — so the thirty-five characters
+  in ``tests/saves`` still open. A reader looping to its own compile-time
+  constant is exactly what broke them a fortnight ago.
+
+  **This closes M8's gate.** DEC-39 kept virtues on condition that something
+  read them; two things do.
+
 - **3.43.1** — **The Incandescent Globe of Sawall is dropped** (DEC-42).
   Zangband has two artifacts of that name — a light and a helm, both real, and
   neither a draft of the other. It could carry both because it saved an

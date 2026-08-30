@@ -25,6 +25,7 @@
 #include "mon-group.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "player-virtue.h"
 #include "mon-spell.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -782,7 +783,7 @@ int rd_quests_1(void) { return rd_quests_aux(false, false, false); }
  * nothing to catch it being made once.  rd_quests_aux() above is the same
  * shape for the same reason.
  */
-static int rd_player_aux(bool with_patron)
+static int rd_player_aux(bool with_patron, bool with_virtues)
 {
 	int i;
 	uint8_t tmp8u, num;
@@ -847,6 +848,39 @@ static int rd_player_aux(bool with_patron)
 			if (!player->patron)
 				note(format("Unknown chaos patron (%s); the character is "
 							"unowned.", buf));
+		}
+	}
+
+	/*
+	 * The virtues (ZangbandTK, PLR-18).  The count comes off the savefile and
+	 * is what the loop runs to, so a save holding more than this build carries
+	 * is truncated and one holding fewer leaves the rest neutral -- either way
+	 * it loads.  An unknown name leaves that slot unmeasured rather than
+	 * refusing the save.
+	 */
+	for (i = 0; i < MAX_PLAYER_VIRTUES; i++) {
+		player->vir_types[i] = 0;
+		player->virtues[i] = 0;
+	}
+	if (with_virtues) {
+		uint8_t stored;
+
+		rd_byte(&stored);
+		for (i = 0; i < stored; i++) {
+			int16_t value;
+			int v;
+
+			rd_string(buf, sizeof(buf));
+			rd_s16b(&value);
+			if (i >= MAX_PLAYER_VIRTUES) continue;
+
+			for (v = 1; v < V_MAX; v++) {
+				if (!my_stricmp(buf, virtue_code(v))) {
+					player->vir_types[i] = v;
+					player->virtues[i] = value;
+					break;
+				}
+			}
 		}
 	}
 
@@ -996,8 +1030,9 @@ static int rd_player_aux(bool with_patron)
 	return 0;
 }
 
-int rd_player_1(void) { return rd_player_aux(false); }
-int rd_player(void) { return rd_player_aux(true); }
+int rd_player_1(void) { return rd_player_aux(false, false); }
+int rd_player_2(void) { return rd_player_aux(true, false); }
+int rd_player(void) { return rd_player_aux(true, true); }
 
 
 

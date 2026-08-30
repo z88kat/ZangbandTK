@@ -19,6 +19,7 @@
 
 #include "cave.h"
 #include "effect-handler.h"
+#include "player-virtue.h"
 #include "game-input.h"
 #include "game-world.h"
 #include "generate.h"
@@ -1240,6 +1241,15 @@ bool effect_handler_ALTER_REALITY(effect_handler_context_t *context)
  */
 bool effect_handler_MAP_AREA(effect_handler_context_t *context)
 {
+	/*
+	 * Knowing a place without walking it (ZangbandTK, PLR-20).  Zangband put
+	 * this on its detection routine ([cave.c:3068](../archive/zangband/src/cave.c#L3068));
+	 * 4.2 splits detection across a dozen effects and maps the level with one,
+	 * so the one is where it goes.
+	 */
+	virtue_change(player, V_KNOWLEDGE, 1);
+	virtue_change(player, V_ENLIGHTEN, 1);
+
 	int i, x, y;
 	int x1, x2, y1, y2;
 	int dist_y = context->y ? context->y : context->value.dice;
@@ -2134,6 +2144,9 @@ bool effect_handler_DISENCHANT(effect_handler_context_t *context)
  */
 bool effect_handler_ENCHANT(effect_handler_context_t *context)
 {
+	/* Putting your faith in the work rather than the world (PLR-20). */
+	virtue_change(player, V_ENCHANT, 1);
+
 	int value = randcalc(context->value, player->depth, RANDOMISE);
 	bool used = false;
 	context->ident = true;

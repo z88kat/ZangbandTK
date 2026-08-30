@@ -32,6 +32,7 @@
 #include "mon-summon.h"
 #include "mon-timed.h"
 #include "mon-util.h"
+#include "player-virtue.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
@@ -1180,6 +1181,9 @@ static void player_kill_monster(struct monster *mon, struct player *p,
 
 	/* Gain experience */
 	player_exp_gain(p, new_exp);
+
+	/* And what killing it says about the killer (ZangbandTK, PLR-20). */
+	virtue_note_kill(p, mon->race, cave ? cave->depth : 0);
 
 	/* Generate treasure */
 	monster_death(mon, p, false);

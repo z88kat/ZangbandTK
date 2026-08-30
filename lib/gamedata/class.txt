@@ -134,6 +134,7 @@
 
 ############### WARRIOR ###############
 name:Warrior
+virtues:VALOUR | HONOUR
 stats:3:-2:-2:2:2
 skill-disarm-phys:25:15
 skill-disarm-magic:20:10
@@ -170,6 +171,7 @@ title:Lord
 
 ############### MAGE ###############
 name:Mage
+virtues:KNOWLEDGE | ENCHANT
 stats:-3:3:0:0:-2
 skill-disarm-phys:30:10
 skill-disarm-magic:35:12
@@ -447,6 +449,7 @@ desc: damage to each monster in its area of effect.
 
 ############### DRUID ###############
 name:Druid
+virtues:NATURE | HARMONY
 stats:-2:0:3:-2:0
 skill-disarm-phys:30:10
 skill-disarm-magic:30:10
@@ -685,6 +688,7 @@ desc:Spews plasma in a long narrow cone from the player.
 
 ############### PRIEST ###############
 name:Priest
+virtues:FAITH | TEMPERANCE
 stats:-1:-3:3:-1:1
 skill-disarm-phys:25:12
 skill-disarm-magic:25:12
@@ -954,6 +958,7 @@ desc: in light doing 100 damage to every light-sensitive creature.
 
 ############### NECROMANCER ###############
 name:Necromancer
+virtues:UNLIFE | KNOWLEDGE
 stats:-3:3:0:0:-2
 skill-disarm-phys:30:10
 skill-disarm-magic:35:12
@@ -1213,6 +1218,7 @@ desc:  Possible actions are move, stand still, 'd'rop, 'm'agic, or 'r'elease.
 
 ############### PALADIN ###############
 name:Paladin
+virtues:JUSTICE | VALOUR | HONOUR | FAITH
 stats:1:-3:1:-1:2
 skill-disarm-phys:20:15
 skill-disarm-magic:20:10
@@ -1375,6 +1381,7 @@ desc: winner can emerge.
 
 ############### ROGUE ###############
 name:Rogue
+virtues:HONOUR
 stats:0:1:-3:3:-1
 skill-disarm-phys:45:20
 skill-disarm-magic:45:20
@@ -1481,6 +1488,7 @@ desc:  This spell may have no effect when the forced descent option is set.
 
 ############### RANGER ###############
 name:Ranger
+virtues:NATURE | TEMPERANCE
 stats:0:0:2:1:-1
 skill-disarm-phys:40:15
 skill-disarm-magic:30:10
@@ -1591,6 +1599,7 @@ desc: slay, is broken, or is cursed.
 
 ############### BLACKGUARD ###############
 name:Blackguard
+virtues:VALOUR | INDIVIDUALISM
 stats:2:0:-3:0:2
 skill-disarm-phys:20:15
 skill-disarm-magic:20:10
@@ -1751,6 +1760,7 @@ desc:Causes a radius 13 earthquake centered around the player.
 # realm selection (PLR-08); until then this is a pure martial class, and adding
 # a magic block later takes nothing away.
 name:Monk
+virtues:FAITH | HARMONY | TEMPERANCE | PATIENCE
 stats:2:-1:1:3:2
 skill-disarm-phys:45:22
 skill-disarm-magic:45:22
@@ -1816,6 +1826,7 @@ blow:48:35:7d12:STUN:18:You hit %s with a crushing blow.
 # Several powers change what they do as the character grows, which is what the
 # `power-when` bands are for: the level range a group of effects applies over.
 name:Mindcrafter
+virtues:HARMONY | ENLIGHTEN | PATIENCE
 stats:-1:0:3:-1:-1
 skill-disarm-phys:30:15
 skill-disarm-magic:30:15
@@ -2060,6 +2071,7 @@ power-expr:B:PLAYER_LEVEL:* 4
 # Zangband's Chaos-Warrior also casts from the Chaos and Death realms.  That
 # waits for realm selection (PLR-08), as the Monk's magic does.
 name:Chaos-Warrior
+virtues:CHANCE | INDIVIDUALISM
 stats:2:1:0:1:2
 skill-disarm-phys:20:11
 skill-disarm-magic:20:11

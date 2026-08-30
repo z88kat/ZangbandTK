@@ -247,6 +247,7 @@ add_library(OurCoreLib OBJECT
         src/player-spell.c
         src/player-timed.c
         src/player-util.c
+        src/player-virtue.c
         src/player.c
         src/project-feat.c
         src/project-mon.c
@@ -933,6 +934,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     player/quest.c
     player/timed.c
     player/util.c
+    player/virtue.c
     trivial/trivial.c
     z-dice/dice.c
     z-expression/expression.c

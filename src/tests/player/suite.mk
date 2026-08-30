@@ -10,4 +10,4 @@ TESTPROGS += player/birth \
              player/pscore \
              player/quest \
              player/timed \
-             player/util
+             player/util player/virtue

@@ -42,6 +42,7 @@
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-luck.h"
+#include "player-virtue.h"
 #include "player-calcs.h"
 #include "player-timed.h"
 #include "player-util.h"
@@ -743,6 +744,9 @@ static const struct hit_types melee_hit_types[] = {
  */
 static void chaotic_effect(struct player *p, struct monster *mon)
 {
+	/* Courting chaos, one blow in ten (ZangbandTK, PLR-20). */
+	if (one_in_(10)) virtue_change(p, V_CHANCE, 1);
+
 	char m_name[80];
 
 	/*
@@ -994,6 +998,7 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	struct monster *mon = square_monster(cave, grid);
 	char m_name[80];
 	bool stop = false;
+	bool asleep = mon && mon->m_timed[MON_TMD_SLEEP] > 0;
 
 	/* The weapon used */
 	struct object *obj = equipped_item_by_slot_name(p, "weapon");
@@ -1004,6 +1009,19 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	bool do_quake = false;
 	bool success = false;
 	bool vorpal = false;
+
+	/*
+	 * Striking something that is not awake to defend itself
+	 * ([cmd1.c:1453](../archive/zangband/src/cmd1.c#L1453)). Zangband spared
+	 * the Rogue the dishonour and not the unkindness, which is the whole of
+	 * what a Rogue is -- 4.2 marks that character with PF_STEAL.
+	 */
+	if (asleep) {
+		virtue_change(p, V_COMPASSION, -1);
+		if (!pf_has(p->state.pflags, PF_STEAL)) {
+			virtue_change(p, V_HONOUR, -1);
+		}
+	}
 
 	char verb[20];
 	uint32_t msg_type = MSG_HIT;

@@ -39,6 +39,7 @@
 #include "ui-menu.h"
 #include "ui-object.h"
 #include "ui-output.h"
+#include "player-virtue.h"
 #include "ui-player.h"
 
 
@@ -1086,6 +1087,25 @@ void write_character_dump(ang_file *fff)
 		}
 	}
 
+
+	/*
+	 * The eight virtues this character is measured against (PLR-20).
+	 *
+	 * Zangband wrote the same section and never showed it -- the knowledge
+	 * screen that would have was commented out, so `dump_virtues()` reached
+	 * only the character sheet. Here it reaches the sheet as well, which is
+	 * where a player looks to see what they have become.
+	 */
+	file_putf(fff, "  [Virtues]\n\n");
+	for (i = 0; i < MAX_PLAYER_VIRTUES; i++) {
+		int virtue = player->vir_types[i];
+
+		if (virtue <= V_NONE) continue;
+
+		file_putf(fff, "You are %s %s.\n",
+				  virtue_describe(player->virtues[i]), virtue_name(virtue));
+	}
+	file_putf(fff, "\n");
 
 	/* Dump the equipment */
 	file_putf(fff, "  [Character Equipment]\n\n");

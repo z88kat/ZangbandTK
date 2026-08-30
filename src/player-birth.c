@@ -38,6 +38,7 @@
 #include "obj-util.h"
 #include "object.h"
 #include "player-birth.h"
+#include "player-virtue.h"
 #include "player-calcs.h"
 #include "player-history.h"
 #include "player-quest.h"
@@ -1001,6 +1002,7 @@ void player_generate(struct player *p, const struct player_race *r,
 	 * whole character of the relationship is that it was not consulted.
 	 */
 	patron_choose(p);
+	virtues_select(p);
 
 	/* Hitdice */
 	p->hitdie = p->race->r_mhp + p->class->c_mhp;

@@ -197,9 +197,6 @@ in when the milestone lands.
    * - Mutations
      - M8
      - :doc:`mutations`
-   * - Virtues
-     - M8
-     - :doc:`virtues`
    * - Magic realms
      - M9
      - :doc:`realms`
@@ -217,8 +214,9 @@ The world is finished — towns, services, roads, dungeons and quests all landed
 which was Phase 2's world work — and the character is under way. Nine races,
 racial powers, the Monk, the Mindcrafter and the Chaos-Warrior are in. What is
 not: the two classes defined by which magic realms they may choose, which wait
-for the realms themselves to arrive. Next come mutations and virtues, neither of
-which Angband has a mechanism for.
+for the realms themselves to arrive. **Virtues have landed** — eight drawn from
+eighteen at birth, moved by how you play, and read by the Lords of Chaos and by
+the dream at the inn. Next come mutations, which Angband has no mechanism for.
 
 A **Tcl/Tk front end** is planned for a later phase, reviving the original's
 interface on Tcl/Tk 9. There is an irony in it: the original ZangbandTK

@@ -36,6 +36,7 @@
 #include "hint.h"
 #include "dun-type.h"
 #include "init.h"
+#include "player-virtue.h"
 #include "message.h"
 #include "mon-init.h"
 #include "mon-list.h"
@@ -3303,6 +3304,69 @@ struct file_parser history_parser = {
  * Initialize player races
  * ------------------------------------------------------------------------ */
 
+/**
+ * Parse a `virtues:` line into a fixed array of virtue indices (PLR-19).
+ *
+ * Shared by class.txt, p_race.txt and realm.txt, which all say the same thing
+ * in the same words: an ordered list of virtues, of which the ones not already
+ * held are taken. Unknown names are an error rather than a silent zero -- a
+ * misspelt virtue would otherwise leave a class quietly measured against one
+ * thing fewer.
+ */
+static enum parser_error grab_virtues(struct parser *p, int *out, int max)
+{
+	char *flags, *s;
+	int n = 0;
+
+	if (!parser_hasval(p, "virtues")) return PARSE_ERROR_NONE;
+
+	flags = string_make(parser_getstr(p, "virtues"));
+	s = strtok(flags, " |");
+	while (s) {
+		int i;
+		bool found = false;
+
+		for (i = 1; i < V_MAX; i++) {
+			if (my_stricmp(s, virtue_code(i))) continue;
+			if (n < max) out[n++] = i;
+			found = true;
+			break;
+		}
+		if (!found) {
+			string_free(flags);
+			return PARSE_ERROR_INVALID_VALUE;
+		}
+		s = strtok(NULL, " |");
+	}
+	string_free(flags);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_class_virtues(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+
+	if (!c) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	return grab_virtues(p, c->virtues, MAX_CLASS_VIRTUES);
+}
+
+static enum parser_error parse_p_race_virtues(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+
+	if (!r) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	return grab_virtues(p, r->virtues, MAX_RACE_VIRTUES);
+}
+
+static enum parser_error parse_realm_virtues(struct parser *p) {
+	struct magic_realm *realm = parser_priv(p);
+
+	if (!realm) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	return grab_virtues(p, realm->virtues, MAX_REALM_VIRTUES);
+}
+
 static enum parser_error parse_p_race_name(struct parser *p) {
 	struct player_race *h = parser_priv(p);
 	struct player_race *r = mem_zalloc(sizeof *r);
@@ -4138,6 +4202,7 @@ static struct parser *init_parse_p_race(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_p_race_name);
+	parser_reg(p, "virtues str virtues", parse_p_race_virtues);
 	parser_reg(p, "stats int str int int int wis int dex int con", parse_p_race_stats);
 	parser_reg(p, "skill-disarm-phys int disarm", parse_p_race_skill_disarm_phys);
 	parser_reg(p, "skill-disarm-magic int disarm", parse_p_race_skill_disarm_magic);
@@ -4283,6 +4348,7 @@ static struct parser *init_parse_realm(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_realm_name);
+	parser_reg(p, "virtues str virtues", parse_realm_virtues);
 	parser_reg(p, "stat sym stat", parse_realm_stat);
 	parser_reg(p, "verb str verb", parse_realm_verb);
 	parser_reg(p, "spell-noun str spell", parse_realm_spell_noun);
@@ -5628,6 +5694,7 @@ static struct parser *init_parse_class(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_class_name);
+	parser_reg(p, "virtues str virtues", parse_class_virtues);
 	parser_reg(p, "stats int str int int int wis int dex int con",
 			   parse_class_stats);
 	parser_reg(p, "skill-disarm-phys int base int incr",

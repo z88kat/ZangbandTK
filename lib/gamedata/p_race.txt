@@ -65,6 +65,7 @@
 
 
 name:Human
+virtues:INDIVIDUALISM
 stats:0:0:0:0:0
 skill-disarm-phys:0
 skill-disarm-magic:0
@@ -85,6 +86,7 @@ height:69:10
 weight:165:35
 
 name:Half-Elf
+virtues:INDIVIDUALISM
 stats:0:1:-1:1:-1
 skill-disarm-phys:2
 skill-disarm-magic:2
@@ -106,6 +108,7 @@ weight:115:25
 obj-flags:SUST_DEX
 
 name:Elf
+virtues:NATURE
 stats:-1:2:-1:1:-1
 skill-disarm-phys:5
 skill-disarm-magic:5
@@ -128,6 +131,7 @@ obj-flags:SUST_DEX
 values:RES_LIGHT[1]
 
 name:Hobbit
+virtues:TEMPERANCE
 stats:-2:2:1:3:2
 skill-disarm-phys:15
 skill-disarm-magic:15
@@ -150,6 +154,7 @@ obj-flags:HOLD_LIFE
 player-flags:KNOW_MUSHROOM
 
 name:Gnome
+virtues:KNOWLEDGE
 stats:-1:2:0:2:1
 skill-disarm-phys:10
 skill-disarm-magic:10
@@ -172,6 +177,7 @@ obj-flags:FREE_ACT
 player-flags:KNOW_ZAPPER
 
 name:Dwarf
+virtues:DILIGENCE
 stats:2:-3:2:-2:2
 skill-disarm-phys:2
 skill-disarm-magic:2
@@ -194,6 +200,7 @@ obj-flags:PROT_BLIND
 player-flags:SEE_ORE
 
 name:Half-Orc
+virtues:HONOUR
 stats:2:-1:0:0:1
 skill-disarm-phys:-3
 skill-disarm-magic:-3
@@ -215,6 +222,7 @@ weight:135:15
 values:RES_DARK[1]
 
 name:Half-Troll
+virtues:VALOUR
 stats:4:-4:-2:-4:3
 skill-disarm-phys:-5
 skill-disarm-magic:-5
@@ -236,6 +244,7 @@ weight:240:60
 obj-flags:SUST_STR | REGEN
 
 name:Dunadan
+virtues:HONOUR
 stats:1:2:2:2:3
 skill-disarm-phys:4
 skill-disarm-magic:4
@@ -257,6 +266,7 @@ weight:190:20
 obj-flags:SUST_CON
 
 name:High-Elf
+virtues:VITALITY
 stats:1:3:-1:3:1
 skill-disarm-phys:4
 skill-disarm-magic:4
@@ -279,6 +289,7 @@ obj-flags:SEE_INVIS
 values:RES_LIGHT[1]
 
 name:Kobold
+virtues:HONOUR
 stats:-1:-1:0:2:2
 skill-disarm-phys:10
 skill-disarm-magic:10
@@ -326,6 +337,7 @@ values:RES_POIS[1]
 
 # Amber's own blood: it heals fast and does not weaken.
 name:Amberite
+virtues:HONOUR
 stats:1:2:2:2:3
 skill-disarm-phys:4
 skill-disarm-magic:4
@@ -375,6 +387,7 @@ power-effect:RESTORE_EXP
 
 # Chaos-touched. The mutations it is born with wait for M8.
 name:Beastman
+virtues:CHANCE
 stats:2:-2:-1:-1:2
 skill-disarm-phys:-5
 skill-disarm-magic:-5
@@ -398,6 +411,7 @@ values:RES_SOUND[1]
 
 # Feeble, and knows it.
 name:Yeek
+virtues:SACRIFICE
 stats:-2:1:1:1:-2
 skill-disarm-phys:2
 skill-disarm-magic:2
@@ -428,6 +442,7 @@ power-expr:B:PLAYER_LEVEL:* 2
 
 # Zangband gave it a different breath every five levels; here it has its wings and its fire, and the breath waits for PLR-02.
 name:Draconian
+virtues:ENCHANT
 stats:2:1:1:1:2
 skill-disarm-phys:-2
 skill-disarm-magic:-2
@@ -459,6 +474,7 @@ power-expr:B:PLAYER_LEVEL:* 3 / 2
 
 # Zangband granted it nothing at all: its whole identity is psionics, which is PLR-06.
 name:Mindflayer
+virtues:ENLIGHTEN
 stats:-3:4:4:0:-2
 skill-disarm-phys:10
 skill-disarm-magic:10
@@ -489,6 +505,7 @@ power-expr:B:PLAYER_LEVEL:+ 0
 
 # Immune to the dark and hurt by the light, which is the bargain.
 name:Vampire
+virtues:UNLIFE
 stats:3:3:-1:-1:1
 skill-disarm-phys:4
 skill-disarm-magic:4
@@ -523,6 +540,7 @@ power-expr:B:PLAYER_LEVEL:/ 2
 
 # Not living. Nothing gets into it, and the cold gets to it.
 name:Golem
+virtues:JUSTICE
 stats:4:-5:-5:-2:4
 skill-disarm-phys:-5
 skill-disarm-magic:-5
@@ -553,6 +571,7 @@ power-dice:30+1d20
 
 # Flies. Zangband quickened it at level nine; speed is not something a 4.2 race can be given, so that waits for PLR-02.
 name:Sprite
+virtues:NATURE
 stats:-4:3:3:3:-2
 skill-disarm-phys:10
 skill-disarm-magic:10
@@ -584,6 +603,7 @@ power-expr:B:PLAYER_LEVEL:* 2
 
 # The most expensive thing you can be born as: 255.
 name:Half-Titan
+virtues:HARMONY
 stats:5:1:1:-2:3
 skill-disarm-phys:-5
 skill-disarm-magic:-5

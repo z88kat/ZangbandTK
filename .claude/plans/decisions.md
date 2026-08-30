@@ -1454,3 +1454,62 @@ better survivor — the Cap lost CHR and SUST_CHR in conversion, 4.2 having no
 charisma — but that is not worth a broken savefile.
 
 **Consequence.** The artifact count stays at 51. CNT-06 has nothing outstanding.
+
+---
+
+### DEC-43 — The virtue writers are sized by coverage, not by census (PLR-20)
+
+Zangband has **169** places that move a virtue. Porting all of them was one
+option and porting only what the consumers read was the other, and this is
+neither: the rule is **every virtue a character can be given must be one their
+play can move**, and the writers are sized to that and stopped there.
+
+*Why not all 169.* They are scattered across nineteen files of a codebase
+organised differently from this one, and most would be guesswork about which
+4.2 path corresponds to which Zangband one. The cost is enormous and the return
+is a slightly denser accounting of numbers that two consumers read four at a
+time.
+
+*Why not only what the consumers read.* The two consumers between them name
+eight virtues — Chance, Individualism, Harmony and Temperance for the patron,
+Enlightenment, Knowledge, Unlife and Chance for the dream. But a character is
+measured against **eight of eighteen**, chosen from their class, race and
+realm, and nothing guarantees any overlap. A Warrior asked about Valour,
+Honour, Justice and four more would have carried eight counters that nothing in
+the game could move and nothing in the game would read: the exact condition
+Zangband shipped in, reached by a different road.
+
+*The rule, and what it cost.* All eighteen are reachable in this game — the
+class, race and realm tables plus the weighted pad between them can produce any
+of them, which `all-eighteen-are-reachable` pins. So all eighteen need a writer,
+and there are **nine hook sites** covering them:
+
+| Site | Virtues |
+|---|---|
+| A monster dies (`virtue_note_kill`) | Valour, Harmony, Unlife, Vitality, Individualism, Compassion, Faith |
+| Striking something asleep | Compassion, Honour |
+| A chaotic weapon discharges | Chance |
+| Tunnelling, and clearing trees | Diligence, Nature |
+| Haste begins | Patience, Diligence |
+| Invulnerability begins | Temperance, Honour, Sacrifice, Valour |
+| Enchanting an item | Mysticism |
+| Mapping a level | Knowledge, Enlightenment |
+| Collecting a bounty | Justice |
+
+Nine sites for eighteen virtues, against Zangband's 169 for the same eighteen.
+Every one is Zangband's own hook at a place 4.2 has the same event; none is
+invented.
+
+*The one substitution, and it is marked.* Zangband's death block asks three
+times whether the dead thing was `GOOD`. 4.2 has no such flag — only `EVIL` —
+and it is not recoverable: Zangband put `GOOD` on 230 monsters, a set running
+from Farmer Maggot to Mughash the Kobold Lord that 4.2 does not record.
+`monster_is_living()` stands in on the unique branches only, because `GOOD` was
+on a quarter of the bestiary and living is on nearly all of it; the non-unique
+branch is dropped rather than substituted. Without something there, Unlife
+would have had no writer that raises it and a Necromancer would carry a counter
+that only ever fell.
+
+**Consequence.** The accounting is coarser than Zangband's and covers the same
+ground. If a third consumer arrives wanting a virtue nobody moves much, the
+answer is another hook rather than another 160.

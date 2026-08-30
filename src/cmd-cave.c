@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "cmd-core.h"
 #include "cmds.h"
+#include "player-virtue.h"
 #include "dun-type.h"
 #include "game-event.h"
 #include "game-input.h"
@@ -557,6 +558,15 @@ static bool twall(struct loc grid)
 
 	/* Sound */
 	sound(MSG_DIG);
+
+	/*
+	 * Digging is diligent, and clearing trees is not kind to them
+	 * ([cmd2.c:1065](../archive/zangband/src/cmd2.c#L1065)).
+	 */
+	virtue_change(player, V_DILIGENCE, 1);
+	if (square_feat(cave, grid)->fidx == lookup_feat("tree")) {
+		virtue_change(player, V_NATURE, -1);
+	}
 
 	/* Forget the wall */
 	square_forget(cave, grid);

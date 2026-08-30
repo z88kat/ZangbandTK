@@ -471,6 +471,9 @@
     <ClCompile Include="src\player-timed.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\player-virtue.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\player-util.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1188,6 +1191,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\player-timed.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\player-virtue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\list-virtues.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\player-util.h">

@@ -33,6 +33,7 @@
 #include "mon-desc.h"
 #include "mon-predicate.h"
 #include "mon-speech.h"
+#include "player-virtue.h"
 #include "mon-timed.h"
 #include "mon-util.h"
 #include "player-calcs.h"
@@ -172,4 +173,11 @@ void monster_claim_bounty(struct player *p, struct monster *mon,
 
 	p->au += reward;
 	p->upkeep->redraw |= PR_GOLD;
+
+	/*
+	 * And collecting on a warrant is the one unambiguously just thing a
+	 * character does ([xtra2.c:914](../archive/zangband/src/xtra2.c#L914)).
+	 * The only writer Justice has, which is as it was in the original.
+	 */
+	virtue_change(p, V_JUSTICE, 5);
 }

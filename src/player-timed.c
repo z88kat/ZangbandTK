@@ -30,6 +30,7 @@
 #include "obj-util.h"
 #include "player-calcs.h"
 #include "player-timed.h"
+#include "player-virtue.h"
 #include "player-util.h"
 #include "project.h"
 
@@ -1050,6 +1051,8 @@ bool player_inc_check(struct player *p, int idx, bool lore)
 bool player_inc_timed(struct player *p, int idx, int v, bool notify,
 		bool can_disturb, bool check)
 {
+	int was = (idx >= 0 && idx < TMD_MAX) ? p->timed[idx] : 0;
+
 	assert(idx >= 0);
 	assert(idx < TMD_MAX);
 
@@ -1062,10 +1065,15 @@ bool player_inc_timed(struct player *p, int idx, int v, bool notify,
 			 */
 			return false;
 		} else {
-			return player_set_timed(p,
+			bool set = player_set_timed(p,
 					idx,
 					p->timed[idx] + v,
 					notify, can_disturb);
+
+			/* ZangbandTK (PLR-20): some of these say something. */
+			if (set) virtue_note_timed(p, idx, was, p->timed[idx]);
+
+			return set;
 		}
 	}
 

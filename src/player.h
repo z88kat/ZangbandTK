@@ -312,9 +312,21 @@ struct player_power {
 /**
  * Player race info
  */
+/**
+ * How many virtues each source contributes, and how many a character carries
+ * (PLR-19).  Zangband's `MAX_PLAYER_VIRTUES` is 8; the per-source caps are
+ * this game's, sized to the longest list any of them needs -- the Paladin's
+ * four.
+ */
+#define MAX_PLAYER_VIRTUES	8
+#define MAX_CLASS_VIRTUES	4
+#define MAX_RACE_VIRTUES	2
+#define MAX_REALM_VIRTUES	2
+
 struct player_race {
 	struct player_race *next;
 	const char *name;
+	int virtues[MAX_RACE_VIRTUES];	/**< Virtues this race brings (PLR-19) */
 
 	unsigned int ridx;
 
@@ -400,6 +412,7 @@ struct magic_realm {
 	struct magic_realm *next;
 	char *code;
 	char *name;
+	int virtues[MAX_REALM_VIRTUES];	/**< First not already held (PLR-19) */
 	int stat;
 	char *verb;
 	char *spell_noun;
@@ -489,6 +502,7 @@ struct player_class {
 	struct player_class *next;
 	const char *name;
 	unsigned int cidx;
+	int virtues[MAX_CLASS_VIRTUES];	/**< Virtues this class brings (PLR-19) */
 
 	const char *title[10];		/**< Titles */
 
@@ -703,6 +717,15 @@ struct player {
 	const struct player_race *race;
 	const struct player_class *class;
 	const struct patron *patron;	/**< The Lord of Chaos served (PLR-05) */
+
+	/**
+	 * What this character is measured against, and where they stand (PLR-18).
+	 * Chosen at birth by virtues_select(); `vir_types` holds indices into
+	 * list-virtues.h and is fixed for the character's life, `virtues` the
+	 * signed standings that move with play.
+	 */
+	uint8_t vir_types[MAX_PLAYER_VIRTUES];
+	int16_t virtues[MAX_PLAYER_VIRTUES];
 
 	struct loc grid;	/* Player location */
 	struct loc old_grid;/* Player location before leaving for an arena */

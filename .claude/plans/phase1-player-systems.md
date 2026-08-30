@@ -400,13 +400,28 @@ birth by class, then race, then realm, deduplicated and padded with weighted-ran
 The selection mechanism is part of the feature, not an implementation detail: which virtues
 a character has distinguishes it as much as the values do. Corrected by DEC-39 — this
 requirement previously said all 18 were tracked, which the source does not support.
+>
+> ✅ **Met.** `virtues_select()` in [player-virtue.c](../../src/player-virtue.c), with the
+> class, race and realm tables in `class.txt`, `p_race.txt` and `realm.txt` rather than in a
+> switch. Zangband's weighted pad is reproduced from its case-range widths.
 
 **PLR-19 — Virtue values change in response to player actions** — kills, spell use, item
-use, quest outcomes.
+use, quest outcomes. ✅ **Met**, at nine hook sites covering all eighteen virtues. **DEC-43**
+records why nine and not Zangband's 169: the rule is that every virtue a character can be
+given must be one their play can move, and the writers are sized to that.
 
-**PLR-20 — Virtues are displayed to the player** and persist in the savefile.
+**PLR-20 — Virtues are displayed to the player** and persist in the savefile. ✅ **Met.**
+A `[Virtues]` section in the character sheet, on Zangband's own thirteen-band ladder; and a
+savefile block written and read *by count*, in player block version 3, with version 2 kept
+as a loader so characters made before this still open.
 
 **PLR-21 — At least one system reads a virtue value and behaves differently because of it.**
+✅ **Met, twice.** A Lord of Chaos reaches for the bottom of its reward ladder less often for
+a character strong in Chance and Individualism and more often for one strong in Harmony and
+Temperance (`patron_roll_slot()`); and the inn dream runs truer for Enlightenment and
+Knowledge, darker for Unlife and Chance (`player_night_dream()`). Both sit on top of
+mechanisms that already existed rather than needing new plumbing. **The gate is closed and
+virtues are kept.**
 Rationale: tracked-but-inert numbers are not a feature. **If nothing consumes virtues,
 PLR-18 to PLR-20 are cut rather than shipped as decoration** — the gate is on any consumer
 at all, not on a particular one.

@@ -305,6 +305,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClCompile Include="src\player-spell.c" />
     <ClCompile Include="src\player-timed.c" />
     <ClCompile Include="src\player-util.c" />
+    <ClCompile Include="src\player-virtue.c" />
     <ClCompile Include="src\player.c" />
     <ClCompile Include="src\project-feat.c" />
     <ClCompile Include="src\project-mon.c" />
@@ -545,6 +546,8 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\player-spell.h" />
     <ClInclude Include="src\player-timed.h" />
     <ClInclude Include="src\player-util.h" />
+    <ClInclude Include="src\player-virtue.h" />
+    <ClInclude Include="src\list-virtues.h" />
     <ClInclude Include="src\player.h" />
     <ClInclude Include="src\project.h" />
     <ClInclude Include="src\randname.h" />

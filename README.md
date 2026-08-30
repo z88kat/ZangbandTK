@@ -58,14 +58,18 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
   carried, and handed back for payment — a bounty, a delivery, a place to find,
   a killing at a named depth of a named dungeon, a killing in the open, and a
   thing to fetch.
+- **Virtues.** Eight of Zangband's eighteen, chosen for each character at birth
+  by class, race and magic, and moved by what they kill, spend and spare. Read
+  by the Lords of Chaos when they hand down a reward, and by the dream at the
+  inn. Zangband tracked them for seven years and never once read one.
 - **Nine races and four classes** from Zangband: Amberite, Beastman, Yeek,
   Draconian, Mindflayer, Vampire, Golem, Sprite and Half-Titan; the Monk with
   unarmed progression, the Mindcrafter with psionics, and the Chaos-Warrior
   sworn at birth to one of nine Lords of the Courts of Chaos. Races may have
   activatable powers, which Angband has no mechanism for.
 
-**Not yet:** mutations, virtues, magic realms, pets, and nightmare mode — and
-the two classes defined by which realm they choose, which wait for the realms.
+**Not yet:** mutations, magic realms, pets, and nightmare mode — and the two
+classes defined by which realm they choose, which wait for the realms.
 A Tcl/Tk front end is planned for a later phase, reviving the original's
 interface on Tcl/Tk 9.
 
