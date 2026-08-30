@@ -3298,7 +3298,7 @@ static int test_a_blessed_beast_bounds_away(void *state) {
 
 	/* ...and gone from where it stood, by a good way. */
 	notnull(mon->race);
-	require(distance(mon->grid, first) >= 5);
+	require(distance(mon->grid, first) > race->hearing);
 
 	/* It is not dead.  It has simply left. */
 	require(mon->hp > 0);
@@ -3318,14 +3318,18 @@ static int test_a_blessed_beast_bounds_away(void *state) {
 	eq(player->chp, 1);
 
 	/* But it still bounds away from the hand. */
-	require(distance(mon->grid, first) >= 5);
+	require(distance(mon->grid, first) > race->hearing);
 
 	/*
-	 * And it always does.  The teleport effect picks the grid whose distance
-	 * best approximates what is asked and then varies it by up to a quarter
-	 * either way, so "at least five" is not something asking for five would
-	 * deliver -- it lands short about half the time.  Asking for ten and
-	 * measuring the worst of thirty bounds is what settled the number.
+	 * And it always does, every time, by more than it can hear.
+	 *
+	 * That is the whole point of the number.  The teleport effect picks the
+	 * grid whose distance best approximates what is asked and then varies it by
+	 * up to a quarter either way, so the bound has to be asked for with room to
+	 * spare; but the reason it has to clear `hearing` rather than a handful of
+	 * grids is that a beast still within earshot knows where the character is
+	 * and comes back, and the second report from play was of exactly that.  A
+	 * bound the beast can simply undo is not a bound.
 	 */
 	{
 		int touch, worst = 999, measured = 0;
@@ -3352,11 +3356,12 @@ static int test_a_blessed_beast_bounds_away(void *state) {
 			measured++;
 		}
 
-		printf("DEER worst of %d bounds: %d grids\n", measured, worst);
+		printf("DEER worst of %d bounds: %d grids, hearing %d\n", measured,
+			   worst, race->hearing);
 
 		/* It has to have actually bounded, or this measures nothing. */
 		eq(measured, 30);
-		require(worst >= 5);
+		require(worst > race->hearing);
 	}
 
 	ok;

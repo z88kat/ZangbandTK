@@ -457,6 +457,13 @@ lethality:armor-class:50
 # cannot live on the animal.
 world:blessing-turns:500
 
+# How far a blessed beast bounds after it has been touched, in grids.  Far
+# enough to be outside its own hearing, or it simply turns round and comes
+# back: a white deer moves at speed 130 and hears at 40, so a short bound only
+# means it is beside you again a few paces later, shying away from a hand it
+# has already refused.  Reported from play twice.
+world:blessing-bound:100
+
 # A vorpal weapon cuts deep on one blow in this many
 melee:vorpal-chance:6
 

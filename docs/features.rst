@@ -171,6 +171,7 @@ restart:
    lethality:hit-points:73      # percent of base monster hit points
    lethality:armor-class:50     # percent of base monster armour class
    world:blessing-turns:500     # how long a blessed beast's gift keeps others away
+   world:blessing-bound:100     # how far it bounds after being touched, in grids
    melee:vorpal-chance:6        # a vorpal weapon cuts deep on one blow in this many
    melee:vorpal-multiplier:2
    melee:chaotic-chance:7       # a chaotic weapon discharges on one blow in this many

@@ -30,6 +30,41 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Savefile compatibility — 30 August 2026
+----------------------------------------
+
+- **3.42.3** — **The white deer bounds out of earshot.** Reported from play a
+  second time, as *still stalking me*. The blessing itself was fixed in 3.33.2
+  and was working: the deer gave its gift once and shied away from every touch
+  after. What it would not do was leave. It bounded ten grids, and a deer moves
+  at speed 130 and hears at 40, so ten grids is a distance it undoes in a few of
+  your turns — arriving back beside you to be touched and refused, over and over.
+
+  The bound is now ``world:blessing-bound`` (100 grids by default, and tunable
+  without a rebuild), chosen to clear the beast's own ``hearing`` rather than
+  its hooves. Past that it no longer knows where you are and goes back to being
+  a deer somewhere else. It is still neither killed nor removed; you can meet it
+  again, and it will still have nothing more to give you.
+
+- **3.42.2** — **Every character saved before today stopped loading**, and the
+  app terminated outright on some of them. Thirty-five real savefiles now live
+  in ``tests/saves``, and a unit test loads every one of them, saves it again
+  and loads it back — because loading alone passes over a fault that only
+  shows up on the next save.
+
+  Four faults, all the same shape: *the savefile names something this build no
+  longer has.* ``rd_misc`` sized three of its arrays from the counts compiled
+  into the running build rather than the counts written in the file, which the
+  rest of the loader has always read back correctly — so adding an object flag,
+  an element or a modifier invalidated every existing save. ``rd_monster_memory``
+  span forever on a monster that had been removed. ``rd_monster`` treated a
+  vanished race as fatal to the whole load, which is what actually killed most
+  of the corpus. ``rd_trap`` and ``rd_ignore`` will do the same at the first
+  renamed trap or object; both are fixed before they fire.
+
+  Setting ``ZTK_SAVE_TRACE`` now names each block as it is read and echoes the
+  loader's notes. Every one of these was invisible without it.
+
 M2: the rest of Zangband's objects — 30 August 2026
 ---------------------------------------------------
 

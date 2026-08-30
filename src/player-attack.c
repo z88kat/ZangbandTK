@@ -965,13 +965,24 @@ static void py_touch_blessed(struct player *p, struct monster *mon)
 	}
 
 	/*
-	 * And away.  Ten rather than the five the beast is meant to clear, because
-	 * the teleport effect picks the grid whose distance best *approximates* what
-	 * is asked and then varies it by up to a quarter either way -- asking for
-	 * five would land short of five about half the time.  Measured at ten: the
-	 * worst of thirty bounds is nine grids.  See a-blessed-beast-bounds-away.
+	 * And away -- properly away, by `blessing-bound` grids.
+	 *
+	 * This was ten, on the reasoning that the beast is meant to clear about
+	 * five and the teleport effect picks the grid whose distance best
+	 * *approximates* what is asked, varying it by up to a quarter either way.
+	 * The distance was right and the thinking behind it was wrong: a white deer
+	 * moves at speed 130 and hears at 40, so ten grids is a bound it undoes in
+	 * a few of the player's turns, and it arrives back beside them to be
+	 * touched and refused again.  Reported from play twice, the second time as
+	 * still stalking me, which is exactly what it was doing.
+	 *
+	 * So the bound has to clear the beast's own hearing, not just its hooves.
+	 * Beyond that it no longer knows where the character is and goes back to
+	 * being a deer somewhere else in the world -- which is the behaviour the
+	 * description promises, and it is still neither killed nor removed.
 	 */
-	effect_simple(EF_TELEPORT, source_monster(mon->midx), "10", 0, 0, 0,
+	effect_simple(EF_TELEPORT, source_monster(mon->midx),
+				  format("%d", (int) z_info->blessing_bound), 0, 0, 0,
 				  mon->grid.y, mon->grid.x, NULL);
 }
 

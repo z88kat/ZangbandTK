@@ -225,7 +225,10 @@ Not everything is there to be fought
 
 A **white deer** is a ``q`` in white, standing too still and too unafraid of
 you. Walk into it and it heals you — everything, whatever you were down to — and
-then bounds away a good ten grids and carries on grazing.
+then bounds away far enough to be out of earshot and carries on grazing
+somewhere else. That distance is the point: a deer moves quickly and hears well,
+and one that bounded only a few paces knew exactly where you were and came
+straight back to be refused again.
 
 It does that once, and then no beast will do it again for a while — about five
 hundred turns, during which you are carrying a blessing and every deer you meet

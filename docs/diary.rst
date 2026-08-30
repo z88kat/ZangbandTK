@@ -88,6 +88,26 @@ Thirty-five of thirty-five load. What I am keeping from this is not the fix. It
 is that I had a working diagnosis, a plausible mechanism and a plan, and the
 actual bug was three identifiers away in a function I had read past twice.
 
+Then, the same afternoon: *the white deer is still stalking me.*
+
+I had fixed that three days ago, and the fix was working. The deer gave its
+blessing once and shied away from every touch after; the character's memory of
+it held; the tests said so. What I had never asked was whether the beast
+actually *left*. It bounded ten grids, and I had a careful comment justifying
+ten — measured, tested, the worst of thirty bounds is nine. All true, and beside
+the point. A white deer moves at speed 130 and hears at 40. Ten grids is not a
+departure, it is a pause. It came straight back and stood there being refused.
+
+The number was right for the question I asked and the question was wrong. I had
+measured how far it went and never once measured whether that was far enough to
+matter, which is the only thing the player experiences. The bound now has to
+clear the beast's own ``hearing`` — the test asserts against ``race->hearing``
+rather than a constant, so it is checking the property that makes it work rather
+than the number that happened to.
+
+Two fixes in one day, and both of my earlier answers had been confident,
+documented and slightly beside the point.
+
 
 27 August 2026 — the game in a browser tab, and four things that were wrong
 ===========================================================================
