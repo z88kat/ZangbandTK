@@ -1369,3 +1369,32 @@ little behind it. The conversion report names the count on every run, so the
 figure is visible rather than buried.
 
 **Consequence.** Balance open question 1 is answered and struck. BAL-07 is met.
+
+---
+
+### DEC-41 — The Scroll of Rumour is dropped (CNT-11)
+
+Confirmed by project owner: *"Drop the scroll of rumours, adds nothing."*
+
+Recorded as a rejection rather than a deferral, so that it is not picked up
+again by someone reading the deferred list as a queue. It sits in
+`objmap.toml`'s `[reject]` beside the artifact bases, not in `[defer]` beside
+the statues.
+
+*The mechanism was never the obstacle.* Zangband's 647 rumours are in the
+archive at [lib/file/rumors.txt](../../archive/zangband/lib/file/rumors.txt),
+and 4.2's `hints.txt` is already the same shape — a flat list of one-line
+strings parsed into a linked list. A `rumor.txt` beside it and an effect that
+picks one is a morning's work.
+
+*The content was.* A good many of the lines name things this game does not have
+or contradict what it does: an Amulet of Doom that is now an Amulet of
+Destruction, wresting one last charge from an empty wand, which 4.2 removed,
+monsters that were never imported. A scroll whose whole purpose is to tell the
+player something true about the game is the wrong place to ship text that is
+false about it — so shipping the list wholesale was never an option, and the
+alternative is 647 individual judgements for one flavour scroll.
+
+**Consequence.** CNT-11's deferred list drops from 16 to 15. The scroll is not
+in the game and is not waiting for anything. If Zangband's rumours are ever
+wanted, they are wanted as new writing rather than as an import.

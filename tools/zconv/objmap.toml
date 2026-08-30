@@ -83,6 +83,13 @@
 # cmd_objects.
 
 [reject]
+"70:51" = { name = "Rumour", why = """Rejected by DEC-41 rather than deferred: \
+it adds nothing worth the curation. Zangband's 647 rumours are in the archive \
+and the machinery to hold them is the shape of `hints.txt`, so the mechanism \
+was never the obstacle -- but a good many of the lines name things this game \
+has not got or contradict what it does, and a scroll whose whole purpose is to \
+tell the player something true is the wrong place for text that is false. \
+Sorting the true from the false is 647 judgements for one flavour scroll.""" }
 
 # ---------------------------------------------------------------- defers
 #
@@ -136,23 +143,6 @@ adding one means an entry in list-elements.h -- which is indexed into \
 `el_info[]` and written to the savefile by position (save.c:177), for every \
 object and every monster. Held deliberately: the wand is one item and the \
 change reaches every savefile in the game.""" }
-
-"70:51" = { name = "Rumour", why = "content curation", note = """Prints a line \
-from Zangband's `lib/file/rumors.txt`, which the archive has: 647 of them. \
-\
-The mechanism is the easy half and is not what this is waiting for. 4.2's \
-`hints.txt` is the same shape -- a flat list of one-line strings, parsed into \
-a linked list -- so a `rumor.txt` beside it and an effect that picks one is a \
-morning's work. \
-\
-The content is the half that needs a decision. Much of the list is generic \
-roguelike advice that travels fine, but a good deal of it names things this \
-game does not have or contradicts what it does: an Amulet of Doom that is now \
-an Amulet of Destruction, wresting a last charge from an empty wand, which 4.2 \
-removed, monsters that were never imported. A scroll whose whole purpose is to \
-tell the player something true about the game is the wrong place to ship text \
-that is false about it, and deciding which lines survive is curation under \
-DEC-19 rather than conversion.""" }
 
 # ------------------------------------------------------------- effects
 #

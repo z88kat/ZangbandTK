@@ -33,6 +33,13 @@ Unreleased
 M2: the rest of Zangband's objects — 30 August 2026
 ---------------------------------------------------
 
+- **3.42.1** — **The Scroll of Rumour is dropped rather than deferred**
+  (DEC-41). It sat on the deferred list, which reads as a queue, and it was
+  never going to reach the front of one: the mechanism is a morning's work and
+  the content is 647 individual judgements about which of Zangband's rumours
+  are still true of this game. It now sits with the artifact bases under
+  *rejected*, where nothing is waiting for anything.
+
 - **3.42.0** — **Three of the objects CNT-11 held back, and two that stay
   held.** A **Ring of Wizardry** needed a mana modifier, which Angband's object
   model did not have; ``MANA`` is appended to the eleven it did. The pval is

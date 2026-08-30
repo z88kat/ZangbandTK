@@ -233,7 +233,7 @@ how the wilderness plays rather than a conversion of a flag. One ego,
 importing it would have put a pair of boots in the game that granted nothing at
 all.
 
-Nineteen of Zangband's object kinds are likewise recorded but not imported,
+Fifteen of Zangband's object kinds are likewise recorded but not imported,
 each for want of a mechanism rather than out of preference:
 
 - **Ten statues and a figurine.** A Zangband statue is a monster rendered in
@@ -251,8 +251,10 @@ each for want of a mechanism rather than out of preference:
   mid-game would not be there when the character was loaded again.
 - **A Wand of Rockets**, whose damage is its own element — it stuns, and shard
   resistance halves it — and adding an element changes the savefile layout.
-- **A Scroll of Rumour**, and this one is waiting on a decision rather than on
-  code. Zangband's 647 rumours are in the archive and Angband already has the
-  machinery to hold a list like it, but a good many of them name things this
-  game does not have or contradict what it does. A scroll whose whole purpose
-  is to tell you something true is the wrong place for text that is not.
+One more is not waiting at all. **The Scroll of Rumour is dropped**, not
+deferred. Zangband's 647 rumours are in the archive and Angband already has the
+machinery to hold a list like it, so the mechanism was never the obstacle — but
+a good many of the lines name things this game does not have or contradict what
+it does, and a scroll whose whole purpose is to tell you something true is the
+wrong place for text that is not. Sorting the true from the false is 647
+judgements for one flavour scroll, and it is not worth them.
