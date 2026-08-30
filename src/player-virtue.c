@@ -37,6 +37,7 @@
 
 #include "init.h"
 #include "monster.h"
+#include "mon-predicate.h"
 #include "player-timed.h"
 
 static const char *virtue_names[] = {
@@ -289,7 +290,7 @@ void virtue_note_kill(struct player *p, const struct monster_race *race,
 		 * put GOOD on 230 monsters and they are not a category 4.2 records,
 		 * running from Farmer Maggot to Mughash the Kobold Lord.
 		 *
-		 * `monster_is_living()` stands in, and only on the unique branches.
+		 * `race_is_living()` stands in, and only on the unique branches.
 		 * The axis Zangband was measuring is what you destroy -- kill the
 		 * living and you lean towards unlife, kill the undead and you lean
 		 * away -- and living is the closer of the two predicates 4.2 has to
@@ -297,7 +298,7 @@ void virtue_note_kill(struct player *p, const struct monster_race *race,
 		 * quarter of the bestiary and living is on nearly all of it, so the
 		 * non-unique branch is dropped rather than substituted.
 		 */
-		if (monster_is_living(race)) {
+		if (race_is_living(race)) {
 			virtue_change(p, V_UNLIFE, 2);
 			virtue_change(p, V_VITALITY, -2);
 		}

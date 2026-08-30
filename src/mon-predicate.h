@@ -20,6 +20,9 @@
 #ifndef MON_PREDICATE_H
 #define MON_PREDICATE_H
 
+struct monster;
+struct monster_race;
+
 /**
  * monster_predicate is a function pointer which tests a given monster to
  * see if the predicate in question is true.
@@ -29,6 +32,8 @@ typedef bool (*monster_predicate)(const struct monster *mon);
 bool monster_is_undead(const struct monster *mon);
 bool monster_is_nonliving(const struct monster *mon);
 bool monster_is_living(const struct monster *mon);
+bool race_is_nonliving(const struct monster_race *race);
+bool race_is_living(const struct monster_race *race);
 bool monster_is_destroyed(const struct monster *mon);
 bool monster_passes_walls(const struct monster *mon);
 bool monster_is_invisible(const struct monster *mon);

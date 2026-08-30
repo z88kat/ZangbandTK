@@ -36,6 +36,31 @@ Savefile compatibility — 30 August 2026
 M8: the virtues, finished — 30 August 2026
 ------------------------------------------
 
+- **3.44.1** — **A pointer of the wrong type, and the gate that should have
+  caught it.** ``virtue_note_kill()`` passed a ``monster_race`` to
+  ``monster_is_living()``, which takes a ``monster``. Clang built it and the
+  undefined behaviour ran; GCC with ``-Werror`` on a Linux runner refused it.
+  The predicate reads only race flags, so the fix is a ``race_is_living()`` for
+  callers that have a race and no instance — ``monster_is_living()`` now
+  delegates to it, and the substitution keeps the semantics it was given: the
+  living check, on the unique branches only.
+
+  **The local build was never running CI's flags.** ``cmake -S . -B build``
+  takes the defaults; every Linux job configures with ``-Werror``. That gap let
+  two defects through in a day — this one, and two invented identifiers a few
+  hours earlier that were reported as a clean build because the output was
+  being filtered with a pattern that does not match what clang prints.
+  ``scripts/check-build`` now configures with CI's flags and lets its exit code
+  be the answer. Run over the whole tree it finds nothing else of the kind.
+
+  It deliberately does not go beyond CI: ``-Wshadow`` alone objects to a dozen
+  places in the existing suite that every Linux job builds happily, and a gate
+  that fails on things CI accepts is one people learn to ignore.
+
+  The kill hook also gained the test it did not have. Every one of the suite's
+  other tests passed with the bad pointer in place, because nothing called the
+  function.
+
 - **3.44.0** — **Zangband's unfinished feature, finished** (PLR-18 to PLR-21).
   Topi Ylinen wrote the virtue system in 1998 and it never worked: by 2.7.5-pre1
   there were **168 places that wrote a virtue and none that read one**, and the

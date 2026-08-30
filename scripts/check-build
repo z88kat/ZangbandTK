@@ -1,0 +1,61 @@
+#!/bin/sh
+#
+# Build the way CI builds, and let the exit code say whether it worked.
+#
+# The ordinary local build is permissive: `cmake -S . -B build` takes the
+# default flags, so a warning scrolls past and the build succeeds.  Every
+# Linux CI job configures with -Werror, so the same warning is fatal there.
+# That gap has let two defects reach master -- an invented identifier and a
+# pointer of the wrong type passed to a predicate -- both of which the
+# compiler had already objected to locally, in output nobody was reading.
+#
+# It is also why this script does not grep.  Filtering build output for the
+# word "error" is guesswork about a compiler's phrasing, and guessing wrong
+# reports success: `grep -E " error "` does not match clang's `error:`, which
+# is exactly how one of those two got through.  The exit code is not a
+# heuristic.
+#
+# Usage:
+#   scripts/check-build            configure and build, strictly
+#   scripts/check-build --tests    ...and run the unit tests after
+#
+# What this does not cover: CI uses GCC and this uses whatever `cc` is, which
+# on macOS is clang.  GCC diagnoses some things clang does not
+# (-Wlogical-op, -Wmaybe-uninitialized among them), so a clean run here is
+# necessary and not sufficient.  It catches the class that has actually been
+# escaping.
+
+set -e
+
+BUILDDIR=build-strict
+
+# CI's flags, and only CI's.
+#
+# Deliberately not stricter.  A gate that fails on things CI accepts is a gate
+# people learn to ignore, and -Wshadow alone objects to a dozen places in the
+# existing test suite that every Linux job builds without complaint.  -Wvla is
+# here because two of the CI jobs ask for it; -Wlogical-op, which those same
+# jobs also ask for, is GCC-only and clang does not have it.
+FLAGS="-Werror -Wvla"
+
+if [ ! -f CMakeLists.txt ]; then
+	echo "check-build: run from the top of the tree" >&2
+	exit 2
+fi
+
+echo "check-build: configuring $BUILDDIR with: $FLAGS"
+cmake -S . -B "$BUILDDIR" -G Ninja \
+	-DCMAKE_C_FLAGS="$FLAGS" \
+	-DSUPPORT_TEST_FRONTEND=ON >/dev/null
+
+echo "check-build: building"
+cmake --build "$BUILDDIR" --parallel
+
+if [ "$1" = "--tests" ]; then
+	echo "check-build: running the unit tests"
+	# LANG matters: the suite compares rendered text and the C locale mangles
+	# the characters some of it contains.
+	( cd "$BUILDDIR" && LANG=en_US.UTF-8 ninja alltests )
+fi
+
+echo "check-build: clean"

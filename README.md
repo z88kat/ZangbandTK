@@ -108,6 +108,20 @@ cd build && make alltests
 941 unit tests and 5 integration tests. They should all pass; if they do not,
 that is a bug worth reporting.
 
+The ordinary build above is permissive. Every Linux CI job configures with
+`-Werror`, so a warning that scrolls past locally is fatal there — which has
+twice let a defect reach master. Before pushing, build the way CI does:
+
+```sh
+scripts/check-build           # configure and build with CI's flags
+scripts/check-build --tests   # ...and run the unit tests after
+```
+
+Its exit code is the answer; it does not print a verdict for you to read past.
+It uses whatever `cc` is, which on macOS is clang rather than CI's GCC, so a
+clean run is necessary and not sufficient — GCC diagnoses some things clang
+does not.
+
 Adding a source file or a data file also means telling the build inputs that
 are maintained by hand — the Visual Studio project, the DOS 8.3 renames, the
 install list. `scripts/check-build-lists` compares them against the tree and

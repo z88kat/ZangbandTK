@@ -15,6 +15,8 @@
 #include "unit-test.h"
 
 #include "init.h"
+#include "mon-util.h"
+#include "monster.h"
 #include "player-birth.h"
 #include "player-util.h"
 #include "player-virtue.h"
@@ -293,6 +295,54 @@ static int test_a_dream_is_clearer_to_the_enlightened(void *state) {
 	ok;
 }
 
+/**
+ * Killing a thing moves what killing that thing should move.
+ *
+ * The densest writer, and the one that most needed a test: this hook shipped
+ * with a pointer of the wrong type in it -- `monster_is_living()` takes a
+ * monster and was handed a race -- and every one of the suite's other tests
+ * passed anyway, because nothing called it. Clang built it, the undefined
+ * behaviour ran, and only GCC with -Werror on a Linux runner objected.
+ *
+ * So this exercises the substitution rather than the surrounding arithmetic:
+ * a living unique should push a character towards Unlife and away from
+ * Vitality, an undead one the other way. The virtues are set directly rather
+ * than birthed, so the test says what it means regardless of which eight the
+ * tables would have chosen.
+ */
+static int test_killing_things_moves_the_right_virtues(void *state) {
+	struct monster_race *living = lookup_monster("Farmer Maggot");
+	struct monster_race *undead = lookup_monster("Kharis the Powerslave");
+	int i;
+
+	notnull(living);
+	notnull(undead);
+	require(rf_has(living->flags, RF_UNIQUE));
+	require(rf_has(undead->flags, RF_UNIQUE));
+	require(rf_has(undead->flags, RF_UNDEAD));
+
+	reselect("Human", "Warrior");
+	for (i = 0; i < MAX_PLAYER_VIRTUES; i++) player->vir_types[i] = V_NONE;
+	player->vir_types[0] = V_UNLIFE;
+	player->vir_types[1] = V_VITALITY;
+	player->virtues[0] = 0;
+	player->virtues[1] = 0;
+
+	/* Killing something alive leans towards unlife. */
+	virtue_note_kill(player, living, 1);
+	require(virtue_value(player, V_UNLIFE) > 0);
+	require(virtue_value(player, V_VITALITY) < 0);
+
+	/* And killing the undead leans back. */
+	player->virtues[0] = 0;
+	player->virtues[1] = 0;
+	virtue_note_kill(player, undead, 1);
+	eq(virtue_value(player, V_UNLIFE), 0);
+	require(virtue_value(player, V_VITALITY) > 0);
+
+	ok;
+}
+
 const char *suite_name = "player/virtue";
 struct test tests[] = {
 	{ "every-character-gets-eight-distinct-virtues",
@@ -306,5 +356,7 @@ struct test tests[] = {
 	  test_the_courts_notice_how_you_lived },
 	{ "a-dream-is-clearer-to-the-enlightened",
 	  test_a_dream_is_clearer_to_the_enlightened },
+	{ "killing-things-moves-the-right-virtues",
+	  test_killing_things_moves_the_right_virtues },
 	{ NULL, NULL }
 };

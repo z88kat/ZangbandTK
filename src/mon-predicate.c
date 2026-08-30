@@ -40,7 +40,7 @@ bool monster_is_undead(const struct monster *mon)
  */
 bool monster_is_nonliving(const struct monster *mon)
 {
-	return (monster_is_undead(mon) || rf_has(mon->race->flags, RF_NONLIVING));
+	return race_is_nonliving(mon->race);
 }
 
 /**
@@ -49,6 +49,28 @@ bool monster_is_nonliving(const struct monster *mon)
 bool monster_is_living(const struct monster *mon)
 {
 	return !monster_is_nonliving(mon);
+}
+
+/**
+ * Nonliving, asked of the race rather than of a monster on the floor.
+ *
+ * Both flags this reads live on the race, so the question never needed an
+ * instance -- and some callers do not have one. A monster that has just died
+ * is the case here (PLR-20): the virtue hooks run from `mon_take_hit()` where
+ * what is known about the dead thing is its race.
+ */
+bool race_is_nonliving(const struct monster_race *race)
+{
+	return (rf_has(race->flags, RF_UNDEAD)
+			|| rf_has(race->flags, RF_NONLIVING));
+}
+
+/**
+ * Living, asked of the race.  See race_is_nonliving().
+ */
+bool race_is_living(const struct monster_race *race)
+{
+	return !race_is_nonliving(race);
 }
 
 /**
