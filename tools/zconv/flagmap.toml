@@ -133,10 +133,6 @@ flags = ["FRIENDLY"]
 
 # ------------------------------------------------------------- implement
 
-[implement.SHAPECHANGER]
-milestone = "M3"
-note = "Monster changes appearance at random. 4.2 has player shapes only."
-
 [implement.QUANTUM]
 milestone = "M3"
 note = "Monster teleports erratically when observed. One monster, pure novelty."

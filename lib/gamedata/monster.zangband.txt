@@ -1037,7 +1037,7 @@ blow:HIT:HURT:1d5
 blow:HIT:CONFUSE:1d3
 spells:BO_FIRE | BO_COLD | CONF
 spell-freq:20
-flags:DROP_60 | EVIL | ATTR_MULTI | ATTR_RAND
+flags:DROP_60 | EVIL | SHAPECHANGER | ATTR_MULTI | ATTR_RAND
 desc:A vaguely humanoid form constantly changing its appearance.
 
 name:vorpal bunny
@@ -5513,7 +5513,7 @@ blow:HIT:LOSE_ALL:15d1
 spells:HEAL | MIND_BLAST | BA_MANA | S_SPIDER | S_HOUND | S_DEMON
 spell-freq:50
 light:2
-flags:MALE | EVIL | FORCE_SLEEP | ONLY_ITEM | DROP_4 | ATTR_MULTI | ATTR_RAND | INVISIBLE | OPEN_DOOR | BASH_DOOR | SMART | POWERFUL | IM_ACID | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
+flags:MALE | EVIL | FORCE_SLEEP | ONLY_ITEM | DROP_4 | ATTR_MULTI | SHAPECHANGER | ATTR_RAND | INVISIBLE | OPEN_DOOR | BASH_DOOR | SMART | POWERFUL | IM_ACID | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 desc:He is one of the few true masters of the art, being extremely skillful in all forms of unarmed combat and controlling the Logrus with disdainful ease.
 
 name:lesser kraken
@@ -5719,7 +5719,7 @@ blow:HIT:BLIND:4d8
 spells:HEAL | BLIND | CONF | SCARE | WOUND | BRAIN_SMASH | FORGET | S_MONSTERS | BA_MANA | BLINK | TPORT | TELE_TO | TELE_AWAY | S_DEMON
 spell-freq:25
 light:1
-flags:UNIQUE | MALE | AMBERITE | FORCE_SLEEP | CAN_SPEAK | ONLY_ITEM | DROP_4 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | ATTR_MULTI | IM_DISEN | ATTR_RAND | RES_TELE | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
+flags:UNIQUE | MALE | AMBERITE | FORCE_SLEEP | SHAPECHANGER | CAN_SPEAK | ONLY_ITEM | DROP_4 | DROP_GOOD | OPEN_DOOR | BASH_DOOR | ATTR_MULTI | IM_DISEN | ATTR_RAND | RES_TELE | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 desc:Once this now gnomish creature created the universe with the Jewel of Judgement - or so you have been told. There is little sanity left in his present form even if he still has the power. "He was a small man. Tiny, might be an even better word. He was around five feet tall and a hunchback. His hair and beard were as heavy as (Corwin's). The only distinguishing features in that great mass of fur were his long, hook nose and his almost black eyes, now squinted against the light... Dworkin: 'I am Oberon's prisoner.' Corwin: 'Oh? None of us knew that Dad had locked you up.' (Corwin) heard (Dworkin) weeping. 'Yes,' he said after a long time. 'He didn't trust me.' 'Why not?' 'I told him I'd thought of a way to destroy Amber. I described it to him, and he locked me in.'"
 
 name:Daoloth, the Render of the Veils
@@ -6347,7 +6347,7 @@ blow:TOUCH:DISENCHANT:10d10
 blow:TOUCH:DRAIN_CHARGES:10d10
 spells:BR_CHAO
 spell-freq:20
-flags:KILL_WALL | KILL_ITEM | KILL_BODY | NO_FEAR | FORCE_SLEEP | MULTIPLY | ATTR_MULTI | ATTR_RAND | DROP_60 | DROP_GOOD | POWERFUL | AURA_ELEC | AURA_FIRE | AURA_COLD | BASH_DOOR | IM_ELEC | IM_FIRE | IM_NEXUS | IM_POIS | IM_ACID | IM_PLASMA | IM_DISEN | COLD_BLOOD | NONLIVING | RAND_50
+flags:KILL_WALL | KILL_ITEM | KILL_BODY | NO_FEAR | FORCE_SLEEP | MULTIPLY | ATTR_MULTI | SHAPECHANGER | ATTR_RAND | DROP_60 | DROP_GOOD | POWERFUL | AURA_ELEC | AURA_FIRE | AURA_COLD | BASH_DOOR | IM_ELEC | IM_FIRE | IM_NEXUS | IM_POIS | IM_ACID | IM_PLASMA | IM_DISEN | COLD_BLOOD | NONLIVING | RAND_50
 desc:Summoned from the Courts of Chaos, it is a mass of sentient Logrus, spreading uncontrollably and destroying everything in its path.
 
 name:cyberdemon
@@ -6894,7 +6894,7 @@ blow:GAZE:LOSE_INT:1d50
 blow:GAZE:LOSE_WIS:1d50
 spells:TELE_AWAY | TELE_TO | TELE_LEVEL | TPORT | BR_NEXU | BA_MANA | BA_FIRE | S_MONSTERS | BRAIN_SMASH | MIND_BLAST | WOUND | HASTE | S_HI_UNDEAD | S_HI_DRAGON | S_UNDEAD | S_AINU | S_DEMON | HEAL | S_SPIDER | S_HOUND | S_HI_DEMON
 spell-freq:33
-flags:UNIQUE | CAN_SPEAK | RES_TELE | NONLIVING | FORCE_SLEEP | PASS_WALL | DEMON | IM_NEXUS | ATTR_MULTI | ATTR_RAND | MALE | AURA_ELEC | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | SMART | OPEN_DOOR | BASH_DOOR | REGENERATE | AURA_COLD | EVIL | IM_ACID | IM_POIS | IM_FIRE | NO_CONF | NO_SLEEP
+flags:UNIQUE | CAN_SPEAK | RES_TELE | NONLIVING | FORCE_SLEEP | PASS_WALL | DEMON | IM_NEXUS | SHAPECHANGER | ATTR_MULTI | ATTR_RAND | MALE | AURA_ELEC | ONLY_ITEM | DROP_4 | DROP_GOOD | DROP_GREAT | SMART | OPEN_DOOR | BASH_DOOR | REGENERATE | AURA_COLD | EVIL | IM_ACID | IM_POIS | IM_FIRE | NO_CONF | NO_SLEEP
 desc:Nyarlathothep is the messenger, the heart and the soul of the outer gods. He is a shapechanger capable of assuming thousands of nightmarish forms. One of them looks like this: "A tall, slim figure with the young face of an antique pharaoh, gay with prismatic robes and crowned with a pshent that glowed with inherent light... the fascination of a dark god or fallen archangel, and around whose eyes there lurked the languid sparkle of capricious humor."
 
 name:Azathoth, Seething Nuclear Chaos

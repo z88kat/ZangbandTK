@@ -137,6 +137,27 @@ Immolation** or **of Electricity** does for a monster exactly what the monster's
 aura does to you, on the same terms — a monster immune to the element shrugs it
 off, and your reflected bolt scatters beside whatever cast it.
 
+Five that will not hold still
+-----------------------------
+
+The **chaos shapechanger**, the **lord of chaos**, the **unmaker**,
+**Nyarlathotep** and **Dworkin Barimen** are not drawn as themselves. Each time
+the display refreshes — which for these is every game turn — the symbol is
+replaced by that of some other creature entirely, and about one time in
+twenty-five by an *object* instead. A shapechanger looks like a kobold, then a
+dragon, then a mushroom, then something else.
+
+Nothing about the monster changes. It has the same stats, the same attacks and
+the same behaviour throughout; only the glyph moves. That is worth knowing
+because the obvious inference — that the thing has actually become a dragon and
+should be fought like one — is wrong, and acting on it is how the flag kills
+people.
+
+The company is not accidental. Four of the five are creatures of chaos, and the
+fifth is Dworkin, who drew the Pattern and lost his mind doing it. In this game
+he is both a shapechanger and one of Amber's blood, and he is the only monster
+who is both.
+
 How dangerous are they?
 -----------------------
 
@@ -166,9 +187,9 @@ make three more of those possible:
 Not yet implemented
 -------------------
 
-Two imported abilities are recorded but not yet active: changing shape at
-random, and teleporting erratically when watched. Between them they affect six
-monsters, and those monsters behave as though they do not have them.
+One imported ability is recorded but not yet active: teleporting erratically
+when watched. It affects one monster, and that monster behaves as though it does
+not have it.
 
 Zangband also tagged every monster with the terrain it prefers and the dungeons
 it belongs in. Those tags are unused here, because this game decides both

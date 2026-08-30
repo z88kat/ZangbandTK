@@ -267,6 +267,36 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 				/* Multi-hued monster */
 				a = mon->attr ? mon->attr : da;
 				c = dc;
+
+				/*
+				 * ZangbandTK (CNT-04): and a shapechanger shows as something
+				 * else entirely, redrawn each time it shimmers.
+				 *
+				 * Nested inside the multi-hued branch because that is where
+				 * Zangband put it: SHAPECHANGER on its own does nothing at all,
+				 * it only modifies a monster that was already changing colour
+				 * ([maid-grf.c:1923](../archive/zangband/src/maid-grf.c#L1923)).
+				 * All five of the original's shapechangers carry ATTR_MULTI, so
+				 * the dependency never showed.
+				 *
+				 * One glyph in twenty-five is an object rather than a monster,
+				 * which is the original's proportion and the thing that makes it
+				 * unsettling rather than merely busy.  Only the character is
+				 * taken; the colour is left to the multi-hued cycling above, as
+				 * it was in the original's text mode.
+				 */
+				if (rf_has(mon->race->flags, RF_SHAPECHANGER)) {
+					int sa;
+					wchar_t sc;
+
+					if (one_in_(25)) {
+						hallucinatory_object(&sa, &sc);
+					} else {
+						hallucinatory_monster(&sa, &sc);
+					}
+
+					c = sc;
+				}
 			} else if (!flags_test(mon->race->flags, RF_SIZE,
 								   RF_ATTR_CLEAR, RF_CHAR_CLEAR, FLAG_END)) {
 				/* Normal monster (not "clear" in any way) */

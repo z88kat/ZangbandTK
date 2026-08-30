@@ -122,4 +122,11 @@ RF(REFLECTING,	RFT_NOTE,		"")
 RF(AURA_FIRE,	RFT_NOTE,		"")
 RF(AURA_COLD,	RFT_NOTE,		"")
 RF(AURA_ELEC,	RFT_NOTE,		"")
+/*
+ * ZangbandTK (CNT-04).  Shows as something else, and something else again the
+ * next time you look.  RFT_DISP with the other display flags, because that is
+ * all it is -- the monster does not change, only the glyph does.  Appended, for
+ * the same savefile reason as the flags above.
+ */
+RF(SHAPECHANGER,RFT_DISP,		"")
 /* end flags */

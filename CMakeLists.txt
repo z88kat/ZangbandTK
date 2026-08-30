@@ -868,6 +868,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     monster/lethality.c
     monster/monster.c
     monster/restele.c
+    monster/shapechanger.c
     monster/speech.c
     object/alloc.c
     object/attack.c
