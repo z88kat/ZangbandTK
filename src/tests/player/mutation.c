@@ -702,6 +702,122 @@ static int test_no_description_promises_charisma(void *state) {
 	ok;
 }
 
+/**
+ * The five melee mutations roll what the code rolls, not what the text said.
+ *
+ * `natural_attack()` sets `dss` and `ddd` and then calls `damroll(ddd, dss)`,
+ * whose parameters are `(num, sides)` -- so a scorpion tail rolls 7d3 while its
+ * own description reads "3d7". All five are written the wrong way round and
+ * all five hit harder in the code: a trunk does a flat 4 rather than 1d4's
+ * average of 2.5.
+ *
+ * Asserted with the sides and the number apart, because a test that only
+ * checked the average would pass on either reading of 2d4 and 4d2.
+ */
+static int test_the_melee_dice_are_the_code_s(void *state) {
+	static const struct {
+		const char *name;
+		int dice, sides, weight;
+	} expect[] = {
+		{ "SCOR_TAIL", 7, 3, 5 },
+		{ "HORNS", 6, 2, 15 },
+		{ "BEAK", 4, 2, 5 },
+		{ "TRUNK", 4, 1, 35 },
+		{ "TENTACLES", 5, 2, 5 },
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(expect); i++) {
+		const struct mutation *m = mutation_by_name(expect[i].name);
+
+		notnull(m);
+		eq(m->kind, MUTATION_KIND_MELEE);
+		eq(m->blow.dice, expect[i].dice);
+		eq(m->blow.sides, expect[i].sides);
+		eq(m->blow_weight, expect[i].weight);
+		notnull(m->blow_verb);
+
+		/* And the description agrees, because the player only sees that. */
+		require(strstr(m->desc, format("%dd%d", expect[i].dice,
+									   expect[i].sides)));
+	}
+
+	/* Only the tail carries an element. */
+	eq(mutation_by_name("SCOR_TAIL")->blow_element, ELEM_POIS);
+	eq(mutation_by_name("HORNS")->blow_element, -1);
+
+	ok;
+}
+
+/**
+ * Every random mutation either fires or has a reason not to.
+ *
+ * Twenty-one of the twenty-seven are effect chains and six are not. The count
+ * is the assertion, because a chain lost to a converter change leaves a
+ * mutation that is gained, described, saved, rolled for every single turn, and
+ * silently does nothing -- indistinguishable from the six that are meant to.
+ */
+static int test_the_random_split_is_what_was_decided(void *state) {
+	static const char *const deferred[] = {
+		"NORMALITY", "WRAITH", "CHAOS_GIFT", "WARNING", "SP_TO_HP", "HP_TO_SP"
+	};
+	const struct mutation *m;
+	int with = 0, without = 0;
+	size_t i;
+
+	for (m = mutations; m; m = m->next) {
+		if (m->kind != MUTATION_KIND_RANDOM) continue;
+
+		if (m->fires) with++; else without++;
+	}
+
+	eq(with, 21);
+	eq(without, 6);
+
+	for (i = 0; i < N_ELEMENTS(deferred); i++) {
+		m = mutation_by_name(deferred[i]);
+
+		notnull(m);
+		null(m->fires);
+	}
+
+	/* Nothing that is not a random mutation fires on a turn passing. */
+	for (m = mutations; m; m = m->next) {
+		if (m->kind == MUTATION_KIND_RANDOM) continue;
+
+		null(m->fires);
+	}
+
+	ok;
+}
+
+/**
+ * A random mutation with no chance would never fire, and none has one.
+ *
+ * Zangband stores the rarity in hundredths, so a stored 30 means one turn in
+ * three thousand. A mutation whose chance came through as zero would be rolled
+ * against `one_in_(0)`; the guard for that is in the firing loop, but the data
+ * should not need it. The one exception is the chaos gift, which fires on
+ * gaining a level rather than on a turn passing.
+ */
+static int test_every_firing_mutation_has_a_rarity(void *state) {
+	const struct mutation *m;
+
+	for (m = mutations; m; m = m->next) {
+		if (!m->fires) continue;
+
+		require(m->chance > 0);
+
+		/* And the rarest of them is still reachable in a long game. */
+		require(m->chance <= 12000);
+	}
+
+	null(mutation_by_name("CHAOS_GIFT")->fires);
+	eq(mutation_by_name("CHAOS_GIFT")->chance, 0);
+
+	ok;
+}
+
 const char *suite_name = "player/mutation";
 struct test tests[] = {
 	{ "all-ninety-six-are-here", test_all_ninety_six_are_here },
@@ -738,5 +854,10 @@ struct test tests[] = {
 	  test_a_power_arrives_and_leaves_with_its_mutation },
 	{ "no-description-promises-charisma",
 	  test_no_description_promises_charisma },
+	{ "the-melee-dice-are-the-code-s", test_the_melee_dice_are_the_code_s },
+	{ "the-random-split-is-what-was-decided",
+	  test_the_random_split_is_what_was_decided },
+	{ "every-firing-mutation-has-a-rarity",
+	  test_every_firing_mutation_has_a_rarity },
 	{ NULL, NULL }
 };

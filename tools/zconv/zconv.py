@@ -1800,6 +1800,58 @@ def _drop_charisma(desc: str) -> str:
     return re.sub(r"\s+([.,])", r"\1", out).strip()
 
 
+_MUT_BLOW = re.compile(
+    r"case MUT2_([A-Z_]+):\s*\{\s*dss = (\d+);\s*ddd = (\d+);"
+    r"\s*n_weight = (\d+);\s*atk_desc = \"([^\"]+)\";", re.S)
+
+
+def _fix_blow_dice(desc: str, dice: str) -> str:
+    """Make a melee mutation's description say what it actually rolls.
+
+    All five state their dice the wrong way round, because `natural_attack()`
+    fills in `dss` and `ddd` and then calls `damroll(ddd, dss)` -- parameters
+    `(num, sides)`. A scorpion tail is written "3d7" and rolls 7d3. The text is
+    not a rounding difference from the code; it is the code's own two variables
+    read in the order their names suggest rather than the order they are passed
+    in, and it makes every one of the five look weaker than it is.
+
+    The description is the only place a player will ever see these numbers, so
+    it gets the real ones.
+    """
+    return re.sub(r"\b\d+d\d+\b", dice, desc, count=1)
+
+
+def _mutation_blows() -> dict:
+    """The five extra attacks, from `natural_attack()`.
+
+    [cmd1.c:995](../archive/zangband/src/cmd1.c#L995). Each fires once per
+    melee round after the weapon blows, in a fixed order, and stops if the
+    monster is already dead.
+
+    The dice are worth reading twice. The code sets `dss` and `ddd` and then
+    calls `damroll(ddd, dss)`, whose parameters are `(num, sides)` -- so a
+    scorpion tail rolls **7d3** while its own description says "3d7". All five
+    are like this, and all five are harder-hitting in the code than in the
+    text: 7d3 averages 14 against 3d7's 12, and an elephantine trunk does a
+    flat 4 rather than 1d4's 2.5. DEC-20 puts the source ahead of the
+    documentation on questions of algorithm, and this is one.
+    """
+    src = (ZANGBAND.parent.parent / "src" / "cmd1.c").read_text(
+        encoding="utf-8", errors="replace")
+    start = src.index("static void natural_attack")
+    body = src[start:src.index("/* Extract monster name", start)]
+
+    blows = {}
+    for code, dss, ddd, weight, verb in _MUT_BLOW.findall(body):
+        blows[code] = {
+            "dice": "%sd%s" % (ddd, dss),
+            "weight": int(weight),
+            "verb": verb,
+        }
+
+    return blows
+
+
 def _mutation_powers() -> tuple[dict, dict]:
     """What each activatable mutation does, from `mutmap.toml`.
 
@@ -1819,7 +1871,15 @@ def _mutation_powers() -> tuple[dict, dict]:
     lines: dict[str, list[str]] = {}
     deferred: dict[str, str] = {}
 
-    for code, spec in table.items():
+    # `[random.X]` sections emit `fires-` lines rather than `power-` ones: the
+    # chain is the same shape and fires on a turn passing rather than on the
+    # player asking for it.
+    entries = [(code, spec, "power-") for code, spec in table.items()
+               if code != "random"]
+    entries += [(code, spec, "fires-")
+                for code, spec in table.get("random", {}).items()]
+
+    for code, spec, prefix in entries:
         if "defer" in spec:
             deferred[code] = " ".join(spec["defer"].split())
             continue
@@ -1833,15 +1893,14 @@ def _mutation_powers() -> tuple[dict, dict]:
             # A single always-on band needs no `when:` at all; the parser
             # opens one for the first effect it sees.
             if len(bands) > 1 or band["from"] or band["to"]:
-                out.append("power-when:%d:%d" % (band["from"], band["to"]))
+                out.append(prefix + "when:%d:%d"
+                           % (band["from"], band["to"]))
 
             for item in band["effects"]:
-                if item.startswith("dice:"):
-                    out.append("power-" + item)
-                elif item.startswith("expr:"):
-                    out.append("power-" + item)
+                if item.startswith(("dice:", "expr:")):
+                    out.append(prefix + item)
                 else:
-                    out.append("power-effect:" + item)
+                    out.append(prefix + "effect:" + item)
 
         lines[code] = out
 
@@ -1858,6 +1917,7 @@ def cmd_mutations(args) -> int:
     weights, gates = _mutation_weights()
     effects, gained_flags = _mutation_effects()
     powers, undone = _mutation_powers()
+    blows = _mutation_blows()
 
     report = Report(
         title="zconv — mutation conversion review",
@@ -1947,7 +2007,10 @@ def cmd_mutations(args) -> int:
         if code in gained_flags:
             entry.set("flags", " | ".join(gained_flags[code]))
 
-        entry.set("desc", _drop_charisma(desc))
+        clean = _drop_charisma(desc)
+        if code in blows:
+            clean = _fix_blow_dice(clean, blows[code]["dice"])
+        entry.set("desc", clean)
         entry.set("gain", gain)
         entry.set("lose", lose)
 
@@ -1955,6 +2018,16 @@ def cmd_mutations(args) -> int:
         # better after the thing it belongs to.  Appended pair by pair rather
         # than through set(), which replaces: a chain is many `power-effect`
         # lines and they all have to survive.
+        if code in blows:
+            # The scorpion tail is the only one that carries an element; the
+            # other four are plain damage.  Zangband projects poison for the
+            # tail and calls mon_take_hit() for the rest.
+            entry.set("blow-dice", blows[code]["dice"])
+            entry.set("blow-weight", blows[code]["weight"])
+            entry.set("blow-verb", blows[code]["verb"])
+            if code == "SCOR_TAIL":
+                entry.set("blow-element", "POIS")
+
         for line in powers.get(code, []):
             key, _, value = line.partition(":")
             entry.pairs.append((key, value))
@@ -1979,6 +2052,13 @@ def cmd_mutations(args) -> int:
         % (len(powers), len(undone)))
     for code in sorted(undone):
         report.notes.append("  deferred -- %s: %s" % (code, undone[code]))
+    report.notes.append(
+        "Melee blows come out of natural_attack() in cmd1.c, not out of the "
+        "descriptions beside them: the code sets dss and ddd and then calls "
+        "damroll(ddd, dss), whose parameters are (num, sides). A scorpion "
+        "tail rolls 7d3 where its own text says 3d7, and all five are like "
+        "this -- harder-hitting in the code than in the documentation every "
+        "time. DEC-20 puts the source first on algorithm.")
 
     OUTDIR.mkdir(exist_ok=True)
     report_path = OUTDIR / "mutations.report.md"

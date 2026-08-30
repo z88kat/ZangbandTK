@@ -32,6 +32,7 @@
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "player-calcs.h"
+#include "player-mutation.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "source.h"
@@ -766,6 +767,9 @@ void process_world(struct chunk *c)
 		update_scent();
 	}
 
+
+	/* And whatever chaos does to the character unasked (PLR-14) */
+	player_mutation_turn(player);
 
 	/*** Process Inventory ***/
 

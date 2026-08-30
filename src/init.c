@@ -4439,6 +4439,7 @@ static enum parser_error parse_mutation_name(struct parser *p) {
 	m->next = h;
 	m->name = string_make(parser_getstr(p, "name"));
 	m->stat = -1;
+	m->blow_element = -1;
 	parser_setpriv(p, m);
 
 	return PARSE_ERROR_NONE;
@@ -4628,6 +4629,103 @@ static enum parser_error parse_mutation_power_expr(struct parser *p) {
 							parser_getstr(p, "expr"));
 }
 
+static struct player_power *mutation_fires(struct mutation *m) {
+	if (!m) return NULL;
+
+	if (!m->fires) {
+		m->fires = mem_zalloc(sizeof(*m->fires));
+		m->fires->name = string_make(m->name);
+	}
+
+	return m->fires;
+}
+
+static enum parser_error parse_mutation_fires_when(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	return power_parse_when(mutation_fires(m), parser_getint(p, "from"),
+							parser_getint(p, "to"));
+}
+
+static enum parser_error parse_mutation_fires_effect(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	return power_parse_effect(mutation_fires(m), p);
+}
+
+static enum parser_error parse_mutation_fires_dice(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m || !m->fires) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	return power_parse_dice(m->fires, parser_getstr(p, "dice"));
+}
+
+static enum parser_error parse_mutation_fires_expr(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m || !m->fires) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	return power_parse_expr(m->fires, parser_getsym(p, "name"),
+							parser_getsym(p, "base"),
+							parser_getstr(p, "expr"));
+}
+
+static enum parser_error parse_mutation_blow_dice(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+	dice_t *dice;
+	const char *string;
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	dice = dice_new();
+	if (!dice) return PARSE_ERROR_INVALID_DICE;
+
+	string = parser_getstr(p, "dice");
+	if (!dice_parse_string(dice, string)) {
+		dice_free(dice);
+		return PARSE_ERROR_NOT_RANDOM;
+	}
+	dice_random_value(dice, &m->blow);
+	dice_free(dice);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mutation_blow_weight(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	m->blow_weight = parser_getint(p, "weight");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mutation_blow_verb(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	string_free(m->blow_verb);
+	m->blow_verb = string_make(parser_getstr(p, "verb"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_mutation_blow_element(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+	int i;
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	i = proj_name_to_idx(parser_getstr(p, "element"));
+	if (i < 0) return PARSE_ERROR_INVALID_VALUE;
+
+	m->blow_element = i;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_mutation_armour(struct parser *p) {
 	struct mutation *m = parser_priv(p);
 
@@ -4722,6 +4820,16 @@ static struct parser *init_parse_mutation(void) {
 	parser_reg(p, "power-dice str dice", parse_mutation_power_dice);
 	parser_reg(p, "power-expr sym name sym base str expr",
 			   parse_mutation_power_expr);
+	parser_reg(p, "fires-when int from int to", parse_mutation_fires_when);
+	parser_reg(p, "fires-effect sym eff ?sym type ?int radius ?int other",
+			   parse_mutation_fires_effect);
+	parser_reg(p, "fires-dice str dice", parse_mutation_fires_dice);
+	parser_reg(p, "fires-expr sym name sym base str expr",
+			   parse_mutation_fires_expr);
+	parser_reg(p, "blow-dice str dice", parse_mutation_blow_dice);
+	parser_reg(p, "blow-weight int weight", parse_mutation_blow_weight);
+	parser_reg(p, "blow-verb str verb", parse_mutation_blow_verb);
+	parser_reg(p, "blow-element str element", parse_mutation_blow_element);
 	parser_reg(p, "values str values", parse_mutation_values);
 	parser_reg(p, "flags str flags", parse_mutation_flags);
 	parser_reg(p, "power str power", parse_mutation_power);
@@ -4770,7 +4878,9 @@ static void cleanup_mutation(void) {
 		string_free(m->gain);
 		string_free(m->lose);
 		string_free(m->power);
+		string_free(m->blow_verb);
 		power_free(m->action);
+		power_free(m->fires);
 		mem_free(m);
 		m = next;
 	}

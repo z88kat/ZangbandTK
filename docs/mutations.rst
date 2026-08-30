@@ -10,9 +10,10 @@ something breathed — and what you get is what the roll gives you.
 
 .. note::
 
-   **Under construction.** The model is built, the standing changes act, and
-   the powers can be invoked. What is left is the mutations that fire on their
-   own and the ones that are extra attacks.
+   **Under construction.** Everything a mutation *does* now works: the standing
+   changes, the powers, the ones that fire on their own, and the extra attacks.
+   What is left is the ways you come by them — the patron's gift, the Chaos
+   Tower, Polymorph Self and the rest.
 
 The four kinds
 --------------
@@ -100,8 +101,32 @@ a body that brews its own alcohol, attracting demons, occasionally becoming
 invulnerable, occasionally dropping your weapon. Twenty-seven, most of them
 rare — one turn in three thousand up to one in twelve thousand.
 
+Each is rolled separately, every turn, so three of these are three chances and
+not one. Almost all of them stop while you are under an anti-magic effect —
+cowardice is the exception, because being too frightened to act is not magic,
+and Zangband is specific about that. Six of the twenty-seven do not fire yet:
+turning briefly incorporeal, being warned about what is nearby, trading hit
+points for spell points and back, losing a mutation at random, and the chaos
+gift, which needs the patron it asks. All six still show on your character
+sheet.
+
 **Melee.** Five of them, and they are extra blows rather than anything else: a
 scorpion tail, horns, a beak, an elephantine trunk, a nest of tentacles.
+
+They land once each per melee round, after your weapon, and cost you nothing —
+a mutated Warrior and a mutated Mage bite equally often. They are the reason a
+low-level character with the right mutations hits harder than their class says
+they should.
+
+.. warning::
+
+   **The melee dice are not what Zangband's own text says.** Every one of the
+   five states its damage the wrong way round: a scorpion tail is written
+   "3d7" and rolls **7d3**, an elephantine trunk is written "1d4" and rolls a
+   flat **4d1**. The code fills in two variables and then passes them in the
+   other order, and the result is that all five hit harder than advertised.
+   This game uses what the code rolls and the descriptions have been corrected
+   to match.
 
 *Zangband files these in three groups rather than four, because thirty-two
 flags is what fits in a machine word and it had three words to spend. The

@@ -31,9 +31,16 @@
 
 #include "player-mutation.h"
 
+#include "cave.h"
+#include "effects.h"
 #include "init.h"
 #include "message.h"
+#include "mon-make.h"
+#include "mon-util.h"
+#include "player-attack.h"
+#include "project.h"
 #include "player-calcs.h"
+#include "player-util.h"
 #include "player-virtue.h"
 
 /**
@@ -342,6 +349,114 @@ void player_apply_mutations(struct player *p, struct player_state *state,
 			} else if (m->el_info[i] > state->el_info[i].res_level) {
 				state->el_info[i].res_level = m->el_info[i];
 			}
+		}
+	}
+}
+
+/**
+ * The mutations that fire on their own (PLR-14, PLR-34).
+ *
+ * Once per turn, per mutation, at whatever rarity Zangband gave it -- one turn
+ * in a thousand for a warning, one in twelve thousand for walking through
+ * shadow. `mutation_random_aux()`
+ * ([mutation.c:1342](../archive/zangband/src/mutation.c#L1342)) rolls each one
+ * separately rather than picking between them, so a character with three of
+ * these has three independent chances every turn, and that is kept.
+ *
+ * Every one of them is suppressed by NO_MAGIC. Zangband tests it inside each
+ * mutation's own block, sixteen times over, and the one it *doesn't* test is
+ * cowardice -- being too frightened to act is not magic. That reading is
+ * followed here rather than tidied into a blanket rule.
+ *
+ * Six have no 4.2 equivalent and simply never fire; the reasons are in
+ * `mutmap.toml` and in the manual.
+ */
+void player_mutation_turn(struct player *p)
+{
+	const struct mutation *m;
+	bool suppressed;
+
+	if (!p || p->is_dead || !p->upkeep->playing) return;
+
+	suppressed = of_has(p->state.flags, OF_NO_MAGIC);
+
+	for (m = mutations; m; m = m->next) {
+		const struct power_effect *band;
+		bool ident = false;
+
+		if (m->kind != MUTATION_KIND_RANDOM) continue;
+		if (!m->fires || m->chance <= 0) continue;
+		if (!player_has_mutation(p, m)) continue;
+
+		/* Cowardice is fear, not sorcery, and fires regardless. */
+		if (suppressed && !streq(m->name, "COWARDICE")) continue;
+
+		if (!one_in_(m->chance)) continue;
+
+		disturb(p);
+
+		for (band = m->fires->effects; band; band = band->next) {
+			if (p->lev < band->from) continue;
+			if (band->to && p->lev > band->to) continue;
+
+			effect_do(band->effect, source_player(), NULL, &ident, true, 0,
+					  0, 0, NULL);
+		}
+	}
+}
+
+/**
+ * The extra attacks chaos has given the character (PLR-35).
+ *
+ * Five of them, each once per melee round, after the weapon blows and in the
+ * order Zangband lists them ([cmd1.c:1981](../archive/zangband/src/cmd1.c#L1981)).
+ * A dead monster stops the rest, which is why `dead` is checked between each.
+ *
+ * The dice are the source's and not the description's. `natural_attack()`
+ * fills in `dss` and `ddd` and then calls `damroll(ddd, dss)`, whose parameters
+ * are `(num, sides)` -- so a scorpion tail rolls 7d3 where its own text says
+ * "3d7". All five are written the wrong way round, and all five hit harder in
+ * the code than in the documentation.
+ */
+void player_mutation_blows(struct player *p, struct monster *mon,
+						   bool *fear, bool *dead)
+{
+	const struct mutation *m;
+
+	if (!p || !mon) return;
+
+	for (m = mutations; m; m = m->next) {
+		int dam;
+
+		if (m->kind != MUTATION_KIND_MELEE) continue;
+		if (!player_has_mutation(p, m)) continue;
+		if (*dead) return;
+
+		/*
+		 * The same to-hit the weapon used, because it is the same character
+		 * swinging -- Zangband builds the chance out of SKILL_THN and to_h
+		 * and nothing else, with no penalty for the limb being a mutation.
+		 */
+		if (!test_hit(chance_of_melee_hit_base(p, NULL),
+					  mon->race->ac)) {
+			msg("You miss %s with your %s.", "it", m->blow_verb);
+			continue;
+		}
+
+		dam = randcalc(m->blow, 0, RANDOMISE);
+		dam = critical_melee(p, NULL, m->blow_weight, p->state.to_h, dam,
+							 NULL);
+		dam += p->state.to_d;
+		if (dam < 0) dam = 0;
+
+		msg("You hit %s with your %s.", "it", m->blow_verb);
+
+		if (m->blow_element >= 0) {
+			project(source_player(), 0, mon->grid, dam, m->blow_element,
+					PROJECT_KILL, 0, 0, NULL);
+			*dead = !square_monster(cave, mon->grid);
+		} else {
+			*dead = mon_take_hit(mon, p, dam, fear, NULL);
 		}
 	}
 }

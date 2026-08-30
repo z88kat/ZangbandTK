@@ -83,6 +83,21 @@ struct mutation {
 	 * equivalent; those are still gained, described and saved.
 	 */
 	struct player_power *action;
+
+	/**
+	 * What a random mutation does on the turn its roll comes up (PLR-14).
+	 *
+	 * The same structure again, and for the same reason -- it is an effect
+	 * chain with a level band -- but it is never chosen, so its level, cost
+	 * and failure go unread. Null for the six with no 4.2 equivalent.
+	 */
+	struct player_power *fires;
+
+	/** An extra attack in the melee round (PLR-35). */
+	random_value blow;
+	int blow_weight;	/**< For the critical-hit table, in tenth-pounds */
+	int blow_element;	/**< An element it carries, or -1 */
+	char *blow_verb;	/**< "You hit it with your tail." */
 	int16_t el_info[ELEM_MAX];
 	bitflag flags[OF_SIZE];
 };
@@ -103,5 +118,8 @@ bool player_mutate(struct player *p);
 int mutation_regen_penalty(const struct player *p);
 void player_apply_mutations(struct player *p, struct player_state *state,
 							bool vuln[ELEM_MAX]);
+void player_mutation_turn(struct player *p);
+void player_mutation_blows(struct player *p, struct monster *mon,
+						   bool *fear, bool *dead);
 
 #endif /* !PLAYER_MUTATION_H */

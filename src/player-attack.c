@@ -44,6 +44,7 @@
 #include "player-luck.h"
 #include "player-virtue.h"
 #include "player-calcs.h"
+#include "player-mutation.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
@@ -399,7 +400,7 @@ static int o_critical_shot(const struct player *p,
  *
  * Factor in weapon weight, total plusses, player level.
  */
-static int critical_melee(struct player *p,
+int critical_melee(struct player *p,
 		const struct monster *monster,
 		int weight, int plus,
 		int dam, uint32_t *msg_type)
@@ -1468,6 +1469,14 @@ void py_attack(struct player *p, struct loc grid)
 		slain = py_attack_real(p, grid, &fear);
 		p->upkeep->energy_use += blow_energy;
 	}
+
+	/*
+	 * And then whatever chaos has grown on the character (PLR-35). After the
+	 * weapon and free of it: Zangband's natural attacks cost no energy and
+	 * are not affected by how many blows the character gets, so a mutated
+	 * Warrior and a mutated Mage bite exactly as often.
+	 */
+	if (!slain) player_mutation_blows(p, mon, &fear, &slain);
 
 	/* Hack - delay fear messages */
 	if (fear && monster_is_visible(mon)) {

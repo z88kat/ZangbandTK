@@ -36,6 +36,35 @@ Savefile compatibility — 30 August 2026
 M8: mutations — 31 August 2026
 ------------------------------
 
+- **3.48.0** — **The mutations that act on their own** (PLR-14, PLR-35).
+  Twenty-one of the twenty-seven random mutations now fire on their own timer,
+  and all five melee mutations land an extra blow in the attack round. That
+  completes what a mutation *does*; the ways you come by one are next.
+
+  Each random mutation is rolled separately every turn, so three of them are
+  three chances rather than one, which is Zangband's arrangement. Every one is
+  suppressed by anti-magic except cowardice — Zangband tests the flag inside
+  sixteen of the seventeen blocks that could have it and pointedly not in that
+  one, because being too frightened to act is not sorcery. That reading was
+  kept rather than tidied into a blanket rule.
+
+  **The melee dice were written the wrong way round in Zangband, all five of
+  them.** ``natural_attack()`` fills in ``dss`` and ``ddd`` and then calls
+  ``damroll(ddd, dss)``, whose parameters are ``(num, sides)`` — so a scorpion
+  tail is described as "3d7" and rolls **7d3**, and an elephantine trunk is
+  described as "1d4" and rolls a flat **4d1**. Every one of the five hits
+  harder in the code than in its own text: 14 against 12, 9 against 7, 6
+  against 5, 4 against 2.5, 7.5 against 6. DEC-20 puts the source ahead of the
+  documentation on algorithm, so the dice are the code's and the descriptions
+  have been corrected to match — they are the only place a player ever sees
+  these numbers.
+
+  Six random mutations are deferred with reasons: wraith form (4.2 has no
+  incorporeal player state), the warning (a piece of user interface rather than
+  an effect), the two hit-point/spell-point exchanges (no effect reads both
+  pools), losing a mutation at random (Phase 5's removal paths), and the chaos
+  gift (Phase 5's patron).
+
 - **3.47.0** — **Twenty-three mutation powers, and nine honest gaps**
   (PLR-16). The activatable mutations join the same list as racial and class
   powers, after them, and use the same machinery — the same failure roll

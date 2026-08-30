@@ -546,6 +546,9 @@ weight:1
 desc:You are subject to berserker fits.
 gain:You become subject to fits of berserk rage!
 lose:You are no longer subject to fits of berserk rage!
+fires-effect:TIMED_INC:SHERO
+fires-dice:10+1d$B
+fires-expr:B:PLAYER_LEVEL:+ 0
 
 name:COWARDICE
 kind:random
@@ -554,6 +557,8 @@ weight:1
 desc:You are subject to cowardice.
 gain:You become an incredible coward!
 lose:You are no longer an incredible coward!
+fires-effect:TIMED_INC:AFRAID
+fires-dice:13+1d27
 
 name:RTELEPORT
 kind:random
@@ -562,6 +567,8 @@ weight:1
 desc:You are teleporting randomly.
 gain:Your position seems very uncertain...
 lose:Your position seems more certain.
+fires-effect:TELEPORT
+fires-dice:40
 
 name:ALCOHOL
 kind:random
@@ -570,6 +577,50 @@ weight:1
 desc:Your body produces alcohol.
 gain:Your body starts producing alcohol!
 lose:Your body stops producing alcohol!
+fires-effect:TIMED_INC:CONFUSED
+fires-dice:15+1d20
+fires-effect:RANDOM
+fires-dice:20
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TIMED_INC:IMAGE
+fires-dice:150+1d150
+fires-effect:TELEPORT
+fires-dice:100
 
 name:HALLU
 kind:random
@@ -578,6 +629,8 @@ weight:1
 desc:You have a hallucinatory insanity.
 gain:You are afflicted by a hallucinatory insanity!
 lose:You are no longer afflicted by a hallucinatory insanity!
+fires-effect:TIMED_INC:IMAGE
+fires-dice:40+1d40
 
 name:FLATULENT
 kind:random
@@ -586,27 +639,41 @@ weight:1
 desc:You are subject to uncontrollable flatulence.
 gain:You become subject to uncontrollable flatulence.
 lose:You are no longer subject to uncontrollable flatulence.
+fires-effect:SPHERE:POIS:3
+fires-dice:$B
+fires-expr:B:PLAYER_LEVEL:+ 3
+fires-effect:WAKE
 
 name:SCOR_TAIL
 kind:melee
 weight:2
-desc:You have a scorpion tail (poison, 3d7).
+desc:You have a scorpion tail (poison, 7d3).
 gain:You grow a scorpion tail!
 lose:You lose your scorpion tail!
+blow-dice:7d3
+blow-weight:5
+blow-verb:tail
+blow-element:POIS
 
 name:HORNS
 kind:melee
 weight:2
-desc:You have horns (dam. 2d6).
+desc:You have horns (dam. 6d2).
 gain:Horns pop forth into your forehead!
 lose:Your horns vanish from your forehead!
+blow-dice:6d2
+blow-weight:15
+blow-verb:horns
 
 name:BEAK
 kind:melee
 weight:2
-desc:You have a beak (dam. 2d4).
+desc:You have a beak (dam. 4d2).
 gain:Your mouth turns into a sharp, powerful beak!
 lose:Your mouth reverts to normal!
+blow-dice:4d2
+blow-weight:5
+blow-verb:beak
 
 name:ATT_DEMON
 kind:random
@@ -615,6 +682,7 @@ weight:2
 desc:You attract demons.
 gain:You start attracting demons.
 lose:You stop attracting demons.
+fires-effect:SUMMON:DEMON
 
 name:PROD_MANA
 kind:random
@@ -623,6 +691,9 @@ weight:1
 desc:You are producing magical energy uncontrollably.
 gain:You start producing magical energy uncontrollably.
 lose:You stop producing magical energy uncontrollably.
+fires-effect:SPHERE:MANA:2
+fires-dice:$B
+fires-expr:B:PLAYER_LEVEL:* 2
 
 name:SPEED_FLUX
 kind:random
@@ -631,6 +702,12 @@ weight:2
 desc:You move faster or slower randomly.
 gain:You become manic-depressive.
 lose:You are no longer manic-depressive.
+fires-effect:RANDOM
+fires-dice:2
+fires-effect:TIMED_INC:FAST
+fires-dice:20+1d20
+fires-effect:TIMED_INC:SLOW
+fires-dice:20+1d20
 
 name:BANISH_ALL
 kind:random
@@ -639,6 +716,9 @@ weight:2
 desc:You sometimes cause nearby creatures to vanish.
 gain:You feel a terrifying power lurking behind you.
 lose:You no longer feel a terrifying power lurking behind you.
+fires-effect:PROJECT_LOS:AWAY_ALL
+fires-dice:$B
+fires-expr:B:PLAYER_LEVEL:* 4
 
 name:EAT_LIGHT
 kind:random
@@ -647,13 +727,18 @@ weight:1
 desc:You sometimes feed off of the light around you.
 gain:You feel a strange kinship with Ungoliant.
 lose:You feel the world's a brighter place.
+fires-effect:DRAIN_LIGHT
+fires-effect:DARKEN_AREA
 
 name:TRUNK
 kind:melee
 weight:2
-desc:You have an elephantine trunk (dam 1d4).
+desc:You have an elephantine trunk (dam 4d1).
 gain:Your nose grows into an elephant-like trunk.
 lose:Your nose returns to a normal length.
+blow-dice:4d1
+blow-weight:35
+blow-verb:trunk
 
 name:ATT_ANIMAL
 kind:random
@@ -662,14 +747,18 @@ weight:1
 desc:You attract animals.
 gain:You start attracting animals.
 lose:You stop attracting animals.
+fires-effect:SUMMON:ANIMAL
 
 name:TENTACLES
 kind:melee
 weight:1
 values:DEX[1]
-desc:You have evil looking tentacles (dam 2d5, +1 DEX).
+desc:You have evil looking tentacles (dam 5d2, +1 DEX).
 gain:Evil-looking tentacles sprout from your sides.
 lose:Your tentacles vanish from your sides.
+blow-dice:5d2
+blow-weight:5
+blow-verb:tentacles
 
 name:RAW_CHAOS
 kind:random
@@ -678,6 +767,9 @@ weight:1
 desc:You occasionally are surrounded with raw chaos.
 gain:You feel the universe is less stable around you.
 lose:You feel the universe is more stable around you.
+fires-effect:SPHERE:CHAOS:8
+fires-dice:$B
+fires-expr:B:PLAYER_LEVEL:+ 0
 
 name:NORMALITY
 kind:random
@@ -703,6 +795,10 @@ weight:1
 desc:Your health is subject to chaotic forces.
 gain:You feel forces of chaos entering your old scars.
 lose:You feel forces of chaos departing your old scars.
+fires-effect:CURE:CUT
+fires-effect:DAMAGE
+fires-dice:1d$B
+fires-expr:B:PLAYER_LEVEL:+ 0
 
 name:WASTING
 kind:random
@@ -711,6 +807,7 @@ weight:1
 desc:You have a horrible wasting disease.
 gain:You suddenly contract a horrible wasting disease.
 lose:You are cured of the horrible wasting disease!
+fires-effect:LOSE_RANDOM_STAT
 
 name:ATT_DRAGON
 kind:random
@@ -719,6 +816,7 @@ weight:1
 desc:You attract dragons.
 gain:You start attracting dragons.
 lose:You stop attracting dragons.
+fires-effect:SUMMON:DRAGON
 
 name:WEIRD_MIND
 kind:random
@@ -727,6 +825,9 @@ weight:2
 desc:Your mind randomly expands and contracts.
 gain:Your thoughts suddenly take off in strange directions.
 lose:Your thoughts return to boring paths.
+fires-effect:TIMED_INC:TELEPATHY
+fires-dice:5+1d$B
+fires-expr:B:PLAYER_LEVEL:* 2
 
 name:NAUSEA
 kind:random
@@ -735,6 +836,7 @@ weight:1
 desc:You have a seriously upset stomach.
 gain:Your stomach starts to roil nauseously.
 lose:Your stomach stops roiling.
+fires-effect:NOURISH:SET_TO:1000
 
 name:CHAOS_GIFT
 kind:random
@@ -751,6 +853,7 @@ weight:1
 desc:You occasionally stumble into other shadows.
 gain:You feel like reality is as thin as paper.
 lose:You feel like you're trapped in reality.
+fires-effect:ALTER_REALITY
 
 name:WARNING
 kind:random
@@ -768,6 +871,8 @@ values:WIS[-2]
 desc:You occasionally feel invincible (-2 WIS).
 gain:You are blessed with fits of invulnerability.
 lose:You are no longer blessed with fits of invulnerability.
+fires-effect:TIMED_INC:INVULN
+fires-dice:8+1d8
 
 name:SP_TO_HP
 kind:random
@@ -792,6 +897,9 @@ weight:1
 desc:You occasionally stumble and drop things.
 gain:Your feet grow to four times their former size.
 lose:Your feet shrink to their former size.
+fires-effect:DAMAGE
+fires-dice:1d$B
+fires-expr:B:PLAYER_LEVEL:+ 0
 
 name:HYPER_STR
 kind:continuous

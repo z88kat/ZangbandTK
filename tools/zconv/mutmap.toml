@@ -281,3 +281,195 @@ defer = """do_cmd_throw_aux(2 + level/30) throws an object with a damage \
 multiplier. 4.2's throwing is a command rather than an effect -- there is \
 nothing for a power to invoke, and the multiplier has no home in the object's \
 own damage calculation."""
+
+# ---------------------------------------------------------------------------
+# Random mutations: what fires, on the turn the roll comes up.
+#
+# Same shape as the powers above and read the same way, out of
+# `mutation_random_aux()` at mutation.c:1342. Two things are true of all of
+# them and are handled in code rather than repeated here: every one is
+# suppressed by NO_MAGIC, and none fires while the character is in a shop or
+# resting through a turn that has not happened yet.
+#
+# 4.2's timed effects already refuse when the character resists -- TMD_AFRAID
+# checks PROT_FEAR, TMD_CONFUSED checks PROT_CONF -- so most of Zangband's
+# guard conditions come free and are not restated.
+
+[random.BERS_RAGE]
+line = 1346
+effects = [ "TIMED_INC:SHERO", "dice:10+1d$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+
+[random.COWARDICE]
+line = 1353
+note = "TMD_AFRAID declines on its own when the character cannot be frightened."
+effects = [ "TIMED_INC:AFRAID", "dice:13+1d27" ]
+
+[random.RTELEPORT]
+line = 1364
+note = """Zangband will not do this to a character who can teleport at will, \
+which is a kindness the mutation itself does not deserve; kept, because it is \
+the difference between a mutation and a bug."""
+effects = [ "TELEPORT", "dice:40" ]
+
+[random.ALCOHOL]
+line = 1379
+note = """The confusion always; the hallucination one time in three of the \
+nineteen-in-twenty case. Zangband's remaining case -- teleport a hundred \
+squares and forget the map -- is the blackout, and is kept."""
+effects = [
+  "TIMED_INC:CONFUSED", "dice:15+1d20",
+  "RANDOM", "dice:20",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TIMED_INC:IMAGE", "dice:150+1d150",
+  "TELEPORT", "dice:100" ]
+
+[random.HALLU]
+line = 1416
+effects = [ "TIMED_INC:IMAGE", "dice:40+1d40" ]
+
+[random.FLATULENT]
+line = 1424
+note = "A poison ball centred on the player, and everything nearby notices."
+effects = [ "SPHERE:POIS:3", "dice:$B", "expr:B:PLAYER_LEVEL:+ 3", "WAKE" ]
+
+[random.ATT_DEMON]
+line = 1465
+note = """One demon in six arrives friendly in Zangband. 4.2 has no pets, so \
+all of them are hostile here -- which makes this mutation worse than \
+Zangband's rather than better, and is the right direction to be wrong in."""
+effects = [ "SUMMON:DEMON" ]
+
+[random.PROD_MANA]
+line = 1490
+note = """Zangband fires an uncontrolled mana bolt in a random direction. 4.2 \
+has no random-direction projection from the player, so this becomes a mana \
+sphere centred on the character -- the same "your magic gets away from you", \
+without the direction."""
+effects = [ "SPHERE:MANA:2", "dice:$B", "expr:B:PLAYER_LEVEL:* 2" ]
+
+[random.SPEED_FLUX]
+line = 1516
+note = "Even chances of hasting and slowing, which is the whole joke."
+effects = [
+  "RANDOM", "dice:2",
+  "TIMED_INC:FAST", "dice:20+1d20",
+  "TIMED_INC:SLOW", "dice:20+1d20" ]
+
+[random.BANISH_ALL]
+line = 1549
+note = """Zangband banishes every monster in line of sight outright. 4.2's \
+nearest is teleporting them away, which leaves them on the level."""
+effects = [ "PROJECT_LOS:AWAY_ALL", "dice:$B", "expr:B:PLAYER_LEVEL:* 4" ]
+
+[random.EAT_LIGHT]
+line = 1560
+note = """Drains the light source and heals a little in the dark. The healing \
+is Zangband's compensation for going blind; the darkening is the cost."""
+effects = [ "DRAIN_LIGHT", "DARKEN_AREA" ]
+
+[random.ATT_ANIMAL]
+line = 1631
+effects = [ "SUMMON:ANIMAL" ]
+
+[random.RAW_CHAOS]
+line = 1653
+effects = [ "SPHERE:CHAOS:8", "dice:$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+
+[random.NORMALITY]
+line = 1663
+defer = """Removes one of the character's own mutations at random, which is a \
+mutation acting on the mutation set rather than on the character. Phase 5 \
+builds the removal paths; this hooks into them there."""
+
+[random.WRAITH]
+line = 1680
+defer = """inc_wraith_form() turns the character incorporeal for a while: they \
+pass through walls and take damage from doing it. 4.2 has no wraith form and \
+no player-passes-walls state at all."""
+
+[random.POLY_WOUND]
+line = 1691
+note = """do_poly_wounds() converts cuts into hit-point loss and back, using \
+chaos. Reduced here to what 4.2 can say: the cuts go, and it costs."""
+effects = [ "CURE:CUT", "DAMAGE", "dice:1d$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+
+[random.WASTING]
+line = 1699
+note = """Zangband picks a random stat and drains it, permanently until \
+restored. The wasting disease, and the reason nobody wants it."""
+effects = [ "LOSE_RANDOM_STAT" ]
+
+[random.ATT_DRAGON]
+line = 1785
+effects = [ "SUMMON:DRAGON" ]
+
+[random.WEIRD_MIND]
+line = 1807
+note = """Telepathy that comes and goes. Zangband toggles a timed ESP; 4.2's \
+nearest standing equivalent is the same timed effect."""
+effects = [ "TIMED_INC:TELEPATHY", "dice:5+1d$B", "expr:B:PLAYER_LEVEL:* 2" ]
+
+[random.NAUSEA]
+line = 1830
+note = """Empties the stomach to Weak. NOURISH:SET_TO takes an absolute value, \
+which is what Zangband does -- this is not a subtraction."""
+effects = [ "NOURISH:SET_TO:1000" ]
+
+[random.CHAOS_GIFT]
+line = 0
+defer = """The one random mutation with no per-turn chance: it fires when the \
+character gains a level, and what it does is ask the Chaos patron for a \
+reward. That is DEC-38's carry-over, and it is built in Phase 5 beside the \
+patron gift itself."""
+
+[random.WALK_SHAD]
+line = 1849
+note = "alter_reality() is 4.2's ALTER_REALITY, and means the same thing."
+effects = [ "ALTER_REALITY" ]
+
+[random.WARNING]
+line = 1860
+defer = """Counts the dangerous monsters within a radius and warns about them \
+by name and number, then offers to read a scroll of protection. It is a piece \
+of user interface rather than an effect, and 4.2 has nothing that produces \
+that message."""
+
+[random.INVULN]
+line = 1913
+note = "Eight to sixteen turns of being untouchable, at random, for free."
+effects = [ "TIMED_INC:INVULN", "dice:8+1d8" ]
+
+[random.SP_TO_HP]
+line = 1928
+defer = """Converts spell points into hit points at a rate that depends on how \
+many of each the character has. 4.2 has no effect that reads one pool to fill \
+the other, and the exchange rate is the whole mechanic."""
+
+[random.HP_TO_SP]
+line = 1948
+defer = """The reverse, and unavailable for the same reason. Both would need an \
+effect built to read both pools."""
+
+[random.DISARM]
+line = 1969
+note = """The character trips, drops what they were holding and hurts \
+themselves. 4.2 has no effect that unwields the weapon, so what survives is \
+the fall."""
+effects = [ "DAMAGE", "dice:1d$B", "expr:B:PLAYER_LEVEL:+ 0" ]

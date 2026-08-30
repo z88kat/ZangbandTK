@@ -60,6 +60,14 @@ int chance_of_missile_hit_base(const struct player *p,
 int chance_of_melee_hit_base(const struct player *p,
 	const struct object *weapon);
 extern bool test_hit(int to_hit, int ac);
+
+/*
+ * Exported for the melee mutations (PLR-35), which land an extra blow with no
+ * object behind it and still deserve to crit.
+ */
+struct monster;
+int critical_melee(struct player *p, const struct monster *monster,
+				   int weight, int plus, int dam, uint32_t *msg_type);
 void hit_chance(random_chance *, int, int);
 void apply_deadliness(int *die_average, int deadliness);
 extern void py_attack(struct player *p, struct loc grid);
