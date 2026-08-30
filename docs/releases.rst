@@ -33,6 +33,31 @@ Unreleased
 M2: the rest of Zangband's objects — 30 August 2026
 ---------------------------------------------------
 
+- **3.40.3** — **Bookkeeping that had drifted far enough to mislead.** The
+  requirement coverage table accounted for 91 of the 109 requirements and said
+  in a footnote that seven were unassigned. Rebuilt rather than patched, with
+  the arithmetic written down so it can be checked: 104 scheduled, one standing
+  rule, two built and never scheduled, two closed by decision. Three
+  requirements — WLD-04a, WLD-04b and WLD-08a — appeared nowhere in the plan at
+  all despite having shipped in M4.
+
+  ``BAL-07`` is recorded as met, with **DEC-40** for the method. The mapping
+  from Angband 2.8.1's ``sleep`` to 4.2's ``sleepiness`` was derived from the
+  434 monsters both versions carry rather than assumed, and the interesting
+  part is what it found: for 13 of the 21 distinct source values the recovered
+  figure *is* the source figure, and 275 of the 434 monsters carry the same
+  number in both. 4.2 never rescaled sleepiness — it edited individual
+  monsters. The scale was identity with noise on it, and the median is what
+  takes the noise off.
+
+  The ``# Source:`` line in the five generated data files is now written
+  relative to the top of the tree instead of absolutely, so regenerating in a
+  differently-named checkout produces the same bytes. ``check-build-lists``
+  fails if an absolute path comes back. It cannot check the stronger property —
+  that the shipped file is what the generator produces today — because the
+  Zangband sources are not in the repository, so that comparison is only
+  available to someone who has them.
+
 - **3.40.2** — **A potion that no game could ever have produced.** Angband
   builds one row of its object allocation table per dungeon level, from zero to
   ``obj-make:max-depth``, and clamps every request into that range. Zangband's

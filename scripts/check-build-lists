@@ -77,6 +77,22 @@ check("gamedata the DOS build asks for and would not find",
       {subs.get(a, a) + ".txt" for a in asked} - packaged - {"lore.txt", "randart.txt"},
       "written at runtime rather than shipped")
 
+# Generated data files carry a "# Source:" line naming what they were made
+# from, and it has to be written relative to the top of the tree.  An absolute
+# path makes committed content depend on where the checkout happens to sit, so
+# two people regenerating the same data produce different files and no diff
+# between them means anything.
+#
+# This is not the same as checking that the shipped file is what the generator
+# produces today: the Zangband sources zconv reads are not in the repository,
+# so that comparison cannot be made from a checkout at all.  What it does is
+# keep the comparison possible for anyone who does have them.
+generated = [f for f in os.listdir("lib/gamedata") if ".zangband." in f]
+check("generated data naming an absolute path rather than a repo-relative one",
+      {f for f in generated
+       if re.search(r"^# Source:\s*/", read("lib/gamedata/" + f), re.M)},
+      "regenerate with tools/zconv after updating it")
+
 # And the autotools install list, which decides what `make install` ships.
 files = re.search(r"^FILES\s*=\s*(.*?)(?=^\w|\Z)", read("lib/gamedata/Makefile"), re.M | re.S)
 install = set(re.findall(r"[\w.\-]+\.txt", files.group(1)))

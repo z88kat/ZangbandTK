@@ -1316,11 +1316,56 @@ Whichever lands decides how many of the eighteen need to move at all. Eighteen
 counters with accounting on every kill, spell and item is most of the cost, and a
 consumer that reads four of them does not justify the other fourteen.
 
-Verification work carried into Phase 2:
+Verification work carried into Phase 2 — three of the four are now done:
 
-- Measure `struct chunk`'s memory footprint against the wilderness live-block target
-  (world & towns Q4) — it shapes the core wilderness design.
-- Recover the 2.8.1 → 4.2 `sleepiness` mapping (balance Q1).
-- Confirm `obj_theme` can drive 4.2's object allocation (content Q4).
-- Objects, artifacts and ego items still need the balance treatment given to the bestiary
-  (balance §5).
+- ~~Measure `struct chunk`'s memory footprint against the wilderness live-block target
+  (world & towns Q4).~~ **Done**, on the real structures with a probe compiled against
+  the game's headers — phase1-world-and-towns §6.
+- ~~Recover the 2.8.1 → 4.2 `sleepiness` mapping (balance Q1).~~ **Done**, and recorded
+  as DEC-40.
+- ~~Confirm `obj_theme` can drive 4.2's object allocation (content Q4).~~ **Done**:
+  `obj_theme_here()` selects the theme and `obj_theme_weight()` biases the roll, in
+  [obj-make.c](../../src/obj-make.c) (CNT-12).
+- **Still open.** Objects, artifacts and ego items need the balance treatment given to
+  the bestiary (balance §5). Importing them did not do it: CNT-06, CNT-07 and CNT-11
+  brought all three across at Zangband's own numbers, with no curve fit and no lethality
+  scalar. Spot-checked as not visibly out of line — the deepest imported weapon deals
+  less than Angband's own — but not measured.
+
+---
+
+### DEC-40 — The sleepiness mapping is recovered, not assumed (BAL-07)
+
+BAL-07 said `sleep` must be *mapped* to 4.2's `sleepiness` rather than copied,
+on the grounds that the two scales might differ, and left the recovery method
+as balance open question 1: *"BAL-07 assumes it is derivable from the 434
+shared monsters. Needs verifying before it is relied upon."*
+
+**It was derivable, it has been derived, and the conversion has been relying on
+it since M2.** `derive_sleep_mapping()` in
+[tools/zconv/rules.py](../../tools/zconv/rules.py) observes every
+(2.8.1 `sleep`, 4.2 `sleepiness`) pair across the monsters both versions carry
+and builds the mapping from what it finds. The question is closed; this entry
+records the answer and what it cost.
+
+*What the data says.* 434 shared monsters yield 21 distinct 2.8.1 sleep values.
+Six of those map to exactly one 4.2 value and are taken as observed. The other
+fifteen map to several, because 4.2 retuned individual monsters without
+retuning the scale — 2.8.1's `10` appears in 4.2 as 5, 10, 13, 14, 20, 30, 40
+and more. For those the median is taken.
+
+*Why the median is the right choice here, and not merely the convenient one.*
+For **13 of the 21** values the recovered figure is the source figure — the
+median of what 4.2 did with `sleep:20` is 20 — and **275 of the 434** shared
+monsters carry the same number in both versions. The two scales are the same
+scale. 4.2 did not rescale sleepiness; it edited monsters. So the mapping
+recovers an identity with noise on top, and the median is what strips the noise
+without inventing a curve. Five values move: 1→10, 3→6, 25→58, 30→45, 90→50,
+each from a handful of observations.
+
+*What this does not settle.* The five that move are recovered from few
+monsters, and a Zangband monster landing on one of them gets a number with
+little behind it. The conversion report names the count on every run, so the
+figure is visible rather than buried.
+
+**Consequence.** Balance open question 1 is answered and struck. BAL-07 is met.

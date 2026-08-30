@@ -295,32 +295,57 @@ playable. Manual chapter: the magic system.
 
 ## 3. Requirement coverage
 
+Every requirement defined in the four Phase 1 documents appears exactly once below.
+There are **109**; the table used to account for 91 of them and to say in a footnote
+that seven were unassigned, which was wrong in both directions. Rebuilt rather than
+patched, and the arithmetic is checkable: the milestone rows sum to 104, and the five
+that are not scheduled are listed under it with a reason each.
+
 | Milestone | Requirements | Count |
 |---|---|---:|
-| M0 | BAL-11, BAL-12 (+ BAL-08 standing) | 2 |
+| M0 | BAL-11, BAL-12 | 2 |
 | M1 | BAL-01…BAL-07, BAL-13, BAL-14 | 9 |
 | M2 | BAL-09, BAL-10, CNT-01…CNT-04, CNT-06…CNT-09, CNT-11 | 11 |
 | M3 | CNT-13…CNT-16 | 4 |
-| M4 | WLD-01…WLD-09, WLD-23, WLD-24 | 11 |
-| M5 | WLD-10…WLD-18 (incl. WLD-11a, WLD-16a–16d; less WLD-13), WLD-25, CNT-05, CNT-12 | 16 |
+| M4 | WLD-01…WLD-09 (incl. WLD-04a, WLD-04b, WLD-08a), WLD-23, WLD-24 | 14 |
+| M5 | WLD-10…WLD-18 (incl. WLD-11a, WLD-16a–16d; less WLD-13), WLD-25, CNT-05, CNT-12, PLR-40, PLR-41 | 18 |
 | M6 | WLD-19…WLD-22 | 4 |
-| M7 | PLR-01…PLR-07 (less the two classes deferred to M9) | 7 |
-| M8 | PLR-13…PLR-21, PLR-34…PLR-38 (+ the Chaos Tower, WLD-16c) | 14 |
+| M7 | PLR-01…PLR-07 | 7 |
+| M8 | PLR-13…PLR-21, PLR-34…PLR-38 (+ the Chaos Tower, the last row of WLD-16c) | 14 |
 | M9 | PLR-08…PLR-12, CNT-10 | 6 |
-| M10 | PLR-22…PLR-28 | 7 |
+| M10 | PLR-22…PLR-33 | 12 |
 | M11 | BAL-15…BAL-17 | 3 |
-| | **Total** | **94** |
+| | **Scheduled** | **104** |
 
-BAL-08 is a standing rule rather than a milestone deliverable, accounting for the 95th.
+And the five that are not:
 
-> **Seven requirements remain unassigned**, all of them from the M0 documentation pass, which
-> this table was never updated for. **PLR-29 to PLR-33** are pet requirements and belong with
-> M10 — PLR-30 and PLR-31 in particular are the reason pets are not overpowered, so M10 must
-> not be sized without them. **PLR-40** (knowledge is a thing that can be lost) and
-> **PLR-41** (a night at the inn shows the sleeper something) were both built in M5 and need
-> recording as done rather than scheduling — as do **CNT-20** (not everything is there to be
-> fought) and **WLD-26** (the monster array is sized per chunk), which this table has never
-> mentioned at all. Assigning these is a separate pass and is not attempted here.
+| Requirement | Why it is not in a milestone |
+|---|---|
+| BAL-08 | A standing rule, not a deliverable: every imported number has its consuming formula checked in both codebases. It applies to M1, M2, M5 and M11 alike. |
+| CNT-20 | Built and shipped, never scheduled. The `BLESSING` race flag and the white deer — ZangbandTK's own, so it belongs to no import milestone. |
+| WLD-26 | Built and shipped, never scheduled. Per-chunk monster capacity, done as M4 pre-work because the wilderness could not be built without it. |
+| CNT-17 | Dropped by DEC-32. Sanity loss is not being implemented; it is not Amber's. |
+| WLD-13 | Superseded by DEC-26. A town is not a persistent chunk, so there is nothing to hold. |
+
+**109 = 104 scheduled + 1 standing + 2 built-unscheduled + 2 closed.** There is no
+PLR-39; the numbering skips it.
+
+Corrections this table carried until now, kept here because each was invisible
+while the count was wrong:
+
+- **WLD-04a, WLD-04b and WLD-08a appeared nowhere in this document.** All three are
+  built — object decay in open country, uniques remembered where ordinary monsters are
+  re-rolled, and danger as a function of law. They were inside the `WLD-01…WLD-09` range
+  numerically and named nowhere, which is how three shipped requirements went four
+  milestones without a mention.
+- **PLR-40 and PLR-41 were listed as needing scheduling.** They were built in M5. They
+  are M5's, not future work.
+- **WLD-16c is counted once, in M5, but is not wholly M5's.** It is a table of eight
+  building services rather than a single deliverable: six shipped in M5, the quest giver
+  went to M6 as WLD-16d, and the Chaos Tower waits for M8 because it removes mutations
+  and there are none yet. Counted where the bulk of it landed, with the remainder noted
+  on M8's row — a requirement that spans milestones cannot be counted twice without
+  breaking the arithmetic, and cannot be counted once without a note.
 
 ---
 

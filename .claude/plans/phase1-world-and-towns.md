@@ -789,6 +789,15 @@ block must not carry a dungeon level's monster capacity. Every bound that
 currently reads `z_info->level_monster_max` against a specific chunk must read
 that chunk's own capacity instead.
 
+> **Built.** `struct chunk` carries its own `mon_size`, set in
+> [cave.c:374](../../src/cave.c#L374) as
+> `MIN(z_info->level_monster_max, ...)` — a dungeon level takes the old bound
+> and is unaffected, a 16x16 wilderness block takes a fraction of it. The one
+> remaining `level_monster_max` outside that line is a scratch buffer in
+> [mon-group.c:60](../../src/mon-group.c#L60), which is a global upper bound on
+> an allocation rather than a capacity applied to a chunk, and is correct as it
+> stands.
+
 ---
 
 ## 7. Observed from ZangbandTK screenshots

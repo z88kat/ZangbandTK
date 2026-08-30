@@ -274,7 +274,8 @@ from Zangband; 4.2's own values are already correct.
 **BAL-06 — Hit points are converted from dice notation to 4.2's average-hp integer** as
 `ndm → n(m+1)/2`, rounded.
 
-**BAL-07 — `sleep` is mapped to 4.2's `sleepiness` semantics, not copied.** 4.2 documents
+**BAL-07 — `sleep` is mapped to 4.2's `sleepiness` semantics, not copied.** ✅ **Met**,
+and the recovery method is recorded as DEC-40. 4.2 documents
 sleepiness on a 0–255 scale at
 [lib/gamedata/monster.txt:108](../../lib/gamedata/monster.txt#L108). §2.4 shows Zangband
 never changed `sleep` from 2.8.1, so the correct mapping is whatever 2.8.1 → 4.2 mapping
@@ -353,8 +354,11 @@ no Zangband analogue.
 
 ## Open questions
 
-1. **How is the 2.8.1 → 4.2 `sleepiness` mapping recovered?** BAL-07 assumes it is
-   derivable from the 434 shared monsters. Needs verifying before it is relied upon.
+1. ~~**How is the 2.8.1 → 4.2 `sleepiness` mapping recovered?**~~ **Settled by DEC-40:
+   derived, not assumed.** `derive_sleep_mapping()` observes every pair across the 434
+   shared monsters. 21 distinct source values, six unambiguous and fifteen resolved by
+   median — and for 13 of the 21 the recovered value *is* the source value, because 4.2
+   never rescaled sleepiness, it edited individual monsters. BAL-07 is met.
 2. ~~Do the 389 imported monsters all belong?~~ **Settled by DEC-19: theme first.** Import
    everything carrying Amber, Mythos or Chaos identity; take the generic tail only where it
    fills a gap. Reduces the volume of BAL-09 calibration work proportionately.
