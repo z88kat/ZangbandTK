@@ -2,8 +2,8 @@
 #
 # Build the way CI builds, and let the exit code say whether it worked.
 #
-# Three builds, because CI runs all three shapes and none of them subsumes
-# another.
+# Three builds and the manual, because CI runs all four and none of them
+# subsumes another.
 #
 #   1. The macOS job, which builds the game through src/Makefile.osx with
 #      clang. Asks for -Wshadow, -Wwrite-strings, -Wmissing-prototypes,
@@ -14,8 +14,11 @@
 #   3. The same again with GCC, because the Linux runners use GCC and it sees
 #      things clang does not -- `depth > 0 || depth > 0` is an error to GCC
 #      and silent to clang.
+#   4. The manual, which .github/workflows/pages.yaml publishes on every push
+#      to master that touches docs/. A broken directive or a bad cross
+#      reference is a build failure there and was invisible here.
 #
-# A defect can pass any two of the three.
+# A defect can pass any three of the four.
 #
 # What made this necessary: `make -f Makefile.osx` and `cmake -S . -B build`
 # both default to permissive, and CI passes -Werror to both. A pointer of the
@@ -31,7 +34,7 @@
 # heuristic.
 #
 # Usage:
-#   scripts/check-build            both builds, strictly
+#   scripts/check-build            every build, strictly, and the manual
 #   scripts/check-build --tests    ...and run the unit tests after
 
 set -e
@@ -47,6 +50,10 @@ JOBS=$(sysctl -n hw.activecpu 2>/dev/null || nproc 2>/dev/null || echo 4)
 # the same arrangement as python3.13 and .venv-docs. `cc` stays clang, which
 # is what the macOS build below wants and what CI's macOS job uses.
 GCC=${GCC:-/opt/homebrew/bin/gcc-16}
+
+# The manual's virtualenv, made by the recipe in docs/README.md. Gitignored,
+# so present on a working tree and absent on a fresh clone.
+SPHINX=${SPHINX:-.venv-docs/bin/sphinx-build}
 
 LOG=$(mktemp -t check-build)
 trap 'rm -f "$LOG"' EXIT
@@ -102,6 +109,30 @@ else
 	echo "check-build:   brew install gcc, then re-run" >&2
 	exit 3
 fi
+
+# --- and the manual ----------------------------------------------------
+#
+# -W, because the manual builds clean today and a warning here is a broken
+# cross reference or a malformed directive -- the two things this pass exists
+# to catch. -E to rebuild from scratch, so a stale doctree cannot carry a
+# previous success over a present failure.
+#
+# Missing Sphinx is a failure and not a skip. This pass was added because the
+# manual was reported as building when it had not been built at all: the
+# command being run took sphinx-build from PATH, nothing ever put the
+# virtualenv there, and "sphinx-build: command not found" was read as "Sphinx
+# is not installed on this machine" rather than as "the wrong command". A pass
+# that quietly does nothing when a tool is absent reproduces exactly that, so
+# this one says what is missing and how to fix it, and stops.
+if [ ! -x "$SPHINX" ]; then
+	echo "check-build: no Sphinx at $SPHINX" >&2
+	echo "check-build:   /usr/bin/python3 -m venv .venv-docs" >&2
+	echo "check-build:   .venv-docs/bin/pip install -r docs/requirements.txt" >&2
+	exit 4
+fi
+
+echo "check-build: building the manual ($SPHINX -W)"
+run "$PWD/$SPHINX" -W -E -b html docs docs/_build/html
 
 if [ "$1" = "--tests" ]; then
 	echo "check-build: running the unit tests"

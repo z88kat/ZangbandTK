@@ -92,6 +92,8 @@ interface on Tcl/Tk 9.
 - **GCC** — only for `scripts/check-build`'s third pass, which reproduces what
   CI's Linux runners see. `brew install gcc` lands it as `gcc-16` beside the
   system clang; nothing else in the build uses it and `cc` stays clang.
+- **Sphinx** — only to build the manual, which is `scripts/check-build`'s
+  fourth pass. One `venv` in the tree; see [docs/README.md](docs/README.md).
 - **Python 3.11+** — only for the data conversion tools. macOS ships 3.9, which
   has no `tomllib`; `brew install python@3.13` adds `python3.13` beside it
   without displacing the system `python3`. Name it explicitly when running the
@@ -125,13 +127,13 @@ configures CMake with `-Werror`. A warning that scrolls past here is fatal
 there, which has let defects reach master. Before pushing:
 
 ```sh
-scripts/check-build           # both builds, with CI's flags
+scripts/check-build           # every build and the manual, with CI's flags
 scripts/check-build --tests   # ...and run the unit tests after
 ```
 
 Its exit code is the answer; it does not print a verdict for you to read past.
 
-It runs three builds, because CI runs all three shapes and none of them
+It runs three builds and the manual, because CI runs all four and none of them
 subsumes another:
 
 | | Compiler | Adds |
@@ -139,16 +141,26 @@ subsumes another:
 | `Makefile.osx` | clang | `-Wshadow`, `-Wwrite-strings`, `-Wmissing-prototypes`, `-Wnested-externs`, `-Wunused-macros`; c99 |
 | CMake | clang | `-pedantic`; gnu99; builds and runs the unit tests |
 | CMake | GCC | `-Wlogical-op`, and everything else GCC sees that clang does not |
+| Sphinx | — | `-W`, so a broken directive or a bad cross reference is fatal |
 
-A defect can pass any two of them. `depth > 0 \|\| depth > 0` is an error to
+A defect can pass any three of them. `depth > 0 \|\| depth > 0` is an error to
 GCC and silent to clang; a pointer of the wrong type is fatal to both, and was
-caught by neither until the flags were being passed.
+caught by neither until the flags were being passed; and a malformed `.rst`
+directive is fatal to none of the three, but fails the job that publishes
+[zangbandtk.com](https://zangbandtk.com/).
 
 The GCC pass needs Homebrew's compiler — `brew install gcc`, which lands as
 `gcc-16` beside the system clang without displacing it. `cc` stays clang,
 which is what the macOS build and CI's macOS job both use. Override with
 `GCC=/path/to/gcc scripts/check-build` if yours is elsewhere; without one the
 script says so and exits non-zero rather than quietly skipping the pass.
+
+The manual pass needs the Sphinx virtualenv from
+[docs/README.md](docs/README.md) — `.venv-docs`, gitignored, so a fresh clone
+has to make it once. It behaves the same way as the GCC pass: missing Sphinx
+prints the two commands that fix it and exits non-zero. Skipping was the old
+behaviour and it hid the fact that the manual was going unbuilt for several
+releases.
 
 Adding a source file or a data file also means telling the build inputs that
 are maintained by hand — the Visual Studio project, the DOS 8.3 renames, the

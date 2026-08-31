@@ -18,8 +18,8 @@ Release log
 Development is tracked by milestone. **M0 to M6 are complete** — which is all of
 Phase 2's world work — and **M7 is done but for two classes**, the Warrior-Mage
 and the High-Mage, which are defined by their choice of magic realm and so wait
-for M9. **M8, mutations and virtues, is next.** See :doc:`features` for what that
-adds up to in the game, and for what the rest will bring.
+for M9. **M8, mutations and virtues, is complete.** See :doc:`features` for what
+that adds up to in the game, and for what the rest will bring.
 
 Version numbers move with the work — patch for a fix, minor for a feature,
 bumped in the commit that does it — so a build can be identified from its title
@@ -35,6 +35,20 @@ Savefile compatibility — 30 August 2026
 
 M8: mutations — 31 August 2026
 ------------------------------
+
+- **3.49.1** — **The manual is part of the gate.** ``scripts/check-build``
+  builds it as a fourth pass with ``-W``, so a broken directive or a bad cross
+  reference fails locally instead of failing the job that publishes
+  zangbandtk.com. Missing Sphinx stops the gate and prints the two commands
+  that fix it, rather than skipping the pass.
+
+  The virtualenv had not gone anywhere. ``docs/Makefile`` took ``sphinx-build``
+  from ``PATH``, nothing ever put ``.venv-docs`` there, and ``make -C docs
+  html`` therefore failed with "sphinx-build: command not found" on a machine
+  with a working Sphinx sitting in the tree. That message reads as "Sphinx is
+  not installed", and was believed — so the manual went unbuilt across several
+  releases that reported it as building. ``docs/Makefile`` now looks for the
+  virtualenv before falling back to ``PATH``.
 
 - **3.49.0** — **How you come by a mutation, and how you get rid of one**
   (PLR-14, PLR-34, DEC-24). Every documented acquisition path that does not go
