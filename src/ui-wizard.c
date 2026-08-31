@@ -28,6 +28,7 @@
 #include "obj-pile.h"
 #include "obj-util.h"
 #include "player-calcs.h"
+#include "player-mutation.h"
 #include "project.h"
 #include "ui-input.h"
 #include "ui-menu.h"
@@ -91,6 +92,125 @@ void wiz_proj_demo(void)
 	menu_select(m, 0, false);
 	screen_load();
 	mem_free(m);
+}
+
+
+/**
+ * ------------------------------------------------------------------------
+ * Mutations
+ * ------------------------------------------------------------------------ */
+
+/**
+ * The name of a mutation's kind, for the listing.
+ */
+static const char *wiz_mutation_kind(const struct mutation *mut)
+{
+	switch (mut->kind) {
+	case MUTATION_KIND_ACTIVATABLE:	return "power";
+	case MUTATION_KIND_RANDOM:		return "random";
+	case MUTATION_KIND_CONTINUOUS:	return "always";
+	case MUTATION_KIND_MELEE:		return "melee";
+	default:						return "-";
+	}
+}
+
+
+static void wiz_mutation_display(struct menu *m, int oid, bool cursor,
+		int row, int col, int wid)
+{
+	const struct mutation *mut = mutation_by_index(oid);
+	uint8_t attr = curs_attrs[CURS_KNOWN][(int)cursor];
+	bool has;
+
+	if (!mut) return;
+
+	has = player_has_mutation(player, mut);
+
+	/*
+	 * The marker is the whole point of the screen: a character's passive
+	 * mutations appear nowhere else in the interface -- the power menu lists
+	 * only the activatable ones, and the full set is written to the character
+	 * dump and nowhere on screen.
+	 */
+	c_put_str(has ? COLOUR_L_GREEN : attr, has ? "[*]" : "[ ]", row, col);
+	c_put_str(attr, format("%-16s", wiz_mutation_kind(mut)), row, col + 4);
+	c_put_str(has ? COLOUR_L_GREEN : attr, mut->name, row, col + 12);
+}
+
+
+static bool wiz_mutation_action(struct menu *m, const ui_event *e, int oid)
+{
+	const struct mutation *mut = mutation_by_index(oid);
+
+	if (!mut) return false;
+	if (e->type != EVT_SELECT) return false;
+
+	if (player_has_mutation(player, mut)) {
+		(void) player_lose_mutation(player, mut);
+	} else {
+		(void) player_gain_mutation(player, mut);
+	}
+
+	/*
+	 * Both of those queue PU_BONUS and friends, but nothing runs the queue
+	 * while a menu has the screen -- so a mutation that changes a stat or the
+	 * hit point total would not show until the next game turn, and toggling
+	 * two that oppose each other would read as the second one failing.
+	 */
+	update_stuff(player);
+
+	return true;
+}
+
+
+static const menu_iter wiz_mutation_iter = {
+	NULL, /* get_tag */
+	NULL, /* validity */
+	wiz_mutation_display,
+	wiz_mutation_action,
+	NULL /* resize */
+};
+
+
+/**
+ * Grant and remove mutations by hand (ZangbandTK).
+ *
+ * There are ninety-six of them and a character gets them by chaos rather than
+ * by choice, which makes anything that touches them -- Polymorph Self, the
+ * patrons, the Chaos Tower -- close to untestable by playing: you cannot ask
+ * for the one you want, you cannot see the passive ones you have, and the
+ * effect that changes them usually changes nothing.  This shows the whole set
+ * with the character's own marked, and toggles one on a keypress.
+ *
+ * Selecting stays on the menu rather than closing it, because the useful thing
+ * is to set up several at once and then go and cast something.
+ */
+void wiz_mutations(void)
+{
+	struct menu *m;
+	region loc = { 0, 0, 0, 0 };
+
+	if (!mutations) {
+		msg("There are no mutations.");
+		return;
+	}
+
+	m = menu_new(MN_SKIN_SCROLL, &wiz_mutation_iter);
+	menu_setpriv(m, mutation_count(), NULL);
+
+	m->title = "Mutations -- select to toggle, Escape to leave";
+	m->flags = MN_DBL_TAP;
+	menu_layout(m, &loc);
+
+	screen_save();
+	clear_from(0);
+	menu_select(m, 0, false);
+	screen_load();
+	mem_free(m);
+
+	/* Whatever was toggled, the character sheet and the bars have to catch up. */
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
+	player->upkeep->redraw |= (PR_BASIC | PR_STATS | PR_HP | PR_MANA);
 }
 
 

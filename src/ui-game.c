@@ -275,6 +275,16 @@ struct cmd_info cmd_debug_player[] =
 	{ "Gain gold", { '$' }, CMD_WIZ_GAIN_GOLD, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Gain hit points", { 'i' }, CMD_WIZ_GAIN_HP, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Know every place", { 'k' }, CMD_WIZ_KNOW_PLACES, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	/*
+	 * 'U' because 'm' and 'M' are both taken -- and every Dbg* list shares one
+	 * key namespace: they all carry keymap 1 in cmds_all (the field after
+	 * menu_level), so cmd_init() files them in the same nested_lists slot and a
+	 * key is spoken for even when the clash is in a different submenu.  'M' is
+	 * "Write map" over in DbgFiles.  The duplicate is an assert at startup, so
+	 * it is a crash before the title screen rather than a menu that quietly
+	 * does the wrong thing.
+	 */
+	{ "Mutations", { 'U' }, CMD_NULL, wiz_mutations, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Learn object kinds", { 'l' }, CMD_NULL, wiz_learn_all_object_kinds, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Learn all monsters", { 'B' }, CMD_NULL, wiz_learn_all_monsters, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Recall monster", { 'r' }, CMD_WIZ_RECALL_MONSTER, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },

@@ -939,6 +939,89 @@ static int test_the_mutation_ceiling_is_eighty_nine(void *state) {
 	ok;
 }
 
+
+/**
+ * Every row of the wizard mutation menu addresses a real mutation.
+ *
+ * The menu hands rows 0 to mutation_count() - 1 to mutation_by_index(), which
+ * matches on `midx` rather than on position in the list -- and the list is
+ * built backwards and renumbered, so the two orders are not the same.  If the
+ * numbering ever started at 1, row 0 would find nothing and the last mutation
+ * would be unreachable; both failures are silent, because a menu row that
+ * resolves to NULL simply draws blank.
+ */
+static int test_every_menu_row_finds_a_mutation(void *state) {
+	int n = mutation_count(), i;
+	const struct mutation *first, *last;
+
+	require(n > 0);
+
+	for (i = 0; i < n; i++) {
+		const struct mutation *mut = mutation_by_index(i);
+
+		notnull(mut);
+		notnull(mut->name);
+		eq((int) mut->midx, i);
+	}
+
+	/* And nothing at either end that the menu would never reach. */
+	null(mutation_by_index(-1));
+	null(mutation_by_index(n));
+
+	/*
+	 * midx order is file order, which is what the menu shows and what the
+	 * character dump claims to show: the first row is the first entry in
+	 * mutation.txt, not the head of the linked list, which is the last.
+	 */
+	first = mutation_by_index(0);
+	last = mutation_by_index(n - 1);
+	notnull(first);
+	notnull(last);
+	require(!streq(first->name, last->name));
+	require(streq(last->name, mutations->name));
+
+	ok;
+}
+
+/**
+ * Toggling a mutation the way the wizard menu does it puts it on and takes it
+ * back off, leaving the character as it found them.
+ */
+static int test_a_mutation_toggles_both_ways(void *state) {
+	int n = mutation_count(), i, restored = 0;
+
+	require(n > 0);
+
+	for (i = 0; i < n; i++) {
+		const struct mutation *mut = mutation_by_index(i);
+		bool had;
+
+		notnull(mut);
+		had = player_has_mutation(player, mut);
+
+		if (had) {
+			require(player_lose_mutation(player, mut));
+			require(!player_has_mutation(player, mut));
+			require(player_gain_mutation(player, mut));
+		} else {
+			require(player_gain_mutation(player, mut));
+			require(player_has_mutation(player, mut));
+			require(player_lose_mutation(player, mut));
+		}
+
+		/*
+		 * Back where it started.  Not merely "the call returned true":
+		 * gaining sheds whatever opposes it, so a toggle that did not come
+		 * back would quietly strip a mutation the tester meant to keep.
+		 */
+		eq(player_has_mutation(player, mut), had);
+		restored++;
+	}
+
+	eq(restored, n);
+	ok;
+}
+
 const char *suite_name = "player/mutation";
 struct test tests[] = {
 	{ "all-ninety-six-are-here", test_all_ninety_six_are_here },
@@ -985,5 +1068,8 @@ struct test tests[] = {
 	{ "being-normal-can-cure-itself", test_being_normal_can_cure_itself },
 	{ "the-mutation-ceiling-is-eighty-nine",
 	  test_the_mutation_ceiling_is_eighty_nine },
+	{ "every-menu-row-finds-a-mutation",
+	  test_every_menu_row_finds_a_mutation },
+	{ "a-mutation-toggles-both-ways", test_a_mutation_toggles_both_ways },
 	{ NULL, NULL }
 };

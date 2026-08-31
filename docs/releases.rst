@@ -33,6 +33,22 @@ Unreleased
 Testing — 31 August 2026
 -------------------------
 
+- **3.49.4** — **Mutations can be granted by hand.** ``^A`` then ``U``, under
+  *Debug → Player*: all ninety-six listed, the character's own marked ``[*]``,
+  select to toggle.
+
+  Chaos hands out mutations and the player does not choose them, which makes
+  everything that touches them hard to test on purpose. Polymorph Self is the
+  worst case — you cannot ask for the mutation that grants it, you cannot see
+  the passive ones you have (the power menu lists only activatables, and the
+  full set reaches the character dump and nothing on screen), and the effect
+  itself does nothing about 60% of the time by design.
+
+  ``U`` rather than ``M`` because every ``Dbg*`` list shares one key namespace,
+  and ``M`` is *Write map* in another submenu. That is an assert in
+  ``cmd_init()``, so the clash is a crash before the title screen rather than a
+  menu that quietly misbehaves — which is how it was found.
+
 - **3.49.3** — **A cheat for powers that will not fire.** ``cheat_powers``, on
   the ``=x`` screen: every racial and mutation power succeeds, and the listing
   shows ``0% to fail`` because the menu and the roll ask the same function.

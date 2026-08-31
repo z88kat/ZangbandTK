@@ -409,6 +409,9 @@ Changing the character directly.
    * - ``k``
      - Know every place ★
      - Every town visited and every block seen, which turns the magetower into a way of getting anywhere at once.
+   * - ``U``
+     - Mutations ★
+     - All ninety-six, with the character's own marked ``[*]``; select one to toggle it, Escape to leave. The only place the passive ones are visible on screen — the power menu lists activatables and the rest reach only the character dump. ``U`` because ``m`` and ``M`` were taken, and because ``U`` was Zangband's own key for these.
    * - ``B``
      - Learn all monsters ★
      - Fills in the whole bestiary, so every monster's recall reads as though you had met and killed it. The companion to *Learn object kinds*, and what the manual's picture of the bestiary is taken through.

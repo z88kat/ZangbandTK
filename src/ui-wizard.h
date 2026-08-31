@@ -17,6 +17,7 @@ void wiz_learn_all_object_kinds(void);
 void wiz_learn_all_monsters(void);
 void wiz_phase_door(void);
 void wiz_proj_demo(void);
+void wiz_mutations(void);
 void wiz_teleport(void);
 
 #endif /* INCLUDED_UI_WIZARD_H */
