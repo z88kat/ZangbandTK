@@ -351,6 +351,23 @@ void player_apply_mutations(struct player *p, struct player_state *state,
 			}
 		}
 	}
+
+	/*
+	 * And what they take away, in a second pass.
+	 *
+	 * Separate from the loop above so the result does not depend on the order
+	 * `mutation.txt` happens to list things in: a character with both rotting
+	 * flesh and the regeneration mutation would otherwise keep or lose the
+	 * regeneration according to which came first in the file. They cancel each
+	 * other as a pair (PLR-37), so that combination should not arise -- but a
+	 * ring of regeneration and rotting flesh certainly can, and Zangband is
+	 * clear that the rot wins.
+	 */
+	for (m = mutations; m; m = m->next) {
+		if (!player_has_mutation(p, m)) continue;
+
+		of_diff(state->flags, m->suppress);
+	}
 }
 
 /**

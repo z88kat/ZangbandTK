@@ -306,6 +306,24 @@ mechanism is the flavour.
 > confirmed closed by the project owner: sanity is not being implemented, and it is not part
 > of the Amber chronicles. The remaining eight paths are all chaos exposure of one kind or
 > another, which is the flavour this requirement is actually about.
+>
+> **And a second is closed by an earlier decision, which this requirement did not record.**
+> "Hit by Chaos *or Toxic Waste*" is two paths, and only the Chaos half exists. Toxic waste
+> is Zangband's `GF_NUKE`, and 4.2 has no such element: the conversion maps `BA_NUKE` to
+> `BA_POIS` and `BR_NUKE` to `BR_POIS` in [spellmap.toml](../../tools/zconv/spellmap.toml),
+> so every monster that breathed toxic waste in Zangband breathes poison here and there is
+> no toxic waste left to be hit by. Zangband's own handler mutates the player one time in
+> five when the poison lands, and of those one in four is a full Polymorph Self
+> ([spells1.c:3215](../../archive/zangband/src/spells1.c#L3215)).
+>
+> Giving poison that behaviour instead was rejected: poison is one of 4.2's commonest damage
+> types, carried by dozens of monsters from the first dungeon level, and hanging a mutation
+> chance on it would mutate low-level characters constantly — which is the opposite of the
+> rarity this requirement is about. The path is closed, not deferred: it needs an element
+> the game does not have and should not gain for this.
+>
+> So **six of the eight paths are live**, two wait for the magic realms (Chaos *Polymorph
+> Self*, and a failed Chaos or Death spell), and this one is closed.
 
 **PLR-35 — Mutations are removed only through the documented paths:** a potion of New Life,
 the Trump *Shuffle* spell, acquiring a cancelling mutation (PLR-37), the mutation-removal

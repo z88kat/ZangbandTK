@@ -32,6 +32,21 @@ resistances without being labelled.
    What this game implements is what Zangband's code did, which is harsher on
    the good mutations and kinder on the bad ones.
 
+   **Your character sheet tells you all of it.** Everything in the bracket
+   after a mutation's description is generated from what the mutation actually
+   does, so the two cannot come apart: every stat it moves, every resistance
+   it grants, every vulnerability it opens, and everything it takes away. It
+   was not always so — a living computer brain used to advertise its four
+   points of intelligence and wisdom and say nothing about the vulnerability
+   to electricity that comes with it.
+
+Three mutations take something away rather than adding anything. Rotting flesh
+stops you regenerating — including the regeneration from a ring you are wearing
+— and the panic-hit power and the warning mutation both stop you resisting fear,
+however you came by the resistance. Three more make ordinary food barely feed
+you: a beak, a mouth that eats rock, and a taste for blood all leave you a
+twentieth of what you swallow. Potions still work normally.
+
 Two of the thirty-two do nothing at all. A silly voice and an illusory normal
 appearance changed only your charisma, and there is no charisma in Angband
 4.2 — the stat was removed in 4.2.0. You can still gain them, they are still
@@ -204,11 +219,18 @@ Barely at all, which is what makes them matter:
 A note on the descriptions
 --------------------------
 
-Twelve mutations advertised a change to your charisma, and there is no charisma
-in Angband 4.2 — the stat was removed in 4.2.0. Those descriptions have had the
-charisma taken out of them and nothing else changed, so a squeaky voice now
-reads as a squeaky voice and warts read as *+5 AC*, which is what they actually
-are. Anything else the description claims is real.
+Each mutation's text is Zangband's sentence with a bracket this game writes
+itself, listing every effect the mutation carries. That is deliberate: the
+brackets Zangband shipped were unreliable in three separate ways. Twelve of
+them named a change to your charisma, and there is no charisma in Angband 4.2 —
+the stat was removed in 4.2.0. All five melee mutations stated their damage
+dice the wrong way round. And six named some of their effects and not others,
+the worst hiding a vulnerability behind a pair of stat bonuses.
+
+Generating the bracket instead of curating it is what stops that recurring. The
+cost is the occasional redundancy — being completely fearless reads *(immune to
+fear)*, which you had probably guessed — and that is a fair price for never
+again being told half of what a mutation does.
 
 If you are carrying a great many
 --------------------------------

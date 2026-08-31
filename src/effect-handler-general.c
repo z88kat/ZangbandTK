@@ -518,6 +518,27 @@ bool effect_handler_NOURISH(effect_handler_context_t *context)
 {
 	int amount = effect_calculate_value(context, false);
 	amount *= z_info->food_value;
+
+	/*
+	 * A mouth that ordinary food does not suit (PLR-13).
+	 *
+	 * Zangband's beak, rock-eating and vampirism mutations all set
+	 * `TR_CANT_EAT`, and its eat command gives such a character `pval / 20`
+	 * -- a twentieth of the value ([cmd6.c:137](../archive/zangband/src/cmd6.c#L137)).
+	 *
+	 * Scoped to edible things on purpose. Zangband tests the flag inside
+	 * `do_cmd_eat_food()` and nowhere else, while 4.2 reaches this handler
+	 * from potions and mushrooms and a class power as well -- so a beaked
+	 * character still gets the full incidental nourishment out of a potion of
+	 * Cure Light Wounds, which is what Zangband does too.
+	 */
+	if (context->subtype == 0 && amount > 0
+			&& player_of_has(player, OF_CANT_EAT)
+			&& context->obj && tval_is_edible(context->obj)) {
+		amount /= 20;
+		msg("This is poor sustenance for you.");
+	}
+
 	if (context->subtype == 0) {
 		/* Increase food level by amount */
 		player_inc_timed(player, TMD_FOOD, MAX(amount, 0), false,

@@ -1650,7 +1650,7 @@ _MUT_FLAG = {
     "SH_ELEC": "SH_ELEC", "SH_FIRE": "SH_FIRE",
     "FEATHER": "FEATHER", "REGEN": "REGEN",
     "TELEPATHY": "TELEPATHY", "FREE_ACT": "FREE_ACT",
-    "PATRON": "PATRON",
+    "PATRON": "PATRON", "CANT_EAT": "CANT_EAT",
 }
 
 #: And the ones 4.2 keeps as a value rather than a flag. A vulnerability is a
@@ -1681,10 +1681,27 @@ _MUT_VALUE = {
 #: not. Taken literally, extra eyes would have been +75 rather than +15.
 _MUT_SKILL = {"SNS": ("SEARCH", 5), "STL": ("STEALTH", 1)}
 
-_MUT_CALC = re.compile(
-    r"if \(p_ptr->muta[123] & MUT[123]_([A-Z0-9_]+)\)\s*\{(.*?)\n\t\}", re.S)
-_MUT_FLAGS_BLOCK = re.compile(
-    r"if \(p_ptr->muta[123] & MUT[123]_([A-Z0-9_]+)\)\s*\{(.*?)\n\t\t\}", re.S)
+#: One `if (p_ptr->mutaN & MUTN_CODE) { ... }` block, ended at its own brace.
+#:
+#: The indentation is load-bearing and has to be, because a fixed close --
+#: `\n\t}` or `\n\t\t}` -- is blind to brace depth and runs past the end of any
+#: block written at a different depth. `player_flags()` mixes the two: the
+#: chaos-gift test sits at one tab beside the race switch, and everything
+#: inside `if (p_ptr->muta1)` sits at two. A pattern closing on two tabs let
+#: the chaos gift swallow its successor's body and claim a flag belonging to
+#: vampirism.
+#:
+#: Reading the group back with `(?P=ind)` ends each block where it actually
+#: ends. This is the third time a brace-blind pattern has mis-read this source
+#: -- the first ran an anchor into the lose-mutation path, the second read the
+#: whole of `mutation_effect()` as one block -- so both patterns take the same
+#: shape now whether or not their own region happens to be uniform.
+_MUT_BLOCK = (
+    r"^(?P<ind>\t+)if \(p_ptr->muta[123] & MUT[123]_(?P<code>[A-Z0-9_]+)\)\s*"
+    r"\n(?P=ind)\{\n(?P<body>.*?)\n(?P=ind)\}")
+
+_MUT_CALC = re.compile(_MUT_BLOCK, re.S | re.M)
+_MUT_FLAGS_BLOCK = re.compile(_MUT_BLOCK, re.S | re.M)
 
 
 def _mutation_effects() -> tuple[dict, dict]:
@@ -1716,7 +1733,7 @@ def _mutation_effects() -> tuple[dict, dict]:
 
     values: dict[str, list[str]] = {}
     for block in _MUT_CALC.finditer(calc):
-        code, body = block.group(1), block.group(2)
+        code, body = block.group("code"), block.group("body")
         out: list[str] = []
 
         for stat, sign, amount in re.findall(
@@ -1763,17 +1780,151 @@ def _mutation_effects() -> tuple[dict, dict]:
     fbody = files[start:files.index(chr(10) + "}" + chr(10), start)]
 
     flags: dict[str, list[str]] = {}
+    cleared: dict[str, list[str]] = {}
     for block in _MUT_FLAGS_BLOCK.finditer(fbody):
-        code = block.group(1)
+        code = block.group("code")
         for name in re.findall(r"SET_FLAG\(of_ptr, TR_([A-Z0-9_]+)\)",
-                               block.group(2)):
+                               block.group("body")):
             if name in _MUT_FLAG:
                 flags.setdefault(code, []).append(_MUT_FLAG[name])
             elif name in _MUT_VALUE:
                 label, level = _MUT_VALUE[name]
                 values.setdefault(code, []).append("%s[%d]" % (label, level))
 
-    return values, flags
+        # And the flags a mutation takes *away*, which are written the other
+        # way round and were read by nothing for five releases.
+        #
+        # `SET_FLAG(of_ptr, TR_X)` has a matching `of_ptr->flags[n] &= ~(TRn_X)`
+        # with the word index baked into both the array subscript and the macro
+        # name, so it does not match the SET_FLAG pattern and was silently
+        # skipped. Three mutations use it, and all three were left kinder than
+        # Zangband's: rotting flesh is supposed to stop a character
+        # regenerating, and the panic-hit and warning mutations are supposed to
+        # stop them resisting fear -- whether the regeneration or the resistance
+        # came from equipment or from another mutation.
+        for name in re.findall(r"of_ptr->flags\[\d\] &= ~\(TR\d_([A-Z0-9_]+)\)",
+                               block.group("body")):
+            if name in _MUT_FLAG:
+                cleared.setdefault(code, []).append(_MUT_FLAG[name])
+
+    return values, flags, cleared
+
+
+#: How each effect reads on a character sheet.
+#:
+#: The parenthetical in a mutation's description is *derived* from what the
+#: mutation actually does, rather than carried over from Zangband's prose. That
+#: is the only way to stop the two drifting apart, and they had: six
+#: descriptions named some of their effects and not others, and the worst of
+#: them -- a living computer brain -- named its four points of intelligence and
+#: wisdom and said nothing about the vulnerability to electricity that comes
+#: with it. A player reading that text would take the mutation for a gift.
+#:
+#: Everything a mutation carries is rendered here: stats, modifiers, armour,
+#: saving throw, resistances, vulnerabilities, granted flags, and the flags it
+#: takes away. Zangband's own sentence is kept and only the bracket is rebuilt.
+_DESC_FLAG = {
+    "PROT_FEAR": "immune to fear",
+    "PROT_CONF": "immune to confusion",
+    "HOLD_LIFE": "hold life",
+    "SEE_INVIS": "see invisible",
+    "TELEPATHY": "telepathy",
+    "FEATHER": "feather fall",
+    "FREE_ACT": "free action",
+    "REGEN": "regeneration",
+    "SH_FIRE": "a fiery aura",
+    "SH_ELEC": "an electric aura",
+    "PATRON": "a chaos patron",
+    "CANT_EAT": "ordinary food barely feeds you",
+}
+
+#: And how the same flag reads when the mutation removes it instead.
+_DESC_SUPPRESS = {
+    "PROT_FEAR": "cannot resist fear",
+    "REGEN": "no regeneration",
+}
+
+_DESC_ELEM = {
+    "ACID": "acid", "ELEC": "electricity", "FIRE": "fire", "COLD": "cold",
+    "POIS": "poison", "LIGHT": "light", "DARK": "darkness",
+    "SOUND": "sound", "SHARD": "shards", "NEXUS": "nexus",
+    "NETHER": "nether", "CHAOS": "chaos", "DISEN": "disenchantment",
+}
+
+#: Modifiers whose name is not what a player would call it.
+_DESC_MOD = {
+    "SEARCH": "searching", "STEALTH": "stealth", "INFRA": "infravision",
+    "SPEED": "speed", "LIGHT": "light", "TUNNEL": "digging",
+    "BLOWS": "blows", "SHOTS": "shots", "MIGHT": "might",
+    "MOVES": "moves", "DAM_RED": "damage reduction", "MANA": "mana",
+}
+
+_STATS = ("STR", "INT", "WIS", "DEX", "CON")
+
+
+def _signed(n: int) -> str:
+    return "%+d" % n
+
+
+def _describe_effects(values, flags, suppress, armour, save, save_scale,
+                      blow_dice, blow_element) -> list[str]:
+    """Every effect a mutation has, in the order a player would read them."""
+    out: list[str] = []
+
+    # The blow first, because for a melee mutation it is the whole point.
+    if blow_dice:
+        if blow_element:
+            out.append("%s, %s" % (_DESC_ELEM.get(blow_element,
+                                                  blow_element.lower()),
+                                   blow_dice))
+        else:
+            out.append("dam %s" % blow_dice)
+
+    stats = [(k, v) for k, v in values if k in _STATS]
+    mods = [(k, v) for k, v in values if k not in _STATS
+            and not k.startswith("RES_")]
+    res = [(k[4:], v) for k, v in values if k.startswith("RES_")]
+
+    for k, v in stats:
+        out.append("%s %s" % (_signed(v), k))
+    for k, v in mods:
+        out.append("%s %s" % (_signed(v), _DESC_MOD.get(k, k.lower())))
+    if armour:
+        out.append("%s AC" % _signed(armour))
+    if save:
+        out.append("%s saving throw" % _signed(save)
+                   + (" and more with level" if save_scale else ""))
+
+    for name, level in res:
+        word = _DESC_ELEM.get(name, name.lower())
+        out.append(("vulnerable to %s" if level < 0 else "resist %s") % word)
+
+    for f in flags:
+        out.append(_DESC_FLAG.get(f, f.lower().replace("_", " ")))
+    for f in suppress:
+        out.append(_DESC_SUPPRESS.get(f, "no %s" % f.lower().replace("_", " ")))
+
+    return out
+
+
+def _rebuild_desc(desc: str, effects: list[str]) -> str:
+    """Zangband's sentence, with a bracket that matches the code.
+
+    The existing parenthetical is dropped whole rather than edited, because
+    what is in it is unreliable -- it omits effects, states dice backwards, and
+    names a stat the game no longer has. What replaces it is generated from the
+    mutation's own fields, so the two cannot drift again.
+    """
+    # Strip a trailing parenthetical and any punctuation left holding it.
+    body = re.sub(r"\s*\([^()]*\)\s*\.?\s*$", "", desc).strip()
+    if not body:
+        body = desc.strip()
+    body = body.rstrip(".").rstrip()
+
+    if not effects:
+        return body + "."
+
+    return "%s (%s)." % (body, ", ".join(effects))
 
 
 def _drop_charisma(desc: str) -> str:
@@ -1915,7 +2066,7 @@ def cmd_mutations(args) -> int:
     found = _ENTRY.findall(text[start:text.index("\n};", start)])
 
     weights, gates = _mutation_weights()
-    effects, gained_flags = _mutation_effects()
+    effects, gained_flags, cleared_flags = _mutation_effects()
     powers, undone = _mutation_powers()
     blows = _mutation_blows()
 
@@ -2006,11 +2157,28 @@ def cmd_mutations(args) -> int:
                 entry.set("values", " | ".join(vals))
         if code in gained_flags:
             entry.set("flags", " | ".join(gained_flags[code]))
+        if code in cleared_flags:
+            entry.set("suppresses", " | ".join(cleared_flags[code]))
 
-        clean = _drop_charisma(desc)
-        if code in blows:
-            clean = _fix_blow_dice(clean, blows[code]["dice"])
-        entry.set("desc", clean)
+        # The bracket is rebuilt from the entry's own fields rather than
+        # carried over, so the text and the code cannot drift apart again.
+        parsed: list[tuple[str, int]] = []
+        for term in (entry.get("values") or "").split("|"):
+            m = re.match(r"\s*([A-Z_]+)\[(-?\d+)\]", term)
+            if m:
+                parsed.append((m.group(1), int(m.group(2))))
+
+        entry.set("desc", _rebuild_desc(_drop_charisma(desc), _describe_effects(
+            parsed,
+            [f.strip() for f in (entry.get("flags") or "").split("|")
+             if f.strip()],
+            [f.strip() for f in (entry.get("suppresses") or "").split("|")
+             if f.strip()],
+            entry.get_int("armour") or 0,
+            entry.get_int("save") or 0,
+            entry.get_int("save-scale") or 0,
+            blows[code]["dice"] if code in blows else "",
+            "POIS" if code in blows and code == "SCOR_TAIL" else "")))
         entry.set("gain", gain)
         entry.set("lose", lose)
 

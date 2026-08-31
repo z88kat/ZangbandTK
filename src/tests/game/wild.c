@@ -77,6 +77,36 @@ static bool find_open_grid_near(struct loc from, struct loc *out) {
 			}
 	}
 
+	/*
+	 * Nothing nearby, so take anything on the level.
+	 *
+	 * The rings are the fast path and are what a test wants -- a square beside
+	 * the character. They are not sufficient, and the reason is the sea:
+	 * `square_isdamaging()` is true of deep water and this wilderness holds
+	 * some 330,000 water grids, so a character generated out in open ocean has
+	 * no acceptable square in the 289 that eight rings cover. Two tests failed
+	 * on the assertion wrapping this call about one whole-suite run in eight,
+	 * and never once in two hundred runs of this suite alone -- where the
+	 * character stands depends on RNG history, and the ocean case is rare.
+	 *
+	 * Widening the rings was the previous fix and it is why the rate is one in
+	 * eight rather than the one in five a rightward scan gave. Widening again
+	 * would move the number and not remove it, because an ocean is larger than
+	 * any radius worth scanning. Falling back to the whole level cannot fail
+	 * on a level with one open square on it, which is every level -- and it
+	 * costs a full scan only on the rare run that would otherwise have failed.
+	 */
+	for (radius = 0; radius < cave->height * cave->width; radius++) {
+		struct loc try = loc(radius % cave->width, radius / cave->width);
+
+		if (!square_in_bounds_fully(cave, try)) continue;
+		if (!square_isempty(cave, try)) continue;
+		if (square_isdamaging(cave, try)) continue;
+
+		*out = try;
+		return true;
+	}
+
 	return false;
 }
 
@@ -3867,7 +3897,7 @@ static int test_practice_makes_a_power_surer(void *state) {
 
 /**
  * The cheat that makes a power fire, and what it says about the one that will
- * not (DEC-42).
+ * not (PLR-02, PLR-16).
  *
  * Reported from play: a level 21 Beastman Chaos-Warrior looking at Polymorph at
  * "20 hp, 95% to fail", which is not a power so much as a rumour of one.  The
@@ -5849,6 +5879,65 @@ static int test_every_service_held_is_built(void *state) {
 	ok;
 }
 
+/**
+ * A character at sea can still be given a neighbour (ZangbandTK).
+ *
+ * The flake this suite carried for six releases, reproduced deliberately.
+ *
+ * `find_open_grid_near()` searches eight rings for a square that is empty and
+ * not damaging, and `square_isdamaging()` is true of deep water. This
+ * wilderness holds some 330,000 water grids, so a character generated in open
+ * ocean has no acceptable square in the 289 squares eight rings cover: the
+ * helper returned false and the two tests wrapping it in a `require` failed.
+ * One whole-suite run in eight, and never once in two hundred runs of this
+ * suite by itself, because where the character stands depends on RNG history.
+ *
+ * Filling the surroundings with deep water by hand is what makes this a test
+ * rather than a wait: it forces the case the sea produces by accident, so the
+ * fallback is exercised every run instead of one in eight.
+ */
+static int test_a_character_at_sea_still_finds_ground(void *state) {
+	struct loc grid, centre = player->grid;
+	int deep = lookup_feat_code("DEEP_WATER");
+	int dy, dx, restored = 0;
+	int saved[17][17];
+
+	require(deep > 0);
+
+	/* Flood eight rings around the character, keeping what was there. */
+	for (dy = -8; dy <= 8; dy++)
+		for (dx = -8; dx <= 8; dx++) {
+			struct loc try = loc(centre.x + dx, centre.y + dy);
+
+			saved[dy + 8][dx + 8] = -1;
+			if (!square_in_bounds_fully(cave, try)) continue;
+
+			saved[dy + 8][dx + 8] = square(cave, try)->feat;
+			square_set_feat(cave, try, deep);
+		}
+
+	/* Every ring is now water, and it still comes back with somewhere. */
+	require(find_open_grid_near(centre, &grid));
+	require(!square_isdamaging(cave, grid));
+	require(square_isempty(cave, grid));
+
+	/* And it had to reach past the rings to do it. */
+	require(distance(centre, grid) > 8);
+
+	for (dy = -8; dy <= 8; dy++)
+		for (dx = -8; dx <= 8; dx++) {
+			struct loc try = loc(centre.x + dx, centre.y + dy);
+
+			if (saved[dy + 8][dx + 8] < 0) continue;
+
+			square_set_feat(cave, try, saved[dy + 8][dx + 8]);
+			restored++;
+		}
+	require(restored > 200);
+
+	ok;
+}
+
 const char *suite_name = "game/wild";
 struct test tests[] = {
 	/*
@@ -5938,6 +6027,8 @@ struct test tests[] = {
 	{ "blood-pays-when-mana-cannot", test_blood_pays_when_mana_cannot },
 	{ "practice-makes-a-power-surer", test_practice_makes_a_power_surer },
 	{ "a-cheat-makes-a-power-fire", test_a_cheat_makes_a_power_fire },
+	{ "a-character-at-sea-still-finds-ground",
+	  test_a_character_at_sea_still_finds_ground },
 	{ "the-monk-has-a-ladder", test_the_monk_has_a_ladder },
 	{ "bare-hands-are-a-progression", test_bare_hands_are_a_progression },
 	{ "armour-takes-the-balance", test_armour_takes_the_balance },

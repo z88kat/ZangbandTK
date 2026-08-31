@@ -323,17 +323,33 @@ that are not scheduled are listed under it with a reason each.
 | 3 | 24 of the 32 activatable mutations in the power list beside racial powers (PLR-16) | 3.47.0 |
 | 4 | 22 of the 27 random mutations firing on their own timer, and all 5 melee mutations in the attack round (PLR-14, PLR-35) | 3.48.0 |
 | 5 | The acquisition and removal paths, the DEC-38 patron carry-over, the Chaos Tower, the potion of New Life (PLR-14, PLR-34, DEC-24) | 3.49.0 |
+| 6 | What the milestone was declared complete without: the wizard grant menu, the character sheet's mutations page, the `cheat_powers` option, and the three flags and one food penalty the converter had been skipping (PLR-13, PLR-15, PLR-17) | 3.49.4–3.50.0 |
+
+**M8 was declared complete one phase early.** PLR-17 asks that mutations be "visible in the
+character sheet, including their effects", and at 3.49.0 they reached
+`write_character_dump()` and nothing on screen — a player could see them only by writing a
+file and reading it. The page landed in 3.49.5, reported from play rather than caught here.
+Two further gaps closed in 3.50.0: three mutations were not taking away the flags Zangband
+has them take away, because the converter read `SET_FLAG` and not the clearing form; and
+six descriptions named some of their effects and not others, the worst of them hiding a
+vulnerability to electricity behind four points of intelligence and wisdom.
 
 PLR-18 to PLR-21 were done earlier — virtues, their selection, their writers and their two
 consumers. That was the milestone's gate: DEC-39 kept the feature on condition that
 something read it, and two things do.
 
-**Thirteen mutations are deferred with reasons**, recorded per-mutation in
-`tools/zconv/mutmap.toml` and listed in `docs/mutations.rst`: eight activatable and five
+**Twelve mutations do nothing**, recorded per-mutation in
+`tools/zconv/mutmap.toml` and listed in `docs/mutations.rst`: eight activatable and four
 random. Every one needs machinery 4.2 has not got — pets, an incorporeal player state, an
 object-to-gold conversion, a pseudo-identification bit, an effect that reads both the hit
 point and spell point pools. Two more continuous mutations are inert because they moved
 only charisma, which 4.2 removed in 4.2.0.
+
+`mutmap.toml` carries **thirteen** `defer` keys, and the thirteenth is a mislabel worth
+correcting rather than counting: the chaos gift has no effect chain because it needs none.
+It carries the `PATRON` flag, `player_apply_mutations()` applies flags whatever a
+mutation's kind, and `patron_owes_reward()` reads it — so it works through the machinery
+PLR-05 built. Counting it as deferred overstated the gap by one in three previous reports.
 
 **What M8 found that the documentation did not say.** The spoiler gives the headline of
 each mutation and the headline is generally the good half: hyper-strength is "+4 STR" there

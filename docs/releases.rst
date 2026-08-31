@@ -33,6 +33,56 @@ Unreleased
 Testing — 31 August 2026
 -------------------------
 
+- **3.50.0** — **Closing M8: the clearing form, and six brackets that lied.**
+  Four items the audit turned up after the milestone was declared complete.
+
+  **The converter read only half of Zangband's flag syntax.** `SET_FLAG(of_ptr,
+  TR_X)` has a counterpart written `flags[n] &= ~(TRn_X)`, with the word index
+  baked into both the subscript and the macro name so it matches nothing the
+  parser looked for. Three mutations use it and all three were kinder here than
+  in Zangband: rotting flesh is meant to stop a character regenerating, and the
+  panic-hit and warning mutations to stop them resisting fear — whether that
+  regeneration or resistance came from another mutation or from a ring they are
+  wearing. Reading the clearing form across **all seven** parsed regions of the
+  Zangband source turns up nothing else: it appears in ``player_flags()`` and
+  in one line its own authors had already commented out.
+
+  Fixing the pattern exposed a second bug of the same kind. Both block regexes
+  closed on a fixed indentation and were blind to brace depth, so the
+  chaos-gift test — which sits one tab shallower than the mutation blocks
+  around it — ran past its own closing brace and claimed a flag belonging to
+  vampirism. Both now match the closing brace to the opening one. This is the
+  third brace-blind read of this source; the shape is now shared whether or not
+  a region happens to be uniform.
+
+  **Three mutations stop ordinary food feeding you**, which reached no data file
+  and no code at all. A beak, a mouth that eats rock and a taste for blood all
+  set Zangband's ``TR_CANT_EAT``, whose eat command leaves such a character a
+  twentieth of what they swallow. Scoped to edible things, which is Zangband's
+  own scope — a potion of Cure Light Wounds still nourishes as much as it ever
+  did, and the test asserts that half too, because dropping the scope passes
+  every other check.
+
+  **A mutation's bracket is now generated from its effects.** Six descriptions
+  named some of what they do and not the rest, and the worst of them — a living
+  computer brain — advertised four points of intelligence and wisdom and said
+  nothing about the vulnerability to electricity. Curating six strings would
+  have left the seventh to be found the same way, so the text is derived:
+  Zangband's sentence, and a bracket built from the entry's own fields. It
+  costs the occasional redundancy (*completely fearless (immune to fear)*) and
+  buys never shipping a description that hides a downside.
+
+  **And the flake this suite carried for six releases.**
+  ``find_open_grid_near()`` in ``game/wild`` searched eight rings for a square
+  that is empty and not damaging, and ``square_isdamaging()`` is true of deep
+  water — of which this wilderness holds some 330,000 grids. A character
+  generated in open ocean has no acceptable square in the 289 that eight rings
+  cover, so two tests failed about one whole-suite run in eight and never once
+  in two hundred runs of the suite alone. It falls back to the whole level now,
+  which cannot fail on a level with one open square on it. A new test floods
+  the surroundings deliberately, so the case is exercised every run rather than
+  one in eight; removing the fallback fails it and both historic offenders.
+
 - **3.49.6** — **The mutations page drew over the stat table**, so ``WIS``
   read as ``IS`` and ``DEX`` vanished. The stat panel starts at column 42 and a
   mutation's description runs to 57 characters; the two cannot share a screen.

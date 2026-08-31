@@ -134,7 +134,8 @@ stat:CON
 difficulty:9
 power:Vampiric drain
 weight:2
-desc:You can drain life from a foe like a vampire.
+flags:CANT_EAT
+desc:You can drain life from a foe like a vampire (ordinary food barely feeds you).
 gain:You become vampiric.
 lose:You are no longer vampiric.
 power-effect:BOLT:NETHER
@@ -192,7 +193,8 @@ stat:CON
 difficulty:18
 power:Eat rock
 weight:2
-desc:You can consume solid rock.
+flags:CANT_EAT
+desc:You can consume solid rock (ordinary food barely feeds you).
 gain:The walls look delicious.
 lose:The walls look unappetizing.
 power-effect:ALTER:KILL_WALL
@@ -235,7 +237,7 @@ difficulty:10
 power:Illuminate area
 weight:3
 values:STEALTH[-1]
-desc:You can emit bright light (-2 stealth).
+desc:You can emit bright light (-1 stealth).
 gain:You can light up rooms with your presence.
 lose:You can no longer light up rooms with your presence.
 power-effect:LIGHT_AREA
@@ -321,7 +323,7 @@ difficulty:12
 power:Resist elements
 weight:3
 save:-10
-desc:You can harden yourself to the ravages of the elements.
+desc:You can harden yourself to the ravages of the elements (-10 saving throw).
 gain:You feel like you can protect yourself.
 lose:You feel like you might be vulnerable.
 power-when:10:0
@@ -437,7 +439,8 @@ stat:DEX
 difficulty:14
 power:Panic hit
 weight:2
-desc:You can run for your life after hitting something.
+suppresses:PROT_FEAR
+desc:You can run for your life after hitting something (cannot resist fear).
 gain:You suddenly understand how thieves feel.
 lose:You no longer feel jumpy.
 power-effect:MOVE_ATTACK
@@ -476,7 +479,7 @@ difficulty:9
 power:Laser eye
 weight:3
 values:SEARCH[-2]
-desc:Your eyes can fire laser beams (-2 sensing).
+desc:Your eyes can fire laser beams (-2 searching).
 gain:Your eyes burn for a moment.
 lose:Your eyes burn for a moment, then feel soothed.
 power-effect:BEAM:LIGHT_WEAK
@@ -659,7 +662,7 @@ blow-element:POIS
 name:HORNS
 kind:melee
 weight:2
-desc:You have horns (dam. 6d2).
+desc:You have horns (dam 6d2).
 gain:Horns pop forth into your forehead!
 lose:Your horns vanish from your forehead!
 blow-dice:6d2
@@ -669,7 +672,8 @@ blow-verb:horns
 name:BEAK
 kind:melee
 weight:2
-desc:You have a beak (dam. 4d2).
+flags:CANT_EAT
+desc:You have a beak (dam 4d2, ordinary food barely feeds you).
 gain:Your mouth turns into a sharp, powerful beak!
 lose:Your mouth reverts to normal!
 blow-dice:4d2
@@ -844,7 +848,7 @@ name:CHAOS_GIFT
 kind:random
 weight:2
 flags:PATRON
-desc:Chaos deities give you gifts.
+desc:Chaos deities give you gifts (a chaos patron).
 gain:You attract the notice of a chaos deity!
 lose:You lose the attention of the chaos deities.
 
@@ -861,7 +865,8 @@ name:WARNING
 kind:random
 chance:1000
 weight:2
-desc:You receive warnings about your foes.
+suppresses:PROT_FEAR
+desc:You receive warnings about your foes (cannot resist fear).
 gain:You suddenly feel paranoid.
 lose:You no longer feel paranoid.
 
@@ -915,7 +920,7 @@ name:PUNY
 kind:continuous
 weight:3
 values:STR[-4] | DEX[2]
-desc:You are puny (+2 DEX, -4 STR).
+desc:You are puny (-4 STR, +2 DEX).
 gain:Your muscles wither away...
 lose:Your muscles revert to normal.
 
@@ -923,7 +928,7 @@ name:HYPER_INT
 kind:continuous
 weight:3
 values:INT[4] | WIS[4] | RES_ELEC[-1]
-desc:Your brain is a living computer (+4 INT/WIS).
+desc:Your brain is a living computer (+4 INT, +4 WIS, vulnerable to electricity).
 gain:Your brain evolves into a living computer!
 lose:Your brain reverts to normal.
 
@@ -932,7 +937,7 @@ kind:continuous
 weight:3
 values:INT[-4] | WIS[-4]
 flags:PROT_FEAR | PROT_CONF
-desc:You are moronic (-4 INT/WIS).
+desc:You are moronic (-4 INT, -4 WIS, immune to fear, immune to confusion).
 gain:Your brain withers away...
 lose:Your brain reverts to normal.
 
@@ -956,7 +961,7 @@ name:ALBINO
 kind:continuous
 weight:2
 values:CON[-4] | RES_DARK[1]
-desc:You are albino (-4 CON).
+desc:You are albino (-4 CON, resist darkness).
 gain:You turn into an albino! You feel frail...
 lose:You are no longer an albino!
 
@@ -965,7 +970,8 @@ kind:continuous
 weight:3
 values:CON[-2]
 flags:HOLD_LIFE
-desc:Your flesh is rotting (-2 CON).
+suppresses:REGEN
+desc:Your flesh is rotting (-2 CON, hold life, no regeneration).
 gain:Your flesh is afflicted by a rotting disease!
 lose:Your flesh is no longer afflicted by a rotting disease!
 
@@ -981,7 +987,7 @@ name:BLANK_FAC
 kind:continuous
 weight:2
 flags:SEE_INVIS
-desc:Your face is featureless.
+desc:Your face is featureless (see invisible).
 gain:Your face becomes completely featureless!
 lose:Your facial features return.
 
@@ -996,7 +1002,7 @@ name:XTRA_EYES
 kind:continuous
 weight:3
 values:SEARCH[3]
-desc:You have an extra pair of eyes (+3 sensing).
+desc:You have an extra pair of eyes (+3 searching).
 gain:You grow an extra pair of eyes!
 lose:Your extra eyes vanish!
 
@@ -1005,7 +1011,7 @@ kind:continuous
 weight:2
 save:15
 save-scale:5
-desc:You are resistant to magic.
+desc:You are resistant to magic (+15 saving throw and more with level).
 gain:You become resistant to magic.
 lose:You become susceptible to magic again.
 
@@ -1021,7 +1027,7 @@ name:INFRAVIS
 kind:continuous
 weight:3
 values:INFRA[3]
-desc:You have remarkable infravision (+3).
+desc:You have remarkable infravision (+3 infravision).
 gain:Your infravision is improved.
 lose:Your infravision is degraded.
 
@@ -1029,7 +1035,7 @@ name:XTRA_LEGS
 kind:continuous
 weight:2
 values:DEX[-1] | SPEED[3]
-desc:You have an extra pair of legs (+3 speed, -1 DEX).
+desc:You have an extra pair of legs (-1 DEX, +3 speed).
 gain:You grow an extra pair of legs!
 lose:Your extra legs disappear!
 
@@ -1046,7 +1052,7 @@ kind:continuous
 weight:2
 values:CON[-1]
 flags:SH_ELEC
-desc:Electricity is running through your veins (-1 CON).
+desc:Electricity is running through your veins (-1 CON, an electric aura).
 gain:Electricity starts running through you!
 lose:Electricity stops running through you.
 
@@ -1055,7 +1061,7 @@ kind:continuous
 weight:2
 values:DEX[-1] | LIGHT[1]
 flags:SH_FIRE
-desc:Your body is enveloped in flames (-1 DEX).
+desc:Your body is enveloped in flames (-1 DEX, +1 light, a fiery aura).
 gain:Your body is enveloped in flames!
 lose:Your body is no longer enveloped in flames.
 
@@ -1089,7 +1095,7 @@ kind:continuous
 weight:2
 values:CON[-1]
 flags:FEATHER
-desc:You have wings (-1 CON).
+desc:You have wings (-1 CON, feather fall).
 gain:You grow a pair of wings.
 lose:Your wings fall off.
 
@@ -1097,7 +1103,7 @@ name:FEARLESS
 kind:continuous
 weight:3
 flags:PROT_FEAR
-desc:You are completely fearless.
+desc:You are completely fearless (immune to fear).
 gain:You become completely fearless.
 lose:You begin to feel fear again.
 
@@ -1105,7 +1111,7 @@ name:REGEN
 kind:continuous
 weight:2
 flags:REGEN
-desc:You are regenerating.
+desc:You are regenerating (regeneration).
 gain:You start regenerating.
 lose:You stop regenerating.
 
@@ -1114,7 +1120,7 @@ kind:continuous
 weight:2
 values:CON[-1]
 flags:TELEPATHY
-desc:You are telepathic (-1 CON).
+desc:You are telepathic (-1 CON, telepathy).
 gain:You develop a telepathic ability!
 lose:You lose your telepathic ability!
 
@@ -1146,7 +1152,7 @@ kind:continuous
 weight:1
 requires:mutations:3
 values:RES_ACID[-1] | RES_ELEC[-1] | RES_FIRE[-1] | RES_COLD[-1]
-desc:You are susceptible to damage from the elements.
+desc:You are susceptible to damage from the elements (vulnerable to acid, vulnerable to electricity, vulnerable to fire, vulnerable to cold).
 gain:You feel strangely exposed.
 lose:You feel less exposed.
 
@@ -1155,7 +1161,7 @@ kind:continuous
 weight:3
 values:STEALTH[1]
 flags:FREE_ACT
-desc:Your movements are precise and forceful (+1 stealth).
+desc:Your movements are precise and forceful (+1 stealth, free action).
 gain:You move with new assurance.
 lose:You move with less assurance.
 

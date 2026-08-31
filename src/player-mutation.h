@@ -100,6 +100,21 @@ struct mutation {
 	char *blow_verb;	/**< "You hit it with your tail." */
 	int16_t el_info[ELEM_MAX];
 	bitflag flags[OF_SIZE];
+
+	/**
+	 * What this mutation takes away, whoever it came from (PLR-15).
+	 *
+	 * Zangband's `player_flags()` accumulates race, equipment and mutations
+	 * together and then *clears* three flags: rotting flesh stops a character
+	 * regenerating, and the panic-hit and warning mutations stop them
+	 * resisting fear. Written as `flags[n] &= ~(TRn_X)` rather than as a
+	 * SET_FLAG, which is why the converter read nothing here for five
+	 * releases and all three mutations were kinder than Zangband's.
+	 *
+	 * These beat the grants, so a character wearing a ring of regeneration
+	 * loses it to rotting flesh -- which is the point of the mutation.
+	 */
+	bitflag suppress[OF_SIZE];
 };
 
 extern struct mutation *mutations;
