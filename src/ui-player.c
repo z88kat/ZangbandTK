@@ -891,6 +891,57 @@ void display_player_xtra_info(void)
 }
 
 /**
+ * The third page of the character sheet: what chaos has made of the character
+ * (ZangbandTK).
+ *
+ * Mutations used to reach the character dump and nothing on screen, which meant
+ * the only way to see the passive ones was to write a file and read it -- the
+ * power menu lists the activatable ones and nothing listed the rest.  Reported
+ * from play, looking at a sheet that said nothing while the message log was
+ * announcing new mutations.
+ *
+ * Listed in `mutation.txt` order, the same order the wizard menu and the dump
+ * use, so the three can be read against each other.
+ */
+static void display_player_mutations(void)
+{
+	int n = mutation_count(), total = player_mutation_total(player);
+	int i, wid, hgt, row = 2, shown = 0;
+
+	Term_get_size(&wid, &hgt);
+
+	c_put_str(COLOUR_L_BLUE, "Mutations", 0, 0);
+
+	if (total <= 0) {
+		put_str("Chaos has not touched you.", 2, 0);
+		return;
+	}
+
+	for (i = 0; i < n; i++) {
+		const struct mutation *mut = mutation_by_index(i);
+
+		if (!mut || !player_has_mutation(player, mut)) continue;
+
+		/*
+		 * Leave a line for the count of what did not fit.  A character can
+		 * carry up to eighty-nine of these and the screen holds far fewer, so
+		 * the page has to say it is incomplete rather than silently stop.
+		 */
+		if (row >= hgt - 2) break;
+
+		put_str(mut->desc ? mut->desc : mut->name, row++, 0);
+		shown++;
+	}
+
+	if (shown < total) {
+		c_put_str(COLOUR_L_UMBER,
+				  format("...and %d more; 'f' writes the full list to a file.",
+						 total - shown), row, 0);
+	}
+}
+
+
+/**
  * Display the character on the screen (two different modes)
  *
  * The top two lines, and the bottom line (or two) are left blank.
@@ -913,7 +964,10 @@ void display_player(int mode)
 	/* Stat info */
 	display_player_stat_info();
 
-	if (mode) {
+	if (mode == 2) {
+		/* What chaos has made of them */
+		display_player_mutations();
+	} else if (mode) {
 		struct panel *p = panels[0].panel();
 		display_panel(p, panels[0].align_left, &panels[0].bounds);
 		panel_free(p);
@@ -1121,8 +1175,9 @@ void write_character_dump(ang_file *fff)
 		const struct mutation *mut;
 
 		file_putf(fff, "  [Mutations]\n\n");
-		for (mut = mutations; mut; mut = mut->next) {
-			if (!player_has_mutation(player, mut)) continue;
+		for (i = 0; i < mutation_count(); i++) {
+			mut = mutation_by_index(i);
+			if (!mut || !player_has_mutation(player, mut)) continue;
 
 			file_putf(fff, "%s\n", mut->desc);
 		}
@@ -1261,7 +1316,7 @@ bool dump_save(const char *path)
 
 
 
-#define INFO_SCREENS 2 /* Number of screens in character info mode */
+#define INFO_SCREENS 3 /* Number of screens in character info mode */
 
 
 /**
@@ -1336,7 +1391,7 @@ void do_cmd_change_name(void)
 
 				case 'l':
 				case ARROW_RIGHT:
-					mode = (mode - 1) % INFO_SCREENS;
+					mode = (mode + INFO_SCREENS - 1) % INFO_SCREENS;
 					break;
 			}
 		} else if (ke.type == EVT_MOUSE) {
@@ -1348,7 +1403,7 @@ void do_cmd_change_name(void)
 				more = false;
 			} else {
 				/* Flip backwards through the screens */			
-				mode = (mode - 1) % INFO_SCREENS;
+				mode = (mode + INFO_SCREENS - 1) % INFO_SCREENS;
 			}
 		}
 

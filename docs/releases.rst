@@ -33,6 +33,25 @@ Unreleased
 Testing — 31 August 2026
 -------------------------
 
+- **3.49.5** — **The character sheet shows mutations.** A third page, reached
+  with ``h`` from the sheet like the other two, listing what chaos has made of
+  the character — or *"Chaos has not touched you."*
+
+  Reported from play: a Sprite Mindcrafter whose message log was announcing
+  *"You mutate!"* and *"Electricity starts running through you!"* while the
+  sheet said nothing at all. Mutations reached the character dump and nowhere on
+  screen; the power menu lists the activatable ones, and the passive ones — most
+  of the ninety-six — could only be seen by writing a file and reading it.
+
+  Two things went with it. Going backwards through the sheet used
+  ``(mode - 1) % INFO_SCREENS``, which is ``-1`` in C rather than the last page,
+  and worked by accident with two screens; with three it would have made the new
+  page unreachable in that direction. And the dump listed mutations by walking
+  the linked list, which is *reverse* file order despite the comment above it
+  claiming file order — the list is built backwards and renumbered. The dump,
+  the new page and the wizard menu now all read in ``mutation.txt`` order, so
+  they can be compared against each other.
+
 - **3.49.4** — **Mutations can be granted by hand.** ``^A`` then ``U``, under
   *Debug → Player*: all ninety-six listed, the character's own marked ``[*]``,
   select to toggle.

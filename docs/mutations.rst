@@ -18,8 +18,9 @@ luck, bad luck. Thirty-two of them, and twelve are purely bad.
 
 These act on your character directly, the way a shapechange does rather than
 the way a ring does — there is nothing to wear and nothing to take off. They
-show up on your character sheet under **Mutations**, and in your stats,
-armour, speed, saving throw and resistances without being labelled.
+show up on your character sheet under **Mutations** — press ``C``, then ``h``
+twice to reach that page — and in your stats, armour, speed, saving throw and
+resistances without being labelled.
 
 .. warning::
 
