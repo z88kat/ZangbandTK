@@ -33,6 +33,37 @@ Unreleased
 Testing — 31 August 2026
 -------------------------
 
+- **3.50.4** — **One bad crawl, and two wrong accounts of it.** Every archived
+  citation in the plans and docs re-checked one at a time — thirty-six of them
+  — before M9 begins, because DEC-16 makes those documents a primary source and
+  the realm spell lists are M9's immediate input.
+
+  **Twelve were dead, and they have one thing in common.** All twelve carried
+  the timestamp ``20220527225941``, and all twelve are spoilers. The 2022-04-20
+  crawl of ``www.zangband.org`` captured everything; the 2022-05-27 crawl of the
+  bare domain captured the homepage and almost nothing under it. All twelve are
+  whole at ``20220420164xxx`` and have been repointed.
+
+  **There is no parking page**, and ``spoilers/life.txt`` is not unarchived.
+  Both were recorded here and neither is true: fetched with ``id_``, the
+  2022-05-27 root is the genuine zangband.org homepage, and life.txt returns
+  13,854 bytes — the complete Life realm spell list — at the timestamp already
+  cited for it. It had been written off on a bad availability check.
+
+  **No requirement rests on a document nobody read.** The four that cite a
+  spoiler as their basis were checked against the recovered text and all four
+  match: nightmare mode is the irreversible birth option BAL-15…17 describes,
+  the Ancient and Foul Curse is CNT-15's, random object abilities are CNT-16's,
+  and DEC-38 names all sixteen of Zangband's patrons correctly before replacing
+  them with nine Lords of the Courts. The citations were stale; the reading was
+  not.
+
+  A note on method, because the first pass got it wrong. A throttled fetch from
+  archive.org returns zero bytes and looks exactly like an absent document: the
+  first sweep declared twenty-one citations dead, and retrying each failure
+  three times reduced that to twelve. Nine documents were nearly rewritten out
+  of the plan because the archive was busy.
+
 - **3.50.3** — **The same mistake, in the test written to replace it.** The
   fourteen-run check on 3.50.2 flaked twice, and it was neither the code nor the
   doorstep: it was ``a-character-at-sea-still-finds-ground``, added one release

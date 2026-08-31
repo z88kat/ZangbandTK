@@ -264,7 +264,7 @@ and were absent from this document's first draft — a useful demonstration of w
 treats the manuals as a primary source.
 
 **CNT-15 — The Ancient and Foul Curse is implemented.** The Curse of Topi Ylinen, from
-[tycurse.txt](https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/tycurse.txt),
+[tycurse.txt](https://web.archive.org/web/20220420164258/http://www.zangband.org/spoilers/tycurse.txt),
 is a *cascading* effect rather than a single one: an initial result — aggravate monsters,
 summon several strong monsters or groups, summon a monster, lose 1/16 of experience,
 paralysis (with a free-action saving throw) — carries a 1-in-6 chance of triggering the next
@@ -295,7 +295,7 @@ and needs a per-monster flag. It should be scheduled with the Mythos monsters of
 deferred to the player-systems family.
 
 **CNT-16 — Objects can receive random abilities on generation.** From
-[randabil.txt](https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/randabil.txt):
+[randabil.txt](https://web.archive.org/web/20220420164302/http://www.zangband.org/spoilers/randabil.txt):
 artifacts, ego items and *ordinary* items may be granted an ability drawn at random from
 Extra Sustain, Extra Resistance or Extra Power lists, either guaranteed or by chance. This
 is a generation-time mechanism distinct from the fixed properties of CNT-08, and applies to

@@ -257,8 +257,14 @@ mutations, virtues.
 - **Carried over from M7:** the remainder of PLR-03 — the **Warrior-Mage** and the
   **High-Mage**, the two classes defined by which realms they may choose. They were deferred
   out of M7 because neither can be built before PLR-08 and PLR-09 exist.
-- Life realm content comes from [archive/zangband/](../../archive/zangband/); its spoiler is
-  the one unarchivable document (DEC-16).
+- Life realm content has a spoiler after all. It was recorded as the one unarchivable
+  document; the 2026-09-01 re-check found it whole — 13,854 bytes, four books of spell
+  descriptions — at the timestamp already cited. **All seven realm spoilers are readable**,
+  and were verified byte-for-byte before M9 started: life 13,854, arcane 12,473, sorcery
+  13,419, nature 12,752, trump 12,986, chaos 16,974, death 20,033, and mind 11,552 for the
+  Mindcrafter's powers. [archive/zangband/](../../archive/zangband/) remains the authority
+  on algorithm under DEC-20; the spoilers are the authority on intent under DEC-16, and M9
+  now has both for every realm.
 - **Folded in from M8, by the project owner's decision:** three mutations whose powers were
   deferred for want of an effect. They are built here rather than earlier because two of
   them are cheap either way and the third is only cheap *here*.

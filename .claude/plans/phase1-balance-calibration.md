@@ -172,7 +172,7 @@ also produces Zangband's characteristically higher-turnover, more lethal encount
 
 Found in Zangband's official documentation (DEC-16), not in the data files, and absent from
 every earlier revision of this document. Source:
-[nightmare.txt](https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/nightmare.txt).
+[nightmare.txt](https://web.archive.org/web/20220420164309/http://www.zangband.org/spoilers/nightmare.txt).
 
 An **irreversible birth option**, described by its own documentation as *"designed to be
 unfair and not intended to be winnable"*, carrying a significant score multiplier. What it

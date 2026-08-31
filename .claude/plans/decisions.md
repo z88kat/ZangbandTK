@@ -69,22 +69,43 @@ what was meant. Requirements derived from them should cite the document.
 > complementary sources rather than alternatives — intent from one, algorithm from the other.
 
 > **Availability, checked 2026-08-15:** 34 of the 36 links resolve to real content. Two do
-> not: the site root, and `spoilers/life.txt` (the Life realm spell list), which returns
-> zero bytes at every snapshot tried from 2005 to 2022. The Life realm content is
-> recoverable from [archive/zangband/](../../archive/zangband/) instead. Note also that
-> `web.archive.org` cannot be retrieved through WebFetch in this environment; `curl` works.
+> not the site root. Note also that `web.archive.org` cannot be retrieved through WebFetch
+> in this environment; `curl` works.
 >
-> **Re-checked 2026-08-31, and the 2022 snapshots are not what they look like.** Fetching
-> `spoilers/mutation.txt` at the archived timestamp in [Idea.md](Idea.md) returns a
-> *domain-parking page*: zangband.org had expired by June 2022, and the Wayback Machine
-> forwards the 2022-05-27 capture to a later one that holds the squatter's placeholder. The
-> original availability check followed those redirects and counted a 200 as content.
+> **Re-checked in full 2026-09-01: all thirty-six citations, one at a time.** The result is
+> simpler than the two accounts that preceded it, and both of those were wrong.
 >
-> Two things fix it. Query the CDX index for a capture that predates the expiry —
-> `https://web.archive.org/cdx/search/cdx?url=zangband.org/spoilers/mutation.txt&fl=timestamp,statuscode,length`
-> — and fetch with the `id_` modifier after the timestamp, which returns the archived bytes
-> without the Wayback wrapper: `.../web/20120807174819id_/http://zangband.org/...`. The 2012
-> captures are good. **Any spoiler fetched from a 2022 timestamp should be re-checked.**
+> *There is no parking page.* An earlier note here said zangband.org had expired by June
+> 2022 and that the Wayback Machine forwards the 2022-05-27 capture to a squatter's
+> placeholder. It does not: fetched with `id_`, that capture of the site root is the genuine
+> zangband.org homepage, and the files that fail return *nothing at all* rather than
+> somebody else's content.
+>
+> *`spoilers/life.txt` is not unarchived.* It was recorded here as returning zero bytes at
+> every snapshot from 2005 to 2022. It returns **13,854 bytes at its own cited timestamp** —
+> the complete Life realm spell list, four books of it. Nothing was ever wrong with that
+> citation.
+>
+> *What is actually wrong is one crawl.* The 2022-04-20 crawl of `www.zangband.org` captured
+> everything. The 2022-05-27 crawl of the bare domain captured the homepage and almost none
+> of the files under it, so **every citation carrying the timestamp `20220527225941` for a
+> file returns zero bytes** — twelve of them, all spoilers — while the same documents are
+> whole at `20220420164xxx` under `www.`. All twelve have been repointed.
+>
+> **The method, and a trap in it.** Fetch with the `id_` modifier after the timestamp, which
+> returns the archived bytes without the Wayback wrapper and without following redirects:
+> `.../web/20220420164254id_/http://www.zangband.org/spoilers/mutation.txt`. Find candidates
+> through the CDX index, and query it **domain-wide with a filter** rather than by exact URL
+> — `?url=zangband.org&matchType=domain&filter=original:.*spoilers/mutation\.txt` — because
+> the archive stores `www.` and `:80` variants that an exact-URL query silently misses; a
+> plain query for `chaospat.txt` returns nothing at all while the file is in fact captured
+> more than a hundred times.
+>
+> And **retry before concluding a document is gone.** A throttled fetch returns zero bytes
+> and is indistinguishable from an absent one. A first pass over these thirty-six declared
+> twenty-one dead; re-running the failures three times each with a pause reduced that to
+> twelve. Nine documents were nearly rewritten out of the plan on the strength of
+> archive.org being busy.
 
 **DEC-20 — Clean-room is dropped. Zangband's source may be read, ported and adapted.**
 Supersedes the clean-room framing in [Idea.md](Idea.md), at the project owner's direction.
@@ -547,9 +568,11 @@ All four requirement documents are drafted:
 - [phase1-player-systems.md](phase1-player-systems.md) — 28 requirements
 - [phase1-content-and-flavour.md](phase1-content-and-flavour.md) — 16 requirements
 
-**The documentation pass is complete** (M0). All 34 recoverable documents were read; only
-`spoilers/life.txt` remains unarchived. It produced **fifteen** requirements that the
-data-file and source analysis had entirely missed:
+**The documentation pass is complete** (M0). All 35 documents were read, and — corrected
+2026-09-01 — **none of them is unarchived**, `spoilers/life.txt` included: it was recorded
+as unrecoverable on the strength of a bad availability check and serves the whole Life
+realm spell list at the timestamp already cited for it. The pass produced **fifteen**
+requirements that the data-file and source analysis had entirely missed:
 
 | Requirement | Finding |
 |---|---|
