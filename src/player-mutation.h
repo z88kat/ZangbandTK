@@ -98,6 +98,17 @@ struct mutation {
 	int blow_weight;	/**< For the critical-hit table, in tenth-pounds */
 	int blow_element;	/**< An element it carries, or -1 */
 	char *blow_verb;	/**< "You hit it with your tail." */
+
+	/**
+	 * True when this mutation's power was turned down rather than queued.
+	 *
+	 * Eleven activatable and random mutations have no effect chain because
+	 * 4.2 has no mechanism for them yet; one has none because the mechanism
+	 * was considered and refused (DEC-48). The power menu lists both, and
+	 * needs to tell them apart -- "not yet" is a promise, and it is one this
+	 * game is not going to keep for the Midas touch.
+	 */
+	bool refused;
 	int16_t el_info[ELEM_MAX];
 	bitflag flags[OF_SIZE];
 

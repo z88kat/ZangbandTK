@@ -33,6 +33,25 @@ Unreleased
 Testing — 31 August 2026
 -------------------------
 
+- **3.50.1** — **The Midas touch is dropped** (DEC-48). Turning objects into
+  gold needs an effect that destroys an object for money, which 4.2 has not
+  got — and building one means settling what fraction, of what valuation, and
+  what that does to the shops pricing against the same numbers. That is an
+  economy mechanic with exactly one consumer, for a mutation that saves the
+  player a walk back to town.
+
+  Recorded as a rejection and not a deferral, so it is not picked up again by
+  someone reading the deferred list as a queue. ``mutmap.toml`` gained a
+  ``reject`` key beside ``defer`` for it — the same split ``objmap.toml``
+  already had — and the conversion report lists it under REJECTED.
+
+  The consequence reaches the screen: the power menu now shows six of its
+  unusable entries as *not yet* and this one as **dropped**, and says so when
+  it is chosen. *Not yet* is a promise, and it is not one this game intends to
+  keep. The mutation is still gained, described and saved, on DEC-44's
+  reasoning that a mutation vanishing from a savefile is worse than one that
+  does nothing.
+
 - **3.50.0** — **Closing M8: the clearing form, and six brackets that lied.**
   Four items the audit turned up after the milestone was declared complete.
 

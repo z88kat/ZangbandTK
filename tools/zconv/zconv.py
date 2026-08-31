@@ -2021,6 +2021,7 @@ def _mutation_powers() -> tuple[dict, dict]:
 
     lines: dict[str, list[str]] = {}
     deferred: dict[str, str] = {}
+    rejected: dict[str, str] = {}
 
     # `[random.X]` sections emit `fires-` lines rather than `power-` ones: the
     # chain is the same shape and fires on a turn passing rather than on the
@@ -2031,6 +2032,15 @@ def _mutation_powers() -> tuple[dict, dict]:
                 for code, spec in table.get("random", {}).items()]
 
     for code, spec, prefix in entries:
+        # `defer` is a queue and `reject` is a decision, and the difference is
+        # the whole reason they are separate keys. A deferred mutation is
+        # waiting for a mechanism and should be picked up when it arrives; a
+        # rejected one has been considered and turned down, and reading the
+        # deferred list as a work queue must not resurrect it. Same split as
+        # objmap.toml's [defer] and [reject].
+        if "reject" in spec:
+            rejected[code] = " ".join(spec["reject"].split())
+            continue
         if "defer" in spec:
             deferred[code] = " ".join(spec["defer"].split())
             continue
@@ -2055,7 +2065,7 @@ def _mutation_powers() -> tuple[dict, dict]:
 
         lines[code] = out
 
-    return lines, deferred
+    return lines, deferred, rejected
 
 
 def cmd_mutations(args) -> int:
@@ -2067,7 +2077,7 @@ def cmd_mutations(args) -> int:
 
     weights, gates = _mutation_weights()
     effects, gained_flags, cleared_flags = _mutation_effects()
-    powers, undone = _mutation_powers()
+    powers, undone, refused = _mutation_powers()
     blows = _mutation_blows()
 
     report = Report(
@@ -2203,6 +2213,10 @@ def cmd_mutations(args) -> int:
         if code in undone:
             item.fields["power-effect"] = rules.Value(
                 "deferred", "PLR-16", rules.DERIVED, undone[code])
+        if code in refused:
+            entry.set("unavailable", "rejected")
+            item.fields["power-effect"] = rules.Value(
+                "rejected", "PLR-16", rules.DERIVED, refused[code])
 
         report.items.append(item)
         entries.append(entry)
@@ -2213,13 +2227,15 @@ def cmd_mutations(args) -> int:
         "Selection weights total %d, which is the 1d193 the switch rolls."
         % sum(weights.values()))
     report.notes.append(
-        "Powers: %d of the 32 activatable mutations are expressed as 4.2 "
-        "effect chains; %d cannot be and carry their reason instead. The "
-        "translations are in mutmap.toml, one judgement per mutation, each "
-        "with the mutation_power_aux() line it was read off."
-        % (len(powers), len(undone)))
+        "Powers: %d mutations are expressed as 4.2 effect chains; %d are "
+        "deferred and %d rejected, each carrying its reason. The translations "
+        "are in mutmap.toml, one judgement per mutation, each with the "
+        "mutation_power_aux() line it was read off."
+        % (len(powers), len(undone), len(refused)))
     for code in sorted(undone):
         report.notes.append("  deferred -- %s: %s" % (code, undone[code]))
+    for code in sorted(refused):
+        report.notes.append("  REJECTED -- %s: %s" % (code, refused[code]))
     report.notes.append(
         "Melee blows come out of natural_attack() in cmd1.c, not out of the "
         "descriptions beside them: the code sets dss and ddd and then calls "

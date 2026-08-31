@@ -1642,3 +1642,37 @@ with `power` the character's level, so a level-40 character can lose several
 mutations and gain several more in one invocation and a level-5 character
 usually gets nothing at all. Polymorph Self should be frightening late and
 merely odd early, and it is.
+
+### DEC-48 — The Midas touch is dropped (PLR-16)
+
+Confirmed by project owner: too much effort for something that is not a game
+changer.
+
+Recorded as a rejection rather than a deferral, so that it is not picked up
+again by someone reading the deferred list as a queue. It sits in
+`mutmap.toml` under `reject` rather than `defer` — a distinction that key pair
+did not have until this decision needed it — and the conversion report lists it
+under REJECTED rather than among the deferred.
+
+*What it would have taken.* Zangband's `alchemy()`
+([mutation.c:1110](../../archive/zangband/src/mutation.c#L1110)) turns a chosen
+object into gold at a fraction of its value. **4.2 has no effect that destroys
+an object for money**, so the work is not one effect handler: it is deciding
+what fraction, of what valuation, and what that does to the shops that price
+against the same numbers. That is an economy mechanic, and it would exist to
+carry one mutation.
+
+*Why the mutation does not earn it.* It is a convenience rather than a power. It
+turns loot you were going to sell into gold without the walk back to town —
+which the game already lets you do, by walking back to town. Nothing else in
+the game wants an object-to-gold effect, so the mechanic would have exactly one
+consumer and no prospect of a second.
+
+**Consequence.** Twelve mutations still do nothing, but the split is now eleven
+deferred and one refused. The activatable "not yet" list drops from eight to
+seven; the Midas touch is listed in the power menu as **dropped** and says so
+when chosen, because "not yet" is a promise and this is not one the game
+intends to keep. The mutation is still gained, described and saved like any
+other — a mutation that vanishes from a savefile is worse than one that does
+nothing, which is the same reasoning DEC-44 applied to the two charisma
+mutations.

@@ -164,9 +164,14 @@ effects = [ "POLY_SELF" ]
 
 [MIDAS_TCH]
 line = 1110
-defer = """alchemy() turns a chosen object into gold at a fraction of its \
-value. 4.2 has no effect that destroys an object for money, and inventing one \
-here would be inventing an economy mechanic to hang one mutation on."""
+reject = """Rejected by DEC-48 rather than deferred: too much work for \
+something that changes no game. `alchemy()` turns a chosen object into gold at \
+a fraction of its value, and 4.2 has no effect that destroys an object for \
+money -- so building it means inventing an economy mechanic (what fraction, of \
+what valuation, and what it does to the shops that price against the same \
+numbers) to hang one mutation on. The mutation itself is a convenience: it \
+turns loot you were going to sell into gold without the walk back to town, \
+which the game already lets you do by walking back to town."""
 
 [GROW_MOLD]
 line = 1115

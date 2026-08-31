@@ -541,6 +541,7 @@ static int test_the_activatable_split_is_what_was_decided(void *state) {
 		"TELEKINES", "SWAP_POS", "DET_CURSE", "MIDAS_TCH", "GROW_MOLD",
 		"WEIGH_MAG", "STERILITY", "LAUNCHER"
 	};
+	/* MIDAS_TCH is among them but refused rather than queued; see DEC-48. */
 	const struct mutation *m;
 	int with = 0, without = 0;
 	size_t i;
@@ -1295,6 +1296,61 @@ static int test_a_beak_wastes_most_of_a_meal(void *state) {
 	ok;
 }
 
+/**
+ * The Midas touch is dropped, and the difference is visible (DEC-48).
+ *
+ * Eleven mutations have no effect chain because 4.2 has no mechanism for them
+ * and one because the mechanism was considered and refused. `mutmap.toml`
+ * keeps them under different keys for that reason, and the data file carries
+ * the distinction so the power menu can stop saying "not yet" about something
+ * that is not coming.
+ *
+ * Asserted as an exact split rather than a property of one entry: the failure
+ * worth catching is a second rejection arriving without a decision behind it,
+ * or this one quietly reverting to a deferral and rejoining the queue.
+ */
+static int test_a_dropped_power_says_so(void *state) {
+	const struct mutation *midas = mutation_by_name("MIDAS_TCH");
+	const struct mutation *m;
+	int refused = 0, waiting = 0;
+
+	notnull(midas);
+	require(midas->refused);
+	null(midas->action);
+
+	for (m = mutations; m; m = m->next) {
+		/*
+		 * The two kinds carry their chain in different fields -- an
+		 * activatable one in `action` and a random one in `fires` -- so a
+		 * single null test counts every random mutation as unimplemented.
+		 */
+		if (m->kind == MUTATION_KIND_ACTIVATABLE) {
+			if (m->action) continue;
+		} else if (m->kind == MUTATION_KIND_RANDOM) {
+			if (m->fires) continue;
+		} else {
+			continue;
+		}
+
+		/* CHAOS_GIFT needs no chain and is not unavailable; see above. */
+		if (streq(m->name, "CHAOS_GIFT")) continue;
+
+		if (m->refused) refused++; else waiting++;
+	}
+
+	eq(refused, 1);
+	eq(waiting, 11);
+
+	/* And nothing that works is marked either way. */
+	for (m = mutations; m; m = m->next) {
+		if (!m->action) continue;
+
+		require(!m->refused);
+	}
+
+	ok;
+}
+
 const char *suite_name = "player/mutation";
 struct test tests[] = {
 	{ "all-ninety-six-are-here", test_all_ninety_six_are_here },
@@ -1348,6 +1404,7 @@ struct test tests[] = {
 	{ "rotting-flesh-beats-worn-regeneration",
 	  test_rotting_flesh_beats_worn_regeneration },
 	{ "a-beak-wastes-most-of-a-meal", test_a_beak_wastes_most_of_a_meal },
+	{ "a-dropped-power-says-so", test_a_dropped_power_says_so },
 	{ "every-menu-row-finds-a-mutation",
 	  test_every_menu_row_finds_a_mutation },
 	{ "a-mutation-toggles-both-ways", test_a_mutation_toggles_both_ways },

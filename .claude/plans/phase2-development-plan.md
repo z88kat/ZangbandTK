@@ -338,9 +338,9 @@ PLR-18 to PLR-21 were done earlier — virtues, their selection, their writers a
 consumers. That was the milestone's gate: DEC-39 kept the feature on condition that
 something read it, and two things do.
 
-**Twelve mutations do nothing**, recorded per-mutation in
-`tools/zconv/mutmap.toml` and listed in `docs/mutations.rst`: eight activatable and four
-random. Every one needs machinery 4.2 has not got — pets, an incorporeal player state, an
+**Twelve mutations do nothing** — eleven deferred and one refused (DEC-48) — recorded
+per-mutation in `tools/zconv/mutmap.toml` and listed in `docs/mutations.rst`: eight
+activatable and four random. Every one needs machinery 4.2 has not got — pets, an incorporeal player state, an
 object-to-gold conversion, a pseudo-identification bit, an effect that reads both the hit
 point and spell point pools. Two more continuous mutations are inert because they moved
 only charisma, which 4.2 removed in 4.2.0.

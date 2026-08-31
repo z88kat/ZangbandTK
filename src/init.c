@@ -4728,6 +4728,21 @@ static enum parser_error parse_mutation_blow_element(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_mutation_unavailable(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+	const char *why = parser_getstr(p, "why");
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	if (streq(why, "rejected")) {
+		m->refused = true;
+	} else if (!streq(why, "deferred")) {
+		return PARSE_ERROR_INVALID_VALUE;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_mutation_armour(struct parser *p) {
 	struct mutation *m = parser_priv(p);
 
@@ -4852,6 +4867,7 @@ static struct parser *init_parse_mutation(void) {
 	parser_reg(p, "values str values", parse_mutation_values);
 	parser_reg(p, "flags str flags", parse_mutation_flags);
 	parser_reg(p, "suppresses str flags", parse_mutation_suppresses);
+	parser_reg(p, "unavailable str why", parse_mutation_unavailable);
 	parser_reg(p, "power str power", parse_mutation_power);
 	parser_reg(p, "desc str desc", parse_mutation_desc);
 	parser_reg(p, "gain str gain", parse_mutation_gain);
