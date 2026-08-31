@@ -193,9 +193,40 @@ static int test_every_flavoured_tval_has_enough_flavours(void *state) {
  */
 static int test_the_deferred_objects_are_absent(void *state) {
 	null(kind_named(TV_WAND, "Tame Monster"));
-	null(kind_named(TV_POTION, "New Life"));
 	null(kind_named(TV_SCROLL, "Artifact Creation"));
 	null(kind_named(TV_WAND, "Rockets"));
+
+	ok;
+}
+
+/**
+ * And the potion of New Life arrived, because mutations did.
+ *
+ * The other side of the test above, and the reason it is worth writing both.
+ * CNT-11 deferred this one on the single ground that "mutations are unbuilt";
+ * M8 built them, so the deferral had to be revisited rather than left to sit.
+ * A deferral whose stated reason has expired and which nobody went back to is
+ * the failure mode this pair is built against.
+ *
+ * Half of Zangband's potion survives. Its Lua is
+ * `do_cmd_rerate(); cure_all_mutations()`, and 4.2 fixes hit points at birth
+ * and has no rerate command -- so the mutations go and the hit dice stay. The
+ * description was overridden to stop promising the half that does not happen.
+ */
+static int test_the_new_life_potion_arrived_with_mutations(void *state) {
+	struct object_kind *kind = kind_named(TV_POTION, "New Life");
+
+	notnull(kind);
+	notnull(kind->effect);
+	eq(kind->effect->index, EF_LOSE_MUTATION);
+
+	/* More than a character can carry, which is how "all of them" is said. */
+	notnull(kind->effect->dice);
+	require(dice_evaluate(kind->effect->dice, 0, AVERAGE, NULL) >= 96);
+
+	/* And it no longer claims to reroll anything. */
+	notnull(kind->text);
+	require(!strstr(kind->text, "hitpoint"));
 
 	ok;
 }
@@ -667,6 +698,8 @@ struct test tests[] = {
 	{ "every-flavoured-tval-has-enough-flavours",
 	  test_every_flavoured_tval_has_enough_flavours },
 	{ "the-deferred-objects-are-absent", test_the_deferred_objects_are_absent },
+	{ "the-new-life-potion-arrived-with-mutations",
+	  test_the_new_life_potion_arrived_with_mutations },
 	{ "weird-luck-cuts-both-ways", test_weird_luck_cuts_both_ways },
 	{ "weird-luck-reaches-out-of-depth", test_weird_luck_reaches_out_of_depth },
 	{ "a-psiblade-spends-mana", test_a_psiblade_spends_mana },

@@ -153,10 +153,14 @@ effects = [
 
 [POLYMORPH]
 line = 1105
-defer = """do_poly_self() is the Polymorph Self mechanic, which is one of \
-PLR-34's acquisition paths rather than a power in its own right -- it rerolls \
-the character's mutations, and it needs the acquisition and removal paths that \
-Phase 5 builds. Deferred to there, not away."""
+note = """do_poly_self() does four things at once: it can change the \
+character's sex, change their race outright, drain stats, and shed and add \
+mutations. Only the last survives, and the ruling is already on the record -- \
+DEC-38 met the same code through the patron's "Thou needst a new form, \
+mortal!" and took 4.2's shapechange over Zangband's permanent race mangling. \
+The gate structure is kept, which is what makes this frightening at level 40 \
+and merely odd at level 5."""
+effects = [ "POLY_SELF" ]
 
 [MIDAS_TCH]
 line = 1110
@@ -394,9 +398,11 @@ effects = [ "SPHERE:CHAOS:8", "dice:$B", "expr:B:PLAYER_LEVEL:+ 0" ]
 
 [random.NORMALITY]
 line = 1663
-defer = """Removes one of the character's own mutations at random, which is a \
-mutation acting on the mutation set rather than on the character. Phase 5 \
-builds the removal paths; this hooks into them there."""
+note = """Removes one of the character's own mutations at random, and can \
+pick itself -- which is the joke, and is why nothing special guards against \
+it. A character who becomes strangely normal may stop being strangely \
+normal."""
+effects = [ "LOSE_MUTATION" ]
 
 [random.WRAITH]
 line = 1680
@@ -434,10 +440,11 @@ effects = [ "NOURISH:SET_TO:1000" ]
 
 [random.CHAOS_GIFT]
 line = 0
-defer = """The one random mutation with no per-turn chance: it fires when the \
-character gains a level, and what it does is ask the Chaos patron for a \
-reward. That is DEC-38's carry-over, and it is built in Phase 5 beside the \
-patron gift itself."""
+defer = """No chain, and none needed. This is the one random mutation with no \
+per-turn chance: it fires on gaining a level, and what it does is make a Lord \
+of the Courts take an interest. It carries the PATRON flag instead, which \
+patron_owes_reward() already reads -- so the mutation works through the \
+machinery PLR-05 built rather than through an effect of its own."""
 
 [random.WALK_SHAD]
 line = 1849

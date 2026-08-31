@@ -284,6 +284,7 @@ weight:1
 desc:You can polymorph yourself at will.
 gain:Your body seems mutable.
 lose:Your body seems stable.
+power-effect:POLY_SELF
 
 name:MIDAS_TCH
 kind:activatable
@@ -778,6 +779,7 @@ weight:3
 desc:You may be mutated, but you're recovering.
 gain:You feel strangely normal.
 lose:You feel normally strange.
+fires-effect:LOSE_MUTATION
 
 name:WRAITH
 kind:random

@@ -622,6 +622,8 @@ static enum parser_error parse_constants_wild(struct parser *p) {
 		z->inn_cost = value;
 	} else if (streq(label, "enchant-cost")) {
 		z->enchant_cost = value;
+	} else if (streq(label, "chaostower-cost")) {
+		z->chaostower_cost = value;
 	} else if (streq(label, "recharge-cost")) {
 		z->recharge_cost = value;
 	} else if (streq(label, "gate-turns")) {

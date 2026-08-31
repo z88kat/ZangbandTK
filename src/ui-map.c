@@ -1838,6 +1838,91 @@ static void service_effect(const char *what, int effect, int32_t price,
 }
 
 /**
+ * How many rows a `menu_dynamic` with letter labels can hold.
+ *
+ * `menu_dynamic_add_label()` writes `label_list[m->count]`, and `lower_case`
+ * is twenty-six characters and a terminator -- so the twenty-seventh row
+ * overwrites the terminator and the twenty-eighth runs off the end of the
+ * allocation. Nothing in 4.2 ever built a menu that long. A character can now
+ * carry eighty-nine mutations at once, which makes it reachable, so both of
+ * the menus below stop here and say how many they did not show.
+ */
+#define MENU_LETTERS	26
+
+/**
+ * The Chaos Tower: have one mutation taken off you (DEC-24, PLR-13).
+ *
+ * The seventh building, and the only one that had to be written rather than
+ * ported. Zangband names it in `t_info.txt` as the Mutatalist, routes it
+ * through a Lua hook, and ships no script to fill the hook -- so it has a
+ * building, a door and no behaviour. `spoilers/mutation.txt` lists it as one of
+ * only six ways to lose a mutation, which is why DEC-24 kept it when it cut the
+ * Casino and the Weaponmaster.
+ *
+ * The player chooses which mutation goes, which Zangband's own removal routes
+ * never allow -- a potion of New Life takes all of them and the strangely
+ * normal mutation takes whichever it likes. Choosing is the whole reason to
+ * walk to a building and pay 2500 gold for something a potion does wholesale.
+ */
+static void service_chaostower(void)
+{
+	const struct mutation *held[MENU_LETTERS];
+	struct menu *m;
+	char *labels;
+	int count = 0, total = 0, chosen;
+	const struct mutation *mut;
+
+	for (mut = mutations; mut; mut = mut->next) {
+		if (!player_has_mutation(player, mut)) continue;
+
+		total++;
+		if (count < (int) N_ELEMENTS(held)) held[count++] = mut;
+	}
+
+	if (!count) {
+		msg("They look you over and shake their heads.  Nothing to do.");
+		return;
+	}
+
+	if (total > count) {
+		msg("There is more wrong with you than they can look at in one visit.");
+	}
+
+	m = menu_dynamic_new();
+	if (!m) return;
+
+	labels = string_make(lower_case);
+	m->selections = labels;
+
+	for (chosen = 0; chosen < count; chosen++) {
+		menu_dynamic_add_label(m, held[chosen]->desc, 0, chosen + 1, labels);
+	}
+	menu_dynamic_add_label(m, "Keep them all", 'q', 0, labels);
+
+	screen_save();
+	menu_dynamic_calc_location(m, 0, 0);
+	region_erase_bordered(&m->boundary);
+	prt(format("Which will you be rid of, for %d au?",
+			   (int) z_info->chaostower_cost), 0, 0);
+
+	chosen = menu_dynamic_select(m);
+
+	menu_dynamic_free(m);
+	string_free(labels);
+	screen_load();
+
+	if (chosen <= 0 || chosen > count) return;
+
+	if (!service_pay(z_info->chaostower_cost, "the Chaos Tower")) return;
+
+	if (player_lose_mutation(player, held[chosen - 1])) {
+		msg("Something is taken out of you, and it does not come back.");
+	}
+
+	player->upkeep->energy_use = z_info->move_energy;
+}
+
+/**
  * The magesmith: put magic on a weapon or a suit of armour (WLD-16c).
  *
  * Asked which before the fee is named, because the two are different work and
@@ -1908,6 +1993,10 @@ void ui_enter_service(game_event_type type, game_event_data *data, void *user)
 
 		case WILD_SERVICE_ENCHANT:
 			service_enchant();
+			break;
+
+		case WILD_SERVICE_CHAOSTOWER:
+			service_chaostower();
 			break;
 
 		case WILD_SERVICE_RECHARGE:
@@ -1987,11 +2076,11 @@ void do_cmd_quest_log(void)
  */
 void do_cmd_racial_power(void)
 {
-	struct player_power *powers[32];
-	const struct mutation *pending[32];
+	struct player_power *powers[MENU_LETTERS];
+	const struct mutation *pending[MENU_LETTERS];
 	struct menu *m;
 	char *labels;
-	int count = 0, waiting = 0, chosen, i;
+	int count = 0, waiting = 0, dropped = 0, chosen, i;
 	struct player_power *power;
 	const struct mutation *mut;
 
@@ -2020,21 +2109,34 @@ void do_cmd_racial_power(void)
 
 		if (mut->action) {
 			if (count < (int) N_ELEMENTS(powers)) powers[count++] = mut->action;
-		} else if (waiting < (int) N_ELEMENTS(pending)) {
+			else dropped++;
+		} else {
 			/*
-			 * Nine of the thirty-two have no 4.2 equivalent yet. They are
+			 * Eight of the thirty-two have no 4.2 equivalent yet. They are
 			 * listed anyway, and refuse when chosen: the character sheet
 			 * already describes them, so a player who has grown a Midas touch
 			 * will come here looking for it, and silence would read as a bug
 			 * rather than as an honest gap.
 			 */
-			pending[waiting++] = mut;
+			if (waiting < (int) N_ELEMENTS(pending)) pending[waiting++] = mut;
+			else dropped++;
 		}
 	}
 
-	if (!count) {
+	/* The usable ones first, so a full list never hides one that works. */
+	if (count + waiting > (int) N_ELEMENTS(powers)) {
+		dropped += count + waiting - (int) N_ELEMENTS(powers);
+		waiting = (int) N_ELEMENTS(powers) - count;
+		if (waiting < 0) waiting = 0;
+	}
+
+	if (!count && !waiting) {
 		msg("You have no power to call on.");
 		return;
+	}
+
+	if (dropped) {
+		msg("Chaos has given you %d more than this list can hold.", dropped);
 	}
 
 	m = menu_dynamic_new();

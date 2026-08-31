@@ -2652,7 +2652,7 @@ static void town_gen_layout(struct chunk *c, struct player *p, uint16_t shops,
 		 * it.  Moving the block earlier and sweeping every lot instead of
 		 * guessing at sixty both helped and neither fixed it.
 		 *
-		 * First, then.  There are only ever five of them and the shops have a
+		 * First, then.  There are only ever six of them and the shops have a
 		 * safety net this does not: if the store loop runs out of room the whole
 		 * layout is thrown away and generated again, so a town that cannot fit
 		 * its shops around its services simply becomes a different town.
@@ -2661,6 +2661,7 @@ static void town_gen_layout(struct chunk *c, struct player *p, uint16_t shops,
 		static const struct { int service, feat; } buildings[] = {
 			{ WILD_SERVICE_MAGETOWER, FEAT_MAGETOWER },
 			{ WILD_SERVICE_HEALER,    FEAT_HEALER },
+			{ WILD_SERVICE_CHAOSTOWER, FEAT_CHAOSTOWER },
 			{ WILD_SERVICE_INN,       FEAT_INN },
 			{ WILD_SERVICE_ENCHANT,   FEAT_MAGESMITH },
 			{ WILD_SERVICE_RECHARGE,  FEAT_RECHARGER },

@@ -147,6 +147,20 @@ effect:TIMED_INC:INVULN
 dice:6+d8
 desc:This potion makes you temporarily invulnerable to damage (7-14 turns).
 
+name:New Life
+type:potion
+graphics:!:d
+level:100
+weight:4
+cost:50000
+alloc:5:75 to 100
+attack:0d0:0:0
+armor:0:0
+flags:EASY_KNOW
+effect:LOSE_MUTATION
+dice:96
+desc:This potion strips away every mutation you carry. There is no other way to be rid of them all at once, and no cheap way to come by it.
+
 name:Booze
 type:potion
 graphics:!:d

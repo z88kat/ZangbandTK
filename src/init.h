@@ -123,6 +123,7 @@ struct angband_constants
 	uint16_t inn_cost;		/**< A bed at the inn until morning */
 	uint16_t enchant_cost;	/**< The magesmith's charge */
 	uint16_t recharge_cost;	/**< The recharger's charge */
+	uint16_t chaostower_cost;	/**< The Chaos Tower's charge, per mutation */
 	uint16_t wild_gate_turns;	/**< Game turns a town gate stands open */
 	uint16_t wild_towns;		/**< How many towns to place in the world */
 

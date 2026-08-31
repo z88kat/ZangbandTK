@@ -1197,7 +1197,7 @@ static uint16_t wild_town_services(struct wilderness *w, int bx, int by,
 	 *
 	 *   town         a way out, a bed, and somebody to mend you
 	 *   city         and a magesmith, and somebody to recharge a wand
-	 *   great city   the same; there is nothing left to add yet
+	 *   great city   and a Chaos Tower
 	 */
 	held |= 1u << WILD_SERVICE_MAGETOWER;
 	held |= 1u << WILD_SERVICE_HEALER;
@@ -1207,6 +1207,16 @@ static uint16_t wild_town_services(struct wilderness *w, int bx, int by,
 		held |= 1u << WILD_SERVICE_ENCHANT;
 		held |= 1u << WILD_SERVICE_RECHARGE;
 	}
+
+	/*
+	 * The Chaos Tower is a great city's alone (DEC-24, PLR-13).
+	 *
+	 * The rarest service, and deliberately so: it is the only way to choose
+	 * which mutation leaves you, and a character with something intolerable
+	 * should have to cross the world for it. Putting one in every town would
+	 * make mutations an inconvenience rather than a thing you live with.
+	 */
+	if (band >= 3) held |= 1u << WILD_SERVICE_CHAOSTOWER;
 
 	return held;
 }
@@ -1736,6 +1746,7 @@ const char *wild_service_name(int service)
 	switch (service) {
 		case WILD_SERVICE_MAGETOWER: return "magetower";
 		case WILD_SERVICE_HEALER:    return "healer";
+		case WILD_SERVICE_CHAOSTOWER: return "chaos tower";
 		case WILD_SERVICE_INN:       return "inn";
 		case WILD_SERVICE_ENCHANT:   return "magesmith";
 		case WILD_SERVICE_RECHARGE:  return "recharger";
@@ -1757,6 +1768,7 @@ int wild_service_at(struct chunk *c, struct loc grid)
 	switch (square(c, grid)->feat) {
 		case FEAT_MAGETOWER: return WILD_SERVICE_MAGETOWER;
 		case FEAT_HEALER:    return WILD_SERVICE_HEALER;
+		case FEAT_CHAOSTOWER: return WILD_SERVICE_CHAOSTOWER;
 		case FEAT_INN:       return WILD_SERVICE_INN;
 		case FEAT_MAGESMITH: return WILD_SERVICE_ENCHANT;
 		case FEAT_RECHARGER: return WILD_SERVICE_RECHARGE;

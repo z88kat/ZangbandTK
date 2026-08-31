@@ -35,6 +35,7 @@
 #include "obj-util.h"
 #include "player-attack.h"
 #include "player-calcs.h"
+#include "player-mutation.h"
 #include "player-history.h"
 #include "player-quest.h"
 #include "player-spell.h"
@@ -2241,6 +2242,22 @@ void patron_bestow_reward(struct player *p)
 
 	if (!lord) return;
 
+	/*
+	 * One favour in six is not a favour at all (PLR-13, DEC-38).
+	 *
+	 * Zangband tests this before it looks at the ladder and returns straight
+	 * away ([xtra2.c:3134](../archive/zangband/src/xtra2.c#L3134)), so the
+	 * mutation *replaces* the reward rather than arriving beside it -- a
+	 * character who was about to be healed is changed instead. Kept in that
+	 * order, because a Lord that gave you a gift and a mutation would be a
+	 * kinder Lord than Zangband's.
+	 */
+	if (one_in_(6)) {
+		msg("%s rewards you with a mutation!", lord->name);
+		(void) player_mutate(p);
+		return;
+	}
+
 	slot = patron_roll_slot(p);
 
 	reward = lord->ladder[slot];
@@ -2251,12 +2268,6 @@ void patron_bestow_reward(struct player *p)
 	if (reward->effect)
 		effect_do(reward->effect, source_player(), NULL, &ident, true, 0,
 				  0, 0, NULL);
-
-	/*
-	 * PLR-05 note: Zangband replaced one reward in six with a mutation.
-	 * Mutations are M8 (PLR-13 to PLR-17) and the branch is deliberately not
-	 * here -- see DEC-38.  It goes in when there are mutations to grant.
-	 */
 }
 
 /**

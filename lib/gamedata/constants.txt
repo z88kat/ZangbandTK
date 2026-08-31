@@ -583,6 +583,17 @@ wild:inn-cost:25
 wild:enchant-cost:250
 wild:recharge-cost:120
 
+# The Chaos Tower's fee to take one mutation off you (DEC-24, PLR-13).
+#
+# Expensive on purpose, and the most expensive service in the game. Zangband
+# never implemented the building so there is no figure to port; this one is
+# set against what it competes with. A potion of New Life removes every
+# mutation at once and is worth 50000 gold at depth 100, so a single removal
+# has to cost enough that the potion stays the thing you hope for -- but
+# little enough that a mid-game character with one intolerable mutation has a
+# way out that is not "find the rarest potion in the game".
+wild:chaostower-cost:2500
+
 # How long a town gate stands open before it swings shut, in game turns. A
 # player at normal speed acts every ten of these, so 100 is about ten moves --
 # long enough to walk through and lead a packhorse, short enough that the gate

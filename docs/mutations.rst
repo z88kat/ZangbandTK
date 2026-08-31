@@ -8,12 +8,6 @@ mutation arrives because something happened to you — a spell went wrong, a
 Lord of Chaos took an interest, you were standing in the wrong place when
 something breathed — and what you get is what the roll gives you.
 
-.. note::
-
-   **Under construction.** Everything a mutation *does* now works: the standing
-   changes, the powers, the ones that fire on their own, and the extra attacks.
-   What is left is the ways you come by them — the patron's gift, the Chaos
-   Tower, Polymorph Self and the rest.
 
 The four kinds
 --------------
@@ -55,7 +49,7 @@ when you are short of mana. Some grow with you: spitting acid throws a wider
 ball from level 30, breathing fire from level 40, and hardening yourself
 against the elements resists more of them the higher you go.
 
-**Nine of the thirty-two cannot be used yet.** They are listed with *not yet*
+**Eight of the thirty-two cannot be used yet.** They are listed with *not yet*
 beside them rather than hidden, because your character sheet describes them and
 you would come looking. What they need is machinery Angband 4.2 does not have,
 and in most cases inventing it to carry one mutation would be the wrong way
@@ -76,9 +70,6 @@ round:
    * - Sense curses
      - Something hidden to reveal. 4.2 has no pseudo-identification; curses are
        runes you learn by carrying the thing.
-   * - Polymorph self
-     - The Polymorph Self mechanic, which is coming with the acquisition paths.
-       Deferred to there, not away.
    * - Midas touch
      - Turning an object into gold. There is no such thing in 4.2, and adding
        one is an economy change.
@@ -148,8 +139,23 @@ the reason there is no generic "random mutation" source:
 - **Polymorph Self**, whether cast or mutated into.
 - **A spell going badly wrong**, if it was a chaos or death spell.
 
-Not every route is open yet: the ones that go through the Chaos and Death
-magic realms wait for the realms themselves.
+Everything on that list works except the two that go through a magic realm —
+Polymorph Self cast as a Chaos spell, and a Chaos or Death spell going wrong.
+Those wait for the realms themselves. The Polymorph Self *mutation* works now,
+and so does everything else: a Lord of the Courts replaces one favour in six
+with a mutation instead, the chaos gift makes a Lord take an interest in a
+character who never swore to one, and unresisted chaos changes you one time in
+three.
+
+.. note::
+
+   **Polymorph Self does less here than in Zangband, on purpose.** Zangband's
+   version could change your sex and your race outright, permanently. This
+   game's shapechanges you instead — the same decision the Chaos patron's
+   "Thou needst a new form, mortal!" already got, for the same reason. What is
+   left of it is the mutation reroll: it sheds some of what you have and gives
+   you more, and how much of each depends on your level. At level 40 it is
+   frightening. At level 5 it usually does nothing at all.
 
 Some races take more readily to particular changes. A Vampire's gaze turns
 hypnotic six times out of ten; a Mindflayer sprouts tentacles as often; a Yeek
@@ -169,14 +175,18 @@ How you get rid of them
 
 Barely at all, which is what makes them matter:
 
-- **A potion of New Life**, which is not easy to come by.
+- **A potion of New Life**, which strips away every mutation at once and is
+  the deepest, most expensive potion in the game. Zangband's also re-rolled
+  your hit points; this one does not, because Angband 4.2 fixes those at birth.
 - **Gaining a mutation that cancels one you have.** Nine such pairs. Becoming
   superhumanly strong ends being puny; growing a beak replaces a trunk. Iron
   skin is the interesting one — it drives out scales, rotting flesh and warts
   all at once, while any one of those three drives out the iron skin. Scales
   and warts get along fine together.
 - **The Chaos Tower**, a building service that exists for this and nothing
-  else.
+  else. Only great cities have one, and it costs 2500 gold a mutation — but it
+  is the only route that lets you *choose* which one goes. Everything else
+  takes whichever it likes, or takes all of them.
 - **The "strangely normal" mutation**, which occasionally removes mutations —
   including, eventually, itself.
 - **Polymorph Self**, which sometimes takes one away instead of adding one.
@@ -198,3 +208,12 @@ in Angband 4.2 — the stat was removed in 4.2.0. Those descriptions have had th
 charisma taken out of them and nothing else changed, so a squeaky voice now
 reads as a squeaky voice and warts read as *+5 AC*, which is what they actually
 are. Anything else the description claims is real.
+
+If you are carrying more than twenty-six
+----------------------------------------
+
+You can hold eighty-nine mutations at once — all ninety-six less the seven that
+cancelling pairs make unreachable together — and no list in the game can put a
+letter beside more than twenty-six things. The power list and the Chaos Tower
+both stop there and tell you how many they left out. Remove one and come back;
+the next visit shows you a different twenty-six.

@@ -68,7 +68,15 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
   sworn at birth to one of nine Lords of the Courts of Chaos. Races may have
   activatable powers, which Angband has no mechanism for.
 
-**Not yet:** mutations, magic realms, pets, and nightmare mode — and the two
+- **Ninety-six mutations.** Chaos changes you, permanently and rarely for the
+  better: standing changes to your body, powers you can invoke, things that
+  happen to you unasked, and extra limbs that attack. You do not choose them.
+  A Lord of the Courts may hand one down instead of a favour, raw chaos leaves
+  them behind, and a Beastman is born mutated and keeps changing. Getting rid
+  of one is hard: the rarest potion in the game, a building only great cities
+  have, or another mutation cancelling it out.
+
+**Not yet:** magic realms, pets, and nightmare mode — and the two
 classes defined by which realm they choose, which wait for the realms.
 A Tcl/Tk front end is planned for a later phase, reviving the original's
 interface on Tcl/Tk 9.

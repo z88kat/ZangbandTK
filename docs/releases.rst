@@ -36,6 +36,41 @@ Savefile compatibility — 30 August 2026
 M8: mutations — 31 August 2026
 ------------------------------
 
+- **3.49.0** — **How you come by a mutation, and how you get rid of one**
+  (PLR-14, PLR-34, DEC-24). Every documented acquisition path that does not go
+  through a magic realm now works: a Lord of the Courts replaces one favour in
+  six with a mutation (the DEC-38 carry-over, filled in), the chaos gift makes
+  a Lord take an interest in a character who never swore to one, unresisted
+  chaos changes you one time in three, and Polymorph Self rerolls what chaos
+  has made of you. The two remaining routes are Chaos and Death realm spells
+  and wait for PLR-08.
+
+  Three new effects carry all of it — ``GAIN_MUTATION``, ``LOSE_MUTATION`` and
+  ``POLY_SELF`` — so a patron's ladder, a potion, a breath and a building can
+  each reach the same machinery from data.
+
+  **The Chaos Tower is built** (DEC-24). Zangband names it in ``t_info.txt``,
+  routes it through a Lua hook and ships no script to fill the hook, so it had
+  a building, a door and no behaviour; ``spoilers/mutation.txt`` lists it as one
+  of only six ways to lose a mutation, which is why DEC-24 kept it when it cut
+  the Casino and the Weaponmaster. Great cities only, 2500 gold, and it is the
+  only route that lets the player *choose* which mutation goes.
+
+  **The potion of New Life came back.** CNT-11 deferred it on the single ground
+  that "mutations are unbuilt", and M8 built them. Half of Zangband's potion
+  survives — ``cure_all_mutations()`` does, ``do_cmd_rerate()`` does not,
+  because 4.2 fixes hit points at birth — and its description was overridden to
+  stop promising the half that no longer happens.
+
+  **A buffer overflow that mutations made reachable.**
+  ``menu_dynamic_add_label()`` writes ``label_list[m->count]`` into a copy of
+  ``lower_case``, which is twenty-six characters and a terminator. Nothing in
+  4.2 ever built a menu longer than that. A character can carry eighty-nine
+  mutations at once — ninety-six less the seven the cancelling pairs make
+  unreachable together — so the power list and the Chaos Tower could both run
+  off the end of the allocation. Both now stop at twenty-six and say how many
+  they did not show, rather than truncating in silence.
+
 - **3.48.0** — **The mutations that act on their own** (PLR-14, PLR-35).
   Twenty-one of the twenty-seven random mutations now fire on their own timer,
   and all five melee mutations land an extra blow in the attack round. That

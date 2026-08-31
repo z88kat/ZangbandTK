@@ -28,6 +28,7 @@
 #include "obj-gear.h"
 #include "obj-knowledge.h"
 #include "player-calcs.h"
+#include "player-mutation.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
@@ -441,6 +442,23 @@ static int project_player_handler_CHAOS(project_player_handler_context_t *contex
 	} else {
 		equip_learn_flag(player, OF_HOLD_LIFE);
 	}
+
+	/*
+	 * And chaos changes what it touches (ZangbandTK, PLR-34).
+	 *
+	 * One of the six documented ways to gain a mutation, and the only one that
+	 * happens to a character who did nothing to invite it. Rare, because
+	 * Zangband makes it rare: `one_in_(3)` on an unresisted chaos hit
+	 * ([spells1.c:3383](../archive/zangband/src/spells1.c#L3383)), and
+	 * unresisted is the operative word -- the resistance check above has
+	 * already returned for anyone carrying it, which is most of the reason to
+	 * carry it.
+	 */
+	if (one_in_(3)) {
+		msg("Your body is twisted by chaos!");
+		(void) player_mutate(player);
+	}
+
 	return 0;
 }
 

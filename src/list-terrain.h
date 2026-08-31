@@ -53,3 +53,4 @@ FEAT(HEALER)     /* somebody who will mend you, for gold (WLD-16c) */
 FEAT(INN)        /* a bed until morning (WLD-16c) */
 FEAT(MAGESMITH)  /* puts magic on an item (WLD-16c) */
 FEAT(RECHARGER)  /* puts charges back in a wand (WLD-16c) */
+FEAT(CHAOSTOWER) /* takes a mutation off you, for a price (DEC-24, PLR-13) */

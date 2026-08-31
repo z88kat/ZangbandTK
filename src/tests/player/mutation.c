@@ -16,6 +16,7 @@
 #include "init.h"
 #include "player.h"
 #include "player-birth.h"
+#include "effects.h"
 #include "player-calcs.h"
 #include "player-mutation.h"
 #include "test-utils.h"
@@ -518,7 +519,7 @@ static int test_the_two_charisma_mutations_are_inert(void *state) {
 /**
  * Every activatable mutation either has a power or has a reason.
  *
- * Twenty-three of the thirty-two are expressible as 4.2 effect chains and nine
+ * Twenty-four of the thirty-two are expressible as 4.2 effect chains and eight
  * are not, and the split is asserted as a count so that neither side can drift
  * quietly. A mutation that lost its effect chain to a converter change would
  * still parse, still appear in the power list, and do nothing when invoked --
@@ -531,8 +532,8 @@ static int test_the_two_charisma_mutations_are_inert(void *state) {
  */
 static int test_the_activatable_split_is_what_was_decided(void *state) {
 	static const char *const deferred[] = {
-		"TELEKINES", "SWAP_POS", "DET_CURSE", "POLYMORPH", "MIDAS_TCH",
-		"GROW_MOLD", "WEIGH_MAG", "STERILITY", "LAUNCHER"
+		"TELEKINES", "SWAP_POS", "DET_CURSE", "MIDAS_TCH", "GROW_MOLD",
+		"WEIGH_MAG", "STERILITY", "LAUNCHER"
 	};
 	const struct mutation *m;
 	int with = 0, without = 0;
@@ -544,8 +545,8 @@ static int test_the_activatable_split_is_what_was_decided(void *state) {
 		if (m->action) with++; else without++;
 	}
 
-	eq(with, 23);
-	eq(without, 9);
+	eq(with, 24);
+	eq(without, 8);
 
 	for (i = 0; i < N_ELEMENTS(deferred); i++) {
 		m = mutation_by_name(deferred[i]);
@@ -752,14 +753,14 @@ static int test_the_melee_dice_are_the_code_s(void *state) {
 /**
  * Every random mutation either fires or has a reason not to.
  *
- * Twenty-one of the twenty-seven are effect chains and six are not. The count
+ * Twenty-two of the twenty-seven are effect chains and five are not. The count
  * is the assertion, because a chain lost to a converter change leaves a
  * mutation that is gained, described, saved, rolled for every single turn, and
  * silently does nothing -- indistinguishable from the six that are meant to.
  */
 static int test_the_random_split_is_what_was_decided(void *state) {
 	static const char *const deferred[] = {
-		"NORMALITY", "WRAITH", "CHAOS_GIFT", "WARNING", "SP_TO_HP", "HP_TO_SP"
+		"WRAITH", "CHAOS_GIFT", "WARNING", "SP_TO_HP", "HP_TO_SP"
 	};
 	const struct mutation *m;
 	int with = 0, without = 0;
@@ -771,8 +772,8 @@ static int test_the_random_split_is_what_was_decided(void *state) {
 		if (m->fires) with++; else without++;
 	}
 
-	eq(with, 21);
-	eq(without, 6);
+	eq(with, 22);
+	eq(without, 5);
 
 	for (i = 0; i < N_ELEMENTS(deferred); i++) {
 		m = mutation_by_name(deferred[i]);
@@ -818,6 +819,124 @@ static int test_every_firing_mutation_has_a_rarity(void *state) {
 	ok;
 }
 
+/**
+ * Every documented acquisition path that 4.2 can carry is wired.
+ *
+ * `spoilers/mutation.txt` names six ways to gain a mutation and this checks
+ * the machinery each one reaches rather than the path itself -- driving a
+ * patron reward or a chaos breath from a unit test needs a dungeon, and what
+ * would break is not the dungeon.
+ *
+ * The chaos gift is the one worth spelling out: it has no effect chain of its
+ * own and works by carrying the PATRON flag, which `patron_owes_reward()`
+ * already reads. A mutation that quietly lost that flag would still be gained,
+ * described and saved, and would simply never do the one thing it is for.
+ */
+static int test_the_acquisition_paths_are_wired(void *state) {
+	const struct mutation *gift = mutation_by_name("CHAOS_GIFT");
+	const struct mutation *poly = mutation_by_name("POLYMORPH");
+	const struct mutation *normal = mutation_by_name("NORMALITY");
+
+	/* The chaos gift makes a Lord take an interest, and nothing else. */
+	notnull(gift);
+	require(of_has(gift->flags, OF_PATRON));
+	null(gift->fires);
+	null(gift->action);
+
+	/* Polymorph Self reaches the effect the patron's reward also reaches. */
+	notnull(poly);
+	notnull(poly->action);
+	notnull(poly->action->effects);
+	notnull(poly->action->effects->effect);
+	eq(poly->action->effects->effect->index, EF_POLY_SELF);
+
+	/* And "strangely normal" is the one that gives one back. */
+	notnull(normal);
+	notnull(normal->fires);
+	notnull(normal->fires->effects);
+	notnull(normal->fires->effects->effect);
+	eq(normal->fires->effects->effect->index, EF_LOSE_MUTATION);
+
+	ok;
+}
+
+/**
+ * Shedding a mutation can take the shedder with it.
+ *
+ * "Strangely normal" removes one of the character's mutations at random and is
+ * not excluded from its own draw -- Zangband guards nothing, and the spoiler
+ * says so: it removes mutations "including, eventually, itself". The obvious
+ * defensive fix would be to skip it, so this pins that it is not skipped.
+ *
+ * Sampled, because it is a one-in-N draw. With that mutation and one other,
+ * it should pick itself about half the time.
+ */
+static int test_being_normal_can_cure_itself(void *state) {
+	const struct mutation *normal = mutation_by_name("NORMALITY");
+	const struct mutation *other = mutation_by_name("HALLU");
+	int self = 0, i;
+
+	notnull(normal);
+	notnull(other);
+
+	for (i = 0; i < 200; i++) {
+		flag_wipe(player->mutations, MUT_SIZE);
+		require(player_gain_mutation(player, normal));
+		require(player_gain_mutation(player, other));
+
+		require(player_lose_random_mutation(player));
+		if (!player_has_mutation(player, normal)) self++;
+	}
+	flag_wipe(player->mutations, MUT_SIZE);
+
+	require(self > 60);
+	require(self < 140);
+
+	ok;
+}
+
+/**
+ * A heavily mutated character does not overflow a menu.
+ *
+ * Eighty-nine is the most a character can carry at once -- ninety-six less the
+ * seven that cancelling pairs make unreachable together -- and both the power
+ * list and the Chaos Tower present their contents through `menu_dynamic` with
+ * letter labels. `menu_dynamic_add_label()` writes `label_list[m->count]` into
+ * a copy of `lower_case`, which is twenty-six characters and a terminator, so
+ * the twenty-seventh row overwrites the terminator and the twenty-eighth runs
+ * off the end of the allocation.
+ *
+ * Nothing in 4.2 ever built a menu that long, so the overflow was unreachable
+ * until mutations arrived. Both menus now stop at twenty-six and say how many
+ * they did not show. This test pins the number the menus are sized against;
+ * the ceiling has to be measured rather than assumed, because it is the
+ * cancelling table that sets it and that table has changed once already.
+ */
+static int test_a_heavily_mutated_character_fits_a_menu(void *state) {
+	const struct mutation *m;
+	int held;
+
+	flag_wipe(player->mutations, MUT_SIZE);
+
+	/*
+	 * Gained in file order, so each one that drives out an earlier one leaves
+	 * the total where it was -- which is the point. This is the most a
+	 * character can actually hold, not the size of the roster.
+	 */
+	for (m = mutations; m; m = m->next) (void) player_gain_mutation(player, m);
+
+	held = player_mutation_total(player);
+	eq(held, mutation_count() - 7);
+	eq(held, 89);
+
+	/* Which is well past what a lettered menu can label. */
+	require(held > 26);
+
+	flag_wipe(player->mutations, MUT_SIZE);
+
+	ok;
+}
+
 const char *suite_name = "player/mutation";
 struct test tests[] = {
 	{ "all-ninety-six-are-here", test_all_ninety_six_are_here },
@@ -859,5 +978,10 @@ struct test tests[] = {
 	  test_the_random_split_is_what_was_decided },
 	{ "every-firing-mutation-has-a-rarity",
 	  test_every_firing_mutation_has_a_rarity },
+	{ "the-acquisition-paths-are-wired",
+	  test_the_acquisition_paths_are_wired },
+	{ "being-normal-can-cure-itself", test_being_normal_can_cure_itself },
+	{ "a-heavily-mutated-character-fits-a-menu",
+	  test_a_heavily_mutated_character_fits_a_menu },
 	{ NULL, NULL }
 };

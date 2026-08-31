@@ -204,6 +204,7 @@ enum wild_service {
 	WILD_SERVICE_INN,			/**< Rest until morning */
 	WILD_SERVICE_ENCHANT,		/**< The magesmith: put magic on an item */
 	WILD_SERVICE_RECHARGE,		/**< Put charges back in a wand or a staff */
+	WILD_SERVICE_CHAOSTOWER,	/**< Take a mutation off you, for a price */
 	WILD_SERVICE_MAX
 };
 

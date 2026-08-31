@@ -128,3 +128,12 @@ EFFECT(SCRAMBLE_STATS,					false,  NULL,		0,		EFINFO_NONE,	"", 					"")
 EFFECT(UNSCRAMBLE_STATS,				false,	NULL,		0,		EFINFO_NONE,	"",					"")
 EFFECT(ANCIENT_CURSE,					false,	NULL,		0,		EFINFO_NONE,	"invokes the Ancient and Foul Curse",	"")
 EFFECT(MUNDANE,						true,	NULL,		0,		EFINFO_NONE,	"strips an item back to what it was made as",	"")
+/*
+ * ZangbandTK (PLR-14, PLR-34): the mutation paths, as effects rather than as
+ * code, so a patron reward, a potion, a chaos breath and the Chaos Tower can
+ * all reach them from data.  Appended -- effects are not written to savefiles
+ * by index, but the list is read in order elsewhere and appending is cheapest.
+ */
+EFFECT(GAIN_MUTATION,					false,	NULL,		0,		EFINFO_NONE,	"changes you, and not always for the better",	"mutate")
+EFFECT(LOSE_MUTATION,					false,	NULL,		0,		EFINFO_NONE,	"takes one of your mutations away",	"lose a mutation")
+EFFECT(POLY_SELF,					false,	NULL,		0,		EFINFO_NONE,	"rewrites what chaos has made of you",	"polymorph self")

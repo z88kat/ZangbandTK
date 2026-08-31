@@ -19,6 +19,7 @@
 
 #include "cave.h"
 #include "effect-handler.h"
+#include "player-mutation.h"
 #include "player-virtue.h"
 #include "game-input.h"
 #include "game-world.h"
@@ -3913,5 +3914,87 @@ bool effect_handler_ANCIENT_CURSE(effect_handler_context_t *context)
 	} while (!stop && rounds < 5 && one_in_(3));
 
 	context->ident = true;
+	return true;
+}
+
+/**
+ * Chaos changes you (PLR-14, PLR-34).
+ *
+ * The single entry point for every route in `spoilers/mutation.txt` that adds
+ * a mutation: a patron's gift, the chaos gift mutation, being hit by raw chaos
+ * without resisting it, Polymorph Self, and a chaos or death spell going
+ * wrong. Written as an effect rather than as five calls to the same function
+ * so that the routes which live in data -- a monster's breath, a potion, a
+ * patron's ladder -- can reach it without new code each time.
+ */
+bool effect_handler_GAIN_MUTATION(effect_handler_context_t *context)
+{
+	context->ident = true;
+
+	return player_mutate(player);
+}
+
+/**
+ * And occasionally takes one back.
+ *
+ * The "strangely normal" mutation, the Chaos Tower and Polymorph Self all want
+ * one; a potion of New Life wants every one there is, and asks for more than a
+ * character can carry rather than needing an effect of its own. Losing nothing
+ * is not a failure -- a character with no mutations can be told they feel
+ * normal without anything having gone wrong -- so this returns true either
+ * way.
+ */
+bool effect_handler_LOSE_MUTATION(effect_handler_context_t *context)
+{
+	int wanted = effect_calculate_value(context, false);
+	int shed = 0;
+
+	context->ident = true;
+
+	if (wanted < 1) wanted = 1;
+
+	while (shed < wanted && player_lose_random_mutation(player)) shed++;
+
+	if (!shed) msg("You feel oddly normal.");
+
+	return true;
+}
+
+/**
+ * Polymorph Self, as far as 4.2 goes (PLR-34).
+ *
+ * Zangband's `do_poly_self()` ([effects.c:3040](../archive/zangband/src/effects.c#L3040))
+ * does four things at once: it can change the character's sex, change their
+ * race outright, drain stats, and shed and add mutations. Only the last of
+ * those survives here, and the reason is already on the record -- DEC-38 ruled
+ * on the race change when the patron's "Thou needst a new form, mortal!" came
+ * up, and took 4.2's shapechange instead of Zangband's permanent race
+ * mangling. The same ruling applies to the same code reached a different way.
+ *
+ * What is kept is the gate structure, because that is what makes this
+ * frightening at high level and merely odd at low: both the shedding and the
+ * gaining loop against `power > randint0(N)`, so a level-40 character can lose
+ * several mutations and gain several more in one go, and a level-5 character
+ * usually gets nothing at all.
+ */
+bool effect_handler_POLY_SELF(effect_handler_context_t *context)
+{
+	int power = player->lev;
+
+	context->ident = true;
+
+	msg("You feel a change coming over you...");
+
+	/* Courting chaos deliberately, and it is noticed (PLR-20). */
+	virtue_change(player, V_CHANCE, 1);
+
+	while ((power > randint0(20)) && one_in_(10)) {
+		if (!player_lose_random_mutation(player)) break;
+	}
+
+	while ((power > randint0(15)) && one_in_(3)) {
+		(void) player_mutate(player);
+	}
+
 	return true;
 }

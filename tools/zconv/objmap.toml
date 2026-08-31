@@ -125,12 +125,6 @@ name, as with the statues, and the pet.""" }
 -- the monster becomes a pet. Without pets the wand has nothing to do; \
 4.2's confusion and hold effects are a different item.""" }
 
-"75:63" = { name = "New Life", why = "mutations", note = """`do_cmd_rerate()` \
-re-rolls the character's hit dice and `cure_all_mutations()` strips every \
-mutation. 4.2 fixes hit points at birth and has no rerate command, and \
-mutations are unbuilt. Importing it as a potion that does nothing at all \
-would be worse than not having it.""" }
-
 "70:52" = { name = "Artifact Creation", why = "no 4.2 effect", note = """\
 `artifact_scroll()` turns an ordinary item in the pack into a random \
 artifact during play. 4.2 generates its random artifacts once, at birth, from \
@@ -266,6 +260,19 @@ ego, base dice, base armour, base weight, and the identification forgotten \
 with them. It is indiscriminate and the message says nothing beforehand, which \
 is Zangband's doing and is kept. 4.2 keeps an item's power in runes and curses \
 as well as numbers, and `object_prep()` rebuilds all of it at once.""" }
+
+"75:63" = { name = "New Life", lines = [
+    "effect:LOSE_MUTATION",
+    "dice:96",
+], note = """CNT-11 deferred this one because mutations were unbuilt, and that \
+reason is gone. `L:USE: do_cmd_rerate(); cure_all_mutations()` -- the potion is \
+a Lua hook rather than a C case, which is why it does not appear beside the \
+other potions in the source. Half of it survives: `cure_all_mutations()` is \
+`LOSE_MUTATION` asked for more than a character can carry, and the count is 96 \
+because that is the whole roster. `do_cmd_rerate()` re-rolls the hit dice and \
+does not, because 4.2 fixes hit points at birth and has no rerate command. \
+What is left is still the rarest and most valuable way out of a bad set of \
+mutations, which is what the potion is for.""" }
 
 "75:62" = { name = "Invulnerability", lines = [
     "effect:TIMED_INC:INVULN",

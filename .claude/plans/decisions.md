@@ -1593,3 +1593,52 @@ ported:
 **Consequence.** If play shows mutations are too cheap, the penalty is a small
 thing to add later and this entry says where it came from. It is not being
 skipped for cost.
+
+### DEC-46 — The Chaos Tower is a great city's alone, and it is the only route that lets you choose (DEC-24, PLR-13)
+
+DEC-24 kept the mutation-removal building on the grounds that
+`spoilers/mutation.txt` lists it as one of only six ways to lose a mutation. Building
+it raised two questions Zangband cannot answer, because Zangband never
+implemented it: it names the Mutatalist in `t_info.txt`, routes it through a Lua
+hook, and ships no script to fill the hook.
+
+*Great cities only, and 2500 gold.* The figure is set against what it competes
+with rather than ported. A potion of New Life removes every mutation at once,
+is worth 50000 gold and generates at depth 100 — so a single removal has to
+cost enough that the potion stays the thing a player hopes for, and little
+enough that a mid-game character with one intolerable mutation has a way out
+that is not "find the rarest potion in the game". Restricting it to the largest
+town band does the same work from the other side: a character with something
+they cannot live with should have to cross the world for it. A Chaos Tower in
+every town would make mutations an inconvenience rather than a thing you live
+with.
+
+*It is the only route that lets the player choose.* Every other removal path in
+the spoiler takes whichever mutation it likes — the potion takes all of them,
+"strangely normal" and Polymorph Self take at random. Choosing is the whole
+reason to walk to a building and pay for one removal what a potion does
+wholesale, and it is what makes the building worth having rather than a slower
+potion.
+
+### DEC-47 — Polymorph Self keeps the mutations and drops the race change (PLR-34)
+
+Zangband's `do_poly_self()` does four things at once: it can change the
+character's sex, change their race outright, drain stats, and shed and add
+mutations. Only the last survives here.
+
+The ruling is DEC-38's, reached the first time this code came up. A Chaos
+patron's "Thou needst a new form, mortal!" is the same function, and DEC-38 took
+4.2's shapechange over Zangband's permanent race mangling — because 4.2 already
+has a shapechange system driven by data, because merging gear into the body has
+better mechanical bite than a changed race, and because the change back is
+always one keystroke away so a patron cannot strand anyone. The same reasoning
+applies to the same code reached through the mutation instead of the patron, and
+a port that answered the question differently depending on which caller found it
+would be worse than either answer.
+
+What is kept is the gate structure, because that is what the mutation is for:
+both the shedding loop and the gaining loop run against `power > randint0(N)`
+with `power` the character's level, so a level-40 character can lose several
+mutations and gain several more in one invocation and a level-5 character
+usually gets nothing at all. Polymorph Self should be frightening late and
+merely odd early, and it is.

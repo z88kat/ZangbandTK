@@ -239,7 +239,8 @@ character creation, races, classes.
 - Use `spoilers/mutation.txt` (DEC-16) to select, rather than guessing from flag names.
 - **Carried over from M7 (DEC-38):** the Chaos-Warrior's patron rewards have a
   one-in-six branch that grants a mutation, left as a deliberate gap when PLR-05
-  was built. Fill it in when PLR-13 exists.
+  was built. **Done** in 3.49.0 — and in Zangband's order, where the mutation
+  *replaces* the favour rather than arriving beside it.
 
 **Exit:** mutations acquirable and visible; virtues doing something. Manual chapters:
 mutations, virtues.
@@ -313,14 +314,35 @@ that are not scheduled are listed under it with a reason each.
 | M7 | PLR-01…PLR-07 | 7 |
 | M8 | PLR-13…PLR-21, PLR-34…PLR-38 (+ the Chaos Tower, the last row of WLD-16c) | 14 |
 
-**M8 progress:** mutations are under way. Phase 1 landed the model — all 96, generated out
-of `tables.c` by `zconv mutations`, with the roll, the nine cancelling pairs, race
-affinity, Beastman birth-and-per-level, and a savefile block. What they *do* comes next.
+**M8 is complete.** All fourteen requirements, in five phases:
 
-PLR-18 to PLR-21 are done — virtues, their selection, their writers and
-their two consumers. That was the milestone's gate: DEC-39 kept the feature on condition
-that something read it, and two things now do. What remains of M8 is mutations
-(PLR-13…PLR-17), the virtue-adjacent PLR-34…PLR-38, and the Chaos Tower.
+| Phase | What landed | Version |
+|---|---|---|
+| 1 | The model: 96 mutations generated out of `tables.c`, the weighted roll, the nine cancelling pairs, race affinity, Beastman birth and per-level, the savefile block (PLR-13, PLR-36, PLR-37, PLR-38) | 3.45.0 |
+| 2 | The 32 continuous mutations as player properties, through `calc_bonuses()`, and the character sheet (PLR-15, PLR-17) | 3.46.0 |
+| 3 | 24 of the 32 activatable mutations in the power list beside racial powers (PLR-16) | 3.47.0 |
+| 4 | 22 of the 27 random mutations firing on their own timer, and all 5 melee mutations in the attack round (PLR-14, PLR-35) | 3.48.0 |
+| 5 | The acquisition and removal paths, the DEC-38 patron carry-over, the Chaos Tower, the potion of New Life (PLR-14, PLR-34, DEC-24) | 3.49.0 |
+
+PLR-18 to PLR-21 were done earlier — virtues, their selection, their writers and their two
+consumers. That was the milestone's gate: DEC-39 kept the feature on condition that
+something read it, and two things do.
+
+**Thirteen mutations are deferred with reasons**, recorded per-mutation in
+`tools/zconv/mutmap.toml` and listed in `docs/mutations.rst`: eight activatable and five
+random. Every one needs machinery 4.2 has not got — pets, an incorporeal player state, an
+object-to-gold conversion, a pseudo-identification bit, an effect that reads both the hit
+point and spell point pools. Two more continuous mutations are inert because they moved
+only charisma, which 4.2 removed in 4.2.0.
+
+**What M8 found that the documentation did not say.** The spoiler gives the headline of
+each mutation and the headline is generally the good half: hyper-strength is "+4 STR" there
+and +4 STR, -1 INT, -1 WIS in the code. All five melee mutations state their dice the wrong
+way round — a scorpion tail is written "3d7" and rolls 7d3 — because `natural_attack()`
+fills in two variables and passes them in the other order. Three mutations have
+prerequisites no Zangband document mentions. The race affinities are not uniform. And the
+regeneration penalty the spoiler warns about had been taken out of Zangband before 2.7.5
+(DEC-45).
 | M9 | PLR-08…PLR-12, CNT-10 | 6 |
 | M10 | PLR-22…PLR-33 | 12 |
 | M11 | BAL-15…BAL-17 | 3 |
