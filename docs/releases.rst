@@ -33,6 +33,19 @@ Unreleased
 Testing — 31 August 2026
 -------------------------
 
+- **3.49.6** — **The mutations page drew over the stat table**, so ``WIS``
+  read as ``IS`` and ``DEX`` vanished. The stat panel starts at column 42 and a
+  mutation's description runs to 57 characters; the two cannot share a screen.
+  The page takes the whole screen now, which it needs anyway — a character can
+  carry far more mutations than the sheet has rows.
+
+  Found from a screenshot, not from a test. The check that passed had grepped
+  for the description being *present*, which it was, on top of the stat labels.
+
+  With it: the page is in :doc:`screenshots`, captured from the running game
+  like the others (``ZTK_SHOT_MUTATE``), and :doc:`features` no longer lists
+  mutations under *Not yet* — M8 landed.
+
 - **3.49.5** — **The character sheet shows mutations.** A third page, reached
   with ``h`` from the sheet like the other two, listing what chaos has made of
   the character — or *"Chaos has not touched you."*

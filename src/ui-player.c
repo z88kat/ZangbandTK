@@ -961,8 +961,13 @@ void display_player(int mode)
 	/* When not playing, do not display in subwindows */
 	if (Term != angband_term[0] && !player->upkeep->playing) return;
 
-	/* Stat info */
-	display_player_stat_info();
+	/*
+	 * Stat info, except on the mutations page, which takes the whole screen.
+	 * The stat table starts at column 42 and a mutation's description runs to
+	 * 57 characters, so the two cannot share a screen: drawn together, the
+	 * descriptions overwrite the stat labels and WIS reads as IS.
+	 */
+	if (mode != 2) display_player_stat_info();
 
 	if (mode == 2) {
 		/* What chaos has made of them */

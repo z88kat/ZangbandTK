@@ -19,13 +19,16 @@ How it works, in three steps:
   3. tosvg.py renders one of those frames, using the palette read straight out
      of src/z-color.c.
 
-Two environment variables set the scene, and both only do what the debug menu
-already offers a player:
+These environment variables set the scene, and each only does what the debug
+menu already offers a player:
 
   ZTK_SHOT       know every place, so the world map is not mostly blank
   ZTK_SHOT_MAP   open the world map
   ZTK_SHOT_COAST stand the character on the nearest waterline
   ZTK_SHOT_LORE  know the whole bestiary
+  ZTK_SHOT_MUTATE grant a fixed handful of mutations, for the sheet page that
+                 lists them -- named rather than rolled, so the picture is the
+                 same every time it is taken
   ZTK_TERM_W/H   a terminal larger than a player's, so the whole world fits
   ZTK_SAVEFILE   let -mtest load a savefile at all
 

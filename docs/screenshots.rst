@@ -94,14 +94,45 @@ The sidebar names the place and its size, *Lorraine, village*, and the status
 line says *Day*. Both are ZangbandTK's: Angband has neither a world for a town
 to sit in nor a time of day for it to be.
 
+What chaos has made of it
+=========================
+
+The third page of the character sheet — press ``C``, then ``h`` twice. Six
+mutations on one character, which is a great many; most characters who have any
+have one or two.
+
+.. image:: screenshots/mutations.svg
+   :alt: The mutations page of a character sheet, listing six mutations by
+         description - short-range teleportation, polymorph, travel between town
+         and the depths, electricity in the veins, wings, and fearlessness.
+   :width: 100%
+
+None of these was chosen. Mutations arrive from a Chaos-Warrior's patron, from a
+polymorph, from a chaos attack, or from simply being a Beastman, and they cannot
+be taken off the way a ring can. The first three are powers, invoked from the
+same list as racial and class powers; the last three are simply true of the
+character.
+
+Two of them charge for what they give: electricity in the veins and wings each
+cost a point of constitution, and the page says so. **A mutation is rarely only
+what it is called** — the Zangband spoiler gives the headline of each and stops,
+and the headline is generally the good half. See :doc:`mutations`.
+
+This page is ZangbandTK's; Angband has no mechanism a mutation could be built
+on. Until it existed, the only way to see the passive ones was to write a
+character dump to a file and read it.
+
+
+
 How these were made
 ===================
 
 With the game's own renderer, driven headlessly. The test front end writes every
 character, position and colour the game draws; a small script replays that into a
-grid and emits SVG using Angband's own palette. Two of the debug commands set the
-scene — *Know every place* to fill the map in, and a larger terminal than a player
-would normally use so the whole world fits in one frame.
+grid and emits SVG using Angband's own palette. A few of the debug commands set
+the scene — *Know every place* to fill the map in, *Mutations* to give the
+character the six on its sheet — and a larger terminal than a player would
+normally use, so the whole world fits in one frame.
 
 That means these cannot drift from the game. They are not screenshots of a build
 somebody had lying about; regenerating them runs the current code.

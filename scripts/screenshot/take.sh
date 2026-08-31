@@ -35,6 +35,20 @@ keys | ZTK_SAVEFILE=1 ZTK_SHOT=1 ZTK_SHOT_COAST=1 ZTK_TERM_W=100 ZTK_TERM_H=32 \
 python3 "$here/tosvg.py" /tmp/ztk-coast.txt -1 "$out/the-coast.svg" \
 	"The coast, where the land runs out"
 
+# The character sheet page that lists mutations, on a character given a few.
+# 'C' opens the sheet; 'h' twice reaches the third page.
+{ echo verbose
+  i=0; while [ $i -lt 10 ]; do echo "key enter"; i=$((i+1)); done
+  echo "key C-["; echo "key C-["
+  echo "key C"; echo noop; echo noop; echo noop
+  echo "key h"; echo noop; echo noop; echo noop
+  echo "key h"; echo noop; echo noop; echo noop; echo noop
+  echo quit
+} | ZTK_SAVEFILE=1 ZTK_SHOT=1 ZTK_SHOT_MUTATE=1 ZTK_TERM_W=80 ZTK_TERM_H=26 \
+	"$game" -mtest -uShotDbg > /tmp/ztk-mutations.txt 2>&1
+python3 "$here/tosvg.py" /tmp/ztk-mutations.txt -1 "$out/mutations.svg" \
+	"What chaos has made of a character"
+
 rm -f "$root/lib/save/ShotDbg"
 rmdir "$root/lib/save" 2>/dev/null || true
 echo "written to $out"

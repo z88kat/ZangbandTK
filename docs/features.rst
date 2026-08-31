@@ -160,6 +160,26 @@ Races, classes and racial powers
 
 See :doc:`characters` for what is different, and :doc:`birth` for the tables.
 
+What chaos makes of you
+-----------------------
+
+- **Ninety-six mutations**, a mechanism Angband has no equivalent of. They are
+  not chosen and not worn: they happen to you, from a Chaos-Warrior's patron, a
+  polymorph, a chaos attack, or simply being a Beastman.
+- **Four kinds.** Activatable ones are powers you invoke and pay for;
+  continuous ones are simply true of you; random ones fire on their own; melee
+  ones add a blow to your attack round.
+- **Rarely only what they are called.** Superhuman strength is +4 STR and also
+  -1 INT and -1 WIS; iron skin is +25 AC and -3 DEX. The Zangband spoiler gives
+  the headline of each and stops, and the headline is generally the good half.
+- **Cancelling pairs**, so gaining one sheds whatever contradicts it — you do
+  not get to be both puny and superhumanly strong.
+- **Polymorph Self**, which sheds some of what you have and grows something
+  else, and is the one power in the game whose outcome nobody can predict.
+
+They are listed on the third page of your character sheet — press ``C``, then
+``h`` twice. See :doc:`mutations` for the whole roster.
+
 Tunable without a rebuild
 -------------------------
 
@@ -194,9 +214,6 @@ in when the milestone lands.
    * - Feature
      - Milestone
      - Chapter
-   * - Mutations
-     - M8
-     - :doc:`mutations`
    * - Magic realms
      - M9
      - :doc:`realms`
@@ -211,12 +228,13 @@ in when the milestone lands.
      - :doc:`nightmare`
 
 The world is finished — towns, services, roads, dungeons and quests all landed,
-which was Phase 2's world work — and the character is under way. Nine races,
-racial powers, the Monk, the Mindcrafter and the Chaos-Warrior are in. What is
-not: the two classes defined by which magic realms they may choose, which wait
-for the realms themselves to arrive. **Virtues have landed** — eight drawn from
-eighteen at birth, moved by how you play, and read by the Lords of Chaos and by
-the dream at the inn. Next come mutations, which Angband has no mechanism for.
+which was Phase 2's world work — and the character is most of the way there.
+Nine races, racial powers, the Monk, the Mindcrafter and the Chaos-Warrior are
+in. **Virtues have landed** — eight drawn from eighteen at birth, moved by how
+you play, and read by the Lords of Chaos and by the dream at the inn — and so
+have **mutations**, all ninety-six of them, which completes M8. What is not: the
+two classes defined by which magic realms they may choose, which wait for the
+realms themselves to arrive. Those are next.
 
 A **Tcl/Tk front end** is planned for a later phase, reviving the original's
 interface on Tcl/Tk 9. There is an irony in it: the original ZangbandTK

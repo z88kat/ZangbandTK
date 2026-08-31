@@ -1165,6 +1165,28 @@ void run_game_loop(void)
 
 			/* Know the whole bestiary, for the picture of it. */
 			if (getenv("ZTK_SHOT_LORE")) wiz_learn_all_monsters();
+
+			/*
+			 * A handful of mutations, for the picture of the character
+			 * sheet page that lists them -- the same thing the debug
+			 * menu's Mutations command does, and named rather than
+			 * rolled so the picture is the same every time it is taken.
+			 */
+			if (getenv("ZTK_SHOT_MUTATE")) {
+				static const char *shot_muts[] = {
+					"BLINK", "POLYMORPH", "RECALL", "ELEC_TOUC",
+					"WINGS", "FEARLESS"
+				};
+				size_t mi;
+
+				for (mi = 0; mi < N_ELEMENTS(shot_muts); mi++) {
+					const struct mutation *mut =
+						mutation_by_name(shot_muts[mi]);
+
+					if (mut) player_gain_mutation(player, mut);
+				}
+				update_stuff(player);
+			}
 		}
 	}
 	/* Tidy up after the player's command */
