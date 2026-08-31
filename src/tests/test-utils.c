@@ -63,6 +63,32 @@ uint32_t test_seed_rng(void)
 	return seed;
 }
 
+/**
+ * Seed the RNG and say how to get this run back.
+ *
+ * Every suite that samples wants this, and until now only `game/wild` had it.
+ * Three flakes were found in one session -- a doorstep danger average, a
+ * patron cruelty rate, and one in `object/imported` that has still not been
+ * identified -- and each was a bound on a sampled statistic that held for most
+ * seeds. The one in the suite that reported its seed took a single command to
+ * reproduce; the others took twenty whole-suite runs and one of them was never
+ * caught at all.
+ *
+ * So the line is printed unconditionally rather than under `-v`: a flaky
+ * failure in CI is exactly the case where nobody thought to ask for verbose
+ * output beforehand.
+ */
+uint32_t test_seed_rng_reported(const char *suite)
+{
+	uint32_t seed = test_seed_rng();
+
+	printf("%s: SEED %u -- replay with ZTK_TEST_SEED=%u\n",
+		   suite ? suite : "suite", (unsigned) seed, (unsigned) seed);
+	fflush(stdout);
+
+	return seed;
+}
+
 void test_savefile_name(char *buf, size_t len, const char *stem)
 {
 	strnfmt(buf, len, "%s-%d", stem, test_process_id());

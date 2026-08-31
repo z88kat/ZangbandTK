@@ -19,6 +19,7 @@ void read_edit_files(void);
  * which seeds from the clock and the process id and so gives a different world
  * every run.  Set ZTK_TEST_SEED to replay a reported one.  Returns the seed. */
 uint32_t test_seed_rng(void);
+uint32_t test_seed_rng_reported(const char *suite);
 
 /* Build a savefile name of this process's own, so that two copies of the suite
  * running at once do not read each other's saves.  The caller owns the buffer:

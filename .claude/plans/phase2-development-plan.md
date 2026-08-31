@@ -259,6 +259,29 @@ mutations, virtues.
   out of M7 because neither can be built before PLR-08 and PLR-09 exist.
 - Life realm content comes from [archive/zangband/](../../archive/zangband/); its spoiler is
   the one unarchivable document (DEC-16).
+- **Folded in from M8, by the project owner's decision:** three mutations whose powers were
+  deferred for want of an effect. They are built here rather than earlier because two of
+  them are cheap either way and the third is only cheap *here*.
+  - **Telekinesis** needs a `FETCH` effect, and this is the reason all three wait. Zangband's
+    `fetch()` is 110 lines ([spells3.c:1139](../../archive/zangband/src/spells3.c#L1139)) and
+    handles weight, line of sight and object piles; 4.2 has no equivalent and never did. It
+    has **three consumers, not one**: the mutation, Sorcery's *Telekinesis* spell, and the
+    Trump realm, which calls the same function
+    ([cmd5.c:864](../../archive/zangband/src/cmd5.c#L864) and
+    [cmd5.c:2046](../../archive/zangband/src/cmd5.c#L2046)). Designing it once against all
+    three is the whole point of folding it in; built for the mutation alone it would be
+    retrofitted twice.
+  - **Swap position** needs an effect that exchanges the player and a monster.
+    `monster_swap()` already exists in 4.2 (`mon-util.c:644`) and handles the player, so this
+    is roughly fifteen lines over a primitive the game runs on every monster turn.
+  - **Sterilize** needs an effect that sets `cave->num_repro` to `repro_monster_max`, plus
+    the 17–34 hit points it costs. The counter is live in 4.2 (read at `mon-move.c:1077`).
+    Cheap, and the recorded reservation stands: it reaches into monster generation to carry
+    one mutation, which is a judgement rather than an obstacle.
+
+  Neither swap nor sterilize unlocks anything but itself, and neither is realm work — they
+  ride along because M9 is where the mutation-power gap is being closed, not because the
+  realms need them.
 
 **Exit:** a Mage's realm choice defines the character, and every class in PLR-03 is
 playable. Manual chapter: the magic system.
@@ -359,7 +382,7 @@ fills in two variables and passes them in the other order. Three mutations have
 prerequisites no Zangband document mentions. The race affinities are not uniform. And the
 regeneration penalty the spoiler warns about had been taken out of Zangband before 2.7.5
 (DEC-45).
-| M9 | PLR-08…PLR-12, CNT-10 | 6 |
+| M9 | PLR-08…PLR-12, CNT-10 (+ PLR-03's two realm classes, and three M8 mutation powers) | 6 |
 | M10 | PLR-22…PLR-33 | 12 |
 | M11 | BAL-15…BAL-17 | 3 |
 | | **Scheduled** | **104** |

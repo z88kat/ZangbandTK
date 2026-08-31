@@ -33,6 +33,39 @@ Unreleased
 Testing — 31 August 2026
 -------------------------
 
+- **3.50.2** — **A bound set from eight worlds, and the seed that found the
+  ninth.** ``the-doorstep-is-survivable`` required the mean wilderness danger
+  within six blocks of the starting town to be at most 12 — a figure taken from
+  eight worlds where it came out between 1 and 6. Eight was not enough: on seed
+  1829551357 it is 14, and the test failed about one whole-suite run in eight
+  for six releases.
+
+  The bound was not wrong by a little, it was measuring the wrong thing. On that
+  same seed the country beyond twelve blocks averages 27, so the doorstep is
+  less than half as dangerous as the wilderness proper and the world is behaving
+  exactly as intended. What the requirement says is that danger *climbs* as you
+  walk out — a comparison between two parts of one world, true by construction
+  because towns are placed in lawful country and law is what danger reads. It
+  has no constant in it to be set from too small a sample. Near 14/7/1/1/1
+  against far 27 every time, across five worlds including the one that broke the
+  old bound; and measuring around an arbitrary block instead of the town fails
+  it on most worlds, so it still discriminates.
+
+  **Every sampling suite now reports its seed.** Only ``game/wild`` did, which
+  is why its flake took one command to reproduce once the seed was in hand and
+  the one in ``object/imported`` was never identified at all. Seven suites
+  gained ``test_seed_rng_reported()``, printed unconditionally rather than under
+  ``-v``, because a flaky failure in CI is exactly the case where nobody thought
+  to ask for verbose output first.
+
+  The rest of the audit found no other test at risk. ``cave/wild``'s terrain
+  composition looks like the same shape and is not — it aggregates twenty
+  *fixed* seeds and cannot vary. The remaining sampled bounds are all far from
+  their means: weird luck's out-of-depth rate is 8.7 standard deviations clear,
+  a Vampire's hypnotic gaze 6.5, the patron notice rate 11.9, and the
+  cross-habitat rate measures 93–95 against a bound of 70. Those were derived
+  rather than guessed, and two of them say so in their own comments.
+
 - **3.50.1** — **The Midas touch is dropped** (DEC-48). Turning objects into
   gold needs an effect that destroys an object for money, which 4.2 has not
   got — and building one means settling what fraction, of what valuation, and
