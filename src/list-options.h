@@ -83,6 +83,10 @@ OP(cheat_places,          "Cheat: Know every place in the world",
 CHEAT, false)
 OP(score_places,          "Score: Knew every place",
 SCORE, false)
+OP(cheat_powers,          "Cheat: Racial and mutation powers never fail",
+CHEAT, false)
+OP(score_powers,          "Score: Powers never failed",
+SCORE, false)
 OP(birth_randarts,        "Generate a new, random artifact set",
 BIRTH, false)
 OP(birth_connect_stairs,  "Generate connected stairs",

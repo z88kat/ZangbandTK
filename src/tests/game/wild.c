@@ -3864,6 +3864,84 @@ static int test_practice_makes_a_power_surer(void *state) {
 	ok;
 }
 
+
+/**
+ * The cheat that makes a power fire, and what it says about the one that will
+ * not (DEC-42).
+ *
+ * Reported from play: a level 21 Beastman Chaos-Warrior looking at Polymorph at
+ * "20 hp, 95% to fail", which is not a power so much as a rumour of one.  The
+ * cheat is the answer to testing it; this also pins down *why* the number is 95,
+ * because it is not the difficulty and it is not the level.
+ *
+ * player_power_chance() adds 5 per point of mana the character is short, and a
+ * class with no spells at all is short by the whole cost -- 100 for a cost of
+ * 20, which buries every other term and clamps to the ceiling.  So the blood
+ * price that exists precisely so a Warrior can use a power at all is cancelled
+ * by a penalty for needing it.  That is recorded here rather than argued with:
+ * changing it is a balance decision, and this test will notice when it is made.
+ */
+static int test_a_cheat_makes_a_power_fire(void *state) {
+	struct player_race *r, *draconian = NULL;
+	struct player_power *power;
+	int with_mana, without_mana;
+	bool keep = player->opts.opt[OPT_cheat_powers];
+
+	for (r = races; r; r = r->next)
+		if (streq(r->name, "Draconian")) draconian = r;
+	notnull(draconian);
+	power = draconian->powers;
+	notnull(power);
+
+	/*
+	 * option_set() marks a cheat's record by setting the option one along from
+	 * it, so the pair has to stay adjacent in list-options.h.  Nothing else
+	 * would notice a reorder: the cheat would keep working and quietly stop
+	 * marking the character, which is the one thing it must not do.
+	 */
+	eq(OPT_score_powers, OPT_cheat_powers + 1);
+
+	player->opts.opt[OPT_cheat_powers] = false;
+	player->lev = power->level;
+
+	/* Paid for out of a full pool. */
+	player->msp = 100;
+	player->csp = 100;
+	with_mana = player_power_chance(player, power);
+
+	/* And by a character who has none, which is the reported case. */
+	player->csp = 0;
+	player->msp = 0;
+	without_mana = player_power_chance(player, power);
+
+	/* The shortfall alone is worth 5 a point, so it reaches the ceiling. */
+	require(power->cost > 0);
+	require(without_mana > with_mana);
+	eq(without_mana, 95);
+
+	/*
+	 * With the cheat on it fires.  Zero rather than merely lower, because
+	 * ui-map.c prints this same number beside the power: the listing has to
+	 * agree with the roll, or the cheat looks broken while working.
+	 */
+	player->opts.opt[OPT_cheat_powers] = true;
+	eq(player_power_chance(player, power), 0);
+
+	/* Full pool, hopeless stat, stunned senseless -- still zero. */
+	player->csp = 0;
+	player->lev = 1;
+	player_set_timed(player, TMD_STUN, 60, false, false);
+	eq(player_power_chance(player, power), 0);
+	player_clear_timed(player, TMD_STUN, false, false);
+
+	/* And off again, so the cheat is a cheat and not a one-way door. */
+	player->opts.opt[OPT_cheat_powers] = false;
+	require(player_power_chance(player, power) > 0);
+
+	player->opts.opt[OPT_cheat_powers] = keep;
+	ok;
+}
+
 /**
  * PLR-03/PLR-04: the Monk arrived, and its unarmed ladder came with it.
  */
@@ -5859,6 +5937,7 @@ struct test tests[] = {
 	{ "a-refused-power-is-free", test_a_refused_power_is_free },
 	{ "blood-pays-when-mana-cannot", test_blood_pays_when_mana_cannot },
 	{ "practice-makes-a-power-surer", test_practice_makes_a_power_surer },
+	{ "a-cheat-makes-a-power-fire", test_a_cheat_makes_a_power_fire },
 	{ "the-monk-has-a-ladder", test_the_monk_has_a_ladder },
 	{ "bare-hands-are-a-progression", test_bare_hands_are_a_progression },
 	{ "armour-takes-the-balance", test_armour_takes_the_balance },

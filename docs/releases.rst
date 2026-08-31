@@ -30,6 +30,27 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Testing — 31 August 2026
+-------------------------
+
+- **3.49.3** — **A cheat for powers that will not fire.** ``cheat_powers``, on
+  the ``=x`` screen: every racial and mutation power succeeds, and the listing
+  shows ``0% to fail`` because the menu and the roll ask the same function.
+
+  Reported from play: a level 21 Beastman Chaos-Warrior looking at Polymorph at
+  ``20 hp, 95% to fail``. Worth recording *why* it is 95, because it is neither
+  the difficulty (18) nor the level (21 against a power level of 18) — a
+  character short of mana is charged 5% per point of the shortfall, and a class
+  with no spell points is short by the entire cost. 20 × 5 = 100, which buries
+  every other term and clamps to the ceiling.
+
+  So the blood price that exists precisely so a spell-less class can use a
+  power at all is cancelled by a penalty for needing it: ``player_use_power()``
+  lets a Warrior pay 20 hit points, and ``player_power_chance()`` then makes it
+  fail 95 times in 100. Whether that penalty should apply to a character paying
+  in blood is a balance decision and has not been made — the test records the
+  present behaviour and will notice when it changes.
+
 Savefile compatibility — 30 August 2026
 ----------------------------------------
 

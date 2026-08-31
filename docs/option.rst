@@ -283,6 +283,19 @@ Peek into something else ``cheat_xtra``
 Allow player to avoid death ``cheat_live``
    Cheaters never win. But they can cheat death.
 
+Racial and mutation powers never fail ``cheat_powers``
+   Every racial and mutation power fires, every time. The listing shows ``0% to
+   fail`` and the roll agrees with it — both ask the same function.
+
+   This exists because some powers are otherwise almost untestable. A power
+   costs mana, and a character short of mana pays in hit points instead — but
+   the failure chance still charges 5% per point of the shortfall, so a class
+   with no spell points at all is 100% over budget on a cost-20 power and sits
+   at the 95% ceiling no matter its level or its stats. A level 21 Beastman
+   Chaos-Warrior looking at Polymorph sees ``20 hp, 95% to fail``. The cheat
+   makes it fire; whether that penalty should apply to a character paying in
+   blood is a separate question.
+
 Take gold ``cheat_gold``
   Asks how much and puts it in your pocket. This one is ZangbandTK's, added
   because the :doc:`magetower <towns>` charges a fare and there was no way to

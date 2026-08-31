@@ -2034,6 +2034,17 @@ int player_power_chance(struct player *p, const struct player_power *power)
 
 	if (!power) return 100;
 
+	/*
+	 * Testing a power you cannot reliably make fire is not testing it.  This
+	 * is a cheat and it says so: it marks the character exactly as the others
+	 * on that screen do, and the status line reads Cheat from here on.
+	 *
+	 * It short-circuits before everything else so the menu and the roll agree
+	 * -- both ask this function, so the listing shows 0% to fail rather than a
+	 * number the roll then ignores.
+	 */
+	if (OPT(p, cheat_powers)) return 0;
+
 	chance = power->fail;
 
 	/* Practice tells, exactly as it does for a spell. */
