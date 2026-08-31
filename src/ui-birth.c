@@ -427,10 +427,9 @@ static bool use_context_menu_birth(struct menu *current_menu,
 		return false;
 	}
 
-	labels = string_make(lower_case);
 	m = menu_dynamic_new();
+	labels = menu_dynamic_labels(m);
 
-	m->selections = labels;
 	menu_dynamic_add_label(m, "Show birth options", '=',
 		ACT_CTX_BIRTH_OPT, labels);
 	if (menu_data->allow_random) {
@@ -933,10 +932,9 @@ static enum birth_stage roller_command(bool first_call)
 			action = ACT_CTX_BIRTH_ROLL_ESCAPE;
 		} else {
 			/* Present a context menu with the other actions. */
-			char *labels = string_make(lower_case);
 			struct menu *m = menu_dynamic_new();
+			char *labels = menu_dynamic_labels(m);
 
-			m->selections = labels;
 			menu_dynamic_add_label(m, "Reroll", 'r',
 				ACT_CTX_BIRTH_ROLL_REROLL, labels);
 			if (prev_roll) {
@@ -1187,10 +1185,9 @@ static enum birth_stage point_based_command(void)
 			stat = in.mouse.y - COSTS_ROW;
 		} else {
 			/* Present a context menu with the other actions. */
-			char *labels = string_make(lower_case);
 			struct menu *m = menu_dynamic_new();
+			char *labels = menu_dynamic_labels(m);
 
-			m->selections = labels;
 			if (in.mouse.y == COSTS_ROW + stat
 					&& (buysell[stat] & 1)) {
 				menu_dynamic_add_label(m, "Sell", 's',

@@ -209,11 +209,10 @@ charisma taken out of them and nothing else changed, so a squeaky voice now
 reads as a squeaky voice and warts read as *+5 AC*, which is what they actually
 are. Anything else the description claims is real.
 
-If you are carrying more than twenty-six
-----------------------------------------
+If you are carrying a great many
+--------------------------------
 
 You can hold eighty-nine mutations at once — all ninety-six less the seven that
-cancelling pairs make unreachable together — and no list in the game can put a
-letter beside more than twenty-six things. The power list and the Chaos Tower
-both stop there and tell you how many they left out. Remove one and come back;
-the next visit shows you a different twenty-six.
+cancelling pairs make unreachable together. The power list and the Chaos Tower
+show all of them. Only the first fifty-one get a letter to press; past that,
+move the cursor to the one you want.

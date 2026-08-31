@@ -1092,12 +1092,76 @@ void menu_dynamic_add(struct menu *m, const char *text, int value)
 	menu_dynamic_add_valid(m, text, value, MN_ROW_VALID);
 }
 
+/**
+ * Add a row, and give it a shortcut key if there is room for one.
+ *
+ * The bound is the point of this function's shape. It writes the key into the
+ * caller's label buffer at the row's own index, and for twenty years it did so
+ * without knowing how long that buffer was -- every caller in the tree
+ * allocated it with `string_make(lower_case)`, twenty-six letters and a
+ * terminator, so the twenty-seventh row overwrote the terminator and the
+ * twenty-eighth ran off the end of the allocation.
+ *
+ * No menu in Angband is long enough to reach it: the largest is eleven rows,
+ * and every row of every fixed list passes its own key. It became reachable
+ * here, where a menu can be as long as the number of places a character has
+ * travelled to or the number of mutations they are carrying.
+ *
+ * Rows past the end of the buffer are still added -- they simply have no
+ * shortcut key, and are selected with the cursor like any other. Refusing the
+ * row instead would silently shorten the list, which is the more dangerous of
+ * the two failures: the entry a player is looking for would not be there and
+ * nothing would say so.
+ */
 void menu_dynamic_add_label_valid(struct menu *m, const char *text, const char label, int value, char *label_list, menu_row_validity_t valid)
 {
-	if (label && m->selections && (m->selections == label_list)) {
+	if (label && m->selections && (m->selections == label_list)
+			&& (size_t) m->count < m->selections_size) {
 		label_list[m->count] = label;
 	}
 	menu_dynamic_add_valid(m,text,value, valid);
+}
+
+/**
+ * Give a dynamic menu a label buffer it cannot overflow.
+ *
+ * One allocation, sized once, recorded on the menu -- so that adding a row is
+ * bounded by construction rather than by each caller remembering how many rows
+ * it might add. Replaces the `string_make(lower_case); m->selections = labels`
+ * pair that every dynamic menu used to open with.
+ *
+ * Fifty-one keys rather than twenty-six, from `all_letters`, because a menu
+ * built from data can be longer than the alphabet: a well-travelled character
+ * is offered up to forty-eight destinations and a heavily mutated one can
+ * carry eighty-nine mutations. A menu longer than fifty-one rows keeps every
+ * row and gives keys to the first fifty-one.
+ *
+ * 'q' is skipped, which is why it is fifty-one and not fifty-two. These menus
+ * conventionally end with a "no thank you" row keyed 'q', and the selection
+ * scan takes the first match in the string -- so a data row that had been
+ * handed 'q' was chosen by the key meant to decline. That was found once
+ * already, in the magetower's own copy of this loop, where the seventeenth
+ * destination could not be visited because picking it declined the journey.
+ *
+ * The buffer belongs to the caller and wants `mem_free()`, which is what
+ * `string_free()` has always been.
+ */
+char *menu_dynamic_labels(struct menu *m)
+{
+	size_t n = strlen(all_letters);
+	char *labels = mem_zalloc(n + 1);
+	size_t i, out = 0;
+
+	for (i = 0; i < n; i++) {
+		if (all_letters[i] == 'q') continue;
+
+		labels[out++] = all_letters[i];
+	}
+
+	m->selections = labels;
+	m->selections_size = out;
+
+	return labels;
 }
 
 void menu_dynamic_add_label(struct menu *m, const char *text, const char label, int value, char *label_list)

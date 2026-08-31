@@ -277,14 +277,13 @@ static bool use_option_context_menu(struct menu *m, const ui_event *in,
 	 * option selected by the menu's filter.
 	 */
 	int page = option_type(m->filter_list[0]);
-	char *labels = string_make(lower_case);
 	struct menu *cm = menu_dynamic_new();
+	char *labels = menu_dynamic_labels(cm);
 	bool refresh = false;
 	char save_label[40];
 	int selected;
 	char dummy;
 
-	cm->selections = labels;
 	strnfmt(save_label, sizeof(save_label), "Save as default %s options",
 		option_type_name(page));
 	menu_dynamic_add_label(cm, save_label, 's', ACT_CTX_OPT_SAVE, labels);

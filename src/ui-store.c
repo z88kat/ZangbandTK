@@ -921,8 +921,7 @@ static int context_menu_store(struct store_context *ctx, const int oid, int mx, 
 	struct menu *m = menu_dynamic_new();
 
 	int selected;
-	char *labels = string_make(lower_case);
-	m->selections = labels;
+	char *labels = menu_dynamic_labels(m);
 
 	menu_dynamic_add_label(m, "Inspect inventory", 'I', ACT_INSPECT_INVEN, labels);
 	if (!ctx->inspect_only) {
@@ -990,8 +989,7 @@ static bool context_menu_store_item(struct store_context *ctx, const int oid, in
 	object_desc(header, sizeof(header), obj,
 		ODESC_PREFIX | ODESC_FULL | ((home) ? 0 : ODESC_STORE), player);
 
-	labels = string_make(lower_case);
-	m->selections = labels;
+	labels = menu_dynamic_labels(m);
 
 	menu_dynamic_add_label(m, "Examine", (OPT(player, rogue_like_commands))
 		? 'x' : 'l', ACT_EXAMINE, labels);

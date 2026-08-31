@@ -1091,10 +1091,9 @@ static int handle_name_mouse(char *buf, size_t buflen, size_t *curs,
 	result = 0;
 
 	/* Present a context menu with the possible actions. */
-	labels = string_make(lower_case);
 	m = menu_dynamic_new();
+	labels = menu_dynamic_labels(m);
 
-	m->selections = labels;
 	menu_dynamic_add_label(m, "Accept", 'a', ACT_CTX_NAME_ACCEPT, labels);
 	menu_dynamic_add_label(m, "Set to random name", 'r',
 		ACT_CTX_NAME_RANDOM, labels);

@@ -553,10 +553,9 @@ static int handle_input_equip_cmp_general(ui_event in, int istate,
 		if (in.mouse.button == 2) {
 			action = ACT_CTX_EQUIPCMP_ESCAPE;
 		} else {
-			char *labels = string_make(lower_case);
 			struct menu *m = menu_dynamic_new();
+			char *labels = menu_dynamic_labels(m);
 
-			m->selections = labels;
 			if (s->npage == s->maxpage) {
 				menu_dynamic_add_label(m, "Go to next page",
 					'n', ACT_CTX_EQUIPCMP_NEXT_PAGE,
@@ -1002,10 +1001,9 @@ static int handle_input_equip_cmp_select(ui_event in, int istate,
 			}
 		} else {
 			/* Display a context menu for the other actions. */
-			char *labels = string_make(lower_case);
 			struct menu *m = menu_dynamic_new();
+			char *labels = menu_dynamic_labels(m);
 
-			m->selections = labels;
 			if ((s->indinc < 0 && s->work_sel > 0)
 					|| (s->indinc >= 0
 					&& s->work_sel < s->nfilt - 1)) {

@@ -1058,7 +1058,7 @@ static void magetower_travel(void)
 						  player->grid.y + player->wild_offset.y);
 	struct menu *m;
 	char *labels;
-	int count, chosen, i, j;
+	int count, chosen, i;
 
 	count = wild_travel_places(wild, from, places, TRAVEL_MAX);
 
@@ -1072,37 +1072,18 @@ static void magetower_travel(void)
 	if (!m) return;
 
 	/*
-	 * A key for every destination, then the quit key, then the terminator.
+	 * A key for every destination, and 'q' to decline.
 	 *
-	 * Sized from the menu rather than from lower_case: its 26 letters are
-	 * fewer than the destinations a well-travelled character can be offered,
-	 * and menu_dynamic_add_label() writes label_list[m->count] for any entry
-	 * given a key, so the "Stay here" row landed past the end of the 27-byte
-	 * buffer -- over the terminator at 26 destinations, and over the heap
-	 * beyond it after that.  all_letters holds 52, comfortably more than the
-	 * TRAVEL_MAX the destination list is already capped at.
-	 *
-	 * 'q' is skipped when handing out destination keys so that it means one
-	 * thing.  The selection scan takes the first match in the string, so a
-	 * destination holding 'q' -- the seventeenth, with the old alphabet -- was
-	 * chosen by the key meant to decline the journey.
+	 * This function used to hand out its own letters, because the 26 of
+	 * lower_case are fewer than the destinations a well-travelled character
+	 * can be offered and the "Stay here" row landed past the end of the
+	 * 27-byte buffer. That is now what menu_dynamic_labels() is for, and it
+	 * skips 'q' for the same reason this did: the selection scan takes the
+	 * first match in the string, so a destination handed 'q' -- the
+	 * seventeenth, with the old alphabet -- was chosen by the key meant to
+	 * decline the journey.
 	 */
-	labels = mem_zalloc(count + 2);
-	for (i = 0, j = 0; i < count; i++, j++) {
-		while (all_letters[j] == 'q') j++;
-
-		/*
-		 * Cannot happen while TRAVEL_MAX stays below the 51 non-'q' letters
-		 * all_letters holds, but bounded rather than asserted: raising the
-		 * town or dungeon maximum should cost a few rows their shortcut key,
-		 * not run off the end of the alphabet.
-		 */
-		if (!all_letters[j]) break;
-
-		labels[i] = all_letters[j];
-	}
-	labels[count] = 'q';
-	m->selections = labels;
+	labels = menu_dynamic_labels(m);
 
 	for (i = 0; i < count; i++) {
 		char line[80];
@@ -1205,8 +1186,7 @@ static void service_healer(void)
 	m = menu_dynamic_new();
 	if (!m) return;
 
-	labels = string_make(lower_case);
-	m->selections = labels;
+	labels = menu_dynamic_labels(m);
 
 	if (missing > 0)
 		menu_dynamic_add_label(m, format("%-28s %5d au", "Bind your wounds",
@@ -1399,8 +1379,7 @@ static bool quest_giver_owed(void)
 	m = menu_dynamic_new();
 	if (!m) return true;
 
-	labels = string_make(lower_case);
-	m->selections = labels;
+	labels = menu_dynamic_labels(m);
 
 	for (i = z_info->quest_fixed;
 		 i < z_info->quest_max && listed < (int) N_ELEMENTS(slot); i++) {
@@ -1838,18 +1817,6 @@ static void service_effect(const char *what, int effect, int32_t price,
 }
 
 /**
- * How many rows a `menu_dynamic` with letter labels can hold.
- *
- * `menu_dynamic_add_label()` writes `label_list[m->count]`, and `lower_case`
- * is twenty-six characters and a terminator -- so the twenty-seventh row
- * overwrites the terminator and the twenty-eighth runs off the end of the
- * allocation. Nothing in 4.2 ever built a menu that long. A character can now
- * carry eighty-nine mutations at once, which makes it reachable, so both of
- * the menus below stop here and say how many they did not show.
- */
-#define MENU_LETTERS	26
-
-/**
  * The Chaos Tower: have one mutation taken off you (DEC-24, PLR-13).
  *
  * The seventh building, and the only one that had to be written rather than
@@ -1866,17 +1833,15 @@ static void service_effect(const char *what, int effect, int32_t price,
  */
 static void service_chaostower(void)
 {
-	const struct mutation *held[MENU_LETTERS];
+	const struct mutation *held[MUTATION_MAX];
 	struct menu *m;
 	char *labels;
-	int count = 0, total = 0, chosen;
+	int count = 0, chosen;
 	const struct mutation *mut;
 
-	for (mut = mutations; mut; mut = mut->next) {
-		if (!player_has_mutation(player, mut)) continue;
-
-		total++;
-		if (count < (int) N_ELEMENTS(held)) held[count++] = mut;
+	for (mut = mutations; mut && count < (int) N_ELEMENTS(held);
+			mut = mut->next) {
+		if (player_has_mutation(player, mut)) held[count++] = mut;
 	}
 
 	if (!count) {
@@ -1884,15 +1849,10 @@ static void service_chaostower(void)
 		return;
 	}
 
-	if (total > count) {
-		msg("There is more wrong with you than they can look at in one visit.");
-	}
-
 	m = menu_dynamic_new();
 	if (!m) return;
 
-	labels = string_make(lower_case);
-	m->selections = labels;
+	labels = menu_dynamic_labels(m);
 
 	for (chosen = 0; chosen < count; chosen++) {
 		menu_dynamic_add_label(m, held[chosen]->desc, 0, chosen + 1, labels);
@@ -1939,8 +1899,7 @@ static void service_enchant(void)
 	m = menu_dynamic_new();
 	if (!m) return;
 
-	labels = string_make(lower_case);
-	m->selections = labels;
+	labels = menu_dynamic_labels(m);
 
 	menu_dynamic_add_label(m, "A weapon, to hit and to wound", 0, ENCH_TOBOTH,
 						   labels);
@@ -2076,11 +2035,11 @@ void do_cmd_quest_log(void)
  */
 void do_cmd_racial_power(void)
 {
-	struct player_power *powers[MENU_LETTERS];
-	const struct mutation *pending[MENU_LETTERS];
+	struct player_power *powers[MUTATION_MAX];
+	const struct mutation *pending[MUTATION_MAX];
 	struct menu *m;
 	char *labels;
-	int count = 0, waiting = 0, dropped = 0, chosen, i;
+	int count = 0, waiting = 0, chosen, i;
 	struct player_power *power;
 	const struct mutation *mut;
 
@@ -2109,8 +2068,7 @@ void do_cmd_racial_power(void)
 
 		if (mut->action) {
 			if (count < (int) N_ELEMENTS(powers)) powers[count++] = mut->action;
-			else dropped++;
-		} else {
+		} else if (waiting < (int) N_ELEMENTS(pending)) {
 			/*
 			 * Eight of the thirty-two have no 4.2 equivalent yet. They are
 			 * listed anyway, and refuse when chosen: the character sheet
@@ -2118,16 +2076,8 @@ void do_cmd_racial_power(void)
 			 * will come here looking for it, and silence would read as a bug
 			 * rather than as an honest gap.
 			 */
-			if (waiting < (int) N_ELEMENTS(pending)) pending[waiting++] = mut;
-			else dropped++;
+			pending[waiting++] = mut;
 		}
-	}
-
-	/* The usable ones first, so a full list never hides one that works. */
-	if (count + waiting > (int) N_ELEMENTS(powers)) {
-		dropped += count + waiting - (int) N_ELEMENTS(powers);
-		waiting = (int) N_ELEMENTS(powers) - count;
-		if (waiting < 0) waiting = 0;
 	}
 
 	if (!count && !waiting) {
@@ -2135,15 +2085,10 @@ void do_cmd_racial_power(void)
 		return;
 	}
 
-	if (dropped) {
-		msg("Chaos has given you %d more than this list can hold.", dropped);
-	}
-
 	m = menu_dynamic_new();
 	if (!m) return;
 
-	labels = string_make(lower_case);
-	m->selections = labels;
+	labels = menu_dynamic_labels(m);
 
 	for (i = 0; i < count; i++) {
 		char line[80];
@@ -2198,6 +2143,7 @@ void do_cmd_racial_power(void)
 		msg("Chaos has given you that, and this game cannot yet use it.");
 		return;
 	}
+
 
 	power = powers[chosen - 1];
 

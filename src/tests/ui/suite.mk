@@ -1,0 +1,2 @@
+TESTPROGS += \
+	ui/menu-labels

@@ -896,23 +896,20 @@ static int test_being_normal_can_cure_itself(void *state) {
 }
 
 /**
- * A heavily mutated character does not overflow a menu.
+ * The ceiling on what one character can carry, measured.
  *
- * Eighty-nine is the most a character can carry at once -- ninety-six less the
- * seven that cancelling pairs make unreachable together -- and both the power
- * list and the Chaos Tower present their contents through `menu_dynamic` with
- * letter labels. `menu_dynamic_add_label()` writes `label_list[m->count]` into
- * a copy of `lower_case`, which is twenty-six characters and a terminator, so
- * the twenty-seventh row overwrites the terminator and the twenty-eighth runs
- * off the end of the allocation.
+ * Eighty-nine: ninety-six less the seven that the cancelling pairs make
+ * unreachable together. It is worth pinning because two other things are sized
+ * against it -- the Chaos Tower's list and the power list -- and because it is
+ * the cancelling table that sets it, and that table has been rewritten once
+ * already, when it turned out iron skin sits at the centre of a star rather
+ * than in a clique of four.
  *
- * Nothing in 4.2 ever built a menu that long, so the overflow was unreachable
- * until mutations arrived. Both menus now stop at twenty-six and say how many
- * they did not show. This test pins the number the menus are sized against;
- * the ceiling has to be measured rather than assumed, because it is the
- * cancelling table that sets it and that table has changed once already.
+ * Asserted twice on purpose: once against the roster so the relationship is
+ * visible, and once as a literal so that a change to either the roster or the
+ * table has to be looked at rather than absorbed.
  */
-static int test_a_heavily_mutated_character_fits_a_menu(void *state) {
+static int test_the_mutation_ceiling_is_eighty_nine(void *state) {
 	const struct mutation *m;
 	int held;
 
@@ -929,8 +926,13 @@ static int test_a_heavily_mutated_character_fits_a_menu(void *state) {
 	eq(held, mutation_count() - 7);
 	eq(held, 89);
 
-	/* Which is well past what a lettered menu can label. */
-	require(held > 26);
+	/*
+	 * Which is more rows than a lettered menu has letters. That is no longer a
+	 * hazard -- `menu_dynamic_labels()` bounds the write and rows past the
+	 * fifty-first are chosen with the cursor instead -- but it is why the
+	 * bound had to exist. See ui/menu-labels.
+	 */
+	require(held > 51);
 
 	flag_wipe(player->mutations, MUT_SIZE);
 
@@ -981,7 +983,7 @@ struct test tests[] = {
 	{ "the-acquisition-paths-are-wired",
 	  test_the_acquisition_paths_are_wired },
 	{ "being-normal-can-cure-itself", test_being_normal_can_cure_itself },
-	{ "a-heavily-mutated-character-fits-a-menu",
-	  test_a_heavily_mutated_character_fits_a_menu },
+	{ "the-mutation-ceiling-is-eighty-nine",
+	  test_the_mutation_ceiling_is_eighty_nine },
 	{ NULL, NULL }
 };

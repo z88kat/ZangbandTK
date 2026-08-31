@@ -1087,9 +1087,7 @@ static bool use_context_menu_list_switcher(struct menu *current_menu,
 	if (!m) {
 		return false;
 	}
-	labels = string_make(lower_case);
-
-	m->selections = labels;
+	labels = menu_dynamic_labels(m);
 	if (((item_mode & USE_INVEN) || allow_all)
 			&& player->upkeep->command_wrk != USE_INVEN) {
 		menu_dynamic_add_label(m, "Inventory", '/', USE_INVEN, labels);

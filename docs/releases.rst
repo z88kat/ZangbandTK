@@ -36,6 +36,42 @@ Savefile compatibility — 30 August 2026
 M8: mutations — 31 August 2026
 ------------------------------
 
+- **3.49.2** — **A shared helper that overflowed on its twenty-seventh call**.
+  ``menu_dynamic_add_label()`` writes a row's shortcut key into the caller's
+  label buffer at the row's own index, and did so without knowing how long that
+  buffer was. Every dynamic menu in the tree allocated it with
+  ``string_make(lower_case)`` — twenty-six letters and a terminator — so the
+  twenty-seventh row overwrote the terminator and the twenty-eighth ran off the
+  end of the allocation.
+
+  **This is an Angband defect, not one this port introduced**, and it is latent
+  upstream rather than live: an audit of all twenty dynamic menus found the
+  largest upstream one is eleven rows, and every row of every fixed list
+  supplies its own key, so the pre-filled letters are entirely overwritten and
+  the buffer's length never matters. Four menus in this game are driven by data
+  instead — the magetower's destinations (up to 48), the Chaos Tower's and the
+  power list's mutations (up to 89), and the quest giver's (capped at 16) — and
+  three of those can pass twenty-six. The magetower had already hit it and
+  fixed it locally; the other two were fixed by clamping in 3.49.0, which was
+  the wrong place to be defensive.
+
+  The bound now lives on the helper. ``struct menu`` carries how many bytes of
+  its label buffer may be written, ``menu_dynamic_labels()`` is the one way to
+  get such a buffer, and all twenty call sites use it. A menu that never asks
+  for one has a bound of zero and cannot be written into at all, so the unsafe
+  thing a future caller might do is now the thing that does nothing. Fifty-one
+  keys are available rather than twenty-six, from ``all_letters`` less ``q`` —
+  skipped because these menus end with a "no thank you" row keyed ``q`` and the
+  selection scan takes the first match, which is how the magetower's
+  seventeenth destination came to be unvisitable. **Rows past the bound keep
+  their place and lose only their key**; refusing the row would silently shorten
+  a long menu, which is the more dangerous failure of the two.
+
+  Long dynamic menus still draw past the bottom of the terminal —
+  ``menu_dynamic_calc_location()`` sets ``page_rows`` to the row count and
+  nothing scrolls. That is a separate upstream limitation, unchanged here, and
+  the magetower has lived with it at 48 destinations since M5.
+
 - **3.49.1** — **The manual is part of the gate.** ``scripts/check-build``
   builds it as a fourth pass with ``-W``, so a broken directive or a bad cross
   reference fails locally instead of failing the job that publishes

@@ -95,8 +95,7 @@ static int context_menu_player_2(int mx, int my)
 		return 0;
 	}
 
-	labels = string_make(lower_case);
-	m->selections = labels;
+	labels = menu_dynamic_labels(m);
 
 	menu_dynamic_add_label(m, "Knowledge", '~', MENU_VALUE_KNOWLEDGE, labels);
 	menu_dynamic_add_label(m, "Show Map", 'M', MENU_VALUE_MAP, labels);
@@ -261,8 +260,7 @@ int context_menu_player(int mx, int my)
 		return 0;
 	}
 
-	labels = string_make(lower_case);
-	m->selections = labels;
+	labels = menu_dynamic_labels(m);
 
 	ADD_LABEL("Use", CMD_USE, MN_ROW_VALID);
 
@@ -439,8 +437,7 @@ int context_menu_cave(struct chunk *c, int y, int x, int adjacent, int mx,
 	if (!m)
 		return 0;
 
-	labels = string_make(lower_case);
-	m->selections = labels;
+	labels = menu_dynamic_labels(m);
 
 	/* Looking has different keys, but we don't have a way to look them up
 	 * (see ui-game.c). */
@@ -673,8 +670,7 @@ int context_menu_object(struct object *obj)
 	object_desc(header, sizeof(header), obj, ODESC_PREFIX | ODESC_BASE,
 		player);
 
-	labels = string_make(lower_case);
-	m->selections = labels;
+	labels = menu_dynamic_labels(m);
 
 	/* 'I' is used for inspect in both keymaps. */
 	menu_dynamic_add_label(m, "Inspect", 'I', MENU_VALUE_INSPECT, labels);

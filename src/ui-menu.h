@@ -219,6 +219,19 @@ struct menu
 	/* Keyboard shortcuts for menu selection-- shouldn't overlap cmd_keys */
 	const char *selections; 
 
+	/*
+	 * How many characters of `selections` a dynamic menu may write.
+	 *
+	 * `menu_dynamic_add_label()` fills `selections` in as rows are added, and
+	 * had no idea how long the buffer was: every caller allocated 27 bytes
+	 * with `string_make(lower_case)` and the twenty-seventh row wrote over the
+	 * terminator, the twenty-eighth past the end of the allocation. Set by
+	 * `menu_dynamic_labels()`, which is now how a dynamic menu gets its label
+	 * buffer. Zero means nothing may be written, so a menu that never calls
+	 * that function cannot be made to write at all.
+	 */
+	size_t selections_size;
+
 	/* Menu selections corresponding to inscriptions */
 	char *inscriptions; 
 
@@ -395,6 +408,7 @@ void menu_set_cursor_x_offset(struct menu *m, int offset);
 struct menu *menu_dynamic_new(void);
 void menu_dynamic_add(struct menu *m, const char *text, int value);
 void menu_dynamic_add_valid(struct menu *m, const char *text, int value, menu_row_validity_t valid);
+char *menu_dynamic_labels(struct menu *m);
 void menu_dynamic_add_label(struct menu *m, const char *text, const char label, int value, char *label_list);
 void menu_dynamic_add_label_valid(struct menu *m, const char *text, const char label, int value, char *label_list, menu_row_validity_t valid);
 size_t menu_dynamic_longest_entry(struct menu *m);
