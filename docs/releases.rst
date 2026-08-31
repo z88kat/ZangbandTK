@@ -33,6 +33,29 @@ Unreleased
 Testing — 31 August 2026
 -------------------------
 
+- **3.50.3** — **The same mistake, in the test written to replace it.** The
+  fourteen-run check on 3.50.2 flaked twice, and it was neither the code nor the
+  doorstep: it was ``a-character-at-sea-still-finds-ground``, added one release
+  earlier, asserting ``restored > 200``. Eight rings around the character are
+  289 squares only when the character is not within eight squares of the edge
+  of the level; nearer the edge the out-of-bounds squares are skipped and the
+  count comes in under the floor for a reason that has nothing wrong with it.
+  A constant standing in for an invariant — exactly what 3.50.2 removed from
+  the doorstep — put back by the test that removed it. It now asserts that
+  everything flooded was restored, which is the actual invariant and has no
+  number in it.
+
+  **And the seed the runner threw away.** 3.50.2 gave every sampling suite a
+  seed line so a flaky failure could be replayed, and it did not work: a suite
+  returns zero whether or not its tests passed, so ``run_tests.cmake`` took the
+  success branch and discarded the output — seed included — unless ``VERBOSE``
+  happened to be set. That is precisely the case the line was added for. The
+  runner now echoes a suite's output whenever it reports fewer passes than
+  tests, and the next failure named its seed on the first try: 936496483.
+
+  Sixteen consecutive whole-suite runs clean, which is the claim 3.50.2 should
+  have waited for.
+
 - **3.50.2** — **A bound set from eight worlds, and the seed that found the
   ninth.** ``the-doorstep-is-survivable`` required the mean wilderness danger
   within six blocks of the starting town to be at most 12 — a figure taken from

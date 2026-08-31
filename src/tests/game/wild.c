@@ -5931,7 +5931,7 @@ static int test_every_service_held_is_built(void *state) {
 static int test_a_character_at_sea_still_finds_ground(void *state) {
 	struct loc grid, centre = player->grid;
 	int deep = lookup_feat_code("DEEP_WATER");
-	int dy, dx, restored = 0;
+	int dy, dx, flooded = 0, restored = 0;
 	int saved[17][17];
 
 	require(deep > 0);
@@ -5946,6 +5946,7 @@ static int test_a_character_at_sea_still_finds_ground(void *state) {
 
 			saved[dy + 8][dx + 8] = square(cave, try)->feat;
 			square_set_feat(cave, try, deep);
+			flooded++;
 		}
 
 	/* Every ring is now water, and it still comes back with somewhere. */
@@ -5965,7 +5966,22 @@ static int test_a_character_at_sea_still_finds_ground(void *state) {
 			square_set_feat(cave, try, saved[dy + 8][dx + 8]);
 			restored++;
 		}
-	require(restored > 200);
+
+	/*
+	 * Everything that was flooded is put back, and that is the whole
+	 * assertion -- there is no right number for it.
+	 *
+	 * This read `restored > 200` when the test was written, on the assumption
+	 * that eight rings around the character are 289 squares. They are not when
+	 * the character starts within eight squares of the edge of the level: the
+	 * out-of-bounds ones are skipped, and the count comes in under the floor
+	 * for a reason that has nothing wrong with it. It failed about one
+	 * whole-suite run in seven, found on seed 936496483, and it was the same
+	 * mistake as the bound this test was written to replace -- a constant
+	 * standing in for an invariant.
+	 */
+	eq(restored, flooded);
+	require(flooded > 0);
 
 	ok;
 }
