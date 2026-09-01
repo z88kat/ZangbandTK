@@ -33,6 +33,24 @@ Unreleased
 M9: magic realms — 1 September 2026
 -----------------------------------
 
+- **3.54.2** — **Realm choice gates which books you can open**, which is what
+  makes the choice mean anything. A class carries the books of every realm it may
+  study — a spell lives in a book which lives in a class, and there is nowhere
+  else to put one — so the choice made at birth is what decides which of them
+  the character can actually read.
+
+  The gate asks how many realms the class has books **in**, not how many it is
+  entitled to, and that distinction was a live regression rather than a nicety:
+  a Priest may study Life or Death and every Priest book in the game is Life, so
+  filtering on the entitlement left a Priest who chose Death unable to read
+  anything at all. The gate is therefore inert until a class carries books from
+  two realms, which is exactly when Sorcery arrives.
+
+  Honest about what the tests cover: a Priest who chose Death is proven to still
+  read their prayer books, and gating on the entitlement instead fails that. But
+  *removing* the filter fails nothing yet, because no class in the data carries
+  two realms' books for it to sort. That test comes with Sorcery's content.
+
 - **3.54.1** — **FETCH, built once for three callers**, and telekinesis works.
   Zangband's ``fetch()`` is called by the telekinesis mutation, by Sorcery's
   *Telekinesis* spell and by the Trump realm, and the three differ in exactly

@@ -26,6 +26,7 @@ void player_spells_free(struct player *p);
 struct magic_realm *class_magic_realms(const struct player_class *c,
 									   int *count);
 const struct class_book *object_kind_to_book(const struct object_kind *kind);
+int class_book_realms(const struct player_class *c);
 int player_realm_choices(const struct player_class *c, int slot,
 						 const struct magic_realm **out, int max);
 void player_realm_default(struct player *p);

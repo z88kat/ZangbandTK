@@ -24,6 +24,9 @@
 #include "unit-test.h"
 
 #include "init.h"
+#include "obj-make.h"
+#include "obj-util.h"
+#include "obj-pile.h"
 #include "obj-tval.h"
 #include "player.h"
 #include "player-birth.h"
@@ -470,6 +473,58 @@ static int test_studying_is_a_property_of_the_character(void *state) {
 	ok;
 }
 
+/**
+ * A Priest who chose Death can still read their prayer books (PLR-08).
+ *
+ * The regression this test exists for. Realm choice has to gate which books a
+ * character can open, or choosing a realm means nothing — but gating on the
+ * class's *entitlement* rather than on the books it actually carries breaks a
+ * Priest immediately: a Priest may study Life or Death, and every Priest book
+ * in the game is Life. Filter on the entitlement and a Priest who picked Death
+ * can read nothing at all.
+ *
+ * So the gate asks how many realms the class has books in, which is one for
+ * every class Angband ships, and the filter is inert until a class carries
+ * books from two realms. Asserted from both ends: the count is one today, and a
+ * Priest studying Death can still open the Novice's Handbook.
+ *
+ * What this cannot yet check is that the filter *works* -- removing it
+ * altogether fails nothing, because no class in the data carries books from two
+ * realms for it to sort. That test arrives with Sorcery's books and not before;
+ * said here rather than left for somebody to discover when they delete the
+ * filter and the suite stays green.
+ */
+static int test_choosing_a_realm_without_books_is_survivable(void *state) {
+	const struct player_class *priest = find_class("Priest");
+	const struct magic_realm *death = find_realm("death");
+	struct object *book = object_new();
+	const struct class_book *found;
+
+	notnull(priest);
+	notnull(death);
+
+	/* Entitled to two realms, but carrying books in only one. */
+	require(priest->magic.realm_count > 1);
+	eq(class_book_realms(priest), 1);
+
+	player_generate(player, NULL, priest, false);
+	object_prep(book, lookup_kind(priest->magic.books[0].tval,
+								  priest->magic.books[0].sval), 0, MINIMISE);
+
+	/* Readable as a Priest of Life, which is the default. */
+	found = player_object_to_book(player, book);
+	notnull(found);
+
+	/* And still readable having chosen Death, which has no books yet. */
+	player->realm[0] = death;
+	found = player_object_to_book(player, book);
+	notnull(found);
+
+	object_delete(cave, player->cave, &book);
+
+	ok;
+}
+
 const char *suite_name = "player/realm";
 struct test tests[] = {
 	{ "seven-realms-exist", test_seven_realms_exist },
@@ -490,5 +545,7 @@ struct test tests[] = {
 	  test_a_single_entitlement_is_not_a_choice },
 	{ "studying-is-a-property-of-the-character",
 	  test_studying_is_a_property_of_the_character },
+	{ "choosing-a-realm-without-books-is-survivable",
+	  test_choosing_a_realm_without_books_is_survivable },
 	{ NULL, NULL }
 };

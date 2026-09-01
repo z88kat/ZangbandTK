@@ -278,6 +278,33 @@ const struct class_book *object_kind_to_book(const struct object_kind *kind)
  * cast from
  */
 /**
+ * How many distinct realms this class actually has books in (PLR-08).
+ *
+ * Not the same as how many it is entitled to, and the difference matters: a
+ * Priest may study Life or Death and every Priest book in the game is Life. A
+ * character's realm choice can only gate a book list that spans realms, so this
+ * is what the gate asks.
+ */
+int class_book_realms(const struct player_class *c)
+{
+	bool seen[REALM_MAX] = { false };
+	int i, n = 0;
+
+	if (!c) return 0;
+
+	for (i = 0; i < c->magic.num_books; i++) {
+		const struct magic_realm *r = c->magic.books[i].realm;
+
+		if (!r || seen[r->ridx]) continue;
+
+		seen[r->ridx] = true;
+		n++;
+	}
+
+	return n;
+}
+
+/**
  * The realms a class allows in a given slot, as a count (PLR-08).
  *
  * A count of one is an entitlement rather than a choice, and the birth step has
@@ -349,10 +376,38 @@ const struct class_book *player_object_to_book(const struct player *p,
 {
 	int i;
 
-	for (i = 0; i < p->class->magic.num_books; i++)
-		if ((obj->tval == p->class->magic.books[i].tval) &&
-			(obj->sval == p->class->magic.books[i].sval))
-			return &p->class->magic.books[i];
+	for (i = 0; i < p->class->magic.num_books; i++) {
+		const struct class_book *book = &p->class->magic.books[i];
+
+		if (obj->tval != book->tval || obj->sval != book->sval) continue;
+
+		/*
+		 * And in a realm this character studies (PLR-08).
+		 *
+		 * A class carries the books of every realm it *may* study, because a
+		 * book has nowhere else to live -- a spell belongs to a book belonging
+		 * to a class. So once Sorcery, Chaos and Trump arrive a Mage's list
+		 * holds all seven realms, and the choice made at birth is what decides
+		 * which of them the character can open. Without this test a Mage of
+		 * Life and Death could read a Chaos book and choosing a realm would
+		 * mean nothing.
+		 *
+		 * Gated on the class actually *having* books in more than one realm,
+		 * not on it being entitled to more than one. The difference is a live
+		 * regression rather than a nicety: a Priest is entitled to Life or
+		 * Death and every Priest book in the game is Life, so filtering on the
+		 * entitlement leaves a Priest who chose Death unable to read anything
+		 * at all. Filtering on what the class carries makes this inert until
+		 * the realm whose books are missing has some -- which is the same
+		 * sequencing DEC-50's import order follows.
+		 */
+		if (book->realm && class_book_realms(p->class) > 1
+				&& !player_studies_realm(p, book->realm)) {
+			continue;
+		}
+
+		return book;
+	}
 
 	return NULL;
 }
