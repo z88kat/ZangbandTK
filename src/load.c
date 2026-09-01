@@ -785,7 +785,7 @@ int rd_quests_1(void) { return rd_quests_aux(false, false, false); }
  * shape for the same reason.
  */
 static int rd_player_aux(bool with_patron, bool with_virtues,
-						 bool with_mutations)
+						 bool with_mutations, bool with_realms)
 {
 	int i;
 	uint8_t tmp8u, num;
@@ -860,6 +860,32 @@ static int rd_player_aux(bool with_patron, bool with_virtues,
 	 * it loads.  An unknown name leaves that slot unmeasured rather than
 	 * refusing the save.
 	 */
+	/*
+	 * The realms this character studies (PLR-08, PLR-11).
+	 *
+	 * Defaulted from the class first, so a save written before realms existed
+	 * comes back studying whatever its class studies rather than nothing --
+	 * which for the four casters in the corpus is what they were studying all
+	 * along, since a class had one realm and no choice.
+	 *
+	 * Read by count and by name. An unknown name leaves the slot empty rather
+	 * than refusing the save: a realm removed from realm.txt should cost the
+	 * character that realm, not the character.
+	 */
+	player_realm_default(player);
+	if (with_realms) {
+		uint8_t stored;
+
+		rd_byte(&stored);
+		for (i = 0; i < stored; i++) {
+			rd_string(buf, sizeof(buf));
+
+			if (i >= REALM_CHOICES) continue;
+
+			player->realm[i] = buf[0] ? lookup_realm(buf) : NULL;
+		}
+	}
+
 	for (i = 0; i < MAX_PLAYER_VIRTUES; i++) {
 		player->vir_types[i] = 0;
 		player->virtues[i] = 0;
@@ -1055,10 +1081,11 @@ static int rd_player_aux(bool with_patron, bool with_virtues,
 	return 0;
 }
 
-int rd_player_1(void) { return rd_player_aux(false, false, false); }
-int rd_player_2(void) { return rd_player_aux(true, false, false); }
-int rd_player_3(void) { return rd_player_aux(true, true, false); }
-int rd_player(void) { return rd_player_aux(true, true, true); }
+int rd_player_1(void) { return rd_player_aux(false, false, false, false); }
+int rd_player_2(void) { return rd_player_aux(true, false, false, false); }
+int rd_player_3(void) { return rd_player_aux(true, true, false, false); }
+int rd_player_4(void) { return rd_player_aux(true, true, true, false); }
+int rd_player(void) { return rd_player_aux(true, true, true, true); }
 
 
 

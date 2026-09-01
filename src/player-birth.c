@@ -991,6 +991,18 @@ void player_generate(struct player *p, const struct player_race *r,
 	p->class = c;
 	p->race = r;
 
+	/*
+	 * And what they study (PLR-08).
+	 *
+	 * Set to the first realm each slot allows, so a character is always in a
+	 * castable state even before the birth step asks -- changing class has to
+	 * leave the old class's realms behind, and a Mage carrying a Paladin's
+	 * Life realm would be a Mage who cannot read their own books. The birth
+	 * step overwrites this; quickstart and the test harness rely on it.
+	 */
+	player_realm_default(p);
+	for (i = 0; i < REALM_CHOICES; i++) p->realm_chosen[i] = false;
+
 	/* Level 1 */
 	p->max_lev = p->lev = 1;
 
@@ -1135,6 +1147,35 @@ void do_cmd_choose_class(struct command *cmd)
 	reset_stats(stats, points_spent, points_inc, &points_left, false);
 	generate_stats(stats, points_spent, points_inc, &points_left);
 	rolled_stats = false;
+}
+
+/**
+ * Take one of the realms the class offered (PLR-08).
+ *
+ * The choice index is into the realms *on offer for this slot*, not into the
+ * realm list -- the menu shows a Paladin two rows and a Mage seven, and the
+ * player picked a row. Resolving it here rather than in the UI keeps the
+ * command replayable, which is what the birth commands exist for.
+ */
+void do_cmd_choose_realm(struct command *cmd)
+{
+	const struct magic_realm *offered[REALM_MAX];
+	int choice, slot, n;
+
+	cmd_get_arg_choice(cmd, "choice", &choice);
+
+	/* The first slot that still has something to decide. */
+	for (slot = 0; slot < REALM_CHOICES; slot++) {
+		if (player_realm_choices(player->class, slot, NULL, 0) < 2) continue;
+		if (!player->realm_chosen[slot]) break;
+	}
+	if (slot >= REALM_CHOICES) return;
+
+	n = player_realm_choices(player->class, slot, offered, REALM_MAX);
+	if (choice < 0 || choice >= n) return;
+
+	player->realm[slot] = offered[choice];
+	player->realm_chosen[slot] = true;
 }
 
 void do_cmd_buy_stat(struct command *cmd)

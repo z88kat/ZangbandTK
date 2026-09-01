@@ -61,6 +61,7 @@ static const struct command_info game_cmds[] =
 	{ CMD_BIRTH_RESET, "go back to the beginning", do_cmd_birth_reset, false, false, 0 },
 	{ CMD_CHOOSE_RACE, "select race", do_cmd_choose_race, false, false, 0 },
 	{ CMD_CHOOSE_CLASS, "select class", do_cmd_choose_class, false, false, 0 },
+	{ CMD_CHOOSE_REALM, "select realm", do_cmd_choose_realm, false, false, 0 },
 	{ CMD_BUY_STAT, "buy points in a stat", do_cmd_buy_stat, false, false, 0 },
 	{ CMD_SELL_STAT, "sell points in a stat", do_cmd_sell_stat, false, false, 0 },
 	{ CMD_RESET_STATS, "reset stats", do_cmd_reset_stats, false, false, 0 },

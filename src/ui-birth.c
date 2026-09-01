@@ -64,6 +64,7 @@ enum birth_stage
 	BIRTH_QUICKSTART,
 	BIRTH_RACE_CHOICE,
 	BIRTH_CLASS_CHOICE,
+	BIRTH_REALM_CHOICE,
 	BIRTH_ROLLER_CHOICE,
 	BIRTH_POINTBASED,
 	BIRTH_ROLLER,
@@ -79,6 +80,7 @@ enum birth_questions
 	BQ_METHOD = 0,
 	BQ_RACE,
 	BQ_CLASS,
+	BQ_REALM,
 	BQ_ROLLER,
 	MAX_BIRTH_QUESTIONS
 };
@@ -146,7 +148,7 @@ static enum birth_stage textui_birth_quickstart(void)
 /**
  * The various menus
  */
-static struct menu race_menu, class_menu, roller_menu;
+static struct menu race_menu, class_menu, realm_menu, roller_menu;
 
 /**
  * Locations of the menus, etc. on the screen
@@ -170,7 +172,18 @@ static struct menu race_menu, class_menu, roller_menu;
  */
 static region race_region = {RACE_COL, TABLE_ROW, 17, MENU_ROWS};
 static region class_region = {CLASS_COL, TABLE_ROW, 17, MENU_ROWS};
+static region realm_region = {CLASS_AUX_COL, TABLE_ROW, 17, MENU_ROWS};
 static region roller_region = {ROLLER_COL, TABLE_ROW, 34, MENU_ROWS};
+
+/**
+ * Which of a character's realm slots the menu is currently asking about.
+ *
+ * The realm step is not one question but up to two, and unlike race and class
+ * its answers depend on an earlier one -- a Paladin is offered Life or Death, a
+ * Mage all seven. So the menu is rebuilt each time the stage is entered rather
+ * than once in setup_menus(), and this says which slot is being filled.
+ */
+static int realm_slot = 0;
 
 /**
  * We use different menu "browse functions" to display the help text
@@ -583,6 +596,38 @@ static void setup_menus(void)
 	for (i = 0; i < MAX_BIRTH_ROLLERS; i++)
 		mdata->items[i] = roller_choices[i];
 	mdata->hint = "Choose how to generate your intrinsic stats. Point-based is recommended.";
+}
+
+/**
+ * Build the realm menu for the slot being asked about (PLR-08).
+ *
+ * Rebuilt on every entry rather than once, because which realms are on offer is
+ * a property of the class chosen a moment ago -- and because stepping back to
+ * change class has to change what this offers.
+ *
+ * \return how many realms are on offer. A slot with fewer than two has nothing
+ * to ask: one is an entitlement, and none means the class does not study in that
+ * slot at all. The caller skips the question in both cases rather than showing a
+ * menu with one row or none.
+ */
+static int build_realm_menu(int slot)
+{
+	static const struct magic_realm *offered[REALM_MAX];
+	struct birthmenu_data *mdata;
+	int n, i;
+
+	n = player_realm_choices(player->class, slot, offered, REALM_MAX);
+	if (n < 2) return n;
+
+	init_birth_menu(&realm_menu, n, 0, &realm_region, false, NULL);
+	mdata = realm_menu.menu_data;
+
+	for (i = 0; i < n; i++) mdata->items[i] = offered[i]->name;
+
+	mdata->hint = "Life and Sorcery are protective, Chaos and Death destructive. "
+		"Nature has both.";
+
+	return n;
 }
 
 /**
@@ -1634,6 +1679,7 @@ int textui_do_birth(void)
 
 			case BIRTH_CLASS_CHOICE:
 			case BIRTH_RACE_CHOICE:
+			case BIRTH_REALM_CHOICE:
 			case BIRTH_ROLLER_CHOICE:
 			{
 				struct menu *menu = &race_menu;
@@ -1648,15 +1694,64 @@ int textui_do_birth(void)
 					command = CMD_CHOOSE_CLASS;
 				}
 
+				/*
+				 * The realms, once the class is known (PLR-08).
+				 *
+				 * Both slots are asked at this one stage, in order, because
+				 * they are one decision to the player -- "a Mage of Chaos and
+				 * Death" -- and because giving each its own stage would make
+				 * stepping back from the second land on the first rather than
+				 * on the class, which is not where the player came from.
+				 *
+				 * A slot with fewer than two realms on offer is skipped: one
+				 * is an entitlement rather than a choice, and asking which of
+				 * the one they would like is a question with a single answer.
+				 */
 				if (current_stage > BIRTH_CLASS_CHOICE) {
 					menu_refresh(&class_menu, false);
 					menu = &roller_menu;
+					command = CMD_NULL;
+
+					if (current_stage == BIRTH_REALM_CHOICE) {
+						while (realm_slot < REALM_CHOICES
+								&& build_realm_menu(realm_slot) < 2) {
+							realm_slot++;
+						}
+
+						if (realm_slot >= REALM_CHOICES) {
+							/* Nothing to ask; walk on. */
+							next = BIRTH_ROLLER_CHOICE;
+							realm_slot = 0;
+							break;
+						}
+
+						menu = &realm_menu;
+						command = CMD_CHOOSE_REALM;
+					}
+				}
+
+				if (current_stage > BIRTH_REALM_CHOICE) {
+					menu = &roller_menu;
+					command = CMD_NULL;
 				}
 
 				next = menu_question(current_stage, menu, command);
 
-				if (next == BIRTH_BACK)
+				if (current_stage == BIRTH_REALM_CHOICE
+						&& next != BIRTH_BACK) {
+					/* One slot answered; ask the next before moving on. */
+					free_birth_menu(&realm_menu);
+					realm_slot++;
+					if (realm_slot < REALM_CHOICES) next = BIRTH_REALM_CHOICE;
+				}
+
+				if (next == BIRTH_BACK) {
+					if (current_stage == BIRTH_REALM_CHOICE) {
+						free_birth_menu(&realm_menu);
+						realm_slot = 0;
+					}
 					next = current_stage - 1;
+				}
 
 				/* Make sure the character gets reset before quickstarting */
 				if (next == BIRTH_QUICKSTART) 

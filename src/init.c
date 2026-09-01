@@ -4403,8 +4403,54 @@ static errr run_parse_realm(struct parser *p) {
 }
 
 static errr finish_parse_realm(struct parser *p) {
+	struct magic_realm *r;
+	unsigned int count = 0;
+
 	realms = parser_priv(p);
 	parser_destroy(p);
+
+	/*
+	 * Reversed into file order first, and then numbered.
+	 *
+	 * The parser links each record to the one before it, so the list arrives
+	 * back-to-front: without this, index 0 is Trump because Trump is last in
+	 * the file, and every list of realms the player is shown would run
+	 * backwards.
+	 *
+	 * `ridx` is an in-memory subscript into `realm_allowed[]` and nothing
+	 * else -- a character's realms go into the savefile by *name*, as the
+	 * patron and the virtues do, so that inserting a realm cannot rebind a
+	 * saved character to a different one. Keeping the index in file order is
+	 * for the reader's sake, not the savefile's.
+	 */
+	{
+		struct magic_realm *head = NULL, *next;
+
+		for (r = realms; r; r = next) {
+			next = r->next;
+			r->next = head;
+			head = r;
+		}
+		realms = head;
+	}
+
+	for (r = realms; r; r = r->next) count++;
+
+	/*
+	 * The safety requirement is that `realm_allowed[]` can hold an index for
+	 * every realm, and that is all this checks. Asserting the count is exactly
+	 * seven belongs to `player/realm`, which reads the shipped data; the parse
+	 * suites supply their own cut-down realm.txt and a hard equality here would
+	 * fail them for having two realms, which is not a defect.
+	 */
+	if (count > REALM_MAX) {
+		quit_fmt("realm.txt has %u realms; REALM_MAX is %d.", count,
+				 REALM_MAX);
+	}
+
+	count = 0;
+	for (r = realms; r; r = r->next) r->ridx = count++;
+
 	return 0;
 }
 
@@ -5638,6 +5684,52 @@ static enum parser_error parse_class_play_flags(struct parser *p) {
 	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
+/**
+ * Which realms a class may study in a given slot (PLR-08).
+ *
+ * Slot 1 or 2, and the two are not interchangeable: Zangband's entitlements are
+ * asymmetric, so a Warrior-Mage's first realm is always Arcane and its second
+ * is free. A class with only a slot 1 line studies one realm.
+ *
+ * Placed after the `magic:` line it governs, and refused before it, because a
+ * class with nothing to cast has nothing to choose between -- which is why the
+ * Monk and the Chaos-Warrior carry no entitlement yet despite Zangband giving
+ * them one.
+ */
+static enum parser_error parse_class_realm_choice(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	unsigned int slot = parser_getuint(p, "slot");
+	char *s, *t;
+
+	if (!c) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	/*
+	 * `books` is what `magic:` allocates; `num_books` counts up as the books
+	 * themselves are read, so it is still zero on the line straight after the
+	 * magic directive. Testing the wrong one of those two rejects every
+	 * entitlement in the file.
+	 */
+	if (!c->magic.books) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (slot < 1 || slot > REALM_CHOICES) return PARSE_ERROR_INVALID_VALUE;
+
+	s = string_make(parser_getstr(p, "realms"));
+	t = strtok(s, " |");
+	while (t) {
+		const struct magic_realm *r = lookup_realm(t);
+
+		if (!r) break;
+
+		c->magic.realm_allowed[slot - 1][r->ridx] = true;
+		t = strtok(NULL, " |");
+	}
+	string_free(s);
+
+	if (t) return PARSE_ERROR_INVALID_VALUE;
+
+	if ((int) slot > c->magic.realm_count) c->magic.realm_count = slot;
+
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_class_magic(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 	int num_books;
@@ -6269,6 +6361,8 @@ static struct parser *init_parse_class(void) {
 	parser_reg(p, "obj-flags ?str flags", parse_class_obj_flags);
 	parser_reg(p, "player-flags ?str flags", parse_class_play_flags);
 	parser_reg(p, "magic uint first uint weight uint books", parse_class_magic);
+	parser_reg(p, "realm-choice uint slot str realms",
+			   parse_class_realm_choice);
 	parser_reg(p, "book sym tval sym quality sym name uint spells str realm",
 			   parse_class_book);
 	parser_reg(p, "book-graphics char glyph sym color",

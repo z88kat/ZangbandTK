@@ -33,6 +33,34 @@ Unreleased
 M9: magic realms — 1 September 2026
 -----------------------------------
 
+- **3.53.0** — **Realms are chosen at birth** (PLR-08, PLR-11). A fourth step
+  after race and class, offering the realms the *class* allows — which is what
+  makes the combination mean anything. The entitlements are Zangband's own, out
+  of ``realm_choices1[]`` and ``realm_choices2[]``, and ``player/realm`` checks
+  the shipped data against that table across all 8 classes × 2 slots × 7 realms
+  rather than against transcribed values.
+
+  A slot offering fewer than two realms is not asked about, because a list of
+  one is an entitlement and not a choice: a Ranger's first realm is Nature and
+  the question would have one answer. Angband's Druid, Necromancer and
+  Blackguard have no Zangband counterpart, so each is entitled to the one realm
+  it already studies — which keeps what they can cast exactly as it was.
+
+  The choice is written to the savefile **by name and by count**, as the patron
+  and the virtues are, so inserting a realm cannot rebind a saved character to a
+  different one. The ``player`` block goes to version 5 and the version 4 reader
+  is kept; a save written before realms existed comes back studying whatever its
+  class studies, which for every caster in the corpus is what it was studying
+  anyway. The corpus is unchanged at **31 loaded, 4 refused**, so the version
+  bump broke nothing incidentally.
+
+  Two things worth recording. The realm list arrives back-to-front from the
+  parser, so ``ridx`` 0 was Trump and every list shown to the player would have
+  run backwards; it is reversed into file order at load. And the character
+  panel asserts rather than growing when given one line too many, so adding the
+  realms line aborted the game — caught by the birth frontend test, which is
+  the pass that exists for exactly that.
+
 - **3.52.1** — **The spell converter, and a correction to the order M9 goes
   in.** No game change. ``zconv.py realms`` slices Zangband's ``magic_info[]``
   by position — 2,464 ``{level, mana}`` pairs, exactly 11 classes × 7 realms ×

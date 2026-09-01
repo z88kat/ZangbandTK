@@ -277,6 +277,73 @@ const struct class_book *object_kind_to_book(const struct object_kind *kind)
  * Get the spellbook structure from an object which is a book the player can
  * cast from
  */
+/**
+ * The realms a class allows in a given slot, as a count (PLR-08).
+ *
+ * A count of one is an entitlement rather than a choice, and the birth step has
+ * to tell those apart: a Ranger's first realm is Nature and asking which of the
+ * one they would like is a question with a single answer.
+ */
+int player_realm_choices(const struct player_class *c, int slot,
+						 const struct magic_realm **out, int max)
+{
+	const struct magic_realm *r;
+	int found = 0;
+
+	if (!c || slot < 0 || slot >= REALM_CHOICES) return 0;
+
+	for (r = realms; r; r = r->next) {
+		if (!c->magic.realm_allowed[slot][r->ridx]) continue;
+		if (out && found < max) out[found] = r;
+		found++;
+	}
+
+	return found;
+}
+
+/**
+ * Put a character on the first realm each of their slots allows (PLR-08).
+ *
+ * Called whenever the class changes, which is why it clears the slots it does
+ * not fill: a character who was a Priest and is now a Rogue must not keep Life
+ * in a slot the Rogue does not have.
+ */
+void player_realm_default(struct player *p)
+{
+	int slot;
+
+	for (slot = 0; slot < REALM_CHOICES; slot++) {
+		const struct magic_realm *first = NULL;
+
+		p->realm[slot] = NULL;
+		if (!p->class || slot >= p->class->magic.realm_count) continue;
+
+		if (player_realm_choices(p->class, slot, &first, 1) > 0) {
+			p->realm[slot] = first;
+		}
+	}
+}
+
+/**
+ * Whether this character studies a realm (PLR-08).
+ *
+ * A class with no entitlement at all -- a Warrior, or Angband's Druid before
+ * its single realm was recorded -- studies nothing and this is false for every
+ * realm, which is the right answer rather than a special case.
+ */
+bool player_studies_realm(const struct player *p, const struct magic_realm *r)
+{
+	int slot;
+
+	if (!p || !r) return false;
+
+	for (slot = 0; slot < REALM_CHOICES; slot++) {
+		if (p->realm[slot] == r) return true;
+	}
+
+	return false;
+}
+
 const struct class_book *player_object_to_book(const struct player *p,
 		const struct object *obj)
 {

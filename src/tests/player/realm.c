@@ -26,6 +26,8 @@
 #include "init.h"
 #include "obj-tval.h"
 #include "player.h"
+#include "player-birth.h"
+#include "player-spell.h"
 #include "test-utils.h"
 
 int setup_tests(void **state) {
@@ -34,6 +36,17 @@ int setup_tests(void **state) {
 #ifdef UNIX
 	create_needed_dirs();
 #endif
+
+	/*
+	 * A real character, because three of these call player_generate() to watch
+	 * what changing class does to the realms. Without one the first of them
+	 * segfaults rather than failing, which reads as the suite dying and not as
+	 * a test result.
+	 */
+	if (!player_make_simple(NULL, NULL, "Student")) {
+		cleanup_angband();
+		return 1;
+	}
 
 	*state = NULL;
 	return 0;
@@ -250,6 +263,213 @@ static int test_a_priests_spell_order_is_unchanged(void *state) {
 	ok;
 }
 
+/**
+ * Which realms each class may study, against Zangband's own table (PLR-08).
+ *
+ * The entitlements are Zangband's, out of `realm_choices1[]` and
+ * `realm_choices2[]` ([tables.c:5329](../archive/zangband/src/tables.c#L5329)),
+ * and the expectations below are transcribed from that table rather than from
+ * anybody's idea of what a class should be able to study. Two of them are worth
+ * knowing about before reading the list as though it were designed:
+ *
+ * - **A Priest's second realm is anything but Life or Death.** The first slot
+ *   offers the two priestly realms and the second offers the other five, so a
+ *   Priest ends up with one holy realm and one that is not.
+ * - **A Ranger's first realm is Nature and there is no choice about it.** A
+ *   single-entry set is an entitlement, not a choice, and the birth step has to
+ *   tell those apart or it will ask a question with one answer.
+ *
+ * Angband's Druid, Necromancer and Blackguard have no Zangband counterpart, so
+ * each is entitled to the one realm it already studies. That keeps what they can
+ * cast exactly as it is, which is the constraint DEC-49 set.
+ */
+static int test_class_realm_entitlements_match_zangband(void *state) {
+	static const struct {
+		const char *cls;
+		int count;
+		const char *slot1;
+		const char *slot2;
+	} expect[] = {
+		{ "Mage",        2, "arcane life nature death sorcery chaos trump",
+		                    "arcane life nature death sorcery chaos trump" },
+		{ "Priest",      2, "life death", "arcane nature sorcery chaos trump" },
+		{ "Rogue",       1, "arcane death sorcery trump", NULL },
+		{ "Ranger",      2, "nature", "arcane death sorcery chaos trump" },
+		{ "Paladin",     1, "life death", NULL },
+		/* Angband's own three: one realm each, and nothing to choose. */
+		{ "Druid",       1, "nature", NULL },
+		{ "Necromancer", 1, "death", NULL },
+		{ "Blackguard",  1, "death", NULL },
+	};
+	size_t i;
+	int checked = 0;
+
+	for (i = 0; i < N_ELEMENTS(expect); i++) {
+		const struct player_class *c = find_class(expect[i].cls);
+		const struct magic_realm *r;
+		int slot;
+
+		notnull(c);
+		eq(c->magic.realm_count, expect[i].count);
+
+		for (slot = 0; slot < REALM_CHOICES; slot++) {
+			const char *want = slot ? expect[i].slot2 : expect[i].slot1;
+
+			for (r = realms; r; r = r->next) {
+				bool allowed = c->magic.realm_allowed[slot][r->ridx];
+				bool wanted = want && strstr(want, r->name) != NULL;
+
+				require(allowed == wanted);
+				checked++;
+			}
+		}
+	}
+
+	/* Eight classes, two slots, seven realms. */
+	eq(checked, 8 * REALM_CHOICES * REALM_MAX);
+
+	ok;
+}
+
+/**
+ * Every realm has an index, and they are the savefile's order.
+ *
+ * A character's realm choice is written by index, so the indices have to be
+ * dense, unique and in file order -- appending a realm must be safe and
+ * inserting one must not silently renumber a saved character's choice into a
+ * different realm.
+ */
+static int test_realms_are_numbered_in_file_order(void *state) {
+	const struct magic_realm *r;
+	unsigned int expected = 0;
+
+	static const char *const order[] = {
+		"arcane", "life", "nature", "death", "sorcery", "chaos", "trump"
+	};
+
+	for (r = realms; r; r = r->next) {
+		eq(r->ridx, expected);
+		require(streq(r->name, order[expected]));
+		expected++;
+	}
+
+	eq(expected, REALM_MAX);
+
+	ok;
+}
+
+/**
+ * A character is always studying something they can read (PLR-08).
+ *
+ * `player_generate()` defaults the realms from the class, and the case that
+ * matters is *changing* class at birth: a character who was a Priest and picks
+ * Rogue must not keep Life in a slot the Rogue does not have, or they would be
+ * carrying a realm whose books they cannot open.
+ *
+ * Asserted by walking a character through three classes with different
+ * entitlements, which is what the birth menu does when somebody browses.
+ */
+static int test_changing_class_leaves_no_stale_realm(void *state) {
+	const struct player_class *priest = find_class("Priest");
+	const struct player_class *rogue = find_class("Rogue");
+	const struct player_class *warrior = find_class("Warrior");
+	int slot;
+
+	notnull(priest);
+	notnull(rogue);
+	notnull(warrior);
+
+	/* A Priest studies two, and both are ones a Priest may. */
+	player_generate(player, NULL, priest, false);
+	notnull(player->realm[0]);
+	notnull(player->realm[1]);
+	for (slot = 0; slot < REALM_CHOICES; slot++) {
+		require(priest->magic.realm_allowed[slot][player->realm[slot]->ridx]);
+	}
+
+	/* A Rogue studies one, and the second slot is emptied rather than kept. */
+	player_generate(player, NULL, rogue, false);
+	notnull(player->realm[0]);
+	null(player->realm[1]);
+	require(rogue->magic.realm_allowed[0][player->realm[0]->ridx]);
+
+	/* And a Warrior studies nothing at all. */
+	player_generate(player, NULL, warrior, false);
+	null(player->realm[0]);
+	null(player->realm[1]);
+
+	ok;
+}
+
+/**
+ * A single-entry entitlement is not a choice.
+ *
+ * The birth step has to tell an entitlement from a choice or it will ask a
+ * Ranger which of the one realm they would like. `player_realm_choices()`
+ * returns the count so the caller can skip a slot with nothing to decide, and
+ * this pins the three shapes it has to distinguish: none, exactly one, and
+ * several.
+ */
+static int test_a_single_entitlement_is_not_a_choice(void *state) {
+	const struct magic_realm *got[REALM_MAX];
+
+	/* None: a Warrior chooses nothing in either slot. */
+	eq(player_realm_choices(find_class("Warrior"), 0, got, REALM_MAX), 0);
+	eq(player_realm_choices(find_class("Warrior"), 1, got, REALM_MAX), 0);
+
+	/* One: a Ranger's first realm is Nature and there is no question. */
+	eq(player_realm_choices(find_class("Ranger"), 0, got, REALM_MAX), 1);
+	require(streq(got[0]->name, "nature"));
+
+	/* Several: a Ranger's second is a genuine choice of five. */
+	eq(player_realm_choices(find_class("Ranger"), 1, got, REALM_MAX), 5);
+
+	/* And a Mage chooses from all seven, twice. */
+	eq(player_realm_choices(find_class("Mage"), 0, got, REALM_MAX), REALM_MAX);
+	eq(player_realm_choices(find_class("Mage"), 1, got, REALM_MAX), REALM_MAX);
+
+	/* A slot beyond the last is answered rather than read past. */
+	eq(player_realm_choices(find_class("Mage"), REALM_CHOICES, got,
+							REALM_MAX), 0);
+	eq(player_realm_choices(NULL, 0, got, REALM_MAX), 0);
+
+	ok;
+}
+
+/**
+ * Studying a realm is asked of the character, not the class.
+ *
+ * `player_studies_realm()` is what the spell machinery will gate on once the
+ * books arrive, so it has to answer for the realms a character actually chose
+ * rather than the ones their class allows. A Priest may study Chaos and mostly
+ * does not.
+ */
+static int test_studying_is_a_property_of_the_character(void *state) {
+	const struct player_class *priest = find_class("Priest");
+	const struct magic_realm *life = find_realm("life");
+	const struct magic_realm *chaos = find_realm("chaos");
+
+	notnull(priest);
+	notnull(life);
+	notnull(chaos);
+
+	player_generate(player, NULL, priest, false);
+
+	/* Defaulted to the first of each slot: Life, and then Arcane. */
+	require(player_studies_realm(player, life));
+	require(!player_studies_realm(player, chaos));
+
+	/* Chaos is allowed in the second slot, and taking it is what counts. */
+	require(priest->magic.realm_allowed[1][chaos->ridx]);
+	player->realm[1] = chaos;
+	require(player_studies_realm(player, chaos));
+
+	require(!player_studies_realm(player, NULL));
+	require(!player_studies_realm(NULL, life));
+
+	ok;
+}
+
 const char *suite_name = "player/realm";
 struct test tests[] = {
 	{ "seven-realms-exist", test_seven_realms_exist },
@@ -260,5 +480,15 @@ struct test tests[] = {
 	{ "every-book-kept-its-place", test_every_book_kept_its_place },
 	{ "a-priests-spell-order-is-unchanged",
 	  test_a_priests_spell_order_is_unchanged },
+	{ "class-realm-entitlements-match-zangband",
+	  test_class_realm_entitlements_match_zangband },
+	{ "realms-are-numbered-in-file-order",
+	  test_realms_are_numbered_in_file_order },
+	{ "changing-class-leaves-no-stale-realm",
+	  test_changing_class_leaves_no_stale_realm },
+	{ "a-single-entitlement-is-not-a-choice",
+	  test_a_single_entitlement_is_not_a_choice },
+	{ "studying-is-a-property-of-the-character",
+	  test_studying_is_a_property_of_the_character },
 	{ NULL, NULL }
 };

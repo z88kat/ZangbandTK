@@ -472,6 +472,24 @@ void wr_player(void)
 	wr_string(player->patron ? player->patron->name : "");
 
 	/*
+	 * The realms this character studies (ZangbandTK, PLR-08, PLR-11).
+	 *
+	 * By name and by count, for the same two reasons as the patron and the
+	 * virtues below: a realm's index is its position in realm.txt, which is a
+	 * load-order detail, and a reader that loops to its own compile-time
+	 * constant is how thirty-five savefiles stopped loading once already.
+	 *
+	 * An empty string for a slot the class does not have, rather than a
+	 * shorter count, so the slot a realm was chosen in survives -- a
+	 * Warrior-Mage's first realm is always Arcane and its second is free, and
+	 * which is which matters.
+	 */
+	wr_byte(REALM_CHOICES);
+	for (i = 0; i < REALM_CHOICES; i++) {
+		wr_string(player->realm[i] ? player->realm[i]->name : "");
+	}
+
+	/*
 	 * The virtues this character is measured against (ZangbandTK, PLR-18).
 	 *
 	 * Written by count, and by name rather than by index.  The count first,

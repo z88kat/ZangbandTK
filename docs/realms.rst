@@ -3,12 +3,10 @@ The Realms of Magic
 
 .. note::
 
-   **Under construction.** The seven realms exist and every book in the game
-   belongs to one of them. Choosing a realm at birth, and the spells that fill
-   Sorcery, Chaos and Trump, are not built: two questions about what to import
-   are with the project owner (DEC-50 and DEC-51). Until those are settled, the
-   three new realms are names with no books behind them, and no class offers a
-   choice.
+   **Under construction.** You choose your realms at birth and your character
+   sheet records them. What is not built yet is the spells that fill Sorcery,
+   Chaos and Trump — until those arrive, choosing one of the three new realms
+   gives you a realm with no books behind it.
 
 Spellcasters in ZangbandTK choose realms of magic at birth, and that choice
 defines the character as much as the class does. Angband asks you what you are;
@@ -75,6 +73,56 @@ scattered per-class constants, and Angband's way of holding it is better.
    only in the dungeon. Folding the two together, which having exactly seven
    realms requires, keeps the stronger of the two. If you know Zangband, Arcane
    is not the realm you remember.
+
+Choosing them
+-------------
+
+Realm choice is a birth step of its own, after race and class, because which
+realms you may study is a property of your **class**. That is what makes the
+combination mean something rather than merely being wide: a Paladin is offered
+Life or Death and nothing else, and a Mage is offered all seven twice over.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 22 34 44
+
+   * - Class
+     - First realm
+     - Second realm
+   * - Mage
+     - any of the seven
+     - any of the seven
+   * - Priest
+     - Life or Death
+     - any of the other five
+   * - Paladin
+     - Life or Death
+     - —
+   * - Rogue
+     - Arcane, Death, Sorcery or Trump
+     - —
+   * - Ranger
+     - Nature
+     - Arcane, Death, Sorcery, Chaos or Trump
+   * - Druid
+     - Nature
+     - —
+   * - Necromancer
+     - Death
+     - —
+   * - Blackguard
+     - Death
+     - —
+
+Two of those rows are worth reading twice. **A Priest's second realm cannot be
+Life or Death** — the first slot offers the two priestly realms and the second
+offers the other five, so a Priest always ends up with one holy realm and one
+that is not. And **a Ranger's first realm is Nature and there is no choice about
+it**; you are not asked, because a list of one is not a question.
+
+These entitlements are Zangband's own, taken from the same table Zangband keeps
+them in, and the game checks itself against that table rather than against
+anybody's idea of what a class ought to study.
 
 Nothing you could cast before has changed
 -----------------------------------------

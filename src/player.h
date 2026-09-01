@@ -415,8 +415,20 @@ struct start_item {
 /**
  * Structure for magic realms
  */
+/**
+ * How many realms there are, and how many a character may study (PLR-08).
+ *
+ * Seven is PLR-09's number and DEC-49's mapping; two is the most Zangband ever
+ * lets one character take, and which two is decided at birth from a set the
+ * class allows. `realm.txt` is checked against this at load rather than the
+ * number being trusted.
+ */
+#define REALM_MAX		7
+#define REALM_CHOICES	2
+
 struct magic_realm {
 	struct magic_realm *next;
+	unsigned int ridx;	/**< Index, assigned on load; the savefile's order */
 	char *code;
 	char *name;
 	int virtues[MAX_REALM_VIRTUES];	/**< First not already held (PLR-19) */
@@ -460,6 +472,24 @@ struct class_book {
  * Information about class magic knowledge
  */
 struct class_magic {
+	/**
+	 * Which realms this class may study, and in which slot (PLR-08).
+	 *
+	 * Two sets rather than one, because Zangband's entitlements are not
+	 * symmetric: a Warrior-Mage's first realm is always Arcane and the second
+	 * is free, where a High-Mage takes one realm from all seven and no second
+	 * at all. Read out of `realm_choices1[]` and `realm_choices2[]`
+	 * ([tables.c:5329](../archive/zangband/src/tables.c#L5329)) and checked
+	 * against them by `player/realm`, so the table stays the authority.
+	 *
+	 * An empty first set means the class does not choose -- which is not the
+	 * same as not casting. Angband's Druid, Necromancer and Blackguard have no
+	 * Zangband counterpart, so each is entitled to the one realm it already
+	 * studies and has nothing to choose between.
+	 */
+	bool realm_allowed[REALM_CHOICES][REALM_MAX];
+	int realm_count;			/**< How many realms this class picks */
+
 	int spell_first;			/**< Level of first spell */
 	int spell_weight;			/**< Max armor weight to avoid mana penalties */
 	int num_books;				/**< Number of spellbooks */
@@ -826,6 +856,10 @@ struct player {
 							the bloodlust check
 							but then was canceled
 							by the user) */
+	/** The realms this character studies, chosen at birth (PLR-08, PLR-11). */
+	const struct magic_realm *realm[REALM_CHOICES];
+	bool realm_chosen[REALM_CHOICES];	/**< Picked, rather than defaulted */
+
 	uint8_t *spell_flags;			/* Spell flags */
 	uint8_t *spell_order;			/* Spell order */
 

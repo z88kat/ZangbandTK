@@ -204,6 +204,8 @@ title:Sorcerer
 title:Arch-Mage
 
 magic:1:300:5
+realm-choice:1:arcane | life | nature | death | sorcery | chaos | trump
+realm-choice:2:arcane | life | nature | death | sorcery | chaos | trump
 
 book:magic book:town:[First Spells]:7:arcane
 book-graphics:?:R
@@ -482,6 +484,7 @@ title:Stormwielder
 title:High Mystic
 
 magic:1:350:5
+realm-choice:1:nature
 
 book:nature book:town:[Lesser Charms]:6:nature
 book-graphics:?:y
@@ -722,6 +725,8 @@ title:Patriarch
 title:High Priest
 
 magic:1:350:5
+realm-choice:1:life | death
+realm-choice:2:arcane | nature | sorcery | chaos | trump
 
 book:prayer book:town:[Novice's Handbook]:6:life
 book-graphics:?:G
@@ -990,6 +995,7 @@ title:Dark Master
 title:Night Lord
 
 magic:1:300:5
+realm-choice:1:death
 
 book:shadow book:town:[Into the Shadows]:5:death
 book-graphics:?:P
@@ -1253,6 +1259,7 @@ title:Paladin
 title:Paladin Lord
 
 magic:1:400:3
+realm-choice:1:life | death
 
 book:prayer book:town:[Novice's Handbook]:6:life
 
@@ -1416,6 +1423,7 @@ title:Thief
 title:Master Thief
 
 magic:5:350:2
+realm-choice:1:arcane | death | sorcery | trump
 
 book:magic book:town:[First Spells]:7:arcane
 
@@ -1524,6 +1532,8 @@ title:Ranger
 title:Ranger Lord
 
 magic:3:400:2
+realm-choice:1:nature
+realm-choice:2:arcane | death | sorcery | chaos | trump
 
 book:nature book:town:[Lesser Charms]:6:nature
 
@@ -1636,6 +1646,7 @@ title:Destroyer
 title:Tyrant
 
 magic:1:600:3
+realm-choice:1:death
 
 book:shadow book:town:[Into the Shadows]:6:death
 

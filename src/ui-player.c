@@ -694,7 +694,14 @@ static const uint8_t colour_table[] =
 
 
 static struct panel *get_panel_topleft(void) {
-	struct panel *p = panel_allocate(player->patron ? 7 : 6);
+	/*
+	 * Sized for what this character actually has, because panel_line() asserts
+	 * rather than growing -- one line too many aborts the game, which is how
+	 * the realms line was found by the birth frontend test rather than by any
+	 * unit suite.
+	 */
+	struct panel *p = panel_allocate(6 + (player->patron ? 1 : 0)
+									 + (player->realm[0] ? 1 : 0));
 
 	panel_line(p, COLOUR_L_BLUE, "Name", "%s", player->full_name);
 	panel_line(p, COLOUR_L_BLUE, "Race",	"%s", player->race->name);
@@ -707,6 +714,25 @@ static struct panel *get_panel_topleft(void) {
 	 */
 	if (player->patron)
 		panel_line(p, COLOUR_L_RED, "Patron", "%s", player->patron->name);
+
+	/*
+	 * And what they study (ZangbandTK, PLR-11).
+	 *
+	 * One line whether the character has one realm or two, because the pair is
+	 * the character: a Mage of Chaos and Death is not the same Mage as one of
+	 * Life and Sorcery, and reading them apart on separate lines makes the
+	 * combination harder to see than it should be. Omitted entirely for a
+	 * Warrior, who has nothing to say here.
+	 */
+	if (player->realm[0]) {
+		if (player->realm[1]) {
+			panel_line(p, COLOUR_L_GREEN, "Realms", "%s and %s",
+					   player->realm[0]->name, player->realm[1]->name);
+		} else {
+			panel_line(p, COLOUR_L_GREEN, "Realm", "%s",
+					   player->realm[0]->name);
+		}
+	}
 
 	panel_line(p, COLOUR_L_BLUE, "Title", "%s", show_title());
 	panel_line(p, COLOUR_L_BLUE, "HP", "%d/%d", player->chp, player->mhp);

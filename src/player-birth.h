@@ -45,4 +45,6 @@ void do_cmd_accept_character(struct command *cmd);
 
 char *find_roman_suffix_start(const char *buf);
 
+void do_cmd_choose_realm(struct command *cmd);
+
 #endif /* !PLAYER_BIRTH_H */
