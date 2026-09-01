@@ -77,4 +77,12 @@ OF(STRANGE_LUCK, "WrdLk")
 OF(PSI_CRIT, "PsiCr")
 /* ZangbandTK (CNT-07): a Lord of the Courts takes an interest.  Appended. */
 OF(PATRON, "Patrn")
+/*
+ * ZangbandTK (PLR-13): a mouth that ordinary food does not suit.  Appended.
+ *
+ * Zangband's TR_CANT_EAT, which a beak sets and which several of its undead
+ * races carry.  The beak is the only holder here; the races that had it in
+ * Zangband are not among the nine this game took.
+ */
+OF(CANT_EAT, "NoEat")
 OF(MAX, "")

@@ -29,6 +29,8 @@ int setup_tests(void **state) {
 	create_needed_dirs();
 #endif
 
+	(void) test_seed_rng_reported(suite_name);
+
 	if (!player_make_simple(NULL, NULL, "Tester")) {
 		cleanup_angband();
 		return 1;

@@ -1089,3 +1089,11 @@ id-type:on effect
 code:EASY_ENCHANT
 power:4
 desc:Takes enchantment more readily than its make suggests
+
+name:cannot eat properly
+type:flag
+subtype:bad
+id-type:on wield
+code:CANT_EAT
+power:-8
+desc:Leaves you a twentieth of the good in anything you eat

@@ -49,9 +49,14 @@ effects = [ "COMMAND" ]
 
 [TELEKINES]
 line = 877
-defer = """fetch() has no equivalent. 4.2 has no effect that pulls a distant \
-object to the player -- the closest, TELEPORT_TO, moves the player instead, \
-which is the opposite of what telekinesis is for."""
+defer = """Deferred to M9, not open-ended. Needs a FETCH effect: 4.2 has \
+nothing that pulls a distant object to the player, and the closest, \
+TELEPORT_TO, moves the player instead, which is the opposite of what \
+telekinesis is for. Zangband's fetch() is 110 lines and handles weight, line of \
+sight and object piles. It is folded into M9 because it has three consumers \
+rather than one -- this mutation, Sorcery's Telekinesis spell, and the Trump \
+realm, which calls the same function -- so the effect gets designed once \
+against all three instead of retrofitted twice."""
 
 [VTELEPORT]
 line = 886
@@ -115,10 +120,14 @@ effects = [ "ALTER:KILL_WALL", "NOURISH:INC_TO:5000" ]
 
 [SWAP_POS]
 line = 1062
-defer = """teleport_swap() exchanges the player and a monster. 4.2 has \
-TELEPORT_TO, which moves the player to the target and leaves the monster where \
-it is -- so the player arrives inside a square that is still occupied. The \
-mechanic is a swap or it is nothing."""
+defer = """Deferred to M9, not open-ended. teleport_swap() exchanges the \
+player and a monster, and TELEPORT_TO leaves the monster where it is, so the \
+player arrives inside an occupied square -- the mechanic is a swap or it is \
+nothing. Cheaper than it looks: monster_swap() already exists in 4.2 \
+(mon-util.c:644) and handles the player, so this is an effect handler over a \
+primitive the game runs on every monster turn. It rides along with M9 because \
+that is where the mutation-power gap is being closed, not because the realms \
+need it."""
 
 [SHRIEK]
 line = 1070
@@ -164,9 +173,14 @@ effects = [ "POLY_SELF" ]
 
 [MIDAS_TCH]
 line = 1110
-defer = """alchemy() turns a chosen object into gold at a fraction of its \
-value. 4.2 has no effect that destroys an object for money, and inventing one \
-here would be inventing an economy mechanic to hang one mutation on."""
+reject = """Rejected by DEC-48 rather than deferred: too much work for \
+something that changes no game. `alchemy()` turns a chosen object into gold at \
+a fraction of its value, and 4.2 has no effect that destroys an object for \
+money -- so building it means inventing an economy mechanic (what fraction, of \
+what valuation, and what it does to the shops that price against the same \
+numbers) to hang one mutation on. The mutation itself is a convenience: it \
+turns loot you were going to sell into gold without the walk back to town, \
+which the game already lets you do by walking back to town."""
 
 [GROW_MOLD]
 line = 1115
@@ -233,11 +247,13 @@ would tell the player something already on screen."""
 
 [STERILITY]
 line = 1223
-defer = """Stops every breeding monster on the level from breeding, at the \
-cost of 17-34 hit points. 4.2 tracks breeding with `num_repro` against \
-`repro_monster_max`, so the mechanic is there, but no effect reaches it and \
-adding one to carry a single mutation is a change to monster generation \
-made from the wrong end."""
+defer = """Deferred to M9, not open-ended. Stops every breeding monster on \
+the level from breeding, at the cost of 17-34 hit points. 4.2 tracks breeding \
+with `num_repro` against `repro_monster_max` and the counter is live (read at \
+mon-move.c:1077), so this is an effect that sets one field plus a damage term. \
+The reservation stands and is a judgement rather than an obstacle: it reaches \
+into monster generation to carry a single mutation. It rides along with M9 \
+because that is where the mutation-power gap is being closed."""
 
 [PANIC_HIT]
 line = 1231

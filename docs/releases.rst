@@ -30,8 +30,204 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+M9: magic realms — 1 September 2026
+-----------------------------------
+
+- **3.51.0** — **Seven realms** (PLR-09, PLR-10, DEC-49). Angband has four
+  realms and Zangband has seven, and the two lists overlap by name without
+  overlapping by meaning. The four are mapped onto four of the seven by content
+  — ``arcane`` keeps its name, ``divine`` becomes **Life**, ``shadow`` becomes
+  **Death**, ``nature`` keeps its name — and Sorcery, Chaos and Trump are added.
+  Exactly seven, with all of Angband's metadata kept: casting stat, verb, spell
+  noun and book noun, which Zangband held as scattered per-class constants.
+
+  **Nothing an existing character can cast has changed.** Realms are not written
+  to the savefile — books are matched by tval and sval — so the rename cost
+  sixteen ``book:`` lines and nothing else. Every class keeps the same books in
+  the same order with the same spells at the same levels; the only difference is
+  the internal name of the realm two book sets belong to, which no player ever
+  sees. ``player/realm`` pins the shape of all eight casting classes so that no
+  later phase of this milestone can disturb one quietly: inserting a book
+  anywhere but the end of a class's list shifts every spell a saved character
+  knows one place along, and the game would load and look reasonable.
+
+  **This game's Arcane is stronger than Zangband's**, and that is the one place
+  the mapping is not clean. Zangband's Arcane was the deliberate weak generalist
+  with every book buyable in town and no high-level power; Angband's is the
+  Mage's realm with two books of attacks and a dungeon-only Tome of Power.
+  Having exactly seven realms requires folding them, and folding keeps the
+  stronger.
+
+  Also here: **the third flake of the session, identified and derived rather
+  than nudged.** ``a-borrowed-lord-is-kinder`` compared how often a sworn and a
+  borrowed Chaos patron reach the cruel end of the reward ladder, over four
+  thousand rolls, and required a ratio above 1.5. The bottom quarter of the
+  ladder is rare enough that four thousand rolls give only 74 to 99 events, so
+  the ratio ranged 1.475 to 2.284 and the bound sat one and a half standard
+  deviations out. It failed about one whole-suite run in fifteen, and the run
+  that caught it named its own seed — 1604416127 — which is what the runner
+  change in 3.50.3 was for. Ten times the rolls puts the bound six standard
+  deviations clear, and the arithmetic is in the comment so the next reader does
+  not have to redo it.
+
 Testing — 31 August 2026
 -------------------------
+
+- **3.50.4** — **One bad crawl, and two wrong accounts of it.** Every archived
+  citation in the plans and docs re-checked one at a time — thirty-six of them
+  — before M9 begins, because DEC-16 makes those documents a primary source and
+  the realm spell lists are M9's immediate input.
+
+  **Twelve were dead, and they have one thing in common.** All twelve carried
+  the timestamp ``20220527225941``, and all twelve are spoilers. The 2022-04-20
+  crawl of ``www.zangband.org`` captured everything; the 2022-05-27 crawl of the
+  bare domain captured the homepage and almost nothing under it. All twelve are
+  whole at ``20220420164xxx`` and have been repointed.
+
+  **There is no parking page**, and ``spoilers/life.txt`` is not unarchived.
+  Both were recorded here and neither is true: fetched with ``id_``, the
+  2022-05-27 root is the genuine zangband.org homepage, and life.txt returns
+  13,854 bytes — the complete Life realm spell list — at the timestamp already
+  cited for it. It had been written off on a bad availability check.
+
+  **No requirement rests on a document nobody read.** The four that cite a
+  spoiler as their basis were checked against the recovered text and all four
+  match: nightmare mode is the irreversible birth option BAL-15…17 describes,
+  the Ancient and Foul Curse is CNT-15's, random object abilities are CNT-16's,
+  and DEC-38 names all sixteen of Zangband's patrons correctly before replacing
+  them with nine Lords of the Courts. The citations were stale; the reading was
+  not.
+
+  A note on method, because the first pass got it wrong. A throttled fetch from
+  archive.org returns zero bytes and looks exactly like an absent document: the
+  first sweep declared twenty-one citations dead, and retrying each failure
+  three times reduced that to twelve. Nine documents were nearly rewritten out
+  of the plan because the archive was busy.
+
+- **3.50.3** — **The same mistake, in the test written to replace it.** The
+  fourteen-run check on 3.50.2 flaked twice, and it was neither the code nor the
+  doorstep: it was ``a-character-at-sea-still-finds-ground``, added one release
+  earlier, asserting ``restored > 200``. Eight rings around the character are
+  289 squares only when the character is not within eight squares of the edge
+  of the level; nearer the edge the out-of-bounds squares are skipped and the
+  count comes in under the floor for a reason that has nothing wrong with it.
+  A constant standing in for an invariant — exactly what 3.50.2 removed from
+  the doorstep — put back by the test that removed it. It now asserts that
+  everything flooded was restored, which is the actual invariant and has no
+  number in it.
+
+  **And the seed the runner threw away.** 3.50.2 gave every sampling suite a
+  seed line so a flaky failure could be replayed, and it did not work: a suite
+  returns zero whether or not its tests passed, so ``run_tests.cmake`` took the
+  success branch and discarded the output — seed included — unless ``VERBOSE``
+  happened to be set. That is precisely the case the line was added for. The
+  runner now echoes a suite's output whenever it reports fewer passes than
+  tests, and the next failure named its seed on the first try: 936496483.
+
+  Sixteen consecutive whole-suite runs clean, which is the claim 3.50.2 should
+  have waited for.
+
+- **3.50.2** — **A bound set from eight worlds, and the seed that found the
+  ninth.** ``the-doorstep-is-survivable`` required the mean wilderness danger
+  within six blocks of the starting town to be at most 12 — a figure taken from
+  eight worlds where it came out between 1 and 6. Eight was not enough: on seed
+  1829551357 it is 14, and the test failed about one whole-suite run in eight
+  for six releases.
+
+  The bound was not wrong by a little, it was measuring the wrong thing. On that
+  same seed the country beyond twelve blocks averages 27, so the doorstep is
+  less than half as dangerous as the wilderness proper and the world is behaving
+  exactly as intended. What the requirement says is that danger *climbs* as you
+  walk out — a comparison between two parts of one world, true by construction
+  because towns are placed in lawful country and law is what danger reads. It
+  has no constant in it to be set from too small a sample. Near 14/7/1/1/1
+  against far 27 every time, across five worlds including the one that broke the
+  old bound; and measuring around an arbitrary block instead of the town fails
+  it on most worlds, so it still discriminates.
+
+  **Every sampling suite now reports its seed.** Only ``game/wild`` did, which
+  is why its flake took one command to reproduce once the seed was in hand and
+  the one in ``object/imported`` was never identified at all. Seven suites
+  gained ``test_seed_rng_reported()``, printed unconditionally rather than under
+  ``-v``, because a flaky failure in CI is exactly the case where nobody thought
+  to ask for verbose output first.
+
+  The rest of the audit found no other test at risk. ``cave/wild``'s terrain
+  composition looks like the same shape and is not — it aggregates twenty
+  *fixed* seeds and cannot vary. The remaining sampled bounds are all far from
+  their means: weird luck's out-of-depth rate is 8.7 standard deviations clear,
+  a Vampire's hypnotic gaze 6.5, the patron notice rate 11.9, and the
+  cross-habitat rate measures 93–95 against a bound of 70. Those were derived
+  rather than guessed, and two of them say so in their own comments.
+
+- **3.50.1** — **The Midas touch is dropped** (DEC-48). Turning objects into
+  gold needs an effect that destroys an object for money, which 4.2 has not
+  got — and building one means settling what fraction, of what valuation, and
+  what that does to the shops pricing against the same numbers. That is an
+  economy mechanic with exactly one consumer, for a mutation that saves the
+  player a walk back to town.
+
+  Recorded as a rejection and not a deferral, so it is not picked up again by
+  someone reading the deferred list as a queue. ``mutmap.toml`` gained a
+  ``reject`` key beside ``defer`` for it — the same split ``objmap.toml``
+  already had — and the conversion report lists it under REJECTED.
+
+  The consequence reaches the screen: the power menu now shows six of its
+  unusable entries as *not yet* and this one as **dropped**, and says so when
+  it is chosen. *Not yet* is a promise, and it is not one this game intends to
+  keep. The mutation is still gained, described and saved, on DEC-44's
+  reasoning that a mutation vanishing from a savefile is worse than one that
+  does nothing.
+
+- **3.50.0** — **Closing M8: the clearing form, and six brackets that lied.**
+  Four items the audit turned up after the milestone was declared complete.
+
+  **The converter read only half of Zangband's flag syntax.** `SET_FLAG(of_ptr,
+  TR_X)` has a counterpart written `flags[n] &= ~(TRn_X)`, with the word index
+  baked into both the subscript and the macro name so it matches nothing the
+  parser looked for. Three mutations use it and all three were kinder here than
+  in Zangband: rotting flesh is meant to stop a character regenerating, and the
+  panic-hit and warning mutations to stop them resisting fear — whether that
+  regeneration or resistance came from another mutation or from a ring they are
+  wearing. Reading the clearing form across **all seven** parsed regions of the
+  Zangband source turns up nothing else: it appears in ``player_flags()`` and
+  in one line its own authors had already commented out.
+
+  Fixing the pattern exposed a second bug of the same kind. Both block regexes
+  closed on a fixed indentation and were blind to brace depth, so the
+  chaos-gift test — which sits one tab shallower than the mutation blocks
+  around it — ran past its own closing brace and claimed a flag belonging to
+  vampirism. Both now match the closing brace to the opening one. This is the
+  third brace-blind read of this source; the shape is now shared whether or not
+  a region happens to be uniform.
+
+  **Three mutations stop ordinary food feeding you**, which reached no data file
+  and no code at all. A beak, a mouth that eats rock and a taste for blood all
+  set Zangband's ``TR_CANT_EAT``, whose eat command leaves such a character a
+  twentieth of what they swallow. Scoped to edible things, which is Zangband's
+  own scope — a potion of Cure Light Wounds still nourishes as much as it ever
+  did, and the test asserts that half too, because dropping the scope passes
+  every other check.
+
+  **A mutation's bracket is now generated from its effects.** Six descriptions
+  named some of what they do and not the rest, and the worst of them — a living
+  computer brain — advertised four points of intelligence and wisdom and said
+  nothing about the vulnerability to electricity. Curating six strings would
+  have left the seventh to be found the same way, so the text is derived:
+  Zangband's sentence, and a bracket built from the entry's own fields. It
+  costs the occasional redundancy (*completely fearless (immune to fear)*) and
+  buys never shipping a description that hides a downside.
+
+  **And the flake this suite carried for six releases.**
+  ``find_open_grid_near()`` in ``game/wild`` searched eight rings for a square
+  that is empty and not damaging, and ``square_isdamaging()`` is true of deep
+  water — of which this wilderness holds some 330,000 grids. A character
+  generated in open ocean has no acceptable square in the 289 that eight rings
+  cover, so two tests failed about one whole-suite run in eight and never once
+  in two hundred runs of the suite alone. It falls back to the whole level now,
+  which cannot fail on a level with one open square on it. A new test floods
+  the surroundings deliberately, so the case is exercised every run rather than
+  one in eight; removing the fallback fails it and both historic offenders.
 
 - **3.49.6** — **The mutations page drew over the stat table**, so ``WIS``
   read as ``IS`` and ``DEX`` vanished. The stat panel starts at column 42 and a

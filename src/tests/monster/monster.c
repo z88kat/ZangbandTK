@@ -16,6 +16,8 @@
 int setup_tests(void **state) {
 	set_file_paths();
 	init_angband();
+
+	(void) test_seed_rng_reported(suite_name);
 	*state = 0;
 	return 0;
 }

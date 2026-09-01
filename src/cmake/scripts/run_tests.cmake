@@ -233,7 +233,17 @@ while(_X LESS CMAKE_ARGC)
             math(EXPR _PASS "${_PASS} + ${_THISPASS}")
             math(EXPR _TOTAL "${_TOTAL} + ${_THISTOTAL}")
             if(NOT _QUIET)
-                if(_VERBOSE)
+                # Echo the output when asked, and always when something in
+                # the suite failed.
+                #
+                # A suite returns 0 whether or not its tests passed, so a
+                # failing run took this branch and had its output thrown away
+                # unless VERBOSE happened to be set. That is precisely the
+                # flaky-in-CI case: nobody knew to ask for verbose output
+                # beforehand, and the suites print the RNG seed needed to
+                # reproduce the run. Two runs in fourteen failed with the seed
+                # sitting in output this script discarded.
+                if(_VERBOSE OR (_THISPASS LESS _THISTOTAL))
                     # Echo the output from test case.
                     set(_MATCHCOUNT 0)
                     string(LENGTH "${_RUN_OUTPUT}" _RESLENGTH)

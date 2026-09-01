@@ -14,11 +14,17 @@
 #include "unit-test.h"
 
 #include "init.h"
+#include "obj-make.h"
+#include "obj-pile.h"
+#include "obj-tval.h"
+#include "obj-util.h"
+#include "object.h"
 #include "player.h"
 #include "player-birth.h"
 #include "effects.h"
 #include "player-calcs.h"
 #include "player-mutation.h"
+#include "player-timed.h"
 #include "test-utils.h"
 
 int setup_tests(void **state) {
@@ -27,6 +33,8 @@ int setup_tests(void **state) {
 #ifdef UNIX
 	create_needed_dirs();
 #endif
+
+	(void) test_seed_rng_reported(suite_name);
 
 	if (!player_make_simple(NULL, NULL, "Tester")) {
 		cleanup_angband();
@@ -535,6 +543,7 @@ static int test_the_activatable_split_is_what_was_decided(void *state) {
 		"TELEKINES", "SWAP_POS", "DET_CURSE", "MIDAS_TCH", "GROW_MOLD",
 		"WEIGH_MAG", "STERILITY", "LAUNCHER"
 	};
+	/* MIDAS_TCH is among them but refused rather than queued; see DEC-48. */
 	const struct mutation *m;
 	int with = 0, without = 0;
 	size_t i;
@@ -1022,6 +1031,328 @@ static int test_a_mutation_toggles_both_ways(void *state) {
 	ok;
 }
 
+/**
+ * Nothing a mutation does is missing from what it says it does.
+ *
+ * The reason this is a loop over all ninety-six and not a list of six names.
+ * Six descriptions were understating their mutations when M8 was declared
+ * complete, and the worst -- a living computer brain -- named four points of
+ * intelligence and wisdom and said nothing about the vulnerability to
+ * electricity that comes with it. A player reading that would take it for a
+ * gift.
+ *
+ * The bracket is now generated from the entry's own fields, so this checks the
+ * property that matters rather than the strings: for every effect a mutation
+ * carries, some corresponding word is in its description. Curating six strings
+ * by hand would have left the seventh to be found the same way.
+ */
+static int test_no_mutation_hides_what_it_does(void *state) {
+	static const char *const stat_name[] = {
+		"STR", "INT", "WIS", "DEX", "CON"
+	};
+	const struct mutation *m;
+	int checked = 0;
+
+	for (m = mutations; m; m = m->next) {
+		int i;
+
+		notnull(m->desc);
+
+		/* Every stat it moves is named. */
+		for (i = 0; i < STAT_MAX; i++) {
+			if (!m->modifiers[i]) continue;
+
+			require(strstr(m->desc, stat_name[i]));
+			checked++;
+		}
+
+		/* Armour, and the saving throw. */
+		if (m->armour) {
+			require(strstr(m->desc, "AC"));
+			checked++;
+		}
+		if (m->save) {
+			require(strstr(m->desc, "saving throw"));
+			checked++;
+		}
+
+		/* A vulnerability says so, and is never left to be discovered. */
+		for (i = 0; i < ELEM_MAX; i++) {
+			if (m->el_info[i] >= 0) continue;
+
+			require(strstr(m->desc, "vulnerable"));
+			checked++;
+		}
+
+		/* And so does anything it takes away. */
+		if (!of_is_empty(m->suppress)) {
+			require(strstr(m->desc, "no ") || strstr(m->desc, "cannot"));
+			checked++;
+		}
+	}
+
+	/*
+	 * A loop that checked nothing would pass every assertion above, so the
+	 * count is asserted too. Forty-nine effects across the ninety-six as the
+	 * roster stands; pinned a little below that so adding a mutation does not
+	 * fail this test, and far enough above zero that a parser returning empty
+	 * fields does.
+	 */
+	require(checked >= 45);
+
+	ok;
+}
+
+/**
+ * The three mutations that take a flag away.
+ *
+ * Zangband's `player_flags()` clears three: rotting flesh stops regeneration,
+ * and the panic-hit and warning mutations stop resistance to fear. They are
+ * written `flags[n] &= ~(TRn_X)` rather than as a `SET_FLAG`, so the converter
+ * read none of them for five releases and all three were kinder here than in
+ * Zangband.
+ *
+ * Asserted as an exact set, because the failure that matters is a fourth
+ * appearing or one of these three quietly going away when the parser changes.
+ */
+static int test_three_mutations_take_a_flag_away(void *state) {
+	const struct mutation *m;
+	int with = 0;
+
+	for (m = mutations; m; m = m->next) {
+		if (of_is_empty(m->suppress)) continue;
+
+		with++;
+	}
+	eq(with, 3);
+
+	m = mutation_by_name("FLESH_ROT");
+	notnull(m);
+	require(of_has(m->suppress, OF_REGEN));
+
+	m = mutation_by_name("PANIC_HIT");
+	notnull(m);
+	require(of_has(m->suppress, OF_PROT_FEAR));
+
+	m = mutation_by_name("WARNING");
+	notnull(m);
+	require(of_has(m->suppress, OF_PROT_FEAR));
+
+	ok;
+}
+
+/**
+ * Rotting flesh beats a ring of regeneration.
+ *
+ * The whole point of reading the clearing form: the suppression has to win
+ * against a flag the character has from somewhere else, not merely fail to
+ * grant one.
+ *
+ * What this does *not* prove is the second pass. `player_apply_mutations()`
+ * applies every grant and then every suppression, rather than both inside one
+ * loop, so the result cannot depend on the order `mutation.txt` lists things
+ * in. As the roster stands that is unobservable: the three suppressors sit at
+ * file positions 26, 60 and 72 and the flags they cancel are granted at 68, 88
+ * and 89, and the list is walked in reverse file order -- so every granter is
+ * reached before its suppressor and a one-pass version would give the same
+ * answer everywhere. The second pass is insurance against a generated file
+ * changing order, and this test cannot tell the two apart. Said plainly here
+ * rather than implied by an assertion that would pass either way.
+ */
+static int test_rotting_flesh_beats_worn_regeneration(void *state) {
+	const struct mutation *rot = mutation_by_name("FLESH_ROT");
+	const struct mutation *fearless = mutation_by_name("FEARLESS");
+	const struct mutation *panic = mutation_by_name("PANIC_HIT");
+
+	notnull(rot);
+	notnull(fearless);
+	notnull(panic);
+
+	flag_wipe(player->mutations, MUT_SIZE);
+	calc_bonuses(player, &player->state, false, true);
+	require(!of_has(player->state.flags, OF_REGEN));
+
+	require(player_gain_mutation(player, rot));
+	calc_bonuses(player, &player->state, false, true);
+	require(!of_has(player->state.flags, OF_REGEN));
+
+	/*
+	 * And a granted resistance loses to a suppression regardless of order:
+	 * fearlessness grants PROT_FEAR, the panic-hit power takes it away.
+	 */
+	flag_wipe(player->mutations, MUT_SIZE);
+	require(player_gain_mutation(player, fearless));
+	calc_bonuses(player, &player->state, false, true);
+	require(of_has(player->state.flags, OF_PROT_FEAR));
+
+	require(player_gain_mutation(player, panic));
+	calc_bonuses(player, &player->state, false, true);
+	require(!of_has(player->state.flags, OF_PROT_FEAR));
+
+	flag_wipe(player->mutations, MUT_SIZE);
+
+	ok;
+}
+
+/** Feed the character from an object, the way the eat command does. */
+static bool nourish(struct object *obj, int amount) {
+	struct effect effect = { 0 };
+	dice_t *dice = dice_new();
+	bool ident = false, used;
+
+	effect.index = EF_NOURISH;
+	effect.subtype = 0;
+	dice_parse_string(dice, format("%d", amount));
+	effect.dice = dice;
+
+	used = effect_do(&effect, source_player(), obj, &ident, true, 0, 0, 0,
+					 NULL);
+	dice_free(dice);
+
+	return used;
+}
+
+/**
+ * A beak leaves you a twentieth of your dinner.
+ *
+ * Three mutations set Zangband's `TR_CANT_EAT` -- a beak, rock-eating and
+ * vampirism -- and the converter dropped the flag entirely on the grounds that
+ * it was "a behaviour carried by the code that runs it". Nothing ran it: the
+ * flag reached no data file and no C, so a beaked character ate as well as
+ * anyone.
+ *
+ * The reduction is scoped to edible things, which is Zangband's own scope --
+ * it tests the flag inside `do_cmd_eat_food()` and nowhere else. So the second
+ * half of this checks a potion is *not* reduced, which is the part a careless
+ * fix would get wrong.
+ */
+static int test_a_beak_wastes_most_of_a_meal(void *state) {
+	const struct mutation *beak = mutation_by_name("BEAK");
+	struct object_kind *food = lookup_kind(TV_FOOD, 1);
+	struct object_kind *potion;
+	struct object *obj = object_new();
+	struct object *drink = object_new();
+	int fed, wasted;
+
+	notnull(beak);
+	require(of_has(beak->flags, OF_CANT_EAT));
+
+	/* All three carry it, which the converter now reads. */
+	require(of_has(mutation_by_name("EAT_ROCK")->flags, OF_CANT_EAT));
+	require(of_has(mutation_by_name("VAMPIRISM")->flags, OF_CANT_EAT));
+
+	notnull(food);
+	object_prep(obj, food, 0, MINIMISE);
+	require(tval_is_edible(obj));
+
+	flag_wipe(player->mutations, MUT_SIZE);
+	calc_bonuses(player, &player->state, false, true);
+
+	/*
+	 * effect_do() rather than effect_simple(), because the reduction is scoped
+	 * to edible objects and effect_simple() has nowhere to put one -- it
+	 * passes no object at all, so the context arrives with a null obj and the
+	 * scope test declines. The eat command reaches effect_do() with the food
+	 * in hand (cmd-obj.c:567), which is the path this is standing in for.
+	 */
+	player_set_timed(player, TMD_FOOD, 100, false, false);
+	require(nourish(obj, 50));
+	fed = player->timed[TMD_FOOD] - 100;
+	require(fed > 0);
+
+	require(player_gain_mutation(player, beak));
+	calc_bonuses(player, &player->state, false, true);
+	require(of_has(player->state.flags, OF_CANT_EAT));
+
+	player_set_timed(player, TMD_FOOD, 100, false, false);
+	require(nourish(obj, 50));
+	wasted = player->timed[TMD_FOOD] - 100;
+
+	/* A twentieth, and emphatically not the whole. */
+	eq(wasted, fed / 20);
+	require(wasted < fed);
+
+	/*
+	 * And a potion is untouched, still wearing the beak.
+	 *
+	 * This is the half a careless fix gets wrong. Zangband tests the flag
+	 * inside `do_cmd_eat_food()`, so only food is reduced; 4.2 reaches the
+	 * same handler from potions, mushrooms and a class power, and reducing all
+	 * of them would quietly halve the incidental nourishment in every healing
+	 * potion in the game. Without this assertion, dropping the scope test
+	 * passes every other check here.
+	 */
+	potion = lookup_kind(TV_POTION, 1);
+	notnull(potion);
+	object_prep(drink, potion, 0, MINIMISE);
+	require(!tval_is_edible(drink));
+
+	player_set_timed(player, TMD_FOOD, 100, false, false);
+	require(nourish(drink, 50));
+	eq(player->timed[TMD_FOOD] - 100, fed);
+
+	flag_wipe(player->mutations, MUT_SIZE);
+	object_delete(cave, player->cave, &obj);
+	object_delete(cave, player->cave, &drink);
+
+	ok;
+}
+
+/**
+ * The Midas touch is dropped, and the difference is visible (DEC-48).
+ *
+ * Eleven mutations have no effect chain because 4.2 has no mechanism for them
+ * and one because the mechanism was considered and refused. `mutmap.toml`
+ * keeps them under different keys for that reason, and the data file carries
+ * the distinction so the power menu can stop saying "not yet" about something
+ * that is not coming.
+ *
+ * Asserted as an exact split rather than a property of one entry: the failure
+ * worth catching is a second rejection arriving without a decision behind it,
+ * or this one quietly reverting to a deferral and rejoining the queue.
+ */
+static int test_a_dropped_power_says_so(void *state) {
+	const struct mutation *midas = mutation_by_name("MIDAS_TCH");
+	const struct mutation *m;
+	int refused = 0, waiting = 0;
+
+	notnull(midas);
+	require(midas->refused);
+	null(midas->action);
+
+	for (m = mutations; m; m = m->next) {
+		/*
+		 * The two kinds carry their chain in different fields -- an
+		 * activatable one in `action` and a random one in `fires` -- so a
+		 * single null test counts every random mutation as unimplemented.
+		 */
+		if (m->kind == MUTATION_KIND_ACTIVATABLE) {
+			if (m->action) continue;
+		} else if (m->kind == MUTATION_KIND_RANDOM) {
+			if (m->fires) continue;
+		} else {
+			continue;
+		}
+
+		/* CHAOS_GIFT needs no chain and is not unavailable; see above. */
+		if (streq(m->name, "CHAOS_GIFT")) continue;
+
+		if (m->refused) refused++; else waiting++;
+	}
+
+	eq(refused, 1);
+	eq(waiting, 11);
+
+	/* And nothing that works is marked either way. */
+	for (m = mutations; m; m = m->next) {
+		if (!m->action) continue;
+
+		require(!m->refused);
+	}
+
+	ok;
+}
+
 const char *suite_name = "player/mutation";
 struct test tests[] = {
 	{ "all-ninety-six-are-here", test_all_ninety_six_are_here },
@@ -1068,6 +1399,14 @@ struct test tests[] = {
 	{ "being-normal-can-cure-itself", test_being_normal_can_cure_itself },
 	{ "the-mutation-ceiling-is-eighty-nine",
 	  test_the_mutation_ceiling_is_eighty_nine },
+	{ "no-mutation-hides-what-it-does",
+	  test_no_mutation_hides_what_it_does },
+	{ "three-mutations-take-a-flag-away",
+	  test_three_mutations_take_a_flag_away },
+	{ "rotting-flesh-beats-worn-regeneration",
+	  test_rotting_flesh_beats_worn_regeneration },
+	{ "a-beak-wastes-most-of-a-meal", test_a_beak_wastes_most_of_a_meal },
+	{ "a-dropped-power-says-so", test_a_dropped_power_says_so },
 	{ "every-menu-row-finds-a-mutation",
 	  test_every_menu_row_finds_a_mutation },
 	{ "a-mutation-toggles-both-ways", test_a_mutation_toggles_both_ways },

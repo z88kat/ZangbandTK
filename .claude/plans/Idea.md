@@ -78,22 +78,22 @@ https://web.archive.org/web/20220508202607/http://zangband.org/spoilers/raceclas
 https://web.archive.org/web/20220420164301/http://www.zangband.org/spoilers/racepow.txt
 https://web.archive.org/web/20220420164302/http://www.zangband.org/spoilers/classtab.txt
 https://web.archive.org/web/20220420164256/http://www.zangband.org/spoilers/clasrace.txt
-https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/stats.txt
+https://web.archive.org/web/20220420164257/http://www.zangband.org/spoilers/stats.txt
 
 https://web.archive.org/web/20220508202606/http://zangband.org/spoilers/life.txt
 https://web.archive.org/web/20220622234645/http://zangband.org/spoilers/arcane.txt
-https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/sorcery.txt
-https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/nature.txt
-https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/trump.txt
-https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/chaos.txt
-https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/death.txt
-https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/mind.txt
+https://web.archive.org/web/20220420164258/http://www.zangband.org/spoilers/sorcery.txt
+https://web.archive.org/web/20220420164304/http://www.zangband.org/spoilers/nature.txt
+https://web.archive.org/web/20220420164253/http://www.zangband.org/spoilers/trump.txt
+https://web.archive.org/web/20220420164300/http://www.zangband.org/spoilers/chaos.txt
+https://web.archive.org/web/20220420164256/http://www.zangband.org/spoilers/death.txt
+https://web.archive.org/web/20220420164258/http://www.zangband.org/spoilers/mind.txt
 
-https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/randabil.txt
-https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/chaospat.txt
-https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/mutation.txt
-https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/tycurse.txt
-https://web.archive.org/web/20220527225941/http://zangband.org/spoilers/nightmare.txt
+https://web.archive.org/web/20220420164302/http://www.zangband.org/spoilers/randabil.txt
+https://web.archive.org/web/20220420164305/http://www.zangband.org/spoilers/chaospat.txt
+https://web.archive.org/web/20220420164254/http://www.zangband.org/spoilers/mutation.txt
+https://web.archive.org/web/20220420164258/http://www.zangband.org/spoilers/tycurse.txt
+https://web.archive.org/web/20220420164309/http://www.zangband.org/spoilers/nightmare.txt
 
 ## Websites
 

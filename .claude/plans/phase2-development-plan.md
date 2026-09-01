@@ -257,8 +257,37 @@ mutations, virtues.
 - **Carried over from M7:** the remainder of PLR-03 — the **Warrior-Mage** and the
   **High-Mage**, the two classes defined by which realms they may choose. They were deferred
   out of M7 because neither can be built before PLR-08 and PLR-09 exist.
-- Life realm content comes from [archive/zangband/](../../archive/zangband/); its spoiler is
-  the one unarchivable document (DEC-16).
+- Life realm content has a spoiler after all. It was recorded as the one unarchivable
+  document; the 2026-09-01 re-check found it whole — 13,854 bytes, four books of spell
+  descriptions — at the timestamp already cited. **All seven realm spoilers are readable**,
+  and were verified byte-for-byte before M9 started: life 13,854, arcane 12,473, sorcery
+  13,419, nature 12,752, trump 12,986, chaos 16,974, death 20,033, and mind 11,552 for the
+  Mindcrafter's powers. [archive/zangband/](../../archive/zangband/) remains the authority
+  on algorithm under DEC-20; the spoilers are the authority on intent under DEC-16, and M9
+  now has both for every realm.
+- **Folded in from M8, by the project owner's decision:** three mutations whose powers were
+  deferred for want of an effect. They are built here rather than earlier because two of
+  them are cheap either way and the third is only cheap *here*.
+  - **Telekinesis** needs a `FETCH` effect, and this is the reason all three wait. Zangband's
+    `fetch()` is 110 lines ([spells3.c:1139](../../archive/zangband/src/spells3.c#L1139)) and
+    handles weight, line of sight and object piles; 4.2 has no equivalent and never did. It
+    has **three consumers, not one**: the mutation, Sorcery's *Telekinesis* spell, and the
+    Trump realm, which calls the same function
+    ([cmd5.c:864](../../archive/zangband/src/cmd5.c#L864) and
+    [cmd5.c:2046](../../archive/zangband/src/cmd5.c#L2046)). Designing it once against all
+    three is the whole point of folding it in; built for the mutation alone it would be
+    retrofitted twice.
+  - **Swap position** needs an effect that exchanges the player and a monster.
+    `monster_swap()` already exists in 4.2 (`mon-util.c:644`) and handles the player, so this
+    is roughly fifteen lines over a primitive the game runs on every monster turn.
+  - **Sterilize** needs an effect that sets `cave->num_repro` to `repro_monster_max`, plus
+    the 17–34 hit points it costs. The counter is live in 4.2 (read at `mon-move.c:1077`).
+    Cheap, and the recorded reservation stands: it reaches into monster generation to carry
+    one mutation, which is a judgement rather than an obstacle.
+
+  Neither swap nor sterilize unlocks anything but itself, and neither is realm work — they
+  ride along because M9 is where the mutation-power gap is being closed, not because the
+  realms need them.
 
 **Exit:** a Mage's realm choice defines the character, and every class in PLR-03 is
 playable. Manual chapter: the magic system.
@@ -323,17 +352,33 @@ that are not scheduled are listed under it with a reason each.
 | 3 | 24 of the 32 activatable mutations in the power list beside racial powers (PLR-16) | 3.47.0 |
 | 4 | 22 of the 27 random mutations firing on their own timer, and all 5 melee mutations in the attack round (PLR-14, PLR-35) | 3.48.0 |
 | 5 | The acquisition and removal paths, the DEC-38 patron carry-over, the Chaos Tower, the potion of New Life (PLR-14, PLR-34, DEC-24) | 3.49.0 |
+| 6 | What the milestone was declared complete without: the wizard grant menu, the character sheet's mutations page, the `cheat_powers` option, and the three flags and one food penalty the converter had been skipping (PLR-13, PLR-15, PLR-17) | 3.49.4–3.50.0 |
+
+**M8 was declared complete one phase early.** PLR-17 asks that mutations be "visible in the
+character sheet, including their effects", and at 3.49.0 they reached
+`write_character_dump()` and nothing on screen — a player could see them only by writing a
+file and reading it. The page landed in 3.49.5, reported from play rather than caught here.
+Two further gaps closed in 3.50.0: three mutations were not taking away the flags Zangband
+has them take away, because the converter read `SET_FLAG` and not the clearing form; and
+six descriptions named some of their effects and not others, the worst of them hiding a
+vulnerability to electricity behind four points of intelligence and wisdom.
 
 PLR-18 to PLR-21 were done earlier — virtues, their selection, their writers and their two
 consumers. That was the milestone's gate: DEC-39 kept the feature on condition that
 something read it, and two things do.
 
-**Thirteen mutations are deferred with reasons**, recorded per-mutation in
-`tools/zconv/mutmap.toml` and listed in `docs/mutations.rst`: eight activatable and five
-random. Every one needs machinery 4.2 has not got — pets, an incorporeal player state, an
+**Twelve mutations do nothing** — eleven deferred and one refused (DEC-48) — recorded
+per-mutation in `tools/zconv/mutmap.toml` and listed in `docs/mutations.rst`: eight
+activatable and four random. Every one needs machinery 4.2 has not got — pets, an incorporeal player state, an
 object-to-gold conversion, a pseudo-identification bit, an effect that reads both the hit
 point and spell point pools. Two more continuous mutations are inert because they moved
 only charisma, which 4.2 removed in 4.2.0.
+
+`mutmap.toml` carries **thirteen** `defer` keys, and the thirteenth is a mislabel worth
+correcting rather than counting: the chaos gift has no effect chain because it needs none.
+It carries the `PATRON` flag, `player_apply_mutations()` applies flags whatever a
+mutation's kind, and `patron_owes_reward()` reads it — so it works through the machinery
+PLR-05 built. Counting it as deferred overstated the gap by one in three previous reports.
 
 **What M8 found that the documentation did not say.** The spoiler gives the headline of
 each mutation and the headline is generally the good half: hyper-strength is "+4 STR" there
@@ -343,7 +388,7 @@ fills in two variables and passes them in the other order. Three mutations have
 prerequisites no Zangband document mentions. The race affinities are not uniform. And the
 regeneration penalty the spoiler warns about had been taken out of Zangband before 2.7.5
 (DEC-45).
-| M9 | PLR-08…PLR-12, CNT-10 | 6 |
+| M9 | PLR-08…PLR-12, CNT-10 (+ PLR-03's two realm classes, and three M8 mutation powers) | 6 |
 | M10 | PLR-22…PLR-33 | 12 |
 | M11 | BAL-15…BAL-17 | 3 |
 | | **Scheduled** | **104** |

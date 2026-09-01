@@ -69,22 +69,43 @@ what was meant. Requirements derived from them should cite the document.
 > complementary sources rather than alternatives — intent from one, algorithm from the other.
 
 > **Availability, checked 2026-08-15:** 34 of the 36 links resolve to real content. Two do
-> not: the site root, and `spoilers/life.txt` (the Life realm spell list), which returns
-> zero bytes at every snapshot tried from 2005 to 2022. The Life realm content is
-> recoverable from [archive/zangband/](../../archive/zangband/) instead. Note also that
-> `web.archive.org` cannot be retrieved through WebFetch in this environment; `curl` works.
+> not the site root. Note also that `web.archive.org` cannot be retrieved through WebFetch
+> in this environment; `curl` works.
 >
-> **Re-checked 2026-08-31, and the 2022 snapshots are not what they look like.** Fetching
-> `spoilers/mutation.txt` at the archived timestamp in [Idea.md](Idea.md) returns a
-> *domain-parking page*: zangband.org had expired by June 2022, and the Wayback Machine
-> forwards the 2022-05-27 capture to a later one that holds the squatter's placeholder. The
-> original availability check followed those redirects and counted a 200 as content.
+> **Re-checked in full 2026-09-01: all thirty-six citations, one at a time.** The result is
+> simpler than the two accounts that preceded it, and both of those were wrong.
 >
-> Two things fix it. Query the CDX index for a capture that predates the expiry —
-> `https://web.archive.org/cdx/search/cdx?url=zangband.org/spoilers/mutation.txt&fl=timestamp,statuscode,length`
-> — and fetch with the `id_` modifier after the timestamp, which returns the archived bytes
-> without the Wayback wrapper: `.../web/20120807174819id_/http://zangband.org/...`. The 2012
-> captures are good. **Any spoiler fetched from a 2022 timestamp should be re-checked.**
+> *There is no parking page.* An earlier note here said zangband.org had expired by June
+> 2022 and that the Wayback Machine forwards the 2022-05-27 capture to a squatter's
+> placeholder. It does not: fetched with `id_`, that capture of the site root is the genuine
+> zangband.org homepage, and the files that fail return *nothing at all* rather than
+> somebody else's content.
+>
+> *`spoilers/life.txt` is not unarchived.* It was recorded here as returning zero bytes at
+> every snapshot from 2005 to 2022. It returns **13,854 bytes at its own cited timestamp** —
+> the complete Life realm spell list, four books of it. Nothing was ever wrong with that
+> citation.
+>
+> *What is actually wrong is one crawl.* The 2022-04-20 crawl of `www.zangband.org` captured
+> everything. The 2022-05-27 crawl of the bare domain captured the homepage and almost none
+> of the files under it, so **every citation carrying the timestamp `20220527225941` for a
+> file returns zero bytes** — twelve of them, all spoilers — while the same documents are
+> whole at `20220420164xxx` under `www.`. All twelve have been repointed.
+>
+> **The method, and a trap in it.** Fetch with the `id_` modifier after the timestamp, which
+> returns the archived bytes without the Wayback wrapper and without following redirects:
+> `.../web/20220420164254id_/http://www.zangband.org/spoilers/mutation.txt`. Find candidates
+> through the CDX index, and query it **domain-wide with a filter** rather than by exact URL
+> — `?url=zangband.org&matchType=domain&filter=original:.*spoilers/mutation\.txt` — because
+> the archive stores `www.` and `:80` variants that an exact-URL query silently misses; a
+> plain query for `chaospat.txt` returns nothing at all while the file is in fact captured
+> more than a hundred times.
+>
+> And **retry before concluding a document is gone.** A throttled fetch returns zero bytes
+> and is indistinguishable from an absent one. A first pass over these thirty-six declared
+> twenty-one dead; re-running the failures three times each with a pause reduced that to
+> twelve. Nine documents were nearly rewritten out of the plan on the strength of
+> archive.org being busy.
 
 **DEC-20 — Clean-room is dropped. Zangband's source may be read, ported and adapted.**
 Supersedes the clean-room framing in [Idea.md](Idea.md), at the project owner's direction.
@@ -547,9 +568,11 @@ All four requirement documents are drafted:
 - [phase1-player-systems.md](phase1-player-systems.md) — 28 requirements
 - [phase1-content-and-flavour.md](phase1-content-and-flavour.md) — 16 requirements
 
-**The documentation pass is complete** (M0). All 34 recoverable documents were read; only
-`spoilers/life.txt` remains unarchived. It produced **fifteen** requirements that the
-data-file and source analysis had entirely missed:
+**The documentation pass is complete** (M0). All 35 documents were read, and — corrected
+2026-09-01 — **none of them is unarchived**, `spoilers/life.txt` included: it was recorded
+as unrecoverable on the strength of a bad availability check and serves the whole Life
+realm spell list at the timestamp already cited for it. The pass produced **fifteen**
+requirements that the data-file and source analysis had entirely missed:
 
 | Requirement | Finding |
 |---|---|
@@ -1642,3 +1665,86 @@ with `power` the character's level, so a level-40 character can lose several
 mutations and gain several more in one invocation and a level-5 character
 usually gets nothing at all. Polymorph Self should be frightening late and
 merely odd early, and it is.
+
+### DEC-48 — The Midas touch is dropped (PLR-16)
+
+Confirmed by project owner: too much effort for something that is not a game
+changer.
+
+Recorded as a rejection rather than a deferral, so that it is not picked up
+again by someone reading the deferred list as a queue. It sits in
+`mutmap.toml` under `reject` rather than `defer` — a distinction that key pair
+did not have until this decision needed it — and the conversion report lists it
+under REJECTED rather than among the deferred.
+
+*What it would have taken.* Zangband's `alchemy()`
+([mutation.c:1110](../../archive/zangband/src/mutation.c#L1110)) turns a chosen
+object into gold at a fraction of its value. **4.2 has no effect that destroys
+an object for money**, so the work is not one effect handler: it is deciding
+what fraction, of what valuation, and what that does to the shops that price
+against the same numbers. That is an economy mechanic, and it would exist to
+carry one mutation.
+
+*Why the mutation does not earn it.* It is a convenience rather than a power. It
+turns loot you were going to sell into gold without the walk back to town —
+which the game already lets you do, by walking back to town. Nothing else in
+the game wants an object-to-gold effect, so the mechanic would have exactly one
+consumer and no prospect of a second.
+
+**Consequence.** Twelve mutations still do nothing, but the split is now eleven
+deferred and one refused. The activatable "not yet" list drops from eight to
+seven; the Midas touch is listed in the power menu as **dropped** and says so
+when chosen, because "not yet" is a promise and this is not one the game
+intends to keep. The mutation is still gained, described and saved like any
+other — a mutation that vanishes from a savefile is worse than one that does
+nothing, which is the same reasoning DEC-44 applied to the two charisma
+mutations.
+
+### DEC-49 — Seven realms, by content and not by name (PLR-09, PLR-10, PLR-12)
+
+PLR-09 asks for seven realms and names them: Life, Sorcery, Nature, Chaos,
+Death, Trump, Arcane. PLR-10 asks that 4.2's realm metadata be retained rather
+than replaced. 4.2 has four realms — arcane, divine, nature, shadow. Those two
+requirements do not compose on their own, because four plus seven is eleven and
+two of the names collide.
+
+*What was chosen.* 4.2's four are mapped onto four of the seven by content:
+
+| 4.2 | becomes |
+|---|---|
+| `arcane` | **Arcane** |
+| `divine` | **Life** |
+| `nature` | **Nature** |
+| `shadow` | **Death** |
+
+and Sorcery, Chaos and Trump are added. That is exactly seven, keeps every
+scrap of 4.2's metadata — the casting stat, verb, spell noun and book noun,
+which Zangband held as scattered per-class constants and expressed less well —
+and costs sixteen `book:` lines, because realms are not written to the savefile.
+Books are matched by tval and sval and the realm is read for display and for
+`calc_mana()`, so renaming a record is free.
+
+*The one that is not a clean match, and is recorded as such.* **This game's
+Arcane is not Zangband's Arcane.** Zangband's was deliberately the weak
+generalist: "it has no ultra-powerful high level spells... all Arcane
+spellbooks can be bought in town"
+([arcane.txt](https://web.archive.org/web/20220420164306/http://www.zangband.org/spoilers/arcane.txt)).
+4.2's arcane realm is the Mage's, with two books of attacks and a dungeon-only
+Wizard's Tome of Power. Folding them keeps the stronger reading.
+
+The alternative was two realms sharing one name, which PLR-09's count forbids;
+the other alternative was renaming 4.2's arcane to Sorcery, which is worse,
+because Sorcery has no direct attack spells at all and 4.2's arcane opens with
+Magic Missile. A stronger Arcane is a balance note for BAL-15 to BAL-17 to pick
+up. It is not a contradiction.
+
+*What this decision does not do.* It does not give any existing casting class a
+realm *choice*. Zangband's Priest picks Life or Death; 4.2's Priest has a fixed
+list. Opening that up means adding books to a class's book list, and
+`player->spell_flags[]` is indexed by a flat position across every book the
+class carries and is written to the savefile by that index — so inserting a book
+anywhere but the end shifts every spell a saved character knows one place along.
+The game would load and the character sheet would look reasonable. Existing
+classes therefore keep their exact progressions, pinned by `player/realm`, and
+the choice mechanism is built so that a class can be opened up in data later
+with a savefile migration written on purpose.

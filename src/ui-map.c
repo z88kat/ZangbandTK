@@ -2113,8 +2113,15 @@ void do_cmd_racial_power(void)
 	for (i = 0; i < waiting; i++) {
 		char line[80];
 
-		strnfmt(line, sizeof(line), "%-24s  not yet",
-				pending[i]->power ? pending[i]->power : pending[i]->name);
+		/*
+		 * "not yet" is a promise; "dropped" is not. Eleven of these are
+		 * waiting for a mechanism 4.2 has not got and one was refused
+		 * (DEC-48), and a player who keeps checking back for the Midas touch
+		 * deserves to be told it is not coming.
+		 */
+		strnfmt(line, sizeof(line), "%-24s  %s",
+				pending[i]->power ? pending[i]->power : pending[i]->name,
+				pending[i]->refused ? "dropped" : "not yet");
 		menu_dynamic_add_label(m, line, 0, count + i + 1, labels);
 	}
 
@@ -2140,7 +2147,13 @@ void do_cmd_racial_power(void)
 	if (chosen <= 0 || chosen > count + waiting) return;
 
 	if (chosen > count) {
-		msg("Chaos has given you that, and this game cannot yet use it.");
+		const struct mutation *waiting_on = pending[chosen - count - 1];
+
+		if (waiting_on->refused) {
+			msg("Chaos has given you that, and this game will not use it.");
+		} else {
+			msg("Chaos has given you that, and this game cannot yet use it.");
+		}
 		return;
 	}
 

@@ -9,6 +9,8 @@
 
 #include "unit-test.h"
 
+#include "test-utils.h"
+
 #include "cave.h"
 #include "init.h"
 #include "wild.h"
@@ -40,6 +42,8 @@ int setup_tests(void **state) {
 	z_info->store_max = 8;
 
 	*state = NULL;
+	(void) test_seed_rng_reported(suite_name);
+
 	return 0;
 }
 
