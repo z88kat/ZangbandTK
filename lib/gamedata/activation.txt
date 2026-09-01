@@ -1504,3 +1504,11 @@ level:57
 power:25
 effect:BREATH:MISSILE:0:20
 dice:300
+
+name:ALCHEMY
+aim:0
+level:5
+power:25
+effect:ALCHEMY
+msg:glows with a yellow light
+desc:turns an object in your pack into a third of its worth in gold

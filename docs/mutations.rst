@@ -65,12 +65,15 @@ when you are short of mana. Some grow with you: spitting acid throws a wider
 ball from level 30, breathing fire from level 40, and hardening yourself
 against the elements resists more of them the higher you go.
 
-**Eight of the thirty-two cannot be used.** Seven are listed with *not yet*
-beside them and one with *dropped*, rather than hidden, because your character
-sheet describes them and you would come looking. The Midas touch is the
-dropped one: turning objects into gold needs an economy mechanic this game is
-not going to build for one mutation, and saying *not yet* about it would be a
-promise (DEC-48). What they need is machinery Angband 4.2 does not have,
+**Seven of the thirty-two cannot be used yet.** They are listed with *not yet*
+beside them rather than hidden, because your character sheet describes them and
+you would come looking.
+
+The Midas touch used to be an eighth, marked *dropped*: turning objects into
+gold needed a mechanic the game was not going to build for one mutation. It
+turned out not to be for one mutation — Sorcery's *Alchemy* spell and a
+random-artifact power want the same thing — so it was built once for all three,
+and the Midas touch works (DEC-52). What they need is machinery Angband 4.2 does not have,
 and in most cases inventing it to carry one mutation would be the wrong way
 round:
 
@@ -89,12 +92,6 @@ round:
    * - Sense curses
      - Something hidden to reveal. 4.2 has no pseudo-identification; curses are
        runes you learn by carrying the thing.
-   * - Midas touch
-     - **Dropped, not waiting.** Turning an object into gold needs an
-       object-destroyed-for-money effect, which 4.2 has not got — and building
-       one means settling what fraction, of what valuation, and what that does
-       to the shops pricing against the same numbers. An economy mechanic for
-       one convenience mutation (DEC-48).
    * - Grow mold
      - Eight *friendly* molds. 4.2 has no pets, so the faithful translation
        would surround you with eight enemies.

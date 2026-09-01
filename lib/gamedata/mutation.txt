@@ -301,7 +301,7 @@ values:WIS[-1]
 desc:You can turn ordinary items to gold (-1 WIS).
 gain:You gain the Midas touch.
 lose:You lose the Midas touch.
-unavailable:rejected
+power-effect:ALCHEMY
 
 name:GROW_MOLD
 kind:activatable

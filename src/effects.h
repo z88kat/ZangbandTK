@@ -65,4 +65,15 @@ void effect_simple(int index,
 	bool *ident);
 int recharge_failure_chance(const struct object *obj, int strength);
 
+/*
+ * The gold an object turns into (ZangbandTK, DEC-52).
+ *
+ * Split out of the effect so the arithmetic can be tested: the effect itself
+ * prompts for an object, and a prompt cannot be driven from a unit suite -- so
+ * a test of the effect could only assert relationships that hold whatever the
+ * divisor is. This is the part worth pinning.
+ */
+#define ALCHEMY_MAX	30000
+int32_t alchemy_price(const struct object *obj, int amt);
+
 #endif /* INCLUDED_EFFECTS_H */

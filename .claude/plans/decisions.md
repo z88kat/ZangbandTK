@@ -1666,7 +1666,13 @@ mutations and gain several more in one invocation and a level-5 character
 usually gets nothing at all. Polymorph Self should be frightening late and
 merely odd early, and it is.
 
-### DEC-48 — The Midas touch is dropped (PLR-16)
+### DEC-48 — The Midas touch is dropped (PLR-16) — **REVERSED by DEC-52**
+
+**This decision was reversed on 1 September 2026. It is kept in full rather than
+deleted, because the reason it gives turned out to be false and that is worth
+being able to read.** The mutation is in the game; see DEC-52 below for what
+changed and why. Everything from here to the end of this entry is the original
+decision as it stood.
 
 Confirmed by project owner: too much effort for something that is not a game
 changer.
@@ -1691,8 +1697,9 @@ which the game already lets you do, by walking back to town. Nothing else in
 the game wants an object-to-gold effect, so the mechanic would have exactly one
 consumer and no prospect of a second.
 
-**Consequence.** Twelve mutations still do nothing, but the split is now eleven
-deferred and one refused. The activatable "not yet" list drops from eight to
+**Consequence** *(as recorded at the time; superseded by DEC-52, which reversed
+this decision and brought the mutation back)*. Twelve mutations still do
+nothing, but the split is now eleven deferred and one refused. The activatable "not yet" list drops from eight to
 seven; the Midas touch is listed in the power menu as **dropped** and says so
 when chosen, because "not yet" is a promise and this is not one the game
 intends to keep. The mutation is still gained, described and saved like any
@@ -1899,16 +1906,17 @@ changes.
 
 ---
 
-## Open — awaiting the project owner
+## Reversals, and what is open
 
-*Nothing.* Both questions M9 stopped on — DEC-50 and DEC-51 — were decided on
-1 September 2026 and are recorded above. Phase 2 of the realms is unblocked.
+*Nothing is awaiting the project owner.* DEC-50 and DEC-51 were decided on
+1 September 2026 and are recorded above, and DEC-52 below reverses DEC-48 —
+which is kept above in full rather than deleted, so that the rejection, the
+reason it was wrong, and the reversal can be read in order.
 
-## Open — awaiting the project owner
+### DEC-52 — The Midas touch comes back, and the mechanic is built once (DEC-48, CNT-10, PLR-16)
 
-### DEC-52 — OPEN — DEC-48's reason for dropping the Midas touch has expired (DEC-48, CNT-10, PLR-16)
-
-**Status: open. M9 Phase 2b stopped here rather than deciding it either way.**
+**Decided by the project owner, 1 September 2026: build the object-to-gold
+mechanic and reinstate the mutation.**
 
 DEC-48 dropped the Midas touch, on the project owner's call that it was too
 much effort for something that is not a game changer. The recorded reasoning
@@ -1932,27 +1940,49 @@ a game changer" was a judgement about the mutation and is untouched by this —
 but the *argument* for it no longer holds, and that is not something to quietly
 route around.
 
-**Three ways forward, and they are the project owner's to pick:**
+**What was chosen: build it, once, for all three.** The same reasoning FETCH
+gets — a mechanic with more than one consumer is designed against all of them
+rather than against whichever arrives first. `ALCHEMY` takes no parameters,
+because none of Zangband's three callers passes any.
 
-1. **Build the effect and reinstate the Midas touch.** One
-   object-destroyed-for-money effect serves all three. The cost DEC-48 named is
-   real and unchanged: what fraction of value, of what valuation, and what it
-   does to shops pricing against the same numbers. But it is now amortised over
-   three consumers rather than one.
-2. **Build the effect for Sorcery only, and leave the mutation dropped.** DEC-48
-   stands as a decision about the mutation; the spell gets the mechanic. Slightly
-   odd to a player who has both, since the same power arrives by one route and
-   not the other.
-3. **Defer Sorcery's *Alchemy* as well**, and record it beside the Midas touch.
-   That leaves Sorcery 31 spells of 32 — the cheapest option and the one that
-   makes the realm incomplete.
+*The numbers are Zangband's, from the source rather than the name.*
+[spells3.c:1489](../../archive/zangband/src/spells3.c#L1489):
 
-**Why this stopped the phase rather than being noted in passing.** Sorcery
-cannot be finished without answering it, and either of the first two options
-overturns or narrows a decision the project owner made ten releases ago on a
-premise that has since changed. Building it would have reinstated something
-that was explicitly refused; skipping it silently would have left a realm short
-a spell with no record of why.
+- **A third of the object's real value.** `object_value_real()`, which is what
+  4.2 prices a sale with — not the shop price and not what the character
+  believes the object is worth. An unidentified ring of speed pays what a ring
+  of speed is worth, which is generous, and is what Zangband does.
+- **Divided before the quantity multiplies it.** `price /= 3` comes first, so
+  ten objects worth two gold each pay *nothing* rather than six. That is
+  integer division doing what it does, and reproducing it matters more than
+  tidying it.
+- **Capped at 30,000.** One act cannot make a character rich.
+- **Artifacts refuse**, via what Zangband guards with
+  `can_player_destroy_object()`: one-of-a-kind items are not currency.
+- **A worthless object becomes fool's gold** — destroyed, nothing paid. Not a
+  way to tidy a pack for free.
 
-*No work has been done on any of the three.* The book tvals landed and the
-sequencing note below is recorded; nothing about `alchemy()` has been built.
+*One deliberate divergence.* Zangband multiplies in a signed 32-bit value and
+caps afterwards, so a stack valuable enough wraps negative and pays nothing. It
+takes a cost above about sixty-five million to reach and Zangband's own data
+does not contain one, so the bug is latent there rather than live — but a cap
+that can be jumped is not a cap, so the multiply is widened here. Found by a
+test written to pin the cap, which then failed on it.
+
+**Consequences, since the plan has been wrong about this count more than once:**
+
+- The Midas touch is **not** dropped, **not** deferred, and **not** among the
+  mutations that do nothing. It is a working activatable power.
+- **Eleven** mutations do nothing, all of them deferred; **none** is refused.
+  The activatable split is **25 working, 7 deferred**.
+- The `unavailable:rejected` field and the power menu's *dropped* label survive
+  with no user. They are kept rather than removed, because the distinction they
+  draw — a power waiting on a mechanism against one considered and turned down —
+  is one this game will need again, and `player/mutation` asserts the refused
+  count is zero so that a rejection reappearing has to be looked at.
+
+*What this does not change.* DEC-48's judgement that the Midas touch is "not a
+game changer" was about the mutation and is untouched; it is a convenience that
+saves a walk to town. What changed is the cost side of the trade. The mechanic
+is no longer being built to carry one convenience — it carries a realm spell as
+well, and an artifact activation Zangband priced at 10,000.

@@ -173,15 +173,16 @@ effects = [ "POLY_SELF" ]
 
 [MIDAS_TCH]
 line = 1110
-reject = """Rejected by DEC-48 rather than deferred: too much work for \
-something that changes no game. `alchemy()` turns a chosen object into gold at \
-a fraction of its value, and 4.2 has no effect that destroys an object for \
-money -- so building it means inventing an economy mechanic (what fraction, of \
-what valuation, and what it does to the shops that price against the same \
-numbers) to hang one mutation on. The mutation itself is a convenience: it \
-turns loot you were going to sell into gold without the walk back to town, \
-which the game already lets you do by walking back to town."""
-
+note = """Reinstated by DEC-52, having been dropped by DEC-48 -- the rejection \
+and the reversal are both on the record because the reason for the first turned \
+out to be false. DEC-48 refused to build an object-to-gold mechanic on the \
+grounds that it "would have exactly one consumer and no prospect of a second"; \
+`alchemy()` has three callers in Zangband, one of them Sorcery's own Alchemy \
+spell, and the mechanic is now built once for all three. The numbers are \
+Zangband's: a third of the object's *real* value, divided before the quantity \
+multiplies it, capped at 30,000, artifacts refused, and a worthless object \
+destroyed for nothing at all."""
+effects = [ "ALCHEMY" ]
 [GROW_MOLD]
 line = 1115
 defer = """Summons eight *pet* molds around the player, as a wall. 4.2's \

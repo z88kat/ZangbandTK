@@ -35,6 +35,7 @@
 #include "obj-curse.h"
 #include "obj-desc.h"
 #include "obj-gear.h"
+#include "obj-power.h"
 #include "obj-ignore.h"
 #include "obj-knowledge.h"
 #include "obj-make.h"
@@ -4015,6 +4016,114 @@ bool effect_handler_POLY_SELF(effect_handler_context_t *context)
 
 	while ((power > randint0(15)) && one_in_(3)) {
 		(void) player_mutate(player);
+	}
+
+	return true;
+}
+
+/**
+ * Turn an object into gold (DEC-52).
+ *
+ * Zangband's `alchemy()`
+ * ([spells3.c:1489](../archive/zangband/src/spells3.c#L1489)), and the numbers
+ * are its numbers rather than anybody's guess at them:
+ *
+ * - **A third of the object's real value**, not its shop value and not what the
+ *   character believes it is worth. `object_value_real()` is the same function
+ *   4.2 prices a sale with, so an unidentified ring of speed pays what a ring of
+ *   speed is worth -- which is generous, and is what Zangband does.
+ * - **Divided before it is multiplied.** `price /= 3` happens first and the
+ *   quantity multiplies afterwards, so ten items worth two gold each pay nothing
+ *   at all rather than six. That is integer division doing what integer division
+ *   does, and reproducing it matters more than tidying it.
+ * - **Capped at 30,000.** One object cannot make a character rich in a single
+ *   act, however deep it was found.
+ * - **Artifacts refuse.** Zangband guards with `can_player_destroy_object()`,
+ *   whose whole purpose for this call is that one-of-a-kind items are not
+ *   currency.
+ * - **A worthless object becomes fool's gold**: destroyed, and nothing paid. The
+ *   spell is not a way to tidy a pack for free.
+ *
+ * Written for three consumers at once, which is why it asks for the object
+ * itself rather than being handed one: the mutation, the spell and the artifact
+ * activation all reach it the same way, and all three of Zangband's callers pass
+ * no arguments.
+ */
+int32_t alchemy_price(const struct object *obj, int amt)
+{
+	int64_t price;
+
+	if (!obj || amt < 1) return 0;
+
+	/*
+	 * A third of the real value, in that order: the division is integer and
+	 * happens before the quantity multiplies it, exactly as Zangband has it.
+	 * Ten objects worth two gold each pay nothing rather than six, and
+	 * reproducing that matters more than tidying it.
+	 *
+	 * Widened to 64 bits for the multiply, which is a deliberate divergence.
+	 * Zangband does this in a signed 32-bit value and caps afterwards, so a
+	 * sufficiently valuable stack wraps negative and pays nothing -- it takes a
+	 * cost above about sixty-five million to reach, which Zangband's own data
+	 * does not contain, so the bug is latent there rather than live. Copying it
+	 * would be copying an accident: the cap is meant to be a ceiling and a
+	 * ceiling that can be jumped is not one.
+	 */
+	price = (int64_t) (object_value_real(obj, 1) / 3);
+	if (amt > 1) price *= amt;
+	if (price > ALCHEMY_MAX) price = ALCHEMY_MAX;
+	if (price < 0) price = 0;
+
+	return (int32_t) price;
+}
+
+bool effect_handler_ALCHEMY(effect_handler_context_t *context)
+{
+	struct object *obj, *destroyed;
+	int32_t price;
+	int amt = 1;
+	bool none_left = false;
+	char o_name[80];
+	const char *q = "Turn which item to gold? ";
+	const char *s = "You have nothing to turn to gold.";
+	int itemmode = (USE_INVEN | USE_FLOOR);
+
+	context->ident = true;
+
+	if (context->cmd) {
+		if (cmd_get_item(context->cmd, "tgtitem", &obj, q, s, NULL,
+						 itemmode)) {
+			return false;
+		}
+	} else if (!get_item(&obj, q, s, 0, NULL, itemmode)) {
+		return false;
+	}
+
+	object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_FULL,
+				player);
+
+	/* One of a kind is not currency. */
+	if (obj->artifact) {
+		msg("You fail to turn %s to gold!", o_name);
+		return false;
+	}
+
+	if (obj->number > 1) {
+		amt = get_quantity(NULL, obj->number);
+		if (amt <= 0) return false;
+	}
+
+	price = alchemy_price(obj, amt);
+
+	destroyed = gear_object_for_use(player, obj, amt, false, &none_left);
+	object_delete(cave, player->cave, &destroyed);
+
+	if (price <= 0) {
+		msg("You turn %s to fool's gold.", o_name);
+	} else {
+		msg("You turn %s to %d coins worth of gold.", o_name, (int) price);
+		player->au += price;
+		player->upkeep->redraw |= (PR_GOLD);
 	}
 
 	return true;

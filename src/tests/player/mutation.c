@@ -15,6 +15,7 @@
 
 #include "init.h"
 #include "obj-make.h"
+#include "obj-power.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
@@ -527,7 +528,7 @@ static int test_the_two_charisma_mutations_are_inert(void *state) {
 /**
  * Every activatable mutation either has a power or has a reason.
  *
- * Twenty-four of the thirty-two are expressible as 4.2 effect chains and eight
+ * Twenty-five of the thirty-two are expressible as 4.2 effect chains and seven
  * are not, and the split is asserted as a count so that neither side can drift
  * quietly. A mutation that lost its effect chain to a converter change would
  * still parse, still appear in the power list, and do nothing when invoked --
@@ -540,10 +541,9 @@ static int test_the_two_charisma_mutations_are_inert(void *state) {
  */
 static int test_the_activatable_split_is_what_was_decided(void *state) {
 	static const char *const deferred[] = {
-		"TELEKINES", "SWAP_POS", "DET_CURSE", "MIDAS_TCH", "GROW_MOLD",
+		"TELEKINES", "SWAP_POS", "DET_CURSE", "GROW_MOLD",
 		"WEIGH_MAG", "STERILITY", "LAUNCHER"
 	};
-	/* MIDAS_TCH is among them but refused rather than queued; see DEC-48. */
 	const struct mutation *m;
 	int with = 0, without = 0;
 	size_t i;
@@ -554,8 +554,8 @@ static int test_the_activatable_split_is_what_was_decided(void *state) {
 		if (m->action) with++; else without++;
 	}
 
-	eq(with, 24);
-	eq(without, 8);
+	eq(with, 25);
+	eq(without, 7);
 
 	for (i = 0; i < N_ELEMENTS(deferred); i++) {
 		m = mutation_by_name(deferred[i]);
@@ -1299,33 +1299,34 @@ static int test_a_beak_wastes_most_of_a_meal(void *state) {
 }
 
 /**
- * The Midas touch is dropped, and the difference is visible (DEC-48).
+ * Nothing is dropped any more, and the machinery for it still works (DEC-52).
  *
- * Eleven mutations have no effect chain because 4.2 has no mechanism for them
- * and one because the mechanism was considered and refused. `mutmap.toml`
- * keeps them under different keys for that reason, and the data file carries
- * the distinction so the power menu can stop saying "not yet" about something
- * that is not coming.
+ * The Midas touch was the only rejection, and DEC-52 reversed it: DEC-48 refused
+ * to build an object-to-gold mechanic because it "would have exactly one
+ * consumer", and `alchemy()` turned out to have three. So the count of refused
+ * mutations is now zero.
  *
- * Asserted as an exact split rather than a property of one entry: the failure
- * worth catching is a second rejection arriving without a decision behind it,
- * or this one quietly reverting to a deferral and rejoining the queue.
+ * The `unavailable:rejected` field and the menu's "dropped" label are kept
+ * rather than removed with their only user, because the distinction they draw
+ * -- between a power waiting on a mechanism and one that was considered and
+ * turned down -- is one this game will need again. Asserted as zero rather than
+ * deleted, so that a rejection reappearing has to come through here and be
+ * looked at.
  */
-static int test_a_dropped_power_says_so(void *state) {
+static int test_nothing_is_dropped_any_more(void *state) {
 	const struct mutation *midas = mutation_by_name("MIDAS_TCH");
 	const struct mutation *m;
 	int refused = 0, waiting = 0;
 
+	/* The one that was dropped now has its power. */
 	notnull(midas);
-	require(midas->refused);
-	null(midas->action);
+	require(!midas->refused);
+	notnull(midas->action);
+	notnull(midas->action->effects);
+	notnull(midas->action->effects->effect);
+	eq(midas->action->effects->effect->index, EF_ALCHEMY);
 
 	for (m = mutations; m; m = m->next) {
-		/*
-		 * The two kinds carry their chain in different fields -- an
-		 * activatable one in `action` and a random one in `fires` -- so a
-		 * single null test counts every random mutation as unimplemented.
-		 */
 		if (m->kind == MUTATION_KIND_ACTIVATABLE) {
 			if (m->action) continue;
 		} else if (m->kind == MUTATION_KIND_RANDOM) {
@@ -1334,21 +1335,114 @@ static int test_a_dropped_power_says_so(void *state) {
 			continue;
 		}
 
-		/* CHAOS_GIFT needs no chain and is not unavailable; see above. */
 		if (streq(m->name, "CHAOS_GIFT")) continue;
 
 		if (m->refused) refused++; else waiting++;
 	}
 
-	eq(refused, 1);
+	eq(refused, 0);
 	eq(waiting, 11);
 
-	/* And nothing that works is marked either way. */
-	for (m = mutations; m; m = m->next) {
-		if (!m->action) continue;
+	ok;
+}
 
-		require(!m->refused);
+/**
+ * A third of the real value, divided before it is multiplied (DEC-52).
+ *
+ * `alchemy_price()` exists to be tested. The effect itself prompts for an
+ * object and a prompt cannot be driven from a unit suite, so a test written
+ * against the effect could only assert relationships that hold whatever the
+ * divisor happens to be -- which is what the first version of this test did,
+ * and changing the third to a half did not fail it.
+ *
+ * Zangband's `alchemy()` does three things in an order that matters:
+ *
+ * - it takes `object_value_real()`, the *real* value, not what the character
+ *   believes the object is worth;
+ * - it divides by three **before** multiplying by the quantity, so ten objects
+ *   worth two gold each pay nothing rather than six;
+ * - and it caps the result at 30,000.
+ */
+static int test_alchemy_pays_a_third_of_the_real_value(void *state) {
+	struct object_kind *kind;
+	struct object *obj = object_new();
+	int32_t real;
+
+	kind = lookup_kind(TV_POTION, 1);
+	notnull(kind);
+	object_prep(obj, kind, 0, MINIMISE);
+
+	real = object_value_real(obj, 1);
+	require(real > 0);
+
+	/* A third, exactly -- not a half, and not the whole. */
+	eq(alchemy_price(obj, 1), real / 3);
+	require(alchemy_price(obj, 1) < real);
+
+	/*
+	 * Divided first, then multiplied. These differ whenever the value is not a
+	 * multiple of three, which is the case the ordering exists to produce.
+	 */
+	eq(alchemy_price(obj, 10), (real / 3) * 10);
+	if (real % 3) require(alchemy_price(obj, 10) < (real * 10) / 3);
+
+	/* The cap, and it is a cap rather than a wrap. */
+	eq(ALCHEMY_MAX, 30000);
+	obj->kind->cost = 100000000;
+	eq(alchemy_price(obj, 99), ALCHEMY_MAX);
+	obj->kind->cost = kind->cost;
+
+	/* Nothing, and no object, are answered rather than divided. */
+	eq(alchemy_price(NULL, 1), 0);
+	eq(alchemy_price(obj, 0), 0);
+
+	object_delete(cave, player->cave, &obj);
+
+	ok;
+}
+
+/**
+ * The mechanic has three consumers, which is why it exists (DEC-52).
+ *
+ * DEC-48 refused to build it on the grounds that it would have exactly one
+ * consumer and no prospect of a second, and that claim is the thing this test
+ * guards: `alchemy()` has three callers in Zangband, and all three reach the
+ * same effect here.
+ *
+ * The Sorcery spell is not asserted because the realm's spells are not imported
+ * yet -- that is the phase this decision unblocked, and asserting it now would
+ * be asserting the future.
+ */
+static int test_the_gold_mechanic_serves_more_than_one_caller(void *state) {
+	const struct mutation *midas = mutation_by_name("MIDAS_TCH");
+	bool found = false;
+	int i;
+
+	/* The mutation. */
+	notnull(midas);
+	notnull(midas->action);
+	eq(midas->action->effects->effect->index, EF_ALCHEMY);
+
+	/*
+	 * And the random-artifact activation, at Zangband's own level of 5.
+	 *
+	 * Walked by index rather than by `next`, because `activations` is an array
+	 * that `finish_parse_act()` fills from element **one** -- element zero is
+	 * left zeroed with a null `next`, so following the links from the base
+	 * pointer stops before it has seen anything.
+	 */
+	for (i = 1; i < z_info->act_max; i++) {
+		const struct activation *act = &activations[i];
+
+		if (!act->name || !streq(act->name, "ALCHEMY")) continue;
+
+		found = true;
+		notnull(act->effect);
+		eq(act->effect->index, EF_ALCHEMY);
+		eq(act->level, 5);
+		require(!act->aim);
 	}
+	require(found);
 
 	ok;
 }
@@ -1406,7 +1500,11 @@ struct test tests[] = {
 	{ "rotting-flesh-beats-worn-regeneration",
 	  test_rotting_flesh_beats_worn_regeneration },
 	{ "a-beak-wastes-most-of-a-meal", test_a_beak_wastes_most_of_a_meal },
-	{ "a-dropped-power-says-so", test_a_dropped_power_says_so },
+	{ "nothing-is-dropped-any-more", test_nothing_is_dropped_any_more },
+	{ "alchemy-pays-a-third-of-the-real-value",
+	  test_alchemy_pays_a_third_of_the_real_value },
+	{ "the-gold-mechanic-serves-more-than-one-caller",
+	  test_the_gold_mechanic_serves_more_than_one_caller },
 	{ "every-menu-row-finds-a-mutation",
 	  test_every_menu_row_finds_a_mutation },
 	{ "a-mutation-toggles-both-ways", test_a_mutation_toggles_both_ways },

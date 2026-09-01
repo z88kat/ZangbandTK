@@ -33,6 +33,33 @@ Unreleased
 M9: magic realms — 1 September 2026
 -----------------------------------
 
+- **3.54.0** — **The Midas touch comes back** (DEC-52, reversing DEC-48).
+  Turning an object into gold was dropped because the mechanic "would have
+  exactly one consumer and no prospect of a second". It has three:
+  ``alchemy()`` is called by the Midas touch, by Sorcery's *Alchemy* spell, and
+  by a random-artifact activation Zangband priced at 10,000. So it is built
+  once, for all three, the same way ``FETCH`` will be.
+
+  The numbers are Zangband's, taken from the source. **A third of the object's
+  real value** — what a sale prices at, not what the character believes it is
+  worth. **Divided before the quantity multiplies it**, so ten objects worth two
+  gold each pay nothing rather than six; that is integer division doing what it
+  does. **Capped at 30,000.** **Artifacts refuse**, because one-of-a-kind items
+  are not currency. And **a worthless object becomes fool's gold** — destroyed,
+  nothing paid.
+
+  One deliberate divergence: Zangband multiplies in a signed 32-bit value and
+  caps afterwards, so a stack valuable enough wraps negative and pays nothing.
+  It needs a cost above about sixty-five million to reach and Zangband's data
+  has none, so the bug is latent there rather than live — but a cap that can be
+  jumped is not a cap. Found by a test written to pin the cap, which failed on
+  it.
+
+  **Eleven mutations now do nothing, all deferred and none refused**, and the
+  activatable split is 25 working to 7. DEC-48 is kept in the record with a
+  reversal notice rather than deleted, because the reason it gave turned out to
+  be wrong and that is the part worth being able to read.
+
 - **3.53.1** — **Books for the three new realms, and a stop on DEC-52.** A
   ``sorcery book``, a ``chaos book`` and a ``deck`` — Trump's book-noun is a
   deck, because that is what Trump magic is. An object records its base by name

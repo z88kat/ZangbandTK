@@ -137,3 +137,12 @@ EFFECT(MUNDANE,						true,	NULL,		0,		EFINFO_NONE,	"strips an item back to what 
 EFFECT(GAIN_MUTATION,					false,	NULL,		0,		EFINFO_NONE,	"changes you, and not always for the better",	"mutate")
 EFFECT(LOSE_MUTATION,					false,	NULL,		0,		EFINFO_NONE,	"takes one of your mutations away",	"lose a mutation")
 EFFECT(POLY_SELF,					false,	NULL,		0,		EFINFO_NONE,	"rewrites what chaos has made of you",	"polymorph self")
+/*
+ * ZangbandTK (DEC-52): an object turned into a third of its worth in gold.
+ *
+ * Built once for three consumers rather than for whichever arrived first --
+ * the Midas touch mutation, Sorcery's Alchemy, and a random-artifact
+ * activation -- which is why it takes no parameters: all three call Zangband's
+ * `alchemy()` with nothing.
+ */
+EFFECT(ALCHEMY,						false,	NULL,		0,		EFINFO_NONE,	"turns an object into a third of its worth in gold",	"turn to gold")
