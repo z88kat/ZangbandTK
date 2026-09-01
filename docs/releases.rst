@@ -33,6 +33,22 @@ Unreleased
 M9: magic realms — 1 September 2026
 -----------------------------------
 
+- **3.56.1** — **A realm you can choose is a realm you can read** (PLR-08,
+  CNT-10). Zangband's entitlement table says a Mage may take Trump, and it is
+  imported whole because it is the record of what Zangband permits. But this
+  game gains a realm's content one commit at a time, and the birth step was
+  offering realms with nothing in them: choose one and the character is made,
+  the realm is fixed, and the spell menu is empty for the rest of that
+  character's life with no way back. It was live for Sorcery between 3.54.2 and
+  3.55.0. The birth step now skips a realm the class has no book in.
+
+  **Trump is deferred whole** (DEC-54). Fifteen of its thirty-two spells are
+  summons, and in Zangband every one of them turns on whether the creature that
+  arrives is *yours*. 4.2 has no monster allegiance at all, so all fifteen would
+  collapse onto the failure branch — *Trump Cyberdemon* would spend 60 mana to
+  put a hostile Cyberdemon next to you. That is the spell inverted, not a weaker
+  version of it, so the realm waits for pets rather than shipping half a book.
+
 - **3.56.0** — **Chaos is playable, and a spell that did nothing is fixed**
   (CNT-10). Thirty-two more workings in four more books — the Sign of Chaos,
   Chaos Mastery, Chaos Channels and the Armageddon Tome — for the three classes

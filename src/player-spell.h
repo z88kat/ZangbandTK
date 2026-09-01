@@ -27,6 +27,8 @@ struct magic_realm *class_magic_realms(const struct player_class *c,
 									   int *count);
 const struct class_book *object_kind_to_book(const struct object_kind *kind);
 int class_book_realms(const struct player_class *c);
+bool class_has_realm_book(const struct player_class *c,
+						  const struct magic_realm *realm);
 int player_realm_choices(const struct player_class *c, int slot,
 						 const struct magic_realm **out, int max);
 void player_realm_default(struct player *p);

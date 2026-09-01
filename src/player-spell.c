@@ -305,11 +305,38 @@ int class_book_realms(const struct player_class *c)
 }
 
 /**
+ * Whether this class has any book at all in a realm (PLR-08).
+ */
+bool class_has_realm_book(const struct player_class *c,
+						  const struct magic_realm *realm)
+{
+	int i;
+
+	if (!c || !realm) return false;
+
+	for (i = 0; i < c->magic.num_books; i++) {
+		if (c->magic.books[i].realm == realm) return true;
+	}
+
+	return false;
+}
+
+/**
  * The realms a class allows in a given slot, as a count (PLR-08).
  *
  * A count of one is an entitlement rather than a choice, and the birth step has
  * to tell those apart: a Ranger's first realm is Nature and asking which of the
  * one they would like is a question with a single answer.
+ *
+ * **A realm with no books is not offered**, even where Zangband's entitlement
+ * table allows it. The table is imported whole and stays that way -- it is the
+ * record of what Zangband permits -- but this game gains a realm's content one
+ * commit at a time, and in between there is a window where a class is entitled
+ * to a realm that has nothing in it. Offering it is a trap: the character is
+ * made, the realm is chosen, and the spell menu is empty for the rest of the
+ * game with no way back. It happened for real -- Trump is deferred (DEC-54) and
+ * Sorcery was in exactly this state between 3.54.2 and 3.55.0 -- so the guard
+ * is here rather than in a note saying to remember.
  */
 int player_realm_choices(const struct player_class *c, int slot,
 						 const struct magic_realm **out, int max)
@@ -321,6 +348,7 @@ int player_realm_choices(const struct player_class *c, int slot,
 
 	for (r = realms; r; r = r->next) {
 		if (!c->magic.realm_allowed[slot][r->ridx]) continue;
+		if (!class_has_realm_book(c, r)) continue;
 		if (out && found < max) out[found] = r;
 		found++;
 	}

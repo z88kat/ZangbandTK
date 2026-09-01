@@ -6,7 +6,8 @@ The Realms of Magic
    **Under construction.** You choose your realms at birth, your character sheet
    records them, and **Sorcery and Chaos are playable** — sixty-four workings in
    eight books between them, and the realm choice decides which books you can
-   open. Trump is still a name with no books behind it.
+   open. **Trump is deferred**, and you will not be offered it: a realm with no
+   books behind it is no longer something you can pick.
 
 Spellcasters in ZangbandTK choose realms of magic at birth, and that choice
 defines the character as much as the class does. Angband asks you what you are;
@@ -154,6 +155,22 @@ the same name. And *Globe of Invulnerability* makes you briefly untouchable.
    their books with their levels and costs, described as beyond what the game
    can express, rather than quietly missing: a book with a hole in it and a note
    saying so is honest, and a spell absent without explanation is not.
+
+Trump, and why you cannot choose it
+------------------------------------
+
+Trump is in the game as a name and nothing else, and the birth step will not
+offer it to you. Fifteen of its thirty-two spells summon a creature, and in
+Zangband every one of them turns on the same question: cast it well and the
+creature is *yours*, cast it badly and an angry group of them appears. This game
+has no way for a monster to be on your side, so all fifteen would come out as
+the bad half — *Trump Cyberdemon* would be sixty mana spent to put a hostile
+Cyberdemon next to you. That is not a weaker spell, it is the opposite spell, so
+Trump waits.
+
+The same guard covers every realm: **if your class has no books in a realm, you
+are not offered it.** That was not true before, and choosing Sorcery in the
+version before it shipped gave you a character who could never cast anything.
 
 Chaos
 -----

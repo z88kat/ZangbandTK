@@ -359,6 +359,10 @@ reaches them by choosing them, which is now possible, and an incomplete new
 realm costs whoever chose it rather than everybody. So:
 
 1. **Sorcery, Chaos, Trump** — new content, no existing casters affected.
+   **Trump is deferred (3.56.1, DEC-54)** on monster allegiance -- 15 of its
+   32 spells are summons whose content is whether the creature is yours, and
+   4.2 has no side for a monster to be on. Birth no longer offers a realm the
+   class has no books in, which was a live trap.
    **Chaos is done (3.56.0):** 32 spells in 4 books, no deferrals but six
    documented reductions (DEC-53), emitted into Mage, Priest and Ranger.
    **Sorcery is done (3.55.0):** 32 spells in 4 books, emitted by

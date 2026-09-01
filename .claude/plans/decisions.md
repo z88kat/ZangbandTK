@@ -2058,3 +2058,61 @@ deferral, and that is not the same as importing it unchanged. Six of its
 thirty-two spells do something measurably different from what Zangband's did,
 and the difference is written next to each one in `realmmap.toml` rather than
 summarised here and forgotten.
+
+---
+
+### DEC-54 — Trump is deferred whole, and an empty realm is no longer offered (CNT-10, PLR-09, PLR-35)
+
+**Decision.** Trump's thirty-two spells are **not** imported. The realm keeps its
+record in `realm.txt` and its place in Zangband's entitlement table, and it has
+no books. Separately and immediately: **a realm with no books is no longer
+offered at birth**, which is a defect fix that outlives this decision.
+
+*Why the whole realm rather than the summons.* Fifteen of Trump's thirty-two
+spells are summons — *Trump Animal*, *Phantasmal Servant*, *Trump Monster*,
+*Conjure Elemental*, *Joker Card*, *Trump Spiders*, *Trump Reptiles*, *Trump
+Hounds*, *Trump Cyberdemon*, *Trump Undead*, *Trump Dragon*, *Mass Trump*,
+*Trump Demon*, *Trump Ancient Dragon*, *Trump Greater Undead* — and in Zangband
+every one of them turns on a variable called `pet`. Read
+[cmd5.c:2049](../../archive/zangband/src/cmd5.c#L2049) and the shape is the same
+fourteen times: succeed and the creature is yours; fail and an angry one appears
+in a group. The spell's whole content is which of those two you get.
+
+Angband 4.2 has no monster allegiance. Every monster is hostile, `SUMMON` has no
+side to take, and there is no field on a monster to put one in. Imported as-is,
+all fifteen would collapse onto the failure branch: *Trump Cyberdemon* at level
+40 would be a spell that spends 60 mana to place a hostile Cyberdemon next to
+you. That is not a weaker version of the spell. It is the spell inverted, and a
+book full of them is a trap rather than a realm.
+
+*Why not import the other seventeen.* Trump would then be four books with
+*Five Aces*, the deepest, six-eighths blank, and the blank half is what the
+spoiler names as the realm's identity — "an equally impressive selection of
+summoning spells". The seventeen that work are real and good, and they are
+mostly teleportation, which the game already has. A realm that is half a hole
+and whose remaining half duplicates Sorcery's is worse than a realm that is
+honestly absent. Sorcery's four deferrals are four out of thirty-two; this would
+be fifteen.
+
+**What would unblock it.** Monster allegiance: a side on `struct monster`, an AI
+that respects it, a `SUMMON` that can take one, and the pet-death and
+pet-management behaviour that comes with it. That is a milestone of its own, not
+a translation choice, and it is what PLR-35's *Shuffle* and the Phantasmal
+Servant both sit behind. Nothing else about Trump is hard — *Shuffle* is a
+120-entry random table that `RANDOM` and `SELECT` can express, and *Living
+Trump* is a `GAIN_MUTATION` away.
+
+**The defect this exposed, which is not about Trump.** Zangband's entitlement
+table is imported whole and correctly says a Mage may take Trump. This game
+gains a realm's content one commit at a time, so between commits there is a
+window where a class is entitled to a realm with nothing in it — and the birth
+step offered it. Choose it and the character is made, the realm is fixed, and
+the spell menu is empty for the rest of that character's life with no way back.
+It was live for Sorcery between 3.54.2 and 3.55.0 and nobody noticed.
+
+`player_realm_choices()` now skips a realm the class has no book in. The
+entitlement table is untouched — it is the record of what Zangband permits and
+should stay that way — and the guard sits between it and the player.
+`player/realm` asserts both halves: every realm offered has a book behind it,
+and every realm the class has a book in is offered somewhere. The second half is
+what stops the guard from being satisfied by offering nothing at all.

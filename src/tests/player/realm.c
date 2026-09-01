@@ -444,17 +444,91 @@ static int test_a_single_entitlement_is_not_a_choice(void *state) {
 	eq(player_realm_choices(find_class("Ranger"), 0, got, REALM_MAX), 1);
 	require(streq(got[0]->name, "nature"));
 
-	/* Several: a Ranger's second is a genuine choice of five. */
-	eq(player_realm_choices(find_class("Ranger"), 1, got, REALM_MAX), 5);
+	/*
+	 * Several: a Ranger's second slot. Zangband entitles it to five, and
+	 * this game offers the two of those five it has built -- Sorcery and
+	 * Chaos. Nature is excluded here because slot 1 does not allow it, not
+	 * because of the books.
+	 */
+	eq(player_realm_choices(find_class("Ranger"), 1, got, REALM_MAX), 2);
 
-	/* And a Mage chooses from all seven, twice. */
-	eq(player_realm_choices(find_class("Mage"), 0, got, REALM_MAX), REALM_MAX);
-	eq(player_realm_choices(find_class("Mage"), 1, got, REALM_MAX), REALM_MAX);
+	/* A Mage is entitled to all seven and is offered the three built. */
+	eq(player_realm_choices(find_class("Mage"), 0, got, REALM_MAX), 3);
+	eq(player_realm_choices(find_class("Mage"), 1, got, REALM_MAX), 3);
 
 	/* A slot beyond the last is answered rather than read past. */
 	eq(player_realm_choices(find_class("Mage"), REALM_CHOICES, got,
 							REALM_MAX), 0);
 	eq(player_realm_choices(NULL, 0, got, REALM_MAX), 0);
+
+	ok;
+}
+
+/**
+ * A realm you can choose is a realm you can read.
+ *
+ * The entitlement table is Zangband's and is imported whole, so it allows
+ * realms this game has not built yet. Offering one at birth is a trap with no
+ * way out: the character is made, the realm is chosen, and the spell menu is
+ * empty for the rest of that character's life. It was live between 3.54.2 and
+ * 3.55.0, and Trump is in exactly that state now (DEC-54).
+ *
+ * So: every realm offered in either slot must be one the class has a book in,
+ * and -- the half that stops the guard being satisfied by offering nothing at
+ * all -- every realm the class has a book in must be offered in some slot.
+ */
+static int test_an_offered_realm_has_books_behind_it(void *state) {
+	const struct player_class *c;
+	int slot, i, offered_total = 0;
+
+	for (c = classes; c; c = c->next) {
+		bool offered[REALM_MAX] = { false };
+
+		for (slot = 0; slot < REALM_CHOICES; slot++) {
+			const struct magic_realm *got[REALM_MAX];
+			int n = player_realm_choices(c, slot, got, REALM_MAX);
+
+			for (i = 0; i < n; i++) {
+				require(class_has_realm_book(c, got[i]));
+				offered[got[i]->ridx] = true;
+				offered_total++;
+			}
+		}
+
+		for (i = 0; i < c->magic.num_books; i++) {
+			const struct magic_realm *r = c->magic.books[i].realm;
+
+			notnull(r);
+			require(offered[r->ridx]);
+		}
+	}
+
+	/*
+	 * And Trump, which every one of the six casting classes below is
+	 * entitled to, is offered to none of them because it has no books.
+	 */
+	for (c = classes; c; c = c->next) {
+		const struct magic_realm *trump = find_realm("trump");
+		const struct magic_realm *got[REALM_MAX];
+		int n, found = 0;
+
+		notnull(trump);
+		for (slot = 0; slot < REALM_CHOICES; slot++) {
+			n = player_realm_choices(c, slot, got, REALM_MAX);
+			for (i = 0; i < n; i++) {
+				if (got[i] == trump) found++;
+			}
+		}
+		eq(found, 0);
+	}
+
+	/*
+	 * Eighteen offers across the eight classes: Mage 3+3, Priest 1+2,
+	 * Rogue 2, Ranger 1+2, and one apiece for the Druid, Necromancer,
+	 * Paladin and Blackguard. A Priest's first slot allows Life or Death
+	 * and only Life is built, which is why it offers one and not two.
+	 */
+	eq(offered_total, 18);
 
 	ok;
 }
@@ -634,6 +708,8 @@ struct test tests[] = {
 	  test_changing_class_leaves_no_stale_realm },
 	{ "a-single-entitlement-is-not-a-choice",
 	  test_a_single_entitlement_is_not_a_choice },
+	{ "an-offered-realm-has-books-behind-it",
+	  test_an_offered_realm_has_books_behind_it },
 	{ "studying-is-a-property-of-the-character",
 	  test_studying_is_a_property_of_the_character },
 	{ "a-spell-without-an-effect-says-so",
