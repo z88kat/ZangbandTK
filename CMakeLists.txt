@@ -934,6 +934,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     player/playerstat.c
     player/pscore.c
     player/quest.c
+    player/realm.c
     player/timed.c
     player/util.c
     player/virtue.c

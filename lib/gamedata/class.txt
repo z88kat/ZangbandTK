@@ -723,7 +723,7 @@ title:High Priest
 
 magic:1:350:5
 
-book:prayer book:town:[Novice's Handbook]:6:divine
+book:prayer book:town:[Novice's Handbook]:6:life
 book-graphics:?:G
 book-properties:25:40:1 to 100
 equip:prayer book:[Novice's Handbook]:1:1:none
@@ -780,7 +780,7 @@ desc:Cures 10 points of damage, removes fear and, from character level 20,
 desc: grants you heroism (resistance to fear, and a bonus of +12 to-hit)
 desc: for a level-dependent duration.
 
-book:prayer book:town:[Cleansing Power]:6:divine
+book:prayer book:town:[Cleansing Power]:6:life
 book-graphics:?:G
 book-properties:100:40:5 to 100
 
@@ -827,7 +827,7 @@ expr:S:PLAYER_LEVEL:+ 0
 desc:Attempts to remove a curse from an item, more effective at higher
 desc: character levels.
 
-book:prayer book:dungeon:[Healing and Sanctuary]:6:divine
+book:prayer book:dungeon:[Healing and Sanctuary]:6:life
 book-graphics:?:g
 book-properties:10000:20:30 to 100
 
@@ -874,7 +874,7 @@ effect:LIGHT_LEVEL
 desc:Lights up, maps out, and senses all objects on the complete current
 desc: dungeon level.
 
-book:prayer book:dungeon:[Battle Blessings]:5:divine
+book:prayer book:dungeon:[Battle Blessings]:5:life
 book-graphics:?:g
 book-properties:30000:15:40 to 100
 
@@ -908,7 +908,7 @@ effect:TIMED_INC:ATT_DEMON:0:5
 dice:20+d20
 desc:Temporarily makes your melee attacks powerfully slay demons.
 
-book:prayer book:dungeon:[Wrath of the Valar]:5:divine
+book:prayer book:dungeon:[Wrath of the Valar]:5:life
 book-graphics:?:g
 book-properties:50000:10:60 to 100
 
@@ -991,7 +991,7 @@ title:Night Lord
 
 magic:1:300:5
 
-book:shadow book:town:[Into the Shadows]:5:shadow
+book:shadow book:town:[Into the Shadows]:5:death
 book-graphics:?:P
 book-properties:25:40:1 to 100
 equip:shadow book:[Into the Shadows]:1:1:none
@@ -1030,7 +1030,7 @@ desc:Detects all monsters which have a spirit in the immediate area,
 desc: and then maps in a region around them, increasing in size with
 desc: character level.
 
-book:shadow book:town:[Dark Rituals]:5:shadow
+book:shadow book:town:[Dark Rituals]:5:death
 book-graphics:?:P
 book-properties:400:40:10 to 100
 
@@ -1074,7 +1074,7 @@ expr:S:PLAYER_LEVEL:* 2 + 10
 desc:Casts a bolt which wounds, and makes spellcasting monsters less successful
 desc: in casting spells.
 
-book:shadow book:town:[Fear and Torment]:5:shadow
+book:shadow book:town:[Fear and Torment]:5:death
 book-graphics:?:P
 book-properties:1600:20:30 to 100
 
@@ -1112,7 +1112,7 @@ desc:Changes you into the form of a warg, and gives you temporary berserk
 desc: strength, at the cost of some hitpoints.
 
 
-book:shadow book:dungeon:[Deadly Powers]:6:shadow
+book:shadow book:dungeon:[Deadly Powers]:6:death
 book-graphics:?:p
 book-properties:30000:15:40 to 100
 
@@ -1169,7 +1169,7 @@ expr:S:PLAYER_LEVEL:* 2
 desc:Invokes a radius-4 darkness ball.
 
 
-book:shadow book:dungeon:[Corruption of Spirit]:5:shadow
+book:shadow book:dungeon:[Corruption of Spirit]:5:death
 book-graphics:?:p
 book-properties:50000:10:60 to 100
 
@@ -1254,7 +1254,7 @@ title:Paladin Lord
 
 magic:1:400:3
 
-book:prayer book:town:[Novice's Handbook]:6:divine
+book:prayer book:town:[Novice's Handbook]:6:life
 
 spell:Bless:1:2:20:4
 effect:TIMED_INC:BLESSED
@@ -1308,7 +1308,7 @@ desc:Cures 10 points of damage, removes fear and, from character level 15,
 desc: grants you heroism (resistance to fear, and a bonus of +12 to-hit)
 desc: for a level-dependent duration.
 
-book:prayer book:dungeon:[Healing and Sanctuary]:5:divine
+book:prayer book:dungeon:[Healing and Sanctuary]:5:life
 
 spell:Protection from Evil:15:8:42:5
 effect:TIMED_INC:PROTEVIL
@@ -1351,7 +1351,7 @@ effect:LIGHT_LEVEL
 desc:Lights up, maps out, and senses all objects on the complete current
 desc: dungeon level.
 
-book:prayer book:dungeon:[Battle Blessings]:5:divine
+book:prayer book:dungeon:[Battle Blessings]:5:life
 
 spell:Smite Evil:25:20:70:40
 effect:TIMED_INC:ATT_EVIL:0:5
@@ -1637,7 +1637,7 @@ title:Tyrant
 
 magic:1:600:3
 
-book:shadow book:town:[Into the Shadows]:6:shadow
+book:shadow book:town:[Into the Shadows]:6:death
 
 spell:Seek Battle:1:1:15:2
 effect:DETECT_FEARFUL_MONSTERS
@@ -1686,7 +1686,7 @@ effect:CLEAR_VALUE
 desc:Your mind becomes too focused to be slowed, paralyzed or confused
 desc: for 12+d12 turns.
 
-book:shadow book:town:[Fear and Torment]:5:shadow
+book:shadow book:town:[Fear and Torment]:5:death
 
 spell:Maim Foe:15:6:35:14
 effect:MELEE_BLOWS:MON_STUN:6
@@ -1720,7 +1720,7 @@ effect:SHAPECHANGE:werewolf
 desc:With a blood-curdling cry you change into a half-man half-wolf!
 desc:  In this form you move, attack, and heal faster.
 
-book:shadow book:dungeon:[Deadly Powers]:4:shadow
+book:shadow book:dungeon:[Deadly Powers]:4:death
 
 spell:Bloodlust:30:25:37:80
 effect:TIMED_INC:BLOODLUST:0:-1

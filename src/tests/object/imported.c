@@ -596,25 +596,49 @@ static int test_a_borrowed_lord_is_kinder(void *state) {
 
 	player->patron = patron_random();
 	notnull(player->patron);
-	for (i = 0; i < 4000; i++) {
+	for (i = 0; i < 40000; i++) {
 		if (patron_roll_slot(player) < floor_slot) sworn_low++;
 	}
 
 	player->patron = NULL;
-	for (i = 0; i < 4000; i++) {
+	for (i = 0; i < 40000; i++) {
 		if (patron_roll_slot(player) < floor_slot) borrowed_low++;
 	}
 
 	player->patron = born_to;
 
 	/*
-	 * A margin, not merely "fewer". The doubling takes the nasty roll from one
-	 * in six to one in twelve, so the sworn character should reach the bottom
-	 * of the ladder about twice as often as the borrower. Asking only for
-	 * "fewer" would make the test a coin flip if the doubling were removed,
-	 * since both sides would then sample the same distribution.
+	 * A margin, not merely "fewer", and forty thousand rolls rather than four.
+	 *
+	 * The doubling takes the nasty roll from one in six to one in twelve, so a
+	 * sworn character should reach the bottom of the ladder about twice as
+	 * often as a borrower, and asking only for "fewer" would make this a coin
+	 * flip if the doubling were removed -- both sides would sample the same
+	 * distribution.
+	 *
+	 * The margin is 1.5, and at four thousand rolls that was not enough. The
+	 * bottom quarter of the ladder is rare, so four thousand rolls produced
+	 * only 74 to 99 events on the borrowed side and the ratio ranged from
+	 * **1.475 to 2.284** across ten seeds -- the bound sat about one and a half
+	 * standard deviations from the mean and the test failed roughly one
+	 * whole-suite run in fifteen. Found on seed 1604416127, which came in at
+	 * 1.475.
+	 *
+	 * Ten times the rolls fixes it, and the figure is derived rather than
+	 * tried. Forty thousand gives about 850 events on the borrowed side and
+	 * 1700 on the sworn, so the relative error is sqrt(850)/850 = 3.4% and
+	 * sqrt(1700)/1700 = 2.4%, and the ratio carries their quadrature sum:
+	 * 2.0 x sqrt(0.034^2 + 0.024^2), about 0.083. The bound is then six
+	 * standard deviations below the mean instead of one and a half. Measured
+	 * across twelve seeds afterwards: 1.788 to 2.117.
+	 *
+	 * The floor on `borrowed_low` is the part of that reasoning the test can
+	 * check for itself. If the rate ever changes enough that the counts
+	 * collapse, the standard-deviation argument above stops holding and this
+	 * says so rather than quietly becoming fragile again. 400 is fifteen
+	 * standard deviations below the expected 850, so it cannot fire by chance.
 	 */
-	require(borrowed_low > 0);
+	require(borrowed_low > 400);
 	require(sworn_low * 2 > borrowed_low * 3);
 
 	ok;

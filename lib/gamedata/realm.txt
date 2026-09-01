@@ -1,11 +1,35 @@
 # File: realm.txt
 
 # name: realm name
+# virtues: the two virtues practising this realm moves (PLR-19)
 # stat: primary spellcasting stat
 # verb: verb used for creating a magic effect
 # spell-noun: name of magic effects
 # book-noun: type of book used
 
+# Seven realms, which is Zangband's number and Zangband's list (PLR-09).
+#
+# Four of them are Angband 4.2's own, renamed where Zangband's name for the
+# same thing is the one this game uses everywhere else (PLR-10 keeps the
+# metadata -- the casting stat, verb and nouns are 4.2's and are better than
+# Zangband's, which expressed them as scattered per-class constants):
+#
+#     4.2 arcane  -> Arcane     4.2 nature  -> Nature
+#     4.2 divine  -> Life       4.2 shadow  -> Death
+#
+# The mapping is by content and not by name, and one of the four is worth
+# reading twice. **This game's Arcane is not Zangband's Arcane.** Zangband's is
+# explicitly the weak generalist -- "it has no ultra-powerful high level
+# spells... all Arcane spellbooks can be bought in town"
+# ([arcane.txt](https://web.archive.org/web/20220420164306/http://www.zangband.org/spoilers/arcane.txt))
+# -- where 4.2's arcane realm carries Magic Missile, two books of attacks and a
+# dungeon-only Wizard's Tome of Power. Folding them together makes Arcane
+# stronger here than it was there. The alternative was two realms sharing one
+# name, which PLR-09's count forbids. See DEC-49.
+#
+# Realms are not written to the savefile -- books are matched by tval and sval,
+# and the realm is read for display and for calc_mana() -- so renaming a record
+# costs nothing but the `book:` lines that name it.
 
 name:arcane
 virtues:ENCHANT | KNOWLEDGE
@@ -14,7 +38,7 @@ verb:cast
 spell-noun:spell
 book-noun:magic book
 
-name:divine
+name:life
 virtues:VITALITY | COMPASSION
 stat:WIS
 verb:recite
@@ -28,9 +52,43 @@ verb:chant
 spell-noun:verse
 book-noun:nature book
 
-name:shadow
+name:death
 virtues:UNLIFE | CHANCE
 stat:INT
 verb:perform
 spell-noun:ritual
 book-noun:shadow book
+
+# And the three Zangband realms 4.2 has no counterpart for at all.
+#
+# Sorcery is the meta realm: "utility spells such as detection and identify,
+# protection spells, spells for fleeing and spells to enhance your odds in
+# combat. It does not, however, have any direct attacking spells."
+# Enchantment and knowledge are what it moves, as arcane does -- it is the
+# scholar's realm without the fire.
+name:sorcery
+virtues:KNOWLEDGE | ENCHANT
+stat:INT
+verb:invoke
+spell-noun:working
+book-noun:sorcery book
+
+# Chaos is the destructive one, and the reason a Chaos-Warrior is what it is.
+# Casting it courts the Courts: V_CHANCE is the virtue mutations move too.
+name:chaos
+virtues:CHANCE | INDIVIDUALISM
+stat:INT
+verb:unleash
+spell-noun:invocation
+book-noun:chaos book
+
+# Trump is the Amber realm, and the one this game has the strongest claim on:
+# its whole conceit is a deck of cards that reaches people and places. Zangband
+# took it from Zelazny and it is the only realm that arrives here already at
+# home.
+name:trump
+virtues:INDIVIDUALISM | KNOWLEDGE
+stat:INT
+verb:read
+spell-noun:card
+book-noun:deck

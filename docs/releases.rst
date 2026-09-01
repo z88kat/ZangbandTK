@@ -30,6 +30,46 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+M9: magic realms — 1 September 2026
+-----------------------------------
+
+- **3.51.0** — **Seven realms** (PLR-09, PLR-10, DEC-49). Angband has four
+  realms and Zangband has seven, and the two lists overlap by name without
+  overlapping by meaning. The four are mapped onto four of the seven by content
+  — ``arcane`` keeps its name, ``divine`` becomes **Life**, ``shadow`` becomes
+  **Death**, ``nature`` keeps its name — and Sorcery, Chaos and Trump are added.
+  Exactly seven, with all of Angband's metadata kept: casting stat, verb, spell
+  noun and book noun, which Zangband held as scattered per-class constants.
+
+  **Nothing an existing character can cast has changed.** Realms are not written
+  to the savefile — books are matched by tval and sval — so the rename cost
+  sixteen ``book:`` lines and nothing else. Every class keeps the same books in
+  the same order with the same spells at the same levels; the only difference is
+  the internal name of the realm two book sets belong to, which no player ever
+  sees. ``player/realm`` pins the shape of all eight casting classes so that no
+  later phase of this milestone can disturb one quietly: inserting a book
+  anywhere but the end of a class's list shifts every spell a saved character
+  knows one place along, and the game would load and look reasonable.
+
+  **This game's Arcane is stronger than Zangband's**, and that is the one place
+  the mapping is not clean. Zangband's Arcane was the deliberate weak generalist
+  with every book buyable in town and no high-level power; Angband's is the
+  Mage's realm with two books of attacks and a dungeon-only Tome of Power.
+  Having exactly seven realms requires folding them, and folding keeps the
+  stronger.
+
+  Also here: **the third flake of the session, identified and derived rather
+  than nudged.** ``a-borrowed-lord-is-kinder`` compared how often a sworn and a
+  borrowed Chaos patron reach the cruel end of the reward ladder, over four
+  thousand rolls, and required a ratio above 1.5. The bottom quarter of the
+  ladder is rare enough that four thousand rolls give only 74 to 99 events, so
+  the ratio ranged 1.475 to 2.284 and the bound sat one and a half standard
+  deviations out. It failed about one whole-suite run in fifteen, and the run
+  that caught it named its own seed — 1604416127 — which is what the runner
+  change in 3.50.3 was for. Ten times the rolls puts the bound six standard
+  deviations clear, and the arithmetic is in the comment so the next reader does
+  not have to redo it.
+
 Testing — 31 August 2026
 -------------------------
 

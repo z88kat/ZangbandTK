@@ -1699,3 +1699,52 @@ intends to keep. The mutation is still gained, described and saved like any
 other — a mutation that vanishes from a savefile is worse than one that does
 nothing, which is the same reasoning DEC-44 applied to the two charisma
 mutations.
+
+### DEC-49 — Seven realms, by content and not by name (PLR-09, PLR-10, PLR-12)
+
+PLR-09 asks for seven realms and names them: Life, Sorcery, Nature, Chaos,
+Death, Trump, Arcane. PLR-10 asks that 4.2's realm metadata be retained rather
+than replaced. 4.2 has four realms — arcane, divine, nature, shadow. Those two
+requirements do not compose on their own, because four plus seven is eleven and
+two of the names collide.
+
+*What was chosen.* 4.2's four are mapped onto four of the seven by content:
+
+| 4.2 | becomes |
+|---|---|
+| `arcane` | **Arcane** |
+| `divine` | **Life** |
+| `nature` | **Nature** |
+| `shadow` | **Death** |
+
+and Sorcery, Chaos and Trump are added. That is exactly seven, keeps every
+scrap of 4.2's metadata — the casting stat, verb, spell noun and book noun,
+which Zangband held as scattered per-class constants and expressed less well —
+and costs sixteen `book:` lines, because realms are not written to the savefile.
+Books are matched by tval and sval and the realm is read for display and for
+`calc_mana()`, so renaming a record is free.
+
+*The one that is not a clean match, and is recorded as such.* **This game's
+Arcane is not Zangband's Arcane.** Zangband's was deliberately the weak
+generalist: "it has no ultra-powerful high level spells... all Arcane
+spellbooks can be bought in town"
+([arcane.txt](https://web.archive.org/web/20220420164306/http://www.zangband.org/spoilers/arcane.txt)).
+4.2's arcane realm is the Mage's, with two books of attacks and a dungeon-only
+Wizard's Tome of Power. Folding them keeps the stronger reading.
+
+The alternative was two realms sharing one name, which PLR-09's count forbids;
+the other alternative was renaming 4.2's arcane to Sorcery, which is worse,
+because Sorcery has no direct attack spells at all and 4.2's arcane opens with
+Magic Missile. A stronger Arcane is a balance note for BAL-15 to BAL-17 to pick
+up. It is not a contradiction.
+
+*What this decision does not do.* It does not give any existing casting class a
+realm *choice*. Zangband's Priest picks Life or Death; 4.2's Priest has a fixed
+list. Opening that up means adding books to a class's book list, and
+`player->spell_flags[]` is indexed by a flat position across every book the
+class carries and is written to the savefile by that index — so inserting a book
+anywhere but the end shifts every spell a saved character knows one place along.
+The game would load and the character sheet would look reasonable. Existing
+classes therefore keep their exact progressions, pinned by `player/realm`, and
+the choice mechanism is built so that a class can be opened up in data later
+with a savefile migration written on purpose.
