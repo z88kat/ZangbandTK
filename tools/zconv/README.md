@@ -18,6 +18,8 @@ python3.13 zconv.py monsters --write       # convert; write the data file too
 python3.13 zconv.py monsters --theme-only  # DEC-19: Amber/Mythos/Chaos identity only
 python3.13 zconv.py artifacts --write      # convert a_info.txt -> 4.2 artifacts
 python3.13 zconv.py egos --write           # convert e_info.txt -> 4.2 ego items
+python3.13 zconv.py realms                 # M9: player spells, derived from magic_info[]
+python3.13 zconv.py realms --realm chaos --class Priest
 ```
 
 Output lands in `out/` — `monsters.report.md` and `monster.zangband.txt`.

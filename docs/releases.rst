@@ -33,6 +33,22 @@ Unreleased
 M9: magic realms — 1 September 2026
 -----------------------------------
 
+- **3.52.1** — **The spell converter, and a correction to the order M9 goes
+  in.** No game change. ``zconv.py realms`` slices Zangband's ``magic_info[]``
+  by position — 2,464 ``{level, mana}`` pairs, exactly 11 classes × 7 realms ×
+  32 spells — and derives the two fields 4.2 stores and Zangband does not:
+  ``sfail`` from the base Zangband computes at cast time, ``sexp`` as
+  ``5 × book²`` (DEC-51). It prints ready-made ``spell:`` lines, and re-derives
+  the per-class realm entitlements from the table as its own cross-check.
+  1,376 lines across every class and realm, none breaking either rule.
+
+  **PLR-08 has to come before CNT-10, which is the reverse of the order they
+  are listed in.** A spell in 4.2 lives inside a ``book:`` inside a *class* —
+  there is nowhere else to put one. Sorcery, Chaos and Trump are realms no
+  existing class carries, and DEC-49 deliberately pinned every existing class's
+  progression, so until a character can *choose* a realm at birth an imported
+  Sorcery spell has no class to belong to. Realm choice first, then the import.
+
 - **3.52.0** — **The savefile guard for the realm import** (DEC-50). No game
   change yet; this is the fence built before the work that needs it.
 

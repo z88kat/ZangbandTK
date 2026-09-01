@@ -315,6 +315,28 @@ Trump book 2 (0.33×).
 
 **Nothing is awaiting a decision. Phase 2 is ready to start.**
 
+#### The order Phase 2 has to go in
+
+**The savefile guard is built (3.52.0).** The `player spells` block is at version 2 and
+carries a fingerprint of the class's spell list, so a character whose spells were learned
+against a different list is refused rather than loaded with somebody else's. 31 of the 35
+corpus characters load; the four with spells recorded are listed in
+`tests/saves/EXPECTED-FAILURES` with their reason.
+
+**The converter is built.** `zconv.py realms` slices `magic_info[]` by position, derives
+`sfail` and `sexp` by the rules above, and prints ready-made `spell:` lines. It
+re-derives the realm entitlements from the table as its own cross-check.
+
+**PLR-08 has to come before CNT-10, which is the reverse of the order they are listed
+in.** A spell in 4.2 lives inside a `book:` inside a *class*; there is nowhere else to
+put one. Sorcery, Chaos and Trump are realms no existing class carries, and DEC-49
+deliberately left every existing class's progression pinned — so until a character can
+*choose* a realm at birth, an imported Sorcery spell has no class to belong to. Writing
+the content first would mean either bolting Sorcery's four books onto the Mage beside its
+Arcane ones, which is not the game's model and doubles a Mage's spell list, or holding 96
+spells of finished data with nothing able to read them. So: **PLR-08 and PLR-11 first
+(realm choice at birth, and the savefile and display that go with it), then CNT-10.**
+
 #### Phase 2's conversion rules, established and verified
 
 This work stands whichever way DEC-50 and DEC-51 go, and should not need doing twice.

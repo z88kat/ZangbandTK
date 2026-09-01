@@ -2273,6 +2273,53 @@ def cmd_mutations(args) -> int:
     return 0
 
 
+def cmd_realms(args) -> int:
+    """Report one class's spells in one realm, derived from magic_info[]."""
+    import realms
+
+    src = (ROOT / "archive" / "zangband" / "src" / "tables.c").read_text(
+        errors="replace")
+
+    print("magic_info[] cross-check")
+    print("=" * 72)
+    pairs = realms.read_pairs(src)
+    print(f"{len(pairs)} pairs = {len(realms.CLASSES)} classes"
+          f" x {len(realms.REALMS)} realms x {realms.SPELLS_PER_REALM} spells")
+    print()
+    print("Realm entitlements, read out of the table by position. Zangband")
+    print("states these twice; if this disagrees with realm_choices1/2[] then")
+    print("the slicing is wrong and nothing below can be trusted.")
+    print()
+    for cls, rs in realms.entitlements(src).items():
+        print(f"  {cls:15s} {', '.join(rs) if rs else '(none)'}")
+
+    print()
+    print(f"{args.cls}, {args.realm}")
+    print("=" * 72)
+    spells = realms.convert(src, args.cls, args.realm)
+    if not spells:
+        print(f"  {args.cls} cannot learn {args.realm}.")
+        return 0
+
+    existing = set(re.findall(r"^spell:([^:]+):",
+                              (GAMEDATA / "class.txt").read_text(), re.M))
+
+    book = 0
+    for sp in spells:
+        if sp["book"] != book:
+            book = sp["book"]
+            print(f"\n  Book {book}  (exp {sp['exp']} per spell level)")
+        have = "   <- 4.2 has this name" if sp["name"] in existing else ""
+        print(f"    spell:{sp['name']}:{sp['level']}:{sp['mana']}:"
+              f"{sp['fail']}:{sp['exp']}{have}")
+
+    borrowed = sum(1 for sp in spells if sp["name"] in existing)
+    print()
+    print(f"  {len(spells)} spells. {borrowed} share a name with one 4.2 has,")
+    print(f"  so {len(spells) - borrowed} need an effect chain written.")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         prog="zconv", description="Convert Zangband data onto Angband 4.2's model.")
@@ -2304,12 +2351,20 @@ def main() -> int:
     mutations.add_argument("--write", action="store_true",
                            help="write the data file as well as the report")
 
+    realms_p = sub.add_parser("realms",
+                              help="convert magic_info[] to 4.2 spell lines")
+    realms_p.add_argument("--realm", default="sorcery",
+                          help="which realm to report (default: sorcery)")
+    realms_p.add_argument("--class", dest="cls", default="Mage",
+                          help="whose figures to use (default: Mage)")
+
     args = parser.parse_args()
     return {"analyse": cmd_analyse, "monsters": cmd_monsters,
             "artifacts": cmd_artifacts,
             "egos": cmd_egos,
             "objects": cmd_objects,
-            "mutations": cmd_mutations}[args.command](args)
+            "mutations": cmd_mutations,
+            "realms": cmd_realms}[args.command](args)
 
 
 if __name__ == "__main__":
