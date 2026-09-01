@@ -289,6 +289,10 @@ mutations, virtues.
   ride along because M9 is where the mutation-power gap is being closed, not because the
   realms need them.
 
+  **All three are done.** Telekinesis and `FETCH` landed with Sorcery (3.54.0);
+  **swap position and sterilize landed in 3.57.0**. Eleven mutations did nothing
+  before; **nine do now**, and none is refused.
+
 **Exit:** a Mage's realm choice defines the character, and every class in PLR-03 is
 playable. Manual chapter: the magic system.
 

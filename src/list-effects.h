@@ -156,4 +156,27 @@ EFFECT(ALCHEMY,						false,	NULL,		0,		EFINFO_NONE,	"turns an object into a thir
  * be able to see what they are taking. Trump and the mutation require sight;
  * Sorcery does not, which is what makes Sorcery's the better spell.
  */
+/*
+ * ZangbandTK (PLR-16): trade places with a monster.
+ *
+ * `teleport_swap()` in Zangband ([spells2.c:3129]) is the mutation's whole
+ * content: TELEPORT_TO brings a monster to you and leaves you where you are,
+ * which puts two things in one square. The exchange is the mechanic or there
+ * is nothing. 4.2's `monster_swap()` already does the hard half and already
+ * handles the player being one of the two, so this is the aiming and the
+ * refusals around it.
+ */
+EFFECT(SWAP_POS,					true,	NULL,		0,		EFINFO_NONE,	"exchanges you with a monster you can see",	"swap position")
+
+/*
+ * ZangbandTK (PLR-16): stop everything on the level from breeding.
+ *
+ * Zangband adds MAX_REPRO to the level's breeder count, which pushes it past
+ * the ceiling that `mon-move.c` checks before a breeder may multiply. 4.2 keeps
+ * the same counter and the same check, so the same addition has the same
+ * effect: breeding stops until enough breeders have died to bring the count
+ * back under the ceiling. It is not permanent and Zangband's is not either.
+ */
+EFFECT(STERILIZE,					false,	NULL,		0,		EFINFO_NONE,	"stops everything on the level from breeding",	"sterilize")
+
 EFFECT(FETCH,						true,	"weight",	1,		EFINFO_DICE,	"pulls an object weighing up to %s to your feet",	"fetch an object")

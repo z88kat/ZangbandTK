@@ -3652,6 +3652,7 @@ static enum parser_error parse_p_race_values(struct parser *p) {
  *	power-when:<from>:<to>  opens a level band; everything after belongs to it
  *	power-effect:...      appended to the current band
  *	power-dice:<dice>     dice for the last effect
+ *	power-effect-msg:...  the killer string a DAMAGE effect names
  *	power-expr:...        binds a name in those dice
  */
 static struct player_power *power_last(struct player_power *head) {
@@ -3773,6 +3774,25 @@ static enum parser_error power_parse_dice(struct player_power *power,
  * Draconian's breath and a Mindflayer's blast scale with level in Zangband, and
  * without this they would be flat numbers that stop mattering.
  */
+/**
+ * The killer string a `DAMAGE` effect in a power chain names.
+ *
+ * The class-spell parser has had `effect-msg` since 4.2; the power parsers
+ * never grew it, so a power that hurt its own user could only report
+ * "yourself". Sterilize is the first to need it -- Zangband kills you with
+ * "the strain of forcing abstinence" -- and it is the same field on the same
+ * struct, so the helper is shared rather than special-cased.
+ */
+static enum parser_error power_parse_msg(struct player_power *power,
+										 const char *text) {
+	struct effect *effect = power_last_effect(power);
+
+	if (!effect) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	effect->msg = string_append(effect->msg, text);
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error power_parse_expr(struct player_power *power,
 										  const char *name, const char *base,
 										  const char *expr) {
@@ -4667,6 +4687,14 @@ static enum parser_error parse_mutation_power_dice(struct parser *p) {
 	return power_parse_dice(m->action, parser_getstr(p, "dice"));
 }
 
+static enum parser_error parse_mutation_power_msg(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m || !m->action) return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	return power_parse_msg(m->action, parser_getstr(p, "text"));
+}
+
 static enum parser_error parse_mutation_power_expr(struct parser *p) {
 	struct mutation *m = parser_priv(p);
 
@@ -4898,6 +4926,7 @@ static struct parser *init_parse_mutation(void) {
 	parser_reg(p, "power-effect sym eff ?sym type ?int radius ?int other",
 			   parse_mutation_power_effect);
 	parser_reg(p, "power-dice str dice", parse_mutation_power_dice);
+	parser_reg(p, "power-effect-msg str text", parse_mutation_power_msg);
 	parser_reg(p, "power-expr sym name sym base str expr",
 			   parse_mutation_power_expr);
 	parser_reg(p, "fires-when int from int to", parse_mutation_fires_when);

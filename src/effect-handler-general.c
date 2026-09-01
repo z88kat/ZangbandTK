@@ -4130,6 +4130,75 @@ bool effect_handler_ALCHEMY(effect_handler_context_t *context)
 }
 
 /**
+ * Trade places with a monster (PLR-16).
+ *
+ * Zangband's `teleport_swap()` ([spells2.c:3129]) refuses three things and this
+ * refuses the same three: nothing there, out of bounds, and a monster that
+ * resists teleportation. Aimed at a target it reaches anything targetable;
+ * aimed along a direction it reaches the adjacent square only, which is
+ * Zangband's behaviour and not a simplification of it.
+ *
+ * `monster_swap()` does the exchange. It is 4.2's own primitive, run on every
+ * monster turn, and it already knows one of the two grids may hold the player.
+ */
+bool effect_handler_SWAP_POS(effect_handler_context_t *context)
+{
+	struct loc target;
+	struct monster *mon;
+
+	context->ident = true;
+
+	if (context->dir == DIR_TARGET && target_okay()) {
+		target_get(&target);
+	} else {
+		target = loc_sum(player->grid, ddgrid[context->dir]);
+	}
+
+	if (!square_in_bounds_fully(cave, target)) {
+		msg("You can't trade places with that!");
+		return false;
+	}
+
+	mon = square_monster(cave, target);
+	if (!mon) {
+		msg("You can't trade places with that!");
+		return false;
+	}
+
+	if (rf_has(mon->race->flags, RF_RES_TELE)) {
+		msg("Your teleportation is blocked!");
+		return false;
+	}
+
+	monster_swap(player->grid, target);
+	player_handle_post_move(player, true, true);
+
+	return true;
+}
+
+/**
+ * Stop everything on the level from breeding (PLR-16).
+ *
+ * Zangband does `num_repro += MAX_REPRO`, which is not a flag and not
+ * permanent: it pushes the level's breeder count past the ceiling
+ * `mon-move.c` checks before a breeder may multiply, and breeding resumes once
+ * enough breeders have died to bring it back under. 4.2 keeps the same counter
+ * and the same check, so the same addition means the same thing.
+ *
+ * The headache is the mutation's own `DAMAGE` effect rather than part of this,
+ * so an effect that stops breeding is only an effect that stops breeding.
+ */
+bool effect_handler_STERILIZE(effect_handler_context_t *context)
+{
+	context->ident = true;
+
+	msg("You suddenly have a headache!");
+	cave->num_repro += z_info->repro_monster_max;
+
+	return true;
+}
+
+/**
  * Pull an object to the caster's feet (PLR-16, CNT-10).
  *
  * Zangband's `fetch()`

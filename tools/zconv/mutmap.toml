@@ -122,14 +122,16 @@ effects = [ "ALTER:KILL_WALL", "NOURISH:INC_TO:5000" ]
 
 [SWAP_POS]
 line = 1062
-defer = """Deferred to M9, not open-ended. teleport_swap() exchanges the \
-player and a monster, and TELEPORT_TO leaves the monster where it is, so the \
-player arrives inside an occupied square -- the mechanic is a swap or it is \
-nothing. Cheaper than it looks: monster_swap() already exists in 4.2 \
-(mon-util.c:644) and handles the player, so this is an effect handler over a \
-primitive the game runs on every monster turn. It rides along with M9 because \
-that is where the mutation-power gap is being closed, not because the realms \
-need it."""
+note = """Built in M9 as it said it would be. The mechanic has to be a swap: \
+TELEPORT_TO brings the monster to you and leaves you where you are, and \
+player_place() asserts the square is empty, so the naive version does not \
+merely play wrong -- it aborts. monster_swap() is 4.2's own primitive, run on \
+every monster turn, and already handles one of the two grids holding the \
+player, so the handler is the aiming and the three refusals around it: nothing \
+there, out of bounds, and a monster with RES_TELE. Zangband refuses a resister \
+outright rather than rolling a saving throw, which is not how RES_TELE works \
+against teleport-other, and that difference is kept."""
+effects = [ "SWAP_POS" ]
 
 [SHRIEK]
 line = 1070
@@ -250,13 +252,19 @@ would tell the player something already on screen."""
 
 [STERILITY]
 line = 1223
-defer = """Deferred to M9, not open-ended. Stops every breeding monster on \
-the level from breeding, at the cost of 17-34 hit points. 4.2 tracks breeding \
-with `num_repro` against `repro_monster_max` and the counter is live (read at \
-mon-move.c:1077), so this is an effect that sets one field plus a damage term. \
-The reservation stands and is a judgement rather than an obstacle: it reaches \
-into monster generation to carry a single mutation. It rides along with M9 \
-because that is where the mutation-power gap is being closed."""
+note = """Built in M9 as it said it would be, and the recorded reservation \
+still stands: it reaches into monster generation to carry a single mutation. \
+Zangband adds MAX_REPRO to `num_repro` rather than setting a flag, which makes \
+this temporary -- breeding resumes once enough breeders die to bring the count \
+back under `repro_monster_max`, the comparison mon-move.c:1077 makes. 4.2 keeps \
+the same counter and the same check, so the same addition means the same thing. \
+The 17-34 hit points are a separate DAMAGE effect in the chain rather than part \
+of the sterilising, so an effect that stops breeding is only that; the killer \
+string needed a `power-effect-msg` directive the power parsers had never \
+grown."""
+effects = [
+  "STERILIZE",
+  "DAMAGE", "dice:16+1d18", "msg:the strain of forcing abstinence" ]
 
 [PANIC_HIT]
 line = 1231

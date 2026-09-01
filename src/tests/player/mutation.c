@@ -528,21 +528,23 @@ static int test_the_two_charisma_mutations_are_inert(void *state) {
 /**
  * Every activatable mutation either has a power or has a reason.
  *
- * Twenty-six of the thirty-two are expressible as 4.2 effect chains and six
+ * Twenty-eight of the thirty-two are expressible as 4.2 effect chains and four
  * are not, and the split is asserted as a count so that neither side can drift
  * quietly. A mutation that lost its effect chain to a converter change would
  * still parse, still appear in the power list, and do nothing when invoked --
- * which is exactly what the nine deferred ones look like, so counting is the
- * only way to tell them apart.
+ * which is exactly what the deferred ones look like, so counting is the only
+ * way to tell them apart.
  *
- * The nine are named here rather than counted, because "nine are deferred" is
+ * Swap position and Sterilize were two of the six and are now built: both were
+ * marked "deferred to M9, not open-ended" and M9 is where they landed.
+ *
+ * The four are named here rather than counted, because "four are deferred" is
  * a fact about a decision and should fail if somebody implements one without
  * saying so.
  */
 static int test_the_activatable_split_is_what_was_decided(void *state) {
 	static const char *const deferred[] = {
-		"SWAP_POS", "DET_CURSE", "GROW_MOLD",
-		"WEIGH_MAG", "STERILITY", "LAUNCHER"
+		"DET_CURSE", "GROW_MOLD", "WEIGH_MAG", "LAUNCHER"
 	};
 	const struct mutation *m;
 	int with = 0, without = 0;
@@ -554,8 +556,8 @@ static int test_the_activatable_split_is_what_was_decided(void *state) {
 		if (m->action) with++; else without++;
 	}
 
-	eq(with, 26);
-	eq(without, 6);
+	eq(with, 28);
+	eq(without, 4);
 
 	for (i = 0; i < N_ELEMENTS(deferred); i++) {
 		m = mutation_by_name(deferred[i]);
@@ -1341,7 +1343,7 @@ static int test_nothing_is_dropped_any_more(void *state) {
 	}
 
 	eq(refused, 0);
-	eq(waiting, 10);
+	eq(waiting, 8);
 
 	ok;
 }

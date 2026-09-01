@@ -214,6 +214,7 @@ weight:2
 desc:You can switch locations with another being.
 gain:You feel like walking a mile in someone else's shoes.
 lose:You feel like staying in your own shoes.
+power-effect:SWAP_POS
 
 name:SHRIEK
 kind:activatable
@@ -434,6 +435,10 @@ values:INT[-1]
 desc:You can cause mass impotence (-1 INT).
 gain:You can give everything around you a headache.
 lose:You hear a massed sigh of relief.
+power-effect:STERILIZE
+power-effect:DAMAGE
+power-dice:16+1d18
+power-effect-msg:the strain of forcing abstinence
 
 name:PANIC_HIT
 kind:activatable

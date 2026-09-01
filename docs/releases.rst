@@ -33,6 +33,27 @@ Unreleased
 M9: magic realms — 1 September 2026
 -----------------------------------
 
+- **3.57.0** — **Swap position and Sterilize work** (PLR-16). The two mutation
+  powers M8 deferred with the note "deferred to M9, not open-ended", built where
+  they said they would be. Eleven mutations did nothing; nine do now.
+
+  *Swap position* had to be an exchange rather than a move. 4.2's nearest
+  existing effect brings the monster to you and leaves you where you are, and
+  ``player_place()`` asserts the square it puts you in is empty — so the naive
+  version does not play wrong, it aborts. ``monster_swap()`` is 4.2's own
+  primitive, run on every monster turn, and already handles one of the two
+  grids holding the player. A monster that resists teleportation refuses
+  outright, which is Zangband's behaviour and is *not* how the same flag works
+  against teleport-other.
+
+  *Sterilize* pushes the level's breeder count past the ceiling that gates
+  breeding, which is what Zangband does and is temporary in both: breeding
+  resumes once enough breeders die. The seventeen-to-thirty-four hit points it
+  costs are a separate effect in the chain, so an effect that stops breeding is
+  only that — which needed a ``power-effect-msg`` directive the power parsers
+  had never grown, since without it a power that hurts its own user could only
+  report "yourself".
+
 - **3.56.1** — **A realm you can choose is a realm you can read** (PLR-08,
   CNT-10). Zangband's entitlement table says a Mage may take Trump, and it is
   imported whole because it is the record of what Zangband permits. But this
