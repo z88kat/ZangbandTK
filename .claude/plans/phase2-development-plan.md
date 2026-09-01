@@ -307,11 +307,13 @@ other 31 carry no spell list. The `player spells` block goes to version 2 and th
 1 reader **refuses** rather than guesses, because a saved caster that loads with the right
 number of spells and the wrong spells is worse than one that does not load.
 
-**One question remains: DEC-51** (spell experience — per-book as Zangband has it, or
-per-spell as 4.2 does). It is smaller than it first appeared and DEC-50 widened it from
-three realms to seven. It is in [decisions.md](decisions.md) under *Open — awaiting the
-project owner*, and it wants answering before the import starts, because it decides a
-field on every one of the 224 spells.
+**DEC-51 is decided too**: spell experience is imported per-book as Zangband has it,
+`sexp = 5 * book²` — 5, 20, 45, 80 — set once per book rather than hand-set on 224 spells.
+The per-book divergence against 4.2's own curve is recorded and left to balance
+calibration; the two values worth watching in playtest are Sorcery book 3 (5.62×) and
+Trump book 2 (0.33×).
+
+**Nothing is awaiting a decision. Phase 2 is ready to start.**
 
 #### Phase 2's conversion rules, established and verified
 

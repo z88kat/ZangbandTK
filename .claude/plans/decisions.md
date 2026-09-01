@@ -1806,16 +1806,26 @@ seven realms remain seven whoever wrote their contents.
 
 ---
 
-## Open — awaiting the project owner
+### DEC-51 — Spell experience is imported per-book, as Zangband has it (CNT-10, BAL-08)
 
-One question M9 raised and stopped on. DEC-50, which stood beside it, was
-decided on 1 September 2026 and has moved above; its answer widens this one,
-because Zangband's spells now arrive in all seven realms rather than three.
+**Decided by the project owner, 1 September 2026: import as derived, which was
+the recommendation below.** `sexp = 5 * book²` — 5, 20, 45, 80 — set once per
+book and applied to all ~224 imported spells. It follows DEC-50: if the spells
+are Zangband's, so is the scheme that rewards them.
 
-### DEC-51 — OPEN — Spell experience: the divergence is per-book, not a scale gap (CNT-10, BAL-08)
+The per-book divergence against 4.2's own curve is recorded and *not* corrected
+at import. It goes to balance calibration as BAL-13's kind of question rather
+than a conversion one, and the two values worth watching in playtest are
+**Sorcery book 3** (5.62× 4.2's median for the same spell levels, because the
+book spans levels 3 to 25) and **Trump book 2** (0.33×). The reasoning that led
+here is kept below, including the figure it corrects.
 
-**Status: open, and smaller than it was first reported. The framing below
-corrects an earlier claim of mine.**
+---
+
+#### How that was arrived at
+
+**Smaller than it was first reported. The framing below corrects an earlier
+claim of mine.**
 
 The conversion itself is exact and is not in question (see the Phase 2 rules
 recorded in the M9 section). Zangband awards first-cast experience as
@@ -1886,3 +1896,10 @@ to balance calibration. The two outliers worth watching are Sorcery book 3
 (over-rewarding) and Trump book 2 (under-rewarding). This blocks nothing —
 whichever way it goes, the converter emits a number and only the number
 changes.
+
+---
+
+## Open — awaiting the project owner
+
+*Nothing.* Both questions M9 stopped on — DEC-50 and DEC-51 — were decided on
+1 September 2026 and are recorded above. Phase 2 of the realms is unblocked.
