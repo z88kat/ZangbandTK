@@ -1751,63 +1751,66 @@ with a savefile migration written on purpose.
 
 ---
 
-## Open — awaiting the project owner
+### DEC-50 — All seven realms take Zangband's spells, and old savefiles break (CNT-10, PLR-09, PLR-12)
 
-Two questions M9 raised and stopped on. Both were found while establishing
-Phase 2's conversion rules; neither was decided, and Phase 2 is not built.
-Whoever picks these up should read them in order, because the second is much
-smaller than it first looked and the first changes what the second applies to.
-
-### DEC-50 — OPEN — What CNT-10 imports, when four of the seven realms are already full (CNT-10, PLR-09, PLR-12)
-
-**Status: open. No work done on either reading.**
+**Decided by the project owner, 1 September 2026: Reading B.**
 
 CNT-10 says *"Realm spellbooks are imported for whichever realms PLR-09
-delivers"*, and PLR-09 delivers seven. But DEC-49 mapped four of those seven
-onto realms that already carry Angband 4.2's own spell content — Arcane, Life,
-Nature and Death are 4.2's `arcane`, `divine`, `nature` and `shadow` renamed —
-and PLR-12 requires that existing class progressions not be disturbed. The two
-requirements cannot both be taken literally.
+delivers"*, and PLR-09 delivers seven. DEC-49 mapped four of those seven onto
+realms that already carry Angband 4.2's own content — Arcane, Life, Nature and
+Death are 4.2's `arcane`, `divine`, `nature` and `shadow` renamed — and PLR-12
+requires that existing class progressions not be disturbed. The two cannot both
+be taken literally, and the two readings were costed:
 
-**Reading A — the three new realms only.** Import Sorcery, Chaos and Trump:
-3 realms × 4 books × 8 spells = **96 spells**, plus book objects for three
-realms that have none. The four mapped realms keep 4.2's content, which under
-DEC-49 *is* their content in this game.
+- **Reading A** — import Sorcery, Chaos and Trump only. 96 spells, no savefile
+  risk, and four of seven realms holding Angband's spells rather than the ones
+  a Zangband player remembers.
+- **Reading B** — import all seven, replacing 4.2's content in the four mapped
+  realms. ~224 spells, and every casting class's savefile invalidated.
 
-- Cost: 96 spells needing hand-mapped effect chains, and three new object kinds
-  per realm's book set.
-- Existing savefiles: untouched. No class's book list changes.
-- Consequence to weigh: a Zangband player will find Life, Nature, Death and
-  Arcane hold Angband's spells rather than the ones they remember. Zangband's
-  Life realm spoiler lists *Detect Evil, Cure Light Wounds, Bless, Remove
-  Fear…* and 4.2's `divine` book 1 holds *Call Light, Detect Evil, Minor
-  Healing, Bless, Sense Invisible* — close in spirit, different in detail. Four
-  of seven realms would be Angband's, three Zangband's.
+**Reading B is taken.** The reason given is that the game is pre-release and
+still in development, so a savefile break is affordable now in a way it will not
+be later; and CNT-10 read plainly asks for Zangband's spells, which is what the
+project is for. Asked directly whether old characters failing to load was
+acceptable, the answer was *"if we cannot load the savefile, so be it."*
 
-**Reading B — all seven realms.** Import Zangband's spells for all seven,
-replacing 4.2's content in the four mapped realms.
+**What breaks, measured rather than estimated.** `player->spell_flags[]` and
+`spell_order[]` are indexed by a flat position across all of a class's books and
+written to the savefile by that index
+([save.c:785](../../src/save.c#L785)), so replacing a book's spell list changes
+what every index means. Eight classes carry a `magic:` block: Mage, Druid,
+Priest, Necromancer, Paladin, Rogue, Ranger, Blackguard. Of the 35 characters in
+`tests/saves`, **four are casting classes** — one Mage, one Druid, one
+Necromancer, one Blackguard. The other 31 are Warriors, Monks, a Mindcrafter and
+a Chaos-Warrior, none of which has a spell list to invalidate. The corpus loses
+four files, not all of it.
 
-- Cost: ~224 spells hand-mapped rather than 96, and the four existing realms'
-  books rewritten.
-- Existing savefiles: **broken for every casting class.**
-  `player->spell_flags[]` and `spell_order[]` are indexed by a flat position
-  across all of a class's books and written to the savefile by that index
-  ([save.c:785](../../src/save.c#L785)). Replacing a book's spell list changes
-  what each index means, so a saved Priest would load with the right number of
-  known spells and the wrong spells. That needs a savefile version bump and a
-  migration that maps old indices to new by spell *name* — which is writable,
-  but it is a piece of work in its own right and it is the kind that fails
-  quietly.
-- It also reopens DEC-49: if the four realms take Zangband's spells, the
-  argument for mapping 4.2's arcane onto Arcane rather than keeping them
-  separate weakens, because the content is no longer 4.2's.
+**The break must be loud.** This is the part that is not a matter of taste. A
+saved Priest whose book contents changed underneath it will load *successfully*
+with the right number of known spells and the wrong spells — the character sheet
+looks reasonable and the game plays wrong. That is worse than a refusal, and it
+is what the savefile work of 30 August was about. So the import bumps the
+`player spells` block to version 2, and the version 1 reader refuses rather than
+guesses. An old character then fails to load with a message that says why, which
+is the outcome the owner accepted; it is not licence to let one load
+incorrectly.
 
-**The reading taken while investigating was A, and it was not adopted.** Phase 1
-shipped under DEC-49 with no class content touched, which is compatible with
-either reading — nothing has been foreclosed. Reading A is cheaper by more than
-half and carries no savefile risk; Reading B is more faithful to Zangband and is
-the more expensive and riskier of the two. This is a scope decision about what
-the game is, not a technical one, which is why it stopped here.
+**Not foreclosed by this.** A name-based migration from the v1 block remains
+writable later if it is ever wanted — mapping old indices to new by spell name.
+Refusing now is a choice about effort, not a door closed.
+
+**This reopens nothing in DEC-49.** The note there that Reading B would weaken
+the argument for mapping 4.2's arcane onto Arcane was written before the
+decision; the mapping is by *realm identity*, not by whose spells sit in it, and
+seven realms remain seven whoever wrote their contents.
+
+---
+
+## Open — awaiting the project owner
+
+One question M9 raised and stopped on. DEC-50, which stood beside it, was
+decided on 1 September 2026 and has moved above; its answer widens this one,
+because Zangband's spells now arrive in all seven realms rather than three.
 
 ### DEC-51 — OPEN — Spell experience: the divergence is per-book, not a scale gap (CNT-10, BAL-08)
 

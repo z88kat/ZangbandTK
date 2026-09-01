@@ -298,12 +298,20 @@ playable. Manual chapter: the magic system.
 became seven, and `player/realm` pins the shape of all eight existing casting classes so
 no later phase can move a spell out from under a saved character. Nothing else is built.
 
-**Phase 2 is stopped, not started**, on two open questions: **DEC-50** (what CNT-10
-imports, when four of the seven realms already hold 4.2's content) and **DEC-51** (spell
-experience, which is a smaller question than it first appeared). Both are written up in
-[decisions.md](decisions.md) under *Open — awaiting the project owner*. Nothing has been
-foreclosed by Phase 1: it touched no class content, so either reading of DEC-50 is still
-open.
+**Phase 2 is unblocked and not started.** **DEC-50 is decided**: Reading B — all seven
+realms take Zangband's spells, ~224 of them, replacing 4.2's content in the four mapped
+realms. The project owner accepted the savefile consequence on the grounds that the game
+is pre-release. Measured rather than assumed, that consequence is four of the 35
+characters in `tests/saves` — one Mage, one Druid, one Necromancer, one Blackguard; the
+other 31 carry no spell list. The `player spells` block goes to version 2 and the version
+1 reader **refuses** rather than guesses, because a saved caster that loads with the right
+number of spells and the wrong spells is worse than one that does not load.
+
+**One question remains: DEC-51** (spell experience — per-book as Zangband has it, or
+per-spell as 4.2 does). It is smaller than it first appeared and DEC-50 widened it from
+three realms to seven. It is in [decisions.md](decisions.md) under *Open — awaiting the
+project owner*, and it wants answering before the import starts, because it decides a
+field on every one of the 224 spells.
 
 #### Phase 2's conversion rules, established and verified
 
