@@ -51,7 +51,7 @@ effects = [ "BOLT_AWARE:MON_CONF", "dice:5+d$S", "expr:S:PLAYER_LEVEL:- 5" ]
 note = "Zangband passes (plev * 3) / 2 as a power; 4.2's own Confuse Monster uses 5+d(level-5), and the two are close enough that keeping 4.2's shape beats introducing a second convention."
 desc = "Attempts to confuse a single monster."
 
-[sorcery.spells."Teleport Self"]
+[sorcery.spells."Teleport"]
 line = 823
 effects = [ "TELEPORT", "dice:$B", "expr:B:PLAYER_LEVEL:* 5" ]
 desc = "Teleports you a long way -- five squares for every level you have."
@@ -188,3 +188,191 @@ desc = "Turns an object into a third of its worth in gold. Artifacts refuse."
 line = 908
 effects = [ "TIMED_INC:INVULN", "dice:7+1d8" ]
 desc = "Makes you briefly untouchable."
+
+# Source: archive/zangband/src/cmd5.c, cast_chaos_spell().
+
+[chaos]
+books = [
+  "Sign of Chaos",
+  "Chaos Mastery",
+  "Chaos Channels",
+  "Armageddon Tome",
+]
+
+[chaos.spells."Magic Missile"]
+line = 1090
+effects = [ "BOLT_OR_BEAM:MISSILE:0:-10", "dice:$Dd4", "expr:D:PLAYER_LEVEL:- 1 / 5 + 3" ]
+desc = "Fires a weak magical bolt, sometimes as a beam."
+
+[chaos.spells."Trap / Door Destruction"]
+line = 1096
+effects = [ "TOUCH:KILL_DOOR", "TOUCH:KILL_TRAP" ]
+desc = "Destroys the doors and traps in the squares next to you."
+
+[chaos.spells."Flash of Light"]
+line = 1099
+effects = [ "LIGHT_AREA", "SPHERE:LIGHT_WEAK:1", "dice:2d$S", "expr:S:PLAYER_LEVEL:/ 2" ]
+note = "4.2's radius is a literal, not an expression, so a radius that grows with level cannot be carried over. The rule, applied the same way everywhere: take the value at the level the earliest-entitled class learns the spell -- a Mage for all five in Chaos. A Mage learns this at 3, so plev/10+1 is 1. It never grows to the 6 it reached at level 50."
+desc = "Lights the area around you, and hurts light-sensitive monsters caught in it."
+
+[chaos.spells."Touch of Confusion"]
+line = 1102
+effects = [ "TIMED_INC:ATT_CONF", "dice:$B", "expr:B:PLAYER_LEVEL:+ 20" ]
+note = "Zangband sets a flag that lasts until it is spent on a blow; 4.2 expresses the same idea as a timed ATT_CONF, which is the only shape the game has for it. So it can lapse unspent, where Zangband's waited."
+desc = "Makes your hands glow.  Your next blows may confuse what they touch."
+
+[chaos.spells."Mana Burst"]
+line = 1110
+effects = [ "BALL:MISSILE:2", "dice:$B+3d5", "expr:B:PLAYER_LEVEL:* 5 / 4" ]
+note = "4.2's radius is a literal, not an expression, so a radius that grows with level cannot be carried over. The rule, applied the same way everywhere: take the value at the level the earliest-entitled class learns the spell -- a Mage for all five in Chaos. A Mage learns this at 9, so the radius is 2. The step up to 3 at level 30 is lost. Zangband adds plev/2 for a Mage or High-Mage and plev/4 for everyone else, which the data language cannot ask. Taking the average as plev*5/4 -- that is plev + plev/4 -- gives every class the non-mage figure plus the base, and a Mage a little less than Zangband gave one."
+desc = "Fires a ball of pure magical force."
+
+[chaos.spells."Fire Bolt"]
+line = 1122
+effects = [ "BOLT_OR_BEAM:FIRE", "dice:$Dd8", "expr:D:PLAYER_LEVEL:- 5 / 4 + 8" ]
+desc = "Fires a bolt of fire, sometimes as a beam."
+
+[chaos.spells."Fist of Force"]
+line = 1128
+effects = [ "BALL:FORCE:0", "dice:$Dd8", "expr:D:PLAYER_LEVEL:- 5 / 4 + 8" ]
+note = "DEC-53. Zangband fires disintegration, which damages and deletes walls at once; 4.2 has no such element. At 8 mana this spell is not the one that should be reshaping the dungeon, so it keeps the damage and loses the walls. Force stuns, which disintegration did not -- a gain, not a loss, and stated."
+desc = "Strikes a single square with a fist of raw force."
+
+[chaos.spells."Teleport Self"]
+line = 1134
+effects = [ "TELEPORT", "dice:$B", "expr:B:PLAYER_LEVEL:* 5" ]
+desc = "Teleports you a long way -- five squares for every level you have."
+
+[chaos.spells."Wonder"]
+line = 1137
+effects = [ "WONDER", "dice:100+m$M", "expr:M:PLAYER_LEVEL:/ 5" ]
+note = "A found match rather than a translation: 4.2's WONDER handler is the same table as Zangband's Wonder, band for band, down to the plev/5 added to the roll and the comment explaining it. Two of the twenty-two bands differ in dice -- 4.2's lightning is a beam of 3+(plev-5)/6 d6 where Zangband's is a bolt-or-beam of 3+(plev-5)/4 d8 -- and nothing else does."
+desc = "Does something.  Anything.  The higher your level the less likely it is to be something you regret."
+
+[chaos.spells."Chaos Bolt"]
+line = 1206
+effects = [ "BOLT_OR_BEAM:CHAOS", "dice:$Dd8", "expr:D:PLAYER_LEVEL:- 5 / 4 + 10" ]
+desc = "Fires a bolt of raw chaos, sometimes as a beam."
+
+[chaos.spells."Sonic Boom"]
+line = 1212
+effects = [ "SPHERE:SOUND:4", "dice:45+$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+note = "4.2's radius is a literal, not an expression, so a radius that grows with level cannot be carried over. The rule, applied the same way everywhere: take the value at the level the earliest-entitled class learns the spell -- a Mage for all five in Chaos. A Mage learns this at 20, so plev/10+2 is 4. It never grows to 7."
+desc = "Shakes the room with a burst of sound centred on you."
+
+[chaos.spells."Doom Bolt"]
+line = 1217
+effects = [ "BEAM:MANA", "dice:$Dd8", "expr:D:PLAYER_LEVEL:- 5 / 4 + 11" ]
+desc = "Fires a beam of pure mana that nothing resists."
+
+[chaos.spells."Fire Ball"]
+line = 1222
+effects = [ "BALL:FIRE:2", "dice:55+$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+desc = "Fires a large ball of fire."
+
+[chaos.spells."Teleport Other"]
+line = 1227
+effects = [ "BEAM:AWAY_ALL", "dice:$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+note = "A beam, not a bolt: Chaos's version clears a whole line of monsters out of your path where Sorcery's Teleport Away takes one. The two are deliberately different spells and both are kept."
+desc = "Fires a beam that teleports away every monster in its path."
+
+[chaos.spells."Word of Destruction"]
+line = 1232
+effects = [ "DESTRUCTION:LIGHT:15" ]
+desc = "Destroys everything in the area around you, and the walls with it."
+
+[chaos.spells."Invoke Logrus"]
+line = 1235
+effects = [ "BALL:CHAOS:6", "dice:66+$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+note = "4.2's radius is a literal, not an expression, so a radius that grows with level cannot be carried over. The rule, applied the same way everywhere: take the value at the level the earliest-entitled class learns the spell -- a Mage for all five in Chaos. A Mage learns this at 30, so plev/5 is 6. It never grows to 10."
+desc = "Calls up a vast ball of chaos.  It grows with your level."
+
+[chaos.spells."Polymorph Other"]
+line = 1240
+effects = [ "BOLT:MON_POLY", "dice:$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+desc = "Turns a single monster into something else."
+
+[chaos.spells."Chain Lightning"]
+line = 1245
+effects = [ "STAR:ELEC", "dice:$Dd8", "expr:D:PLAYER_LEVEL:/ 10 + 5" ]
+desc = "Fires a beam of lightning in every direction at once."
+
+[chaos.spells."Arcane Binding"]
+line = 1249
+effects = [ "RECHARGE", "dice:90" ]
+note = "Zangband's recharge(90) against 4.2's Recharging at plev/8+6 -- Chaos's is roughly four times the strength, the same relationship Sorcery's Recharging has, and the number is taken as written."
+desc = "Recharges a wand or staff, powerfully."
+
+[chaos.spells."Disintegrate"]
+line = 1251
+effects = [ "BALL:KILL_WALL:3", "BALL:MANA:3", "dice:80+$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+note = "4.2's radius is a literal, not an expression, so a radius that grows with level cannot be carried over. The rule, applied the same way everywhere: take the value at the level the earliest-entitled class learns the spell -- a Mage for all five in Chaos. A Mage learns this at 35, so 3+plev/40 is 3. The step up to 4 at level 40 is lost. DEC-53. Disintegration did two things 4.2 keeps apart: it deleted walls and it damaged monsters with a type nothing resisted. Here that is two effects in one chain -- KILL_WALL for the terrain, MANA for the damage -- so the spell keeps both halves. The cost is that monsters are struck by two projections rather than one, and rock-hurt monsters take the KILL_WALL damage as well."
+desc = "Annihilates everything in a ball, and the walls with it."
+
+[chaos.spells."Alter Reality"]
+line = 1256
+effects = [ "ALTER_REALITY" ]
+desc = "Rebuilds the level around you."
+
+[chaos.spells."Polymorph Self"]
+line = 1259
+effects = [ "POLY_SELF" ]
+note = "The same effect DEC-47 built for the mutation, called from a second place. Chaos is the realm the spoiler says can twist its own caster, and this is that spell."
+desc = "Twists your own body.  You may gain or lose mutations, and you will not choose which."
+
+[chaos.spells."Chaos Branding"]
+line = 1262
+effects = [ "BRAND_WEAPON" ]
+note = "Zangband brands with the Chaotic ego; 4.2's BRAND_WEAPON gives Flame or Frost on a coin flip and has no chaos brand to give. Which brand you get is at least unpredictable, which is the spell's character if not its element. Adding a Chaos brand to brand.txt would need BRAND_WEAPON to take a parameter, and is not in this pass."
+desc = "Brands your weapon.  You do not choose with what."
+
+[chaos.spells."Summon Demon"]
+line = 1265
+effects = [ "SUMMON:DEMON", "dice:1" ]
+note = "Zangband gives a one-in-three chance the demon serves you. 4.2 has no pets and no monster allegiance at all, so every demon this calls is hostile. That is a real loss of the spell's point and it is recorded rather than papered over."
+desc = "Summons a demon.  It will not be pleased to see you."
+
+[chaos.spells."Beam of Gravity"]
+line = 1285
+effects = [ "BEAM:GRAVITY", "dice:$Dd8", "expr:D:PLAYER_LEVEL:- 5 / 4 + 9" ]
+desc = "Fires a beam of gravity that batters and slows what it hits."
+
+[chaos.spells."Meteor Swarm"]
+line = 1290
+effects = [ "SWARM:METEOR:2", "dice:$B+m15", "expr:B:PLAYER_LEVEL:* 3 / 2" ]
+note = "Zangband scatters ten to twenty meteors on random squares within five of you; 4.2's SWARM throws its balls at one target. The count becomes a flat fifteen where Zangband rolled ten to twenty, because the swarm size is a fixed part of the dice string, and the aim becomes a target rather than the ground around you -- more accurate than Zangband's and no stronger per meteor."
+desc = "Calls down a swarm of meteors."
+
+[chaos.spells."Flame Strike"]
+line = 1322
+effects = [ "SPHERE:FIRE:8", "dice:150+$B", "expr:B:PLAYER_LEVEL:* 2" ]
+desc = "Engulfs everything around you in fire."
+
+[chaos.spells."Call Chaos"]
+line = 1325
+effects = [ "RANDOM", "dice:3", "BALL:CHAOS:3", "dice:150", "STAR_BALL:PLASMA:2", "dice:75", "SPHERE:MANA:8", "dice:300" ]
+note = "Zangband rolls one of thirty damage types and then one of three shapes: balls in all nine directions at 75, a huge ball centred on you at 300, or an aimed ball or beam at 150. Thirty types is not something the data language can hold, so the three shapes are kept and given one type each -- chaos aimed, plasma outward, mana centred. The roll is still there and still decides what happens; what it no longer decides is the element."
+desc = "Calls on chaos.  What arrives is not up to you."
+
+[chaos.spells."Magic Rocket"]
+line = 1328
+effects = [ "BALL:SHARD:2", "dice:120+$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+note = "DEC-53. 4.2 has no rocket. Zangband's rocket does great damage that little resists and cuts what survives; shards is the element that cuts, so shards it is. Shard resistance now helps against it, where almost nothing helped before."
+desc = "Launches a rocket that shreds what it hits."
+
+[chaos.spells."Mana Storm"]
+line = 1334
+effects = [ "BALL:MANA:4", "dice:300+$B", "expr:B:PLAYER_LEVEL:* 2" ]
+desc = "Calls down a storm of raw mana.  Nothing resists it."
+
+[chaos.spells."Breathe Logrus"]
+line = 1339
+effects = [ "BALL:CHAOS:2", "dice:$B", "expr:B:PLAYER_HP:+ 0" ]
+note = "The damage is your current hit points, which 4.2 can say: PLAYER_HP is one of its dice bases. Cast it healthy."
+desc = "Breathes chaos with everything you have.  The damage is your own current hit points."
+
+[chaos.spells."Call the Void"]
+line = 1344
+effects = [ "STAR_BALL:SHARD:2", "dice:175", "STAR_BALL:MANA:3", "dice:175", "STAR_BALL:POIS:4", "dice:175" ]
+note = "Zangband fires twenty-seven balls outward -- nine rockets, nine mana, nine nuke -- unless you are standing next to a wall, in which case it destroys the area and takes 100 to 250 hit points off you. The three volleys become three STAR_BALLs with the elements DEC-53 chose. The wall clause is dropped: the effect language has no test on the terrain around the caster, so the spell can no longer punish you for casting it in a corridor. That is the spell's defining risk and it is gone, said plainly rather than quietly."
+desc = "Fires three volleys of destruction outward in every direction."

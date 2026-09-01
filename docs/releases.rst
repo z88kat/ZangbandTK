@@ -33,6 +33,38 @@ Unreleased
 M9: magic realms — 1 September 2026
 -----------------------------------
 
+- **3.56.0** — **Chaos is playable, and a spell that did nothing is fixed**
+  (CNT-10). Thirty-two more workings in four more books — the Sign of Chaos,
+  Chaos Mastery, Chaos Channels and the Armageddon Tome — for the three classes
+  entitled to the realm: Mage, Priest and Ranger. The Rogue is not entitled and
+  did not grow, which is the entitlement table doing its job.
+
+  **Nothing was deferred, which is not the same as nothing changed.** 4.2 has no
+  disintegration, no rocket and no radiation, and a spell's blast radius is a
+  fixed number here rather than one that grows with the caster. Six spells do
+  something measurably different as a result, each recorded next to its own
+  entry; the two worth knowing are that *Call the Void* no longer punishes you
+  for casting it beside a wall, and that *Summon Demon* always calls a hostile
+  one. See DEC-53.
+
+  **A found match rather than a translation:** 4.2's ``WONDER`` effect is
+  Zangband's *Wonder* table band for band, down to the ``plev / 5`` added to the
+  roll and the comment explaining it.
+
+  **Sorcery's *Teleport* did nothing in 3.55.0 and now works.** Its effect chain
+  was keyed under the wrong name, so the converter emitted the spell with its
+  level, mana and failure and no effect at all — indistinguishable from a
+  deliberate deferral. Two things now catch that: ``zconv realms`` fails if any
+  name in ``realmmap.toml`` does not match the spell table, in either direction,
+  and ``player/realm`` asserts that every effectless spell carries the deferral
+  wording *and* that there are exactly sixteen of them.
+
+  **And a failing test now fails the build.** The CMake runner set its exit code
+  only when a suite died or its output was malformed, so a suite reporting
+  10/11 printed in red and exited 0 — and ``scripts/check-build``, ``make
+  alltests`` and CI all called that a pass. Found by a real failure sailing
+  through the gate during this work. Upstream Angband has the same hole.
+
 - **3.55.0** — **Sorcery is playable** (CNT-10). Thirty-two workings in four
   books — the Beginner's Handbook, the Master Sorcerer's Handbook, Pattern
   Sorcery and the Grimoire of Power — emitted by ``zconv realms`` into the four

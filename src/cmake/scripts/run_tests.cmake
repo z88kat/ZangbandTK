@@ -279,6 +279,16 @@ while(_X LESS CMAKE_ARGC)
                     set(_PERCENT 100)
                 endif()
                 set(_RESULT "${_THISPASS}/${_THISTOTAL}")
+                # ZangbandTK: a suite that reports failures must fail the run.
+                #
+                # Upstream sets _EXITCODE only when a suite dies or its output
+                # is malformed, so a suite that runs cleanly and reports
+                # 10/11 prints in red and exits 0. Every gate built on the exit
+                # code -- scripts/check-build, `make alltests`, CI -- then calls
+                # that a pass. Found by a real failure sailing through the gate.
+                if(_THISPASS LESS _THISTOTAL)
+                    set(_EXITCODE 1)
+                endif()
                 string(LENGTH "${_NAME}" _NAMLENGTH)
                 string(LENGTH "${_RESULT}" _RESLENGTH)
                 math(EXPR _PADLENGTH "${_DISLENGTH} - ${_NAMLENGTH} - ${_RESLENGTH}")

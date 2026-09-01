@@ -181,6 +181,28 @@ def read_realmmap() -> dict:
         return tomllib.load(handle)
 
 
+def check_coverage(src: str, realm: str, spellmap: dict) -> list[str]:
+    """Complaints about realmmap.toml disagreeing with the spell table.
+
+    A name misspelt in realmmap.toml is silent otherwise: the spell is emitted
+    with no effect chain and looks like a deferral. This makes it loud.
+    """
+    real = read_names(src, realm)
+    mapped = spellmap.get(realm, {}).get("spells", {})
+    out = []
+    for name in real:
+        if name not in mapped:
+            out.append("no realmmap entry for %r" % name)
+    for name in mapped:
+        if name not in real:
+            out.append("realmmap has %r, which is not a %s spell" % (name, realm))
+    books = spellmap.get(realm, {}).get("books", [])
+    if len(books) != SPELLS_PER_REALM // SPELLS_PER_BOOK:
+        out.append("%s has %d book titles, wanted %d"
+                   % (realm, len(books), SPELLS_PER_REALM // SPELLS_PER_BOOK))
+    return out
+
+
 def emit_books(src: str, cls: str, realm: str, spellmap: dict) -> list[str]:
     """One class's realm as the `book:`/`spell:` lines class.txt wants.
 
@@ -209,8 +231,7 @@ def emit_books(src: str, cls: str, realm: str, spellmap: dict) -> list[str]:
                 realm, "town" if seen_book <= 2 else "dungeon",
                 title, len(in_book), realm))
             lines.append("book-graphics:?:%s" % BOOK_COLOUR[realm])
-            lines.append("book-properties:%d:%d:%d to 100" % (
-                25 * seen_book, 40 - 8 * (seen_book - 1), seen_book * 10 - 9))
+            lines.append("book-properties:%s" % BOOK_TIERS[seen_book - 1])
 
         entry = realm_data["spells"].get(s["name"], {})
         lines.append("spell:%s:%d:%d:%d:%d" % (
@@ -232,6 +253,23 @@ def emit_books(src: str, cls: str, realm: str, spellmap: dict) -> list[str]:
 
 
 #: A colour per realm's books, matching object_base.txt.
+# Cost, weight and allocation depth, one line per book tier.
+#
+# Not Zangband's own numbers. Zangband prices its four books 100 / 1000 / 25000
+# / 100000 and allocates the rare two at depths 65 and 95 on a 128-level
+# dungeon, and neither scale transfers: 4.2 stops at 100 and its gold is not
+# Zangband's gold. What does transfer is the shape -- two books you buy in town
+# and two you find deep -- so these are 4.2's own figures for the same shape,
+# lifted from the Mage's five books (tiers 1, 2, 4 and 5 of
+# 25/400/1600/30000/50000). A new realm's books then price and appear at the
+# same depths as the books already in the game, which is the point.
+BOOK_TIERS = (
+    "25:40:1 to 100",
+    "400:40:10 to 100",
+    "30000:15:50 to 100",
+    "50000:10:75 to 100",
+)
+
 BOOK_COLOUR = {
     "sorcery": "B", "chaos": "v", "trump": "w",
     "arcane": "R", "life": "G", "nature": "y", "death": "p",

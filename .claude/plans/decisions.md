@@ -1986,3 +1986,75 @@ game changer" was about the mutation and is untouched; it is a convenience that
 saves a walk to town. What changed is the cost side of the trade. The mechanic
 is no longer being built to carry one convenience — it carries a realm spell as
 well, and an artifact activation Zangband priced at 10,000.
+
+---
+
+### DEC-53 — Chaos's three missing elements, and the radius that cannot grow (CNT-10)
+
+**Decision.** Chaos is imported whole — all thirty-two spells, none deferred —
+by mapping three Zangband damage types 4.2 does not have onto types it does, and
+by freezing five radii that Zangband grew with the caster's level.
+
+Chaos is the realm the spoiler calls "the very element of unmaking", and its
+spells are almost all direct attacks. That makes it the realm most exposed to
+the one place Zangband and 4.2 genuinely differ in kind: the list of things a
+projection can be. 4.2 has twenty-five elements and thirty-one other
+projections, and Zangband's `hurt_types[30]` contains four that have no
+counterpart at all.
+
+*The three that Chaos actually uses:*
+
+- **Disintegration** (`GF_DISINTEGRATE`) did two things at once: it damaged
+  everything, resisted by nothing, and it deleted walls. 4.2 keeps those apart —
+  `KILL_WALL` deletes walls, and `MANA` is the damage nothing resists. So the
+  two spells that used it are treated differently by what they cost.
+  *Fist of Force* is 8 mana at level 20 and becomes `BALL:FORCE`, keeping the
+  damage and losing the walls, because a cheap early spell is not the one that
+  should be reshaping the dungeon. It gains stunning, which disintegration did
+  not have. *Disintegrate* is 40 mana at level 35 and becomes a two-effect
+  chain, `BALL:KILL_WALL` then `BALL:MANA`, keeping both halves at the cost of
+  striking monsters with two projections rather than one.
+- **Rocket** (`GF_ROCKET`) becomes `SHARD`. Zangband's rocket does great damage
+  that little resists and cuts what survives; shards is 4.2's element that cuts.
+  Shard resistance now helps against *Magic Rocket*, where almost nothing helped
+  before.
+- **Nuke** (`GF_NUKE`, poison-radiation) appears only inside *Call the Void* and
+  becomes `POIS`, which is the half of it 4.2 has.
+
+`GF_HELL_FIRE` and `GF_HOLY_FIRE` are the fourth and fifth with no counterpart,
+and no Chaos spell casts them directly — they reach the player only through
+*Call Chaos*, which is separately reduced (below).
+
+*The radius rule.* 4.2's `radius` is a literal in the data file, not an
+expression, so a radius that grows with level cannot be carried over at all.
+Rather than choose five numbers five ways, one rule is applied everywhere:
+**take the value at the level the earliest-entitled class learns the spell**,
+which is a Mage for all five. *Flash of Light* 1, *Mana Burst* 2, *Sonic Boom*
+4, *Invoke Logrus* 6, *Disintegrate* 3. Every one of them is right at the level
+you first cast it and smaller than Zangband's later on, which is the direction
+to err in: the spell is never stronger than it was.
+
+*Three further reductions, recorded with the content in `realmmap.toml`:*
+
+- ***Call Chaos*** rolled one of thirty damage types and then one of three
+  shapes. Thirty types is not something the data language can hold, so the three
+  shapes are kept and given one type each. The roll still decides what happens;
+  what it no longer decides is the element.
+- ***Call the Void*** punished you for casting it next to a wall — it destroyed
+  the area and took 100 to 250 hit points off you. The effect language has no
+  test on the terrain around the caster, so the spell can no longer do that.
+  This is the spell's defining risk and it is gone; saying so plainly is the
+  whole of what can be done about it.
+- ***Summon Demon*** gave a one-in-three chance the demon served you. 4.2 has no
+  pets and no monster allegiance, so every demon it calls is hostile.
+
+*And one found match rather than a translation.* 4.2's `WONDER` effect handler
+is Zangband's *Wonder* table band for band, down to the `plev / 5` added to the
+roll and the comment explaining why. Two of twenty-two bands differ in dice.
+That is shared ancestry showing through, and the spell is simply `effect:WONDER`.
+
+**What this costs.** Chaos is the first realm imported without a single
+deferral, and that is not the same as importing it unchanged. Six of its
+thirty-two spells do something measurably different from what Zangband's did,
+and the difference is written next to each one in `realmmap.toml` rather than
+summarised here and forgotten.

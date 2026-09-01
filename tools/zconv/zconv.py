@@ -2317,6 +2317,30 @@ def cmd_realms(args) -> int:
     print()
     print(f"  {len(spells)} spells. {borrowed} share a name with one 4.2 has,")
     print(f"  so {len(spells) - borrowed} need an effect chain written.")
+
+    spellmap = realms.read_realmmap()
+    print()
+    print("realmmap.toml coverage")
+    print("=" * 72)
+    complaints = realms.check_coverage(src, args.realm, spellmap)
+    if complaints:
+        for c in complaints:
+            print(f"  {c}")
+        return 1
+    entries = spellmap[args.realm]["spells"]
+    deferred = [n for n, v in entries.items() if "defer" in v]
+    print(f"  all {len(entries)} names match the table.")
+    print(f"  {len(entries) - len(deferred)} carry an effect chain;"
+          f" {len(deferred)} deferred.")
+    for n in deferred:
+        print(f"    defer {n}: {entries[n]['defer']}")
+
+    if args.emit:
+        print()
+        print(f"class.txt block for {args.cls}, {args.realm}")
+        print("=" * 72)
+        for line in realms.emit_books(src, args.cls, args.realm, spellmap):
+            print(line)
     return 0
 
 
@@ -2357,6 +2381,8 @@ def main() -> int:
                           help="which realm to report (default: sorcery)")
     realms_p.add_argument("--class", dest="cls", default="Mage",
                           help="whose figures to use (default: Mage)")
+    realms_p.add_argument("--emit", action="store_true",
+                          help="print the class.txt block as well as the report")
 
     args = parser.parse_args()
     return {"analyse": cmd_analyse, "monsters": cmd_monsters,

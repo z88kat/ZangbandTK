@@ -359,6 +359,8 @@ reaches them by choosing them, which is now possible, and an incomplete new
 realm costs whoever chose it rather than everybody. So:
 
 1. **Sorcery, Chaos, Trump** — new content, no existing casters affected.
+   **Chaos is done (3.56.0):** 32 spells in 4 books, no deferrals but six
+   documented reductions (DEC-53), emitted into Mage, Priest and Ranger.
    **Sorcery is done (3.55.0):** 32 spells in 4 books, emitted by
    `zconv realms` into the four classes entitled to it (Mage, Priest, Rogue,
    Ranger), 28 with effect chains and 4 deferred with reasons in

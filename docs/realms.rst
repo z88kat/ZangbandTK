@@ -4,9 +4,9 @@ The Realms of Magic
 .. note::
 
    **Under construction.** You choose your realms at birth, your character sheet
-   records them, and **Sorcery is playable** — thirty-two workings in four books,
-   and the realm choice decides which books you can open. Chaos and Trump are
-   still names with no books behind them.
+   records them, and **Sorcery and Chaos are playable** — sixty-four workings in
+   eight books between them, and the realm choice decides which books you can
+   open. Trump is still a name with no books behind it.
 
 Spellcasters in ZangbandTK choose realms of magic at birth, and that choice
 defines the character as much as the class does. Angband asks you what you are;
@@ -155,13 +155,43 @@ the same name. And *Globe of Invulnerability* makes you briefly untouchable.
    can express, rather than quietly missing: a book with a hole in it and a note
    saying so is honest, and a spell absent without explanation is not.
 
+Chaos
+-----
+
+Sorcery's opposite in every respect. Sorcery has no attack spell in it; Chaos is
+almost nothing else. The spoiler calls it "the very element of unmaking", and
+what it offers instead of protection is an arsenal that runs from *Magic
+Missile* at level 2 to *Mana Storm* and *Call the Void*.
+
+Four books: the **Sign of Chaos** and **Chaos Mastery** in town, **Chaos
+Channels** and the **Armageddon Tome** below.
+
+Nothing was deferred — all thirty-two work — but six of them do something
+measurably different from what Zangband's did, because 4.2 has no
+disintegration, no rocket and no radiation, and because a spell's blast radius
+is a fixed number here rather than one that grows as you do. The trades are
+written out in the project's decision record as DEC-53; the two
+worth knowing at the table are that **Call the Void no longer punishes you for
+casting it beside a wall**, and that **the demon Summon Demon calls is always
+hostile**, where Zangband gave it a one-in-three chance of serving you.
+
+*Polymorph Self* is here too — the same effect the Chaos mutation uses, reached
+from a second place. Chaos is the realm that twists its own caster, and that is
+the spell that does it.
+
 Nothing you could cast before has changed
 -----------------------------------------
 
 Adding the realms did not move a single spell. Every class Angband ships keeps
 the same books **in the same order** with the same spells at the same levels.
-Sorcery's four books went on the *end* of the lists that gained them — a Mage's
-five Arcane books are still books one to five, with Sorcery's as six to nine.
+Each new realm's four books go on the *end* of the lists that gain them — a
+Mage's five Arcane books are still books one to five, with Sorcery's as six to
+nine and Chaos's as ten to thirteen.
+
+One consequence is visible and intended: a Mage who takes Arcane and Sorcery has
+*Phase Door* in two books, because Zangband put it in both realms and both are
+that character's. You will only ever see the books of the realms you chose, so
+the duplicate is exactly the one Zangband showed.
 
 That ordering is not tidiness. Your known spells are recorded by their position
 in a flat list across all of your class's books, so appending leaves every
