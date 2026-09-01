@@ -76,8 +76,6 @@ src/tests/ran-already
 src/version.h
 build*/
 archive
-tcl9.0.4
-tk9.0.4
 tools/zconv/out/
 __pycache__/
 *.pyc
