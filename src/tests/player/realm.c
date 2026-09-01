@@ -30,6 +30,7 @@
 #include "obj-tval.h"
 #include "player.h"
 #include "player-birth.h"
+#include "player-calcs.h"
 #include "player-spell.h"
 #include "test-utils.h"
 
@@ -166,6 +167,10 @@ static int test_no_existing_class_progression_moved(void *state) {
 		 * and again by Chaos's four (Mage, Priest, Ranger). The Rogue
 		 * is not entitled to Chaos and did not grow the second time,
 		 * which is the entitlement table doing its job.
+		 *
+		 * The Chaos-Warrior is here for the opposite reason: it went
+		 * from no books at all to four, because Chaos is the one realm
+		 * Zangband's table gives it and the realm now exists.
 		 */
 		{ "Mage", 13, 94 },
 		{ "Druid", 5, 27 },
@@ -175,6 +180,7 @@ static int test_no_existing_class_progression_moved(void *state) {
 		{ "Rogue", 6, 41 },
 		{ "Ranger", 10, 70 },
 		{ "Blackguard", 3, 15 },
+		{ "Chaos-Warrior", 4, 32 },
 	};
 	size_t i;
 
@@ -220,6 +226,7 @@ static int test_every_book_kept_its_place(void *state) {
 		                   "sorcery", "sorcery", "sorcery", "sorcery",
 		                   "chaos", "chaos", "chaos", "chaos" } },
 		{ "Blackguard",  { "death", "death", "death" } },
+		{ "Chaos-Warrior", { "chaos", "chaos", "chaos", "chaos" } },
 	};
 	size_t i;
 	int j, checked = 0;
@@ -245,8 +252,8 @@ static int test_every_book_kept_its_place(void *state) {
 		}
 	}
 
-	/* 13 + 5 + 13 + 5 + 3 + 6 + 10 + 3 books across the eight classes. */
-	eq(checked, 58);
+	/* 13 + 5 + 13 + 5 + 3 + 6 + 10 + 3 + 4 across the nine casting classes. */
+	eq(checked, 62);
 
 	ok;
 }
@@ -523,12 +530,14 @@ static int test_an_offered_realm_has_books_behind_it(void *state) {
 	}
 
 	/*
-	 * Eighteen offers across the eight classes: Mage 3+3, Priest 1+2,
-	 * Rogue 2, Ranger 1+2, and one apiece for the Druid, Necromancer,
-	 * Paladin and Blackguard. A Priest's first slot allows Life or Death
-	 * and only Life is built, which is why it offers one and not two.
+	 * Nineteen offers across the nine casting classes: Mage 3+3,
+	 * Priest 1+2, Rogue 2, Ranger 1+2, and one apiece for the Druid,
+	 * Necromancer, Paladin, Blackguard and Chaos-Warrior. A Priest's first
+	 * slot allows Life or Death and only Life is built, which is why it
+	 * offers one and not two; a Chaos-Warrior is entitled to Chaos and
+	 * nothing else, which is Zangband's own table.
 	 */
-	eq(offered_total, 18);
+	eq(offered_total, 19);
 
 	ok;
 }
@@ -690,6 +699,61 @@ static int test_a_spell_without_an_effect_says_so(void *state) {
 	ok;
 }
 
+/**
+ * The Chaos-Warrior can cast, which is the whole of what it was missing.
+ *
+ * Zangband's spoiler is blunt about it -- "trained in Chaos magic. They are not
+ * interested in any other form of magic. They can learn every Chaos spell" --
+ * and until Chaos existed there was nothing to give it, so the class shipped
+ * declaring `NO_MANA` and holding no books. Both of those are now wrong and
+ * both are asserted against.
+ *
+ * The mana check is the one that matters. `NO_MANA` is also *derived* -- a
+ * character with no spell points has it whether the class says so or not -- so
+ * removing the declaration proves nothing on its own. A Chaos-Warrior of a
+ * useful level has to actually come out with spell points.
+ */
+static int test_a_chaos_warrior_casts_chaos(void *state) {
+	const struct player_class *cw = find_class("Chaos-Warrior");
+	const struct magic_realm *chaos = find_realm("chaos");
+	const struct magic_realm *got[REALM_MAX];
+	const struct class_book *book;
+	struct object *tome = object_new();
+
+	notnull(cw);
+	notnull(chaos);
+
+	/* One realm, and Zangband gives it no second choice. */
+	eq(class_book_realms(cw), 1);
+	eq(player_realm_choices(cw, 0, got, REALM_MAX), 1);
+	require(got[0] == chaos);
+	eq(player_realm_choices(cw, 1, got, REALM_MAX), 0);
+
+	/* The class no longer declares itself unable to hold mana. */
+	require(!pf_has(cw->pflags, PF_NO_MANA));
+
+	player_generate(player, NULL, cw, false);
+	require(player->realm[0] == chaos);
+	require(player_studies_realm(player, chaos));
+
+	/*
+	 * And has spell points at a level it could use them. `spell_first` is
+	 * 2 for this class, which is Zangband's own figure, so level 1 is
+	 * legitimately zero and would not tell us anything.
+	 */
+	player->lev = 20;
+	calc_bonuses(player, &player->state, false, true);
+	require(player->msp > 0);
+
+	/* And its books open. */
+	book = &cw->magic.books[0];
+	object_prep(tome, lookup_kind(book->tval, book->sval), 0, MINIMISE);
+	notnull(player_object_to_book(player, tome));
+	object_delete(cave, player->cave, &tome);
+
+	ok;
+}
+
 const char *suite_name = "player/realm";
 struct test tests[] = {
 	{ "seven-realms-exist", test_seven_realms_exist },
@@ -708,6 +772,7 @@ struct test tests[] = {
 	  test_changing_class_leaves_no_stale_realm },
 	{ "a-single-entitlement-is-not-a-choice",
 	  test_a_single_entitlement_is_not_a_choice },
+	{ "a-chaos-warrior-casts-chaos", test_a_chaos_warrior_casts_chaos },
 	{ "an-offered-realm-has-books-behind-it",
 	  test_an_offered_realm_has_books_behind_it },
 	{ "studying-is-a-property-of-the-character",

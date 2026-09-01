@@ -129,8 +129,14 @@ It does not choose which, it cannot leave, and every time it gains a level its
 Lord looks up and decides how it feels about the servant it has. Usually that is
 a gift — a healing, a raised stat, experience, an object out of nothing. Sometimes
 it is a cursed weapon, a ruined stat, monsters dropped on top of you, or the
-level destroyed around you. The class fights nearly as well as a Warrior and is
-otherwise unremarkable, because the class *is* the relationship.
+level destroyed around you. The class fights nearly as well as a Warrior, and
+the relationship *is* the class.
+
+**It also casts.** A Chaos-Warrior learns Chaos magic from level 2 — all
+thirty-two spells, and it is the only class in the game with exactly one realm
+and no choice about it. Zangband is blunt on the point: they are "not interested
+in any other form of magic". Until the Chaos realm existed there was nothing to
+give them and the class shipped unable to hold spell points at all.
 
 **And thirteen is an unlucky level.** The odds of the cruel end of the repertoire
 are normally about one in six; on reaching level 13 they are one in two. Every

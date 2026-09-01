@@ -33,6 +33,26 @@ Unreleased
 M9: magic realms — 1 September 2026
 -----------------------------------
 
+- **3.58.0** — **The Chaos-Warrior casts** (PLR-03, CNT-10). Zangband is blunt
+  about the class — "trained in Chaos magic. They are not interested in any
+  other form of magic. They can learn every Chaos spell" — but until the Chaos
+  realm existed there was nothing to give it, so it shipped declaring itself
+  unable to hold spell points. It now has all four Chaos books and all
+  thirty-two spells from level 2, and it is the only class in the game with
+  exactly one realm and no choice about it. Its figures are its own out of
+  ``magic_info[]``, not the Mage's.
+
+  The savefile corpus is unchanged at 31 loaded and 4 refused: the version-2
+  spell block only checks its fingerprint when the character actually has
+  spells recorded, and the Chaos-Warrior in the corpus has none.
+
+  **Two latent faults surfaced doing it.** Swapping ``player->class`` in place
+  without re-sizing the spell arrays segfaulted as soon as the class had spells
+  — a patron test had been doing exactly that harmlessly for as long as the
+  Chaos-Warrior had no books. And ``player_spells_free()`` freed without
+  clearing, so a second free aborted; upstream leaves those pointers dangling
+  and it is harmless only while nothing frees twice.
+
 - **3.57.0** — **Swap position and Sterilize work** (PLR-16). The two mutation
   powers M8 deferred with the note "deferred to M9, not open-ended", built where
   they said they would be. Eleven mutations did nothing; nine do now.

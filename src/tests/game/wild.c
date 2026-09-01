@@ -33,6 +33,7 @@
 #include "player.h"
 #include "player-attack.h"
 #include "player-birth.h"
+#include "player-spell.h"
 #include "player-timed.h"
 #include "player-quest.h"
 #include "player-util.h"
@@ -4853,7 +4854,16 @@ static int test_a_patron_waits_until_the_level_is_settled(void *state) {
 		if (streq(c->name, "Chaos-Warrior")) chaos = c;
 	notnull(chaos);
 
+	/*
+	 * Swapping the class in place means swapping the spell arrays with it:
+	 * they are sized by the class's total_spells, levelling writes into
+	 * them, and the Chaos-Warrior gained 128 spells when Chaos arrived
+	 * (CNT-10). Leaving the old class's arrays here is a segfault, not a
+	 * wrong answer, and it was one until the realm landed.
+	 */
 	player->class = chaos;
+	player_spells_free(player);
+	player_spells_init(player);
 	player->mhp = 30000;
 	player->msp = 0;
 
@@ -4881,6 +4891,8 @@ static int test_a_patron_waits_until_the_level_is_settled(void *state) {
 	require(i == 9);
 
 	player->class = keep;
+	player_spells_free(player);
+	player_spells_init(player);
 	player->patron = keep_patron;
 	player->lev = 1;
 	player->exp = 0;

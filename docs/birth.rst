@@ -573,8 +573,10 @@ Chaos-Warrior
   it cannot leave — and every time it gains a level its Lord looks up and
   decides how it feels. Usually that is a gift. Sometimes it is not.
 
-  It fights nearly as well as a Warrior and is otherwise unremarkable, which is
-  the point: the class is the relationship. See :ref:`Patrons <patrons>`.
+  It fights nearly as well as a Warrior, and it casts Chaos — every spell in the
+  realm, from level 2, and no other realm ever. There is no realm choice to make
+  at birth because there is nothing to choose between: a Chaos-Warrior's magic
+  is Chaos or it is nothing. See :ref:`Patrons <patrons>` and :doc:`realms`.
 
 .. _martial-arts:
 

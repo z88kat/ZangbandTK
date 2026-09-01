@@ -192,6 +192,10 @@ worth knowing at the table are that **Call the Void no longer punishes you for
 casting it beside a wall**, and that **the demon Summon Demon calls is always
 hostile**, where Zangband gave it a one-in-three chance of serving you.
 
+The **Chaos-Warrior** is the realm's own class: one realm, no choice, every
+spell, from level 2. Mages, Priests and Rangers may take Chaos as one of two
+realms; a Chaos-Warrior *is* one.
+
 *Polymorph Self* is here too — the same effect the Chaos mutation uses, reached
 from a second place. Chaos is the realm that twists its own caster, and that is
 the spell that does it.

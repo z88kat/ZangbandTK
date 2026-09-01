@@ -3242,7 +3242,7 @@ equip:light:Wooden Torch:1:3:none
 equip:sword:Broad Sword:1:1:none
 equip:soft armour:Soft Leather Armour:1:1:none
 equip:scroll:Word of Recall:1:1:birth_no_recall
-player-flags:CHAOS_PATRON | NO_MANA
+player-flags:CHAOS_PATRON
 title:Rookie
 title:Soldier
 title:Mercenary
@@ -3253,3 +3253,178 @@ title:Chaos Hero
 title:Chaos Baron
 title:Chaos Duke
 title:Chaos Lord
+
+magic:2:400:4
+realm-choice:1:chaos
+
+book:chaos book:town:[Sign of Chaos]:8:chaos
+book-graphics:?:v
+book-properties:25:40:1 to 100
+spell:Magic Missile:2:1:23:5
+effect:BOLT_OR_BEAM:MISSILE:0:-10
+dice:$Dd4
+expr:D:PLAYER_LEVEL:- 1 / 5 + 3
+desc:Fires a weak magical bolt, sometimes as a beam.
+spell:Trap / Door Destruction:3:3:24:5
+effect:TOUCH:KILL_DOOR
+effect:TOUCH:KILL_TRAP
+desc:Destroys the doors and traps in the squares next to you.
+spell:Flash of Light:4:4:26:5
+effect:LIGHT_AREA
+effect:SPHERE:LIGHT_WEAK:1
+dice:2d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Lights the area around you, and hurts light-sensitive monsters caught in it.
+spell:Touch of Confusion:5:6:27:5
+effect:TIMED_INC:ATT_CONF
+dice:$B
+expr:B:PLAYER_LEVEL:+ 20
+desc:Makes your hands glow.  Your next blows may confuse what they touch.
+spell:Mana Burst:7:9:30:5
+effect:BALL:MISSILE:2
+dice:$B+3d5
+expr:B:PLAYER_LEVEL:* 5 / 4
+desc:Fires a ball of pure magical force.
+spell:Fire Bolt:8:9:32:5
+effect:BOLT_OR_BEAM:FIRE
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 8
+desc:Fires a bolt of fire, sometimes as a beam.
+spell:Fist of Force:15:12:42:5
+effect:BALL:FORCE:0
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 8
+desc:Strikes a single square with a fist of raw force.
+spell:Teleport Self:16:15:44:5
+effect:TELEPORT
+dice:$B
+expr:B:PLAYER_LEVEL:* 5
+desc:Teleports you a long way -- five squares for every level you have.
+book:chaos book:town:[Chaos Mastery]:8:chaos
+book-graphics:?:v
+book-properties:400:40:10 to 100
+spell:Wonder:19:18:48:20
+effect:WONDER
+dice:100+m$M
+expr:M:PLAYER_LEVEL:/ 5
+desc:Does something.  Anything.  The higher your level the less likely it is to be something you regret.
+spell:Chaos Bolt:22:21:53:20
+effect:BOLT_OR_BEAM:CHAOS
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 10
+desc:Fires a bolt of raw chaos, sometimes as a beam.
+spell:Sonic Boom:25:25:57:20
+effect:SPHERE:SOUND:4
+dice:45+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Shakes the room with a burst of sound centred on you.
+spell:Doom Bolt:28:27:62:20
+effect:BEAM:MANA
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 11
+desc:Fires a beam of pure mana that nothing resists.
+spell:Fire Ball:30:30:65:20
+effect:BALL:FIRE:2
+dice:55+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Fires a large ball of fire.
+spell:Teleport Other:33:36:69:20
+effect:BEAM:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Fires a beam that teleports away every monster in its path.
+spell:Word of Destruction:36:39:74:20
+effect:DESTRUCTION:LIGHT:15
+desc:Destroys everything in the area around you, and the walls with it.
+spell:Invoke Logrus:40:67:80:20
+effect:BALL:CHAOS:6
+dice:66+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Calls up a vast ball of chaos.  It grows with your level.
+book:chaos book:dungeon:[Chaos Channels]:8:chaos
+book-graphics:?:v
+book-properties:30000:15:50 to 100
+spell:Polymorph Other:11:16:36:45
+effect:BOLT:MON_POLY
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Turns a single monster into something else.
+spell:Chain Lightning:14:21:41:45
+effect:STAR:ELEC
+dice:$Dd8
+expr:D:PLAYER_LEVEL:/ 10 + 5
+desc:Fires a beam of lightning in every direction at once.
+spell:Arcane Binding:16:22:44:45
+effect:RECHARGE
+dice:90
+desc:Recharges a wand or staff, powerfully.
+spell:Disintegrate:23:34:54:45
+effect:BALL:KILL_WALL:3
+effect:BALL:MANA:3
+dice:80+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Annihilates everything in a ball, and the walls with it.
+spell:Alter Reality:30:45:65:45
+effect:ALTER_REALITY
+desc:Rebuilds the level around you.
+spell:Polymorph Self:42:75:83:45
+effect:POLY_SELF
+desc:Twists your own body.  You may gain or lose mutations, and you will not choose which.
+spell:Chaos Branding:45:135:87:45
+effect:BRAND_WEAPON
+desc:Brands your weapon.  You do not choose with what.
+spell:Summon Demon:47:150:90:45
+effect:SUMMON:DEMON
+dice:1
+desc:Summons a demon.  It will not be pleased to see you.
+book:chaos book:dungeon:[Armageddon Tome]:8:chaos
+book-graphics:?:v
+book-properties:50000:10:75 to 100
+spell:Beam of Gravity:23:34:54:80
+effect:BEAM:GRAVITY
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 9
+desc:Fires a beam of gravity that batters and slows what it hits.
+spell:Meteor Swarm:35:52:72:80
+effect:SWARM:METEOR:2
+dice:$B+m15
+expr:B:PLAYER_LEVEL:* 3 / 2
+desc:Calls down a swarm of meteors.
+spell:Flame Strike:37:55:75:80
+effect:SPHERE:FIRE:8
+dice:150+$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Engulfs everything around you in fire.
+spell:Call Chaos:41:63:81:80
+effect:RANDOM
+dice:3
+effect:BALL:CHAOS:3
+dice:150
+effect:STAR_BALL:PLASMA:2
+dice:75
+effect:SPHERE:MANA:8
+dice:300
+desc:Calls on chaos.  What arrives is not up to you.
+spell:Magic Rocket:43:66:84:80
+effect:BALL:SHARD:2
+dice:120+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Launches a rocket that shreds what it hits.
+spell:Mana Storm:45:72:87:80
+effect:BALL:MANA:4
+dice:300+$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Calls down a storm of raw mana.  Nothing resists it.
+spell:Breathe Logrus:48:150:92:80
+effect:BALL:CHAOS:2
+dice:$B
+expr:B:PLAYER_HP:+ 0
+desc:Breathes chaos with everything you have.  The damage is your own current hit points.
+spell:Call the Void:49:150:93:80
+effect:STAR_BALL:SHARD:2
+dice:175
+effect:STAR_BALL:MANA:3
+dice:175
+effect:STAR_BALL:POIS:4
+dice:175
+desc:Fires three volleys of destruction outward in every direction.

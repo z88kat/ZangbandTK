@@ -257,6 +257,10 @@ mutations, virtues.
 - **Carried over from M7:** the remainder of PLR-03 — the **Warrior-Mage** and the
   **High-Mage**, the two classes defined by which realms they may choose. They were deferred
   out of M7 because neither can be built before PLR-08 and PLR-09 exist.
+  **Still outstanding.** Both are entitled to all seven realms, so both want the
+  four mapped realms replaced first or they arrive holding books nobody has
+  written. The **Chaos-Warrior** was the third of the three and is **done
+  (3.58.0)**: one realm, no choice, all thirty-two spells from level 2.
 - Life realm content has a spoiler after all. It was recorded as the one unarchivable
   document; the 2026-09-01 re-check found it whole — 13,854 bytes, four books of spell
   descriptions — at the timestamp already cited. **All seven realm spoilers are readable**,

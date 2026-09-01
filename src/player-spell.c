@@ -197,11 +197,18 @@ void player_spells_init(struct player *p)
 
 /**
  * Free player spells
+ *
+ * The pointers are cleared as well as freed. Upstream leaves them dangling,
+ * which is harmless while this is only ever called once at teardown and an
+ * abort the moment anything frees or re-initialises twice -- as swapping a
+ * character's class in place has to.
  */
 void player_spells_free(struct player *p)
 {
 	mem_free(p->spell_flags);
 	mem_free(p->spell_order);
+	p->spell_flags = NULL;
+	p->spell_order = NULL;
 }
 
 /**
