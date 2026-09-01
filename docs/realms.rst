@@ -4,8 +4,11 @@ The Realms of Magic
 .. note::
 
    **Under construction.** The seven realms exist and every book in the game
-   belongs to one of them. What is being written next is the part that matters
-   most — choosing them at birth, and the spells that fill the three new ones.
+   belongs to one of them. Choosing a realm at birth, and the spells that fill
+   Sorcery, Chaos and Trump, are not built: two questions about what to import
+   are with the project owner (DEC-50 and DEC-51). Until those are settled, the
+   three new realms are names with no books behind them, and no class offers a
+   choice.
 
 Spellcasters in ZangbandTK choose realms of magic at birth, and that choice
 defines the character as much as the class does. Angband asks you what you are;

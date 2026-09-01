@@ -292,6 +292,87 @@ mutations, virtues.
 **Exit:** a Mage's realm choice defines the character, and every class in PLR-03 is
 playable. Manual chapter: the magic system.
 
+#### Where M9 actually stands
+
+**Phase 1 is done (3.51.0).** Seven realms exist, DEC-49 records how four plus seven
+became seven, and `player/realm` pins the shape of all eight existing casting classes so
+no later phase can move a spell out from under a saved character. Nothing else is built.
+
+**Phase 2 is stopped, not started**, on two open questions: **DEC-50** (what CNT-10
+imports, when four of the seven realms already hold 4.2's content) and **DEC-51** (spell
+experience, which is a smaller question than it first appeared). Both are written up in
+[decisions.md](decisions.md) under *Open — awaiting the project owner*. Nothing has been
+foreclosed by Phase 1: it touched no class content, so either reading of DEC-50 is still
+open.
+
+#### Phase 2's conversion rules, established and verified
+
+This work stands whichever way DEC-50 and DEC-51 go, and should not need doing twice.
+Both numeric fields 4.2 requires and Zangband does not store are **derived exactly** —
+neither is invented, which is what BAL-08 asks for:
+
+- **`sfail`, the base failure rate.** Zangband has no per-spell failure figure; it
+  computes one at cast time. The two formulas are *structurally identical* —
+  [spells3.c:2960](../../archive/zangband/src/spells3.c#L2960) against
+  [player-spell.c:397](../../src/player-spell.c#L397) — with the same level-difference
+  term, the same stat adjustment, the same five-per-point penalty for casting short of
+  mana, and the same floor-then-cap order. The only difference is that Zangband derives
+  the base from the spell's level where 4.2 stores it. So
+  **`sfail = slevel + 20` for Arcane and `slevel * 3 / 2 + 20` for every other realm**,
+  and every term after it already agrees.
+- **`sexp`, the first-cast experience.** `5 * book²` — 5, 20, 45, 80 — because Zangband
+  awards `5 * book² * slevel` and 4.2 awards `sexp * slevel`. See DEC-51 for the
+  divergence this leaves per book, which is a balance note rather than a conversion
+  problem.
+
+- **The source table is parsed and cross-checked.** `magic_info[MAX_CLASS]`
+  ([tables.c:2184](../../archive/zangband/src/tables.c#L2184), 3,129 lines) holds
+  **2,464** `{level, mana}` pairs, which is exactly 11 classes × 7 realms × 32 spells, so
+  it can be sliced positionally. That slicing was verified against an *independent* table,
+  `realm_choices1[]` and `realm_choices2[]`
+  ([tables.c:5329](../../archive/zangband/src/tables.c#L5329)): every class-realm pair the
+  choice tables forbid holds 32 unusable entries, and every pair they allow holds usable
+  ones. **Zero mismatches across all 77 combinations.** Two classes — Chaos-Warrior and
+  High-Mage — have no `/*** Name ***/` comment in the table, so parsing by those comments
+  finds 9 classes and silently mis-assigns the rest; parse by position and verify against
+  the choice tables.
+
+The per-class realm entitlements, read from those same tables, are:
+
+| Class | First realm from | Second realm from |
+|---|---|---|
+| Mage, Warrior-Mage, High-Mage | all seven (Warrior-Mage: Arcane only) | all seven / none for High-Mage |
+| Priest, Paladin | Life, Death | Priest: five others; Paladin: none |
+| Rogue | Sorcery, Death, Trump, Arcane | none |
+| Ranger | Nature | five others |
+| Chaos-Warrior | Chaos | none |
+| Monk | Life, Nature, Death | none |
+| Warrior, Mindcrafter | none | none |
+
+Note **the Chaos-Warrior is entitled to Chaos and does not cast today** — a gap in
+PLR-05's class rather than new scope, and subject to the same book-index hazard as any
+other existing class.
+
+#### Size, recorded honestly
+
+**M9 is substantially larger than M8**, which took six phases. M8's largest single body of
+judgement was mapping 32 activatable mutations onto 4.2 effect chains, and that was a
+phase on its own. What M9 has left after Phase 1:
+
+- **96 spells** (Reading A) or **~224** (Reading B) needing hand-mapped effect chains —
+  three to seven times M8's largest phase.
+- **Book objects for three realms** that have none: Sorcery, Chaos and Trump books do not
+  exist as object kinds, so CNT-10 is an object import as well as a spell import.
+- **Realm choice at birth** (PLR-08, PLR-11): a birth step of its own, a per-class
+  entitlement, a savefile block written by count with a version bump, and the character
+  display.
+- **Two classes** (PLR-03's remainder): Warrior-Mage and High-Mage.
+- **Six carry-overs**: FETCH designed once against its three consumers, swap position,
+  sterilize, Polymorph Self as a Chaos spell, the chaos and death spell-failure mutation
+  paths, and PLR-35's Trump *Shuffle*.
+
+Anyone planning this should expect it to break into more phases than M8 did, not fewer.
+
 > PLR-12 is the trap here. Half-implementing this leaves the game with two magic systems.
 
 ---
