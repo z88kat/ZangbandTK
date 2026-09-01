@@ -528,7 +528,7 @@ static int test_the_two_charisma_mutations_are_inert(void *state) {
 /**
  * Every activatable mutation either has a power or has a reason.
  *
- * Twenty-five of the thirty-two are expressible as 4.2 effect chains and seven
+ * Twenty-six of the thirty-two are expressible as 4.2 effect chains and six
  * are not, and the split is asserted as a count so that neither side can drift
  * quietly. A mutation that lost its effect chain to a converter change would
  * still parse, still appear in the power list, and do nothing when invoked --
@@ -541,7 +541,7 @@ static int test_the_two_charisma_mutations_are_inert(void *state) {
  */
 static int test_the_activatable_split_is_what_was_decided(void *state) {
 	static const char *const deferred[] = {
-		"TELEKINES", "SWAP_POS", "DET_CURSE", "GROW_MOLD",
+		"SWAP_POS", "DET_CURSE", "GROW_MOLD",
 		"WEIGH_MAG", "STERILITY", "LAUNCHER"
 	};
 	const struct mutation *m;
@@ -554,8 +554,8 @@ static int test_the_activatable_split_is_what_was_decided(void *state) {
 		if (m->action) with++; else without++;
 	}
 
-	eq(with, 25);
-	eq(without, 7);
+	eq(with, 26);
+	eq(without, 6);
 
 	for (i = 0; i < N_ELEMENTS(deferred); i++) {
 		m = mutation_by_name(deferred[i]);
@@ -1341,7 +1341,7 @@ static int test_nothing_is_dropped_any_more(void *state) {
 	}
 
 	eq(refused, 0);
-	eq(waiting, 11);
+	eq(waiting, 10);
 
 	ok;
 }
@@ -1447,6 +1447,48 @@ static int test_the_gold_mechanic_serves_more_than_one_caller(void *state) {
 	ok;
 }
 
+/**
+ * Telekinesis lifts less than the spell of the same name, on purpose (PLR-16).
+ *
+ * FETCH was built once for three consumers, and the two ways they differ are
+ * parameters rather than being levelled away: the mutation gets
+ * `level * 10` and requires line of sight, where Sorcery's spell gets
+ * `level * 15` and does not. That is what makes Sorcery's the better version,
+ * and a port that gave all three the same numbers would have quietly removed a
+ * distinction Zangband drew deliberately.
+ *
+ * The line-of-sight flag is the easy one to lose, because it rides in the
+ * effect's `other` field and an effect line written without it parses perfectly
+ * and asks for no sight at all.
+ */
+static int test_telekinesis_is_the_weaker_fetch(void *state) {
+	const struct mutation *tk = mutation_by_name("TELEKINES");
+	const struct effect *e;
+
+	notnull(tk);
+	notnull(tk->action);
+	notnull(tk->action->effects);
+
+	e = tk->action->effects->effect;
+	notnull(e);
+	eq(e->index, EF_FETCH);
+
+	/* Sight required: the flag rides in `other` and is easily dropped. */
+	eq(e->other, 1);
+
+	/*
+	 * Ten per level, not fifteen. Evaluated through the dice rather than read
+	 * off the expression, because the expression is what would be wrong.
+	 */
+	notnull(e->dice);
+	player->lev = 10;
+	eq(dice_evaluate(e->dice, 1, AVERAGE, NULL), 100);
+	player->lev = 20;
+	eq(dice_evaluate(e->dice, 1, AVERAGE, NULL), 200);
+
+	ok;
+}
+
 const char *suite_name = "player/mutation";
 struct test tests[] = {
 	{ "all-ninety-six-are-here", test_all_ninety_six_are_here },
@@ -1505,6 +1547,8 @@ struct test tests[] = {
 	  test_alchemy_pays_a_third_of_the_real_value },
 	{ "the-gold-mechanic-serves-more-than-one-caller",
 	  test_the_gold_mechanic_serves_more_than_one_caller },
+	{ "telekinesis-is-the-weaker-fetch",
+	  test_telekinesis_is_the_weaker_fetch },
 	{ "every-menu-row-finds-a-mutation",
 	  test_every_menu_row_finds_a_mutation },
 	{ "a-mutation-toggles-both-ways", test_a_mutation_toggles_both_ways },

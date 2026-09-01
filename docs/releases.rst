@@ -33,6 +33,24 @@ Unreleased
 M9: magic realms — 1 September 2026
 -----------------------------------
 
+- **3.54.1** — **FETCH, built once for three callers**, and telekinesis works.
+  Zangband's ``fetch()`` is called by the telekinesis mutation, by Sorcery's
+  *Telekinesis* spell and by the Trump realm, and the three differ in exactly
+  two ways — so both are parameters rather than being levelled away. The
+  mutation lifts ``level × 10`` and needs line of sight; Sorcery's lifts
+  ``level × 15`` and does not, which is what makes Sorcery's the better spell.
+
+  The rest of the rules are Zangband's and each of them is there because leaving
+  one out turns a spell with texture into one that just moves things: it refuses
+  while you are standing on something, refuses artifacts — *"The object seems to
+  have a will of its own!"* — has a weight limit, and given a direction rather
+  than a target walks outward until it finds an object and stops at a wall. One
+  rule is **not** carried across and is recorded rather than dropped quietly:
+  Zangband refuses to fetch out of a vault, and 4.2 marks vault squares
+  differently enough that the equivalent test would be an invention.
+
+  **Ten mutations now do nothing**, six activatable and four random.
+
 - **3.54.0** — **The Midas touch comes back** (DEC-52, reversing DEC-48).
   Turning an object into gold was dropped because the mechanic "would have
   exactly one consumer and no prospect of a second". It has three:

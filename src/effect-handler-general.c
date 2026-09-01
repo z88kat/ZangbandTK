@@ -4128,3 +4128,103 @@ bool effect_handler_ALCHEMY(effect_handler_context_t *context)
 
 	return true;
 }
+
+/**
+ * Pull an object to the caster's feet (PLR-16, CNT-10).
+ *
+ * Zangband's `fetch()`
+ * ([spells3.c:1139](../archive/zangband/src/spells3.c#L1139)), and its rules are
+ * more particular than the name suggests. Every one of them is here because
+ * leaving one out turns a spell with texture into a spell that just moves
+ * things:
+ *
+ * - **Not while standing on something.** There is nowhere to put what arrives,
+ *   and Zangband refuses rather than stacking.
+ * - **A weight limit**, which is the whole balance of the spell: `plev * 15` for
+ *   Sorcery and Trump, `level * 10` for the mutation. It comes from the dice.
+ * - **Artifacts refuse** — "The object seems to have a will of its own!" One of
+ *   a kind does not come when called.
+ * - **Line of sight, for two of the three callers.** Trump and the mutation
+ *   require it; Sorcery's does not, which is exactly what makes Sorcery's
+ *   version the better spell and is worth preserving rather than levelling.
+ * - **Aimed at a target, or along a direction.** Given a direction rather than a
+ *   target it walks outward until it finds an object, and stops at a wall.
+ *
+ * The one rule not carried across is Zangband's refusal to fetch out of a vault
+ * (`CAVE_ICKY`). 4.2 marks vault squares differently and the equivalent test
+ * would be inventing a rule rather than porting one; recorded here rather than
+ * silently dropped.
+ */
+bool effect_handler_FETCH(effect_handler_context_t *context)
+{
+	int limit = effect_calculate_value(context, false);
+	bool need_los = (context->other != 0);
+	struct loc grid, target;
+	struct object *obj;
+
+	context->ident = true;
+
+	/* Nowhere to put what arrives. */
+	if (square_object(cave, player->grid)) {
+		msg("You can't fetch when you're already standing on something.");
+		return false;
+	}
+
+	if (context->dir == DIR_TARGET && target_okay()) {
+		target_get(&target);
+
+		if (distance(player->grid, target) > z_info->max_range
+				|| !square_in_bounds_fully(cave, target)) {
+			msg("You can't fetch something that far away!");
+			return false;
+		}
+		if (!square_object(cave, target)) {
+			msg("There is no object at this place.");
+			return false;
+		}
+		if (need_los && !square_isview(cave, target)) {
+			msg("You have no direct line of sight to that location.");
+			return false;
+		}
+		grid = target;
+	} else {
+		/*
+		 * Along a direction: outward until something is found, stopping at a
+		 * wall or the edge of range. Zangband walks the same way.
+		 */
+		grid = player->grid;
+		while (true) {
+			grid = loc_sum(grid, ddgrid[context->dir]);
+
+			if (!square_in_bounds_fully(cave, grid)) return false;
+			if (distance(player->grid, grid) > z_info->max_range) return false;
+			if (!square_isprojectable(cave, grid)) return false;
+			if (square_object(cave, grid)) break;
+		}
+	}
+
+	obj = square_object(cave, grid);
+	if (!obj) return false;
+
+	if (obj->weight > limit) {
+		msg("The object is too heavy.");
+		return false;
+	}
+	if (obj->artifact) {
+		msg("The object seems to have a will of its own!");
+		return false;
+	}
+
+	square_excise_object(cave, grid, obj);
+	if (!floor_carry(cave, player->grid, obj, false)) {
+		/* Put it back rather than losing it. */
+		floor_carry(cave, grid, obj, false);
+		return false;
+	}
+
+	msg("It flies through the air to your feet.");
+	square_note_spot(cave, player->grid);
+	player->upkeep->redraw |= (PR_MAP);
+
+	return true;
+}

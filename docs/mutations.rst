@@ -65,7 +65,7 @@ when you are short of mana. Some grow with you: spitting acid throws a wider
 ball from level 30, breathing fire from level 40, and hardening yourself
 against the elements resists more of them the higher you go.
 
-**Seven of the thirty-two cannot be used yet.** They are listed with *not yet*
+**Six of the thirty-two cannot be used yet.** They are listed with *not yet*
 beside them rather than hidden, because your character sheet describes them and
 you would come looking.
 
@@ -83,9 +83,6 @@ round:
 
    * - Mutation
      - What it needs
-   * - Telekinesis
-     - Pulling a distant object to you. 4.2 can move *you* to a place; it
-       cannot bring a thing to you.
    * - Swap position
      - Exchanging places with a monster. 4.2's nearest move puts you in a
        square that is still occupied.

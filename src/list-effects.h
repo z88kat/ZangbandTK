@@ -146,3 +146,14 @@ EFFECT(POLY_SELF,					false,	NULL,		0,		EFINFO_NONE,	"rewrites what chaos has ma
  * `alchemy()` with nothing.
  */
 EFFECT(ALCHEMY,						false,	NULL,		0,		EFINFO_NONE,	"turns an object into a third of its worth in gold",	"turn to gold")
+/*
+ * ZangbandTK (PLR-16, CNT-10): an object pulled to the caster's feet.
+ *
+ * Aimed, and built once for three consumers rather than for whichever arrived
+ * first: the telekinesis mutation, Sorcery's Telekinesis, and the Trump realm's
+ * own version. They differ in exactly two ways, so both are parameters -- the
+ * weight it can lift comes from the dice, and `other` is 1 when the caster must
+ * be able to see what they are taking. Trump and the mutation require sight;
+ * Sorcery does not, which is what makes Sorcery's the better spell.
+ */
+EFFECT(FETCH,						true,	"weight",	1,		EFINFO_DICE,	"pulls an object weighing up to %s to your feet",	"fetch an object")

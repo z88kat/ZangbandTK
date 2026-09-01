@@ -49,15 +49,17 @@ effects = [ "COMMAND" ]
 
 [TELEKINES]
 line = 877
-defer = """Deferred to M9, not open-ended. Needs a FETCH effect: 4.2 has \
-nothing that pulls a distant object to the player, and the closest, \
-TELEPORT_TO, moves the player instead, which is the opposite of what \
-telekinesis is for. Zangband's fetch() is 110 lines and handles weight, line of \
-sight and object piles. It is folded into M9 because it has three consumers \
-rather than one -- this mutation, Sorcery's Telekinesis spell, and the Trump \
-realm, which calls the same function -- so the effect gets designed once \
-against all three instead of retrofitted twice."""
+note = """FETCH, built once against its three consumers: this mutation, \
+Sorcery's Telekinesis spell, and the Trump realm's, which call the same \
+function. Deferred to M9 until that effect existed rather than approximated \
+with TELEPORT_TO, which moves the player instead and is the opposite of what \
+telekinesis is for.
 
+The mutation is the weaker of the three, and deliberately: `fetch(dir, \
+lvl * 10, TRUE)` against Sorcery's `lvl * 15, FALSE`, so it lifts two thirds \
+as much and cannot reach what the character cannot see. Both differences are \
+parameters on the effect rather than being levelled away."""
+effects = [ "FETCH:NONE:0:1", "dice:$B", "expr:B:PLAYER_LEVEL:* 10" ]
 [VTELEPORT]
 line = 886
 note = "Range 10 + 4 x level, which is a long way at depth."

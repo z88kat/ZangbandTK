@@ -69,6 +69,9 @@ values:CON[-1]
 desc:You are telekinetic (-1 CON).
 gain:You gain the ability to move objects telekinetically.
 lose:You lose the ability to move objects telekinetically.
+power-effect:FETCH:NONE:0:1
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 10
 
 name:VTELEPORT
 kind:activatable
