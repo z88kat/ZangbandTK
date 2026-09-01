@@ -33,6 +33,33 @@ Unreleased
 M9: magic realms — 1 September 2026
 -----------------------------------
 
+- **3.55.0** — **Sorcery is playable** (CNT-10). Thirty-two workings in four
+  books — the Beginner's Handbook, the Master Sorcerer's Handbook, Pattern
+  Sorcery and the Grimoire of Power — emitted by ``zconv realms`` into the four
+  classes entitled to the realm: Mage, Priest, Rogue and Ranger. The numbers
+  come from ``magic_info[]`` per class, the effect chains from a new
+  ``realmmap.toml``, and the two are kept apart on purpose so the Mage's Sorcery
+  and the Rogue's are the same spells at different levels rather than two
+  transcriptions that can drift. All four classes' blocks reproduce from the
+  converter.
+
+  **The books are appended, never inserted.** A Mage's five Arcane books are
+  still books one to five with Sorcery's as six to nine, so every spell index a
+  saved character holds still means what it meant — and the corpus is unchanged
+  at 31 loaded, 4 refused. Inserting would have shifted them, the game would
+  have loaded, and the sheet would have looked reasonable.
+
+  **Four of the thirty-two do nothing and say so**: *Identify True*, *Detect
+  Enchantment*, *Self Knowledge* and *Explosive Rune*, each needing a mechanism
+  4.2 removed or never had. They are in their books with their levels and costs,
+  described as beyond what the game can express. A book with a hole in it and a
+  note saying so is honest; a spell absent without explanation is not.
+
+  This is also the realm filter's first real test. Until now no class carried
+  books from two realms, so removing the filter failed nothing; a Priest of Life
+  can now read prayer books and not Sorcery ones, and a Priest of Sorcery the
+  other way round.
+
 - **3.54.2** — **Realm choice gates which books you can open**, which is what
   makes the choice mean anything. A class carries the books of every realm it may
   study — a spell lives in a book which lives in a class, and there is nowhere

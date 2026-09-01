@@ -44,7 +44,9 @@ b) the "Angband licence":
 
 from __future__ import annotations
 
+import pathlib
 import re
+import tomllib
 
 # The order the table is laid out in.  Both lists are positional and neither is
 # alphabetical; changing either silently mis-slices everything after it.
@@ -170,3 +172,67 @@ def entitlements(src: str) -> dict[str, list[str]]:
     pairs = read_pairs(src)
     return {cls: [r for r in REALMS if usable(slice_for(pairs, cls, r))]
             for cls in CLASSES}
+
+
+def read_realmmap() -> dict:
+    """The effect chains, book names and dispositions, from realmmap.toml."""
+    path = pathlib.Path(__file__).resolve().parent / "realmmap.toml"
+    with path.open("rb") as handle:
+        return tomllib.load(handle)
+
+
+def emit_books(src: str, cls: str, realm: str, spellmap: dict) -> list[str]:
+    """One class's realm as the `book:`/`spell:` lines class.txt wants.
+
+    The numbers come from `magic_info[]` and the effects from realmmap.toml, and
+    keeping those apart is the point: a spell is described once and priced once
+    per class, so the Mage's Sorcery and the Rogue's Sorcery are the same spells
+    at different levels rather than two transcriptions that can drift.
+
+    A deferred spell is emitted with its level, mana and failure and no effect
+    chain. That is deliberate -- see realmmap.toml -- and the caller reports it.
+    """
+    spells = convert(src, cls, realm)
+    if not spells:
+        return []
+
+    realm_data = spellmap[realm]
+    lines: list[str] = []
+    seen_book = None
+
+    for s in spells:
+        if s["book"] != seen_book:
+            seen_book = s["book"]
+            in_book = [x for x in spells if x["book"] == seen_book]
+            title = realm_data["books"][seen_book - 1]
+            lines.append("book:%s book:%s:[%s]:%d:%s" % (
+                realm, "town" if seen_book <= 2 else "dungeon",
+                title, len(in_book), realm))
+            lines.append("book-graphics:?:%s" % BOOK_COLOUR[realm])
+            lines.append("book-properties:%d:%d:%d to 100" % (
+                25 * seen_book, 40 - 8 * (seen_book - 1), seen_book * 10 - 9))
+
+        entry = realm_data["spells"].get(s["name"], {})
+        lines.append("spell:%s:%d:%d:%d:%d" % (
+            s["name"], s["level"], s["mana"], s["fail"], s["exp"]))
+
+        for item in entry.get("effects", []):
+            if item.startswith(("dice:", "expr:", "effect-yx:", "effect-msg:")):
+                lines.append(item)
+            else:
+                lines.append("effect:" + item)
+
+        if "defer" in entry:
+            lines.append("desc:This working is beyond what this game can yet")
+            lines.append("desc: express, and does nothing.  See realmmap.toml.")
+        else:
+            lines.append("desc:%s" % entry.get("desc", "A working of " + realm))
+
+    return lines
+
+
+#: A colour per realm's books, matching object_base.txt.
+BOOK_COLOUR = {
+    "sorcery": "B", "chaos": "v", "trump": "w",
+    "arcane": "R", "life": "G", "nature": "y", "death": "p",
+}

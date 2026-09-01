@@ -1,0 +1,190 @@
+# What each realm spell does, in 4.2's effect language.
+#
+# The same kind of file as mutmap.toml and for the same reason: there is no
+# mechanical route from Zangband's `cast_*_spell()` switches to a 4.2 effect
+# chain. Each entry is a judgement, made once, written down with the source line
+# it came off and what the translation costs.
+#
+# The numbers -- level, mana, failure and experience -- are deliberately **not**
+# here. They come out of `magic_info[]` per class and per realm, so a spell is
+# one entry in this file and appears in class.txt once for every class entitled
+# to its realm, carrying that class's own figures.
+#
+# `defer` marks a spell 4.2 cannot express, with the reason. A deferred spell is
+# still emitted -- level, mana, failure and all -- but with no effect chain, and
+# the conversion report lists it. That is deliberate: a book with a hole in it
+# and a note saying so is honest, and a spell quietly missing from a book is not.
+#
+# Source: archive/zangband/src/cmd5.c, cast_sorcery_spell().
+
+[sorcery]
+books = [
+  "Beginner's Handbook",
+  "Master Sorcerer's Handbook",
+  "Pattern Sorcery",
+  "Grimoire of Power",
+]
+
+[sorcery.spells."Detect Monsters"]
+line = 806
+effects = [ "DETECT_VISIBLE_MONSTERS", "effect-yx:22:40" ]
+desc = "Detects all monsters nearby that are not invisible."
+
+[sorcery.spells."Phase Door"]
+line = 809
+effects = [ "TELEPORT", "dice:10" ]
+desc = "Teleports you a short distance -- ten squares."
+
+[sorcery.spells."Detect Doors and Traps"]
+line = 812
+effects = [ "DETECT_TRAPS", "effect-yx:22:40", "DETECT_DOORS", "effect-yx:22:40", "DETECT_STAIRS", "effect-yx:22:40" ]
+desc = "Detects doors, traps and staircases nearby."
+
+[sorcery.spells."Light Area"]
+line = 817
+effects = [ "LIGHT_AREA", "SPHERE:LIGHT_WEAK:2", "dice:2d$S", "expr:S:PLAYER_LEVEL:/ 2" ]
+desc = "Lights the area around you, and hurts light-sensitive monsters caught in it."
+
+[sorcery.spells."Confuse Monster"]
+line = 820
+effects = [ "BOLT_AWARE:MON_CONF", "dice:5+d$S", "expr:S:PLAYER_LEVEL:- 5" ]
+note = "Zangband passes (plev * 3) / 2 as a power; 4.2's own Confuse Monster uses 5+d(level-5), and the two are close enough that keeping 4.2's shape beats introducing a second convention."
+desc = "Attempts to confuse a single monster."
+
+[sorcery.spells."Teleport Self"]
+line = 823
+effects = [ "TELEPORT", "dice:$B", "expr:B:PLAYER_LEVEL:* 5" ]
+desc = "Teleports you a long way -- five squares for every level you have."
+
+[sorcery.spells."Sleep Monster"]
+line = 826
+effects = [ "BOLT_AWARE:SLEEP_ALL", "dice:$B", "expr:B:PLAYER_LEVEL:* 10 + 500" ]
+desc = "Attempts to put a single monster to sleep."
+
+[sorcery.spells."Recharging"]
+line = 829
+effects = [ "RECHARGE", "dice:$B", "expr:B:PLAYER_LEVEL:* 4" ]
+note = "Zangband's recharge(plev * 4) is four times the strength 4.2's own Recharging uses at the same level. Kept, because Sorcery is the utility realm and this is one of the reasons to study it."
+desc = "Recharges a wand or a staff, and may destroy it if the attempt fails."
+
+[sorcery.spells."Magic Mapping"]
+line = 832
+effects = [ "MAP_AREA", "effect-yx:22:40" ]
+desc = "Maps the area around you."
+
+[sorcery.spells."Identify"]
+line = 835
+effects = [ "IDENTIFY" ]
+note = "4.2 identifies runes rather than objects -- a rune learned is learned on every object carrying it -- so this is 4.2's own Identify Rune under Zangband's name. The name is Zangband's because the spell is in Zangband's book; what it does is 4.2's, because that is the mechanism the game has."
+desc = "Identifies a rune on an object you are carrying."
+
+[sorcery.spells."Slow Monster"]
+line = 838
+effects = [ "BOLT_STATUS:MON_SLOW", "dice:5+d$S", "expr:S:PLAYER_LEVEL:- 5" ]
+desc = "Attempts to slow a single monster."
+
+[sorcery.spells."Mass Sleep"]
+line = 841
+effects = [ "PROJECT_LOS:SLEEP_ALL", "dice:$B", "expr:B:PLAYER_LEVEL:* 10 + 500" ]
+desc = "Attempts to put every monster you can see to sleep."
+
+[sorcery.spells."Teleport Away"]
+line = 844
+effects = [ "BEAM:AWAY_ALL", "dice:$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+desc = "Fires a beam that teleports away every monster it strikes. Some resist."
+
+[sorcery.spells."Haste Self"]
+line = 847
+effects = [ "TIMED_INC:FAST:0:5", "dice:$B+d20", "expr:B:PLAYER_LEVEL:+ 0" ]
+desc = "Hastens you for a while."
+
+[sorcery.spells."Detection True"]
+line = 850
+effects = [ "DETECT_VISIBLE_MONSTERS", "effect-yx:22:40", "DETECT_INVISIBLE_MONSTERS", "effect-yx:22:40", "DETECT_TRAPS", "effect-yx:22:40", "DETECT_DOORS", "effect-yx:22:40", "DETECT_STAIRS", "effect-yx:22:40", "DETECT_GOLD", "effect-yx:22:40", "DETECT_OBJECTS", "effect-yx:22:40" ]
+note = "Zangband's detect_all() in the parts 4.2 has. It also revealed object kinds the player had not learned, which 4.2 has no equivalent for since it identifies runes rather than objects."
+desc = "Detects everything nearby: monsters seen and unseen, doors, traps, stairs, treasure and objects."
+
+[sorcery.spells."Identify True"]
+line = 853
+defer = "identify_fully() tells the player everything about an object at once. 4.2 has no such thing and cannot have: it replaced whole-object identification with runes, learned one at a time by carrying and using the thing. There is no hidden complete description for a spell to reveal, so this would have to invent the very mechanic 4.2 removed."
+
+[sorcery.spells."Detect Objects and Treasure"]
+line = 858
+effects = [ "DETECT_OBJECTS", "effect-yx:22:40", "DETECT_GOLD", "effect-yx:22:40" ]
+desc = "Detects objects and treasure nearby."
+
+[sorcery.spells."Detect Enchantment"]
+line = 863
+defer = "detect_objects_magic() marks every nearby object carrying an enchantment, which in Zangband is a property the player may not know. 4.2 has no equivalent: an object's runes are either learned or not, and there is no separate is-this-magical bit to detect. Detecting objects at all is already DETECT_OBJECTS, two spells up this same book, so mapping it there would give the realm two spells doing one thing."
+
+[sorcery.spells."Charm Monster"]
+line = 866
+effects = [ "COMMAND" ]
+note = "charm_monster() makes a permanent pet in Zangband; 4.2's COMMAND takes a monster over for a while, because 4.2 has no pets. The same mapping the hypnotic gaze mutation got."
+desc = "Takes control of a monster for a time."
+
+[sorcery.spells."Dimension Door"]
+line = 869
+effects = [ "TELEPORT_TO" ]
+desc = "Opens a gate to a place you choose nearby."
+
+[sorcery.spells."Sense Minds"]
+line = 873
+effects = [ "TIMED_INC:TELEPATHY", "dice:24+1d31" ]
+desc = "Grants telepathy for a while."
+
+[sorcery.spells."Self Knowledge"]
+line = 876
+defer = "self_knowledge() prints everything the character is -- every resistance, sustain and ability, from every source at once. 4.2 retired it because the character sheet carries the same information continuously, on the pages reached with 'h', so the spell would tell the player what is already on screen. The same reasoning retired the Weigh Magic mutation."
+
+[sorcery.spells."Teleport Level"]
+line = 879
+effects = [ "TELEPORT_LEVEL" ]
+desc = "Teleports you one level up or down, without choosing which."
+
+[sorcery.spells."Word of Recall"]
+line = 882
+effects = [ "RECALL" ]
+desc = "Returns you from the dungeon, or takes you back down, after a delay."
+
+[sorcery.spells."Stasis"]
+line = 885
+effects = [ "BOLT_STATUS:MON_HOLD", "dice:$B", "expr:B:PLAYER_LEVEL:* 10 + 500" ]
+desc = "Attempts to hold a single monster completely still."
+
+[sorcery.spells."Telekinesis"]
+line = 888
+effects = [ "FETCH", "dice:$B", "expr:B:PLAYER_LEVEL:* 15" ]
+note = "The strongest of FETCH's three callers: fifteen per level and no need to see what it takes, against the mutation's ten and its requirement of sight. That difference is why the effect takes both as parameters."
+desc = "Pulls a distant object to your feet, whether or not you can see it."
+
+[sorcery.spells."Explosive Rune"]
+line = 891
+defer = "explosive_rune() lays a glyph that detonates when a monster steps on it. 4.2 has a warding glyph -- GLYPH with GLYPH_WARDING -- which monsters will not cross, and that is a different spell rather than a weaker one: warding turns a corridor into a wall, an explosive rune is a trap the player sets. Mapping one onto the other would give Sorcery a second Glyph of Warding under a name promising an explosion."
+
+[sorcery.spells."Clairvoyance"]
+line = 894
+effects = [ "LIGHT_LEVEL", "TIMED_INC:TELEPATHY", "dice:24+1d31" ]
+note = "Zangband grants the telepathy only to a character who has none already; 4.2's TIMED_INC extends what is there, which is the kinder reading and costs nobody anything."
+desc = "Lights the whole level, and grants telepathy for a while."
+
+[sorcery.spells."Enchant Weapon"]
+line = 899
+effects = [ "ENCHANT:TOBOTH", "dice:1d4" ]
+desc = "Attempts to enchant a weapon, to hit and to wound."
+
+[sorcery.spells."Enchant Armour"]
+line = 902
+effects = [ "ENCHANT:TOAC", "dice:1+1d3" ]
+desc = "Attempts to enchant a suit of armour."
+
+[sorcery.spells."Alchemy"]
+line = 905
+effects = [ "ALCHEMY" ]
+note = "The mechanic DEC-52 built, shared with the Midas touch mutation and a random-artifact activation."
+desc = "Turns an object into a third of its worth in gold. Artifacts refuse."
+
+[sorcery.spells."Globe of Invulnerability"]
+line = 908
+effects = [ "TIMED_INC:INVULN", "dice:7+1d8" ]
+desc = "Makes you briefly untouchable."

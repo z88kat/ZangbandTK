@@ -203,7 +203,7 @@ title:Warlock
 title:Sorcerer
 title:Arch-Mage
 
-magic:1:300:5
+magic:1:300:9
 realm-choice:1:arcane | life | nature | death | sorcery | chaos | trump
 realm-choice:2:arcane | life | nature | death | sorcery | chaos | trump
 
@@ -450,6 +450,166 @@ desc: damage to each monster in its area of effect.
 
 
 ############### DRUID ###############
+
+book:sorcery book:town:[Beginner's Handbook]:8:sorcery
+book-graphics:?:B
+book-properties:25:40:1 to 100
+spell:Detect Monsters:1:1:21:5
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Detects all monsters nearby that are not invisible.
+spell:Phase Door:1:2:21:5
+effect:TELEPORT
+dice:10
+desc:Teleports you a short distance -- ten squares.
+spell:Detect Doors and Traps:3:3:24:5
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+desc:Detects doors, traps and staircases nearby.
+spell:Light Area:3:3:24:5
+effect:LIGHT_AREA
+effect:SPHERE:LIGHT_WEAK:2
+dice:2d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Lights the area around you, and hurts light-sensitive monsters caught in it.
+spell:Confuse Monster:4:4:26:5
+effect:BOLT_AWARE:MON_CONF
+dice:5+d$S
+expr:S:PLAYER_LEVEL:- 5
+desc:Attempts to confuse a single monster.
+spell:Teleport:5:5:27:5
+desc:A working of sorcery
+spell:Sleep Monster:6:5:29:5
+effect:BOLT_AWARE:SLEEP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Attempts to put a single monster to sleep.
+spell:Recharging:7:7:30:5
+effect:RECHARGE
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Recharges a wand or a staff, and may destroy it if the attempt fails.
+book:sorcery book:town:[Master Sorcerer's Handbook]:8:sorcery
+book-graphics:?:B
+book-properties:50:32:11 to 100
+spell:Magic Mapping:9:7:33:20
+effect:MAP_AREA
+effect-yx:22:40
+desc:Maps the area around you.
+spell:Identify:10:7:35:20
+effect:IDENTIFY
+desc:Identifies a rune on an object you are carrying.
+spell:Slow Monster:11:7:36:20
+effect:BOLT_STATUS:MON_SLOW
+dice:5+d$S
+expr:S:PLAYER_LEVEL:- 5
+desc:Attempts to slow a single monster.
+spell:Mass Sleep:13:7:39:20
+effect:PROJECT_LOS:SLEEP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Attempts to put every monster you can see to sleep.
+spell:Teleport Away:18:12:47:20
+effect:BEAM:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Fires a beam that teleports away every monster it strikes. Some resist.
+spell:Haste Self:22:12:53:20
+effect:TIMED_INC:FAST:0:5
+dice:$B+d20
+expr:B:PLAYER_LEVEL:+ 0
+desc:Hastens you for a while.
+spell:Detection True:28:20:62:20
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+effect:DETECT_INVISIBLE_MONSTERS
+effect-yx:22:40
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+effect:DETECT_GOLD
+effect-yx:22:40
+effect:DETECT_OBJECTS
+effect-yx:22:40
+desc:Detects everything nearby: monsters seen and unseen, doors, traps, stairs, treasure and objects.
+spell:Identify True:33:30:69:20
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+book:sorcery book:dungeon:[Pattern Sorcery]:8:sorcery
+book-graphics:?:B
+book-properties:75:24:21 to 100
+spell:Detect Objects and Treasure:3:3:24:45
+effect:DETECT_OBJECTS
+effect-yx:22:40
+effect:DETECT_GOLD
+effect-yx:22:40
+desc:Detects objects and treasure nearby.
+spell:Detect Enchantment:10:10:35:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Charm Monster:10:10:35:45
+effect:COMMAND
+desc:Takes control of a monster for a time.
+spell:Dimension Door:12:12:38:45
+effect:TELEPORT_TO
+desc:Opens a gate to a place you choose nearby.
+spell:Sense Minds:14:10:41:45
+effect:TIMED_INC:TELEPATHY
+dice:24+1d31
+desc:Grants telepathy for a while.
+spell:Self Knowledge:20:18:50:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Teleport Level:20:18:50:45
+effect:TELEPORT_LEVEL
+desc:Teleports you one level up or down, without choosing which.
+spell:Word of Recall:25:25:57:45
+effect:RECALL
+desc:Returns you from the dungeon, or takes you back down, after a delay.
+book:sorcery book:dungeon:[Grimoire of Power]:8:sorcery
+book-graphics:?:B
+book-properties:100:16:31 to 100
+spell:Stasis:10:10:35:80
+effect:BOLT_STATUS:MON_HOLD
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Attempts to hold a single monster completely still.
+spell:Telekinesis:25:25:57:80
+effect:FETCH
+dice:$B
+expr:B:PLAYER_LEVEL:* 15
+desc:Pulls a distant object to your feet, whether or not you can see it.
+spell:Explosive Rune:25:30:57:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Clairvoyance:30:40:65:80
+effect:LIGHT_LEVEL
+effect:TIMED_INC:TELEPATHY
+dice:24+1d31
+desc:Lights the whole level, and grants telepathy for a while.
+spell:Enchant Weapon:40:80:80:80
+effect:ENCHANT:TOBOTH
+dice:1d4
+desc:Attempts to enchant a weapon, to hit and to wound.
+spell:Enchant Armour:40:100:80:80
+effect:ENCHANT:TOAC
+dice:1+1d3
+desc:Attempts to enchant a suit of armour.
+spell:Alchemy:42:50:83:80
+effect:ALCHEMY
+desc:Turns an object into a third of its worth in gold. Artifacts refuse.
+spell:Globe of Invulnerability:45:70:87:80
+effect:TIMED_INC:INVULN
+dice:7+1d8
+desc:Makes you briefly untouchable.
+
 name:Druid
 virtues:NATURE | HARMONY
 stats:-2:0:3:-2:0
@@ -724,7 +884,7 @@ title:Prophet
 title:Patriarch
 title:High Priest
 
-magic:1:350:5
+magic:1:350:9
 realm-choice:1:life | death
 realm-choice:2:arcane | nature | sorcery | chaos | trump
 
@@ -962,6 +1122,166 @@ desc: in light doing 100 damage to every light-sensitive creature.
 
 
 ############### NECROMANCER ###############
+
+book:sorcery book:town:[Beginner's Handbook]:8:sorcery
+book-graphics:?:B
+book-properties:25:40:1 to 100
+spell:Detect Monsters:2:1:23:5
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Detects all monsters nearby that are not invisible.
+spell:Phase Door:3:2:24:5
+effect:TELEPORT
+dice:10
+desc:Teleports you a short distance -- ten squares.
+spell:Detect Doors and Traps:4:3:26:5
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+desc:Detects doors, traps and staircases nearby.
+spell:Light Area:5:4:27:5
+effect:LIGHT_AREA
+effect:SPHERE:LIGHT_WEAK:2
+dice:2d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Lights the area around you, and hurts light-sensitive monsters caught in it.
+spell:Confuse Monster:6:5:29:5
+effect:BOLT_AWARE:MON_CONF
+dice:5+d$S
+expr:S:PLAYER_LEVEL:- 5
+desc:Attempts to confuse a single monster.
+spell:Teleport:7:6:30:5
+desc:A working of sorcery
+spell:Sleep Monster:9:7:33:5
+effect:BOLT_AWARE:SLEEP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Attempts to put a single monster to sleep.
+spell:Recharging:11:10:36:5
+effect:RECHARGE
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Recharges a wand or a staff, and may destroy it if the attempt fails.
+book:sorcery book:town:[Master Sorcerer's Handbook]:8:sorcery
+book-graphics:?:B
+book-properties:50:32:11 to 100
+spell:Magic Mapping:13:11:39:20
+effect:MAP_AREA
+effect-yx:22:40
+desc:Maps the area around you.
+spell:Identify:14:12:41:20
+effect:IDENTIFY
+desc:Identifies a rune on an object you are carrying.
+spell:Slow Monster:15:13:42:20
+effect:BOLT_STATUS:MON_SLOW
+dice:5+d$S
+expr:S:PLAYER_LEVEL:- 5
+desc:Attempts to slow a single monster.
+spell:Mass Sleep:16:14:44:20
+effect:PROJECT_LOS:SLEEP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Attempts to put every monster you can see to sleep.
+spell:Teleport Away:22:15:53:20
+effect:BEAM:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Fires a beam that teleports away every monster it strikes. Some resist.
+spell:Haste Self:27:17:60:20
+effect:TIMED_INC:FAST:0:5
+dice:$B+d20
+expr:B:PLAYER_LEVEL:+ 0
+desc:Hastens you for a while.
+spell:Detection True:30:22:65:20
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+effect:DETECT_INVISIBLE_MONSTERS
+effect-yx:22:40
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+effect:DETECT_GOLD
+effect-yx:22:40
+effect:DETECT_OBJECTS
+effect-yx:22:40
+desc:Detects everything nearby: monsters seen and unseen, doors, traps, stairs, treasure and objects.
+spell:Identify True:36:33:74:20
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+book:sorcery book:dungeon:[Pattern Sorcery]:8:sorcery
+book-graphics:?:B
+book-properties:75:24:21 to 100
+spell:Detect Objects and Treasure:7:7:30:45
+effect:DETECT_OBJECTS
+effect-yx:22:40
+effect:DETECT_GOLD
+effect-yx:22:40
+desc:Detects objects and treasure nearby.
+spell:Detect Enchantment:12:12:38:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Charm Monster:14:14:41:45
+effect:COMMAND
+desc:Takes control of a monster for a time.
+spell:Dimension Door:15:15:42:45
+effect:TELEPORT_TO
+desc:Opens a gate to a place you choose nearby.
+spell:Sense Minds:18:18:47:45
+effect:TIMED_INC:TELEPATHY
+dice:24+1d31
+desc:Grants telepathy for a while.
+spell:Self Knowledge:20:20:50:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Teleport Level:22:22:53:45
+effect:TELEPORT_LEVEL
+desc:Teleports you one level up or down, without choosing which.
+spell:Word of Recall:27:27:60:45
+effect:RECALL
+desc:Returns you from the dungeon, or takes you back down, after a delay.
+book:sorcery book:dungeon:[Grimoire of Power]:8:sorcery
+book-graphics:?:B
+book-properties:100:16:31 to 100
+spell:Stasis:13:13:39:80
+effect:BOLT_STATUS:MON_HOLD
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Attempts to hold a single monster completely still.
+spell:Telekinesis:24:24:56:80
+effect:FETCH
+dice:$B
+expr:B:PLAYER_LEVEL:* 15
+desc:Pulls a distant object to your feet, whether or not you can see it.
+spell:Explosive Rune:27:30:60:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Clairvoyance:33:40:69:80
+effect:LIGHT_LEVEL
+effect:TIMED_INC:TELEPATHY
+dice:24+1d31
+desc:Lights the whole level, and grants telepathy for a while.
+spell:Enchant Weapon:42:80:83:80
+effect:ENCHANT:TOBOTH
+dice:1d4
+desc:Attempts to enchant a weapon, to hit and to wound.
+spell:Enchant Armour:42:100:83:80
+effect:ENCHANT:TOAC
+dice:1+1d3
+desc:Attempts to enchant a suit of armour.
+spell:Alchemy:45:50:87:80
+effect:ALCHEMY
+desc:Turns an object into a third of its worth in gold. Artifacts refuse.
+spell:Globe of Invulnerability:48:70:92:80
+effect:TIMED_INC:INVULN
+dice:7+1d8
+desc:Makes you briefly untouchable.
+
 name:Necromancer
 virtues:UNLIFE | KNOWLEDGE
 stats:-3:3:0:0:-2
@@ -1422,7 +1742,7 @@ title:Rogue
 title:Thief
 title:Master Thief
 
-magic:5:350:2
+magic:5:350:6
 realm-choice:1:arcane | death | sorcery | trump
 
 book:magic book:town:[First Spells]:7:arcane
@@ -1495,6 +1815,162 @@ desc:  This spell may have no effect when the forced descent option is set.
 
 
 ############### RANGER ###############
+
+book:sorcery book:town:[Beginner's Handbook]:8:sorcery
+book-graphics:?:B
+book-properties:25:40:1 to 100
+spell:Detect Monsters:5:1:27:5
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Detects all monsters nearby that are not invisible.
+spell:Phase Door:7:2:30:5
+effect:TELEPORT
+dice:10
+desc:Teleports you a short distance -- ten squares.
+spell:Detect Doors and Traps:8:3:32:5
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+desc:Detects doors, traps and staircases nearby.
+spell:Light Area:9:3:33:5
+effect:LIGHT_AREA
+effect:SPHERE:LIGHT_WEAK:2
+dice:2d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Lights the area around you, and hurts light-sensitive monsters caught in it.
+spell:Confuse Monster:13:6:39:5
+effect:BOLT_AWARE:MON_CONF
+dice:5+d$S
+expr:S:PLAYER_LEVEL:- 5
+desc:Attempts to confuse a single monster.
+spell:Teleport:15:7:42:5
+desc:A working of sorcery
+spell:Sleep Monster:17:9:45:5
+effect:BOLT_AWARE:SLEEP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Attempts to put a single monster to sleep.
+spell:Recharging:21:12:51:5
+effect:RECHARGE
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Recharges a wand or a staff, and may destroy it if the attempt fails.
+book:sorcery book:town:[Master Sorcerer's Handbook]:8:sorcery
+book-graphics:?:B
+book-properties:50:32:11 to 100
+spell:Magic Mapping:25:14:57:20
+effect:MAP_AREA
+effect-yx:22:40
+desc:Maps the area around you.
+spell:Identify:27:15:60:20
+effect:IDENTIFY
+desc:Identifies a rune on an object you are carrying.
+spell:Slow Monster:29:17:63:20
+effect:BOLT_STATUS:MON_SLOW
+dice:5+d$S
+expr:S:PLAYER_LEVEL:- 5
+desc:Attempts to slow a single monster.
+spell:Mass Sleep:30:20:65:20
+effect:PROJECT_LOS:SLEEP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Attempts to put every monster you can see to sleep.
+spell:Teleport Away:31:23:66:20
+effect:BEAM:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Fires a beam that teleports away every monster it strikes. Some resist.
+spell:Haste Self:32:25:68:20
+effect:TIMED_INC:FAST:0:5
+dice:$B+d20
+expr:B:PLAYER_LEVEL:+ 0
+desc:Hastens you for a while.
+spell:Detection True:35:30:72:20
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+effect:DETECT_INVISIBLE_MONSTERS
+effect-yx:22:40
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+effect:DETECT_GOLD
+effect-yx:22:40
+effect:DETECT_OBJECTS
+effect-yx:22:40
+desc:Detects everything nearby: monsters seen and unseen, doors, traps, stairs, treasure and objects.
+spell:Identify True:40:35:80:20
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+book:sorcery book:dungeon:[Pattern Sorcery]:8:sorcery
+book-graphics:?:B
+book-properties:75:24:21 to 100
+spell:Detect Objects and Treasure:9:3:33:45
+effect:DETECT_OBJECTS
+effect-yx:22:40
+effect:DETECT_GOLD
+effect-yx:22:40
+desc:Detects objects and treasure nearby.
+spell:Detect Enchantment:13:10:39:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Charm Monster:14:10:41:45
+effect:COMMAND
+desc:Takes control of a monster for a time.
+spell:Dimension Door:15:10:42:45
+effect:TELEPORT_TO
+desc:Opens a gate to a place you choose nearby.
+spell:Sense Minds:16:10:44:45
+effect:TIMED_INC:TELEPATHY
+dice:24+1d31
+desc:Grants telepathy for a while.
+spell:Self Knowledge:17:20:45:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Teleport Level:18:17:47:45
+effect:TELEPORT_LEVEL
+desc:Teleports you one level up or down, without choosing which.
+spell:Word of Recall:30:35:65:45
+effect:RECALL
+desc:Returns you from the dungeon, or takes you back down, after a delay.
+book:sorcery book:dungeon:[Grimoire of Power]:7:sorcery
+book-graphics:?:B
+book-properties:100:16:31 to 100
+spell:Stasis:15:15:42:80
+effect:BOLT_STATUS:MON_HOLD
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Attempts to hold a single monster completely still.
+spell:Telekinesis:20:20:50:80
+effect:FETCH
+dice:$B
+expr:B:PLAYER_LEVEL:* 15
+desc:Pulls a distant object to your feet, whether or not you can see it.
+spell:Explosive Rune:35:40:72:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Clairvoyance:37:40:75:80
+effect:LIGHT_LEVEL
+effect:TIMED_INC:TELEPATHY
+dice:24+1d31
+desc:Lights the whole level, and grants telepathy for a while.
+spell:Enchant Weapon:43:80:84:80
+effect:ENCHANT:TOBOTH
+dice:1d4
+desc:Attempts to enchant a weapon, to hit and to wound.
+spell:Enchant Armour:44:100:86:80
+effect:ENCHANT:TOAC
+dice:1+1d3
+desc:Attempts to enchant a suit of armour.
+spell:Alchemy:45:50:87:80
+effect:ALCHEMY
+desc:Turns an object into a third of its worth in gold. Artifacts refuse.
+
 name:Ranger
 virtues:NATURE | TEMPERANCE
 stats:0:0:2:1:-1
@@ -1531,7 +2007,7 @@ title:Pathfinder
 title:Ranger
 title:Ranger Lord
 
-magic:3:400:2
+magic:3:400:6
 realm-choice:1:nature
 realm-choice:2:arcane | death | sorcery | chaos | trump
 
@@ -1608,6 +2084,162 @@ desc: slay, is broken, or is cursed.
 
 
 ############### BLACKGUARD ###############
+
+book:sorcery book:town:[Beginner's Handbook]:8:sorcery
+book-graphics:?:B
+book-properties:25:40:1 to 100
+spell:Detect Monsters:3:2:24:5
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Detects all monsters nearby that are not invisible.
+spell:Phase Door:3:3:24:5
+effect:TELEPORT
+dice:10
+desc:Teleports you a short distance -- ten squares.
+spell:Detect Doors and Traps:5:4:27:5
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+desc:Detects doors, traps and staircases nearby.
+spell:Light Area:7:4:30:5
+effect:LIGHT_AREA
+effect:SPHERE:LIGHT_WEAK:2
+dice:2d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Lights the area around you, and hurts light-sensitive monsters caught in it.
+spell:Confuse Monster:9:6:33:5
+effect:BOLT_AWARE:MON_CONF
+dice:5+d$S
+expr:S:PLAYER_LEVEL:- 5
+desc:Attempts to confuse a single monster.
+spell:Teleport:11:8:36:5
+desc:A working of sorcery
+spell:Sleep Monster:13:8:39:5
+effect:BOLT_AWARE:SLEEP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Attempts to put a single monster to sleep.
+spell:Recharging:17:17:45:5
+effect:RECHARGE
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Recharges a wand or a staff, and may destroy it if the attempt fails.
+book:sorcery book:town:[Master Sorcerer's Handbook]:8:sorcery
+book-graphics:?:B
+book-properties:50:32:11 to 100
+spell:Magic Mapping:20:19:50:20
+effect:MAP_AREA
+effect-yx:22:40
+desc:Maps the area around you.
+spell:Identify:23:25:54:20
+effect:IDENTIFY
+desc:Identifies a rune on an object you are carrying.
+spell:Slow Monster:25:25:57:20
+effect:BOLT_STATUS:MON_SLOW
+dice:5+d$S
+expr:S:PLAYER_LEVEL:- 5
+desc:Attempts to slow a single monster.
+spell:Mass Sleep:27:25:60:20
+effect:PROJECT_LOS:SLEEP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Attempts to put every monster you can see to sleep.
+spell:Teleport Away:31:27:66:20
+effect:BEAM:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Fires a beam that teleports away every monster it strikes. Some resist.
+spell:Haste Self:34:35:71:20
+effect:TIMED_INC:FAST:0:5
+dice:$B+d20
+expr:B:PLAYER_LEVEL:+ 0
+desc:Hastens you for a while.
+spell:Detection True:38:37:77:20
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+effect:DETECT_INVISIBLE_MONSTERS
+effect-yx:22:40
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+effect:DETECT_GOLD
+effect-yx:22:40
+effect:DETECT_OBJECTS
+effect-yx:22:40
+desc:Detects everything nearby: monsters seen and unseen, doors, traps, stairs, treasure and objects.
+spell:Identify True:42:40:83:20
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+book:sorcery book:dungeon:[Pattern Sorcery]:8:sorcery
+book-graphics:?:B
+book-properties:75:24:21 to 100
+spell:Detect Objects and Treasure:15:7:42:45
+effect:DETECT_OBJECTS
+effect-yx:22:40
+effect:DETECT_GOLD
+effect-yx:22:40
+desc:Detects objects and treasure nearby.
+spell:Detect Enchantment:15:20:42:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Charm Monster:17:17:45:45
+effect:COMMAND
+desc:Takes control of a monster for a time.
+spell:Dimension Door:18:18:47:45
+effect:TELEPORT_TO
+desc:Opens a gate to a place you choose nearby.
+spell:Sense Minds:19:25:48:45
+effect:TIMED_INC:TELEPATHY
+dice:24+1d31
+desc:Grants telepathy for a while.
+spell:Self Knowledge:23:25:54:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Teleport Level:27:27:60:45
+effect:TELEPORT_LEVEL
+desc:Teleports you one level up or down, without choosing which.
+spell:Word of Recall:35:35:72:45
+effect:RECALL
+desc:Returns you from the dungeon, or takes you back down, after a delay.
+book:sorcery book:dungeon:[Grimoire of Power]:7:sorcery
+book-graphics:?:B
+book-properties:100:16:31 to 100
+spell:Stasis:20:20:50:80
+effect:BOLT_STATUS:MON_HOLD
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Attempts to hold a single monster completely still.
+spell:Telekinesis:27:27:60:80
+effect:FETCH
+dice:$B
+expr:B:PLAYER_LEVEL:* 15
+desc:Pulls a distant object to your feet, whether or not you can see it.
+spell:Explosive Rune:37:60:75:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Clairvoyance:40:40:80:80
+effect:LIGHT_LEVEL
+effect:TIMED_INC:TELEPATHY
+dice:24+1d31
+desc:Lights the whole level, and grants telepathy for a while.
+spell:Enchant Weapon:45:80:87:80
+effect:ENCHANT:TOBOTH
+dice:1d4
+desc:Attempts to enchant a weapon, to hit and to wound.
+spell:Enchant Armour:45:100:87:80
+effect:ENCHANT:TOAC
+dice:1+1d3
+desc:Attempts to enchant a suit of armour.
+spell:Alchemy:50:50:95:80
+effect:ALCHEMY
+desc:Turns an object into a third of its worth in gold. Artifacts refuse.
+
 name:Blackguard
 virtues:VALOUR | INDIVIDUALISM
 stats:2:0:-3:0:2

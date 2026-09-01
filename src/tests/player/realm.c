@@ -143,25 +143,32 @@ static int test_every_realm_is_fully_described(void *state) {
 }
 
 /**
- * No existing class's progression moved (PLR-12).
+ * Every class's progression, and Sorcery went on the end (PLR-12, CNT-10).
  *
- * The shape of all eight casting classes 4.2 ships, as they were before the
- * realms arrived: how many books, and how many spells in total. The totals are
- * what `spell_flags[]` is sized and saved by, so a change to one is a change to
- * every savefile for that class.
+ * The shape of all eight casting classes: how many books, and how many spells in
+ * total. The totals are what `spell_flags[]` is sized and saved by.
+ *
+ * Four of them grew when Sorcery arrived, which DEC-50 licenses — but the four
+ * books went on the **end** of each list, never into the middle, and that is the
+ * part worth having a test for. A character's known spells are recorded by flat
+ * position across their class's books, so appending leaves every index that
+ * already existed meaning exactly what it meant, while inserting anywhere else
+ * would shift them. `every-book-kept-its-place` below asserts the prefix
+ * directly.
  */
 static int test_no_existing_class_progression_moved(void *state) {
 	static const struct {
 		const char *name;
 		int books, spells;
 	} shape[] = {
-		{ "Mage", 5, 30 },
+		/* Grown by Sorcery's four books: Mage, Priest, Rogue, Ranger. */
+		{ "Mage", 9, 62 },
 		{ "Druid", 5, 27 },
-		{ "Priest", 5, 28 },
+		{ "Priest", 9, 60 },
 		{ "Necromancer", 5, 26 },
 		{ "Paladin", 3, 16 },
-		{ "Rogue", 2, 10 },
-		{ "Ranger", 2, 11 },
+		{ "Rogue", 6, 41 },
+		{ "Ranger", 6, 42 },
 		{ "Blackguard", 3, 15 },
 	};
 	size_t i;
@@ -191,16 +198,20 @@ static int test_no_existing_class_progression_moved(void *state) {
 static int test_every_book_kept_its_place(void *state) {
 	static const struct {
 		const char *cls;
-		const char *realms[5];
+		const char *realms[9];
 	} order[] = {
-		{ "Mage",        { "arcane", "arcane", "arcane", "arcane", "arcane" } },
+		{ "Mage",        { "arcane", "arcane", "arcane", "arcane", "arcane",
+		                   "sorcery", "sorcery", "sorcery", "sorcery" } },
 		{ "Druid",       { "nature", "nature", "nature", "nature", "nature" } },
-		{ "Priest",      { "life", "life", "life", "life", "life" } },
+		{ "Priest",      { "life", "life", "life", "life", "life",
+		                   "sorcery", "sorcery", "sorcery", "sorcery" } },
 		{ "Necromancer", { "death", "death", "death", "death", "death" } },
-		{ "Paladin",     { "life", "life", "life", NULL, NULL } },
-		{ "Rogue",       { "arcane", "arcane", NULL, NULL, NULL } },
-		{ "Ranger",      { "nature", "nature", NULL, NULL, NULL } },
-		{ "Blackguard",  { "death", "death", "death", NULL, NULL } },
+		{ "Paladin",     { "life", "life", "life" } },
+		{ "Rogue",       { "arcane", "arcane",
+		                   "sorcery", "sorcery", "sorcery", "sorcery" } },
+		{ "Ranger",      { "nature", "nature",
+		                   "sorcery", "sorcery", "sorcery", "sorcery" } },
+		{ "Blackguard",  { "death", "death", "death" } },
 	};
 	size_t i;
 	int j, checked = 0;
@@ -221,12 +232,13 @@ static int test_every_book_kept_its_place(void *state) {
 		}
 
 		/* And no book beyond the ones listed. */
-		if (c->magic.num_books < 5) {
+		if (c->magic.num_books < 9) {
 			require(order[i].realms[c->magic.num_books] == NULL);
 		}
 	}
 
-	eq(checked, 30);
+	/* 9 + 5 + 9 + 5 + 3 + 6 + 6 + 3 books across the eight classes. */
+	eq(checked, 46);
 
 	ok;
 }
@@ -474,53 +486,61 @@ static int test_studying_is_a_property_of_the_character(void *state) {
 }
 
 /**
- * A Priest who chose Death can still read their prayer books (PLR-08).
+ * The filter's first real test: a Priest of Sorcery cannot read prayer books.
  *
- * The regression this test exists for. Realm choice has to gate which books a
- * character can open, or choosing a realm means nothing — but gating on the
- * class's *entitlement* rather than on the books it actually carries breaks a
- * Priest immediately: a Priest may study Life or Death, and every Priest book
- * in the game is Life. Filter on the entitlement and a Priest who picked Death
- * can read nothing at all.
+ * Until Sorcery arrived, no class carried books from two realms, so the realm
+ * filter had nothing to sort and removing it failed nothing. A Priest now
+ * carries five Life books and four Sorcery ones, and which of them the
+ * character can open is the whole point of choosing a realm.
  *
- * So the gate asks how many realms the class has books in, which is one for
- * every class Angband ships, and the filter is inert until a class carries
- * books from two realms. Asserted from both ends: the count is one today, and a
- * Priest studying Death can still open the Novice's Handbook.
- *
- * What this cannot yet check is that the filter *works* -- removing it
- * altogether fails nothing, because no class in the data carries books from two
- * realms for it to sort. That test arrives with Sorcery's books and not before;
- * said here rather than left for somebody to discover when they delete the
- * filter and the suite stays green.
+ * Both directions, because a filter that refuses everything passes a test that
+ * only checks it refuses something. A Priest of Life reads the Novice's
+ * Handbook and not the Beginner's Handbook; a Priest of Sorcery reads the
+ * Beginner's Handbook and not the Novice's.
  */
-static int test_choosing_a_realm_without_books_is_survivable(void *state) {
+static int test_the_realm_filter_sorts_two_realms(void *state) {
 	const struct player_class *priest = find_class("Priest");
-	const struct magic_realm *death = find_realm("death");
-	struct object *book = object_new();
-	const struct class_book *found;
+	const struct magic_realm *life = find_realm("life");
+	const struct magic_realm *sorcery = find_realm("sorcery");
+	struct object *prayer = object_new(), *working = object_new();
+	const struct class_book *pb = NULL, *sb = NULL;
+	int i;
 
 	notnull(priest);
-	notnull(death);
+	notnull(life);
+	notnull(sorcery);
 
-	/* Entitled to two realms, but carrying books in only one. */
-	require(priest->magic.realm_count > 1);
-	eq(class_book_realms(priest), 1);
+	/* The class now spans two realms, which is what makes the filter live. */
+	eq(class_book_realms(priest), 2);
+
+	for (i = 0; i < priest->magic.num_books; i++) {
+		const struct class_book *b = &priest->magic.books[i];
+
+		if (b->realm == life && !pb) pb = b;
+		if (b->realm == sorcery && !sb) sb = b;
+	}
+	notnull(pb);
+	notnull(sb);
+
+	object_prep(prayer, lookup_kind(pb->tval, pb->sval), 0, MINIMISE);
+	object_prep(working, lookup_kind(sb->tval, sb->sval), 0, MINIMISE);
 
 	player_generate(player, NULL, priest, false);
-	object_prep(book, lookup_kind(priest->magic.books[0].tval,
-								  priest->magic.books[0].sval), 0, MINIMISE);
 
-	/* Readable as a Priest of Life, which is the default. */
-	found = player_object_to_book(player, book);
-	notnull(found);
+	/* A Priest of Life: prayers yes, workings no. */
+	player->realm[0] = life;
+	player->realm[1] = life;
+	notnull(player_object_to_book(player, prayer));
+	null(player_object_to_book(player, working));
 
-	/* And still readable having chosen Death, which has no books yet. */
-	player->realm[0] = death;
-	found = player_object_to_book(player, book);
-	notnull(found);
+	/* A Priest of Sorcery: the other way round. */
+	player->realm[0] = sorcery;
+	player->realm[1] = sorcery;
+	null(player_object_to_book(player, prayer));
+	notnull(player_object_to_book(player, working));
 
-	object_delete(cave, player->cave, &book);
+	object_delete(cave, player->cave, &prayer);
+	object_delete(cave, player->cave, &working);
 
 	ok;
 }
@@ -545,7 +565,7 @@ struct test tests[] = {
 	  test_a_single_entitlement_is_not_a_choice },
 	{ "studying-is-a-property-of-the-character",
 	  test_studying_is_a_property_of_the_character },
-	{ "choosing-a-realm-without-books-is-survivable",
-	  test_choosing_a_realm_without_books_is_survivable },
+	{ "the-realm-filter-sorts-two-realms",
+	  test_the_realm_filter_sorts_two_realms },
 	{ NULL, NULL }
 };

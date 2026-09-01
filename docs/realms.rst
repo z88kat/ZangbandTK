@@ -3,10 +3,10 @@ The Realms of Magic
 
 .. note::
 
-   **Under construction.** You choose your realms at birth and your character
-   sheet records them. What is not built yet is the spells that fill Sorcery,
-   Chaos and Trump — until those arrive, choosing one of the three new realms
-   gives you a realm with no books behind it.
+   **Under construction.** You choose your realms at birth, your character sheet
+   records them, and **Sorcery is playable** — thirty-two workings in four books,
+   and the realm choice decides which books you can open. Chaos and Trump are
+   still names with no books behind them.
 
 Spellcasters in ZangbandTK choose realms of magic at birth, and that choice
 defines the character as much as the class does. Angband asks you what you are;
@@ -124,14 +124,50 @@ These entitlements are Zangband's own, taken from the same table Zangband keeps
 them in, and the game checks itself against that table rather than against
 anybody's idea of what a class ought to study.
 
+Sorcery
+-------
+
+The meta-realm, and the first of the three new ones to arrive. Detection,
+identification, protection, escape, and every convenience a dungeon delver
+wants — and **not one direct attack spell in it**. That is Sorcery's whole
+character: it makes everything else you do easier and kills nothing itself.
+
+Four books: the **Beginner's Handbook**, the **Master Sorcerer's Handbook**,
+**Pattern Sorcery** (a name this game has a better claim on than Zangband did),
+and the **Grimoire of Power**. The first two are sold in town; the last two are
+found below.
+
+Its best workings are the ones no other realm has. *Teleport Away* fires a beam
+that removes monsters from your path rather than killing them. *Telekinesis*
+pulls an object to your feet from anywhere you can reach — the strongest of the
+three versions in the game, lifting fifteen pounds a level and needing no sight
+of what it takes. *Recharging* is four times the strength of the Arcane spell of
+the same name. And *Globe of Invulnerability* makes you briefly untouchable.
+
+.. note::
+
+   **Four of the thirty-two do nothing, and say so.** *Identify True*, *Detect
+   Enchantment*, *Self Knowledge* and *Explosive Rune* each need a mechanism
+   Angband 4.2 removed or never had — whole-object identification, a
+   separate is-this-magical bit, a self-knowledge readout the character sheet
+   already carries, and a glyph that explodes rather than wards. They are in
+   their books with their levels and costs, described as beyond what the game
+   can express, rather than quietly missing: a book with a hole in it and a note
+   saying so is honest, and a spell absent without explanation is not.
+
 Nothing you could cast before has changed
 -----------------------------------------
 
 Adding the realms did not move a single spell. Every class Angband ships keeps
-the same books in the same order with the same spells at the same levels, and a
-character saved before the realms arrived loads with exactly the spells they
-knew. Only the *name* of the realm two of those book sets belong to has changed,
-and no character ever sees a realm's internal name.
+the same books **in the same order** with the same spells at the same levels.
+Sorcery's four books went on the *end* of the lists that gained them — a Mage's
+five Arcane books are still books one to five, with Sorcery's as six to nine.
+
+That ordering is not tidiness. Your known spells are recorded by their position
+in a flat list across all of your class's books, so appending leaves every
+position meaning what it meant, while inserting anywhere else would shift them:
+the game would load, the sheet would look reasonable, and a Priest who had
+learned Remove Fear would find they knew something else.
 
 That is not a courtesy, it is a hazard avoided. A character's known spells are
 stored by their position in a flat list across all of their class's books, so

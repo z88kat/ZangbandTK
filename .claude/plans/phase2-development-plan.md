@@ -359,6 +359,12 @@ reaches them by choosing them, which is now possible, and an incomplete new
 realm costs whoever chose it rather than everybody. So:
 
 1. **Sorcery, Chaos, Trump** — new content, no existing casters affected.
+   **Sorcery is done (3.55.0):** 32 spells in 4 books, emitted by
+   `zconv realms` into the four classes entitled to it (Mage, Priest, Rogue,
+   Ranger), 28 with effect chains and 4 deferred with reasons in
+   `realmmap.toml`. The books are **appended** to each class's list rather than
+   inserted, which leaves every existing spell index meaning what it meant --
+   the savefile corpus is unchanged at 31 loaded and 4 refused.
 2. **Arcane, Life, Nature, Death** — each replaced only once its chains are
    complete, one realm per commit, so a half-finished realm never ships.
 
