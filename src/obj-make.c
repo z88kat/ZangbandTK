@@ -1203,6 +1203,9 @@ int obj_theme_weight(const struct obj_theme *theme, int tval)
 		case TV_NATURE_BOOK:
 		case TV_SHADOW_BOOK:
 		case TV_OTHER_BOOK:
+		case TV_SORCERY_BOOK:
+		case TV_CHAOS_BOOK:
+		case TV_DECK:
 			return theme->magic;
 
 		/* Things brought along rather than sought. */

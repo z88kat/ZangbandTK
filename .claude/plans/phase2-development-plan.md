@@ -337,6 +337,37 @@ Arcane ones, which is not the game's model and doubles a Mage's spell list, or h
 spells of finished data with nothing able to read them. So: **PLR-08 and PLR-11 first
 (realm choice at birth, and the savefile and display that go with it), then CNT-10.**
 
+#### The order the seven realms have to arrive in
+
+**Phase 2a is done (3.53.0).** Realms are chosen at birth from the class's
+entitlement, recorded in the savefile by name, and shown on the character sheet.
+The three new realms also have book types now (`sorcery book`, `chaos book`,
+`deck`); a book's *kind* is created by `class.txt` itself, so nothing in
+object.txt was needed.
+
+**The three new realms come before the four mapped ones, and this is not a
+preference.** DEC-50 replaces the spell content of Arcane, Life, Nature and
+Death with Zangband's. A spell with no effect chain parses and does nothing —
+the same trap the mutations set — and each realm needs roughly nineteen chains
+written by hand out of thirty-two, the rest being names 4.2 already has. So
+replacing a working realm's content before its chains are finished would leave
+the Mage, Priest, Druid, Necromancer, Paladin, Rogue, Ranger and Blackguard
+holding books full of spells that cast nothing.
+
+Sorcery, Chaos and Trump have no existing content to break: a character only
+reaches them by choosing them, which is now possible, and an incomplete new
+realm costs whoever chose it rather than everybody. So:
+
+1. **Sorcery, Chaos, Trump** — new content, no existing casters affected.
+2. **Arcane, Life, Nature, Death** — each replaced only once its chains are
+   complete, one realm per commit, so a half-finished realm never ships.
+
+**Phase 2b is stopped on DEC-52**, which is open: Sorcery's *Alchemy* spell needs
+the object-to-gold mechanic that DEC-48 refused for the Midas touch, and DEC-48's
+stated reason — that the mechanic would have exactly one consumer — turns out to
+be wrong. `alchemy()` has three callers in Zangband. That is the project owner's
+to settle.
+
 #### Phase 2's conversion rules, established and verified
 
 This work stands whichever way DEC-50 and DEC-51 go, and should not need doing twice.

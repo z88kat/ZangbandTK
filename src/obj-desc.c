@@ -164,6 +164,16 @@ static const char *obj_desc_get_basename(const struct object *obj, bool aware,
 			else
 				return "& Necromantic Tome~ #";
 
+		case TV_SORCERY_BOOK:
+			return terse ? "& Book~ #" : "& Sorcery Book~ #";
+
+		case TV_CHAOS_BOOK:
+			return terse ? "& Book~ #" : "& Chaos Book~ #";
+
+		/* A deck rather than a book, which is what Trump magic is. */
+		case TV_DECK:
+			return terse ? "& Deck~ #" : "& Deck~ of Cards #";
+
 		case TV_OTHER_BOOK:
 			if (terse)
 				return "& Book~ #";

@@ -195,5 +195,20 @@ graphics:light purple
 # max-stack:5
 flags:HATES_FIRE | EASY_KNOW
 
+# ZangbandTK (CNT-10): the three realms 4.2 has no book for.  A deck rather
+# than a book for Trump, because that is what Trump magic is -- realm.txt's
+# book-noun says the same thing.
+name:sorcery book:Sorcery Book~
+graphics:light blue
+flags:HATES_FIRE | EASY_KNOW
+
+name:chaos book:Chaos Book~
+graphics:violet
+flags:HATES_FIRE | EASY_KNOW
+
+name:deck:Deck~
+graphics:white
+flags:HATES_FIRE | EASY_KNOW
+
 name:gold
 graphics:light yellow

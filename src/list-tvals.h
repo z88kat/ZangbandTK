@@ -38,4 +38,15 @@ TV(PRAYER_BOOK, "prayer book")
 TV(NATURE_BOOK, "nature book")
 TV(SHADOW_BOOK, "shadow book")
 TV(OTHER_BOOK, "other book")
+/*
+ * ZangbandTK (CNT-10): a book for each realm 4.2 had no counterpart for.
+ *
+ * Safe to add here rather than only at the end: an object records its base by
+ * *name* (`tval_find_name()` in save.c), not by this list's numbering, so the
+ * order is an in-memory detail. The nouns are realm.txt's own book-nouns, so
+ * that "You have a Sorcery Book" and the realm's own description agree.
+ */
+TV(SORCERY_BOOK, "sorcery book")
+TV(CHAOS_BOOK, "chaos book")
+TV(DECK, "deck")
 TV(GOLD, "gold")

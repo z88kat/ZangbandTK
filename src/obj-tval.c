@@ -344,6 +344,9 @@ bool tval_is_book_k(const struct object_kind *kind)
 		case TV_NATURE_BOOK:
 		case TV_SHADOW_BOOK:
 		case TV_OTHER_BOOK:
+		case TV_SORCERY_BOOK:
+		case TV_CHAOS_BOOK:
+		case TV_DECK:
 			return true;
 		default:
 			return false;

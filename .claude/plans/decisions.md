@@ -1903,3 +1903,56 @@ changes.
 
 *Nothing.* Both questions M9 stopped on — DEC-50 and DEC-51 — were decided on
 1 September 2026 and are recorded above. Phase 2 of the realms is unblocked.
+
+## Open — awaiting the project owner
+
+### DEC-52 — OPEN — DEC-48's reason for dropping the Midas touch has expired (DEC-48, CNT-10, PLR-16)
+
+**Status: open. M9 Phase 2b stopped here rather than deciding it either way.**
+
+DEC-48 dropped the Midas touch, on the project owner's call that it was too
+much effort for something that is not a game changer. The recorded reasoning
+turned on one specific claim:
+
+> *Nothing else in the game wants an object-to-gold effect, so the mechanic
+> would have exactly one consumer and no prospect of a second.*
+
+**That claim is now false.** Importing the Sorcery realm turns up `alchemy()`
+with three callers in Zangband, not one:
+
+| Caller | What it is |
+|---|---|
+| [mutation.c:1112](../../archive/zangband/src/mutation.c#L1112) | the Midas touch — the one DEC-48 refused |
+| [cmd5.c:881](../../archive/zangband/src/cmd5.c#L881) | **Sorcery spell 30, *Alchemy***, at level 42 for a Mage |
+| [artifact.c:743](../../archive/zangband/src/artifact.c#L743) | a random-artifact activation, priced at 10,000 |
+
+So the mechanic has three consumers, one of which is a realm spell inside the
+milestone being built now. DEC-48's decision may still be the right one — "not
+a game changer" was a judgement about the mutation and is untouched by this —
+but the *argument* for it no longer holds, and that is not something to quietly
+route around.
+
+**Three ways forward, and they are the project owner's to pick:**
+
+1. **Build the effect and reinstate the Midas touch.** One
+   object-destroyed-for-money effect serves all three. The cost DEC-48 named is
+   real and unchanged: what fraction of value, of what valuation, and what it
+   does to shops pricing against the same numbers. But it is now amortised over
+   three consumers rather than one.
+2. **Build the effect for Sorcery only, and leave the mutation dropped.** DEC-48
+   stands as a decision about the mutation; the spell gets the mechanic. Slightly
+   odd to a player who has both, since the same power arrives by one route and
+   not the other.
+3. **Defer Sorcery's *Alchemy* as well**, and record it beside the Midas touch.
+   That leaves Sorcery 31 spells of 32 — the cheapest option and the one that
+   makes the realm incomplete.
+
+**Why this stopped the phase rather than being noted in passing.** Sorcery
+cannot be finished without answering it, and either of the first two options
+overturns or narrows a decision the project owner made ten releases ago on a
+premise that has since changed. Building it would have reinstated something
+that was explicitly refused; skipping it silently would have left a realm short
+a spell with no record of why.
+
+*No work has been done on any of the three.* The book tvals landed and the
+sequencing note below is recorded; nothing about `alchemy()` has been built.

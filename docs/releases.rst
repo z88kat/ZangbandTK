@@ -33,6 +33,28 @@ Unreleased
 M9: magic realms — 1 September 2026
 -----------------------------------
 
+- **3.53.1** — **Books for the three new realms, and a stop on DEC-52.** A
+  ``sorcery book``, a ``chaos book`` and a ``deck`` — Trump's book-noun is a
+  deck, because that is what Trump magic is. An object records its base by name
+  rather than by the tval list's numbering, so adding these mid-list is safe.
+  A book's *kind* is created by ``class.txt`` itself, so no object needed
+  writing.
+
+  The spell import stops on **DEC-52**, which is open. Sorcery's *Alchemy*
+  needs the object-to-gold mechanic that DEC-48 refused for the Midas touch,
+  and DEC-48's stated reason — that the mechanic would have exactly one
+  consumer — is wrong: ``alchemy()`` has three callers in Zangband, one of them
+  a realm spell inside this milestone. Building it would reinstate something
+  explicitly refused; skipping it would leave Sorcery a spell short with no
+  record. Either way it is not a decision to make in passing.
+
+  Also recorded: **the three new realms have to be imported before the four
+  mapped ones.** DEC-50 replaces Arcane, Life, Nature and Death outright, and
+  a spell with no effect chain does nothing — so replacing a working realm
+  before its nineteen-or-so hand-written chains are finished would leave every
+  existing caster holding books that cast nothing. A new realm costs only
+  whoever chose it.
+
 - **3.53.0** — **Realms are chosen at birth** (PLR-08, PLR-11). A fourth step
   after race and class, offering the realms the *class* allows — which is what
   makes the combination mean anything. The entitlements are Zangband's own, out
