@@ -1748,3 +1748,138 @@ The game would load and the character sheet would look reasonable. Existing
 classes therefore keep their exact progressions, pinned by `player/realm`, and
 the choice mechanism is built so that a class can be opened up in data later
 with a savefile migration written on purpose.
+
+---
+
+## Open — awaiting the project owner
+
+Two questions M9 raised and stopped on. Both were found while establishing
+Phase 2's conversion rules; neither was decided, and Phase 2 is not built.
+Whoever picks these up should read them in order, because the second is much
+smaller than it first looked and the first changes what the second applies to.
+
+### DEC-50 — OPEN — What CNT-10 imports, when four of the seven realms are already full (CNT-10, PLR-09, PLR-12)
+
+**Status: open. No work done on either reading.**
+
+CNT-10 says *"Realm spellbooks are imported for whichever realms PLR-09
+delivers"*, and PLR-09 delivers seven. But DEC-49 mapped four of those seven
+onto realms that already carry Angband 4.2's own spell content — Arcane, Life,
+Nature and Death are 4.2's `arcane`, `divine`, `nature` and `shadow` renamed —
+and PLR-12 requires that existing class progressions not be disturbed. The two
+requirements cannot both be taken literally.
+
+**Reading A — the three new realms only.** Import Sorcery, Chaos and Trump:
+3 realms × 4 books × 8 spells = **96 spells**, plus book objects for three
+realms that have none. The four mapped realms keep 4.2's content, which under
+DEC-49 *is* their content in this game.
+
+- Cost: 96 spells needing hand-mapped effect chains, and three new object kinds
+  per realm's book set.
+- Existing savefiles: untouched. No class's book list changes.
+- Consequence to weigh: a Zangband player will find Life, Nature, Death and
+  Arcane hold Angband's spells rather than the ones they remember. Zangband's
+  Life realm spoiler lists *Detect Evil, Cure Light Wounds, Bless, Remove
+  Fear…* and 4.2's `divine` book 1 holds *Call Light, Detect Evil, Minor
+  Healing, Bless, Sense Invisible* — close in spirit, different in detail. Four
+  of seven realms would be Angband's, three Zangband's.
+
+**Reading B — all seven realms.** Import Zangband's spells for all seven,
+replacing 4.2's content in the four mapped realms.
+
+- Cost: ~224 spells hand-mapped rather than 96, and the four existing realms'
+  books rewritten.
+- Existing savefiles: **broken for every casting class.**
+  `player->spell_flags[]` and `spell_order[]` are indexed by a flat position
+  across all of a class's books and written to the savefile by that index
+  ([save.c:785](../../src/save.c#L785)). Replacing a book's spell list changes
+  what each index means, so a saved Priest would load with the right number of
+  known spells and the wrong spells. That needs a savefile version bump and a
+  migration that maps old indices to new by spell *name* — which is writable,
+  but it is a piece of work in its own right and it is the kind that fails
+  quietly.
+- It also reopens DEC-49: if the four realms take Zangband's spells, the
+  argument for mapping 4.2's arcane onto Arcane rather than keeping them
+  separate weakens, because the content is no longer 4.2's.
+
+**The reading taken while investigating was A, and it was not adopted.** Phase 1
+shipped under DEC-49 with no class content touched, which is compatible with
+either reading — nothing has been foreclosed. Reading A is cheaper by more than
+half and carries no savefile risk; Reading B is more faithful to Zangband and is
+the more expensive and riskier of the two. This is a scope decision about what
+the game is, not a technical one, which is why it stopped here.
+
+### DEC-51 — OPEN — Spell experience: the divergence is per-book, not a scale gap (CNT-10, BAL-08)
+
+**Status: open, and smaller than it was first reported. The framing below
+corrects an earlier claim of mine.**
+
+The conversion itself is exact and is not in question (see the Phase 2 rules
+recorded in the M9 section). Zangband awards first-cast experience as
+`5 * book² * slevel` where `book` is 1 to 4
+([cmd5.c:2826](../../archive/zangband/src/cmd5.c#L2826), whose own comment reads
+"Experience: 5, 20, 45, or 80 * spell level"), and 4.2 awards
+`sexp * slevel` ([player-spell.c:546](../../src/player-spell.c#L546)). The
+structures are identical, so `sexp = 5 * book²` — 5, 20, 45, 80 — transfers the
+mechanism exactly.
+
+**What was reported first, and was wrong.** This was flagged as an
+eight-fold discrepancy, on the grounds that 4.2's `sexp` runs 2 to 10 against
+Zangband's 5 to 80. **4.2's `sexp` runs 2 to 300.** The earlier figure came from
+looking only at low-level spells, where 4.2's values genuinely are 2 to 10; the
+value rises steeply with spell level. Median `sexp` by level band across the 163
+spells 4.2 ships:
+
+| Spell level | 1–10 | 11–20 | 21–30 | 31–40 | 41–50 |
+|---|---|---|---|---|---|
+| median `sexp` | 4 | 10 | 25 | 115 | 200 |
+
+**What the comparison actually shows.** Zangband's derived values against 4.2's
+median at the same spell levels, for the Mage's three new realms:
+
+| Realm | Book | Levels | Zangband | 4.2 median | Ratio |
+|---|---|---|---|---|---|
+| Sorcery | 1 | 1–7 | 5 | 4 | 1.25 |
+| Sorcery | 2 | 9–33 | 20 | 16 | 1.25 |
+| Sorcery | 3 | 3–25 | 45 | 8 | **5.62** |
+| Sorcery | 4 | 10–45 | 80 | 25 | 3.20 |
+| Chaos | 1 | 1–15 | 5 | 5 | 1.00 |
+| Chaos | 2 | 17–35 | 20 | 20 | 1.00 |
+| Chaos | 3 | 11–47 | 45 | 50 | 0.90 |
+| Chaos | 4 | 20–49 | 80 | 115 | 0.70 |
+| Trump | 1 | 1–17 | 5 | 5 | 1.00 |
+| Trump | 2 | 20–42 | 20 | 60 | **0.33** |
+| Trump | 3 | 15–45 | 45 | 50 | 0.90 |
+| Trump | 4 | 30–49 | 80 | 140 | 0.57 |
+
+So the scales are **broadly comparable and cluster on 1.0**, and the divergence
+runs in *both* directions — 0.33 to 5.62. There is no systematic gap to correct.
+The cause of the spread is structural: Zangband ties experience to which *book*
+a spell is in, and 4.2 ties it to the *spell*, so a cheap spell in a late book
+is over-rewarded and an expensive spell in an early book is under-rewarded.
+Sorcery book 3 spans levels 3 to 25, which is why it is the worst offender.
+
+**So the question is narrower than "faithful or scaled".** It is whether to
+import Zangband's per-book value as it stands, or to derive `sexp` from the
+spell's own level against 4.2's curve. The precedent favours neither
+automatically:
+
+- **BAL-05** rescales imported armour class by 9/8, because the two games roll
+  against it differently — a rescale to make the *mechanism* agree.
+- **BAL-13** applies measured global scalars to every monster, 4.2's included —
+  a rescale for *balance*, exposed as a tunable constant in `constants.txt`.
+- **DEC-40** recovered 4.2's sleepiness scale by observing 434 shared monsters
+  rather than assuming a factor — a rescale *derived from evidence*.
+
+None of the three is quite this case: the mechanism already agrees, so BAL-05's
+reasoning does not apply, and there is no shared population to derive a mapping
+from the way DEC-40 had. The nearest fit is BAL-13's: treat it as a balance dial
+rather than a conversion question, import Zangband's values, and note the
+per-book divergence for BAL-15 to BAL-17 to pick up during playtest.
+
+**Recommendation, offered rather than taken:** import as derived, record the
+table above in the conversion report so the outliers are visible, and leave it
+to balance calibration. The two outliers worth watching are Sorcery book 3
+(over-rewarding) and Trump book 2 (under-rewarding). This blocks nothing —
+whichever way it goes, the converter emits a number and only the number
+changes.

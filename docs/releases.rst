@@ -33,6 +33,31 @@ Unreleased
 M9: magic realms — 1 September 2026
 -----------------------------------
 
+- **3.51.1** — **M9 stops on two questions, with the groundwork recorded.**
+  No game change. Phase 2 of the realms — importing the spellbooks — is not
+  built, because CNT-10 and PLR-12 cannot both be taken literally once four of
+  the seven realms already hold Angband's own spells. Both readings are written
+  up as **DEC-50**, with what each costs: 96 spells and no savefile risk, against
+  ~224 spells and a migration for every casting class.
+
+  **DEC-51** records the spell-experience question and corrects an earlier
+  report of it. It was flagged as an eight-fold scale gap on the basis that
+  Angband's ``sexp`` runs 2 to 10; it runs **2 to 300**, and the earlier figure
+  came from looking only at low-level spells. Measured properly against
+  Angband's median at the same spell levels, Zangband's values cluster on 1.0
+  and diverge in both directions — 0.33 to 5.6 — because Zangband ties the award
+  to the book and Angband to the spell. A balance note, not a conversion
+  problem.
+
+  Phase 2's conversion rules are recorded so they are not derived twice. Both
+  fields Angband needs and Zangband does not store come out exactly: ``sfail``
+  because the two failure formulas are structurally identical after the base,
+  and ``sexp`` because both games multiply by the spell's level. The source
+  table is parsed positionally — 2,464 ``{level, mana}`` pairs, exactly 11
+  classes × 7 realms × 32 — and that slicing is cross-checked against the
+  independent ``realm_choices`` tables with **zero mismatches across all 77
+  class-realm combinations**.
+
 - **3.51.0** — **Seven realms** (PLR-09, PLR-10, DEC-49). Angband has four
   realms and Zangband has seven, and the two lists overlap by name without
   overlapping by meaning. The four are mapped onto four of the seven by content
