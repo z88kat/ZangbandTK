@@ -192,6 +192,16 @@ worth knowing at the table are that **Call the Void no longer punishes you for
 casting it beside a wall**, and that **the demon Summon Demon calls is always
 hostile**, where Zangband gave it a one-in-three chance of serving you.
 
+**And Chaos spells backfire.** Fail one and you may not simply lose the mana:
+the realm produces a chaotic effect instead, and how bad it is depends on how
+deep the spell was. *Magic Missile* never backfires. *Call the Void* almost
+always does, and what you get ranges from a short teleport, through a room full
+of doors and traps, a mutation, a forgotten map and an earthquake, down to eight
+monsters landing on you and, at the very bottom, the Ancient and Foul Curse.
+This is Zangband's own table and its own scaling — the spoiler warns that "Chaos
+spells are known to backfire easily" — and it is the price of the realm having
+no protective spells at all.
+
 The **Chaos-Warrior** is the realm's own class: one realm, no choice, every
 spell, from level 2. Mages, Priests and Rangers may take Chaos as one of two
 realms; a Chaos-Warrior *is* one.

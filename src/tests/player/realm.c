@@ -754,6 +754,101 @@ static int test_a_chaos_warrior_casts_chaos(void *state) {
 	ok;
 }
 
+/**
+ * A spell's number inside its realm, which is what wild magic is scaled by.
+ *
+ * `sidx` counts across the whole class, so Chaos's *Magic Missile* is spell 0
+ * for a Chaos-Warrior and spell 62 for a Mage — the Mage has five Arcane books
+ * and four Sorcery ones in front of it. Zangband scales a Chaos backfire by the
+ * spell's place in its **realm**, so using `sidx` directly would make every
+ * Chaos spell a Mage owns backfire as though it were the deepest in the game,
+ * and would look right for a Chaos-Warrior while being wrong for everyone else.
+ *
+ * Checked for three classes and every realm each of them carries, and tied to
+ * two names at the ends so the numbers cannot drift into agreeing with
+ * themselves.
+ */
+static int test_a_spell_knows_its_place_in_its_realm(void *state) {
+	static const char *const who[] = { "Chaos-Warrior", "Mage", "Priest" };
+	size_t w;
+	int checked = 0;
+
+	for (w = 0; w < N_ELEMENTS(who); w++) {
+		const struct player_class *c = find_class(who[w]);
+		const struct magic_realm *realm = NULL;
+		int b, k, expect = 0;
+
+		notnull(c);
+		player_generate(player, NULL, c, false);
+
+		for (b = 0; b < c->magic.num_books; b++) {
+			const struct class_book *book = &c->magic.books[b];
+
+			/* Each realm restarts at zero, and runs up without a gap. */
+			if (book->realm != realm) {
+				realm = book->realm;
+				expect = 0;
+			}
+
+			for (k = 0; k < book->num_spells; k++) {
+				const struct class_spell *sp = &book->spells[k];
+
+				eq(spell_realm_index(player, sp), expect);
+				expect++;
+				checked++;
+			}
+		}
+	}
+
+	/* 32 + 94 + 92 spells across the three. */
+	eq(checked, 218);
+
+	/*
+	 * And the ends, by name. A Mage's Chaos runs 0 to 31 exactly as a
+	 * Chaos-Warrior's does, though its `sidx` runs 62 to 93.
+	 */
+	for (w = 0; w < 2; w++) {
+		const struct player_class *c = find_class(who[w]);
+		const struct class_spell *first = NULL, *last = NULL;
+		int b, k;
+
+		notnull(c);
+		player_generate(player, NULL, c, false);
+
+		for (b = 0; b < c->magic.num_books; b++) {
+			const struct class_book *book = &c->magic.books[b];
+
+			if (!book->realm || !streq(book->realm->name, "chaos")) continue;
+			for (k = 0; k < book->num_spells; k++) {
+				const struct class_spell *sp = &book->spells[k];
+
+				if (!first) first = sp;
+				last = sp;
+			}
+		}
+
+		notnull(first);
+		notnull(last);
+		require(streq(first->name, "Magic Missile"));
+		require(streq(last->name, "Call the Void"));
+		eq(spell_realm_index(player, first), 0);
+		eq(spell_realm_index(player, last), 31);
+	}
+
+	/* A Mage's really does carry the higher raw index, or nothing was tested. */
+	{
+		const struct player_class *mage = find_class("Mage");
+		const struct class_book *book;
+
+		notnull(mage);
+		book = &mage->magic.books[9];
+		require(streq(book->realm->name, "chaos"));
+		eq(book->spells[0].sidx, 62);
+	}
+
+	ok;
+}
+
 const char *suite_name = "player/realm";
 struct test tests[] = {
 	{ "seven-realms-exist", test_seven_realms_exist },
@@ -772,6 +867,8 @@ struct test tests[] = {
 	  test_changing_class_leaves_no_stale_realm },
 	{ "a-single-entitlement-is-not-a-choice",
 	  test_a_single_entitlement_is_not_a_choice },
+	{ "a-spell-knows-its-place-in-its-realm",
+	  test_a_spell_knows_its_place_in_its_realm },
 	{ "a-chaos-warrior-casts-chaos", test_a_chaos_warrior_casts_chaos },
 	{ "an-offered-realm-has-books-behind-it",
 	  test_an_offered_realm_has_books_behind_it },

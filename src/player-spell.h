@@ -50,6 +50,8 @@ int16_t spell_chance(int spell_index);
 int spell_stat_adjust(struct player *p, int stat);
 int spell_stat_minfail(struct player *p, int stat);
 void spell_learn(int spell_index);
+int spell_realm_index(const struct player *p,
+					  const struct class_spell *spell);
 bool spell_cast(int spell_index, int dir, struct command *cmd);
 
 extern void get_spell_info(int index, char *buf, size_t len);

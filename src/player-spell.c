@@ -27,6 +27,7 @@
 #include "object.h"
 #include "player-calcs.h"
 #include "player-spell.h"
+#include "mon-summon.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "project.h"
@@ -705,6 +706,175 @@ static int beam_chance(void)
 }
 
 /**
+ * Where a spell sits inside its own realm, 0 to 31 (CNT-10).
+ *
+ * `sidx` counts across the whole class, so Chaos's first spell is index 0 for
+ * a Chaos-Warrior and index 62 for a Mage. Zangband's wild magic is scaled by
+ * the realm-relative number -- deeper Chaos spells backfire harder -- so the
+ * offset of the realm's first book has to come off first.
+ */
+int spell_realm_index(const struct player *p,
+					  const struct class_spell *spell)
+{
+	int b, offset = 0;
+
+	if (!spell || !spell->realm) return 0;
+
+	for (b = 0; b < p->class->magic.num_books; b++) {
+		const struct class_book *book = &p->class->magic.books[b];
+
+		if (book->realm == spell->realm) break;
+		offset += book->num_spells;
+	}
+
+	return spell->sidx - offset;
+}
+
+/**
+ * A Chaos spell that fails does something else instead (CNT-10, PLR-13).
+ *
+ * The spoiler promises this -- "Chaos spells are known to backfire easily and
+ * produce undesired effects" -- and `wild_magic()`
+ * ([cmd5.c:452](../archive/zangband/src/cmd5.c)) is the promise. The roll is
+ * `randint0(spell) + randint0(9)`, so a deeper spell reaches further down a
+ * table that gets worse as it goes: a short teleport at the top, the Ancient
+ * and Foul Curse at the bottom.
+ *
+ * The bands are Zangband's, boundary for boundary. What changed is what sits
+ * in three of them, and only where 4.2 has no counterpart:
+ *
+ * - Zangband's six *bizarre* summon groups do not exist here, so the two
+ *   summoning bands call for ordinary monsters. Eight of them, which is
+ *   Zangband's count.
+ * - `summon_cyber()` calls a Cyberdemon; the nearest here is a greater demon.
+ * - `wall_breaker()` smashes walls near you, which is a KILL_WALL sphere.
+ *
+ * Everything else -- the teleports, the light and dark, the doors and traps,
+ * the earthquake, the mutation, the disenchantment, the forgetting, the chaos
+ * ball, the granite, and the curse at the bottom -- is an effect 4.2 already
+ * has, several of them because earlier milestones built them.
+ */
+static void chaos_backfires(struct player *p, int idx)
+{
+	int roll = (idx > 0 ? randint0(idx) : 0) + randint0(9);
+	int i;
+
+	msg("You produce a chaotic effect!");
+
+	switch (roll) {
+		case 1: case 2: case 3:
+			effect_simple(EF_TELEPORT, source_player(), "10", 0, 0, 0, 0, 0,
+						  NULL);
+			break;
+
+		case 4: case 5: case 6:
+			effect_simple(EF_TELEPORT, source_player(), "100", 0, 0, 0, 0, 0,
+						  NULL);
+			break;
+
+		case 7: case 8:
+			effect_simple(EF_TELEPORT, source_player(), "200", 0, 0, 0, 0, 0,
+						  NULL);
+			break;
+
+		case 9: case 10: case 11:
+			effect_simple(EF_DARKEN_AREA, source_player(), "0", 0, 0, 0, 0, 0,
+						  NULL);
+			effect_simple(EF_SPHERE, source_player(), "10", PROJ_DARK_WEAK, 3,
+						  0, 0, 0, NULL);
+			break;
+
+		case 12: case 13: case 14:
+			effect_simple(EF_LIGHT_AREA, source_player(), "0", 0, 0, 0, 0, 0,
+						  NULL);
+			effect_simple(EF_SPHERE, source_player(), "2d3", PROJ_LIGHT_WEAK,
+						  2, 0, 0, 0, NULL);
+			break;
+
+		case 15:
+			effect_simple(EF_TOUCH, source_player(), "0", PROJ_KILL_DOOR, 0, 0,
+						  0, 0, NULL);
+			break;
+
+		case 16: case 17:
+			effect_simple(EF_SPHERE, source_player(), "0", PROJ_KILL_WALL, 1,
+						  0, 0, 0, NULL);
+			break;
+
+		case 18:
+			effect_simple(EF_TOUCH_AWARE, source_player(), "0", PROJ_SLEEP_ALL,
+						  0, 0, 0, 0, NULL);
+			break;
+
+		case 19: case 20:
+			effect_simple(EF_TOUCH, source_player(), "0", PROJ_MAKE_TRAP, 0, 0,
+						  0, 0, NULL);
+			break;
+
+		case 21: case 22:
+			effect_simple(EF_TOUCH, source_player(), "0", PROJ_MAKE_DOOR, 0, 0,
+						  0, 0, NULL);
+			break;
+
+		case 23: case 24: case 25:
+			effect_simple(EF_WAKE, source_player(), "0", 0, 0, 0, 0, 0, NULL);
+			break;
+
+		case 26:
+			effect_simple(EF_EARTHQUAKE, source_player(), "0", 0, 5, 0, 0, 0,
+						  NULL);
+			break;
+
+		case 27: case 28:
+			effect_simple(EF_GAIN_MUTATION, source_player(), "0", 0, 0, 0, 0,
+						  0, NULL);
+			break;
+
+		case 29: case 30:
+			effect_simple(EF_DISENCHANT, source_player(), "0", 0, 0, 0, 0, 0,
+						  NULL);
+			break;
+
+		case 31:
+			msg("You forget where you have been.");
+			player_forget_the_world(p);
+			break;
+
+		case 32:
+			effect_simple(EF_SPHERE, source_player(), format("%d", idx + 5),
+						  PROJ_CHAOS, 1 + idx / 10, 0, 0, 0, NULL);
+			break;
+
+		case 33:
+			effect_simple(EF_GRANITE, source_player(), "0", 0, 0, 0, 0, 0,
+						  NULL);
+			break;
+
+		case 34: case 35:
+			for (i = 0; i < 8; i++) {
+				effect_simple(EF_SUMMON, source_player(), "1", 0, 0, 0, 0, 0,
+							  NULL);
+			}
+			break;
+
+		case 36: case 37:
+			effect_simple(EF_SUMMON, source_player(), "2+1d3", 0, 0, 0, 0, 0,
+						  NULL);
+			break;
+
+		case 38:
+			effect_simple(EF_SUMMON, source_player(), "1",
+						  summon_name_to_idx("HI_DEMON"), 0, 0, 0, 0, NULL);
+			break;
+
+		default:
+			effect_simple(EF_ANCIENT_CURSE, source_player(), "0", 0, 0, 0, 0,
+						  0, NULL);
+			break;
+	}
+}
+
+/**
  * Cast the specified spell
  */
 bool spell_cast(int spell_index, int dir, struct command *cmd)
@@ -721,8 +891,21 @@ bool spell_cast(int spell_index, int dir, struct command *cmd)
 
 	/* Fail or succeed */
 	if (randint0(100) < chance) {
+		int idx = spell_realm_index(player, spell);
+
 		event_signal(EVENT_INPUT_FLUSH);
 		msg("You failed to concentrate hard enough!");
+
+		/*
+		 * Chaos does not merely fail (CNT-10). The chance is the spell's
+		 * own place in the realm, so Magic Missile never backfires and
+		 * Call the Void nearly always does -- which is Zangband's
+		 * arithmetic and not a scaling invented here.
+		 */
+		if (spell->realm && streq(spell->realm->name, "chaos")
+				&& randint1(100) < idx) {
+			chaos_backfires(player, idx);
+		}
 	} else {
 		/* Cast the spell */
 		if (!effect_do(spell->effect, source_player(), NULL, &ident, true, dir,

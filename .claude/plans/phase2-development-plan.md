@@ -453,6 +453,10 @@ phase on its own. What M9 has left after Phase 1:
 - **Six carry-overs**: FETCH designed once against its three consumers, swap position,
   sterilize, Polymorph Self as a Chaos spell, the chaos and death spell-failure mutation
   paths, and PLR-35's Trump *Shuffle*.
+  **Four and a half are done.** FETCH landed with Sorcery (3.54.0); swap
+  position and sterilize in 3.57.0; Polymorph Self is a Chaos spell (3.56.0);
+  the **chaos** failure path is 3.59.0 and the **death** one waits for the Death
+  realm's own commit (DEC-53 addendum). Trump *Shuffle* is blocked by DEC-54.
 
 Anyone planning this should expect it to break into more phases than M8 did, not fewer.
 

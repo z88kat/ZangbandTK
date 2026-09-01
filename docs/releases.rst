@@ -33,6 +33,27 @@ Unreleased
 M9: magic realms — 1 September 2026
 -----------------------------------
 
+- **3.59.0** — **Chaos spells backfire** (CNT-10). A failed Chaos spell may
+  produce a chaotic effect instead of merely failing, and how bad it is depends
+  on how deep the spell was: *Magic Missile* never backfires, *Call the Void*
+  almost always does. Zangband's forty-band table, boundary for boundary, from a
+  short teleport at the top to the Ancient and Foul Curse at the bottom. Only
+  three bands are substituted — the six *bizarre* summon groups and the
+  Cyberdemon do not exist here, and ``wall_breaker()`` becomes a ``KILL_WALL``
+  sphere. Everything else was already an effect the game had, ``GAIN_MUTATION``
+  from M8 and ``ANCIENT_CURSE`` from M3 among them.
+
+  The scaling is the part that could have been quietly wrong. A spell's index
+  counts across its whole class, so Chaos's first spell is 0 for a
+  Chaos-Warrior and 62 for a Mage — scaling by that would have looked correct
+  for the one class and made every Chaos spell a Mage owns backfire as though
+  it were the deepest in the game. ``player/realm`` walks all 218 spells of
+  three classes asserting each realm restarts at zero.
+
+  Death's miscast penalty is deliberately *not* built with this: it would change
+  an existing class's balance before that class's spell content is replaced, and
+  belongs in the Death realm's own commit. See DEC-53's addendum.
+
 - **3.58.0** — **The Chaos-Warrior casts** (PLR-03, CNT-10). Zangband is blunt
   about the class — "trained in Chaos magic. They are not interested in any
   other form of magic. They can learn every Chaos spell" — but until the Chaos

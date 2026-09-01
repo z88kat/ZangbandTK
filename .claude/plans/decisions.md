@@ -2116,3 +2116,48 @@ should stay that way — and the guard sits between it and the player.
 `player/realm` asserts both halves: every realm offered has a book behind it,
 and every realm the class has a book in is offered somewhere. The second half is
 what stops the guard from being satisfied by offering nothing at all.
+
+#### DEC-53, addendum — a Chaos spell that fails does something else (3.59.0)
+
+Recorded here rather than as a decision of its own, because it is the same
+question DEC-53 answers — what Chaos costs to bring across — asked about the
+failure path instead of the spells.
+
+Zangband's spoiler promises this and the code delivers it: a failed Chaos spell
+rolls `randint1(100) < spell` against the spell's place in its realm, and on a
+hit runs `wild_magic()` ([cmd5.c:452](../../archive/zangband/src/cmd5.c#L452)).
+The roll inside is `randint0(spell) + randint0(9)`, so a deeper spell reaches
+further down a table that gets worse as it goes — a short teleport at the top,
+the Ancient and Foul Curse at the bottom. *Magic Missile* at realm index 0 can
+never backfire; *Call the Void* at 31 nearly always does.
+
+The bands are kept boundary for boundary. Three of the forty entries have no
+4.2 counterpart and are substituted, and nothing else is:
+
+- Zangband's six **bizarre summon groups** do not exist here, so both summoning
+  bands call ordinary monsters. Eight of them, which is Zangband's count.
+- **`summon_cyber()`** calls a Cyberdemon; the nearest thing here is a greater
+  demon.
+- **`wall_breaker()`** smashes walls near the caster, which becomes a
+  `KILL_WALL` sphere.
+
+Everything else is an effect the game already had, several of them because
+earlier milestones built them: `GAIN_MUTATION` from M8, `ANCIENT_CURSE` from M3,
+and `EARTHQUAKE`, `DISENCHANT`, `GRANITE`, `TELEPORT`, the light and dark, and
+the door and trap touches from 4.2 itself.
+
+*The scaling is the part worth a test rather than a paragraph.* A spell's `sidx`
+counts across the whole class, so Chaos's first spell is 0 for a Chaos-Warrior
+and 62 for a Mage. Scaling by `sidx` would look right for a Chaos-Warrior and
+make every Chaos spell a Mage owns backfire as though it were the deepest in the
+game. `spell_realm_index()` takes the realm's offset off first, and
+`player/realm` walks all 218 spells of three classes asserting each realm
+restarts at zero.
+
+**Death's failure path is not built with this one.** Zangband punishes a miscast
+Death spell too — `(sval + 1)d6` hit points, and the Necronomicon shakes your
+sanity — and it is buildable today, because `shadow book` is the Death realm and
+the Necromancer already carries four of them. It is deliberately left: it would
+change the balance of an existing class *before* that class's spell content is
+replaced, which is the half-state the M9 ordering exists to avoid. It belongs in
+the Death realm's own commit.
