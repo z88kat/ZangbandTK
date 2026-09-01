@@ -134,6 +134,49 @@ static const int adj_mag_stat[STAT_RANGE] =
 };
 
 /**
+ * A fingerprint of the class's spell list, in the order the savefile indexes it
+ * (ZangbandTK, DEC-50).
+ *
+ * `spell_flags[]` and `spell_order[]` are written to the savefile by flat index
+ * across all of a class's books, so what index 7 *means* is decided entirely by
+ * the data files.  Change a book's contents and an old character loads with the
+ * right number of known spells and the wrong spells: the character sheet looks
+ * reasonable and the game plays wrong.  That is the failure this exists to stop.
+ *
+ * DEC-50 replaces the spell content of four realms outright, so the break is
+ * deliberate this time -- but the guard is not written for that one occasion.
+ * The fingerprint goes in the savefile and is checked on the way back, so every
+ * later change to a spell list is caught by the game rather than remembered by
+ * whoever makes it.
+ *
+ * The index is folded in beside the name so that reordering a book, which keeps
+ * every name and changes every meaning, is a different fingerprint too.
+ */
+uint32_t player_spell_fingerprint(const struct player *p)
+{
+	uint32_t h = 5381;
+	int b, s;
+
+	if (!p || !p->class) return 0;
+
+	for (b = 0; b < p->class->magic.num_books; b++) {
+		const struct class_book *book = &p->class->magic.books[b];
+
+		for (s = 0; s < book->num_spells; s++) {
+			const struct class_spell *spell = &book->spells[s];
+			const char *c;
+
+			h = h * 33u + (uint32_t) spell->sidx;
+			for (c = spell->name ? spell->name : ""; *c; c++)
+				h = h * 33u + (uint8_t) *c;
+		}
+	}
+
+	return h;
+}
+
+
+/**
  * Initialise player spells
  */
 void player_spells_init(struct player *p)

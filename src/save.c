@@ -26,6 +26,7 @@
 #include "monster.h"
 #include "player-mutation.h"
 #include "player-virtue.h"
+#include "player-spell.h"
 #include "object.h"
 #include "obj-desc.h"
 #include "obj-knowledge.h"
@@ -783,6 +784,14 @@ void wr_player_spells(void)
 	int i;
 
 	wr_u16b(player->class->magic.total_spells);
+
+	/*
+	 * The shape of the list these indices are indices into (DEC-50).  Read
+	 * back and compared on load, so a character saved against one spell list
+	 * is refused by a build carrying another rather than loading with every
+	 * spell shifted along.
+	 */
+	wr_u32b(player_spell_fingerprint(player));
 
 	for (i = 0; i < player->class->magic.total_spells; i++)
 		wr_byte(player->spell_flags[i]);

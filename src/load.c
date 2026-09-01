@@ -1309,10 +1309,43 @@ int rd_player_hp(void)
 /**
  * Read the player spells
  */
+/**
+ * The spell block as it was written before the realms arrived (DEC-50).
+ *
+ * A v1 block records `spell_flags[]` and `spell_order[]` by flat index and says
+ * nothing about the list those indices point into, so there is no way to tell a
+ * character saved against 4.2's spells from one saved against Zangband's.  Since
+ * DEC-50 replaces the contents of four realms, reading one is guessing.
+ *
+ * It refuses rather than guesses -- but only when there is something to get
+ * wrong.  A character with no spells recorded, which is every Warrior and every
+ * caster who has not learned one yet, carries nothing that can be misread, and
+ * those load exactly as before.  That is the difference between the four saved
+ * casters in `tests/saves` and the thirty-one other characters in it.
+ */
+int rd_player_spells_1(void)
+{
+	uint16_t tmp16u;
+
+	rd_u16b(&tmp16u);
+
+	/* Nothing recorded, so nothing that can mean the wrong thing. */
+	if (tmp16u == 0) {
+		player_spells_init(player);
+		return 0;
+	}
+
+	note("This character learned spells before the magic realms arrived.");
+	note("Those spells are recorded by position, and the positions have moved.");
+	note("It cannot be loaded without giving it somebody else's spells.");
+	return (-1);
+}
+
 int rd_player_spells(void)
 {
 	int i;
 	uint16_t tmp16u;
+	uint32_t fingerprint;
 	
 	int cnt;
 	
@@ -1320,6 +1353,19 @@ int rd_player_spells(void)
 	rd_u16b(&tmp16u);
 	if (tmp16u > player->class->magic.total_spells) {
 		note(format("Too many player spells (%d).", tmp16u));
+		return (-1);
+	}
+
+	/*
+	 * And the shape of the list they are indices into.  A character with none
+	 * recorded is indifferent to it; one with spells is not, and is refused
+	 * rather than loaded against a list that has moved underneath it.
+	 */
+	rd_u32b(&fingerprint);
+	if (tmp16u > 0 && fingerprint != player_spell_fingerprint(player)) {
+		note("This character's spells were learned from a different spell list.");
+		note("They are recorded by position, and the positions have moved.");
+		note("It cannot be loaded without giving it somebody else's spells.");
 		return (-1);
 	}
 

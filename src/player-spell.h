@@ -16,7 +16,12 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+/* Declared rather than included: spell_cast() below takes one, and this header
+ * is included from save.c, which has no reason to know the command layer. */
+struct command;
+
 void player_spells_init(struct player *p);
+uint32_t player_spell_fingerprint(const struct player *p);
 void player_spells_free(struct player *p);
 struct magic_realm *class_magic_realms(const struct player_class *c,
 									   int *count);

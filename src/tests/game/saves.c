@@ -57,6 +57,43 @@ int teardown_tests(void *state) {
 	return 0;
 }
 
+#define SAVE_EXPECTED "EXPECTED-FAILURES"
+
+/**
+ * Whether this savefile is on the list of ones known not to load.
+ *
+ * Kept as a file beside the corpus rather than a list in here, so that adding
+ * or clearing an entry is a change to the thing it describes and carries its
+ * reason with it.  A line is "name: reason"; '#' comments and blank lines are
+ * ignored.
+ */
+static bool save_expected_to_fail(const char *name)
+{
+	char path[1024];
+	ang_file *f;
+	char line[256];
+	bool found = false;
+
+	path_build(path, sizeof(path), SAVE_CORPUS, SAVE_EXPECTED);
+	f = file_open(path, MODE_READ, FTYPE_TEXT);
+	if (!f) return false;
+
+	while (!found && file_getl(f, line, sizeof(line))) {
+		char *colon;
+
+		if (line[0] == '#' || line[0] == '\0') continue;
+
+		colon = strchr(line, ':');
+		if (colon) *colon = '\0';
+
+		found = streq(line, name);
+	}
+
+	file_close(f);
+	return found;
+}
+
+
 /**
  * Put the game back to a state a savefile can be loaded into.
  *
@@ -79,7 +116,7 @@ static int test_every_saved_character_still_loads(void *state) {
 	ang_dir *dir = my_dopen(SAVE_CORPUS);
 	const char *roundtrip = "saves-roundtrip.tmp";
 	char name[256];
-	int loaded = 0, failed = 0;
+	int loaded = 0, failed = 0, expected = 0, revived = 0;
 
 	/*
 	 * Absent rather than empty is a real answer: a checkout without the corpus
@@ -93,6 +130,7 @@ static int test_every_saved_character_still_loads(void *state) {
 		/* Skip anything that is plainly not a savefile. */
 		if (name[0] == '.') continue;
 		if (suffix(name, ".md") || suffix(name, ".txt")) continue;
+		if (streq(name, SAVE_EXPECTED)) continue;
 
 		path_build(path, sizeof(path), SAVE_CORPUS, name);
 
@@ -110,9 +148,30 @@ static int test_every_saved_character_still_loads(void *state) {
 		play_again = false;
 
 		if (!savefile_load(path, false)) {
-			printf("SAVE %-14s FAILED to load\n", name);
-			failed++;
+			/*
+			 * A refusal that is on the list is the loader doing its job.
+			 * DEC-50 replaced the spell content of four realms, and a
+			 * character who learned spells against the old list cannot be
+			 * read without being handed somebody else's.
+			 */
+			if (save_expected_to_fail(name)) {
+				printf("SAVE %-14s refused, as expected\n", name);
+				expected++;
+			} else {
+				printf("SAVE %-14s FAILED to load\n", name);
+				failed++;
+			}
 			continue;
+		}
+
+		/*
+		 * And a file on the list that loads is a failure of its own.  The
+		 * entry has outlived its reason, and left there it would go on
+		 * excusing the next genuine break of that same file.
+		 */
+		if (save_expected_to_fail(name)) {
+			printf("SAVE %-14s loads; take it off %s\n", name, SAVE_EXPECTED);
+			revived++;
 		}
 
 		/*
@@ -160,13 +219,17 @@ static int test_every_saved_character_still_loads(void *state) {
 
 	my_dclose(dir);
 
-	printf("SAVES %d loaded, %d failed\n", loaded, failed);
+	printf("SAVES %d loaded, %d refused as expected, %d failed\n", loaded,
+		   expected, failed);
 
 	/* The corpus is not empty... */
-	require(loaded + failed > 0);
+	require(loaded + failed + expected > 0);
 
-	/* ...and all of it works. */
+	/* ...nothing broke that was not already known to be broken... */
 	eq(failed, 0);
+
+	/* ...and nothing on the list has quietly started working again. */
+	eq(revived, 0);
 
 	ok;
 }

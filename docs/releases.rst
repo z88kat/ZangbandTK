@@ -33,6 +33,36 @@ Unreleased
 M9: magic realms — 1 September 2026
 -----------------------------------
 
+- **3.52.0** — **The savefile guard for the realm import** (DEC-50). No game
+  change yet; this is the fence built before the work that needs it.
+
+  ``spell_flags[]`` and ``spell_order[]`` are recorded by flat index across all
+  of a class's books, so what index 7 *means* is decided entirely by the data
+  files. DEC-50 replaces the spell content of four realms outright — which
+  means an old character would load **successfully**, with the right number of
+  known spells and the wrong spells. The sheet would look reasonable and the
+  game would play wrong.
+
+  The ``player spells`` block goes to version 2 and now carries a fingerprint of
+  the class's spell list. On load it is compared, and a character whose spells
+  were learned against a different list is **refused** with a message saying so.
+  The version 1 reader refuses too — but only when there is something to get
+  wrong: a character with no spells recorded, which is every Warrior and every
+  caster who has not learned one, is unaffected and loads as before.
+
+  The fingerprint is not written for this one occasion. Every later change to a
+  spell list is caught by the game rather than remembered by whoever makes it.
+
+  Of the 35 characters in the test corpus, **four refuse and thirty-one load**.
+  The four are listed in ``tests/saves/EXPECTED-FAILURES`` with their reason,
+  and the suite fails both if an unlisted file breaks *and* if a listed one
+  starts loading again — a manifest that outlives its reason would silently
+  excuse the next real break.
+
+
+M9: magic realms — 1 September 2026
+-----------------------------------
+
 - **3.51.1** — **M9 stops on two questions, with the groundwork recorded.**
   No game change. Phase 2 of the realms — importing the spellbooks — is not
   built, because CNT-10 and PLR-12 cannot both be taken literally once four of

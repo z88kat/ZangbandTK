@@ -1,0 +1,19 @@
+# Savefiles that are known not to load, and why.
+#
+# One "name: reason" a line; '#' comments.  The suite reads this and treats a
+# listed file's refusal as expected -- but it also fails if a listed file
+# *loads*, because a manifest that outlives its reason is worse than none: it
+# would silently excuse the next real break.
+#
+# Take an entry out when the file loads again, rather than leaving it here.
+
+# DEC-50: the magic realms replace the spell content of four realms outright.
+# spell_flags[] and spell_order[] are stored by flat index across a class's
+# books, so these four cannot be loaded without handing them somebody else's
+# spells.  The project owner accepted this on 1 September 2026 -- the game is
+# pre-release -- and the loader refuses rather than guessing.  The other 31
+# characters in this directory have no spells recorded and are unaffected.
+Ador: caster, spells recorded against the pre-realm spell list
+Amanwe: caster, spells recorded against the pre-realm spell list
+Hilia: caster, spells recorded against the pre-realm spell list
+Nath: caster, spells recorded against the pre-realm spell list
