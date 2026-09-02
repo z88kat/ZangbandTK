@@ -230,13 +230,17 @@ static int test_two_realms_punish_a_miscast(void *state) {
 	}
 
 	/*
-	 * Chaos: 32 each for the Mage, the Priest and the Chaos-Warrior, and 28
-	 * for the Ranger, whose figures put four of them past level 50.
+	 * Chaos: 32 each for the Mage, the Priest, the Chaos-Warrior, the
+	 * Warrior-Mage and the High-Mage, and 28 for the Ranger, whose figures
+	 * put four of them past level 50.
 	 */
-	eq(chaos, 124);
+	eq(chaos, 188);
 
-	/* Death: 32 each for the Necromancer and the Blackguard. */
-	eq(death, 64);
+	/*
+	 * Death: 32 each for the Necromancer, the Blackguard, the Warrior-Mage
+	 * and the High-Mage.
+	 */
+	eq(death, 128);
 
 	/* And the other five realms say nothing, which is most of the game. */
 	require(quiet > 300);

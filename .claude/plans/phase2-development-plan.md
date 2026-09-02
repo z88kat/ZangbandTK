@@ -344,8 +344,11 @@ classes.
    books.
 2. ~~**Death's miscast penalty.**~~ **Done (3.63.0)**, in the Death realm's own
    commit as planned.
-3. **Warrior-Mage and High-Mage**, carried over from M7. Both are defined by which
-   realms they may choose, so both were waiting on realm choice, which now exists.
+3. ~~**Warrior-Mage and High-Mage.**~~ **Done (3.64.0)**, which closes PLR-03:
+   every class Zangband has is playable. Twenty-four books each over the six
+   realms with content; the difference between them is that a Warrior-Mage
+   always studies Arcane and picks a second realm, and a High-Mage picks one
+   realm and gets no second slot, paid for in better figures.
 4. **Trump**, deferred whole (3.56.1, DEC-54). Fifteen of its thirty-two spells are
    summons whose whole content is whether the creature that arrives is *yours*, and 4.2
    has no side for a monster to be on. **It waits for M10**, and is the one part of M9

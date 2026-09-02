@@ -301,6 +301,22 @@ Both of Death's classes cast on borrowed figures: Zangband had neither a
 Necromancer nor a Blackguard. The Necromancer takes Zangband's Mage and the
 Blackguard its Paladin.
 
+Who can choose what
+-------------------
+
+The two classes carried over from the previous milestone are the ones the realm
+system exists for:
+
+- A **Warrior-Mage** studies **Arcane** in its first slot, always, and anything
+  it likes in the second. Zangband lists Arcane in both slots, so it may take it
+  twice and study one realm — the table's own answer, left as it stands.
+- A **High-Mage** chooses **one** realm out of seven and gets no second slot,
+  and is paid for it in figures: it reaches a realm's last spells earlier and
+  more cheaply than any other class.
+
+Both are entitled to Trump and neither is offered it, because Trump has no books
+(:doc:`see above <realms>`).
+
 What has changed, and what has not
 ----------------------------------
 

@@ -33,6 +33,30 @@ Unreleased
 M9: magic realms — 2 September 2026
 -----------------------------------
 
+- **3.64.0** — **The Warrior-Mage and the High-Mage, and PLR-03 is closed**
+  (PLR-03, DEC-36). M7 built three of Zangband's five extra classes and deferred
+  these two, because each is *defined* by which realms it may choose and realm
+  choice did not exist yet. Every class in PLR-03 is now playable.
+
+  A **Warrior-Mage** studies Arcane in its first slot, always, and anything it
+  likes in the second — the generalist realm plus one specialism, on a class
+  that fights respectably and levels slowly because it pays for both halves. A
+  **High-Mage** chooses one realm out of seven and gets no second slot at all,
+  and Zangband's table pays it for that: it reaches a realm's deepest spells
+  earlier and for less mana than any other caster, on the worst hit dice in the
+  game. That difference lives entirely in two ``realm-choice:`` lines, so that
+  is what ``player/realm`` asserts, both directions.
+
+  Twenty-four books apiece, over the six realms that have content. Both are
+  entitled to Trump and neither is offered it, because it has no books (DEC-54).
+
+  **The skill conversion is DEC-36's, re-run rather than re-judged.** That
+  mapping was measured against the six classes both games share and recorded as
+  a table of rules — save increment × 0.42, search base × 0.62, melee × 3.1 and
+  its increment × 0.56, shoot × 3.45 — and applying it here reproduces the
+  Monk, the Mindcrafter and the Chaos-Warrior exactly, field for field, which is
+  what made it safe to apply to two classes nobody had converted.
+
 - **3.63.0** — **Death is Zangband's, and DEC-50 is finished** (CNT-10, DEC-50,
   DEC-55). Thirty-two spells in four books — Black Prayers, Black Mass, Black
   Channels, the Necronomicon — replacing the five shadow books the Necromancer

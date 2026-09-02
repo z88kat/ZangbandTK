@@ -578,6 +578,27 @@ Chaos-Warrior
   at birth because there is nothing to choose between: a Chaos-Warrior's magic
   is Chaos or it is nothing. See :ref:`Patrons <patrons>` and :doc:`realms`.
 
+.. _Warrior-Mage:
+
+Warrior-Mage
+  A fighter who casts, and the only class in the game whose first realm is
+  decided for it: **Arcane**, always, plus any second realm you like. That is
+  the class — the generalist realm, which can be bought outright in town, and
+  one specialism on top of it. It fights and shoots respectably and levels
+  slowly, because it is paying for both halves.
+
+.. _High-Mage:
+
+High-Mage
+  The specialist. It picks **one** realm out of all seven and gets no second
+  choice at all, and in exchange Zangband's table gives it the best figures of
+  any caster: it reaches a realm's deepest spells earlier and for less mana than
+  anyone else. It also has the worst hit dice in the game and cannot fight.
+
+  A High-Mage of Sorcery can do everything except kill things. A High-Mage of
+  Chaos can do very little except kill things. That is the choice, and it is the
+  whole class.
+
 .. _martial-arts:
 
 Martial arts

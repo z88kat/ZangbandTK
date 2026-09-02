@@ -206,6 +206,9 @@ static int test_no_existing_class_progression_moved(void *state) {
 		{ "Ranger", 12, 91 },
 		{ "Blackguard", 4, 32 },
 		{ "Chaos-Warrior", 4, 32 },
+		/* PLR-03's last two, and both are entitled to nearly everything. */
+		{ "Warrior-Mage", 24, 192 },
+		{ "High-Mage", 24, 192 },
 	};
 	size_t i;
 
@@ -254,6 +257,14 @@ static int test_every_book_kept_its_place(void *state) {
 		                   "chaos", "chaos", "chaos", "chaos" } },
 		{ "Blackguard",  { "death", "death", "death", "death" } },
 		{ "Chaos-Warrior", { "chaos", "chaos", "chaos", "chaos" } },
+		/*
+		 * The Warrior-Mage and the High-Mage are not listed. Both carry
+		 * twenty-four books over six realms, wider than this table's
+		 * rows, and `every-realm-is-four-books-of-eight` covers them on
+		 * the invariant instead -- four books to a realm, each realm
+		 * contiguous, which is what this table checks one class at a
+		 * time.
+		 */
 	};
 	size_t i;
 	int j, checked = 0;
@@ -280,7 +291,7 @@ static int test_every_book_kept_its_place(void *state) {
 	}
 
 	/*
-	 * 12 + 4 + 12 + 4 + 4 + 8 + 12 + 4 + 4 across the nine casting classes,
+	 * 12 + 4 + 12 + 4 + 4 + 8 + 12 + 4 + 4 across the nine listed classes,
 	 * and every one of those numbers is now a multiple of four: all seven
 	 * realms hold four books of eight spells, which is Zangband's shape
 	 * throughout and the end of DEC-50's replacement.
@@ -571,14 +582,20 @@ static int test_an_offered_realm_has_books_behind_it(void *state) {
 	}
 
 	/*
-	 * Nineteen offers across the nine casting classes: Mage 3+3,
-	 * Priest 1+2, Rogue 2, Ranger 1+2, and one apiece for the Druid,
-	 * Necromancer, Paladin, Blackguard and Chaos-Warrior. A Priest's first
-	 * slot allows Life or Death and only Life is built, which is why it
-	 * offers one and not two; a Chaos-Warrior is entitled to Chaos and
-	 * nothing else, which is Zangband's own table.
+	 * Thirty-one offers across the eleven casting classes. Angband's nine
+	 * account for nineteen: Mage 3+3, Priest 1+2, Rogue 2, Ranger 1+2, and
+	 * one apiece for the Druid, Necromancer, Paladin, Blackguard and
+	 * Chaos-Warrior. A Priest's first slot allows Life or Death and only
+	 * Life is built, which is why it offers one and not two.
+	 *
+	 * The other thirteen are the two carried-over classes: a Warrior-Mage
+	 * takes Arcane in the first slot and any of the seven -- Arcane
+	 * included, which is Zangband's own table -- in the second, so one plus
+	 * six; and a High-Mage chooses one realm from all seven and has no
+	 * second slot at all, so six. Trump is entitled for both and offered to
+	 * neither, because it has no books (DEC-54).
 	 */
-	eq(offered_total, 19);
+	eq(offered_total, 32);
 
 	ok;
 }
@@ -721,7 +738,9 @@ static int test_the_realm_filter_sorts_three_realms(void *state) {
  * blesses a weapon. Four are Arcane's two, once each for the Mage and the
  * Rogue: Phlogiston, because refuelling a light source is a command in 4.2 and
  * not an effect, and Detect Enchantment again, for the reason Sorcery's is.
- * Ten are Nature's five, once each for the Druid and the Ranger: three of those
+ * Seventy-six now, because the Warrior-Mage and the High-Mage each carry six
+ * whole realms and so seventeen deferrals apiece. Of the rest, ten are
+ * Nature's five, once each for the Druid and the Ranger: three of those
  * five -- Animal Taming, Summon Animal, Animal Friendship -- are the same
  * monster-allegiance wall that deferred Trump whole, and the other two are
  * whole-object identification and a rustproofing that is an object property
@@ -756,7 +775,7 @@ static int test_a_spell_without_an_effect_says_so(void *state) {
 		}
 	}
 
-	eq(effectless, 42);
+	eq(effectless, 76);
 
 	ok;
 }
@@ -1154,8 +1173,12 @@ static int test_every_realm_is_four_books_of_eight(void *state) {
 		require(c->magic.total_spells <= realms_here * 32);
 	}
 
-	/* Nine casting classes, and none of them missed. */
-	eq(classes_seen, 9);
+	/*
+	 * Eleven casting classes now: Angband's nine, plus the Warrior-Mage and
+	 * the High-Mage, which PLR-03 carried over from M7 because both are
+	 * defined by which realms they may choose.
+	 */
+	eq(classes_seen, 11);
 
 	for (i = 0; i < N_ELEMENTS(borrowed); i++) {
 		const struct player_class *k = find_class(borrowed[i].cls);
@@ -1181,6 +1204,97 @@ static int test_every_realm_is_four_books_of_eight(void *state) {
 	ok;
 }
 
+/**
+ * The Warrior-Mage and the High-Mage, and what makes them different (PLR-03).
+ *
+ * M7 built three of Zangband's five extra classes and deferred these two,
+ * because each is *defined* by which realms it may choose and realm choice did
+ * not exist yet. It does, so here they are — and the thing worth testing is not
+ * that they exist but that the difference between them survived the import,
+ * because it lives entirely in the two `realm-choice:` lines.
+ *
+ * A **Warrior-Mage** always studies Arcane, in the first slot, and picks
+ * anything else in the second: a fighter who casts, whose magic is the
+ * generalist realm plus one specialism. A **High-Mage** picks one realm from
+ * everything and gets no second slot at all — the specialist that gives up
+ * breadth for the better figures Zangband's table hands it, which is the same
+ * trade DEC-55 used to break the Necromancer's donor tie.
+ *
+ * Both are entitled to Trump, and neither is offered it, because it has no
+ * books (DEC-54).
+ */
+static int test_the_two_carried_over_classes(void *state) {
+	const struct player_class *wm = find_class("Warrior-Mage");
+	const struct player_class *hm = find_class("High-Mage");
+	const struct magic_realm *arcane = find_realm("arcane");
+	const struct magic_realm *trump = find_realm("trump");
+	const struct magic_realm *got[REALM_MAX];
+	int n;
+
+	notnull(wm);
+	notnull(hm);
+	notnull(arcane);
+	notnull(trump);
+
+	/* A Warrior-Mage's first realm is Arcane and there is no question. */
+	eq(player_realm_choices(wm, 0, got, REALM_MAX), 1);
+	require(got[0] == arcane);
+
+	/*
+	 * And its second is a genuine choice of six -- every built realm,
+	 * Arcane included. Zangband lists Arcane in both of this class's slots,
+	 * so a Warrior-Mage may take it twice and study one realm; that is the
+	 * table's own answer and is left alone.
+	 */
+	eq(player_realm_choices(wm, 1, got, REALM_MAX), 6);
+	for (n = 0; n < 6; n++) {
+		require(got[n] != trump);
+	}
+
+	/* A High-Mage chooses one realm from six, and has no second slot. */
+	eq(player_realm_choices(hm, 0, got, REALM_MAX), 6);
+	eq(player_realm_choices(hm, 1, got, REALM_MAX), 0);
+
+	/* Which is the difference, stated as a difference. */
+	require(player_realm_choices(wm, 1, NULL, 0) > 0);
+	eq(player_realm_choices(hm, 1, NULL, 0), 0);
+
+	/*
+	 * And the High-Mage's figures are better than the Warrior-Mage's, which
+	 * is what it is buying with that missing slot. Zangband's spell_weight
+	 * is the armour a caster tolerates, so lower is stricter -- the
+	 * comparison that matters is the first spell's mana and the last
+	 * spell's level in a realm they share.
+	 */
+	eq(wm->magic.spell_first, 1);
+	eq(hm->magic.spell_first, 1);
+	{
+		const struct class_spell *w = NULL, *h = NULL;
+		int b, k;
+
+		for (b = 0; b < wm->magic.num_books; b++) {
+			if (!streq(wm->magic.books[b].realm->name, "arcane")) continue;
+			for (k = 0; k < wm->magic.books[b].num_spells; k++) {
+				w = &wm->magic.books[b].spells[k];
+			}
+		}
+		for (b = 0; b < hm->magic.num_books; b++) {
+			if (!streq(hm->magic.books[b].realm->name, "arcane")) continue;
+			for (k = 0; k < hm->magic.books[b].num_spells; k++) {
+				h = &hm->magic.books[b].spells[k];
+			}
+		}
+		notnull(w);
+		notnull(h);
+		require(streq(w->name, h->name));
+
+		/* The specialist reaches the realm's last spell sooner. */
+		require(h->slevel < w->slevel);
+	}
+
+	ok;
+}
+
 const char *suite_name = "player/realm";
 struct test tests[] = {
 	{ "seven-realms-exist", test_seven_realms_exist },
@@ -1199,6 +1313,7 @@ struct test tests[] = {
 	  test_changing_class_leaves_no_stale_realm },
 	{ "a-single-entitlement-is-not-a-choice",
 	  test_a_single_entitlement_is_not_a_choice },
+	{ "the-two-carried-over-classes", test_the_two_carried_over_classes },
 	{ "every-realm-is-four-books-of-eight",
 	  test_every_realm_is_four_books_of_eight },
 	{ "the-druid-casts-on-priest-figures",
