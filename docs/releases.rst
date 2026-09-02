@@ -33,6 +33,39 @@ Unreleased
 M9: magic realms — 2 September 2026
 -----------------------------------
 
+- **3.63.0** — **Death is Zangband's, and DEC-50 is finished** (CNT-10, DEC-50,
+  DEC-55). Thirty-two spells in four books — Black Prayers, Black Mass, Black
+  Channels, the Necronomicon — replacing the five shadow books the Necromancer
+  carried and the three the Blackguard had. **All four of the realms Angband
+  already had now hold Zangband's spells**, and every realm in the game is four
+  books of eight, which is Zangband's shape throughout.
+
+  Both of Death's classes cast on borrowed figures, because Zangband had
+  neither: the Necromancer on Zangband's Mage, the Blackguard on its Paladin
+  (DEC-55).
+
+  **A miscast Death spell hurts**, which 3.59.0 left out on purpose — it changes
+  the balance of a class whose content had not been replaced yet, and now it
+  has. ``(book + 2)d6`` on a roll against the spell's depth in the realm, plus a
+  one-in-six chance of losing experience from the realm's second half unless you
+  have Hold Life. Out of the **Necronomicon** it is worse half the time: a
+  saving throw against confusion and hallucination, and failing the next one
+  instead costs a point of intelligence *and* a point of wisdom. It is the only
+  spell failure in the game that can permanently cost a statistic.
+
+  Four deferred: *Enslave Undead* and *Raise the Dead* need a creature able to
+  take your side; *Wraithform* needs an incorporeal player, which this game has
+  no notion of; and *Omnicide* is a whole-level sweep with a running mana cost
+  that would otherwise duplicate the realm's own *Mass Genocide*.
+
+  ``GF_HELL_FIRE`` is the last of DEC-53's missing elements to matter. Zangband's
+  hell fire does double damage to *good* monsters, and 4.2 has a projection that
+  favours evil and none that favours good, so *Malediction* and *Hellfire* use
+  ``MANA``: the property that decides how they play is that nothing resists
+  them. ``NETHER`` was the closer flavour and the worse spell — undead resist
+  nether, and it would have handed the realm's own quarry immunity to its
+  biggest attacks.
+
 - **3.62.0** — **Nature is Zangband's, and the Druid casts on borrowed figures**
   (CNT-10, DEC-50, DEC-55). Thirty-two spells in four books — Call of the Wild,
   Nature Mastery, Nature's Gifts, Nature's Wrath — replacing the five nature

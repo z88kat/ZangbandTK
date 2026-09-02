@@ -52,6 +52,16 @@ int spell_stat_minfail(struct player *p, int stat);
 void spell_learn(int spell_index);
 int spell_realm_index(const struct player *p,
 					  const struct class_spell *spell);
+void death_miscast(struct player *p, int idx, int book);
+
+/** What a failed cast does beyond failing. */
+enum spell_backfire {
+	BACKFIRE_NONE = 0,
+	BACKFIRE_CHAOS,
+	BACKFIRE_DEATH
+};
+
+enum spell_backfire spell_backfire_kind(const struct class_spell *spell);
 bool spell_cast(int spell_index, int dir, struct command *cmd);
 
 extern void get_spell_info(int index, char *buf, size_t len);

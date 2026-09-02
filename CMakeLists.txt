@@ -932,6 +932,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     player/inven-carry-num.c
     player/inven-wield.c
     player/mutation.c
+    player/miscast.c
     player/pathfind.c
     player/playerstat.c
     player/pscore.c

@@ -1010,3 +1010,186 @@ line = 1054
 effects = [ "PROJECT_LOS_AWARE:DISP_ALL", "dice:$B", "expr:B:PLAYER_LEVEL:* 4", "EARTHQUAKE:NONE:30", "SPHERE:KILL_WALL:4", "SPHERE:MANA:4", "dice:100+$B", "expr:B:PLAYER_LEVEL:+ 0" ]
 note = "Three things at once in Zangband and three effects here: dispel everything in sight, then an earthquake, then a disintegration ball centred on the caster. The earthquake's radius is 20+plev/2 there and a literal here; the disintegration is split into KILL_WALL and MANA by DEC-53, so the walls go and the damage lands, at the cost of striking monsters with two projections rather than one."
 desc = "Nature turns on everything around you, the ground included."
+
+# Source: archive/zangband/src/cmd5.c, cast_death_spell().
+
+# The last of the four realms Angband already had, and the only one neither of
+# its 4.2 classes can import directly: the Necromancer and the Blackguard both
+# post-date Zangband, so both cast on borrowed figures under DEC-55 -- the
+# Necromancer on Zangband's Mage, the Blackguard on its Paladin.
+
+[death]
+books = [
+  "Black Prayers",
+  "Black Mass",
+  "Black Channels",
+  "Necronomicon",
+]
+
+[death.spells."Detect Unlife"]
+line = 1376
+effects = [ "DETECT_VISIBLE_MONSTERS", "effect-yx:22:40" ]
+note = "detect_monsters_nonliving() finds what has no life; 4.2 detects the living (DETECT_LIVING_MONSTERS) and has no inverse. Detecting everything visible is wider than asked and never narrower, which is the direction to err in for a detection -- and DETECT_SOUL, the other candidate, finds spirits rather than their absence."
+desc = "Detects creatures nearby."
+
+[death.spells."Malediction"]
+line = 1379
+effects = [ "BALL:MANA:0", "dice:$Dd3", "expr:D:PLAYER_LEVEL:- 1 / 5 + 3" ]
+note = "DEC-53's list of elements 4.2 does not have includes GF_HELL_FIRE, and this is where it finally matters. Zangband's hell fire does double damage to *good* monsters; 4.2 has a projection that favours evil (HOLY_ORB) and none that favours good. MANA is taken instead -- the property that decides how the spell plays is that nothing resists it, which is a Death caster's answer to a resistant target. NETHER would have been the closer flavour and the worse spell: undead resist nether, and it would have handed the realm's own quarry immunity to its biggest attacks. The one-in-five extra -- fear, confusion, stunning, or on a one-in-a-thousand roll of 666 an outright death ray -- is not carried: a chain cannot roll a second effect at a probability of its own. Zangband's own comment explains the radius-0 ball rather than a bolt, and that is kept: it can be aimed at any visible monster."
+desc = "Curses a creature with unresisted force."
+
+[death.spells."Detect Evil"]
+line = 1403
+effects = [ "DETECT_EVIL", "effect-yx:22:40" ]
+desc = "Detects evil creatures nearby."
+
+[death.spells."Stinking Cloud"]
+line = 1406
+effects = [ "BALL:POIS:2", "dice:10+$B", "expr:B:PLAYER_LEVEL:/ 2" ]
+desc = "Throws a cloud of poison."
+
+[death.spells."Black Sleep"]
+line = 1411
+effects = [ "BOLT_AWARE:SLEEP_ALL", "dice:$B", "expr:B:PLAYER_LEVEL:* 10 + 500" ]
+desc = "Puts a single creature to sleep."
+
+[death.spells."Resist Poison"]
+line = 1416
+effects = [ "TIMED_INC:OPP_POIS", "dice:19+1d21" ]
+desc = "Grants temporary resistance to poison."
+
+[death.spells."Horrify"]
+line = 1419
+effects = [ "BOLT_AWARE:TURN_ALL", "dice:$B", "expr:B:PLAYER_LEVEL:+ 0", "BOLT_STATUS:MON_STUN", "dice:$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+desc = "Terrifies a creature, and leaves it reeling."
+
+[death.spells."Enslave Undead"]
+line = 1425
+defer = "The monster-allegiance wall that deferred Trump whole (DEC-54) and three of Nature's five. 4.2 has no side for a monster to be on. control_one_undead() makes one undead creature serve you, which is the whole spell."
+
+[death.spells."Orb of Entropy"]
+line = 1430
+effects = [ "BALL:MON_DRAIN:2", "dice:$B+3d6", "expr:B:PLAYER_LEVEL:* 5 / 4" ]
+note = "The class-dependent divisor again -- plev/2 for a Mage or High-Mage and plev/4 for everyone else, which the data language cannot ask. Averaged as plev*5/4, exactly as Mana Burst is in Chaos, so the two spells built the same way stay built the same way."
+desc = "An orb of entropy, which drains the life from what it touches."
+
+[death.spells."Nether Bolt"]
+line = 1440
+effects = [ "BOLT_OR_BEAM:NETHER", "dice:$Dd8", "expr:D:PLAYER_LEVEL:- 5 / 4 + 6" ]
+desc = "Fires a bolt of nether, sometimes as a beam."
+
+[death.spells."Terror"]
+line = 1446
+effects = [ "PROJECT_LOS_AWARE:TURN_ALL", "dice:30+$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+desc = "Terrifies every creature in sight."
+
+[death.spells."Vampiric Drain"]
+line = 1449
+effects = [ "BOLT:MON_DRAIN", "dice:$B+1d$B", "expr:B:PLAYER_LEVEL:+ 0", "HEAL_HP", "dice:$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+note = "Zangband drains plev + randint1(plev) * max(1, plev/10) and gives the caster the same back. 4.2 has JUMP_AND_BITE, which drains by biting, but it closes to melee -- this is a bolt and stays one. The heal is a second effect at the caster's level, which is close to the average return without the multiplier's spikes."
+desc = "Drains life from a creature and takes it for yourself."
+
+[death.spells."Poison Branding"]
+line = 1472
+effects = [ "BRAND_WEAPON" ]
+note = "4.2's BRAND_WEAPON gives Flame or Frost on a coin flip and has no venom brand for a weapon -- BRAND_AMMO has one, and weapons do not. The same mapping and the same loss as Chaos Branding and Elemental Branding."
+desc = "Brands your weapon.  You do not choose with what."
+
+[death.spells."Dispel Good"]
+line = 1475
+effects = [ "PROJECT_LOS_AWARE:DISP_ALL", "dice:$B", "expr:B:PLAYER_LEVEL:* 4" ]
+note = "4.2 has DISP_UNDEAD, DISP_EVIL and DISP_ALL, and no DISP_GOOD -- the projections were written for a game whose player is on the other side. So this hits everything in sight rather than everything that is not evil, which is wider than asked. The same shape of widening Life's Exorcism took."
+desc = "Blasts every creature in sight."
+
+[death.spells."Genocide"]
+line = 1478
+effects = [ "BANISH" ]
+desc = "Removes every creature of one kind from the level.  You choose the kind."
+
+[death.spells."Restore Life"]
+line = 1481
+effects = [ "RESTORE_EXP" ]
+desc = "Restores experience you have lost."
+
+[death.spells."Berserk"]
+line = 1484
+effects = [ "TIMED_INC:SHERO", "dice:24+1d26", "HEAL_HP", "dice:30", "CURE:AFRAID" ]
+desc = "Sends you berserk: braver, harder to frighten, and worse at defending yourself."
+
+[death.spells."Invoke Spirits"]
+line = 1489
+effects = [ "WONDER", "dice:100+m$M", "expr:M:PLAYER_LEVEL:/ 5" ]
+note = "A found match, like Chaos's Wonder. Zangband's Invoke Spirits is the Wonder table with a different skin -- the same twenty-two bands at the same boundaries, the same plev/5 added to the roll -- and its low end raises undead, frightens and confuses the caster where Wonder's clones, hastes and heals the target. 4.2's WONDER handler is that table, so this is the same effect reached from a second place, at the cost of the skin."
+desc = "Calls on the dead.  What answers is not up to you."
+
+[death.spells."Dark Bolt"]
+line = 1616
+effects = [ "BOLT_OR_BEAM:DARK", "dice:$Dd8", "expr:D:PLAYER_LEVEL:- 5 / 4 + 4" ]
+desc = "Fires a bolt of darkness, sometimes as a beam."
+
+[death.spells."Battle Frenzy"]
+line = 1622
+effects = [ "TIMED_INC:SHERO", "dice:24+1d26", "HEAL_HP", "dice:30", "CURE:AFRAID", "TIMED_INC:FAST", "dice:$B+1d$S", "expr:B:PLAYER_LEVEL:/ 2", "expr:S:PLAYER_LEVEL:/ 2 + 20" ]
+desc = "Berserk, and fast with it."
+
+[death.spells."Vampirism True"]
+line = 1628
+effects = [ "BOLT:MON_DRAIN", "dice:100", "HEAL_HP", "dice:100", "BOLT:MON_DRAIN", "dice:100", "HEAL_HP", "dice:100", "BOLT:MON_DRAIN", "dice:100", "HEAL_HP", "dice:100" ]
+note = "Three drains of a hundred each, which is Zangband's loop written out. The virtue cost -- a point of Sacrifice and a point of Vitality every time -- is not carried: no effect changes a virtue, and the spell is not worth building one for."
+desc = "Drains a hundred points of life three times over, and keeps all of it."
+
+[death.spells."Vampiric Branding"]
+line = 1639
+effects = [ "BRAND_WEAPON" ]
+note = "As Poison Branding: 4.2 has no vampiric weapon brand to give."
+desc = "Brands your weapon.  You do not choose with what."
+
+[death.spells."Darkness Storm"]
+line = 1642
+effects = [ "BALL:DARK:4", "dice:120" ]
+desc = "Calls down a storm of darkness."
+
+[death.spells."Mass Genocide"]
+line = 1647
+effects = [ "MASS_BANISH" ]
+desc = "Removes every creature near you from the level."
+
+[death.spells."Death Ray"]
+line = 1650
+effects = [ "BOLT:MON_DRAIN", "dice:$B", "expr:B:PLAYER_LEVEL:* 10" ]
+note = "Zangband's death ray kills outright, gated on the monster's level against plev * 50 as a power rather than as damage, and has no effect at all on the nonliving. 4.2 has no instant kill and no such gate. MON_DRAIN keeps the half that defines the spell in play -- the nonliving are still immune, because draining life needs life -- and turns the kill into ten points a level, which at 48 is 480 and lethal to most of what it will be pointed at without being lethal to everything."
+desc = "Draws the life out of a living creature.  The dead are untouched."
+
+[death.spells."Raise the Dead"]
+line = 1655
+defer = "The monster-allegiance wall that deferred Trump whole (DEC-54) and three of Nature's five. 4.2 has no side for a monster to be on. raise_dead() calls undead out of the floor to fight for you -- two in three of them loyal. Imported hostile it is a spell that raises undead to attack the caster, which is the opposite spell."
+
+[death.spells."Esoteria"]
+line = 1669
+effects = [ "IDENTIFY" ]
+note = "Zangband rolls: below your level it identifies one object, above it identifies one fully. 4.2 replaced whole-object identification with runes learned one at a time, so the better half has nowhere to go and the roll has nothing to choose between. What is left is the rune, every time -- the same mapping Sorcery's and Arcane's Identify take."
+desc = "Identifies one unknown rune on an item."
+
+[death.spells."Word of Death"]
+line = 1675
+effects = [ "PROJECT_LOS_AWARE:MON_DRAIN", "dice:$B", "expr:B:PLAYER_LEVEL:* 3" ]
+desc = "Drains the life from every living creature in sight."
+
+[death.spells."Evocation"]
+line = 1678
+effects = [ "PROJECT_LOS_AWARE:DISP_ALL", "dice:$B", "expr:B:PLAYER_LEVEL:* 4", "PROJECT_LOS_AWARE:TURN_ALL", "dice:$B", "expr:B:PLAYER_LEVEL:* 4", "MASS_BANISH" ]
+desc = "Blasts, terrifies and then banishes everything in sight."
+
+[death.spells."Hellfire"]
+line = 1683
+effects = [ "BALL:MANA:3", "dice:666", "DAMAGE", "dice:49+1d51", "effect-msg:the strain of casting Hellfire" ]
+note = "DEC-53's list of elements 4.2 does not have includes GF_HELL_FIRE, and this is where it finally matters. Zangband's hell fire does double damage to *good* monsters; 4.2 has a projection that favours evil (HOLY_ORB) and none that favours good. MANA is taken instead -- the property that decides how the spell plays is that nothing resists it, which is a Death caster's answer to a resistant target. NETHER would have been the closer flavour and the worse spell: undead resist nether, and it would have handed the realm's own quarry immunity to its biggest attacks. Six hundred and sixty-six is Zangband's number and is kept, and so is the fifty to a hundred hit points it costs to cast -- which is the whole of the spell's character and the reason it is not simply the best attack in the game."
+desc = "Six hundred and sixty-six points of unresisted fire, and fifty to a hundred of your own."
+
+[death.spells."Omnicide"]
+line = 1689
+defer = "Kills every non-unique monster on the *level*, one at a time, taking mana for each until the caster runs out. 4.2's nearest are BANISH, which removes one kind, and MASS_BANISH, which removes what is nearby -- and both are already this realm's Genocide and Mass Genocide, so mapping Omnicide onto either would give Death two names for one spell at the very top of its last book. A whole-level sweep with a running cost is its own effect and is not built for one spell."
+
+[death.spells."Wraithform"]
+line = 1755
+defer = "inc_wraith_form() turns the caster incorporeal for a while: they pass through walls and take damage from doing it. The same wall the WRAITH mutation is deferred behind -- 4.2 has no incorporeal state for the player, and PASS_WALL is a monster flag with no player side."

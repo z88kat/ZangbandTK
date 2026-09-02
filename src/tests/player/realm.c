@@ -189,15 +189,22 @@ static int test_no_existing_class_progression_moved(void *state) {
 		 * figures from a class Zangband never had -- DEC-55 gives it
 		 * Zangband's Priest, the only Nature carrier sharing the Druid's
 		 * `spell_first`, `spell_weight` and casting stat.
+		 *
+		 * **Death** finished it, and moved both of its classes: the
+		 * Necromancer's five books became four and the Blackguard's
+		 * three became four, and both cast on borrowed figures -- the
+		 * Necromancer on Zangband's Mage, the Blackguard on its Paladin.
+		 * Every class in the table is now on a multiple of four books,
+		 * because every realm is four books of eight.
 		 */
 		{ "Mage", 12, 96 },
 		{ "Druid", 4, 32 },
 		{ "Priest", 12, 96 },
-		{ "Necromancer", 5, 26 },
+		{ "Necromancer", 4, 32 },
 		{ "Paladin", 4, 32 },
 		{ "Rogue", 8, 63 },
 		{ "Ranger", 12, 91 },
-		{ "Blackguard", 3, 15 },
+		{ "Blackguard", 4, 32 },
 		{ "Chaos-Warrior", 4, 32 },
 	};
 	size_t i;
@@ -238,14 +245,14 @@ static int test_every_book_kept_its_place(void *state) {
 		{ "Priest",      { "life", "life", "life", "life",
 		                   "sorcery", "sorcery", "sorcery", "sorcery",
 		                   "chaos", "chaos", "chaos", "chaos" } },
-		{ "Necromancer", { "death", "death", "death", "death", "death" } },
+		{ "Necromancer", { "death", "death", "death", "death" } },
 		{ "Paladin",     { "life", "life", "life", "life" } },
 		{ "Rogue",       { "arcane", "arcane", "arcane", "arcane",
 		                   "sorcery", "sorcery", "sorcery", "sorcery" } },
 		{ "Ranger",      { "nature", "nature", "nature", "nature",
 		                   "sorcery", "sorcery", "sorcery", "sorcery",
 		                   "chaos", "chaos", "chaos", "chaos" } },
-		{ "Blackguard",  { "death", "death", "death" } },
+		{ "Blackguard",  { "death", "death", "death", "death" } },
 		{ "Chaos-Warrior", { "chaos", "chaos", "chaos", "chaos" } },
 	};
 	size_t i;
@@ -272,7 +279,12 @@ static int test_every_book_kept_its_place(void *state) {
 		}
 	}
 
-	/* 12 + 4 + 12 + 5 + 4 + 8 + 12 + 3 + 4 across the nine casting classes. */
+	/*
+	 * 12 + 4 + 12 + 4 + 4 + 8 + 12 + 4 + 4 across the nine casting classes,
+	 * and every one of those numbers is now a multiple of four: all seven
+	 * realms hold four books of eight spells, which is Zangband's shape
+	 * throughout and the end of DEC-50's replacement.
+	 */
 	eq(checked, 64);
 
 	ok;
@@ -713,7 +725,11 @@ static int test_the_realm_filter_sorts_three_realms(void *state) {
  * five -- Animal Taming, Summon Animal, Animal Friendship -- are the same
  * monster-allegiance wall that deferred Trump whole, and the other two are
  * whole-object identification and a rustproofing that is an object property
- * here rather than anything a spell can reach.
+ * here rather than anything a spell can reach. And eight are Death's four, once
+ * each for the Necromancer and the Blackguard: Enslave Undead and Raise the
+ * Dead are the allegiance wall again, Wraithform is the wall the WRAITH
+ * mutation waits behind, and Omnicide is a whole-level sweep with a running
+ * mana cost that would otherwise duplicate this realm's own Mass Genocide.
  *
  * `scripts/check-build` also runs `zconv realms --check` now, which catches a
  * mis-keyed name itself rather than its symptom. This stays because it asks the
@@ -740,7 +756,7 @@ static int test_a_spell_without_an_effect_says_so(void *state) {
 		}
 	}
 
-	eq(effectless, 34);
+	eq(effectless, 42);
 
 	ok;
 }
@@ -1076,6 +1092,95 @@ static int test_the_druid_casts_on_priest_figures(void *state) {
 	ok;
 }
 
+/**
+ * Every realm is four books of eight, and the Necromancer casts on Mage figures.
+ *
+ * The end of DEC-50, asserted as one shape rather than nine. Zangband holds
+ * every realm as four books, so after Life, Arcane, Nature and Death were
+ * replaced, **every casting class in the game is on a multiple of four books**.
+ * A realm that came out with three, or a class left holding one of Angband's
+ * five-book sets, fails here without anybody having to know which.
+ *
+ * Books of eight, but not always eight *learnable*: a class whose figures put a
+ * spell above level 50 does not get it, so the Ranger's Chaos runs 8, 8, 7, 5
+ * and its last book is genuinely short. That is Zangband's own arithmetic --
+ * `usable()` drops what cannot be reached -- so the assertion is on the book
+ * count and on no book exceeding eight, with the total pinned per class below.
+ *
+ * And the two Death classes are pinned by number, for the reason the Druid is:
+ * both cast on borrowed figures under DEC-55, the donor is one word in the
+ * converter, and the converter check cannot tell a wrong donor from a right
+ * one. The Necromancer takes Zangband's Mage and the Blackguard its Paladin,
+ * and their first and last spells differ, which is what proves the two are not
+ * reading one row.
+ */
+static int test_every_realm_is_four_books_of_eight(void *state) {
+	static const struct {
+		const char *cls;
+		int first_level, first_mana, last_level, last_mana;
+	} borrowed[] = {
+		{ "Necromancer", 1, 1, 47, 100 },
+		{ "Blackguard", 1, 1, 50, 111 },
+	};
+	const struct player_class *c;
+	size_t i;
+	int classes_seen = 0;
+
+	for (c = classes; c; c = c->next) {
+		int b, realms_here = 0;
+		bool counted[REALM_MAX] = { false };
+
+		if (!c->magic.num_books) continue;
+		classes_seen++;
+
+		for (b = 0; b < c->magic.num_books; b++) {
+			const struct class_book *book = &c->magic.books[b];
+
+			notnull(book->realm);
+			require(book->num_spells > 0 && book->num_spells <= 8);
+			if (!counted[book->realm->ridx]) {
+				counted[book->realm->ridx] = true;
+				realms_here++;
+			}
+		}
+
+		eq(c->magic.num_books, realms_here * 4);
+
+		/*
+		 * And no more than the realm holds. Fewer is legitimate and means a
+		 * spell out of reach at level 50; more would mean a book emitted
+		 * twice.
+		 */
+		require(c->magic.total_spells <= realms_here * 32);
+	}
+
+	/* Nine casting classes, and none of them missed. */
+	eq(classes_seen, 9);
+
+	for (i = 0; i < N_ELEMENTS(borrowed); i++) {
+		const struct player_class *k = find_class(borrowed[i].cls);
+		const struct class_spell *first, *last;
+
+		notnull(k);
+		eq(k->magic.num_books, 4);
+		first = &k->magic.books[0].spells[0];
+		last = &k->magic.books[3].spells[k->magic.books[3].num_spells - 1];
+
+		require(streq(first->name, "Detect Unlife"));
+		require(streq(last->name, "Wraithform"));
+		eq(first->slevel, borrowed[i].first_level);
+		eq(first->smana, borrowed[i].first_mana);
+		eq(last->slevel, borrowed[i].last_level);
+		eq(last->smana, borrowed[i].last_mana);
+	}
+
+	/* Different rows, not one row read twice. */
+	require(borrowed[0].last_level != borrowed[1].last_level);
+	require(borrowed[0].last_mana != borrowed[1].last_mana);
+
+	ok;
+}
+
 const char *suite_name = "player/realm";
 struct test tests[] = {
 	{ "seven-realms-exist", test_seven_realms_exist },
@@ -1094,6 +1199,8 @@ struct test tests[] = {
 	  test_changing_class_leaves_no_stale_realm },
 	{ "a-single-entitlement-is-not-a-choice",
 	  test_a_single_entitlement_is_not_a_choice },
+	{ "every-realm-is-four-books-of-eight",
+	  test_every_realm_is_four_books_of_eight },
 	{ "the-druid-casts-on-priest-figures",
 	  test_the_druid_casts_on_priest_figures },
 	{ "arcane-is-bought-in-town", test_arcane_is_bought_in_town },

@@ -336,15 +336,14 @@ classes.
 **Open, in the order it should be taken.**
 
 1. **The four mapped realms.** DEC-50 replaces Angband 4.2's spell content with
-   Zangband's. **Life (3.60.0)**, **Arcane (3.61.0)** and **Nature (3.62.0)**
-   are done; **Death remains**. The class question below is settled -- DEC-55,
-   a derivation rather than a decision -- and Death's two classes have donors
-   waiting. One realm per commit, each only once its effect chains are complete: a
+   Zangband's. **Done: Life (3.60.0), Arcane (3.61.0), Nature (3.62.0), Death
+   (3.63.0).** Every realm in the game is now four books of eight, which is
+   Zangband's shape throughout, and DEC-55 settled the three classes Zangband
+   never had by derivation rather than by decision. One realm per commit, each only once its effect chains are complete: a
    spell with no chain parses and does nothing, and eight classes read these
    books.
-2. **Death's miscast penalty**, deliberately left out of 3.59.0. It is buildable today
-   and belongs in the Death realm's own commit, because it would change an existing
-   class's balance before that class's content is replaced.
+2. ~~**Death's miscast penalty.**~~ **Done (3.63.0)**, in the Death realm's own
+   commit as planned.
 3. **Warrior-Mage and High-Mage**, carried over from M7. Both are defined by which
    realms they may choose, so both were waiting on realm choice, which now exists.
 4. **Trump**, deferred whole (3.56.1, DEC-54). Fifteen of its thirty-two spells are

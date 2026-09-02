@@ -4,6 +4,7 @@ TESTPROGS += player/birth \
              player/digging \
              player/history \
              player/mutation \
+             player/miscast \
              player/inven-carry-num \
              player/inven-wield \
              player/pathfind \

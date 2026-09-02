@@ -265,11 +265,48 @@ to import; it takes Zangband's *Priest's*, which is the only class carrying
 Nature that shares the Druid's three magic constants. The **Ranger**, which used
 to borrow two of the Druid's books, now gets the whole realm on its own figures.
 
+Death
+-----
+
+The foulest of them, and the only realm that punishes you for casting it badly.
+Drains, nether, darkness, poison, terror, two kinds of genocide, and at the
+bottom *Hellfire* — six hundred and sixty-six points that nothing resists, and
+fifty to a hundred of your own to pay for it.
+
+Four books: **Black Prayers**, **Black Mass**, **Black Channels** and the
+**Necronomicon**.
+
+.. warning::
+
+   **A miscast Death spell hurts.** Fail one and, on a roll against the spell's
+   depth in the realm, you take ``(book + 2)d6`` — so the deeper the book the
+   worse it is. From the second half of the realm you may lose experience with
+   it, one time in six, unless you have Hold Life.
+
+   **The Necronomicon is worse.** Half of its miscasts shake the reader instead:
+   fail a saving throw and you are confused, and one time in three
+   hallucinating badly; make that one and fail the next and you lose a point of
+   intelligence *and* a point of wisdom. It is the only spell failure in the
+   game that can permanently cost a character a statistic, and it is why the
+   fourth book is frightening rather than merely expensive.
+
+Four of the thirty-two do nothing. *Enslave Undead* and *Raise the Dead* need a
+creature able to take your side, which is the wall Trump waits behind.
+*Wraithform* needs an incorporeal player, which this game has no notion of. And
+*Omnicide* kills every creature on the level, one at a time, taking mana until
+you run out — a sweep with a running cost that the realm's own *Mass Genocide*
+would otherwise duplicate.
+
+Both of Death's classes cast on borrowed figures: Zangband had neither a
+Necromancer nor a Blackguard. The Necromancer takes Zangband's Mage and the
+Blackguard its Paladin.
+
 What has changed, and what has not
 ----------------------------------
 
-Three of the four realms Angband already had now hold Zangband's spells instead:
-**Life**, **Arcane** and **Nature**. Only Death still holds Angband's. This is DEC-50, taken deliberately, and it has consequences worth stating:
+**All four of the realms Angband already had now hold Zangband's spells**:
+Life, Arcane, Nature and Death. Every realm in the game is four books of eight,
+which is Zangband's shape throughout. This is DEC-50, taken deliberately, and it has consequences worth stating:
 
 - **A Priest's prayers and a Mage's spells are different spells now**, at
   different levels, in differently-named books. A Paladin gains most — Angband

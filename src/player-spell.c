@@ -875,6 +875,86 @@ static void chaos_backfires(struct player *p, int idx)
 }
 
 /**
+ * A Death spell that fails hurts the caster (CNT-10, DEC-53 addendum).
+ *
+ * The other half of the pair `chaos_backfires()` is: Zangband punishes a
+ * miscast Death spell as surely as it lets a Chaos one run wild, on the same
+ * roll -- `randint1(100) < spell`, the spell's own place in its realm -- and the
+ * punishment is graded by which book it came out of.
+ *
+ * Out of the first three books it is simply pain: `(sval + 1)d6` hit points --
+ * eight spells to a book, so the book is the spell's realm index over eight,
+ * and the deeper the book the worse the miscast -- and above the realm's midpoint a
+ * one-in-six chance of losing experience with it, which Hold Life prevents.
+ *
+ * Out of the **Necronomicon** it is worse half the time. Zangband rolls two
+ * saving throws: fail the first and you are confused, and one time in three
+ * hallucinating badly; fail the second instead and you lose a point of
+ * intelligence and a point of wisdom. Zangband's `player_save(100)` is a roll
+ * against the character's saving throw, and 4.2 spells that out at each site as
+ * `randint0(100) < state.skills[SKILL_SAVE]`, which is what is written here --
+ * the shape is kept whole. This is the one spell-failure path in the game that
+ * can cost a character a stat, and it is the reason the Necronomicon is
+ * frightening rather than merely expensive.
+ *
+ * Deliberately left out of 3.59.0 with Chaos's, because it changes the balance
+ * of a class whose content had not been replaced yet. It has been now.
+ */
+void death_miscast(struct player *p, int idx, int book)
+{
+	/* The Necronomicon is the fourth book, and shakes the reader. */
+	if (book == 3 && one_in_(2)) {
+		msg("Your sanity is shaken by reading the Necronomicon!");
+
+		if (randint0(100) >= p->state.skills[SKILL_SAVE]) {
+			if (!player_of_has(p, OF_PROT_CONF)) {
+				(void) player_inc_timed(p, TMD_CONFUSED, rand_range(4, 8),
+										true, true, true);
+			}
+			if (!player_resists(p, ELEM_CHAOS) && one_in_(3)) {
+				(void) player_inc_timed(p, TMD_IMAGE, rand_range(150, 400),
+										true, true, true);
+			}
+		} else if (randint0(100) >= p->state.skills[SKILL_SAVE]) {
+			(void) player_stat_dec(p, STAT_INT, false);
+			(void) player_stat_dec(p, STAT_WIS, false);
+		}
+
+		return;
+	}
+
+	msg("It hurts!");
+	take_hit(p, damroll(book + 2, 6), "a miscast Death spell");
+
+	/*
+	 * Zangband's `spell > 15` is the realm's midpoint: the second half of the
+	 * realm can cost experience and the first half cannot.
+	 */
+	if (idx > 15 && one_in_(6) && !player_of_has(p, OF_HOLD_LIFE)) {
+		player_exp_lose(p, idx * 250, false);
+	}
+}
+
+/**
+ * What a failed cast of this spell does beyond failing (CNT-10).
+ *
+ * Two realms punish a miscast and five do not, and which is which is a fact
+ * about the spell rather than a step in casting it -- so it is a function that
+ * can be asked, rather than a pair of `streq` calls buried in a branch that
+ * only runs on a failed roll of a failed cast. Removing the Death arm of that
+ * branch was caught by nothing at all; `player/miscast` walks every spell of
+ * every class through this and would catch it now.
+ */
+enum spell_backfire spell_backfire_kind(const struct class_spell *spell)
+{
+	if (!spell || !spell->realm) return BACKFIRE_NONE;
+	if (streq(spell->realm->name, "chaos")) return BACKFIRE_CHAOS;
+	if (streq(spell->realm->name, "death")) return BACKFIRE_DEATH;
+
+	return BACKFIRE_NONE;
+}
+
+/**
  * Cast the specified spell
  */
 bool spell_cast(int spell_index, int dir, struct command *cmd)
@@ -897,14 +977,22 @@ bool spell_cast(int spell_index, int dir, struct command *cmd)
 		msg("You failed to concentrate hard enough!");
 
 		/*
-		 * Chaos does not merely fail (CNT-10). The chance is the spell's
-		 * own place in the realm, so Magic Missile never backfires and
-		 * Call the Void nearly always does -- which is Zangband's
-		 * arithmetic and not a scaling invented here.
+		 * Chaos and Death do not merely fail (CNT-10). The chance is the
+		 * spell's own place in its realm, so Magic Missile never
+		 * backfires and Call the Void nearly always does -- Zangband's
+		 * arithmetic, and the same roll for both realms.
 		 */
-		if (spell->realm && streq(spell->realm->name, "chaos")
-				&& randint1(100) < idx) {
-			chaos_backfires(player, idx);
+		if (randint1(100) < idx) {
+			switch (spell_backfire_kind(spell)) {
+				case BACKFIRE_CHAOS:
+					chaos_backfires(player, idx);
+					break;
+				case BACKFIRE_DEATH:
+					death_miscast(player, idx, idx / 8);
+					break;
+				case BACKFIRE_NONE:
+					break;
+			}
 		}
 	} else {
 		/* Cast the spell */
