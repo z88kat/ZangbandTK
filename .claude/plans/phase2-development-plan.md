@@ -302,26 +302,56 @@ playable. Manual chapter: the magic system.
 
 #### Where M9 actually stands
 
-**Phase 1 is done (3.51.0).** Seven realms exist, DEC-49 records how four plus seven
-became seven, and `player/realm` pins the shape of all eight existing casting classes so
-no later phase can move a spell out from under a saved character. Nothing else is built.
+**As of 3.59.0.** Everything structural is built; what remains is content and two
+classes.
 
-**Phase 2 is unblocked and not started.** **DEC-50 is decided**: Reading B — all seven
-realms take Zangband's spells, ~224 of them, replacing 4.2's content in the four mapped
-realms. The project owner accepted the savefile consequence on the grounds that the game
-is pre-release. Measured rather than assumed, that consequence is four of the 35
-characters in `tests/saves` — one Mage, one Druid, one Necromancer, one Blackguard; the
-other 31 carry no spell list. The `player spells` block goes to version 2 and the version
-1 reader **refuses** rather than guesses, because a saved caster that loads with the right
-number of spells and the wrong spells is worse than one that does not load.
+**Done.**
 
-**DEC-51 is decided too**: spell experience is imported per-book as Zangband has it,
-`sexp = 5 * book²` — 5, 20, 45, 80 — set once per book rather than hand-set on 224 spells.
-The per-book divergence against 4.2's own curve is recorded and left to balance
-calibration; the two values worth watching in playtest are Sorcery book 3 (5.62×) and
-Trump book 2 (0.33×).
+- **The seven realms exist** (3.51.0, PLR-09, PLR-10, DEC-49), and `player/realm` pins
+  the shape of every existing casting class so no later phase can move a spell out from
+  under a saved character.
+- **Realm choice at birth** (3.53.0, PLR-08, PLR-11) — chosen from the class's
+  entitlement, recorded in the savefile by name, shown on the character sheet. Birth
+  skips a realm the class has no book in (3.56.1), which was a live trap: between 3.54.2
+  and 3.55.0 a character could choose Sorcery before it had content and be left with an
+  empty spell menu for the rest of its life, with no way back.
+- **The savefile guard** (3.52.0). The `player spells` block is at version 2 and carries a
+  fingerprint of the class's spell list, so a character whose spells were learned against
+  a different list is refused rather than handed somebody else's. 31 of the 35 corpus
+  characters load; the four with spells recorded are named in
+  `tests/saves/EXPECTED-FAILURES` with their reason.
+- **The converter** (3.52.1). `zconv.py realms` slices `magic_info[]` by position and
+  derives `sfail` and `sexp` by the rules below, re-deriving the realm entitlements from
+  the same table as its own cross-check.
+- **Two realms imported.** **Sorcery** (3.55.0) and **Chaos** (3.56.0) — 32 workings in
+  4 books each, emitted into every class entitled to them, with Chaos's forty-band
+  backfire table on top (3.59.0). The books are *appended* to each class's list rather
+  than inserted, so every existing spell index still means what it meant.
+- **The Chaos-Warrior casts** (3.58.0, PLR-03) — the class shipped in M7 declaring
+  itself a Chaos caster with no Chaos to cast.
+- **M8's three folded-in mutation powers** — `FETCH` built once for its three callers
+  (3.54.1), swap position and sterilize (3.57.0), and the Midas touch recovered
+  (3.54.0, DEC-52 reversing DEC-48).
 
-**Nothing is awaiting a decision. Phase 2 is ready to start.**
+**Open, in the order it should be taken.**
+
+1. **The four mapped realms.** Arcane, Life, Nature and Death still hold Angband 4.2's
+   spell content, and DEC-50 replaces it with Zangband's — roughly 128 of the ~224
+   spells, and the part that invalidates existing casters. One realm per commit, each
+   only once its effect chains are complete: a spell with no chain parses and does
+   nothing, and eight classes read these books.
+2. **Death's miscast penalty**, deliberately left out of 3.59.0. It is buildable today
+   and belongs in the Death realm's own commit, because it would change an existing
+   class's balance before that class's content is replaced.
+3. **Warrior-Mage and High-Mage**, carried over from M7. Both are defined by which
+   realms they may choose, so both were waiting on realm choice, which now exists.
+4. **Trump**, deferred whole (3.56.1, DEC-54). Fifteen of its thirty-two spells are
+   summons whose whole content is whether the creature that arrives is *yours*, and 4.2
+   has no side for a monster to be on. **It waits for M10**, and is the one part of M9
+   that a later milestone unblocks rather than the other way round.
+
+**Nothing is awaiting a decision.** DEC-50 and DEC-51 were settled on 1 September;
+DEC-52, DEC-53 and DEC-54 were taken and recorded during the work.
 
 #### The order Phase 2 has to go in
 
@@ -382,11 +412,11 @@ realm costs whoever chose it rather than everybody. So:
 2. **Arcane, Life, Nature, Death** — each replaced only once its chains are
    complete, one realm per commit, so a half-finished realm never ships.
 
-**Phase 2b is stopped on DEC-52**, which is open: Sorcery's *Alchemy* spell needs
-the object-to-gold mechanic that DEC-48 refused for the Midas touch, and DEC-48's
-stated reason — that the mechanic would have exactly one consumer — turns out to
-be wrong. `alchemy()` has three callers in Zangband. That is the project owner's
-to settle.
+**DEC-52 was settled and Phase 2b resumed** (3.54.0). Sorcery's *Alchemy* needed the
+object-to-gold mechanic that DEC-48 had refused for the Midas touch, on the stated
+ground that it would have exactly one consumer — which was wrong: `alchemy()` has three
+callers in Zangband. Built once, it serves all three, and the Midas touch came back with
+it.
 
 #### Phase 2's conversion rules, established and verified
 

@@ -180,6 +180,31 @@ What chaos makes of you
 They are listed on the third page of your character sheet — press ``C``, then
 ``h`` twice. See :doc:`mutations` for the whole roster.
 
+The realms of magic
+-------------------
+
+- **Seven realms** where Angband has four — Arcane, Life, Nature, Death, and the three
+  Zangband adds: **Sorcery**, **Chaos** and **Trump**. Four of the seven are Angband's
+  own, renamed where Zangband's word for the same thing is the one this game uses
+  (:doc:`realms` says which, and why one of them is not quite Zangband's realm of the
+  same name).
+- **You choose at birth**, from what your class is entitled to, and the choice is
+  permanent. A Mage may take any of them; a Chaos-Warrior takes Chaos and nothing else.
+  Your realms decide which spellbooks you can open at all — a Priest of Death cannot read
+  a Life book.
+- **Sorcery and Chaos are playable** — sixty-four workings in eight books between them.
+  Sorcery is the realm of knowing and going: detection, teleportation, enchantment,
+  *Globe of Invulnerability* at the end of it. Chaos is the destructive one, and it
+  **backfires**: a failed Chaos spell may go off as something else, and how bad that is
+  depends on how deep the spell was. *Magic Missile* never backfires; *Call the Void*
+  almost always does.
+- **The Chaos-Warrior casts**, which is what the class was always for.
+
+Content arrives one realm per release. Arcane, Life, Nature and Death currently hold
+Angband's own spells rather than Zangband's, and **Trump is deferred** until monsters can
+take sides — fifteen of its thirty-two spells are summons whose whole point is that the
+creature is *yours*. You are not offered a realm with no books behind it.
+
 Tunable without a rebuild
 -------------------------
 
@@ -214,9 +239,6 @@ in when the milestone lands.
    * - Feature
      - Milestone
      - Chapter
-   * - Magic realms
-     - M9
-     - :doc:`realms`
    * - Two more classes
      - M9
      - :doc:`birth`
@@ -233,8 +255,11 @@ Nine races, racial powers, the Monk, the Mindcrafter and the Chaos-Warrior are
 in. **Virtues have landed** — eight drawn from eighteen at birth, moved by how
 you play, and read by the Lords of Chaos and by the dream at the inn — and so
 have **mutations**, all ninety-six of them, which completes M8. What is not: the
-two classes defined by which magic realms they may choose, which wait for the
-realms themselves to arrive. Those are next.
+two classes defined by which magic realms they may choose — the Warrior-Mage and the
+High-Mage — which were waiting for realm choice, and no longer are. **The realms
+themselves have arrived**: seven of them, chosen at birth, with Sorcery and Chaos
+playable and the rest of the content coming one realm at a time. Those two classes and
+that content are what M9 has left, apart from Trump, which waits on pets.
 
 A **Tcl/Tk front end** is planned for a later phase, reviving the original's
 interface on Tcl/Tk 9. There is an irony in it: the original ZangbandTK
