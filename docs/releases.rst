@@ -33,6 +33,43 @@ Unreleased
 M9: magic realms — 2 September 2026
 -----------------------------------
 
+- **3.64.1** — **The Windows CI failure was a missing directory, and the gate
+  now builds the way that job builds.** ``game/saves`` failed two Windows CI
+  runs, 0/1, while Linux and macOS were green — and it was neither Windows nor
+  the sanitizers.
+
+  The savefile corpus is staged into the unit tests' working directory, and that
+  staging hung off ``SUPPORT_TEST_FRONTEND`` — an option about the *end-to-end*
+  test front end, which has nothing to do with whether the unit tests can find
+  their data. It defaults to OFF; ``linux.yaml`` passes it and ``msys2.yaml``
+  does not, in all three of its jobs that run the tests. So the suite was
+  looking for ``tests/saves`` in a directory that did not exist, and failing on
+  the assertion written for exactly that ("absent rather than empty is a real
+  answer"). Staging now hangs off ``allunittests``, so any configuration that
+  can run the unit tests can feed them.
+
+  **Direction of the failure: neither.** No save loaded that should not have,
+  and none failed that should not have. Reproduced on macOS by configuring as
+  that job does, and confirmed by staging the corpus into that same build, where
+  the whole suite passes **1242/1242 under ASAN+UBSAN with no sanitizer reports
+  at all**.
+
+  **The corpus is now one test per savefile** — 38 rather than 1. A tally of
+  "0/1" was why two CI runs could not say which file had broken or in which
+  direction; ``game/saves 37/38`` names it, and an absent corpus says so in
+  words and reports the path it looked in. Two invariants came out of writing
+  it: a manifest entry naming a file that is not in the corpus used to pass
+  silently, and nothing checked that every file had actually been offered to a
+  test.
+
+  ``scripts/check-build`` gained a sixth pass that reproduces that CI job —
+  Debug, ASAN+UBSAN, and *no* ``-DSUPPORT_*`` options at all. The missing
+  options are the pass, not an oversight; the sanitizers are worth having on
+  their own but would not have caught this. And ``.gitattributes`` now pins the
+  corpus as binary, which git's heuristic already got right, because the corpus
+  is the one place a silent byte-for-byte change would go unnoticed until a
+  character failed to load.
+
 - **3.64.0** — **The Warrior-Mage and the High-Mage, and PLR-03 is closed**
   (PLR-03, DEC-36). M7 built three of Zangband's five extra classes and deferred
   these two, because each is *defined* by which realms it may choose and realm

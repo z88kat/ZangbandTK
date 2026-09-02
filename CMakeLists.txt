@@ -1006,8 +1006,33 @@ endif()
 # and TEST_OVERRIDE_PATHS are set below.
 if((READONLY_INSTALL) OR (SHARED_INSTALL))
     set(TEST_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+    # Already the source tree: tests/ is where the unit tests will look.
+    set(NEED_UNIT_TEST_DATA OFF)
 else()
     set(TEST_WORKING_DIRECTORY "$<TARGET_FILE_DIR:OurExecutable>")
+    set(NEED_UNIT_TEST_DATA ON)
+endif()
+
+# Stage the data the unit tests read, because the unit tests read it.
+#
+# game/saves reads the savefile corpus from tests/saves relative to the
+# working directory above. That directory was being populated only as a
+# POST_BUILD side effect of SUPPORT_TEST_FRONTEND -- an option about the
+# *end-to-end* test front end, which has nothing to do with whether the unit
+# tests can find their data. SUPPORT_TEST_FRONTEND defaults to OFF, and
+# linux.yaml passes it while msys2.yaml does not, so all three Windows jobs ran
+# game/saves against a directory that did not exist while Linux and macOS
+# passed. It read as a platform bug for two CI runs and was a configuration
+# one.
+#
+# Attaching it to allunittests instead means any configuration that can run the
+# unit tests can also feed them.
+if(NEED_UNIT_TEST_DATA)
+    add_custom_target(stageunittestdata
+        COMMAND "${CMAKE_COMMAND}" -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests"
+            "${TEST_WORKING_DIRECTORY}/tests"
+        COMMENT "Staging unit test data")
 endif()
 
 # Set up an object library with the shared code for unit tests.
@@ -1131,6 +1156,9 @@ if((NOT CMAKE_CROSSCOMPILING) OR (DEFINED CMAKE_CROSSCOMPILING_EMULATOR))
     endif()
     if(SC_INSTALL)
         add_dependencies(allunittests TransferLib ${ANGBAND_TEST_CASE_TARGETS})
+    endif()
+    if(NEED_UNIT_TEST_DATA)
+        add_dependencies(allunittests stageunittestdata)
     endif()
 else()
     add_custom_target(allunittests)

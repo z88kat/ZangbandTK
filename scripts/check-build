@@ -23,8 +23,18 @@
 #      not have is emitted with its level, mana and failure and no effect at
 #      all -- which looks exactly like a deliberate deferral. One shipped that
 #      way (Sorcery's *Teleport*, 3.55.0) and was found by accident.
+#   6. The msys2 ASAN/UBSAN job, reproduced: a Debug build with
+#      -fsanitize=address -fsanitize=undefined and, deliberately, **none of
+#      the frontend options this script passes elsewhere**. That last part is
+#      the point. `game/saves` failed two Windows CI runs while every other
+#      job was green, and it was not the sanitizers and not Windows: the
+#      savefile corpus is staged into the test working directory, and that
+#      staging hung off SUPPORT_TEST_FRONTEND, which linux.yaml passes and
+#      msys2.yaml does not. This pass builds the way that job builds, which is
+#      the only way to see it. The sanitizers come along for the ride and are
+#      worth having on their own.
 #
-# A defect can pass any four of the five.
+# A defect can pass any five of the six.
 #
 # What made this necessary: `make -f Makefile.osx` and `cmake -S . -B build`
 # both default to permissive, and CI passes -Werror to both. A pointer of the
@@ -41,6 +51,10 @@
 #
 # Usage:
 #   scripts/check-build            every build, the manual, and the realm data
+#   scripts/check-build --tests    ...and run the unit tests after
+#
+# The sanitizer pass is the slow one and is incremental in build-asan, so the
+# first run pays for it and later ones do not.
 #   scripts/check-build --tests    ...and run the unit tests after
 
 set -e
@@ -185,5 +199,27 @@ if [ "$1" = "--tests" ]; then
 	# some of the characters it contains.
 	( cd build-strict && LANG=en_US.UTF-8 ninja alltests )
 fi
+
+# --- and the way the Windows CI job builds --------------------------------
+#
+# Configured to match .github/workflows/msys2.yaml's asan-ubsan-clang64 job as
+# closely as one can off Windows: Debug, no interprocedural optimisation, the
+# same sanitizer flags, and no -DSUPPORT_* of any kind. The missing options are
+# not an oversight -- they are what this pass exists to reproduce.
+#
+# It runs the tests unconditionally rather than under --tests, because a
+# sanitizer build that is never run tells you nothing: ASAN and UBSAN report at
+# run time, and the configuration difference this caught only shows up when a
+# test goes looking for its data.
+echo "check-build: building and testing as msys2/asan-ubsan does (Debug, ASAN+UBSAN, no frontends)"
+if [ ! -d build-asan ]; then
+	mkdir build-asan
+	( cd build-asan && run cmake -G Ninja \
+		-DCMAKE_BUILD_TYPE=Debug \
+		-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
+		-DCMAKE_C_FLAGS="-fsanitize=address -fsanitize=undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer -fno-lto -g" \
+		.. )
+fi
+( cd build-asan && LANG=en_US.UTF-8 run ninja alltests )
 
 echo "check-build: clean"

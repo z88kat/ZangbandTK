@@ -62,6 +62,8 @@ static void println(const char *str) {
 	printf("%s\n", str);
 }
 
+static void build_test_list(void);
+
 int setup_tests(void **state) {
 	plog_aux = println;
 
@@ -70,6 +72,13 @@ int setup_tests(void **state) {
 #ifdef UNIX
 	create_needed_dirs();
 #endif
+
+	/*
+	 * The test list is built here rather than written out, because it has one
+	 * entry per savefile and the corpus is whatever is on disk. setup_tests()
+	 * runs before the harness walks tests[], which is what makes this legal.
+	 */
+	build_test_list();
 
 	return 0;
 }
@@ -131,134 +140,257 @@ static void reset_for_load(void)
 	init_angband();
 }
 
-/**
- * Every file in tests/saves loads, and produces a character.
+
+
+/*
+ * One test per savefile, built at run time.
+ *
+ * The corpus used to be a single test: thirty-five files loaded in a loop, three
+ * counters, and four assertions at the end. It reported "0/1 passed" and a
+ * tally, which is exactly what it did on Windows CI for two runs -- and from
+ * that log it was impossible to tell *which* file had gone wrong, or in which
+ * direction, or (as it turned out) that no file had been read at all.
+ *
+ * So each file is now its own named test. `game/saves 34/35 passed` says how
+ * many, and the runner echoes the failing assertion, which names the file.
+ * `the-corpus-is-present` runs first and says the path it looked in, because
+ * "the directory is not there" is a different answer from "a save broke" and
+ * the old suite could not tell them apart.
+ *
+ * The harness takes a static `tests[]`, so it is sized once and filled in
+ * `setup_tests()`, which runs before the first test. The names have to outlive
+ * setup, so they are the strings in `corpus[]` rather than a stack buffer.
  */
-static int test_every_saved_character_still_loads(void *state) {
-	ang_dir *dir = my_dopen(SAVE_CORPUS);
-	const char *roundtrip = "saves-roundtrip.tmp";
-	char name[256];
-	int loaded = 0, failed = 0, expected = 0, revived = 0;
+#define MAX_SAVES 128
 
-	/*
-	 * Absent rather than empty is a real answer: a checkout without the corpus
-	 * should say so rather than pass silently having tested nothing.
-	 */
-	notnull(dir);
+static char corpus[MAX_SAVES][256];
+static int corpus_count;
+static bool corpus_found;
+static char corpus_path[1024];
 
-	while (my_dread(dir, name, sizeof(name))) {
-		char path[1024];
+/* Which entry the next per-save test should read. */
+static int next_save;
 
-		/* Skip anything that is plainly not a savefile. */
-		if (name[0] == '.') continue;
-		if (suffix(name, ".md") || suffix(name, ".txt")) continue;
-		if (streq(name, SAVE_EXPECTED)) continue;
-
-		path_build(path, sizeof(path), SAVE_CORPUS, name);
-
-		/*
-		 * Named before the attempt, not after.  A savefile the loader cannot
-		 * make sense of calls quit(), which takes the process with it, so a
-		 * message printed afterwards is a message never printed -- and the one
-		 * thing needed at that point is which file did it.
-		 */
-		printf("SAVE trying %s\n", name);
-		fflush(stdout);
-
-		play_again = true;
-		reset_for_load();
-		play_again = false;
-
-		if (!savefile_load(path, false)) {
-			/*
-			 * A refusal that is on the list is the loader doing its job.
-			 * DEC-50 replaced the spell content of four realms, and a
-			 * character who learned spells against the old list cannot be
-			 * read without being handed somebody else's.
-			 */
-			if (save_expected_to_fail(name)) {
-				printf("SAVE %-14s refused, as expected\n", name);
-				expected++;
-			} else {
-				printf("SAVE %-14s FAILED to load\n", name);
-				failed++;
-			}
-			continue;
-		}
-
-		/*
-		 * And a file on the list that loads is a failure of its own.  The
-		 * entry has outlived its reason, and left there it would go on
-		 * excusing the next genuine break of that same file.
-		 */
-		if (save_expected_to_fail(name)) {
-			printf("SAVE %-14s loads; take it off %s\n", name, SAVE_EXPECTED);
-			revived++;
-		}
-
-		/*
-		 * Loaded is not the same as usable.  A character whose race or class
-		 * no longer exists came back wrong even though every block was read
-		 * without complaint -- which is exactly what renaming something in
-		 * the data files would do.  The name is not checked: a character may
-		 * legitimately have none, which is why the default savefile is called
-		 * PLAYER.
-		 */
-		if (!player || !player->race || !player->class ||
-				!player->race->name || !player->class->name) {
-			printf("SAVE %-14s loaded but is not a character\n", name);
-			failed++;
-			continue;
-		}
-
-		/*
-		 * Loading is only half of compatibility.  An old save can come back
-		 * in a state the writer cannot cope with - a monster array with a
-		 * hole in it will crash wr_monster on the very next save - so each
-		 * character is written out again and read back.  The copy goes to a
-		 * scratch path: the corpus itself stays exactly as it was played.
-		 */
-		if (!savefile_save(roundtrip)) {
-			printf("SAVE %-14s loaded but could not be saved again\n", name);
-			failed++;
-			continue;
-		}
-
-		play_again = true;
-		reset_for_load();
-		play_again = false;
-
-		if (!savefile_load(roundtrip, false)) {
-			printf("SAVE %-14s did not survive a save and reload\n", name);
-			failed++;
-			continue;
-		}
-
-		loaded++;
+/**
+ * The corpus directory is where it should be, and not empty.
+ *
+ * Runs first, and is the reason the rest can be terse. An absent corpus is not
+ * a broken savefile and must not read like one: two Windows CI runs failed here
+ * and the log said only "0/1 passed", which sent the search after line endings
+ * and path separators when the directory simply had not been staged.
+ */
+static int test_the_corpus_is_present(void *state) {
+	if (!corpus_found) {
+		printf("SAVES no corpus at %s -- nothing was tested\n", corpus_path);
+		printf("SAVES   the unit tests read tests/ from the build's game\n");
+		printf("SAVES   directory; if it is missing, that staging is missing\n");
 	}
+	require(corpus_found);
 
-	file_delete(roundtrip);
+	/* Absent and empty are both real answers, and neither is a pass. */
+	require(corpus_count > 0);
 
-	my_dclose(dir);
-
-	printf("SAVES %d loaded, %d refused as expected, %d failed\n", loaded,
-		   expected, failed);
-
-	/* The corpus is not empty... */
-	require(loaded + failed + expected > 0);
-
-	/* ...nothing broke that was not already known to be broken... */
-	eq(failed, 0);
-
-	/* ...and nothing on the list has quietly started working again. */
-	eq(revived, 0);
+	printf("SAVES %d files in %s\n", corpus_count, corpus_path);
 
 	ok;
 }
 
+/**
+ * One savefile: it loads and survives a round trip, or it is refused and listed.
+ *
+ * Both directions are failures, which is the whole point of the manifest. A
+ * file that will not load and is not on the list is a break. A file that loads
+ * and *is* on the list has outlived its entry, and leaving it there would go on
+ * excusing the next genuine break of that same file.
+ */
+static int test_one_saved_character(void *state) {
+	const char *roundtrip = "saves-roundtrip.tmp";
+	const char *name;
+	char path[1024];
+	bool listed;
+
+	require(next_save < corpus_count);
+	name = corpus[next_save++];
+	listed = save_expected_to_fail(name);
+
+	path_build(path, sizeof(path), SAVE_CORPUS, name);
+
+	/*
+	 * Named before the attempt, not after. A savefile the loader cannot make
+	 * sense of calls quit(), which takes the process with it, so a message
+	 * printed afterwards is a message never printed -- and the one thing
+	 * needed at that point is which file did it.
+	 */
+	printf("SAVE trying %s\n", name);
+	fflush(stdout);
+
+	play_again = true;
+	reset_for_load();
+	play_again = false;
+
+	if (!savefile_load(path, false)) {
+		if (listed) {
+			printf("SAVE %-14s refused, as expected\n", name);
+			ok;
+		}
+		printf("SAVE %-14s FAILED to load, and is not in %s\n",
+			   name, SAVE_EXPECTED);
+		require(listed);
+	}
+
+	if (listed) {
+		printf("SAVE %-14s loads; take it out of %s\n", name, SAVE_EXPECTED);
+		require(!listed);
+	}
+
+	/*
+	 * Loaded is not the same as usable. A character whose race or class no
+	 * longer exists came back wrong even though every block was read without
+	 * complaint -- which is exactly what renaming something in the data files
+	 * would do. The name is not checked: a character may legitimately have
+	 * none, which is why the default savefile is called PLAYER.
+	 */
+	notnull(player);
+	notnull(player->race);
+	notnull(player->class);
+	notnull(player->race->name);
+	notnull(player->class->name);
+
+	/*
+	 * Loading is only half of compatibility. An old save can come back in a
+	 * state the writer cannot cope with -- a monster array with a hole in it
+	 * will crash wr_monster on the very next save -- so each character is
+	 * written out again and read back. The copy goes to a scratch path: the
+	 * corpus itself stays exactly as it was played.
+	 */
+	require(savefile_save(roundtrip));
+
+	play_again = true;
+	reset_for_load();
+	play_again = false;
+
+	require(savefile_load(roundtrip, false));
+	file_delete(roundtrip);
+
+	printf("SAVE %-14s loaded, and survived a save and reload\n", name);
+
+	ok;
+}
+
+/**
+ * Every name in the manifest is a file that is actually there.
+ *
+ * The other way a manifest goes stale. A name that matches nothing excuses
+ * nothing, so it never fails anything -- it just sits there, and the next
+ * reader takes it as evidence about a file that no longer exists. Found by
+ * falsifying the suite: adding an entry for a file not in the corpus passed
+ * 37/37, which is the definition of a check that is not being made.
+ */
+static int test_the_manifest_has_no_dead_entries(void *state) {
+	char path[1024];
+	ang_file *f;
+	char line[256];
+	int dead = 0;
+
+	require(corpus_found);
+
+	path_build(path, sizeof(path), SAVE_CORPUS, SAVE_EXPECTED);
+	f = file_open(path, MODE_READ, FTYPE_TEXT);
+	notnull(f);
+
+	while (file_getl(f, line, sizeof(line))) {
+		char *colon;
+		int i;
+		bool present = false;
+
+		if (line[0] == '#' || line[0] == '\0' || line[0] == '\r') continue;
+
+		colon = strchr(line, ':');
+		if (!colon) continue;
+		*colon = '\0';
+
+		for (i = 0; i < corpus_count; i++) {
+			if (streq(line, corpus[i])) {
+				present = true;
+				break;
+			}
+		}
+
+		if (!present) {
+			printf("SAVES %s names %s, which is not in the corpus\n",
+				   SAVE_EXPECTED, line);
+			dead++;
+		}
+	}
+
+	file_close(f);
+
+	eq(dead, 0);
+
+	ok;
+}
+
+/**
+ * Every file in the corpus was actually offered to a test.
+ *
+ * The per-save tests read `corpus[]` in order, one entry each, because the
+ * harness hands a test no way of knowing which one it is. That is only sound
+ * if the harness runs them all, in order, exactly once -- so this checks the
+ * counter arrived where it should. It is the guard on the mechanism rather than
+ * on the savefiles.
+ */
+static int test_every_file_was_tried(void *state) {
+	eq(next_save, corpus_count);
+
+	ok;
+}
 
 const char *suite_name = "game/saves";
-struct test tests[] = {
-	{ "every-saved-character-still-loads", test_every_saved_character_still_loads },
-	{ NULL, NULL }
-};
+
+/*
+ * Three invariant tests plus one per savefile, and the NULL the harness stops
+ * on.
+ */
+struct test tests[MAX_SAVES + 4];
+
+static void build_test_list(void) {
+	ang_dir *dir;
+	char name[256];
+	int i, n = 0;
+
+	path_build(corpus_path, sizeof(corpus_path), ".", SAVE_CORPUS);
+
+	dir = my_dopen(SAVE_CORPUS);
+	if (dir) {
+		corpus_found = true;
+		while (n < MAX_SAVES && my_dread(dir, name, sizeof(name))) {
+			/* Skip anything that is plainly not a savefile. */
+			if (name[0] == '.') continue;
+			if (suffix(name, ".md") || suffix(name, ".txt")) continue;
+			if (streq(name, SAVE_EXPECTED)) continue;
+
+			my_strcpy(corpus[n], name, sizeof(corpus[n]));
+			n++;
+		}
+		my_dclose(dir);
+	}
+	corpus_count = n;
+
+	i = 0;
+	tests[i].name = "the-corpus-is-present";
+	tests[i].func = test_the_corpus_is_present;
+	i++;
+	for (n = 0; n < corpus_count; n++) {
+		tests[i].name = corpus[n];
+		tests[i].func = test_one_saved_character;
+		i++;
+	}
+	tests[i].name = "the-manifest-has-no-dead-entries";
+	tests[i].func = test_the_manifest_has_no_dead_entries;
+	i++;
+	tests[i].name = "every-file-was-tried";
+	tests[i].func = test_every_file_was_tried;
+	i++;
+	tests[i].name = NULL;
+	tests[i].func = NULL;
+}

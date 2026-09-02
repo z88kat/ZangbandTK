@@ -1,0 +1,16 @@
+# The savefile corpus is binary and must never be line-ending converted.
+#
+# Git's own heuristic already gets this right -- `git ls-files --eol` reports
+# every savefile as `i/-text`, because they carry NUL bytes early -- so this is
+# belt and braces rather than a fix. It is here because the corpus is the one
+# thing in the repository where a silent byte-for-byte change would go unnoticed
+# until a character failed to load, and leaving that to a heuristic is a worse
+# bargain than two lines of configuration.
+#
+# Written as individual attributes rather than the `binary` macro so the
+# manifest below can opt back in: the macro is `-diff -merge -text` and a later
+# `text` rule would re-enable conversion while leaving the file undiffable.
+tests/saves/** -text -diff
+
+# The manifest beside them is text, read a line at a time, and wants LF.
+tests/saves/EXPECTED-FAILURES text eol=lf diff

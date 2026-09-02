@@ -87,3 +87,4 @@ __pycache__/
 # the build*/ rule above.
 src/wasm-obj/
 src/wasm-obj-test/
+build-asan/
