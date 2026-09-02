@@ -532,9 +532,10 @@ The per-class realm entitlements, read from those same tables, are:
 | Monk | Life, Nature, Death | none |
 | Warrior, Mindcrafter | none | none |
 
-Note **the Chaos-Warrior is entitled to Chaos and does not cast today** — a gap in
-PLR-05's class rather than new scope, and subject to the same book-index hazard as any
-other existing class.
+Note **every entitlement in that table is now backed by books** — the
+Chaos-Warrior gained Chaos in 3.58.0, the Monk its three realms in 3.65.0, and
+DEC-57 completed the five classes that were short. The only cell not honoured is
+Trump, which has no content (DEC-54), and `player/realm` asserts the rest.
 
 #### Size, recorded honestly
 
@@ -572,8 +573,33 @@ Anyone planning this should expect it to break into more phases than M8 did, not
   projections distinguish targets, with confirmation before harming a pet.
 - PLR-25 to PLR-28 — nine command modes with distance behaviour, persistence across levels
   and saves, visual distinction, and summoning/charming as sources.
+- **PLR-29 — allegiance has three states, not two.** Hostile, friendly and pet
+  behave differently: a friendly monster does not attack you, cannot be
+  commanded and costs nothing, where a pet can be commanded and costs upkeep.
+  PLR-29 says outright that "a boolean *friendly* flag is insufficient", so this
+  is a constraint on how PLR-22 is built rather than a feature after it.
+- **PLR-30 — pets cost mana upkeep proportional to the sum of their levels**,
+  reducing the player's mana *regeneration rate* rather than the pool. This is
+  the entire balancing mechanism for pets; without it a summoner build
+  trivialises the game, and the documentation warns explicitly about pets that
+  summon more pets.
+- **PLR-31 — experience only for the killing blow.** A pet that kills earns the
+  player nothing. The second half of pet balance, and it interacts with DEC-08.
+- **PLR-32 — summons inherit their summoner's allegiance**, which compounds with
+  PLR-30's upkeep.
+- **PLR-33 — annoying a pet or a friendly monster turns it hostile**: area
+  effects that catch them, aggravation and the like. The documented counterweight
+  to pets, and the reason PLR-24's confirmation prompt matters.
 
-**Exit:** pets commandable, persistent and distinguishable. Manual chapter: pets.
+> These five were in the requirement document's §4 refinements and not in this
+> section, while the summary table below counted twelve requirements for M10.
+> Written in on 2 September, because two of them change how the earlier ones must
+> be built: PLR-29 rules out the obvious boolean, and PLR-30 decides what the
+> feature costs.
+
+**Exit:** pets commandable, persistent and distinguishable, with three
+allegiance states, mana upkeep, killing-blow experience, inherited allegiance and
+annoyance implemented. Manual chapter: pets.
 
 > Budget generously. Every place 4.2 assumes "monster ⇒ enemy" is a potential defect, and
 > they are not enumerable by search. The standing constraint in §1 exists to keep this from
