@@ -33,6 +33,39 @@ Unreleased
 M9: magic realms — 2 September 2026
 -----------------------------------
 
+- **3.60.1** — **The savefile fence is live again, and three latent faults are
+  fixed.** DEC-50's Life realm left every one of the thirty-five historical
+  savefiles refused, so nothing proved a character could be saved and loaded at
+  all — and the spell-list fingerprint, which is exactly the guard the three
+  remaining realm replacements need, had stopped being exercised by anything:
+  every corpus file now fails a step earlier on a missing object kind, so the
+  fingerprint could have been broken outright with the suite still green.
+
+  ``game/roundtrip`` builds its own characters instead. A Priest with realms
+  chosen and prayers learned survives a save and load with the same spells at
+  the same indices; the fingerprint **refuses** that character when a spell in
+  the class list has been renamed underneath it, and **accepts** it when it has
+  not. The rename is deliberate — it leaves ``total_spells`` alone, so the count
+  check cannot catch it and only the fingerprint can.
+
+  Making that possible needed three fixes, all the same defect — memory freed
+  and left live — and all invisible while a process only ever starts the game
+  once:
+
+  - ``cleanup_angband()`` freed the data directory strings without clearing
+    them, so the next ``init_file_paths()`` double-freed and libmalloc aborted.
+  - ``vformat_kill()`` freed the ``format()`` buffer and left it live, so the
+    next ``format()`` wrote into freed memory and the abort landed on some
+    unrelated ``free()`` much later.
+  - ``calc_spells()`` read the spell arrays before they existed. Birth chooses a
+    class and only initialises the arrays at the end, so between the two a
+    literate class has none — and every class change recalculates bonuses.
+    Upstream survived it by reading freed memory; clearing those pointers in
+    3.58.0 turned that into an honest NULL dereference.
+
+  Together they are why a unit test could not build a second character in one
+  process, which was recorded in 3.60.0 as its own piece of work.
+
 - **3.60.0** — **Life is Zangband's realm now** (CNT-10, DEC-50). Thirty-two
   prayers in four books — *Book of Common Prayer*, *High Mass*, *Book of the
   Unicorn*, *Blessings of the Grail* — replacing the five Angband prayer books

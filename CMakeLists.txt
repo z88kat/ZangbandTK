@@ -862,6 +862,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     effects/earthquake.c
     effects/info.c
     game/basic.c
+    game/roundtrip.c
     game/mage.c
     game/saves.c
     game/wild.c

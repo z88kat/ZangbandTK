@@ -32,10 +32,13 @@
  * stays honest, because a listed file that starts loading again fails the suite
  * too.
  *
- * It no longer proves that a character can be saved and loaded at all. Nothing
- * does. A fresh corpus of played characters should replace these, and until it
- * exists this suite is a regression test with nothing to regress from -- which
- * is worth knowing rather than discovering later.
+ * It no longer proves that a character can be saved and loaded at all.
+ * **`game/roundtrip` does that now**: it builds its own caster, saves it, loads
+ * it back, and proves the spell-list fingerprint refuses a character whose
+ * class list has moved and accepts one whose has not. A fresh corpus of played
+ * characters is still worth having -- these files span block versions no
+ * generated character will reproduce -- but the live guard is no longer
+ * missing.
  */
 
 #include "unit-test.h"

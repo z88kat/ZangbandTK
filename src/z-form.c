@@ -603,7 +603,18 @@ char *vformat(const char *fmt, va_list vp)
 
 void vformat_kill(void)
 {
+	/*
+	 * Cleared as well as freed. `vformat()` allocates only when `format_buf`
+	 * is NULL and otherwise writes into whatever `format_len` says is there,
+	 * so leaving the pointer live after freeing it means the next `format()`
+	 * writes into freed memory -- and the abort lands on some unrelated
+	 * `free()` much later, with a backtrace that unwinds to nothing. Harmless
+	 * while a process only ever shuts the game down once; not harmless in a
+	 * test that builds a second character.
+	 */
 	mem_free(format_buf);
+	format_buf = NULL;
+	format_len = 0;
 }
 
 

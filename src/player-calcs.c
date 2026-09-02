@@ -1279,6 +1279,20 @@ static void calc_spells(struct player *p)
 	/* Must be literate */
 	if (!p->class->magic.total_spells) return;
 
+	/*
+	 * And must have the arrays the spells are counted in.
+	 *
+	 * The class and the arrays are set at different moments: birth chooses a
+	 * class and only calls `player_spells_init()` at the end of it, so
+	 * between those two a literate class can have no arrays -- and every
+	 * class change in between recalculates bonuses. Upstream got away with it
+	 * because `player_spells_free()` left the pointers dangling, so this read
+	 * freed memory and usually survived; clearing them turned that into a
+	 * NULL dereference, which is the honest version of the same bug. It is
+	 * why a unit test could not make a second character in one process.
+	 */
+	if (!p->spell_flags || !p->spell_order) return;
+
 	/* Wait for creation */
 	if (!character_generated) return;
 

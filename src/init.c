@@ -6948,18 +6948,42 @@ void cleanup_angband(void)
 	/* Free the format() buffer */
 	vformat_kill();
 
-	/* Free the directories */
+	/*
+	 * Free the directories, and clear them.
+	 *
+	 * Upstream frees without clearing, which is safe only while nothing ever
+	 * initialises a second time in one process. `init_file_paths()` opens by
+	 * freeing whatever is there, so after a cleanup that left these dangling
+	 * the next call double-frees and libmalloc aborts -- with a backtrace that
+	 * unwinds to nothing useful, which is how this stayed hidden. It is why a
+	 * unit test could not build a character after resetting the game, and why
+	 * the only reset in the suites is the one that sets `play_again` and so
+	 * never reaches this block at all.
+	 */
 	string_free(ANGBAND_DIR_GAMEDATA);
+	ANGBAND_DIR_GAMEDATA = NULL;
 	string_free(ANGBAND_DIR_CUSTOMIZE);
+	ANGBAND_DIR_CUSTOMIZE = NULL;
 	string_free(ANGBAND_DIR_HELP);
+	ANGBAND_DIR_HELP = NULL;
 	string_free(ANGBAND_DIR_SCREENS);
+	ANGBAND_DIR_SCREENS = NULL;
 	string_free(ANGBAND_DIR_FONTS);
+	ANGBAND_DIR_FONTS = NULL;
 	string_free(ANGBAND_DIR_TILES);
+	ANGBAND_DIR_TILES = NULL;
 	string_free(ANGBAND_DIR_SOUNDS);
+	ANGBAND_DIR_SOUNDS = NULL;
 	string_free(ANGBAND_DIR_ICONS);
+	ANGBAND_DIR_ICONS = NULL;
 	string_free(ANGBAND_DIR_USER);
+	ANGBAND_DIR_USER = NULL;
 	string_free(ANGBAND_DIR_SAVE);
+	ANGBAND_DIR_SAVE = NULL;
 	string_free(ANGBAND_DIR_PANIC);
+	ANGBAND_DIR_PANIC = NULL;
 	string_free(ANGBAND_DIR_SCORES);
+	ANGBAND_DIR_SCORES = NULL;
 	string_free(ANGBAND_DIR_ARCHIVE);
+	ANGBAND_DIR_ARCHIVE = NULL;
 }

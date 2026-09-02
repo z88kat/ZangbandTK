@@ -21,9 +21,14 @@
 # These thirty-five are therefore historical. They are kept because they are the
 # only record of the formats this game has written, and because the day a reader
 # for them is written -- mapping old book names to new -- this is what would
-# prove it worked. They no longer guard against accidental breakage: only the
-# fresh characters the suite makes for itself do that now, and a new corpus of
-# played characters should replace these.
+# prove it worked.
+#
+# They no longer guard against accidental breakage. `game/roundtrip` does that
+# instead, on characters it builds itself: a caster saved and loaded back with
+# the same spells at the same indices, and the spell-list fingerprint proved to
+# refuse a moved list and accept an unmoved one. A new corpus of played
+# characters is still worth having, because these files carry block versions no
+# freshly built character will reproduce.
 Ador: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
 Allen: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
 Amanwe: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
