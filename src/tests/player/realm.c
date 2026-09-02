@@ -181,14 +181,22 @@ static int test_no_existing_class_progression_moved(void *state) {
 		 * already refused whole before it, and `game/roundtrip` proves
 		 * the fingerprint still catches a character whose list moved.
 		 * What this test guards is the *next* move, the one nobody meant.
+		 *
+		 * **Nature** moved the Druid and the Ranger the same way: the
+		 * Druid's five books became four, and the Ranger, which borrowed
+		 * two of the Druid's, gained the whole realm and went to twelve.
+		 * The Druid is also the first class in the game to take its
+		 * figures from a class Zangband never had -- DEC-55 gives it
+		 * Zangband's Priest, the only Nature carrier sharing the Druid's
+		 * `spell_first`, `spell_weight` and casting stat.
 		 */
 		{ "Mage", 12, 96 },
-		{ "Druid", 5, 27 },
+		{ "Druid", 4, 32 },
 		{ "Priest", 12, 96 },
 		{ "Necromancer", 5, 26 },
 		{ "Paladin", 4, 32 },
 		{ "Rogue", 8, 63 },
-		{ "Ranger", 10, 70 },
+		{ "Ranger", 12, 91 },
 		{ "Blackguard", 3, 15 },
 		{ "Chaos-Warrior", 4, 32 },
 	};
@@ -226,7 +234,7 @@ static int test_every_book_kept_its_place(void *state) {
 		{ "Mage",        { "arcane", "arcane", "arcane", "arcane",
 		                   "sorcery", "sorcery", "sorcery", "sorcery",
 		                   "chaos", "chaos", "chaos", "chaos" } },
-		{ "Druid",       { "nature", "nature", "nature", "nature", "nature" } },
+		{ "Druid",       { "nature", "nature", "nature", "nature" } },
 		{ "Priest",      { "life", "life", "life", "life",
 		                   "sorcery", "sorcery", "sorcery", "sorcery",
 		                   "chaos", "chaos", "chaos", "chaos" } },
@@ -234,7 +242,7 @@ static int test_every_book_kept_its_place(void *state) {
 		{ "Paladin",     { "life", "life", "life", "life" } },
 		{ "Rogue",       { "arcane", "arcane", "arcane", "arcane",
 		                   "sorcery", "sorcery", "sorcery", "sorcery" } },
-		{ "Ranger",      { "nature", "nature",
+		{ "Ranger",      { "nature", "nature", "nature", "nature",
 		                   "sorcery", "sorcery", "sorcery", "sorcery",
 		                   "chaos", "chaos", "chaos", "chaos" } },
 		{ "Blackguard",  { "death", "death", "death" } },
@@ -264,8 +272,8 @@ static int test_every_book_kept_its_place(void *state) {
 		}
 	}
 
-	/* 12 + 5 + 12 + 5 + 4 + 8 + 10 + 3 + 4 across the nine casting classes. */
-	eq(checked, 63);
+	/* 12 + 4 + 12 + 5 + 4 + 8 + 12 + 3 + 4 across the nine casting classes. */
+	eq(checked, 64);
 
 	ok;
 }
@@ -693,7 +701,7 @@ static int test_the_realm_filter_sorts_three_realms(void *state) {
  * which catches a spell quietly *gaining* the deferral wording to make the
  * first half pass.
  *
- * Twenty-four as the realms stand. Sixteen are Sorcery's four -- Identify True,
+ * Thirty-four as the realms stand. Sixteen are Sorcery's four -- Identify True,
  * Detect Enchantment, Self Knowledge, Explosive Rune -- once for each of the
  * four classes entitled to the realm. Four are Life's two, Day of the Dove and
  * Bless Weapon, once each for the Priest and the Paladin: the first needs
@@ -701,6 +709,11 @@ static int test_the_realm_filter_sorts_three_realms(void *state) {
  * blesses a weapon. Four are Arcane's two, once each for the Mage and the
  * Rogue: Phlogiston, because refuelling a light source is a command in 4.2 and
  * not an effect, and Detect Enchantment again, for the reason Sorcery's is.
+ * Ten are Nature's five, once each for the Druid and the Ranger: three of those
+ * five -- Animal Taming, Summon Animal, Animal Friendship -- are the same
+ * monster-allegiance wall that deferred Trump whole, and the other two are
+ * whole-object identification and a rustproofing that is an object property
+ * here rather than anything a spell can reach.
  *
  * `scripts/check-build` also runs `zconv realms --check` now, which catches a
  * mis-keyed name itself rather than its symptom. This stays because it asks the
@@ -727,7 +740,7 @@ static int test_a_spell_without_an_effect_says_so(void *state) {
 		}
 	}
 
-	eq(effectless, 24);
+	eq(effectless, 34);
 
 	ok;
 }
@@ -995,6 +1008,74 @@ static int test_arcane_is_bought_in_town(void *state) {
 	ok;
 }
 
+/**
+ * The Druid casts on Zangband's Priest figures (DEC-55).
+ *
+ * The Druid, the Necromancer and the Blackguard post-date Zangband, so
+ * `magic_info[]` has no row for any of them and DEC-50 replaces their realms'
+ * content regardless. Each borrows the figures of the Zangband class it matches
+ * on `spell_first`, `spell_weight` and casting stat -- the constants six of the
+ * nine classes match exactly *and* by name, which is what makes the key
+ * evidence rather than a guess.
+ *
+ * The Druid's are 1 / 350 / WIS, which among the six Zangband classes carrying
+ * Nature is the Priest's and only the Priest's. So this is a derivation, and
+ * these numbers are what it derived.
+ *
+ * Pinned because a donor is one word in the converter and nothing else would
+ * notice it changing: every other donor gives a different first or last level
+ * (Mage 1 and 40, Monk 1 and 48, High-Mage 1 and 39, Warrior-Mage 2 and 50,
+ * Ranger 3 and 42, against the Priest's 2 and 44). The Ranger is checked
+ * alongside for contrast -- it has its own row and must *not* share the Druid's.
+ */
+static int test_the_druid_casts_on_priest_figures(void *state) {
+	static const struct {
+		const char *cls, *first, *last;
+		int first_level, first_mana, last_level, last_mana;
+	} shape[] = {
+		{ "Druid", "Detect Creatures", "Nature's Wrath", 2, 1, 44, 80 },
+		{ "Ranger", "Detect Creatures", "Nature's Wrath", 3, 1, 42, 80 },
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(shape); i++) {
+		const struct player_class *c = find_class(shape[i].cls);
+		const struct class_spell *first = NULL, *last = NULL;
+		int b, k, counted = 0;
+
+		notnull(c);
+		for (b = 0; b < c->magic.num_books; b++) {
+			const struct class_book *book = &c->magic.books[b];
+
+			if (!book->realm || !streq(book->realm->name, "nature")) continue;
+			for (k = 0; k < book->num_spells; k++) {
+				if (!first) first = &book->spells[k];
+				last = &book->spells[k];
+				counted++;
+			}
+		}
+
+		notnull(first);
+		notnull(last);
+		eq(counted, 32);
+		require(streq(first->name, shape[i].first));
+		require(streq(last->name, shape[i].last));
+		eq(first->slevel, shape[i].first_level);
+		eq(first->smana, shape[i].first_mana);
+		eq(last->slevel, shape[i].last_level);
+		eq(last->smana, shape[i].last_mana);
+	}
+
+	/*
+	 * And the two are not the same slice. A donor bug that pointed the Druid
+	 * at the Ranger would satisfy the shape above if both rows were read from
+	 * one place, so the difference is asserted directly.
+	 */
+	require(shape[0].first_level != shape[1].first_level);
+
+	ok;
+}
+
 const char *suite_name = "player/realm";
 struct test tests[] = {
 	{ "seven-realms-exist", test_seven_realms_exist },
@@ -1013,6 +1094,8 @@ struct test tests[] = {
 	  test_changing_class_leaves_no_stale_realm },
 	{ "a-single-entitlement-is-not-a-choice",
 	  test_a_single_entitlement_is_not_a_choice },
+	{ "the-druid-casts-on-priest-figures",
+	  test_the_druid_casts_on_priest_figures },
 	{ "arcane-is-bought-in-town", test_arcane_is_bought_in_town },
 	{ "a-spell-knows-its-place-in-its-realm",
 	  test_a_spell_knows_its_place_in_its_realm },

@@ -829,3 +829,184 @@ desc = "Returns you to town, or from town to the depth you last reached."
 line = 2596
 effects = [ "LIGHT_LEVEL", "TIMED_INC:TELEPATHY", "dice:24+1d31" ]
 desc = "Lights the whole level and grants telepathy for a while."
+
+# Source: archive/zangband/src/cmd5.c, cast_nature_spell().
+
+# Nature's own bargain: the weather at the top of the realm and the ground at
+# the bottom, with healing and the four resistances in between. Five of the
+# thirty-two are deferred and three of those five are the same wall -- taming,
+# summoning and befriending animals all need a monster to be able to take your
+# side, which is what deferred Trump whole.
+
+[nature]
+books = [
+  "Call of the Wild",
+  "Nature Mastery",
+  "Nature's Gifts",
+  "Nature's Wrath",
+]
+
+[nature.spells."Detect Creatures"]
+line = 913
+effects = [ "DETECT_VISIBLE_MONSTERS", "effect-yx:22:40" ]
+desc = "Detects all monsters nearby that are not invisible."
+
+[nature.spells."First Aid"]
+line = 916
+effects = [ "HEAL_HP", "dice:2d8", "TIMED_DEC:CUT", "dice:15" ]
+desc = "Heals a little and closes a light wound."
+
+[nature.spells."Detect Doors and Traps"]
+line = 920
+effects = [ "DETECT_TRAPS", "effect-yx:22:40", "DETECT_DOORS", "effect-yx:22:40", "DETECT_STAIRS", "effect-yx:22:40" ]
+desc = "Detects doors, traps and staircases nearby."
+
+[nature.spells."Foraging"]
+line = 925
+effects = [ "NOURISH:SET_TO", "dice:99" ]
+desc = "Finds enough to eat."
+
+[nature.spells."Daylight"]
+line = 928
+effects = [ "LIGHT_AREA", "SPHERE:LIGHT_WEAK:2", "dice:2d$S", "expr:S:PLAYER_LEVEL:/ 2" ]
+note = "Zangband's daylight burns its own caster if they are light-sensitive -- a Vampire chanting this regrets it. There is no way to say 'and hurt the caster if they hate light' in an effect chain, so that half is lost, and the note is here rather than nowhere. The radius is fixed at 2 by the DEC-53 rule, matching Sorcery's and Arcane's Light Area."
+desc = "Fills the area with daylight, and burns what cannot bear it."
+
+[nature.spells."Animal Taming"]
+line = 938
+defer = "The monster-allegiance wall, the same one that deferred Trump whole (DEC-54) and Life's Day of the Dove. 4.2 has no side for a monster to be on: no field to put one in, no AI that would read it, and no SUMMON that can take one. charm_animal() makes one animal fight for you, which is the entire spell -- a hostile animal is what you already had."
+
+[nature.spells."Resist Environment"]
+line = 943
+effects = [ "SET_VALUE", "dice:19+1d21", "TIMED_INC:OPP_COLD", "TIMED_INC:OPP_FIRE", "TIMED_INC:OPP_ELEC", "CLEAR_VALUE" ]
+note = "A SET_VALUE bracket, which is how 4.2 gives several timed effects one duration: Zangband calls inc_oppose_* once each with its own rand_range(20, 40) roll, so each element got a different number there and they all get the same one here. The 4.2 Mage's own Resistance is written exactly this way. Three elements here and four in Resistance True, which is the pair Zangband intends: the cheap one covers the weather and the dear one covers acid as well."
+desc = "Grants temporary resistance to cold, fire and lightning."
+
+[nature.spells."Cure Wounds & Poison"]
+line = 948
+effects = [ "CURE:CUT", "CURE:POISONED" ]
+desc = "Closes every wound and draws out every poison."
+
+[nature.spells."Stone to Mud"]
+line = 952
+effects = [ "LINE:KILL_WALL", "dice:20+1d30" ]
+desc = "Melts a wall along a line."
+
+[nature.spells."Lightning Bolt"]
+line = 957
+effects = [ "BOLT_OR_BEAM:ELEC:0:-10", "dice:$Dd8", "expr:D:PLAYER_LEVEL:- 5 / 4 + 3" ]
+desc = "Fires a bolt of lightning, sometimes as a beam."
+
+[nature.spells."Nature Awareness"]
+line = 963
+effects = [ "MAP_AREA", "effect-yx:22:40", "DETECT_TRAPS", "effect-yx:22:40", "DETECT_DOORS", "effect-yx:22:40", "DETECT_STAIRS", "effect-yx:22:40", "DETECT_VISIBLE_MONSTERS", "effect-yx:22:40" ]
+note = "Zangband's own comment on this line reads 'Nature Awareness -- downgraded', and the downgrade is that it maps the area rather than the level."
+desc = "Maps the area, and finds its doors, traps, stairs and creatures."
+
+[nature.spells."Frost Bolt"]
+line = 970
+effects = [ "BOLT_OR_BEAM:COLD:0:-10", "dice:$Dd8", "expr:D:PLAYER_LEVEL:- 5 / 4 + 5" ]
+desc = "Fires a bolt of frost, sometimes as a beam."
+
+[nature.spells."Ray of Sunlight"]
+line = 975
+effects = [ "LINE:LIGHT_WEAK", "dice:6d8" ]
+desc = "Draws a line of sunlight, and burns what cannot bear it."
+
+[nature.spells."Entangle"]
+line = 980
+effects = [ "PROJECT_LOS_AWARE:MON_SLOW", "dice:$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+note = "slow_monsters() has no power argument in Zangband and slows everything in sight outright; 4.2's projection takes a power, so the caster's level is passed and a strong monster may shrug it off. Slightly weaker, and the alternative was inventing a saving throw that neither game has."
+desc = "Roots every creature in sight to the spot."
+
+[nature.spells."Summon Animal"]
+line = 983
+defer = "The monster-allegiance wall, the same one that deferred Trump whole (DEC-54) and Life's Day of the Dove. 4.2 has no side for a monster to be on: no field to put one in, no AI that would read it, and no SUMMON that can take one. Zangband summons this one as a pet outright, with no failure branch: SUMMON_ANIMAL_RANGER and pet TRUE. Imported as a hostile summon it would be a spell that calls an animal to attack you, which is the opposite spell."
+
+[nature.spells."Herbal Healing"]
+line = 989
+effects = [ "HEAL_HP", "dice:1000", "CURE:STUN", "CURE:CUT", "CURE:POISONED" ]
+desc = "Heals a thousand points, and cures stunning, bleeding and poison with it."
+
+[nature.spells."Door Building"]
+line = 995
+effects = [ "TOUCH:MAKE_DOOR" ]
+desc = "Builds doors in the squares around you."
+
+[nature.spells."Stair Building"]
+line = 998
+effects = [ "CREATE_STAIRS" ]
+desc = "Builds a staircase under your feet."
+
+[nature.spells."Stone Skin"]
+line = 1001
+effects = [ "TIMED_INC:SHIELD", "dice:29+1d21" ]
+desc = "Hardens your skin for a while."
+
+[nature.spells."Resistance True"]
+line = 1004
+effects = [ "SET_VALUE", "dice:19+1d21", "TIMED_INC:OPP_ACID", "TIMED_INC:OPP_ELEC", "TIMED_INC:OPP_FIRE", "TIMED_INC:OPP_COLD", "CLEAR_VALUE" ]
+note = "A SET_VALUE bracket, which is how 4.2 gives several timed effects one duration: Zangband calls inc_oppose_* once each with its own rand_range(20, 40) roll, so each element got a different number there and they all get the same one here. The 4.2 Mage's own Resistance is written exactly this way."
+desc = "Grants temporary resistance to acid, lightning, fire and cold."
+
+[nature.spells."Animal Friendship"]
+line = 1011
+defer = "The monster-allegiance wall, the same one that deferred Trump whole (DEC-54) and Life's Day of the Dove. 4.2 has no side for a monster to be on: no field to put one in, no AI that would read it, and no SUMMON that can take one. charm_animals() turns every animal in sight, which is Animal Taming's problem multiplied."
+
+[nature.spells."Stone Tell"]
+line = 1014
+defer = "identify_fully() tells you everything about an object, and 4.2 replaced whole-object identification with runes learned one at a time. The same call and the same reason as Sorcery's Identify True, which is deferred; mapping it to IDENTIFY would make it a duplicate of a spell Nature does not otherwise have."
+
+[nature.spells."Wall of Stone"]
+line = 1016
+effects = [ "GRANITE" ]
+desc = "Raises a granite wall behind you."
+
+[nature.spells."Protect from Corrosion"]
+line = 1019
+defer = "rustproof() makes a suit of armour immune to acid damage for good. In 4.2 that is an object property -- the ignore-element flags -- set by an item's kind or its ego and reachable by no effect. Adding one to carry a single Nature spell is the wrong way round, and the spell says so instead."
+
+[nature.spells."Earthquake"]
+line = 1021
+effects = [ "EARTHQUAKE:NONE:10" ]
+desc = "Shakes the ground apart around you."
+
+[nature.spells."Whirlwind Attack"]
+line = 1024
+effects = [ "SWEEP", "dice:$S", "expr:S:PLAYER_LEVEL:+ 10 / 15" ]
+note = "4.2's own Whirlwind Attack, blow for blow -- the Blackguard has it and this is the same effect with the same dice. Zangband's whirlwind_attack() strikes every adjacent monster once, and SWEEP's blow count is 4.2's reading of the same idea."
+desc = "Strikes every monster next to you."
+
+[nature.spells."Blizzard"]
+line = 1027
+effects = [ "BALL:COLD:3", "dice:70+$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+note = "The radius grows as plev/12+1 in Zangband and cannot here (DEC-53). A Druid learns this at 36, where that is 4; 3 is taken because the three weather balls share a radius in Zangband and should share one here, and 3 is the value at the level the earliest of the three is learned."
+desc = "Calls down a blizzard."
+
+[nature.spells."Lightning Storm"]
+line = 1032
+effects = [ "BALL:ELEC:3", "dice:90+$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+desc = "Calls down a storm of lightning."
+
+[nature.spells."Whirlpool"]
+line = 1036
+effects = [ "BALL:WATER:3", "dice:100+$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+desc = "Opens a whirlpool.  Water batters, confuses and stuns."
+
+[nature.spells."Call Sunlight"]
+line = 1040
+effects = [ "SPHERE:LIGHT:8", "dice:150", "LIGHT_LEVEL" ]
+note = "Lights the whole level and burns everything nearby that hates light. As with Daylight, the half that burns a light-sensitive caster is not expressible and is lost."
+desc = "Floods the level with sunlight."
+
+[nature.spells."Elemental Branding"]
+line = 1051
+effects = [ "BRAND_WEAPON" ]
+note = "Zangband brands with a random element of four; 4.2's BRAND_WEAPON gives Flame or Frost on a coin flip and has no acid or lightning brand to give. Two of the four, chosen at random, which is the same shape at half the range. Chaos Branding takes the same mapping for the same reason."
+desc = "Brands your weapon with an element.  You do not choose which."
+
+[nature.spells."Nature's Wrath"]
+line = 1054
+effects = [ "PROJECT_LOS_AWARE:DISP_ALL", "dice:$B", "expr:B:PLAYER_LEVEL:* 4", "EARTHQUAKE:NONE:30", "SPHERE:KILL_WALL:4", "SPHERE:MANA:4", "dice:100+$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+note = "Three things at once in Zangband and three effects here: dispel everything in sight, then an earthquake, then a disintegration ball centred on the caster. The earthquake's radius is 20+plev/2 there and a literal here; the disintegration is split into KILL_WALL and MANA by DEC-53, so the walls go and the damage lands, at the cost of striking monsters with two projections rather than one."
+desc = "Nature turns on everything around you, the ground included."

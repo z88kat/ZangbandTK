@@ -237,17 +237,44 @@ source, which is a command in this game rather than a spell; and *Detect
 Enchantment* wants a single is-this-magical bit, which no longer exists now that
 an object's properties are runes you learn one at a time.
 
+Nature
+------
+
+The weather at the top and the ground at the bottom, with healing and the four
+resistances in between. *Herbal Healing* mends a thousand points and cures
+stunning, bleeding and poison with it. *Stone Skin*, *Wall of Stone*, *Stair
+Building* and *Door Building* reshape the dungeon around you. And the last four
+spells are a blizzard, a lightning storm, a whirlpool and *Nature's Wrath*,
+which dispels everything in sight, shakes the level apart and disintegrates what
+is left.
+
+Four books: **Call of the Wild**, **Nature Mastery**, **Nature's Gifts** and
+**Nature's Wrath** — the last of which shares its name with the spell inside it.
+
+**Five of the thirty-two do nothing, and three of those five are the same
+wall.** *Animal Taming*, *Summon Animal* and *Animal Friendship* all need a
+creature to be able to take your side, which is the thing that deferred Trump
+whole and waits for the same milestone. The other two are *Stone Tell*, which
+would tell you everything about an object in a game that replaced that with
+runes learned one at a time, and *Protect from Corrosion*, which is an object
+property here rather than anything a spell can reach.
+
+The **Druid** is the first class in the game to cast on borrowed figures.
+Zangband never had a Druid, so there is no row of levels and mana costs for it
+to import; it takes Zangband's *Priest's*, which is the only class carrying
+Nature that shares the Druid's three magic constants. The **Ranger**, which used
+to borrow two of the Druid's books, now gets the whole realm on its own figures.
+
 What has changed, and what has not
 ----------------------------------
 
-Two of the four realms Angband already had now hold Zangband's spells instead:
-**Life** and **Arcane**. Nature and Death still hold Angband's, and will not for
-long. This is DEC-50, taken deliberately, and it has consequences worth stating:
+Three of the four realms Angband already had now hold Zangband's spells instead:
+**Life**, **Arcane** and **Nature**. Only Death still holds Angband's. This is DEC-50, taken deliberately, and it has consequences worth stating:
 
 - **A Priest's prayers and a Mage's spells are different spells now**, at
   different levels, in differently-named books. A Paladin gains most — Angband
   gave it three of the Priest's books and sixteen prayers, and Zangband's table
-  gives it all thirty-two.
+  gives it all thirty-two. A Ranger gains nearly as much.
 - **Savefiles from before the change do not load.** A book's identity is its
   name, and every old save carries the town temple's stock, so deleting
   *[Novice's Handbook]* made every one of them unreadable. The game is

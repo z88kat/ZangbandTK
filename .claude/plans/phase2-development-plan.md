@@ -336,9 +336,10 @@ classes.
 **Open, in the order it should be taken.**
 
 1. **The four mapped realms.** DEC-50 replaces Angband 4.2's spell content with
-   Zangband's. **Life is done (3.60.0)** and **Arcane is done (3.61.0)**;
-   **Nature and Death remain**, and both need the class question below settled
-   first. One realm per commit, each only once its effect chains are complete: a
+   Zangband's. **Life (3.60.0)**, **Arcane (3.61.0)** and **Nature (3.62.0)**
+   are done; **Death remains**. The class question below is settled -- DEC-55,
+   a derivation rather than a decision -- and Death's two classes have donors
+   waiting. One realm per commit, each only once its effect chains are complete: a
    spell with no chain parses and does nothing, and eight classes read these
    books.
 2. **Death's miscast penalty**, deliberately left out of 3.59.0. It is buildable today

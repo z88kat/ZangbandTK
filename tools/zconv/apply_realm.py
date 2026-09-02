@@ -56,9 +56,29 @@ def main() -> int:
             out.append(blk)
             continue
 
+        # A directive that has nothing to do with books can sit inside the
+        # book region -- the Druid's `equip:nature book:[Lesser Charms]` lives
+        # between its first book's properties and that book's first spell -- and
+        # replacing the region wholesale deletes it. Carry anything that is not
+        # part of the book grammar across, after the first new book.
+        grammar = ("book:", "book-graphics:", "book-properties:", "spell:",
+                   "effect:", "effect-yx:", "effect-msg:", "dice:", "expr:",
+                   "desc:")
+        strays = [l for l in have if l.strip() and not l.startswith(grammar)]
+
         old = "\n".join(have)
         assert blk.count(old) == 1, cls
-        blk = blk.replace(old, "\n".join(want))
+
+        # A stray stays where it was, immediately after the first book's
+        # properties. It cannot be moved out: `equip:nature book:[...]` names an
+        # object kind that the `book:` directive itself creates, so an equip
+        # line ahead of its book is "unrecognized sval" and the game refuses to
+        # start. Which is why the Druid's was in there in the first place.
+        new_lines = list(want)
+        for stray in strays:
+            print("  %-14s kept in the book region: %s" % (cls, stray))
+            new_lines.insert(3, stray)
+        blk = blk.replace(old, "\n".join(new_lines))
 
         # A class may start the game holding one of these books by name, and a
         # title that no longer exists is "unrecognized sval" at load -- the game

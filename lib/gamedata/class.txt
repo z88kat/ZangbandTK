@@ -749,210 +749,182 @@ title:Windrider
 title:Stormwielder
 title:High Mystic
 
-magic:1:350:5
+magic:1:350:4
 realm-choice:1:nature
 
-book:nature book:town:[Lesser Charms]:6:nature
+book:nature book:town:[Call of the Wild]:8:nature
 book-graphics:?:y
 book-properties:25:40:1 to 100
-equip:nature book:[Lesser Charms]:1:1:none
-
-spell:Detect Life:1:1:23:2
-effect:DETECT_LIVING_MONSTERS
+equip:nature book:[Call of the Wild]:1:1:none
+spell:Detect Creatures:2:1:23:5
+effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
-desc:Detects all living monsters in the immediate area, for one turn only.
-
-spell:Fox Form:1:2:20:10
-effect:SHAPECHANGE:fox
-desc:Changes you into the shape of a quick and stealthy fox.
-desc:  While shapechanged you cannot use items.
-
-spell:Remove Hunger:2:2:25:2
-effect:NOURISH:INC_TO
-dice:50
-desc:Magically renders you comfortably fed (but not satiated).
-
-spell:Stinking Cloud:3:2:27:4
-effect:BALL:POIS:2
-dice:$B
-expr:B:PLAYER_LEVEL:/ 2 + 10
-desc:Shoots a radius-2 poison ball.
-
-spell:Confuse Monster:5:3:30:5
-effect:BOLT_AWARE:MON_CONF
-dice:5+d$S
-expr:S:PLAYER_LEVEL:- 5
-desc:Confuse a single monster; more effective against animals.
-
-spell:Slow Monster:6:4:30:5
-effect:BOLT_STATUS:MON_SLOW
-dice:5+d$S
-expr:S:PLAYER_LEVEL:- 5
-desc:Slows down a monster; more effective against animals.
-
-book:nature book:town:[Gifts of Nature]:6:nature
-book-graphics:?:y
-book-properties:400:40:10 to 100
-
-spell:Cure Poison:4:4:30:4
-effect:CURE:POISONED
-desc:Neutralizes poison.
-
-spell:Resist Poison:7:6:32:5
-effect:TIMED_INC:OPP_POIS
-dice:20+d20
-desc:Grants you resistance to poison for 20+1d20 turns.
-
-spell:Turn Stone to Mud:8:3:25:5
-effect:LINE:KILL_WALL
-dice:20+1d30
-desc:Produces a beam that destroys the first section of wall it hits,
-desc: unless it is a permanent wall.  Each monster caught in the beam that
-desc: is susceptible to rock remover takes 20+1d30 points of damage.
-
-spell:Sense Surroundings:9:4:35:6
-effect:MAP_AREA
-dice:$Dd$S
-expr:D:PLAYER_LEVEL:/ 30 + 1 * 22
-expr:S:PLAYER_LEVEL:/ 30 + 1 * 44
-desc:Maps the nearby area.
-
-spell:Lightning Strike:12:6:35:8
-effect:STRIKE:ELEC:0
-dice:$Dd4
-expr:D:PLAYER_LEVEL:/ 4
-effect:STRIKE:SOUND:3
-dice:$B
-expr:B:PLAYER_LEVEL:+ 5
-desc:Strikes a target from above with a lightning bolt, followed by a clap
-desc: of thunder.  If targeting a direction or the target is not a passable
-desc: grid in the line of sight, the player will be the target.
-
-spell:Earth Rising:14:5:40:12
-effect:SHORT_BEAM:SHARD:4:5
-dice:$Dd6
-expr:D:PLAYER_LEVEL:/ 3 + 2
-desc:Causes shards to explode in a line out of the earth, striking objects and
-desc: monsters.  Length of the line increases with player level.
-
-book:nature book:dungeon:[Creature Dominion]:5:nature
-book-graphics:?:o
-book-properties:10000:20:30 to 100
-
-spell:Trance:20:10:45:15
-effect:TOUCH_AWARE:MON_HOLD
-dice:3+d$D
-expr:D:PLAYER_LEVEL:/ 7
-desc:Holds every adjacent, non-resistant monster for a level-dependent
-desc: number of turns; animals are entranced for longer.
-
-spell:Mass Sleep:25:15:50:15
-effect:PROJECT_LOS:SLEEP_ALL
-dice:$B
-expr:B:PLAYER_LEVEL:* 10 + 500
-desc:Attempts to put to sleep each monster within line of sight.
-desc:  Monsters that resist sleep are not affected.
-
-spell:Become Pukel-man:30:20:75:50
-effect:SHAPECHANGE:Pukel-man
-desc:Gives you the form of a statue of the Drúedain, slow but hard to hurt.
-
-spell:Eagle's Flight:35:20:80:80
-effect:SHAPECHANGE:eagle
-desc:Gives you the form of one of the great eagles of Manwë.
-
-spell:Bear Form:40:20:85:100
-effect:SHAPECHANGE:bear
-desc:Allows you to take the form of a great bear of the mountains, sweeping
-desc: aside your enemies with your mighty paws.
-
-book:nature book:dungeon:[Nature Craft]:5:nature
-book-graphics:?:o
-book-properties:30000:15:40 to 100
-
-spell:Tremor:20:20:60:16
-effect:EARTHQUAKE:TARGETED:4
-desc:Causes a targeted 4-square radius earthquake.
-desc:  Earthquakes may hurt the player, damage monsters and destroy items
-desc: in some squares in the area of effect.
-desc:  Artifacts will not be destroyed by this spell.
-desc:  This spell has no effect when used in the town.
-
-spell:Haste Self:25:12:65:15
-effect:TIMED_INC:FAST:0:5
-dice:$B+d20
-expr:B:PLAYER_LEVEL:+ 0
-desc:Hastes you (+10 to speed) for a level-dependent duration.
-
-spell:Revitalize:35:70:90:90
-effect:RESTORE_STAT:STR
-effect:RESTORE_STAT:INT
-effect:RESTORE_STAT:WIS
-effect:RESTORE_STAT:DEX
-effect:RESTORE_STAT:CON
-effect:RESTORE_EXP
-desc:Restores all stats and experience points to maximum.
-
-spell:Rapid Regeneration:37:20:90:100
-effect:TIMED_INC:HEAL
-dice:5+1d3
-desc:Speed up digestion to increase regeneration of hitpoints for
-desc: the next 5+1d3 turns (or until hungry).
-
-spell:Herbal Curing:40:20:90:100
+desc:Detects all monsters nearby that are not invisible.
+spell:First Aid:5:3:27:5
+effect:HEAL_HP
+dice:2d8
+effect:TIMED_DEC:CUT
+dice:15
+desc:Heals a little and closes a light wound.
+spell:Detect Doors and Traps:5:4:27:5
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+desc:Detects doors, traps and staircases nearby.
+spell:Foraging:6:5:29:5
+effect:NOURISH:SET_TO
+dice:99
+desc:Finds enough to eat.
+spell:Daylight:6:5:29:5
+effect:LIGHT_AREA
+effect:SPHERE:LIGHT_WEAK:2
+dice:2d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Fills the area with daylight, and burns what cannot bear it.
+spell:Animal Taming:6:6:29:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Resist Environment:7:7:30:5
+effect:SET_VALUE
+dice:19+1d21
+effect:TIMED_INC:OPP_COLD
+effect:TIMED_INC:OPP_FIRE
+effect:TIMED_INC:OPP_ELEC
+effect:CLEAR_VALUE
+desc:Grants temporary resistance to cold, fire and lightning.
+spell:Cure Wounds & Poison:7:7:30:5
 effect:CURE:CUT
 effect:CURE:POISONED
-effect:CURE:STUN
-effect:CURE:BLACKBREATH
-effect:NOURISH:INC_TO
-dice:80
-desc:Cures all cuts, poison, stunning and black breath, and leaves you
-desc: well-nourished.
-
-book:nature book:dungeon:[Wild Forces]:5:nature
-book-graphics:?:o
-book-properties:50000:10:60 to 100
-
-spell:Meteor Swarm:30:14:85:20
-effect:SWARM:METEOR:1
-dice:$B+m$M
-expr:B:PLAYER_LEVEL:/ 2 + 30
-expr:M:PLAYER_LEVEL:/ 20 + 2
-desc:Shoots a swarm of 3 or 4 meteors.
-desc:  Meteors will travel until hitting a wall, a monster,
-desc: or reaching the target location.
-desc:  Meteors will explode as a radius-1 ball that does unresistable
-desc: damage to each monster in its area of effect.
-desc:  If this kills the monster that blocked the path to the target
-desc: location, the next meteor may continue to find another target.
-
-spell:Rift:35:20:60:25
-effect:BEAM:GRAVITY
-dice:40+$Dd7
-expr:D:PLAYER_LEVEL:+ 0
-desc:Fires a gravity beam that hurts each monster in its path
-desc: and has a chance of teleporting it away.
-
-spell:Ice Storm:37:25:75:24
-effect:PROJECT_LOS:ICE
-dice:3d$S
-expr:S:PLAYER_LEVEL:* 3
-desc:Strikes every monster in line of sight with sheets of ice from above.
-
-spell:Volcanic Eruption:40:30:75:50
-effect:SPHERE:FIRE:5:5
-dice:$B+d$S
-expr:B:PLAYER_LEVEL:* 3 / 2
-expr:S:PLAYER_LEVEL:* 3
-effect:EARTHQUAKE:NONE:5
-desc:Creates a radius 5 ball of fire, followed by a radius 5 earthquake,
-desc: around the player.
-
-spell:River of Lightning:43:35:75:100
-effect:ARC:PLASMA:0:20
+desc:Closes every wound and draws out every poison.
+book:nature book:town:[Nature Mastery]:8:nature
+book-graphics:?:y
+book-properties:400:40:10 to 100
+spell:Stone to Mud:7:7:30:20
+effect:LINE:KILL_WALL
+dice:20+1d30
+desc:Melts a wall along a line.
+spell:Lightning Bolt:8:7:32:20
+effect:BOLT_OR_BEAM:ELEC:0:-10
 dice:$Dd8
-expr:D:PLAYER_LEVEL:+ 10
-desc:Spews plasma in a long narrow cone from the player.
+expr:D:PLAYER_LEVEL:- 5 / 4 + 3
+desc:Fires a bolt of lightning, sometimes as a beam.
+spell:Nature Awareness:9:10:33:20
+effect:MAP_AREA
+effect-yx:22:40
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Maps the area, and finds its doors, traps, stairs and creatures.
+spell:Frost Bolt:10:10:35:20
+effect:BOLT_OR_BEAM:COLD:0:-10
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 5
+desc:Fires a bolt of frost, sometimes as a beam.
+spell:Ray of Sunlight:11:11:36:20
+effect:LINE:LIGHT_WEAK
+dice:6d8
+desc:Draws a line of sunlight, and burns what cannot bear it.
+spell:Entangle:20:20:50:20
+effect:PROJECT_LOS_AWARE:MON_SLOW
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Roots every creature in sight to the spot.
+spell:Summon Animal:30:30:65:20
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Herbal Healing:42:100:83:20
+effect:HEAL_HP
+dice:1000
+effect:CURE:STUN
+effect:CURE:CUT
+effect:CURE:POISONED
+desc:Heals a thousand points, and cures stunning, bleeding and poison with it.
+book:nature book:dungeon:[Nature's Gifts]:8:nature
+book-graphics:?:y
+book-properties:30000:15:50 to 100
+spell:Door Building:9:9:33:45
+effect:TOUCH:MAKE_DOOR
+desc:Builds doors in the squares around you.
+spell:Stair Building:11:12:36:45
+effect:CREATE_STAIRS
+desc:Builds a staircase under your feet.
+spell:Stone Skin:12:13:38:45
+effect:TIMED_INC:SHIELD
+dice:29+1d21
+desc:Hardens your skin for a while.
+spell:Resistance True:18:20:47:45
+effect:SET_VALUE
+dice:19+1d21
+effect:TIMED_INC:OPP_ACID
+effect:TIMED_INC:OPP_ELEC
+effect:TIMED_INC:OPP_FIRE
+effect:TIMED_INC:OPP_COLD
+effect:CLEAR_VALUE
+desc:Grants temporary resistance to acid, lightning, fire and cold.
+spell:Animal Friendship:35:35:72:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Stone Tell:39:40:78:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Wall of Stone:40:50:80:45
+effect:GRANITE
+desc:Raises a granite wall behind you.
+spell:Protect from Corrosion:42:90:83:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+book:nature book:dungeon:[Nature's Wrath]:8:nature
+book-graphics:?:y
+book-properties:50000:10:75 to 100
+spell:Earthquake:22:22:53:80
+effect:EARTHQUAKE:NONE:10
+desc:Shakes the ground apart around you.
+spell:Whirlwind Attack:25:25:57:80
+effect:SWEEP
+dice:$S
+expr:S:PLAYER_LEVEL:+ 10 / 15
+desc:Strikes every monster next to you.
+spell:Blizzard:27:27:60:80
+effect:BALL:COLD:3
+dice:70+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Calls down a blizzard.
+spell:Lightning Storm:32:30:68:80
+effect:BALL:ELEC:3
+dice:90+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Calls down a storm of lightning.
+spell:Whirlpool:37:32:75:80
+effect:BALL:WATER:3
+dice:100+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Opens a whirlpool.  Water batters, confuses and stuns.
+spell:Call Sunlight:39:37:78:80
+effect:SPHERE:LIGHT:8
+dice:150
+effect:LIGHT_LEVEL
+desc:Floods the level with sunlight.
+spell:Elemental Branding:42:90:83:80
+effect:BRAND_WEAPON
+desc:Brands your weapon with an element.  You do not choose which.
+spell:Nature's Wrath:44:80:86:80
+effect:PROJECT_LOS_AWARE:DISP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+effect:EARTHQUAKE:NONE:30
+effect:SPHERE:KILL_WALL:4
+effect:SPHERE:MANA:4
+dice:100+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Nature turns on everything around you, the ground included.
 
 
 ############### PRIEST ###############
@@ -2442,7 +2414,7 @@ equip:sword:Main Gauche:1:1:none
 equip:bow:Short Bow:1:1:none
 equip:arrow:Arrow:15:20:none
 equip:scroll:Word of Recall:1:1:birth_no_recall
-equip:nature book:[Lesser Charms]:1:1:none
+equip:nature book:[Call of the Wild]:1:1:none
 player-flags:FAST_SHOT | CHOOSE_SPELLS
 title:Runner
 title:Strider
@@ -2455,80 +2427,182 @@ title:Pathfinder
 title:Ranger
 title:Ranger Lord
 
-magic:3:400:10
+magic:3:400:12
 realm-choice:1:nature
 realm-choice:2:arcane | death | sorcery | chaos | trump
 
-book:nature book:town:[Lesser Charms]:6:nature
-
-spell:Remove Hunger:3:1:25:2
-effect:NOURISH:INC_TO
-dice:50
-desc:Magically renders you comfortably fed (but not satiated).
-
-spell:Detect Life:5:2:23:2
-effect:DETECT_LIVING_MONSTERS
+book:nature book:town:[Call of the Wild]:8:nature
+book-graphics:?:y
+book-properties:25:40:1 to 100
+spell:Detect Creatures:3:1:24:5
+effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
-desc:Detects all living monsters in the immediate area, for one turn only.
-
-spell:Herbal Curing:9:6:30:4
+desc:Detects all monsters nearby that are not invisible.
+spell:First Aid:4:3:26:5
+effect:HEAL_HP
+dice:2d8
+effect:TIMED_DEC:CUT
+dice:15
+desc:Heals a little and closes a light wound.
+spell:Detect Doors and Traps:4:4:26:5
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+desc:Detects doors, traps and staircases nearby.
+spell:Foraging:5:7:27:5
+effect:NOURISH:SET_TO
+dice:99
+desc:Finds enough to eat.
+spell:Daylight:6:7:29:5
+effect:LIGHT_AREA
+effect:SPHERE:LIGHT_WEAK:2
+dice:2d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Fills the area with daylight, and burns what cannot bear it.
+spell:Animal Taming:7:7:30:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Resist Environment:8:7:32:5
+effect:SET_VALUE
+dice:19+1d21
+effect:TIMED_INC:OPP_COLD
+effect:TIMED_INC:OPP_FIRE
+effect:TIMED_INC:OPP_ELEC
+effect:CLEAR_VALUE
+desc:Grants temporary resistance to cold, fire and lightning.
+spell:Cure Wounds & Poison:9:7:33:5
 effect:CURE:CUT
 effect:CURE:POISONED
-effect:CURE:STUN
-effect:CURE:BLACKBREATH
-desc:Cures all cuts, poison, stunning and black breath.
-
-spell:Resist Poison:12:10:32:5
-effect:TIMED_INC:OPP_POIS
-dice:20+d20
-desc:Grants you resistance to poison for 20+1d20 turns.
-
-spell:Turn Stone to Mud:15:5:25:5
+desc:Closes every wound and draws out every poison.
+book:nature book:town:[Nature Mastery]:8:nature
+book-graphics:?:y
+book-properties:400:40:10 to 100
+spell:Stone to Mud:9:7:33:20
 effect:LINE:KILL_WALL
 dice:20+1d30
-desc:Produces a beam that destroys the first section of wall it hits,
-desc: unless it is a permanent wall.  Each monster caught in the beam that
-desc: is susceptible to rock remover takes 20+1d30 points of damage.
-
-spell:Sense Surroundings:20:8:35:8
+desc:Melts a wall along a line.
+spell:Lightning Bolt:10:7:35:20
+effect:BOLT_OR_BEAM:ELEC:0:-10
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 3
+desc:Fires a bolt of lightning, sometimes as a beam.
+spell:Nature Awareness:11:9:36:20
 effect:MAP_AREA
-dice:$Dd$S
-expr:D:PLAYER_LEVEL:/ 30 + 1 * 22
-expr:S:PLAYER_LEVEL:/ 30 + 1 * 44
-desc:Maps the nearby area.
-
-
-book:nature book:dungeon:[Nature Craft]:5:nature
-
-spell:Cover Tracks:20:20:40:40
-effect:TIMED_INC:COVERTRACKS:0:5
-dice:$B+d20
-expr:B:PLAYER_LEVEL:* 2
-desc:Prevents you from leaving scent for monsters to track you by for a
-desc: level-dependent duration.
-
-spell:Create Arrows:22:20:40:40
-effect:CREATE_ARROWS
-desc:Allows the player to turn a staff into a stack of arrows, with quality
-desc: depending on staff level and player level.
-
-spell:Haste Self:25:12:65:15
-effect:TIMED_INC:FAST:0:5
-dice:$B+d20
+effect-yx:22:40
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Maps the area, and finds its doors, traps, stairs and creatures.
+spell:Frost Bolt:12:9:38:20
+effect:BOLT_OR_BEAM:COLD:0:-10
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 5
+desc:Fires a bolt of frost, sometimes as a beam.
+spell:Ray of Sunlight:14:9:41:20
+effect:LINE:LIGHT_WEAK
+dice:6d8
+desc:Draws a line of sunlight, and burns what cannot bear it.
+spell:Entangle:18:20:47:20
+effect:PROJECT_LOS_AWARE:MON_SLOW
+dice:$B
 expr:B:PLAYER_LEVEL:+ 0
-desc:Hastes you (+10 to speed) for a level-dependent duration.
-
-spell:Decoy:30:30:40:60
-effect:GLYPH:DECOY
-desc:Leaves a magical decoy that looks and sounds like the player.
-
-spell:Brand Ammunition:40:60:95:120
-effect:BRAND_AMMO
-desc:Brands one stack of ammunition with fire, cold, or poison
-desc: (selected at random) and at the same time attempts to improve
-desc: the to-hit bonus and the to-dam bonus of the same ammunition.
-desc:  The spell has no effect if the ammunition is already branded, has a
-desc: slay, is broken, or is cursed.
+desc:Roots every creature in sight to the spot.
+spell:Summon Animal:23:23:54:20
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Herbal Healing:40:100:80:20
+effect:HEAL_HP
+dice:1000
+effect:CURE:STUN
+effect:CURE:CUT
+effect:CURE:POISONED
+desc:Heals a thousand points, and cures stunning, bleeding and poison with it.
+book:nature book:dungeon:[Nature's Gifts]:8:nature
+book-graphics:?:y
+book-properties:30000:15:50 to 100
+spell:Door Building:10:10:35:45
+effect:TOUCH:MAKE_DOOR
+desc:Builds doors in the squares around you.
+spell:Stair Building:12:12:38:45
+effect:CREATE_STAIRS
+desc:Builds a staircase under your feet.
+spell:Stone Skin:14:15:41:45
+effect:TIMED_INC:SHIELD
+dice:29+1d21
+desc:Hardens your skin for a while.
+spell:Resistance True:20:30:50:45
+effect:SET_VALUE
+dice:19+1d21
+effect:TIMED_INC:OPP_ACID
+effect:TIMED_INC:OPP_ELEC
+effect:TIMED_INC:OPP_FIRE
+effect:TIMED_INC:OPP_COLD
+effect:CLEAR_VALUE
+desc:Grants temporary resistance to acid, lightning, fire and cold.
+spell:Animal Friendship:35:30:72:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Stone Tell:38:40:77:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Wall of Stone:40:55:80:45
+effect:GRANITE
+desc:Raises a granite wall behind you.
+spell:Protect from Corrosion:42:80:83:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+book:nature book:dungeon:[Nature's Wrath]:8:nature
+book-graphics:?:y
+book-properties:50000:10:75 to 100
+spell:Earthquake:25:28:57:80
+effect:EARTHQUAKE:NONE:10
+desc:Shakes the ground apart around you.
+spell:Whirlwind Attack:26:26:59:80
+effect:SWEEP
+dice:$S
+expr:S:PLAYER_LEVEL:+ 10 / 15
+desc:Strikes every monster next to you.
+spell:Blizzard:30:35:65:80
+effect:BALL:COLD:3
+dice:70+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Calls down a blizzard.
+spell:Lightning Storm:32:29:68:80
+effect:BALL:ELEC:3
+dice:90+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Calls down a storm of lightning.
+spell:Whirlpool:36:33:74:80
+effect:BALL:WATER:3
+dice:100+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Opens a whirlpool.  Water batters, confuses and stuns.
+spell:Call Sunlight:40:35:80:80
+effect:SPHERE:LIGHT:8
+dice:150
+effect:LIGHT_LEVEL
+desc:Floods the level with sunlight.
+spell:Elemental Branding:41:80:81:80
+effect:BRAND_WEAPON
+desc:Brands your weapon with an element.  You do not choose which.
+spell:Nature's Wrath:42:80:83:80
+effect:PROJECT_LOS_AWARE:DISP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+effect:EARTHQUAKE:NONE:30
+effect:SPHERE:KILL_WALL:4
+effect:SPHERE:MANA:4
+dice:100+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Nature turns on everything around you, the ground included.
 
 
 ############### BLACKGUARD ###############

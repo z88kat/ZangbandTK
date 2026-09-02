@@ -33,6 +33,42 @@ Unreleased
 M9: magic realms — 2 September 2026
 -----------------------------------
 
+- **3.62.0** — **Nature is Zangband's, and the Druid casts on borrowed figures**
+  (CNT-10, DEC-50, DEC-55). Thirty-two spells in four books — Call of the Wild,
+  Nature Mastery, Nature's Gifts, Nature's Wrath — replacing the five nature
+  books the Druid carried and the two the Ranger borrowed from it. The Ranger
+  now gets the whole realm and goes from ten books to twelve.
+
+  **The Druid is the first class to cast on another class's figures.** Zangband
+  never had a Druid, so ``magic_info[]`` has no row for it, and DEC-50 replaces
+  its realm anyway. **DEC-55** settles that: a class Zangband never had takes
+  the figures of the one it matches on ``spell_first``, ``spell_weight`` and
+  casting stat — the three constants that six of Angband's nine casting classes
+  match *exactly and by name*, which is what makes the key evidence rather than
+  a guess. The Druid's are 1 / 350 / WIS, which among the six Zangband classes
+  carrying Nature is the Priest's and only the Priest's.
+
+  Recorded as an obstacle "wanting deciding"; it turned out to be a derivation.
+  The same rule gives the Necromancer Zangband's Mage and the Blackguard its
+  Paladin, which Death will use.
+
+  **Five of the thirty-two are deferred, and three are one wall**: *Animal
+  Taming*, *Summon Animal* and *Animal Friendship* all need a creature able to
+  take your side, which is what deferred Trump whole. The other two are *Stone
+  Tell*, whole-object identification in a game that replaced it with runes, and
+  *Protect from Corrosion*, which is an object property here rather than
+  anything an effect reaches.
+
+  Two tool faults surfaced. A realm's book region can hold a directive that is
+  not about books — the Druid's ``equip:nature book:[Lesser Charms]`` sits
+  between its first book's properties and that book's first spell, and cannot be
+  moved out because an ``equip:`` line naming a book must follow the ``book:``
+  directive that creates the object kind. Replacing the region wholesale deleted
+  it, and the game then refused to start. And ``extract_realm_block`` ran to the
+  end of the class block, swallowing the banner comment that separates one class
+  from the next and moving the Priest's heading into the middle of the Druid's
+  spells.
+
 - **3.61.0** — **Arcane is Zangband's** (CNT-10, DEC-50). Thirty-two spells in
   four books — Cantrips for Beginners, Minor Arcana, Major Arcana, the Manual of
   Mastery — replacing the five magic books the Mage and the Rogue carried. The

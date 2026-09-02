@@ -94,12 +94,38 @@ class NotAZangbandClass(KeyError):
     """
 
 
+# DEC-55: whose figures a class that Zangband never had borrows.
+#
+# Three of 4.2's nine casting classes post-date Zangband, so `magic_info[]` has
+# no row for them. Each takes the figures of the Zangband class it matches on
+# `spell_first`, `spell_weight` and casting stat -- the three constants both
+# games inherited from the same ancestor, and which six of the nine match
+# exactly and by name. See DEC-55 for the derivation and for why the two that
+# are not unique resolve the way they do.
+#
+# A donor is one word here on purpose: if a class plays wrong at these figures,
+# changing it and re-running the converter is the whole of the fix.
+DONORS = {
+    "Druid": "Priest",              # 1/350/WIS, unique among Nature's carriers
+    "Necromancer": "Mage",          # ties with High-Mage; generalist wins
+    "Blackguard": "Paladin",        # 1/600 matches nothing; nearest weight
+}
+
+
+def donor_for(cls: str) -> str:
+    """The Zangband class whose figures `cls` uses -- itself, or its donor."""
+    return DONORS.get(cls, cls)
+
+
 def slice_for(pairs, cls: str, realm: str):
     """The 32 ``{level, mana}`` pairs for one class in one realm."""
+    cls = donor_for(cls)
     if cls not in CLASSES:
         raise NotAZangbandClass(
             f"{cls} is Angband 4.2's own class; Zangband's magic_info[] has no "
-            f"figures for it. Known classes: {', '.join(CLASSES)}.")
+            f"figures for it, and DEC-55 names no donor. Known classes: "
+            f"{', '.join(CLASSES)}."
+        )
 
     base = (CLASSES.index(cls) * len(REALMS) + REALMS.index(realm)) \
         * SPELLS_PER_REALM
@@ -299,8 +325,33 @@ def extract_realm_block(block: str, realm: str) -> list[str]:
             if not other.endswith(":" + realm):
                 end = later
                 break
-        return block[at:end].rstrip("\n").split("\n")
+        lines = block[at:end].rstrip("\n").split("\n")
+
+        # The block ends at its last `desc:`. What follows -- a blank line, or
+        # the banner comment that separates one class from the next -- belongs
+        # to the file rather than to the realm, and swallowing it moves the next
+        # class's heading into the middle of this one's spells.
+        while lines and (not lines[-1].strip()
+                         or lines[-1].lstrip().startswith("#")):
+            lines.pop()
+
+        return lines
     return []
+
+
+# The directives `emit_books()` produces. Anything else inside a realm's book
+# region belongs to the class rather than the realm -- the Druid's
+# `equip:nature book:[...]` has to sit after the `book:` line that creates that
+# object kind, or the game will not start -- so the reproduction check compares
+# what the generator owns and reports the rest.
+BOOK_GRAMMAR = ("book:", "book-graphics:", "book-properties:", "spell:",
+                "effect:", "effect-yx:", "effect-msg:", "dice:", "expr:",
+                "desc:")
+
+
+def generated_only(lines: list[str]) -> list[str]:
+    """Just the lines the generator is responsible for."""
+    return [l for l in lines if l.strip() and l.startswith(BOOK_GRAMMAR)]
 
 
 def check_all(src: str, spellmap: dict, gamedata: str) -> list[str]:
@@ -318,10 +369,13 @@ def check_all(src: str, spellmap: dict, gamedata: str) -> list[str]:
     * a realm emitted into a class the entitlement table does not give it, or
       missing from one it does.
 
-    Returns an empty list when everything agrees. Meant to be run by the build
-    gate rather than by hand, because noticing is what failed last time.
+    Returns (complaints, notes). Complaints fail the build; notes are things
+    worth printing that are not wrong -- a class directive living inside a
+    realm's book region, for one. Meant to be run by the build gate rather than
+    by hand, because noticing is what failed last time.
     """
     out = []
+    notes = []
     blocks = class_blocks(gamedata)
 
     for realm in spellmap:
@@ -333,16 +387,22 @@ def check_all(src: str, spellmap: dict, gamedata: str) -> list[str]:
         holds = sorted(cls for cls, blk in blocks.items()
                        if extract_realm_block(blk, realm))
         for cls in holds:
-            if cls not in CLASSES:
-                out.append("%s: %s holds it, and Zangband never had that class"
-                           % (realm, cls))
+            if donor_for(cls) not in CLASSES:
+                out.append("%s: %s holds it, Zangband never had that class, and "
+                           "DEC-55 names no donor" % (realm, cls))
                 continue
             want = emit_books(src, cls, realm, spellmap)
             if not want:
                 out.append("%s: %s holds it but the table gives it none"
                            % (realm, cls))
                 continue
-            have = extract_realm_block(blocks[cls], realm)
+            raw = extract_realm_block(blocks[cls], realm)
+            have = generated_only(raw)
+            strays = [l for l in raw if l not in have and l.strip()]
+            for stray in strays:
+                notes.append("%s: %s keeps %s inside the book region; not "
+                             "generated, so not compared"
+                             % (realm, cls, stray.strip()))
             if have == want:
                 continue
             out.append("%s: %s does not match the converter (%d lines in the "
@@ -355,7 +415,7 @@ def check_all(src: str, spellmap: dict, gamedata: str) -> list[str]:
                     out.append("      converter: %s" % b)
                     break
 
-    return out
+    return out, notes
 
 
 def emit_books(src: str, cls: str, realm: str, spellmap: dict) -> list[str]:

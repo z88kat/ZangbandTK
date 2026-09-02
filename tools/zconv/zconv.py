@@ -2282,7 +2282,8 @@ def cmd_realms(args) -> int:
 
     if args.check:
         gamedata = (GAMEDATA / "class.txt").read_text()
-        complaints = realms.check_all(src, realms.read_realmmap(), gamedata)
+        complaints, notes = realms.check_all(
+            src, realms.read_realmmap(), gamedata)
         print("realm content check")
         print("=" * 72)
         if complaints:
@@ -2291,6 +2292,10 @@ def cmd_realms(args) -> int:
             print()
             print("  FAILED")
             return 1
+        for n in notes:
+            print("  note: %s" % n)
+        if notes:
+            print()
         spellmap = realms.read_realmmap()
         blocks = realms.class_blocks(gamedata)
         for realm in spellmap:
