@@ -380,19 +380,22 @@ classes.
    2 September audit -- the deferral was recorded in DEC-36 and nowhere the plan
    would show it.
 
-**One thing is awaiting the project owner, and this plan was not carrying it.**
-DEC-50 and DEC-51 were settled on 1 September; DEC-52 to DEC-55 were taken and
-recorded during the work. What is outstanding is the **mana-shortfall penalty**:
-a character short of mana pays in hit points, and the *failure* chance still
-charges 5% per point of the shortfall, so a class with no spell points at all is
-100% over budget on a cost-20 power and sits at the 95% ceiling whatever its
-level or stats — a level 21 Beastman Chaos-Warrior sees `20 hp, 95% to fail`.
-Whether that penalty should apply to someone paying in blood is the open
-question. It has been written up in [option.rst](../../docs/option.rst) since
-3.49.3 and appeared nowhere here, which is why it kept being reported as
-"nothing outstanding". **It wants settling before M10 rather than during it**:
-PLR-30 makes mana upkeep the entire balancing mechanism for pets, and building
-that on an unresolved mana rule is poor sequencing.
+**Nothing is awaiting the project owner.** DEC-50 and DEC-51 were settled on
+1 September; DEC-52 to DEC-57 were taken during the work, the last two of them
+answered directly when asked.
+
+The one item that *was* outstanding — the **mana-shortfall penalty** — is
+**settled by DEC-56**: a power paid for in blood is not also penalised for it,
+because the condition charging the surcharge was character for character the
+condition that made the price blood. Spells keep theirs, being paid for in
+unconsciousness rather than blood.
+
+Worth keeping the lesson rather than only the answer. That question sat in
+[option.rst](../../docs/option.rst) from 3.49.3 and nowhere in this plan, and so
+was reported as "nothing outstanding" through several status passes. **A question
+for the project owner belongs here, not only in the chapter where it was
+noticed** — the manual is where a consequence is explained, and this is where
+work and decisions are tracked.
 
 #### The order Phase 2 has to go in
 
