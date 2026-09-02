@@ -202,6 +202,9 @@ The realms of magic
   out of the Necronomicon it can cost you a statistic.
 - **Arcane is bought outright** — all four of its books are sold in town, which is
   the bargain that makes the weakest realm worth taking.
+- **Every class studies every realm Zangband allows it**, which is more than
+  Angband allows: a Mage may take Death or Life, a Priest may take Arcane. Six
+  realms are open to a Mage where Angband gives it one.
 - **The Chaos-Warrior, the Warrior-Mage, the High-Mage and the Monk all cast**, which
   is what those classes were always for. A Warrior-Mage always studies Arcane and
   picks a second realm; a High-Mage picks one realm from seven and gets no second, and

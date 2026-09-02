@@ -238,9 +238,13 @@ static int test_two_realms_punish_a_miscast(void *state) {
 
 	/*
 	 * Death: 32 each for the Necromancer, the Blackguard, the Warrior-Mage,
-	 * the High-Mage and the Monk.
+	 * the High-Mage, the Monk, the Mage, the Priest and the Paladin, and 25
+	 * each for the Rogue and the Ranger, whose figures put seven of the
+	 * thirty-two past level 50. DEC-57 completed Zangband's entitlements, so
+	 * Death is now the most widely carried realm in the game -- ten of the
+	 * twelve casting classes have it.
 	 */
-	eq(death, 160);
+	eq(death, 306);
 
 	/* And the other five realms say nothing, which is most of the game. */
 	require(quiet > 300);

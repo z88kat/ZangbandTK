@@ -203,7 +203,7 @@ title:Warlock
 title:Sorcerer
 title:Arch-Mage
 
-magic:1:300:12
+magic:1:300:24
 realm-choice:1:arcane | life | nature | death | sorcery | chaos | trump
 realm-choice:2:arcane | life | nature | death | sorcery | chaos | trump
 
@@ -716,6 +716,566 @@ effect:STAR_BALL:POIS:4
 dice:175
 desc:Fires three volleys of destruction outward in every direction.
 
+book:prayer book:town:[Book of Common Prayer]:8:life
+book-graphics:?:G
+book-properties:25:40:1 to 100
+spell:Detect Evil:1:1:21:5
+effect:DETECT_EVIL
+effect-yx:22:40
+desc:Detects evil creatures nearby, even invisible ones.
+spell:Cure Light Wounds:3:2:24:5
+effect:HEAL_HP
+dice:2d10
+effect:TIMED_DEC:CUT
+dice:10
+desc:Heals a small amount of damage and reduces bleeding.
+spell:Bless:4:3:26:5
+effect:TIMED_INC:BLESSED
+dice:11+1d13
+desc:Grants a bonus to armour class and to hit for a short while.
+spell:Remove Fear:5:5:27:5
+effect:CURE:AFRAID
+desc:Removes fear.
+spell:Call Light:7:7:30:5
+effect:LIGHT_AREA
+effect:SPHERE:LIGHT_WEAK:1:10
+dice:2d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Lights up the area and hurts light-sensitive creatures in it.
+spell:Detect Traps and Secret Doors:9:8:33:5
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+desc:Detects traps, doors and stairs nearby.
+spell:Cure Medium Wounds:12:12:38:5
+effect:HEAL_HP
+dice:4d10
+effect:TIMED_DEC:CUT
+dice:40
+desc:Heals damage and stops all but the worst bleeding.
+spell:Satisfy Hunger:15:14:42:5
+effect:NOURISH:INC_TO
+dice:90
+desc:Feeds you as though you had eaten a full meal.
+book:prayer book:town:[High Mass]:8:life
+book-graphics:?:G
+book-properties:400:40:10 to 100
+spell:Remove Curse:16:16:44:20
+effect:REMOVE_CURSE
+dice:$B+d$S
+expr:B:PLAYER_LEVEL:+ 0
+expr:S:PLAYER_LEVEL:+ 0
+desc:Attempts to remove a curse from an item.
+spell:Cure Poison:17:17:45:20
+effect:CURE:POISONED
+desc:Cures poison.
+spell:Cure Critical Wounds:18:18:47:20
+effect:HEAL_HP
+dice:8d10
+effect:CURE:STUN
+effect:CURE:CUT
+desc:Heals a great deal of damage, and all stunning and bleeding.
+spell:Sense Unseen:19:19:48:20
+effect:TIMED_INC:SINVIS
+dice:23+1d25
+desc:Lets you see invisible creatures for a while.
+spell:Holy Orb:20:20:50:20
+effect:BALL:HOLY_ORB:2:30
+dice:$B+3d6
+expr:B:PLAYER_LEVEL:* 3 / 2
+desc:Fires a ball of holy force that does double damage to evil creatures.
+spell:Protection from Evil:23:23:54:20
+effect:TIMED_INC:PROTEVIL
+dice:$B+d25
+expr:B:PLAYER_LEVEL:* 3
+desc:Turns aside blows from evil creatures weaker than you.
+spell:Healing:30:30:65:20
+effect:HEAL_HP
+dice:300
+effect:CURE:STUN
+effect:CURE:CUT
+desc:Heals 300 hit points, and all stunning and bleeding.
+spell:Glyph of Warding:35:70:72:20
+effect:GLYPH:WARDING
+desc:Inscribes a glyph beneath you that most creatures will not cross.
+book:prayer book:dungeon:[Book of the Unicorn]:8:life
+book-graphics:?:G
+book-properties:30000:15:50 to 100
+spell:Exorcism:26:30:59:45
+effect:PROJECT_LOS_AWARE:DISP_UNDEAD
+dice:d$S
+expr:S:PLAYER_LEVEL:+ 0
+effect:PROJECT_LOS_AWARE:DISP_EVIL
+dice:d$S
+expr:S:PLAYER_LEVEL:+ 0
+effect:PROJECT_LOS_AWARE:TURN_EVIL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Harms undead and evil creatures in line of sight, and makes the evil
+desc:  among them flee.
+spell:Dispel Curse:28:25:62:45
+effect:REMOVE_CURSE
+dice:$B+d$S
+expr:B:PLAYER_LEVEL:* 2
+expr:S:PLAYER_LEVEL:* 2
+desc:Attempts to remove a curse, with far more force than the lesser
+desc:  prayer.
+spell:Dispel Undead & Demons:33:33:69:45
+effect:PROJECT_LOS_AWARE:DISP_UNDEAD
+dice:d$S
+expr:S:PLAYER_LEVEL:* 3
+effect:PROJECT_LOS_AWARE:DISP_EVIL
+dice:d$S
+expr:S:PLAYER_LEVEL:* 3
+desc:Harms every undead and evil creature in line of sight.
+spell:Day of the Dove:35:35:72:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Dispel Evil:35:35:72:45
+effect:PROJECT_LOS_AWARE:DISP_EVIL
+dice:d$S
+expr:S:PLAYER_LEVEL:* 4
+desc:Harms every evil creature in line of sight.
+spell:Banish:35:55:72:45
+effect:PROJECT_LOS_AWARE:AWAY_EVIL
+dice:100
+desc:Teleports every evil creature in line of sight away from you.
+spell:Holy Word:39:40:78:45
+effect:PROJECT_LOS_AWARE:DISP_EVIL
+dice:d$S
+expr:S:PLAYER_LEVEL:* 4
+effect:HEAL_HP
+dice:1000
+effect:CURE:AFRAID
+effect:CURE:POISONED
+effect:CURE:STUN
+effect:CURE:CUT
+desc:Harms every evil creature in line of sight, heals you greatly, and
+desc:  cures fear, poison, stunning and bleeding.
+spell:Warding True:46:70:89:45
+effect:GLYPH:WARDING
+desc:Inscribes a glyph beneath you. The ring of glyphs Zangband also laid
+desc:  around you has no equivalent here.
+book:prayer book:dungeon:[Blessings of the Grail]:8:life
+book-graphics:?:G
+book-properties:50000:10:75 to 100
+spell:Heroism:9:9:33:80
+effect:HEAL_HP
+dice:10
+effect:CURE:AFRAID
+effect:TIMED_INC:HERO
+dice:24+1d26
+desc:Makes you a hero: heals a little, removes fear, and grants a bonus to
+desc:  hit.
+spell:Prayer:25:25:57:80
+effect:TIMED_INC:BLESSED
+dice:49+1d51
+desc:Blesses you for far longer than the lesser prayer does.
+spell:Bless Weapon:35:85:72:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Restoration:42:100:83:80
+effect:RESTORE_STAT:STR
+effect:RESTORE_STAT:INT
+effect:RESTORE_STAT:WIS
+effect:RESTORE_STAT:DEX
+effect:RESTORE_STAT:CON
+effect:RESTORE_EXP
+desc:Restores every drained stat and any lost experience.
+spell:Healing True:45:90:87:80
+effect:HEAL_HP
+dice:2000
+effect:CURE:STUN
+effect:CURE:CUT
+desc:Heals 2000 hit points, and all stunning and bleeding.
+spell:Holy Vision:48:50:92:80
+effect:IDENTIFY
+desc:Tells you everything about one object.
+spell:Divine Intervention:49:100:93:80
+effect:SPHERE:HOLY_ORB:1
+dice:777
+effect:PROJECT_LOS_AWARE:DISP_ALL
+dice:d$S
+expr:S:PLAYER_LEVEL:* 4
+effect:PROJECT_LOS:MON_SLOW
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+effect:PROJECT_LOS:MON_HOLD
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+effect:PROJECT_LOS_AWARE:TURN_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+effect:TIMED_INC:SHERO
+dice:24+1d26
+effect:HEAL_HP
+dice:300
+effect:TIMED_INC:FAST:0:5
+dice:$B+d20
+expr:B:PLAYER_LEVEL:+ 20
+effect:CURE:AFRAID
+desc:Your god intervenes: holy force at your feet, every creature in sight
+desc:  harmed, slowed, held and put to flight, and you healed, hasted and
+desc:  made a berserk hero. The angel Zangband also sent to fight for you
+desc:  waits for creatures that can take your side.
+spell:Holy Invulnerability:50:100:95:80
+effect:TIMED_INC:INVULN
+dice:6+1d8
+desc:Makes you briefly invulnerable to all harm.
+
+book:nature book:town:[Call of the Wild]:8:nature
+book-graphics:?:y
+book-properties:25:40:1 to 100
+spell:Detect Creatures:1:1:21:5
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Detects all monsters nearby that are not invisible.
+spell:First Aid:3:3:24:5
+effect:HEAL_HP
+dice:2d8
+effect:TIMED_DEC:CUT
+dice:15
+desc:Heals a little and closes a light wound.
+spell:Detect Doors and Traps:3:3:24:5
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+desc:Detects doors, traps and staircases nearby.
+spell:Foraging:4:4:26:5
+effect:NOURISH:SET_TO
+dice:99
+desc:Finds enough to eat.
+spell:Daylight:4:4:26:5
+effect:LIGHT_AREA
+effect:SPHERE:LIGHT_WEAK:2
+dice:2d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Fills the area with daylight, and burns what cannot bear it.
+spell:Animal Taming:4:5:26:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Resist Environment:5:5:27:5
+effect:SET_VALUE
+dice:19+1d21
+effect:TIMED_INC:OPP_COLD
+effect:TIMED_INC:OPP_FIRE
+effect:TIMED_INC:OPP_ELEC
+effect:CLEAR_VALUE
+desc:Grants temporary resistance to cold, fire and lightning.
+spell:Cure Wounds & Poison:5:5:27:5
+effect:CURE:CUT
+effect:CURE:POISONED
+desc:Closes every wound and draws out every poison.
+book:nature book:town:[Nature Mastery]:8:nature
+book-graphics:?:y
+book-properties:400:40:10 to 100
+spell:Stone to Mud:5:5:27:20
+effect:LINE:KILL_WALL
+dice:20+1d30
+desc:Melts a wall along a line.
+spell:Lightning Bolt:5:5:27:20
+effect:BOLT_OR_BEAM:ELEC:0:-10
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 3
+desc:Fires a bolt of lightning, sometimes as a beam.
+spell:Nature Awareness:7:6:30:20
+effect:MAP_AREA
+effect-yx:22:40
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Maps the area, and finds its doors, traps, stairs and creatures.
+spell:Frost Bolt:7:6:30:20
+effect:BOLT_OR_BEAM:COLD:0:-10
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 5
+desc:Fires a bolt of frost, sometimes as a beam.
+spell:Ray of Sunlight:9:6:33:20
+effect:LINE:LIGHT_WEAK
+dice:6d8
+desc:Draws a line of sunlight, and burns what cannot bear it.
+spell:Entangle:19:12:48:20
+effect:PROJECT_LOS_AWARE:MON_SLOW
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Roots every creature in sight to the spot.
+spell:Summon Animal:25:25:57:20
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Herbal Healing:40:100:80:20
+effect:HEAL_HP
+dice:1000
+effect:CURE:STUN
+effect:CURE:CUT
+effect:CURE:POISONED
+desc:Heals a thousand points, and cures stunning, bleeding and poison with it.
+book:nature book:dungeon:[Nature's Gifts]:8:nature
+book-graphics:?:y
+book-properties:30000:15:50 to 100
+spell:Door Building:7:7:30:45
+effect:TOUCH:MAKE_DOOR
+desc:Builds doors in the squares around you.
+spell:Stair Building:9:12:33:45
+effect:CREATE_STAIRS
+desc:Builds a staircase under your feet.
+spell:Stone Skin:10:12:35:45
+effect:TIMED_INC:SHIELD
+dice:29+1d21
+desc:Hardens your skin for a while.
+spell:Resistance True:15:20:42:45
+effect:SET_VALUE
+dice:19+1d21
+effect:TIMED_INC:OPP_ACID
+effect:TIMED_INC:OPP_ELEC
+effect:TIMED_INC:OPP_FIRE
+effect:TIMED_INC:OPP_COLD
+effect:CLEAR_VALUE
+desc:Grants temporary resistance to acid, lightning, fire and cold.
+spell:Animal Friendship:30:30:65:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Stone Tell:37:40:75:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Wall of Stone:38:45:77:45
+effect:GRANITE
+desc:Raises a granite wall behind you.
+spell:Protect from Corrosion:40:90:80:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+book:nature book:dungeon:[Nature's Wrath]:8:nature
+book-graphics:?:y
+book-properties:50000:10:75 to 100
+spell:Earthquake:20:18:50:80
+effect:EARTHQUAKE:NONE:10
+desc:Shakes the ground apart around you.
+spell:Whirlwind Attack:23:23:54:80
+effect:SWEEP
+dice:$S
+expr:S:PLAYER_LEVEL:+ 10 / 15
+desc:Strikes every monster next to you.
+spell:Blizzard:25:25:57:80
+effect:BALL:COLD:3
+dice:70+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Calls down a blizzard.
+spell:Lightning Storm:30:27:65:80
+effect:BALL:ELEC:3
+dice:90+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Calls down a storm of lightning.
+spell:Whirlpool:35:30:72:80
+effect:BALL:WATER:3
+dice:100+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Opens a whirlpool.  Water batters, confuses and stuns.
+spell:Call Sunlight:37:35:75:80
+effect:SPHERE:LIGHT:8
+dice:150
+effect:LIGHT_LEVEL
+desc:Floods the level with sunlight.
+spell:Elemental Branding:40:90:80:80
+effect:BRAND_WEAPON
+desc:Brands your weapon with an element.  You do not choose which.
+spell:Nature's Wrath:40:75:80:80
+effect:PROJECT_LOS_AWARE:DISP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+effect:EARTHQUAKE:NONE:30
+effect:SPHERE:KILL_WALL:4
+effect:SPHERE:MANA:4
+dice:100+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Nature turns on everything around you, the ground included.
+
+book:shadow book:town:[Black Prayers]:8:death
+book-graphics:?:p
+book-properties:25:40:1 to 100
+spell:Detect Unlife:1:1:21:5
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Detects creatures nearby.
+spell:Malediction:2:2:23:5
+effect:BALL:MANA:0
+dice:$Dd3
+expr:D:PLAYER_LEVEL:- 1 / 5 + 3
+desc:Curses a creature with unresisted force.
+spell:Detect Evil:2:2:23:5
+effect:DETECT_EVIL
+effect-yx:22:40
+desc:Detects evil creatures nearby.
+spell:Stinking Cloud:3:3:24:5
+effect:BALL:POIS:2
+dice:10+$B
+expr:B:PLAYER_LEVEL:/ 2
+desc:Throws a cloud of poison.
+spell:Black Sleep:5:5:27:5
+effect:BOLT_AWARE:SLEEP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Puts a single creature to sleep.
+spell:Resist Poison:7:10:30:5
+effect:TIMED_INC:OPP_POIS
+dice:19+1d21
+desc:Grants temporary resistance to poison.
+spell:Horrify:9:9:33:5
+effect:BOLT_AWARE:TURN_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:BOLT_STATUS:MON_STUN
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Terrifies a creature, and leaves it reeling.
+spell:Enslave Undead:10:10:35:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+book:shadow book:town:[Black Mass]:8:death
+book-graphics:?:p
+book-properties:400:40:10 to 100
+spell:Orb of Entropy:12:12:38:20
+effect:BALL:MON_DRAIN:2
+dice:$B+3d6
+expr:B:PLAYER_LEVEL:* 5 / 4
+desc:An orb of entropy, which drains the life from what it touches.
+spell:Nether Bolt:13:12:39:20
+effect:BOLT_OR_BEAM:NETHER
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 6
+desc:Fires a bolt of nether, sometimes as a beam.
+spell:Terror:18:15:47:20
+effect:PROJECT_LOS_AWARE:TURN_ALL
+dice:30+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Terrifies every creature in sight.
+spell:Vampiric Drain:23:20:54:20
+effect:BOLT:MON_DRAIN
+dice:$B+1d$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:HEAL_HP
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Drains life from a creature and takes it for yourself.
+spell:Poison Branding:30:75:65:20
+effect:BRAND_WEAPON
+desc:Brands your weapon.  You do not choose with what.
+spell:Dispel Good:33:35:69:20
+effect:PROJECT_LOS_AWARE:DISP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Blasts every creature in sight.
+spell:Genocide:37:25:75:20
+effect:BANISH
+desc:Removes every creature of one kind from the level.  You choose the kind.
+spell:Restore Life:45:50:87:20
+effect:RESTORE_EXP
+desc:Restores experience you have lost.
+book:shadow book:dungeon:[Black Channels]:8:death
+book-graphics:?:p
+book-properties:30000:15:50 to 100
+spell:Berserk:10:20:35:45
+effect:TIMED_INC:SHERO
+dice:24+1d26
+effect:HEAL_HP
+dice:30
+effect:CURE:AFRAID
+desc:Sends you berserk: braver, harder to frighten, and worse at defending yourself.
+spell:Invoke Spirits:10:15:35:45
+effect:WONDER
+dice:100+m$M
+expr:M:PLAYER_LEVEL:/ 5
+desc:Calls on the dead.  What answers is not up to you.
+spell:Dark Bolt:11:11:36:45
+effect:BOLT_OR_BEAM:DARK
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 4
+desc:Fires a bolt of darkness, sometimes as a beam.
+spell:Battle Frenzy:30:25:65:45
+effect:TIMED_INC:SHERO
+dice:24+1d26
+effect:HEAL_HP
+dice:30
+effect:CURE:AFRAID
+effect:TIMED_INC:FAST
+dice:$B+1d$S
+expr:B:PLAYER_LEVEL:/ 2
+expr:S:PLAYER_LEVEL:/ 2 + 20
+desc:Berserk, and fast with it.
+spell:Vampirism True:33:35:69:45
+effect:BOLT:MON_DRAIN
+dice:100
+effect:HEAL_HP
+dice:100
+effect:BOLT:MON_DRAIN
+dice:100
+effect:HEAL_HP
+dice:100
+effect:BOLT:MON_DRAIN
+dice:100
+effect:HEAL_HP
+dice:100
+desc:Drains a hundred points of life three times over, and keeps all of it.
+spell:Vampiric Branding:33:90:69:45
+effect:BRAND_WEAPON
+desc:Brands your weapon.  You do not choose with what.
+spell:Darkness Storm:40:40:80:45
+effect:BALL:DARK:4
+dice:120
+desc:Calls down a storm of darkness.
+spell:Mass Genocide:40:75:80:45
+effect:MASS_BANISH
+desc:Removes every creature near you from the level.
+book:shadow book:dungeon:[Necronomicon]:8:death
+book-graphics:?:p
+book-properties:50000:10:75 to 100
+spell:Death Ray:20:20:50:80
+effect:BOLT:MON_DRAIN
+dice:$B
+expr:B:PLAYER_LEVEL:* 10
+desc:Draws the life out of a living creature.  The dead are untouched.
+spell:Raise the Dead:25:66:57:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Esoteria:30:40:65:80
+effect:IDENTIFY
+desc:Identifies one unknown rune on an item.
+spell:Word of Death:33:35:69:80
+effect:PROJECT_LOS_AWARE:MON_DRAIN
+dice:$B
+expr:B:PLAYER_LEVEL:* 3
+desc:Drains the life from every living creature in sight.
+spell:Evocation:37:35:75:80
+effect:PROJECT_LOS_AWARE:DISP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+effect:PROJECT_LOS_AWARE:TURN_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+effect:MASS_BANISH
+desc:Blasts, terrifies and then banishes everything in sight.
+spell:Hellfire:42:120:83:80
+effect:BALL:MANA:3
+dice:666
+effect:DAMAGE
+dice:49+1d51
+effect-msg:the strain of casting Hellfire
+desc:Six hundred and sixty-six points of unresisted fire, and fifty to a hundred of your own.
+spell:Omnicide:45:100:87:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Wraithform:47:100:90:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
 name:Druid
 virtues:NATURE | HARMONY
 stats:-2:0:3:-2:0
@@ -962,7 +1522,7 @@ title:Prophet
 title:Patriarch
 title:High Priest
 
-magic:1:350:12
+magic:1:350:24
 realm-choice:1:life | death
 realm-choice:2:arcane | nature | sorcery | chaos | trump
 
@@ -1510,6 +2070,531 @@ effect:STAR_BALL:POIS:4
 dice:175
 desc:Fires three volleys of destruction outward in every direction.
 
+book:nature book:town:[Call of the Wild]:8:nature
+book-graphics:?:y
+book-properties:25:40:1 to 100
+spell:Detect Creatures:2:1:23:5
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Detects all monsters nearby that are not invisible.
+spell:First Aid:5:3:27:5
+effect:HEAL_HP
+dice:2d8
+effect:TIMED_DEC:CUT
+dice:15
+desc:Heals a little and closes a light wound.
+spell:Detect Doors and Traps:5:4:27:5
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+desc:Detects doors, traps and staircases nearby.
+spell:Foraging:6:5:29:5
+effect:NOURISH:SET_TO
+dice:99
+desc:Finds enough to eat.
+spell:Daylight:6:5:29:5
+effect:LIGHT_AREA
+effect:SPHERE:LIGHT_WEAK:2
+dice:2d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Fills the area with daylight, and burns what cannot bear it.
+spell:Animal Taming:6:6:29:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Resist Environment:7:7:30:5
+effect:SET_VALUE
+dice:19+1d21
+effect:TIMED_INC:OPP_COLD
+effect:TIMED_INC:OPP_FIRE
+effect:TIMED_INC:OPP_ELEC
+effect:CLEAR_VALUE
+desc:Grants temporary resistance to cold, fire and lightning.
+spell:Cure Wounds & Poison:7:7:30:5
+effect:CURE:CUT
+effect:CURE:POISONED
+desc:Closes every wound and draws out every poison.
+book:nature book:town:[Nature Mastery]:8:nature
+book-graphics:?:y
+book-properties:400:40:10 to 100
+spell:Stone to Mud:7:7:30:20
+effect:LINE:KILL_WALL
+dice:20+1d30
+desc:Melts a wall along a line.
+spell:Lightning Bolt:8:7:32:20
+effect:BOLT_OR_BEAM:ELEC:0:-10
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 3
+desc:Fires a bolt of lightning, sometimes as a beam.
+spell:Nature Awareness:9:10:33:20
+effect:MAP_AREA
+effect-yx:22:40
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Maps the area, and finds its doors, traps, stairs and creatures.
+spell:Frost Bolt:10:10:35:20
+effect:BOLT_OR_BEAM:COLD:0:-10
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 5
+desc:Fires a bolt of frost, sometimes as a beam.
+spell:Ray of Sunlight:11:11:36:20
+effect:LINE:LIGHT_WEAK
+dice:6d8
+desc:Draws a line of sunlight, and burns what cannot bear it.
+spell:Entangle:20:20:50:20
+effect:PROJECT_LOS_AWARE:MON_SLOW
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Roots every creature in sight to the spot.
+spell:Summon Animal:30:30:65:20
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Herbal Healing:42:100:83:20
+effect:HEAL_HP
+dice:1000
+effect:CURE:STUN
+effect:CURE:CUT
+effect:CURE:POISONED
+desc:Heals a thousand points, and cures stunning, bleeding and poison with it.
+book:nature book:dungeon:[Nature's Gifts]:8:nature
+book-graphics:?:y
+book-properties:30000:15:50 to 100
+spell:Door Building:9:9:33:45
+effect:TOUCH:MAKE_DOOR
+desc:Builds doors in the squares around you.
+spell:Stair Building:11:12:36:45
+effect:CREATE_STAIRS
+desc:Builds a staircase under your feet.
+spell:Stone Skin:12:13:38:45
+effect:TIMED_INC:SHIELD
+dice:29+1d21
+desc:Hardens your skin for a while.
+spell:Resistance True:18:20:47:45
+effect:SET_VALUE
+dice:19+1d21
+effect:TIMED_INC:OPP_ACID
+effect:TIMED_INC:OPP_ELEC
+effect:TIMED_INC:OPP_FIRE
+effect:TIMED_INC:OPP_COLD
+effect:CLEAR_VALUE
+desc:Grants temporary resistance to acid, lightning, fire and cold.
+spell:Animal Friendship:35:35:72:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Stone Tell:39:40:78:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Wall of Stone:40:50:80:45
+effect:GRANITE
+desc:Raises a granite wall behind you.
+spell:Protect from Corrosion:42:90:83:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+book:nature book:dungeon:[Nature's Wrath]:8:nature
+book-graphics:?:y
+book-properties:50000:10:75 to 100
+spell:Earthquake:22:22:53:80
+effect:EARTHQUAKE:NONE:10
+desc:Shakes the ground apart around you.
+spell:Whirlwind Attack:25:25:57:80
+effect:SWEEP
+dice:$S
+expr:S:PLAYER_LEVEL:+ 10 / 15
+desc:Strikes every monster next to you.
+spell:Blizzard:27:27:60:80
+effect:BALL:COLD:3
+dice:70+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Calls down a blizzard.
+spell:Lightning Storm:32:30:68:80
+effect:BALL:ELEC:3
+dice:90+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Calls down a storm of lightning.
+spell:Whirlpool:37:32:75:80
+effect:BALL:WATER:3
+dice:100+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Opens a whirlpool.  Water batters, confuses and stuns.
+spell:Call Sunlight:39:37:78:80
+effect:SPHERE:LIGHT:8
+dice:150
+effect:LIGHT_LEVEL
+desc:Floods the level with sunlight.
+spell:Elemental Branding:42:90:83:80
+effect:BRAND_WEAPON
+desc:Brands your weapon with an element.  You do not choose which.
+spell:Nature's Wrath:44:80:86:80
+effect:PROJECT_LOS_AWARE:DISP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+effect:EARTHQUAKE:NONE:30
+effect:SPHERE:KILL_WALL:4
+effect:SPHERE:MANA:4
+dice:100+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Nature turns on everything around you, the ground included.
+
+book:shadow book:town:[Black Prayers]:8:death
+book-graphics:?:p
+book-properties:25:40:1 to 100
+spell:Detect Unlife:1:1:21:5
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Detects creatures nearby.
+spell:Malediction:2:2:23:5
+effect:BALL:MANA:0
+dice:$Dd3
+expr:D:PLAYER_LEVEL:- 1 / 5 + 3
+desc:Curses a creature with unresisted force.
+spell:Detect Evil:3:3:24:5
+effect:DETECT_EVIL
+effect-yx:22:40
+desc:Detects evil creatures nearby.
+spell:Stinking Cloud:5:4:27:5
+effect:BALL:POIS:2
+dice:10+$B
+expr:B:PLAYER_LEVEL:/ 2
+desc:Throws a cloud of poison.
+spell:Black Sleep:7:7:30:5
+effect:BOLT_AWARE:SLEEP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Puts a single creature to sleep.
+spell:Resist Poison:9:11:33:5
+effect:TIMED_INC:OPP_POIS
+dice:19+1d21
+desc:Grants temporary resistance to poison.
+spell:Horrify:11:11:36:5
+effect:BOLT_AWARE:TURN_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:BOLT_STATUS:MON_STUN
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Terrifies a creature, and leaves it reeling.
+spell:Enslave Undead:12:12:38:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+book:shadow book:town:[Black Mass]:8:death
+book-graphics:?:p
+book-properties:400:40:10 to 100
+spell:Orb of Entropy:14:14:41:20
+effect:BALL:MON_DRAIN:2
+dice:$B+3d6
+expr:B:PLAYER_LEVEL:* 5 / 4
+desc:An orb of entropy, which drains the life from what it touches.
+spell:Nether Bolt:16:16:44:20
+effect:BOLT_OR_BEAM:NETHER
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 6
+desc:Fires a bolt of nether, sometimes as a beam.
+spell:Terror:21:20:51:20
+effect:PROJECT_LOS_AWARE:TURN_ALL
+dice:30+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Terrifies every creature in sight.
+spell:Vampiric Drain:25:24:57:20
+effect:BOLT:MON_DRAIN
+dice:$B+1d$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:HEAL_HP
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Drains life from a creature and takes it for yourself.
+spell:Poison Branding:33:75:69:20
+effect:BRAND_WEAPON
+desc:Brands your weapon.  You do not choose with what.
+spell:Dispel Good:35:35:72:20
+effect:PROJECT_LOS_AWARE:DISP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Blasts every creature in sight.
+spell:Genocide:40:30:80:20
+effect:BANISH
+desc:Removes every creature of one kind from the level.  You choose the kind.
+spell:Restore Life:50:52:95:20
+effect:RESTORE_EXP
+desc:Restores experience you have lost.
+book:shadow book:dungeon:[Black Channels]:8:death
+book-graphics:?:p
+book-properties:30000:15:50 to 100
+spell:Berserk:13:20:39:45
+effect:TIMED_INC:SHERO
+dice:24+1d26
+effect:HEAL_HP
+dice:30
+effect:CURE:AFRAID
+desc:Sends you berserk: braver, harder to frighten, and worse at defending yourself.
+spell:Invoke Spirits:13:15:39:45
+effect:WONDER
+dice:100+m$M
+expr:M:PLAYER_LEVEL:/ 5
+desc:Calls on the dead.  What answers is not up to you.
+spell:Dark Bolt:14:15:41:45
+effect:BOLT_OR_BEAM:DARK
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 4
+desc:Fires a bolt of darkness, sometimes as a beam.
+spell:Battle Frenzy:33:33:69:45
+effect:TIMED_INC:SHERO
+dice:24+1d26
+effect:HEAL_HP
+dice:30
+effect:CURE:AFRAID
+effect:TIMED_INC:FAST
+dice:$B+1d$S
+expr:B:PLAYER_LEVEL:/ 2
+expr:S:PLAYER_LEVEL:/ 2 + 20
+desc:Berserk, and fast with it.
+spell:Vampirism True:35:35:72:45
+effect:BOLT:MON_DRAIN
+dice:100
+effect:HEAL_HP
+dice:100
+effect:BOLT:MON_DRAIN
+dice:100
+effect:HEAL_HP
+dice:100
+effect:BOLT:MON_DRAIN
+dice:100
+effect:HEAL_HP
+dice:100
+desc:Drains a hundred points of life three times over, and keeps all of it.
+spell:Vampiric Branding:35:95:72:45
+effect:BRAND_WEAPON
+desc:Brands your weapon.  You do not choose with what.
+spell:Darkness Storm:44:44:86:45
+effect:BALL:DARK:4
+dice:120
+desc:Calls down a storm of darkness.
+spell:Mass Genocide:45:75:87:45
+effect:MASS_BANISH
+desc:Removes every creature near you from the level.
+book:shadow book:dungeon:[Necronomicon]:8:death
+book-graphics:?:p
+book-properties:50000:10:75 to 100
+spell:Death Ray:25:25:57:80
+effect:BOLT:MON_DRAIN
+dice:$B
+expr:B:PLAYER_LEVEL:* 10
+desc:Draws the life out of a living creature.  The dead are untouched.
+spell:Raise the Dead:30:75:65:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Esoteria:35:45:72:80
+effect:IDENTIFY
+desc:Identifies one unknown rune on an item.
+spell:Word of Death:40:40:80:80
+effect:PROJECT_LOS_AWARE:MON_DRAIN
+dice:$B
+expr:B:PLAYER_LEVEL:* 3
+desc:Drains the life from every living creature in sight.
+spell:Evocation:42:40:83:80
+effect:PROJECT_LOS_AWARE:DISP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+effect:PROJECT_LOS_AWARE:TURN_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+effect:MASS_BANISH
+desc:Blasts, terrifies and then banishes everything in sight.
+spell:Hellfire:48:125:92:80
+effect:BALL:MANA:3
+dice:666
+effect:DAMAGE
+dice:49+1d51
+effect-msg:the strain of casting Hellfire
+desc:Six hundred and sixty-six points of unresisted fire, and fifty to a hundred of your own.
+spell:Omnicide:49:100:93:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Wraithform:50:111:95:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+
+book:magic book:town:[Cantrips for Beginners]:8:arcane
+book-graphics:?:R
+book-properties:100:40:1 to 100
+spell:Zap:1:1:21:5
+effect:BOLT_OR_BEAM:ELEC:0:-10
+dice:$Dd3
+expr:D:PLAYER_LEVEL:- 1 / 5 + 3
+desc:Fires a weak bolt of lightning, sometimes as a beam.
+spell:Wizard Lock:1:1:21:5
+effect:ALTER:MAKE_DOOR
+desc:Creates a door along a line.  Something to put between you and what follows.
+spell:Detect Invisibility:2:1:22:5
+effect:DETECT_INVISIBLE_MONSTERS
+effect-yx:22:40
+desc:Detects invisible creatures nearby.
+spell:Detect Monsters:2:2:22:5
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Detects all monsters nearby that are not invisible.
+spell:Blink:3:3:23:5
+effect:TELEPORT
+dice:10
+desc:Teleports you a short distance -- ten squares.
+spell:Light Area:5:5:25:5
+effect:LIGHT_AREA
+effect:SPHERE:LIGHT_WEAK:2
+dice:2d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Lights the area around you, and hurts light-sensitive monsters caught in it.
+spell:Trap & Door Destruction:6:6:26:5
+effect:ALTER:KILL_DOOR
+effect:ALTER:KILL_TRAP
+desc:Destroys doors and traps along a line.
+spell:Cure Light Wounds:7:6:27:5
+effect:HEAL_HP
+dice:2d8
+effect:TIMED_DEC:CUT
+dice:10
+desc:Heals a little and closes a light wound.
+book:magic book:town:[Minor Arcana]:8:arcane
+book-graphics:?:R
+book-properties:250:40:12 to 100
+spell:Detect Doors & Traps:8:7:28:20
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+desc:Detects doors, traps and staircases nearby.
+spell:Phlogiston:9:8:29:20
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Detect Treasure:10:9:30:20
+effect:DETECT_ORE
+effect-yx:22:40
+effect:DETECT_GOLD
+effect-yx:22:40
+desc:Detects gold nearby, in the rock and on the floor.
+spell:Detect Enchantment:11:10:31:20
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Detect Objects:12:11:32:20
+effect:DETECT_OBJECTS
+effect-yx:22:40
+desc:Detects objects nearby.
+spell:Cure Poison:13:12:33:20
+effect:CURE:POISONED
+desc:Cures poison.
+spell:Resist Cold:14:13:34:20
+effect:TIMED_INC:OPP_COLD
+dice:19+1d21
+desc:Grants temporary resistance to cold.
+spell:Resist Fire:15:14:35:20
+effect:TIMED_INC:OPP_FIRE
+dice:19+1d21
+desc:Grants temporary resistance to fire.
+book:magic book:town:[Major Arcana]:8:arcane
+book-graphics:?:R
+book-properties:1000:30:16 to 100
+spell:Resist Lightning:16:15:36:45
+effect:TIMED_INC:OPP_ELEC
+dice:19+1d21
+desc:Grants temporary resistance to lightning.
+spell:Resist Acid:17:16:37:45
+effect:TIMED_INC:OPP_ACID
+dice:19+1d21
+desc:Grants temporary resistance to acid.
+spell:Cure Medium Wounds:18:17:38:45
+effect:HEAL_HP
+dice:4d8
+effect:TIMED_DEC:CUT
+dice:50
+desc:Heals a moderate wound and most of the bleeding.
+spell:Teleport:19:18:39:45
+effect:TELEPORT
+dice:$B
+expr:B:PLAYER_LEVEL:* 5
+desc:Teleports you a long way -- five squares for every level you have.
+spell:Stone to Mud:22:20:42:45
+effect:LINE:KILL_WALL
+dice:20+1d30
+desc:Melts a wall along a line.
+spell:Ray of Light:24:22:44:45
+effect:LINE:LIGHT_WEAK
+dice:6d8
+desc:Draws a line of light, and burns what cannot bear it.
+spell:Satisfy Hunger:27:24:47:45
+effect:NOURISH:SET_TO
+dice:99
+desc:Fills your stomach.
+spell:See Invisible:29:26:49:45
+effect:TIMED_INC:SINVIS
+dice:23+1d25
+desc:Lets you see invisible creatures for a while.
+book:magic book:town:[Manual of Mastery]:8:arcane
+book-graphics:?:R
+book-properties:2500:20:27 to 100
+spell:Recharging:33:30:53:80
+effect:RECHARGE
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Recharges a wand or staff.
+spell:Teleport Level:37:36:57:80
+effect:TELEPORT_LEVEL
+desc:Takes you up or down one level, and does not ask which.
+spell:Identify:40:37:60:80
+effect:IDENTIFY
+desc:Identifies one unknown rune on an item.
+spell:Teleport Away:42:38:62:80
+effect:BEAM:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Fires a beam that teleports away every monster in its path.
+spell:Elemental Ball:44:39:64:80
+effect:RANDOM
+dice:4
+effect:BALL:FIRE:2
+dice:75+$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:BALL:ELEC:2
+dice:75+$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:BALL:COLD:2
+dice:75+$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:BALL:ACID:2
+dice:75+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Hurls a ball of one element.  Which one is not up to you.
+spell:Detection:46:40:66:80
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+effect:DETECT_INVISIBLE_MONSTERS
+effect-yx:22:40
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+effect:DETECT_GOLD
+effect-yx:22:40
+effect:DETECT_OBJECTS
+effect-yx:22:40
+desc:Detects everything nearby: monsters, traps, doors, stairs, gold and objects.
+spell:Word of Recall:47:55:67:80
+effect:RECALL
+desc:Returns you to town, or from town to the depth you last reached.
+spell:Clairvoyance:50:120:70:80
+effect:LIGHT_LEVEL
+effect:TIMED_INC:TELEPATHY
+dice:24+1d31
+desc:Lights the whole level and grants telepathy for a while.
 name:Necromancer
 virtues:UNLIFE | KNOWLEDGE
 stats:-3:3:0:0:-2
@@ -1760,7 +2845,7 @@ title:Chevalier
 title:Paladin
 title:Paladin Lord
 
-magic:1:400:4
+magic:1:400:8
 realm-choice:1:life | death
 
 book:prayer book:town:[Book of Common Prayer]:8:life
@@ -1973,7 +3058,183 @@ effect:TIMED_INC:INVULN
 dice:6+1d8
 desc:Makes you briefly invulnerable to all harm.
 
-
+book:shadow book:town:[Black Prayers]:8:death
+book-graphics:?:p
+book-properties:25:40:1 to 100
+spell:Detect Unlife:1:1:21:5
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Detects creatures nearby.
+spell:Malediction:3:2:24:5
+effect:BALL:MANA:0
+dice:$Dd3
+expr:D:PLAYER_LEVEL:- 1 / 5 + 3
+desc:Curses a creature with unresisted force.
+spell:Detect Evil:4:3:26:5
+effect:DETECT_EVIL
+effect-yx:22:40
+desc:Detects evil creatures nearby.
+spell:Stinking Cloud:6:5:29:5
+effect:BALL:POIS:2
+dice:10+$B
+expr:B:PLAYER_LEVEL:/ 2
+desc:Throws a cloud of poison.
+spell:Black Sleep:8:8:32:5
+effect:BOLT_AWARE:SLEEP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Puts a single creature to sleep.
+spell:Resist Poison:10:11:35:5
+effect:TIMED_INC:OPP_POIS
+dice:19+1d21
+desc:Grants temporary resistance to poison.
+spell:Horrify:12:12:38:5
+effect:BOLT_AWARE:TURN_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:BOLT_STATUS:MON_STUN
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Terrifies a creature, and leaves it reeling.
+spell:Enslave Undead:15:15:42:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+book:shadow book:town:[Black Mass]:8:death
+book-graphics:?:p
+book-properties:400:40:10 to 100
+spell:Orb of Entropy:17:17:45:20
+effect:BALL:MON_DRAIN:2
+dice:$B+3d6
+expr:B:PLAYER_LEVEL:* 5 / 4
+desc:An orb of entropy, which drains the life from what it touches.
+spell:Nether Bolt:19:19:48:20
+effect:BOLT_OR_BEAM:NETHER
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 6
+desc:Fires a bolt of nether, sometimes as a beam.
+spell:Terror:23:23:54:20
+effect:PROJECT_LOS_AWARE:TURN_ALL
+dice:30+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Terrifies every creature in sight.
+spell:Vampiric Drain:28:26:62:20
+effect:BOLT:MON_DRAIN
+dice:$B+1d$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:HEAL_HP
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Drains life from a creature and takes it for yourself.
+spell:Poison Branding:35:75:72:20
+effect:BRAND_WEAPON
+desc:Brands your weapon.  You do not choose with what.
+spell:Dispel Good:40:35:80:20
+effect:PROJECT_LOS_AWARE:DISP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Blasts every creature in sight.
+spell:Genocide:45:35:87:20
+effect:BANISH
+desc:Removes every creature of one kind from the level.  You choose the kind.
+spell:Restore Life:50:52:95:20
+effect:RESTORE_EXP
+desc:Restores experience you have lost.
+book:shadow book:dungeon:[Black Channels]:8:death
+book-graphics:?:p
+book-properties:30000:15:50 to 100
+spell:Berserk:15:20:42:45
+effect:TIMED_INC:SHERO
+dice:24+1d26
+effect:HEAL_HP
+dice:30
+effect:CURE:AFRAID
+desc:Sends you berserk: braver, harder to frighten, and worse at defending yourself.
+spell:Invoke Spirits:15:20:42:45
+effect:WONDER
+dice:100+m$M
+expr:M:PLAYER_LEVEL:/ 5
+desc:Calls on the dead.  What answers is not up to you.
+spell:Dark Bolt:18:20:47:45
+effect:BOLT_OR_BEAM:DARK
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 4
+desc:Fires a bolt of darkness, sometimes as a beam.
+spell:Battle Frenzy:38:38:77:45
+effect:TIMED_INC:SHERO
+dice:24+1d26
+effect:HEAL_HP
+dice:30
+effect:CURE:AFRAID
+effect:TIMED_INC:FAST
+dice:$B+1d$S
+expr:B:PLAYER_LEVEL:/ 2
+expr:S:PLAYER_LEVEL:/ 2 + 20
+desc:Berserk, and fast with it.
+spell:Vampirism True:40:40:80:45
+effect:BOLT:MON_DRAIN
+dice:100
+effect:HEAL_HP
+dice:100
+effect:BOLT:MON_DRAIN
+dice:100
+effect:HEAL_HP
+dice:100
+effect:BOLT:MON_DRAIN
+dice:100
+effect:HEAL_HP
+dice:100
+desc:Drains a hundred points of life three times over, and keeps all of it.
+spell:Vampiric Branding:42:100:83:45
+effect:BRAND_WEAPON
+desc:Brands your weapon.  You do not choose with what.
+spell:Darkness Storm:48:50:92:45
+effect:BALL:DARK:4
+dice:120
+desc:Calls down a storm of darkness.
+spell:Mass Genocide:48:75:92:45
+effect:MASS_BANISH
+desc:Removes every creature near you from the level.
+book:shadow book:dungeon:[Necronomicon]:8:death
+book-graphics:?:p
+book-properties:50000:10:75 to 100
+spell:Death Ray:30:35:65:80
+effect:BOLT:MON_DRAIN
+dice:$B
+expr:B:PLAYER_LEVEL:* 10
+desc:Draws the life out of a living creature.  The dead are untouched.
+spell:Raise the Dead:36:85:74:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Esoteria:38:45:77:80
+effect:IDENTIFY
+desc:Identifies one unknown rune on an item.
+spell:Word of Death:45:45:87:80
+effect:PROJECT_LOS_AWARE:MON_DRAIN
+dice:$B
+expr:B:PLAYER_LEVEL:* 3
+desc:Drains the life from every living creature in sight.
+spell:Evocation:47:45:90:80
+effect:PROJECT_LOS_AWARE:DISP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+effect:PROJECT_LOS_AWARE:TURN_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+effect:MASS_BANISH
+desc:Blasts, terrifies and then banishes everything in sight.
+spell:Hellfire:50:150:95:80
+effect:BALL:MANA:3
+dice:666
+effect:DAMAGE
+dice:49+1d51
+effect-msg:the strain of casting Hellfire
+desc:Six hundred and sixty-six points of unresisted fire, and fifty to a hundred of your own.
+spell:Omnicide:50:100:95:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Wraithform:50:111:95:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
 name:Rogue
 virtues:HONOUR
 stats:0:1:-3:3:-1
@@ -2009,7 +3270,7 @@ title:Rogue
 title:Thief
 title:Master Thief
 
-magic:5:350:8
+magic:5:350:12
 realm-choice:1:arcane | death | sorcery | trump
 
 book:magic book:town:[Cantrips for Beginners]:8:arcane
@@ -2345,6 +3606,150 @@ spell:Alchemy:45:50:87:80
 effect:ALCHEMY
 desc:Turns an object into a third of its worth in gold. Artifacts refuse.
 
+book:shadow book:town:[Black Prayers]:8:death
+book-graphics:?:p
+book-properties:25:40:1 to 100
+spell:Detect Unlife:5:3:27:5
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Detects creatures nearby.
+spell:Malediction:7:4:30:5
+effect:BALL:MANA:0
+dice:$Dd3
+expr:D:PLAYER_LEVEL:- 1 / 5 + 3
+desc:Curses a creature with unresisted force.
+spell:Detect Evil:9:5:33:5
+effect:DETECT_EVIL
+effect-yx:22:40
+desc:Detects evil creatures nearby.
+spell:Stinking Cloud:13:7:39:5
+effect:BALL:POIS:2
+dice:10+$B
+expr:B:PLAYER_LEVEL:/ 2
+desc:Throws a cloud of poison.
+spell:Black Sleep:15:7:42:5
+effect:BOLT_AWARE:SLEEP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Puts a single creature to sleep.
+spell:Resist Poison:17:15:45:5
+effect:TIMED_INC:OPP_POIS
+dice:19+1d21
+desc:Grants temporary resistance to poison.
+spell:Horrify:19:17:48:5
+effect:BOLT_AWARE:TURN_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:BOLT_STATUS:MON_STUN
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Terrifies a creature, and leaves it reeling.
+spell:Enslave Undead:19:19:48:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+book:shadow book:town:[Black Mass]:6:death
+book-graphics:?:p
+book-properties:400:40:10 to 100
+spell:Orb of Entropy:21:21:51:20
+effect:BALL:MON_DRAIN:2
+dice:$B+3d6
+expr:B:PLAYER_LEVEL:* 5 / 4
+desc:An orb of entropy, which drains the life from what it touches.
+spell:Nether Bolt:23:23:54:20
+effect:BOLT_OR_BEAM:NETHER
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 6
+desc:Fires a bolt of nether, sometimes as a beam.
+spell:Terror:27:25:60:20
+effect:PROJECT_LOS_AWARE:TURN_ALL
+dice:30+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Terrifies every creature in sight.
+spell:Vampiric Drain:30:30:65:20
+effect:BOLT:MON_DRAIN
+dice:$B+1d$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:HEAL_HP
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Drains life from a creature and takes it for yourself.
+spell:Poison Branding:35:35:72:20
+effect:BRAND_WEAPON
+desc:Brands your weapon.  You do not choose with what.
+spell:Dispel Good:45:45:87:20
+effect:PROJECT_LOS_AWARE:DISP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Blasts every creature in sight.
+book:shadow book:dungeon:[Black Channels]:7:death
+book-graphics:?:p
+book-properties:30000:15:50 to 100
+spell:Berserk:20:25:50:45
+effect:TIMED_INC:SHERO
+dice:24+1d26
+effect:HEAL_HP
+dice:30
+effect:CURE:AFRAID
+desc:Sends you berserk: braver, harder to frighten, and worse at defending yourself.
+spell:Invoke Spirits:23:20:54:45
+effect:WONDER
+dice:100+m$M
+expr:M:PLAYER_LEVEL:/ 5
+desc:Calls on the dead.  What answers is not up to you.
+spell:Dark Bolt:28:28:62:45
+effect:BOLT_OR_BEAM:DARK
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 4
+desc:Fires a bolt of darkness, sometimes as a beam.
+spell:Battle Frenzy:32:32:68:45
+effect:TIMED_INC:SHERO
+dice:24+1d26
+effect:HEAL_HP
+dice:30
+effect:CURE:AFRAID
+effect:TIMED_INC:FAST
+dice:$B+1d$S
+expr:B:PLAYER_LEVEL:/ 2
+expr:S:PLAYER_LEVEL:/ 2 + 20
+desc:Berserk, and fast with it.
+spell:Vampirism True:46:45:89:45
+effect:BOLT:MON_DRAIN
+dice:100
+effect:HEAL_HP
+dice:100
+effect:BOLT:MON_DRAIN
+dice:100
+effect:HEAL_HP
+dice:100
+effect:BOLT:MON_DRAIN
+dice:100
+effect:HEAL_HP
+dice:100
+desc:Drains a hundred points of life three times over, and keeps all of it.
+spell:Vampiric Branding:48:100:92:45
+effect:BRAND_WEAPON
+desc:Brands your weapon.  You do not choose with what.
+spell:Darkness Storm:50:50:95:45
+effect:BALL:DARK:4
+dice:120
+desc:Calls down a storm of darkness.
+book:shadow book:dungeon:[Necronomicon]:4:death
+book-graphics:?:p
+book-properties:50000:10:75 to 100
+spell:Death Ray:30:30:65:80
+effect:BOLT:MON_DRAIN
+dice:$B
+expr:B:PLAYER_LEVEL:* 10
+desc:Draws the life out of a living creature.  The dead are untouched.
+spell:Raise the Dead:31:80:66:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Esoteria:32:40:68:80
+effect:IDENTIFY
+desc:Identifies one unknown rune on an item.
+spell:Wraithform:50:125:95:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
 name:Ranger
 virtues:NATURE | TEMPERANCE
 stats:0:0:2:1:-1
@@ -2381,7 +3786,7 @@ title:Pathfinder
 title:Ranger
 title:Ranger Lord
 
-magic:3:400:12
+magic:3:400:20
 realm-choice:1:nature
 realm-choice:2:arcane | death | sorcery | chaos | trump
 
@@ -2869,6 +4274,327 @@ dice:120+$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Launches a rocket that shreds what it hits.
 
+book:shadow book:town:[Black Prayers]:8:death
+book-graphics:?:p
+book-properties:25:40:1 to 100
+spell:Detect Unlife:5:2:27:5
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Detects creatures nearby.
+spell:Malediction:5:3:27:5
+effect:BALL:MANA:0
+dice:$Dd3
+expr:D:PLAYER_LEVEL:- 1 / 5 + 3
+desc:Curses a creature with unresisted force.
+spell:Detect Evil:7:4:30:5
+effect:DETECT_EVIL
+effect-yx:22:40
+desc:Detects evil creatures nearby.
+spell:Stinking Cloud:9:5:33:5
+effect:BALL:POIS:2
+dice:10+$B
+expr:B:PLAYER_LEVEL:/ 2
+desc:Throws a cloud of poison.
+spell:Black Sleep:11:8:36:5
+effect:BOLT_AWARE:SLEEP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 10 + 500
+desc:Puts a single creature to sleep.
+spell:Resist Poison:17:25:45:5
+effect:TIMED_INC:OPP_POIS
+dice:19+1d21
+desc:Grants temporary resistance to poison.
+spell:Horrify:19:19:48:5
+effect:BOLT_AWARE:TURN_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:BOLT_STATUS:MON_STUN
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Terrifies a creature, and leaves it reeling.
+spell:Enslave Undead:22:22:53:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+book:shadow book:town:[Black Mass]:6:death
+book-graphics:?:p
+book-properties:400:40:10 to 100
+spell:Orb of Entropy:24:24:56:20
+effect:BALL:MON_DRAIN:2
+dice:$B+3d6
+expr:B:PLAYER_LEVEL:* 5 / 4
+desc:An orb of entropy, which drains the life from what it touches.
+spell:Nether Bolt:26:26:59:20
+effect:BOLT_OR_BEAM:NETHER
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 6
+desc:Fires a bolt of nether, sometimes as a beam.
+spell:Terror:28:28:62:20
+effect:PROJECT_LOS_AWARE:TURN_ALL
+dice:30+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Terrifies every creature in sight.
+spell:Vampiric Drain:30:30:65:20
+effect:BOLT:MON_DRAIN
+dice:$B+1d$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:HEAL_HP
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Drains life from a creature and takes it for yourself.
+spell:Poison Branding:40:80:80:20
+effect:BRAND_WEAPON
+desc:Brands your weapon.  You do not choose with what.
+spell:Dispel Good:45:40:87:20
+effect:PROJECT_LOS_AWARE:DISP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Blasts every creature in sight.
+book:shadow book:dungeon:[Black Channels]:6:death
+book-graphics:?:p
+book-properties:30000:15:50 to 100
+spell:Berserk:25:30:57:45
+effect:TIMED_INC:SHERO
+dice:24+1d26
+effect:HEAL_HP
+dice:30
+effect:CURE:AFRAID
+desc:Sends you berserk: braver, harder to frighten, and worse at defending yourself.
+spell:Invoke Spirits:25:25:57:45
+effect:WONDER
+dice:100+m$M
+expr:M:PLAYER_LEVEL:/ 5
+desc:Calls on the dead.  What answers is not up to you.
+spell:Dark Bolt:27:27:60:45
+effect:BOLT_OR_BEAM:DARK
+dice:$Dd8
+expr:D:PLAYER_LEVEL:- 5 / 4 + 4
+desc:Fires a bolt of darkness, sometimes as a beam.
+spell:Battle Frenzy:39:39:78:45
+effect:TIMED_INC:SHERO
+dice:24+1d26
+effect:HEAL_HP
+dice:30
+effect:CURE:AFRAID
+effect:TIMED_INC:FAST
+dice:$B+1d$S
+expr:B:PLAYER_LEVEL:/ 2
+expr:S:PLAYER_LEVEL:/ 2 + 20
+desc:Berserk, and fast with it.
+spell:Vampirism True:45:45:87:45
+effect:BOLT:MON_DRAIN
+dice:100
+effect:HEAL_HP
+dice:100
+effect:BOLT:MON_DRAIN
+dice:100
+effect:HEAL_HP
+dice:100
+effect:BOLT:MON_DRAIN
+dice:100
+effect:HEAL_HP
+dice:100
+desc:Drains a hundred points of life three times over, and keeps all of it.
+spell:Vampiric Branding:46:100:89:45
+effect:BRAND_WEAPON
+desc:Brands your weapon.  You do not choose with what.
+book:shadow book:dungeon:[Necronomicon]:5:death
+book-graphics:?:p
+book-properties:50000:10:75 to 100
+spell:Death Ray:35:35:72:80
+effect:BOLT:MON_DRAIN
+dice:$B
+expr:B:PLAYER_LEVEL:* 10
+desc:Draws the life out of a living creature.  The dead are untouched.
+spell:Raise the Dead:38:90:77:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Esoteria:40:45:80:80
+effect:IDENTIFY
+desc:Identifies one unknown rune on an item.
+spell:Word of Death:48:50:92:80
+effect:PROJECT_LOS_AWARE:MON_DRAIN
+dice:$B
+expr:B:PLAYER_LEVEL:* 3
+desc:Drains the life from every living creature in sight.
+spell:Evocation:50:50:95:80
+effect:PROJECT_LOS_AWARE:DISP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+effect:PROJECT_LOS_AWARE:TURN_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+effect:MASS_BANISH
+desc:Blasts, terrifies and then banishes everything in sight.
+
+book:magic book:town:[Cantrips for Beginners]:8:arcane
+book-graphics:?:R
+book-properties:100:40:1 to 100
+spell:Zap:3:2:23:5
+effect:BOLT_OR_BEAM:ELEC:0:-10
+dice:$Dd3
+expr:D:PLAYER_LEVEL:- 1 / 5 + 3
+desc:Fires a weak bolt of lightning, sometimes as a beam.
+spell:Wizard Lock:3:2:23:5
+effect:ALTER:MAKE_DOOR
+desc:Creates a door along a line.  Something to put between you and what follows.
+spell:Detect Invisibility:4:3:24:5
+effect:DETECT_INVISIBLE_MONSTERS
+effect-yx:22:40
+desc:Detects invisible creatures nearby.
+spell:Detect Monsters:4:3:24:5
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+desc:Detects all monsters nearby that are not invisible.
+spell:Blink:5:4:25:5
+effect:TELEPORT
+dice:10
+desc:Teleports you a short distance -- ten squares.
+spell:Light Area:6:6:26:5
+effect:LIGHT_AREA
+effect:SPHERE:LIGHT_WEAK:2
+dice:2d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Lights the area around you, and hurts light-sensitive monsters caught in it.
+spell:Trap & Door Destruction:7:7:27:5
+effect:ALTER:KILL_DOOR
+effect:ALTER:KILL_TRAP
+desc:Destroys doors and traps along a line.
+spell:Cure Light Wounds:8:8:28:5
+effect:HEAL_HP
+dice:2d8
+effect:TIMED_DEC:CUT
+dice:10
+desc:Heals a little and closes a light wound.
+book:magic book:town:[Minor Arcana]:8:arcane
+book-graphics:?:R
+book-properties:250:40:12 to 100
+spell:Detect Doors & Traps:9:9:29:20
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+desc:Detects doors, traps and staircases nearby.
+spell:Phlogiston:10:10:30:20
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Detect Treasure:11:11:31:20
+effect:DETECT_ORE
+effect-yx:22:40
+effect:DETECT_GOLD
+effect-yx:22:40
+desc:Detects gold nearby, in the rock and on the floor.
+spell:Detect Enchantment:12:12:32:20
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Detect Objects:14:13:34:20
+effect:DETECT_OBJECTS
+effect-yx:22:40
+desc:Detects objects nearby.
+spell:Cure Poison:15:14:35:20
+effect:CURE:POISONED
+desc:Cures poison.
+spell:Resist Cold:16:15:36:20
+effect:TIMED_INC:OPP_COLD
+dice:19+1d21
+desc:Grants temporary resistance to cold.
+spell:Resist Fire:17:16:37:20
+effect:TIMED_INC:OPP_FIRE
+dice:19+1d21
+desc:Grants temporary resistance to fire.
+book:magic book:town:[Major Arcana]:8:arcane
+book-graphics:?:R
+book-properties:1000:30:16 to 100
+spell:Resist Lightning:18:17:38:45
+effect:TIMED_INC:OPP_ELEC
+dice:19+1d21
+desc:Grants temporary resistance to lightning.
+spell:Resist Acid:19:18:39:45
+effect:TIMED_INC:OPP_ACID
+dice:19+1d21
+desc:Grants temporary resistance to acid.
+spell:Cure Medium Wounds:20:19:40:45
+effect:HEAL_HP
+dice:4d8
+effect:TIMED_DEC:CUT
+dice:50
+desc:Heals a moderate wound and most of the bleeding.
+spell:Teleport:22:20:42:45
+effect:TELEPORT
+dice:$B
+expr:B:PLAYER_LEVEL:* 5
+desc:Teleports you a long way -- five squares for every level you have.
+spell:Stone to Mud:25:23:45:45
+effect:LINE:KILL_WALL
+dice:20+1d30
+desc:Melts a wall along a line.
+spell:Ray of Light:27:26:47:45
+effect:LINE:LIGHT_WEAK
+dice:6d8
+desc:Draws a line of light, and burns what cannot bear it.
+spell:Satisfy Hunger:29:27:49:45
+effect:NOURISH:SET_TO
+dice:99
+desc:Fills your stomach.
+spell:See Invisible:33:30:53:45
+effect:TIMED_INC:SINVIS
+dice:23+1d25
+desc:Lets you see invisible creatures for a while.
+book:magic book:town:[Manual of Mastery]:7:arcane
+book-graphics:?:R
+book-properties:2500:20:27 to 100
+spell:Recharging:38:36:58:80
+effect:RECHARGE
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Recharges a wand or staff.
+spell:Teleport Level:42:38:62:80
+effect:TELEPORT_LEVEL
+desc:Takes you up or down one level, and does not ask which.
+spell:Identify:44:38:64:80
+effect:IDENTIFY
+desc:Identifies one unknown rune on an item.
+spell:Teleport Away:46:40:66:80
+effect:BEAM:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Fires a beam that teleports away every monster in its path.
+spell:Elemental Ball:47:42:67:80
+effect:RANDOM
+dice:4
+effect:BALL:FIRE:2
+dice:75+$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:BALL:ELEC:2
+dice:75+$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:BALL:COLD:2
+dice:75+$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:BALL:ACID:2
+dice:75+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Hurls a ball of one element.  Which one is not up to you.
+spell:Detection:48:44:68:80
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+effect:DETECT_INVISIBLE_MONSTERS
+effect-yx:22:40
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+effect:DETECT_GOLD
+effect-yx:22:40
+effect:DETECT_OBJECTS
+effect-yx:22:40
+desc:Detects everything nearby: monsters, traps, doors, stairs, gold and objects.
+spell:Word of Recall:49:65:69:80
+effect:RECALL
+desc:Returns you to town, or from town to the depth you last reached.
 name:Blackguard
 virtues:VALOUR | INDIVIDUALISM
 stats:2:0:-3:0:2

@@ -354,6 +354,32 @@ classes.
    has no side for a monster to be on. **It waits for M10**, and is the one part of M9
    that a later milestone unblocks rather than the other way round.
 
+   **So CNT-10 is met for six realms of seven and deferred for the seventh, not
+   met.** The requirement reads "realm spellbooks are imported for whichever
+   realms PLR-09 delivers", and PLR-09 delivers Trump -- so the honest statement
+   is six of seven with the seventh recorded, not a tick. Arcane, Life, Nature,
+   Death, Sorcery and Chaos are all in, four books of eight apiece, and since
+   DEC-57 they are in every class Zangband entitles to them.
+
+   *(This paragraph was reported as written on 2 September and was not: the
+   script carrying it aborted on an earlier assertion and only some of its edits
+   landed. The audit that followed checked for the old wording being gone rather
+   than the new wording being present, and so missed it too.)*
+
+5. ~~**The entitlement completion.**~~ **Done (3.66.0, DEC-57).** Zangband's
+   `realm_choices1/2[]` were transcribed verbatim from the start, but the books
+   for a realm only ever reached classes that already carried that kind of book
+   -- so five classes could choose realms with no content behind them. Ten
+   class-realm pairs, forty books, 305 spells; the project owner chose fidelity.
+   `player/realm` now asserts the direction nothing asserted before: entitled
+   plus content implies books.
+
+6. ~~**The Monk's realms.**~~ **Done (3.65.0, DEC-36's addendum.)** Deferred in
+   M7 until realm selection existed. One of Life, Nature or Death, on the Monk's
+   own row of `magic_info[]`. It was missing from this list until the
+   2 September audit -- the deferral was recorded in DEC-36 and nowhere the plan
+   would show it.
+
 **One thing is awaiting the project owner, and this plan was not carrying it.**
 DEC-50 and DEC-51 were settled on 1 September; DEC-52 to DEC-55 were taken and
 recorded during the work. What is outstanding is the **mana-shortfall penalty**:

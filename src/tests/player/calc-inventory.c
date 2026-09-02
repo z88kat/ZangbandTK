@@ -418,9 +418,20 @@ static int test_calc_inventory_equipped_pack_quiver(void *state) {
 			{ -1, -1, -1, false, false }
 		},
 		{
-			{ TV_MAGIC_BOOK, 1, 1 },
+			/*
+			 * All three books are readable now, and readable books come
+			 * first (ZangbandTK, DEC-57).  A Mage carried Arcane, Sorcery
+			 * and Chaos, so a nature book and a prayer book were dead
+			 * weight and fell in with the general sort; completing
+			 * Zangband's entitlements gave the Mage Life and Nature as
+			 * well, so it can browse all three.  What separates them is
+			 * then the ordinary rule -- decreasing tval -- which is why
+			 * the magic book, first when it was the only readable one,
+			 * is now last of the three.
+			 */
 			{ TV_NATURE_BOOK, 1, 1 },
 			{ TV_PRAYER_BOOK, 1, 1 },
+			{ TV_MAGIC_BOOK, 1, 1 },
 			{ TV_POTION, 3, 1 },
 			{ TV_POTION, 5, 2 },
 			{ TV_POTION, 2, 3 },

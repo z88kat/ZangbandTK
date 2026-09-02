@@ -197,13 +197,13 @@ static int test_no_existing_class_progression_moved(void *state) {
 		 * Every class in the table is now on a multiple of four books,
 		 * because every realm is four books of eight.
 		 */
-		{ "Mage", 12, 96 },
+		{ "Mage", 24, 192 },
 		{ "Druid", 4, 32 },
-		{ "Priest", 12, 96 },
+		{ "Priest", 24, 192 },
 		{ "Necromancer", 4, 32 },
-		{ "Paladin", 4, 32 },
-		{ "Rogue", 8, 63 },
-		{ "Ranger", 12, 91 },
+		{ "Paladin", 8, 64 },
+		{ "Rogue", 12, 88 },
+		{ "Ranger", 20, 147 },
 		{ "Blackguard", 4, 32 },
 		{ "Chaos-Warrior", 4, 32 },
 		/* PLR-03's last two, and both are entitled to nearly everything. */
@@ -226,77 +226,97 @@ static int test_no_existing_class_progression_moved(void *state) {
 /**
  * And every book is still the same book, in the same place.
  *
- * The counts above would not notice a swap. This pins each class's books in
- * order by the realm they belong to, which is the field the rename touched, and
- * by their item sub-type, which is the field `player_object_to_book()` matches
- * on -- so a book that changed identity or changed position fails here.
+ * The counts above would not notice a swap. This pins every class's books in
+ * order, as runs of one realm, which is the form the data actually has: a
+ * realm's four books are contiguous and each realm is appended after the last,
+ * so a run table says the same thing as a book-by-book list and stays readable
+ * at a hundred and sixty-four books. It also pins the run *lengths*, which the
+ * old per-book form did not.
  *
- * The Paladin and the Priest are both listed on purpose: they share the Life
- * realm, so one edit reaches two classes. They no longer share book *kinds* --
+ * Written as runs when DEC-57 completed Zangband's entitlements and the Mage,
+ * the Priest, the Warrior-Mage and the High-Mage all reached twenty-four books
+ * -- wider than any sensible fixed-size row. Every class is listed now, which
+ * the old form could not manage.
+ *
+ * The Paladin and the Priest are both here on purpose: they share the Life
+ * realm, so one edit reaches two classes. They do not share book *kinds* --
  * DEC-50 gave each of them Zangband's four Life books, where 4.2 had the
  * Paladin carrying three of the Priest's five.
+ *
+ * **The order is the savefile's order.** A character's known spells are
+ * recorded by flat position across all of its class's books, so a realm
+ * appearing anywhere but where it does would shift every index after it. That
+ * is why DEC-57's new realms went on the *end* of each list and why this test
+ * reads as a prefix: Arcane, Sorcery and Chaos still open the Mage's list in
+ * that order, and the three realms it gained follow.
  */
 static int test_every_book_kept_its_place(void *state) {
+	struct run { const char *realm; int books; };
 	static const struct {
 		const char *cls;
-		const char *realms[13];
+		struct run runs[7];
 	} order[] = {
-		{ "Mage",        { "arcane", "arcane", "arcane", "arcane",
-		                   "sorcery", "sorcery", "sorcery", "sorcery",
-		                   "chaos", "chaos", "chaos", "chaos" } },
-		{ "Druid",       { "nature", "nature", "nature", "nature" } },
-		{ "Priest",      { "life", "life", "life", "life",
-		                   "sorcery", "sorcery", "sorcery", "sorcery",
-		                   "chaos", "chaos", "chaos", "chaos" } },
-		{ "Necromancer", { "death", "death", "death", "death" } },
-		{ "Paladin",     { "life", "life", "life", "life" } },
-		{ "Rogue",       { "arcane", "arcane", "arcane", "arcane",
-		                   "sorcery", "sorcery", "sorcery", "sorcery" } },
-		{ "Ranger",      { "nature", "nature", "nature", "nature",
-		                   "sorcery", "sorcery", "sorcery", "sorcery",
-		                   "chaos", "chaos", "chaos", "chaos" } },
-		{ "Blackguard",  { "death", "death", "death", "death" } },
-		{ "Chaos-Warrior", { "chaos", "chaos", "chaos", "chaos" } },
-		/*
-		 * The Warrior-Mage and the High-Mage are not listed. Both carry
-		 * twenty-four books over six realms, wider than this table's
-		 * rows, and `every-realm-is-four-books-of-eight` covers them on
-		 * the invariant instead -- four books to a realm, each realm
-		 * contiguous, which is what this table checks one class at a
-		 * time.
-		 */
+		{ "Mage",        { { "arcane", 4 }, { "sorcery", 4 }, { "chaos", 4 },
+		                   { "life", 4 }, { "nature", 4 }, { "death", 4 } } },
+		{ "Druid",       { { "nature", 4 } } },
+		{ "Priest",      { { "life", 4 }, { "sorcery", 4 }, { "chaos", 4 },
+		                   { "nature", 4 }, { "death", 4 }, { "arcane", 4 } } },
+		{ "Necromancer", { { "death", 4 } } },
+		{ "Paladin",     { { "life", 4 }, { "death", 4 } } },
+		{ "Rogue",       { { "arcane", 4 }, { "sorcery", 4 },
+		                   { "death", 4 } } },
+		{ "Ranger",      { { "nature", 4 }, { "sorcery", 4 }, { "chaos", 4 },
+		                   { "death", 4 }, { "arcane", 4 } } },
+		{ "Blackguard",  { { "death", 4 } } },
+		{ "Monk",        { { "life", 4 }, { "nature", 4 }, { "death", 4 } } },
+		{ "Chaos-Warrior", { { "chaos", 4 } } },
+		{ "Warrior-Mage", { { "life", 4 }, { "sorcery", 4 }, { "nature", 4 },
+		                    { "chaos", 4 }, { "death", 4 },
+		                    { "arcane", 4 } } },
+		{ "High-Mage",   { { "life", 4 }, { "sorcery", 4 }, { "nature", 4 },
+		                   { "chaos", 4 }, { "death", 4 },
+		                   { "arcane", 4 } } },
 	};
 	size_t i;
-	int j, checked = 0;
+	int checked = 0;
 
 	for (i = 0; i < N_ELEMENTS(order); i++) {
 		const struct player_class *c = find_class(order[i].cls);
+		int b = 0;
+		size_t r;
 
 		notnull(c);
-		for (j = 0; j < c->magic.num_books; j++) {
-			const struct class_book *b = &c->magic.books[j];
+		for (r = 0; r < N_ELEMENTS(order[i].runs); r++) {
+			const char *realm = order[i].runs[r].realm;
+			int n = order[i].runs[r].books;
+			int k;
 
-			require(order[i].realms[j] != NULL);
-			notnull(b->realm);
-			require(streq(b->realm->name, order[i].realms[j]));
-			require(b->sval > 0);
-			require(b->num_spells > 0);
-			checked++;
+			if (!realm) break;
+			for (k = 0; k < n; k++) {
+				const struct class_book *book;
+
+				/* The run must actually be there, not run off the end. */
+				require(b < c->magic.num_books);
+				book = &c->magic.books[b];
+
+				notnull(book->realm);
+				require(streq(book->realm->name, realm));
+				require(book->sval > 0);
+				require(book->num_spells > 0);
+				b++;
+				checked++;
+			}
 		}
 
-		/* And no book beyond the ones listed. */
-		if (c->magic.num_books < 13) {
-			require(order[i].realms[c->magic.num_books] == NULL);
-		}
+		/* And no book beyond the runs listed. */
+		eq(b, c->magic.num_books);
 	}
 
 	/*
-	 * 12 + 4 + 12 + 4 + 4 + 8 + 12 + 4 + 4 across the nine listed classes,
-	 * and every one of those numbers is now a multiple of four: all seven
-	 * realms hold four books of eight spells, which is Zangband's shape
-	 * throughout and the end of DEC-50's replacement.
+	 * A hundred and sixty-four books across the twelve casting classes, and
+	 * every class on a multiple of four, because every realm is four books.
 	 */
-	eq(checked, 64);
+	eq(checked, 164);
 
 	ok;
 }
@@ -504,16 +524,21 @@ static int test_a_single_entitlement_is_not_a_choice(void *state) {
 	require(streq(got[0]->name, "nature"));
 
 	/*
-	 * Several: a Ranger's second slot. Zangband entitles it to five, and
-	 * this game offers the two of those five it has built -- Sorcery and
-	 * Chaos. Nature is excluded here because slot 1 does not allow it, not
-	 * because of the books.
+	 * Several: a Ranger's second slot. Zangband entitles it to Sorcery,
+	 * Chaos, Death, Trump and Arcane, and DEC-57 completed the books, so
+	 * four of those five are offered -- everything but Trump, which has
+	 * none. Nature is absent because slot 1 holds it, not because of books.
 	 */
-	eq(player_realm_choices(find_class("Ranger"), 1, got, REALM_MAX), 2);
+	eq(player_realm_choices(find_class("Ranger"), 1, got, REALM_MAX), 4);
 
-	/* A Mage is entitled to all seven and is offered the three built. */
-	eq(player_realm_choices(find_class("Mage"), 0, got, REALM_MAX), 3);
-	eq(player_realm_choices(find_class("Mage"), 1, got, REALM_MAX), 3);
+	/*
+	 * A Mage is entitled to all seven in both slots and is offered the six
+	 * that have content. Before DEC-57 it was offered three, because the
+	 * four mapped realms were only ever emitted into the classes that
+	 * already carried those books.
+	 */
+	eq(player_realm_choices(find_class("Mage"), 0, got, REALM_MAX), 6);
+	eq(player_realm_choices(find_class("Mage"), 1, got, REALM_MAX), 6);
 
 	/* A slot beyond the last is answered rather than read past. */
 	eq(player_realm_choices(find_class("Mage"), REALM_CHOICES, got,
@@ -597,7 +622,7 @@ static int test_an_offered_realm_has_books_behind_it(void *state) {
 	 * for the first two and offered to neither, because it has no books
 	 * (DEC-54).
 	 */
-	eq(offered_total, 35);
+	eq(offered_total, 48);
 
 	ok;
 }
@@ -641,15 +666,17 @@ static int test_studying_is_a_property_of_the_character(void *state) {
  *
  * Until Sorcery arrived, no class carried books from two realms, so the realm
  * filter had nothing to sort and removing it failed nothing. A Priest now
- * carries five Life books, four Sorcery ones and four Chaos ones, and which of
- * them the character can open is the whole point of choosing a realm.
+ * carries **all six realms that have content** -- Life, Sorcery, Chaos, Nature,
+ * Death and Arcane, twenty-four books between them, since DEC-57 completed
+ * Zangband's entitlements -- and which of them the character can open is the
+ * whole point of choosing a realm.
  *
- * All three realms, and each in both directions, because a filter that refuses
- * everything passes a test that only checks it refuses something. With three
- * realms in play a wrong answer also has somewhere to go that two did not: a
- * filter keyed on the class rather than the character, or one that lets a
- * second realm through as well as the chosen one, fails here and would not have
- * failed with Life and Sorcery alone.
+ * Three of the six are checked, in a grid, and each in both directions, because
+ * a filter that refuses everything passes a test that only checks it refuses
+ * something. With three realms in play a wrong answer also has somewhere to go
+ * that two did not: a filter keyed on the class rather than the character, or
+ * one that lets a second realm through as well as the chosen one, fails here
+ * and would not have failed with Life and Sorcery alone.
  */
 static int test_the_realm_filter_sorts_three_realms(void *state) {
 	const struct player_class *priest = find_class("Priest");
@@ -660,8 +687,8 @@ static int test_the_realm_filter_sorts_three_realms(void *state) {
 
 	notnull(priest);
 
-	/* Three realms of books is what makes the filter live. */
-	eq(class_book_realms(priest), 3);
+	/* Six realms of books is what makes the filter live. */
+	eq(class_book_realms(priest), 6);
 
 	for (i = 0; i < 3; i++) {
 		const struct class_book *first = NULL;
@@ -778,7 +805,7 @@ static int test_a_spell_without_an_effect_says_so(void *state) {
 		}
 	}
 
-	eq(effectless, 87);
+	eq(effectless, 120);
 
 	ok;
 }
@@ -888,7 +915,7 @@ static int test_a_spell_knows_its_place_in_its_realm(void *state) {
 	 * Priest's 96 is three whole realms of 32, which is what DEC-50 arriving
 	 * looks like from here: 4.2's five prayer books became Zangband's four,
 	 * and its five magic books became Zangband's four. */
-	eq(checked, 224);
+	eq(checked, 416);
 
 	/*
 	 * And the ends, by name. A Mage's Chaos runs 0 to 31 exactly as a
@@ -1490,6 +1517,91 @@ static int test_the_monk_learns_at_random(void *state) {
 	ok;
 }
 
+/**
+ * Every entitlement a class has is backed by books (DEC-57).
+ *
+ * The assertion whose absence let a gap live for six versions.
+ * `an-offered-realm-has-books-behind-it` checks one direction -- nothing is
+ * offered that cannot be read -- and that direction is satisfied perfectly by
+ * offering *less* than Zangband allows. Which is exactly what happened: the
+ * three new realms were appended to the classes entitled to them, the four
+ * mapped realms were only ever emitted into the classes that already carried
+ * those books, and nobody compared the two. A Mage was entitled to seven realms
+ * and could study three.
+ *
+ * So this is the other direction. The `realm-choice:` lines are Zangband's
+ * `realm_choices1/2[]` transcribed verbatim -- `class-realm-entitlements-match-
+ * zangband` above is what says so -- and a realm "has content" here if any
+ * class in the game carries books of it. Put together: **if a class is entitled
+ * to a realm and that realm has content, the class must have its books.**
+ *
+ * Trump is the one realm with no content, so it is entitled by six classes and
+ * required of none, which is DEC-54 and is why the emptiness test is separate.
+ */
+static int test_every_entitlement_is_backed_by_books(void *state) {
+	const struct player_class *c;
+	const struct magic_realm *r;
+	bool has_content[REALM_MAX] = { false };
+	int required = 0, empty_realms = 0;
+
+	/* Which realms anybody has books for. */
+	for (c = classes; c; c = c->next) {
+		int b;
+
+		for (b = 0; b < c->magic.num_books; b++) {
+			notnull(c->magic.books[b].realm);
+			has_content[c->magic.books[b].realm->ridx] = true;
+		}
+	}
+
+	for (r = realms; r; r = r->next) {
+		if (!has_content[r->ridx]) empty_realms++;
+	}
+
+	/* Exactly one realm has no content, and DEC-54 says which. */
+	eq(empty_realms, 1);
+	{
+		const struct magic_realm *trump = find_realm("trump");
+
+		notnull(trump);
+		require(!has_content[trump->ridx]);
+	}
+
+	for (c = classes; c; c = c->next) {
+		int slot;
+
+		for (slot = 0; slot < REALM_CHOICES; slot++) {
+			for (r = realms; r; r = r->next) {
+				if (!c->magic.realm_allowed[slot][r->ridx]) continue;
+				if (!has_content[r->ridx]) continue;
+
+				require(class_has_realm_book(c, r));
+				required++;
+			}
+		}
+	}
+
+	/*
+	 * Forty-eight entitlement-and-content pairs across the twelve casting
+	 * classes -- counted so that a loop which checked nothing would pass
+	 * nothing. It is the same forty-eight `an-offered-realm-has-books-
+	 * behind-it` counts, because both walk slot by realm; the two tests
+	 * differ in what they assert, not in what they walk.
+	 *
+	 * And that difference is the point. That test asks whether everything
+	 * *offered* has books, which `player_realm_choices()` guarantees by
+	 * construction -- it skips realms without books, so that half of it is
+	 * circular. This one asks the question the filter cannot answer: of the
+	 * realms Zangband *entitles* the class to, and which exist in this
+	 * game, does the class have the books? Nothing asked that until DEC-57,
+	 * which is how a Mage came to be entitled to seven realms and able to
+	 * study three.
+	 */
+	eq(required, 48);
+
+	ok;
+}
+
 const char *suite_name = "player/realm";
 struct test tests[] = {
 	{ "seven-realms-exist", test_seven_realms_exist },
@@ -1519,6 +1631,8 @@ struct test tests[] = {
 	{ "a-spell-knows-its-place-in-its-realm",
 	  test_a_spell_knows_its_place_in_its_realm },
 	{ "a-chaos-warrior-casts-chaos", test_a_chaos_warrior_casts_chaos },
+	{ "every-entitlement-is-backed-by-books",
+	  test_every_entitlement_is_backed_by_books },
 	{ "an-offered-realm-has-books-behind-it",
 	  test_an_offered_realm_has_books_behind_it },
 	{ "studying-is-a-property-of-the-character",

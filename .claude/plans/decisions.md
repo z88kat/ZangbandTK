@@ -2379,3 +2379,93 @@ the power is still rationed by how much punishment the character can take.
 `player/wild`'s *a-cheat-makes-a-power-fire* now asserts
 `eq(without_mana, with_mana)` — equality rather than the old inequality,
 because it catches the penalty returning in any size.
+
+---
+
+### DEC-57 — Every entitlement Zangband gives is carried over (CNT-10, PLR-08, DEC-50)
+
+**Decided by the project owner, 2 September 2026:** *"If the entitlements are in
+Zangband then we should carry them over and complete the task by including them
+here in our implementation."* Fidelity to the tables, against a real balance
+change.
+
+**The gap, and that it was nobody's decision.** Zangband's
+`realm_choices1/2[]` were transcribed verbatim into `class.txt` from the start
+— `player/realm`'s `class-realm-entitlements-match-zangband` has asserted that
+since 3.53.0, and it never failed. What was missing was the *books*. Five classes
+could choose realms they had no content for:
+
+| Class | Entitled but bookless |
+|---|---|
+| Mage | Life, Nature, Death |
+| Priest | Arcane, Nature, Death |
+| Rogue | Death |
+| Ranger | Arcane, Death |
+| Paladin | Death |
+
+Ten class-realm pairs, forty books, **305 spells**.
+
+This was an artefact of the order the realms arrived in, not a judgement. Sorcery
+and Chaos were **appended** to the classes entitled to them, so those got full
+coverage. The four mapped realms were **replaced** in place under DEC-50 — and
+replacement only touches classes that *already carry* books of that realm, which
+in Angband 4.2 meant Life for the Priest and Paladin, Arcane for the Mage and
+Rogue, Nature for the Druid and Ranger, Death for the Necromancer and Blackguard.
+Nothing ever emitted a mapped realm into a class that had not previously had it.
+
+The tell is the asymmetry. The Warrior-Mage and the High-Mage arrived after all
+six realms existed and were emitted with the full set, twenty-four books each.
+The Mage and the Priest are entitled to exactly the same realms in Zangband and
+had twelve. Two classes with one entitlement and two different amounts of
+content is not a design; it is a rollout showing through.
+
+**DEC-50 does not cover it.** That decision is about *replacing* the four mapped
+realms' spell content and the savefile cost of doing so. It says nothing about
+which classes carry which realm, and the word "entitlement" does not appear in
+it.
+
+**The consequence, plainly: a Mage that can study Death is not Angband's Mage.**
+Six realms are open to it now instead of three, and among them Death — drains,
+nether, genocide, *Hellfire* — and Life, with healing and *Holy
+Invulnerability*. That is Zangband's Mage, which is a far broader class than
+4.2's, and the same goes for the Priest, which can now take Arcane. It is a
+larger change to how the game plays than any single realm import was, and it was
+taken deliberately for fidelity rather than for balance. BAL-14's dials remain
+the way to answer it if playtest says the classes are now too strong; the
+alternative — keeping a reduction nobody chose — would have been worse.
+
+**What was checked before doing it.**
+
+- *The books go on the end.* Every new realm is appended, never inserted, so
+  every spell index that already existed still means what it meant.
+  `every-book-kept-its-place` reads the whole thing as ordered runs and the
+  Mage's Chaos books are still at flat index 64.
+- *The savefile.* Appending leaves indices alone but the fingerprint covers the
+  whole list, so it changes: a saved caster **with spells recorded is refused**
+  rather than silently rebound, which is the fence doing what 3.52.0 built it
+  for, and one with none loads unaffected. The corpus needed no change — all
+  thirty-five files already fail a step earlier on the prayer-book kind DEC-50
+  deleted, so `game/saves` is unmoved at 38/38 and `EXPECTED-FAILURES` is
+  untouched.
+- *The chosen-versus-random gate*, which DEC-36's addendum found for the Monk,
+  **does not move for anyone.** It is keyed on the class's own `spell_book`
+  constant, and 4.2 keys it on the class flag `PF_CHOOSE_SPELLS`; neither
+  consults the realm. So a Priest that gains Arcane still learns at random, and
+  a Mage that gains Life *chooses* its prayers. The same Life book behaves
+  differently in two hands, which is Zangband's behaviour and worth knowing at
+  the table.
+- *No deferral becomes reachable.* All seventeen realm-spell deferrals are
+  per-spell mechanism reasons and none names a class, so widening who carries a
+  realm widens the deferrals with it: eighty-seven effectless spells became a
+  hundred and twenty.
+- *Seven spells are out of reach on their own figures* — Death's last seven for
+  the Rogue and the Ranger, Arcane's last one for the Ranger, all above level 50.
+  That is `usable()` doing Zangband's arithmetic, the same as the Rogue's Sorcery
+  before it.
+
+**And one visible consequence beyond the spell lists.** A Mage's pack now sorts
+a nature book and a prayer book as *readable*, because it can read them. 4.2 puts
+readable books first and then sorts by decreasing tval, so the magic book — first
+when it was the only one a Mage could use — comes last of the three.
+`player/calc-inventory` caught it, and the expected order was derived from the
+rule before the test was re-run rather than copied from the failure.

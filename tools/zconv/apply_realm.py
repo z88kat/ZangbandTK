@@ -1,14 +1,25 @@
 #!/usr/bin/env python3.13
-"""Replace one realm's books in class.txt with what the converter emits.
+"""Put one realm's books into class.txt, as the converter emits them.
 
-Used for the four realms DEC-50 replaces, where the books already exist and are
-being swapped rather than appended. Appending is safe for a new realm because it
-leaves every existing spell index meaning what it meant; replacing is not, and
-is what DEC-50 licenses.
+Two operations, because the two are not the same risk:
 
-Usage: apply_realm.py <realm> [Class ...]
-With no classes, every class in class.txt that already holds a book of that
-realm.  The `magic:` book count is recomputed from what the block ends up with.
+**Replace** (the default) swaps books a class already has. That is what the four
+mapped realms needed under DEC-50 -- Arcane, Life, Nature and Death already
+carried Angband's content -- and it moves every spell index after the block,
+which is why DEC-50 had to license it.
+
+**Append** (`--append`) adds a realm a class does not yet carry, at the end of
+its book list. Every index that already existed keeps meaning what it meant, so
+a saved character's known spells are untouched. Sorcery and Chaos arrived this
+way, and DEC-57's entitlement completion does too.
+
+Usage:
+  apply_realm.py <realm> [Class ...]            replace
+  apply_realm.py --append <realm> [Class ...]   append
+
+With no classes named, replace acts on every class that already holds a book of
+that realm, and append refuses (there is no sensible "every class" for it). The
+`magic:` book count is recomputed from what the block ends up with either way.
 """
 
 import pathlib
@@ -21,13 +32,45 @@ import realms as R
 ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 
 
+def append_realm(blk: str, cls: str, realm: str, want: list[str]) -> str:
+    """The class block with `realm`'s books added after the ones it has."""
+    # Everything from the last book line to the end of the generated region.
+    starts = [m.start() for m in
+              re.finditer(r"(?m)^book:\S+(?: \S+)? book:", blk)]
+    assert starts, cls
+
+    tail = blk[starts[-1]:]
+    lines = tail.rstrip("\n").split("\n")
+
+    # A trailing banner comment belongs to the file, not to the class.
+    trailing = []
+    while lines and (not lines[-1].strip()
+                     or lines[-1].lstrip().startswith("#")):
+        trailing.insert(0, lines.pop())
+
+    body = blk[:starts[-1]] + "\n".join(lines) + "\n\n" + "\n".join(want)
+    if trailing:
+        body += "\n" + "\n".join(trailing)
+    return body.rstrip("\n") + "\n"
+
+
 def main() -> int:
-    if len(sys.argv) < 2:
+    args = sys.argv[1:]
+    appending = False
+    if args and args[0] == "--append":
+        appending = True
+        args = args[1:]
+
+    if not args:
         print(__doc__)
         return 2
 
-    realm = sys.argv[1]
-    only = sys.argv[2:]
+    realm = args[0]
+    only = args[1:]
+
+    if appending and not only:
+        print("--append needs the classes named explicitly")
+        return 2
 
     src = (ROOT / "archive" / "zangband" / "src" / "tables.c").read_text(
         errors="replace")
@@ -45,7 +88,18 @@ def main() -> int:
     for blk in blocks:
         cls = blk.split("\n")[0][len("name:"):].strip()
         have = R.extract_realm_block(blk, realm)
-        if not have or (only and cls not in only):
+
+        if only and cls not in only:
+            out.append(blk)
+            continue
+
+        if appending:
+            if have:
+                print("  %-14s already carries %s -- that is a replace"
+                      % (cls, realm))
+                out.append(blk)
+                continue
+        elif not have:
             out.append(blk)
             continue
 
@@ -65,6 +119,22 @@ def main() -> int:
                    "effect:", "effect-yx:", "effect-msg:", "dice:", "expr:",
                    "desc:")
         strays = [l for l in have if l.strip() and not l.startswith(grammar)]
+
+        if appending:
+            blk = append_realm(blk, cls, realm, want)
+
+            books = len(re.findall(r"(?m)^book:", blk))
+            mm = re.search(r"(?m)^magic:(\d+):(\d+):(\d+)$", blk)
+            assert mm, cls
+            blk = (blk[:mm.start()]
+                   + "magic:%s:%s:%d" % (mm.group(1), mm.group(2), books)
+                   + blk[mm.end():])
+
+            print("  %-14s +%-8s %d lines, now %d books, %d spells"
+                  % (cls, realm, len(want), books,
+                     len(re.findall(r"(?m)^spell:", blk))))
+            out.append(blk)
+            continue
 
         old = "\n".join(have)
         assert blk.count(old) == 1, cls

@@ -33,6 +33,48 @@ Unreleased
 Balance — 2 September 2026
 ---------------------------
 
+- **3.66.0** — **Every entitlement Zangband gives is carried over** (CNT-10,
+  PLR-08, DEC-57). Zangband's ``realm_choices1/2[]`` were transcribed verbatim
+  from the start — a test has asserted that since 3.53.0 and never failed — but
+  the *books* for a realm only ever reached classes that already carried that
+  kind of book. So five classes could choose realms with nothing behind them: a
+  **Mage** was allowed six realms and had three, a **Priest** likewise, and the
+  **Rogue**, **Ranger** and **Paladin** were each short of Death or Arcane.
+
+  Ten class-realm pairs, forty books, **305 spells**. It was an artefact of the
+  rollout rather than a decision — the three new realms were *appended* to their
+  entitled classes and the four mapped ones *replaced* in place, and replacement
+  only touches a class that already has those books. The tell was the asymmetry:
+  the Warrior-Mage and High-Mage, emitted after all six realms existed, had
+  twenty-four books, and the Mage with the same entitlement had twelve. The
+  project owner chose fidelity to the tables.
+
+  **A Mage that can study Death is not Angband's Mage.** Healing at one end and
+  *Hellfire* at the other; a Priest may take Arcane. It is a larger change to
+  how the game plays than any single realm import, taken for fidelity rather
+  than for balance, and BAL-14's dials are the answer if playtest disagrees.
+
+  The new books go on the **end** of each class's list, so every spell index that
+  already existed still means what it meant — the Mage's Chaos books are still at
+  flat index 64. The savefile fingerprint covers the whole list, so it changes: a
+  saved caster **with spells recorded is refused** rather than silently rebound,
+  and one with none loads unaffected. The corpus needed no change, because all
+  thirty-five files already fail a step earlier on the prayer-book kind DEC-50
+  deleted.
+
+  Three things checked and found not to move: the chosen-versus-random gate is
+  keyed on the class and never on the realm, so a Priest gaining Arcane still
+  learns at random while a Mage gaining Life *chooses* its prayers; no deferral
+  is class-specific, so widening who carries a realm widened the deferrals with
+  it, 87 to 120; and seven spells sit above level 50 on the Rogue's and Ranger's
+  own figures, which is ``usable()`` doing Zangband's arithmetic.
+
+  **One consequence beyond the spell lists.** A Mage's pack now sorts a nature
+  book and a prayer book as *readable*, because it can read them — and since
+  readable books come first and then sort by decreasing tval, the magic book
+  comes last of the three. ``player/calc-inventory`` caught it; the new order was
+  derived from the rule before the test was re-run.
+
 - **3.65.1** — **A power paid for in blood is no longer also penalised for it**
   (DEC-56). Racial and mutation powers charged 5% failure per point of mana the
   character was short — but the condition that triggered it, ``csp < cost``, is

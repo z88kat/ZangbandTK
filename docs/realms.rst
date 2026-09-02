@@ -305,6 +305,22 @@ Blackguard its Paladin.
 Who can choose what
 -------------------
 
+**Every class can study every realm Zangband lets it.** That sounds obvious and
+was not true until recently: the entitlements were right from the start, but the
+*books* for a realm were only ever given to classes that already carried that
+kind of book, so a Mage was allowed six realms and had three. Completing it added
+forty books and three hundred and five spells (DEC-57).
+
+What it means at the table: **a Mage can study Death or Life**, and a **Priest
+can study Arcane**. That is Zangband's Mage — a far broader class than Angband's,
+with healing at one end and *Hellfire* at the other — and if you know Angband
+4.2, it is the biggest single change in this chapter.
+
+One oddity worth knowing, because it looks like a bug and is not. Whether you
+*choose* which spell to learn or get a random one is a property of your **class**,
+never of the book. So a Mage that studies Life picks its prayers, and a Priest
+reading the same book takes what it is given. Zangband does exactly this.
+
 The two classes carried over from the previous milestone are the ones the realm
 system exists for:
 
