@@ -172,6 +172,30 @@ so it is quicker to run it yourself:
 scripts/check-build-lists
 ```
 
+### Flakes
+
+A green run says the tests passed once, not that they are deterministic. Several
+suites seed the RNG and then let the game do real work, so a test can be right
+about the rule it checks and still fail one run in sixteen because something the
+rule does not mention fired — `game/wild`'s `a-refused-power-is-free` did
+exactly that, and one run in sixteen is invisible to a gate that runs once.
+
+```sh
+scripts/check-flakes -n 12
+```
+
+runs every suite twelve times and reports anything that was not the same every
+time, naming the suite, the pass and — by asking the suite again with `-v` — the
+individual test. It takes the list of suites from `ninja -t commands
+allunittests` rather than from disk, and says so, because globbing
+`build-*/unittests/*/*/*` picks up binaries from configurations that no longer
+exist: a diagnostic suite written, run and deleted leaves its binary behind and
+its tests keep being counted. That inflated a reported total by three. Anything
+on disk that ninja does not know about is named as an orphan and not counted.
+
+Add `-s player/realm` to run one suite, `-b` for a build directory other than
+`build-strict`.
+
 ### The manual
 
 ```sh

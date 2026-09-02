@@ -33,6 +33,22 @@ Unreleased
 Balance — 2 September 2026
 ---------------------------
 
+- **3.66.1** — **A harness for flakes, taking its list from the build rather
+  than from disk.** ``scripts/check-flakes -n 12`` runs every suite twelve times
+  and reports anything that was not the same every time — the suite, the pass,
+  and the individual test, obtained by asking the short suite again with ``-v``.
+  A single green run says the tests passed once; it does not say they are
+  deterministic, and ``game/wild``'s ``a-refused-power-is-free`` failed one run
+  in sixteen for two releases while every gate stayed green.
+
+  The list of suites comes from ``ninja -t commands allunittests``. The
+  throwaway script this replaces globbed ``build-*/unittests/*/*/*``, which
+  picked up a diagnostic suite that had been written, run and deleted — its
+  binary outlived its build rule, and its three tests were counted into two
+  totals reported here. Anything on disk the build does not know about is now
+  named as an orphan and left out of the count. Current figure: **1246 tests**,
+  and twelve consecutive whole-suite passes clean, 14,952 test runs.
+
 - **3.66.0** — **Every entitlement Zangband gives is carried over** (CNT-10,
   PLR-08, DEC-57). Zangband's ``realm_choices1/2[]`` were transcribed verbatim
   from the start — a test has asserted that since 3.53.0 and never failed — but

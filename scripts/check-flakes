@@ -1,0 +1,197 @@
+#!/usr/bin/env python3
+#
+# Run the unit test suites repeatedly and report anything that is not the
+# same every time.
+#
+# A single green run says a suite passed once. It does not say the suite is
+# deterministic, and several of ours are not obviously so: they seed the RNG
+# from ZTK_TEST_SEED and then let the game do real work, so a test can be
+# right about the rule it checks and still fail one run in sixteen because
+# something the rule does not mention happened to fire. `game/wild`'s
+# a-refused-power-is-free did exactly that. The only way to find those is to
+# run the suites enough times to see the tail.
+#
+# Two things this script is careful about, both because getting them wrong
+# produced numbers I reported and then had to correct:
+#
+#   1. **The list of suites comes from ninja, not from disk.** Globbing
+#      build-*/unittests/*/*/* picks up binaries from configurations that no
+#      longer exist -- a diagnostic suite written, run and deleted leaves its
+#      binary behind, and its tests keep being counted. That inflated a
+#      "1248/1248" I quoted twice. `ninja -t commands allunittests` holds the
+#      list the build actually maintains, which is the same list CI runs.
+#      Anything on disk that is not in it is reported as an orphan.
+#
+#   2. **The suites are rebuilt before they are run.** A test binary is not
+#      rebuilt by editing lib/gamedata, and a suite that reads a data file
+#      keeps its own staged copy, so running without building can report a
+#      pass for code or data that no longer exists.
+#
+# Usage:
+#
+#   scripts/check-flakes [-b BUILD_DIR] [-n PASSES] [-s SUITE]...
+#
+#   -b  build directory (default: build-strict)
+#   -n  how many times to run every suite (default: 8)
+#   -s  run only suites whose path contains this string; repeatable
+#
+# Exit status is 0 only if every pass of every suite passed every test.
+
+import argparse
+import collections
+import os
+import re
+import shlex
+import subprocess
+import sys
+
+SUMMARY = re.compile(r"^(?P<name>[^:\n]+) finished: (?P<pass>\d+)/(?P<total>\d+) passed")
+# Under -v the framework prints "  <test name>   " and then Passed or Failed,
+# the latter wrapped in the red colour code.
+VERBOSE_TEST = re.compile(r"^ +(?P<test>\S+) +\x1b\[01;3(?P<colour>[12])m")
+
+
+def failing_tests(path, cwd):
+    """The names of the tests that failed, by asking the suite again with -v.
+
+    Without this a shortfall reads "21/22" and nothing else: the framework
+    prints per-test lines only when it is verbose, so a CI log or a flake run
+    says a suite broke without saying which test. Same reasoning as naming
+    the savefile in game/saves rather than reporting a tally.
+
+    A second run can disagree with the first -- that is the whole point of
+    looking for flakes -- so this reports what the re-run saw and says when
+    the re-run was clean rather than pretending the first result was wrong.
+    """
+    run = subprocess.run([path, "-v"], cwd=cwd, capture_output=True, text=True)
+    named = [m["test"] for m in
+             (VERBOSE_TEST.match(l) for l in (run.stdout + run.stderr).splitlines())
+             if m and m["colour"] == "1"]
+    if named:
+        return ", ".join(named)
+    return "the -v re-run passed, so the failure is intermittent"
+
+
+def ninja_test_list(build):
+    """The suites the build maintains, and the directory it runs them in.
+
+    Read out of the `allunittests` command line rather than off disk. That
+    target is a cmake script invocation whose arguments after `--` are the
+    test binaries, so the list is exactly the one `make alltests` and CI use.
+    """
+    try:
+        out = subprocess.run(["ninja", "-C", build, "-t", "commands", "allunittests"],
+                             capture_output=True, text=True, check=True).stdout
+    except FileNotFoundError:
+        sys.exit("check-flakes: ninja is not on PATH")
+    except subprocess.CalledProcessError as e:
+        sys.exit("check-flakes: ninja could not describe allunittests in %s\n%s"
+                 % (build, e.stderr.strip()))
+    line = None
+    for candidate in out.splitlines():
+        if "run_tests.cmake" in candidate:
+            line = candidate
+    if line is None:
+        sys.exit("check-flakes: no run_tests.cmake command in %s's allunittests.\n"
+                 "Configure it with -DSUPPORT_TEST_FRONTEND=ON." % build)
+    words = shlex.split(line)
+    cwd = words[words.index("cd") + 1] if "cd" in words else build
+    if "--" not in words:
+        sys.exit("check-flakes: allunittests took no test arguments")
+    return words[words.index("--") + 1:], cwd
+
+
+def orphans(build, known):
+    """Executables under unittests/ that ninja's list does not mention."""
+    root = os.path.join(build, "unittests")
+    known = {os.path.realpath(p) for p in known}
+    found = []
+    for dirpath, _dirnames, filenames in os.walk(root):
+        for name in filenames:
+            path = os.path.join(dirpath, name)
+            if not os.access(path, os.X_OK) or os.path.isdir(path):
+                continue
+            if os.path.realpath(path) not in known:
+                found.append(path)
+    return sorted(found)
+
+
+def main():
+    ap = argparse.ArgumentParser(add_help=True)
+    ap.add_argument("-b", "--build", default="build-strict")
+    ap.add_argument("-n", "--passes", type=int, default=8)
+    ap.add_argument("-s", "--suite", action="append", default=[])
+    args = ap.parse_args()
+
+    tests, cwd = ninja_test_list(args.build)
+    stale = orphans(args.build, tests)
+
+    selected = tests
+    if args.suite:
+        selected = [t for t in tests if any(s in t for s in args.suite)]
+        if not selected:
+            sys.exit("check-flakes: no suite matched %s" % ", ".join(args.suite))
+
+    print("check-flakes: %d of %d suites, %d passes each, from ninja's list"
+          % (len(selected), len(tests), args.passes))
+    for path in stale:
+        print("check-flakes: orphan on disk, not counted: %s" % path)
+
+    # Build the binaries without running them, by asking for the output paths
+    # rather than for allunittests, which would run the lot as it built them.
+    # stageunittestdata comes too: a suite that reads lib/gamedata reads the
+    # staged copy, and a suite rebuilt against edited data with a stale copy
+    # beside it reports a pass for data that is gone.
+    targets = [os.path.relpath(os.path.realpath(t), os.path.realpath(args.build))
+               for t in selected]
+    if subprocess.run(["ninja", "-C", args.build, "stageunittestdata"] + targets,
+                      capture_output=True).returncode != 0:
+        made = subprocess.run(["ninja", "-C", args.build] + targets)
+        if made.returncode != 0:
+            sys.exit("check-flakes: the suites do not build")
+
+    # results[suite] = list of (passed, total), one per pass
+    results = collections.defaultdict(list)
+    failures = []
+    for n in range(args.passes):
+        total = shortfall = 0
+        for path in selected:
+            run = subprocess.run([path], cwd=cwd, capture_output=True, text=True)
+            lines = (run.stdout + run.stderr).splitlines()
+            summary = None
+            for line in lines:
+                m = SUMMARY.match(line)
+                if m:
+                    summary = m
+            if summary is None:
+                failures.append((n + 1, path, "no summary line; exit %d" % run.returncode))
+                results[path].append((0, 0))
+                continue
+            got, want = int(summary["pass"]), int(summary["total"])
+            results[summary["name"]].append((got, want))
+            total += want
+            if got < want:
+                shortfall += want - got
+                failures.append((n + 1, summary["name"], "%d/%d; failed: %s"
+                                 % (got, want, failing_tests(path, cwd))))
+        print("  pass %d/%d: %d tests, %d not passed"
+              % (n + 1, args.passes, total, shortfall))
+
+    varied = sorted(name for name, r in results.items() if len(set(r)) > 1)
+    print("check-flakes: %d suites ran, %d varied between passes"
+          % (len(results), len(varied)))
+    for name in varied:
+        print("check-flakes: VARIED: %s -> %s"
+              % (name, ", ".join("%d/%d" % r for r in results[name])))
+    for n, name, why in failures:
+        print("check-flakes: pass %d: %s: %s" % (n, name, why))
+    if failures or varied:
+        return 1
+    print("check-flakes: clean; %d tests per pass, %d passes, %d test runs"
+          % (sum(r[0][1] for r in results.values()), args.passes,
+             sum(r[0][1] for r in results.values()) * args.passes))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
