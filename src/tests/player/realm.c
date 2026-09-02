@@ -174,9 +174,9 @@ static int test_no_existing_class_progression_moved(void *state) {
 		 */
 		{ "Mage", 13, 94 },
 		{ "Druid", 5, 27 },
-		{ "Priest", 13, 92 },
+		{ "Priest", 12, 96 },
 		{ "Necromancer", 5, 26 },
-		{ "Paladin", 3, 16 },
+		{ "Paladin", 4, 32 },
 		{ "Rogue", 6, 41 },
 		{ "Ranger", 10, 70 },
 		{ "Blackguard", 3, 15 },
@@ -203,8 +203,10 @@ static int test_no_existing_class_progression_moved(void *state) {
  * by their item sub-type, which is the field `player_object_to_book()` matches
  * on -- so a book that changed identity or changed position fails here.
  *
- * The Paladin and the Priest share three books and are both listed on purpose:
- * they are the case where one edit reaches two classes.
+ * The Paladin and the Priest are both listed on purpose: they share the Life
+ * realm, so one edit reaches two classes. They no longer share book *kinds* --
+ * DEC-50 gave each of them Zangband's four Life books, where 4.2 had the
+ * Paladin carrying three of the Priest's five.
  */
 static int test_every_book_kept_its_place(void *state) {
 	static const struct {
@@ -215,11 +217,11 @@ static int test_every_book_kept_its_place(void *state) {
 		                   "sorcery", "sorcery", "sorcery", "sorcery",
 		                   "chaos", "chaos", "chaos", "chaos" } },
 		{ "Druid",       { "nature", "nature", "nature", "nature", "nature" } },
-		{ "Priest",      { "life", "life", "life", "life", "life",
+		{ "Priest",      { "life", "life", "life", "life",
 		                   "sorcery", "sorcery", "sorcery", "sorcery",
 		                   "chaos", "chaos", "chaos", "chaos" } },
 		{ "Necromancer", { "death", "death", "death", "death", "death" } },
-		{ "Paladin",     { "life", "life", "life" } },
+		{ "Paladin",     { "life", "life", "life", "life" } },
 		{ "Rogue",       { "arcane", "arcane",
 		                   "sorcery", "sorcery", "sorcery", "sorcery" } },
 		{ "Ranger",      { "nature", "nature",
@@ -269,10 +271,19 @@ static int test_every_book_kept_its_place(void *state) {
  * Names only: levels and mana are the balance surface and are allowed to be
  * tuned, but a name moving between indices is a saved character forgetting one
  * prayer and remembering another.
+ *
+ * These five were 4.2's -- Call Light, Detect Evil, Minor Healing, Bless, Sense
+ * Invisible -- until DEC-50 replaced the Life realm's content with Zangband's.
+ * That replacement is the whole point of CNT-10 and is the one thing this test
+ * is *not* guarding against; it guards against the next accidental move. The
+ * saved characters this would have protected are already refused by the
+ * fingerprint on the `player spells` block, which is the honest outcome and the
+ * reason that guard was built first.
  */
 static int test_a_priests_spell_order_is_unchanged(void *state) {
 	static const char *const first_five[] = {
-		"Call Light", "Detect Evil", "Minor Healing", "Bless", "Sense Invisible"
+		"Detect Evil", "Cure Light Wounds", "Bless", "Remove Fear",
+		"Call Light"
 	};
 	const struct player_class *priest = find_class("Priest");
 	const struct class_book *book;
@@ -669,10 +680,13 @@ static int test_the_realm_filter_sorts_three_realms(void *state) {
  *
  * Two halves, and both are needed. Every effectless spell must carry the
  * deferral wording, which catches a misspelt key; and the count must be exactly
- * sixteen, which catches a spell quietly *gaining* the deferral wording to make
- * the first half pass. The sixteen are Sorcery's four -- Identify True, Detect
+ * twenty, which catches a spell quietly *gaining* the deferral wording to make
+ * the first half pass. Sixteen are Sorcery's four -- Identify True, Detect
  * Enchantment, Self Knowledge, Explosive Rune -- once for each of the four
- * classes entitled to the realm.
+ * classes entitled to the realm. The other four are Life's two, Day of the Dove
+ * and Bless Weapon, once each for the Priest and the Paladin: the first needs
+ * monster allegiance and waits for M10 with Trump, and 4.2 has no effect that
+ * blesses a weapon.
  */
 static int test_a_spell_without_an_effect_says_so(void *state) {
 	const struct player_class *c;
@@ -694,7 +708,7 @@ static int test_a_spell_without_an_effect_says_so(void *state) {
 		}
 	}
 
-	eq(effectless, 16);
+	eq(effectless, 20);
 
 	ok;
 }
@@ -800,8 +814,10 @@ static int test_a_spell_knows_its_place_in_its_realm(void *state) {
 		}
 	}
 
-	/* 32 + 94 + 92 spells across the three. */
-	eq(checked, 218);
+	/* 32 + 94 + 96 spells across the three.  The Priest's 96 is 32 Life,
+	 * 32 Sorcery and 32 Chaos; its Life was 28 until DEC-50 replaced 4.2's
+	 * five prayer books with Zangband's four. */
+	eq(checked, 222);
 
 	/*
 	 * And the ends, by name. A Mage's Chaos runs 0 to 31 exactly as a

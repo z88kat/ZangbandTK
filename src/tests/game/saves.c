@@ -17,6 +17,25 @@
  * They are opened read-only and never written back, so the corpus cannot be
  * quietly rewritten into whatever the current format happens to be, which
  * would defeat the whole purpose.
+ *
+ * **What this suite proves changed on 2 September 2026, and not for the
+ * better.** DEC-50 gave the Life realm Zangband's four prayer books in place of
+ * Angband's five, which deleted the object kinds of the old ones -- and a
+ * savefile names an object by tval and sval as text, so every one of these
+ * thirty-five files became unreadable at a stroke. Every save carries the town
+ * temple's stock, and the temple sells prayer books.
+ *
+ * So all thirty-five are now listed in EXPECTED-FAILURES, and what is left
+ * checks two things and not the one it was built for: that every historical
+ * file is refused *gracefully* rather than crashing the process, which is the
+ * failure mode the four faults of 30 August actually had; and that the manifest
+ * stays honest, because a listed file that starts loading again fails the suite
+ * too.
+ *
+ * It no longer proves that a character can be saved and loaded at all. Nothing
+ * does. A fresh corpus of played characters should replace these, and until it
+ * exists this suite is a regression test with nothing to regress from -- which
+ * is worth knowing rather than discovering later.
  */
 
 #include "unit-test.h"
@@ -233,6 +252,7 @@ static int test_every_saved_character_still_loads(void *state) {
 
 	ok;
 }
+
 
 const char *suite_name = "game/saves";
 struct test tests[] = {

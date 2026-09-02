@@ -30,6 +30,42 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+M9: magic realms — 2 September 2026
+-----------------------------------
+
+- **3.60.0** — **Life is Zangband's realm now** (CNT-10, DEC-50). Thirty-two
+  prayers in four books — *Book of Common Prayer*, *High Mass*, *Book of the
+  Unicorn*, *Blessings of the Grail* — replacing the five Angband prayer books
+  the Priest and the Paladin carried. The first *replacement* rather than an
+  addition, and the first realm where 4.2 already had content.
+
+  Twelve of the thirty-two chains came from spells 4.2 already had, because
+  Life *is* 4.2's `divine` under DEC-49. Two are deferred: *Day of the Dove*
+  charms, which needs monster allegiance and waits for M10 with Trump, and 4.2
+  has no effect that blesses a weapon. Two of 4.2's own shortfalls are recorded
+  rather than hidden — there is no `DISP_DEMON` projection, so *Exorcism* and
+  *Dispel Undead & Demons* dispel undead by name and demons by being evil,
+  which is wider than asked; and `GLYPH` places one glyph where *Warding True*
+  laid a ring.
+
+  The Paladin gains the most: 4.2 gave it three of the Priest's books and
+  sixteen prayers, and Zangband's table gives it all thirty-two, at much higher
+  levels.
+
+  **Every savefile in the corpus is now refused, and that is the accepted
+  cost.** A book's object kind is created by its `book:` line, and a savefile
+  names objects by tval and sval *as text* — so deleting `[Novice's Handbook]`
+  made every save holding one unreadable, and every save holds one, because
+  every save carries the town temple's stock. Measured before the change: the
+  two town prayer books appear in 35 of 35 files, the three dungeon books in 0,
+  1 and 1. The choice between Zangband's titles and keeping the two town ones
+  was put to the project owner with those numbers; Zangband's titles were
+  chosen. The thirty-five files are listed in ``tests/saves/EXPECTED-FAILURES``
+  with the reason, and the suite still fails if one of them *loads* or if
+  anything crashes rather than refusing. **It no longer proves a character can
+  be saved and loaded at all** — a fresh corpus of played characters is needed
+  for that, and is the next thing this suite wants.
+
 M9: magic realms — 1 September 2026
 -----------------------------------
 
