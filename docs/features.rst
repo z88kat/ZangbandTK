@@ -192,18 +192,25 @@ The realms of magic
   permanent. A Mage may take any of them; a Chaos-Warrior takes Chaos and nothing else.
   Your realms decide which spellbooks you can open at all — a Priest of Death cannot read
   a Life book.
-- **Sorcery and Chaos are playable** — sixty-four workings in eight books between them.
-  Sorcery is the realm of knowing and going: detection, teleportation, enchantment,
-  *Globe of Invulnerability* at the end of it. Chaos is the destructive one, and it
-  **backfires**: a failed Chaos spell may go off as something else, and how bad that is
-  depends on how deep the spell was. *Magic Missile* never backfires; *Call the Void*
-  almost always does.
-- **The Chaos-Warrior casts**, which is what the class was always for.
+- **Six of the seven are playable** — a hundred and ninety-two workings in
+  twenty-four books, every one of them Zangband's rather than Angband's. Sorcery is
+  the realm of knowing and going: detection, teleportation, enchantment, *Globe of
+  Invulnerability* at the end of it, and not one attack spell in it. Chaos is the
+  destructive one, and it **backfires**: a failed Chaos spell may go off as something
+  else, and how bad that is depends on how deep the spell was. *Magic Missile* never
+  backfires; *Call the Void* almost always does. Death punishes a miscast too, and
+  out of the Necronomicon it can cost you a statistic.
+- **Arcane is bought outright** — all four of its books are sold in town, which is
+  the bargain that makes the weakest realm worth taking.
+- **The Chaos-Warrior, the Warrior-Mage, the High-Mage and the Monk all cast**, which
+  is what those classes were always for. A Warrior-Mage always studies Arcane and
+  picks a second realm; a High-Mage picks one realm from seven and gets no second, and
+  is paid for it in better figures; a Monk picks one of Life, Nature and Death and
+  keeps its fists.
 
-Content arrives one realm per release. Arcane, Life, Nature and Death currently hold
-Angband's own spells rather than Zangband's, and **Trump is deferred** until monsters can
-take sides — fifteen of its thirty-two spells are summons whose whole point is that the
-creature is *yours*. You are not offered a realm with no books behind it.
+**Trump is deferred** until monsters can take sides — fifteen of its thirty-two spells
+are summons whose whole point is that the creature is *yours*. You are not offered a
+realm with no books behind it.
 
 Tunable without a rebuild
 -------------------------
@@ -239,9 +246,6 @@ in when the milestone lands.
    * - Feature
      - Milestone
      - Chapter
-   * - Two more classes
-     - M9
-     - :doc:`birth`
    * - Pets and allies
      - M10
      - :doc:`pets`
@@ -251,15 +255,16 @@ in when the milestone lands.
 
 The world is finished — towns, services, roads, dungeons and quests all landed,
 which was Phase 2's world work — and the character is most of the way there.
-Nine races, racial powers, the Monk, the Mindcrafter and the Chaos-Warrior are
-in. **Virtues have landed** — eight drawn from eighteen at birth, moved by how
-you play, and read by the Lords of Chaos and by the dream at the inn — and so
-have **mutations**, all ninety-six of them, which completes M8. What is not: the
-two classes defined by which magic realms they may choose — the Warrior-Mage and the
-High-Mage — which were waiting for realm choice, and no longer are. **The realms
-themselves have arrived**: seven of them, chosen at birth, with Sorcery and Chaos
-playable and the rest of the content coming one realm at a time. Those two classes and
-that content are what M9 has left, apart from Trump, which waits on pets.
+Nine races, racial powers and **every class Zangband has** are in — the Monk, the
+Mindcrafter, the Chaos-Warrior, the Warrior-Mage and the High-Mage, which closes
+that requirement. **Virtues have landed** — eight drawn from eighteen at birth,
+moved by how you play, and read by the Lords of Chaos and by the dream at the inn
+— and so have **mutations**, all ninety-six of them, which completes M8.
+
+**The realms have arrived too**: seven of them, chosen at birth, six carrying
+Zangband's own spells. What M9 has left is **Trump alone**, and it is not waiting
+on work here — it waits on pets, because fifteen of its thirty-two spells turn on
+a creature being *yours*.
 
 A **Tcl/Tk front end** is planned for a later phase, reviving the original's
 interface on Tcl/Tk 9. There is an irony in it: the original ZangbandTK

@@ -33,6 +33,55 @@ Unreleased
 M9: magic realms — 2 September 2026
 -----------------------------------
 
+- **3.65.0** — **The Monk casts, and a gate the field names lie about**
+  (PLR-03, PLR-08, DEC-36). M7 built the Monk and deferred its casting: realm
+  selection did not exist yet. It does, so the Monk now takes one of **Life,
+  Nature or Death** — twelve books, ninety-six spells, on its own row of
+  ``magic_info[]``, so DEC-55's donor rule never touches it. DEC-36's prose said
+  "choosing between Life and Nature" and was one realm short;
+  ``realm_choices1[]`` includes Death, and ``realm_choices2[]`` gives the Monk
+  nothing, so it picks one of three and has no second slot.
+
+  **Punching and casting coexist, and they meet in the armour.** A Monk is the
+  only class that is both ``MARTIAL_ARTS`` and a caster, and Zangband weighs the
+  *same six slots* twice: at ``100 + level * 4`` for the martial penalty and at
+  ``spell_weight`` for the mana one. The Monk's ``spell_weight`` is **300 — the
+  Mage's figure, not the Priest's 350** — so a Monk in heavy armour loses its
+  unarmed bonuses *and* its spell points together. Both halves are asserted,
+  because a class where one quietly disables the other is the failure worth
+  testing for.
+
+  **A Monk learns its spells at random, like a Priest** — and that is the thing
+  no field name advertises. Zangband has a ``spell_type`` field that looks
+  exactly like the chosen-versus-random switch and **nothing reads it**; the real
+  gate is the class's own ``spell_book`` constant, which stays ``TV_LIFE_BOOK``
+  whichever realm the Monk picks. So the Monk does *not* get ``CHOOSE_SPELLS``,
+  which is the opposite of what treating it as "just another caster" would have
+  done. Applied to the six classes both games share, the rule agrees with
+  Angband's own convention six times out of six.
+
+  **It also found a defect in a class shipped six versions ago.** The
+  Chaos-Warrior's constant is ``TV_SORCERY_BOOK``, so it chooses its spells, and
+  3.58.0 gave it books without the flag — it has been learning Chaos at random
+  ever since. Fixed here.
+
+  Three things checked and found not to apply: Zangband's glove penalty is gated
+  on ``TV_SORCERY_BOOK`` so a Monk never had one (and 4.2 has none at all); none
+  of the twenty-nine ``CLASS_MONK`` sites touches mana or failure; and Zangband's
+  own study command filters books by the class constant, which means a Zangband
+  Monk of Nature cannot select its own books — a bug in the original, not carried
+  across, because books here are matched by realm.
+
+  **Documentation and plan corrections** from the 2 September audit: four doc
+  claims that had gone stale (three realms described as still holding Angband's
+  spells; a chapter note contradicting its own chapter; a mutation counted as
+  broken that works), two plan lines still reading as open decisions after they
+  were settled, CNT-10 phrased honestly as met for six realms of seven with Trump
+  deferred rather than as a tick, and the **mana-shortfall penalty** written into
+  the plan as the one thing outstanding for the project owner — it had been
+  recorded only in the options chapter since 3.49.3, which is why it kept being
+  reported as "nothing outstanding".
+
 - **3.64.1** — **The Windows CI failure was a missing directory, and the gate
   now builds the way that job builds.** ``game/saves`` failed two Windows CI
   runs, 0/1, while Linux and macOS were green — and it was neither Windows nor

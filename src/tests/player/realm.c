@@ -588,14 +588,16 @@ static int test_an_offered_realm_has_books_behind_it(void *state) {
 	 * Chaos-Warrior. A Priest's first slot allows Life or Death and only
 	 * Life is built, which is why it offers one and not two.
 	 *
-	 * The other thirteen are the two carried-over classes: a Warrior-Mage
-	 * takes Arcane in the first slot and any of the seven -- Arcane
-	 * included, which is Zangband's own table -- in the second, so one plus
-	 * six; and a High-Mage chooses one realm from all seven and has no
-	 * second slot at all, so six. Trump is entitled for both and offered to
-	 * neither, because it has no books (DEC-54).
+	 * The other sixteen are the three classes whose realms are their whole
+	 * definition. A Warrior-Mage takes Arcane in the first slot and any of
+	 * the seven -- Arcane included, which is Zangband's own table -- in the
+	 * second, so one plus six. A High-Mage chooses one realm from all seven
+	 * and has no second slot, so six. A Monk chooses one from Life, Nature
+	 * and Death and likewise has no second slot, so three. Trump is entitled
+	 * for the first two and offered to neither, because it has no books
+	 * (DEC-54).
 	 */
-	eq(offered_total, 32);
+	eq(offered_total, 35);
 
 	ok;
 }
@@ -738,8 +740,9 @@ static int test_the_realm_filter_sorts_three_realms(void *state) {
  * blesses a weapon. Four are Arcane's two, once each for the Mage and the
  * Rogue: Phlogiston, because refuelling a light source is a command in 4.2 and
  * not an effect, and Detect Enchantment again, for the reason Sorcery's is.
- * Seventy-six now, because the Warrior-Mage and the High-Mage each carry six
- * whole realms and so seventeen deferrals apiece. Of the rest, ten are
+ * Eighty-seven now. The Warrior-Mage and the High-Mage each carry six whole
+ * realms and so seventeen deferrals apiece, and the Monk carries Life, Nature
+ * and Death, which is eleven more. Of the rest, ten are
  * Nature's five, once each for the Druid and the Ranger: three of those
  * five -- Animal Taming, Summon Animal, Animal Friendship -- are the same
  * monster-allegiance wall that deferred Trump whole, and the other two are
@@ -775,7 +778,7 @@ static int test_a_spell_without_an_effect_says_so(void *state) {
 		}
 	}
 
-	eq(effectless, 76);
+	eq(effectless, 87);
 
 	ok;
 }
@@ -1174,11 +1177,11 @@ static int test_every_realm_is_four_books_of_eight(void *state) {
 	}
 
 	/*
-	 * Eleven casting classes now: Angband's nine, plus the Warrior-Mage and
-	 * the High-Mage, which PLR-03 carried over from M7 because both are
-	 * defined by which realms they may choose.
+	 * Twelve casting classes: Angband's nine, the Warrior-Mage and the
+	 * High-Mage that PLR-03 carried over, and the Monk, whose casting DEC-36
+	 * deferred until realm selection existed and which is the last of them.
 	 */
-	eq(classes_seen, 11);
+	eq(classes_seen, 12);
 
 	for (i = 0; i < N_ELEMENTS(borrowed); i++) {
 		const struct player_class *k = find_class(borrowed[i].cls);
@@ -1295,6 +1298,198 @@ static int test_the_two_carried_over_classes(void *state) {
 	ok;
 }
 
+/**
+ * The Monk punches and casts, and neither disables the other (PLR-03, PLR-08).
+ *
+ * DEC-36 built the Monk in M7 and deferred its casting: "In Zangband it casts,
+ * choosing between Life and Nature. Realm selection is PLR-08, two milestones
+ * out, so it ships as a pure martial class." Realm selection exists, so this is
+ * the deferral discharged — and the prose was one realm short. `realm_choices1`
+ * gives the Monk **Life, Nature *and* Death**, and `realm_choices2` gives it
+ * nothing, so it picks one of three and gets no second slot.
+ *
+ * The interesting part is the coexistence. A Monk is the only class in the game
+ * that is both `MARTIAL_ARTS` and a caster, and the two meet in one place:
+ * Zangband weighs the *same six armour slots* for both, at
+ * `100 + level * 4` for the martial penalty (`xtra1.c:2466`) and at
+ * `spell_weight` for the mana penalty. The Monk's `spell_weight` is 300 — the
+ * Mage's figure, not the Priest's 350 — so a Monk in heavy armour loses its
+ * unarmed bonuses *and* its spell points together. That coupling is Zangband's
+ * and this checks both halves are present rather than one having quietly
+ * disabled the other.
+ *
+ * What is deliberately **not** here: `CHOOSE_SPELLS`. See
+ * `the-monk-learns-at-random` below.
+ *
+ * The **spell points** are the substantive half. Dropping `NO_MANA` from the
+ * class is hygiene rather than the thing that enables casting: the flag is
+ * derived output, set by `calc_bonuses()` whenever `msp` is zero and read only
+ * by monster AI deciding whether draining mana is worth it. It is never an
+ * input to `calc_mana()`, so a class declaring it while carrying twelve books
+ * merely contradicts itself until the next recalculation. Putting it back is
+ * therefore caught by nothing, and correctly so -- which is why this asks the
+ * game for a Monk's actual spell points instead.
+ */
+static int test_the_monk_punches_and_casts(void *state) {
+	const struct player_class *monk = find_class("Monk");
+	const struct magic_realm *got[REALM_MAX];
+	int b, n;
+	bool seen_life = false, seen_nature = false, seen_death = false;
+
+	notnull(monk);
+
+	/* Still a martial artist, and still has its blow ladder. */
+	require(pf_has(monk->pflags, PF_MARTIAL_ARTS));
+	notnull(monk->blows);
+
+	/* And a caster: twelve books over exactly the three realms. */
+	eq(monk->magic.num_books, 12);
+	eq(class_book_realms(monk), 3);
+	for (b = 0; b < monk->magic.num_books; b++) {
+		const char *r = monk->magic.books[b].realm->name;
+
+		if (streq(r, "life")) seen_life = true;
+		else if (streq(r, "nature")) seen_nature = true;
+		else if (streq(r, "death")) seen_death = true;
+		else require(false);
+	}
+	require(seen_life && seen_nature && seen_death);
+
+	/* One realm from three, and no second slot -- realm_choices2 is none. */
+	n = player_realm_choices(monk, 0, got, REALM_MAX);
+	eq(n, 3);
+	eq(player_realm_choices(monk, 1, got, REALM_MAX), 0);
+
+	/*
+	 * Its own figures out of `magic_info[]`, not a donor's and not the
+	 * Priest's: the Monk is one of Zangband's eleven classes. Pinned at both
+	 * ends of each realm, because the three differ and a slice taken from the
+	 * wrong row would still look plausible.
+	 */
+	eq(monk->magic.spell_first, 1);
+	{
+		static const struct {
+			const char *realm, *last;
+			int last_level, last_mana;
+		} ends[] = {
+			{ "life", "Holy Invulnerability", 50, 100 },
+			{ "nature", "Nature's Wrath", 48, 85 },
+			{ "death", "Wraithform", 50, 115 },
+		};
+		size_t i;
+
+		for (i = 0; i < N_ELEMENTS(ends); i++) {
+			const struct class_spell *first = NULL, *last = NULL;
+			int k;
+
+			for (b = 0; b < monk->magic.num_books; b++) {
+				const struct class_book *book = &monk->magic.books[b];
+
+				if (!streq(book->realm->name, ends[i].realm)) continue;
+				for (k = 0; k < book->num_spells; k++) {
+					if (!first) first = &book->spells[k];
+					last = &book->spells[k];
+				}
+			}
+			notnull(first);
+			notnull(last);
+
+			/* Every realm opens at level 1 for a Monk, and costs one point. */
+			eq(first->slevel, 1);
+			eq(first->smana, 1);
+
+			require(streq(last->name, ends[i].last));
+			eq(last->slevel, ends[i].last_level);
+			eq(last->smana, ends[i].last_mana);
+		}
+	}
+
+	/*
+	 * The armour tolerance, which is where the two halves of the class meet.
+	 * The Mage's 300 rather than the Priest's 350, so it is asserted against
+	 * both to say which it is.
+	 */
+	eq(monk->magic.spell_weight, 300);
+	{
+		const struct player_class *mage = find_class("Mage");
+		const struct player_class *priest = find_class("Priest");
+
+		notnull(mage);
+		notnull(priest);
+		eq(monk->magic.spell_weight, mage->magic.spell_weight);
+		require(monk->magic.spell_weight != priest->magic.spell_weight);
+	}
+
+	/*
+	 * And it really has spell points, which is the whole claim. Asked of the
+	 * game rather than of the data: a wrong `spell_first`, a `magic:` line
+	 * that failed to parse, or a realm whose stat the Monk has none of would
+	 * all leave the books in place and the pool empty.
+	 */
+	player_generate(player, NULL, monk, false);
+	notnull(player->realm[0]);
+	require(player_studies_realm(player, player->realm[0]));
+
+	player->lev = player->max_lev = 20;
+	calc_bonuses(player, &player->state, false, true);
+	require(player->msp > 0);
+
+	/* Still punching at that level, too: bare-handed blows, not one. */
+	require(player->state.num_blows > 100);
+
+	ok;
+}
+
+/**
+ * A Monk learns at random, and a Warrior-Mage chooses (PLR-03).
+ *
+ * The gate nothing in the name advertises. Zangband has a `spell_type` field
+ * that looks exactly like the chosen-versus-random switch -- 0 for the Monk, 1
+ * for the Priest -- and **it is never read**. What actually decides is the
+ * class's own `spell_book` constant: `do_cmd_study()` branches on
+ * `mp_ptr->spell_book != TV_LIFE_BOOK` (`cmd5.c:339`), and the Monk's constant
+ * is `TV_LIFE_BOOK` whatever realm it picks, because that field is never
+ * reassigned from the chosen realm. So a Monk of Nature still learns at random,
+ * like a Priest.
+ *
+ * The rule is trustworthy for the same reason DEC-55's key is: applied to the
+ * six classes both games have, it agrees with Angband's own convention six
+ * times out of six -- Priest and Paladin random, Mage, Rogue and Ranger chosen.
+ *
+ * It also found a defect. The Chaos-Warrior's constant is `TV_SORCERY_BOOK`,
+ * so it chooses, and 3.58.0 shipped it without the flag -- learning at random
+ * like a Priest for six versions.
+ */
+static int test_the_monk_learns_at_random(void *state) {
+	static const struct {
+		const char *cls;
+		bool chooses;
+	} shape[] = {
+		/* TV_LIFE_BOOK in magic_info[] -- random. */
+		{ "Monk", false },
+		{ "Priest", false },
+		{ "Paladin", false },
+		/* TV_SORCERY_BOOK -- chosen. */
+		{ "Chaos-Warrior", true },
+		{ "Warrior-Mage", true },
+		{ "High-Mage", true },
+		{ "Mage", true },
+		{ "Rogue", true },
+		{ "Ranger", true },
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(shape); i++) {
+		const struct player_class *c = find_class(shape[i].cls);
+
+		notnull(c);
+		require(c->magic.num_books > 0);
+		eq(pf_has(c->pflags, PF_CHOOSE_SPELLS), shape[i].chooses);
+	}
+
+	ok;
+}
+
 const char *suite_name = "player/realm";
 struct test tests[] = {
 	{ "seven-realms-exist", test_seven_realms_exist },
@@ -1313,6 +1508,8 @@ struct test tests[] = {
 	  test_changing_class_leaves_no_stale_realm },
 	{ "a-single-entitlement-is-not-a-choice",
 	  test_a_single_entitlement_is_not_a_choice },
+	{ "the-monk-punches-and-casts", test_the_monk_punches_and_casts },
+	{ "the-monk-learns-at-random", test_the_monk_learns_at_random },
 	{ "the-two-carried-over-classes", test_the_two_carried_over_classes },
 	{ "every-realm-is-four-books-of-eight",
 	  test_every_realm_is_four_books_of_eight },

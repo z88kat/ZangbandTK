@@ -599,6 +599,22 @@ High-Mage
   Chaos can do very little except kill things. That is the choice, and it is the
   whole class.
 
+.. _Monk-realms:
+
+.. note::
+
+   **A Monk casts as well as fights.** It studies one realm out of **Life,
+   Nature or Death** — chosen at birth, permanent, and there is no second choice
+   the way a Mage gets one. Its spells are learned at random rather than picked,
+   which is what Zangband does for anything reading prayers.
+
+   The two halves meet in your armour. A Monk's unarmed bonuses and its spell
+   points are weighed against the *same* six slots, and its tolerance is a
+   Mage's rather than a Priest's — so a Monk in plate loses the fists and the
+   magic together. Of its three realms, **Death is the weakest choice**: this
+   game takes a spell's casting stat from the realm, and Death casts on
+   intelligence, which a Monk has least of.
+
 .. _martial-arts:
 
 Martial arts

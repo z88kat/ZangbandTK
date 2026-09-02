@@ -3,11 +3,12 @@ The Realms of Magic
 
 .. note::
 
-   **Under construction.** You choose your realms at birth, your character sheet
-   records them, and **Sorcery and Chaos are playable** — sixty-four workings in
-   eight books between them, and the realm choice decides which books you can
-   open. **Trump is deferred**, and you will not be offered it: a realm with no
-   books behind it is no longer something you can pick.
+   **Six of the seven realms are playable** — Arcane, Life, Nature, Death,
+   Sorcery and Chaos, a hundred and ninety-two workings in twenty-four books,
+   all of them Zangband's. You choose your realms at birth and your character
+   sheet records them, and that choice decides which books you can open at all.
+   **Trump is deferred**, and you will not be offered it: a realm with no books
+   behind it is not something you can pick.
 
 Spellcasters in ZangbandTK choose realms of magic at birth, and that choice
 defines the character as much as the class does. Angband asks you what you are;

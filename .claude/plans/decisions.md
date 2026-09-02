@@ -1146,6 +1146,15 @@ and a Monk that levels as fast as a Warrior is not paying for eight unarmed blow
 Nature. Realm selection is PLR-08, two milestones out, so it ships as a pure
 martial class; adding a `magic:` block later takes nothing away from it.
 
+> **Discharged in 3.65.0**, and the sentence above was one realm short.
+> `realm_choices1[]` gives the Monk **Life, Nature *and* Death**, and
+> `realm_choices2[]` gives it `CH_NONE` — so it picks one of three and has no
+> second slot, which is the High-Mage's shape narrowed to three realms. It casts
+> on its own row of `magic_info[]`, so DEC-55's donor rule never applies to it.
+> Recorded here rather than by editing the paragraph, because what DEC-36
+> decided is untouched and only its deferral is spent. See the addendum below
+> for what building it turned up.
+
 *One defect found while building it.* PLR-02's racial powers read their cost from
 spell points only, and `calc_mana()` returns a maximum of zero for any class with
 no spellbooks — Warrior, Rogue, Blackguard, and now Monk. A Draconian Warrior
@@ -2253,3 +2262,66 @@ so a different donor is a one-word change and a re-run. If the Necromancer plays
 wrong at the High-Mage's numbers instead of the Mage's, that is a calibration
 finding and cheap to act on -- which is the reason for putting the donor in the
 data rather than in the emitted file.
+
+
+#### DEC-36, addendum — what the Monk's casting turned up (3.65.0, PLR-03, PLR-08)
+
+Two things the field names actively mislead about, and one defect in a class
+already shipped.
+
+**Chosen versus random is not `spell_type`.** Zangband's `magic_info[]` carries a
+`spell_type` field that looks exactly like the switch — 0 for the Monk, 1 for the
+Priest — and **nothing reads it**. What decides is the class's own `spell_book`
+constant: `do_cmd_study()` branches on `mp_ptr->spell_book != TV_LIFE_BOOK`
+([cmd5.c:339](../../archive/zangband/src/cmd5.c#L339)), taking a selected spell
+if so and a random one if not. That field is *never reassigned from the chosen
+realm* — `REALM1_BOOK` is a separate macro — so the Monk's constant stays
+`TV_LIFE_BOOK` whichever realm it picks, and **a Monk of Nature learns at random
+exactly as a Priest does.** So the Monk does *not* get `CHOOSE_SPELLS`, which is
+the opposite of what "it is a caster, give it the caster flag" would have done.
+
+The rule is trustworthy on the same standard as DEC-55's key: applied to the six
+classes both games have, it agrees with Angband 4.2's own convention six times
+out of six — Priest and Paladin random, Mage, Rogue and Ranger chosen.
+
+**And it found a defect.** The Chaos-Warrior's constant is `TV_SORCERY_BOOK`, so
+it chooses its spells, and 3.58.0 gave it books without the flag. It has been
+learning Chaos at random since — fixed here. The Mindcrafter's constant is
+`TV_LIFE_BOOK` and it carries `CHOOSE_SPELLS`, which is wrong by the same rule
+and *inert*, because the flag is only read by the study command and a
+Mindcrafter has no books to study; left alone and noted rather than changed.
+
+**The martial and the magical meet in the armour.** A Monk is the only class in
+the game that is both `MARTIAL_ARTS` and a caster, and Zangband weighs *the same
+six slots* twice: at `100 + level * 4` for the martial penalty
+([xtra1.c:2466](../../archive/zangband/src/xtra1.c#L2466)) and at `spell_weight`
+for the mana penalty. The Monk's `spell_weight` is **300 — the Mage's figure, not
+the Priest's 350** — so a Monk in heavy armour loses its unarmed bonuses *and*
+its spell points together. Nothing needed building for that: 4.2 already weighs
+the same slots for `monk_armour` (M7 built it to Zangband's threshold exactly)
+and for `cumber_armor`. It is asserted rather than assumed, because a class where
+one half quietly disables the other is the failure mode worth testing for.
+
+*Three things checked and found not to apply.* Zangband's **glove** penalty is
+gated on `spell_book == TV_SORCERY_BOOK`, so a Monk never had one — and 4.2 has
+no glove penalty at all, so there was nothing to reproduce either way. None of
+the twenty-nine `CLASS_MONK` sites in Zangband touches mana or spell failure;
+every one is martial or cosmetic. And `item_tester_tval = mp_ptr->spell_book` in
+`do_cmd_study()` means a Zangband Monk of Nature cannot select its own books at
+all — a bug in the original, not carried across: in this game books are matched
+by realm through `player_object_to_book()`, so a Monk of Nature reads nature
+books and chants verses.
+
+**One consequence worth stating rather than fixing.** The casting stat comes from
+the *realm* here and from the *class* in Zangband (PLR-10, DEC-49 chose 4.2's
+per-realm metadata deliberately). Zangband's Monk casts everything on WIS; here a
+Monk of Life or Nature casts on WIS and a Monk of **Death on INT**, which the
+Monk has at −1. So Death is the weak choice of its three rather than a free one.
+That is the established design showing through a new class, not a new decision.
+
+**And one gap found in a class shipped last release.** `calc_mana()` gives
+`CLASS_HIGH_MAGE` a flat `msp += msp / 4`
+([xtra1.c:1768](../../archive/zangband/src/xtra1.c#L1768)) on top of the better
+levels and costs its `magic_info[]` row already carries. Our High-Mage does not
+have it, and 4.2's `class.txt` has no field for a mana multiplier, so it wants
+code rather than data. Not done here; recorded so it is not found twice.

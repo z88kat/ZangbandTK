@@ -237,10 +237,10 @@ static int test_two_realms_punish_a_miscast(void *state) {
 	eq(chaos, 188);
 
 	/*
-	 * Death: 32 each for the Necromancer, the Blackguard, the Warrior-Mage
-	 * and the High-Mage.
+	 * Death: 32 each for the Necromancer, the Blackguard, the Warrior-Mage,
+	 * the High-Mage and the Monk.
 	 */
-	eq(death, 128);
+	eq(death, 160);
 
 	/* And the other five realms say nothing, which is most of the game. */
 	require(quiet > 300);

@@ -112,11 +112,14 @@ rare — one turn in three thousand up to one in twelve thousand.
 Each is rolled separately, every turn, so three of these are three chances and
 not one. Almost all of them stop while you are under an anti-magic effect —
 cowardice is the exception, because being too frightened to act is not magic,
-and Zangband is specific about that. Six of the twenty-seven do not fire yet:
-turning briefly incorporeal, being warned about what is nearby, trading hit
-points for spell points and back, losing a mutation at random, and the chaos
-gift, which needs the patron it asks. All six still show on your character
-sheet.
+and Zangband is specific about that. Five of the twenty-seven do not fire yet:
+turning briefly incorporeal, being warned about what is nearby, and trading hit
+points for spell points and back. All five still show on your character sheet.
+
+Two that used to be on this list are not. **Losing a mutation at random** works —
+that is the "strangely normal" one, and it takes a mutation back. And the
+**chaos gift** was never really missing: it has no per-turn roll because it
+fires when you gain a level, through the patron that grants it.
 
 **Melee.** Five of them, and they are extra blows rather than anything else: a
 scorpion tail, horns, a beak, an elephantine trunk, a nest of tentacles.

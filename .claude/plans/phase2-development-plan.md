@@ -354,8 +354,19 @@ classes.
    has no side for a monster to be on. **It waits for M10**, and is the one part of M9
    that a later milestone unblocks rather than the other way round.
 
-**Nothing is awaiting a decision.** DEC-50 and DEC-51 were settled on 1 September;
-DEC-52, DEC-53 and DEC-54 were taken and recorded during the work.
+**One thing is awaiting the project owner, and this plan was not carrying it.**
+DEC-50 and DEC-51 were settled on 1 September; DEC-52 to DEC-55 were taken and
+recorded during the work. What is outstanding is the **mana-shortfall penalty**:
+a character short of mana pays in hit points, and the *failure* chance still
+charges 5% per point of the shortfall, so a class with no spell points at all is
+100% over budget on a cost-20 power and sits at the 95% ceiling whatever its
+level or stats — a level 21 Beastman Chaos-Warrior sees `20 hp, 95% to fail`.
+Whether that penalty should apply to someone paying in blood is the open
+question. It has been written up in [option.rst](../../docs/option.rst) since
+3.49.3 and appeared nowhere here, which is why it kept being reported as
+"nothing outstanding". **It wants settling before M10 rather than during it**:
+PLR-30 makes mana upkeep the entire balancing mechanism for pets, and building
+that on an unresolved mana rule is poor sequencing.
 
 #### The order Phase 2 has to go in
 
@@ -426,15 +437,21 @@ realm costs whoever chose it rather than everybody. So:
      35** saves, because every save carries the town temple's stock. The three
      dungeon books appear in 0, 1 and 1. So a straight replacement costs the
      whole corpus rather than the four casters DEC-50 accounted for, and the
-     cost sits entirely in two titles. **Awaiting a decision** — see the open
-     question below.
+     cost sits entirely in two titles. **Decided by the project owner on
+     2 September 2026**: Zangband's titles throughout, and the corpus is the
+     price. All thirty-five files are listed in `tests/saves/EXPECTED-FAILURES`
+     with the reason, and `game/roundtrip` replaced them as the live guard.
    - **Death cannot be imported from Zangband at all, and Nature only half.**
      `magic_info[]` holds figures for Zangband's eleven classes, and three of
      4.2's casting classes post-date it: **Druid** (Nature), **Necromancer** and
      **Blackguard** (both Death). Death is carried *only* by those last two, so
      there is no class with Zangband figures to import it into. Arcane (Mage,
-     Rogue) and Life (Paladin, Priest) are unaffected. This wants deciding
-     before Nature or Death is attempted.
+     Rogue) and Life (Paladin, Priest) are unaffected. **Settled by DEC-55**,
+     and it turned out to be a derivation rather than a decision: each borrows
+     the figures of the Zangband class it matches on `spell_first`,
+     `spell_weight` and casting stat -- a key six of the nine match exactly
+     *and* by name. Nature and Death both landed on it. The Monk needed none of
+     it: Zangband has a Monk, so it casts on its own row.
 
 **DEC-52 was settled and Phase 2b resumed** (3.54.0). Sorcery's *Alchemy* needed the
 object-to-gold mechanic that DEC-48 had refused for the Midas touch, on the stated
