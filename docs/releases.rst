@@ -33,6 +33,22 @@ Unreleased
 Pets — 3 September 2026
 -----------------------
 
+- **3.67.1** — **A wilderness test stops depending on the world it drew.**
+  ``game/wild``'s ``a-towns-services-are-built`` walked the generated world and
+  ended with ``require(checked > 1)`` — a floor on how many towns the *world*
+  gave services to, which is a random draw. Measured across thirty worlds it
+  ran from two towns to twelve, and a world with one or none is legal, so the
+  suite failed about one run in twenty and said nothing about the code when it
+  did. Found by ``scripts/check-flakes``, one release after it was written.
+
+  Replaced with two deterministic tests rather than a looser floor.
+  ``town_gen_wild()`` takes the service mask as an argument, so the masks can be
+  chosen: each of the six services alone, then all six together, then none —
+  that last being the case a random world almost never supplies and the only
+  one that catches a generator building something it was not asked for.
+  Falsified both ways, by making the generator ignore the mask and by making it
+  build nothing.
+
 - **3.67.0** — **A monster can be on your side** (M10 phase 1; PLR-22, PLR-27,
   PLR-29, DEC-58). Angband 4.2 has no such notion — searching its source for
   *friendly* finds a comment and a shopkeeper's greeting — so this is a change

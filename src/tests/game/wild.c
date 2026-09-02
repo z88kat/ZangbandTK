@@ -3045,6 +3045,8 @@ static int test_the_surface_knows_the_hour(void *state) {
  * the two are written in different files -- the same gap the shops had, and
  * caught the same way: build the town and look for the doors.
  */
+static int towns_with_services(void);
+
 static int test_a_towns_services_are_built(void *state) {
 	int idx, checked = 0;
 
@@ -3078,7 +3080,99 @@ static int test_a_towns_services_are_built(void *state) {
 		checked++;
 	}
 
-	require(checked > 1);
+	/*
+	 * The floor is on service masks tried, not on towns the world happened
+	 * to draw.
+	 *
+	 * `checked` counts towns carrying services, which is a property of the
+	 * random world: across thirty worlds it ran from two towns to twelve,
+	 * and a world with one or none is legal and rare -- which made
+	 * `require(checked > 1)` fail about one run in twenty and say nothing
+	 * about the code. The deterministic half below does the real work, so
+	 * this only records that the world walk was not vacuous when there was
+	 * something to walk.
+	 */
+	eq(checked, MIN(6, towns_with_services()));
+
+	ok;
+}
+
+/** How many towns in this world carry any service at all. */
+static int towns_with_services(void) {
+	int idx, n = 0;
+
+	for (idx = 0; idx < wild_town_count(wild); idx++)
+		if (wild->towns[idx].services) n++;
+
+	return n;
+}
+
+/**
+ * Every service the generator is asked for is built, and only those (WLD-16c).
+ *
+ * The same question as the test above, asked so the answer cannot depend on
+ * the world: `town_gen_wild()` takes the service mask as an argument, so the
+ * masks can be chosen rather than drawn. Each service alone, then all of them
+ * together, then none -- which is the case that catches a generator building
+ * something it was not asked for, and the one a random world almost never
+ * produces because a town with no services at all is uncommon.
+ *
+ * Built at a great city's dimensions (132x34, the largest band) so the six
+ * buildings have somewhere to stand: a smaller plan runs out of wall to put
+ * doors in and the generator walks off the chunk.
+ */
+static int test_every_service_is_built_when_asked(void *state) {
+	int i, tried = 0;
+
+	for (i = 0; i <= WILD_SERVICE_MAX; i++) {
+		uint16_t want = (i == WILD_SERVICE_MAX)
+			? (uint16_t) ((1u << WILD_SERVICE_MAX) - 1)
+			: (uint16_t) (1u << i);
+		struct chunk *c;
+		struct loc g;
+		uint16_t found = 0;
+
+		c = town_gen_wild(player, 1234567u + i, 132, 34, 0, want);
+		notnull(c);
+
+		for (g.y = 0; g.y < c->height; g.y++)
+			for (g.x = 0; g.x < c->width; g.x++) {
+				int at = wild_service_at(c, g);
+
+				if (at >= 0) found |= 1u << at;
+			}
+
+		eq(found, want);
+		cave_free(c);
+		tried++;
+	}
+
+	/* Six services one at a time, then all six at once */
+	eq(tried, WILD_SERVICE_MAX + 1);
+
+	ok;
+}
+
+/**
+ * A town asked for nothing is given nothing.
+ *
+ * Split from the loop above because it is the only case that can fail while
+ * every other passes: a generator that always builds an inn satisfies every
+ * mask that contains one and is caught only by a mask that does not.
+ */
+static int test_a_town_asked_for_nothing_has_nothing(void *state) {
+	struct chunk *c = town_gen_wild(player, 7654321u, 132, 34, 0, 0);
+	struct loc g;
+	int found = 0;
+
+	notnull(c);
+
+	for (g.y = 0; g.y < c->height; g.y++)
+		for (g.x = 0; g.x < c->width; g.x++)
+			if (wild_service_at(c, g) >= 0) found++;
+
+	eq(found, 0);
+	cave_free(c);
 
 	ok;
 }
@@ -6127,6 +6221,10 @@ struct test tests[] = {
 	{ "town-names-come-back-the-same", test_town_names_come_back_the_same },
 	{ "a-magetower-stands-where-it-should", test_a_magetower_stands_where_it_should },
 	{ "a-towns-services-are-built", test_a_towns_services_are_built },
+	{ "every-service-is-built-when-asked",
+	  test_every_service_is_built_when_asked },
+	{ "a-town-asked-for-nothing-has-nothing",
+	  test_a_town_asked_for_nothing_has_nothing },
 	{ "services-follow-the-size", test_services_follow_the_size },
 	{ "the-tower-offers-only-known-places", test_the_tower_offers_only_known_places },
 	{ "the-fare-rises-with-the-distance", test_the_fare_rises_with_the_distance },
