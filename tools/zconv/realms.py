@@ -48,6 +48,8 @@ import pathlib
 import re
 import tomllib
 
+ROOT = pathlib.Path(__file__).resolve().parents[2]
+
 # The order the table is laid out in.  Both lists are positional and neither is
 # alphabetical; changing either silently mis-slices everything after it.
 CLASSES = ["Warrior", "Mage", "Priest", "Rogue", "Ranger", "Paladin",
@@ -80,8 +82,25 @@ def read_pairs(src: str) -> list[tuple[int, int]]:
     return pairs
 
 
+class NotAZangbandClass(KeyError):
+    """4.2 has a casting class Zangband never did.
+
+    Druid, Necromancer and Blackguard are Angband 4.2's own, so ``magic_info[]``
+    holds no level or mana figures for them.  That is a gap in the *source*, not
+    a bug here, and it decides which realms can be imported directly: Arcane
+    (Mage, Rogue) and Life (Paladin, Priest) can, Nature is half-affected
+    through the Druid, and Death cannot be imported at all -- both classes that
+    carry it, Necromancer and Blackguard, post-date Zangband.
+    """
+
+
 def slice_for(pairs, cls: str, realm: str):
     """The 32 ``{level, mana}`` pairs for one class in one realm."""
+    if cls not in CLASSES:
+        raise NotAZangbandClass(
+            f"{cls} is Angband 4.2's own class; Zangband's magic_info[] has no "
+            f"figures for it. Known classes: {', '.join(CLASSES)}.")
+
     base = (CLASSES.index(cls) * len(REALMS) + REALMS.index(realm)) \
         * SPELLS_PER_REALM
     return pairs[base:base + SPELLS_PER_REALM]
@@ -203,6 +222,47 @@ def check_coverage(src: str, realm: str, spellmap: dict) -> list[str]:
     return out
 
 
+def book_noun(realm: str) -> str:
+    """The object kind a realm's books are, read from ``realm.txt``.
+
+    Not ``f"{realm} book"``.  That is right for Sorcery and Chaos by
+    coincidence -- their realms happen to be named after their books -- and
+    wrong for every realm 4.2 already had: Life's books are *prayer books*,
+    Arcane's are *magic books*.  Emitting ``life book`` would name an object
+    kind that does not exist, and the parse would fail on a realm this was
+    never run against.
+    """
+    text = (ROOT / "lib" / "gamedata" / "realm.txt").read_text()
+    block = re.search(rf"^name:{realm}$(.*?)(?=^name:|\Z)", text,
+                      re.M | re.S)
+    if not block:
+        raise ValueError(f"realm.txt has no record for {realm}.")
+
+    noun = re.search(r"^book-noun:(.+)$", block.group(1), re.M)
+    if not noun:
+        raise ValueError(f"realm.txt gives {realm} no book-noun.")
+    return noun.group(1).strip()
+
+
+#: Every key an entry in realmmap.toml may carry.  Anything else is a mistake
+#: rather than a comment, and is refused: a `desc2` key that this file simply
+#: ignored cost a silent half-description on eight Life spells before it was
+#: noticed, which is the same shape of bug as a mutation whose flag was skipped.
+ENTRY_KEYS = {"line", "effects", "desc", "defer", "note"}
+
+
+def check_entry_keys(spellmap: dict) -> list[str]:
+    """Complaints about realmmap keys nothing reads."""
+    out = []
+    for realm, data in spellmap.items():
+        for name, entry in data.get("spells", {}).items():
+            for key in entry:
+                if key not in ENTRY_KEYS:
+                    out.append(f"{realm}/{name}: nothing reads key {key!r}"
+                               f" (known: {', '.join(sorted(ENTRY_KEYS))})")
+    return out
+
+
 def emit_books(src: str, cls: str, realm: str, spellmap: dict) -> list[str]:
     """One class's realm as the `book:`/`spell:` lines class.txt wants.
 
@@ -227,8 +287,8 @@ def emit_books(src: str, cls: str, realm: str, spellmap: dict) -> list[str]:
             seen_book = s["book"]
             in_book = [x for x in spells if x["book"] == seen_book]
             title = realm_data["books"][seen_book - 1]
-            lines.append("book:%s book:%s:[%s]:%d:%s" % (
-                realm, "town" if seen_book <= 2 else "dungeon",
+            lines.append("book:%s:%s:[%s]:%d:%s" % (
+                book_noun(realm), "town" if seen_book <= 2 else "dungeon",
                 title, len(in_book), realm))
             lines.append("book-graphics:?:%s" % BOOK_COLOUR[realm])
             lines.append("book-properties:%s" % BOOK_TIERS[seen_book - 1])
@@ -247,7 +307,14 @@ def emit_books(src: str, cls: str, realm: str, spellmap: dict) -> list[str]:
             lines.append("desc:This working is beyond what this game can yet")
             lines.append("desc: express, and does nothing.  See realmmap.toml.")
         else:
-            lines.append("desc:%s" % entry.get("desc", "A working of " + realm))
+            # A description may be one string or a list of them.  4.2 joins
+            # consecutive `desc:` lines without adding a space, so every line
+            # after the first carries its own leading space, exactly as the
+            # hand-written spells in class.txt do.
+            text = entry.get("desc", "A working of " + realm)
+            parts = [text] if isinstance(text, str) else list(text)
+            for n, part in enumerate(parts):
+                lines.append("desc:%s%s" % ("" if n == 0 else " ", part))
 
     return lines
 

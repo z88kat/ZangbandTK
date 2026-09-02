@@ -2296,7 +2296,11 @@ def cmd_realms(args) -> int:
     print()
     print(f"{args.cls}, {args.realm}")
     print("=" * 72)
-    spells = realms.convert(src, args.cls, args.realm)
+    try:
+        spells = realms.convert(src, args.cls, args.realm)
+    except realms.NotAZangbandClass as gap:
+        print(f"  {gap}")
+        return 1
     if not spells:
         print(f"  {args.cls} cannot learn {args.realm}.")
         return 0
@@ -2323,6 +2327,7 @@ def cmd_realms(args) -> int:
     print("realmmap.toml coverage")
     print("=" * 72)
     complaints = realms.check_coverage(src, args.realm, spellmap)
+    complaints += realms.check_entry_keys(spellmap)
     if complaints:
         for c in complaints:
             print(f"  {c}")

@@ -412,6 +412,26 @@ realm costs whoever chose it rather than everybody. So:
 2. **Arcane, Life, Nature, Death** — each replaced only once its chains are
    complete, one realm per commit, so a half-finished realm never ships.
 
+   **Two obstacles found on the first attempt (Life), both measured:**
+
+   - **Replacing a realm's book titles deletes object kinds, and every existing
+     savefile references them.** A book's kind is created by its `book:` line in
+     class.txt, and a savefile names an object by tval and sval *as text*, so
+     dropping `[Novice's Handbook]` makes every save holding one unreadable.
+     Measured across the corpus: the two **town** prayer books appear in **35 of
+     35** saves, because every save carries the town temple's stock. The three
+     dungeon books appear in 0, 1 and 1. So a straight replacement costs the
+     whole corpus rather than the four casters DEC-50 accounted for, and the
+     cost sits entirely in two titles. **Awaiting a decision** — see the open
+     question below.
+   - **Death cannot be imported from Zangband at all, and Nature only half.**
+     `magic_info[]` holds figures for Zangband's eleven classes, and three of
+     4.2's casting classes post-date it: **Druid** (Nature), **Necromancer** and
+     **Blackguard** (both Death). Death is carried *only* by those last two, so
+     there is no class with Zangband figures to import it into. Arcane (Mage,
+     Rogue) and Life (Paladin, Priest) are unaffected. This wants deciding
+     before Nature or Death is attempted.
+
 **DEC-52 was settled and Phase 2b resumed** (3.54.0). Sorcery's *Alchemy* needed the
 object-to-gold mechanic that DEC-48 had refused for the Midas touch, on the stated
 ground that it would have exactly one consumer — which was wrong: `alchemy()` has three

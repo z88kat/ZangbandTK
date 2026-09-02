@@ -376,3 +376,254 @@ line = 1344
 effects = [ "STAR_BALL:SHARD:2", "dice:175", "STAR_BALL:MANA:3", "dice:175", "STAR_BALL:POIS:4", "dice:175" ]
 note = "Zangband fires twenty-seven balls outward -- nine rockets, nine mana, nine nuke -- unless you are standing next to a wall, in which case it destroys the area and takes 100 to 250 hit points off you. The three volleys become three STAR_BALLs with the elements DEC-53 chose. The wall clause is dropped: the effect language has no test on the terrain around the caster, so the spell can no longer punish you for casting it in a corridor. That is the spell's defining risk and it is gone, said plainly rather than quietly."
 desc = "Fires three volleys of destruction outward in every direction."
+
+# Source: archive/zangband/src/cmd5.c, cast_life_spell() (line 597).
+#
+# The realm 4.2 already had most of.  Life is DEC-49's mapping of 4.2's
+# `divine`, so the Priest has been casting a version of this all along: twelve
+# of the thirty-two names exist in class.txt already, and their chains are
+# reused rather than rewritten.  Where Zangband's spell is the same spell with
+# different numbers, Zangband's numbers win -- that is what CNT-10 asks for.
+#
+# Two of 4.2's shortfalls show up here and are worth naming once. There is no
+# `DISP_DEMON` projection: 4.2 dispels undead, evil or everything, so a spell
+# that hits undead *and* demons becomes undead plus evil, which is wider than
+# asked and includes every demon. And there is no effect that blesses a weapon.
+
+[life]
+books = [
+  "Book of Common Prayer",
+  "High Mass",
+  "Book of the Unicorn",
+  "Blessings of the Grail",
+]
+
+[life.spells."Detect Evil"]
+line = 607
+effects = [ "DETECT_EVIL", "effect-yx:22:40" ]
+desc = "Detects evil creatures nearby, even invisible ones."
+
+[life.spells."Cure Light Wounds"]
+line = 610
+effects = [ "HEAL_HP", "dice:2d10", "TIMED_DEC:CUT", "dice:10" ]
+desc = "Heals a small amount of damage and reduces bleeding."
+
+[life.spells."Bless"]
+line = 614
+effects = [ "TIMED_INC:BLESSED", "dice:11+1d13" ]
+desc = "Grants a bonus to armour class and to hit for a short while."
+
+[life.spells."Remove Fear"]
+line = 617
+effects = [ "CURE:AFRAID" ]
+desc = "Removes fear."
+
+[life.spells."Call Light"]
+line = 620
+effects = [ "LIGHT_AREA", "SPHERE:LIGHT_WEAK:1:10", "dice:2d$S",
+            "expr:S:PLAYER_LEVEL:/ 2" ]
+desc = "Lights up the area and hurts light-sensitive creatures in it."
+
+[life.spells."Detect Traps and Secret Doors"]
+line = 623
+effects = [ "DETECT_TRAPS", "effect-yx:22:40", "DETECT_DOORS",
+            "effect-yx:22:40", "DETECT_STAIRS", "effect-yx:22:40" ]
+desc = "Detects traps, doors and stairs nearby."
+
+[life.spells."Cure Medium Wounds"]
+line = 628
+effects = [ "HEAL_HP", "dice:4d10", "TIMED_DEC:CUT", "dice:40" ]
+desc = "Heals damage and stops all but the worst bleeding."
+
+[life.spells."Satisfy Hunger"]
+line = 632
+effects = [ "NOURISH:INC_TO", "dice:90" ]
+desc = "Feeds you as though you had eaten a full meal."
+
+[life.spells."Remove Curse"]
+line = 635
+effects = [ "REMOVE_CURSE", "dice:$B+d$S", "expr:B:PLAYER_LEVEL:+ 0",
+            "expr:S:PLAYER_LEVEL:+ 0" ]
+desc = "Attempts to remove a curse from an item."
+
+[life.spells."Cure Poison"]
+line = 638
+effects = [ "CURE:POISONED" ]
+desc = "Cures poison."
+
+[life.spells."Cure Critical Wounds"]
+line = 641
+effects = [ "HEAL_HP", "dice:8d10", "CURE:STUN", "CURE:CUT" ]
+desc = "Heals a great deal of damage, and all stunning and bleeding."
+
+[life.spells."Sense Unseen"]
+line = 646
+effects = [ "TIMED_INC:SINVIS", "dice:23+1d25" ]
+desc = "Lets you see invisible creatures for a while."
+
+# Zangband's own comment misspells this "Orb or Draining".  The bonus is halved
+# for a class that is not a Priest or a High-Mage; 4.2 expresses that as the
+# `other` field on the ball, which is what its own Orb of Draining already does.
+[life.spells."Holy Orb"]
+line = 649
+effects = [ "BALL:HOLY_ORB:2:30", "dice:$B+3d6",
+            "expr:B:PLAYER_LEVEL:* 3 / 2" ]
+desc = "Fires a ball of holy force that does double damage to evil creatures."
+
+[life.spells."Protection from Evil"]
+line = 660
+effects = [ "TIMED_INC:PROTEVIL", "dice:$B+d25",
+            "expr:B:PLAYER_LEVEL:* 3" ]
+desc = "Turns aside blows from evil creatures weaker than you."
+
+[life.spells."Healing"]
+line = 663
+effects = [ "HEAL_HP", "dice:300", "CURE:STUN", "CURE:CUT" ]
+desc = "Heals 300 hit points, and all stunning and bleeding."
+
+[life.spells."Glyph of Warding"]
+line = 668
+effects = [ "GLYPH:WARDING" ]
+desc = "Inscribes a glyph beneath you that most creatures will not cross."
+
+# dispel_demons() has no 4.2 counterpart; see the note at the head of [life].
+# Undead are dispelled by name and demons by being evil, which also catches
+# other evil creatures in line of sight.
+[life.spells."Exorcism"]
+line = 671
+effects = [ "PROJECT_LOS_AWARE:DISP_UNDEAD", "dice:d$S",
+            "expr:S:PLAYER_LEVEL:+ 0",
+            "PROJECT_LOS_AWARE:DISP_EVIL", "dice:d$S",
+            "expr:S:PLAYER_LEVEL:+ 0",
+            "PROJECT_LOS_AWARE:TURN_EVIL", "dice:$B",
+            "expr:B:PLAYER_LEVEL:+ 0" ]
+desc = [
+  "Harms undead and evil creatures in line of sight, and makes the evil",
+  " among them flee.",
+]
+
+[life.spells."Dispel Curse"]
+line = 676
+effects = [ "REMOVE_CURSE", "dice:$B+d$S", "expr:B:PLAYER_LEVEL:* 2",
+            "expr:S:PLAYER_LEVEL:* 2" ]
+desc = [
+  "Attempts to remove a curse, with far more force than the lesser",
+  " prayer.",
+]
+
+[life.spells."Dispel Undead & Demons"]
+line = 679
+effects = [ "PROJECT_LOS_AWARE:DISP_UNDEAD", "dice:d$S",
+            "expr:S:PLAYER_LEVEL:* 3",
+            "PROJECT_LOS_AWARE:DISP_EVIL", "dice:d$S",
+            "expr:S:PLAYER_LEVEL:* 3" ]
+desc = "Harms every undead and evil creature in line of sight."
+
+# charm_monsters().  The whole content of the spell is that the creatures
+# become *yours*, and 4.2 has no side for a monster to be on -- the same wall
+# Trump ran into (DEC-54).  Waits for M10 rather than shipping as a no-op.
+[life.spells."Day of the Dove"]
+line = 683
+defer = "charming needs monster allegiance, which arrives with M10 (DEC-54)"
+
+[life.spells."Dispel Evil"]
+line = 686
+effects = [ "PROJECT_LOS_AWARE:DISP_EVIL", "dice:d$S",
+            "expr:S:PLAYER_LEVEL:* 4" ]
+desc = "Harms every evil creature in line of sight."
+
+[life.spells."Banish"]
+line = 689
+effects = [ "PROJECT_LOS_AWARE:AWAY_EVIL", "dice:100" ]
+desc = "Teleports every evil creature in line of sight away from you."
+
+[life.spells."Holy Word"]
+line = 695
+effects = [ "PROJECT_LOS_AWARE:DISP_EVIL", "dice:d$S",
+            "expr:S:PLAYER_LEVEL:* 4",
+            "HEAL_HP", "dice:1000", "CURE:AFRAID", "CURE:POISONED",
+            "CURE:STUN", "CURE:CUT" ]
+desc = [
+  "Harms every evil creature in line of sight, heals you greatly, and",
+  " cures fear, poison, stunning and bleeding.",
+]
+
+# glyph_creation() lays a ring of glyphs around the caster; 4.2's GLYPH places
+# one, beneath you, and has no form that covers the adjacent grids.  Reduced to
+# the single glyph rather than deferred: the spell still does the thing it is
+# for, less of it.
+[life.spells."Warding True"]
+line = 703
+effects = [ "GLYPH:WARDING" ]
+desc = [
+  "Inscribes a glyph beneath you. The ring of glyphs Zangband also laid",
+  " around you has no equivalent here.",
+]
+
+[life.spells."Heroism"]
+line = 707
+effects = [ "HEAL_HP", "dice:10", "CURE:AFRAID", "TIMED_INC:HERO",
+            "dice:24+1d26" ]
+desc = [
+  "Makes you a hero: heals a little, removes fear, and grants a bonus to",
+  " hit.",
+]
+
+[life.spells."Prayer"]
+line = 712
+effects = [ "TIMED_INC:BLESSED", "dice:49+1d51" ]
+desc = "Blesses you for far longer than the lesser prayer does."
+
+# bless_weapon().  4.2 has a BLESSED object flag and no effect that confers it:
+# BRAND_WEAPON is chaos branding and a different thing entirely.  Deferred
+# rather than approximated, because a priest's blessed weapon is the point of
+# the spell and a random brand is not it.
+[life.spells."Bless Weapon"]
+line = 715
+defer = "4.2 has no effect that blesses a weapon; BRAND_WEAPON is not it"
+
+[life.spells."Restoration"]
+line = 717
+effects = [ "RESTORE_STAT:STR", "RESTORE_STAT:INT", "RESTORE_STAT:WIS",
+            "RESTORE_STAT:DEX", "RESTORE_STAT:CON", "RESTORE_EXP" ]
+desc = "Restores every drained stat and any lost experience."
+
+[life.spells."Healing True"]
+line = 726
+effects = [ "HEAL_HP", "dice:2000", "CURE:STUN", "CURE:CUT" ]
+desc = "Heals 2000 hit points, and all stunning and bleeding."
+
+[life.spells."Holy Vision"]
+line = 731
+effects = [ "IDENTIFY" ]
+desc = "Tells you everything about one object."
+
+# The one spell in the realm that is a list rather than an effect.  Nine of the
+# ten things Zangband does here are expressible; the tenth, a *friendly* angel,
+# is not, for the reason Day of the Dove is deferred.  Emitted without it and
+# said out loud, because the other nine are the spell's weight.
+[life.spells."Divine Intervention"]
+line = 733
+effects = [ "SPHERE:HOLY_ORB:1", "dice:777",
+            "PROJECT_LOS_AWARE:DISP_ALL", "dice:d$S",
+            "expr:S:PLAYER_LEVEL:* 4",
+            "PROJECT_LOS:MON_SLOW", "dice:$B", "expr:B:PLAYER_LEVEL:* 4",
+            "PROJECT_LOS:MON_HOLD", "dice:$B", "expr:B:PLAYER_LEVEL:* 4",
+            "PROJECT_LOS_AWARE:TURN_ALL", "dice:$B",
+            "expr:B:PLAYER_LEVEL:* 4",
+            "TIMED_INC:SHERO", "dice:24+1d26",
+            "HEAL_HP", "dice:300",
+            "TIMED_INC:FAST:0:5", "dice:$B+d20",
+            "expr:B:PLAYER_LEVEL:+ 20",
+            "CURE:AFRAID" ]
+desc = [
+  "Your god intervenes: holy force at your feet, every creature in sight",
+  " harmed, slowed, held and put to flight, and you healed, hasted and",
+  " made a berserk hero. The angel Zangband also sent to fight for you",
+  " waits for creatures that can take your side.",
+]
+
+[life.spells."Holy Invulnerability"]
+line = 751
+effects = [ "TIMED_INC:INVULN", "dice:6+1d8" ]
+desc = "Makes you briefly invulnerable to all harm."
