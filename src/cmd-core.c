@@ -169,6 +169,7 @@ static const struct command_info game_cmds[] =
 	{ CMD_WIZ_REROLL_ITEM, "reroll an item", do_cmd_wiz_reroll_item, false, false, 0 },
 	{ CMD_WIZ_STAT_ITEM, "get statistics for an item", do_cmd_wiz_stat_item, false, false, 0 },
 	{ CMD_WIZ_SUMMON_NAMED, "summon specific monster", do_cmd_wiz_summon_named, false, false, 0 },
+	{ CMD_WIZ_SET_ALLEGIANCE, "change a monster's allegiance", do_cmd_wiz_set_allegiance, false, false, 0 },
 	{ CMD_WIZ_SUMMON_RANDOM, "summon random monsters", do_cmd_wiz_summon_random, false, false, 0 },
 	{ CMD_WIZ_TELEPORT_RANDOM, "teleport", do_cmd_wiz_teleport_random, false, false, 0 },
 	{ CMD_WIZ_TELEPORT_TO, "teleport to location", do_cmd_wiz_teleport_to, false, false, 0 },

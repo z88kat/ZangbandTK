@@ -2469,3 +2469,74 @@ readable books first and then sorts by decreasing tval, so the magic book — fi
 when it was the only one a Mage could use — comes last of the three.
 `player/calc-inventory` caught it, and the expected order was derived from the
 rule before the test was re-run rather than copied from the failure.
+
+---
+
+**DEC-58 — Allegiance is a three-state field, not Zangband's two bits, and it
+brings `RF_GOOD` with it.** (M10 phase 1, 3 September 2026.)
+
+PLR-22 asks for allegiance and PLR-29 refines it: hostile, friendly and pet
+behave differently, and "a boolean *friendly* flag is insufficient". Four
+things had to be settled to build it, and none of them is what the requirement
+document says.
+
+**The requirement names the wrong mechanism.** §2.6 cites `RF6_FRIENDLY` with
+an `is_pet()` predicate. `RF6_*` is Zangband's *spell* flag set and has nothing
+to do with it. Allegiance is two bits stolen inside `m_ptr->smart`, the
+smart-learn bitfield: `SM_PET 0x00800000` and `SM_FRIENDLY 0x10000000`, both
+carrying an `/* XXX */` marker
+([defines.h:2537](../../archive/zangband/src/defines.h#L2537)), with hostile
+derived as neither.
+
+We take the states and leave the encoding. `set_pet()` was
+`m_ptr->smart |= SM_PET` and never cleared `SM_FRIENDLY`; `set_friendly()` was
+the mirror image. Both bits could stand at once and the monster behaved as
+whichever predicate was tested first — which is `is_pet()` almost everywhere,
+so a pet the player deliberately released kept taking orders and kept costing
+upkeep. One enum field assigned through one setter cannot reach that state.
+`MON_ALLEGIANCE_HOSTILE` is zero so that every existing creation path in the
+game — generation, breeding, shapechange, the townsfolk — keeps producing
+hostile monsters without being told to.
+
+**4.2 has no `RF_GOOD`**, and `are_enemies()` needs one. Zangband checks
+alignment *before* sides, so a good creature and an evil one fight whatever
+side either is on — including two of the player's own pets. Without the flag
+that rule reads only half a table and never fires. Zangband flags 33 races
+GOOD, of which seven are races we have imported, so the flag plus seven data
+lines is the whole cost.
+
+**And the base templates contradicted the imported data.** 4.2 gives monsters a
+`base:` template whose flags merge into the race's, and the `dragon` and
+`ancient dragon` bases carry `EVIL`. So the law drake and the Great Wyrm of Law
+— GOOD and not evil in Zangband — came out GOOD *and* EVIL here, which made
+each of them an enemy of both alignments and of nothing else: Balance, not Law.
+Fixed with `flags-off:EVIL` on those two. The balance drake and the Great Wyrm
+of Balance keep both flags, because Zangband gives them both deliberately, and
+a test pins the difference in both directions so a later tidy-up cannot flatten
+one into the other.
+
+**PLR-27's "visually distinguishable" is a word, not a colour.** Zangband's
+ASCII distinction was the look string `" (pet) "`; `MONST_PET` and
+`MONST_FRIEND` were flags for its graphical Tk client and its borg, never for
+the map ([maid-grf.c:1883](../../archive/zangband/src/maid-grf.c#L1883)). We
+annotate look, and the monster list in the same shape as its sleep tag, and
+leave the glyph alone. Recolouring would have to win against three attr rules
+already in place — multi-hued, purple uniques, and shapechangers — and would
+lose to all three on the monsters most worth identifying. The one change we do
+make to the original is putting the word *first* rather than after the health
+and the recall prompt, because that is where a player reading a crowded floor
+stops.
+
+**Savefile.** The monster record gained one byte at the end. It appears in two
+blocks — `monsters` and `chunks`, since stored levels are read through the same
+reader — so both went to version 2 with a version 1 loader that skips the byte
+and leaves the monster hostile, which is what it was. `game/roundtrip` reads
+the block headers out of a saved file and asks for version 2 on both, because
+the failure worth catching is not a lost byte but a *forgotten version number*:
+that reads an old save with every later field one byte out and produces a
+plausible-looking monster with the wrong group and a wrong side.
+
+*Consequence.* Nothing in the game makes a pet yet — that is PLR-28, phase 6 —
+so today the states are reachable only through the wizard command added with
+them. That is deliberate: PLR-22 is a change to an invariant, and it is worth
+landing and testing on its own before anything depends on it.

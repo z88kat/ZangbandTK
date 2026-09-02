@@ -1,1 +1,1 @@
-TESTPROGS += monster/amberite monster/attack monster/aura monster/crossing monster/desc monster/imported monster/lastflags monster/lethality monster/monster monster/restele monster/shapechanger monster/speech
+TESTPROGS += monster/allegiance monster/amberite monster/attack monster/aura monster/crossing monster/desc monster/imported monster/lastflags monster/lethality monster/monster monster/restele monster/shapechanger monster/speech

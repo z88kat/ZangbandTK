@@ -258,6 +258,13 @@ static void wr_monster(const struct monster *mon)
 	wr_byte(mon->group_info[PRIMARY_GROUP].role);
 	wr_u16b(mon->group_info[SUMMON_GROUP].index);
 	wr_byte(mon->group_info[SUMMON_GROUP].role);
+
+	/*
+	 * ZangbandTK (PLR-22): whose side it is on.  Added at the end of the
+	 * record in monster block version 2, so version 1 records read the same
+	 * as they always did and simply stop here.
+	 */
+	wr_byte(mon->allegiance);
 }
 
 /**

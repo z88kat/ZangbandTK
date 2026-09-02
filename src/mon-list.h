@@ -32,6 +32,7 @@ typedef struct monster_list_entry_s {
 	struct monster_race *race;
 	uint16_t count[MONSTER_LIST_SECTION_MAX];
 	uint16_t asleep[MONSTER_LIST_SECTION_MAX];
+	uint16_t pets[MONSTER_LIST_SECTION_MAX];	/* ZangbandTK (PLR-27) */
 	int16_t dx[MONSTER_LIST_SECTION_MAX], dy[MONSTER_LIST_SECTION_MAX];
 	uint8_t attr;
 } monster_list_entry_t;

@@ -566,7 +566,27 @@ Anyone planning this should expect it to break into more phases than M8 did, not
 ---
 
 ### M10 — Pets
-*Committed by DEC-19. The invariant change.*
+*Committed by DEC-19. The invariant change. **Started 3 September 2026.***
+
+**Phases.** Seven, in dependency order, one commit each:
+
+| | Phase | Requirements | State |
+|---|---|---|---|
+| 1 | Allegiance exists and is visible | PLR-22, PLR-29, PLR-27 | ✅ 3.67.0 |
+| 2 | The AI | PLR-23 | |
+| 3 | Commands and persistence | PLR-25, PLR-26 | |
+| 4 | Balance | PLR-30, PLR-31 | |
+| 5 | Player-side safety | PLR-24, PLR-33 | |
+| 6 | Sources, and the queue M10 unblocks | PLR-28, PLR-32 | |
+| 7 | Trump | DEC-54 | |
+
+Phase 1 is first because PLR-29 constrains PLR-22 rather than following it, and
+phase 4 is not last because PLR-30's upkeep is the whole of pet balance — both
+are foundations, not additions. Phase 6 carries the accumulated queue: the six
+pets-gated realm spells across Life, Nature and Death, Chaos's *Summon Demon*
+(shipped hostile by DEC-53), the `GROW_MOLD` and `ATT_DEMON` mutations, the
+`HYPN_GAZE` mutation shipped as a timed `COMMAND` rather than a permanent pet,
+the Wand of Tame Monster and the magical figurine.
 
 - PLR-22 — monsters carry an allegiance; hostility stops being an invariant.
 - PLR-23, PLR-24 — AI accounts for friendly monsters; player attacks, spells and

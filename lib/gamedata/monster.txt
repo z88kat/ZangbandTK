@@ -3410,6 +3410,7 @@ flags:MALE | SMART
 flags:DROP_60
 flags:OPEN_DOOR
 flags:FORCE_SLEEP
+flags:GOOD
 spell-freq:3
 spell-power:6
 spells:HEAL | SCARE | HEAL_KIN
@@ -7882,6 +7883,8 @@ blow:BITE:HURT:3d6
 flags:DROP_3 | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR
 flags:IM_COLD | NO_CONF | NO_SLEEP | NO_STUN
+flags:GOOD
+flags-off:EVIL
 innate-freq:12
 spell-freq:13
 spells:CONF | SCARE | SLOW
@@ -7906,6 +7909,7 @@ blow:BITE:HURT:3d6
 flags:DROP_3 | ONLY_ITEM
 flags:OPEN_DOOR | BASH_DOOR
 flags:IM_COLD | IM_FIRE | IM_DISEN | NO_CONF | NO_SLEEP | NO_STUN
+flags:GOOD
 innate-freq:9
 spell-freq:12
 spells:CONF | SCARE | SLOW
@@ -10113,6 +10117,7 @@ flags:DROP_2 | DROP_GOOD | ONLY_ITEM
 flags:OPEN_DOOR
 flags:NO_CONF | NO_SLEEP
 flags:FORCE_SLEEP | GROUP_AI
+flags:GOOD
 spell-freq:2
 spells:S_KIN
 friends:100:2d6:Soldier ant:servant
@@ -11587,6 +11592,7 @@ flags:OPEN_DOOR | BASH_DOOR
 flags:IM_ACID | IM_ELEC | IM_FIRE | IM_POIS | IM_PLASMA | NO_CONF
 flags:NO_SLEEP | NO_HOLD
 flags:FORCE_SLEEP
+flags:GOOD
 innate-freq:6
 spell-freq:5
 spells:BA_FIRE
@@ -13496,6 +13502,8 @@ flags:ATTR_FLICKER
 flags:ONLY_ITEM
 flags:BASH_DOOR
 flags:IM_COLD | NO_STUN
+flags:GOOD
+flags-off:EVIL
 innate-freq:5
 spell-freq:5
 spells:BLIND | CONF | SCARE
@@ -14062,6 +14070,7 @@ flags:ATTR_FLICKER
 flags:ONLY_ITEM
 flags:BASH_DOOR
 flags:IM_COLD | IM_FIRE | IM_DISEN | NO_STUN
+flags:GOOD
 innate-freq:5
 spell-freq:5
 spells:BLIND | CONF | SCARE

@@ -339,3 +339,67 @@ bool monster_is_decoyed(const struct monster *mon)
 
 	return true;
 }
+
+/**
+ * ------------------------------------------------------------------------
+ * Allegiance
+ * ------------------------------------------------------------------------ */
+/**
+ * A pet: fights for the player, takes orders, costs mana upkeep (PLR-29)
+ */
+bool monster_is_pet(const struct monster *mon)
+{
+	return mon->allegiance == MON_ALLEGIANCE_PET;
+}
+
+/**
+ * Friendly: will not attack the player, and that is all it promises.
+ *
+ * Not commandable and not paid for.  A pet is *not* friendly by this
+ * predicate, which is Zangband's arrangement rather than an oversight -- it
+ * writes `!is_hostile()` where it means "on the player's side at all", and so
+ * do we.  The distinction matters: PLR-29's table gives friendly monsters no
+ * upkeep and no commands precisely because they are not pets.
+ */
+bool monster_is_friendly(const struct monster *mon)
+{
+	return mon->allegiance == MON_ALLEGIANCE_FRIENDLY;
+}
+
+/**
+ * Hostile: the state every monster in Angband 4.2 is in
+ */
+bool monster_is_hostile(const struct monster *mon)
+{
+	return mon->allegiance == MON_ALLEGIANCE_HOSTILE;
+}
+
+/**
+ * Will these two monsters fight each other?
+ *
+ * Zangband's `are_enemies()` ([monster1.c:1760](../archive/zangband/src/monster1.c#L1760)),
+ * which is two rules: opposed alignment, and opposed sides.
+ *
+ * The alignment rule is why a pet angel and a pet demon will not stand
+ * together, and it applies whatever side either of them is on -- two hostile
+ * monsters of opposed alignment fight as readily as a pet and an enemy do.
+ */
+bool monsters_are_enemies(const struct monster *mon, const struct monster *other)
+{
+	assert(mon);
+	assert(other);
+
+	/* Nothing is its own enemy */
+	if (mon == other) return false;
+
+	/* Good and evil will not stand together, whatever side they are on */
+	if ((rf_has(mon->race->flags, RF_EVIL)
+			&& rf_has(other->race->flags, RF_GOOD))
+			|| (rf_has(mon->race->flags, RF_GOOD)
+			&& rf_has(other->race->flags, RF_EVIL))) {
+		return true;
+	}
+
+	/* Opposite sides.  Pet and friendly are the same side as each other */
+	return monster_is_hostile(mon) != monster_is_hostile(other);
+}

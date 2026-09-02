@@ -268,6 +268,16 @@ static struct object *rd_item(void)
 /**
  * Read a monster
  */
+/**
+ * Whether the monster records now being read carry an allegiance byte.
+ *
+ * The record appears in two blocks -- "monsters" and "chunks" -- so both went
+ * to version 2 together, and both have a version 1 loader that sets this
+ * false.  A version 1 monster is hostile, which is what it was when it was
+ * written and what MON_ALLEGIANCE_HOSTILE being zero already gives it.
+ */
+static bool monster_record_has_allegiance = true;
+
 static bool rd_monster(struct chunk *c, struct monster *mon)
 {
 	uint8_t tmp8u;
@@ -357,6 +367,23 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 	mon->group_info[SUMMON_GROUP].index = tmp16u;
 	rd_byte(&tmp8u);
 	mon->group_info[SUMMON_GROUP].role = tmp8u;
+
+	/*
+	 * ZangbandTK (PLR-22): whose side it is on, in monster block version 2.
+	 * A version 1 record ends above and the monster stays hostile, which is
+	 * what it was.  An out-of-range byte is refused rather than assigned:
+	 * the field drives combat and targeting, and a monster on no side at all
+	 * would be a slow crash rather than a fast one.
+	 */
+	if (monster_record_has_allegiance) {
+		rd_byte(&tmp8u);
+		if (tmp8u >= MON_ALLEGIANCE_MAX) {
+			note(format("Monster %d has an unknown allegiance (%d).",
+						mon->midx, tmp8u));
+			return false;
+		}
+		mon->allegiance = tmp8u;
+	}
 
 	/* Now delete the monster if necessary */
 	if (delete) {
@@ -2331,6 +2358,17 @@ int rd_objects(void)
 /**
  * Read the monster list - wrapper functions
  */
+int rd_monsters_1(void)
+{
+	int result;
+
+	monster_record_has_allegiance = false;
+	result = rd_monsters();
+	monster_record_has_allegiance = true;
+
+	return result;
+}
+
 int rd_monsters(void)
 {
 	int i;
@@ -2379,6 +2417,17 @@ int rd_traps(void)
 /**
  * Read the chunk list
  */
+int rd_chunks_1(void)
+{
+	int result;
+
+	monster_record_has_allegiance = false;
+	result = rd_chunks();
+	monster_record_has_allegiance = true;
+
+	return result;
+}
+
 int rd_chunks(void)
 {
 	int j;

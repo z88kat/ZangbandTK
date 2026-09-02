@@ -128,6 +128,7 @@ void do_cmd_wiz_rerate(struct command *cmd);
 void do_cmd_wiz_reroll_item(struct command *cmd);
 void do_cmd_wiz_stat_item(struct command *cmd);
 void do_cmd_wiz_summon_named(struct command *cmd);
+void do_cmd_wiz_set_allegiance(struct command *cmd);
 void do_cmd_wiz_summon_random(struct command *cmd);
 void do_cmd_wiz_teleport_random(struct command *cmd);
 void do_cmd_wiz_teleport_to(struct command *cmd);

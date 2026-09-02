@@ -867,6 +867,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     game/saves.c
     game/wild.c
     message/message.c
+    monster/allegiance.c
     monster/amberite.c
     monster/aura.c
     monster/attack.c

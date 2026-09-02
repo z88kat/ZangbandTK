@@ -30,6 +30,47 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Pets — 3 September 2026
+-----------------------
+
+- **3.67.0** — **A monster can be on your side** (M10 phase 1; PLR-22, PLR-27,
+  PLR-29, DEC-58). Angband 4.2 has no such notion — searching its source for
+  *friendly* finds a comment and a shopkeeper's greeting — so this is a change
+  to an invariant the monster subsystem is built on rather than a feature on
+  top of it, and it lands on its own before anything depends on it.
+
+  **Three states, not a flag.** Hostile, friendly and pet: a friendly monster
+  will not attack you and promises nothing else, where a pet takes orders and
+  will cost mana upkeep. Zangband carried this as two bits inside its
+  smart-learn bitfield, and neither setter cleared the other, so a monster
+  could be both and behaved as whichever test ran first — a released pet went
+  on taking orders. One enum field cannot reach that state, and hostile is zero
+  so no creation path has to remember anything.
+
+  **Monsters can be enemies of each other.** Alignment is checked before sides,
+  which means two of your own pets will fight if one is good and the other
+  evil. That needed ``RF_GOOD``, which 4.2 does not have: added, with the seven
+  imported races Zangband flags. It also turned up a contradiction — 4.2's
+  ``dragon`` base template carries ``EVIL``, so the law drake and the Great
+  Wyrm of Law came out good *and* evil, which is Balance rather than Law. The
+  balance drake and the Great Wyrm of Balance keep both flags, because Zangband
+  gives them both on purpose.
+
+  **Looking at a monster says whose side it is on, first** — before its wounds,
+  where Zangband put it last and after the recall prompt. The monster list
+  counts pets the way it counts sleepers. The glyph is not recoloured, which is
+  also what Zangband did: its pet colours belonged to the Tk client.
+
+  Saved games keep it. The monster record gained a byte, so the ``monsters``
+  and ``chunks`` blocks both went to version 2 with version 1 loaders; older
+  characters open with every monster hostile, which is what they were. A test
+  reads the block headers out of a saved file and insists on the new version,
+  because the failure that matters is a forgotten version number rather than a
+  lost byte.
+
+  Nothing makes a pet yet. That is phase 6; for now the states are reachable
+  through a wizard command added with them.
+
 Balance — 2 September 2026
 ---------------------------
 

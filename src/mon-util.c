@@ -761,6 +761,33 @@ void monster_swap(struct loc grid1, struct loc grid2)
 /**
  * Monster wakes up and possibly becomes aware of the player
  */
+/**
+ * Put a monster on a side (PLR-22).
+ *
+ * The only way to change allegiance.  Zangband had three setters --
+ * `set_pet()`, `set_friendly()` and `set_hostile()` -- of which the first two
+ * only ever set a bit and never cleared the other, so a monster charmed and
+ * then befriended held both and behaved as whichever test ran first.  One
+ * function assigning one field cannot do that.
+ *
+ * Redraws the monster: the player learns which side something is on by
+ * looking at it, and a charm that does not visibly take is indistinguishable
+ * from a charm that failed.
+ */
+void monster_set_allegiance(struct monster *mon, enum monster_allegiance side)
+{
+	assert(mon);
+	assert(side >= 0 && side < MON_ALLEGIANCE_MAX);
+
+	if (mon->allegiance == side) return;
+
+	mon->allegiance = side;
+
+	/* The monster list and the health bar both say whose side it is on */
+	player->upkeep->redraw |= (PR_MONLIST | PR_HEALTH);
+	square_light_spot(cave, mon->grid);
+}
+
 void monster_wake(struct monster *mon, bool notify, int aware_chance)
 {
 	int flag = notify ? MON_TMD_FLG_NOTIFY : MON_TMD_FLG_NOMESSAGE;

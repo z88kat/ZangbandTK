@@ -382,6 +382,37 @@ struct monster_race {
  * The "held_obj" field points to the first object of a stack
  * of objects (if any) being carried by the monster (see above).
  */
+/**
+ * Whose side a monster is on.
+ *
+ * ZangbandTK (PLR-22, PLR-29).  Angband 4.2 has no such notion: every monster
+ * is an enemy by construction, and that assumption is built into targeting,
+ * goal selection, projection and combat.
+ *
+ * Three states rather than a `friendly` boolean, because Zangband's three
+ * behave differently and PLR-29 says so in terms.  A friendly monster will not
+ * attack the player, cannot be commanded and is free; a pet can be commanded
+ * and costs mana upkeep.  Collapsing them would make one of the two
+ * unreachable.
+ *
+ * Zangband itself carried this as two bits stolen inside `m_ptr->smart`, the
+ * smart-learn bitfield -- `SM_PET` and `SM_FRIENDLY`, both marked XXX
+ * ([defines.h:2537](../archive/zangband/src/defines.h#L2537)) -- with hostile
+ * derived as neither.  `set_pet()` did not clear `SM_FRIENDLY` and
+ * `set_friendly()` did not clear `SM_PET`, so both could be set at once and
+ * whichever test came first won.  An enum makes that state unrepresentable.
+ *
+ * HOSTILE is deliberately zero.  Every monster in the game is created through
+ * `mem_zalloc` or an assignment from a zeroed struct, so nothing has to be
+ * told to be hostile and no creation path can forget to be.
+ */
+enum monster_allegiance {
+	MON_ALLEGIANCE_HOSTILE = 0,
+	MON_ALLEGIANCE_FRIENDLY,
+	MON_ALLEGIANCE_PET,
+	MON_ALLEGIANCE_MAX
+};
+
 struct monster {
 	struct monster_race *race;		/* Monster's (current) race */
 	struct monster_race *original_race;	/* Changed monster's original race */
@@ -415,6 +446,8 @@ struct monster {
 
 	uint8_t min_range;			/* What is the closest we want to be? */
 	uint8_t best_range;			/* How close do we want to be? */
+
+	enum monster_allegiance allegiance;	/* Whose side it is on (PLR-22) */
 };
 
 /** Variables **/

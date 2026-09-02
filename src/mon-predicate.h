@@ -61,4 +61,10 @@ bool monster_is_mimicking(const struct monster *mon);
 bool monster_can_be_scared(const struct monster *mon);
 bool monster_is_decoyed(const struct monster *mon);
 
+/* Allegiance (PLR-22, PLR-29) */
+bool monster_is_pet(const struct monster *mon);
+bool monster_is_friendly(const struct monster *mon);
+bool monster_is_hostile(const struct monster *mon);
+bool monsters_are_enemies(const struct monster *mon, const struct monster *other);
+
 #endif /* !MON_PREDICATE_H */

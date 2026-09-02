@@ -313,6 +313,13 @@ struct cmd_info cmd_debug_summon[] =
 {
 	{ "Summon specific", { 'n' }, CMD_WIZ_SUMMON_NAMED, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Summon random", { 's' }, CMD_WIZ_SUMMON_RANDOM, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	/*
+	 * ZangbandTK (PLR-22).  'y' rather than 'p': every cmd_debug_* list
+	 * shares one key namespace (they all carry keymap 2, and cmd_init()
+	 * derives one index from it), so 'p' is already the teleport menu's
+	 * "Random near" and a second one asserts at startup rather than at use.
+	 */
+	{ "Set allegiance", { 'y' }, CMD_WIZ_SET_ALLEGIANCE, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 };
 
 struct cmd_info cmd_debug_files[] =

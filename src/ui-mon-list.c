@@ -103,6 +103,7 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 		size_t name_width;
 		uint16_t count_in_section = 0;
 		uint16_t asleep_in_section = 0;
+		uint16_t pets_in_section = 0;
 
 		line_buffer[0] = '\0';
 
@@ -131,6 +132,28 @@ static void monster_list_format_section(const monster_list_t *list, textblock *t
 			strnfmt(asleep, sizeof(asleep), " (%d asleep)", asleep_in_section);
 		else if (asleep_in_section == 1 && count_in_section == 1)
 			strnfmt(asleep, sizeof(asleep), " (asleep)");
+
+		/*
+		 * ZangbandTK (PLR-27): and how many of them are yours, in the same
+		 * shape as the sleep tag.  Prepended rather than appended: the tag is
+		 * what the name is clipped against, so putting the side first means a
+		 * long race name loses its tail rather than losing the thing that
+		 * says not to shoot.
+		 */
+		pets_in_section = list->entries[index].pets[section];
+		if (pets_in_section > 0) {
+			char tail[40];
+
+			my_strcpy(tail, asleep, sizeof(tail));
+			if (pets_in_section == count_in_section) {
+				strnfmt(asleep, sizeof(asleep),
+						(count_in_section == 1) ? " (pet)" : " (all pets)");
+			} else {
+				strnfmt(asleep, sizeof(asleep), " (%d pet%s)",
+						pets_in_section, (pets_in_section == 1) ? "" : "s");
+			}
+			my_strcat(asleep, tail, sizeof(asleep));
+		}
 
 		/* Clip the monster name to fit, and append the sleep tag. */
 		name_width = MIN(full_width - utf8_strlen(asleep), sizeof(line_buffer));

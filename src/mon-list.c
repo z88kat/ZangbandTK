@@ -193,6 +193,18 @@ void monster_list_collect(monster_list_t *list)
 		if (mon->m_timed[MON_TMD_SLEEP] > 0)
 			entry->asleep[field]++;
 
+		/*
+		 * ZangbandTK (PLR-27): how many of them are yours.
+		 *
+		 * The list groups by race, so a single monster cannot be marked --
+		 * the entry for "4 kobolds" is one row.  Counted the way sleeping
+		 * monsters already are, and shown the same way, because a row saying
+		 * "4 kobolds (2 pets)" answers the question a player actually has
+		 * before firing into a crowd.
+		 */
+		if (monster_is_pet(mon))
+			entry->pets[field]++;
+
 		/* Store the location offset from the player; this is only used for
 		 * monster counts of 1 */
 		entry->dx[field] = mon->grid.x - player->grid.x;

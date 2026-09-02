@@ -26,6 +26,7 @@
 #include "init.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "mon-predicate.h"
 #include "mon-util.h"
 #include "obj-curse.h"
 #include "obj-desc.h"
@@ -2658,6 +2659,49 @@ void do_cmd_wiz_stat_item(struct command *cmd)
 	if (obj->artifact) {
 		mark_artifact_created(obj->artifact, true);
 	}
+}
+
+
+/**
+ * Put a monster on a side (CMD_WIZ_SET_ALLEGIANCE).
+ *
+ * ZangbandTK (PLR-22).  Until PLR-28's charms and summons arrive this is the
+ * only way to reach the two new states in a running game, and it stays useful
+ * afterwards: it makes a pet without also doing whatever the spell that makes
+ * pets does, which is what you want when the question is the AI.
+ *
+ * Takes the allegiance from the command's "choice" argument when there is one,
+ * so a script can drive it, and asks otherwise.
+ */
+void do_cmd_wiz_set_allegiance(struct command *cmd)
+{
+	struct monster *mon;
+	int choice;
+	const char *named[] = { "hostile", "friendly", "your pet" };
+
+	target_set_monster(NULL);
+	if (!target_okay()) {
+		msg("Target a monster first.");
+		return;
+	}
+	mon = target_get_monster();
+	if (!mon) {
+		msg("No target monster selected.");
+		return;
+	}
+
+	if (cmd_get_arg_choice(cmd, "choice", &choice) != CMD_OK) {
+		choice = get_quantity("Allegiance (0 hostile, 1 friendly, 2 pet)? ",
+							  MON_ALLEGIANCE_MAX - 1);
+		cmd_set_arg_choice(cmd, "choice", choice);
+	}
+	if (choice < 0 || choice >= MON_ALLEGIANCE_MAX) {
+		msg("No such allegiance.");
+		return;
+	}
+
+	monster_set_allegiance(mon, choice);
+	msg("It is now %s.", named[choice]);
 }
 
 

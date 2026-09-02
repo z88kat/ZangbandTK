@@ -22,6 +22,7 @@
 #include "game-input.h"
 #include "init.h"
 #include "mon-desc.h"
+#include "mon-predicate.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-ignore.h"
@@ -64,23 +65,45 @@ void look_mon_desc(char *buf, size_t max, int m_idx)
 	/* Determine if the monster is "living" (vs "undead") */
 	if (monster_is_destroyed(mon)) living = false;
 
+	/*
+	 * ZangbandTK (PLR-27): whose side it is on, first.
+	 *
+	 * Before the wounds, because it is the thing that decides whether you
+	 * attack at all.  Zangband put it last, after the health and after the
+	 * recall prompt ([xtra2.c:2149](../archive/zangband/src/xtra2.c#L2149)),
+	 * which is where a player scanning a crowded floor stops reading.
+	 *
+	 * Text rather than colour.  This string *is* how Zangband distinguished
+	 * pets in ASCII; `MONST_PET` was a flag for the Tk client and the borg,
+	 * never for the map.  Recolouring the glyph would also have to win
+	 * against the three attr rules already on it -- multi-hued, purple
+	 * uniques and shapechangers -- and it would lose to all three.
+	 */
+	if (monster_is_pet(mon)) {
+		my_strcpy(buf, "pet, ", max);
+	} else if (monster_is_friendly(mon)) {
+		my_strcpy(buf, "friendly, ", max);
+	} else {
+		my_strcpy(buf, "", max);
+	}
+
 	/* Assess health */
 	if (mon->hp >= mon->maxhp) {
 		/* No damage */
-		my_strcpy(buf, (living ? "unhurt" : "undamaged"), max);
+		my_strcat(buf, (living ? "unhurt" : "undamaged"), max);
 	} else {
 		/* Calculate a health "percentage" */
 		int perc = 100L * mon->hp / mon->maxhp;
 
 		if (perc >= 60)
-			my_strcpy(buf, (living ? "somewhat wounded" : "somewhat damaged"),
+			my_strcat(buf, (living ? "somewhat wounded" : "somewhat damaged"),
 					  max);
 		else if (perc >= 25)
-			my_strcpy(buf, (living ? "wounded" : "damaged"), max);
+			my_strcat(buf, (living ? "wounded" : "damaged"), max);
 		else if (perc >= 10)
-			my_strcpy(buf, (living ? "badly wounded" : "badly damaged"), max);
+			my_strcat(buf, (living ? "badly wounded" : "badly damaged"), max);
 		else
-			my_strcpy(buf, (living ? "almost dead" : "almost destroyed"), max);
+			my_strcat(buf, (living ? "almost dead" : "almost destroyed"), max);
 	}
 
 	/* Effect status */

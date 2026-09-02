@@ -30,6 +30,12 @@
  * alone, so the count check in `rd_player_spells()` cannot catch it and the
  * fingerprint is the only thing that can. Renaming is also exactly what DEC-50
  * does at scale: same book, same slot, different spell.
+ *
+ * Since PLR-22 it also covers the monster record, which gained an allegiance
+ * byte. That byte is the difference between reloading a level and reloading it
+ * with your pets turned on you, and the version bump that goes with it is the
+ * difference between old saves working and old saves reading one field's bytes
+ * as another's.
  */
 
 #include "unit-test.h"
@@ -44,6 +50,7 @@
 #include "player-calcs.h"
 #include "player-spell.h"
 #include "player-util.h"
+#include "mon-util.h"
 #include "savefile.h"
 #include "z-file.h"
 #include "z-util.h"
@@ -307,6 +314,144 @@ static int test_a_character_with_no_spells_does_not_care(void *state) {
 	ok;
 }
 
+/**
+ * A pet is still a pet after a save and a load.
+ *
+ * Three monsters, one on each side, because the failure that matters is not
+ * "allegiance was lost" -- a byte written and never read gives every monster
+ * whatever happened to follow it, and one of the three would still look right.
+ * Placed by hand and read back by race name.
+ */
+static int test_the_sides_survive_a_round_trip(void *state) {
+	static const enum monster_allegiance sides[] = {
+		MON_ALLEGIANCE_HOSTILE, MON_ALLEGIANCE_FRIENDLY, MON_ALLEGIANCE_PET
+	};
+	struct monster_group_info info = { 0, 0 };
+	struct monster_race *race;
+	int placed = 0, seen = 0, i, already = 0;
+
+	/*
+	 * After the birth, not before: `make_a_caster()` resets the game, and
+	 * `cleanup_angband()` frees `r_info` on the way through, so a race
+	 * pointer taken first is dangling by the time it is used. ASAN said so.
+	 */
+	require(make_a_caster());
+	race = lookup_monster("soldier");
+	notnull(race);
+
+	/*
+	 * The level may already hold soldiers of its own -- the generator picks
+	 * by depth and this race is shallow -- so count them first and check the
+	 * difference.  Without this the test passes or fails on what the level
+	 * happened to contain, which is a coin toss with a seed on it.
+	 */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		if (mon->race == race) already++;
+	}
+
+	/*
+	 * Three of the same race in a row, so only the byte distinguishes them.
+	 * Up to fifty attempts, not three: `scatter_ext` looks for an empty grid
+	 * within six and may not find one, and a loop that tries once per monster
+	 * fails whenever the player lands somewhere crowded.  That was a one run
+	 * in four flake before `scripts/check-flakes` found it.
+	 */
+	for (i = 0; i < 50 && placed < (int) N_ELEMENTS(sides); i++) {
+		struct loc grid;
+
+		if (scatter_ext(cave, &grid, 1, player->grid, 6, true,
+						square_isempty) == 0) continue;
+		if (!place_new_monster(cave, grid, race, false, false, info,
+							   ORIGIN_DROP)) continue;
+		monster_set_allegiance(square_monster(cave, grid), sides[placed]);
+		placed++;
+	}
+	eq(placed, (int) N_ELEMENTS(sides));
+
+	require(savefile_save(savename));
+	reset_before_load();
+	require(savefile_load(savename, false));
+
+	/* Look it up again: the load reset the game and rebuilt r_info */
+	race = lookup_monster("soldier");
+	notnull(race);
+
+	{
+		int by_side[MON_ALLEGIANCE_MAX] = { 0 };
+
+		for (i = 1; i < cave_monster_max(cave); i++) {
+			struct monster *mon = cave_monster(cave, i);
+
+			if (!mon->race || mon->race != race) continue;
+			require(mon->allegiance >= 0
+					&& mon->allegiance < MON_ALLEGIANCE_MAX);
+			by_side[mon->allegiance]++;
+			seen++;
+		}
+		eq(seen, already + 3);
+		eq(by_side[MON_ALLEGIANCE_HOSTILE], already + 1);
+		eq(by_side[MON_ALLEGIANCE_FRIENDLY], 1);
+		eq(by_side[MON_ALLEGIANCE_PET], 1);
+	}
+
+	ok;
+}
+
+/**
+ * The savefile says the monster record changed shape.
+ *
+ * Reads the block headers out of the file rather than trusting the table in
+ * `savefile.c`, and asks for version 2 on both blocks that carry a monster
+ * record -- "monsters" and "chunks", because `rd_chunks()` reads stored levels
+ * through the same reader.
+ *
+ * This is the mistake worth a test: change the record, forget one of the two
+ * version numbers, and an old savefile is read with the fields one byte out
+ * from where they were written. That does not fail loudly. It produces a
+ * monster with the wrong group index and a plausible allegiance.
+ */
+static int test_the_monster_blocks_say_version_two(void *state) {
+	ang_file *f;
+	uint8_t head[28];
+	int found = 0;
+
+	require(make_a_caster());
+	require(savefile_save(savename));
+
+	f = file_open(savename, MODE_READ, FTYPE_RAW);
+	notnull(f);
+
+	/* Eight bytes of magic and name come before the first block header */
+	require(file_skip(f, 8));
+
+	while (file_read(f, (char *) head, sizeof(head)) == (int) sizeof(head)) {
+		char name[17];
+		uint32_t version, size;
+
+		memcpy(name, head, 16);
+		name[16] = 0;
+		version = head[16] | (head[17] << 8) | (head[18] << 16)
+			| ((uint32_t) head[19] << 24);
+		size = head[20] | (head[21] << 8) | (head[22] << 16)
+			| ((uint32_t) head[23] << 24);
+
+		if (streq(name, "monsters") || streq(name, "chunks")) {
+			eq(version, 2);
+			found++;
+		}
+
+		/* Blocks are padded to a multiple of four bytes */
+		if (!file_skip(f, (int) ((size + 3) & ~3U))) break;
+	}
+	file_close(f);
+
+	eq(found, 2);
+
+	ok;
+}
+
 const char *suite_name = "game/roundtrip";
 struct test tests[] = {
 	{ "a-caster-survives-a-round-trip",
@@ -315,5 +460,9 @@ struct test tests[] = {
 	  test_the_fingerprint_refuses_a_moved_spell_list },
 	{ "a-character-with-no-spells-does-not-care",
 	  test_a_character_with_no_spells_does_not_care },
+	{ "the-monster-blocks-say-version-two",
+	  test_the_monster_blocks_say_version_two },
+	{ "the-sides-survive-a-round-trip",
+	  test_the_sides_survive_a_round_trip },
 	{ NULL, NULL }
 };
