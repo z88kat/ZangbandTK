@@ -33,15 +33,16 @@
  * description of a source tree and no kind of version number, and it was what
  * the title screen had been displaying.
  *
- * Must agree with VERSION in Makefile.src, which is what reaches Info.plist and
- * so the About panel.
+ * This is the only place it is written down.  src/Makefile.version seds it back
+ * out of this file, and that is what reaches Info.plist and so the About panel,
+ * so there is nothing to keep in step by hand.
  */
 #define VERSION_STRING	"3.66.1"
 
 /*
  * The Angband release this is built on.  Shown alongside our own version so it
- * is clear both what we are and what we came from.  Must agree with
- * BASE_VERSION in Makefile.src.
+ * is clear both what we are and what we came from.  Read back out of here by
+ * src/Makefile.version, the same way as the line above.
  */
 #define BASE_VERSION_STRING	"4.2.6"
 
