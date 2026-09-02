@@ -2054,12 +2054,22 @@ int player_power_chance(struct player *p, const struct player_power *power)
 	chance -= spell_stat_adjust(p, power->stat);
 
 	/*
-	 * Reaching past what is left is harder.  This stays even though a short
-	 * character can now pay in blood instead (see player_use_power) -- the
-	 * penalty is for the strain of reaching, not for the bookkeeping.
+	 * A character short of mana is *not* penalised for it here, and that is a
+	 * decision rather than an omission (DEC-56).
+	 *
+	 * There used to be `chance += 5 * (cost - csp)`, carried over from the way
+	 * spells work.  But the condition it tested -- `csp < cost` -- is the same
+	 * condition player_use_power() uses to decide the price is paid in blood,
+	 * character for character.  So the penalty fell on exactly the people
+	 * already paying hit points for the privilege, and on nobody else: they
+	 * were charged twice for one shortfall.
+	 *
+	 * A spell short of mana is different and keeps its penalty
+	 * (player-spell.c).  A spell is not paid for in blood at all -- it is paid
+	 * for in unconsciousness, by player_over_exert(), which faints the caster
+	 * and may take a point of constitution.  Blood is a price; fainting is a
+	 * risk; the two do not need the same surcharge on top.
 	 */
-	if (p->csp < power->cost)
-		chance += 5 * (power->cost - p->csp);
 
 	if (p->timed[TMD_AFRAID]) chance += 20;
 
@@ -2110,9 +2120,10 @@ bool player_use_power(struct player *p, struct player_power *power, int dir)
 	/*
 	 * Short of mana, the price is paid in blood.  This is Zangband's rule and
 	 * it is the only reason the whole feature works for everyone: the Warrior
-	 * and the Monk have no spells at all, so calc_mana() leaves them with a
-	 * maximum of zero, and without this a Draconian Warrior could never once
-	 * breathe.  Anyone who has spent their pool is in the same position.
+	 * and the Mindcrafter have no spellbooks, so calc_mana() leaves the Warrior
+	 * with a maximum of zero, and without this a Draconian Warrior could never
+	 * once breathe.  Anyone who has spent their pool is in the same position.
+	 * (The Monk had no mana either until 3.65.0, when it gained a realm.)
 	 */
 	use_hp = (p->csp < power->cost);
 

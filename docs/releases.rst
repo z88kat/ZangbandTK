@@ -30,6 +30,33 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Balance — 2 September 2026
+---------------------------
+
+- **3.65.1** — **A power paid for in blood is no longer also penalised for it**
+  (DEC-56). Racial and mutation powers charged 5% failure per point of mana the
+  character was short — but the condition that triggered it, ``csp < cost``, is
+  character for character the same condition that decides the price comes out
+  of *hit points*. So the surcharge fell on exactly the people already paying
+  blood, and on nobody else. They were charged twice for one shortfall.
+
+  A Draconian's breath, cost 25, at the level it arrives: **95% to fail on an
+  empty pool, now 7%** — the same as with a full one. Worth saying that the old
+  number was not a permanent 95: the level term ate into it, so the power came
+  good around level 30. An earlier note of mine claimed a Warrior "still cannot
+  breathe", which was that one figure generalised too far.
+
+  **Spells keep their penalty**, and that is not an inconsistency. A spell is
+  not paid for in blood; it is paid for in unconsciousness — ``over_exert()``
+  faints the caster and may take a point of constitution, after a confirmation
+  prompt. Blood is a price, fainting is a risk, and neither needs a surcharge
+  on top.
+
+  The blood price itself is unchanged: 13 to 25 hit points for a cost-25 power,
+  and still refused outright below that. The two classes with no mana at all —
+  the Warrior and the Mindcrafter — are the ones this was blocking.
+
+
 M9: magic realms — 2 September 2026
 -----------------------------------
 

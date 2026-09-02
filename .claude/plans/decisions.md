@@ -2325,3 +2325,57 @@ That is the established design showing through a new class, not a new decision.
 levels and costs its `magic_info[]` row already carries. Our High-Mage does not
 have it, and 4.2's `class.txt` has no field for a mana multiplier, so it wants
 code rather than data. Not done here; recorded so it is not found twice.
+
+---
+
+### DEC-56 — A power paid for in blood is not also penalised for it (PLR-02, PLR-16, BAL-08)
+
+**Decided by the project owner, 2 September 2026: no.**
+
+`player_power_chance()` charged `5 * (cost - csp)` when a character was short
+of mana for a racial or mutation power, which is how spells work
+([player-spell.c:621](../../src/player-spell.c#L621)). It is removed.
+
+**The reason it was wrong is that its condition was already spoken for.** The
+penalty tested `csp < cost`; `player_use_power()` uses
+`use_hp = (p->csp < power->cost)` to decide the price comes out of hit points.
+Character for character, those are the same people. So the surcharge fell on
+exactly those already paying blood and on nobody else — charged twice for one
+shortfall — while the comment beside the blood price said it existed *"so a
+Draconian Warrior could never once breathe"* without it, and the penalty then
+made that Warrior fail 95 times in 100 anyway. The two halves of the same
+feature were pulling against each other.
+
+**Measured, before and after.** A Draconian's breath: cost 25, power level 15,
+base failure 12.
+
+| Level | Full pool | Empty pool, before | Empty pool, after |
+|---|---|---|---|
+| 15 | 7% | 95% | 7% |
+| 25 | 6% | 95% | 6% |
+| 30 | 6% | 87% | 6% |
+| 40 | 6% | 57% | 6% |
+| 50 | 6% | 27% | 6% |
+
+Worth recording that the old behaviour was not a permanent 95: the level term
+ate into the shortfall, so the power arrived around level 30 rather than never.
+An earlier note of mine said a Warrior "still cannot breathe" — that was drawn
+from the single level-15 figure a test asserted and generalised too far.
+
+**Spells keep their penalty, and that is not an inconsistency.** A spell is not
+paid for in blood. It is paid for in unconsciousness: `player_over_exert()`
+faints the caster for `5 * shortfall + 1` turns and takes a point of
+constitution half the time, after a *"Attempt it anyway?"* confirmation. Blood
+is a price and fainting is a risk; neither needs a surcharge on top, and the
+power path has no faint.
+
+**What it costs.** Any character can now use a power at its true failure rate
+with an empty pool, paying `randint1(cost - cost/2) + cost/2` hit points — 13
+to 25 for a cost of 25. Two classes have no mana at all, the Warrior and the
+Mindcrafter, and they are the ones this was blocking. The blood price and the
+"You have not the strength left." refusal below `chp < cost` are unchanged, so
+the power is still rationed by how much punishment the character can take.
+
+`player/wild`'s *a-cheat-makes-a-power-fire* now asserts
+`eq(without_mana, with_mana)` — equality rather than the old inequality,
+because it catches the penalty returning in any size.

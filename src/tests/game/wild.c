@@ -3991,12 +3991,19 @@ static int test_practice_makes_a_power_surer(void *state) {
  * cheat is the answer to testing it; this also pins down *why* the number is 95,
  * because it is not the difficulty and it is not the level.
  *
- * player_power_chance() adds 5 per point of mana the character is short, and a
- * class with no spells at all is short by the whole cost -- 100 for a cost of
- * 20, which buries every other term and clamps to the ceiling.  So the blood
- * price that exists precisely so a Warrior can use a power at all is cancelled
- * by a penalty for needing it.  That is recorded here rather than argued with:
- * changing it is a balance decision, and this test will notice when it is made.
+ * The 95 was the mana shortfall, not the difficulty and not the level.
+ * player_power_chance() charged 5 per point short, and a class with no mana at
+ * all is short by the whole cost -- 125 for a cost of 25 -- which buried every
+ * other term and clamped to the ceiling.
+ *
+ * **That penalty is gone (DEC-56), and this test now pins its absence.** The
+ * condition it tested was `csp < cost`, which is character for character the
+ * same condition player_use_power() uses to decide the price is paid in blood:
+ * it fell on exactly the people already paying hit points and on nobody else.
+ * So being short of mana must now make no difference to the chance at all, and
+ * `eq(without_mana, with_mana)` is the assertion that says so -- a stricter one
+ * than the inequality it replaces, because it would catch the penalty coming
+ * back in any size.
  */
 static int test_a_cheat_makes_a_power_fire(void *state) {
 	struct player_race *r, *draconian = NULL;
@@ -4031,10 +4038,17 @@ static int test_a_cheat_makes_a_power_fire(void *state) {
 	player->msp = 0;
 	without_mana = player_power_chance(player, power);
 
-	/* The shortfall alone is worth 5 a point, so it reaches the ceiling. */
+	/*
+	 * Identical, not merely close.  The character who will pay in blood is
+	 * charged nothing extra for needing to (DEC-56), and a power costing 25
+	 * against an empty pool is exactly as likely to fire as one cast from a
+	 * full one.
+	 */
 	require(power->cost > 0);
-	require(without_mana > with_mana);
-	eq(without_mana, 95);
+	eq(without_mana, with_mana);
+
+	/* And it is a real number, not both-are-95 hiding under an equality. */
+	require(with_mana < 95);
 
 	/*
 	 * With the cheat on it fires.  Zero rather than merely lower, because
