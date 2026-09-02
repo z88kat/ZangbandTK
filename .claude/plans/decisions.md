@@ -2161,3 +2161,33 @@ the Necromancer already carries four of them. It is deliberately left: it would
 change the balance of an existing class *before* that class's spell content is
 replaced, which is the half-state the M9 ordering exists to avoid. It belongs in
 the Death realm's own commit.
+
+#### DEC-49, addendum — the fold went Zangband's way (3.61.0)
+
+DEC-49 recorded that Zangband's Arcane and Angband's arcane are not the same
+realm, that having exactly seven realms forces them together, and that folding
+them "keeps the stronger of the two". That was the state while Arcane still held
+Angband's content. **DEC-50 replaced it**, so the sentence now reads the other
+way: this game's Arcane is Zangband's Arcane, and the fold cost Angband's side
+of it — two books of attack spells and the *Wizard's Tome of Power*.
+
+Recorded rather than edited into DEC-49, because what DEC-49 decided (seven
+realms, mapped by content) is unchanged; only its consequence flipped, and it
+flipped because a later decision was taken, which is the kind of thing a
+decision record should show rather than tidy away.
+
+*What it costs.* In thirty-two Arcane spells there is one ball, one bolt and one
+beam. A Mage's damage now comes from its **second** realm, which is Zangband's
+own arrangement -- a Mage there takes two, and Arcane plus Chaos is the classic
+pair. A Mage who takes Arcane and Sorcery has chosen two realms that barely
+fight, and Zangband would have let them do exactly that.
+
+*What it buys.* All four Arcane books are sold in town, for 100 to 2500 gold.
+That is the other half of the spoiler's sentence and the realm's whole bargain:
+no other realm can be bought outright, and every other realm keeps its two best
+books in the dungeon. The town/dungeon flag is not cosmetic -- `store.c` stocks
+every town book permanently and never a dungeon one -- so emitting Arcane under
+the generic two-town rule made half the realm unbuyable and quietly removed the
+reason to choose it. `player/realm` now pins the four books' costs and
+allocation depths by number, because the converter check cannot tell that the
+generator was asked for the wrong ladder.

@@ -33,6 +33,34 @@ Unreleased
 M9: magic realms — 2 September 2026
 -----------------------------------
 
+- **3.61.0** — **Arcane is Zangband's** (CNT-10, DEC-50). Thirty-two spells in
+  four books — Cantrips for Beginners, Minor Arcana, Major Arcana, the Manual of
+  Mastery — replacing the five magic books the Mage and the Rogue carried. The
+  second of the four realms Angband already had, after Life.
+
+  **All four are sold in town**, for 100, 250, 1000 and 2500 gold, which is the
+  realm's whole bargain and the half of the spoiler's sentence that pays for the
+  other half: Arcane "has no ultra-powerful high level spells" *and* "all Arcane
+  spellbooks can be bought in town". Emitted under the generic two-town rule,
+  half the realm was unbuyable and the reason to choose it was quietly gone. The
+  flag is not cosmetic — ``store.c`` stocks every town book permanently and
+  never a dungeon one.
+
+  **A Mage no longer learns its attacks from Arcane.** One ball, one bolt and
+  one beam in thirty-two spells. That is Zangband's design, where a Mage takes
+  two realms and the second is where the damage lives; Arcane plus Chaos is the
+  classic pair. DEC-49's consequence is therefore inverted, and its addendum
+  says so rather than being edited to match.
+
+  Two deferred: *Phlogiston*, because refuelling a light is a command in 4.2 and
+  not an effect, and *Detect Enchantment*, for the same reason Sorcery's is.
+
+  Along the way, ``apply_realm.py`` — the tool that swaps a realm's books rather
+  than appending them — learned to fix starting equipment. A class can begin the
+  game holding a book by name, and the Rogue's ``equip:magic book:[First
+  Spells]`` outlived the book: the game refused to start with "unrecognized
+  sval". Nature and Death will each hit the same thing.
+
 - **3.60.2** — **The gate checks the realm content, and a flake is fixed.**
   ``scripts/check-build`` gained a fifth pass: ``zconv realms --check`` asks
   whether every spell name in ``realmmap.toml`` matches Zangband's own table, in

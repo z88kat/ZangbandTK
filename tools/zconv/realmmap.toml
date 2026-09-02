@@ -627,3 +627,205 @@ desc = [
 line = 751
 effects = [ "TIMED_INC:INVULN", "dice:6+1d8" ]
 desc = "Makes you briefly invulnerable to all harm."
+
+# Source: archive/zangband/src/cmd5.c, cast_arcane_spell().
+
+# Zangband is explicit that this is the weak generalist -- "it has no
+# ultra-powerful high level spells... all Arcane spellbooks can be bought in
+# town" -- and the content bears that out: thirty-two spells and exactly one
+# that does damage worth the name. DEC-49 records that folding it together with
+# 4.2's own arcane realm makes this game's Arcane stronger than Zangband's was,
+# because 4.2 put Magic Missile and two books of attacks in it.
+
+[arcane]
+books = [
+  "Cantrips for Beginners",
+  "Minor Arcana",
+  "Major Arcana",
+  "Manual of Mastery",
+]
+
+# All four are bought in town, which is the realm's defining trait rather than a
+# detail: "all Arcane spellbooks can be bought in town" is the half of the
+# spoiler's sentence that pays for the other half, that Arcane "has no
+# ultra-powerful high level spells". Zangband's own k_info agrees -- the four
+# cost 100, 250, 1000 and 2500 and are allocated at depths 10, 15, 20 and 35,
+# where Sorcery's fourth book costs 100,000 and appears at 95. The flag is not
+# cosmetic: store.c always stocks a town book and never a dungeon one.
+books-in-town = 4
+
+# Zangband's own costs, and its own allocation depths rescaled from its
+# 128-level dungeon to 4.2's hundred. The first stays at depth 1 because a Mage
+# casts from it at level 1.
+book-tiers = [
+  "100:40:1 to 100",
+  "250:40:12 to 100",
+  "1000:30:16 to 100",
+  "2500:20:27 to 100",
+]
+
+[arcane.spells."Zap"]
+line = 2473
+effects = [ "BOLT_OR_BEAM:ELEC:0:-10", "dice:$Dd3", "expr:D:PLAYER_LEVEL:- 1 / 5 + 3" ]
+desc = "Fires a weak bolt of lightning, sometimes as a beam."
+
+[arcane.spells."Wizard Lock"]
+line = 2479
+effects = [ "ALTER:MAKE_DOOR" ]
+note = "Zangband jams an existing door shut; 4.2 has no jamming at all -- a door is open, closed, locked or broken, and no effect reaches the lock. ALTER makes a door along the aimed line instead, which serves the same purpose (something between you and what is chasing you) by different means, and works on an empty corridor where Zangband's needed a door already there."
+desc = "Creates a door along a line.  Something to put between you and what follows."
+
+[arcane.spells."Detect Invisibility"]
+line = 2484
+effects = [ "DETECT_INVISIBLE_MONSTERS", "effect-yx:22:40" ]
+desc = "Detects invisible creatures nearby."
+
+[arcane.spells."Detect Monsters"]
+line = 2487
+effects = [ "DETECT_VISIBLE_MONSTERS", "effect-yx:22:40" ]
+desc = "Detects all monsters nearby that are not invisible."
+
+[arcane.spells."Blink"]
+line = 2490
+effects = [ "TELEPORT", "dice:10" ]
+desc = "Teleports you a short distance -- ten squares."
+
+[arcane.spells."Light Area"]
+line = 2493
+effects = [ "LIGHT_AREA", "SPHERE:LIGHT_WEAK:2", "dice:2d$S", "expr:S:PLAYER_LEVEL:/ 2" ]
+note = "The radius grows with level in Zangband and cannot here -- 4.2's radius is a literal, the same constraint DEC-53 met in Chaos. A Mage learns this at 5, where plev/10+1 is 1; 2 is taken instead, matching Sorcery's Light Area so the two realms do not disagree about the same spell."
+desc = "Lights the area around you, and hurts light-sensitive monsters caught in it."
+
+[arcane.spells."Trap & Door Destruction"]
+line = 2496
+effects = [ "ALTER:KILL_DOOR", "ALTER:KILL_TRAP" ]
+note = "A line, not a touch. Zangband's arcane version is destroy_door(dir) and is aimed, where Chaos's is destroy_doors_touch() and reaches the squares beside you. Both are kept as what they are."
+desc = "Destroys doors and traps along a line."
+
+[arcane.spells."Cure Light Wounds"]
+line = 2501
+effects = [ "HEAL_HP", "dice:2d8", "TIMED_DEC:CUT", "dice:10" ]
+desc = "Heals a little and closes a light wound."
+
+[arcane.spells."Detect Doors & Traps"]
+line = 2505
+effects = [ "DETECT_TRAPS", "effect-yx:22:40", "DETECT_DOORS", "effect-yx:22:40", "DETECT_STAIRS", "effect-yx:22:40" ]
+desc = "Detects doors, traps and staircases nearby."
+
+[arcane.spells."Phlogiston"]
+line = 2510
+defer = "Refuelling a light source is a command in 4.2 (CMD_REFILL), not an effect, and there is nothing for a spell to invoke. Torches and lanterns are refilled from flasks and other lights, which the player does by hand. Building a REFUEL effect to carry one Arcane spell would be the wrong way round; the spell is in its book saying so."
+
+[arcane.spells."Detect Treasure"]
+line = 2513
+effects = [ "DETECT_ORE", "effect-yx:22:40", "DETECT_GOLD", "effect-yx:22:40" ]
+note = "Two calls in Zangband and two effects here: detect_treasure() finds gold in the rock and detect_objects_gold() finds it lying about. 4.2 keeps those apart as DETECT_ORE and DETECT_GOLD."
+desc = "Detects gold nearby, in the rock and on the floor."
+
+[arcane.spells."Detect Enchantment"]
+line = 2517
+defer = "The same wall Sorcery's Detect Enchantment hit. detect_objects_magic() marks every nearby object that carries an enchantment, and 4.2 has no is-this-magical bit to read: an object's properties are runes the character learns one at a time. Mapping it to DETECT_OBJECTS would give Arcane two spells doing one thing, three entries apart."
+
+[arcane.spells."Detect Objects"]
+line = 2520
+effects = [ "DETECT_OBJECTS", "effect-yx:22:40" ]
+desc = "Detects objects nearby."
+
+[arcane.spells."Cure Poison"]
+line = 2523
+effects = [ "CURE:POISONED" ]
+desc = "Cures poison."
+
+[arcane.spells."Resist Cold"]
+line = 2526
+effects = [ "TIMED_INC:OPP_COLD", "dice:19+1d21" ]
+desc = "Grants temporary resistance to cold."
+
+[arcane.spells."Resist Fire"]
+line = 2529
+effects = [ "TIMED_INC:OPP_FIRE", "dice:19+1d21" ]
+desc = "Grants temporary resistance to fire."
+
+[arcane.spells."Resist Lightning"]
+line = 2532
+effects = [ "TIMED_INC:OPP_ELEC", "dice:19+1d21" ]
+desc = "Grants temporary resistance to lightning."
+
+[arcane.spells."Resist Acid"]
+line = 2535
+effects = [ "TIMED_INC:OPP_ACID", "dice:19+1d21" ]
+desc = "Grants temporary resistance to acid."
+
+[arcane.spells."Cure Medium Wounds"]
+line = 2538
+effects = [ "HEAL_HP", "dice:4d8", "TIMED_DEC:CUT", "dice:50" ]
+desc = "Heals a moderate wound and most of the bleeding."
+
+[arcane.spells."Teleport"]
+line = 2542
+effects = [ "TELEPORT", "dice:$B", "expr:B:PLAYER_LEVEL:* 5" ]
+desc = "Teleports you a long way -- five squares for every level you have."
+
+[arcane.spells."Stone to Mud"]
+line = 2545
+effects = [ "LINE:KILL_WALL", "dice:20+1d30" ]
+desc = "Melts a wall along a line."
+
+[arcane.spells."Ray of Light"]
+line = 2550
+effects = [ "LINE:LIGHT_WEAK", "dice:6d8" ]
+desc = "Draws a line of light, and burns what cannot bear it."
+
+[arcane.spells."Satisfy Hunger"]
+line = 2556
+effects = [ "NOURISH:SET_TO", "dice:99" ]
+note = "Zangband sets food to its maximum less one. 4.2's SET_TO takes a percentage, so 99 is that same 'full but not stuffed'."
+desc = "Fills your stomach."
+
+[arcane.spells."See Invisible"]
+line = 2559
+effects = [ "TIMED_INC:SINVIS", "dice:23+1d25" ]
+desc = "Lets you see invisible creatures for a while."
+
+[arcane.spells."Recharging"]
+line = 2562
+effects = [ "RECHARGE", "dice:$B", "expr:B:PLAYER_LEVEL:* 4" ]
+note = "Four times the level, which is what Zangband's arcane recharge(plev * 4) asks and happens to equal Sorcery's figure exactly. Chaos's Arcane Binding is a flat 90 and stronger at every level below 22."
+desc = "Recharges a wand or staff."
+
+[arcane.spells."Teleport Level"]
+line = 2564
+effects = [ "TELEPORT_LEVEL" ]
+desc = "Takes you up or down one level, and does not ask which."
+
+[arcane.spells."Identify"]
+line = 2567
+effects = [ "IDENTIFY" ]
+note = "4.2 replaced whole-object identification with runes learned one at a time, so this reads one rune where Zangband read one object. The same mapping Sorcery's Identify takes; the realms agree."
+desc = "Identifies one unknown rune on an item."
+
+[arcane.spells."Teleport Away"]
+line = 2569
+effects = [ "BEAM:AWAY_ALL", "dice:$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+desc = "Fires a beam that teleports away every monster in its path."
+
+[arcane.spells."Elemental Ball"]
+line = 2574
+effects = [ "RANDOM", "dice:4", "BALL:FIRE:2", "dice:75+$B", "expr:B:PLAYER_LEVEL:+ 0", "BALL:ELEC:2", "dice:75+$B", "expr:B:PLAYER_LEVEL:+ 0", "BALL:COLD:2", "dice:75+$B", "expr:B:PLAYER_LEVEL:+ 0", "BALL:ACID:2", "dice:75+$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+note = "One of four elements, chosen when you cast it and not before -- fire, lightning, frost or acid, at 75 plus your level in a radius of two. Zangband rolls the element with randint1(4); RANDOM is 4.2's way of saying the same thing, and this is the only place in Arcane that does damage worth the name."
+desc = "Hurls a ball of one element.  Which one is not up to you."
+
+[arcane.spells."Detection"]
+line = 2590
+effects = [ "DETECT_VISIBLE_MONSTERS", "effect-yx:22:40", "DETECT_INVISIBLE_MONSTERS", "effect-yx:22:40", "DETECT_TRAPS", "effect-yx:22:40", "DETECT_DOORS", "effect-yx:22:40", "DETECT_STAIRS", "effect-yx:22:40", "DETECT_GOLD", "effect-yx:22:40", "DETECT_OBJECTS", "effect-yx:22:40" ]
+desc = "Detects everything nearby: monsters, traps, doors, stairs, gold and objects."
+
+[arcane.spells."Word of Recall"]
+line = 2593
+effects = [ "RECALL" ]
+desc = "Returns you to town, or from town to the depth you last reached."
+
+[arcane.spells."Clairvoyance"]
+line = 2596
+effects = [ "LIGHT_LEVEL", "TIMED_INC:TELEPATHY", "dice:24+1d31" ]
+desc = "Lights the whole level and grants telepathy for a while."

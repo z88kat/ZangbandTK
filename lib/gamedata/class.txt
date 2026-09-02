@@ -203,253 +203,184 @@ title:Warlock
 title:Sorcerer
 title:Arch-Mage
 
-magic:1:300:13
+magic:1:300:12
 realm-choice:1:arcane | life | nature | death | sorcery | chaos | trump
 realm-choice:2:arcane | life | nature | death | sorcery | chaos | trump
 
-book:magic book:town:[First Spells]:7:arcane
+book:magic book:town:[Cantrips for Beginners]:8:arcane
 book-graphics:?:R
-book-properties:25:40:1 to 100
-equip:magic book:[First Spells]:1:1:none
-
-spell:Magic Missile:1:1:22:4
-effect:BOLT_OR_BEAM:MISSILE:0:-10
-dice:$Dd4
+book-properties:100:40:1 to 100
+spell:Zap:1:1:21:5
+effect:BOLT_OR_BEAM:ELEC:0:-10
+dice:$Dd3
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
-desc:Fires a magic missile that always hits its target and does
-desc: unresistable damage.
-desc:  Sometimes a beam is fired instead that hurts each monster
-desc: in its path.
-desc:  The chance to get a beam goes up with your character level.
-
-spell:Light Room:1:2:26:4
-effect:LIGHT_AREA
-effect:SPHERE:LIGHT_WEAK:2
-dice:1
-desc:Lights up all squares within 2 grids of the player, and hurts
-desc: all light-sensitive monsters in the area of effect.
-desc:  If you are in a room, the entire room will be lit up as well.
-
-spell:Find Traps, Doors & Stairs:1:1:20:2
-effect:DETECT_TRAPS
+desc:Fires a weak bolt of lightning, sometimes as a beam.
+spell:Wizard Lock:1:1:21:5
+effect:ALTER:MAKE_DOOR
+desc:Creates a door along a line.  Something to put between you and what follows.
+spell:Detect Invisibility:1:1:21:5
+effect:DETECT_INVISIBLE_MONSTERS
 effect-yx:22:40
-effect:DETECT_DOORS
+desc:Detects invisible creatures nearby.
+spell:Detect Monsters:2:1:22:5
+effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
-effect:DETECT_STAIRS
-effect-yx:22:40
-desc:Detects all traps, doors, and stairs in the immediate area.
-
-spell:Phase Door:2:2:22:4
+desc:Detects all monsters nearby that are not invisible.
+spell:Blink:2:2:22:5
 effect:TELEPORT
 dice:10
-desc:Teleports you randomly up to 10 squares away.
-
-spell:Electric Arc:2:2:34:4
-effect:SHORT_BEAM:ELEC:0:1
-dice:$Dd6
-expr:D:PLAYER_LEVEL:- 1 / 5 + 3
-desc:Creates an electrical discharge that hurts monsters and destroys
-desc: vulnerable items in its path.  Length of the effect increases
-desc: with player level.
-
-spell:Detect Monsters:3:2:24:4
-effect:DETECT_VISIBLE_MONSTERS
-effect-yx:22:40
-desc:Detects all non-invisible monsters in the immediate area,
-desc: for one turn only.
-
-spell:Fire Ball:6:5:33:5
-effect:BALL:FIRE:2
-dice:$B
-expr:B:PLAYER_LEVEL:* 2
-desc:Shoots a radius-2 fire ball.
-
-book:magic book:town:[Attacks and Knowledge]:6:arcane
+desc:Teleports you a short distance -- ten squares.
+spell:Light Area:4:4:24:5
+effect:LIGHT_AREA
+effect:SPHERE:LIGHT_WEAK:2
+dice:2d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Lights the area around you, and hurts light-sensitive monsters caught in it.
+spell:Trap & Door Destruction:5:5:25:5
+effect:ALTER:KILL_DOOR
+effect:ALTER:KILL_TRAP
+desc:Destroys doors and traps along a line.
+spell:Cure Light Wounds:6:5:26:5
+effect:HEAL_HP
+dice:2d8
+effect:TIMED_DEC:CUT
+dice:10
+desc:Heals a little and closes a light wound.
+book:magic book:town:[Minor Arcana]:8:arcane
 book-graphics:?:R
-book-properties:400:40:10 to 100
-
-spell:Recharging:5:5:28:6
-effect:RECHARGE
-dice:$B
-expr:B:PLAYER_LEVEL:/ 8 + 6
-desc:Adds charges to a stack of wands or staves.
-desc:  Chance of success and number of charges gained increase with your
-desc: level and decrease with level of wand or staff and number of charges.
-desc:  A failed attempt to recharge destroys one wand or staff from the stack.
-
-spell:Identify Rune:8:7:25:8
-effect:IDENTIFY
-desc:Reveals an unknown rune on an object.
-
-spell:Treasure Detection:10:3:60:5
-effect:DETECT_ORE
-effect-yx:22:40
-effect:SENSE_GOLD
-effect-yx:22:40
-effect:SENSE_OBJECTS
-effect-yx:22:40
-desc:Detects gold and senses objects in the immediate area.
-
-spell:Frost Bolt:13:5:40:6
-effect:BOLT_OR_BEAM:COLD
-dice:$Dd8
-expr:D:PLAYER_LEVEL:- 5 / 3 + 6
-desc:Shoots a bolt of frost that always hits its target.
-desc:  Sometimes a beam is fired instead that hurts each monster
-desc: in its path.
-desc:  The chance to get a beam goes up with your character level.
-
-spell:Reveal Monsters:15:6:40:8
-effect:DETECT_INVISIBLE_MONSTERS
-effect-yx:22:40
-effect:DETECT_VISIBLE_MONSTERS
-effect-yx:22:40
-desc:Detects all monsters in the immediate area, for one turn only.
-
-spell:Acid Spray:20:5:30:12
-effect:ARC:ACID:10:60
-dice:$Dd8
-expr:D:PLAYER_LEVEL:/ 2
-desc:Sprays acid in a 60-degree cone, hitting all monsters up to 10 grids away.
-
-book:magic book:town:[Magical Defences]:6:arcane
-book-graphics:?:R
-book-properties:1600:20:30 to 100
-
-spell:Disable Traps, Destroy Doors:5:5:30:6
-effect:TOUCH:KILL_DOOR
-effect:TOUCH:KILL_TRAP
-desc:Disables traps and destroys doors within a 1-square radius of you.
-
-spell:Teleport Self:7:6:35:5
-effect:TELEPORT
-dice:M$M
-expr:M:PLAYER_LEVEL:* 9 / 5
-desc:Teleports you randomly within the current level.
-
-spell:Teleport Other:15:10:30:12
-effect:BOLT_STATUS:AWAY_ALL
-dice:$B
-expr:B:PLAYER_LEVEL:* 3
-desc:Produces a bolt that teleports away the first monster in its path.
-desc:  Distance teleported increases with player level.
-
-spell:Resistance:20:20:65:20
-effect:SET_VALUE
-dice:20+d20
-effect:TIMED_INC:OPP_ACID
-effect:TIMED_INC:OPP_ELEC
-effect:TIMED_INC:OPP_COLD
-effect:TIMED_INC:OPP_FIRE
-effect:CLEAR_VALUE
-desc:Grants you resistance to acid, cold, fire and lightning for 20+1d20 turns.
-
-spell:Tap Magical Energy:22:2:30:12
-effect:TAP_DEVICE
-desc:Turns wand or staff energy into mana; tapping stuns the player briefly.
-
-spell:Mana Channel:25:10:50:20
-effect:TIMED_INC:FASTCAST
-dice:5+1d5
-desc:Increases spellcasting speed by 33% for 5+1d5 turns.
-
-book:magic book:dungeon:[Arcane Control]:6:arcane
-book-graphics:?:r
-book-properties:30000:15:40 to 100
-
-spell:Door Creation:13:9:40:12
-effect:TOUCH:MAKE_DOOR
-desc:A door is created on each empty floor space that is directly
-desc: adjacent to you.  These doors are closed, but not locked.
-
-spell:Mana Bolt:25:8:60:30
-effect:BOLT_OR_BEAM:MISSILE
-dice:$Dd8
-expr:D:PLAYER_LEVEL:- 10
-desc:Fires a magic missile that always hits its target and does
-desc: unresistable damage.
-desc:  Sometimes a beam is fired instead that hurts each monster
-desc: in its path.
-desc:  The chance to get a beam goes up with your character level.
-
-spell:Teleport Level:28:17:65:20
-effect:TELEPORT_LEVEL
-desc:Teleports you 1 level up or 1 level down (chosen at random).
-desc:  This spell may have no effect when the forced descent option is set.
-
-spell:Detection:30:10:70:30
+book-properties:250:40:12 to 100
+spell:Detect Doors & Traps:7:6:27:20
 effect:DETECT_TRAPS
 effect-yx:22:40
 effect:DETECT_DOORS
 effect-yx:22:40
 effect:DETECT_STAIRS
 effect-yx:22:40
+desc:Detects doors, traps and staircases nearby.
+spell:Phlogiston:8:8:28:20
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Detect Treasure:9:8:29:20
 effect:DETECT_ORE
 effect-yx:22:40
-effect:SENSE_GOLD
+effect:DETECT_GOLD
 effect-yx:22:40
-effect:SENSE_OBJECTS
+desc:Detects gold nearby, in the rock and on the floor.
+spell:Detect Enchantment:9:9:29:20
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Detect Objects:9:9:29:20
+effect:DETECT_OBJECTS
+effect-yx:22:40
+desc:Detects objects nearby.
+spell:Cure Poison:11:10:31:20
+effect:CURE:POISONED
+desc:Cures poison.
+spell:Resist Cold:12:12:32:20
+effect:TIMED_INC:OPP_COLD
+dice:19+1d21
+desc:Grants temporary resistance to cold.
+spell:Resist Fire:13:12:33:20
+effect:TIMED_INC:OPP_FIRE
+dice:19+1d21
+desc:Grants temporary resistance to fire.
+book:magic book:town:[Major Arcana]:8:arcane
+book-graphics:?:R
+book-properties:1000:30:16 to 100
+spell:Resist Lightning:14:12:34:45
+effect:TIMED_INC:OPP_ELEC
+dice:19+1d21
+desc:Grants temporary resistance to lightning.
+spell:Resist Acid:15:12:35:45
+effect:TIMED_INC:OPP_ACID
+dice:19+1d21
+desc:Grants temporary resistance to acid.
+spell:Cure Medium Wounds:16:14:36:45
+effect:HEAL_HP
+dice:4d8
+effect:TIMED_DEC:CUT
+dice:50
+desc:Heals a moderate wound and most of the bleeding.
+spell:Teleport:18:15:38:45
+effect:TELEPORT
+dice:$B
+expr:B:PLAYER_LEVEL:* 5
+desc:Teleports you a long way -- five squares for every level you have.
+spell:Stone to Mud:20:16:40:45
+effect:LINE:KILL_WALL
+dice:20+1d30
+desc:Melts a wall along a line.
+spell:Ray of Light:23:18:43:45
+effect:LINE:LIGHT_WEAK
+dice:6d8
+desc:Draws a line of light, and burns what cannot bear it.
+spell:Satisfy Hunger:25:20:45:45
+effect:NOURISH:SET_TO
+dice:99
+desc:Fills your stomach.
+spell:See Invisible:25:20:45:45
+effect:TIMED_INC:SINVIS
+dice:23+1d25
+desc:Lets you see invisible creatures for a while.
+book:magic book:town:[Manual of Mastery]:8:arcane
+book-graphics:?:R
+book-properties:2500:20:27 to 100
+spell:Recharging:28:25:48:80
+effect:RECHARGE
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Recharges a wand or staff.
+spell:Teleport Level:35:35:55:80
+effect:TELEPORT_LEVEL
+desc:Takes you up or down one level, and does not ask which.
+spell:Identify:38:30:58:80
+effect:IDENTIFY
+desc:Identifies one unknown rune on an item.
+spell:Teleport Away:40:30:60:80
+effect:BEAM:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Fires a beam that teleports away every monster in its path.
+spell:Elemental Ball:41:30:61:80
+effect:RANDOM
+dice:4
+effect:BALL:FIRE:2
+dice:75+$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:BALL:ELEC:2
+dice:75+$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:BALL:COLD:2
+dice:75+$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:BALL:ACID:2
+dice:75+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Hurls a ball of one element.  Which one is not up to you.
+spell:Detection:42:30:62:80
+effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
 effect:DETECT_INVISIBLE_MONSTERS
 effect-yx:22:40
-effect:DETECT_VISIBLE_MONSTERS
+effect:DETECT_TRAPS
 effect-yx:22:40
-desc:Detects all traps, doors, stairs, treasure, objects and monsters in the
-desc: immediate area.
-
-spell:Dimension Door:35:30:80:40
-effect:TELEPORT_TO
-desc:Teleports you to (or near to) a square of your choice.
-
-spell:Thrust Away:40:12:90:40
-effect:SHORT_BEAM:FORCE:1:10
-dice:$Dd8
-expr:D:PLAYER_LEVEL:+ 0
-desc:Fires a short range beam of force.
-
-book:magic book:dungeon:[Wizard's Tome of Power]:5:arcane
-book-graphics:?:r
-book-properties:50000:10:60 to 100
-
-spell:Shock Wave:20:5:40:16
-effect:BALL:SOUND:2
-dice:$B
-expr:B:PLAYER_LEVEL:* 2
-desc:Shoots a radius-2 sound ball.
-desc:  Apart from doing sound damage, this also has a chance to stun
-desc: each monster in the area of effect.
-
-spell:Explosion:30:10:50:20
-effect:BALL:SHARD:2
-dice:$B
-expr:B:PLAYER_LEVEL:* 2
-effect:BALL:FORCE:2
-dice:$B
-expr:B:PLAYER_LEVEL:/ 5
-desc:Shoots a radius-2 shards ball and throws around anything in the area of
-desc: effect.
-
-spell:Banishment:35:45:95:25
-effect:BANISH
-desc:Removes all monsters represented by a chosen symbol from the level.
-desc:  Uniques are not affected.
-desc:  You take 1d4 points of damage for every monster removed.
-
-spell:Mass Banishment:40:75:90:100
-effect:MASS_BANISH
-desc:Removes all monsters within 20 squares of you.
-desc:  Uniques are not affected.
-desc:  You take 1d3 points of damage for every monster removed.
-
-spell:Mana Storm:45:16:85:200
-effect:BALL:MANA:3
-dice:$B
-expr:B:PLAYER_LEVEL:* 2 + 300
-desc:Shoots a radius-3 mana ball that does unresistable
-desc: damage to each monster in its area of effect.
-
-
-############### DRUID ###############
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+effect:DETECT_GOLD
+effect-yx:22:40
+effect:DETECT_OBJECTS
+effect-yx:22:40
+desc:Detects everything nearby: monsters, traps, doors, stairs, gold and objects.
+spell:Word of Recall:45:50:65:80
+effect:RECALL
+desc:Returns you to town, or from town to the depth you last reached.
+spell:Clairvoyance:49:100:69:80
+effect:LIGHT_LEVEL
+effect:TIMED_INC:TELEPATHY
+dice:24+1d31
+desc:Lights the whole level and grants telepathy for a while.
 
 book:sorcery book:town:[Beginner's Handbook]:8:sorcery
 book-graphics:?:B
@@ -2139,7 +2070,7 @@ equip:light:Wooden Torch:1:3:none
 equip:sword:Dagger:1:1:none
 equip:soft armour:Soft Leather Armour:1:1:none
 equip:scroll:Word of Recall:1:1:birth_no_recall
-equip:magic book:[First Spells]:1:1:none
+equip:magic book:[Cantrips for Beginners]:1:1:none
 player-flags:CHOOSE_SPELLS | STEAL
 title:Vagabond
 title:Cutpurse
@@ -2152,79 +2083,183 @@ title:Rogue
 title:Thief
 title:Master Thief
 
-magic:5:350:6
+magic:5:350:8
 realm-choice:1:arcane | death | sorcery | trump
 
-book:magic book:town:[First Spells]:7:arcane
-
-spell:Detect Monsters:5:1:50:4
+book:magic book:town:[Cantrips for Beginners]:8:arcane
+book-graphics:?:R
+book-properties:100:40:1 to 100
+spell:Zap:1:1:21:5
+effect:BOLT_OR_BEAM:ELEC:0:-10
+dice:$Dd3
+expr:D:PLAYER_LEVEL:- 1 / 5 + 3
+desc:Fires a weak bolt of lightning, sometimes as a beam.
+spell:Wizard Lock:1:1:21:5
+effect:ALTER:MAKE_DOOR
+desc:Creates a door along a line.  Something to put between you and what follows.
+spell:Detect Invisibility:2:1:22:5
+effect:DETECT_INVISIBLE_MONSTERS
+effect-yx:22:40
+desc:Detects invisible creatures nearby.
+spell:Detect Monsters:2:2:22:5
 effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
-desc:Detects all non-invisible monsters in the immediate area,
-desc: for one turn only.
-
-spell:Phase Door:7:2:55:4
+desc:Detects all monsters nearby that are not invisible.
+spell:Blink:3:3:23:5
 effect:TELEPORT
 dice:10
-desc:Teleports you randomly up to 10 squares away.
-
-spell:Object Detection:10:3:60:5
+desc:Teleports you a short distance -- ten squares.
+spell:Light Area:5:5:25:5
+effect:LIGHT_AREA
+effect:SPHERE:LIGHT_WEAK:2
+dice:2d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Lights the area around you, and hurts light-sensitive monsters caught in it.
+spell:Trap & Door Destruction:6:6:26:5
+effect:ALTER:KILL_DOOR
+effect:ALTER:KILL_TRAP
+desc:Destroys doors and traps along a line.
+spell:Cure Light Wounds:7:7:27:5
+effect:HEAL_HP
+dice:2d8
+effect:TIMED_DEC:CUT
+dice:10
+desc:Heals a little and closes a light wound.
+book:magic book:town:[Minor Arcana]:8:arcane
+book-graphics:?:R
+book-properties:250:40:12 to 100
+spell:Detect Doors & Traps:8:8:28:20
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
+effect-yx:22:40
+desc:Detects doors, traps and staircases nearby.
+spell:Phlogiston:9:9:29:20
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Detect Treasure:10:10:30:20
 effect:DETECT_ORE
+effect-yx:22:40
+effect:DETECT_GOLD
+effect-yx:22:40
+desc:Detects gold nearby, in the rock and on the floor.
+spell:Detect Enchantment:11:11:31:20
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Detect Objects:13:11:33:20
+effect:DETECT_OBJECTS
+effect-yx:22:40
+desc:Detects objects nearby.
+spell:Cure Poison:14:12:34:20
+effect:CURE:POISONED
+desc:Cures poison.
+spell:Resist Cold:15:13:35:20
+effect:TIMED_INC:OPP_COLD
+dice:19+1d21
+desc:Grants temporary resistance to cold.
+spell:Resist Fire:16:14:36:20
+effect:TIMED_INC:OPP_FIRE
+dice:19+1d21
+desc:Grants temporary resistance to fire.
+book:magic book:town:[Major Arcana]:8:arcane
+book-graphics:?:R
+book-properties:1000:30:16 to 100
+spell:Resist Lightning:17:15:37:45
+effect:TIMED_INC:OPP_ELEC
+dice:19+1d21
+desc:Grants temporary resistance to lightning.
+spell:Resist Acid:18:16:38:45
+effect:TIMED_INC:OPP_ACID
+dice:19+1d21
+desc:Grants temporary resistance to acid.
+spell:Cure Medium Wounds:19:17:39:45
+effect:HEAL_HP
+dice:4d8
+effect:TIMED_DEC:CUT
+dice:50
+desc:Heals a moderate wound and most of the bleeding.
+spell:Teleport:20:20:40:45
+effect:TELEPORT
+dice:$B
+expr:B:PLAYER_LEVEL:* 5
+desc:Teleports you a long way -- five squares for every level you have.
+spell:Stone to Mud:23:22:43:45
+effect:LINE:KILL_WALL
+dice:20+1d30
+desc:Melts a wall along a line.
+spell:Ray of Light:25:24:45:45
+effect:LINE:LIGHT_WEAK
+dice:6d8
+desc:Draws a line of light, and burns what cannot bear it.
+spell:Satisfy Hunger:28:25:48:45
+effect:NOURISH:SET_TO
+dice:99
+desc:Fills your stomach.
+spell:See Invisible:30:28:50:45
+effect:TIMED_INC:SINVIS
+dice:23+1d25
+desc:Lets you see invisible creatures for a while.
+book:magic book:town:[Manual of Mastery]:8:arcane
+book-graphics:?:R
+book-properties:2500:20:27 to 100
+spell:Recharging:35:30:55:80
+effect:RECHARGE
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Recharges a wand or staff.
+spell:Teleport Level:39:36:59:80
+effect:TELEPORT_LEVEL
+desc:Takes you up or down one level, and does not ask which.
+spell:Identify:42:37:62:80
+effect:IDENTIFY
+desc:Identifies one unknown rune on an item.
+spell:Teleport Away:44:38:64:80
+effect:BEAM:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Fires a beam that teleports away every monster in its path.
+spell:Elemental Ball:46:40:66:80
+effect:RANDOM
+dice:4
+effect:BALL:FIRE:2
+dice:75+$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:BALL:ELEC:2
+dice:75+$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:BALL:COLD:2
+dice:75+$B
+expr:B:PLAYER_LEVEL:+ 0
+effect:BALL:ACID:2
+dice:75+$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Hurls a ball of one element.  Which one is not up to you.
+spell:Detection:47:42:67:80
+effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
+effect:DETECT_INVISIBLE_MONSTERS
+effect-yx:22:40
+effect:DETECT_TRAPS
+effect-yx:22:40
+effect:DETECT_DOORS
+effect-yx:22:40
+effect:DETECT_STAIRS
 effect-yx:22:40
 effect:DETECT_GOLD
 effect-yx:22:40
 effect:DETECT_OBJECTS
 effect-yx:22:40
-desc:Detects all objects in the immediate area.
-
-spell:Detect Stairs:12:3:50:5
-effect:DETECT_STAIRS
-effect-yx:44:60
-desc:Detects all stairs in a wide area.
-
-spell:Recharging:20:10:50:6
-effect:RECHARGE
-dice:$B
-expr:B:PLAYER_LEVEL:/ 10 + 4
-desc:Adds charges to a stack of wands or staves.
-desc:  Chance of success and number of charges gained increase with your
-desc: level and decrease with level of wand or staff and number of charges.
-desc:  A failed attempt to recharge destroys one wand or staff from the stack.
-
-spell:Reveal Monsters:25:3:40:8
-effect:DETECT_INVISIBLE_MONSTERS
-effect-yx:22:40
-effect:DETECT_VISIBLE_MONSTERS
-effect-yx:22:40
-desc:Detects all monsters in the immediate area, for one turn only.
-
-book:magic book:dungeon:[Arcane Control]:4:arcane
-
-spell:Teleport Self:17:6:35:5
-effect:TELEPORT
-dice:M$M
-expr:M:PLAYER_LEVEL:* 9 / 5
-desc:Teleports you randomly within the current level.
-
-spell:Hit and Run:23:20:40:20
-effect:TIMED_INC:ATT_RUN
-dice:10
-desc:Prepares you to teleport a short distance after stealing from a monster.
-
-spell:Teleport Other:30:10:30:50
-effect:BOLT_STATUS:AWAY_ALL
-dice:$B
-expr:B:PLAYER_LEVEL:* 3
-desc:Produces a bolt that teleports away the first monster in its path.
-desc:  Distance teleported increases with player level.
-
-spell:Teleport Level:35:17:65:80
-effect:TELEPORT_LEVEL
-desc:Teleports you 1 level up or 1 level down (chosen at random).
-desc:  This spell may have no effect when the forced descent option is set.
-
-
-############### RANGER ###############
+desc:Detects everything nearby: monsters, traps, doors, stairs, gold and objects.
+spell:Word of Recall:48:60:68:80
+effect:RECALL
+desc:Returns you to town, or from town to the depth you last reached.
+spell:Clairvoyance:50:125:70:80
+effect:LIGHT_LEVEL
+effect:TIMED_INC:TELEPATHY
+dice:24+1d31
+desc:Lights the whole level and grants telepathy for a while.
 
 book:sorcery book:town:[Beginner's Handbook]:8:sorcery
 book-graphics:?:B

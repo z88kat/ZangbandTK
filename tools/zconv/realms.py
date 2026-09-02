@@ -215,10 +215,18 @@ def check_coverage(src: str, realm: str, spellmap: dict) -> list[str]:
     for name in mapped:
         if name not in real:
             out.append("realmmap has %r, which is not a %s spell" % (name, realm))
-    books = spellmap.get(realm, {}).get("books", [])
-    if len(books) != SPELLS_PER_REALM // SPELLS_PER_BOOK:
+    data = spellmap.get(realm, {})
+    books = data.get("books", [])
+    want = SPELLS_PER_REALM // SPELLS_PER_BOOK
+    if len(books) != want:
         out.append("%s has %d book titles, wanted %d"
-                   % (realm, len(books), SPELLS_PER_REALM // SPELLS_PER_BOOK))
+                   % (realm, len(books), want))
+    tiers = data.get("book-tiers")
+    if tiers is not None and len(tiers) != want:
+        out.append("%s has %d book-tiers, wanted %d" % (realm, len(tiers), want))
+    in_town = data.get("books-in-town", BOOKS_IN_TOWN)
+    if not 0 <= in_town <= want:
+        out.append("%s puts %d of %d books in town" % (realm, in_town, want))
     return out
 
 
@@ -374,11 +382,13 @@ def emit_books(src: str, cls: str, realm: str, spellmap: dict) -> list[str]:
             seen_book = s["book"]
             in_book = [x for x in spells if x["book"] == seen_book]
             title = realm_data["books"][seen_book - 1]
+            in_town = realm_data.get("books-in-town", BOOKS_IN_TOWN)
+            tiers = realm_data.get("book-tiers", BOOK_TIERS)
             lines.append("book:%s:%s:[%s]:%d:%s" % (
-                book_noun(realm), "town" if seen_book <= 2 else "dungeon",
+                book_noun(realm), "town" if seen_book <= in_town else "dungeon",
                 title, len(in_book), realm))
             lines.append("book-graphics:?:%s" % BOOK_COLOUR[realm])
-            lines.append("book-properties:%s" % BOOK_TIERS[seen_book - 1])
+            lines.append("book-properties:%s" % tiers[seen_book - 1])
 
         entry = realm_data["spells"].get(s["name"], {})
         lines.append("spell:%s:%d:%d:%d:%d" % (
@@ -423,6 +433,14 @@ BOOK_TIERS = (
     "30000:15:50 to 100",
     "50000:10:75 to 100",
 )
+
+# How many of a realm's four books can be bought in town, by default.
+#
+# The flag is not cosmetic: `store.c` always stocks a town book and never a
+# dungeon one, and `init.c` gives a dungeon book the ignore-element flags and
+# marks it good. A realm may override both this and the tiers above, and
+# Arcane does -- see realmmap.toml.
+BOOKS_IN_TOWN = 2
 
 BOOK_COLOUR = {
     "sorcery": "B", "chaos": "v", "trump": "w",

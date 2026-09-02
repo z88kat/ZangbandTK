@@ -67,13 +67,19 @@ scattered per-class constants, and Angband's way of holding it is better.
 
 .. warning::
 
-   **This game's Arcane is stronger than Zangband's.** Zangband's Arcane was
-   deliberately the weak generalist — every one of its books could be bought in
-   town, and it had no high-level power at all. Angband's arcane realm is the
-   Mage's realm, with two books of attacks and a *Wizard's Tome of Power* found
-   only in the dungeon. Folding the two together, which having exactly seven
-   realms requires, keeps the stronger of the two. If you know Zangband, Arcane
-   is not the realm you remember.
+   **Arcane is Zangband's Arcane, and that is a change from Angband.** The two
+   games disagreed about this realm more than any other: Zangband's Arcane was
+   deliberately the weak generalist, every book buyable in town and no
+   high-level power at all, while Angband's arcane realm is the Mage's realm,
+   with two books of attacks and a *Wizard's Tome of Power* found only in the
+   dungeon. Having exactly seven realms means folding them together, and the
+   fold went Zangband's way (DEC-49, DEC-50).
+
+   So **a Mage no longer learns its attacks from Arcane.** In thirty-two
+   Arcane spells there is one ball, one bolt and one beam. That is not a
+   mistake: in Zangband a Mage takes *two* realms, and the second is where the
+   damage comes from. Take Chaos alongside it, and the pair is the classic
+   Zangband Mage.
 
 Choosing them
 -------------
@@ -210,25 +216,58 @@ realms; a Chaos-Warrior *is* one.
 from a second place. Chaos is the realm that twists its own caster, and that is
 the spell that does it.
 
-Nothing you could cast before has changed
------------------------------------------
+Arcane
+------
 
-Adding the realms did not move a single spell. Every class Angband ships keeps
-the same books **in the same order** with the same spells at the same levels.
-Each new realm's four books go on the *end* of the lists that gain them — a
-Mage's five Arcane books are still books one to five, with Sorcery's as six to
-nine and Chaos's as ten to thirteen.
+The weak generalist, and the one realm where this game and Angband disagree
+outright. Detection, escape, the four temporary resistances, cures for poison
+and light wounds, *Stone to Mud*, *Satisfy Hunger*, *Recharging* — everything a
+delver wants and almost nothing that kills. Its whole offence is *Zap*, a weak
+lightning bolt; *Ray of Light*; and *Elemental Ball*, which throws fire,
+lightning, frost or acid and does not let you choose which.
 
-One consequence is visible and intended: a Mage who takes Arcane and Sorcery has
-*Phase Door* in two books, because Zangband put it in both realms and both are
-that character's. You will only ever see the books of the realms you chose, so
-the duplicate is exactly the one Zangband showed.
+Four books: **Cantrips for Beginners**, **Minor Arcana**, **Major Arcana** and
+the **Manual of Mastery** — and **all four are sold in town**, for 100, 250,
+1000 and 2500 gold. That is the realm's bargain, and it is the reason to take
+it: no other realm can be bought outright. Every other realm keeps its two best
+books in the dungeon.
+
+Two of the thirty-two do nothing and say so. *Phlogiston* refuels a light
+source, which is a command in this game rather than a spell; and *Detect
+Enchantment* wants a single is-this-magical bit, which no longer exists now that
+an object's properties are runes you learn one at a time.
+
+What has changed, and what has not
+----------------------------------
+
+Two of the four realms Angband already had now hold Zangband's spells instead:
+**Life** and **Arcane**. Nature and Death still hold Angband's, and will not for
+long. This is DEC-50, taken deliberately, and it has consequences worth stating:
+
+- **A Priest's prayers and a Mage's spells are different spells now**, at
+  different levels, in differently-named books. A Paladin gains most — Angband
+  gave it three of the Priest's books and sixteen prayers, and Zangband's table
+  gives it all thirty-two.
+- **Savefiles from before the change do not load.** A book's identity is its
+  name, and every old save carries the town temple's stock, so deleting
+  *[Novice's Handbook]* made every one of them unreadable. The game is
+  pre-release and this was chosen with the numbers in hand.
+
+**Sorcery, Chaos and Trump took nothing away**, because no class carried them
+before. Their books go on the *end* of the lists that gain them — a Mage's four
+Arcane books are books one to four, with Sorcery's as five to eight and Chaos's
+as nine to twelve.
 
 That ordering is not tidiness. Your known spells are recorded by their position
 in a flat list across all of your class's books, so appending leaves every
 position meaning what it meant, while inserting anywhere else would shift them:
 the game would load, the sheet would look reasonable, and a Priest who had
 learned Remove Fear would find they knew something else.
+
+One duplicate is visible and intended: a Mage who takes Arcane and Sorcery has
+*Phase Door* in two books, because Zangband put it in both realms and both are
+that character's. You will only ever see the books of the realms you chose, so
+the duplicate is exactly the one Zangband showed.
 
 That is not a courtesy, it is a hazard avoided. A character's known spells are
 stored by their position in a flat list across all of their class's books, so

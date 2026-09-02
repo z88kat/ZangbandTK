@@ -171,13 +171,23 @@ static int test_no_existing_class_progression_moved(void *state) {
 		 * The Chaos-Warrior is here for the opposite reason: it went
 		 * from no books at all to four, because Chaos is the one realm
 		 * Zangband's table gives it and the realm now exists.
+		 *
+		 * The Mage and the Rogue moved again when **Arcane** was
+		 * replaced (DEC-50), and that is a different kind of move from
+		 * the two above: arcane books are the *first* in both lists, so
+		 * swapping Angband's five for Zangband's four shifts every spell
+		 * index after them. The Mage went 13 books to 12, the Rogue 6 to
+		 * 8. DEC-50 licenses exactly this, the savefile corpus was
+		 * already refused whole before it, and `game/roundtrip` proves
+		 * the fingerprint still catches a character whose list moved.
+		 * What this test guards is the *next* move, the one nobody meant.
 		 */
-		{ "Mage", 13, 94 },
+		{ "Mage", 12, 96 },
 		{ "Druid", 5, 27 },
 		{ "Priest", 12, 96 },
 		{ "Necromancer", 5, 26 },
 		{ "Paladin", 4, 32 },
-		{ "Rogue", 6, 41 },
+		{ "Rogue", 8, 63 },
 		{ "Ranger", 10, 70 },
 		{ "Blackguard", 3, 15 },
 		{ "Chaos-Warrior", 4, 32 },
@@ -213,7 +223,7 @@ static int test_every_book_kept_its_place(void *state) {
 		const char *cls;
 		const char *realms[13];
 	} order[] = {
-		{ "Mage",        { "arcane", "arcane", "arcane", "arcane", "arcane",
+		{ "Mage",        { "arcane", "arcane", "arcane", "arcane",
 		                   "sorcery", "sorcery", "sorcery", "sorcery",
 		                   "chaos", "chaos", "chaos", "chaos" } },
 		{ "Druid",       { "nature", "nature", "nature", "nature", "nature" } },
@@ -222,7 +232,7 @@ static int test_every_book_kept_its_place(void *state) {
 		                   "chaos", "chaos", "chaos", "chaos" } },
 		{ "Necromancer", { "death", "death", "death", "death", "death" } },
 		{ "Paladin",     { "life", "life", "life", "life" } },
-		{ "Rogue",       { "arcane", "arcane",
+		{ "Rogue",       { "arcane", "arcane", "arcane", "arcane",
 		                   "sorcery", "sorcery", "sorcery", "sorcery" } },
 		{ "Ranger",      { "nature", "nature",
 		                   "sorcery", "sorcery", "sorcery", "sorcery",
@@ -254,8 +264,8 @@ static int test_every_book_kept_its_place(void *state) {
 		}
 	}
 
-	/* 13 + 5 + 13 + 5 + 3 + 6 + 10 + 3 + 4 across the nine casting classes. */
-	eq(checked, 62);
+	/* 12 + 5 + 12 + 5 + 4 + 8 + 10 + 3 + 4 across the nine casting classes. */
+	eq(checked, 63);
 
 	ok;
 }
@@ -679,14 +689,23 @@ static int test_the_realm_filter_sorts_three_realms(void *state) {
  * the converter.
  *
  * Two halves, and both are needed. Every effectless spell must carry the
- * deferral wording, which catches a misspelt key; and the count must be exactly
- * twenty, which catches a spell quietly *gaining* the deferral wording to make
- * the first half pass. Sixteen are Sorcery's four -- Identify True, Detect
- * Enchantment, Self Knowledge, Explosive Rune -- once for each of the four
- * classes entitled to the realm. The other four are Life's two, Day of the Dove
- * and Bless Weapon, once each for the Priest and the Paladin: the first needs
+ * deferral wording, which catches a misspelt key; and the count must be exact,
+ * which catches a spell quietly *gaining* the deferral wording to make the
+ * first half pass.
+ *
+ * Twenty-four as the realms stand. Sixteen are Sorcery's four -- Identify True,
+ * Detect Enchantment, Self Knowledge, Explosive Rune -- once for each of the
+ * four classes entitled to the realm. Four are Life's two, Day of the Dove and
+ * Bless Weapon, once each for the Priest and the Paladin: the first needs
  * monster allegiance and waits for M10 with Trump, and 4.2 has no effect that
- * blesses a weapon.
+ * blesses a weapon. Four are Arcane's two, once each for the Mage and the
+ * Rogue: Phlogiston, because refuelling a light source is a command in 4.2 and
+ * not an effect, and Detect Enchantment again, for the reason Sorcery's is.
+ *
+ * `scripts/check-build` also runs `zconv realms --check` now, which catches a
+ * mis-keyed name itself rather than its symptom. This stays because it asks the
+ * question of the *game* -- of parsed classes and parsed books -- rather than
+ * of the data files.
  */
 static int test_a_spell_without_an_effect_says_so(void *state) {
 	const struct player_class *c;
@@ -708,7 +727,7 @@ static int test_a_spell_without_an_effect_says_so(void *state) {
 		}
 	}
 
-	eq(effectless, 20);
+	eq(effectless, 24);
 
 	ok;
 }
@@ -814,10 +833,11 @@ static int test_a_spell_knows_its_place_in_its_realm(void *state) {
 		}
 	}
 
-	/* 32 + 94 + 96 spells across the three.  The Priest's 96 is 32 Life,
-	 * 32 Sorcery and 32 Chaos; its Life was 28 until DEC-50 replaced 4.2's
-	 * five prayer books with Zangband's four. */
-	eq(checked, 222);
+	/* 32 + 96 + 96 spells across the three.  Each of the Mage's and the
+	 * Priest's 96 is three whole realms of 32, which is what DEC-50 arriving
+	 * looks like from here: 4.2's five prayer books became Zangband's four,
+	 * and its five magic books became Zangband's four. */
+	eq(checked, 224);
 
 	/*
 	 * And the ends, by name. A Mage's Chaos runs 0 to 31 exactly as a
@@ -857,9 +877,119 @@ static int test_a_spell_knows_its_place_in_its_realm(void *state) {
 		const struct class_book *book;
 
 		notnull(mage);
-		book = &mage->magic.books[9];
+		book = &mage->magic.books[8];
 		require(streq(book->realm->name, "chaos"));
-		eq(book->spells[0].sidx, 62);
+		eq(book->spells[0].sidx, 64);
+	}
+
+	ok;
+}
+
+/**
+ * Arcane is bought in town, and the other realms are not (CNT-10, DEC-49).
+ *
+ * The spoiler's sentence about Arcane has two halves and the second pays for
+ * the first: it "has no ultra-powerful high level spells" *and* "all Arcane
+ * spellbooks can be bought in town". A realm you can buy outright is worth
+ * choosing even when its ceiling is low, and one you cannot is a different
+ * bargain. Zangband's own numbers agree -- its four Arcane books cost 100 to
+ * 2500 where Sorcery's fourth costs 100,000.
+ *
+ * The flag is not cosmetic, which is why this is asserted rather than trusted:
+ * `store.c` puts every town book in the shop's permanent stock and never a
+ * dungeon one, and `init.c` gives a dungeon book the ignore-element flags and
+ * marks it good. Emitted with the generic two-town rule, half of Arcane was
+ * unbuyable and the realm lost the half of its character that makes it a
+ * choice.
+ */
+static int test_arcane_is_bought_in_town(void *state) {
+	static const struct {
+		const char *realm;
+		int town, dungeon;
+	} shape[] = {
+		{ "arcane", 4, 0 },
+		{ "sorcery", 2, 2 },
+		{ "chaos", 2, 2 },
+		{ "life", 2, 2 },
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(shape); i++) {
+		const struct magic_realm *realm = find_realm(shape[i].realm);
+		const struct player_class *c;
+		int town = 0, dungeon = 0;
+		bool seen[64] = { false };
+
+		notnull(realm);
+
+		/*
+		 * Counted over distinct books rather than over classes, because a
+		 * book shared by two classes is one book in the shop.
+		 */
+		for (c = classes; c; c = c->next) {
+			int b;
+
+			for (b = 0; b < c->magic.num_books; b++) {
+				const struct class_book *book = &c->magic.books[b];
+
+				if (book->realm != realm) continue;
+				require(book->sval > 0 && book->sval < 64);
+				if (seen[book->sval]) continue;
+				seen[book->sval] = true;
+
+				if (book->dungeon) dungeon++; else town++;
+			}
+		}
+
+		eq(town, shape[i].town);
+		eq(dungeon, shape[i].dungeon);
+	}
+
+	/*
+	 * And Arcane's prices and depths, by number.
+	 *
+	 * Pinned because nothing else notices them. The converter check proves
+	 * class.txt matches what the generator produces; it cannot tell that the
+	 * generator was asked for the wrong ladder. Dropping Arcane's own
+	 * `book-tiers` and falling back to the generic one passed every test and
+	 * the converter check both -- and would have put a 2500-gold town book in
+	 * the shop at 50,000 and made it unfindable above depth 75.
+	 *
+	 * The numbers are Zangband's own costs, and its own allocation depths
+	 * rescaled from its 128-level dungeon to Angband's hundred. The first book
+	 * stays at depth 1 because a Mage casts from it at level 1.
+	 */
+	{
+		static const struct {
+			const char *title;
+			int cost, alloc_min;
+		} priced[] = {
+			{ "[Cantrips for Beginners]", 100, 1 },
+			{ "[Minor Arcana]", 250, 12 },
+			{ "[Major Arcana]", 1000, 16 },
+			{ "[Manual of Mastery]", 2500, 27 },
+		};
+		const struct player_class *mage = find_class("Mage");
+		size_t k;
+		int b, found = 0;
+
+		notnull(mage);
+		for (b = 0; b < mage->magic.num_books; b++) {
+			const struct class_book *book = &mage->magic.books[b];
+			const struct object_kind *kind;
+
+			if (!book->realm || !streq(book->realm->name, "arcane")) continue;
+			kind = lookup_kind(book->tval, book->sval);
+			notnull(kind);
+
+			for (k = 0; k < N_ELEMENTS(priced); k++) {
+				if (!streq(kind->name, priced[k].title)) continue;
+				eq(kind->cost, priced[k].cost);
+				eq(kind->alloc_min, priced[k].alloc_min);
+				found++;
+			}
+		}
+		eq(found, 4);
 	}
 
 	ok;
@@ -883,6 +1013,7 @@ struct test tests[] = {
 	  test_changing_class_leaves_no_stale_realm },
 	{ "a-single-entitlement-is-not-a-choice",
 	  test_a_single_entitlement_is_not_a_choice },
+	{ "arcane-is-bought-in-town", test_arcane_is_bought_in_town },
 	{ "a-spell-knows-its-place-in-its-realm",
 	  test_a_spell_knows_its_place_in_its_realm },
 	{ "a-chaos-warrior-casts-chaos", test_a_chaos_warrior_casts_chaos },
