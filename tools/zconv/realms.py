@@ -263,6 +263,93 @@ def check_entry_keys(spellmap: dict) -> list[str]:
     return out
 
 
+def class_blocks(gamedata: str) -> dict[str, str]:
+    """class.txt split into one text block per class, keyed by name."""
+    out = {}
+    for blk in re.split(r"(?m)^(?=name:)", gamedata)[1:]:
+        out[blk.split("\n")[0][len("name:"):].strip()] = blk
+    return out
+
+
+def extract_realm_block(block: str, realm: str) -> list[str]:
+    """The lines class.txt holds for one realm inside one class, or [].
+
+    A realm's books are contiguous and in order -- that is what makes appending
+    a realm safe -- so the block runs from its first `book:` line to the line
+    before the next book of a different realm, or the end of the class.
+    """
+    starts = [m.start() for m in
+              re.finditer(r"(?m)^book:\S+(?: \S+)? book:", block)]
+    for i, at in enumerate(starts):
+        line = block[at:block.index("\n", at)]
+        if not line.endswith(":" + realm):
+            continue
+        # Found the realm's first book; run to the first later book of another.
+        end = len(block)
+        for later in starts[i + 1:]:
+            other = block[later:block.index("\n", later)]
+            if not other.endswith(":" + realm):
+                end = later
+                break
+        return block[at:end].rstrip("\n").split("\n")
+    return []
+
+
+def check_all(src: str, spellmap: dict, gamedata: str) -> list[str]:
+    """Complaints about realmmap.toml, the source table and class.txt agreeing.
+
+    Three ways a realm's content can be wrong, and this is all three:
+
+    * a name in realmmap.toml that the source table does not have, or the
+      reverse. Sorcery's *Teleport* was keyed as "Teleport Self", so the
+      converter found no entry and emitted the spell with its level, mana and
+      failure and **no effect** -- indistinguishable from a deliberate deferral,
+      and it shipped in 3.55.0 doing nothing;
+    * a class.txt block that no longer matches what the converter produces,
+      which is what a hand edit looks like from here;
+    * a realm emitted into a class the entitlement table does not give it, or
+      missing from one it does.
+
+    Returns an empty list when everything agrees. Meant to be run by the build
+    gate rather than by hand, because noticing is what failed last time.
+    """
+    out = []
+    blocks = class_blocks(gamedata)
+
+    for realm in spellmap:
+        out.extend("%s: %s" % (realm, c) for c in
+                   check_coverage(src, realm, spellmap))
+
+        # Which classes class.txt says carry this realm, and which the
+        # entitlement table says can.
+        holds = sorted(cls for cls, blk in blocks.items()
+                       if extract_realm_block(blk, realm))
+        for cls in holds:
+            if cls not in CLASSES:
+                out.append("%s: %s holds it, and Zangband never had that class"
+                           % (realm, cls))
+                continue
+            want = emit_books(src, cls, realm, spellmap)
+            if not want:
+                out.append("%s: %s holds it but the table gives it none"
+                           % (realm, cls))
+                continue
+            have = extract_realm_block(blocks[cls], realm)
+            if have == want:
+                continue
+            out.append("%s: %s does not match the converter (%d lines in the "
+                       "file, %d from the converter)"
+                       % (realm, cls, len(have), len(want)))
+            for n, (a, b) in enumerate(zip(have, want)):
+                if a != b:
+                    out.append("    first difference at line %d" % n)
+                    out.append("      file:      %s" % a)
+                    out.append("      converter: %s" % b)
+                    break
+
+    return out
+
+
 def emit_books(src: str, cls: str, realm: str, spellmap: dict) -> list[str]:
     """One class's realm as the `book:`/`spell:` lines class.txt wants.
 

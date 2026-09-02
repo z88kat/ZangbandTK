@@ -33,6 +33,36 @@ Unreleased
 M9: magic realms — 2 September 2026
 -----------------------------------
 
+- **3.60.2** — **The gate checks the realm content, and a flake is fixed.**
+  ``scripts/check-build`` gained a fifth pass: ``zconv realms --check`` asks
+  whether every spell name in ``realmmap.toml`` matches Zangband's own table, in
+  both directions, and whether every realm block in ``class.txt`` is still what
+  the converter produces for that class. This is the guard against the failure
+  that put Sorcery's *Teleport* into the game doing nothing — a name keyed
+  wrongly yields a spell with a level, a mana cost, a failure rate and no
+  effect, which parses, appears in the book, casts, and does nothing. With three
+  realms and about 128 more spells still to import, noticing is not a plan.
+  Proved by reintroducing the mis-key (caught) and by hand-editing one spell's
+  experience value in ``class.txt`` (caught).
+
+  The pass picks its interpreter rather than assuming one: the converter reads
+  TOML with ``tomllib``, which is Python 3.11 and later, and ``python3`` on the
+  development machine is 3.9 — so taking whatever is on ``PATH`` made the pass
+  die on an import and say nothing about the realms. A missing interpreter is a
+  failure with a recipe, not a skip.
+
+  **And ``game/wild``'s ``a-refused-power-is-free`` was failing about one seed in
+  sixteen**, on master before this work. It hand-set a spell-point pool and
+  asserted an upper bound on what a power charged. Neither holds: the power's
+  effect projects, ``project()`` recalculates when anything is pending, and a
+  mind blast aimed nowhere in particular can come back on the caster — psi
+  damage drains experience, which drops the level and shrinks both pools. On the
+  failing seed the character had 43 spell points before a 12-point power and 2
+  after. The test now takes the pool the game computes, checks it can hold the
+  price, and asserts only the lower bound, which survives because nothing gives
+  mana back. The Draconian test beside it had already reached that conclusion
+  for the same reason.
+
 - **3.60.1** — **The savefile fence is live again, and three latent faults are
   fixed.** DEC-50's Life realm left every one of the thirty-five historical
   savefiles refused, so nothing proved a character could be saved and loaded at

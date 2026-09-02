@@ -2280,6 +2280,32 @@ def cmd_realms(args) -> int:
     src = (ROOT / "archive" / "zangband" / "src" / "tables.c").read_text(
         errors="replace")
 
+    if args.check:
+        gamedata = (GAMEDATA / "class.txt").read_text()
+        complaints = realms.check_all(src, realms.read_realmmap(), gamedata)
+        print("realm content check")
+        print("=" * 72)
+        if complaints:
+            for c in complaints:
+                print("  %s" % c)
+            print()
+            print("  FAILED")
+            return 1
+        spellmap = realms.read_realmmap()
+        blocks = realms.class_blocks(gamedata)
+        for realm in spellmap:
+            entries = spellmap[realm]["spells"]
+            deferred = [n for n, v in entries.items() if "defer" in v]
+            holds = sorted(c for c, b in blocks.items()
+                           if realms.extract_realm_block(b, realm))
+            print("  %-8s %2d spells, %2d deferred, reproduces for %s"
+                  % (realm, len(entries), len(deferred),
+                     ", ".join(holds) if holds else "(not emitted yet)"))
+        print()
+        print("  all realmmap names match the source table, and every emitted")
+        print("  block is what the converter produces from it.")
+        return 0
+
     print("magic_info[] cross-check")
     print("=" * 72)
     pairs = realms.read_pairs(src)
@@ -2388,6 +2414,9 @@ def main() -> int:
                           help="whose figures to use (default: Mage)")
     realms_p.add_argument("--emit", action="store_true",
                           help="print the class.txt block as well as the report")
+    realms_p.add_argument("--check", action="store_true",
+                          help="verify realmmap, the source table and "
+                               "class.txt agree; exit 1 if not")
 
     args = parser.parse_args()
     return {"analyse": cmd_analyse, "monsters": cmd_monsters,

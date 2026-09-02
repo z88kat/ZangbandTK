@@ -3755,13 +3755,18 @@ static int test_a_race_keeps_its_power(void *state) {
  */
 static int test_a_refused_power_is_free(void *state) {
 	struct player_race *r, *mindflayer = NULL;
+	struct player_class *c, *mage = NULL;
 	const struct player_race *keep_race = player->race;
+	const struct player_class *keep_class = player->class;
 	struct player_power *power;
 	int before;
 
 	for (r = races; r; r = r->next)
 		if (streq(r->name, "Mindflayer")) mindflayer = r;
 	notnull(mindflayer);
+	for (c = classes; c; c = c->next)
+		if (streq(c->name, "Mage")) mage = c;
+	notnull(mage);
 	power = mindflayer->powers;
 	notnull(power);
 
@@ -3788,12 +3793,56 @@ static int test_a_refused_power_is_free(void *state) {
 	eq(player->csp, before);
 	eq(player->chp, 100);
 
-	/* Old enough, and paid up.  The price is variable, so bound it. */
-	player->lev = power->level;
+	/*
+	 * Old enough, and paid up.
+	 *
+	 * The pool is the game's, not this test's. A hand-set `msp` does not
+	 * survive the call: the power's effect projects, `project()` runs
+	 * `update_stuff()` whenever anything is pending, and `calc_mana()` then
+	 * recomputes `msp` from the real class and level and clamps `csp` to it.
+	 * Whether anything was pending depends on what the tests ahead of this one
+	 * left behind, which is why asserting against a fabricated 100 failed on
+	 * about one seed in sixteen and passed on the rest.
+	 *
+	 * So: let the game settle the pool, check it can actually hold the price,
+	 * fill it, and then assert only what the pool afterwards can support.
+	 */
+	player->class = mage;
+	player_spells_free(player);
+	player_spells_init(player);
+	player->lev = player->max_lev = 30;
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
+	update_stuff(player);
+
+	/*
+	 * A Mage at 30 has spell points to spare for a twelve-point power. This
+	 * is set rather than hoped for: the suite's player is whatever the test
+	 * before this one left, and on some seeds that is a character whose real
+	 * pool is smaller than the price -- which is the *blood* path, and
+	 * `blood-pays-when-mana-cannot` is the test for that.
+	 */
+	require(player->msp >= power->cost);
+	player->csp = player->msp;
+	player->chp = player->mhp;
+	before = player->csp;
+
 	require(player_use_power(player, power, 0));
-	require(player->csp <= 100 - power->cost / 2);
-	require(player->csp >= 100 - power->cost);
-	eq(player->chp, 100);
+
+	/*
+	 * Mana was spent, and at least the minimum price -- the payment is
+	 * `randint1(cost - cost / 2) + cost / 2` and nothing gives mana back, so
+	 * the lower bound holds whatever else happens.
+	 *
+	 * **No upper bound, and not out of timidity.** A mind blast aimed nowhere
+	 * in particular can come back on the caster; psi damage drains
+	 * experience, which drops the level, and `calc_mana()` then recomputes a
+	 * smaller pool and clamps `csp` into it. Measured on the failing seed: 43
+	 * spell points before the call and 2 after, for a power costing 12. That
+	 * is the game behaving correctly and the pool afterwards simply not being
+	 * evidence about the price. The Draconian test below reached the same
+	 * conclusion for the same reason, and this is that rule applied here.
+	 */
+	require(before - player->csp >= power->cost / 2 + 1);
 
 	/* Nothing left in either pool. */
 	player->csp = 0;
@@ -3804,6 +3853,11 @@ static int test_a_refused_power_is_free(void *state) {
 
 
 	player->race = keep_race;
+	player->class = (struct player_class *) keep_class;
+	player_spells_free(player);
+	player_spells_init(player);
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
+	update_stuff(player);
 	ok;
 }
 

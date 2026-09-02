@@ -17,8 +17,14 @@
 #   4. The manual, which .github/workflows/pages.yaml publishes on every push
 #      to master that touches docs/. A broken directive or a bad cross
 #      reference is a build failure there and was invisible here.
+#   5. The realm content check, which asks whether the spell data in
+#      class.txt is still what the converter produces from realmmap.toml and
+#      Zangband's own table. A spell keyed under a name the source table does
+#      not have is emitted with its level, mana and failure and no effect at
+#      all -- which looks exactly like a deliberate deferral. One shipped that
+#      way (Sorcery's *Teleport*, 3.55.0) and was found by accident.
 #
-# A defect can pass any three of the four.
+# A defect can pass any four of the five.
 #
 # What made this necessary: `make -f Makefile.osx` and `cmake -S . -B build`
 # both default to permissive, and CI passes -Werror to both. A pointer of the
@@ -34,7 +40,7 @@
 # heuristic.
 #
 # Usage:
-#   scripts/check-build            every build, strictly, and the manual
+#   scripts/check-build            every build, the manual, and the realm data
 #   scripts/check-build --tests    ...and run the unit tests after
 
 set -e
@@ -133,6 +139,45 @@ fi
 
 echo "check-build: building the manual ($SPHINX -W)"
 run "$PWD/$SPHINX" -W -E -b html docs docs/_build/html
+
+# --- and the realm content ----------------------------------------------
+#
+# Three things have to agree: every spell name in realmmap.toml against
+# Zangband's own table, in both directions; and every realm block emitted into
+# class.txt against what the converter produces for that class today.
+#
+# This is here rather than in a test because the failure it catches is silent
+# in the game. A mis-keyed name yields a spell with a level, a mana cost, a
+# failure rate and no effect -- it parses, it appears in the book, it casts,
+# and it does nothing. `player/realm` catches the ones that carry no deferral
+# note; this catches the mis-key itself, and a hand edit that drifted from the
+# generator, before either can ship.
+#
+# The interpreter is chosen rather than assumed. The converter reads TOML with
+# `tomllib`, which is 3.11 and later, and `python3` on this machine is 3.9 --
+# so taking whatever is on PATH makes this pass die on an import and say
+# nothing about the realms. Missing is a failure and not a skip, for the same
+# reason the Sphinx pass says so: a pass that quietly does nothing is worse
+# than no pass, because it reports success.
+PYTHON=""
+for candidate in ${ZCONV_PYTHON:-} python3.14 python3.13 python3.12 python3.11 python3; do
+	[ -n "$candidate" ] || continue
+	if command -v "$candidate" >/dev/null 2>&1 &&
+			"$candidate" -c 'import tomllib' >/dev/null 2>&1; then
+		PYTHON="$candidate"
+		break
+	fi
+done
+
+if [ -z "$PYTHON" ]; then
+	echo "check-build: no Python with tomllib (3.11 or later) found" >&2
+	echo "check-build:   tried python3.14 python3.13 python3.12 python3.11 python3" >&2
+	echo "check-build:   set ZCONV_PYTHON to one, or brew install python@3.13" >&2
+	exit 5
+fi
+
+echo "check-build: checking the realm content ($PYTHON zconv realms --check)"
+run "$PYTHON" tools/zconv/zconv.py realms --check
 
 if [ "$1" = "--tests" ]; then
 	echo "check-build: running the unit tests"
