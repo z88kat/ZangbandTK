@@ -172,6 +172,12 @@ so it is quicker to run it yourself:
 scripts/check-build-lists
 ```
 
+`scripts/check-build` runs it too, as of 3.79.2. It used to be a separate step
+you had to remember and three pushes in a row went red on it, which is the
+fourth time a pass has been added to the gate because CI caught something the
+gate did not ask about. The answer has been the same every time: build the way
+CI builds.
+
 ### Flakes
 
 A green run says the tests passed once, not that they are deterministic. Several

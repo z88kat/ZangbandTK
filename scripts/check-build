@@ -2,8 +2,8 @@
 #
 # Build the way CI builds, and let the exit code say whether it worked.
 #
-# Three builds and the manual, because CI runs all four and none of them
-# subsumes another.
+# Three builds, the manual and three cheap checks, because CI runs all of them
+# and none subsumes another.
 #
 #   1. The macOS job, which builds the game through src/Makefile.osx with
 #      clang. Asks for -Wshadow, -Wwrite-strings, -Wmissing-prototypes,
@@ -17,6 +17,8 @@
 #   4. The manual, which .github/workflows/pages.yaml publishes on every push
 #      to master that touches docs/. A broken directive or a bad cross
 #      reference is a build failure there and was invisible here.
+#   5b. The build input lists, which linux.yaml runs as its own step and which
+#      three consecutive pushes went red on.
 #   5. The realm content check, which asks whether the spell data in
 #      class.txt is still what the converter produces from realmmap.toml and
 #      Zangband's own table. A spell keyed under a name the source table does
@@ -192,6 +194,18 @@ fi
 
 echo "check-build: checking the realm content ($PYTHON zconv realms --check)"
 run "$PYTHON" tools/zconv/zconv.py realms --check
+
+# The build-input lists, which linux.yaml runs as its own step.
+#
+# This was a separate script you had to remember, and three pushes in a row
+# went red on it: a new lib/gamedata file was not in the install list, so a
+# packaged build would have shipped without it.  Nothing about that needs a
+# compiler, it takes a fraction of a second, and CI treats it as a gate -- so
+# it belongs in the gate.  The fourth time a local pass has been added because
+# CI caught something it did not, and the answer has been the same every time:
+# build the way CI builds.
+echo "check-build: checking the build input lists (scripts/check-build-lists)"
+run scripts/check-build-lists
 
 if [ "$1" = "--tests" ]; then
 	echo "check-build: running the unit tests"

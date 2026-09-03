@@ -33,6 +33,15 @@ Unreleased
 Pets follow — 3 September 2026
 ------------------------------
 
+- **3.79.2** — **The gate checks the build input lists.** Three consecutive
+  pushes went red on Linux CI for the same reason — a new ``lib/gamedata`` file
+  missing from the install list, which would have shipped a packaged build
+  without it — because ``scripts/check-build-lists`` was a separate script you
+  had to remember and ``scripts/check-build`` did not run it. It does now. That
+  is the **fourth** pass added to the local gate because CI caught something
+  the gate did not ask about, after ``-Werror``, the missing test-frontend
+  option and the GCC pass; the answer has been the same every time.
+
 - **3.79.1** — **A charm test stops assuming a charm is certain.** The saving
   throw is ``level > randint1(power * 3)``, so a level 30 creature against a
   power of 200 rolls against ``randint1(600)`` and wins about one time in
