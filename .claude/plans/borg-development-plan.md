@@ -342,6 +342,50 @@ tried.
 the five to be underestimated: the ratings pass is a judgement call about 200
 spells, not a mechanical conversion.*
 
+#### The rating scale, decided before the pass
+
+Written first, on the project owner's instruction and because the plan's own
+Open section asked for it: *"Before rating 200 spells, decide what the numbers
+mean, or the pass will not be consistent with itself."* Upstream's tables use
+5-95 with no documented meaning beyond "usefulness", and 163 entries rated
+against an undefined scale is 163 opportunities to disagree with yourself.
+
+**A rating answers one question: *how much does the borg want to spend a turn
+casting this, compared with hitting something?*** Not how strong the spell is,
+not how much a human would like it, and not how flavourful it is. The borg's
+alternative to any spell is almost always another melee round, and the rating
+is what makes it choose.
+
+| Band | Meaning | Examples of the kind |
+|---:|---|---|
+| **90-95** | **Saves the character's life, or the run.** Escape, healing at low hit points, curing what will otherwise kill it. The borg should reach for these ahead of anything. | *Phase Door*, *Cure Critical Wounds*, teleport |
+| **75-89** | **Its best answer to a fight it is in.** The attack spell it should lead with, or the one that ends a fight it would otherwise lose. | *Magic Missile* early, *Orb of Draining*, *Stinking Cloud* |
+| **60-74** | **Information it will act on.** Detection and mapping, which change where it goes next. Rated below combat because knowing is worth less than surviving. | *Find Traps, Doors & Stairs*, *Detect Monsters* |
+| **51-59** | **Useful and situational.** Worth casting when there is nothing better to do, and the borg only considers these when it is bored -- a genuine threshold in the code, not a figure of speech. | light, minor utility, resistances |
+| **50** | **Unrated.** The fallback, and it means *nobody has judged this spell*. Never assign 50 by hand: it is the value that says the pass has not reached here yet. | -- |
+| **1-49** | **Judged and not wanted.** The borg can cast it and should not. Slow, expensive or redundant against what it already has. | duplicated detection, flavour spells |
+| **0** | **Never.** Actively harmful for an automaton: anything that needs a judgement it cannot make, or that could kill it. | self-damaging or irreversible effects |
+
+Three rules that keep the pass consistent with itself:
+
+1. **Rate against the alternative, not in isolation.** A spell is worth 85 if
+   the borg should cast it instead of attacking, and 40 if it should attack
+   instead. Asking "is this a good spell?" produces a different and useless
+   answer.
+2. **Rate the spell, not the level it is found at.** The code already knows the
+   spell's level and mana. A weak first-book attack spell is still the best
+   answer a level-3 caster has, and the borg stops choosing it when something
+   better becomes legal.
+3. **50 is reserved.** It is the fallback that `borg_init_spell()` assigns to
+   anything the pass has not reached. Rating a spell 50 by hand makes "not yet
+   judged" and "judged as middling" indistinguishable, which is exactly the
+   confusion the pass exists to remove. Use 51 or 49.
+
+The threshold at 50 is real and worth knowing before rating: `borg_play_magic`
+skips any spell rated 50 or less unless the borg is *bored*, so the difference
+between 49 and 51 is the difference between "only when there is nothing to do"
+and "considered in a fight".
+
 - **BRG-07 — Spell ratings live in the game data, keyed by name and realm.**
   There are 200 distinct spell names across the seven realms, and 1,472
   `spell:` lines in [class.txt](../../lib/gamedata/class.txt) because realms
@@ -366,6 +410,57 @@ spells, not a mechanical conversion.*
 **Exit:** the borg starts, and plays for N turns without aborting, as all
 fourteen classes and all twenty races. This is checkable exhaustively and
 should be a test, not a claim.
+
+**BRG-08 and BRG-09 landed 3 September 2026 in 3.82.0, ahead of BRG-07**, and
+the reordering is the plan's own principle 4: nothing crashes first, plays well
+second. Measured with `scripts/borg-smoke` rather than taken from this
+document, and the measurement corrected it. §2 said thirteen of fourteen
+classes fail, the vanilla eight loudly and the added five silently. What
+actually happens:
+
+| | before | after |
+|---|---:|---:|
+| play for 60 turns | **2** | **12** |
+| crash the process | 10 | 0 |
+| fail without crashing | 2 | 2 |
+
+So it was **twelve** of fourteen failing, not thirteen, and **ten of those
+killed the process** rather than reporting a startup failure -- reading
+`borg_spell_ratings[30..223]` off the end of a thirty-entry array is fatal, not
+merely wrong. The two that worked were the Warrior, which casts nothing, and
+the Mindcrafter, whose psionics are a power list with no table to mismatch
+(PLR-06).
+
+What the fix was:
+
+- **Ratings are looked up by name, within the table's actual length.** The
+  positional match was the crash. `N_ELEMENTS` now travels with the pointer.
+- **An unrated spell is merely unloved.** Described from the game's own data,
+  rated 50, and given `BORG_SPELL_UNKNOWN` -- a new enum member, appended,
+  because there was none and the first value is `MAGIC_MISSILE` at zero, so an
+  unrated spell was previously *believed to be Magic Missile* by a `switch` in
+  `borg-magic-play.c`.
+- **The `default:` arm falls through instead of returning.** It returned before
+  `borg_magics` was allocated and raised no failure flag, so the five added
+  classes dereferenced NULL hundreds of turns later.
+- **A spell with no effect chain no longer dereferences NULL.**
+  `player/realm`'s `a-spell-without-an-effect-says-so` proves this game's data
+  contains them; upstream dereferenced `cspell->effect` unconditionally.
+- **A class with no spells allocates nothing**, which the Warrior and the
+  Mindcrafter both need.
+
+**Still open, and it is the last blocker for fourteen of fourteen: the
+Necromancer and the Blackguard wedge in the study loop.** Both repeat
+*"# Studying spell/prayer Detect Unlife."* forever without the game clock
+advancing, so B0's step budget catches them and they fail with `reason=wedged`
+rather than hanging. Both are the Death-realm pair and both choose their spells
+rather than learning at random -- but so do the Mage, Rogue, Ranger and Druid,
+which all play, so the choose/random split is not the cause. The study sends
+`G`, a book letter and a spell letter; the most likely candidate is
+`as->book_offset` from `borg_get_book_offset(cspell->sidx)` addressing the
+wrong slot for a realm whose books M9 rebuilt, which is BRG-11's territory.
+Not chased further, because BRG-08's value does not depend on it and a wedge
+that reports itself is not an emergency.
 
 ---
 

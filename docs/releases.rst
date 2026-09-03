@@ -33,6 +33,27 @@ Unreleased
 Pets follow — 3 September 2026
 ------------------------------
 
+- **3.82.0** — **Twelve of fourteen classes can be played by the borg, up from
+  two.** B1's robustness half, taken before its ratings half because nothing
+  crashing matters more than playing well. With the harness from 3.81.0 the
+  failure could be measured rather than assumed, and the measurement corrected
+  the plan: twelve classes failed rather than thirteen, and ten of them
+  **killed the process** rather than reporting a startup failure.
+
+  The borg matched each class's spell list against a hand-written table
+  *positionally, by name*, and M9 replaced every spell list — so a Mage's first
+  spell is now ``Zap`` where the table expects ``Magic Missile``, and the loop
+  then read 194 entries past the end of a 30-entry array. Ratings are now
+  looked up by name within the table's real length, an unrated spell is merely
+  unloved rather than fatal, and the five classes this variant added no longer
+  fall through to an unallocated array. A spell with no effect chain no longer
+  dereferences NULL either.
+
+  The two remaining classes, the Necromancer and the Blackguard, loop trying to
+  study their first Death spell. They now fail with ``reason=wedged`` and the
+  loop visible in the notes, rather than hanging — which is the step budget from
+  3.81.0 earning its place a day after it was added.
+
 - **3.81.0** — **The borg plays the game, and says so when it breaks.** B0 of
   the borg plan. Nothing in this repository played the game: 112 unit suites
   test rules in isolation and none of them walks a character out of a town,

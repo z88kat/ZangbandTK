@@ -39,6 +39,41 @@ borg_magic *borg_magics = NULL;
 
 
 static borg_spell_rating *borg_spell_ratings;
+
+/*
+ * How many entries `borg_spell_ratings` actually has (ZangbandTK, BRG-08).
+ *
+ * The tables have no terminator and no length, and `borg_init_spell()` indexed
+ * them by the spell's *position in the class's spell list* -- so a Mage with
+ * 224 spells read `borg_spell_ratings[30..223]` off the end of a 30-entry
+ * array. That is the crash, and it is why ten of fourteen classes killed the
+ * process rather than reporting anything.
+ */
+static int borg_spell_rating_count;
+
+/*
+ * The rating for a spell of this name, or NULL if it is not in the table.
+ *
+ * By name rather than by position, which is the whole of BRG-07's argument in
+ * miniature: positions moved the moment M9 replaced the spell lists, and names
+ * did not. A linear scan over at most thirty entries, run once per spell at
+ * borg startup.
+ */
+static const borg_spell_rating *borg_find_rating(const char *name)
+{
+    int i;
+
+    if (!name || !borg_spell_ratings) return NULL;
+
+    for (i = 0; i < borg_spell_rating_count; i++) {
+        if (borg_spell_ratings[i].name
+            && streq(borg_spell_ratings[i].name, name)) {
+            return &borg_spell_ratings[i];
+        }
+    }
+
+    return NULL;
+}
 // !FIX !TODO for now put this in the code.  It should probably end up in borg.txt or a new borg.cfg
 // I also gave low ratings to spells that are new since the borg doesn't know when to use them yet.
 static borg_spell_rating borg_spell_ratings_MAGE[] =
@@ -740,28 +775,74 @@ static int borg_get_book_offset(int index)
 /*
  * initialize the spell data
  */
+/*
+ * Describe one of the class's spells to the borg (ZangbandTK, BRG-08, BRG-09).
+ *
+ * Upstream matched the class's spell list against a hand-written C table
+ * *positionally, comparing names*, and treated a mismatch as a startup
+ * failure. M9 replaced every spell list, so all eight tables mismatch on
+ * their first spell -- a Mage's is now `Zap` where the table expects `Magic
+ * Missile` -- and the loop then ran on past the end of the table. Measured
+ * with `scripts/borg-smoke`: twelve of fourteen classes fail and ten of them
+ * kill the process.
+ *
+ * So an unrated spell is now **merely unloved** rather than fatal. It is
+ * described from the game's own data, given a middling rating and
+ * `BORG_SPELL_UNKNOWN`, and the borg simply has no special tactic for it.
+ * That is the difference between a borg that cannot start as a Priest and one
+ * that plays a Priest without knowing that *Orb of Draining* is its best
+ * spell.
+ *
+ * The fallback rating is flat on purpose, and BRG-08 asks for it to be derived
+ * from the spell's effect. It is not derived here because that derivation is a
+ * judgement about what the borg should prefer, and BRG-07's rubric -- which
+ * says what a rating of 50 means as against 95 -- is not written yet. A flat
+ * middling value is honest about knowing nothing; a made-up derivation would
+ * look like knowledge.
+ */
 static void borg_init_spell(borg_magic *spells, int spell_num)
 {
     borg_magic               *spell  = &spells[spell_num];
     const struct class_spell *cspell = spell_by_index(player, spell_num);
-    if (strcmp(cspell->name, borg_spell_ratings[spell_num].name)) {
-        borg_note(format("**STARTUP FAILURE** spell definition mismatch. "
-                         "<%s> not the same as <%s>",
-            cspell->name, borg_spell_ratings[spell_num].name));
-        borg_init_failure = true;
+    const borg_spell_rating  *rating;
+
+    /*
+     * A spell the game will not describe. Not expected, and not a reason to
+     * refuse to play: leave the slot as `mem_zalloc` left it, but with an
+     * enum that does not read as Magic Missile.
+     */
+    if (!cspell) {
+        spell->name       = "(unknown)";
+        spell->spell_enum = BORG_SPELL_UNKNOWN;
+        spell->status     = BORG_MAGIC_ICKY;
         return;
     }
-    spell->rating       = borg_spell_ratings[spell_num].rating;
-    spell->name         = borg_spell_ratings[spell_num].name;
-    spell->spell_enum   = borg_spell_ratings[spell_num].spell_enum;
-    spell->level        = cspell->slevel;
-    spell->book_offset  = borg_get_book_offset(cspell->sidx);
-    spell->effect_index = cspell->effect->index;
-    spell->power        = cspell->smana;
-    spell->sfail        = cspell->sfail;
-    spell->status       = spell_okay_to_cast(player, spell_num);
-    spell->times        = 0;
-    spell->book         = cspell->bidx;
+
+    rating = borg_find_rating(cspell->name);
+
+    spell->rating     = rating ? rating->rating : 50;
+    spell->spell_enum = rating ? rating->spell_enum : BORG_SPELL_UNKNOWN;
+
+    /*
+     * The name comes from the game rather than from the table, so a note
+     * about a spell says what the character is actually holding.
+     */
+    spell->name        = cspell->name;
+    spell->level       = cspell->slevel;
+    spell->book_offset = borg_get_book_offset(cspell->sidx);
+
+    /*
+     * `player/realm` has a test called `a-spell-without-an-effect-says-so`,
+     * so a spell with no effect chain is a thing this game's data contains.
+     * Upstream dereferenced `cspell->effect` unconditionally.
+     */
+    spell->effect_index = cspell->effect ? cspell->effect->index : 0;
+
+    spell->power  = cspell->smana;
+    spell->sfail  = cspell->sfail;
+    spell->status = spell_okay_to_cast(player, spell_num);
+    spell->times  = 0;
+    spell->book   = cspell->bidx;
 }
 
 /*
@@ -771,36 +852,76 @@ void borg_prepare_book_info(void)
 {
     switch (player->class->cidx) {
     case CLASS_MAGE:
-        borg_spell_ratings = borg_spell_ratings_MAGE;
+        borg_spell_ratings      = borg_spell_ratings_MAGE;
+        borg_spell_rating_count = N_ELEMENTS(borg_spell_ratings_MAGE);
         break;
     case CLASS_DRUID:
-        borg_spell_ratings = borg_spell_ratings_DRUID;
+        borg_spell_ratings      = borg_spell_ratings_DRUID;
+        borg_spell_rating_count = N_ELEMENTS(borg_spell_ratings_DRUID);
         break;
     case CLASS_PRIEST:
-        borg_spell_ratings = borg_spell_ratings_PRIEST;
+        borg_spell_ratings      = borg_spell_ratings_PRIEST;
+        borg_spell_rating_count = N_ELEMENTS(borg_spell_ratings_PRIEST);
         break;
     case CLASS_NECROMANCER:
-        borg_spell_ratings = borg_spell_ratings_NECROMANCER;
+        borg_spell_ratings      = borg_spell_ratings_NECROMANCER;
+        borg_spell_rating_count = N_ELEMENTS(borg_spell_ratings_NECROMANCER);
         break;
     case CLASS_PALADIN:
-        borg_spell_ratings = borg_spell_ratings_PALADIN;
+        borg_spell_ratings      = borg_spell_ratings_PALADIN;
+        borg_spell_rating_count = N_ELEMENTS(borg_spell_ratings_PALADIN);
         break;
     case CLASS_ROGUE:
-        borg_spell_ratings = borg_spell_ratings_ROGUE;
+        borg_spell_ratings      = borg_spell_ratings_ROGUE;
+        borg_spell_rating_count = N_ELEMENTS(borg_spell_ratings_ROGUE);
         break;
     case CLASS_RANGER:
-        borg_spell_ratings = borg_spell_ratings_RANGER;
+        borg_spell_ratings      = borg_spell_ratings_RANGER;
+        borg_spell_rating_count = N_ELEMENTS(borg_spell_ratings_RANGER);
         break;
     case CLASS_BLACKGUARD:
-        borg_spell_ratings = borg_spell_ratings_BLACKGUARD;
+        borg_spell_ratings      = borg_spell_ratings_BLACKGUARD;
+        borg_spell_rating_count = N_ELEMENTS(borg_spell_ratings_BLACKGUARD);
         break;
     default:
-        borg_spell_ratings = NULL;
-        return;
+        /*
+         * A class the borg has no ratings for (ZangbandTK, BRG-09).
+         *
+         * Upstream returned here, *before* `borg_magics` was allocated, and
+         * without raising `borg_init_failure`. So the five classes this game
+         * added -- Monk, Mindcrafter, Chaos-Warrior, Warrior-Mage, High-Mage
+         * -- left `borg_magics` NULL and the borg dereferenced it the first
+         * time it thought about casting. No warning, no failure flag, a
+         * segfault several hundred turns later.
+         *
+         * Falling through is the fix. With no table, every spell is unrated
+         * and gets the treatment in `borg_init_spell()`: described from the
+         * game's data, middling, and without a tactic. The borg plays such a
+         * class as a fighter who occasionally casts, which is worse than
+         * playing it well and enormously better than crashing.
+         *
+         * This is the defect M7 would have caught had the borg been running,
+         * which is the argument for keeping it running.
+         */
+        borg_spell_ratings      = NULL;
+        borg_spell_rating_count = 0;
+        borg_note(format("# No borg spell ratings for %s; every spell is "
+                         "unrated", player->class->name));
+        break;
     }
 
     if (borg_magics)
         mem_free(borg_magics);
+
+    borg_magics = NULL;
+
+    /*
+     * A class with no spells at all allocates nothing, and must not: the
+     * Warrior has no books, and the Mindcrafter's psionics are a power list
+     * rather than a realm (PLR-06), so both arrive here with
+     * `total_spells == 0`. `mem_zalloc(0)` is not somewhere to index.
+     */
+    if (player->class->magic.total_spells <= 0) return;
 
     borg_magics
         = mem_zalloc(player->class->magic.total_spells * sizeof(borg_magic));

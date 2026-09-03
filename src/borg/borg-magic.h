@@ -178,7 +178,19 @@ enum borg_spells {
     BLOODLUST,
     UNHOLY_REPRIEVE,
     FORCEFUL_BLOW,
-    QUAKE
+    QUAKE,
+
+    /*
+     * ZangbandTK (BRG-08): a spell the borg has no name for.
+     *
+     * Appended, so every existing value keeps its number. There was no such
+     * value, and the first member is `MAGIC_MISSILE` at zero -- so an
+     * unrated spell left `spell_enum` at 0 and the borg believed it was
+     * holding Magic Missile. `borg-magic-play.c` reads `spell_enum` in a
+     * switch and compares it against `MAGIC_MISSILE` by name, so that is not
+     * a cosmetic confusion.
+     */
+    BORG_SPELL_UNKNOWN
 };
 
 /*
