@@ -50,6 +50,11 @@ SUMMARY = re.compile(r"^(?P<name>[^:\n]+) finished: (?P<pass>\d+)/(?P<total>\d+)
 # the latter wrapped in the red colour code.
 VERBOSE_TEST = re.compile(r"^ +(?P<test>\S+) +\x1b\[01;3(?P<colour>[12])m")
 
+# A seeded suite says so on its first line, and that is the whole diagnosis of
+# a rare flake: without it, a one-in-three-hundred failure is unreproducible
+# and all the harness can say is "intermittent".
+SEED_LINE = re.compile(r"ZTK_TEST_SEED=(\d+)")
+
 
 def failing_tests(path, cwd):
     """The names of the tests that failed, by asking the suite again with -v.
@@ -173,13 +178,21 @@ def main():
                 failures.append((n + 1, path, "no summary line; exit %d" % run.returncode))
                 results[path].append((0, 0))
                 continue
+            seed = None
+            for line in lines:
+                m = SEED_LINE.search(line)
+                if m:
+                    seed = m.group(1)
             got, want = int(summary["pass"]), int(summary["total"])
             results[summary["name"]].append((got, want))
             total += want
             if got < want:
                 shortfall += want - got
-                failures.append((n + 1, summary["name"], "%d/%d; failed: %s"
-                                 % (got, want, failing_tests(path, cwd))))
+                failures.append((n + 1, summary["name"], "%d/%d%s; failed: %s"
+                                 % (got, want,
+                                    (" ZTK_TEST_SEED=%s" % seed) if seed
+                                    else "",
+                                    failing_tests(path, cwd))))
         print("  pass %d/%d: %d tests, %d not passed"
               % (n + 1, args.passes, total, shortfall))
 

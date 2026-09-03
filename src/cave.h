@@ -469,6 +469,8 @@ void cave_free(struct chunk *c);
 void list_object(struct chunk *c, struct object *obj);
 void delist_object(struct chunk *c, struct object *obj);
 void object_lists_check_integrity(struct chunk *c, struct chunk *c_k);
+int cave_check_integrity(struct chunk *c, struct chunk *c_k, char *why,
+						 size_t len);
 void scatter(struct chunk *c, struct loc *place, struct loc grid, int d,
 			 bool need_los);
 int scatter_ext(struct chunk *c, struct loc *places, int n, struct loc grid,

@@ -38,6 +38,7 @@
 #include "mon-util.h"
 #include "monster.h"
 #include "player-birth.h"
+#include "project.h"
 
 static void println(const char *str) {
 	printf("%s\n", str);
@@ -104,12 +105,18 @@ static struct monster *place_at(struct loc grid, const char *name,
 }
 
 /**
- * A monster of that race on that side, in a grid adjacent to `near`.
+ * A monster of that race on that side, somewhere `near` can fight it.
  *
- * Adjacency rather than "within three": `monster_nice_target()` requires the
- * target to be projectable, and a randomly generated level will sometimes put
- * a grid three away round a corner. That is correct behaviour and a coin toss
- * for a test.
+ * Adjacent for preference, because that is unambiguous. Failing that, a grid
+ * within three that `near` has a clear line to -- which is what
+ * `monster_nice_target()` actually requires, and the reason "within three"
+ * alone is not enough: a randomly generated level will put a grid three away
+ * round a corner, and the pet correctly refuses to target through a wall.
+ *
+ * The fallback is not decoration. Placing two enemies beside one pet needs two
+ * free neighbours, and a pet in a corridor has one -- which failed about one
+ * run in two hundred until `scripts/check-flakes` learned to report the seed
+ * and named it twice in the same place.
  */
 static struct monster *place_beside(struct monster *near, const char *name,
 									enum monster_allegiance side) {
@@ -120,6 +127,16 @@ static struct monster *place_beside(struct monster *near, const char *name,
 
 		if (!square_in_bounds_fully(cave, grid)) continue;
 		if (!square_isempty(cave, grid)) continue;
+
+		return place_at(grid, name, side);
+	}
+
+	for (i = 0; i < 60; i++) {
+		struct loc grid;
+
+		if (scatter_ext(cave, &grid, 1, near->grid, 3, true,
+						square_isempty) == 0) continue;
+		if (!projectable(cave, near->grid, grid, PROJECT_NONE)) continue;
 
 		return place_at(grid, name, side);
 	}
@@ -302,31 +319,39 @@ static int test_an_ally_stays_awake(void *state) {
 	 * the same distance from the player and differ only in their side.
 	 */
 	{
-		struct loc grid;
-		int i;
+		struct loc grid = loc(0, 0), next = loc(0, 0);
+		int i, j;
 		bool found = false;
 
-		for (i = 0; i < 2000 && !found; i++) {
+		/*
+		 * A *pair* of grids, not one and then a neighbour. Searching for a
+		 * far grid first and hoping it has a free neighbour failed about one
+		 * run in fifty: a dead-end corridor square satisfies every test and
+		 * has no empty neighbour at all, and the test then died on setup
+		 * rather than on anything it was measuring. Found by check-flakes at
+		 * twenty passes, having survived six and forty.
+		 */
+		for (i = 0; i < 4000 && !found; i++) {
 			grid = loc(randint0(cave->width), randint0(cave->height));
 			if (!square_in_bounds_fully(cave, grid)) continue;
 			if (!square_isempty(cave, grid)) continue;
 			if (square_isview(cave, grid)) continue;
 			if (distance(grid, player->grid) <= z_info->max_sight) continue;
-			found = true;
+
+			for (j = 0; j < 8 && !found; j++) {
+				next = loc_sum(grid, ddgrid_ddd[j]);
+
+				if (!square_in_bounds_fully(cave, next)) continue;
+				if (!square_isempty(cave, next)) continue;
+				if (square_isview(cave, next)) continue;
+				found = true;
+			}
 		}
 		require(found);
 
 		pet = place_at(grid, "soldier", MON_ALLEGIANCE_PET);
 		require(pet);
-		plain = NULL;
-		for (i = 0; i < 8 && !plain; i++) {
-			struct loc next = loc_sum(grid, ddgrid_ddd[i]);
-
-			if (!square_in_bounds_fully(cave, next)) continue;
-			if (!square_isempty(cave, next)) continue;
-			if (square_isview(cave, next)) continue;
-			plain = place_at(next, "kobold", MON_ALLEGIANCE_HOSTILE);
-		}
+		plain = place_at(next, "kobold", MON_ALLEGIANCE_HOSTILE);
 		require(plain);
 	}
 
@@ -376,8 +401,21 @@ static int test_enemies_that_meet_fight(void *state) {
 	clear_the_level();
 	pet = place_side("soldier", MON_ALLEGIANCE_PET, 3);
 	require(pet);
-	foe = place_beside(pet, "large white snake", MON_ALLEGIANCE_HOSTILE);
+	/*
+	 * A white jelly, which never moves. The snake this used to use carries
+	 * RAND_50 and wanders: once it turns a corner the pet cannot see it,
+	 * `monster_nice_target()` drops it for want of a clear line, and the pet
+	 * mills about for the rest of the loop. That failed about one run in
+	 * three hundred, which is exactly the kind of thing that is unfindable
+	 * without the seed -- `scripts/check-flakes` reports it now, and this was
+	 * the first flake it named rather than shrugging at.
+	 *
+	 * The jelly staying put is the point: what is being tested is that two
+	 * adjacent enemies fight, not that a pet can chase something.
+	 */
+	foe = place_beside(pet, "white jelly", MON_ALLEGIANCE_HOSTILE);
 	require(foe);
+	require(rf_has(foe->race->flags, RF_NEVER_MOVE));
 
 	before = foe->hp;
 

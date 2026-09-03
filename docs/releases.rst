@@ -30,6 +30,37 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Pets follow — 3 September 2026
+------------------------------
+
+- **3.74.0** — **The chunk's bookkeeping is checked** (M10 phase A of
+  PLR-26's reversal). ``cave_check_integrity()`` and a ``game/integrity``
+  suite: object indices agree with the slots the chunk filed them under, held
+  objects name the monster holding them and are listed, monsters agree with the
+  map about who is standing where, mimicked objects point back, and group
+  indices name groups that exist.
+
+  4.2 ships ``object_lists_check_integrity()`` and nothing calls it in tests —
+  it is built on ``assert()``, which aborts rather than reporting and says
+  nothing about monsters. This one reports, covers both lists, and is safe to
+  call from a test.
+
+  ``scripts/check-flakes`` also reports the **seed** of a failing pass now. That
+  is the whole diagnosis of a rare flake: without it a one-in-three-hundred
+  failure is unreproducible and the harness can only say "intermittent". It
+  earned that on the run it was added for, naming three failures in
+  ``monster/ally-ai`` that six, forty and two hundred passes had not found —
+  all of them the same mistake in the test rather than the code, assuming a
+  randomly generated level would leave a free grid where one was wanted.
+
+  It is here ahead of pets following the player downstairs, which moves live
+  monsters and their held objects between chunks. That failure mode does not
+  crash where the mistake is: it surfaces as a corrupt savefile or a duplicated
+  artifact several levels later. An instrument that fails *at* the corruption is
+  worth more than care taken while writing the thing that might cause it — and
+  these invariants have never been checked at all, so it earns its place either
+  way.
+
 Pets — 3 September 2026
 -----------------------
 

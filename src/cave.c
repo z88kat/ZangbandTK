@@ -730,3 +730,144 @@ struct loc cave_find_decoy(struct chunk *c)
 {
 	return c->decoy;
 }
+
+/**
+ * ------------------------------------------------------------------------
+ * Integrity checking
+ * ------------------------------------------------------------------------ */
+/**
+ * Look for anything inconsistent about a chunk's monster and object lists.
+ *
+ * ZangbandTK.  Returns the number of problems found, and writes the first one
+ * into `why` if there is room.
+ *
+ * 4.2 has `object_lists_check_integrity()` already, and it is built on
+ * `assert()`: right for a debug build and useless as an instrument, because it
+ * aborts rather than reporting and it says nothing about monsters. This one
+ * reports, covers both lists, and is safe to call from a test.
+ *
+ * It exists because PLR-26's pet-carrying moves live monsters and their held
+ * objects between chunks, and the failure mode of getting that wrong is not a
+ * crash at the point of the mistake -- it is an object listed in two chunks,
+ * or a monster index pointing at a slot that has been reused, which surfaces
+ * as a corrupt savefile or a duplicated artifact some levels later. An
+ * instrument that fails *at* the corruption is worth more than any amount of
+ * care taken while writing the thing that might cause it.
+ *
+ * Useful on its own terms too. Nothing checked these invariants before, so a
+ * defect anywhere in level generation, monster placement or object handling
+ * has been able to leave the lists inconsistent and go unnoticed.
+ */
+int cave_check_integrity(struct chunk *c, struct chunk *c_k, char *why,
+						 size_t len)
+{
+	int problems = 0, i;
+
+	if (why && len) why[0] = '\0';
+
+	/* Report only the first problem, but count them all */
+#define COMPLAIN(...) \
+	do { \
+		if (why && len && !why[0]) strnfmt(why, len, __VA_ARGS__); \
+		problems++; \
+	} while (0)
+
+	if (!c) {
+		COMPLAIN("no chunk to check");
+		return problems;
+	}
+
+	/* --- Objects --- */
+	if (c_k && c->obj_max != c_k->obj_max) {
+		COMPLAIN("object lists differ in size: %d against %d",
+				 (int) c->obj_max, (int) c_k->obj_max);
+	}
+
+	for (i = 1; i < c->obj_max; i++) {
+		struct object *obj = c->objects[i];
+
+		if (!obj) continue;
+
+		if (obj->oidx != i) {
+			COMPLAIN("object %d thinks it is object %d", i, (int) obj->oidx);
+		}
+
+		/*
+		 * An object on the floor must be in that floor pile; one held by a
+		 * monster must be in that monster's pile and must name it. A carried
+		 * object with a stale `held_m_idx` is the specific way pet-carrying
+		 * can go wrong.
+		 */
+		if (!loc_is_zero(obj->grid)) {
+			if (!pile_contains(square_object(c, obj->grid), obj)) {
+				COMPLAIN("object %d is not in the pile at its own grid", i);
+			}
+		} else if (obj->held_m_idx) {
+			struct monster *mon = cave_monster(c, obj->held_m_idx);
+
+			if (obj->held_m_idx >= c->mon_max || !mon->race) {
+				COMPLAIN("object %d is held by monster %d, which is not there",
+						 i, (int) obj->held_m_idx);
+			} else if (!pile_contains(mon->held_obj, obj)) {
+				COMPLAIN("object %d is not in the pile of the monster "
+						 "holding it", i);
+			}
+		}
+	}
+
+	/* --- Monsters --- */
+	for (i = 1; i < c->mon_max; i++) {
+		struct monster *mon = cave_monster(c, i);
+		struct object *obj;
+
+		if (!mon->race) continue;
+
+		if (mon->midx != i) {
+			COMPLAIN("monster %d thinks it is monster %d", i, mon->midx);
+		}
+
+		if (!square_in_bounds(c, mon->grid)) {
+			COMPLAIN("monster %d is out of bounds", i);
+		} else if (square(c, mon->grid)->mon != mon->midx) {
+			COMPLAIN("monster %d stands where the map says %d is", i,
+					 square(c, mon->grid)->mon);
+		}
+
+		for (obj = mon->held_obj; obj; obj = obj->next) {
+			if (obj->held_m_idx != mon->midx) {
+				COMPLAIN("monster %d holds an object that names %d", i,
+						 (int) obj->held_m_idx);
+			}
+			if (!obj->oidx || obj->oidx >= c->obj_max
+					|| c->objects[obj->oidx] != obj) {
+				COMPLAIN("monster %d holds an object the chunk has not "
+						 "listed", i);
+			}
+		}
+
+		if (mon->mimicked_obj && mon->mimicked_obj->mimicking_m_idx
+				!= mon->midx) {
+			COMPLAIN("monster %d mimics an object that names %d", i,
+					 (int) mon->mimicked_obj->mimicking_m_idx);
+		}
+
+		/* A group index must name a group that exists */
+		{
+			int g;
+
+			for (g = 0; g < GROUP_MAX; g++) {
+				int index = mon->group_info[g].index;
+
+				if (!index) continue;
+				if (index >= c->mon_size || !c->monster_groups[index]) {
+					COMPLAIN("monster %d is in group %d, which does not exist",
+							 i, index);
+				}
+			}
+		}
+	}
+
+#undef COMPLAIN
+
+	return problems;
+}
