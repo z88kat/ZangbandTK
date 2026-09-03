@@ -809,6 +809,16 @@ bool borg_flow_spastic(bool bored)
 /* How many steps a crossing gets before it is abandoned as hopeless. */
 #define BORG_WORLD_TRIES 400
 
+/* Does this mouth sit on the road network?  (ZangbandTK, BRG-13.) */
+static bool borg_mouth_on_road(struct wild_dungeon *mouth)
+{
+    int size = z_info->wild_block_size;
+
+    if (!wild || size < 1) return false;
+
+    return wild_road_at(wild, mouth->grid.x / size, mouth->grid.y / size);
+}
+
 /*
  * Is the straight line from here to this mouth clear of impassable terrain?
  *
@@ -911,7 +921,29 @@ static int borg_choose_dungeon(void)
          */
         if (t->min_depth > borg.trait[BI_MAXCLEVEL]) continue;
 
-        if (!borg_world_line_clear(m)) continue;
+        /*
+         * A road to the door beats a clear line to it (ZangbandTK, BRG-13).
+         *
+         * The project owner's design, and it is what the game was built for:
+         * *"The borg should follow the road, that's what most players will
+         * do."* `wild_place_roads()` lays a spanning tree over the towns, the
+         * short hops between neighbours, and then **a spur to every dungeon
+         * mouth** -- its own comment records that six of thirteen mouths
+         * happened to sit on a road before that pass existed and the rest were
+         * up to a thousand grids of open country away.
+         *
+         * So a road is better than a measured line in three ways. It is
+         * passable by construction, which retires the terrain question rather
+         * than sampling around it. It avoids the worst country, because
+         * `wild_road_cost()` routes around mountains, so following one is how
+         * a character survives the crossing. And it is legible in the log:
+         * "walked the road to Rebma" can be diagnosed, a bearing that wandered
+         * cannot.
+         *
+         * The clear-line test is kept as the fallback for a mouth with no road
+         * to it, which has not been observed but is not guaranteed.
+         */
+        if (!borg_mouth_on_road(m) && !borg_world_line_clear(m)) continue;
 
         dist = ABS(m->grid.y - (player->grid.y + player->wild_offset.y))
              + ABS(m->grid.x - (player->grid.x + player->wild_offset.x));
@@ -1043,6 +1075,25 @@ bool borg_flow_world(void)
                    + ABS(mouth->grid.x - (wx + ddx_ddd[i])));
 
             if (gain <= 0) continue;
+
+            /*
+             * Weight a step that stays on the road (ZangbandTK, BRG-13).
+             *
+             * Roads run from every town to every mouth and route around the
+             * mountains, so a step along one is both passable and safer than
+             * the same step across open country. Weighted rather than
+             * required: a road is a block-resolution fact and the character
+             * moves grid by grid, so insisting on it would stall at every
+             * block edge. Two grids' worth of preference is enough to hold
+             * the road where one exists and to be overridden by a genuinely
+             * shorter way where it does not.
+             */
+            if (z_info->wild_block_size > 0
+                && wild_road_at(wild,
+                                (wx + ddx_ddd[i]) / z_info->wild_block_size,
+                                (wy + ddy_ddd[i]) / z_info->wild_block_size)) {
+                gain += 2;
+            }
 
             dir = borg_extract_dir(borg.c.y, borg.c.x,
                                    borg.c.y + ddy_ddd[i],

@@ -33,6 +33,33 @@ Unreleased
 Pets follow — 3 September 2026
 ------------------------------
 
+- **3.89.0** — **The borg follows the road, and stops teleporting itself to its
+  death.** Two changes, one of which lowers a number this log has been
+  reporting.
+
+  **It follows the road.** The project owner: *"The borg should follow the
+  road, that's what most players will do."* And the game was already built for
+  it — ``wild_place_roads()`` lays a spanning tree over the towns, short hops
+  between neighbours, and **a spur to every dungeon mouth**, its own comment
+  recording that before that pass existed six of thirteen mouths happened to
+  sit on a road and the rest were up to a thousand grids of open country away.
+  Verified: every mouth in both seeds tested is on a road, Rebma included. A
+  road is passable by construction, which retires the terrain question rather
+  than sampling around it; it routes around mountains, so following one is
+  safer; and it is legible in a log. The measured clear-line test is kept as
+  the fallback for a mouth with no road.
+
+  **And it no longer reads Scrolls of Deep Descent it cannot survive.** Deep
+  Descent drops the character ``(4 / stair-skip) + 1`` levels — five as the
+  data ships — and the borg's preparedness rules gate walking down *one* level
+  and said nothing about this. A Warrior at character level 4 read one at depth
+  6, arrived at depth 11, and died there.
+
+  That correction lowers the best depth this log has reported since 3.85.0 from
+  **11 to 6**. Depth 11 was never earned: it was the scroll accident, and the
+  borg died as a direct result. Depth 6 is what it walks to, and it matches its
+  character level exactly, which is what its own rule intends.
+
 - **3.88.0** — **The borg can walk across the world to a dungeon it chose.**
   There is no route to depth 30 without this: the Vaults of Amber, which the
   town staircase leads into, ends at depth 15; a town staircase always leads to

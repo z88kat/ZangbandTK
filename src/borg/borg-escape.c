@@ -629,9 +629,33 @@ static bool borg_teleport_off_level(void)
             || borg_activate_item(act_tele_level))
             return true;
 
-        if (borg_activate_item(act_deep_descent)
-            || borg_read_scroll(sv_scroll_deep_descent))
-            return true;
+        /*
+         * Deep Descent, but only if it can survive where it lands
+         * (ZangbandTK, BRG-13b).
+         *
+         * It drops the character `(4 / stair_skip) + 1` levels -- **five** as
+         * the data ships -- and the borg's preparedness rules gate walking
+         * down *one* level and say nothing about this. Measured: a Warrior at
+         * character level 4 read one at depth 6, arrived at depth 11, and died
+         * there. It was the deepest that borg had ever been, and it had not
+         * earned a single level of it.
+         *
+         * Teleport Level above is unaffected: it moves one level and either
+         * direction, so the existing rules already cover where it lands.
+         */
+        {
+            int drop = (4 / MAX((int) z_info->stair_skip, 1)) + 1;
+            int land = borg.trait[BI_CDEPTH] + drop;
+
+            if (!borg_prepared(land)) {
+                if (borg_activate_item(act_deep_descent)
+                    || borg_read_scroll(sv_scroll_deep_descent))
+                    return true;
+            } else {
+                borg_note(format("# Not reading Deep Descent: depth %d is %s",
+                    land, borg_prepared(land)));
+            }
+        }
     }
 
     return false;

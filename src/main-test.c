@@ -561,10 +561,13 @@ static void c_borg_mouths(char *rest)
 		if (in && t && t->max_depth > 15) deeper_inside++;
 
 		printf("borg-mouth: %-28s band %2d-%-3d world %4d,%-4d "
-			   "local %5d,%-5d %s\n",
+			   "local %5d,%-5d %-9s road:%s\n",
 			   t ? t->name : "(unknown)", t ? t->min_depth : -1,
 			   t ? t->max_depth : -1, m->grid.y, m->grid.x, ly, lx,
-			   in ? "IN WINDOW" : "outside");
+			   in ? "IN WINDOW" : "outside",
+			   wild_road_at(wild, m->grid.x / z_info->wild_block_size,
+							m->grid.y / z_info->wild_block_size)
+				   ? "yes" : "NO");
 	}
 
 	printf("borg-mouths: %d of %d in the window, %d of those reach past "
