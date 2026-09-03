@@ -57,7 +57,7 @@ int16_t num_pot_rcold;
 
 int16_t num_missile;
 
-int16_t num_book[9];
+int16_t num_book[BORG_MAX_BOOKS];
 
 int16_t num_fix_stat[STAT_MAX];
 int16_t home_stat_add[STAT_MAX];
@@ -652,7 +652,14 @@ static void borg_notice_home_aux(borg_item *in_item, bool no_items)
                 break;
 
             /* Count the books */
-            num_book[item->sval] += item->iqty;
+            /*
+             * ZangbandTK (BRG-10): sval is not bounded by the array.
+             *
+             * Only the upper bound is testable -- `sval` is unsigned, which
+             * the GCC pass pointed out when the lower one was there too.
+             */
+            if (item->sval < BORG_MAX_BOOKS)
+                num_book[item->sval] += item->iqty;
 
             break;
 

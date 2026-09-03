@@ -21,6 +21,7 @@
 
 #ifdef ALLOW_BORG
 
+#include "../effects.h"
 #include "../generate.h"
 #include "../obj-slays.h"
 #include "../obj-util.h"
@@ -2391,6 +2392,53 @@ static int borg_attack_aux_object(void)
  *
  * Take into account the failure rate of spells/objects/etc.  XXX XXX XXX
  */
+/*
+ * As `borg_attack_aux_spell_bolt()`, but for a spell the borg has no enum for
+ * (ZangbandTK, BRG-07).
+ *
+ * The mana penalties in the enum version are all expressed against
+ * `primary_spell_for_class`, which is one of Angband's spells per Angband's
+ * class -- meaningless for a spell this game added, and for the five classes
+ * it added. So the penalty here is the simple one: the spell's own cost,
+ * doubled when it would eat into half the mana pool. Understating the damage
+ * and overstating the cost both push the borg toward a named spell when it has
+ * one, which is the safe direction for a fallback.
+ */
+static int borg_attack_aux_spell_by_index(
+    int spell_num, int rad, int dam, int typ, int max_range, bool is_arc)
+{
+    int b_n, power;
+
+    if (spell_num < 0) return 0;
+
+    /* No firing while blind, confused, or hallucinating */
+    if (borg.trait[BI_ISBLIND] || borg.trait[BI_ISCONFUSED]
+        || borg.trait[BI_ISIMAGE]) {
+        return 0;
+    }
+
+    if (is_arc)
+        b_n = borg_launch_arc(rad, dam, typ, max_range);
+    else
+        b_n = borg_launch_bolt(rad, dam, typ, max_range, 0);
+
+    power = borg_magics[spell_num].power;
+    b_n   = b_n - power;
+    if (borg.trait[BI_CURSP] - power < borg.trait[BI_MAXSP] / 2)
+        b_n = b_n - power;
+
+    if (b_n <= 0) return 0;
+
+    if (borg_simulate) return b_n;
+
+    if (!borg_spell_by_index(spell_num)) return 0;
+
+    borg_keypress('5');
+    successful_target = -1;
+
+    return b_n;
+}
+
 int borg_attack_aux_spell_bolt(
     const enum borg_spells spell, int rad, int dam, int typ, int max_range, bool is_arc)
 {
@@ -3824,6 +3872,45 @@ int borg_calculate_attack_effectiveness(int attack_type)
         dam = 10;
         return (borg_attack_aux_spell_dispel(
             MASS_SLEEP, dam, BORG_ATTACK_OLD_SLEEP));
+
+    /*
+     * Spell -- whatever bolt or ball this character has (ZangbandTK, BRG-07).
+     *
+     * Placed beside the hardcoded cases rather than replacing them: where the
+     * borg does know a spell by name it also knows its damage formula, which
+     * is better information than this has. This is the fallback that stops a
+     * caster whose spells the borg has never heard of from fighting with its
+     * fists.
+     *
+     * The damage estimate is deliberately crude -- the borg has no formula for
+     * a spell it does not know -- and taken from the character's level the way
+     * the magic missile case does. Understating it is the safe direction: it
+     * makes the borg prefer a named spell when it has one.
+     */
+    case BF_SPELL_BY_EFFECT_BOLT: {
+        int num = borg_best_spell_with_effect(EF_BOLT);
+
+        if (num < 0) num = borg_best_spell_with_effect(EF_BOLT_OR_BEAM);
+        if (num < 0) num = borg_best_spell_with_effect(EF_BEAM);
+        if (num < 0) return 0;
+
+        rad = 0;
+        dam = ((((borg.trait[BI_CLEVEL] - 1) / 5) + 3) * (4 + 1)) / 2;
+        return (borg_attack_aux_spell_by_index(
+            num, rad, dam, BORG_ATTACK_MISSILE, z_info->max_range, false));
+    }
+
+    case BF_SPELL_BY_EFFECT_BALL: {
+        int num = borg_best_spell_with_effect(EF_BALL);
+
+        if (num < 0) num = borg_best_spell_with_effect(EF_SPHERE);
+        if (num < 0) return 0;
+
+        rad = 1;
+        dam = ((((borg.trait[BI_CLEVEL] - 1) / 5) + 3) * (4 + 1)) / 2;
+        return (borg_attack_aux_spell_by_index(
+            num, rad, dam, BORG_ATTACK_MISSILE, z_info->max_range, false));
+    }
 
     /* Spell -- magic missile */
     case BF_SPELL_MAGIC_MISSILE:

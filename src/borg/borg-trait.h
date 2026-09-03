@@ -54,6 +54,14 @@
 #define RACE_DUNADAN    8
 #define RACE_HIGH_ELF   9
 #define RACE_KOBOLD     10
+/*
+ * ZangbandTK (BRG-10): the most spellbooks any class here carries.
+ *
+ * Angband's widest caster has eight; this game's have 28. See `amt_book`
+ * below for what the old bound of nine did.
+ */
+#define BORG_MAX_BOOKS 32
+
 #define MAX_RACES       11
 
 enum borg_item_pos { BORG_INVEN = 1, BORG_EQUIP = 2, BORG_QUILL = 4 };
@@ -463,9 +471,31 @@ struct borg_struct {
     struct goals goal;
 
     /* number of books */
-    int16_t amt_book[9];
+    /*
+     * ZangbandTK (BRG-10): sized by the widest class, not by Angband's.
+     *
+     * These were `[9]`, which is one more than Angband's widest caster. M9
+     * gave this game seven realms of four books, so a Mage, Priest,
+     * Warrior-Mage and High-Mage each carry **28**, a Ranger 24, a Rogue 16
+     * and a Monk 12 -- seven of the twelve casters past the end of the array.
+     *
+     * `borg_note_spell_books()` writes `borg.book_idx[book_num]` for every
+     * book of the class it finds in the pack, so a Mage holding its twelfth
+     * book wrote off the end of this structure and corrupted whatever followed
+     * it. And `borg_browse()` only ever looked at the first eight, so any
+     * spell in a later book could not be learned even when the write landed
+     * somewhere harmless. That is why a Mage here studied nothing in four
+     * thousand turns, cast nothing, fought with its fists and died at
+     * character level one in every seed.
+     *
+     * `borg_init_cave()`'s pattern is followed rather than making these
+     * dynamic: a generous ceiling, plus a startup check that refuses to run if
+     * the data outgrows it (see `borg_init_spells`). 32 is the next multiple of
+     * four above 28, so a class gaining an eighth realm still fits.
+     */
+    int16_t amt_book[BORG_MAX_BOOKS];
     /* location of books in inventory */
-    int16_t book_idx[9];
+    int16_t book_idx[BORG_MAX_BOOKS];
 
     /* need add to stat potions */
     bool need_statgain[STAT_MAX];

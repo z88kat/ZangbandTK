@@ -20,6 +20,7 @@
 #include "buildid.h"
 #include "cave.h"
 #include "dun-type.h"
+#include "wild.h"
 #include "mon-make.h"
 #include "mon-predicate.h"
 #include "mon-util.h"
@@ -512,6 +513,66 @@ static void c_borg_kills(char *rest)
 }
 
 /**
+ * borg-mouths? -- every dungeon mouth, its band, and whether it is reachable
+ * without crossing the world (BRG-13).
+ *
+ * The question this answers decides how much work depth 30 is. The town
+ * staircase leads into the Vaults of Amber, which ends at 15, so reaching 30
+ * means walking to the mouth of a dungeon whose band goes deeper. The surface
+ * is a 144x144 window onto a much larger world, rebuilt as the player crosses
+ * it -- so a mouth inside the current window is a short walk to a known grid,
+ * and one outside it needs an overworld navigator.
+ *
+ * Reports both, per mouth, so the answer is a table rather than an opinion.
+ */
+static void c_borg_mouths(char *rest)
+{
+	int i, n, inside = 0, deeper_inside = 0;
+	struct loc off;
+
+	if (!character_dungeon || !wild || !cave) {
+		printf("borg-mouths: FAILED no world yet\n");
+		run_failed = 1;
+		return;
+	}
+
+	off = player->wild_offset;
+	n   = wild_dungeon_count(wild);
+
+	printf("borg-mouths: player at world %d,%d  window %dx%d at offset %d,%d\n",
+		   player->grid.y + off.y, player->grid.x + off.x,
+		   cave->height, cave->width, off.y, off.x);
+
+	for (i = 0; i < n; i++) {
+		struct wild_dungeon *m = wild_dungeon_by_index(wild, i);
+		const struct dun_type *t;
+		int ly, lx;
+		bool in;
+
+		if (!m) continue;
+		t = dun_type_by_index(m->type);
+
+		/* Where it would sit in the current surface chunk */
+		ly = m->grid.y - off.y;
+		lx = m->grid.x - off.x;
+		in = (ly >= 0 && ly < cave->height && lx >= 0 && lx < cave->width);
+
+		if (in) inside++;
+		if (in && t && t->max_depth > 15) deeper_inside++;
+
+		printf("borg-mouth: %-28s band %2d-%-3d world %4d,%-4d "
+			   "local %5d,%-5d %s\n",
+			   t ? t->name : "(unknown)", t ? t->min_depth : -1,
+			   t ? t->max_depth : -1, m->grid.y, m->grid.x, ly, lx,
+			   in ? "IN WINDOW" : "outside");
+	}
+
+	printf("borg-mouths: %d of %d in the window, %d of those reach past "
+		   "depth 15\n", inside, n, deeper_inside);
+	fflush(stdout);
+}
+
+/**
  * borg-shops? -- which shops the borg has found (BRG-12).
  *
  * The borg learns the map a panel at a time, so on a 144x144 wilderness
@@ -624,6 +685,7 @@ static test_cmd cmds[] = {
 	{ "borg-status?", c_borg_status },
 	{ "borg-notes?", c_borg_notes },
 	{ "borg-shops?", c_borg_shops },
+	{ "borg-mouths?", c_borg_mouths },
 	{ "borg-pet", c_borg_pet },
 	{ "borg-pets?", c_borg_pets },
 	{ "borg-kills?", c_borg_kills },

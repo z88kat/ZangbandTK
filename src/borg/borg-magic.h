@@ -266,6 +266,16 @@ extern bool borg_spell_legal(const enum borg_spells spell);
 extern bool borg_spell_okay(const enum borg_spells spell);
 
 /*
+ * ZangbandTK (BRG-07): cast by what a spell does, not by which enum it is.
+ *
+ * 184 of this game's 224 realm spells have no `enum borg_spells` value, so
+ * they cannot be reached by any `borg_spell()` call. These two are how the
+ * borg uses M9's realms at all. See borg-magic.c for the measurement.
+ */
+extern int  borg_best_spell_with_effect(int effect_index);
+extern bool borg_spell_by_index(int spell_num);
+
+/*
  * Find the power (cost in sp) value for a given spell
  */
 extern int borg_get_spell_power(const enum borg_spells spell);

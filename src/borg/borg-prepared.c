@@ -17,6 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+#include "../dun-type.h"
 #include "borg-prepared.h"
 
 #ifdef ALLOW_BORG
@@ -535,13 +536,51 @@ static const char *borg_prepared_aux(int depth)
  * This now returns a string with the reason you are not prepared.
  *
  */
+/*
+ * The deepest level the dungeon the borg is standing in reaches (BRG-13).
+ *
+ * Zero when that is unknown or the borg is on the surface. Angband has one
+ * dungeon of 1 to 100 and needs no such question; this game has thirteen with
+ * their own bands, from the Vaults of Amber at 1-15 to the Abyss at 90-127.
+ */
+static int borg_dungeon_floor(void)
+{
+    const struct dun_type *type;
+
+    if (!player->dungeon) return 0;
+
+    type = dun_type_by_index(player->dungeon - 1);
+
+    return type ? (int) type->max_depth : 0;
+}
+
 const char *borg_prepared(int depth)
 {
     const char *reason;
+    int floor;
 
     /* Town and First level */
     if (depth == 1)
         return ((char *)NULL);
+
+    /*
+     * There is no deeper here (ZangbandTK, BRG-13).
+     *
+     * `dungeon_get_next_level()` **clamps** the target depth to the dungeon's
+     * own floor rather than refusing the descent, so taking down stairs at
+     * the bottom of the Vaults of Amber puts the character back at depth 15.
+     * The borg's preparedness ladder knows nothing of dungeons, so it would
+     * read that as a successful descent and do it again, for ever: no crash,
+     * no message, just a stair loop that never gets deeper.
+     *
+     * Reported as an unpreparedness rather than handled here, because the
+     * borg's existing answer to "not prepared for deeper" is to go up -- and
+     * going up is exactly right. What it does when it reaches the surface is
+     * the other half of BRG-13.
+     */
+    floor = borg_dungeon_floor();
+    if (floor && depth > floor)
+        return ("no deeper in this dungeon");
 
     if (borg_cfg[BORG_USES_DYNAMIC_CALCS]) {
 

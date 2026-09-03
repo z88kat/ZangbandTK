@@ -312,6 +312,19 @@ enum {
     BF_ACT_DRAGON_SHINING,
     BF_ACT_DRAGON_POWER,
 
+    /*
+     * ZangbandTK (BRG-07): whatever attack spell this character actually has.
+     *
+     * Every case above names one spell from Angband's `enum borg_spells`. M9
+     * replaced the spell lists, so 184 of this game's 224 realm spells match
+     * no case and the borg cannot cast them -- a Mage here starts with `Zap`
+     * where the list expects `Magic Missile`, and so never casts at all.
+     * This case asks for the best-rated bolt or ball the character knows,
+     * whatever it happens to be called.
+     */
+    BF_SPELL_BY_EFFECT_BOLT,
+    BF_SPELL_BY_EFFECT_BALL,
+
     BF_MAX
 };
 

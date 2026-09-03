@@ -33,6 +33,30 @@ Unreleased
 Pets follow — 3 September 2026
 ------------------------------
 
+- **3.87.0** — **The borg learns that a dungeon has a bottom, and that every
+  other one is a long walk away.** Two array overruns and a wall the borg has
+  not reached yet.
+
+  ``dungeon_get_next_level()`` clamps a descent to the dungeon's own floor
+  rather than refusing it, so taking down stairs at the bottom of the Vaults of
+  Amber returns you to depth 15. The borg's preparedness rules knew nothing of
+  dungeons and would have read each clamp as a successful dive, looping for
+  ever with no crash and no message. It now reports "no deeper in this dungeon"
+  and goes up, which is its own existing answer to being unready for deeper.
+
+  Alongside that, two more arrays sized for Angband's widest caster: ``num_book``
+  is indexed by an object's *sval*, which nothing bounds, and had nine slots.
+  That is the fourth instance of the same shape after the map arrays, the spell
+  table and ``book_idx`` — recorded as a pattern rather than four separate
+  fixes, because none of the four had a guard and the one added here refuses to
+  start rather than corrupting memory.
+
+  And a measurement that sizes what remains: of the thirteen dungeon mouths in
+  the world, **none** is inside the 144×144 surface window — not even the
+  Vaults of Amber's own. The nearest dungeon reaching past depth 15 is 576
+  grids away. Since the town staircase always leads to the shallowest dungeon,
+  there is no route deeper than 15 that does not cross the world.
+
 - **3.86.0** — **Every spell the borg can cast now has a rating, and it made no
   difference yet.** BRG-08's derivation, done properly now that the rating
   rubric exists: 224 distinct realm-and-name pairs across the seven realms, 49

@@ -23,6 +23,8 @@
 
 #ifdef ALLOW_BORG
 
+#include "borg-trait.h"
+
 #include "borg-item.h"
 
 /*
@@ -49,7 +51,16 @@ extern int16_t num_pot_rcold;
 
 extern int16_t num_missile;
 
-extern int16_t num_book[9];
+/*
+ * ZangbandTK (BRG-10): indexed by the book's *sval*, so it needs the widest
+ * bound of all -- and had the narrowest.
+ *
+ * The fourth array in `src/borg/` sized for Angband's widest caster. Worse
+ * than `amt_book` beside it, because that was indexed by a book number
+ * bounded by the class and this is indexed by an object sval, which is
+ * bounded by nothing.
+ */
+extern int16_t num_book[BORG_MAX_BOOKS];
 
 extern int16_t num_fix_stat[STAT_MAX];
 extern int16_t home_stat_add[STAT_MAX];

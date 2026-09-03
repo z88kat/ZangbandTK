@@ -17,7 +17,6 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
-#include "../effects.h"
 #include "borg-magic.h"
 
 #ifdef ALLOW_BORG
@@ -628,6 +627,91 @@ bool borg_spell_legal_fail(const enum borg_spells spell, int allow_fail)
 /*
  * Attempt to cast a spell
  */
+/*
+ * The best spell the character knows that does this (ZangbandTK, BRG-07).
+ *
+ * The borg casts through ninety-five hardcoded `borg_spell(ENUM)` calls, one
+ * per spell it was taught about, and `enum borg_spells` is Angband's spell
+ * list. M9 replaced the spell lists with seven realms of thirty-two, so
+ * **184 of this game's 224 realm spells have no enum and cannot be cast at
+ * all** -- Nature has exactly one castable spell. The measured consequence is
+ * blunt: a Mage's first attack spell here is `Zap`, the borg only knows how to
+ * ask for `Magic Missile`, so it never casts an attack spell, melees with four
+ * hit points, and dies at character level one in every seed tried.
+ *
+ * Rating by enum cannot fix that, which is why the ratings pass moved nothing.
+ * Asking for a spell by *what it does* can, and it is also what finally makes
+ * the ratings load-bearing: they are the tie-break between two spells that do
+ * the same thing.
+ *
+ * Returns an index into `borg_magics`, or -1. Index rather than enum because
+ * the unrated spells all share `BORG_SPELL_UNKNOWN` and an enum lookup could
+ * not tell them apart.
+ */
+int borg_best_spell_with_effect(int effect_index)
+{
+    int i, best = -1, best_rating = -1;
+
+    if (!borg_magics) return -1;
+
+    for (i = 0; i < player->class->magic.total_spells; i++) {
+        borg_magic *as = &borg_magics[i];
+
+        if (as->effect_index != (uint16_t) effect_index) continue;
+
+        /* Has to be one it can actually cast right now */
+        if (as->status < BORG_MAGIC_TEST) continue;
+        if (borg.book_idx[as->book] < 0) continue;
+        if (as->power > borg.trait[BI_CURSP]) continue;
+
+        if (as->rating > best_rating) {
+            best_rating = as->rating;
+            best        = i;
+        }
+    }
+
+    return best;
+}
+
+/*
+ * Cast the spell at this index (ZangbandTK, BRG-07).
+ *
+ * `borg_spell()` looks a spell up by enum and then casts it by book and
+ * offset; the cast itself was always index-based, so this is the second half
+ * of that function with the lookup removed. It is the only way to cast a spell
+ * the borg has no enum for, which is 82 per cent of this game's realm spells.
+ */
+bool borg_spell_by_index(int spell_num)
+{
+    int i;
+    borg_magic *as;
+
+    if (!borg_magics || spell_num < 0
+        || spell_num >= player->class->magic.total_spells) {
+        return false;
+    }
+
+    as = &borg_magics[spell_num];
+
+    if (no_light(player)) return false;
+    if (as->status < BORG_MAGIC_TEST) return false;
+    if (as->power > borg.trait[BI_CURSP]) return false;
+
+    i = borg.book_idx[as->book];
+    if (i < 0) return false;
+
+    borg_note(format("# Casting %s by effect (%d,%d).", as->name, i,
+        as->book_offset));
+
+    borg_keypress('m');
+    borg_keypress(all_letters_nohjkl[i]);
+    borg_keypress(all_letters_nohjkl[as->book_offset]);
+
+    as->times++;
+
+    return true;
+}
+
 bool borg_spell(const enum borg_spells spell)
 {
     int i;
@@ -714,7 +798,7 @@ void borg_cheat_spells(void)
     int i;
 
     /* Assume no books */
-    for (i = 0; i < 9; i++)
+    for (i = 0; i < BORG_MAX_BOOKS; i++)
         borg.book_idx[i] = -1;
 
     /* Scan the pack */
@@ -722,7 +806,12 @@ void borg_cheat_spells(void)
         int        book_num;
         borg_item *item = &borg_items[i];
 
-        for (book_num = 0; book_num < player->class->magic.num_books;
+        /*
+         * ZangbandTK (BRG-10): bounded by the array as well as by the class.
+         * A Mage has 28 books and this array had nine slots.
+         */
+        for (book_num = 0; book_num < player->class->magic.num_books
+                && book_num < BORG_MAX_BOOKS;
             book_num++) {
             struct class_book book = player->class->magic.books[book_num];
             if (item->tval == book.tval && item->sval == book.sval) {
@@ -739,7 +828,14 @@ void borg_cheat_spells(void)
 
     /* XXX XXX XXX Dark */
 
-    for (int book_idx = 0; book_idx < 8; book_idx++)         {
+    /*
+     * ZangbandTK (BRG-10): every book, not the first eight.
+     *
+     * Angband's widest caster has eight books so the literal was harmless
+     * there. Here it meant three quarters of a Mage's spells were never
+     * browsed and so never learnable.
+     */
+    for (int book_idx = 0; book_idx < BORG_MAX_BOOKS; book_idx++)         {
         /* Look for the book */
         i = borg.book_idx[book_idx];
 
@@ -1030,6 +1126,25 @@ void borg_prepare_book_info(void)
         borg_note(format("# No borg spell ratings for %s; every spell is "
                          "unrated", player->class->name));
         break;
+    }
+
+    /*
+     * ZangbandTK (BRG-10): refuse to run rather than corrupt memory.
+     *
+     * `borg.book_idx[]` and `borg.amt_book[]` are fixed at BORG_MAX_BOOKS.
+     * They are generous now, but the bound they replaced was generous for
+     * Angband too and this game outgrew it silently -- a Mage's 28 books
+     * against nine slots, with no warning and no crash, just a corrupted
+     * structure and a caster that never learned a spell. A clear startup
+     * failure is the right answer to the next such change.
+     */
+    if (player->class->magic.num_books > BORG_MAX_BOOKS) {
+        borg_note(format("**STARTUP FAILURE** %s has %d books and the borg "
+                         "has room for %d",
+            player->class->name, player->class->magic.num_books,
+            (int) BORG_MAX_BOOKS));
+        borg_init_failure = true;
+        return;
     }
 
     if (borg_magics)

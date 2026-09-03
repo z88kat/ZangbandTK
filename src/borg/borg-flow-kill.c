@@ -2761,6 +2761,7 @@ void borg_near_monster_type(int dist)
 
 		/*** Scan for Scary Guys ***/
 
+
 		/* Do ScaryGuys now, before distance checks.  We are
 		 * Looking for scary guys on level, not scary guys
 		 * near me

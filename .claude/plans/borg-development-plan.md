@@ -529,6 +529,51 @@ pathfinding problem across 144 × 144 rather than a table.*
   Note also that our deepest dungeon reaches **127**, past every one of these
   bounds, so the ladder simply runs out.
 
+#### BRG-13, measured: the first half is done and the second half is the whole job
+
+**The floor half landed 3 September 2026 in 3.87.0.** `borg_prepared()` now
+returns *"no deeper in this dungeon"* once the requested depth passes
+`dun_type_by_index(player->dungeon - 1)->max_depth`. Reported as an
+unpreparedness rather than handled directly, because the borg's existing answer
+to that is to go up, and going up is right.
+
+It matters because `dungeon_get_next_level()` **clamps** rather than refuses:
+taking down stairs at the bottom of the Vaults of Amber returns the character
+to depth 15. The borg would have read each clamp as a successful descent and
+looped for ever -- no crash, no message. Measured as byte-identical to
+baseline, which is correct: the borg has never reached depth 15, so this is a
+fix for a wall it has not hit yet. The Warrior at depth 11 is four levels away.
+
+**And the second half is not a refinement.** Measured with `borg-mouths?`,
+which reports every mouth's world grid against the current surface window:
+
+| | |
+|---|---:|
+| dungeon mouths in the world | 13 |
+| **inside the current 144x144 window** | **0** |
+| nearest mouth reaching past depth 15 | **576 grids** (The Grove of the Unicorn, band 30-55) |
+| nearest mouth whose band contains 30 cheaply | 2,208 grids (Faiella-Bionin, band 8-30) |
+
+Not one mouth is in the window -- **including the Vaults of Amber's own**, whose
+mouth sits 472 grids north and 200 west. The borg has never used a mouth at
+all: it reaches the Vaults by the town staircase, which
+`player_dungeon_at_stairs()` sends to the shallowest dungeon there is. The
+world spans roughly fourteen windows by fourteen.
+
+So in-window walking buys **nothing**, and there is no route to depth 30 that
+avoids crossing the world: the town staircase always gives the shallowest
+dungeon, and Word of Recall returns to a dungeon already visited.
+
+**What that job actually is, and it may be smaller than "a pathfinder".** The
+surface window follows the player -- `wild_adopt_window()` re-anchors it as the
+world scrolls -- so crossing 576 grids does not need a global route computed in
+advance. It needs a **world-space goal that survives the window being rebuilt**
+plus local obstacle avoidance: walk toward a bearing, step around what is in
+the way, and keep the destination in world coordinates rather than level ones.
+The open risk is terrain: open sea and mountain between here and there would
+turn a bearing into a route, and that is the point at which it becomes a
+pathfinding project.
+
 - **BRG-13 — The borg knows a dungeon has a floor, and where the next one
   is.** Read the `dun_type` depth ranges. When a dungeon bottoms out, walk to a
   deeper one rather than scumming for stairs that do not exist. `borg_prepared`
@@ -656,6 +701,87 @@ after — see principle 4 of the Phase 2 plan.*
   `borg_danger`, and count them on the player's side of a fight. This is the
   one requirement here that produces visibly wrong behaviour the moment M10
   ships, rather than merely missed opportunity.
+- **BRG-11a — The "abandon this level" trigger identifies danger by Angband
+  monster name, and it traps every caster at character level 1.** Scoped
+  3 September 2026 after five attempts at the symptom; recorded rather than
+  fixed, because the fix is a rewrite and the fifth attempt made things worse.
+
+  **What is wrong, and it is structural rather than a constant.**
+  `scaryguy_on_level` -- the flag that makes the borg give up on a level -- is
+  set in `borg-flow-kill.c` by matching **monster name prefixes**. Upstream
+  says so itself: *"!FIX this should be rewritten to not use specific names
+  but instead track certain attacks that are particularly scary"*. The
+  character level 8 list is `soldier`, `cutpurse`, `acolyte`, `apprentice`,
+  `kobold`, `jackal`, `shrieker`, `filthy street urchin`, `battle-scarred
+  veteran`, `mean-looking mercenary`; the level 20 list adds `cave spider`.
+  It is also deliberately level-wide rather than proximity-based: *"scary guys
+  on level, not scary guys near me"*.
+
+  Both choices are right for Angband. Together, here, they are a trap: those
+  are the starting town's monsters and the Vaults of Amber's signature
+  dwellers (`dweller:base:kobold`, `dweller:base:spider`). A level 1 character
+  flees on its first turn and never stops.
+
+  **It is a feedback loop, which is why it looks like a caster problem.**
+  Fleeing prevents fighting, not fighting prevents levelling, and not
+  levelling keeps the character under the threshold. A Warrior escapes because
+  melee works without spells and it out-levels the list; a Mage cannot, and
+  measurably does not -- character level 1, dead, in every seed tried.
+
+  **What it is not.** Both alternative explanations were checked and both are
+  false. Our depth 1-2 monsters are Angband's to within noise (mean 11.7 hit
+  points against 10.7, mean damage 2.6 against 2.5, worst case 8.0 in both,
+  measured against the tree as it stood before this project began), and the
+  hit dice are 4.2's exactly -- Warrior 9, Mage 0, Priest 2. The content did
+  not move; the model is being applied to the same monsters it was written
+  for, with a bestiary it does not recognise.
+
+  **Five attempts on the symptom, and what they taught.** The ratings pass, the
+  by-effect casting, the book-array overrun and study-while-fleeing all left
+  the Mage's runs *byte-identical* -- 10044/3154/6608 turns, character level 1
+  -- which is what finally proved it never reaches any of that code. The fifth,
+  making the shallow rules require an awake monster within 30 grids, moved it
+  the wrong way: the Mage stopped fleeing, started fighting, and died **sooner**
+  (2662/2136 turns). That is worth keeping in mind before the next attempt: at
+  four hit points with no spells, fleeing was the only thing keeping it alive,
+  so removing the flee without giving it a way to fight is a regression.
+
+  **What a fix has to do**, therefore, and it is more than a threshold: give a
+  level 1 caster a way to survive *and* a way to level. Reading threat from the
+  monster's own attacks rather than its name is the piece upstream asks for and
+  the piece this game needs, but on its own it only changes which monsters
+  frighten it.
+
+  **The fifth attempt was reverted, and its Warrior number is the reason to
+  record it rather than retry it.** Requiring an awake monster within 30 grids
+  is defensible in itself -- a sleeping kobold across a 198-grid level is not a
+  level to abandon -- and it measured badly in both directions. The Mage died
+  sooner (2662 against 10044 turns). The Warrior *survived longer and got far
+  shallower*: 40,000 turns at **depth 2** against 26,473 turns reaching **depth
+  11**. Fleeing less means fighting more, and fighting more at low level means
+  both dying sooner and diving less. Anything that adjusts when the borg runs
+  has to be judged on depth as well as survival, or it will look like an
+  improvement while making the borg worse at the only thing being asked of it.
+
+- **BRG-16a — The borg wields unknown items straight off the floor, and a
+  careful player would not.** Recorded 3 September 2026, not scheduled.
+
+  It wore a `Club (2d2) (+0,+0) [+20] {cursed, ??}` because twenty points of
+  armour scores well, learned the rune of ancient and foul curse, and had its
+  experience drained back to character level one. A human sees `{??}` -- unknown
+  runes -- on a depth-1 club with +20 armour and smells a trap; the project
+  owner's summary is *"if it looks too good to be true it probably is... maybe
+  get them checked first"*.
+
+  The reason to record it is not the curse, which is uncommon and working as
+  designed. It is that **a borg which walks into every trap a careful player
+  avoids keeps producing findings that are really just it playing badly.** One
+  such finding had to be discounted on exactly those grounds while chasing the
+  caster deaths this session, and discounting costs as much time as
+  investigating. Wanted: prefer identified items, or use a Scroll of
+  Identify/Remove Curse before wearing something suspiciously good for the
+  depth.
+
 - **BRG-16 — Mutations, virtues and luck are borg traits.** Add them to
   `borg.trait[]` so the borg can at least avoid the mutations that hurt it.
   Commanding pets (PLR-23…PLR-27) is deliberately **not** in scope: BRG-15 is

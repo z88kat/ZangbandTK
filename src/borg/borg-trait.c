@@ -2258,7 +2258,18 @@ static void borg_notice_inventory(void)
             if (!obj_kind_can_browse(&k_info[item->kind]))
                 break;
             /* Count the books */
-            borg.amt_book[borg_get_book_num(item->sval)] += item->iqty;
+            /*
+             * ZangbandTK (BRG-10): -1 is "not one of this class's books", and
+             * indexing an array with it wrote before the start of the
+             * structure. Reachable with any spellbook the character cannot
+             * use, which is most of them once there are seven realms.
+             */
+            {
+                int bnum = borg_get_book_num(item->sval);
+
+                if (bnum >= 0 && bnum < BORG_MAX_BOOKS)
+                    borg.amt_book[bnum] += item->iqty;
+            }
             break;
 
         /* Food */
