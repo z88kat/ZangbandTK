@@ -771,6 +771,131 @@ generated world is worth a lot when debugging one.
 
 ---
 
+## 6. Front-end housekeeping — retire SDL 1.2
+
+*Not a gameplay milestone. Independent of M0–M11 and can run in any gap; nothing
+blocks on it and it blocks nothing.* Recorded as DEC-65; the SDL 3 assessment that
+found it is in [sdl3-assessment.md](sdl3-assessment.md).
+
+Two SDL front ends are maintained. [main-sdl2.c](../../src/main-sdl2.c) is the
+one that ships — the AppImage, the MSYS2 CI job, and the browser build all use
+it. [main-sdl.c](../../src/main-sdl.c) is 6,169 lines of **SDL 1.2**, built by
+CI, shipped by nothing, and reachable by a user only if they configure it by
+hand.
+
+**It is no longer testing what its label says.** Debian and Ubuntu have replaced
+`libsdl1.2-dev` with **sdl12-compat**, which implements the SDL 1.2 API by
+dlopening SDL 2; Fedora and Arch did the same earlier. The `linux.yaml` job named
+*SDL* therefore builds an SDL 1.2 front end against SDL 2 through a translation
+layer. It goes green, and it is verifying a configuration nobody ships.
+
+**Our investment in the file is one hunk** — the About box, changed to print
+every credit line rather than the first, to match `main-sdl2.c`. Everything else
+is upstream's, 137 diff lines from Angband's copy in total.
+
+So the "bring SDL 1.2 up to SDL 2" work is almost entirely deletion, because the
+SDL 2 front end it would be brought up to already exists and is better.
+
+### The work
+
+1. **Confirm nothing is lost.** Walk `main-sdl.c`'s feature surface against
+   `main-sdl2.c` — fonts, tilesets, window layout, the sound path — and record
+   anything SDL 1.2 does that SDL 2 does not. Expected: nothing. This step is the
+   one that makes the rest safe, so it is not skipped.
+2. **Port the About-box hunk** if `main-sdl2.c` has drifted from it, so the one
+   local change survives the removal.
+3. **Remove the front end**: `src/main-sdl.c`, `SDLMAINFILES` in
+   [Makefile.src](../../src/Makefile.src), the `SYS_sdl` block in
+   [Makefile.std](../../src/Makefile.std), `--enable-sdl` / `--enable-sdl-mixer`
+   and the `AM_PATH_SDL` branch in [configure.ac](../../configure.ac),
+   `SUPPORT_SDL_FRONTEND` / `SUPPORT_SDL_SOUND` and the
+   `SDL_Frontend.cmake` / `SDL_Sound.cmake` macros, and
+   `lib/icons/angband-sdl.desktop`.
+4. **Decide on `lib/customize/font-sdl.prf`** — check whether the SDL 2 front end
+   reads it before deleting it. It may be shared.
+5. **Collapse the CI jobs.** The *SDL* job in `linux.yaml` goes; the
+   `Makefile.std` and autoconf jobs lose their SDL 1.2 variants. The SDL 2 job
+   stays and becomes the only one, which is a real gain: CI time back, and one
+   fewer configuration whose green tells us nothing.
+6. **Simplify the mutual-exclusion logic.** [CMakeLists.txt](../../CMakeLists.txt)
+   and `configure.ac` both carry "cannot have SDL and SDL2 at once" branches that
+   exist only because there are two. They go with it.
+
+**Exit:** one SDL front end in the tree, CI building it and nothing else, and a
+`grep -ri sdl` over the build system that returns only SDL 2. No player-visible
+change.
+
+**If deletion is refused** — if the SDL 1.2 front end is wanted for a platform
+where SDL 2 genuinely is not available — then the alternative is to keep the file
+and stop pretending: rename the CI job to say sdl12-compat, and document that it
+is an SDL 2 build. That is worse, and it is written down so the choice is a
+choice.
+
+---
+
+## 7. Automated play testing — revive the borg
+
+*Not a gameplay milestone. Independent of M0–M11 except that B3 needs M10
+playable; nothing else blocks on it and it blocks nothing.* Recorded as DEC-66.
+Planned in full in [borg-development-plan.md](borg-development-plan.md), which
+defines twenty-one requirements — BRG-01 to BRG-21 — in five phases, B0 to B4.
+
+**We have 110 unit suites and none of them plays the game.** Nothing in the tree
+walks a character out of a town, across the wilderness, into a dungeon and back.
+The DOS smoke test is a six-second script and `scripts/screenshot/take.sh` drives
+a pre-made savefile through fixed keys. Angband's borg is the only thing that can
+be made to do it, and it is still sitting in [src/borg/](../../src/borg/) —
+69,632 lines, 279 commits, **none of them ours**, compiling warning-free against
+the current headers.
+
+**It crashes on the first turn of every game, for one reason.** `borg_grids` is a
+static 66 × 198 array; our depth-0 wilderness surface is 144 × 144, so
+`borg_update_map` indexes off the end of it. The guard that should catch this
+compares against `z_info->dungeon_wid/hgt`, which still match. Grow the array
+and the borg plays — roughly 1,400 log lines of stairs, fights, flight and
+shopping in one short run. **That is what makes this worth scheduling: the engine
+is intact, and B0 is small.**
+
+Past that, the borg can only be a Warrior. `borg_init_spell()` matches each
+class's spell list against a hand-written table positionally by name, so all
+eight vanilla casters fail at startup on their first spell — Mage expects
+`Magic Missile`, M9 gives it `Zap` — and the five Zangband classes fall through
+to `borg_spell_ratings = NULL` with no error raised at all. It has zero
+references to pets, the wilderness, named dungeons, mutations or virtues.
+
+### The shape of the work
+
+1. **B0 — make it run and make it drivable.** Size the map arrays from the level,
+   fix the guard, add a headless entry point that honours `ZTK_TEST_SEED` and
+   exits non-zero on failure, install `borg.txt`. **Small, and worth doing even
+   if nothing after it is scheduled** — it turns a segfault into a CI smoke test.
+2. **B1 — classes, races and realms.** Move spell ratings into `lib/gamedata`
+   keyed by name-and-realm: 200 entries once, rather than a C table per class.
+   Never fail fatally on an unrated spell; never fail silently on an unknown
+   class; derive the class and race counts from the loaded data. **The gate for
+   any coverage past one class in fourteen.**
+3. **B2 — the world.** Cross the wilderness on purpose, and read the `dun_type`
+   depth ranges so the borg knows a dungeon has a floor.
+4. **B3 — allegiance.** Never attack its own pets. This discharges the standing
+   PLR-22 constraint in [§1](#standing-constraints): `src/borg/` is the largest
+   remaining body of code that assumes every monster is hostile.
+5. **B4 — the testing product.** N seeds × M classes × K turns, nightly, with
+   savefile round-trips and invariant assertions during play.
+
+**Exit:** a nightly CI job that plays every class from a fixed set of seeds and
+fails on a crash, an assertion or a wedge, plus a recorded depth-and-level table
+comparable between releases.
+
+**The cost to go in with eyes open** is that `src/borg/` is the one subsystem
+where we have contributed nothing and upstream is still contributing. DEC-11 gave
+up merge compatibility and kept cherry-picking; every line changed here spends
+that. Hence B1's insistence on a data file rather than rewritten C tables. And
+the borg is not a correctness oracle — it does not know the rules, so it reports
+crashes and wedges, and only the assertions written for it in BRG-19 turn it into
+anything more.
+
+---
+
 ## Open
 
 - M4's chunk footprint measurement (world Q4) should happen before M4 is estimated; it may

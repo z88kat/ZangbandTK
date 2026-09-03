@@ -2883,3 +2883,123 @@ And `TransferLib`, which stages `lib/gamedata` for the unit tests, is a
 that was reverted within the same second it was staged. Two falsifications in
 this phase read a stale copy before that was understood. `scripts/check-flakes`
 now asks for `TransferLib` as well as `stageunittestdata` every run.
+
+---
+
+**DEC-65 — The SDL 2 front end stays on SDL 2, and the SDL 1.2 front end is
+what actually needs the work.** (3 September 2026. Applies DEC-11. Full working
+in [sdl3-assessment.md](sdl3-assessment.md), including the three conditions that
+would change the answer.)
+
+Asked what it would cost to move to SDL 3.4. Counted rather than guessed: 228
+distinct SDL symbols across `main-sdl2.c` (8,502 lines), `src/sdl2` (7,094) and
+`snd-sdl.c` (293), and **731 occurrences of symbols SDL 3 renames or removes** —
+a floor, since it excludes the `SDL_Rect` → `SDL_FRect` conversions the float
+renderer forces and every `event.key.keysym.sym` that becomes `event.key.key`.
+
+**The decisive number is not that one.** `pui-ctrl.c`, `pui-dlg.c` and
+`pui-misc.c` are byte-identical to upstream Angband; `main-sdl2.c` differs by 677
+lines, essentially the Emscripten work. Fifteen thousand lines maintained by
+somebody else, and still being maintained — the recent commits on them are
+*check for allocation failures from `SDL_strdup()`* and *add missing checks for
+memory allocation failures*.
+
+DEC-11 gave up merge compatibility and kept cherry-pick compatibility, on the
+argument that cherry-picking needs only that a file "still exists and is
+recognisably related", and that what it buys is "crashes, leaks, portability,
+undefined behaviour". Those two commits are that list verbatim. An SDL 3 port
+does not bend DEC-11; it spends the thing DEC-11 chose to keep, on the one
+subsystem where we have contributed nothing and would gain nothing by owning.
+
+**The web build is an independent no.** Emscripten's SDL 3 port arrived in
+emscripten 5.0.0 (January 2026) and `sdl3_ttf` in 5.0.3 (March); we pin 3.1.51,
+so it is a four-major-version toolchain jump underneath a build that exists only
+because Asyncify behaves. And Emscripten has **no `sdl3_image` port** — only
+`sdl3.py` and `sdl3_ttf.py`. Tilesets go through `IMG_Load`, so the browser build
+would need SDL3_image built from source under `emcmake`, or it loses tiles.
+Separately, the AppImage is built on ubuntu-22.04 on purpose, for glibc, and
+`libsdl3-dev` is not in 24.04 let alone 22.04. Both are solvable; neither is
+free, and neither buys the player anything.
+
+**What SDL 3 would give us**, honestly: better HiDPI, better Wayland, a cleaner
+audio API, main callbacks. For a 2D tile-and-text renderer, nothing currently
+broken.
+
+*Not "never".* The condition to revisit is upstream Angband porting its own SDL
+front end, at which point the cost inverts — staying would be the divergence.
+Until then the pin is `release-3.4.16` if anyone experiments, not `main`, which
+is 3.5.0-dev.
+
+**What the investigation actually found.** `main-sdl.c` is 6,169 lines of SDL
+**1.2**, built by CI and shipped by nothing. Debian and Ubuntu have replaced
+`libsdl1.2-dev` with **sdl12-compat**, a shim implementing the SDL 1.2 API by
+dlopening SDL 2 — Fedora and Arch did the same earlier. So the `linux.yaml` job
+labelled *SDL* has not tested SDL 1.2 for some time; it tests SDL 2 through a
+translation layer, in a front end nobody runs, against a second copy of the sound
+backend. Our entire local investment in it is one hunk: the About box printing
+every credit line instead of the first. Scheduled as §6 of the Phase 2
+development plan.
+
+---
+
+**DEC-66 — The borg is revived as test infrastructure, and it is changed
+through data wherever data will do.** (3 September 2026. Applies DEC-11.
+Discharges the PLR-22 standing constraint.)
+
+Angband's borg was dismissed early as not required. That was right about
+entertainment and wrong about testing. We now have 110 unit suites and **not one
+of them plays the game** — nothing walks a character out of a town, across the
+wilderness, into a dungeon and back. The DOS smoke test is a six-second script;
+`scripts/screenshot/take.sh` drives a pre-made savefile through fixed keys. The
+borg is the only thing in the tree that can be made to play, and it is still
+there: 69,632 lines in `src/borg/`, **279 commits and none of them ours**,
+compiling warning-free against the current headers.
+
+**The decisive number is how little it needs to start running.** It segfaults on
+the first turn of every game for one reason: `borg_grids` is a static 66 × 198
+array and our depth-0 wilderness surface is 144 × 144, so `borg_update_map`
+indexes off the end of it — the guard in `borg_init_cave` compares against
+`z_info->dungeon_wid/hgt`, which still match, so it never fires. Grown, the same
+Warrior played roughly 1,400 log lines: stairs, doors, objects, monster
+tracking, melee, flight, stair-scumming, back to town for food. Wilderness
+terrain and dungeon mouths went past it without complaint.
+
+So this is not "port the borg to ZangbandZK". It is one array, a headless entry
+point, and then the spell tables.
+
+**The spell tables are the real work, and they decide the rule.**
+`borg_init_spell()` matches each class's spell list against a hand-written C
+table *positionally, by name*. All eight vanilla casters therefore fail at
+startup on their first spell — Mage expects `Magic Missile` and M9 gives it
+`Zap` — and the five Zangband classes fall through to
+`borg_spell_ratings = NULL` and an early return before `borg_magics` is
+allocated, raising nothing. Thirteen of fourteen classes are either a loud
+failure or a silent null.
+
+The obvious fix is to rewrite eight tables. **The decision is not to.** There are
+200 distinct spell names across the seven realms and 1,472 `spell:` lines in
+`class.txt`; rated once by name-and-realm that is ~200 entries in `lib/gamedata`
+rather than a table per class, and a new realm then costs nothing. DEC-11 gave up
+merge compatibility and kept cherry-pick compatibility on the argument that what
+it buys is "crashes, leaks, portability, undefined behaviour". `src/borg/` is the
+one subsystem where we have contributed nothing and upstream is still
+contributing — the same position DEC-65 found `main-sdl2.c` in, and the same
+conclusion follows. A `borg-rating:` field in a data file conflicts with nothing;
+a rewritten `borg_spell_ratings_MAGE[]` conflicts forever. **Where a borg change
+can live in data, it must.**
+
+**What the borg is not.** It does not know the rules, so it cannot tell us a rule
+is wrong. It reports crashes, assertions, corrupt savefiles and wedges. Turning
+it into a correctness tool means writing invariants *for* it — savefile
+round-trips mid-run, the player never on an impassable grid, pet upkeep agreeing
+with pet count — and the borg's contribution is that it supplies situations
+nobody would think to write down. Scheduled honestly as a robustness harness
+first.
+
+**One thing it found before it was even working.** Forcing each class through
+`borg_init` reported the Mindcrafter as having zero spells. That is a game
+question, not a borg question, and it is recorded as Open in the borg plan — but
+nothing else had noticed, which is this decision in miniature.
+
+Scheduled as §7 of the Phase 2 development plan, and planned in full in
+[borg-development-plan.md](borg-development-plan.md) as BRG-01 to BRG-21.

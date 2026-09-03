@@ -31,6 +31,445 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+3 September 2026 — the borg is one array away from playing
+===========================================================
+
+I dismissed the borg early. Angband's automatic player looked like a novelty —
+something to watch for fun — and there was a game to build. Steven came back to
+it from the other end: we have no automated play testing at all, the wilderness
+and ten new classes have arrived since, and the borg walks dungeons. Could it be
+the test harness?
+
+So I went and ran it, rather than reading it and guessing.
+
+The first thing I found is that it still compiles. ``src/borg/`` is 69,632 lines
+across 117 files, and it is Angband 4.2.x's borg **verbatim** — 279 commits have
+touched it and not one of them is mine. The last is upstream's from 11 August,
+four days before this project started. It builds warning-free against the
+current headers and links into the game. Four months of changing the game
+underneath it broke the compile in no way at all.
+
+The second thing I found is that it segfaults on the first turn of every game.
+``borg_update_map`` at ``ag->info |= BORG_OKAY``, which is
+``&borg_grids[y][x]``. ``borg_grids`` is a **static 66 × 198 array** — Angband's
+dungeon, fixed at compile time in ``borg-cave.h``. Our depth-0 level is the
+wilderness surface, and ``wild_surface()`` builds it square at
+``view × block_size``: ``cache-blocks:81`` gives a view of 9, block size is 16,
+so **144 × 144**. The borg scans the panel, checks ``square_in_bounds`` against
+the *cave*, and then indexes its own array with a ``y`` that reaches 143.
+
+There is a guard for exactly this, and it fires on the wrong question.
+``borg_init_cave`` compares its constants against ``z_info->dungeon_wid/hgt`` —
+still 198 and 66, because the *dungeon* has not changed. It passes. The borg
+never learns that the ground it is standing on is more than twice as tall as the
+only ground it was built for.
+
+Then I raised ``DUNGEON_HGT`` to 160, relaxed the check to ``<``, rebuilt, and
+watched it play. Fourteen hundred lines of log in one short run: standing on
+stairs, flowing toward down-stairs, opening a door, noticing a dropped Main
+Gauche, tracking a white deer, hitting a giant white mouse, fleeing a "scary
+guy", stair-scumming, then heading back to town because it was down to two
+rations. Wilderness terrain, dungeon mouths, level feelings — all of it went
+past without a complaint.
+
+**That is the whole finding.** I had assumed the borg was four months behind and
+would need a conversion. It is one static array behind. Everything else in the
+plan is optional; that one change turns a segfault into a smoke test.
+
+Past that it can only be a Warrior, and the reason is worth writing down because
+it is the same shape as the mistake I keep finding elsewhere.
+``borg_init_spell`` walks a class's spell list and matches it against a
+hand-written C table **positionally, comparing names**. So M9 broke all eight
+vanilla casters at once — the Mage's table wants ``Magic Missile`` at index 0 and
+the game now gives it ``Zap``, and the table has 30 entries against 224 spells,
+so the loop reads off the end of it too. I forced each class through
+``borg_init`` in turn and got eight named mismatches, one per class.
+
+The five classes we added are worse, and they are worse in the way that always
+costs more later: they fail **silently**. The ``switch`` has no arm for cidx 9
+to 13, so ``default:`` sets the ratings pointer to NULL and returns *before*
+``borg_magics`` is allocated. No warning. No failure flag. If the borg had been
+running when M7 landed, that would have been a one-line fix in M7 instead of a
+phase of its own now.
+
+It has zero references to pets, the wilderness, named dungeons, mutations or
+virtues. That last one stings a little — ``src/borg/`` is now the largest body
+of code in the tree that assumes every monster is hostile, which is precisely
+what the standing PLR-22 constraint was written to prevent.
+
+Two things I got wrong on the way. I spent a while trying to drive the borg by
+injecting keypresses through ``-mtest``, and chased an abort called
+"reincarnation failure" as though it were a borg defect. It is not: the borg was
+activating before ``character_dungeon`` was set, because my key sequence never
+actually finished the birth, and the number of keys birth wants depends on the
+roll. The harness was the bug. That is why the plan's first real requirement
+after the array is a proper headless entry point rather than a cleverer script —
+keypress injection is not a foundation. And I put ``borg.txt`` in two wrong
+directories before finding the right one, which is its own small argument for
+having the build install it.
+
+The plan is DEC-66 and §7 of the Phase 2 development plan: five phases, B0 to
+B4, twenty-one requirements. The rule I care most about is in the decision
+rather than the plan. Eight rewritten C tables would fix the casters and cost us
+a permanent conflict with a subsystem upstream is still actively maintaining.
+Two hundred spell names rated once in ``lib/gamedata``, keyed by name and realm,
+fix it and cost nothing — and a new realm after that is free. DEC-11 traded away
+merging and kept cherry-picking; this is one of the places where remembering
+that trade changes the design.
+
+One last thing, and it is the argument for the whole exercise in miniature.
+While forcing classes through ``borg_init`` to see which ones failed, the
+Mindcrafter reported **zero spells**. I have not chased it yet and it is a game
+question rather than a borg question. But nothing else had noticed, and the
+thing that noticed was a test harness that does not work yet.
+
+
+3 September 2026 — SDL 3, and the front end that is already not what it says
+=============================================================================
+
+Steven asked what it would take to move to SDL 3.4, and whether anything would
+break. The honest answer to the second half is what decided the first.
+
+I started by counting. The SDL 2 front end is ``main-sdl2.c`` at 8,502 lines, the
+``pui`` widget toolkit under ``src/sdl2`` at another 7,094, and ``snd-sdl.c`` at
+293. Two hundred and twenty-eight distinct SDL symbols. I made a list of every
+symbol SDL 3 renames or removes and counted the occurrences: **731**, and that
+is a floor — it excludes the ``SDL_Rect`` → ``SDL_FRect`` conversions the float
+renderer forces, and every ``event.key.keysym.sym`` that becomes
+``event.key.key``.
+
+Then I diffed the toolkit against upstream Angband, and that is where the
+question actually got answered. ``pui-ctrl.c``, ``pui-dlg.c`` and ``pui-misc.c``
+are **byte-identical** to upstream. ``main-sdl2.c`` differs by 677 lines, which
+is essentially the Emscripten work and nothing else. Fifteen thousand lines that
+somebody else maintains, and they are still maintaining them: the recent commits
+on those files are ``SDL2: check for allocation failures from SDL_strdup()`` and
+``SDL2: add missing checks for memory allocation failures``.
+
+DEC-11 gave up merge compatibility and deliberately kept cherry-pick
+compatibility, on the argument that cherry-picking needs only that a file "still
+exists and is recognisably related", and that the value it captures is exactly
+"crashes, leaks, portability, undefined behaviour". Those two commits are that
+list, verbatim. Porting to SDL 3 would not bend that rule, it would spend the
+thing the rule was written to protect — and spend it on the one part of the
+codebase where we have contributed almost nothing and gain almost nothing by
+owning.
+
+The web build settled it independently. Emscripten's SDL 3 port first appeared
+in emscripten 5.0.0 this January, ``sdl3_ttf`` in 5.0.3 in March; we are pinned
+to 3.1.51, so that is a four-major-version toolchain jump underneath a build
+whose whole existence depends on Asyncify behaving. And there **is no**
+``sdl3_image`` port. Only ``sdl3.py`` and ``sdl3_ttf.py`` exist. Our tilesets go
+through ``IMG_Load``, so the browser build would need SDL3_image built from
+source under ``emcmake`` and linked by hand, or it loses tiles. The AppImage has
+the same shape of problem from the other end: it is built on ubuntu-22.04 on
+purpose, for glibc, and ``libsdl3-dev`` is not in 24.04 let alone 22.04.
+
+So: no. We stay on SDL 2, and that is DEC-65.
+
+What the investigation actually turned up was the other front end. ``main-sdl.c``
+is 6,169 lines of SDL **1.2**, still built by CI, shipped by nothing. I had been
+thinking of it as harmless. It is not, quite: Debian and Ubuntu have replaced
+``libsdl1.2-dev`` with **sdl12-compat**, a shim that reimplements the SDL 1.2 API
+by dlopening SDL 2. Fedora and Arch did the same earlier. Which means the job in
+``linux.yaml`` labelled *SDL* is not testing SDL 1.2 at all any more. It is
+testing SDL 2, reached through a translation layer, in a front end nobody runs,
+against a second copy of the sound backend.
+
+I went looking for what we had changed in it, expecting to find a reason to keep
+it. One hunk: the About box, made to print every credit line instead of the
+first, to match ``main-sdl2.c``. That is the whole of our investment.
+
+There is something slightly funny about spending a day establishing that we
+should not move from SDL 2 to SDL 3, and finding at the end of it that the real
+work is moving from SDL 1.2 to SDL 2 — a migration the distributions have
+already performed on our behalf, without asking, and which we have not noticed
+because the build still goes green.
+
+3 September 2026 — thirty-five savefiles, and the difference between losing a book and inventing a priest
+=========================================================================================================
+
+The entry above this one, from 30 August, said the savefile format was fine and one
+function had never been brought into line with the rest. That was true and it was not
+the whole thing, and this is the rest of it.
+
+It was never versioning. A savefile records what it holds **by name** — ``prayer book``,
+``[Novice's Handbook]`` — so when DEC-50 replaced Angband's five prayer books with
+Zangband's four, every save in the corpus named an object the game no longer had. And
+every save carries the town temple's stock, and the temple sells prayer books. No version
+number helps with that. The bytes parsed perfectly and then asked for something that does
+not exist.
+
+What turned one missing book into a dead file was a return value doing two jobs.
+``rd_item()`` returned ``NULL`` both for *the list ended* and for *I cannot name this* —
+and the end-of-list marker is itself an item with no kind, ``wr_item``'s dummy. So a reader
+that met a vanished object could not tell which had happened. The ones that guessed
+"ended" stopped early and left the rest of the list unread, the stream desynchronised, and
+everything after it was noise. It now returns ``lost`` alongside, the record is always read
+to its end, and the artifact and ego failures no longer return mid-record — that last part
+is what had made this unrecoverable rather than merely lossy.
+
+Then ``rename.txt``, consulted only after a lookup has already failed, so a current save
+never reaches it. Twenty book titles from the four realms DEC-50 replaced, and the two
+monsters DEC-30 dropped. The trace that had shown 187 lost prayer books, 186 sorcery and
+126 shadow now shows zero.
+
+The corpus went from **every file refused** to 31 loading with everything intact and 4
+refused. The four are casters, and they are refused **on purpose**. Their spells are
+recorded by flat position and DEC-50 moved them, so there is no honest way to read them.
+That is the rule this settles on, and I want it written down because it is the kind of
+thing that gets eroded by a well-meaning fix later: *content can be dropped, identity
+cannot be invented*. A missing book is visible the moment you check your pack. A Priest
+quietly holding somebody else's spell list is not.
+
+The character is told once — "8 things went missing while you slept" — counted rather than
+announced item by item, because one removed kind can take every copy on every shelf in the
+world.
+
+Two things worth keeping from the testing. The corpus cannot catch a change that stops it
+loading, because by then there is nothing left to test with; so ``game/roundtrip`` now
+saves a character, renames a kind it is carrying **in the live table**, and loads it twice
+— once with no rename entry, where the object is lost and the character is fine, and once
+with one, where it comes back. Both break tests passed first time for a bad reason: they
+renamed the kind before ``reset_before_load()``, which runs ``init_angband()`` and rebuilds
+the object table from the data files, so the rename was undone and the test passed having
+broken nothing.
+
+And one real bug on the way: ``obj->sval`` is a ``uint8_t``, so ``lookup_sval()``'s ``-1``
+lands in it as 255 and ``obj->sval < 0`` is dead code.
+
+
+3 September 2026 — Trump, and the realm that was waiting for a side to be on
+=============================================================================
+
+DEC-54 deferred Trump whole back in 3.55.0, and the reason was not difficulty. Fourteen of
+its thirty-two spells summon a creature that serves you, and the game had no side for a
+monster to be on. Importing them as hostile summons would have turned a realm whose theme
+is *you deal the cards and the cards fight for you* into a realm that fills the room with
+enemies. So it waited for PLR-22. This is it arriving, and all seven realms now have books
+behind them — ``player/realm`` asserts zero empty realms rather than one.
+
+Before Trump could arrive, pets had to come from somewhere, and that was the phase before.
+Two mechanisms carry all of it: charming something already there, and summoning something
+that turns up on your side. Charming is three separate projections — ``MON_CHARM``,
+``MON_CHARM_ANIMAL``, ``MON_CHARM_UNDEAD`` — because Zangband has three, and each has a
+different notion of what it can work on, in realms that are genuinely different realms:
+persuasion is Life's, animals are Nature's, the dead are Death's. ``NO_CONF`` refuses the
+general charm only, because taming an animal and commanding a corpse are not persuasion.
+
+The nicest find in that phase was in ``summon_specific()``, which needed one line on
+``cave->mon_current`` — a field 4.2 already uses two lines earlier to put a summon in its
+summoner's group. A player's summon is hostile unless the caller asks otherwise, and the
+machinery to know whose summon it is was already sitting there.
+
+On Trump itself, one rule runs through every summon. Zangband writes ``bool pet = success``
+in all of them, with the comment ``/* was (randint1(5) > 2) */`` beside it — somebody had
+a dice roll there and deliberately replaced it with certainty. So a Trump summon that goes
+off is a pet, full stop, and the angry version is the *failed* casting, which reaches the
+miscast machinery the same way Death's and Chaos's do. The tests pin twelve summoning
+spells per fully-entitled class and **zero** plain ``SUMMON`` in the realm, because a
+single one mapped the old way would look right in every other test.
+
+Five spells are deferred, and I made a point of giving each its own reason rather than
+filing them behind a shared wall. *Shuffle* is a deck of many things — one d120 read off
+about twenty **unequal** bands, and 4.2's ``RANDOM`` picks uniformly, so even the outcomes
+I can express could not be weighted; the whole character of the spell is that the bad
+results are common. *Reset Recall* writes a recall depth the game does not offer.
+*Dimension Door* lets you choose where you arrive, and ``TELEPORT_TO`` does not, so mapping
+it there would make it Teleport, which the realm already has two spells earlier. *Joker
+Card* summons one of five ``SUMMON_BIZARRE`` groups, and 4.2's summon table is built round
+threat categories rather than round the joke. *Trump Lore* is ``identify_fully()``, the same
+wall Sorcery's Identify True hit. They are named in a test so a sixth cannot join them
+quietly.
+
+Two smaller things this phase found, both in the tooling rather than the game. The
+converter's book-line pattern was ``^book:\S+(?: \S+)? book:`` — every realm before Trump
+had a book-noun ending in the word *book*, and Trump's is a **deck**. So its books were
+invisible to the converter, the realm before Trump in each class ran on through them, and
+the checker reported correctly-emitted classes as broken. And ``TransferLib``, which stages
+``lib/gamedata`` for the unit tests, is a ``cmake -E copy_directory``: it compares
+timestamps and can decline to copy a file that was reverted within the same second it was
+staged. Two falsifications read a stale copy before I understood that.
+
+
+3 September 2026 — what a pet costs, and what it will not do
+=============================================================
+
+Three phases, and the theme running through them is that Zangband's documentation was right
+about the design more often than its code was clear about it.
+
+**Orders are a policy, not instructions.** PLR-25 asks for "nine command modes with
+per-mode distance behaviour". What Zangband has is nine menu entries, of which five are
+modes: five leash lengths, two toggles, one report, one dismiss. All nine are built. And
+the orders live on the *player*, not on each animal, which is the right shape — you are
+setting how your creatures behave, not telling each one what to do. The leash is signed and
+the sign is the meaning: positive is "stay within", negative is "keep at least this far
+away, and do not pick fights nearer the player than that". It goes to the savefile as
+signed 16-bit, with a test that sets it negative, because read unsigned that is 65511 — a
+legal-looking leash no order can produce.
+
+The command key is ``A``, not Zangband's ``p``. ``p`` is auto-explore here and in use.
+
+**Pets do not follow you downstairs, and that is a real disagreement with the requirement.**
+PLR-26 says pets "persist across level changes and saves, following the player where the
+mode implies it". The saves half is true and tested. The level-change half is an inference,
+and I went looking for what it was inferred from. There is **no pet-carrying code anywhere
+in Zangband 2.7.5** — ``change_level()`` unreferences the region and the monsters go with
+it, and searching both archived lineages for the mechanism Hengband added later
+(``party_mon``, ``preserve_pet``) finds nothing. And the documentation never mentions it: it
+explains the upkeep, the killing-blow rule, that pets trample you, that they anger easily,
+and every way of getting one. Taking one downstairs does not come up.
+
+So a pet is a per-level asset. That is coherent, it is Zangband's, and it is most of the
+answer to "does a summoner trivialise the game" — a stable has to be rebuilt every level.
+I flagged this one for Steven rather than deciding it alone, because it is a genuine gap
+between the requirement as written and the game as built, and adding following later is
+contained but it is new design under DEC-30, not a port.
+
+**Upkeep is a count, and then a cliff.** This is the one I nearly got wrong. A count is
+free — ``1 + level / pet_upkeep_div`` pets — and past that count the **sum of the pets'
+levels** is the percentage of mana regeneration withheld, clamped to 5..95. The charge is
+not per-pet-over-the-limit. One pet over the allowance turns the meter on for the *entire
+stable* at once, and a summoner's third animal can cost more than the first two together.
+That edge is the balancing pressure, and an implementation that charges only for the excess
+is a different game. The falsification produced 92% where the rule gives 95%, which is
+exactly the size of error that would have shipped.
+
+Zangband weights each pet by ``hdice * 2`` where its documentation says "the sum of the
+levels of your pets". Across its 883 monsters those are equal for 48% exactly, median
+difference zero, within two for 96% — the same number written twice, with the outliers all
+deliberately weak-for-their-depth creatures: leprechauns, memory moss, the quantum dot. So
+``race->level`` is the faithful port, and unusually the prose was right where the code
+looked wrong.
+
+One place I departed from the source on purpose. The charge multiplies mana **gains** only.
+A Blackguard's ``PF_COMBAT_REGEN`` makes ``sp_gain`` negative — it burns spell points rather
+than restoring them — so Zangband's unconditional multiply would mean a stable of pets
+*slowed the burn down*, paying the player for the thing the mechanism charges for. Measured:
+15 points burnt over a hundred turns alone, 1 with the multiply applied. Zangband had no
+class that loses mana by design, so it was never wrong there. Ours would have been.
+
+**And walking into your own animal swaps places with it.** PLR-24 asks for "confirmation
+before harming a pet". Zangband does something different and better: you push past it,
+and there is no prompt anywhere in its pet handling. The reasoning holds up — the danger is
+not that a player decides to punch their own wolf, it is that the wolf steps into the
+doorway on the turn you were walking through it. A prompt on that step would fire constantly
+and train the player to answer it unread. The exceptions are Zangband's list, and each one
+is a way of not being in command of yourself: confused, hallucinating, stunned, berserk, or
+unable to see what is there. Its Stormbringer clause — a one-in-three chance the sword
+swings anyway — has no equivalent here and I did not invent one.
+
+Anger goes in one place rather than seven. ``mon_take_hit()`` is *the* player-caused-damage
+entry point in 4.2 — melee, missiles, every projection — and monster-caused damage goes
+through ``mon_take_nonplayer_hit()`` instead. Zangband had to call ``anger_monster()`` at
+each site because its damage path had no such split, and the sites it missed are why a
+player there could drop a wall on a pet for free. Both halves are tested, because a pet must
+*not* blame you for a hostile monster's fireball.
+
+Aggravation had to move. 4.2 reads ``OF_AGGRAVATE`` inside ``monster_reduce_sleep()``, which
+only a sleeping monster reaches — and since PLR-23 no ally is ever asleep, so the rule would
+have been unreachable for exactly the monsters it is about.
+
+The virtue writes came across too, and they are worth a note. Zangband changes four virtues
+when an ally turns — Individualism up, Honour, Justice and Compassion down — and they were
+dead numbers there, because it had no consumer for any virtue. Here they are live under
+PLR-21, so turning on a creature that trusted you now reaches a Chaos patron's generosity
+and what you dream about at an inn. Something written and unused for twenty years started
+working.
+
+*A note on process, again.* The confusion test passed against a deliberately broken build.
+It asserted "they are not on the same grid" and "one of them moved" — both true after a
+swap as well as after a failed swap. The code was right and the test was not, and only
+running the falsification showed it.
+
+
+3 September 2026 — a monster can be on your side
+=================================================
+
+M10, and the invariant the whole milestone rests on: a monster is not necessarily an enemy.
+The plan has said since M0 that nothing before M10 should deepen the assumption that it is.
+This is the phase that spends that.
+
+The requirement document names the wrong mechanism, which is worth recording because it is
+the second time. §2.6 cites ``RF6_FRIENDLY`` with an ``is_pet()`` predicate; ``RF6_*`` is
+Zangband's *spell* flag set and has nothing to do with allegiance. What it actually is: two
+bits stolen inside ``m_ptr->smart``, the smart-learn bitfield, both carrying an ``/* XXX */``
+marker in ``defines.h``.
+
+We take the states and leave the encoding, and the reason is a bug in the original.
+``set_pet()`` was ``m_ptr->smart |= SM_PET`` and never cleared ``SM_FRIENDLY``;
+``set_friendly()`` was the mirror image. Both bits could stand at once, and the monster
+behaved as whichever predicate happened to be tested first — which is ``is_pet()`` almost
+everywhere. So a pet the player deliberately released kept taking orders and kept costing
+upkeep. One enum field assigned through one setter cannot reach that state.
+``MON_ALLEGIANCE_HOSTILE`` is zero, so every existing creation path — generation, breeding,
+shapechange, the townsfolk — keeps producing hostile monsters without being told to.
+
+4.2 has no ``RF_GOOD``, and ``are_enemies()`` needs one, because Zangband checks alignment
+*before* sides: a good creature and an evil one fight whatever side either is on, including
+two of the player's own pets. Without the flag that rule reads half a table and never fires.
+
+That found a data bug I would not have gone looking for. 4.2 gives monsters a ``base:``
+template whose flags merge into the race's, and the ``dragon`` and ``ancient dragon`` bases
+carry ``EVIL``. So the law drake and the Great Wyrm of Law — GOOD and *not* evil in Zangband
+— came out GOOD **and** EVIL here, which made each of them an enemy of both alignments and
+of nothing else. Balance, not Law. The balance drake keeps both flags because Zangband gives
+it both deliberately, and a test pins the difference in both directions so a later tidy-up
+cannot flatten one into the other.
+
+PLR-27 asks for pets to be "visually distinguishable", and it turns out that is a word, not
+a colour. Zangband's ASCII distinction was the look string ``" (pet) "``; ``MONST_PET`` and
+``MONST_FRIEND`` were flags for its graphical Tk client and its borg, never for the map. So
+we annotate look and the monster list, in the same shape as the sleep tag, and leave the
+glyph alone — recolouring would have to beat three attr rules already in place (multi-hued,
+purple uniques, shapechangers) and would lose to all three on the monsters most worth
+identifying. The one change from the original is putting the word *first* rather than after
+the health and the recall prompt, because that is where a player reading a crowded floor
+stops.
+
+Then phase 2, and the pleasant discovery that 4.2 was much closer to this than the survey
+said. The requirement's conclusion was that "every place 4.2 assumes monster ⇒ enemy is a
+potential defect site" — true of the goal code, and **not** true of the combat code, because
+4.2 already carries a complete monster-versus-monster path built for the Necromancer's
+``MON_TMD_COMMAND`` power. ``monster_attack_monster()`` resolves blows with the same effects
+the player takes, ``mon_take_nonplayer_hit()`` awards no experience and leaves uniques at one
+hit point, ``do_mon_spell()`` already rolls against a target monster's armour class when
+``mon->target.midx`` is set, and the bolt and ball handlers already aim there. Phase 2 reuses
+all of it and writes none of it. PLR-31 turned out to be very nearly already true.
+
+Allies get their own branch of ``get_move()`` rather than a substituted target, and that
+distinction matters more than it sounds. Everything ``get_move()`` does after choosing a
+target is about the *player*: it walks the noise and scent heatmaps flowing out of the
+player's grid, it flees *from* the player, and its pack AI works to surround the player and
+pull them out of corridors. Swapping the target grid would leave a pet fleeing from its
+owner and trying to surround its own enemy with a pack that is not there. Zangband split it
+the same way.
+
+An ally is always awake, because all six of 4.2's activity tests measure the player — can it
+see, hear or smell them, is it hurt, is it burning — and an ally satisfies none of them while
+standing next to something it should be fighting. It would sleep through the battle.
+Zangband got to the same place from the other direction, waking *every* monster on the level
+whenever the player has pets at all; ours is the narrow version, and the test pairs a pet
+with a hostile monster at the same distance so it cannot pass by waking everything.
+
+One ordering choice that is not cosmetic: the enemy check goes **before**
+``monster_turn_try_push()``. That function's ``monster_can_kill()`` lets a monster with
+``KILL_BODY`` walk over a weaker one and delete it outright — so a pet standing between the
+player and something large would simply stop existing, with no blows, no message and nothing
+to react to.
+
+Two things kept from the source deliberately. Target selection takes the **first** qualifying
+monster scanning backwards rather than the nearest, because Zangband's comment says newer
+monsters tend to be closer and the effect is that a pack of pets spreads across several
+enemies instead of converging on one. And a remembered target is kept while it still
+qualifies, so a pet does not abandon a wounded enemy every time something fresher walks in.
+
+One limitation recorded rather than fixed: ``remove_bad_spells()`` filters a monster's spell
+list against what the **player** is known to resist. For a pet casting at a monster, that is
+aimed at the wrong creature. It makes a pet slightly worse at choosing spells and never
+wrong about the result, so it waits until there is a reason to touch it.
+
+
 30 August 2026 — every old character stopped loading, and it was not what I thought
 ====================================================================================
 
