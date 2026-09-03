@@ -414,6 +414,100 @@ static bool get_move_bodyguard(struct monster *mon)
 
 
 /**
+ * Is this monster worth attacking, from that one's point of view?
+ *
+ * ZangbandTK (PLR-23).  Zangband's `nice_target()`
+ * ([melee2.c:102](../archive/zangband/src/melee2.c#L102)), whose rules are:
+ * not itself, not dead, an actual enemy, close enough, and reachable.
+ *
+ * "Close enough" is a Manhattan distance of twenty, which is the original's
+ * own Mega-Hack and is kept: without a cap, every non-hostile monster on the
+ * level scans every other one every turn, and the pathological case is a
+ * summoner's stable.
+ *
+ * The leash rules only apply to pets, and are the reason a pet on "stay away"
+ * does not charge across the room: it will not pick a fight nearer the player
+ * than its leash allows, and on a positive leash it will not chase something
+ * further from the player than it is.
+ */
+static bool monster_nice_target(const struct monster *mon,
+								const struct monster *t_mon)
+{
+	if (!t_mon || t_mon == mon || !t_mon->race) return false;
+
+	if (!monsters_are_enemies(mon, t_mon)) return false;
+
+	/* Mega Hack -- the target must be close (Zangband's own comment) */
+	if (ABS(mon->grid.y - t_mon->grid.y)
+			+ ABS(mon->grid.x - t_mon->grid.x) > 20) {
+		return false;
+	}
+
+	if (monster_is_pet(mon)) {
+		if (player->pet_follow_distance < 0) {
+			/* Told to keep away: no fighting near the player */
+			if (t_mon->cdis <= (0 - player->pet_follow_distance)) return false;
+		} else if ((mon->cdis < t_mon->cdis)
+				&& (t_mon->cdis > player->pet_follow_distance)) {
+			/* Told to stay close: no chasing things out past the leash */
+			return false;
+		}
+	}
+
+	/* It has to be reachable, unless the hunter goes through walls */
+	if (!monster_passes_walls(mon)
+			&& !projectable(cave, mon->grid, t_mon->grid, PROJECT_NONE)) {
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * Find something for a non-hostile monster to fight, and remember it.
+ *
+ * ZangbandTK (PLR-23).  Zangband's `get_enemy_target()`
+ * ([melee2.c:520](../archive/zangband/src/melee2.c#L520)): keep the target you
+ * have while it is still worth having, and otherwise take the **first** one
+ * found scanning the monster list backwards.
+ *
+ * First rather than nearest, which looks like a bug and is not: Zangband's
+ * comment says newer monsters tend to be closer, and the practical effect is
+ * that a pet goes for whatever just arrived rather than recomputing a best
+ * target every turn while the fight moves around it. Nearest-first also makes
+ * a pack of pets converge on one victim; this spreads them.
+ */
+bool monster_find_enemy(struct monster *mon)
+{
+	int i;
+
+	/* Do we already have a nice enemy? */
+	if (mon->target.midx > 0) {
+		struct monster *t_mon = cave_monster(cave, mon->target.midx);
+
+		if (monster_nice_target(mon, t_mon)) {
+			mon->target.grid = t_mon->grid;
+			return true;
+		}
+
+		/* Forget it */
+		mon->target.midx = 0;
+	}
+
+	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+		struct monster *t_mon = cave_monster(cave, i);
+
+		if (monster_nice_target(mon, t_mon)) {
+			mon->target.midx = t_mon->midx;
+			mon->target.grid = t_mon->grid;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
  * Choose the best direction to advance toward the player, using sound or scent.
  *
  * Ghosts and rock-eaters generally just head straight for the player. Other
@@ -878,11 +972,74 @@ static int get_move_choose_direction(struct loc offset)
  * The function then returns false if we're already where we want to be, and
  * otherwise sets the chosen direction to step and returns true.
  */
+/**
+ * Where a monster on the player's side is trying to get to (PLR-23).
+ *
+ * Its own branch rather than a target swap inside `get_move()`, because
+ * almost everything that function does afterwards is about the player: it
+ * follows the noise and scent heatmaps that flow from the player's grid, it
+ * flees *from* the player, and its pack AI works to surround the player and
+ * pull them out of corridors. None of that means anything for a monster
+ * fighting alongside them. Zangband split it the same way, for the same
+ * reason ([melee2.c:3121](../archive/zangband/src/melee2.c#L3121)).
+ *
+ * The order is: fight something if there is something worth fighting;
+ * otherwise, if you are a pet and off your leash, come back; otherwise mill
+ * about. A friendly monster never comes looking for the player, which is the
+ * whole difference between friendly and pet in movement terms.
+ */
+static bool get_move_ally(struct monster *mon, int *dir, bool *good)
+{
+	struct loc grid = loc(0, 0);
+
+	if (monster_find_enemy(mon)) {
+		grid = loc_diff(mon->target.grid, mon->grid);
+	} else if (monster_is_pet(mon)) {
+		int leash = player->pet_follow_distance;
+		bool avoid = (leash < 0) && (mon->cdis <= (0 - leash));
+		bool lonely = !avoid && (mon->cdis > leash);
+		bool distant = mon->cdis > PET_SEEK_DIST;
+
+		if (avoid) {
+			/* Too close when told to keep away: walk away from the player */
+			grid = loc_diff(mon->grid, player->grid);
+		} else if (lonely || distant) {
+			/*
+			 * Come and find them.  The leash is clamped to PET_SEEK_DIST for
+			 * the search, as Zangband does: on "seek and destroy" the leash
+			 * is 255, and a pet that has lost its fight would otherwise be
+			 * content to stand half a level away.
+			 */
+			int keep = player->pet_follow_distance;
+
+			if (keep > PET_SEEK_DIST) player->pet_follow_distance = PET_SEEK_DIST;
+			if (get_move_advance(mon, good)) {
+				grid = loc_diff(mon->target.grid, mon->grid);
+			}
+			player->pet_follow_distance = keep;
+		}
+	}
+
+	if (loc_is_zero(grid)) {
+		grid = get_move_random(mon);
+	}
+	if (loc_is_zero(grid)) return false;
+
+	*dir = get_move_choose_direction(grid);
+
+	return true;
+}
+
 static bool get_move(struct monster *mon, int *dir, bool *good)
 {
 	struct loc target = monster_is_decoyed(mon) ? cave_find_decoy(cave) :
 		player->grid;
 	bool group_ai = rf_has(mon->race->flags, RF_GROUP_AI);
+
+	/* A monster on the player's side has somewhere else to be (PLR-23) */
+	if (!monster_is_hostile(mon)) {
+		return get_move_ally(mon, dir, good);
+	}
 
 	/* Offset to current position to move toward */
 	struct loc grid = loc(0, 0);
@@ -1245,9 +1402,19 @@ static bool monster_turn_can_move(struct monster *mon, const char *m_name,
 
 		return true;
 	} else if (square_iscloseddoor(cave, new)|| square_issecretdoor(cave, new)){
-		/* Don't allow a confused move to open a door. */
+		/*
+		 * Don't allow a confused move to open a door, and don't allow a pet
+		 * to unless the player said it could (ZangbandTK, PLR-25).
+		 *
+		 * A pet that opens doors is a pet that lets things out. Zangband made
+		 * it a standing order for exactly that reason, and defaults it off.
+		 * Bashing is not gated -- a monster strong enough to break a door
+		 * down is not being discreet either way, and the original gates only
+		 * opening ([melee2.c:359](../archive/zangband/src/melee2.c#L359)).
+		 */
 		bool can_open = rf_has(mon->race->flags, RF_OPEN_DOOR) &&
-			!confused;
+			!confused &&
+			(!monster_is_pet(mon) || player->pet_open_doors);
 		/* During a confused move, a monster only bashes sometimes. */
 		bool can_bash = rf_has(mon->race->flags, RF_BASH_DOOR) &&
 			(!confused || one_in_(3));
@@ -1435,6 +1602,20 @@ static void monster_turn_grab_objects(struct monster *mon, const char *m_name,
 	/* Abort if can't pickup/kill */
 	if (!rf_has(mon->race->flags, RF_TAKE_ITEM) &&
 		!rf_has(mon->race->flags, RF_KILL_ITEM)) {
+		return;
+	}
+
+	/*
+	 * A pet only picks things up if the player said it could (PLR-25).
+	 *
+	 * Zangband gates picking up and not destroying
+	 * ([melee2.c:2570](../archive/zangband/src/melee2.c#L2570)), which reads
+	 * odd until you see what the order is for: a pet carrying your drops
+	 * around is an inventory problem, and a pet eating them is a monster
+	 * being a monster.
+	 */
+	if (monster_is_pet(mon) && !player->pet_pickup_items
+			&& !rf_has(mon->race->flags, RF_KILL_ITEM)) {
 		return;
 	}
 
@@ -1644,6 +1825,17 @@ static void monster_turn(struct monster *mon)
 	/* Let other group monsters know about the player */
 	monster_group_rouse(cave, mon);
 
+	/*
+	 * ZangbandTK (PLR-23): pick a fight before deciding how to attack.
+	 *
+	 * Here rather than inside the movement code because the ranged attack
+	 * below comes first, and a pet that only found its target while working
+	 * out where to walk would spend the turn it met something silent.
+	 */
+	if (!monster_is_hostile(mon)) {
+		(void) monster_find_enemy(mon);
+	}
+
 	/* Try to multiply - this can use up a turn */
 	if (monster_turn_multiply(mon))
 		return;
@@ -1729,7 +1921,34 @@ static void monster_turn(struct monster *mon)
 
 		/* A monster is in the way, try to push past/kill */
 		if (square_monster(cave, new)) {
-			did_something = monster_turn_try_push(mon, m_name, new);
+			struct monster *t_mon = square_monster(cave, new);
+
+			/*
+			 * ZangbandTK (PLR-23): unless it is an enemy, in which case
+			 * fight it.
+			 *
+			 * Before the push-past check, not after: `monster_can_kill()`
+			 * lets a stronger monster with KILL_BODY walk over a weaker one
+			 * and delete it outright, which for a pet standing between the
+			 * player and something large would be a silent death with no
+			 * blows, no message and no chance to intervene.
+			 *
+			 * The resolver is 4.2's own `monster_attack_monster()`, which
+			 * already existed for the Necromancer's commanded monster: same
+			 * blows, same effects, and `mon_take_nonplayer_hit()` for the
+			 * damage -- which awards no experience and leaves uniques at one
+			 * hit point, so a pet cannot farm either (PLR-31).
+			 */
+			if (monsters_are_enemies(mon, t_mon)) {
+				if (monster_is_visible(mon))
+					rf_on(lore->flags, RF_NEVER_BLOW);
+
+				if (rf_has(mon->race->flags, RF_NEVER_BLOW)) continue;
+
+				did_something = monster_attack_monster(mon, t_mon);
+			} else {
+				did_something = monster_turn_try_push(mon, m_name, new);
+			}
 		} else {
 			/* Otherwise we can just move */
 			monster_swap(mon->grid, new);
@@ -1793,6 +2012,21 @@ static bool monster_check_active(struct monster *mon)
 		mflag_on(mon->mflag, MFLAG_ACTIVE);
 	} else if (monster_taking_terrain_damage(cave, mon)) {
 		/* Monster is taking damage from the terrain */
+		mflag_on(mon->mflag, MFLAG_ACTIVE);
+	} else if (!monster_is_hostile(mon)) {
+		/*
+		 * ZangbandTK (PLR-23): a monster on the player's side is always
+		 * awake.
+		 *
+		 * Every test above measures the *player*: can it see, hear or smell
+		 * them.  A pet is not hunting the player, so all six can be false
+		 * while it is standing next to something it should be fighting, and
+		 * it would spend the fight asleep.  Zangband reached the same place
+		 * from the other direction, waking every monster on the level while
+		 * the player has pets at all
+		 * ([melee2.c:3357](../archive/zangband/src/melee2.c#L3357)); this is
+		 * the narrower version of that.
+		 */
 		mflag_on(mon->mflag, MFLAG_ACTIVE);
 	} else {
 		/* Otherwise go passive */

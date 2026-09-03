@@ -898,6 +898,22 @@ struct player {
 	struct player_state state;			/* Calculatable state */
 	struct player_state known_state;	/* What the player can know of the above */
 	struct player_upkeep *upkeep;		/* Temporary player-related values */
+
+	/**
+	 * Standing orders for pets (ZangbandTK, PLR-25).
+	 *
+	 * One set for all of them, as in Zangband: the commands are a policy the
+	 * player sets, not instructions given to an individual animal.
+	 *
+	 * `pet_follow_distance` is a leash length in grids, and its sign carries
+	 * meaning -- positive is "stay within this far of me", negative is "stay
+	 * at least this far away". That is Zangband's encoding
+	 * ([defines.h:757](../archive/zangband/src/defines.h#L757)) and it is why
+	 * the field is signed.
+	 */
+	int16_t pet_follow_distance;	/* Leash length; negative means keep away */
+	bool pet_open_doors;			/* Pets may open doors */
+	bool pet_pickup_items;			/* Pets may pick things up */
 };
 
 

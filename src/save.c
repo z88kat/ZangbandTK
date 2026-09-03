@@ -611,6 +611,16 @@ void wr_player(void)
 	/* # of turns spent resting */
 	wr_u32b(player->resting_turn);
 
+	/*
+	 * ZangbandTK (PLR-25): standing orders for pets, in player block
+	 * version 6.  Three fields rather than one packed word, because the
+	 * leash is signed and the other two are not, and a packed word would
+	 * have to be unpacked correctly by every future reader.
+	 */
+	wr_s16b(player->pet_follow_distance);
+	wr_byte(player->pet_open_doors);
+	wr_byte(player->pet_pickup_items);
+
 	/* Future use */
 	for (i = 0; i < 8; i++) wr_u32b(0L);
 }

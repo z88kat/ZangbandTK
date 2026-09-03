@@ -2540,3 +2540,60 @@ plausible-looking monster with the wrong group and a wrong side.
 so today the states are reachable only through the wizard command added with
 them. That is deliberate: PLR-22 is a change to an invariant, and it is worth
 landing and testing on its own before anything depends on it.
+
+---
+
+**DEC-59 — Allies get their own branch of the AI, and most of the machinery
+they need was already there.** (M10 phase 2, 3 September 2026.)
+
+PLR-23 asks for monster AI that accounts for friendly monsters. Three findings.
+
+**4.2 is much closer to this than §2.6 says.** The requirement document's survey
+concluded that "every place 4.2 assumes monster ⇒ enemy is a potential defect
+site". True of the *goal* code, and not true of the *combat* code, because 4.2
+already carries a complete monster-versus-monster path built for the
+Necromancer's `MON_TMD_COMMAND` power: `monster_attack_monster()` resolves
+blows with the same effects the player takes; `mon_take_nonplayer_hit()` applies
+the damage, awards no experience and leaves uniques at one hit point;
+`do_mon_spell()` already rolls against a target monster's armour class instead
+of the player's saving throw when `mon->target.midx` is set; and the bolt and
+ball handlers already aim there. Phase 2 reuses all of it and writes none of it.
+**PLR-31 is therefore very nearly already true** — its own phase will be a check
+rather than a build.
+
+**Allies get a branch, not a substituted target.** Everything `get_move()` does
+after choosing a target is about the player: it walks the noise and scent
+heatmaps that flow out of the player's grid, it flees *from* the player, and its
+pack AI works to surround the player and pull them out of corridors. Swapping
+the target grid would leave a pet fleeing from its owner and trying to surround
+its own enemy with a pack that isn't there. Zangband split it the same way
+([melee2.c:3121](../../archive/zangband/src/melee2.c#L3121)) and so do we.
+
+**An ally is always awake.** All six of 4.2's activity tests measure the player
+— can it see, hear or smell them, is it hurt, is it burning. An ally satisfies
+none of them while standing next to something it should be fighting, and would
+sleep through the battle. Zangband arrived at the same place from the other
+direction, waking *every* monster on the level whenever the player has pets at
+all ([melee2.c:3357](../../archive/zangband/src/melee2.c#L3357)); ours is the
+narrow version, and the test pairs a pet with a hostile monster at the same
+distance so it cannot pass by waking everything.
+
+**One ordering choice that is not cosmetic.** The enemy check goes *before*
+`monster_turn_try_push()`, not after. That function's `monster_can_kill()` lets
+a monster with `KILL_BODY` walk over a weaker one and delete it outright — so a
+pet standing between the player and something large would simply stop existing,
+with no blows, no message and nothing to react to. Enemies fight; only
+non-enemies get pushed past.
+
+*Kept from the source deliberately.* Target selection takes the **first**
+qualifying monster scanning backwards, not the nearest — Zangband's comment says
+newer monsters tend to be closer, and the effect is that a pack of pets spreads
+across several enemies instead of converging on one. And a remembered target is
+kept while it still qualifies, so a pet does not abandon a wounded enemy each
+time something fresher walks in.
+
+*Known limitation, recorded rather than fixed.* `remove_bad_spells()` filters a
+monster's spell list against what the **player** is known to resist. For a pet
+casting at a monster that filtering is aimed at the wrong creature. It makes a
+pet slightly worse at choosing spells and never wrong about the result, so it
+waits until there is a reason to touch it.

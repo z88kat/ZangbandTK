@@ -783,6 +783,14 @@ void monster_set_allegiance(struct monster *mon, enum monster_allegiance side)
 
 	mon->allegiance = side;
 
+	/*
+	 * Forget whatever it was fighting (PLR-23).  A monster's enemies change
+	 * when its side does, and a stale monster target would have a monster
+	 * that just turned on the player still trying to bolt one of its former
+	 * allies.
+	 */
+	mon->target.midx = 0;
+
 	/* The monster list and the health bar both say whose side it is on */
 	player->upkeep->redraw |= (PR_MONLIST | PR_HEALTH);
 	square_light_spot(cave, mon->grid);

@@ -98,6 +98,7 @@ int rd_player_2(void);
 int rd_player_3(void);
 int rd_player_4(void);
 int rd_player(void);
+int rd_player_5(void);
 int rd_ignore(void);
 int rd_misc(void);
 int rd_player_hp(void);

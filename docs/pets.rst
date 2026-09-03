@@ -111,9 +111,49 @@ Characters saved before this was added still open. Their monsters are all
 hostile, which is what they were.
 
 
+How they fight
+--------------
+
+A monster on your side is not simply a hostile monster with the attacking
+switched off. Angband's monster AI has exactly one goal in it — every road
+through it leads to the player, following the sound and scent that spread out
+from wherever you are standing, or running away from the same place, or working
+with its pack to surround you. None of that describes an ally, so allies think
+differently.
+
+**They pick a fight.** An ally looks for the nearest thing it is at war with,
+within about twenty squares, that it can actually reach, and goes for it. Once
+it has picked something it stays with it until the fight is over or the target
+stops being worth chasing — it will not drop a wounded enemy because something
+fresher walked into the room.
+
+**They stay awake.** Angband decides whether a monster is thinking by asking
+whether it can see, hear or smell *you*. An ally on the far side of a level
+satisfies none of those and would otherwise sleep through its own battle.
+
+**They cast at what they are fighting.** A pet with spells throws them at its
+enemy, rolling against that creature's armour rather than against your saving
+throw.
+
+**And when two enemies meet, they fight.** Neither shoves past the other, and
+neither tramples the other underfoot — a large hostile monster cannot simply
+walk over your pet and delete it on the way to you. It has to kill it, one blow
+at a time, where you can see it happening.
+
+A pet fighting for you earns you nothing. Experience is for the killing blow,
+and if your pet struck it, the blow was not yours. A pet cannot finish a unique
+either: uniques survive anything that is not the player at one hit point.
+
+Pets also keep to a leash — how close they stay, whether they will fight near
+you, whether they open doors, whether they pick things up. Those are orders you
+give, and the next section covers giving them; until then every pet follows the
+default, which is to stay within about six squares, leave doors alone and leave
+your things where they fall.
+
+
 Not yet written
 ---------------
 
-Commanding pets, what they cost, how they behave in a fight, what makes one in
-the first place, and what makes one stop being one. Those arrive with the rest
-of M10 and this chapter grows a section each time.
+Giving the orders, what pets cost you in mana, what makes one in the first
+place, and what makes one stop being one. Those arrive with the rest of M10 and
+this chapter grows a section each time.

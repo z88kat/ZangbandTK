@@ -812,7 +812,8 @@ int rd_quests_1(void) { return rd_quests_aux(false, false, false); }
  * shape for the same reason.
  */
 static int rd_player_aux(bool with_patron, bool with_virtues,
-						 bool with_mutations, bool with_realms)
+						 bool with_mutations, bool with_realms,
+						 bool with_pet_orders)
 {
 	int i;
 	uint8_t tmp8u, num;
@@ -1102,17 +1103,35 @@ static int rd_player_aux(bool with_patron, bool with_virtues,
 	/* # of turns spent resting */
 	rd_u32b(&player->resting_turn);
 
+	/*
+	 * ZangbandTK (PLR-25): standing orders for pets, from player block
+	 * version 6.  An older character has none recorded and gets the default
+	 * a new one is born with, which is the same leash Zangband starts on.
+	 */
+	if (with_pet_orders) {
+		rd_s16b(&player->pet_follow_distance);
+		rd_byte(&tmp8u);
+		player->pet_open_doors = (tmp8u != 0);
+		rd_byte(&tmp8u);
+		player->pet_pickup_items = (tmp8u != 0);
+	} else {
+		player->pet_follow_distance = PET_FOLLOW_DIST;
+		player->pet_open_doors = false;
+		player->pet_pickup_items = false;
+	}
+
 	/* Future use */
 	strip_bytes(32);
 
 	return 0;
 }
 
-int rd_player_1(void) { return rd_player_aux(false, false, false, false); }
-int rd_player_2(void) { return rd_player_aux(true, false, false, false); }
-int rd_player_3(void) { return rd_player_aux(true, true, false, false); }
-int rd_player_4(void) { return rd_player_aux(true, true, true, false); }
-int rd_player(void) { return rd_player_aux(true, true, true, true); }
+int rd_player_1(void) { return rd_player_aux(false, false, false, false, false); }
+int rd_player_2(void) { return rd_player_aux(true, false, false, false, false); }
+int rd_player_3(void) { return rd_player_aux(true, true, false, false, false); }
+int rd_player_4(void) { return rd_player_aux(true, true, true, false, false); }
+int rd_player_5(void) { return rd_player_aux(true, true, true, true, false); }
+int rd_player(void) { return rd_player_aux(true, true, true, true, true); }
 
 
 

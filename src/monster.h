@@ -406,6 +406,24 @@ struct monster_race {
  * `mem_zalloc` or an assignment from a zeroed struct, so nothing has to be
  * told to be hostile and no creation path can forget to be.
  */
+/**
+ * Pet leash lengths, in grids (ZangbandTK, PLR-25).
+ *
+ * Zangband's own five ([defines.h:757](../archive/zangband/src/defines.h#L757)).
+ * A negative length means the opposite: keep at least that far away, and do
+ * not fight anything closer to the player than that.
+ *
+ * PET_SEEK_DIST is not one of the five a player can choose. It is the distance
+ * at which a pet that has wandered off gives up on finding its own fight and
+ * comes looking for you, whatever leash it is on.
+ */
+#define PET_CLOSE_DIST		1
+#define PET_FOLLOW_DIST		6
+#define PET_SEEK_DIST		10
+#define PET_DESTROY_DIST	255
+#define PET_SPACE_DIST		(-10)
+#define PET_AWAY_DIST		(-25)
+
 enum monster_allegiance {
 	MON_ALLEGIANCE_HOSTILE = 0,
 	MON_ALLEGIANCE_FRIENDLY,

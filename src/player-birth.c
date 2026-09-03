@@ -1055,6 +1055,18 @@ void player_generate(struct player *p, const struct player_race *r,
 	/* Always start with a well fed player */
 	p->timed[TMD_FOOD] = PY_FOOD_FULL - 1;
 
+	/*
+	 * ZangbandTK (PLR-25): the standing orders pets start under.
+	 *
+	 * "Follow me", doors shut, hands off -- Zangband's own defaults.  A
+	 * character with no pets is unaffected by all three, but a summoning
+	 * spell can arrive before the player has ever opened the pet menu, and
+	 * a leash of zero would mean "stay exactly on top of me".
+	 */
+	p->pet_follow_distance = PET_FOLLOW_DIST;
+	p->pet_open_doors = false;
+	p->pet_pickup_items = false;
+
 	if (!old_history) {
 		if (p->history) {
 			string_free(p->history);

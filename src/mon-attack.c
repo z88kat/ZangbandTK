@@ -67,7 +67,32 @@
 static void monster_get_target_dist_grid(struct monster *mon, int *dist,
 										 struct loc *grid)
 {
-	if (monster_is_decoyed(mon)) {
+	struct monster *t_mon = (mon->target.midx > 0)
+		? cave_monster(cave, mon->target.midx) : NULL;
+
+	/*
+	 * ZangbandTK (PLR-23): a monster on the player's side aims at whatever it
+	 * is fighting, not at the player.
+	 *
+	 * Everything downstream of this reads right once the grid does: the spell
+	 * chooser measures range from it, `do_mon_spell()` already rolls against
+	 * a monster's armour class instead of the player's saving throw when
+	 * `target.midx` is set, and the bolt and ball handlers already aim there.
+	 * All of that was built for the Necromancer's commanded monster and is
+	 * reused whole.
+	 *
+	 * Restricted to non-hostile monsters on purpose. A *commanded* monster is
+	 * hostile and also carries a target.midx, and it has always measured its
+	 * range to the player; changing that is not this requirement's business.
+	 */
+	if (t_mon && t_mon->race && !monster_is_hostile(mon)) {
+		if (dist) {
+			*dist = distance(mon->grid, t_mon->grid);
+		}
+		if (grid) {
+			*grid = t_mon->grid;
+		}
+	} else if (monster_is_decoyed(mon)) {
 		struct loc decoy = cave_find_decoy(cave);
 		if (dist) {
 			*dist = distance(mon->grid, decoy);

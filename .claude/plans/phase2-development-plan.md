@@ -573,7 +573,7 @@ Anyone planning this should expect it to break into more phases than M8 did, not
 | | Phase | Requirements | State |
 |---|---|---|---|
 | 1 | Allegiance exists and is visible | PLR-22, PLR-29, PLR-27 | ✅ 3.67.0 |
-| 2 | The AI | PLR-23 | |
+| 2 | The AI | PLR-23 | ✅ 3.68.0 |
 | 3 | Commands and persistence | PLR-25, PLR-26 | |
 | 4 | Balance | PLR-30, PLR-31 | |
 | 5 | Player-side safety | PLR-24, PLR-33 | |

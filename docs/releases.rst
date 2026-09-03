@@ -33,6 +33,33 @@ Unreleased
 Pets — 3 September 2026
 -----------------------
 
+- **3.68.0** — **Allies fight** (M10 phase 2; PLR-23, DEC-59). A monster on the
+  player's side now picks its own enemy, stays awake while it is nowhere near
+  the player, casts at what it is fighting, and comes back when it drifts off
+  the leash.
+
+  Most of the machinery was already in the tree. 4.2 carries a complete
+  monster-versus-monster path built for the Necromancer's command power —
+  ``monster_attack_monster()`` for blows, ``mon_take_nonplayer_hit()`` for the
+  damage, and monster-aware targeting in the spell code — so phase 2 reuses it
+  and writes none of it. That also means **PLR-31 is nearly already true**:
+  ``mon_take_nonplayer_hit()`` awards no experience and leaves uniques at one
+  hit point, so a pet can neither farm experience nor finish a unique.
+
+  Allies get their own branch of ``get_move()`` rather than a swapped target,
+  because everything that function does afterwards is about the player: the
+  noise and scent heatmaps flow from the player's grid, the flee logic runs away
+  from it, and the pack AI works to surround it.
+
+  One ordering choice is load-bearing: the enemy check comes **before** the
+  push-past check, because ``monster_can_kill()`` lets a ``KILL_BODY`` monster
+  walk over a weaker one and delete it. Without that, a pet standing between the
+  player and something large would vanish with no blows struck.
+
+  The three standing orders pets will obey — leash length, doors, picking things
+  up — arrive with the player block at version 6. Older characters load with
+  Zangband's defaults: follow me, doors shut, hands off.
+
 - **3.67.1** — **A wilderness test stops depending on the world it drew.**
   ``game/wild``'s ``a-towns-services-are-built`` walked the generated world and
   ended with ``require(checked > 1)`` — a floor on how many towns the *world*
