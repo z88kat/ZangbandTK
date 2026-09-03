@@ -540,6 +540,17 @@ void borg_init(void)
     borg_init_item_activation();
 
     /*** Grids ***/
+    /*
+     * ZangbandTK (BRG-13): no crossing in progress, and nothing given up on.
+     *
+     * `mem_zalloc` would leave these zero, which means "mouth 0" rather than
+     * "none" -- the sort of off-by-one that would have the borg walk to the
+     * Vaults of Amber's own mouth on its first turn.
+     */
+    borg.goal.world_dungeon = -1;
+    borg.goal.world_best    = -1;
+    borg.goal.world_tries   = 0;
+
     borg_init_cave();
     borg_init_flow();
 

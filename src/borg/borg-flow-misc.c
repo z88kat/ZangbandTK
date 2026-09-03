@@ -17,6 +17,8 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+#include "../dun-type.h"
+#include "../wild.h"
 #include "borg-flow-misc.h"
 
 #ifdef ALLOW_BORG
@@ -779,6 +781,289 @@ bool borg_flow_spastic(bool bored)
 /*
  * Prepare to "flow" towards a specific shop entry
  */
+/*
+ * Cross the world to the mouth of a deeper dungeon (ZangbandTK, BRG-13).
+ *
+ * There is no route to depth 30 without this. The Vaults of Amber, which the
+ * town staircase leads into, ends at depth 15; `player_dungeon_at_stairs()`
+ * always sends a town staircase to the shallowest dungeon there is; and not
+ * one of the thirteen dungeon mouths is inside the starting 144x144 window --
+ * the nearest reaching past 15 is 576 grids away, and the world is roughly
+ * fourteen windows by fourteen.
+ *
+ * The design is a bearing rather than a route, and the measurement is what
+ * licenses that. Sampling the straight line to every mouth at block
+ * resolution, across four seeds: **at least one dungeon whose band reaches
+ * past 15 always has a completely clear line**, usually several, and Rebma
+ * (band 25-50, which contains the target depth) was clear in all four. Where a
+ * line is blocked it is `mountainside`, never open sea. So the borg prefers a
+ * target it does not have to route around, which turns a pathfinding problem
+ * into a target-selection one.
+ *
+ * The goal is held in **world** coordinates. The surface window is rebuilt and
+ * re-anchored as the character crosses it (`wild_adopt_window()`), so a level
+ * grid stops meaning anything the moment the window moves; a world grid
+ * survives it.
+ */
+
+/* How many steps a crossing gets before it is abandoned as hopeless. */
+#define BORG_WORLD_TRIES 400
+
+/*
+ * Is the straight line from here to this mouth clear of impassable terrain?
+ *
+ * Sampled per wilderness block, which is the granularity at which the terrain
+ * actually varies. Town and dungeon blocks are markers rather than walls --
+ * `wild_block_feat()` returns FEAT_PERM for one and FEAT_DUNGEON for the other
+ * and a character walks through both -- and counting them as obstacles made
+ * every line look blocked on the first measurement.
+ */
+static bool borg_world_line_clear(struct wild_dungeon *mouth)
+{
+    int size = z_info->wild_block_size;
+    int fy, fx, ty, tx, steps, k;
+
+    if (!wild || size < 1) return false;
+
+    fy = (player->grid.y + player->wild_offset.y) / size;
+    fx = (player->grid.x + player->wild_offset.x) / size;
+    ty = mouth->grid.y / size;
+    tx = mouth->grid.x / size;
+
+    steps = MAX(ABS(ty - fy), ABS(tx - fx));
+    if (steps < 1) return true;
+
+    for (k = 0; k <= steps; k++) {
+        int by   = fy + (ty - fy) * k / steps;
+        int bx   = fx + (tx - fx) * k / steps;
+        int feat = wild_block_feat(wild, bx, by);
+
+        if (feat == FEAT_PERM || feat == FEAT_DUNGEON) continue;
+        if (feat == FEAT_WATER) continue;   /* crossable at the edges */
+        if (!feat_is_passable(feat)) return false;
+    }
+
+    return true;
+}
+
+/*
+ * Choose a mouth worth walking to, or -1.
+ *
+ * Wanted: a dungeon that reaches deeper than the one we are stuck in, that we
+ * are ready to enter at its shallowest level, and whose line is clear.
+ * Nearest first among those, because every grid walked is a turn not spent
+ * descending.
+ */
+static int borg_choose_dungeon(void)
+{
+    int i, n, best = -1, best_dist = 0;
+    int here_floor = 0;
+
+    if (!wild) return -1;
+
+    /*
+     * Only cross when actually stuck.
+     *
+     * Without this the borg walks the world on its first turn: with no
+     * dungeon visited yet there is no floor to be stuck at, so every dungeon
+     * counts as "deeper than here" and the nearest one wins -- which was
+     * measured as an 831-grid hike to the mouth of the Vaults of Amber while
+     * the town staircase into the very same dungeon stood ten grids away, and
+     * a death at character level 1 in open country for its trouble.
+     *
+     * So: it must have been somewhere, and it must have reached that
+     * somewhere's bottom. Anything else is a reason to take the stairs it
+     * already has.
+     */
+    if (!player->dungeon) return -1;
+
+    {
+        const struct dun_type *t = dun_type_by_index(player->dungeon - 1);
+
+        if (!t) return -1;
+        here_floor = t->max_depth;
+    }
+
+    if (borg.trait[BI_MAXDEPTH] < here_floor) return -1;
+
+    n = wild_dungeon_count(wild);
+
+    for (i = 0; i < n; i++) {
+        struct wild_dungeon  *m = wild_dungeon_by_index(wild, i);
+        const struct dun_type *t;
+        int dist;
+
+        if (!m) continue;
+        if (i == borg.goal.world_best) continue;  /* already given up on */
+
+        t = dun_type_by_index(m->type);
+        if (!t) continue;
+
+        /* Has to go deeper than where we are stuck */
+        if (t->max_depth <= here_floor) continue;
+
+        /*
+         * And we have to survive arriving. Entering a mouth puts the
+         * character at that dungeon's shallowest level, and the borg's own
+         * rule refuses a depth above its character level -- so a dungeon
+         * starting at 25 is no use at character level 6, however clear the
+         * road to it.
+         */
+        if (t->min_depth > borg.trait[BI_MAXCLEVEL]) continue;
+
+        if (!borg_world_line_clear(m)) continue;
+
+        dist = ABS(m->grid.y - (player->grid.y + player->wild_offset.y))
+             + ABS(m->grid.x - (player->grid.x + player->wild_offset.x));
+
+        if (best < 0 || dist < best_dist) {
+            best      = i;
+            best_dist = dist;
+        }
+    }
+
+    return best;
+}
+
+/*
+ * Walk toward the chosen mouth, one step per call. True if a step was taken.
+ *
+ * Inside the window this is an ordinary flow to a known grid. Outside it, the
+ * borg walks toward the bearing and lets the window rebuild around it, which
+ * is why the goal is kept in world coordinates.
+ */
+bool borg_flow_world(void)
+{
+    struct wild_dungeon *mouth;
+    int ly, lx, dist;
+
+    /* Only on the surface, and only when there is somewhere better to be */
+    if (borg.trait[BI_CDEPTH]) return false;
+    if (!wild || !cave) return false;
+
+    /* Pick a target, or keep the one we have */
+    if (borg.goal.world_dungeon < 0) {
+        int pick = borg_choose_dungeon();
+        const struct dun_type *t;
+        struct wild_dungeon   *m;
+
+        if (pick < 0) return false;
+
+        m = wild_dungeon_by_index(wild, pick);
+        t = m ? dun_type_by_index(m->type) : NULL;
+        if (!m || !t) return false;
+
+        borg.goal.world_dungeon = pick;
+        borg.goal.world         = m->grid;
+        borg.goal.world_tries   = BORG_WORLD_TRIES;
+        borg.goal.world_best    = -1;
+
+        borg_note(format("# Crossing the world to %s (depth %d-%d), "
+                         "%d grids away",
+            t->name, t->min_depth, t->max_depth,
+            ABS(m->grid.y - (player->grid.y + player->wild_offset.y))
+            + ABS(m->grid.x - (player->grid.x + player->wild_offset.x))));
+    }
+
+    mouth = wild_dungeon_by_index(wild, borg.goal.world_dungeon);
+    if (!mouth) {
+        borg.goal.world_dungeon = -1;
+        return false;
+    }
+
+    /* Where the goal sits in the window as it is now anchored */
+    ly = mouth->grid.y - player->wild_offset.y;
+    lx = mouth->grid.x - player->wild_offset.x;
+
+    dist = ABS(mouth->grid.y - (player->grid.y + player->wild_offset.y))
+         + ABS(mouth->grid.x - (player->grid.x + player->wild_offset.x));
+
+    /*
+     * The step budget, and it is spent on *failing to close the distance*
+     * rather than on steps taken. A walk that is getting nearer may take as
+     * long as it likes; one that is not is abandoned, and the mouth is
+     * remembered as hopeless so the next choice is a different one. Retrying
+     * the same unreachable target every time the borg gets bored is the same
+     * thrash as the stair-scum loop.
+     */
+    if (borg.goal.world_best < 0 || dist < borg.goal.world_best) {
+        borg.goal.world_best  = dist;
+        borg.goal.world_tries = BORG_WORLD_TRIES;
+    } else if (--borg.goal.world_tries <= 0) {
+        borg_note(format("# Giving up on the crossing; %d grids short", dist));
+        borg.goal.world_best    = borg.goal.world_dungeon; /* remember it */
+        borg.goal.world_dungeon = -1;
+        return false;
+    }
+
+    /* Arrived: step onto the mouth and the descent does the rest */
+    if (ly == borg.c.y && lx == borg.c.x) {
+        borg_note("# Standing on the mouth of the dungeon we chose");
+        borg.goal.world_dungeon = -1;
+        borg_keypress('>');
+        return true;
+    }
+
+    /* In the window: an ordinary flow to a known grid */
+    if (ly >= 0 && ly < cave->height && lx >= 0 && lx < cave->width) {
+        borg_flow_clear();
+        borg_flow_enqueue_grid(ly, lx);
+        borg_flow_spread(250, true, false, false, -1, false);
+
+        if (borg_flow_commit("the dungeon we chose", GOAL_MISC))
+            return borg_flow_old(GOAL_MISC);
+    }
+
+    /*
+     * Outside the window: walk the bearing and let the world scroll.
+     *
+     * All eight directions are considered, ranked by how much each closes the
+     * world-space distance, so a step round an obstacle is a step sideways
+     * rather than a stop. Deep water is refused rather than routed around: a
+     * borg at low character level cannot swim, and drowning itself is a worse
+     * outcome than abandoning the crossing -- which only costs it the depth it
+     * already had.
+     */
+    {
+        int wy = player->grid.y + player->wild_offset.y;
+        int wx = player->grid.x + player->wild_offset.x;
+        int best_dir = 0, best_gain = 0, i;
+
+        for (i = 0; i < 8; i++) {
+            struct loc g = loc(borg.c.x + ddx_ddd[i], borg.c.y + ddy_ddd[i]);
+            int gain, dir;
+
+            if (!square_in_bounds_fully(cave, g)) continue;
+            if (!square_ispassable(cave, g)) continue;
+            if (square_iswater(cave, g)) continue;
+
+            /* How much nearer this step leaves us, in world grids */
+            gain = dist
+                - (ABS(mouth->grid.y - (wy + ddy_ddd[i]))
+                   + ABS(mouth->grid.x - (wx + ddx_ddd[i])));
+
+            if (gain <= 0) continue;
+
+            dir = borg_extract_dir(borg.c.y, borg.c.x,
+                                   borg.c.y + ddy_ddd[i],
+                                   borg.c.x + ddx_ddd[i]);
+            if (!dir) continue;
+
+            if (gain > best_gain) {
+                best_gain = gain;
+                best_dir  = dir;
+            }
+        }
+
+        if (best_dir) {
+            borg_keypress(I2D(best_dir));
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool borg_flow_shop_entry(int i)
 {
     int x, y;

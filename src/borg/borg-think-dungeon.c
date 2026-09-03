@@ -2010,6 +2010,22 @@ bool borg_think_dungeon(void)
         return true;
 
     /*
+     * Cross the world to a deeper dungeon (ZangbandTK, BRG-13).
+     *
+     * After the shopping below and before leaving the level, because a
+     * crossing of several hundred grids wants food and light bought first --
+     * and because the borg's own answer to "no deeper in this dungeon" is to
+     * come up here, which is what puts it in a position to choose.
+     *
+     * Does nothing until the borg is actually stuck: `borg_choose_dungeon()`
+     * only offers a mouth that goes deeper than the dungeon it has been in,
+     * that it is ready to enter at that dungeon's shallowest level, and whose
+     * straight line is clear of impassable terrain.
+     */
+    if (!borg.trait[BI_CDEPTH] && borg_flow_world())
+        return true;
+
+    /*
      * Shop before leaving town, not after (ZangbandTK, BRG-12).
      *
      * The shop visit below this sits *after* `borg_leave_level()`, so it is

@@ -573,6 +573,85 @@ static void c_borg_mouths(char *rest)
 }
 
 /**
+ * borg-terrain? -- what lies on the straight line to each deeper mouth
+ * (BRG-13).
+ *
+ * The question that decides whether crossing the world is a bearing or a
+ * route. A bearing plus local obstacle avoidance is a small piece of work; if
+ * open sea or mountain sits across the line, it becomes a pathfinder, and that
+ * is worth knowing before building either.
+ *
+ * Sampled at block resolution -- the wilderness is generated per block of
+ * `wild:block-size` grids, so that is the granularity at which terrain
+ * actually varies.
+ */
+static void c_borg_terrain(char *rest)
+{
+	int i, n, size;
+
+	if (!character_dungeon || !wild) {
+		printf("borg-terrain: FAILED no world yet\n");
+		run_failed = 1;
+		return;
+	}
+
+	size = z_info->wild_block_size;
+	n    = wild_dungeon_count(wild);
+
+	for (i = 0; i < n; i++) {
+		struct wild_dungeon *m = wild_dungeon_by_index(wild, i);
+		const struct dun_type *t;
+		int fy, fx, ty, tx, steps, k;
+		int blocked = 0, water = 0, samples = 0;
+
+		if (!m) continue;
+		t = dun_type_by_index(m->type);
+		if (!t || t->max_depth <= 15) continue;
+
+		fy = (player->grid.y + player->wild_offset.y) / size;
+		fx = (player->grid.x + player->wild_offset.x) / size;
+		ty = m->grid.y / size;
+		tx = m->grid.x / size;
+
+		steps = MAX(ABS(ty - fy), ABS(tx - fx));
+		if (steps < 1) steps = 1;
+
+		for (k = 0; k <= steps; k++) {
+			int by = fy + (ty - fy) * k / steps;
+			int bx = fx + (tx - fx) * k / steps;
+			int feat = wild_block_feat(wild, bx, by);
+
+			samples++;
+
+			/*
+			 * A town block and a dungeon block are markers rather than
+			 * terrain -- `wild_block_feat()` returns FEAT_PERM for one and
+			 * FEAT_DUNGEON for the other, and a character walks through both.
+			 * Counting them as walls made every line look obstructed.
+			 */
+			if (feat == FEAT_PERM || feat == FEAT_DUNGEON) continue;
+
+			if (feat == FEAT_WATER) {
+				water++;
+			} else if (!feat_is_passable(feat)) {
+				blocked++;
+				if (blocked == 1) {
+					printf("borg-terrain-block: %s at block %d,%d on the line "
+						   "to %s\n", f_info[feat].name, by, bx, t->name);
+				}
+			}
+		}
+
+		printf("borg-terrain: %-28s band %2d-%-3d  %3d blocks  "
+			   "water %2d  impassable %2d  %s\n",
+			   t->name, t->min_depth, t->max_depth, samples, water, blocked,
+			   (blocked == 0) ? "CLEAR LINE" : "obstructed");
+	}
+
+	fflush(stdout);
+}
+
+/**
  * borg-shops? -- which shops the borg has found (BRG-12).
  *
  * The borg learns the map a panel at a time, so on a 144x144 wilderness
@@ -686,6 +765,7 @@ static test_cmd cmds[] = {
 	{ "borg-notes?", c_borg_notes },
 	{ "borg-shops?", c_borg_shops },
 	{ "borg-mouths?", c_borg_mouths },
+	{ "borg-terrain?", c_borg_terrain },
 	{ "borg-pet", c_borg_pet },
 	{ "borg-pets?", c_borg_pets },
 	{ "borg-kills?", c_borg_kills },

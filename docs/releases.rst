@@ -33,6 +33,37 @@ Unreleased
 Pets follow — 3 September 2026
 ------------------------------
 
+- **3.88.0** — **The borg can walk across the world to a dungeon it chose.**
+  There is no route to depth 30 without this: the Vaults of Amber, which the
+  town staircase leads into, ends at depth 15; a town staircase always leads to
+  the shallowest dungeon there is; and none of the thirteen dungeon mouths is
+  inside the starting 144×144 surface window — the nearest reaching past 15 is
+  576 grids away, across a world roughly fourteen windows square.
+
+  It is a **bearing rather than a route**, and a measurement licenses that.
+  Sampling the straight line to every mouth at block resolution across four
+  seeds, at least one dungeon whose band reaches past 15 always has a
+  completely clear line, usually several — and Rebma, whose band of 25–50
+  contains the target depth, was clear in all four. Where a line is blocked it
+  is mountainside, never open sea. So the borg **prefers a target it does not
+  have to route around**, which turns a pathfinding problem into a
+  target-selection one.
+
+  The destination is held in **world** coordinates, because the surface window
+  is rebuilt and re-anchored as the character crosses it, and a level grid
+  stops meaning anything the moment it moves. Inside the window the borg flows
+  to a known grid; outside it walks the bearing and lets the world scroll,
+  choosing among all eight directions by how much each closes the world
+  distance so a step round an obstacle is a step sideways rather than a stop.
+
+  It refuses to swim, and it gives up rather than thrashing: the step budget is
+  spent on *failing to close the distance* rather than on steps taken, and an
+  abandoned mouth is remembered as hopeless so the next choice is a different
+  one. And it only crosses when actually stuck — it must have reached the
+  bottom of the dungeon it has been in. Without that gate it walked 831 grids
+  on its first turn to the mouth of the very dungeon whose staircase stood ten
+  grids away, and died at character level 1 in open country for its trouble.
+
 - **3.87.0** — **The borg learns that a dungeon has a bottom, and that every
   other one is a long walk away.** Two array overruns and a wall the borg has
   not reached yet.

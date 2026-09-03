@@ -375,6 +375,33 @@ struct goals {
 
     bool    do_best;
     struct borg_best *best_item;
+
+    /*
+     * ZangbandTK (BRG-13): a destination in the *world*, not on this level.
+     *
+     * Every other goal here is a grid in the current chunk, which is right
+     * when every level is a dungeon. The surface is a 144x144 window onto a
+     * world of roughly fourteen windows by fourteen, and it is rebuilt and
+     * re-anchored as the character crosses it (`wild_adopt_window()`), so a
+     * level grid stops meaning anything the moment the window moves. Held in
+     * world coordinates it survives the rebuild, which is the whole trick.
+     *
+     * Needed because there is no route to depth 30 that does not cross the
+     * world: the Vaults of Amber ends at 15, the town staircase always leads
+     * to the shallowest dungeon there is, and not one of the thirteen dungeon
+     * mouths is inside the starting window -- the nearest reaching past 15 is
+     * 576 grids away.
+     *
+     * `world_dungeon` is the index of the mouth being walked to, or -1.
+     * `world_tries` is the step budget: a walk that stops closing the distance
+     * is abandoned rather than retried, because a borg that re-picks an
+     * unreachable target every time it gets bored is the same thrash as the
+     * stair-scum loop and the bravery escalation.
+     */
+    struct loc world;
+    int16_t    world_dungeon;
+    int16_t    world_tries;
+    int16_t    world_best;
 };
 
 struct temp {

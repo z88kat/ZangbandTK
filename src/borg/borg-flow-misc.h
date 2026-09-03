@@ -99,6 +99,14 @@ extern bool borg_twitchy(void);
 extern int borg_extract_dir(int y1, int x1, int y2, int x2);
 
 /*
+ * ZangbandTK (BRG-13): walk across the world to a dungeon the borg chose.
+ *
+ * The only route to depth 30: the Vaults of Amber ends at 15 and the town
+ * staircase always leads to the shallowest dungeon there is.
+ */
+extern bool borg_flow_world(void);
+
+/*
  * Given a "source" and "target" locations, travel in a "direction",
  */
 extern int borg_goto_dir(int y1, int x1, int y2, int x2);
