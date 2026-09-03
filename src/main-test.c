@@ -18,16 +18,73 @@
 
 #include "angband.h"
 #include "buildid.h"
+#include "game-world.h"
 #include "main.h"
 #include "player.h"
 #include "player-birth.h"
+#include "savefile.h"
 #include "ui-game.h"
+
+#ifdef ALLOW_BORG
+#include "borg/borg.h"
+#include "borg/borg-init.h"
+#endif
 
 #ifdef USE_TEST
 
 static int prompt = 0;
 static int verbose = 0;
 static int nextkey = 0;
+
+#ifdef ALLOW_BORG
+/**
+ * Whether anything in this run has failed (BRG-05).
+ *
+ * The whole point of a borg run in CI is that it fails loudly. `borg_oops()`
+ * merely stops, so from outside an abort looked exactly like a tidy
+ * retirement, and nothing in the borg ever set an exit status. This does, and
+ * `quit` carries it out of the process.
+ */
+static int run_failed = 0;
+
+/** The seed this run used, so a failure can be repeated (BRG-04). */
+static uint32_t run_seed = 0;
+
+/**
+ * Turns requested before the game was ready to play them (BRG-03).
+ *
+ * The front end reads its commands from the terminal's event hook, which the
+ * game calls whenever it wants input -- and it wants input *before* it starts:
+ * the splash screen asks for a keypress, and how many requests come before the
+ * game loop begins is not fixed. One `key enter` was not enough and three
+ * were, which is precisely the unreproducibility that made a scripted borg run
+ * impossible.
+ *
+ * So `borg-run` does not require the game to be ready. It records what was
+ * asked for, feeds a keypress to move whatever prompt is up along, and the
+ * event hook starts the run on the first request after `character_dungeon`
+ * becomes true. Nothing counts keys.
+ */
+static int run_pending = 0;
+
+/**
+ * Set while the borg is being started up (BRG-03).
+ *
+ * `borg_init()` asks for input itself, and the front end answered those
+ * requests out of the *command script* -- so a run's `borg-status?` and `quit`
+ * were consumed from inside `borg_init()`, and the process exited before the
+ * run had begun. The script belongs to the harness, not to the borg's
+ * prompts, so command reading stops for the duration and prompts are
+ * dismissed with ESCAPE.
+ *
+ * Once the borg is properly active it steals `inkey_hack`, which is consulted
+ * before the terminal is polled, so this hook stops being asked for keys and
+ * the script is safe again -- but only from that moment.
+ */
+static int borg_starting = 0;
+
+static void borg_begin_pending(void);
+#endif
 
 static void c_key(char *rest) {
 	if (streq(rest, "left")) {
@@ -54,6 +111,21 @@ static void c_noop(char *rest) {
 }
 
 static void c_quit(char *rest) {
+#ifdef ALLOW_BORG
+	/*
+	 * A failed borg run leaves the process with a non-zero status (BRG-05).
+	 *
+	 * This is the whole value of B0: a crash or an abort has to be visible to
+	 * whatever ran the binary, not merely present in a log. A segfault gives
+	 * 139 by itself; an abort or a bad round trip would otherwise exit 0 and
+	 * look like success.
+	 */
+	if (run_failed) {
+		printf("borg: run FAILED, ZTK_TEST_SEED=%u\n", run_seed);
+		fflush(stdout);
+		exit(1);
+	}
+#endif
 	quit(NULL);
 }
 
@@ -103,13 +175,257 @@ static void c_player_birth(char *rest) {
 	player_generate(player, r, c, false);
 }
 
+/*
+ * ZangbandTK: these two crashed on a character that has none yet.
+ *
+ * Called before `player-birth`, or at the birth prompt before a race and class
+ * have been chosen, `player->class` is NULL and this dereferenced it -- the
+ * front end used to test the game exiting on signal 11. Harmless in the four
+ * existing frontend tests, which always birth first, and exactly the sort of
+ * thing a borg harness trips over while working out what state it is in.
+ */
 static void c_player_class(char *rest) {
-	printf("player-class: %s\n", player->class->name);
+	printf("player-class: %s\n",
+		   (player && player->class) ? player->class->name : "(none)");
 }
 
 static void c_player_race(char *rest) {
-	printf("player-race: %s\n", player->race->name);
+	printf("player-race: %s\n",
+		   (player && player->race) ? player->race->name : "(none)");
 }
+
+#ifdef ALLOW_BORG
+
+/**
+ * borg-seed [N] -- seed the RNG for a reproducible run (BRG-04).
+ *
+ * Without an argument it reads `ZTK_TEST_SEED`, which is the variable the unit
+ * suites and `scripts/check-flakes` already use, so a borg failure is repeated
+ * the same way a suite failure is. Without either it takes a value from the
+ * clock and *prints it*, which is the part that matters: an unrepeatable
+ * failure is a rumour.
+ */
+static void c_borg_seed(char *rest)
+{
+	const char *env = getenv("ZTK_TEST_SEED");
+
+	if (rest && *rest) {
+		run_seed = (uint32_t) strtoul(rest, NULL, 10);
+	} else if (env && *env) {
+		run_seed = (uint32_t) strtoul(env, NULL, 10);
+	} else {
+		run_seed = (uint32_t) time(NULL);
+	}
+
+	Rand_init();
+	Rand_quick = false;
+	Rand_state_init(run_seed);
+
+	printf("borg-seed: ZTK_TEST_SEED=%u\n", run_seed);
+	fflush(stdout);
+}
+
+/**
+ * borg-run N -- play for N game turns and hand control back (BRG-03).
+ *
+ * The borg's only entry point is `^z` then `z` through the UI, and its only
+ * exit is a keypress. This is the headless equivalent of both. It refuses to
+ * start before `character_dungeon`, which is the *"reincarnation failure"*
+ * abort that made key injection unreproducible.
+ *
+ * It returns immediately. The borg plays by stealing `inkey_hack`, so the play
+ * happens inside the game's own input loop after this returns, and stops when
+ * `borg_turn_limit` is reached -- at which point the hook is removed and this
+ * frontend's command reader gets input back.
+ */
+static void c_borg_run(char *rest)
+{
+	int turns = (rest && *rest) ? atoi(rest) : 1000;
+
+	if (turns < 1) turns = 1;
+	run_pending = turns;
+
+	/*
+	 * If the game is not playing yet, move the prompt along and come back.
+	 * `nextkey` is the front end's own way of supplying a keypress, and the
+	 * event hook below tries again on every subsequent request.
+	 */
+	if (!character_dungeon) {
+		printf("borg-run: waiting for the game to start\n");
+		fflush(stdout);
+		nextkey = '\r';
+		return;
+	}
+
+	borg_begin_pending();
+}
+
+/**
+ * Actually start the run, once there is a game to run in (BRG-03).
+ */
+static void borg_begin_pending(void)
+{
+	int turns = run_pending;
+
+	run_pending = 0;
+
+	borg_abort_reason = NULL;
+	borg_starting     = 1;
+	if (!borg_initialized) borg_init();
+	borg_starting     = 0;
+
+	if (borg_init_failure) {
+		printf("borg-run: FAILED borg_init ZTK_TEST_SEED=%u\n", run_seed);
+		run_failed = 1;
+		return;
+	}
+
+	/*
+	 * Start it the way the menu does (BRG-03).
+	 *
+	 * `borg_cmd_start()` is what `^z z` reaches, and calling it rather than
+	 * setting `borg_active` and installing the hook by hand is the difference
+	 * between a borg that runs and one that only looks started: the ritual
+	 * also calls `borg_reinit_options()`, which allocates the arrays that
+	 * `borg_reset_ignore()` frees on the way out. Setting the flags directly
+	 * skipped the allocation and the first deactivation dereferenced NULL.
+	 */
+	borg_turn_limit = turn + turns;
+
+	/*
+	 * A decision budget as well, so the run cannot hang (BRG-05).
+	 *
+	 * Generous against the turn budget -- the borg spends many decisions per
+	 * game turn, resting, walking and reading the screen -- but finite, which
+	 * is the point. `ZTK_BORG_STEPS` overrides it for a run that legitimately
+	 * needs more.
+	 */
+	{
+		const char *env = getenv("ZTK_BORG_STEPS");
+
+		borg_step_count = 0;
+		borg_step_limit = (env && *env) ? strtol(env, NULL, 10)
+			: (int32_t) turns * 200 + 2000;
+	}
+
+	borg_headless = true;
+	borg_cmd_start();
+
+	printf("borg-run: started for %d turns at turn %d\n", turns, (int) turn);
+	fflush(stdout);
+}
+
+/**
+ * borg-status? -- one machine-readable line about the run (BRG-05).
+ *
+ * Turns, depth, character level and why it stopped, on one line, because a
+ * regression signal nobody can grep is a log nobody reads. The depth and level
+ * are BRG-18's signal in miniature: a build where every class stops getting
+ * past depth 3 has broken something no assertion catches.
+ */
+static void c_borg_status(char *rest)
+{
+	const char *why = borg_abort_reason ? borg_abort_reason
+		: (borg_active ? "still running" : "budget spent");
+
+	if (borg_abort_reason) run_failed = 1;
+
+	printf("borg-status: turn=%d depth=%d clevel=%d ready=%d seed=%u "
+		   "result=%s reason=%s\n",
+		   (int) turn, player ? player->depth : -1,
+		   player ? player->lev : -1, character_dungeon ? 1 : 0, run_seed,
+		   run_failed ? "FAILED" : "ok", why);
+	fflush(stdout);
+}
+
+/**
+ * borg-notes? [N] -- the last N things the borg said (BRG-05).
+ *
+ * `borg_note()` puts its reasoning into the game's message log and, if the
+ * right setting is on, into a file nobody reads. A run that fails in CI is
+ * useless without the last few notes: they say whether the borg was fighting,
+ * lost, or waiting for a prompt that never came. Twenty lines beside the
+ * summary turns "it crashed" into a diagnosis.
+ */
+static void c_borg_notes(char *rest)
+{
+	int want = (rest && *rest) ? atoi(rest) : 20;
+	int have = (int) messages_num();
+	int i;
+
+	if (want > have) want = have;
+
+	for (i = want - 1; i >= 0; i--) {
+		printf("borg-note: %s\n", message_str((int16_t) i));
+	}
+	fflush(stdout);
+}
+
+/**
+ * borg-roundtrip -- save, reload and compare (BRG-19, pulled into B0).
+ *
+ * BRG-19 schedules mid-run invariants for the last phase. This one comes
+ * forward because it is the cheapest of them and the likeliest to catch
+ * something: the borg walks a character through wilderness, dungeons, stores
+ * and level changes for thousands of turns, which is far more savefile states
+ * than any fixture covers, and a corrupt save is exactly the failure that is
+ * invisible until much later.
+ *
+ * Compares depth, level, experience and turn across the round trip. Not a deep
+ * comparison -- `game/roundtrip` does that against fixtures -- but enough that
+ * a save which drops the character's progress cannot pass.
+ */
+static void c_borg_roundtrip(char *rest)
+{
+	char name[128];
+	int was_depth, was_lev, was_turn;
+	int32_t was_exp;
+
+	if (!character_dungeon) {
+		printf("borg-roundtrip: FAILED no character\n");
+		run_failed = 1;
+		return;
+	}
+
+	was_depth = player->depth;
+	was_lev   = player->lev;
+	was_exp   = player->exp;
+	was_turn  = (int) turn;
+
+	strnfmt(name, sizeof(name), "borg-roundtrip-%d", (int) getpid());
+
+	if (!savefile_save(name)) {
+		printf("borg-roundtrip: FAILED save ZTK_TEST_SEED=%u\n", run_seed);
+		run_failed = 1;
+		return;
+	}
+
+	if (!savefile_load(name, false)) {
+		printf("borg-roundtrip: FAILED load ZTK_TEST_SEED=%u\n", run_seed);
+		run_failed = 1;
+		file_delete(name);
+		return;
+	}
+	file_delete(name);
+
+	if (player->depth != was_depth || player->lev != was_lev
+			|| player->exp != was_exp || (int) turn != was_turn) {
+		printf("borg-roundtrip: FAILED mismatch "
+			   "depth %d->%d lev %d->%d exp %d->%d turn %d->%d "
+			   "ZTK_TEST_SEED=%u\n",
+			   was_depth, player->depth, was_lev, player->lev,
+			   (int) was_exp, (int) player->exp, was_turn, (int) turn,
+			   run_seed);
+		run_failed = 1;
+		return;
+	}
+
+	printf("borg-roundtrip: ok depth=%d lev=%d turn=%d\n",
+		   player->depth, player->lev, (int) turn);
+	fflush(stdout);
+}
+
+#endif /* ALLOW_BORG */
 
 typedef struct {
 	const char *name;
@@ -127,6 +443,14 @@ static test_cmd cmds[] = {
 	{ "player-birth", c_player_birth },
 	{ "player-class?", c_player_class },
 	{ "player-race?", c_player_race },
+
+#ifdef ALLOW_BORG
+	{ "borg-seed", c_borg_seed },
+	{ "borg-run", c_borg_run },
+	{ "borg-status?", c_borg_status },
+	{ "borg-notes?", c_borg_notes },
+	{ "borg-roundtrip", c_borg_roundtrip },
+#endif
 
 	{ NULL, NULL }
 };
@@ -215,6 +539,52 @@ static errr term_xtra_event(int v) {
 		Term_keypress(nextkey, 0);
 		nextkey = 0;
 	}
+
+#ifdef ALLOW_BORG
+	/*
+	 * A run asked for before the game was ready starts here (BRG-03).
+	 *
+	 * This hook runs on every request for input, so it is the first place that
+	 * can see `character_dungeon` become true. Starting the borg here rather
+	 * than counting keypresses in the input script is what makes a run
+	 * reproducible from a seed alone.
+	 */
+	/*
+	 * While the borg is starting or driving, this hook does nothing at all.
+	 *
+	 * Not the script -- those lines belong to the harness, and answering
+	 * `borg_init()`'s prompts out of them exited the process from inside
+	 * startup. And not a keypress either, which was the next mistake: the
+	 * borg's only stop signal is *real user input*, so an injected ESCAPE
+	 * read as somebody reaching for the keyboard and the run aborted at turn
+	 * one with "user abort". The borg feeds itself through `inkey_hack`; this
+	 * hook is only being asked whether anything has arrived, and the honest
+	 * answer is no.
+	 */
+	if (borg_starting || borg_active) {
+		/*
+		 * Keypress 10 specifically, and it is upstream's own exemption:
+		 * `internal_borg_inkey()`'s abort check tests
+		 * `ch_evt.key.code != 10`, so a line feed is the one key that
+		 * satisfies the terminal's need for an event without reading as
+		 * somebody reaching for the keyboard. ESCAPE aborted the run at turn
+		 * one; injecting nothing at all hung it, because the terminal poll
+		 * waits for an event and the borg's own hook sits above that poll.
+		 */
+		nextkey = 10;
+		return 0;
+	}
+
+	if (run_pending && character_dungeon) {
+		borg_begin_pending();
+		return 0;
+	}
+	if (run_pending) {
+		nextkey = '\r';
+		return 0;
+	}
+#endif
+
 	return test_docmd();
 }
 

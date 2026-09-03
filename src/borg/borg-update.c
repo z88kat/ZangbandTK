@@ -274,6 +274,25 @@ static void borg_update_map(void)
              * bounds */
             if (!square_in_bounds(cave, l))
                 continue;
+
+            /*
+             * And in the borg's bounds, which are not the game's (ZangbandTK,
+             * BRG-01).
+             *
+             * The check above asks whether the grid exists. This asks whether
+             * there is anywhere to record it, and the two were the same
+             * question only while every level was the dungeon. Without it a
+             * wilderness level indexes off the end of `borg_grids`, which is
+             * the segfault the borg opened with on every game.
+             *
+             * `borg_init_cave()` already refuses to start when the game's
+             * largest level does not fit, so reaching this is not expected --
+             * it is here because the cost is two comparisons and the failure
+             * it prevents is silent memory corruption.
+             */
+            if (y >= AUTO_MAX_Y || x >= AUTO_MAX_X)
+                continue;
+
             map_info(l, &g);
 
             /* Get the borg_grid */

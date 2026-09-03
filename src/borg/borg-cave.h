@@ -33,8 +33,39 @@
 #define DUNGEON_WID 198
 #define DUNGEON_HGT 66
 
-#define AUTO_MAX_X DUNGEON_WID
-#define AUTO_MAX_Y DUNGEON_HGT
+/*
+ * ZangbandTK (BRG-01): the borg's arrays are sized by the largest level the
+ * game can put it on, which is not the dungeon.
+ *
+ * Upstream set these to the dungeon's own 66 x 198 because in Angband every
+ * level is the dungeon. Here depth 0 is a wilderness surface, built square at
+ * `wild_view_blocks() * z_info->wild_block_size` -- 144 x 144 as the data
+ * ships -- so the tallest level the borg stands on is half again the height
+ * these were sized for. `borg_update_map()` scanned the panel, checked only
+ * `square_in_bounds(cave, ...)`, and then indexed `borg_grids[y][x]` with a
+ * `y` reaching 143: it walked off the end of a 66-element array of row
+ * pointers and dereferenced whatever followed. That was the segfault on the
+ * first turn of every game.
+ *
+ * These are **ceilings with headroom, not copies of game data.** The standing
+ * constraint in the borg plan is that no borg constant may be duplicated from
+ * game data, and it is a good one -- three of the four that were duplicated
+ * had gone wrong. So nothing here is derived from `wild:block-size` or
+ * `wild:cache-blocks`; instead `borg_init_cave()` asks the game at run time
+ * what its largest level is and refuses to start if it does not fit inside
+ * these. A data change that outgrows the borg gets a clear startup failure
+ * rather than the corruption above.
+ *
+ * Deliberately not as generous as they could be. Several loops scan the whole
+ * array every turn, so the ceiling is paid for on every one of them; 160 x 208
+ * covers 144 x 198 with room and costs about two and a half times upstream's
+ * scan rather than fifteen.
+ */
+#define BORG_MAX_HGT 160
+#define BORG_MAX_WID 208
+
+#define AUTO_MAX_X BORG_MAX_WID
+#define AUTO_MAX_Y BORG_MAX_HGT
 
 /*
  * Forward declare

@@ -67,7 +67,7 @@ struct borg_commands
  */
 /* predefine all the functions used in the array */
 static void borg_cmd_help(void);
-static void borg_cmd_start(void);
+void borg_cmd_start(void);
 static void borg_cmd_init_txt_file(void);
 static void borg_cmd_step(void);
 static void borg_cmd_update(void);
@@ -203,8 +203,16 @@ static void borg_cmd_help(void)
 
 /*
  * Setup the borg to start
+ *
+ * ZangbandTK (BRG-03): not static, so a headless harness can start the borg
+ * the same way the menu does. The activation is a ritual -- reinit the
+ * options, clear the best-item cache, set the flags, install the key stealer
+ * -- and reimplementing part of it is how a harness ends up with a borg that
+ * looks active and is not. Skipping `borg_reinit_options()` alone crashed on
+ * the first *de*activation, because that is where the ignore-settings arrays
+ * are allocated and `borg_reset_ignore()` frees them.
  */
-static void borg_cmd_start(void)
+void borg_cmd_start(void)
 {
     /* make sure the important game options are set correctly */
     borg_reinit_options();

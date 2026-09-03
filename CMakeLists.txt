@@ -397,6 +397,7 @@ if(SUPPORT_BORG)
     endif()
 endif()
 
+
 if(SUPPORT_COVERAGE)
     configure_target_for_coverage(OurCoreLib)
 endif()
@@ -445,6 +446,18 @@ target_include_directories(OurExecutable PRIVATE
     ${ANGBAND_CORE_INCLUDE_DIRS}
 )
 target_link_libraries(OurExecutable PRIVATE ${ANGBAND_CORE_LINK_LIBRARIES})
+# ZangbandTK (BRG-03): the front ends need to know the borg exists too.
+#
+# ALLOW_BORG was set on OurCoreLib for every platform and on OurExecutable
+# only inside the SUPPORT_WINDOWS_FRONTEND branch, so on macOS and Linux the
+# borg was compiled but no front end could name it -- main-win.c could call
+# do_cmd_borg() and main-test.c could not. That made a headless borg run
+# impossible everywhere CI runs, and it failed silently: the guarded code
+# simply vanished, so main-test.c compiled clean while referring to symbols
+# declared eighty lines below their use.
+if(SUPPORT_BORG)
+    target_compile_definitions(OurExecutable PRIVATE -D ALLOW_BORG)
+endif()
 
 # Allow for some introspection:  have rules to print out names that something
 # downstream could use.  Have the output start with "our-<something>=" so it
@@ -477,9 +490,6 @@ if(SUPPORT_WINDOWS_FRONTEND)
     include(src/cmake/macros/WINDOWS_Frontend.cmake)
     configure_windows_frontend(OurExecutable ${PNG_TARGET})
     configure_windows_frontend(OurCoreLib "")
-    if(SUPPORT_BORG)
-        target_compile_definitions(OurExecutable PRIVATE -D ALLOW_BORG)
-    endif()
 endif()
 
 if(SUPPORT_SDL_SOUND)
@@ -519,6 +529,14 @@ endif()
 if(SUPPORT_TEST_FRONTEND)
     include(src/cmake/macros/TEST_Frontend.cmake)
     configure_test_frontend(OurExecutable)
+    # ZangbandTK (BRG-03): the core library needs to know as well.
+    #
+    # USE_TEST reached only OurExecutable, so a `#ifdef USE_TEST` anywhere in
+    # OurCoreLib -- which is where the game loop lives -- silently compiled to
+    # nothing. The same one-target defect as ALLOW_BORG above, and it hid a
+    # headless birth branch in ui-game.c that appeared to do nothing at all.
+    # Nothing else in OurCoreLib reads USE_TEST.
+    target_compile_definitions(OurCoreLib PRIVATE -D USE_TEST)
 endif()
 
 if(SUPPORT_COVERAGE)

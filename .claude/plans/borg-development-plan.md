@@ -283,6 +283,57 @@ this document.*
 non-zero if it crashed or aborted, with a summary line either way. That goes
 into CI as it stands.
 
+**Landed 3 September 2026 in 3.81.0**, as `scripts/borg-smoke`. What actually
+happened, since almost none of it was the work this phase expected:
+
+- **BRG-01/02 done, and the guard is the better half.** The arrays are sized by
+  a checked ceiling rather than by the dungeon, and `borg_init_cave()` now asks
+  the game for its largest level -- `MAX(z_info->dungeon_*, wild_view_blocks()
+  * wild_block_size)` -- and refuses to start if it does not fit. Growing
+  `wild:cache-blocks` to 225 produces a clean startup failure instead of the
+  segfault, which is what makes the ceiling an upper bound and not a copy of
+  game data.
+- **Two build defects blocked the phase outright**, and both were single-target
+  option leaks. `ALLOW_BORG` was set on `OurExecutable` only inside
+  `if(SUPPORT_WINDOWS_FRONTEND)`, so on macOS and Linux no front end could
+  name the borg. `USE_TEST` was set only on `OurExecutable`, so a
+  `#ifdef USE_TEST` in `OurCoreLib` -- where the game loop lives -- compiled to
+  nothing. Both failed *silently*: guarded code vanished and the files still
+  compiled.
+- **BRG-03 needed a headless birth, not just an entry point.** The four
+  existing front-end tests all `quit` before the game starts, so
+  `character_dungeon` had never been true in the test front end at all.
+  `start_game()` gained a `ZTK_HEADLESS` branch using `player_make_simple()`
+  -- the same public helper `main-spoil.c` uses -- and raising the level the
+  way `main-stats.c` does.
+- **`borg_cmd_start()` is no longer static**, because activation is a ritual
+  and reimplementing half of it is how the first working run crashed:
+  `borg_reinit_options()` allocates the arrays `borg_reset_ignore()` frees, so
+  setting `borg_active` by hand crashed on the first *de*activation.
+- **A headless run has nobody at the keyboard**, and that took three attempts.
+  The borg stops on any real keypress; feeding ESCAPE aborted it at turn one,
+  feeding nothing hung it because the terminal's event poll sits *below* the
+  borg's own hook, and upstream's exemption for key code 10 is unreachable
+  because `Term_keypress(10)` is translated to `KC_ENTER` first. Hence
+  `borg_headless`.
+- **BRG-05 grew a wedge detector**, which was not in the plan and should have
+  been: a turn budget assumes the clock moves, and a borg waiting for a prompt
+  it cannot see makes decisions forever. A hung CI job is a red build with no
+  diagnosis, so `borg_step_limit` counts decisions and running out of them is a
+  named failure.
+- **`borg-notes?` was added** for the same reason. Every diagnosis in this
+  phase came from reading the last dozen things the borg said.
+- **BRG-06 is deferred, deliberately.** The borg writes its own `borg.txt`
+  defaults when the user file is missing, so a run is not blocked by it -- the
+  delivered file only makes the borg play *better*, which is behaviour, and
+  principle 4 puts robustness first. Also: `lib/gamedata` is policed by
+  `check-build-lists` for parsed data files, so the delivered copy wants a home
+  chosen on purpose rather than in passing.
+
+The borg reaches depth 1 in 300 turns as a Warrior and the same seed gives the
+same run. `borg-roundtrip` (BRG-19, pulled forward) passes at every seed
+tried.
+
 ---
 
 ### B1 — Classes, races and realms

@@ -68,6 +68,15 @@ void borg_oops(const char *what)
     /* Stop processing */
     borg_active = false;
 
+    /*
+     * And remember why (ZangbandTK, BRG-05).
+     *
+     * Kept so a headless run can exit non-zero and say what happened. The
+     * first reason wins: an abort often provokes further complaints on the way
+     * out, and the first one is the one that describes the fault.
+     */
+    if (!borg_abort_reason) borg_abort_reason = what;
+
     /* Give a warning */
     borg_note(format("# Aborting (%s).", what));
 

@@ -30,6 +30,7 @@
 #include "obj-knowledge.h"
 #include "obj-util.h"
 #include "player-attack.h"
+#include "player-birth.h"
 #include "player-calcs.h"
 #include "player-path.h"
 #include "player-properties.h"
@@ -774,7 +775,47 @@ static bool start_game(bool new_game)
 	/* No living character loaded */
 	if (player->is_dead || new_game) {
 		character_generated = false;
+#ifdef USE_TEST
+		/*
+		 * ZangbandTK (BRG-03): a headless run skips the birth menus.
+		 *
+		 * `textui_do_birth()` is a menu loop, so the only way through it is
+		 * keystrokes -- and driving birth by injected keys is not
+		 * reproducible, because the number of keys the menus consume depends
+		 * on the roll and on which prompts the character's race and class
+		 * raise. That is what made a scripted borg run impossible, and why
+		 * the borg sometimes activated before `character_dungeon` was set and
+		 * aborted with "reincarnation failure".
+		 *
+		 * `player_make_simple()` is the same public helper `main-spoil.c`
+		 * already uses to build a character without the UI, and the levels are
+		 * raised the way `main-stats.c` raises them. Gated on an environment
+		 * variable and on `USE_TEST`, so a real game cannot reach it: this is
+		 * a test front end's shortcut, not a second birth path.
+		 */
+		if (getenv("ZTK_HEADLESS")) {
+			const char *hrace  = getenv("ZTK_HEADLESS_RACE");
+			const char *hclass = getenv("ZTK_HEADLESS_CLASS");
+
+			if (!player_make_simple(hrace && *hrace ? hrace : NULL,
+									hclass && *hclass ? hclass : NULL,
+									"Borg")) {
+				return false;
+			}
+
+			character_generated     = true;
+			player->is_dead         = false;
+			player->upkeep->playing = true;
+			player->upkeep->autosave = false;
+
+			prepare_next_level(player);
+			on_new_level();
+		} else {
+			textui_do_birth();
+		}
+#else
 		textui_do_birth();
+#endif
 	} else {
 		/*
 		 * Bring the stock curse objects up-to-date with what the

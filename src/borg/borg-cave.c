@@ -22,18 +22,47 @@
 #ifdef ALLOW_BORG
 
 #include "../init.h"
+#include "../wild.h"
 
 #include "borg-init.h"
 #include "borg-io.h"
 
 borg_grid *borg_grids[AUTO_MAX_Y]; /* The grids */
 
+/**
+ * The largest level this game can generate, in grids (ZangbandTK, BRG-02).
+ *
+ * Asked of the game rather than assumed, because the answer is data: the
+ * wilderness surface is square at the view span times the block size, and
+ * either of those can be changed in `constants.txt`.
+ */
+static void borg_largest_level(int *hgt, int *wid)
+{
+    int surface = wild_view_blocks() * z_info->wild_block_size;
+
+    *hgt = MAX((int) z_info->dungeon_hgt, surface);
+    *wid = MAX((int) z_info->dungeon_wid, surface);
+}
+
 void borg_init_cave(void)
 {
-    /* sanity check  */
-    if (DUNGEON_WID != z_info->dungeon_wid
-        || DUNGEON_HGT != z_info->dungeon_hgt) {
-        borg_note("**STARTUP FAILURE** dungeon size miss match");
+    int max_hgt, max_wid;
+
+    /*
+     * Sanity check (ZangbandTK, BRG-02).
+     *
+     * Upstream compared its own constants against `z_info->dungeon_wid/hgt`
+     * and those still match, so the check passed while the borg was about to
+     * index off the end of its own arrays on a wilderness level. It was asking
+     * whether the *dungeon* had changed shape, when what matters is whether
+     * the largest level the borg may be put on fits in what has been
+     * allocated for it. That is what this asks.
+     */
+    borg_largest_level(&max_hgt, &max_wid);
+    if (max_hgt > AUTO_MAX_Y || max_wid > AUTO_MAX_X) {
+        borg_note(format("**STARTUP FAILURE** the largest level is %dx%d and "
+                         "the borg has room for %dx%d",
+            max_hgt, max_wid, AUTO_MAX_Y, AUTO_MAX_X));
         borg_init_failure = true;
     }
 

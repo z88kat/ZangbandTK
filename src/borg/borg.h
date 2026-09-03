@@ -87,6 +87,61 @@ extern int *borg_cfg;
  */
 extern bool borg_active; /* Actually active */
 extern bool borg_cancel; /* Being cancelled */
+
+/*
+ * ZangbandTK (BRG-03, BRG-05): a headless run's budget and its verdict.
+ *
+ * The borg has exactly one way in -- `^z` then `z`, through the UI -- and
+ * exactly one way out: a keypress. Neither is available to a test, and
+ * injecting keys is not reproducible, because the birth menus consume a
+ * number of them that depends on the roll and the borg sometimes activates
+ * before `character_dungeon` is set and aborts.
+ *
+ * `borg_turn_limit` is the game turn at which a run stops itself; 0 means the
+ * run is not bounded, which is the interactive case. `borg_abort_reason` is
+ * NULL until something goes wrong and then holds `borg_oops()`'s words, so a
+ * caller can tell a clean stop from an abort without reading the log --
+ * `borg_oops()` merely stopped, and from outside a crash looked exactly like a
+ * tidy retirement.
+ */
+extern int32_t borg_turn_limit;
+extern const char *borg_abort_reason;
+
+/*
+ * ZangbandTK (BRG-05): a decision budget, so a wedged run ends.
+ *
+ * The turn budget assumes the borg advances game turns. A borg that cannot
+ * see a prompt it is waiting for makes decisions forever without the clock
+ * moving, and a run like that neither crashes nor aborts -- it hangs, which in
+ * CI is worse than either, because a hung job is a red build with no
+ * diagnosis. This counts decisions rather than turns, and running out of them
+ * is a failure with its own name.
+ */
+extern int32_t borg_step_limit;
+extern int32_t borg_step_count;
+
+/*
+ * ZangbandTK (BRG-03): there is nobody at the keyboard.
+ *
+ * The borg's only stop signal is a real keypress, which is right for a player
+ * watching it and wrong for a scripted run: a headless front end has to feed
+ * the terminal *something* or its event poll waits forever, and anything it
+ * feeds is read as somebody reaching for the keyboard. Upstream exempts key
+ * code 10 from the abort check, but `Term_keypress(10)` is translated to
+ * `KC_ENTER` (156) before the borg ever sees it, so the exemption cannot be
+ * reached from outside.
+ *
+ * Set for a bounded run, where the turn and step budgets are what stop it.
+ */
+extern bool borg_headless;
+
+/*
+ * ZangbandTK (BRG-03): start the borg the way the menu does.
+ *
+ * Defined in borg-commands.c beside the menu that calls it, and declared here
+ * so a headless front end can reach it without going through `get_com()`.
+ */
+extern void borg_cmd_start(void);
 extern bool borg_save; /* do a save next time we get to press a key! */
 
 extern int16_t old_depth;

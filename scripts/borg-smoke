@@ -1,0 +1,79 @@
+#!/bin/sh
+#
+# Play the game with the borg, and fail loudly if it breaks (BRG-05, BRG-17).
+#
+# The point is not that the borg plays well. It is that nothing in this
+# repository plays the game at all: 112 unit suites test rules in isolation and
+# none of them walks a character out of a town, across the wilderness, into a
+# dungeon and back. This does, and it reports a crash, an abort or a wedge as a
+# non-zero exit with the seed that produced it -- which is what makes a failure
+# something you can repeat rather than a rumour.
+#
+# Usage: scripts/borg-smoke [-x executable] [-n turns] [-c class] seed...
+#
+# With no seeds it runs three fixed ones, so the default invocation is
+# deterministic and suitable for CI.
+
+exe=build-strict/game/angband
+turns=400
+class=Warrior
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+		-x) exe="$2"; shift 2 ;;
+		-n) turns="$2"; shift 2 ;;
+		-c) class="$2"; shift 2 ;;
+		--) shift; break ;;
+		-*) echo "borg-smoke: unknown option $1" >&2; exit 2 ;;
+		*) break ;;
+	esac
+done
+
+if [ $# -gt 0 ]; then
+	seeds="$*"
+else
+	seeds="1 7 20260903"
+fi
+
+if [ ! -x "$exe" ]; then
+	echo "borg-smoke: no executable at $exe" >&2
+	exit 2
+fi
+
+# The manual's screenshot tooling and the unit suites both want UTF-8, and the
+# game refuses to start without it.
+LANG=${LANG:-en_US.UTF-8}
+export LANG
+
+# A headless birth, so no keypresses are counted (BRG-03).
+ZTK_HEADLESS=1
+ZTK_HEADLESS_CLASS="$class"
+export ZTK_HEADLESS ZTK_HEADLESS_CLASS
+
+ran=0
+bad=0
+
+for seed in $seeds; do
+	ran=$(expr $ran + 1)
+	printf 'borg-smoke: %s seed %s for %s turns... ' "$class" "$seed" "$turns"
+
+	out=$(printf 'borg-seed %s\nborg-run %s\nborg-roundtrip\nborg-status?\nquit\n' \
+		"$seed" "$turns" | "$exe" -mtest 2>&1)
+	rc=$?
+
+	status=$(printf '%s\n' "$out" | grep '^borg-status:')
+
+	if [ $rc -ne 0 ] || [ -z "$status" ]; then
+		bad=$(expr $bad + 1)
+		echo "FAILED (exit $rc)"
+		echo "  reproduce: ZTK_HEADLESS=1 ZTK_HEADLESS_CLASS=$class \\"
+		echo "    printf 'borg-seed $seed\\\\nborg-run $turns\\\\nborg-status?\\\\nquit\\\\n' | $exe -mtest"
+		# The last thing it said is usually the diagnosis.
+		printf '%s\n' "$out" | tail -12 | sed 's/^/  /'
+	else
+		echo "$status" | sed 's/^borg-status: //'
+	fi
+done
+
+echo "borg-smoke: $(expr $ran - $bad)/$ran seeds played"
+exit $bad

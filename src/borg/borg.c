@@ -169,6 +169,15 @@ static struct keypress borg_inkey_hack(int flush_first)
 /*
  * set the entry point for the game.
  */
+/*
+ * ZangbandTK (BRG-03, BRG-05): see borg.h.
+ */
+int32_t     borg_turn_limit   = 0;
+const char *borg_abort_reason = NULL;
+int32_t     borg_step_limit   = 0;
+int32_t     borg_step_count   = 0;
+bool        borg_headless     = false;
+
 void borg_update_entrypoint(bool start)
 {
     if (start) {
@@ -234,6 +243,34 @@ static struct keypress internal_borg_inkey(int flush_first)
 
     /* Refresh the screen */
     Term_fresh();
+
+    /*
+     * A bounded run stops itself (ZangbandTK, BRG-03).
+     *
+     * Checked here because this is the one place the borg is reliably asked
+     * for its next move, so it is where a budget can be spent without
+     * threading a counter through the whole of `borg_think()`. Deactivating
+     * lets the block below remove the hook and hand input back, which is the
+     * borg's own way of stopping rather than a second one bolted beside it.
+     */
+    if (borg_turn_limit && turn >= borg_turn_limit) {
+        borg_note("# ZangbandTK: turn budget spent, stopping");
+        borg_active = false;
+    }
+
+    /*
+     * And a decision budget, which is what catches a wedge (ZangbandTK,
+     * BRG-05). Spending these without reaching the turn budget means the borg
+     * is thinking without the game clock moving, so the run has not finished
+     * -- it has stopped getting anywhere, and says so.
+     */
+    if (borg_step_limit && borg_active) {
+        if (++borg_step_count > borg_step_limit) {
+            borg_note("# ZangbandTK: step budget spent without the clock "
+                      "moving");
+            borg_oops("wedged");
+        }
+    }
 
     /* Deactivate */
     if (!borg_active) {
@@ -440,7 +477,8 @@ static struct keypress internal_borg_inkey(int flush_first)
     if (borg.trait[BI_CDEPTH] >= 1)
         borg.in_shop = false;
 
-    if (!borg.in_shop && (((ch_evt.type & EVT_KBRD) && ch_evt.key.code > 0
+    if (!borg_headless && !borg.in_shop
+        && (((ch_evt.type & EVT_KBRD) && ch_evt.key.code > 0
         && ch_evt.key.code != 10) || ch_evt.type == EVT_DISCONNECT)) {
         /* Oops */
         if (ch_evt.type == EVT_DISCONNECT) {

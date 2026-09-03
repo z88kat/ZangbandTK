@@ -33,6 +33,32 @@ Unreleased
 Pets follow — 3 September 2026
 ------------------------------
 
+- **3.81.0** — **The borg plays the game, and says so when it breaks.** B0 of
+  the borg plan. Nothing in this repository played the game: 112 unit suites
+  test rules in isolation and none of them walks a character out of a town,
+  into a dungeon and back. ``scripts/borg-smoke`` does, from a seed, and exits
+  non-zero on a crash, an abort or a wedge with the seed printed beside it.
+
+  The borg segfaulted on the first turn of every game because its map arrays
+  are sized for Angband's 66×198 dungeon and this game's depth 0 is a 144×144
+  wilderness surface. They are now sized by a ceiling that the game's own
+  largest level is checked against, so growing ``wild:cache-blocks`` produces a
+  startup failure rather than memory corruption.
+
+  Two build defects had to be fixed first, both single-target option leaks that
+  failed silently: ``ALLOW_BORG`` reached the executable only in the Windows
+  branch, so on macOS and Linux no front end could name the borg, and
+  ``USE_TEST`` never reached the core library, so guarded code there compiled
+  to nothing. A headless birth was needed too — the four existing front-end
+  tests all quit before the game starts, so a live character had never existed
+  in the test front end.
+
+  Also new because the phase needed them: a decision budget, so a borg waiting
+  for a prompt it cannot see fails instead of hanging a CI job with no
+  diagnosis; ``borg-notes?``, which produced every diagnosis in the phase; and
+  a mid-run savefile round-trip, pulled forward from BRG-19. The borg reaches
+  depth 1 in 300 turns and the same seed gives the same run.
+
 - **3.80.1** — **Every class is asked whether its books and its spells
   agree.** The borg reported the Mindcrafter as having zero spells, which
   turned out to be correct and by design — PLR-06's psionics are twelve
