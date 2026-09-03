@@ -11,7 +11,7 @@ FILES = activation.txt artifact.txt artifact.zangband.txt body.txt blow_methods.
  object_base.txt object_property.txt old_class.txt p_race.txt pain.txt \
  patron.txt pit.txt \
  player_property.txt player_timed.txt projection.txt quality.txt quest.txt \
- realm.txt \
+ realm.txt rename.txt \
  room_template.txt shape.txt slay.txt store.txt summon.txt terrain.txt town.txt \
  trap.txt ui_entry.txt ui_entry_base.txt ui_entry_renderer.txt \
  ui_knowledge.txt vault.txt visuals.txt world.txt
