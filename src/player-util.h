@@ -75,6 +75,7 @@ int16_t modify_stat_value(int value, int amount);
 void player_scramble_stats(struct player *p);
 void player_fix_scramble(struct player *p);
 void player_regen_hp(struct player *p);
+int player_pet_upkeep(const struct player *p);
 void player_regen_mana(struct player *p);
 void player_adjust_hp_precise(struct player *p, int32_t hp_gain);
 int32_t player_adjust_mana_precise(struct player *p, int32_t sp_gain);

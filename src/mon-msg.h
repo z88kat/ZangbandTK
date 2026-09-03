@@ -36,5 +36,6 @@ bool add_monster_message(struct monster *m, int msg_code, bool delay);
 bool add_monster_message_show_damage(struct monster *m, int msg_code,
 		bool delay, int damage);
 void show_monster_messages(void);
+void monster_messages_reset(void);
 
 #endif /* MONSTER_MESSAGE_H */

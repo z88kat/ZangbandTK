@@ -555,6 +555,17 @@ struct player_class {
 	bitflag pflags[PF_SIZE];	/**< (Player) flags */
 
 	int max_attacks;			/**< Maximum possible attacks */
+
+	/**
+	 * How many pets this class keeps for nothing (ZangbandTK, PLR-30).
+	 *
+	 * The free allowance is `1 + level / pet_upkeep_div`, so a *smaller*
+	 * divider means *more* free pets -- the classes that are good at magic
+	 * carry more of it without paying.  Zangband's own numbers: 20 for
+	 * everyone, 15 for the Mage and 12 for the High-Mage
+	 * ([tables.c:2072](../archive/zangband/src/tables.c#L2072)).
+	 */
+	int pet_upkeep_div;
 	int min_weight;				/**< Minimum weapon weight for calculations */
 	int att_multiply;			/**< Multiplier for attack calculations */
 

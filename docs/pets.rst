@@ -221,8 +221,49 @@ If you play with persistent levels turned on, a level you come back to still has
 your pets on it, standing where you left them.
 
 
+What they cost
+--------------
+
+Keeping control of a charmed creature takes concentration, and past a point it
+takes more than you have to spare.
+
+**A few are free.** You maintain ``1 + level/20`` of them for nothing — two at
+level 20, three at 48. A Mage divides by 15 instead and a High-Mage by 12, so
+they keep four and five where a Warrior keeps three.
+
+**Past that, the whole stable is charged.** Not the extra one: *all* of them.
+The bill is the sum of your pets' levels, as a percentage of your mana
+regeneration, and it is never less than 5% or more than 95%.
+
+That is a cliff and it is meant to be. Two pets inside your allowance cost you
+nothing at all; a third takes a slice of your regeneration proportional to all
+three. The pet menu tells you the figure before you go looking for a fourth.
+
+The warning in Zangband's own documentation is worth repeating: *keep this in
+mind if you have a pet which can summon or otherwise produce more pets.*
+
+If you are a Blackguard, none of this touches you — your mana burns rather than
+regenerates, and a stable of pets does not slow the burning. Zangband had no
+class that loses mana by design, so it never had to decide this; scaling the
+burn the same way would have paid you for keeping pets.
+
+
+What they earn you
+------------------
+
+**Nothing.** Experience is for the killing blow, and if your pet struck it, it
+was not yours.
+
+Nor can a pet finish a unique. Anything that is not the player leaves a unique
+alive on its last hit point, however hard it is hit — so a pet cannot be sent
+into a vault to clear it for you.
+
+Between them these are why a stable is a tactical asset and not a way to win the
+game while standing still.
+
+
 Not yet written
 ---------------
 
-What pets cost you in mana, what makes one in the first place, and what makes
-one stop being one. Those arrive with the rest of M10.
+What makes a pet in the first place, and what makes one stop being one. Those
+arrive with the rest of M10.

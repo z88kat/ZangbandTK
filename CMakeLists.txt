@@ -935,6 +935,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     player/inven-wield.c
     player/mutation.c
     player/miscast.c
+    player/pet-upkeep.c
     player/pathfind.c
     player/playerstat.c
     player/pscore.c

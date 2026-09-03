@@ -24,6 +24,7 @@
 # hitdie:increment
 # exp:percent
 # max-attacks:count
+# pet-upkeep-div:divider
 # min-weight:weight in tenths of pounds
 # strength-multiplier:multiplicative factor
 # title:title
@@ -63,6 +64,13 @@
 # no experience point penalty.
 
 # 'max-attacks' sets the maximum possible number of blows per round.
+
+# 'pet-upkeep-div' is how readily the class keeps pets (ZangbandTK, PLR-30).
+# A character maintains 1 + level/divider of them for nothing; past that, the
+# sum of their levels is charged against mana regeneration.  So a *smaller*
+# divider means *more* free pets.  Zangband's numbers: 20 for everyone, 15 for
+# the Mage, 12 for the High-Mage.  Druid, Necromancer and Blackguard have no
+# Zangband row and take their donor's under DEC-55.
 
 # 'min-weight' is the minimum, in tenths of pounds, imposed on a weapon's weight
 # when computing the number of blows per round.
@@ -148,6 +156,7 @@ skill-throw:55:45
 skill-dig:0:0
 hitdie:9
 max-attacks:6
+pet-upkeep-div:20
 min-weight:30
 strength-multiplier:5
 equip:food:Ration of Food:1:3:none
@@ -185,6 +194,7 @@ skill-throw:20:15
 skill-dig:0:0
 hitdie:0
 max-attacks:4
+pet-upkeep-div:15
 min-weight:40
 strength-multiplier:2
 equip:food:Ration of Food:1:3:none
@@ -1291,6 +1301,7 @@ skill-throw:40:30
 skill-dig:0:0
 hitdie:2
 max-attacks:4
+pet-upkeep-div:20
 min-weight:35
 strength-multiplier:3
 equip:food:Ration of Food:1:3:none
@@ -1503,6 +1514,7 @@ skill-throw:35:20
 skill-dig:0:0
 hitdie:2
 max-attacks:4
+pet-upkeep-div:20
 min-weight:35
 strength-multiplier:3
 equip:food:Ration of Food:1:3:none
@@ -2610,6 +2622,7 @@ skill-throw:20:15
 skill-dig:0:0
 hitdie:2
 max-attacks:4
+pet-upkeep-div:15
 min-weight:35
 strength-multiplier:3
 equip:food:Ration of Food:1:3:none
@@ -2825,6 +2838,7 @@ skill-throw:50:30
 skill-dig:0:0
 hitdie:6
 max-attacks:5
+pet-upkeep-div:20
 min-weight:30
 strength-multiplier:5
 equip:food:Ration of Food:1:3:none
@@ -3250,6 +3264,7 @@ skill-throw:72:45
 skill-dig:0:0
 hitdie:4
 max-attacks:5
+pet-upkeep-div:20
 min-weight:20
 strength-multiplier:4
 equip:food:Ration of Food:1:3:none
@@ -3765,6 +3780,7 @@ skill-throw:66:30
 skill-dig:0:0
 hitdie:5
 max-attacks:5
+pet-upkeep-div:20
 min-weight:35
 strength-multiplier:4
 equip:food:Ration of Food:1:3:none
@@ -4610,6 +4626,7 @@ skill-throw:40:30
 skill-dig:0:0
 hitdie:8
 max-attacks:5
+pet-upkeep-div:20
 min-weight:100
 strength-multiplier:5
 equip:shadow book:[Black Prayers]:1:1:none
@@ -4840,6 +4857,7 @@ skill-dig:0:0
 hitdie:6
 exp:40
 max-attacks:5
+pet-upkeep-div:20
 min-weight:40
 strength-multiplier:3
 equip:food:Ration of Food:3:5:none
@@ -5469,6 +5487,7 @@ skill-dig:0:0
 hitdie:2
 exp:25
 max-attacks:4
+pet-upkeep-div:20
 min-weight:35
 strength-multiplier:3
 equip:food:Ration of Food:3:5:none
@@ -5714,6 +5733,7 @@ skill-dig:0:0
 hitdie:6
 exp:35
 max-attacks:5
+pet-upkeep-div:20
 min-weight:30
 strength-multiplier:5
 equip:food:Ration of Food:3:5:none
@@ -5927,6 +5947,7 @@ skill-dig:0:0
 hitdie:4
 exp:50
 max-attacks:5
+pet-upkeep-div:20
 min-weight:35
 strength-multiplier:4
 equip:food:Ration of Food:1:3:none
@@ -7034,6 +7055,7 @@ skill-dig:0:0
 hitdie:0
 exp:30
 max-attacks:4
+pet-upkeep-div:12
 min-weight:40
 strength-multiplier:2
 equip:food:Ration of Food:1:3:none

@@ -7,7 +7,7 @@ TESTPROGS += player/birth \
              player/miscast \
              player/inven-carry-num \
              player/inven-wield \
-             player/pathfind \
+             player/pet-upkeep player/pathfind \
              player/playerstat \
              player/pscore \
              player/quest \

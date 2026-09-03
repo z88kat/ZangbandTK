@@ -506,6 +506,24 @@ static void show_message(struct monster_race_message *msg)
 }
 
 /**
+ * Throw away any stacked monster messages without showing them.
+ *
+ * ZangbandTK.  The queue holds `struct monster_race *`, and the races are
+ * freed by `cleanup_angband()`.  Anything still stacked at that point becomes
+ * a dangling pointer that the *next* `show_monster_messages()` reads -- which
+ * is a use-after-free surviving across a whole game, and exactly the shape of
+ * the four found in 3.60.x: a free without a clear.
+ *
+ * Found by the ASAN pass, in a test that starts a second character after a
+ * first: the message from a monster killed in the first game was still in the
+ * queue and named a race that no longer existed.
+ */
+void monster_messages_reset(void)
+{
+	size_mon_msg = size_mon_hist = 0;
+}
+
+/**
  * Show and then cler all stacked monster messages.
  */
 void show_monster_messages(void)

@@ -617,6 +617,60 @@ void player_regen_hp(struct player *p)
 /**
  * Regenerate one turn's worth of mana
  */
+/**
+ * What the player's pets are costing, as a percentage of mana regeneration.
+ *
+ * ZangbandTK (PLR-30).  Zangband's rule, in two halves
+ * ([dungeon.c:1435](../archive/zangband/src/dungeon.c#L1435)):
+ *
+ *   - a *count* is free -- `1 + level / pet_upkeep_div` of them, so the
+ *     allowance grows with the character and faster for the classes with the
+ *     smaller divider;
+ *   - past that count, the **sum of the pets' levels** is the percentage
+ *     withheld, clamped to between 5 and 95.
+ *
+ * The two halves measure different things on purpose, and it is the sharpest
+ * edge in the mechanism: one pet over the allowance flips the charge on for
+ * *every* pet at once, so a summoner's third animal can cost more than the two
+ * before it put together.
+ *
+ * The weight is the monster's level, and that is measured rather than assumed.
+ * Zangband writes `total_friend_levels += r_ptr->hdice * 2`, which looks like a
+ * different quantity from the "sum of their levels" its documentation
+ * describes. Across its 883 monsters, `hdice * 2` **equals** the level for 48%
+ * exactly, with a median difference of zero and within two for 96% -- the same
+ * number written twice. The outliers are deliberate: leprechauns, memory moss
+ * and the quantum dot, all weak for their depth. So `race->level` is the
+ * faithful port and the documentation is right.
+ *
+ * Returns 0 when nothing is owed, which is the common case and the one the
+ * caller can skip work for.
+ */
+int player_pet_upkeep(const struct player *p)
+{
+	int i, pets = 0, levels = 0, free_pets;
+
+	if (!cave) return 0;
+
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		if (!mon->race || !monster_is_pet(mon)) continue;
+		pets++;
+		levels += mon->race->level;
+	}
+
+	if (!pets) return 0;
+
+	free_pets = 1 + (p->lev / p->class->pet_upkeep_div);
+	if (pets <= free_pets) return 0;
+
+	if (levels > 95) return 95;
+	if (levels < 5) return 5;
+
+	return levels;
+}
+
 void player_regen_mana(struct player *p)
 {
 	int32_t sp_gain;
@@ -647,6 +701,24 @@ void player_regen_mana(struct player *p)
 	sp_gain = (int32_t)(p->msp * percent);
 	if (percent >= 0)
 		sp_gain += PY_REGEN_MNBASE;
+
+	/*
+	 * ZangbandTK (PLR-30): and the pets take their cut of what is left.
+	 *
+	 * Applied to gains only, never to losses. A Blackguard's `sp_gain` is
+	 * *negative* -- PF_COMBAT_REGEN burns mana rather than restoring it --
+	 * and scaling that by the same factor would mean keeping a stable made a
+	 * Blackguard's mana last longer, which is the mechanism paying the player
+	 * for the thing it is supposed to charge them for. Zangband had no class
+	 * that loses mana by design, so its unconditional multiply was never
+	 * wrong there; here it would be.
+	 */
+	if (sp_gain > 0) {
+		int upkeep = player_pet_upkeep(p);
+
+		if (upkeep) sp_gain = (sp_gain * (100 - upkeep)) / 100;
+	}
+
 	sp_gain = player_adjust_mana_precise(p, sp_gain);
 
 	/* SP degen heals BGs at double efficiency vs casting */

@@ -5546,6 +5546,20 @@ static enum parser_error parse_class_max_attacks(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+/**
+ * How many pets the class keeps for free (ZangbandTK, PLR-30).
+ */
+static enum parser_error parse_class_pet_upkeep(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->pet_upkeep_div = parser_getint(p, "pet-upkeep-div");
+	if (c->pet_upkeep_div < 1)
+		return PARSE_ERROR_INVALID_VALUE;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_class_min_weight(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 
@@ -6382,6 +6396,7 @@ static struct parser *init_parse_class(void) {
 	parser_reg(p, "hitdie int mhp", parse_class_hitdie);
 	parser_reg(p, "exp int exp", parse_class_exp);
 	parser_reg(p, "max-attacks int max-attacks", parse_class_max_attacks);
+	parser_reg(p, "pet-upkeep-div int pet-upkeep-div", parse_class_pet_upkeep);
 	parser_reg(p, "min-weight int min-weight", parse_class_min_weight);
 	parser_reg(p, "strength-multiplier int att-multiply", parse_class_str_mult);
 	parser_reg(p, "title str title", parse_class_title);
@@ -6911,6 +6926,15 @@ bool init_angband(void)
 void cleanup_angband(void)
 {
 	int i;
+
+	/*
+	 * Anything a monster was about to say goes with the monsters (ZangbandTK).
+	 * The stacked messages hold race pointers, and the races are freed a few
+	 * lines below; leaving them stacked leaves a dangling read for whatever
+	 * flushes the queue next, which for a second character in one process is
+	 * a real one.
+	 */
+	monster_messages_reset();
 
 	/* Free the chunk list */
 	for (i = 0; i < chunk_list_max; i++) {

@@ -2348,9 +2348,23 @@ static void show_pet_roster(void)
 	if (!n) {
 		textblock_append(tb, "Nothing follows you.\n");
 	} else {
+		int upkeep = player_pet_upkeep(player);
+		int free_pets = 1 + (player->lev / player->class->pet_upkeep_div);
+
 		textblock_append(tb, "\n");
 		textblock_append_c(tb, COLOUR_L_UMBER,
 						   "%d in all, %d levels between them.\n", n, levels);
+		textblock_append(tb, "\nA %s of your level keeps %d for nothing. ",
+						 player->class->name, free_pets);
+		if (upkeep) {
+			textblock_append_c(tb, COLOUR_L_RED,
+							   "Past that the whole stable is charged: you "
+							   "are regaining %d%% less mana.\n",
+							   upkeep);
+		} else {
+			textblock_append(tb, "One more than that and the whole stable is "
+							 "charged, not just the extra one.\n");
+		}
 	}
 
 	textui_textblock_show(tb, SCREEN_REGION, "What follows you");
@@ -2465,11 +2479,21 @@ void do_cmd_pet(void)
 	screen_save();
 	menu_dynamic_calc_location(m, 0, 0);
 	region_erase_bordered(&m->boundary);
-	if (pets)
-		prt(format("%d %s follow you, %d levels between them.", pets,
-				   (pets == 1) ? "creature" : "creatures", levels), 0, 0);
-	else
+	if (pets) {
+		int upkeep = player_pet_upkeep(player);
+
+		if (upkeep)
+			prt(format("%d %s follow you, %d levels between them, "
+					   "costing %d%% of your mana regeneration.", pets,
+					   (pets == 1) ? "creature" : "creatures", levels,
+					   upkeep), 0, 0);
+		else
+			prt(format("%d %s follow you, %d levels between them, and cost "
+					   "you nothing yet.", pets,
+					   (pets == 1) ? "creature" : "creatures", levels), 0, 0);
+	} else {
 		prt("Nothing follows you, but orders keep until something does.", 0, 0);
+	}
 
 	chosen = menu_dynamic_select(m);
 

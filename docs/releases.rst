@@ -33,6 +33,40 @@ Unreleased
 Pets — 3 September 2026
 -----------------------
 
+- **3.70.0** — **Pets cost mana, and earn you nothing** (M10 phase 4; PLR-30,
+  PLR-31, DEC-61). The two halves of pet balance, which Zangband's own
+  documentation says are the whole of it.
+
+  A *count* is free — ``1 + level/pet-upkeep-div`` pets, the divider now class
+  data at Zangband's three values (20, 15 for the Mage, 12 for the High-Mage;
+  the three 4.2 classes take their DEC-55 donor's). Past that count the **sum of
+  the pets' levels** is the percentage of mana regeneration withheld, clamped to
+  5..95 — for the whole stable, not for the excess. That cliff is the balancing
+  pressure: two pets inside the allowance are free and a third is charged for
+  all three.
+
+  The weight is the monster's level, and that was measured rather than assumed.
+  Zangband's code adds ``hdice * 2`` where its documentation says "the sum of
+  the levels"; across its 883 monsters those are equal for 48% exactly, median
+  difference zero, within two for 96% — the same number written twice.
+
+  **A Blackguard is exempt, deliberately.** Its mana regeneration is negative,
+  so applying the factor would make a stable of pets slow the burn down and pay
+  the player for what the mechanism charges for. Measured: 15 spell points burnt
+  over a hundred turns alone, 1 with the factor applied. Zangband had no such
+  class, so this is our call and DEC-61 records it.
+
+  PLR-31 turned out to be already true and is now proved: monster-versus-monster
+  kills award no experience and leave uniques alive, so a pet can neither farm
+  nor clear a vault.
+
+  The sanitizer pass found a **real use-after-free** on the way through, of the
+  same shape as the four fixed in 3.60.x: the stacked monster-message queue
+  holds race pointers, ``cleanup_angband()`` frees the races, and nothing
+  emptied the queue — so a message left over from one character was read after
+  the races were gone when the next character flushed it. Cleared on cleanup
+  now.
+
 - **3.69.0** — **Pets take orders** (M10 phase 3; PLR-25, PLR-26, DEC-60).
   The pet menu on ``A``: five leash lengths, two switches, a roster and a
   dismissal. Zangband used ``p``, which is auto-explore here.

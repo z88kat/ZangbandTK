@@ -2655,3 +2655,55 @@ DEC-30, not a port, and it would change the balance PLR-30 is sizing.
 *Already true, and not from this phase.* With the `birth_levels_persist` option
 on, a stored level keeps its pets when the player returns to it, because the
 `chunks` block carries the allegiance byte from phase 1.
+
+---
+
+**DEC-61 — Pet upkeep is a count-based allowance and a whole-stable charge, and
+it is not applied to a Blackguard's burn.** (M10 phase 4, 3 September 2026.)
+
+PLR-30 and PLR-31, the two halves of pet balance. The documentation is explicit
+that they are the whole of it
+([monster.txt:200](../../archive/zangband/lib/help/monster.txt#L200)).
+
+**The two halves of PLR-30 measure different things, and that is the mechanism.**
+A *count* is free — `1 + level / pet_upkeep_div` pets — and past that count the
+**sum of the pets' levels** is the percentage of mana regeneration withheld,
+clamped to 5..95 ([dungeon.c:1435](../../archive/zangband/src/dungeon.c#L1435)).
+So the charge is not per-pet-over-the-limit: one pet over the allowance turns
+the meter on for the entire stable at once, and a summoner's third animal can
+cost more than the first two together. That edge is the balancing pressure, and
+an implementation that charges only for the excess is a different game — it has
+a test, and the falsification produced 92% where the rule gives 95%.
+
+**The weight is the monster's level, measured rather than assumed.** Zangband
+writes `total_friend_levels += r_ptr->hdice * 2`, which reads as a different
+quantity from the "sum of the levels of your pets" its documentation describes.
+Across its 883 monsters, `hdice * 2` equals the level for **48% exactly**, with
+a median difference of **zero** and within two for **96%** — the same number
+written twice. The outliers are deliberately weak-for-their-depth creatures:
+leprechauns, memory moss, the quantum dot. So `race->level` is the faithful port
+and, unusually, the requirement's prose was right where the code looked wrong.
+
+**The divider is class data.** Zangband's three values — 20 for everyone, 15 for
+the Mage, 12 for the High-Mage — are now `pet-upkeep-div` in `class.txt`. Druid,
+Necromancer and Blackguard have no Zangband row and take their donor's under
+DEC-55: 20, 15 and 20. A smaller divider means *more* free pets, so the classes
+best at magic carry more of it unpaid.
+
+**The charge is applied to mana gains only, never to losses.** A Blackguard's
+`PF_COMBAT_REGEN` makes `sp_gain` negative — it burns spell points rather than
+restoring them — and Zangband's unconditional multiply would mean a stable of
+pets *slowed the burn down*, paying the player for the thing the mechanism
+charges for. Zangband had no class that loses mana by design, so its version was
+never wrong there; ours would be. Measured in the falsification: a Blackguard
+burns 15 spell points over a hundred turns alone and 1 with the multiply
+applied. This is our call rather than the source's, and it is recorded here for
+that reason.
+
+**PLR-31 was already true, and is now proved.** Monster-versus-monster kills go
+through `mon_take_nonplayer_hit()`, which awards no experience and caps damage
+at the target's remaining hit points, so a unique survives. Both halves have
+tests, because a game that awards nothing for anything satisfies the first one
+too. One difference from Zangband worth noting: Zangband set a unique's hit
+points to 1, 4.2 caps the damage so it lands on 0, and death in 4.2 is `hp < 0`.
+Same outcome, different arithmetic.
