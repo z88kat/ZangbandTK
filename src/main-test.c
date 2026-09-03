@@ -18,7 +18,12 @@
 
 #include "angband.h"
 #include "buildid.h"
+#include "cave.h"
 #include "dun-type.h"
+#include "mon-make.h"
+#include "mon-predicate.h"
+#include "mon-util.h"
+#include "monster.h"
 #include "game-world.h"
 #include "main.h"
 #include "player.h"
@@ -29,6 +34,7 @@
 #ifdef ALLOW_BORG
 #include "borg/borg.h"
 #include "borg/borg-init.h"
+#include "borg/borg-flow-kill.h"
 #include "borg/borg-flow-misc.h"
 #endif
 
@@ -397,6 +403,115 @@ static void c_borg_notes(char *rest)
 }
 
 /**
+ * borg-pet <race> -- put a pet beside the player (BRG-15).
+ *
+ * The borg has never had a concept of allegiance, so a pet was simply a
+ * monster to it: something to target, to be frightened of, and to walk across
+ * a level to kill. That is behaviour which goes visibly wrong the moment
+ * anybody runs the borg against a game with pets in it, and it needs a way to
+ * be tested rather than reasoned about.
+ */
+static void c_borg_pet(char *rest)
+{
+	struct monster_group_info info = { 0, 0 };
+	struct monster_race *race;
+	int i;
+
+	if (!character_dungeon || !cave) {
+		printf("borg-pet: FAILED no level yet\n");
+		run_failed = 1;
+		return;
+	}
+
+	race = lookup_monster((rest && *rest) ? rest : "soldier");
+	if (!race) {
+		printf("borg-pet: FAILED no such race <%s>\n", rest ? rest : "");
+		run_failed = 1;
+		return;
+	}
+
+	for (i = 0; i < 8; i++) {
+		struct loc grid = loc_sum(player->grid, ddgrid_ddd[i]);
+
+		if (!square_in_bounds_fully(cave, grid)) continue;
+		if (!square_isempty(cave, grid)) continue;
+		if (!place_new_monster(cave, grid, race, false, false, info,
+							   ORIGIN_DROP)) continue;
+
+		monster_set_allegiance(square_monster(cave, grid),
+							   MON_ALLEGIANCE_PET);
+		printf("borg-pet: %s at %d,%d\n", race->name, grid.y, grid.x);
+		fflush(stdout);
+		return;
+	}
+
+	printf("borg-pet: FAILED nowhere to put it\n");
+	run_failed = 1;
+}
+
+/**
+ * borg-pets? -- how many pets are still alive and still ours (BRG-15).
+ *
+ * Counts both, because the two failure modes read differently: a pet the borg
+ * killed is gone, and a pet the borg merely *hit* has turned hostile and is
+ * still on the level (PLR-33).
+ */
+static void c_borg_pets(char *rest)
+{
+	int i, pets = 0, hostile = 0;
+
+	if (cave) {
+		for (i = 1; i < cave_monster_max(cave); i++) {
+			struct monster *mon = cave_monster(cave, i);
+
+			if (!mon->race) continue;
+			if (monster_is_pet(mon)) pets++;
+			else if (monster_is_hostile(mon)) hostile++;
+		}
+	}
+
+	printf("borg-pets: pets=%d hostiles=%d\n", pets, hostile);
+	fflush(stdout);
+}
+
+/**
+ * borg-kills? -- the borg's target list, and whether any ally is on it.
+ *
+ * The direct measurement for BRG-15, and it had to be direct: asking whether
+ * pets *survive* a run measures the wrong thing, because the borg changes
+ * level constantly and a pet that was left behind looks exactly like one that
+ * was killed.
+ *
+ * `allies` must be zero. `borg_kills[]` is not just a target list --
+ * `borg_danger()` is computed over it and `borg_flow_kill()` walks toward its
+ * entries -- so an ally on it is a pet the borg is afraid of, chasing, and
+ * swinging at.
+ */
+static void c_borg_kills(char *rest)
+{
+	int i, tracked = 0, allies = 0;
+
+	for (i = 1; i < borg_kills_nxt; i++) {
+		const borg_kill *kill = &borg_kills[i];
+		struct monster *mon;
+
+		if (!kill->r_idx) continue;
+		tracked++;
+
+		if (!cave) continue;
+		mon = square_monster(cave, loc(kill->pos.x, kill->pos.y));
+		if (mon && mon->race && !monster_is_hostile(mon)) {
+			printf("borg-kill-ally: %s at %d,%d\n", mon->race->name,
+				   kill->pos.y, kill->pos.x);
+			allies++;
+		}
+	}
+
+	printf("borg-kills: tracked=%d allies=%d\n", tracked, allies);
+	fflush(stdout);
+}
+
+/**
  * borg-shops? -- which shops the borg has found (BRG-12).
  *
  * The borg learns the map a panel at a time, so on a 144x144 wilderness
@@ -509,6 +624,9 @@ static test_cmd cmds[] = {
 	{ "borg-status?", c_borg_status },
 	{ "borg-notes?", c_borg_notes },
 	{ "borg-shops?", c_borg_shops },
+	{ "borg-pet", c_borg_pet },
+	{ "borg-pets?", c_borg_pets },
+	{ "borg-kills?", c_borg_kills },
 	{ "borg-roundtrip", c_borg_roundtrip },
 #endif
 

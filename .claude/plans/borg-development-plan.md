@@ -567,6 +567,45 @@ after — see principle 4 of the Phase 2 plan.*
 **Exit:** a borg with pets does not attack them, and the mutation set is
 visible in `^z 0`.
 
+**BRG-15 implemented 3 September 2026 in 3.84.0, and NOT demonstrated.** Both
+halves are in and the reason it cannot be shown yet is itself the finding.
+
+**What was done.** `src/borg/` contained **zero** references to allegiance, so
+a pet was simply a monster: something to target, to fear and to cross a level
+to kill. The seam is the kill list, because `borg_kills[]` is not merely a
+target list -- `borg_danger()` is computed over it and `borg_flow_kill()` walks
+toward its entries -- so one check covers targeting, fear and pursuit together:
+
+- `borg_new_kill()` refuses to create an entry for a creature that is not
+  hostile. Every path that observes a monster reaches this one function, which
+  is why the check is there rather than at each of its four call sites.
+- `borg_update_kill_old()` deletes an entry whose monster has changed sides,
+  which is the case a wand of Tame Monster creates. The reverse needs nothing:
+  an angered pet (PLR-33) is a monster the borg has no entry for, and the next
+  observation makes one.
+
+**Why it is not demonstrated, and this is the part worth reading.** An
+instrument was built for it -- `borg-kills?`, reporting the tracked count and,
+separately, how many tracked entries point at a creature that is *not* hostile,
+which must be zero. It reads the list with the borg's own idiom
+(`for (i = 1; i < borg_kills_nxt; i++)`).
+
+It reports `tracked=0` on every run, with the fix and without it, after sixty
+turns on a level holding twenty-four hostile monsters. The borg has no target
+list because **it never fights anything**: it descends, stands on the stairs,
+and leaves, and `borg_kills_nxt` is reset to 1 at every level change. Three
+measurement attempts failed the same way -- short bursts observe nothing, long
+ones change level and lose the pets to the carry.
+
+So **B3's verification is gated on B2's blocker**, though its implementation is
+not. Until the borg restocks and stays on a level long enough to fight, there
+is nothing to observe. The fix is landed anyway rather than held: it is a
+two-line guard whose only failure mode would be the borg *ignoring* a monster,
+which the condition makes impossible, and leaving master with a borg that
+attacks the player's pets is the worse of the two states.
+
+BRG-16 (mutations, virtues and luck as borg traits) is not started.
+
 ---
 
 ### B4 — The testing product

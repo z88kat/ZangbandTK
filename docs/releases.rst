@@ -33,6 +33,26 @@ Unreleased
 Pets follow — 3 September 2026
 ------------------------------
 
+- **3.84.0** — **The borg stops treating your pets as targets.** ``src/borg/``
+  held **no** concept of allegiance, so a pet was simply a monster to it:
+  something to target, to be frightened of, and to walk across a level to kill.
+  Since ``borg_kills[]`` is what danger is computed over and what the borg
+  walks toward, one check at the single point where entries are created covers
+  targeting, fear and pursuit together; a second drops any creature that
+  changes sides while the borg is watching, which a Wand of Tame Monster can
+  do.
+
+  **Implemented but not demonstrated, and the reason is the interesting part.**
+  An instrument was built for it — ``borg-kills?``, which reports how many
+  tracked entries point at something that is not hostile, a number that must be
+  zero. It reports no tracked monsters at all, with the fix and without, after
+  sixty turns on a level holding twenty-four hostiles: the borg never
+  accumulates a target list because it never fights, and its list is wiped at
+  every level change. So this is gated on the same blocker as 3.83.0 — the borg
+  cannot restock, so it stair-scums instead of playing. Landed regardless,
+  because the only failure mode of the guard would be the borg *ignoring* a
+  monster, which its condition makes impossible.
+
 - **3.83.0** — **The borg stops believing the surface is the outside wall of
   the world.** Four files read Angband's ``DUNGEON_HGT`` — 66 — as the current
   level's height, and this game's wilderness surface is 144 rows, with a

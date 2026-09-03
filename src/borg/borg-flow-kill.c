@@ -22,6 +22,7 @@
 #ifdef ALLOW_BORG
 
 #include "../game-world.h"
+#include "../mon-predicate.h"
 #include "../monster.h"
 #include "../ui-term.h"
 
@@ -276,6 +277,24 @@ static void borg_update_kill_old(int i)
 
     struct monster *m_ptr = square_monster(cave, loc(kill->pos.x, kill->pos.y));
     struct monster_race *r_ptr = &r_info[kill->r_idx];
+
+    /*
+     * A creature that has changed sides leaves the list (ZangbandTK, BRG-15).
+     *
+     * The other half of the check in `borg_new_kill()`. A hostile monster the
+     * borg is already tracking can become the player's -- charmed by a wand of
+     * Tame Monster, or dominated -- and an entry that stays behind is a pet
+     * the borg keeps walking toward and swinging at.
+     *
+     * The reverse needs nothing: an angered pet (PLR-33) is simply a monster
+     * the borg has no entry for, and the next observation creates one.
+     */
+    if (m_ptr && !monster_is_hostile(m_ptr)) {
+        borg_note(format("# %s is on our side now; forgetting it",
+            borg_race_name(kill->r_idx)));
+        borg_delete_kill(i);
+        return;
+    }
 
     /* Extract max hitpoints */
     /* Extract actual Hitpoints, this is a cheat.  Borg does not look
@@ -764,6 +783,28 @@ static int borg_new_kill(unsigned int r_idx, int y, int x)
     /* it might be that it can't be found */
     m_ptr = square_monster(cave, loc(x, y));
     if (!m_ptr)
+        return -1;
+
+    /*
+     * Nothing on the player's side goes on the kill list (ZangbandTK, BRG-15).
+     *
+     * `borg_kills[]` is not merely a target list -- `borg_danger()` is
+     * computed over it, `borg_flow_kill()` walks toward its entries, and
+     * `borg_attack()` chooses from them. So one check here is the whole of
+     * "do not attack your own pets, and do not be frightened of them":
+     * a creature that never enters the list is never targeted, never feared,
+     * and never chased.
+     *
+     * Every path that observes a monster reaches this function, which is why
+     * the check is here rather than at each of the four call sites.
+     *
+     * A pet the player angers becomes hostile (PLR-33) and the borg then
+     * creates an entry for it the next time it looks, because the list is
+     * rebuilt from observation rather than remembered. The reverse -- a
+     * hostile creature becoming a pet while the borg is watching -- is handled
+     * where entries are refreshed.
+     */
+    if (!monster_is_hostile(m_ptr))
         return -1;
 
     /* Count the monsters */
