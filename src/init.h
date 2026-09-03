@@ -91,6 +91,30 @@ struct angband_constants
 	/* Maxima of things on a given level, read from constants.txt */
 	uint16_t level_monster_max;	/**< Maximum number of monsters on a given level */
 
+	/**
+	 * How many pets can follow the player between levels (PLR-26).
+	 *
+	 * Not a balance limit -- the mana upkeep is that.  A safety valve, so a
+	 * pathological stable cannot make a level transition slow: every carried
+	 * pet is a scatter search around the arrival grid, and there is no useful
+	 * answer to "forty of them".  Anything over the cap is left behind and
+	 * named, the same as one that will not fit.
+	 */
+	uint16_t pet_max_carried;
+
+	/**
+	 * How far from the player a following pet may be put down (PLR-26).
+	 *
+	 * Measured rather than guessed.  Counting the empty grids around an
+	 * arrival across twenty-five generated levels: a mean of 6.6 within three
+	 * grids, 16.9 within five, 30.2 within seven -- and room for a six-pet
+	 * stable on about half of arrivals at three, against 96 per cent at five.
+	 * The player lands on a staircase, and a staircase is usually in a
+	 * corridor.  Three works (91 to 99 per cent of four pets arrive); five is
+	 * chosen for the margin.  See `constants.txt` for the full note.
+	 */
+	uint16_t pet_carry_radius;
+
 	/* Monster generation constants, read from constants.txt */
 	uint16_t alloc_monster_chance;	/**< 1/per-turn-chance of generation */
 	uint16_t level_monster_min;	/**< Minimum number generated */

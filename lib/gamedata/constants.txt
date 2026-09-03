@@ -604,3 +604,51 @@ wild:gate-turns:100
 # 129-block world leaves them a good walk apart without the map feeling empty.
 # The first is always the starting village, and is always the smallest band.
 wild:towns:12
+
+# === ZangbandTK pets ===
+#
+# How many pets follow the player down a staircase (PLR-26, DEC-60).
+#
+# This is not the balance limit on a stable -- the mana upkeep is that, and it
+# is charged on the sum of their levels whatever this says.  It is a safety
+# valve: every carried pet costs a scatter search around the arrival grid, and
+# there is no useful answer to a player arriving with forty of them.  Anything
+# over the cap is left behind and named individually, the same as one that
+# cannot be fitted in.
+#
+# Set to 0 for Zangband's own behaviour, which was to leave every pet where it
+# stood -- an artefact of its region model rather than a decision, but a
+# defensible way to play.
+pets:max-carried:24
+
+# How far from the player a following pet may be put down.
+#
+# Measured, not guessed.  Empty grids around an arrival, across twenty-five
+# generated levels:
+#
+#     radius 3   mean  6.6 free grids   room for six pets on ~50% of arrivals
+#     radius 5   mean 16.9 free grids   room for six pets on ~96% of arrivals
+#     radius 7   mean 30.2 free grids   room for six pets on 100% of arrivals
+#
+# The player arrives on a staircase and a staircase is usually in a corridor,
+# so three grids is a much smaller neighbourhood than it sounds.
+#
+# Three does work: measured across twenty descents with four pets, 91 to 99
+# per cent of them arrive.  Five gets 99 to 100.  Five is chosen for the margin
+# and because it is still unambiguously "it followed you downstairs"; seven
+# starts to mean "it is somewhere on this level".
+#
+# Worth recording how the number was nearly got wrong. Radius three first
+# measured at 70 to 80 per cent, which looked like the radius being too tight
+# and was not -- the arrival search was asking for grids ring by ring, and a
+# grid inside radius one is also inside radius two, so the rings returned the
+# same grids repeatedly and later pets were handed grids an earlier one had
+# taken. The tell was that the figure was *identical* on every run whatever the
+# seed, which is what a structural miscount looks like next to the
+# level-to-level variation it was mistaken for.
+#
+# Line of sight is deliberately *not* required. That is what a summoning spell
+# wants, so the player sees the thing appear; a pet that walked down the stairs
+# behind you does not need to be visible, only near, and requiring sight halved
+# the available grids for no benefit.
+pets:carry-radius:5

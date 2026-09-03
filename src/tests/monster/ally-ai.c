@@ -523,46 +523,56 @@ static int test_an_order_grants_nothing_the_race_lacks(void *state) {
 }
 
 /**
- * Pets are left behind at a staircase (PLR-26, DEC-60).
+ * Pets follow you downstairs (PLR-26, DEC-60 as reversed).
  *
- * PLR-26 says pets "persist across level changes and saves, following the
- * player where the mode implies it". The saves half is true and tested in
- * `game/roundtrip`. The level-change half is **not Zangband's behaviour**:
- * there is no pet-carrying code anywhere in its source, and its own
- * documentation, which explains the upkeep and the experience rule and the
- * ways of getting a pet, never mentions taking one downstairs. Hengband added
- * that later; 2.7.5 did not have it.
+ * This test used to assert the opposite, and the reversal is the point of
+ * keeping the note. Zangband leaves every pet behind -- there is no
+ * pet-carrying code anywhere in its source and its documentation never
+ * mentions the subject -- so the first reading of PLR-26 followed the source
+ * and pinned that, with a comment saying reversing it would be a deliberate
+ * act with a failing test attached.
  *
- * So a pet is a per-level asset here, and this test says so rather than
- * leaving it to be discovered. Reversing it later is a deliberate act with a
- * failing test attached, which is the point.
+ * It was reversed, deliberately, and the test failed as designed. The project
+ * owner's reasoning: "Pets are one element of zangband that people like.
+ * Usually people don't leave their pets behind." DEC-60 records that the
+ * recommendation was the other way and why it lost.
  */
-static int test_pets_do_not_follow_you_downstairs(void *state) {
-	struct monster *pet;
-	int i, before = 0, after = 0;
+static int test_pets_follow_you_downstairs(void *state) {
+	int t, best = 0;
 
-	clear_the_level();
-	pet = place_side("soldier", MON_ALLEGIANCE_PET, 3);
-	require(pet);
+	/*
+	 * Up to ten descents, and the question is whether the pet *can* arrive.
+	 * A pet that finds no free grid within the carry radius is left behind
+	 * and named, which is the policy rather than a failure, so asserting one
+	 * arrival from one descent asserts the level generator's good behaviour.
+	 * `game/carry` measures the rate; this only has to show the reversal
+	 * happened.
+	 */
+	for (t = 0; t < 10 && best < 1; t++) {
+		struct monster *pet;
+		int i, after = 0;
 
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
+		clear_the_level();
+		pet = place_side("soldier", MON_ALLEGIANCE_PET, 3);
+		if (!pet) continue;
 
-		if (mon->race && monster_is_pet(mon)) before++;
+		/* Down a level, the way the game does it */
+		player->depth++;
+		prepare_next_level(player);
+		on_new_level();
+
+		for (i = 1; i < cave_monster_max(cave); i++) {
+			struct monster *mon = cave_monster(cave, i);
+
+			if (mon->race && monster_is_pet(mon)) after++;
+		}
+
+		/* Never more than went down */
+		require(after <= 1);
+		if (after > best) best = after;
 	}
-	eq(before, 1);
 
-	/* Down a level, the way the game does it */
-	player->depth++;
-	prepare_next_level(player);
-	on_new_level();
-
-	for (i = 1; i < cave_monster_max(cave); i++) {
-		struct monster *mon = cave_monster(cave, i);
-
-		if (mon->race && monster_is_pet(mon)) after++;
-	}
-	eq(after, 0);
+	eq(best, 1);
 
 	ok;
 }
@@ -583,7 +593,6 @@ struct test tests[] = {
 	  test_the_orders_gate_doors_and_pickup },
 	{ "an-order-grants-nothing-the-race-lacks",
 	  test_an_order_grants_nothing_the_race_lacks },
-	{ "pets-do-not-follow-you-downstairs",
-	  test_pets_do_not_follow_you_downstairs },
+	{ "pets-follow-you-downstairs", test_pets_follow_you_downstairs },
 	{ NULL, NULL }
 };

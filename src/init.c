@@ -535,6 +535,31 @@ static enum parser_error parse_constants_lethality(struct parser *p) {
 }
 
 /**
+ * ZangbandTK: how pets behave at a level change (PLR-26).
+ */
+static enum parser_error parse_constants_pets(struct parser *p) {
+	struct angband_constants *z;
+	const char *label;
+	int value;
+
+	z = parser_priv(p);
+	label = parser_getsym(p, "label");
+	value = parser_getint(p, "value");
+
+	if (value < 0 || value > 255)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	if (streq(label, "max-carried"))
+		z->pet_max_carried = value;
+	else if (streq(label, "carry-radius"))
+		z->pet_carry_radius = value;
+	else
+		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+
+	return PARSE_ERROR_NONE;
+}
+
+/**
  * ZangbandTK: tuning for the Zangband melee weapon mechanics.
  *
  * Kept in data for the same reason as the lethality scalars — these are
@@ -1130,6 +1155,7 @@ static struct parser *init_parse_constants(void) {
 	parser_reg(p, "level-max sym label int value", parse_constants_level_max);
 	parser_reg(p, "mon-gen sym label int value", parse_constants_mon_gen);
 	parser_reg(p, "lethality sym label int value", parse_constants_lethality);
+	parser_reg(p, "pets sym label int value", parse_constants_pets);
 	parser_reg(p, "melee sym label int value", parse_constants_melee);
 	parser_reg(p, "wild sym label int value", parse_constants_wild);
 	parser_reg(p, "mon-play sym label int value", parse_constants_mon_play);
@@ -7036,6 +7062,13 @@ void cleanup_angband(void)
 	 * a real one.
 	 */
 	monster_messages_reset();
+
+	/*
+	 * And the pets in transit, if the game is torn down mid-transition
+	 * (ZangbandTK, PLR-26).  The buffer is reused across level changes rather
+	 * than allocated each time, so something has to give it back.
+	 */
+	pets_in_transit_free();
 
 	/* Free the chunk list */
 	for (i = 0; i < chunk_list_max; i++) {

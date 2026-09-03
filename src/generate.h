@@ -328,6 +328,7 @@ const char *get_level_profile_name_from_index(int i);
 /* gen-cave.c */
 struct chunk *town_gen(struct player *p, int min_height, int min_width,
 	const char **p_error);
+void pets_in_transit_free(void);
 struct chunk *town_gen_wild(struct player *p, uint32_t seed,
 	int wid, int hgt, uint16_t shops, uint16_t services);
 struct chunk *classic_gen(struct player *p, int min_height, int min_width,

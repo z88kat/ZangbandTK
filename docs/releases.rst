@@ -33,6 +33,32 @@ Unreleased
 Pets follow — 3 September 2026
 ------------------------------
 
+- **3.75.0** — **Pets follow you downstairs** (PLR-26 as reversed; DEC-66,
+  reversing half of DEC-60). Every pet on the level comes with you, put down
+  within five squares of where you arrive, nearest-follower first. Anything
+  that will not fit is left behind and **named individually**, however many
+  lines that takes — arriving with four when you left with six and not knowing
+  which two you lost is worse than losing them.
+
+  Zangband deleted every pet at a level change, and that was its region model
+  deciding rather than a design: no pet-carrying code anywhere in its source,
+  no mention in its documentation, nothing in nineteen changelog entries about
+  pets. The recommendation here was to keep that behaviour, and it lost:
+  *"Pets are one element of zangband that people like. Usually people don't
+  leave their pets behind."*
+
+  Two constants, both data: ``pets:max-carried`` (24, a safety valve rather
+  than a balance limit) and ``pets:carry-radius`` (5, **measured** — a mean of
+  6.6 empty grids within three of an arrival against 16.9 within five, and the
+  player lands on a staircase, which is usually in a corridor).
+
+  A pet carrying objects is **not** carried yet; it is left behind and told
+  why. Its held objects belong to the old chunk's object list, and moving them
+  is the next phase. The alternative was destroying a player's property to make
+  a transition tidy.
+
+  Nothing follows the player into an arena or out of one.
+
 - **3.74.0** — **The chunk's bookkeeping is checked** (M10 phase A of
   PLR-26's reversal). ``cave_check_integrity()`` and a ``game/integrity``
   suite: object indices agree with the slots the chunk filed them under, held

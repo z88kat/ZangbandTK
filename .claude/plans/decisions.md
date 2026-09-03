@@ -2600,8 +2600,17 @@ waits until there is a reason to touch it.
 
 ---
 
-**DEC-60 — Pets are commanded as a policy, and they do not follow you
-downstairs.** (M10 phase 3, 3 September 2026.)
+### DEC-60 — Pets are commanded as a policy, and they do not follow you downstairs — **the second half REVERSED by DEC-66**
+
+**The level-change half of this decision was reversed on 3 September 2026, and
+the recommendation it records was mine and lost.** It is kept in full rather
+than rewritten, on DEC-48's model, because the argument is worth being able to
+read against the decision that overruled it. The command half stands
+unchanged. Everything from here to the end of this entry is the original as it
+stood; DEC-66 below says what changed.
+
+**DEC-60 (original) — Pets are commanded as a policy, and they do not follow
+you downstairs.** (M10 phase 3, 3 September 2026.)
 
 PLR-25 and PLR-26. Two findings and one thing the requirement asks for that
 the source does not do.
@@ -3003,3 +3012,75 @@ nothing else had noticed, which is this decision in miniature.
 
 Scheduled as §7 of the Phase 2 development plan, and planned in full in
 [borg-development-plan.md](borg-development-plan.md) as BRG-01 to BRG-21.
+
+---
+
+**DEC-66 — Pets follow the player downstairs. Reverses the second half of
+DEC-60.** (3 September 2026.)
+
+**Confirmed by the project owner, against my recommendation.** His reasoning,
+in full: *"The pet should follow downstairs. Pets are one element of zangband
+that people like. Usually people don't leave their pets behind."*
+
+DEC-60 argued the other way and the argument is kept above. In summary it was:
+Zangband deletes every pet at a level change; there is no pet-carrying code
+anywhere in 2.7.5, in either archived lineage; its documentation covers the
+upkeep, the killing-blow rule, that pets trample you and every way of getting
+one, and never mentions the subject; nineteen pet entries in its changelog
+never touch it; and it gives the player no warning. So the behaviour is an
+artefact of its region model rather than a decision — but an artefact that was
+doing real balance work, because rebuilding a stable every level is the
+unnamed third counterweight beside the upkeep and the experience rule.
+
+**What that argument was right about, and what it was wrong about.** It was
+right that nobody decided this and right that the source cannot settle it. It
+was wrong to treat "the source does it" as a reason when the source did not
+decide, and wrong about the weight: what people remember about Zangband's pets
+is having them, and a mechanic people like is worth more than a balance
+coincidence. The balance consequence is real and does not go away; it is
+carried forward as its own question (DEC-65) with figures, rather than being
+used to argue against a decision already taken.
+
+**Placement, decided and measured.** Every pet on the level is carried, not
+only those on a short leash: a pet across the level is still yours. They are
+put down within `pets:carry-radius` of the player's arrival grid, nearest
+first, so a crowded arrival gives the closest grids to the pets that were
+following closest. `pets:max-carried` caps the number, and both are data.
+
+The radius is **five**, and it is measured. Empty grids around an arrival
+across twenty-five generated levels: a mean of 6.6 within three, 16.9 within
+five, 30.2 within seven, with room for a six-pet stable on about half of
+arrivals at three against 96 per cent at five. The player lands on a staircase
+and a staircase is usually in a corridor. Three does work — 91 to 99 per cent
+of a four-pet stable arrives — and five is chosen for the margin. **This is a
+change from the three I proposed and the project owner approved**, made on the
+measurement and left as a data line so it can be changed back in one edit.
+
+Line of sight is deliberately not required. `scatter_ext()` offers it because a
+summoned monster should be seen to arrive; a pet that walked down the stairs
+does not need to be visible, only near, and requiring sight halved an already
+small number of grids.
+
+**What happens to one that will not fit: it is left, and it is named,
+individually.** However many lines that takes. Losing some silently is the
+same defect as not carrying them at all, wearing a different hat. An arrival
+with no free grid whatsoever leaves the whole stable — measured at roughly one
+descent in eight hundred — and says so, pet by pet.
+
+**Nothing follows the player into an arena, or out of one.** Tested rather than
+merely implemented: an arena that carried pets in is the kind of thing a player
+would find before we did.
+
+*A correction worth recording, because it nearly became a wrong decision.*
+The first measurement of radius three showed only 70 to 80 per cent of a
+four-pet stable arriving, which read as the radius being too tight. It was not:
+the arrival search was asking `scatter_ext()` for grids ring by ring, and a
+grid inside radius one is also inside radius two, so the rings returned the
+same grids repeatedly, the count of what had been found was inflated by
+duplicates, and later pets were handed grids an earlier one had already taken.
+The tell was that the figure came out *identical* on every run whatever the
+seed — a structural miscount looks nothing like the level-to-level variation it
+was mistaken for. One call at the full radius, sorted by distance afterwards,
+gives 80 of 80. Had that not been chased down, the conclusion would have been
+"the approved radius is wrong" and the real defect would have shipped
+underneath a policy change.

@@ -208,17 +208,25 @@ them worse than keeping them.
 Between levels
 --------------
 
-**Pets do not follow you down a staircase.** They are left where they stand,
-and the level is gone when you leave it.
+**Your pets follow you down a staircase.** All of them, wherever they were
+standing — a pet across the level is still yours.
 
-This is Zangband's behaviour rather than a limitation of ours — there is no
-pet-carrying code anywhere in its source, and its own documentation, which
-explains the upkeep and the experience rule and every way of getting a pet,
-never mentions taking one with you. It also does most of the work of keeping
-pets in proportion: a stable has to be earned again on every level.
+They arrive around you, within about five squares, the ones that were following
+closest getting the closest ground. If there is no room for one of them it stays
+behind, and you are told which: *"The soldier cannot follow you."* One line per
+animal, because arriving with four when you left with six and not knowing which
+two you lost is worse than losing them.
 
-If you play with persistent levels turned on, a level you come back to still has
-your pets on it, standing where you left them.
+There is no room at all now and then — a staircase in a dead end — and then the
+whole stable is left. It is rare, and it is still named.
+
+Zangband did not do this. It deleted every pet at a level change, and that was
+its region model deciding rather than a design: there is no pet-carrying code
+anywhere in its source and its documentation never raises the subject. Pets
+following you is one of the things people remember liking about Zangband, so
+this game does the thing people remember rather than the thing the code did.
+
+Nothing follows you into an arena, or out of one.
 
 
 What they cost

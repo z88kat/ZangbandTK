@@ -36,7 +36,10 @@
 #include "dun-type.h"
 #include "generate.h"
 #include "init.h"
+#include "mon-desc.h"
+#include "mon-group.h"
 #include "mon-make.h"
+#include "mon-predicate.h"
 #include "mon-move.h"
 #include "mon-spell.h"
 #include "monster.h"
@@ -1387,6 +1390,257 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
  *
  * \param p is the current player struct, in practice the global player
 */
+/**
+ * ------------------------------------------------------------------------
+ * Pets follow the player between levels (PLR-26, DEC-60)
+ * ------------------------------------------------------------------------ */
+/**
+ * The pets in transit, and how many.
+ *
+ * A file-static rather than something on the player, deliberately: the list is
+ * filled and emptied inside one call of `prepare_next_level()`, so it cannot
+ * be reached by a save and needs no savefile block. That is worth having as a
+ * property rather than as a hope -- a carried monster written to a savefile
+ * would be a monster in no chunk, and there is no honest way to read one back.
+ *
+ * Sorted by how far each pet was from the player when it was collected, so
+ * that when there is not room for all of them the ones that were actually
+ * following get the grids. That is what "stay close" ought to buy.
+ */
+static struct monster *pets_in_transit;
+static int pets_in_transit_count;
+
+/** Ordering for arrival grids: nearest the player first. */
+static int cmp_grid_distance(const void *a, const void *b)
+{
+	const struct loc *ga = a;
+	const struct loc *gb = b;
+	int da = distance(*ga, player->grid);
+	int db = distance(*gb, player->grid);
+
+	if (da != db) return (da < db) ? -1 : 1;
+	if (ga->y != gb->y) return (ga->y < gb->y) ? -1 : 1;
+
+	return (ga->x < gb->x) ? -1 : (ga->x > gb->x) ? 1 : 0;
+}
+
+/** Ordering for the collection: nearest the player first. */
+static int cmp_pet_distance(const void *a, const void *b)
+{
+	const struct monster *ma = a;
+	const struct monster *mb = b;
+
+	if (ma->cdis != mb->cdis) return (ma->cdis < mb->cdis) ? -1 : 1;
+
+	/* Stable enough: two pets at the same distance keep their list order */
+	return (ma->midx < mb->midx) ? -1 : (ma->midx > mb->midx) ? 1 : 0;
+}
+
+/**
+ * Take the player's pets off the level, before the level is taken down.
+ *
+ * Every pet, not only the ones on a short leash: a pet across the level is
+ * still yours, and the project owner's reasoning for PLR-26 was that people do
+ * not leave their pets behind. The cap is `pets:max-carried`.
+ *
+ * The bookkeeping mirrors `wipe_mon_list()` for everything except the freeing:
+ * the racial counter comes down here because `place_monster()` will put it back
+ * up, and a unique carried without that would have `cur_num` at two and never
+ * be generated again. The monster leaves its group here too, so that a level
+ * stored under the persistent-levels option does not keep a group entry
+ * pointing at a monster that has gone.
+ */
+static void collect_pets(struct chunk *c, struct player *p)
+{
+	int i;
+
+	pets_in_transit_count = 0;
+
+	/* Nothing follows you into an arena, and nothing follows you out */
+	if (p->upkeep->arena_level) return;
+	if (!z_info->pet_max_carried) return;
+	if (!c) return;
+
+	if (!pets_in_transit) {
+		pets_in_transit = mem_zalloc(z_info->pet_max_carried
+									 * sizeof(*pets_in_transit));
+	}
+
+	for (i = 1; i < cave_monster_max(c); i++) {
+		struct monster *mon = cave_monster(c, i);
+
+		if (!mon->race || !monster_is_pet(mon)) continue;
+
+		/*
+		 * A pet holding something stays behind, for now.
+		 *
+		 * Its objects belong to *this* chunk: they carry an `oidx` into this
+		 * chunk's object array, and `cave_free()` sweeps objects with no grid
+		 * -- which is every held object -- so carrying the monster without
+		 * moving them leaves the copy pointing at freed memory. The integrity
+		 * checker found exactly that on this feature's first run, which is
+		 * what it was built for.
+		 *
+		 * Phase C moves them properly and removes this. Until then, leaving
+		 * the pet is the only honest option: the alternative is destroying
+		 * what it was carrying, and a player's property is not ours to throw
+		 * away to make a transition tidy.
+		 */
+		if (mon->held_obj || mon->mimicked_obj) {
+			char m_name[80];
+
+			monster_desc(m_name, sizeof(m_name), mon,
+						 MDESC_CAPITAL | MDESC_IND_VIS);
+			msg("%s is carrying something, and cannot follow you.", m_name);
+			continue;
+		}
+
+		if (pets_in_transit_count >= z_info->pet_max_carried) {
+			char m_name[80];
+
+			monster_desc(m_name, sizeof(m_name), mon,
+						 MDESC_CAPITAL | MDESC_IND_VIS);
+			msg("%s cannot follow you.", m_name);
+			continue;
+		}
+
+		/* Take a copy, then unhook the original without freeing it */
+		memcpy(&pets_in_transit[pets_in_transit_count], mon, sizeof(*mon));
+		pets_in_transit_count++;
+
+		monster_remove_from_groups(c, mon);
+		square_set_mon(c, mon->grid, 0);
+		if (mon->original_race) mon->original_race->cur_num--;
+		else mon->race->cur_num--;
+		memset(mon, 0, sizeof(*mon));
+		c->mon_cnt--;
+	}
+
+	if (pets_in_transit_count > 1) {
+		sort(pets_in_transit, pets_in_transit_count,
+			 sizeof(*pets_in_transit), cmp_pet_distance);
+	}
+}
+
+/**
+ * Put them down again on the new level, and say which ones did not make it.
+ *
+ * Radius one, then two, then three from wherever the player arrived. Not
+ * further: something four squares away through a wall has not followed you.
+ *
+ * A pet that cannot be placed is named. Losing one silently is the same defect
+ * as not carrying them at all, wearing a different hat -- the player who walks
+ * downstairs with six animals and arrives with four should be told which two,
+ * however many lines that takes.
+ */
+static void place_carried_pets(struct chunk *c, struct player *p)
+{
+	struct loc *grids;
+	int i, next = 0, found = 0;
+
+	if (!pets_in_transit_count) return;
+
+	/*
+	 * Ask for every grid at once, ring by ring.
+	 *
+	 * `scatter_ext()` collects *all* the feasible grids within a radius and
+	 * hands back as many distinct ones as asked for, so one call per ring
+	 * finds everything there is -- where a call per pet is a dart at the same
+	 * neighbourhood and can miss what is plainly available. Ring by ring
+	 * rather than one call at radius three because the pets are sorted
+	 * nearest-first and should get grids in that order: what "stay close"
+	 * ought to buy is being the one that fits.
+	 */
+	grids = mem_zalloc(pets_in_transit_count * sizeof(*grids));
+
+	/*
+	 * One call at the full radius, then sorted by distance.
+	 *
+	 * `scatter_ext()` gathers every feasible grid inside the radius and hands
+	 * back as many *distinct* ones as asked for, so a single call finds
+	 * everything there is. Asking ring by ring instead -- radius one, then
+	 * two, then three -- looks like it would prefer close grids and does not:
+	 * a grid within one is also within two, so the rings return the same grids
+	 * over and over, the count of what was found is inflated by the
+	 * duplicates, and the later pets are handed grids an earlier one has
+	 * already taken. It produced exactly 54 arrivals out of 80 on every run,
+	 * whatever the seed, which is what a structural miscount looks like next
+	 * to the level-to-level variation it was mistaken for.
+	 *
+	 * The nearest-first preference is kept by sorting afterwards, which is
+	 * what the collection order is for: on a crowded arrival the pets that
+	 * were following closest get the closest grids.
+	 *
+	 * No line-of-sight requirement, and that is measured too. `scatter_ext()`
+	 * offers it because a summoned monster should be seen to arrive; a pet
+	 * that walked down the stairs behind the player does not need to be
+	 * visible, only near. With sight: one to four grids inside radius three.
+	 * Without: two to eight. The radius itself is `pets:carry-radius`, where
+	 * the numbers behind five rather than three are written down.
+	 */
+	found = scatter_ext(c, grids, pets_in_transit_count, p->grid,
+						z_info->pet_carry_radius, false, square_isempty);
+	if (found > 1) {
+		sort(grids, found, sizeof(*grids), cmp_grid_distance);
+	}
+
+	for (i = 0; i < pets_in_transit_count; i++) {
+		struct monster *mon = &pets_in_transit[i];
+		bool placed = false;
+
+		/*
+		 * A fresh identity in the new chunk. Zeroing midx puts
+		 * `place_monster()` on its not-loading path, which pops a new index
+		 * and starts a new singleton group -- the old group is gone with the
+		 * old chunk, and a stale index would name a group that never existed
+		 * here. The monster target goes for the same reason.
+		 */
+		mon->midx = 0;
+		memset(mon->group_info, 0, sizeof(mon->group_info));
+		mon->target.midx = 0;
+		mon->target.grid = loc(0, 0);
+		mflag_off(mon->mflag, MFLAG_HANDLED);
+
+		while (next < found && !placed) {
+			struct loc grid = grids[next++];
+
+			/* An earlier pet may have taken it since the search */
+			if (!square_isempty(c, grid)) continue;
+			if (place_monster(c, grid, mon, 0) > 0) placed = true;
+		}
+
+		if (!placed) {
+			char m_name[80];
+
+			monster_desc(m_name, sizeof(m_name), mon,
+						 MDESC_CAPITAL | MDESC_IND_VIS);
+			msg("%s cannot follow you.", m_name);
+
+			/*
+			 * No counter change. `collect_pets()` already took this monster
+			 * out of `race->cur_num` when it lifted it off the old level, and
+			 * decrementing again here drove the count to -1 -- which does not
+			 * block anything immediately and quietly corrupts the allocation
+			 * table, so it showed up as an unrelated test failing several
+			 * tests later.
+			 */
+		}
+	}
+
+	mem_free(grids);
+	pets_in_transit_count = 0;
+}
+
+/**
+ * Release the transit buffer (called from cleanup).
+ */
+void pets_in_transit_free(void)
+{
+	mem_free(pets_in_transit);
+	pets_in_transit = NULL;
+	pets_in_transit_count = 0;
+}
+
 void prepare_next_level(struct player *p)
 {
 	bool persist = OPT(p, birth_levels_persist) || p->upkeep->arena_level;
@@ -1396,6 +1650,16 @@ void prepare_next_level(struct player *p)
 	/* Deal with any existing current level */
 	if (character_dungeon) {
 		assert (p->cave);
+
+		/*
+		 * ZangbandTK (PLR-26): the pets come too.
+		 *
+		 * Here, before either teardown branch and before `cave_store()` on
+		 * the persistent path -- a stored level must not keep a monster the
+		 * player has taken with them, and the non-persistent path is about to
+		 * free everything it can see.
+		 */
+		collect_pets(cave, p);
 
 		/*
 		 * Take what the player left lying on the surface into the world's
@@ -1764,6 +2028,15 @@ void prepare_next_level(struct player *p)
 	 */
 	if (kept_known)
 		wild_keep_knowledge(kept_known, kept_offset);
+
+	/*
+	 * ZangbandTK (PLR-26): and the pets arrive.
+	 *
+	 * Last, after the player has been placed and the level is otherwise
+	 * finished, because the scatter is around the player's arrival grid and
+	 * there is no arrival grid before `player_place()`.
+	 */
+	place_carried_pets(cave, p);
 
 	/* The dungeon is ready */
 	character_dungeon = true;
