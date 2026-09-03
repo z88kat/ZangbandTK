@@ -207,6 +207,15 @@ static int test_no_existing_class_progression_moved(void *state) {
 		{ "Ranger", 24, 172 },
 		{ "Blackguard", 4, 32 },
 		{ "Chaos-Warrior", 4, 32 },
+		/*
+		 * The Monk's books were pinned by the realm-runs table below from
+		 * the day DEC-36 gave it Life, Nature and Death, but its *spell*
+		 * count was not pinned anywhere -- the one casting class with no
+		 * row here. Found by way of the borg, which reported it as having
+		 * 96 spells while listing the classes it could not start as, and
+		 * nothing in 110 suites had an opinion either way.
+		 */
+		{ "Monk", 12, 96 },
 		/* PLR-03's last two, and both are entitled to nearly everything. */
 		{ "Warrior-Mage", 28, 224 },
 		{ "High-Mage", 28, 224 },
@@ -1731,6 +1740,101 @@ static int test_trumps_deferrals_are_the_five(void *state) {
 	ok;
 }
 
+/**
+ * Every class's book and spell counts agree with each other, whoever it is.
+ *
+ * The counts table above names classes one at a time, which is exact and does
+ * not scale: the Monk cast for two milestones with its spell count pinned
+ * nowhere, because nobody added a row. This asks the same question of
+ * `classes` itself, so a class added tomorrow is covered on the day it is
+ * added rather than on the day somebody remembers it.
+ *
+ * The invariants, and each is a mistake that has a shape:
+ *
+ *   - **Books and spells go together.** A class with books and no spells has
+ *     unstudiable books; one with spells and no books has spells that can
+ *     never be learned. Either is a data error and neither is currently
+ *     reachable through the parser.
+ *   - **The total is the sum of the books.** `total_spells` is written by the
+ *     parser and read by the savefile as the length of the known-spell
+ *     bitfield, so a total that disagrees with the books it came from
+ *     mis-sizes `player->spell_flags`.
+ *   - **A book holds one to eight spells, of one named realm.** Eight is the
+ *     shape DEC-50 fixed for every realm, and a book of nine would put a
+ *     spell where no character can reach it. A book of *zero* is the case
+ *     worth naming: harmless in play, and a sign that a realm was added to a
+ *     class without its content.
+ *   - **A realm you may choose has books to put it in.** The converse does
+ *     not hold and must not be asserted: the Druid, Necromancer and Blackguard
+ *     have books and no choice at all, which is what an empty
+ *     `realm_allowed` means.
+ *
+ * Not asserted here: that a class *should* cast. The Mindcrafter has twelve
+ * powers, no books and no realms, and that is PLR-06 rather than an omission
+ * -- `game/wild` pins it. This test would pass a game where every class was a
+ * Warrior, and that is the right scope for it; the counts table above is what
+ * says who casts what.
+ */
+static int test_every_class_agrees_with_its_own_books(void *state) {
+	const struct player_class *c;
+	int casters = 0;
+
+	for (c = classes; c; c = c->next) {
+		int b, summed = 0;
+
+		/* Books and spells are present together or absent together */
+		eq(c->magic.num_books > 0, c->magic.total_spells > 0);
+
+		if (!c->magic.num_books) {
+			eq(c->magic.total_spells, 0);
+			eq(c->magic.realm_count, 0);
+			continue;
+		}
+
+		casters++;
+
+		for (b = 0; b < c->magic.num_books; b++) {
+			const struct class_book *book = &c->magic.books[b];
+
+			if (!book->realm || book->num_spells < 1
+					|| book->num_spells > 8) {
+				printf("  %s book %d: %d spells, realm %s\n", c->name, b,
+					   book->num_spells,
+					   book->realm ? book->realm->name : "(none)");
+			}
+			notnull(book->realm);
+			require(book->num_spells >= 1);
+			require(book->num_spells <= 8);
+			summed += book->num_spells;
+		}
+
+		if (summed != c->magic.total_spells) {
+			printf("  %s: %d books summing to %d, total_spells says %d\n",
+				   c->name, c->magic.num_books, summed,
+				   c->magic.total_spells);
+		}
+		eq(summed, c->magic.total_spells);
+
+		/* Whatever it may choose, it has somewhere to put it */
+		{
+			const struct magic_realm *r;
+			int slot;
+
+			for (slot = 0; slot < REALM_CHOICES; slot++) {
+				for (r = realms; r; r = r->next) {
+					if (!c->magic.realm_allowed[slot][r->ridx]) continue;
+					require(class_has_realm_book(c, r));
+				}
+			}
+		}
+	}
+
+	/* And the loop found the classes it was meant to: twelve cast */
+	eq(casters, 12);
+
+	ok;
+}
+
 const char *suite_name = "player/realm";
 struct test tests[] = {
 	{ "seven-realms-exist", test_seven_realms_exist },
@@ -1760,6 +1864,8 @@ struct test tests[] = {
 	{ "a-spell-knows-its-place-in-its-realm",
 	  test_a_spell_knows_its_place_in_its_realm },
 	{ "a-chaos-warrior-casts-chaos", test_a_chaos_warrior_casts_chaos },
+	{ "every-class-agrees-with-its-own-books",
+	  test_every_class_agrees_with_its_own_books },
 	{ "every-entitlement-is-backed-by-books",
 	  test_every_entitlement_is_backed_by_books },
 	{ "an-offered-realm-has-books-behind-it",

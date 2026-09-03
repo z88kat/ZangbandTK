@@ -466,8 +466,23 @@ So they can be re-checked. All patches were reverted; the tree is as it was.
   not at all.** The borg steals `inkey_hack`, which is a `main-*.c`-independent
   hook, so it should carry over — but nobody has checked, and it is cheaper to
   check while Phase 3 is being designed than after.
-- **Mindcrafter reports 0 spells.** Measured while forcing classes through
-  `borg_init`, and not chased. Either PLR-06's psionics are not on the
-  `class_spell` path, or something is wrong. It is a game question, not a borg
-  question, but the borg is how it was noticed — which is the argument for this
-  whole document in miniature.
+- ~~**Mindcrafter reports 0 spells.**~~ **Resolved 3 September 2026, and it was
+  the benign reading.** PLR-06's psionics are on the `power:` path: the class
+  has twelve `power:` entries, no `magic:` line, no books and no realms, which
+  is what makes it not a realm. `game/wild`'s
+  `the-mindcrafter-thinks-for-itself` already asserted exactly that. So the
+  borg's observation was accurate and the worry was not — nothing to fix.
+
+  It was still worth chasing, because next door to it there was a real gap: the
+  **Monk** casts twelve books of ninety-six spells and its spell count was
+  pinned nowhere. `player/realm`'s counts table names classes one at a time and
+  the Monk had no row, so two milestones of Monk casting went unasserted. Fixed
+  with the row *and* with
+  `every-class-agrees-with-its-own-books`, which asks `classes` itself rather
+  than a list of names: books and spells present together, the total equal to
+  the sum of the books, every book one-to-eight spells of a named realm, and
+  every choosable realm backed by books. A class added tomorrow is covered on
+  the day it is added.
+
+  The general lesson is the one the borg plan is arguing: a hand-maintained
+  table only covers what somebody remembered to add.

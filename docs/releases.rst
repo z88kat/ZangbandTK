@@ -33,6 +33,19 @@ Unreleased
 Pets follow — 3 September 2026
 ------------------------------
 
+- **3.80.1** — **Every class is asked whether its books and its spells
+  agree.** The borg reported the Mindcrafter as having zero spells, which
+  turned out to be correct and by design — PLR-06's psionics are twelve
+  ``power:`` entries and no realm, and ``game/wild`` already asserted it. Next
+  door to it was a real gap: the **Monk** casts twelve books of ninety-six
+  spells and its spell count was pinned nowhere, because ``player/realm``'s
+  counts table names classes one at a time and nobody had added a row. Fixed
+  with the row, and with an invariant asked of ``classes`` itself — books and
+  spells present together, the total equal to the sum of the books, every book
+  one to eight spells of a named realm, and every choosable realm backed by
+  books. Falsified by perturbing the loaded data three ways, and it catches an
+  empty book that the existing entitlement test passes. No game change.
+
 - **3.80.0** — **Four pets, and one in twenty walks away.** Two decisions from
   the project owner, both about how the game feels to play rather than about
   the numbers. The carry cap drops from 24 to **four**: it was written as a
