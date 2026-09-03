@@ -406,6 +406,30 @@ and "considered in a fight".
 - **BRG-08 — An unrated spell is usable, not a startup failure.** Derive a
   fallback rating from the spell's effect index. An unrated spell should be
   merely unloved.
+
+  **The derivation landed 3 September 2026 in 3.86.0, and it did not help.**
+  Sized from the data first: **224** distinct (realm, name) pairs -- seven
+  realms of exactly 32, with 24 names shared between realms -- of which 49
+  already had an upstream rating by name, leaving **175** needing a judgement.
+  Rated by effect category against the rubric rather than one at a time,
+  because 175 individual opinions would not stay consistent with each other,
+  and because a category means a spell added tomorrow is rated the day it is
+  added.
+
+  Measured over three seeds at 40,000 turns:
+
+  | class | best depth | best level | outcome |
+  |---|---:|---:|---|
+  | Mage | 1 | **1** | died, all three seeds |
+  | Priest | 2 | **2** | died, all three seeds |
+  | Warrior | 11 | 6 | one survived |
+
+  **So the ratings are not the binding constraint for casters.** A character
+  level 1 Mage has four hit points and two spell points; it dies before spell
+  selection means anything. The pass was still worth doing -- it is BRG-08 done
+  rather than deferred, and it is needed the moment a caster survives long
+  enough to cast -- but the honest reading is that it moved nothing measurable,
+  and early survival is what limits the nine caster classes.
 - **BRG-09 — An unknown class degrades to melee, and never leaves
   `borg_magics` null.** The `default:` arm must warn and continue, not return
   early with an unallocated array. This is the defect that would have been
@@ -530,8 +554,33 @@ character level, and the borg's own rule (`MAXCLEVEL < depth` refuses the
 descent) makes depth a proxy for it. Of the 1,472 `spell:` entries across the
 seven realms, **64 per cent are reachable by character level 30**; the rest sit
 at 31-50. Trump's summons run from 24 to 49, so 30 exercises the early ones and
-not the great undead. If the whole of M9 and M10 is wanted the number is nearer
-50 -- but nothing argues for raising it before 30 is met.
+not the great undead.
+
+#### Follow-up: raising the bar to 50
+
+**Recorded rather than carried.** The project owner, 3 September 2026: *"Let's
+stay with level 30 until we get it working, we can expand to 50 later, make a
+note for follow up."* So 30 is the target and 50 is a later question, not an
+ambition to be worked toward in the meantime.
+
+What raising it to 50 would buy, so whoever picks it up does not have to
+re-measure:
+
+| | reachable by clevel 30 | needs 31-50 |
+|---|---:|---:|
+| `spell:` entries across the seven realms (1,472 total) | **64%** (947) | **36%** (525) |
+| Trump summons (24-49) | the early ones | the great undead at 49 |
+
+And the dungeon bands say where it would have to go: 30 is reachable in
+Faiella-Bionin (8-30) at its floor, or Garnath (15-40), Kolvir (20-45), Rebma
+(25-50) or the Grove (30-55). **50** needs Rebma's floor or deeper --
+Tir-na Nog'th (35-65), A Broken Pattern (40-75) -- which is two dungeon
+transitions further out than the target, not one.
+
+**Scoping consequence, and it is the useful half of this note: anything only
+reachable above character level 30 is out of scope.** Neither the ratings pass
+nor the depth work should grow to accommodate it. A spell or a mechanism that
+only matters above 30 gets rated by its category and left alone.
 
 **Part-landed 3 September 2026 in 3.83.0. The exit criterion is NOT met, and
 the phase stopped at its agreed boundary.** What was found is more useful than

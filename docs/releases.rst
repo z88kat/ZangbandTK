@@ -33,6 +33,25 @@ Unreleased
 Pets follow — 3 September 2026
 ------------------------------
 
+- **3.86.0** — **Every spell the borg can cast now has a rating, and it made no
+  difference yet.** BRG-08's derivation, done properly now that the rating
+  rubric exists: 224 distinct realm-and-name pairs across the seven realms, 49
+  already rated upstream, 175 needing a judgement. Rated by effect category
+  against the rubric rather than one spell at a time, so they stay consistent
+  with each other and a spell added later is rated the day it is added.
+
+  The rubric leads with survival, and so does the mapping: escape and healing
+  at 90–95, above the best attack spell at 85, so a cornered borg runs rather
+  than swings. Sleeping or scaring a whole room rates 88 — survival wearing an
+  offensive coat. Summoning a pet rates 40, deliberately low, because the borg
+  cannot reason about the mana upkeep that would leave it unable to cast.
+
+  **Measured, and it did not move the casters**: over three seeds at 40,000
+  turns a Mage still dies at character level 1 and a Priest at 1–2, where a
+  Warrior reaches level 6 and depth 11. A level 1 Mage has four hit points; it
+  dies before spell selection means anything. Recorded as a result rather than
+  presented as an improvement.
+
 - **3.85.0** — **The borg reaches depth 11, up from 2, and it was food.** Two
   thresholds inside the borg disagreed with each other and with this game's
   data. ``borg_restock()`` refuses to descend past depth 1 with fewer than

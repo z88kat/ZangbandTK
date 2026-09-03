@@ -17,6 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+#include "../effects.h"
 #include "borg-magic.h"
 
 #ifdef ALLOW_BORG
@@ -800,6 +801,125 @@ static int borg_get_book_offset(int index)
  * middling value is honest about knowing nothing; a made-up derivation would
  * look like knowledge.
  */
+/*
+ * What an unrated spell is worth, from what it does (ZangbandTK, BRG-08).
+ *
+ * BRG-08 asks for a fallback derived from the spell's effect, and this is it.
+ * It was a flat 50 until the rating rubric existed, because a made-up
+ * derivation would have looked like knowledge; the rubric is written now, so
+ * this implements it.
+ *
+ * **Rule zero of the rubric is survival first**, and it is not a matter of
+ * taste: the borg's measured failure is dying at character level three to six,
+ * three runs in six, not playing slowly. A borg that reaches depth 30 alive is
+ * verification of M8 to M10; one that fights beautifully and dies at 12 is
+ * not. So escape, healing and curing sit above attack, and attack above
+ * information.
+ *
+ * The bands are the rubric's:
+ *
+ *   90-95  saves the character's life or the run
+ *   75-89  its best answer to a fight it is in
+ *   60-74  information it will act on
+ *   51-59  useful and situational (below the borg's own "bored" threshold)
+ *   1-49   judged and not wanted
+ *
+ * 50 is deliberately never returned. The rubric reserves it for *not yet
+ * judged*, and the point of this function is that every spell has now been
+ * judged -- by category rather than one at a time, which is the only way 175
+ * unrated spells stay consistent with each other.
+ *
+ * Rating by category also means a spell added tomorrow is rated the day it is
+ * added, rather than waiting for somebody to remember it. Where a category is
+ * wrong for a particular spell, that is what a per-spell override is for; none
+ * is needed yet, and adding the mechanism before a case demands it would be
+ * building a pipeline to tune numbers nobody has looked at.
+ */
+static uint8_t borg_rating_from_effect(int effect_index)
+{
+    switch (effect_index) {
+    /*** 90-95: stays alive ***/
+    case EF_TELEPORT:            /* the escape, and the borg's best trick */
+    case EF_TELEPORT_LEVEL:
+        return 95;
+    case EF_HEAL_HP:
+    case EF_CURE:
+        return 92;
+    case EF_RESTORE_MANA:        /* a caster with no mana cannot escape either */
+        return 90;
+
+    /*** 75-89: wins the fight it is in ***/
+    case EF_BALL:
+    case EF_SPHERE:
+        return 85;
+    case EF_BOLT:
+    case EF_BOLT_OR_BEAM:
+    case EF_BEAM:
+    case EF_BOLT_AWARE:
+    case EF_BOLT_STATUS:
+    case EF_LINE:
+        return 82;
+    case EF_PROJECT_LOS:
+    case EF_PROJECT_LOS_AWARE:   /* sleep or scare a room: survival, really */
+        return 88;
+
+    /*** 60-74: information it acts on ***/
+    case EF_DETECT_VISIBLE_MONSTERS:
+    case EF_DETECT_INVISIBLE_MONSTERS:
+    case EF_DETECT_EVIL:
+        return 72;
+    case EF_DETECT_TRAPS:
+    case EF_DETECT_DOORS:
+    case EF_DETECT_STAIRS:
+        return 68;
+    case EF_MAP_AREA:
+        return 65;
+    case EF_LIGHT_AREA:
+        return 62;
+
+    /*** 51-59: worth doing when there is nothing better ***/
+    case EF_TIMED_INC:           /* blessings, resistances, speed */
+    case EF_TIMED_INC_NO_RES:
+        return 58;
+    case EF_BRAND_WEAPON:
+        return 56;
+    case EF_RECHARGE:
+    case EF_RESTORE_STAT:
+    case EF_RESTORE_EXP:
+        return 54;
+    case EF_NOURISH:             /* food matters, and it is cheaper to carry */
+        return 52;
+    case EF_RECALL:
+    case EF_IDENTIFY:
+        return 51;
+
+    /*** 1-49: judged, and not wanted by an automaton ***/
+    case EF_SUMMON_PET:
+        /*
+         * Pets are M10's and the borg has no idea what to do with them
+         * (BRG-15 stops it attacking its own; BRG-16 would have it use them).
+         * Rated low rather than zero because a pet still fights for it, and
+         * the mana upkeep it cannot reason about is the reason it is not
+         * higher: DEC-61 charges the whole stable once the free allowance is
+         * passed, which would leave a caster unable to cast.
+         */
+        return 40;
+    case EF_TELEPORT_TO:         /* pulls a monster to you: rarely what it wants */
+        return 30;
+    case EF_RANDOM:
+        /* A random effect is one the borg cannot plan around. */
+        return 20;
+
+    default:
+        /*
+         * Anything not named above. 55 rather than 50: the rubric reserves 50
+         * for unjudged, and this *is* a judgement -- "probably useful, nothing
+         * special" -- which sits just above the borg's bored threshold.
+         */
+        return 55;
+    }
+}
+
 static void borg_init_spell(borg_magic *spells, int spell_num)
 {
     borg_magic               *spell  = &spells[spell_num];
@@ -820,7 +940,9 @@ static void borg_init_spell(borg_magic *spells, int spell_num)
 
     rating = borg_find_rating(cspell->name);
 
-    spell->rating     = rating ? rating->rating : 50;
+    spell->rating     = rating ? rating->rating
+        : borg_rating_from_effect(cspell->effect ? (int) cspell->effect->index
+                                                 : -1);
     spell->spell_enum = rating ? rating->spell_enum : BORG_SPELL_UNKNOWN;
 
     /*
