@@ -27,6 +27,7 @@
 #include "mon-make.h"
 #include "mon-msg.h"
 #include "mon-predicate.h"
+#include "player-virtue.h"
 #include "mon-speech.h"
 #include "mon-spell.h"
 #include "mon-summon.h"
@@ -796,6 +797,43 @@ void monster_set_allegiance(struct monster *mon, enum monster_allegiance side)
 	square_light_spot(cave, mon->grid);
 }
 
+/**
+ * Something the player did has upset this monster (PLR-33).
+ *
+ * Zangband's `anger_monster()`
+ * ([monster1.c:1744](../archive/zangband/src/monster1.c#L1744)): a monster on
+ * the player's side that takes damage, or is put to sleep, stops being on the
+ * player's side. It is the documented counterweight to pets -- "pets are also
+ * rather easily irritable", and "this is something to think about before
+ * lighting up a room if you have pet orcs".
+ *
+ * `what` is the line said about it, because Zangband distinguishes the two
+ * reasons: something you did to it directly makes it "get angry", and simply
+ * carrying something that aggravates makes it "suddenly become hostile". Pass
+ * NULL for the first, which is the common one.
+ *
+ * The virtue writes are Zangband's own and they are pointed: turning on a
+ * creature that trusted you is a gain in Individualism and a loss in Honour,
+ * Justice and Compassion. This game has virtues (PLR-18), so they are carried;
+ * they were dead code in Zangband, which had no consumer for any of them.
+ */
+void monster_make_hostile(struct monster *mon, const char *what)
+{
+	char m_name[80];
+
+	if (monster_is_hostile(mon)) return;
+
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL | MDESC_IND_VIS);
+	msg("%s %s", m_name, what ? what : "gets angry!");
+
+	monster_set_allegiance(mon, MON_ALLEGIANCE_HOSTILE);
+
+	virtue_change(player, V_INDIVIDUALISM, 1);
+	virtue_change(player, V_HONOUR, -1);
+	virtue_change(player, V_JUSTICE, -1);
+	virtue_change(player, V_COMPASSION, -1);
+}
+
 void monster_wake(struct monster *mon, bool notify, int aware_chance)
 {
 	int flag = notify ? MON_TMD_FLG_NOTIFY : MON_TMD_FLG_NOMESSAGE;
@@ -1442,6 +1480,19 @@ bool mon_take_hit(struct monster *mon, struct player *p, int dam, bool *fear,
 
 	/* No damage, we're done */
 	if (dam == 0) return false;
+
+	/*
+	 * ZangbandTK (PLR-33): and anything on the player's side that the player
+	 * has just hurt stops being on the player's side.
+	 *
+	 * One site, not seven. This function is *the* player-caused-damage entry
+	 * point in 4.2 -- melee, missiles and every projection reach it, and
+	 * monster-caused damage goes through `mon_take_nonplayer_hit()` instead.
+	 * Zangband had to write `anger_monster()` at each call site because its
+	 * equivalent had no such split, and the sites it missed are why a player
+	 * there could shatter a wall onto a pet for free.
+	 */
+	monster_make_hostile(mon, NULL);
 
 	/* Covering tracks is no longer possible */
 	p->timed[TMD_COVERTRACKS] = 0;

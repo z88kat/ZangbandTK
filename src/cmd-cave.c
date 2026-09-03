@@ -1120,6 +1120,27 @@ void do_cmd_steal(struct command *cmd)
  * Note that this routine handles monsters in the destination grid,
  * and also handles attempting to move into walls/doors/rubble/etc.
  */
+/**
+ * Can the player change places with this monster rather than fight it?
+ *
+ * ZangbandTK (PLR-24).  The conditions are Zangband's, and each one is a way
+ * of not being in command of yourself: confusion, hallucination, being stunned,
+ * a berserk rage, or simply not being able to see what is there. Its
+ * Stormbringer clause -- a one in three chance the sword swings anyway -- has
+ * no equivalent here and is not invented.
+ */
+static bool player_can_swap_with(struct player *p, struct monster *mon)
+{
+	if (!monster_is_visible(mon)) return false;
+	if (p->timed[TMD_CONFUSED]) return false;
+	if (p->timed[TMD_IMAGE]) return false;
+	if (p->timed[TMD_STUN]) return false;
+	if (p->timed[TMD_SHERO]) return false;
+
+	/* Something has to be able to stand where the player is */
+	return square_ispassable(cave, p->grid);
+}
+
 void move_player(int dir, bool disarm)
 {
 	struct loc grid = loc_sum(player->grid, ddgrid[dir]);
@@ -1138,6 +1159,31 @@ void move_player(int dir, bool disarm)
 
 			/* Camouflaged monster wakes up and becomes aware */
 			monster_wake(mon, false, 100);
+		} else if (!monster_is_hostile(mon) && player_can_swap_with(player, mon)) {
+			/*
+			 * ZangbandTK (PLR-24): walk into something on your side and you
+			 * change places with it, rather than hitting it.
+			 *
+			 * This is Zangband's answer, and it is better than the
+			 * confirmation prompt the requirement asks for
+			 * ([cmd1.c:2318](../archive/zangband/src/cmd1.c#L2318)). The
+			 * danger is not that the player will decide to punch their own
+			 * animal; it is that the animal wanders into the corridor mouth
+			 * on the turn the player was walking that way. A prompt on every
+			 * such step would be a prompt on nearly every step -- pets follow
+			 * you -- and would train the player to answer it without reading.
+			 *
+			 * A player who cannot tell what they are doing gets no such
+			 * courtesy: confused, hallucinating, stunned, berserk or unable
+			 * to see it, the blow lands and the pet takes it personally.
+			 */
+			char m_name[80];
+
+			monster_desc(m_name, sizeof(m_name), mon, MDESC_IND_VIS);
+			msg("You push past %s.", m_name);
+			monster_swap(player->grid, grid);
+			player->upkeep->energy_use = z_info->move_energy;
+			return;
 		} else {
 			py_attack(player, grid);
 		}

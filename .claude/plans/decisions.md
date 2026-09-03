@@ -2707,3 +2707,54 @@ tests, because a game that awards nothing for anything satisfies the first one
 too. One difference from Zangband worth noting: Zangband set a unique's hit
 points to 1, 4.2 caps the damage so it lands on 0, and death in 4.2 is `hp < 0`.
 Same outcome, different arithmetic.
+
+---
+
+**DEC-62 — Walking into an ally changes places with it; hurting one turns it.**
+(M10 phase 5, 3 September 2026.)
+
+PLR-24 and PLR-33, which are one mechanism seen from two sides.
+
+**PLR-24 asks for "confirmation before harming a pet". Zangband does something
+different and better.** Walking into a non-hostile monster **swaps places with
+it** — "You push past X"
+([cmd1.c:2318](../../archive/zangband/src/cmd1.c#L2318)) — and there is no
+prompt anywhere in its pet handling. The reasoning holds up: the danger is not
+that a player decides to punch their own animal, it is that the animal steps
+into the doorway on the turn the player was walking through it. Pets follow you,
+so a prompt on that step would appear constantly and train the player to answer
+it unread. We take the swap.
+
+The exceptions are Zangband's list, and each is a way of not being in command of
+yourself: confused, hallucinating, stunned, berserk, or unable to see what is
+there. Its Stormbringer clause — a one-in-three chance the sword swings anyway —
+has no equivalent here and is not invented.
+
+**PLR-33's anger goes in one place, not seven.** `mon_take_hit()` is *the*
+player-caused-damage entry point in 4.2: melee, missiles and every projection
+arrive there, and monster-caused damage goes through
+`mon_take_nonplayer_hit()` instead. Zangband had to write `anger_monster()` at
+each call site because its damage path had no such split, and the sites it
+missed are why a player there could bring a wall down on a pet for free. Both
+halves are tested, because a pet must *not* blame the player for a hostile
+monster's fireball.
+
+**Aggravation is checked in the monster's turn, not while it sleeps.** 4.2 reads
+`OF_AGGRAVATE` inside `monster_reduce_sleep()`, which only a sleeping monster
+reaches — and since PLR-23 no ally is ever asleep, so the rule would have been
+unreachable for exactly the monsters it is about. Zangband checks it in
+`process_monster` ([melee2.c:2959](../../archive/zangband/src/melee2.c#L2959))
+and so do we. It keeps Zangband's separate wording too: something you did to it
+makes it "get angry", carrying something that aggravates makes it "suddenly
+become hostile".
+
+**The virtue writes are carried.** Zangband changes four virtues when an ally
+turns — Individualism up, Honour, Justice and Compassion down — and they were
+dead numbers there, since it had no consumer for any virtue. Here they are live
+(PLR-21), so turning on a creature that trusted you now has a downstream effect
+on a Chaos patron's generosity and on what you dream about at an inn.
+
+*A note on process.* The confusion test passed against a deliberately broken
+build and had to be rewritten: it asserted "they are not on the same grid" and
+"one of them moved", both of which are true after a swap as well. The code was
+right and the test was not, and only running the falsification showed it.

@@ -1841,6 +1841,19 @@ static void monster_turn(struct monster *mon)
 	monster_group_rouse(cave, mon);
 
 	/*
+	 * ZangbandTK (PLR-33): nobody wants to be your friend if you aggravate.
+	 *
+	 * Checked every turn rather than only while asleep, which is where
+	 * Zangband puts it ([melee2.c:2959](../archive/zangband/src/melee2.c#L2959)):
+	 * 4.2 reads OF_AGGRAVATE in `monster_reduce_sleep()`, and a pet that is
+	 * awake -- which every pet is, since PLR-23 -- would never reach it.
+	 */
+	if (!monster_is_hostile(mon) && player_of_has(player, OF_AGGRAVATE)) {
+		monster_make_hostile(mon, "suddenly becomes hostile!");
+		equip_learn_flag(player, OF_AGGRAVATE);
+	}
+
+	/*
 	 * ZangbandTK (PLR-23): pick a fight before deciding how to attack.
 	 *
 	 * Here rather than inside the movement code because the ranged attack

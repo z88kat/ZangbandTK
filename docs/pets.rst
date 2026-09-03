@@ -262,8 +262,36 @@ Between them these are why a stable is a tactical asset and not a way to win the
 game while standing still.
 
 
+Losing one
+----------
+
+Pets are easily irritable. **Anything you do that hurts one turns it against
+you** — a blow, an arrow, a bolt that passes through it, a fireball that catches
+it at the edge. It stops being yours on the spot, and it remembers.
+
+That is the thing to think about before lighting up a room while you have pet
+orcs, and it is the reason area spells are a different proposition with a
+stable behind you. Damage from *other* monsters does not count against you: a
+pet caught in something else's breath is unhurt in its opinion of you.
+
+**Carrying something that aggravates turns them all.** Nobody wants to be your
+friend if you are aggravating.
+
+Turning on a creature that trusted you costs you virtue: a gain in
+Individualism and a loss in Honour, Justice and Compassion. Those are real
+numbers here and other things read them.
+
+Walking into your own pet does **not** hurt it. You change places with it —
+"you push past it" — which is what stops the whole mechanism firing every time
+an animal gets into a doorway ahead of you.
+
+Unless you are not in command of yourself. Confused, hallucinating, stunned,
+berserk, or unable to see what is in front of you, the blow lands and the pet
+takes it personally. Confusion is a different kind of dangerous when you have
+things following you.
+
+
 Not yet written
 ---------------
 
-What makes a pet in the first place, and what makes one stop being one. Those
-arrive with the rest of M10.
+What makes a pet in the first place. That arrives with the rest of M10.

@@ -33,6 +33,31 @@ Unreleased
 Pets — 3 September 2026
 -----------------------
 
+- **3.71.0** — **Turning on your own** (M10 phase 5; PLR-24, PLR-33, DEC-62).
+  Anything the player does that hurts an ally turns it hostile, and carrying
+  something that aggravates turns them all. It costs virtue: Individualism up,
+  Honour, Justice and Compassion down — Zangband's own four writes, dead numbers
+  there and live ones here.
+
+  The anger goes in **one** place. ``mon_take_hit()`` is the player-caused
+  damage entry point in 4.2 — melee, missiles and every projection reach it,
+  while monster-caused damage goes through ``mon_take_nonplayer_hit()`` — so a
+  pet cannot blame the player for something else's fireball. Zangband had to
+  write its call at seven sites and missed some.
+
+  **PLR-24 asked for a confirmation prompt; Zangband does something better.**
+  Walking into an ally changes places with it. The danger was never that a
+  player decides to punch their own animal, it is that the animal steps into the
+  doorway on the turn the player was walking through it — and since pets follow
+  you, a prompt on that step would appear constantly and be answered unread. The
+  exceptions are Zangband's: confused, hallucinating, stunned, berserk, or
+  unable to see it.
+
+  Aggravation is checked in the monster's turn rather than in
+  ``monster_reduce_sleep()``, where 4.2 reads the flag — no ally is ever asleep
+  since 3.68.0, so the rule would have been unreachable for exactly the monsters
+  it is about.
+
 - **3.70.0** — **Pets cost mana, and earn you nothing** (M10 phase 4; PLR-30,
   PLR-31, DEC-61). The two halves of pet balance, which Zangband's own
   documentation says are the whole of it.

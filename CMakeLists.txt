@@ -869,6 +869,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     message/message.c
     monster/allegiance.c
     monster/ally-ai.c
+    monster/anger.c
     monster/amberite.c
     monster/aura.c
     monster/attack.c
