@@ -33,6 +33,37 @@ Unreleased
 Pets follow — 3 September 2026
 ------------------------------
 
+- **3.77.0** — **The awkward cases** (PLR-26 phase D). Uniques, groups,
+  stored levels and the arena.
+
+  **A real bug, found by the test written for it.** The racial counter was
+  released when a pet was lifted off the old level — which looks tidier and is
+  wrong, because the new level is *generated between the collection and the
+  placement*. A carried unique therefore became available to the generator, and
+  the player could arrive to find a second copy of their own pet standing
+  there. Two Grips, reproducibly. The count is now held through generation and
+  handed over at placement.
+
+  **Groups.** A carried pet's old group index is cleared, so it joins a fresh
+  group of its own. ``monster_group_assign()`` self-heals a *dangling* index,
+  which is why a test that only asked for a valid group passed against a build
+  with the clearing removed; the case that is not harmless is a **collision**
+  with a real group on the new level, which quietly enlists the pet among
+  strangers. The test forces that collision and asks that the pet's group
+  contains the pet and nobody else.
+
+  **Stored levels.** With persistent levels the old chunk is kept rather than
+  freed, so the collection has to happen before ``cave_store()`` — otherwise
+  the stored level holds a monster that is also standing on the new one, and
+  coming back up hands the player a second copy.
+
+  **The arena carries nothing in and nothing out**, and that is tested rather
+  than merely implemented: an arena that let a stable in would be found by a
+  player long before it was found by us. Writing that test also turned up that
+  ``arena_gen()`` reads ``health_who`` without checking it, so an arena entered
+  without an opponent named segfaults — unreachable in play, since only the
+  effect can get there, but worth knowing.
+
 - **3.76.0** — **And they bring what they are carrying** (PLR-26 phase C).
   A held object belongs to a chunk twice over — ``obj->oidx`` is a slot in the
   real object array and the player's knowledge of it sits in the same slot of

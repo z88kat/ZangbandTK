@@ -1530,10 +1530,23 @@ static void collect_pets(struct chunk *c, struct player *p)
 		memcpy(&pets_in_transit[pets_in_transit_count], mon, sizeof(*mon));
 		pets_in_transit_count++;
 
+		/*
+		 * The racial counter is deliberately *not* touched here.
+		 *
+		 * A pet in transit still exists, and `race->cur_num` means "how many
+		 * of these are in the game". Releasing the count at collection time
+		 * looks tidier and is wrong: the new level is generated between the
+		 * collection and the placement, so a carried **unique** would be
+		 * available to the generator and the player could arrive to find a
+		 * second copy of their own pet standing there. That is not
+		 * hypothetical -- `a-carried-unique-stays-unique` found exactly two
+		 * Grips.
+		 *
+		 * The hand-over happens in `place_carried_pets()`, one decrement
+		 * immediately before `place_monster()` puts the count back.
+		 */
 		monster_remove_from_groups(c, mon);
 		square_set_mon(c, mon->grid, 0);
-		if (mon->original_race) mon->original_race->cur_num--;
-		else mon->race->cur_num--;
 		memset(mon, 0, sizeof(*mon));
 		c->mon_cnt--;
 	}
@@ -1623,6 +1636,16 @@ static void place_carried_pets(struct chunk *c, struct player *p)
 		mon->target.grid = loc(0, 0);
 		mflag_off(mon->mflag, MFLAG_HANDLED);
 
+		/*
+		 * Hand the racial count over. It was held through the generation of
+		 * this level so that a carried unique could not be generated onto it
+		 * as well (see `collect_pets()`); `place_monster()` puts it straight
+		 * back, and if the placement fails the monster has ceased to exist
+		 * and the count is right to have gone.
+		 */
+		if (mon->original_race) mon->original_race->cur_num--;
+		else mon->race->cur_num--;
+
 		while (next < found && !placed) {
 			struct loc grid = grids[next++];
 			int16_t midx;
@@ -1666,12 +1689,11 @@ static void place_carried_pets(struct chunk *c, struct player *p)
 			msg("%s cannot follow you.", m_name);
 
 			/*
-			 * No counter change. `collect_pets()` already took this monster
-			 * out of `race->cur_num` when it lifted it off the old level, and
-			 * decrementing again here drove the count to -1 -- which does not
-			 * block anything immediately and quietly corrupts the allocation
-			 * table, so it showed up as an unrelated test failing several
-			 * tests later.
+			 * No counter change here: the decrement above already accounts
+			 * for this monster ceasing to exist. Doing it twice drove
+			 * `cur_num` to -1, which blocks nothing immediately and quietly
+			 * corrupts the allocation table -- it surfaced as an unrelated
+			 * test failing several tests later.
 			 *
 			 * What it was carrying does have to go, though. Those objects are
 			 * off both chunks' lists and nothing else will ever reach them, so

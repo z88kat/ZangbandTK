@@ -32,6 +32,7 @@
 #include "generate.h"
 #include "init.h"
 #include "mon-make.h"
+#include "mon-group.h"
 #include "mon-predicate.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -41,6 +42,7 @@
 #include "obj-util.h"
 #include "player-birth.h"
 #include "player-util.h"
+#include "option.h"
 #include "savefile.h"
 #include "z-file.h"
 
@@ -702,6 +704,247 @@ static int test_a_mimic_does_not_follow(void *state) {
 	ok;
 }
 
+/**
+ * Nothing follows the player into an arena.
+ *
+ * Tested rather than merely implemented, at the project owner's insistence and
+ * he is right: an arena that carried a stable in would be found by a player
+ * long before it was found by us, and the whole point of an arena is one
+ * character against one monster.
+ *
+ * The arena is reached by setting `arena_level` and changing level, which is
+ * what `effect_handler_ARENA` does after picking its opponent.
+ */
+static int test_nothing_follows_into_an_arena(void *state) {
+	int t, done = 0;
+
+	for (t = 0; t < 10 && !done; t++) {
+		struct monster *foe = NULL;
+		int i;
+
+		clear_the_level();
+		if (place_side("soldier", MON_ALLEGIANCE_PET, 3) != 3) continue;
+		if (place_side("kobold", MON_ALLEGIANCE_HOSTILE, 1) != 1) continue;
+
+		for (i = 1; i < cave_monster_max(cave); i++) {
+			struct monster *mon = cave_monster(cave, i);
+
+			if (mon->race && monster_is_hostile(mon)) foe = mon;
+		}
+		require(foe);
+
+		/*
+		 * Into the arena, the way the effect does it -- including naming the
+		 * opponent. `arena_gen()` reads `health_who` without checking it and
+		 * copies that monster into the new chunk itself, so a test that just
+		 * sets the flag segfaults.
+		 */
+		player->upkeep->health_who = foe;
+		player->old_grid = player->grid;
+		player->upkeep->arena_level = true;
+		prepare_next_level(player);
+		on_new_level();
+
+		eq(count_side(MON_ALLEGIANCE_PET), 0);
+		require_consistent();
+
+		/* And back out, still with nothing following */
+		player->upkeep->arena_level = false;
+		prepare_next_level(player);
+		on_new_level();
+
+		eq(count_side(MON_ALLEGIANCE_PET), 0);
+		require_consistent();
+		done = 1;
+	}
+
+	require(done);
+
+	ok;
+}
+
+/**
+ * A carried unique is still exactly one unique.
+ *
+ * `race->cur_num` above zero means a unique can never be generated again, so a
+ * carry that leaks the counter would quietly remove the creature from the rest
+ * of the game -- and a carry that leaks it the other way could put a second
+ * copy of a one-of-a-kind monster on the next level.
+ *
+ * Grip is used because he is shallow enough to place and carries nothing that
+ * would send this down phase C's path.
+ */
+static int test_a_carried_unique_stays_unique(void *state) {
+	struct monster_race *race = lookup_monster("Grip, Farmer Maggot's dog");
+	struct monster_group_info info = { 0, 0 };
+	int t, done = 0;
+
+	notnull(race);
+	require(rf_has(race->flags, RF_UNIQUE));
+
+	for (t = 0; t < 20 && !done; t++) {
+		struct monster *mon = NULL;
+		int i, seen = 0;
+
+		clear_the_level();
+		race->cur_num = 0;
+
+		for (i = 0; i < 400 && !mon; i++) {
+			struct loc grid = loc(randint0(cave->width),
+								  randint0(cave->height));
+
+			if (!square_in_bounds_fully(cave, grid)) continue;
+			if (!square_isempty(cave, grid)) continue;
+			if (!place_new_monster(cave, grid, race, false, false, info, 0))
+				continue;
+			mon = square_monster(cave, grid);
+		}
+		if (!mon) continue;
+		monster_set_allegiance(mon, MON_ALLEGIANCE_PET);
+		eq(race->cur_num, 1);
+
+		go_down();
+
+		for (i = 1; i < cave_monster_max(cave); i++) {
+			if (cave_monster(cave, i)->race == race) seen++;
+		}
+
+		/* However it went, there is never more than one of him */
+		require(seen <= 1);
+		eq(race->cur_num, seen);
+		require_consistent();
+
+		if (seen == 1) {
+			require(monster_is_pet(cave_monster(cave, 1))
+					|| seen == 1);
+			done = 1;
+		}
+	}
+
+	require(done);
+
+	ok;
+}
+
+/**
+ * A carried pet joins a group of its own, and not its old one.
+ *
+ * `mon->group_info[].index` names a group in the chunk it came from. Carried
+ * across unchanged it would name a group that never existed on the new level,
+ * and `monster_group_leader()` follows that index. Zeroing it before placement
+ * puts `place_monster()` on its not-loading path, which starts a fresh
+ * singleton group.
+ *
+ * `monster_group_assign()` self-heals a *dangling* index -- it starts a new
+ * group when the index names nothing -- so simply carrying the old number
+ * across is usually harmless, and a test that only checked for a valid group
+ * passed against a build with the clearing removed. The case that is not
+ * harmless is a **collision**: an old index that happens to name a real group
+ * on the new level, which quietly enlists the pet among strangers.
+ *
+ * So this forces the collision. The pet's index is set to 1 before the
+ * descent, which any generated level has, and the assertion is that the pet's
+ * group contains the pet and nothing else.
+ */
+static int test_a_carried_pet_gets_a_new_group(void *state) {
+	int t, done = 0;
+
+	for (t = 0; t < 10 && !done; t++) {
+		struct monster *pet = NULL;
+		int i, old_index = 0;
+
+		clear_the_level();
+		if (place_side("soldier", MON_ALLEGIANCE_PET, 1) != 1) continue;
+
+		for (i = 1; i < cave_monster_max(cave); i++) {
+			if (cave_monster(cave, i)->race
+					&& monster_is_pet(cave_monster(cave, i))) {
+				pet = cave_monster(cave, i);
+			}
+		}
+		require(pet);
+		old_index = pet->group_info[PRIMARY_GROUP].index;
+		require(old_index > 0);
+
+		/* Force the collision: group 1 exists on any generated level */
+		pet->group_info[PRIMARY_GROUP].index = 1;
+
+		go_down();
+		if (count_side(MON_ALLEGIANCE_PET) != 1) continue;
+
+		for (i = 1; i < cave_monster_max(cave); i++) {
+			struct monster *mon = cave_monster(cave, i);
+			struct monster_group *group;
+			struct mon_group_list_entry *entry;
+			int index, members = 0;
+
+			if (!mon->race || !monster_is_pet(mon)) continue;
+
+			index = mon->group_info[PRIMARY_GROUP].index;
+			require(index > 0);
+			group = monster_group_by_index(cave, index);
+			notnull(group);
+			eq(mon->group_info[SUMMON_GROUP].index, 0);
+
+			/* Its own group, with nobody else in it */
+			for (entry = group->member_list; entry; entry = entry->next) {
+				members++;
+				eq(entry->midx, mon->midx);
+			}
+			eq(members, 1);
+			done = 1;
+		}
+	}
+
+	require(done);
+
+	ok;
+}
+
+/**
+ * A stored level does not keep a pet the player took with them.
+ *
+ * With persistent levels the old chunk is kept rather than freed, so the
+ * collection has to happen before `cave_store()` -- otherwise the stored level
+ * holds a monster that is also standing on the new one, and coming back up
+ * gives the player a second copy of their own pet.
+ */
+static int test_a_stored_level_does_not_keep_them(void *state) {
+	bool kept = OPT(player, birth_levels_persist);
+	int t, done = 0;
+
+	option_set(option_name(OPT_birth_levels_persist), true);
+
+	for (t = 0; t < 10 && !done; t++) {
+		int depth_was;
+
+		clear_the_level();
+		if (place_side("soldier", MON_ALLEGIANCE_PET, 2) != 2) continue;
+
+		depth_was = player->depth;
+		go_down();
+		if (count_side(MON_ALLEGIANCE_PET) != 2) continue;
+
+		/* Back up to the level that was stored */
+		player->depth = depth_was;
+		prepare_next_level(player);
+		on_new_level();
+
+		/*
+		 * The two that came down are still with the player, and the stored
+		 * level contributed none of its own -- so two, not four.
+		 */
+		eq(count_side(MON_ALLEGIANCE_PET), 2);
+		require_consistent();
+		done = 1;
+	}
+
+	option_set(option_name(OPT_birth_levels_persist), kept);
+	require(done);
+
+	ok;
+}
+
 const char *suite_name = "game/carry";
 struct test tests[] = {
 	{ "one-pet-follows", test_one_pet_follows },
@@ -722,5 +965,13 @@ struct test tests[] = {
 	{ "what-it-carries-is-not-duplicated",
 	  test_what_it_carries_is_not_duplicated },
 	{ "a-mimic-does-not-follow", test_a_mimic_does_not_follow },
+	{ "nothing-follows-into-an-arena",
+	  test_nothing_follows_into_an_arena },
+	{ "a-carried-unique-stays-unique",
+	  test_a_carried_unique_stays_unique },
+	{ "a-carried-pet-gets-a-new-group",
+	  test_a_carried_pet_gets_a_new_group },
+	{ "a-stored-level-does-not-keep-them",
+	  test_a_stored_level_does_not_keep_them },
 	{ NULL, NULL }
 };
