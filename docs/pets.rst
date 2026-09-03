@@ -151,9 +151,78 @@ default, which is to stay within about six squares, leave doors alone and leave
 your things where they fall.
 
 
+Giving orders
+-------------
+
+Press ``A`` for the pet menu. Zangband used ``p``; here that key is
+auto-explore.
+
+The orders are a policy, not instructions to an individual — you are setting how
+your animals behave, and every pet you have follows the same one. They keep
+until you change them, they survive a save, and they apply to pets you have not
+acquired yet.
+
+Five of them are a leash:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 22 78
+
+   * - Order
+     - What it means
+   * - **Stay close**
+     - Never more than a square away. They will not chase anything.
+   * - **Follow me**
+     - Within about six squares. The default, and the useful one.
+   * - **Seek and destroy**
+     - Go anywhere. They will cross the level for a fight and you will lose
+       track of them.
+   * - **Give me space**
+     - Keep ten squares off, and take no fight closer to you than that.
+   * - **Stay away**
+     - Twenty-five squares. For when the thing following you breathes fire.
+
+The last two are the ones to reach for before you cast something with a radius.
+A pet that is keeping its distance also refuses to start a fight near you, which
+is the point: the danger is not the pet, it is what the pet drags into the room.
+
+Two more are switches:
+
+**Pets may open doors** — off by default. A pet that opens doors is a pet that
+lets things out.
+
+**Pets may pick up items** — off by default. This governs picking up, not
+destroying: a pet that eats your drops is a monster being a monster and no order
+will stop it.
+
+And two do something:
+
+**What follows you** lists your pets with their levels, and the total. That
+total is the number your mana upkeep will be charged on.
+
+**Dismiss pets** asks about all of them, then one at a time. A dismissed pet is
+gone, not released — turning a stable loose as enemies would make dismissing
+them worse than keeping them.
+
+
+Between levels
+--------------
+
+**Pets do not follow you down a staircase.** They are left where they stand,
+and the level is gone when you leave it.
+
+This is Zangband's behaviour rather than a limitation of ours — there is no
+pet-carrying code anywhere in its source, and its own documentation, which
+explains the upkeep and the experience rule and every way of getting a pet,
+never mentions taking one with you. It also does most of the work of keeping
+pets in proportion: a stable has to be earned again on every level.
+
+If you play with persistent levels turned on, a level you come back to still has
+your pets on it, standing where you left them.
+
+
 Not yet written
 ---------------
 
-Giving the orders, what pets cost you in mana, what makes one in the first
-place, and what makes one stop being one. Those arrive with the rest of M10 and
-this chapter grows a section each time.
+What pets cost you in mana, what makes one in the first place, and what makes
+one stop being one. Those arrive with the rest of M10.

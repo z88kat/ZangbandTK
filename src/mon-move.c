@@ -414,6 +414,40 @@ static bool get_move_bodyguard(struct monster *mon)
 
 
 /**
+ * May this monster open a door?
+ *
+ * ZangbandTK (PLR-25).  The race has to be able to, and a pet has to have been
+ * told it may.  A pet that opens doors is a pet that lets things out, which is
+ * why Zangband made it a standing order and defaults it off
+ * ([melee2.c:359](../archive/zangband/src/melee2.c#L359)).
+ *
+ * Bashing is deliberately not gated. A monster strong enough to break a door
+ * off its hinges is not being discreet either way, and the original gates only
+ * opening.
+ */
+bool monster_may_open_doors(const struct monster *mon)
+{
+	if (!rf_has(mon->race->flags, RF_OPEN_DOOR)) return false;
+
+	return !monster_is_pet(mon) || player->pet_open_doors;
+}
+
+/**
+ * May this monster pick an object up?
+ *
+ * ZangbandTK (PLR-25).  Zangband gates picking up and not destroying
+ * ([melee2.c:2570](../archive/zangband/src/melee2.c#L2570)), which reads odd
+ * until you see what the order is for: a pet carrying your drops around is an
+ * inventory problem, and a pet eating them is a monster being a monster.
+ */
+bool monster_may_take_items(const struct monster *mon)
+{
+	if (!rf_has(mon->race->flags, RF_TAKE_ITEM)) return false;
+
+	return !monster_is_pet(mon) || player->pet_pickup_items;
+}
+
+/**
  * Is this monster worth attacking, from that one's point of view?
  *
  * ZangbandTK (PLR-23).  Zangband's `nice_target()`
@@ -1402,19 +1436,8 @@ static bool monster_turn_can_move(struct monster *mon, const char *m_name,
 
 		return true;
 	} else if (square_iscloseddoor(cave, new)|| square_issecretdoor(cave, new)){
-		/*
-		 * Don't allow a confused move to open a door, and don't allow a pet
-		 * to unless the player said it could (ZangbandTK, PLR-25).
-		 *
-		 * A pet that opens doors is a pet that lets things out. Zangband made
-		 * it a standing order for exactly that reason, and defaults it off.
-		 * Bashing is not gated -- a monster strong enough to break a door
-		 * down is not being discreet either way, and the original gates only
-		 * opening ([melee2.c:359](../archive/zangband/src/melee2.c#L359)).
-		 */
-		bool can_open = rf_has(mon->race->flags, RF_OPEN_DOOR) &&
-			!confused &&
-			(!monster_is_pet(mon) || player->pet_open_doors);
+		/* Don't allow a confused move to open a door */
+		bool can_open = monster_may_open_doors(mon) && !confused;
 		/* During a confused move, a monster only bashes sometimes. */
 		bool can_bash = rf_has(mon->race->flags, RF_BASH_DOOR) &&
 			(!confused || one_in_(3));
@@ -1605,16 +1628,8 @@ static void monster_turn_grab_objects(struct monster *mon, const char *m_name,
 		return;
 	}
 
-	/*
-	 * A pet only picks things up if the player said it could (PLR-25).
-	 *
-	 * Zangband gates picking up and not destroying
-	 * ([melee2.c:2570](../archive/zangband/src/melee2.c#L2570)), which reads
-	 * odd until you see what the order is for: a pet carrying your drops
-	 * around is an inventory problem, and a pet eating them is a monster
-	 * being a monster.
-	 */
-	if (monster_is_pet(mon) && !player->pet_pickup_items
+	/* A pet only picks things up if the player said it could (PLR-25) */
+	if (!monster_may_take_items(mon)
 			&& !rf_has(mon->race->flags, RF_KILL_ITEM)) {
 		return;
 	}

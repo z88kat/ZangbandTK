@@ -21,6 +21,8 @@
 #include "cave.h"
 #include "grafmode.h"
 #include "init.h"
+#include "mon-desc.h"
+#include "mon-make.h"
 #include "mon-predicate.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -2289,3 +2291,205 @@ void do_cmd_view_map(void)
 }
 
 
+
+/**
+ * ------------------------------------------------------------------------
+ * Pets (ZangbandTK, PLR-25)
+ * ------------------------------------------------------------------------ */
+/**
+ * How many pets the player has, and the sum of their levels.
+ *
+ * The sum is what PLR-30's upkeep will be charged on, and it is worth showing
+ * before it is worth charging: a player who cannot see the number cannot see
+ * the cost coming.
+ */
+static int count_pets(int *levels)
+{
+	int i, n = 0;
+
+	if (levels) *levels = 0;
+
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		if (!mon->race || !monster_is_pet(mon)) continue;
+		n++;
+		if (levels) *levels += mon->race->level;
+	}
+
+	return n;
+}
+
+/**
+ * The roster: what you have, and what it is costing you.
+ *
+ * Zangband's "Display current pets" ran through the knowledge screens and
+ * printed a name a line ([cmd4.c:3520](../archive/zangband/src/cmd4.c#L3520)).
+ * This adds the level beside each one, because the level is the number the
+ * upkeep is charged on and a list of names does not explain the bill.
+ */
+static void show_pet_roster(void)
+{
+	textblock *tb = textblock_new();
+	int i, n = 0, levels = 0;
+
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+		char m_name[80];
+
+		if (!mon->race || !monster_is_pet(mon)) continue;
+
+		monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL | MDESC_IND_VIS);
+		textblock_append(tb, "%-40s  level %d\n", m_name, mon->race->level);
+		n++;
+		levels += mon->race->level;
+	}
+
+	if (!n) {
+		textblock_append(tb, "Nothing follows you.\n");
+	} else {
+		textblock_append(tb, "\n");
+		textblock_append_c(tb, COLOUR_L_UMBER,
+						   "%d in all, %d levels between them.\n", n, levels);
+	}
+
+	textui_textblock_show(tb, SCREEN_REGION, "What follows you");
+	textblock_free(tb);
+}
+
+/**
+ * Let some pets go.
+ *
+ * Asks about all of them first, as Zangband does, because a player with twenty
+ * summoned molds does not want twenty questions -- and then one at a time, for
+ * the player who wants to drop the expensive one and keep the useful one.
+ *
+ * A dismissed pet is *gone*, not turned loose. That is Zangband's behaviour
+ * (`delete_monster_idx`), and the alternative -- releasing it as hostile --
+ * would make dismissing a summoner's stable considerably worse than keeping it.
+ */
+static void dismiss_pets(void)
+{
+	bool all = false;
+	int i, dismissed = 0;
+
+	if (!count_pets(NULL)) {
+		msg("Nothing follows you.");
+		return;
+	}
+
+	if (get_check("Dismiss all of them? ")) all = true;
+
+	for (i = cave_monster_max(cave) - 1; i >= 1; i--) {
+		struct monster *mon = cave_monster(cave, i);
+		char m_name[80];
+
+		if (!mon->race || !monster_is_pet(mon)) continue;
+
+		monster_desc(m_name, sizeof(m_name), mon,
+					 MDESC_CAPITAL | MDESC_IND_VIS);
+
+		if (!all && !get_check(format("Dismiss %s? ", m_name))) continue;
+
+		delete_monster_idx(cave, i);
+		dismissed++;
+	}
+
+	if (dismissed) {
+		msg("%d %s dismissed.", dismissed,
+			(dismissed == 1) ? "creature is" : "creatures are");
+		player->upkeep->redraw |= (PR_MONLIST);
+	}
+}
+
+/**
+ * Standing orders for pets (PLR-25).
+ *
+ * Zangband's nine, which are not nine of the same thing: five set a leash
+ * length, two are toggles, one is a report and one acts. The requirement calls
+ * them "nine command modes with per-mode distance behaviour", which is true of
+ * the first five only.
+ *
+ * Orders are a policy for all pets at once rather than instructions to an
+ * individual, which is how Zangband has it -- the player sets how their
+ * animals behave, not what each one is doing.
+ */
+void do_cmd_pet(void)
+{
+	struct menu *m;
+	char *labels;
+	int chosen, pets, levels;
+
+	static const struct {
+		const char *text;
+		int16_t distance;
+	} modes[] = {
+		{ "Stay close",       PET_CLOSE_DIST },
+		{ "Follow me",        PET_FOLLOW_DIST },
+		{ "Seek and destroy", PET_DESTROY_DIST },
+		{ "Give me space",    PET_SPACE_DIST },
+		{ "Stay away",        PET_AWAY_DIST },
+	};
+	int i;
+
+	pets = count_pets(&levels);
+
+	m = menu_dynamic_new();
+	if (!m) return;
+	labels = menu_dynamic_labels(m);
+
+	for (i = 0; i < (int) N_ELEMENTS(modes); i++) {
+		char line[80];
+
+		/*
+		 * The order in force is marked rather than pre-selected, because a
+		 * dynamic menu's selection is where the cursor sits and the player
+		 * would not see it on a menu they open and close.
+		 */
+		strnfmt(line, sizeof(line), "%-20s%s", modes[i].text,
+				(player->pet_follow_distance == modes[i].distance)
+				? "  <-- now" : "");
+		menu_dynamic_add_label(m, line, 0, i + 1, labels);
+	}
+
+	menu_dynamic_add_label(m, player->pet_open_doors
+						   ? "Pets may open doors"
+						   : "Pets may not open doors", 0, 6, labels);
+	menu_dynamic_add_label(m, player->pet_pickup_items
+						   ? "Pets may pick up items"
+						   : "Pets may not pick up items", 0, 7, labels);
+	menu_dynamic_add_label(m, "What follows you", 0, 8, labels);
+	menu_dynamic_add_label(m, "Dismiss pets", 0, 9, labels);
+	menu_dynamic_add_label(m, "Nothing", 'q', 0, labels);
+
+	screen_save();
+	menu_dynamic_calc_location(m, 0, 0);
+	region_erase_bordered(&m->boundary);
+	if (pets)
+		prt(format("%d %s follow you, %d levels between them.", pets,
+				   (pets == 1) ? "creature" : "creatures", levels), 0, 0);
+	else
+		prt("Nothing follows you, but orders keep until something does.", 0, 0);
+
+	chosen = menu_dynamic_select(m);
+
+	menu_dynamic_free(m);
+	string_free(labels);
+	screen_load();
+
+	if (chosen >= 1 && chosen <= (int) N_ELEMENTS(modes)) {
+		player->pet_follow_distance = modes[chosen - 1].distance;
+		msg("%s.", modes[chosen - 1].text);
+	} else if (chosen == 6) {
+		player->pet_open_doors = !player->pet_open_doors;
+		msg("Pets may %sopen doors.", player->pet_open_doors ? "" : "not ");
+	} else if (chosen == 7) {
+		player->pet_pickup_items = !player->pet_pickup_items;
+		msg("Pets may %spick up items.",
+			player->pet_pickup_items ? "" : "not ");
+	} else if (chosen == 8) {
+		show_pet_roster();
+	} else if (chosen == 9) {
+		dismiss_pets();
+	}
+}

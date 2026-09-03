@@ -33,6 +33,27 @@ Unreleased
 Pets — 3 September 2026
 -----------------------
 
+- **3.69.0** — **Pets take orders** (M10 phase 3; PLR-25, PLR-26, DEC-60).
+  The pet menu on ``A``: five leash lengths, two switches, a roster and a
+  dismissal. Zangband used ``p``, which is auto-explore here.
+
+  The requirement calls these "nine command modes with per-mode distance
+  behaviour"; they are nine entries of which five are distance modes. All nine
+  are built. The orders are one policy for every pet at once, which is how
+  Zangband holds them, and they survive a save in player block version 6 — the
+  leash written signed, because its sign is its meaning and reading it unsigned
+  turns "stay twenty-five squares away" into a leash of 65511.
+
+  **Pets do not follow you downstairs, and that is deliberate.** PLR-26 asks
+  for it; Zangband does not do it. There is no pet-carrying code anywhere in
+  2.7.5 — the mechanism Hengband later added for this is absent from both
+  archived lineages — and its documentation, which covers the upkeep, the
+  killing-blow rule and every way of obtaining a pet, never mentions taking one
+  with you. A pet is a per-level asset, which is also most of the answer to
+  whether a summoner trivialises the game. A test pins it, so reversing it is a
+  deliberate act. Levels kept under the persistent-levels option do keep their
+  pets, which has been true since 3.67.0.
+
 - **3.68.0** — **Allies fight** (M10 phase 2; PLR-23, DEC-59). A monster on the
   player's side now picks its own enemy, stays awake while it is nowhere near
   the player, casts at what it is fighting, and comes back when it drifts off

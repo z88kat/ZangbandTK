@@ -411,6 +411,124 @@ static int test_enemies_that_meet_fight(void *state) {
 	ok;
 }
 
+/**
+ * The standing orders gate doors and pickup, and only for pets (PLR-25).
+ *
+ * The whole truth table, because each cell fails differently: a gate written
+ * on the order alone stops *hostile* monsters opening doors, which would empty
+ * the dungeon of door-opening monsters; a gate written on the race alone does
+ * nothing at all; and a pet that ignores the order lets things out of rooms
+ * the player deliberately shut.
+ */
+static int test_the_orders_gate_doors_and_pickup(void *state) {
+	struct monster *pet, *foe;
+	bool keep_doors = player->pet_open_doors;
+	bool keep_items = player->pet_pickup_items;
+
+	clear_the_level();
+
+	/* A cutpurse opens doors and takes items; both flags on one race */
+	pet = place_side("cutpurse", MON_ALLEGIANCE_PET, 3);
+	require(pet);
+	foe = place_beside(pet, "cutpurse", MON_ALLEGIANCE_HOSTILE);
+	require(foe);
+	require(rf_has(pet->race->flags, RF_OPEN_DOOR));
+	require(rf_has(pet->race->flags, RF_TAKE_ITEM));
+
+	player->pet_open_doors = false;
+	player->pet_pickup_items = false;
+	require(!monster_may_open_doors(pet));
+	require(!monster_may_take_items(pet));
+
+	/* The hostile one of the same race is not under orders */
+	require(monster_may_open_doors(foe));
+	require(monster_may_take_items(foe));
+
+	player->pet_open_doors = true;
+	player->pet_pickup_items = true;
+	require(monster_may_open_doors(pet));
+	require(monster_may_take_items(pet));
+
+	player->pet_open_doors = keep_doors;
+	player->pet_pickup_items = keep_items;
+
+	ok;
+}
+
+/**
+ * A race that cannot do it is not made able to by an order.
+ *
+ * Separate from the table above because it is the half a permissive
+ * implementation gets wrong: `return player->pet_open_doors` passes every
+ * assertion up there and gives a pet snake the run of the dungeon.
+ */
+static int test_an_order_grants_nothing_the_race_lacks(void *state) {
+	struct monster *pet;
+	bool keep_doors = player->pet_open_doors;
+	bool keep_items = player->pet_pickup_items;
+
+	clear_the_level();
+	pet = place_side("large white snake", MON_ALLEGIANCE_PET, 3);
+	require(pet);
+	require(!rf_has(pet->race->flags, RF_OPEN_DOOR));
+	require(!rf_has(pet->race->flags, RF_TAKE_ITEM));
+
+	player->pet_open_doors = true;
+	player->pet_pickup_items = true;
+	require(!monster_may_open_doors(pet));
+	require(!monster_may_take_items(pet));
+
+	player->pet_open_doors = keep_doors;
+	player->pet_pickup_items = keep_items;
+
+	ok;
+}
+
+/**
+ * Pets are left behind at a staircase (PLR-26, DEC-60).
+ *
+ * PLR-26 says pets "persist across level changes and saves, following the
+ * player where the mode implies it". The saves half is true and tested in
+ * `game/roundtrip`. The level-change half is **not Zangband's behaviour**:
+ * there is no pet-carrying code anywhere in its source, and its own
+ * documentation, which explains the upkeep and the experience rule and the
+ * ways of getting a pet, never mentions taking one downstairs. Hengband added
+ * that later; 2.7.5 did not have it.
+ *
+ * So a pet is a per-level asset here, and this test says so rather than
+ * leaving it to be discovered. Reversing it later is a deliberate act with a
+ * failing test attached, which is the point.
+ */
+static int test_pets_do_not_follow_you_downstairs(void *state) {
+	struct monster *pet;
+	int i, before = 0, after = 0;
+
+	clear_the_level();
+	pet = place_side("soldier", MON_ALLEGIANCE_PET, 3);
+	require(pet);
+
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		if (mon->race && monster_is_pet(mon)) before++;
+	}
+	eq(before, 1);
+
+	/* Down a level, the way the game does it */
+	player->depth++;
+	prepare_next_level(player);
+	on_new_level();
+
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		if (mon->race && monster_is_pet(mon)) after++;
+	}
+	eq(after, 0);
+
+	ok;
+}
+
 const char *suite_name = "monster/ally-ai";
 struct test tests[] = {
 	{ "a-pet-finds-an-enemy", test_a_pet_finds_an_enemy },
@@ -423,5 +541,11 @@ struct test tests[] = {
 	  test_turning_hostile_forgets_the_target },
 	{ "an-ally-stays-awake", test_an_ally_stays_awake },
 	{ "enemies-that-meet-fight", test_enemies_that_meet_fight },
+	{ "the-orders-gate-doors-and-pickup",
+	  test_the_orders_gate_doors_and_pickup },
+	{ "an-order-grants-nothing-the-race-lacks",
+	  test_an_order_grants_nothing_the_race_lacks },
+	{ "pets-do-not-follow-you-downstairs",
+	  test_pets_do_not_follow_you_downstairs },
 	{ NULL, NULL }
 };

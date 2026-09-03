@@ -452,6 +452,81 @@ static int test_the_monster_blocks_say_version_two(void *state) {
 	ok;
 }
 
+/**
+ * Standing orders for pets survive a save (PLR-25, PLR-26).
+ *
+ * All three at once and all three away from their defaults, because the
+ * failure mode of a positional savefile block is a *shift*: write two fields
+ * and read three and every later field is wrong, while a test that only checks
+ * one field cannot see it.
+ *
+ * The leash is set to a negative value on purpose. It is the one field whose
+ * sign carries meaning, and reading a signed field as unsigned gives 65511
+ * rather than -25 -- which is a legal-looking leash that no order can produce.
+ */
+static int test_the_pet_orders_survive_a_save(void *state) {
+	require(make_a_caster());
+
+	player->pet_follow_distance = PET_AWAY_DIST;
+	player->pet_open_doors = true;
+	player->pet_pickup_items = true;
+
+	require(savefile_save(savename));
+	reset_before_load();
+	require(savefile_load(savename, false));
+
+	eq(player->pet_follow_distance, PET_AWAY_DIST);
+	require(player->pet_follow_distance < 0);
+	require(player->pet_open_doors);
+	require(player->pet_pickup_items);
+
+	ok;
+}
+
+/**
+ * The player block says version 6.
+ *
+ * Same reasoning as the monster block's: a shape change without a version bump
+ * reads every older character's timed effects and energy out of the wrong
+ * bytes, and does it quietly.
+ */
+static int test_the_player_block_says_version_six(void *state) {
+	ang_file *f;
+	uint8_t head[28];
+	int found = 0;
+
+	require(make_a_caster());
+	require(savefile_save(savename));
+
+	f = file_open(savename, MODE_READ, FTYPE_RAW);
+	notnull(f);
+	require(file_skip(f, 8));
+
+	while (file_read(f, (char *) head, sizeof(head)) == (int) sizeof(head)) {
+		char name[17];
+		uint32_t version, size;
+
+		memcpy(name, head, 16);
+		name[16] = 0;
+		version = head[16] | (head[17] << 8) | (head[18] << 16)
+			| ((uint32_t) head[19] << 24);
+		size = head[20] | (head[21] << 8) | (head[22] << 16)
+			| ((uint32_t) head[23] << 24);
+
+		if (streq(name, "player")) {
+			eq(version, 6);
+			found++;
+		}
+
+		if (!file_skip(f, (int) ((size + 3) & ~3U))) break;
+	}
+	file_close(f);
+
+	eq(found, 1);
+
+	ok;
+}
+
 const char *suite_name = "game/roundtrip";
 struct test tests[] = {
 	{ "a-caster-survives-a-round-trip",
@@ -464,5 +539,9 @@ struct test tests[] = {
 	  test_the_monster_blocks_say_version_two },
 	{ "the-sides-survive-a-round-trip",
 	  test_the_sides_survive_a_round_trip },
+	{ "the-player-block-says-version-six",
+	  test_the_player_block_says_version_six },
+	{ "the-pet-orders-survive-a-save",
+	  test_the_pet_orders_survive_a_save },
 	{ NULL, NULL }
 };

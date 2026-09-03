@@ -194,6 +194,11 @@ struct cmd_info cmd_info[] =
 	 */
 	{ "Things you have taken on", { 'J', '%' }, CMD_NULL, do_cmd_quest_log, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Use a power", { 'N', '&' }, CMD_NULL, do_cmd_racial_power, NULL, 0, NULL, NULL, NULL, 0 },
+	/*
+	 * ZangbandTK (PLR-25).  'A' for allies, not Zangband's 'p': that key is
+	 * auto-explore here, which is 4.2's and in use.
+	 */
+	{ "Command pets", { 'A' }, CMD_NULL, do_cmd_pet, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Repeat level feeling", { KTRL('F') }, CMD_NULL, do_cmd_feeling, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Show previous message", { KTRL('O') }, CMD_NULL, do_cmd_message_one, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Show previous messages", { KTRL('P') }, CMD_NULL, do_cmd_messages, NULL, 0, NULL, NULL, NULL, 0 }

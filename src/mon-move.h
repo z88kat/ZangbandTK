@@ -27,6 +27,8 @@ enum monster_stagger {
 
 bool multiply_monster(const struct monster *mon);
 bool monster_find_enemy(struct monster *mon);
+bool monster_may_open_doors(const struct monster *mon);
+bool monster_may_take_items(const struct monster *mon);
 void process_monsters(int minimum_energy);
 void reset_monsters(void);
 void restore_monsters(void);

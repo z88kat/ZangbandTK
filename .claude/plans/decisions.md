@@ -2597,3 +2597,61 @@ monster's spell list against what the **player** is known to resist. For a pet
 casting at a monster that filtering is aimed at the wrong creature. It makes a
 pet slightly worse at choosing spells and never wrong about the result, so it
 waits until there is a reason to touch it.
+
+---
+
+**DEC-60 — Pets are commanded as a policy, and they do not follow you
+downstairs.** (M10 phase 3, 3 September 2026.)
+
+PLR-25 and PLR-26. Two findings and one thing the requirement asks for that
+the source does not do.
+
+**PLR-25's "nine command modes with per-mode distance behaviour" is nine
+entries, of which five are modes.** Zangband's pet menu holds five leash
+lengths (1, 6, 255, −10, −25), two toggles (doors, picking things up), one
+report and one action (dismiss)
+([cmd5.c:3123](../../archive/zangband/src/cmd5.c#L3123)). All nine are built;
+the distance behaviour belongs to five of them.
+
+The orders are **one policy for all pets**, not instructions to an individual —
+Zangband keeps them on the player, and that is the right shape: the player is
+setting how their animals behave, not telling each animal what to do.
+
+The leash is signed and the sign is the meaning: positive is "stay within",
+negative is "keep at least this far away, and do not pick fights nearer the
+player than that". Written to the savefile as a signed 16-bit value in player
+block version 6, with a test that sets it negative — reading it unsigned gives
+65511, a legal-looking leash no order can produce.
+
+**The key is `A`, not Zangband's `p`.** `p` is auto-explore here, which is
+4.2's and in use.
+
+**PLR-26's level-change half is not Zangband's behaviour.** The requirement
+says pets "persist across level changes and saves, following the player where
+the mode implies it". The saves half is true and tested. The level-change half
+is an inference, and both sources contradict it:
+
+- There is **no pet-carrying code anywhere in Zangband 2.7.5**. `change_level()`
+  unreferences the region and the monsters go with it; a search of the tree for
+  the mechanism Hengband later added for this (`party_mon`, `preserve_pet`)
+  finds nothing, in either archived Zangband lineage.
+- The **documentation never mentions it**
+  ([monster.txt:181](../../archive/zangband/lib/help/monster.txt#L181)). It
+  explains the upkeep, the killing-blow rule, that pets trample you, that they
+  anger easily, and every way of obtaining one. Taking one downstairs does not
+  come up.
+
+So a pet is a per-level asset, which is a coherent design and Zangband's: it is
+also most of the answer to "does a summoner trivialise the game", since a stable
+has to be rebuilt every level. `monster/ally-ai` pins it with a test, so
+reversing it is a deliberate act rather than a drift.
+
+**This is worth the project owner's attention** rather than mine alone, because
+it is a real difference between the requirement as written and the game as
+built. Adding following later is contained — a list carried across
+`prepare_next_level()`, placed near the player — but it is new design under
+DEC-30, not a port, and it would change the balance PLR-30 is sizing.
+
+*Already true, and not from this phase.* With the `birth_levels_persist` option
+on, a stored level keeps its pets when the player returns to it, because the
+`chunks` block carries the allegiance byte from phase 1.
