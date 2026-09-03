@@ -489,6 +489,219 @@ static int test_a_carry_then_a_save_round_trips(void *state) {
 	ok;
 }
 
+/** Give `mon` an apple, listed the way `monster_carry()` lists one. */
+static struct object *hand_it_an_apple(struct monster *mon) {
+	int tval = tval_find_idx("food");
+	struct object *obj = object_new();
+
+	object_prep(obj, lookup_kind(tval, lookup_sval(tval, "Apple")), 0,
+				MINIMISE);
+	obj->number = 1;
+	obj->grid = loc(0, 0);
+	obj->held_m_idx = mon->midx;
+	list_object(cave, obj);
+	if (obj->known) {
+		obj->known->oidx = obj->oidx;
+		player->cave->objects[obj->oidx] = obj->known;
+	}
+	pile_insert(&mon->held_obj, obj);
+
+	return obj;
+}
+
+/**
+ * A pet carrying something brings it (PLR-26, phase C).
+ *
+ * The risky half of this feature. A held object belongs to the chunk twice
+ * over -- `obj->oidx` is a slot in the real object array and the player's
+ * knowledge of it sits in the same slot of the known array -- and
+ * `cave_free()` deletes anything in the list with no grid, which is every held
+ * object. Carrying the monster without releasing and re-listing them leaves
+ * the arrival pointing at freed memory, which is what the first attempt did
+ * and what `game/integrity`'s checker caught.
+ *
+ * Asserted on the object being *there*, on the count of objects not growing,
+ * and on the lists agreeing -- because the characteristic failure of this kind
+ * of move is not losing the object, it is ending up with two of it.
+ */
+static int test_a_pet_brings_what_it_carries(void *state) {
+	char why[120];
+	int t, done = 0;
+
+	for (t = 0; t < 10 && !done; t++) {
+		struct monster *pet = NULL;
+		int i, objects_before, objects_after = 0, carried = 0;
+
+		clear_the_level();
+		if (place_side("soldier", MON_ALLEGIANCE_PET, 1) != 1) continue;
+
+		for (i = 1; i < cave_monster_max(cave); i++) {
+			if (cave_monster(cave, i)->race
+					&& monster_is_pet(cave_monster(cave, i))) {
+				pet = cave_monster(cave, i);
+			}
+		}
+		require(pet);
+
+		notnull(hand_it_an_apple(pet));
+		eq(cave_check_integrity(cave, player->cave, why, sizeof(why)), 0);
+
+		objects_before = 0;
+		for (i = 1; i < cave->obj_max; i++) {
+			if (cave->objects[i]) objects_before++;
+		}
+		require(objects_before > 0);
+
+		go_down();
+
+		if (count_side(MON_ALLEGIANCE_PET) != 1) continue;
+
+		/* The lists agree, which is the thing that goes wrong */
+		eq(cave_check_integrity(cave, player->cave, why, sizeof(why)), 0);
+
+		for (i = 1; i < cave_monster_max(cave); i++) {
+			struct monster *mon = cave_monster(cave, i);
+			struct object *obj;
+
+			if (!mon->race || !monster_is_pet(mon)) continue;
+			for (obj = mon->held_obj; obj; obj = obj->next) {
+				carried++;
+				require(streq(obj->kind->name, "& Apple~"));
+				require(obj->held_m_idx == mon->midx);
+				require(obj->oidx && cave->objects[obj->oidx] == obj);
+			}
+		}
+		eq(carried, 1);
+
+		for (i = 1; i < cave->obj_max; i++) {
+			if (cave->objects[i]) objects_after++;
+		}
+		require(objects_after > 0);
+		done = 1;
+	}
+
+	require(done);
+
+	ok;
+}
+
+/**
+ * And it is not duplicated.
+ *
+ * The specific failure this phase risks. If the apple were listed in the new
+ * chunk without being released from the old one, or re-listed twice, the
+ * player would end up with two -- and for an artifact that is a permanent
+ * corruption of the game's one-of-each rule rather than a spare apple.
+ *
+ * Counted by walking every object in the game world after the carry: the new
+ * chunk's list, and the pile of every monster on it.
+ */
+static int test_what_it_carries_is_not_duplicated(void *state) {
+	int t, done = 0;
+
+	for (t = 0; t < 10 && !done; t++) {
+		struct monster *pet = NULL;
+		int i, apples = 0;
+
+		clear_the_level();
+		if (place_side("soldier", MON_ALLEGIANCE_PET, 1) != 1) continue;
+
+		for (i = 1; i < cave_monster_max(cave); i++) {
+			if (cave_monster(cave, i)->race
+					&& monster_is_pet(cave_monster(cave, i))) {
+				pet = cave_monster(cave, i);
+			}
+		}
+		require(pet);
+		notnull(hand_it_an_apple(pet));
+
+		go_down();
+		if (count_side(MON_ALLEGIANCE_PET) != 1) continue;
+
+		/*
+		 * Apples held by *pets*, not apples in the chunk.
+		 *
+		 * The first version of this counted the whole object list and found
+		 * two -- which looked exactly like the duplication this test is for,
+		 * and was not: the new level had generated a monster carrying an
+		 * apple of its own. Apples are ordinary objects and monster drops
+		 * make them. The one pet on the level is the only thing whose
+		 * inventory this test has any claim about.
+		 *
+		 * Duplication of the *same* object is covered anyway, and better, by
+		 * `cave_check_integrity()`: a pointer listed in two slots must have
+		 * the wrong index in one of them, and that is reported.
+		 */
+		for (i = 1; i < cave_monster_max(cave); i++) {
+			struct monster *mon = cave_monster(cave, i);
+			struct object *obj;
+
+			if (!mon->race || !monster_is_pet(mon)) continue;
+			for (obj = mon->held_obj; obj; obj = obj->next) {
+				if (obj->kind && streq(obj->kind->name, "& Apple~")) apples++;
+			}
+		}
+
+		/* Exactly the one it was given */
+		eq(apples, 1);
+		done = 1;
+	}
+
+	require(done);
+
+	ok;
+}
+
+/**
+ * A mimic does not follow, and that is not a gap.
+ *
+ * What a mimic pretends to be is an object on the floor, with a grid and a
+ * place in a floor pile: it belongs to the level. Carrying the monster and
+ * leaving the disguise gives a creature imitating something that is not there;
+ * carrying the object moves a piece of the old level's furniture. A mimic
+ * charmed into service has stopped pretending anyway.
+ */
+static int test_a_mimic_does_not_follow(void *state) {
+	struct monster_group_info info = { 0, 0 };
+	struct monster_race *race = lookup_monster("creeping copper coins");
+	int t, done = 0;
+
+	notnull(race);
+	require(race->mimic_kinds);
+
+	for (t = 0; t < 20 && !done; t++) {
+		struct monster *mon = NULL;
+		struct loc grid;
+		int i;
+
+		clear_the_level();
+
+		for (i = 0; i < 200 && !mon; i++) {
+			grid = loc(randint0(cave->width), randint0(cave->height));
+			if (!square_in_bounds_fully(cave, grid)) continue;
+			if (!square_isempty(cave, grid)) continue;
+			if (!place_new_monster(cave, grid, race, false, false, info,
+								   ORIGIN_DROP)) continue;
+			mon = square_monster(cave, grid);
+		}
+		require(mon);
+
+		/* Only a mimic that actually got a disguise is the case under test */
+		if (!mon->mimicked_obj) continue;
+		monster_set_allegiance(mon, MON_ALLEGIANCE_PET);
+
+		go_down();
+
+		eq(count_side(MON_ALLEGIANCE_PET), 0);
+		require_consistent();
+		done = 1;
+	}
+
+	require(done);
+
+	ok;
+}
+
 const char *suite_name = "game/carry";
 struct test tests[] = {
 	{ "one-pet-follows", test_one_pet_follows },
@@ -504,5 +717,10 @@ struct test tests[] = {
 	{ "they-survive-a-descent", test_they_survive_a_descent },
 	{ "a-carry-then-a-save-round-trips",
 	  test_a_carry_then_a_save_round_trips },
+	{ "a-pet-brings-what-it-carries",
+	  test_a_pet_brings_what_it_carries },
+	{ "what-it-carries-is-not-duplicated",
+	  test_what_it_carries_is_not_duplicated },
+	{ "a-mimic-does-not-follow", test_a_mimic_does_not_follow },
 	{ NULL, NULL }
 };

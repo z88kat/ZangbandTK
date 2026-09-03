@@ -40,6 +40,7 @@
 #include "mon-group.h"
 #include "mon-make.h"
 #include "mon-predicate.h"
+#include "obj-pile.h"
 #include "mon-move.h"
 #include "mon-spell.h"
 #include "monster.h"
@@ -1472,26 +1473,22 @@ static void collect_pets(struct chunk *c, struct player *p)
 		if (!mon->race || !monster_is_pet(mon)) continue;
 
 		/*
-		 * A pet holding something stays behind, for now.
+		 * A mimic stays behind, and that is not a limitation to be lifted.
 		 *
-		 * Its objects belong to *this* chunk: they carry an `oidx` into this
-		 * chunk's object array, and `cave_free()` sweeps objects with no grid
-		 * -- which is every held object -- so carrying the monster without
-		 * moving them leaves the copy pointing at freed memory. The integrity
-		 * checker found exactly that on this feature's first run, which is
-		 * what it was built for.
-		 *
-		 * Phase C moves them properly and removes this. Until then, leaving
-		 * the pet is the only honest option: the alternative is destroying
-		 * what it was carrying, and a player's property is not ours to throw
-		 * away to make a transition tidy.
+		 * What a mimic pretends to be is an object *on the floor*, with a grid
+		 * and a place in a floor pile -- it belongs to the level, not to the
+		 * monster. Carrying the monster and leaving the disguise would produce
+		 * a creature imitating something that is not there; carrying the
+		 * object would move a piece of the old level's furniture onto the new
+		 * one. Neither is the spell's promise, and a mimic charmed into
+		 * service has stopped pretending anyway.
 		 */
-		if (mon->held_obj || mon->mimicked_obj) {
+		if (mon->mimicked_obj) {
 			char m_name[80];
 
 			monster_desc(m_name, sizeof(m_name), mon,
 						 MDESC_CAPITAL | MDESC_IND_VIS);
-			msg("%s is carrying something, and cannot follow you.", m_name);
+			msg("%s cannot follow you.", m_name);
 			continue;
 		}
 
@@ -1502,6 +1499,31 @@ static void collect_pets(struct chunk *c, struct player *p)
 						 MDESC_CAPITAL | MDESC_IND_VIS);
 			msg("%s cannot follow you.", m_name);
 			continue;
+		}
+
+		/*
+		 * What it is carrying comes off both object lists, without being
+		 * freed.
+		 *
+		 * A held object belongs to this chunk twice over: `obj->oidx` is a
+		 * slot in `c->objects`, and the player's knowledge of it is a separate
+		 * object in the same slot of `p->cave->objects`. Both have to be
+		 * released or `cave_free()` will sweep them -- it deletes anything in
+		 * the list with no grid, which is every held object -- and the carried
+		 * copy would arrive pointing at freed memory. That is the defect the
+		 * integrity checker caught when this phase was first attempted.
+		 *
+		 * Known twin first: `delist_object()` refuses to release a real object
+		 * while its known counterpart is still listed. The idiom is
+		 * `monster_carry()`'s, run backwards.
+		 */
+		{
+			struct object *obj;
+
+			for (obj = mon->held_obj; obj; obj = obj->next) {
+				if (obj->known) delist_object(p->cave, obj->known);
+				delist_object(c, obj);
+			}
 		}
 
 		/* Take a copy, then unhook the original without freeing it */
@@ -1603,10 +1625,37 @@ static void place_carried_pets(struct chunk *c, struct player *p)
 
 		while (next < found && !placed) {
 			struct loc grid = grids[next++];
+			int16_t midx;
 
 			/* An earlier pet may have taken it since the search */
 			if (!square_isempty(c, grid)) continue;
-			if (place_monster(c, grid, mon, 0) > 0) placed = true;
+
+			midx = place_monster(c, grid, mon, 0);
+			if (midx <= 0) continue;
+			placed = true;
+
+			/*
+			 * And its belongings join the new chunk's lists, at matching
+			 * indices in the real and the known array -- which is what
+			 * `object_lists_check_integrity()` requires and what
+			 * `monster_carry()` does when a monster picks something up.
+			 *
+			 * `place_monster()` copied the struct, so the objects belong to
+			 * the placed monster now and must name its new index.
+			 */
+			{
+				struct monster *arrived = cave_monster(c, midx);
+				struct object *obj;
+
+				for (obj = arrived->held_obj; obj; obj = obj->next) {
+					obj->held_m_idx = arrived->midx;
+					list_object(c, obj);
+					if (obj->known) {
+						obj->known->oidx = obj->oidx;
+						p->cave->objects[obj->oidx] = obj->known;
+					}
+				}
+			}
 		}
 
 		if (!placed) {
@@ -1623,7 +1672,15 @@ static void place_carried_pets(struct chunk *c, struct player *p)
 			 * block anything immediately and quietly corrupts the allocation
 			 * table, so it showed up as an unrelated test failing several
 			 * tests later.
+			 *
+			 * What it was carrying does have to go, though. Those objects are
+			 * off both chunks' lists and nothing else will ever reach them, so
+			 * this is the only place they can be freed. It is a real loss to
+			 * the player and the message above is the only notice of it --
+			 * which is the argument for the carry radius being generous.
 			 */
+			object_pile_free(NULL, NULL, mon->held_obj);
+			mon->held_obj = NULL;
 		}
 	}
 

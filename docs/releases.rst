@@ -33,6 +33,30 @@ Unreleased
 Pets follow — 3 September 2026
 ------------------------------
 
+- **3.76.0** — **And they bring what they are carrying** (PLR-26 phase C).
+  A held object belongs to a chunk twice over — ``obj->oidx`` is a slot in the
+  real object array and the player's knowledge of it sits in the same slot of
+  the known array — and ``cave_free()`` deletes anything listed with no grid,
+  which is every held object. So a carried pet's belongings are released from
+  both of the old chunk's lists and re-listed on the new one at matching
+  indices, which is ``monster_carry()``'s idiom run backwards and then
+  forwards.
+
+  Falsified both ways: skipping the release crashes on freed memory, skipping
+  the re-listing is caught by the integrity checker and loses the object.
+
+  A **mimic** still does not follow, and that is not a gap to be closed. What
+  it pretends to be is an object on the floor, with a grid and a place in a
+  pile: it belongs to the level. Carrying the monster and leaving the disguise
+  gives a creature imitating something that is not there.
+
+  One diagnosis worth keeping. A test reported the carried object *duplicated*
+  — two apples where one was given — which is precisely the failure this phase
+  risks. It was not: the new level had generated a monster carrying an apple of
+  its own, and the test was counting the whole object list rather than the pet's
+  inventory. Chasing it down rather than adjusting the assertion is the only way
+  to tell those two apart.
+
 - **3.75.0** — **Pets follow you downstairs** (PLR-26 as reversed; DEC-66,
   reversing half of DEC-60). Every pet on the level comes with you, put down
   within five squares of where you arrive, nearest-follower first. Anything
