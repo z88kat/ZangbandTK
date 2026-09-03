@@ -33,6 +33,28 @@ Unreleased
 Pets follow — 3 September 2026
 ------------------------------
 
+- **3.78.0** — **Told which ones, and by name** (PLR-26 phase E). The player
+  is told their pets followed, and every pet that stays behind is named
+  individually.
+
+  Two defects in the obvious version of that, both found by the tests.
+
+  The messages were said **where the decision was made**, which is before the
+  old level is torn down — so they landed on a screen the player never sees.
+  The names are now held and said on arrival, beside whatever else is being
+  reported.
+
+  And they said *"It cannot follow you."* ``MDESC_IND_VIS`` gives the
+  indefinite form for a monster the player cannot see, and nothing is visible
+  during a level transition — so every pet got the same useless line, and since
+  the message log collapses identical lines, three animals declined produced
+  **one**. Named by race now (``MDESC_SHOW``): a player knows their own animals
+  whether or not they can see them. The pet roster and the dismissal prompt had
+  the same fault and are fixed with it.
+
+  Nothing is said when the player has no pets, so the line means something when
+  it appears.
+
 - **3.77.0** — **The awkward cases** (PLR-26 phase D). Uniques, groups,
   stored levels and the arena.
 

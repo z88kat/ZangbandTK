@@ -212,10 +212,17 @@ Between levels
 standing — a pet across the level is still yours.
 
 They arrive around you, within about five squares, the ones that were following
-closest getting the closest ground. If there is no room for one of them it stays
-behind, and you are told which: *"The soldier cannot follow you."* One line per
-animal, because arriving with four when you left with six and not knowing which
-two you lost is worse than losing them.
+closest getting the closest ground, and you are told they came::
+
+   Your 3 pets follow you down.
+
+If there is no room for one of them it stays behind, and you are told which::
+
+   The soldier cannot follow you.
+
+One line per animal, by name — arriving with four when you left with six and
+not knowing which two you lost is worse than losing them. Nothing is said at
+all when you have no pets, so the line means something when it appears.
 
 There is no room at all now and then — a staircase in a dead end — and then the
 whole stable is left. It is rare, and it is still named.

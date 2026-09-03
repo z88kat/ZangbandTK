@@ -2339,7 +2339,12 @@ static void show_pet_roster(void)
 
 		if (!mon->race || !monster_is_pet(mon)) continue;
 
-		monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL | MDESC_IND_VIS);
+		/*
+		 * MDESC_SHOW: a pet on the far side of the level is still one the
+		 * player owns and can name, and a roster of "It, level 12" lines is
+		 * no roster at all.
+		 */
+		monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL | MDESC_SHOW);
 		textblock_append(tb, "%-40s  level %d\n", m_name, mon->race->level);
 		n++;
 		levels += mon->race->level;
@@ -2401,7 +2406,7 @@ static void dismiss_pets(void)
 		if (!mon->race || !monster_is_pet(mon)) continue;
 
 		monster_desc(m_name, sizeof(m_name), mon,
-					 MDESC_CAPITAL | MDESC_IND_VIS);
+					 MDESC_CAPITAL | MDESC_SHOW);
 
 		if (!all && !get_check(format("Dismiss %s? ", m_name))) continue;
 

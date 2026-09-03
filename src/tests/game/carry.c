@@ -32,6 +32,7 @@
 #include "generate.h"
 #include "init.h"
 #include "mon-make.h"
+#include "message.h"
 #include "mon-group.h"
 #include "mon-predicate.h"
 #include "mon-util.h"
@@ -945,6 +946,131 @@ static int test_a_stored_level_does_not_keep_them(void *state) {
 	ok;
 }
 
+/**
+ * How many messages newer than `since` contain `text`.
+ *
+ * Counted against a baseline taken before the action, not "the last few": the
+ * suite's earlier tests leave their own messages in the log, and a window of
+ * the most recent handful found a previous test's line and reported it as this
+ * one's. That is how `nothing-is-said-without-pets` first passed for a reason
+ * that had nothing to do with the code.
+ */
+static int said_since(const char *text, uint16_t since) {
+	int i, n = 0;
+	int fresh = (int) messages_num() - (int) since;
+
+	for (i = 0; i < fresh && i < (int) messages_num(); i++) {
+		const char *m = message_str(i);
+
+		if (m && strstr(m, text)) n++;
+	}
+
+	return n;
+}
+
+/**
+ * The player is told that their pets followed.
+ *
+ * Not decoration. The whole argument for carrying pets is that people do not
+ * want to leave them, so the player should be able to tell from the message
+ * log that they did not -- and a player who arrives with fewer than they left
+ * with needs to know that happened without counting animals.
+ */
+static int test_the_player_is_told_they_followed(void *state) {
+	int t, done = 0;
+
+	for (t = 0; t < 10 && !done; t++) {
+		uint16_t before;
+
+		clear_the_level();
+		if (place_side("soldier", MON_ALLEGIANCE_PET, 2) != 2) continue;
+
+		before = messages_num();
+		go_down();
+		if (count_side(MON_ALLEGIANCE_PET) != 2) continue;
+
+		require(said_since("follow you down", before) > 0);
+		done = 1;
+	}
+
+	require(done);
+
+	ok;
+}
+
+/**
+ * And every pet that stays behind is named, by its own name.
+ *
+ * The cap is the reliable way to make some stay: three distinct races and room
+ * for one leaves two, and the two lines have to name *those two*. A single
+ * line saying "some pets could not follow" gives the player the shape of the
+ * information and not the information -- which ones do they now not have?
+ *
+ * Three different races, not three soldiers, and that is the point rather than
+ * tidiness: Angband's message log collapses identical lines into one with a
+ * repeat count, so "The soldier cannot follow you." three times is one entry.
+ * That is the right behaviour and it makes a same-race test unable to tell
+ * "named each" from "named once".
+ *
+ * Checked on the *new* level, which is why the names are held rather than said
+ * when the decision is made: everything that declines a pet happens before the
+ * old level is torn down, and a message put out there lands on a screen the
+ * player never sees.
+ */
+static int test_every_pet_left_behind_is_named(void *state) {
+	uint16_t kept = z_info->pet_max_carried;
+	int t, done = 0;
+
+	z_info->pet_max_carried = 1;
+
+	for (t = 0; t < 10 && !done; t++) {
+		uint16_t before;
+		int named = 0;
+
+		clear_the_level();
+		if (place_side("soldier", MON_ALLEGIANCE_PET, 1) != 1) continue;
+		if (place_side("kobold", MON_ALLEGIANCE_PET, 1) != 1) continue;
+		if (place_side("cutpurse", MON_ALLEGIANCE_PET, 1) != 1) continue;
+
+		before = messages_num();
+		go_down();
+
+		/* Two of the three declined, and each is named by its own name */
+		named += (said_since("soldier cannot follow", before) > 0) ? 1 : 0;
+		named += (said_since("kobold cannot follow", before) > 0) ? 1 : 0;
+		named += (said_since("cutpurse cannot follow", before) > 0) ? 1 : 0;
+
+		eq(named, 2);
+		done = 1;
+	}
+
+	z_info->pet_max_carried = kept;
+	require(done);
+
+	ok;
+}
+
+/**
+ * Nothing is said when the player has no pets.
+ *
+ * A line on every staircase would be noise, and noise is what a player learns
+ * to skip -- which would cost them the line that matters on the descent where
+ * something did stay behind.
+ */
+static int test_nothing_is_said_without_pets(void *state) {
+	uint16_t before;
+
+	clear_the_level();
+
+	before = messages_num();
+	go_down();
+
+	eq(said_since("follow you down", before), 0);
+	eq(said_since("cannot follow you", before), 0);
+
+	ok;
+}
+
 const char *suite_name = "game/carry";
 struct test tests[] = {
 	{ "one-pet-follows", test_one_pet_follows },
@@ -973,5 +1099,11 @@ struct test tests[] = {
 	  test_a_carried_pet_gets_a_new_group },
 	{ "a-stored-level-does-not-keep-them",
 	  test_a_stored_level_does_not_keep_them },
+	{ "the-player-is-told-they-followed",
+	  test_the_player_is_told_they_followed },
+	{ "every-pet-left-behind-is-named",
+	  test_every_pet_left_behind_is_named },
+	{ "nothing-is-said-without-pets",
+	  test_nothing_is_said_without_pets },
 	{ NULL, NULL }
 };

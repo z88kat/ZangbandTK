@@ -1411,6 +1411,75 @@ static void sanitize_player_loc(struct chunk *c, struct player *p)
 static struct monster *pets_in_transit;
 static int pets_in_transit_count;
 
+/**
+ * The pets that will not be coming, by name.
+ *
+ * Held rather than said at the time. Everything that decides a pet cannot
+ * follow happens *before* the old level is torn down -- a mimic, or one over
+ * the cap -- and a message put out there arrives while the screen is being
+ * rebuilt for a level the player has not seen yet. So the names are kept and
+ * said on arrival, next to whatever else is being reported, where they will be
+ * read.
+ *
+ * Sized by the cap, plus the collection: nothing can decline more pets than
+ * were on the level.
+ */
+static char **pets_left_behind;
+static int pets_left_behind_count;
+static int pets_left_behind_size;
+
+/** Remember that this one is staying, to be said on arrival. */
+static void note_left_behind(const struct monster *mon)
+{
+	char m_name[80];
+
+	/*
+	 * MDESC_SHOW, not MDESC_IND_VIS: name the race whether or not the player
+	 * can see it. Nothing is visible during a level transition, so the
+	 * indefinite form gave "It cannot follow you." for every pet -- and since
+	 * the message log collapses identical lines, three animals declined
+	 * produced *one* useless line. A player knows their own animals by name.
+	 */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_CAPITAL | MDESC_SHOW);
+
+	if (pets_left_behind_count >= pets_left_behind_size) {
+		pets_left_behind_size = pets_left_behind_size
+			? pets_left_behind_size * 2 : 8;
+		pets_left_behind = mem_realloc(pets_left_behind,
+									   pets_left_behind_size
+									   * sizeof(*pets_left_behind));
+	}
+
+	pets_left_behind[pets_left_behind_count++] = string_make(m_name);
+}
+
+/**
+ * Say what followed and what did not, one line per animal.
+ *
+ * Every pet that stayed behind is named individually, however many lines that
+ * takes. A player who walks downstairs with six and arrives with four, and is
+ * told only that "some pets could not follow", has been given the shape of the
+ * information and not the information: which two do they now not have?
+ */
+static void report_pets(int arrived)
+{
+	int i;
+
+	if (arrived == 1) {
+		msg("Your pet follows you down.");
+	} else if (arrived > 1) {
+		msg("Your %d pets follow you down.", arrived);
+	}
+
+	for (i = 0; i < pets_left_behind_count; i++) {
+		msg("%s cannot follow you.", pets_left_behind[i]);
+		string_free(pets_left_behind[i]);
+		pets_left_behind[i] = NULL;
+	}
+
+	pets_left_behind_count = 0;
+}
+
 /** Ordering for arrival grids: nearest the player first. */
 static int cmp_grid_distance(const void *a, const void *b)
 {
@@ -1484,20 +1553,12 @@ static void collect_pets(struct chunk *c, struct player *p)
 		 * service has stopped pretending anyway.
 		 */
 		if (mon->mimicked_obj) {
-			char m_name[80];
-
-			monster_desc(m_name, sizeof(m_name), mon,
-						 MDESC_CAPITAL | MDESC_IND_VIS);
-			msg("%s cannot follow you.", m_name);
+			note_left_behind(mon);
 			continue;
 		}
 
 		if (pets_in_transit_count >= z_info->pet_max_carried) {
-			char m_name[80];
-
-			monster_desc(m_name, sizeof(m_name), mon,
-						 MDESC_CAPITAL | MDESC_IND_VIS);
-			msg("%s cannot follow you.", m_name);
+			note_left_behind(mon);
 			continue;
 		}
 
@@ -1571,9 +1632,17 @@ static void collect_pets(struct chunk *c, struct player *p)
 static void place_carried_pets(struct chunk *c, struct player *p)
 {
 	struct loc *grids;
-	int i, next = 0, found = 0;
+	int i, next = 0, found = 0, arrived = 0;
 
-	if (!pets_in_transit_count) return;
+	/*
+	 * Still say what stayed behind even when nothing is in transit: a level
+	 * whose only pets were mimics, or a cap of zero, declines them all at
+	 * collection time and there is nothing to place.
+	 */
+	if (!pets_in_transit_count) {
+		report_pets(0);
+		return;
+	}
 
 	/*
 	 * Ask for every grid at once, ring by ring.
@@ -1667,11 +1736,11 @@ static void place_carried_pets(struct chunk *c, struct player *p)
 			 * the placed monster now and must name its new index.
 			 */
 			{
-				struct monster *arrived = cave_monster(c, midx);
+				struct monster *placed_mon = cave_monster(c, midx);
 				struct object *obj;
 
-				for (obj = arrived->held_obj; obj; obj = obj->next) {
-					obj->held_m_idx = arrived->midx;
+				for (obj = placed_mon->held_obj; obj; obj = obj->next) {
+					obj->held_m_idx = placed_mon->midx;
 					list_object(c, obj);
 					if (obj->known) {
 						obj->known->oidx = obj->oidx;
@@ -1682,11 +1751,7 @@ static void place_carried_pets(struct chunk *c, struct player *p)
 		}
 
 		if (!placed) {
-			char m_name[80];
-
-			monster_desc(m_name, sizeof(m_name), mon,
-						 MDESC_CAPITAL | MDESC_IND_VIS);
-			msg("%s cannot follow you.", m_name);
+			note_left_behind(mon);
 
 			/*
 			 * No counter change here: the decrement above already accounts
@@ -1703,11 +1768,15 @@ static void place_carried_pets(struct chunk *c, struct player *p)
 			 */
 			object_pile_free(NULL, NULL, mon->held_obj);
 			mon->held_obj = NULL;
+		} else {
+			arrived++;
 		}
 	}
 
 	mem_free(grids);
 	pets_in_transit_count = 0;
+
+	report_pets(arrived);
 }
 
 /**
@@ -1715,9 +1784,19 @@ static void place_carried_pets(struct chunk *c, struct player *p)
  */
 void pets_in_transit_free(void)
 {
+	int i;
+
 	mem_free(pets_in_transit);
 	pets_in_transit = NULL;
 	pets_in_transit_count = 0;
+
+	for (i = 0; i < pets_left_behind_count; i++) {
+		string_free(pets_left_behind[i]);
+	}
+	mem_free(pets_left_behind);
+	pets_left_behind = NULL;
+	pets_left_behind_count = 0;
+	pets_left_behind_size = 0;
 }
 
 void prepare_next_level(struct player *p)
