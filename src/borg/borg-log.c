@@ -208,10 +208,11 @@ void borg_write_map(bool ask)
         player->depth, player->max_depth, player->died_from);
     file_putf(borg_map_file, "Borg Compile Date: %s\n", borg_engine_date);
 
-    line    = mem_zalloc((DUNGEON_WID + 1) * sizeof(wchar_t));
-    ch_line = mem_zalloc((DUNGEON_WID + 1) * sizeof(char));
-    for (i = 0; i < DUNGEON_HGT; i++) {
-        for (j = 0; j < DUNGEON_WID; j++) {
+    /* ZangbandTK (BRG-12): dump the level that is there, not the dungeon */
+    line    = mem_zalloc((cave->width + 1) * sizeof(wchar_t));
+    ch_line = mem_zalloc((cave->width + 1) * sizeof(char));
+    for (i = 0; i < cave->height; i++) {
+        for (j = 0; j < cave->width; j++) {
             wchar_t ch;
 
             borg_grid *ag = &borg_grids[i][j];
@@ -531,8 +532,9 @@ void borg_write_map(bool ask)
     }
 
     /* Check the dungeon */
-    for (loc_y = 0; loc_y < DUNGEON_HGT; loc_y++) {
-        for (loc_x = 0; loc_x < DUNGEON_WID; loc_x++) {
+    /* ZangbandTK (BRG-12): as above -- the level's extent, not the dungeon's */
+    for (loc_y = 0; loc_y < cave->height; loc_y++) {
+        for (loc_x = 0; loc_x < cave->width; loc_x++) {
             int16_t this_o_idx, next_o_idx = 0;
 
             /* Scan all objects in the grid */

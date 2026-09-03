@@ -116,8 +116,21 @@ bool borg_happy_grid_bold(int y, int x)
 
     borg_grid *ag = &borg_grids[y][x];
 
-    /* Bounds Check */
-    if (y >= DUNGEON_HGT - 2 || y <= 2 || x >= DUNGEON_WID - 2 || x <= 2)
+    /*
+     * Bounds Check
+     *
+     * ZangbandTK (BRG-12): against the level, not against the dungeon.
+     *
+     * `DUNGEON_HGT` is Angband's 66 and every level there is the dungeon. On
+     * this game's wilderness surface -- 144 x 144 as the data ships -- a
+     * character starts at about row 81, so this returned false for every grid
+     * the player was ever standing on and the borg believed the whole surface
+     * was the outside wall of the world. That is why it could not find a
+     * town's shops, could not buy food, and stair-scummed between the surface
+     * and depth 1 for three thousand turns saying "unable to dive: restock
+     * food < 3".
+     */
+    if (y >= cave->height - 2 || y <= 2 || x >= cave->width - 2 || x <= 2)
         return false;
 
     /* Accept stairs */

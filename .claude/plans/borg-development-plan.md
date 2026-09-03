@@ -485,6 +485,68 @@ pathfinding problem across 144 × 144 rather than a table.*
 it did not start next to, and its recorded depth stops being capped by the
 first dungeon's floor.
 
+**Part-landed 3 September 2026 in 3.83.0. The exit criterion is NOT met, and
+the phase stopped at its agreed boundary.** What was found is more useful than
+what was built:
+
+**The borg does not reach depth 2, let alone a second dungeon.** Measured over
+3000 turns for each of the twelve playable classes, before and after:
+
+| | before | after |
+|---|---:|---:|
+| best depth reached, any class | 2 | 2 |
+| best character level, any class | 2 | 2 |
+| classes reaching a second dungeon | 0 | 0 |
+
+So none of the wilderness work in BRG-12/13/14 can be demonstrated yet, because
+the borg never gets far enough to need it. That is worth knowing before writing
+a wilderness pathfinder: **the blocker is not navigation.**
+
+**What was fixed, and it is real.** The four files that read `DUNGEON_WID/HGT`
+as the *level's* extent (flagged in B0 as behaviour and therefore B2's):
+
+- `borg_happy_grid_bold()` rejected every grid at `y >= DUNGEON_HGT - 2`. A
+  character starts the surface at about **row 81 of a 144-row level**, so this
+  returned false for every grid the player ever stood on -- the borg believed
+  the entire surface was the outside wall of the world. After the fix it
+  registers the town's shops, which sit at rows 83 to 87 and were previously
+  *outside its universe*: `borg-shops?` reports 3 of 8 known where it reported
+  none.
+- The two panel clamps in `borg-flow-kill.c`, the two map-dump loops in
+  `borg-log.c`, and the outside-wall check in `borg-fight-attack.c`, all now
+  read `cave->height`/`cave->width`.
+
+**And an unreachable branch made reachable.** `borg_think_dungeon()` visits
+shops *after* `borg_leave_level()`, so the shop visit is dead code whenever
+leaving succeeds -- which on this game's surface is always, because the borg
+arrives from the dungeon standing on the town staircase. Angband does not show
+this: there the borg's first town visit happens before it has ever descended,
+so it shops on the way *in*. Arriving from below with shopping still to do is a
+shape this game creates and Angband does not.
+
+**The blocker, precisely, with the evidence.** The borg loops: come up for
+food, descend without buying any, note *"# heading up (bored and unable to
+dive: restock food < 3)"*, come up again. Two upstream thresholds disagree --
+`borg_restock()` refuses to dive below **three** rations and
+`borg_choose_shop()` heads for the General Store only at **zero** -- so between
+one and two rations it will neither dive nor shop. Aligning the two thresholds
+was tried and **did not fix it**, so that is not the whole cause and the change
+was reverted rather than kept on a hunch. What remains is most likely a
+bootstrap: `borg_shops[i].ware[]` is filled by *visiting* a shop, and
+`borg_think_shop_buy_useful()` cannot want what it has never seen, so nothing
+sends the borg inside in the first place.
+
+**What B2 needs next, in order:** the shop bootstrap above; then BRG-12's
+surface flow; then BRG-13. None of it is navigation until the borg can restock.
+
+**A harness correction that matters more than any of it: a dead character is
+not a failure.** The borg calls `borg_oops("death")` down the same channel it
+uses for defects, and three of the twelve classes die within 3000 turns at
+character level 1. Left as it was, B4's nightly job would have been permanently
+red and everyone would have learned to ignore it. Death now reports
+`result=died` with a zero exit, and `maxdepth`/`clevel` on the summary line are
+what make a build where everything dies at depth 1 visible.
+
 ---
 
 ### B3 — Allegiance and the newer player systems

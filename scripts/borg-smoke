@@ -63,6 +63,7 @@ for seed in $seeds; do
 
 	status=$(printf '%s\n' "$out" | grep '^borg-status:')
 
+	# A dead character is a played run, not a broken one -- see c_borg_status.
 	if [ $rc -ne 0 ] || [ -z "$status" ]; then
 		bad=$(expr $bad + 1)
 		echo "FAILED (exit $rc)"

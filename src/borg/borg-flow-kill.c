@@ -228,16 +228,17 @@ static void borg_update_kill_new(int i)
             * borg_panel_hgt();
         if (j < 0)
             j = 0;
-        if (j > DUNGEON_HGT - SCREEN_HGT)
-            j = DUNGEON_HGT - SCREEN_HGT;
+        /* ZangbandTK (BRG-12): clamp to the level, not to the dungeon */
+        if (j > cave->height - SCREEN_HGT)
+            j = cave->height - SCREEN_HGT;
         morgy_panel_y = j;
 
         j = ((kill->pos.x - borg_panel_wid() / 2) / borg_panel_wid())
             * borg_panel_wid();
         if (j < 0)
             j = 0;
-        if (j > DUNGEON_WID - SCREEN_WID)
-            j = DUNGEON_WID - SCREEN_WID;
+        if (j > cave->width - SCREEN_WID)
+            j = cave->width - SCREEN_WID;
         morgy_panel_x = j;
     }
 
@@ -376,16 +377,17 @@ static void borg_update_kill_old(int i)
             * borg_panel_hgt();
         if (j < 0)
             j = 0;
-        if (j > DUNGEON_HGT - SCREEN_HGT)
-            j = DUNGEON_HGT - SCREEN_HGT;
+        /* ZangbandTK (BRG-12): clamp to the level, not to the dungeon */
+        if (j > cave->height - SCREEN_HGT)
+            j = cave->height - SCREEN_HGT;
         morgy_panel_y = j;
 
         j = ((kill->pos.x - borg_panel_wid() / 2) / borg_panel_wid())
             * borg_panel_wid();
         if (j < 0)
             j = 0;
-        if (j > DUNGEON_WID - SCREEN_WID)
-            j = DUNGEON_WID - SCREEN_WID;
+        if (j > cave->width - SCREEN_WID)
+            j = cave->width - SCREEN_WID;
         morgy_panel_x = j;
     }
 

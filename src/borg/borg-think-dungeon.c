@@ -2009,6 +2009,30 @@ bool borg_think_dungeon(void)
     if (borg_flow_dark(true))
         return true;
 
+    /*
+     * Shop before leaving town, not after (ZangbandTK, BRG-12).
+     *
+     * The shop visit below this sits *after* `borg_leave_level()`, so it is
+     * unreachable whenever leaving succeeds -- and on this game's surface it
+     * always succeeds, because the borg arrives from the dungeon standing on
+     * the town staircase. The result was a stair-scum loop: come up for food,
+     * descend without buying any, note "unable to dive: restock food < 3",
+     * come up again. Every one of the twelve playable classes was still at
+     * depth 1 or 2 after three thousand turns.
+     *
+     * Angband's own town does not show this. There the borg's first visit
+     * happens before it has ever descended, so it shops on the way *in*;
+     * arriving from below onto a staircase with shopping still to do is a
+     * shape this game creates and Angband does not.
+     *
+     * Gated on depth 0, so nothing about the borg's behaviour in a dungeon
+     * changes.
+     */
+    if (!borg.trait[BI_CDEPTH] && borg_choose_shop()) {
+        if (borg_flow_shop_entry(borg.goal.shop))
+            return true;
+    }
+
     /* Leave the level (if needed) */
     if (borg.trait[BI_GOLD] < borg_cfg[BORG_MONEY_SCUM_AMOUNT]
         && borg_cfg[BORG_MONEY_SCUM_AMOUNT] != 0 && !borg.trait[BI_CDEPTH]

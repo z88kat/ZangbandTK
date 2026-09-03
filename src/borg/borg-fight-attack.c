@@ -1759,9 +1759,15 @@ int borg_launch_bolt(int rad, int dam, int typ, int max, int ammo_location)
                 if (n <= 0)
                     continue;
 
-                /* The game forbids targeting the outside walls */
-                if (x == 0 || y == 0 || x == DUNGEON_WID - 1
-                    || y == DUNGEON_HGT - 1)
+                /*
+                 * The game forbids targeting the outside walls
+                 *
+                 * ZangbandTK (BRG-12): which are the *level's* walls. Read
+                 * against the dungeon's height this skipped nothing on a
+                 * wilderness level and skipped real grids on a short one.
+                 */
+                if (x == 0 || y == 0 || x == cave->width - 1
+                    || y == cave->height - 1)
                     continue;
 
                 /* Collect best attack */

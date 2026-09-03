@@ -33,6 +33,34 @@ Unreleased
 Pets follow — 3 September 2026
 ------------------------------
 
+- **3.83.0** — **The borg stops believing the surface is the outside wall of
+  the world.** Four files read Angband's ``DUNGEON_HGT`` — 66 — as the current
+  level's height, and this game's wilderness surface is 144 rows, with a
+  character starting at about row 81. So the borg's own position was off the
+  bottom edge of its world model: the grid test it uses to decide whether
+  anywhere is worth standing returned false for every grid the player ever
+  occupied. With that fixed it registers the starting town's shops, which sit
+  at rows 83 to 87 and were previously outside its universe entirely.
+
+  It also visits shops in a branch that ran *after* the decision to leave the
+  level, making it dead code in town — the borg arrives from the dungeon
+  standing on the town staircase and always leaves before it gets there.
+  Angband never shows this, because there the borg's first town visit happens
+  before it has ever descended.
+
+  **The borg still does not get past depth 2**, and that is now measured rather
+  than assumed: 3000 turns for each of the twelve playable classes, best depth
+  2 and best character level 2, before and after. The remaining blocker is a
+  food deadlock — it refuses to dive below three rations and only shops for
+  food at zero — plus a bootstrap where it cannot want to buy from a shop whose
+  stock it has never seen. Aligning the two thresholds did not fix it and was
+  reverted rather than kept on a hunch.
+
+  And a correction to the harness worth more than the rest: **a dead character
+  is no longer a failure.** Three of the twelve classes die inside 3000 turns at
+  character level 1, and the borg reports death down the same channel it uses
+  for defects, so a nightly job would have been permanently red.
+
 - **3.82.0** — **Twelve of fourteen classes can be played by the borg, up from
   two.** B1's robustness half, taken before its ratings half because nothing
   crashing matters more than playing well. With the harness from 3.81.0 the

@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "buildid.h"
+#include "dun-type.h"
 #include "game-world.h"
 #include "main.h"
 #include "player.h"
@@ -28,6 +29,7 @@
 #ifdef ALLOW_BORG
 #include "borg/borg.h"
 #include "borg/borg-init.h"
+#include "borg/borg-flow-misc.h"
 #endif
 
 #ifdef USE_TEST
@@ -328,13 +330,46 @@ static void c_borg_status(char *rest)
 	const char *why = borg_abort_reason ? borg_abort_reason
 		: (borg_active ? "still running" : "budget spent");
 
-	if (borg_abort_reason) run_failed = 1;
+	/*
+	 * A dead character is not a failure (BRG-05, BRG-17).
+	 *
+	 * The borg calls `borg_oops("death")` when the character dies, which is
+	 * the same channel it uses for defects -- and dying is *ordinary play*.
+	 * A level-one Warrior sent into a dungeon dies often, so treating it as a
+	 * failure would leave B4's nightly job permanently red and teach everyone
+	 * to ignore it. What CI should fail on is a crash, an abort the borg did
+	 * not intend, or a wedge.
+	 *
+	 * Recorded distinctly rather than hidden: a build where every class dies
+	 * at depth 1 is worth seeing, and that is what `maxdepth` and `clevel` on
+	 * the summary line are for.
+	 */
+	if (borg_abort_reason && !streq(borg_abort_reason, "death")) {
+		run_failed = 1;
+	}
 
-	printf("borg-status: turn=%d depth=%d clevel=%d ready=%d seed=%u "
-		   "result=%s reason=%s\n",
+	/*
+	 * `maxdepth` and `dungeon` are BRG-18's regression signal (and B2's
+	 * measurement). Current depth alone says nothing about a run: a borg that
+	 * reached depth 12 and walked back up to sell reports 0, and a build where
+	 * every class suddenly stops getting past depth 3 is invisible without
+	 * the high-water mark.
+	 */
+	printf("borg-status: turn=%d depth=%d maxdepth=%d dungeon=%s clevel=%d "
+		   "grid=%d,%d level=%dx%d ready=%d seed=%u result=%s reason=%s\n",
 		   (int) turn, player ? player->depth : -1,
-		   player ? player->lev : -1, character_dungeon ? 1 : 0, run_seed,
-		   run_failed ? "FAILED" : "ok", why);
+		   player ? player->max_depth : -1,
+		   (player && player->dungeon
+			&& dun_type_by_index(player->dungeon - 1))
+			   ? dun_type_by_index(player->dungeon - 1)->name : "-",
+		   player ? player->lev : -1,
+		   player ? player->grid.y : -1, player ? player->grid.x : -1,
+		   cave ? cave->height : -1, cave ? cave->width : -1,
+		   character_dungeon ? 1 : 0, run_seed,
+		   run_failed ? "FAILED"
+			: ((borg_abort_reason && streq(borg_abort_reason, "death"))
+			   ? "died" : "ok"),
+		   why);
 	fflush(stdout);
 }
 
@@ -358,6 +393,30 @@ static void c_borg_notes(char *rest)
 	for (i = want - 1; i >= 0; i--) {
 		printf("borg-note: %s\n", message_str((int16_t) i));
 	}
+	fflush(stdout);
+}
+
+/**
+ * borg-shops? -- which shops the borg has found (BRG-12).
+ *
+ * The borg learns the map a panel at a time, so on a 144x144 wilderness
+ * surface it only knows about the shops it has walked past. Whether it knows
+ * about any at all is the difference between a borg that restocks and one that
+ * stair-scums forever saying it needs food.
+ */
+static void c_borg_shops(char *rest)
+{
+	int i, known = 0;
+
+	for (i = 0; i < (int) z_info->store_max; i++) {
+		if (track_shop_x[i] > 0 || track_shop_y[i] > 0) {
+			printf("borg-shop: %d at %d,%d\n", i, track_shop_y[i],
+				   track_shop_x[i]);
+			known++;
+		}
+	}
+
+	printf("borg-shops: %d of %d known\n", known, (int) z_info->store_max);
 	fflush(stdout);
 }
 
@@ -449,6 +508,7 @@ static test_cmd cmds[] = {
 	{ "borg-run", c_borg_run },
 	{ "borg-status?", c_borg_status },
 	{ "borg-notes?", c_borg_notes },
+	{ "borg-shops?", c_borg_shops },
 	{ "borg-roundtrip", c_borg_roundtrip },
 #endif
 
