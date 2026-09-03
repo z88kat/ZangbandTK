@@ -3084,3 +3084,62 @@ was mistaken for. One call at the full radius, sorted by distance afterwards,
 gives 80 of 80. Had that not been chased down, the conclusion would have been
 "the approved radius is wrong" and the real defect would have shipped
 underneath a policy change.
+
+---
+
+**DEC-65 — What a permanent stable costs, measured. No change to the upkeep is
+needed, and the concern that prompted this question was wrong.**
+(M10, PLR-26 phase F, 3 September 2026.)
+
+When DEC-66 made pets follow the player downstairs, I argued that the mana
+upkeep had gone from being the *second* limit on a stable to being the only
+one, and that this made Trump "straightforwardly the strongest realm in the
+game". That claim was made from intuition and was raised as its own question
+rather than settled. Here are the measurements.
+
+A level 30 Mage with 120 spell points regains **36 sp per 100 turns** with no
+pets, and keeps `1 + level/15` = **2 pets free**.
+
+| pets | sum of levels | upkeep | sp per 100 turns | against none |
+|---:|---:|---:|---:|---:|
+| 2 soldiers (level 2) | 4 | 0% | 36 | 100% |
+| 3 soldiers | 6 | 6% | 34 | 94% |
+| 10 soldiers | 20 | 20% | 29 | 80% |
+| 24 soldiers (the carry cap) | 48 | 48% | 19 | 52% |
+| 2 young red dragons (level 31) | 62 | 0% | 36 | 100% |
+| **3 young red dragons** | 93 | **93%** | **2** | **5%** |
+| 4 or more dragons | 124+ | 95% | 1 | 2% |
+
+**The claim was wrong, and the reason is the shape of the curve.** The upkeep
+is charged on the *sum of the pets' levels*, so it is not a mild tax that a
+large stable absorbs — for anything worth summoning it is a cliff. Two young
+red dragons are free; the third costs 93 per cent of the caster's mana
+regeneration, taking a Mage from 36 spell points per hundred turns to 2. A
+caster with an army of deep pets **cannot cast**, which is the opposite of the
+failure I predicted.
+
+**What following actually changes** is narrower and better than either the
+worry or the enthusiasm: a caster may now keep their *free allowance*
+permanently. That is two pets at level 30, three at 40, four at 48 for a Mage —
+five for a High-Mage, who divides by 12. A few standing companions, not a
+horde. Everything past the allowance still costs, and now costs continuously
+rather than being rebuilt, which if anything makes the large stable a *worse*
+proposition than before rather than a better one.
+
+The one case that is cheap is a large stable of *shallow* pets: 24 level-2
+soldiers cost 48 per cent, permanently. That is not a problem worth fixing,
+because 24 level-2 soldiers a thousand feet down are not an army, they are 24
+things that die to the first breath weapon — and the mechanism that turns them
+hostile when caught in it (PLR-33) is already there.
+
+**Decision: leave the upkeep as it is.** No decay, no carry limit doing balance
+work, no change to the 95 per cent ceiling. The two named counterweights in
+Zangband's documentation — the upkeep and the killing-blow rule — turn out to
+be sufficient without the third, unnamed one that its region model provided by
+accident.
+
+*Recorded as a decision rather than dropped, because the question was raised
+in writing and a reader finding the worry in DEC-66 should be able to find the
+answer.* The figures are printed by `player/pet-upkeep`'s
+`what-a-stable-costs`, so a change to the regeneration formula or to monster
+levels will move them where someone can see it.

@@ -33,6 +33,28 @@ Unreleased
 Pets follow — 3 September 2026
 ------------------------------
 
+- **3.79.0** — **What a permanent stable costs** (PLR-26 phase F; DEC-65).
+  Pets following the player raised a question: the mana upkeep had gone from
+  being the second limit on a stable to being the only one, and the worry was
+  that this made Trump straightforwardly the strongest realm. Measured, that
+  worry was **wrong**.
+
+  A level 30 Mage regains 36 spell points per hundred turns and keeps two pets
+  free. Two young red dragons cost nothing; the third costs 93 per cent, taking
+  the same Mage to **2** per hundred turns. The upkeep is charged on the *sum*
+  of pet levels, so for anything worth summoning it is a cliff rather than a
+  tax, and a caster with an army of deep pets cannot cast at all.
+
+  What following actually changes is narrower: a caster may keep their free
+  allowance permanently — two pets at level 30, four at 48, five for a
+  High-Mage. A few standing companions rather than a horde, and everything past
+  the allowance now costs *continuously* instead of being rebuilt, which makes
+  the large stable a worse proposition than before rather than a better one.
+
+  No change to the upkeep. The figures are printed by ``player/pet-upkeep``, so
+  a change to the regeneration formula or to monster levels moves them where
+  somebody can see it.
+
 - **3.78.0** — **Told which ones, and by name** (PLR-26 phase E). The player
   is told their pets followed, and every pet that stays behind is named
   individually.

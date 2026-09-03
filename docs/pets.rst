@@ -250,9 +250,15 @@ they keep four and five where a Warrior keeps three.
 The bill is the sum of your pets' levels, as a percentage of your mana
 regeneration, and it is never less than 5% or more than 95%.
 
-That is a cliff and it is meant to be. Two pets inside your allowance cost you
-nothing at all; a third takes a slice of your regeneration proportional to all
-three. The pet menu tells you the figure before you go looking for a fourth.
+That is a cliff and it is meant to be, and for pets worth having it is a very
+steep one. A level 30 Mage regains 36 spell points per hundred turns and keeps
+two pets free. Two young red dragons cost nothing. The third costs 93% — the
+same Mage now regains **2**.
+
+Shallow pets are cheap: twenty-four level-2 soldiers come to 48%. They are also
+twenty-four things that die to the first breath weapon.
+
+The pet menu tells you the figure before you go looking for another.
 
 The warning in Zangband's own documentation is worth repeating: *keep this in
 mind if you have a pet which can summon or otherwise produce more pets.*

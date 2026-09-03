@@ -439,6 +439,107 @@ static int test_a_pet_cannot_kill_a_unique(void *state) {
 	ok;
 }
 
+/**
+ * What a stable actually costs, in numbers (PLR-26 phase F, for DEC-65).
+ *
+ * Pets following the player between levels changes what limits a stable. It
+ * used to be limited twice: by the mana upkeep, and by having to be rebuilt on
+ * every level. The second limit is gone, so the upkeep is now the only one --
+ * and the upkeep is capped at withholding 95 per cent of mana regeneration,
+ * which is a percentage of a small number.
+ *
+ * This test asserts almost nothing. It prints the figures the decision needs,
+ * so that the argument is made against measurements rather than against
+ * intuition, and so a later change to the regeneration formula shows up here.
+ */
+static int test_what_a_stable_costs(void *state) {
+	static const int sizes[] = { 1, 2, 3, 4, 6, 10, 24 };
+	struct monster_race *race = lookup_monster("soldier");
+	int32_t base;
+	size_t k;
+
+	notnull(race);
+	clear_the_level();
+
+	player->lev = 30;
+	player->msp = 120;
+	base = regained_over_a_hundred_turns();
+	require(base > 0);
+
+	printf("  a level 30 Mage with %d sp regains %d sp per 100 turns with no "
+		   "pets\n", (int) player->msp, (int) base);
+	printf("  free allowance at level 30: %d pets\n",
+		   1 + player->lev / player->class->pet_upkeep_div);
+	printf("  %-6s %-8s %-8s %-10s %s\n", "pets", "levels", "upkeep",
+		   "sp/100t", "vs none");
+
+	for (k = 0; k < N_ELEMENTS(sizes); k++) {
+		int32_t with;
+		int upkeep, placed;
+
+		clear_the_level();
+		placed = place_pets("soldier", sizes[k]);
+		if (placed != sizes[k]) continue;
+
+		upkeep = player_pet_upkeep(player);
+		with = regained_over_a_hundred_turns();
+
+		printf("  %-6d %-8d %-8d %-10d %d%%\n", placed,
+			   placed * race->level, upkeep, (int) with,
+			   base ? (int) (100 * with / base) : 0);
+	}
+
+	/* And the same for pets worth having, which is where the cap binds */
+	{
+		struct monster_race *deep = lookup_monster("young red dragon");
+		int placed;
+
+		notnull(deep);
+		printf("  a %s is level %d\n", deep->name, deep->level);
+
+		for (k = 0; k < N_ELEMENTS(sizes); k++) {
+			int32_t with;
+			int upkeep;
+
+			clear_the_level();
+			placed = place_pets(deep->name, sizes[k]);
+			if (placed != sizes[k]) continue;
+
+			upkeep = player_pet_upkeep(player);
+			with = regained_over_a_hundred_turns();
+
+			printf("  %-6d %-8d %-8d %-10d %d%%\n", placed,
+				   placed * deep->level, upkeep, (int) with,
+				   base ? (int) (100 * with / base) : 0);
+		}
+	}
+
+	/*
+	 * The property worth asserting, rather than a figure that moves with the
+	 * monster data: the charge is monotonic in the size of the stable, and it
+	 * is capped. Those two together are the whole of what limits a stable now
+	 * that it no longer has to be rebuilt every level -- which is the
+	 * substance of DEC-65.
+	 */
+	{
+		int small, large;
+
+		clear_the_level();
+		if (place_pets("soldier", 3) == 3) {
+			small = player_pet_upkeep(player);
+			require(small > 0);
+
+			if (place_pets("soldier", 7) == 7) {
+				large = player_pet_upkeep(player);
+				require(large > small);
+				require(large <= 95);
+			}
+		}
+	}
+
+	ok;
+}
+
 const char *suite_name = "player/pet-upkeep";
 struct test tests[] = {
 	{ "no-pets-cost-nothing", test_no_pets_cost_nothing },
@@ -452,5 +553,6 @@ struct test tests[] = {
 	  test_a_blackguard_is_not_paid_for_pets },
 	{ "experience-is-for-the-killing-blow",
 	  test_experience_is_for_the_killing_blow },
+	{ "what-a-stable-costs", test_what_a_stable_costs },
 	{ NULL, NULL }
 };
