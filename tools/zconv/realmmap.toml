@@ -1224,3 +1224,248 @@ defer = "Kills every non-unique monster on the *level*, one at a time, taking ma
 [death.spells."Wraithform"]
 line = 1755
 defer = "inc_wraith_form() turns the caster incorporeal for a while: they pass through walls and take damage from doing it. The same wall the WRAITH mutation is deferred behind -- 4.2 has no incorporeal state for the player, and PASS_WALL is a monster flag with no player side."
+
+# ============================================================================
+# Trump (DEC-54, built in M10 phase 7)
+#
+# Deferred whole in 3.55.0 because fourteen of its thirty-two spells summon a
+# creature that serves you, and the game had no side for a monster to be on.
+# PLR-22 brought one; this is the realm arriving.
+#
+# One thing runs through the summons and is worth stating once. Zangband writes
+# `bool pet = success` in every one of them: a Trump summon that goes off is a
+# pet, and only a *failed* casting produces something angry -- with the comment
+# `/* was (randint1(5) > 2) */` next to it, recording that the original had
+# been a dice roll and was deliberately changed to certainty. So the summons
+# here are SUMMON_PET without a hostile branch. The failure case is not lost:
+# it is the realm's miscast, which Death and Chaos already have and Trump
+# shares through the same machinery.
+# ============================================================================
+
+[trump]
+books = [ "Conjurings & Tricks", "Deck of Many Things", "Trumps of Doom", "Five Aces" ]
+
+[trump.spells."Phase Door"]
+line = 1789
+effects = [ "TELEPORT", "dice:10" ]
+desc = "Teleports you a short distance."
+
+[trump.spells."Mind Blast"]
+line = 1795
+note = """fire_bolt_or_beam(beam - 10, GF_PSI, ...) with damroll(3 + (plev-1)/4, 3). \
+The MON_PSI projection was built for the Mindcrafter (PLR-06) and is reused \
+whole -- Zangband's Trump and its Mindcrafter cast the same thing."""
+effects = [ "BOLT_OR_BEAM:MON_PSI", "dice:$Dd3", "expr:D:PLAYER_LEVEL:- 1 / 4 + 3" ]
+desc = "Assaults a creature's mind."
+
+[trump.spells."Shuffle"]
+line = 1803
+defer = """A deck of many things: one draw against a d120, read off about \
+twenty unequal bands, from a summoning of everything nearby at the bottom to a \
+wish at the top. Two problems, and the second is the one that matters. Several \
+individual outcomes need mechanisms we lack -- the ty curse, a wish, \
+Zangband's own artifact creation (already deferred for its own reasons). And \
+4.2's RANDOM effect picks *uniformly* from its branches, so even the \
+expressible outcomes could not be given their weights: Shuffle's whole \
+character is that the bad results are common and the good ones are rare, and a \
+uniform draw over the same outcomes is a different card game. Deferred as a \
+shape, not as a list of missing parts."""
+
+[trump.spells."Reset Recall"]
+line = 1980
+defer = """Sets the depth Word of Recall will take you to, from the levels \
+you have reached. 4.2 recalls to `max_depth` and offers no choice; there is no \
+effect that writes the recall depth and no interface that asks for one. \
+Building both to carry one spell is the wrong way round."""
+
+[trump.spells."Teleport"]
+line = 2016
+effects = [ "TELEPORT", "dice:$B", "expr:B:PLAYER_LEVEL:* 4" ]
+desc = "Teleports you a long distance."
+
+[trump.spells."Dimension Door"]
+line = 2022
+defer = """dimension_door() lets the player *choose* where to arrive, within \
+a range. 4.2 has TELEPORT_TO, which sends the player to a grid the game picks \
+or to a targeted monster, and no interface for picking an empty square to \
+appear on. Mapping it to TELEPORT_TO would make it Teleport with extra steps, \
+and the realm already has Teleport two spells earlier."""
+
+[trump.spells."Trump Spying"]
+line = 2028
+effects = [ "TIMED_INC:TELEPATHY", "dice:25+1d30" ]
+desc = "Grants telepathy for a while."
+
+[trump.spells."Teleport Away"]
+line = 2034
+effects = [ "BEAM:AWAY_ALL", "dice:$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+desc = "Teleports away every creature in a line."
+
+[trump.spells."Trump Reach"]
+line = 2042
+note = """The spell table calls it Trump Reach and the code comment calls it \
+Trump Object; the table is the name the player sees, so that is the name. What \
+it does is `fetch(dir, plev * 15, TRUE)` -- it reaches out and pulls an object \
+back, which fits the table's name better than the comment's."""
+effects = [ "FETCH", "dice:$B", "expr:B:PLAYER_LEVEL:* 15" ]
+desc = "Reaches out and pulls a distant object to you."
+
+[trump.spells."Trump Animal"]
+line = 2049
+effects = [ "SUMMON_PET:ANIMAL", "dice:1" ]
+desc = "Calls an animal to serve you."
+
+[trump.spells."Phantasmal Servant"]
+line = 2068
+note = """SUMMON_PHANTOM at (plev * 3) / 2. 4.2 has no phantom summon type \
+and no phantom; the nearest thing it has to a conjured servant with no will of \
+its own is an undead one, so this calls UNDEAD.
+
+The level boost is dropped, and that is a grammar limit rather than a choice: \
+4.2's summon takes its level as `player->depth + <literal>`, and the effect \
+line's `other` field must be a number -- the same constraint DEC-53 hit on \
+`radius`. Zangband summoned at `(plev * 3) / 2`, a figure derived from the \
+caster; 4.2 summons from the depth the caster is standing on, which is the \
+same idea reached the other way round, since a level 28 character is not \
+usually on level 3. The line the spell says on success -- "'Your wish, \
+master?'" -- is Zangband's."""
+effects = [ "SUMMON_PET:UNDEAD", "dice:1" ]
+desc = "Calls something with no will of its own to serve you."
+
+[trump.spells."Trump Monster"]
+line = 2083
+effects = [ "SUMMON_PET:MONSTER", "dice:1" ]
+desc = "Calls a creature to serve you."
+
+[trump.spells."Conjure Elemental"]
+line = 2106
+note = """SUMMON_ELEMENTAL. 4.2 has no elemental summon type and no group of \
+monsters answering to one; the closest by character is AINU, the elemental \
+spirits of the setting we are in. Recorded rather than silently substituted: \
+this calls a Maia where Zangband called an earth elemental."""
+effects = [ "SUMMON_PET:AINU", "dice:1" ]
+desc = "Calls a spirit of the elements to serve you."
+
+[trump.spells."Teleport Level"]
+line = 2128
+effects = [ "TELEPORT_LEVEL" ]
+desc = "Teleports you one level up or down."
+
+[trump.spells."Word of Recall"]
+line = 2134
+effects = [ "RECALL" ]
+desc = "Returns you to town, or to the depths."
+
+[trump.spells."Banish"]
+line = 2140
+note = """banish_monsters(plev * 4) -- teleports every monster in sight away, \
+which is not 4.2's BANISH effect (that deletes monsters by symbol and is a \
+different, far stronger thing)."""
+effects = [ "PROJECT_LOS:AWAY_ALL", "dice:$B", "expr:B:PLAYER_LEVEL:* 4" ]
+desc = "Teleports away every creature in sight."
+
+[trump.spells."Joker Card"]
+line = 2146
+defer = """Summons one of five SUMMON_BIZARRE groups at random -- molds, \
+mimics, jellies, quylthulgs, and the like. 4.2 has none of those summon types \
+and no equivalent grouping; the summon table it has is built round threat \
+categories (animals, undead, dragons) rather than round the joke this spell is \
+making. A RANDOM chain over the types 4.2 does have would summon five ordinary \
+things and lose the point."""
+
+[trump.spells."Trump Spiders"]
+line = 2179
+effects = [ "SUMMON_PET:SPIDER", "dice:1" ]
+desc = "Calls spiders to serve you."
+
+[trump.spells."Trump Reptiles"]
+line = 2201
+note = """SUMMON_HYBRID in Zangband -- chimerae, hydras and the like. 4.2's \
+nearest is HYDRA, which is most of what the group was."""
+effects = [ "SUMMON_PET:HYDRA", "dice:1" ]
+desc = "Calls a hydra to serve you."
+
+[trump.spells."Trump Hounds"]
+line = 2223
+effects = [ "SUMMON_PET:HOUND", "dice:1" ]
+desc = "Calls a pack of hounds to serve you."
+
+[trump.spells."Trump Branding"]
+line = 2246
+note = """brand_weapon(4) -- Zangband's brand 4 is its Trump brand, which \
+teleports what it hits. 4.2's BRAND_WEAPON picks a brand at random and has no \
+way to ask for one; the spell brands, and which brand it is is not ours to \
+choose. Recorded as a difference rather than deferred: a random brand is still \
+the spell doing its job."""
+effects = [ "BRAND_WEAPON" ]
+desc = "Puts a brand on your weapon.  You do not choose which."
+
+[trump.spells."Living Trump"]
+line = 2252
+note = """gain_mutation(77) -- the teleport mutations, which this game has \
+(PLR-16). 4.2's GAIN_MUTATION picks at random and cannot be asked for a \
+particular one, so this gives a mutation rather than *the* mutation. The \
+alternative was deferring a spell whose mechanism we have."""
+effects = [ "GAIN_MUTATION" ]
+desc = "Turns you into a Living Trump.  Chaos chooses what that means."
+
+[trump.spells."Death Dealing"]
+line = 2264
+note = """dispel_living(plev * 3), which is a whole-room strike on everything \
+alive rather than a death ray."""
+effects = [ "PROJECT_LOS:DISP_ALL", "dice:$B", "expr:B:PLAYER_LEVEL:* 3" ]
+desc = "Strikes at every living creature in sight."
+
+[trump.spells."Trump Cyberdemon"]
+line = 2272
+note = """SUMMON_CYBER at twice the caster's level. 4.2 has no cyberdemon and \
+no cyberdemon summon; HI_DEMON is the same idea -- the largest demon the depth \
+will give you. The level boost is dropped for the reason Phantasmal Servant's \
+is: `other` must be a literal, and 4.2 summons from the depth rather than from \
+the caster's level."""
+effects = [ "SUMMON_PET:HI_DEMON", "dice:1" ]
+desc = "Calls a great demon to serve you."
+
+[trump.spells."Trump Divination"]
+line = 2293
+effects = [ "DETECT_TRAPS", "DETECT_DOORS", "DETECT_STAIRS", "DETECT_GOLD", "DETECT_OBJECTS", "DETECT_VISIBLE_MONSTERS", "DETECT_INVISIBLE_MONSTERS" ]
+desc = "Detects everything nearby."
+
+[trump.spells."Trump Lore"]
+line = 2299
+defer = """identify_fully(). The same wall as Sorcery's Identify True and \
+Nature's Stone Tell: 4.2 replaced whole-object identification with runes \
+learned one at a time, so there is no complete hidden description for a spell \
+to reveal."""
+
+[trump.spells."Trump Undead"]
+line = 2305
+effects = [ "SUMMON_PET:UNDEAD", "dice:1" ]
+desc = "Calls the dead to serve you."
+
+[trump.spells."Trump Dragon"]
+line = 2327
+effects = [ "SUMMON_PET:DRAGON", "dice:1" ]
+desc = "Calls a dragon to serve you."
+
+[trump.spells."Mass Trump"]
+line = 2349
+note = """Zangband summons `randint0(plev / 2) + 1` of them. Expressed as the \
+dice on the effect, which is what SUMMON_PET counts."""
+effects = [ "SUMMON_PET:MONSTERS", "dice:1+1d$S", "expr:S:PLAYER_LEVEL:/ 2" ]
+desc = "Calls several creatures to serve you."
+
+[trump.spells."Trump Demon"]
+line = 2371
+effects = [ "SUMMON_PET:DEMON", "dice:1" ]
+desc = "Calls a demon to serve you."
+
+[trump.spells."Trump Ancient Dragon"]
+line = 2393
+effects = [ "SUMMON_PET:HI_DRAGON", "dice:1" ]
+desc = "Calls an ancient dragon to serve you."
+
+[trump.spells."Trump Greater Undead"]
+line = 2415
+effects = [ "SUMMON_PET:HI_UNDEAD", "dice:1" ]
+desc = "Calls one of the great undead to serve you."

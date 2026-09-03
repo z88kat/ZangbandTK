@@ -31,6 +31,7 @@
 #include "player.h"
 #include "player-birth.h"
 #include "player-calcs.h"
+#include "effects.h"
 #include "player-spell.h"
 #include "test-utils.h"
 
@@ -197,18 +198,18 @@ static int test_no_existing_class_progression_moved(void *state) {
 		 * Every class in the table is now on a multiple of four books,
 		 * because every realm is four books of eight.
 		 */
-		{ "Mage", 24, 192 },
+		{ "Mage", 28, 224 },
 		{ "Druid", 4, 32 },
-		{ "Priest", 24, 192 },
+		{ "Priest", 28, 224 },
 		{ "Necromancer", 4, 32 },
 		{ "Paladin", 8, 64 },
-		{ "Rogue", 12, 88 },
-		{ "Ranger", 20, 147 },
+		{ "Rogue", 16, 116 },
+		{ "Ranger", 24, 172 },
 		{ "Blackguard", 4, 32 },
 		{ "Chaos-Warrior", 4, 32 },
 		/* PLR-03's last two, and both are entitled to nearly everything. */
-		{ "Warrior-Mage", 24, 192 },
-		{ "High-Mage", 24, 192 },
+		{ "Warrior-Mage", 28, 224 },
+		{ "High-Mage", 28, 224 },
 	};
 	size_t i;
 
@@ -254,28 +255,30 @@ static int test_every_book_kept_its_place(void *state) {
 	struct run { const char *realm; int books; };
 	static const struct {
 		const char *cls;
-		struct run runs[7];
+		struct run runs[8];
 	} order[] = {
 		{ "Mage",        { { "arcane", 4 }, { "sorcery", 4 }, { "chaos", 4 },
-		                   { "life", 4 }, { "nature", 4 }, { "death", 4 } } },
+		                   { "life", 4 }, { "nature", 4 }, { "death", 4 },
+		                   { "trump", 4 } } },
 		{ "Druid",       { { "nature", 4 } } },
 		{ "Priest",      { { "life", 4 }, { "sorcery", 4 }, { "chaos", 4 },
-		                   { "nature", 4 }, { "death", 4 }, { "arcane", 4 } } },
+		                   { "nature", 4 }, { "death", 4 }, { "arcane", 4 },
+		                   { "trump", 4 } } },
 		{ "Necromancer", { { "death", 4 } } },
 		{ "Paladin",     { { "life", 4 }, { "death", 4 } } },
 		{ "Rogue",       { { "arcane", 4 }, { "sorcery", 4 },
-		                   { "death", 4 } } },
+		                   { "death", 4 }, { "trump", 4 } } },
 		{ "Ranger",      { { "nature", 4 }, { "sorcery", 4 }, { "chaos", 4 },
-		                   { "death", 4 }, { "arcane", 4 } } },
+		                   { "death", 4 }, { "arcane", 4 }, { "trump", 4 } } },
 		{ "Blackguard",  { { "death", 4 } } },
 		{ "Monk",        { { "life", 4 }, { "nature", 4 }, { "death", 4 } } },
 		{ "Chaos-Warrior", { { "chaos", 4 } } },
 		{ "Warrior-Mage", { { "life", 4 }, { "sorcery", 4 }, { "nature", 4 },
 		                    { "chaos", 4 }, { "death", 4 },
-		                    { "arcane", 4 } } },
+		                    { "arcane", 4 }, { "trump", 4 } } },
 		{ "High-Mage",   { { "life", 4 }, { "sorcery", 4 }, { "nature", 4 },
 		                   { "chaos", 4 }, { "death", 4 },
-		                   { "arcane", 4 } } },
+		                   { "arcane", 4 }, { "trump", 4 } } },
 	};
 	size_t i;
 	int checked = 0;
@@ -316,7 +319,7 @@ static int test_every_book_kept_its_place(void *state) {
 	 * A hundred and sixty-four books across the twelve casting classes, and
 	 * every class on a multiple of four, because every realm is four books.
 	 */
-	eq(checked, 164);
+	eq(checked, 188);
 
 	ok;
 }
@@ -529,7 +532,7 @@ static int test_a_single_entitlement_is_not_a_choice(void *state) {
 	 * four of those five are offered -- everything but Trump, which has
 	 * none. Nature is absent because slot 1 holds it, not because of books.
 	 */
-	eq(player_realm_choices(find_class("Ranger"), 1, got, REALM_MAX), 4);
+	eq(player_realm_choices(find_class("Ranger"), 1, got, REALM_MAX), 5);
 
 	/*
 	 * A Mage is entitled to all seven in both slots and is offered the six
@@ -537,8 +540,8 @@ static int test_a_single_entitlement_is_not_a_choice(void *state) {
 	 * four mapped realms were only ever emitted into the classes that
 	 * already carried those books.
 	 */
-	eq(player_realm_choices(find_class("Mage"), 0, got, REALM_MAX), 6);
-	eq(player_realm_choices(find_class("Mage"), 1, got, REALM_MAX), 6);
+	eq(player_realm_choices(find_class("Mage"), 0, got, REALM_MAX), 7);
+	eq(player_realm_choices(find_class("Mage"), 1, got, REALM_MAX), 7);
 
 	/* A slot beyond the last is answered rather than read past. */
 	eq(player_realm_choices(find_class("Mage"), REALM_CHOICES, got,
@@ -591,19 +594,33 @@ static int test_an_offered_realm_has_books_behind_it(void *state) {
 	 * And Trump, which every one of the six casting classes below is
 	 * entitled to, is offered to none of them because it has no books.
 	 */
-	for (c = classes; c; c = c->next) {
+	/*
+	 * Trump is offered now, to the six classes Zangband entitles to it. It
+	 * was filtered out here from 3.55.0 to 3.72.0, and the counterpart to
+	 * this loop -- "no class is offered a realm with no books" -- is what
+	 * the filter is for and is still tested below.
+	 */
+	{
 		const struct magic_realm *trump = find_realm("trump");
 		const struct magic_realm *got[REALM_MAX];
-		int n, found = 0;
+		int offered = 0;
 
 		notnull(trump);
-		for (slot = 0; slot < REALM_CHOICES; slot++) {
-			n = player_realm_choices(c, slot, got, REALM_MAX);
-			for (i = 0; i < n; i++) {
-				if (got[i] == trump) found++;
+		for (c = classes; c; c = c->next) {
+			bool has = false;
+
+			for (slot = 0; slot < REALM_CHOICES; slot++) {
+				int n = player_realm_choices(c, slot, got, REALM_MAX);
+
+				for (i = 0; i < n; i++) {
+					if (got[i] == trump) has = true;
+				}
 			}
+			if (has) offered++;
 		}
-		eq(found, 0);
+
+		/* Mage, Priest, Rogue, Ranger, Warrior-Mage, High-Mage */
+		eq(offered, 6);
 	}
 
 	/*
@@ -622,7 +639,7 @@ static int test_an_offered_realm_has_books_behind_it(void *state) {
 	 * for the first two and offered to neither, because it has no books
 	 * (DEC-54).
 	 */
-	eq(offered_total, 48);
+	eq(offered_total, 55);
 
 	ok;
 }
@@ -688,7 +705,7 @@ static int test_the_realm_filter_sorts_three_realms(void *state) {
 	notnull(priest);
 
 	/* Six realms of books is what makes the filter live. */
-	eq(class_book_realms(priest), 6);
+	eq(class_book_realms(priest), 7);
 
 	for (i = 0; i < 3; i++) {
 		const struct class_book *first = NULL;
@@ -806,7 +823,7 @@ static int test_a_spell_without_an_effect_says_so(void *state) {
 		}
 	}
 
-	eq(effectless, 83);
+	eq(effectless, 113);
 
 	ok;
 }
@@ -916,7 +933,7 @@ static int test_a_spell_knows_its_place_in_its_realm(void *state) {
 	 * Priest's 96 is three whole realms of 32, which is what DEC-50 arriving
 	 * looks like from here: 4.2's five prayer books became Zangband's four,
 	 * and its five magic books became Zangband's four. */
-	eq(checked, 416);
+	eq(checked, 480);
 
 	/*
 	 * And the ends, by name. A Mage's Chaos runs 0 to 31 exactly as a
@@ -1277,13 +1294,13 @@ static int test_the_two_carried_over_classes(void *state) {
 	 * so a Warrior-Mage may take it twice and study one realm; that is the
 	 * table's own answer and is left alone.
 	 */
-	eq(player_realm_choices(wm, 1, got, REALM_MAX), 6);
+	eq(player_realm_choices(wm, 1, got, REALM_MAX), 7);
 	for (n = 0; n < 6; n++) {
 		require(got[n] != trump);
 	}
 
 	/* A High-Mage chooses one realm from six, and has no second slot. */
-	eq(player_realm_choices(hm, 0, got, REALM_MAX), 6);
+	eq(player_realm_choices(hm, 0, got, REALM_MAX), 7);
 	eq(player_realm_choices(hm, 1, got, REALM_MAX), 0);
 
 	/* Which is the difference, stated as a difference. */
@@ -1559,14 +1576,15 @@ static int test_every_entitlement_is_backed_by_books(void *state) {
 		if (!has_content[r->ridx]) empty_realms++;
 	}
 
-	/* Exactly one realm has no content, and DEC-54 says which. */
-	eq(empty_realms, 1);
-	{
-		const struct magic_realm *trump = find_realm("trump");
-
-		notnull(trump);
-		require(!has_content[trump->ridx]);
-	}
+	/*
+	 * Every realm has content since 3.73.0. Trump was the last one without
+	 * -- deferred whole by DEC-54 because fourteen of its spells summon a
+	 * creature that serves you and nothing could -- and M10's last phase
+	 * brought it in. Asserted as zero rather than deleted: "all seven have
+	 * books" is the thing worth saying, and a test that stopped checking
+	 * would not notice a realm losing them again.
+	 */
+	eq(empty_realms, 0);
 
 	for (c = classes; c; c = c->next) {
 		int slot;
@@ -1598,7 +1616,117 @@ static int test_every_entitlement_is_backed_by_books(void *state) {
 	 * which is how a Mage came to be entitled to seven realms and able to
 	 * study three.
 	 */
-	eq(required, 48);
+	eq(required, 55);
+
+	ok;
+}
+
+/**
+ * Trump is a realm now, and it is a realm of pets (DEC-54, DEC-64).
+ *
+ * Deferred whole from 3.55.0: fourteen of its thirty-two spells summon a
+ * creature that serves you, and until PLR-22 there was no side for a monster
+ * to be on. Importing it as hostile summons would have made the realm's own
+ * theme -- you deal the cards and the cards fight for you -- into a realm that
+ * fills the room with enemies.
+ *
+ * So the thing to pin is not that Trump exists but that its summons are
+ * *pets*. A future edit that mapped one of them to plain SUMMON would look
+ * right in every other test.
+ */
+static int test_trump_summons_serve_you(void *state) {
+	const struct player_class *c;
+	int summons = 0, hostile_summons = 0, books = 0, classes_with = 0;
+
+	for (c = classes; c; c = c->next) {
+		bool has = false;
+		int b;
+
+		for (b = 0; b < c->magic.num_books; b++) {
+			const struct class_book *book = &c->magic.books[b];
+			int k;
+
+			if (!book->realm || !streq(book->realm->name, "trump")) continue;
+			has = true;
+			books++;
+
+			for (k = 0; k < book->num_spells; k++) {
+				const struct effect *e;
+
+				for (e = book->spells[k].effect; e; e = e->next) {
+					if (e->index == EF_SUMMON_PET) summons++;
+					if (e->index == EF_SUMMON) hostile_summons++;
+				}
+			}
+		}
+		if (has) classes_with++;
+	}
+
+	/* Six classes, four books each */
+	eq(classes_with, 6);
+	eq(books, 24);
+
+	/*
+	 * Fourteen of the realm's thirty-two spells summon, and every one of
+	 * them summons a pet.
+	 *
+	 * Seventy-five rather than six times fourteen, because Zangband marks
+	 * some class-realm cells unlearnable with a level of 99 and the emitter
+	 * drops those (DEC-61): the Rogue never reaches four of Trump's summons
+	 * and the Ranger never reaches five. Four full classes at fourteen, plus
+	 * the Rogue's ten and the Ranger's nine.
+	 */
+	eq(summons, 4 * 14 + 10 + 9);
+	eq(hostile_summons, 0);
+
+	ok;
+}
+
+/**
+ * And the realm's deferrals are the five that were argued for, not more.
+ *
+ * A count would let a sixth in silently. These five are named because each was
+ * a separate judgement: Shuffle's weighted deck cannot be expressed by a
+ * uniform RANDOM, Reset Recall needs a recall depth 4.2 does not keep,
+ * Dimension Door needs a player-chosen destination it has no interface for,
+ * Joker Card summons groups that do not exist here, and Trump Lore is
+ * whole-object identification, which 4.2 replaced with runes.
+ */
+static int test_trumps_deferrals_are_the_five(void *state) {
+	static const char *const deferred[] = {
+		"Shuffle", "Reset Recall", "Dimension Door", "Joker Card",
+		"Trump Lore"
+	};
+	const struct player_class *c = find_class("High-Mage");
+	int b, silent = 0;
+	size_t i;
+
+	notnull(c);
+
+	for (b = 0; b < c->magic.num_books; b++) {
+		const struct class_book *book = &c->magic.books[b];
+		int k;
+
+		if (!book->realm || !streq(book->realm->name, "trump")) continue;
+
+		for (k = 0; k < book->num_spells; k++) {
+			const struct class_spell *sp = &book->spells[k];
+			bool expected = false;
+
+			for (i = 0; i < N_ELEMENTS(deferred); i++) {
+				if (streq(sp->name, deferred[i])) expected = true;
+			}
+
+			if (sp->effect) {
+				require(!expected);
+			} else {
+				require(expected);
+				silent++;
+			}
+		}
+	}
+
+	eq(silent, (int) N_ELEMENTS(deferred));
 
 	ok;
 }
@@ -1642,5 +1770,7 @@ struct test tests[] = {
 	  test_a_spell_without_an_effect_says_so },
 	{ "the-realm-filter-sorts-three-realms",
 	  test_the_realm_filter_sorts_three_realms },
+	{ "trump-summons-serve-you", test_trump_summons_serve_you },
+	{ "trumps-deferrals-are-the-five", test_trumps_deferrals_are_the_five },
 	{ NULL, NULL }
 };

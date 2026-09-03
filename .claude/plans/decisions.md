@@ -2821,3 +2821,65 @@ with the unique check deliberately removed. It used Grip, which carries
 was asserting a rule it was not reaching. Changed to Mughash, who is a unique
 and nothing else. That is twice this milestone that a falsification caught a
 test rather than the code.
+
+---
+
+**DEC-64 — Trump arrives, twenty-seven spells of thirty-two, and five deferred
+as shapes rather than as parts lists.** (M10 phase 7, 3 September 2026.
+Discharges DEC-54.)
+
+DEC-54 deferred Trump whole in 3.55.0: fourteen of its thirty-two spells summon
+a creature that serves you, and the game had no side for a monster to be on.
+Importing it as hostile summons would have turned a realm whose theme is *you
+deal the cards and the cards fight for you* into a realm that fills the room
+with enemies. PLR-22 brought the side; this is the realm arriving. Every one of
+the seven realms now has books behind it, and `player/realm` asserts zero empty
+realms rather than one.
+
+**One rule runs through the summons.** Zangband writes `bool pet = success` in
+every single one, with the comment `/* was (randint1(5) > 2) */` beside it —
+recording that the original had been a dice roll and was deliberately changed
+to certainty. So a Trump summon that goes off is a pet, full stop; the angry
+version is the *failed* casting, which reaches the realm's miscast machinery
+here the same way Death's and Chaos's do. The tests pin twelve summoning spells
+per fully-entitled class and **zero** plain `SUMMON` in the realm, because a
+single one mapped the old way would look right in every other test.
+
+**Five spells are deferred, each for a reason of its own rather than for a
+shared wall.** They are named in a test, so a sixth cannot join them quietly:
+
+- *Shuffle* is a deck of many things: one d120 read off about twenty **unequal**
+  bands. 4.2's `RANDOM` picks uniformly, so even the outcomes we can express
+  could not be weighted — and Shuffle's whole character is that the bad results
+  are common and the good ones rare. Deferred as a shape, not as a list of
+  missing pieces.
+- *Reset Recall* writes the recall depth; 4.2 recalls to `max_depth` and offers
+  no choice, so there is neither an effect nor an interface.
+- *Dimension Door* lets the player choose where to arrive. `TELEPORT_TO` sends
+  you where the game picks; mapping it there would make it Teleport, which the
+  realm already has two spells earlier.
+- *Joker Card* summons one of five `SUMMON_BIZARRE` groups. 4.2's summon table
+  is built round threat categories, not round the joke.
+- *Trump Lore* is `identify_fully()`, the same wall as Sorcery's Identify True.
+
+**Three substitutions are recorded rather than made quietly.** Phantasmal
+Servant calls UNDEAD where Zangband called a phantom; Conjure Elemental calls
+AINU — a Maia, where Zangband called an earth elemental; Trump Cyberdemon calls
+HI_DEMON. In each case 4.2 has no such summon type and the nearest by character
+was taken. Two of them also lose their level boost, and that is a grammar limit
+rather than a choice: an effect line's `other` field must be a literal, the same
+constraint DEC-53 hit on `radius`. Zangband summoned at a level derived from the
+caster; 4.2 summons from the depth the caster is standing on, which reaches
+nearly the same place from the other side.
+
+*Two smaller things this phase found.* The converter's book-line pattern matched
+`^book:\S+(?: \S+)? book:` — every realm before Trump had a book-noun ending in
+the word "book", and Trump's is a **deck**. The pattern made Trump's books
+invisible, so the realm *before* Trump in each class ran on through them and the
+checker reported correctly-emitted classes as broken. Replaced with `^book:`.
+
+And `TransferLib`, which stages `lib/gamedata` for the unit tests, is a
+`cmake -E copy_directory`: it compares timestamps and can decline to copy a file
+that was reverted within the same second it was staged. Two falsifications in
+this phase read a stale copy before that was understood. `scripts/check-flakes`
+now asks for `TransferLib` as well as `stageunittestdata` every run.

@@ -36,7 +36,7 @@ def append_realm(blk: str, cls: str, realm: str, want: list[str]) -> str:
     """The class block with `realm`'s books added after the ones it has."""
     # Everything from the last book line to the end of the generated region.
     starts = [m.start() for m in
-              re.finditer(r"(?m)^book:\S+(?: \S+)? book:", blk)]
+              re.finditer(R.BOOK_LINE, blk)]
     assert starts, cls
 
     tail = blk[starts[-1]:]

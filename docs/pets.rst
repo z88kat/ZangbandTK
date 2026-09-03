@@ -325,6 +325,12 @@ monster summons. That is worth reading twice next to the upkeep: a pet that can
 summon builds you a stable you are paying for.
 
 
+**Or take up Trump.** The seventh realm is a realm of pets: twelve of its
+spells call something that serves you, from an animal at level 24 to one of the
+great undead at 49. The Mage, Priest, Rogue, Ranger, Warrior-Mage and High-Mage
+may all study it.
+
+
 Still to come
 -------------
 

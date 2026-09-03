@@ -213,7 +213,7 @@ title:Warlock
 title:Sorcerer
 title:Arch-Mage
 
-magic:1:300:24
+magic:1:300:28
 realm-choice:1:arcane | life | nature | death | sorcery | chaos | trump
 realm-choice:2:arcane | life | nature | death | sorcery | chaos | trump
 
@@ -1301,6 +1301,150 @@ desc: express, and does nothing.  See realmmap.toml.
 spell:Wraithform:47:100:90:80
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
+
+book:deck:town:[Conjurings & Tricks]:8:trump
+book-graphics:?:w
+book-properties:25:40:1 to 100
+spell:Phase Door:1:1:21:5
+effect:TELEPORT
+dice:10
+desc:Teleports you a short distance.
+spell:Mind Blast:3:3:24:5
+effect:BOLT_OR_BEAM:MON_PSI
+dice:$Dd3
+expr:D:PLAYER_LEVEL:- 1 / 4 + 3
+desc:Assaults a creature's mind.
+spell:Shuffle:5:5:27:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Reset Recall:6:6:29:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Teleport:7:7:30:5
+effect:TELEPORT
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Teleports you a long distance.
+spell:Dimension Door:9:9:33:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Trump Spying:14:12:41:5
+effect:TIMED_INC:TELEPATHY
+dice:25+1d30
+desc:Grants telepathy for a while.
+spell:Teleport Away:17:15:45:5
+effect:BEAM:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Teleports away every creature in a line.
+book:deck:town:[Deck of Many Things]:8:trump
+book-graphics:?:w
+book-properties:400:40:10 to 100
+spell:Trump Reach:20:20:50:20
+effect:FETCH
+dice:$B
+expr:B:PLAYER_LEVEL:* 15
+desc:Reaches out and pulls a distant object to you.
+spell:Trump Animal:24:22:56:20
+effect:SUMMON_PET:ANIMAL
+dice:1
+desc:Calls an animal to serve you.
+spell:Phantasmal Servant:28:24:62:20
+effect:SUMMON_PET:UNDEAD
+dice:1
+desc:Calls something with no will of its own to serve you.
+spell:Trump Monster:30:25:65:20
+effect:SUMMON_PET:MONSTER
+dice:1
+desc:Calls a creature to serve you.
+spell:Conjure Elemental:33:28:69:20
+effect:SUMMON_PET:AINU
+dice:1
+desc:Calls a spirit of the elements to serve you.
+spell:Teleport Level:35:30:72:20
+effect:TELEPORT_LEVEL
+desc:Teleports you one level up or down.
+spell:Word of Recall:40:35:80:20
+effect:RECALL
+desc:Returns you to town, or to the depths.
+spell:Banish:42:40:83:20
+effect:PROJECT_LOS:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Teleports away every creature in sight.
+book:deck:dungeon:[Trumps of Doom]:8:trump
+book-graphics:?:w
+book-properties:30000:15:50 to 100
+spell:Joker Card:15:15:42:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Trump Spiders:24:24:56:45
+effect:SUMMON_PET:SPIDER
+dice:1
+desc:Calls spiders to serve you.
+spell:Trump Reptiles:26:26:59:45
+effect:SUMMON_PET:HYDRA
+dice:1
+desc:Calls a hydra to serve you.
+spell:Trump Hounds:30:30:65:45
+effect:SUMMON_PET:HOUND
+dice:1
+desc:Calls a pack of hounds to serve you.
+spell:Trump Branding:35:70:72:45
+effect:BRAND_WEAPON
+desc:Puts a brand on your weapon.  You do not choose which.
+spell:Living Trump:40:100:80:45
+effect:GAIN_MUTATION
+desc:Turns you into a Living Trump.  Chaos chooses what that means.
+spell:Death Dealing:42:50:83:45
+effect:PROJECT_LOS:DISP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 3
+desc:Strikes at every living creature in sight.
+spell:Trump Cyberdemon:45:100:87:45
+effect:SUMMON_PET:HI_DEMON
+dice:1
+desc:Calls a great demon to serve you.
+book:deck:dungeon:[Five Aces]:8:trump
+book-graphics:?:w
+book-properties:50000:10:75 to 100
+spell:Trump Divination:30:30:65:80
+effect:DETECT_TRAPS
+effect:DETECT_DOORS
+effect:DETECT_STAIRS
+effect:DETECT_GOLD
+effect:DETECT_OBJECTS
+effect:DETECT_VISIBLE_MONSTERS
+effect:DETECT_INVISIBLE_MONSTERS
+desc:Detects everything nearby.
+spell:Trump Lore:35:50:72:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Trump Undead:36:80:74:80
+effect:SUMMON_PET:UNDEAD
+dice:1
+desc:Calls the dead to serve you.
+spell:Trump Dragon:39:80:78:80
+effect:SUMMON_PET:DRAGON
+dice:1
+desc:Calls a dragon to serve you.
+spell:Mass Trump:42:100:83:80
+effect:SUMMON_PET:MONSTERS
+dice:1+1d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Calls several creatures to serve you.
+spell:Trump Demon:47:100:90:80
+effect:SUMMON_PET:DEMON
+dice:1
+desc:Calls a demon to serve you.
+spell:Trump Ancient Dragon:48:100:92:80
+effect:SUMMON_PET:HI_DRAGON
+dice:1
+desc:Calls an ancient dragon to serve you.
+spell:Trump Greater Undead:49:100:93:80
+effect:SUMMON_PET:HI_UNDEAD
+dice:1
+desc:Calls one of the great undead to serve you.
 name:Druid
 virtues:NATURE | HARMONY
 stats:-2:0:3:-2:0
@@ -1554,7 +1698,7 @@ title:Prophet
 title:Patriarch
 title:High Priest
 
-magic:1:350:24
+magic:1:350:28
 realm-choice:1:life | death
 realm-choice:2:arcane | nature | sorcery | chaos | trump
 
@@ -2642,6 +2786,150 @@ effect:LIGHT_LEVEL
 effect:TIMED_INC:TELEPATHY
 dice:24+1d31
 desc:Lights the whole level and grants telepathy for a while.
+
+book:deck:town:[Conjurings & Tricks]:8:trump
+book-graphics:?:w
+book-properties:25:40:1 to 100
+spell:Phase Door:1:1:21:5
+effect:TELEPORT
+dice:10
+desc:Teleports you a short distance.
+spell:Mind Blast:4:4:26:5
+effect:BOLT_OR_BEAM:MON_PSI
+dice:$Dd3
+expr:D:PLAYER_LEVEL:- 1 / 4 + 3
+desc:Assaults a creature's mind.
+spell:Shuffle:6:5:29:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Reset Recall:7:7:30:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Teleport:9:9:33:5
+effect:TELEPORT
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Teleports you a long distance.
+spell:Dimension Door:11:11:36:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Trump Spying:17:14:45:5
+effect:TIMED_INC:TELEPATHY
+dice:25+1d30
+desc:Grants telepathy for a while.
+spell:Teleport Away:19:17:48:5
+effect:BEAM:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Teleports away every creature in a line.
+book:deck:town:[Deck of Many Things]:8:trump
+book-graphics:?:w
+book-properties:400:40:10 to 100
+spell:Trump Reach:22:22:53:20
+effect:FETCH
+dice:$B
+expr:B:PLAYER_LEVEL:* 15
+desc:Reaches out and pulls a distant object to you.
+spell:Trump Animal:26:24:59:20
+effect:SUMMON_PET:ANIMAL
+dice:1
+desc:Calls an animal to serve you.
+spell:Phantasmal Servant:30:25:65:20
+effect:SUMMON_PET:UNDEAD
+dice:1
+desc:Calls something with no will of its own to serve you.
+spell:Trump Monster:32:30:68:20
+effect:SUMMON_PET:MONSTER
+dice:1
+desc:Calls a creature to serve you.
+spell:Conjure Elemental:35:30:72:20
+effect:SUMMON_PET:AINU
+dice:1
+desc:Calls a spirit of the elements to serve you.
+spell:Teleport Level:38:35:77:20
+effect:TELEPORT_LEVEL
+desc:Teleports you one level up or down.
+spell:Word of Recall:42:40:83:20
+effect:RECALL
+desc:Returns you to town, or to the depths.
+spell:Banish:45:45:87:20
+effect:PROJECT_LOS:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Teleports away every creature in sight.
+book:deck:dungeon:[Trumps of Doom]:8:trump
+book-graphics:?:w
+book-properties:30000:15:50 to 100
+spell:Joker Card:17:17:45:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Trump Spiders:27:25:60:45
+effect:SUMMON_PET:SPIDER
+dice:1
+desc:Calls spiders to serve you.
+spell:Trump Reptiles:29:27:63:45
+effect:SUMMON_PET:HYDRA
+dice:1
+desc:Calls a hydra to serve you.
+spell:Trump Hounds:33:30:69:45
+effect:SUMMON_PET:HOUND
+dice:1
+desc:Calls a pack of hounds to serve you.
+spell:Trump Branding:38:75:77:45
+effect:BRAND_WEAPON
+desc:Puts a brand on your weapon.  You do not choose which.
+spell:Living Trump:41:110:81:45
+effect:GAIN_MUTATION
+desc:Turns you into a Living Trump.  Chaos chooses what that means.
+spell:Death Dealing:45:55:87:45
+effect:PROJECT_LOS:DISP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 3
+desc:Strikes at every living creature in sight.
+spell:Trump Cyberdemon:49:125:93:45
+effect:SUMMON_PET:HI_DEMON
+dice:1
+desc:Calls a great demon to serve you.
+book:deck:dungeon:[Five Aces]:8:trump
+book-graphics:?:w
+book-properties:50000:10:75 to 100
+spell:Trump Divination:32:30:68:80
+effect:DETECT_TRAPS
+effect:DETECT_DOORS
+effect:DETECT_STAIRS
+effect:DETECT_GOLD
+effect:DETECT_OBJECTS
+effect:DETECT_VISIBLE_MONSTERS
+effect:DETECT_INVISIBLE_MONSTERS
+desc:Detects everything nearby.
+spell:Trump Lore:38:55:77:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Trump Undead:40:85:80:80
+effect:SUMMON_PET:UNDEAD
+dice:1
+desc:Calls the dead to serve you.
+spell:Trump Dragon:43:85:84:80
+effect:SUMMON_PET:DRAGON
+dice:1
+desc:Calls a dragon to serve you.
+spell:Mass Trump:46:110:89:80
+effect:SUMMON_PET:MONSTERS
+dice:1+1d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Calls several creatures to serve you.
+spell:Trump Demon:48:115:92:80
+effect:SUMMON_PET:DEMON
+dice:1
+desc:Calls a demon to serve you.
+spell:Trump Ancient Dragon:49:120:93:80
+effect:SUMMON_PET:HI_DRAGON
+dice:1
+desc:Calls an ancient dragon to serve you.
+spell:Trump Greater Undead:50:125:95:80
+effect:SUMMON_PET:HI_UNDEAD
+dice:1
+desc:Calls one of the great undead to serve you.
 name:Necromancer
 virtues:UNLIFE | KNOWLEDGE
 stats:-3:3:0:0:-2
@@ -3326,7 +3614,7 @@ title:Rogue
 title:Thief
 title:Master Thief
 
-magic:5:350:12
+magic:5:350:16
 realm-choice:1:arcane | death | sorcery | trump
 
 book:magic book:town:[Cantrips for Beginners]:8:arcane
@@ -3808,6 +4096,133 @@ desc:Identifies one unknown rune on an item.
 spell:Wraithform:50:125:95:80
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
+
+book:deck:town:[Conjurings & Tricks]:8:trump
+book-graphics:?:w
+book-properties:25:40:1 to 100
+spell:Phase Door:5:2:27:5
+effect:TELEPORT
+dice:10
+desc:Teleports you a short distance.
+spell:Mind Blast:7:5:30:5
+effect:BOLT_OR_BEAM:MON_PSI
+dice:$Dd3
+expr:D:PLAYER_LEVEL:- 1 / 4 + 3
+desc:Assaults a creature's mind.
+spell:Shuffle:9:7:33:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Reset Recall:11:9:36:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Teleport:13:11:39:5
+effect:TELEPORT
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Teleports you a long distance.
+spell:Dimension Door:15:13:42:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Trump Spying:19:15:48:5
+effect:TIMED_INC:TELEPATHY
+dice:25+1d30
+desc:Grants telepathy for a while.
+spell:Teleport Away:21:20:51:5
+effect:BEAM:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Teleports away every creature in a line.
+book:deck:town:[Deck of Many Things]:8:trump
+book-graphics:?:w
+book-properties:400:40:10 to 100
+spell:Trump Reach:25:22:57:20
+effect:FETCH
+dice:$B
+expr:B:PLAYER_LEVEL:* 15
+desc:Reaches out and pulls a distant object to you.
+spell:Trump Animal:30:26:65:20
+effect:SUMMON_PET:ANIMAL
+dice:1
+desc:Calls an animal to serve you.
+spell:Phantasmal Servant:33:26:69:20
+effect:SUMMON_PET:UNDEAD
+dice:1
+desc:Calls something with no will of its own to serve you.
+spell:Trump Monster:35:32:72:20
+effect:SUMMON_PET:MONSTER
+dice:1
+desc:Calls a creature to serve you.
+spell:Conjure Elemental:40:35:80:20
+effect:SUMMON_PET:AINU
+dice:1
+desc:Calls a spirit of the elements to serve you.
+spell:Teleport Level:42:38:83:20
+effect:TELEPORT_LEVEL
+desc:Teleports you one level up or down.
+spell:Word of Recall:46:44:89:20
+effect:RECALL
+desc:Returns you to town, or to the depths.
+spell:Banish:49:50:93:20
+effect:PROJECT_LOS:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Teleports away every creature in sight.
+book:deck:dungeon:[Trumps of Doom]:7:trump
+book-graphics:?:w
+book-properties:30000:15:50 to 100
+spell:Joker Card:20:15:50:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Trump Spiders:30:30:65:45
+effect:SUMMON_PET:SPIDER
+dice:1
+desc:Calls spiders to serve you.
+spell:Trump Reptiles:33:30:69:45
+effect:SUMMON_PET:HYDRA
+dice:1
+desc:Calls a hydra to serve you.
+spell:Trump Hounds:38:33:77:45
+effect:SUMMON_PET:HOUND
+dice:1
+desc:Calls a pack of hounds to serve you.
+spell:Trump Branding:42:90:83:45
+effect:BRAND_WEAPON
+desc:Puts a brand on your weapon.  You do not choose which.
+spell:Living Trump:45:150:87:45
+effect:GAIN_MUTATION
+desc:Turns you into a Living Trump.  Chaos chooses what that means.
+spell:Death Dealing:48:75:92:45
+effect:PROJECT_LOS:DISP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 3
+desc:Strikes at every living creature in sight.
+book:deck:dungeon:[Five Aces]:5:trump
+book-graphics:?:w
+book-properties:50000:10:75 to 100
+spell:Trump Divination:35:30:72:80
+effect:DETECT_TRAPS
+effect:DETECT_DOORS
+effect:DETECT_STAIRS
+effect:DETECT_GOLD
+effect:DETECT_OBJECTS
+effect:DETECT_VISIBLE_MONSTERS
+effect:DETECT_INVISIBLE_MONSTERS
+desc:Detects everything nearby.
+spell:Trump Lore:42:65:83:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Trump Undead:44:100:86:80
+effect:SUMMON_PET:UNDEAD
+dice:1
+desc:Calls the dead to serve you.
+spell:Trump Dragon:46:100:89:80
+effect:SUMMON_PET:DRAGON
+dice:1
+desc:Calls a dragon to serve you.
+spell:Trump Demon:49:125:93:80
+effect:SUMMON_PET:DEMON
+dice:1
+desc:Calls a demon to serve you.
 name:Ranger
 virtues:NATURE | TEMPERANCE
 stats:0:0:2:1:-1
@@ -3845,7 +4260,7 @@ title:Pathfinder
 title:Ranger
 title:Ranger Lord
 
-magic:3:400:20
+magic:3:400:24
 realm-choice:1:nature
 realm-choice:2:arcane | death | sorcery | chaos | trump
 
@@ -4661,6 +5076,120 @@ desc:Detects everything nearby: monsters, traps, doors, stairs, gold and objects
 spell:Word of Recall:49:65:69:80
 effect:RECALL
 desc:Returns you to town, or from town to the depth you last reached.
+
+book:deck:town:[Conjurings & Tricks]:8:trump
+book-graphics:?:w
+book-properties:25:40:1 to 100
+spell:Phase Door:3:1:24:5
+effect:TELEPORT
+dice:10
+desc:Teleports you a short distance.
+spell:Mind Blast:6:6:29:5
+effect:BOLT_OR_BEAM:MON_PSI
+dice:$Dd3
+expr:D:PLAYER_LEVEL:- 1 / 4 + 3
+desc:Assaults a creature's mind.
+spell:Shuffle:9:7:33:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Reset Recall:10:8:35:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Teleport:13:10:39:5
+effect:TELEPORT
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Teleports you a long distance.
+spell:Dimension Door:17:15:45:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Trump Spying:20:17:50:5
+effect:TIMED_INC:TELEPATHY
+dice:25+1d30
+desc:Grants telepathy for a while.
+spell:Teleport Away:22:20:53:5
+effect:BEAM:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Teleports away every creature in a line.
+book:deck:town:[Deck of Many Things]:7:trump
+book-graphics:?:w
+book-properties:400:40:10 to 100
+spell:Trump Reach:24:22:56:20
+effect:FETCH
+dice:$B
+expr:B:PLAYER_LEVEL:* 15
+desc:Reaches out and pulls a distant object to you.
+spell:Trump Animal:28:25:62:20
+effect:SUMMON_PET:ANIMAL
+dice:1
+desc:Calls an animal to serve you.
+spell:Phantasmal Servant:33:26:69:20
+effect:SUMMON_PET:UNDEAD
+dice:1
+desc:Calls something with no will of its own to serve you.
+spell:Trump Monster:36:32:74:20
+effect:SUMMON_PET:MONSTER
+dice:1
+desc:Calls a creature to serve you.
+spell:Conjure Elemental:38:33:77:20
+effect:SUMMON_PET:AINU
+dice:1
+desc:Calls a spirit of the elements to serve you.
+spell:Teleport Level:42:38:83:20
+effect:TELEPORT_LEVEL
+desc:Teleports you one level up or down.
+spell:Word of Recall:45:42:87:20
+effect:RECALL
+desc:Returns you to town, or to the depths.
+book:deck:dungeon:[Trumps of Doom]:6:trump
+book-graphics:?:w
+book-properties:30000:15:50 to 100
+spell:Joker Card:20:20:50:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Trump Spiders:28:26:62:45
+effect:SUMMON_PET:SPIDER
+dice:1
+desc:Calls spiders to serve you.
+spell:Trump Reptiles:31:30:66:45
+effect:SUMMON_PET:HYDRA
+dice:1
+desc:Calls a hydra to serve you.
+spell:Trump Hounds:36:33:74:45
+effect:SUMMON_PET:HOUND
+dice:1
+desc:Calls a pack of hounds to serve you.
+spell:Trump Branding:41:80:81:45
+effect:BRAND_WEAPON
+desc:Puts a brand on your weapon.  You do not choose which.
+spell:Living Trump:44:120:86:45
+effect:GAIN_MUTATION
+desc:Turns you into a Living Trump.  Chaos chooses what that means.
+book:deck:dungeon:[Five Aces]:4:trump
+book-graphics:?:w
+book-properties:50000:10:75 to 100
+spell:Trump Divination:35:33:72:80
+effect:DETECT_TRAPS
+effect:DETECT_DOORS
+effect:DETECT_STAIRS
+effect:DETECT_GOLD
+effect:DETECT_OBJECTS
+effect:DETECT_VISIBLE_MONSTERS
+effect:DETECT_INVISIBLE_MONSTERS
+desc:Detects everything nearby.
+spell:Trump Lore:40:65:80:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Trump Dragon:47:95:90:80
+effect:SUMMON_PET:DRAGON
+dice:1
+desc:Calls a dragon to serve you.
+spell:Mass Trump:50:120:95:80
+effect:SUMMON_PET:MONSTERS
+dice:1+1d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Calls several creatures to serve you.
 name:Blackguard
 virtues:VALOUR | INDIVIDUALISM
 stats:2:0:-3:0:2
@@ -6034,7 +6563,7 @@ title:Baron Mage
 title:Battlemage
 title:Wizard Lord
 
-magic:1:350:24
+magic:1:350:28
 realm-choice:1:arcane
 realm-choice:2:arcane | life | sorcery | nature | chaos | death | trump
 
@@ -7118,9 +7647,152 @@ effect:TIMED_INC:TELEPATHY
 dice:24+1d31
 desc:Lights the whole level and grants telepathy for a while.
 
+book:deck:town:[Conjurings & Tricks]:8:trump
+book-graphics:?:w
+book-properties:25:40:1 to 100
+spell:Phase Door:1:1:21:5
+effect:TELEPORT
+dice:10
+desc:Teleports you a short distance.
+spell:Mind Blast:5:5:27:5
+effect:BOLT_OR_BEAM:MON_PSI
+dice:$Dd3
+expr:D:PLAYER_LEVEL:- 1 / 4 + 3
+desc:Assaults a creature's mind.
+spell:Shuffle:7:7:30:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Reset Recall:8:7:32:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Teleport:10:10:35:5
+effect:TELEPORT
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Teleports you a long distance.
+spell:Dimension Door:12:12:38:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Trump Spying:18:15:47:5
+effect:TIMED_INC:TELEPATHY
+dice:25+1d30
+desc:Grants telepathy for a while.
+spell:Teleport Away:20:18:50:5
+effect:BEAM:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Teleports away every creature in a line.
+book:deck:town:[Deck of Many Things]:8:trump
+book-graphics:?:w
+book-properties:400:40:10 to 100
+spell:Trump Reach:24:23:56:20
+effect:FETCH
+dice:$B
+expr:B:PLAYER_LEVEL:* 15
+desc:Reaches out and pulls a distant object to you.
+spell:Trump Animal:28:25:62:20
+effect:SUMMON_PET:ANIMAL
+dice:1
+desc:Calls an animal to serve you.
+spell:Phantasmal Servant:31:26:66:20
+effect:SUMMON_PET:UNDEAD
+dice:1
+desc:Calls something with no will of its own to serve you.
+spell:Trump Monster:33:30:69:20
+effect:SUMMON_PET:MONSTER
+dice:1
+desc:Calls a creature to serve you.
+spell:Conjure Elemental:38:32:77:20
+effect:SUMMON_PET:AINU
+dice:1
+desc:Calls a spirit of the elements to serve you.
+spell:Teleport Level:40:38:80:20
+effect:TELEPORT_LEVEL
+desc:Teleports you one level up or down.
+spell:Word of Recall:44:42:86:20
+effect:RECALL
+desc:Returns you to town, or to the depths.
+spell:Banish:48:46:92:20
+effect:PROJECT_LOS:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Teleports away every creature in sight.
+book:deck:dungeon:[Trumps of Doom]:8:trump
+book-graphics:?:w
+book-properties:30000:15:50 to 100
+spell:Joker Card:19:18:48:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Trump Spiders:29:27:63:45
+effect:SUMMON_PET:SPIDER
+dice:1
+desc:Calls spiders to serve you.
+spell:Trump Reptiles:31:30:66:45
+effect:SUMMON_PET:HYDRA
+dice:1
+desc:Calls a hydra to serve you.
+spell:Trump Hounds:35:33:72:45
+effect:SUMMON_PET:HOUND
+dice:1
+desc:Calls a pack of hounds to serve you.
+spell:Trump Branding:40:80:80:45
+effect:BRAND_WEAPON
+desc:Puts a brand on your weapon.  You do not choose which.
+spell:Living Trump:42:120:83:45
+effect:GAIN_MUTATION
+desc:Turns you into a Living Trump.  Chaos chooses what that means.
+spell:Death Dealing:46:55:89:45
+effect:PROJECT_LOS:DISP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 3
+desc:Strikes at every living creature in sight.
+spell:Trump Cyberdemon:50:135:95:45
+effect:SUMMON_PET:HI_DEMON
+dice:1
+desc:Calls a great demon to serve you.
+book:deck:dungeon:[Five Aces]:8:trump
+book-graphics:?:w
+book-properties:50000:10:75 to 100
+spell:Trump Divination:33:30:69:80
+effect:DETECT_TRAPS
+effect:DETECT_DOORS
+effect:DETECT_STAIRS
+effect:DETECT_GOLD
+effect:DETECT_OBJECTS
+effect:DETECT_VISIBLE_MONSTERS
+effect:DETECT_INVISIBLE_MONSTERS
+desc:Detects everything nearby.
+spell:Trump Lore:40:60:80:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Trump Undead:42:95:83:80
+effect:SUMMON_PET:UNDEAD
+dice:1
+desc:Calls the dead to serve you.
+spell:Trump Dragon:45:95:87:80
+effect:SUMMON_PET:DRAGON
+dice:1
+desc:Calls a dragon to serve you.
+spell:Mass Trump:46:120:89:80
+effect:SUMMON_PET:MONSTERS
+dice:1+1d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Calls several creatures to serve you.
+spell:Trump Demon:48:125:92:80
+effect:SUMMON_PET:DEMON
+dice:1
+desc:Calls a demon to serve you.
+spell:Trump Ancient Dragon:49:130:93:80
+effect:SUMMON_PET:HI_DRAGON
+dice:1
+desc:Calls an ancient dragon to serve you.
+spell:Trump Greater Undead:50:135:95:80
+effect:SUMMON_PET:HI_UNDEAD
+dice:1
+desc:Calls one of the great undead to serve you.
+
 
 ############### HIGH-MAGE ###############
-
 name:High-Mage
 virtues:ENCHANT | KNOWLEDGE
 stats:-5:4:0:0:-2
@@ -7156,7 +7828,7 @@ title:Sorcerer
 title:Ipsissimus
 title:Archimage
 
-magic:1:300:24
+magic:1:300:28
 realm-choice:1:life | sorcery | nature | chaos | death | trump | arcane
 
 book:prayer book:town:[Book of Common Prayer]:8:life
@@ -8238,3 +8910,147 @@ effect:LIGHT_LEVEL
 effect:TIMED_INC:TELEPATHY
 dice:24+1d31
 desc:Lights the whole level and grants telepathy for a while.
+
+book:deck:town:[Conjurings & Tricks]:8:trump
+book-graphics:?:w
+book-properties:25:40:1 to 100
+spell:Phase Door:1:1:21:5
+effect:TELEPORT
+dice:10
+desc:Teleports you a short distance.
+spell:Mind Blast:2:2:23:5
+effect:BOLT_OR_BEAM:MON_PSI
+dice:$Dd3
+expr:D:PLAYER_LEVEL:- 1 / 4 + 3
+desc:Assaults a creature's mind.
+spell:Shuffle:4:4:26:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Reset Recall:5:5:27:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Teleport:6:5:29:5
+effect:TELEPORT
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Teleports you a long distance.
+spell:Dimension Door:7:7:30:5
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Trump Spying:10:10:35:5
+effect:TIMED_INC:TELEPATHY
+dice:25+1d30
+desc:Grants telepathy for a while.
+spell:Teleport Away:14:12:41:5
+effect:BEAM:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Teleports away every creature in a line.
+book:deck:town:[Deck of Many Things]:8:trump
+book-graphics:?:w
+book-properties:400:40:10 to 100
+spell:Trump Reach:16:16:44:20
+effect:FETCH
+dice:$B
+expr:B:PLAYER_LEVEL:* 15
+desc:Reaches out and pulls a distant object to you.
+spell:Trump Animal:20:20:50:20
+effect:SUMMON_PET:ANIMAL
+dice:1
+desc:Calls an animal to serve you.
+spell:Phantasmal Servant:25:22:57:20
+effect:SUMMON_PET:UNDEAD
+dice:1
+desc:Calls something with no will of its own to serve you.
+spell:Trump Monster:28:24:62:20
+effect:SUMMON_PET:MONSTER
+dice:1
+desc:Calls a creature to serve you.
+spell:Conjure Elemental:28:26:62:20
+effect:SUMMON_PET:AINU
+dice:1
+desc:Calls a spirit of the elements to serve you.
+spell:Teleport Level:30:28:65:20
+effect:TELEPORT_LEVEL
+desc:Teleports you one level up or down.
+spell:Word of Recall:35:30:72:20
+effect:RECALL
+desc:Returns you to town, or to the depths.
+spell:Banish:39:36:78:20
+effect:PROJECT_LOS:AWAY_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 4
+desc:Teleports away every creature in sight.
+book:deck:dungeon:[Trumps of Doom]:8:trump
+book-graphics:?:w
+book-properties:30000:15:50 to 100
+spell:Joker Card:11:11:36:45
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Trump Spiders:21:21:51:45
+effect:SUMMON_PET:SPIDER
+dice:1
+desc:Calls spiders to serve you.
+spell:Trump Reptiles:23:23:54:45
+effect:SUMMON_PET:HYDRA
+dice:1
+desc:Calls a hydra to serve you.
+spell:Trump Hounds:25:25:57:45
+effect:SUMMON_PET:HOUND
+dice:1
+desc:Calls a pack of hounds to serve you.
+spell:Trump Branding:31:65:66:45
+effect:BRAND_WEAPON
+desc:Puts a brand on your weapon.  You do not choose which.
+spell:Living Trump:36:90:74:45
+effect:GAIN_MUTATION
+desc:Turns you into a Living Trump.  Chaos chooses what that means.
+spell:Death Dealing:39:45:78:45
+effect:PROJECT_LOS:DISP_ALL
+dice:$B
+expr:B:PLAYER_LEVEL:* 3
+desc:Strikes at every living creature in sight.
+spell:Trump Cyberdemon:42:90:83:45
+effect:SUMMON_PET:HI_DEMON
+dice:1
+desc:Calls a great demon to serve you.
+book:deck:dungeon:[Five Aces]:8:trump
+book-graphics:?:w
+book-properties:50000:10:75 to 100
+spell:Trump Divination:25:25:57:80
+effect:DETECT_TRAPS
+effect:DETECT_DOORS
+effect:DETECT_STAIRS
+effect:DETECT_GOLD
+effect:DETECT_OBJECTS
+effect:DETECT_VISIBLE_MONSTERS
+effect:DETECT_INVISIBLE_MONSTERS
+desc:Detects everything nearby.
+spell:Trump Lore:32:45:68:80
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
+spell:Trump Undead:34:75:71:80
+effect:SUMMON_PET:UNDEAD
+dice:1
+desc:Calls the dead to serve you.
+spell:Trump Dragon:36:75:74:80
+effect:SUMMON_PET:DRAGON
+dice:1
+desc:Calls a dragon to serve you.
+spell:Mass Trump:38:90:77:80
+effect:SUMMON_PET:MONSTERS
+dice:1+1d$S
+expr:S:PLAYER_LEVEL:/ 2
+desc:Calls several creatures to serve you.
+spell:Trump Demon:42:90:83:80
+effect:SUMMON_PET:DEMON
+dice:1
+desc:Calls a demon to serve you.
+spell:Trump Ancient Dragon:44:90:86:80
+effect:SUMMON_PET:HI_DRAGON
+dice:1
+desc:Calls an ancient dragon to serve you.
+spell:Trump Greater Undead:46:90:89:80
+effect:SUMMON_PET:HI_UNDEAD
+dice:1
+desc:Calls one of the great undead to serve you.

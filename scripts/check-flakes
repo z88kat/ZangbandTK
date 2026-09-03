@@ -139,12 +139,18 @@ def main():
 
     # Build the binaries without running them, by asking for the output paths
     # rather than for allunittests, which would run the lot as it built them.
-    # stageunittestdata comes too: a suite that reads lib/gamedata reads the
-    # staged copy, and a suite rebuilt against edited data with a stale copy
-    # beside it reports a pass for data that is gone.
+    #
+    # stageunittestdata and TransferLib come too, because the suites read two
+    # staged copies rather than the tree: the savefile corpus and lib/gamedata.
+    # A suite rebuilt against edited data with a stale copy beside it reports a
+    # pass for data that is gone -- and TransferLib's copy is a `cmake -E
+    # copy_directory`, which compares timestamps and can decline to copy a file
+    # that was reverted within the same second it was staged. Asking for it
+    # every run is cheap; finding out the other way is not.
     targets = [os.path.relpath(os.path.realpath(t), os.path.realpath(args.build))
                for t in selected]
-    if subprocess.run(["ninja", "-C", args.build, "stageunittestdata"] + targets,
+    if subprocess.run(["ninja", "-C", args.build, "stageunittestdata",
+                       "TransferLib"] + targets,
                       capture_output=True).returncode != 0:
         made = subprocess.run(["ninja", "-C", args.build] + targets)
         if made.returncode != 0:

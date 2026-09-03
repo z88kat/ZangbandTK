@@ -305,6 +305,16 @@ def class_blocks(gamedata: str) -> dict[str, str]:
     return out
 
 
+#: A `book:` line in class.txt, which is not the same as a `book-graphics:` or
+#: `book-properties:` line.  Written as "anything starting `book:`" rather than
+#: as a pattern for the tval, which is what it was until Trump: every realm
+#: before it had a book-noun ending in the word "book", and matching on that
+#: made Trump's *deck* invisible -- so the realm before it in the file ran on
+#: through Trump's books and the checker reported a class that had been emitted
+#: correctly as broken.
+BOOK_LINE = re.compile(r"(?m)^book:")
+
+
 def extract_realm_block(block: str, realm: str) -> list[str]:
     """The lines class.txt holds for one realm inside one class, or [].
 
@@ -313,7 +323,7 @@ def extract_realm_block(block: str, realm: str) -> list[str]:
     before the next book of a different realm, or the end of the class.
     """
     starts = [m.start() for m in
-              re.finditer(r"(?m)^book:\S+(?: \S+)? book:", block)]
+              re.finditer(BOOK_LINE, block)]
     for i, at in enumerate(starts):
         line = block[at:block.index("\n", at)]
         if not line.endswith(":" + realm):

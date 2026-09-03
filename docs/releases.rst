@@ -33,6 +33,36 @@ Unreleased
 Pets — 3 September 2026
 -----------------------
 
+- **3.73.0** — **Trump** (M10 phase 7; DEC-64, discharging DEC-54). The
+  seventh realm, deferred whole in 3.55.0 because fourteen of its thirty-two
+  spells summon a creature that serves you and nothing could. **Every realm now
+  has books behind it.**
+
+  Twenty-seven of the thirty-two are built, across four decks — *Conjurings &
+  Tricks*, *Deck of Many Things*, *Trumps of Doom*, *Five Aces* — for the six
+  classes Zangband entitles: Mage, Priest, Rogue, Ranger, Warrior-Mage,
+  High-Mage. The Mage, Priest, Warrior-Mage and High-Mage now carry 28 books
+  and 224 spells apiece.
+
+  Zangband writes ``bool pet = success`` in every Trump summon, with a comment
+  recording that it had been a dice roll and was deliberately made certain. So a
+  Trump summon that goes off is a pet; the angry version is a *failed* casting,
+  which reaches the miscast machinery. A test pins zero plain summons in the
+  realm, because one mapped the old way would look right everywhere else.
+
+  Five are deferred, each for its own reason and each named in a test so a sixth
+  cannot join them quietly. *Shuffle* is the interesting one: a d120 read off
+  twenty **unequal** bands, and 4.2's ``RANDOM`` picks uniformly — the outcomes
+  could be listed and the weights could not, and the weights are the spell.
+
+  Two things turned up on the way. The converter's book-line pattern assumed
+  every realm's books were called "books"; Trump's are a **deck**, so its books
+  were invisible and the realm before it in each class appeared to run on
+  through them. And ``TransferLib``, which stages the game data for the unit
+  tests, compares timestamps and can decline to re-copy a file reverted within
+  the same second — two falsifications read a stale copy before that was
+  understood. ``scripts/check-flakes`` now stages it every run.
+
 - **3.72.0** — **Where pets come from** (M10 phase 6; PLR-28, PLR-32, DEC-63).
   Three charm projections and a pet-summoning effect, and with them the queue
   this milestone has been holding since M8 comes off.
