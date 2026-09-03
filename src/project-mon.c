@@ -27,6 +27,7 @@
 #include "mon-move.h"
 #include "mon-msg.h"
 #include "mon-predicate.h"
+#include "player-virtue.h"
 #include "mon-spell.h"
 #include "mon-timed.h"
 #include "mon-util.h"
@@ -1042,6 +1043,94 @@ static void project_monster_handler_MON_PSI(project_monster_handler_context_t *c
 		/* Something there, but not much of it, and not shaped like yours. */
 		context->dam /= 3;
 	}
+}
+
+/**
+ * Charming, and the two ways it fails (ZangbandTK, PLR-28).
+ *
+ * Zangband's three charm projections share one shape
+ * ([spells1.c:2061](../archive/zangband/src/spells1.c#L2061)): a list of
+ * creatures it cannot work on at all, then a saving throw of the monster's
+ * level against a third of the power, then a check on whether the player is
+ * someone anything would follow.
+ *
+ * The saving throw is `level > randint1(power * 3)`, which is Zangband's
+ * `hdice * 2 > randint1(dam * 3)` with the measured identity from DEC-61
+ * substituted. It is generous to the caster at high power and stingy at low:
+ * a level 20 monster is beaten about five times in six by a power of 40 and
+ * about one time in three by a power of 10.
+ *
+ * Aggravation is checked last and separately, because it is not a resistance:
+ * the attempt worked and the creature still will not have you. Zangband's
+ * wording, and worth keeping -- it tells the player what to take off.
+ */
+static void charm_monster(project_monster_handler_context_t *context,
+						  bool eligible, enum mon_messages success)
+{
+	struct monster *mon = context->mon;
+	int power = context->dam;
+
+	/* Charming never hurts */
+	context->dam = 0;
+
+	if (context->seen) context->obvious = true;
+
+	if (!eligible || monster_is_unique(mon)
+			|| rf_has(mon->race->flags, RF_QUESTOR)
+			|| mon->race->level > randint1(power * 3)) {
+		context->hurt_msg = MON_MSG_UNAFFECTED;
+		context->obvious = false;
+		return;
+	}
+
+	if (player_of_has(player, OF_AGGRAVATE)) {
+		context->hurt_msg = MON_MSG_HATES_YOU;
+		return;
+	}
+
+	monster_set_allegiance(mon, MON_ALLEGIANCE_PET);
+	context->hurt_msg = success;
+
+	/*
+	 * Zangband's virtue writes for a successful charm: taking a creature into
+	 * your service is a step away from Individualism, and doing it to an
+	 * animal is a step towards Nature.
+	 */
+	virtue_change(player, V_INDIVIDUALISM, -1);
+	if (rf_has(mon->race->flags, RF_ANIMAL)) {
+		virtue_change(player, V_NATURE, 1);
+	}
+}
+
+/**
+ * Charm anything that can be charmed.
+ *
+ * NO_CONF is a resistance here and nowhere else in the three: Zangband treats
+ * a mind that cannot be confused as a mind that cannot be talked round.
+ */
+static void project_monster_handler_MON_CHARM(project_monster_handler_context_t *context)
+{
+	bool eligible = !rf_has(context->mon->race->flags, RF_NO_CONF);
+
+	if (context->seen && !eligible) {
+		rf_on(context->lore->flags, RF_NO_CONF);
+	}
+
+	charm_monster(context, eligible, MON_MSG_SEEMS_FRIENDLY);
+}
+
+/** Tame an animal, and only an animal. */
+static void project_monster_handler_MON_CHARM_ANIMAL(project_monster_handler_context_t *context)
+{
+	charm_monster(context, rf_has(context->mon->race->flags, RF_ANIMAL),
+				  MON_MSG_SEEMS_FRIENDLY);
+}
+
+/** Enslave the dead, and only the dead. */
+static void project_monster_handler_MON_CHARM_UNDEAD(project_monster_handler_context_t *context)
+{
+	charm_monster(context, rf_has(context->mon->race->flags, RF_UNDEAD),
+				  MON_MSG_IN_YOUR_THRALL);
 }
 
 static const project_monster_handler_f monster_handlers[] = {

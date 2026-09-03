@@ -2404,6 +2404,52 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 }
 
 /**
+ * Summon monsters that arrive on the player's side (ZangbandTK, PLR-28).
+ *
+ * The same handler as `SUMMON`, with the pet flag set around it. A separate
+ * effect rather than a parameter on the old one, because the two are different
+ * spells with different descriptions -- "summons animals" and "summons animals
+ * to serve you" are not the same promise -- and the effect name is what the
+ * spell description is generated from.
+ *
+ * There is no monster-summoner branch here: a monster casting this would be
+ * summoning pets for the *player*, which no spell should do. A monster's
+ * summons inherit its own side in `summon_specific()` instead.
+ */
+bool effect_handler_SUMMON_PET(effect_handler_context_t *context)
+{
+	int summon_max = effect_calculate_value(context, false);
+	int summon_type = context->subtype;
+	int level_boost = context->other;
+	int message_type = summon_message_type(summon_type);
+	int count = 0;
+
+	sound(message_type);
+
+	/* No summoning in arena levels */
+	if (player->upkeep->arena_level) return true;
+
+	summon_pets_scope(true);
+	while (summon_max) {
+		count += summon_specific(player->grid, player->depth + level_boost,
+								 summon_type, true, false);
+		summon_max--;
+	}
+	summon_pets_scope(false);
+
+	context->ident = true;
+
+	if (!count) {
+		msg("Nothing comes.");
+	} else if (player->timed[TMD_BLIND]) {
+		msgt(message_type, "You hear %s appear nearby.",
+			 (count > 1 ? "many things" : "something"));
+	}
+
+	return true;
+}
+
+/**
  * Delete all non-unique monsters of a given "type" from the level
  * -------
  * Warning - this function assumes that the entered monster symbol is an ASCII

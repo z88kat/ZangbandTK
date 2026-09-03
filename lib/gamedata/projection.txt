@@ -709,3 +709,37 @@ blind-desc:something
 obvious:1
 wake:1
 color:Violet
+
+# ZangbandTK (PLR-28): the three ways a monster ends up on your side.
+#
+# Zangband's GF_CHARM, GF_CONTROL_ANIMAL and GF_CONTROL_UNDEAD
+# (spells1.c:2061 onwards).  Separate codes rather than one with a flag,
+# because each has a different notion of what it can work on and the realms
+# that carry them are different realms: charming outright is Life's, animals
+# are Nature's, and the dead are Death's.
+#
+# None of them does damage.  The "damage" a spell gives them is the power of
+# the attempt, which the target's level is rolled against.
+code:MON_CHARM
+type:monster
+desc:attempts to charm monsters into serving you
+blind-desc:something
+obvious:1
+wake:1
+color:Light Green
+
+code:MON_CHARM_ANIMAL
+type:monster
+desc:attempts to tame animals
+blind-desc:something
+obvious:1
+wake:1
+color:Green
+
+code:MON_CHARM_UNDEAD
+type:monster
+desc:attempts to enslave the undead
+blind-desc:something
+obvious:1
+wake:1
+color:Light Dark

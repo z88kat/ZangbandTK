@@ -577,7 +577,7 @@ Anyone planning this should expect it to break into more phases than M8 did, not
 | 3 | Commands and persistence | PLR-25, PLR-26 | ✅ 3.69.0 (PLR-26 part, DEC-60) |
 | 4 | Balance | PLR-30, PLR-31 | ✅ 3.70.0 |
 | 5 | Player-side safety | PLR-24, PLR-33 | ✅ 3.71.0 |
-| 6 | Sources, and the queue M10 unblocks | PLR-28, PLR-32 | |
+| 6 | Sources, and the queue M10 unblocks | PLR-28, PLR-32 | ✅ 3.72.0 |
 | 7 | Trump | DEC-54 | |
 
 Phase 1 is first because PLR-29 constrains PLR-22 rather than following it, and

@@ -207,6 +207,7 @@ int effect_subtype(int index, const char *type)
 
 		/* Summon name */
 		case EF_SUMMON:
+		case EF_SUMMON_PET:
 			return summon_name_to_idx(type);
 
 		/* Stat name */

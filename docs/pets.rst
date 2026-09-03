@@ -291,7 +291,42 @@ takes it personally. Confusion is a different kind of dangerous when you have
 things following you.
 
 
-Not yet written
----------------
+Getting one
+-----------
 
-What makes a pet in the first place. That arrives with the rest of M10.
+**Charm something that is already there.** Three spells do it, and they are in
+three realms because they are three different things:
+
+- *Day of the Dove* (Life) turns everything in sight, if it will be turned.
+- *Animal Taming* (Nature) takes one animal; *Animal Friendship* takes every
+  animal in sight.
+- *Enslave Undead* (Death) binds one undead creature to you.
+
+A Wand of Tame Monster does the same thing from an item, at a fixed strength
+that does not depend on your level — which is what makes it worth carrying deep.
+A hypnotic gaze, if chaos has given you one, is a charm as well.
+
+Three creatures will never be charmed: uniques, quest monsters, and anything
+whose mind cannot be confused — though a mind that resists persuasion can still
+be tamed if it is an animal, or commanded if it is dead. Everything else rolls
+its level against the strength of the attempt, so a strong charm on a shallow
+creature is nearly certain and a weak one on something deep is nearly hopeless.
+
+And if you are carrying something that aggravates, nothing will have you. The
+charm lands, the creature considers it, and hates you too much.
+
+**Or summon something that arrives on your side.** *Summon Animal* (Nature)
+calls one. Chaos's *Summon Demon* calls one demon in three that will serve you
+and two that will not. If you can grow mould, the eight that come up around you
+are yours — which is the point of a wall of mould.
+
+**And anything your pets summon is yours too.** So is anything a friendly
+monster summons. That is worth reading twice next to the upkeep: a pet that can
+summon builds you a stable you are paying for.
+
+
+Still to come
+-------------
+
+Two of the ways Zangband gives you a pet are not here yet: a Mindcrafter's
+domination, and a Chaos patron handing you one as a gift.

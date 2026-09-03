@@ -671,9 +671,15 @@ spell:Chaos Branding:45:90:87:45
 effect:BRAND_WEAPON
 desc:Brands your weapon.  You do not choose with what.
 spell:Summon Demon:47:100:90:45
+effect:RANDOM
+dice:3
+effect:SUMMON_PET:DEMON
+dice:1
 effect:SUMMON:DEMON
 dice:1
-desc:Summons a demon.  It will not be pleased to see you.
+effect:SUMMON:DEMON
+dice:1
+desc:Summons a demon.  One in three will serve you.
 book:chaos book:dungeon:[Armageddon Tome]:8:chaos
 book-graphics:?:v
 book-properties:50000:10:75 to 100
@@ -842,8 +848,10 @@ dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Harms every undead and evil creature in line of sight.
 spell:Day of the Dove:35:35:72:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:PROJECT_LOS:MON_CHARM
+dice:$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Attempts to turn every monster in line of sight to your side.
 spell:Dispel Evil:35:35:72:45
 effect:PROJECT_LOS_AWARE:DISP_EVIL
 dice:d$S
@@ -968,8 +976,10 @@ dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Fills the area with daylight, and burns what cannot bear it.
 spell:Animal Taming:4:5:26:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BOLT_AWARE:MON_CHARM_ANIMAL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to tame a single animal.
 spell:Resist Environment:5:5:27:5
 effect:SET_VALUE
 dice:19+1d21
@@ -1021,8 +1031,9 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Roots every creature in sight to the spot.
 spell:Summon Animal:25:25:57:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SUMMON_PET:ANIMAL
+dice:1
+desc:Summons an animal to serve you.
 spell:Herbal Healing:40:100:80:20
 effect:HEAL_HP
 dice:1000
@@ -1053,8 +1064,10 @@ effect:TIMED_INC:OPP_COLD
 effect:CLEAR_VALUE
 desc:Grants temporary resistance to acid, lightning, fire and cold.
 spell:Animal Friendship:30:30:65:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:PROJECT_LOS:MON_CHARM_ANIMAL
+dice:$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Attempts to tame every animal in line of sight.
 spell:Stone Tell:37:40:75:45
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
@@ -1148,8 +1161,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Terrifies a creature, and leaves it reeling.
 spell:Enslave Undead:10:10:35:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BOLT_AWARE:MON_CHARM_UNDEAD
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to bind a single undead creature to your will.
 book:shadow book:town:[Black Mass]:8:death
 book-graphics:?:p
 book-properties:400:40:10 to 100
@@ -1356,8 +1371,10 @@ dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Fills the area with daylight, and burns what cannot bear it.
 spell:Animal Taming:6:6:29:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BOLT_AWARE:MON_CHARM_ANIMAL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to tame a single animal.
 spell:Resist Environment:7:7:30:5
 effect:SET_VALUE
 dice:19+1d21
@@ -1409,8 +1426,9 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Roots every creature in sight to the spot.
 spell:Summon Animal:30:30:65:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SUMMON_PET:ANIMAL
+dice:1
+desc:Summons an animal to serve you.
 spell:Herbal Healing:42:100:83:20
 effect:HEAL_HP
 dice:1000
@@ -1441,8 +1459,10 @@ effect:TIMED_INC:OPP_COLD
 effect:CLEAR_VALUE
 desc:Grants temporary resistance to acid, lightning, fire and cold.
 spell:Animal Friendship:35:35:72:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:PROJECT_LOS:MON_CHARM_ANIMAL
+dice:$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Attempts to tame every animal in line of sight.
 spell:Stone Tell:39:40:78:45
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
@@ -1654,8 +1674,10 @@ dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Harms every undead and evil creature in line of sight.
 spell:Day of the Dove:24:20:56:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:PROJECT_LOS:MON_CHARM
+dice:$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Attempts to turn every monster in line of sight to your side.
 spell:Dispel Evil:25:20:57:45
 effect:PROJECT_LOS_AWARE:DISP_EVIL
 dice:d$S
@@ -2027,9 +2049,15 @@ spell:Chaos Branding:47:90:90:45
 effect:BRAND_WEAPON
 desc:Brands your weapon.  You do not choose with what.
 spell:Summon Demon:49:100:93:45
+effect:RANDOM
+dice:3
+effect:SUMMON_PET:DEMON
+dice:1
 effect:SUMMON:DEMON
 dice:1
-desc:Summons a demon.  It will not be pleased to see you.
+effect:SUMMON:DEMON
+dice:1
+desc:Summons a demon.  One in three will serve you.
 book:chaos book:dungeon:[Armageddon Tome]:8:chaos
 book-graphics:?:v
 book-properties:50000:10:75 to 100
@@ -2114,8 +2142,10 @@ dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Fills the area with daylight, and burns what cannot bear it.
 spell:Animal Taming:6:6:29:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BOLT_AWARE:MON_CHARM_ANIMAL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to tame a single animal.
 spell:Resist Environment:7:7:30:5
 effect:SET_VALUE
 dice:19+1d21
@@ -2167,8 +2197,9 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Roots every creature in sight to the spot.
 spell:Summon Animal:30:30:65:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SUMMON_PET:ANIMAL
+dice:1
+desc:Summons an animal to serve you.
 spell:Herbal Healing:42:100:83:20
 effect:HEAL_HP
 dice:1000
@@ -2199,8 +2230,10 @@ effect:TIMED_INC:OPP_COLD
 effect:CLEAR_VALUE
 desc:Grants temporary resistance to acid, lightning, fire and cold.
 spell:Animal Friendship:35:35:72:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:PROJECT_LOS:MON_CHARM_ANIMAL
+dice:$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Attempts to tame every animal in line of sight.
 spell:Stone Tell:39:40:78:45
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
@@ -2294,8 +2327,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Terrifies a creature, and leaves it reeling.
 spell:Enslave Undead:12:12:38:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BOLT_AWARE:MON_CHARM_UNDEAD
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to bind a single undead creature to your will.
 book:shadow book:town:[Black Mass]:8:death
 book-graphics:?:p
 book-properties:400:40:10 to 100
@@ -2683,8 +2718,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Terrifies a creature, and leaves it reeling.
 spell:Enslave Undead:10:10:35:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BOLT_AWARE:MON_CHARM_UNDEAD
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to bind a single undead creature to your will.
 book:shadow book:town:[Black Mass]:8:death
 book-graphics:?:p
 book-properties:400:40:10 to 100
@@ -2978,8 +3015,10 @@ dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Harms every undead and evil creature in line of sight.
 spell:Day of the Dove:33:30:69:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:PROJECT_LOS:MON_CHARM
+dice:$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Attempts to turn every monster in line of sight to your side.
 spell:Dispel Evil:35:32:72:45
 effect:PROJECT_LOS_AWARE:DISP_EVIL
 dice:d$S
@@ -3111,8 +3150,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Terrifies a creature, and leaves it reeling.
 spell:Enslave Undead:15:15:42:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BOLT_AWARE:MON_CHARM_UNDEAD
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to bind a single undead creature to your will.
 book:shadow book:town:[Black Mass]:8:death
 book-graphics:?:p
 book-properties:400:40:10 to 100
@@ -3660,8 +3701,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Terrifies a creature, and leaves it reeling.
 spell:Enslave Undead:19:19:48:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BOLT_AWARE:MON_CHARM_UNDEAD
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to bind a single undead creature to your will.
 book:shadow book:town:[Black Mass]:6:death
 book-graphics:?:p
 book-properties:400:40:10 to 100
@@ -3838,8 +3881,10 @@ dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Fills the area with daylight, and burns what cannot bear it.
 spell:Animal Taming:7:7:30:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BOLT_AWARE:MON_CHARM_ANIMAL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to tame a single animal.
 spell:Resist Environment:8:7:32:5
 effect:SET_VALUE
 dice:19+1d21
@@ -3891,8 +3936,9 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Roots every creature in sight to the spot.
 spell:Summon Animal:23:23:54:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SUMMON_PET:ANIMAL
+dice:1
+desc:Summons an animal to serve you.
 spell:Herbal Healing:40:100:80:20
 effect:HEAL_HP
 dice:1000
@@ -3923,8 +3969,10 @@ effect:TIMED_INC:OPP_COLD
 effect:CLEAR_VALUE
 desc:Grants temporary resistance to acid, lightning, fire and cold.
 spell:Animal Friendship:35:30:72:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:PROJECT_LOS:MON_CHARM_ANIMAL
+dice:$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Attempts to tame every animal in line of sight.
 spell:Stone Tell:38:40:77:45
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
@@ -4329,8 +4377,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Terrifies a creature, and leaves it reeling.
 spell:Enslave Undead:22:22:53:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BOLT_AWARE:MON_CHARM_UNDEAD
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to bind a single undead creature to your will.
 book:shadow book:town:[Black Mass]:6:death
 book-graphics:?:p
 book-properties:400:40:10 to 100
@@ -4691,8 +4741,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Terrifies a creature, and leaves it reeling.
 spell:Enslave Undead:15:15:42:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BOLT_AWARE:MON_CHARM_UNDEAD
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to bind a single undead creature to your will.
 book:shadow book:town:[Black Mass]:8:death
 book-graphics:?:p
 book-properties:400:40:10 to 100
@@ -5027,8 +5079,10 @@ dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Harms every undead and evil creature in line of sight.
 spell:Day of the Dove:36:35:74:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:PROJECT_LOS:MON_CHARM
+dice:$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Attempts to turn every monster in line of sight to your side.
 spell:Dispel Evil:38:35:77:45
 effect:PROJECT_LOS_AWARE:DISP_EVIL
 dice:d$S
@@ -5152,8 +5206,10 @@ dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Fills the area with daylight, and burns what cannot bear it.
 spell:Animal Taming:7:7:30:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BOLT_AWARE:MON_CHARM_ANIMAL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to tame a single animal.
 spell:Resist Environment:8:8:32:5
 effect:SET_VALUE
 dice:19+1d21
@@ -5205,8 +5261,9 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Roots every creature in sight to the spot.
 spell:Summon Animal:31:31:66:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SUMMON_PET:ANIMAL
+dice:1
+desc:Summons an animal to serve you.
 spell:Herbal Healing:40:100:80:20
 effect:HEAL_HP
 dice:1000
@@ -5237,8 +5294,10 @@ effect:TIMED_INC:OPP_COLD
 effect:CLEAR_VALUE
 desc:Grants temporary resistance to acid, lightning, fire and cold.
 spell:Animal Friendship:35:35:72:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:PROJECT_LOS:MON_CHARM_ANIMAL
+dice:$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Attempts to tame every animal in line of sight.
 spell:Stone Tell:40:40:80:45
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
@@ -5331,8 +5390,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Terrifies a creature, and leaves it reeling.
 spell:Enslave Undead:14:14:41:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BOLT_AWARE:MON_CHARM_UNDEAD
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to bind a single undead creature to your will.
 book:shadow book:town:[Black Mass]:8:death
 book-graphics:?:p
 book-properties:400:40:10 to 100
@@ -5873,9 +5934,15 @@ spell:Chaos Branding:45:135:87:45
 effect:BRAND_WEAPON
 desc:Brands your weapon.  You do not choose with what.
 spell:Summon Demon:47:150:90:45
+effect:RANDOM
+dice:3
+effect:SUMMON_PET:DEMON
+dice:1
 effect:SUMMON:DEMON
 dice:1
-desc:Summons a demon.  It will not be pleased to see you.
+effect:SUMMON:DEMON
+dice:1
+desc:Summons a demon.  One in three will serve you.
 book:chaos book:dungeon:[Armageddon Tome]:8:chaos
 book-graphics:?:v
 book-properties:50000:10:75 to 100
@@ -6087,8 +6154,10 @@ dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Harms every undead and evil creature in line of sight.
 spell:Day of the Dove:36:36:74:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:PROJECT_LOS:MON_CHARM
+dice:$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Attempts to turn every monster in line of sight to your side.
 spell:Dispel Evil:38:38:77:45
 effect:PROJECT_LOS_AWARE:DISP_EVIL
 dice:d$S
@@ -6373,8 +6442,10 @@ dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Fills the area with daylight, and burns what cannot bear it.
 spell:Animal Taming:7:7:30:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BOLT_AWARE:MON_CHARM_ANIMAL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to tame a single animal.
 spell:Resist Environment:8:8:32:5
 effect:SET_VALUE
 dice:19+1d21
@@ -6426,8 +6497,9 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Roots every creature in sight to the spot.
 spell:Summon Animal:31:31:66:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SUMMON_PET:ANIMAL
+dice:1
+desc:Summons an animal to serve you.
 spell:Herbal Healing:45:100:87:20
 effect:HEAL_HP
 dice:1000
@@ -6458,8 +6530,10 @@ effect:TIMED_INC:OPP_COLD
 effect:CLEAR_VALUE
 desc:Grants temporary resistance to acid, lightning, fire and cold.
 spell:Animal Friendship:38:38:77:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:PROJECT_LOS:MON_CHARM_ANIMAL
+dice:$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Attempts to tame every animal in line of sight.
 spell:Stone Tell:40:42:80:45
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
@@ -6630,9 +6704,15 @@ spell:Chaos Branding:49:95:93:45
 effect:BRAND_WEAPON
 desc:Brands your weapon.  You do not choose with what.
 spell:Summon Demon:50:111:95:45
+effect:RANDOM
+dice:3
+effect:SUMMON_PET:DEMON
+dice:1
 effect:SUMMON:DEMON
 dice:1
-desc:Summons a demon.  It will not be pleased to see you.
+effect:SUMMON:DEMON
+dice:1
+desc:Summons a demon.  One in three will serve you.
 book:chaos book:dungeon:[Armageddon Tome]:8:chaos
 book-graphics:?:v
 book-properties:50000:10:75 to 100
@@ -6723,8 +6803,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Terrifies a creature, and leaves it reeling.
 spell:Enslave Undead:12:12:38:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BOLT_AWARE:MON_CHARM_UNDEAD
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to bind a single undead creature to your will.
 book:shadow book:town:[Black Mass]:8:death
 book-graphics:?:p
 book-properties:400:40:10 to 100
@@ -7193,8 +7275,10 @@ dice:d$S
 expr:S:PLAYER_LEVEL:* 3
 desc:Harms every undead and evil creature in line of sight.
 spell:Day of the Dove:31:30:66:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:PROJECT_LOS:MON_CHARM
+dice:$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Attempts to turn every monster in line of sight to your side.
 spell:Dispel Evil:32:30:68:45
 effect:PROJECT_LOS_AWARE:DISP_EVIL
 dice:d$S
@@ -7479,8 +7563,10 @@ dice:2d$S
 expr:S:PLAYER_LEVEL:/ 2
 desc:Fills the area with daylight, and burns what cannot bear it.
 spell:Animal Taming:4:3:26:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BOLT_AWARE:MON_CHARM_ANIMAL
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to tame a single animal.
 spell:Resist Environment:4:4:26:5
 effect:SET_VALUE
 dice:19+1d21
@@ -7532,8 +7618,9 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Roots every creature in sight to the spot.
 spell:Summon Animal:20:20:50:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SUMMON_PET:ANIMAL
+dice:1
+desc:Summons an animal to serve you.
 spell:Herbal Healing:35:80:72:20
 effect:HEAL_HP
 dice:1000
@@ -7564,8 +7651,10 @@ effect:TIMED_INC:OPP_COLD
 effect:CLEAR_VALUE
 desc:Grants temporary resistance to acid, lightning, fire and cold.
 spell:Animal Friendship:25:25:57:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:PROJECT_LOS:MON_CHARM_ANIMAL
+dice:$B
+expr:B:PLAYER_LEVEL:* 2
+desc:Attempts to tame every animal in line of sight.
 spell:Stone Tell:33:35:69:45
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
@@ -7736,9 +7825,15 @@ spell:Chaos Branding:42:80:83:45
 effect:BRAND_WEAPON
 desc:Brands your weapon.  You do not choose with what.
 spell:Summon Demon:44:90:86:45
+effect:RANDOM
+dice:3
+effect:SUMMON_PET:DEMON
+dice:1
 effect:SUMMON:DEMON
 dice:1
-desc:Summons a demon.  It will not be pleased to see you.
+effect:SUMMON:DEMON
+dice:1
+desc:Summons a demon.  One in three will serve you.
 book:chaos book:dungeon:[Armageddon Tome]:8:chaos
 book-graphics:?:v
 book-properties:50000:10:75 to 100
@@ -7829,8 +7924,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:+ 0
 desc:Terrifies a creature, and leaves it reeling.
 spell:Enslave Undead:8:8:32:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BOLT_AWARE:MON_CHARM_UNDEAD
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to bind a single undead creature to your will.
 book:shadow book:town:[Black Mass]:8:death
 book-graphics:?:p
 book-properties:400:40:10 to 100

@@ -759,26 +759,27 @@ static int test_the_realm_filter_sorts_three_realms(void *state) {
  * which catches a spell quietly *gaining* the deferral wording to make the
  * first half pass.
  *
- * Thirty-four as the realms stand. Sixteen are Sorcery's four -- Identify True,
- * Detect Enchantment, Self Knowledge, Explosive Rune -- once for each of the
- * four classes entitled to the realm. Four are Life's two, Day of the Dove and
- * Bless Weapon, once each for the Priest and the Paladin: the first needs
- * monster allegiance and waits for M10 with Trump, and 4.2 has no effect that
- * blesses a weapon. Four are Arcane's two, once each for the Mage and the
- * Rogue: Phlogiston, because refuelling a light source is a command in 4.2 and
- * not an effect, and Detect Enchantment again, for the reason Sorcery's is.
- * Eighty-seven now. The Warrior-Mage and the High-Mage each carry six whole
- * realms and so seventeen deferrals apiece, and the Monk carries Life, Nature
- * and Death, which is eleven more. Of the rest, ten are
- * Nature's five, once each for the Druid and the Ranger: three of those
- * five -- Animal Taming, Summon Animal, Animal Friendship -- are the same
- * monster-allegiance wall that deferred Trump whole, and the other two are
- * whole-object identification and a rustproofing that is an object property
- * here rather than anything a spell can reach. And eight are Death's four, once
- * each for the Necromancer and the Blackguard: Enslave Undead and Raise the
- * Dead are the allegiance wall again, Wraithform is the wall the WRAITH
- * mutation waits behind, and Omnicide is a whole-level sweep with a running
- * mana cost that would otherwise duplicate this realm's own Mass Genocide.
+ * Eighty-three as the realms stand, down from a hundred and twenty when M10
+ * began: five of the seventeen deferred spells were waiting on monster
+ * allegiance, and it arrived.
+ *
+ * What is left is twelve distinct spells across the six realms, counted once
+ * per entitled class. Sorcery's four -- Identify True, Detect Enchantment,
+ * Self Knowledge, Explosive Rune -- are whole-object identification, an
+ * is-this-magical bit 4.2 does not keep, a character sheet that already says
+ * everything, and a trap glyph that is not 4.2's warding glyph. Life keeps
+ * Bless Weapon, because no 4.2 effect blesses a weapon. Arcane keeps
+ * Phlogiston, refuelling being a command rather than an effect, and Detect
+ * Enchantment again. Nature keeps Stone Tell and Protect from Corrosion, one
+ * of them whole-object identification again and the other an object property
+ * no spell can reach. Death keeps Wraithform, Omnicide, and Raise the Dead --
+ * that last one re-deferred in 3.72.0 with its reason corrected: the pet half
+ * of its wall came down, and the other half is that Zangband raises the
+ * corpses actually lying on the floor and 4.2 has no corpses.
+ *
+ * The count is high relative to the twelve because the classes with six realms
+ * carry nearly all of them: the Warrior-Mage and the High-Mage take twelve
+ * apiece.
  *
  * `scripts/check-build` also runs `zconv realms --check` now, which catches a
  * mis-keyed name itself rather than its symptom. This stays because it asks the
@@ -805,7 +806,7 @@ static int test_a_spell_without_an_effect_says_so(void *state) {
 		}
 	}
 
-	eq(effectless, 120);
+	eq(effectless, 83);
 
 	ok;
 }

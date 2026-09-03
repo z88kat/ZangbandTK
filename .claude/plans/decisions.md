@@ -2758,3 +2758,66 @@ on a Chaos patron's generosity and on what you dream about at an inn.
 build and had to be rewritten: it asserted "they are not on the same grid" and
 "one of them moved", both of which are true after a swap as well. The code was
 right and the test was not, and only running the falsification showed it.
+
+---
+
+**DEC-63 — Charming is a projection, summons inherit their summoner's side, and
+the queue M10 was holding comes off it.** (M10 phase 6, 3 September 2026.)
+
+PLR-28 and PLR-32, and everything deferred behind them since M8.
+
+**Two mechanisms carry all of PLR-28's paths.** Charming something already
+there, and summoning something that arrives on your side. Charming is three new
+projections — `MON_CHARM`, `MON_CHARM_ANIMAL`, `MON_CHARM_UNDEAD` — because
+Zangband has three (`GF_CHARM`, `GF_CONTROL_ANIMAL`, `GF_CONTROL_UNDEAD`) and
+each has a different notion of what it can work on, in realms that are
+different realms: persuasion is Life's, animals are Nature's, the dead are
+Death's. Summoning is one new effect, `SUMMON_PET`, rather than a parameter on
+`SUMMON`: they are different spells with different promises, and the effect
+name is what the spell description is generated from.
+
+The saving throw is Zangband's `hdice * 2 > randint1(dam * 3)` with DEC-61's
+measured identity substituted, so `level > randint1(power * 3)`. Uniques and
+questors are immune outright; `NO_CONF` refuses the general charm only, because
+taming an animal and commanding a corpse are not persuasion. Aggravation
+refuses **after** the roll succeeds and keeps its own message — it is not a
+resistance, and telling the player it is something they are carrying is the
+point of the separate wording.
+
+**PLR-32 lands in `summon_specific()`**, on `cave->mon_current` — which 4.2
+already uses two lines earlier to put a summon in its summoner's group. A
+player's summon is hostile unless the caller asks otherwise.
+
+**What came off the queue.** Five realm spells built (*Day of the Dove*,
+*Animal Taming*, *Animal Friendship*, *Summon Animal*, *Enslave Undead*); Chaos's
+*Summon Demon* restored to one-in-three as a `RANDOM` chain of three, undoing
+what DEC-53 recorded as a loss; `GROW_MOLD` built, `HYPN_GAZE` restored from a
+timed `COMMAND` to a real charm, `ATT_DEMON` restored to one-in-six; and the
+Wand of Tame Monster imported. Effectless spells fell from 120 to 83.
+
+**Two things did not come off, and their reasons are corrected rather than
+carried.** Both had two walls and only one came down:
+
+*Raise the Dead* animates the corpses and skeletons **actually lying on the
+floor**, two in three of them as pets. The pet half is solved; 4.2 has no corpse
+or skeleton object and no `DROP_CORPSE` flag, so there is nothing lying there to
+raise. Translating it as "summon undead as pets" would be a different spell
+wearing this one's name: this one is paid for by what you have already killed,
+and that is its whole character.
+
+*The magical figurine* is thrown, breaks, and summons the monster **named in
+it**. The pet half is solved; 4.2 has no object type whose name interpolates a
+monster race. Re-filed with the ten statues, because a figurine is a statue that
+does something and whatever solves them solves it.
+
+*Still open after this phase:* Mindcrafter domination and Chaos patron gifts,
+both listed in PLR-28 and both needing a hook in code we own rather than a data
+change. They are small and they are not blocked; they are simply not this
+phase's five.
+
+*A note on process, again.* `a-unique-cannot-be-charmed` passed against a build
+with the unique check deliberately removed. It used Grip, which carries
+`NO_CONF` — so the general charm refused it for the *other* reason and the test
+was asserting a rule it was not reaching. Changed to Mughash, who is a unique
+and nothing else. That is twice this milestone that a falsification caught a
+test rather than the code.

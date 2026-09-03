@@ -544,7 +544,7 @@ static int test_the_two_charisma_mutations_are_inert(void *state) {
  */
 static int test_the_activatable_split_is_what_was_decided(void *state) {
 	static const char *const deferred[] = {
-		"DET_CURSE", "GROW_MOLD", "WEIGH_MAG", "LAUNCHER"
+		"DET_CURSE", "WEIGH_MAG", "LAUNCHER"
 	};
 	const struct mutation *m;
 	int with = 0, without = 0;
@@ -556,8 +556,9 @@ static int test_the_activatable_split_is_what_was_decided(void *state) {
 		if (m->action) with++; else without++;
 	}
 
-	eq(with, 28);
-	eq(without, 4);
+	/* GROW_MOLD joined the built ones in 3.72.0, when pets arrived */
+	eq(with, 29);
+	eq(without, 3);
 
 	for (i = 0; i < N_ELEMENTS(deferred); i++) {
 		m = mutation_by_name(deferred[i]);
@@ -1343,7 +1344,8 @@ static int test_nothing_is_dropped_any_more(void *state) {
 	}
 
 	eq(refused, 0);
-	eq(waiting, 8);
+	/* Seven since 3.72.0: GROW_MOLD was waiting on monster allegiance */
+	eq(waiting, 7);
 
 	ok;
 }

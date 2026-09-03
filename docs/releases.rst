@@ -33,6 +33,30 @@ Unreleased
 Pets — 3 September 2026
 -----------------------
 
+- **3.72.0** — **Where pets come from** (M10 phase 6; PLR-28, PLR-32, DEC-63).
+  Three charm projections and a pet-summoning effect, and with them the queue
+  this milestone has been holding since M8 comes off.
+
+  Built: Life's *Day of the Dove*, Nature's *Animal Taming*, *Animal
+  Friendship* and *Summon Animal*, Death's *Enslave Undead*, the ``GROW_MOLD``
+  mutation, and the Wand of Tame Monster. Restored: Chaos's *Summon Demon* to
+  one demon in three serving you, which DEC-53 recorded as a loss; the
+  ``HYPN_GAZE`` mutation from a timed command to a real charm; and
+  ``ATT_DEMON`` to one in six arriving friendly. **Spells shipping without an
+  effect fell from 120 to 83.**
+
+  A summon arrives on its summoner's side, which is why the upkeep is charged
+  on the sum: a pet that summons builds you a stable you are paying for.
+
+  Two things stayed deferred with their reasons **corrected** rather than
+  carried. *Raise the Dead* animates the corpses actually lying on the floor,
+  and 4.2 has no corpse objects — "summon undead as pets" would be a different
+  spell wearing its name. The magical figurine summons the monster named in it,
+  and 4.2 has no object whose name interpolates a monster race; it is re-filed
+  with the ten statues, since a figurine is a statue that does something.
+
+  Still open from PLR-28: Mindcrafter domination and Chaos patron gifts.
+
 - **3.71.0** — **Turning on your own** (M10 phase 5; PLR-24, PLR-33, DEC-62).
   Anything the player does that hurts an ally turns it hostile, and carrying
   something that aggravates turns them all. It costs virtue: Individualism up,

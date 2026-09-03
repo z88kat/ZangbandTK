@@ -674,6 +674,19 @@ static void project_feature_handler_MON_CRUSH(project_feature_handler_context_t 
 {
 }
 
+/* Charming leaves the furniture alone (PLR-28) */
+static void project_feature_handler_MON_CHARM(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_MON_CHARM_ANIMAL(project_feature_handler_context_t *context)
+{
+}
+
+static void project_feature_handler_MON_CHARM_UNDEAD(project_feature_handler_context_t *context)
+{
+}
+
 /* Psionic force leaves the room exactly as it found it (PLR-06) */
 static void project_feature_handler_MON_PSI(project_feature_handler_context_t *context)
 {

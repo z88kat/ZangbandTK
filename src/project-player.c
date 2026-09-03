@@ -777,6 +777,22 @@ static int project_player_handler_MON_DRAIN(project_player_handler_context_t *co
 	return 0;
 }
 
+/* Charming only ever travels from the player outward (PLR-28) */
+static int project_player_handler_MON_CHARM(project_player_handler_context_t *context)
+{
+	return 0;
+}
+
+static int project_player_handler_MON_CHARM_ANIMAL(project_player_handler_context_t *context)
+{
+	return 0;
+}
+
+static int project_player_handler_MON_CHARM_UNDEAD(project_player_handler_context_t *context)
+{
+	return 0;
+}
+
 /* Psionic force, which only ever travels from the player outward (PLR-06) */
 static int project_player_handler_MON_PSI(project_player_handler_context_t *context)
 {

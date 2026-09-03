@@ -115,15 +115,23 @@ Sorting the true from the false is 647 judgements for one flavour scroll.""" }
 "9:8" = { name = "Mithril Statue of #", why = "statue" }
 "9:9" = { name = "Ornate Statue of #", why = "statue" }
 
-"8:0" = { name = "Magical Figurine of #", why = "pets", note = """Thrown, it \
+"8:0" = { name = "Magical Figurine of #", why = "statue", note = """Thrown, it \
 breaks and summons the monster named in its `pval` as a pet \
 (cmd2.c:2209 -- `summon_named_creature(x, y, o_ptr->pval, FALSE, FALSE, TRUE)`, \
-where the last argument is `pet`). Both halves are missing: the monster in the \
-name, as with the statues, and the pet.""" }
+where the last argument is `pet`). Two halves were missing: the monster in the \
+name, as with the statues, and the pet. **The pet half arrived with PLR-22 in \
+3.67.0** and the other half did not: 4.2 has no object type whose name \
+interpolates a monster race, and no `TV_FIGURINE` to hang one on. Re-filed \
+under "statue" in 3.72.0, with the ten statues, because that is the one wall \
+still standing -- and because a figurine is a statue that does something, so \
+whatever solves them solves this.""" }
 
-"65:17" = { name = "Tame Monster", why = "pets", note = """`charm_monster(dir, 45)` \
--- the monster becomes a pet. Without pets the wand has nothing to do; \
-4.2's confusion and hold effects are a different item.""" }
+"65:17" = { name = "Tame Monster", why = "built 3.72.0", note = """\
+`charm_monster(dir, 45)` -- the monster becomes a pet. Deferred through \
+3.71.0 for want of monster allegiance; built on the MON_CHARM projection when \
+PLR-22 brought it. The power is a flat 45 rather than the caster's level, \
+which is what the wand's own line says and is why it is worth carrying at any \
+level: it beats a level 15 monster's saving throw about nine times in ten.""" }
 
 "70:52" = { name = "Artifact Creation", why = "no 4.2 effect", note = """\
 `artifact_scroll()` turns an ordinary item in the pack into a random \

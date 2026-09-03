@@ -64,6 +64,10 @@ MON_MSG(APPEAR,			MSG_GENERIC,	false,	"appear[s]!")
 MON_MSG(HIT_AND_RUN,		MSG_GENERIC,	true,	"There is a puff of smoke!")
 MON_MSG(QUAKE_DEATH,		MSG_KILL,	false,	"[is|are] embedded in rock!")
 MON_MSG(QUAKE_HURT,		MSG_GENERIC,	false,	"wail[s] out in pain!")
+/* ZangbandTK (PLR-28): charming, and the two ways it can fail */
+MON_MSG(SEEMS_FRIENDLY,		MSG_GENERIC,	false,	"suddenly seem[s] friendly!")
+MON_MSG(IN_YOUR_THRALL,		MSG_GENERIC,	false,	"[is|are] in your thrall!")
+MON_MSG(HATES_YOU,			MSG_GENERIC,	false,	"hate[s] you too much!")
 /* Dummy messages for monster pain - we use edit file info instead. */
 MON_MSG(95,					MSG_GENERIC,	false,	"")
 MON_MSG(75,					MSG_GENERIC,	false,	"")

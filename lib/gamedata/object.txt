@@ -3872,6 +3872,25 @@ power:3
 effect:BOLT_AWARE:MON_SLOW
 dice:10+1d20
 
+# ZangbandTK (PLR-28, CNT-11): the wand whose whole purpose is a pet.
+# Deferred through 3.71.0 because 4.2 had nothing for it to do.  Its power is a
+# flat 45, from the wand's own line rather than from the reader's level, which
+# is what makes it worth carrying deep.
+name:Tame Monster
+type:wand
+graphics:-:d
+level:52
+weight:10
+cost:1000
+alloc:52:52 to 100
+attack:1d1:0:0
+armor:0:0
+charges:2+d6
+power:20
+effect:BOLT_AWARE:MON_CHARM
+dice:45
+desc:It attempts to charm a monster into serving you.
+
 name:Confuse Monster
 type:wand
 graphics:-:d

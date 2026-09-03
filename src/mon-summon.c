@@ -399,6 +399,22 @@ static int call_monster(struct loc grid)
  *
  * Note that this function may not succeed, though this is very rare.
  */
+/**
+ * Whether the next player summon arrives as a pet (ZangbandTK, PLR-28).
+ *
+ * A global rather than a parameter, matching `summon_specific_type` two lines
+ * away, and for the same reason: `summon_specific()` has three callers and the
+ * allocation filter it installs cannot take arguments either. Set it, call,
+ * clear it -- `summon_pets_scope` does that so nothing can leak the flag into
+ * the next summon.
+ */
+static bool summon_pets = false;
+
+void summon_pets_scope(bool pets)
+{
+	summon_pets = pets;
+}
+
 int summon_specific(struct loc grid, int lev, int type, bool delay, bool call)
 {
 	int d;
@@ -453,6 +469,30 @@ int summon_specific(struct loc grid, int lev, int type, bool delay, bool call)
 
 	/* Success, return the level of the monster */
 	mon = square_monster(cave, near);
+
+	/*
+	 * ZangbandTK (PLR-32): a summon arrives on the summoner's side.
+	 *
+	 * "Any monsters a friendly monster summons will also be friendly"
+	 * ([monster.txt:234](../archive/zangband/lib/help/monster.txt#L234)), and
+	 * the same for a pet's -- which is why PLR-30 warns about a pet that
+	 * summons more pets, and why the upkeep is charged on the sum rather than
+	 * per animal.
+	 *
+	 * `cave->mon_current` is the monster taking its turn, which is exactly
+	 * what 4.2 already uses two lines above to put the summon in its
+	 * summoner's group. A summon the *player* called is hostile unless the
+	 * caller says otherwise, which is what `summon_pets` is for.
+	 */
+	if (cave->mon_current > 0) {
+		struct monster *summoner = cave_monster(cave, cave->mon_current);
+
+		if (summoner && summoner->race) {
+			monster_set_allegiance(mon, summoner->allegiance);
+		}
+	} else if (summon_pets) {
+		monster_set_allegiance(mon, MON_ALLEGIANCE_PET);
+	}
 
 	/* If delay, try to let the player act before the summoned monsters,
 	 * including holding faster monsters for the required number of turns */

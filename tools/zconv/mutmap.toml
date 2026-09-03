@@ -42,10 +42,11 @@ bands = [
 
 [HYPN_GAZE]
 line = 868
-note = """charm_monster() in Zangband, COMMAND in 4.2. Both take a monster \
-over; Zangband keeps it as a permanent pet and 4.2 commands it for a while, \
-because 4.2 has no pets."""
-effects = [ "COMMAND" ]
+note = """charm_monster() in Zangband. Shipped as 4.2's COMMAND from \
+3.60.0, which takes a monster over for a while rather than keeping it -- the \
+best available before monster allegiance existed. Restored in 3.72.0 to a \
+real charm: the gaze makes a permanent pet, as the source has it."""
+effects = [ "BOLT_AWARE:MON_CHARM", "dice:$B", "expr:B:PLAYER_LEVEL:+ 0" ]
 
 [TELEKINES]
 line = 877
@@ -189,10 +190,14 @@ destroyed for nothing at all."""
 effects = [ "ALCHEMY" ]
 [GROW_MOLD]
 line = 1115
-defer = """Summons eight *pet* molds around the player, as a wall. 4.2's \
-SUMMON produces hostile monsters, so the honest translation of this power \
-would surround the character with eight enemies -- the exact opposite of what \
-it is for. 4.2 has no pets."""
+note = """Eight pet molds around the player, as a wall of flesh. Deferred \
+through 3.71.0 because 4.2's SUMMON produces hostile monsters and the honest \
+translation would have surrounded the character with eight enemies -- the \
+exact opposite of the power. Built in 3.72.0 on SUMMON_PET. Zangband's \
+SUMMON_BIZARRE1 is its mold group; 4.2 has no such summon type, so this uses \
+KIN's nearest relative, ANIMAL, and the molds it produces are whatever the \
+depth offers rather than specifically molds."""
+effects = [ "SUMMON_PET:ANIMAL", "dice:8" ]
 
 [RESIST]
 line = 1126
@@ -382,10 +387,11 @@ effects = [ "SPHERE:POIS:3", "dice:$B", "expr:B:PLAYER_LEVEL:+ 3", "WAKE" ]
 
 [random.ATT_DEMON]
 line = 1465
-note = """One demon in six arrives friendly in Zangband. 4.2 has no pets, so \
-all of them are hostile here -- which makes this mutation worse than \
-Zangband's rather than better, and is the right direction to be wrong in."""
-effects = [ "SUMMON:DEMON" ]
+note = """One demon in six arrives as a pet. Shipped all-hostile from \
+3.60.0 for want of monster allegiance, recorded then as "worse than \
+Zangband's rather than better, and the right direction to be wrong in". \
+Restored in 3.72.0 as a RANDOM chain of six, one of which summons a pet."""
+effects = [ "RANDOM", "dice:6", "SUMMON_PET:DEMON", "dice:1", "SUMMON:DEMON", "dice:1", "SUMMON:DEMON", "dice:1", "SUMMON:DEMON", "dice:1", "SUMMON:DEMON", "dice:1", "SUMMON:DEMON", "dice:1" ]
 
 [random.PROD_MANA]
 line = 1490

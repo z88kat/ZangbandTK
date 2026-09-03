@@ -328,9 +328,13 @@ desc = "Brands your weapon.  You do not choose with what."
 
 [chaos.spells."Summon Demon"]
 line = 1265
-effects = [ "SUMMON:DEMON", "dice:1" ]
-note = "Zangband gives a one-in-three chance the demon serves you. 4.2 has no pets and no monster allegiance at all, so every demon this calls is hostile. That is a real loss of the spell's point and it is recorded rather than papered over."
-desc = "Summons a demon.  It will not be pleased to see you."
+note = """Zangband gives a one-in-three chance the demon serves you. \
+Shipped hostile in 3.57.0 for want of monster allegiance and recorded as \
+something M10 should revisit (DEC-53); restored in 3.72.0 as a RANDOM chain \
+of three, one of which summons a pet. One in three exactly, which is what the \
+source rolls."""
+effects = [ "RANDOM", "dice:3", "SUMMON_PET:DEMON", "dice:1", "SUMMON:DEMON", "dice:1", "SUMMON:DEMON", "dice:1" ]
+desc = "Summons a demon.  One in three will serve you."
 
 [chaos.spells."Beam of Gravity"]
 line = 1285
@@ -524,7 +528,11 @@ desc = "Harms every undead and evil creature in line of sight."
 # Trump ran into (DEC-54).  Waits for M10 rather than shipping as a no-op.
 [life.spells."Day of the Dove"]
 line = 683
-defer = "charming needs monster allegiance, which arrives with M10 (DEC-54)"
+note = """charm_monsters(plev * 2) -- everything in sight, at twice the \
+caster's level. Deferred through 3.71.0 for want of monster allegiance, which \
+PLR-22 brought; built in 3.72.0 on the MON_CHARM projection."""
+effects = [ "PROJECT_LOS:MON_CHARM", "dice:$B", "expr:B:PLAYER_LEVEL:* 2" ]
+desc = "Attempts to turn every monster in line of sight to your side."
 
 [life.spells."Dispel Evil"]
 line = 686
@@ -874,7 +882,10 @@ desc = "Fills the area with daylight, and burns what cannot bear it."
 
 [nature.spells."Animal Taming"]
 line = 938
-defer = "The monster-allegiance wall, the same one that deferred Trump whole (DEC-54) and Life's Day of the Dove. 4.2 has no side for a monster to be on: no field to put one in, no AI that would read it, and no SUMMON that can take one. charm_animal() makes one animal fight for you, which is the entire spell -- a hostile animal is what you already had."
+note = """charm_animal(dir, plev): one animal, aimed. Deferred through \
+3.71.0 for want of monster allegiance."""
+effects = [ "BOLT_AWARE:MON_CHARM_ANIMAL", "dice:$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+desc = "Attempts to tame a single animal."
 
 [nature.spells."Resist Environment"]
 line = 943
@@ -921,7 +932,12 @@ desc = "Roots every creature in sight to the spot."
 
 [nature.spells."Summon Animal"]
 line = 983
-defer = "The monster-allegiance wall, the same one that deferred Trump whole (DEC-54) and Life's Day of the Dove. 4.2 has no side for a monster to be on: no field to put one in, no AI that would read it, and no SUMMON that can take one. Zangband summons this one as a pet outright, with no failure branch: SUMMON_ANIMAL_RANGER and pet TRUE. Imported as a hostile summon it would be a spell that calls an animal to attack you, which is the opposite spell."
+note = """SUMMON_ANIMAL_RANGER with pet TRUE and no failure branch -- \
+Zangband summons this one as a pet outright. Deferred through 3.71.0 because \
+imported as a hostile summon it would be a spell that calls an animal to \
+attack you, which is the opposite spell. Built in 3.72.0 on SUMMON_PET."""
+effects = [ "SUMMON_PET:ANIMAL", "dice:1" ]
+desc = "Summons an animal to serve you."
 
 [nature.spells."Herbal Healing"]
 line = 989
@@ -951,7 +967,10 @@ desc = "Grants temporary resistance to acid, lightning, fire and cold."
 
 [nature.spells."Animal Friendship"]
 line = 1011
-defer = "The monster-allegiance wall, the same one that deferred Trump whole (DEC-54) and Life's Day of the Dove. 4.2 has no side for a monster to be on: no field to put one in, no AI that would read it, and no SUMMON that can take one. charm_animals() turns every animal in sight, which is Animal Taming's problem multiplied."
+note = """charm_animals(plev * 2) -- every animal in sight. Deferred \
+through 3.71.0 for want of monster allegiance."""
+effects = [ "PROJECT_LOS:MON_CHARM_ANIMAL", "dice:$B", "expr:B:PLAYER_LEVEL:* 2" ]
+desc = "Attempts to tame every animal in line of sight."
 
 [nature.spells."Stone Tell"]
 line = 1014
@@ -1065,7 +1084,10 @@ desc = "Terrifies a creature, and leaves it reeling."
 
 [death.spells."Enslave Undead"]
 line = 1425
-defer = "The monster-allegiance wall that deferred Trump whole (DEC-54) and three of Nature's five. 4.2 has no side for a monster to be on. control_one_undead() makes one undead creature serve you, which is the whole spell."
+note = """control_one_undead(dir, plev): one undead creature, aimed. \
+Deferred through 3.71.0 for want of monster allegiance."""
+effects = [ "BOLT_AWARE:MON_CHARM_UNDEAD", "dice:$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+desc = "Attempts to bind a single undead creature to your will."
 
 [death.spells."Orb of Entropy"]
 line = 1430
@@ -1162,7 +1184,16 @@ desc = "Draws the life out of a living creature.  The dead are untouched."
 
 [death.spells."Raise the Dead"]
 line = 1655
-defer = "The monster-allegiance wall that deferred Trump whole (DEC-54) and three of Nature's five. 4.2 has no side for a monster to be on. raise_dead() calls undead out of the floor to fight for you -- two in three of them loyal. Imported hostile it is a spell that raises undead to attack the caster, which is the opposite spell."
+defer = """raise_dead() animates the corpses and skeletons *actually lying \
+on the floor nearby*, two in three of them as pets. The pet half of that wall \
+came down with PLR-22; the other half did not. Zangband keeps corpses and \
+skeletons as fields on the ground, dropped by DROP_CORPSE and DROP_SKELETON \
+monsters, and 4.2 has no such object and no such flag -- there is nothing \
+lying there to raise. Translating it as "summon undead as pets" would be a \
+different spell wearing this one's name: this one is paid for by what you \
+have already killed, and that is the whole character of it. Re-deferred in \
+3.72.0 with the reason corrected, rather than left reading as blocked on pets \
+when pets have arrived."""
 
 [death.spells."Esoteria"]
 line = 1669

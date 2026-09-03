@@ -194,9 +194,17 @@ static int test_every_flavoured_tval_has_enough_flavours(void *state) {
  * an object could modify.
  */
 static int test_the_deferred_objects_are_absent(void *state) {
-	null(kind_named(TV_WAND, "Tame Monster"));
 	null(kind_named(TV_SCROLL, "Artifact Creation"));
 	null(kind_named(TV_WAND, "Rockets"));
+
+	/*
+	 * And the Wand of Tame Monster is here, since 3.72.0. It left this list
+	 * the day monster allegiance arrived, which is what the note above says
+	 * is supposed to happen -- so it is asserted present rather than deleted
+	 * from the test, because "we imported it" and "we forgot about it" look
+	 * the same once the line is gone.
+	 */
+	notnull(kind_named(TV_WAND, "Tame Monster"));
 
 	ok;
 }
