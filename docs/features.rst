@@ -235,6 +235,133 @@ Setting both lethality values to ``100`` gives behaviour identical to vanilla
 Angband 4.2 — a supported configuration, and a useful comparison.
 
 
+Where this differs from Zangband
+================================
+
+This is not a port. Zangband stopped in 2005 at 2.7.5-pre1 and Angband did not
+stop, so every piece of Zangband that arrives here has to be expressed in a game
+that has moved twenty years on. Most of it converts intact. Where it does not,
+the reason is recorded — every judgement below has a numbered entry in the
+project's decision log with the source line it came off and what the change
+cost.
+
+Five reasons cover almost all of it.
+
+Angband 4.2 cannot say it
+-------------------------
+
+The commonest reason, and the least interesting: the mechanism exists in
+Zangband and 4.2 has no vocabulary for it.
+
+- **Chaos lost three damage types.** Zangband's ``hurt_types`` has four
+  projections 4.2 has no counterpart for. Disintegration damaged *and* removed
+  walls, which 4.2 splits into two effects; the other two were mapped onto the
+  nearest thing that exists. Five spell radii that grew with the caster's level
+  are frozen, because 4.2's radius is a constant in the data. Chaos still
+  arrived whole — thirty-two spells, none dropped.
+- **Nothing blesses a weapon.** 4.2 has a ``BLESSED`` object flag and no effect
+  that confers it, so Life's *Bless Weapon* is listed and does nothing rather
+  than being quietly replaced by a random brand, which is a different spell.
+- **Nothing dispels demons by name.** 4.2 dispels undead, evil, or everything.
+  *Exorcism* therefore hits undead by name and demons by being evil, which
+  catches more than Zangband's version did.
+- **A ring of glyphs is one glyph.** *Warding True* laid glyphs around the
+  caster; 4.2's ``GLYPH`` places one, beneath you.
+- **Polymorph Self keeps the mutations and drops the race change.** Zangband
+  rewrote your race permanently. 4.2 has shapechanges, which are better, and a
+  character whose race is mangled mid-game breaks things a savefile has to
+  believe.
+
+Where the gap was worth closing rather than working around, it was closed:
+``FETCH`` did not exist in 4.2 and now does, because telekinesis, Sorcery and
+Trump all needed it.
+
+The original never finished it
+------------------------------
+
+Zangband has features that were written and then not wired up. You would not
+have noticed playing it, because nothing showed.
+
+- **Virtues.** Topi Ylinen wrote them in 1998. By 2.7.5-pre1 there were **168
+  places that wrote a virtue and none that read one**, and the screen that would
+  have displayed them was commented out with the note *"Display virtues option
+  is always left out"*. Eight counters moving with everything a character did,
+  for seven years, read by nothing. The selection is kept because that part did
+  real work; the consumers are ours — the Lords of Chaos weigh them, and so does
+  the dream at the inn.
+- **The mutation regeneration penalty.** The spoiler describes it in detail. It
+  is not in the source: ``count_mutations()`` has two callers and both are
+  prerequisite checks. The documentation describes a version that shipped and
+  then lost the feature, so this game does not have it either.
+
+Pointing it back at Amber
+-------------------------
+
+Zangband began as a game built on Roger Zelazny's *Chronicles of Amber* and did
+not stay one. It picked up Moorcock, then Lovecraft, then Tolkien, then
+Warhammer. Steering it back is a project goal rather than a preference, and it
+applies to content already imported as much as to what comes next.
+
+- **A Chaos-Warrior serves a Lord of the Courts.** Zangband's sixteen patrons
+  are Moorcock's Elric gods — Slortar, Xiombarg, Arioch — plus Khorne,
+  Slaanesh, Nurgle and Tzeentch, who are Warhammer. Not one has any connection
+  to Amber. Nine named Lords of the Courts of Chaos replace them.
+- **The Unicorn of Amber** is in the game, and she is Amber's emblem: she makes
+  you whole once and is then gone about her business.
+- **Races are curated, not imported wholesale.** Four of Zangband's were turned
+  down on the evidence rather than converted for completeness.
+- **One realm is deliberately not Zangband's.** Zangband's Arcane is explicitly
+  the weak generalist with no high-level spells. 4.2's arcane realm is a Mage's
+  main line. Folding them together makes Arcane stronger here than it was
+  there, and the alternative was two realms sharing one name.
+
+Because it plays better
+-----------------------
+
+Some changes are neither conversion nor fidelity. They are the game being
+improved.
+
+- **Pets follow you downstairs.** Zangband left them behind. That was carried
+  over at first and then reversed: a pet you have spent the game charming and
+  feeding, abandoned by a staircase, is a punishment for using the feature.
+- **A power paid for in blood is not also penalised for it.** Both games charge
+  5% failure per point of mana you are short. Both also let a character with no
+  mana pay the cost in hit points instead — and those are the same characters,
+  so the surcharge fell only on people already bleeding for it. A Draconian's
+  breath went from 95% to fail to 7%.
+- **A blessed beast bounds out of earshot.** The white deer heals you once and
+  leaves. It used to bound ten grids, which a creature moving at speed 130 and
+  hearing at 40 undoes immediately — so it came back and stood there being
+  refused. Reported from play twice.
+- **A character who has cheated says so**, in red, on the status line. The game
+  always knew; it just never mentioned it.
+- **Mutations are on the character sheet.** They reached the character dump and
+  nowhere on screen, which meant the only way to see the passive ones was to
+  write a file and read it.
+
+Nobody wrote down what they meant
+---------------------------------
+
+The last group is the honest one: the original does something, the reason is
+not recorded anywhere, and a judgement had to be made.
+
+- **Seven realms, mapped by content and not by name.** 4.2 has four realms and
+  Zangband names seven. Four plus seven is eleven, and two of the names
+  collide. The four that overlap are mapped by what they *hold* rather than what
+  they are called.
+- **Spell experience is per-book.** Zangband awards ``5 × book² × level`` and
+  4.2 awards ``sexp × level``, so the mechanism transfers exactly — but it
+  leaves a spread of 0.33× to 5.62× against 4.2's own curve, because Zangband
+  ties the reward to which book a spell is in and 4.2 ties it to the spell. Kept
+  as Zangband had it, with the outliers recorded for playtest rather than
+  quietly corrected.
+- **Classes Zangband never had borrow the figures of the class they match.**
+  The Druid, Necromancer and Blackguard are Angband's own, so Zangband's spell
+  table has no levels or mana for them at all.
+- **Monster sleepiness was recovered, not assumed.** The two games use different
+  scales and neither documents the relationship. It was derived by observing 434
+  monsters the two games share, rather than by picking a factor.
+
 Not yet
 =======
 

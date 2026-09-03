@@ -74,10 +74,16 @@ object:shadow book:[Deadly Powers]:[Black Channels]
 object:shadow book:[Corruption of Spirit]:[Necronomicon]
 
 
-# === Monsters dropped on the way to Amber (DEC-30) ========================
+# === Two monsters that were Angband's all along =============================
 #
-# Both were removed rather than renamed: neither belongs in a game about the
-# Courts of Chaos, and neither has a successor to point at.
+# Not dropped: deduplicated. Zangband's `hobo` and `raving lunatic` are
+# Angband's boil-covered wretch and village idiot under different names --
+# identical in glyph, colour, speed, armour, depth and experience, and both
+# still in Angband under the older name. The import kept Angband's names, which
+# is why a savefile written before that names something that is not there.
+#
+# They point at the monster they always were rather than at nothing, so a
+# character's kill record survives the deduplication.
 
-monster:raving lunatic:-
-monster:hobo:-
+monster:hobo:boil-covered wretch
+monster:raving lunatic:village idiot
