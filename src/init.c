@@ -4344,6 +4344,106 @@ struct file_parser p_race_parser = {
 
 /**
  * ------------------------------------------------------------------------
+ * Initialize renames
+ * ------------------------------------------------------------------------ */
+
+/**
+ * What this game used to call things (rename.txt).
+ *
+ * Consulted only when a savefile names something no lookup can find, so it
+ * costs nothing for a current file and turns a rename from a lost object into
+ * no loss at all.  Kept as a flat list because it is walked once per failure
+ * and there are never many.
+ */
+struct rename_entry *renames = NULL;
+
+static enum parser_error parse_rename_object(struct parser *p) {
+	struct rename_entry *r = mem_zalloc(sizeof *r);
+	const char *to = parser_getstr(p, "to");
+
+	r->kind = RENAME_OBJECT;
+	r->tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (r->tval < 0) {
+		mem_free(r);
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	}
+	r->from = string_make(parser_getsym(p, "from"));
+	r->to = streq(to, "-") ? NULL : string_make(to);
+	r->next = renames;
+	renames = r;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_rename_named(struct parser *p,
+		enum rename_kind kind) {
+	struct rename_entry *r = mem_zalloc(sizeof *r);
+	const char *to = parser_getstr(p, "to");
+
+	r->kind = kind;
+	r->tval = -1;
+	r->from = string_make(parser_getsym(p, "from"));
+	r->to = streq(to, "-") ? NULL : string_make(to);
+	r->next = renames;
+	renames = r;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_rename_monster(struct parser *p) {
+	return parse_rename_named(p, RENAME_MONSTER);
+}
+
+static enum parser_error parse_rename_artifact(struct parser *p) {
+	return parse_rename_named(p, RENAME_ARTIFACT);
+}
+
+static enum parser_error parse_rename_ego(struct parser *p) {
+	return parse_rename_named(p, RENAME_EGO);
+}
+
+static struct parser *init_parse_rename(void) {
+	struct parser *p = parser_new();
+
+	parser_setpriv(p, NULL);
+	parser_reg(p, "object sym tval sym from str to", parse_rename_object);
+	parser_reg(p, "monster sym from str to", parse_rename_monster);
+	parser_reg(p, "artifact sym from str to", parse_rename_artifact);
+	parser_reg(p, "ego sym from str to", parse_rename_ego);
+	return p;
+}
+
+static errr run_parse_rename(struct parser *p) {
+	return parse_file_quit_not_found(p, "rename");
+}
+
+static errr finish_parse_rename(struct parser *p) {
+	parser_destroy(p);
+	return 0;
+}
+
+static void cleanup_rename(void) {
+	struct rename_entry *r = renames;
+
+	while (r) {
+		struct rename_entry *next = r->next;
+
+		string_free(r->from);
+		if (r->to) string_free(r->to);
+		mem_free(r);
+		r = next;
+	}
+	renames = NULL;
+}
+
+struct file_parser rename_parser = {
+	"rename",
+	init_parse_rename,
+	run_parse_rename,
+	finish_parse_rename,
+	cleanup_rename
+};
+
+/**
+ * ------------------------------------------------------------------------
  * Initialize player magic realms
  * ------------------------------------------------------------------------ */
 static enum parser_error parse_realm_name(struct parser *p) {
@@ -6783,6 +6883,7 @@ static struct {
 	{ "history charts", &history_parser },
 	{ "bodies", &body_parser },
 	{ "player races", &p_race_parser },
+	{ "renames", &rename_parser },
 	{ "magic realms", &realm_parser },
 	{ "player classes", &class_parser },
 	{ "artifacts", &artifact_parser },

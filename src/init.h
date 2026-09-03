@@ -309,6 +309,27 @@ extern struct file_parser names_parser;
 extern struct file_parser player_property_parser;
 extern struct file_parser p_race_parser;
 extern struct file_parser realm_parser;
+
+/**
+ * What this game used to call something (rename.txt).
+ */
+enum rename_kind {
+	RENAME_OBJECT,
+	RENAME_MONSTER,
+	RENAME_ARTIFACT,
+	RENAME_EGO
+};
+
+struct rename_entry {
+	enum rename_kind kind;
+	int tval;			/**< For RENAME_OBJECT; -1 otherwise */
+	char *from;
+	char *to;			/**< NULL when the thing was removed outright */
+	struct rename_entry *next;
+};
+
+extern struct rename_entry *renames;
+extern struct file_parser rename_parser;
 extern struct file_parser mutation_parser;
 extern struct file_parser shape_parser;
 extern struct file_parser trap_parser;

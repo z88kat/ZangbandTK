@@ -686,6 +686,9 @@ bool savefile_load(const char *path, bool cheat_death)
 	ok = try_load(f, loaders);
 	file_close(f);
 
+	/* Say once what the character lost to a renamed or removed kind. */
+	if (ok) note_lost_objects();
+
 	if (player->is_dead && cheat_death) {
 			player->is_dead = false;
 			player->chp = player->mhp;

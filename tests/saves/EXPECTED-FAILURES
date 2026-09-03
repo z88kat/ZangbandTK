@@ -5,62 +5,22 @@
 # that outlives its reason would silently excuse the next real break.
 #
 # Take an entry out when the file loads again, rather than leaving it here.
-
-# DEC-50, 2 September 2026: the Life realm took Zangband's four prayer books in
-# place of Angband's five, and a book's object kind is created by its book: line
-# in class.txt. A savefile names an object by tval and sval *as text*, so the
-# moment [Novice's Handbook] stopped existing, every save holding one stopped
-# being readable -- and every save holds one, because every save carries the
-# town temple's stock and the temple sells prayer books.
 #
-# Measured before the change, not after: the two town prayer books appear in 35
-# of 35 of these files; the three dungeon books in 0, 1 and 1. The project owner
-# chose Zangband's book titles throughout, over keeping the two town titles,
-# knowing this was the cost and that the game is pre-release.
+# This file held all thirty-five between 2 and 3 September 2026. It holds four
+# now, and the difference is the point: an object whose kind has been renamed
+# or removed is no longer fatal. The character wakes up without it -- see
+# rd_item() and boggyman_took_one() in load.c -- and the other thirty-one
+# characters came back.
 #
-# These thirty-five are therefore historical. They are kept because they are the
-# only record of the formats this game has written, and because the day a reader
-# for them is written -- mapping old book names to new -- this is what would
-# prove it worked.
-#
-# They no longer guard against accidental breakage. `game/roundtrip` does that
-# instead, on characters it builds itself: a caster saved and loaded back with
-# the same spells at the same indices, and the spell-list fingerprint proved to
-# refuse a moved list and accept an unmoved one. A new corpus of played
-# characters is still worth having, because these files carry block versions no
-# freshly built character will reproduce.
-Ador: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Allen: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Amanwe: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Amornor: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Anglim: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Avata: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Bercar: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Bragor: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Bronwen: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Curu: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Cuth: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Eiglor: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Eldalith: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Elegor: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Findur: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Golin: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Halinen: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Hauglion: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Hilia: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Lothloth: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Luinar: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Lumharm: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Macire: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Nath: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Nedhrin: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-PLAYER: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Sulare: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Taurth: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Telch: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Thil: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Ulon: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Uluthan: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Valith: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-Varano: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
-yyAndolad: predates DEC-50's Life realm; holds a prayer book kind that no longer exists
+# These four are refused for a different reason, and deliberately. DEC-50
+# replaced the Life realm's spells, and a character's known spells are recorded
+# by flat position across their class's books. There is no honest way to read
+# them: the file says "spell 7" and spell 7 is now a different prayer. A
+# missing object is visible the moment you check your pack; a Priest quietly
+# holding somebody else's spell list is not. So this refuses rather than
+# guesses, and that is the rule -- content can be dropped, identity cannot be
+# invented.
+Ador: caster; spells recorded by position against the pre-DEC-50 spell list
+Amanwe: caster; spells recorded by position against the pre-DEC-50 spell list
+Hilia: caster; spells recorded by position against the pre-DEC-50 spell list
+Nath: caster; spells recorded by position against the pre-DEC-50 spell list

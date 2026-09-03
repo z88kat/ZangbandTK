@@ -102,13 +102,77 @@ static uint8_t trf_size = 0;
 
 /**
  * Shorthand function pointer for rd_item version
+ *
+ * `lost` distinguishes the two reasons an item reader returns NULL, which used
+ * to be the same answer and cost the project every savefile it had.  See
+ * rd_item().
  */
-typedef struct object *(*rd_item_t)(void);
+typedef struct object *(*rd_item_t)(bool *lost);
+
+/**
+ * What a name became, from rename.txt, or NULL if nothing is recorded.
+ *
+ * Consulted only after a lookup has already failed, so a current savefile
+ * never reaches it.  `removed` distinguishes "no entry" from "an entry that
+ * says this was deleted on purpose" -- the second is still a loss, but a known
+ * one, and worth saying differently.
+ */
+static const char *renamed_to(enum rename_kind kind, int tval,
+		const char *from, bool *removed)
+{
+	const struct rename_entry *r;
+
+	if (removed) *removed = false;
+	if (!from || !from[0]) return NULL;
+
+	for (r = renames; r; r = r->next) {
+		if (r->kind != kind) continue;
+		if (kind == RENAME_OBJECT && r->tval != tval) continue;
+		if (my_stricmp(r->from, from) != 0) continue;
+
+		if (!r->to && removed) *removed = true;
+		return r->to;
+	}
+
+	return NULL;
+}
+
+
+/**
+ * How many objects this load could not name, and the note that says so.
+ *
+ * An object whose kind has been renamed or removed since the character was
+ * saved cannot be rebuilt -- a savefile stores "prayer book", not a number.
+ * Rather than refuse the whole character for it, the object is dropped and the
+ * character wakes up without it.  Counted rather than announced one at a time,
+ * because a single removed kind can take every copy on every shelf in the
+ * world and thirty separate messages would bury the rest of the load.
+ */
+static int boggyman_losses = 0;
+
+static void boggyman_took_one(void)
+{
+	boggyman_losses++;
+}
+
+void note_lost_objects(void)
+{
+	if (!boggyman_losses) return;
+
+	if (boggyman_losses == 1) {
+		note("Something of yours went missing while you slept.");
+	} else {
+		note(format("%d things went missing while you slept.",
+					boggyman_losses));
+	}
+
+	boggyman_losses = 0;
+}
 
 /**
  * Read an object.
  */
-static struct object *rd_item(void)
+static struct object *rd_item(bool *lost)
 {
 	struct object *obj = object_new();
 
@@ -118,11 +182,39 @@ static struct object *rd_item(void)
 	size_t i;
 	char buf[128];
 	uint8_t ver = 1;
+	char lost_name[128];
+
+	/*
+	 * NULL means two different things here, and telling them apart is the
+	 * whole point of `lost`.
+	 *
+	 * A savefile names its objects -- "prayer book", "[Novice's Handbook]" --
+	 * rather than numbering them, so an object whose kind has since been
+	 * renamed or removed cannot be rebuilt.  That is not the same event as
+	 * reaching the end of a list, but it used to return the same NULL, and the
+	 * end-of-list marker is *itself* an item with no kind (see wr_item's dummy
+	 * in save.c).  So a caller could not tell "the pile ended" from "this book
+	 * is gone", and the readers that guessed "ended" stopped early and left the
+	 * rest of the list unread -- which desynchronised the stream and corrupted
+	 * everything after it.  One deleted book took the whole savefile.
+	 *
+	 *   *lost == false  -- end of list, or a record that was never an item
+	 *   *lost == true   -- a real item this build cannot name any more
+	 *
+	 * When `lost` is true the record has still been read to its end, so the
+	 * caller may drop the object and carry on reading.  That is why the
+	 * artifact and ego failures below no longer return early: bailing out
+	 * mid-record is what made this unrecoverable.
+	 */
+	if (lost) *lost = false;
+	lost_name[0] = '\0';
 
 	rd_u16b(&tmp16u);
 	rd_byte(&ver);
-	if (tmp16u != 0xffff)
+	if (tmp16u != 0xffff) {
+		object_delete(NULL, NULL, &obj);
 		return NULL;
+	}
 
 	rd_u16b(&obj->oidx);
 
@@ -139,7 +231,22 @@ static struct object *rd_item(void)
 	}
 	rd_string(buf, sizeof(buf));
 	if (buf[0]) {
-		obj->sval = lookup_sval(obj->tval, buf);
+		/*
+		 * Signed, and deliberately not obj->sval: that field is a uint8_t, so
+		 * lookup_sval()'s -1 lands in it as 255 and every "did that resolve?"
+		 * test written against it is dead code.
+		 */
+		int sv = lookup_sval(obj->tval, buf);
+
+		/* Not a name this build knows; ask what it became. */
+		if (sv < 0 || !lookup_kind(obj->tval, sv)) {
+			const char *now = renamed_to(RENAME_OBJECT, obj->tval, buf, NULL);
+
+			if (now) sv = lookup_sval(obj->tval, now);
+			if (sv < 0) my_strcpy(lost_name, buf, sizeof(lost_name));
+		}
+
+		obj->sval = sv;
 	}
 	rd_s16b(&obj->pval);
 
@@ -150,16 +257,26 @@ static struct object *rd_item(void)
 	if (buf[0]) {
 		obj->artifact = lookup_artifact_name(buf);
 		if (!obj->artifact) {
-			note(format("Couldn't find artifact %s!", buf));
-			return NULL;
+			const char *now = renamed_to(RENAME_ARTIFACT, -1, buf, NULL);
+
+			if (now) obj->artifact = lookup_artifact_name(now);
+		}
+		if (!obj->artifact) {
+			/* Noted, not returned on: the rest of the record still has to be
+			 * read or the stream is left mid-object. */
+			my_strcpy(lost_name, buf, sizeof(lost_name));
 		}
 	}
 	rd_string(buf, sizeof(buf));
 	if (buf[0]) {
 		obj->ego = lookup_ego_item(buf, obj->tval, obj->sval);
 		if (!obj->ego) {
-			note(format("Couldn't find ego item %s!", buf));
-			return NULL;
+			const char *now = renamed_to(RENAME_EGO, -1, buf, NULL);
+
+			if (now) obj->ego = lookup_ego_item(now, obj->tval, obj->sval);
+		}
+		if (!obj->ego && !lost_name[0]) {
+			my_strcpy(lost_name, buf, sizeof(lost_name));
 		}
 	}
 	rd_byte(&effect);
@@ -250,8 +367,22 @@ static struct object *rd_item(void)
 	/* Lookup item kind */
 	obj->kind = lookup_kind(obj->tval, obj->sval);
 
-	/* Check we have a kind */
-	if ((!obj->tval && !obj->sval) || !obj->kind) {
+	/*
+	 * An item with neither tval nor sval is the end-of-list marker, and is not
+	 * a loss.  Anything else that failed to resolve is one, and the caller is
+	 * told so it can drop this object and keep reading.
+	 */
+	if (!obj->tval && !obj->sval) {
+		object_delete(NULL, NULL, &obj);
+		return NULL;
+	}
+
+	if (!obj->kind || lost_name[0]) {
+		if (lost && !lost_name[0]) {
+			/* Name what went, so the note says something useful. */
+			my_strcpy(lost_name, "an object", sizeof(lost_name));
+		}
+		if (lost) *lost = true;
 		object_delete(NULL, NULL, &obj);
 		return NULL;
 	}
@@ -291,6 +422,11 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 	mon->midx = tmp16u;
 	rd_string(race_name, sizeof(race_name));
 	mon->race = lookup_monster(race_name);
+	if (!mon->race) {
+		const char *now = renamed_to(RENAME_MONSTER, -1, race_name, NULL);
+
+		if (now) mon->race = lookup_monster(now);
+	}
 	if (!mon->race) {
 		/* The race has been renamed or removed since this save was
 		 * written.  Read the rest of the record anyway - the stream
@@ -348,9 +484,18 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 
 	/* Read all the held objects (order is unimportant) */
 	while (true) {
-		struct object *obj = rd_item();
-		if (!obj)
+		bool lost = false;
+		struct object *obj = rd_item(&lost);
+
+		if (!obj) {
+			/* Gone from the game, not the end of the pile: skip it and keep
+			 * reading, or the rest of what it carried is left in the stream. */
+			if (lost) {
+				boggyman_took_one();
+				continue;
+			}
 			break;
+		}
 
 		pile_insert(&mon->held_obj, obj);
 		assert(obj->oidx);
@@ -588,6 +733,12 @@ int rd_monster_memory(void)
 	rd_string(buf, sizeof(buf));
 	while (!streq(buf, "No more monsters")) {
 		struct monster_race *race = lookup_monster(buf);
+
+		if (!race) {
+			const char *now = renamed_to(RENAME_MONSTER, -1, buf, NULL);
+
+			if (now) race = lookup_monster(now);
+		}
 
 		/* Get the kill and theft counts */
 		rd_u16b(&nkill);
@@ -1473,10 +1624,17 @@ static int rd_gear_aux(rd_item_t rd_item_version, struct object **gear)
 
 	/* Read until done */
 	while (code != FINISHED_CODE) {
-		struct object *obj = (*rd_item_version)();
+		bool lost = false;
+		struct object *obj = (*rd_item_version)(&lost);
 
 		/* Read the item */
 		if (!obj) {
+			if (lost) {
+				/* It went in the night; the character wakes up without it. */
+				boggyman_took_one();
+				rd_byte(&code);
+				continue;
+			}
 			note("Error reading item");
 			return (-1);
 		}
@@ -1585,19 +1743,34 @@ static int rd_stores_aux(rd_item_t rd_item_version, bool with_quality)
 
 		/* Read the items */
 		for (; num; num--) {
-			/* Read the known item */
-			struct object *obj, *known_obj = (*rd_item_version)();
-			if (!known_obj) {
+			bool lost_known = false, lost_real = false;
+			struct object *obj, *known_obj;
+
+			/*
+			 * A shelf is written as pairs -- what the shopkeeper has and what
+			 * the character knows of it -- so both records are read even when
+			 * the first is of something this build no longer has.  Skipping
+			 * one of a pair would leave the other to be read as the next pair.
+			 */
+			known_obj = (*rd_item_version)(&lost_known);
+			if (!known_obj && !lost_known) {
 				note("Error reading known item");
 				return (-1);
 			}
 
-			/* Read the item */
-			obj = (*rd_item_version)();
-			if (!obj) {
+			obj = (*rd_item_version)(&lost_real);
+			if (!obj && !lost_real) {
 				note("Error reading item");
 				return (-1);
 			}
+
+			if (!known_obj || !obj) {
+				if (known_obj) object_delete(NULL, NULL, &known_obj);
+				if (obj) object_delete(NULL, NULL, &obj);
+				boggyman_took_one();
+				continue;
+			}
+
 			obj->known = known_obj;
 
 			/* Accept any valid items */
@@ -1783,9 +1956,18 @@ static int rd_objects_aux(rd_item_t rd_item_version, struct chunk *c)
 
 	/* Read the dungeon items until one isn't returned */
 	while (true) {
-		struct object *obj = (*rd_item_version)();
-		if (!obj)
+		bool lost = false;
+		struct object *obj = (*rd_item_version)(&lost);
+
+		if (!obj) {
+			/* Gone from the game rather than the end of the level's items:
+			 * leave it lying nowhere and read the ones after it. */
+			if (lost) {
+				boggyman_took_one();
+				continue;
+			}
 			break;
+		}
 #if OBJ_RECOVER
 		if (square_in_bounds_fully(c, obj->grid) && c == cave) {
 #else
@@ -2019,13 +2201,19 @@ static int rd_wilderness_body(void)
 		struct object *obj;
 		uint16_t rx, ry;
 		int32_t left;
+		bool lost = false;
 
 		rd_u16b(&rx);
 		rd_u16b(&ry);
 		rd_s32b(&left);
 
-		obj = rd_item();
+		obj = rd_item(&lost);
 		if (!obj) {
+			if (lost) {
+				/* One relic fewer in the world, and the rest still load. */
+				boggyman_took_one();
+				continue;
+			}
 			note("Error reading a wilderness object");
 			return -1;
 		}

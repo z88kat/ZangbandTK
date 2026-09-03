@@ -51,6 +51,7 @@
 #include "player-spell.h"
 #include "player-util.h"
 #include "mon-util.h"
+#include "obj-util.h"
 #include "savefile.h"
 #include "z-file.h"
 #include "z-util.h"
@@ -527,6 +528,209 @@ static int test_the_player_block_says_version_six(void *state) {
 	ok;
 }
 
+
+/**
+ * A savefile names what it holds, so renaming a thing is a compatibility event.
+ *
+ * These three exist because of a real one.  DEC-50 replaced Angband's five
+ * prayer books with Zangband's four, which deleted the old object kinds -- and
+ * a savefile records "prayer book", "[Novice's Handbook]" rather than a number.
+ * Every save in the corpus carried the town temple's stock, so every save named
+ * a book the game no longer had, and all thirty-five stopped loading.
+ *
+ * The corpus could not have caught that.  A test made of savefiles cannot
+ * notice a change that stops them loading, because then there is nothing left
+ * to test with.  So the break is made deliberately here, on a character the
+ * suite has just written, against the live object table.
+ */
+
+/** The object kind of that name, from the live table. */
+static struct object_kind *kind_named(const char *name) {
+	int k;
+
+	for (k = 0; k < z_info->k_max; k++) {
+		if (k_info[k].name && streq(k_info[k].name, name)) return &k_info[k];
+	}
+
+	return NULL;
+}
+
+/** The kind of the first thing in the character's pack, or NULL. */
+static struct object_kind *first_carried_kind(void) {
+	struct object *obj;
+
+	for (obj = player->gear; obj; obj = obj->next) {
+		if (obj->kind && obj->kind->name) return obj->kind;
+	}
+
+	return NULL;
+}
+
+/** How many things of that name the character is carrying. */
+static int carried_named(const char *name) {
+	struct object *obj;
+	int n = 0;
+
+	for (obj = player->gear; obj; obj = obj->next) {
+		if (obj->kind && obj->kind->name && streq(obj->kind->name, name)) n++;
+	}
+
+	return n;
+}
+
+/**
+ * A thing renamed out from under a savefile is only lost, and the rest loads.
+ *
+ * The old behaviour was that it took the whole character with it -- and worse,
+ * it took the *stream*: rd_item() returned NULL both for "the list ended" and
+ * for "I cannot name this", the end-of-list marker being itself an item with no
+ * kind.  A reader that met a vanished object stopped early and left the rest of
+ * the list unread, so one deleted book desynchronised everything after it.
+ */
+static int test_a_vanished_object_is_only_lost(void *state) {
+	struct object_kind *kind;
+	char was[128];
+	int carried;
+
+	require(make_a_caster());
+
+	kind = first_carried_kind();
+	notnull(kind);
+	my_strcpy(was, kind->name, sizeof(was));
+	carried = carried_named(was);
+	require(carried > 0);
+
+	require(savefile_save(savename));
+
+	reset_before_load();
+
+	/*
+	 * Renamed after the reset, not before it.  reset_before_load() runs
+	 * init_angband(), which rebuilds the object table out of the data files --
+	 * so a kind renamed before the reset is quietly put back, the load sees the
+	 * name it saved, and the test passes having broken nothing.  It has to be
+	 * renamed in the table the *load* will read.
+	 *
+	 * No rename.txt entry, so there is nothing to recover it with.
+	 */
+	kind = kind_named(was);
+	notnull(kind);
+	string_free(kind->name);
+	kind->name = string_make("A Thing That Is Not There Any More");
+
+	require(savefile_load(savename, false));
+
+	/* The character came back... */
+	notnull(player->class);
+	notnull(player->race);
+
+	/* ...without the thing, and without it taking anything else. */
+	eq(carried_named(was), 0);
+
+	ok;
+}
+
+/**
+ * And with an entry in rename.txt it is not even lost.
+ *
+ * This is the cheap half of the answer: a rename costs one line in a data file,
+ * and that line is the difference between a character keeping its sword and
+ * not.
+ */
+static int test_a_renamed_object_is_recovered(void *state) {
+	struct object_kind *kind;
+	struct rename_entry *entry;
+	char was[128];
+	int carried, tval;
+
+	require(make_a_caster());
+
+	kind = first_carried_kind();
+	notnull(kind);
+	my_strcpy(was, kind->name, sizeof(was));
+	tval = kind->tval;
+	carried = carried_named(was);
+	require(carried > 0);
+
+	require(savefile_save(savename));
+
+	reset_before_load();
+
+	/*
+	 * Both the rename and the entry go in after the reset: init_angband()
+	 * rebuilds the object table *and* re-reads rename.txt, so anything done
+	 * before it is discarded.
+	 */
+	kind = kind_named(was);
+	notnull(kind);
+	string_free(kind->name);
+	kind->name = string_make("Renamed For The Test");
+
+	/* What a rename.txt line amounts to, pushed onto the live list. */
+	entry = mem_zalloc(sizeof *entry);
+	entry->kind = RENAME_OBJECT;
+	entry->tval = tval;
+	entry->from = string_make(was);
+	entry->to = string_make("Renamed For The Test");
+	entry->next = renames;
+	renames = entry;
+
+	require(savefile_load(savename, false));
+
+	notnull(player->class);
+
+	/* Back, under its new name and in the same number. */
+	eq(carried_named("Renamed For The Test"), carried);
+
+	ok;
+}
+
+/**
+ * Every rename in the data file points at something that exists.
+ *
+ * A typo here is silent in the worst way: the entry looks like protection and
+ * does nothing, so the object it was meant to save is lost anyway and the file
+ * says otherwise.  Removals are written `-` and name nothing on purpose.
+ */
+static int test_every_rename_points_somewhere_real(void *state) {
+	const struct rename_entry *r;
+	int checked = 0, removals = 0;
+
+	for (r = renames; r; r = r->next) {
+		notnull(r->from);
+		require(r->from[0] != '\0');
+
+		if (!r->to) {
+			removals++;
+			continue;
+		}
+
+		switch (r->kind) {
+			case RENAME_OBJECT:
+				require(r->tval >= 0);
+				notnull(kind_named(r->to));
+				break;
+			case RENAME_MONSTER:
+				notnull(lookup_monster(r->to));
+				break;
+			case RENAME_ARTIFACT:
+				notnull(lookup_artifact_name(r->to));
+				break;
+			case RENAME_EGO:
+				break;
+		}
+		checked++;
+	}
+
+	printf("RENAMES %d point somewhere real, %d record a removal\n", checked,
+		   removals);
+
+	/* The file is not empty, or this test checks nothing. */
+	require(checked + removals > 0);
+
+	ok;
+}
+
 const char *suite_name = "game/roundtrip";
 struct test tests[] = {
 	{ "a-caster-survives-a-round-trip",
@@ -543,5 +747,9 @@ struct test tests[] = {
 	  test_the_player_block_says_version_six },
 	{ "the-pet-orders-survive-a-save",
 	  test_the_pet_orders_survive_a_save },
+	{ "a-vanished-object-is-only-lost", test_a_vanished_object_is_only_lost },
+	{ "a-renamed-object-is-recovered", test_a_renamed_object_is_recovered },
+	{ "every-rename-points-somewhere-real",
+	  test_every_rename_points_somewhere_real },
 	{ NULL, NULL }
 };

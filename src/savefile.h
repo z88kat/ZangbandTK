@@ -102,6 +102,7 @@ int rd_player_5(void);
 int rd_ignore(void);
 int rd_misc(void);
 int rd_player_hp(void);
+void note_lost_objects(void);
 int rd_player_spells_1(void);
 int rd_player_spells(void);
 int rd_gear(void);

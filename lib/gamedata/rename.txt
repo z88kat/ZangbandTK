@@ -1,0 +1,83 @@
+# File: rename.txt
+#
+# Things this game used to call something else.
+#
+# A savefile records what it holds by *name* -- "prayer book",
+# "[Novice's Handbook]", "raving lunatic" -- and not by number, so a character
+# saved before a rename names something the game can no longer find. Without
+# this file the object is simply lost, which is survivable but not free: the
+# character wakes up short of it (see rd_item() in load.c).
+#
+# This file is how a rename costs nothing instead. Each line says what the old
+# name became, and the loader consults it when a lookup fails. It is only read
+# on the failing path, so it costs nothing at all for a current savefile.
+#
+# **Add an entry whenever you rename or remove something a savefile can hold.**
+# That is objects, monsters, artifacts and ego types. It takes one line and it
+# is the difference between a character keeping its sword and not.
+#
+# object:<tval>:<old sval>:<new sval>
+#   An object kind. The tval is the current one; if the tval changed too, the
+#   old name is unreachable and the object is lost -- rename svals, not tvals.
+#
+# monster:<old name>:<new name>
+# artifact:<old name>:<new name>
+# ego:<old name>:<new name>
+#
+# A `new` name of "-" means the thing was removed outright rather than renamed.
+# That is not the same as leaving it out: it records that the loss is known and
+# intended, so the next reader does not go looking for a mistake.
+
+
+# === The Life realm (DEC-50, 3.60.0) =====================================
+#
+# Zangband's four prayer books replaced Angband's five. Two of the old five
+# were town books and appeared in every savefile in existence, because every
+# save carries the town temple's stock. Mapped by what the book is for rather
+# than by position: the beginner's book to the beginner's book, and the rest
+# to the nearest rung of the new ladder.
+
+object:prayer book:[Novice's Handbook]:[Book of Common Prayer]
+object:prayer book:[Cleansing Power]:[High Mass]
+object:prayer book:[Healing and Sanctuary]:[Book of the Unicorn]
+object:prayer book:[Battle Blessings]:[Book of the Unicorn]
+object:prayer book:[Wrath of the Valar]:[Blessings of the Grail]
+
+
+# === Arcane (DEC-50, 3.62.0) =============================================
+#
+# Angband's five magic books became Zangband's four. The first two were town
+# books and are in every savefile that has seen a town.
+
+object:magic book:[First Spells]:[Cantrips for Beginners]
+object:magic book:[Attacks and Knowledge]:[Minor Arcana]
+object:magic book:[Magical Defences]:[Minor Arcana]
+object:magic book:[Arcane Control]:[Major Arcana]
+object:magic book:[Wizard's Tome of Power]:[Manual of Mastery]
+
+
+# === Nature (DEC-50, 3.63.0) =============================================
+
+object:nature book:[Lesser Charms]:[Call of the Wild]
+object:nature book:[Gifts of Nature]:[Nature Mastery]
+object:nature book:[Creature Dominion]:[Nature Mastery]
+object:nature book:[Nature Craft]:[Nature's Gifts]
+object:nature book:[Wild Forces]:[Nature's Wrath]
+
+
+# === Death (DEC-50, 3.64.0) ==============================================
+
+object:shadow book:[Into the Shadows]:[Black Prayers]
+object:shadow book:[Dark Rituals]:[Black Mass]
+object:shadow book:[Fear and Torment]:[Black Mass]
+object:shadow book:[Deadly Powers]:[Black Channels]
+object:shadow book:[Corruption of Spirit]:[Necronomicon]
+
+
+# === Monsters dropped on the way to Amber (DEC-30) ========================
+#
+# Both were removed rather than renamed: neither belongs in a game about the
+# Courts of Chaos, and neither has a successor to point at.
+
+monster:raving lunatic:-
+monster:hobo:-
