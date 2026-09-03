@@ -33,6 +33,17 @@ Unreleased
 Pets follow — 3 September 2026
 ------------------------------
 
+- **3.79.1** — **A charm test stops assuming a charm is certain.** The saving
+  throw is ``level > randint1(power * 3)``, so a level 30 creature against a
+  power of 200 rolls against ``randint1(600)`` and wins about one time in
+  twenty. Four assertions in ``monster/charm`` called the charm once and
+  required it to take — a five per cent flake apiece, and the comment on one of
+  them claimed power 200 "beats the saving throw essentially always", which the
+  arithmetic does not support. Raising the power only makes it rarer, so the
+  tests now ask whether a creature *can* be charmed rather than whether it was
+  charmed first try. The assertions that a charm is *refused* need no such
+  loop: those are certainties. Found by ``check-flakes`` reporting the seed.
+
 - **3.79.0** — **What a permanent stable costs** (PLR-26 phase F; DEC-65).
   Pets following the player raised a question: the mana upkeep had gone from
   being the second limit on a stable to being the only one, and the worry was

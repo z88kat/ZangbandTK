@@ -98,6 +98,32 @@ static void charm_at(struct monster *mon, int type, int power) {
 				   NULL);
 }
 
+/**
+ * Charm until it takes, or give up after `tries`.
+ *
+ * A charm is *never* certain, and the arithmetic says why: the saving throw is
+ * `level > randint1(power * 3)`, so a level 30 creature against a power of 200
+ * rolls against `randint1(600)` and wins about one time in twenty. Calling it
+ * once and asserting the charm took is therefore a five per cent flake, which
+ * is what it was -- caught by `scripts/check-flakes` reporting the seed after
+ * two failures in twenty whole-suite passes.
+ *
+ * Raising the power does not fix it, only makes it rarer, so the honest test
+ * is "can this be charmed" rather than "is this charmed on the first attempt".
+ * The tests that assert a charm is *refused* need no such loop: those are
+ * certainties.
+ */
+static bool charm_until(struct monster *mon, int type, int power, int tries) {
+	int t;
+
+	for (t = 0; t < tries; t++) {
+		if (monster_is_pet(mon)) return true;
+		charm_at(mon, type, power);
+	}
+
+	return monster_is_pet(mon);
+}
+
 /** How many pets are on the level. */
 static int pets_here(void) {
 	int i, n = 0;
@@ -126,9 +152,7 @@ static int test_a_strong_charm_takes(void *state) {
 	require(mon);
 	require(monster_is_hostile(mon));
 
-	charm_at(mon, PROJ_MON_CHARM, 200);
-
-	require(monster_is_pet(mon));
+	require(charm_until(mon, PROJ_MON_CHARM, 200, 20));
 
 	ok;
 }
@@ -183,8 +207,7 @@ static int test_no_conf_resists_the_general_charm(void *state) {
 
 	/* But the undead charm reaches it, because it is undead */
 	require(rf_has(mon->race->flags, RF_UNDEAD));
-	charm_at(mon, PROJ_MON_CHARM_UNDEAD, 200);
-	require(monster_is_pet(mon));
+	require(charm_until(mon, PROJ_MON_CHARM_UNDEAD, 200, 20));
 
 	ok;
 }
@@ -210,8 +233,7 @@ static int test_the_narrow_charms_are_narrow(void *state) {
 	require(monster_is_hostile(animal));
 
 	/* The animal charm will */
-	charm_at(animal, PROJ_MON_CHARM_ANIMAL, 200);
-	require(monster_is_pet(animal));
+	require(charm_until(animal, PROJ_MON_CHARM_ANIMAL, 200, 20));
 
 	clear_the_level();
 	person = put_beside("apprentice");
@@ -246,8 +268,7 @@ static int test_aggravation_refuses_the_charm(void *state) {
 	require(monster_is_hostile(mon));
 
 	/* And without it, the same charm takes */
-	charm_at(mon, PROJ_MON_CHARM, 200);
-	require(monster_is_pet(mon));
+	require(charm_until(mon, PROJ_MON_CHARM, 200, 20));
 
 	ok;
 }
