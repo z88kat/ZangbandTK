@@ -1,0 +1,99 @@
+#!/bin/sh
+#
+# How far the borg actually gets (BRG-18).
+#
+# Best depth and character level over N turns, per class, from fixed seeds.
+# This is the number that says whether the borg is verification of M8 to M10 or
+# a crash harness: a borg parked at depth 2 exercises almost none of the
+# mutations, the deeper realms' spells or the out-of-depth monsters that only
+# appear further down.
+#
+# It is a script rather than a shell loop in somebody's notes because the same
+# sweep was hand-rolled four times while chasing the depth stall, each time
+# slightly differently, which makes runs incomparable. The output is one line
+# per run plus a summary, so two runs can be diffed.
+#
+# Usage: scripts/borg-progress [-x exe] [-n turns] [-c class[,class...]] [seed...]
+#
+# Deaths are reported, not treated as failures -- the borg dies often at low
+# level and that is ordinary play (see c_borg_status). The exit status is
+# non-zero only for a crash, an abort or a wedge, which is what CI should care
+# about.
+
+exe=build-strict/game/angband
+turns=40000
+classes=Warrior
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+		-x) exe="$2"; shift 2 ;;
+		-n) turns="$2"; shift 2 ;;
+		-c) classes="$2"; shift 2 ;;
+		--) shift; break ;;
+		-*) echo "borg-progress: unknown option $1" >&2; exit 2 ;;
+		*) break ;;
+	esac
+done
+
+if [ $# -gt 0 ]; then seeds="$*"; else seeds="1 7 13 42 99 2026"; fi
+
+if [ ! -x "$exe" ]; then
+	echo "borg-progress: no executable at $exe" >&2
+	exit 2
+fi
+
+LANG=${LANG:-en_US.UTF-8}
+export LANG
+ZTK_HEADLESS=1
+export ZTK_HEADLESS
+
+# A step budget generous enough that the turn budget is what ends a run. Left
+# finite on purpose: a wedged borg must fail rather than hang.
+ZTK_BORG_STEPS=${ZTK_BORG_STEPS:-20000000}
+export ZTK_BORG_STEPS
+
+echo "borg-progress: $turns turns, seeds [$seeds]"
+printf '%-15s %6s %7s %7s %7s  %s\n' class seed turns depth clevel outcome
+
+broken=0
+runs=0
+best_depth=0
+best_level=0
+deaths=0
+
+for class in $(echo "$classes" | tr ',' ' '); do
+	ZTK_HEADLESS_CLASS="$class"
+	export ZTK_HEADLESS_CLASS
+
+	for seed in $seeds; do
+		runs=$(expr $runs + 1)
+
+		out=$(printf 'borg-seed %s\nborg-run %s\nborg-status?\nquit\n' \
+			"$seed" "$turns" | "$exe" -mtest 2>&1)
+		rc=$?
+		line=$(printf '%s\n' "$out" | grep '^borg-status:')
+
+		if [ $rc -ne 0 ] || [ -z "$line" ]; then
+			broken=$(expr $broken + 1)
+			printf '%-15s %6s %7s %7s %7s  BROKEN (exit %s)\n' \
+				"$class" "$seed" "-" "-" "-" "$rc"
+			printf '%s\n' "$out" | tail -6 | sed 's/^/    /'
+			continue
+		fi
+
+		t=$(printf '%s\n' "$line" | sed -n 's/.*turn=\([0-9]*\).*/\1/p')
+		d=$(printf '%s\n' "$line" | sed -n 's/.*maxdepth=\([0-9]*\).*/\1/p')
+		l=$(printf '%s\n' "$line" | sed -n 's/.*clevel=\([0-9]*\).*/\1/p')
+		r=$(printf '%s\n' "$line" | sed -n 's/.*result=\([a-z]*\).*/\1/p')
+
+		[ "$d" -gt "$best_depth" ] 2>/dev/null && best_depth=$d
+		[ "$l" -gt "$best_level" ] 2>/dev/null && best_level=$l
+		[ "$r" = "died" ] && deaths=$(expr $deaths + 1)
+
+		printf '%-15s %6s %7s %7s %7s  %s\n' "$class" "$seed" "$t" "$d" "$l" "$r"
+	done
+done
+
+echo
+echo "borg-progress: $runs runs, best depth $best_depth, best level $best_level, $deaths died, $broken broken"
+exit $broken

@@ -722,7 +722,7 @@ const char *borg_restock(int depth)
         return ("restock fuel < 2");
 
     /* Must have "food" */
-    if (borg.trait[BI_FOOD] < 3)
+    if (borg.trait[BI_FOOD] < BORG_FOOD_TO_DIVE)
         return ("restock food < 3");
 
     /* Must have "recall" */

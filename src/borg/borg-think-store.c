@@ -17,6 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+#include "borg-prepared.h"
 #include "borg-think-store.h"
 
 #ifdef ALLOW_BORG
@@ -107,8 +108,21 @@ bool borg_choose_shop(void)
     if (borg.trait[BI_ISCUT] || borg.trait[BI_ISPOISONED])
         borg.goal.shop = 3;
 
-    /* If Starving  -- flow to general store */
-    if (borg.trait[BI_FOOD] == 0
+    /*
+     * If short of food -- flow to general store (ZangbandTK, BRG-12).
+     *
+     * Was `== 0`, meaning the borg only went shopping for food once it had
+     * none at all. `borg_restock()` refuses to descend past depth 1 below
+     * **three** rations, so between one and two the borg would neither dive
+     * nor shop: it rose to the surface, bought nothing, went back down, and
+     * noted "unable to dive: restock food < 3" for ever. Every one of the
+     * twelve playable classes sat at depth 1 or 2 after three thousand turns.
+     *
+     * Angband does not show this because its classes start with three to five
+     * rations, which already satisfies the descent threshold; ours start with
+     * one to three (`class.txt`), so two rolls in three begin below it.
+     */
+    if (borg.trait[BI_FOOD] < BORG_FOOD_TO_DIVE
         || (borg.trait[BI_LIGHT] == 0 && borg.trait[BI_CLEVEL] >= 2)) {
         /* G Store first */
         borg.goal.shop = 0;
@@ -121,7 +135,14 @@ bool borg_choose_shop(void)
     /* If poisoned, bleeding, or needing to shop instantly
      * Buy items straight away, without having to see each shop
      */
-    if ((borg.trait[BI_LIGHT] == 0 || borg.trait[BI_FOOD] == 0
+    /*
+     * ZangbandTK (BRG-12): `BI_FOOD` here was `== 0` as well, and this is the
+     * block that matters. The assignment above is only a hint -- "Assume no
+     * important shop" below resets `goal.shop` unless `goal.ware` was set too
+     * -- and `borg_think_shop_buy_useful()` is what sets both. Relaxing the
+     * hint alone changed nothing, which is how the reset was found.
+     */
+    if ((borg.trait[BI_LIGHT] == 0 || borg.trait[BI_FOOD] < BORG_FOOD_TO_DIVE
             || borg.trait[BI_ISCUT] || borg.trait[BI_ISPOISONED])
         || (borg.trait[BI_LIGHT] == 1 && borg.trait[BI_GOLD] >= 100
             && borg.trait[BI_CLEVEL] < 10)) {

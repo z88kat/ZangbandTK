@@ -33,6 +33,33 @@ Unreleased
 Pets follow — 3 September 2026
 ------------------------------
 
+- **3.85.0** — **The borg reaches depth 11, up from 2, and it was food.** Two
+  thresholds inside the borg disagreed with each other and with this game's
+  data. ``borg_restock()`` refuses to descend past depth 1 with fewer than
+  three rations; ``borg_choose_shop()`` only went shopping for food at *zero*.
+  Between one and two the borg would neither dive nor buy — and our classes
+  start with one to three rations where Angband's start with three to five, so
+  two rolls in three begin below the line. It rose to the surface, bought
+  nothing, went back down, and reported "unable to dive: restock food < 3" for
+  ever.
+
+  Fixing the shop threshold alone was not enough, because the borg's power
+  curve valued food only up to seven rations and then almost stopped, so it set
+  off with barely more than the minimum and starved at depth — where it could
+  not path back to an up-staircase, would not dive without food, and escalated
+  its own "bravery" from 3 to 30000 until it ignored all danger and died to a
+  grid bug. The carry target is now twelve, named separately from the dive
+  threshold so the two cannot drift together again.
+
+  Measured over six seeds at 40,000 turns each: **best depth 2 → 11**, median
+  character level 3 → 5. Deaths rose from three runs in six to four, which is
+  the honest half of the result — it goes deeper and dies more, and survival is
+  now what limits it rather than starvation.
+
+  Also new: ``scripts/borg-progress``, which records best depth and character
+  level per class from fixed seeds (BRG-18, pulled forward), because that sweep
+  had been hand-rolled four times and slightly differently each time.
+
 - **3.84.0** — **The borg stops treating your pets as targets.** ``src/borg/``
   held **no** concept of allegiance, so a pet was simply a monster to it:
   something to target, to be frightened of, and to walk across a level to kill.

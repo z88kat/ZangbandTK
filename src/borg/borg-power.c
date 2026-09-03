@@ -1141,11 +1141,24 @@ static int32_t borg_power_inventory(void)
     if ((borg.trait[BI_ISHUNGRY] || borg.trait[BI_ISWEAK])
         && borg.trait[BI_FOOD])
         value += 100000;
+    /*
+     * ZangbandTK (BRG-12): want enough food to stay down, not the minimum.
+     *
+     * The strong reward stopped at seven rations and then fell to almost
+     * nothing, so the borg descended with barely more than the three
+     * `borg_restock()` demands -- and then starved at depth, could not path
+     * back to an up-staircase, refused to dive without food, and escalated its
+     * "bravery" from 3 to 30000 until it ignored all danger and died. That was
+     * the observed death in three runs of six.
+     *
+     * Twelve rather than seven, and the difference is one purchase in town
+     * against a run ending at depth 1.
+     */
     k = 0;
-    for (; k < 7 && k < borg.trait[BI_FOOD]; k++)
+    for (; k < BORG_FOOD_TO_CARRY && k < borg.trait[BI_FOOD]; k++)
         value += 50000L;
     if (borg.trait[BI_STR] >= 15) {
-        for (; k < 10 && k < borg.trait[BI_FOOD]; k++)
+        for (; k < BORG_FOOD_TO_CARRY + 3 && k < borg.trait[BI_FOOD]; k++)
             value += 200L;
     }
     if (borg.trait[BI_REG] && borg.trait[BI_CLEVEL] <= 15) {

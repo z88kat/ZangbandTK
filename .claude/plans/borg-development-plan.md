@@ -366,7 +366,16 @@ is what makes it choose.
 | **1-49** | **Judged and not wanted.** The borg can cast it and should not. Slow, expensive or redundant against what it already has. | duplicated detection, flavour spells |
 | **0** | **Never.** Actively harmful for an automaton: anything that needs a judgement it cannot make, or that could kill it. | self-damaging or irreversible effects |
 
-Three rules that keep the pass consistent with itself:
+**Rule zero: rate for survival first.** Where a rating is a judgement call
+between hitting harder and staying alive, staying alive wins. This is not a
+matter of taste, it is what the measurements say: the borg's failure mode is
+**dying at character level 3 to 6**, three runs in six, not playing slowly. A
+borg that reaches depth 30 alive is verification of M8 to M10; one that fights
+beautifully and dies at 12 is not, however elegant the fight was. So escape,
+healing and curing sit above attack spells at every level, and an attack spell
+that leaves the borg exposed is rated below a worse one that does not.
+
+Three further rules that keep the pass consistent with itself:
 
 1. **Rate against the alternative, not in isolation.** A spell is worth 85 if
    the borg should cast it instead of attacking, and 40 if it should attack
@@ -473,6 +482,29 @@ pathfinding problem across 144 × 144 rather than a table.*
   ground to cross rather than a town to shop in: flow toward dungeon mouths,
   prefer `FEAT_ROAD`, and treat deep water, open sea and rock as the obstacles
   they are.
+- **BRG-13a — `borg_prepared_aux`'s depth ladder is written for Angband's
+  world, and produces inexplicable behaviour in ours.** Recorded separately
+  from BRG-13 because it is a distinct defect with its own symptom, and it
+  wants writing down even though the fix arrives with BRG-13.
+
+  `borg-prepared.c` holds **thirty hardcoded depth comparisons** — `depth <=
+  5`, `<= 9`, `<= 55`, `<= 80`, `<= 98`, `>= 82`, `>= 97`, `>= 99` and the rest
+  — describing Angband's single 1-to-100 ladder with Morgoth at the bottom. Our
+  world is thirteen dungeons with their own bands, from the Vaults of Amber at
+  1-15 to the Abyss at 90-127, and **none of those numbers corresponds to
+  anything here**. The rules they gate are real ones: what resistances to
+  require, when to carry teleport, when the borg considers itself ready for the
+  endgame.
+
+  The symptom is not a crash, which is what makes it worth recording. It is a
+  borg that demands endgame kit at a depth where this game has none of it, or
+  dives without resistances the local dungeon needs, and a reader of the log
+  sees only that it behaved oddly at depth. Nobody would connect that to a
+  constant written for a different game's dungeon.
+
+  Note also that our deepest dungeon reaches **127**, past every one of these
+  bounds, so the ladder simply runs out.
+
 - **BRG-13 — The borg knows a dungeon has a floor, and where the next one
   is.** Read the `dun_type` depth ranges. When a dungeon bottoms out, walk to a
   deeper one rather than scumming for stairs that do not exist. `borg_prepared`
@@ -481,9 +513,25 @@ pathfinding problem across 144 × 144 rather than a table.*
   inn first, since they change what "recover" means; then magesmith, recharger,
   magetower and chaos tower.
 
-**Exit:** a borg run started in the fixed starting town reaches a named dungeon
-it did not start next to, and its recorded depth stops being capped by the
-first dungeon's floor.
+**Exit (revised 3 September 2026 by the project owner): the borg reaches depth
+30.** *"Yer that guy needs to go down to level 30 at least."* This replaces
+"crosses to a named dungeon", on the ground that reaching a dungeon is worth
+little if it then sits at the top of it.
+
+**Depth 30 forces BRG-13 rather than merely benefiting from it.** The town
+staircase leads into the Vaults of Amber, which **bottoms out at 15**
+(`dungeon.txt`). The bands are 1-15, 1-20, 8-30, 15-40, 20-45, 25-50, 30-55,
+35-65, 40-75, 55-90, 60-95, 75-110 and 90-127, so 30 is reachable only by
+crossing to Faiella-Bionin or deeper. There is no route to the target inside
+the starting dungeon.
+
+**And 30 is a well-chosen bar for the purpose.** Content here is gated by
+character level, and the borg's own rule (`MAXCLEVEL < depth` refuses the
+descent) makes depth a proxy for it. Of the 1,472 `spell:` entries across the
+seven realms, **64 per cent are reachable by character level 30**; the rest sit
+at 31-50. Trump's summons run from 24 to 49, so 30 exercises the early ones and
+not the great undead. If the whole of M9 and M10 is wanted the number is nearer
+50 -- but nothing argues for raising it before 30 is met.
 
 **Part-landed 3 September 2026 in 3.83.0. The exit criterion is NOT met, and
 the phase stopped at its agreed boundary.** What was found is more useful than
@@ -620,6 +668,13 @@ work; this is what makes it a test.*
 - **BRG-18 — The suite records depth and character level as a regression
   signal.** A build where every class suddenly stops getting past depth 3 has
   broken something no assertion catches.
+
+  **Landed 3 September 2026 as `scripts/borg-progress`, ahead of the rest of
+  B4.** Pulled forward because the same sweep had been hand-rolled four times
+  while chasing the depth stall -- each time slightly differently, which makes
+  runs incomparable -- and because best-depth-per-class is the number the
+  project owner is now asking for. Deaths are reported rather than failed; the
+  exit status counts only crashes, aborts and wedges.
 - **BRG-19 — Invariants are checked during play, not only at the end.**
   Round-trip the savefile every M turns; assert the player is never on an
   impassable grid; assert pet count and mana upkeep agree (PLR-30); assert the
