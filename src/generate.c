@@ -1412,11 +1412,28 @@ static struct monster *pets_in_transit;
 static int pets_in_transit_count;
 
 /**
+ * Why a pet is not coming.
+ *
+ * Four reasons, and they are four messages rather than one, because they mean
+ * different things to the player. Three of them leave a pet standing on the
+ * old level, still yours, recoverable if the level persists. The fourth does
+ * not: `PET_LEFT_GONE` is a creature that has left to find a new owner and is
+ * removed from the game. Telling those apart in one line is the whole point of
+ * having four messages instead of one.
+ */
+enum pet_left {
+	PET_LEFT_CAP,		/* over pets:max-carried */
+	PET_LEFT_GONE,		/* it left for good (PLR-26, DEC-68) */
+	PET_LEFT_NO_ROOM,	/* nowhere to put it at the arrival */
+	PET_LEFT_MIMIC		/* its disguise belongs to the old level */
+};
+
+/**
  * The pets that will not be coming, by name.
  *
  * Held rather than said at the time. Everything that decides a pet cannot
- * follow happens *before* the old level is torn down -- a mimic, or one over
- * the cap -- and a message put out there arrives while the screen is being
+ * follow happens *before* the old level is torn down -- refused, over the cap,
+ * or a mimic -- and a message put out there arrives while the screen is being
  * rebuilt for a level the player has not seen yet. So the names are kept and
  * said on arrival, next to whatever else is being reported, where they will be
  * read.
@@ -1425,11 +1442,12 @@ static int pets_in_transit_count;
  * were on the level.
  */
 static char **pets_left_behind;
+static enum pet_left *pets_left_why;
 static int pets_left_behind_count;
 static int pets_left_behind_size;
 
-/** Remember that this one is staying, to be said on arrival. */
-static void note_left_behind(const struct monster *mon)
+/** Remember that this one is staying, and why, to be said on arrival. */
+static void note_left_behind(const struct monster *mon, enum pet_left why)
 {
 	char m_name[80];
 
@@ -1448,10 +1466,45 @@ static void note_left_behind(const struct monster *mon)
 		pets_left_behind = mem_realloc(pets_left_behind,
 									   pets_left_behind_size
 									   * sizeof(*pets_left_behind));
+		pets_left_why = mem_realloc(pets_left_why, pets_left_behind_size
+									* sizeof(*pets_left_why));
 	}
 
+	pets_left_why[pets_left_behind_count] = why;
 	pets_left_behind[pets_left_behind_count++] = string_make(m_name);
 }
+
+/**
+ * Does this one stay with you?  (PLR-26, DEC-68.)
+ *
+ * A flat chance, per pet, per level change. The project owner's number and his
+ * reasoning: *"5% per pet. Checked at each level. So there is a 1 in 20 chance
+ * the pet will leave"*, and *"That's fair enough given the original zangband
+ * was 100%"*. Zangband deleted every pet at every staircase; this loses one in
+ * twenty.
+ *
+ * It was built the clever way first -- fear, wounds and a flat extra for
+ * animals, all read off state the game already kept -- and that was not what
+ * was asked for. The design is that a pet sometimes just goes, the way a cat
+ * does; a derived quantity would have made it a consequence of how the last
+ * level went, which is a different and more managed thing. A flat roll says
+ * what it means.
+ *
+ * Checked **once**, here, at the transition, for every pet on the level and
+ * before the cap. Not a loyalty simulation running every turn: one roll per
+ * pet per descent, and then a message.
+ *
+ * Takes no argument, and does not need one. It is not static so that the rate
+ * can be measured directly: one in twenty is not something a handful of
+ * descents can show, and every descent costs a level generation.
+ */
+bool pet_stays_with_you(void)
+{
+	if (!z_info->pet_leave_chance) return true;
+
+	return randint0(100) >= z_info->pet_leave_chance;
+}
+
 
 /**
  * Say what followed and what did not, one line per animal.
@@ -1472,7 +1525,23 @@ static void report_pets(int arrived)
 	}
 
 	for (i = 0; i < pets_left_behind_count; i++) {
-		msg("%s cannot follow you.", pets_left_behind[i]);
+		switch (pets_left_why[i]) {
+			case PET_LEFT_GONE:
+				msg("%s does a runner, looking for a new owner.",
+					pets_left_behind[i]);
+				break;
+			case PET_LEFT_CAP:
+				msg("%s stays behind; you cannot lead more than %d.",
+					pets_left_behind[i], (int) z_info->pet_max_carried);
+				break;
+			case PET_LEFT_NO_ROOM:
+				msg("There is no room here for %s.", pets_left_behind[i]);
+				break;
+			case PET_LEFT_MIMIC:
+			default:
+				msg("%s cannot follow you.", pets_left_behind[i]);
+				break;
+		}
 		string_free(pets_left_behind[i]);
 		pets_left_behind[i] = NULL;
 	}
@@ -1553,12 +1622,39 @@ static void collect_pets(struct chunk *c, struct player *p)
 		 * service has stopped pretending anyway.
 		 */
 		if (mon->mimicked_obj) {
-			note_left_behind(mon);
+			note_left_behind(mon, PET_LEFT_MIMIC);
+			continue;
+		}
+
+		/*
+		 * It may simply leave (DEC-68).
+		 *
+		 * Rolled for every pet and *before* the cap, which is the literal
+		 * reading of "5% per pet, checked at each level": the roll asks
+		 * whether the creature is still yours, not whether it gets one of the
+		 * four places. Checking after the cap would exempt the pets beyond it.
+		 *
+		 * That ordering turns out to be very nearly unobservable, and the
+		 * attempt to falsify it is worth recording so nobody repeats it. The
+		 * cap counter only advances when a pet is actually *collected*, so a
+		 * departure never fills a place under either order; and a high leave
+		 * chance stops anything being collected, while a low one produces
+		 * almost no departures, so the two effects cancel. Three constructions
+		 * were tried and none separated the orders. It is kept this way
+		 * because it is what the rule says, not because a test can tell.
+		 *
+		 * The name is taken before the deletion, because after it there is no
+		 * monster to name. Deleting here is safe: this loop walks indices and
+		 * does not hold a pointer across the call.
+		 */
+		if (!pet_stays_with_you()) {
+			note_left_behind(mon, PET_LEFT_GONE);
+			delete_monster_idx(c, i);
 			continue;
 		}
 
 		if (pets_in_transit_count >= z_info->pet_max_carried) {
-			note_left_behind(mon);
+			note_left_behind(mon, PET_LEFT_CAP);
 			continue;
 		}
 
@@ -1751,7 +1847,7 @@ static void place_carried_pets(struct chunk *c, struct player *p)
 		}
 
 		if (!placed) {
-			note_left_behind(mon);
+			note_left_behind(mon, PET_LEFT_NO_ROOM);
 
 			/*
 			 * No counter change here: the decrement above already accounts
@@ -1795,6 +1891,8 @@ void pets_in_transit_free(void)
 	}
 	mem_free(pets_left_behind);
 	pets_left_behind = NULL;
+	mem_free(pets_left_why);
+	pets_left_why = NULL;
 	pets_left_behind_count = 0;
 	pets_left_behind_size = 0;
 }

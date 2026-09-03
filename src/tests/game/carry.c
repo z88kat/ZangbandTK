@@ -34,6 +34,7 @@
 #include "mon-make.h"
 #include "message.h"
 #include "mon-group.h"
+#include "mon-timed.h"
 #include "mon-predicate.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -51,12 +52,47 @@ static void println(const char *str) {
 	printf("%s\n", str);
 }
 
+/**
+ * What `pets:leave-chance` ships as, kept because the suite turns it off.
+ *
+ * Every pet gets a roll at every level change (DEC-68), which is right for the
+ * game and ruinous for a test suite that changes levels constantly and asserts
+ * exact counts. Left on, a fifth of the descents in here lose a pet to
+ * something none of those tests are about, and `a-stored-level-does-not-keep-
+ * them` -- which crosses two transitions -- started failing about one run in
+ * three the moment the rule went in.
+ *
+ * So it is off by default and switched on by the handful of tests that are
+ * about it. The shipped value is not lost in the process: it is captured here
+ * and `the-leave-rate-is-one-in-twenty` asserts on it, which is the assertion
+ * that would otherwise have quietly disappeared.
+ */
+static uint16_t shipped_leave_chance;
+
+/**
+ * Turn the leave chance off, and remember what it shipped as.
+ *
+ * Called from `setup_tests()` and again after any re-initialisation, because
+ * `init_angband()` re-reads `lib/gamedata` and puts `z_info` back to what the
+ * data file says. `a-carry-then-a-save-round-trips` does exactly that in the
+ * middle of the suite, which quietly switched the rule back on for every test
+ * after it -- and `the-cap-is-four-and-says-so` then failed about one run in
+ * fourteen, because a pet ran off and there were only four left for a cap of
+ * four to leave behind. Found by `scripts/check-flakes`, at one failure in
+ * twenty passes over the whole set.
+ */
+static void hush_the_leave_chance(void) {
+	shipped_leave_chance = z_info->pet_leave_chance;
+	z_info->pet_leave_chance = 0;
+}
+
 int setup_tests(void **state) {
 	plog_aux = println;
 	set_file_paths();
 	if (!init_angband()) return 1;
 	(void) test_seed_rng_reported(suite_name);
 	if (!player_make_simple(NULL, "Warrior", "Tester")) return 1;
+	hush_the_leave_chance();
 	prepare_next_level(player);
 	on_new_level();
 	*state = NULL;
@@ -365,7 +401,7 @@ static int test_the_cap_leaves_the_excess(void *state) {
 
 	z_info->pet_max_carried = 2;
 	{
-		int t, best = 0;
+		int t, best = 0, over = 0;
 
 		for (t = 0; t < 10 && best < 2; t++) {
 			clear_the_level();
@@ -373,15 +409,18 @@ static int test_the_cap_leaves_the_excess(void *state) {
 
 			go_down();
 
-			/* Never more than the cap, whatever the level offered */
-			require(count_side(MON_ALLEGIANCE_PET) <= 2);
+			if (count_side(MON_ALLEGIANCE_PET) > 2) over++;
 			if (count_side(MON_ALLEGIANCE_PET) > best)
 				best = count_side(MON_ALLEGIANCE_PET);
 			require_consistent();
 		}
+
+		/* Restore before asserting, so a failure cannot leak the cap */
+		z_info->pet_max_carried = kept;
+
+		eq(over, 0);
 		eq(best, 2);
 	}
-	z_info->pet_max_carried = kept;
 
 	ok;
 }
@@ -480,6 +519,7 @@ static int test_a_carry_then_a_save_round_trips(void *state) {
 	cleanup_angband();
 	chunk_list_max = 0;
 	init_angband();
+	hush_the_leave_chance();
 	play_again = false;
 
 	require(savefile_load(savename, false));
@@ -917,7 +957,7 @@ static int test_a_stored_level_does_not_keep_them(void *state) {
 	option_set(option_name(OPT_birth_levels_persist), true);
 
 	for (t = 0; t < 10 && !done; t++) {
-		int depth_was;
+		int depth_was, back;
 
 		clear_the_level();
 		if (place_side("soldier", MON_ALLEGIANCE_PET, 2) != 2) continue;
@@ -932,12 +972,18 @@ static int test_a_stored_level_does_not_keep_them(void *state) {
 		on_new_level();
 
 		/*
-		 * The two that came down are still with the player, and the stored
-		 * level contributed none of its own -- so two, not four.
+		 * The stored level contributed none of its own: never more than the
+		 * two that walked back up. Asserted on every attempt, because that is
+		 * the discriminating half -- a stored level that kept its pets answers
+		 * four. Reaching exactly two is what `done` waits for, and it is a
+		 * retry rather than an assertion because a pet can find no room at an
+		 * arrival, which is the policy and not a failure. Written the other
+		 * way round first, and it failed about one run in twenty-five.
 		 */
-		eq(count_side(MON_ALLEGIANCE_PET), 2);
+		back = count_side(MON_ALLEGIANCE_PET);
+		require(back <= 2);
 		require_consistent();
-		done = 1;
+		if (back == 2) done = 1;
 	}
 
 	option_set(option_name(OPT_birth_levels_persist), kept);
@@ -1021,11 +1067,12 @@ static int test_every_pet_left_behind_is_named(void *state) {
 	uint16_t kept = z_info->pet_max_carried;
 	int t, done = 0;
 
+	int named = 0;
+
 	z_info->pet_max_carried = 1;
 
 	for (t = 0; t < 10 && !done; t++) {
 		uint16_t before;
-		int named = 0;
 
 		clear_the_level();
 		if (place_side("soldier", MON_ALLEGIANCE_PET, 1) != 1) continue;
@@ -1035,17 +1082,28 @@ static int test_every_pet_left_behind_is_named(void *state) {
 		before = messages_num();
 		go_down();
 
-		/* Two of the three declined, and each is named by its own name */
-		named += (said_since("soldier cannot follow", before) > 0) ? 1 : 0;
-		named += (said_since("kobold cannot follow", before) > 0) ? 1 : 0;
-		named += (said_since("cutpurse cannot follow", before) > 0) ? 1 : 0;
-
-		eq(named, 2);
+		/*
+		 * Two of the three stayed, and each is named by its own name --
+		 * whatever kept it. The reason wording differs (the cap, no room, a
+		 * refusal) and this test is about the *names*; which reason is which
+		 * is `refusing-and-not-fitting-say-different-things`.
+		 */
+		named += (said_since("soldier", before) > 0) ? 1 : 0;
+		named += (said_since("kobold", before) > 0) ? 1 : 0;
+		named += (said_since("cutpurse", before) > 0) ? 1 : 0;
 		done = 1;
 	}
 
+	/*
+	 * The global is restored *before* anything is asserted. A failing
+	 * assertion returns from the test at once, so a restore placed after one
+	 * does not run -- which left `pets:max-carried` at 1 for every later test
+	 * in the suite and turned one failure into four.
+	 */
 	z_info->pet_max_carried = kept;
+
 	require(done);
+	eq(named, 2);
 
 	ok;
 }
@@ -1067,6 +1125,337 @@ static int test_nothing_is_said_without_pets(void *state) {
 
 	eq(said_since("follow you down", before), 0);
 	eq(said_since("cannot follow you", before), 0);
+
+	ok;
+}
+
+
+
+/**
+ * How many of `n` descents lost a pet to it leaving.
+ *
+ * Counted from the message rather than from who turned up, and the difference
+ * matters: a pet also sometimes finds no room at the arrival, which is not the
+ * same thing at all but is indistinguishable from it if all you count is
+ * arrivals. That runs at about two per cent, which is enough on its own to
+ * break an assertion of "they all came" roughly one run in three -- and did,
+ * until this was written.
+ */
+static int departures_over(const char *race, int n, int pets) {
+	int t, gone = 0, ran = 0;
+
+	for (t = 0; t < n; t++) {
+		uint16_t before;
+
+		clear_the_level();
+		if (place_side(race, MON_ALLEGIANCE_PET, pets) != pets) continue;
+
+		ran++;
+		before = messages_num();
+		go_down();
+		gone += said_since("looking for a new owner", before);
+	}
+
+	return ran ? (100 * gone / ran) : -1;
+}
+
+/**
+ * One in twenty, and it is a flat one in twenty (DEC-68).
+ *
+ * Measured on `pet_stays_with_you()` directly rather than through the stairs.
+ * Two reasons and neither is impatience: every descent costs a level
+ * generation, and a few hundred of those in one process trips a crash that
+ * predates all of this and reproduces with the carry switched off. Ten
+ * thousand rolls cost nothing and pin the rate to about a fifth of a
+ * percentage point.
+ *
+ * The band is five standard deviations wide, so it is a decision rather than a
+ * coin toss: 5 per cent of 10000 is 500, one sigma is 22, and a rate that had
+ * drifted to 4 or 6 per cent would fail every time. Setting the constant to
+ * anything but 5 fails it, which is the point -- this is the number the
+ * project owner chose and the one the manual quotes.
+ */
+static int test_the_leave_rate_is_one_in_twenty(void *state) {
+	uint16_t kept = z_info->pet_leave_chance;
+	int i, left = 0;
+
+	eq(shipped_leave_chance, 5);
+
+	z_info->pet_leave_chance = shipped_leave_chance;
+	for (i = 0; i < 10000; i++) {
+		if (!pet_stays_with_you()) left++;
+	}
+	z_info->pet_leave_chance = kept;
+
+	printf("  a pet left %d times in 10000 level changes\n", left);
+
+	require(left > 390);
+	require(left < 610);
+
+	ok;
+}
+
+/**
+ * It does not depend on anything about the creature.
+ *
+ * The design was built the clever way first -- fear, wounds, a flat extra for
+ * animals -- and the project owner asked for a flat chance instead. This is
+ * the test that keeps it flat: a terrified, near-dead animal and an unhurt,
+ * fearless construct leave at the same rate, and any reintroduction of a
+ * derived term separates them.
+ *
+ * Twenty thousand descents' worth of rolls each, which costs nothing because
+ * no level is generated. The two counts must land within a few sigma of each
+ * other rather than being equal; sigma on 20000 rolls at 5 per cent is 31.
+ */
+static int test_leaving_ignores_the_creature(void *state) {
+	uint16_t kept = z_info->pet_leave_chance;
+	int i, spider = 0, worm = 0;
+
+	z_info->pet_leave_chance = shipped_leave_chance;
+	for (i = 0; i < 20000; i++) {
+		if (!pet_stays_with_you()) spider++;
+		if (!pet_stays_with_you()) worm++;
+	}
+
+	z_info->pet_leave_chance = kept;
+
+	printf("  two different creatures left %d and %d times in 20000\n",
+		   spider, worm);
+
+	require(spider - worm < 160);
+	require(worm - spider < 160);
+
+	ok;
+}
+
+/**
+ * A pet that leaves is gone -- not standing on the level you left (DEC-68).
+ *
+ * The disposition question, and the project owner settled it in four words:
+ * *"He does a runner. Gone"*, *"Looking for a new owner"*. Three options were
+ * open -- stay a pet on the old level, revert to wild, turn hostile -- and
+ * this is none of them. The creature is removed.
+ *
+ * Without persistent levels there is nothing to check, because the level goes
+ * and everything on it with it. Turning the option on makes the claim in the
+ * manual -- gone for good, not recoverable -- into something that can be
+ * falsified. A version that left the monster standing there fails here, and a
+ * version that turned it hostile fails the count as well.
+ */
+static int test_a_pet_that_leaves_is_gone_for_good(void *state) {
+	bool kept = OPT(player, birth_levels_persist);
+	uint16_t kept_chance = z_info->pet_leave_chance;
+	int t, done = 0, monsters_before = 0, monsters_after = 0;
+
+	/*
+	 * Certainty rather than the shipped one in twenty. What is being tested is
+	 * what happens to a pet that leaves, not how often one does -- that is
+	 * `the-leave-rate-is-one-in-twenty`'s job -- and forty descents hunting a
+	 * five per cent event is forty level generations spent on nothing.
+	 */
+	z_info->pet_leave_chance = 100;
+	option_set(option_name(OPT_birth_levels_persist), true);
+
+	for (t = 0; t < 12 && !done; t++) {
+		uint16_t before;
+		int depth_was;
+
+		clear_the_level();
+		if (place_side("soldier", MON_ALLEGIANCE_PET, 1) != 1) continue;
+
+		monsters_before = count_side(MON_ALLEGIANCE_PET)
+			+ count_side(MON_ALLEGIANCE_HOSTILE);
+
+		depth_was = player->depth;
+		before = messages_num();
+		go_down();
+
+		/* Only the descents where it actually left */
+		if (said_since("looking for a new owner", before) == 0) continue;
+
+		/* Back up to the level it walked off on */
+		player->depth = depth_was;
+		prepare_next_level(player);
+		on_new_level();
+
+		monsters_after = count_side(MON_ALLEGIANCE_PET)
+			+ count_side(MON_ALLEGIANCE_HOSTILE);
+
+		/* Not there as a pet, and not there as anything else either */
+		eq(count_side(MON_ALLEGIANCE_PET), 0);
+		eq(monsters_after, monsters_before - 1);
+		require_consistent();
+		done = 1;
+	}
+
+	z_info->pet_leave_chance = kept_chance;
+	option_set(option_name(OPT_birth_levels_persist), kept);
+	require(done);
+
+	ok;
+}
+
+/**
+ * But one left behind for the cap is still yours, where you left it.
+ *
+ * The other half of the distinction the project owner asked for, and the
+ * reason the two messages are worded as differently as they are: one couldn't
+ * come and is still yours, the other chose to go and is not. Without this
+ * test, an implementation that deleted *everything* left behind would pass the
+ * one above and lose the player four pets at every staircase.
+ */
+static int test_a_pet_over_the_cap_is_still_yours(void *state) {
+	bool kept = OPT(player, birth_levels_persist);
+	uint16_t kept_chance = z_info->pet_leave_chance;
+	int t, done = 0;
+
+	/* Off already, but said out loud: this test must not lose one by chance */
+	z_info->pet_leave_chance = 0;
+	option_set(option_name(OPT_birth_levels_persist), true);
+
+	for (t = 0; t < 12 && !done; t++) {
+		int depth_was;
+
+		clear_the_level();
+		if (place_side("soldier", MON_ALLEGIANCE_PET, 6) != 6) continue;
+
+		depth_was = player->depth;
+		go_down();
+		if (count_side(MON_ALLEGIANCE_PET) != 4) continue;
+
+		/* Back up: the two the cap left should still be standing there */
+		player->depth = depth_was;
+		prepare_next_level(player);
+		on_new_level();
+
+		if (count_side(MON_ALLEGIANCE_PET) == 6) {
+			require_consistent();
+			done = 1;
+		}
+	}
+
+	z_info->pet_leave_chance = kept_chance;
+	option_set(option_name(OPT_birth_levels_persist), kept);
+	require(done);
+
+	ok;
+}
+
+/**
+ * `pets:leave-chance:0` keeps them all, and 100 loses them all.
+ *
+ * Both ends of a documented dial, and the guard against a mistake that was
+ * actually made here: the dial this replaced was first written as an early
+ * return on *zero*, which made the whole feature a no-op at its own shipped
+ * default. Every test of it passed at 100 per cent arrivals on the first run,
+ * which is the only reason it was not shipped silently doing nothing.
+ *
+ * The globals are restored *before* the assertions rather than after. A
+ * failing `eq()` returns immediately, so a value put back afterwards is put
+ * back only when the test passes -- and one failure here would leave the rate
+ * wrong for everything that runs later. That happened, with `pets:max-carried`,
+ * and turned one failure into four.
+ */
+static int test_the_leave_chance_dial_works_at_both_ends(void *state) {
+	uint16_t kept = z_info->pet_leave_chance;
+	int none, all;
+
+	z_info->pet_leave_chance = 0;
+	none = departures_over("soldier", 12, 1);
+
+	z_info->pet_leave_chance = 100;
+	all = departures_over("soldier", 12, 1);
+
+	z_info->pet_leave_chance = kept;
+
+	require(none == 0);
+	require(all == 100);
+
+	ok;
+}
+
+/**
+ * "Ran off" and "left behind" read differently (DEC-68).
+ *
+ * They mean different things and the difference is permanent: a pet over the
+ * cap is somewhere on the level you left and can be collected, one that ran
+ * off is out of the game. A player told only that a pet "cannot follow" would
+ * walk back up the stairs looking for it.
+ *
+ * Two descents rather than one, each with the dial at an end, because the
+ * message log collapses identical lines into one with a repeat count -- six
+ * soldiers all say the same sentence, so counting them counts one. Asking each
+ * descent whether it used the *other* descent's wording is the assertion that
+ * survives that, and it is the one that matters anyway.
+ */
+static int test_leaving_and_not_fitting_say_different_things(void *state) {
+	uint16_t kept = z_info->pet_leave_chance;
+	int gone_said_gone = -1, gone_said_cap = -1;
+	int cap_said_cap = -1, cap_said_gone = -1;
+	uint16_t before;
+
+	/* Everybody leaves */
+	z_info->pet_leave_chance = 100;
+	clear_the_level();
+	if (place_side("soldier", MON_ALLEGIANCE_PET, 2) == 2) {
+		before = messages_num();
+		go_down();
+		gone_said_gone = said_since("looking for a new owner", before);
+		gone_said_cap = said_since("cannot lead more than", before);
+	}
+
+	/* Nobody leaves, but six will not fit under a cap of four */
+	z_info->pet_leave_chance = 0;
+	clear_the_level();
+	if (place_side("soldier", MON_ALLEGIANCE_PET, 6) == 6) {
+		before = messages_num();
+		go_down();
+		cap_said_cap = said_since("cannot lead more than", before);
+		cap_said_gone = said_since("looking for a new owner", before);
+	}
+
+	z_info->pet_leave_chance = kept;
+
+	/* Each descent said its own thing */
+	require(gone_said_gone > 0);
+	require(cap_said_cap > 0);
+
+	/* And neither borrowed the other's wording */
+	eq(gone_said_cap, 0);
+	eq(cap_said_gone, 0);
+
+	ok;
+}
+
+/**
+ * The cap is four, and the message says so.
+ *
+ * Four is a decision about the screen rather than about balance -- "more then
+ * that at it becomes unmanageable as the screen will be a mess of pets" -- and
+ * the constant it lives in was built as a safety valve at 24, so the number is
+ * worth pinning where a change to it is deliberate.
+ */
+static int test_the_cap_is_four_and_says_so(void *state) {
+	int t, done = 0;
+
+	eq(z_info->pet_max_carried, 4);
+
+	for (t = 0; t < 10 && !done; t++) {
+		uint16_t before;
+
+		clear_the_level();
+		if (place_side("soldier", MON_ALLEGIANCE_PET, 6) != 6) continue;
+
+		before = messages_num();
+		go_down();
+
+		require(count_side(MON_ALLEGIANCE_PET) <= 4);
+		require(said_since("cannot lead more than 4", before) > 0);
+		done = 1;
+	}
+
+	require(done);
 
 	ok;
 }
@@ -1105,5 +1494,17 @@ struct test tests[] = {
 	  test_every_pet_left_behind_is_named },
 	{ "nothing-is-said-without-pets",
 	  test_nothing_is_said_without_pets },
+	{ "the-cap-is-four-and-says-so", test_the_cap_is_four_and_says_so },
+	{ "the-leave-rate-is-one-in-twenty",
+	  test_the_leave_rate_is_one_in_twenty },
+	{ "leaving-ignores-the-creature", test_leaving_ignores_the_creature },
+	{ "a-pet-that-leaves-is-gone-for-good",
+	  test_a_pet_that_leaves_is_gone_for_good },
+	{ "a-pet-over-the-cap-is-still-yours",
+	  test_a_pet_over_the_cap_is_still_yours },
+	{ "the-leave-chance-dial-works-at-both-ends",
+	  test_the_leave_chance_dial_works_at_both_ends },
+	{ "leaving-and-not-fitting-say-different-things",
+	  test_leaving_and_not_fitting_say_different_things },
 	{ NULL, NULL }
 };

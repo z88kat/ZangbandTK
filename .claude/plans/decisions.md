@@ -2600,14 +2600,14 @@ waits until there is a reason to touch it.
 
 ---
 
-### DEC-60 — Pets are commanded as a policy, and they do not follow you downstairs — **the second half REVERSED by DEC-66**
+### DEC-60 — Pets are commanded as a policy, and they do not follow you downstairs — **the second half REVERSED by DEC-67**
 
 **The level-change half of this decision was reversed on 3 September 2026, and
 the recommendation it records was mine and lost.** It is kept in full rather
 than rewritten, on DEC-48's model, because the argument is worth being able to
 read against the decision that overruled it. The command half stands
 unchanged. Everything from here to the end of this entry is the original as it
-stood; DEC-66 below says what changed.
+stood; DEC-67 below says what changed.
 
 **DEC-60 (original) — Pets are commanded as a policy, and they do not follow
 you downstairs.** (M10 phase 3, 3 September 2026.)
@@ -3015,7 +3015,7 @@ Scheduled as §7 of the Phase 2 development plan, and planned in full in
 
 ---
 
-**DEC-66 — Pets follow the player downstairs. Reverses the second half of
+**DEC-67 — Pets follow the player downstairs. Reverses the second half of
 DEC-60.** (3 September 2026.)
 
 **Confirmed by the project owner, against my recommendation.** His reasoning,
@@ -3046,6 +3046,18 @@ only those on a short leash: a pet across the level is still yours. They are
 put down within `pets:carry-radius` of the player's arrival grid, nearest
 first, so a crowded arrival gives the closest grids to the pets that were
 following closest. `pets:max-carried` caps the number, and both are data.
+
+**Amended 3 September 2026: the cap is four, and it means something different
+now.** It was written as a safety valve at 24 — a number chosen only so that a
+pathological stable could not make a level transition slow, and never expected
+to bind. The project owner set it to four on a ground the balance figures
+cannot see: *"more then that at it becomes unmanageable as the screen will be a
+mess of pets"*. So it is now a deliberate limit on how much of the screen a
+stable may occupy, not a guard against a case that would never arise. The
+constant's comment said the wrong thing about itself and has been rewritten.
+It is still not the *balance* limit — DEC-65 measured that and left it alone —
+and the two do not overlap: the upkeep has already priced four deep pets out
+of existence long before the screen has anything to say about it.
 
 The radius is **five**, and it is measured. Empty grids around an arrival
 across twenty-five generated levels: a mean of 6.6 within three, 16.9 within
@@ -3091,7 +3103,7 @@ underneath a policy change.
 needed, and the concern that prompted this question was wrong.**
 (M10, PLR-26 phase F, 3 September 2026.)
 
-When DEC-66 made pets follow the player downstairs, I argued that the mana
+When DEC-67 made pets follow the player downstairs, I argued that the mana
 upkeep had gone from being the *second* limit on a stable to being the only
 one, and that this made Trump "straightforwardly the strongest realm in the
 game". That claim was made from intuition and was raised as its own question
@@ -3105,7 +3117,7 @@ pets, and keeps `1 + level/15` = **2 pets free**.
 | 2 soldiers (level 2) | 4 | 0% | 36 | 100% |
 | 3 soldiers | 6 | 6% | 34 | 94% |
 | 10 soldiers | 20 | 20% | 29 | 80% |
-| 24 soldiers (the carry cap) | 48 | 48% | 19 | 52% |
+| 24 soldiers (the carry cap of the day) | 48 | 48% | 19 | 52% |
 | 2 young red dragons (level 31) | 62 | 0% | 36 | 100% |
 | **3 young red dragons** | 93 | **93%** | **2** | **5%** |
 | 4 or more dragons | 124+ | 95% | 1 | 2% |
@@ -3127,7 +3139,11 @@ rather than being rebuilt, which if anything makes the large stable a *worse*
 proposition than before rather than a better one.
 
 The one case that is cheap is a large stable of *shallow* pets: 24 level-2
-soldiers cost 48 per cent, permanently. That is not a problem worth fixing,
+soldiers cost 48 per cent, permanently. (The carry cap was 24 when this was
+measured and is four now — see the amendment to DEC-67 — so 24 of them can only
+be assembled on one level and not walked down with. The figures stand as
+measured; the cheap case just got harder to reach, which does not change the
+conclusion.) That is not a problem worth fixing,
 because 24 level-2 soldiers a thousand feet down are not an army, they are 24
 things that die to the first breath weapon — and the mechanism that turns them
 hostile when caught in it (PLR-33) is already there.
@@ -3139,7 +3155,103 @@ be sufficient without the third, unnamed one that its region model provided by
 accident.
 
 *Recorded as a decision rather than dropped, because the question was raised
-in writing and a reader finding the worry in DEC-66 should be able to find the
+in writing and a reader finding the worry in DEC-67 should be able to find the
 answer.* The figures are printed by `player/pet-upkeep`'s
 `what-a-stable-costs`, so a change to the regeneration formula or to monster
 levels will move them where someone can see it.
+
+---
+
+**DEC-68 — A pet leaves you, one time in twenty, at each level change. New
+design, not a port.** (M10, PLR-26, 3 September 2026.)
+
+**The project owner's reasoning, and it is the justification for the whole
+thing:** *"5% per pet. Checked at each level. So there is a 1 in 20 chance the
+pet will leave"*, and *"That's fair enough given the original zangband was
+100%"*.
+
+That comparison is the frame everything else here should be read in. **Zangband
+lost every pet at every staircase.** Not one in twenty — all of them, every
+time, because its region model discarded the level and everything standing on
+it. Measured against that, a rule that takes one pet in twenty is not a tax
+being added; it is the last four per cent of a loss that used to be total.
+
+The design, in his words: *"pets should just leave sometimes. Cats do that.
+Sometimes a pet just won't follow you."* And on what becomes of one: *"He does
+a runner. Gone"*, *"Looking for a new owner"*.
+
+**There is no precedent to port.** Zangband's pets have no willingness, loyalty
+or morale of any kind — deleted at a level change, so the question never arises
+— and `set_hostile()` is reached from exactly three places in its source:
+`anger_monster()`, the aggravation check, and one site in `cmd2.c`. A pet there
+leaves you because of something you did, never of its own accord. Nothing in
+its documentation raises the subject. So this is invention, recorded as such.
+
+**A flat chance, and the clever version was thrown away.** This was first built
+to read state the game already keeps: `MON_TMD_FEAR` contributing 50, wounds up
+to 40, a flat 5 for `RF_ANIMAL`, and `RF_NO_FEAR` never refusing. It measured
+well and it was not what was asked for. A derived chance makes leaving a
+consequence of how the last level went, which is a managed thing the player
+plays around; the design is that a pet sometimes just goes. A flat roll says
+that, and it says it in four lines instead of twenty. **`pets:leave-chance`**
+is data, ships at 5, and 0 turns it off.
+
+**A pet that leaves is gone.** Removed from the game — not standing on the old
+level, not wild, not hostile. Under persistent levels you can walk back up and
+it is not there. This reverses what I had written a few hours earlier, which
+was that a refusing pet stayed a pet where it stood; that was chosen on the
+ground that PLR-33 reserves hostility for things the player did, and it is the
+wrong reading of what leaving means. A creature that has gone looking for a new
+owner has not stayed put waiting to be collected.
+
+**Which makes it read differently from the cap, deliberately.** There are four
+ways not to come and they are four messages, and the distinction that matters
+is whether the pet is still yours:
+
+    The soldier does a runner, looking for a new owner.     <- gone, for good
+    The soldier stays behind; you cannot lead more than 4.  <- still yours
+    There is no room here for the giant frog.               <- still yours
+    The creeping coins cannot follow you.                   <- still yours
+
+A player told only that a pet "cannot follow" would walk back up the stairs
+looking for it. The first line has to say, in one line, that there is nothing
+to go back for — hence the project owner's own phrasing in it.
+
+**What one in twenty compounds to**, because per pet per descent is not what a
+player experiences:
+
+| | chance a given pet is still with you |
+|---|---:|
+| after 1 level change | 95% |
+| after 5 | 77% |
+| after 10 | 60% |
+| after 20 | 36% |
+| after 50 | 8% |
+
+A pet lasts a median of thirteen or fourteen level changes and a mean of
+twenty. With a full stable of four, **about one descent in five costs you one
+of them** (1 − 0.95⁴ = 18.5%), and after twenty levels you expect one or two of
+the original four still with you. That is a real attrition rate and it should
+be read next to the alternative it replaced: four pets over twenty levels
+losing two or three, against four pets over *one* level losing four.
+
+**Deliberately noted: this is a permanent loss of something the player spent
+mana or a spell on, with no warning and no way to prevent it.** That is the
+design as asked for. It is why the message matters more than usual and why the
+rate is data rather than a literal — one in twenty is a charming mechanic and
+one in three would be an infuriating one, and the distance between them is a
+line in `constants.txt`.
+
+**Rolled before the cap**, so that every pet gets the same chance wherever it
+stands in the queue. That ordering turns out to be very nearly unobservable and
+the failed attempt to falsify it is recorded in the code: the cap counter only
+advances when a pet is actually collected, so a departure never fills a place
+under either order, and a high leave chance stops anything being collected
+while a low one produces almost no departures. Three constructions were tried
+and none separated the two orders. It is written this way because it is what
+the rule says, not because a test can tell.
+
+**Checked once, at the transition.** The project owner's constraint, honoured
+literally: one roll per pet per descent, in `pet_stays_with_you()`, called from
+the loop that collects them. No loyalty value on the monster, nothing
+accumulating between levels, nothing running on a monster's turn.

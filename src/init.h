@@ -115,6 +115,17 @@ struct angband_constants
 	 */
 	uint16_t pet_carry_radius;
 
+	/**
+	 * Chance in 100, per pet per level change, that a pet leaves (DEC-68).
+	 *
+	 * Flat, by design: the project owner asked for "5% per pet, checked at
+	 * each level" rather than anything derived from the creature's state.  A
+	 * pet that leaves is gone for good, so this is the one number that decides
+	 * how expensive a stable is to keep, and it is data because the right
+	 * value is a playtest question and not a derivation.
+	 */
+	uint16_t pet_leave_chance;
+
 	/* Monster generation constants, read from constants.txt */
 	uint16_t alloc_monster_chance;	/**< 1/per-turn-chance of generation */
 	uint16_t level_monster_min;	/**< Minimum number generated */

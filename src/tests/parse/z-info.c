@@ -396,6 +396,45 @@ static int test_o_r_crit_level(void *s) {
  * test_bad_o_r_crit_level() have to be before test_m_crit_level(),
  * test_r_crit_level(), test_o_m_crit_level(), and test_o_r_crit_level().
  */
+/**
+ * The three pet dials parse, and `leave-chance` rejects what it cannot mean.
+ *
+ * `leave-chance` is a percentage and the other two are counts, so they share a
+ * directive and not a range. 101 is not a stronger setting than 100, it is a
+ * typo, and a parser that took it quietly would push the whole rule past
+ * certainty without saying so.
+ */
+static int test_pets(void *state) {
+	struct parser *p = (struct parser*) state;
+	struct angband_constants *z;
+	errr r;
+
+	eq(parser_parse(p, "pets:max-carried:4"), PARSE_ERROR_NONE);
+	eq(parser_parse(p, "pets:carry-radius:5"), PARSE_ERROR_NONE);
+	eq(parser_parse(p, "pets:leave-chance:5"), PARSE_ERROR_NONE);
+
+	z = parser_priv(p);
+	require(z);
+	eq(z->pet_max_carried, 4);
+	eq(z->pet_carry_radius, 5);
+	eq(z->pet_leave_chance, 5);
+
+	/* 100 is the top of the range: every pet leaves at every level change */
+	eq(parser_parse(p, "pets:leave-chance:100"), PARSE_ERROR_NONE);
+	eq(z->pet_leave_chance, 100);
+
+	/* Past it is a mistake, not a stronger setting */
+	r = parser_parse(p, "pets:leave-chance:101");
+	eq(r, PARSE_ERROR_INVALID_VALUE);
+	eq(z->pet_leave_chance, 100);
+
+	/* And an unknown dial is not silently dropped */
+	r = parser_parse(p, "pets:devotion:50");
+	eq(r, PARSE_ERROR_UNDEFINED_DIRECTIVE);
+
+	ok;
+}
+
 const char *suite_name = "parse/z-info";
 struct test tests[] = {
 	{ "negative", test_negative },
@@ -493,5 +532,6 @@ struct test tests[] = {
 	{ "o_r_crit_chance_power_scl_num", test_o_r_crit_chance_power_scl_den },
 	{ "o_r_crit_chance_add_den", test_o_r_crit_chance_add_den },
 	{ "o_r_crit_level", test_o_r_crit_level },
+	{ "pets", test_pets },
 	{ NULL, NULL }
 };

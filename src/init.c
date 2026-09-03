@@ -548,11 +548,15 @@ static enum parser_error parse_constants_pets(struct parser *p) {
 
 	if (value < 0 || value > 255)
 		return PARSE_ERROR_INVALID_VALUE;
+	if (streq(label, "leave-chance") && value > 100)
+		return PARSE_ERROR_INVALID_VALUE;
 
 	if (streq(label, "max-carried"))
 		z->pet_max_carried = value;
 	else if (streq(label, "carry-radius"))
 		z->pet_carry_radius = value;
+	else if (streq(label, "leave-chance"))
+		z->pet_leave_chance = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 

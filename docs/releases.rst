@@ -33,6 +33,38 @@ Unreleased
 Pets follow — 3 September 2026
 ------------------------------
 
+- **3.80.0** — **Four pets, and one in twenty walks away.** Two decisions from
+  the project owner, both about how the game feels to play rather than about
+  the numbers. The carry cap drops from 24 to **four**: it was written as a
+  safety valve against a case that would never arise, and it becomes a
+  deliberate limit, because *"more then that at it becomes unmanageable as the
+  screen will be a mess of pets"*. And each pet now has a flat **5% chance, at
+  each level change, of leaving you for good** — *"He does a runner. Gone"*,
+  *"Looking for a new owner"* — removed from the game, not left standing on the
+  level behind you, and not recoverable under persistent levels either. Read
+  next to what it replaces: Zangband deleted **every** pet at every staircase,
+  which is the project owner's own justification — *"That's fair enough given
+  the original zangband was 100%"*. Compounded, a pet lasts a median of
+  thirteen or fourteen level changes, and a full stable of four loses one about
+  one descent in five.
+
+  The four ways of not coming now read as four messages, and the distinction
+  they carry is whether the pet is still yours: one ran off and is gone, the
+  other three are standing where you left them. ``pets:leave-chance`` is data
+  and 0 turns it off. Recorded as DEC-68, and the pets chapter is rewritten
+  with the whole picture in it — following, the four, the 5% and what it
+  compounds to, which losses are permanent, and the upkeep table showing the
+  third young red dragon costing 93% of a caster's regeneration.
+
+  The rule is off inside ``game/carry`` and switched on by the tests that are
+  about it, because a suite that changes levels constantly and asserts exact
+  counts cannot also be losing a pet one descent in five. Getting that right
+  took a correction that ``scripts/check-flakes`` found and nothing else would
+  have: ``a-carry-then-a-save-round-trips`` re-initialises the game in the
+  middle of the suite, which re-reads ``lib/gamedata`` and quietly turned the
+  rule back on for every test after it. One failure in twenty whole-set passes,
+  and about one run in fourteen for the test that actually broke.
+
 - **3.79.2** — **The gate checks the build input lists.** Three consecutive
   pushes went red on Linux CI for the same reason — a new ``lib/gamedata`` file
   missing from the install list, which would have shipped a packaged build
@@ -152,7 +184,7 @@ Pets follow — 3 September 2026
   inventory. Chasing it down rather than adjusting the assertion is the only way
   to tell those two apart.
 
-- **3.75.0** — **Pets follow you downstairs** (PLR-26 as reversed; DEC-66,
+- **3.75.0** — **Pets follow you downstairs** (PLR-26 as reversed; DEC-67,
   reversing half of DEC-60). Every pet on the level comes with you, put down
   within five squares of where you arrive, nearest-follower first. Anything
   that will not fit is left behind and **named individually**, however many

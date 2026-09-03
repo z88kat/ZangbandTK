@@ -607,19 +607,29 @@ wild:towns:12
 
 # === ZangbandTK pets ===
 #
-# How many pets follow the player down a staircase (PLR-26, DEC-60).
+# How many pets follow the player down a staircase (PLR-26, DEC-60, DEC-67).
 #
-# This is not the balance limit on a stable -- the mana upkeep is that, and it
-# is charged on the sum of their levels whatever this says.  It is a safety
-# valve: every carried pet costs a scatter search around the arrival grid, and
-# there is no useful answer to a player arriving with forty of them.  Anything
-# over the cap is left behind and named individually, the same as one that
-# cannot be fitted in.
+# **A deliberate limit, decided on playability.** It was built as a safety
+# valve at 24 -- a number chosen only so that a pathological stable could not
+# make a level transition slow -- and the project owner set it to four for a
+# different and better reason: "more than that and it becomes unmanageable as
+# the screen will be a mess of pets".  That is a real constraint and not one
+# the balance figures can see, which is why DEC-65 measured the upkeep, found
+# it sufficient, and left this to judgement.
+#
+# It is still not the *balance* limit: the mana upkeep is that, and it is
+# charged on the sum of the pets' levels whatever this says.  DEC-65 has the
+# numbers -- two young red dragons are free and the third costs 93 per cent of
+# a caster's mana regeneration -- so four pets is well past the point where the
+# upkeep has already decided the question.
+#
+# Anything over the cap is left behind and named individually, and told the
+# player it was the cap rather than anything the animal did.
 #
 # Set to 0 for Zangband's own behaviour, which was to leave every pet where it
 # stood -- an artefact of its region model rather than a decision, but a
 # defensible way to play.
-pets:max-carried:24
+pets:max-carried:4
 
 # How far from the player a following pet may be put down.
 #
@@ -652,3 +662,32 @@ pets:max-carried:24
 # behind you does not need to be visible, only near, and requiring sight halved
 # the available grids for no benefit.
 pets:carry-radius:5
+
+# The chance, per pet, per level change, that a pet leaves you (DEC-68).
+#
+# The project owner's number and his reasoning: "5% per pet.  Checked at each
+# level.  So there is a 1 in 20 chance the pet will leave", and "That's fair
+# enough given the original zangband was 100%".  Zangband deleted every pet at
+# every level change; this loses one in twenty, once, as you take the stairs.
+#
+# A flat chance and nothing else.  An earlier version of this derived it from
+# the creature's fear, its wounds and whether it was an animal, which was
+# cleverer and was not what was asked for; the design is that a pet sometimes
+# just goes, the way a cat does, and a flat roll says that without pretending
+# to model anything.
+#
+# A pet that leaves is **gone** -- removed, not left standing on the old level,
+# and not recoverable even under persistent levels.  It has gone looking for a
+# new owner.  That is what makes it read differently from a pet over
+# `max-carried`, which is still yours where you left it.
+#
+# What 5 per cent compounds to, since one pet per descent is not what a player
+# experiences: a pet survives a descent 19 times in 20, ten descents about 6
+# times in 10, and twenty descents about 36 times in 100 -- so a pet lasts a
+# median of thirteen or fourteen level changes and a mean of twenty.  With a
+# full stable of four, about one descent in five costs you one of them, and
+# after twenty levels you expect to still have one or two of the four you
+# started with.  Against Zangband's zero after the first staircase.
+#
+# Set to 0 to turn the whole thing off; 100 means no pet ever follows you.
+pets:leave-chance:5

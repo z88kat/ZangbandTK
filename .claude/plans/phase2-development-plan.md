@@ -568,7 +568,8 @@ Anyone planning this should expect it to break into more phases than M8 did, not
 ### M10 — Pets
 *Committed by DEC-19. The invariant change. **Started 3 September 2026.***
 
-**Phases.** Seven, in dependency order, one commit each:
+**Phases.** Seven in dependency order, one commit each, and two more added
+afterwards when the project owner reversed DEC-60's second half:
 
 | | Phase | Requirements | State |
 |---|---|---|---|
@@ -579,6 +580,8 @@ Anyone planning this should expect it to break into more phases than M8 did, not
 | 5 | Player-side safety | PLR-24, PLR-33 | ✅ 3.71.0 |
 | 6 | Sources, and the queue M10 unblocks | PLR-28, PLR-32 | ✅ 3.72.0 |
 | 7 | Trump | DEC-54 | ✅ 3.73.0 (DEC-64) |
+| 8 | Pets follow you downstairs | PLR-26 as reversed, DEC-67 | ✅ 3.74.0–3.79.0, phases A–F |
+| 9 | Four of them, and one in twenty walks away | DEC-67 amended, DEC-68 | ✅ 3.80.0 |
 
 Phase 1 is first because PLR-29 constrains PLR-22 rather than following it, and
 phase 4 is not last because PLR-30's upkeep is the whole of pet balance — both
@@ -904,3 +907,31 @@ anything more.
   underestimated, and M2's flag translation is larger than its requirement count suggests.
 - The DEC-16 documentation pass in M0 may add requirements. Three came from four documents;
   thirty remain unread.
+
+### Known defect: a crash at about six hundred level generations in one process
+
+Generating roughly six hundred levels inside a single process aborts with a
+segmentation fault. It is **pre-existing and unrelated to pets** — proved by
+setting `pets:max-carried:0`, which disables the carry entirely and still exits
+139 at the same point — and it was found only because the leave-rate tests in
+`game/carry` wanted large samples and started taking the stairs a few hundred
+times per run.
+
+Nothing a player does reaches it in one sitting from a fresh start, but a long
+game does thousands of level changes, so it is not academic; the most likely
+reading is something accumulating across generations that teardown does not
+release. It is recorded here rather than fixed because it was found in the
+middle of unrelated work and diagnosing it properly is its own job.
+
+The tests were reshaped around it rather than allowed to trip it: `game/carry`
+measures the leave rate by asking `pet_stays_with_you()` directly, which costs
+no level generations at all, and proves the wiring with a handful of descents
+at a forced rate rather than a few hundred at the real one.
+
+A second trap in the same suite is worth naming next to it, because it is the
+kind of thing any test that re-initialises the game will hit:
+`init_angband()` re-reads `lib/gamedata`, so any `z_info` value a suite has
+set for its own purposes is silently restored to what the data file says.
+`game/carry` turns the pet leave chance off and `a-carry-then-a-save-round-
+trips` re-initialises halfway through, which turned it back on for every test
+after it.

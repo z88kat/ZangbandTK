@@ -318,6 +318,7 @@ extern struct room_template *room_templates;
 
 /* generate.c */
 void prepare_next_level(struct player *p);
+bool pet_stays_with_you(void);
 const struct cave_profile *find_cave_profile(const char *name);
 int get_room_builder_count(void);
 int get_room_builder_index_from_name(const char *name);

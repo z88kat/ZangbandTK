@@ -208,30 +208,123 @@ them worse than keeping them.
 Between levels
 --------------
 
-**Your pets follow you down a staircase.** All of them, wherever they were
-standing — a pet across the level is still yours.
+**Your pets follow you down a staircase.** Wherever they were standing — a pet
+across the level is still yours — and up to **four** of them.
+
+Zangband did not do this. It deleted every pet at every level change, and that
+was its region model deciding rather than a design: there is no pet-carrying
+code anywhere in its source, and its documentation never raises the subject.
+Pets following you is one of the things people remember liking about Zangband,
+so this game does the thing people remember rather than the thing the code did.
 
 They arrive around you, within about five squares, the ones that were following
 closest getting the closest ground, and you are told they came::
 
    Your 3 pets follow you down.
 
-If there is no room for one of them it stays behind, and you are told which::
+Nothing is said at all when you have no pets, so the line means something when
+it appears.
 
-   The soldier cannot follow you.
 
-One line per animal, by name — arriving with four when you left with six and
-not knowing which two you lost is worse than losing them. Nothing is said at
-all when you have no pets, so the line means something when it appears.
+Four, and why
+~~~~~~~~~~~~~
+
+Four is about the screen rather than about the balance. A dozen animals
+arriving around you is a mess to look at and worse to move through. If you have
+more than four, the nearest four come and the rest stay where they were.
+
+The mana upkeep has usually settled the question well before the fourth one
+anyway — see `What they cost`_, where the third young red dragon costs 93 per
+cent of a caster's regeneration. Four is the limit you notice with a stable of
+cheap animals; the upkeep is the limit you notice with a stable worth having.
+
+
+One in twenty walks away
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Each pet has a 5% chance, at each level change, of leaving you.** It is a
+flat chance. It does not depend on the creature, on how hurt it is, on how
+frightened it is, or on anything you did. Sometimes a pet just goes — cats do
+that::
+
+   The cave spider does a runner, looking for a new owner.
+
+**A pet that leaves is gone.** Not standing on the level you left, not gone
+wild, not turned against you — gone from the game. There is nothing to go back
+for, and persistent levels make no difference. That is what the message is
+telling you, and it is the reason it is worded the way it is.
+
+One in twenty sounds small and compounds into something real, so here it is
+plainly:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 40 60
+
+   * - After this many level changes
+     - a given pet is still with you
+   * - 1
+     - 95%
+   * - 5
+     - 77%
+   * - 10
+     - 60%
+   * - 20
+     - 36%
+   * - 50
+     - 8%
+
+A pet lasts about thirteen or fourteen level changes before the odds turn
+against it, and twenty on average. With a full stable of four, roughly **one
+descent in five costs you one of them**, and after twenty levels you should
+expect one or two of your original four.
+
+That is attrition, and it is meant to be. It is also worth measuring against
+what it replaced: four pets over twenty levels losing two or three, against
+four pets over *one* level losing all four.
+
+
+Which ones you lost, and whether you can get them back
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Every pet that does not come with you is named, one line each, however many
+there are. Arriving with two when you left with five and not knowing which
+three you lost is worse than losing them.
+
+The lines say different things, and the difference is the one that matters::
+
+   The cave spider does a runner, looking for a new owner.
+   The soldier stays behind; you cannot lead more than 4.
+   There is no room here for the giant frog.
+   The creeping coins cannot follow you.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 34 22 44
+
+   * - What happened
+     - Still yours?
+     - 
+   * - It ran off
+     - **no**
+     - gone from the game; nothing to go back for
+   * - Over the limit of four
+     - yes
+     - standing where you left it
+   * - No room to arrive
+     - yes
+     - standing where you left it
+   * - A mimic
+     - yes
+     - its disguise belongs to the old level
+
+Three of those four are recoverable: the pet is on the level you came from,
+still yours, and if that level persists it is still yours when you go back up.
+Only the first is permanent.
 
 There is no room at all now and then — a staircase in a dead end — and then the
-whole stable is left. It is rare, and it is still named.
-
-Zangband did not do this. It deleted every pet at a level change, and that was
-its region model deciding rather than a design: there is no pet-carrying code
-anywhere in its source and its documentation never raises the subject. Pets
-following you is one of the things people remember liking about Zangband, so
-this game does the thing people remember rather than the thing the code did.
+whole stable is left behind. It is rare, it is not permanent, and every one of
+them is still named.
 
 Nothing follows you into an arena, or out of one.
 
@@ -251,12 +344,56 @@ The bill is the sum of your pets' levels, as a percentage of your mana
 regeneration, and it is never less than 5% or more than 95%.
 
 That is a cliff and it is meant to be, and for pets worth having it is a very
-steep one. A level 30 Mage regains 36 spell points per hundred turns and keeps
-two pets free. Two young red dragons cost nothing. The third costs 93% — the
-same Mage now regains **2**.
+steep one. Here is a level 30 Mage, who has 120 spell points, regains **36 per
+hundred turns** with no pets, and keeps two free:
 
-Shallow pets are cheap: twenty-four level-2 soldiers come to 48%. They are also
-twenty-four things that die to the first breath weapon.
+.. list-table::
+   :header-rows: 1
+   :widths: 34 14 14 19 19
+
+   * - The stable
+     - Sum of levels
+     - Upkeep
+     - sp per 100 turns
+     - against none
+   * - 2 soldiers (level 2)
+     - 4
+     - 0%
+     - 36
+     - 100%
+   * - 3 soldiers
+     - 6
+     - 6%
+     - 34
+     - 94%
+   * - 10 soldiers
+     - 20
+     - 20%
+     - 29
+     - 80%
+   * - 2 young red dragons (level 31)
+     - 62
+     - 0%
+     - 36
+     - 100%
+   * - **3 young red dragons**
+     - 93
+     - **93%**
+     - **2**
+     - **5%**
+   * - 4 young red dragons
+     - 124
+     - 95%
+     - 1
+     - 2%
+
+Read the fifth row before you charm a third dragon. Two are free; the third
+takes you from thirty-six spell points per hundred turns to two. A caster with
+an army of deep pets **cannot cast**, and that — rather than the limit of four
+— is what actually decides the size of a stable worth having.
+
+Shallow pets are cheap: a dozen level-2 soldiers come to 24%. They are also a
+dozen things that die to the first breath weapon.
 
 The pet menu tells you the figure before you go looking for another.
 
