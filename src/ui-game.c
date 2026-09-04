@@ -196,10 +196,26 @@ struct cmd_info cmd_info[] =
 	{ "Things you have taken on", { 'J', '%' }, CMD_NULL, do_cmd_quest_log, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Use a power", { 'N', '&' }, CMD_NULL, do_cmd_racial_power, NULL, 0, NULL, NULL, NULL, 0 },
 	/*
-	 * ZangbandTK (PLR-25).  'A' for allies, not Zangband's 'p': that key is
-	 * auto-explore here, which is 4.2's and in use.
+	 * ZangbandTK (PLR-25).  'P' for pets, and '!' in the roguelike keyset.
+	 *
+	 * This was 'A' for allies, which was wrong twice over.  Zangband's own key
+	 * is 'p' and that is auto-explore here, so the command did have to move --
+	 * but 'A' is cmd_item's "Activate an object", and cmd_init() fills
+	 * converted_list[] by walking cmds_all in order without checking, so
+	 * whichever list comes last wins.  cmd_info is after cmd_item, so pets took
+	 * the key and CMD_ACTIVATE was left with none.
+	 *
+	 * That is worse than a missing key.  cmd_lookup_key(CMD_ACTIVATE) then
+	 * returns 0, and object inscriptions are matched against it -- so '@A1'
+	 * stopped tagging an item for activation and '!A' stopped asking for
+	 * confirmation before one, silently, on items that had been inscribed for
+	 * years.  The assert in cmd_init() below is so this cannot happen again.
+	 *
+	 * 'P' because no letter is free in both keysets -- the roguelike one spends
+	 * eight on running -- so this follows the two commands above it and takes a
+	 * letter in the original keyset and a symbol in the roguelike one.
 	 */
-	{ "Command pets", { 'A' }, CMD_NULL, do_cmd_pet, NULL, 0, NULL, NULL, NULL, 0 },
+	{ "Command pets", { 'P', '!' }, CMD_NULL, do_cmd_pet, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Repeat level feeling", { KTRL('F') }, CMD_NULL, do_cmd_feeling, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Show previous message", { KTRL('O') }, CMD_NULL, do_cmd_message_one, NULL, 0, NULL, NULL, NULL, 0 },
 	{ "Show previous messages", { KTRL('P') }, CMD_NULL, do_cmd_messages, NULL, 0, NULL, NULL, NULL, 0 }
@@ -453,6 +469,24 @@ void cmd_init(void)
 				/* Skip entries that don't have a valid key. */
 				if (!commands[i].key[0] || !commands[i].key[1])
 					continue;
+
+				/*
+				 * Check for a key claimed twice (ZangbandTK).
+				 *
+				 * The nested lists below have always asserted on this; the
+				 * top-level ones did not, and simply overwrote -- so a second
+				 * claim on a key made the first command unreachable, and said
+				 * nothing.  That is how "Command pets" took 'A' from "Activate
+				 * an object" and cost every '@A' and '!A' inscription in the
+				 * game its meaning, unnoticed through a release.
+				 *
+				 * A crash before the title screen is the right failure here:
+				 * these tables are fixed at compile time, so an assert can only
+				 * fire on a developer's machine, and the alternative is a
+				 * command that quietly does not exist.
+				 */
+				assert(!converted_list[0][commands[i].key[0]]);
+				assert(!converted_list[1][commands[i].key[1]]);
 
 				converted_list[0][commands[i].key[0]] =
 					&commands[i];

@@ -52,9 +52,34 @@ static int test_cmd_lookup_rogue(void *state) {
 	ok;
 }
 
+/*
+ * Regression test: 'A' activates, and CMD_ACTIVATE can be found from it
+ * (ZangbandTK).
+ *
+ * "Command pets" was given 'A' as well, and cmd_init() fills converted_list[]
+ * by walking cmds_all in order without checking -- so the later list won and
+ * CMD_ACTIVATE was left with no key in either keyset.  The visible half was
+ * that 'A' opened the pet menu; the quiet half was that
+ * cmd_lookup_key(CMD_ACTIVATE) returned 0, and object inscriptions are matched
+ * against that value, so '@A1' stopped tagging an item for activation and '!A'
+ * stopped asking before activating one.
+ *
+ * Both directions are checked because the reverse lookup is the one that broke
+ * silently.
+ */
+static int test_cmd_lookup_activate(void *state) {
+	require(cmd_lookup('A', KEYMAP_MODE_ORIG) == CMD_ACTIVATE);
+	require(cmd_lookup('A', KEYMAP_MODE_ROGUE) == CMD_ACTIVATE);
+	require(cmd_lookup_key(CMD_ACTIVATE, KEYMAP_MODE_ORIG) == 'A');
+	require(cmd_lookup_key(CMD_ACTIVATE, KEYMAP_MODE_ROGUE) == 'A');
+
+	ok;
+}
+
 const char *suite_name = "command/lookup";
 struct test tests[] = {
 	{ "cmd_lookup_orig",  test_cmd_lookup_orig },
 	{ "cmd_lookup_rogue", test_cmd_lookup_rogue },
+	{ "cmd_lookup_activate", test_cmd_lookup_activate },
 	{ NULL, NULL }
 };
