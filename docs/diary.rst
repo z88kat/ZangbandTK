@@ -31,6 +31,76 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+4 September 2026 — writing a script that can see colour
+=======================================================
+
+Gervais had a wilderness hiding in it. The other three tilesets had nothing, so
+they had to be drawn, and I cannot draw. Steven had already said do all three,
+including the two whose licences say nothing at all, having gone and checked for
+himself that there is nothing to find.
+
+The way out is that nine of the ten features are not pictures. Grass is mottled
+greens. Deep water is a blue that barely varies. Sand is mottled tans. A texture
+is a rule rather than a drawing, and a rule can be asked for at 16x16 and again
+at 8x8, where a shrunk 32x32 tile is mush. Only the tree is a shape, and a blob
+with a trunk under it reads as a tree at sixteen pixels.
+
+That also decided the palette question. If the script picks the greens, they are
+this script's greens and the tile sits *beside* the sheet rather than in it. So
+it samples: every opaque pixel in the target sheet, sorted into hue families,
+most frequent kept. Adam Bolt's greens for Adam Bolt. Nothing in there knows
+what colour grass is; it knows to go and ask.
+
+Then I spent an hour learning that I cannot classify colour by inequality.
+
+The first run put **scarlet earth** in two of the three tilesets, because `r >=
+g >= b` is true of pure red. I tightened it to require green clear of blue, and
+`(110, 45, 35)` sailed through, which is brick. Earth is on the orange axis: green
+has to be a real fraction of the way up from blue towards red, and a quarter
+turned out to be the number.
+
+The second run gave Adam Bolt a **blue tree**. Its brightest "green" was
+`(88, 136, 136)` — teal, where green and blue are equal, and `g >= b` does not
+mind. Nomad's brightest green was `(248, 248, 8)`, which is yellow, where red
+and green are equal and `g >= r` does not mind either. Green has to be greener
+than *both* its neighbours, which is obvious once you have shipped two tilesets
+that disagree.
+
+And the canopy was washing out even after that, because I was brightening by
+multiplying every channel. The first channel to hit 255 stops while the others
+keep climbing, so the hue slides towards white. Cap the factor at what the
+brightest channel can take and the ratios — and the colour — survive.
+
+What I want to remember is not the three bugs. It is that I found the first two
+by rendering the tiles and squinting, got the diagnosis wrong twice, and then
+found all three in about a minute by printing the sampled palette. The palette is
+three numbers per colour. The tile is a thousand pixels. I had been reading the
+big thing.
+
+**The other lesson was cheaper and worse.** The first version appended a row
+unconditionally, so running it twice put two rows on and moved every coordinate.
+A generated file that changes every time you regenerate it is not a generated
+file, it is a liability, and I caught it only because I happened to run the
+script twice while fixing something else. It reclaims its own row now, and I
+tested that by running it three times and diffing the bytes.
+
+Steven asked, while this was going on, that we write down what we have done to
+these tilesets. He is right and it is the single most useful thing to come out of
+today. There is now `lib/tiles/README`, and the same in LICENSE.md and the
+manual, and the distinction it draws is the one that actually matters: a
+**mapping** adds a lookup table pointing at art already in the sheet and alters
+no image, and a **modification** writes pixels. Gervais is mapped and its PNG is
+byte-identical to Angband's. The other three are modified, one row each, nothing
+existing touched.
+
+That distinction is not pedantry. It is the whole of whether a licence that
+forbids modification has been respected — which is precisely the thing I got
+wrong this morning by reading Shockbolt's terms for the question I was already
+asking instead of the one that mattered. Writing down which kind of change we
+made to what means the next person does not have to reconstruct it from the
+pixels, and neither do I.
+
+
 4 September 2026 — the tiles were in the box
 ============================================
 

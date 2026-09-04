@@ -45,6 +45,60 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Terrain for the other three tilesets, drawn by a script — 4 September 2026
+----------------------------------------------------------------------------
+
+- **3.97.0** — **Adam Bolt's, Nomad's and the original 8×8 get a wilderness
+  too.** Gervais' set had one hiding in it and was mapped; these three had
+  nothing to map, so ``scripts/tiles/make-terrain.py`` draws it: ten features in
+  three lighting variants, appended as **one new row of thirty tiles** to each
+  sheet, with the matching ``feat-ztk.prf`` written beside it.
+
+  **Generated rather than shrunk out of Gervais**, for three reasons. Nine of
+  the ten are *textures* — grass is mottled greens, deep water is a blue that
+  barely varies — and a texture is a rule, which survives being asked for at
+  16×16 and again at 8×8 where a downscaled 32×32 tile is mush. The palette can
+  then be taken from the sheet being extended, so the grass is that tileset's
+  own green rather than one this project chose. And the art is ours, so no
+  attribution follows it into three more files.
+
+  **Nothing already in those sheets is touched.** The row goes below the
+  existing art, so every original cell keeps its coordinates and every original
+  pixel its value. The script is deterministic and idempotent — re-running
+  reproduces the same bytes and reclaims the row it wrote last time rather than
+  adding another, which the first version got wrong.
+
+  **What the palette sampler had to learn**, each fault found by dumping the
+  three numbers rather than squinting at the thousand pixels:
+
+  - ``r >= g >= b`` admits pure red, so the first generated earth was scarlet in
+    two tilesets; and merely clearing blue was not enough either, because
+    ``(110, 45, 35)`` passes that and is brick. Earth wants green a quarter of
+    the way up from blue towards red.
+  - ``g >= r and g >= b`` admits yellow, where red and green are equal — Nomad's
+    brightest "green" came back ``(248, 248, 8)`` — and teal, where green and
+    blue are: Adam Bolt's came back ``(88, 136, 136)``, which is why its first
+    tree canopy was blue.
+  - Brightening by multiplication drains the colour out: the first channel to
+    reach 255 stops while the others climb, so the hue slides towards white.
+
+- **3.97.0** — **What we have done to the tilesets is written down.** A new
+  ``lib/tiles/README``, and the same in ``LICENSE.md`` and :doc:`copying`,
+  recording per tileset whether it was *mapped* (a lookup table onto art already
+  in the sheet, altering no image) or *modified* (pixels written into it).
+
+  Gervais is mapped only and its ``32x32.png`` is byte-identical to Angband's.
+  The other three are modified. Adam Bolt's licence permits that in terms; the
+  original 8×8 and Nomad's carry no licence statement anywhere and stand on the
+  project licence like the rest of the tree, which is a reading of a silence
+  rather than a permission granted and is recorded as exactly that.
+
+  **Still missing, deliberately**: the inn, magesmith, chaos tower and recharger
+  everywhere, and the dungeon mouth and secret door in the three generated sets.
+  Those are buildings and openings — shapes rather than rules — and a borrowed
+  picture for one of them is actively wrong rather than merely absent.
+
+
 The wilderness gets its tiles — 4 September 2026
 --------------------------------------------------
 

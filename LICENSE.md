@@ -38,12 +38,34 @@ Angband licence and which the licence above does not override.
 
 ### Graphics
 
+**These tilesets have been changed.** None of the four was drawn for this game,
+so none had art for the wilderness, and the imported bestiary rendered as ASCII
+letters among the pictures. What was done to each — and, importantly, whether it
+was a *mapping* (a lookup table pointing at art already in the sheet) or a
+*modification* (pixels written into the sheet) — is set out in
+[lib/tiles/README](lib/tiles/README). In summary:
+
+| Tileset | Image | What we added |
+|---|---|---|
+| Gervais 32×32 | **untouched** | a mapping only, onto cells Angband never used |
+| Adam Bolt 16×16 | **modified** | one appended row of thirty generated terrain tiles |
+| Nomad 16×16 | **modified** | the same |
+| Original 8×8 | **modified** | the same |
+
+Nothing already in a sheet is altered: the generated row goes below the existing
+art, so every original cell keeps its coordinates and every original pixel its
+value. The colours are sampled from the sheet being extended, so the additions
+are in that tileset's own palette. All four also gain `.prf` files, which are
+mappings and change no art.
+
 - **Adam Bolt's 16×16 tiles** may be redistributed and used for any purpose,
-  with or without modification.
+  with or without modification. Modified here, which those terms allow in
+  terms.
 - **David Gervais' 32×32 tiles** may be redistributed, modified and used only
   under the terms of the
   [Creative Commons Attribution 3.0](http://creativecommons.org/licenses/by/3.0/)
-  licence.
+  licence. **Not modified here** — `32x32.png` is byte-identical to Angband's.
+  What this game adds is a mapping onto cells the sheet already contained.
 - **Shockbolt's 64×64 tiles are not distributed with this game**, and were
   removed in 3.95.0. Angband ships them; we may not. The licence grants use
   "with in-development and released versions of Angband" and withholds it for
@@ -59,6 +81,13 @@ Angband licence and which the licence above does not override.
   here, and none in Angband's own `copying.rst` either. Recorded as a known gap
   rather than left to be assumed: it is inherited, not settled, and the two sets
   are shipped on the same footing Angband ships them on.
+
+  **Both are modified here**, by the appended row described above. Neither is
+  listed among the exceptions below, so both stand on the project licence like
+  the rest of the tree — which is a reading of a silence rather than a
+  permission granted, and is written down as such. If either author or Angband
+  states terms that this reading does not satisfy, the row is one script run
+  away from being removed again.
 
 ### Sound and fonts
 

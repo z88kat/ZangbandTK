@@ -1,6 +1,6 @@
 MKPATH=../../../mk/
 include $(MKPATH)buildsys.mk
 
-DATA = 16x16.png  flvr-new.prf  graf-new.prf  xtra-new.prf  graf-ztk.prf
+DATA = 16x16.png  flvr-new.prf  graf-new.prf  xtra-new.prf  graf-ztk.prf  feat-ztk.prf
 
 PACKAGE = tiles/adam-bolt
