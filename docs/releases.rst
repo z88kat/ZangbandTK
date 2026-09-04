@@ -33,6 +33,30 @@ Unreleased
 Tidying — 4 September 2026
 ---------------------------
 
+- **3.93.0** — **A borg run says where it got to, and breaks out of prompts it
+  cannot answer.** Two instruments, and the second turned a class of
+  half-hour investigations into a line of log.
+
+  Status was printed only when a run *finished*, which is exactly wrong for a
+  run that may not: three separate questions this session were unanswerable for
+  that reason, the last costing half an hour to establish that a process was at
+  0% CPU. A progress line now goes to the log every 500 game turns.
+
+  It localised the standing hang immediately — depth 25 at turn 1, depth 1 by
+  turn 504, stopped between 1004 and 1504 — and sampling the wedged process
+  named it: the borg opens 4.2's object context menu through ``do_cmd_equip()``
+  and cannot get out, spinning inside it while the game turn never advances.
+
+  That was the **fourth** prompt the harness could not answer, after the borg's
+  own initialisation, level generation and a store. So the fix is general
+  rather than a fourth special case: when the game keeps asking for input while
+  the game turn does not advance — a borg that is playing moves the clock, one
+  trapped in a menu does not — the harness sends ESCAPE and logs it, and fails
+  the run as wedged if forty attempts do not clear it.
+
+  It fired correctly and **ESCAPE did not clear the context menu**, which is a
+  second finding and possibly a game-side one rather than a borg one.
+
 - **3.92.0** — **The scoped route: a Warrior-Mage, four cheats, and depth 30 as
   the bar.** Standard play does not reach the depths this game's content lives
   at, and the early-game grind is not what the borg exists to verify — so the

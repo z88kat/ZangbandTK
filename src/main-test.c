@@ -33,6 +33,7 @@
 #include "player.h"
 #include "player-birth.h"
 #include "player-calcs.h"
+#include "player-mutation.h"
 #include "player-util.h"
 #include "savefile.h"
 #include "ui-game.h"
@@ -119,6 +120,49 @@ static int pending_cheat_gold = 0;
 static int pending_jump       = 0;
 static int applying_setup     = 0;
 static int want_deathless     = 0;
+
+/*
+ * How often to print a progress line during a run, in game turns (BRG-22).
+ *
+ * The harness printed status only when a run *finished*, which is exactly
+ * wrong for a run that may not: a hang then costs a ten-minute timeout and
+ * yields one bit of information -- that it hung. Three separate questions this
+ * session were unanswerable for that reason, and the last cost half an hour to
+ * learn that a process was at 0% CPU.
+ *
+ * Zero disables it. `ZTK_BORG_EVERY` overrides.
+ */
+static int progress_every = 0;
+static int progress_next  = 0;
+
+/*
+ * Breaking out of a prompt the borg does not understand (BRG-22).
+ *
+ * The harness has now failed to answer four distinct prompts: the borg's own
+ * `borg_init()`, level generation, a store, and -- the one that hung every run
+ * at depth -- 4.2's object context menu, reached through `do_cmd_equip()`.
+ * Each was diagnosed by sampling a wedged process and each cost most of an
+ * hour. Teaching the harness a fifth special case would be the wrong answer to
+ * the fourth instance.
+ *
+ * So: **any** prompt the borg cannot get past is dismissed generically. The
+ * detector is that the game keeps asking for input while the game *turn* does
+ * not advance -- a borg that is playing moves the clock, and one trapped in a
+ * menu does not, however busy it looks. ESCAPE is the safe answer to almost
+ * every prompt in the game, and it is safe for the borg specifically because
+ * `borg_headless` stops a keypress being read as a user reaching for the
+ * keyboard.
+ *
+ * Bounded, because a prompt that ESCAPE does not clear would otherwise spin
+ * just as hard: after `STUCK_GIVE_UP` attempts the run is failed as wedged,
+ * with the turn it stopped on.
+ */
+#define STUCK_PROMPT_AFTER 300
+#define STUCK_GIVE_UP      40
+
+static int  stuck_turn    = -1;
+static int  stuck_count   = 0;
+static int  stuck_escapes = 0;
 
 static void borg_begin_pending(void);
 #endif
@@ -327,6 +371,16 @@ static void borg_begin_pending(void)
 	 * `borg_reset_ignore()` frees on the way out. Setting the flags directly
 	 * skipped the allocation and the first deactivation dereferenced NULL.
 	 */
+	{
+		const char *env = getenv("ZTK_BORG_EVERY");
+
+		progress_every = (env && *env) ? atoi(env) : 500;
+		progress_next  = (int) turn;
+		stuck_turn     = -1;
+		stuck_count    = 0;
+		stuck_escapes  = 0;
+	}
+
 	borg_turn_limit = turn + turns;
 
 	/*
@@ -647,6 +701,101 @@ static void c_borg_mouths(char *rest)
 
 	printf("borg-mouths: %d of %d in the window, %d of those reach past "
 		   "depth 15\n", inside, n, deeper_inside);
+	fflush(stdout);
+}
+
+/**
+ * borg-exercise? -- what the run actually exercised (BRG-22).
+ *
+ * The point of the scoped route, and the thing reaching depth 30 is only the
+ * precondition for. A borg that arrives at depth 30 having cast three spells
+ * and summoned nothing has verified almost none of M8, M9 or M10, and the
+ * depth alone would hide that -- so this reports the content rather than the
+ * achievement.
+ *
+ * Everything here is read from the game's own state rather than from the
+ * borg's, so it says what *happened* rather than what the borg believes.
+ *
+ *   realms   spells learned and successfully cast, per realm. `PY_SPELL_WORKED`
+ *            is set the first time a spell actually goes off, which is the
+ *            difference between a spell list and a spell used.
+ *   pets     allies alive now, and whether any were ever held -- M10's whole
+ *            point, and the thing the Summon Pet rating of 40 puts at risk.
+ *   mutations what the character has, since M8's content is invisible unless
+ *            something grants it.
+ */
+static void c_borg_exercise(char *rest)
+{
+	int i, learned = 0, worked = 0;
+	int pets = 0, muts = 0;
+
+	if (!player) {
+		printf("borg-exercise: FAILED no character\n");
+		run_failed = 1;
+		return;
+	}
+
+	/* Per-realm spell use, which is M9's verification */
+	{
+		const struct class_magic *m = &player->class->magic;
+		int b;
+		int r_learned[16] = { 0 }, r_worked[16] = { 0 };
+		const char *r_name[16] = { NULL };
+
+		for (b = 0; b < m->num_books; b++) {
+			const struct class_book *book = &m->books[b];
+			int ridx = book->realm ? book->realm->ridx : 0;
+			int k;
+
+			if (ridx < 16) r_name[ridx] = book->realm ? book->realm->name : "?";
+
+			for (k = 0; k < book->num_spells; k++) {
+				uint8_t f = player->spell_flags
+					? player->spell_flags[book->spells[k].sidx] : 0;
+
+				if (f & PY_SPELL_LEARNED) {
+					learned++;
+					if (ridx < 16) r_learned[ridx]++;
+				}
+				if (f & PY_SPELL_WORKED) {
+					worked++;
+					if (ridx < 16) r_worked[ridx]++;
+				}
+			}
+		}
+
+		for (i = 0; i < 16; i++) {
+			if (!r_name[i]) continue;
+			printf("borg-realm: %-10s learned=%-3d cast=%d\n",
+				   r_name[i], r_learned[i], r_worked[i]);
+		}
+	}
+
+	/* Pets alive now (M10) */
+	if (cave) {
+		for (i = 1; i < cave_monster_max(cave); i++) {
+			struct monster *mon = cave_monster(cave, i);
+
+			if (mon->race && monster_is_pet(mon)) pets++;
+		}
+	}
+
+	/* Mutations held (M8) */
+	{
+		const struct mutation *mut;
+
+		for (mut = mutations; mut; mut = mut->next) {
+			if (player_has_mutation(player, mut)) {
+				printf("borg-mutation: %s\n", mut->name);
+				muts++;
+			}
+		}
+	}
+
+	printf("borg-exercise: spells learned=%d cast=%d of %d | pets=%d | "
+		   "mutations=%d | maxdepth=%d clevel=%d deaths=%d\n",
+		   learned, worked, player->class->magic.total_spells, pets, muts,
+		   player->max_depth, player->lev, run_deaths);
 	fflush(stdout);
 }
 
@@ -990,6 +1139,7 @@ static test_cmd cmds[] = {
 	{ "borg-shops?", c_borg_shops },
 	{ "borg-mouths?", c_borg_mouths },
 	{ "borg-terrain?", c_borg_terrain },
+	{ "borg-exercise?", c_borg_exercise },
 	{ "borg-cheat", c_borg_cheat },
 	{ "borg-jump", c_borg_jump },
 	{ "borg-pet", c_borg_pet },
@@ -1087,6 +1237,46 @@ static errr term_xtra_event(int v) {
 	}
 
 #ifdef ALLOW_BORG
+	/*
+	 * A prompt the borg cannot answer: dismiss it and say so.
+	 */
+	if (character_dungeon && borg_active) {
+		if ((int) turn != stuck_turn) {
+			stuck_turn  = (int) turn;
+			stuck_count = 0;
+		} else if (++stuck_count > STUCK_PROMPT_AFTER) {
+			stuck_count = 0;
+
+			if (++stuck_escapes > STUCK_GIVE_UP) {
+				printf("borg-stuck: FAILED a prompt ESCAPE will not clear, "
+					   "turn %d ZTK_TEST_SEED=%u\n", (int) turn, run_seed);
+				fflush(stdout);
+				run_failed = 1;
+				borg_active = false;
+				return 0;
+			}
+
+			printf("borg-stuck: dismissing an unanswered prompt at turn %d "
+				   "(%d)\n", (int) turn, stuck_escapes);
+			fflush(stdout);
+			nextkey = ESCAPE;
+			return 0;
+		}
+	}
+
+	/*
+	 * Progress, so a run that never finishes still says where it got to.
+	 */
+	if (progress_every > 0 && character_dungeon && borg_active
+			&& (int) turn >= progress_next) {
+		progress_next = (int) turn + progress_every;
+		printf("borg-progress: turn=%d depth=%d maxdepth=%d clevel=%d "
+			   "hp=%d/%d gold=%d\n",
+			   (int) turn, player->depth, player->max_depth, player->lev,
+			   player->chp, player->mhp, (int) player->au);
+		fflush(stdout);
+	}
+
 	/*
 	 * A run asked for before the game was ready starts here (BRG-03).
 	 *
