@@ -272,7 +272,7 @@ extern bool borg_spell_okay(const enum borg_spells spell);
  * they cannot be reached by any `borg_spell()` call. These two are how the
  * borg uses M9's realms at all. See borg-magic.c for the measurement.
  */
-extern int  borg_best_spell_with_effect(int effect_index);
+extern int  borg_best_spell_with_effect(int effect_idx);
 extern bool borg_spell_by_index(int spell_num);
 
 /*

@@ -648,7 +648,7 @@ bool borg_spell_legal_fail(const enum borg_spells spell, int allow_fail)
  * the unrated spells all share `BORG_SPELL_UNKNOWN` and an enum lookup could
  * not tell them apart.
  */
-int borg_best_spell_with_effect(int effect_index)
+int borg_best_spell_with_effect(int effect_idx)
 {
     int i, best = -1, best_rating = -1;
 
@@ -657,7 +657,7 @@ int borg_best_spell_with_effect(int effect_index)
     for (i = 0; i < player->class->magic.total_spells; i++) {
         borg_magic *as = &borg_magics[i];
 
-        if (as->effect_index != (uint16_t) effect_index) continue;
+        if (as->effect_index != (uint16_t) effect_idx) continue;
 
         /* Has to be one it can actually cast right now */
         if (as->status < BORG_MAGIC_TEST) continue;
@@ -931,9 +931,9 @@ static int borg_get_book_offset(int index)
  * is needed yet, and adding the mechanism before a case demands it would be
  * building a pipeline to tune numbers nobody has looked at.
  */
-static uint8_t borg_rating_from_effect(int effect_index)
+static uint8_t borg_rating_from_effect(int effect_idx)
 {
-    switch (effect_index) {
+    switch (effect_idx) {
     /*** 90-95: stays alive ***/
     case EF_TELEPORT:            /* the escape, and the borg's best trick */
     case EF_TELEPORT_LEVEL:
