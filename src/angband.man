@@ -103,7 +103,7 @@ save data scores xtra edit file
 .SH "GETTING STARTED"
 To start with, you can just say angband \-uTest, and that creates a
 save file with the file name 
-.I ~/.angband/Angband/save/<UID>.Test.
+.I ~/.angband/ZangbandTK/save/<UID>.Test.
 The best place to get help is the program itself; help is reached by
 the command
 .B ?

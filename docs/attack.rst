@@ -79,8 +79,8 @@ other magical means to learn about monster's abilities that don't require
 you to actually experience the attacks.
 
 This memory can be used by all your characters; it is stored in a file
-called 'lore.txt' in your user directory (~/.angband/Angband in Linux,
-lib/user in Windows, Documents/Angband in macOS).
+called ``lore.txt`` in your user directory (``~/.angband/ZangbandTK`` on Linux,
+``lib/user`` on Windows, ``Documents/ZangbandTK`` on macOS).
 
 Your Weapon
 ===========
@@ -259,7 +259,7 @@ stunning, and the power of "free action" prevents magical paralysis (the
 player may still be paralyzed by being "knocked out" in melee or by a stunning
 attack, but this is very rare and can be prevented with protection from
 stunning; paralysis due to fainting from hunger or casting a spell with
-ith insufficient mana is also unaffected by having free action). There are
+with insufficient mana is also unaffected by having free action). There are
 monsters that can cause status effects such as blindness, paralysis or
 confusion through their melee attack.  Since this is a physical effect and
 not a mental one, the player will not get a saving throw.  However, having
@@ -278,8 +278,12 @@ no saving throw, except to those that would actually teleport him up or
 down one dungeon level. Having resistance to nexus will also prevent being
 level-teleported, but will not help against normal teleportation spell
 attacks. The player may teleport monsters in the same way, with a spell,
-wand or rod. No monsters, even Morgoth himself, can resist this 
-teleportation.  Yet...
+wand or rod — but in ZangbandTK a hundred and two of the imported monsters
+shrug it off. A unique that does is simply unmoved; anything else gets a
+saving throw that a heavy creature usually passes and a light one usually
+fails, so teleport-other is a reliable escape from a swarm and an unreliable
+one from the thing you most want moved. The monster recall says *cannot be
+teleported* once you have seen it happen. See :doc:`monsters`.
 
 Other attacks are usually element-based, including the aforementioned
 example of dragon breath. Many monsters can breathe various attacks or cast
@@ -420,10 +424,11 @@ A note on speed
 
 Monsters which do not move at normal speed generally move "slowly" (-10 to
 speed), "fairly quickly" (+5), "quickly" (+10), "very quickly" (+20) or
-"incredibly quickly" (+30). (It will surprise nobody that Morgoth is one of
-the few monsters in the last category.) This is further adjusted by the fact
-that any non-unique monster may have a random adjustment from (-2) to (+2)
-to its own speed.
+"incredibly quickly" (anything past +20). Twenty-seven creatures fall in that
+last band, and the two fastest things in the game are both Zelazny's: the
+Serpent of Chaos at +45 and the Unicorn of Order at +50. This is further
+adjusted by the fact that any non-unique monster may have a random adjustment
+from (-2) to (+2) to its own speed.
 
 Generally, (+10) is exactly double normal speed, and (-10) exactly half.
 (+20) is about three times normal speed, but after that there is less
@@ -457,6 +462,12 @@ Some of the ego weapons that you might find in the dungeon are listed
 below. This will give you a small taste of the items that can be found.
 However if you wish to discover these items on your own, you may not wish
 to continue. Ego weapons are denoted by the following "names":
+
+.. note::
+
+   This list is Angband's. ZangbandTK adds sixteen ego types of its own —
+   ``(Vampiric)``, ``(Chaotic)``, ``of Sharpness``, ``(Trump Weapon)`` and the
+   rest — which are described in :doc:`objects` rather than here.
 
 Ego Melee Weapons:
 ------------------

@@ -45,9 +45,9 @@ create new user pref files, or save to a user pref file.
 Where to find them
 ~~~~~~~~~~~~~~~~~~
 
-On macOS, you can find them in your user directory, in ``Documents/Angband/``.
+On macOS, you can find them in your user directory, in ``Documents/ZangbandTK/``.
 
-On Linux, they will be stored in ``~/.angband/Angband``.
+On Linux, they will be stored in ``~/.angband/ZangbandTK``.
 
 On Windows you can find them in ``lib/user/``.
 
@@ -297,8 +297,8 @@ Some aspects of how the game is presented, notably the font, window placement
 and graphical tile set, are controlled by the front end, rather than the core
 of the game itself.  Each front end has its own mechanism for setting those
 details and recording them between game sessions.  Below are brief descriptions
-for what you can configure with the standard `Windows`_, `X11`_, `SDL`_,
-`SDL2`_ and `Mac`_ front ends.
+for what you can configure with the standard `Windows`_, `X11`_, `SDL2`_ and
+`Mac`_ front ends.
 
 Windows
 ~~~~~~~
@@ -381,39 +381,6 @@ main window) and 7 are:
 * ANGBAND_X11_AT_Y_z holds the vertical coordinate (zero is topmost) for the upper left corner of the window
 * ANGBAND_X11_COLS_z holds the number of columns to display in the window
 * ANGBAND_X11_ROWS_z holds the number of rows to display in the window
-
-SDL
-~~~
-
-With the SDL front end, the main window and any subwindows are displayed within
-the application's rectangular window.  At the top of the application's window
-is a status line.  Within that status line, items highlighted in yellow are
-buttons that can be pressed to initiate an action.  From left to right they are:
-
-* The application's version number - pressing it displays an information dialog about the application
-* The currently selected terminal - pressing it brings up a menu for selecting the current terminal; you can also make a terminal the current one by clicking on the terminal's title bar if it is visible
-* Whether or not the current terminal is visible - pressing it for any terminal that is not the main window will allow you to show or hide that terminal
-* The font for the current terminal - pressing it brings up a menu to choose the font for the terminal
-* Options - brings up a dialog for selecting global options including those for the graphical tile set used and whether fullscreen mode is enabled
-* Quit - to save the game and exit
-
-To move a terminal window, click on its title bar and then drag the mouse.
-To resize a terminal window, position the mouse pointer over the lower right
-corner.  That should cause a blue square to appear, then click and drag to
-resize the terminal.
-
-To change the graphical tile set used when displaying the game's map, press
-the Options button in the status bar.  Then, in the dialog that appears, press
-one of the red buttons that appear to the right of the label,
-"Available Graphics:".  The last of those buttons, labeled "None", selects
-text as the method for displaying the map.  Your choice for the graphical tile
-set does not take effect until you press the red button labeled "OK" at the
-bottom of the dialog.
-
-When you leave the game, the current settings for the SDL interface are saved
-as ``sdlinit.txt`` in the same directory as is used for preference files, see
-`User Pref Files`_ for details.  Those settings will be automatically reloaded
-the next time you start the SDL interface.
 
 SDL2
 ~~~~
@@ -529,13 +496,14 @@ height.
 
 When you leave the game, the current Mac-specific settings are saved and will
 be automatically reloaded when you restart.  The settings are stored in
-``Library/Preferences/org.rephial.angband.plist`` within your user directory.
+``Library/Preferences/org.zangbandtk.zangbandtk.plist`` within your user
+directory.
 If you suspect those settings have been corrupted in some way or would like to
 start again from the default settings, quit the game if it is running, open a
 Terminal window (i.e. select 'Go->Utilities->Terminal' from the Finder's
 menus), and, in that Terminal window, run this::
 
-	defaults delete org.rephial.angband
+	defaults delete org.zangbandtk.zangbandtk
 
 to clear the contents of the preferences file and any cached preferences that
 may be retained in memory.

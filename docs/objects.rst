@@ -1,7 +1,7 @@
 Objects
 =======
 
-ZangbandTK adds 85 object kinds, 51 artifacts and 17 ego types to Angband's,
+ZangbandTK adds 86 object kinds, 51 artifacts and 16 ego types to Angband's,
 along with three weapon properties Angband has no equivalent for.
 
 Three new weapon properties
@@ -45,7 +45,7 @@ value are unchanged.
 New ego types
 -------------
 
-Seventeen, including ``(Vampiric)``, ``(Chaotic)``, ``of Sharpness``,
+Sixteen, including ``(Vampiric)``, ``(Chaotic)``, ``of Sharpness``,
 ``(Ghoul Touch)``, ``of Immolation``, and the Amber-flavoured
 ``(Trump Weapon)`` and ``(Pattern Weapon)``.
 
@@ -55,11 +55,12 @@ Artifacts are rare by design; a vampiric long sword is not.
 New objects
 -----------
 
-Eighty-two of Zangband's own object kinds, which is most of what it had that
+Eighty-six of Zangband's own object kinds, which is most of what it had that
 Angband does not: thirteen swords including the **Diamond Edge** and the
-**Psiblade**, nine polearms, eight hafted weapons, nineteen pieces of armour
-from the **T-shirt** to the feathered **Hagaromo**, and twenty-eight rings and
-amulets.
+**Psiblade**, nine polearms, eight hafted weapons, eighteen pieces of armour
+from the **T-shirt** to the feathered **Hagaromo**, and twenty-five rings and
+amulets. The remaining thirteen are consumables — five potions, four scrolls,
+two rods, a food and an arrow.
 
 The jewellery is where the interesting things are. An **Amulet of Anti-Magic**
 stops you casting at all; an **Amulet of Anti-Teleportation** roots you where
@@ -233,24 +234,26 @@ how the wilderness plays rather than a conversion of a flag. One ego,
 importing it would have put a pair of boots in the game that granted nothing at
 all.
 
-Fifteen of Zangband's object kinds are likewise recorded but not imported,
+Thirteen of Zangband's object kinds are likewise recorded but not imported,
 each for want of a mechanism rather than out of preference:
 
 - **Ten statues and a figurine.** A Zangband statue is a monster rendered in
   a material — the name reads *Mithril Statue of a Balrog* — and the figurine
   is thrown to break and release the creature as a pet. Angband's object names
   are fixed text and an object cannot refer to a monster, so a statue here
-  would be a heavy lump with the interesting part missing. The figurine needs
-  pets as well.
-- **A Wand of Tame Monster**, for the same reason: it makes a pet.
-- **A Potion of New Life**, which re-rolls your hit points and cures every
-  mutation. Neither mechanism exists yet.
+  would be a heavy lump with the interesting part missing. Pets are no longer
+  the obstacle; naming the monster is.
 - **A Scroll of Artifact Creation**, which makes a new artifact out of an
   ordinary item during play. Angband generates its random artifacts once, at
   birth, and stores an artifact in the savefile by name — so one invented
   mid-game would not be there when the character was loaded again.
 - **A Wand of Rockets**, whose damage is its own element — it stuns, and shard
   resistance halves it — and adding an element changes the savefile layout.
+
+Two that used to be on this list have since arrived. The **Wand of Tame
+Monster** waited on pets and now has them (:doc:`pets`). The **Potion of New
+Life** strips every mutation you carry (:doc:`mutations`); Zangband's version
+also re-rolled your hit points, and that half of it is still not built.
 
 One more is not waiting at all. **The Scroll of Rumour is dropped**, not
 deferred. Zangband's 647 rumours are in the archive and Angband already has the

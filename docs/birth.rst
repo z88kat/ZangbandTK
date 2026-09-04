@@ -285,9 +285,9 @@ Amberite
 
 Beastman
   Chaos-touched and born wrong. Strong and hardy, dull and clumsy, and
-  resistant to sound and confusion because it is already used to both. In
-  Zangband a Beastman also acquired mutations as it levelled; that waits for
-  the mutation system.
+  resistant to sound and confusion because it is already used to both. It is
+  also the only race that mutates without being made to: one mutation at birth
+  and a one-in-five chance at every level after. See :doc:`mutations`.
 
 .. _Yeek:
 
@@ -300,17 +300,18 @@ Yeek
 
 Draconian
   Winged, and descended from something that mattered. Strong, hardy, quick and
-  clever, it glides rather than falls and resists fire. In Zangband a Draconian
-  gained a different breath weapon every five levels; that waits for racial
-  powers.
+  clever, it glides rather than falls and resists fire. It breathes from level
+  15 — fire, and only fire. In Zangband the breath changed every five levels;
+  here it does not, which is the one thing about the race still to be built.
 
 .. _Mindflayer:
 
 Mindflayer
   All mind and no body: brilliant and wise, physically wretched, with excellent
   infravision and the sight to see what is invisible. Zangband granted it no
-  resistances at all, because its entire identity is psionic — which arrives
-  with the Mindcrafter.
+  resistances at all, because its entire identity is psionic: it blasts minds
+  from level 15, and a Mindflayer Mindcrafter is the pairing the race was drawn
+  for.
 
 .. _Vampire:
 
@@ -331,9 +332,9 @@ Golem
 
 Sprite
   Tiny, quick-witted and airborne. Feeble in a fight, excellent at everything
-  requiring fingers or attention, and it falls slowly. Zangband quickened
-  Sprites at level nine; a race in this game cannot yet be given speed, so that
-  waits for racial powers.
+  requiring fingers or attention, and it falls slowly. It throws sleeping dust
+  from level 12. Zangband also quickened Sprites at level nine; a race in this
+  game cannot yet be given speed, so that part is still to be built.
 
 .. _Half-Titan:
 
@@ -369,12 +370,13 @@ Half-Titan       examine your foes            35    20  STR        12%
 The level is when the power arrives; before it, the character simply cannot.
 
 The cost comes out of spell points where there are any — and where there are
-not, it comes out of you. Two classes have no mana at all, the Warrior and the
-Monk, and for them a racial power is always paid for in hit points instead, at
-the same price. So can anyone else who has run their pool down far enough. That is Zangband's rule and it is what keeps the powers worth
-having whatever you chose to be; the menu tells you which pool a power is about
-to take from before you commit to it. The amount is not fixed either: it is
-somewhere between half the listed cost and all of it.
+not, it comes out of you. The Warrior is the one class with no mana at all, and
+for it a racial power is always paid for in hit points instead, at the same
+price. So can anyone else who has run their pool down far enough. That is
+Zangband's rule and it is what keeps the powers worth having whatever you chose
+to be; the menu tells you which pool a power is about to take from before you
+commit to it. The amount is not fixed either: it is somewhere between half the
+listed cost and all of it.
 
 The failure figure is the chance at exactly the level the power arrives, with
 an average stat. Both of the things you can do about it help: every level past
@@ -537,7 +539,7 @@ Blackguard
   Blackguards scorn skills apart from slaughter, and require strength and
   intelligence (or rat-cunning) to thrive in the dungeon.
 
-The class below is Zangband's, and is new to ZangbandTK.
+The five classes below are Zangband's, and are new to ZangbandTK.
 
 .. _Monk:
 

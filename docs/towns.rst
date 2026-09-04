@@ -214,7 +214,8 @@ Services
 --------
 
 Buildings with something behind the door, as against shops, which sell things.
-Each is a ``+`` in a colour of its own, and each charges.
+There are six. The magetower is a ``9``; the other five are each a ``+`` in a
+colour of its own. All of them charge.
 
 .. list-table::
    :header-rows: 1
@@ -246,6 +247,11 @@ Each is a ``+`` in a colour of its own, and each charges.
      - Puts charges back in a wand or a staff, 120 gold, at the same strength
        as a scroll of Recharging. It can still fail and destroy the item — that
        is the ordinary recharging risk, not a swindle.
+   * - Chaos tower
+     - great city only
+     - Takes one mutation off you, 2500 gold, and **you choose which**. The
+       rarest service in the game and deliberately so: it is the only way to
+       pick, where a potion of New Life takes the lot. See :doc:`mutations`.
 
 Work
 ----

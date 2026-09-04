@@ -3,12 +3,14 @@ The Realms of Magic
 
 .. note::
 
-   **Six of the seven realms are playable** — Arcane, Life, Nature, Death,
-   Sorcery and Chaos, a hundred and ninety-two workings in twenty-four books,
+   **All seven realms are playable** — Arcane, Life, Nature, Death, Sorcery,
+   Chaos and Trump, two hundred and twenty-four workings in twenty-eight books,
    all of them Zangband's. You choose your realms at birth and your character
    sheet records them, and that choice decides which books you can open at all.
-   **Trump is deferred**, and you will not be offered it: a realm with no books
-   behind it is not something you can pick.
+
+   Seventeen individual spells across the seven are inert and say so in their
+   own description, each for want of a mechanism this game does not have. They
+   are named in the realm sections below.
 
 Spellcasters in ZangbandTK choose realms of magic at birth, and that choice
 defines the character as much as the class does. Angband asks you what you are;
@@ -121,6 +123,23 @@ Life or Death and nothing else, and a Mage is offered all seven twice over.
    * - Blackguard
      - Death
      - —
+   * - Monk
+     - Life, Nature or Death
+     - —
+   * - Chaos-Warrior
+     - Chaos
+     - —
+   * - Warrior-Mage
+     - Arcane
+     - any of the seven
+   * - High-Mage
+     - any of the seven
+     - —
+
+That is twelve of the game's fourteen classes. The other two never reach this
+step: a Warrior studies nothing, and a Mindcrafter's psionics are a power list
+rather than a realm — nothing to choose, nothing to find, and nothing that can
+be taken away.
 
 Two of those rows are worth reading twice. **A Priest's second realm cannot be
 Life or Death** — the first slot offers the two priestly realms and the second
@@ -163,21 +182,41 @@ the same name. And *Globe of Invulnerability* makes you briefly untouchable.
    can express, rather than quietly missing: a book with a hole in it and a note
    saying so is honest, and a spell absent without explanation is not.
 
-Trump, and why you cannot choose it
-------------------------------------
+Trump
+-----
 
-Trump is in the game as a name and nothing else, and the birth step will not
-offer it to you. Fifteen of its thirty-two spells summon a creature, and in
-Zangband every one of them turns on the same question: cast it well and the
-creature is *yours*, cast it badly and an angry group of them appears. This game
-has no way for a monster to be on your side, so all fifteen would come out as
-the bad half — *Trump Cyberdemon* would be sixty mana spent to put a hostile
-Cyberdemon next to you. That is not a weaker spell, it is the opposite spell, so
-Trump waits.
+The last realm to arrive, and the one that had to wait for pets. Fifteen of its
+thirty-two spells summon a creature, and in Zangband every one of them turns on
+the same question: cast it well and the creature is *yours*, cast it badly and an
+angry group of them appears. Until monsters could take sides, all fifteen would
+have come out as the bad half — *Trump Cyberdemon* would have been sixty mana
+spent to put a hostile Cyberdemon next to you, which is not a weaker spell but
+the opposite spell. Pets closed that, and the realm went in whole.
 
-The same guard covers every realm: **if your class has no books in a realm, you
-are not offered it.** That was not true before, and choosing Sorcery in the
-version before it shipped gave you a character who could never cast anything.
+Four books: **Conjurings & Tricks** and the **Deck of Many Things** in town,
+**Trumps of Doom** and **Five Aces** below.
+
+What it is for is reach: a deck that goes places and fetches people. *Teleport*,
+*Teleport Away*, *Teleport Level*, *Word of Recall* and *Phase Door* are all in
+it, which makes it the realm of getting out; and the summons run from *Trump
+Animal* up through the hounds, spiders, reptiles, dragons and undead to
+*Trump Cyberdemon*. *Living Trump* makes the caster part of the deck.
+
+.. note::
+
+   **Five of the thirty-two do nothing, and say so.** *Dimension Door* would
+   let you choose the square you arrive on, and there is no interface for
+   picking one. *Reset Recall* would write the depth Word of Recall takes you
+   to, and nothing here can. *Shuffle* is the deck itself — one roll read off
+   twenty unequal outcomes, several of which need mechanisms this game lacks.
+   *Joker Card* summons the groups 4.2's summon table has no equivalent of. And
+   *Trump Lore* is whole-object identification, the same wall as Sorcery's
+   *Identify True* and Nature's *Stone Tell*.
+
+The guard that used to keep Trump off the birth menu still covers every realm:
+**if your class has no books in a realm, you are not offered it.** That was not
+true before, and choosing Sorcery in the version before it shipped gave you a
+character who could never cast anything.
 
 Chaos
 -----
@@ -252,13 +291,15 @@ is left.
 Four books: **Call of the Wild**, **Nature Mastery**, **Nature's Gifts** and
 **Nature's Wrath** — the last of which shares its name with the spell inside it.
 
-**Five of the thirty-two do nothing, and three of those five are the same
-wall.** *Animal Taming*, *Summon Animal* and *Animal Friendship* all need a
-creature to be able to take your side, which is the thing that deferred Trump
-whole and waits for the same milestone. The other two are *Stone Tell*, which
-would tell you everything about an object in a game that replaced that with
-runes learned one at a time, and *Protect from Corrosion*, which is an object
-property here rather than anything a spell can reach.
+**Two of the thirty-two do nothing.** *Stone Tell* would tell you everything
+about an object in a game that replaced that with runes learned one at a time,
+and *Protect from Corrosion* is an object property here rather than anything a
+spell can reach.
+
+Three more used to be inert and no longer are. *Animal Taming*, *Summon Animal*
+and *Animal Friendship* all needed a creature to be able to take your side; pets
+gave them that, and Nature is now the realm that walks into a fight with company
+(:doc:`pets`).
 
 The **Druid** is the first class in the game to cast on borrowed figures.
 Zangband never had a Druid, so there is no row of levels and mana costs for it
@@ -291,12 +332,17 @@ Four books: **Black Prayers**, **Black Mass**, **Black Channels** and the
    game that can permanently cost a character a statistic, and it is why the
    fourth book is frightening rather than merely expensive.
 
-Four of the thirty-two do nothing. *Enslave Undead* and *Raise the Dead* need a
-creature able to take your side, which is the wall Trump waits behind.
-*Wraithform* needs an incorporeal player, which this game has no notion of. And
-*Omnicide* kills every creature on the level, one at a time, taking mana until
-you run out — a sweep with a running cost that the realm's own *Mass Genocide*
-would otherwise duplicate.
+Three of the thirty-two do nothing. *Raise the Dead* animates the corpses and
+skeletons actually lying on the floor near you, and 4.2 has no such object —
+there is nothing lying there to raise. Translating it as "summon undead as pets"
+would be a different spell wearing this one's name: this one is paid for by what
+you have already killed, and that is the whole character of it. *Wraithform* needs an incorporeal player, which
+this game has no notion of. And *Omnicide* kills every creature on the level, one
+at a time, taking mana until you run out — a sweep with a running cost that the
+realm's own *Mass Genocide* would otherwise duplicate.
+
+*Enslave Undead* was on that list until pets arrived. It now does what it says,
+and binds one undead creature to you (:doc:`pets`).
 
 Both of Death's classes cast on borrowed figures: Zangband had neither a
 Necromancer nor a Blackguard. The Necromancer takes Zangband's Mage and the
@@ -331,8 +377,8 @@ system exists for:
   and is paid for it in figures: it reaches a realm's last spells earlier and
   more cheaply than any other class.
 
-Both are entitled to Trump and neither is offered it, because Trump has no books
-(:doc:`see above <realms>`).
+Both are entitled to Trump and both are now offered it; it was the one
+entitlement in the table that had nothing behind it, and no longer is.
 
 What has changed, and what has not
 ----------------------------------

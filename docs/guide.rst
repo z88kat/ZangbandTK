@@ -19,6 +19,13 @@ if you have just a little actual gameplay experience.
    armour class, so fights resolve faster in both directions. Read
    :doc:`balance` alongside it.
 
+   Where it named Angband's endgame it has been corrected to this game's, and
+   where it named Angband as the game you are playing it now says "the game".
+   Nothing else has been touched. The character dump below is a real Angband
+   3.5.0 one and its layout is not today's — 4.2 has no Perception line, for
+   instance — and the character advice throughout is written for Angband's nine
+   classes rather than this game's fourteen.
+
    It is still a handy source of hints and habits. Just don't take it as an
    authority.
 
@@ -26,32 +33,39 @@ The basics
 ----------
 
 As borrowed from a classic rgra post, there's not much that you actually have
-to do. Your one and only mission is to slay Morgoth on dungeon level 100. In
-order to get there, you need to go down a lot of stairs and kill Sauron on
-dungeon level 99. That's about it - everything else is optional. Of course,
-before you can kill Sauron you'll need lots of experience and good equipment,
-but by the time you get that deep you'll have both. Just see to it that you
-don't die along the way.
+to do. Your one and only mission is to slay the Serpent of Chaos on the
+hundredth level of the Courts of Chaos. In order to get there, you need to go
+down a lot of stairs and kill Oberon on the ninety-ninth. That's about it -
+everything else is optional. Of course, before you can kill Oberon you'll need
+lots of experience and good equipment, but by the time you get that deep you'll
+have both. Just see to it that you don't die along the way.
+
+One thing this guide's original could take for granted and you cannot: depth is
+no longer enough. ZangbandTK has thirteen dungeons, each ending at the bottom of
+its own range, so getting deeper means walking across the world to find one that
+reaches deeper. The Courts of Chaos are where the game ends, and finding their
+entrance is part of the task. See :doc:`dungeon` and :doc:`wilderness`.
 
 The one and most important thing you need to get in your head is that you can't
 possibly kill every monster on every level. Think of the game as forays into
 the dungeon from which you want to return with cool stuff; think of the
 shallower levels as obstacles you need to overcome on your way deeper into the
 dungeon; or whatever you like. Just never-ever think of it as a killing spree.
-Until you find Sauron, your task is to survive and eventually get to level 99.
+Until you find Oberon, your task is to survive and eventually get to level 99.
 
 The next point is that you don't need to fight any particular monster (other
 than the big two). Yes, there might be a rather impressive hoard in that
 vault – but if the monsters guarding it are too many or too fierce, well, just
-give it a pass. Angband offers an endless supply of monsters and treasure and
+give it a pass. The game offers an endless supply of monsters and treasure and
 everything. There will always be another day – provided you live to see another
 day. Sometimes you just have to bug out and run for your life.
 
-So, let me recap, the vital points of Angband are:
+So, let me recap, the vital points are:
 
 * go down a lot of stairs
-* kill Sauron (dl 99)
-* kill Morgoth (dl 100)
+* find the Courts of Chaos
+* kill Oberon (dl 99)
+* kill the Serpent of Chaos (dl 100)
 * Quick start
 
 From this point, the guide assumes that you are playing a fighting class
@@ -223,8 +237,8 @@ What to avoid
 On Bad Luck
 -----------
 
-This is rule number one of Angband: don't take unnecessary risks. If you take
-enough low-probability chances of death, you'll never survive to fight Sauron.
+This is rule number one: don't take unnecessary risks. If you take
+enough low-probability chances of death, you'll never survive to fight Oberon.
 Such deaths are generally called 'stupid', but that's not always accurate.
 Sometimes it's just bad luck. But given enough chances, you are guaranteed to
 receive it. It's the trick to extremely fast dives: the fewer moves you make,
@@ -242,20 +256,20 @@ following is intended to state what many perceive to be blatantly obvious,
 hence "you did WHAT!" face-palm deaths. This really should be cleaned up and
 refactored, but placing here for now.
 
-WARNING. I have yet to defeat Angband. This is a compilation of some of the
+WARNING. I have yet to win. This is a compilation of some of the
 better tips I've learned while trying to explore the depths... (to Level ~35).
 Additional advice would be greatly appreciated!
 
 Start simple
 ````````````
 
-Begin your Angband career as a warrior. Warriors are relatively simple to
+Begin your career as a warrior. Warriors are relatively simple to
 begin with, and are less likely to be eaten by a pack of jackals.
 
 Focus!
 ``````
 
-Angband is a very harsh game, in that the character you've been playing for
+This is a very harsh game, in that the character you've been playing for
 months could be killed by a single careless action. Playing when tired or
 drunk is probably a good way to leave yourself with nothing but a sad tale to
 share on the forums. If you have the ability to sense monsters or traps then
@@ -265,7 +279,7 @@ that, without the appropriate gear, will kill your character in a single move.
 Use that stuff
 ``````````````
 
-Angband has potions, spell books, wands, staffs, rods, activate-able items,
+The game has potions, spell books, wands, staffs, rods, activate-able items,
 melee weapons, ranged weapons, and whatnot. They're meant to be used, for
 crying out loud! It can take a while to get used to using all the different
 types of items, but they work best when used in concert. For those able to use
@@ -279,7 +293,7 @@ Rangers have a bow
 Really a subset of the previous point, but it happens so often... Don't try to
 play a ranger like a warrior -- rely on the bow! Similarly for mages, don't do
 a Gandalf. He may be able to draw a sword and rush headlong in to a pack or
-orcs, but mages in Angband are considerably more fragile. Priests are better
+orcs, but mages are considerably more fragile. Priests are better
 equipped to engage in melee combat - with their healing abilities compensating
 for their somewhat fragile nature.
 
@@ -305,7 +319,7 @@ Common fallacy: you find an incredibly powerful Staff of Mighty BOOM! (3
 charges), or a single Potion of become Chuck Norris, and then you keep
 carrying it around and never actually use it. It could be a life insurance,
 but you might still reconsider your strategy: maybe you've become too careful
-lately (Angband rewards deliberate risk-taking, after all).
+lately (the game rewards deliberate risk-taking, after all).
 
 Identifying your items
 ``````````````````````
@@ -473,7 +487,7 @@ yet, you have a higher chance of survival.
 Information Awareness
 `````````````````````
 
-Angband offers a LOT of information on a LOT of different screens. If you
+The game offers a LOT of information on a LOT of different screens. If you
 haven't already, try enabling multiple consoles -- ALL of them -- and then try
 out different options / combinations. Being able to view a lot of information
 simultaneously at a glance is a considerable benefit over having to be
@@ -482,9 +496,9 @@ diligent enough to manually check each relevant screen each time.
 Also, change the text size. Sure you may be accustomed to your terminal font
 and size for reading; however, you can read and make sense from context a lot
 easier than you can reliably identify the glyph, color, and relative position
-of every character on the screen. Angband may be a text-based game, but you
+of every character on the screen. This may be a text-based game, but you
 don't have to play with a tiny (or even normal size font). Using a slightly
-larger font makes identifying things a LOT easier. The SDL interface is
+larger font makes identifying things a LOT easier. The SDL2 interface is
 perhaps the easiest for using multiple terminals and changing fonts.
 
 This alone has greatly contributed to my survivability!

@@ -140,7 +140,7 @@ To make matters worse, as you get used to the difference between the player
 and the character, it becomes so "obvious" that you start to ignore it. At
 that point, you find yourself merging the player and the character in your
 mind, and you find yourself saying things like "So yesterday, I was at my
-friend's house, and I stayed up late playing Angband, and I was attacked by
+friend's house, and I stayed up late playing ZangbandTK, and I was attacked by
 some wild dogs, and I got killed by a demon, but I made it to the high
 score list", in which the pronoun changes back and forth from the real
 world to the virtual one several times in the same sentence. So, from this
@@ -253,6 +253,6 @@ character, how to create different kinds of characters, how to determine
 which equipment to wield/wear, how to use various kinds of objects, and how
 to use the more than fifty different commands available to your character.
 The best resource for learning these things is the
-:doc:`manual that includes this demo <index>`. The in-game help, which you
+:doc:`manual that includes this demo <documentation>`. The in-game help, which you
 access by pressing ``?``, does have a list of the commands with the key and
 very brief description for each.

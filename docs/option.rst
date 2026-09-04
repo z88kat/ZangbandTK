@@ -348,7 +348,7 @@ A second and much larger set, reached with ``^A`` — control-A. The game asks f
 confirmation the first time, and the character is marked from then on: on death
 it says *"Score not registered for wizards."*
 
-These are not options but commands. There are forty-four of them in nine
+These are not options but commands. There are forty-eight of them in nine
 submenus: pick a submenu with the movement keys, then a command by its letter.
 
 They are development tools and there are no guard rails. Nothing asks whether
@@ -520,6 +520,13 @@ Putting monsters in front of you.
    * - ``s``
      - Summon random
      - 
+   * - ``y``
+     - Set allegiance ★
+     - Target a monster first, then say whether it is hostile, friendly or
+       yours. It makes a pet without doing whatever the spell that makes pets
+       does, which is what you want when the question is the AI. ``y`` because
+       ``p`` is the teleport menu's *Random near* and every debug submenu
+       shares one key namespace.
 
 Files
 ~~~~~

@@ -1,9 +1,9 @@
 Races and Classes
 =================
 
-Angband gives you eleven races and nine classes. ZangbandTK has twenty and ten,
-and the new ones are not variations on the old — they are the reason the game
-feels different from the first screen.
+Angband gives you eleven races and nine classes. ZangbandTK has twenty and
+fourteen, and the new ones are not variations on the old — they are the reason
+the game feels different from the first screen.
 
 :doc:`birth` has the full descriptions and the tables. This page is what is
 different from Angband, and why.
@@ -45,8 +45,9 @@ that did not make it.
      - Feeble, cowardly, and cheap — it levels as fast as a human, which is
        the only kindness it is shown.
    * - **Beastman**
-     - Chaos-touched and born wrong. In Zangband it also mutated as it
-       levelled; that waits for the mutation system.
+     - Chaos-touched and born wrong, and the one race that mutates without
+       being made to: one mutation at birth and a one-in-five chance at every
+       level after.
 
 **Experience cost is a real dial here.** Angband flattened it — nearly every
 race costs 120 per cent and the field barely matters. Zangband ran it from 100

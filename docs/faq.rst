@@ -2,7 +2,9 @@
 Frequently Asked Questions
 ==========================
 
-The best way to get answers to your questions is to post them on the `Angband forum`_.
+The best place to ask about ZangbandTK is its own `issue tracker`_. The
+`Angband forum`_ is the place for questions about Angband itself, which is what
+ZangbandTK is built on and what most of its mechanics still come from.
 
 .. contents:: Contents
    :local:
@@ -13,7 +15,8 @@ Issues and problems
 How do I report a bug?
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Post on the `Angband forum`_.
+Open an issue on the `issue tracker`_. If you are sure the bug is Angband's
+rather than this game's, it is worth reporting upstream as well.
 
 Bug reports should include:
 
@@ -39,7 +42,7 @@ Common ways to resolve this include:
 
 * Install legacy X11 bitmap font packages provided by your operating system (package names vary by distribution).
 * Explicitly select an installed bitmap font by setting the ``ANGBAND_X11_FONT`` environment variable.
-* Use a different frontend (SDL, SDL2, Windows, macOS) that does not rely on X11 bitmap fonts.
+* Use a different front end (SDL2, Windows, macOS) that does not rely on X11 bitmap fonts.
 
 On Linux, the required font is typically provided as ``10x20.pcf.gz``. If your distribution allows searching packages by installed files, look for a package that provides that file. Common examples include:
 
@@ -49,7 +52,7 @@ On Linux, the required font is typically provided as ``10x20.pcf.gz``. If your d
 
 Depending on the distribution and configuration, installing these packages may not be sufficient if X11 is not configured to search the installed font paths.
 
-If none of the above works, please check the forums for distribution-specific advice or post a question including your OS, distribution, and ZangbandTK version.
+If none of the above works, please check the forums for distribution-specific advice, or open an issue including your OS, distribution, and ZangbandTK version.
 
 Is there a way to disable that thing that pops up when you hit the enter key?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -80,4 +83,5 @@ pull requests all in the one place.
    project has already taken.
 
 
+.. _issue tracker: https://github.com/z88kat/ZangbandTK/issues
 .. _Angband forum: https://angband.live/forums/

@@ -258,11 +258,11 @@ For source distributions a sample ``borg.txt`` file is provided in the
 user preferences directory for your operating system, and then customize it.
 
 - Windows: Copy ``src/borg/borg.txt`` to ``lib/user/borg.txt``
-- Linux\Unix: Copy ``src/borg/borg.txt`` to ``~/.angband/Angband/borg.txt``
+- Linux\Unix: Copy ``src/borg/borg.txt`` to ``~/.angband/ZangbandTK/borg.txt``
 - macOS with the Cocoa front end:: Copy ``src/borg/borg.txt`` to 
-  ``Documents/Angband`` within your home directory 
+  ``Documents/ZangbandTK`` within your home directory 
 
-If you are using a binary distribution of Angband, the default borg.txt file 
+If you are using a binary distribution of ZangbandTK, the default borg.txt file 
 needs to copied from the spot where it was put in the distribution for that
 platform.
 

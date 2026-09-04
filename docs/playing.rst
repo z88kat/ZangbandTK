@@ -108,13 +108,13 @@ Original Keyset Command Summary
 ``g``  Get objects on floor          ``G``  Gain new spells/prayers
 ``h``  Fire default ammo at target   ``H``  (unused)
 ``i``  List contents of pack         ``I``  Inspect an item
-``j``  (unused)                      ``J``  (unused)
+``j``  (unused)                      ``J``  Quests you have taken on
 ``k``  Ignore an item                ``K``  Toggle ignore
 ``l``  Look around                   ``L``  Locate player on map
 ``m``  Cast a spell                  ``M``  Display map of entire level
-``n``  Repeat previous command       ``N``  (unused)
+``n``  Repeat previous command       ``N``  Use a racial power
 ``o``  Open a door or chest          ``O``  (unused)
-``p``  (normally unused; see note)   ``P``  (unused)
+``p``  (normally unused; see note)   ``P``  Command pets
 ``q``  Quaff a potion                ``Q``  Retire character & quit
 ``r``  Read a scroll                 ``R``  Rest for a period
 ``s``  Steal (rogues only)           ``S``  See abilities
@@ -156,6 +156,17 @@ Original Keyset Command Summary
 ``/``  Identify symbol
 ``|``  List contents of quiver
 ====== ============================= ====== ============================
+
+.. note::
+
+   **Three of these keys are ZangbandTK's.** ``P`` — ``!`` in the roguelike
+   keyset — commands your pets (:doc:`pets`); ``J`` — ``%`` — lists the work
+   you have taken on (:doc:`quests`); ``N`` — ``&`` — uses a racial power
+   (:ref:`Racial powers <racial-powers>`).
+
+   Each takes a letter in the original keyset and a symbol in the roguelike
+   one, because no letter is free in both: the roguelike keyset spends eight of
+   them on running and eight more on walking.
 
 .. index::
    single: autoexplore; original keyset
@@ -204,13 +215,13 @@ Roguelike Keyset Command Summary
  ``x``  Look around                   ``X``  Use an item
  ``y``  (walk - north west)           ``Y``  (run - north west)
  ``z``  Aim a wand (Zap)              ``Z``  Use a staff (Zap)
- ``!``  (unused)                      ``^a`` (special - debug command)
+ ``!``  Command pets                  ``^a`` (special - debug command)
  ``@``  Center map                    ``^b`` (alter - south west)
  ``#``  (unused)                      ``^c`` (special - break)
  ``$``  (unused)                      ``^d`` Ignore an item
- ``%``  (unused)                      ``^e`` Toggle inven/equip window
+ ``%``  Quests you have taken on      ``^e`` Toggle inven/equip window
  ``^``  (special - control key)       ``^f`` Repeat level feeling
- ``&``  (unused)                      ``^g`` Do autopickup
+ ``&``  Use a racial power            ``^g`` Do autopickup
  ``*``  Target monster or location    ``^h`` (alter - west)
  ``(``  (unused)                      ``^i`` (special - tab)
  ``)``  Dump screen to a file         ``^j`` (alter - south)

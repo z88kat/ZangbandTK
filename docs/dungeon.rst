@@ -31,8 +31,9 @@ symbol (by default) is used to represent the character.
 
 It will not be necessary to remember all of the symbols and their meanings.
 The "slash" command (``/``) will identify any character appearing on your
-map (see 'commands.txt'), and there is a comprehensive menu of terrain,
-objects, monsters and so on using the "tilde" (``~``) command.
+map, and there is a comprehensive menu of terrain, objects, monsters and so on
+using the "tilde" (``~``) command. The in-game help (``?``) has a symbol list
+of its own.
 
 Note that you can use a "user pref file" to change any of these symbols to
 something you are more comfortable with.
@@ -51,8 +52,13 @@ Features that do not block line of sight
 ``'``   A broken door              ``6``    Entrance to Magic Shop
 ``<``   A staircase up             ``7``    Entrance to the Black Market
 ``>``   A staircase down           ``8``    Entrance to your Home
-``#``   A pool of lava
+``#``   A pool of lava             ``9``    Entrance to the magetower
 ===== =========================    =====  ================================== 
+
+The other five town services are all ``+``, each in a colour of its own: the
+inn in brown, the healer in green, the magesmith in red, the recharger in blue
+and the chaos tower in violet. Looking at one (``l``) names it. :doc:`towns`
+says which places have which.
 
 Features that block line of sight
 ---------------------------------
@@ -63,6 +69,26 @@ Features that block line of sight
 ``+``   A locked door              ``*``    A mineral vein with treasure
 ``:``   A pile of rubble           ``:``    A pile of passable rubble
 ===== =========================    =====  ==================================
+
+Out in the country
+------------------
+
+The wilderness has terrain the dungeon does not. None of it blocks line of
+sight except the trees.
+
+===== ==========================    =====  ==================================
+``.``   Grass (green)               ``~``    Shallow water — wadeable
+``.``   Bare earth (brown)          ``~``    Deep water — you can drown in it
+``.``   Sand (yellow)               ``~``    Open sea, where the world ends
+``.``   Mud — slow going, unlit     ``:``    A mountainside — impassable
+``%``   A tree — blocks sight
+===== ==========================    =====  ==================================
+
+Note that ``%`` is a tree above ground and a mineral vein below it, and that
+``:`` is a mountainside above ground and rubble below it. The colour tells
+them apart, and so does looking. :doc:`wilderness` covers what the terrain
+does to you.
+
 
 Objects
 -------
@@ -98,7 +124,7 @@ Monsters
 ``k``     Kobold              ``K``    Killer Beetle
 ``l``     Tree/Ent            ``L``    Lich
 ``m``     Mold                ``M``    Multi-Headed Hydra
-``n``     Naga                ``N``    (unused)
+``n``     Naga                ``N``    Fish and other swimmers
 ``o``     Orc                 ``O``    Ogre
 ``p``     Human "person"      ``P``    Giant "person"
 ``q``     Quadruped           ``Q``    Quylthulg (Pulsing Flesh Mound)
@@ -108,10 +134,17 @@ Monsters
 ``u``     Minor Demon         ``U``    Major Demon
 ``v``     Vortex              ``V``    Vampire
 ``w``     Worm or Worm Mass   ``W``    Wight/Wraith
-``x``     (unused)            ``X``    Xorn/Xaren
+``x``     Lurker              ``X``    Xorn/Xaren
 ``y``     Yeek                ``Y``    Yeti
 ``z``     Zombie/Mummy        ``Z``    Zephyr Hound
 =====   ===================   =====  ====================================
+
+Two more classes are ZangbandTK's, and display as punctuation because Angband
+has no letter for them: ``#`` is a wall monster — sentient stone and the mists
+that drift between it — and ``|`` is an animated weapon. Both look exactly like
+the terrain and the treasure they sit among, which is the point. Other monsters
+disguise themselves as objects and take that object's symbol; :doc:`monsters`
+has the list.
 
 The Dungeons
 ============
@@ -682,20 +715,36 @@ of the treasures present in the dungeon.
 Winning The Game
 ================
 
-If your character has killed Sauron (a difficult task), who lives on level
-99 (4950') in the dungeon, a magical staircase will appear that will allow
-you to finally reach level 100. Morgoth lurks on this level of his dungeon,
-and you will not be able to go below his level until you have killed him.
-Try to avoid wandering around on level 100 unless you are ready for him,
-since he has a habit of coming at you across the dungeon, the Mighty Hammer
-'Grond' in hand, to slay you for your impudence.
+The game ends in Amber, not in Angband. There are two things to kill and you
+are on both quests from the moment you are born; nobody offers them to you and
+there is nothing to report back.
 
-If you should actually survive the attempt of killing Morgoth, you will
-receive the status of WINNER. You may continue to explore, and may even save
-the game and play more later, but since you have defeated the toughest
-creature alive, there is really not much point. Unless you wish to listen
-to the rumors of a powerful ring buried somewhere in the dungeon, or a suit
-of dragon scale mail that resists everything...
+Both are in **the Courts of Chaos**, which runs from level 75 to level 110, so
+the last part of the game is a matter of crossing the world to find its
+entrance rather than of going down far enough. Depth alone will not do it: the
+Abyss also reaches past level 100, and the hundredth level of the Abyss has
+nothing on it to kill.
+
+**Oberon, King of Amber** is on level 99 (4950') of the Courts. You will not be
+able to go below his level until you have killed him. When he dies a magical
+staircase appears, which is how you reach level 100.
+
+**The Serpent of Chaos** lurks on level 100, and holds that level the same way.
+It is the older thing: the Unicorn of Order fought with the Serpent and stole
+one of its eyes, the Jewel of Judgement, and with the Jewel Dworkin drew the
+Pattern and gave birth to the infinite worlds of shadow. Killing it is the end
+of the game.
+
+If you should actually survive that, you will receive the status of WINNER. You
+may continue to explore, and may even save the game and play more later, but
+since you have defeated the toughest creature alive, there is really not much
+point.
+
+.. note::
+
+   Sauron and Morgoth are still in the bestiary as deep uniques. They are no
+   longer what the game is about, and killing them ends nothing. See
+   :doc:`quests`.
 
 When you are ready to retire, press the ``Q`` key to have your character
 entered into the high score list as a winner. Note that until you retire,

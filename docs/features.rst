@@ -79,10 +79,11 @@ Towns worth walking to
 
 A town is somewhere to do things, not a row of shop doors (:doc:`towns`).
 
-- **Five services**: a magetower that carries you to places you have been for a
-  fare by distance, an inn that sells a bed until morning, a healer, a magesmith
-  and a recharger. Which of them a place keeps follows from its size, and a town
-  that has fallen keeps none.
+- **Six services**: a magetower that carries you to places you have been for a
+  fare by distance, an inn that sells a bed until morning, a healer, a
+  magesmith, a recharger, and — in a great city only — a chaos tower that takes
+  one mutation off you and lets you choose which. Which of them a place keeps
+  follows from its size, and a town that has fallen keeps none.
 - **A night at the inn may show you something** — a place you have not found,
   put on your map, or a bad dream about something you have met. Which, depends on
   how well governed the town is.
@@ -114,7 +115,7 @@ Monsters, objects and magic
 - **387 imported monsters**, including the princes of Amber and the Mythos
   deities. 1013 in total.
 - **51 artifacts**, including Grayswandir and Frakir.
-- **17 ego types**, including ``(Vampiric)``, ``(Chaotic)`` and
+- **16 ego types**, including ``(Vampiric)``, ``(Chaotic)`` and
   ``(Trump Weapon)``.
 - **Three weapon mechanics** Angband has no equivalent of: vampiric, vorpal and
   chaotic.
@@ -207,13 +208,13 @@ The realms of magic
   realms are open to a Mage where Angband gives it one.
 - **The Chaos-Warrior, the Warrior-Mage, the High-Mage and the Monk all cast**, which
   is what those classes were always for. A Warrior-Mage always studies Arcane and
-  picks a second realm; a High-Mage picks one realm from seven and gets no second, and
-  is paid for it in better figures; a Monk picks one of Life, Nature and Death and
-  keeps its fists.
+  picks a second realm; a High-Mage picks one realm from all seven and gets no
+  second, and is paid for it in better figures; a Monk picks one of Life, Nature
+  and Death and keeps its fists.
 
-**Trump is deferred** until monsters can take sides — fifteen of its thirty-two spells
-are summons whose whole point is that the creature is *yours*. You are not offered a
-realm with no books behind it.
+**Trump arrived with pets** — fifteen of its thirty-two spells are summons whose
+whole point is that the creature is *yours*, so it could not ship until monsters
+could take sides. All seven realms are now playable.
 
 Tunable without a rebuild
 -------------------------
@@ -371,16 +372,21 @@ in when the milestone lands.
 
 .. list-table::
    :header-rows: 1
-   :widths: 30 15 55
+   :widths: 26 12 22 40
 
    * - Feature
      - Milestone
+     - Where it stands
      - Chapter
    * - Pets and allies
      - M10
+     - Mostly in. Three sides, the pet menu on ``P``, charms, summons and the
+       Trump realm all work. A Mindcrafter's domination and a patron's gift of
+       one do not yet.
      - :doc:`pets`
    * - Nightmare mode
      - M11
+     - Not started.
      - :doc:`nightmare`
 
 The world is finished — towns, services, roads, dungeons and quests all landed,
@@ -391,10 +397,9 @@ that requirement. **Virtues have landed** — eight drawn from eighteen at birth
 moved by how you play, and read by the Lords of Chaos and by the dream at the inn
 — and so have **mutations**, all ninety-six of them, which completes M8.
 
-**The realms have arrived too**: seven of them, chosen at birth, six carrying
-Zangband's own spells. What M9 has left is **Trump alone**, and it is not waiting
-on work here — it waits on pets, because fifteen of its thirty-two spells turn on
-a creature being *yours*.
+**The realms have arrived too**: all seven, chosen at birth, each carrying
+Zangband's own thirty-two spells in four books. Trump came last, with pets,
+because fifteen of its spells turn on a creature being *yours*. M9 is closed.
 
 A **Tcl/Tk front end** is planned for a later phase, reviving the original's
 interface on Tcl/Tk 9. There is an irony in it: the original ZangbandTK

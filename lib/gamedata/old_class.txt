@@ -3,7 +3,7 @@
 # This file contains the old spellcasting classes from Angband.
 # To use these instead of the new ones, simply rename it to class.txt, and
 # put it in your user directory (lib\user on Windows,
-# ~/Documents/Angband on macOS, ~/.angband/Angband on Linux/Unix)
+# ~/Documents/ZangbandTK on macOS, ~/.angband/ZangbandTK on Linux/Unix)
 
 ############### MAGE ###############
 name:Mage

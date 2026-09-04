@@ -154,8 +154,8 @@ your things where they fall.
 Giving orders
 -------------
 
-Press ``A`` for the pet menu. Zangband used ``p``; here that key is
-auto-explore.
+Press ``P`` for the pet menu — ``!`` in the roguelike keyset, where ``P``
+peruses a book. Zangband used ``p``; here that key is auto-explore.
 
 The orders are a policy, not instructions to an individual — you are setting how
 your animals behave, and every pet you have follows the same one. They keep

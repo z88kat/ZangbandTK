@@ -31,6 +31,155 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+4 September 2026 — the manual was describing two different games
+================================================================
+
+Steven asked me to check the manual for consistency, because it had been a
+muddle of the original Angband documentation, Zangband's own docs imported from
+twenty years ago, and what we have written since. He was right, and the muddle
+was worse than "some pages are old". The manual was in places describing a game
+that is not this one.
+
+The worst of it is the ending. :doc:`dungeon`'s *Winning The Game* still told you
+to kill Sauron on level 99 and Morgoth on level 100, complete with Grond, and the
+players' :doc:`guide` opened its "vital points" list with the same two names.
+``quest.txt`` has said Oberon and the Serpent of Chaos for months, and DEC-30 is
+the whole reason this project exists. Two of the four documents a new player is
+most likely to read were pointing them at Tolkien.
+
+The rest is the ordinary rot of a manual that was inherited rather than written.
+Three of the four I would not have guessed:
+
+**The Chaos Tower is a service and nobody told the towns page.** ``wild.h`` has
+six entries in ``WILD_SERVICE_*``; :doc:`towns` listed five and :doc:`features`
+said "Five services" in bold. The tower has been in a great city since DEC-24 and
+is documented in :doc:`mutations` — just not in the chapter about buildings.
+
+**Trump shipped and three pages did not notice.** :doc:`realms` still opened with
+"Six of the seven realms are playable" and had a section headed *Trump, and why
+you cannot choose it*. ``class.txt`` has four Trump books and thirty-two spells,
+and the same milestone quietly un-deferred *Animal Taming*, *Summon Animal*,
+*Animal Friendship* and *Enslave Undead* — five spells the Nature and Death
+sections were still calling inert.
+
+**Nobody had recounted the imports.** The object page said 85 kinds in one
+sentence and 82 in another; the file has 86. Ego types were 17 in four places and
+are 16. Armour was nineteen and is eighteen; rings and amulets were twenty-eight
+and are twenty-five. Numbers written once and never checked again.
+
+**The map symbol tables were Angband's.** ``N`` and ``x`` were marked
+*(unused)*; they are twenty-four fish and two lurkers. There was no grass, no
+tree, no water, no mountainside and no sea in a game whose defining feature is a
+wilderness, and no ``9`` for the magetower.
+
+Then the file paths. ``~/.angband/Angband`` and ``Documents/Angband`` in four
+places across the docs, ``lib/readme.txt``, ``old_class.txt`` and the man page —
+``VERSION_NAME`` is "ZangbandTK", so every one of them named a directory that
+does not exist. And ``org.rephial.angband`` for the macOS preferences, where the
+bundle identifier has been ``org.zangbandtk.zangbandtk`` since the app was
+first built.
+
+The SDL 1.2 front end I retired yesterday still had its own section in
+:doc:`customize`, telling you about a status bar in an application that is not
+built.
+
+A thing I found while reading the keysets
+-----------------------------------------
+
+``A`` was bound twice. ``cmd_item`` has *Activate an object* on it and
+``cmd_info`` had *Command pets* on it, both at ``keymap`` 0, and ``cmd_init()``
+walks ``cmds_all`` in order and overwrites — so pets won, and ``CMD_ACTIVATE``
+had no key at all in either keyset.
+
+I flagged it rather than fixing it, because which command keeps a key is a
+gameplay decision. Steven said fix it, so I went looking for which one should
+move — and found that the visible half of this was the smaller half.
+
+``cmd_lookup_key(CMD_ACTIVATE)`` was returning 0, and **object inscriptions are
+matched against that value**. ``ui-object.c`` compares the character after
+``@`` to it when looking for a quick tag, and ``get_item_allow()`` compares it
+when looking for a ``!`` confirmation. So ``@A1`` had stopped tagging an item
+for activation and ``!A`` had stopped asking before activating one, on items
+that had been inscribed that way for years, with no message and nothing in the
+UI to suggest it. That is a worse bug than a key that opens the wrong menu, and
+it settles the question: Activate keeps ``A``.
+
+Pets moved to ``P`` — ``!`` in the roguelike keyset. There is no letter free in
+both: the roguelike keyset spends eight on running and eight on walking, and by
+4.2 everything else is spoken for. That is why the quest log is ``J``/``%`` and
+a racial power is ``N``/``&``, and pets now follow the same shape. ``P`` for
+pets is at least a mnemonic, which ``A`` for allies was reaching for.
+
+The reason this shipped at all is the interesting part. The **nested** command
+lists assert on a duplicate key — there is a comment in ``cmd_debug_player``
+explaining that a clash there is "a crash before the title screen rather than a
+menu that quietly does the wrong thing", which is exactly right. The
+**top-level** lists had no such check and simply overwrote. So the tables that
+matter most were the ones with no guard on them. They have one now, and
+``command/lookup`` has a regression test that checks ``A`` resolves to
+``CMD_ACTIVATE`` in both directions — the reverse lookup especially, since that
+is the half that broke silently.
+
+I put the bug back to check the assert fires. It does, at startup, before the
+title screen.
+
+world.txt, which was still describing Angband's world
+-----------------------------------------------------
+
+Steven asked me to update it in the same pass. It was a hundred and twenty-eight
+lines naming the depths "Angband 1" through "Angband 127" — one dungeon, a
+hundred and twenty-eight levels, each linked to the next. That is Angband's
+world and not ours: ours is a wilderness with thirteen dungeons opening off it,
+and depth 100 is in both the Courts of Chaos and the Abyss. Calling depth 40
+"Angband 40" said the opposite of what the game does.
+
+They are "Level <n>" now. Depth 0 stays "Town", because two places in the level
+builder look the chunk up by that literal string.
+
+The part worth recording is what the file turned out to be *for*, because it is
+not what its name suggests. ``up`` and ``down`` are parsed, cross-checked at
+startup, and then never read by anything — every caller uses
+``level_by_depth()``. What the file actually does is say which depths exist (the
+level builder dereferences ``level_by_depth()`` without checking, so a missing
+line is a crash on arrival) and give each depth a stable key for persistent
+levels. The header now says so.
+
+And that key is savefile-visible, which made the rename a real one. With
+``birth_levels_persist`` a stored level is filed under its depth's name and that
+name goes to disk as text, so renaming would have quietly cost such a character
+every level it had banked. ``rename.txt``'s own header says to add an entry
+whenever you rename something a savefile can hold; there is no ``level:`` record
+type and adding one for a hundred and twenty-seven mechanical renames would be
+silly, so the fallback lives in ``level_by_name()`` and a small migration runs
+on the one load path that never calls it. Both read only when the current name
+has already failed, so a current savefile pays nothing.
+
+One thing I did **not** fix, and it should be written down: the persistent-level
+key is the *depth*, not the level. With thirteen dungeons, the fortieth of
+Garnath and the fortieth of Rebma are filed under the same name and the second
+overwrites the first. ``birth_levels_persist`` is an experimental option and
+this is a design question about what a persistent level even means in a world
+with a map, not a typo to correct. It is in the file header so the next reader
+does not have to rediscover it.
+
+What I did not do
+-----------------
+
+The seven inherited manual chapters are corrected, not rewritten. Their prose,
+their examples and their emphasis are still Angband's, and they do not attempt to
+explain the wilderness, pets, mutations, patrons or the realms — those have pages
+of their own, and :doc:`manual` now says so plainly rather than promising a
+revision that has not happened.
+
+The players' guide is the one I am least comfortable with. It was written by an
+Angband player for 3.5.0, it is calibrated to monster numbers we deliberately
+changed, and its character dump has a *Perception* line that 4.2 does not have. I
+corrected the endgame and the places where it named Angband as the game you are
+playing, and left the rest under a note that says what it is. Rewriting it is a
+real piece of work and pretending otherwise in a disclaimer would have been the
+easier lie.
+
+
 3 September 2026 — the borg is one array away from playing
 ===========================================================
 

@@ -293,9 +293,8 @@ Use a power (``N``) or Use a power (``&``)
   :ref:`Psionics <psionics>`.
 
   A power draws on spell points like a spell. A character with none left — and
-  a warrior or a monk never has any, having no spells at all — pays in hit
-  points instead, at the same price, and the menu says which before you
-  commit. The listed failure chance
+  a warrior never has any, having no spells at all — pays in hit points
+  instead, at the same price, and the menu says which before you commit. The listed failure chance
   falls as you gain levels past the level the power arrives at, and falls
   further as you raise the stat it leans on. Failing still costs the price;
   being told you are too junior, too confused, or too spent costs nothing.
@@ -639,6 +638,29 @@ Check knowledge (``~``)
     two items. To see what those additional commands are, use the '?' key
     to bring up the in-game help for the equippable comparison.
 
+Things you have taken on (``J``) or Things you have taken on (``%``)
+  Lists the work you have accepted and not yet handed back: what each job is,
+  which town it came from, and how far along you are. The two quests the game
+  ends on — Oberon and the Serpent of Chaos — are not listed here, because
+  nobody gave them to you and there is nothing to report back. You can give up
+  a job from this screen; walking back into the building that hired you also
+  works. See :doc:`quests`.
+
+  In the roguelike keyset the key is ``%``, because ``J`` is one of that
+  keyset's eight running keys. This command takes no energy.
+
+Command pets (``P``) or Command pets (``!``)
+  Opens the pet menu. Five orders set how close your animals stay, from *stay
+  close* to *stay away*; two switches say whether they may open doors and
+  whether they may pick things up; and two more list what is following you and
+  dismiss it. The orders are a policy rather than instructions to an
+  individual — every pet follows the same one, and it keeps across a save.
+  See :doc:`pets`.
+
+  Zangband used ``p``, which is auto-explore here. In the roguelike keyset the
+  key is ``!``, because ``P`` is *peruse a book* there. This command takes no
+  energy.
+
 Saving and Exiting Commands
 ===========================
 
@@ -693,11 +715,13 @@ Help Commands
 =============
 
 Help (``?``)
-  Brings up the ZangbandTK on-line help system. Note that the help files are
-  just text files in a particular format, and that other help files may be
-  available on the Net. In particular, there are a variety of spoiler files
-  which do not come with the standard distribution. Check the place you got
-  Angband from or ask on the Angband forums, angband.live/forums/ , about them.
+  Brings up the ZangbandTK on-line help system: the command list, the map
+  symbols, the towns and their services, the dungeons of the world, and the
+  cheat and debug commands. It is a short reference rather than a manual —
+  this documentation is the long form, and the help system points at it.
+
+  The help files are just text files in a particular format, in
+  ``lib/help/``, so you can add your own.
 
 Identify Symbol (``/``)
   Use this command to find out what a character stands for. For instance,
@@ -723,8 +747,8 @@ Identify Symbol (``/``)
   any point will exit this command.
 
 Game Version (``V``)
-  This command will tell you what version of ZangbandTK you are using. For
-  more information, see the 'version.txt' help file.
+  This command will tell you what version of ZangbandTK you are using, and
+  which version of Angband it is built on.
 
 Extra Commands
 ==============

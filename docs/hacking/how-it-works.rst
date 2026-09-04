@@ -2,9 +2,18 @@
 How It Works
 ============
 
-This document describes how Angband actually *works* at a high level. Individual
+This document describes how the game actually *works* at a high level. Individual
 sections referenced from the TOC are marked with anchors in square brackets to
 make grepping for them easier.
+
+.. note::
+
+   This chapter is inherited from Angband and describes the architecture the two
+   games share, which is nearly all of it — the chunk, the command layer, the
+   turn loop and the data files are 4.2's. Where it says "Angband" it means that
+   shared machinery. What ZangbandTK adds on top of it — the wilderness, towns
+   and services, dungeons, pets, mutations, patrons and realms — is not
+   described here; :doc:`modifying` lists the data files those live in.
 
 .. contents:: Contents
    :local:
@@ -13,13 +22,20 @@ make grepping for them easier.
 The Game
 ========
 
-As you probably know if you're reading this, Angband is a roguelike game set in
+As you probably know if you're reading this, this is a roguelike game set in
 a high-fantasy universe. The game world is made up of levels, numbered from zero
-("the town") to some maximum depth. Levels are increasingly dangerous the deeper
-they are into the dungeon. Levels are filled with monsters, traps, and objects.
-Monsters move and act on their own, traps react to creatures entering their
-square, and objects are inert unless used by a creature. The objective of the
-game is to find Morgoth at depth 100 and kill him.
+to some maximum depth. Levels are increasingly dangerous the deeper they are
+into the dungeon. Levels are filled with monsters, traps, and objects. Monsters
+move and act on their own, traps react to creatures entering their square, and
+objects are inert unless used by a creature.
+
+In Angband level zero is "the town" and every level below it belongs to the one
+dungeon. In ZangbandTK level zero is the wilderness, which holds several towns
+and the entrances to thirteen dungeons, and a level below it belongs to whichever
+dungeon you went down into — so depth alone does not identify a level, and code
+that assumes it does is code that has not been updated. The objective of the
+game is to reach the hundredth level of the Courts of Chaos and kill the Serpent
+of Chaos.
 
 Data Structures
 ===============

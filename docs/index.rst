@@ -99,4 +99,4 @@ drop in the country stays where you left it until somebody finds it.
 
 **The bestiary is not Tolkien's alone.** 387 monsters imported from Zangband,
 including the princes of Amber and the Mythos deities, alongside 51 artifacts and
-17 ego types. :doc:`monsters` and :doc:`objects` have the detail.
+16 ego types. :doc:`monsters` and :doc:`objects` have the detail.
