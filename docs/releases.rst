@@ -4,22 +4,36 @@ Release log
 
 .. note::
 
-   **3.1.1 is the first release**, tagged on 18 August 2026 — a macOS disk image
-   and a source archive, on the `Releases page`_. It is marked a pre-release, as
-   every release will be while the game is early. What follows is the development
-   log, grouped by the milestones the work is organised into, newest first, with
-   everything done since that tag under *Unreleased*.
+   **3.1.1 was the first release**, tagged on 18 August 2026 — a macOS disk image
+   and a source archive. The most recent is **3.49.5**, from 31 August, and both
+   are on the `Releases page`_. Every release so far is marked a pre-release.
+
+   What follows is the development log, grouped by the milestones the work is
+   organised into, newest first, with everything done since the last tag under
+   *Unreleased*. That section is large: M9 and M10 — the realms of magic and
+   pets, the two biggest pieces of work in the project — both landed after
+   3.49.5 was cut.
 
    This page covers ZangbandTK only. For Angband's own long history, which this
    game is built on, see :doc:`version`.
 
 .. _Releases page: https://github.com/z88kat/ZangbandTK/releases
 
-Development is tracked by milestone. **M0 to M6 are complete** — which is all of
-Phase 2's world work — and **M7 is done but for two classes**, the Warrior-Mage
-and the High-Mage, which are defined by their choice of magic realm and so wait
-for M9. **M8, mutations and virtues, is complete.** See :doc:`features` for what
-that adds up to in the game, and for what the rest will bring.
+Development is tracked by milestone. **M0 to M9 are complete**: the balance
+scalars, the bestiary and treasure, the effects and vaults, the wilderness, the
+towns, the quests, the races and classes, the mutations and virtues, and all
+seven realms of magic. The Warrior-Mage and the High-Mage, which M7 could not
+finish because they are defined by their choice of realm, arrived with M9.
+
+**M10, pets, is all but done.** All nine of its phases have shipped — allegiance,
+the AI, orders, upkeep, player-side safety, the sources, Trump, following you
+downstairs, and the stable that costs you one in twenty at each level change.
+Two of PLR-28's ways of acquiring a pet are still open: a Mindcrafter's
+domination and a Chaos patron granting one as a gift. Neither is blocked; both
+need a hook in code we own rather than a data change.
+
+**M11, nightmare mode, has not been started.** See :doc:`features` for what all
+of this adds up to in the game, and for what is left.
 
 Version numbers move with the work — patch for a fix, minor for a feature,
 bumped in the commit that does it — so a build can be identified from its title
@@ -1809,9 +1823,6 @@ Testing — 31 August 2026
   fail 95 times in 100. Whether that penalty should apply to a character paying
   in blood is a balance decision and has not been made — the test records the
   present behaviour and will notice when it changes.
-
-Savefile compatibility — 30 August 2026
-----------------------------------------
 
 M8: mutations — 31 August 2026
 ------------------------------

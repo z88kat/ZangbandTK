@@ -46,10 +46,10 @@ disk image and the source archive and nothing else. And for one release after th
 the 32-bit zip was named ``-win.zip``, before the 64-bit build arrived and both
 were named for their architecture.
 
-Every release is marked a **pre-release**, and will be for as long as the game is
-early. CI builds, signs and verifies each one, but no version is played through
-before it is tagged: there are known bugs and unfinished features, and the badge
-on the Releases page says so before you download rather than after.
+Every release so far is marked a **pre-release**. CI builds, signs and verifies
+each one, but no version has been played through before it was tagged: there are
+known bugs and one milestone's worth of unfinished features, and the badge on
+the Releases page says so before you download rather than after.
 
 The disk image requires **macOS on Apple Silicon**. Intel Macs are not
 supported; they reach legacy status in September 2026.
@@ -176,10 +176,12 @@ Before you start
    **Savefiles are not compatible** with Angband or Zangband, and never will be.
    Do not point ZangbandTK at a savefile you care about.
 
-The game is early. It is playable and it already feels different from Angband,
-but a good deal of Zangband is still missing — see :doc:`features` for exactly
-what. If you have played Angband before, :doc:`balance` is the shortest account
-of what will kill you that would not have before.
+Everything Zangband is known for is now in the game — the wilderness, the towns,
+the dungeons, the bestiary, mutations, chaos patrons, the seven realms and pets.
+Nightmare mode is the one milestone still to come; :doc:`features` is the honest
+inventory of what is in and what is not. If you have played Angband before,
+:doc:`balance` is the shortest account of what will kill you that would not have
+before.
 
 
 Linux

@@ -216,6 +216,41 @@ The realms of magic
 whole point is that the creature is *yours*, so it could not ship until monsters
 could take sides. All seven realms are now playable.
 
+Things that fight for you
+-------------------------
+
+The largest change to the game's assumptions, and the last big one (:doc:`pets`).
+In Angband every monster is an enemy — not as a rule so much as an assumption
+threaded through the targeting, the AI, the projections and the combat.
+
+- **Three sides, not two.** Hostile, friendly and pet behave differently: a
+  friendly creature will not attack you but takes no orders and costs nothing,
+  where a pet does both.
+- **Orders are a policy.** Press ``P`` — ``!`` in the roguelike keyset. Five
+  settings put your animals anywhere from a square away to twenty-five, and two
+  switches say whether they may open doors and whether they may pick things up.
+  Every pet follows the same policy, and it survives a save.
+- **They cost mana, not gold.** A few are free — one, plus one per so many
+  character levels, and the divider is a property of your class — and past that
+  allowance the *sum of your pets' levels* is withheld from your mana
+  regeneration. The edge is sharp on purpose: one pet over the allowance turns
+  the charge on for all of them at once.
+- **A pet that kills earns you nothing.** Experience is for the killing blow, so
+  a summoner watching its animals work does not level.
+- **What a pet summons is also yours**, which compounds with the upkeep — the
+  reason Zangband's own documentation warns about a pet that can make more pets.
+- **They can turn on you.** Catch one in a ball spell, or put on something that
+  aggravates, and it stops being yours. The game asks before you aim at one.
+- **Four of them follow you downstairs**, and each has a one in twenty chance of
+  leaving at every level change — a median of thirteen or fourteen descents, and
+  with a full stable about one descent in five costs you one. Zangband deleted
+  every pet at every staircase; this is the softer rule, and both numbers are in
+  ``constants.txt``.
+
+Where they come from: charms and summons across Life, Nature, Death and Chaos, a
+Wand of Tame Monster, a wall of mould, and the whole of the Trump realm. Uniques,
+quest monsters and anything whose mind cannot be confused refuse outright.
+
 Tunable without a rebuild
 -------------------------
 

@@ -18,9 +18,12 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
 
 .. note::
 
-   **Status: early.** The game is playable, already feels different from
-   Angband, and has the wilderness — Zangband's defining feature — under it.
-   There is a long way to go, and :doc:`features` says exactly how far.
+   **Status: feature-complete but for one milestone.** Everything Zangband is
+   known for is in — the wilderness, the towns and their services, thirteen
+   dungeons, the bestiary, mutations, chaos patrons, seven realms of magic and
+   pets. What is left is nightmare mode, and the polish that turns a working
+   game into one worth standing behind. :doc:`features` is the honest
+   inventory, and every release so far is still marked a pre-release.
    Development happens at `GitHub`_.
 
 .. _GitHub: https://github.com/z88kat/ZangbandTK
@@ -77,8 +80,8 @@ Start here
       :link: releases
       :link-type: doc
 
-      What changed in each version, by milestone. M0 to M4 are complete and M5
-      is under way.
+      What changed in each version, by milestone. M0 to M9 are complete and
+      M10, pets, is all but done. M11, nightmare mode, is the last.
 
 
 What makes it Zangband

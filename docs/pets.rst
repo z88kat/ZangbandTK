@@ -3,9 +3,9 @@ Pets and Allies
 
 .. note::
 
-   **Being written.** This chapter is filled in by milestone **M10**, one
-   section per phase, and it is not finished yet. What is here describes what
-   the game does today; what is missing is named at the end.
+   **All nine phases of milestone M10 have shipped**, and this chapter describes
+   what the game does today. Two of the ways Zangband gives you a pet are still
+   to come; they are named at the end.
 
    Requirements: PLR-22 to PLR-33.
 
@@ -492,5 +492,17 @@ may all study it.
 Still to come
 -------------
 
-Two of the ways Zangband gives you a pet are not here yet: a Mindcrafter's
-domination, and a Chaos patron handing you one as a gift.
+Two of the ways Zangband gives you a pet are not here yet, both of them listed
+in PLR-28 alongside the ones that are.
+
+**A Mindcrafter's domination.** The power exists and arrives at level 9, but it
+*holds* a mind rather than taking it — at level 30 it holds every mind in sight.
+Zangband's made the creature yours. The charm machinery is built and this is a
+change to what the power does rather than to anything under it.
+
+**A Chaos patron handing you one as a gift.** The Lords give and take a great
+deal already; a pet is not yet among the things they give.
+
+Neither is blocked by anything. Both need a hook in code this project owns
+rather than a line in a data file, which is why they were not part of the phase
+that brought the other five sources in.
