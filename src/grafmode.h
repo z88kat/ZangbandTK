@@ -35,6 +35,15 @@
  *              above as well.
  * overdrawMax: Row in the file where tiles in that row or above draw the tile
  *              above as well.
+ * cycleHues:   If the sheet is laid out with the colour on the row and the
+ *              shape on the column, the number of hues in a colour block;
+ *              0 if the sheet is not laid out that way, which is every set
+ *              but the Neon one.  See graf_cycle_attr().
+ * cycleTones:  Number of tones per hue in that layout.
+ * cycleSpan:   How many of those hues a shimmer walks through.  Hues beyond
+ *              it are still in the sheet and still used for identity; they
+ *              are just not part of the rainbow, which is how grey stays out
+ *              of it.
  * cell_width:  Width of an individual tile in pixels.
  * cell_height: Height of an individual tile in pixels.
  * pref:        Value of ANGBAND_GRAF variable.
@@ -47,6 +56,9 @@ typedef struct _graphics_mode {
 	uint8_t alphablend;
 	uint8_t overdrawRow;
 	uint8_t overdrawMax;
+	uint8_t cycleHues;
+	uint8_t cycleTones;
+	uint8_t cycleSpan;
 	uint16_t cell_width;
 	uint16_t cell_height;
 	char path[256];
@@ -64,5 +76,8 @@ void close_graphics_modes(void);
 graphics_mode* get_graphics_mode(uint8_t id);
 
 int is_dh_tile(int a, wchar_t c);
+
+bool graf_cycles(void);
+uint8_t graf_cycle_attr(uint8_t attr, int step);
 
 #endif /* INCLUDED_GRAFMODE_H */

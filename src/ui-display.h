@@ -32,6 +32,7 @@ void cnv_stat(int val, char *out_val, size_t out_len);
 void allow_animations(void);
 void disallow_animations(void);
 void idle_update(void);
+size_t animation_frame(void);
 void toggle_inven_equip(void);
 void subwindows_set_flags(uint32_t *new_flags, size_t n_subwindows);
 void init_display(void);

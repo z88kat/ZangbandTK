@@ -20,16 +20,23 @@
 # each tile only ever carries one of these at a time.
 
 # hue:<name>:<pale>:<neon>:<dim>:<shadow>
-hue:grey:F0F0FF:B4B4D8:6E6E88:3D3D4C
-hue:yellow:FFFA8C:FFF600:B4A800:635C00
-hue:orange:FFC48F:FF8A1F:A85A14:5C310B
+#
+# The order is the cycle order.  A shimmering monster walks along this list a
+# hue at a time, so it has to read as a spectrum -- and grey has to be last,
+# because a rainbow that passes through grey looks like the colour dropping
+# out rather than moving on.  list.txt's `cycle:` says how many of these are
+# cyclable; grey sits outside that count and a grey monster does not shimmer,
+# which is honest: there is no grey rainbow.
 hue:red:FF9595:FF2B2B:BF1C1C:690F0F
-hue:magenta:FF8BE8:FF2BD1:A81C8A:5C0F4C
-hue:purple:C9A0FF:A855FF:6E2BB0:3D1861
-hue:blue:7FA0FF:3D6BFF:2340B0:132361
-hue:cyan:9FEFFF:22F0FF:14A0B0:0B5861
+hue:orange:FFC48F:FF8A1F:A85A14:5C310B
+hue:yellow:FFFA8C:FFF600:B4A800:635C00
 hue:green:93F5BC:3BFF7A:1FA850:115C2C
-hue:teal:7FBFB2:1F8C7F:0F5C55:08332F
+hue:teal:7FBFB2:2ABFAE:1A7A70:0F4A44
+hue:cyan:9FEFFF:22F0FF:14A0B0:0B5861
+hue:blue:7FA0FF:3D6BFF:2340B0:132361
+hue:purple:C9A0FF:A855FF:6E2BB0:3D1861
+hue:magenta:FF8BE8:FF2BD1:A81C8A:5C0F4C
+hue:grey:F0F0FF:B4B4D8:6E6E88:3D3D4C
 
 # attr:<game colour code>:<hue>:<tone>
 #
@@ -75,10 +82,10 @@ attr:T:teal:pale
 # This is the ZX Spectrum BRIGHT bit doing the job it always did -- one
 # drawing, three states, no extra art -- and it is the one knob worth turning
 # if the walls shout louder than the monsters.  Positive is darker.
-lighting:dark:+2
-lighting:lit:+1
-lighting:los:+1
-lighting:torch:0
+lighting:dark:+1
+lighting:lit:0
+lighting:los:0
+lighting:torch:-1
 
 # trap-lighting:<keyword>:<tone offset>
 #

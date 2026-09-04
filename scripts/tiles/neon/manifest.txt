@@ -9,16 +9,32 @@
 # the intended state of an unfinished set, and it is the same argument
 # scripts/tiles/README makes about uniques: a letter says "not drawn yet".
 
-# --- terrain: feat:<CODE>:<shape>[:<extra tone shift>] ------------------------------------------
-feat:FLOOR:floor:+2
-feat:GRANITE:wall
-feat:PERM:wall
-feat:MAGMA:wall
-feat:QUARTZ:wall
+# --- terrain: feat:<CODE>:<shape>[:<tone when lit>] ---
+#
+# The fourth field names the tone a feature sits at when lit; the light moves
+# it from there.  Without one it sits at the tone its colour code maps to.
+#
+# Ground and walls all want `dim`: they are the backdrop, and whatever stands
+# on them has to win.  They are named individually because they start from
+# four different base tones -- Angband's colours were picked for single glyphs
+# and FLOOR is White while GRANITE is Light Slate.
+#
+# An absolute tone and not a relative shift.  Relative was tried and was wrong
+# twice: the shifts stacked with the lighting offset and clamped, so all four
+# ground features landed on `shadow` together -- black, at actual size -- and
+# the global darkening step aimed at the walls pushed lava and broken doors
+# off the bottom with them.---------------------------------------
+feat:FLOOR:floor:dim
+feat:GRANITE:wall:dim
+feat:PERM:wall:dim
+feat:MAGMA:wall:dim
+feat:QUARTZ:wall:dim
 feat:MAGMA_K:wall
 feat:QUARTZ_K:wall
-feat:SECRET:wall
-feat:ROCK:wall
+feat:SECRET:wall:dim
+feat:ROCK:wall:dim
+# The edge of the world is a wall nothing gets through, so it is the one
+# wall that should not recede.
 feat:WORLD_EDGE:wall
 feat:RUBBLE:rubble
 feat:PASS_RUBBLE:rubble
@@ -27,10 +43,10 @@ feat:OPEN:door_open
 feat:BROKEN:door_open
 feat:LESS:stairs_up
 feat:MORE:stairs_down
-feat:GRASS:grass
-feat:DIRT:floor:+2
-feat:SAND:floor:+2
-feat:ROAD:floor:+2
+feat:GRASS:grass:dim
+feat:DIRT:floor:dim
+feat:SAND:floor:dim
+feat:ROAD:floor:dim
 feat:TREE:tree
 feat:MUD:water
 feat:WATER:water

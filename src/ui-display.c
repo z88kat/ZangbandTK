@@ -1635,6 +1635,22 @@ static void do_animation(void)
 }
 
 /**
+ * How many animation frames have gone by.
+ *
+ * A tileset that lays its colour out on the row rotates a shimmering
+ * monster's tile by this rather than by mon->attr.  mon->attr cannot carry
+ * it: grid_data_as_text() writes the drawing attr back into that field on
+ * every redraw (ui-map.c), so after the first frame it holds a tile row
+ * rather than the step it was given, and the monster settles on one wrong
+ * hue instead of moving through them.
+ */
+size_t animation_frame(void)
+{
+	return flicker;
+}
+
+
+/**
  * Set animations to allowed
  */
 void allow_animations(void)
@@ -1667,7 +1683,15 @@ void idle_update(void)
 	if (!animations_allowed) return;
 	if (msg_flag) return;
 	if (!character_dungeon) return;
-	if (!OPT(player, animate_flicker) || (use_graphics != GRAPHICS_NONE))
+	/*
+	 * Graphics mode used to be excluded outright, because a tileset's colour
+	 * is painted into its art and nothing here could change it.  A set that
+	 * lays the colour out on the row can (see graf_cycle_attr()), so it is
+	 * the tileset that decides now rather than the fact of graphics.
+	 */
+	if (!OPT(player, animate_flicker))
+		return;
+	if (use_graphics != GRAPHICS_NONE && !graf_cycles())
 		return;
 
 	/* Animate and redraw if necessary */
