@@ -20,8 +20,11 @@
 #include "buildid.h"
 #include "cave.h"
 #include "dun-type.h"
+#include "generate.h"
 #include "wild.h"
 #include "mon-make.h"
+#include "obj-desc.h"
+#include "obj-gear.h"
 #include "mon-predicate.h"
 #include "mon-util.h"
 #include "monster.h"
@@ -29,6 +32,8 @@
 #include "main.h"
 #include "player.h"
 #include "player-birth.h"
+#include "player-calcs.h"
+#include "player-util.h"
 #include "savefile.h"
 #include "ui-game.h"
 
@@ -36,6 +41,7 @@
 #include "borg/borg.h"
 #include "borg/borg-init.h"
 #include "borg/borg-flow-kill.h"
+#include "borg/borg-io.h"
 #include "borg/borg-flow-misc.h"
 #endif
 
@@ -58,6 +64,9 @@ static int run_failed = 0;
 
 /** The seed this run used, so a failure can be repeated (BRG-04). */
 static uint32_t run_seed = 0;
+
+/* How many times the character died during the run (BRG-22). */
+static int run_deaths = 0;
 
 /**
  * Turns requested before the game was ready to play them (BRG-03).
@@ -91,6 +100,25 @@ static int run_pending = 0;
  * the script is safe again -- but only from that moment.
  */
 static int borg_starting = 0;
+
+/*
+ * Cheats and a jump requested before the game existed (BRG-22).
+ *
+ * The front end reads its script before `start_game()` runs, so a command that
+ * needs a live character cannot act when it is read -- the same reason
+ * `borg-run` defers. These are applied from the event hook on the first
+ * request for input after `character_dungeon` becomes true, in order: cheat,
+ * then jump, then run.
+ *
+ * Guarded while applying, because `prepare_next_level()` asks for input and
+ * the front end would otherwise answer it out of the *script* -- which put a
+ * `borg-status?` in the middle of a level generation on the first attempt.
+ */
+static int pending_cheat_lev  = 0;
+static int pending_cheat_gold = 0;
+static int pending_jump       = 0;
+static int applying_setup     = 0;
+static int want_deathless     = 0;
 
 static void borg_begin_pending(void);
 #endif
@@ -318,6 +346,13 @@ static void borg_begin_pending(void)
 	}
 
 	borg_headless = true;
+
+	if (want_deathless && borg_cfg) {
+		borg_cfg[BORG_CHEAT_DEATH] = 1;
+		option_set("cheat_live", true);
+		borg_note("# ZangbandTK: death is cheated; deaths are still counted");
+	}
+
 	borg_cmd_start();
 
 	printf("borg-run: started for %d turns at turn %d\n", turns, (int) turn);
@@ -336,6 +371,16 @@ static void c_borg_status(char *rest)
 {
 	const char *why = borg_abort_reason ? borg_abort_reason
 		: (borg_active ? "still running" : "budget spent");
+	char weapon_desc[80] = "(none)";
+
+	if (player && player->body.slots) {
+		struct object *w = slot_object(player, slot_by_name(player, "weapon"));
+
+		if (w) {
+			object_desc(weapon_desc, sizeof(weapon_desc), w,
+						ODESC_BASE, player);
+		}
+	}
 
 	/*
 	 * A dead character is not a failure (BRG-05, BRG-17).
@@ -362,7 +407,32 @@ static void c_borg_status(char *rest)
 	 * every class suddenly stops getting past depth 3 is invisible without
 	 * the high-water mark.
 	 */
+	/*
+	 * The wielded weapon and the armour total, because "is it upgrading?" is
+	 * a different question from "how deep did it get?" and the answer changes
+	 * what to fix. A character at depth 6 still holding the dagger it was born
+	 * with has not been picking things up, which would depress every class
+	 * equally and is not a fighting problem at all.
+	 */
+	/*
+	 * Count the deaths from the message log rather than from a hook, because
+	 * with `cheat_live` on the character does not stay dead and there is no
+	 * single place that notices. "Reached depth 30, died fourteen times" is
+	 * the useful result; the depth alone is not.
+	 */
+	{
+		int k, n = (int) messages_num();
+
+		run_deaths = 0;
+		for (k = 0; k < n; k++) {
+			const char *m = message_str((int16_t) k);
+
+			if (m && prefix(m, "You die")) run_deaths++;
+		}
+	}
+
 	printf("borg-status: turn=%d depth=%d maxdepth=%d dungeon=%s clevel=%d "
+		   "hp=%d/%d ac=%d gold=%d deaths=%d weapon=%s "
 		   "grid=%d,%d level=%dx%d ready=%d seed=%u result=%s reason=%s\n",
 		   (int) turn, player ? player->depth : -1,
 		   player ? player->max_depth : -1,
@@ -370,6 +440,11 @@ static void c_borg_status(char *rest)
 			&& dun_type_by_index(player->dungeon - 1))
 			   ? dun_type_by_index(player->dungeon - 1)->name : "-",
 		   player ? player->lev : -1,
+		   player ? player->chp : -1, player ? player->mhp : -1,
+		   player ? player->state.ac + player->state.to_a : -1,
+		   player ? (int) player->au : -1,
+		   run_deaths,
+		   weapon_desc,
 		   player ? player->grid.y : -1, player ? player->grid.x : -1,
 		   cave ? cave->height : -1, cave ? cave->width : -1,
 		   character_dungeon ? 1 : 0, run_seed,
@@ -576,6 +651,152 @@ static void c_borg_mouths(char *rest)
 }
 
 /**
+ * borg-cheat <clevel> <gold> -- the scoped route's four levers (BRG-22).
+ *
+ * The project owner's direction: *"The borg reaching depth 30 unaided using a
+ * single character class... This is why we added the cheats, in order to be
+ * able to test better by giving us higher levels, more experience, more HP,
+ * and yes, cheating death."*
+ *
+ * The point is that the early-game grind is **not what is being verified**.
+ * Three attempts at making the borg survive it made it worse, and none of the
+ * milestones the run exists to exercise -- M8's mutations, M9's realms, M10's
+ * pets -- live at character level 6 anyway.
+ *
+ * **The cheats remove attrition, not decisions.** The borg still chooses what
+ * to buy, what to wield, which spell to cast, what to fight, when to flee and
+ * when to descend, and every level is still generated and played. Two lines
+ * are held deliberately:
+ *
+ *   - Grants happen **here, at the start**, never reactively. A borg healed
+ *     whenever it is about to die tells us nothing about combat.
+ *   - Gold rather than granted equipment, so the borg *shops* -- which
+ *     exercises M5's stores and keeps a real decision in the loop.
+ */
+static void c_borg_cheat(char *rest)
+{
+	int want_lev = 30, want_gold = 200000;
+	char *arg;
+
+	if (rest && *rest) {
+		arg = strtok(rest, " ");
+		if (arg) want_lev = atoi(arg);
+		arg = strtok(NULL, " ");
+		if (arg) want_gold = atoi(arg);
+	}
+
+	/* Deferred: the character does not exist when the script is read */
+	if (!character_dungeon) {
+		pending_cheat_lev  = want_lev;
+		pending_cheat_gold = want_gold;
+		printf("borg-cheat: queued clevel=%d gold=%d\n", want_lev, want_gold);
+		fflush(stdout);
+		return;
+	}
+
+	/*
+	 * Experience to the requested character level. `clevel >= depth` is the
+	 * borg's own gate on descending, so without this no amount of anything
+	 * else reaches depth 30.
+	 */
+	while (player->lev < want_lev && player->exp < PY_MAX_EXP) {
+		int32_t need = (int32_t) player_exp[player->lev - 1]
+			* player->expfact / 100L;
+
+		player_exp_gain(player, MAX(need - player->exp + 1, 1));
+		if (player->lev >= want_lev) break;
+	}
+
+	/*
+	 * Heal after granting levels, or the grant is a trap.
+	 *
+	 * `player_exp_gain()` raises *maximum* hit points and leaves the current
+	 * total where it was, so a character granted level 30 wakes with the
+	 * fourteen hit points it had at level 2 and a maximum of 244. Dropped at
+	 * depth 25 it read that correctly as mortal danger and fled to depth 1 --
+	 * "Leaving (low hit-points)" -- which looked like the borg refusing to
+	 * descend and was the harness handing it an invalid character.
+	 */
+	player->chp = player->mhp;
+	player->csp = player->msp;
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
+	update_stuff(player);
+
+	player->au = want_gold;
+
+	/*
+	 * Cheat death (BRG-22). The borg already has the setting and the plumbing
+	 * -- `BORG_CHEAT_DEATH` turns on the game's `cheat_live` -- it is simply
+	 * off by default and `borg.txt` is not installed, so the default stands.
+	 *
+	 * Deaths stay a **reported metric** rather than being hidden by this:
+	 * "reached depth 30, died fourteen times" says far more than "reached
+	 * depth 30", and it keeps the signal that dying is what the run is
+	 * ultimately measuring.
+	 */
+	want_deathless = 1;
+
+	/* Mutation and racial powers never fail; cheap, and it exercises M8. */
+	option_set(option_name(OPT_cheat_powers), true);
+
+	printf("borg-cheat: clevel=%d exp=%d gold=%d hp=%d/%d\n",
+		   player->lev, (int) player->exp, (int) player->au,
+		   player->chp, player->mhp);
+	fflush(stdout);
+}
+
+/**
+ * borg-jump <depth> -- put the borg at a depth, using the map we already have.
+ *
+ * Teleport to a *dungeon*, not to the target depth. Arriving at 30 directly
+ * generates one level and proves nothing; arriving at a dungeon whose band
+ * contains 30 and descending by play is the thing worth measuring.
+ */
+static void c_borg_jump(char *rest)
+{
+	int depth = (rest && *rest) ? atoi(rest) : 25;
+
+	/* Deferred, as above */
+	if (!character_dungeon) {
+		pending_jump = depth;
+		printf("borg-jump: queued depth=%d\n", depth);
+		fflush(stdout);
+		return;
+	}
+
+	/* Pick the shallowest dungeon whose band contains the depth wanted */
+	{
+		const struct dun_type *d, *best = NULL;
+
+		for (d = dun_types; d; d = d->next) {
+			if (depth < d->min_depth || depth > d->max_depth) continue;
+			if (!best || d->min_depth < best->min_depth) best = d;
+		}
+
+		if (best) {
+			int i;
+
+			for (i = 0; i < dun_type_count(); i++) {
+				if (dun_type_by_index(i) == best) {
+					player->dungeon = i + 1;
+					break;
+				}
+			}
+			printf("borg-jump: %s (band %d-%d)\n", best->name,
+				   best->min_depth, best->max_depth);
+		}
+	}
+
+	player->depth = depth;
+	if (player->max_depth < depth) player->max_depth = depth;
+	prepare_next_level(player);
+	on_new_level();
+
+	printf("borg-jump: at depth %d\n", player->depth);
+	fflush(stdout);
+}
+
+/**
  * borg-terrain? -- what lies on the straight line to each deeper mouth
  * (BRG-13).
  *
@@ -769,6 +990,8 @@ static test_cmd cmds[] = {
 	{ "borg-shops?", c_borg_shops },
 	{ "borg-mouths?", c_borg_mouths },
 	{ "borg-terrain?", c_borg_terrain },
+	{ "borg-cheat", c_borg_cheat },
+	{ "borg-jump", c_borg_jump },
 	{ "borg-pet", c_borg_pet },
 	{ "borg-pets?", c_borg_pets },
 	{ "borg-kills?", c_borg_kills },
@@ -895,6 +1118,47 @@ static errr term_xtra_event(int v) {
 		 * waits for an event and the borg's own hook sits above that poll.
 		 */
 		nextkey = 10;
+		return 0;
+	}
+
+	/*
+	 * Setup first: cheats, then the jump, then the run (BRG-22). Guarded so
+	 * that input requested during level generation is not answered out of the
+	 * harness's own script.
+	 */
+	if (!applying_setup && character_dungeon
+			&& (pending_cheat_lev || pending_jump)) {
+		applying_setup = 1;
+
+		if (pending_cheat_lev) {
+			char buf[64];
+
+			strnfmt(buf, sizeof(buf), "%d %d", pending_cheat_lev,
+					pending_cheat_gold);
+			pending_cheat_lev = 0;
+			c_borg_cheat(buf);
+		}
+
+		if (pending_jump) {
+			char buf[32];
+
+			strnfmt(buf, sizeof(buf), "%d", pending_jump);
+			pending_jump = 0;
+			c_borg_jump(buf);
+		}
+
+		applying_setup = 0;
+		return 0;
+	}
+
+	/*
+	 * While the setup is running, answer its prompts with a keypress rather
+	 * than with nothing. Returning no event leaves the terminal's poll
+	 * waiting for ever -- level generation asks for input, and the harness
+	 * must not answer it out of the script.
+	 */
+	if (applying_setup) {
+		nextkey = '\r';
 		return 0;
 	}
 

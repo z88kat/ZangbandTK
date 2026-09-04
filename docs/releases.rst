@@ -33,6 +33,43 @@ Unreleased
 Tidying — 4 September 2026
 ---------------------------
 
+- **3.92.0** — **The scoped route: a Warrior-Mage, four cheats, and depth 30 as
+  the bar.** Standard play does not reach the depths this game's content lives
+  at, and the early-game grind is not what the borg exists to verify — so the
+  route is one character taken deep with the cheat infrastructure this project
+  already built.
+
+  **Warrior-Mage**, because it has all seven realms: 224 of 224 spells are
+  reachable by one character, and that includes every source of pets in the
+  game. It leaves the Chaos patron and the Mindcrafter's psionics untested,
+  which no single route covers.
+
+  Four levers, all pre-existing: ``borg-cheat`` grants character level and
+  gold, ``borg-jump`` places the character at a dungeon whose band contains the
+  wanted depth, ``BORG_CHEAT_DEATH`` removes the attrition, and
+  ``cheat_powers`` stops mutation powers failing. **The cheats remove
+  attrition, not decisions** — grants happen at the start, never in reaction to
+  danger, and the jump goes to a *dungeon* rather than to the target depth, so
+  the intervening levels are generated and played. Deaths are counted and
+  reported even though they are cheated.
+
+  Gold rather than granted equipment, deliberately, so the borg shops — and it
+  does: dropped at depth 25 it walks to town for Phase Door scrolls, which is
+  exactly the decision the route is meant to preserve.
+
+  **It does not reach depth 30 yet**, and the honest reason is that a shopping
+  round trip from depth 25 takes more turns than the runs so far have allowed.
+  Also fixed here: granting experience raises *maximum* hit points without
+  healing, so the first cheated character woke at depth 25 with fourteen hit
+  points of 244 and fled to depth 1 — which looked like the borg refusing to
+  descend and was the harness handing it an invalid character.
+
+  Housekeeping: ``docs/hacking/borg.rst`` now describes this variant before
+  upstream's text rather than only Angband and Morgoth — discharging BRG-21,
+  which had gone unmet across five borg releases. (The duplicate ``DEC-65``
+  was fixed independently and better in 3.91.0, which also caught a second
+  duplicate at ``DEC-31`` and added a check for it.)
+
 - **3.91.0** — **The SDL 1.2 front end is retired** (DEC-70). ``main-sdl.c``
   was 6,169 lines built by CI and shipped by nothing — reachable only by
   configuring it by hand, and not testing what its label said. Debian and Ubuntu

@@ -16,6 +16,123 @@ The primary use of the Borg is entertainment. It is fun to watch the
 Borg play the game, and it can be amusing to see how it handles
 situations. It has also been used to test the game and find bugs.
 
+ZangbandTK
+==========
+
+This file is upstream's, and everything below this section describes
+*Angband* — its town, its bestiary, its single dungeon of one hundred levels
+with Morgoth at the bottom. Most of it still applies. What follows is what
+does not, and what this variant added, so that a reader is not misled by the
+rest (DEC-17, BRG-21).
+
+**The borg is test infrastructure here, not entertainment.** It exists because
+there was no test in the repository that played the game: 112 unit suites test
+rules in isolation and none of them walks a character out of a town, into a
+dungeon and back. See ``.claude/plans/borg-development-plan.md`` for the
+requirements, BRG-01 to BRG-22.
+
+Running it without a keyboard
+-----------------------------
+
+The borg's only entry point upstream is ``^z`` then ``z``, through the UI, and
+its only exit is a keypress. Neither is available to a test. The test front end
+(``-mtest``, built when ``SUPPORT_TEST_FRONTEND`` is on) adds commands that
+drive it headlessly::
+
+   borg-seed [N]      seed the run; without N, reads ZTK_TEST_SEED
+   borg-run N         play for N game turns, then hand control back
+   borg-status?       one machine-readable line: turn, depth, maxdepth,
+                      character level, hit points, armour, gold, deaths,
+                      wielded weapon, and why it stopped
+   borg-notes? [N]    the last N things the borg said
+   borg-kills?        its target list, and whether any ally is on it
+   borg-shops?        which shops it has found
+   borg-mouths?       every dungeon mouth, its band, and whether it is
+                      inside the current surface window
+   borg-terrain?      what lies on the straight line to each deeper mouth
+   borg-pet <race>    place an ally beside the player
+   borg-pets?         how many pets survive, and how many turned hostile
+   borg-roundtrip     save, reload and compare, mid-run
+   borg-cheat L G     grant character level L and G gold (see below)
+   borg-jump D        place the character at depth D, in a dungeon whose
+                      band contains it
+
+A character is born without the birth menus by setting ``ZTK_HEADLESS=1`` and
+``ZTK_HEADLESS_CLASS``; the menus consume a number of keys that depends on the
+roll, which is why key injection was not reproducible.
+
+Two scripts wrap this. ``scripts/borg-smoke`` plays fixed seeds and exits
+non-zero on a crash, an abort or a wedge, printing the seed to repeat it.
+``scripts/borg-progress`` reports best depth and character level per class,
+which is the regression signal BRG-18 asks for.
+
+**A dead character is not a failure.** The borg reports death down the same
+channel it uses for defects, and it dies often at low character level. Death
+is reported as ``result=died`` with a zero exit; only crashes, aborts and
+wedges fail.
+
+**A run always ends.** As well as the turn budget there is a decision budget,
+because a borg waiting for a prompt it cannot see makes decisions for ever
+without the clock moving — which neither crashes nor aborts, it hangs, and a
+hung CI job is a red build with no diagnosis.
+
+What this variant changes underneath it
+---------------------------------------
+
+**Depth 0 is not a town.** It is a wilderness surface of 144 by 144 grids, a
+window onto a world of roughly fourteen windows square, rebuilt and re-anchored
+as the character crosses it. The borg's arrays were sized for Angband's
+66-by-198 dungeon and it segfaulted on the first turn of every game; they are
+now sized by a checked ceiling, and ``borg_init_cave()`` refuses to start if
+the game's largest level does not fit.
+
+**There are thirteen dungeons, not one.** Each has its own depth band, from the
+Vaults of Amber at 1-15 to the Abyss at 90-127, and ``dungeon_get_next_level()``
+*clamps* a descent to the dungeon's floor rather than refusing it — so a borg
+that does not know about floors reads each clamp as a successful dive and loops
+for ever. ``borg_prepared()`` now reports "no deeper in this dungeon".
+
+Reaching a deeper dungeon means crossing the world, because no mouth is inside
+the starting window and a town staircase always leads to the shallowest dungeon
+there is. ``borg_flow_world()`` walks to a mouth, holding the destination in
+*world* coordinates so it survives the window being rebuilt, and following the
+roads — ``wild_place_roads()`` lays a spur to every mouth, so a road is
+passable by construction and routes around the mountains.
+
+**Seven magic realms replaced Angband's spell lists.** The borg casts through
+ninety-five hardcoded ``borg_spell(ENUM)`` calls against Angband's
+``enum borg_spells``, so **184 of this game's 224 realm spells cannot be cast
+at all** — Nature has one. ``borg_best_spell_with_effect()`` and
+``borg_spell_by_index()`` are the beginning of an answer; the rest is BRG-07.
+
+**Monsters have three allegiances.** A pet is not a target: nothing that is not
+hostile enters ``borg_kills[]``, which covers targeting, fear and pursuit
+together.
+
+**Several constants were sized for Angband and quietly outgrown** — the map
+arrays, the spell ratings tables, ``book_idx``/``amt_book`` against a Mage's 28
+books, and ``num_book`` indexed by an unbounded object sval. Each is now a
+named ceiling with a startup check that refuses to run rather than corrupting
+memory. If you add a constant here that mirrors something the game knows, give
+it a guard.
+
+The scoped route, and the cheats
+--------------------------------
+
+Standard play does not reach the depths this game's content lives at, and the
+early-game grind is not what the borg exists to verify. The scoped route is a
+single Warrior-Mage — all seven realms, so every spell and every source of pets
+is reachable by one character — taken to depth 30 with four levers:
+``borg-cheat`` grants character level and gold, ``borg-jump`` places it at a
+dungeon using the map, and ``BORG_CHEAT_DEATH`` removes the attrition.
+
+**The cheats remove attrition, not decisions.** The borg still chooses what to
+buy, what to wield, what to cast, what to fight and when to descend, and every
+level is generated and played. Grants happen at the start, never in reaction to
+danger; the jump goes to a *dungeon*, not to the target depth. Deaths are
+counted and reported even though they are cheated, because "reached depth 30,
+died fourteen times" says something and the depth alone does not.
+
 Running The Borg
 ================
 
