@@ -128,7 +128,6 @@ SDL2MAINFILES = \
 	sdl2/pui-dlg.o \
 	sdl2/pui-misc.o
 
-SDLMAINFILES = main-sdl.o
 
 SNDSDLFILES = snd-sdl.o
 
@@ -155,7 +154,6 @@ ALLMAINFILES = \
 	$(BASEMAINFILES) \
 	$(GCUMAINFILES) \
 	$(SDL2MAINFILES) \
-	$(SDLMAINFILES) \
 	$(SNDSDLFILES) \
 	$(TESTMAINFILES) \
 	$(WINMAINFILES) \

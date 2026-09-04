@@ -774,7 +774,7 @@ generated world is worth a lot when debugging one.
 
 ---
 
-## 6. Front-end housekeeping — retire SDL 1.2
+## 6. Front-end housekeeping — retire SDL 1.2 ✅ **done, 3.91.0**
 
 *Not a gameplay milestone. Independent of M0–M11 and can run in any gap; nothing
 blocks on it and it blocks nothing.* Recorded as DEC-70; the SDL 3 assessment that

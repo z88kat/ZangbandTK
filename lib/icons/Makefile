@@ -12,8 +12,6 @@ install-extra:
 	@if test x"${NOINSTALL}" != xyes ; then \
 		if test x"${ENABLESDL2}" = xyes ; then \
 			desktop_file=angband-sdl2.desktop ; \
-                elif test x"${ENABLESDL}" = xyes ; then \
-			desktop_file=angband-sdl.desktop ; \
 		elif test x"${ENABLEX11}" = xyes ; then \
 			desktop_file=angband-x11.desktop ; \
 		else \

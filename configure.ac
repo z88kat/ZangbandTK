@@ -242,10 +242,6 @@ AC_ARG_ENABLE(sdl2,
 	[AS_HELP_STRING([--enable-sdl2], [enable SDL2 frontend (default: disabled)])],
 	[enable_sdl2=$enableval],
 	[enable_sdl2=no])
-AC_ARG_ENABLE(sdl,
-	[AS_HELP_STRING([--enable-sdl], [enable SDL frontend (default: disabled)])],
-	[enable_sdl=$enableval],
-	[enable_sdl=no])
 AC_ARG_ENABLE(win,
 	[AS_HELP_STRING([--enable-win], [enable Windows frontend (default: disabled)])],
 	[enable_win=$enableval],
@@ -268,10 +264,6 @@ AC_ARG_ENABLE(sdl2_mixer,
 	[AS_HELP_STRING([--enable-sdl2-mixer], [enable SDL2 mixer sound support (default: disabled unless SDL2 enabled)])],
 	[enable_sdl2_mixer=$enable_sdl2_mixer],
 	[enable_sdl2_mixer=$enable_sdl2])
-AC_ARG_ENABLE(sdl_mixer,
-	[AS_HELP_STRING([--enable-sdl-mixer], [enable SDL mixer sound support (default: disabled unless SDL enabled)])],
-	[enable_sdl_mixer=$enable_sdl_mixer],
-	[enable_sdl_mixer=$enable_sdl])
 
 MAINFILES="\$(BASEMAINFILES)"
 
@@ -341,47 +333,11 @@ AS_IF([test "$enable_sdl2" = "yes" || test "$enable_sdl2_mixer" = "yes"],
 				AC_DEFINE(SOUND, 1, [Define to 1 if including sound support.])
 				LIBS="${LIBS} -lSDL2_mixer"
 				MAINFILES="${MAINFILES} \$(SNDSDLFILES)"])])
-		AS_IF([test "$with_sdl2" = "yes" || test "$found_sdl2_mixer" = "yes"],
-			[AS_IF([test "$enable_sdl" = "yes"],
-				[AC_MSG_WARN([disabling SDL:  --enable-sdl2 or --enable-sdl2-mixer also set and SDL2 was found; can not mix SDL2 and SDL])
-				enable_sdl=no])
-			AS_IF([test "$enable_sdl_mixer" = "yes"],
-				[AC_MSG_WARN([disabling SDL mixer:  --enable-sdl2 or --enable-sdl2-mixer also set and SDL2 was found; can not mix SDL2 and SDL])
-				enable_sdl_mixer=no])],
+		AS_IF([test "$with_sdl2" = "no" && test "$found_sdl2_mixer" = "no"],
 			[dnl Not using SDL2 so restore flags.
 			CPPFLAGS="${hold_CPPFLAGS}"
 			LIBS="${hold_LIBS}"])])])
 ENABLESDL2="$with_sdl2"; AC_SUBST(ENABLESDL2)
-with_sdl=no
-AS_IF([test "$enable_sdl" = "yes" || test "$enable_sdl_mixer" = "yes"],
-	[dnl SDL checking
-	AM_PATH_SDL(1.2.10,,)
-
-	found_sdl_mixer=no
-	AS_IF([test "$SDL_CONFIG" != "no"],
-		[hold_CPPFLAGS="${CPPFLAGS}"
-		hold_LIBS="${LIBS}"
-		CPPFLAGS="${CPPFLAGS} ${SDL_CFLAGS}"
-		LIBS="${LIBS} ${SDL_LIBS}"
-		AS_IF([test "$enable_sdl" = "yes"],
-			[AC_CHECK_LIB(SDL_image, IMG_LoadPNG_RW, with_sdl=yes, with_sdl=no)
-			AC_CHECK_LIB(SDL_ttf, TTF_Init, with_sdlx=yes, with_sdl=no)
-			AS_IF([test "$with_sdl" = "yes"],
-				[AC_DEFINE(USE_SDL, 1, [Define to 1 if using the SDL interface and SDL is found.])
-				LIBS="${LIBS} -lSDL_image -lSDL_ttf"
-				MAINFILES="${MAINFILES} \$(SDLMAINFILES)"])])
-		AS_IF([test "$enable_sdl_mixer" = "yes"],
-			[AC_CHECK_LIB(SDL_mixer, Mix_OpenAudio, found_sdl_mixer=yes, found_sdl_mixer=no)
-			AS_IF([test "$found_sdl_mixer" = "yes"],
-				[AC_DEFINE(SOUND_SDL, 1, [Define to 1 if using SDL_mixer sound support and it's found.])
-				AC_DEFINE(SOUND, 1, [Define to 1 if including sound support.])
-				LIBS="${LIBS} -lSDL_mixer"
-				MAINFILES="${MAINFILES} \$(SNDSDLFILES)"])])
-		AS_IF([test "$with_sdl" = "no" && test "$found_sdl_mixer" = "no"],
-			[dnl Not using SDL so restore flags.
-			CPPFLAGS="${hold_CPPFLAGS}"
-			LIB="${hold_LIBS}"])])])
-ENABLESDL="$with_sdl"; AC_SUBST(ENABLESDL)
 
 dnl Test checking
 AS_IF([test "$enable_test" = "yes"],
@@ -543,12 +499,6 @@ AS_IF([test "$enable_sdl2" = "yes"],
 		[echo "- SDL2                                    Yes"
 		local_player_frontends="$local_player_frontends"+])],
 	[echo "- SDL2                                    Disabled"])
-AS_IF([test "$enable_sdl" = "yes"],
-	[AS_IF([test "$with_sdl" = "no"],
-		[echo "- SDL                                     No; missing libraries"],
-		[echo "- SDL                                     Yes"
-		local_player_frontends="$local_player_frontends"+])],
-	[echo "- SDL                                     Disabled"])
 
 AS_IF([test "$enable_win" = "yes"],
 	[echo "- Windows                                 Yes"
@@ -574,11 +524,6 @@ AS_IF([test "$enable_sdl2_mixer" = "yes"],
 		[echo "- SDL2 sound                              No; missing libraries"],
 		[echo "- SDL2 sound                              Yes"])],
 	[echo "- SDL2 sound                              Disabled"])
-AS_IF([test "$enable_sdl_mixer" = "yes"],
-	[AS_IF([test "$found_sdl_mixer" = "no"],
-		[echo "- SDL sound                               No; missing libraries"],
-		[echo "- SDL sound                               Yes"])],
-	[echo "- SDL sound                               Disabled"])
 
 AS_IF([test x"$local_player_frontends" = "x"],
 	[AC_MSG_WARN([No player frontends are enabled.  Check your --enable options and prerequisites for the frontends.])])

@@ -33,11 +33,6 @@ If you want to build the X11 front end while building one of the other
 graphical front ends, the option to pass to CMake is
 ``-DSUPPORT_X11_FRONTEND=ON``.
 
-To build Angband with the SDL front end::
-
-    cmake -DSUPPORT_SDL_FRONTEND=ON -B build
-    cmake --build build
-
 To build Angband with the SDL2 front end::
 
     cmake -DSUPPORT_SDL2_FRONTEND=ON -B build
@@ -49,12 +44,16 @@ To build Angband with the GCU front end::
     cmake --build build
 
 You can build support for more than one of the graphical front ends by setting
-all the desired SUPPORT_*_FRONTEND options when running CMake (the exception to
-this are the SDL and SDL2 which can not be built at the same time).  If you
-want the executable to have support for sound, pass ``-DSUPPORT_SDL_SOUND=ON``
-or ``-DSUPPORT_SDL2_SOUND=ON`` to CMake (as with the SDL and SDL2 front ends,
-you can't build support for both SDL and SDL2 sound; it is also not possible to
-build the SDL front end with SDL2 sound or the SDL2 front end with SDL sound).
+all the desired SUPPORT_*_FRONTEND options when running CMake.  If you want the
+executable to have support for sound, pass ``-DSUPPORT_SDL2_SOUND=ON``.
+
+.. note::
+
+   ZangbandTK has no SDL 1.2 front end.  Angband ships one, and this game
+   retired it (DEC-70): the distributions had already replaced ``libsdl1.2-dev``
+   with **sdl12-compat**, which implements the SDL 1.2 API on top of SDL 2, so
+   the build that claimed to test SDL 1.2 was testing SDL 2 through a
+   translation layer, in a front end nothing shipped.  Use SDL2.
 
 There are options to not build a self-contained installation and, instead,
 organize the files for a typical Linux or Unix layout.  One such option

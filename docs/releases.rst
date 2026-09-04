@@ -33,6 +33,30 @@ Unreleased
 Tidying — 4 September 2026
 ---------------------------
 
+- **3.91.0** — **The SDL 1.2 front end is retired** (DEC-70). ``main-sdl.c``
+  was 6,169 lines built by CI and shipped by nothing — reachable only by
+  configuring it by hand, and not testing what its label said. Debian and Ubuntu
+  replaced ``libsdl1.2-dev`` with **sdl12-compat**, which implements the SDL 1.2
+  API by dlopening SDL 2, so the job named *SDL* was building an SDL 1.2 front
+  end against SDL 2 through a translation layer. It went green and verified a
+  configuration nobody ships.
+
+  **Nothing is lost, and that was checked rather than assumed.** Our only two
+  local changes to the file were the About box printing every credit line and a
+  guard against a saved configuration naming an uninstalled tileset. The first
+  is already in ``main-sdl2.c`` — the same commit changed both. The second does
+  not apply there: the SDL 2 front end validates a graphics mode when it *parses*
+  the config, so it never had the hazard.
+
+  Gone with it: ``SUPPORT_SDL_FRONTEND`` and ``SUPPORT_SDL_SOUND``, the two
+  CMake macros, ``--enable-sdl`` and ``--enable-sdl-mixer``, the ``AM_PATH_SDL``
+  detection, ``SDLMAINFILES``, ``SYS_sdl``, ``SOUND_sdl``, the desktop file, the
+  now-unreachable ``font-sdl.prf``, and the CI job. The two statistics builds
+  kept their sound — the point was to compile more infrastructure — and now get
+  it through SDL2. ``snd-sdl.c`` stays: it includes plain ``SDL.h`` and
+  ``SDL_mixer.h``, so the include path decides which SDL it gets, and SDL2 sound
+  uses the same file.
+
 - **3.90.0** — **A cheat that hands you a pet**, on the ``=x`` screen and on
   the debug menu as ``^A`` then ``N``. It asks which monster and puts one
   beside you, already yours.

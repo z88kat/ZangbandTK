@@ -47,7 +47,7 @@
  * all the others use this file for their "main()" function.
  */
 
-#if defined(WIN32_CONSOLE_MODE) || !defined(WINDOWS) || defined(USE_SDL) || defined(USE_SDL2)
+#if defined(WIN32_CONSOLE_MODE) || !defined(WINDOWS) || defined(USE_SDL2)
 
 #include "main.h"
 
@@ -68,9 +68,6 @@ static const struct module modules[] =
 	{ "x11", help_x11, init_x11, false, true },
 #endif /* USE_X11 */
 
-#ifdef USE_SDL
-	{ "sdl", help_sdl, init_sdl, false, false },
-#endif /* USE_SDL */
 
 #ifdef USE_SDL2
 	{ "sdl2", help_sdl2, init_sdl2, false, false },
