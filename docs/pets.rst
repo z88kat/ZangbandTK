@@ -3,9 +3,10 @@ Pets and Allies
 
 .. note::
 
-   **All nine phases of milestone M10 have shipped**, and this chapter describes
-   what the game does today. Two of the ways Zangband gives you a pet are still
-   to come; they are named at the end.
+   **Milestone M10 is complete** — all nine phases, and the two pet sources
+   PLR-28 named that the last of them shipped without. This chapter describes
+   what the game does today. Two of Zangband's routes remain, and both want an
+   object that does not exist here yet; they are named at the end.
 
    Requirements: PLR-22 to PLR-33.
 
@@ -489,20 +490,22 @@ great undead at 49. The Mage, Priest, Rogue, Ranger, Warrior-Mage and High-Mage
 may all study it.
 
 
+**Or dominate a mind.** A Mindcrafter's *dominate a mind* arrives at level 9,
+and what it does changes at 30. Below that it is a mind attack — it confuses
+what it hits — and from 30 it takes every hostile mind in sight. The split is
+Zangband's: below 30 the power cannot hold anything in thrall at all, and above
+it the domination is wholesale.
+
+**Or be given one.** All nine Lords of Chaos will hand a Chaos-Warrior
+something living, somewhere in the generous half of their moods — a servant, a
+demonic servant, or an undead one, depending on the Lord. It arrives beside you
+and it is yours.
+
+
 Still to come
 -------------
 
-Two of the ways Zangband gives you a pet are not here yet, both of them listed
-in PLR-28 alongside the ones that are.
-
-**A Mindcrafter's domination.** The power exists and arrives at level 9, but it
-*holds* a mind rather than taking it — at level 30 it holds every mind in sight.
-Zangband's made the creature yours. The charm machinery is built and this is a
-change to what the power does rather than to anything under it.
-
-**A Chaos patron handing you one as a gift.** The Lords give and take a great
-deal already; a pet is not yet among the things they give.
-
-Neither is blocked by anything. Both need a hook in code this project owns
-rather than a line in a data file, which is why they were not part of the phase
-that brought the other five sources in.
+Two of Zangband's routes to a pet remain, and both want an *object* rather than
+a mechanism: a thrown magical figurine, and a wand of charm monster. Neither
+object exists here yet, so neither is a change to the pet machinery — which is
+finished.

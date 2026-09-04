@@ -37,6 +37,8 @@
 #include "mon-util.h"
 #include "monster.h"
 #include "player-birth.h"
+#include "player.h"
+#include "player-util.h"
 #include "project.h"
 
 static void println(const char *str) {
@@ -438,6 +440,107 @@ static int test_the_deferred_content_arrived(void *state) {
 }
 
 const char *suite_name = "monster/charm";
+
+/**
+ * The two pet sources PLR-28 named and M10 shipped without (PLR-28, DEC-63).
+ *
+ * PLR-28 lists five documented ways to acquire a pet -- realm spells, a
+ * Mindcrafter's domination, a Chaos patron's gift, thrown figurines and wands
+ * of charm monster -- and M10 was declared complete carrying three of them.
+ * `docs/pets.rst` said so at the bottom of the chapter, which is the honest
+ * version of a gap and not a substitute for closing it.
+ *
+ * These check the data, because both are data: the psionic power's effect
+ * chain, and the reward codes on the patron ladders.  Whether a charm *lands*
+ * is tested above; this is whether the game offers the route at all.
+ */
+static int test_domination_charms_at_thirty(void *state) {
+	const struct player_class *c;
+	const struct player_power *power = NULL, *p;
+
+	for (c = classes; c; c = c->next) {
+		if (!streq(c->name, "Mindcrafter")) continue;
+		for (p = c->powers; p; p = p->next) {
+			if (streq(p->name, "dominate a mind")) power = p;
+		}
+	}
+	notnull(power);
+
+	/*
+	 * Two bands, and the effects differ.  Zangband's Domination fires
+	 * GF_DOMINATION at one target below level 30 and charm_monsters() above
+	 * it, and GF_DOMINATION cannot make a pet until its damage passes 29 --
+	 * which, being the character's level, it cannot yet be.  So the low band
+	 * must *not* charm and the high band must.
+	 */
+	{
+		const struct power_effect *band;
+		bool low_charms = false, high_charms = false, found_low = false;
+
+		for (band = power->effects; band; band = band->next) {
+			const struct effect *e;
+			bool is_low = (band->to > 0 && band->to < 30);
+
+			if (is_low) found_low = true;
+
+			for (e = band->effect; e; e = e->next) {
+				if (e->subtype == PROJ_MON_CHARM) {
+					if (is_low) low_charms = true; else high_charms = true;
+				}
+				/* And it is no longer paralysis, which is what it was. */
+				require(e->subtype != PROJ_MON_HOLD);
+			}
+		}
+
+		require(found_low);
+		require(!low_charms);
+		require(high_charms);
+	}
+
+	ok;
+}
+
+/**
+ * Every Lord of Chaos can hand you something living.
+ *
+ * Zangband's sixteen patrons carry thirteen servant rewards between them, at
+ * rungs eight to seventeen of the twenty -- the middle-to-generous band. All
+ * nine of ours carry one, in that band, and it summons on the player's side.
+ */
+static int test_a_patron_gifts_a_pet(void *state) {
+	struct patron *patron;
+	int lords = 0, gifts = 0;
+
+	notnull(patrons);
+
+	for (patron = patrons; patron; patron = patron->next) {
+		int i, found = -1;
+
+		lords++;
+		for (i = 0; i < PATRON_LADDER; i++) {
+			const struct patron_reward *r = patron->ladder[i];
+			const struct effect *e;
+
+			if (!r || !r->effect) continue;
+
+			for (e = r->effect; e; e = e->next) {
+				if (e->index != EF_SUMMON_PET) continue;
+				found = i + 1;
+			}
+		}
+
+		/* One per Lord, and in Zangband's own band. */
+		require(found >= 8);
+		require(found <= 17);
+		gifts++;
+	}
+
+	printf("PATRON %d Lords, %d of them gift a servant\n", lords, gifts);
+	eq(gifts, lords);
+
+	ok;
+}
+
 struct test tests[] = {
 	{ "a-strong-charm-takes", test_a_strong_charm_takes },
 	{ "a-unique-cannot-be-charmed", test_a_unique_cannot_be_charmed },
@@ -450,5 +553,7 @@ struct test tests[] = {
 	{ "a-summons-side-is-its-summoners",
 	  test_a_summons_side_is_its_summoners },
 	{ "the-deferred-content-arrived", test_the_deferred_content_arrived },
+	{ "domination-charms-at-thirty", test_domination_charms_at_thirty },
+	{ "a-patron-gifts-a-pet", test_a_patron_gifts_a_pet },
 	{ NULL, NULL }
 };

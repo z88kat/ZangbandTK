@@ -582,6 +582,17 @@ afterwards when the project owner reversed DEC-60's second half:
 | 7 | Trump | DEC-54 | ✅ 3.73.0 (DEC-64) |
 | 8 | Pets follow you downstairs | PLR-26 as reversed, DEC-67 | ✅ 3.74.0–3.79.0, phases A–F |
 | 9 | Four of them, and one in twenty walks away | DEC-67 amended, DEC-68 | ✅ 3.80.0 |
+| 10 | The last two of PLR-28's five sources: a Mindcrafter's domination, and a Chaos Lord's gift | PLR-28 completed | ✅ 3.94.1 |
+
+**M10 was declared complete at phase 9 with PLR-28 unfinished.** That
+requirement names five ways to acquire a pet and three had been built;
+`docs/pets.rst` recorded the two missing at the bottom of the chapter, which is
+honest and is not the same as done. Both were recorded as needing "a hook in
+code this project owns rather than a line in a data file", and both turned out
+to be data: the psionic power's effect chain, and three reward codes on the
+patron ladders. This is the second milestone to be called complete a phase
+early -- M8 was, over PLR-17 -- and both times the gap was written down
+correctly and then read as finished.
 
 Phase 1 is first because PLR-29 constrains PLR-22 rather than following it, and
 phase 4 is not last because PLR-30's upkeep is the whole of pet balance — both

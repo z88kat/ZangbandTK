@@ -19,18 +19,19 @@ Release log
 
 .. _Releases page: https://github.com/z88kat/ZangbandTK/releases
 
-Development is tracked by milestone. **M0 to M9 are complete**: the balance
+Development is tracked by milestone. **M0 to M10 are complete**: the balance
 scalars, the bestiary and treasure, the effects and vaults, the wilderness, the
 towns, the quests, the races and classes, the mutations and virtues, and all
 seven realms of magic. The Warrior-Mage and the High-Mage, which M7 could not
 finish because they are defined by their choice of realm, arrived with M9.
 
-**M10, pets, is all but done.** All nine of its phases have shipped — allegiance,
-the AI, orders, upkeep, player-side safety, the sources, Trump, following you
-downstairs, and the stable that costs you one in twenty at each level change.
-Two of PLR-28's ways of acquiring a pet are still open: a Mindcrafter's
-domination and a Chaos patron granting one as a gift. Neither is blocked; both
-need a hook in code we own rather than a data change.
+**M10, pets, is done.** All nine phases — allegiance, the AI, orders, upkeep,
+player-side safety, the sources, Trump, following you downstairs, and the stable
+that costs you one in twenty at each level change — and, in 3.92.0, the last two
+of PLR-28's five ways to acquire one: a Mindcrafter's domination and a Chaos
+Lord's gift. Both turned out to be data rather than the code hook they were
+recorded as needing. Two of Zangband's routes remain and want objects that do
+not exist here: a thrown figurine, and a wand of charm monster.
 
 **M11, nightmare mode, has not been started.** See :doc:`features` for what all
 of this adds up to in the game, and for what is left.
@@ -43,6 +44,37 @@ than the Angband 4.2.6 the code sits on.
 
 Unreleased
 ==========
+
+M10: the last two pet sources — 4 September 2026
+-------------------------------------------------
+
+- **3.94.1** — **PLR-28's last two paths** (PLR-28, DEC-63). M10 was declared
+  complete carrying three of the five documented ways to acquire a pet, and
+  :doc:`pets` said so at the bottom of the chapter — an honest gap, not a closed
+  one. Both turned out to be data, where the plan had them down as needing a
+  code hook.
+
+  **A Mindcrafter's domination** existed at level 9 and *held* minds: paralysis
+  under the name of domination. Zangband's is two powers in one. Below level 30
+  it fires ``GF_DOMINATION`` at a single target, and that projection cannot make
+  a pet until its damage passes 29 — which, the damage being the character's
+  level, it cannot yet be. From 30 it is ``charm_monsters()`` on everything in
+  sight. So the low band is a mind attack and only the high band charms, and
+  that is what it does now. 4.2 has no projection that picks among stun,
+  confusion and fear, so the low band is confusion alone — the one Zangband's
+  own switch reaches for most often.
+
+  **A Chaos Lord's gift.** Zangband has three servant rewards; this game carried
+  none of them. All nine Lords now have one — a servant, a demonic servant or an
+  undead one — at rungs 8 to 17 of the twenty, which is the band Zangband's own
+  sixteen patrons place them in, each replacing a reward that Lord already gave
+  twice, so nothing it could do was lost.
+
+  Both are pinned by tests, and both tests were checked against a deliberate
+  regression: reverting the projection, or one ladder entry, fails them.
+
+
+
 
 Tidying — 4 September 2026
 ---------------------------

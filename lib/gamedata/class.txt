@@ -6171,17 +6171,27 @@ power-effect:TELEPORT
 power-dice:$B
 power-expr:B:PLAYER_LEVEL:* 5
 
+# Zangband's Domination (mind.c:347).  Two bands, and the split is the whole
+# point: below level 30 it fires GF_DOMINATION at one target, and that
+# projection can only make a pet when its damage exceeds 29 -- which the
+# damage, being the character's level, cannot yet be.  So the low band is a
+# mind *attack* that stuns, confuses or frightens, and only the high band
+# charms, through charm_monsters(plev * 2).
+#
+# 4.2 has no projection that picks among stun, confusion and fear, so the low
+# band is confusion alone: the middle of Zangband's three and the one its own
+# switch reaches for twice out of four.  The high band is exact.
 power:dominate a mind
 power-level:9
 power-cost:7
 power-stat:WIS
 power-fail:50
 power-when:1:29
-power-effect:BALL:MON_HOLD:1
+power-effect:BALL:MON_CONF:1
 power-dice:$B
 power-expr:B:PLAYER_LEVEL:+ 0
 power-when:30:0
-power-effect:PROJECT_LOS:MON_HOLD
+power-effect:PROJECT_LOS:MON_CHARM
 power-dice:$B
 power-expr:B:PLAYER_LEVEL:* 2
 

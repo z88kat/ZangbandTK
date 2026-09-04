@@ -253,6 +253,29 @@ Where they come from: charms and summons across Life, Nature, Death and Chaos, a
 Wand of Tame Monster, a wall of mould, and the whole of the Trump realm. Uniques,
 quest monsters and anything whose mind cannot be confused refuse outright.
 
+Pets and allies
+---------------
+
+- **A monster can be on your side.** Angband has no such idea — every monster
+  is an enemy, and that is an assumption rather than a rule. Allegiance is a
+  field on the monster now, with three states: hostile, friendly, and yours.
+- **Nine orders**, given as a standing policy rather than one creature at a
+  time, and **they follow you downstairs**. Zangband left them behind, which
+  punishes you for using the feature.
+- **They cost.** An allowance you keep for nothing, then a charge on the sum of
+  your pets' levels above it — so a stable of weak animals is cheap and one deep
+  ally is not. A pet leaves you about one time in twenty at a level change.
+- **Ways to get one:** a realm spell that summons or charms, a Mindcrafter's
+  *domination* (a mind attack until level 30, and wholesale from 30), a Chaos
+  Lord handing you a servant, and anything your own pets summon. **Trump is the
+  realm of pets** — twelve of its spells call something that serves you.
+- **Walking into one changes places with it**; hurting one turns it against you,
+  rather than asking you to confirm.
+
+Two of Zangband's routes are still missing, and both want an object rather than
+a mechanism: a thrown magical figurine, and a wand of charm monster. See
+:doc:`pets`.
+
 Tunable without a rebuild
 -------------------------
 
@@ -415,12 +438,6 @@ in when the milestone lands.
      - Milestone
      - Where it stands
      - Chapter
-   * - Pets and allies
-     - M10
-     - Mostly in. Three sides, the pet menu on ``P``, charms, summons and the
-       Trump realm all work. A Mindcrafter's domination and a patron's gift of
-       one do not yet.
-     - :doc:`pets`
    * - Nightmare mode
      - M11
      - Not started.
