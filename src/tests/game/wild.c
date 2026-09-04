@@ -5515,6 +5515,24 @@ static int test_the_unicorn_makes_you_whole(void *state) {
 		}
 	notnull(race);
 
+	/*
+	 * She is a unique, and the world this seed built may have put her on the
+	 * surface already -- in which case place_new_monster() refuses, correctly,
+	 * and the test fails for a reason that has nothing to do with blessings.
+	 * That is what it did in CI on seed 1291180490, with her standing at
+	 * 79,16 while this test asked for a second one.  Clear the level's copy so
+	 * the race's counter is free, the way a-wounded-unique-is-remembered does
+	 * after it is finished with its unique.
+	 */
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *other = cave_monster(cave, i);
+
+		if (!other->race) continue;
+		if (other->race != race) continue;
+
+		delete_monster(cave, other->grid);
+	}
+
 	require(find_open_grid_near(player->grid, &grid));
 
 	require(place_new_monster(cave, grid, race, false, false, info,
