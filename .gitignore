@@ -88,3 +88,7 @@ __pycache__/
 src/wasm-obj/
 src/wasm-obj-test/
 build-asan/
+
+# The Neon tileset writes a mock map for inspection; the sheet beside it is
+# shipped, this is not.
+lib/tiles/neon/preview.png

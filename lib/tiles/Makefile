@@ -1,7 +1,7 @@
 MKPATH=../../mk/
 include $(MKPATH)buildsys.mk
 
-SUBDIRS = adam-bolt gervais nomad old
+SUBDIRS = adam-bolt gervais neon nomad old
 
 DATA = list.txt  README
 

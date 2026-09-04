@@ -1,0 +1,18 @@
+# down staircase -- steps falling away to the right.  Up and down are mirror
+# images, which is the one pair of tiles a player must never misread.
+................
+XXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXX
+XXXXXXXXXXXX..XX
+XXXXXXXXXXXX..XX
+XXXXXXXXX.....XX
+XXXXXXXXX.....XX
+XXXXXX........XX
+XXXXXX........XX
+XXX...........XX
+XXX...........XX
+..............XX
+..............XX
+XXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXX
+................

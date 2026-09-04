@@ -1,0 +1,17 @@
+# up staircase -- the same steps climbing to the right.
+................
+XXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXX
+XX..............
+XX..............
+XX...........XXX
+XX...........XXX
+XX........XXXXXX
+XX........XXXXXX
+XX.....XXXXXXXXX
+XX.....XXXXXXXXX
+XX..XXXXXXXXXXXX
+XX..XXXXXXXXXXXX
+XXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXX
+................

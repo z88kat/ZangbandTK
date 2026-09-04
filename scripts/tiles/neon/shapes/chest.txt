@@ -1,0 +1,18 @@
+# chest -- banded, with a lock plate.  Deliberately close to the mimic,
+# which is the joke the mimic is making.
+................
+................
+..XXXXXXXXXXXX..
+.XXXXXXXXXXXXXX.
+.XX.XXXXXX.XXXX.
+.XXXXXXXXXXXXXX.
+.XXXXXXXXXXXXXX.
+.XX..XXXX..XXXX.
+.XXXXX..XXXXXXX.
+.XXXXX..XXXXXXX.
+.XXXXXXXXXXXXXX.
+.XX.XXXXXX.XXXX.
+.XXXXXXXXXXXXXX.
+..XXXXXXXXXXXX..
+................
+................

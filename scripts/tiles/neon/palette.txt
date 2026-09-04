@@ -1,0 +1,91 @@
+# palette.txt -- the colours of the Neon tileset.
+#
+# Every tile is one silhouette drawn in exactly one non-black colour, so a
+# tile's colour is data rather than art: it is looked up from the monster's
+# own `color:` field, or the terrain's `graphics:` field, in lib/gamedata.
+# That is information the other tilesets throw away -- once a graphic tile is
+# assigned, ui-map.c:258 short-circuits on `da & 0x80` and the game's own
+# colour never reaches the screen.
+#
+# Ten hues, four tones each, giving forty rows in the tile sheet.  The tones
+# are flat colours and not dithers: a 50% dither of a dark hue loses half the
+# pixels of a one-pixel limb, which at sixteen pixels is the whole silhouette.
+#
+# Four and not three because terrain needs a tone for identity *and* a tone
+# for the light.  With three, grass (a dark green) and trees (a light green)
+# both landed on the same lit colour and the wilderness became one flat field
+# -- visible immediately in the preview and invisible in any assertion.
+#
+# Influence: Jeff Minter / Llamasoft.  Hyper-saturated, and legible because
+# each tile only ever carries one of these at a time.
+
+# hue:<name>:<pale>:<neon>:<dim>:<shadow>
+hue:grey:F0F0FF:B4B4D8:6E6E88:3D3D4C
+hue:yellow:FFFA8C:FFF600:B4A800:635C00
+hue:orange:FFC48F:FF8A1F:A85A14:5C310B
+hue:red:FF9595:FF2B2B:BF1C1C:690F0F
+hue:magenta:FF8BE8:FF2BD1:A81C8A:5C0F4C
+hue:purple:C9A0FF:A855FF:6E2BB0:3D1861
+hue:blue:7FA0FF:3D6BFF:2340B0:132361
+hue:cyan:9FEFFF:22F0FF:14A0B0:0B5861
+hue:green:93F5BC:3BFF7A:1FA850:115C2C
+hue:teal:7FBFB2:1F8C7F:0F5C55:08332F
+
+# attr:<game colour code>:<hue>:<tone>
+#
+# Chosen by hue family and then by lightness, never by taste.  Angband's
+# colours are load-bearing -- white is cold, red burns -- and a player reads
+# the colour before the shape.  Three pairs collapse, and each is a pair the
+# eye already struggles with in ASCII: Slate/Light Slate, Dark/Light Dark,
+# Mustard/Mud.  The other twenty-one survive intact.
+attr:w:grey:pale
+attr:W:grey:neon
+attr:s:grey:neon
+attr:D:grey:dim
+attr:d:grey:dim
+attr:Y:yellow:pale
+attr:y:yellow:neon
+attr:M:yellow:dim
+attr:m:yellow:dim
+attr:U:orange:pale
+attr:o:orange:neon
+attr:u:orange:dim
+attr:I:red:pale
+attr:R:red:neon
+attr:r:red:dim
+attr:i:magenta:pale
+attr:P:magenta:neon
+attr:p:magenta:dim
+attr:V:purple:pale
+attr:v:purple:neon
+attr:Z:blue:pale
+attr:b:blue:neon
+attr:z:cyan:pale
+attr:B:cyan:neon
+attr:G:green:neon
+attr:g:green:dim
+attr:t:teal:neon
+# Light Teal was missing until one potion flavour fell through the gap.
+attr:T:teal:pale
+
+# lighting:<prf lighting keyword>:<tone offset>
+#
+# Terrain keeps its own tone for identity and the light shifts it: a step
+# darker when only remembered, a step brighter under a torch right beside you.
+# This is the ZX Spectrum BRIGHT bit doing the job it always did -- one
+# drawing, three states, no extra art -- and it is the one knob worth turning
+# if the walls shout louder than the monsters.  Positive is darker.
+lighting:dark:+2
+lighting:lit:+1
+lighting:los:+1
+lighting:torch:0
+
+# trap-lighting:<keyword>:<tone offset>
+#
+# Traps get a shallower ramp than terrain.  A trap you have found is a thing
+# to spot, not ground to walk over, so a visible one sits at its own colour
+# and only a remembered one dims.
+trap-lighting:dark:+1
+trap-lighting:lit:0
+trap-lighting:los:0
+trap-lighting:torch:0

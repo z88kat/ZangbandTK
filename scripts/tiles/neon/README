@@ -1,0 +1,152 @@
+The Neon tileset
+================
+
+One silhouette, one colour, and the colour is data.
+
+    scripts/tiles/build-neon.py            build the sheet and the prf
+    scripts/tiles/build-neon.py --check    measure the palette and the output
+    scripts/tiles/build-neon.py --preview  also write a mock map to look at
+
+Registered as graphics mode 7 in lib/tiles/list.txt.  Modes 5 and 6 are
+Shockbolt's and stay retired.
+
+What it covers
+--------------
+
+    105 silhouettes  ->  2092 preference lines
+
+    monsters      1013 lines    every monster in the game
+    terrain        168 lines    all 42 features, four lighting variants each
+    objects        157 lines    every object that carries its own colour
+    flavours       302 lines    every flavour in flavor.txt
+    traps          152 lines    38 of 40 traps, four variants each
+    spell effects  300 lines    60 projections x 5 directions
+
+Two traps are deliberately absent: 'no trap' and 'door lock', neither of which
+is a thing drawn on the floor.
+
+The 8x8 set spends 945 distinct pictures and covers none of ZangbandTK's
+imported monsters, which is what graf-ztk.prf exists to paper over.  This set
+needs no graf-ztk.prf: nothing is borrowed, because nothing is missing.
+
+Why it is built this way
+------------------------
+
+Every other tileset paints colour into its art, and the game then discards its
+own: once a graphic tile is assigned, ui-map.c:258 short-circuits on
+`da & 0x80` and a monster's `color:` never reaches the screen.  So the twelve
+zephyr hounds -- which differ by nothing else -- need twelve drawings there,
+and get whichever ones somebody made.
+
+Here the sheet has *the colour on the row and the shape on the column*, so a
+preference line is (this thing's colour, this thing's silhouette) and both
+halves are read out of lib/gamedata: a monster's `base:` and `color:`, a
+feature's `graphics:`, a trap's, a flavour's, a projection's.  Twelve hounds
+are one drawing.  Sixty spell elements are five.
+
+It falls out of the prf format, which has always been `attr:char`, and in
+graphics mode has always meant `row:col`.
+
+Where the art lives
+-------------------
+
+`shapes/*.txt`, as sixteen lines of sixteen characters, `X` for ink.  Text
+because it diffs in git, reviews without a paint program, and can be fixed by
+hand in thirty seconds.  The sheet is a build artifact; delete it and rebuild.
+
+Adding a shape is two edits: draw `shapes/<name>.txt`, then name it in
+`manifest.txt` against a `base:`, a `feat:` code, a `tval:`, a `trap:` code or
+a `gf:` direction.  Anything not named there has no tile and renders as its
+ASCII letter, which is the intended state of an unfinished set and the same
+argument this directory's other README makes about uniques: a letter says
+"not drawn yet".
+
+Uniques
+-------
+
+They get tiles here, and the objection in ../README does not apply.  That
+objection is about *portraits*: a borrowed picture of the Mouth of Sauron
+worn by Oberon says something false.  A silhouette is not a portrait -- it
+says "a person, violet", which is what monster.zangband.txt says too.
+
+What it does not do, and this is the honest limit: two monsters sharing a
+`base:` and a `color:` are the same tile.  Oberon, Dworkin and Mandor are all
+violet people, so all three are one violet person.  That is where a
+hand-drawn shape and a per-name override in the manifest should go first.
+
+Three things the data made necessary
+------------------------------------
+
+Each of these was found by looking at the output, and each is now data rather
+than a special case in the code.
+
+*Four tones, not three.*  Terrain needs a tone for identity and a tone for the
+light.  With three, grass (a dark green) and trees (a light green) landed on
+the same lit colour and the wilderness became one flat field.
+
+*A per-feature bias.*  Angband's colours were chosen for single glyphs.  FLOOR
+is White and GRANITE is Light Slate, so a floor spread over a whole cell came
+out *brighter* than the wall around it.  One global bias cannot fix that, so a
+`feat:` line may carry a fourth field and FLOOR carries `+2`.
+
+*A shallower ramp for traps.*  A trap you have found is a thing to spot, not
+ground to walk over, so `trap-lighting:` sits at zero for a visible trap and
+only dims a remembered one.
+
+What --check measures
+---------------------
+
+A tile is one colour on black, so a colour's contrast against black *is* its
+legibility -- and the bar differs by role.  A creature, object or visible trap
+must be spotted (3:1).  Lit terrain must read as ground and should lose to
+whatever stands on it (1.5:1).  Anything `dark` is remembered rather than seen
+and has no floor at all: dim is what it means.
+
+It also reads the sheet back and confirms every coordinate the prf names holds
+ink of the colour that row is supposed to be, and that every name in the file
+resolves against lib/gamedata.  Those checks exist because all three of the
+ways this goes wrong are silent:
+
+* the renderer takes the cell index modulo the sheet size rather than
+  complaining, so a wrong coordinate draws a different picture;
+* `lookup_monster()` falls back to a substring match, so a misspelled name
+  binds to whatever contains it;
+* `lookup_sval()` compares against `obj_desc_name_format()` of each kind's
+  name, so `& Small wooden chest~` resolves to nothing at all -- which it did,
+  for all 157 object lines, until the formatter was ported into this script.
+
+Two more were found the same way, both about how a colour is written down.
+Names are spelled four ways across the data files -- "Light Green", "Light
+dark", "L_DARK", "ORANGE" -- so they are folded before lookup rather than
+matched exactly; one potion flavour was missing on top of that because `T`
+(Light Teal) had no mapping at all.  And trap.txt gives most of its colours as
+single-letter codes but five of them as full names ("light slate"), so a
+resolver that took only codes dropped those five without a word.
+
+The check that catches this class of thing is the cheapest one here: every
+shape named in the manifest must end up in the sheet.  A shape that was drawn
+and never used means all of its lines were dropped somewhere, and that is how
+the five traps were found.
+
+The palette
+-----------
+
+Ten hues, four tones, in `palette.txt` with the mapping from the game's 28
+colour codes.  Influence: Jeff Minter / Llamasoft.  Hyper-saturated, and
+legible only because a tile carries one of them at a time -- the constraint is
+what pays for the palette.
+
+Three pairs collapse -- Slate/Light Slate, Dark/Light Dark, Mustard/Mud -- each
+a pair the eye already struggles with in ASCII.  The other twenty-two codes
+survive intact.
+
+Not done yet
+------------
+
+* Per-name shapes for the named characters, starting with the Amber princes.
+* Colour cycling.  Under this layout, cycling a tile's hue is arithmetic on
+  the row: hold the column, rotate the colour within its block.  The cycle
+  table already exists (226 definitions in lib/gamedata/visuals.txt, driven by
+  visuals_cycler_get_attr_for_race), and it is switched off in graphics mode
+  by one condition in ui-display.c's idle_update().  That is engine work, not
+  tileset work, and belongs in its own change.

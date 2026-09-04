@@ -1,0 +1,18 @@
+# open door -- the leaf swung back against the jamb, so the gap reads as a
+# way through rather than as a broken wall.
+................
+XXXXXXXXXXXXXXXX
+XX............XX
+XX............XX
+XX....XXXXXXXXXX
+XX....XXXXXXXXXX
+XX....XXXXXXXXXX
+XX....XXXXXXXXXX
+XX....XXXXXXXXXX
+XX....XXXXXXXXXX
+XX....XXXXXXXXXX
+XX............XX
+XX............XX
+XXXXXXXXXXXXXXXX
+................
+................

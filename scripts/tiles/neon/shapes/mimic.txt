@@ -1,0 +1,17 @@
+# mimic -- a chest that has teeth and is watching you.
+................
+................
+..XXXXXXXXXXXX..
+.XXXXXXXXXXXXXX.
+.XX..........XX.
+.X..XX....XX..X.
+.X..XX....XX..X.
+.XX..........XX.
+.XXXXXXXXXXXXXX.
+.XX.X.X.X.X.XXX.
+.XXXXXXXXXXXXXX.
+.XX..........XX.
+.XXXXXXXXXXXXXX.
+..XXXXXXXXXXXX..
+................
+................

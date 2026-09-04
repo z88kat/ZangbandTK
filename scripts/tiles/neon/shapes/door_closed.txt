@@ -1,0 +1,18 @@
+# closed door -- panelled, with a handle.  The frame reaches the cell edge so
+# a door in a wall run does not leave a seam.
+................
+XXXXXXXXXXXXXXXX
+XX............XX
+XX.XXXXXXXXXX.XX
+XX.XXXXXXXXXX.XX
+XX.XXXXXXXXXX.XX
+XX.XXXXXXXXXX.XX
+XX.XXXXXXX.XX.XX
+XX.XXXXXXX.XX.XX
+XX.XXXXXXXXXX.XX
+XX.XXXXXXXXXX.XX
+XX.XXXXXXXXXX.XX
+XX.XXXXXXXXXX.XX
+XX............XX
+XXXXXXXXXXXXXXXX
+................

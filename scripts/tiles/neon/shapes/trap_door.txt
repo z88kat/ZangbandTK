@@ -1,0 +1,17 @@
+# trap door -- two leaves that are about to be underneath you.
+................
+XXXXXXXXXXXXXXXX
+XXX..........XXX
+XX............XX
+XX............XX
+XX............XX
+XXX..........XXX
+XXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXX
+XXX..........XXX
+XX............XX
+XX............XX
+XXX..........XXX
+XXXXXXXXXXXXXXXX
+................
+................

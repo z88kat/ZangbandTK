@@ -1,0 +1,18 @@
+# scroll -- ruled sheet with rollers.  The lines of writing are what stop it
+# reading as a blank slab or a chest.
+................
+................
+..XXXXXXXXXXXX..
+.XX..........XX.
+.XX.XXXXXXXX.XX.
+.XX..........XX.
+.XX.XXXXXXXX.XX.
+.XX..........XX.
+.XX.XXXXXXXX.XX.
+.XX..........XX.
+.XX.XXXXXXXX.XX.
+.XX..........XX.
+..XXXXXXXXXXXX..
+................
+................
+................

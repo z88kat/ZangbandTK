@@ -1,0 +1,17 @@
+# cloak -- hung by the shoulders and spreading to a ragged hem.
+................
+.....XXXXXX.....
+....XXXXXXXX....
+...XX.XXXX.XX...
+..XXX.XXXX.XXX..
+..XXXXXXXXXXXX..
+.XXXXXXXXXXXXXX.
+.XXXXXXXXXXXXXX.
+.XXXXXXXXXXXXXX.
+XXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXX
+XXX.XXXXXXXX.XXX
+XX...XXXXXX...XX
+X.....XXXX.....X
+................

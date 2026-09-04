@@ -1,0 +1,18 @@
+# lurker -- an outline and nothing else, for a thing that is only there
+# once you have walked into it.
+................
+................
+..XX........XX..
+.X..X......X..X.
+X....X....X....X
+X.....X..X.....X
+X......XX......X
+X..............X
+X..............X
+X......XX......X
+X.....X..X.....X
+X....X....X....X
+.X..X......X..X.
+..XX........XX..
+................
+................

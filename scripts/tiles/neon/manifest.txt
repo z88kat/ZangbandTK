@@ -1,0 +1,181 @@
+# manifest.txt -- which silhouette each thing in the game is drawn with.
+#
+# One shape serves every creature that shares it, because colour is what
+# separates them and colour comes from lib/gamedata.  Thirty-odd breeds of
+# zephyr hound are one drawing here, and each is finally the colour its own
+# entry in monster.txt claims it is.
+#
+# Anything not listed has no tile and renders as its ASCII letter.  That is
+# the intended state of an unfinished set, and it is the same argument
+# scripts/tiles/README makes about uniques: a letter says "not drawn yet".
+
+# --- terrain: feat:<CODE>:<shape>[:<extra tone shift>] ------------------------------------------
+feat:FLOOR:floor:+2
+feat:GRANITE:wall
+feat:PERM:wall
+feat:MAGMA:wall
+feat:QUARTZ:wall
+feat:MAGMA_K:wall
+feat:QUARTZ_K:wall
+feat:SECRET:wall
+feat:ROCK:wall
+feat:WORLD_EDGE:wall
+feat:RUBBLE:rubble
+feat:PASS_RUBBLE:rubble
+feat:CLOSED:door_closed
+feat:OPEN:door_open
+feat:BROKEN:door_open
+feat:LESS:stairs_up
+feat:MORE:stairs_down
+feat:GRASS:grass
+feat:DIRT:floor:+2
+feat:SAND:floor:+2
+feat:ROAD:floor:+2
+feat:TREE:tree
+feat:MUD:water
+feat:WATER:water
+feat:DEEP_WATER:water
+feat:DUNGEON:dungeon
+feat:LAVA:lava
+feat:NONE:empty
+feat:STORE_GENERAL:store_1
+feat:STORE_ARMOR:store_2
+feat:STORE_WEAPON:store_3
+feat:STORE_BOOK:store_4
+feat:STORE_ALCHEMY:store_5
+feat:STORE_MAGIC:store_6
+feat:STORE_BLACK:store_7
+feat:HOME:store_8
+feat:HEALER:healer
+feat:INN:inn
+feat:MAGESMITH:magesmith
+feat:RECHARGER:recharger
+feat:MAGETOWER:magetower
+feat:CHAOSTOWER:chaostower
+
+# --- monsters: base:<monster base>:<shape> ---------------------------------
+base:canine:hound
+base:zephyr hound:hound
+base:feline:hound
+base:quadruped:hound
+base:rodent:hound
+base:yeti:hound
+base:humanoid:humanoid
+base:person:humanoid
+base:townsfolk:humanoid
+base:kobold:humanoid
+base:orc:humanoid
+base:troll:humanoid
+base:ogre:humanoid
+base:giant:humanoid
+base:yeek:humanoid
+base:skeleton:humanoid
+base:zombie:humanoid
+base:dragon:dragon
+base:ancient dragon:dragon
+base:hybrid:dragon
+base:hydra:dragon
+base:ghost:ghost
+base:wraith:ghost
+base:vampire:ghost
+base:lich:ghost
+base:mold:mold
+base:jelly:mold
+base:mushroom:mold
+base:quylthulg:mold
+base:icky thing:mold
+base:snake:snake
+base:naga:snake
+base:worm:snake
+base:reptile:snake
+base:tree:tree
+base:player:player
+base:major demon:major_demon
+base:minor demon:minor_demon
+base:elemental:elemental
+base:fish:fish
+base:spider:spider
+base:ainu:ainu
+base:bird:bird
+base:golem:golem
+base:vortex:vortex
+base:eye:eye
+base:insect:insect
+base:ant:ant
+base:bat:bat
+base:centipede:centipede
+base:killer beetle:killer_beetle
+base:creeping coins:creeping_coins
+base:dragon fly:dragon_fly
+base:xorn:xorn
+base:wall monster:wall_monster
+base:lurker:lurker
+base:mimic:mimic
+base:animated weapon:animated_weapon
+base:Morgoth:morgoth
+
+# --- objects: tval:<object type>:<shape> -----------------------------------
+#
+# Flavoured types take their colour from flavor.txt rather than object.txt,
+# because before it is identified a potion is its flavour and nothing else.
+tval:potion:potion
+tval:flask:potion
+tval:scroll:scroll
+tval:ring:ring
+tval:amulet:ring
+tval:sword:sword
+tval:polearm:axe
+tval:hafted:mace
+tval:bow:bow
+tval:arrow:arrow
+tval:bolt:bolt
+tval:shot:shot
+tval:soft armor:armour_soft
+tval:hard armor:armour_hard
+tval:dragon armor:armour_dragon
+tval:shield:shield
+tval:helm:helm
+tval:crown:crown
+tval:cloak:cloak
+tval:gloves:gloves
+tval:boots:boots
+tval:chest:chest
+tval:food:food
+tval:gold:gold
+tval:digger:digger
+tval:light:light
+tval:wand:wand
+tval:staff:staff
+tval:rod:rod
+tval:mushroom:mushroom
+tval:none:pile
+
+# --- traps: trap:<trap code>:<shape> ---------------------------------------
+#
+# Keyed on the code, which is trap.txt's first field, so the four dart traps
+# are one drawing and the prf still names each of them.  'no trap' and
+# 'door lock' are left out: neither is a thing drawn on the floor.
+trap:alarm:trap_alarm
+trap:ancient mechanism:trap_mechanism
+trap:dart trap:trap_dart
+trap:decoy:trap_decoy
+trap:discolored spot:trap_spot
+trap:explosion:trap_explosion
+trap:gas trap:trap_gas
+trap:glyph of warding:trap_glyph
+trap:mind blast trap:trap_mind
+trap:pit:trap_pit
+trap:strange rune:trap_rune
+trap:trap:trap_generic
+trap:trap door:trap_door
+trap:web:trap_web
+
+# --- spell effects: gf:<direction>:<shape> ---------------------------------
+#
+# Five shapes for every projection in the game.  The element is carried
+# entirely by the colour, which projection.txt already states.
+gf:0:bolt_0
+gf:45:bolt_45
+gf:90:bolt_90
+gf:135:bolt_135
+gf:static:burst

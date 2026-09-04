@@ -1,0 +1,17 @@
+# spider -- round body, eight legs reaching all four corners.
+................
+X..............X
+.X.....XX.....X.
+.XX...XXXX...XX.
+..XX.XXXXXX.XX..
+X..XXXXXXXXXX..X
+.X.XX.XXXX.XX.X.
+..XXXXXXXXXXXX..
+..XXXXXXXXXXXX..
+.X.XXXXXXXXXX.X.
+X..XX.XXXX.XX..X
+..XX.XXXXXX.XX..
+.XX...XXXX...XX.
+.X.....XX.....X.
+X..............X
+................

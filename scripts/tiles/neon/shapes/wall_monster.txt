@@ -1,0 +1,18 @@
+# wall monster -- the wall, with something looking out of it.  It has to
+# sit in a wall run without breaking the courses.
+XXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXX
+XX............XX
+XX.XX......XX.XX
+XX.XX......XX.XX
+XX............XX
+XX...XXXXXX...XX
+XX..XX....XX..XX
+XX............XX
+XX.X.X.X.X.X.XXX
+XX............XX
+XXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXX

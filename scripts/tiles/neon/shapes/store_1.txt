@@ -1,0 +1,19 @@
+# general store -- shopfronts carry the numeral the ASCII glyph
+# carries, because a store the player cannot name is a store they will
+# walk into by accident.
+................
+....XXXXXXXX....
+...XXXXXXXXXX...
+..XXXXXXXXXXXX..
+.XXXXXXXXXXXXXX.
+.XX..........XX.
+.XX....X.....XX.
+.XX...XX.....XX.
+.XX....X.....XX.
+.XX....X.....XX.
+.XX...XXX....XX.
+.XX..........XX.
+.XXXXXX..XXXXXX.
+.XXXX......XXXX.
+.XXXX......XXXX.
+................

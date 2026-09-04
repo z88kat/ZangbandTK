@@ -1,0 +1,17 @@
+# magesmith -- an anvil.
+................
+....XXXXXXXX....
+...XXXXXXXXXX...
+..XXXXXXXXXXXX..
+.XXXXXXXXXXXXXX.
+.XX..........XX.
+.XX..XXXXX...XX.
+.XX...XXX....XX.
+.XX....X.....XX.
+.XX...XXX....XX.
+.XX..XXXXX...XX.
+.XX..........XX.
+.XXXXXX..XXXXXX.
+.XXXX......XXXX.
+.XXXX......XXXX.
+................

@@ -1,0 +1,18 @@
+# dungeon entrance -- an arch around a dark mouth, steps at the sill.
+# The one wilderness feature that is a place rather than ground.
+................
+....XXXXXXXX....
+..XXXXXXXXXXXX..
+.XXXX......XXXX.
+.XXX........XXX.
+.XX..........XX.
+.XX..........XX.
+.XX..........XX.
+.XX..........XX.
+.XX..........XX.
+.XX....XX....XX.
+.XX...XXXX...XX.
+.XX..XXXXXX..XX.
+.XXXXXXXXXXXXXX.
+.XXXXXXXXXXXXXX.
+................

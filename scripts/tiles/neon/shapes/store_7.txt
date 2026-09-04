@@ -1,0 +1,17 @@
+# store 7 -- see store_1.
+................
+....XXXXXXXX....
+...XXXXXXXXXX...
+..XXXXXXXXXXXX..
+.XXXXXXXXXXXXXX.
+.XX..........XX.
+.XX..XXXXX...XX.
+.XX......X...XX.
+.XX.....X....XX.
+.XX....X.....XX.
+.XX...X......XX.
+.XX..........XX.
+.XXXXXX..XXXXXX.
+.XXXX......XXXX.
+.XXXX......XXXX.
+................

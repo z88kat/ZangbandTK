@@ -1,0 +1,19 @@
+# wall -- courses of brick.  A solid block would be right for granite and
+# wrong for everything, and the black mortar is what stops a wall run from
+# becoming one undifferentiated slab.
+XXXXXXXXXXXXXXXX
+XXXXXXX.XXXXXXXX
+XXXXXXX.XXXXXXXX
+................
+XXX.XXXXXXXX.XXX
+XXX.XXXXXXXX.XXX
+................
+XXXXXXX.XXXXXXXX
+XXXXXXX.XXXXXXXX
+................
+XXX.XXXXXXXX.XXX
+XXX.XXXXXXXX.XXX
+................
+XXXXXXX.XXXXXXXX
+XXXXXXX.XXXXXXXX
+XXXXXXXXXXXXXXXX

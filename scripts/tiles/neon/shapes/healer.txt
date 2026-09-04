@@ -1,0 +1,17 @@
+# healer -- the same shopfront with a cross over the door.
+................
+....XXXXXXXX....
+...XXXXXXXXXX...
+..XXXXXXXXXXXX..
+.XXXXXXXXXXXXXX.
+.XX..........XX.
+.XX....X.....XX.
+.XX....X.....XX.
+.XX..XXXXX...XX.
+.XX....X.....XX.
+.XX....X.....XX.
+.XX..........XX.
+.XXXXXX..XXXXXX.
+.XXXX......XXXX.
+.XXXX......XXXX.
+................
