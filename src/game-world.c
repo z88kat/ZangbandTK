@@ -94,6 +94,84 @@ const uint8_t extract_energy[200] =
 };
 
 /**
+ * Find a level by a name world.txt used to use (ZangbandTK).
+ *
+ * Until 3.91.0 this game inherited Angband's names for the depths: "Angband 1"
+ * through "Angband 127".  Those are place names for a game with one dungeon,
+ * and this one has thirteen -- depth 40 is in no particular place here -- so
+ * they became "Level <n>".
+ *
+ * A level name is something a savefile holds: with birth_levels_persist a
+ * stored level is filed under its depth's name, and the name goes to disk as
+ * text.  Renaming without this would quietly cost such a character every level
+ * it had banked, which is the loss rename.txt exists to prevent for objects and
+ * monsters.  Read only when an exact lookup has already failed, so it costs a
+ * current savefile nothing.
+ */
+static struct level *level_by_legacy_name(const char *name)
+{
+	const char *digits;
+	char *end;
+	long depth;
+
+	if (!name || !prefix(name, "Angband ")) return NULL;
+
+	digits = name + sizeof("Angband ") - 1;
+	if (!isdigit((unsigned char)*digits)) return NULL;
+
+	depth = strtol(digits, &end, 10);
+	if (*end != '\0') return NULL;
+	if (depth < 0 || depth >= (long)z_info->max_depth) return NULL;
+
+	return level_by_depth((int)depth);
+}
+
+/**
+ * Bring a level name read from a savefile up to date (ZangbandTK).
+ *
+ * The companion to level_by_legacy_name() above, for the one path that does not
+ * go through a lookup: with birth_levels_persist the chunk's name and depth are
+ * both read straight from the savefile, so nothing would ever notice the name
+ * was the old one.  The level would keep its contents and simply never be found
+ * again, because the game would be looking for "Level 40" and the chunk is
+ * filed under "Angband 40".
+ *
+ * Handles the " known" suffix the level builder appends to the player's
+ * remembered copy of a level, since that copy is stored under its own name.
+ *
+ * \param name is the name as the savefile holds it.
+ * \return the current name, or `name` itself when there is nothing to do.  Any
+ * translation is into a static buffer, so copy it before calling again.
+ */
+const char *migrate_level_name(const char *name)
+{
+	static char buf[80];
+	const char *known = " known";
+	char base[80];
+	struct level *lev;
+	bool is_known;
+
+	if (!name) return name;
+
+	is_known = suffix(name, known);
+	if (is_known) {
+		size_t len = strlen(name) - strlen(known);
+
+		if (len >= sizeof(base)) return name;
+		memcpy(base, name, len);
+		base[len] = '\0';
+	} else {
+		my_strcpy(base, name, sizeof(base));
+	}
+
+	lev = level_by_legacy_name(base);
+	if (!lev) return name;
+
+	strnfmt(buf, sizeof(buf), "%s%s", lev->name, is_known ? known : "");
+	return buf;
+}
+
+/**
  * Find a level by its name
  */
 struct level *level_by_name(const char *name)
@@ -105,7 +183,7 @@ struct level *level_by_name(const char *name)
 		}
 		lev = lev->next;
 	}
-	return lev;
+	return lev ? lev : level_by_legacy_name(name);
 }
 
 /**

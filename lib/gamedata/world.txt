@@ -1,133 +1,182 @@
-# world.txt - list of dungeon levels and depths
-
+# File: world.txt
+#
+# How the depths of the world are numbered.
+#
+# === What this file is not ===
+#
+# In Angband this file is the world: one dungeon, a hundred and twenty-eight
+# levels, each linked to the one above and the one below, and the names are the
+# dungeon's own -- "Angband 1" through "Angband 127".  That is not this game.
+# ZangbandTK's world is a wilderness with thirteen dungeons opening off it, and
+# which dungeon you are in is a property of the player, not of the depth.  What
+# the dungeons are, how deep each goes and what lives in them is in
+# dungeon.txt; where they open is decided by the wilderness generator.
+#
+# So the names here are no longer place names and must not be read as any.  A
+# depth does not name a place in this game -- levels 90 to 110 are in both the
+# Courts of Chaos and the Abyss -- and calling depth 40 "Angband 40" said the
+# opposite of what the game does.  They are now "Level <n>", which claims
+# nothing.
+#
+# === What this file is for ===
+#
+# Two things, and only two.
+#
+# 1. It says which depths exist.  `level_by_depth()` must return an entry for
+#    every depth from 0 to world:max-depth - 1 in constants.txt, because the
+#    level builder dereferences the result without checking it.  A missing line
+#    here is a crash on arrival at that depth.
+#
+# 2. It gives each depth a stable key for persistent levels
+#    (birth_levels_persist).  A stored level is filed under its depth's name,
+#    and a savefile records that name as text -- so renaming a line here costs
+#    a persistent character the levels it had stored under the old name.
+#    `level_by_name()` in game-world.c carries a fallback for the Angband names
+#    this file used to hold, for exactly that reason.
+#
+#    Note that the key is the *depth*, not the level: with thirteen dungeons,
+#    the fortieth of Garnath and the fortieth of Rebma are filed under the same
+#    name and the second overwrites the first.  Persistent levels are an
+#    experimental option and this is a known limitation of them here.
+#
+# `up` and `down` are parsed, checked against each other at startup, and then
+# never read -- everything that walks the world uses `level_by_depth()`.  They
+# are kept because the parser and its test require them, and because a broken
+# chain is a cheap way to catch a typo in this file.
+#
+# Depth 0 is the surface: the wilderness, with the towns standing in it.  Its
+# name must stay "Town".  Two places in the level builder look the chunk up by
+# that literal string (generate.c and gen-cave.c), and the vanilla town
+# generator is reached through it.
+#
 # records are
-# level:level name:level up:level down
+# level:depth:level name:level up:level down
 
-level:0:Town:None:Angband 1
-level:1:Angband 1:Town:Angband 2
-level:2:Angband 2:Angband 1:Angband 3
-level:3:Angband 3:Angband 2:Angband 4
-level:4:Angband 4:Angband 3:Angband 5
-level:5:Angband 5:Angband 4:Angband 6
-level:6:Angband 6:Angband 5:Angband 7
-level:7:Angband 7:Angband 6:Angband 8
-level:8:Angband 8:Angband 7:Angband 9
-level:9:Angband 9:Angband 8:Angband 10
-level:10:Angband 10:Angband 9:Angband 11
-level:11:Angband 11:Angband 10:Angband 12
-level:12:Angband 12:Angband 11:Angband 13
-level:13:Angband 13:Angband 12:Angband 14
-level:14:Angband 14:Angband 13:Angband 15
-level:15:Angband 15:Angband 14:Angband 16
-level:16:Angband 16:Angband 15:Angband 17
-level:17:Angband 17:Angband 16:Angband 18
-level:18:Angband 18:Angband 17:Angband 19
-level:19:Angband 19:Angband 18:Angband 20
-level:20:Angband 20:Angband 19:Angband 21
-level:21:Angband 21:Angband 20:Angband 22
-level:22:Angband 22:Angband 21:Angband 23
-level:23:Angband 23:Angband 22:Angband 24
-level:24:Angband 24:Angband 23:Angband 25
-level:25:Angband 25:Angband 24:Angband 26
-level:26:Angband 26:Angband 25:Angband 27
-level:27:Angband 27:Angband 26:Angband 28
-level:28:Angband 28:Angband 27:Angband 29
-level:29:Angband 29:Angband 28:Angband 30
-level:30:Angband 30:Angband 29:Angband 31
-level:31:Angband 31:Angband 30:Angband 32
-level:32:Angband 32:Angband 31:Angband 33
-level:33:Angband 33:Angband 32:Angband 34
-level:34:Angband 34:Angband 33:Angband 35
-level:35:Angband 35:Angband 34:Angband 36
-level:36:Angband 36:Angband 35:Angband 37
-level:37:Angband 37:Angband 36:Angband 38
-level:38:Angband 38:Angband 37:Angband 39
-level:39:Angband 39:Angband 38:Angband 40
-level:40:Angband 40:Angband 39:Angband 41
-level:41:Angband 41:Angband 40:Angband 42
-level:42:Angband 42:Angband 41:Angband 43
-level:43:Angband 43:Angband 42:Angband 44
-level:44:Angband 44:Angband 43:Angband 45
-level:45:Angband 45:Angband 44:Angband 46
-level:46:Angband 46:Angband 45:Angband 47
-level:47:Angband 47:Angband 46:Angband 48
-level:48:Angband 48:Angband 47:Angband 49
-level:49:Angband 49:Angband 48:Angband 50
-level:50:Angband 50:Angband 49:Angband 51
-level:51:Angband 51:Angband 50:Angband 52
-level:52:Angband 52:Angband 51:Angband 53
-level:53:Angband 53:Angband 52:Angband 54
-level:54:Angband 54:Angband 53:Angband 55
-level:55:Angband 55:Angband 54:Angband 56
-level:56:Angband 56:Angband 55:Angband 57
-level:57:Angband 57:Angband 56:Angband 58
-level:58:Angband 58:Angband 57:Angband 59
-level:59:Angband 59:Angband 58:Angband 60
-level:60:Angband 60:Angband 59:Angband 61
-level:61:Angband 61:Angband 60:Angband 62
-level:62:Angband 62:Angband 61:Angband 63
-level:63:Angband 63:Angband 62:Angband 64
-level:64:Angband 64:Angband 63:Angband 65
-level:65:Angband 65:Angband 64:Angband 66
-level:66:Angband 66:Angband 65:Angband 67
-level:67:Angband 67:Angband 66:Angband 68
-level:68:Angband 68:Angband 67:Angband 69
-level:69:Angband 69:Angband 68:Angband 70
-level:70:Angband 70:Angband 69:Angband 71
-level:71:Angband 71:Angband 70:Angband 72
-level:72:Angband 72:Angband 71:Angband 73
-level:73:Angband 73:Angband 72:Angband 74
-level:74:Angband 74:Angband 73:Angband 75
-level:75:Angband 75:Angband 74:Angband 76
-level:76:Angband 76:Angband 75:Angband 77
-level:77:Angband 77:Angband 76:Angband 78
-level:78:Angband 78:Angband 77:Angband 79
-level:79:Angband 79:Angband 78:Angband 80
-level:80:Angband 80:Angband 79:Angband 81
-level:81:Angband 81:Angband 80:Angband 82
-level:82:Angband 82:Angband 81:Angband 83
-level:83:Angband 83:Angband 82:Angband 84
-level:84:Angband 84:Angband 83:Angband 85
-level:85:Angband 85:Angband 84:Angband 86
-level:86:Angband 86:Angband 85:Angband 87
-level:87:Angband 87:Angband 86:Angband 88
-level:88:Angband 88:Angband 87:Angband 89
-level:89:Angband 89:Angband 88:Angband 90
-level:90:Angband 90:Angband 89:Angband 91
-level:91:Angband 91:Angband 90:Angband 92
-level:92:Angband 92:Angband 91:Angband 93
-level:93:Angband 93:Angband 92:Angband 94
-level:94:Angband 94:Angband 93:Angband 95
-level:95:Angband 95:Angband 94:Angband 96
-level:96:Angband 96:Angband 95:Angband 97
-level:97:Angband 97:Angband 96:Angband 98
-level:98:Angband 98:Angband 97:Angband 99
-level:99:Angband 99:Angband 98:Angband 100
-level:100:Angband 100:Angband 99:Angband 101
-level:101:Angband 101:Angband 100:Angband 102
-level:102:Angband 102:Angband 101:Angband 103
-level:103:Angband 103:Angband 102:Angband 104
-level:104:Angband 104:Angband 103:Angband 105
-level:105:Angband 105:Angband 104:Angband 106
-level:106:Angband 106:Angband 105:Angband 107
-level:107:Angband 107:Angband 106:Angband 108
-level:108:Angband 108:Angband 107:Angband 109
-level:109:Angband 109:Angband 108:Angband 110
-level:110:Angband 110:Angband 109:Angband 111
-level:111:Angband 111:Angband 110:Angband 112
-level:112:Angband 112:Angband 111:Angband 113
-level:113:Angband 113:Angband 112:Angband 114
-level:114:Angband 114:Angband 113:Angband 115
-level:115:Angband 115:Angband 114:Angband 116
-level:116:Angband 116:Angband 115:Angband 117
-level:117:Angband 117:Angband 116:Angband 118
-level:118:Angband 118:Angband 117:Angband 119
-level:119:Angband 119:Angband 118:Angband 120
-level:120:Angband 120:Angband 119:Angband 121
-level:121:Angband 121:Angband 120:Angband 122
-level:122:Angband 122:Angband 121:Angband 123
-level:123:Angband 123:Angband 122:Angband 124
-level:124:Angband 124:Angband 123:Angband 125
-level:125:Angband 125:Angband 124:Angband 126
-level:126:Angband 126:Angband 125:Angband 127
-level:127:Angband 127:Angband 126:None
+level:0:Town:None:Level 1
+level:1:Level 1:Town:Level 2
+level:2:Level 2:Level 1:Level 3
+level:3:Level 3:Level 2:Level 4
+level:4:Level 4:Level 3:Level 5
+level:5:Level 5:Level 4:Level 6
+level:6:Level 6:Level 5:Level 7
+level:7:Level 7:Level 6:Level 8
+level:8:Level 8:Level 7:Level 9
+level:9:Level 9:Level 8:Level 10
+level:10:Level 10:Level 9:Level 11
+level:11:Level 11:Level 10:Level 12
+level:12:Level 12:Level 11:Level 13
+level:13:Level 13:Level 12:Level 14
+level:14:Level 14:Level 13:Level 15
+level:15:Level 15:Level 14:Level 16
+level:16:Level 16:Level 15:Level 17
+level:17:Level 17:Level 16:Level 18
+level:18:Level 18:Level 17:Level 19
+level:19:Level 19:Level 18:Level 20
+level:20:Level 20:Level 19:Level 21
+level:21:Level 21:Level 20:Level 22
+level:22:Level 22:Level 21:Level 23
+level:23:Level 23:Level 22:Level 24
+level:24:Level 24:Level 23:Level 25
+level:25:Level 25:Level 24:Level 26
+level:26:Level 26:Level 25:Level 27
+level:27:Level 27:Level 26:Level 28
+level:28:Level 28:Level 27:Level 29
+level:29:Level 29:Level 28:Level 30
+level:30:Level 30:Level 29:Level 31
+level:31:Level 31:Level 30:Level 32
+level:32:Level 32:Level 31:Level 33
+level:33:Level 33:Level 32:Level 34
+level:34:Level 34:Level 33:Level 35
+level:35:Level 35:Level 34:Level 36
+level:36:Level 36:Level 35:Level 37
+level:37:Level 37:Level 36:Level 38
+level:38:Level 38:Level 37:Level 39
+level:39:Level 39:Level 38:Level 40
+level:40:Level 40:Level 39:Level 41
+level:41:Level 41:Level 40:Level 42
+level:42:Level 42:Level 41:Level 43
+level:43:Level 43:Level 42:Level 44
+level:44:Level 44:Level 43:Level 45
+level:45:Level 45:Level 44:Level 46
+level:46:Level 46:Level 45:Level 47
+level:47:Level 47:Level 46:Level 48
+level:48:Level 48:Level 47:Level 49
+level:49:Level 49:Level 48:Level 50
+level:50:Level 50:Level 49:Level 51
+level:51:Level 51:Level 50:Level 52
+level:52:Level 52:Level 51:Level 53
+level:53:Level 53:Level 52:Level 54
+level:54:Level 54:Level 53:Level 55
+level:55:Level 55:Level 54:Level 56
+level:56:Level 56:Level 55:Level 57
+level:57:Level 57:Level 56:Level 58
+level:58:Level 58:Level 57:Level 59
+level:59:Level 59:Level 58:Level 60
+level:60:Level 60:Level 59:Level 61
+level:61:Level 61:Level 60:Level 62
+level:62:Level 62:Level 61:Level 63
+level:63:Level 63:Level 62:Level 64
+level:64:Level 64:Level 63:Level 65
+level:65:Level 65:Level 64:Level 66
+level:66:Level 66:Level 65:Level 67
+level:67:Level 67:Level 66:Level 68
+level:68:Level 68:Level 67:Level 69
+level:69:Level 69:Level 68:Level 70
+level:70:Level 70:Level 69:Level 71
+level:71:Level 71:Level 70:Level 72
+level:72:Level 72:Level 71:Level 73
+level:73:Level 73:Level 72:Level 74
+level:74:Level 74:Level 73:Level 75
+level:75:Level 75:Level 74:Level 76
+level:76:Level 76:Level 75:Level 77
+level:77:Level 77:Level 76:Level 78
+level:78:Level 78:Level 77:Level 79
+level:79:Level 79:Level 78:Level 80
+level:80:Level 80:Level 79:Level 81
+level:81:Level 81:Level 80:Level 82
+level:82:Level 82:Level 81:Level 83
+level:83:Level 83:Level 82:Level 84
+level:84:Level 84:Level 83:Level 85
+level:85:Level 85:Level 84:Level 86
+level:86:Level 86:Level 85:Level 87
+level:87:Level 87:Level 86:Level 88
+level:88:Level 88:Level 87:Level 89
+level:89:Level 89:Level 88:Level 90
+level:90:Level 90:Level 89:Level 91
+level:91:Level 91:Level 90:Level 92
+level:92:Level 92:Level 91:Level 93
+level:93:Level 93:Level 92:Level 94
+level:94:Level 94:Level 93:Level 95
+level:95:Level 95:Level 94:Level 96
+level:96:Level 96:Level 95:Level 97
+level:97:Level 97:Level 96:Level 98
+level:98:Level 98:Level 97:Level 99
+level:99:Level 99:Level 98:Level 100
+level:100:Level 100:Level 99:Level 101
+level:101:Level 101:Level 100:Level 102
+level:102:Level 102:Level 101:Level 103
+level:103:Level 103:Level 102:Level 104
+level:104:Level 104:Level 103:Level 105
+level:105:Level 105:Level 104:Level 106
+level:106:Level 106:Level 105:Level 107
+level:107:Level 107:Level 106:Level 108
+level:108:Level 108:Level 107:Level 109
+level:109:Level 109:Level 108:Level 110
+level:110:Level 110:Level 109:Level 111
+level:111:Level 111:Level 110:Level 112
+level:112:Level 112:Level 111:Level 113
+level:113:Level 113:Level 112:Level 114
+level:114:Level 114:Level 113:Level 115
+level:115:Level 115:Level 114:Level 116
+level:116:Level 116:Level 115:Level 117
+level:117:Level 117:Level 116:Level 118
+level:118:Level 118:Level 117:Level 119
+level:119:Level 119:Level 118:Level 120
+level:120:Level 120:Level 119:Level 121
+level:121:Level 121:Level 120:Level 122
+level:122:Level 122:Level 121:Level 123
+level:123:Level 123:Level 122:Level 124
+level:124:Level 124:Level 123:Level 125
+level:125:Level 125:Level 124:Level 126
+level:126:Level 126:Level 125:Level 127
+level:127:Level 127:Level 126:None
