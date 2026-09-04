@@ -31,6 +31,76 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+4 September 2026 — the tiles were in the box
+============================================
+
+The wilderness had no art. Seventeen terrain features — grass, earth, sand, mud,
+water at three depths, roads, trees, mountainside, six town services — and not a
+tile for any of them in any of the five tilesets. In graphics mode the game's
+flagship feature was a field of ASCII letters surrounded by pictures.
+
+I costed the obvious answer and it was awful: seventeen tiles in five styles is
+eighty-five pieces of art, and I cannot draw. So before proposing anything I went
+and looked in the sheets, and the answer was sitting in one of them.
+
+Angband maps 1,151 of Gervais' 3,840 cells. Another 1,239 unmapped cells hold
+art, and a contiguous block — sheet rows 23 to 25 — is a wilderness terrain set.
+Grass, three browns of earth, sand, cobbled road, water pale and deep and open,
+boulders, bushes, bare trees, blossom trees. Gervais drew for a variant audience
+in the days when everybody was building a wilderness. Angband never had one, so
+nobody ever wired them up. They have been shipping in this repository, unused,
+the whole time.
+
+The mechanics of it turned out to be measurable, which I did not expect. Gervais
+gives each feature three consecutive columns for its lighting states, and I could
+not tell from the file which column was which — ``graf-dvg.prf`` maps ``FLOOR``
+as N, N+1, N+2 but ``LAVA`` as N, N-1, N+1, so there is no positional rule. There
+is a luminance rule: across the fifteen features already mapped three ways, mean
+brightness runs torch > lit > dark without exception. Torch is a light right
+beside you and is the brightest; ``lit`` is ambient room light; ``dark`` is
+remembered. Once I had that, finding candidates was mechanical — a run of three
+unmapped, fully-covered cells whose luminance descends — and 3,840 cells became
+75 to choose between.
+
+Then I nearly ruined it by trusting the arithmetic. I picked *bare earth* by mean
+colour, rgb(130,83,53), a perfectly sensible brown. It is lava. Molten rock
+photographs as brown if you average it, because the black crust and the orange
+cracks meet in the middle. My *open sea* had a large blue snowflake painted on
+it. Both went straight into a render and both were obvious in a second.
+
+That is the whole lesson of the afternoon, really. The classifier narrowed 3,840
+cells to 75 and could not tell lava from soil; my eye could not have found the 75
+and settled the last step instantly. Neither half was optional.
+
+I stopped at thirteen of eighteen. The four town services left over — inn,
+magesmith, chaos tower, recharger — could have had a borrowed arch each from the
+row the shops use, and I decided against it. Two buildings drawn identically is
+worse than a building drawn as a letter: the letter is honestly unfinished, and
+the duplicate is quietly wrong. That is the same rule the monster tiles already
+follow, where uniques are deliberately left as text rather than given a
+stand-in portrait that says something false about them.
+
+**And a real defect fell out of it.** Adding a new prf meant adding it to the
+tileset's ``DATA`` list, which is where I noticed ``graf-ztk.prf`` was not in
+one — not in any of the four. That file is what gives 234 imported monsters a
+tile instead of a letter, every tileset's main prf asks for it with a ``%:``
+line, and ``make install`` has never copied it. Any build that installs rather
+than running from the tree has been shipping four tilesets that reference a
+missing file, since the day the feature landed.
+
+It was invisible for the same reason as everything else I have found today: the
+only thing that would notice is an install, and this machine does not do one.
+``check-build-lists`` checks ``lib/gamedata/Makefile`` against disk and stopped
+there. It checks the tilesets now. I tested that by deleting an entry and
+watching it go red, because a check I have not seen fail is a check I have not
+tested.
+
+Three times today a generated or enumerated file had quietly drifted from what it
+describes, and every time the gate that would have caught it either did not exist
+or was never run. That is starting to look less like three accidents and more
+like a category.
+
+
 4 September 2026 — a tileset we had no right to ship
 ====================================================
 

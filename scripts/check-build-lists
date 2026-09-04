@@ -100,6 +100,27 @@ on_disk = {f for f in os.listdir("lib/gamedata") if f.endswith(".txt")}
 check("lib/gamedata/Makefile will not install", on_disk - install)
 check("lib/gamedata/Makefile installs what is not there", install - on_disk)
 
+# The tileset install lists, which decide whether a tileset arrives complete.
+#
+# Same shape as the check above and added for the same reason it was: these had
+# never been checked and were stale.  `graf-ztk.prf` gives every imported
+# monster a stand-in tile, is loaded by a `%:` line in each tileset's main prf,
+# and was in none of the four DATA lists -- so `make install` shipped four
+# tilesets whose main file asks for a file that is not there, and 234 monsters
+# went back to being letters on any build that installs rather than runs from
+# the tree.  Nothing said so, because the only thing that would notice is an
+# install, and the developer machine does not do one.
+for tileset in sorted(os.listdir("lib/tiles")):
+    makefile = os.path.join("lib/tiles", tileset, "Makefile")
+    if not os.path.isfile(makefile):
+        continue
+    data = re.search(r"^DATA\s*=\s*(.*?)(?=^\w|\Z)", read(makefile), re.M | re.S)
+    listed = set(re.findall(r"[\w.\-]+\.(?:prf|png)", data.group(1))) if data else set()
+    present = {f for f in os.listdir(os.path.join("lib/tiles", tileset))
+               if f.endswith((".prf", ".png"))}
+    check("%s will not install" % makefile, present - listed)
+    check("%s installs what is not there" % makefile, listed - present)
+
 # The decision log is numbered by hand, and a number that means two things is
 # worse than no number: DEC-31 and DEC-65 were each written twice, and both
 # collisions were cited from live files and commit messages before anybody

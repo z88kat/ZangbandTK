@@ -1536,3 +1536,6 @@ GF:CHAOS:135:0x81:0xA3
 
 # Load ZangbandTK's stand-in tiles (generated)
 %:graf-ztk.prf
+
+# ZangbandTK's own terrain (WLD): Gervais cells Angband never mapped.
+%:feat-ztk.prf

@@ -45,6 +45,61 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The wilderness gets its tiles — 4 September 2026
+--------------------------------------------------
+
+- **3.96.0** — **Thirteen of the eighteen missing terrain tiles, and not one of
+  them drawn.** The wilderness is this game's flagship feature and it was the
+  only thing on screen with no art: grass, earth, sand, water, roads and trees
+  all rendered as ASCII letters inside a tiled game.
+
+  They were in the sheet the whole time. Angband maps 1,151 of David Gervais'
+  3,840 cells; another 1,239 unmapped cells hold art, and a contiguous block of
+  it — sheet rows 23 to 25 — is a wilderness terrain set. Gervais drew for a
+  variant audience; Angband has no wilderness, so nobody wired them up. So this
+  is a mapping and not an art commission: no tile was made, resized or altered.
+
+  **The lighting convention was measured rather than guessed.** Gervais gives a
+  feature three consecutive columns, and mean luminance runs
+  ``torch > lit > dark`` in every one of the fifteen features ``graf-dvg.prf``
+  already maps three ways. Candidate families were then found by that rule — a
+  run of three unmapped, fully-covered cells whose luminance descends — which
+  narrowed 3,840 cells to 75 to choose from.
+
+  **And then each one was looked at, which is the part that mattered.** Colour
+  alone puts lava and bare earth in the same bucket, and the first pick for
+  *bare earth* was molten rock; the first *open sea* had a snowflake painted on
+  it. Both were caught by rendering the picks before writing them down.
+
+  Water is three distinct looks rather than one recoloured three times — pale
+  ripples, strong blue, and a smooth featureless open sea — because wadeable
+  against drownable is a decision the player makes off the map. ``SECRET`` is
+  mapped to granite, closing a gap that is Angband's own: unmapped, a secret
+  door was the only ASCII ``#`` on screen and gave itself away by looking
+  different.
+
+  **Four features are deliberately still letters**: the inn, the magesmith, the
+  chaos tower and the recharger. Gervais' row of shop-front arches had exactly
+  two unclaimed, and both fitted something — a cross for the healer, a crown for
+  the magetower. The remaining four are not given a borrowed arch, because two
+  buildings sharing a picture is worse than a building that is honestly a
+  letter: the first is wrong silently.
+
+- **3.96.0** — **The stand-in monster tiles were never being installed.** Found
+  while adding the file above. Each tileset's main prf has a ``%:graf-ztk.prf``
+  line, and that file — which gives 234 imported monsters a tile so they are not
+  letters among the pictures — was in none of the four hand-maintained ``DATA``
+  lists. So ``make install`` shipped four tilesets asking for a file that is not
+  there, and every build that installs rather than runs from the tree lost the
+  feature entirely.
+
+  Nothing said so, because the only thing that would notice is an install and
+  the developer machine does not do one. ``scripts/check-build-lists`` already
+  checks ``lib/gamedata/Makefile`` against disk and stopped there; it now does
+  the same for every tileset, which was verified by removing an entry and
+  watching it fail.
+
+
 Shockbolt's tiles are removed — 4 September 2026
 --------------------------------------------------
 
