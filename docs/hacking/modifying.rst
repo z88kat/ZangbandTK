@@ -363,13 +363,17 @@ and generally matches the naming convention of the other tilesets you see
 there. Once the directory has been created, the next step is to decide how big
 the tiles will be in pixels and then create a blank PNG image large enough to
 hold all of the tiles (be sure to enable alpha transparency). As an example,
-Shockbolt's tileset uses 64x64 pixel tiles. It also uses the special alpha
-blending flag so it can use double-height tiles (64x128) for large or tall
-monsters. Its dimensions are 8192x2048 but the tileset is not completely
-full. More tiles can be added without increasing the size of the image as new
-objects are added to future releases of Angband. This should be kept in mind as
+David Gervais' tileset uses 32x32 pixel tiles and its dimensions are 4096x960,
+but the tileset is not completely full -- roughly two thirds of its cells are
+unmapped, and a good many of those hold art nobody has wired up. More tiles can
+be added without increasing the size of the image as new objects are added, so
 packing your tileset into the smallest possible image size may not be the most
-maintainable solution. Be sure to name the image file after the tile size, for
+maintainable solution.
+
+The ``extra`` line also carries an alpha-blending flag that allows double-height
+tiles for large or tall monsters. No tileset shipped with this game uses it --
+the one that did, Shockbolt's, is not distributed here (see :doc:`../copying`) --
+but the support is intact and a new tileset may ask for it. Be sure to name the image file after the tile size, for
 example 64x64.png. Use the base size even if you are enabling double-height
 tiles.
 
@@ -468,8 +472,8 @@ It's possible to have more than one preference file by using a sort of include
 syntax that causes other preference files referenced from your main preference
 file to also be read. It is also possible to place comments in your preference
 files to help you keep track of where different kinds of objects are
-mapped. Any text on a line after a ``#`` symbol is ignored. Shockbolt's tiles
-make great use of this and define a well organized set of mappings using three
+mapped. Any text on a line after a ``#`` symbol is ignored. The shipped tilesets
+make great use of this and define a well organized set of mappings using several
 files with comments for each logical section of objects to be mapped::
 
   # This is a comment
@@ -483,9 +487,9 @@ one of the other tileset directories and update the DATA and PACKAGE lines to
 match the filenames you chose for your tileset.
 
 Once you have a working tileset and functional understanding of how tilesets
-are managed and organized, it would be a good idea to study Shockbolt's tileset
-and follow the examples there in order to produce a high-quality tileset that
-you will be proud to share with others.
+are managed and organized, it would be a good idea to study David Gervais' set --
+the largest one shipped here -- and follow the examples there in order to produce
+a high-quality tileset that you will be proud to share with others.
 
 Larger changes
 ==============

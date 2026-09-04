@@ -106,11 +106,16 @@ static struct parser *init_parse_grafmode(void) {
  * Test whether a parsed graphics mode's tileset is actually on disk.
  *
  * list.txt describes the tilesets a full installation has, which is not always
- * the set a particular build ships: the WebAssembly build leaves out the large
- * ones, because Shockbolt alone is 17MB and no page load wants it.  A mode
- * whose image is missing used to be offered in the menu like any other and then
- * kill the game when chosen -- load_graphics() reaches the missing file and
- * quits -- so the check belongs here, once, before the mode is offered at all.
+ * the set a particular build ships: a small build may leave the larger ones out,
+ * and the WebAssembly Makefile names the ones it stages.  A mode whose image is
+ * missing used to be offered in the menu like any other and then kill the game
+ * when chosen -- load_graphics() reaches the missing file and quits -- so the
+ * check belongs here, once, before the mode is offered at all.
+ *
+ * It is also what makes a *removed* tileset harmless.  Shockbolt's set was
+ * modes 5 and 6 until 3.95.0 (see LICENSE.md); a saved preference still naming
+ * one finds no such mode, and the front ends fall back to ASCII rather than
+ * looking for a file that is not there.
  */
 static bool grafmode_is_installed(const graphics_mode *mode)
 {

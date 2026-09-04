@@ -233,8 +233,9 @@ static int get_tile_fraction_from_size(const graphics_mode *gm,
  * Each location in the terminal either stores a character, a tile,
  * padding for a big tile, or padding for a big character (for example a
  * kanji that takes two columns).  These structures represent that.  Note
- * that tiles do not overlap with each other (excepting the double-height
- * tiles, i.e. from the Shockbolt set; that's handled as a special case).
+ * that tiles do not overlap with each other (excepting double-height tiles,
+ * which are handled as a special case; no tileset shipped with this game uses
+ * them since Shockbolt's was removed, but the support is intact).
  * Characters can overlap horizontally:  that is for handling fonts that
  * aren't fixed width.
  */

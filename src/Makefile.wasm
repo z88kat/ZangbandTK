@@ -98,15 +98,15 @@ ALLOBJS  = $(BASEOBJS) $(BASEMAINFILES) $(SDL2MAINFILES)
 OBJS     = $(addprefix $(OBJDIR)/,$(ALLOBJS))
 
 # The data the game cannot start without, staged into a tree the file packager
-# turns into one .data file.  Deliberately not all of lib/: shockbolt is 17MB of
-# tiles and the sounds another 3.2MB, and neither belongs in a first page load.
+# turns into one .data file.  Deliberately not all of lib/: the sounds are 3.2MB
+# and do not belong in a first page load.
 LIBDIRS = gamedata screens help customize fonts icons user
 
-# Shockbolt is left out and cannot sensibly be put back: 17MB of tiles, more
-# than twice everything else here together.  Gervais is 1.3MB and earns its
-# place.  Nothing needs saying in list.txt about the ones missing -- grafmode.c
-# offers only the tilesets it can find, so this list is the only place the
-# choice is made.
+# Every tileset the game ships, which since 3.95.0 is all of them: they come to
+# a little over 2MB together and Gervais, the largest at 1.3MB, earns its place.
+# The list is kept explicit rather than globbed because it is the only place the
+# choice is made -- grafmode.c offers only the tilesets it can find, so dropping
+# a name here is all it takes to leave one out of the web build.
 TILESETS = old nomad adam-bolt gervais
 
 $(WASMDIR)/lib.stamp:

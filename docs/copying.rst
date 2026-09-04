@@ -52,23 +52,11 @@ Angband licence and which the licence above does not override:
 
 * David Gervais' (32x32) graphics may be redistributed, modified, and used only under the terms of the `Creative Commons Attribution 3.0 <http://creativecommons.org/licenses/by/3.0/>`_ licence.
 
-* Shockbolt's (64x64) graphics are distributed under the following licence:
+* **Shockbolt's (64x64) graphics are not distributed with this game.** Angband ships them; ZangbandTK may not. The licence grants use "with in-development and released versions of Angband" and expressly withholds it for "other games or projects" — and this is another project: separately named, separately released, with a savefile format of its own. The author offers permission on request and we have not asked, so the tileset was removed in 3.95.0 rather than shipped on an assumption. The terms are at `Angband's copying page <https://angband.readthedocs.io/en/latest/copying.html>`_.
 
-    The Shockbolt Angband 64x64/128x64 tileset is copyright (C) Raymond Gaustadnes 2012.  It can be found in the file lib/tiles/shockbolt/64x64.png.
+  Nothing about this is a complaint. Raymond Gaustadnes drew that set for Angband and is entitled to say where it goes.
 
-    Permission is granted to:
-
-    * use the tileset with in-development and released versions of Angband
-    * distribute and make copies of the tileset with in-development and released versions of Angband, as long as no fee is charged for it
-    * incorporate tiles designed by the author for variants of Angband and use and distribute them with Angband under the terms above
-
-    Permission is not granted to:
-
-    * modify the tileset without the author's permission.
-    * incorporate tiles designed for ToME that do not appear in the Angband tileset.
-    * use or distribute the tileset with other games or projects.  If you want to use and distribute the tileset with other games or projects, you must obtain explicit permission from the author.  Non-commercial games or projects may be granted permission to use them, and if so, use will be allowed as long as the game or project remains non-commercial.  To use them in commercial games, a non-exclusive licence must be acquired from the author.
-
-  Currently some of the tiles in the 64x64.png tilesheet were resized from tiles made by David Gervais for the 32x32 set.
+* **The original (8x8) and Nomad's tiles** carry no licence statement here, and none in Angband's own copying page. That is a known gap, inherited rather than settled, and is written down instead of assumed.
 
 * The sounds are licenced under the Creative Commons Attribution 4.0 licence.  They were created by Dubtrain <angband@dubtrain.com>. You can find them in Wave format at http://www.dubtrain.com/angband/.
 

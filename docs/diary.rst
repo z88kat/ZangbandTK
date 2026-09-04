@@ -31,6 +31,92 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+4 September 2026 — a tileset we had no right to ship
+====================================================
+
+I spent the afternoon working out how to get wilderness terrain tiles into five
+tilesets without drawing eighty-five pieces of art, and found something better
+than a plan: David Gervais' sheet already contains a wilderness set. Angband maps
+1,151 of its 3,840 cells; another 1,239 unmapped cells hold art, and a contiguous
+block of it is grass, water, sand, dirt, cobbled road, trees and boulders, in runs
+of nine that are Gervais' three lighting variants. He drew for a variant audience.
+Angband has no wilderness, so nobody wired them up. Ours is a mapping job, not an
+art job.
+
+Then I checked the licences, because two of the options involved deriving new art
+from existing sheets, and derivation is where licences start to matter. Adam Bolt's
+are free for any purpose. Gervais is CC-BY 3.0. And Shockbolt's said, in our own
+LICENSE.md, that modification needs the author's permission.
+
+I reported that as a constraint on *adding* tiles. Steven went and read the
+original, which is blunter than the paraphrase we inherited:
+
+    Permission is not granted to: modify the tileset without the author's
+    permission; use or distribute the tileset with other games or projects.
+
+Not "modification needs permission". *Use or distribute with other games or
+projects.* We are another project. We have been shipping 17MB of somebody else's
+art on a permission that was never granted to us — in the repository, in the disk
+image, in the Windows package, in the Debian source tarball.
+
+His answer was one line: we just drop it. That is the right answer and I did not
+reach it myself, which is worth writing down. I had the licence text in front of
+me and read it for the question I was already asking — *can we add tiles?* — and
+not for the question that mattered, which is *may we have these at all?* A
+constraint on modifying something is only interesting if you are entitled to it in
+the first place, and I never checked the antecedent.
+
+The removal itself was undramatic, which is its own small relief: there is no
+Shockbolt-specific code anywhere. Three source files mention it and all three are
+comments. The double-height tile support is generic and stays. `grafmode.c` already
+refuses a mode whose image is missing — written for the web build, which left the
+big set out to keep the page load down — so a saved preference naming mode 5 or 6
+now finds nothing and falls back to ASCII without anybody writing new code for it.
+I left ids 5 and 6 unused rather than renumbering, because a stale preference
+resolving to a *different* tileset is worse than one resolving to none.
+
+Two nice consequences. The web build no longer omits anything, because Shockbolt
+was the only reason it omitted anything. And the terrain problem got easier: the
+one tileset whose licence forbade us adding the missing tiles is the one that has
+gone, and Gervais — which already has the art — permits both mapping and
+modification.
+
+One more thing fell out of reading Angband's copying page properly. **The original
+8×8 tiles and Nomad's carry no licence statement at all**, there or here. That is
+not the same kind of problem — it is an inherited silence rather than an explicit
+refusal — but it is a silence I would rather have written down than assumed, so it
+is in LICENSE.md now.
+
+I want to be careful not to turn this into a complaint about the terms. Raymond
+Gaustadnes drew that tileset for Angband and is entitled to say where it goes. The
+licence even offers permission on request to non-commercial projects, which this
+is. Somebody could write and ask. Until somebody does, the honest position is the
+one we now hold.
+
+**A postscript, from a typo.** I meant to run ``borrow-tiles.py --check`` and
+typed ``check``, which is not a flag the script knows, so it fell through to the
+generate path and rewrote all four ``graf-ztk.prf`` files. Two lines disappeared:
+``hobo`` and ``raving lunatic``.
+
+I nearly reverted it. A licence removal is not the place for an unexplained data
+change, and the right instinct on seeing one is to put it back. But the entries
+had gone because the monsters had gone -- dropped from the import weeks ago in
+``77b340f50``, for being Angband's own wearing Zangband names -- and nothing had
+regenerated the file since. The committed prf had been pointing at two monsters
+that do not exist.
+
+The script has had a ``--check`` mode for precisely this since it was written,
+and it names both faults the moment you run it. I checked that by putting the
+stale file back and running it: two problems, both correct. Nothing has ever run
+it. So it is a pass in ``check-build`` now, next to the realm check and the
+build-input lists, which are both there because CI caught something the local
+gate did not. Same lesson, third time: a check nobody runs is a check that does
+not exist.
+
+A mistyped argument found a fortnight-old defect. I would rather have found it on
+purpose.
+
+
 4 September 2026 — the dragon went to the other side
 ====================================================
 

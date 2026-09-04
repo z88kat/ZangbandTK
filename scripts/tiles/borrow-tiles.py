@@ -3,7 +3,7 @@
 Give the imported monsters a tile to stand in until they have their own.
 
 ZangbandTK adds 391 monsters that Angband does not have, and not one of them
-appears in any of the five tilesets -- so in graphics mode they render as ASCII
+appears in any of the shipped tilesets -- so in graphics mode they render as ASCII
 letters among the pictures.  Most of them are ordinary creatures that look like
 something already drawn: a chaos hound is a hound, a serpent man is a snake.
 

@@ -52,11 +52,10 @@ nothing.
 Escape for leaving fullscreen — which is a key this game needs far too often to
 lend out.
 
-**Four tilesets of the six.** The original 8×8, Adam Bolt's, Nomad's and David
-Gervais', which between them are a little over two megabytes. Shockbolt's two
-modes are left out: that set is 17 MB on its own, more than twice everything
-else the page carries, and does not belong in a page load. They are not listed
-in the menu either — the game offers only the tilesets it can actually find.
+**All four tilesets.** The original 8×8, Adam Bolt's, Nomad's and David
+Gervais', which between them are a little over two megabytes — small enough for
+a page load, which is why they are all here. The game offers only the tilesets
+it can actually find, so a build that leaves one out does not list it.
 
 Everything else is the whole game: the same wilderness, the same bestiary, the
 same lethality, the same savefile format.

@@ -55,14 +55,9 @@ size:16:16:8x16.png
 pref:graf-nmd.prf
 extra:0:0:0
 
-name:5:Shockbolt Dark
-directory:shockbolt
-size:64:64:64x64.png
-pref:graf-shb-dark.prf
-extra:1:27:31
-
-name:6:Shockbolt Light
-directory:shockbolt
-size:64:64:64x64.png
-pref:graf-shb-light.prf
-extra:1:27:31
+# Shockbolt's 64x64 set was modes 5 and 6 and is gone.  Its licence grants use
+# "with in-development and released versions of Angband" and withholds it for
+# "other games or projects", which is what this is, so shipping it was not ours
+# to do.  The ids are deliberately not reused: a saved preference naming 5 or 6
+# finds no such mode and the front ends fall back to ASCII, where reusing the
+# number would silently hand somebody a tileset they did not choose.

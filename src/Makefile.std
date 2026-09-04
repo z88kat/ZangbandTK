@@ -138,7 +138,7 @@ clean:
 
 # make a distribution
 TILESET_DIRS = lib/tiles/adam-bolt lib/tiles/gervais lib/tiles/nomad \
-       lib/tiles/old lib/tiles/shockbolt
+       lib/tiles/old
 DIRS = lib/gamedata lib/customize lib/help lib/screens lib/fonts lib/tiles \
        $(TILESET_DIRS) lib/sounds lib/icons lib/user lib/user/panic \
        lib/user/save lib/user/scores

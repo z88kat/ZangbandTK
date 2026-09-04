@@ -226,8 +226,6 @@ monster:hellcat:0x90:0xB7
 monster:high priest:0x84:0xA7
 # as chimaera (colour differs)
 monster:hippocampus:0x93:0x9D
-# as boil-covered wretch
-monster:hobo:0x8B:0x83
 # as Nan, the Giant (colour differs)
 monster:hru:0x95:0xBE
 # as giant roc
@@ -360,8 +358,6 @@ monster:raal's tome of destruction:0x85:0xE7
 monster:rat-thing:0x8D:0x99
 # as crow of Durthang
 monster:raven:0x93:0xA3
-# as village idiot
-monster:raving lunatic:0x8B:0x84
 # as nether wraith (colour differs)
 monster:revenant:0x94:0x8E
 # as giant grey rat

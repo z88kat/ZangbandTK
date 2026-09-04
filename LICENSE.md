@@ -44,21 +44,21 @@ Angband licence and which the licence above does not override.
   under the terms of the
   [Creative Commons Attribution 3.0](http://creativecommons.org/licenses/by/3.0/)
   licence.
-- **Shockbolt's 64×64 tiles** are copyright © Raymond Gaustadnes 2012, in
-  `lib/tiles/shockbolt/64x64.png`. Permission is granted to use the tileset with
-  in-development and released versions of Angband; to distribute and copy it
-  with them, as long as no fee is charged; and to incorporate tiles the author
-  designed for variants of Angband and distribute them under those terms.
+- **Shockbolt's 64×64 tiles are not distributed with this game**, and were
+  removed in 3.95.0. Angband ships them; we may not. The licence grants use
+  "with in-development and released versions of Angband" and withholds it for
+  "other games or projects", which is what ZangbandTK is — a separate project,
+  separately named, with its own releases and its own savefile format. The
+  author offers permission on request and we have not asked, so until somebody
+  does, the honest position is not to ship them. See
+  <https://angband.readthedocs.io/en/latest/copying.html> for the terms.
 
-  Permission is **not** granted to modify the tileset without the author's
-  permission, to incorporate tiles designed for ToME that do not appear in the
-  Angband tileset, or to use or distribute the tileset with other games or
-  projects without explicit permission from the author. Non-commercial projects
-  may be granted permission on request; commercial use requires a non-exclusive
-  licence from the author.
-
-  Some tiles in that sheet were resized from tiles David Gervais made for the
-  32×32 set.
+  This is not a criticism of the terms. Raymond Gaustadnes drew that tileset for
+  Angband and is entitled to say where it goes.
+- **The original 8×8 tiles and Nomad's 16×16 tiles** carry no licence statement
+  here, and none in Angband's own `copying.rst` either. Recorded as a known gap
+  rather than left to be assumed: it is inherited, not settled, and the two sets
+  are shipped on the same footing Angband ships them on.
 
 ### Sound and fonts
 

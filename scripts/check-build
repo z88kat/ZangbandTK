@@ -195,6 +195,23 @@ fi
 echo "check-build: checking the realm content ($PYTHON zconv realms --check)"
 run "$PYTHON" tools/zconv/zconv.py realms --check
 
+# The borrowed monster tiles, which nothing was checking.
+#
+# `graf-ztk.prf` is generated: it gives each imported monster the picture of an
+# Angband monster that resembles it, so the bestiary is not half ASCII in
+# graphics mode.  Generated and then committed, which means it can go stale
+# without anything saying so -- and it had.  Two monsters, `hobo` and `raving
+# lunatic`, were dropped from the import in 77b340f50 for being Angband's own
+# wearing Zangband names, and their tile lines sat in four prf files for weeks
+# afterwards pointing at monsters that no longer exist.
+#
+# The script has had a `--check` mode for exactly this the whole time. Nothing
+# ran it.  A check nobody runs is a check that does not exist, which is the same
+# lesson as the two passes above and is why this one is here rather than in a
+# note somewhere.
+echo "check-build: checking the borrowed monster tiles (borrow-tiles.py --check)"
+run "$PYTHON" scripts/tiles/borrow-tiles.py --check
+
 # The build-input lists, which linux.yaml runs as its own step.
 #
 # This was a separate script you had to remember, and three pushes in a row

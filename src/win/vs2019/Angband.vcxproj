@@ -638,7 +638,6 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <Image Include="lib\tiles\gervais\32x32.png" />
     <Image Include="lib\tiles\nomad\8x16.png" />
     <Image Include="lib\tiles\old\8x8.png" />
-    <Image Include="lib\tiles\shockbolt\64x64.png" />
     <Image Include="src\win\angband.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -691,10 +690,6 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <None Include="lib\tiles\old\flvr-xxx.prf" />
     <None Include="lib\tiles\old\graf-xxx.prf" />
     <None Include="lib\tiles\old\xtra-xxx.prf" />
-    <None Include="lib\tiles\shockbolt\flvr-shb.prf" />
-    <None Include="lib\tiles\shockbolt\graf-shb-dark.prf" />
-    <None Include="lib\tiles\shockbolt\graf-shb-light.prf" />
-    <None Include="lib\tiles\shockbolt\xtra-shb.prf" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="lib\gamedata\activation.txt" />

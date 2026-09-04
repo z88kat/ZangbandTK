@@ -133,8 +133,8 @@
 #define DEFAULT_ERROR_COLOR \
 	COLOUR_RED
 
-/* shockbolt's tiles are 64x64; dungeon is 198 tiles long;
- * 64 * 198 is 12672 which is bigger than any possible texture! */
+/* a 64x64 tileset against a dungeon 198 tiles long is 12672 pixels, which is
+ * bigger than any possible texture -- so the map view caps the tile size */
 #define REASONABLE_MAP_TILE_WIDTH 16
 #define REASONABLE_MAP_TILE_HEIGHT 16
 

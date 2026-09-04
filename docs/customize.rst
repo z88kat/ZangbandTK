@@ -356,7 +356,7 @@ rows and columns used for displaying a tile with the "Tile Multiplier" entry
 in the "Graphics" menu.  Since typical fonts are often twice as tall as wide,
 multipliers where the first value, for the width, is twice the second, often
 x work better with the tiles that are natively square (the original ones,
-Adam Bolt's, David Gervais's, and the two versions of Shockbolt's tiles).
+Adam Bolt's and David Gervais's).
 Nomad's tiles are 8 x 16 and so usually work best with multipliers that use the
 same value for both dimensions.
 

@@ -45,6 +45,58 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Shockbolt's tiles are removed — 4 September 2026
+--------------------------------------------------
+
+- **3.95.0** — **The 64×64 tileset is gone, on its licence.** Angband ships it;
+  this game may not, and had been shipping it anyway.
+
+  The terms are plain once read: permission is granted to use the tileset "with
+  in-development and released versions of Angband", and is expressly *not*
+  granted to "use or distribute the tileset with other games or projects". This
+  is another project — separately named, separately released, with a savefile
+  format of its own — so the two clauses point the same way. The author offers
+  permission on request; nobody asked. Shipping it was an assumption, and it was
+  ours to correct rather than to keep quiet about.
+
+  Removed: ``lib/tiles/shockbolt/`` (17MB), graphics modes 5 and 6, the entries
+  in every build and packaging list, and the licence grant that never covered us.
+  Four tilesets remain — the original 8×8, Adam Bolt's, Nomad's and David
+  Gervais' — and Gervais at 32×32 is now the largest.
+
+  **If you were playing in one of those two modes, the game will start in ASCII**
+  and you should pick another tileset from the graphics menu. Nothing crashes:
+  ``grafmode_is_installed()`` already refuses a mode whose image is absent, and a
+  saved preference naming 5 or 6 now finds no such mode and falls back. The two
+  ids are deliberately not reused, so a stale preference cannot be handed a
+  tileset nobody chose.
+
+  Two things follow from this that are worth saying out loud. The **web build
+  now carries every tileset it lists** — the only reason it left any out was
+  Shockbolt's 17MB. And the **wilderness terrain-tile problem got smaller**: the
+  one tileset whose licence forbade us from adding the missing tiles is the one
+  that has gone, and Gervais, which already contains an unmapped wilderness set,
+  is CC-BY and may be both mapped and modified.
+
+  Also recorded while reading the terms: **the original 8×8 and Nomad's tiles
+  carry no licence statement**, here or in Angband's own copying page. That is an
+  inherited gap rather than a settled position, and it is now written down in
+  ``LICENSE.md`` instead of assumed.
+
+- **3.95.0** — **Two dead tile mappings, and the check that was not being run.**
+  Found by accident while removing the tileset above: ``graf-ztk.prf`` is
+  generated, committed, and had gone stale. ``hobo`` and ``raving lunatic`` were
+  dropped from the import in ``77b340f50`` for being Angband's own monsters
+  wearing Zangband names, and their tile lines sat in four prf files for weeks
+  afterwards, pointing at monsters that no longer exist.
+
+  ``borrow-tiles.py`` has had a ``--check`` mode for exactly this the whole time,
+  and it catches both immediately. Nothing ran it. It is a pass in
+  ``scripts/check-build`` now, beside the realm content check and the build-input
+  lists, both of which are there for the same reason: a check nobody runs is a
+  check that does not exist.
+
+
 A polymorphed pet is still yours — 4 September 2026
 ----------------------------------------------------
 

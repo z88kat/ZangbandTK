@@ -37,9 +37,6 @@
     <Filter Include="Resource Files\tiles\gervais">
       <UniqueIdentifier>{ffcb2da1-8a10-4aeb-bc47-d4bbdf86c25b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\tiles\shockbolt">
-      <UniqueIdentifier>{17f9ff36-5291-48d6-ab97-aa69c0796699}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource Files\tiles\old">
       <UniqueIdentifier>{73a57601-68d2-48dc-9767-99ebcc71296b}</UniqueIdentifier>
     </Filter>
@@ -1471,9 +1468,6 @@
     <Image Include="lib\tiles\old\8x8.png">
       <Filter>Resource Files\tiles\old</Filter>
     </Image>
-    <Image Include="lib\tiles\shockbolt\64x64.png">
-      <Filter>Resource Files\tiles\shockbolt</Filter>
-    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\win\angband.rc">
@@ -1618,18 +1612,6 @@
     </None>
     <None Include="lib\tiles\old\xtra-xxx.prf">
       <Filter>Resource Files\tiles\old</Filter>
-    </None>
-    <None Include="lib\tiles\shockbolt\flvr-shb.prf">
-      <Filter>Resource Files\tiles\shockbolt</Filter>
-    </None>
-    <None Include="lib\tiles\shockbolt\graf-shb-dark.prf">
-      <Filter>Resource Files\tiles\shockbolt</Filter>
-    </None>
-    <None Include="lib\tiles\shockbolt\graf-shb-light.prf">
-      <Filter>Resource Files\tiles\shockbolt</Filter>
-    </None>
-    <None Include="lib\tiles\shockbolt\xtra-shb.prf">
-      <Filter>Resource Files\tiles\shockbolt</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
