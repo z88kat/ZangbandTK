@@ -165,7 +165,7 @@ source under ``emcmake`` and linked by hand, or it loses tiles. The AppImage has
 the same shape of problem from the other end: it is built on ubuntu-22.04 on
 purpose, for glibc, and ``libsdl3-dev`` is not in 24.04 let alone 22.04.
 
-So: no. We stay on SDL 2, and that is DEC-65.
+So: no. We stay on SDL 2, and that is DEC-70.
 
 What the investigation actually turned up was the other front end. ``main-sdl.c``
 is 6,169 lines of SDL **1.2**, still built by CI, shipped by nothing. I had been

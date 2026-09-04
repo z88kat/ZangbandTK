@@ -743,7 +743,14 @@ the reference the project owner pointed at, and it carries the cast, the
 geography and the mechanics of Pattern, Logrus, Trump and Shadow-walking.
 
 
-**DEC-31 — The dungeons are Amber's places, and a dungeon has a bottom.**
+**DEC-69 — The dungeons are Amber's places, and a dungeon has a bottom.**
+
+*Renumbered from DEC-31 on 4 September 2026.* Two decisions were written as
+DEC-31 -- this one and the townsfolk ruling below -- and both are cited in
+commit messages, so the collision had already made the number useless. The
+townsfolk one keeps 31 because `docs/wilderness.rst` cites it that way in the
+published manual. Commit `41aba8844` ("WLD-14: thirteen dungeons, each with its
+own depths, floor and bottom") cites DEC-31 meaning *this* decision.
 
 WLD-14 asks that dungeon entrances carry their own depth range and character.
 Two decisions inside that were not settled by the requirement.
@@ -2895,10 +2902,15 @@ now asks for `TransferLib` as well as `stageunittestdata` every run.
 
 ---
 
-**DEC-65 — The SDL 2 front end stays on SDL 2, and the SDL 1.2 front end is
+**DEC-70 — The SDL 2 front end stays on SDL 2, and the SDL 1.2 front end is
 what actually needs the work.** (3 September 2026. Applies DEC-11. Full working
 in [sdl3-assessment.md](sdl3-assessment.md), including the three conditions that
 would change the answer.)
+
+*Renumbered from DEC-65 on 4 September 2026.* Two decisions were written as
+DEC-65 -- this one and the permanent stable's cost. That one keeps the number:
+it is cited six times in live files (`constants.txt`, `pet-upkeep.c`, `carry.c`,
+the release log) against two for this one, and in a commit message besides.
 
 Asked what it would cost to move to SDL 3.4. Counted rather than guessed: 228
 distinct SDL symbols across `main-sdl2.c` (8,502 lines), `src/sdl2` (7,094) and

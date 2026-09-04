@@ -87,6 +87,10 @@ OP(cheat_powers,          "Cheat: Racial and mutation powers never fail",
 CHEAT, false)
 OP(score_powers,          "Score: Powers never failed",
 SCORE, false)
+OP(cheat_pet,             "Cheat: Gain a pet (select to be asked which)",
+CHEAT, false)
+OP(score_pet,             "Score: Took a pet",
+SCORE, false)
 OP(birth_randarts,        "Generate a new, random artifact set",
 BIRTH, false)
 OP(birth_connect_stairs,  "Generate connected stairs",

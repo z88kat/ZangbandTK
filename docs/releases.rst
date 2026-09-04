@@ -30,6 +30,32 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Tidying — 4 September 2026
+---------------------------
+
+- **3.90.0** — **A cheat that hands you a pet**, on the ``=x`` screen and on
+  the debug menu as ``^A`` then ``N``. It asks which monster and puts one
+  beside you, already yours.
+
+  Every route the game offers to a pet is a roll — a Trump summon, a charm that
+  has to beat a saving throw, a patron in a good mood — so seeing what pets
+  *do* meant playing until one arrived and hoping it was the kind you wanted to
+  look at. The placement is a function rather than part of the command, because
+  the borg's test harness wants exactly the same thing, and a test can call it.
+
+- **The decision log had two numbers that each meant two things.** DEC-31 was
+  both *the dungeons are Amber's places* and *Zangband's six town inhabitant
+  types were three unused constants*; DEC-65 was both *the SDL 2 front end stays
+  on SDL 2* and *what a permanent stable costs*. Both collisions were being
+  cited from live files and commit messages before anyone noticed — the file
+  parses and reads perfectly well with a duplicate in it.
+
+  The cited meaning keeps the number in each case, and the other is renumbered
+  with a note saying which commit cites it the old way: the dungeons become
+  DEC-69, SDL becomes DEC-70. ``scripts/check-build-lists`` now fails the build
+  on a repeated number, which is the only thing that would have caught it.
+
+
 Pets follow — 3 September 2026
 ------------------------------
 

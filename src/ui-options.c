@@ -233,6 +233,16 @@ static bool option_toggle_handle(struct menu *m, const ui_event *event,
 		menu_refresh(m, false);
 	}
 
+	if (player->opts.opt[oid] && streq(option_name(oid), "cheat_pet")) {
+		screen_load();
+		do_cmd_wiz_gain_pet(NULL);
+		screen_save();
+		clear_from(0);
+
+		player->opts.opt[oid] = false;
+		menu_refresh(m, false);
+	}
+
 	if (player->opts.opt[oid] && streq(option_name(oid), "cheat_places")) {
 		screen_load();
 		do_cmd_wiz_know_places(NULL);

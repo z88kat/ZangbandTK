@@ -1415,6 +1415,47 @@ static bool place_friends(struct chunk *c, struct loc grid, struct monster_race 
 }
 
 /**
+ * Put a pet of this race beside the player, and return it.
+ *
+ * The first free grid of the eight, so it arrives where a summon would rather
+ * than across the level.  NULL if the race is missing or the character is
+ * boxed in.
+ *
+ * Exists as a function because two callers want exactly this and neither is
+ * the game proper: the "Gain a pet" cheat, and the borg's own test command.
+ * Every route the game offers a player is a roll -- a Trump summon, a charm
+ * that has to beat a saving throw, a patron in a good mood -- so testing what
+ * pets *do* otherwise means playing until one turns up and hoping it is the
+ * kind you wanted to look at.
+ */
+struct monster *place_pet_beside_player(struct monster_race *race)
+{
+	struct monster_group_info info = { 0, 0 };
+	int i;
+
+	if (!race || !cave) return NULL;
+
+	for (i = 0; i < 8; i++) {
+		struct loc grid = loc_sum(player->grid, ddgrid_ddd[i]);
+		struct monster *mon;
+
+		if (!square_in_bounds_fully(cave, grid)) continue;
+		if (!square_isempty(cave, grid)) continue;
+		if (!place_new_monster(cave, grid, race, false, false, info,
+							   ORIGIN_DROP)) continue;
+
+		mon = square_monster(cave, grid);
+		if (!mon) continue;
+
+		monster_set_allegiance(mon, MON_ALLEGIANCE_PET);
+		return mon;
+	}
+
+	return NULL;
+}
+
+
+/**
  * Attempts to place a monster of the given race at the given location.
  *
  * Note that certain monsters are placed with a large group of

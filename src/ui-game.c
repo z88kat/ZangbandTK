@@ -291,6 +291,9 @@ struct cmd_info cmd_debug_player[] =
 	 * does the wrong thing.
 	 */
 	{ "Mutations", { 'U' }, CMD_NULL, wiz_mutations, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
+	/* 'N' because 'p' and 'P' are both taken elsewhere in the Dbg* lists,
+	 * which share one key namespace -- see the note on 'U' above. */
+	{ "Gain a pet", { 'N' }, CMD_WIZ_GAIN_PET, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Learn object kinds", { 'l' }, CMD_NULL, wiz_learn_all_object_kinds, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Learn all monsters", { 'B' }, CMD_NULL, wiz_learn_all_monsters, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },
 	{ "Recall monster", { 'r' }, CMD_WIZ_RECALL_MONSTER, NULL, player_can_debug_prereq, 0, NULL, NULL, NULL, 0 },

@@ -283,6 +283,15 @@ Peek into something else ``cheat_xtra``
 Allow player to avoid death ``cheat_live``
    Cheaters never win. But they can cheat death.
 
+Gain a pet ``cheat_pet``
+   Asks which monster, and puts one beside you as yours. Also on the debug menu
+   as *Gain a pet* (``^A`` then ``N``).
+
+   Every route the game offers to a pet is a roll — a Trump summon, a charm
+   that has to beat a saving throw, a Chaos-Warrior's patron in a good mood — so
+   seeing what pets *do* otherwise means playing until one arrives and hoping it
+   is the kind you wanted to look at.
+
 Racial and mutation powers never fail ``cheat_powers``
    Every racial and mutation power fires, every time. The listing shows ``0% to
    fail`` and the roll agrees with it — both ask the same function.
@@ -418,6 +427,9 @@ Changing the character directly.
    * - ``k``
      - Know every place ★
      - Every town visited and every block seen, which turns the magetower into a way of getting anywhere at once.
+   * - ``N``
+     - Gain a pet ★
+     - Asks which monster and puts one beside you, already yours. ``N`` because ``p`` and ``P`` are taken elsewhere in the debug lists, which share one key namespace.
    * - ``U``
      - Mutations ★
      - All ninety-six, with the character's own marked ``[*]``; select one to toggle it, Escape to leave. Chaos hands these out and the player does not choose them, so anything that touches them — Polymorph Self, the patrons, the Chaos Tower — is otherwise close to untestable on purpose. ``U`` because ``m`` and ``M`` were taken, and because ``U`` was Zangband's own key for these. To *read* what a character has, use the third page of the character sheet rather than this.

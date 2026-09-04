@@ -31,6 +31,7 @@
  */
 
 #include "unit-test.h"
+#include "option.h"
 #include "test-utils.h"
 
 #include "cave.h"
@@ -540,6 +541,64 @@ static int test_what_a_stable_costs(void *state) {
 	ok;
 }
 
+
+/** How many pets are on the level right now. */
+static int live_pets(void)
+{
+	int i, n = 0;
+
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		if (mon && mon->race && monster_is_pet(mon)) n++;
+	}
+
+	return n;
+}
+
+
+/**
+ * The cheat that hands you a pet puts one beside you, and it is yours.
+ *
+ * Every route the game offers to a pet is a roll -- a Trump summon, a charm
+ * that has to beat a saving throw, a Chaos-Warrior's patron in a good mood --
+ * so testing what pets *do* meant playing until one arrived and hoping it was
+ * the kind you wanted to look at. `place_pet_beside_player()` is the part of
+ * the cheat worth testing: the command around it is a prompt and a message.
+ *
+ * It is also asserted that the option's score twin sits immediately after it.
+ * option_set() marks a cheat's record by setting the option one along, so a
+ * reorder in list-options.h would leave the cheat working and quietly stop
+ * marking the character -- the one thing a cheat must not do, and nothing else
+ * would notice.
+ */
+static int test_the_pet_cheat_gives_a_pet(void *state) {
+	struct monster_race *race = lookup_monster("soldier");
+	struct monster *pet;
+	int before, after;
+
+	eq(OPT_score_pet, OPT_cheat_pet + 1);
+
+	notnull(race);
+	before = live_pets();
+
+	pet = place_pet_beside_player(race);
+	notnull(pet);
+
+	/* Beside the player, not merely somewhere. */
+	require(distance(pet->grid, player->grid) == 1);
+
+	/* Yours, and counted as yours. */
+	require(monster_is_pet(pet));
+	after = live_pets();
+	eq(after, before + 1);
+
+	/* A race that does not exist is not a pet, and does not crash. */
+	null(place_pet_beside_player(NULL));
+
+	ok;
+}
+
 const char *suite_name = "player/pet-upkeep";
 struct test tests[] = {
 	{ "no-pets-cost-nothing", test_no_pets_cost_nothing },
@@ -554,5 +613,6 @@ struct test tests[] = {
 	{ "experience-is-for-the-killing-blow",
 	  test_experience_is_for_the_killing_blow },
 	{ "what-a-stable-costs", test_what_a_stable_costs },
+	{ "the-pet-cheat-gives-a-pet", test_the_pet_cheat_gives_a_pet },
 	{ NULL, NULL }
 };

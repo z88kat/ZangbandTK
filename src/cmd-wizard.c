@@ -1203,6 +1203,39 @@ void do_cmd_wiz_gain_gold(struct command *cmd)
 }
 
 /**
+ * Put a pet next to the player (CMD_WIZ_GAIN_PET).  Takes no arguments from
+ * cmd; asks for the monster by name.
+ *
+ * There is no other way to get a specific pet on demand.  Every route the game
+ * offers is a roll -- a Trump summon, a charm that has to beat a saving throw,
+ * a Chaos-Warrior's patron in a good mood -- so testing what pets *do* means
+ * playing until one arrives and hoping it is the kind you wanted to look at.
+ * This is the same shape as the other "do something" cheats on that screen:
+ * it acts once and switches itself back off, and the character is marked.
+ */
+void do_cmd_wiz_gain_pet(struct command *cmd)
+{
+	struct monster_race *race;
+	char name[80] = "soldier";
+
+	if (!get_string("Pet to gain: ", name, sizeof(name))) return;
+
+	race = lookup_monster(name);
+	if (!race) {
+		msg("No monster called '%s'.", name);
+		return;
+	}
+
+	if (!place_pet_beside_player(race)) {
+		msg("There is nowhere beside you to put it.");
+		return;
+	}
+
+	msg("%s is yours.", race->name);
+	player->upkeep->redraw |= (PR_MONLIST);
+}
+
+/**
  * Give the player a great many hit points (CMD_WIZ_GAIN_HP).  Takes no
  * arguments from cmd.
  *

@@ -100,6 +100,19 @@ on_disk = {f for f in os.listdir("lib/gamedata") if f.endswith(".txt")}
 check("lib/gamedata/Makefile will not install", on_disk - install)
 check("lib/gamedata/Makefile installs what is not there", install - on_disk)
 
+# The decision log is numbered by hand, and a number that means two things is
+# worse than no number: DEC-31 and DEC-65 were each written twice, and both
+# collisions were cited from live files and commit messages before anybody
+# noticed. Nothing else would catch it -- the file parses, renders and reads
+# perfectly well with a duplicate in it.
+decisions = read(".claude/plans/decisions.md")
+headings = re.findall(r"^(?:### |\*\*)(DEC-\d+) \u2014", decisions, re.M)
+seen, twice = set(), set()
+for d in headings:
+    (twice if d in seen else seen).add(d)
+check("decision numbers used more than once", twice,
+      "each DEC number must head exactly one decision")
+
 for name, items, note in FAIL:
     print("%s:" % name)
     for i in items:

@@ -33,6 +33,7 @@ int mon_create_drop_count(const struct monster_race *race, bool maximize,
 	bool specific, int *specific_count);
 void mon_create_mimicked_object(struct chunk *c, struct monster *mon,
 								int index);
+struct monster *place_pet_beside_player(struct monster_race *race);
 int16_t place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 	uint8_t origin);
 int mon_hp(const struct monster_race *race, aspect hp_aspect);

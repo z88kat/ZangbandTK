@@ -777,7 +777,7 @@ generated world is worth a lot when debugging one.
 ## 6. Front-end housekeeping — retire SDL 1.2
 
 *Not a gameplay milestone. Independent of M0–M11 and can run in any gap; nothing
-blocks on it and it blocks nothing.* Recorded as DEC-65; the SDL 3 assessment that
+blocks on it and it blocks nothing.* Recorded as DEC-70; the SDL 3 assessment that
 found it is in [sdl3-assessment.md](sdl3-assessment.md).
 
 Two SDL front ends are maintained. [main-sdl2.c](../../src/main-sdl2.c) is the
