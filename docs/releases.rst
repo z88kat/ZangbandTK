@@ -45,6 +45,35 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+An unexplored square is black everywhere — 4 September 2026
+-------------------------------------------------------------
+
+- **3.97.1** — **The generated tilesets give the unseen grid an opaque tile.**
+  Angband points ``FEAT_NONE`` at cell (0,0), which in two of the four sheets is
+  fully transparent — so what an unexplored square looks like was decided by
+  whatever the front end leaves behind a transparent tile, and that is not the
+  same everywhere. On macOS it came out **white** in Nomad's set: a field of
+  snow with the map drawn in it, which reads as a fault rather than as ground
+  nobody has walked on.
+
+  Reported from play, and the cause was ours. ``make-terrain.py`` rewrites the
+  three sheets it extends, and Nomad was the only one stored as a *palette* PNG;
+  writing it back as RGBA changes what ``CGImageGetAlphaInfo`` reports, which is
+  what ``main-cocoa.m`` reads to decide whether to blend. Adam Bolt's and the
+  8×8 set were already RGBA, which is exactly why Nomad alone changed.
+
+  The fix does not argue with the front end: the generated row now carries a
+  thirty-first tile that is opaque black, and ``feat:NONE`` points at it. An
+  opaque tile composites the same either way. Black because black is what "you
+  have not been here" has meant in this game since it was ASCII, and one
+  lighting variant because an unseen square is not lit three different ways.
+
+  *Left as it is, and said out loud rather than buried:* the generator still
+  converts a palette sheet to RGBA. Keeping Nomad's format would mean quantising
+  the generated tiles to its existing palette, which is a better answer and is
+  not one to start at the end of a long session.
+
+
 Terrain for the other three tilesets, drawn by a script — 4 September 2026
 ----------------------------------------------------------------------------
 

@@ -61,3 +61,6 @@ feat:WORLD_EDGE:torch:0xBC:0x9B
 feat:WORLD_EDGE:los:0xBC:0x9B
 feat:WORLD_EDGE:lit:0xBC:0x9C
 feat:WORLD_EDGE:dark:0xBC:0x9D
+
+# The unexplored grid, opaque so no front end has to guess.
+feat:NONE:*:0xBC:0x9E

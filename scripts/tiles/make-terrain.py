@@ -412,9 +412,9 @@ def emit(directory, sheet, tile_w, tile_h):
     rng = Rand(0x5A46)
 
     features = build(tile_w, palette, rng)
-    assert len(features) * len(LIGHTING) <= cols, \
+    assert len(features) * len(LIGHTING) + 1 <= cols, \
         '%s has only %d columns; needs %d' % (directory, cols,
-                                              len(features) * len(LIGHTING))
+                                              len(features) * len(LIGHTING) + 1)
 
     # A row on the bottom, so nothing already in the sheet is touched.
     #
@@ -455,6 +455,28 @@ def emit(directory, sheet, tile_w, tile_h):
             else:
                 lines.append('feat:%s:%s:0x%02X:0x%02X'
                              % (name, keys[k], row + 0x80, col + 0x80))
+
+    # One more tile, and it is not terrain: an opaque black square for the grid
+    # the player has not seen.
+    #
+    # Angband points FEAT_NONE at cell (0,0), which in two of these three sheets
+    # is fully transparent -- so what an unexplored square looks like is decided
+    # by whatever the front end happens to leave behind a transparent tile, and
+    # that is not the same everywhere. On macOS it came out white in Nomad's
+    # set: a field of snow with the map drawn in it, which reads as a fault
+    # rather than as unexplored ground.
+    #
+    # An opaque tile has no such argument with the front end. It is black
+    # because black is what "you have not been here" has meant in this game
+    # since it was ASCII, and one lighting variant because an unseen square is
+    # not lit three different ways.
+    none_col = len(features) * len(LIGHTING)
+    for y in range(tile_h):
+        for x in range(tile_w):
+            pixels[row * tile_h + y][none_col * tile_w + x] = (0, 0, 0, 255)
+    lines.append('')
+    lines.append('# The unexplored grid, opaque so no front end has to guess.')
+    lines.append('feat:NONE:*:0x%02X:0x%02X' % (row + 0x80, none_col + 0x80))
 
     write_png(path, pixels)
     out = os.path.join(TILES, directory, 'feat-ztk.prf')
