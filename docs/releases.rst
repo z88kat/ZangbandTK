@@ -45,6 +45,81 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+A polymorphed pet is still yours — 4 September 2026
+----------------------------------------------------
+
+- **3.94.3** — **And polymorph stopped deleting things** (PLR-22). The second
+  half of the same bug, found by asking what happens when the placing fails.
+
+  4.2 polymorphs by deleting the monster and placing a new one, and never looks
+  at whether the placing worked. When it did not the monster was simply gone —
+  which is a spell that occasionally works as a deletion, and since PLR-22 an
+  occasional way to lose a pet with no message at all.
+
+  It was not rare. **Measured at 3.5 per cent from depth thirty down** — about
+  one polymorph in twenty-eight — 1.2 per cent at fifteen and 0.2 per cent in
+  the town. The curve is this game's own bestiary: two dozen races are fish,
+  ``place_new_monster_one()`` will not put a fish on dry land (a ZangbandTK
+  rule — 4.2 has no water to need it), and ``poly_race()`` drew from the whole
+  allocation table without asking where the monster was standing. The deep fish
+  are krakens, whales and Charybdis, which sit squarely in the band a deep
+  polymorph draws from.
+
+  Fixed at the draw rather than at the failure. The preconditions
+  ``place_new_monster_one()`` applies that do not depend on who is standing
+  there — terrain, water, glyphs, unique counts and depth — are now one
+  function, ``monster_race_fits_grid()``, which that function obeys and
+  ``poly_race()`` consults. So the shape drawn is one that can stand where the
+  monster stands, and the spell *works* instead of fizzling. Zangband's
+  fallback is kept behind it — "Placing the new monster failed - use the old" —
+  because the cost of being wrong about "unreachable" is a creature vanishing.
+
+  Both halves are pinned separately, and each regression fails its own
+  assertion: drop the fallback as well and monsters vanish; keep the fallback
+  and drop the filter and nothing vanishes but the spell silently does nothing
+  eight times in six hundred.
+
+  One incidental finding, recorded because it cost an hour: the level generator
+  will sometimes start a character in a doorway with seven walls round it, and
+  the test helper that places a monster beside the player wants an empty
+  *floor* grid — an open door is passable and is not floor. One level in twenty
+  has nowhere to put anything. That was a 12 per cent flake with nothing to do
+  with polymorph.
+
+- **3.94.2** — **Polymorph no longer takes your pet off you** (PLR-22, PLR-33).
+  Reported from a reading of what players said they liked about the original,
+  which names "recruiting an army of summoned pets that can polymorph into
+  incredibly powerful dragons". Ours did the opposite: it handed the dragon to
+  the enemy.
+
+  A polymorph is one creature to the player and two to the code. 4.2 deletes the
+  monster and places a new one, and everything not carried across that seam is
+  lost — which, since PLR-22, includes whose side it was on. So a pet you
+  polymorphed came back hostile, standing next to you.
+
+  And *silently*. ``MON_POLY`` zeroes the damage, so the one site that turns an
+  ally against you — ``mon_take_hit()``, PLR-33's choke point — was never
+  reached, and nothing said "gets angry!". The player was left with an enemy
+  where their ally had been and no message accounting for it. Zangband read the
+  attitude before the delete and handed it back after
+  (``polymorph_monster()``, ``spells3.c:4368``); this now does the same, at the
+  same two points.
+
+  This is the mechanic the strategy rests on, not merely a tidy-up.
+  ``poly_race()`` aims at ``(depth + monster level) / 2 + 5``, so polymorphing
+  your own animal deep in a dungeon is how a weak pet becomes a strong one.
+  PLR-30's upkeep charges the *sum* of pet levels against mana regeneration, so
+  the reward already carries a price that scales with it and no cap was wanted.
+
+  PLR-33 is not bypassed. A chaos attack that polymorphs also deals damage, and
+  damage runs before the side effects, so the pet is hostile before its shape
+  changes — dropping a chaos ball on your own animal does not become free by
+  virtue of it polymorphing. Three tests in ``monster/anger`` pin all of it, and
+  the two that matter were checked against a deliberate regression: with the
+  restore removed, the pet and the friendly monster both fail and the chaos case
+  still passes, which is exactly the split the rule describes.
+
+
 M10: the last two pet sources — 4 September 2026
 -------------------------------------------------
 

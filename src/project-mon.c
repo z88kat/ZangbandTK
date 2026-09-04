@@ -42,10 +42,12 @@
  *
  * \param race is the current race of the monster to be polymorphed.
  * \param current_level is the level that monster is on.
+ * \param grid is where the monster is standing, and where its new shape has
+ * to be able to stand (ZangbandTK).
  * Note that this function is one of the more "dangerous" ones...
  */
 static struct monster_race *poly_race(struct monster_race *race,
-		int current_level)
+		int current_level, struct loc grid)
 {
 	int i, minlvl, maxlvl, goal;
 
@@ -70,8 +72,28 @@ static struct monster_race *poly_race(struct monster_race *race,
 		if (rf_has(new_race->flags, RF_UNIQUE)) continue;
 		if (new_race->level < minlvl || new_race->level > maxlvl) continue;
 
-		/* Avoid force-depth monsters, since it might cause a crash in project_m() */
-		if (rf_has(new_race->flags, RF_FORCE_DEPTH) && current_level < new_race->level) continue;
+		/*
+		 * And it has to be able to stand where the monster is standing
+		 * (ZangbandTK).  The caller deletes the monster and then places the
+		 * new shape, so a shape that cannot go there does not fail politely
+		 * -- it leaves an empty square where the monster was, which reads as
+		 * the spell having killed it and, since PLR-22, can quietly cost the
+		 * player a pet.
+		 *
+		 * The commonest way to draw one is water. Two dozen races in the
+		 * bestiary are fish, `place_new_monster_one()` will not put a fish on
+		 * dry land, and this draw is over the whole allocation table -- so
+		 * before this, roughly that share of every polymorph cast on solid
+		 * ground was a coin toss between changing the monster and deleting
+		 * it. Depth and glyphs come through the same test because they are
+		 * refusals at the same step.
+		 *
+		 * Note this subsumes the FORCE_DEPTH check that used to be here, and
+		 * subsumes it more accurately: that compared against `current_level`,
+		 * where the placement it is predicting compares against the *cave's*
+		 * depth.
+		 */
+		if (!monster_race_fits_grid(cave, grid, new_race)) continue;
 
 		return new_race;
 	}
@@ -1313,6 +1335,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 	if (context->do_poly) {
 		enum mon_messages hurt_msg = MON_MSG_UNAFFECTED;
 		const struct loc grid = context->grid;
+		enum monster_allegiance side = mon->allegiance;
 		int savelvl = 0;
 		struct monster_race *old;
 		struct monster_race *new;
@@ -1337,7 +1360,7 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 		}
 
 		old = (mon->original_race) ? mon->original_race : mon->race;
-		new = poly_race(old, player->depth);
+		new = poly_race(old, player->depth, grid);
 
 		/* Handle polymorph */
 		if (new != old) {
@@ -1349,9 +1372,75 @@ static void project_m_apply_side_effects(project_monster_handler_context_t *cont
 
 			/* Delete the old monster, and return a new one */
 			delete_monster_idx(cave, m_idx);
-			place_new_monster(cave, grid, new, false, false, info,
-							  ORIGIN_DROP_POLY);
+			if (!place_new_monster(cave, grid, new, false, false, info,
+								   ORIGIN_DROP_POLY)) {
+				/*
+				 * Put the shape it had back (ZangbandTK).  4.2 deletes before
+				 * it places and does not look at whether the place succeeded,
+				 * so a refusal here used to remove the monster from the game
+				 * -- a polymorph that occasionally worked as a deletion, and
+				 * since PLR-22 an occasional way to lose a pet with no message
+				 * at all.
+				 *
+				 * `poly_race()` above now declines any shape that cannot stand
+				 * on this grid, so the reachable causes are gone and this is
+				 * the guard rather than the fix. It is kept because the cost
+				 * of being wrong about "unreachable" is a creature vanishing,
+				 * and because Zangband kept exactly this
+				 * ([spells3.c:4368](../archive/zangband/src/spells3.c#L4368)):
+				 * "Placing the new monster failed - use the old."
+				 *
+				 * The old shape is what the old monster *was*, so it can go
+				 * where the old monster was. What it cannot be is the same
+				 * monster: hit points, timed effects, sleep and anything it
+				 * was carrying are gone with the delete, exactly as they are
+				 * on the successful path. A monster restored to full health is
+				 * a poor outcome; a monster that is not there is a worse one.
+				 */
+				place_new_monster(cave, grid, old, false, false, info,
+								  ORIGIN_DROP_POLY);
+			}
 			context->mon = square_monster(cave, grid);
+
+			/*
+			 * ZangbandTK (PLR-22): the new shape is on the side the old one
+			 * was on.
+			 *
+			 * Zangband's `polymorph_monster()`
+			 * ([spells3.c:4368](../archive/zangband/src/spells3.c#L4368))
+			 * reads the attitude *before* the delete and hands it to
+			 * `place_monster_aux()` afterwards, for the same reason it is
+			 * done here: a polymorph is one monster in 4.2's model and two in
+			 * its implementation, and everything not copied across the seam
+			 * is lost. Allegiance is the only field on this side of the seam
+			 * that the player chose.
+			 *
+			 * Without this a pet changes shape and starts attacking, and does
+			 * it *silently*: `MON_POLY` zeroes the damage, so
+			 * `monster_make_hostile()` -- PLR-33's one site, which is reached
+			 * from damage -- never fires and never says "gets angry!". The
+			 * player is left with a hostile creature where their ally stood
+			 * and nothing on screen to explain it. That is worse than either
+			 * outcome chosen deliberately.
+			 *
+			 * PLR-33 is not bypassed. A chaos ball that polymorphs also deals
+			 * damage, so it angers the pet through the ordinary path before
+			 * reaching here, and `side` has already been read as hostile.
+			 * Only a *direct* polymorph -- Chaos's Polymorph Other, a Wand or
+			 * Rod of Polymorph, the activation -- arrives with a pet still a
+			 * pet, which is exactly the case Zangband preserved.
+			 *
+			 * And the upkeep pays for it. `poly_race()` aims at
+			 * `(depth + level) / 2 + 5` with a one-in-a-hundred reach to 100,
+			 * so polymorphing your own animal deep in a dungeon is how a weak
+			 * pet becomes a strong one -- the strategy the feature is
+			 * remembered for. PLR-30 charges the *sum* of pet levels against
+			 * mana regeneration, so the reward is bought at a price that
+			 * scales with it, and no cap is needed here.
+			 */
+			if (context->mon)
+				monster_set_allegiance(context->mon, side);
+
 			/*
 			 * Note the appearance of the new one if it is visible
 			 * but the old one wasn't.

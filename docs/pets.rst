@@ -449,6 +449,26 @@ berserk, or unable to see what is in front of you, the blow lands and the pet
 takes it personally. Confusion is a different kind of dangerous when you have
 things following you.
 
+**Changing its shape does not change its side.** Polymorph a pet — Chaos's
+*Polymorph Other*, a Wand or a Rod of Polymorph — and whatever it turns into is
+still yours.
+
+That is worth doing on purpose. The new shape is drawn from somewhere between
+the creature's own depth and the depth you are standing on, so polymorphing your
+own animal deep in a dungeon is how a weak pet becomes a strong one, and it is
+where the dragons come from. It is a gamble every time — you do not get to
+choose what you get, and it can come back worse — and a unique will not change
+at all. What holds it in check is the upkeep: a stronger pet is a heavier one,
+and the charge is on the *sum* of your pets' levels.
+
+What it will never do is take the creature away. The shape drawn is always one
+that can stand where your pet is standing, so a polymorph on the shore does not
+turn your hound into a kraken and leave you with an empty patch of sand.
+
+Chaos itself is not so obliging. A chaos attack that polymorphs also **hurts**,
+and hurting a pet turns it against you before its shape has changed — so a chaos
+ball dropped on your own animal costs you the animal, whatever it becomes.
+
 
 Getting one
 -----------

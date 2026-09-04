@@ -243,6 +243,11 @@ threaded through the targeting, the AI, the projections and the combat.
   reason Zangband's own documentation warns about a pet that can make more pets.
 - **They can turn on you.** Catch one in a ball spell, or put on something that
   aggravates, and it stops being yours. The game asks before you aim at one.
+- **But changing its shape does not change its side.** Polymorph a pet and what
+  it becomes is still yours — the new shape drawn from between its own depth and
+  the depth you are standing on, so doing it deep is how a weak pet becomes a
+  strong one, and where the dragons come from. Zangband's own rule, and the
+  upkeep pays for it.
 - **Four of them follow you downstairs**, and each has a one in twenty chance of
   leaving at every level change — a median of thirteen or fourteen descents, and
   with a full stable about one descent in five costs you one. Zangband deleted

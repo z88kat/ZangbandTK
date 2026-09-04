@@ -594,6 +594,26 @@ patron ladders. This is the second milestone to be called complete a phase
 early -- M8 was, over PLR-17 -- and both times the gap was written down
 correctly and then read as finished.
 
+**And one defect outlived the milestone.** Fixed in 3.94.2, after M10 closed: a
+polymorph deleted the monster and placed a new one without carrying its
+allegiance, so a polymorphed pet came back hostile -- silently, because
+`MON_POLY` zeroes the damage and PLR-33's anger hangs off damage. It belongs to
+phase 1: allegiance is a field on the monster, and every path that *replaces* a
+monster has to carry it, which is a different question from every path that
+changes one. Zangband's `polymorph_monster()` reads the attitude before its
+delete for exactly this reason. Nothing in phases 1 to 10 asked "what replaces a
+monster", and this is the answer to it that was missed.
+
+**And the same seam had a second hole, fixed in 3.94.3.** 4.2 places the new
+shape without checking that it can be placed, and when it could not the monster
+was deleted outright -- measured at 3.5 per cent of polymorphs from depth thirty
+down. The cause is WLD's, not PLR's: two dozen races are fish, this game will not
+put a fish on dry land, and `poly_race()` drew without asking where the monster
+stood. Fixed at the draw, with `monster_race_fits_grid()` as the one definition
+of "can this race be here" that the placer obeys and the drawer consults. Worth
+recording against the milestone because it is the same lesson twice in a day:
+the wilderness added rules that code written before it does not know about.
+
 Phase 1 is first because PLR-29 constrains PLR-22 rather than following it, and
 phase 4 is not last because PLR-30's upkeep is the whole of pet balance — both
 are foundations, not additions. Phase 6 carries the accumulated queue: the six

@@ -1116,6 +1116,57 @@ int16_t place_monster(struct chunk *c, struct loc grid, struct monster *mon,
 }
 
 /**
+ * Whether this race could be put on this grid, occupancy aside (ZangbandTK).
+ *
+ * Everything `place_new_monster_one()` refuses that does not depend on who is
+ * standing there at the moment -- terrain, water, glyphs, how many of a unique
+ * there may be, and depth.  Split out because a caller that is about to
+ * *replace* a monster needs the answer before it destroys the one it has, and
+ * asking by trying is not open to it.
+ *
+ * `poly_race()` is that caller.  It draws a shape for a monster that is already
+ * standing somewhere, and a shape that cannot be placed there costs the game
+ * the monster: 4.2 deletes first and places second, so a refusal at the second
+ * step leaves an empty square.  With two dozen aquatic races in the bestiary
+ * and a world with a sea in it, that is not a corner case.
+ *
+ * Kept beside the function it mirrors, and called by it, so the two cannot
+ * drift into disagreeing about what "can be here" means.
+ */
+bool monster_race_fits_grid(struct chunk *c, struct loc grid,
+		const struct monster_race *race)
+{
+	assert(square_in_bounds(c, grid));
+	assert(race && race->name);
+
+	/* Prevent monsters from being placed where they cannot walk, but allow
+	 * other feature types */
+	if (!square_is_monster_walkable(c, grid)) return false;
+
+	/*
+	 * And a fish is not put on dry land, whoever asked (ZangbandTK).  Here
+	 * rather than in the wilderness generator because that is not the only
+	 * caller: a shoal arrives through place_friends(), which scatters its
+	 * members around the leader and would happily leave one flapping on the
+	 * beach.  Summons and escorts have the same shape.
+	 */
+	if (monster_is_aquatic(race) && !square_iswater(c, grid)) return false;
+
+	/* No creation on glyphs */
+	if (square_iswarded(c, grid) || square_isdecoyed(c, grid)) return false;
+
+	/* "unique" monsters must be "unique" */
+	if (rf_has(race->flags, RF_UNIQUE) && (race->cur_num >= race->max_num))
+		return false;
+
+	/* Depth monsters may NOT be created out of depth */
+	if (rf_has(race->flags, RF_FORCE_DEPTH) && c->depth < race->level)
+		return false;
+
+	return true;
+}
+
+/**
  * Attempts to place a monster of the given race at the given location.
  *
  * If `sleep` is true, the monster is placed with its default sleep value,
@@ -1155,29 +1206,8 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 	/* Not where the player already is */
 	if (loc_eq(player->grid, grid)) return false;
 
-	/* Prevent monsters from being placed where they cannot walk, but allow
-	 * other feature types */
-	if (!square_is_monster_walkable(c, grid)) return false;
-
-	/*
-	 * And a fish is not put on dry land, whoever asked (ZangbandTK).  Here
-	 * rather than in the wilderness generator because that is not the only
-	 * caller: a shoal arrives through place_friends(), which scatters its
-	 * members around the leader and would happily leave one flapping on the
-	 * beach.  Summons and escorts have the same shape.
-	 */
-	if (monster_is_aquatic(race) && !square_iswater(c, grid)) return false;
-
-	/* No creation on glyphs */
-	if (square_iswarded(c, grid) || square_isdecoyed(c, grid)) return false;
-
-	/* "unique" monsters must be "unique" */
-	if (rf_has(race->flags, RF_UNIQUE) && (race->cur_num >= race->max_num))
-		return false;
-
-	/* Depth monsters may NOT be created out of depth */
-	if (rf_has(race->flags, RF_FORCE_DEPTH) && c->depth < race->level)
-		return false;
+	/* Terrain, water, glyphs, how many there may be, and depth */
+	if (!monster_race_fits_grid(c, grid, race)) return false;
 
 	/* Add to level feeling, note uniques for cheaters */
 	add_to_monster_rating(c, race->level * race->level);

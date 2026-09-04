@@ -31,6 +31,121 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+4 September 2026 — the dragon went to the other side
+====================================================
+
+Steven found a forum summary of what players actually liked about the original
+and asked me to check it against what we have built. That is a better question
+than it looks, because it is not "is it faithful" — it is "did the part anyone
+cared about survive the port". Five points. Four came back mostly clean.
+
+The third one did not. It reads: *"deep mechanics like recruiting an army of
+summoned pets that can polymorph into incredibly powerful dragons"*. We have the
+army — the whole of Trump is summons, and the upkeep is built. We have the
+dragons: *Trump Dragon* and *Trump Ancient Dragon* call one directly. What we did
+not have was the sentence's verb.
+
+Polymorph a pet here and it came back hostile.
+
+The reason is the shape of the code rather than anything anyone decided. A
+polymorph is one creature to the player and two to the machine: 4.2 deletes the
+monster and places a new one at the same square. Everything that lives on the
+monster struct and is not explicitly copied across that seam is gone, and since
+PLR-22 one of those things is whose side it is on. Nobody wrote "a polymorphed
+pet turns on you"; the field simply was not carried, and a new monster is hostile
+because hostile is zero.
+
+Zangband knew. ``polymorph_monster()`` reads ``friendly`` and ``pet`` into two
+locals *before* the delete and hands them to ``place_monster_aux()`` after — five
+lines, obviously deliberate, and the reason the strategy the forum post
+remembers was possible at all. Ours is the same two points, one line each.
+
+The part that bothered me more than the bug was that it was **silent**.
+``MON_POLY`` sets the damage to zero, which is correct — a polymorph is not a
+wound. But PLR-33's anger has exactly one site, ``mon_take_hit()``, and that
+returns early on zero damage. So nothing angered the pet and nothing said "gets
+angry!". You cast a spell on your own animal, it turned into something else, and
+then it attacked you, with no line of text anywhere accounting for the change.
+A player would reasonably conclude the game was broken. It was, but not in the
+way they would have guessed.
+
+Writing the tests made me find the interesting half. There are two rules here
+and they look like they contradict: *hurting a pet turns it hostile*, and *a
+polymorphed pet stays yours*. Chaos does both at once — it damages and it
+polymorphs. Which wins?
+
+The order settles it, and the order was already right by accident.
+``project_m()`` applies damage first and side effects second, so a chaos ball
+angers the pet through the ordinary path, and by the time the shape changes the
+side being carried across is the one anger just wrote. Hostile. Both rules hold
+and neither needed a special case — as long as the allegiance is read at the top
+of the side-effect handler and not any earlier. Read it earlier and preserving it
+becomes a way to launder an attack: bomb your own animal for free provided it
+polymorphs. There is a test for that now, and it is the one I would have missed
+if I had only tested the thing I set out to fix.
+
+Checked the fix the way the last two went in: reverted the restore and ran the
+suite. The pet and the friendly monster fail, the chaos case still passes. That
+split is the whole rule, stated as a pair of failures.
+
+One thing I looked at and left alone. If ``place_new_monster()`` fails after the
+delete, the monster is simply gone — and for a pet that means it vanishes with no
+message. Zangband put the old race back in that case. Ours does not, and it is
+4.2's own behaviour rather than anything we introduced, so it is written down
+here rather than changed on the way past.
+
+**Later the same day**, Steven read that last paragraph and said resolve it, which
+was the right call and I should have made it myself. "4.2's own behaviour" was
+doing a lot of work in that sentence — it is 4.2's behaviour in a game that has no
+water in it.
+
+I had assumed the failure was theoretical. It is not, and the number is
+embarrassing: **3.5 per cent of polymorphs from depth thirty down**, about one in
+twenty-eight, deleted the monster. 1.2 per cent at fifteen, 0.2 in the town.
+
+The cause is entirely ours. Two dozen races in the bestiary are fish, and
+``place_new_monster_one()`` refuses to put a fish on dry land — a rule we added
+for the sea, and correct. ``poly_race()`` draws from the whole allocation table
+and never asked where the monster was standing. So every fish drawn was a
+deletion, and the rate climbs with depth because the deep fish — krakens, whales,
+Charybdis — sit right in the band a deep polymorph draws from. We built the sea
+and never told the polymorph about it.
+
+I fixed it at the draw rather than at the failure, which I think is the more
+interesting half. Zangband's fallback puts the old monster back, and that turns a
+deletion into a fizzle — the spell visibly does nothing, one cast in fifty-eight.
+Better, not good. Asking ``poly_race()`` for a shape that can stand where the
+monster is standing turns it into a spell that works. So the placement
+preconditions that do not depend on who is standing there are one function now,
+``monster_race_fits_grid()``, obeyed by the placer and consulted by the drawer,
+which is the only arrangement where the two cannot drift apart. Zangband's
+fallback is kept behind it, because "unreachable" is a claim I have now been
+wrong about once today.
+
+The tests took three goes and each go taught me something.
+
+The first pair passed against a deliberately broken build, because I had them
+counting the wrong thing — with the fallback in place nothing vanishes, so
+"never empty" goes quiet while the spell is silently fizzling. The counter that
+separates the fix from the near miss is *unchanged*: how often the monster comes
+back as itself. Nought with the filter, eight in six hundred with only the
+fallback.
+
+The second go was tuned at the wrong depth and with the wrong monster. A young
+blue dragon is level 21 and the polymorph saving throw bottoms out at 11 whatever
+the power, so it saves sometimes, and every save counts as unchanged and drowns
+the signal. A soldier is level 2 and never saves.
+
+The third thing was not about polymorph at all. The suite flaked at 12 per cent,
+and it was the generator putting the character in a doorway with seven walls round
+it: the helper that places a monster beside the player wants an empty *floor*
+grid, and an open door is passable and is not floor. One level in twenty has
+nowhere to stand. Generate until there is room.
+
+Three attempts at a test for a fix I was confident in after ten minutes. The fix
+was the easy part.
+
+
 4 September 2026 — the manual was describing two different games
 ================================================================
 
