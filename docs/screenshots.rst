@@ -123,6 +123,41 @@ on. Until it existed, the only way to see the passive ones was to write a
 character dump to a file and read it.
 
 
+What fights for you
+===================
+
+Four pets — the number that follows you down a staircase — and the menu that
+commands them, on ``P``.
+
+.. image:: screenshots/pets.svg
+   :alt: The pet menu open over the wilderness outside a village, listing five
+         distance orders with "Follow me" marked as current, two switches and
+         two actions, above a character with two dogs and two bears standing
+         around it.
+   :width: 100%
+
+The line above the menu is the whole of pet balance in one sentence: *4
+creatures follow you, 36 levels between them, costing 36% of your mana
+regeneration*. It is charged on the **sum** of their levels, not the count, and
+only past a free allowance that grows with your character — so the third animal
+can cost more than the two before it put together.
+
+The orders are a policy rather than instructions to an individual. Every pet
+follows the same one, it survives a save, and it applies to pets you have not
+acquired yet.
+
+**Nothing on the map marks them as yours**, and that is deliberate. The two
+``C`` and two ``q`` beside the ``@`` are drawn exactly as they would be if they
+were about to eat you. A colour was considered and rejected: the glyph already
+carries three rules — multi-hued, purple uniques, shapechangers — and a fourth
+would lose to all of them. Look at one (``l``) and it says *pet* before its
+health; the monster list (``[``) counts them, so a row reads *4 kobolds (2
+pets)*, which is the question you actually have before firing into a crowd.
+
+The **Cheat** marker in red at the bottom is not a bug in the picture. These
+captures use the debug commands to set the scene, and any character that has
+touched them carries that marker for as long as it exists — see
+:doc:`the cheating options <option>`.
 
 How these were made
 ===================

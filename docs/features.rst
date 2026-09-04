@@ -26,7 +26,9 @@ page is the honest inventory: what is in the game now, and what is not.
 
    .. grid-item-card:: Savefiles
 
-      Compatible with neither Angband nor Zangband, and never will be
+      Compatible with neither Angband nor Zangband, and never will be.
+      Compatible across ZangbandTK versions: a character saved by an older
+      build loads into a newer one.
 
 
 In the game now

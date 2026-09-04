@@ -176,6 +176,22 @@ Before you start
    **Savefiles are not compatible** with Angband or Zangband, and never will be.
    Do not point ZangbandTK at a savefile you care about.
 
+**Your character survives an upgrade.** A ZangbandTK savefile is written in
+blocks, each carrying its own version, and the loader keeps a reader for every
+version it has ever written — so a character saved by an older build loads into
+a newer one. Things that were renamed are mapped rather than lost, and a shipped
+corpus of real characters, played and saved by hand across the whole of
+development, is loaded by the test suite on every change so that a break is
+noticed before a release rather than after.
+
+Where something has been removed outright rather than renamed, the character
+comes back **without that item** rather than not at all. The one thing that will
+refuse a savefile is a change it cannot honestly read: a caster whose spell list
+has moved underneath them is turned away rather than handed somebody else's
+spells. Content can be dropped; identity is not invented. Four characters out of
+thirty-five in the corpus are refused on that rule, and each is recorded with its
+reason.
+
 Everything Zangband is known for is now in the game — the wilderness, the towns,
 the dungeons, the bestiary, mutations, chaos patrons, the seven realms and pets.
 Nightmare mode is the one milestone still to come; :doc:`features` is the honest

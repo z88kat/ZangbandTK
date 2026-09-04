@@ -1265,6 +1265,36 @@ void run_game_loop(void)
 				}
 				update_stuff(player);
 			}
+
+			/*
+			 * A full stable, for the picture of what fights for you.  The
+			 * same thing the debug menu's "Gain a pet" does, four times, and
+			 * named rather than rolled so the picture is the same every time
+			 * it is taken.
+			 *
+			 * Four because that is pets:max-carried -- the number that
+			 * follows you down a staircase -- so the shot shows a stable at
+			 * its documented limit rather than an arbitrary crowd.  Their
+			 * levels run 1, 9, 10 and 16, which is thirty-six between them:
+			 * enough that the upkeep line reads as a real number instead of
+			 * rounding to nothing, and all four are things a Nature caster
+			 * could actually charm.
+			 */
+			if (getenv("ZTK_SHOT_PETS")) {
+				static const char *shot_pets[] = {
+					"wild dog", "cave bear", "wolf", "grizzly bear"
+				};
+				size_t pi;
+
+				for (pi = 0; pi < N_ELEMENTS(shot_pets); pi++) {
+					struct monster_race *race =
+						lookup_monster(shot_pets[pi]);
+
+					if (race) place_pet_beside_player(race);
+				}
+				player->upkeep->redraw |= (PR_MONLIST);
+				update_stuff(player);
+			}
 		}
 	}
 	/* Tidy up after the player's command */
