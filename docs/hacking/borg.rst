@@ -76,6 +76,52 @@ because a borg waiting for a prompt it cannot see makes decisions for ever
 without the clock moving — which neither crashes nor aborts, it hangs, and a
 hung CI job is a red build with no diagnosis.
 
+Prompts, and the one mistake that looks like four
+-------------------------------------------------
+
+**Read this before adding anything to the harness that answers a prompt.**
+
+A prompt in this game reads its input with ``inkey_ex()``, which consults
+``inkey_hack`` -- the borg's hook -- **before** it polls the terminal. So while
+the borg is active, *the borg answers every prompt in the game*, not just the
+ones it meant to raise. A key pushed into the terminal with ``Term_keypress()``
+is never read: ``internal_borg_inkey()`` only *peeks* at the terminal, for the
+user-abort check, and a headless run ignores that peek by design.
+
+This harness got that wrong four separate times, and each cost most of an hour
+to diagnose by sampling a wedged process:
+
+1. ``borg_init()``'s own prompts, answered out of the command script.
+2. Level generation's prompts, likewise -- a ``borg-status?`` ended up executing
+   in the middle of ``prepare_next_level()``.
+3. A store.
+4. 4.2's object context menu, reached when a stray keypress lands on
+   ``do_cmd_equip()``. This one wedges a run outright: the borg keeps thinking,
+   the game turn never advances, and the process sits at 0% CPU.
+
+**They look like four problems and they are one.** The first three appeared to
+be fixed by answering at the terminal layer, and that worked only because in
+those cases the borg was *not yet active* -- so the terminal layer genuinely was
+the reader. The moment a prompt appears mid-run the same approach silently
+stops working, which is why the fourth resisted three separate fixes.
+
+Two conclusions worth carrying:
+
+- **Answer at the borg's layer, not the terminal's**, whenever the borg is
+  active. ``borg_keypress()`` puts a key where ``internal_borg_inkey()`` will
+  hand it over; ``Term_keypress()`` does not.
+- **"ESCAPE does not clear that menu" was a fact about the harness, not the
+  menu.** ``menu_dynamic_select()`` honours ESCAPE and returns -1, so a human
+  player is not trapped there. It was raised as a possible game-side interface
+  fault and it is not one.
+
+The harness detects the general case rather than each prompt: if the game keeps
+asking for input while the game *turn* does not advance -- a borg that is
+playing moves the clock, one trapped in a menu does not, however busy it looks
+-- it dismisses and logs, and fails the run as wedged after a bounded number of
+attempts. That detection is sound and reports the turn and seed; **what to send
+so the prompt actually clears is still open** at the time of writing.
+
 What this variant changes underneath it
 ---------------------------------------
 

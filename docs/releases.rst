@@ -33,6 +33,36 @@ Unreleased
 Tidying — 4 September 2026
 ---------------------------
 
+- **3.94.0** — **Four prompt failures turn out to be one mistake, and it is
+  the harness's.** Sampling a wedged process settled a question three
+  hypotheses had got wrong.
+
+  A prompt reads its input with ``inkey_ex()``, which consults the borg's
+  ``inkey_hack`` **before** polling the terminal — so while the borg is active
+  *the borg answers every prompt in the game*. A key pushed with
+  ``Term_keypress()`` is never read at all; ``internal_borg_inkey()`` only
+  peeks at the terminal for the user-abort check, which a headless run ignores
+  by design.
+
+  That unifies four failures previously treated as separate: the borg's own
+  initialisation, level generation, a store, and 4.2's object context menu. The
+  first three *looked* fixed because in those cases the borg was not yet active
+  and the terminal layer genuinely was the reader — which is why the fourth
+  resisted three separate fixes.
+
+  It also retires a suspected game defect. "ESCAPE does not clear that context
+  menu" was a fact about the harness, not the menu:
+  ``menu_dynamic_select()`` honours ESCAPE and returns −1, so a player is not
+  trapped there.
+
+  The whole of it is written up in :doc:`hacking/borg` beside the harness
+  commands, because it is the sort of thing that costs the next person a day.
+
+  **The context-menu wedge is not fixed.** Delivering ESCAPE through the borg's
+  own queue is the right layer and still does not clear it, and it reproduces
+  on every seed tried — turns 725, 755, 1063 and 3765. So the scoped route
+  cannot yet complete a verification run.
+
 - **3.93.0** — **A borg run says where it got to, and breaks out of prompts it
   cannot answer.** Two instruments, and the second turned a class of
   half-hour investigations into a line of log.

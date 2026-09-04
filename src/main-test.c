@@ -1256,10 +1256,42 @@ static errr term_xtra_event(int v) {
 				return 0;
 			}
 
+			/*
+			 * ESCAPE *and* a flush of the borg's own keypress queue.
+			 *
+			 * ESCAPE alone did not clear it, forty-one times over, and the
+			 * reason is not that the menu refuses to close --
+			 * `menu_dynamic_select()` honours ESCAPE and returns -1, so a
+			 * player is not trapped there. It is that the borg still holds the
+			 * rest of a queued key sequence whose prompt has desynchronised,
+			 * and those keys re-open the menu as fast as ESCAPE closes it.
+			 *
+			 * Flushing is the right general answer for the same reason the
+			 * breaker is: whatever sequence the borg was midway through has
+			 * already gone wrong by the time we are here, so finishing it can
+			 * only make things worse.
+			 */
+			/*
+			 * Delivered through the *borg's* queue, not the terminal's.
+			 *
+			 * This is the whole of the bug, and it took four prompts to see.
+			 * A prompt reads with `inkey_ex()`, which consults `inkey_hack`
+			 * -- the borg's hook -- **before** it polls the terminal. So while
+			 * the borg is active the borg answers every prompt in the game,
+			 * and a key pushed with `Term_keypress()` sits in a queue nothing
+			 * reads: `internal_borg_inkey()` only *peeks* at the terminal, for
+			 * the user-abort check that `borg_headless` deliberately ignores.
+			 *
+			 * Flush the desynchronised sequence, then queue ESCAPE where the
+			 * borg will hand it over. Flushing alone made matters worse --
+			 * `borg_think()` simply generates a fresh sequence, so it removed
+			 * the only channel that could have carried the key.
+			 */
 			printf("borg-stuck: dismissing an unanswered prompt at turn %d "
 				   "(%d)\n", (int) turn, stuck_escapes);
 			fflush(stdout);
-			nextkey = ESCAPE;
+			borg_flush();
+			borg_keypress(ESCAPE);
 			return 0;
 		}
 	}
