@@ -660,6 +660,71 @@ static void player_outfit(struct player *p)
 		kind->everseen = true;
 	}
 
+	/*
+	 * A book for each realm the character studies (PLR-08, PLR-03).
+	 *
+	 * Zangband gives every caster its first book at birth and resolves *which*
+	 * book from the realm chosen moments earlier: `player_init[]` holds the
+	 * marker `{TV_SORCERY_BOOK, 0}` and `player_outfit()` turns it into
+	 * `TV_LIFE_BOOK + realm - 1` ([birth.c:668](../archive/zangband/src/birth.c#L668)).
+	 * Mage, Priest, Ranger and Warrior-Mage carry a second marker for their
+	 * second realm slot.
+	 *
+	 * A `start_items` line cannot say that. It names one object kind, and the
+	 * realm is not known until the player picks it, so a fixed line is right
+	 * only when the class has exactly one realm to choose from -- which is why
+	 * a Rogue who chose Death used to start with an arcane book it could not
+	 * open. Six classes had no book at all: the Mage and the Priest lost
+	 * theirs to the realm renames in `d1eadd951` and `0847955a7`, each of
+	 * which fixed one class's book and dropped another's, and the four
+	 * imported casters never had one. A level 1 Mage read "Study (1)" on the
+	 * status bar with nothing to study from.
+	 *
+	 * Done here rather than in the data because the class already knows the
+	 * answer: every book it declares carries its realm, so the book to give is
+	 * the first one belonging to a realm this character studies. That needs no
+	 * new directive and cannot fall out of step with `book:` lines, which a
+	 * parallel list in `equip:` did.
+	 */
+	for (i = 0; i < REALM_CHOICES; i++) {
+		const struct magic_realm *realm = p->realm[i];
+		int b;
+
+		if (!realm) continue;
+
+		/* The same realm in both slots is one book, not two */
+		if (i > 0 && p->realm[i - 1] == realm) continue;
+
+		for (b = 0; b < p->class->magic.num_books; b++) {
+			const struct class_book *book = &p->class->magic.books[b];
+			struct object_kind *kind;
+
+			if (book->realm != realm) continue;
+
+			kind = lookup_kind(book->tval, book->sval);
+			if (!kind) break;
+
+			obj = object_new();
+			object_prep(obj, kind, 0, MINIMISE);
+			obj->number = 1;
+			obj->origin = ORIGIN_BIRTH;
+
+			known_obj = object_new();
+			obj->known = known_obj;
+			object_set_base_known(p, obj);
+			object_flavor_aware(p, obj);
+			obj->known->pval = obj->pval;
+			obj->known->effect = obj->effect;
+			obj->known->notice |= OBJ_NOTICE_ASSESSED;
+
+			p->au -= object_value_real(obj, obj->number);
+
+			inven_carry(p, obj, true, false);
+			kind->everseen = true;
+			break;
+		}
+	}
+
 	/* Sanity check */
 	if (p->au < 0)
 		p->au = 0;
@@ -1178,12 +1243,12 @@ void do_cmd_choose_realm(struct command *cmd)
 
 	/* The first slot that still has something to decide. */
 	for (slot = 0; slot < REALM_CHOICES; slot++) {
-		if (player_realm_choices(player->class, slot, NULL, 0) < 2) continue;
+		if (player_realm_offer(player, slot, NULL, 0) < 2) continue;
 		if (!player->realm_chosen[slot]) break;
 	}
 	if (slot >= REALM_CHOICES) return;
 
-	n = player_realm_choices(player->class, slot, offered, REALM_MAX);
+	n = player_realm_offer(player, slot, offered, REALM_MAX);
 	if (choice < 0 || choice >= n) return;
 
 	player->realm[slot] = offered[choice];

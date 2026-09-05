@@ -616,7 +616,7 @@ static int build_realm_menu(int slot)
 	struct birthmenu_data *mdata;
 	int n, i;
 
-	n = player_realm_choices(player->class, slot, offered, REALM_MAX);
+	n = player_realm_offer(player, slot, offered, REALM_MAX);
 	if (n < 2) return n;
 
 	init_birth_menu(&realm_menu, n, 0, &realm_region, false, NULL);

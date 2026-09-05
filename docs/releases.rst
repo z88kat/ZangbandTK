@@ -48,6 +48,45 @@ Unreleased
 Gervais' unexplored squares go black too — 5 September 2026
 --------------------------------------------------------------
 
+- **3.106.0** — **Every caster begins with a spellbook again.** Six classes
+  started the game unable to cast: the Mage and the Priest lost theirs to the
+  realm renames — ``d1eadd951`` and ``0847955a7`` each fixed one class's book
+  and deleted another's in the same edit — and the Monk, Chaos-Warrior,
+  Warrior-Mage and High-Mage never had one. A level 1 Mage read ``Study (1)``
+  on the status bar with nothing to study from.
+
+  The book is resolved from the realm chosen at birth, which is the only way it
+  can be right. Zangband does the same: ``player_init[]`` holds a marker and
+  ``player_outfit()`` turns it into the book of the realm picked moments
+  earlier. A fixed ``equip:`` line names one object kind and the realm is not
+  known until the player picks it, so the Rogue's and the Paladin's fixed books
+  were wrong in general too — a Rogue who took Death began with an arcane
+  primer it could not open. Those two are fixed by the same change.
+
+  No new data directive was needed: the class already declares which realm each
+  of its books belongs to, so the book to give is the first one of a realm this
+  character studies.
+
+  **And a realm already taken is no longer offered twice.** A Mage defaulted to
+  Arcane in *both* slots — thirty-two spells where it should have sixty-four,
+  and one book where Zangband gives two — because the function answering "what
+  may I pick" only ever saw the class, never the character. Zangband excludes
+  the first realm from the second list; now so does this. Mage, Priest, Ranger
+  and Warrior-Mage start with two books, matching the archive exactly.
+
+  New suite ``player/kit``, because nothing pinned starting equipment and that
+  is how two classes lost a book without anybody noticing. It asserts that
+  every class starts with something, that every caster holds a book of each
+  realm it studies, that no class holds a book it cannot open, that the
+  two-slot classes take two different realms, and that the bookless classes
+  stay bookless.
+
+  Not changed, and recorded instead: five classes shared with Angband carry no
+  experience penalty where Zangband gave them one. That is BAL-04 and DEC-36
+  working as written — 4.2's classes keep 4.2's conventions — but it leaves the
+  five imported classes as the only ones paying for their power. Changing it is
+  a balance judgement about Angband's classes rather than a conversion one.
+
 - **3.105.0** — **Virtues are on the character sheet, and M8 is finished.**
   PLR-20 asks that virtues be displayed to the player. They reached the
   character *dump* — a file you have to ask for and open in something else —

@@ -690,10 +690,17 @@ static const struct { uint16_t wid, hgt; } wild_town_bands[] = {
  * light wounds, somewhere to store what will not fit in a pack, and a
  * bookseller.
  *
- * The bookseller is here for a reason worth recording: no class begins with a
- * spellbook.  A mage starts with a rapier and a torch, so a village without one
- * would leave every caster unable to learn a spell until they had walked to
- * another town.
+ * The bookseller is here for a reason worth recording, though the reason has
+ * changed.  It used to be that no class began with a spellbook -- a Mage
+ * started with a rapier and a torch -- so a village without a bookseller would
+ * have left every caster unable to learn a spell until they had walked to
+ * another town.  That was a regression rather than a design (PLR-08), and
+ * every caster is now outfitted with the first book of each realm it studies.
+ *
+ * The bookseller stays, because the first book is where a caster starts and
+ * not where it finishes: the second, third and fourth books of a realm are
+ * bought, and a character who chooses a second realm later still needs
+ * somewhere to buy into it.
  *
  * What it does *not* hold -- the armoury, the weaponsmith, the magic shop, the
  * black market -- is what makes a larger town worth the walk.

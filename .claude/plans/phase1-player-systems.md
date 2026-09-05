@@ -249,6 +249,14 @@ mechanism; this is new.
 **PLR-03 — The 5 Zangband-only classes are available:** Warrior-Mage, Chaos-Warrior, Monk,
 Mindcrafter, High-Mage.
 
+> **Starting spellbooks, 3.106.0.** All five were present from 3.64.0 and four of them
+> began the game unable to cast, along with Angband's own Mage and Priest. Zangband
+> outfits a caster with the book of the realm it chose at birth; a `start_items` line
+> cannot express that, so `player_outfit()` now grants the first book of each realm the
+> character studies. Pinned by the `player/kit` suite, which did not exist — nothing
+> asserted any class's starting equipment, which is how the Mage and the Priest lost
+> theirs to two commits that were about something else.
+
 **PLR-04 — Monk unarmed combat is implemented** as a distinct progression, not as a
 weaponless penalty.
 

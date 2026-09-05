@@ -371,17 +371,67 @@ int player_realm_choices(const struct player_class *c, int slot,
  * not fill: a character who was a Priest and is now a Rogue must not keep Life
  * in a slot the Rogue does not have.
  */
+/**
+ * What this character may still pick for a slot (PLR-08).
+ *
+ * `player_realm_choices()` answers about the *class* -- what a Mage is
+ * entitled to -- and cannot answer this, because it never sees the character.
+ * A realm already taken in an earlier slot must not be offered again: a Mage
+ * of Arcane and Arcane studies thirty-two spells where it should study
+ * sixty-four, and starts with one book where Zangband gives it two.
+ *
+ * Zangband filters the same way and in the same place, excluding the first
+ * realm from the second list at
+ * [birth.c:963](../archive/zangband/src/birth.c#L963).
+ *
+ * Kept separate from `player_realm_choices()` rather than folded into it,
+ * because the two questions differ and the entitlement one is what the class
+ * data means: a Mage is entitled to all seven whatever it has picked so far.
+ */
+int player_realm_offer(const struct player *p, int slot,
+					   const struct magic_realm **out, int max)
+{
+	const struct magic_realm *all[REALM_MAX];
+	int n, i, found = 0;
+
+	if (!p) return 0;
+
+	n = player_realm_choices(p->class, slot, all, REALM_MAX);
+
+	for (i = 0; i < n; i++) {
+		int earlier;
+		bool taken = false;
+
+		for (earlier = 0; earlier < slot; earlier++)
+			if (p->realm[earlier] == all[i]) taken = true;
+
+		if (taken) continue;
+
+		if (out && found < max) out[found] = all[i];
+		found++;
+	}
+
+	return found;
+}
+
 void player_realm_default(struct player *p)
 {
 	int slot;
 
+	/*
+	 * Filled in slot order, and each slot sees what the ones before it took,
+	 * so a class entitled to the same realm twice defaults to two different
+	 * ones rather than the same one twice.
+	 */
+	for (slot = 0; slot < REALM_CHOICES; slot++)
+		p->realm[slot] = NULL;
+
 	for (slot = 0; slot < REALM_CHOICES; slot++) {
 		const struct magic_realm *first = NULL;
 
-		p->realm[slot] = NULL;
 		if (!p->class || slot >= p->class->magic.realm_count) continue;
 
-		if (player_realm_choices(p->class, slot, &first, 1) > 0) {
+		if (player_realm_offer(p, slot, &first, 1) > 0) {
 			p->realm[slot] = first;
 		}
 	}

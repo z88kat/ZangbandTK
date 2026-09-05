@@ -1485,7 +1485,6 @@ realm-choice:1:nature
 book:nature book:town:[Call of the Wild]:8:nature
 book-graphics:?:y
 book-properties:25:40:1 to 100
-equip:nature book:[Call of the Wild]:1:1:none
 spell:Detect Creatures:2:1:23:5
 effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
@@ -2969,7 +2968,6 @@ realm-choice:1:death
 book:shadow book:town:[Black Prayers]:8:death
 book-graphics:?:p
 book-properties:25:40:1 to 100
-equip:shadow book:[Black Prayers]:1:1:none
 spell:Detect Unlife:1:1:21:5
 effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
@@ -3171,7 +3169,6 @@ equip:light:Wooden Torch:1:3:none
 equip:sword:Main Gauche:1:1:none
 equip:scroll:Protection from Evil:1:1:none
 equip:scroll:Word of Recall:1:1:birth_no_recall
-equip:prayer book:[Book of Common Prayer]:1:1:none
 player-flags:BLESS_WEAPON | SHIELD_BASH
 title:Gallant
 title:Keeper
@@ -3601,7 +3598,6 @@ equip:light:Wooden Torch:1:3:none
 equip:sword:Dagger:1:1:none
 equip:soft armour:Soft Leather Armour:1:1:none
 equip:scroll:Word of Recall:1:1:birth_no_recall
-equip:magic book:[Cantrips for Beginners]:1:1:none
 player-flags:CHOOSE_SPELLS | STEAL
 title:Vagabond
 title:Cutpurse
@@ -4247,7 +4243,6 @@ equip:sword:Main Gauche:1:1:none
 equip:bow:Short Bow:1:1:none
 equip:arrow:Arrow:15:20:none
 equip:scroll:Word of Recall:1:1:birth_no_recall
-equip:nature book:[Call of the Wild]:1:1:none
 player-flags:FAST_SHOT | CHOOSE_SPELLS
 title:Runner
 title:Strider
@@ -5208,7 +5203,6 @@ max-attacks:5
 pet-upkeep-div:20
 min-weight:100
 strength-multiplier:5
-equip:shadow book:[Black Prayers]:1:1:none
 equip:food:Ration of Food:1:3:none
 equip:light:Wooden Torch:1:3:none
 equip:sword:Tulwar:1:1:none

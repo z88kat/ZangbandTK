@@ -29,6 +29,9 @@ const struct class_book *object_kind_to_book(const struct object_kind *kind);
 int class_book_realms(const struct player_class *c);
 bool class_has_realm_book(const struct player_class *c,
 						  const struct magic_realm *realm);
+/* What this character may still pick for a slot, earlier slots excluded. */
+int player_realm_offer(const struct player *p, int slot,
+					   const struct magic_realm **out, int max);
 int player_realm_choices(const struct player_class *c, int slot,
 						 const struct magic_realm **out, int max);
 void player_realm_default(struct player *p);

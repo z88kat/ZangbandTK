@@ -90,7 +90,20 @@ Choosing them
 Realm choice is a birth step of its own, after race and class, because which
 realms you may study is a property of your **class**. That is what makes the
 combination mean something rather than merely being wide: a Paladin is offered
-Life or Death and nothing else, and a Mage is offered all seven twice over.
+Life or Death and nothing else, and a Mage is offered all seven, then the six
+it did not take.
+
+A realm already taken is not offered again. A Mage of Arcane and Arcane would
+study thirty-two spells where it should study sixty-four, which is not a choice
+anybody would make on purpose and is therefore not one you are given.
+
+**You begin holding the first book of every realm you study.** A Mage and a
+Priest start with two, one for each slot; a Monk or a Chaos-Warrior with one;
+a Warrior or a Mindcrafter with none, having no realm to hold a book for. The
+book follows the realm you actually chose, so a Rogue who takes Death starts
+with a Necromantic Tome and not somebody else's arcane primer. The second,
+third and fourth books of a realm are bought or found — the village bookseller
+exists for exactly that.
 
 .. list-table::
    :header-rows: 1

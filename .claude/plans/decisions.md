@@ -1143,7 +1143,30 @@ six, and `x_dev → device incr` is 1.00 in six of six. Those are not coincidenc
 they are 4.2 having deliberately rescaled one skill and left the other alone.
 
 *The experience factor is kept*, which makes the Monk the only class in the game
-that costs anything. That is the same call PLR-01 made for races and for the same
+that costs anything.
+
+> **Revisited 3.106.0, and left alone — but it is worth a second look.** This
+> was written when the Monk was the only imported class. There are now five,
+> and all five carry Zangband's figure (Monk 40, Chaos-Warrior 35, Warrior-Mage
+> 50, Mindcrafter 25, High-Mage 30) while the five shared classes that had one
+> in Zangband run at 0 — Mage 30, Priest 20, Rogue 25, Ranger 30, Paladin 35.
+>
+> That is BAL-04 and this paragraph working exactly as written: 4.2's classes
+> keep 4.2's conventions, imported classes bring their own. It is not an
+> oversight, and an M8 audit that called it "the one substantive gap" was
+> wrong.
+>
+> What it *is* is a live asymmetry nobody chose on purpose. A Monk pays forty
+> per cent more per level than a Warrior; a Mage pays the same as one, where
+> Zangband charged it thirty. So the imported classes are the only ones paying
+> for their power, and the shared casters got their Zangband spell lists under
+> DEC-57 without the price that came with them.
+>
+> Deliberately not changed here. Giving the shared six Zangband's experience
+> factors is a judgement about *4.2's* classes rather than about the import,
+> and it would make them half-4.2 (stats, skills, hit dice, titles) and
+> half-Zangband (experience) — which is a balance decision for the project
+> owner, not a conversion one. That is the same call PLR-01 made for races and for the same
 reason: 4.2 treats the field as a formality, Zangband used it as the balance dial,
 and a Monk that levels as fast as a Warrior is not paying for eight unarmed blows.
 
