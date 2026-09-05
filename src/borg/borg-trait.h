@@ -392,16 +392,38 @@ struct goals {
      * mouths is inside the starting window -- the nearest reaching past 15 is
      * 576 grids away.
      *
-     * `world_dungeon` is the index of the mouth being walked to, or -1.
+     * `world_kind` says which sort of landmark is being walked to and
+     * `world_index` identifies it within that sort; `BORG_WORLD_NONE` is
+     * "not crossing".
      * `world_tries` is the step budget: a walk that stops closing the distance
      * is abandoned rather than retried, because a borg that re-picks an
      * unreachable target every time it gets bored is the same thrash as the
      * stair-scum loop and the bravery escalation.
      */
     struct loc world;
-    int16_t    world_dungeon;
+    int16_t    world_kind;      /* enum borg_world_goal */
+    int16_t    world_index;     /* mouth or town, by kind */
     int16_t    world_tries;
     int16_t    world_best;
+};
+
+/**
+ * What the borg is walking across the world to reach (BRG-13, BRG-25).
+ *
+ * A dungeon mouth was the only landmark worth crossing to while the borg's
+ * whole purpose was depth. It is not: the starting village keeps four shops by
+ * design (WLD-11a), and the borg's own restock rules want a Staff of
+ * Teleportation from depth 10, which is a magic shop item. A borg that cannot
+ * shop anywhere but where it was born stops at depth 9 whatever else is fixed.
+ *
+ * Both are the same walk to a different landmark, so they share everything
+ * except the choosing and what happens on arrival -- a mouth is descended, a
+ * town is simply stood in and the ordinary shopping takes over.
+ */
+enum borg_world_goal {
+    BORG_WORLD_NONE = 0,
+    BORG_WORLD_DUNGEON,
+    BORG_WORLD_TOWN
 };
 
 struct temp {
@@ -431,6 +453,13 @@ struct temp {
  * All the information the borg knows about itself
  */
 struct borg_struct {
+    /*
+     * Where the surface window was anchored last time the map was read
+     * (ZangbandTK, BRG-25). Window-relative memories -- the shop tracker --
+     * are only meaningful while this has not moved.
+     */
+    struct loc wild_offset;
+
     struct player *player; /* !HACK to work around a MSVC bug */
 
     /* current traits, set in borg_notice */

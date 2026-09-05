@@ -48,6 +48,44 @@ Unreleased
 An unexplored square is black everywhere — 4 September 2026
 -------------------------------------------------------------
 
+- **3.102.0** — **The borg can go shopping in another town.** The starting
+  village keeps four trades by design (WLD-11a) and the borg's own restock rule
+  wants a Staff of Teleportation from depth 10, which is a magic shop item. A
+  borg that can only shop where it was born stops at depth 9 with two hundred
+  thousand gold, whatever else is fixed.
+
+  Crossing the world to a town is the same walk as crossing to a dungeon mouth,
+  so it is the same machinery pointed at a different landmark: the goal now
+  carries a kind as well as an index, and only the choosing and the arrival
+  differ -- a mouth is descended, a town is stood in and the ordinary shopping
+  takes over.
+
+  Three things had to be right, and the first two were wrong first:
+
+  *What the borg wants* is read from traits, not from ``borg_restock()``'s
+  message and not by asking ``borg_prepared()`` where the wall is. The obvious
+  version does ask, and it is not a pure query -- it settles
+  ``borg.ready_morgoth`` on the way past and returns a pointer into a shared
+  static buffer. Speculating with it once a turn from the flow wedged a cheated
+  Warrior on an unexpected direction prompt at turn 787,049.
+
+  *What the borg already has* is the trades of the town it is standing in or
+  beside, and nothing at all out in the country. "The nearest town" reads
+  better and is wrong: a borg 334 grids from Avalon was credited with Avalon's
+  magic shop, concluded it wanted for nothing, and stood in a field.
+
+  *Where the shops are* had never survived the world moving. ``track_shop_x/y``
+  hold window coordinates and the surface is a 144-grid porthole that
+  re-anchors as the character walks, so a borg that walked to Avalon arrived
+  still holding four sets of coordinates that now named open country. They are
+  translated with the window now, and dropped when they scroll out of it.
+
+  Measured: the borg picks Avalon -- the nearest town with a magic shop, about
+  180 grids -- walks there and arrives. What it does not yet do is settle and
+  shop once it gets there; it wanders off again, because ``borg_flow_dark()``
+  will explore a scrolling wilderness for ever and there is always more of it.
+  That is the next thing, and it is a bigger problem than this one was.
+
 - **3.101.0** — **The borg can learn spells, and cast them.** Five hypotheses
   about the study loop failed, including memory corruption -- ASAN ran clean
   straight through it. Reading the borg's study path against the game's, line

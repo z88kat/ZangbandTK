@@ -1015,3 +1015,28 @@ worth doing when the borg has more test scaffolding, not worth blocking this on.
 
 Remaining: `cast` is 1 or 0 for every class. Learning is fixed; using what is
 learned is the next question, and it is what M9 actually wants demonstrated.
+
+### BRG-25 — town travel (travel done, shopping not, 3.102.0)
+
+Done: the world crossing takes a town as a target, the chooser picks the
+nearest town keeping a trade the borg needs and cannot buy where it stands,
+and the shop tracker survives the window scrolling. Measured, the borg walks
+the ~180 grids to Avalon and arrives.
+
+Not done: it does not settle and shop once there. It arrives, wanders back
+out, and re-targets.
+
+### BRG-26 — the borg wanders the wilderness (open, and the real blocker)
+
+`borg_flow_dark()` explores unknown grids when there is nothing better to do.
+On a scrolling surface there is always more unknown, so "nothing better to do"
+never ends: a cheated Warrior walked 467 grids from its village and 334 from
+the nearest town, and spent most of a run in open country.
+
+This is why BRG-25's arrival does not stick, and it is very likely why max
+depth sits at 8 while the borg is nominally capable of far more. Exploring an
+endless map is not exploration, it is a random walk with a step budget.
+
+Wanted: a bound on surface exploration -- something like "explore the town and
+the ground between it and a known mouth, not the world" -- so that having
+arrived somewhere counts for something.

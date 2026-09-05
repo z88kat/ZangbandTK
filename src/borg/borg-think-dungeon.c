@@ -2005,24 +2005,34 @@ bool borg_think_dungeon(void)
     if (borg_flow_vein(false, 250))
         return true;
 
-    /* Explore interesting grids */
-    if (borg_flow_dark(true))
-        return true;
-
     /*
-     * Cross the world to a deeper dungeon (ZangbandTK, BRG-13).
+     * Cross the world to a deeper dungeon, or to a town that stocks what this
+     * one cannot (ZangbandTK, BRG-13, BRG-25).
      *
-     * After the shopping below and before leaving the level, because a
-     * crossing of several hundred grids wants food and light bought first --
-     * and because the borg's own answer to "no deeper in this dungeon" is to
-     * come up here, which is what puts it in a position to choose.
+     * Before exploring, not after, and that ordering is a measured correction.
+     * It sat below `borg_flow_dark()` on the reasoning that a crossing of
+     * several hundred grids should wait until there is nothing better to do.
+     * On this game's surface there is always something: the wilderness scrolls
+     * as the character walks, so fresh unexplored grids arrive faster than the
+     * borg can visit them and the crossing is never reached at all. The borg
+     * explored the countryside around its village for two thirds of a million
+     * turns with a hundred and eighty grid walk to a magic shop it needed.
      *
-     * Does nothing until the borg is actually stuck: `borg_choose_dungeon()`
-     * only offers a mouth that goes deeper than the dungeon it has been in,
-     * that it is ready to enter at that dungeon's shallowest level, and whose
-     * straight line is clear of impassable terrain.
+     * Exploring is what a borg does when it has no better plan. Being walled
+     * in is a better plan, and both choosers say so only when the borg is
+     * genuinely stuck: `borg_choose_dungeon()` wants to have reached the
+     * bottom of where it is, and `borg_choose_town()` wants a shop that would
+     * lift a restock refusal standing between it and the next depth.
+     *
+     * Still after chasing monsters and objects, because those are steps away
+     * rather than a journey, and a borg that walks past a free item to start
+     * a crossing arrives worse equipped for it.
      */
     if (!borg.trait[BI_CDEPTH] && borg_flow_world())
+        return true;
+
+    /* Explore interesting grids */
+    if (borg_flow_dark(true))
         return true;
 
     /*

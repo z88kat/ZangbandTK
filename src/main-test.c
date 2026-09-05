@@ -909,6 +909,66 @@ static void c_borg_spells(char *rest)
 }
 
 /**
+ * borg-towns? -- the world's towns, and what each keeps (BRG-25).
+ *
+ * The borg crosses the world for a shop it cannot reach, so the question
+ * "which town has a magic shop and how far is it" has to be answerable
+ * without reading a savefile. Distance is from the character, in world grids.
+ */
+static void c_borg_towns(char *rest)
+{
+	static const char *store_name[] = {
+		"general", "armoury", "weapon", "book",
+		"alchemy", "magic",   "black",  "home"
+	};
+	int i, here;
+	struct loc w;
+
+	if (!player || !wild) {
+		printf("borg-towns: FAILED no world\n");
+		run_failed = 1;
+		return;
+	}
+
+	w.y  = player->grid.y + player->wild_offset.y;
+	w.x  = player->grid.x + player->wild_offset.x;
+	here = wild_town_here(wild, w);
+
+	for (i = 0; i < wild_town_count(wild); i++) {
+		struct wild_town *t = &wild->towns[i];
+		struct loc org = wild_town_origin_of(wild, i);
+		size_t k;
+
+		printf("borg-town: %d %-14s band=%d at %d,%d dist=%d%s stores=",
+			   i, t->name ? t->name : "?", (int) t->band,
+			   org.y, org.x,
+			   ABS(org.y - w.y) + ABS(org.x - w.x),
+			   i == here ? " (HERE)" : "");
+
+		for (k = 0; k < N_ELEMENTS(store_name); k++)
+			if (t->stores & (1u << k)) printf("%s ", store_name[k]);
+
+		printf("\n");
+	}
+
+	{
+		uint16_t want = borg_stores_wanted();
+		size_t   k;
+
+		printf("borg-towns: %d in the world, standing in %d, home %d, "
+			   "would cross to %d (maxdepth=%d wants=",
+			   wild_town_count(wild), here, borg_town_home(),
+			   borg_choose_town(), (int) borg.trait[BI_MAXDEPTH]);
+
+		for (k = 0; k < N_ELEMENTS(store_name); k++)
+			if (want & (1u << k)) printf("%s ", store_name[k]);
+
+		printf("%s)\n", want ? "" : "nothing");
+	}
+	fflush(stdout);
+}
+
+/**
  * borg-exercise? -- what the run actually exercised (BRG-22).
  *
  * The point of the scoped route, and the thing reaching depth 30 is only the
@@ -1402,6 +1462,7 @@ static test_cmd cmds[] = {
 	{ "borg-terrain?", c_borg_terrain },
 	{ "borg-prepared?", c_borg_prepared },
 	{ "borg-spells?", c_borg_spells },
+	{ "borg-towns?", c_borg_towns },
 	{ "borg-exercise?", c_borg_exercise },
 	{ "borg-cheat", c_borg_cheat },
 	{ "borg-jump", c_borg_jump },

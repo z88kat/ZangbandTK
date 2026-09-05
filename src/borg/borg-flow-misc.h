@@ -107,6 +107,19 @@ extern int borg_extract_dir(int y1, int x1, int y2, int x2);
 extern bool borg_flow_world(void);
 
 /*
+ * Which town the borg would cross the world to shop in, or -1 (BRG-25).
+ * Exposed for the harness: a crossing that never starts and a crossing that
+ * starts and fails look identical from outside, and they are different bugs.
+ */
+extern int borg_choose_town(void);
+
+/* Which trades would end the borg's current shortfall, as a store bitmask. */
+extern uint16_t borg_stores_wanted(void);
+
+/* The town the borg shops at: the one it stands in, else the nearest. */
+extern int borg_town_home(void);
+
+/*
  * Given a "source" and "target" locations, travel in a "direction",
  */
 extern int borg_goto_dir(int y1, int x1, int y2, int x2);

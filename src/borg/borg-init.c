@@ -547,7 +547,8 @@ void borg_init(void)
      * "none" -- the sort of off-by-one that would have the borg walk to the
      * Vaults of Amber's own mouth on its first turn.
      */
-    borg.goal.world_dungeon = -1;
+    borg.goal.world_kind  = BORG_WORLD_NONE;
+    borg.goal.world_index = -1;
     borg.goal.world_best    = -1;
     borg.goal.world_tries   = 0;
 

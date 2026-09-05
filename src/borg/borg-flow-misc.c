@@ -20,6 +20,7 @@
 #include "../dun-type.h"
 #include "../wild.h"
 #include "borg-flow-misc.h"
+#include "borg-prepared.h"
 
 #ifdef ALLOW_BORG
 
@@ -958,6 +959,230 @@ static int borg_choose_dungeon(void)
 }
 
 /*
+ * Which town the borg is standing in, or -1 out in the country.
+ */
+static int borg_town_here(void)
+{
+    struct loc w;
+
+    if (!wild || !player) return -1;
+
+    w.y = player->grid.y + player->wild_offset.y;
+    w.x = player->grid.x + player->wild_offset.x;
+
+    return wild_town_here(wild, w);
+}
+
+/*
+ * What the borg can buy where it stands, as a store bitmask.
+ *
+ * Standing in a town, that town's trades. Standing anywhere else, nothing --
+ * and the "nothing" is the point (ZangbandTK, BRG-25).
+ *
+ * Written first as "the nearest town", on the reasoning that the borg spends
+ * its surface time in the country and the comparison wants the town whose
+ * shops it uses. Measured, that is wrong in the way that matters: a borg 334
+ * grids from Avalon was credited with Avalon's magic shop, decided it wanted
+ * for nothing, and stood in a field. Nearest is not reachable, and a shop the
+ * borg has never seen is a shop it cannot buy from -- it knew four shops all
+ * run, and all four were in the village it left.
+ *
+ * Out of town the borg has no shops at all, so anything it wants is a reason
+ * to walk to a town that has it. That is also what makes the wandering
+ * purposeful: `borg_flow_dark()` will explore a scrolling wilderness for ever,
+ * and this is the borg having somewhere to be instead.
+ */
+static uint16_t borg_stores_at_hand(void)
+{
+    int i;
+    struct loc w;
+
+    /*
+     * Slack around the walls, because the wall is not where the shops stop
+     * being reachable.
+     *
+     * `wild_town_here()` is exact, which is right for "have I arrived" and
+     * wrong for "can I shop". Measured with the exact test: the borg stepped
+     * one grid outside Avalon, found itself with no shops in reach, targeted
+     * Avalon one grid away, stepped back in, announced its arrival, and did it
+     * again -- fifty-one arrivals in a single run. A borg a dozen grids from
+     * the gate is at the town for every purpose that matters here.
+     */
+    const int slack = 12;
+
+    if (!wild || !player) return 0;
+
+    w.y = player->grid.y + player->wild_offset.y;
+    w.x = player->grid.x + player->wild_offset.x;
+
+    for (i = 0; i < wild_town_count(wild); i++) {
+        struct loc        org = wild_town_origin_of(wild, i);
+        struct wild_town *t   = &wild->towns[i];
+
+        if (w.x >= org.x - slack && w.x < org.x + t->wid + slack
+            && w.y >= org.y - slack && w.y < org.y + t->hgt + slack)
+            return t->stores;
+    }
+
+    return 0;
+}
+
+/*
+ * The town the borg is in, or the nearest -- for reporting only.
+ */
+int borg_town_home(void)
+{
+    int i, home, best_dist = 0;
+
+    if (!wild || !player) return -1;
+
+    home = borg_town_here();
+    if (home >= 0) return home;
+
+    for (i = 0; i < wild_town_count(wild); i++) {
+        struct loc org = wild_town_origin_of(wild, i);
+        int dist = ABS(org.y - (player->grid.y + player->wild_offset.y))
+                 + ABS(org.x - (player->grid.x + player->wild_offset.x));
+
+        if (home < 0 || dist < best_dist) {
+            home      = i;
+            best_dist = dist;
+        }
+    }
+
+    return home;
+}
+
+/*
+ * Which trades could end the shortfall (ZangbandTK, BRG-25).
+ *
+ * Read from the same traits `borg_restock()` counts, rather than from the
+ * string it returns or by asking it. Two reasons, and the second was measured.
+ *
+ * Matching on the message would work today and break the first time somebody
+ * rewords one, and a borg that silently stops travelling because a message
+ * changed is a bug nobody would think to look for.
+ *
+ * And calling `borg_prepared()` to locate the wall -- which is the obvious
+ * way to write this, and how it was written first -- is not safe from here.
+ * It is asked once per turn from the flow, it walks up to forty depths, and
+ * it is not a pure query: it settles `borg.ready_morgoth` on the way past and
+ * returns a pointer into a shared static buffer. Speculating with it wedged a
+ * cheated Warrior on an unexpected direction prompt at turn 787,049, and the
+ * same run without the speculation reached the time cap cleanly. Traits are
+ * plain reads and cannot do that.
+ *
+ * The thresholds are the deepest band's rather than the current one's, because
+ * this decides whether a shop is worth a walk of several hundred grids, not
+ * whether to buy something standing in front of it. Arriving with two teleport
+ * sources when six are wanted at depth 36 is a second crossing later.
+ */
+uint16_t borg_stores_wanted(void)
+{
+    uint16_t want = 0;
+
+    /* Food, light and fuel: the general store */
+    if (borg.trait[BI_FOOD] < 5 || borg.trait[BI_LIGHT] < 2
+        || (borg.trait[BI_AFUEL] < 5 && !borg.trait[BI_LIGHT]))
+        want |= 1u << WILD_STORE_GENERAL;
+
+    /* Phase door, cure wounds, word of recall: the alchemist */
+    if (borg.trait[BI_APHASE] < 2 || borg.trait[BI_RECALL] < 2
+        || borg.trait[BI_ACLW] + borg.trait[BI_ACSW] + borg.trait[BI_ACCW] < 4)
+        want |= 1u << WILD_STORE_ALCHEMY;
+
+    /*
+     * Teleportation: the magic shop, and the one that actually bites. A Scroll
+     * of Teleportation is stocked nowhere in town -- only `normal:staff:
+     * Teleportation` in the magic shop -- so this requirement cannot be met at
+     * all in a place without one, whatever the borg is carrying in gold.
+     *
+     * Not wanted until the borg has been deep enough for the wall to be in
+     * sight. `borg_restock()` first demands two teleport sources at depth 10,
+     * so a character that has reached 8 is two levels from being stopped and
+     * has survived enough country to cross some. Wanting it from the first
+     * turn is BRG-13's mistake in another costume: that was an 831-grid hike
+     * at character level one, and it died in a field.
+     */
+    if (borg.trait[BI_MAXDEPTH] >= 8
+        && borg.trait[BI_ATELEPORT] + borg.trait[BI_AESCAPE] < 6)
+        want |= 1u << WILD_STORE_MAGIC;
+
+    return want;
+}
+
+/*
+ * Choose a town worth walking to, or -1 (ZangbandTK, BRG-25).
+ *
+ * The starting village keeps a general store, a bookseller, an alchemist and
+ * the home, and nothing else, because WLD-11a makes the armoury, the
+ * weaponsmith, the magic shop and the black market the reason a larger town is
+ * worth the walk. That is deliberate design and it is also a wall: the borg's
+ * own restock rule wants two teleport sources from depth 10, the only town
+ * source is the magic shop's Staff of Teleportation, and the village has no
+ * magic shop. Measured, the borg stopped at depth 9 with 206,000 gold.
+ *
+ * So: only when short of something buyable, and only towards a town that keeps
+ * a trade this one does not. Nearest first among those, and a road preferred
+ * over open country for the same three reasons the dungeon crossing prefers
+ * one -- passable by construction, routed around the worst land, and legible
+ * afterwards.
+ */
+int borg_choose_town(void)
+{
+    int here, i, best = -1, best_dist = 0;
+    uint16_t have, want;
+
+    if (!wild || !player) return -1;
+
+    /*
+     * The town the borg shops at, which is the nearest one rather than the one
+     * underfoot (ZangbandTK, BRG-25).
+     *
+     * Requiring it to be standing inside the walls looked right and was
+     * measured wrong: the borg spends its surface time in the country between
+     * the town and the dungeon it dives into, so `wild_town_here()` answers -1
+     * almost every time the question is asked. The comparison wants the town
+     * whose shops it can actually use, and that is the nearest, whether or not
+     * it happens to be inside the gate this turn.
+     */
+    here = borg_town_here();
+    have = borg_stores_at_hand();
+
+    /*
+     * And only for a trade that would actually help. "Any shop this one has
+     * not got" was measured sending the borg a thousand grids to the only
+     * black market in the world while it wanted a staff from the magic shop
+     * two hundred grids the other way.
+     */
+    want = borg_stores_wanted() & ~have;
+    if (!want) return -1;
+
+    for (i = 0; i < wild_town_count(wild); i++) {
+        struct wild_town *t = &wild->towns[i];
+        struct loc        org;
+        int               dist;
+
+        if (i == here) continue;
+
+        /* Must keep a trade the borg needs and cannot buy where it stands */
+        if (!(t->stores & want)) continue;
+
+        org = wild_town_origin_of(wild, i);
+
+        dist = ABS(org.y - (player->grid.y + player->wild_offset.y))
+             + ABS(org.x - (player->grid.x + player->wild_offset.x));
+
+        if (best < 0 || dist < best_dist) {
+            best      = i;
+            best_dist = dist;
+        }
+    }
+
+    return best;
+}
+
+/*
  * Walk toward the chosen mouth, one step per call. True if a step was taken.
  *
  * Inside the window this is an ordinary flow to a known grid. Outside it, the
@@ -966,7 +1191,6 @@ static int borg_choose_dungeon(void)
  */
 bool borg_flow_world(void)
 {
-    struct wild_dungeon *mouth;
     int ly, lx, dist;
 
     /* Only on the surface, and only when there is somewhere better to be */
@@ -974,41 +1198,96 @@ bool borg_flow_world(void)
     if (!wild || !cave) return false;
 
     /* Pick a target, or keep the one we have */
-    if (borg.goal.world_dungeon < 0) {
+    if (borg.goal.world_kind == BORG_WORLD_NONE) {
         int pick = borg_choose_dungeon();
-        const struct dun_type *t;
-        struct wild_dungeon   *m;
 
-        if (pick < 0) return false;
+        if (pick >= 0) {
+            struct wild_dungeon   *m = wild_dungeon_by_index(wild, pick);
+            const struct dun_type *t = m ? dun_type_by_index(m->type) : NULL;
 
-        m = wild_dungeon_by_index(wild, pick);
-        t = m ? dun_type_by_index(m->type) : NULL;
-        if (!m || !t) return false;
+            if (!m || !t) return false;
 
-        borg.goal.world_dungeon = pick;
-        borg.goal.world         = m->grid;
-        borg.goal.world_tries   = BORG_WORLD_TRIES;
-        borg.goal.world_best    = -1;
+            borg.goal.world_kind  = BORG_WORLD_DUNGEON;
+            borg.goal.world_index = pick;
+            borg.goal.world       = m->grid;
 
-        borg_note(format("# Crossing the world to %s (depth %d-%d), "
-                         "%d grids away",
-            t->name, t->min_depth, t->max_depth,
-            ABS(m->grid.y - (player->grid.y + player->wild_offset.y))
-            + ABS(m->grid.x - (player->grid.x + player->wild_offset.x))));
+            borg_note(format("# Crossing the world to %s (depth %d-%d), "
+                             "%d grids away",
+                t->name, t->min_depth, t->max_depth,
+                ABS(m->grid.y - (player->grid.y + player->wild_offset.y))
+                + ABS(m->grid.x - (player->grid.x + player->wild_offset.x))));
+        } else {
+            /*
+             * Nowhere deeper to walk to, so try somewhere better stocked
+             * (ZangbandTK, BRG-25). Second, not first: a dungeon that goes
+             * deeper is always the better use of the walk, and shopping is
+             * what the borg falls back on when depth is what it cannot buy.
+             */
+            pick = borg_choose_town();
+
+            if (pick < 0) return false;
+
+            borg.goal.world_kind  = BORG_WORLD_TOWN;
+            borg.goal.world_index = pick;
+            borg.goal.world       = wild_town_origin_of(wild, pick);
+
+            borg_note(format("# Crossing the world to %s for its shops "
+                             "(want %04x), %d grids away",
+                wild->towns[pick].name ? wild->towns[pick].name : "a town",
+                (unsigned) borg_stores_wanted(),
+                ABS(borg.goal.world.y
+                    - (player->grid.y + player->wild_offset.y))
+                + ABS(borg.goal.world.x
+                    - (player->grid.x + player->wild_offset.x))));
+        }
+
+        borg.goal.world_tries = BORG_WORLD_TRIES;
+        borg.goal.world_best  = -1;
     }
 
-    mouth = wild_dungeon_by_index(wild, borg.goal.world_dungeon);
-    if (!mouth) {
-        borg.goal.world_dungeon = -1;
+    /*
+     * Keep the goal current. A mouth's grid never moves, but re-reading it
+     * each step means a target that has gone away -- a bad index, a world
+     * rebuilt underneath -- abandons the walk rather than walking to a stale
+     * coordinate.
+     */
+    if (borg.goal.world_kind == BORG_WORLD_DUNGEON) {
+        struct wild_dungeon *m
+            = wild_dungeon_by_index(wild, borg.goal.world_index);
+
+        if (!m) {
+            borg.goal.world_kind = BORG_WORLD_NONE;
+            return false;
+        }
+        borg.goal.world = m->grid;
+    } else if (borg.goal.world_index < 0
+               || borg.goal.world_index >= wild_town_count(wild)) {
+        borg.goal.world_kind = BORG_WORLD_NONE;
         return false;
     }
 
     /* Where the goal sits in the window as it is now anchored */
-    ly = mouth->grid.y - player->wild_offset.y;
-    lx = mouth->grid.x - player->wild_offset.x;
+    ly = borg.goal.world.y - player->wild_offset.y;
+    lx = borg.goal.world.x - player->wild_offset.x;
 
-    dist = ABS(mouth->grid.y - (player->grid.y + player->wild_offset.y))
-         + ABS(mouth->grid.x - (player->grid.x + player->wild_offset.x));
+    dist = ABS(borg.goal.world.y - (player->grid.y + player->wild_offset.y))
+         + ABS(borg.goal.world.x - (player->grid.x + player->wild_offset.x));
+
+    /*
+     * A town is arrived at by being inside it, not by standing on one grid of
+     * it. Its origin is a corner, and the shops are spread across a rectangle
+     * up to 132 grids wide -- walking to the corner and calling that arrival
+     * would leave the borg outside the wall of a place it had crossed the
+     * world to reach.
+     */
+    if (borg.goal.world_kind == BORG_WORLD_TOWN
+        && borg_town_here() == borg.goal.world_index) {
+        borg_note(format("# Arrived at %s; shopping from here",
+            wild->towns[borg.goal.world_index].name
+                ? wild->towns[borg.goal.world_index].name : "the town"));
+        borg.goal.world_kind = BORG_WORLD_NONE;
+        return false;
+    }
 
     /*
      * The step budget, and it is spent on *failing to close the distance*
@@ -1023,17 +1302,23 @@ bool borg_flow_world(void)
         borg.goal.world_tries = BORG_WORLD_TRIES;
     } else if (--borg.goal.world_tries <= 0) {
         borg_note(format("# Giving up on the crossing; %d grids short", dist));
-        borg.goal.world_best    = borg.goal.world_dungeon; /* remember it */
-        borg.goal.world_dungeon = -1;
+        borg.goal.world_best = borg.goal.world_index; /* remember it */
+        borg.goal.world_kind = BORG_WORLD_NONE;
         return false;
     }
 
     /* Arrived: step onto the mouth and the descent does the rest */
     if (ly == borg.c.y && lx == borg.c.x) {
-        borg_note("# Standing on the mouth of the dungeon we chose");
-        borg.goal.world_dungeon = -1;
-        borg_keypress('>');
-        return true;
+        if (borg.goal.world_kind == BORG_WORLD_DUNGEON) {
+            borg_note("# Standing on the mouth of the dungeon we chose");
+            borg.goal.world_kind = BORG_WORLD_NONE;
+            borg_keypress('>');
+            return true;
+        }
+
+        /* A town corner reached without being counted as inside it */
+        borg.goal.world_kind = BORG_WORLD_NONE;
+        return false;
     }
 
     /* In the window: an ordinary flow to a known grid */
@@ -1042,7 +1327,10 @@ bool borg_flow_world(void)
         borg_flow_enqueue_grid(ly, lx);
         borg_flow_spread(250, true, false, false, -1, false);
 
-        if (borg_flow_commit("the dungeon we chose", GOAL_MISC))
+        if (borg_flow_commit(borg.goal.world_kind == BORG_WORLD_TOWN
+                                 ? "the town we chose"
+                                 : "the dungeon we chose",
+                             GOAL_MISC))
             return borg_flow_old(GOAL_MISC);
     }
 
@@ -1071,8 +1359,8 @@ bool borg_flow_world(void)
 
             /* How much nearer this step leaves us, in world grids */
             gain = dist
-                - (ABS(mouth->grid.y - (wy + ddy_ddd[i]))
-                   + ABS(mouth->grid.x - (wx + ddx_ddd[i])));
+                - (ABS(borg.goal.world.y - (wy + ddy_ddd[i]))
+                   + ABS(borg.goal.world.x - (wx + ddx_ddd[i])));
 
             if (gain <= 0) continue;
 

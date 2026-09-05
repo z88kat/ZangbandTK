@@ -29,6 +29,9 @@
 
 #include "borg/borg.h"
 #include "borg/borg-init.h"
+#include "wild.h"
+
+#include "borg/borg-flow-misc.h"
 #include "borg/borg-prepared.h"
 #include "borg/borg-trait.h"
 #include "borg/borg.h"
@@ -280,6 +283,70 @@ static int test_a_borg_with_recall_is_left_alone(void *state)
 	ok;
 }
 
+/**
+ * What the borg would cross the world to buy (BRG-25).
+ *
+ * `borg_stores_wanted()` decides whether a walk of several hundred grids is
+ * worth making, so it is the whole of the travel decision that is not
+ * geometry. It reads traits and nothing else -- deliberately, because the
+ * obvious version asked `borg_prepared()` where the wall was and that is not
+ * a pure query: it settles `borg.ready_morgoth` on the way past and hands
+ * back a pointer into a shared static buffer. Being able to test it by
+ * setting numbers is the point of it being written this way.
+ */
+static int test_a_stocked_borg_wants_no_shops(void *state)
+{
+	a_well_supplied_borg();
+	require(borg_stores_wanted() == 0);
+	ok;
+}
+
+static int test_no_teleport_at_depth_wants_the_magic_shop(void *state)
+{
+	a_well_supplied_borg();
+	borg.trait[BI_ATELEPORT] = 0;
+	borg.trait[BI_AESCAPE]   = 0;
+	borg.trait[BI_MAXDEPTH]  = 12;
+
+	require(borg_stores_wanted() & (1u << WILD_STORE_MAGIC));
+	ok;
+}
+
+/**
+ * And not before. `borg_restock()` first demands teleportation at depth 10,
+ * so a shallow character has no business walking to a magic shop -- BRG-13's
+ * measured mistake was an 831-grid hike at character level one that died in a
+ * field, and wanting a staff from turn one is the same error wearing a hat.
+ */
+static int test_a_shallow_borg_does_not_want_the_magic_shop(void *state)
+{
+	a_well_supplied_borg();
+	borg.trait[BI_ATELEPORT] = 0;
+	borg.trait[BI_AESCAPE]   = 0;
+	borg.trait[BI_MAXDEPTH]  = 3;
+
+	require(!(borg_stores_wanted() & (1u << WILD_STORE_MAGIC)));
+	ok;
+}
+
+/**
+ * The shortfalls the village can answer must name their own shop, or the borg
+ * walks to the wrong place -- which it did: a thousand grids to the world's
+ * only black market while it wanted a staff two hundred the other way.
+ */
+static int test_each_shortfall_names_its_own_shop(void *state)
+{
+	a_well_supplied_borg();
+	borg.trait[BI_FOOD] = 0;
+	require(borg_stores_wanted() == (1u << WILD_STORE_GENERAL));
+
+	a_well_supplied_borg();
+	borg.trait[BI_RECALL] = 0;
+	require(borg_stores_wanted() == (1u << WILD_STORE_ALCHEMY));
+
+	ok;
+}
+
 const char *suite_name = "borg/prepared";
 
 struct test tests[] = {
@@ -291,5 +358,13 @@ struct test tests[] = {
 	  test_no_recall_at_depth_five_sends_the_borg_to_town },
 	{ "a borg with recall is left alone",
 	  test_a_borg_with_recall_is_left_alone },
+	{ "a stocked borg wants no shops",
+	  test_a_stocked_borg_wants_no_shops },
+	{ "no teleport at depth wants the magic shop",
+	  test_no_teleport_at_depth_wants_the_magic_shop },
+	{ "a shallow borg does not want the magic shop",
+	  test_a_shallow_borg_does_not_want_the_magic_shop },
+	{ "each shortfall names its own shop",
+	  test_each_shortfall_names_its_own_shop },
 	{ NULL, NULL }
 };

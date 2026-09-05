@@ -257,6 +257,55 @@ static void borg_update_map(void)
     borg_grid       *ag;
     struct grid_data g;
 
+    /*
+     * Forget where the shops were when the world moves under us
+     * (ZangbandTK, BRG-25).
+     *
+     * `track_shop_x/y[]` hold *window* coordinates, and on this game's surface
+     * the window is a 144-grid porthole onto a world some two thousand grids
+     * across: it re-anchors as the character walks, so grid 87,95 is a
+     * different place before and after. The tracker was written and never
+     * cleared, because before the wilderness a town was a level and a level
+     * did not move.
+     *
+     * Measured: a borg that walked from its starting village to Avalon --
+     * three hundred grids, and the whole point of the crossing -- arrived
+     * still believing it knew four shops, at four sets of coordinates that now
+     * named open country. It never found Avalon's magic shop, which is the one
+     * thing it had gone there for.
+     *
+     * Moved with the window rather than forgotten. Clearing was tried first
+     * and is worse than the bug: the surface re-anchors whenever the character
+     * nears the edge of the porthole, which on a walk is constantly, so the
+     * borg finished a run knowing no shops at all. A shop that scrolls out of
+     * the window is dropped, because there is nowhere left to point at it, and
+     * it is recorded again the next time the borg sees the door.
+     */
+    if (player->wild_offset.y != borg.wild_offset.y
+        || player->wild_offset.x != borg.wild_offset.x) {
+        int shift_y = player->wild_offset.y - borg.wild_offset.y;
+        int shift_x = player->wild_offset.x - borg.wild_offset.x;
+
+        for (i = 0; i < (int) z_info->store_max; i++) {
+            int ny, nx;
+
+            if (!track_shop_x[i] && !track_shop_y[i]) continue;
+
+            ny = track_shop_y[i] - shift_y;
+            nx = track_shop_x[i] - shift_x;
+
+            if (ny > 0 && ny < cave->height && nx > 0 && nx < cave->width) {
+                track_shop_y[i] = ny;
+                track_shop_x[i] = nx;
+            } else {
+                track_shop_y[i] = 0;
+                track_shop_x[i] = 0;
+            }
+        }
+
+        borg.wild_offset = player->wild_offset;
+    }
+
     /* Analyze the current map panel */
     for (dy = 0; dy < SCREEN_HGT; dy++) {
         /* Scan the row */
