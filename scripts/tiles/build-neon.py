@@ -880,6 +880,28 @@ def cycle_attr(attr, step, hues, tones, span):
     return 0x80 | (block * per_block + ((hue + step) % span) * tones + tone)
 
 
+# Treasure carries KF_SHIMMER, so it moves the same way the monsters do.
+TREASURE = ('copper', 'silver', 'gold', 'mithril', 'adamantite', 'rubies')
+
+
+def glint_attr(attr, step, hues, tones):
+    """The arithmetic graf_glint_attr() does in src/grafmode.c.
+
+    Treasure moves through tones rather than hues -- silver is white, slate,
+    white, not a rainbow -- and only through the brightest three, because the
+    fourth is the tone for remembered terrain and an object reaching it reads
+    as blinking out rather than catching the light.
+    """
+    span = min(3, tones)
+    per_block = hues * tones
+    row = attr & 0x7f
+    block, slot = divmod(row, per_block)
+    hue, tone = divmod(slot, tones)
+    if tone >= span:
+        return attr
+    return 0x80 | (block * per_block + hue * tones + (tone + step) % span)
+
+
 def make_cycle_strip(sheet, frames=10, zoom=4):
     """One row per shimmering monster, one column per step of the cycle.
 
@@ -891,14 +913,19 @@ def make_cycle_strip(sheet, frames=10, zoom=4):
     hues, tones = len(sheet.order), len(TONES)
     span = read_cycle_declaration()[2]
 
-    rows = [name for name in SHIMMER if name in prf['monster']]
+    rows = [('monster', name) for name in SHIMMER if name in prf['monster']]
+    rows += [('object', ('gold', name)) for name in TREASURE
+             if ('gold', name) in prf['object']]
     W, H = frames * TILE * zoom, len(rows) * TILE * zoom
     out = [[(0, 0, 0, 255)] * W for _ in range(H)]
 
-    for ty, name in enumerate(rows):
-        row, col = prf['monster'][name]
+    for ty, (kind, key) in enumerate(rows):
+        row, col = prf[kind][key]
         for step in range(frames):
-            r = cycle_attr(0x80 | row, step, hues, tones, span) & 0x7f
+            if kind == 'object':
+                r = glint_attr(0x80 | row, step, hues, tones) & 0x7f
+            else:
+                r = cycle_attr(0x80 | row, step, hues, tones, span) & 0x7f
             for y in range(TILE):
                 for x in range(TILE):
                     p = px[r * TILE + y][col * TILE + x]
@@ -911,7 +938,7 @@ def make_cycle_strip(sheet, frames=10, zoom=4):
 
     path = os.path.join(SRC, 'cycle.png')
     write_png(path, out)
-    print('\n  cycle: %s (%d monsters x %d steps)' % (path, len(rows), frames))
+    print('\n  cycle: %s (%d things x %d steps)' % (path, len(rows), frames))
 
 
 SHAPES = read_shapes()

@@ -402,3 +402,62 @@ uint8_t graf_cycle_attr(uint8_t attr, int step)
 
 	return 0x80 | (block * per_block + hue * tones + tone);
 }
+
+
+/**
+ * How many tones from the top of a hue a glint moves through.
+ *
+ * Not all of them: the last tone in a set laid out this way is for terrain the
+ * player is only remembering, and it is dark enough that a glint reaching it
+ * would read as the object blinking out rather than catching the light.
+ */
+#define GLINT_TONES 3
+
+
+/**
+ * Move a tile's tone, holding its hue and its shape.
+ * \param attr Is the tile's attribute, which in graphics mode is its row.
+ * \param step Is how many tones to move along.
+ *
+ * The counterpart to graf_cycle_attr(), for things that should catch the light
+ * rather than change colour.  Silver is not a rainbow; it is white, then
+ * slate, then white again, which is what visuals.txt has always said in text
+ * mode -- `flicker:s:slate white light-dark`.  Rotating its hue instead would
+ * be wrong even where it is possible, and for silver it is not possible at
+ * all: grey sits outside the rainbow, so graf_cycle_attr() leaves it exactly
+ * where it was and the metal simply does not move.
+ *
+ * Works on every hue, inside the span or out of it, because a tone is
+ * something every hue has.
+ */
+uint8_t graf_glint_attr(uint8_t attr, int step)
+{
+	int hues, tones, span, per_block, row, block, slot, hue, tone;
+
+	if (!(attr & 0x80) || !graf_cycles()) {
+		return attr;
+	}
+
+	hues = current_graphics_mode->cycleHues;
+	tones = current_graphics_mode->cycleTones;
+	span = MIN(GLINT_TONES, tones);
+	per_block = hues * tones;
+
+	row = attr & 0x7f;
+	block = row / per_block;
+	slot = row % per_block;
+	hue = slot / tones;
+	tone = slot % tones;
+
+	/* A tile already below the glint's range stays where it is. */
+	if (tone >= span) {
+		return attr;
+	}
+
+	tone = (tone + step) % span;
+	if (tone < 0) {
+		tone += span;
+	}
+
+	return 0x80 | (block * per_block + hue * tones + tone);
+}

@@ -31,6 +31,7 @@
 #include "player-timed.h"
 #include "trap.h"
 #include "ui-display.h"
+#include "ui-visuals.h"
 #include "ui-map.h"
 #include "effect-handler.h"
 #include "effects.h"
@@ -116,6 +117,41 @@ static bool get_trap_graphics(struct chunk *c, struct grid_data *g, int *a,
 
 	return trf_has(g->trap->flags, TRF_WEB);
 }
+
+/**
+ * Move a colour along, for something that shimmers.
+ *
+ * Two mechanisms, because "colour" is two different things depending on the
+ * mode.  In text mode the attribute *is* a colour, and visuals.txt has said
+ * what the next one should be since long before this -- `flicker:y:yellow
+ * light-yellow, mustard` is gold, and `flicker:u:umber light-umber mustard` is
+ * copper.  That table was only ever consulted for monsters; nothing about it
+ * is monster-shaped.
+ *
+ * In graphics mode the attribute is a row in the tile sheet and the cycles
+ * cannot help, so the row moves instead -- which works only on a tileset that
+ * declares its sheet is laid out for it, and is left alone on every other.
+ *
+ * `offset` keeps things that would otherwise move in lockstep apart, and
+ * `tonal` picks which way a tile moves: a multi-hued monster changes hue,
+ * while treasure catches the light without changing what metal it is.  In
+ * text mode the distinction does not arise, because visuals.txt's cycles
+ * already say the right thing for each colour.
+ */
+static uint8_t shimmer_attr(uint8_t attr, int offset, bool tonal)
+{
+	size_t frame = animation_frame() + (size_t) offset;
+
+	if (attr & 0x80) {
+		return tonal ? graf_glint_attr(attr, (int) frame)
+			: graf_cycle_attr(attr, (int) frame);
+	} else {
+		uint8_t next = visuals_flicker_get_attr_for_frame(attr, frame);
+
+		return (next == BASIC_COLORS) ? attr : next;
+	}
+}
+
 
 /**
  * Apply text lighting effects
@@ -236,6 +272,17 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 				/* Normal attr and char */
 				a = object_kind_attr(g->first_kind);
 				c = object_kind_char(g->first_kind);
+
+				/*
+				 * Treasure shimmers.  The option has described itself as
+				 * applying to "monsters and items" for as long as it has
+				 * existed, and until now do_animation() only ever walked
+				 * monsters, so the second half of that sentence was not true
+				 * of any version of the game.
+				 */
+				if (kf_has(g->first_kind->kind_flags, KF_SHIMMER)) {
+					a = shimmer_attr(a, (int) g->first_kind->kidx, true);
+				}
 			}
 		}
 	}
@@ -282,12 +329,20 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 				 * screen are not in lockstep, which reads as a effect rather
 				 * than as a rainbow.
 				 */
-				if (graf_cycles() &&
-						(rf_has(mon->race->flags, RF_ATTR_MULTI) ||
-						 rf_has(mon->race->flags, RF_ATTR_FLICKER) ||
-						 rf_has(mon->race->flags, RF_ATTR_RAND))) {
-					a = graf_cycle_attr(da,
-						(int) (animation_frame() + mon->race->ridx));
+				if (rf_has(mon->race->flags, RF_ATTR_MULTI) ||
+						rf_has(mon->race->flags, RF_ATTR_FLICKER)) {
+					a = shimmer_attr(da, (int) mon->race->ridx, false);
+				} else if (rf_has(mon->race->flags, RF_ATTR_RAND)) {
+					/*
+					 * ATTR_RAND is one random colour chosen when the monster
+					 * was made (mon-make.c:1286), not a changing one, and in
+					 * graphics mode it has always been thrown away -- the
+					 * colour it picked has nowhere to live once a tile is
+					 * chosen.  Rotating by the monster's own index gives it
+					 * back: fixed for that monster, different from the next
+					 * one of its kind standing beside it.
+					 */
+					a = graf_cycle_attr(da, (int) mon->midx);
 				}
 			} else if (OPT(player, purple_uniques) && 
 					monster_is_shape_unique(mon)) {

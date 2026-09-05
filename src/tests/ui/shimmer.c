@@ -20,6 +20,14 @@
  * The second test is the other half of the same bargain: the shape must never
  * move. Colour is the row and shape is the column, so a rotation that touched
  * the column would silently redraw the monster as some other creature.
+ *
+ * The rest are about treasure. The option has always described itself as
+ * covering "monsters and items", and until now no item in any version of the
+ * game could shimmer -- there was no flag for it and `do_animation()` only
+ * ever walked monsters. Copper and gold now carry KF_SHIMMER, and take their
+ * colours from the same visuals.txt cycles the monsters use: `flicker:u` is
+ * umber to light-umber to mustard, which is copper, and `flicker:y` is the
+ * same walk in yellows, which is gold.
  */
 
 #include "unit-test.h"
@@ -38,7 +46,11 @@
 #include "player-util.h"
 #include "test-utils.h"
 #include "ui-map.h"
+#include "obj-util.h"
+#include "ui-object.h"
 #include "ui-prefs.h"
+#include "ui-visuals.h"
+#include "z-color.h"
 
 /* Matches lib/tiles/list.txt's declaration for the Neon set. */
 #define HUES  10
@@ -201,6 +213,159 @@ static int test_a_set_that_does_not_cycle_is_untouched(void *state) {
 	ok;
 }
 
+/* An object kind carrying KF_SHIMMER, or one that does not. */
+static struct object_kind *find_kind(bool shimmering) {
+	int k;
+
+	for (k = 1; k < z_info->k_max; k++) {
+		struct object_kind *kind = &k_info[k];
+
+		if (!kind->name || kind->flavor) continue;
+		if (kf_has(kind->kind_flags, KF_SHIMMER) == shimmering) return kind;
+	}
+
+	return NULL;
+}
+
+/**
+ * A shimmering kind whose index actually moves its colour.
+ *
+ * The kind's own index is the offset, so a kind whose index happens to be a
+ * whole number of turns around the wheel shimmers to exactly where it started.
+ * Picking one of those would leave a test that passes whether the feature
+ * works or not, and would do it quietly, the next time object.txt gained a
+ * line above the treasure.
+ */
+static struct object_kind *find_moving_kind(uint8_t from) {
+	int k;
+
+	for (k = 1; k < z_info->k_max; k++) {
+		struct object_kind *kind = &k_info[k];
+
+		if (!kind->name || kind->flavor) continue;
+		if (!kf_has(kind->kind_flags, KF_SHIMMER)) continue;
+		if (graf_glint_attr(from, (int) kind->kidx) != from) return kind;
+	}
+
+	return NULL;
+}
+
+static void object_grid(struct grid_data *g, struct object_kind *kind) {
+	memset(g, 0, sizeof(*g));
+	g->f_idx = FEAT_FLOOR;
+	g->lighting = LIGHTING_LIT;
+	g->in_view = true;
+	g->first_kind = kind;
+}
+
+/**
+ * Treasure glints in graphics mode: the tone moves, the hue does not.
+ *
+ * Silver is the case that forced this.  Grey sits outside the rainbow, so
+ * rotating its hue leaves it exactly where it was and the metal never moves --
+ * which is what the first version did, visibly, for silver, opals and
+ * diamonds.
+ */
+static int test_treasure_shimmers_in_graphics_mode(void *state) {
+	struct grid_data g;
+	struct object_kind *kind;
+	int a = 0, tap = 0;
+	wchar_t ch = 0, tcp = 0;
+	uint8_t stat_attr = (uint8_t) (0x80 | TEST_ROW);
+
+	current_graphics_mode = &cycling_mode;
+	kind = find_moving_kind(stat_attr);
+	notnull(kind);
+	object_grid(&g, kind);
+	kind_x_attr[kind->kidx] = stat_attr;
+	kind_x_char[kind->kidx] = (wchar_t) (0x80 | TEST_COL);
+
+	grid_data_as_text(&g, &a, &ch, &tap, &tcp);
+
+	/* Exactly the contract: the kind's own index is the offset, and treasure
+	 * glints rather than rotating, so it is the tone that moves. */
+	eq(a, graf_glint_attr(stat_attr, (int) kind->kidx));
+	/* And it moved, so this is not passing on a coincidence. */
+	require(a != stat_attr);
+
+	/* The shape and the *hue* are where they were; the tone is what changed. */
+	eq((int) (ch & 0x7f), TEST_COL);
+	eq(((a & 0x7f) % (HUES * TONES)) / TONES,
+	   (TEST_ROW % (HUES * TONES)) / TONES);
+	eq((a & 0x7f) / (HUES * TONES), TEST_ROW / (HUES * TONES));
+	/* Never into the tone reserved for remembered terrain. */
+	require((a & 0x7f) % TONES < 3);
+
+	ok;
+}
+
+/**
+ * And in text mode, out of the cycle visuals.txt already had for its colour.
+ */
+static int test_treasure_shimmers_in_text_mode(void *state) {
+	struct grid_data g;
+	struct object_kind *kind = find_kind(true);
+	graphics_mode plain;
+	int a = 0, tap = 0;
+	wchar_t ch = 0, tcp = 0;
+	uint8_t expected;
+
+	notnull(kind);
+	memset(&plain, 0, sizeof(plain));
+	plain.grafID = 201;
+	current_graphics_mode = &plain;
+
+	object_grid(&g, kind);
+	kind_x_attr[kind->kidx] = COLOUR_YELLOW;
+	kind_x_char[kind->kidx] = L'$';
+
+	expected = visuals_flicker_get_attr_for_frame(COLOUR_YELLOW, kind->kidx);
+	require(expected != BASIC_COLORS);
+
+	grid_data_as_text(&g, &a, &ch, &tap, &tcp);
+
+	eq(a, expected);
+	/* Still a colour and not a tile row. */
+	require(!(a & 0x80));
+
+	current_graphics_mode = &cycling_mode;
+	ok;
+}
+
+/**
+ * Everything else is left exactly alone, in either mode.
+ *
+ * Most of the game is objects that do not shimmer, and the cost of getting
+ * this wrong is every one of them changing colour.
+ */
+static int test_a_plain_object_does_not_shimmer(void *state) {
+	struct grid_data g;
+	struct object_kind *kind = find_kind(false);
+	graphics_mode plain;
+	int a = 0, tap = 0;
+	wchar_t ch = 0, tcp = 0;
+
+	notnull(kind);
+	object_grid(&g, kind);
+
+	current_graphics_mode = &cycling_mode;
+	kind_x_attr[kind->kidx] = (uint8_t) (0x80 | TEST_ROW);
+	kind_x_char[kind->kidx] = (wchar_t) (0x80 | TEST_COL);
+	grid_data_as_text(&g, &a, &ch, &tap, &tcp);
+	eq(a, 0x80 | TEST_ROW);
+
+	memset(&plain, 0, sizeof(plain));
+	plain.grafID = 201;
+	current_graphics_mode = &plain;
+	kind_x_attr[kind->kidx] = COLOUR_YELLOW;
+	a = 0;
+	grid_data_as_text(&g, &a, &ch, &tap, &tcp);
+	eq(a, COLOUR_YELLOW);
+
+	current_graphics_mode = &cycling_mode;
+	ok;
+}
+
 const char *suite_name = "ui/shimmer";
 struct test tests[] = {
 	{ "the-rotation-ignores-the-field-it-overwrites",
@@ -208,5 +373,11 @@ struct test tests[] = {
 	{ "only-the-hue-moves", test_only_the_hue_moves },
 	{ "a-set-that-does-not-cycle-is-untouched",
 	  test_a_set_that_does_not_cycle_is_untouched },
+	{ "treasure-shimmers-in-graphics-mode",
+	  test_treasure_shimmers_in_graphics_mode },
+	{ "treasure-shimmers-in-text-mode",
+	  test_treasure_shimmers_in_text_mode },
+	{ "a-plain-object-does-not-shimmer",
+	  test_a_plain_object_does_not_shimmer },
 	{ NULL, NULL }
 };

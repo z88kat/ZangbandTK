@@ -1631,6 +1631,29 @@ static void do_animation(void)
 		player->upkeep->redraw |= (PR_MAP | PR_MONLIST);
 	}
 
+	/*
+	 * Treasure shimmers too, and nothing here changes it: an object is
+	 * recoloured where it is drawn, in grid_data_as_text(), from the frame
+	 * counter below.  What it needs from here is the redraw, or the new
+	 * colour never reaches the screen.  One visible piece is enough to ask
+	 * for it, so this stops at the first.
+	 */
+	if (cave) {
+		int j;
+
+		for (j = 1; j < cave->obj_max; j++) {
+			struct object *obj = cave->objects[j];
+
+			if (!obj || !obj->kind) continue;
+			if (!kf_has(obj->kind->kind_flags, KF_SHIMMER)) continue;
+			if (!square_in_bounds(cave, obj->grid)) continue;
+			if (!square_isseen(cave, obj->grid)) continue;
+
+			player->upkeep->redraw |= PR_MAP;
+			break;
+		}
+	}
+
 	flicker++;
 }
 

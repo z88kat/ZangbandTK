@@ -79,5 +79,6 @@ int is_dh_tile(int a, wchar_t c);
 
 bool graf_cycles(void);
 uint8_t graf_cycle_attr(uint8_t attr, int step);
+uint8_t graf_glint_attr(uint8_t attr, int step);
 
 #endif /* INCLUDED_GRAFMODE_H */

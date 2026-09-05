@@ -107,8 +107,15 @@ Color: Illuminate torchlight in yellow ``view_yellow_light``
   Turning this option off will slightly improve game speed.
 
 Color: Shimmer multi-colored things ``animate_flicker``
-  Certain powerful monsters and items will shimmer in real time, i.e.
-  between keypresses.  
+  Certain powerful monsters, and treasure lying on the floor, will shimmer in
+  real time, i.e. between keypresses.  With the option off they still change
+  colour, but only as game turns pass, so a shimmer becomes a slow drift.
+
+  In graphics mode this needs a tileset that can recolour a tile without
+  changing the picture on it, which means one that declares ``cycle:`` in
+  ``lib/tiles/list.txt``.  At present that is the Neon set; the four tilesets
+  inherited from Angband paint colour into their art, so nothing shimmers in
+  them and the option has no effect.
 
 Center map continuously ``center_player``
   The map always centres on the player with this option on. With it off, it

@@ -5299,46 +5299,57 @@ desc: elemental and ethereal.
 name:copper
 type:gold
 graphics:$:u
+flags:SHIMMER
 
 name:silver
 type:gold
 graphics:$:s
+flags:SHIMMER
 
 name:garnets
 type:gold
 graphics:$:r
+flags:SHIMMER
 
 name:gold
 type:gold
 graphics:$:y
+flags:SHIMMER
 
 name:opals
 type:gold
 graphics:$:W
+flags:SHIMMER
 
 name:sapphires
 type:gold
 graphics:$:b
+flags:SHIMMER
 
 name:rubies
 type:gold
 graphics:$:r
+flags:SHIMMER
 
 name:diamonds
 type:gold
 graphics:$:w
+flags:SHIMMER
 
 name:emeralds
 type:gold
 graphics:$:g
+flags:SHIMMER
 
 name:mithril
 type:gold
 graphics:$:B
+flags:SHIMMER
 
 name:adamantite
 type:gold
 graphics:$:G
+flags:SHIMMER
 
 
 ##### "Morgoth Artifacts" #####
