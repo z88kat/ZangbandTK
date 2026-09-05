@@ -200,11 +200,21 @@ def read_shapes():
 def read_manifest():
     """The shape each thing is drawn with.
 
-    A `feat:` line may carry a fourth field, an extra tone shift for that one
-    feature.  It exists because Angband's colours were picked for single
-    glyphs: FLOOR is White and GRANITE is Light Slate, so a floor spread over
-    a whole cell comes out *brighter* than the wall around it.  One global
-    bias cannot fix that -- the two need biasing by different amounts.
+    A `feat:` line may carry a fourth field naming the tone that feature sits
+    at when lit; the light then moves it from there.  Without one it sits at
+    the tone its colour code maps to.
+
+    It exists because Angband's colours were picked for single glyphs, and a
+    glyph's colour spread over a whole cell reads quite differently: FLOOR is
+    White and GRANITE is Light Slate, so the floor came out brighter than the
+    wall around it.
+
+    An absolute tone rather than a relative shift, because relative shifts
+    were tried first and were wrong twice over.  They stack with the lighting
+    offset and clamp at the ends, so four ground features starting from four
+    base tones all landed on `shadow` together -- black, in practice -- while
+    a global darkening step aimed at the walls pushed lava and broken doors
+    off the bottom as well.  A target tone cannot do either.
     """
     feats, bases, tvals, traps, gf = {}, {}, {}, {}, {}
     for line in open(os.path.join(SRC, 'manifest.txt'), encoding='utf-8'):
@@ -212,12 +222,12 @@ def read_manifest():
         if not line or line.startswith('#'):
             continue
         kind, key, shape = line.split(':', 2)
-        bias = 0
+        target = None
         if kind == 'feat' and ':' in shape:
-            shape, extra = shape.rsplit(':', 1)
-            bias = int(extra)
+            shape, target = shape.rsplit(':', 1)
+            assert target in TONES, '%s: %r is not a tone' % (key, target)
         if kind == 'feat':
-            feats[key] = (shape, bias)
+            feats[key] = (shape, target)
             continue
         {'feat': feats, 'base': bases, 'tval': tvals,
          'trap': traps, 'gf': gf}[kind][key] = shape
@@ -385,10 +395,13 @@ def build():
     # a creature must be visible, but remembered unlit terrain is *supposed*
     # to be dim, so one legibility floor for both would be the wrong test.
     used = {}
+    # And what asked for each colour, so a failure can say which feature is
+    # too dark rather than only which hex value is.
+    blame = {}
 
     names = colour_names()
 
-    def emit(text, shape, colour, kind, shift=0):
+    def emit(text, shape, colour, kind, shift=0, target=None):
         # The data files spell a colour two ways and neither is wrong: a
         # single-letter code (`graphics:^:R`) or a full name
         # (`graphics:^:light slate`).  trap.txt uses both, five records apart,
@@ -399,10 +412,13 @@ def build():
             return False
         hue, base = attrs[code]
         # The light moves the tone; it does not replace it.  Replacing it is
-        # what collapsed grass into trees.
-        tone = TONES[max(0, min(len(TONES) - 1, TONES.index(base) + shift))]
+        # what collapsed grass into trees.  `target` overrides where the
+        # feature sits when lit, and the light still moves it from there.
+        start = TONES.index(target if target else base)
+        tone = TONES[max(0, min(len(TONES) - 1, start + shift))]
         row, col = sheet.cell(shape, hue, tone)
         used.setdefault(hues[hue][tone], set()).add(kind)
+        blame.setdefault(hues[hue][tone], set()).add(text)
         lines.append('%s:0x%02X:0x%02X' % (text, 0x80 | row, 0x80 | col))
         return True
 
@@ -415,12 +431,20 @@ def build():
         entry = feats.get(code)
         if not entry or 'graphics' not in record:
             continue
-        shape, bias = entry
+        shape, target = entry
         colour = record['graphics'].split(':')[-1]
+        # Lit terrain never sits at `pale`.  Pale is the top of the ramp and
+        # what a torch beside you does to a feature; a feature that starts
+        # there under ambient light has nowhere brighter to go and reads
+        # washed out -- a pale peach door instead of a wooden one.  Angband's
+        # light colours (Light Umber, Light Slate and the rest) map to that
+        # tone, so without this rule half the dungeon starts at the top.
+        if target is None and colour in attrs and attrs[colour][1] == 'pale':
+            target = 'neon'
         for light in ('torch', 'los', 'lit', 'dark'):
             kind = 'unlit' if light == 'dark' else 'terrain'
             if emit('feat:%s:%s' % (code, light), shape, colour, kind,
-                    lighting[light] + bias):
+                    lighting[light], target):
                 counts['terrain'] += 1
 
     # Monsters.  Shape from `base:`, colour from `color:`, which is the point.
@@ -493,7 +517,7 @@ def build():
     unused = sorted(set(SHAPES) - set(sheet.columns))
     assert not unused, 'shapes drawn but never used: %s' % unused
 
-    return sheet, lines, used, counts
+    return sheet, lines, used, counts, blame
 
 
 HEADER = """# graf-neo.prf -- the Neon tileset.
@@ -514,7 +538,7 @@ def main():
     check = '--check' in sys.argv
     preview = '--preview' in sys.argv
 
-    sheet, lines, used, counts = build()
+    sheet, lines, used, counts, blame = build()
     os.makedirs(OUT, exist_ok=True)
     width, height = sheet.size()
     write_png(os.path.join(OUT, '16x16.png'), sheet.render())
@@ -529,13 +553,18 @@ def main():
         print('  %-9s %d' % (kind, counts[kind]))
 
     if check:
-        report(sheet, used)
+        report(sheet, used, blame)
     if preview:
         make_preview(sheet)
+        # And again at actual size.  Brightness cannot be judged at 3x: a
+        # colour at 2:1 against black is a discernible dot when it is three
+        # pixels wide and simply absent when it is one, which is how the
+        # floor and the road shipped invisible.
+        make_preview(sheet, zoom=1, filename='preview-actual-size.png')
     return 0
 
 
-def report(sheet, used):
+def report(sheet, used, blame):
     hues, attrs = read_palette()[:2]
     print('\n  --- palette ---')
     print('  %d slots carry %d game colour codes' % (len(used), len(attrs)))
@@ -548,7 +577,7 @@ def report(sheet, used):
     # remembered terrain is memory: dim is what it means.
     TIERS = (('creatures and objects', {'monster', 'object', 'flavour',
                                         'trap', 'effect'}, 3.0),
-             ('lit terrain',           {'terrain'},                     1.5),
+             ('lit terrain',           {'terrain'},                     2.5),
              ('remembered terrain',    {'unlit'},                       0.0))
     failures = []
     for label, kinds, floor in TIERS:
@@ -559,7 +588,13 @@ def report(sheet, used):
         print('    %-22s %2d slots, dimmest #%s at %4.1f:1 (floor %.1f)'
               % (label, len(slots), worst, contrast_on_black(worst), floor))
         failures += [(label, h) for h in slots if contrast_on_black(h) < floor]
-    assert not failures, 'below its tier floor: %s' % failures
+    if failures:
+        for label, h in failures:
+            who = sorted(blame.get(h, ()))
+            print('    TOO DARK  #%s at %.1f:1 in %s -- %s%s'
+                  % (h, contrast_on_black(h), label, ', '.join(who[:4]),
+                     ' ...' if len(who) > 4 else ''))
+    assert not failures, '%d colours below their tier floor' % len(failures)
 
     spot = [h for h, k in used.items()
             if k & {'monster', 'object', 'flavour', 'trap', 'effect'}]
@@ -726,7 +761,7 @@ def read_prf():
     return out
 
 
-def make_preview(sheet, zoom=3):
+def make_preview(sheet, zoom=3, filename='preview.png'):
     prf = read_prf()
     first = {}
     for index, _, tval in read_flavours():
@@ -786,7 +821,7 @@ def make_preview(sheet, zoom=3):
         for tx, name in enumerate(family):
             blit(find(prf['monster'], name), tx, len(MAP) + 1 + i)
 
-    path = os.path.join(OUT, 'preview.png')
+    path = os.path.join(SRC, filename)
     write_png(path, out)
     print('\n  preview: %s (%dx%d)' % (path, W, H))
     if missing:

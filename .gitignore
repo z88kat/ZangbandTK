@@ -89,6 +89,10 @@ src/wasm-obj/
 src/wasm-obj-test/
 build-asan/
 
-# The Neon tileset writes a mock map for inspection; the sheet beside it is
-# shipped, this is not.
-lib/tiles/neon/preview.png
+# The Neon tileset writes two pictures for inspection -- a mock map and a
+# filmstrip of the colour cycle.  They live beside the source art rather than
+# beside the sheet, because Makefile.osx copies lib/tiles wholesale into the
+# app bundle and these have no business shipping.
+scripts/tiles/neon/preview.png
+scripts/tiles/neon/preview-actual-size.png
+scripts/tiles/neon/cycle.png
