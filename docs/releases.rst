@@ -48,6 +48,32 @@ Unreleased
 Gervais' unexplored squares go black too — 5 September 2026
 --------------------------------------------------------------
 
+- **3.104.0** — **Two crashes in mutation melee, found by giving the borg
+  mutations.** Five mutations grow the character an extra limb -- horns, a
+  beak, a scorpion tail, tentacles, a trunk -- and ``player_mutation_blows()``
+  swings it after the weapon. It never completed a swing. Not once, for any of
+  the five, since the code was written.
+
+  ``critical_melee()`` was handed ``NULL`` where the monster goes, and it asks
+  ``is_debuffed()`` whether the target is confused, held, afraid or stunned --
+  which reads the monster's timers. And it writes its message type through an
+  out-param the caller may not want, unconditionally, so passing ``NULL`` for
+  that crashed too. Two dereferences, one after the other, on the first blow.
+
+  The monster is passed now, ``is_debuffed()`` treats "no monster" as "not
+  debuffed", and the message type is genuinely optional rather than
+  optional-looking.
+
+  Nothing had ever made a character with horns hit something. The borg did, on
+  its first run with mutations granted, which is the argument for granting them:
+  ``borg-grant`` hands over mutations rolled the way the game rolls them and
+  every book of every realm the character studies, because the deeper books are
+  dungeon drops and a granted level 25 caster with its starting book knows the
+  same four spells it knew at level 5.
+
+  With the grants, one Mage run held **21 spells learned, 4 mutations and a
+  pet** -- against 5, 0 and 0 without them.
+
 - **3.103.0** — **The borg plays every night.** The project owner set the
   cadence: *"Agreed we should not run the borg too often. Once a night for now,
   then we can drop to once a week when development stabilizes."* Dropping to

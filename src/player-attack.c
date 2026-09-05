@@ -296,6 +296,14 @@ void apply_deadliness(int *die_average, int deadliness)
  */
 static bool is_debuffed(const struct monster *monster)
 {
+	/*
+	 * A blow with no monster behind it is not a blow against a debuffed one.
+	 * Guarded rather than assumed because the callers are spread across melee,
+	 * mutations and shapechanges, and the one that passed NULL crashed on
+	 * every swing rather than misbehaving somewhere it could be noticed.
+	 */
+	if (!monster) return false;
+
 	return monster->m_timed[MON_TMD_CONF] > 0 ||
 			monster->m_timed[MON_TMD_HOLD] > 0 ||
 			monster->m_timed[MON_TMD_FEAR] > 0 ||
@@ -408,6 +416,18 @@ int critical_melee(struct player *p,
 	int to_h = p->state.to_h + plus;
 	int chance, new_dam;
 	bool psi;
+	uint32_t discard;
+
+	/*
+	 * The message type is an out-param the caller may not want (ZangbandTK).
+	 *
+	 * Every write below goes through it unconditionally, so a caller with no
+	 * message to print -- `player_mutation_blows()` prints its own, in the
+	 * mutation's own words -- had to invent a variable to throw away or crash.
+	 * It crashed. Pointed at a local instead, so the parameter is genuinely
+	 * optional rather than optional-looking.
+	 */
+	if (!msg_type) msg_type = &discard;
 
 	if (is_debuffed(monster)) {
 		to_h += z_info->m_crit_debuff_toh;

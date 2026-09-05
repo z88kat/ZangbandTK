@@ -51,6 +51,11 @@
 #include "borg/borg-update.h"
 #include "borg/borg-magic.h"
 #include "player-spell.h"
+#include "player-mutation.h"
+#include "obj-make.h"
+#include "obj-pile.h"
+#include "obj-knowledge.h"
+#include "obj-gear.h"
 #include "obj-util.h"
 #include "obj-tval.h"
 #include "obj-desc.h"
@@ -909,6 +914,116 @@ static void c_borg_spells(char *rest)
 }
 
 /**
+ * borg-grant [mutations] -- the rest of the scoped route's grants (BRG-23).
+ *
+ * `borg-cheat` hands over character level and gold, which buys depth. This
+ * hands over the *content* -- the things M8, M9 and M10 added, which a borg
+ * starting at character level one will not reach in any run short enough to
+ * put in a nightly.
+ *
+ * The project owner's framing: *"There are endless possible walk throughs, I
+ * would have at least one scoped route ... This is why we added the cheats, in
+ * order to be able to test better by giving us higher levels, more experience,
+ * more HP."* The same argument applies to content: a run that never holds a
+ * pet has not tested pets, however deep it gets.
+ *
+ *   mutations   rolled the way the game rolls them, so what is granted is
+ *               something the game could actually have given.
+ *   books       every book of every realm the character studies, because the
+ *               deeper ones are dungeon drops and are not in any shop -- a
+ *               granted level 30 caster with only its starting book knows the
+ *               same four spells it knew at level 5.
+ *
+ * Pets are `borg-pet`, which already exists and takes a race, because which
+ * monster is following you is the interesting variable there.
+ */
+static void c_borg_grant(char *rest)
+{
+	int want_muts = 3, got_muts = 0, got_books = 0;
+	int b, tries;
+
+	if (rest && *rest) want_muts = atoi(rest);
+
+	if (!player) {
+		printf("borg-grant: FAILED no character\n");
+		run_failed = 1;
+		return;
+	}
+
+	/*
+	 * Mutations, rolled rather than chosen. `mutation_roll()` applies the
+	 * game's own weighting and refuses ones the character already has, so a
+	 * granted set is a set the game could have produced -- which is the
+	 * difference between testing M8 and testing a hand-picked corner of it.
+	 */
+	for (tries = 0; got_muts < want_muts && tries < want_muts * 20; tries++) {
+		const struct mutation *m = mutation_roll(player);
+
+		if (m && player_gain_mutation(player, m)) {
+			printf("borg-grant: mutation %s\n", m->name ? m->name : "?");
+			got_muts++;
+		}
+	}
+
+	/* Every book of every realm this character studies */
+	for (b = 0; b < player->class->magic.num_books; b++) {
+		const struct class_book *book = &player->class->magic.books[b];
+		struct object *obj;
+		struct object_kind *kind;
+
+		if (!book->realm) continue;
+		if (class_book_realms(player->class) > 1
+			&& !player_studies_realm(player, book->realm))
+			continue;
+
+		kind = lookup_kind(book->tval, book->sval);
+		if (!kind) continue;
+
+		/* Already carrying it */
+		{
+			int i;
+			bool have = false;
+
+			for (i = 0; i < z_info->pack_size; i++) {
+				struct object *o = player->upkeep->inven[i];
+				if (o && o->kind == kind) { have = true; break; }
+			}
+			if (have) continue;
+		}
+
+		/*
+		 * Built the way `player_outfit()` builds a starting item, field for
+		 * field. An object handed to `inven_carry()` with a partly filled
+		 * `known` twin segfaults the moment anything looks at it -- which
+		 * here was the next redraw, three hundred turns in, a long way from
+		 * the code that made it.
+		 */
+		obj = object_new();
+		object_prep(obj, kind, 0, MINIMISE);
+		obj->number = 1;
+		obj->origin = ORIGIN_CHEAT;
+
+		obj->known = object_new();
+		object_set_base_known(player, obj);
+		object_flavor_aware(player, obj);
+		obj->known->pval   = obj->pval;
+		obj->known->effect = obj->effect;
+		obj->known->notice |= OBJ_NOTICE_ASSESSED;
+
+		inven_carry(player, obj, true, false);
+		kind->everseen = true;
+		got_books++;
+	}
+
+	player->upkeep->update |= (PU_BONUS | PU_SPELLS | PU_INVEN);
+	update_stuff(player);
+
+	printf("borg-grant: %d mutations, %d books, %d mutations total\n",
+		   got_muts, got_books, player_mutation_total(player));
+	fflush(stdout);
+}
+
+/**
  * borg-towns? -- the world's towns, and what each keeps (BRG-25).
  *
  * The borg crosses the world for a shop it cannot reach, so the question
@@ -1462,6 +1577,7 @@ static test_cmd cmds[] = {
 	{ "borg-terrain?", c_borg_terrain },
 	{ "borg-prepared?", c_borg_prepared },
 	{ "borg-spells?", c_borg_spells },
+	{ "borg-grant", c_borg_grant },
 	{ "borg-towns?", c_borg_towns },
 	{ "borg-exercise?", c_borg_exercise },
 	{ "borg-cheat", c_borg_cheat },

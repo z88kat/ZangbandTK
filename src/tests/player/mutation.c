@@ -22,6 +22,14 @@
 #include "object.h"
 #include "player.h"
 #include "player-birth.h"
+#include "game-world.h"
+#include "generate.h"
+#include "player-attack.h"
+#include "mon-move.h"
+#include "mon-make.h"
+#include "mon-lore.h"
+#include "mon-util.h"
+#include "cave.h"
 #include "effects.h"
 #include "player-calcs.h"
 #include "player-mutation.h"
@@ -1493,6 +1501,103 @@ static int test_telekinesis_is_the_weaker_fetch(void *state) {
 	ok;
 }
 
+/**
+ * A melee mutation completes its blow.
+ *
+ * Five mutations give the character an extra attack -- horns, a beak, a
+ * scorpion tail, tentacles, a trunk -- and `player_mutation_blows()` swings
+ * them after the weapon. It handed `critical_melee()` a NULL where the monster
+ * goes, and `critical_melee()` asks `is_debuffed()` whether the target is
+ * confused or held or afraid, which reads the monster's timers.
+ *
+ * So the first swing of the first melee mutation anybody ever had dereferenced
+ * address 0x24, every time, for all five. It was found by the borg on its
+ * first run with mutations granted -- nothing else in the project had ever
+ * made a character with horns hit something.
+ *
+ * The test is the whole path rather than the arithmetic: what was wrong was
+ * not a wrong number, it was that no number was ever reached.
+ */
+static int test_a_melee_mutation_completes_its_blow(void *state) {
+	const struct mutation *tail = mutation_by_name("SCOR_TAIL");
+	struct monster_race *race;
+	struct monster_group_info info = { 0, 0 };
+	struct monster *victim;
+	struct loc grid;
+	bool fear = false, dead = false;
+	int before;
+
+	notnull(tail);
+
+	/*
+	 * This suite makes a character and no world, because every other test in
+	 * it asks about the character alone. A blow needs somewhere to land, so
+	 * build a level here rather than in `setup_tests()` -- the other twenty
+	 * tests have no use for one and generating a cave for each of them would
+	 * be paying for this test twenty times. Last in the list for the same
+	 * reason.
+	 */
+	if (!cave) {
+		prepare_next_level(player);
+		on_new_level();
+	}
+	notnull(cave);
+
+	race = lookup_monster("large white snake");
+	notnull(race);
+
+	require(scatter_ext(cave, &grid, 1, player->grid, 6, true,
+						square_isempty) > 0);
+	require(place_new_monster(cave, grid, race, false, false, info,
+							  ORIGIN_DROP));
+	victim = square_monster(cave, grid);
+	notnull(victim);
+
+	flag_wipe(player->mutations, MUT_SIZE);
+	require(player_gain_mutation(player, tail));
+	calc_bonuses(player, &player->state, false, true);
+
+	/*
+	 * Swing until it connects, and fail if it never does.
+	 *
+	 * `player_mutation_blows()` rolls to hit before it rolls damage, and a
+	 * miss returns without touching `critical_melee()` -- which is where the
+	 * crash lives. A single swing therefore passes against the *broken* code
+	 * most of the time, which is exactly the test that should not be written:
+	 * both faults were reverted and one swing reported success for each.
+	 *
+	 * The monster is healed between swings so it cannot die and end the loop
+	 * early, and a run of two hundred misses fails the test rather than
+	 * passing it quietly -- a fixture that stops landing blows has stopped
+	 * testing anything and must say so.
+	 */
+	{
+		int swing, hits = 0;
+
+		for (swing = 0; swing < 200 && !hits; swing++) {
+			/*
+			 * Healed between swings so a long run of misses cannot end by
+			 * chipping the monster to death, and stopped the instant one
+			 * lands -- a dead monster is freed, and swinging at it again
+			 * reads `mon->race` through a dangling pointer. That is this
+			 * test's own bug, found the same way as the one it is testing.
+			 */
+			victim->hp = victim->maxhp;
+			dead  = false;
+			fear  = false;
+			before = victim->hp;
+
+			player_mutation_blows(player, victim, &fear, &dead);
+
+			if (dead || victim->hp < before) hits++;
+		}
+
+		require(hits > 0);
+	}
+
+	ok;
+}
+
 const char *suite_name = "player/mutation";
 struct test tests[] = {
 	{ "all-ninety-six-are-here", test_all_ninety_six_are_here },
@@ -1556,5 +1661,7 @@ struct test tests[] = {
 	{ "every-menu-row-finds-a-mutation",
 	  test_every_menu_row_finds_a_mutation },
 	{ "a-mutation-toggles-both-ways", test_a_mutation_toggles_both_ways },
+	{ "a melee mutation completes its blow",
+	  test_a_melee_mutation_completes_its_blow },
 	{ NULL, NULL }
 };

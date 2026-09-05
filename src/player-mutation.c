@@ -461,7 +461,19 @@ void player_mutation_blows(struct player *p, struct monster *mon,
 		}
 
 		dam = randcalc(m->blow, 0, RANDOMISE);
-		dam = critical_melee(p, NULL, m->blow_weight, p->state.to_h, dam,
+
+		/*
+		 * The monster, not NULL (ZangbandTK).
+		 *
+		 * `critical_melee()` asks whether its target is debuffed -- confused,
+		 * held, afraid or stunned all make a critical likelier -- and
+		 * `is_debuffed()` reads the monster's timers without checking it has
+		 * one. Passing NULL here dereferenced address 0x24 on the first swing
+		 * of the first melee mutation anybody ever had, so no character with
+		 * horns, a tail, a beak, tentacles or trunk had ever completed an
+		 * attack. Found by the borg on its first run with mutations granted.
+		 */
+		dam = critical_melee(p, mon, m->blow_weight, p->state.to_h, dam,
 							 NULL);
 		dam += p->state.to_d;
 		if (dam < 0) dam = 0;

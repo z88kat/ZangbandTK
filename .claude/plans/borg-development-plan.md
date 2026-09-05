@@ -1049,3 +1049,30 @@ by hand. Cadence is the cron line and nothing else; weekly is `0 3 * * 0`.
 `scripts/borg-progress` grew `-m minutes` (the wall-clock cap, outer bound over
 the turn budget) and now prints each run's exercise report and a `capped`
 count alongside deaths.
+
+### BRG-23 — the grant set (done, 3.104.0)
+
+`borg-grant [n]` grants n mutations (rolled, not chosen, so the set is one the
+game could produce) and every book of every realm the character studies. Pets
+stay with `borg-pet`, which takes a race, because which monster follows you is
+the interesting variable.
+
+Measured on a Mage, cheat 25 + grant 4 + one pet: 21 spells learned, 4
+mutations, 1 pet held, against 5/0/0 ungranted.
+
+Found two crashes doing it, both in `critical_melee()` via
+`player_mutation_blows()`. Covered by `player/mutation`'s
+"a melee mutation completes its blow".
+
+### BRG-27 — the borg casts spells that want a direction (open)
+
+With 21 spells rather than 5, the borg reaches utility spells it does not know
+how to target. It sends `m c a` and the game asks "Direction ('*' or <click> to
+target...)?" with nothing queued, and `borg_messages_react()` aborts the run.
+
+The attack paths queue a direction (`borg_attack_aux_spell_by_index()` presses
+'5' after casting). Whatever path is casting here does not. Reproduce with:
+
+    borg-seed 1 / borg-cheat 25 200000 / borg-run 300 / borg-grant 4 / borg-run
+
+This is why the nightly does not use the grant set yet.
