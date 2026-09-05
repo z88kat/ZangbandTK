@@ -45,6 +45,26 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Gervais' unexplored squares go black too — 5 September 2026
+--------------------------------------------------------------
+
+- **3.102.2** — The same fault the generated tilesets had, reported again from
+  play: Angband points ``FEAT_NONE`` at cell (0,0), which in Gervais' sheet is
+  **fully transparent**, so what an unwalked square looks like is decided by
+  whatever the front end leaves behind a transparent tile. On macOS that is
+  white — a field of snow with the map drawn in it, which reads as a fault
+  rather than as unexplored ground.
+
+  **Fixed as a mapping, not a modification.** Of the sheet's 3840 cells exactly
+  one is fully opaque and pure black — ``0x80:0x82`` — and nothing else refers to
+  it. ``feat:NONE`` points there now.
+
+  The three tilesets this game generates terrain into each carry a black square
+  of their own, appended to the sheet. Gervais gets none, because
+  ``LICENSE.md`` and ``lib/tiles/README`` both say in those words that its
+  ``32x32.png`` is byte-identical to Angband's. Drawing one in would have been
+  easier and would have made that claim false.
+
 Looking at a monster stops making you forget the trees — 5 September 2026
 ----------------------------------------------------------------------------
 

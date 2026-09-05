@@ -128,3 +128,21 @@ feat:SECRET:torch:0x96:0x92
 feat:SECRET:los:0x96:0x92
 feat:SECRET:lit:0x96:0x93
 feat:SECRET:dark:0x96:0x94
+
+# --- The unexplored grid ----------------------------------------------------
+#
+# Angband points FEAT_NONE at cell (0,0), which in this sheet is *fully
+# transparent* -- so what a square nobody has walked on looks like is decided by
+# whatever the front end leaves behind a transparent tile, and that is not the
+# same everywhere.  On macOS it comes out white: a field of snow with the map
+# drawn in it, which reads as a fault rather than as unexplored ground.
+#
+# 0x80:0x82 is the one fully opaque, pure black cell in all 3840 of them, and
+# nothing else refers to it.  An opaque tile has no argument with any front end.
+#
+# Deliberately a *mapping* and not a new tile.  The three tilesets this game
+# generates terrain into carry a black square of their own, appended to the
+# sheet; Gervais gets none, because its 32x32.png is byte-identical to Angband's
+# and LICENSE.md says so in those words.  Keeping that true is worth more than
+# the convenience of drawing one.
+feat:NONE:*:0x80:0x82
