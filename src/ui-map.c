@@ -30,6 +30,7 @@
 #include "obj-util.h"
 #include "player-timed.h"
 #include "trap.h"
+#include "ui-display.h"
 #include "ui-map.h"
 #include "effect-handler.h"
 #include "effects.h"
@@ -259,6 +260,35 @@ void grid_data_as_text(struct grid_data *g, int *ap, wchar_t *cp, int *tap,
 				/* Special attr/char codes */
 				a = da;
 				c = dc;
+
+				/*
+				 * A shimmering monster shimmers in graphics mode too, on a
+				 * tileset that says how its sheet is laid out.  Every other
+				 * set paints colour into its art, so the colour is fixed the
+				 * moment the tile is chosen and do_animation()'s work here is
+				 * thrown away; the Neon set puts the colour on the row, so
+				 * the same picture exists in every colour.
+				 *
+				 * Rotated by the animation frame rather than by mon->attr.
+				 * mon->attr looks like the obvious carrier -- do_animation()
+				 * has just put this frame's colour in it -- but a few lines
+				 * below, this function writes the drawing attr back into that
+				 * same field.  From the second frame on it therefore holds a
+				 * tile row, not a step, and the monster settles on one wrong
+				 * hue and stays there: no error, no shimmer, and a colour
+				 * that looks deliberate.
+				 *
+				 * The race index offsets each monster so that two of them on
+				 * screen are not in lockstep, which reads as a effect rather
+				 * than as a rainbow.
+				 */
+				if (graf_cycles() &&
+						(rf_has(mon->race->flags, RF_ATTR_MULTI) ||
+						 rf_has(mon->race->flags, RF_ATTR_FLICKER) ||
+						 rf_has(mon->race->flags, RF_ATTR_RAND))) {
+					a = graf_cycle_attr(da,
+						(int) (animation_frame() + mon->race->ridx));
+				}
 			} else if (OPT(player, purple_uniques) && 
 					monster_is_shape_unique(mon)) {
 				/* Turn uniques purple if desired (violet, actually) */

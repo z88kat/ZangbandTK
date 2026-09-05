@@ -21,10 +21,12 @@
 
 # hue:<name>:<pale>:<neon>:<dim>:<shadow>
 #
-# Ordered as a spectrum with grey last.  Nothing depends on the order any more
-# -- it was arranged this way for a colour-cycling experiment that was tried
-# and abandoned (see the neon-colour-cycling branch) -- and it is kept because
-# a spectrum is easier to read than the arbitrary order it replaced.
+# The order is the cycle order.  A shimmering monster walks along this list a
+# hue at a time, so it has to read as a spectrum -- and grey has to be last,
+# because a rainbow that passes through grey looks like the colour dropping
+# out rather than moving on.  list.txt's `cycle:` says how many of these are
+# cyclable; grey sits outside that count and a grey monster does not shimmer,
+# which is honest: there is no grey rainbow.
 hue:red:FF9595:FF2B2B:BF1C1C:690F0F
 hue:orange:FFC48F:FF8A1F:A85A14:5C310B
 hue:yellow:FFFA8C:FFF600:B4A800:635C00

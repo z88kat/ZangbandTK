@@ -175,6 +175,16 @@ def read_palette():
     return hues, attrs, lighting, trap_lighting
 
 
+def read_cycle_declaration():
+    """list.txt's `cycle:` for this set: hues, tones and the rainbow's span."""
+    path = os.path.join(ROOT, 'lib', 'tiles', 'list.txt')
+    for line in open(path, encoding='utf-8'):
+        if line.startswith('cycle:'):
+            bits = [int(v) for v in line.strip().split(':')[1:4]]
+            return tuple(bits)
+    return (0, 0, 0)
+
+
 def read_shapes():
     """name -> 16 strings of 16 characters, `X` for ink."""
     shapes = {}
@@ -537,6 +547,7 @@ HEADER = """# graf-neo.prf -- the Neon tileset.
 def main():
     check = '--check' in sys.argv
     preview = '--preview' in sys.argv
+    cycle = '--cycle' in sys.argv
 
     sheet, lines, used, counts, blame = build()
     os.makedirs(OUT, exist_ok=True)
@@ -561,6 +572,8 @@ def main():
         # pixels wide and simply absent when it is one, which is how the
         # floor and the road shipped invisible.
         make_preview(sheet, zoom=1, filename='preview-actual-size.png')
+    if cycle:
+        make_cycle_strip(sheet)
     return 0
 
 
@@ -673,6 +686,20 @@ def report(sheet, used, blame):
     assert not unresolved, 'object svals that resolve to nothing: %s' % unresolved[:3]
     print('    %d object svals all resolve'
           % len(re.findall(r'^object:', text, re.M)))
+
+    # list.txt tells the engine the block shape so graf_cycle_attr() can move
+    # along a row; palette.txt is where that shape actually comes from.  If the
+    # two disagree, a shimmering monster rotates into the wrong colours, and
+    # nothing anywhere says so.
+    hues, tones, span = read_cycle_declaration()
+    assert (hues, tones) == (len(sheet.order), len(TONES)), (
+        'list.txt declares cycle:%d:%d but the palette is %d hues x %d tones'
+        % (hues, tones, len(sheet.order), len(TONES)))
+    assert 1 < span <= hues, 'cycle span %d is not usable' % span
+    # The hues past the span are the ones a shimmer must not walk into, so
+    # they have to be at the end of palette.txt and not in the middle of it.
+    print('    list.txt cycle:%d:%d:%d matches the palette; %s excluded from '
+          'the rainbow' % (hues, tones, span, ', '.join(sheet.order[span:])))
 
     features = {r['code'] for r in read_records('terrain.txt', (), start='code')}
     used_feats = set(re.findall(r'^feat:([^:]+):', text, re.M))
@@ -826,6 +853,65 @@ def make_preview(sheet, zoom=3, filename='preview.png'):
     print('\n  preview: %s (%dx%d)' % (path, W, H))
     if missing:
         print('  MISSING from the prf: %s' % sorted(set(map(str, missing)))[:6])
+
+
+# Monsters that carry ATTR_MULTI, ATTR_FLICKER or ATTR_RAND, so these are the
+# ones the game will actually shimmer.
+SHIMMER = (
+    'baby multi-hued dragon', 'chaos drake', 'energy vortex',
+    'shimmering mold', 'blink dog', 'phase spider',
+    'killer iridescent beetle', 'disenchanter eye',
+)
+
+
+def cycle_attr(attr, step, hues, tones, span):
+    """The arithmetic graf_cycle_attr() does in src/grafmode.c.
+
+    Ported rather than shared, because the C runs in the game and this runs
+    here; --check asserts that the block shape both of them use is the same in
+    list.txt and in palette.txt, which is the way the two can drift.
+    """
+    per_block = hues * tones
+    row = attr & 0x7f
+    block, slot = divmod(row, per_block)
+    hue, tone = divmod(slot, tones)
+    if hue >= span:
+        return attr
+    return 0x80 | (block * per_block + ((hue + step) % span) * tones + tone)
+
+
+def make_cycle_strip(sheet, frames=10, zoom=4):
+    """One row per shimmering monster, one column per step of the cycle.
+
+    What the game will do at five frames a second, laid out so it can be
+    judged without hunting a chaos drake in a dungeon.
+    """
+    prf = read_prf()
+    px = read_png(os.path.join(OUT, '16x16.png'))
+    hues, tones = len(sheet.order), len(TONES)
+    span = read_cycle_declaration()[2]
+
+    rows = [name for name in SHIMMER if name in prf['monster']]
+    W, H = frames * TILE * zoom, len(rows) * TILE * zoom
+    out = [[(0, 0, 0, 255)] * W for _ in range(H)]
+
+    for ty, name in enumerate(rows):
+        row, col = prf['monster'][name]
+        for step in range(frames):
+            r = cycle_attr(0x80 | row, step, hues, tones, span) & 0x7f
+            for y in range(TILE):
+                for x in range(TILE):
+                    p = px[r * TILE + y][col * TILE + x]
+                    if p[:3] == (0, 0, 0):
+                        continue
+                    for dy in range(zoom):
+                        for dx in range(zoom):
+                            out[(ty * TILE + y) * zoom + dy][
+                                (step * TILE + x) * zoom + dx] = p
+
+    path = os.path.join(SRC, 'cycle.png')
+    write_png(path, out)
+    print('\n  cycle: %s (%d monsters x %d steps)' % (path, len(rows), frames))
 
 
 SHAPES = read_shapes()

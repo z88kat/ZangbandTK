@@ -67,3 +67,11 @@ directory:neon
 size:16:16:16x16.png
 pref:graf-neo.prf
 extra:0:0:0
+# The sheet has the colour on the row and the shape on the column, in blocks of
+# ten hues by four tones, so a tile's colour can be changed without changing
+# its picture -- which is what lets a shimmering monster shimmer in graphics
+# mode.  The third number is how many of those hues the shimmer walks through:
+# nine, because the tenth is grey and a rainbow through grey looks like the
+# colour failing.  Only this set is laid out that way; the others must not
+# claim it.
+cycle:10:4:9

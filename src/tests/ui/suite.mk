@@ -1,2 +1,4 @@
 TESTPROGS += \
-	ui/menu-labels
+	ui/grafmode \
+	ui/menu-labels \
+	ui/shimmer

@@ -38,6 +38,9 @@ static enum parser_error parse_graf_name(struct parser *p) {
 	mode->alphablend = 0;
 	mode->overdrawRow = 0;
 	mode->overdrawMax = 0;
+	mode->cycleHues = 0;
+	mode->cycleTones = 0;
+	mode->cycleSpan = 0;
 	my_strcpy(mode->file, "", 32);
 	my_strcpy(mode->pref, "none", 32);
 	
@@ -89,6 +92,20 @@ static enum parser_error parse_graf_extra(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_graf_cycle(struct parser *p) {
+	graphics_mode *mode = parser_priv(p);
+	if (!mode) {
+		return PARSE_ERROR_INVALID_VALUE;
+	}
+	mode->cycleHues = parser_getuint(p, "hues");
+	mode->cycleTones = parser_getuint(p, "tones");
+	mode->cycleSpan = parser_getuint(p, "span");
+	if (mode->cycleSpan > mode->cycleHues) {
+		return PARSE_ERROR_INVALID_VALUE;
+	}
+	return PARSE_ERROR_NONE;
+}
+
 static struct parser *init_parse_grafmode(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -98,6 +115,7 @@ static struct parser *init_parse_grafmode(void) {
 	parser_reg(p, "size uint wid uint hgt str filename", parse_graf_size);
 	parser_reg(p, "pref str prefname", parse_graf_pref);
 	parser_reg(p, "extra uint alpha uint row uint max", parse_graf_extra);
+	parser_reg(p, "cycle uint hues uint tones uint span", parse_graf_cycle);
 
 	return p;
 }
@@ -189,6 +207,9 @@ static errr finish_parse_grafmode(struct parser *p) {
 	graphics_modes[count].alphablend = 0;
 	graphics_modes[count].overdrawRow = 0;
 	graphics_modes[count].overdrawMax = 0;
+	graphics_modes[count].cycleHues = 0;
+	graphics_modes[count].cycleTones = 0;
+	graphics_modes[count].cycleSpan = 0;
 	my_strcpy(graphics_modes[count].pref, "none", 8);
 	my_strcpy(graphics_modes[count].path, "", 32);
 	my_strcpy(graphics_modes[count].file, "", 32);
@@ -304,4 +325,80 @@ int is_dh_tile(int a, wchar_t c)
 	tileset_row = a & 0x7f;
 	return tileset_row >= current_graphics_mode->overdrawRow &&
 		tileset_row <= current_graphics_mode->overdrawMax;
+}
+
+
+/**
+ * Test for whether the current graphics mode can have a tile's colour
+ * changed without changing its picture.
+ */
+bool graf_cycles(void)
+{
+	return current_graphics_mode &&
+		current_graphics_mode->cycleHues > 1 &&
+		current_graphics_mode->cycleTones > 0 &&
+		current_graphics_mode->cycleSpan > 1;
+}
+
+
+/**
+ * Rotate a graphic tile's colour, holding its shape.
+ * \param attr Is the tile's attribute, which in graphics mode is its row.
+ * \param step Is how many hues to move along.
+ * \return The attribute of the same shape in another colour, or `attr`
+ * unchanged if the current mode has not declared a layout this works on.
+ *
+ * Ordinarily a tileset paints colour into its art, so a monster's colour is
+ * fixed the moment its tile is chosen and a shimmering monster cannot shimmer
+ * -- which is why do_animation()'s work is thrown away in graphics mode.
+ *
+ * The Neon tileset lays its sheet out with the colour on the row and the shape
+ * on the column, in blocks of `cycleHues` x `cycleTones` rows, so the same
+ * drawing exists in every colour and moving between them is arithmetic on the
+ * row alone.  A set that does not say so in list.txt is left alone.
+ *
+ * The tone is held rather than rotated: walking through every slot in the
+ * block would take a bright monster into the tones meant for remembered
+ * terrain, where it is nearly invisible.
+ *
+ * Only the first `cycleSpan` hues are walked.  The set's palette is ordered so
+ * those read as a spectrum and the ones past the span do not belong in one --
+ * grey, for the Neon set, because a rainbow that passes through grey looks
+ * like the colour failing rather than moving.  A monster whose own colour is
+ * out there keeps it and does not shimmer.
+ *
+ * Staying inside the row's own block keeps the result on the sheet.  A set
+ * declaring `cycle:` is laid out in whole blocks by construction -- the
+ * generator emits them and its --check verifies every coordinate lands in the
+ * sheet -- so every slot in a block that a valid row belongs to is valid too.
+ */
+uint8_t graf_cycle_attr(uint8_t attr, int step)
+{
+	int hues, tones, span, per_block, row, block, slot, hue, tone;
+
+	if (!(attr & 0x80) || !graf_cycles()) {
+		return attr;
+	}
+
+	hues = current_graphics_mode->cycleHues;
+	tones = current_graphics_mode->cycleTones;
+	span = current_graphics_mode->cycleSpan;
+	per_block = hues * tones;
+
+	row = attr & 0x7f;
+	block = row / per_block;
+	slot = row % per_block;
+	hue = slot / tones;
+	tone = slot % tones;
+
+	if (hue >= span) {
+		return attr;
+	}
+
+	hue = (hue + step) % span;
+	if (hue < 0) {
+		hue += span;
+	}
+
+	return 0x80 | (block * per_block + hue * tones + tone);
 }
