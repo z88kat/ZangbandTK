@@ -400,6 +400,7 @@ static void borg_begin_pending(void)
 	}
 
 	borg_headless = true;
+	borg_trace_keys = (getenv("ZTK_BORG_KEYS") != NULL);
 
 	if (want_deathless && borg_cfg) {
 		borg_cfg[BORG_CHEAT_DEATH] = 1;

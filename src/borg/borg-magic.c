@@ -814,6 +814,24 @@ void borg_cheat_spells(void)
                 && book_num < BORG_MAX_BOOKS;
             book_num++) {
             struct class_book book = player->class->magic.books[book_num];
+
+            /*
+             * ZangbandTK (BRG-11): an empty pack slot is not a spellbook.
+             *
+             * A `borg_item` for an empty slot is zeroed, so its tval and sval
+             * are both 0 -- and it matched any book entry that also read zero,
+             * recording that book as being in inventory slot 0. The borg then
+             * believed it held a book it did not own, chose a spell from it,
+             * and sent `G a d` for ever while the game answered "You cannot
+             * learn any new spells from the books you have".
+             *
+             * That is the study loop recorded as BRG-11 for the Necromancer
+             * and Blackguard, and it is why no character in any run had ever
+             * successfully studied a single spell -- the exercise report read
+             * `learned=0 cast=0 of 224` for that reason and no other.
+             */
+            if (!item->iqty) continue;
+
             if (item->tval == book.tval && item->sval == book.sval) {
                 /* Note book locations */
                 borg.book_idx[book_num] = i;

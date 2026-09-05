@@ -314,6 +314,24 @@ errr borg_keypress(keycode_t k)
         return (-1);
     }
 
+    /*
+     * ZangbandTK: trace what is queued and what is taken (BRG-22).
+     *
+     * The context-menu wedge is a symptom: the borg queues a multi-key
+     * sequence for an action, the game consumes fewer keys than the sequence
+     * assumed, and the remainder lands at top level -- where a stray `e` opens
+     * the equipment listing and its context menu. Clearing the menu afterwards
+     * treats the consequence; the mismatch is the fault, and it is only
+     * findable by comparing what went in with what came out.
+     *
+     * Off unless `ZTK_BORG_KEYS` is set, because a run queues tens of
+     * thousands of keys.
+     */
+    if (borg_trace_keys) {
+        borg_note(format("&KEY+ %c (%lu)",
+            (k >= 32 && k < 127) ? (char) k : '?', (unsigned long) k));
+    }
+
     /* Store the char, advance the queue */
     borg_key_queue[borg_key_head++] = k;
 
@@ -386,6 +404,9 @@ errr borg_keypresses(const char *str)
     return 0;
 }
 
+/* ZangbandTK: see borg_keypress() -- set from ZTK_BORG_KEYS. */
+bool borg_trace_keys = false;
+
 /*
  * Get the next Borg keypress
  */
@@ -403,6 +424,11 @@ keycode_t borg_inkey(bool take)
     /* Do not advance */
     if (!take)
         return i;
+
+    if (borg_trace_keys) {
+        borg_note(format("&KEY- %c (%lu)",
+            (i >= 32 && i < 127) ? (char) i : '?', (unsigned long) i));
+    }
 
     /* Advance the queue */
     borg_key_tail++;

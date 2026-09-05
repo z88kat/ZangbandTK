@@ -55,6 +55,9 @@ extern void borg_warning(const char *what);
 /*
  * Add a keypress to the "queue" (fake event)
  */
+/* ZangbandTK (BRG-22): trace the key queue to find prompt desynchronisation */
+extern bool borg_trace_keys;
+
 extern errr borg_keypress(keycode_t k);
 
 /*

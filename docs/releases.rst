@@ -48,6 +48,30 @@ Unreleased
 An unexplored square is black everywhere — 4 September 2026
 -------------------------------------------------------------
 
+- **3.98.0** — **The study loop is named, and it is not what four fixes
+  assumed.** The borg has never successfully studied a spell in any run this
+  project has made, which is why every exercise report reads ``learned=0
+  cast=0 of 224``.
+
+  Tracing the key queue settled what three hypotheses had got wrong. The borg
+  queues ``G a d`` — study, book, spell — all three keys are consumed cleanly,
+  and the game answers *"You cannot learn any new spells from the books you
+  have."* There is no desynchronisation and no stray key; the object context
+  menu chased through three earlier fixes was a red herring. A Warrior-Mage is
+  born with food, a torch, a sword, armour and a Word of Recall — **no
+  spellbook** — so the game is right and the borg is wrong.
+
+  One real defect found on the way and fixed: an empty pack slot is a zeroed
+  ``borg_item``, so its tval and sval are both 0 and it matched any book entry
+  reading zero, recording that book as being in inventory slot 0.
+
+  **The wedge itself is not fixed**, and it is now specified precisely rather
+  than guessed at: ``book_idx[16]`` reads −1 immediately after the scan that
+  sets it and 0 when the study code reads it, with only two writers in the
+  whole subsystem and both inside that scan. That is a memory-consistency
+  contradiction rather than a logic error. An ASAN build runs the first 400
+  turns clean.
+
 - **3.97.1** — **The generated tilesets give the unseen grid an opaque tile.**
   Angband points ``FEAT_NONE`` at cell (0,0), which in two of the four sheets is
   fully transparent — so what an unexplored square looks like was decided by
