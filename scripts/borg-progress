@@ -13,7 +13,13 @@
 # slightly differently, which makes runs incomparable. The output is one line
 # per run plus a summary, so two runs can be diffed.
 #
-# Usage: scripts/borg-progress [-x exe] [-n turns] [-c class[,class...]] [seed...]
+# Usage: scripts/borg-progress [-x exe] [-n turns] [-m minutes]
+#                              [-c class[,class...]] [seed...]
+#
+# -m bounds each run by the clock as well as by turns, and the clock is the
+# outer bound: a turn budget does not bound wall time, because a character at
+# depth computes far more per turn than one at depth 1 and a wedged run
+# consumes no turns at all while running for ever.
 #
 # Deaths are reported, not treated as failures -- the borg dies often at low
 # level and that is ordinary play (see c_borg_status). The exit status is
@@ -22,12 +28,14 @@
 
 exe=build-strict/game/angband
 turns=40000
+minutes=
 classes=Warrior
 
 while [ $# -gt 0 ]; do
 	case "$1" in
 		-x) exe="$2"; shift 2 ;;
 		-n) turns="$2"; shift 2 ;;
+		-m) minutes="$2"; shift 2 ;;
 		-c) classes="$2"; shift 2 ;;
 		--) shift; break ;;
 		-*) echo "borg-progress: unknown option $1" >&2; exit 2 ;;
@@ -52,7 +60,16 @@ export ZTK_HEADLESS
 ZTK_BORG_STEPS=${ZTK_BORG_STEPS:-20000000}
 export ZTK_BORG_STEPS
 
-echo "borg-progress: $turns turns, seeds [$seeds]"
+if [ -n "$minutes" ]; then
+	ZTK_BORG_MINUTES="$minutes"
+	export ZTK_BORG_MINUTES
+fi
+
+if [ -n "$minutes" ]; then
+	echo "borg-progress: $turns turns or $minutes minutes, seeds [$seeds]"
+else
+	echo "borg-progress: $turns turns, seeds [$seeds]"
+fi
 printf '%-15s %6s %7s %7s %7s  %s\n' class seed turns depth clevel outcome
 
 broken=0
@@ -60,6 +77,9 @@ runs=0
 best_depth=0
 best_level=0
 deaths=0
+capped=0
+learned_total=0
+cast_total=0
 
 for class in $(echo "$classes" | tr ',' ' '); do
 	ZTK_HEADLESS_CLASS="$class"
@@ -68,7 +88,7 @@ for class in $(echo "$classes" | tr ',' ' '); do
 	for seed in $seeds; do
 		runs=$(expr $runs + 1)
 
-		out=$(printf 'borg-seed %s\nborg-run %s\nborg-status?\nquit\n' \
+		out=$(printf 'borg-seed %s\nborg-run %s\nborg-status?\nborg-exercise?\nquit\n' \
 			"$seed" "$turns" | "$exe" -mtest 2>&1)
 		rc=$?
 		line=$(printf '%s\n' "$out" | grep '^borg-status:')
@@ -89,11 +109,29 @@ for class in $(echo "$classes" | tr ',' ' '); do
 		[ "$d" -gt "$best_depth" ] 2>/dev/null && best_depth=$d
 		[ "$l" -gt "$best_level" ] 2>/dev/null && best_level=$l
 		[ "$r" = "died" ] && deaths=$(expr $deaths + 1)
+		[ "$r" = "capped" ] && capped=$(expr $capped + 1)
 
 		printf '%-15s %6s %7s %7s %7s  %s\n' "$class" "$seed" "$t" "$d" "$l" "$r"
+
+		# What the run exercised, which is the point of running it at all.
+		# A borg that reaches depth 30 having cast nothing has verified
+		# almost none of M8, M9 or M10, and the depth alone would hide that.
+		ex=$(printf '%s\n' "$out" | grep '^borg-exercise:')
+		if [ -n "$ex" ]; then
+			printf '%s\n' "$ex" | sed 's/^borg-exercise: /    exercised: /'
+			el=$(printf '%s\n' "$ex" | sed -n 's/.*learned=\([0-9]*\).*/\1/p')
+			ec=$(printf '%s\n' "$ex" | sed -n 's/.*cast=\([0-9]*\).*/\1/p')
+			learned_total=$(expr $learned_total + ${el:-0})
+			cast_total=$(expr $cast_total + ${ec:-0})
+		fi
 	done
 done
 
 echo
-echo "borg-progress: $runs runs, best depth $best_depth, best level $best_level, $deaths died, $broken broken"
+echo "borg-progress: $runs runs, best depth $best_depth, best level $best_level,"
+echo "borg-progress: $deaths died, $capped capped, $broken broken,"
+echo "borg-progress: $learned_total spells learned, $cast_total cast"
+
+# Deaths and time caps are data. Only a crash, an abort or a wedge is a
+# failure, and each of those has already printed its seed above.
 exit $broken

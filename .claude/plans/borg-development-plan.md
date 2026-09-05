@@ -1040,3 +1040,12 @@ endless map is not exploration, it is a random walk with a step budget.
 Wanted: a bound on surface exploration -- something like "explore the town and
 the ground between it and a known mouth, not the world" -- so that having
 arrived somewhere counts for something.
+
+### BRG-20 — the nightly job (done, 3.103.0)
+
+`.github/workflows/borg.yaml`, 03:00 UTC, `workflow_dispatch` for running it
+by hand. Cadence is the cron line and nothing else; weekly is `0 3 * * 0`.
+
+`scripts/borg-progress` grew `-m minutes` (the wall-clock cap, outer bound over
+the turn budget) and now prints each run's exercise report and a `capped`
+count alongside deaths.

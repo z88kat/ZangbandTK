@@ -48,6 +48,33 @@ Unreleased
 Gervais' unexplored squares go black too — 5 September 2026
 --------------------------------------------------------------
 
+- **3.103.0** — **The borg plays every night.** The project owner set the
+  cadence: *"Agreed we should not run the borg too often. Once a night for now,
+  then we can drop to once a week when development stabilizes."* Dropping to
+  weekly is one line -- the cron in ``.github/workflows/borg.yaml`` -- and
+  nothing else needs touching, which is the point of it being one line.
+
+  Scheduled, not on push. A borg run is minutes of play, and a check that slows
+  every push is a check people route around.
+
+  It reports the three numbers -- best depth, best character level, and how
+  each run ended -- and, per run, what was actually exercised: spells learned
+  and cast, pets held, mutations. Depth alone would hide a borg that arrived
+  deep having done none of the things M8 to M10 are about.
+
+  Deaths and time caps are data, not failures. A borg that dies at character
+  level 3 is playing badly, which is worth knowing and is not a broken build; a
+  nightly that goes red for that is a nightly everyone learns to ignore. Only a
+  crash, an abort or a wedge exits non-zero, and each prints its seed so it can
+  be replayed with ``scripts/borg-progress -c <class> <seed>``.
+
+  Both build switches are named explicitly rather than assumed, because both
+  are off by default and both fail quietly: without ``SUPPORT_BORG`` the borg
+  compiles away to nothing and the binary plays a game nobody is driving,
+  and without ``SUPPORT_TEST_FRONTEND`` there is no ``-mtest`` module at all.
+  The first draft of this job had the second wrong and died on *"Unable to
+  prepare any 'display module'!"*.
+
 - **3.102.2** — The same fault the generated tilesets had, reported again from
   play: Angband points ``FEAT_NONE`` at cell (0,0), which in Gervais' sheet is
   **fully transparent**, so what an unwalked square looks like is decided by

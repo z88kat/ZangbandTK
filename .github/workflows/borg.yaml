@@ -1,0 +1,94 @@
+# The borg plays the game (BRG-20).
+#
+# The borg is not a feature, it is how we find out whether M8 to M10 actually
+# work: a character that plays for a million turns walks through more monster
+# allegiance, spell casting, mutation and wilderness code than any fixture
+# will, and it does it without anybody writing the fixture.
+#
+# Nightly rather than on push, and the project owner set the cadence: *"Agreed
+# we should not run the borg too often. Once a night for now, then we can drop
+# to once a week when development stabilizes."* Dropping to weekly is the one
+# line below -- change the cron to `0 3 * * 0`. Nothing else needs touching,
+# which is the point of it being one line.
+name: Borg
+
+on:
+  # 03:00 UTC. Change this line, and only this line, to change the cadence.
+  schedule:
+    - cron: '0 3 * * *'
+  # And by hand, for when somebody wants to know now.
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: 'Wall-clock cap per run, in minutes'
+        required: false
+        default: '10'
+      classes:
+        description: 'Comma-separated classes to run'
+        required: false
+        default: 'Warrior,Mage,Priest,Warrior-Mage'
+
+permissions:
+  contents: read
+
+jobs:
+  play:
+    name: Play the game
+    runs-on: ubuntu-latest
+    # Two hours is the outer bound on the *job*, well clear of what the runs
+    # below should take. The runs bound themselves; this only catches a
+    # scheduler that has stopped making sense.
+    timeout-minutes: 120
+
+    steps:
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc cmake ninja-build libx11-dev
+
+      - name: Clone Project
+        uses: actions/checkout@v6
+
+      # Both switches are off by default and both fail *quietly* when missing,
+      # which is why they are named here rather than assumed. Without
+      # SUPPORT_BORG the borg's code compiles away to nothing and the binary
+      # runs a game nobody is playing; without SUPPORT_TEST_FRONTEND there is
+      # no -mtest display module, and the run dies on "Unable to prepare any
+      # 'display module'!" -- which was the first thing this job did.
+      - name: Build
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DSUPPORT_BORG=ON -DSUPPORT_TEST_FRONTEND=ON
+          cmake --build build -j"$(nproc)"
+
+      # The three numbers, plus what the runs actually exercised. Seeds are
+      # fixed so two nights can be compared; a change in depth is a change in
+      # the borg or the game, not in the dice.
+      #
+      # Deaths and time caps are data, not failures -- a borg that dies at
+      # character level 3 is playing badly, which is worth knowing and is not
+      # a broken build. Only a crash, an abort or a wedge exits non-zero, and
+      # each prints its seed so it can be replayed with
+      # `scripts/borg-progress -c <class> <seed>`.
+      - name: Play
+        env:
+          LANG: en_US.UTF-8
+        run: |
+          scripts/borg-progress \
+            -x build/game/angband \
+            -n 2000000 \
+            -m "${{ github.event.inputs.minutes || '10' }}" \
+            -c "${{ github.event.inputs.classes || 'Warrior,Mage,Priest,Warrior-Mage' }}" \
+            1 7 13
+
+      # Kept whatever the outcome, because the interesting run is usually the
+      # one that went wrong.
+      - name: Keep the log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: borg-log
+          path: |
+            build/game/*.txt
+          if-no-files-found: ignore
+          retention-days: 14

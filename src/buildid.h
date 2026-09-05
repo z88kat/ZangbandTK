@@ -37,7 +37,7 @@
  * out of this file, and that is what reaches Info.plist and so the About panel,
  * so there is nothing to keep in step by hand.
  */
-#define VERSION_STRING	"3.102.2"
+#define VERSION_STRING	"3.103.0"
 
 /*
  * The Angband release this is built on.  Shown alongside our own version so it
