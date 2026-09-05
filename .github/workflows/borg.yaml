@@ -8,14 +8,14 @@
 # Nightly rather than on push, and the project owner set the cadence: *"Agreed
 # we should not run the borg too often. Once a night for now, then we can drop
 # to once a week when development stabilizes."* Dropping to weekly is the one
-# line below -- change the cron to `0 3 * * 0`. Nothing else needs touching,
+# line below -- change the cron to `0 6 * * 0`. Nothing else needs touching,
 # which is the point of it being one line.
 name: Borg
 
 on:
-  # 03:00 UTC. Change this line, and only this line, to change the cadence.
+  # 06:00 UTC. Change this line, and only this line, to change the cadence.
   schedule:
-    - cron: '0 3 * * *'
+    - cron: '0 6 * * *'
   # And by hand, for when somebody wants to know now.
   workflow_dispatch:
     inputs:
