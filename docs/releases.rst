@@ -48,6 +48,53 @@ Unreleased
 An unexplored square is black everywhere — 4 September 2026
 -------------------------------------------------------------
 
+- **3.101.0** — **The borg can learn spells, and cast them.** Five hypotheses
+  about the study loop failed, including memory corruption -- ASAN ran clean
+  straight through it. Reading the borg's study path against the game's, line
+  by line, found it in one pass.
+
+  The borg matched a spellbook in the pack to a class book on tval and sval.
+  That is not what makes a book readable here. ``player_object_to_book()``
+  applies a second test the borg had no notion of: the book must belong to a
+  realm this character studies (PLR-08). A class carries the books of every
+  realm it *may* study, because a book has nowhere else to live, and the choice
+  made at birth decides which of them can be opened -- so a Warrior-Mage's list
+  holds twenty-eight books and the character can read four.
+
+  A Warrior-Mage carrying a Chaos Book it cannot open recorded chaos book 1 as
+  held, chose Magic Missile from it, and sent ``G a a`` forty-one times.
+  ``obj_can_study()`` filters the pack by the same realm test, so the book was
+  never offered, the letter never meant anything, and the game refused before
+  any prompt appeared -- no message, no failed command, nothing in any log. The
+  borg was asking for a book that does not exist as far as the game is
+  concerned.
+
+  It now asks ``player_object_to_book()`` instead of repeating its rules, so
+  the two cannot drift apart again. It is the function the study command itself
+  goes through.
+
+  Measured across eight classes, two minutes each, from ``learned=0 cast=0``:
+
+  ===============  =======  ====
+  class            learned  cast
+  ===============  =======  ====
+  Mage                   3     1
+  Priest                 2     0
+  Warrior-Mage           3     0
+  Ranger                 1     0
+  Rogue                  2     1
+  Monk                   5     1
+  Paladin                1     1
+  Mindcrafter            0     0
+  ===============  =======  ====
+
+  Mindcrafter has no spells in the data yet, which is the closed
+  not-a-defect. The Warrior-Mage that used to wedge now plays until something
+  kills it, which is data rather than a failure.
+
+  This is M9 finally being exercised rather than asserted. Nothing had ever
+  cast a spell in a borg run before.
+
 - **3.100.0** — **The borg was not choosing to stay shallow. It had no legal
   move.** A Warrior granted level 30 and 200,000 gold, placed at depth 25,
   climbed out and ground at depth 2 while losing a character level. That looks

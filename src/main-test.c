@@ -49,6 +49,12 @@
 #include "borg/borg-inventory.h"
 #include "borg/borg-prepared.h"
 #include "borg/borg-update.h"
+#include "borg/borg-magic.h"
+#include "player-spell.h"
+#include "obj-util.h"
+#include "obj-tval.h"
+#include "obj-desc.h"
+#include "ui-menu.h"
 #include "borg/borg-trait.h"
 #endif
 
@@ -809,6 +815,100 @@ static void c_borg_prepared(char *rest)
 }
 
 /**
+ * borg-spells? -- what the borg believes about a spell, beside what the game
+ * believes about the same spell (BRG-11).
+ *
+ * The borg keeps its own table, `borg_magics[]`, built by cheating the spell
+ * screens. The game keeps `class_spell` and `player->spell_flags[]`. Every
+ * study decision is the borg's table answering a question the game's table
+ * will be asked immediately afterwards, and a study loop is the two of them
+ * disagreeing -- the borg queues the keys for a spell it believes it can
+ * learn, and the game refuses because by its own reckoning there is nothing
+ * to learn.
+ *
+ * Printing one and then the other, for the same spell index, is the only way
+ * to see which of them is wrong. Five hypotheses about this loop failed
+ * because each guessed at a mechanism instead of reading both sides.
+ */
+static void c_borg_spells(char *rest)
+{
+	const struct class_magic *m;
+	int b, shown = 0;
+	bool only_odd = !(rest && *rest && streq(rest, "all"));
+
+	if (!player || !borg_initialized) {
+		printf("borg-spells: FAILED no borg\n");
+		run_failed = 1;
+		return;
+	}
+
+	m = &player->class->magic;
+
+	printf("borg-spells: class=%s books=%d total=%d clevel=%d "
+		   "new_spells=%d can_study=%d choose=%d\n",
+		   player->class->name, m->num_books, m->total_spells, player->lev,
+		   (int) player->upkeep->new_spells,
+		   player_can_study(player, false) ? 1 : 0,
+		   player_has(player, PF_CHOOSE_SPELLS) ? 1 : 0);
+
+	for (b = 0; b < m->num_books; b++) {
+		const struct class_book *book = &m->books[b];
+		int k;
+
+		for (k = 0; k < book->num_spells; k++) {
+			const struct class_spell *cs = &book->spells[k];
+			borg_magic *as = &borg_magics[cs->sidx];
+			uint8_t f = player->spell_flags ? player->spell_flags[cs->sidx] : 0;
+			int game_ok = spell_okay_to_study(player, cs->sidx) ? 1 : 0;
+			int borg_ok = (as->status == BORG_MAGIC_OKAY) ? 1 : 0;
+
+			/*
+			 * Only the rows where they disagree, unless asked for all. A
+			 * Mage has 224 spells and the interesting ones are the handful
+			 * the borg would act on and the game would refuse.
+			 */
+			if (only_odd && borg_ok == game_ok) continue;
+
+			printf("  %-22s book=%d(idx=%d) off=%d | borg: lvl=%d status=%d "
+				   "ok=%d | game: slevel=%d learned=%d worked=%d ok=%d\n",
+				   cs->name, (int) as->book, (int) borg.book_idx[as->book],
+				   (int) as->book_offset, (int) as->level, (int) as->status,
+				   borg_ok, (int) cs->slevel,
+				   (f & PY_SPELL_LEARNED) ? 1 : 0,
+				   (f & PY_SPELL_WORKED) ? 1 : 0, game_ok);
+			shown++;
+		}
+	}
+
+	/*
+	 * And the game's verdict on each book actually in the pack, which is the
+	 * question `G` asks first. The borg chooses a spell and then names the
+	 * book that holds it; the game filters the pack by `obj_can_study` before
+	 * it will accept any letter at all, so a book the borg is certain about
+	 * and the game will not offer is the whole failure.
+	 */
+	{
+		int i;
+		for (i = 0; i < z_info->pack_size; i++) {
+			struct object *obj = player->upkeep->inven[i];
+			char o_name[80];
+			if (!obj) continue;
+			if (!tval_is_book_k(obj->kind)) continue;
+			object_desc(o_name, sizeof(o_name), obj, ODESC_PREFIX | ODESC_BASE,
+						player);
+			printf("  pack %d (%c): %-34s browse=%d study=%d count=%d\n",
+				   i, all_letters_nohjkl[i], o_name,
+				   obj_can_browse(obj) ? 1 : 0, obj_can_study(obj) ? 1 : 0,
+				   spell_book_count_spells(player, obj, spell_okay_to_study));
+		}
+	}
+
+	printf("borg-spells: %d %s\n", shown,
+		   only_odd ? "disagreements" : "spells listed");
+	fflush(stdout);
+}
+
+/**
  * borg-exercise? -- what the run actually exercised (BRG-22).
  *
  * The point of the scoped route, and the thing reaching depth 30 is only the
@@ -1301,6 +1401,7 @@ static test_cmd cmds[] = {
 	{ "borg-mouths?", c_borg_mouths },
 	{ "borg-terrain?", c_borg_terrain },
 	{ "borg-prepared?", c_borg_prepared },
+	{ "borg-spells?", c_borg_spells },
 	{ "borg-exercise?", c_borg_exercise },
 	{ "borg-cheat", c_borg_cheat },
 	{ "borg-jump", c_borg_jump },
@@ -1449,6 +1550,29 @@ static errr term_xtra_event(int v) {
 			 * `borg_think()` simply generates a fresh sequence, so it removed
 			 * the only channel that could have carried the key.
 			 */
+			/*
+			 * Say what it is stuck on. "A prompt ESCAPE will not clear" names
+			 * the symptom and nothing else, and the whole difficulty with a
+			 * wedge is that the thing on screen is the one piece of evidence
+			 * not in any log.
+			 */
+			if (stuck_escapes == 1) {
+				char line[200];
+				int  row;
+				for (row = 0; row < 24; row++) {
+					int col;
+					for (col = 0; col < (int) sizeof(line) - 1; col++) {
+						wchar_t ch;
+						int     a;
+						if (Term_what(col, row, &a, &ch) != 0) break;
+						line[col] = (ch >= 32 && ch < 127) ? (char) ch : ' ';
+					}
+					line[col] = 0;
+					while (col > 0 && line[col - 1] == ' ') line[--col] = 0;
+					if (col) printf("borg-stuck-screen: row%d |%s|\n", row, line);
+				}
+			}
+
 			printf("borg-stuck: dismissing an unanswered prompt at turn %d "
 				   "(%d)\n", (int) turn, stuck_escapes);
 			fflush(stdout);

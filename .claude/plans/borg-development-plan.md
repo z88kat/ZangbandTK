@@ -998,3 +998,20 @@ targets and to make the restock reason say which town can satisfy it.
 
 This blocks depth 30: the depth 10 rung cannot be climbed in the village, and
 the rungs below 30 want six teleport sources.
+
+### BRG-11 — the study loop (done, 3.101.0)
+
+Cause: the borg matched pack books to class books on tval and sval, while the
+game's `player_object_to_book()` also requires the book's realm to be one the
+character studies (PLR-08). The borg recorded books it could never open, chose
+spells from them, and sent study keys the game discarded before any prompt.
+
+Fixed by calling `player_object_to_book()` rather than re-implementing it.
+
+Regression detector: `borg-exercise?`'s learned/cast counts, which the nightly
+reports. A unit test for the scan itself wants `borg_items[]`, `borg_magics[]`
+and real objects in the pack all standing up together inside the test harness;
+worth doing when the borg has more test scaffolding, not worth blocking this on.
+
+Remaining: `cast` is 1 or 0 for every class. Learning is fixed; using what is
+learned is the next question, and it is what M9 actually wants demonstrated.

@@ -801,43 +801,55 @@ void borg_cheat_spells(void)
     for (i = 0; i < BORG_MAX_BOOKS; i++)
         borg.book_idx[i] = -1;
 
-    /* Scan the pack */
+    /*
+     * Scan the pack, asking the game which book each item is.
+     *
+     * ZangbandTK (BRG-11): matched on tval and sval alone, which is not what
+     * makes a book readable here.
+     *
+     * `player_object_to_book()` applies a second test the borg had no notion
+     * of: the book must belong to a realm this character studies (PLR-08). A
+     * class carries the books of every realm it *may* study, because a book
+     * has nowhere else to live, and the choice made at birth decides which of
+     * them the character can open. So a Warrior-Mage's class list holds all
+     * twenty-eight books while the character can read the four of its own
+     * realm.
+     *
+     * Matching on tval and sval found the others. Measured: a Warrior-Mage
+     * carrying a Chaos Book it cannot open recorded chaos book 1 as held,
+     * chose Magic Missile out of it, and sent `G a a` forty-one times. The
+     * game refused every one before any prompt appeared -- `obj_can_study()`
+     * filters the pack by the same realm test, so the book was never offered
+     * and the letter never meant anything. No message, no failed command,
+     * nothing in any log: the borg asked for a book that does not exist as
+     * far as the game is concerned.
+     *
+     * Asking `player_object_to_book()` rather than repeating its rules means
+     * the two cannot drift apart again. It is the function the study command
+     * itself goes through.
+     */
     for (i = 0; i < z_info->pack_size; i++) {
-        int        book_num;
-        borg_item *item = &borg_items[i];
+        const struct class_book *book;
+        struct object           *obj;
+        int                      book_num;
 
-        /*
-         * ZangbandTK (BRG-10): bounded by the array as well as by the class.
-         * A Mage has 28 books and this array had nine slots.
-         */
-        for (book_num = 0; book_num < player->class->magic.num_books
-                && book_num < BORG_MAX_BOOKS;
-            book_num++) {
-            struct class_book book = player->class->magic.books[book_num];
+        /* An empty pack slot is not a spellbook */
+        if (!borg_items[i].iqty)
+            continue;
 
-            /*
-             * ZangbandTK (BRG-11): an empty pack slot is not a spellbook.
-             *
-             * A `borg_item` for an empty slot is zeroed, so its tval and sval
-             * are both 0 -- and it matched any book entry that also read zero,
-             * recording that book as being in inventory slot 0. The borg then
-             * believed it held a book it did not own, chose a spell from it,
-             * and sent `G a d` for ever while the game answered "You cannot
-             * learn any new spells from the books you have".
-             *
-             * That is the study loop recorded as BRG-11 for the Necromancer
-             * and Blackguard, and it is why no character in any run had ever
-             * successfully studied a single spell -- the exercise report read
-             * `learned=0 cast=0 of 224` for that reason and no other.
-             */
-            if (!item->iqty) continue;
+        obj = player->upkeep->inven[i];
+        if (!obj)
+            continue;
 
-            if (item->tval == book.tval && item->sval == book.sval) {
-                /* Note book locations */
-                borg.book_idx[book_num] = i;
-                break;
-            }
-        }
+        book = player_object_to_book(player, obj);
+        if (!book)
+            continue;
+
+        /* Its index in the class list, which is what borg_magics uses */
+        book_num = (int)(book - player->class->magic.books);
+
+        if (book_num >= 0 && book_num < BORG_MAX_BOOKS)
+            borg.book_idx[book_num] = i;
     }
 
     /* only browse spells if casting is possible */
