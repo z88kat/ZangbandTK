@@ -48,6 +48,62 @@ Unreleased
 An unexplored square is black everywhere — 4 September 2026
 -------------------------------------------------------------
 
+- **3.100.0** — **The borg was not choosing to stay shallow. It had no legal
+  move.** A Warrior granted level 30 and 200,000 gold, placed at depth 25,
+  climbed out and ground at depth 2 while losing a character level. That looks
+  like a borg with bad judgement about danger. It was three separate faults,
+  none of them about danger.
+
+  *It was forbidden to descend and never sent home.* ``borg_prepared()`` refuses
+  every depth below 4 without a Word of Recall. ``borg_restock()`` -- the rule
+  that sends the borg to town -- has its matching line commented out upstream.
+  So the borg may not go deeper and is not required to go anywhere else, and it
+  grinds where it stands. It sat at depth 5 for thirty thousand turns holding
+  forty Phase Door scrolls, no recall, and enough gold to buy the Alchemist's
+  entire stock of it. The same gap exists at every band boundary, because
+  restock answers about one depth at a time: phase door becomes required at 6
+  and teleportation at 10, so a borg at 5 or at 9 is told it is fine where it is
+  and refused the next step down.
+
+  ``borg_must_return_to_town()`` now asks about the next level as well as the
+  current one, and restock demands the recall scroll that prepared already
+  demands. It cannot send the borg home for something town could not supply:
+  restock only counts consumables, and the requirements town cannot sell --
+  character level, hit points -- live elsewhere and are not consulted.
+
+  *It threw away its own progress.* Answering yes to "Set recall depth to
+  current depth?" does not redirect a recall, it sets ``max_depth`` to wherever
+  the character is standing. The borg answered yes at depth 5 with a best of 9,
+  discarded the 9, and spent three quarters of the following run re-earning
+  depth 6.
+
+  Two faults behind that. ``unique_depths[]`` keeps the three shallowest live
+  uniques by comparing against the deepest kept so far, but starts at zero, so
+  the comparison is ``level < 0`` and nothing is ever inserted -- the borg's
+  idea of what it is hunting reads as depth zero for the whole game, and every
+  depth looks far below it. And the reset itself had a catch-all yes. It now
+  refuses when the borg is shallower than its best and still equipped for that
+  best, which is the case where the depth is progress rather than a mistake.
+
+  Measured on one seed, same budget: deepest reached 9 to 10, best depth held at
+  the end 6 to 8, armour class 66 to 72.
+
+  *And the ceiling that is left is not a borg fault at all.* The borg is now
+  stopped at depth 10 by ``restock tele + tele staff < 2``. A Staff of
+  Teleportation is sold in the magic shop; the starting village deliberately has
+  no magic shop (WLD-11a -- the armoury, the weaponsmith, the magic shop and the
+  black market are what make a larger town worth the walk). The borg has never
+  needed to travel between towns, because before the wilderness there was only
+  one. Recorded as BRG-25; it is the next thing standing between the borg and
+  depth 30.
+
+  New: ``src/tests/borg/prepared.c``, the first unit test to call into the borg
+  -- unit test targets now compile with ``ALLOW_BORG``, without which the borg
+  headers preprocess away and a borg test fails to compile rather than to link.
+  New harness commands ``borg-prepared?`` (the depth ladder and the first rung
+  the borg cannot climb) and a ``borg-maxdepth-drop`` watch, since a record that
+  ratchets downwards is invisible in any single reading.
+
 - **3.99.0** — **A borg run is time boxed, and says whether it finished.** The
   project owner: *"The borg also needs to be time boxed on the nightly run not
   that it runs for 25 hours."* A turn budget does not bound wall clock — a

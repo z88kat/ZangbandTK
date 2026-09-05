@@ -547,7 +547,12 @@ static int borg_dungeon_floor(void)
 {
     const struct dun_type *type;
 
-    if (!player->dungeon) return 0;
+    /*
+     * Asked before there is a character -- a unit test, or the borg being
+     * questioned about the ladder outside a game. There is no dungeon to be
+     * at the bottom of, so nothing is out of range.
+     */
+    if (!player || !player->dungeon) return 0;
 
     type = dun_type_by_index(player->dungeon - 1);
 
@@ -773,6 +778,27 @@ const char *borg_restock(int depth)
 
     /*** Level 3 to 5 ***/
 
+    /*
+     * Must have "recall" (ZangbandTK, BRG-24).
+     *
+     * `borg_prepared_aux()` refuses every depth from 5 down without a Word of
+     * Recall, and upstream has the matching rule here commented out. That
+     * pairing is a deadlock: the borg may not descend, and is not sent home
+     * for the one scroll that would let it. It grinds where it stands until
+     * the run ends, which reads as a borg that has decided shallow is safer
+     * rather than a borg with no legal move.
+     *
+     * Measured: a Warrior granted level 30 and 200,000 gold sat at depth 5
+     * for thirty thousand turns with forty Phase Door scrolls and no recall,
+     * while the Alchemist stocked it -- `always:scroll:Word of Recall`.
+     *
+     * The threshold is one rather than upstream's commented-out two, so that
+     * this asks for exactly what `borg_prepared()` asks for. Two rules about
+     * the same scroll that disagree by one is how this started.
+     */
+    if (depth >= 5 && borg.trait[BI_RECALL] < 1)
+        return ("restock recall");
+
     if (depth <= 5)
         return ((char *)NULL);
 
@@ -866,6 +892,8 @@ const char *borg_restock(int depth)
 
 extern const char *borg_must_return_to_town(void)
 {
+    const char *reason;
+
     /* don't need to go to town if in town */
     if (borg.trait[BI_CDEPTH] == 0)
         return ((char *)NULL);
@@ -875,7 +903,26 @@ extern const char *borg_must_return_to_town(void)
         return ((char *)NULL);
 
     /* need to return to town if restock is needed */
-    return borg_restock(borg.trait[BI_CDEPTH]);
+    reason = borg_restock(borg.trait[BI_CDEPTH]);
+    if (reason)
+        return reason;
+
+    /*
+     * And if the *next* level down needs a restock (ZangbandTK, BRG-24).
+     *
+     * `borg_restock()` answers about one depth at a time, and its rules step
+     * up at band boundaries -- phase door becomes required at 6, teleportation
+     * at 10. A borg at depth 5 is therefore told it is fine where it is and
+     * simultaneously refused depth 6, with nothing to reconcile the two. It
+     * stays at 5 for ever.
+     *
+     * Asking about the next level closes that gap. It cannot send the borg
+     * home for a reason town could not fix, because restock only ever counts
+     * consumables -- the requirements town cannot supply, character level and
+     * hit points, live in `borg_prepared_aux()` and are not consulted here.
+     * A borg that needs to grow rather than to shop is left alone to grow.
+     */
+    return borg_restock(borg.trait[BI_CDEPTH] + 1);
 }
 
 

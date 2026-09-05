@@ -963,3 +963,38 @@ So they can be re-checked. All patches were reverted; the tree is as it was.
 
   The general lesson is the one the borg plan is arguing: a hand-maintained
   table only covers what somebody remembered to add.
+
+### BRG-24 — the borg had no legal move (done, 3.100.0)
+
+Three faults, all presenting as "the borg prefers shallow":
+
+1. `borg_prepared()` demands a Word of Recall from depth 5; `borg_restock()`
+   has the matching rule commented out. Forbidden to descend, never sent home.
+   Fixed: restock demands the same scroll, and `borg_must_return_to_town()`
+   asks about `cdepth + 1` so band boundaries (phase at 6, teleport at 10)
+   cannot strand it either.
+2. `unique_depths[]` initialised to zero, so its "keep the three shallowest"
+   comparison never fires and `borg_depth_hunted_unique` is zero all game.
+   Fixed: sentinel 127.
+3. The catch-all yes to "Set recall depth to current depth?", which sets
+   `max_depth` to the current depth. Fixed: refuse while the borg is shallower
+   than its best and still prepared for that best.
+
+Covered by `src/tests/borg/prepared.c` (the deadlock invariant, falsified two
+ways) and by the harness's `borg-maxdepth-drop` watch (the other two need a
+live game).
+
+### BRG-25 — the borg cannot shop outside the town it starts in (open)
+
+The borg's ceiling is now `restock tele + tele staff < 2` at depth 10. The
+Staff of Teleportation is a magic shop item and the starting village has no
+magic shop by design (WLD-11a). Bigger towns do, and `wild_town_stores()`
+scores the magic shop in from the "town" band upwards.
+
+Before the wilderness there was one town with everything, so nothing in the
+borg models "the thing I need is sold somewhere else". `borg_flow_world()`
+already crosses the surface to dungeon mouths; the work is to give it towns as
+targets and to make the restock reason say which town can satisfy it.
+
+This blocks depth 30: the depth 10 rung cannot be climbed in the village, and
+the rungs below 30 want six teleport sources.

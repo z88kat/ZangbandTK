@@ -44,6 +44,12 @@
 #include "borg/borg-flow-kill.h"
 #include "borg/borg-io.h"
 #include "borg/borg-flow-misc.h"
+#include "borg/borg-store.h"
+#include "borg/borg-item.h"
+#include "borg/borg-inventory.h"
+#include "borg/borg-prepared.h"
+#include "borg/borg-update.h"
+#include "borg/borg-trait.h"
 #endif
 
 #ifdef USE_TEST
@@ -737,6 +743,72 @@ static void c_borg_mouths(char *rest)
 }
 
 /**
+ * borg-prepared? -- the depth ladder, and the first rung the borg cannot climb.
+ *
+ * `borg_prepared()` is the borg's own answer to "may I go to depth N", and a
+ * borg that climbs *out* of a depth it was placed at is usually one whose
+ * answer is no. The reason is a short string the borg already computes and
+ * then throws away; all this does is ask at every depth up to the target and
+ * print the first refusal, so a run that goes backwards says why in one line
+ * instead of requiring a bisection.
+ *
+ * `borg_restock()` is asked separately because it is a *different* question --
+ * prepared is "am I equipped for that depth", restock is "must I return to
+ * town from the depth I am at" -- and a borg can be perfectly prepared for
+ * depth 25 and still be dragged to town every few turns by the second.
+ */
+static void c_borg_prepared(char *rest)
+{
+	int d, limit = 30, first_no = -1;
+	const char *why = NULL;
+
+	if (!player || !borg_initialized) {
+		printf("borg-prepared: FAILED no borg\n");
+		run_failed = 1;
+		return;
+	}
+
+	if (rest && *rest) limit = atoi(rest);
+	if (limit < 1 || limit > 127) limit = 30;
+
+	/* The borg's beliefs are only current if it has looked at the world */
+	borg_notice(true);
+
+	for (d = 1; d <= limit; d++) {
+		const char *r = borg_prepared(d);
+		if (r) { first_no = d; why = r; break; }
+	}
+
+	printf("borg-prepared: deepest-allowed=%d", first_no < 0 ? limit : first_no - 1);
+	if (first_no > 0)
+		printf(" first-refusal=%d reason=\"%s\"", first_no, why);
+	else
+		printf(" first-refusal=none");
+
+	{
+		const char *rs = borg_restock(borg.trait[BI_CDEPTH]);
+		printf(" cdepth=%d restock=%s\n", (int)borg.trait[BI_CDEPTH],
+			   rs ? rs : "no");
+	}
+
+	/* The escape stock, since the restock rules are mostly about it */
+	printf("  escapes: teleport=%d escape=%d phase=%d recall=%d "
+		   "cure=%d food=%d fa=%d rfire=%d seeinv=%d\n",
+		   (int)borg.trait[BI_ATELEPORT], (int)borg.trait[BI_AESCAPE],
+		   (int)borg.trait[BI_APHASE],    (int)borg.trait[BI_RECALL],
+		   (int)(borg.trait[BI_ACLW] + borg.trait[BI_ACSW] + borg.trait[BI_ACCW]),
+		   (int)borg.trait[BI_FOOD],      (int)borg.trait[BI_FRACT],
+		   (int)borg.trait[BI_RFIRE],     (int)borg.trait[BI_SINV]);
+
+	/* The rungs themselves, so a near miss is visible rather than inferred */
+	for (d = 5; d <= limit; d += 5) {
+		const char *r = borg_prepared(d);
+		printf("  depth %3d: %s\n", d, r ? r : "ready");
+	}
+	fflush(stdout);
+}
+
+/**
  * borg-exercise? -- what the run actually exercised (BRG-22).
  *
  * The point of the scoped route, and the thing reaching depth 30 is only the
@@ -1076,6 +1148,63 @@ static void c_borg_shops(char *rest)
 		}
 	}
 
+	/*
+	 * And what the borg believes is *in* them. A borg that will not buy
+	 * something can be failing to want it or failing to see it, and those
+	 * have nothing in common; the shop model is the only place that says
+	 * which.
+	 */
+	for (i = 0; i < (int) z_info->store_max; i++) {
+		int n;
+		for (n = 0; n < (int) z_info->store_inven_max; n++) {
+			borg_item *w = &borg_shops[i].ware[n];
+			if (!w->iqty) continue;
+			printf("borg-ware: shop=%d qty=%d cost=%d tval=%d sval=%d %s\n",
+				   i, (int) w->iqty, (int) w->cost, (int) w->tval,
+				   (int) w->sval, w->desc);
+		}
+	}
+
+	/*
+	 * And the pack, because `borg_think_shop_buy_useful()` gives up before
+	 * it values anything if there is no empty slot to put a purchase in. A
+	 * borg that will not buy a 125 gold scroll while holding 200,000 gold
+	 * is either not seeing it, not wanting it, or has nowhere to put it,
+	 * and only the last of those looks like nothing at all from outside.
+	 */
+	{
+		int used = 0;
+		for (i = 0; i < PACK_SLOTS; i++) {
+			if (!borg_items[i].iqty) continue;
+			used++;
+			printf("borg-pack: %2d qty=%d %s\n", i, (int) borg_items[i].iqty,
+				   borg_items[i].desc);
+		}
+		printf("borg-pack: %d of %d slots used, first empty %d\n",
+			   used, (int) PACK_SLOTS, borg_first_empty_inventory_slot());
+	}
+
+	/*
+	 * What the *game* put on the level, against what the borg found. The
+	 * borg records a shop when its grid scan sees the door, so a shop the
+	 * town has and the borg has not walked past does not exist as far as
+	 * buying is concerned -- it can hold stock the borg can see (the store
+	 * model is filled in separately) and still be unreachable.
+	 */
+	if (cave) {
+		int placed = 0;
+		struct loc l;
+		for (l.y = 0; l.y < cave->height; l.y++) {
+			for (l.x = 0; l.x < cave->width; l.x++) {
+				if (!feat_is_shop(square(cave, l)->feat)) continue;
+				printf("borg-shopgrid: %d at %d,%d\n",
+					   square_shopnum(cave, l), l.y, l.x);
+				placed++;
+			}
+		}
+		printf("borg-shopgrids: %d placed on this level\n", placed);
+	}
+
 	printf("borg-shops: %d of %d known\n", known, (int) z_info->store_max);
 	fflush(stdout);
 }
@@ -1171,6 +1300,7 @@ static test_cmd cmds[] = {
 	{ "borg-shops?", c_borg_shops },
 	{ "borg-mouths?", c_borg_mouths },
 	{ "borg-terrain?", c_borg_terrain },
+	{ "borg-prepared?", c_borg_prepared },
 	{ "borg-exercise?", c_borg_exercise },
 	{ "borg-cheat", c_borg_cheat },
 	{ "borg-jump", c_borg_jump },
@@ -1333,6 +1463,30 @@ static errr term_xtra_event(int v) {
 	 * run unwinds normally and the status line and exercise report are still
 	 * produced -- a capped run must yield its numbers rather than nothing.
 	 */
+	/*
+	 * `player->max_depth` is the deepest the character has ever been and
+	 * nothing should ever lower it -- the borg's own preparedness reads it,
+	 * and a borg whose record of its own progress ratchets downwards will
+	 * re-earn the same depths for ever. Watched here rather than asserted,
+	 * because the first question is which turn and which code path.
+	 */
+	if (player && borg_active) {
+		static int seen_max = 0;
+		if (player->max_depth > seen_max) {
+			seen_max = player->max_depth;
+		} else if (player->max_depth < seen_max) {
+			int m;
+			printf("borg-maxdepth-drop: turn=%d %d -> %d at depth %d "
+				   "hunted=%d recall=%d\n",
+				   (int) turn, seen_max, player->max_depth, player->depth,
+				   borg_depth_hunted_unique, (int) player->word_recall);
+			for (m = 5; m >= 0; m--)
+				printf("  before: %s\n", message_str((int16_t) m));
+			fflush(stdout);
+			seen_max = player->max_depth;
+		}
+	}
+
 	if (run_deadline && borg_active && time(NULL) >= run_deadline) {
 		printf("borg-timecap: stopping at turn %d, the clock ran out\n",
 			   (int) turn);

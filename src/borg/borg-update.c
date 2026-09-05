@@ -2250,7 +2250,24 @@ void borg_update(void)
         borg_numb_live_unique    = 0;
         borg_first_living_unique = 0;
         borg_depth_hunted_unique = 0;
-        int unique_depths[4] = {0, 0, 0, 0};
+        /*
+         * Sentinel high, not zero (ZangbandTK, BRG-24).
+         *
+         * This keeps the three shallowest live uniques, by comparing each
+         * candidate against the deepest one kept so far. Starting the array
+         * at zero makes that comparison `level < 0`, which no monster
+         * satisfies, so nothing is ever inserted and the third entry stays
+         * zero for the whole game.
+         *
+         * The consequence is not a slightly wrong number. `borg_depth_
+         * hunted_unique` reads as zero, so the borg believes every depth is
+         * far below the uniques it still wants, and answers yes to "Set
+         * recall depth to current depth?" -- which sets `player->max_depth`
+         * to wherever it happens to be standing. Measured: a Warrior at
+         * depth 5 with a best of 9 threw the 9 away at turn 409421 and spent
+         * the remaining three quarters of the run re-earning depth 6.
+         */
+        int unique_depths[4] = {127, 127, 127, 127};
 
         /*Extract dead uniques and set some Prep code numbers */
         for (u_i = 1; u_i < (unsigned int)(z_info->r_max - 1); u_i++) {

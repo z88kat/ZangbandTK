@@ -101,6 +101,36 @@ bool borg_recall(void)
                         borg_note("# Not Resetting recall depth.");
                         borg_keypress('n');
                     }
+                    else if (borg.trait[BI_MAXDEPTH] > borg.trait[BI_CDEPTH]
+                             && NULL
+                                    == borg_prepared(
+                                        borg.trait[BI_MAXDEPTH])) {
+                        /*
+                         * Do not reset Depth (ZangbandTK, BRG-24).
+                         *
+                         * Answering yes sets `player->max_depth` to wherever
+                         * the borg is standing, so the reset is not a change
+                         * of destination -- it discards the record of how
+                         * deep the character has ever been. That is only
+                         * sensible when the depth being discarded is one the
+                         * borg can no longer survive; the cases above are
+                         * exactly those, and they say yes on their own.
+                         *
+                         * Here the borg is shallower than its best and still
+                         * equipped for that best, so the depth is not a
+                         * mistake to be forgotten -- it is progress, and the
+                         * borg would have to walk all the way back down to
+                         * earn it again.
+                         *
+                         * Measured before this guard: a Warrior with a best
+                         * of 9 read recall at depth 5, threw the 9 away, and
+                         * spent three quarters of a million turns re-earning
+                         * depth 6.
+                         */
+                        borg_note("# Not resetting recall depth: still "
+                                  "prepared for max depth.");
+                        borg_keypress('n');
+                    }
                     else {
                         /* Do reset Depth */
                         borg_note("# Resetting recall depth.");

@@ -842,6 +842,7 @@ endif()
 # run the lower level ones first.
 set(ANGBAND_TEST_CASE_SOURCES
     artifact/name.c
+    borg/prepared.c
     cave/find.c
     cave/scatter.c
     cave/wild.c
@@ -1089,6 +1090,14 @@ foreach(ANGBAND_TEST_CASE_SOURCE ${ANGBAND_TEST_CASE_SOURCES})
         ${ANGBAND_UNIT_TEST_INCLUDE_DIRS}
     )
     target_compile_definitions(${ANGBAND_TEST_CASE_NAME} PRIVATE "${ANGBAND_BUILD_ID_OPTION}")
+    # The borg is compiled into OurCoreLib for every platform, so a test case
+    # may call into it -- but only if it sees the same ALLOW_BORG the library
+    # was built with. Without this the borg headers preprocess away to nothing
+    # and a borg test fails to compile rather than failing to link, which
+    # reads as a broken test rather than a missing definition.
+    if(NOT MSVC)
+        target_compile_definitions(${ANGBAND_TEST_CASE_NAME} PRIVATE -D ALLOW_BORG)
+    endif()
     target_link_libraries(${ANGBAND_TEST_CASE_NAME} PRIVATE
         ${ANGBAND_CORE_LINK_LIBRARIES}
     )
