@@ -136,6 +136,28 @@ static int progress_every = 0;
 static int progress_next  = 0;
 
 /*
+ * A wall-clock cap on a run, and it is the outer bound (BRG-20).
+ *
+ * The project owner: *"The borg also needs to be time boxed on the nightly run
+ * not that it runs for 25 hours."* A turn budget does not bound wall clock --
+ * a character at depth computes far more per turn than one at depth 1, and a
+ * wedged run consumes none at all while running for ever.
+ *
+ * The two limits fail differently and the report has to say which. Reaching
+ * the turn budget means the run **finished**; reaching the clock means it did
+ * not, and "depth 28 in ninety minutes" and "still going at ninety minutes"
+ * are different results. Neither is a crash: a nightly job that goes red for
+ * running out of time teaches everyone to ignore it, exactly as one that goes
+ * red for a death would.
+ *
+ * `ZTK_BORG_MINUTES` overrides. The default is twenty, which fits inside a
+ * nightly window with room for the gate and the suites beside it, and is meant
+ * to be tuned once there is real data on how long a descent to depth 30 takes.
+ */
+static time_t run_deadline = 0;
+static int    hit_time_cap = 0;
+
+/*
  * Breaking out of a prompt the borg does not understand (BRG-22).
  *
  * The harness has now failed to answer four distinct prompts: the borg's own
@@ -379,6 +401,14 @@ static void borg_begin_pending(void)
 		stuck_turn     = -1;
 		stuck_count    = 0;
 		stuck_escapes  = 0;
+
+		{
+			const char *mins = getenv("ZTK_BORG_MINUTES");
+			int m = (mins && *mins) ? atoi(mins) : 20;
+
+			hit_time_cap = 0;
+			run_deadline = m > 0 ? time(NULL) + (time_t) m * 60 : 0;
+		}
 	}
 
 	borg_turn_limit = turn + turns;
@@ -425,6 +455,7 @@ static void borg_begin_pending(void)
 static void c_borg_status(char *rest)
 {
 	const char *why = borg_abort_reason ? borg_abort_reason
+		: hit_time_cap ? "time cap -- run did NOT finish"
 		: (borg_active ? "still running" : "budget spent");
 	char weapon_desc[80] = "(none)";
 
@@ -505,7 +536,7 @@ static void c_borg_status(char *rest)
 		   character_dungeon ? 1 : 0, run_seed,
 		   run_failed ? "FAILED"
 			: ((borg_abort_reason && streq(borg_abort_reason, "death"))
-			   ? "died" : "ok"),
+			   ? "died" : (hit_time_cap ? "capped" : "ok")),
 		   why);
 	fflush(stdout);
 }
@@ -1295,6 +1326,20 @@ static errr term_xtra_event(int v) {
 			borg_keypress(ESCAPE);
 			return 0;
 		}
+	}
+
+	/*
+	 * The wall-clock cap. Stops the borg the way the turn budget does, so the
+	 * run unwinds normally and the status line and exercise report are still
+	 * produced -- a capped run must yield its numbers rather than nothing.
+	 */
+	if (run_deadline && borg_active && time(NULL) >= run_deadline) {
+		printf("borg-timecap: stopping at turn %d, the clock ran out\n",
+			   (int) turn);
+		fflush(stdout);
+		hit_time_cap = 1;
+		borg_active  = false;
+		return 0;
 	}
 
 	/*

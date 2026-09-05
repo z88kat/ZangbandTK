@@ -48,6 +48,29 @@ Unreleased
 An unexplored square is black everywhere — 4 September 2026
 -------------------------------------------------------------
 
+- **3.99.0** — **A borg run is time boxed, and says whether it finished.** The
+  project owner: *"The borg also needs to be time boxed on the nightly run not
+  that it runs for 25 hours."* A turn budget does not bound wall clock — a
+  character at depth computes far more per turn than one at depth 1, and a
+  wedged run consumes no turns at all while running for ever.
+
+  ``ZTK_BORG_MINUTES`` defaults to twenty, chosen to fit a nightly window with
+  room for the gate and the suites beside it, and meant to be retuned once
+  there is data on how long a descent to depth 30 takes.
+
+  The two limits fail differently and the report distinguishes them: reaching
+  the turn budget is ``result=ok reason=budget spent`` and means the run
+  finished; reaching the clock is ``result=capped reason=time cap -- run did
+  NOT finish``. Neither is a crash, for the same reason a death is not — a
+  nightly that goes red for running out of time is a nightly everyone learns to
+  ignore. A capped run still emits its status line and exercise report, so it
+  yields its numbers rather than nothing.
+
+  The first capped run was itself informative: a cheated Warrior bought armour
+  from 9 to 56, upgraded its weapon and *earned* money, which retires the
+  suspicion that the borg could not value equipment — it never had any to
+  spend.
+
 - **3.98.0** — **The study loop is named, and it is not what four fixes
   assumed.** The borg has never successfully studied a spell in any run this
   project has made, which is why every exercise report reads ``learned=0
