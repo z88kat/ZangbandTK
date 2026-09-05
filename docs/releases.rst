@@ -45,6 +45,64 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Looking at a monster stops making you forget the trees — 5 September 2026
+----------------------------------------------------------------------------
+
+- **3.102.1** — **The disappearing squares were real, and they were trees.**
+  Reported from play as a graphical fault: squares going unexplored and coming
+  back as the character walked, in every tileset. It was never graphical. It was
+  in the ASCII build too — as a blank among the grass, where nobody had noticed
+  it in the months it has been there.
+
+  ``path_analyse()`` in ``mon-util.c`` walks the projection path from the player
+  to every monster in view and forgets any grid along it that the player's
+  *memory* says blocks line of sight. In 4.2 that inference is airtight: nothing
+  there lets a projection through while blocking sight, so such a grid is by
+  definition misremembered.
+
+  **A tree is the exception, and the only one in this game** — ``PROJECT`` and
+  ``PASSABLE`` without ``LOS``, which is the whole of "you can push through, but
+  you cannot see far". A bolt crosses it and sight does not, so ``los()`` and
+  ``project_path()`` disagree about it: a monster can be plainly in view around a
+  tree while the projection path to it goes straight through one. Every such tree
+  was forgotten, every turn.
+
+  **And it compounded.** A forgotten grid remembers as ``FEAT_NONE``, which
+  carries no ``LOS`` flag — so ``square_allowslos(player->cave, ...)`` stays
+  false for it and the same grid is re-forgotten on every later pass. One tree
+  could hold a line of country open indefinitely, which is why it looked worse
+  than one square at a time.
+
+  The memory is now dropped only when it actually disagrees with the ground:
+  remembered as blocking, really not. On any level without trees this cannot
+  change what 4.2 did.
+
+  *Measured against the reported savefile*, driven headlessly through the test
+  front end and paced left and right as it was reported: **38 lost squares
+  before, 0 after**.
+
+  Pinned by ``game/treesight``, which has a suite to itself. The test has to
+  stand the character in woodland, remember the whole map and put monsters round
+  them; done inside ``game/wild`` that is three pieces of shared state to put
+  back, and putting them back is where it went wrong three times — it wiped the
+  town's residents, then left the character somewhere else, then crashed one run
+  in twelve restoring a knowledge array against a level that had moved under it.
+  A suite of its own gets a level of its own and owes nothing to anybody.
+
+  An earlier version of the test also passed against a deliberately broken
+  build, because it never refreshed the view and ``path_analyse()`` only runs for
+  a monster whose grid is flagged in view — so it walked straight past the thing
+  it was testing.
+
+  And it took the sanitizer pass to find the last fault in it: the test placed
+  its monsters on a fixed ring three grids out, and a tree is passable but is not
+  *floor*, so ``square_isempty()`` refuses one. Standing in woodland — which is
+  the entire point — that ring can be trees the whole way round, and on about one
+  seed in a hundred there was nowhere to put a monster at all. It searches
+  outward in rings now. Forty flake passes clean, and it still fails on the seed
+  that caught it when the fix is removed.
+
+
 An unexplored square is black everywhere — 4 September 2026
 -------------------------------------------------------------
 

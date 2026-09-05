@@ -300,8 +300,32 @@ static void path_analyse(struct chunk *c, struct loc grid)
 
 	/* Project along the path */
 	for (i = 0; i < path_n - 1; ++i) {
-		/* Forget grids which would block los */
-		if (!square_allowslos(player->cave, path_g[i])) {
+		/*
+		 * Forget grids the player has *misremembered* as blocking line of
+		 * sight.  A monster is visible through this grid, so anything the
+		 * player believes is standing in the way is wrong and is dropped.
+		 *
+		 * The second half of that test is ZangbandTK's, and without it this
+		 * eats the wilderness (WLD).  4.2 needs no such check because the
+		 * inference is airtight there: nothing in Angband lets a projection
+		 * through while blocking sight, so a sight-blocker found on a
+		 * projection path is by definition misremembered.
+		 *
+		 * A tree is the exception, and the only one in the game -- `PROJECT`
+		 * and `PASSABLE` without `LOS`, which is the whole of "you can push
+		 * through, but you cannot see far".  A bolt crosses it and sight does
+		 * not, so a remembered tree on the path is *correct* and was being
+		 * forgotten anyway: every turn, for every tree on a line between the
+		 * player and a monster.  In play that is a scatter of squares going
+		 * unexplored and coming back as you walk, which is what it was
+		 * reported as.
+		 *
+		 * So the memory is only dropped when it actually disagrees with the
+		 * ground: remembered as blocking, really not.  On any level without
+		 * trees this cannot change what 4.2 did.
+		 */
+		if (!square_allowslos(player->cave, path_g[i])
+				&& square_allowslos(c, path_g[i])) {
 			sqinfo_off(square(c, path_g[i])->info, SQUARE_SEEN);
 			square_forget(c, path_g[i]);
 			square_light_spot(c, path_g[i]);

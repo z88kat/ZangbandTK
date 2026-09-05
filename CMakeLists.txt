@@ -859,6 +859,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     game/mage.c
     game/saves.c
     game/wild.c
+    game/treesight.c
     message/message.c
     monster/allegiance.c
     monster/ally-ai.c

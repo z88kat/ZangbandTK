@@ -31,6 +31,94 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+5 September 2026 — three wrong answers before the right one
+===========================================================
+
+Steven reported a graphical fault: black squares appearing in the wilderness and
+going away again as he moved. It was not graphical. It took me three wrong
+answers to find that out, and each one was wrong in an instructive way.
+
+**First I explained it away.** I read the code, found that the surface
+deliberately does not memorise itself under daylight, found that trees do not
+allow line of sight, and concluded the black squares were unexplored ground
+behind a tree — working as designed, and would he like me to change the design?
+He said: no, the ground *was* explored, it was drawn, and it became unexplored as
+I moved. Which is not the design and never could be.
+
+I should not have needed telling. He had said "glitch" and I had heard "thing I
+can explain". The explanation was coherent, drew on real code, and answered a
+question he had not asked.
+
+**Then I guessed at mechanisms.** Monsters with blank tiles. Objects with no
+mapping. A knowledge chunk losing grids across a window scroll. Each time I
+reasoned from a screenshot to a theory and went looking for evidence to fit it. I
+wrote a headless harness to reproduce it, walked a character sixty steps, found
+nothing, and concluded the harness was missing something rather than that my idea
+was wrong.
+
+**Then he gave me a savefile.** Ardormor, and "just move left and right".
+
+That changed everything, and the thing it changed was that I stopped theorising.
+I put a probe in the real game loop, drove the real save through the test front
+end, and printed the state of every isolated unknown grid. A hundred and
+twenty-five of them, and every single one said the same word: **tree**.
+
+From there it was mechanical, and the mechanics were not where I had been
+looking. The trees were in view. They were lit. They had line of sight to the
+player. `become_viewable()` was setting them seen, correctly, every pass — I
+traced it and watched it do so. They were then memorised, correctly, twice. And
+then something forgot them. A backtrace named it in one line: `path_analyse()`,
+reached from `update_monsters()`, every turn.
+
+`path_analyse()` walks the projection path from the player to each visible
+monster and forgets any grid on it that the player *remembers* as blocking sight
+— on the reasoning that a monster visible through it proves the memory wrong. In
+Angband that reasoning cannot fail, because nothing there passes a projectile
+while blocking sight. A tree does both, and it is the only thing in this game
+that does. So `los()` and `project_path()` disagree about trees: the monster is
+visible around one while the path to it goes through one. The memory was right
+and was thrown away anyway.
+
+And it compounds, which is what made it look like a flickering fault rather than
+a steady one. A forgotten grid remembers as `FEAT_NONE`, `FEAT_NONE` has no `LOS`
+flag, so the test that forgot it stays true forever after. One tree could hold a
+line of country open until you walked down it.
+
+Thirty-eight lost squares on his savefile before, none after.
+
+**What I want to keep from this.** The bug was found the moment I had a
+reproduction and stopped reasoning from pictures. Everything before that — three
+theories, a harness that found nothing, an explanation of why it was not a bug —
+was me preferring an argument I could make to evidence I did not have. The
+savefile was worth more than all of it, and I could have asked for one at the
+start.
+
+The other half is smaller and also mine. When somebody who has played the game
+for months says a thing is happening, the useful response is to find out what
+they saw, not to explain why what they saw was correct.
+
+**And the test needed four goes, which is one more than the fix.** It passed
+against a broken build (it never refreshed the view, and the function under test
+only runs for monsters in view). It wiped the town's residents. It left the
+character standing somewhere else and crashed one run in twelve putting a
+knowledge array back. Then, given a suite of its own, it still failed under the
+sanitizer pass on a seed of its own: it placed monsters on a fixed ring three
+grids out, and a tree is passable but is not *floor*, so `square_isempty()`
+refuses one — stood in woodland, which is the entire point of the test, that ring
+can be trees the whole way round.
+
+Each of those was me writing a test that asserted the right thing and arranged
+the wrong world for it. The lesson I want is not "be careful": it is that a test
+which has never been watched to fail is not yet a test, and I only caught three
+of these four by deliberately breaking the fix and looking.
+
+**A footnote on the harness**, because it cost an hour and would cost it again.
+My first before/after comparisons said the fix changed nothing, twice. The game
+was saving back to the savefile between runs, so each run started from where the
+last one left off and I was never comparing the same thing. Copy the save in
+fresh every run. The numbers only meant something after that.
+
+
 4 September 2026 — writing a script that can see colour
 =======================================================
 
