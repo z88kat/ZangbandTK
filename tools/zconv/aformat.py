@@ -107,19 +107,29 @@ def header(path: str) -> str:
     return "\n".join(out).rstrip() + "\n"
 
 
-def write(path: str, entries: list[Entry], preamble: str = "") -> None:
-    """Write entries back in 4.2 format.
+def render(entries: list[Entry], preamble: str = "") -> str:
+    """Entries in 4.2 format, as a string.
 
     Output is a pure function of `entries` — no timestamps, no ordering by hash
-    — so that identical input yields an identical file (BAL-12).
+    — so that identical input yields identical text (BAL-12). Split out from
+    `write()` so a `--check` can compare against the committed file without
+    writing anything: a reproducibility check that has to write first is one
+    nobody runs on a clean tree.
     """
+    parts = []
+    if preamble:
+        parts.append(preamble)
+        parts.append("\n")
+    for entry in entries:
+        parts.append(entry.render())
+        parts.append("\n\n")
+    return "".join(parts)
+
+
+def write(path: str, entries: list[Entry], preamble: str = "") -> None:
+    """Write entries back in 4.2 format."""
     with open(path, "w", encoding="utf-8") as handle:
-        if preamble:
-            handle.write(preamble)
-            handle.write("\n")
-        for entry in entries:
-            handle.write(entry.render())
-            handle.write("\n\n")
+        handle.write(render(entries, preamble))
 
 
 def index_by_key(entries: list[Entry]) -> dict[str, Entry]:

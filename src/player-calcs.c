@@ -1698,6 +1698,15 @@ static void calc_light(struct player *p, struct player_state *state,
 		/* Alter p->state.cur_light if reasonable */
 	    state->cur_light += amt;
 	}
+
+	/*
+	 * And what the character is, as well as what they carry (PLR-15).
+	 *
+	 * Added here rather than in `player_apply_mutations()`, which runs first:
+	 * this function opens by zeroing `cur_light`, so a contribution made
+	 * before it is discarded before anything reads it.
+	 */
+	state->cur_light += mutation_light_bonus(p);
 }
 
 /**

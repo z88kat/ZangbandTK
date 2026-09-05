@@ -35,6 +35,7 @@
 #include "effects.h"
 #include "init.h"
 #include "message.h"
+#include "mon-desc.h"
 #include "mon-make.h"
 #include "mon-util.h"
 #include "player-attack.h"
@@ -439,8 +440,21 @@ void player_mutation_blows(struct player *p, struct monster *mon,
 						   bool *fear, bool *dead)
 {
 	const struct mutation *m;
+	char m_name[80];
 
 	if (!p || !mon) return;
+
+	/*
+	 * Named, like every other blow in the game (ZangbandTK).
+	 *
+	 * These said "You hit it with your tail" whatever was being hit, while
+	 * `mon` sat in scope and the rest of the melee code has used
+	 * `monster_desc()` throughout. It went unnoticed because until 3.104.0
+	 * the first swing of any melee mutation crashed, so nobody had read the
+	 * message. MDESC_TARG is the objective, uncapitalised form the other
+	 * attack messages use -- correct after "You hit".
+	 */
+	monster_desc(m_name, sizeof(m_name), mon, MDESC_TARG);
 
 	for (m = mutations; m; m = m->next) {
 		int dam;
@@ -456,7 +470,7 @@ void player_mutation_blows(struct player *p, struct monster *mon,
 		 */
 		if (!test_hit(chance_of_melee_hit_base(p, NULL),
 					  mon->race->ac)) {
-			msg("You miss %s with your %s.", "it", m->blow_verb);
+			msg("You miss %s with your %s.", m_name, m->blow_verb);
 			continue;
 		}
 
@@ -478,7 +492,7 @@ void player_mutation_blows(struct player *p, struct monster *mon,
 		dam += p->state.to_d;
 		if (dam < 0) dam = 0;
 
-		msg("You hit %s with your %s.", "it", m->blow_verb);
+		msg("You hit %s with your %s.", m_name, m->blow_verb);
 
 		if (m->blow_element >= 0) {
 			project(source_player(), 0, mon->grid, dam, m->blow_element,
@@ -509,4 +523,34 @@ int mutation_regen_penalty(const struct player *p)
 	(void) p;
 
 	return 0;
+}
+
+/**
+ * Light radius from mutations (PLR-15).
+ *
+ * Separate from `player_apply_mutations()` because `calc_light()` opens by
+ * setting `state->cur_light = 0` and then summing the equipment, so anything
+ * the mutation pass contributes is wiped a few lines later. Asked from inside
+ * `calc_light()` instead, where it survives.
+ *
+ * One mutation carries it -- a body enveloped in flames, whose description
+ * promises "+1 light" and did not give it. Zangband 2.7.5 has both the light
+ * and the fiery aura commented out at
+ * [mutation.c:1984](../archive/zangband/src/mutation.c#L1984); this game
+ * already honours the aura, and honouring one half of a two-line intent while
+ * printing both to the player is the worst of the three available choices.
+ */
+int mutation_light_bonus(const struct player *p)
+{
+	const struct mutation *m;
+	int light = 0;
+
+	if (!p) return 0;
+
+	for (m = mutations; m; m = m->next) {
+		if (!player_has_mutation(p, m)) continue;
+		light += m->modifiers[OBJ_MOD_LIGHT];
+	}
+
+	return light;
 }

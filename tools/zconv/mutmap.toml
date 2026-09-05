@@ -513,3 +513,32 @@ note = """The character trips, drops what they were holding and hurts \
 themselves. 4.2 has no effect that unwields the weapon, so what survives is \
 the fall."""
 effects = [ "DAMAGE", "dice:1d$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+
+# --- Continuous mutations read by code rather than by data ---------------
+#
+# Most continuous mutations are expressible as `values:` and `flags:` in
+# mutation.txt and need no entry here. These two are not: Zangband reads them
+# from inside other systems, so what happens to them is a decision rather than
+# a translation, and it was made and then not written down anywhere -- both sat
+# inert and unrecorded until the M8 audit found them.
+
+[continuous.GOOD_LUCK]
+line = 3707
+note = """Two halves. Object generation adds twenty to the level an object \
+rolls against, one time in thirteen (object2.c:3707) -- built, in \
+make_object(), because `base` is this game's `delta_level` and it is the same \
+line in the same place. The other half forces a heavy pseudo-identification \
+(dungeon.c:163) and is dropped, not deferred: 4.2 replaced pseudo-ID with \
+runes learned by carrying and using a thing, so there is no feeling to make \
+reliable and never will be."""
+
+[continuous.BAD_LUCK]
+line = 2032
+defer = """The whole of it hangs on identify_item() (spells3.c:2032), which \
+rerolls or curses an object one time in thirteen at the moment it becomes \
+known. 4.2 has no such moment -- identification was replaced by runes learned \
+one at a time by use, so an object never stops being unknown and there is \
+nothing to attach the reroll to. Its twin good luck kept the half that does \
+have a home; this one has no half that does. Gained, described, saved and \
+shown on the character sheet like any other, and pinned inert by \
+player/mutation's the-inert-continuous-mutations-are-inert."""

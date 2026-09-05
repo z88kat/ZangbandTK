@@ -345,6 +345,106 @@ static int test_killing_things_moves_the_right_virtues(void *state) {
 	ok;
 }
 
+/**
+ * Every one of the eight reads as a sentence a player can act on (PLR-20).
+ *
+ * PLR-20 asks that virtues be displayed, on Zangband's thirteen-band ladder.
+ * The sheet's virtues page and the character dump both build their line with
+ * `virtue_line()`, so this pins the wording once for both -- and it pins that
+ * all eight slots produce one, because the failure this requirement actually
+ * had was not a wrong sentence but a page that did not exist.
+ */
+static int test_every_virtue_reads_as_a_sentence(void *state) {
+	int i, got = 0;
+
+	/*
+	 * A fresh eight. An earlier test in this suite empties the array to check
+	 * one writer in isolation, and a test that reads whatever the previous one
+	 * left behind is measuring the order the suite happens to run in.
+	 */
+	reselect("Human", "Priest");
+
+	for (i = 0; i < MAX_PLAYER_VIRTUES; i++) {
+		char line[80];
+		size_t n;
+
+		require(virtue_line(player, i, line, sizeof(line)));
+
+		/* Names its virtue, and says where the character stands in it */
+		require(strstr(line, virtue_name(player->vir_types[i])));
+		require(strstr(line, virtue_describe(player->virtues[i])));
+		require(prefix(line, "You are "));
+
+		n = strlen(line);
+		require(n > 0 && line[n - 1] == '.');
+
+		got++;
+	}
+
+	eq(got, MAX_PLAYER_VIRTUES);
+	ok;
+}
+
+/**
+ * An empty slot says so rather than producing a sentence about nothing.
+ */
+static int test_an_empty_slot_makes_no_line(void *state) {
+	char line[80];
+	int  saved;
+
+	reselect("Human", "Priest");
+	saved = player->vir_types[0];
+
+	player->vir_types[0] = V_NONE;
+	require(!virtue_line(player, 0, line, sizeof(line)));
+	player->vir_types[0] = saved;
+
+	/* And out of range is not a sentence either */
+	require(!virtue_line(player, -1, line, sizeof(line)));
+	require(!virtue_line(player, MAX_PLAYER_VIRTUES, line, sizeof(line)));
+
+	ok;
+}
+
+/**
+ * The ladder has thirteen rungs and they are in order.
+ *
+ * Asserted at the boundaries rather than by counting strings, because the
+ * failure worth catching is a rung that moved: a character reading "virtuous
+ * in Justice" at a value that used to say "very virtuous" is a silent change
+ * to what the player is told about themselves.
+ */
+static int test_the_ladder_has_thirteen_rungs_in_order(void *state) {
+	static const struct { int value; const char *reads; } rung[] = {
+		{ -200, "the polar opposite of" },
+		{ -100, "an arch-enemy of" },
+		{  -80, "a bitter enemy of" },
+		{  -60, "an enemy of" },
+		{  -40, "sinning against" },
+		{  -20, "straying from the path of" },
+		{    0, "neutral to" },
+		{    1, "somewhat virtuous in" },
+		{   20, "virtuous in" },
+		{   40, "very virtuous in" },
+		{   60, "a champion of" },
+		{   80, "a great champion of" },
+		{  100, "the living embodiment of" },
+	};
+	size_t i, j;
+
+	eq(N_ELEMENTS(rung), 13);
+
+	for (i = 0; i < N_ELEMENTS(rung); i++) {
+		require(streq(virtue_describe(rung[i].value), rung[i].reads));
+
+		/* and no two rungs read alike */
+		for (j = 0; j < i; j++)
+			require(!streq(rung[i].reads, rung[j].reads));
+	}
+
+	ok;
+}
+
 const char *suite_name = "player/virtue";
 struct test tests[] = {
 	{ "every-character-gets-eight-distinct-virtues",
@@ -360,5 +460,10 @@ struct test tests[] = {
 	  test_a_dream_is_clearer_to_the_enlightened },
 	{ "killing-things-moves-the-right-virtues",
 	  test_killing_things_moves_the_right_virtues },
+	{ "every-virtue-reads-as-a-sentence",
+	  test_every_virtue_reads_as_a_sentence },
+	{ "an-empty-slot-makes-no-line", test_an_empty_slot_makes_no_line },
+	{ "the-ladder-has-thirteen-rungs-in-order",
+	  test_the_ladder_has_thirteen_rungs_in_order },
 	{ NULL, NULL }
 };

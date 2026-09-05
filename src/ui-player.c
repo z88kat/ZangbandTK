@@ -968,12 +968,62 @@ static void display_player_mutations(void)
 
 
 /**
+ * The eight virtues this character is measured against (PLR-20).
+ *
+ * PLR-20 asks that virtues be "displayed to the player" and persist in the
+ * savefile. The savefile half has been right since 3.55.0; the display half
+ * reached `write_character_dump()` and stopped there, which is a file the
+ * player has to ask for and then open in something else. The requirement's own
+ * status note claimed "a `[Virtues]` section in the character sheet", and the
+ * dump is not the sheet -- that is precisely the failure PLR-17 was caught on
+ * and M8 un-declared for once already, repeated one requirement later.
+ *
+ * The wording is the dump's, and deliberately: "You are %s %s." on Zangband's
+ * thirteen-band ladder (`virtue_describe()`, ported from avatar.c:370). The
+ * sheet and the dump saying the same sentence means a player comparing them is
+ * not left wondering which is authoritative, and it is what the requirement
+ * names -- the ladder, not a number. Zangband shows no number here and neither
+ * does this.
+ *
+ * Modelled on `display_player_mutations()` rather than shaped afresh: same
+ * whole-screen page, same heading colour, same empty case. Eight lines could
+ * have shared the screen with the stat table, but a virtue sentence runs to
+ * forty-odd characters against the table's column 42, so it would collide
+ * exactly as the mutation descriptions do.
+ */
+static void display_player_virtues(void)
+{
+	int i, shown = 0, row = 2;
+
+	c_put_str(COLOUR_L_BLUE, "Virtues", 0, 0);
+
+	for (i = 0; i < MAX_PLAYER_VIRTUES; i++) {
+		char line[80];
+
+		if (!virtue_line(player, i, line, sizeof(line))) continue;
+
+		put_str(line, row++, 0);
+		shown++;
+	}
+
+	/*
+	 * A character always has eight by PLR-18, so this is a guard rather than a
+	 * case -- but a sheet that draws nothing at all reads as a broken page,
+	 * and a broken page is what this requirement was already found to be.
+	 */
+	if (!shown)
+		put_str("You are measured against nothing yet.", 2, 0);
+}
+
+/**
  * Display the character on the screen (two different modes)
  *
  * The top two lines, and the bottom line (or two) are left blank.
  *
  * Mode 0 = standard display with skills/history
  * Mode 1 = special display with equipment flags
+ * Mode 2 = what chaos has made of them (PLR-17)
+ * Mode 3 = the virtues they are measured against (PLR-20)
  */
 void display_player(int mode)
 {
@@ -988,16 +1038,20 @@ void display_player(int mode)
 	if (Term != angband_term[0] && !player->upkeep->playing) return;
 
 	/*
-	 * Stat info, except on the mutations page, which takes the whole screen.
-	 * The stat table starts at column 42 and a mutation's description runs to
-	 * 57 characters, so the two cannot share a screen: drawn together, the
-	 * descriptions overwrite the stat labels and WIS reads as IS.
+	 * Stat info, except on the mutations and virtues pages, which take the
+	 * whole screen. The stat table starts at column 42; a mutation's
+	 * description runs to 57 characters and a virtue sentence to forty-odd, so
+	 * neither can share a screen with it: drawn together, the text overwrites
+	 * the stat labels and WIS reads as IS.
 	 */
-	if (mode != 2) display_player_stat_info();
+	if (mode != 2 && mode != 3) display_player_stat_info();
 
 	if (mode == 2) {
 		/* What chaos has made of them */
 		display_player_mutations();
+	} else if (mode == 3) {
+		/* What their play has made of them */
+		display_player_virtues();
 	} else if (mode) {
 		struct panel *p = panels[0].panel();
 		display_panel(p, panels[0].align_left, &panels[0].bounds);
@@ -1179,17 +1233,18 @@ void write_character_dump(ang_file *fff)
 	 *
 	 * Zangband wrote the same section and never showed it -- the knowledge
 	 * screen that would have was commented out, so `dump_virtues()` reached
-	 * only the character sheet. Here it reaches the sheet as well, which is
-	 * where a player looks to see what they have become.
+	 * only the dump. This did the same for a long time while claiming
+	 * otherwise; the sheet's fourth page (`display_player_virtues()`) is where
+	 * a player actually looks, and both now build their line with
+	 * `virtue_line()` so they cannot drift apart.
 	 */
 	file_putf(fff, "  [Virtues]\n\n");
 	for (i = 0; i < MAX_PLAYER_VIRTUES; i++) {
-		int virtue = player->vir_types[i];
+		char line[80];
 
-		if (virtue <= V_NONE) continue;
+		if (!virtue_line(player, i, line, sizeof(line))) continue;
 
-		file_putf(fff, "You are %s %s.\n",
-				  virtue_describe(player->virtues[i]), virtue_name(virtue));
+		file_putf(fff, "%s\n", line);
 	}
 	file_putf(fff, "\n");
 
@@ -1347,7 +1402,8 @@ bool dump_save(const char *path)
 
 
 
-#define INFO_SCREENS 3 /* Number of screens in character info mode */
+/* Number of screens in character info mode: stats, flags, mutations, virtues */
+#define INFO_SCREENS 4
 
 
 /**

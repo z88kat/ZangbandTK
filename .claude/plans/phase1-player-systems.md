@@ -428,10 +428,23 @@ use, quest outcomes. ✅ **Met**, at nine hook sites covering all eighteen virtu
 records why nine and not Zangband's 169: the rule is that every virtue a character can be
 given must be one their play can move, and the writers are sized to that.
 
-**PLR-20 — Virtues are displayed to the player** and persist in the savefile. ✅ **Met.**
-A `[Virtues]` section in the character sheet, on Zangband's own thirteen-band ladder; and a
-savefile block written and read *by count*, in player block version 3, with version 2 kept
-as a loader so characters made before this still open.
+**PLR-20 — Virtues are displayed to the player** and persist in the savefile. ✅ **Met**
+in 3.105.0. The character sheet's fourth page, reached with `C` and space, on Zangband's
+own thirteen-band ladder; and a savefile block written and read *by count*, in player block
+version 3, with version 2 kept as a loader so characters made before this still open.
+
+> **This was recorded as met for fifty releases and was not.** The status note above used
+> to read "a `[Virtues]` section in the character sheet", and what existed was a
+> `[Virtues]` section in the character **dump** — a file the player has to ask for and open
+> in something else. There was no on-screen display of any kind: `display_player()` had
+> three pages and none of them showed a virtue.
+>
+> That is the identical failure PLR-17 was caught on, one requirement later, and it
+> survived because the wording *"character sheet"* is what the dump is called in the code
+> that writes it. The lesson worth keeping is not about virtues: a requirement whose status
+> note paraphrases the implementation will agree with itself for ever. Both callers now
+> build their line with `virtue_line()`, so the sheet and the dump cannot say different
+> things again, and `player/virtue` pins the sentence.
 
 **PLR-21 — At least one system reads a virtue value and behaves differently because of it.**
 ✅ **Met, twice.** A Lord of Chaos reaches for the bottom of its reward ladder less often for

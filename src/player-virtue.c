@@ -357,3 +357,32 @@ void virtue_note_timed(struct player *p, int idx, int old, int new_value)
 		virtue_change(p, V_VALOUR, -10);
 	}
 }
+
+/**
+ * How one of a character's virtues reads, as a whole sentence (PLR-20).
+ *
+ * One function because there are two places that must not disagree: the
+ * character sheet's virtues page and the character dump. They carried the same
+ * format string in two files, which is how the sheet came to be claimed in the
+ * requirement's status note while only the dump had it -- nobody comparing
+ * them would have found the difference, because the difference was that one of
+ * them did not exist.
+ *
+ * `slot` is an index into the character's eight, not a virtue index. Returns
+ * false for an empty slot so a caller can skip it without knowing what
+ * `V_NONE` means.
+ */
+bool virtue_line(const struct player *p, int slot, char *buf, size_t len)
+{
+	int virtue;
+
+	if (!p || slot < 0 || slot >= MAX_PLAYER_VIRTUES) return false;
+
+	virtue = p->vir_types[slot];
+	if (virtue <= V_NONE) return false;
+
+	strnfmt(buf, len, "You are %s %s.", virtue_describe(p->virtues[slot]),
+			virtue_name(virtue));
+
+	return true;
+}

@@ -34,6 +34,7 @@
 #include "player-birth.h"
 #include "player-calcs.h"
 #include "player-mutation.h"
+#include "ui-player.h"
 #include "player-util.h"
 #include "savefile.h"
 #include "ui-game.h"
@@ -1024,6 +1025,57 @@ static void c_borg_grant(char *rest)
 }
 
 /**
+ * borg-sheet? [mode] -- render a character-sheet page and print it (PLR-20).
+ *
+ * The sheet is the one part of this game with no unit test anywhere, because
+ * the unit harness has no terminal and `display_player()` draws straight to
+ * one. This has a terminal, so it can ask the honest question: put the page on
+ * screen and read back what landed there.
+ *
+ * That question is worth being able to ask. PLR-20 was recorded as met, with a
+ * status note describing "a `[Virtues]` section in the character sheet", while
+ * the virtues reached only the character *dump* -- a file the player must ask
+ * for and open elsewhere. Nothing could have caught that except looking at the
+ * screen, and nothing could look at the screen.
+ */
+static void c_borg_sheet(char *rest)
+{
+	int mode = (rest && *rest) ? atoi(rest) : 0;
+	int row, wid, hgt;
+
+	if (!player) {
+		printf("borg-sheet: FAILED no character\n");
+		run_failed = 1;
+		return;
+	}
+
+	Term_get_size(&wid, &hgt);
+	if (wid > 200) wid = 200;
+
+	display_player(mode);
+
+	for (row = 0; row < hgt; row++) {
+		char line[204];
+		int  col, last = 0;
+
+		for (col = 0; col < wid; col++) {
+			wchar_t ch;
+			int     a;
+
+			if (Term_what(col, row, &a, &ch) != 0) break;
+			line[col] = (ch >= 32 && ch < 127) ? (char) ch : ' ';
+			if (line[col] != ' ') last = col + 1;
+		}
+
+		line[last] = 0;
+		if (last) printf("borg-sheet: %2d |%s|\n", row, line);
+	}
+
+	printf("borg-sheet: mode %d rendered\n", mode);
+	fflush(stdout);
+}
+
+/**
  * borg-towns? -- the world's towns, and what each keeps (BRG-25).
  *
  * The borg crosses the world for a shop it cannot reach, so the question
@@ -1578,6 +1630,7 @@ static test_cmd cmds[] = {
 	{ "borg-prepared?", c_borg_prepared },
 	{ "borg-spells?", c_borg_spells },
 	{ "borg-grant", c_borg_grant },
+	{ "borg-sheet?", c_borg_sheet },
 	{ "borg-towns?", c_borg_towns },
 	{ "borg-exercise?", c_borg_exercise },
 	{ "borg-cheat", c_borg_cheat },

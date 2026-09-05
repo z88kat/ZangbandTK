@@ -48,6 +48,56 @@ Unreleased
 Gervais' unexplored squares go black too — 5 September 2026
 --------------------------------------------------------------
 
+- **3.105.0** — **Virtues are on the character sheet, and M8 is finished.**
+  PLR-20 asks that virtues be displayed to the player. They reached the
+  character *dump* — a file you have to ask for and open in something else —
+  and nothing on screen. The requirement had been recorded as met for fifty
+  releases, its status note describing "a ``[Virtues]`` section in the
+  character sheet", because that is what the code calls the dump.
+
+  It is the identical failure PLR-17 was caught on, one requirement later.
+
+  The sheet has a fourth page now, reached with ``C`` and space, after
+  mutations: eight lines on Zangband's thirteen-rung ladder, from *the polar
+  opposite of* to *the living embodiment of*. No numbers, because Zangband
+  showed none and the rung is the part that means anything. The page and the
+  dump both build their line with ``virtue_line()``, so they cannot say
+  different things again.
+
+  Folded in, all in the same code and all found by the M8 audit:
+
+  **Mutation blows name what they hit.** They said "You hit it with your tail"
+  whatever was in front of you, with the monster in scope and the rest of the
+  game using ``monster_desc()`` throughout — unnoticed because until 3.104.0
+  the first swing of any melee mutation crashed.
+
+  **A body enveloped in flames gives light.** Its description promised "+1
+  light" and its data carried ``LIGHT[1]``, and nothing read it:
+  ``calc_light()`` opens by zeroing the total and then walks equipment slots.
+
+  **Good luck does something; bad luck is recorded as doing nothing.** Both
+  were inert and neither was written down anywhere. Good luck's object-
+  generation half ports cleanly — one time in thirteen an object rolls against
+  a level twenty deeper — and its other half, and the whole of bad luck, hang
+  on an identification moment 4.2 does not have. So one is built and one is
+  deferred with a reason, and the count of inert mutations goes from a claimed
+  two to a measured three.
+
+  **The mutation converter emitted a directive the parser refuses.** It wrote
+  ``power-effect:msg:`` where ``init.c`` registers ``power-effect-msg``, so
+  regenerating ``mutation.txt`` produced a file the game would not load. The
+  committed data had been hand-corrected months ago and the converter never
+  was. ``zconv mutations --check`` now exists and the gate runs it; four of the
+  six converters still have none.
+
+  And the stale counts are recounted from the data rather than carried forward:
+  ten mutations do nothing, not the "six activatable and four random" the plan
+  had; ``mutmap.toml`` carries nine ``defer`` keys, not thirteen; Tame Monster
+  has left the deferred table it had sat in since it was built, which drops the
+  object deferrals from fourteen to thirteen; and the decision log no longer
+  says Mindcrafter domination and Chaos patron gifts are open eleven releases
+  after they shipped.
+
 - **3.104.0** — **Two crashes in mutation melee, found by giving the borg
   mutations.** Five mutations grow the character an extra limb -- horns, a
   beak, a scorpion tail, tentacles, a trunk -- and ``player_mutation_blows()``

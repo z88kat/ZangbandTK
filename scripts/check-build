@@ -195,6 +195,14 @@ fi
 echo "check-build: checking the realm content ($PYTHON zconv realms --check)"
 run "$PYTHON" tools/zconv/zconv.py realms --check
 
+# The same question for the mutations, and it is not a formality: the emitter
+# wrote a directive the parser does not register, so regenerating mutation.txt
+# produced a file the game would refuse to load. The committed data had been
+# hand-corrected and nothing compared the two for three months. Four of the six
+# converters still have no --check and want one.
+echo "check-build: checking the mutation data ($PYTHON zconv mutations --check)"
+run "$PYTHON" tools/zconv/zconv.py mutations --check
+
 # The borrowed monster tiles, which nothing was checking.
 #
 # `graf-ztk.prf` is generated: it gives each imported monster the picture of an

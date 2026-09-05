@@ -31,6 +31,7 @@
 #include "obj-power.h"
 #include "obj-slays.h"
 #include "obj-tval.h"
+#include "player-mutation.h"
 #include "obj-util.h"
 
 /**
@@ -1283,6 +1284,25 @@ struct object *make_object(struct chunk *c, int lev, bool good, bool great,
 
 	/* Base level for the object */
 	base = (good ? (lev + 10) : lev);
+
+	/*
+	 * A white aura is worth something (PLR-15).
+	 *
+	 * Zangband's Good Luck mutation adds twenty to the level an object rolls
+	 * against, one time in thirteen
+	 * ([object2.c:3707](../archive/zangband/src/object2.c#L3707)). `base` is
+	 * this game's `delta_level`, so it is the same line in the same place.
+	 *
+	 * Its other half -- forcing a heavy pseudo-identification -- has no home
+	 * here and never will: 4.2 replaced pseudo-ID with runes learned by
+	 * carrying and using a thing, so there is no feeling to make reliable.
+	 * That half is dropped rather than deferred, and the mutation is honest
+	 * without it, because this is the half a player would actually notice.
+	 */
+	if (player && player_has_mutation(player, mutation_by_name("GOOD_LUCK"))
+		&& one_in_(13)) {
+		base += 20;
+	}
 
 	/*
 	 * A themed dungeon needs more attempts than the three the book test wants,

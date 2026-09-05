@@ -75,6 +75,27 @@ Neither is a large effect and neither is meant to be. A virtue at full stretch
 moves the patron's roll two steps and the dream's odds by a few points in a
 hundred. What it is not is nothing, which is what it was.
 
+Where to see them
+-----------------
+
+Press ``C`` for your character sheet and then space until you reach the
+**Virtues** page — it is the fourth, after your statistics, your equipment
+flags and your mutations. Eight lines, one per virtue, each saying where you
+stand on a thirteen-rung ladder that runs from *the polar opposite of* through
+*neutral to* up to *the living embodiment of*.
+
+There are no numbers. Zangband did not show them either, and the rung is the
+part that means something: knowing you are *very virtuous in Valour* tells you
+what a Lord of Chaos will make of you, and knowing you are at 47 does not.
+
+The same eight lines appear in the character dump ``f`` writes, in a
+``[Virtues]`` section, so a dump and the sheet can be read against each other.
+
+Zangband showed them in neither place. Its knowledge-screen entry was commented
+out, and for a long time this game only wrote them to the dump — which is a
+file you have to ask for and open in something else, and is not the same as
+being told.
+
 Where this came from
 --------------------
 

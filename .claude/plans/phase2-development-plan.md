@@ -697,7 +697,7 @@ that are not scheduled are listed under it with a reason each.
 |---|---|---|
 | 1 | The model: 96 mutations generated out of `tables.c`, the weighted roll, the nine cancelling pairs, race affinity, Beastman birth and per-level, the savefile block (PLR-13, PLR-36, PLR-37, PLR-38) | 3.45.0 |
 | 2 | The 32 continuous mutations as player properties, through `calc_bonuses()`, and the character sheet (PLR-15, PLR-17) | 3.46.0 |
-| 3 | 24 of the 32 activatable mutations in the power list beside racial powers (PLR-16) | 3.47.0 |
+| 3 | 24 of the 32 activatable mutations in the power list beside racial powers (PLR-16); 29 of 32 by 3.72.0 | 3.47.0 |
 | 4 | 22 of the 27 random mutations firing on their own timer, and all 5 melee mutations in the attack round (PLR-14, PLR-35) | 3.48.0 |
 | 5 | The acquisition and removal paths, the DEC-38 patron carry-over, the Chaos Tower, the potion of New Life (PLR-14, PLR-34, DEC-24) | 3.49.0 |
 | 6 | What the milestone was declared complete without: the wizard grant menu, the character sheet's mutations page, the `cheat_powers` option, and the three flags and one food penalty the converter had been skipping (PLR-13, PLR-15, PLR-17) | 3.49.4–3.50.0 |
@@ -715,19 +715,34 @@ PLR-18 to PLR-21 were done earlier — virtues, their selection, their writers a
 consumers. That was the milestone's gate: DEC-39 kept the feature on condition that
 something read it, and two things do.
 
+> **M8 was one requirement short of complete until 3.105.0, and said otherwise.** PLR-20
+> asks that virtues be *displayed to the player*; they reached the character dump and
+> nothing on screen. The milestone's own exit criterion (DEC-17) is the manual chapter, and
+> `docs/virtues.rst` did not tell a player where to look because there was nowhere. Closed
+> by the sheet's fourth page. See PLR-20 in the Phase 1 player-systems document for why the
+> status note agreed with itself for fifty releases.
+
 **Ten mutations do nothing**, all deferred and none refused — DEC-52 reversed the one
 rejection, and telekinesis works now that `FETCH` exists — recorded per-mutation in
-`tools/zconv/mutmap.toml` and listed in `docs/mutations.rst`: six activatable and four
-random. Every one needs machinery 4.2 has not got — pets, an incorporeal player state, an
-object-to-gold conversion, a pseudo-identification bit, an effect that reads both the hit
-point and spell point pools. Two more continuous mutations are inert because they moved
-only charisma, which 4.2 removed in 4.2.0.
+`tools/zconv/mutmap.toml` and listed in `docs/mutations.rst`: **three activatable, four
+random and three continuous**. Every one needs machinery 4.2 has not got — an incorporeal
+player state, a pseudo-identification bit, an effect that reads both the hit point and
+spell point pools, a throwing multiplier where throwing is a command.
 
-`mutmap.toml` carries **thirteen** `defer` keys, and the thirteenth is a mislabel worth
-correcting rather than counting: the chaos gift has no effect chain because it needs none.
-It carries the `PATRON` flag, `player_apply_mutations()` applies flags whatever a
-mutation's kind, and `patron_owes_reward()` reads it — so it works through the machinery
-PLR-05 built. Counting it as deferred overstated the gap by one in three previous reports.
+> These figures were wrong in this document for four releases and are recounted here from
+> the data rather than carried forward. It said six activatable and four random, which was
+> the count before grow mold and the Midas touch were built (3.72.0, DEC-52) — the sentence
+> was updated for the reasons and not for the number. And it said two continuous, counting
+> only the charisma pair; **bad luck** was inert too and recorded nowhere at all, found by
+> the M8 audit and now deferred with a reason. Its twin **good luck** was in the same state
+> and is now built: one time in thirteen an object rolls against a level twenty deeper
+> (`make_object()`), which is the half of it 4.2 can express.
+
+`mutmap.toml` carries **nine** `defer` keys, and one is a mislabel worth correcting rather
+than counting: the chaos gift has no effect chain because it needs none. It carries the
+`PATRON` flag, `player_apply_mutations()` applies flags whatever a mutation's kind, and
+`patron_owes_reward()` reads it — so it works through the machinery PLR-05 built. Counting
+it as deferred overstated the gap by one in every previous report.
 
 **What M8 found that the documentation did not say.** The spoiler gives the headline of
 each mutation and the headline is generally the good half: hyper-strength is "+4 STR" there

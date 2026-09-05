@@ -47,12 +47,21 @@ however you came by the resistance. Three more make ordinary food barely feed
 you: a beak, a mouth that eats rock, and a taste for blood all leave you a
 twentieth of what you swallow. Potions still work normally.
 
-Two of the thirty-two do nothing at all. A silly voice and an illusory normal
+Three of the thirty-two do nothing at all. A silly voice and an illusory normal
 appearance changed only your charisma, and there is no charisma in Angband
-4.2 — the stat was removed in 4.2.0. You can still gain them, they are still
-described on your sheet, and they have no effect. They were left in rather than
-dropped because a mutation that vanishes from a savefile is worse than one that
-does nothing.
+4.2 — the stat was removed in 4.2.0. **Bad luck** is the third: everything it
+did happened at the moment an object was identified, and 4.2 has no such
+moment — you learn what a thing is one rune at a time by carrying and using it,
+so it never stops being unknown and there is nothing for the curse to hang on.
+You can still gain all three, they are still described on your sheet, and they
+have no effect. They were left in rather than dropped because a mutation that
+vanishes from a savefile is worse than one that does nothing.
+
+Its twin, **good luck**, does work — but only half of it. One time in thirteen
+an object generated near you rolls against a level twenty deeper than it should,
+which is a real if occasional gift. The other half made your sense of an
+object's worth reliable, and that is the same wall bad luck ran into: there is
+no such sense here to make reliable.
 
 **Activatable.** Powers you invoke, at a cost in mana — or in blood, if you
 are not a caster. Spitting acid, breathing fire, eating rock, turning objects
@@ -65,7 +74,7 @@ when you are short of mana. Some grow with you: spitting acid throws a wider
 ball from level 30, breathing fire from level 40, and hardening yourself
 against the elements resists more of them the higher you go.
 
-**Four of the thirty-two cannot be used yet.** They are listed with *not yet*
+**Three of the thirty-two cannot be used yet.** They are listed with *not yet*
 beside them rather than hidden, because your character sheet describes them and
 you would come looking.
 
@@ -93,9 +102,6 @@ round:
    * - Sense curses
      - Something hidden to reveal. 4.2 has no pseudo-identification; curses are
        runes you learn by carrying the thing.
-   * - Grow mold
-     - Eight *friendly* molds. 4.2 has no pets, so the faithful translation
-       would surround you with eight enemies.
    * - Weigh magic
      - Reporting how long your effects have left. 4.2 puts that on the status
        line already.
@@ -112,9 +118,9 @@ rare — one turn in three thousand up to one in twelve thousand.
 Each is rolled separately, every turn, so three of these are three chances and
 not one. Almost all of them stop while you are under an anti-magic effect —
 cowardice is the exception, because being too frightened to act is not magic,
-and Zangband is specific about that. Five of the twenty-seven do not fire yet:
+and Zangband is specific about that. Four of the twenty-seven do not fire yet:
 turning briefly incorporeal, being warned about what is nearby, and trading hit
-points for spell points and back. All five still show on your character sheet.
+points for spell points and back. All four still show on your character sheet.
 
 Two that used to be on this list are not. **Losing a mutation at random** works —
 that is the "strangely normal" one, and it takes a mutation back. And the

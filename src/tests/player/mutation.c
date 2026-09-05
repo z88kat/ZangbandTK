@@ -26,6 +26,8 @@
 #include "generate.h"
 #include "player-attack.h"
 #include "mon-move.h"
+#include "message.h"
+#include "mon-desc.h"
 #include "mon-make.h"
 #include "mon-lore.h"
 #include "mon-util.h"
@@ -504,17 +506,29 @@ static int test_the_elemental_bodies_are_auras_only(void *state) {
 }
 
 /**
- * Two mutations do nothing, and that is the correct answer.
+ * Three continuous mutations do nothing, and that is the correct answer.
  *
  * A silly voice and an illusory normal appearance moved charisma and nothing
- * else, and 4.2 removed charisma in 4.2.0. They are still gained, still
- * described, still saved, and have no effect -- which is worth pinning,
- * because "this mutation does nothing" is indistinguishable from "the
+ * else, and 4.2 removed charisma in 4.2.0.
+ *
+ * Bad luck is the third, and it was found inert without being recorded as
+ * such -- gained, described, saved, shown on the sheet, and read by no code
+ * anywhere. Zangband hangs the whole of it on `identify_item()`
+ * ([spells3.c:2032](../archive/zangband/src/spells3.c#L2032)), which rerolls
+ * an object one time in thirteen at the moment it becomes known. 4.2 has no
+ * such moment: identification was replaced by runes learned one at a time by
+ * carrying and using a thing, so there is no point at which an object stops
+ * being unknown for a curse to be attached to. Its twin, good luck, kept the
+ * half that does have a home -- twenty levels on an object roll, one time in
+ * thirteen -- and lost the pseudo-identification half for the same reason.
+ *
+ * Pinned because "this mutation does nothing" is indistinguishable from "the
  * converter dropped this mutation's effects" unless somebody wrote down which
- * of the two it was.
+ * of the two it was. That is exactly how bad luck went unnoticed: the count
+ * here said two and the true number was three.
  */
-static int test_the_two_charisma_mutations_are_inert(void *state) {
-	static const char *const inert[] = { "SILLY_VOI", "ILL_NORM" };
+static int test_the_inert_continuous_mutations_are_inert(void *state) {
+	static const char *const inert[] = { "SILLY_VOI", "ILL_NORM", "BAD_LUCK" };
 	size_t i;
 	int j;
 
@@ -529,6 +543,14 @@ static int test_the_two_charisma_mutations_are_inert(void *state) {
 		for (j = 0; j < OBJ_MOD_MAX; j++) eq(m->modifiers[j], 0);
 		for (j = 0; j < ELEM_MAX; j++) eq(m->el_info[j], 0);
 	}
+
+	/*
+	 * And good luck is *not* among them any more. Asserted from the other
+	 * side, because the failure worth catching is somebody removing the
+	 * object-generation hook and leaving this list looking correct.
+	 */
+	require(mutation_by_name("GOOD_LUCK") != NULL);
+	eq(mutation_light_bonus(player), 0);
 
 	ok;
 }
@@ -1572,7 +1594,31 @@ static int test_a_melee_mutation_completes_its_blow(void *state) {
 	 * testing anything and must say so.
 	 */
 	{
-		int swing, hits = 0;
+		int  swing, hits = 0, named = 0, i, n;
+		char m_name[80];
+
+		/*
+		 * Seen, or the test cannot tell the fix from the bug.
+		 *
+		 * `MDESC_TARG` renders a monster the character cannot see as "it" --
+		 * correctly, and that is the same word the broken version printed for
+		 * everything. In a bare test cave the monster is usually unseen, so
+		 * the assertion below passed or failed on whether the level happened
+		 * to light it. Measured: it passed once and then failed.
+		 */
+		mflag_on(victim->mflag, MFLAG_VISIBLE);
+
+		/*
+		 * The name is taken now, while the monster is certainly alive. A
+		 * swing that lands may kill it, and `monster_desc()` on a freed
+		 * monster reads its race through a dangling pointer -- the same trap
+		 * the healing below avoids, met a second time by asking for the name
+		 * after the loop rather than before it.
+		 */
+		monster_desc(m_name, sizeof(m_name), victim, MDESC_TARG);
+
+		/* And the name must be a name, or the assertion proves nothing */
+		require(!streq(m_name, "it"));
 
 		for (swing = 0; swing < 200 && !hits; swing++) {
 			/*
@@ -1593,7 +1639,61 @@ static int test_a_melee_mutation_completes_its_blow(void *state) {
 		}
 
 		require(hits > 0);
+
+		/*
+		 * And the blow said what it hit. These messages read "You hit it with
+		 * your tail" whatever was in front of the character, while every other
+		 * attack in the game names its target -- unnoticed because until
+		 * 3.104.0 the swing crashed before printing anything.
+		 */
+		n = (int) messages_num();
+
+		for (i = 0; i < n && i < 40; i++) {
+			const char *msg = message_str((int16_t) i);
+
+			if (msg && strstr(msg, "with your") && strstr(msg, m_name)) {
+				named++;
+				break;
+			}
+		}
+
+		require(named > 0);
 	}
+
+	ok;
+}
+
+/**
+ * A body enveloped in flames gives light (PLR-15).
+ *
+ * Its description has always promised "+1 light" and its data has always
+ * carried `LIGHT[1]`, and the value went nowhere: `player_apply_mutations()`
+ * reads stats, stealth, searching, infravision and speed and not light, and
+ * `calc_light()` opens by zeroing the total and then walks equipment slots
+ * only. The test that pinned the value checked that it *parsed*.
+ *
+ * Depth is set because `calc_light()` returns early in a lit town, which would
+ * make this pass for the wrong reason.
+ */
+static int test_a_burning_body_lights_the_way(void *state) {
+	const struct mutation *fire = mutation_by_name("FIRE_BODY");
+	int base;
+
+	notnull(fire);
+	flag_wipe(player->mutations, MUT_SIZE);
+
+	player->depth = 1;
+
+	calc_bonuses(player, &player->state, false, true);
+	base = player->state.cur_light;
+
+	require(player_gain_mutation(player, fire));
+	calc_bonuses(player, &player->state, false, true);
+	eq(player->state.cur_light, base + 1);
+
+	require(player_lose_mutation(player, fire));
+	calc_bonuses(player, &player->state, false, true);
+	eq(player->state.cur_light, base);
 
 	ok;
 }
@@ -1622,8 +1722,8 @@ struct test tests[] = {
 	  test_a_vulnerability_is_not_lost_on_the_way },
 	{ "the-elemental-bodies-are-auras-only",
 	  test_the_elemental_bodies_are_auras_only },
-	{ "the-two-charisma-mutations-are-inert",
-	  test_the_two_charisma_mutations_are_inert },
+	{ "the-inert-continuous-mutations-are-inert",
+	  test_the_inert_continuous_mutations_are_inert },
 	{ "the-activatable-split-is-what-was-decided",
 	  test_the_activatable_split_is_what_was_decided },
 	{ "a-power-is-built-from-its-mutation",
@@ -1661,6 +1761,8 @@ struct test tests[] = {
 	{ "every-menu-row-finds-a-mutation",
 	  test_every_menu_row_finds_a_mutation },
 	{ "a-mutation-toggles-both-ways", test_a_mutation_toggles_both_ways },
+	{ "a burning body lights the way",
+	  test_a_burning_body_lights_the_way },
 	{ "a melee mutation completes its blow",
 	  test_a_melee_mutation_completes_its_blow },
 	{ NULL, NULL }

@@ -142,6 +142,9 @@ bool player_lose_random_mutation(struct player *p);
 const struct mutation *mutation_roll(const struct player *p);
 bool player_mutate(struct player *p);
 int mutation_regen_penalty(const struct player *p);
+
+/* Light radius contributed by the character's mutations. */
+int mutation_light_bonus(const struct player *p);
 void player_apply_mutations(struct player *p, struct player_state *state,
 							bool vuln[ELEM_MAX]);
 void player_mutation_turn(struct player *p);

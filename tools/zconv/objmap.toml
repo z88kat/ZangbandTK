@@ -126,13 +126,6 @@ under "statue" in 3.72.0, with the ten statues, because that is the one wall \
 still standing -- and because a figurine is a statue that does something, so \
 whatever solves them solves this.""" }
 
-"65:17" = { name = "Tame Monster", why = "built 3.72.0", note = """\
-`charm_monster(dir, 45)` -- the monster becomes a pet. Deferred through \
-3.71.0 for want of monster allegiance; built on the MON_CHARM projection when \
-PLR-22 brought it. The power is a flat 45 rather than the caster's level, \
-which is what the wand's own line says and is why it is worth carrying at any \
-level: it beats a level 15 monster's saving throw about nine times in ten.""" }
-
 "70:52" = { name = "Artifact Creation", why = "no 4.2 effect", note = """\
 `artifact_scroll()` turns an ordinary item in the pack into a random \
 artifact during play. 4.2 generates its random artifacts once, at birth, from \
@@ -313,3 +306,19 @@ is the kind's `pval`, which 4.2 expresses as a NOURISH effect. 8 matches \
 
 [message]
 "80:33" = "That tastes good."
+
+# --- Built, and kept here so the deferred count stops including them --------
+#
+# An entry whose reason reads "built" is not deferred, and leaving it in
+# [defer] made the converter skip it *and* print it in the Deferred column --
+# so every report and every document quoting one said fourteen where the truth
+# was thirteen. The kind itself lives in hand-maintained object.txt rather than
+# the generated file, so nothing was wrong with the data; only with the count.
+
+[built]
+"65:17" = { name = "Tame Monster", note = """\
+`charm_monster(dir, 45)` -- the monster becomes a pet. Deferred through \
+3.71.0 for want of monster allegiance; built on the MON_CHARM projection when \
+PLR-22 brought it. The power is a flat 45 rather than the caster's level, \
+which is what the wand's own line says and is why it is worth carrying at any \
+level: it beats a level 15 monster's saving throw about nine times in ten.""" }

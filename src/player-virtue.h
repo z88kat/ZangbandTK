@@ -40,6 +40,9 @@ void virtue_change(struct player *p, int virtue, int amount);
 int virtue_value(const struct player *p, int virtue);
 bool player_has_virtue(const struct player *p, int virtue);
 const char *virtue_describe(int value);
+
+/* One of a character's eight virtues, as a sentence. False for an empty slot. */
+bool virtue_line(const struct player *p, int slot, char *buf, size_t len);
 void virtue_note_kill(struct player *p, const struct monster_race *race,
 					  int depth);
 void virtue_note_timed(struct player *p, int idx, int old, int new_value);

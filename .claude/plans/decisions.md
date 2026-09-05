@@ -2826,10 +2826,18 @@ it**. The pet half is solved; 4.2 has no object type whose name interpolates a
 monster race. Re-filed with the ten statues, because a figurine is a statue that
 does something and whatever solves them solves it.
 
-*Still open after this phase:* Mindcrafter domination and Chaos patron gifts,
-both listed in PLR-28 and both needing a hook in code we own rather than a data
-change. They are small and they are not blocked; they are simply not this
-phase's five.
+*Open after this phase, and closed in 3.94.1:* Mindcrafter domination and Chaos
+patron gifts, both listed in PLR-28. Both landed, and both turned out to be
+**data** where this paragraph had them down as needing a code hook — domination
+is a `power-when` band on the Mindcrafter reaching `PROJECT_LOS:MON_CHARM` at
+level 30, and the patron gifts are `reward-effect:SUMMON_PET` rows on the
+Lords' ladders. The prediction in this sentence was wrong in the direction that
+matters: they were smaller than it says, not larger.
+
+*Corrected 3.105.0.* This paragraph read as live for eleven releases after the
+work shipped, which is how the M8 audit came to list both as outstanding. Left
+in place rather than deleted, with the outcome attached, because a decision log
+that quietly loses its wrong predictions is not one you can learn from.
 
 *A note on process, again.* `a-unique-cannot-be-charmed` passed against a build
 with the unique check deliberately removed. It used Grip, which carries
