@@ -465,7 +465,19 @@ age:20:20
 height:70:6
 weight:150:20
 obj-flags:FEATHER
-values:RES_FIRE[1]
+# Five resistances, each on its own threshold, exactly as the archive grants
+# them (files.c:1408).  Fire used to be given at birth, which is four levels of
+# free head start; the other four were simply missing.
+gain-at:5
+gain-values:RES_FIRE[1]
+gain-at:10
+gain-values:RES_COLD[1]
+gain-at:15
+gain-values:RES_ACID[1]
+gain-at:20
+gain-values:RES_ELEC[1]
+gain-at:35
+gain-values:RES_POIS[1]
 power:breathe like a dragon
 power-level:15
 power-cost:25
@@ -497,13 +509,21 @@ history:1
 age:20:20
 height:70:6
 weight:150:20
-obj-flags:SEE_INVIS
+# Both sustains from birth, and the other two on thresholds (files.c:1421).
+# Seeing the invisible was given at birth and the sustains and telepathy were
+# missing altogether -- the manual said this race "was granted nothing at all",
+# which the archive does not bear out.
+obj-flags:SUST_INT | SUST_WIS
+gain-at:15
+gain-obj-flags:SEE_INVIS
+gain-at:30
+gain-obj-flags:TELEPATHY
 power:blast a mind
 power-level:15
 power-cost:12
 power-stat:INT
 power-fail:14
-power-effect:BOLT:MANA
+power-effect:BOLT:MON_PSI
 power-dice:$B
 power-expr:B:PLAYER_LEVEL:+ 0
 
@@ -529,8 +549,20 @@ history:1
 age:20:20
 height:70:6
 weight:150:20
-obj-flags:HOLD_LIFE | SLOW_DIGEST
+# A vampire carries its own dim light in the archive (TR_LITE, files.c:1469),
+# which was missed -- so the one race that is hurt by light also had none of
+# its own.  Everything here is granted at birth: the Vampire is the one
+# imported race with no level thresholds at all.
+#
+# SLOW_DIGEST was here and is not in the archive.  It was the wrong sign twice
+# over: a benefit, on the race whose relationship with food is that food does
+# not work.  Zangband gives it a tenth of a meal instead (cmd6.c:99), which is
+# what BLOOD_DIET now does.  UNDEAD starts it just after midnight, so the sun
+# is not already up on a race the sun burns.
+obj-flags:HOLD_LIFE
+player-flags:BLOOD_DIET | UNDEAD
 values:RES_DARK[3] | RES_NETHER[1] | RES_POIS[1] | RES_COLD[1] | RES_LIGHT[-1]
+light:1
 power:drink blood
 power-level:5
 power-cost:10
@@ -564,8 +596,14 @@ history:1
 age:20:20
 height:70:6
 weight:150:20
-obj-flags:SEE_INVIS | FREE_ACT | HOLD_LIFE | SLOW_DIGEST
+# CANT_EAT is the archive's (files.c:1439) and was missing, so a Golem ate
+# like anything else while the manual said it barely eats.  Hold life waits for
+# 35 rather than arriving at birth.
+obj-flags:SEE_INVIS | FREE_ACT | SLOW_DIGEST | CANT_EAT
+armour:20:5
 values:RES_POIS[3] | RES_COLD[-1]
+gain-at:35
+gain-obj-flags:HOLD_LIFE
 power:turn to stone
 power-level:20
 power-cost:15

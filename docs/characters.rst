@@ -28,15 +28,23 @@ that did not make it.
        unnaturally fast, and dear: 225 per cent experience. The game is named
        after these people.
    * - **Draconian**
-     - Breathes. The second most expensive thing you can be.
+     - Breathes. The second most expensive thing you can be, and it grows into
+       its scales — fire at 5, cold at 10, acid at 15, lightning at 20 and
+       poison at 35.
    * - **Vampire**
      - Drinks blood to heal, from level 5 — the earliest power in the game.
+       Immune to darkness, and burnt by the sun: stand on a lit street at
+       noon and you take a point a turn and cannot heal. Food is nearly
+       useless to it, at a tenth of the good it does anyone else, and it
+       begins the game just after midnight.
    * - **Mindflayer**
      - Enormous intelligence and wisdom, a feeble body, and it attacks minds
-       directly.
+       directly. Sees the invisible at 15 and reads minds at 30.
    * - **Golem**
      - Made, not born. Very strong, very stupid, and can turn its skin to
-       stone.
+       stone. Twenty points of armour before it wears anything at all, and a
+       point more every fifth level; immune to poison, needs no food and
+       cannot eat.
    * - **Sprite**
      - Flies. Fragile, quick, and puts things to sleep.
    * - **Half-Titan**

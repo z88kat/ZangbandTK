@@ -3669,6 +3669,143 @@ static enum parser_error parse_p_race_values(struct parser *p) {
 }
 
 /**
+ * What a race grows into (PLR-01).
+ *
+ * Zangband grants most racial properties on a level threshold rather than at
+ * birth, and 4.2 has no way to say so in data -- its one case, the Warrior's
+ * fearlessness, is hardcoded. So an imported race either got its properties
+ * immediately, which is a head start it should not have, or not at all.
+ *
+ *	gain-at:<level>              opens a band; everything after belongs to it
+ *	gain-obj-flags:<flags>       object flags the band grants
+ *	gain-values:RES_x[n] | ...   resistances the band grants
+ *
+ * Written as a band rather than a level per line because a race usually gains
+ * more than one thing at once, and because it reads like the `power-when`
+ * bands the powers already use.
+ */
+static struct player_race_gain *race_gain_last(struct player_race_gain *head) {
+	while (head && head->next) head = head->next;
+	return head;
+}
+
+/**
+ * A light the race carries itself (PLR-01).
+ *
+ * Zangband's Vampire has `TR_LITE` -- it glows faintly, which is a nice piece
+ * of design on the one race that light hurts. 4.2 reads light radius from
+ * equipment only, and a race has no modifiers to put it in, so it needs both a
+ * field and a line in `calc_light()`. The same shape as the mutation that
+ * envelops you in flames.
+ */
+static enum parser_error parse_p_race_light(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->light = parser_getint(p, "light");
+	return PARSE_ERROR_NONE;
+}
+
+/**
+ * Armour the race is, rather than armour it wears (PLR-01).
+ *
+ * A Golem is made of something: `to_a += 20 + lev / 5`
+ * ([xtra1.c:2670](../archive/zangband/src/xtra1.c#L2670)), which at level 50 is
+ * thirty points our Golem did not have. It is the whole of what the race is
+ * for -- a blunt, slow, poison-proof thing that is hard to hurt -- and it was
+ * the largest single omission of the nine imported races.
+ *
+ * Split into a flat part and a divisor because that is the shape the mutations
+ * already use for their saving throws (`save` and `save_scale`), and a second
+ * spelling of the same idea would be one to remember.
+ */
+static enum parser_error parse_p_race_armour(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->armour = parser_getint(p, "armour");
+	r->armour_scale = parser_getint(p, "scale");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_gain_at(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	struct player_race_gain *g, *last;
+	int level = parser_getint(p, "level");
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (level < 1 || level > PY_MAX_LEVEL)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	g = mem_zalloc(sizeof(*g));
+	g->level = level;
+
+	last = race_gain_last(r->gains);
+	if (last)
+		last->next = g;
+	else
+		r->gains = g;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_gain_obj_flags(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	struct player_race_gain *g;
+	char *flags;
+	char *s;
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	g = race_gain_last(r->gains);
+	if (!g)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+
+	flags = string_make(parser_getstr(p, "flags"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(g->flags, OF_SIZE, list_obj_flag_names, s))
+			break;
+		s = strtok(NULL, " |");
+	}
+	string_free(flags);
+	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_race_gain_values(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	struct player_race_gain *g;
+	char *s;
+	char *t;
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	g = race_gain_last(r->gains);
+	if (!g)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	s = string_make(parser_getstr(p, "values"));
+	t = strtok(s, " |");
+	while (t) {
+		int value = 0;
+		int index = 0;
+
+		if (grab_index_and_int(&value, &index, list_element_names, "RES_", t))
+			break;
+		g->el_info[index].res_level = value;
+		t = strtok(NULL, " |");
+	}
+
+	string_free(s);
+	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
+}
+
+/**
  * Powers, shared between races (PLR-02) and classes (PLR-06).
  *
  * Both declare them the same way and mean the same thing by them, so the
@@ -4314,6 +4451,11 @@ static struct parser *init_parse_p_race(void) {
 	parser_reg(p, "height int base_hgt int mod_hgt", parse_p_race_height);
 	parser_reg(p, "weight int base_wgt int mod_wgt", parse_p_race_weight);
 	parser_reg(p, "obj-flags ?str flags", parse_p_race_obj_flags);
+	parser_reg(p, "light int light", parse_p_race_light);
+	parser_reg(p, "armour int armour int scale", parse_p_race_armour);
+	parser_reg(p, "gain-at int level", parse_p_race_gain_at);
+	parser_reg(p, "gain-obj-flags ?str flags", parse_p_race_gain_obj_flags);
+	parser_reg(p, "gain-values str values", parse_p_race_gain_values);
 	parser_reg(p, "player-flags ?str flags", parse_p_race_play_flags);
 	parser_reg(p, "values str values", parse_p_race_values);
 	parser_reg(p, "power str name", parse_p_race_power);
@@ -4357,6 +4499,13 @@ static void cleanup_p_race(void)
 
 		/* And whatever the race could do (PLR-02). */
 		power_free(p->powers);
+
+		/* And whatever it grew into (PLR-01). */
+		while (p->gains) {
+			struct player_race_gain *g = p->gains;
+			p->gains = g->next;
+			mem_free(g);
+		}
 
 		string_free((char *)p->name);
 		mem_free(p);

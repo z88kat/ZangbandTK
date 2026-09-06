@@ -45,6 +45,53 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The four half-imported races are finished — 6 September 2026
+----------------------------------------------------------------
+
+- **3.110.0** — **A race can now grow into what it is.** Zangband grants most
+  racial properties on a level threshold rather than at birth, and 4.2 has
+  nowhere to put one: ``struct player_race`` carries a single set of flags,
+  applied at birth. The import flattened every threshold to *never*, which is
+  why a Draconian had wings and no scales.
+
+  ``gain-at`` / ``gain-obj-flags`` / ``gain-values`` declare the bands in
+  ``p_race.txt``, and they are applied in the two places 4.2 already assembles
+  a character — ``player_flags()`` beside 4.2's own single hard-coded threshold,
+  and ``calc_bonuses()`` after the innate resists. A gained property is then
+  indistinguishable from an innate one. Eight more races are queued behind
+  this and are now a data change (DEC-72).
+
+  What the four were missing:
+
+  - **Draconian** — all five resistances, at 5, 10, 15, 20 and 35.
+  - **Mindflayer** — sustained intelligence and wisdom at birth, see invisible
+    at 15, telepathy at 30. Its racial blast fired a bolt of ``MANA``; the
+    archive fires ``GF_PSI`` (``racial.c:492``). A conversion error, not a
+    recorded substitution — ``MON_PSI`` has existed since DEC-37 added it for
+    exactly this, and the Mindcrafter uses it.
+  - **Golem** — twenty points of armour and a point every fifth level
+    (``xtra1.c:2670``), which is thirty at level 50 and the largest single
+    omission of the nine imported races. It was missed because it is granted
+    in ``calc_bonuses()``, not in the flag switch the import read.
+  - **Vampire** — its own dim light (``TR_LITE``), on the one race that light
+    hurts. It also had ``SLOW_DIGEST``, which is not in the archive and was
+    the wrong sign twice over: a benefit, on the race whose defining problem
+    is that food does not work. Zangband gives it a tenth of a meal instead,
+    burns it for a point a turn on a lit town grid by day, and starts it just
+    after midnight so the sun is not already up.
+
+  ``src/tests/player/race.c`` is new, and is where race work belongs from now
+  on — the race assertions had accumulated in ``game/wild.c``, a 6,295-line
+  wilderness suite, because that is where somebody happened to be working.
+  Eight tests, falsified ten ways. One of them walks every ``gain-at`` band in
+  the data rather than a list written by hand, so a race added later cannot
+  declare a threshold that never opens.
+
+  Finding this also turned up real test pollution: ``player/mutation.c`` set
+  the race to Vampire in one test and never put it back, so the beak test —
+  which measures what a beak costs you at mealtimes — had been measuring it on
+  the one race whose own nutrition rule takes precedence.
+
 The README stops describing an older game — 6 September 2026
 ----------------------------------------------------------------
 

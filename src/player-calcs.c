@@ -1725,6 +1725,10 @@ static void calc_light(struct player *p, struct player_state *state,
 	 * before it is discarded before anything reads it.
 	 */
 	state->cur_light += mutation_light_bonus(p);
+
+	/* And a light the race carries itself -- a Vampire's own dim glow */
+	if (p->race)
+		state->cur_light += p->race->light;
 }
 
 /**
@@ -2091,6 +2095,32 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		}
 	}
 
+	/*
+	 * And the resistances the race has grown into (PLR-01).
+	 *
+	 * A Draconian resists fire at 5, cold at 10, acid at 15, lightning at 20
+	 * and poison at 35. Applied straight after the innate ones and before
+	 * anything else touches `el_info`, so equipment and mutations layer on top
+	 * exactly as they do for a race born with them.
+	 */
+	{
+		const struct player_race_gain *g;
+
+		for (g = p->race->gains; g; g = g->next) {
+			if (p->lev < g->level) continue;
+
+			for (i = 0; i < ELEM_MAX; i++) {
+				if (!g->el_info[i].res_level) continue;
+
+				if (g->el_info[i].res_level == -1)
+					vuln[i] = true;
+				else if (g->el_info[i].res_level
+						 > state->el_info[i].res_level)
+					state->el_info[i].res_level = g->el_info[i].res_level;
+			}
+		}
+	}
+
 	/* Base pflags */
 	pf_wipe(state->pflags);
 	pf_copy(state->pflags, p->race->pflags);
@@ -2211,6 +2241,24 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 
 	/* And what chaos has made of the character (PLR-15) */
 	player_apply_mutations(p, state, vuln);
+
+	/*
+	 * Armour the race is rather than armour it wears (PLR-01).
+	 *
+	 * A Golem is `20 + lev / 5` of hardened clay
+	 * ([xtra1.c:2670](../archive/zangband/src/xtra1.c#L2670)), which is thirty
+	 * points at level 50 and most of the reason to play one.  Zangband set
+	 * `dis_to_a` alongside `to_a`; 4.2 has no such field, and instead runs this
+	 * whole function again for the known state, so an intrinsic the character
+	 * cannot be ignorant of is displayed correctly with no second line.
+	 */
+	if (p->race && (p->race->armour || p->race->armour_scale)) {
+		int innate = p->race->armour;
+
+		if (p->race->armour_scale)
+			innate += p->lev / p->race->armour_scale;
+		state->to_a += innate;
+	}
 
 	/* Now deal with vulnerabilities */
 	for (i = 0; i < ELEM_MAX; i++) {

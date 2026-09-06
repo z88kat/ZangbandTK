@@ -533,7 +533,24 @@ bool effect_handler_NOURISH(effect_handler_context_t *context)
 	 * character still gets the full incidental nourishment out of a potion of
 	 * Cure Light Wounds, which is what Zangband does too.
 	 */
+	/*
+	 * And a mouth that wants blood (PLR-01).
+	 *
+	 * A Vampire gets `pval / 10` from food
+	 * ([cmd6.c:102](../archive/zangband/src/cmd6.c#L102)) -- twice what a
+	 * beaked character manages, but still a tenth of a meal.  Tested before
+	 * `CANT_EAT` because Zangband tests it first, so a Vampire that acquires
+	 * that flag from a mutation keeps the better of the two rates rather than
+	 * dropping to a twentieth.
+	 */
 	if (context->subtype == 0 && amount > 0
+			&& player_has(player, PF_BLOOD_DIET)
+			&& context->obj && tval_is_edible(context->obj)) {
+		amount /= 10;
+		msg("Mere victuals hold scant sustenance for a being such as yourself.");
+		if (player->timed[TMD_FOOD] < PY_FOOD_HUNGRY)
+			msg("Your hunger can only be satisfied with fresh blood!");
+	} else if (context->subtype == 0 && amount > 0
 			&& player_of_has(player, OF_CANT_EAT)
 			&& context->obj && tval_is_edible(context->obj)) {
 		amount /= 20;

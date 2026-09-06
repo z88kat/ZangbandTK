@@ -1440,6 +1440,21 @@ void do_cmd_accept_character(struct command *cmd)
 	/* Outfit the player, if they can sell the stuff */
 	player_outfit(player);
 
+	/*
+	 * The undead wake up in the dark (PLR-01).
+	 *
+	 * Zangband starts a Vampire -- and the four other undead races queued
+	 * behind it -- just after midnight
+	 * ([dungeon.c:3270](../archive/zangband/src/dungeon.c#L3270)), so that a
+	 * race the sun burns is not set down in the middle of the day with
+	 * nowhere to stand.  It is flavour that is also mercy.
+	 *
+	 * Here rather than in `player_init()`, which sets the first turn but runs
+	 * before a race has been chosen -- the line after it assigns the default.
+	 */
+	if (player_has(player, PF_UNDEAD))
+		turn = (30L * z_info->day_length) / 4 + 1;
+
 	/* Stop the player being quite so dead */
 	player->is_dead = false;
 

@@ -928,6 +928,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     player/digging.c
     player/history.c
     player/kit.c
+    player/race.c
     player/inven-carry-num.c
     player/inven-wield.c
     player/mutation.c

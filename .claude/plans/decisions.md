@@ -3374,3 +3374,49 @@ the rule says, not because a test can tell.
 literally: one roll per pet per descent, in `pet_stays_with_you()`, called from
 the loop that collects them. No loyalty value on the monster, nothing
 accumulating between levels, nothing running on a monster's turn.
+
+---
+
+**DEC-72 — A race's intrinsics arrive on a level threshold, declared in data,
+and the Golem's armour is a race field rather than a special case.**
+
+The project owner, asking for the four partial races to be finished: *"The
+level-gated intrinsics are the same mechanism the classes needed and don't
+have... If it does, build it once properly, because eight more races are queued
+behind this."*
+
+**What Zangband does.** `player_flags()` in `files.c` is one long switch, and
+most races appear in it more than once — a Draconian resists fire above level 4
+and cold above 9 and acid above 14, a Mindflayer sees the invisible at 15 and
+reads minds at 30, a Golem holds its life at 35. Twelve of the twenty-one races
+gate something. 4.2 has no equivalent: `struct player_race` carries one set of
+flags and one `el_info`, both applied at birth, and the import silently
+flattened every threshold to *never*.
+
+**The mechanism.** `struct player_race_gain` — a level, a flag set, an
+`el_info` — as a list on the race, parsed from three new directives:
+
+```
+gain-at:15
+gain-obj-flags:SEE_INVIS
+gain-values:RES_FIRE[1]
+```
+
+Applied in the two places 4.2 already assembles a character's properties:
+`player_flags()` beside `PF_BRAVERY_30`, which is 4.2's own single hard-coded
+threshold, and `calc_bonuses()` after the innate `el_info` loop. A gained
+property is then indistinguishable from an innate one — which is the point, and
+is what makes the eight queued races a data change rather than a code change.
+
+**Two things that could not be data.** A Golem's armour is `20 + lev / 5`
+(`xtra1.c:2670`), which is the largest single omission of the nine imported
+races — thirty points at level 50 — and it is granted in `calc_bonuses()`, not
+in `player_flags()`, which is exactly why the import missed it. A Vampire
+carries `TR_LITE`, its own dim glow (`files.c:1469`), on the one race that
+light hurts. Neither is a flag or a resist, so each is a field on the race:
+`armour` with `armour_scale` (the shape the mutations already use for their
+saving throws), and `light`. Both are still declared in data.
+
+**What this does not cover.** Classes gate things too, and this mechanism is
+not wired to them. That is deliberate: no class currently needs it, and a
+second consumer should be added when there is a second consumer.

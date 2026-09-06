@@ -627,6 +627,7 @@ static void update_scent(void)
  */
 void process_world(struct chunk *c)
 {
+	bool burning = false;	/* Standing in sunlight this turn (PLR-01) */
 	int i, y, x;
 
 	/* ZangbandTK: the town gates swing shut behind whoever went through. */
@@ -700,6 +701,32 @@ void process_world(struct chunk *c)
 	if (player->timed[TMD_POISONED]) {
 		take_hit(player, player_apply_damage_reduction(player, 1),
 			"poison");
+		if (player->is_dead) {
+			return;
+		}
+	}
+
+	/*
+	 * Take damage from sunlight (PLR-01).
+	 *
+	 * Zangband burns anything with `TR_HURT_LITE` that stands on a lit grid
+	 * in town by day ([dungeon.c:1014](../archive/zangband/src/dungeon.c#L1014)):
+	 * one point a turn, and no regeneration while it lasts.  4.2 has no such
+	 * object flag and carries light vulnerability in `el_info` instead, so
+	 * that is what this reads -- which keeps Zangband's real behaviour of
+	 * burning whoever holds the vulnerability, not whoever is a Vampire.
+	 *
+	 * The archive also scorches an undead character for wielding one of the
+	 * holy lights of Galadriel or Elendil.  Those artefacts are not imported
+	 * yet, so that half waits for the artefact pass.
+	 */
+	if (player->state.el_info[ELEM_LIGHT].res_level < 0 && !player->depth
+			&& is_daytime() && !player->timed[TMD_INVULN]
+			&& square_isglow(c, player->grid)) {
+		msg("The sun's rays scorch your flesh!");
+		take_hit(player, player_apply_damage_reduction(player, 1),
+			"sunlight");
+		burning = true;
 		if (player->is_dead) {
 			return;
 		}
@@ -826,8 +853,8 @@ void process_world(struct chunk *c)
 		}
 	}
 
-	/* Regenerate Hit Points if needed */
-	if (player->chp < player->mhp)
+	/* Regenerate Hit Points if needed -- but not while the sun is on you */
+	if (player->chp < player->mhp && !burning)
 		player_regen_hp(player);
 
 	/* Regenerate or lose mana */

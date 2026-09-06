@@ -363,7 +363,38 @@ struct player_race {
 
 	struct element_info el_info[ELEM_MAX]; /**< Resists */
 
+	int light;					/**< Light radius the race carries (PLR-01) */
+	int armour;					/**< Innate armour class (PLR-01) */
+	int armour_scale;			/**< ...plus level divided by this */
+
+	struct player_race_gain *gains;	/**< What it grows into (PLR-01) */
+
 	struct player_power *powers;	/**< What the race can do (PLR-02) */
+};
+
+/**
+ * Something a race gains on reaching a level (PLR-01, PLR-02).
+ *
+ * Zangband hands out most racial properties on a level threshold rather than
+ * at birth: a Draconian resists fire at 5, cold at 10, acid at 15, lightning
+ * at 20 and poison at 35, and a Mindflayer sees the invisible at 15 and reads
+ * minds at 30 (`player_flags()`,
+ * [files.c:1408](../archive/zangband/src/files.c#L1408)).
+ *
+ * 4.2 has one such case, hardcoded -- `PF_BRAVERY_30` -- and no way to say it
+ * in data, so the nine imported races were given their properties at birth or
+ * not at all. Both are wrong: granted early they are a free head start,
+ * omitted they are simply missing, and four of the nine were missing several.
+ *
+ * One list per race, applied where the birth-time flags and resists already
+ * are, so a gained property behaves exactly like an innate one from the moment
+ * it arrives.
+ */
+struct player_race_gain {
+	int level;						/**< From this character level */
+	bitflag flags[OF_SIZE];			/**< Object flags gained */
+	struct element_info el_info[ELEM_MAX];	/**< Resists gained */
+	struct player_race_gain *next;
 };
 
 /**

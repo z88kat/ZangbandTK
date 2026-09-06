@@ -240,6 +240,7 @@ static int test_iron_skin_sheds_all_three(void *state) {
  * a Vampire should draw it more than half the time.
  */
 static int test_a_race_affinity_beats_the_roll(void *state) {
+	const struct player_race *keep = player->race;
 	struct player_race *r;
 	int i, gazes = 0;
 
@@ -260,6 +261,7 @@ static int test_a_race_affinity_beats_the_roll(void *state) {
 	require(gazes > 500);
 	require(gazes < 800);
 
+	player->race = (struct player_race *)keep;
 	ok;
 }
 
@@ -1267,6 +1269,20 @@ static int test_a_beak_wastes_most_of_a_meal(void *state) {
 	struct object *drink = object_new();
 	int fed, wasted;
 
+	struct player_race *r;
+
+	/*
+	 * A race that eats normally, said out loud.
+	 *
+	 * This used to inherit whatever the suite had left behind, and the test
+	 * above leaves a Vampire -- who has a nourishment rule of its own that
+	 * takes precedence (PLR-01), so the beak was being measured on the one
+	 * race where the beak is not what decides the answer.
+	 */
+	for (r = races; r; r = r->next)
+		if (streq(r->name, "Human")) player->race = r;
+	require(streq(player->race->name, "Human"));
+
 	notnull(beak);
 	require(of_has(beak->flags, OF_CANT_EAT));
 
@@ -1304,6 +1320,29 @@ static int test_a_beak_wastes_most_of_a_meal(void *state) {
 	/* A twentieth, and emphatically not the whole. */
 	eq(wasted, fed / 20);
 	require(wasted < fed);
+
+	/*
+	 * And a Vampire with a beak still gets a tenth, not a twentieth.
+	 *
+	 * Zangband tests the race before the flag
+	 * ([cmd6.c:99](../archive/zangband/src/cmd6.c#L99)), so the two rules do
+	 * not stack -- the better of the two wins. Worth pinning because the whole
+	 * difference is which branch is written first, and nothing else would
+	 * notice if they were swapped.
+	 */
+	for (r = races; r; r = r->next)
+		if (streq(r->name, "Vampire")) player->race = r;
+	calc_bonuses(player, &player->state, false, true);
+	require(player_has(player, PF_BLOOD_DIET));
+	require(of_has(player->state.flags, OF_CANT_EAT));
+
+	player_set_timed(player, TMD_FOOD, 100, false, false);
+	require(nourish(obj, 50));
+	eq(player->timed[TMD_FOOD] - 100, fed / 10);
+
+	for (r = races; r; r = r->next)
+		if (streq(r->name, "Human")) player->race = r;
+	calc_bonuses(player, &player->state, false, true);
 
 	/*
 	 * And a potion is untouched, still wearing the beak.

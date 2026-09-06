@@ -329,6 +329,22 @@ void player_flags(struct player *p, bitflag f[OF_SIZE])
 	if (player_has(p, PF_BRAVERY_30) && p->lev >= 30) {
 		of_on(f, OF_PROT_FEAR);
 	}
+
+	/*
+	 * And what the race has grown into (PLR-01).
+	 *
+	 * Zangband grants most racial properties on a level threshold rather than
+	 * at birth -- a Mindflayer sees the invisible at 15 and reads minds at 30.
+	 * Applied here, beside the flags the race was born with, so a gained
+	 * property is indistinguishable from an innate one once it arrives.
+	 */
+	if (p->race) {
+		const struct player_race_gain *g;
+
+		for (g = p->race->gains; g; g = g->next)
+			if (p->lev >= g->level)
+				of_union(f, g->flags);
+	}
 }
 
 

@@ -3,6 +3,9 @@ TESTPROGS += player/birth \
              player/combine-pack \
              player/digging \
              player/history \
+             player/kit \
+             player/race \
+             player/realm \
              player/mutation \
              player/miscast \
              player/inven-carry-num \
