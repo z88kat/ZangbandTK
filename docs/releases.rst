@@ -48,6 +48,39 @@ Unreleased
 Gervais' unexplored squares go black too — 5 September 2026
 --------------------------------------------------------------
 
+- **3.107.0** — **Angband's six classes now pay for themselves too, and the
+  High-Mage gets its mana.** Five classes carried Zangband's experience factor
+  and six carried none, and the split fell along the line of which game a class
+  was imported from rather than what the class can do (DEC-71).
+
+  The conversion was never wrong — BAL-04 and DEC-36 both say 4.2's classes keep
+  4.2's conventions — but the result was a game where the Paladin and the
+  Chaos-Warrior, same hit die and same shape and priced identically by Zangband,
+  sat at 100% and 135%. Priest 120, Rogue 125, Mage 130, Ranger 130, Paladin
+  135, and the Warrior stays free, which is Zangband's own arrangement: ten of
+  its eleven classes pay.
+
+  Worth knowing, because it is the opposite of the natural assumption: Zangband
+  does *not* charge casters more. Its pure casters are the cheapest after the
+  Warrior and its **hybrids** pay most — Warrior-Mage 150, Monk 140. You pay for
+  having both halves; a pure Mage is already priced in fragility at hit die 0.
+
+  **The High-Mage's 25% mana bonus is built**, and it stopped being optional the
+  moment the prices equalised. Recorded as a known gap since DEC-55, it is the
+  whole of what the class is: without it a level 20 High-Mage holds 27 mana
+  against a Mage's 29, with one more point of intelligence, two fewer of
+  strength and a worse melee skill. With it, 33. It is a class flag rather than
+  a hardcoded class name, so the next class wanting it says so in its own file.
+
+  Costs a Human Mage 91 experience to reach level 5 instead of 70, and 5,720
+  instead of 4,400 for level 20 — little in the first hour, and telling from the
+  mid-game on.
+
+  Races were checked at the same time and do **not** have this fault: the two
+  groups interleave rather than partitioning, with the imported Yeek the
+  cheapest race in the game alongside Human and the imported Beastman at 140
+  beside Angband's High-Elf at 145.
+
 - **3.106.0** — **Every caster begins with a spellbook again.** Six classes
   started the game unable to cast: the Mage and the Priest lost theirs to the
   realm renames — ``d1eadd951`` and ``0847955a7`` each fixed one class's book

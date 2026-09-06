@@ -2994,6 +2994,82 @@ development plan.
 
 ---
 
+**DEC-71 — Angband's six classes come onto Zangband's experience convention,
+and the High-Mage gets its mana bonus.**
+
+The project owner, on being shown that five classes paid for their power and
+six did not: *"On the face of things I would say we need to rebalance the
+original angband races to match that of zangband otherwise we have an
+incoherent system"* — races clarified to classes immediately after.
+
+**What was wrong.** Not the conversion. BAL-04 and DEC-36 both say 4.2's
+classes keep 4.2's conventions and imported classes bring their own, and that
+is exactly what the data did. What it produced was a split that falls along the
+line of *which game a class came from* rather than what a class can do:
+
+| | Zangband | before | after |
+|---|---:|---:|---:|
+| Warrior | 100% | 100% | 100% |
+| Priest | 120% | 100% | 120% |
+| Rogue | 125% | 100% | 125% |
+| Mindcrafter | 125% | 125% | 125% |
+| Mage | 130% | 100% | 130% |
+| Ranger | 130% | 100% | 130% |
+| High-Mage | 130% | 130% | 130% |
+| Paladin | 135% | 100% | 135% |
+| Chaos-Warrior | 135% | 135% | 135% |
+| Monk | 140% | 140% | 140% |
+| Warrior-Mage | 150% | 150% | 150% |
+
+Ten of Zangband's eleven pay; only the Warrior is free. Before this, six paid
+nothing at all. The Paladin and the Chaos-Warrior have the same hit die and the
+same shape and Zangband prices both at 135; they sat at 100 and 135. The Mage
+and the High-Mage are near-twins in the archive and sat at 100 and 130.
+
+**Why the experience factor alone.** It is the only lever with a clean
+partition. Race and class hit dice already agree with Zangband — nine of eleven
+classes exactly, eighteen of nineteen races — so nothing was offsetting the
+missing price. Taking Zangband's *stats and skills* for the six as well would
+mean re-deriving DEC-36's conversion factors, and those six classes are the
+calibration set those factors were measured from: the change would invalidate
+the conversion of the five imported classes. Circular, and much larger than the
+problem.
+
+**Zangband's ordering is not "casters pay more".** Worth recording because it
+is the natural assumption and it is wrong. The pure casters are among the
+cheapest — Priest 120, Mindcrafter 125, Mage 130 — and the hybrids pay most:
+Warrior-Mage 150, Monk 140, Paladin 135, Chaos-Warrior 135. You pay for having
+both halves. A pure Mage is already priced in fragility, at hit die 0 and
+strength −5.
+
+**The High-Mage's mana bonus is part of this and no longer an optional gap.**
+DEC-55 recorded `msp += msp / 4` (`xtra1.c:1768`) as known and unbuilt.
+Equalising the price at 130% removes the penalty but leaves the High-Mage with
+one more point of intelligence, two fewer of strength and a worse melee skill
+than the Mage — measured, a level 20 High-Mage holds 27 mana against the Mage's
+29 without the bonus, and 33 with it. Without it the class is a worse Mage;
+with it, it is the class its name describes. Built as `PF_EXTRA_MANA` rather
+than a hardcoded class name, so the next class wanting it says so in its own
+file the way `ZERO_FAIL` and `BEAM` do.
+
+**What this costs a player.** A Human Mage needs 91 experience to reach level 5
+instead of 70, 494 instead of 380 for level 10, 5,720 instead of 4,400 for
+level 20. Nothing much in the first hour; it tells from the mid-game on, and
+the Warrior becomes the clearly fastest-levelling class, which is Zangband's
+design.
+
+**Not changed: races.** Checked at the same time and they do not have this
+fault. The imported nine carry Zangband's figures and the shared eleven carry
+4.2's, but the shared races sit at 100–145 rather than flat at 100, the
+divergence from Zangband is small and mixed in direction, and the two groups
+interleave — Yeek (imported) is the cheapest race in the game alongside Human,
+and Beastman at 140 sits beside High-Elf at 145. Price tracks capability. The
+one oddity is Angband's own: Dunadan at 120% with the same stat line as the
+225% Amberite.
+
+---
+
+
 **DEC-66 — The borg is revived as test infrastructure, and it is changed
 through data wherever data will do.** (3 September 2026. Applies DEC-11.
 Discharges the PLR-22 standing constraint.)

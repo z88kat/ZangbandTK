@@ -5337,49 +5337,18 @@ static int test_the_monk_keeps_zangbands_numbers(void *state) {
 
 	/*
 	 * The experience factor is the one that carries weight.  4.2 leaves it at
-	 * zero for all nine of its classes; Zangband ran 0 to 40 and used it as
-	 * the balance dial.  Keeping Zangband's is the same call PLR-01 made for
-	 * races, and it is what makes a Monk slow to level.
+	 * zero for all nine of its classes; Zangband ran 0 to 50 and used it as
+	 * the balance dial.  The Monk's 40 is Zangband's.
+	 *
+	 * The rule this used to assert alongside it -- that Angband's classes are
+	 * free and imported ones cost -- was reversed by DEC-71 and has moved to
+	 * `player/realm`'s `every-class-charges-zangbands-price`, which names all
+	 * eleven figures instead of the shape of two groups.  That split fell
+	 * along the line of which game a class came from rather than what it can
+	 * do, and this test asserting it was part of what made it look settled.
 	 */
 	eq(monk->c_exp, 40);
 
-	{
-		/*
-		 * The rule rather than the count, so this does not need editing every
-		 * time a class lands: all nine of Angband's own classes are free, and
-		 * every class brought over from Zangband costs, which is the whole
-		 * point of keeping a field 4.2 leaves at zero.
-		 */
-		static const char *angbands[] = {
-			"Warrior", "Mage", "Druid", "Priest", "Necromancer",
-			"Paladin", "Rogue", "Ranger", "Blackguard"
-		};
-		struct player_class *other;
-		int ported = 0;
-
-		for (other = classes; other; other = other->next) {
-			size_t k;
-			bool inherited = false;
-
-			for (k = 0; k < N_ELEMENTS(angbands); k++)
-				if (streq(other->name, angbands[k])) inherited = true;
-
-			if (inherited) {
-				if (other->c_exp != 0)
-					printf("%s should be free, costs %d\n", other->name,
-						   other->c_exp);
-				eq(other->c_exp, 0);
-			} else {
-				if (other->c_exp <= 0)
-					printf("%s is ported and should cost\n", other->name);
-				require(other->c_exp > 0);
-				ported++;
-			}
-		}
-
-		/* And there is at least one of ours, or the rule proves nothing. */
-		require(ported > 0);
-	}
 
 	ok;
 }

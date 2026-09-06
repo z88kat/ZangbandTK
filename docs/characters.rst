@@ -153,10 +153,25 @@ They are replaced by Swayvill the King of Chaos, Suhuy who keeps the Logrus,
 Mandor, Dara, Gramble, Jurt, Despil, Borel and Gilva. Four of them are already
 walking around in the bestiary, so you can be gifted by a Lord you later meet.
 
+What every class costs
+----------------------
+
+Some classes learn more slowly than others, and in this game that is a real
+price rather than a formality. A Warrior needs the least experience of anyone
+to reach a level; a Warrior-Mage needs half again as much.
+
+The arrangement is Zangband's and it is not the one most people expect. It is
+not that casters are expensive — the pure casters are among the *cheapest*
+after the Warrior, because a Mage is already paying in hit points and strength.
+What costs is having **two things at once**. The Warrior-Mage fights and casts,
+and pays 150 per cent. The Monk fights unarmed and casts, and pays 140. The
+Paladin and the Chaos-Warrior pay 135. The Priest, who only prays, pays 120.
+
+Ten of the eleven classes Zangband has pay something. Only the Warrior is free,
+and that is the whole of what a Warrior gets for having no magic at all.
+
 Still to come
 -------------
 
-Two of Zangband's classes are not in yet: the Warrior-Mage and the High-Mage,
-both defined by which realms they may choose, so both waiting on :doc:`realms`.
-Eight more races are waiting too, four of them undead, which want one mechanism
+Eight more races are waiting, four of them undead, which want one mechanism
 between them and should arrive together.

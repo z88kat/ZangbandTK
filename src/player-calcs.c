@@ -1569,6 +1569,24 @@ static void calc_mana(struct player *p, struct player_state *state, bool update)
 	}
 
 	/*
+	 * A quarter again, for a class built around having it (PLR-03).
+	 *
+	 * Zangband gives the High-Mage a flat 25% at
+	 * [xtra1.c:1768](../archive/zangband/src/xtra1.c#L1768), applied to the
+	 * class-and-stat total after the armour penalty, which is where this sits.
+	 *
+	 * It is the class's whole identity and it was missing for eleven releases.
+	 * Without it a High-Mage is a Mage with one more point of intelligence,
+	 * two fewer of strength and a worse melee skill -- strictly the poorer
+	 * choice, for a class whose name says otherwise. DEC-55 recorded the gap
+	 * and called it code rather than data; it is a flag rather than a
+	 * hardcoded class name so that the next class wanting it says so in its
+	 * own file, the way `ZERO_FAIL` and `BEAM` do.
+	 */
+	if (msp > 0 && pf_has(state->pflags, PF_EXTRA_MANA))
+		msp += msp / 4;
+
+	/*
 	 * And the bonus mana, after the encumbrance penalty and not subject to it
 	 * ([xtra1.c:1868](../archive/zangband/src/xtra1.c#L1868), whose comment
 	 * says so in as many words).

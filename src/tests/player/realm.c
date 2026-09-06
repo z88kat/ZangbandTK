@@ -1835,6 +1835,112 @@ static int test_every_class_agrees_with_its_own_books(void *state) {
 	ok;
 }
 
+/**
+ * The High-Mage holds a quarter again as much magic (PLR-03).
+ *
+ * Zangband's `msp += msp / 4` at
+ * [xtra1.c:1768](../archive/zangband/src/xtra1.c#L1768). It is the whole of
+ * what makes the class worth choosing: strip it and a High-Mage is a Mage with
+ * one more point of intelligence, two fewer of strength and a worse melee
+ * skill, which is a worse Mage rather than a different one.
+ *
+ * Measured against the same character with the flag taken away rather than
+ * against the Mage, because the two classes differ in stats as well and a
+ * comparison between them would be measuring both things at once.
+ */
+static int test_a_high_mage_holds_more_magic(void *state) {
+	struct player_class *hm = (struct player_class *) find_class("High-Mage");
+	int with, without;
+
+	notnull(hm);
+	require(player_make_simple(NULL, "High-Mage", "Tester"));
+
+	/* A level worth having mana at */
+	while (player->lev < 20)
+		player_exp_gain(player, player_exp[player->lev - 1] + 1);
+
+	require(pf_has(hm->pflags, PF_EXTRA_MANA));
+
+	calc_bonuses(player, &player->state, false, true);
+	with = player->msp;
+	require(with > 0);
+
+	pf_off(hm->pflags, PF_EXTRA_MANA);
+	calc_bonuses(player, &player->state, false, true);
+	without = player->msp;
+
+	pf_on(hm->pflags, PF_EXTRA_MANA);
+	calc_bonuses(player, &player->state, false, true);
+
+	/* A quarter more, give or take the integer division */
+	if (with != without + without / 4) {
+		printf("  High-Mage has %d mana, %d without the flag "
+			   "(expected %d)\n", with, without, without + without / 4);
+		eq(with, without + without / 4);
+	}
+
+	ok;
+}
+
+/**
+ * Every class Zangband has charges Zangband's price for itself (BAL-04, DEC-71).
+ *
+ * The experience factor is Zangband's balance dial: 4.2 leaves it at zero for
+ * all nine of its own classes and Zangband ran it from 0 to 50, spending it on
+ * the classes that get two things at once. Ten of its eleven pay; only the
+ * Warrior is free.
+ *
+ * For a long time this game charged five classes and not the other six, and
+ * the split fell along the line of which game a class was imported from rather
+ * than what the class can do. Two that Zangband priced identically -- the
+ * Paladin and the Chaos-Warrior, same hit die, same shape -- sat at 100% and
+ * 135%, and the Mage and the High-Mage, near-twins in the archive, at 100% and
+ * 130%.
+ *
+ * The numbers are written out rather than derived, because the point of the
+ * table is that somebody checked each one against `class_info[]` and it should
+ * fail if a later change drifts from that.
+ */
+static int test_every_class_charges_zangbands_price(void *state) {
+	static const struct { const char *name; int exp; } price[] = {
+		{ "Warrior",        0 },
+		{ "Priest",        20 },
+		{ "Rogue",         25 },
+		{ "Mindcrafter",   25 },
+		{ "Mage",          30 },
+		{ "Ranger",        30 },
+		{ "High-Mage",     30 },
+		{ "Paladin",       35 },
+		{ "Chaos-Warrior", 35 },
+		{ "Monk",          40 },
+		{ "Warrior-Mage",  50 },
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(price); i++) {
+		const struct player_class *c = find_class(price[i].name);
+
+		notnull(c);
+
+		if (c->c_exp != price[i].exp) {
+			printf("  %s costs %d%%, Zangband charges %d%%\n",
+				   price[i].name, 100 + c->c_exp, 100 + price[i].exp);
+			eq(c->c_exp, price[i].exp);
+		}
+	}
+
+	/*
+	 * And Angband's three keep Angband's convention, which is the other half
+	 * of the rule: a class this game did not import from Zangband has no
+	 * Zangband price to carry.
+	 */
+	eq(find_class("Druid")->c_exp, 0);
+	eq(find_class("Necromancer")->c_exp, 0);
+	eq(find_class("Blackguard")->c_exp, 0);
+
+	ok;
+}
+
 const char *suite_name = "player/realm";
 struct test tests[] = {
 	{ "seven-realms-exist", test_seven_realms_exist },
@@ -1878,5 +1984,9 @@ struct test tests[] = {
 	  test_the_realm_filter_sorts_three_realms },
 	{ "trump-summons-serve-you", test_trump_summons_serve_you },
 	{ "trumps-deferrals-are-the-five", test_trumps_deferrals_are_the_five },
+	{ "every-class-charges-zangbands-price",
+	  test_every_class_charges_zangbands_price },
+	{ "a-high-mage-holds-more-magic",
+	  test_a_high_mage_holds_more_magic },
 	{ NULL, NULL }
 };

@@ -311,6 +311,12 @@ desc: its own right.  Carry too much armour and the balance goes: your blows
 desc: halve and the bonuses stop.
 
 type:player
+code:EXTRA_MANA
+name:Deep Reserves
+desc:Your study has been narrow and total, and you hold a quarter again as
+desc: much magic as anyone else of your learning.
+type:player
+
 code:CHAOS_PATRON
 name:Sworn to Chaos
 desc:You belong to one of the Lords of the Courts of Chaos.  You did not
