@@ -33,8 +33,8 @@ that did not make it.
        poison at 35.
    * - **Vampire**
      - Drinks blood to heal, from level 5 — the earliest power in the game.
-       Immune to darkness, and burnt by the sun: stand on a lit street at
-       noon and you take a point a turn and cannot heal. Food is nearly
+       Immune to darkness, and burnt by the sun: anywhere on the surface in
+       daylight you take a point a turn and cannot heal. Food is nearly
        useless to it, at a tenth of the good it does anyone else, and it
        begins the game just after midnight.
    * - **Mindflayer**
@@ -43,8 +43,8 @@ that did not make it.
    * - **Golem**
      - Made, not born. Very strong, very stupid, and can turn its skin to
        stone. Twenty points of armour before it wears anything at all, and a
-       point more every fifth level; immune to poison, needs no food and
-       cannot eat.
+       point more every fifth level; immune to poison, and gets almost nothing
+       out of food.
    * - **Sprite**
      - Flies. Fragile, quick, and puts things to sleep.
    * - **Half-Titan**

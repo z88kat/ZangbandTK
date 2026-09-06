@@ -48,6 +48,37 @@ Unreleased
 The four half-imported races are finished — 6 September 2026
 ----------------------------------------------------------------
 
+- **3.110.1** — **The manual now describes the four races that were just
+  finished.** Worth saying what this was *not*: the pattern elsewhere has been
+  documentation describing intended behaviour rather than built behaviour — the
+  Monk's page promised armour class the class did not grant. That is not what
+  happened here. The manual was accurate to what was built every time. A
+  Draconian really did resist fire, a Golem really did hold its life, a Vampire
+  really did digest slowly. The build was wrong and the manual faithfully
+  described the wrong build, which is the harder failure to notice, because
+  nothing disagrees with anything.
+
+  The four descriptions in :doc:`birth` are rewritten around what the races now
+  do, and the level thresholds are stated in the text — a short note before the
+  list explains the convention, since half of Zangband's races are shaped by
+  it and Angband has almost nothing of the kind.
+
+  The Vampire's entry is the one that mattered most: it is a race a player picks
+  for the flavour, and the flavour is now mechanical. Sunlight, the tenth of a
+  meal, and the midnight start are all things you would otherwise discover by
+  dying at dawn. Writing it up turned up a claim worth checking rather than
+  reasoning about — dawn calls ``cave_illuminate()`` over the whole surface,
+  wilderness included, so a Vampire burns anywhere outdoors and not only on a
+  town street. There is now a test for that, run with and without the grid lit
+  by hand.
+
+  Three overstatements caught in review before they landed: a Golem *can* eat,
+  it just gets a twentieth of the good out of it (``cmd6.c:135``); the Vampire's
+  infravision ties with the Dwarf and the Kobold rather than leading; and the
+  Amberite was described as the second dearest race when at 225 per cent it is
+  the third, behind the Half-Titan and the Draconian. That last one predates
+  this work.
+
 - **3.110.0** — **A race can now grow into what it is.** Zangband grants most
   racial properties on a level threshold rather than at birth, and 4.2 has
   nowhere to put one: ``struct player_race`` carries a single set of flags,

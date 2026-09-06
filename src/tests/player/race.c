@@ -116,7 +116,7 @@ static int fed_as(const char *name) {
  * Stand this race on a lit grid at this depth, run one game turn, and report
  * the hit points lost.
  */
-static int burned(const char *name, int depth, bool day) {
+static int burned_lit(const char *name, int depth, bool day, bool force_glow) {
 	int before;
 
 	if (!player_make_simple(name, NULL, "Tester")) return -1;
@@ -127,13 +127,18 @@ static int burned(const char *name, int depth, bool day) {
 
 	player->depth = depth;
 	prepare_next_level(player);
-	sqinfo_on(square(cave, player->grid)->info, SQUARE_GLOW);
+	if (force_glow)
+		sqinfo_on(square(cave, player->grid)->info, SQUARE_GLOW);
 
 	player->chp = player->mhp;
 	before = player->chp;
 	process_world(cave);
 
 	return before - player->chp;
+}
+
+static int burned(const char *name, int depth, bool day) {
+	return burned_lit(name, depth, day, true);
 }
 
 /*
@@ -319,15 +324,26 @@ static int test_a_vampire_gets_little_from_food(void *state) {
  * ([dungeon.c:1014](../archive/zangband/src/dungeon.c#L1014)): a point a turn
  * on a lit town grid by day, and no regeneration while it lasts.
  *
- * Run four ways -- Vampire by day, Vampire by night, Vampire underground,
- * Human by day -- because a burn that fires everywhere is as wrong as one that
- * never fires, and only the first of those four should hurt.
+ * Run six ways -- Vampire by day, by night and underground, a Human by day, and
+ * the first two again without lighting the grid by hand -- because a burn that
+ * fires everywhere is as wrong as one that never fires, and only daylight on
+ * the surface should hurt.
  */
-static int test_the_sun_burns_a_vampire_in_town(void *state) {
+static int test_the_sun_burns_a_vampire_outdoors(void *state) {
 	require(burned("Vampire", 0, true) == 1);
 	require(burned("Vampire", 0, false) == 0);	/* night */
 	require(burned("Vampire", 1, true) == 0);	/* underground */
 	require(burned("Human", 0, true) == 0);		/* not vulnerable */
+
+	/*
+	 * And without anybody lighting the grid by hand. Dawn calls
+	 * `cave_illuminate()` over the whole surface, wilderness included
+	 * (`game-world.c:670`), so a Vampire outdoors by day is burning wherever it
+	 * stands -- not only on a town street. The manual says so, so it is
+	 * checked rather than reasoned about.
+	 */
+	require(burned_lit("Vampire", 0, true, false) == 1);
+	require(burned_lit("Vampire", 0, false, false) == 0);
 	ok;
 }
 
@@ -360,8 +376,8 @@ struct test tests[] = {
 			test_every_level_gate_actually_opens },
 	{ "a-vampire-gets-little-from-food",
 			test_a_vampire_gets_little_from_food },
-	{ "the-sun-burns-a-vampire-in-town",
-			test_the_sun_burns_a_vampire_in_town },
+	{ "the-sun-burns-a-vampire-outdoors",
+			test_the_sun_burns_a_vampire_outdoors },
 	{ "the-undead-wake-in-the-dark",
 			test_the_undead_wake_in_the_dark },
 	{ NULL, NULL }

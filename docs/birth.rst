@@ -273,13 +273,20 @@ Kobold
 
 The races below are Zangband's, and are new to ZangbandTK.
 
+Several of them **grow into what they are** rather than arriving finished. Where
+a description gives a level — "resists fire from 5", "reads minds at 30" — the
+property is simply absent before it and permanent after. Angband has almost
+nothing of this; in Zangband it is how half the races are shaped, and it is
+worth reading as part of the race rather than as a footnote, because it changes
+which levels are dangerous for you.
+
 .. _Amberite:
 
 Amberite
   Of Amber's own blood, and it shows: an Amberite is better than a human at
   very nearly everything, heals unnaturally fast, and cannot have its
   constitution drained. All of which is paid for at the counter — an Amberite
-  costs 225 experience for every level, the second dearest thing you can be.
+  costs 225 experience for every level, the third dearest thing you can be.
 
 .. _Beastman:
 
@@ -300,33 +307,78 @@ Yeek
 
 Draconian
   Winged, and descended from something that mattered. Strong, hardy, quick and
-  clever, it glides rather than falls and resists fire. It breathes from level
-  15 — fire, and only fire. In Zangband the breath changed every five levels;
-  here it does not, which is the one thing about the race still to be built.
+  clever, and it glides rather than falls from the moment it is born.
+
+  Everything else arrives with age, one scale at a time: fire at level 5, cold
+  at 10, acid at 15, lightning at 20, and poison at 35. A first-level Draconian
+  is therefore a well-built creature with no protection at all, and a
+  thirty-fifth-level one resists nearly everything the dungeon throws. It is the
+  slowest-ripening race in the game, and at 250 experience for every level it is
+  also the second dearest.
+
+  It breathes from level 15 — fire, and only fire. In Zangband the breath
+  changed every five levels; here it does not, which is the one thing about the
+  race still to be built.
 
 .. _Mindflayer:
 
 Mindflayer
-  All mind and no body: brilliant and wise, physically wretched, with excellent
-  infravision and the sight to see what is invisible. Zangband granted it no
-  resistances at all, because its entire identity is psionic: it blasts minds
-  from level 15, and a Mindflayer Mindcrafter is the pairing the race was drawn
-  for.
+  All mind and no body: brilliant and wise, physically wretched, and with
+  excellent infravision. Its intelligence and wisdom cannot be drained — those
+  two it protects from birth, because they are the only things it has.
+
+  The rest of the mind opens later. It sees what is invisible from level 15, and
+  from 30 it reads the thoughts of everything on the level whether it can see
+  them or not. Zangband granted it no elemental resistance whatsoever, and that
+  is deliberate rather than an oversight: its entire identity is psionic. It
+  blasts minds from level 15, and a Mindflayer Mindcrafter is the pairing the
+  race was drawn for.
 
 .. _Vampire:
 
 Vampire
-  A bargain rather than a gift. Strong and clever, holds its life against
-  draining, resists poison, cold and nether, and is *immune* to darkness — and
-  is hurt by light, which is most of the world, most of the time. Vampires have
-  keen infravision and digest slowly.
+  A bargain rather than a gift, and the one race whose drawbacks you have to
+  play around rather than simply survive. Strong and clever, it holds its life
+  against draining, resists poison, cold and nether, is *immune* to darkness,
+  and carries a faint light of its own — it can see one square without a torch,
+  which no other race can. It sees 50 feet in the dark, as far as anything does.
+
+  What it pays:
+
+  - **The sun burns it.** Anywhere on the surface in daylight — town streets
+    and open wilderness alike, since dawn lights the whole of it — you take a
+    point of damage every turn and cannot heal at all while it lasts. At night,
+    underground, or on a grid the light does not reach, you are fine. This is
+    not a slow drain to be ignored: crossing country by day is a running wound,
+    and travelling at night is the Vampire's version of ordinary caution.
+  - **Food barely works.** A ration feeds a Vampire a tenth of what it feeds
+    anyone else. You are not meant to live on it; you are meant to drink blood,
+    which is the racial power it gets at level 5, the earliest in the game. It
+    strikes a monster for your character level in nether damage and heals you
+    for half that level.
+  - **Light hurts it** in the ordinary way as well: light-based attacks land
+    harder on a Vampire than on anything else.
+
+  Because of the sun, a Vampire **begins the game just after midnight** rather
+  than at dawn. That is not decoration — it is the few hours of darkness you get
+  to reach a shop and a staircase before the problem starts.
 
 .. _Golem:
 
 Golem
-  Not alive. Enormously strong and tough, extremely stupid, immune to poison,
-  never held or paralysed, sees the invisible, barely eats — and is hurt by
-  cold. A blunt instrument that costs 200 to swing.
+  Not alive, and built rather than born. Enormously strong and tough, extremely
+  stupid, immune to poison, never held or paralysed, sees the invisible — and is
+  hurt by cold.
+
+  Its real advantage is that it *is* armour. A Golem has twenty points of armour
+  class wearing nothing at all, and gains another point every fifth level, so a
+  Golem at 50 is thirty points ahead of any other race before it puts on a
+  single item. Nothing else in the game does this, and it is most of the reason
+  to be one.
+
+  Food is nearly useless to it — a twentieth of the good it does anyone else —
+  but it digests so slowly that it rarely needs any. From level 35 it holds its
+  life against draining. A blunt instrument that costs 200 to swing.
 
 .. _Sprite:
 
