@@ -32,6 +32,7 @@
 #include "wild.h"
 
 #include "borg/borg-flow-misc.h"
+#include "borg/borg-magic.h"
 #include "borg/borg-prepared.h"
 #include "borg/borg-trait.h"
 #include "borg/borg.h"
@@ -347,6 +348,60 @@ static int test_each_shortfall_names_its_own_shop(void *state)
 	ok;
 }
 
+/**
+ * An unrecognised spell is not a spell the borg can ask for by name (BRG-28).
+ *
+ * `borg_magic.spell_enum` comes from the borg's rating table, which is keyed by
+ * spell *name*. This game replaced the realms' spell lists with Zangband's
+ * under DEC-50 and the upstream table knows Angband's, so nearly every spell is
+ * unrecognised: 206 of a Mage's 224 carry `BORG_SPELL_UNKNOWN`.
+ *
+ * They therefore all compare equal, and `borg_get_spell_number()` returned the
+ * first of them to any caller asking for any of them. A caller that meant Blink
+ * got Zap. The nightly's one broken run was exactly this: the test-cast path
+ * asked whether *Blink* needed aiming, was told no, and then cast a lightning
+ * bolt, which stopped on an unanswered "Direction?" and failed the run.
+ *
+ * Driven against a hand-built table rather than a real character's, because the
+ * property is about the lookup and not about any class's spell list -- and
+ * because the failing case needs *two* unrecognised spells, which is awkward to
+ * arrange by choosing a class and easy to state directly.
+ */
+static int test_an_unknown_spell_is_not_found_by_name(void *state)
+{
+	borg_magic *fake, *saved = borg_magics;
+	int i, n;
+
+	/*
+	 * A caster, because the lookup is bounded by the character's spell count
+	 * and this suite's Warrior has none -- the loop would not run and the
+	 * test would pass for the wrong reason.
+	 */
+	require(player_make_simple(NULL, "Mage", "Tester"));
+	n = player->class->magic.total_spells;
+	require(n > 3);
+
+	fake = mem_zalloc(n * sizeof(*fake));
+	for (i = 0; i < n; i++) fake[i].spell_enum = BORG_SPELL_UNKNOWN;
+	fake[1].spell_enum = MAGIC_MISSILE;
+
+	borg_magics = fake;
+
+	/*
+	 * The sentinel finds nothing. Before the fix this returned 0 -- the first
+	 * of the two unrecognised spells -- so a caller meaning the third spell
+	 * was handed the first.
+	 */
+	eq(borg_get_spell_number(BORG_SPELL_UNKNOWN), -1);
+
+	/* A spell the table does name is still found, and found correctly */
+	eq(borg_get_spell_number(MAGIC_MISSILE), 1);
+
+	borg_magics = saved;
+	mem_free(fake);
+	ok;
+}
+
 const char *suite_name = "borg/prepared";
 
 struct test tests[] = {
@@ -366,5 +421,7 @@ struct test tests[] = {
 	  test_a_shallow_borg_does_not_want_the_magic_shop },
 	{ "each shortfall names its own shop",
 	  test_each_shortfall_names_its_own_shop },
+	{ "an unknown spell is not found by name",
+	  test_an_unknown_spell_is_not_found_by_name },
 	{ NULL, NULL }
 };

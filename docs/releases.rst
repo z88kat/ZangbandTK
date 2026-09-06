@@ -48,6 +48,29 @@ Unreleased
 Gervais' unexplored squares go black too — 5 September 2026
 --------------------------------------------------------------
 
+- **3.108.1** — **The borg was casting the wrong spell.** A spell's
+  ``spell_enum`` comes from the borg's rating table, which is keyed by name;
+  anything the table does not name gets ``BORG_SPELL_UNKNOWN``. Since DEC-50
+  replaced the realms with Zangband's spell lists and the upstream table knows
+  Angband's, that is **206 of a Mage's 224**. They all compare equal, and
+  ``borg_get_spell_number()`` handed every caller the first of them.
+
+  So a caller meaning Blink got Zap. That is what broke the first nightly's one
+  red run: the test-cast path asked whether *Blink* needed aiming, was told no,
+  and then cast a lightning bolt that stopped on an unanswered "Direction?".
+
+  The lookup refuses the sentinel now, so casting the wrong spell is not
+  reachable, and the path that had a spell in hand casts it by index.
+
+  The effect is larger than the crash. Measured on the nightly's own sweep,
+  twelve runs, before and after: **spells cast 4 → 24**, learned 16 → 30, best
+  character level 8 → 13, broken runs 1 → 0. A granted Mage that used to abort
+  now runs to the time cap with **25 spells learned and 23 cast**, where it
+  previously managed 21 and none.
+
+  This also closes BRG-27, which is why the nightly does not yet run the scoped
+  route — that block is lifted.
+
 - **3.108.0** — **The birth menus fit the screen, and say when they don't.**
   Five races were invisible. ``MENU_ROWS`` was ``TABLE_ROW + 14``, which
   conflates "the last row" with "how many rows" and gives a region running from

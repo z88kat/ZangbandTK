@@ -293,6 +293,13 @@ extern bool borg_is_dungeon_book(int tval, int sval);
 /*
  * Find the magic structure given a book/entry
  */
+/*
+ * Which spell carries this enum, or -1. Exposed so the sentinel's behaviour
+ * can be tested: `BORG_SPELL_UNKNOWN` is shared by every spell the borg's
+ * rating table does not name, and must find none of them.
+ */
+extern int borg_get_spell_number(const enum borg_spells spell);
+
 extern borg_magic *borg_get_spell_entry(int book, int what);
 
 /*

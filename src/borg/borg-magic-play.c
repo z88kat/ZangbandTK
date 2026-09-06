@@ -201,8 +201,11 @@ bool borg_play_magic(bool bored)
         /* Note */
         borg_note("# Testing untried spell/prayer");
 
-        /* Use spell or prayer */
-        if (borg_spell(as->spell_enum)) {
+        /*
+         * By index, not by enum. The spell in hand is this one; asking for it
+         * by `spell_enum` asks for whichever spell shares its sentinel.
+         */
+        if (borg_spell_by_index(spell_num)) {
             /* Allow attack spells */
             /* MEGAHACK -- assume "Random" is shooting.  */
             if (effects[as->effect_index].aim || as->effect_index == EF_RANDOM

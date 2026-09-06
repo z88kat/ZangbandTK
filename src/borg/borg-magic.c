@@ -376,10 +376,33 @@ borg_magic *borg_get_spell_entry(int book, int entry)
 /*
  * Find the spell index for a given spell
  */
-static int borg_get_spell_number(const enum borg_spells spell)
+int borg_get_spell_number(const enum borg_spells spell)
 {
     /* The borg must be able to "cast" spells */
     if (borg_magics == NULL)
+        return -1;
+
+    /*
+     * The sentinel is not a spell, and matching it finds the wrong one
+     * (ZangbandTK).
+     *
+     * `spell_enum` is set from the borg's rating table, which is keyed by
+     * name, so a spell the table does not name gets `BORG_SPELL_UNKNOWN`. In
+     * this game that is nearly all of them: 206 of a Mage's 224, because
+     * DEC-50 replaced the realms' spell lists with Zangband's names and the
+     * upstream table knows Angband's.
+     *
+     * They therefore all compare equal, and this returned whichever came
+     * first. A caller asking to cast Blink got Zap -- the first unrecognised
+     * spell in the list -- which is how the nightly broke: the test-cast path
+     * checked whether *Blink* needed aiming, decided it did not, and then cast
+     * a lightning bolt that stopped dead on "Direction?".
+     *
+     * Refused here rather than at each caller, so that casting the wrong spell
+     * is not reachable at all. A caller that has a spell in hand should use
+     * `borg_spell_by_index()`.
+     */
+    if (spell == BORG_SPELL_UNKNOWN)
         return -1;
 
     int total_spells = player->class->magic.total_spells;

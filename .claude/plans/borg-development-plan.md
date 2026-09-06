@@ -1064,7 +1064,7 @@ Found two crashes doing it, both in `critical_melee()` via
 `player_mutation_blows()`. Covered by `player/mutation`'s
 "a melee mutation completes its blow".
 
-### BRG-27 — the borg casts spells that want a direction (open)
+### BRG-27 — the borg casts spells that want a direction (done, 3.108.1)
 
 With 21 spells rather than 5, the borg reaches utility spells it does not know
 how to target. It sends `m c a` and the game asks "Direction ('*' or <click> to
@@ -1075,4 +1075,29 @@ The attack paths queue a direction (`borg_attack_aux_spell_by_index()` presses
 
     borg-seed 1 / borg-cheat 25 200000 / borg-run 300 / borg-grant 4 / borg-run
 
-This is why the nightly does not use the grant set yet.
+Cause: not the targeting at all. `borg_spell(as->spell_enum)` on a spell the
+borg's rating table does not name asks for `BORG_SPELL_UNKNOWN`, which 206 of a
+Mage's 224 spells share, and `borg_get_spell_number()` returned the first of
+them. The aim check was done on the spell the borg *chose* and the cast was of
+a different spell entirely. Recorded as BRG-28 below.
+
+The grant set is no longer blocked: a granted Mage runs to the time cap with 25
+spells learned and 23 cast.
+
+### BRG-28 — every unrecognised spell was the same spell (done, 3.108.1)
+
+`borg_magic.spell_enum` is filled from the borg's rating table by name, so any
+spell the table does not name carries `BORG_SPELL_UNKNOWN`. This game's spell
+names are Zangband's (DEC-50) and the table is Angband's, so nearly every spell
+is unrecognised and they all compare equal.
+
+`borg_get_spell_number()` now refuses the sentinel, so no caller can be handed
+"the first unrecognised spell" by asking for a different one. Pinned by
+`borg/prepared`'s `an unknown spell is not found by name`, driven against a
+hand-built table because the failure needs the sentinel to appear twice.
+
+Worth noting for later: the borg still cannot *name* 206 of a Mage's spells, so
+every path that works by enum is unavailable for them. The by-index and
+by-effect paths cover attacking; the by-name paths (escape, healing, detection
+by specific spell) only ever see the 18 it recognises. Extending the rating
+table to Zangband's names is a separate and much larger job.
