@@ -583,11 +583,49 @@ bool player_make_simple(const char *nrace, const char *nclass,
  *
  * Having an item identifies it and makes the player "aware" of its purpose.
  */
+/**
+ * Put one starting item in the player's pack, known and paid for.
+ *
+ * Three callers now want this -- the class kit, the race's substitutions and
+ * the realm books -- and it was copied out twice before the third arrived.
+ */
+static void birth_give(struct player *p, struct object_kind *kind, int num)
+{
+	struct object *obj = object_new();
+	struct object *known_obj = object_new();
+
+	object_prep(obj, kind, 0, MINIMISE);
+	obj->number = num;
+	obj->origin = ORIGIN_BIRTH;
+
+	obj->known = known_obj;
+	object_set_base_known(p, obj);
+	object_flavor_aware(p, obj);
+	obj->known->pval = obj->pval;
+	obj->known->effect = obj->effect;
+	obj->known->notice |= OBJ_NOTICE_ASSESSED;
+
+	p->au -= object_value_real(obj, obj->number);
+
+	inven_carry(p, obj, true, false);
+	kind->everseen = true;
+}
+
+/** Does the race take something else in place of this part of the kit? */
+static bool race_displaces_tval(const struct player *p, int tval)
+{
+	const struct player_race_kit *k;
+
+	for (k = p->race ? p->race->kit : NULL; k; k = k->next)
+		if (k->replaces == tval) return true;
+	return false;
+}
+
 static void player_outfit(struct player *p)
 {
 	int i;
 	const struct start_item *si;
-	struct object *obj, *known_obj;
+	const struct player_race_kit *kit;
 
 	/* Currently carrying nothing */
 	p->upkeep->total_weight = 0;
@@ -609,6 +647,9 @@ static void player_outfit(struct player *p)
 		int num = rand_range(si->min, si->max);
 		struct object_kind *kind = lookup_kind(si->tval, si->sval);
 		assert(kind);
+
+		/* What the race packs instead of this (PLR-01) */
+		if (race_displaces_tval(p, si->tval)) continue;
 
 		/* Without start_kit, only start with 1 food and 1 light */
 		if (!OPT(p, birth_start_kit)) {
@@ -638,26 +679,31 @@ static void player_outfit(struct player *p)
 			if (!included) continue;
 		}
 
-		/* Prepare a new item */
-		obj = object_new();
-		object_prep(obj, kind, 0, MINIMISE);
-		obj->number = num;
-		obj->origin = ORIGIN_BIRTH;
+		birth_give(p, kind, num);
+	}
 
-		known_obj = object_new();
-		obj->known = known_obj;
-		object_set_base_known(p, obj);
-		object_flavor_aware(p, obj);
-		obj->known->pval = obj->pval;
-		obj->known->effect = obj->effect;
-		obj->known->notice |= OBJ_NOTICE_ASSESSED;
+	/*
+	 * And what the race packs in place of it (PLR-01).
+	 *
+	 * Granted whether or not the class kit had anything of the displaced kind,
+	 * because Zangband's grant is by race and never looks at the class -- a
+	 * Vampire Necromancer carries no torch to replace and still needs its
+	 * scrolls of Darkness. Held to the same `birth_start_kit` rule as the kit
+	 * it stands in for, so turning the option off still leaves one of each.
+	 */
+	for (kit = p->race ? p->race->kit : NULL; kit; kit = kit->next) {
+		struct object_kind *kind = lookup_kind(kit->tval, kit->sval);
+		int num = rand_range(kit->min, kit->max);
 
-		/* Deduct the cost of the item from starting cash */
-		p->au -= object_value_real(obj, obj->number);
+		if (!kind) continue;
 
-		/* Carry the item */
-		inven_carry(p, obj, true, false);
-		kind->everseen = true;
+		if (!OPT(p, birth_start_kit)) {
+			if (kit->replaces != TV_FOOD && kit->replaces != TV_LIGHT)
+				continue;
+			num = 1;
+		}
+
+		birth_give(p, kind, num);
 	}
 
 	/*
@@ -704,23 +750,7 @@ static void player_outfit(struct player *p)
 			kind = lookup_kind(book->tval, book->sval);
 			if (!kind) break;
 
-			obj = object_new();
-			object_prep(obj, kind, 0, MINIMISE);
-			obj->number = 1;
-			obj->origin = ORIGIN_BIRTH;
-
-			known_obj = object_new();
-			obj->known = known_obj;
-			object_set_base_known(p, obj);
-			object_flavor_aware(p, obj);
-			obj->known->pval = obj->pval;
-			obj->known->effect = obj->effect;
-			obj->known->notice |= OBJ_NOTICE_ASSESSED;
-
-			p->au -= object_value_real(obj, obj->number);
-
-			inven_carry(p, obj, true, false);
-			kind->everseen = true;
+			birth_give(p, kind, 1);
 			break;
 		}
 	}

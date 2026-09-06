@@ -3420,3 +3420,61 @@ saving throws), and `light`. Both are still declared in data.
 **What this does not cover.** Classes gate things too, and this mechanism is
 not wired to them. That is deliberate: no class currently needs it, and a
 second consumer should be added when there is a second consumer.
+
+---
+
+**DEC-73 — A character the light hurts may put out daylight; nobody else may.**
+
+The project owner, on being shown the numbers: *"We should improve this so the
+vampire is more playable. We need the darken ground feature plus the birth
+grant"* — after asking the question that found it, which was simply whether a
+Vampire starts taking damage the moment it steps outdoors.
+
+**The problem was not the damage.** That matches Zangband exactly: one point per
+world tick, both games ticking every ten game turns, both with a ten-thousand
+turn day, and both lighting every wilderness grid unconditionally at dawn. The
+midnight start works and buys 2,499 moves. Resist-light gear cancels the burn in
+both games. None of that needed changing.
+
+**What was missing was the shelter.** Zangband's answer to a Vampire caught out
+at dawn is the two to five scrolls of Darkness it starts with
+(`birth.c:591`, and the comment there is *"Hack -- Give the player scrolls of
+DARKNESS!"*). Its darkening had no guard of any kind (`spells1.c:552`): the
+grid went dark, and a Vampire could sit out the day in a hole of its own making.
+
+4.2 guards it:
+
+```c
+if ((player->depth != 0 || !is_daytime()) && !square_isbright(cave, grid))
+```
+
+which is correct for Angband -- you should not be able to switch the sun off --
+and leaves ZangbandTK's Vampire with no daytime shelter but a staircase. We had
+inherited a rule written for a game with no race that burns.
+
+**The divergence.** The guard now also passes when the *caster* is light
+vulnerable. Not when the player is: when the caster is, so a monster casting
+darkness near a Vampire does not put the daylight out on its behalf. The
+relaxation is a thing the Vampire does.
+
+The archive supports going further — Zangband has no guard at all, for anyone.
+That was rejected as more than is needed: keyed to the caster's own
+vulnerability, every existing character's play is byte-for-byte what it was, and
+the one race that needs shelter can make some. If a second light-vulnerable race
+arrives it inherits this for free.
+
+**Why this is written down.** It is a deliberate departure from stock Angband in
+a file nobody would think to check, and it looks exactly like a bug. Someone
+will find `player_can_darken_daylight()` in `project-feat.c` and restore the
+original condition. The test `a-vampire-can-put-out-the-daylight` will stop
+them; this records why.
+
+**And the kit.** Race starting-kit substitution is new (`equip-instead` in
+`p_race.txt`). Zangband decides food and light by race before it looks at the
+class at all: the six undead-or-built races take Satisfy Hunger scrolls instead
+of rations, and the Vampire takes Darkness instead of torches. Both are
+substitutions, so the directive names the `tval` it displaces; the grant is
+unconditional, because Zangband's never consulted a class kit and a Vampire
+Necromancer -- the one class carrying no light -- must still get its scrolls.
+Of our twenty races only the Vampire and the Golem qualify today; the other four
+of Zangband's six are among the deferred eight and will need one line each.

@@ -34,9 +34,11 @@ that did not make it.
    * - **Vampire**
      - Drinks blood to heal, from level 5 — the earliest power in the game.
        Immune to darkness, and burnt by the sun: anywhere on the surface in
-       daylight you take a point a turn and cannot heal. Food is nearly
-       useless to it, at a tenth of the good it does anyone else, and it
-       begins the game just after midnight.
+       daylight you take a point a turn and cannot heal — so it carries
+       scrolls of Darkness instead of torches, and is the only character who
+       can put out daylight to shelter in it. Food is nearly useless to it, at
+       a tenth of the good it does anyone else, and it begins the game just
+       after midnight.
    * - **Mindflayer**
      - Enormous intelligence and wisdom, a feeble body, and it attacks minds
        directly. Sees the invisible at 15 and reads minds at 30.

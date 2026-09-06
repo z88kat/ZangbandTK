@@ -66,11 +66,36 @@ static void project_feature_handler_LIGHT_WEAK(project_feature_handler_context_t
 }
 
 /* Darken the grid */
+/**
+ * May this source put out daylight? Only a caster the sun is hurting (DEC-73).
+ */
+static bool player_can_darken_daylight(struct source origin)
+{
+	return origin.what == SRC_PLAYER
+		&& player->state.el_info[ELEM_LIGHT].res_level < 0;
+}
+
 static void project_feature_handler_DARK_WEAK(project_feature_handler_context_t *context)
 {
 	const struct loc grid = context->grid;
 
-	if ((player->depth != 0 || !is_daytime()) && !square_isbright(cave, grid)) {
+	/*
+	 * Stock 4.2 refuses to darken the surface in daylight, which is sensible
+	 * in a game where nobody minds the sun. ZangbandTK has a race that does
+	 * (PLR-01, DEC-73): a Vampire burns on any lit outdoor grid by day, and
+	 * Zangband's answer was the two to five scrolls of Darkness it starts
+	 * with -- its darkening had no guard at all
+	 * ([spells1.c:552](../archive/zangband/src/spells1.c#L552)), so a Vampire
+	 * could put out the ground it stood on and wait the day out.
+	 *
+	 * Removing the guard outright is what the archive does and is more than is
+	 * needed. Letting it through only for a caster the light actually hurts
+	 * leaves every other character's play exactly as it was, and gives the one
+	 * race that needs shelter a way to make some.
+	 */
+	if ((player->depth != 0 || !is_daytime()
+			|| player_can_darken_daylight(context->origin))
+			&& !square_isbright(cave, grid)) {
 		/* Turn off the light */
 		sqinfo_off(square(cave, grid)->info, SQUARE_GLOW);
 	}

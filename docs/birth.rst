@@ -348,9 +348,17 @@ Vampire
   - **The sun burns it.** Anywhere on the surface in daylight — town streets
     and open wilderness alike, since dawn lights the whole of it — you take a
     point of damage every turn and cannot heal at all while it lasts. At night,
-    underground, or on a grid the light does not reach, you are fine. This is
-    not a slow drain to be ignored: crossing country by day is a running wound,
-    and travelling at night is the Vampire's version of ordinary caution.
+    underground, or on a grid the light does not reach, you are fine.
+
+    You are given the answer to this in your pack. A Vampire starts with two to
+    five **Scrolls of Darkness** in place of the torches everyone else carries,
+    and reading one puts out the ground around you — daylight included, which
+    is a thing only a character the light hurts can do. The darkness is
+    shelter: stand in it and the burning stops. Being immune to darkness, you
+    are the one character who loses nothing by making some.
+
+    So a Vampire travels by night, goes to ground by day, and spends a scroll
+    when it is caught between the two.
   - **Food barely works.** A ration feeds a Vampire a tenth of what it feeds
     anyone else. You are not meant to live on it; you are meant to drink blood,
     which is the racial power it gets at level 5, the earliest in the game. It
@@ -360,8 +368,10 @@ Vampire
     harder on a Vampire than on anything else.
 
   Because of the sun, a Vampire **begins the game just after midnight** rather
-  than at dawn. That is not decoration — it is the few hours of darkness you get
-  to reach a shop and a staircase before the problem starts.
+  than at dawn — roughly two and a half thousand moves of darkness to reach a
+  shop and a staircase before the problem starts. And because food is nearly
+  useless to it, it carries scrolls of Remove Hunger rather than rations: those
+  work normally, being nothing to do with eating.
 
 .. _Golem:
 
@@ -377,7 +387,8 @@ Golem
   to be one.
 
   Food is nearly useless to it — a twentieth of the good it does anyone else —
-  but it digests so slowly that it rarely needs any. From level 35 it holds its
+  but it digests so slowly that it rarely needs any, and it starts with scrolls
+  of Remove Hunger instead of rations for when it does. From level 35 it holds its
   life against draining. A blunt instrument that costs 200 to swing.
 
 .. _Sprite:

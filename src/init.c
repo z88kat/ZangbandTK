@@ -3730,6 +3730,54 @@ static enum parser_error parse_p_race_armour(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+/**
+ * A race that needs different things in its pack than its class packed (PLR-01).
+ *
+ * Zangband's `player_outfit()` decides food and light by race before it looks
+ * at the class at all: the six undead-or-built races get scrolls of Satisfy
+ * Hunger *instead of* rations ([birth.c:557](../archive/zangband/src/birth.c#L557)),
+ * and a Vampire gets scrolls of Darkness *instead of* torches
+ * ([birth.c:591](../archive/zangband/src/birth.c#L591)) -- it carries its own
+ * light and needs a way to put the sun out, not a way to make more of it.
+ *
+ * Both are substitutions rather than additions, which is why this names the
+ * `tval` it displaces. The grant itself is unconditional: Zangband never
+ * consulted a class kit, so a Vampire Necromancer -- whose class carries no
+ * light at all -- still gets its scrolls.
+ */
+static enum parser_error parse_p_race_equip_instead(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	struct player_race_kit *k;
+	int tval, replaces, sval;
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	replaces = tval_find_idx(parser_getsym(p, "replaces"));
+	if (replaces < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	sval = lookup_sval(tval, parser_getsym(p, "sval"));
+	if (sval < 0)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+	k = mem_zalloc(sizeof *k);
+	k->replaces = replaces;
+	k->tval = tval;
+	k->sval = sval;
+	k->min = parser_getint(p, "min");
+	k->max = parser_getint(p, "max");
+	if (k->min < 0 || k->max < k->min) {
+		mem_free(k);
+		return PARSE_ERROR_INVALID_ITEM_NUMBER;
+	}
+	k->next = r->kit;
+	r->kit = k;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_p_race_gain_at(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	struct player_race_gain *g, *last;
@@ -4453,6 +4501,9 @@ static struct parser *init_parse_p_race(void) {
 	parser_reg(p, "obj-flags ?str flags", parse_p_race_obj_flags);
 	parser_reg(p, "light int light", parse_p_race_light);
 	parser_reg(p, "armour int armour int scale", parse_p_race_armour);
+	parser_reg(p,
+		"equip-instead sym replaces sym tval sym sval int min int max",
+		parse_p_race_equip_instead);
 	parser_reg(p, "gain-at int level", parse_p_race_gain_at);
 	parser_reg(p, "gain-obj-flags ?str flags", parse_p_race_gain_obj_flags);
 	parser_reg(p, "gain-values str values", parse_p_race_gain_values);
@@ -4505,6 +4556,13 @@ static void cleanup_p_race(void)
 			struct player_race_gain *g = p->gains;
 			p->gains = g->next;
 			mem_free(g);
+		}
+
+		/* And what it packed instead (PLR-01). */
+		while (p->kit) {
+			struct player_race_kit *k = p->kit;
+			p->kit = k->next;
+			mem_free(k);
 		}
 
 		string_free((char *)p->name);

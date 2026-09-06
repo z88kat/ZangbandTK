@@ -20,13 +20,25 @@
 #include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-tval.h"
+#include "obj-util.h"
 #include "player-birth.h"
 #include "player-spell.h"
+#include "generate.h"
 #include "test-utils.h"
 
 int setup_tests(void **state) {
 	set_file_paths();
 	init_angband();
+	/*
+	 * A level, so that births after the first have somewhere to draw on.
+	 *
+	 * `calc_light()` sets PU_MONSTERS when a character's light differs from
+	 * the last one's, and the Vampire is the first race to carry a light of
+	 * its own -- so the birth *after* a Vampire's is the first that ever
+	 * needed a cave to update. Real play always has one; this suite did not.
+	 */
+	if (!player_make_simple(NULL, NULL, "Tester")) return 1;
+	prepare_next_level(player);
 	*state = NULL;
 	return 0;
 }
@@ -67,6 +79,33 @@ static int things_held(void) {
 
 	for (i = 0; i < player->body.count; i++)
 		if (slot_object(player, i)) n++;
+
+	return n;
+}
+
+/** How many of this object kind the character is carrying. */
+static int carried(int tval, const char *sval_name) {
+	int sval = lookup_sval(tval, sval_name);
+	int i, n = 0;
+
+	if (sval < 0) return -1;
+
+	for (i = 0; i < z_info->pack_size; i++) {
+		struct object *obj = player->upkeep->inven[i];
+		if (obj && obj->tval == tval && obj->sval == sval) n += obj->number;
+	}
+
+	return n;
+}
+
+/** Everything of this tval the character is carrying. */
+static int carried_tval(int tval) {
+	int i, n = 0;
+
+	for (i = 0; i < z_info->pack_size; i++) {
+		struct object *obj = player->upkeep->inven[i];
+		if (obj && obj->tval == tval) n += obj->number;
+	}
 
 	return n;
 }
@@ -227,6 +266,61 @@ static int test_the_bookless_classes_stay_bookless(void *state) {
 	ok;
 }
 
+/*
+ * A race can take something else in place of part of the kit (PLR-01).
+ *
+ * Zangband decides food and light by race before it looks at the class
+ * ([birth.c:557](../archive/zangband/src/birth.c#L557)). A Vampire gets scrolls
+ * of Satisfy Hunger instead of rations -- food is worth a tenth to it -- and
+ * scrolls of Darkness instead of torches, which are the only shelter it has
+ * from the sun. A Golem takes the food swap and keeps its torches.
+ *
+ * Checked as a substitution rather than an addition: the displaced item must be
+ * *gone*. A version that granted the scrolls and left the rations would look
+ * right in an inventory listing and be wrong.
+ */
+static int test_a_race_can_pack_something_else(void *state) {
+	require(player_make_simple("Vampire", "Warrior", "Tester"));
+	require(carried(TV_SCROLL, "Remove Hunger") >= 2);
+	require(carried(TV_SCROLL, "Darkness") >= 2);
+	require(carried_tval(TV_FOOD) == 0);
+	require(carried_tval(TV_LIGHT) == 0);
+
+	/* The Golem trades food only */
+	require(player_make_simple("Golem", "Warrior", "Tester"));
+	require(carried(TV_SCROLL, "Remove Hunger") >= 2);
+	require(carried_tval(TV_FOOD) == 0);
+	require(carried_tval(TV_LIGHT) > 0);
+	require(carried(TV_SCROLL, "Darkness") == 0);
+
+	/* And nobody else is touched */
+	require(player_make_simple("Human", "Warrior", "Tester"));
+	require(carried_tval(TV_FOOD) > 0);
+	require(carried_tval(TV_LIGHT) > 0);
+	require(carried(TV_SCROLL, "Remove Hunger") == 0);
+	require(carried(TV_SCROLL, "Darkness") == 0);
+	ok;
+}
+
+/*
+ * And the grant does not depend on the class having had one to replace.
+ *
+ * The Necromancer is the only class with no light in its kit -- it is the
+ * unlight class and starts without one on purpose. Zangband's grant is by race
+ * and never consults the class, so a Vampire Necromancer still gets its
+ * scrolls. Under a substitution that only edited existing entries it would get
+ * none, and the one class/race pairing that most needs them would be the one
+ * pairing that silently missed out.
+ */
+static int test_the_substitution_does_not_need_something_to_replace(void *state) {
+	require(player_make_simple("Human", "Necromancer", "Tester"));
+	require(carried_tval(TV_LIGHT) == 0);
+
+	require(player_make_simple("Vampire", "Necromancer", "Tester"));
+	require(carried(TV_SCROLL, "Darkness") >= 2);
+	ok;
+}
+
 const char *suite_name = "player/kit";
 struct test tests[] = {
 	{ "every-class-starts-with-a-kit",
@@ -237,6 +331,10 @@ struct test tests[] = {
 	  test_no_class_starts_with_a_book_it_cannot_read },
 	{ "two-realm-slots-take-two-realms",
 	  test_two_realm_slots_take_two_realms },
+	{ "a-race-can-pack-something-else",
+			test_a_race_can_pack_something_else },
+	{ "the-substitution-does-not-need-something-to-replace",
+			test_the_substitution_does_not_need_something_to_replace },
 	{ "the-bookless-classes-stay-bookless",
 	  test_the_bookless_classes_stay_bookless },
 	{ NULL, NULL }

@@ -367,7 +367,8 @@ struct player_race {
 	int armour;					/**< Innate armour class (PLR-01) */
 	int armour_scale;			/**< ...plus level divided by this */
 
-	struct player_race_gain *gains;	/**< What it grows into (PLR-01) */
+	struct player_race_gain *gains;
+	struct player_race_kit *kit;	/**< Starting-kit substitutions (PLR-01) */	/**< What it grows into (PLR-01) */
 
 	struct player_power *powers;	/**< What the race can do (PLR-02) */
 };
@@ -390,6 +391,18 @@ struct player_race {
  * are, so a gained property behaves exactly like an innate one from the moment
  * it arrives.
  */
+/**
+ * What a race takes instead of part of its class's starting kit (PLR-01).
+ */
+struct player_race_kit {
+	int replaces;			/**< tval from the class kit this displaces */
+	int tval;
+	int sval;
+	int min;
+	int max;
+	struct player_race_kit *next;
+};
+
 struct player_race_gain {
 	int level;						/**< From this character level */
 	bitflag flags[OF_SIZE];			/**< Object flags gained */

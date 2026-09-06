@@ -30,6 +30,17 @@
 # obj-flags:object flags
 # player-flags:player flags
 # values:values
+# light:radius
+# armour:base:scale
+# gain-at:level
+# gain-obj-flags:object flags
+# gain-values:values
+# equip-instead:replaced tval:tval:sval:min:max
+# virtues:virtues
+# mutation-affinity:mutation:weight
+# mutation-rate:one-in
+# power:name  (then power-level, power-cost, power-stat, power-fail,
+#              power-effect, power-dice, power-expr, power-when)
 
 # 'name' indicates the beginning of an entry.
 
@@ -62,6 +73,38 @@
 
 # 'values' is for object modifiers which take a value that races possess
 # innately.
+
+# 'light' is a light radius the race carries itself, with no lamp -- a
+# Vampire's own dim glow.  Added to whatever equipment provides.
+
+# 'armour' is innate armour class: a flat amount, plus character level
+# divided by the scale.  'armour:20:5' is a Golem, which is 20 points of
+# hardened clay at birth and 30 by level 50.  A scale of 0 means no level
+# term.
+
+# 'gain-at' opens a band of properties the race grows into rather than being
+# born with, and applies to every 'gain-obj-flags' and 'gain-values' line
+# following it until the next 'gain-at'.  The level is inclusive: 'gain-at:15'
+# arrives at level 15.  Zangband grants most racial properties this way -- a
+# Draconian resists fire at 5, cold at 10, acid at 15, lightning at 20 and
+# poison at 35 -- and a gained property is indistinguishable from an innate
+# one once it arrives.
+
+# 'equip-instead' is a starting-kit substitution: the race takes this object
+# in place of whatever its class would have given of the replaced tval.  A
+# Vampire takes scrolls of Darkness instead of torches, because it carries its
+# own light and what it needs is a way to put the sun out.  The grant does not
+# depend on the class having had anything to replace -- a Vampire Necromancer
+# starts with no light at all and still gets its scrolls.
+
+# 'virtues' is for the virtues a race inclines towards (see virtue.txt).
+
+# 'mutation-affinity' weights a race towards one mutation; 'mutation-rate' is
+# the one-in-N chance of gaining one on gaining a level (Beastmen).
+
+# 'power' begins a racial power -- something the race can do that no class
+# teaches -- and is followed by its level, cost, stat, failure rate and
+# effect, in the same shape as a class spell.
 
 
 name:Human
@@ -563,6 +606,13 @@ obj-flags:HOLD_LIFE
 player-flags:BLOOD_DIET | UNDEAD
 values:RES_DARK[3] | RES_NETHER[1] | RES_POIS[1] | RES_COLD[1] | RES_LIGHT[-1]
 light:1
+# Zangband packs a Vampire differently before it looks at the class at all
+# (birth.c:557, birth.c:591): scrolls of Satisfy Hunger instead of rations,
+# because food is nearly useless to it, and scrolls of Darkness instead of
+# torches, because it carries its own light and what it actually needs is a
+# way to put the sun out.  Both are substitutions, not additions.
+equip-instead:food:scroll:Remove Hunger:2:5
+equip-instead:light:scroll:Darkness:2:5
 power:drink blood
 power-level:5
 power-cost:10
@@ -601,6 +651,10 @@ weight:150:20
 # 35 rather than arriving at birth.
 obj-flags:SEE_INVIS | FREE_ACT | SLOW_DIGEST | CANT_EAT
 armour:20:5
+# A Golem gets a twentieth out of food, so Zangband gives it scrolls rather
+# than rations too (birth.c:557).  It keeps its torches: only the Vampire
+# trades those away.
+equip-instead:food:scroll:Remove Hunger:2:5
 values:RES_POIS[3] | RES_COLD[-1]
 gain-at:35
 gain-obj-flags:HOLD_LIFE

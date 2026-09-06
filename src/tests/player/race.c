@@ -347,6 +347,129 @@ static int test_the_sun_burns_a_vampire_outdoors(void *state) {
 	ok;
 }
 
+/**
+ * Read a scroll of Darkness where the player stands; is the grid dark after?
+ */
+static bool darkness_takes_from(const char *name, int depth, bool day,
+		bool by_monster) {
+	struct object *obj;
+	struct source origin;
+	bool dark;
+
+	if (!player_make_simple(name, NULL, "Tester")) return false;
+
+	turn = day ? 1 : (10L * z_info->day_length) / 2 + 1;
+	player->depth = depth;
+	prepare_next_level(player);
+	sqinfo_on(square(cave, player->grid)->info, SQUARE_GLOW);
+
+	if (by_monster) {
+		struct monster *mon = NULL;
+		int d;
+
+		/*
+		 * Whichever neighbouring grid is actually free. Assuming the one to
+		 * the east is not safe -- `prepare_next_level()` can put the player
+		 * against a wall, and `t_add_monster()` asserts rather than returning
+		 * null, so the wrong guess is a crash on some seeds and not others.
+		 */
+		for (d = 0; d < 8 && !mon; d++) {
+			struct loc g = loc_sum(player->grid, ddgrid_ddd[d]);
+			if (square_in_bounds_fully(cave, g) && square_isempty(cave, g))
+				mon = t_add_monster(cave, g, "grid bug");
+		}
+		if (!mon) return false;
+		origin = source_monster(mon->midx);
+	} else {
+		origin = source_player();
+	}
+
+	obj = object_new();
+	object_prep(obj, lookup_kind(TV_SCROLL,
+			lookup_sval(TV_SCROLL, "Darkness")), 0, RANDOMISE);
+	{
+		bool ident = false;
+		effect_do(obj->kind->effect, origin, obj, &ident, true, 0, 0, 0, NULL);
+	}
+	object_delete(NULL, NULL, &obj);
+
+	dark = !square_isglow(cave, player->grid);
+	return dark;
+}
+
+static bool darkness_takes(const char *name, int depth, bool day) {
+	return darkness_takes_from(name, depth, day, false);
+}
+
+/*
+ * A Vampire can put the sun out where it stands (DEC-73).
+ *
+ * Stock 4.2 refuses to darken the surface in daylight, which is right for a
+ * game where nobody minds the sun and wrong for the one race that burns in it.
+ * Zangband's darkening had no such guard, and the two to five scrolls a Vampire
+ * starts with were its shelter.
+ *
+ * Checked from both sides: the Vampire can do it, an ordinary character still
+ * cannot, and underground -- where the guard never applied -- both can. If the
+ * relaxation had been written as "always allow", the Human-by-day case would
+ * catch it.
+ */
+static int test_a_vampire_can_put_out_the_daylight(void *state) {
+	require(darkness_takes("Vampire", 0, true));
+	require(!darkness_takes("Human", 0, true));
+
+	/* Night and depth were never guarded, and still are not */
+	require(darkness_takes("Human", 0, false));
+	require(darkness_takes("Human", 1, true));
+
+	/*
+	 * And it is the caster's vulnerability that counts, not the player's.
+	 * Without that, a monster casting darkness anywhere near a Vampire could
+	 * put out the daylight on its behalf -- the relaxation is meant to be a
+	 * thing the Vampire does, not a thing that happens around it.
+	 */
+	require(!darkness_takes_from("Vampire", 0, true, true));
+	ok;
+}
+
+/*
+ * And doing so actually stops the burning, which is the whole point.
+ *
+ * The two halves are separately plausible and separately useless: a scroll that
+ * darkens a grid the sun check does not read, or a sun check reading a grid
+ * nothing can darken. This runs the burn, reads the scroll, runs it again.
+ */
+static int test_darkness_is_shelter_from_the_sun(void *state) {
+	int before, after;
+
+	require(player_make_simple("Vampire", NULL, "Tester"));
+	turn = 1;
+	player->depth = 0;
+	prepare_next_level(player);
+	sqinfo_on(square(cave, player->grid)->info, SQUARE_GLOW);
+
+	player->chp = player->mhp;
+	before = player->chp;
+	process_world(cave);
+	require(before - player->chp == 1);
+
+	{
+		struct object *obj = object_new();
+		bool ident = false;
+		object_prep(obj, lookup_kind(TV_SCROLL,
+				lookup_sval(TV_SCROLL, "Darkness")), 0, RANDOMISE);
+		effect_do(obj->kind->effect, source_player(), obj, &ident, true, 0,
+				0, 0, NULL);
+		object_delete(NULL, NULL, &obj);
+	}
+
+	player->chp = player->mhp;
+	after = player->chp;
+	process_world(cave);
+	eq(after - player->chp, 0);
+	ok;
+}
+
 /*
  * The undead start the game just after midnight
  * ([dungeon.c:3270](../archive/zangband/src/dungeon.c#L3270)) -- which for the
@@ -378,6 +501,10 @@ struct test tests[] = {
 			test_a_vampire_gets_little_from_food },
 	{ "the-sun-burns-a-vampire-outdoors",
 			test_the_sun_burns_a_vampire_outdoors },
+	{ "a-vampire-can-put-out-the-daylight",
+			test_a_vampire_can_put_out_the_daylight },
+	{ "darkness-is-shelter-from-the-sun",
+			test_darkness_is_shelter_from_the_sun },
 	{ "the-undead-wake-in-the-dark",
 			test_the_undead_wake_in_the_dark },
 	{ NULL, NULL }

@@ -45,6 +45,53 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The Vampire becomes playable — 7 September 2026
+----------------------------------------------------------------
+
+- **3.111.0** — **The Vampire can shelter from the sun, and packs for it.**
+  From a playability question: does a Vampire start taking damage the moment it
+  goes outdoors?
+
+  Everything about the *damage* turned out to match the archive exactly — one
+  point per world tick, both games ticking every ten game turns, both with a
+  ten-thousand-turn day, both lighting every wilderness grid unconditionally at
+  dawn, and resist-light gear cancelling it in both. The midnight start works
+  and buys about 2,499 moves. What was missing was the shelter.
+
+  Zangband gives a Vampire two to five scrolls of Darkness at birth, and its
+  darkening has no guard at all (``spells1.c:552``) — so a Vampire caught out at
+  dawn puts out the ground it is standing on and waits. 4.2 refuses to darken
+  the surface in daylight, which is right for a game where nobody minds the sun
+  and left ours with no daytime shelter but a staircase. We had inherited a rule
+  written for a game with no race that burns.
+
+  Both halves are now in. The guard passes for a caster the light hurts —
+  the *caster*, not the player, so a monster casting darkness near a Vampire
+  does not put the daylight out on its behalf. Zangband removes the guard for
+  everyone; that was rejected as more than is needed, and every other
+  character's play is unchanged. Recorded as DEC-73, because it looks exactly
+  like a bug to anyone who finds it later.
+
+  Race starting-kit substitution is new (``equip-instead`` in ``p_race.txt``).
+  Zangband decides food and light by race before it looks at the class: the
+  undead-or-built races take Satisfy Hunger scrolls instead of rations, and the
+  Vampire takes Darkness instead of torches. The grant is unconditional rather
+  than an edit of the class kit, because a Vampire Necromancer — the one class
+  that carries no light — must still get its scrolls. Of twenty races only the
+  Vampire and Golem qualify today; four of Zangband's six are among the
+  deferred races and will need one line each.
+
+  Two things worth recording from the verification. A first falsification run
+  reported the darkening tests passing with the change reverted; they were
+  reading stale binaries, because reverting left the helper unused and the
+  ``-Werror`` build failed silently behind a redirect. Falsifying through the
+  predicate body instead gave real answers, and turned up a genuine gap — the
+  ``SRC_PLAYER`` half was untested, and is now. And the kit suite needed a cave
+  for the first time: ``calc_light()`` raises ``PU_MONSTERS`` when a character's
+  light differs from the last one's, and the Vampire is the first race to carry
+  a light of its own, so the birth *after* a Vampire's was the first that ever
+  needed one.
+
 The four half-imported races are finished — 6 September 2026
 ----------------------------------------------------------------
 
