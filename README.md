@@ -19,9 +19,12 @@ system that Zangband never had.
 ZangbandTK puts the first on top of the second. It is not a port: Zangband's
 2005 codebase is not what is worth preserving. Its *character* is.
 
-> **Status: early.** The game is playable, already feels different from Angband,
-> and has the wilderness — Zangband's defining feature — under it. There is a
-> long way to go. See [Current state](#current-state).
+> **Status: playable, and most of the way built.** Ten of the eleven milestones
+> are done — the wilderness, the towns, the quests, the bestiary, the races and
+> classes, the mutations, the virtues, the seven realms of magic and the pets.
+> Nightmare mode is the one that is left. It has not been released yet, and it
+> has not been played through by anybody but its author. See
+> [Current state](#current-state).
 
 ## Current state
 
@@ -40,7 +43,7 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
 - **387 imported monsters**, including the princes of Amber and the Mythos
   deities. 1013 in total.
 - **51 artifacts**, including Grayswandir and Frakir.
-- **17 ego types**, including `(Vampiric)`, `(Chaotic)` and `(Trump Weapon)`.
+- **16 ego types**, including `(Vampiric)`, `(Chaotic)` and `(Trump Weapon)`.
 - **Three weapon mechanics** Angband has no equivalent of: vampiric, vorpal and
   chaotic.
 - **The Ancient and Foul Curse**, with its cascade intact.
@@ -62,12 +65,23 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
   by class, race and magic, and moved by what they kill, spend and spare. Read
   by the Lords of Chaos when they hand down a reward, and by the dream at the
   inn. Zangband tracked them for seven years and never once read one.
-- **Nine races and four classes** from Zangband: Amberite, Beastman, Yeek,
+- **Nine races and every class Zangband has**: Amberite, Beastman, Yeek,
   Draconian, Mindflayer, Vampire, Golem, Sprite and Half-Titan; the Monk with
-  unarmed progression, the Mindcrafter with psionics, and the Chaos-Warrior
-  sworn at birth to one of nine Lords of the Courts of Chaos. Races may have
-  activatable powers, which Angband has no mechanism for.
+  unarmed progression, the Mindcrafter with psionics, the Chaos-Warrior sworn at
+  birth to one of nine Lords of the Courts of Chaos, and the Warrior-Mage and
+  High-Mage, which are defined by the realms they choose and so arrived with
+  them. Races may have activatable powers, which Angband has no mechanism for.
 
+- **Seven realms of magic** where Angband has four, adding Sorcery, Chaos and
+  Trump. Chosen at birth from what your class allows, and permanent. A hundred
+  and ninety-two workings in twenty-four books, every one of them Zangband's:
+  Sorcery has no attack spell in it, Chaos backfires, and Arcane is bought
+  outright in town. Seventeen of the two hundred and twenty-four are declared
+  inert and say so where you read them.
+- **Pets.** A monster can be on your side, which Angband has no notion of.
+  Three sides rather than two, nine orders given as a standing policy, mana
+  upkeep charged on the sum of your pets' levels, and four of them follow you
+  downstairs — where Zangband left them behind.
 - **Ninety-six mutations.** Chaos changes you, permanently and rarely for the
   better: standing changes to your body, powers you can invoke, things that
   happen to you unasked, and extra limbs that attack. You do not choose them.
@@ -76,10 +90,9 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
   of one is hard: the rarest potion in the game, a building only great cities
   have, or another mutation cancelling it out.
 
-**Not yet:** magic realms, pets, and nightmare mode — and the two
-classes defined by which realm they choose, which wait for the realms.
-A Tcl/Tk front end is planned for a later phase, reviving the original's
-interface on Tcl/Tk 9.
+**Not yet:** nightmare mode, which is the last milestone and has not been
+started. A Tcl/Tk front end is planned for a later phase, reviving the
+original's interface on Tcl/Tk 9.
 
 ## Building
 

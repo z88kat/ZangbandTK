@@ -45,8 +45,32 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
-Gervais' unexplored squares go black too — 5 September 2026
---------------------------------------------------------------
+The README stops describing an older game — 6 September 2026
+----------------------------------------------------------------
+
+- **3.108.2** — **The front page was out of date and the release log had drifted.**
+  Both found by taking stock rather than by anything failing.
+
+  The README still said *"Not yet: magic realms, pets, and nightmare mode — and
+  the two classes defined by which realm they choose"*. All of that has landed
+  except nightmare mode: the seven realms, the pets, the Warrior-Mage and the
+  High-Mage. It also said **17 ego types** where the data and three pages of the
+  manual say 16, and *"nine races and four classes"* while listing three. The
+  status line called the project *early* with ten of eleven milestones done.
+
+  Every number on that page is now checked against the data files rather than
+  remembered: 16 ego types, 387 imported monsters, 51 artifacts, ninety-six
+  mutations, thirteen dungeons, nine Lords of the Courts.
+
+  **And the release log's headings had come adrift.** Entries are prepended, and
+  seven versions' worth had been filed under whichever heading happened to be at
+  the top: everything from 3.102.2 to 3.108.1 sat under *"Gervais' unexplored
+  squares go black too"*, and five versions of borg work sat under *"An
+  unexplored square is black everywhere"*. Each group has a heading that
+  describes it and carries the date its work was actually done.
+
+Class costs, the birth menus, and a borg casting the wrong spell — 6 September 2026
+---------------------------------------------------------------------------------------
 
 - **3.108.1** — **The borg was casting the wrong spell.** A spell's
   ``spell_enum`` comes from the borg's rating table, which is keyed by name;
@@ -129,6 +153,9 @@ Gervais' unexplored squares go black too — 5 September 2026
   groups interleave rather than partitioning, with the imported Yeek the
   cheapest race in the game alongside Human and the imported Beastman at 140
   beside Angband's High-Elf at 145.
+
+Every caster has a book, and M8 closes — 5 September 2026
+-------------------------------------------------------------
 
 - **3.106.0** — **Every caster begins with a spellbook again.** Six classes
   started the game unable to cast: the Mage and the Priest lost theirs to the
@@ -272,6 +299,9 @@ Gervais' unexplored squares go black too — 5 September 2026
   The first draft of this job had the second wrong and died on *"Unable to
   prepare any 'display module'!"*.
 
+Gervais' unexplored squares go black too — 5 September 2026
+---------------------------------------------------------------
+
 - **3.102.2** — The same fault the generated tilesets had, reported again from
   play: Angband points ``FEAT_NONE`` at cell (0,0), which in Gervais' sheet is
   **fully transparent**, so what an unwalked square looks like is decided by
@@ -347,8 +377,8 @@ Looking at a monster stops making you forget the trees — 5 September 2026
   that caught it when the fix is removed.
 
 
-An unexplored square is black everywhere — 4 September 2026
--------------------------------------------------------------
+The borg learns to play — 5 September 2026
+----------------------------------------------
 
 - **3.102.0** — **The borg can go shopping in another town.** The starting
   village keeps four trades by design (WLD-11a) and the borg's own restock rule
@@ -537,6 +567,9 @@ An unexplored square is black everywhere — 4 September 2026
   whole subsystem and both inside that scan. That is a memory-consistency
   contradiction rather than a logic error. An ASAN build runs the first 400
   turns clean.
+
+An unexplored square is black everywhere — 4 September 2026
+---------------------------------------------------------------
 
 - **3.97.1** — **The generated tilesets give the unseen grid an opaque tile.**
   Angband points ``FEAT_NONE`` at cell (0,0), which in two of the four sheets is
