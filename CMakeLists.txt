@@ -943,6 +943,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     player/virtue.c
     trivial/trivial.c
     ui/menu-labels.c
+    ui/scrollbar.c
     z-dice/dice.c
     z-expression/expression.c
     z-file/filename-index.c

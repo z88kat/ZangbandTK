@@ -178,12 +178,58 @@ static int scrolling_get_cursor(int row, int col, int n, int top, region *loc)
 /**
  * Display current view of a skin
  */
+/**
+ * Where the scroll thumb sits, and how long it is (ZangbandTK).
+ *
+ * Separated from the drawing so it can be tested: the arithmetic is the half
+ * that can be quietly wrong -- a thumb that never reaches the bottom, or one
+ * that vanishes on a long list -- and the half that cannot be checked by
+ * looking at one screenshot.
+ *
+ * Returns false when the list fits, in which case nothing is drawn at all.
+ */
+bool menu_scroll_thumb(int n, int rows_per_page, int top,
+					   int *thumb_top, int *thumb_len)
+{
+	int len, pos;
+
+	*thumb_top = 0;
+	*thumb_len = 0;
+
+	if (rows_per_page <= 0 || n <= rows_per_page) return false;
+
+	/* Proportional, rounded up, and never shorter than one row */
+	len = (rows_per_page * rows_per_page + n - 1) / n;
+	if (len < 1) len = 1;
+	if (len > rows_per_page) len = rows_per_page;
+
+	pos = (top * rows_per_page + (n - 1) / 2) / n;
+
+	/*
+	 * Pinned at both ends. Proportional arithmetic alone leaves a gap at the
+	 * bottom on most list lengths, so "I am at the end" would never quite
+	 * read as the end -- which is the one position a player most wants to be
+	 * sure of.
+	 */
+	if (top <= 0) pos = 0;
+	if (top >= n - rows_per_page) pos = rows_per_page - len;
+	if (pos < 0) pos = 0;
+	if (pos > rows_per_page - len) pos = rows_per_page - len;
+
+	*thumb_top = pos;
+	*thumb_len = len;
+
+	return true;
+}
+
 static void display_scrolling(struct menu *menu, int cursor, int *top, region *loc)
 {
 	int col = loc->col;
 	int row = loc->row;
 	int rows_per_page = loc->page_rows;
 	int n = menu->filter_list ? menu->filter_count : menu->count;
+	int text_width = loc->width;
+	int thumb_top = 0, thumb_len = 0;
 	int i;
 
 	/* Keep a certain distance from the top when possible */
@@ -198,6 +244,24 @@ static void display_scrolling(struct menu *menu, int cursor, int *top, region *l
 	*top = MIN(*top, n - rows_per_page);
 	*top = MAX(*top, 0);
 
+	/*
+	 * A list that scrolls says so, in its own right-hand column (ZangbandTK).
+	 *
+	 * A menu that silently scrolls is only marginally better than one that
+	 * silently truncates: with thirty-two races and fourteen rows there is no
+	 * way to tell there is more, how much more, or where in it you are.
+	 * Zangband scrolls the same list and draws nothing at all, so there is no
+	 * original behaviour to follow here.
+	 *
+	 * A proportional thumb, because it is two questions -- is there more, and
+	 * where am I -- and a "more below" marker answers only the first. It costs
+	 * the rightmost column of the region and appears only when the list does
+	 * not fit, so a menu that never scrolls looks exactly as it did. Rows are
+	 * drawn a column narrower while it is up, so nothing can be written over.
+	 */
+	if (menu_scroll_thumb(n, rows_per_page, *top, &thumb_top, &thumb_len))
+		text_width = loc->width - 1;
+
 	for (i = 0; i < rows_per_page; i++) {
 		/* Blank all lines */
 		Term_erase(col, row + i, loc->width);
@@ -205,7 +269,15 @@ static void display_scrolling(struct menu *menu, int cursor, int *top, region *l
 			/* Redraw the line if it's within the number of menu items */
 			bool is_curs = (i == cursor - *top);
 			display_menu_row(menu, i + *top, *top, is_curs, row + i, col,
-							loc->width);
+							text_width);
+		}
+
+		if (thumb_len) {
+			bool on_thumb = (i >= thumb_top && i < thumb_top + thumb_len);
+
+			Term_putstr(col + loc->width - 1, row + i, 1,
+						on_thumb ? COLOUR_L_BLUE : COLOUR_L_DARK,
+						on_thumb ? "#" : "|");
 		}
 	}
 

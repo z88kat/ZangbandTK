@@ -1568,8 +1568,50 @@ static int test_a_melee_mutation_completes_its_blow(void *state) {
 	race = lookup_monster("large white snake");
 	notnull(race);
 
-	require(scatter_ext(cave, &grid, 1, player->grid, 6, true,
-						square_isempty) > 0);
+	/*
+	 * As near the player as the level allows, widening until it finds room.
+	 *
+	 * A fixed radius of six fails outright on a level that gives the player a
+	 * tight spot -- one pass in eight, on seed 1404343356 -- and the test then
+	 * fails for a reason that has nothing to do with mutations.
+	 *
+	 * Near, though, and not merely anywhere empty: the scorpion tail carries
+	 * poison, so its damage is delivered by `project()` from the player to the
+	 * monster's grid. Placed across the level behind a wall the projection
+	 * never arrives, every blow does nothing, and the test fails on `hits`
+	 * instead -- which is what the second attempt at this did.
+	 *
+	 * And the character is moved next to the monster rather than the monster
+	 * scattered around the character, because `player->grid` is whatever an
+	 * earlier test in this suite left it as and need not be anywhere on this
+	 * level at all -- which is what the first two attempts both tripped over.
+	 * Two adjacent empty grids is the whole requirement, and any level has
+	 * them.
+	 */
+	{
+		struct loc g, best_mon = loc(0, 0), best_plr = loc(0, 0);
+		bool found = false;
+
+		for (g.y = 1; g.y < cave->height - 1 && !found; g.y++) {
+			for (g.x = 1; g.x < cave->width - 1 && !found; g.x++) {
+				struct loc side = loc(g.x + 1, g.y);
+
+				if (!square_isempty(cave, g)) continue;
+				if (!square_isempty(cave, side)) continue;
+
+				best_mon = g;
+				best_plr = side;
+				found = true;
+			}
+		}
+
+		require(found);
+
+		/* Stand the character beside it rather than trusting where it was */
+		player->grid = best_plr;
+		grid = best_mon;
+	}
+
 	require(place_new_monster(cave, grid, race, false, false, info,
 							  ORIGIN_DROP));
 	victim = square_monster(cave, grid);

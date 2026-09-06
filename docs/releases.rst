@@ -48,6 +48,32 @@ Unreleased
 Gervais' unexplored squares go black too — 5 September 2026
 --------------------------------------------------------------
 
+- **3.108.0** — **The birth menus fit the screen, and say when they don't.**
+  Five races were invisible. ``MENU_ROWS`` was ``TABLE_ROW + 14``, which
+  conflates "the last row" with "how many rows" and gives a region running from
+  row 9 to row 31 on a terminal with 24 lines. ``region_calculate()`` expands
+  only *non-positive* page counts to fit the screen, so the 23 went through
+  untouched; ``display_scrolling()`` then believed it had three spare rows for
+  twenty races, never scrolled, and drew the last five where
+  ``Term_gotoxy()`` discards them. The cursor still walked onto them, with the
+  highlight off-screen.
+
+  The region is derived from the terminal now, leaving the bottom line alone —
+  which is what Zangband does at ``ui.c:126``, recomputed on every redraw
+  rather than fixed at compile time. All four birth menus share the constant,
+  so the class list stops being one entry from the same wall.
+
+  **And a scrolling list now shows that it scrolls.** A proportional thumb in
+  the region's own right-hand column: it answers both halves of the question —
+  that there is more, and roughly where in it you are — where a "more below"
+  marker answers only the first. Zangband scrolls the same list and draws
+  nothing at all, so there was no original behaviour to follow.
+
+  It appears only when the list does not fit, and rows are drawn a column
+  narrower while it is up, so a menu that never scrolls looks exactly as it did
+  and nothing can be written over. It lives in the scrolling skin rather than
+  in the birth screen, so every menu in the game that scrolls gains it.
+
 - **3.107.0** — **Angband's six classes now pay for themselves too, and the
   High-Mage gets its mana.** Five classes carried Zangband's experience factor
   and six carried none, and the split fell along the line of which game a class

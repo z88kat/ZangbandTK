@@ -1076,6 +1076,65 @@ static void c_borg_sheet(char *rest)
 }
 
 /**
+ * borg-menu? [count] -- draw a scrolling menu and print what landed (BRG-05).
+ *
+ * The birth menus are the one part of the game with a terminal and no test.
+ * `ui/scrollbar` pins the thumb arithmetic, which is the half that can be
+ * quietly wrong; this is the other half -- whether the rows and the thumb
+ * actually reach the screen at the size the region claims.
+ *
+ * Built in the race menu's own region so it is the real geometry rather than
+ * an approximation of it: same column, same row, same width, same skin.
+ */
+static void c_borg_menu(char *rest)
+{
+	int count = (rest && *rest) ? atoi(rest) : 32;
+	static const char *names[64];
+	static char        buf[64][32];
+	struct menu       *m;
+	region             loc = { 2, 9, 17, -1 };
+	int                i, wid, hgt, row;
+
+	if (count < 1) count = 1;
+	if (count > 64) count = 64;
+
+	for (i = 0; i < count; i++) {
+		strnfmt(buf[i], sizeof(buf[i]), "Race %d", i + 1);
+		names[i] = buf[i];
+	}
+
+	m = menu_new(MN_SKIN_SCROLL, menu_find_iter(MN_ITER_STRINGS));
+	menu_setpriv(m, count, names);
+	menu_layout(m, &loc);
+
+	Term_clear();
+	menu_refresh(m, false);
+
+	Term_get_size(&wid, &hgt);
+	if (wid > 200) wid = 200;
+
+	for (row = 0; row < hgt; row++) {
+		char line[204];
+		int  col, last = 0;
+
+		for (col = 0; col < wid; col++) {
+			wchar_t ch;
+			int     a;
+
+			if (Term_what(col, row, &a, &ch) != 0) break;
+			line[col] = (ch >= 32 && ch < 127) ? (char) ch : ' ';
+			if (line[col] != ' ') last = col + 1;
+		}
+		line[last] = 0;
+		if (last) printf("borg-menu: %2d |%s|\n", row, line);
+	}
+
+	printf("borg-menu: %d entries in a %dx%d terminal\n", count, wid, hgt);
+	menu_free(m);
+	fflush(stdout);
+}
+
+/**
  * borg-towns? -- the world's towns, and what each keeps (BRG-25).
  *
  * The borg crosses the world for a shop it cannot reach, so the question
@@ -1631,6 +1690,7 @@ static test_cmd cmds[] = {
 	{ "borg-spells?", c_borg_spells },
 	{ "borg-grant", c_borg_grant },
 	{ "borg-sheet?", c_borg_sheet },
+	{ "borg-menu?", c_borg_menu },
 	{ "borg-towns?", c_borg_towns },
 	{ "borg-exercise?", c_borg_exercise },
 	{ "borg-cheat", c_borg_cheat },

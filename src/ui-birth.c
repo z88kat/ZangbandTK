@@ -165,7 +165,26 @@ static struct menu race_menu, class_menu, realm_menu, roller_menu;
 #define ROLLER_COL      36
 #define HIST_INSTRUCT_ROW 18
 
-#define MENU_ROWS TABLE_ROW + 14
+/*
+ * How tall the birth menus are: from TABLE_ROW to one line short of the
+ * bottom, whatever the terminal happens to be (ZangbandTK).
+ *
+ * This was `TABLE_ROW + 14`, which conflates "the last row" with "how many
+ * rows" and yields 23 -- a region running from row 9 to row 31 on a terminal
+ * that has 24 lines. `region_calculate()` only expands a *non-positive*
+ * page_rows to fit the screen, so a positive 23 was passed through untouched,
+ * and `display_scrolling()` then believed it had three rows to spare for
+ * twenty races: it set `top` to zero, never scrolled, and drew the last five
+ * races at rows 24 to 28, where `Term_gotoxy()` rejects them. Five races were
+ * invisible and the cursor walked onto them with the highlight off-screen.
+ *
+ * A negative value means "to the bottom, less this many lines", so -1 leaves
+ * the last row alone -- which is what Zangband does with
+ * `Term->hgt - TABLE_ROW - 1` at
+ * [ui.c:126](../archive/zangband/src/ui.c#L126), recomputed on every redraw
+ * rather than fixed at compile time.
+ */
+#define MENU_ROWS (-1)
 
 /**
  * upper left column and row, width, and lower column
