@@ -14,7 +14,12 @@
 # per run plus a summary, so two runs can be diffed.
 #
 # Usage: scripts/borg-progress [-x exe] [-n turns] [-m minutes]
-#                              [-c class[,class...]] [seed...]
+#                              [-c class[,class...]] [-b baseline] [seed...]
+#
+# -b compares the run against a committed baseline and fails if a number has
+# dropped materially. That is the point of the nightly: deaths are not failures
+# and neither are time caps, so without this the job is green while best depth
+# halves.
 #
 # -m bounds each run by the clock as well as by turns, and the clock is the
 # outer bound: a turn budget does not bound wall time, because a character at
@@ -29,6 +34,7 @@
 exe=build-strict/game/angband
 turns=40000
 minutes=
+baseline=
 classes=Warrior
 
 while [ $# -gt 0 ]; do
@@ -36,6 +42,7 @@ while [ $# -gt 0 ]; do
 		-x) exe="$2"; shift 2 ;;
 		-n) turns="$2"; shift 2 ;;
 		-m) minutes="$2"; shift 2 ;;
+		-b) baseline="$2"; shift 2 ;;
 		-c) classes="$2"; shift 2 ;;
 		--) shift; break ;;
 		-*) echo "borg-progress: unknown option $1" >&2; exit 2 ;;
@@ -44,6 +51,20 @@ while [ $# -gt 0 ]; do
 done
 
 if [ $# -gt 0 ]; then seeds="$*"; else seeds="1 7 13 42 99 2026"; fi
+
+# Seeds are numbers. Options only count before them, so `-b file` written after
+# the seed list is silently swallowed as two more seeds -- which is how a run
+# came to report a class playing seed "tests/borg/BASELINE". Checked rather than
+# documented, because the failure looks like a strange result rather than a
+# mistake in the command.
+for seed in $seeds; do
+	case "$seed" in
+		''|*[!0-9]*)
+			echo "borg-progress: '$seed' is not a seed." >&2
+			echo "borg-progress: options go before the seeds." >&2
+			exit 2 ;;
+	esac
+done
 
 if [ ! -x "$exe" ]; then
 	echo "borg-progress: no executable at $exe" >&2
@@ -76,6 +97,8 @@ broken=0
 runs=0
 best_depth=0
 best_level=0
+best_depth_run=none
+best_level_run=none
 deaths=0
 capped=0
 learned_total=0
@@ -106,8 +129,12 @@ for class in $(echo "$classes" | tr ',' ' '); do
 		l=$(printf '%s\n' "$line" | sed -n 's/.*clevel=\([0-9]*\).*/\1/p')
 		r=$(printf '%s\n' "$line" | sed -n 's/.*result=\([a-z]*\).*/\1/p')
 
-		[ "$d" -gt "$best_depth" ] 2>/dev/null && best_depth=$d
-		[ "$l" -gt "$best_level" ] 2>/dev/null && best_level=$l
+		if [ "$d" -gt "$best_depth" ] 2>/dev/null; then
+			best_depth=$d; best_depth_run="$class seed $seed"
+		fi
+		if [ "$l" -gt "$best_level" ] 2>/dev/null; then
+			best_level=$l; best_level_run="$class seed $seed"
+		fi
 		[ "$r" = "died" ] && deaths=$(expr $deaths + 1)
 		[ "$r" = "capped" ] && capped=$(expr $capped + 1)
 
@@ -134,4 +161,84 @@ echo "borg-progress: $learned_total spells learned, $cast_total cast"
 
 # Deaths and time caps are data. Only a crash, an abort or a wedge is a
 # failure, and each of those has already printed its seed above.
-exit $broken
+[ $broken -gt 0 ] && exit $broken
+
+[ -z "$baseline" ] && exit 0
+
+if [ ! -f "$baseline" ]; then
+	echo "borg-progress: no baseline at $baseline" >&2
+	exit 2
+fi
+
+# A capped run stopped where the clock landed rather than where the borg did,
+# and the clock depends on how busy the machine is. Every other run is exact --
+# the same seed on the same build gives the same turn count every time -- so a
+# comparison is only meaningful when nothing was capped, and saying that out
+# loud beats quietly comparing numbers that cannot be compared.
+if [ $capped -gt 0 ]; then
+	echo
+	echo "borg-progress: $capped run(s) hit the clock, so the numbers are not"
+	echo "borg-progress: comparable and the baseline check is SKIPPED. Raise -m,"
+	echo "borg-progress: or lower -n, until every run finishes on its own."
+	exit 0
+fi
+
+want() {
+	sed -n "s/^$1:[[:space:]]*\([0-9][0-9]*\).*/\1/p" "$baseline" | head -1
+}
+want_note() {
+	sed -n "s/^$1:[[:space:]]*[0-9][0-9]*[[:space:]]*//p" "$baseline" | head -1
+}
+
+b_depth=$(want best-depth)
+b_level=$(want best-level)
+b_learn=$(want spells-learned)
+b_cast=$(want spells-cast)
+b_runs=$(want runs)
+
+regressed=0
+
+# Thresholds, chosen and not inherited. For one build and one set of seeds
+# these runs are exact to the turn, so nothing here is noise -- but any data
+# change reshuffles the random stream and moves which seed happens to do well.
+# Measured, the spread across three seeds is depth 1 to 7 and level 1 to 13, so
+# a reshuffle can plausibly cost a couple. Three cannot be explained that way.
+report() {
+	echo
+	echo "borg-progress: REGRESSION -- $1"
+	echo "borg-progress:   was $2 ($4), now $3"
+	echo "borg-progress:   reproduce: scripts/borg-progress -n $turns -c $classes $seeds"
+	regressed=1
+}
+
+if [ -n "$b_depth" ] && [ $((b_depth - best_depth)) -ge 3 ]; then
+	report "best depth fell by $((b_depth - best_depth))" \
+		"$b_depth" "$best_depth by $best_depth_run" "$(want_note best-depth)"
+fi
+if [ -n "$b_level" ] && [ $((b_level - best_level)) -ge 4 ]; then
+	report "best character level fell by $((b_level - best_level))" \
+		"$b_level" "$best_level by $best_level_run" "$(want_note best-level)"
+fi
+if [ -n "$b_cast" ] && [ $((cast_total * 2)) -lt "$b_cast" ]; then
+	report "spells cast less than halved" \
+		"$b_cast" "$cast_total across $runs runs" "over ${b_runs:-?} runs"
+fi
+if [ -n "$b_learn" ] && [ $((learned_total * 2)) -lt "$b_learn" ]; then
+	report "spells learned less than halved" \
+		"$b_learn" "$learned_total across $runs runs" "over ${b_runs:-?} runs"
+fi
+
+if [ $regressed -eq 0 ]; then
+	echo
+	echo "borg-progress: against $baseline -- depth $best_depth/$b_depth," \
+		"level $best_level/$b_level, learned $learned_total/$b_learn," \
+		"cast $cast_total/$b_cast"
+	echo "borg-progress: no material drop."
+	exit 0
+fi
+
+echo
+echo "borg-progress: if this is an improvement being measured the wrong way,"
+echo "borg-progress: or a change that legitimately moved the numbers, update"
+echo "borg-progress: $baseline and say why in the commit."
+exit 1

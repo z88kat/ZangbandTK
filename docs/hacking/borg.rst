@@ -561,3 +561,103 @@ Known Limitations
   and screensaver)
 - Info window sizes may increase when exiting pseudo-screensaver mode from
   options menu
+
+The nightly run, and how to read it
+===================================
+
+``.github/workflows/borg.yaml`` plays the borg every night at 06:00 UTC —
+twelve runs, four classes against three fixed seeds, unaided: no cheats, no
+grants, no pets. Change the cadence by changing the cron line and nothing else.
+
+Where the results are
+---------------------
+
+On the run's own page, as a rendered summary rather than sixty lines of log to
+expand. The full output is also kept as the ``borg-nightly`` artifact for
+ninety days, alongside the borg's own death log, so a bad night can be examined
+after the fact.
+
+Why pass and fail is not enough
+-------------------------------
+
+Every run dies. That is what unaided play looks like at these character levels,
+so a death is data and not a failure; a run that hits the wall clock has not
+failed either. The job goes red only for a crash, an abort or a wedge.
+
+Which means the numbers that matter — best depth, best character level, spells
+cast — could halve overnight and the job would stay green. That is exactly the
+regression the nightly exists to catch, so it is checked against a committed
+baseline instead.
+
+The baseline
+------------
+
+``tests/borg/BASELINE`` records what the borg currently manages. Same idea as
+``tests/saves/EXPECTED-FAILURES``: a statement of what is true now, which
+somebody has to change on purpose.
+
+``scripts/borg-progress -b tests/borg/BASELINE`` compares a sweep against it
+and exits non-zero if a number has dropped materially. The thresholds are in
+``borg-progress`` beside the comparison, with the reasoning:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Number
+     - Fails when
+   * - best depth
+     - down by 3 or more
+   * - best character level
+     - down by 4 or more
+   * - spells cast
+     - less than half the baseline
+   * - spells learned
+     - less than half the baseline
+
+They are not tighter than that for a specific reason. For one build and one set
+of seeds the runs are *exact* — the same seed gives the same turn count every
+time, verified three runs over — so none of this is noise. But any change to the
+game's **data** reshuffles the random stream and moves which seed happens to do
+well: the same seed that died at character level 1 one night reached level 13
+the next, on a change to starting equipment. Measured across the three seeds the
+spread is depth 1 to 7 and level 1 to 13, so a reshuffle can plausibly cost a
+couple of levels. Three cannot be explained that way.
+
+A run that hit the clock is **excluded** from the comparison, and the job says
+so, because a capped run stopped where the clock landed rather than where the
+borg did and the clock depends on how busy the runner is. If that starts
+happening, raise ``-m`` or lower ``-n`` until every run finishes on its own.
+
+.. _borg-baseline-update:
+
+Updating the baseline when a number improves
+--------------------------------------------
+
+This is the step to get right, because the tempting thing to do with a red
+night is to make it green.
+
+Take the sweep the nightly takes, at the commit you are about to push::
+
+    scripts/borg-progress -n 2000000 -m 10 \
+        -c Warrior,Mage,Priest,Warrior-Mage 1 7 13
+
+Copy its three summary lines into ``tests/borg/BASELINE``, update the notes
+saying which run reached each best, and **say in the commit message why the
+number moved**. A baseline that rises without an explanation is one nobody
+trusts to fall.
+
+Three things worth knowing:
+
+- **Do not update it to silence a red night.** If a number dropped and you do
+  not know why, that is the finding, not an inconvenience. The failure output
+  names the metric, both values, the run that reached today's best and the
+  command to reproduce it, which is enough to start from.
+- **Re-baseline in the same commit as the change that moved the numbers**, so
+  the diff shows the cause and the effect together.
+- **The class list, the seeds and the turn budget are part of the measurement.**
+  They live in the workflow. Changing any of them invalidates the file, so
+  change them and re-baseline together.
+
+Options go before the seeds. ``-b`` written after them is a seed as far as the
+argument parser is concerned; it will refuse rather than run, but it is an easy
+one to trip over.

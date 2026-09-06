@@ -1,0 +1,48 @@
+# What the borg manages, so that a drop is noticed.
+#
+# The nightly cannot use pass and fail for this. Every run dies -- that is what
+# unaided play at these levels looks like -- and a run that hits the clock has
+# not failed either, so the job goes red only for a crash or a wedge. Without
+# this file best depth could halve overnight and the job would stay green,
+# which is exactly the regression the nightly exists to catch.
+#
+# `scripts/borg-progress -b tests/borg/BASELINE` compares a sweep against these
+# and fails if a number has dropped materially. Same shape as
+# tests/saves/EXPECTED-FAILURES: a committed statement of what is true now,
+# which somebody has to change on purpose.
+#
+# === Updating it when a number legitimately improves ===
+#
+# Take the sweep the nightly takes, at the commit you are about to push:
+#
+#     scripts/borg-progress -n 2000000 -m 10 \
+#         -c Warrior,Mage,Priest,Warrior-Mage 1 7 13
+#
+# Copy its three summary lines into the values below, update the notes saying
+# which run reached each best, and say in the commit message why the number
+# moved. That last part is the point of the file: a baseline that rises without
+# an explanation is a baseline nobody trusts to fall.
+#
+# Do not update it to make a red night go green. If a number dropped and you do
+# not know why, that is the finding.
+#
+# === What these numbers depend on ===
+#
+# The class list, the seeds, and the turn budget -- all three are in the
+# workflow and all three are part of what is being measured. Changing any of
+# them invalidates the file, so change them and re-baseline in the same commit.
+#
+# The runs are exact: the same seed on the same build gives the same turn count
+# every time, verified three times over. So nothing here is noise. But any
+# change to the game *data* reshuffles the random stream and moves which seed
+# happens to do well -- which is why the thresholds in borg-progress tolerate a
+# couple of levels rather than demanding the figures never move at all.
+
+# Taken at fee2b4cbe, 6 September 2026, unaided (no cheats, no grants, no pets).
+# 12 runs: Warrior, Mage, Priest, Warrior-Mage against seeds 1, 7 and 13.
+
+best-depth: 7   Warrior seed 13
+best-level: 13  Warrior seed 13
+spells-learned: 30
+spells-cast: 24
+runs: 12

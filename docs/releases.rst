@@ -48,6 +48,39 @@ Unreleased
 The README stops describing an older game — 6 September 2026
 ----------------------------------------------------------------
 
+- **3.109.0** — **The nightly says what the borg managed, and goes red when it
+  drops.** Pass and fail cannot carry this: every run dies, which is what
+  unaided play looks like at these levels, and a run that hits the clock has not
+  failed either — so the job went red only for a crash. Best depth could have
+  halved overnight and nobody would have known.
+
+  ``tests/borg/BASELINE`` records what the borg currently manages, on the same
+  pattern as ``tests/saves/EXPECTED-FAILURES``: a statement of what is true now
+  that somebody has to change on purpose. Seeded from a sweep at ``fee2b4cbe``
+  — best depth 7, best level 13, 30 spells learned, 24 cast, over twelve
+  unaided runs.
+
+  The thresholds are deliberate: depth down 3, level down 4, or either spell
+  count halved. Not tighter, because although the runs are *exact* — the same
+  seed gives the same turn count every time, checked three times over — any
+  change to game data reshuffles the random stream and moves which seed happens
+  to do well. The same seed that died at level 1 one night reached 13 the next,
+  on a change to starting equipment.
+
+  A run that hit the clock is **excluded** from the comparison and the job says
+  so, since a capped run stopped where the clock landed rather than where the
+  borg did.
+
+  The results now render on the run page as a job summary rather than sixty
+  lines of log to expand, and the failure names the metric, both values, which
+  run reached each, and the command to reproduce it — enough for someone
+  arriving cold without reading the log.
+
+  And the artifact step is fixed rather than left pretending: it globbed
+  ``build/game/*.txt``, which matched nothing, and ``if-no-files-found:
+  ignore`` made it pass silently — the first red night uploaded zero bytes.
+  It now keeps the sweep's own output and the borg's death log, for ninety days.
+
 - **3.108.2** — **The front page was out of date and the release log had drifted.**
   Both found by taking stock rather than by anything failing.
 

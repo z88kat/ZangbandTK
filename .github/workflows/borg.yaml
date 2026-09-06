@@ -74,21 +74,56 @@ jobs:
         env:
           LANG: en_US.UTF-8
         run: |
+          set -o pipefail
           scripts/borg-progress \
             -x build/game/angband \
             -n 2000000 \
             -m "${{ github.event.inputs.minutes || '10' }}" \
             -c "${{ github.event.inputs.classes || 'Warrior,Mage,Priest,Warrior-Mage' }}" \
-            1 7 13
+            -b tests/borg/BASELINE \
+            1 7 13 2>&1 | tee borg-nightly.txt
+
+      # The run page, rather than sixty lines of log somebody has to expand.
+      # GitHub renders whatever is appended here as markdown, and the table
+      # borg-progress already prints is the right shape for it.
+      #
+      # `if: always()` because the interesting night is the one that failed:
+      # a summary that only appears when everything is fine is a summary for
+      # the wrong occasion.
+      - name: Say what happened
+        if: always()
+        run: |
+          {
+            echo "## Borg nightly"
+            echo
+            echo '```'
+            cat borg-nightly.txt || echo "(no output -- the run did not get that far)"
+            echo '```'
+            echo
+            echo "Baseline: \`tests/borg/BASELINE\`. A drop is a regression;"
+            echo "deaths and time caps are not. To reproduce a run:"
+            echo
+            echo '```'
+            echo "scripts/borg-progress -c <class> <seed>"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       # Kept whatever the outcome, because the interesting run is usually the
-      # one that went wrong.
+      # one that went wrong -- and kept from paths that exist.
+      #
+      # This used to glob `build/game/*.txt`, which matched nothing: the borg
+      # writes its death log to ANGBAND_DIR_USER/archive, and the sweep's own
+      # output only ever went to stdout. With `if-no-files-found: ignore` the
+      # step passed every time and uploaded zero bytes, so the first red night
+      # left nothing behind at all. A step that pretends to keep something is
+      # worse than no step.
       - name: Keep the log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: borg-log
+          name: borg-nightly
           path: |
-            build/game/*.txt
-          if-no-files-found: ignore
-          retention-days: 14
+            borg-nightly.txt
+            ~/.angband/**/archive/borg-log.txt
+          if-no-files-found: warn
+          retention-days: 90
