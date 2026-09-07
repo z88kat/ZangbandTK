@@ -45,6 +45,35 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The release stopped one step short of the zip — 7 September 2026
+----------------------------------------------------------------
+
+- **3.111.3** — **The Windows release built the game and then could not package
+  it.** All 223 objects compiled and ``angband.exe`` linked; ``scripts/pkg_win``
+  then stopped on ``lib/tiles/neon/graf-neo.prf: No such file or directory``,
+  which names a file that exists. Line 28 is the ``awk`` inside ``cp_unix2dos``
+  and the name in the message is its *output*: there was no ``lib/tiles/neon``
+  in the staging tree to write into.
+
+  The script built its tileset directories from a list written out by hand, and
+  the neon set had been added to ``list.txt`` and not to that list. The ``find``
+  that gathers prf files goes by pattern, so it picked the new set up happily,
+  had nowhere to put it, and ``errexit`` stopped the release on the spot.
+
+  ``pkg_win`` now takes the tilesets from what ``lib/tiles`` actually holds, the
+  same way it already mirrors the built manual a few lines above.
+  ``Makefile.std`` and ``Makefile.wasm`` each kept their own copy of the same
+  stale list, so the source tarball and the web build would have shipped without
+  the set and said nothing about it; both are explicit lists on purpose, so both
+  get the name added rather than a glob. ``Makefile.osx`` already globbed the
+  subdirectories, which is why the Mac app has had the set all along.
+
+  **And the version had come adrift**, in the same way the headings had at
+  3.108.2: ``buildid.h`` still read 3.108.2 while this log had reached 3.111.2.
+  Six entries — 3.109.0 through 3.111.2 — were written without the bump the top
+  of this page asks for, so every build since ``fee2b4cbe`` has told the player
+  it was 3.108.2. The header is back in step with the log.
+
 A use-after-free at birth, and the gate that was not watching — 7 September 2026
 --------------------------------------------------------------------------------
 

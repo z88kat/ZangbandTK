@@ -107,7 +107,7 @@ LIBDIRS = gamedata screens help customize fonts icons user
 # The list is kept explicit rather than globbed because it is the only place the
 # choice is made -- grafmode.c offers only the tilesets it can find, so dropping
 # a name here is all it takes to leave one out of the web build.
-TILESETS = old nomad adam-bolt gervais
+TILESETS = old nomad adam-bolt gervais neon
 
 $(WASMDIR)/lib.stamp:
 	@mkdir -p $(WASMDIR)/lib

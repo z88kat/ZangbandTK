@@ -48,10 +48,13 @@ mkdir lib/help
 mkdir lib/screens
 mkdir lib/fonts
 mkdir lib/tiles
-mkdir lib/tiles/adam-bolt
-mkdir lib/tiles/gervais
-mkdir lib/tiles/nomad
-mkdir lib/tiles/old
+# As with the manual above, the tilesets are whatever lib/tiles actually holds
+# rather than a list kept here.  list.txt already decides which sets the game
+# offers; when the neon set was added there and not here, the prf copy below
+# had no directory to land in and packaging stopped on it.
+for d in ../lib/tiles/*/ ; do
+	mkdir -p "lib/tiles/`basename "$d"`"
+done
 mkdir lib/sounds
 mkdir lib/icons
 mkdir lib/user
@@ -132,10 +135,9 @@ cp ../lib/icons/*.png lib/icons
 for f in `find ../lib/tiles \( -name '*.txt' -o -name '*.prf' \) -print` ; do
 	cp_unix2dos "$f" `echo "$f" | sed -E -e 's%^\.\./%%'`
 done
-cp ../lib/tiles/adam-bolt/*.png lib/tiles/adam-bolt
-cp ../lib/tiles/gervais/*.png lib/tiles/gervais
-cp ../lib/tiles/nomad/*.png lib/tiles/nomad
-cp ../lib/tiles/old/*.png lib/tiles/old
+for d in ../lib/tiles/*/ ; do
+	cp "$d"*.png "lib/tiles/`basename "$d"`"
+done
 
 cp ../lib/sounds/*.mp3 lib/sounds
 
