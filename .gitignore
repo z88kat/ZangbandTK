@@ -52,6 +52,27 @@ lib/user/save/*
 lib/user/scores/scores.*
 lib/user/sdl2init.txt
 lib/user/window.prf
+
+# The same files again, one directory up.
+#
+# Run from the build tree without PRIVATE_USER_PATH set, the user path is
+# `lib/` itself rather than `lib/user/`, so everything above lands here
+# instead -- which is where a `scripts/borg-progress` sweep or `make tests`
+# puts it. Five of these were committed by accident and dirtied the working
+# tree on every run.
+#
+# No keepfile in the directories: `create_needed_dirs()` (src/init.c) makes
+# save, panic, scores, archive and the user path itself at startup, and
+# lib/Makefile's pre-distclean deletes them again, so a tracked file in one of
+# them is a file `make distclean` removes.
+lib/CharOutput.txt
+lib/lore.txt
+lib/archive/*
+lib/panic/*
+lib/save/*
+lib/scores/scores.*
+lib/sdl2init.txt
+lib/window.prf
 mk/buildsys.mk
 mk/extra.mk
 mk/sinclude.mk
