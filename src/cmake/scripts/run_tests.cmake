@@ -202,6 +202,15 @@ while(_X LESS CMAKE_ARGC)
             else()
                 message("${_CONVERTED_PATH}: Suite died: ${_RUN_RESULT}")
             endif()
+            # And what it said on the way out. The output is already captured
+            # above and was being thrown away on exactly the path where it is
+            # the only evidence there is: a suite that dies rather than failing
+            # has usually hit an assertion or a sanitizer, and the report names
+            # the file and the line. Without this, a red msys2 job says only
+            # "Suite died" and the next person starts from the suite name.
+            if(NOT (_RUN_OUTPUT STREQUAL ""))
+                message("${_RUN_OUTPUT}")
+            endif()
             set(_EXITCODE 1)
             set(_RUN_RESULT 1)
             # We do not know how many tests the suite had, but at least one
@@ -217,6 +226,15 @@ while(_X LESS CMAKE_ARGC)
             message("${_RED}${_CONVERTED_PATH}: Suite died${_RESET}")
         else()
             message("${_CONVERTED_PATH}: Suite died")
+        endif()
+        # And what it said on the way out. The output is already captured
+        # above and was being thrown away on exactly the path where it is
+        # the only evidence there is: a suite that dies rather than failing
+        # has usually hit an assertion or a sanitizer, and the report names
+        # the file and the line. Without this, a red msys2 job says only
+        # "Suite died" and the next person starts from the suite name.
+        if(NOT (_RUN_OUTPUT STREQUAL ""))
+            message("${_RUN_OUTPUT}")
         endif()
         set(_EXITCODE ${_RUN_RESULT})
         # We do not know how many tests the suite had, but at least one failed.

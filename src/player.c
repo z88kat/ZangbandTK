@@ -16,7 +16,9 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 
+#include "cave.h"
 #include "effects.h"
+#include "game-world.h"
 #include "init.h"
 #include "obj-pile.h"
 #include "obj-util.h"
@@ -511,6 +513,30 @@ void player_cleanup_members(struct player *p)
 	}
 	string_free(p->body.name);
 	string_free(p->history);
+	/*
+	 * The level and the player's memory of it are a pair, and go together.
+	 *
+	 * A level object's `known` counterpart lives in `p->cave`
+	 * ([obj-knowledge.c:864](src/obj-knowledge.c#L864)), so releasing one
+	 * chunk while the other survives leaves every `obj->known` in the level
+	 * pointing at freed memory. The next character's birth then walks exactly
+	 * those pointers -- `player_learn_innate()` into
+	 * `update_player_object_knowledge()`, which iterates `cave->objects[]` and
+	 * dereferences `obj->known` on each. A real game never notices, because a
+	 * birth reset happens before any level exists; a test that generates a
+	 * level and then makes a second character finds it immediately, and msys2
+	 * found it before we did.
+	 *
+	 * The global chunk is released first, deliberately. `cave_free()` derives
+	 * its paired chunk as `player->cave` and hands it to `object_delete()`, so
+	 * going in this order unhooks the known copies while that chunk is still
+	 * alive. The other order hands `object_delete()` a NULL and leaks them.
+	 */
+	if (p == player && cave) {
+		cave_free(cave);
+		cave = NULL;
+		character_dungeon = false;
+	}
 	if (p->cave) {
 		cave_free(p->cave);
 		p->cave = NULL;

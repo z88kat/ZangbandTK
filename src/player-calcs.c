@@ -2858,6 +2858,24 @@ void update_stuff(struct player *p)
 	/* Character is not ready yet, no map updates */
 	if (!character_generated) return;
 
+	/*
+	 * And no level to update, which is not the same question.
+	 *
+	 * `character_generated` stays true across a birth reset -- it says a
+	 * character has existed, not that one is standing on a level -- so
+	 * everything below can be reached while `cave` is NULL: roll a new
+	 * character after the last one died and `get_bonuses()` calls through to
+	 * `update_monsters()`, which walks `cave_monster_max(cave)`.
+	 *
+	 * It needs `PU_MONSTERS` to be set to get that far, and what sets it
+	 * during birth is a character whose light differs from the previous one's
+	 * (`calc_light()` below). Before ZangbandTK no race carried a light, so
+	 * the flag was never raised at birth and this was unreachable; the Vampire
+	 * (PLR-01) raises it. `update_player_object_knowledge()` already tests
+	 * `cave` for the same reason.
+	 */
+	if (!cave) return;
+
 	/* Map is not shown, no map updates */
 	if (!map_is_visible()) return;
 

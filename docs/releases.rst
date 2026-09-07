@@ -45,6 +45,43 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+A use-after-free at birth, and the gate that was not watching — 7 September 2026
+--------------------------------------------------------------------------------
+
+- **3.111.2** — **msys2 went red on the new race suite, and it was a real
+  defect.** The suite *died* rather than failing, and the sanitizer report never
+  reached the log — the test runner captured the child's output and printed it
+  on every path except the one where it is the only evidence there is. Fixed
+  first, so the next one is diagnosable.
+
+  The fault: the level and the player's memory of it are a pair, and a level
+  object's ``known`` counterpart lives in ``p->cave``. ``player_init()`` released
+  ``p->cave`` and left the global ``cave`` holding objects whose ``known``
+  pointers now dangled — and the next character's birth walked exactly those,
+  through ``player_learn_innate()`` into ``update_player_object_knowledge()``,
+  which dereferences ``obj->known`` on every level object. A real game never
+  notices, because a birth reset happens before any level exists. The chunks are
+  now released together, the global one first so that ``cave_free()`` can still
+  unhook the known copies while its pair is alive.
+
+  Fixing that exposed a second, older one underneath: ``update_stuff()`` guards
+  its map work with ``character_generated``, which says a character *has*
+  existed rather than that one is standing on a level, so ``update_monsters()``
+  could walk a null ``cave`` during birth. It needs ``PU_MONSTERS`` raised to
+  get there, and what raises it at birth is a character whose light differs from
+  the previous one's — which before the Vampire no race could do.
+
+  **It was never a Windows quirk.** The suites seed from the clock and the pid,
+  and the fault needs a level that happens to have a visible object on the
+  floor: 3 seeds in 30. msys2 drew a bad one. Both fixes then held over 80 runs
+  across 40 seeds.
+
+  And the local gate had stopped reproducing the job it claims to: it created
+  ``build-asan`` only when the directory was missing, so a directory made before
+  ``-fno-sanitize-recover=undefined`` was added kept the old flags for ever —
+  reporting undefined behaviour and carrying on where msys2 aborts. It now
+  configures every time.
+
 The nightly was measuring the wrong machine — 7 September 2026
 ----------------------------------------------------------------
 

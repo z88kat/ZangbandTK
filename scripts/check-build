@@ -250,15 +250,35 @@ fi
 # sanitizer build that is never run tells you nothing: ASAN and UBSAN report at
 # run time, and the configuration difference this caught only shows up when a
 # test goes looking for its data.
+# One seed per run, which is worth knowing about.
+#
+# The suites seed from the clock and the pid unless ZTK_TEST_SEED says
+# otherwise (src/tests/test-utils.c), so this pass exercises one random level
+# layout out of many. A sanitizer fault that depends on the layout therefore
+# shows up as an intermittent red job: the use-after-free in
+# `player_cleanup_members()` fired on 3 seeds in 30, which is why msys2 caught
+# it and this did not.
+#
+# If a sanitizer failure will not reproduce, sweep seeds rather than re-running:
+#
+#     for s in $(seq 1 30); do ZTK_TEST_SEED=$s \
+#         ./build-asan/unittests/player/race/race; done
+#
 echo "check-build: building and testing as msys2/asan-ubsan does (Debug, ASAN+UBSAN, no frontends)"
-if [ ! -d build-asan ]; then
-	mkdir build-asan
-	( cd build-asan && run cmake -G Ninja \
-		-DCMAKE_BUILD_TYPE=Debug \
-		-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
-		-DCMAKE_C_FLAGS="-fsanitize=address -fsanitize=undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer -fno-lto -g" \
-		.. )
-fi
+# Configured every time, not only when the directory is missing.
+#
+# It used to be `if [ ! -d build-asan ]`, which meant a directory created before
+# a flag was added kept the old flags for ever. Mine had been made before
+# -fno-sanitize-recover=undefined arrived, so this pass had been *reporting*
+# undefined behaviour and carrying on while msys2 aborted on it -- the gate
+# claimed to reproduce that job and did not. cmake is idempotent here and only
+# forces a rebuild when the flags actually change.
+mkdir -p build-asan
+( cd build-asan && run cmake -G Ninja \
+	-DCMAKE_BUILD_TYPE=Debug \
+	-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
+	-DCMAKE_C_FLAGS="-fsanitize=address -fsanitize=undefined -fno-sanitize-recover=undefined -fno-omit-frame-pointer -fno-lto -g" \
+	.. )
 ( cd build-asan && LANG=en_US.UTF-8 run ninja alltests )
 
 echo "check-build: clean"
