@@ -614,14 +614,49 @@ and exits non-zero if a number has dropped materially. The thresholds are in
    * - spells learned
      - less than half the baseline
 
-They are not tighter than that for a specific reason. For one build and one set
-of seeds the runs are *exact* — the same seed gives the same turn count every
-time, verified three runs over — so none of this is noise. But any change to the
+They are not tighter than that for a specific reason. For one build, one set of
+seeds **and one machine** the runs are *exact* — the same seed gives the same
+turn count every time, verified three runs over and later reproduced at two
+optimisation levels — so none of this is noise. But any change to the
 game's **data** reshuffles the random stream and moves which seed happens to do
 well: the same seed that died at character level 1 one night reached level 13
 the next, on a change to starting equipment. Measured across the three seeds the
 spread is depth 1 to 7 and level 1 to 13, so a reshuffle can plausibly cost a
 couple of levels. Three cannot be explained that way.
+
+The runs are not portable between machines
+-----------------------------------------
+
+This cost a night, so it is written down. The first baseline was taken from a
+local sweep and compared against CI, the job called a regression, and the code
+was fine.
+
+At the same commit, with the same seed, class and flags, Warrior seed 13 played
+**280,358 turns to character level 13** on Darwin arm64 and **5,252 turns to
+character level 1** on Linux x86_64. Both machines are internally exact and
+reproduce their own figures every time. Neither is wrong; they are not the same
+measurement.
+
+Build type is not the cause — the local figure reproduces identically at ``-O0``
+and under ``RelWithDebInfo``, which is what CI builds — and the RNG is fixed
+width and deterministically seeded, so the same seed and the same sequence of
+calls give the same answer anywhere. Something in the sequence of calls differs
+by platform, and what it is has not been chased down, because it does not change
+what to do about it: **a baseline has to be generated the same way it will be
+measured.**
+
+So ``borg-progress`` records ``platform:`` in the baseline, prints the platform
+it is running on, and **skips the comparison entirely when the two differ**
+rather than comparing figures that cannot be compared. Running a sweep locally
+against the committed baseline is still useful — you get the table and the
+exercise line — it just will not judge you against CI's numbers.
+
+A useful corollary: a data change scoped to something the runs do not touch
+moves nothing at all. These runs play a Human, so the four races finished in
+3.110.0 left every turn count byte-identical across two nightlies. That is what
+finally separated the platform difference from a real regression — a genuine
+regression would have moved one number, not every number, and would not have
+left the Warrior rows identical to the digit.
 
 A run that hit the clock is **excluded** from the comparison, and the job says
 so, because a capped run stopped where the clock landed rather than where the
@@ -636,18 +671,21 @@ Updating the baseline when a number improves
 This is the step to get right, because the tempting thing to do with a red
 night is to make it green.
 
-Take the sweep the nightly takes, at the commit you are about to push::
+**Take it from a nightly, not from your own machine.** Run the workflow by hand
+— Actions → Borg → Run workflow — and copy the summary lines out of its log.
+A local sweep measures your laptop, and the nightly is what will be compared
+against this file; see `The runs are not portable between machines`_ above.
 
-    scripts/borg-progress -n 2000000 -m 10 \
-        -c Warrior,Mage,Priest,Warrior-Mage 1 7 13
-
-Copy its three summary lines into ``tests/borg/BASELINE``, update the notes
+Copy its summary lines into ``tests/borg/BASELINE``, update the notes
 saying which run reached each best, and **say in the commit message why the
 number moved**. A baseline that rises without an explanation is one nobody
 trusts to fall.
 
-Three things worth knowing:
+Four things worth knowing:
 
+- **Check the platform before you believe a drop.** If every number fell at
+  once, suspect the measurement rather than the game: a real regression usually
+  moves one thing. The comparison names the platform it ran on.
 - **Do not update it to silence a red night.** If a number dropped and you do
   not know why, that is the finding, not an inconvenience. The failure output
   names the metric, both values, the run that reached today's best and the

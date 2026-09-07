@@ -97,6 +97,16 @@ broken=0
 runs=0
 best_depth=0
 best_level=0
+# The machine, which turns out to be part of what is being measured.
+#
+# These runs are exact to the turn on one machine and are *not* portable across
+# machines: the same seed, class and commit gave Warrior seed 13 a run of
+# 280,358 turns to character level 13 on Darwin arm64 and 5,252 turns to level 1
+# on Linux x86_64. The first baseline was taken locally and compared against CI,
+# which made a red night look like a regression in the game when it was a
+# difference of hardware. Recording the platform is what stops that repeating.
+platform="$(uname -s) $(uname -m)"
+
 best_depth_run=none
 best_level_run=none
 deaths=0
@@ -158,6 +168,7 @@ echo
 echo "borg-progress: $runs runs, best depth $best_depth, best level $best_level,"
 echo "borg-progress: $deaths died, $capped capped, $broken broken,"
 echo "borg-progress: $learned_total spells learned, $cast_total cast"
+echo "borg-progress: on $platform"
 
 # Deaths and time caps are data. Only a crash, an abort or a wedge is a
 # failure, and each of those has already printed its seed above.
@@ -189,6 +200,19 @@ want() {
 want_note() {
 	sed -n "s/^$1:[[:space:]]*[0-9][0-9]*[[:space:]]*//p" "$baseline" | head -1
 }
+
+b_platform=$(sed -n 's/^platform:[[:space:]]*//p' "$baseline" | head -1)
+
+if [ -n "$b_platform" ] && [ "$b_platform" != "$platform" ]; then
+	echo
+	echo "borg-progress: this is $platform; $baseline was taken on"
+	echo "borg-progress: $b_platform. The runs are exact on one machine and"
+	echo "borg-progress: not comparable between two, so the baseline check is"
+	echo "borg-progress: SKIPPED. Compare a run against a baseline from the"
+	echo "borg-progress: same platform, which for the nightly means taking the"
+	echo "borg-progress: baseline from a nightly."
+	exit 0
+fi
 
 b_depth=$(want best-depth)
 b_level=$(want best-level)

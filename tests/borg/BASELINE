@@ -13,15 +13,25 @@
 #
 # === Updating it when a number legitimately improves ===
 #
-# Take the sweep the nightly takes, at the commit you are about to push:
+# Take it from a nightly, not from your own machine. Run the workflow by hand
+# (Actions -> Borg -> Run workflow) and copy the summary lines out of its log.
 #
-#     scripts/borg-progress -n 2000000 -m 10 \
-#         -c Warrior,Mage,Priest,Warrior-Mage 1 7 13
+# This is not fussiness. The first version of this file was taken from a local
+# sweep, and it cost a night: every number differed from CI's, the job called it
+# a regression, and the code was fine. The runs are exact to the turn on one
+# machine and are not portable between two -- Warrior seed 13 at the same commit
+# played 280,358 turns to character level 13 on Darwin arm64 and 5,252 turns to
+# level 1 on Linux x86_64. A baseline has to be generated the same way it will
+# be measured, and the nightly is what measures it.
 #
-# Copy its three summary lines into the values below, update the notes saying
-# which run reached each best, and say in the commit message why the number
-# moved. That last part is the point of the file: a baseline that rises without
-# an explanation is a baseline nobody trusts to fall.
+# `borg-progress` now records the platform below and refuses to compare across
+# platforms, so a repeat of that mistake says so instead of failing the build.
+# Running a sweep locally against this file is fine; it will skip the check.
+#
+# Update the notes saying which run reached each best, and say in the commit
+# message why the number moved. That last part is the point of the file: a
+# baseline that rises without an explanation is a baseline nobody trusts to
+# fall.
 #
 # Do not update it to make a red night go green. If a number dropped and you do
 # not know why, that is the finding.
@@ -32,17 +42,29 @@
 # workflow and all three are part of what is being measured. Changing any of
 # them invalidates the file, so change them and re-baseline in the same commit.
 #
-# The runs are exact: the same seed on the same build gives the same turn count
-# every time, verified three times over. So nothing here is noise. But any
-# change to the game *data* reshuffles the random stream and moves which seed
-# happens to do well -- which is why the thresholds in borg-progress tolerate a
-# couple of levels rather than demanding the figures never move at all.
+# And the machine. The runs are exact *on one machine*: the same seed on the
+# same build gives the same turn count every time, verified three times over,
+# and reproduced later at two optimisation levels. They are not exact across
+# machines. So nothing here is noise, but everything here is specific to the
+# platform named below.
+#
+# Any change to the game *data* also reshuffles the random stream and moves
+# which seed happens to do well -- which is why the thresholds in borg-progress
+# tolerate a couple of levels rather than demanding the figures never move at
+# all. Note that data changes scoped to something the run does not touch move
+# nothing: these runs play a Human, so the four races finished in 3.110.0 left
+# every turn count identical, which is how the platform difference was finally
+# separated from a real regression.
 
-# Taken at fee2b4cbe, 6 September 2026, unaided (no cheats, no grants, no pets).
-# 12 runs: Warrior, Mage, Priest, Warrior-Mage against seeds 1, 7 and 13.
+# Taken from the nightly of 7 September 2026, at 15d811d83, unaided (no cheats,
+# no grants, no pets). 12 runs: Warrior, Mage, Priest, Warrior-Mage against
+# seeds 1, 7 and 13, all twelve dying, none capped.
+#
+# Replaces a baseline taken on Darwin arm64, which CI could never match.
 
-best-depth: 7   Warrior seed 13
-best-level: 13  Warrior seed 13
-spells-learned: 30
-spells-cast: 24
+platform: Linux x86_64
+best-depth: 8   Warrior seed 1
+best-level: 9   Priest seed 1
+spells-learned: 22
+spells-cast: 15
 runs: 12

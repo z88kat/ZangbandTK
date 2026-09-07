@@ -45,6 +45,44 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The nightly was measuring the wrong machine — 7 September 2026
+----------------------------------------------------------------
+
+- **3.111.1** — **The first red night was the baseline, not the game.** The
+  nightly reported best character level down from 13 to 9, spells learned 30 to
+  22, cast 24 to 15, and called it a regression.
+
+  Two things in the shape of it said otherwise. Every number had moved, where a
+  real regression usually moves one — and best *depth* had gone up, 7 to 8. And
+  the Warrior rows were byte-identical to the previous night, to the digit,
+  across all the race and class data that landed in between.
+
+  Both turned out to be true and innocent. The runs play a Human, and
+  everything in 3.110.0 was scoped to four other races, so the Warrior's random
+  stream genuinely never moved. And the numbers all differed because the
+  baseline was taken on a different computer from the one measuring it.
+
+  At the same commit, same seed, same flags, Warrior seed 13 played **280,358
+  turns to character level 13** on Darwin arm64 and **5,252 turns to level 1**
+  on Linux x86_64. Both machines are internally exact and reproduce their own
+  figures every time; neither is wrong. Build type was ruled out — the local
+  figure reproduces identically at ``-O0`` and under ``RelWithDebInfo``, which
+  is what CI builds — and the RNG is fixed-width and deterministically seeded,
+  so the divergence is somewhere in the *sequence* of calls rather than the
+  dice. What exactly has not been chased down, because it does not change the
+  remedy.
+
+  The baseline is re-taken from the nightly's own log and now records
+  ``platform:``. ``borg-progress`` prints the platform it ran on and **skips
+  the comparison when the two differ**, rather than comparing figures that
+  cannot be compared, so this fails loudly instead of looking like a bug in the
+  game. Running a sweep locally is still useful for the table; it just no
+  longer judges your laptop against CI.
+
+  The lesson is one line, and it is now the first line of the update
+  instructions: a baseline has to be generated the same way it will be
+  measured.
+
 The Vampire becomes playable — 7 September 2026
 ----------------------------------------------------------------
 
