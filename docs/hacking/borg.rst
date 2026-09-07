@@ -625,7 +625,7 @@ spread is depth 1 to 7 and level 1 to 13, so a reshuffle can plausibly cost a
 couple of levels. Three cannot be explained that way.
 
 The runs are not portable between machines
------------------------------------------
+------------------------------------------
 
 This cost a night, so it is written down. The first baseline was taken from a
 local sweep and compared against CI, the job called a regression, and the code
