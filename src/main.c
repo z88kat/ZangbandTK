@@ -406,7 +406,7 @@ int main(int argc, char *argv[])
 				/* in graphics.txt, 2 corresponds to adam bolt's tiles */
 				arg_graphics = 2; 
 				if (*arg) arg_graphics = atoi(arg);
-				break;
+				continue;
 
 			case 'u': {
 				if (!*arg) goto usage;
@@ -462,7 +462,7 @@ int main(int argc, char *argv[])
 				puts("  -n             Start a new character (WARNING: overwrites default savefile without -u)");
 				puts("  -l             Lists all savefiles you can play");
 				puts("  -w             Resurrect dead character (marks savefile)");
-				puts("  -g             Request graphics mode");
+				puts("  -g[mode]       Request graphics mode (default 2)");
 				puts("  -u<who>        Use your <who> savefile");
 				puts("  -d<dir>=<path> Override a specific directory with <path>. <path> can be:");
 				for (i = 0; i < (int)N_ELEMENTS(change_path_values); i++) {

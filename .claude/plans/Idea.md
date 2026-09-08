@@ -124,8 +124,8 @@ https://www.amazon.co.uk/Second-Chronicles-Amber-S-F-MASTERWORKS/dp/147322215X/
 To cut the release
 
 git push origin master
-git tag 3.49.5
-git push origin 3.49.5
+git tag 3.108.2
+git push origin 3.108.3
 
 ## Pre-Release
 
