@@ -45,6 +45,55 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The Sprite flies faster and the Yeek stops corroding — 7 September 2026
+-----------------------------------------------------------------------
+
+- **3.112.0** — **Two gaps the audit found, and a sweep to see whether there
+  were more.**
+
+  A Sprite had no speed at all. Zangband sets ``TR_SPEED`` on it above level 9
+  and cashes the flag as ``pspeed += lev / 10`` (``xtra1.c:2550``) — a point at
+  10 rising to five at 50, which is worth more than most races' entire list of
+  resistances and is most of what 175 experience a level buys. It is now a
+  ``speed:base:scale`` field, sibling to the ``light:`` and ``armour:`` fields
+  the Vampire and Golem needed, because the Klackon is blocked behind exactly
+  the same thing and this makes it a data line when it arrives.
+
+  Worth recording about the arithmetic: the archive's level-10 threshold is
+  redundant with its own formula, since ``9 / 10`` is 0. So ``speed:0:10``
+  reproduces every level exactly with no ``gain-at`` band, and the test checks
+  the boundary rather than the endpoint — a flat bonus, or a scale of five,
+  both fail it.
+
+  A Yeek was resistant to acid but never immune, which the archive grants above
+  19. One data line now the gates exist. That exposed a real flaw in the
+  generic gate test: it required a gated resist to be *absent* below its band,
+  which is true of the Draconian and false of the Yeek, who upgrades one it
+  already has. It now requires the band to *raise* the resist.
+
+  **And the set is closed, which was worth checking rather than assuming.**
+  Sweeping every race-conditional grant in the archive's ``player_flags()``
+  against our data: 10 level gates, all now present, and no birth flag missing
+  from any of the nine imported races.
+
+  That sweep covers one function, though, and the Golem's armour was never in
+  it. Sweeping outside it turned up three more, all on the Golem: it cannot be
+  **stunned** (``effects.c:1875``), cannot **bleed** (``effects.c:2064``), and
+  a monster draining life from it — or from a Vampire — **does not heal itself**
+  (``melee1.c:1327``). ``OF_PROT_STUN`` exists, so the first is one data line;
+  the others need thought. Not built here; recorded so they are not found again
+  by accident.
+
+  Three documentation corrections while in the area. The Draconian's breath was
+  described as changing "every five levels" in Zangband — it changes by
+  *class*, with a chance equal to your level in a hundred (``racial.c:380``),
+  and our damage is one and a half times level against the archive's twice.
+  The Sprite's entry said Zangband quickened it at level nine, where the
+  archive is above nine, meaning ten. And ``p_race.txt``'s own header said
+  ``mutation-rate`` was a one-in-N chance; it is a percentage, so a Beastman's
+  ``1:20`` is one chance in five per level, which is what the manual has always
+  said and what the header got wrong.
+
 The release stopped one step short of the zip — 7 September 2026
 ----------------------------------------------------------------
 

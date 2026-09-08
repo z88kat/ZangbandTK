@@ -2260,6 +2260,22 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		state->to_a += innate;
 	}
 
+	/*
+	 * And speed the race is, on the same shape (PLR-01).
+	 *
+	 * A Sprite flies: `lev / 10`, so one point at 10 and five at 50
+	 * ([xtra1.c:2550](../archive/zangband/src/xtra1.c#L2550)). Applied here,
+	 * after equipment and before the weight penalty and the final clamp, so an
+	 * innate bonus is treated exactly like a worn one.
+	 */
+	if (p->race && (p->race->speed || p->race->speed_scale)) {
+		int innate = p->race->speed;
+
+		if (p->race->speed_scale)
+			innate += p->lev / p->race->speed_scale;
+		state->speed += innate;
+	}
+
 	/* Now deal with vulnerabilities */
 	for (i = 0; i < ELEM_MAX; i++) {
 		if (vuln[i] && (state->el_info[i].res_level < 3))

@@ -366,6 +366,8 @@ struct player_race {
 	int light;					/**< Light radius the race carries (PLR-01) */
 	int armour;					/**< Innate armour class (PLR-01) */
 	int armour_scale;			/**< ...plus level divided by this */
+	int speed;					/**< Innate speed bonus (PLR-01) */
+	int speed_scale;			/**< ...plus level divided by this */
 
 	struct player_race_gain *gains;
 	struct player_race_kit *kit;	/**< Starting-kit substitutions (PLR-01) */	/**< What it grows into (PLR-01) */

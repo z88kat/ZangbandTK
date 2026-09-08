@@ -299,9 +299,13 @@ Beastman
 .. _Yeek:
 
 Yeek
-  Feeble, cowardly, and aware of it. Weak, fragile, poor in a fight and
-  resistant to acid. The one thing in its favour is that it is cheap: a Yeek
-  levels at the same rate as a human, which is the only kindness it is shown.
+  Feeble, cowardly, and aware of it. Weak, fragile and poor in a fight.
+
+  It is resistant to acid from birth and **immune to it above level 19**, which
+  is the one thing a Yeek is unambiguously good at — nothing corrodes it, and
+  no acid attack in the game will touch it once it gets there. Beyond that its
+  only kindness is the price: a Yeek levels at the same rate as a human, the
+  cheapest race in the game alongside Human itself.
 
 .. _Draconian:
 
@@ -316,9 +320,13 @@ Draconian
   slowest-ripening race in the game, and at 250 experience for every level it is
   also the second dearest.
 
-  It breathes from level 15 — fire, and only fire. In Zangband the breath
-  changed every five levels; here it does not, which is the one thing about the
-  race still to be built.
+  It breathes from level 15 — fire, and only fire. Zangband's breath is not
+  fixed like that, and not on a level cycle either as this page used to say: it
+  is one-in-three cold rather than fire, and then, with a chance equal to your
+  character level in a hundred, it becomes something belonging to your *class*
+  — shards for a Warrior, disenchantment for a Mage, chaos for a Chaos-Warrior,
+  confusion for a Monk (`racial.c:380`). That, and a breath worth twice your
+  level rather than one and a half times it, are what remain to be built.
 
 .. _Mindflayer:
 
@@ -395,9 +403,14 @@ Golem
 
 Sprite
   Tiny, quick-witted and airborne. Feeble in a fight, excellent at everything
-  requiring fingers or attention, and it falls slowly. It throws sleeping dust
-  from level 12. Zangband also quickened Sprites at level nine; a race in this
-  game cannot yet be given speed, so that part is still to be built.
+  requiring fingers or attention, resistant to light, and it falls slowly. It
+  throws sleeping dust from level 12.
+
+  And it is **the only race that gets faster as it grows**: a point of speed at
+  level 10 and another every tenth level after, so a Sprite at 50 moves five
+  points quicker than anything else in the game before it wears a single item.
+  Nothing else does this, and at 175 experience a level it is most of what you
+  are paying for.
 
 .. _Half-Titan:
 

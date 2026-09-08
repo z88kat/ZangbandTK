@@ -168,6 +168,60 @@ static int test_the_draconian_grows_into_its_scales(void *state) {
 }
 
 /*
+ * A Sprite flies, and flies faster as it grows (PLR-01).
+ *
+ * `lev / 10` ([xtra1.c:2550](../archive/zangband/src/xtra1.c#L2550)): one point
+ * at 10, five at 50. It had none of this -- the largest single number missing
+ * from the imported races after the Golem's armour, and worth more than most
+ * races' whole list of resistances.
+ *
+ * The boundary is the point of the test. Zangband gates the flag above level 9
+ * and then divides the level by ten, which is the same thing twice: a flat
+ * bonus, or a scale of anything but ten, would pass a test that only looked at
+ * level 50.
+ */
+static int test_a_sprite_flies_faster_as_it_grows(void *state) {
+	struct player_race *sprite = race_named("Sprite");
+	int at9, at10, at20, at50, without, keep;
+
+	require(sprite);
+	require(grown_to("Sprite", 9));  at9  = player->state.speed;
+	require(grown_to("Sprite", 10)); at10 = player->state.speed;
+	require(grown_to("Sprite", 20)); at20 = player->state.speed;
+	require(grown_to("Sprite", 50)); at50 = player->state.speed;
+
+	/* The same character with the scale switched off, as the only baseline
+	 * that measures this and nothing else. */
+	keep = sprite->speed_scale;
+	sprite->speed_scale = 0;
+	require(grown_to("Sprite", 50));
+	without = player->state.speed;
+	sprite->speed_scale = keep;
+
+	eq(at50 - without, 5);		/* lev / 10 at 50 */
+	eq(at10 - at9, 1);			/* and nothing at all until 10 */
+	eq(at20 - at10, 1);
+	eq(at9, at10 - 1);
+	ok;
+}
+
+/*
+ * And a Yeek stops merely resisting acid (PLR-01).
+ *
+ * Immune above 19 (`files.c`, RACE_YEEK) -- the one thing a Yeek is good at,
+ * and it had the resistance without the immunity. Checked either side of the
+ * threshold and against the resistance it starts with, so a version that
+ * granted immunity at birth would fail as loudly as one that never granted it.
+ */
+static int test_a_yeek_becomes_immune_to_acid(void *state) {
+	eq(res_at("Yeek", 1, ELEM_ACID), 1);
+	eq(res_at("Yeek", 19, ELEM_ACID), 1);
+	eq(res_at("Yeek", 20, ELEM_ACID), 3);
+	eq(res_at("Yeek", 50, ELEM_ACID), 3);
+	ok;
+}
+
+/*
  * A Mindflayer sustains both its mental stats from birth, sees the invisible
  * above 14 and reads minds above 29
  * ([files.c:1421](../archive/zangband/src/files.c#L1421)).
@@ -282,19 +336,26 @@ static int test_every_level_gate_actually_opens(void *state) {
 				if (!g->el_info[i].res_level) continue;
 				require(res_at(r->name, g->level, i)
 						== g->el_info[i].res_level);
+				/*
+				 * Below the band it must be *less*, not absent. The Draconian
+				 * gains resistances it did not have; the Yeek upgrades one it
+				 * did -- acid 1 at birth, 3 above 19 -- and demanding zero
+				 * there fails a race that is correct.
+				 */
 				if (below < g->level)
-					require(res_at(r->name, below, i) == 0);
+					require(res_at(r->name, below, i)
+							< g->el_info[i].res_level);
 				gates++;
 			}
 		}
 	}
 
 	/*
-	 * If nothing was gated, the loop above proved nothing. Eight is what the
-	 * four races carry today -- five Draconian resists, two Mindflayer flags,
-	 * one Golem flag. Raise it as races arrive.
+	 * If nothing was gated, the loop above proved nothing. Nine is what the
+	 * races carry today -- five Draconian resists, two Mindflayer flags, one
+	 * Golem flag and the Yeek's acid immunity. Raise it as races arrive.
 	 */
-	require(gates >= 8);
+	require(gates >= 9);
 	ok;
 }
 
@@ -489,6 +550,10 @@ const char *suite_name = "player/race";
 struct test tests[] = {
 	{ "the-draconian-grows-into-its-scales",
 			test_the_draconian_grows_into_its_scales },
+	{ "a-sprite-flies-faster-as-it-grows",
+			test_a_sprite_flies_faster_as_it_grows },
+	{ "a-yeek-becomes-immune-to-acid",
+			test_a_yeek_becomes_immune_to_acid },
 	{ "the-mindflayer-grows-into-its-mind",
 			test_the_mindflayer_grows_into_its_mind },
 	{ "the-golem-is-made-of-something",

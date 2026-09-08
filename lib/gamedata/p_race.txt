@@ -32,13 +32,14 @@
 # values:values
 # light:radius
 # armour:base:scale
+# speed:base:scale
 # gain-at:level
 # gain-obj-flags:object flags
 # gain-values:values
 # equip-instead:replaced tval:tval:sval:min:max
 # virtues:virtues
 # mutation-affinity:mutation:weight
-# mutation-rate:one-in
+# mutation-rate:count at birth:percent chance per level
 # power:name  (then power-level, power-cost, power-stat, power-fail,
 #              power-effect, power-dice, power-expr, power-when)
 
@@ -82,6 +83,10 @@
 # hardened clay at birth and 30 by level 50.  A scale of 0 means no level
 # term.
 
+# 'speed' is innate speed, on the same shape: a flat amount plus character
+# level divided by the scale.  'speed:0:10' is a Sprite, which is a point
+# faster every tenth level.
+
 # 'gain-at' opens a band of properties the race grows into rather than being
 # born with, and applies to every 'gain-obj-flags' and 'gain-values' line
 # following it until the next 'gain-at'.  The level is inclusive: 'gain-at:15'
@@ -99,8 +104,11 @@
 
 # 'virtues' is for the virtues a race inclines towards (see virtue.txt).
 
-# 'mutation-affinity' weights a race towards one mutation; 'mutation-rate' is
-# the one-in-N chance of gaining one on gaining a level (Beastmen).
+# 'mutation-affinity' weights a race towards one mutation.  'mutation-rate' is
+# how many mutations the race is born with, then the *percentage* chance of
+# gaining another on gaining a level -- `player.c` rolls `randint0(100) <
+# rate`, so a Beastman's '1:20' is one at birth and one chance in five per
+# level, not one in twenty.
 
 # 'power' begins a racial power -- something the race can do that no class
 # teaches -- and is followed by its level, cost, stat, failure rate and
@@ -477,6 +485,10 @@ age:20:20
 height:70:6
 weight:150:20
 values:RES_ACID[1]
+# And stops being merely resistant: immune to acid above level 19
+# (files.c, RACE_YEEK).  The one thing a Yeek is actually good at.
+gain-at:20
+gain-values:RES_ACID[3]
 power:scream
 power-level:15
 power-cost:15
@@ -688,6 +700,10 @@ age:20:20
 height:70:6
 weight:150:20
 obj-flags:FEATHER
+# A Sprite flies: `lev / 10` speed, so +1 at 10 and +5 at 50 (xtra1.c:2550).
+# Zangband gates the flag above level 9, which its own arithmetic makes
+# redundant -- 9/10 is 0 -- so the scale alone reproduces every level.
+speed:0:10
 values:RES_LIGHT[1]
 power:throw sleeping dust
 power-level:12

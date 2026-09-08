@@ -3778,6 +3778,33 @@ static enum parser_error parse_p_race_equip_instead(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+/**
+ * Speed the race is born to, or grows into (PLR-01).
+ *
+ * Zangband sets `TR_SPEED` on a Sprite above level 9 and on a Klackon above
+ * level 9, and cashes the flag in one place: `pspeed += lev / 10`
+ * ([xtra1.c:2550](../archive/zangband/src/xtra1.c#L2550)). So a Sprite is one
+ * point faster at 10 and five points faster at 50, which is worth more than
+ * most races' entire list of resistances and was missing altogether.
+ *
+ * The level threshold in the archive is redundant with its own arithmetic --
+ * `9 / 10` is 0 -- so `speed:0:10` reproduces every level exactly without a
+ * `gain-at` band. The threshold matters for the Monk, whose flag is
+ * conditional on carrying no armour rather than on a level, and that is a
+ * class question this does not answer.
+ */
+static enum parser_error parse_p_race_speed(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->speed = parser_getint(p, "speed");
+	r->speed_scale = parser_getint(p, "scale");
+	if (r->speed_scale < 0)
+		return PARSE_ERROR_INVALID_VALUE;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_p_race_gain_at(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	struct player_race_gain *g, *last;
@@ -4501,6 +4528,7 @@ static struct parser *init_parse_p_race(void) {
 	parser_reg(p, "obj-flags ?str flags", parse_p_race_obj_flags);
 	parser_reg(p, "light int light", parse_p_race_light);
 	parser_reg(p, "armour int armour int scale", parse_p_race_armour);
+	parser_reg(p, "speed int speed int scale", parse_p_race_speed);
 	parser_reg(p,
 		"equip-instead sym replaces sym tval sym sval int min int max",
 		parse_p_race_equip_instead);

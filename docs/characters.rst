@@ -48,12 +48,14 @@ that did not make it.
        point more every fifth level; immune to poison, and gets almost nothing
        out of food.
    * - **Sprite**
-     - Flies. Fragile, quick, and puts things to sleep.
+     - Flies, and the only race that gets faster as it grows: a point of speed
+       at level 10 and another every tenth after. Fragile, and puts things to
+       sleep.
    * - **Half-Titan**
      - The most expensive thing you can be, at 255 per cent.
    * - **Yeek**
-     - Feeble, cowardly, and cheap — it levels as fast as a human, which is
-       the only kindness it is shown.
+     - Immune to acid above 19, and otherwise feeble, cowardly, and cheap —
+       it levels as fast as a human, which is the only kindness it is shown.
    * - **Beastman**
      - Chaos-touched and born wrong, and the one race that mutates without
        being made to: one mutation at birth and a one-in-five chance at every
