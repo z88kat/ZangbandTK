@@ -970,6 +970,64 @@ Deferred to their own platforms (DEC-21):
 
 Outstanding follow-ups raised while building, rather than while planning:
 
+- **The Spectre's pass-wall** (PLR-01). The Spectre shipped without it, on the
+  reasoning that three finished races should not wait on one unknown, and its
+  manual entry says so. What was established while sizing it, so nobody has to
+  size it twice:
+
+  **Four parts, all small.** Movement: one branch in `move_player()`
+  ([cmd-cave.c:1362](../../src/cmd-cave.c#L1362)), where 4.2 gates on
+  `square_ispassable()`; the archive allows any wall that is not *permanent*
+  ([cmd1.c:2301](../zangband/src/cmd1.c#L2301)), and 4.2 has `square_isperm()`
+  already. No energy cost -- it is an ordinary move. Damage while inside rock:
+  `1 + depth / 10` a turn with no regeneration, and it *cannot kill you* -- the
+  archive applies it only while `chp > depth / 10`
+  ([dungeon.c:1202](../zangband/src/dungeon.c#L1202)). That is the same shape
+  as the Vampire's sunlight in `process_world()`. And attacking monsters that
+  are inside walls, which the archive permits.
+
+  **The unknown is the view.** 4.2's `update_view()` casts from the player's
+  grid on the assumption that it is passable. What a character standing inside
+  solid rock can see is undefined, and cannot be sized without trying it. This
+  is the whole reason the Spectre shipped without the ability rather than with
+  a guess at it.
+
+  **And a question for the project owner, which is not a race question.**
+  Zangband's mountains were never walls: `FEAT_MOUNTAIN` is passable to
+  everyone at an energy penalty unless you have `TR_WILD_WALK`
+  ([cmd1.c:2382](../zangband/src/cmd1.c#L2382)) -- slow terrain, not an
+  obstacle. Ours are `ROCK | WALL` and *not* `PERMANENT`
+  ([terrain.txt](../../lib/gamedata/terrain.txt), `mountainside`). So a
+  faithful pass-wall would let a Spectre walk straight through our mountain
+  ranges, which the original never had to consider because it had no such
+  walls to walk through.
+
+  That is a real difference between this wilderness and Zangband's, and it may
+  bear on more than one race -- anything that reads "wall" reads our mountains
+  as one. Three ways out, and the choice is the owner's: make mountainside
+  permanent (mountains block everyone, pass-wall included); give pass-wall a
+  terrain exception; or follow Zangband and make mountains slow rather than
+  solid, which is the largest change and the most faithful one.
+
+- **The imported races share a placeholder age, height and weight** (PLR-01).
+  All nine of the first wave carry `age:20:20`, `height:70:6`,
+  `weight:150:20`, where the archive gives each race its own figures. A
+  Half-Titan is currently the same size as a Yeek, and a Yeek should be
+  50 inches and 82 pounds against the Half-Titan's 100 and 255.
+
+  Left alone deliberately, and the reasoning is the point of writing it down:
+  it is **cosmetic** -- these fields reach the character sheet and nothing
+  else, no skill, no combat, no experience -- and correcting it **changes
+  existing characters' sheets**, which is a different kind of change from
+  filling a gap. It reads as a bug to whoever notices it, which is why it is
+  here rather than in a transcript.
+
+  The eight races of the second wave already carry the archive's figures: age
+  verbatim, height and weight the midpoint of its separate male and female
+  rows, which is how 4.2 derived its own. So the fix for the nine is to do the
+  same, and `scripts/` has no generator for it because the mapping is three
+  lines of arithmetic.
+
 - ~~**The inn's nightmare** (WLD-16c).~~ **Built, as PLR-41.** Both directions
   below were taken: a bad night on a failed save, and a true dream that reveals a
   place. Weighted by the town's law, so a frontier inn gives nightmares and a

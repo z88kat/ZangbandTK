@@ -832,6 +832,158 @@ power-dice:$B
 power-expr:B:PLAYER_LEVEL:+ 0
 
 
+# The four undead of Zangband, which share one shape: they cannot eat, they
+# begin the game just after midnight (dungeon.c:3270), and Zangband gives each
+# of them scrolls of Satisfy Hunger in place of the rations they cannot use
+# (birth.c:557).  Only the Vampire among the five also fears the light.
+name:Skeleton
+virtues:UNLIFE
+stats:0:-2:-2:0:1
+skill-disarm-phys:-5
+skill-disarm-magic:-5
+skill-device:-5
+skill-save:5
+skill-stealth:-1
+skill-search:-1
+skill-melee:16
+skill-shoot:0
+skill-throw:0
+skill-dig:0
+hitdie:10
+exp:145
+infravision:2
+history:1
+age:100:35
+height:69:5
+weight:50:5
+# No SLOW_DIGEST: a skeleton gets hungry at the ordinary rate and can do
+# nothing about it, which is why the scrolls matter more to it than to the rest.
+obj-flags:SEE_INVIS | HOLD_LIFE | CANT_EAT
+player-flags:UNDEAD
+values:RES_SHARD[1] | RES_POIS[3] | RES_ACID[-1]
+equip-instead:food:scroll:Remove Hunger:2:5
+gain-at:10
+gain-values:RES_COLD[1]
+power:recover your lost life force
+power-level:30
+power-cost:30
+power-stat:WIS
+power-fail:18
+power-effect:RESTORE_EXP
+
+name:Zombie
+virtues:UNLIFE
+stats:2:-6:-6:1:4
+skill-disarm-phys:-5
+skill-disarm-magic:-5
+skill-device:-5
+skill-save:8
+skill-stealth:-1
+skill-search:-1
+skill-melee:20
+skill-shoot:0
+skill-throw:0
+skill-dig:0
+hitdie:13
+exp:135
+infravision:2
+history:1
+age:100:30
+height:69:5
+weight:100:23
+obj-flags:SEE_INVIS | HOLD_LIFE | SLOW_DIGEST | CANT_EAT
+player-flags:UNDEAD
+values:RES_NETHER[1] | RES_POIS[3] | RES_FIRE[-1]
+equip-instead:food:scroll:Remove Hunger:2:5
+gain-at:5
+gain-values:RES_COLD[1]
+power:recover your lost life force
+power-level:30
+power-cost:30
+power-stat:WIS
+power-fail:18
+power-effect:RESTORE_EXP
+
+# Ships without pass-wall, deliberately: the archive lets a Spectre walk
+# through any non-permanent wall, and 4.2 has no player mechanism for it.  The
+# four small parts of that are understood; what a character standing inside
+# solid rock can see is not.  Recorded as a follow-up in decisions.md rather
+# than guessed at here.
+name:Spectre
+virtues:UNLIFE
+stats:-5:4:4:2:-3
+skill-disarm-phys:10
+skill-disarm-magic:10
+skill-device:25
+skill-save:20
+skill-stealth:5
+skill-search:5
+skill-melee:-20
+skill-shoot:-10
+skill-throw:-10
+skill-dig:0
+hitdie:7
+exp:180
+infravision:5
+history:1
+age:100:30
+height:69:5
+weight:100:23
+obj-flags:SEE_INVIS | HOLD_LIFE | SLOW_DIGEST | CANT_EAT
+player-flags:UNDEAD
+values:RES_COLD[1] | RES_NETHER[1] | RES_POIS[3] | RES_ELEC[-1]
+equip-instead:food:scroll:Remove Hunger:2:5
+gain-at:35
+gain-obj-flags:TELEPATHY
+power:howl to terrify your enemies
+power-level:4
+power-cost:6
+power-stat:INT
+power-fail:3
+power-effect:BOLT_AWARE:TURN_ALL
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+
+# The Ghoul's second power, eating corpses for nutrition, has nothing to eat:
+# 4.2 has no corpse objects at all.  Its first is the paralysing touch, which
+# is a flag rather than a power and is built in player-attack.c.
+name:Ghoul
+virtues:UNLIFE
+stats:0:-1:-1:-1:1
+skill-disarm-phys:-3
+skill-disarm-magic:-3
+skill-device:-3
+skill-save:6
+skill-stealth:1
+skill-search:0
+skill-melee:10
+skill-shoot:0
+skill-throw:0
+skill-dig:0
+hitdie:9
+exp:125
+infravision:2
+history:1
+age:100:30
+height:69:5
+weight:100:23
+obj-flags:HOLD_LIFE | CANT_EAT | GHOUL_TOUCH
+player-flags:UNDEAD
+values:RES_COLD[1] | RES_POIS[3] | RES_FIRE[-1]
+equip-instead:food:scroll:Remove Hunger:2:5
+gain-at:10
+gain-values:RES_DARK[1]
+gain-at:20
+gain-values:RES_NETHER[1]
+power:sense living creatures
+power-level:30
+power-cost:10
+power-stat:WIS
+power-fail:12
+power-effect:DETECT_LIVING_MONSTERS
+power-dice:22
+
+
 # Flies. Zangband quickened it at level nine; speed is not something a 4.2 race can be given, so that waits for PLR-02.
 name:Sprite
 virtues:NATURE

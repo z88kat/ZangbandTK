@@ -452,12 +452,67 @@ Imp
   invisible from level 10. It throws fire from level 9 — a bolt, becoming a
   ball at 30.
 
+.. _Skeleton:
+
+Skeleton
+  Bones, animated. It sees the invisible, holds its life against draining, is
+  immune to poison and resists shards — and acid eats it. Cold above level 10.
+
+  **It cannot eat, and it digests at the ordinary rate**, which is the worst
+  combination of the four undead: it gets hungry like anyone else and food is
+  no use to it. So it starts with two to five scrolls of Remove Hunger instead
+  of rations, and will be buying more. From level 30 it can recover lost
+  experience, which no other race can do for itself.
+
+.. _Zombie:
+
+Zombie
+  Enormously strong and tough and very nearly mindless — a six-point penalty
+  to both intelligence and wisdom, the heaviest in the game — with thirteen hit
+  dice, the second most. Sees the invisible, holds its life, immune to poison,
+  resists nether, and fire is its undoing. Cold above level 5, the earliest of
+  the four.
+
+  It cannot eat but digests slowly, so the hunger scrolls it starts with go
+  further than a Skeleton's. From level 30 it too can recover lost experience.
+
+.. _Spectre:
+
+Spectre
+  Barely there. Feeble and frail — seven hit dice and five points of strength
+  gone — and in exchange the best saving throw, magic device skill and stealth
+  of any race in the game, telepathy above level 35, and 180 experience a level
+  to pay for it. Immune to poison, resists cold and nether, holds its life,
+  sees the invisible, and lightning tears it apart.
+
+  It howls from level 4 — the earliest attacking power any race has — and
+  terrifies what it is aimed at.
+
+  **What it cannot yet do is walk through walls.** In Zangband a Spectre passes
+  through anything that is not permanent, taking a little damage for as long as
+  it stands inside rock. This game has no mechanism for a player walking
+  through a wall at all, and the part nobody has established is what such a
+  character can *see* while inside one. The race ships without it rather than
+  with a guess; everything else about the Spectre is complete.
+
+.. _Ghoul:
+
+Ghoul
+  A corpse-eater, and the one race whose **bare hands paralyse**: fight
+  unarmed and what you hit falls asleep, which is the whole reason to be one.
+  Immune to poison, resists cold, holds its life, and fire hurts it. Darkness
+  above level 10, nether above 20.
+
+  It senses living creatures from level 30. Zangband gave it a second power —
+  eating corpses for nutrition — which has nothing to work on here, because
+  this game has no corpses to eat.
+
 .. _racial-powers:
 
 Racial powers
 -------------
 
-Twelve of these thirteen races can do something no amount of study will teach,
+Sixteen of these seventeen races can do something no amount of study will teach,
 and press ``N`` to do it. The Amberite can do two things, which is the point of
 being an Amberite; the Beastman can do nothing, because in Zangband its whole
 character was mutation happening *to* it rather than anything it chose.

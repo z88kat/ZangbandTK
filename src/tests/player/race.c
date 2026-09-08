@@ -348,6 +348,53 @@ static int test_the_second_wave_of_races(void *state) {
 }
 
 /*
+ * The four undead, which share one shape (PLR-01).
+ *
+ * Skeleton, Zombie, Spectre and Ghoul: none of them can eat, all of them wake
+ * just after midnight, and each takes scrolls of Remove Hunger in place of the
+ * rations it cannot use. Checked as a group because the point of them is that
+ * they are a group -- a fifth undead race should be a data block and nothing
+ * else, and if the pattern has drifted this is where it shows.
+ *
+ * Note the Vampire is *not* here: it eats badly rather than not at all
+ * (BLOOD_DIET), and it is the only one of the five the light hurts.
+ */
+static int test_the_undead_share_one_shape(void *state) {
+	static const char *undead[] = { "Skeleton", "Zombie", "Spectre", "Ghoul" };
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(undead); i++) {
+		struct player *p = grown_to(undead[i], 1);
+
+		require(p);
+		require(has_at(undead[i], 1, OF_CANT_EAT));
+		require(player_has(p, PF_UNDEAD));
+		require(has_at(undead[i], 1, OF_HOLD_LIFE));
+		eq(res_at(undead[i], 1, ELEM_POIS), 3);	/* immune, all four */
+	}
+
+	/* Each has a vulnerability, and they are not the same one */
+	eq(res_at("Skeleton", 1, ELEM_ACID), -1);
+	eq(res_at("Zombie", 1, ELEM_FIRE), -1);
+	eq(res_at("Spectre", 1, ELEM_ELEC), -1);
+	eq(res_at("Ghoul", 1, ELEM_FIRE), -1);
+
+	/* Their gates, which differ */
+	eq(res_at("Zombie", 4, ELEM_COLD), 0);
+	eq(res_at("Zombie", 5, ELEM_COLD), 1);
+	eq(res_at("Skeleton", 9, ELEM_COLD), 0);
+	eq(res_at("Skeleton", 10, ELEM_COLD), 1);
+	require(!has_at("Spectre", 34, OF_TELEPATHY));
+	require(has_at("Spectre", 35, OF_TELEPATHY));
+	eq(res_at("Ghoul", 10, ELEM_DARK), 1);
+	eq(res_at("Ghoul", 20, ELEM_NETHER), 1);
+
+	/* And the Ghoul's touch, which arrives as a flag it already had a home for */
+	require(has_at("Ghoul", 1, OF_GHOUL_TOUCH));
+	ok;
+}
+
+/*
  * Every level-gated intrinsic in the data actually reaches the player.
  *
  * The gates are new, and there are eight more races queued behind these four
@@ -392,12 +439,13 @@ static int test_every_level_gate_actually_opens(void *state) {
 	}
 
 	/*
-	 * If nothing was gated, the loop above proved nothing. Ten is what the
-	 * races carry today -- five Draconian resists, two Mindflayer flags, one
-	 * Golem flag, the Yeek's acid immunity and the Imp's see-invisible. Raise
-	 * it as races arrive.
+	 * If nothing was gated, the loop above proved nothing. Fifteen is what the
+	 * races carry today: five Draconian resists, two Mindflayer flags, one
+	 * Golem flag, the Yeek's acid immunity, the Imp's see-invisible, a cold
+	 * resistance each for Skeleton and Zombie, the Spectre's telepathy and the
+	 * Ghoul's two. Raise it as races arrive.
 	 */
-	require(gates >= 10);
+	require(gates >= 15);
 	ok;
 }
 
@@ -604,6 +652,8 @@ struct test tests[] = {
 			test_the_vampire_glows_and_starves },
 	{ "the-second-wave-of-races",
 			test_the_second_wave_of_races },
+	{ "the-undead-share-one-shape",
+			test_the_undead_share_one_shape },
 	{ "every-level-gate-actually-opens",
 			test_every_level_gate_actually_opens },
 	{ "a-vampire-gets-little-from-food",

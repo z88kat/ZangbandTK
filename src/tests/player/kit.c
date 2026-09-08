@@ -13,6 +13,7 @@
  * describes the kit beautifully.
  */
 #include "unit-test.h"
+#include <stdio.h>
 
 #include "init.h"
 #include "object.h"
@@ -321,6 +322,41 @@ static int test_the_substitution_does_not_need_something_to_replace(void *state)
 	ok;
 }
 
+/*
+ * Every race that cannot use food carries something that works instead.
+ *
+ * Driven from the data rather than a list written here, because the list is
+ * the thing that goes stale: six races take this substitution today and a
+ * seventh would be a data block with no code change, so a hand-written roster
+ * would pass while the new race quietly starved. Reading `CANT_EAT` and
+ * `BLOOD_DIET` off the race and then checking the pack is the version that
+ * fails when somebody forgets the line -- which is exactly how this test came
+ * to be written, a falsification having removed the Ghoul's and gone unnoticed.
+ */
+static int test_no_race_starves_for_want_of_a_kit_line(void *state) {
+	struct player_race *r;
+	int checked = 0;
+
+	for (r = races; r; r = r->next) {
+		bool cannot_eat = of_has(r->flags, OF_CANT_EAT);
+		bool wants_blood = pf_has(r->pflags, PF_BLOOD_DIET);
+
+		if (!cannot_eat && !wants_blood) continue;
+
+		require(player_make_simple(r->name, "Warrior", "Tester"));
+		if (carried(TV_SCROLL, "Remove Hunger") < 2) {
+			printf("%s starts with no hunger scrolls\n", r->name);
+		}
+		require(carried(TV_SCROLL, "Remove Hunger") >= 2);
+		eq(carried_tval(TV_FOOD), 0);
+		checked++;
+	}
+
+	/* Golem, Vampire, Skeleton, Zombie, Spectre, Ghoul */
+	require(checked >= 6);
+	ok;
+}
+
 const char *suite_name = "player/kit";
 struct test tests[] = {
 	{ "every-class-starts-with-a-kit",
@@ -331,6 +367,8 @@ struct test tests[] = {
 	  test_no_class_starts_with_a_book_it_cannot_read },
 	{ "two-realm-slots-take-two-realms",
 	  test_two_realm_slots_take_two_realms },
+	{ "no-race-starves-for-want-of-a-kit-line",
+			test_no_race_starves_for_want_of_a_kit_line },
 	{ "a-race-can-pack-something-else",
 			test_a_race_can_pack_something_else },
 	{ "the-substitution-does-not-need-something-to-replace",

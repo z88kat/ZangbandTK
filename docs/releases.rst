@@ -45,6 +45,60 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Every race Zangband had has now been considered — 7 September 2026
+------------------------------------------------------------------
+
+- **3.114.0** — **The four undead: Skeleton, Zombie, Spectre and Ghoul.** With
+  these, all twenty-one races Zangband has and Angband does not have been
+  decided: seventeen are in, four were turned down under DEC-35 as
+  near-duplicates. Twenty-eight races in the game.
+
+  They share one shape, which is why they arrived together: none can eat, all
+  wake just after midnight, and each takes scrolls of Remove Hunger in place of
+  rations. The kit substitution and the ``UNDEAD`` flag both already existed —
+  built for the Vampire in 3.111.0 — so all four needed was one
+  ``equip-instead`` line each. That is what building the Vampire's mechanism
+  generally rather than specially bought.
+
+  The Skeleton has the hardest bargain of the four: it cannot eat *and*
+  digests at the ordinary rate, where the other three digest slowly. The
+  Spectre pays 180 a level for the best saving throw, device skill and stealth
+  in the game on seven hit dice. The Zombie is the second-strongest thing you
+  can be and very nearly mindless.
+
+  **The Ghoul's paralysing touch was already built.** The audit called it
+  "Zangband-specific, needs designing"; in fact ``OF_GHOUL_TOUCH`` and its hook
+  in ``player-attack.c`` have been there since CNT-09, written for items that
+  carry the flag — bare-handed only, ``MON_TMD_SLEEP``, using 4.2's own save so
+  it honours ``NO_SLEEP``. Declaring the flag on the race was the whole of the
+  work. Its *other* power, eating corpses, has nothing to work on: 4.2 has no
+  corpse objects.
+
+  **The Spectre ships without pass-wall, deliberately**, and its manual entry
+  says so in the same terms as the Draconian's breath and the Sprite's old
+  missing speed. Three finished races should not wait on one unknown. What was
+  established while sizing it is recorded as a follow-up rather than left in a
+  transcript: four small parts (a movement branch, per-turn damage shaped like
+  the Vampire's sunlight, no energy cost, attacking monsters in walls), with
+  the genuine unknown being what a character standing inside solid rock can
+  *see*, since 4.2's view algorithm assumes the player's grid is passable.
+
+  That follow-up also carries a question that is not about races at all.
+  Zangband's mountains were never walls — ``FEAT_MOUNTAIN`` is passable to
+  everyone at an energy penalty (``cmd1.c:2382``), slow terrain rather than an
+  obstacle. Ours are ``ROCK | WALL`` and not ``PERMANENT``. So a faithful
+  pass-wall would let a Spectre cross our mountain ranges, which the original
+  never had to consider because it had no such walls to cross. Anything that
+  reads "wall" reads our mountains as one, so it may bear on more than one
+  race.
+
+  Also recorded: all nine races of the first wave share a placeholder age,
+  height and weight, so a Half-Titan is currently the same size as a Yeek. It
+  is cosmetic — those fields reach the character sheet and nothing else — and
+  correcting it changes existing characters, which is a different kind of
+  change from filling a gap. The eight of the second wave carry the archive's
+  own figures.
+
 Four more races, and the mapping proved rather than trusted — 7 September 2026
 ------------------------------------------------------------------------------
 

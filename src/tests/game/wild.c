@@ -3832,12 +3832,12 @@ static int test_a_race_keeps_its_power(void *state) {
 	eq(found, (int) N_ELEMENTS(table));
 
 	/*
-	 * Twelve races carry a power, of the thirteen imported.  The Amberite has
+	 * Sixteen races carry a power, of the seventeen imported.  The Amberite has
 	 * two, being the one bloodline the game is about, and the Beastman
 	 * deliberately has none: in Zangband its whole character was involuntary
 	 * mutation rather than anything it could choose to do.
 	 */
-	eq(carrying, 12);
+	eq(carrying, 16);
 
 	ok;
 }
@@ -5363,6 +5363,10 @@ static int test_every_race_is_playable(void *state) {
 		{ "Klackon",    135 },
 		{ "Nibelung",   135 },
 		{ "Imp",        110 },
+		{ "Skeleton",   145 },
+		{ "Zombie",     135 },
+		{ "Spectre",    180 },
+		{ "Ghoul",      125 },
 		{ "Mindflayer", 140 },
 		{ "Vampire",    200 },
 		{ "Golem",      200 },

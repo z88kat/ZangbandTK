@@ -1,18 +1,19 @@
 Races and Classes
 =================
 
-Angband gives you eleven races and nine classes. ZangbandTK has twenty-four and
+Angband gives you eleven races and nine classes. ZangbandTK has twenty-eight and
 fourteen, and the new ones are not variations on the old — they are the reason
 the game feels different from the first screen.
 
 :doc:`birth` has the full descriptions and the tables. This page is what is
 different from Angband, and why.
 
-Thirteen new races
-------------------
+Seventeen new races
+-------------------
 
-Curated, not imported. Zangband has twenty-one races Angband does not; thirteen
-are in, four are turned down on the evidence, and four are waiting. The rule was
+Curated, not imported. Zangband has twenty-one races Angband does not;
+**seventeen are in** and four are turned down on the evidence — the near-
+duplicates. None are waiting. The rule was
 that a race has to add a decision rather than a line on the menu — three of
 Zangband's are a Half-Troll with one resistance swapped, and those are the ones
 that did not make it.
@@ -57,6 +58,16 @@ that did not make it.
      - The only race that resists disenchantment from birth.
    * - **Imp**
      - A minor demon. Throws fire, and the cheapest race worth being.
+   * - **Skeleton**
+     - Bones. Cannot eat at all and digests normally, which is the hardest
+       bargain of the four undead; recovers lost experience.
+   * - **Zombie**
+     - Immensely strong, very nearly mindless, thirteen hit dice.
+   * - **Spectre**
+     - Barely there: the best saves, devices and stealth in the game, and the
+       frailest body. Walking through walls is not built yet.
+   * - **Ghoul**
+     - Its bare hands paralyse what they hit.
    * - **Sprite**
      - Flies, and the only race that gets faster as it grows: a point of speed
        at level 10 and another every tenth after. Fragile, and puts things to
@@ -195,5 +206,7 @@ and that is the whole of what a Warrior gets for having no magic at all.
 Still to come
 -------------
 
-Four more races are waiting, all of them undead, which want one mechanism
-between them and should arrive together.
+All twenty-one of Zangband's races have now been considered: seventeen are in,
+four were turned down as near-duplicates of races already present. What remains
+is not a race but an ability — the Spectre's pass-wall, which wants a mechanism
+this game does not have.
