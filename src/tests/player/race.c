@@ -307,6 +307,47 @@ static int test_the_vampire_glows_and_starves(void *state) {
 }
 
 /*
+ * The four near-data races of the second wave (PLR-01).
+ *
+ * Barbarian, Klackon, Nibelung and Imp: one gate between them, one innate
+ * speed, and the rest flags. Checked because "it parsed" is not the same as
+ * "it reaches the player" -- every one of these goes through a different path
+ * (`PROT_FEAR` and `PROT_CONF` are object flags, the resists are `el_info`,
+ * the Imp's see-invisible is a gate and the Klackon's speed is a field).
+ */
+static int test_the_second_wave_of_races(void *state) {
+	int with_speed, without, keep;
+	struct player_race *klackon = race_named("Klackon");
+
+	require(has_at("Barbarian", 1, OF_PROT_FEAR));
+
+	require(klackon);
+	require(has_at("Klackon", 1, OF_PROT_CONF));
+	eq(res_at("Klackon", 1, ELEM_ACID), 1);
+	require(grown_to("Klackon", 50)); with_speed = player->state.speed;
+	keep = klackon->speed_scale;
+	klackon->speed_scale = 0;
+	require(grown_to("Klackon", 50)); without = player->state.speed;
+	klackon->speed_scale = keep;
+	eq(with_speed - without, 5);		/* lev / 10, as the Sprite */
+
+	eq(res_at("Nibelung", 1, ELEM_DISEN), 1);
+	eq(res_at("Nibelung", 1, ELEM_DARK), 1);
+
+	eq(res_at("Imp", 1, ELEM_FIRE), 1);
+	require(!has_at("Imp", 9, OF_SEE_INVIS));
+	require(has_at("Imp", 10, OF_SEE_INVIS));
+
+	/*
+	 * And the Golem cannot be stunned (effects.c:1875) -- one of the three
+	 * grants the archive makes outside `player_flags()`, which is why the
+	 * first sweep missed it.
+	 */
+	require(has_at("Golem", 1, OF_PROT_STUN));
+	ok;
+}
+
+/*
  * Every level-gated intrinsic in the data actually reaches the player.
  *
  * The gates are new, and there are eight more races queued behind these four
@@ -351,11 +392,12 @@ static int test_every_level_gate_actually_opens(void *state) {
 	}
 
 	/*
-	 * If nothing was gated, the loop above proved nothing. Nine is what the
+	 * If nothing was gated, the loop above proved nothing. Ten is what the
 	 * races carry today -- five Draconian resists, two Mindflayer flags, one
-	 * Golem flag and the Yeek's acid immunity. Raise it as races arrive.
+	 * Golem flag, the Yeek's acid immunity and the Imp's see-invisible. Raise
+	 * it as races arrive.
 	 */
-	require(gates >= 9);
+	require(gates >= 10);
 	ok;
 }
 
@@ -560,6 +602,8 @@ struct test tests[] = {
 			test_the_golem_is_made_of_something },
 	{ "the-vampire-glows-and-starves",
 			test_the_vampire_glows_and_starves },
+	{ "the-second-wave-of-races",
+			test_the_second_wave_of_races },
 	{ "every-level-gate-actually-opens",
 			test_every_level_gate_actually_opens },
 	{ "a-vampire-gets-little-from-food",

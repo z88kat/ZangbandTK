@@ -45,6 +45,49 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Four more races, and the mapping proved rather than trusted — 7 September 2026
+------------------------------------------------------------------------------
+
+- **3.113.0** — **Barbarian, Klackon, Nibelung and Imp.** The four of the eight
+  deferred races that are essentially data, taken first so the two that are not
+  do not hold them up.
+
+  Before writing any of it, the field mapping DEC-35 recorded — stats and hit
+  dice copied, disarm/device/save/stealth copied, ``search`` from Zangband's
+  ``r_sns``, melee and shoot *doubled*, Zangband's experience kept, charisma
+  dropped — was **run backwards against all nine existing imports and
+  reproduces every one exactly**. Only then were the new four generated from
+  the archive's own table, and they round-trip the same way. Eight races' worth
+  of numbers is too many to transcribe by hand and hope.
+
+  What they bring: the Barbarian resists fear from birth, which no other race
+  does. The Klackon is the second user of the ``speed:`` field built an hour
+  earlier — ``lev / 10``, exactly as the Sprite — which is what building it as
+  a general mechanism was for. The Nibelung is the only race in the game that
+  resists disenchantment from birth. The Imp sees the invisible from level 10.
+  All four have a racial power; the bolt-becomes-a-ball ones use ``power-when``
+  bands, which the Mindcrafter already established.
+
+  **The Golem's stun immunity is folded in** — one of the three grants found
+  yesterday outside ``player_flags()``, and a one-line fix since
+  ``OF_PROT_STUN`` exists.
+
+  Two things checked because of yesterday's lesson that ``player_flags()`` is
+  only one function. Every one of the four was swept for non-flag grants:
+  Klackon and Nibelung have none; the Barbarian's starting ring of resist fear
+  is swapped for sustain strength (``birth.c:672``), which is moot because no
+  class in this game starts with a ring; and the Imp's exemptions from
+  ``sanity_blast()`` and ``have_nightmare_aux()`` are moot because DEC-32
+  dropped that whole path. Nothing outstanding.
+
+  Also found while sweeping: all nine existing imports share a **placeholder**
+  age, height and weight — 20:20, 70:6, 150:20 — where the archive gives each
+  its own. A Half-Titan should not be the same size as a Yeek. The four new
+  races take the archive's figures (age verbatim, height and weight the
+  midpoint of its separate male and female rows, which is how 4.2 derived its
+  own). Correcting the nine is cosmetic and left out of this commit, because it
+  changes existing character sheets.
+
 The Sprite flies faster and the Yeek stops corroding — 7 September 2026
 -----------------------------------------------------------------------
 

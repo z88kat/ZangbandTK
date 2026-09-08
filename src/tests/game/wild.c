@@ -3832,12 +3832,12 @@ static int test_a_race_keeps_its_power(void *state) {
 	eq(found, (int) N_ELEMENTS(table));
 
 	/*
-	 * Nine powers across eight races -- the Amberite has two, being the one
-	 * bloodline the game is about.  The ninth race we ported, the Beastman,
+	 * Twelve races carry a power, of the thirteen imported.  The Amberite has
+	 * two, being the one bloodline the game is about, and the Beastman
 	 * deliberately has none: in Zangband its whole character was involuntary
 	 * mutation rather than anything it could choose to do.
 	 */
-	eq(carrying, 8);
+	eq(carrying, 12);
 
 	ok;
 }
@@ -5359,6 +5359,10 @@ static int test_every_race_is_playable(void *state) {
 		{ "Beastman",   140 },
 		{ "Yeek",       100 },
 		{ "Draconian",  250 },
+		{ "Barbarian",  120 },
+		{ "Klackon",    135 },
+		{ "Nibelung",   135 },
+		{ "Imp",        110 },
 		{ "Mindflayer", 140 },
 		{ "Vampire",    200 },
 		{ "Golem",      200 },
@@ -5394,7 +5398,7 @@ static int test_every_race_is_playable(void *state) {
 			}
 	}
 
-	/* All nine arrived... */
+	/* All of them arrived... */
 	eq(found, (int) N_ELEMENTS(ported));
 
 	/* ...on top of the eleven 4.2 ships. */

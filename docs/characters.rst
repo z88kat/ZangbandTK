@@ -1,18 +1,18 @@
 Races and Classes
 =================
 
-Angband gives you eleven races and nine classes. ZangbandTK has twenty and
+Angband gives you eleven races and nine classes. ZangbandTK has twenty-four and
 fourteen, and the new ones are not variations on the old — they are the reason
 the game feels different from the first screen.
 
 :doc:`birth` has the full descriptions and the tables. This page is what is
 different from Angband, and why.
 
-Nine new races
---------------
+Thirteen new races
+------------------
 
-Curated, not imported. Zangband has twenty-one races Angband does not; nine are
-in, four are turned down on the evidence, and eight are waiting. The rule was
+Curated, not imported. Zangband has twenty-one races Angband does not; thirteen
+are in, four are turned down on the evidence, and four are waiting. The rule was
 that a race has to add a decision rather than a line on the menu — three of
 Zangband's are a Half-Troll with one resistance swapped, and those are the ones
 that did not make it.
@@ -47,6 +47,16 @@ that did not make it.
        stone. Twenty points of armour before it wears anything at all, and a
        point more every fifth level; immune to poison, and gets almost nothing
        out of food.
+   * - **Barbarian**
+     - Resists fear from birth, which no other race does, and can work itself
+       into a berserk frenzy.
+   * - **Klackon**
+     - An insect that works: acid-proof, confusion-proof, spits acid, and gets
+       faster as it grows.
+   * - **Nibelung**
+     - The only race that resists disenchantment from birth.
+   * - **Imp**
+     - A minor demon. Throws fire, and the cheapest race worth being.
    * - **Sprite**
      - Flies, and the only race that gets faster as it grows: a point of speed
        at level 10 and another every tenth after. Fragile, and puts things to
@@ -185,5 +195,5 @@ and that is the whole of what a Warrior gets for having no magic at all.
 Still to come
 -------------
 
-Eight more races are waiting, four of them undead, which want one mechanism
+Four more races are waiting, all of them undead, which want one mechanism
 between them and should arrive together.

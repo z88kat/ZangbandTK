@@ -419,13 +419,46 @@ Half-Titan
   clumsy, and resistant to chaos — which, given what it is descended from, is
   less a resistance than a family trait.
 
+.. _Barbarian:
+
+Barbarian
+  Strong, hardy, and afraid of nothing — it resists fear outright, from birth,
+  which no other race does. Poor with devices, indifferent at stealth, and
+  cheap at 120. From level 8 it can work itself into a frenzy: thirty hit
+  points back, fear cleared, and a berserk rage for ten turns and more.
+
+.. _Klackon:
+
+Klackon
+  An insect that works. Strong, hardy, diligent, resistant to acid and
+  immune to confusion, and it **gets faster as it grows** — a point of speed
+  at level 10 and another every tenth after, the same as a Sprite. Excellent
+  at disarming. It spits acid from level 9, a bolt that becomes a ball at 25.
+
+.. _Nibelung:
+
+Nibelung
+  A dwarf of the deep mines, and the **only race in the game that resists
+  disenchantment from birth** — which matters more than it sounds, because
+  nothing else protects your equipment that early. Wise, patient, resistant
+  to darkness, and it sees fifty feet in the dark. From level 10 it examines
+  its surroundings: traps, doors and stairs at once.
+
+.. _Imp:
+
+Imp
+  A minor demon, and the cheapest thing worth being at 110. Feeble in every
+  way except constitution, resistant to fire from birth, and it sees the
+  invisible from level 10. It throws fire from level 9 — a bolt, becoming a
+  ball at 30.
+
 .. _racial-powers:
 
 Racial powers
 -------------
 
-Eight of these nine races can do something no amount of study will teach, and
-press ``N`` to do it. The Amberite can do two things, which is the point of
+Twelve of these thirteen races can do something no amount of study will teach,
+and press ``N`` to do it. The Amberite can do two things, which is the point of
 being an Amberite; the Beastman can do nothing, because in Zangband its whole
 character was mutation happening *to* it rather than anything it chose.
 

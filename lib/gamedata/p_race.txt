@@ -661,7 +661,9 @@ weight:150:20
 # CANT_EAT is the archive's (files.c:1439) and was missing, so a Golem ate
 # like anything else while the manual said it barely eats.  Hold life waits for
 # 35 rather than arriving at birth.
-obj-flags:SEE_INVIS | FREE_ACT | SLOW_DIGEST | CANT_EAT
+# PROT_STUN because a Golem cannot be stunned (effects.c:1875) -- one of three
+# grants the archive makes outside player_flags(), which is why it was missed.
+obj-flags:SEE_INVIS | FREE_ACT | SLOW_DIGEST | CANT_EAT | PROT_STUN
 armour:20:5
 # A Golem gets a twentieth out of food, so Zangband gives it scrolls rather
 # than rations too (birth.c:557).  It keeps its torches: only the Vampire
@@ -677,6 +679,158 @@ power-stat:CON
 power-fail:8
 power-effect:TIMED_INC:STONESKIN
 power-dice:30+1d20
+
+# Zangband's barbarian: strong, hardy, fearless and cheap.  It resists fear
+# outright, which is why the archive swaps its starting ring of resist fear for
+# one of sustain strength (birth.c:672) -- moot here, as no class in this game
+# starts with a ring.
+name:Barbarian
+virtues:VALOUR
+stats:3:-2:-1:1:2
+skill-disarm-phys:-2
+skill-disarm-magic:-2
+skill-device:-10
+skill-save:2
+skill-stealth:-1
+skill-search:1
+skill-melee:20
+skill-shoot:0
+skill-throw:0
+skill-dig:0
+hitdie:11
+exp:120
+infravision:0
+history:1
+age:14:8
+height:80:6
+weight:195:18
+obj-flags:PROT_FEAR
+power:work yourself into a frenzy
+power-level:8
+power-cost:10
+power-stat:WIS
+power-fail:9
+power-effect:HEAL_HP
+power-dice:30
+power-effect:CURE:AFRAID
+power-effect:TIMED_INC:SHERO
+power-dice:10+1d$B
+power-expr:B:PLAYER_LEVEL:+ 0
+
+# An insect that works.  Diligent, quick and acid-proof, and the second race
+# to use the innate speed field -- `lev / 10` above level 9, exactly as the
+# Sprite does (xtra1.c:2550).
+name:Klackon
+virtues:DILIGENCE
+stats:2:-1:-1:1:2
+skill-disarm-phys:10
+skill-disarm-magic:10
+skill-device:5
+skill-save:5
+skill-stealth:0
+skill-search:-1
+skill-melee:10
+skill-shoot:10
+skill-throw:10
+skill-dig:0
+hitdie:12
+exp:135
+infravision:2
+history:1
+age:20:3
+height:57:3
+weight:75:4
+obj-flags:PROT_CONF
+values:RES_ACID[1]
+speed:0:10
+power:spit acid
+power-level:9
+power-cost:9
+power-stat:DEX
+power-fail:14
+power-when:1:24
+power-effect:BOLT:ACID
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+power-when:25:50
+power-effect:BALL:ACID:2
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+
+# A dwarf of the deep mines, and the only race that resists disenchantment
+# from birth.  Patient, wise, and it sees a long way in the dark.
+name:Nibelung
+virtues:PATIENCE
+stats:1:-1:2:0:2
+skill-disarm-phys:3
+skill-disarm-magic:3
+skill-device:5
+skill-save:10
+skill-stealth:1
+skill-search:5
+skill-melee:10
+skill-shoot:0
+skill-throw:0
+skill-dig:0
+hitdie:11
+exp:135
+infravision:5
+history:1
+age:40:12
+height:41:3
+weight:85:5
+values:RES_DISEN[1] | RES_DARK[1]
+power:examine your surroundings
+power-level:10
+power-cost:5
+power-stat:WIS
+power-fail:10
+power-effect:DETECT_TRAPS
+power-dice:22
+power-effect:DETECT_DOORS
+power-dice:22
+power-effect:DETECT_STAIRS
+power-dice:22
+
+# A minor demon.  Fire is its element from birth, and it sees the invisible
+# from level 10.  Cheap for what it is, at 110.
+name:Imp
+virtues:FAITH
+stats:-1:-1:-1:1:2
+skill-disarm-phys:-3
+skill-disarm-magic:-3
+skill-device:2
+skill-save:-1
+skill-stealth:1
+skill-search:-1
+skill-melee:10
+skill-shoot:-10
+skill-throw:-10
+skill-dig:0
+hitdie:10
+exp:110
+infravision:3
+history:1
+age:13:4
+height:66:1
+weight:135:5
+values:RES_FIRE[1]
+gain-at:10
+gain-obj-flags:SEE_INVIS
+power:throw fire
+power-level:9
+power-cost:15
+power-stat:WIS
+power-fail:15
+power-when:1:29
+power-effect:BOLT:FIRE
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+power-when:30:50
+power-effect:BALL:FIRE:2
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+
 
 # Flies. Zangband quickened it at level nine; speed is not something a 4.2 race can be given, so that waits for PLR-02.
 name:Sprite
