@@ -45,6 +45,200 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The nightly stops gating on its luckiest run — 9 September 2026
+---------------------------------------------------------------
+
+- **3.116.0** — **Totals replace maxima, and the per-run rows became the
+  message.** The nightly went red for best depth falling 8 to 3, on a night
+  when the fleet's character levels went 41 to 39 and its casting 15 to 14.
+  Nothing was broken: twelve runs, twelve deaths, none capped.
+
+  **Best depth is a maximum over twelve runs, so it reports whichever run got
+  luckiest.** Pulling the per-run tables out of four nightlies made that
+  concrete: **eight of the twelve never leave depth 1 on any night**, so the
+  whole depth signal lives in four runs and best depth lived in one. When the
+  pass-wall commit shifted that run's random stream, the headline moved
+  wholesale.
+
+  Also visible in that history, and worth recording: the twelve races added on
+  7 September left **all twelve rows byte-identical**, and 7 to 8 September
+  moved **no rows at all** — the runs are deterministic on CI. The runs set no
+  race, so every character is a Human, which is why the new races could not
+  have touched them.
+
+  Both directions were evaluated against that real history plus deliberate
+  regressions — casting collapsing the way ``BORG_SPELL_UNKNOWN`` made it (4
+  cast against 15), nothing learned, the fleet ceasing to level, the fleet
+  ceasing to descend, every character level halved. The new rules raise **no
+  false alarm and miss none**. The old rules missed none either; they cried
+  wolf twice, which is its own failure, because a job that goes red for nothing
+  gets ignored.
+
+  So the gate is now four totals — cast and learned halving, total character
+  levels down more than a third, total depth down more than two fifths — and
+  the twelve ``run:`` rows in the baseline **decide nothing**. They exist so a
+  failure says *"Warrior seed 1: depth 8 to 3"* instead of leaving a reader to
+  diff two files, which matters because a scheduled task reads this output
+  cold. The report states in as many words that rows moving is not a
+  regression and that the totals decide.
+
+  Depth is the loosest threshold on purpose: with two thirds of the runs stuck
+  on the first floor it is close to a dead metric. It wants tightening when the
+  borg reliably gets below depth 1, and until then the character levels carry
+  the weight — which is also the honest reason the old depth rule was fragile
+  rather than merely unlucky.
+
+  ``scripts/check-build``'s header gained two notes while this was verified,
+  both from mistakes made verifying it: the gate takes some twenty-five minutes
+  and has to be *waited on* rather than backgrounded and checked for a phrase
+  that may never appear; and nothing else may run against the build while it
+  does, because a hand-run suite collides where the harness does not. It also
+  records the staged-data trap — the copy into each build tree compares
+  timestamps, so a data file edited, built, and reverted within the same second
+  keeps the edit in every staged tree, which presents as unrelated suites
+  segfaulting.
+
+  The baseline is reshaped in the same commit and retaken from the 9 September
+  nightly, which measured this exact commit. Its totals are that night's:
+  depth 18, levels 39, learned 20, cast 14. Updating the rows is now free,
+  since they gate nothing; changing a total still wants a reason. The
+  cross-platform guard is untouched — it caught the first false alarm this file
+  ever produced.
+
+Mountains charge like the walls they are — 9 September 2026
+-----------------------------------------------------------
+
+- **3.115.3** — **The surface exemption is reversed.** 3.115.0 shipped the
+  in-rock damage underground only, on the archive-faithful ground that
+  Zangband's mountains were not ``FF_BLOCK`` grids, so a Spectre there was
+  never inside a wall and paid nothing for a crossing. The project owner
+  overruled it on the same consistency ground as the pass-wall ruling itself:
+  *"Our mountains are walls so the Spector takes damage."* A mountain here is a
+  wall, so being inside one costs what being inside a wall costs.
+
+  DEC-74 records the reversal **above** the reading it overruled rather than in
+  place of it, because the next person to compare us against Zangband will find
+  the difference and should be able to see it was considered and taken
+  deliberately.
+
+  **Measured before it was asserted**, since the formula at depth 0 is not
+  obviously survivable: the depth term is zero, so it is one point a turn, and
+  the guard ``chp > depth / 10`` becomes ``chp > 0`` — its tightest possible
+  form. It holds, because death is ``chp < 0``. Measured, a Spectre in a
+  mountain settles hovering between nothing and one hit point, taking a point
+  back off whenever it regenerates one, and survives a thousand turns of it.
+  Underground at fifty it takes six a turn and floors at one.
+
+  So a crossing is not lethal in itself and it is not free either. A range is
+  many blocks wide and a first-level Spectre has sixteen hit points, so it
+  arrives at the far side empty — and what kills it will be the first thing it
+  meets, not the rock. That is a real price for a race that pays 180 per cent,
+  and it is what the ruling intends.
+
+  The falsification that used to prove "damage on the surface fails" now proves
+  the opposite: reinstating the old exemption fails the suite, and removing the
+  cannot-kill guard fails it twice over, since it now breaks the surface and the
+  dungeon both. The manual says the cost applies to mountains, and roughly what
+  it comes to.
+
+The Spectre walks through walls, and the view was never the problem — 9 September 2026
+--------------------------------------------------------------------------------------
+
+- **3.115.0** — **Pass-wall, the last outstanding piece of any race.** The
+  project owner ruled on it after going and checking: *"I tested the Spectre in
+  the old zangband and he can walk through walls. If he can do that he can walk
+  through anything."* Mountains included. Recorded as DEC-74, with the note that
+  this is a consistency argument rather than an archive one — and that it lands
+  where the archive was anyway, because Zangband's mountains were passable to
+  everyone in the first place, so the original never had to decide it.
+
+  **The view, which was the whole reason this waited, needed no work at all.**
+  ``los()`` never inspects its own origin: every scanner in every branch starts
+  one step away from ``grid1``, so line of sight from inside a wall is already
+  well defined. A character in rock sees its eight neighbours by the adjacency
+  short-circuit and nothing beyond, because rock is not projectable.
+  ``add_light()`` goes through the same function, and no assertion anywhere
+  requires the player's grid to be passable. One afternoon of reading retired
+  the fear rather than confirming it.
+
+  The rest is what was sized: a branch in ``do_cmd_walk_test()``, a condition in
+  ``move_player()``, and per-turn damage of ``1 + depth / 10`` in
+  ``process_world()`` that **cannot kill** — the archive applies it only while
+  ``chp > depth / 10``, so a Spectre can always walk back out of a mountain.
+  Attacking monsters inside walls needed nothing: ``do_cmd_walk_test()`` already
+  handles the monster case before it tests passability. No energy cost, as in
+  the archive.
+
+  **A test caught a real hazard.** The rule is permanence, and the obvious
+  helper for that — ``square_isperm()`` — tests for permanent *rock*, requiring
+  ``TF_ROCK`` as well. The edge of the world is permanent open sea and carries
+  no rock flag, so the first version let a Spectre walk off the edge of the
+  world. It now tests ``TF_PERMANENT`` directly, and the reason is written where
+  someone would otherwise simplify it back.
+
+  **Two consequences checked rather than assumed.** Nothing depended on
+  mountains being solid: danger comes from a block's ``law`` and not its
+  terrain, mountains exclude town *placement* and cost 25 in the road
+  pathfinder — roads route around them rather than being stopped — and a
+  mountain block is 65 per cent rock at grid level with the rest dirt and
+  grass, so it was always porous. A Spectre crossing a range saves time, not
+  access. And the borg, which knows nothing about any of this: five seeds at
+  60,000 turns each, no crash, no wedge, no oops. It simply never uses the
+  ability.
+
+  ``no_regen`` replaces ``burning`` in ``process_world()``, since two different
+  things now stop a character healing — sunlight on a Vampire, rock around a
+  Spectre. Zangband called it ``cave_no_regen`` and used it for exactly those
+  two.
+
+  **The damage is underground only, and that is a judgement.** Zangband keys it
+  on ``FF_BLOCK`` and its mountain does not carry that flag — "rock face" is
+  ``HALF_LOS | USE_TRANS | ICKY | OBJECT`` — so a Spectre there crossed a range
+  without ever being inside a wall. Ours are walls, and a range is many blocks
+  wide, so the archive's own test would charge for a crossing the original
+  never charged for. The surface is free; the dungeon is not. That reproduces
+  Zangband's outcome rather than its code, and the manual entry now states the
+  cost as plainly as the ability — a hit point a turn, six at the bottom, no
+  healing while you are in there, and it stops rather than killing you.
+
+- **3.115.1** — **An audit of all twenty-eight race entries, which found five
+  things wrong.** Written up piecemeal across a dozen commits, and the eleven
+  inherited from 4.2 had never been reviewed at all.
+
+  - **Human**: "go up levels faster than any other race" — the Yeek matches
+    them at 100 per cent. A tie described as a lead, which is the third time
+    today that exact shape has turned up.
+  - **Skeleton, Zombie, Spectre, Ghoul**: five thresholds written "above level
+    N" where the data says ``gain-at:N``, so each was off by one. My own text,
+    hours old. The Yeek's "above level 19" was correct against ``gain-at:20``
+    but used the archive's idiom rather than ours; everything now reads "from
+    level N", matching the directive.
+  - **Spectre**: "the best saving throw, magic device skill and stealth of any
+    race" — it ties with a High-Elf on saves and a Mindflayer on devices. Only
+    the stealth is a lead.
+  - **Imp**: "feeble in every way except constitution" — its dexterity is
+    positive too.
+  - And the coverage question: all twenty-eight have entries in
+    :doc:`birth`. The eleven shared races have no row in
+    :doc:`characters`, which is correct rather than missing — that page is
+    explicitly what differs from Angband.
+
+  Two inherited claims were checked and are **true**, which is worth recording
+  so nobody re-checks them: the Half-Troll's regeneration really does cost it
+  extra food (``OF_REGEN`` doubles consumption in ``game-world.c``), and the
+  Vampire's "as far as anything sees" is tie-safe wording for a genuine
+  five-way tie on infravision.
+
+- **3.115.2** — **A test wrote to a fixed temp filename.**
+  ``game/saves`` used ``"saves-roundtrip.tmp"`` for every run, so any two
+  concurrent runs of that suite raced on one file — reliably, eight times out
+  of eight in parallel. Nothing in the harness collides, because
+  ``check-flakes`` and the CMake runner both go suite by suite; a person
+  running a suite by hand while a verification job is going does, and it
+  presents as an intermittent savefile failure, which is about the most
+  alarming thing it could look like. ``test_savefile_name()`` already existed
+  for this and three other suites were already using it.
+
 Every race Zangband had has now been considered — 7 September 2026
 ------------------------------------------------------------------
 

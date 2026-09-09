@@ -97,6 +97,9 @@ broken=0
 runs=0
 best_depth=0
 best_level=0
+sum_depth=0
+sum_level=0
+rows=
 # The machine, which turns out to be part of what is being measured.
 #
 # These runs are exact to the turn on one machine and are *not* portable across
@@ -106,6 +109,9 @@ best_level=0
 # which made a red night look like a regression in the game when it was a
 # difference of hardware. Recording the platform is what stops that repeating.
 platform="$(uname -s) $(uname -m)"
+
+tmp_moved="${TMPDIR:-/tmp}/borg-progress-moved.$$"
+trap 'rm -f "$tmp_moved"' EXIT INT TERM
 
 best_depth_run=none
 best_level_run=none
@@ -139,6 +145,11 @@ for class in $(echo "$classes" | tr ',' ' '); do
 		l=$(printf '%s\n' "$line" | sed -n 's/.*clevel=\([0-9]*\).*/\1/p')
 		r=$(printf '%s\n' "$line" | sed -n 's/.*result=\([a-z]*\).*/\1/p')
 
+		sum_depth=$(expr $sum_depth + ${d:-0})
+		sum_level=$(expr $sum_level + ${l:-0})
+		rows="$rows$class:$seed:${d:-0}:${l:-0}
+"
+
 		if [ "$d" -gt "$best_depth" ] 2>/dev/null; then
 			best_depth=$d; best_depth_run="$class seed $seed"
 		fi
@@ -165,7 +176,8 @@ for class in $(echo "$classes" | tr ',' ' '); do
 done
 
 echo
-echo "borg-progress: $runs runs, best depth $best_depth, best level $best_level,"
+echo "borg-progress: $runs runs, $sum_depth depth and $sum_level levels in total,"
+echo "borg-progress: deepest $best_depth, highest $best_level,"
 echo "borg-progress: $deaths died, $capped capped, $broken broken,"
 echo "borg-progress: $learned_total spells learned, $cast_total cast"
 echo "borg-progress: on $platform"
@@ -214,48 +226,92 @@ if [ -n "$b_platform" ] && [ "$b_platform" != "$platform" ]; then
 	exit 0
 fi
 
-b_depth=$(want best-depth)
-b_level=$(want best-level)
+b_sdepth=$(want sum-depth)
+b_slevel=$(want sum-level)
 b_learn=$(want spells-learned)
 b_cast=$(want spells-cast)
 b_runs=$(want runs)
 
 regressed=0
 
-# Thresholds, chosen and not inherited. For one build and one set of seeds
-# these runs are exact to the turn, so nothing here is noise -- but any data
-# change reshuffles the random stream and moves which seed happens to do well.
-# Measured, the spread across three seeds is depth 1 to 7 and level 1 to 13, so
-# a reshuffle can plausibly cost a couple. Three cannot be explained that way.
+# What moved, run by run, before any verdict.
+#
+# This is the part a reader arriving cold needs, and the old output did not have
+# it: "best depth fell by 5" says nothing about where. Measured over four
+# nights, a change lands on a handful of the twelve rows -- the pass-wall commit
+# moved four of them and left eight untouched -- so naming them is the
+# difference between "one run changed shape" and "the fleet got worse".
+#
+# Reported, never fatal. A single row is not the fleet, which is the whole
+# reason the old best-depth rule cried wolf.
+moved=0
+printf '%s' "$rows" | while IFS=: read -r rc rs rd rl; do
+	[ -z "$rc" ] && continue
+	was=$(sed -n "s/^run:$rc:$rs:\([0-9]*\):\([0-9]*\).*/\1 \2/p" "$baseline" | head -1)
+	[ -z "$was" ] && { echo "borg-progress:   $rc seed $rs is new"; continue; }
+	wd=${was% *}; wl=${was#* }
+	[ "$wd" = "$rd" ] && [ "$wl" = "$rl" ] && continue
+	echo "borg-progress:   $rc seed $rs: depth $wd->$rd, level $wl->$rl"
+done > "$tmp_moved"
+if [ -s "$tmp_moved" ]; then
+	echo
+	echo "borg-progress: rows that moved since the baseline:"
+	cat "$tmp_moved"
+	moved=$(wc -l < "$tmp_moved" | tr -d ' ')
+	echo "borg-progress: $moved of $runs row(s) differ. That alone is not a"
+	echo "borg-progress: regression -- the totals below decide."
+fi
+
+# Thresholds, chosen against four nights of real runs rather than inherited.
+#
+# The two the nightly used to gate on were *maxima*, and a maximum over twelve
+# runs reports whichever run got luckiest. Measured: eight of the twelve never
+# leave depth 1 on any night, so the whole depth signal lives in four runs and
+# `best depth` lived in one. When that one run's stream shifted, the headline
+# fell from 8 to 3 and the job went red for a change that left the fleet's
+# character levels at 39 against 41. That was the only false alarm in four
+# nights and it came from that rule.
+#
+# Sums instead, which move when the fleet moves. Evaluated over the real nights
+# plus deliberate regressions -- casting collapsing (which is what the
+# BORG_SPELL_UNKNOWN bug did: 4 cast against 15), nothing learned, the fleet
+# ceasing to level, the fleet ceasing to descend, every character level halved
+# -- the set below raises no false alarm and misses none of them. The old set
+# missed none either; it just cried wolf twice.
+#
+# Depth is deliberately the loosest of the four, at 40 per cent, because it has
+# the least room to move: with two thirds of the runs stuck at depth 1 it is
+# nearly a dead metric today. Tighten it when the borg reliably gets below the
+# first floor, and until then let the character levels carry the weight.
 report() {
 	echo
 	echo "borg-progress: REGRESSION -- $1"
-	echo "borg-progress:   was $2 ($4), now $3"
+	echo "borg-progress:   was $2, now $3"
 	echo "borg-progress:   reproduce: scripts/borg-progress -n $turns -c $classes $seeds"
 	regressed=1
 }
 
-if [ -n "$b_depth" ] && [ $((b_depth - best_depth)) -ge 3 ]; then
-	report "best depth fell by $((b_depth - best_depth))" \
-		"$b_depth" "$best_depth by $best_depth_run" "$(want_note best-depth)"
-fi
-if [ -n "$b_level" ] && [ $((b_level - best_level)) -ge 4 ]; then
-	report "best character level fell by $((b_level - best_level))" \
-		"$b_level" "$best_level by $best_level_run" "$(want_note best-level)"
-fi
 if [ -n "$b_cast" ] && [ $((cast_total * 2)) -lt "$b_cast" ]; then
 	report "spells cast less than halved" \
-		"$b_cast" "$cast_total across $runs runs" "over ${b_runs:-?} runs"
+		"$b_cast over ${b_runs:-?} runs" "$cast_total across $runs runs"
 fi
 if [ -n "$b_learn" ] && [ $((learned_total * 2)) -lt "$b_learn" ]; then
 	report "spells learned less than halved" \
-		"$b_learn" "$learned_total across $runs runs" "over ${b_runs:-?} runs"
+		"$b_learn over ${b_runs:-?} runs" "$learned_total across $runs runs"
+fi
+if [ -n "$b_slevel" ] && [ $((sum_level * 10)) -lt $((b_slevel * 7)) ]; then
+	report "character levels down more than a third across the fleet" \
+		"$b_slevel in total" "$sum_level in total"
+fi
+if [ -n "$b_sdepth" ] && [ $((sum_depth * 10)) -lt $((b_sdepth * 6)) ]; then
+	report "depth down more than two fifths across the fleet" \
+		"$b_sdepth in total" "$sum_depth in total"
 fi
 
 if [ $regressed -eq 0 ]; then
 	echo
-	echo "borg-progress: against $baseline -- depth $best_depth/$b_depth," \
-		"level $best_level/$b_level, learned $learned_total/$b_learn," \
+	echo "borg-progress: against $baseline -- depth $sum_depth/$b_sdepth," \
+		"levels $sum_level/$b_slevel, learned $learned_total/$b_learn," \
 		"cast $cast_total/$b_cast"
 	echo "borg-progress: no material drop."
 	exit 0

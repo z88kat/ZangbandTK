@@ -1034,6 +1034,16 @@ code:GHOUL_TOUCH
 power:12
 desc:Sends what you strike bare-handed to sleep
 
+# Walking through rock (PLR-01, DEC-74).  Not "sustain" or "protection" or
+# anything else on the list; it is an ability, so it goes with the others.
+name:pass wall
+type:flag
+subtype:misc ability
+id-type:on wield
+code:PASS_WALL
+power:30
+desc:Lets you walk through walls
+
 name:returning
 type:flag
 subtype:throw

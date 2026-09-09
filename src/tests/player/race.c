@@ -23,6 +23,8 @@
 #include "test-utils.h"
 #include "cave.h"
 #include "generate.h"
+#include "cmd-core.h"
+#include "player-util.h"
 #include "effects.h"
 #include "game-world.h"
 #include "obj-tval.h"
@@ -621,6 +623,161 @@ static int test_darkness_is_shelter_from_the_sun(void *state) {
 	ok;
 }
 
+/**
+ * Stand this race in a level and try to step onto `feat`; did it move?
+ */
+static bool steps_into(const char *name, const char *feat_name)
+{
+	struct loc target;
+	int feat = lookup_feat_code(feat_name);
+	int d;
+
+	/*
+	 * A code that does not exist is a failing test, not a passing one.
+	 *
+	 * `lookup_feat_code()` returns -1 for an unknown name and
+	 * `square_set_feat()` indexes `f_info` with it, which ASAN reports as a
+	 * heap-buffer-overflow -- but without ASAN it quietly scribbles and the
+	 * move still succeeds, so the assertion passes having tested nothing.
+	 * That is what happened here: mountainside's code is `ROCK`, not
+	 * `MOUNTAIN`, so "a Spectre walks through a mountain" passed for three
+	 * hours without once involving a mountain.
+	 */
+	if (feat < 0) return false;
+
+	if (!player_make_simple(name, NULL, "Tester")) return false;
+	player->depth = 1;
+	prepare_next_level(player);
+
+	/*
+	 * Whichever neighbour is actually there, and the direction that reaches
+	 * it, found together.
+	 *
+	 * This used to try east and fall back to west without re-checking the
+	 * fallback, which walks off the array whenever the player is placed on
+	 * the top row -- `square_in_bounds_fully()` excludes the outer ring, so
+	 * east fails, and west of x=0 is x=-1. ASAN called it a
+	 * heap-buffer-overflow in `square_set_feat()`, which is exactly what it
+	 * was.
+	 */
+	for (d = 0; d < 8; d++) {
+		target = loc_sum(player->grid, ddgrid_ddd[d]);
+		if (square_in_bounds_fully(cave, target)) break;
+	}
+	if (d == 8) return false;
+
+	square_set_feat(cave, target, feat);
+	move_player(ddd[d], false);
+	return loc_eq(player->grid, target);
+}
+
+/*
+ * A Spectre walks through rock, and only through rock that gives (DEC-74).
+ *
+ * The project owner's ruling was a consistency argument -- "if he can walk
+ * through walls he can walk through anything" -- and it lands close to the
+ * archive anyway, whose mountains were passable to everyone in the first place
+ * ([cmd1.c:2382](../archive/zangband/src/cmd1.c#L2382)).
+ *
+ * The two that must still hold are the point of the test. Permanent wall is
+ * what the dungeon is built out of at its edges, and the world's edge is
+ * `PERMANENT` in `terrain.txt` for exactly this reason -- a Spectre that could
+ * step off the edge of the world would be a much worse bug than one that
+ * cannot cross a mountain.
+ */
+static int test_a_spectre_walks_through_rock(void *state) {
+	require(steps_into("Spectre", "GRANITE"));
+	require(steps_into("Spectre", "MAGMA"));
+	require(steps_into("Spectre", "ROCK"));	/* mountainside */
+
+	require(!steps_into("Spectre", "PERM"));
+	require(!steps_into("Spectre", "WORLD_EDGE"));
+
+	/* And nobody else walks through any of it */
+	require(!steps_into("Human", "GRANITE"));
+	require(!steps_into("Human", "ROCK"));
+	ok;
+}
+
+/*
+ * And standing in rock hurts without killing (DEC-74).
+ *
+ * Zangband applies the damage only while `chp > depth / 10`
+ * ([dungeon.c:1202](../archive/zangband/src/dungeon.c#L1202)), which is what
+ * stops a Spectre suffocating inside a mountain it walked into. Checked by
+ * running the world until it stops taking damage and confirming it is alive --
+ * a version that simply dealt damage every turn would fail here and nowhere
+ * else.
+ */
+static int test_rock_grinds_a_spectre_but_does_not_kill_it(void *state) {
+	int i, before;
+
+	require(steps_into("Spectre", "GRANITE"));
+	require(player->depth > 0);
+	require(!square_ispassable(cave, player->grid));
+
+	player->chp = player->mhp;
+	before = player->chp;
+	process_world(cave);
+	require(player->chp < before);		/* it hurts */
+
+	/*
+	 * Now from one hit point, which is the case that matters and the one a
+	 * clamp would pass without doing anything. A guard that never fires looks
+	 * exactly like a guard that works when the character starts healthy.
+	 */
+	player->chp = 1;
+	for (i = 0; i < 500 && !player->is_dead; i++)
+		process_world(cave);
+	require(!player->is_dead);
+	require(player->chp >= 0);
+	ok;
+}
+
+/*
+ * And a mountain costs a Spectre blood, the same as any other wall (DEC-74).
+ *
+ * The project owner overruled the archive-faithful reading here: *"Our
+ * mountains are walls so the Spector takes damage."* Zangband's mountains were
+ * not `FF_BLOCK` grids, so a Spectre there was never inside a wall and paid
+ * nothing for a crossing; ours are walls, and the rule follows our world
+ * rather than the original's.
+ *
+ * Measured before it was asserted, because the formula at depth 0 is not
+ * obviously survivable: one point a turn, and the guard `chp > depth / 10`
+ * becomes `chp > 0`, which is its tightest form. It holds -- death is
+ * `chp < 0` -- so a Spectre pins at nothing left and stays there rather than
+ * dying. Checked at both ends, because a guard that only works underground
+ * would look exactly like one that works.
+ */
+static int test_a_mountain_costs_a_spectre_blood(void *state) {
+	int before, i;
+
+	require(player_make_simple("Spectre", NULL, "Tester"));
+	player->depth = 0;
+	prepare_next_level(player);
+	square_set_feat(cave, player->grid, lookup_feat_code("ROCK"));
+	require(!square_ispassable(cave, player->grid));
+
+	/* A point a turn on the surface, where the depth term is zero */
+	player->chp = player->mhp;
+	before = player->chp;
+	process_world(cave);
+	eq(before - player->chp, 1);
+
+	/*
+	 * And it will not kill, which on the surface is the case that matters:
+	 * a range is many blocks wide, so a crossing spends far more turns in
+	 * rock than a level-one Spectre has hit points.
+	 */
+	player->chp = 1;
+	for (i = 0; i < 1000 && !player->is_dead; i++)
+		process_world(cave);
+	require(!player->is_dead);
+	require(player->chp >= 0);
+	ok;
+}
+
 /*
  * The undead start the game just after midnight
  * ([dungeon.c:3270](../archive/zangband/src/dungeon.c#L3270)) -- which for the
@@ -664,6 +821,12 @@ struct test tests[] = {
 			test_a_vampire_can_put_out_the_daylight },
 	{ "darkness-is-shelter-from-the-sun",
 			test_darkness_is_shelter_from_the_sun },
+	{ "a-spectre-walks-through-rock",
+			test_a_spectre_walks_through_rock },
+	{ "rock-grinds-a-spectre-but-does-not-kill-it",
+			test_rock_grinds_a_spectre_but_does_not_kill_it },
+	{ "a-mountain-costs-a-spectre-blood",
+			test_a_mountain_costs_a_spectre_blood },
 	{ "the-undead-wake-in-the-dark",
 			test_the_undead_wake_in_the_dark },
 	{ NULL, NULL }

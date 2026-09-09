@@ -57,7 +57,28 @@
 #
 # The sanitizer pass is the slow one and is incremental in build-asan, so the
 # first run pays for it and later ones do not.
-#   scripts/check-build --tests    ...and run the unit tests after
+#
+# === Two things about running it, both learned the hard way ===
+#
+# **It takes twenty-five minutes or so with --tests, and it has to be waited
+# on.** Backgrounding it and then checking a summary line later is how a result
+# gets lost: if the pattern you grep for never appears -- because the run failed
+# early, or printed something else -- the wait never ends and the outcome is
+# never read. Poll the output file itself, and check whether the process is
+# still alive rather than whether some phrase has shown up.
+#
+# **Do not run anything else against the build while it runs.** The suites are
+# sequential by design and nothing in the harness collides with itself, but a
+# suite run by hand alongside this one does: `game/saves` raced on a shared
+# temp file until it was given a per-process name, and that presented as an
+# intermittent savefile failure, which is about the most alarming thing it
+# could look like.
+#
+# And if suites start segfaulting in files you have not touched, suspect the
+# staged data before the code. The copy into each build tree is a
+# `cmake -E copy_directory`, which compares timestamps: edit a data file, build,
+# then revert the edit within the same second and the staged copy keeps the
+# edit for ever. A `touch lib/gamedata/*.txt` and a rebuild clears it.
 
 set -e
 

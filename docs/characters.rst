@@ -64,8 +64,10 @@ that did not make it.
    * - **Zombie**
      - Immensely strong, very nearly mindless, thirteen hit dice.
    * - **Spectre**
-     - Barely there: the best saves, devices and stealth in the game, and the
-       frailest body. Walking through walls is not built yet.
+     - Barely there: the best stealth in the game, saves and devices matched by
+       nothing but a High-Elf and a Mindflayer, and seven hit dice. Walks
+       through walls and mountain ranges, at a hit point a turn and no healing
+       while inside.
    * - **Ghoul**
      - Its bare hands paralyse what they hit.
    * - **Sprite**
@@ -207,6 +209,5 @@ Still to come
 -------------
 
 All twenty-one of Zangband's races have now been considered: seventeen are in,
-four were turned down as near-duplicates of races already present. What remains
-is not a race but an ability — the Spectre's pass-wall, which wants a mechanism
-this game does not have.
+four were turned down as near-duplicates of races already present. Nothing is
+outstanding — the Spectre's pass-wall, the last piece, is built (DEC-74).

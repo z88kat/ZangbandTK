@@ -204,10 +204,24 @@ static int test_the_corpus_is_present(void *state) {
  * excusing the next genuine break of that same file.
  */
 static int test_one_saved_character(void *state) {
-	const char *roundtrip = "saves-roundtrip.tmp";
+	/*
+	 * Per process, not a fixed name.
+	 *
+	 * This was `"saves-roundtrip.tmp"` for everybody, so any two runs of this
+	 * suite at the same time wrote and deleted the same file and one of them
+	 * lost -- reliably, eight times out of eight when run in parallel. The
+	 * suites are run sequentially by `check-flakes` and by the CMake runner,
+	 * so nothing in the harness collides; a person running a suite by hand
+	 * while a verification job is going does, and it looks exactly like an
+	 * intermittent savefile bug. `test_savefile_name()` was written for this
+	 * and three other suites already use it.
+	 */
+	char roundtrip[64];
 	const char *name;
 	char path[1024];
 	bool listed;
+
+	test_savefile_name(roundtrip, sizeof(roundtrip), "saves-roundtrip");
 
 	require(next_save < corpus_count);
 	name = corpus[next_save++];

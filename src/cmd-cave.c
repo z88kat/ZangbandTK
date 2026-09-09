@@ -1197,7 +1197,8 @@ void move_player(int dir, bool disarm)
 		disturb(player);
 		/* No move made so no energy spent. */
 		player->upkeep->energy_use = 0;
-	} else if (!square_ispassable(cave, grid)) {
+	} else if (!square_ispassable(cave, grid)
+			&& !player_can_pass_walls(player, grid)) {
 		disturb(player);
 
 		/* Notice unknown obstacles, mention known obstacles */
@@ -1352,6 +1353,10 @@ static bool do_cmd_walk_test(struct player *p, struct loc grid)
 
 	/* If we don't know the grid, allow attempts to walk into it */
 	if (!square_isknown(cave, grid))
+		return true;
+
+	/* Some characters walk through rock (DEC-74) */
+	if (player_can_pass_walls(p, grid))
 		return true;
 
 	/*

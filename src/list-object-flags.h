@@ -65,6 +65,7 @@ OF(SH_FIRE, "ShFir")
 OF(SH_ELEC, "ShElc")
 /* ZangbandTK (CNT-09): more of the wearer's side.  Appended, as above. */
 OF(GHOUL_TOUCH, "Ghoul")
+OF(PASS_WALL, "PassWall")
 OF(RETURN, "Retrn")
 OF(LUCK_10, " Luck")
 OF(EASY_ENCHANT, "EasEn")
