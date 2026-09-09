@@ -172,8 +172,63 @@ function(angband_curses_create_target _TARGET_OUT)
     endif()
 endfunction()
 
+# Creates an imported library target that links curses statically, and sets
+# _TARGET_OUT to its name.  Will not modify _TARGET_OUT if the static archives
+# could not be found.
+#
+# This exists for building a binary that is handed to somebody else.  A
+# dynamically linked curses build is bound to the exact ncurses the build
+# machine had: on a Debian container with no libncursesw.so.6 it does not
+# start at all, and on the RPM distributions, whose ncurses carries no symbol
+# versions, every launch prints "no version information available" to stderr,
+# which reads as a fault in the game.  Linking the archives removes both.  The
+# terminfo database is still read at run time from the target system, which is
+# what we want -- that is how the game learns what the player's terminal can
+# do, and every Linux has one.
+#
+# Two archives, in this order: ncurses is built with --with-termlib on the
+# distributions that matter, so the terminal driver lives in libtinfo and
+# libncursesw.a alone leaves better than a thousand symbols undefined.  Where
+# ncurses was built without that split there is no tinfo archive to find and
+# ncursesw.a is self-contained, so tinfo is looked for but not required.
+function(angband_curses_create_static_target _TARGET_OUT)
+    # Named with the prefix and suffix in full: find_library takes a name like
+    # that literally, which is the whole point -- the plain name would match
+    # the shared library and quietly undo this.
+    find_library(CURSES_STATIC_NCURSES NAMES libncursesw.a)
+    if(CURSES_STATIC_NCURSES STREQUAL "CURSES_STATIC_NCURSES-NOTFOUND")
+        return()
+    endif()
+    # libtinfow.a first: a few distributions build a separate wide tinfo.
+    find_library(CURSES_STATIC_TINFO NAMES libtinfow.a libtinfo.a)
+
+    set(_TARGET Curses::CursesStatic)
+    if(NOT TARGET ${_TARGET})
+        add_library(${_TARGET} INTERFACE IMPORTED)
+        if(CURSES_STATIC_TINFO STREQUAL "CURSES_STATIC_TINFO-NOTFOUND")
+            set(_LIBRARIES "${CURSES_STATIC_NCURSES}")
+        else()
+            set(_LIBRARIES "${CURSES_STATIC_NCURSES}" "${CURSES_STATIC_TINFO}")
+        endif()
+        set_target_properties(${_TARGET} PROPERTIES
+            INTERFACE_LINK_LIBRARIES "${_LIBRARIES}"
+            ANGBAND_PROP_CURSES_NCURSES ON
+            ANGBAND_PROP_CURSES_HEADER_NAME "ncurses.h"
+        )
+        angband_curses_test_use_default_colors(${_TARGET})
+    endif()
+    set(${_TARGET_OUT} ${_TARGET} PARENT_SCOPE)
+endfunction()
+
 macro(configure_gcu_frontend _NAME_TARGET)
-    angband_curses_create_target(CURSES_SELECTED)
+    if(GCU_STATIC_CURSES)
+        angband_curses_create_static_target(CURSES_SELECTED)
+        if(NOT TARGET ${CURSES_SELECTED})
+            message(FATAL_ERROR "GCU_STATIC_CURSES is set but libncursesw.a was not found.  Install the static curses libraries (libncurses-dev on Debian and Ubuntu, ncurses-static on Fedora) or turn the option off.")
+        endif()
+    else()
+        angband_curses_create_target(CURSES_SELECTED)
+    endif()
     if(TARGET ${CURSES_SELECTED})
         target_link_libraries(${_NAME_TARGET} PRIVATE ${CURSES_SELECTED})
         target_compile_definitions(${_NAME_TARGET} PRIVATE

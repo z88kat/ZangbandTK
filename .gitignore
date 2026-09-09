@@ -110,6 +110,15 @@ src/wasm-obj/
 src/wasm-obj-test/
 build-asan/
 
+# Makefile.osx-tty's object tree, and the tarball it packages.  The objects
+# get their own directory rather than going in src/ beside everything else
+# because the Cocoa build compiles the same files with -DMACH_O_CARBON and the
+# two must not overwrite each other's .o files; see the header of
+# src/Makefile.osx-tty.  The tarball is matched by name because *.tar.gz is
+# not ignored wholesale -- the source archive is built at the top level too.
+src/osx-tty/
+*-osx-terminal.tar.gz
+
 # The Neon tileset writes two pictures for inspection -- a mock map and a
 # filmstrip of the colour cycle.  They live beside the source art rather than
 # beside the sheet, because Makefile.osx copies lib/tiles wholesale into the

@@ -1,0 +1,233 @@
+# File: Makefile.osx-tty
+#
+# Terminal (curses) build of ZangbandTK for macOS.
+#
+# This is a second, independent Mac target alongside Makefile.osx.  That one
+# builds the Cocoa application bundle -- the windowed game with tiles and
+# sound.  This one builds a plain executable that draws with curses and runs
+# inside Terminal.app, iTerm2, or over ssh, and ships as a tarball rather than
+# a disk image.  There is no .app and no window server involved at all.
+#
+# The two builds cannot share object files.  Makefile.osx compiles everything
+# with -DMACH_O_CARBON, which changes where the game looks for its user
+# directory (init.c) and which sound back end exists (sound-core.c), and this
+# build must not define it -- a terminal build wants the Unix paths.  Both
+# makefiles compile the same .c files in the same directory, so if they wrote
+# to the same cave.o the second build would silently link objects compiled for
+# the other one.  Everything here therefore goes under $(OBJDIR).
+
+# Prerequisites are expanded as each rule is read, so the default target
+# cannot name $(EXE) up here -- EXE is not set until below and the rule would
+# be read with no prerequisites at all, leaving "make" with nothing to do.
+# Name the goal now and give it its rule after the variables.
+.DEFAULT_GOAL := all
+
+# settings
+CC = clang
+OPT ?= -O2
+
+# Where the object files, the static library and the executable are built.
+# Keeps this build entirely out of Makefile.osx's way; see the note above.
+OBJDIR = osx-tty/
+
+# ZangbandTK: the name the tarball and its top directory are called.
+DISPLAY_NAME = ZangbandTK
+
+# The name of the executable a player types.  Matches the Linux AppImage
+# (scripts/pkg_appimage), which installs the same front end as "zangbandtk";
+# PROGNAME from Makefile.src is still "angband" and names the Windows and
+# Nintendo binaries, so it is not what we want in a terminal on the path.
+EXE = $(OBJDIR)zangbandtk
+
+# Apple Silicon only, for the reason given in Makefile.osx (DEC-22).  11.0 is
+# the floor rather than that file's 10.9 because 11.0 is the first release
+# that ran on arm64 at all; asking for less is not honoured, it is just a
+# number clang has to raise.
+ARCHS = arm64
+ARCHFLAGS = $(addprefix -arch ,$(ARCHS))
+OSXVERSFLAGS = -mmacosx-version-min=11.0
+# Makefile.osx's set, less -Wunused-macros.  main-gcu.c wraps its curses
+# include in "#define term System_term" ... "#undef term" to dodge a name
+# clash with <term.h> on AIX, and defines NCURSES_ENABLE_STDbool_H for
+# ncurses' own preprocessor to read.  Neither is expanded on macOS, so
+# -Wunused-macros calls both dead -- and with -Werror, which the release
+# build passes in OPT, that stops the build.  They are a portability shield,
+# not dead code, so the flag goes rather than the shield.  The Cocoa build
+# keeps -Wunused-macros; it never compiles main-gcu.c.
+WARNINGS = -W -Wall -Wextra -Wno-unused-parameter \
+	-Wno-missing-field-initializers -Wwrite-strings -Wmissing-prototypes \
+	-Wnested-externs -Wshadow
+JUST_C = -std=c99
+
+# USE_GCU selects the curses front end in main.c's module table; USE_NCURSES
+# tells main-gcu.c to include <ncurses.h> and to define
+# _XOPEN_SOURCE_EXTENDED, which is what makes the wide-character entry points
+# visible in Apple's headers.
+#
+# USE_PRIVATE_PATHS sends the save, score and panic directories to
+# ~/.angband/ZangbandTK instead of into ./lib beside the executable.  Without
+# it a player who deletes the extracted folder deletes their characters with
+# it, and the tarball could not be unpacked anywhere read only.  Note this is
+# a different place from where the Cocoa application keeps its saves
+# (~/Documents/Angband): that follows from MACH_O_CARBON, which this build
+# does not set, and the two sets of characters are deliberately separate.
+CFLAGS = -g -I. $(WARNINGS) $(OPT) \
+	-DUSE_GCU -DUSE_NCURSES -DHAVE_USE_DEFAULT_COLORS \
+	-DUSE_PRIVATE_PATHS -DALLOW_BORG -DHAVE_MKSTEMP \
+	-fno-stack-protector $(OSXVERSFLAGS) $(ARCHFLAGS)
+
+# Apple's curses in /usr/lib, deliberately, not Homebrew's.  A release binary
+# linked against /opt/homebrew/opt/ncurses/lib/libncursesw.6.dylib does not
+# start on a machine that has no Homebrew, and that failure does not show up
+# on the machine that built it.  The system library is old (ncurses 5.7) but
+# it has everything the front end asks for, including use_default_colors and
+# the wide-character calls, and it is present on every macOS install along
+# with the terminfo database it reads.  The "No Homebrew Leakage" check in
+# .github/workflows/release.yaml is what keeps it that way.
+LIBS = -lncurses
+
+# Import user prefs
+# If you don't want to edit this file, put your module redefinitions
+# and build flags in "./config"
+-include config
+
+# Check for autoconf.h; do not warn on nonexistence
+autoconf= $(wildcard autoconf.h)
+ifneq ($(autoconf),)
+CFLAGS += -DHAVE_CONFIG_H
+endif
+
+# Note that Makefile.version sets VERSION, and so we must run version.sh after
+# including it
+include Makefile.inc
+include Makefile.version
+
+PACKAGE_VERSION := ${VERSION}
+VERSION := $(shell ../scripts/version.sh)
+ifeq (${VERSION},)
+	VERSION := unknown
+else
+	CFLAGS += -DBUILD_ID=${VERSION}
+endif
+
+LIBTTY = $(OBJDIR)zangbandtk.a
+OBJS = $(addprefix $(OBJDIR),$(BASEOBJS))
+TTY_OBJS = $(addprefix $(OBJDIR),main.o main-gcu.o)
+
+
+#
+# Build the executable
+#
+
+all: $(EXE)
+
+$(LIBTTY): $(OBJS)
+	@libtool -static -o $@ $(OBJS)
+
+$(EXE): $(LIBTTY) $(TTY_OBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(TTY_OBJS) $(LIBTTY) $(LIBS)
+	@printf "%10s %-20s\n" LINK $@
+
+clean:
+	-$(RM) -r $(OBJDIR)
+
+
+#
+# Basic build rules and dependencies
+#
+# Header dependencies come from the compiler (-MMD -MP), for the reason spelled
+# out at length in Makefile.osx: without them, editing a header leaves objects
+# carrying an old struct layout, which links cleanly and then misbehaves at run
+# time.
+#
+
+DEPFLAGS = -MMD -MP
+
+$(OBJDIR)%.o : %.c
+	@mkdir -p $(@D)
+	@printf "%10s %-20s\n" CC $<
+	@$(CC) $(JUST_C) $(CFLAGS) $(DEPFLAGS) -c -o $@ $<
+
+-include $(OBJS:.o=.d) $(TTY_OBJS:.o=.d)
+
+
+#
+# Packaging.
+#
+# A tarball holding one directory: the executable, the game data it reads, and
+# the manual.  Nothing is installed and nothing is written inside it while the
+# game runs (see USE_PRIVATE_PATHS above), so it can be unpacked anywhere and
+# deleted when done.
+#
+
+PACKAGE_NAME = $(DISPLAY_NAME)-$(PACKAGE_VERSION)
+STAGE = $(OBJDIR)dist/$(PACKAGE_NAME)
+
+# Only what a terminal actually reads.  lib/fonts, lib/sounds and lib/icons
+# belong to the windowed front ends, and lib/tiles is a few megabytes of PNGs
+# that no curses build can draw -- but lib/tiles/list.txt is still parsed at
+# startup to build the graphics-mode table, so that one file has to come along
+# even though the images do not.
+dist: $(EXE)
+	@rm -rf $(OBJDIR)dist
+	@mkdir -p $(STAGE)/lib/gamedata
+	@mkdir -p $(STAGE)/lib/screens
+	@mkdir -p $(STAGE)/lib/help
+	@mkdir -p $(STAGE)/lib/customize
+	@mkdir -p $(STAGE)/lib/tiles
+	@echo copying files...
+	@cp ../lib/gamedata/*.txt $(STAGE)/lib/gamedata
+	@cp ../lib/screens/*.txt $(STAGE)/lib/screens
+	@cp ../lib/help/*.txt $(STAGE)/lib/help
+	@cp ../lib/customize/*.prf $(STAGE)/lib/customize
+	@cp ../lib/tiles/list.txt $(STAGE)/lib/tiles
+
+# The manual, if it has been built.  Copied with a test rather than a
+# dependency so that somebody building the tarball locally does not need
+# Sphinx; the release workflow always has it, because it takes the documents
+# from the docconvert job.
+	@if test -d ../docs/_build/html ; then \
+		mkdir -p $(STAGE)/docs ; \
+		(cd ../docs/_build/html && tar -cf - .) | (cd $(STAGE)/docs && tar -xf -) ; \
+	fi
+
+	@cp osx-tty-readme.txt $(STAGE)/README.txt
+	@cp ../LICENSE.md $(STAGE)/LICENSE.md
+	@cp borg/borg.txt $(STAGE)/borg.txt
+	@install -m 755 $(EXE) $(STAGE)/zangbandtk
+
+# Sign ad-hoc, and strip the extended attributes first for the same reason
+# Makefile.osx's dist target does: codesign refuses anything carrying Finder
+# information or a provenance attribute, and recent macOS attaches the latter
+# on its own.  An arm64 executable has to be signed to run at all, so the
+# linker has already applied an ad-hoc signature -- doing it here as well is
+# what makes it deterministic rather than a side effect of the link, and gives
+# the verify below something to check.
+#
+# This is not notarization.  A tarball downloaded with a browser arrives
+# quarantined, and the first run is refused until the player clears that;
+# README.txt is where we tell them so.
+	@xattr -cr $(STAGE)/zangbandtk
+	codesign --force --sign - $(STAGE)/zangbandtk
+	codesign --verify --strict $(STAGE)/zangbandtk
+
+	@-rm -f ../"$(PACKAGE_NAME)-osx-terminal.tar.gz"
+	(cd $(OBJDIR)dist && tar -czf - $(PACKAGE_NAME)) > ../"$(PACKAGE_NAME)-osx-terminal.tar.gz"
+	@echo "created $(PACKAGE_NAME)-osx-terminal.tar.gz"
+
+
+# Allow for some introspection, matching src/Makefile and Makefile.ibm, so the
+# release workflow can ask for the executable name rather than repeating it.
+print-executable-name:
+	@echo our-executable-name=$(notdir $(EXE))
+
+print-package-name:
+	@echo our-package-name=$(PACKAGE_NAME)
+
+vars:
+	@echo LDFLAGS = $(LDFLAGS)
+	@echo CFLAGS = $(CFLAGS)
+	@echo LIBS = $(LIBS)
+	@echo EXE = $(EXE)
+
+.PHONY : all clean dist print-executable-name print-package-name vars

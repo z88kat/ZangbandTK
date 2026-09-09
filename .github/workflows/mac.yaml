@@ -24,6 +24,42 @@ jobs:
           cd src
           env OPT="-Werror" make -f Makefile.osx -j$(sysctl -n hw.activecpu)
 
+  # The released terminal build, built and played on every push rather than
+  # only when a tag is cut.  The cmake-curses job below also builds a curses
+  # front end, but it builds it the portable way and stops at the link; this
+  # is the one that has to produce something a player can download, so it goes
+  # all the way to the tarball and then starts the game inside it.
+  terminal:
+    name: Terminal
+    runs-on: macos-latest
+    steps:
+      - name: Clone Project
+        uses: actions/checkout@v6
+
+      - name: Build and Package
+        run: |
+          cd src
+          env OPT="-Werror" make -f Makefile.osx-tty \
+            -j$(sysctl -n hw.activecpu) dist
+
+      # Same two checks the release job makes, for the same reasons: a curses
+      # that resolved to Homebrew would work here and nowhere else, and an
+      # archive that unpacks correctly still tells you nothing about whether
+      # the game in it starts.
+      - name: Check and Play the Archive
+        run: |
+          package=$(cd src && make -f Makefile.osx-tty print-package-name \
+            | sed -En 's/^our-package-name=//p')
+          mkdir -p unpacked
+          tar -xzf ${package}-osx-terminal.tar.gz -C unpacked
+          otool -L unpacked/${package}/zangbandtk
+          if otool -L unpacked/${package}/zangbandtk \
+              | grep -qE '/opt/homebrew|/usr/local' ; then
+            echo "The executable links a library outside /usr/lib." >&2
+            exit 1
+          fi
+          scripts/smoke-tty unpacked/${package}
+
   cmake-curses:
     runs-on: macos-latest
     steps:

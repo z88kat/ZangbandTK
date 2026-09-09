@@ -1,0 +1,86 @@
+#!/bin/bash
+#
+# Build the Linux terminal tarball from a self-contained build of the game.
+#
+# Use in the root directory of the game, like so:
+#    scripts/pkg_linux_tty ZangbandTK-3.5.1 [output.tar.gz]
+#
+# Expects a self-contained build in build/game -- the executable beside its lib
+# directory, which is what a CMake build with SC_INSTALL produces.  Configure it
+# with SUPPORT_GCU_FRONTEND, GCU_STATIC_CURSES and USE_PRIVATE_PATHS; see
+# .github/workflows/release.yaml for the invocation the release uses and why
+# each of those is there.
+#
+# This is a separate download from the AppImage, which already carries the same
+# curses front end.  The AppImage is for a desktop: it is mounted through FUSE,
+# which modern Debian and Ubuntu no longer install by default, and it bundles
+# the SDL2 and X11 stacks that a terminal never touches.  This is for a server
+# you reach over ssh -- an executable, its data, and nothing else.
+set -o errexit
+
+if [ $# -ne 1 ] && [ $# -ne 2 ]; then
+	sed -n -e '3,19p' "$0" | sed -e 's/^# \{0,1\}//'
+	exit 1
+fi
+
+NAME=$1
+if [ $# -eq 1 ]; then
+	OUT=$NAME-linux64-terminal.tar.gz
+else
+	OUT=$2
+fi
+
+if [ ! -x build/game/angband ]; then
+	echo "No self-contained build found at build/game/angband." >&2
+	echo "Configure with SC_INSTALL and build before running this." >&2
+	exit 1
+fi
+
+# A curses build that still depends on the target's ncurses is the one thing
+# that cannot be checked by looking at the archive afterwards, and it is the
+# most likely thing to be wrong, so refuse to package one.  See the comment on
+# angband_curses_create_static_target in src/cmake/macros/GCU_Frontend.cmake.
+if ldd build/game/angband | grep -qE 'libncurses|libtinfo'; then
+	echo "The executable links ncurses dynamically:" >&2
+	ldd build/game/angband | grep -E 'libncurses|libtinfo' >&2
+	echo "Configure with -DGCU_STATIC_CURSES=ON so it runs on systems that" >&2
+	echo "have a different ncurses, or none." >&2
+	exit 1
+fi
+
+STAGE=`mktemp -d`
+trap 'rm -rf "$STAGE"' EXIT
+ROOT=$STAGE/$NAME
+mkdir -p "$ROOT"
+
+# Only what a terminal reads.  lib/fonts, lib/sounds and lib/icons belong to the
+# windowed front ends and lib/tiles is megabytes of images no curses build can
+# draw -- but lib/tiles/list.txt is still parsed at startup to build the
+# graphics-mode table, so that one file comes along without the pictures.
+mkdir -p "$ROOT/lib/tiles"
+for dir in gamedata screens help customize; do
+	cp -R "build/game/lib/$dir" "$ROOT/lib/$dir"
+done
+cp build/game/lib/tiles/list.txt "$ROOT/lib/tiles/"
+
+# Named for the game rather than for the CMake project, which is still Angband
+# because it also names the install paths.  Same rename the AppImage does.
+cp build/game/angband "$ROOT/zangbandtk"
+chmod 755 "$ROOT/zangbandtk"
+
+cp scripts/linux-tty-readme.txt "$ROOT/README.txt"
+# The licence travels with every copy, which is what the Angband licence asks.
+cp LICENSE.md "$ROOT/LICENSE.md"
+cp src/borg/borg.txt "$ROOT/borg.txt"
+
+# The manual, if it has been built.  Optional so that building the tarball by
+# hand does not need Sphinx; the release workflow always has it, because it
+# takes the documents from the docconvert job.
+if [ -d docs/_build/html ]; then
+	mkdir -p "$ROOT/docs"
+	(cd docs/_build/html && tar -cf - .) | (cd "$ROOT/docs" && tar -xf -)
+fi
+
+rm -f "$OUT"
+(cd "$STAGE" && tar -czf - "$NAME") > "$OUT"
+echo "Wrote $OUT"

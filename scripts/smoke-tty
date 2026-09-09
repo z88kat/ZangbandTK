@@ -1,0 +1,150 @@
+#!/usr/bin/env python3
+"""Drive the curses build through character creation and into the dungeon.
+
+A packaged terminal build can be complete and still be useless: a missing
+gamedata file, a data path that does not resolve once the tree is unpacked
+somewhere else, a curses library that is not on the machine.  None of that
+shows up in a listing of the archive, and none of it shows up by running the
+executable with -h either, because the front end is never started.
+
+So start it for real, on a pseudo-terminal, make a random character and check
+the game reaches the point of drawing a map.  Anything short of that exits
+non-zero and prints the last screen it managed.
+
+    scripts/smoke-tty <game-directory> [executable]
+
+This writes to the invoking user's ~/.angband/ZangbandTK, creating it if it is
+not there, and leaves a character called SmokeTest behind if the run gets far
+enough to save one.  That cannot be redirected: the game expands ~ from the
+passwd entry (getpwuid, in z-file.c) and never looks at $HOME, so setting HOME
+here would accomplish nothing but the appearance of isolation.  On a CI runner
+that home directory is thrown away with the job; run it locally and it is your
+own.
+"""
+
+import os
+import pty
+import re
+import select
+import struct
+import sys
+import time
+
+import fcntl
+import termios
+
+ROWS, COLS = 45, 110
+
+# Milestones, in the order they have to appear.  Each is a thing that can only
+# be on screen if a whole stage of startup worked: the splash line comes out of
+# lib/screens/news.txt, so it proves the executable runs and found its data
+# directory; initialisation complete means every gamedata file parsed; the race
+# menu means the player tables loaded; and the status line means a character
+# exists and a level was generated around them.
+#
+# The needles are text the game prints, not text it is built from.  The title
+# is drawn as ASCII art, letter by letter, so "ZangbandTK" never actually
+# appears on the splash screen and is not something to look for.
+MILESTONES = [
+    ("splash", "zangbandtk.com", "the executable did not draw lib/screens/news.txt"),
+    ("data", "Initialization complete", "the game did not finish reading lib/gamedata"),
+    ("birth", "Half-Elf", "the character creation menus did not appear"),
+    ("play", "LEVEL", "no character was created, or no level was generated"),
+]
+
+
+def strip_escapes(text):
+    """Remove the control sequences, leaving what a reader would see."""
+    osc = r'\x1b\][0-9];[^\x07\x1b]*(?:\x07|\x1b\\)'
+    csi = r'\x1b\[[0-9;?]*[a-zA-Z]'
+    other = r'\x1b[()][B0]|\x1b[=>]'
+    return re.sub('|'.join((osc, csi, other)), '', text)
+
+
+def run(game_dir, executable):
+    env = dict(os.environ, TERM='xterm-256color')
+    argv = ['./' + executable, '-mgcu', '-uSmokeTest', '-n']
+
+    pid, fd = pty.fork()
+    if pid == 0:
+        os.chdir(game_dir)
+        os.execve(argv[0], argv, env)
+    fcntl.ioctl(fd, termios.TIOCSWINSZ, struct.pack('HHHH', ROWS, COLS, 0, 0))
+
+    captured = bytearray()
+
+    def pump(seconds):
+        deadline = time.time() + seconds
+        while time.time() < deadline:
+            readable, _, _ = select.select([fd], [], [], 0.3)
+            if not readable:
+                continue
+            try:
+                chunk = os.read(fd, 65536)
+            except OSError:
+                return
+            if not chunk:
+                return
+            captured.extend(chunk)
+
+    def send(keys):
+        # A game that has already quit -- which is exactly what a missing
+        # gamedata file causes -- leaves the master side of the pty with no
+        # reader, so writing to it raises EIO.  That is a result, not an
+        # error: swallow it and let the milestone check below report which
+        # stage was not reached, with the game's own complaint in the output
+        # it captured.
+        try:
+            os.write(fd, keys)
+        except OSError:
+            pass
+
+    try:
+        # Splash, then '@' to take random selections for the whole character,
+        # then two returns to get past the name prompt and the confirmation.
+        pump(6)
+        send(b'\r')
+        pump(3)
+        send(b'@')
+        pump(4)
+        send(b'\r')
+        pump(3)
+        send(b'\r')
+        pump(4)
+    finally:
+        try:
+            os.kill(pid, 9)
+            os.waitpid(pid, 0)
+        except OSError:
+            pass
+
+    return strip_escapes(captured.decode('utf-8', 'replace'))
+
+
+def main():
+    if len(sys.argv) not in (2, 3):
+        sys.exit('usage: smoke-tty <game-directory> [executable]')
+    game_dir = sys.argv[1]
+    executable = sys.argv[2] if len(sys.argv) == 3 else 'zangbandtk'
+
+    if not os.access(os.path.join(game_dir, executable), os.X_OK):
+        sys.exit('smoke-tty: %s/%s is not an executable' % (game_dir, executable))
+
+    screen = run(game_dir, executable)
+
+    failed = [m for m in MILESTONES if m[1] not in screen]
+    for name, needle, explanation in failed:
+        print('smoke-tty: %s -- %s (looked for %r)'
+              % (name, explanation, needle), file=sys.stderr)
+    if failed:
+        print('--- last output ---', file=sys.stderr)
+        print(screen[-3000:], file=sys.stderr)
+        return 1
+
+    print('smoke-tty: reached the dungeon (%s)'
+          % ', '.join(m[0] for m in MILESTONES))
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

@@ -56,6 +56,14 @@ env:
     # the Linux AppImage.
     LINUX_ARCHIVE_ARTIFACT: release-linux-archive
     # Used as the name when uploading or downloading the artifact for passing
+    # the name of the Linux terminal archive.
+    LINTTY_ARTIFACT: release-linux-terminal
+    # Used as the path for the file with the name of the Linux terminal archive.
+    LINTTY_ARTIFACT_PATH: release-linux-terminal.txt
+    # Used as the name when uploading or downloading the artifact holding
+    # the Linux terminal archive.
+    LINTTY_ARCHIVE_ARTIFACT: release-linux-terminal-archive
+    # Used as the name when uploading or downloading the artifact for passing
     # the name of the 32-bit Windows archive.
     WIN32_ARTIFACT: release-win32
     # Used as the path for the file with the name of the 32-bit Windows archive.
@@ -75,6 +83,14 @@ env:
     # Used as the name when uploading or downloading the artifact holding
     # the Mac archive.
     MAC_ARCHIVE_ARTIFACT: release-mac-archive
+    # Used as the name when uploading or downloading the artifact for passing
+    # the name of the Mac terminal archive.
+    MACTTY_ARTIFACT: release-mac-terminal
+    # Used as the path for the file with the name of the Mac terminal archive.
+    MACTTY_ARTIFACT_PATH: release-mac-terminal.txt
+    # Used as the name when uploading or downloading the artifact holding
+    # the Mac terminal archive.
+    MACTTY_ARCHIVE_ARTIFACT: release-mac-terminal-archive
     # Used as the name when uploading or downloading the artifact for passing
     # the name of the DOS archive.
     DOS_ARTIFACT: release-dos
@@ -582,6 +598,141 @@ jobs:
           path: ${{ steps.create_linux_archive.outputs.archive_file }}
           retention-days: 1
 
+  linux-terminal:
+    needs: [setup, docconvert]
+    name: Linux (terminal, 64-bit)
+    # Deliberately not ubuntu-latest, and for the same reason the AppImage job
+    # is not: the executable is bound to the glibc it was built against, so the
+    # oldest runner still supported puts the floor as low as it can go.  Here
+    # that is glibc 2.35, which the README in the archive states.
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
+          echo "name=$name" >> $GITHUB_OUTPUT
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      # libncurses-dev carries the static archives as well as the shared
+      # libraries, which is what GCU_STATIC_CURSES needs.  Nothing here wants
+      # X11 or SDL2: that is the point of this build.
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build gcc git libncurses-dev file
+
+      # Need commit history and tags for scripts/version.sh to work as expected
+      # so use 0 for fetch-depth.
+      - name: Clone Project
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download Artifact with Converted Documents
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.DOC_ARTIFACT }}
+
+      # scripts/pkg_linux_tty puts the manual in the archive if it is there.
+      - name: Extract Converted Documents
+        run: |
+          tar -xf ${{ env.DOC_ARTIFACT_PATH }}
+
+      # The curses front end on its own -- no SDL2, no X11.  The AppImage job
+      # above already builds a binary that has all three, so this is not about
+      # reaching the terminal front end; it is about handing somebody an
+      # executable and its data with nothing else in the way, for a server
+      # where the AppImage is the wrong shape.
+      #
+      # SC_INSTALL makes the data path ./lib relative to the working directory,
+      # which is what lets the unpacked archive be moved anywhere;
+      # USE_PRIVATE_PATHS then sends the saves to the player's home rather than
+      # inside it.  Both are as the AppImage job explains at greater length.
+      #
+      # GCU_STATIC_CURSES is the one that is specific to shipping a bare
+      # executable.  A dynamically linked curses build is bound to the exact
+      # ncurses on the machine that built it: it will not start at all on a
+      # Debian system without libncursesw.so.6, and on the RPM distributions it
+      # starts but prints "no version information available" on every launch.
+      - name: Build
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror -DUSE_PRIVATE_PATHS" \
+            -DSC_INSTALL=ON \
+            -DSUPPORT_GCU_FRONTEND=ON \
+            -DGCU_STATIC_CURSES=ON
+          cmake --build build --parallel
+
+      - name: Create Linux Terminal Archive
+        id: create_linux_terminal_archive
+        run: |
+          archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+          scripts/pkg_linux_tty $archive_prefix
+          echo "archive_file=${archive_prefix}-linux64-terminal.tar.gz" >> $GITHUB_OUTPUT
+          echo "package_name=$archive_prefix" >> $GITHUB_OUTPUT
+
+      - name: Unpack the Archive
+        run: |
+          mkdir -p unpacked
+          tar -xzf ${{ steps.create_linux_terminal_archive.outputs.archive_file }} -C unpacked
+
+      # pkg_linux_tty refuses to package a dynamically linked curses, so this
+      # is belt and braces -- but it is checking the file that is actually
+      # going to be uploaded rather than the one in the build tree.
+      - name: Check the Executable Stands Alone
+        run: |
+          root=unpacked/${{ steps.create_linux_terminal_archive.outputs.package_name }}
+          ldd $root/zangbandtk
+          if ldd $root/zangbandtk | grep -qE 'libncurses|libtinfo|libX11|libSDL'; then
+            echo "The executable depends on a library it should have linked in or never wanted." >&2
+            exit 1
+          fi
+          file $root/zangbandtk | grep -q "x86-64"
+
+      # Play it, on a distribution that is not the one it was built on and has
+      # no ncurses of its own.  Debian's base image has no libncursesw.so.6 at
+      # all, which is exactly the machine a dynamically linked build fails on,
+      # so it is the one worth testing against.
+      - name: Smoke Test on Another Distribution
+        run: |
+          root=unpacked/${{ steps.create_linux_terminal_archive.outputs.package_name }}
+          test -f $root/lib/gamedata/constants.txt
+          test -f $root/README.txt
+          test -n "$(ls -A $root/docs)"
+          docker run --rm \
+            -v "$PWD/$root:/game:ro" \
+            -v "$PWD/scripts/smoke-tty:/smoke-tty:ro" \
+            debian:12 \
+            sh -c 'apt-get update -qq >/dev/null && \
+              DEBIAN_FRONTEND=noninteractive apt-get install -y -qq python3 >/dev/null && \
+              cp -R /game /play && python3 /smoke-tty /play'
+
+      - name: Create Artifact with Linux Terminal Archive Path
+        run: |
+          echo archive_path= '${{ steps.create_linux_terminal_archive.outputs.archive_file }}' > $LINTTY_ARTIFACT_PATH
+
+      - name: Upload Artifact with Linux Terminal Archive Path
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.LINTTY_ARTIFACT }}
+          path: ${{ env.LINTTY_ARTIFACT_PATH }}
+          retention-days: 1
+
+      - name: Upload Linux Terminal Archive as Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.LINTTY_ARCHIVE_ARTIFACT }}
+          path: ${{ steps.create_linux_terminal_archive.outputs.archive_file }}
+          retention-days: 1
+
   windows32:
     needs: [setup, docconvert]
     name: Windows (32-bit)
@@ -876,6 +1027,125 @@ jobs:
           path: ${{ steps.create_mac_archive.outputs.archive_file }}
           retention-days: 1
 
+  mac-terminal:
+    needs: [setup, docconvert]
+    name: Mac (terminal)
+    runs-on: macos-latest
+    steps:
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
+          echo "name=$name" >> $GITHUB_OUTPUT
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      # Need commit history and tags for scripts/version.sh to work as expected
+      # so use 0 for fetch-depth.
+      - name: Clone Project
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download Artifact with Converted Documents
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.DOC_ARTIFACT }}
+
+      # Makefile.osx-tty's dist target puts docs/_build/html in the tarball if
+      # it is there, so unpack the manual before building it.
+      - name: Extract Converted Documents
+        run: |
+          tar -xf ${{ env.DOC_ARTIFACT_PATH }}
+
+      # The curses build: the same game as the disk image, drawn with
+      # characters, for playing in Terminal or over ssh.  A tarball rather than
+      # a .dmg because there is no application bundle to mount -- it is one
+      # executable and the data it reads.
+      #
+      # OPT carries -Werror for the same reason the Cocoa job's does, and
+      # PACKAGE_NAME is passed in for the same reason too: left to itself the
+      # makefile would take the version from scripts/version.sh, which is a git
+      # describe and does not see a lightweight tag, so the file would be named
+      # after a commit and the upload below would go looking for something that
+      # does not exist.
+      - name: Create Mac Terminal Archive
+        id: create_mac_terminal_archive
+        run: |
+          package_name=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+          cd src
+          env OPT="-O2 -DNDEBUG -Werror" make -f Makefile.osx-tty \
+            -j$(sysctl -n hw.activecpu) PACKAGE_NAME="$package_name" dist
+          echo "archive_file=${package_name}-osx-terminal.tar.gz" >> $GITHUB_OUTPUT
+          echo "package_name=$package_name" >> $GITHUB_OUTPUT
+
+      - name: Unpack the Archive
+        run: |
+          mkdir -p unpacked
+          tar -xzf ${{ steps.create_mac_terminal_archive.outputs.archive_file }} -C unpacked
+
+      # The failure this guards against does not show up on the machine that
+      # builds it.  The runner has Homebrew, so a curses that resolves to
+      # /opt/homebrew links happily here and then refuses to start for every
+      # player who has no Homebrew, with a dyld error naming a path they have
+      # never heard of.  Makefile.osx-tty asks for the system library on
+      # purpose; this is what proves it got it.
+      - name: Check for Homebrew Leakage
+        run: |
+          root=unpacked/${{ steps.create_mac_terminal_archive.outputs.package_name }}
+          otool -L $root/zangbandtk
+          if otool -L $root/zangbandtk | grep -qE '/opt/homebrew|/usr/local' ; then
+            echo "The executable links a library outside /usr/lib." >&2
+            exit 1
+          fi
+          file $root/zangbandtk | grep -q arm64
+
+      # An unsigned or incoherently signed executable is killed on sight by
+      # macOS on Apple Silicon, so check the signature survived the trip
+      # through tar rather than only checking it at the point it was applied.
+      - name: Verify the Signature
+        run: |
+          root=unpacked/${{ steps.create_mac_terminal_archive.outputs.package_name }}
+          codesign --verify --strict --verbose=2 $root/zangbandtk
+
+      # Everything above says the archive is well formed.  This says the game
+      # in it runs: scripts/smoke-tty starts the curses front end on a
+      # pseudo-terminal, makes a random character and checks it reaches a
+      # generated level.  The data files are pruned by hand in the dist target
+      # -- no tiles, no fonts, no sounds -- so the thing most likely to be
+      # wrong is that too much was pruned, and nothing but starting the game
+      # finds that out.
+      - name: Smoke Test
+        run: |
+          root=unpacked/${{ steps.create_mac_terminal_archive.outputs.package_name }}
+          test -f $root/lib/gamedata/constants.txt
+          test -f $root/README.txt
+          test -n "$(ls -A $root/docs)"
+          scripts/smoke-tty $root
+
+      - name: Create Artifact with Mac Terminal Archive Path
+        run: |
+          echo archive_path= '${{ steps.create_mac_terminal_archive.outputs.archive_file }}' > $MACTTY_ARTIFACT_PATH
+
+      - name: Upload Artifact with Mac Terminal Archive Path
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.MACTTY_ARTIFACT }}
+          path: ${{ env.MACTTY_ARTIFACT_PATH }}
+          retention-days: 1
+
+      - name: Upload Mac Terminal Archive as Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.MACTTY_ARCHIVE_ARTIFACT }}
+          path: ${{ steps.create_mac_terminal_archive.outputs.archive_file }}
+          retention-days: 1
+
   dos:
     # Only setup: this job builds its own text manual rather than taking the
     # docconvert job's HTML, so waiting on docconvert would be waiting for
@@ -1019,7 +1289,7 @@ jobs:
 
   release:
     if: github.event_name == 'push'
-    needs: [ setup, source, nintendo, linux, windows32, windows64, mac, dos ]
+    needs: [ setup, source, nintendo, linux, linux-terminal, windows32, windows64, mac, mac-terminal, dos ]
     name: Create GitHub Release
     runs-on: ubuntu-latest
     # gh release create both makes the tag's release and uploads the files
@@ -1095,6 +1365,22 @@ jobs:
         with:
           name: ${{ env.LINUX_ARCHIVE_ARTIFACT }}
 
+      - name: Download Artifact with Linux Terminal Archive Path
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.LINTTY_ARTIFACT }}
+
+      - name: Extract Linux Terminal Archive Path and Store in Step Outputs
+        id: store_linux_terminal
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' $LINTTY_ARTIFACT_PATH`
+          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with Linux Terminal Archive
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.LINTTY_ARCHIVE_ARTIFACT }}
+
       - name: Download Artifact with 32-bit Windows Archive Path
         uses: actions/download-artifact@v8
         with:
@@ -1143,6 +1429,22 @@ jobs:
         with:
           name: ${{ env.MAC_ARCHIVE_ARTIFACT }}
 
+      - name: Download Artifact with Mac Terminal Archive Path
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.MACTTY_ARTIFACT }}
+
+      - name: Extract Mac Terminal Archive Path and Store in Step Outputs
+        id: store_mac_terminal
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' $MACTTY_ARTIFACT_PATH`
+          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with Mac Terminal Archive
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.MACTTY_ARCHIVE_ARTIFACT }}
+
       - name: Download Artifact with DOS Archive Path
         uses: actions/download-artifact@v8
         with:
@@ -1175,7 +1477,9 @@ jobs:
             ${{ steps.store_win64.outputs.archive_path }} \
             ${{ steps.store_win32.outputs.archive_path }} \
             ${{ steps.store_linux.outputs.archive_path }} \
+            ${{ steps.store_linux_terminal.outputs.archive_path }} \
             ${{ steps.store_nin.outputs.archive_path }} \
             ${{ steps.store_mac.outputs.archive_path }} \
+            ${{ steps.store_mac_terminal.outputs.archive_path }} \
             ${{ steps.store_dos.outputs.archive_path }} \
             $options

@@ -7,6 +7,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/cmake/modules")
 
 option(SUPPORT_GCU_FRONTEND "Support for GCU front end." OFF)
 option(SUPPORT_NCURSES_FRONTEND "Synonym for SUPPORT_GCU_FRONTEND for backwards compatibility." OFF)
+option(GCU_STATIC_CURSES "Link the GCU front end against static curses archives instead of the shared libraries, so the executable does not depend on the ncurses the target system happens to have.  For building a binary to hand to somebody else; needs the static libraries installed at build time." OFF)
 option(SUPPORT_SDL2_FRONTEND "Support for SDL2 front end." OFF)
 option(SUPPORT_X11_FRONTEND "Support for X11 Frontend." OFF)
 option(SUPPORT_SDL2_SOUND "Support for sound with SDL2." OFF)

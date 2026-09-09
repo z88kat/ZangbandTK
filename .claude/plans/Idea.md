@@ -124,11 +124,5 @@ https://www.amazon.co.uk/Second-Chronicles-Amber-S-F-MASTERWORKS/dp/147322215X/
 To cut the release
 
 git push origin master
-git tag 3.108.2
-git push origin 3.108.3
-
-## Pre-Release
-
-git push origin master
-git tag -a 3.5.1-rc1 -m "Windows build test"
-git push origin 3.5.1-rc1
+git tag 3.108.2 -m "Release 01-01-2000"
+git push origin 3.108.2

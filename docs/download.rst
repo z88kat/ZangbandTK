@@ -16,6 +16,9 @@ build for each platform, and the source:
 
 - ``ZangbandTK-<version>-osx.dmg`` — the macOS disk image: the application, this
   manual in HTML, and the borg's documentation.
+- ``ZangbandTK-<version>-osx-terminal.tar.gz`` — the same game for macOS drawn
+  with characters, to play in Terminal, iTerm2 or over ssh. No window, no tiles,
+  no sound. See `Playing in a terminal`_.
 - ``ZangbandTK-<version>-win64.zip`` — the Windows build, 64-bit, with the same
   manual beside it. A single executable: libpng and zlib are linked in, so there
   are no DLLs to keep track of. **Prefer this one.**
@@ -26,6 +29,9 @@ build for each platform, and the source:
   make it executable and run it. Carries three front ends, chosen with ``-m``:
   ``-msdl2`` for tiles, ``-mx11`` for a plain window, and ``-mgcu`` to play in a
   terminal with no display at all.
+- ``ZangbandTK-<version>-linux64-terminal.tar.gz`` — the Linux terminal build:
+  the curses front end on its own, with no FUSE and no graphics stack, for a
+  server you reach over ssh. See `The Linux terminal build`_.
 - ``ZangbandTK-<version>-nintendo.zip`` — the Nintendo DS ROM and the 3DS build,
   with the data the card needs. Text mode, no tiles or sound.
 - ``ZangbandTK-<version>-dos.zip`` — the DOS build, for a 386 or better with a
@@ -120,6 +126,51 @@ Developer ID would add, and exactly what macOS is complaining about.
 The disk image carries a ``README.txt`` saying all of this too, for anyone who
 downloads it without passing through this page.
 
+Playing in a terminal
+=====================
+
+``ZangbandTK-<version>-osx-terminal.tar.gz`` is the curses build: the same game,
+drawn with characters, inside a terminal. It is a separate download from the
+disk image rather than something hidden inside it, because it is a different
+executable — there is no application bundle and no window server involved at
+all, which is what lets it run over ssh.
+
+.. code-block:: sh
+
+   tar -xzf ZangbandTK-<version>-osx-terminal.tar.gz
+   cd ZangbandTK-<version>
+   ./zangbandtk
+
+Keep the executable and the ``lib`` directory beside it together, and start the
+game from inside the unpacked folder — that is where it looks for its data.
+
+Quarantine applies here too, and the *Open Anyway* route above is about
+applications, so the direct way is the one to use:
+
+.. code-block:: sh
+
+   xattr -d com.apple.quarantine zangbandtk
+
+Unpacking with ``tar`` in a terminal, rather than by double-clicking the
+archive, usually avoids the mark in the first place.
+
+.. important::
+
+   **The terminal build does not share savefiles with the application.** Its
+   characters live in ``~/.angband/ZangbandTK``; the ``.app``'s live in
+   ``~/Documents/Angband``. This follows from the terminal build using the Unix
+   convention for a user's data rather than the macOS one, and it means the two
+   can be run side by side without treading on each other — but a character
+   started in one will not appear in the other.
+
+Nothing is written inside the unpacked folder while you play, so it can be
+deleted or replaced with a newer version without taking your characters with it.
+
+80x24 is the minimum size and is cramped; 100x40 or larger is much better. The
+front end can split the window into subwindows — ``./zangbandtk -mgcu -n2``
+through ``-n6`` — and ``./zangbandtk -h`` lists the rest. Your terminal must be
+set to UTF-8, which Terminal.app and iTerm2 both are by default.
+
 Building it from source
 =======================
 
@@ -154,6 +205,27 @@ That produces ``ZangbandTK.app`` in the repository root. Double-click it, or:
 .. code-block:: sh
 
    open ZangbandTK.app
+
+The terminal build
+------------------
+
+.. code-block:: sh
+
+   cd ZangbandTK/src
+   make -f Makefile.osx-tty -j$(sysctl -n hw.activecpu)
+
+That produces ``src/osx-tty/zangbandtk``. It links Apple's curses in
+``/usr/lib`` deliberately, not Homebrew's, so that the executable runs on a
+machine with no Homebrew on it. Add the ``dist`` target to build the tarball
+that the release carries:
+
+.. code-block:: sh
+
+   make -f Makefile.osx-tty -j$(sysctl -n hw.activecpu) dist
+
+It has its own object directory because the Cocoa build compiles the same
+sources with different flags; the two builds do not interfere and can both be
+present at once.
 
 The tests
 ---------
@@ -222,6 +294,41 @@ That path is inherited from Angband and kept so that nothing has to move later.
 There is no 32-bit Linux build. Ubuntu dropped the i386 archive in 19.10, Fedora
 and Arch dropped 32-bit years ago, and the source archive covers anyone still
 running it.
+
+The Linux terminal build
+------------------------
+
+The AppImage above already carries the curses front end — run it with ``-mgcu``
+— so on a desktop there is nothing else to fetch. ``-linux64-terminal.tar.gz``
+is for the machines where the AppImage is the wrong shape: FUSE is a package to
+install before it will mount at all, and the SDL2 and X11 libraries it bundles
+are most of its size and no use at all without a display.
+
+.. code-block:: sh
+
+   tar -xzf ZangbandTK-<version>-linux64-terminal.tar.gz
+   cd ZangbandTK-<version>
+   ./zangbandtk
+
+The executable, its data, and nothing else. Keep the ``lib`` directory beside
+the executable and start the game from inside the unpacked folder — that is
+where it looks for its data.
+
+x86-64, and glibc 2.35 or newer: Ubuntu 22.04, Debian 12, RHEL 9 and anything
+after those. Nothing needs to be installed alongside it. ncurses is linked in
+statically and deliberately: a dynamically linked build does not start at all
+on a system with no ``libncursesw.so.6`` — a stock Debian container is one —
+and on the RPM distributions it starts but prints ``no version information
+available`` on every launch, which looks like a fault and is not one. The
+terminfo database is still read from the system at run time, which is how the
+game learns what your terminal can do.
+
+Saves go to ``~/.angband/ZangbandTK``, the same place the AppImage keeps them,
+so the two share characters and nothing is written inside the unpacked folder.
+
+The terminal size and subwindow notes under `Playing in a terminal`_ apply here
+too, as does the requirement that the terminal be UTF-8 — over ssh that depends
+on the locale your session picks up at both ends.
 
 
 Nintendo DS and 3DS

@@ -85,6 +85,55 @@ jobs:
           cmake -G Ninja -DCMAKE_C_FLAGS="-Werror" -DSUPPORT_GCU_FRONTEND=ON ..
           ninja -j$(nproc)
 
+  # The released terminal tarball, built and played on every push rather than
+  # only when a tag is cut.  The NCurses job above also builds the curses front
+  # end, but it builds it the ordinary way and stops at the link; this is the
+  # one that has to produce something a stranger can download and run on a
+  # machine that is not this one, so it packages the archive and then plays the
+  # game inside it on a different distribution.
+  terminal-package:
+    name: Terminal package
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc cmake ninja-build libncurses-dev file
+
+      - name: Clone Project
+        uses: actions/checkout@v6
+
+      - name: Build and Package
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror -DUSE_PRIVATE_PATHS" \
+            -DSC_INSTALL=ON \
+            -DSUPPORT_GCU_FRONTEND=ON \
+            -DGCU_STATIC_CURSES=ON
+          cmake --build build --parallel
+          scripts/pkg_linux_tty ZangbandTK-ci
+
+      - name: Check and Play the Archive
+        run: |
+          mkdir -p unpacked
+          tar -xzf ZangbandTK-ci-linux64-terminal.tar.gz -C unpacked
+          ldd unpacked/ZangbandTK-ci/zangbandtk
+          if ldd unpacked/ZangbandTK-ci/zangbandtk \
+              | grep -qE 'libncurses|libtinfo|libX11|libSDL'; then
+            echo "The executable depends on a library it should not." >&2
+            exit 1
+          fi
+          # Debian's base image has no libncursesw.so.6, which is precisely the
+          # machine a dynamically linked build cannot start on.
+          docker run --rm \
+            -v "$PWD/unpacked/ZangbandTK-ci:/game:ro" \
+            -v "$PWD/scripts/smoke-tty:/smoke-tty:ro" \
+            debian:12 \
+            sh -c 'apt-get update -qq >/dev/null && \
+              DEBIAN_FRONTEND=noninteractive apt-get install -y -qq python3 >/dev/null && \
+              cp -R /game /play && python3 /smoke-tty /play'
+
   sdl2:
     name: SDL2
     runs-on: ubuntu-latest
