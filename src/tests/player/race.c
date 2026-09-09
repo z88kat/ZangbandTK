@@ -735,17 +735,23 @@ static int test_rock_grinds_a_spectre_but_does_not_kill_it(void *state) {
 }
 
 /*
- * And crossing a mountain range costs a Spectre nothing (DEC-74).
+ * And a mountain costs a Spectre blood, the same as any other wall (DEC-74).
  *
- * Zangband's damage is keyed on its `FF_BLOCK` flag and its mountains do not
- * carry it, so a Spectre there crossed a range without being touched. Ours are
- * walls, so the archive's own test would charge for a crossing it never
- * charged for -- and a range is many blocks wide. Underground rock still
- * grinds, which is the pairing this checks: the same character, the same
- * ability, damage below and none above.
+ * The project owner overruled the archive-faithful reading here: *"Our
+ * mountains are walls so the Spector takes damage."* Zangband's mountains were
+ * not `FF_BLOCK` grids, so a Spectre there was never inside a wall and paid
+ * nothing for a crossing; ours are walls, and the rule follows our world
+ * rather than the original's.
+ *
+ * Measured before it was asserted, because the formula at depth 0 is not
+ * obviously survivable: one point a turn, and the guard `chp > depth / 10`
+ * becomes `chp > 0`, which is its tightest form. It holds -- death is
+ * `chp < 0` -- so a Spectre pins at nothing left and stays there rather than
+ * dying. Checked at both ends, because a guard that only works underground
+ * would look exactly like one that works.
  */
-static int test_a_mountain_costs_a_spectre_nothing(void *state) {
-	int before;
+static int test_a_mountain_costs_a_spectre_blood(void *state) {
+	int before, i;
 
 	require(player_make_simple("Spectre", NULL, "Tester"));
 	player->depth = 0;
@@ -753,10 +759,22 @@ static int test_a_mountain_costs_a_spectre_nothing(void *state) {
 	square_set_feat(cave, player->grid, lookup_feat_code("ROCK"));
 	require(!square_ispassable(cave, player->grid));
 
+	/* A point a turn on the surface, where the depth term is zero */
 	player->chp = player->mhp;
 	before = player->chp;
 	process_world(cave);
-	eq(player->chp, before);
+	eq(before - player->chp, 1);
+
+	/*
+	 * And it will not kill, which on the surface is the case that matters:
+	 * a range is many blocks wide, so a crossing spends far more turns in
+	 * rock than a level-one Spectre has hit points.
+	 */
+	player->chp = 1;
+	for (i = 0; i < 1000 && !player->is_dead; i++)
+		process_world(cave);
+	require(!player->is_dead);
+	require(player->chp >= 0);
 	ok;
 }
 
@@ -807,8 +825,8 @@ struct test tests[] = {
 			test_a_spectre_walks_through_rock },
 	{ "rock-grinds-a-spectre-but-does-not-kill-it",
 			test_rock_grinds_a_spectre_but_does_not_kill_it },
-	{ "a-mountain-costs-a-spectre-nothing",
-			test_a_mountain_costs_a_spectre_nothing },
+	{ "a-mountain-costs-a-spectre-blood",
+			test_a_mountain_costs_a_spectre_blood },
 	{ "the-undead-wake-in-the-dark",
 			test_the_undead_wake_in_the_dark },
 	{ NULL, NULL }

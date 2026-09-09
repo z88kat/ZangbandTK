@@ -772,8 +772,7 @@ void process_world(struct chunk *c)
 	 * `chp < 0` ([player-util.c:361](../src/player-util.c#L361)), so the
 	 * damage floors a Spectre at nothing left rather than through it.
 	 */
-	if (player->depth > 0
-			&& !square_ispassable(c, player->grid)
+	if (!square_ispassable(c, player->grid)
 			&& player_can_pass_walls(player, player->grid)
 			&& !player->timed[TMD_INVULN]
 			&& player->chp > player->depth / 10) {

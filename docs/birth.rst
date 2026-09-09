@@ -495,22 +495,22 @@ Spectre
   Stepping into rock takes no longer than stepping anywhere else.
 
   **It costs blood, though, and you should know how much before you choose
-  one.** Underground, every turn you spend inside rock takes a hit point,
-  and more the deeper you are — one at the top of the dungeon, six at two
-  thousand five hundred feet — and you cannot heal at all while you are in
-  there. Cutting a corner is nothing. Crossing a vault wall is nothing.
-  Tunnelling any distance through a deep level will empty you.
+  one.** Every turn you spend inside rock takes a hit point, and more the
+  deeper you are — one on the surface and at the top of the dungeon, six at
+  two thousand five hundred feet — and you cannot heal at all while you are
+  in there. Cutting a corner is nothing. Crossing a vault wall is nothing.
+  Tunnelling any distance will empty you.
 
-  What it will not do is kill you. The damage stops when you have nothing
-  left to give rather than carrying on through, so a Spectre can always come
-  back out of the rock it walked into — though it will come out with almost
-  nothing, into whatever is waiting.
+  What it will not do is kill you. The damage stops when you have nothing left
+  to give rather than carrying on through, so a Spectre can always come back
+  out of the rock it walked into. It will come out with nothing, though, into
+  whatever is waiting — and that is usually what kills a Spectre, rather than
+  the rock.
 
-  **On the surface it is free.** Mountain ranges cost you nothing at all, which
-  is deliberate and is what Zangband's own numbers did: its mountains were
-  not walls, so a Spectre there was never inside one to be hurt by it. Ours
-  are, and a range is many blocks wide, so charging for the crossing would be
-  charging for something the original never charged for.
+  **Mountains are walls here, and they charge like walls.** A range is many
+  blocks across and a young Spectre has sixteen hit points, so you will reach
+  the far side empty. Going round is often the better idea, and going through
+  is the thing you can do that nothing else can — pick your moment.
 
   And inside rock you see the eight squares around you and nothing else, which
   is its own kind of dangerous: you can be most of the way through a mountain

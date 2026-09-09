@@ -3592,7 +3592,33 @@ rather than killing -- the archive applies it only while `chp > depth / 10`
 Zangband is explicit that this is deliberate: a character without the flag in
 a wall *"WILL BE"* reduced below zero, and one with it will not.
 
-**Underground only, which the archive does not answer because it never had to.**
+**Everywhere, including mountains -- reversing the reading below.** The project
+owner overruled it on the same consistency ground as the pass-wall ruling
+itself: *"Our mountains are walls so the Spector takes damage."* A mountain here
+is a wall, so being inside one costs what being inside a wall costs. Our
+world's rule, not Zangband's.
+
+The paragraph that follows is the archive-faithful reading, kept rather than
+edited away, because the next person to compare us against Zangband will find
+this difference and should be able to see that it was considered and overruled
+on purpose rather than missed.
+
+*What it comes to, measured rather than assumed.* At depth 0 the formula gives
+one point a turn and the guard `chp > depth / 10` becomes `chp > 0`, its
+tightest form. It still holds -- death is `chp < 0` -- so a Spectre in a
+mountain pins at nothing left and stays there: measured, it settles hovering
+between 0 and 1, taking a point back off whenever it regenerates one, and does
+not die over a thousand turns. Underground at 50 it takes six a turn and floors
+at 1.
+
+So a crossing is not lethal in itself, and it is not trivial either: a range is
+many blocks wide and a first-level Spectre has sixteen hit points, so it comes
+out the far side at nothing. What kills it will be the first thing it meets, not
+the rock. That is a real price for a race that pays 180 per cent, and it is the
+outcome the ruling intends.
+
+**The reading that was overruled: underground only, which the archive does not
+answer because it never had to.**
 Zangband keys the damage on `cave_wall_grid()`, its `FF_BLOCK` flag, and its
 mountain does not carry it -- "rock face" is
 `HALF_LOS | USE_TRANS | ICKY | OBJECT` (`lib/edit/f_info.txt`, N:97). So a

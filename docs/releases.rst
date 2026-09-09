@@ -45,6 +45,42 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Mountains charge like the walls they are — 9 September 2026
+-----------------------------------------------------------
+
+- **3.115.3** — **The surface exemption is reversed.** 3.115.0 shipped the
+  in-rock damage underground only, on the archive-faithful ground that
+  Zangband's mountains were not ``FF_BLOCK`` grids, so a Spectre there was
+  never inside a wall and paid nothing for a crossing. The project owner
+  overruled it on the same consistency ground as the pass-wall ruling itself:
+  *"Our mountains are walls so the Spector takes damage."* A mountain here is a
+  wall, so being inside one costs what being inside a wall costs.
+
+  DEC-74 records the reversal **above** the reading it overruled rather than in
+  place of it, because the next person to compare us against Zangband will find
+  the difference and should be able to see it was considered and taken
+  deliberately.
+
+  **Measured before it was asserted**, since the formula at depth 0 is not
+  obviously survivable: the depth term is zero, so it is one point a turn, and
+  the guard ``chp > depth / 10`` becomes ``chp > 0`` — its tightest possible
+  form. It holds, because death is ``chp < 0``. Measured, a Spectre in a
+  mountain settles hovering between nothing and one hit point, taking a point
+  back off whenever it regenerates one, and survives a thousand turns of it.
+  Underground at fifty it takes six a turn and floors at one.
+
+  So a crossing is not lethal in itself and it is not free either. A range is
+  many blocks wide and a first-level Spectre has sixteen hit points, so it
+  arrives at the far side empty — and what kills it will be the first thing it
+  meets, not the rock. That is a real price for a race that pays 180 per cent,
+  and it is what the ruling intends.
+
+  The falsification that used to prove "damage on the surface fails" now proves
+  the opposite: reinstating the old exemption fails the suite, and removing the
+  cannot-kill guard fails it twice over, since it now breaks the surface and the
+  dungeon both. The manual says the cost applies to mountains, and roughly what
+  it comes to.
+
 The Spectre walks through walls, and the view was never the problem — 9 September 2026
 --------------------------------------------------------------------------------------
 

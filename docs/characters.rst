@@ -66,8 +66,8 @@ that did not make it.
    * - **Spectre**
      - Barely there: the best stealth in the game, saves and devices matched by
        nothing but a High-Elf and a Mindflayer, and seven hit dice. Walks
-       through walls and mountain ranges — free on the surface, a hit point a
-       turn underground.
+       through walls and mountain ranges, at a hit point a turn and no healing
+       while inside.
    * - **Ghoul**
      - Its bare hands paralyse what they hit.
    * - **Sprite**
