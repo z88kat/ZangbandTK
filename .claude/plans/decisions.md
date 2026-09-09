@@ -3536,3 +3536,79 @@ unconditional, because Zangband's never consulted a class kit and a Vampire
 Necromancer -- the one class carrying no light -- must still get its scrolls.
 Of our twenty races only the Vampire and the Golem qualify today; the other four
 of Zangband's six are among the deferred eight and will need one line each.
+
+---
+
+**DEC-74 — A Spectre walks through anything that is not permanent, mountain
+ranges included. The rule is permanence, not rock.**
+
+The project owner, having gone and checked: *"I tested the Spectre in the old
+zangband and he can walk through walls. If he can do that he can walk through
+anything. So yes we should implement that and allow walking through a
+mountain."*
+
+**Note what kind of argument that is.** It is a consistency argument, not an
+archive-fidelity one -- a thing that passes through walls should not be stopped
+by a hill. It is recorded in those terms because a later reader who checks the
+archive will find something that looks like agreement and is not quite:
+Zangband's mountains were never walls in the first place. `FEAT_MOUNTAIN` is
+passable to *everyone* there, at an energy penalty, unless you have
+`TR_WILD_WALK` ([cmd1.c:2382](../zangband/src/cmd1.c#L2382)). So the original
+never had a Spectre blocked by a mountain either, and never had to decide this.
+The ruling and the archive agree on the outcome by different routes.
+
+**Our mountains are walls, and that is the divergence underneath.**
+`mountainside` is `ROCK | WALL` and not `PERMANENT`
+([terrain.txt](../../lib/gamedata/terrain.txt)). Where Zangband made mountains
+slow, this game made them solid. That difference is older than this decision
+and is not settled by it -- anything that reads "wall" reads our mountains as
+one -- but it is why the question arose at all.
+
+**The rule as built.** `player_can_pass_walls()` in
+[player-util.c](../../src/player-util.c): the character has `OF_PASS_WALL` and
+the grid is not `TF_PERMANENT`. Granite, veins, secret doors and mountainsides
+give way; permanent wall and the edge of the world do not.
+
+Deliberately **not** `square_isperm()`, which tests for permanent *rock* -- it
+requires `TF_ROCK` as well. The edge of the world is permanent open sea and
+carries no rock flag, so routing through that helper let a Spectre walk off the
+edge of the world. A test caught it. Anyone tempted to simplify this back
+should read that test first.
+
+**What nothing depended on.** Checked rather than assumed, because the worry was
+that mountains kept early characters out of deep country. They did not. Danger
+comes from a block's `law`, not its terrain
+([wild.c](../../src/wild.c), `wild_block_danger()`); mountains exclude *town
+placement* and cost 25 in the road pathfinder, so roads route around them
+rather than being blocked by them; and a mountain block is 65 per cent rock at
+grid level with the rest dirt and grass, so it was always porous. A Spectre
+crossing a range saves time, not access.
+
+**The damage, and the one judgement in this that is not a lookup.** Standing
+inside rock costs `1 + depth / 10` a turn with no regeneration, and stops
+rather than killing -- the archive applies it only while `chp > depth / 10`
+([dungeon.c:1202](../zangband/src/dungeon.c#L1202)), and death here is
+`chp < 0`, so a Spectre floors at nothing left and can always walk back out.
+Zangband is explicit that this is deliberate: a character without the flag in
+a wall *"WILL BE"* reduced below zero, and one with it will not.
+
+**Underground only, which the archive does not answer because it never had to.**
+Zangband keys the damage on `cave_wall_grid()`, its `FF_BLOCK` flag, and its
+mountain does not carry it -- "rock face" is
+`HALF_LOS | USE_TRANS | ICKY | OBJECT` (`lib/edit/f_info.txt`, N:97). So a
+Zangband Spectre crossing a range took nothing at all, because it was never
+inside a wall. Ours *are* walls, and `mountainside` is what a mountain block is
+built from, so applying the archive's own test would charge for a crossing the
+original never charged for -- across many blocks, at a point a turn, with no
+healing. The surface is therefore free and the dungeon is not, which reproduces
+Zangband's outcome rather than its code. Recorded as a judgement because it is
+one.
+
+**The view, which was the thing nobody had sized.** It needed no work at all.
+`los()` never inspects its own origin -- every scanner in every branch starts
+one step away from `grid1` -- so line of sight from inside a wall is already
+well defined: the eight neighbours are visible by the adjacency short-circuit,
+and rock blocks everything beyond because rock is not projectable. `add_light()`
+goes through the same function. There is no assertion anywhere that the
+player's grid is passable. The fear was unfounded and cost one afternoon of
+reading to retire.

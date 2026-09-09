@@ -156,8 +156,8 @@ Half-Titan 255, which is to say they level at less than half a human's pace.
 
 Human
   The human is the base character.  All other races are compared to them.
-  Humans are average at everything and tend to go up levels faster than any
-  other race due to their shorter life spans.  No racial adjustments or 
+  Humans are average at everything and gain levels as fast as anything in the
+  game -- the Yeek matches them at 100 per cent and nothing beats them.  No racial adjustments or 
   intrinsics occur to human characters.  Humans do not have any infravision.
 
 .. _Half-Elf:
@@ -301,7 +301,7 @@ Beastman
 Yeek
   Feeble, cowardly, and aware of it. Weak, fragile and poor in a fight.
 
-  It is resistant to acid from birth and **immune to it above level 19**, which
+  It is resistant to acid from birth and **immune to it from level 20**, which
   is the one thing a Yeek is unambiguously good at — nothing corrodes it, and
   no acid attack in the game will touch it once it gets there. Beyond that its
   only kindness is the price: a Yeek levels at the same rate as a human, the
@@ -447,8 +447,9 @@ Nibelung
 .. _Imp:
 
 Imp
-  A minor demon, and the cheapest thing worth being at 110. Feeble in every
-  way except constitution, resistant to fire from birth, and it sees the
+  A minor demon, and the cheapest thing worth being at 110. Feeble in mind
+  and body alike, though quick and hardy enough, resistant to fire from
+  birth, and it sees the
   invisible from level 10. It throws fire from level 9 — a bolt, becoming a
   ball at 30.
 
@@ -456,7 +457,7 @@ Imp
 
 Skeleton
   Bones, animated. It sees the invisible, holds its life against draining, is
-  immune to poison and resists shards — and acid eats it. Cold above level 10.
+  immune to poison and resists shards — and acid eats it. Cold from level 10.
 
   **It cannot eat, and it digests at the ordinary rate**, which is the worst
   combination of the four undead: it gets hungry like anyone else and food is
@@ -470,7 +471,7 @@ Zombie
   Enormously strong and tough and very nearly mindless — a six-point penalty
   to both intelligence and wisdom, the heaviest in the game — with thirteen hit
   dice, the second most. Sees the invisible, holds its life, immune to poison,
-  resists nether, and fire is its undoing. Cold above level 5, the earliest of
+  resists nether, and fire is its undoing. Cold from level 5, the earliest of
   the four.
 
   It cannot eat but digests slowly, so the hunger scrolls it starts with go
@@ -480,28 +481,48 @@ Zombie
 
 Spectre
   Barely there. Feeble and frail — seven hit dice and five points of strength
-  gone — and in exchange the best saving throw, magic device skill and stealth
-  of any race in the game, telepathy above level 35, and 180 experience a level
-  to pay for it. Immune to poison, resists cold and nether, holds its life,
+  gone — and in exchange the best stealth of any race in the game, a saving throw
+  matched only by a High-Elf and a way with devices matched only by a
+  Mindflayer, telepathy from level 35, and 180 experience a level to pay for
+  it. Immune to poison, resists cold and nether, holds its life,
   sees the invisible, and lightning tears it apart.
 
   It howls from level 4 — the earliest attacking power any race has — and
   terrifies what it is aimed at.
 
-  **What it cannot yet do is walk through walls.** In Zangband a Spectre passes
-  through anything that is not permanent, taking a little damage for as long as
-  it stands inside rock. This game has no mechanism for a player walking
-  through a wall at all, and the part nobody has established is what such a
-  character can *see* while inside one. The race ships without it rather than
-  with a guess; everything else about the Spectre is complete.
+  **And it walks through walls.** Granite, veins, secret doors and mountain
+  ranges all give way; only permanent wall and the edge of the world hold it.
+  Stepping into rock takes no longer than stepping anywhere else.
+
+  **It costs blood, though, and you should know how much before you choose
+  one.** Underground, every turn you spend inside rock takes a hit point,
+  and more the deeper you are — one at the top of the dungeon, six at two
+  thousand five hundred feet — and you cannot heal at all while you are in
+  there. Cutting a corner is nothing. Crossing a vault wall is nothing.
+  Tunnelling any distance through a deep level will empty you.
+
+  What it will not do is kill you. The damage stops when you have nothing
+  left to give rather than carrying on through, so a Spectre can always come
+  back out of the rock it walked into — though it will come out with almost
+  nothing, into whatever is waiting.
+
+  **On the surface it is free.** Mountain ranges cost you nothing at all, which
+  is deliberate and is what Zangband's own numbers did: its mountains were
+  not walls, so a Spectre there was never inside one to be hurt by it. Ours
+  are, and a range is many blocks wide, so charging for the crossing would be
+  charging for something the original never charged for.
+
+  And inside rock you see the eight squares around you and nothing else, which
+  is its own kind of dangerous: you can be most of the way through a mountain
+  with no idea what is waiting on the far side.
 
 .. _Ghoul:
 
 Ghoul
   A corpse-eater, and the one race whose **bare hands paralyse**: fight
   unarmed and what you hit falls asleep, which is the whole reason to be one.
-  Immune to poison, resists cold, holds its life, and fire hurts it. Darkness
-  above level 10, nether above 20.
+  Immune to poison, resists cold, holds its life, and fire hurts it. Darkness from
+  level 10, nether from 20.
 
   It senses living creatures from level 30. Zangband gave it a second power —
   eating corpses for nutrition — which has nothing to work on here, because

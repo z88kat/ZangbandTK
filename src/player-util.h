@@ -120,6 +120,7 @@ void player_resting_complete_special(struct player *p);
 int player_get_resting_repeat_count(struct player *p);
 void player_set_resting_repeat_count(struct player *p, int16_t count);
 bool player_of_has(const struct player *p, int flag);
+bool player_can_pass_walls(const struct player *p, struct loc grid);
 bool player_resists(const struct player *p, int element);
 bool player_is_immune(const struct player *p, int element);
 void player_place(struct chunk *c, struct player *p, struct loc grid);

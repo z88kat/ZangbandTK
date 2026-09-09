@@ -627,7 +627,12 @@ static void update_scent(void)
  */
 void process_world(struct chunk *c)
 {
-	bool burning = false;	/* Standing in sunlight this turn (PLR-01) */
+	/*
+	 * Something is stopping the character healing this turn -- sunlight on a
+	 * Vampire, or solid rock around a Spectre. Zangband called it
+	 * `cave_no_regen` and used it for exactly these two.
+	 */
+	bool no_regen = false;
 	int i, y, x;
 
 	/* ZangbandTK: the town gates swing shut behind whoever went through. */
@@ -726,7 +731,56 @@ void process_world(struct chunk *c)
 		msg("The sun's rays scorch your flesh!");
 		take_hit(player, player_apply_damage_reduction(player, 1),
 			"sunlight");
-		burning = true;
+		no_regen = true;
+		if (player->is_dead) {
+			return;
+		}
+	}
+
+	/*
+	 * Take damage from standing inside solid rock (PLR-01, DEC-74).
+	 *
+	 * `1 + depth / 10` a turn with no regeneration, and it *cannot kill you*:
+	 * Zangband applies it only while `chp > depth / 10`
+	 * ([dungeon.c:1202](../archive/zangband/src/dungeon.c#L1202)), so a
+	 * Spectre grinds down to that floor and stops rather than suffocating in
+	 * a mountain it cannot get out of. The comment there is explicit that this
+	 * is deliberate -- everyone else in a wall dies, a pass-wall character
+	 * does not.
+	 *
+	 * Keyed on being able to pass walls rather than on being in one, because
+	 * an ordinary character in a wall grid is a bug rather than a Spectre, and
+	 * killing them for it would hide it.
+	 *
+	 * **Underground only, and that is a judgement rather than a lookup.**
+	 * Zangband keyed this on `cave_wall_grid()`, which is its `FF_BLOCK` flag,
+	 * and its mountains do not carry it -- "rock face" is
+	 * `HALF_LOS | USE_TRANS | ICKY | OBJECT` (`lib/edit/f_info.txt`, N:97), so
+	 * it is passable to everyone and costs energy rather than blood. A
+	 * Zangband Spectre crossing a mountain range therefore took no damage at
+	 * all, because it was not in a wall.
+	 *
+	 * Ours *are* walls -- `mountainside` is `ROCK | WALL`, and it is what a
+	 * mountain block is built from -- so the archive's own test would charge
+	 * for a crossing it never charged for. That divergence is ours, not a
+	 * design intent to punish, and a range is many blocks wide: at a point a
+	 * turn with no healing it would empty a low-level character on the way
+	 * across. So the surface is free and the dungeon is not, which is what
+	 * Zangband's numbers actually produced.
+	 *
+	 * The guard `chp > depth / 10` is what stops it killing: death is
+	 * `chp < 0` ([player-util.c:361](../src/player-util.c#L361)), so the
+	 * damage floors a Spectre at nothing left rather than through it.
+	 */
+	if (player->depth > 0
+			&& !square_ispassable(c, player->grid)
+			&& player_can_pass_walls(player, player->grid)
+			&& !player->timed[TMD_INVULN]
+			&& player->chp > player->depth / 10) {
+		msg("Your molecules feel disrupted!");
+		take_hit(player, player_apply_damage_reduction(player,
+				1 + player->depth / 10), "density");
+		no_regen = true;
 		if (player->is_dead) {
 			return;
 		}
@@ -853,8 +907,8 @@ void process_world(struct chunk *c)
 		}
 	}
 
-	/* Regenerate Hit Points if needed -- but not while the sun is on you */
-	if (player->chp < player->mhp && !burning)
+	/* Regenerate Hit Points if needed -- unless something is preventing it */
+	if (player->chp < player->mhp && !no_regen)
 		player_regen_hp(player);
 
 	/* Regenerate or lose mana */

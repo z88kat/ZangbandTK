@@ -45,6 +45,104 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The Spectre walks through walls, and the view was never the problem — 9 September 2026
+--------------------------------------------------------------------------------------
+
+- **3.115.0** — **Pass-wall, the last outstanding piece of any race.** The
+  project owner ruled on it after going and checking: *"I tested the Spectre in
+  the old zangband and he can walk through walls. If he can do that he can walk
+  through anything."* Mountains included. Recorded as DEC-74, with the note that
+  this is a consistency argument rather than an archive one — and that it lands
+  where the archive was anyway, because Zangband's mountains were passable to
+  everyone in the first place, so the original never had to decide it.
+
+  **The view, which was the whole reason this waited, needed no work at all.**
+  ``los()`` never inspects its own origin: every scanner in every branch starts
+  one step away from ``grid1``, so line of sight from inside a wall is already
+  well defined. A character in rock sees its eight neighbours by the adjacency
+  short-circuit and nothing beyond, because rock is not projectable.
+  ``add_light()`` goes through the same function, and no assertion anywhere
+  requires the player's grid to be passable. One afternoon of reading retired
+  the fear rather than confirming it.
+
+  The rest is what was sized: a branch in ``do_cmd_walk_test()``, a condition in
+  ``move_player()``, and per-turn damage of ``1 + depth / 10`` in
+  ``process_world()`` that **cannot kill** — the archive applies it only while
+  ``chp > depth / 10``, so a Spectre can always walk back out of a mountain.
+  Attacking monsters inside walls needed nothing: ``do_cmd_walk_test()`` already
+  handles the monster case before it tests passability. No energy cost, as in
+  the archive.
+
+  **A test caught a real hazard.** The rule is permanence, and the obvious
+  helper for that — ``square_isperm()`` — tests for permanent *rock*, requiring
+  ``TF_ROCK`` as well. The edge of the world is permanent open sea and carries
+  no rock flag, so the first version let a Spectre walk off the edge of the
+  world. It now tests ``TF_PERMANENT`` directly, and the reason is written where
+  someone would otherwise simplify it back.
+
+  **Two consequences checked rather than assumed.** Nothing depended on
+  mountains being solid: danger comes from a block's ``law`` and not its
+  terrain, mountains exclude town *placement* and cost 25 in the road
+  pathfinder — roads route around them rather than being stopped — and a
+  mountain block is 65 per cent rock at grid level with the rest dirt and
+  grass, so it was always porous. A Spectre crossing a range saves time, not
+  access. And the borg, which knows nothing about any of this: five seeds at
+  60,000 turns each, no crash, no wedge, no oops. It simply never uses the
+  ability.
+
+  ``no_regen`` replaces ``burning`` in ``process_world()``, since two different
+  things now stop a character healing — sunlight on a Vampire, rock around a
+  Spectre. Zangband called it ``cave_no_regen`` and used it for exactly those
+  two.
+
+  **The damage is underground only, and that is a judgement.** Zangband keys it
+  on ``FF_BLOCK`` and its mountain does not carry that flag — "rock face" is
+  ``HALF_LOS | USE_TRANS | ICKY | OBJECT`` — so a Spectre there crossed a range
+  without ever being inside a wall. Ours are walls, and a range is many blocks
+  wide, so the archive's own test would charge for a crossing the original
+  never charged for. The surface is free; the dungeon is not. That reproduces
+  Zangband's outcome rather than its code, and the manual entry now states the
+  cost as plainly as the ability — a hit point a turn, six at the bottom, no
+  healing while you are in there, and it stops rather than killing you.
+
+- **3.115.1** — **An audit of all twenty-eight race entries, which found five
+  things wrong.** Written up piecemeal across a dozen commits, and the eleven
+  inherited from 4.2 had never been reviewed at all.
+
+  - **Human**: "go up levels faster than any other race" — the Yeek matches
+    them at 100 per cent. A tie described as a lead, which is the third time
+    today that exact shape has turned up.
+  - **Skeleton, Zombie, Spectre, Ghoul**: five thresholds written "above level
+    N" where the data says ``gain-at:N``, so each was off by one. My own text,
+    hours old. The Yeek's "above level 19" was correct against ``gain-at:20``
+    but used the archive's idiom rather than ours; everything now reads "from
+    level N", matching the directive.
+  - **Spectre**: "the best saving throw, magic device skill and stealth of any
+    race" — it ties with a High-Elf on saves and a Mindflayer on devices. Only
+    the stealth is a lead.
+  - **Imp**: "feeble in every way except constitution" — its dexterity is
+    positive too.
+  - And the coverage question: all twenty-eight have entries in
+    :doc:`birth`. The eleven shared races have no row in
+    :doc:`characters`, which is correct rather than missing — that page is
+    explicitly what differs from Angband.
+
+  Two inherited claims were checked and are **true**, which is worth recording
+  so nobody re-checks them: the Half-Troll's regeneration really does cost it
+  extra food (``OF_REGEN`` doubles consumption in ``game-world.c``), and the
+  Vampire's "as far as anything sees" is tie-safe wording for a genuine
+  five-way tie on infravision.
+
+- **3.115.2** — **A test wrote to a fixed temp filename.**
+  ``game/saves`` used ``"saves-roundtrip.tmp"`` for every run, so any two
+  concurrent runs of that suite raced on one file — reliably, eight times out
+  of eight in parallel. Nothing in the harness collides, because
+  ``check-flakes`` and the CMake runner both go suite by suite; a person
+  running a suite by hand while a verification job is going does, and it
+  presents as an intermittent savefile failure, which is about the most
+  alarming thing it could look like. ``test_savefile_name()`` already existed
+  for this and three other suites were already using it.
+
 Every race Zangband had has now been considered — 7 September 2026
 ------------------------------------------------------------------
 

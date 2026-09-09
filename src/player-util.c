@@ -1841,6 +1841,33 @@ bool player_of_has(const struct player *p, int flag)
 }
 
 /**
+ * May this character walk into a grid that is solid? (PLR-01, DEC-74)
+ *
+ * Zangband's Spectre passes through anything that is not *permanent*
+ * ([cmd1.c:2301](../archive/zangband/src/cmd1.c#L2301)), and that distinction
+ * is the whole of the rule: granite, veins, secret doors and -- by the project
+ * owner's ruling -- mountainsides all give way, while permanent wall and the
+ * edge of the world do not. The world's edge is `PERMANENT` in
+ * `terrain.txt` precisely so that it keeps holding, which is worth knowing
+ * before anyone reaches for a different test here.
+ */
+bool player_can_pass_walls(const struct player *p, struct loc grid)
+{
+	assert(p);
+	if (!player_of_has(p, OF_PASS_WALL)) return false;
+	if (!square_in_bounds_fully(cave, grid)) return false;
+
+	/*
+	 * `TF_PERMANENT` directly, and not `square_isperm()`, which is a test for
+	 * permanent *rock* -- it wants `TF_ROCK` as well. The edge of the world is
+	 * permanent and is open sea, so it has no rock flag, and going through that
+	 * helper let a Spectre walk off the edge of the world. The test above
+	 * caught it; this is what it caught.
+	 */
+	return !tf_has(f_info[square(cave, grid)->feat].flags, TF_PERMANENT);
+}
+
+/**
  * Check if the player resists (or better) an element
  */
 bool player_resists(const struct player *p, int element)

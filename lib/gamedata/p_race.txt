@@ -904,11 +904,8 @@ power-stat:WIS
 power-fail:18
 power-effect:RESTORE_EXP
 
-# Ships without pass-wall, deliberately: the archive lets a Spectre walk
-# through any non-permanent wall, and 4.2 has no player mechanism for it.  The
-# four small parts of that are understood; what a character standing inside
-# solid rock can see is not.  Recorded as a follow-up in decisions.md rather
-# than guessed at here.
+# PASS_WALL: it walks through anything that is not permanent, mountainsides
+# included (DEC-74).  Permanent wall and the edge of the world still hold.
 name:Spectre
 virtues:UNLIFE
 stats:-5:4:4:2:-3
@@ -929,7 +926,7 @@ history:1
 age:100:30
 height:69:5
 weight:100:23
-obj-flags:SEE_INVIS | HOLD_LIFE | SLOW_DIGEST | CANT_EAT
+obj-flags:SEE_INVIS | HOLD_LIFE | SLOW_DIGEST | CANT_EAT | PASS_WALL
 player-flags:UNDEAD
 values:RES_COLD[1] | RES_NETHER[1] | RES_POIS[3] | RES_ELEC[-1]
 equip-instead:food:scroll:Remove Hunger:2:5
