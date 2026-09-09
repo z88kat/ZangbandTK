@@ -605,14 +605,41 @@ and exits non-zero if a number has dropped materially. The thresholds are in
 
    * - Number
      - Fails when
-   * - best depth
-     - down by 3 or more
-   * - best character level
-     - down by 4 or more
    * - spells cast
      - less than half the baseline
    * - spells learned
      - less than half the baseline
+   * - total character levels
+     - down by more than a third
+   * - total depth
+     - down by more than two fifths
+
+**Totals, not maxima, and the twelve per-run rows decide nothing.** The rows in
+the baseline exist so that a failure can say *"Warrior seed 1: depth 8 to 3"*
+rather than leaving a reader to diff two files; a row moving is never by itself
+a regression.
+
+That split was measured rather than assumed. The nightly used to gate on *best*
+depth and *best* character level, and a maximum over twelve runs reports
+whichever run got luckiest. Eight of the twelve never leave depth 1 on any
+night, so the whole depth signal lives in four runs and best depth lived in
+one. On 9 September that run's random stream shifted, the headline fell from 8
+to 3, and the job went red for a change that left the fleet's character levels
+at 39 against 41 and its casting at 14 against 15 — the only false alarm in
+four nights of real runs.
+
+Both directions were checked before replacing it, against those four nights
+plus deliberate regressions: casting collapsing the way the
+``BORG_SPELL_UNKNOWN`` bug made it (4 cast against 15), nothing learned, the
+fleet ceasing to level, the fleet ceasing to descend, every character level
+halved. The totals raise no false alarm and miss none of those. The old rules
+missed none either — they simply cried wolf twice, which is its own kind of
+failure: a job that goes red for nothing gets ignored.
+
+Depth is the loosest of the four at two fifths, deliberately, because it has
+the least room to move — with two thirds of the runs stuck on the first floor
+it is close to a dead metric. Tighten it when the borg reliably gets below
+depth 1; until then the character levels carry the weight.
 
 They are not tighter than that for a specific reason. For one build, one set of
 seeds **and one machine** the runs are *exact* — the same seed gives the same
@@ -672,11 +699,18 @@ This is the step to get right, because the tempting thing to do with a red
 night is to make it green.
 
 **Take it from a nightly, not from your own machine.** Run the workflow by hand
-— Actions → Borg → Run workflow — and copy the summary lines out of its log.
+— Actions → Borg → Run workflow — and copy the figures out of its log:
+the four totals from the summary, and the twelve rows from the run table in the
+form ``run:CLASS:SEED:DEPTH:CLEVEL``.
+
 A local sweep measures your laptop, and the nightly is what will be compared
 against this file; see `The runs are not portable between machines`_ above.
 
-Copy its summary lines into ``tests/borg/BASELINE``, update the notes
+**Updating the rows alone is free** — they decide nothing, so a night where the
+stream reshuffled can have its rows refreshed without argument. Changing one of
+the four *totals* is the part that wants a reason in the commit message.
+
+Copy the figures into ``tests/borg/BASELINE``, update the notes
 saying which run reached each best, and **say in the commit message why the
 number moved**. A baseline that rises without an explanation is one nobody
 trusts to fall.
@@ -686,6 +720,10 @@ Four things worth knowing:
 - **Check the platform before you believe a drop.** If every number fell at
   once, suspect the measurement rather than the game: a real regression usually
   moves one thing. The comparison names the platform it ran on.
+- **Read the rows before the verdict.** The failure output lists every run that
+  moved. Four of twelve moving with the totals holding is a reshuffle; the
+  totals falling is the fleet getting worse. Only the second is red, and the
+  output says which it is.
 - **Do not update it to silence a red night.** If a number dropped and you do
   not know why, that is the finding, not an inconvenience. The failure output
   names the metric, both values, the run that reached today's best and the

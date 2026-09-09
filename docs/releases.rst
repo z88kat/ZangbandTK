@@ -45,6 +45,66 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The nightly stops gating on its luckiest run — 9 September 2026
+---------------------------------------------------------------
+
+- **3.116.0** — **Totals replace maxima, and the per-run rows became the
+  message.** The nightly went red for best depth falling 8 to 3, on a night
+  when the fleet's character levels went 41 to 39 and its casting 15 to 14.
+  Nothing was broken: twelve runs, twelve deaths, none capped.
+
+  **Best depth is a maximum over twelve runs, so it reports whichever run got
+  luckiest.** Pulling the per-run tables out of four nightlies made that
+  concrete: **eight of the twelve never leave depth 1 on any night**, so the
+  whole depth signal lives in four runs and best depth lived in one. When the
+  pass-wall commit shifted that run's random stream, the headline moved
+  wholesale.
+
+  Also visible in that history, and worth recording: the twelve races added on
+  7 September left **all twelve rows byte-identical**, and 7 to 8 September
+  moved **no rows at all** — the runs are deterministic on CI. The runs set no
+  race, so every character is a Human, which is why the new races could not
+  have touched them.
+
+  Both directions were evaluated against that real history plus deliberate
+  regressions — casting collapsing the way ``BORG_SPELL_UNKNOWN`` made it (4
+  cast against 15), nothing learned, the fleet ceasing to level, the fleet
+  ceasing to descend, every character level halved. The new rules raise **no
+  false alarm and miss none**. The old rules missed none either; they cried
+  wolf twice, which is its own failure, because a job that goes red for nothing
+  gets ignored.
+
+  So the gate is now four totals — cast and learned halving, total character
+  levels down more than a third, total depth down more than two fifths — and
+  the twelve ``run:`` rows in the baseline **decide nothing**. They exist so a
+  failure says *"Warrior seed 1: depth 8 to 3"* instead of leaving a reader to
+  diff two files, which matters because a scheduled task reads this output
+  cold. The report states in as many words that rows moving is not a
+  regression and that the totals decide.
+
+  Depth is the loosest threshold on purpose: with two thirds of the runs stuck
+  on the first floor it is close to a dead metric. It wants tightening when the
+  borg reliably gets below depth 1, and until then the character levels carry
+  the weight — which is also the honest reason the old depth rule was fragile
+  rather than merely unlucky.
+
+  ``scripts/check-build``'s header gained two notes while this was verified,
+  both from mistakes made verifying it: the gate takes some twenty-five minutes
+  and has to be *waited on* rather than backgrounded and checked for a phrase
+  that may never appear; and nothing else may run against the build while it
+  does, because a hand-run suite collides where the harness does not. It also
+  records the staged-data trap — the copy into each build tree compares
+  timestamps, so a data file edited, built, and reverted within the same second
+  keeps the edit in every staged tree, which presents as unrelated suites
+  segfaulting.
+
+  The baseline is reshaped in the same commit and retaken from the 9 September
+  nightly, which measured this exact commit. Its totals are that night's:
+  depth 18, levels 39, learned 20, cast 14. Updating the rows is now free,
+  since they gate nothing; changing a total still wants a reason. The
+  cross-platform guard is untouched — it caught the first false alarm this file
+  ever produced.
+
 Mountains charge like the walls they are — 9 September 2026
 -----------------------------------------------------------
 

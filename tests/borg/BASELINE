@@ -3,68 +3,105 @@
 # The nightly cannot use pass and fail for this. Every run dies -- that is what
 # unaided play at these levels looks like -- and a run that hits the clock has
 # not failed either, so the job goes red only for a crash or a wedge. Without
-# this file best depth could halve overnight and the job would stay green,
-# which is exactly the regression the nightly exists to catch.
+# this file the fleet could halve overnight and the job would stay green, which
+# is exactly the regression the nightly exists to catch.
 #
-# `scripts/borg-progress -b tests/borg/BASELINE` compares a sweep against these
-# and fails if a number has dropped materially. Same shape as
+# scripts/borg-progress -b tests/borg/BASELINE compares a sweep against these
+# and fails if the fleet has dropped materially. Same shape as
 # tests/saves/EXPECTED-FAILURES: a committed statement of what is true now,
 # which somebody has to change on purpose.
 #
-# === Updating it when a number legitimately improves ===
+# === Totals decide; rows report ===
+#
+# The four totals below are the gate. The twelve run: rows are *not*: they exist
+# so a failure can say "Warrior seed 1: depth 8->3" instead of leaving a reader
+# to diff two files. A row moving is never by itself a regression.
+#
+# That split is measured rather than assumed. The nightly used to gate on best
+# depth and best level, which are *maxima* over the twelve runs -- so they
+# report whichever run got luckiest. Eight of the twelve never leave depth 1 on
+# any night, so the entire depth signal lives in four runs and best depth lived
+# in one. On 9 September that one run's random stream shifted, the headline fell
+# from 8 to 3, and the job went red for a change that left the fleet's character
+# levels at 39 against 41 and its casting at 14 against 15. That was the only
+# false alarm in four nights of real runs, and it came from that rule.
+#
+# Checked in both directions before replacing it, against those four nights plus
+# deliberate regressions: casting collapsing the way the BORG_SPELL_UNKNOWN bug
+# made it (4 cast against 15), nothing being learned, the fleet ceasing to
+# level, the fleet ceasing to descend, and every character level halved. The
+# totals raise no false alarm and miss none of those. The old rules missed none
+# either -- they simply cried wolf twice.
+#
+# === Thresholds ===
+#
+#   spells cast       less than half         -- caught the one real regression
+#   spells learned    less than half            in this file's whole history
+#   sum-level         down more than a third
+#   sum-depth         down more than two fifths
+#
+# Depth is the loosest on purpose: with two thirds of the runs stuck on the
+# first floor it has almost no room to move and is close to a dead metric today.
+# Tighten it when the borg reliably gets below depth 1; until then the character
+# levels carry the weight.
+#
+# === Updating it ===
 #
 # Take it from a nightly, not from your own machine. Run the workflow by hand
-# (Actions -> Borg -> Run workflow) and copy the summary lines out of its log.
+# (Actions -> Borg -> Run workflow) and copy the figures out of its log: the four
+# totals from the summary, and the twelve rows from the run table, in the form
+# run:CLASS:SEED:DEPTH:CLEVEL.
 #
 # This is not fussiness. The first version of this file was taken from a local
-# sweep, and it cost a night: every number differed from CI's, the job called it
-# a regression, and the code was fine. The runs are exact to the turn on one
-# machine and are not portable between two -- Warrior seed 13 at the same commit
-# played 280,358 turns to character level 13 on Darwin arm64 and 5,252 turns to
-# level 1 on Linux x86_64. A baseline has to be generated the same way it will
-# be measured, and the nightly is what measures it.
+# sweep, and it cost a night: every number differed from CI's and the job called
+# a regression that was not there. The runs are exact to the turn on one machine
+# and are not portable between two -- Warrior seed 13 at the same commit played
+# 280,358 turns to character level 13 on Darwin arm64 and 5,252 turns to level 1
+# on Linux x86_64. A baseline has to be generated the same way it will be
+# measured. borg-progress records the platform below and refuses to compare
+# across platforms, so a repeat of that says so instead of failing the build.
 #
-# `borg-progress` now records the platform below and refuses to compare across
-# platforms, so a repeat of that mistake says so instead of failing the build.
-# Running a sweep locally against this file is fine; it will skip the check.
+# Updating the rows alone is free -- they decide nothing. Changing a total is
+# the part that wants a reason in the commit message.
 #
-# Update the notes saying which run reached each best, and say in the commit
-# message why the number moved. That last part is the point of the file: a
-# baseline that rises without an explanation is a baseline nobody trusts to
-# fall.
-#
-# Do not update it to make a red night go green. If a number dropped and you do
-# not know why, that is the finding.
+# Do not update it to make a red night green. If a total dropped and you do not
+# know why, that is the finding.
 #
 # === What these numbers depend on ===
 #
-# The class list, the seeds, and the turn budget -- all three are in the
-# workflow and all three are part of what is being measured. Changing any of
-# them invalidates the file, so change them and re-baseline in the same commit.
+# The class list, the seeds, the turn budget and the machine -- all four are part
+# of what is being measured, so changing any of them invalidates the file.
 #
-# And the machine. The runs are exact *on one machine*: the same seed on the
-# same build gives the same turn count every time, verified three times over,
-# and reproduced later at two optimisation levels. They are not exact across
-# machines. So nothing here is noise, but everything here is specific to the
-# platform named below.
-#
-# Any change to the game *data* also reshuffles the random stream and moves
-# which seed happens to do well -- which is why the thresholds in borg-progress
-# tolerate a couple of levels rather than demanding the figures never move at
-# all. Note that data changes scoped to something the run does not touch move
-# nothing: these runs play a Human, so the four races finished in 3.110.0 left
-# every turn count identical, which is how the platform difference was finally
-# separated from a real regression.
+# Data changes reshuffle the random stream and move which run happens to do well;
+# a change scoped to something the runs do not touch moves nothing at all. These
+# runs set no race, so every character is a Human, and the twelve races added on
+# 7 September left all twelve rows byte-identical.
 
-# Taken from the nightly of 7 September 2026, at 15d811d83, unaided (no cheats,
-# no grants, no pets). 12 runs: Warrior, Mage, Priest, Warrior-Mage against
-# seeds 1, 7 and 13, all twelve dying, none capped.
+# Taken from the nightly of 9 September 2026, at c7a6e5498, unaided (no cheats,
+# no grants, no pets). Twelve runs: Warrior, Mage, Priest and Warrior-Mage
+# against seeds 1, 7 and 13, all twelve dying, none capped.
 #
-# Replaces a baseline taken on Darwin arm64, which CI could never match.
+# Reshaped from best-depth/best-level to totals-plus-rows in the same commit,
+# and the totals are what that night actually measured. The previous file's
+# best-depth of 8 came from Warrior seed 1, whose stream moved with the
+# pass-wall commit; its run now reads depth 3, level 9.
 
 platform: Linux x86_64
-best-depth: 8   Warrior seed 1
-best-level: 9   Priest seed 1
-spells-learned: 22
-spells-cast: 15
+sum-depth: 18
+sum-level: 39
+spells-learned: 20
+spells-cast: 14
 runs: 12
+
+run:Warrior:1:3:9
+run:Warrior:7:2:3
+run:Warrior:13:1:1
+run:Mage:1:1:1
+run:Mage:7:1:1
+run:Mage:13:1:2
+run:Priest:1:2:8
+run:Priest:7:1:2
+run:Priest:13:1:4
+run:Warrior-Mage:1:1:1
+run:Warrior-Mage:7:1:2
+run:Warrior-Mage:13:3:5
