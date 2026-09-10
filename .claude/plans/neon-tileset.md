@@ -203,7 +203,18 @@ runs, so it cannot be the default play state.
 
 ---
 
-## 6. Outstanding, elsewhere
+## 6. The other four tilesets — closed since
+
+Audited and fixed on 10 September 2026, in `52f7ecf61` and `734013370`.  All
+four inherited sets now have complete terrain, objects, flavours, traps and
+spell effects; every monster still without a tile is a unique, which is the
+policy.  `scripts/tiles/audit-tiles.py` is the guard and exits non-zero on a
+gap.  See `scripts/tiles/README` — the four silent failure modes listed there
+are worth reading before touching any of this.
+
+---
+
+## 7. Outstanding, elsewhere
 
 * **Monsters sharing a `base:` and a `color:` are the same tile.** Oberon, Dworkin and
   Mandor are all violet people, so all three are one violet figure. Per-name shapes and a
