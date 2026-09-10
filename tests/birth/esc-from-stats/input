@@ -1,0 +1,23 @@
+# Stepping back from the stats question, which for a long time did nothing.
+#
+# The realm question is skipped for a class with nothing to choose, and the
+# skip used to walk forwards whichever way it was being walked through -- so
+# ESC at the stats column returned to the stats column. Here the escape has to
+# land on the class question for the change of class to take effect at all: a
+# birth that ignores it ends up a Warrior on the standard roller.
+key space
+key a
+key a
+key C-[
+key b
+key b
+key a
+key a
+key enter
+key enter
+key enter
+key enter
+# Character birthed.
+player-race?
+player-class?
+quit

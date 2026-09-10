@@ -157,12 +157,34 @@ static struct menu race_menu, class_menu, realm_menu, roller_menu;
 #define QUESTION_ROW     7
 #define TABLE_ROW        9
 
+/*
+ * The row above the lists, where each column says what it is (ZangbandTK).
+ *
+ * It was blank: the gap between the question and the menus. A column of
+ * twenty-one race names with no heading relies on the player inferring what
+ * they are looking at from the names themselves, which works for races and
+ * not much else.
+ */
+#define MENU_HEADER_ROW  (TABLE_ROW - 1)
+
 #define QUESTION_COL     2
 #define RACE_COL         2
-#define RACE_AUX_COL    19
-#define CLASS_COL       19
-#define CLASS_AUX_COL   36
-#define ROLLER_COL      36
+/*
+ * A blank column either side of the scrollbar (ZangbandTK).
+ *
+ * The bar takes the rightmost column of its region, and these columns were
+ * packed edge to edge and sized so that the longest name filled its field
+ * exactly. So the bar was drawn hard against the text on both sides -- the top
+ * of it read as "^Str: +0", and the class beside it as "Chaos-Warrior#" -- and
+ * a bar that touches the words is a punctuation mark. One column wider, and one
+ * column further apart: the lists keep the thirteen characters
+ * "Chaos-Warrior" needs, and the roller, the rightmost thing on the screen,
+ * still ends at column 73 of 80.
+ */
+#define RACE_AUX_COL    21
+#define CLASS_COL       21
+#define CLASS_AUX_COL   40
+#define ROLLER_COL      40
 #define HIST_INSTRUCT_ROW 18
 
 /*
@@ -183,15 +205,19 @@ static struct menu race_menu, class_menu, realm_menu, roller_menu;
  * `Term->hgt - TABLE_ROW - 1` at
  * [ui.c:126](../archive/zangband/src/ui.c#L126), recomputed on every redraw
  * rather than fixed at compile time.
+ *
+ * -2 leaves two: a blank line and then the status line drawn by
+ * `birth_menu_scroll_cues()`, which is worth a row of the list because it is
+ * the only cue on the screen that states the scroll position in words.
  */
-#define MENU_ROWS (-1)
+#define MENU_ROWS (-2)
 
 /**
  * upper left column and row, width, and lower column
  */
-static region race_region = {RACE_COL, TABLE_ROW, 17, MENU_ROWS};
-static region class_region = {CLASS_COL, TABLE_ROW, 17, MENU_ROWS};
-static region realm_region = {CLASS_AUX_COL, TABLE_ROW, 17, MENU_ROWS};
+static region race_region = {RACE_COL, TABLE_ROW, 18, MENU_ROWS};
+static region class_region = {CLASS_COL, TABLE_ROW, 18, MENU_ROWS};
+static region realm_region = {CLASS_AUX_COL, TABLE_ROW, 18, MENU_ROWS};
 static region roller_region = {ROLLER_COL, TABLE_ROW, 34, MENU_ROWS};
 
 /**
@@ -222,6 +248,8 @@ struct birthmenu_data
 {
 	const char **items;
 	const char *hint;
+	/* What this column of the screen is, for its header */
+	const char *label;
 	bool allow_random;
 	enum birth_stage stage_inout;
 };
@@ -238,6 +266,97 @@ static void birthmenu_display(struct menu *menu, int oid, bool cursor,
 
 	uint8_t attr = curs_attrs[CURS_KNOWN][0 != cursor];
 	c_put_str(attr, data->items[oid], row, col);
+}
+
+/**
+ * Write one coloured run of the status line, and say where the next begins.
+ *
+ * `Term_putstr()` rather than `text_out_e()` and its colour markup, because
+ * `text_out()` wraps by stepping to the next row and under the menu there is
+ * no next row: a line that ran long would be dropped off the bottom of the
+ * screen instead of merely cut short. Truncating costs the tail of a sentence
+ * whose front half carries the numbers.
+ */
+static int status_run(int col, int row, uint8_t attr, const char *text)
+{
+	int room = Term->wid - 1 - col;
+	int len = (int)strlen(text);
+
+	if (room <= 0) return col;
+	if (len > room) len = room;
+
+	Term_putstr(col, row, len, attr, text);
+
+	return col + len;
+}
+
+/**
+ * Say that the list is longer than the window, three ways at three scales
+ * (ZangbandTK).
+ *
+ * The thumb in the gutter is a picture, and a picture one column wide is
+ * ambiguous by construction: the player has to work out that a column of
+ * punctuation beside the list is a scrollbar at all, and nothing on the screen
+ * says so. So it is backed by two cues that cannot be misread, and the three
+ * answer the question at different scales -- the header how much list there is
+ * and where this page falls in it, the bar where in it you are, the status line
+ * how many rows are off each end and which keys move them.
+ *
+ * All three appear only while the list scrolls, so a menu that fits looks
+ * exactly as it did and the presence of the status line is itself a signal. The
+ * header keeps its label either way: naming the column earns its row on its own
+ * account.
+ *
+ * Called from `display_scrolling()` after `top` has settled, so what it says
+ * describes the rows drawn beside it rather than the previous page.
+ */
+static void birth_menu_scroll_cues(struct menu *menu, int top, int rows, int n)
+{
+	struct birthmenu_data *data = menu_priv(menu);
+	const region *loc = &menu->active;
+	int status_row = loc->row + loc->page_rows + 1;
+	char first = 0, last = 0;
+	char buf[80];
+	int col;
+
+	/* The header names the column always, and counts it when it scrolls */
+	Term_erase(loc->col, MENU_HEADER_ROW, loc->width);
+	if (n > rows) {
+		strnfmt(buf, sizeof(buf), "%s  %d-%d/%d", data->label, top + 1,
+				MIN(top + rows, n), n);
+	} else {
+		my_strcpy(buf, data->label, sizeof(buf));
+	}
+	Term_putstr(loc->col, MENU_HEADER_ROW, loc->width, COLOUR_SLATE, buf);
+
+	/* The line MENU_ROWS gave up, cleared whether or not it is used */
+	Term_erase(0, status_row, 255);
+	if (n <= rows) return;
+
+	if (top > 0 && n - top - rows > 0) {
+		strnfmt(buf, sizeof(buf), "%d above, %d below", top,
+				n - top - rows);
+	} else if (top > 0) {
+		strnfmt(buf, sizeof(buf), "%d more above", top);
+	} else {
+		strnfmt(buf, sizeof(buf), "%d more below", n - rows);
+	}
+
+	/* The count in the colour of the thumb, the keys in the colour the
+	 * instructions at the top of the screen already use for keys */
+	col = status_run(QUESTION_COL, status_row, COLOUR_L_BLUE, buf);
+	col = status_run(col, status_row, COLOUR_SLATE, " - ");
+	col = status_run(col, status_row, COLOUR_L_GREEN, "Up/Down");
+	col = status_run(col, status_row, COLOUR_SLATE, " or ");
+	col = status_run(col, status_row, COLOUR_L_GREEN, "SPACE");
+	col = status_run(col, status_row, COLOUR_SLATE, " to scroll");
+
+	if (menu_tag_range(menu->selections, n, top, rows, &first, &last)) {
+		strnfmt(buf, sizeof(buf), "%c-%c", first, last);
+		col = status_run(col, status_row, COLOUR_SLATE, ", ");
+		col = status_run(col, status_row, COLOUR_L_GREEN, buf);
+		(void)status_run(col, status_row, COLOUR_SLATE, " to pick directly");
+	}
 }
 
 /**
@@ -526,7 +645,8 @@ static bool use_context_menu_birth(struct menu *current_menu,
  */
 static void init_birth_menu(struct menu *menu, int n_choices,
 							int initial_choice, const region *reg,
-							bool allow_random, browse_f aux)
+							bool allow_random, browse_f aux,
+							const char *label)
 {
 	struct birthmenu_data *menu_data;
 
@@ -549,6 +669,7 @@ static void init_birth_menu(struct menu *menu, int n_choices,
 	   (where applicable) */
 	menu_data->items = mem_alloc(n_choices * sizeof *menu_data->items);
 	menu_data->allow_random = allow_random;
+	menu_data->label = label;
 
 	/* Set private data */
 	menu_setpriv(menu, n_choices, menu_data);
@@ -562,6 +683,9 @@ static void init_birth_menu(struct menu *menu, int n_choices,
 	 * in menu_question()) is also available using the mouse.
 	 */
 	menu->context_hook = use_context_menu_birth;
+
+	/* Header count and status line, drawn once the list knows where it is */
+	menu->scroll_hook = birth_menu_scroll_cues;
 
 	/* Lay out the menu appropriately */
 	menu_layout(menu, reg);
@@ -588,7 +712,7 @@ static void setup_menus(void)
 
 	/* Race menu. */
 	init_birth_menu(&race_menu, n, player->race ? player->race->ridx : 0,
-	                &race_region, true, race_help);
+	                &race_region, true, race_help, "RACE");
 	mdata = race_menu.menu_data;
 
 	for (i = 0, r = races; r; r = r->next, i++)
@@ -601,7 +725,7 @@ static void setup_menus(void)
 
 	/* Class menu similar to race. */
 	init_birth_menu(&class_menu, n, player->class ? player->class->cidx : 0,
-	                &class_region, true, class_help);
+	                &class_region, true, class_help, "CLASS");
 	mdata = class_menu.menu_data;
 
 	for (i = 0, c = classes; c; c = c->next, i++)
@@ -610,7 +734,7 @@ static void setup_menus(void)
 		
 	/* Roller menu straightforward */
 	init_birth_menu(&roller_menu, MAX_BIRTH_ROLLERS, 0, &roller_region, false,
-					NULL);
+					NULL, "STATS");
 	mdata = roller_menu.menu_data;
 	for (i = 0; i < MAX_BIRTH_ROLLERS; i++)
 		mdata->items[i] = roller_choices[i];
@@ -638,7 +762,7 @@ static int build_realm_menu(int slot)
 	n = player_realm_offer(player, slot, offered, REALM_MAX);
 	if (n < 2) return n;
 
-	init_birth_menu(&realm_menu, n, 0, &realm_region, false, NULL);
+	init_birth_menu(&realm_menu, n, 0, &realm_region, false, NULL, "REALM");
 	mdata = realm_menu.menu_data;
 
 	for (i = 0; i < n; i++) mdata->items[i] = offered[i]->name;
@@ -672,12 +796,19 @@ static void free_birth_menus(void)
 
 /**
  * Clear the previous question
+ *
+ * Stops short of MENU_HEADER_ROW, which belongs to the column headers. This
+ * runs on entry to each question, by which time the earlier columns have been
+ * redrawn with their headers, and clearing the whole row would take the header
+ * off a list that is still on the screen -- the race column stays up while the
+ * class is being chosen. `print_menu_instructions()` blanks the row instead,
+ * before any of the menus are drawn.
  */
 static void clear_question(void)
 {
 	int i;
 
-	for (i = QUESTION_ROW; i < TABLE_ROW; i++)
+	for (i = QUESTION_ROW; i < MENU_HEADER_ROW; i++)
 		/* Clear line, position cursor */
 		Term_erase(0, i, 255);
 }
@@ -697,6 +828,8 @@ static void clear_question(void)
  */	
 static void print_menu_instructions(void)
 {
+	int i;
+
 	/* Clear screen */
 	Term_clear();
 	
@@ -712,6 +845,17 @@ static void print_menu_instructions(void)
 	
 	/* Reset text_out() indentation */
 	text_out_indent = 0;
+
+	/*
+	 * Clear down to the menus.
+	 *
+	 * How far the paragraph above reaches depends on the width of the
+	 * terminal, and the two rows under it are the question and the column
+	 * headers. Blanking them here, before any menu is drawn, is what lets
+	 * `clear_question()` leave the header row alone.
+	 */
+	for (i = QUESTION_ROW; i < TABLE_ROW; i++)
+		Term_erase(0, i, 255);
 }
 
 /**
@@ -837,6 +981,26 @@ static void finish_with_random_choices(enum birth_stage current)
 			}
 		}
 	}
+}
+
+/**
+ * Redraw a question already answered, without its help text (ZangbandTK).
+ *
+ * The columns are drawn left to right and each question's help text goes in the
+ * column to its right -- which, by the time the next question is being asked,
+ * holds that next question's list. Redrawing the old help and then covering it
+ * over is not merely wasted work: the two do not cover exactly the same
+ * columns, and what shows through the gap is a one-character stripe of the
+ * previous answer's stat block, standing in a blank column looking like part of
+ * the list beside it.
+ */
+static void refresh_answered_menu(struct menu *menu)
+{
+	browse_f aux = menu->browse_hook;
+
+	menu->browse_hook = NULL;
+	menu_refresh(menu, false);
+	menu->browse_hook = aux;
 }
 
 /**
@@ -1678,6 +1842,9 @@ int textui_do_birth(void)
 				cmdq_push(CMD_BIRTH_RESET);
 
 				roller = BIRTH_RESET;
+
+				/* A fresh character asks the realm question from the top */
+				realm_slot = 0;
 				
 				if (quickstart_allowed)
 					next = BIRTH_QUICKSTART;
@@ -1708,7 +1875,7 @@ int textui_do_birth(void)
 				print_menu_instructions();
 
 				if (current_stage > BIRTH_RACE_CHOICE) {
-					menu_refresh(&race_menu, false);
+					refresh_answered_menu(&race_menu);
 					menu = &class_menu;
 					command = CMD_CHOOSE_CLASS;
 				}
@@ -1727,19 +1894,39 @@ int textui_do_birth(void)
 				 * the one they would like is a question with a single answer.
 				 */
 				if (current_stage > BIRTH_CLASS_CHOICE) {
-					menu_refresh(&class_menu, false);
+					refresh_answered_menu(&class_menu);
 					menu = &roller_menu;
 					command = CMD_NULL;
 
 					if (current_stage == BIRTH_REALM_CHOICE) {
+						/*
+						 * Stepped back into, the question starts again from
+						 * its first slot (PLR-08).
+						 *
+						 * `realm_slot` is left past the last slot when the
+						 * question finishes. So a stage arrived at from below
+						 * found nothing left to ask and walked straight
+						 * forward again: ESC at the stats column returned to
+						 * the stats column, for every class, which reads as a
+						 * key that does nothing at all.
+						 */
+						if (prev > BIRTH_REALM_CHOICE) realm_slot = 0;
+
 						while (realm_slot < REALM_CHOICES
 								&& build_realm_menu(realm_slot) < 2) {
 							realm_slot++;
 						}
 
 						if (realm_slot >= REALM_CHOICES) {
-							/* Nothing to ask; walk on. */
-							next = BIRTH_ROLLER_CHOICE;
+							/*
+							 * Nothing to ask; walk on the way we were going.
+							 * A question that is never asked is not a place to
+							 * stop on the way back either -- for a Warrior
+							 * that makes ESC at the stats column land on the
+							 * class, the last thing actually asked.
+							 */
+							next = (prev > BIRTH_REALM_CHOICE)
+								? BIRTH_CLASS_CHOICE : BIRTH_ROLLER_CHOICE;
 							realm_slot = 0;
 							break;
 						}

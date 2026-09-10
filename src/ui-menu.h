@@ -59,6 +59,10 @@ extern const char all_letters[];		/* abc..zABC..Z */
 bool menu_scroll_thumb(int n, int rows_per_page, int top,
 					   int *thumb_top, int *thumb_len);
 
+/* The first and last selection tag on show; false when there are none. */
+bool menu_tag_range(const char *selections, int n, int top, int rows,
+					char *first, char *last);
+
 extern const char all_letters_nohjkl[];		/* abc..gim..zABC..Z */
 
 
@@ -266,6 +270,20 @@ struct menu
 	 * This function is called after screening out any mouse events that
 	 * are handled natively by menu_select(). */
 	bool (*context_hook)(struct menu *m, const ui_event *in, ui_event *out);
+
+	/*
+	 * Called at the end of a scrolling menu's redraw, once `top` has settled
+	 * (ZangbandTK).
+	 *
+	 * For cues about the scroll position that live outside the list -- a count
+	 * in the column header, a status line under the menu. They have to be
+	 * drawn after the skin has decided which rows are showing, not before:
+	 * `browse_hook` runs ahead of `display_list()` and would describe the
+	 * previous position, one keypress behind the list beside it.
+	 *
+	 * `rows` is the height of the region, `n` the length of the list.
+	 */
+	void (*scroll_hook)(struct menu *m, int top, int rows, int n);
 
 	/* Flags specifying the behavior of this menu (from struct menu_flags) */
 	int flags;

@@ -133,6 +133,90 @@ static int test_the_thumb_only_moves_down(void *state) {
 	ok;
 }
 
+/**
+ * The letters the status line offers are the letters on the screen.
+ *
+ * The birth menus tag by absolute position, so which letters are on show moves
+ * with the list: naming a fixed "a-y" would send a player to a row that is no
+ * longer there. Thirty-four races in a twenty-one row region, at the top of the
+ * list and at the bottom of it.
+ */
+static int test_the_tag_range_follows_the_list(void *state) {
+	char first, last;
+
+	require(menu_tag_range(all_letters_nohjkl, 34, 0, 21, &first, &last));
+	eq(first, 'a');
+	eq(last, 'y');
+
+	require(menu_tag_range(all_letters_nohjkl, 34, 13, 21, &first, &last));
+	eq(first, 'r');
+	eq(last, 'L');
+
+	/* A list shorter than its region ends at the last row it has */
+	require(menu_tag_range(all_letters_nohjkl, 5, 0, 21, &first, &last));
+	eq(first, 'a');
+	eq(last, 'e');
+
+	ok;
+}
+
+/**
+ * It stops at the end of the alphabet, not the end of the list.
+ *
+ * `selections` is a fixed string and the caller passes a count that has nothing
+ * to do with its length. A list longer than the letters available must name the
+ * last letter there is rather than read past the terminator to find one -- and
+ * a row with no letter cannot be picked directly whatever the line says.
+ */
+static int test_the_tag_range_stays_inside_the_alphabet(void *state) {
+	int len = (int)strlen(all_letters_nohjkl);
+	char first, last;
+	int rows, n, top;
+
+	require(menu_tag_range(all_letters_nohjkl, 200, 0, 200, &first, &last));
+	eq(first, 'a');
+	eq(last, all_letters_nohjkl[len - 1]);
+
+	/* Scrolled past the letters entirely, there is nothing to offer */
+	require(!menu_tag_range(all_letters_nohjkl, 200, len, 20, &first, &last));
+
+	for (rows = 1; rows <= 24; rows++) {
+		for (n = 1; n <= 200; n++) {
+			for (top = 0; top < n; top++) {
+				if (!menu_tag_range(all_letters_nohjkl, n, top, rows,
+						&first, &last)) {
+					continue;
+				}
+				require(first != 0);
+				require(last != 0);
+				require(strchr(all_letters_nohjkl, first) != NULL);
+				require(strchr(all_letters_nohjkl, last) != NULL);
+			}
+		}
+	}
+
+	ok;
+}
+
+/**
+ * One row is not a range, and no list has no letters.
+ *
+ * The status line reads "a-y to pick directly"; with one row on show that
+ * would be "a-a", which says less than nothing. The caller drops the clause,
+ * so this has to be the answer it gets.
+ */
+static int test_a_single_row_is_not_a_range(void *state) {
+	char first, last;
+
+	require(!menu_tag_range(all_letters_nohjkl, 1, 0, 21, &first, &last));
+	require(!menu_tag_range(all_letters_nohjkl, 34, 0, 1, &first, &last));
+	require(!menu_tag_range(NULL, 34, 0, 21, &first, &last));
+	require(!menu_tag_range(all_letters_nohjkl, 0, 0, 21, &first, &last));
+	require(!menu_tag_range(all_letters_nohjkl, 34, 0, 0, &first, &last));
+
+	ok;
+}
+
 const char *suite_name = "ui/scrollbar";
 struct test tests[] = {
 	{ "a-list-that-fits-has-no-thumb", test_a_list_that_fits_has_no_thumb },
@@ -142,5 +226,9 @@ struct test tests[] = {
 	{ "the-thumb-stays-inside-the-track",
 	  test_the_thumb_stays_inside_the_track },
 	{ "the-thumb-only-moves-down", test_the_thumb_only_moves_down },
+	{ "the-tag-range-follows-the-list", test_the_tag_range_follows_the_list },
+	{ "the-tag-range-stays-inside-the-alphabet",
+	  test_the_tag_range_stays_inside_the_alphabet },
+	{ "a-single-row-is-not-a-range", test_a_single_row_is_not_a_range },
 	{ NULL, NULL }
 };

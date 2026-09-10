@@ -31,6 +31,66 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+10 September 2026 — three cues for one fact
+==========================================
+
+Steven sent me a design for the race list on the character creation screen,
+which he said "does not work very well". The list is longer than the screen and
+scrolls, and until today the only thing that said so was a thumb in a
+one-column gutter, which I added on the sixth. His design keeps it and puts two
+more cues behind it for the same fact: a count in the column header, and a row
+of plain words under the menu. His words: "row of words is unambiguous in a way
+no ASCII glyph in a 1-column gutter can be, and it costs one line of screen".
+
+He is right, and the reason is worth writing down. The bar answers *where am I*
+as a picture, and a picture one column wide has to be recognised as a scrollbar
+before it can say anything at all — and nothing on the screen said it was one.
+So now there is ``RACE  1-21/28`` over the list and ``13 more below - Up/Down or
+SPACE to scroll, a-y to pick directly`` under it. All three appear only while
+the list scrolls, which means the presence of the status line is itself a
+signal, and a menu that fits looks exactly as it did.
+
+The header pays for itself twice over: until today no column on that screen said
+what it was. The line under the menu costs a row of the list, which is what the
+second row given up by ``MENU_ROWS`` is for.
+
+Then two things showed up that I only saw because I drew the screen at actual
+size instead of reading the code.
+
+The bar was drawn hard up against the column to its right — ``^Str:  +0`` — and
+capping the ends made that worse rather than better, because the caps are what
+make a column of punctuation read as a bar, and a bar glued to a stat block
+reads as a typo. The columns were packed edge to edge and sized so that
+``Chaos-Warrior`` filled its field exactly, so the fix was a column of air on
+each side of the bar and one more column of width for the lists. The roller,
+the rightmost thing on the screen, still ends at column 73 of 80.
+
+The second was older than anything I did today. Each question writes its help
+text in the column to its right, and when the next question is asked, its list
+is drawn over the top of that help. The two do not cover exactly the same
+columns — so as soon as there was a gap between them, a one-character stripe of
+the previous answer's stat block showed through it: a stray ``0``, ``+``, ``m``
+standing in an otherwise blank column beside the class list, looking for all the
+world like part of it. The help text of a question already answered is simply
+not redrawn now. It was never meant to be seen; it was only ever being covered
+up.
+
+Then, looking at the finished screen, he found something that had nothing to do
+with any of it: ESC at the stats column did not go back to the class. It never
+had, for any class. The realm question is skipped when the class has nothing to
+choose — a Warrior studies no magic — and the skip walked *forwards* whichever
+direction it was being walked through, so stepping back off the stats question
+landed on a stage with nothing to ask, which sent you straight to the stats
+question again. The slot counter is also left past the end when the question
+finishes, so a Mage, who does have a realm to choose, hit exactly the same wall.
+Two lines: start the question again from its first slot when it is arrived at
+from below, and when it has nothing to ask, walk on the way we were going. A
+question never asked is not a place to stop on the way back either.
+
+That one now has an end-to-end test — walk to the stats column, escape, change
+the class, and check the character comes out a Mage. It fails on the old code
+with a Warrior, which is the whole point of writing it.
+
 5 September 2026 — three wrong answers before the right one
 ===========================================================
 

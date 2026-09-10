@@ -222,6 +222,38 @@ bool menu_scroll_thumb(int n, int rows_per_page, int top,
 	return true;
 }
 
+/**
+ * The first and last selection tag on show (ZangbandTK).
+ *
+ * A menu that offers "a-y to pick directly" has to name the letters that are
+ * actually on the screen. The birth menus tag by absolute position, so the
+ * visible range moves as the list scrolls, and `selections` can run out before
+ * the list does -- thirty-four races against forty-eight letters is fine, but
+ * the caller cannot know that without reading off the end to find out.
+ *
+ * Returns false when there is no run of two or more tags to name.
+ */
+bool menu_tag_range(const char *selections, int n, int top, int rows,
+					char *first, char *last)
+{
+	int len, lo, hi;
+
+	if (!selections || n <= 0 || rows <= 0 || top < 0) return false;
+
+	len = (int)strlen(selections);
+	lo = top;
+	hi = MIN(top + rows, n) - 1;
+	if (hi > len - 1) hi = len - 1;
+
+	/* One tag is not a range, and none at all is not worth saying */
+	if (lo >= hi || lo >= len) return false;
+
+	if (first) *first = selections[lo];
+	if (last) *last = selections[hi];
+
+	return true;
+}
+
 static void display_scrolling(struct menu *menu, int cursor, int *top, region *loc)
 {
 	int col = loc->col;
@@ -280,6 +312,27 @@ static void display_scrolling(struct menu *menu, int cursor, int *top, region *l
 						on_thumb ? "#" : "|");
 		}
 	}
+
+	/*
+	 * Cap the ends, so the gutter reads as a bar (ZangbandTK).
+	 *
+	 * Without them the thumb is a block of hashes floating in a column of
+	 * pipes, which is a scrollbar only to someone who already knows it is one:
+	 * the ends are exactly as open at the top of the list as in the middle of
+	 * it. The caps close the track, which is what makes the length of the
+	 * thumb mean anything, and they are drawn over the first and last track
+	 * rows rather than given rows of their own -- the bar is one column of the
+	 * region either way.
+	 */
+	if (thumb_len) {
+		Term_putstr(col + loc->width - 1, row, 1, COLOUR_L_DARK, "^");
+		Term_putstr(col + loc->width - 1, row + rows_per_page - 1, 1,
+					COLOUR_L_DARK, "v");
+	}
+
+	/* Cues that live outside the list, now that `top` has settled */
+	if (menu->scroll_hook)
+		menu->scroll_hook(menu, *top, rows_per_page, n);
 
 	if (menu->cursor >= 0)
 		Term_gotoxy(col + menu->cursor_x_offset, row + cursor - *top);
