@@ -1,26 +1,43 @@
-Tiles for monsters Angband does not have
-========================================
+Tiles for the things Angband does not have
+==========================================
 
-ZangbandTK adds 391 monsters to Angband's 624, and none of them appear in any
-of the five tilesets that ship with the game.  In graphics mode they used to
-render as ASCII letters among the pictures.
+    audit-tiles.py     what each set does not draw; fails if there is a gap
+    borrow-tiles.py    give a thing with no tile one that already exists
+    make-terrain.py    draw the wilderness for the sets that have none
+    make-services.py   draw the six service buildings
+    build-neon.py      build the Neon set, which is generated whole
 
-    scripts/tiles/borrow-tiles.py            regenerate
-    scripts/tiles/borrow-tiles.py --dry-run  report without writing
-    scripts/tiles/borrow-tiles.py --check    verify what was written
+Run the audit first.  It is the only one that answers the question that
+matters -- is anything in the game still without a tile -- and it exits
+non-zero if the answer is yes.  The other scripts each check what they wrote,
+which is a different and smaller claim.
 
-It writes graf-ztk.prf into each tileset's directory and adds one %: line to
-the tileset's own prf so it is loaded last.  Nothing hand-authored is touched,
-and a generated line only ever covers a monster that had no tile at all.
+Where the gaps come from
+------------------------
 
-How a tile is chosen
---------------------
+ZangbandTK adds 389 monsters, seventeen terrain features, six places to walk
+into that are not shops, and a run of objects; Angband's four tilesets have art
+for none of it, because Angband has none of it.  In graphics mode every one of
+those rendered as an ASCII letter in the middle of a drawn dungeon.
 
-The monster must share a `base:` with an Angband monster the tileset already
-draws -- a snake never borrows from a dog.  Sharing the `color:` too is much
-better, because colour is most of what a small tile says.  Nearest `depth:`
-breaks the tie, and that part matters: without it Bloodfang the Wolf borrowed a
-scruffy little dog.
+Three mechanisms close that, in increasing cost:
+
+**Borrow** -- `borrow-tiles.py`.  Most of it.  A thing with no tile takes the
+picture of a thing that has one: monsters match on `base:`, preferring the same
+`color:` and then the nearest `depth:`; objects match on `type:`, then colour,
+then nearest `level:`; traps match on the code trap.txt groups them under.  No
+art is drawn.  It writes `graf-ztk.prf` into each set and adds one `%:` line so
+the set loads it.
+
+**Draw a rule** -- `make-terrain.py` for ground, `make-services.py` for the six
+services.  Reached when nothing similar exists to borrow from.  Both generate
+into a row appended to the set's own sheet, sampling that set's own palette, so
+the new art sits in the set rather than beside it -- and both reclaim their row
+on a re-run, so running them twice is the same as running them once.  Being
+generated has a licensing dividend as well: the art is this project's own.
+
+**Draw a picture** -- not done for these sets, and not planned.  Four sheets at
+three tile sizes is four times the work and four chances to be inconsistent.
 
 Uniques are left alone
 ----------------------
@@ -33,23 +50,49 @@ whose whole purpose is to move away from that, three Amber princes in Tolkien's
 clothing is worse than no picture at all.  An ASCII letter says "not drawn
 yet".  A wrong portrait says something false.
 
-The 122 imported uniques therefore render as text until somebody draws them.
+Around 120 uniques per set therefore render as text, and the audit does not
+count that as a gap.
 
-Two ways this goes wrong quietly
---------------------------------
+Nothing else here makes a claim that strong, which is why BASE_ALIAS exists.
+Angband has no fish, no wall monsters and no animated weapons, so those had
+nothing to borrow and used to be letters; a fish drawn as a snake asserts only
+that it is long and legless, which it is.
 
-`lookup_monster()` falls back to a substring match, so a misspelled name binds
-to whatever happens to contain it.  And the renderer takes the cell index
-modulo the sheet size, so an out-of-range coordinate draws a different picture
-instead of failing.  Neither produces an error message.
+Four ways this goes wrong in silence
+------------------------------------
 
-Both are avoided by construction -- names are read from the data files and
-coordinates are copied verbatim from lines the tileset already uses -- and
---check is what proves it.
+Every one of these produced a file that parsed cleanly and did nothing:
+
+* **Case.**  The engine compares names with `my_stricmp`, and the shipped files
+  do not agree with the data: the prf files say "Filthy street urchin" where
+  monster.txt says "filthy street urchin".  A case-sensitive check reports 629
+  missing monsters in a set that draws all of Angband.
+* **Object names.**  `lookup_sval()` compares against
+  `obj_desc_name_format()` of each kind's name, so `& Small wooden chest~` has
+  to be written "Small wooden chest".  The raw form resolves to nothing, and an
+  sval that does not exist is not an error.
+* **Substring monster names.**  `lookup_monster()` falls back to a substring
+  match, so a misspelt name binds to whatever contains it.
+* **Coordinates.**  The renderer takes the cell index modulo the sheet size
+  rather than complaining, so a coordinate that is not really in the sheet
+  draws some other picture.
+
+`--check` on each script is what proves these stayed avoided.  Names come from
+the data files and borrowed coordinates are copied from lines the set already
+uses, so all four are avoided by construction -- but by construction is a claim
+that needs testing, not asserting.
 
 Replacing a placeholder with real art
 -------------------------------------
 
-Delete the monster's line from graf-ztk.prf and add a proper mapping to the
-tileset's own prf.  Re-running the script will not put it back: it only writes
-lines for monsters that have no tile from any other file.
+Delete the line from the generated file and add a proper mapping to the set's
+own prf.  Re-running will not put it back: a generated line only ever covers a
+thing that had no tile from any other file.
+
+One ordering rule
+-----------------
+
+`make-terrain.py` and `make-services.py` both append a row to the same sheet,
+and terrain's row is above services'.  If terrain is re-run it must be run
+first, because it truncates the sheet back to its own row.
+`make-services.py --check` says so if it happens.
