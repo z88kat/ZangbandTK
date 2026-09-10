@@ -535,9 +535,40 @@ static void c_borg_status(char *rest)
 		}
 	}
 
+	int deepest_allowed = -1;
+	const char *blocking_reason = "-";
+
+	/*
+	 * How deep the borg believes it may go, and what stops it going further.
+	 *
+	 * This replaced `ready=`, which reported `character_dungeon` -- "a level
+	 * exists" -- and so was true of every run that had started and told nobody
+	 * anything. The question a shallow run actually raises is *why* it is
+	 * shallow, and `borg_prepared()` already answers it in one word: "5 Food",
+	 * "30 hp", "2 cure". Ten of twelve nightly runs turned out to be *forbidden*
+	 * from leaving the first floor rather than choosing to stay, and finding
+	 * that out took an afternoon of tracing because the log did not say so.
+	 */
+	{
+		int d;
+
+		if (player && borg_initialized) {
+			borg_notice(true);
+			for (d = 1; d <= 127; d++) {
+				const char *r = borg_prepared(d);
+				if (r) {
+					deepest_allowed = d - 1;
+					blocking_reason = r;
+					break;
+				}
+			}
+		}
+	}
+
 	printf("borg-status: turn=%d depth=%d maxdepth=%d dungeon=%s clevel=%d "
 		   "hp=%d/%d ac=%d gold=%d deaths=%d weapon=%s "
-		   "grid=%d,%d level=%dx%d ready=%d seed=%u result=%s reason=%s\n",
+		   "grid=%d,%d level=%dx%d allowed=%d blocked=\"%s\" seed=%u "
+		   "result=%s reason=%s\n",
 		   (int) turn, player ? player->depth : -1,
 		   player ? player->max_depth : -1,
 		   (player && player->dungeon
@@ -551,7 +582,7 @@ static void c_borg_status(char *rest)
 		   weapon_desc,
 		   player ? player->grid.y : -1, player ? player->grid.x : -1,
 		   cave ? cave->height : -1, cave ? cave->width : -1,
-		   character_dungeon ? 1 : 0, run_seed,
+		   deepest_allowed, blocking_reason, run_seed,
 		   run_failed ? "FAILED"
 			: ((borg_abort_reason && streq(borg_abort_reason, "death"))
 			   ? "died" : (hit_time_cap ? "capped" : "ok")),

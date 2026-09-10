@@ -589,6 +589,34 @@ cast — could halve overnight and the job would stay green. That is exactly the
 regression the nightly exists to catch, so it is checked against a committed
 baseline instead.
 
+Why a run stopped where it did
+------------------------------
+
+Every run's line is followed by the borg's own account of its depth limit::
+
+    Priest              13   20001       1       1  ok
+        allowed to depth 1, held back by: Clevel < depth
+
+and the summary counts the causes across the fleet::
+
+    borg-progress: what held the fleet back:
+                 3 5 Food
+                 2 2 cure
+                 2 30 hp
+
+That comes from ``borg_prepared()``, which has always returned a reason in one
+word — ``5 Food``, ``30 hp``, ``2 cure`` — and which nothing recorded. It
+matters more than it looks: on 9 September ten of the twelve runs turned out to
+be **forbidden** from leaving the first floor rather than choosing to stay
+there, and establishing that took an afternoon of tracing depth over time. The
+tally is the part that distinguishes one fleet-wide cause from twelve unrelated
+ones — six runs blocked on supplies the shops stock is a shopping bug, not a
+balance question.
+
+The status line carries the same two fields, ``allowed=`` and ``blocked=``.
+They replaced ``ready=``, which reported whether a level existed and was
+therefore true of every run that had started.
+
 The baseline
 ------------
 

@@ -113,6 +113,7 @@ platform="$(uname -s) $(uname -m)"
 tmp_moved="${TMPDIR:-/tmp}/borg-progress-moved.$$"
 trap 'rm -f "$tmp_moved"' EXIT INT TERM
 
+blocked_tally=
 best_depth_run=none
 best_level_run=none
 deaths=0
@@ -145,6 +146,18 @@ for class in $(echo "$classes" | tr ',' ' '); do
 		l=$(printf '%s\n' "$line" | sed -n 's/.*clevel=\([0-9]*\).*/\1/p')
 		r=$(printf '%s\n' "$line" | sed -n 's/.*result=\([a-z]*\).*/\1/p')
 
+		# How deep the borg thought it was allowed, and what stopped it.
+		#
+		# The single most useful line in this output and it was missing.
+		# Ten of twelve runs turned out to be *forbidden* from leaving the
+		# first floor rather than choosing to stay there, and establishing
+		# that took an afternoon of tracing. `borg_prepared()` says it in
+		# one word -- "5 Food", "30 hp", "2 cure" -- so the log says it too.
+		al=$(printf '%s\n' "$line" | sed -n 's/.*allowed=\(-*[0-9]*\).*/\1/p')
+		bl=$(printf '%s\n' "$line" | sed -n 's/.*blocked="\([^"]*\)".*/\1/p')
+		blocked_tally="$blocked_tally$bl
+"
+
 		sum_depth=$(expr $sum_depth + ${d:-0})
 		sum_level=$(expr $sum_level + ${l:-0})
 		rows="$rows$class:$seed:${d:-0}:${l:-0}
@@ -160,6 +173,14 @@ for class in $(echo "$classes" | tr ',' ' '); do
 		[ "$r" = "capped" ] && capped=$(expr $capped + 1)
 
 		printf '%-15s %6s %7s %7s %7s  %s\n' "$class" "$seed" "$t" "$d" "$l" "$r"
+
+		# Only when the run stopped short of where it was allowed, or was
+		# stopped early -- a run that went as deep as it was let go needs no
+		# explanation.
+		if [ "${al:-0}" -le 4 ] 2>/dev/null; then
+			printf '    allowed to depth %s, held back by: %s\n' \
+				"${al:--}" "${bl:-unknown}"
+		fi
 
 		# What the run exercised, which is the point of running it at all.
 		# A borg that reaches depth 30 having cast nothing has verified
@@ -181,6 +202,16 @@ echo "borg-progress: deepest $best_depth, highest $best_level,"
 echo "borg-progress: $deaths died, $capped capped, $broken broken,"
 echo "borg-progress: $learned_total spells learned, $cast_total cast"
 echo "borg-progress: on $platform"
+
+# What stopped the fleet, counted. A single cause behind most of the runs is a
+# different problem from twelve different ones, and the tally is what says
+# which -- six of twelve blocked on supplies the shops stock is a shopping
+# bug, not a balance question.
+if [ -n "$blocked_tally" ]; then
+	echo "borg-progress: what held the fleet back:"
+	printf '%s' "$blocked_tally" | grep -v '^-*$' | sort | uniq -c \
+		| sort -rn | sed 's/^/borg-progress:   /'
+fi
 
 # Deaths and time caps are data. Only a crash, an abort or a wedge is a
 # failure, and each of those has already printed its seed above.
