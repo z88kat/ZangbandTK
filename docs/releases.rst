@@ -45,6 +45,28 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The nightly says why a run stopped — 10 September 2026
+------------------------------------------------------
+
+- **3.117.0** — **The borg has always known why it will not go deeper, and
+  nothing wrote it down.** ``borg_prepared()`` returns a reason in one word —
+  ``5 Food``, ``30 hp``, ``2 cure`` — and the nightly recorded only the depth
+  reached, so a shallow fleet looked like bad play.
+
+  It is not bad play. Asking the borg directly, **ten of the twelve runs are
+  forbidden from leaving the first floor** rather than choosing to stay: the
+  reasons split roughly half supplies (food, cure potions, a recall scroll) and
+  half level or hit points. Establishing that took an afternoon of tracing
+  depth over time; it now takes a glance.
+
+  Each run's line is followed by ``allowed to depth N, held back by: ...``, and
+  the summary tallies the causes across the fleet, which is the part that
+  separates one shared cause from twelve unrelated ones.
+
+  ``ready=`` in the status line is gone. It reported ``character_dungeon`` — "a
+  level exists" — so it was true of every run that had started and told nobody
+  anything. ``allowed=`` and ``blocked=`` replace it and say something.
+
 The nightly stops gating on its luckiest run — 9 September 2026
 ---------------------------------------------------------------
 
