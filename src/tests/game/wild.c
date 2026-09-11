@@ -3800,10 +3800,9 @@ static int test_a_race_keeps_its_power(void *state) {
 	struct player_race *r;
 	struct player_power *power;
 	size_t i;
-	int found = 0, carrying = 0;
+	int found = 0;
 
 	for (r = races; r; r = r->next) {
-		if (r->powers) carrying++;
 
 		for (power = r->powers; power; power = power->next) {
 			/* Nothing half-parsed: a power with no effect would do nothing. */
@@ -3832,12 +3831,39 @@ static int test_a_race_keeps_its_power(void *state) {
 	eq(found, (int) N_ELEMENTS(table));
 
 	/*
-	 * Sixteen races carry a power, of the seventeen imported.  The Amberite has
-	 * two, being the one bloodline the game is about, and the Beastman
-	 * deliberately has none: in Zangband its whole character was involuntary
-	 * mutation rather than anything it could choose to do.
+	 * Which races have a power, named rather than counted.
+	 *
+	 * This asserted `carrying == 16` on the model that the imported races have
+	 * powers and the shared ones do not. That model was wrong: six races
+	 * Angband and Zangband share -- Dwarf, Hobbit, Gnome, Half-Orc, Half-Troll
+	 * and Kobold -- have one in Zangband too, and DEC-77 gave them back. A
+	 * count could only ever say that the number moved; naming the six with
+	 * nothing to press says which way, and fails just as surely if a race
+	 * loses one as if a race gains one it should not have.
+	 *
+	 * The Beastman is deliberately among them: in Zangband its whole character
+	 * was involuntary mutation rather than anything it could choose to do.
 	 */
-	eq(carrying, 16);
+	{
+		static const char *powerless[] = {
+			"Human", "Half-Elf", "Elf", "Dunadan", "High-Elf", "Beastman",
+		};
+		struct player_race *r;
+		size_t j;
+		int without = 0;
+
+		for (r = races; r; r = r->next) {
+			if (r->powers) continue;
+			without++;
+			for (j = 0; j < N_ELEMENTS(powerless); j++)
+				if (streq(r->name, powerless[j])) break;
+			if (j == N_ELEMENTS(powerless)) {
+				printf("%s has no racial power and should have\n", r->name);
+				require(false);
+			}
+		}
+		eq(without, (int) N_ELEMENTS(powerless));
+	}
 
 	ok;
 }

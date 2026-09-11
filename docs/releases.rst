@@ -45,6 +45,25 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+A Dwarf can find the stairs again — 11 September 2026
+--------------------------------------------------------
+
+- **3.118.0** — **The six races Angband and Zangband share had lost their racial
+  powers.** A Dwarf, Hobbit, Gnome, Half-Orc, Half-Troll and Kobold each have one
+  in Zangband, and the import took the shared races' stats and skills and stopped
+  there. A Dwarf arrived as Angband's Dwarf: the same race minus the one button
+  it can press.
+
+  A dwarf now examines its surroundings from level 5 — traps, doors and stairs.
+  A half-orc plays tough from level 3, which is the earliest racial power in the
+  game. A gnome blinks, a half-troll works itself into a frenzy, a kobold throws
+  a poison dart, and a hobbit cooks a ration of food onto the floor at its feet.
+
+  The manual's racial-power table had also gone stale twice over: it listed nine
+  powers where the game has twenty-three, having never been updated when the
+  eight deferred races landed. It is now complete and ordered by level, and each
+  of the six races has a line in its own entry.
+
 A Sprite and a Half-Titan stop being the same size — 11 September 2026
 -------------------------------------------------------------------------
 

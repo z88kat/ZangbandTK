@@ -190,6 +190,9 @@ Hobbit
   on their life force, and are thus resistant to life draining. Hobbits are
   very partial to mushrooms and can identify them when found.
 
+  From level 15 a hobbit can **cook some food**, which puts a ration on the
+  floor at its feet. A hobbit need never starve, and can feed a party.
+
 .. _Gnome:
 
 Gnome
@@ -200,6 +203,9 @@ Gnome
   so they are not very good at fighting with hand weapons. Gnomes have good
   infravision.  Gnomes are intrinsically protected against paralysis.  Gnomes
   are excellent at using wands and staves and can identify them when found.
+
+  From level 5 a gnome can **blink**, a short hop that lengthens as the gnome
+  does — eleven squares at the start and sixty by the end.
 
 .. _Dwarf:
 
@@ -216,6 +222,10 @@ Dwarf
   themselves for no good reason, screaming out challenges at imagined foes.
   In other words, dwarves have a miserable stealth.
 
+  From level 5 a dwarf can **examine its surroundings**, finding the traps,
+  doors and stairs nearby — the earliest way any character has of seeing a
+  floor before walking it.
+
 .. _Half-Orc:
 
 Half-Orc
@@ -226,6 +236,10 @@ Half-Orc
   have great constitution and lots of hit points. Because they prefer to live
   underground rather than on the surface, half-orcs resist darkness attacks.
   They have fair infravision.
+
+  From level 3 a half-orc can **play tough**, shrugging off the fear it is
+  feeling — the earliest racial power in the game, and the only one any
+  character has before level 4.
 
 .. _Half-Troll:
 
@@ -238,6 +252,11 @@ Half-Troll
   they regenerate quickly like other trolls. Unfortunately, this
   regeneration also requires them to eat more food than other races. They
   have fair infravision.
+
+  From level 10 a half-troll can **work itself into a frenzy** — thirty hit
+  points back if it is not already raging, its fear gone, and berserk for
+  ten turns plus a roll against its level. The same power a Barbarian has,
+  two levels later and two points dearer.
 
 .. _Dunadan:
 
@@ -270,6 +289,9 @@ Kobold
   intelligence. And while their constitution makes them tough, it still
   cannot prevent the fact that they are not the biggest of creatures, and
   have few hit points.
+
+  From level 12 a kobold can **throw a dart of poison**, for damage equal to
+  its character level. Its own poison resistance is why it can handle them.
 
 The races below are Zangband's, and are new to ZangbandTK.
 
@@ -369,7 +391,7 @@ Vampire
     when it is caught between the two.
   - **Food barely works.** A ration feeds a Vampire a tenth of what it feeds
     anyone else. You are not meant to live on it; you are meant to drink blood,
-    which is the racial power it gets at level 5, the earliest in the game. It
+    which is the racial power it gets at level 5. It
     strikes a monster for your character level in nether damage and heals you
     for half that level.
   - **Light hurts it** in the ordinary way as well: light-based attacks land
@@ -533,24 +555,43 @@ Ghoul
 Racial powers
 -------------
 
-Sixteen of these seventeen races can do something no amount of study will teach,
-and press ``N`` to do it. The Amberite can do two things, which is the point of
-being an Amberite; the Beastman can do nothing, because in Zangband its whole
-character was mutation happening *to* it rather than anything it chose.
+Twenty-two of these twenty-eight races can do something no amount of study will
+teach, and press ``N`` to do it. The Amberite can do two things, which is the
+point of being an Amberite; the Beastman can do nothing, because in Zangband its
+whole character was mutation happening *to* it rather than anything it chose.
 
-================ ========================= =====  ====  =====  =======
-Race             Power                     Level  Mana  Stat   Failure
-================ ========================= =====  ====  =====  =======
-Amberite         shift into shadow            30    50  INT        50%
-Amberite         walk the Pattern             40    75  WIS        50%
-Vampire          drink blood                   5    10  CON         9%
-Sprite           throw sleeping dust          12    12  INT        15%
-Yeek             scream                       15    15  WIS        10%
-Draconian        breathe like a dragon        15    25  CON        12%
-Mindflayer       blast a mind                 15    12  INT        14%
-Golem            turn to stone                20    15  CON         8%
-Half-Titan       examine your foes            35    20  STR        12%
-================ ========================= =====  ====  =====  =======
+The six races Angband and Zangband share have theirs too, which is easy to miss
+if you have played Angband: a Dwarf, Hobbit, Gnome, Half-Orc, Half-Troll and
+Kobold are all ordinary in Angband and are not here. Only Human, Half-Elf, Elf,
+Dunadan, High-Elf and Beastman have nothing to press.
+
+================ ============================ =====  ====  =====  =======
+Race             Power                        Level  Mana  Stat   Failure
+================ ============================ =====  ====  =====  =======
+Half-Orc         play tough                       3     5  WIS        8%
+Spectre          howl to terrify your enemies     4     6  INT        3%
+Dwarf            examine your surroundings        5     5  WIS       12%
+Gnome            blink                            5    10  INT       12%
+Vampire          drink blood                      5    10  CON        9%
+Barbarian        work yourself into a frenzy      8    10  WIS        9%
+Klackon          spit acid                        9     9  DEX       14%
+Imp              throw fire                       9    15  WIS       15%
+Half-Troll       work yourself into a frenzy     10    12  WIS        9%
+Nibelung         examine your surroundings       10     5  WIS       10%
+Kobold           throw a dart of poison          12     8  DEX       14%
+Sprite           throw sleeping dust             12    12  INT       15%
+Hobbit           cook some food                  15    10  INT       10%
+Yeek             scream                          15    15  WIS       10%
+Draconian        breathe like a dragon           15    25  CON       12%
+Mindflayer       blast a mind                    15    12  INT       14%
+Golem            turn to stone                   20    15  CON        8%
+Amberite         shift into shadow               30    50  INT       50%
+Skeleton         recover your lost life force    30    30  WIS       18%
+Zombie           recover your lost life force    30    30  WIS       18%
+Ghoul            sense living creatures          30    10  WIS       12%
+Half-Titan       examine your foes               35    20  STR       12%
+Amberite         walk the Pattern                40    75  WIS       50%
+================ ============================ =====  ====  =====  =======
 
 The level is when the power arrives; before it, the character simply cannot.
 

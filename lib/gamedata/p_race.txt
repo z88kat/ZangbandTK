@@ -222,6 +222,15 @@ height:34:4
 weight:55:5
 obj-flags:HOLD_LIFE
 player-flags:KNOW_MUSHROOM
+# `create_food()` drops a ration at your feet (spells2.c:4117) -- an object to
+# carry, share or sell, not a full stomach, which is why this is not NOURISH.
+power:cook some food
+power-level:15
+power-cost:10
+power-stat:INT
+power-fail:10
+power-effect:CREATE_FOOD
+
 
 name:Gnome
 virtues:KNOWLEDGE
@@ -245,6 +254,20 @@ height:40:5
 weight:80:5
 obj-flags:FREE_ACT
 player-flags:KNOW_ZAPPER
+# `teleport_player(10 + plev)` (racial.c:233): a short hop that lengthens as
+# the gnome does, from 11 squares at level 1 to 60 at 50.
+power:blink
+power-level:5
+power-cost:10
+power-stat:INT
+power-fail:12
+power-effect:TELEPORT
+# The whole distance goes in the expression. `10+$B` parses -- and binds $B to
+# the *dice count*, giving `10 + 5d0` at level 5: min 15, max 10, average 12.
+# Silently, as ever. DEC-75's lesson, one file over.
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 10
+
 
 name:Dwarf
 virtues:DILIGENCE
@@ -268,6 +291,21 @@ height:47:4
 weight:135:20
 obj-flags:PROT_BLIND
 player-flags:SEE_ORE
+# Zangband's dwarf finds its way about: detect traps, doors and stairs at
+# level 5 (racial.c:216, tables.c:7754).  The Nibelung has the same power five
+# levels later, which is why the two blocks read alike.
+power:examine your surroundings
+power-level:5
+power-cost:5
+power-stat:WIS
+power-fail:12
+power-effect:DETECT_TRAPS
+power-dice:22
+power-effect:DETECT_DOORS
+power-dice:22
+power-effect:DETECT_STAIRS
+power-dice:22
+
 
 name:Half-Orc
 virtues:HONOUR
@@ -290,6 +328,15 @@ age:11:4
 height:64:2
 weight:135:15
 values:RES_DARK[1]
+# `clear_afraid()` (racial.c:240).  Removes the fear it is feeling now; it is
+# not the standing fear resistance the Barbarian carries.
+power:play tough
+power-level:3
+power-cost:5
+power-stat:WIS
+power-fail:8
+power-effect:CURE:AFRAID
+
 
 name:Half-Troll
 virtues:VALOUR
@@ -312,6 +359,22 @@ age:20:10
 height:90:16
 weight:240:60
 obj-flags:SUST_STR | REGEN
+# Identical to the Barbarian's frenzy in the archive, line for line
+# (racial.c:247 against racial.c:292): thirty hit points if not already
+# berserk, fear cleared, and 10+1d(level) turns of it.  Two levels later and
+# two points dearer.
+power:work yourself into a frenzy
+power-level:10
+power-cost:12
+power-stat:WIS
+power-fail:9
+power-effect:HEAL_HP
+power-dice:30
+power-effect:CURE:AFRAID
+power-effect:TIMED_INC:SHERO
+power-dice:10+1d$B
+power-expr:B:PLAYER_LEVEL:+ 0
+
 
 name:Dunadan
 virtues:HONOUR
@@ -406,6 +469,18 @@ values:RES_POIS[1]
 # ---------------------------------------------------------------------------
 
 # Amber's own blood: it heals fast and does not weaken.
+# `fire_bolt(GF_POIS, dir, plev)` (racial.c:354) -- damage is the character's
+# level, flat, with no dice at either end.
+power:throw a dart of poison
+power-level:12
+power-cost:8
+power-stat:DEX
+power-fail:14
+power-effect:BOLT:POIS
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+
+
 name:Amberite
 virtues:HONOUR
 stats:1:2:2:2:3

@@ -3898,3 +3898,56 @@ was dropped.
 `parser_getint` (init.c:4525-4527), three pairs of plain integers -- not the
 `values:` dice grammar that turned an Amulet of Destruction into a benefit
 (DEC-75). Checked rather than assumed, because that is the lesson.
+
+**DEC-77 — The six races Angband and Zangband share keep their Zangband racial
+powers, and one of them needed an effect 4.2 has not got.**
+
+A Dwarf, Hobbit, Gnome, Half-Orc, Half-Troll and Kobold each have a racial
+power in Zangband ([racial.c:216-360](../zangband/src/racial.c#L216), with
+level, cost, stat and failure from
+[tables.c:7752](../zangband/src/tables.c#L7752)) and had none here. The import
+took the eleven shared races' stats and skills and stopped, so a Dwarf arrived
+as Angband's Dwarf: the same race minus the one button it can press. Nothing
+reported it because a race with no power is a legal race, and because these are
+the races a reader is least likely to check.
+
+All six figures are the archive's. Two are powers this game already had under
+another race, which is a useful check on the shape rather than a coincidence:
+the Dwarf's detection is the Nibelung's five levels earlier, and the
+Half-Troll's frenzy is the Barbarian's, line for line in the archive, two
+levels later and two points dearer.
+
+**One is not data.** `create_food()` drops a ration of food at your feet
+([spells2.c:4117](../zangband/src/spells2.c#L4117)) and 4.2 has no effect that
+makes an object at all -- `ACQUIRE` and `CREATE_ARROWS` both consume something
+first. `CREATE_FOOD` is twenty lines mirroring `CREATE_ARROWS`, and it is
+restoration rather than invention: the behaviour is the archive's and the object
+is one 4.2 already ships. It is deliberately not `NOURISH`, because the point is
+a ration you can carry, share or sell, and a hobbit who is not hungry still
+wants it.
+
+*I had sized all six as data-only when listing the outstanding work. That was
+wrong by one, and the correction is cheap enough that it did not change the
+answer.*
+
+**The parser trap caught one, and it was mine.** `power-dice:10+$B` for the
+Gnome's `teleport_player(10 + plev)` parses, and binds `$B` to the **dice
+count** rather than adding it to the base: at level 5 it is `10 + 5d0`, which
+`dice_evaluate` reports as minimum 15, maximum 10, average 12. A range whose
+maximum is below its minimum, silently. The whole distance goes in the
+expression instead -- `power-dice:$B` with `power-expr:B:PLAYER_LEVEL:+ 10`.
+
+**And a test that counted where it should have named.** `a-race-keeps-its-power`
+asserted that sixteen races carry a power, on the model that imported races have
+them and shared ones do not. Giving the six their powers made it seven-and-
+twenty and the test went red -- correctly, because the model was wrong rather
+than the data. It now names the six races that have nothing to press (Human,
+Half-Elf, Elf, Dunadan, High-Elf, Beastman) and fails in both directions: a race
+losing a power, and a race gaining one it should not have. A count could only
+ever have said the number moved.
+
+The form already shipping on the Barbarian and the Imp, `10+1d$B`, is *correct*:
+the `1d` puts the variable in `sides`, so it is `10 + randint1(level)`, which is
+what the archive does. Measured, not assumed -- the first version of that check
+failed because the test had not set `player->lev`, and it would have been very
+easy to read that as a defect in the data rather than in the test.

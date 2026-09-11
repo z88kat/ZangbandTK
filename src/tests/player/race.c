@@ -16,6 +16,8 @@
  */
 #include "unit-test.h"
 
+#include "z-dice.h"
+
 #include "init.h"
 #include "player.h"
 #include "player-birth.h"
@@ -845,6 +847,126 @@ static int test_every_race_has_a_body(void *state) {
 	ok;
 }
 
+/** The named power of that race, or NULL. */
+static struct player_power *power_of(const char *race, const char *power)
+{
+	struct player_race *r = race_named(race);
+	struct player_power *pw;
+
+	if (!r) return NULL;
+	for (pw = r->powers; pw; pw = pw->next)
+		if (streq(pw->name, power)) return pw;
+	return NULL;
+}
+
+/**
+ * The six races Angband and Zangband share kept their racial powers.
+ *
+ * A Dwarf, Hobbit, Gnome, Half-Orc, Half-Troll and Kobold each have one in
+ * Zangband (racial.c, with the level, cost, stat and failure from
+ * tables.c:7752) and had none here. The import took the eleven shared races'
+ * stats and skills and stopped: a Dwarf arrived as Angband's Dwarf, which is
+ * the same race minus the one button it can press.
+ *
+ * The figures are the archive's, so this pins them rather than arguing them --
+ * an edit to p_race.txt that reprices one is a decision somebody makes.
+ */
+static int test_the_shared_races_kept_their_powers(void *state) {
+	static const struct {
+		const char *race, *power;
+		int level, cost, stat, fail;
+	} rows[] = {
+		{ "Dwarf",      "examine your surroundings",  5,  5,  STAT_WIS, 12 },
+		{ "Hobbit",     "cook some food",            15, 10,  STAT_INT, 10 },
+		{ "Gnome",      "blink",                      5, 10,  STAT_INT, 12 },
+		{ "Half-Orc",   "play tough",                 3,  5,  STAT_WIS,  8 },
+		{ "Half-Troll", "work yourself into a frenzy", 10, 12, STAT_WIS, 9 },
+		{ "Kobold",     "throw a dart of poison",    12,  8,  STAT_DEX, 14 },
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(rows); i++) {
+		struct player_power *pw = power_of(rows[i].race, rows[i].power);
+
+		if (!pw) {
+			printf("%s has no power '%s'\n", rows[i].race, rows[i].power);
+			require(false);
+		}
+		if (pw->level != rows[i].level || pw->cost != rows[i].cost
+				|| pw->stat != rows[i].stat || pw->fail != rows[i].fail) {
+			printf("%s: %d/%d/%d/%d, wanted %d/%d/%d/%d\n", rows[i].race,
+					pw->level, pw->cost, pw->stat, pw->fail,
+					rows[i].level, rows[i].cost, rows[i].stat, rows[i].fail);
+			require(false);
+		}
+	}
+	ok;
+}
+
+/**
+ * The two powers whose strength is written as an expression give the archive's
+ * numbers, measured rather than read.
+ *
+ * `power-dice` goes through the dice grammar, and DEC-75 is the reason this
+ * test exists: the same text means different things to different parsers here,
+ * and `values:[-d5M5]` looked like a penalty and granted a bonus. So the
+ * Gnome's `10+$B` and the Kobold's `$B` are evaluated at two character levels
+ * and compared against `10 + plev` and `plev`, which is what Zangband passes
+ * to `teleport_player` and `fire_bolt` (racial.c:236, 357).
+ */
+static int test_a_power_expression_means_what_it_says(void *state) {
+	struct player_power *blink = power_of("Gnome", "blink");
+	struct player_power *dart = power_of("Kobold", "throw a dart of poison");
+	static const int levels[] = { 5, 50 };
+	size_t i;
+
+	require(blink && blink->effects && blink->effects->effect);
+	require(dart && dart->effects && dart->effects->effect);
+
+	/*
+	 * And the form that was already shipping, because it is the same grammar
+	 * and the Gnome's near-identical `10+$B` proved to mean something else
+	 * entirely. A Half-Troll's frenzy is `inc_shero(10 + randint1(plev))`,
+	 * so the duration must span 11..10+level and no wider.
+	 */
+	{
+		struct player_power *rage = power_of("Half-Troll",
+				"work yourself into a frenzy");
+		struct power_effect *pe;
+		struct effect *shero = NULL;
+
+		require(rage);
+		for (pe = rage->effects; pe; pe = pe->next) {
+			struct effect *e;
+
+			for (e = pe->effect; e; e = e->next)
+				if (e->index == EF_TIMED_INC) shero = e;
+		}
+		require(shero && shero->dice);
+		player->lev = 40;
+		eq(dice_evaluate(shero->dice, 40, MINIMISE, NULL), 11);
+		eq(dice_evaluate(shero->dice, 40, MAXIMISE, NULL), 50);
+	}
+
+	for (i = 0; i < N_ELEMENTS(levels); i++) {
+		int lev = levels[i];
+		int range, damage;
+
+		player->lev = lev;
+		range = dice_evaluate(blink->effects->effect->dice, lev, AVERAGE,
+				NULL);
+		damage = dice_evaluate(dart->effects->effect->dice, lev, AVERAGE,
+				NULL);
+
+		if (range != 10 + lev || damage != lev) {
+			printf("at level %d: blink %d (wanted %d), dart %d (wanted %d)\n",
+					lev, range, 10 + lev, damage, lev);
+			require(false);
+		}
+	}
+	ok;
+}
+
 const char *suite_name = "player/race";
 struct test tests[] = {
 	{ "the-draconian-grows-into-its-scales",
@@ -882,5 +1004,9 @@ struct test tests[] = {
 	{ "the-undead-wake-in-the-dark",
 			test_the_undead_wake_in_the_dark },
 	{ "every-race-has-a-body", test_every_race_has_a_body },
+	{ "the-shared-races-kept-their-powers",
+			test_the_shared_races_kept_their_powers },
+	{ "a-power-expression-means-what-it-says",
+			test_a_power_expression_means_what_it_says },
 	{ NULL, NULL }
 };

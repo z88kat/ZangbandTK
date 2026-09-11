@@ -3451,6 +3451,38 @@ bool effect_handler_BRAND_BOLTS(effect_handler_context_t *context)
 /**
  * Turn a staff into arrows
  */
+/**
+ * Conjure a ration of food at the caster's feet.
+ *
+ * A Hobbit's racial power, which Zangband does exactly this way: prepare the
+ * ration kind and `drop_near` it (spells2.c:4117). It is not NOURISH -- the
+ * point is an object you can carry, share or sell, not a full stomach now, and
+ * a Hobbit who is not hungry still wants the ration.
+ *
+ * 4.2 had no effect that makes an object at all except ACQUIRE and
+ * CREATE_ARROWS, both of which consume something. This is the smallest thing
+ * that restores the archive's behaviour with an object 4.2 already ships.
+ */
+bool effect_handler_CREATE_FOOD(effect_handler_context_t *context)
+{
+	struct object_kind *kind = lookup_kind(TV_FOOD,
+		lookup_sval(TV_FOOD, "Ration of Food"));
+	struct object *food;
+
+	if (!kind) return false;
+
+	food = object_new();
+	object_prep(food, kind, 0, MINIMISE);
+	food->number = 1;
+	food->origin = ORIGIN_ACQUIRE;
+	player_know_object(player, food);
+
+	drop_near(cave, &food, 0, player->grid, true, false);
+
+	context->ident = true;
+	return true;
+}
+
 bool effect_handler_CREATE_ARROWS(effect_handler_context_t *context)
 {
 	int lev;
