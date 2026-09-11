@@ -131,6 +131,38 @@ Over the weight limit and the strikes halve and every bonus withdraws; under it,
 each empty armour slot is worth armour class in its own right. See
 :ref:`Martial arts <martial-arts>`.
 
+Two more things hang off that limit. A Monk **speeds up** from level 10, by one
+point for every ten levels, and **cannot be held** from level 25 — and both of
+them go away the moment it is carrying too much armour, along with the blows and
+the armour class. Nothing else in the game gates an intrinsic on what you are
+wearing. It is the clearest statement of what the class is: a Monk's advantages
+are all things that stop being true when it puts something on.
+
+.. _class-gates:
+
+What a class grows into
+-----------------------
+
+Four classes gain something on reaching a level, the way many races do, and
+nothing tells you it is coming:
+
+=============== ================================= ======
+Class           Gains                              Level
+=============== ================================= ======
+Mindcrafter     resistance to fear                    10
+Monk            speed, while unencumbered             10
+Mindcrafter     sustained wisdom                      20
+Monk            free action, while unencumbered       25
+Chaos-Warrior   resistance to chaos                   30
+Mindcrafter     resistance to confusion               30
+Chaos-Warrior   resistance to fear                    40
+Mindcrafter     telepathy                             40
+Paladin         resistance to fear                    40
+=============== ================================= ======
+
+A Warrior's immunity to fear at 30 is Angband's own and works the same way. The
+four above are Zangband's, and were missing until 3.118.1.
+
 The Mindcrafter, and psionics
 -----------------------------
 

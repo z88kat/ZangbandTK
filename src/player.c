@@ -341,11 +341,50 @@ void player_flags(struct player *p, bitflag f[OF_SIZE])
 	 * property is indistinguishable from an innate one once it arrives.
 	 */
 	if (p->race) {
-		const struct player_race_gain *g;
+		const struct player_gain *g;
 
 		for (g = p->race->gains; g; g = g->next)
-			if (p->lev >= g->level)
+			if (player_gain_applies(p, g))
 				of_union(f, g->flags);
+	}
+
+	/*
+	 * And the same for the class, which DEC-72 recorded as needing none.
+	 *
+	 * Four do: a Paladin resists fear at 40, a Chaos-Warrior resists chaos at
+	 * 30 and fear at 40, a Mindcrafter gains four properties between 10 and
+	 * 40, and a Monk gains speed at 10 and free action at 25 -- the last two
+	 * only while it is light enough to fight bare-handed, which is why a gain
+	 * carries a condition as well as a level.
+	 */
+	if (p->class) {
+		const struct player_gain *g;
+
+		for (g = p->class->gains; g; g = g->next)
+			if (player_gain_applies(p, g))
+				of_union(f, g->flags);
+	}
+}
+
+/**
+ * Whether a level gain has arrived for this character.
+ *
+ * The level is the common case and the condition is the reason this is a
+ * function rather than a comparison: Zangband gates the Monk's two on its
+ * armour rather than only on its level, and asking the equipment directly --
+ * rather than reading `player_state`, which may be half-built -- is what lets
+ * `calc_bonuses()` and `player_flags()` agree about it.
+ */
+bool player_gain_applies(const struct player *p, const struct player_gain *g)
+{
+	if (p->lev < g->level) return false;
+
+	switch (g->condition) {
+		case GAIN_UNENCUMBERED:
+			return !martial_armour_burdens((struct player *) p, NULL);
+		case GAIN_ALWAYS:
+		default:
+			return true;
 	}
 }
 

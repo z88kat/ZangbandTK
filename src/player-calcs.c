@@ -1792,8 +1792,7 @@ int calc_unlocking_chance(const struct player *p, int lock_power,
  * and jewellery do not weigh on it, and a shield is checked here because the
  * arm slot is one of the six you are rewarded for leaving empty.
  */
-static bool martial_armour_burdens(struct player *p,
-								   struct player_state *state)
+bool martial_armour_burdens(struct player *p, struct player_state *state)
 {
 	static const char *worn[] = {
 		"body", "head", "arm", "back", "hands", "feet"
@@ -2104,10 +2103,25 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	 * exactly as they do for a race born with them.
 	 */
 	{
-		const struct player_race_gain *g;
+		const struct player_gain *g;
 
 		for (g = p->race->gains; g; g = g->next) {
-			if (p->lev < g->level) continue;
+			if (!player_gain_applies(p, g)) continue;
+
+			for (i = 0; i < ELEM_MAX; i++) {
+				if (!g->el_info[i].res_level) continue;
+
+				if (g->el_info[i].res_level == -1)
+					vuln[i] = true;
+				else if (g->el_info[i].res_level
+						 > state->el_info[i].res_level)
+					state->el_info[i].res_level = g->el_info[i].res_level;
+			}
+		}
+
+		/* And the class's, which gate the same way (PLR-06, DEC-78). */
+		for (g = p->class->gains; g; g = g->next) {
+			if (!player_gain_applies(p, g)) continue;
 
 			for (i = 0; i < ELEM_MAX; i++) {
 				if (!g->el_info[i].res_level) continue;
@@ -2274,6 +2288,18 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 		if (p->race->speed_scale)
 			innate += p->lev / p->race->speed_scale;
 		state->speed += innate;
+	}
+
+	/*
+	 * And the gated form, which today is the Monk's and only while it is
+	 * light enough to fight bare-handed (PLR-06, DEC-78).
+	 */
+	if (p->class) {
+		const struct player_gain *g;
+
+		for (g = p->class->gains; g; g = g->next)
+			if (g->speed_scale && player_gain_applies(p, g))
+				state->speed += p->lev / g->speed_scale;
 	}
 
 	/* Now deal with vulnerabilities */

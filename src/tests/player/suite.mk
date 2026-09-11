@@ -1,5 +1,6 @@
 TESTPROGS += player/birth \
              player/calc-inventory \
+             player/class \
              player/combine-pack \
              player/digging \
              player/history \

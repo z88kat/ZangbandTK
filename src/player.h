@@ -369,7 +369,7 @@ struct player_race {
 	int speed;					/**< Innate speed bonus (PLR-01) */
 	int speed_scale;			/**< ...plus level divided by this */
 
-	struct player_race_gain *gains;
+	struct player_gain *gains;
 	struct player_race_kit *kit;	/**< Starting-kit substitutions (PLR-01) */	/**< What it grows into (PLR-01) */
 
 	struct player_power *powers;	/**< What the race can do (PLR-02) */
@@ -405,12 +405,48 @@ struct player_race_kit {
 	struct player_race_kit *next;
 };
 
-struct player_race_gain {
+/**
+ * A condition a gain carries beyond its level (ZangbandTK, PLR-06).
+ *
+ * Zangband's class gates are mostly plain thresholds, and the Monk's are not:
+ * its speed at 10 and free action at 25 arrive only while it is wearing little
+ * enough to fight bare-handed (`!p_ptr->state.monk_armour_stat`,
+ * [files.c:1301](../archive/zangband/src/files.c#L1301)). One condition is not
+ * a mechanism, so this is a named list rather than a boolean -- the next one
+ * costs a line here, a line in `gain_condition_names` and a case in
+ * `player_gain_applies()`.
+ *
+ * The predicate has to be a function of the player alone, not of
+ * `player_state`, because a gain is read both while `calc_bonuses()` is still
+ * assembling that state and by `player_flags()` outside it. Asking the
+ * equipment directly is what makes the two agree.
+ */
+enum {
+	GAIN_ALWAYS = 0,
+	GAIN_UNENCUMBERED,	/**< Light enough to fight bare-handed */
+	GAIN_COND_MAX
+};
+
+struct player_gain {
 	int level;						/**< From this character level */
+	int condition;					/**< GAIN_*, beyond the level */
 	bitflag flags[OF_SIZE];			/**< Object flags gained */
 	struct element_info el_info[ELEM_MAX];	/**< Resists gained */
-	struct player_race_gain *next;
+	/**
+	 * Speed, as level divided by this (ZangbandTK, PLR-06).
+	 *
+	 * The race carries an ungated pair of its own for the Sprite and the
+	 * Klackon. This is the gated form, and the Monk is why it exists: Zangband
+	 * hands it `TR_SPEED`, which `calc_bonuses()` there turns into
+	 * `pspeed += lev / 10` ([xtra1.c:2550](../archive/zangband/src/xtra1.c#L2550))
+	 * -- the same arithmetic, but only while it is unencumbered. Keeping it on
+	 * the gain rather than beside the race's pair means the condition is
+	 * expressed in one place instead of two.
+	 */
+	int speed_scale;
+	struct player_gain *next;
 };
+
 
 /**
  * Blow names for shapechanged players
@@ -599,6 +635,19 @@ struct player_class {
 
 	bitflag flags[OF_SIZE];		/**< (Object) flags */
 	bitflag pflags[PF_SIZE];	/**< (Player) flags */
+
+	/**
+	 * What the class grows into (ZangbandTK, PLR-06).
+	 *
+	 * The same mechanism the races use, and for the same reason: Zangband's
+	 * `player_flags()` gates a class's intrinsics on character level too --
+	 * a Mindcrafter resists fear at 10, sustains wisdom at 20, resists
+	 * confusion at 30 and reads minds at 40
+	 * ([files.c:1309](../archive/zangband/src/files.c#L1309)). DEC-72 built
+	 * this for races and recorded that no class needed it, which was wrong
+	 * about four of them; DEC-78 is the correction.
+	 */
+	struct player_gain *gains;
 
 	int max_attacks;			/**< Maximum possible attacks */
 
@@ -1012,5 +1061,7 @@ void player_cleanup_members(struct player *p);
 
 /* player-race.c */
 struct player_race *player_id2race(guid id);
+bool player_gain_applies(const struct player *p,
+						 const struct player_gain *g);
 
 #endif /* !PLAYER_H */

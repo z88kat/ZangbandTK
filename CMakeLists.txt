@@ -925,6 +925,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     parse/z-info.c
     player/birth.c
     player/calc-inventory.c
+    player/class.c
     player/combine-pack.c
     player/digging.c
     player/history.c

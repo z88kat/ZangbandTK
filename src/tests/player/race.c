@@ -413,7 +413,7 @@ static int test_every_level_gate_actually_opens(void *state) {
 	int gates = 0;
 
 	for (r = races; r; r = r->next) {
-		struct player_race_gain *g;
+		struct player_gain *g;
 		for (g = r->gains; g; g = g->next) {
 			int i;
 			int below = MAX(g->level - 1, 1);

@@ -45,6 +45,24 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+A Mindcrafter grows into four things it never had — 11 September 2026
+------------------------------------------------------------------------
+
+- **3.118.1** — **Four classes gain intrinsics on a level threshold in Zangband
+  and gained nothing here.** A Mindcrafter now resists fear at 10, sustains
+  wisdom at 20, resists confusion at 30 and reads minds at 40. A Chaos-Warrior
+  resists chaos at 30 and fear at 40. A Paladin resists fear at 40.
+
+  **And a Monk speeds up.** One point for every ten levels from level 10, and
+  free action from 25 — both of them only while it is carrying little enough
+  armour to fight bare-handed, which is the one place in the game where an
+  intrinsic depends on what you are wearing. Put plate on a Monk and it loses
+  the speed along with the blows.
+
+  The mechanism is the one the races already had, extended rather than copied,
+  with a named condition on the band. The manual has a table of what each class
+  grows into, because nothing in the game tells you it is coming.
+
 A Dwarf can find the stairs again — 11 September 2026
 --------------------------------------------------------
 

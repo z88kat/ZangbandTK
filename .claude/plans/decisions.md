@@ -3476,8 +3476,17 @@ light hurts. Neither is a flag or a resist, so each is a field on the race:
 saving throws), and `light`. Both are still declared in data.
 
 **What this does not cover.** Classes gate things too, and this mechanism is
-not wired to them. That is deliberate: no class currently needs it, and a
-second consumer should be added when there is a second consumer.
+not wired to them.
+
+*That sentence used to end "That is deliberate: no class currently needs it, and
+a second consumer should be added when there is a second consumer." It was
+wrong, and it is left visible rather than edited away because the claim was
+acted on.* Six classes gate something in `player_flags()`
+([files.c:1278](../zangband/src/files.c#L1278)) and four of them needed this
+mechanism: a Paladin, a Chaos-Warrior, a Mindcrafter and a Monk. The check that
+would have caught it was reading the class half of the same switch I had read
+the race half of. **DEC-78 wires it up**; what follows below is the race
+mechanism as built, which is unchanged.
 
 ---
 
@@ -3951,3 +3960,51 @@ the `1d` puts the variable in `sides`, so it is `10 + randint1(level)`, which is
 what the archive does. Measured, not assumed -- the first version of that check
 failed because the test had not set `player->lev`, and it would have been very
 easy to read that as a defect in the data rather than in the test.
+
+**DEC-78 — The level-gate mechanism serves classes too, and carries a condition
+because one class gate is not a level.**
+
+DEC-72 built level-gated intrinsics for races and recorded that no class needed
+them. Four do.
+
+| Class | Gains | At |
+|---|---|---|
+| Paladin | fear resistance | 40 |
+| Chaos-Warrior | chaos resistance, then fear resistance | 30, 40 |
+| Mindcrafter | fear resistance, sustain wisdom, confusion resistance, telepathy | 10, 20, 30, 40 |
+| Monk | speed, then free action | 10, 25 — *while unencumbered* |
+
+Two of Zangband's six gating classes needed nothing: the Warrior's fear
+resistance at 30 is 4.2's own `BRAVERY_30`, and the Ranger's `WILD_SHOT` and
+`WILD_WALK` cancel a terrain penalty this game has not got, which objflagmap
+already records as blocked on a mechanic rather than on effort.
+
+**The mechanism is the race one, shared rather than copied.**
+`struct player_race_gain` becomes `struct player_gain` and `player_class` grows
+the same list, with the three directives parsed once and each parser passing in
+the list it owns -- exactly the arrangement `power:` already uses for the same
+reason.
+
+**The condition is the only new design here, and it is deliberately a list.**
+A Monk's speed and free action arrive only while it is wearing little enough to
+fight bare-handed (`!p_ptr->state.monk_armour_stat`,
+[files.c:1301](../zangband/src/files.c#L1301)). That is the *only* conditional
+gate in the archive, for any race or class, so the temptation is a Monk special
+case. What is built instead is `gain-when:<CONDITION>` against a named list with
+one entry, because the difference in cost is a line and the difference in what
+the next one costs is a mechanism.
+
+*The predicate is a function of the player, not of `player_state`.* A gain is
+read both by `calc_bonuses()`, while that state is still being assembled, and by
+`player_flags()`, outside it. `martial_armour_burdens()` turned out to take a
+`state` argument it never used -- it reads the equipment and the character level
+-- so exporting it and dropping the dependency is what lets the two callers
+agree without ordering rules.
+
+**Speed rides on the gain rather than beside it.** Zangband hands the Monk
+`TR_SPEED`, which its `calc_bonuses()` turns into `pspeed += lev / 10`
+([xtra1.c:2550](../zangband/src/xtra1.c#L2550)) -- the same arithmetic the
+Sprite and the Klackon get from the race `speed`/`speed_scale` pair DEC-72
+built. The Monk's is gated on level *and* condition, so it is a `gain-speed:`
+on the band rather than a second ungated pair on the class. One expression of
+"when", not two.
