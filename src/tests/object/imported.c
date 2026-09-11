@@ -833,6 +833,116 @@ static int test_the_unmappable_five_stay_unmapped(void *state) {
 	ok;
 }
 
+/** The ego named `name`, or NULL. */
+static struct ego_item *ego_named(const char *name)
+{
+	int i;
+
+	for (i = 0; i < z_info->e_max; i++) {
+		if (!e_info[i].name) continue;
+		if (!my_stricmp(e_info[i].name, name)) return &e_info[i];
+	}
+	return NULL;
+}
+
+/**
+ * A Sword of Sharpness digs.
+ *
+ * Zangband gives it VORPAL and TUNNEL together, and its pval -- the size of
+ * the digging bonus -- is not on the `C:` line at all. It is computed by a
+ * `L:MAKE:` hook, `object.pval = m_bonus(5, level) + 1`, and the converter
+ * read only the `C:` line. With no pval the TUNNEL flag went to the "modifier
+ * flag with no pval" pile and what shipped was a digging ego that does not
+ * dig.
+ *
+ * Nothing complained, because VORPAL survived and an ego with one property is
+ * a legal ego -- the same silence that hid eleven artifacts with no
+ * activation.
+ *
+ * `dig += obj->modifiers[OBJ_MOD_TUNNEL]` applies to anything wielded, not
+ * just to diggers (player-calcs.c:2175), so the bonus is real on a sword.
+ */
+static int test_sharpness_digs(void *state) {
+	struct ego_item *ego = ego_named("of Sharpness");
+	int least, most;
+
+	require(ego);
+
+	/* At the surface the m_bonus contributes nothing and the base is 1. */
+	least = randcalc(ego->modifiers[OBJ_MOD_TUNNEL], 0, MINIMISE);
+	most = randcalc(ego->modifiers[OBJ_MOD_TUNNEL], MAX_RAND_DEPTH, MAXIMISE);
+
+	eq(least, 1);
+	eq(most, 6);
+	ok;
+}
+
+/**
+ * A Trump Weapon can be activated.
+ *
+ * Zangband's `L:USE:` hook teleports the wielder 100 squares on a 50-100 turn
+ * timer; its TELEPORT flag separately teleports them at random, which is the
+ * drawback the power pays for. objflagmap.toml recorded ACTIVATE as "handled
+ * separately via act:/time:" and nothing in the ego path handled it, so what
+ * shipped carried the drawback alone.
+ *
+ * That claim-with-no-implementation is the same shape as the artifact
+ * activations: a disposition in the record that reads like the work was done.
+ */
+static int test_a_trump_weapon_teleports_on_purpose(void *state) {
+	struct ego_item *ego = ego_named("(Trump Weapon)");
+
+	require(ego);
+	require(ego->activation);
+	require(streq(ego->activation->name, "TELE_LONG"));
+
+	/* An activation with no recharge is usable every turn. */
+	require(randcalc(ego->time, 0, MINIMISE) > 0);
+	ok;
+}
+
+/**
+ * Four egos roll for their modifier rather than always granting the maximum.
+ *
+ * Zangband stores the largest figure a pval may reach and rolls
+ * `randint1()` against it each time the item is made (object2.c:2215). Writing
+ * that figure as a fixed value made every one of these items the best it could
+ * ever have been: a Lantern of Vision gave +6 searching where Zangband
+ * averaged +3.5.
+ *
+ * Falsified by the range collapsing, in either direction -- a fixed value
+ * fails because least == most, and a wrong die fails on the bound.
+ */
+static int test_the_rolled_modifiers_are_ranges(void *state) {
+	static const struct {
+		const char *ego;
+		int mod;
+		int least, most;
+	} rows[] = {
+		{ "of Vision", OBJ_MOD_SEARCH, 1, 6 },
+		{ "(Trump Weapon)", OBJ_MOD_SEARCH, 1, 2 },
+		{ "(Pattern Weapon)", OBJ_MOD_STR, 1, 2 },
+		{ "(Pattern Weapon)", OBJ_MOD_CON, 1, 2 },
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(rows); i++) {
+		struct ego_item *ego = ego_named(rows[i].ego);
+		int least, most;
+
+		require(ego);
+		least = randcalc(ego->modifiers[rows[i].mod], 0, MINIMISE);
+		most = randcalc(ego->modifiers[rows[i].mod], 0, MAXIMISE);
+		if (least != rows[i].least || most != rows[i].most) {
+			printf("%s %d: got %d..%d, wanted %d..%d\n", rows[i].ego,
+					rows[i].mod, least, most, rows[i].least,
+					rows[i].most);
+			require(false);
+		}
+	}
+	ok;
+}
+
 const char *suite_name = "object/imported";
 struct test tests[] = {
 	{ "the-imported-artifacts-can-be-activated",
@@ -869,5 +979,10 @@ struct test tests[] = {
 	{ "wizardry-grants-mana", test_wizardry_grants_mana },
 	{ "havoc-rolls-on-a-table", test_havoc_rolls_on_a_table },
 	{ "mundanity-has-its-effect", test_mundanity_has_its_effect },
+	{ "sharpness-digs", test_sharpness_digs },
+	{ "a-trump-weapon-teleports-on-purpose",
+	  test_a_trump_weapon_teleports_on_purpose },
+	{ "the-rolled-modifiers-are-ranges",
+	  test_the_rolled_modifiers_are_ranges },
 	{ NULL, NULL }
 };

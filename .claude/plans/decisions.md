@@ -3638,3 +3638,98 @@ and rock blocks everything beyond because rock is not projectable. `add_light()`
 goes through the same function. There is no assertion anywhere that the
 player's grid is passable. The fear was unfounded and cost one afternoon of
 reading to retire.
+
+**DEC-75 — The object-side BAL-08 sweep: three numbers arrive wrong, and three
+more are carried faithfully into a game that no longer reads them.**
+
+BAL-08 is "every imported number has its consuming formula checked in both
+codebases", and it is two requirements wearing one name: the value has to arrive
+intact, *and* the formula at each end has to mean the same thing by it. The
+Sprite's speed and the Yeek's immunity were both found by the second half. So
+was most of what follows.
+
+**What was wrong, and is now fixed.**
+
+*An ego's pval can live in a hook, and the reader only looked at the table.*
+Zangband keeps an ego's modifier size on its `C:` line -- except where it does
+not. `of Sharpness` has no `C:` line at all; its pval is
+`object.pval = m_bonus(5, level) + 1`, computed in a `L:MAKE:` hook at the depth
+the sword was made. Reading the `C:` line alone made the pval zero, which sent
+TUNNEL to the "modifier flag with no pval" pile, and what shipped was a digging
+ego that does not dig. 4.2's `M` is `m_bonus()` under another name -- the two
+functions are line-for-line the same, including the constant 128
+([z-rand.c:455](../../src/z-rand.c#L455),
+[object2.c](../zangband/src/object2.c)) -- so `TUNNEL[1+M5]` is an exact
+translation rather than an approximation.
+
+*The ACTIVATE disposition described work that was never done.* `objflagmap.toml`
+records the flag as "Handled separately via act:/time: rather than as a flag",
+and nothing in the ego path handled it: `match_activation()` was called from the
+artifact converter and nowhere else. `(Trump Weapon)` therefore shipped with the
+random-teleportation curse its TELEPORT flag earns and none of the deliberate
+teleport its `L:USE:` hook grants -- the drawback without the item. This is the
+same shape as the artifact activations found the day before: a line in the record
+that reads like a decision and is in fact a gap.
+
+*A maximum was being written where Zangband rolled.* `o_ptr->pval +=
+randint1(max_pval)` ([object2.c:2231](../zangband/src/object2.c#L2231)) rolls
+every time an ego is made; the converter emitted the maximum as a fixed figure,
+so a Lantern of Vision gave +6 searching where the original averaged +3.5. Four
+egos were affected. Where one Zangband pval drove two modifiers -- the Pattern
+Weapon's STR and CON -- the pairing cannot be kept, because 4.2 rolls each
+modifier separately ([obj-make.c:430](../../src/obj-make.c#L430)). Keeping the
+roll and losing the pairing is the smaller error: it holds the mean, where the
+fixed maximum overstated every one of these by half again.
+
+*A rod with no recharge time is a wand with infinite charges.* Zangband stores a
+rod's recharge in the kind's `pval` (`o_ptr->timeout += k_ptr->pval`,
+[cmd6.c:806](../zangband/src/cmd6.c#L806)); 4.2 reads it from `time:` and
+defaults it to zero. The converter emitted no `time:` line at all, so both
+imported rods recharged instantly -- including Havoc, a depth-95 rod that throws
+150-point elemental balls. The units question answers itself from the data
+rather than from the code: twelve rods exist in both games and eleven carry the
+identical number (Fire Bolts 15, Acid Balls 27, Light 9, Recall 60), so the
+figure crosses 1:1, and the tick-rate difference I reasoned my way to from first
+principles -- Zangband runs `process_world()` every game turn, 4.2 every tenth
+-- is a difference upstream Angband introduced and never rescaled for.
+
+**What is carried faithfully and is not read at this end. Deliberately left.**
+
+*An ego's `cost` and `rating` are inert in 4.2.* Both are parsed, stored on
+`struct ego_item`, and read by nothing but `main-stats.c`. Zangband consumed
+both -- `cost` priced the item and `rating` fed the level feeling through
+`inc_rating()`. 4.2 prices every wearable from `object_power()` instead
+([obj-power.c:1099](../../src/obj-power.c#L1099)) and computes feelings from
+object value. This is 4.2's design applied to its own egos identically, not
+something the import got wrong, so the fields stay as written and the game keeps
+ignoring them. Worth knowing before someone "fixes" an imported ego's price.
+
+*Potions stopped feeding you.* Zangband adds the potion's pval to the food clock
+on every quaff, scaled by race -- full for most, a tenth for a Vampire, a
+twentieth for the four undead races ([cmd6.c:231](../zangband/src/cmd6.c#L231)).
+4.2 has no generic quaff nutrition; a potion feeds you only if it carries an
+explicit `NOURISH` effect. Five imported potions have a non-zero pval, and the
+largest is 100 on a 20000-unit clock. Inventing five NOURISH effects to recover
+half a percent of a food bar would be adding content, not converting it. The
+race-dependent divisors are a race feature and belong with that work if anyone
+wants them.
+
+*Imported objects sit on Zangband's depth curve, not 4.2's.* Of 226 kinds that
+exist in both games under the same name, 202 differ in level and 154 in cost --
+Angband spent twenty years rebalancing them. Weight, armour class and damage
+dice show no systematic drift in either direction, which is the thing that
+needed checking: the units are the same and nothing is off by a factor. Under
+DEC-20 the archive is authoritative for what an imported object is, so its own
+numbers stand.
+
+**A latent one, fixed anyway.** Zangband subtracts `randint1(-max_to_h)` when an
+ego's combat figure is negative ([object2.c:2217](../zangband/src/object2.c#L2217)),
+which is how a cursed ego gets its penalty; the converter returned `"0"` for
+anything not positive. Fifteen Zangband egos carry a negative and none of them
+reaches conversion today -- 4.2 ships its own Morgul, Shattered and Blasted -- so
+this was producing no wrong data and no test can pin it from the shipped file.
+It is fixed rather than recorded because the next ego imported may well be one of
+them, and because `-d50` is exactly `-randint1(50)` under 4.2's parser, which
+negates a whole random value and shifts the base to suit
+([parser.c:203](../../src/parser.c#L203)). Said plainly here so nobody mistakes
+the absence of a test for an absence of thought.

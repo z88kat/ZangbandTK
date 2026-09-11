@@ -998,15 +998,54 @@ def cmd_egos(args) -> int:
 
         # 4.2 expresses an ego's combat bonuses as dice; Zangband stores the
         # maximum each may roll to, which is the same thing said differently.
+        #
+        # Both signs matter. Zangband subtracts `randint1(-max_to_h)` when the
+        # figure is negative (object2.c:2217), which is how a cursed ego gets
+        # its penalty; returning "0" for those made the penalty vanish and
+        # left a Blade of Backbiting that simply does not backbite. 4.2's
+        # parser negates a whole random value on a leading minus and shifts
+        # the base to suit (parser.c:203), so `-d50` is exactly `-randint1(50)`.
         if len(combat) >= 3:
-            def dice(value: str) -> str:
-                n = int(value) if value.lstrip("-").isdigit() else 0
-                return f"d{n}" if n > 0 else "0"
-            entry.set("combat", f"{dice(combat[0])}:{dice(combat[1])}:"
-                                f"{dice(combat[2])}")
+            entry.set("combat", f"{_ego_roll(combat[0])}:"
+                                f"{_ego_roll(combat[1])}:"
+                                f"{_ego_roll(combat[2])}")
         pval = 0
         if len(combat) >= 4 and combat[3].lstrip("-").isdigit():
             pval = int(combat[3])
+
+        # Zangband keeps an ego's pval in one of two places, and this read only
+        # ever looked in the first.
+        #
+        # `of Sharpness` has no `C:` line at all: its pval is computed by a
+        # `L:MAKE:` hook from the depth the item was made at. Reading the `C:`
+        # line alone made its pval zero, which sent TUNNEL to the "modifier
+        # flag with no pval" pile, and what shipped was a digging ego that
+        # does not dig. Nothing reported it, because VORPAL survived and an
+        # ego with one property is a legal ego.
+        pval_expr = _ego_roll(str(pval)) if pval else None
+        make = "\n".join(
+            line.partition(":")[2]
+            for line in rec.all("L")
+            if line.startswith("MAKE:"))
+        for pattern, render in _EGO_MAKE_PVAL:
+            match = pattern.search(make)
+            if match:
+                pval_expr = render(match)
+                pval = pval or 1
+                item.translations.append(
+                    "pval comes from the MAKE hook, not the C: line: "
+                    f"`{match.group(0).strip()}` becomes `{pval_expr}`")
+                break
+        else:
+            # A hook that sets the pval in a way no pattern reads is the
+            # failure this whole section exists to stop being silent about.
+            if "object.pval" in make:
+                item.flag_dispositions.append((
+                    "L:MAKE pval", "manual",
+                    "the MAKE hook sets the pval and no rule reads it: "
+                    + " ".join(
+                        line.strip() for line in make.splitlines()
+                        if "object.pval" in line)))
 
         for kind in spec["types"]:
             entry.pairs.append(("type", kind))
@@ -1015,12 +1054,15 @@ def cmd_egos(args) -> int:
             f"slot {slot} ({spec['note']})")
 
         flags, values, brands, slays, curses = [], [], [], [], []
+        pval_flags: list[str] = []
         for flag in rec.flags():
             disposition, reason = flagmap.disposition(flag)
             if disposition == "value":
                 if flag in flagmap.value_pval:
-                    if pval:
-                        values.append(f"{flagmap.value_pval[flag]}[{pval}]")
+                    if pval_expr:
+                        values.append(
+                            f"{flagmap.value_pval[flag]}[{pval_expr}]")
+                        pval_flags.append(flagmap.value_pval[flag])
                     else:
                         item.flag_dispositions.append((
                             flag, "manual",
@@ -1056,6 +1098,48 @@ def cmd_egos(args) -> int:
             entry.pairs.append(("slay", slay))
         for curse in dedupe(curses):
             entry.pairs.append(("curse", curse))
+
+        # One roll in Zangband, one per modifier here.
+        #
+        # `o_ptr->pval += randint1(max_pval)` rolls once and the single pval
+        # then answers for every modifier flag the ego carries, so a Pattern
+        # Weapon is +1/+1 or +2/+2 and never +1/+2. 4.2 rolls each modifier
+        # separately (obj-make.c:430), so the pairing cannot be kept. Keeping
+        # the roll and losing the pairing is the smaller error: it holds the
+        # mean, where writing the maximum as a fixed figure overstated every
+        # one of these by half again.
+        if len(pval_flags) > 1 and pval_expr and pval_expr.startswith(
+                ("d", "-d")):
+            item.translations.append(
+                "one Zangband pval drives %s; 4.2 rolls each separately, so "
+                "they no longer move together" % " and ".join(pval_flags))
+
+        # What `L:USE:` does, as one of 4.2's named activations.
+        #
+        # objflagmap.toml records ACTIVATE as "handled separately via act:/
+        # time:" -- and nothing here handled it. `(Trump Weapon)` shipped with
+        # the random-teleportation curse its TELEPORT flag earns and none of
+        # the deliberate teleport its Lua grants, which is the drawback
+        # without the item. Same USE-only rule as the artifacts (BAL-08): a
+        # MAKE or DESC hook calls the same primitives an activation would.
+        script = "\n".join(
+            line.partition(":")[2]
+            for line in rec.all("L")
+            if line.startswith("USE:"))
+        if script.strip():
+            activation, note = art.match_activation(script)
+            if activation:
+                entry.set("act", activation)
+                item.fields["act"] = rules.Value(
+                    activation, "CNT-06", rules.CONVERTED, note)
+                timeout = art.match_timeout(script)
+                if timeout:
+                    entry.set("time", timeout)
+            else:
+                item.flag_dispositions.append((
+                    "L:USE", "manual",
+                    "carries Lua that no 4.2 activation matches, so the ego "
+                    "is imported without one"))
 
         # CNT-16: 4.2 generates random abilities itself, given the kind flags.
         rand = flagmap.rand_ability.get(rec.name)
@@ -1103,18 +1187,44 @@ def cmd_egos(args) -> int:
     report_path.write_text(report.render(), encoding="utf-8")
     print(f"report:  {report_path.relative_to(ROOT)}")
 
+    preamble = (
+        "# ego_item.zangband.txt — generated by tools/zconv. "
+        "Do not hand-edit.\n"
+        "# Hand-tuned values belong in tools/zconv/overrides.toml "
+        "(BAL-12).\n"
+        f"# Source: {source_of(ZANGBAND / 'e_info.txt')}\n"
+    )
+
+    if args.check:
+        # Does the committed file still say what this converter produces?
+        #
+        # The three things this caught on the day it was added were all of one
+        # shape: an ego that parses, generates and reads like an ego, while a
+        # property it is supposed to have is quietly missing. `of Sharpness`
+        # had lost its digging, `(Trump Weapon)` its activation, and four egos
+        # granted their maximum modifier where Zangband rolled for it.
+        made = aformat.render(entries, preamble=preamble)
+        have = (GAMEDATA / "ego_item.zangband.txt").read_text(encoding="utf-8")
+
+        if made != have:
+            import difflib
+
+            print("ego data check")
+            print("=" * 72)
+            for line in list(difflib.unified_diff(
+                    have.splitlines(), made.splitlines(),
+                    "lib/gamedata/ego_item.zangband.txt", "converter output",
+                    lineterm=""))[:40]:
+                print("  %s" % line)
+            print()
+            print("  FAILED -- lib/gamedata/ego_item.zangband.txt is not what "
+                  "the converter produces")
+            return 1
+        print("ego data check: lib/gamedata matches the converter")
+
     if args.write:
         data_path = OUTDIR / "ego_item.zangband.txt"
-        aformat.write(
-            str(data_path), entries,
-            preamble=(
-                "# ego_item.zangband.txt — generated by tools/zconv. "
-                "Do not hand-edit.\n"
-                "# Hand-tuned values belong in tools/zconv/overrides.toml "
-                "(BAL-12).\n"
-                f"# Source: {source_of(ZANGBAND / 'e_info.txt')}\n"
-            ),
-        )
+        aformat.write(str(data_path), entries, preamble=preamble)
         print(f"data:    {data_path.relative_to(ROOT)}")
     else:
         print("data:    not written (pass --write)")
@@ -1189,6 +1299,40 @@ def zangband_flavours(kind: str) -> list[tuple[str, str]]:
 # writes the same thing as a random expression in the value itself -- `1+M4`
 # is a base of 1 plus an m_bonus roll to 4 -- so the scaling survives the
 # conversion instead of freezing at the ceiling.
+def _ego_roll(value: str) -> str:
+    """A Zangband ego maximum as the 4.2 random value that rolls to it.
+
+    Zangband stores the largest figure an ego may roll and rolls
+    `randint1()` against it every time one is made (object2.c:2215); 4.2
+    stores the expression and calls `randcalc()` (obj-make.c:424). `dN` is
+    therefore the faithful form and a plain `N` is the maximum pretending to
+    be the average.
+
+    Negatives are penalties, not absences: `-dN` parses as a negated random
+    value whose base is shifted to suit, so it yields -1..-N (parser.c:203),
+    which is what `o_ptr->to_h -= randint1(N)` does.
+    """
+    n = int(value) if value.lstrip("-").isdigit() else 0
+    if n > 0:
+        return f"d{n}"
+    if n < 0:
+        return f"-d{-n}"
+    return "0"
+
+
+#: `L:MAKE:` hooks that set an ego's pval from the depth rather than from a
+#: `C:` line. 4.2's `M` is `m_bonus()` by another name, so these translate
+#: exactly rather than approximately.
+_EGO_MAKE_PVAL = [
+    (re.compile(r"object\.pval\s*=\s*m_bonus\((\d+),\s*level\)\s*\+\s*(\d+)"),
+     lambda m: "%s+M%s" % (m.group(2), m.group(1))),
+    (re.compile(r"object\.pval\s*=\s*(\d+)\s*\+\s*m_bonus\((\d+),\s*level\)"),
+     lambda m: "%s+M%s" % (m.group(1), m.group(2))),
+    (re.compile(r"object\.pval\s*=\s*m_bonus\((\d+),\s*level\)"),
+     lambda m: "M%s" % m.group(1)),
+]
+
+
 _MAKE_PVAL = [
     (re.compile(r"object\.pval\s*=\s*(\d+)\s*\+\s*m_bonus\(object\.pval,\s*level\)"),
      lambda m, pval: "%s+M%d" % (m.group(1), pval)),
@@ -2503,6 +2647,8 @@ def main() -> int:
     egos = sub.add_parser("egos", help="convert e_info.txt to 4.2 ego items")
     egos.add_argument("--write", action="store_true",
                       help="write the data file as well as the report")
+    egos.add_argument("--check", action="store_true",
+                      help="fail if lib/gamedata does not match the converter")
 
     objects = sub.add_parser("objects",
                              help="convert k_info.txt to 4.2 object kinds")

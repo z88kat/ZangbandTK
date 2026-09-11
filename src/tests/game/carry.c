@@ -1067,7 +1067,7 @@ static int test_every_pet_left_behind_is_named(void *state) {
 	uint16_t kept = z_info->pet_max_carried;
 	int t, done = 0;
 
-	int named = 0;
+	int named = 0, arrived = 0;
 
 	z_info->pet_max_carried = 1;
 
@@ -1083,14 +1083,30 @@ static int test_every_pet_left_behind_is_named(void *state) {
 		go_down();
 
 		/*
-		 * Two of the three stayed, and each is named by its own name --
-		 * whatever kept it. The reason wording differs (the cap, no room, a
-		 * refusal) and this test is about the *names*; which reason is which
-		 * is `refusing-and-not-fitting-say-different-things`.
+		 * Each pet that stayed is named by its own name -- whatever kept it.
+		 * The reason wording differs (the cap, no room, a refusal) and this
+		 * test is about the *names*; which reason is which is
+		 * `refusing-and-not-fitting-say-different-things`.
 		 */
 		named += (said_since("soldier", before) > 0) ? 1 : 0;
 		named += (said_since("kobold", before) > 0) ? 1 : 0;
 		named += (said_since("cutpurse", before) > 0) ? 1 : 0;
+
+		/*
+		 * How many actually stayed, rather than how many the cap implies.
+		 *
+		 * This asserted `named == 2` on the reasoning that a cap of one leaves
+		 * two of three. The cap is not the only way to stay: the one-in-twenty
+		 * leave roll can take the pet that would have been carried, and then
+		 * all three are left and all three are named -- correctly. The suite
+		 * draws a fresh seed per run, so the test was one unlucky roll from
+		 * red on any night, and it went red on the night an unrelated data
+		 * change shifted the stream by one draw.
+		 *
+		 * Counting the survivors asks what the test is named for: every pet
+		 * left behind is named, and no pet that came with you is.
+		 */
+		arrived = count_side(MON_ALLEGIANCE_PET);
 		done = 1;
 	}
 
@@ -1103,7 +1119,8 @@ static int test_every_pet_left_behind_is_named(void *state) {
 	z_info->pet_max_carried = kept;
 
 	require(done);
-	eq(named, 2);
+	eq(named, 3 - arrived);
+	require(named >= 2);
 
 	ok;
 }
