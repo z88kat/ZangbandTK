@@ -45,6 +45,34 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Two egos get the half of themselves that was missing — 11 September 2026
+-------------------------------------------------------------------------
+
+- **3.117.1** — **The object-side BAL-08 sweep, first stage: ego items.** Three
+  faults, all of the same kind — the item parses, generates, and reads like an
+  ego while a property it is meant to have is quietly absent.
+
+  **A Sword of Sharpness now digs.** Zangband gives it VORPAL and TUNNEL
+  together, and the size of the digging bonus is not on the line the converter
+  read: it is computed at creation from the depth, in a hook. With no size, the
+  flag was filed under "modifier with no value" and dropped. It is +1 near the
+  surface and up to +6 deep, which is what the original gives.
+
+  **A Trump Weapon can be activated again.** Its Lua teleports the wielder on a
+  50–100 turn timer, and its separate random-teleportation flag is the drawback
+  that power pays for. Only the drawback had been imported. The flag table said
+  activations were "handled separately"; nothing handled them.
+
+  **Four egos rolled for their bonus and were shipping the best case.** A
+  Lantern of Vision gave +6 searching where Zangband averages +3.5. The Pattern
+  Weapon's +STR and +CON no longer move together, which Zangband's single value
+  made them do — 4.2 has no way to say it, and holding the average matters more.
+
+  Also: the eleven artifacts that had lost their activations, and the Amulet of
+  Hunger that had invented one, from earlier the same day. A ``--check`` pass now
+  compares the committed ego and artifact data against what the converter
+  produces, so the next one of these fails a build instead of shipping.
+
 The nightly says why a run stopped — 10 September 2026
 ------------------------------------------------------
 

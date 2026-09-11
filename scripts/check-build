@@ -223,6 +223,10 @@ run "$PYTHON" tools/zconv/zconv.py realms --check
 # converters still have no --check and want one.
 echo "check-build: checking the mutation data ($PYTHON zconv mutations --check)"
 run "$PYTHON" tools/zconv/zconv.py mutations --check
+echo "check-build: checking the artifact data ($PYTHON zconv artifacts --check)"
+run "$PYTHON" tools/zconv/zconv.py artifacts --check
+echo "check-build: checking the ego data ($PYTHON zconv egos --check)"
+run "$PYTHON" tools/zconv/zconv.py egos --check
 
 # The borrowed monster tiles, which nothing was checking.
 #

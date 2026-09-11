@@ -36,6 +36,8 @@ cost:30000
 alloc:2:105 to 127
 flags:TELEPATHY
 values:STR[4] | INT[4] | DEX[4] | SPEED[4] | STEALTH[4] | RES_FIRE[1] | RES_COLD[1] | RES_ACID[1] | RES_ELEC[1] | RES_POIS[1]
+act:MISSILE
+time:250+d250
 desc:An artifact of Zangband.
 
 name:of the Thaumaturgist
@@ -74,6 +76,8 @@ alloc:33:70 to 127
 attack:2d4:-2:0
 armor:15:40
 values:STR[4] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_DARK[1] | RES_DISEN[1]
+act:BANISHMENT
+time:500
 desc:An artifact of Zangband.
 
 name:of Command
@@ -190,6 +194,8 @@ attack:0d0:0:0
 armor:1:20
 flags:SUST_STR | SLOW_DIGEST
 values:STR[1] | CON[1]
+act:SATISFY
+time:100
 desc:An artifact of Zangband.
 
 name:'Thief's Shadow'
@@ -202,6 +208,8 @@ attack:0d0:0:0
 armor:1:4
 flags:EASY_ENCHANT
 values:DEX[2] | STEALTH[2] | RES_LIGHT[1]
+act:SLEEP_ALL
+time:55
 desc:An artifact of Zangband.
 
 name:of the Alchemist
@@ -484,6 +492,8 @@ slay:EVIL_2
 slay:DEMON_3
 slay:UNDEAD_3
 slay:DRAGON_3
+act:STONE_TO_MUD
+time:5
 desc:An artifact of Zangband.
 
 name:of Hagen
@@ -612,6 +622,8 @@ alloc:4:80 to 127
 attack:0d0:10:14
 armor:0:0
 values:SPEED[10] | RES_FIRE[1] | MIGHT[10]
+act:FIREBRAND
+time:999
 desc:An artifact of Zangband.
 
 name:of Marksmanship
@@ -675,7 +687,6 @@ armor:0:0
 flags:PROT_FEAR | VAMPIRIC
 values:RES_FIRE[1] | RES_COLD[1] | RES_CHAOS[1] | STR[3]
 slay:ANIMAL_2
-act:CURE_SERIOUS
 desc:An artifact of Zangband.
 
 name:of the Miser

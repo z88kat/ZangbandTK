@@ -143,6 +143,26 @@ ACTIVATION_PATTERNS: list[tuple[str, str, str]] = [
     (r"inc_shero\(", "BERSERKER", "inc_shero -> berserk strength"),
     (r"inc_hero\(", "HERO", "inc_hero"),
     (r"inc_blessed\(", "BLESSING", "inc_blessed"),
+
+    # Six the table did not reach (BAL-08, CNT-06). Each was a USE hook whose
+    # primitive had no entry here, so `match_activation()` returned None and
+    # the artifact imported with no activation at all -- silently, because an
+    # artifact without one is a legal artifact.
+    (r"genocide\(", "BANISHMENT",
+     "genocide -> banish a monster type"),
+    (r"create_food\(", "SATISFY",
+     "create_food -> satisfy hunger; 4.2 feeds rather than conjuring"),
+    (r"sleep_monsters_touch\(", "SLEEP_ALL",
+     "sleep_monsters_touch -> sleep; 4.2 has no touch-range form, so this is "
+     "line of sight where the original was adjacent"),
+    (r"wall_to_mud\(", "STONE_TO_MUD",
+     "wall_to_mud"),
+    (r"brand_bolts\(", "FIREBRAND",
+     "brand_bolts -> brand ammunition with fire; Zangband brands bolts only, "
+     "4.2 brands whatever is in the quiver"),
+    (r"fire_ball\(\s*GF_MISSILE", "MISSILE",
+     "fire_ball(GF_MISSILE) -> 4.2's magic missile, which is a bolt: the ball "
+     "radius is not representable in the named vocabulary"),
     (r"inc_protevil\(", "PROTEVIL", "inc_protevil"),
     (r"inc_oppose_fire\(", "RESIST_FIRE", "inc_oppose_fire"),
     (r"inc_oppose_cold\(", "RESIST_COLD", "inc_oppose_cold"),
