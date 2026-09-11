@@ -1,12 +1,15 @@
 # Phase 3 — The Tcl/Tk Front End
 
-**Status:** draft · **Phase:** 3 · **Inputs:** [decisions.md](decisions.md) (DEC-12, DEC-13,
-DEC-14, DEC-21, DEC-22), [phase2-development-plan.md](phase2-development-plan.md) §5,
+**Status:** T0 in progress · **Phase:** 3 · **Inputs:** [decisions.md](decisions.md)
+(DEC-12, DEC-13, DEC-14, DEC-21, DEC-22),
+[phase2-development-plan.md](phase2-development-plan.md) §5,
 [phase3-observations.md](phase3-observations.md), and the archive survey in §1 below.
 
-The terminal build does not go away. ZangbandTK/Tk is an **additional front end** —
-`main-tcl.c` alongside `main-gcu.c` and `main-sdl2.c` — that adds menus, panels and tiles
-over the same game core. Every gameplay decision in Phase 1 and 2 stands unchanged.
+The terminal build does not go away, and neither does the Cocoa one. ZangbandTK/Tk is an
+**additional front end** — `main-tcl.c` alongside `main-gcu.c` and `main-sdl2.c` — that adds
+menus, panels and tiles over the same game core, and ships as a second macOS application
+rather than a replacement for the one people play now (§6 decision 14). Every gameplay
+decision in Phase 1 and 2 stands unchanged.
 
 ---
 
@@ -21,8 +24,8 @@ Everything in this table was measured on this Mac today, not inferred:
 
 | Question | Answer | Evidence |
 |---|---|---|
-| Does Tcl 9.0.4 build here? | **Yes** — `libtcl9.0.dylib`, `tclsh9.0`, `arm64`, zipfs present | built from [archive/tcl9.0.4/](../../archive/tcl9.0.4/) |
-| Does Tk 9.0.4 build here, without X11? | **Yes** — `libtcl9tk9.0.dylib`, `wish`, Aqua (`MAC_OSX_TK=1`), `arm64` | built from [archive/tk9.0.4/](../../archive/tk9.0.4/) with `--enable-aqua` |
+| Does Tcl 9.0.4 build here? | **Yes** — `libtcl9.0.dylib`, `tclsh9.0`, `arm64`, zipfs present | [scripts/build-tcltk](../../scripts/build-tcltk), from [tcltk/](../../tcltk/) |
+| Does Tk 9.0.4 build here, without X11? | **Yes** — `libtcl9tk9.0.dylib`, `wish9.0`, Aqua (Cocoa/Carbon/QuartzCore, no X11), `arm64` | the same script, `--enable-aqua` |
 | Does the original front-end C survive complete? | **Yes** — 49,285 lines of bridge + 16,514 lines of widget library + 121 Tcl scripts, plus every image asset | §1 |
 | Can we ship the original sounds? | **No** — 208 wav files survive, but they are personal-use-only material. 4.2's own pack replaces them | §1.4 |
 | Does that C compile against Tk 9? | **Not as-is — but it converges fast.** 759 errors → **253** after a three-rule mechanical sweep, and **203 of those 253 sit in two files** | §2.2 |
@@ -226,7 +229,7 @@ screenshots**.
 | `options.txt` | 29 KB | Option reference |
 | `contents`, `contents-zkb`, `help-index` | 14 KB | The help tree (see below) |
 | `performance.html`, `files.html`, `about.html`, `original.html` | 6 KB | Author's notes, including his own performance advice |
-| `msgs/` | 34 catalogues | **English *and* Japanese**, `en.msg` + `ja.msg` per area |
+| `msgs/` | 34 catalogues | **English *and* Japanese**, `en.msg` + `ja.msg` per area. Not carried forward — §6 decision 11 |
 
 #### What `interface.html` pins down
 
@@ -313,26 +316,43 @@ and neither is needed.
 
 ## 2. Verified build facts
 
-### 2.1 Tcl/Tk 9.0.4 on Apple Silicon — confirmed, with two bootstrap traps
+### 2.1 Tcl/Tk 9.0.4 on Apple Silicon — built, and now reproducible on demand
 
-DEC-13 holds. Both built and installed clean from the in-tree sources, Tk with
-`--enable-aqua` so there is no XQuartz dependency. Two ordering traps, and the build script
-must encode both:
+DEC-13 holds, and **T0's first deliverable is done**:
+[scripts/build-tcltk](../../scripts/build-tcltk) builds both from the sources vendored in
+[tcltk/](../../tcltk/) into `tcltk/local`, in about two minutes on this Mac. Result, 11 Sep:
+
+| | |
+|---|---|
+| `libtcl9.0.dylib`, `libtcl9tk9.0.dylib` | `arm64`, both |
+| `tclsh9.0`, `wish9.0` | run; `zipfs root` answers `//zipfs:/` |
+| Windowing system | **Aqua** — `wish9.0` links Cocoa, Carbon and QuartzCore, and no X11 at all |
+| Private headers | `tclInt.h` and `tkInt.h` installed, which §2.2's port requires |
+| Prefix | project-local, gitignored; no system Tcl is touched or needed |
+
+**Both bootstrap traps are avoided by construction rather than worked around**, which is
+worth recording because the workaround was the plan:
 
 1. **The one DEC-13 records.** Tcl's `configure-packages` step runs the freshly built
    `tclsh`, which is linked against its *install* path. On a clean tree that dylib does not
    exist yet, so the step dies with "cannot find a usable native Tcl 9 tclsh" although the
-   core compiled fine. Reproduced exactly. `make install` then `make` again clears it.
+   core compiled fine.
 
-2. **A second one, not yet recorded.** After that, the bundled `thread3.0.6` package fails
-   its zip step (`cp: libthread.vfs/thread_library/ttrace.tcl: No such file or directory`)
-   on an out-of-tree build. The Tcl **core** is unaffected and installs fine — only the
-   bundled extras break.
+2. **A second one, found while writing this.** The bundled `thread3.0.6` package fails its
+   zip step (`cp: libthread.vfs/thread_library/ttrace.tcl: No such file or directory`) on
+   an out-of-tree build. The Tcl **core** is unaffected — only the bundled extras break.
 
-   ZangbandTK needs none of the bundled packages (thread, sqlite, itcl, tdbc). The build
-   script should skip them rather than work around them. Do **not** reach for
-   `--disable-zipfs`: zipfs is worth keeping, because it is how ~108,000 lines of Tcl get
-   packaged inside the executable instead of shipped as a loose directory.
+Both live in the `packages` step, and ZangbandTK needs none of the four bundled packages
+(thread, sqlite, itcl, tdbc). Building `binaries libraries` rather than the default `all`
+skips that step entirely, so neither trap fires. Do **not** reach for `--disable-zipfs`:
+zipfs is worth keeping, because it is how the front end's Tcl gets packaged inside the
+executable instead of shipped as a loose directory.
+
+The third trap is new and cost nothing only because the script now encodes it: **`make
+install` does not install `tkInt.h`.** The port's riskiest files reach into it (§2.2), and
+without `install-private-headers` for both Tcl and Tk the front end compiles against the
+source tree here and nowhere else — a failure that would first appear in CI, on a machine
+where nobody could see the source tree at all.
 
 ### 2.2 The port measured, not guessed
 
@@ -383,16 +403,11 @@ having — is nearly clean. 35 errors across eight files is a day's work, not a 
 
 ## 3. Architecture
 
-> ⚠️ **This section needs revision.** §3.2 models the bridge as 190 accessor commands with
-> Tcl reading game state — the *original's* model, which it was forced into because it could
-> only synthesise keystrokes. 4.2 has **eighteen replaceable front-end hooks**
-> ([game-input.h:42](../../src/game-input.h#L42)) — `get_item_hook`,
-> `get_spell_from_book_hook`, `view_abilities_hook`, `get_point_hook`, `get_quantity_hook`,
-> `get_check_hook` and more — plus a typed command queue. Together they cover both
-> directions without keystroke synthesis, and they are the seam the original never had.
-> **T3 should be rebuilt around hooks rather than accessors, and the bridge estimate probably
-> falls.** See [OBS-45](phase3-observations.md). Top item for the next session.
-
+*Rewritten 11 Sep 2026. The previous version modelled the bridge as 190 accessor commands
+with Tcl reading game state and replying in keystrokes — the original's model, which it was
+forced into because 2.4.0 offered nothing else. 4.2 offers three more seams, and two of them
+retire whole command families outright. Everything below is checked against the tree rather
+than inferred from the archive.*
 
 ### 3.1 What the original actually looked like
 
@@ -418,7 +433,70 @@ toplevel**. The original mixed native widgets and term windows freely, and shipp
 term-rendered screens wherever a native widget was not worth building. That is licence to
 do the same, and it is what makes T1 useful on its own.
 
-### 3.2 The two halves, and why the split matters for sequencing
+### 3.2 The four seams
+
+The original bridge had **one** seam and everything followed from it: Tcl read game state
+through accessor commands, and pushed keystrokes back. That is why there are 190 commands,
+why `angband keypress` is the second most-used family in the whole script tree, and why
+`inkey_flags` exists at all — with only keystrokes to reply with, Tcl had to *infer* what
+the game was currently asking before it could answer.
+
+4.2 has four seams. Three of them did not exist in 2001, and two of those retire a command
+family outright:
+
+| Direction | 4.2's seam | Retires | Verified at |
+|---|---|---|---|
+| **UI drives the game** | the typed command queue — `cmdq_push()` plus `cmd_set_arg_item / _direction / _point / _number / _string / _choice / _target` | `angband keypress` synthesis | [cmd-core.h:317-383](../../src/cmd-core.h#L317) |
+| **Game says something changed** | `event_add_handler()` / `event_add_handler_set()` over **66** event types | `qebind`'s game-coupled half | [game-event.h:29](../../src/game-event.h#L29), [:211](../../src/game-event.h#L211) |
+| **Game asks the UI a question** | **17 input hooks** — `get_item_hook`, `get_spell_from_book_hook`, `get_point_hook`, `get_quantity_hook`, `get_check_hook`, `view_abilities_hook` and the rest | `inkey_flags` inference | [game-input.h](../../src/game-input.h), installed at [ui-input.c:1788](../../src/ui-input.c#L1788) |
+| **UI reads state to draw** | nothing — this is the bridge we write | — | — |
+
+**What this changes, concretely.** `keypress` (32 scripts) and `inkey_flags` (18) are the
+two largest families after `player`, and between them they are the *whole* of the old
+input model. Both are replaced by API that already exists and is already typed: the front
+end pushes a `CMD_DROP` carrying an object pointer rather than synthesising `d` and then
+guessing which prompt arrived. A hook is *called with* its context and *returns* an answer,
+so there is nothing to infer.
+
+**What this does not change.** The fourth row is empty on 4.2's side, and it is the bulk.
+Drawing the Misc panel means reading `player`; the Micro Map means reading `cave`; Recall
+means reading `monster_race`, `object_kind` and `artifact`; the paper doll means reading
+`player->body`. No hook and no event hands you that — every one of those is an accessor we
+write. So the honest revision is not "the bridge collapses":
+
+- The **driving and prompting third** of the old surface is replaced by existing API.
+- The **reading two-thirds** is unchanged in size, and is still keyed to structures that
+  have been renamed and reshaped since 2.4.0 — the 774 `p_ptr->` references are all in
+  this part.
+
+§4's ~24,800-line rewrite estimate should be re-scoped on that basis: `interp1.c` and
+`interp2.c` are where the saving falls, and it is a saving in the third of the bridge that
+was going to be the fiddliest, not in the two-thirds that is merely long.
+
+> **The trap in the third row, and it is the important one.** The hooks belong to the
+> *text UI*, not to the front end. [`textui_init()`](../../src/ui-init.c#L44) calls
+> `textui_input_init()`, which installs all seventeen, and `main.c` calls it at
+> [line 565](../../src/main.c#L565) — before `play_game()`. So `main-tcl.c` links the whole
+> text UI and overrides hooks *after* that call, one at a time.
+>
+> That is exactly the property that makes T1 → T7 incremental: **each native dialog is one
+> hook reassignment**, and everything not yet converted keeps working because the term
+> implementation is still underneath it. It is also what makes the milestone boundaries
+> real rather than administrative.
+>
+> The caution: **nothing in the tree overrides an input hook today.** `main-gcu.c`,
+> `main-sdl2.c` and `main-win.c` all set *term* hooks and take textui's input hooks as they
+> come. The seam is real, it is declared, and it is unexercised — T3 is its first consumer,
+> so budget for finding its rough edges rather than assuming a clean fit.
+
+**The menu bar falls out of the same tree.** [`struct cmd_info`](../../src/ui-input.h#L44)
+carries `desc`, `key[2]`, a `cmd_code`, a `hook` and a `prereq` predicate, and
+[`cmds_all[]`](../../src/ui-game.c#L386) groups those into named lists. Label, accelerator,
+action and enable-state for every command in the game, already declarative. Commands with a
+real `cmd_code` go to the queue; commands with `CMD_NULL` and a `hook` are UI actions the
+front end calls directly. T7 needs no leaf data of its own.
+
+### 3.3 Three tiers, and what feeds each
 
 DEC-14 settles the model: `main-tcl.c` is a term backend, the game keeps its main loop.
 That gets you part of the UI. **Three tiers, not two** — the middle one is invisible from
@@ -427,42 +505,43 @@ screenshots and is where the original did its best work ([OBS-15](phase3-observa
 | Tier | Fed by | Gets you |
 |---|---|---|
 | **Term windows** | 4.2's existing `ui-term.c` hooks — `Term_text`, `Term_pict`, `Term_curs`, `Term_xtra` | The map and messages, and any full-screen display we choose not to rebuild |
-| **Canvas text laid out as a terminal** | the bridge, drawn as canvas items | Character Info (1,170 lines), the flags table (673), the Misc panel. *Looks* classic; is addressable, localisable and clickable — which is how the Misc window's `EXP` and `AC` labels toggle on click |
-| **Native widgets** | 190 C accessor commands reading game state directly | Micro Map, Progress, Recall, Choice — and the menus |
+| **Canvas text laid out as a terminal** | read accessors, drawn as canvas items | Character Info (1,170 lines), the flags table (673), the Misc panel. *Looks* classic; is addressable and clickable — which is how the Misc window's `EXP` and `AC` labels toggle on click |
+| **Native widgets** | all four seams — accessors to draw, events to know when to redraw, hooks to answer prompts, the queue to act | Micro Map, Progress, Recall, Choice — and the menus |
 
 The middle tier matters because it dissolves a false choice. A player who reads the classic
 sheet fluently loses nothing by it being a canvas, and gains hover, colour and click. Reach
-for it wherever the classic layout *is* the right layout.
+for it wherever the classic layout *is* the right layout — bounded by §6 decision 9, which
+makes native the default and this the argued exception.
 
-The 190 commands are the work. They form a hierarchical surface — `angband player`,
-`angband cave`, `angband inventory`, `angband r_info info`, `angband keypress` — whose
-leaves are direct accessors onto 2.9.2/2.4.0-era structures: `object_kind`, `monster_race`,
-`monster_type`, `feature_type`, `artifact_type`. Every one exists in 4.2 under a different
-name and shape, and the bridge carries **774** `p_ptr->` references into a `player` struct
-that has since been restructured.
+Measured demand per command family, as script count. Read it now as **two lists, not one**:
 
-Measured demand per command family, as script count — this is the sequencing input, because
-each family unlocks a specific set of scripts:
-
-| Family | Scripts | Family | Scripts |
+| Replaced by a 4.2 seam | Scripts | Still ours to write | Scripts |
 |---|---:|---|---:|
-| `player` | 36 | `game` | 10 |
-| `keypress` | 32 | `system` | 10 |
-| `inkey_flags` | 18 | `o_list` | 8 |
-| `r_info` | 11 | `info` | 8 |
-| `k_info` | 10 | `setting` | 7 |
-| `inventory` | 10 | `cave` | 7 |
-| `sound` | 9 | `spell` / `mindcraft` | 6 each |
-| `store` | 5 | `m_list` / `power` / `equipment` / `keymap` | 5 each |
+| `keypress` → command queue | 32 | `player` | 36 |
+| `inkey_flags` → input hooks | 18 | `r_info` | 11 |
+| `sound` → `sound-core.c` (§4) | 9 | `k_info` / `inventory` | 10 each |
+| `setting` → 4.2's option table | 7 | `o_list` / `info` | 8 each |
+| `keymap` → 4.2's keymap API | 5 | `cave` | 7 |
+| | | `spell` / `mindcraft` | 6 each |
+| | | `store` / `m_list` / `power` / `equipment` | 5 each |
+| | | `game` / `system` | 10 each |
 
-**The rule this sets: keep the old command names wherever 4.2 has an equivalent concept.**
-It is the single highest-leverage decision in Phase 3 — it is what turns 108,000 lines of
-Tcl from a rewrite into an adaptation. Where 4.2's concept genuinely differs, rename
-deliberately and fix the scripts; never rename for taste.
+**The rule this sets, and it applies to the right-hand column: keep the old command names
+wherever 4.2 has an equivalent concept.** It is the single highest-leverage decision in
+Phase 3 — it is what turns 108,000 lines of Tcl from a rewrite into an adaptation. Where
+4.2's concept genuinely differs, rename deliberately and fix the scripts; never rename for
+taste. The left-hand column is exempt: those scripts change no matter what they are called,
+because what they *do* is being replaced.
+
+**`qebind` splits along the same line.** §4 budgets `qebind-dll.c` in the Port column, and
+that is still right for its Tcl-facing half — the machinery by which a script says "call me
+when this changes" is genuinely game-agnostic and worth having. Its game-facing half, the
+event *sources*, is replaced by one C shim that turns `event_add_handler` callbacks into
+qebind events. Port the binder, drop the sources.
 
 ---
 
-### 3.3 What the original UI assumed about the world — and why that matters here
+### 3.4 What the original UI assumed about the world — and why that matters here
 
 Playing the original raises a fair question: the vault editor and the `.vlt` files look like
 evidence of a hand-authored world. They are, and the evidence is stronger than the vault
@@ -527,7 +606,7 @@ towns' names. Check them against DEC-01's Amber target before adopting them whol
 
 | Verdict | What | Lines | Note |
 |---|---|---:|---|
-| **Port** | `icon1/2.c`, `icon-dll.c` (tile engine), `map-dll.c`, `qebind-dll.c`, `struct-dll.c`, `util-dll.c`, `cmdinfo-dll.c`, `plat*.c` | ~12,000 | Game-agnostic. 35 compile errors between them. The real prize. |
+| **Port** | `icon1/2.c`, `icon-dll.c` (tile engine), `map-dll.c`, `qebind-dll.c`, `struct-dll.c`, `util-dll.c`, `cmdinfo-dll.c`, `plat*.c` | ~12,000 | Game-agnostic. 35 compile errors between them. The real prize. `qebind-dll.c` is the one exception: port its binder, drop its event sources for `game-event.h` (§3.3). |
 | **Port, with the risk** | `widget1/2-dll.c`, `canv-widget.c`, `widget.c`, `TclTk-dll.c` | ~8,000 | Private-header widgets. 203 of the 253 remaining errors. |
 | **Rewrite against 4.2** | `interp1.c`, `interp2.c`, `struct.c`, `town.c`, `describe.c`, `r_info.c`, `birth-tnb.c`, `wor-z.c`, `file_character.c`, `main-tnb.c` | ~24,800 | The bulk of Phase 3. |
 | **Drop** | see below | ~10,000 | |
@@ -569,20 +648,44 @@ towns' names. Check them against DEC-01's Amber target before adopting them whol
 Each ends with something runnable. T1 is the one to aim at before deciding anything else.
 
 ### T0 — Build foundation
-*No visible change.*
+*No visible change. Everything here is cheap now and expensive to retrofit, which is the
+only reason any of it is in the first milestone.*
 
-- `scripts/build-tcltk` — builds Tcl 9.0.4 then Tk 9.0.4 (Aqua) from `archive/`, encoding
-  both bootstrap traps from §2.1 and skipping bundled packages.
+- ✅ **`scripts/build-tcltk`** — done, 11 Sep. Builds both from `tcltk/` into `tcltk/local`
+  in about two minutes; see §2.1 for what it verifies and the three traps it encodes.
 - `src/cmake/macros/TCL_Frontend.cmake` + `SUPPORT_TCL_FRONTEND` option, defaulting **OFF**,
-  matching the existing front-end modules.
+  matching the existing front-end modules, plus `TCLTK_PREFIX` pointing at what the script
+  installed.
 - `src/main-tcl.c` from [main-xxx.c](../../src/main-xxx.c): embeds the interpreter, opens one
   toplevel, registers nothing.
 - Vendor the ported widget library under `src/tcl/`, with copyright headers intact.
 - Apply the §2.2 mechanical sweep as **one reviewable commit**, separate from every
   hand-fix that follows. It touches every file and must not hide real changes.
 
-**Exit:** `cmake -DSUPPORT_TCL_FRONTEND=ON` builds; an empty Tk window opens and closes
-cleanly. Terminal builds unaffected — CI stays green per DEC-21.
+Four more, each moved here from a later milestone because doing it later means doing it
+twice — see §6 decisions 11–13:
+
+- **`ANGBAND_DIR_TCL` and one loader.** The scripts live in `lib/tcl/`, and the path is
+  built beside the other thirteen at [init.c:355](../../src/init.c#L355). Everything that
+  reads a script goes through one function, so a dev build can point at the source tree and
+  a release build at zipfs without a single `source` path changing. Deciding this at T9,
+  when there are 121 scripts, means editing 121 scripts.
+- **A minimal `ZangbandTclTK.app` bundle**, with its own identifier — a second application
+  beside the Cocoa one, never a replacement for it (§6 decision 14). Unbundled Tk on Aqua
+  opens a window, but the application menu, Dock identity, activation and the native file
+  dialogs all behave differently from a bundled app — and T7 commits to the application menu
+  and ⌘-accelerators specifically ([OBS-42](phase3-observations.md)). An `Info.plist`
+  wrapper now means every milestone from T1 on is tested in the shape it ships in, rather
+  than discovering at T7 that the shape was wrong all along.
+- **`.github/workflows/tk.yaml`.** macOS only to begin with (§6 decision 13), building the
+  toolchain and then the front end. Cache `tcltk/local` keyed on a hash of `tcltk/` so the
+  two-minute toolchain build happens once rather than per push.
+- **The test harness skeleton**, per §9 — `tcltest` wired up and running zero tests, so that
+  the first test written has somewhere to go.
+
+**Exit:** `cmake -DSUPPORT_TCL_FRONTEND=ON -DTCLTK_PREFIX=…` builds; a bundled
+`ZangbandTK.app` opens an empty Tk window and closes cleanly; the macOS Tk workflow is
+green. Terminal builds unaffected — the other thirteen workflows stay green per DEC-21.
 
 ---
 
@@ -656,21 +759,40 @@ corridor.
 ### T3 — The bridge spine
 *No new UI. Everything after this depends on it.*
 
-The families every script assumes: `keypress` (32 scripts), `inkey_flags` (18), `game`,
-`system`, `setting`, `message`. Plus the `struct` accessor machinery and `qebind`, which is
-how Tcl learns that game state changed.
+**Build all four seams from §3.2 before any of the read accessors.** They are what every
+later milestone is written against, and three of the four are thin wrappers over API that
+already exists:
 
-- **Expose 4.2's command table** — [ui-game.c:388](../../src/ui-game.c#L388)'s named groups,
-  each command's label and keys, `cmd_lookup_key()` for the *live* binding, and the prereq
-  predicates. This is what lets T7 generate the menu bar instead of hand-authoring it
-  ([OBS-17](phase3-observations.md)).
+- **Down — the command queue.** One Tcl command that takes a `cmd_code` and named typed
+  arguments, over `cmdq_push()` and the seven `cmd_set_arg_*` setters. Not keystrokes:
+  ZangbandTK/Tk should never synthesise a keypress to make the game do something.
+- **Up — game events.** One C shim registering `event_add_handler` across the 66 event
+  types and re-emitting each as a qebind event a script can bind to (§3.3). Written once,
+  covers every window that has to redraw when something changes.
+- **Sideways — the input hooks.** The override mechanism, plus the discipline that goes
+  with it: every hook starts as textui's, and each native dialog later replaces exactly one
+  of them. Get the override point right — after
+  [`textui_init()`](../../src/ui-init.c#L44), before `play_game()` — and T4–T8 become
+  independent of each other.
+- **Reads — the `struct` accessor machinery**, and then only the families those milestones
+  need, in the order they need them.
 
-- Establish the naming rule from §3.2 as a **written map**: old command → 4.2 concept →
-  kept, renamed, or dropped. This document is the deliverable, and it is what makes T4–T8
-  estimable.
+Plus:
 
-**Exit:** Tcl can inject keys, read input context, observe game events, and read and write
-options. `debug.tcl` and `errorInfo.tcl` work — the debug loop exists before the UI does.
+- **Expose 4.2's command table** — [`cmds_all[]`](../../src/ui-game.c#L386)'s named groups,
+  [`struct cmd_info`](../../src/ui-input.h#L44)'s label, keys, `cmd_code` and prereq
+  predicate, and `cmd_lookup_key()` for the *live* binding. This is what lets T7 generate
+  the menu bar instead of hand-authoring it ([OBS-17](phase3-observations.md)).
+- Establish the naming rule from §3.3 as a **written map**: old command → 4.2 concept →
+  kept, renamed, replaced by a seam, or dropped. This document is the deliverable, and it is
+  what makes T4–T8 estimable. It is also where §3.2's re-scoping gets settled with numbers
+  rather than thirds.
+- **The scripted-session harness** from §9, which the four seams make possible: a test can
+  push a command, wait for an event, and answer a hook without a keyboard or a window.
+
+**Exit:** Tcl can drive the game through the queue, observe the 66 events, answer a prompt
+through an overridden hook, and read and write options. `debug.tcl` and `errorInfo.tcl`
+work — the debug loop exists before the UI does — and one scripted session runs in CI.
 
 ---
 
@@ -906,7 +1028,9 @@ palette — presented as one categorised list, so a dead control is structurally
 and the player never has to know which layer owns a setting
 ([OBS-13](phase3-observations.md), [OBS-34](phase3-observations.md)); keymap UI;
 help via the Sphinx manual (DEC-17), replacing TkHtml and reusing the `.book`/`.page` tree as its index; the 32 startup tips, rewritten for whatever the UI actually ends up doing; Ttk restyling; zipfs packaging of the Tcl into the
-app bundle; and the `.app` build alongside `Makefile.osx`.
+app bundle; and the release `ZangbandTclTK.app`, which by here is T0's minimal bundle grown
+up rather than a new piece of work — shipping *beside* `ZangbandTK.app`, which Phase 3 never
+touches (§6 decision 14), so the download page has to say in a line which is which.
 
 **Exit:** a double-clickable ZangbandTK.app with no external Tcl dependency.
 
@@ -914,9 +1038,9 @@ app bundle; and the `.app` build alongside `Makefile.osx`.
 
 ## 6. Decisions needed
 
-**All ten are settled.** Raw findings from the running original accumulate in
+**All fourteen are settled.** Raw findings from the running original accumulate in
 [phase3-observations.md](phase3-observations.md); the settled rationale for each decision
-follows below. Raw findings from the running original accumulate in [phase3-observations.md](phase3-observations.md).
+follows below.
 
 | # | Question | Recommendation | Blocks |
 |---|---|---|---|
@@ -930,6 +1054,10 @@ follows below. Raw findings from the running original accumulate in [phase3-obse
 | ~~8~~ | ~~What renders the in-game help?~~ | **Settled — Sphinx content, rendered in-app.** See below. | — |
 | ~~9~~ | ~~Term, native, or canvas-styled-classic?~~ | **Settled — native widgets where possible.** See below. | — |
 | ~~10~~ | ~~Release target?~~ | **Settled — macOS, Windows and Linux: whatever Tk supports.** See below. | — |
+| ~~11~~ | ~~Localisation?~~ | **Settled — none. English only.** See below. | — |
+| ~~12~~ | ~~Where do the toolchain, the C and the scripts live?~~ | **Settled — `tcltk/`, `src/tcl/`, `lib/tcl/`.** See below. | — |
+| ~~13~~ | ~~Which platform first?~~ | **Settled — macOS through development; the other two before release.** See below. | — |
+| ~~14~~ | ~~Does the Tk build replace `ZangbandTK.app`?~~ | **Settled — no. Two applications, permanently.** See below. | — |
 
 **Settled — Ttk, themed by platform.** Confirmed by project owner. Tk 9's native widget set
 replaces `tk/library/`'s **10,636 lines** of 1999 megawidgets — `ttk::notebook` for tabbed
@@ -1068,6 +1196,93 @@ shrinks to a volume and on/off control.
 *What it does not rule out:* the symbolic monster-spell and martial-art events. Those are
 names, not indices, and they are the part of the old vocabulary worth having.
 
+**Settled — no localisation. English only.** Confirmed by project owner. The archive ships
+34 message catalogues in English *and* Japanese, and `msgs/` is listed in §1.5 as an asset
+because it is one — but it is an asset for a project with translators, and this one has
+none.
+
+This is a decision that has to be taken at T0 rather than discovered at T9, which is the
+only reason it is worth a paragraph. Every widget from T4 on either routes its strings
+through a catalogue or does not, and retrofitting the first answer across a finished UI
+means touching every string in it. Write English literals; do not wrap them in `msgcat`;
+do not carry `msgs/` forward. The one thing to keep is the *habit* the catalogues enforced —
+no string built by concatenating fragments — because that is good practice regardless and
+it is the part that would make a future translation possible rather than impossible.
+
+**Settled — three homes, and each one follows an existing pattern.** The question is where
+the toolchain, the ported C and the 121 scripts live now that `archive/` is staying
+untracked.
+
+| What | Where | Tracked? | Why there |
+|---|---|---|---|
+| Tcl/Tk 9.0.4 sources | [tcltk/](../../tcltk/) | **Yes** | CI cannot see `archive/`, and a toolchain that exists on one Mac is not a build |
+| What `build-tcltk` produces | `tcltk/build`, `tcltk/local` | No | Reproducible in two minutes; gitignored |
+| Ported widget library and bridge | `src/tcl/` | Yes | It is C we compile, and it sits beside the other front ends |
+| The Tcl UI | `lib/tcl/` | Yes | It is data the game loads at runtime, like `lib/tiles/` and `lib/screens/` |
+
+`lib/tcl/` is the one worth arguing, and the argument is that it buys the whole of 4.2's
+existing path machinery for three lines: a `char *ANGBAND_DIR_TCL` beside the other
+thirteen at [init.h:310](../../src/init.h#L310), its `BUILD_DIRECTORY_PATH` beside the
+others at [init.c:355](../../src/init.c#L355), and its `string_free`. Install rules,
+`SHARED_INSTALL`, `READONLY_INSTALL`, the self-contained build and the packaging scripts
+then all handle it already, because they handle `lib/` subdirectories generically. Putting
+the scripts anywhere else means teaching every one of those about a new kind of thing.
+
+*And `archive/` stays exactly as it is* — gitignored, untracked, the reference copy. Nothing
+is built from it. When the port needs something out of it, that thing is copied into the
+project and tracked, which is what happened to Tcl/Tk on 11 Sep and is the precedent for
+the widget library, the four tile sets in T2, and `grund.snd`'s vocabulary in T9.
+
+**Settled — macOS through development, all three before release.** Confirmed by project
+owner, and it narrows decision 10 rather than reopening it: the *deliverable* is still
+macOS, Windows and Linux. The *sequence* is macOS until the front end is finished, because
+that is the only platform being tested by hand.
+
+*What follows from it:*
+
+- **One CI job at T0, not three.** `tk.yaml` builds macOS. Linux and Windows jobs land when
+  there is something worth keeping green on them — and they will find real breakage when
+  they do, which is the point of adding them before release rather than at it.
+- **Portability stays a coding discipline meanwhile**, per DEC-12's four rules. The `plat`
+  layer gets its macOS backend written and its other two stubbed with `#error`, exactly as
+  the original did — a stub that fails loudly at compile time is honest; a silently wrong
+  fallback is not.
+- **The two accelerator namespaces still get separated at T7** even though only the macOS
+  half is testable, because the separation is a data-structure decision
+  ([OBS-42](phase3-observations.md)) and merging them would be the expensive mistake.
+
+**Settled — two macOS applications, permanently.** Confirmed by project owner: *"we want to
+keep the existing build because this is a different play experience. The TK is a separate
+release … the current version remains, it is built and will always be playable."*
+
+`ZangbandTK.app` — `main-cocoa.c`, built by `gmake -f Makefile.osx`, identifier
+`org.zangbandtk.zangbandtk` — is not a stepping stone to anything and is not deprecated by
+this phase. The Tk front end ships beside it as its own application, provisionally
+**`ZangbandTclTK.app`** with its own bundle identifier; the name is cheap to change up to
+T9 and impossible to change afterwards without orphaning everyone's Dock icon.
+
+*Why this is the better answer, and not merely the owner's answer:* the two are genuinely
+different games to sit down to. One is a terminal the player reads; the other is a menu bar
+they browse. Replacing the first with the second would take something away from the player
+who already prefers it, in exchange for nothing they asked for — and it would put every
+Phase 3 milestone on the critical path of an application that currently works.
+
+*What follows from it:*
+
+- **`Makefile.osx` is never touched by Phase 3.** The Tk build is a cmake target from T0
+  onward, and the two build systems do not meet.
+- **Distinct bundle identifiers**, or the two fight over Launch Services registration,
+  preferences and the icon the Dock shows.
+- **Shared savefiles, deliberately.** Both write `~/.angband/ZangbandTK` — same
+  `ANGBAND_DIR_USER`, same characters, same scores. A character started in the terminal and
+  continued in Tk is a feature, and it is the same relationship the terminal build already
+  has with the Cocoa one. Nothing in the front end may write a savefile the other cannot
+  read.
+- **The release ships both**, which makes the naming decision a user-facing one rather than
+  a build detail: the download page has to say in a line which is which.
+- **DEC-21's "the terminal build stays the reference" gains a second referent.** Any
+  divergence in behaviour between the two applications is a bug in the newer one.
+
 ---
 
 ## 7. Risks
@@ -1075,11 +1290,12 @@ names, not indices, and they are the part of the old vocabulary worth having.
 | Risk | Severity | Handling |
 |---|---|---|
 | **`widget1/2-dll.c` against Tk 9 internals.** 203 of 253 remaining errors; Tk's internals changed substantially since 8.3. | **High** — the one place this could genuinely stall | Timebox it in T0. If it resists, the fallback is a Tk canvas plus Ttk instead of custom canvas items — slower, and **not free**: it means reimplementing the four custom item types (`cursor`, `progressbar`, `text`, `rectangle`), one of which draws the linked cursor in §1.5. Decide by measurement, not by attachment to the original. |
-| **The bridge rewrite is 26,000 lines.** | **High**, but linear and testable | Sequenced by measured script demand (§3.2); each family lands with the scripts it unlocks. Never "rewrite `interp1.c`" as one task. |
+| **The bridge rewrite is the bulk of Phase 3.** Smaller than the 26,000-line estimate now that three of §3.2's four seams already exist, but the read accessors are untouched by that. | **High**, but linear and testable | Build the four seams first (T3), then sequence the accessors by measured script demand (§3.3) so each family lands with the scripts it unlocks. Never "rewrite `interp1.c`" as one task. |
 | **Aqua has no fast blit path.** | Medium | `Tk_PhotoPutBlock` first, measured at actual size. Behind `plat`. |
 | **Phase 2 keeps moving under it.** M7/M9/M10 change races, classes, realms and pets — exactly what T4 and T8 display. | Medium | T8 after M9. T4 reads through accessors, not layouts. |
 | **108,000 lines of unfamiliar Tcl.** | Medium | `debug.tcl` and `errorInfo.tcl` land in T3, before the UI work. Adapt scripts as their command family lands, never speculatively. |
 | **Two front ends diverging.** | Low | The term build stays the reference. No gameplay logic in `src/tcl/` — ever. |
+| **The input hooks are declared but unexercised.** No front end in the tree overrides one; T3 is the first (§3.2). | Medium | Override one hook early — `get_check_hook` is the smallest — and prove the round trip before T7 depends on sixteen more. |
 
 ---
 
@@ -1113,21 +1329,81 @@ names, not indices, and they are the part of the old vocabulary worth having.
 
 Stated plainly, so nothing here reads as more settled than it is:
 
-- **Nothing has been linked.** §2.2 is `-fsyntax-only`. Link errors and runtime behaviour
-  are unmeasured.
-- **No Tcl script has been run** against Tk 9. Tcl 8.3 → 9 changes scripts too (encoding,
-  `Tcl_Size`-driven API surface, removed commands), and 108,000 lines have not been audited.
+- **Nothing has been linked.** §2.2 is `-fsyntax-only`. The toolchain it would link against
+  now exists and is verified (§2.1), but no game object has been built against it, and link
+  errors and runtime behaviour are unmeasured.
+- **The 121 scripts have not been run against Tk 9.** They *have* now been run against their
+  own Tk 8.3.3 — see the box above — but 8.3 → 9 changes scripts too (encoding, the
+  `Tcl_Size`-driven API surface, removed commands), and 108,000 lines are unaudited.
+- **The input hooks are unexercised.** They are declared, and `textui_input_init()` installs
+  them, but no front end in the tree overrides one. T3 is the first (§3.2).
 - **Rendering performance is unmeasured** on the portable blit path. This is the one that
   could change T2's design.
-- **The 190-command surface has not been mapped** to 4.2 concepts. Until T3 produces that
+- **The read-accessor surface has not been mapped** to 4.2 concepts. §3.2 settles which
+  third of the old bridge disappears; it does not size what remains. Until T3 produces that
   map, T4–T8 sizes are informed guesses.
-- **Windows and Linux are untried** for the front end, deliberately, per DEC-21.
+- **Windows and Linux are untried** for the front end, deliberately, per §6 decision 13 —
+  which now says *when* they get tried rather than leaving it open.
 - **The graphics are audited for presence, not for fitness.** Every asset is there and every
   file decodes (§1.3), but no tile has been mapped to a 4.2 index, and nothing has been
   judged at actual size in a running window — which is the only judgement that counts.
-- **The 121 scripts have not been run against Tk 9.** They *have* now been run against
-  their own Tk — see the box below — but Tcl 8.3 → 9 changes scripts too (encoding, the
-  `Tcl_Size`-driven API surface, removed commands), and 108,000 lines are unaudited.
 - **The sound event mapping is sketched, not written.** §1.4 confirms 7 exact name matches
   and 11 obvious truncations; the remaining ~190 symbolic events have not been walked
   against 4.2's list one by one.
+
+---
+
+## 9. How this gets tested
+
+The plan turns `interface.html` into "ten testable statements" (§1.5) and sets T5's and T7's
+exits as *checked against the original running side by side*. That is a person with two
+windows open, and it does not survive being done twenty times.
+
+It should not have to. **This is the most testable front end the project will ever have**,
+and for a reason peculiar to it: the UI is written in a scripting language, and T3 exposes
+the game to that language deliberately. `main-gcu.c` and `main-cocoa.c` can only be driven
+from outside, through a pseudo-terminal, one keystroke at a time — which is exactly what
+[scripts/smoke-tty](../../scripts/smoke-tty) does and why it is 150 lines of pty handling.
+A Tk build can be driven from *inside*, in the same language the UI is written in.
+
+Four layers, cheapest first. Each lands with the milestone that makes it possible.
+
+| Layer | What it asserts | Lands | Runs |
+|---|---|---|---|
+| Toolchain check | The pieces `build-tcltk` installed are the pieces the port needs — private headers, config files, zipfs | ✅ done | Every CI run, first step |
+| `tcltest` unit tests | Individual Tcl procedures: the menu map, the tile lookup, the contents tree, formatting | T0 skeleton, real tests from T4 | Every CI run |
+| Scripted sessions | The game plays: push a command, wait for an event, answer a hook, assert what changed | T3 | Every CI run |
+| Synthesised interaction | The ten mouse rules, the Recall/Choice hand-off, grow-on-hover | T5, T7 | Every CI run if the runner allows a display; otherwise a pre-release gate |
+
+**The scripted session is the one that matters**, and §3.2's four seams are what make it
+possible. A test pushes `CMD_WALK` with a typed direction, waits for `EVENT_PLAYERMOVED`,
+and reads the new grid — no keyboard, no window, no screen scraping. The same harness
+answers prompts by overriding a hook from Tcl, which means a test can play through a store
+purchase or a spell cast without a single synthetic keystroke. `scripts/smoke-tk`, beside
+`smoke-tty` and `borg-smoke`, is the shape: reach the dungeon, assert the map drew, exit
+non-zero with the last state if not.
+
+**Synthesised interaction is Tk's own trick.** `event generate` delivers a real
+`<Button-1>` to a real widget through the real binding, so *"Control-left-click is
+`Alter (+)`"* becomes an assertion rather than a checklist line. Write each of the ten rules
+as one test as its rule is implemented, and T5's exit condition stops being a person with
+two windows open and becomes a suite that stays true afterwards.
+
+**Three constraints from how this repo already works**, so the harness fits rather than
+fights:
+
+- The unit tests in [src/tests/](../../src/tests/) are C programs linked against
+  `angband.o`, they are **not** in ctest, and the test front end is off by default. The Tcl
+  suites are a *second* body of tests with a different runner; do not try to merge them.
+- **macOS has no `timeout`.** Every harness here needs its own watchdog, as `smoke-tty`
+  already does — a hung Tk event loop otherwise hangs the job rather than failing it.
+- A Tk test needs a display. Aqua on a CI runner is the open question: if it turns out the
+  runner cannot open a window, the first three layers still run headless and only the fourth
+  moves to a local pre-release gate. Find this out at T0, when the answer costs nothing.
+
+**What cannot be asserted this way is the rendering**, and it should not be faked. Tiles are
+judged at actual size, in a running window, on something worth walking into — no golden-image
+comparison substitutes for that, and a pixel-diff suite over a tileset still being authored
+would fail constantly for reasons nobody cares about. T2's photo capture
+([OBS-20](phase3-observations.md)) is the right tool: capture on demand, for a person to
+look at.
