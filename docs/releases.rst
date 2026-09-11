@@ -45,6 +45,29 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Two rods stop recharging instantly — 11 September 2026
+--------------------------------------------------------
+
+- **3.117.2** — **The object-side BAL-08 sweep, second stage: object kinds.**
+  Zangband keeps a rod's recharge time in the same field it keeps a ring's bonus
+  in, and the converter only ever read it as the second. Both imported rods
+  therefore arrived with no recharge at all — and a rod with no recharge is a
+  wand with infinite charges. The Rod of Havoc, found around depth 95, throws a
+  150-point elemental ball; it could be zapped every single turn, for ever.
+
+  Havoc now takes 250 turns to recharge and Pesticide 3, which are Zangband's
+  own numbers. They cross unchanged: eleven of the twelve rods that exist in
+  both games already carry the identical figure.
+
+  **And a trap worth knowing about if you ever hand-edit the data.** An object's
+  ``values:`` line is read by a different parser from its ``combat:`` and
+  ``time:`` lines, and the two disagree about a minus sign. In ``combat:``,
+  ``-d50`` means "1 to 50 *off*". In ``values:``, the same text means a *positive*
+  bonus of up to +5 — quietly, with no error. Trying it on the Amulet of
+  Destruction produced an amulet of destruction that improved all five of your
+  statistics. Its penalty stays flat, and a test now fails if anyone writes the
+  tempting version.
+
 Two egos get the half of themselves that was missing — 11 September 2026
 -------------------------------------------------------------------------
 

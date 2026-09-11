@@ -3722,6 +3722,51 @@ needed checking: the units are the same and nothing is off by a factor. Under
 DEC-20 the archive is authoritative for what an imported object is, so its own
 numbers stand.
 
+**Stage 2, the object kinds: one more of the same, and one trap underneath it.**
+
+*A rod with no recharge is a wand with infinite charges.* Zangband stores a
+rod's recharge in the kind's `pval` (`o_ptr->timeout += k_ptr->pval`,
+[cmd6.c:806](../zangband/src/cmd6.c#L806)); 4.2 reads it from `time:` and
+defaults a missing one to zero. The converter emitted no `time:` line at all,
+so both imported rods recharged instantly -- including Havoc, a depth-95 rod
+that throws 150-point elemental balls, zappable every turn for ever. The units
+question answers itself from the data rather than from the code: twelve rods
+exist in both games and eleven carry the identical number (Fire Bolts 15, Acid
+Balls 27, Light 9, Recall 60), so the figure crosses 1:1 -- and the tick-rate
+difference I had reasoned my way to from first principles (Zangband runs
+`process_world()` every game turn, 4.2 every tenth) turns out to be a change
+Angband made later and never rescaled for. Worth recording as a case where the
+archive's *data* settled a question the archive's *code* would have answered
+wrongly. Wands and staves get the same treatment for their charge count, which
+nothing imported uses today.
+
+*And the trap: `values:` is not parsed by the parser the other fields use.*
+`combat:`, `time:` and `charges:` go through `parse_random`, which negates a
+whole random value on a leading minus and shifts the base to suit
+([parser.c:203](../../src/parser.c#L203)). `values:` goes through
+`dice_parse_string` ([datafile.c:245](../../src/datafile.c#L245)), a state
+machine whose only minus belongs to the base number.
+
+This was found by trying the obvious repair and measuring it. The Amulet of
+Destruction ships a flat -5 to all five statistics where Zangband rolls
+`-(randint1(5) + m_bonus(5, level))` -- -1 to -10, worse the deeper you find
+it. Writing `STR[-d5M5]` looks like the faithful form and is not: the `-`
+becomes an empty base, the bare `d` becomes *zero* dice rather than one, and
+the amulet grants **+0 to +5 to every statistic**. It parses. The game starts.
+An Amulet of Destruction that helps you.
+
+Even `parse_random`'s negation would be wrong here, because `m_bonus` is always
+non-negative and is added back after the shift, so `-d5M5` there is worst at
+the surface and mildest at the bottom -- the opposite of the original. The
+cursed rolled pvals are therefore **not representable in either parser**, the
+flat figure stays, and a test asserts the sign at both ends of the range and
+both ends of the dungeon so that the tempting repair fails rather than ships.
+
+The converter now reports any MAKE hook that sets a pval it cannot read,
+rather than dropping it: that is six kinds in the source and two in the
+import, including the Ring of Extra Attacks, whose `+2` one time in seven has
+no form in 4.2 at all.
+
 **A latent one, fixed anyway.** Zangband subtracts `randint1(-max_to_h)` when an
 ego's combat figure is negative ([object2.c:2217](../zangband/src/object2.c#L2217)),
 which is how a cursed ego gets its penalty; the converter returned `"0"` for

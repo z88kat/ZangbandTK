@@ -206,6 +206,7 @@ desc:Yes, it is an arrow.  Surely you can do better than this twig.
 
 name:Havoc
 type:rod
+time:250
 graphics:-:d
 level:95
 weight:15
@@ -286,6 +287,7 @@ desc:This rod calls forth a random attack.
 
 name:Pesticide
 type:rod
+time:3
 graphics:-:d
 level:23
 weight:15

@@ -1338,6 +1338,13 @@ _MAKE_PVAL = [
      lambda m, pval: "%s+M%d" % (m.group(1), pval)),
     (re.compile(r"object\.pval\s*=\s*randint1\((\d+)\)\s*\+\s*m_bonus\(object\.pval,\s*level\)"),
      lambda m, pval: "d%sM%d" % (m.group(1), pval)),
+
+    # Deliberately absent: the cursed forms,
+    # `object.pval = -(randint1(5) + m_bonus(-(object.pval), level))`, which
+    # the Amulet of Destruction and three rings use. They are not expressible
+    # and the attempt was worse than the omission -- see the comment on
+    # `values:` below. They fall to the manual disposition instead, which now
+    # names the line.
 ]
 
 #: And the same for the armour bonus, which 4.2 also takes as an expression.
@@ -1519,6 +1526,45 @@ def cmd_objects(args) -> int:
         entry.set("name", rec.name)
         entry.set("type", obj_type)
 
+        # A kind's `pval` does not always mean a modifier, and for three types
+        # it means something 4.2 keeps in a different field entirely.
+        #
+        # A rod's pval is its recharge: `o_ptr->timeout += k_ptr->pval`
+        # (cmd6.c:806). 4.2 reads that from `time:` and defaults it to zero,
+        # and the converter emitted no `time:` line at all -- so both imported
+        # rods recharged instantly, including Havoc, a depth-95 rod throwing
+        # 150-point elemental balls. A rod with no recharge is a wand with
+        # infinite charges, and it parses, generates and reads correctly.
+        #
+        # The figure crosses 1:1 and the data says so rather than the code:
+        # twelve rods exist in both games and eleven carry the identical
+        # number -- Fire Bolts 15, Acid Balls 27, Light 9, Recall 60 -- so
+        # Angband's later change to how often `process_world()` runs was never
+        # rescaled for, in either direction.
+        #
+        # A wand's or staff's pval is its charge count, dealt out as
+        # `k_ptr->pval / 2 + randint1((k_ptr->pval + 1) / 2)`
+        # (object2.c:3119), which is 4.2's `charges:` to the letter. Nothing
+        # imported today is one; the rule is here rather than the two rods so
+        # that the next one is not the next silent zero.
+        if pval:
+            if obj_type == "rod":
+                entry.set("time", str(pval))
+                item.fields["time"] = rules.Value(
+                    str(pval), "CNT-11", rules.CONVERTED,
+                    "the kind's pval is a rod's recharge time (cmd6.c:806); "
+                    "4.2 keeps it in `time:` and treats a missing one as no "
+                    "recharge at all")
+                pval = 0
+            elif obj_type in ("wand", "staff"):
+                charges = "%d+d%d" % (pval // 2, (pval + 1) // 2)
+                entry.set("charges", charges)
+                item.fields["charges"] = rules.Value(
+                    charges, "CNT-11", rules.CONVERTED,
+                    "the kind's pval is a wand or staff's charge count "
+                    "(object2.c:3119)")
+                pval = 0
+
         graphics = (rec.first("G") or "").split(":")
         if len(graphics) >= 2:
             entry.set("graphics", "%s:%s" % (graphics[0], graphics[1]))
@@ -1566,6 +1612,22 @@ def cmd_objects(args) -> int:
                 item.fields["alloc"] = rules.Value(
                     entry.get("alloc"), "CNT-11", rules.DERIVED, note)
 
+        # One hook, one reader. `rec.all("L")` returns every hook a kind
+        # carries -- USE, MAKE, SMASH, DESC, TIMED -- and joining them before
+        # matching is what made an artifact's HIT hook read as an activation
+        # (BAL-08). The MAKE patterns below describe what happens when the
+        # object is *created*, so they see MAKE and nothing else; the
+        # activation question sees USE and nothing else. Neither is exercised
+        # by today's data, which is precisely why it was worth separating.
+        make = "\n".join(
+            line.partition(":")[2]
+            for line in rec.all("L")
+            if line.startswith("MAKE:"))
+        script = "\n".join(
+            line.partition(":")[2]
+            for line in rec.all("L")
+            if line.startswith("USE:"))
+
         # Zangband gives every kind a P: line whether or not it means anything:
         # the Amulet of Destruction is recorded with 7d7 damage dice it can
         # never use. 4.2 writes `attack:0d0:0:0` on everything that is not a
@@ -1582,7 +1644,7 @@ def cmd_objects(args) -> int:
             entry.set("attack", "%s:%s:%s" % (dice, power[2], power[3]))
             to_a = power[4]
             for pattern, render in _MAKE_TOA:
-                match = pattern.search("\n".join(rec.all("L")))
+                match = pattern.search(make)
                 if match:
                     to_a = render(match)
                     item.translations.append(
@@ -1593,16 +1655,52 @@ def cmd_objects(args) -> int:
 
         # What L:MAKE: does to the pval, as a 4.2 random expression, so that a
         # ring found at depth is worth more than one found at the gate.
-        script = "\n".join(rec.all("L"))
+        #
+        # `values:` is not parsed by the parser the other fields use, and the
+        # difference is not cosmetic.
+        #
+        # `combat:`, `time:` and `charges:` go through `parse_random`, which
+        # negates a whole random value on a leading minus and shifts the base
+        # to suit (parser.c:203). `values:` goes through `dice_parse_string`
+        # (datafile.c:245), a state machine whose only minus is part of the
+        # base number -- so `STR[-d5M5]` does not mean "-1 to -10". It reads
+        # the `-` as an empty base, the bare `d` as *zero* dice rather than
+        # one, and yields `0 + 0d5 + M5`: a **positive** bonus of 0 to 5, on an
+        # Amulet of Destruction. It parses. Nothing complains.
+        #
+        # Even the negation `parse_random` does would be wrong here, because
+        # `m_bonus` is always non-negative and gets added back after the shift:
+        # `-d5M5` there is worst at the surface and mildest at the bottom,
+        # where Zangband's `-(randint1(5) + m_bonus(5, level))` is the other
+        # way round. So the cursed forms are not representable in either
+        # parser, and writing something that reads like them is how you ship
+        # an amulet of destruction that helps.
+        #
+        # A kind's pval is *fixed* where an ego's is rolled --
+        # `o_ptr->pval = k_ptr->pval` (object2.c:1892) against the ego's
+        # `+= randint1(max_pval)` -- so a plain figure here is right, and a
+        # plain figure there was the maximum pretending to be the average.
+        # The asymmetry is real and this comment exists so the next reader
+        # does not "fix" one to match the other.
         pval_expr = str(pval)
         for pattern, render in _MAKE_PVAL:
-            match = pattern.search(script)
+            match = pattern.search(make)
             if match:
                 pval_expr = render(match, pval)
                 item.translations.append(
                     "pval scales with depth: `%s` becomes `%s`"
                     % (match.group(0), pval_expr))
                 break
+        else:
+            # Same rule as the egos: a hook that sets the pval in a way no
+            # pattern reads must say so rather than be dropped in silence.
+            if "object.pval" in make:
+                item.flag_dispositions.append((
+                    "L:MAKE pval", "manual",
+                    "the MAKE hook sets the pval and no rule reads it: "
+                    + " ".join(
+                        line.strip() for line in make.splitlines()
+                        if "object.pval" in line)))
 
         flags, values, brands, slays, curses = [], [], [], [], []
         for flag in rec.flags():
@@ -1663,11 +1761,11 @@ def cmd_objects(args) -> int:
             item.fields["effect"] = rules.Value(
                 spec["lines"][0].partition(":")[2], "CNT-11", rules.DERIVED,
                 spec.get("note", ""))
-        elif [line for line in rec.all("L") if line.startswith("USE")]:
+        elif script.strip():
             item.flag_dispositions.append((
                 "L:USE", "manual",
                 "carries Lua that objmap.toml has no effect translation for"))
-        elif "add_ego_power" in script:
+        elif "add_ego_power" in make:
             item.flag_dispositions.append((
                 "add_ego_power", "manual",
                 "rolls a random extra ability at creation. 4.2 has the same "
@@ -1725,42 +1823,75 @@ def cmd_objects(args) -> int:
         % (sum(1 for k, _, _, _ in flavours if k == "ring"),
            sum(1 for k, _, _, _ in flavours if k == "amulet")))
 
+    preamble = (
+        "# object.zangband.txt — generated by tools/zconv. "
+        "Do not hand-edit.\n"
+        "# Hand-tuned values belong in tools/zconv/overrides.toml "
+        "(BAL-12).\n"
+        "# Source: %s\n" % source_of(ZANGBAND / "k_info.txt")
+    )
+
+    # Flavour indices continue above the highest flavor.txt uses, since the
+    # two files share one list and an index is an identity.
+    base = 1 + max(int(n) for n in re.findall(
+        r"^(?:flavor|fixed):(\d+)", (GAMEDATA / "flavor.txt").read_text(
+            encoding="utf-8", errors="replace"), re.M))
+    lines = [
+        "# flavor.zangband.txt — generated by tools/zconv. "
+        "Do not hand-edit.",
+        "# Source: %s" % source_of(ROOT / "archive" / "zangband" / "src" / "flavor.c"),
+        "#",
+        "# Zangband's ring and amulet flavours that 4.2 does not have. The",
+        "# imported kinds need them: 4.2 assigns one flavour per kind and",
+        "# quits if it runs out.",
+    ]
+    last = ""
+    for offset, (kind, glyph, adjective, colour) in enumerate(flavours):
+        if kind != last:
+            lines += ["", "kind:%s:%s" % (kind, glyph)]
+            last = kind
+        lines.append("flavor:%d:%s:%s" % (base + offset, colour, adjective))
+    flavour_text = "\n".join(lines) + "\n"
+
+    if args.check:
+        # Does the committed data still say what this converter produces?
+        #
+        # The thing this caught on the day it was added: both imported rods
+        # had no `time:` line, so each recharged instantly. Nothing about that
+        # is a parse error, and a rod usable every turn looks from the data
+        # like a rod.
+        failures = []
+        for name, made in (("object.zangband.txt",
+                            aformat.render(entries, preamble=preamble)),
+                           ("flavor.zangband.txt", flavour_text)):
+            have = (GAMEDATA / name).read_text(encoding="utf-8")
+            if made != have:
+                failures.append((name, have, made))
+
+        if failures:
+            import difflib
+
+            print("object data check")
+            print("=" * 72)
+            for name, have, made in failures:
+                for line in list(difflib.unified_diff(
+                        have.splitlines(), made.splitlines(),
+                        "lib/gamedata/" + name, "converter output",
+                        lineterm=""))[:40]:
+                    print("  %s" % line)
+            print()
+            print("  FAILED -- %s is not what the converter produces"
+                  % ", ".join("lib/gamedata/" + n for n, _, _ in failures))
+            return 1
+        print("object data check: lib/gamedata matches the converter")
+
     if args.write:
         data_path = OUTDIR / "object.zangband.txt"
-        aformat.write(
-            str(data_path), entries,
-            preamble=(
-                "# object.zangband.txt — generated by tools/zconv. "
-                "Do not hand-edit.\n"
-                "# Hand-tuned values belong in tools/zconv/overrides.toml "
-                "(BAL-12).\n"
-                "# Source: %s\n" % source_of(ZANGBAND / "k_info.txt")
-            ),
-        )
+        aformat.write(str(data_path), entries, preamble=preamble)
         print("data:    %s" % data_path.relative_to(ROOT))
 
-        # Flavour indices continue above the highest flavor.txt uses, since
-        # the two files share one list and an index is an identity.
-        base = 1 + max(int(n) for n in re.findall(
-            r"^(?:flavor|fixed):(\d+)", (GAMEDATA / "flavor.txt").read_text(
-                encoding="utf-8", errors="replace"), re.M))
         flavour_path = OUTDIR / "flavor.zangband.txt"
-        lines = [
-            "# flavor.zangband.txt — generated by tools/zconv. "
-            "Do not hand-edit.",
-            "# Source: %s" % source_of(ROOT / "archive" / "zangband" / "src" / "flavor.c"),
-            "#",
-            "# Zangband's ring and amulet flavours that 4.2 does not have. The",
-            "# imported kinds need them: 4.2 assigns one flavour per kind and",
-            "# quits if it runs out.",
-        ]
-        last = ""
-        for offset, (kind, glyph, adjective, colour) in enumerate(flavours):
-            if kind != last:
-                lines += ["", "kind:%s:%s" % (kind, glyph)]
-                last = kind
-            lines.append("flavor:%d:%s:%s" % (base + offset, colour, adjective))
-        flavour_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        flavour_path.write_text(flavour_text, encoding="utf-8")
         print("data:    %s" % flavour_path.relative_to(ROOT))
     else:
         print("data:    not written (pass --write)")
@@ -2652,6 +2783,8 @@ def main() -> int:
 
     objects = sub.add_parser("objects",
                              help="convert k_info.txt to 4.2 object kinds")
+    objects.add_argument("--check", action="store_true",
+                         help="fail if lib/gamedata does not match the converter")
     objects.add_argument("--write", action="store_true",
                          help="write the data file as well as the report")
 

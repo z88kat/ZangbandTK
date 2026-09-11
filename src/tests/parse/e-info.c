@@ -364,6 +364,39 @@ static int test_combat0(void *state) {
 	ok;
 }
 
+/**
+ * A cursed ego's combat penalty survives the parser.
+ *
+ * Zangband subtracts `randint1(-max_to_h)` when the figure on a `C:` line is
+ * negative (object2.c:2217), which is how `of Backbiting` backbites. The
+ * converter writes that as `-d50`, on the reading that `parse_random` negates
+ * a whole random value and shifts the base to compensate (parser.c:203).
+ *
+ * That reading is worth a test rather than a comment, because the sibling
+ * field `values:` goes through an entirely different parser -- one whose only
+ * minus belongs to the base number -- where the same text silently means a
+ * *positive* bonus. Two parsers, one syntax, opposite answers; the assumption
+ * is cheap to state and was expensive to get wrong.
+ *
+ * Nothing imported today carries a negative, so this is the only place the
+ * rule can be pinned at all. Asserted as the range rather than the fields,
+ * since the fields are an implementation detail of the shift.
+ */
+static int test_combat_negative(void *state) {
+	struct parser* p = (struct parser*) state;
+	enum parser_error r = parser_parse(p, "combat:-d50:-d10:0");
+	struct ego_item *e;
+
+	eq(r, PARSE_ERROR_NONE);
+	e = (struct ego_item*) parser_priv(p);
+	notnull(e);
+	eq(randcalc(e->to_h, 0, MINIMISE), -50);
+	eq(randcalc(e->to_h, 0, MAXIMISE), -1);
+	eq(randcalc(e->to_d, 0, MINIMISE), -10);
+	eq(randcalc(e->to_d, 0, MAXIMISE), -1);
+	ok;
+}
+
 static int test_min0(void *state) {
 	struct parser *p = (struct parser*) state;
 	enum parser_error r = parser_parse(p, "min-combat:10:13:4");
@@ -734,6 +767,7 @@ struct test tests[] = {
 	{ "item0", test_item0 },
 	{ "item_bad0", test_item_bad0 },
 	{ "combat0", test_combat0 },
+	{ "combat_negative", test_combat_negative },
 	{ "min_combat0", test_min0 },
 	{ "act0", test_act0 },
 	{ "act_bad0", test_act_bad0 },

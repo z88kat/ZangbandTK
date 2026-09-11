@@ -227,6 +227,8 @@ echo "check-build: checking the artifact data ($PYTHON zconv artifacts --check)"
 run "$PYTHON" tools/zconv/zconv.py artifacts --check
 echo "check-build: checking the ego data ($PYTHON zconv egos --check)"
 run "$PYTHON" tools/zconv/zconv.py egos --check
+echo "check-build: checking the object data ($PYTHON zconv objects --check)"
+run "$PYTHON" tools/zconv/zconv.py objects --check
 
 # The borrowed monster tiles, which nothing was checking.
 #

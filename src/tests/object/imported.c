@@ -943,6 +943,87 @@ static int test_the_rolled_modifiers_are_ranges(void *state) {
 	ok;
 }
 
+/**
+ * An imported rod has a recharge time.
+ *
+ * Zangband keeps a rod's recharge in the kind's `pval` --
+ * `o_ptr->timeout += k_ptr->pval` (cmd6.c:806) -- and 4.2 keeps it in
+ * `time:`, defaulting a missing one to zero. The converter emitted no `time:`
+ * line, so both imported rods recharged instantly. A Rod of Havoc at depth 95
+ * throws a 150-point elemental ball, and it could be zapped every turn for
+ * ever. It parses, it generates, and it reads exactly like a rod.
+ *
+ * The numbers are Zangband's own and cross unchanged: eleven of the twelve
+ * rods that exist in both games carry the identical figure, which is what
+ * settles the units question. `obj_can_zap` refuses a rod whose timeout has
+ * not run down (obj-util.c), so a non-zero time is the whole mechanism.
+ */
+static int test_an_imported_rod_recharges(void *state) {
+	static const struct { const char *name; int time; } rows[] = {
+		{ "Havoc", 250 },
+		{ "Pesticide", 3 },
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(rows); i++) {
+		struct object_kind *kind = kind_named(TV_ROD, rows[i].name);
+		int t;
+
+		require(kind);
+		t = randcalc(kind->time, 0, MINIMISE);
+		if (t != rows[i].time) {
+			printf("%s: recharge %d, wanted %d\n", rows[i].name, t,
+					rows[i].time);
+			require(false);
+		}
+	}
+	ok;
+}
+
+/**
+ * An Amulet of Destruction is never a benefit.
+ *
+ * Zangband rolls its penalty --
+ * `object.pval = -(randint1(5) + m_bonus(-(object.pval), level))`, so -1 to
+ * -10 and worse the deeper you find it -- and what ships is a flat -5. That
+ * is a known loss, recorded in DEC-75, and this test exists because the
+ * obvious repair is wrong in a way that does not announce itself.
+ *
+ * `values:` is not parsed by the parser `combat:` and `time:` use.
+ * `parse_random` negates a whole random value on a leading minus;
+ * `dice_parse_string`, which `values:` goes through (datafile.c:245), treats
+ * a minus as part of the base number alone. `STR[-d5M5]` there is not
+ * "-1 to -10": the `-` becomes an empty base, the bare `d` becomes *zero*
+ * dice rather than one, and the result is `0 + 0d5 + M5` -- a positive bonus
+ * of up to +5 on the amulet whose entire point is ruin. It parses and the
+ * game starts.
+ *
+ * So the assertion is the sign, at both ends of the range and at both ends of
+ * the dungeon. Anything that reads like the faithful expression and is not
+ * fails here.
+ */
+static int test_destruction_is_never_a_gift(void *state) {
+	struct object_kind *kind = kind_named(TV_AMULET, "Destruction");
+	static const int mods[] = {
+		OBJ_MOD_STR, OBJ_MOD_INT, OBJ_MOD_WIS, OBJ_MOD_DEX, OBJ_MOD_CON,
+	};
+	size_t i;
+
+	require(kind);
+	for (i = 0; i < N_ELEMENTS(mods); i++) {
+		int shallow = randcalc(kind->modifiers[mods[i]], 0, MAXIMISE);
+		int deep = randcalc(kind->modifiers[mods[i]], MAX_RAND_DEPTH,
+				MAXIMISE);
+
+		if (shallow >= 0 || deep >= 0) {
+			printf("modifier %d: best case %d at the gate, %d at the "
+					"bottom\n", mods[i], shallow, deep);
+			require(false);
+		}
+	}
+	ok;
+}
+
 const char *suite_name = "object/imported";
 struct test tests[] = {
 	{ "the-imported-artifacts-can-be-activated",
@@ -984,5 +1065,7 @@ struct test tests[] = {
 	  test_a_trump_weapon_teleports_on_purpose },
 	{ "the-rolled-modifiers-are-ranges",
 	  test_the_rolled_modifiers_are_ranges },
+	{ "an-imported-rod-recharges", test_an_imported_rod_recharges },
+	{ "destruction-is-never-a-gift", test_destruction_is_never_a_gift },
 	{ NULL, NULL }
 };
