@@ -45,6 +45,20 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+A Draconian breathes cold as well, and for the right damage — 11 September 2026
+----------------------------------------------------------------------------------
+
+- **3.118.3** — A Draconian's breath was fire only and did three-quarters of the
+  damage the original gives. It is now **twice your character level**, and fire
+  two times in three with cold the third, which is where every Draconian breath
+  starts in Zangband. At level 30 that is 60 rather than 45.
+
+  Still not built, and the manual says so: in Zangband the breath sometimes
+  becomes something belonging to your *class* instead — shards for a Warrior,
+  disenchantment for a Mage, hellfire for a Priest — on a chance equal to your
+  character level in a hundred. A racial power here cannot ask which class is
+  holding it.
+
 The bloodless stop bleeding — 11 September 2026
 --------------------------------------------------
 

@@ -632,9 +632,30 @@ power-level:15
 power-cost:25
 power-stat:CON
 power-fail:12
+# Fire two times in three and cold the third, which is where the archive starts
+# every Draconian breath: `Type = (one_in_(3) ? GF_COLD : GF_FIRE)`
+# (racial.c:381).  It used to be fire only.
+#
+# Damage is `plev * 2` (racial.c:481).  It used to be `plev * 3 / 2`, which is
+# three-quarters of the archive's at every level.
+#
+# What is NOT here: from level 15 or so the archive rolls `randint1(100) < plev`
+# and, on success, replaces the element with a pair belonging to the character's
+# *class* -- shards or the elements for a Warrior, mana or disenchantment for a
+# Mage, hellfire or holy fire for a Priest, and so on through seven branches.
+# A race power has no way to ask what class is holding it, and building one is a
+# design decision rather than a conversion.  Recorded in DEC-80.
+power-effect:RANDOM
+power-dice:3
 power-effect:BREATH:FIRE:0:30
 power-dice:$B
-power-expr:B:PLAYER_LEVEL:* 3 / 2
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:BREATH:FIRE:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:BREATH:COLD:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
 
 # Zangband granted it nothing at all: its whole identity is psionics, which is PLR-06.
 name:Mindflayer

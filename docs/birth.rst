@@ -342,13 +342,19 @@ Draconian
   slowest-ripening race in the game, and at 250 experience for every level it is
   also the second dearest.
 
-  It breathes from level 15 — fire, and only fire. Zangband's breath is not
-  fixed like that, and not on a level cycle either as this page used to say: it
-  is one-in-three cold rather than fire, and then, with a chance equal to your
-  character level in a hundred, it becomes something belonging to your *class*
-  — shards for a Warrior, disenchantment for a Mage, chaos for a Chaos-Warrior,
-  confusion for a Monk (`racial.c:380`). That, and a breath worth twice your
-  level rather than one and a half times it, are what remain to be built.
+  It breathes from level 15, for **twice your character level** in damage —
+  fire two times in three and cold the third, which is where every Draconian
+  breath starts in Zangband. Until 3.118.3 it was fire only, and for
+  three-quarters of the damage.
+
+  One thing is still not built. In Zangband, with a chance equal to your
+  character level in a hundred, the breath instead becomes something belonging
+  to your *class* — shards or raw force for a Warrior, mana or disenchantment
+  for a Mage, hellfire or holy fire for a Priest, chaos or confusion for a
+  Chaos-Warrior, sound or confusion for a Monk, mental energy for a
+  Mindcrafter, darkness or poison for a Rogue (`racial.c:380`). A racial power
+  in this game has no way to ask which class is holding it, so that is a
+  mechanism to design rather than a number to copy.
 
 .. _Mindflayer:
 

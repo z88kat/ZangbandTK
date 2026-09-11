@@ -4084,3 +4084,40 @@ does not heal the attacker at all -- the only blow that heals a monster is
 `UN_POWER`, draining charges ([mon-blows.c:756](../../src/mon-blows.c#L756)) --
 so there is nothing to deny. Recorded because it had been carried as
 outstanding work for some time and is not work.
+
+**DEC-80 — A Draconian breathes the archive's elements for the archive's
+damage; the class table and the shape are open.**
+
+Three things were wrong with the imported breath and two of them were lookups.
+
+**Damage was three-quarters.** `fire_ball(Type, dir, plev * 2, ...)`
+([racial.c:481](../zangband/src/racial.c#L481)); ours was `plev * 3 / 2`. At
+level 30 that is 45 against 60, for the life of the character. Fixed.
+
+**Element was fire only.** Every Draconian breath in the archive starts
+`Type = (one_in_(3) ? GF_COLD : GF_FIRE)`
+([racial.c:381](../zangband/src/racial.c#L381)). Now a `RANDOM` over three
+branches, two fire and one cold. Fixed.
+
+**Open, and put to the project owner rather than decided here.**
+
+*The class table.* From level 15 the archive rolls `randint1(100) < plev` and,
+on success, replaces the element with a pair belonging to the character's class
+-- seven branches, from shards for a Warrior to mental energy for a
+Mindcrafter. A race power in this game has no way to ask which class holds it,
+and `power-when:` bands on character level cannot express it. Building it means
+either a class dimension on `struct player_power` or a new effect that reads the
+class, both of which are design rather than conversion. **Not built, and the
+manual says so in those terms.**
+
+*The shape.* Zangband throws a *ball* of radius `(plev / 15) + 1` -- two at
+level 15, four at 50 -- and what ships here is 4.2's `BREATH`, a 20-degree cone
+30 grids long. These are not near-misses of each other: a ball lands on a point
+and a cone sweeps from the caster. 4.2 has `BALL` and could do the archive's
+shape exactly, and it also has a breath mechanic that every dragon in the game
+uses and that a player would recognise as breathing.
+
+The question is which the Draconian should be, and it is a design question
+rather than a fidelity one, which is why it is here rather than answered: the
+archive's answer is available and so is the one that matches the rest of this
+game. **Left as the cone pending a ruling.**

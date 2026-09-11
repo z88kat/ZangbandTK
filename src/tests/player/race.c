@@ -1059,6 +1059,62 @@ static int test_the_bloodless_do_not_bleed(void *state) {
 	ok;
 }
 
+/**
+ * A Draconian breathes fire or cold, for twice its level.
+ *
+ * Both halves were wrong. The element was fire only, where the archive rolls
+ * `one_in_(3) ? GF_COLD : GF_FIRE` on every breath
+ * ([racial.c:381](../../archive/zangband/src/racial.c#L381)); and the damage
+ * was `plev * 3 / 2` against the archive's `plev * 2`
+ * ([racial.c:481](../../archive/zangband/src/racial.c#L481)) -- three-quarters,
+ * at every level, for the life of the character.
+ *
+ * The three branches are asserted by element and by damage together, because
+ * a RANDOM chain with the right elements and the wrong dice looks correct in
+ * the data file.
+ *
+ * Not asserted, because it is not built: from around level 15 the archive
+ * substitutes a pair of elements belonging to the character's *class* on a
+ * `randint1(100) < plev` roll. A race power cannot ask what class holds it.
+ * DEC-80.
+ */
+static int test_a_draconian_breathes_two_ways(void *state) {
+	struct player_power *pw = power_of("Draconian", "breathe like a dragon");
+	struct power_effect *pe;
+	struct effect *e;
+	int fire = 0, cold = 0, other = 0;
+
+	require(pw && pw->effects);
+	pe = pw->effects;
+	require(pe->effect);
+
+	/* The chain is RANDOM over three, then the three. */
+	e = pe->effect;
+	require(e->index == EF_RANDOM);
+	require(dice_evaluate(e->dice, 1, AVERAGE, NULL) == 3);
+
+	for (e = e->next; e; e = e->next) {
+		int dam;
+
+		require(e->index == EF_BREATH);
+		player->lev = 30;
+		dam = dice_evaluate(e->dice, 30, AVERAGE, NULL);
+		if (dam != 60) {
+			printf("a branch does %d at level 30, wanted 60\n", dam);
+			require(false);
+		}
+
+		if (e->subtype == ELEM_FIRE) fire++;
+		else if (e->subtype == ELEM_COLD) cold++;
+		else other++;
+	}
+
+	eq(fire, 2);
+	eq(cold, 1);
+	eq(other, 0);
+	ok;
+}
+
 const char *suite_name = "player/race";
 struct test tests[] = {
 	{ "the-draconian-grows-into-its-scales",
@@ -1101,5 +1157,7 @@ struct test tests[] = {
 	{ "a-power-expression-means-what-it-says",
 			test_a_power_expression_means_what_it_says },
 	{ "the-bloodless-do-not-bleed", test_the_bloodless_do_not_bleed },
+	{ "a-draconian-breathes-two-ways",
+			test_a_draconian_breathes_two_ways },
 	{ NULL, NULL }
 };
