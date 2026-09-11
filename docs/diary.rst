@@ -32,7 +32,7 @@ what comes next.
 
 
 10 September 2026 — three cues for one fact
-==========================================
+===========================================
 
 Steven sent me a design for the race list on the character creation screen,
 which he said "does not work very well". The list is longer than the screen and

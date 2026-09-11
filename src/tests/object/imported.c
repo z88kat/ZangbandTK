@@ -15,6 +15,7 @@
  */
 
 #include "unit-test.h"
+#include <stdio.h>
 
 #include "init.h"
 #include "mon-make.h"
@@ -724,8 +725,121 @@ static int test_mundanity_has_its_effect(void *state) {
 	ok;
 }
 
+/**
+ * The activation on a named artifact, or NULL if it has none.
+ */
+static const struct activation *artifact_act(const char *name)
+{
+	int i;
+
+	for (i = 0; i < z_info->a_max; i++)
+		if (a_info[i].name && streq(a_info[i].name, name))
+			return a_info[i].activation;
+	return NULL;
+}
+
+static bool artifact_exists(const char *name)
+{
+	int i;
+
+	for (i = 0; i < z_info->a_max; i++)
+		if (a_info[i].name && streq(a_info[i].name, name))
+			return true;
+	return false;
+}
+
+/*
+ * The imported artifacts that can be activated, one row each (CNT-06, BAL-08).
+ *
+ * Named individually rather than counted, because a count passes while the
+ * wrong artifact holds the wrong power. Each of these lost its activation to a
+ * converter that matched Zangband's Lua against every hook an artifact has --
+ * USE, HIT, MAKE, TIMED, DESC -- and then took the first pattern that matched
+ * anything. An artifact without an activation is a legal artifact, so nothing
+ * complained for months.
+ *
+ * The 4.2 activation each maps to is the nearest in a fixed vocabulary, not a
+ * translation: `sleep_monsters_touch()` is adjacent in Zangband and line of
+ * sight here, and `fire_ball(GF_MISSILE)` loses its radius because 4.2's
+ * magic missile is a bolt. Those are recorded in the converter beside the
+ * pattern rather than hidden here.
+ */
+static int test_the_imported_artifacts_can_be_activated(void *state) {
+	static const struct { const char *name; const char *act; } rows[] = {
+		{ "of Julian",              "BANISHMENT"   },
+		{ "of Keri the Humble",     "SATISFY"      },
+		{ "'Thief's Shadow'",       "SLEEP_ALL"    },
+		{ "of Destiny",             "STONE_TO_MUD" },
+		{ "of Brand",               "FIREBRAND"    },
+		{ "of Elemental Mastery",   "MISSILE"      },
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(rows); i++) {
+		const struct activation *act;
+
+		if (!artifact_exists(rows[i].name)) {
+			printf("artifact missing entirely: %s\n", rows[i].name);
+			require(false);
+		}
+		act = artifact_act(rows[i].name);
+		if (!act || !act->name || !streq(act->name, rows[i].act)) {
+			printf("%s: expected %s, got %s\n", rows[i].name, rows[i].act,
+				   (act && act->name) ? act->name : "none");
+			require(false);
+		}
+	}
+	ok;
+}
+
+/*
+ * And `of Hunger` has none, which is the other half of the same bug.
+ *
+ * It has no USE hook at all -- only TIMED, HIT and SPOIL -- so it is not
+ * activatable in Zangband either. It acquired `CURE_SERIOUS` because its
+ * `L:TIMED:` block calls `hp_player(2)` for accelerated regeneration and the
+ * converter read every hook as though it were the activation. Removing a power
+ * is the riskier direction of the two, so it is pinned rather than assumed.
+ */
+static int test_hunger_is_not_activatable(void *state) {
+	require(artifact_exists("of Hunger"));
+	require(artifact_act("of Hunger") == NULL);
+	ok;
+}
+
+/*
+ * Five have no 4.2 equivalent and are imported without one, deliberately.
+ *
+ * Charm, `werewindle()`, summoning the Dawn, a whirlwind attack and identify:
+ * 4.2's activation list has nothing for any of them, and the honest import is
+ * an artifact that still exists and still carries its other properties rather
+ * than a guess at the nearest power. Pinned so that adding one is a decision
+ * somebody makes rather than a side effect.
+ */
+static int test_the_unmappable_five_stay_unmapped(void *state) {
+	static const char *rows[] = {
+		"of Command", "'Werewindle'", "of the Dawn", "'Whirlwind'",
+		"of the Wandering Wizard",
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(rows); i++) {
+		require(artifact_exists(rows[i]));
+		if (artifact_act(rows[i])) {
+			printf("%s gained an activation\n", rows[i]);
+			require(false);
+		}
+	}
+	ok;
+}
+
 const char *suite_name = "object/imported";
 struct test tests[] = {
+	{ "the-imported-artifacts-can-be-activated",
+			test_the_imported_artifacts_can_be_activated },
+	{ "hunger-is-not-activatable", test_hunger_is_not_activatable },
+	{ "the-unmappable-five-stay-unmapped",
+			test_the_unmappable_five_stay_unmapped },
 	{ "the-imported-kinds-are-there", test_the_imported_kinds_are_there },
 	{ "no-kind-is-imported-twice", test_no_kind_is_imported_twice },
 	{ "the-artifact-bases-stayed-out", test_the_artifact_bases_stayed_out },
