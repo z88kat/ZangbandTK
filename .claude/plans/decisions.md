@@ -576,7 +576,7 @@ requirements that the data-file and source analysis had entirely missed:
 
 | Requirement | Finding |
 |---|---|
-| BAL-15…BAL-17 | Nightmare mode — an irreversible birth option and difficulty system |
+| BAL-15…BAL-18 | Nightmare mode — an irreversible birth option and difficulty system. *Audited against Zangband's source 11 September 2026: the spoiler describes about forty-five modifiers and the game implements sixteen. BAL-18 records that the source is the port and the spoiler is a candidate list.* |
 | CNT-15 | The Ancient and Foul Curse, and its cascade |
 | CNT-16 | Random object abilities at generation time |
 | ~~**CNT-17**~~ | ~~**Eldritch Horrors** — sanity blasting~~ **Dropped by DEC-32.** The Mythos path is closed; the inn's nightmare is built without it. |

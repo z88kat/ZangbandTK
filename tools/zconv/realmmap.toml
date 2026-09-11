@@ -119,9 +119,16 @@ defer = "detect_objects_magic() marks every nearby object carrying an enchantmen
 
 [sorcery.spells."Charm Monster"]
 line = 866
-effects = [ "COMMAND" ]
-note = "charm_monster() makes a permanent pet in Zangband; 4.2's COMMAND takes a monster over for a while, because 4.2 has no pets. The same mapping the hypnotic gaze mutation got."
-desc = "Takes control of a monster for a time."
+effects = [ "BOLT_AWARE:MON_CHARM", "dice:$B", "expr:B:PLAYER_LEVEL:+ 0" ]
+note = """charm_monster(dir, plev) -- one monster, aimed, at the caster's \
+level, and the creature is *yours*. Mapped to COMMAND until 3.72.1 on the \
+grounds that 4.2 has no pets; PLR-22 brought them and rebuilt the other four \
+charms in the game on MON_CHARM, and this one was missed. COMMAND takes a \
+monster over for a while and hands it back, which is a different spell: the \
+whole content of this one is that the creature changes sides and stays \
+changed. Now the single-target twin of Life's Day of the Dove, and built the \
+same way as Nature's Animal Taming and Death's Enslave Undead."""
+desc = "Attempts to turn a single monster to your side."
 
 [sorcery.spells."Dimension Door"]
 line = 869
@@ -186,7 +193,11 @@ desc = "Turns an object into a third of its worth in gold. Artifacts refuse."
 
 [sorcery.spells."Globe of Invulnerability"]
 line = 908
-effects = [ "TIMED_INC:INVULN", "dice:7+1d8" ]
+effects = [ "TIMED_INC:INVULN", "dice:7+1d9" ]
+note = """rand_range(8, 16), so eight to sixteen turns inclusive -- which in \
+4.2's dice is 7+1d9 and not 7+1d8. Corrected in 3.72.1; it had been a turn \
+short at the top. Life's Holy Invulnerability is rand_range(7, 14) and was \
+already right."""
 desc = "Makes you briefly untouchable."
 
 # Source: archive/zangband/src/cmd5.c, cast_chaos_spell().
@@ -224,7 +235,11 @@ desc = "Makes your hands glow.  Your next blows may confuse what they touch."
 [chaos.spells."Mana Burst"]
 line = 1110
 effects = [ "BALL:MISSILE:2", "dice:$B+3d5", "expr:B:PLAYER_LEVEL:* 5 / 4" ]
-note = "4.2's radius is a literal, not an expression, so a radius that grows with level cannot be carried over. The rule, applied the same way everywhere: take the value at the level the earliest-entitled class learns the spell -- a Mage for all five in Chaos. A Mage learns this at 9, so the radius is 2. The step up to 3 at level 30 is lost. Zangband adds plev/2 for a Mage or High-Mage and plev/4 for everyone else, which the data language cannot ask. Taking the average as plev*5/4 -- that is plev + plev/4 -- gives every class the non-mage figure plus the base, and a Mage a little less than Zangband gave one."
+class-effects.Mage = [ "BALL:MISSILE:2", "dice:$B+3d5",
+                       "expr:B:PLAYER_LEVEL:* 3 / 2" ]
+class-effects."High-Mage" = [ "BALL:MISSILE:2", "dice:$B+3d5",
+                              "expr:B:PLAYER_LEVEL:* 3 / 2" ]
+note = "4.2's radius is a literal, not an expression, so a radius that grows with level cannot be carried over. The rule, applied the same way everywhere: take the value at the level the earliest-entitled class learns the spell -- a Mage for all five in Chaos. A Mage learns this at 9, so the radius is 2. The step up to 3 at level 30 is lost. Zangband adds plev/2 for a Mage or High-Mage and plev/4 for everyone else. This note used to say the data language cannot ask that; the language cannot, but class.txt can, because it holds a spell per class -- so since 3.72.1 the two mage classes carry their own chain and the default is the plev*5/4 every other class already had."
 desc = "Fires a ball of pure magical force."
 
 [chaos.spells."Fire Bolt"]
@@ -465,13 +480,23 @@ line = 646
 effects = [ "TIMED_INC:SINVIS", "dice:23+1d25" ]
 desc = "Lets you see invisible creatures for a while."
 
-# Zangband's own comment misspells this "Orb or Draining".  The bonus is halved
-# for a class that is not a Priest or a High-Mage; 4.2 expresses that as the
-# `other` field on the ball, which is what its own Orb of Draining already does.
+# Zangband's own comment misspells this "Orb or Draining".  The level bonus is
+# plev/2 for a Priest or a High-Mage and plev/4 for everyone else, on top of a
+# flat plev -- so 3/2 and 5/4 of level.  Until 3.72.1 the comment here claimed
+# the `other` field on the ball expressed that; it does not.  `other` on BALL is
+# a radius divisor (4.2 adds one to the radius per `other` levels), which is how
+# the 2-below-30, 3-above-30 radius arrives, and there is no field for a
+# class-dependent damage bonus because the effect language cannot test the
+# caster's class.  class.txt holds a copy of the spell per class, so the two
+# priestly classes get their own chain and the rest take the default.
 [life.spells."Holy Orb"]
 line = 649
 effects = [ "BALL:HOLY_ORB:2:30", "dice:$B+3d6",
-            "expr:B:PLAYER_LEVEL:* 3 / 2" ]
+            "expr:B:PLAYER_LEVEL:* 5 / 4" ]
+class-effects.Priest = [ "BALL:HOLY_ORB:2:30", "dice:$B+3d6",
+                         "expr:B:PLAYER_LEVEL:* 3 / 2" ]
+class-effects."High-Mage" = [ "BALL:HOLY_ORB:2:30", "dice:$B+3d6",
+                              "expr:B:PLAYER_LEVEL:* 3 / 2" ]
 desc = "Fires a ball of holy force that does double damage to evil creatures."
 
 [life.spells."Protection from Evil"]
@@ -603,8 +628,16 @@ desc = "Heals 2000 hit points, and all stunning and bleeding."
 
 [life.spells."Holy Vision"]
 line = 731
-effects = [ "IDENTIFY" ]
-desc = "Tells you everything about one object."
+defer = """identify_fully(), and the fourth spell in the game to want it -- the \
+same wall as Sorcery's Identify True, Trump's Trump Lore and Nature's Stone \
+Tell. 4.2 replaced whole-object identification with runes learned one at a \
+time, so there is no complete hidden description for a spell to reveal. Until \
+3.72.1 this was mapped to IDENTIFY and described as telling you everything \
+about an object, which is the one thing it could not do: 4.2's IDENTIFY learns \
+a single rune, and Sorcery's low-level Identify is already that spell, at a \
+twentieth of the cost. Deferred rather than left claiming it, because the \
+realm chapter names this mechanism as impossible three times and Life may not \
+be the exception that sells it for fifty mana."""
 
 # The one spell in the realm that is a list rather than an effect.  Nine of the
 # ten things Zangband does here are expressible; the tenth, a *friendly* angel,
@@ -961,9 +994,18 @@ desc = "Hardens your skin for a while."
 
 [nature.spells."Resistance True"]
 line = 1004
-effects = [ "SET_VALUE", "dice:19+1d21", "TIMED_INC:OPP_ACID", "TIMED_INC:OPP_ELEC", "TIMED_INC:OPP_FIRE", "TIMED_INC:OPP_COLD", "CLEAR_VALUE" ]
-note = "A SET_VALUE bracket, which is how 4.2 gives several timed effects one duration: Zangband calls inc_oppose_* once each with its own rand_range(20, 40) roll, so each element got a different number there and they all get the same one here. The 4.2 Mage's own Resistance is written exactly this way."
-desc = "Grants temporary resistance to acid, lightning, fire and cold."
+effects = [ "SET_VALUE", "dice:19+1d21", "TIMED_INC:OPP_ACID",
+            "TIMED_INC:OPP_ELEC", "TIMED_INC:OPP_FIRE", "TIMED_INC:OPP_COLD",
+            "TIMED_INC:OPP_POIS", "CLEAR_VALUE" ]
+note = """A SET_VALUE bracket, which is how 4.2 gives several timed effects \
+one duration: Zangband calls inc_oppose_* once each with its own \
+rand_range(20, 40) roll, so each element got a different number there and they \
+all get the same one here. The 4.2 Mage's own Resistance is written exactly \
+this way. Five calls, not four -- Zangband's fifth is inc_oppose_pois, and it \
+was missing here until 3.72.1. That is the half of the spell worth the mana: \
+each of the four elements has a cheap spell of its own somewhere in the game, \
+and poison does not."""
+desc = "Grants temporary resistance to acid, lightning, fire, cold and poison."
 
 [nature.spells."Animal Friendship"]
 line = 1011
@@ -1092,7 +1134,11 @@ desc = "Attempts to bind a single undead creature to your will."
 [death.spells."Orb of Entropy"]
 line = 1430
 effects = [ "BALL:MON_DRAIN:2", "dice:$B+3d6", "expr:B:PLAYER_LEVEL:* 5 / 4" ]
-note = "The class-dependent divisor again -- plev/2 for a Mage or High-Mage and plev/4 for everyone else, which the data language cannot ask. Averaged as plev*5/4, exactly as Mana Burst is in Chaos, so the two spells built the same way stay built the same way."
+class-effects.Mage = [ "BALL:MON_DRAIN:2", "dice:$B+3d6",
+                       "expr:B:PLAYER_LEVEL:* 3 / 2" ]
+class-effects."High-Mage" = [ "BALL:MON_DRAIN:2", "dice:$B+3d6",
+                              "expr:B:PLAYER_LEVEL:* 3 / 2" ]
+note = "The class-dependent divisor again -- plev/2 for a Mage or High-Mage and plev/4 for everyone else. Carried per class since 3.72.1, exactly as Mana Burst is in Chaos, so the two spells built the same way stay built the same way."
 desc = "An orb of entropy, which drains the life from what it touches."
 
 [death.spells."Nether Bolt"]
@@ -1237,9 +1283,19 @@ defer = "inc_wraith_form() turns the caster incorporeal for a while: they pass t
 # pet, and only a *failed* casting produces something angry -- with the comment
 # `/* was (randint1(5) > 2) */` next to it, recording that the original had
 # been a dice roll and was deliberately changed to certainty. So the summons
-# here are SUMMON_PET without a hostile branch. The failure case is not lost:
-# it is the realm's miscast, which Death and Chaos already have and Trump
-# shares through the same machinery.
+# here are SUMMON_PET without a hostile branch.
+#
+# What that costs is worth stating plainly, because this comment used to claim
+# the opposite. The hostile half is *gone*, not relocated: a failed Trump
+# summon in this game simply fails, and the caster is out the mana and nothing
+# else. Only Chaos and Death punish a miscast -- `spell_backfire_kind()` says
+# so and `player/miscast` asserts it for every spell of every class -- so there
+# is no Trump miscast for the angry Cyberdemon to arrive through. The spoiler
+# opens on that risk ("if the spellcaster fails to cast the summoning spell
+# correctly, the summoned creature will be hostile"), so this is a real
+# softening of the realm and not a translation detail. Giving Trump its own
+# backfire is a design decision rather than a mapping one, and is not taken
+# here.
 # ============================================================================
 
 [trump]
@@ -1252,10 +1308,16 @@ desc = "Teleports you a short distance."
 
 [trump.spells."Mind Blast"]
 line = 1795
-note = """fire_bolt_or_beam(beam - 10, GF_PSI, ...) with damroll(3 + (plev-1)/4, 3). \
-The MON_PSI projection was built for the Mindcrafter (PLR-06) and is reused \
-whole -- Zangband's Trump and its Mindcrafter cast the same thing."""
-effects = [ "BOLT_OR_BEAM:MON_PSI", "dice:$Dd3", "expr:D:PLAYER_LEVEL:- 1 / 4 + 3" ]
+note = """fire_bolt_or_beam(beam - 10, GF_PSI, ...) with damroll(3 + \
+(plev-1)/5, 3). The MON_PSI projection was built for the Mindcrafter (PLR-06) \
+and is reused whole -- Zangband's Trump and its Mindcrafter cast the same \
+thing. Two corrections in 3.72.1: this note used to say the divisor was 4 and \
+the chain followed the note, which gave every caster a quarter more dice than \
+Zangband from level five up; and the `beam - 10` was not carried at all, so it \
+beamed ten per cent more often than it should. Arcane's Zap is the same shape \
+and had both right, which is what made these visible."""
+effects = [ "BOLT_OR_BEAM:MON_PSI:0:-10", "dice:$Dd3",
+            "expr:D:PLAYER_LEVEL:- 1 / 5 + 3" ]
 desc = "Assaults a creature's mind."
 
 [trump.spells."Shuffle"]
@@ -1285,15 +1347,25 @@ desc = "Teleports you a long distance."
 
 [trump.spells."Dimension Door"]
 line = 2022
-defer = """dimension_door() lets the player *choose* where to arrive, within \
-a range. 4.2 has TELEPORT_TO, which sends the player to a grid the game picks \
-or to a targeted monster, and no interface for picking an empty square to \
-appear on. Mapping it to TELEPORT_TO would make it Teleport with extra steps, \
-and the realm already has Teleport two spells earlier."""
+effects = [ "TELEPORT_TO" ]
+note = """dimension_door(). Deferred through 3.72.1 on the grounds that 4.2 \
+has "no interface for picking an empty square to appear on", which was simply \
+wrong: effect_handler_TELEPORT_TO has a player-choice branch that calls \
+get_aim_dir and target_get, sets its own dim_door flag, and randomises the \
+landing only when you aim into a vault -- which is Zangband's rule. Sorcery's \
+Dimension Door is the same Zangband function and has shipped on this effect \
+all along, so the realm that could not express it and the realm that already \
+did were the same game. Not Teleport with extra steps: Teleport takes what the \
+dungeon gives you and this one does not."""
+desc = "Opens a gate onto a place you choose nearby."
 
 [trump.spells."Trump Spying"]
 line = 2028
-effects = [ "TIMED_INC:TELEPATHY", "dice:25+1d30" ]
+effects = [ "TIMED_INC:TELEPATHY", "dice:24+1d31" ]
+note = """rand_range(25, 55), which in 4.2's dice is 24+1d31. The spoiler \
+renders that roll as "1d30+25" and this entry followed the spoiler, landing a \
+turn short at the minimum. Sorcery's Sense Minds and Clairvoyance and Arcane's \
+Clairvoyance are the same call and all three were already right."""
 desc = "Grants telepathy for a while."
 
 [trump.spells."Teleport Away"]
@@ -1428,7 +1500,17 @@ desc = "Calls a great demon to serve you."
 
 [trump.spells."Trump Divination"]
 line = 2293
-effects = [ "DETECT_TRAPS", "DETECT_DOORS", "DETECT_STAIRS", "DETECT_GOLD", "DETECT_OBJECTS", "DETECT_VISIBLE_MONSTERS", "DETECT_INVISIBLE_MONSTERS" ]
+effects = [ "DETECT_TRAPS", "effect-yx:22:40", "DETECT_DOORS",
+            "effect-yx:22:40", "DETECT_STAIRS", "effect-yx:22:40",
+            "DETECT_GOLD", "effect-yx:22:40", "DETECT_OBJECTS",
+            "effect-yx:22:40", "DETECT_VISIBLE_MONSTERS", "effect-yx:22:40",
+            "DETECT_INVISIBLE_MONSTERS", "effect-yx:22:40" ]
+note = """detect_all(). Every DETECT_ handler takes the half-height and \
+half-width of the rectangle it searches from the effect's own y and x, and \
+those default to zero -- so until 3.72.1 this spell had seven detections and \
+no area, and searched the single square the caster was standing on. It was the \
+only spell in the game missing effect-yx, which is why nothing else showed the \
+symptom."""
 desc = "Detects everything nearby."
 
 [trump.spells."Trump Lore"]

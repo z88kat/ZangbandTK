@@ -31,8 +31,478 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+11 September 2026 — the mode that was mostly a spoiler
+======================================================
+
+Steven had ``archive/manual/Nightmare-Mode.txt`` open and asked whether our plan
+for nightmare mode matches it. Two answers, and the second one is the one that
+matters.
+
+The small answer: no. Our §2.8 summarised three of the spoiler's eight sections
+and nobody noticed, so Combat, Magic, Town, Wilderness and Dungeon, and Other —
+twenty-two claims — had never been written down anywhere in the plan. M11 is the
+next milestone now that pets have closed, and it would have been scoped off a
+document we had read a quarter of.
+
+The large answer is that reading the other three quarters would not have helped
+much either, because **the spoiler describes a game Zangband never shipped**.
+``ironman_nightmare`` is ``p_ptr->birth[18]`` and the macro is the only way to
+reach it — a grep for ``birth[18]`` returns the ``#define`` and nothing else —
+and it appears at twenty-four sites. Against roughly forty-five claims, sixteen
+changes to play exist, plus the option, the score and a line in the character dump. No doubled monster damage. No monster criticals, no slays
+disregarded, no spell-failure floor, no ball spells turning on the caster. The
+whole Town section is one ``if`` at the inn. The whole Objects section — ten
+items, from device failure to pseudo-ID — is nothing at all.
+
+And four of the sixteen appear in no spoiler. One of them is, I think, the
+cruellest thing in the mode: **a sustain fails one time in thirteen, and a stat
+drain is permanent twelve times in thirteen**. A player reading the spoiler would
+know about the doubled hit points and never learn that their sustains had
+quietly stopped working. Stair creation is disabled, which is the escape hatch
+gone. Monsters arrive with double energy and without the free first move the
+engine normally grants, which is a different and worse thing than "start awake".
+
+The fourth I liked enough to want it kept: before the midnight curse, a bell
+tolls at eleven, quarter past, half past and quarter to. Four warnings, the only
+mercy in the mode and the only piece of stagecraft in it, and no documentation
+ever mentioned it.
+
+So M11 is not the port it was written as. It splits: the sixteen Zangband
+actually built, each with a source line to check against, and then a separate
+stage of things we choose to add, designed as ours rather than described as
+restorations. Some of that second stage is nearly free, because earlier
+milestones left the hooks lying about — ``repro-max`` is already a constant in
+``constants.txt``, reflection already has its one-in-ten in CNT-09's code, 4.2
+already shuffles shopkeepers and gives them purses, M8 already has a mutation
+table to weight. One item is refused outright: the spoiler restores the
+cyberdemon summon, and DEC-30 is why our own cascade already calls greater
+demons instead.
+
+The part I want to remember is about method. DEC-16 says read the manuals,
+because they carry mechanics the data files do not, and that rule found the
+Ancient and Foul Curse and the random ability tables. It is still right. But a
+release note from 3.50.x says all four spoiler-based requirements "match", and
+what was actually checked was that the document existed and said what the
+requirement's first line said. Nobody opened the source. A spoiler is evidence of
+what its author intended; only the code is evidence of what the player got. That
+is BAL-18 now, and it applies to every requirement still resting on a document
+rather than a source line.
+
+11 September 2026 — Chaos, where the spoiler lost badly
+=======================================================
+
+Sixth spoiler, and the first realm where I changed no game data at all. Chaos
+is clean. Every one of the thirty-two chains matches ``cmd5.c``, every
+deviation already has a note explaining itself, and 188 level-and-mana rows
+across six classes came out with nothing to answer for.
+
+The document did not. Its class tables are the worst of the six:
+
+* **The Chaos-Warrior's entire mana column is wrong.** Thirty-one of its
+  thirty-two rows disagree with ours, and ``tables.c`` agrees with ours every
+  time — ``{ 40, 67 }`` for Invoke Logrus where the spoiler says 45, ``{ 47,
+  150 }`` for Summon Demon where it says 100. The spoiler's numbers look like
+  an earlier table's, uniformly about two thirds of the real cost.
+* **The Priest's second book is shifted a row**, so six spells carry the
+  previous spell's figures.
+* **The High-Mage's Trap/Door Destruction** is given as level 2; the table says
+  1.
+
+And three of its spell descriptions are wrong outright. *Meteor Swarm* is
+described as "damage 65+level, radius 3 if level less than 40, 4 otherwise";
+the source is ``project(0, 2, x, y, (plev * 3) / 2, GF_METEOR, ...)`` — radius
+2, damage plev\\*3/2, which is what we have. And *Summon Demon* is described as
+"1 in 3 the demon(s) will try to kill you", where the code says
+``bool pet = (one_in_(3))`` — one in three that it *serves* you, two in three
+hostile. The spoiler has it exactly backwards.
+
+Which is the interesting part, because **our manual had it backwards the other
+way**. The Chaos chapter still said *Summon Demon* "is always hostile, where
+Zangband gave it a one-in-three chance of serving you". That was true in
+3.57.0 and stopped being true in 3.72.0 when pets let the pet branch come back;
+``pets.rst`` was updated then and this chapter was not. Three documents, three
+different answers, and only the game itself right. It is the fourth stale
+pets-era claim these sweeps have turned up and the pattern is always the same
+shape: a thing was blocked on monster allegiance, allegiance arrived, the fix
+landed, and one sentence somewhere else kept describing the old world.
+
+One thing I checked expecting to find an error and did not: the chapter says a
+Chaos backfire can drop "eight monsters" on you. ``chaos_backfires()`` case 34
+and 35 loop ``for (i = 0; i < 8; i++)`` around ``EF_SUMMON``. Eight it is.
+
+The rest of the work was filling the chapter out. It described a realm that is
+"almost nothing else" but attack spells and then named four of them, so *Chain
+Lightning*, *Breathe Logrus*, *Wonder*, *Alter Reality*, *Polymorph Other*,
+*Teleport Other*, *Arcane Binding*, *Magic Rocket* and *Invoke Logrus* are in
+it now, along with the realm's own sentence about itself — Chaos has no
+protective spells, which is the thing to weigh before taking it alone.
+
+11 September 2026 — Trump, and a spell that detected one square
+===============================================================
+
+Fifth spoiler and the worst haul yet: three defects in the data, one false
+claim in a decision note, and the manual missing about a third of the realm.
+
+**Trump Divination detected nothing.** Every ``DETECT_`` handler in 4.2 takes
+the half-height and half-width of the rectangle it searches from the effect's
+own ``y`` and ``x`` fields, supplied by ``effect-yx``. Those default to zero.
+Trump Divination had seven detections and no ``effect-yx`` on any of them, so
+it searched a rectangle of zero by zero: **the single square the caster was
+standing on**. Thirty mana, level twenty-five to thirty-five depending on
+class, and it told you about the floor under your feet.
+
+What makes it worth writing down is how invisible it was. The spell has the
+right seven effects in the right order; the chain reads correctly; nothing
+warns, nothing fails, and the spell reports success. I only found it by
+noticing the chain was *shorter* than Arcane's Detection, which does the same
+seven things — and the difference was seven repetitions of a line that is easy
+to read as noise. A sweep over class.txt says it was the only spell in the game
+missing it, which is the good news and the reason nothing else showed a
+symptom.
+
+**Mind Blast was wrong twice**, and both errors came from the note above it.
+The note transcribed ``damroll(3 + (plev-1)/5, 3)`` as ``/4`` and the chain
+followed the note — a quarter more dice than Zangband from level five up. And
+``fire_bolt_or_beam(beam - 10, ...)`` lost its ``- 10`` entirely, so it beamed
+ten per cent more often than it should. Arcane's *Zap* is the same shape,
+``BOLT_OR_BEAM:ELEC:0:-10`` with ``/5``, and had both right; the two spells
+sitting side by side in the same file with different answers is what made it
+visible. The lesson I keep relearning this week: the note is not the source,
+and when the note and the data agree with each other and not with ``cmd5.c``,
+they agree because one was copied from the other.
+
+**Trump Spying** finally fixed, having reported it twice and fixed it neither
+time. ``rand_range(25, 55)`` is ``24+1d31``; the spoiler renders that roll as
+"1d30+25" and this entry followed the spoiler. Three other spells make the same
+call and all three were right.
+
+Then the one I am not fixing. The ``[trump]`` header comment said the hostile
+summon "is not lost: it is the realm's miscast, which Death and Chaos already
+have and Trump shares through the same machinery." Trump shares no such thing.
+``spell_backfire_kind()`` returns ``BACKFIRE_CHAOS`` for chaos, ``BACKFIRE_DEATH``
+for death and ``BACKFIRE_NONE`` for everything else, and ``player/miscast``
+asserts exactly that for every spell of every class. So a failed Trump summon
+costs the mana and nothing else, and the hostile half of the realm — which is
+the risk the spoiler opens on — is simply gone. The comment now says so. Giving
+Trump its own backfire is a design decision and Steven's to make; correcting a
+note that claimed the work was already done is not.
+
+The manual was missing both attack spells, the fetch, the detection, the
+banish, the brand and Mass Trump — a chapter that said "what it is for is
+reach" and then listed only the teleports. All in now, along with the note
+about failed summons, because a player choosing this realm on the strength of
+"cast it badly and an angry group appears" should know that half of the
+sentence is not true here.
+
+11 September 2026 — Nature, and a resistance nobody was getting
+===============================================================
+
+Fourth spoiler, and the first one where the defect I found is worth real hit
+points.
+
+**Resistance True was missing poison.** Zangband's ``case 19`` calls
+``inc_oppose_`` five times — acid, electricity, fire, cold and **poison** — and
+our chain had four of the five. The note beside it explained the SET_VALUE
+bracket carefully and correctly and simply never mentioned the fifth call, so
+there was nothing to notice: a spell called Resistance *True*, in the book you
+buy at level eighteen, granting exactly what the cheaper *Resist Environment*
+grants plus acid. The spoiler says "resistance to all elements **and poison**"
+and it was right. ``OPP_POIS`` has existed in 4.2 all along and class.txt uses
+it in five other places.
+
+That is the half of the spell worth the mana, which is what makes it a real
+loss rather than a tidy one: every one of the four elements has a cheap
+single-element spell somewhere in the game, and poison does not.
+
+The figures are otherwise exact — 192 level-and-mana rows across the six classes
+Zangband gives Nature, and one apparent difference which resolved the other way.
+The spoiler puts the Mage's *Nature Awareness* at 5/5; ``tables.c`` says
+``{ 7, 6 }``, and ``cmd5.c`` labels the case ``/* Nature Awareness --
+downgraded */``. The spoiler was written before somebody downgraded it and then
+transcribed the column one row out, which is why it shows one ``7 6`` where the
+table has two. Our data follows the table. Four spoilers in and the count is
+five errors in the documents against two in the game.
+
+The manual had a plain factual error in this one, and it is the kind that comes
+from writing about a book without opening it. "The last four spells are a
+blizzard, a lightning storm, a whirlpool and *Nature's Wrath*." The last four
+are *Whirlpool*, *Call Sunlight*, *Elemental Branding* and *Nature's Wrath*;
+Blizzard and Lightning Storm are the two before. Two whole spells — flooding the
+level with sunlight, and putting fire or frost on your weapon — appeared nowhere
+in the chapter at all.
+
+The other thing missing was the spoiler's own first paragraph: Nature "contains
+the only powerful healing spell outside the Life Realm". I checked it rather
+than copying it — *Herbal Healing* at a thousand points is the only heal of that
+size outside Life in the whole game; Death's Vampirism True drains a hundred at
+a time and is a different thing. That is the answer to "why would a Ranger or a
+Druid take this", and the chapter never gave it.
+
+11 September 2026 — the fifth deferral was never a deferral
+===========================================================
+
+Steven said to do it, so Trump's *Dimension Door* works now. One line of
+realmmap: ``defer`` out, ``effects = [ "TELEPORT_TO" ]`` in.
+
+The interesting part is what caught it and what caught me. The reason recorded
+against the spell was that 4.2 has "no interface for picking an empty square to
+appear on". ``effect_handler_TELEPORT_TO`` has a player-choice branch that calls
+``get_aim_dir``, falls through to ``target_get``, sets a local ``dim_door``
+flag, and randomises the landing only when you aimed into a vault — which is
+Zangband's own rule for the spell, written out in 4.2's own code. Sorcery's
+Dimension Door is the same Zangband function and has been shipping on that
+branch since Sorcery went in. So the realm that could not express the spell and
+the realm that already did were the same game, three milestones apart, and
+nobody compared them because nobody had reason to until I read Sorcery against
+its spoiler yesterday.
+
+What I got right by accident: the test. ``trumps_deferrals_are_the_five`` names
+its five rather than counting them, and the comment above it says a count "would
+let a sixth in silently". It does the opposite job just as well — the moment
+Dimension Door grew an effect the test failed on ``require(!expected)``, because
+a spell on the list is not allowed to work. So the list and the comment both had
+to be rewritten to say four, and the reasoning for the one that left had to be
+written down to make the test build. A test that made me explain myself before
+it would go green.
+
+A trap worth recording twice. ``cmake --build build --target unittests`` does
+not relink a changed test source, so the first run gave me 26 of 27 with the
+*old* test name in the output, which reads exactly like a real failure in new
+code. ``--target run-unittest-player-realm`` rebuilds the one test and runs it:
+27 of 27. I have written this down before and still lost ten minutes to it.
+
+Seventeen inert spells now, not eighteen, and Trump has four. Worth noticing
+that the number went down for the first time since these sweeps began.
+
+11 September 2026 — Sorcery, and the charm that missed the boat
+===============================================================
+
+Same treatment for Sorcery. The figures are exact: 190 level-and-mana rows
+across the six classes that can study it, no mismatches, all thirty-two names
+in the spoiler's order, four book titles right, the first two in town. The
+spoiler marks one row ``XXXXXXXX`` for a Rogue and a Ranger and it is *Globe of
+Invulnerability* — which is precisely the seven-of-eight Grimoire of Power that
+turned up in yesterday's sweep of short books. Two independent readings of the
+same table agreeing is the first time this week I have not had to go and check
+something twice.
+
+Two real defects, both in the realm I was checking.
+
+**Charm Monster never got the pets treatment.** Zangband's
+``charm_monster(dir, plev)`` makes a permanent pet. It was mapped to ``COMMAND``
+— take a monster over for a while and hand it back — with the note saying, quite
+correctly at the time, that 4.2 has no pets. PLR-22 brought pets, and the other
+four charms in the game were rebuilt on ``MON_CHARM``: Life's Day of the Dove,
+Nature's Animal Taming and Animal Friendship, Death's Enslave Undead. This one
+was missed. It is the only spell left in the game whose note still says 4.2 has
+no pets, and it has been the wrong spell ever since — not weaker, different, in
+exactly the way the Trump work spent a milestone arguing about. Now
+``BOLT_AWARE:MON_CHARM`` at the caster's level, the single-target twin of Day of
+the Dove.
+
+**Globe of Invulnerability was a turn short.** ``rand_range(8, 16)`` is eight to
+sixteen inclusive, which in 4.2's dice is ``7+1d9``. We had ``7+1d8``. Life's
+Holy Invulnerability is ``rand_range(7, 14)`` and was already right, which is
+what made the other one visible: two spells of the same shape rendered two
+different ways, and only one of them can be correct.
+
+And two things the manual had wrong, both of which I only caught by reading the
+source rather than the chapter.
+
+*Telekinesis* was described as "lifting fifteen pounds a level". The call is
+``fetch(dir, plev * 15, FALSE)`` and **4.2 stores weight in tenths of a pound** —
+``ui-object.c`` prints ``weight / 10`` and ``weight % 10`` as "N.N lb". So it is
+a pound and a half per level, not fifteen. At level forty that is the difference
+between sixty pounds and six hundred, and the spoiler had it right all along:
+"1.5*level lbs".
+
+*Recharging* was described as "four times the strength of the Arcane spell of
+the same name". Both are ``recharge(plev * 4)``. They are the same spell at the
+same strength; Arcane simply charges you twenty-one levels more for it, which is
+a better sentence anyway and is the one there now. The "four times" is against
+*Angband's* own Recharging, which is what the realmmap note said and the chapter
+garbled.
+
+One finding I am leaving alone because it is not Sorcery's. **Trump's Dimension
+Door is deferred on a premise that is false.** Its note says 4.2 has "no
+interface for picking an empty square to appear on". It has exactly that:
+``effect_handler_TELEPORT_TO`` has a player-choice branch that calls
+``get_aim_dir`` and ``target_get``, sets a local ``dim_door`` flag, and
+randomises the landing only if you aimed into a vault. Sorcery's Dimension Door
+— the same Zangband function — already ships on it and works. So one realm's
+copy of the spell does the thing while the other does nothing and explains that
+it cannot, which is the Holy Vision situation inside out. It is a one-line fix
+and it is Steven's call, not mine to slip in while checking a different realm.
+
+11 September 2026 — checking Arcane, and the spoiler losing
+===========================================================
+
+Third pass over an old spoiler today, and the first one where the
+implementation came out ahead of the document I was checking it against.
+
+Arcane is faithful. All thirty-two names in the spoiler's order, the four book
+titles, all four sold in town at 100, 250, 1000 and 2500 gold — and every level
+and mana figure for all six classes that can study it, which I diffed by
+machine rather than by eye: 191 rows, no mismatches. Phlogiston and Detect
+Enchantment are the two deferrals the manual already names.
+
+**Twice the spoiler is simply wrong, and we follow the source.** It says
+*Cure Medium Wounds* is "same as Life spell", which is 4d10; ``cmd5.c`` says
+``hp_player(damroll(4, 8))``. It says *Recharging* is power level times two;
+the source says ``recharge(plev * 4)``. Our data has 4d8 and plev*4, and the
+note beside Recharging already said so in as many words. Somebody read the code
+rather than the spoiler when this realm went in, and it shows.
+
+One more where I expected a defect and found care. Zangband's telepathy
+durations are all ``rand_range(25, 55)``, and the spoiler renders that as
+"25+1d30", which is 26 to 55 and wrong by one at the bottom. Our Arcane and
+Sorcery entries say ``24+1d31``, which is exactly 25 to 55. Trump Spying is the
+one that took the spoiler's figure instead — ``25+1d30`` — so that one is a turn
+short at the minimum. One turn, in one spell, in a realm nobody asked me about;
+noted here and not fixed today.
+
+What was missing was the manual, again, and the biggest gap is the spoiler's
+own headline. Arcane "attempts to encompass all 'useful' spells from all
+realms", and the specialised realms "usually offer the same spell at a lower
+level and cost" — so it is "perhaps not recommendable as one's only realm". The
+chapter said Arcane is buyable and called that its bargain, and never said the
+other half. I checked the claim before writing it down: for a Mage, nineteen
+Arcane spells also appear in a realm it might be studying, and seventeen of the
+nineteen are cheaper there. *Identify* is level 38 for 30 mana in Arcane and 10
+for 7 in Sorcery. *Stone to Mud* is 20 against Nature's 5. Only *Cure Poison*
+is better in Arcane. The spoiler's advice survives the port exactly.
+
+Then the Ranger's *Clairvoyance* row in the spoiler's table says ``XXXXXXXX``,
+and our Ranger's Manual of Mastery holds seven spells. Correct — and it pulled
+a thread. Sixteen books in this game hold fewer than eight spells, and all
+sixteen belong to a Rogue or a Ranger, the two classes entitled to realms they
+were never built for. A Rogue's Necronomicon has four rituals of eight, no
+*Hellfire* among them, and two of the four are inert: **two working rituals in
+a fifty thousand gold book**. That is a thing a player should be told before
+buying it, and the manual has never mentioned it anywhere. It does now, with
+the whole table.
+
+11 September 2026 — three spells that asked the caster's class
+==============================================================
+
+Steven read this morning's entry and said to fix both. Neither fix was the one
+I expected.
+
+**Holy Orb.** The comment in ``realmmap.toml`` claimed the priest/non-priest
+halving was carried on the ``other`` field of the ball, "which is what its own
+Orb of Draining already does". It is not. ``other`` on ``BALL`` is a radius
+divisor — 4.2 adds one to the radius for every ``other`` levels the caster has —
+and that is how Zangband's rule of radius 2 below level 30 and 3 above it
+arrives. The field was doing a real job, just not the job the comment named,
+and because it looked like the class bonus had been handled nobody went looking
+for the class bonus.
+
+So the halving had nowhere to live, and the spell shipped at three halves of
+level for every class — the priestly figure, handed to Mages, Paladins, Monks
+and Warrior-Mages as well.
+
+Then it turned out not to be one spell. Zangband tests ``pclass`` inside three
+spells: *Holy Orb* for a Priest or High-Mage, and *Mana Burst* in Chaos and
+*Orb of Entropy* in Death for a Mage or High-Mage, all three the same
+plev/2-or-plev/4 divisor. The other two were handled honestly and differently —
+their notes say the distinction is one "the data language cannot ask" and give
+every class the non-mage figure. That was true of the effect language and false
+of the file: **class.txt holds a separate copy of every spell per class.** The
+distinction cannot go in the chain and never needed to; it goes in the file.
+
+So ``class-effects`` now sits beside ``effects`` in realmmap.toml, naming the
+classes that differ, and all three spells carry Zangband's split. Holy Orb is
+the only one where anyone loses: four classes stop getting a bonus they were
+never entitled to. The two mage classes gain on the other two, which is what
+Zangband gave them.
+
+The generator validates the key, because the failure mode is silence — a
+misspelt class name would miss the lookup and quietly hand that class the
+default chain, which is precisely the bug the key exists to fix. ``Preist``
+now fails the build.
+
+**Holy Vision.** I had assumed its description overclaimed and wanted
+rewording. Reading ``cmd5.c`` instead of the spoiler settled it: ``case 29:
+return identify_fully()``. It is the same call as Sorcery's *Identify True*,
+Trump's *Trump Lore* and Nature's *Stone Tell*, and all three of those are
+deferred for the same stated reason. Holy Vision alone had been mapped to
+``IDENTIFY``, which in 4.2 learns a single rune, and then described as telling
+you everything about an object — the one thing it could not do.
+
+Rewording it would have left Life selling one rune for fifty mana at level 40
+when Sorcery sells the same rune for two mana at level 5. So it is deferred,
+which makes four spells behind that one wall and eighteen inert spells in the
+game rather than seventeen. Whole-object identification is now comfortably the
+commonest reason a spell here does nothing, and the feature list says so, which
+it did not before.
+
+None of this touches a savefile. The spell-list fingerprint hashes names and
+indices and not effects, so the corpus still loads 38 of 38 — I checked rather
+than reasoned about it, having reasoned wrongly once already today.
+
+A thing I did not change, and want written down because it will come up. Our
+Necromancer and Blackguard take a Zangband class's *figures* under DEC-55, and
+a Necromancer therefore casts Orb of Entropy at Mage levels and Mage mana. It
+does not get the Mage's damage bonus, because Zangband's test names
+``CLASS_MAGE`` and a Necromancer is not one. Death's own class not getting
+Death's orb bonus is arguable the other way — the Priest gets Life's — and if
+it should change it is one line in ``realms.py`` and a re-run.
+
+11 September 2026 — the realm the chapter forgot
+================================================
+
+Steven had ``archive/manual/Life-Magic.txt`` open and asked whether our manual
+covers it. Mostly it does, through the in-game spell descriptions, which is
+where the spoiler's per-spell effects belong. But the realm chapter had a
+section for Sorcery, Trump, Chaos, Arcane, Nature and Death, and none for Life —
+the first realm we converted, and the only one with nothing written about it.
+
+The chapter caught itself. Its own opening note says seventeen spells across the
+seven realms are inert and "are named in the realm sections below", and the
+sections name sixteen: four in Sorcery, five in Trump, two in Arcane, two in
+Nature, three in Death. The seventeenth is *Bless Weapon*, and with no Life
+section there was nowhere for it to be named. The four book titles had the same
+problem — *Book of Common Prayer*, *High Mass*, *Book of the Unicorn*,
+*Blessings of the Grail* appeared once in the release log and nowhere a player
+would look, so the manual never said which two are sold in town.
+
+Checking the numbers before writing the section turned up two things I did not
+go looking for, and neither is a documentation problem.
+
+**Holy Orb's class bonus is not in the game.** Zangband gives 3d6 + 3/2 of your
+level to priests and high mages and 3d6 + 5/4 to everybody else, and
+``realmmap.toml`` has a comment saying exactly that, and saying it is expressed
+as the ``other`` field on the ball the way 4.2's own Orb of Draining does it.
+The emitted chains do not have it. A Priest's *Holy Orb* and a Paladin's are
+identical character for character — ``$B+3d6`` with ``B`` at three halves of
+level — so every class casts the priestly version. The mapping file describes a
+translation that did not happen.
+
+**Holy Vision claims something the engine does not do.** Its description says it
+tells you everything about one object; it emits ``IDENTIFY``, and 4.2's
+``IDENTIFY`` identifies a single unknown rune on one item. Whole-object
+identification is precisely the wall that deferred *Identify True*, *Trump Lore*
+and *Stone Tell* — the realm chapter names it as impossible three times in three
+different realms, and then Life quietly offers it for fifty mana. I left the
+spell out of the new section rather than write the claim down a fourth time.
+
+So the section says what the realm is for, which books are where, and the three
+prayers that translate to something measurably different — the two dispels that
+hit demons by being evil, *Warding True* reduced to the one glyph, and *Divine
+Intervention* doing nine of its ten things for want of an angel in the summon
+table. It also records something I had not noticed until I put the levels side
+by side: Life is the one realm a High-Mage is not first into. A Priest reaches
+*Holy Orb* at 10 against its 19, and *Holy Invulnerability* at 45 against 49.
+The chapter claimed the High-Mage gets there earliest full stop, and that is
+true in six realms out of seven. Zangband's table knows whose realm this is.
+
+Two smaller corrections fell out of the same read. The feature list said six of
+the seven realms were playable, with a hundred and ninety-two workings in
+twenty-four books, eleven lines above a sentence saying all seven are — it was
+written when Trump was still out and never updated when Trump went in.
+
 10 September 2026 — three cues for one fact
-==========================================
+===========================================
 
 Steven sent me a design for the race list on the character creation screen,
 which he said "does not work very well". The list is longer than the screen and

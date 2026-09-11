@@ -670,8 +670,8 @@ twice — see §6 decisions 11–13:
   reads a script goes through one function, so a dev build can point at the source tree and
   a release build at zipfs without a single `source` path changing. Deciding this at T9,
   when there are 121 scripts, means editing 121 scripts.
-- **A minimal `ZangbandTclTK.app` bundle**, with its own identifier — a second application
-  beside the Cocoa one, never a replacement for it (§6 decision 14). Unbundled Tk on Aqua
+- **A minimal `ZangbandTclTK.app` bundle**, identifier `org.zangbandtk.zangbandtcltk` — a
+  second application beside the Cocoa one, never a replacement for it (§6 decision 14). Unbundled Tk on Aqua
   opens a window, but the application menu, Dock identity, activation and the native file
   dialogs all behave differently from a bundled app — and T7 commits to the application menu
   and ⌘-accelerators specifically ([OBS-42](phase3-observations.md)). An `Info.plist`
@@ -1257,9 +1257,22 @@ release … the current version remains, it is built and will always be playable
 
 `ZangbandTK.app` — `main-cocoa.c`, built by `gmake -f Makefile.osx`, identifier
 `org.zangbandtk.zangbandtk` — is not a stepping stone to anything and is not deprecated by
-this phase. The Tk front end ships beside it as its own application, provisionally
-**`ZangbandTclTK.app`** with its own bundle identifier; the name is cheap to change up to
-T9 and impossible to change afterwards without orphaning everyone's Dock icon.
+this phase. The Tk front end ships beside it as its own application, **`ZangbandTclTK.app`**.
+Confirmed by project owner as the naming convention, which settles it everywhere the name
+appears rather than only on the bundle:
+
+| | Cocoa, today | Tcl/Tk, from T0 |
+|---|---|---|
+| Bundle | `ZangbandTK.app` | `ZangbandTclTK.app` |
+| Identifier | `org.zangbandtk.zangbandtk` | `org.zangbandtk.zangbandtcltk` |
+| Release artefact | `<package>-osx.dmg` | `<package>-osx-tcltk.dmg` |
+| Built by | `gmake -f Makefile.osx` | cmake, `SUPPORT_TCL_FRONTEND=ON` |
+
+The artefact suffix follows the convention the terminal builds already use —
+`-osx-terminal.tar.gz`, `-linux64-terminal.tar.gz` — so the download page reads as one
+family rather than three unrelated files. `release.yaml` codesigns and verifies
+`ZangbandTK.app` by name at [line 1009](../../.github/workflows/release.yaml#L1009); the
+new bundle needs the same treatment, not a copy of the step that happens to work.
 
 *Why this is the better answer, and not merely the owner's answer:* the two are genuinely
 different games to sit down to. One is a terminal the player reads; the other is a menu bar

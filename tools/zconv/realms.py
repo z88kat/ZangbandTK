@@ -282,18 +282,30 @@ def book_noun(realm: str) -> str:
 #: rather than a comment, and is refused: a `desc2` key that this file simply
 #: ignored cost a silent half-description on eight Life spells before it was
 #: noticed, which is the same shape of bug as a mutation whose flag was skipped.
-ENTRY_KEYS = {"line", "effects", "desc", "defer", "note"}
+ENTRY_KEYS = {"line", "effects", "class-effects", "desc", "defer", "note"}
 
 
 def check_entry_keys(spellmap: dict) -> list[str]:
     """Complaints about realmmap keys nothing reads."""
     out = []
+    known = set(CLASSES) | set(DONORS)
     for realm, data in spellmap.items():
         for name, entry in data.get("spells", {}).items():
             for key in entry:
                 if key not in ENTRY_KEYS:
                     out.append(f"{realm}/{name}: nothing reads key {key!r}"
                                f" (known: {', '.join(sorted(ENTRY_KEYS))})")
+
+            # A misspelt class name here is silent otherwise: the lookup misses
+            # and the class quietly takes the default chain, which is exactly
+            # the bug this whole key exists to fix.
+            for cls in entry.get("class-effects", {}):
+                if cls not in known:
+                    out.append(f"{realm}/{name}: class-effects names {cls!r},"
+                               f" which is not a class")
+            if "class-effects" in entry and "effects" not in entry:
+                out.append(f"{realm}/{name}: class-effects without effects,"
+                           f" so every other class would cast nothing")
     return out
 
 
@@ -464,7 +476,23 @@ def emit_books(src: str, cls: str, realm: str, spellmap: dict) -> list[str]:
         lines.append("spell:%s:%d:%d:%d:%d" % (
             s["name"], s["level"], s["mana"], s["fail"], s["exp"]))
 
-        for item in entry.get("effects", []):
+        # Three of Zangband's spells pay a bigger level bonus to the two
+        # classes the realm belongs to, and 4.2's effect language has no test
+        # on the caster's class -- but class.txt holds a separate copy of every
+        # spell per class, so the distinction goes in the file rather than in
+        # the chain. `class-effects` names the classes that differ; everyone
+        # else gets `effects`.
+        #
+        # Keyed on the class itself and not on `donor_for()`, deliberately. A
+        # donor supplies the figures Zangband has no row for (DEC-55), and this
+        # is not a figure -- it is Zangband testing `pclass` by name. A
+        # Necromancer therefore casts Orb of Entropy at Mage levels and mana,
+        # because those are figures, and at the ordinary damage bonus, because
+        # Zangband's test names CLASS_MAGE and a Necromancer is not one. If that
+        # should change it is this line, and the realm re-run.
+        chain = entry.get("class-effects", {}).get(cls, entry.get("effects", []))
+
+        for item in chain:
             if item.startswith(("dice:", "expr:", "effect-yx:", "effect-msg:")):
                 lines.append(item)
             else:

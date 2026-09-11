@@ -500,8 +500,10 @@ spell:Detect Enchantment:10:10:35:45
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
 spell:Charm Monster:10:10:35:45
-effect:COMMAND
-desc:Takes control of a monster for a time.
+effect:BOLT_AWARE:MON_CHARM
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to turn a single monster to your side.
 spell:Dimension Door:12:12:38:45
 effect:TELEPORT_TO
 desc:Opens a gate to a place you choose nearby.
@@ -552,7 +554,7 @@ effect:ALCHEMY
 desc:Turns an object into a third of its worth in gold. Artifacts refuse.
 spell:Globe of Invulnerability:45:70:87:80
 effect:TIMED_INC:INVULN
-dice:7+1d8
+dice:7+1d9
 desc:Makes you briefly untouchable.
 
 book:chaos book:town:[Sign of Chaos]:8:chaos
@@ -581,7 +583,7 @@ desc:Makes your hands glow.  Your next blows may confuse what they touch.
 spell:Mana Burst:9:6:33:5
 effect:BALL:MISSILE:2
 dice:$B+3d5
-expr:B:PLAYER_LEVEL:* 5 / 4
+expr:B:PLAYER_LEVEL:* 3 / 2
 desc:Fires a ball of pure magical force.
 spell:Fire Bolt:13:9:39:5
 effect:BOLT_OR_BEAM:FIRE
@@ -802,7 +804,7 @@ desc:Lets you see invisible creatures for a while.
 spell:Holy Orb:20:20:50:20
 effect:BALL:HOLY_ORB:2:30
 dice:$B+3d6
-expr:B:PLAYER_LEVEL:* 3 / 2
+expr:B:PLAYER_LEVEL:* 5 / 4
 desc:Fires a ball of holy force that does double damage to evil creatures.
 spell:Protection from Evil:23:23:54:20
 effect:TIMED_INC:PROTEVIL
@@ -911,8 +913,8 @@ effect:CURE:STUN
 effect:CURE:CUT
 desc:Heals 2000 hit points, and all stunning and bleeding.
 spell:Holy Vision:48:50:92:80
-effect:IDENTIFY
-desc:Tells you everything about one object.
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
 spell:Divine Intervention:49:100:93:80
 effect:SPHERE:HOLY_ORB:1
 dice:777
@@ -1062,8 +1064,9 @@ effect:TIMED_INC:OPP_ACID
 effect:TIMED_INC:OPP_ELEC
 effect:TIMED_INC:OPP_FIRE
 effect:TIMED_INC:OPP_COLD
+effect:TIMED_INC:OPP_POIS
 effect:CLEAR_VALUE
-desc:Grants temporary resistance to acid, lightning, fire and cold.
+desc:Grants temporary resistance to acid, lightning, fire, cold and poison.
 spell:Animal Friendship:30:30:65:45
 effect:PROJECT_LOS:MON_CHARM_ANIMAL
 dice:$B
@@ -1172,7 +1175,7 @@ book-properties:400:40:10 to 100
 spell:Orb of Entropy:12:12:38:20
 effect:BALL:MON_DRAIN:2
 dice:$B+3d6
-expr:B:PLAYER_LEVEL:* 5 / 4
+expr:B:PLAYER_LEVEL:* 3 / 2
 desc:An orb of entropy, which drains the life from what it touches.
 spell:Nether Bolt:13:12:39:20
 effect:BOLT_OR_BEAM:NETHER
@@ -1311,9 +1314,9 @@ effect:TELEPORT
 dice:10
 desc:Teleports you a short distance.
 spell:Mind Blast:3:3:24:5
-effect:BOLT_OR_BEAM:MON_PSI
+effect:BOLT_OR_BEAM:MON_PSI:0:-10
 dice:$Dd3
-expr:D:PLAYER_LEVEL:- 1 / 4 + 3
+expr:D:PLAYER_LEVEL:- 1 / 5 + 3
 desc:Assaults a creature's mind.
 spell:Shuffle:5:5:27:5
 desc:This working is beyond what this game can yet
@@ -1327,11 +1330,11 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 4
 desc:Teleports you a long distance.
 spell:Dimension Door:9:9:33:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:TELEPORT_TO
+desc:Opens a gate onto a place you choose nearby.
 spell:Trump Spying:14:12:41:5
 effect:TIMED_INC:TELEPATHY
-dice:25+1d30
+dice:24+1d31
 desc:Grants telepathy for a while.
 spell:Teleport Away:17:15:45:5
 effect:BEAM:AWAY_ALL
@@ -1411,12 +1414,19 @@ book-graphics:?:w
 book-properties:50000:10:75 to 100
 spell:Trump Divination:30:30:65:80
 effect:DETECT_TRAPS
+effect-yx:22:40
 effect:DETECT_DOORS
+effect-yx:22:40
 effect:DETECT_STAIRS
+effect-yx:22:40
 effect:DETECT_GOLD
+effect-yx:22:40
 effect:DETECT_OBJECTS
+effect-yx:22:40
 effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
 effect:DETECT_INVISIBLE_MONSTERS
+effect-yx:22:40
 desc:Detects everything nearby.
 spell:Trump Lore:35:50:72:80
 desc:This working is beyond what this game can yet
@@ -1600,8 +1610,9 @@ effect:TIMED_INC:OPP_ACID
 effect:TIMED_INC:OPP_ELEC
 effect:TIMED_INC:OPP_FIRE
 effect:TIMED_INC:OPP_COLD
+effect:TIMED_INC:OPP_POIS
 effect:CLEAR_VALUE
-desc:Grants temporary resistance to acid, lightning, fire and cold.
+desc:Grants temporary resistance to acid, lightning, fire, cold and poison.
 spell:Animal Friendship:35:35:72:45
 effect:PROJECT_LOS:MON_CHARM_ANIMAL
 dice:$B
@@ -1881,8 +1892,8 @@ effect:CURE:STUN
 effect:CURE:CUT
 desc:Heals 2000 hit points, and all stunning and bleeding.
 spell:Holy Vision:40:40:80:80
-effect:IDENTIFY
-desc:Tells you everything about one object.
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
 spell:Divine Intervention:42:90:83:80
 effect:SPHERE:HOLY_ORB:1
 dice:777
@@ -2022,8 +2033,10 @@ spell:Detect Enchantment:12:12:38:45
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
 spell:Charm Monster:14:14:41:45
-effect:COMMAND
-desc:Takes control of a monster for a time.
+effect:BOLT_AWARE:MON_CHARM
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to turn a single monster to your side.
 spell:Dimension Door:15:15:42:45
 effect:TELEPORT_TO
 desc:Opens a gate to a place you choose nearby.
@@ -2074,7 +2087,7 @@ effect:ALCHEMY
 desc:Turns an object into a third of its worth in gold. Artifacts refuse.
 spell:Globe of Invulnerability:48:70:92:80
 effect:TIMED_INC:INVULN
-dice:7+1d8
+dice:7+1d9
 desc:Makes you briefly untouchable.
 
 book:chaos book:town:[Sign of Chaos]:8:chaos
@@ -2372,8 +2385,9 @@ effect:TIMED_INC:OPP_ACID
 effect:TIMED_INC:OPP_ELEC
 effect:TIMED_INC:OPP_FIRE
 effect:TIMED_INC:OPP_COLD
+effect:TIMED_INC:OPP_POIS
 effect:CLEAR_VALUE
-desc:Grants temporary resistance to acid, lightning, fire and cold.
+desc:Grants temporary resistance to acid, lightning, fire, cold and poison.
 spell:Animal Friendship:35:35:72:45
 effect:PROJECT_LOS:MON_CHARM_ANIMAL
 dice:$B
@@ -2796,9 +2810,9 @@ effect:TELEPORT
 dice:10
 desc:Teleports you a short distance.
 spell:Mind Blast:4:4:26:5
-effect:BOLT_OR_BEAM:MON_PSI
+effect:BOLT_OR_BEAM:MON_PSI:0:-10
 dice:$Dd3
-expr:D:PLAYER_LEVEL:- 1 / 4 + 3
+expr:D:PLAYER_LEVEL:- 1 / 5 + 3
 desc:Assaults a creature's mind.
 spell:Shuffle:6:5:29:5
 desc:This working is beyond what this game can yet
@@ -2812,11 +2826,11 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 4
 desc:Teleports you a long distance.
 spell:Dimension Door:11:11:36:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:TELEPORT_TO
+desc:Opens a gate onto a place you choose nearby.
 spell:Trump Spying:17:14:45:5
 effect:TIMED_INC:TELEPATHY
-dice:25+1d30
+dice:24+1d31
 desc:Grants telepathy for a while.
 spell:Teleport Away:19:17:48:5
 effect:BEAM:AWAY_ALL
@@ -2896,12 +2910,19 @@ book-graphics:?:w
 book-properties:50000:10:75 to 100
 spell:Trump Divination:32:30:68:80
 effect:DETECT_TRAPS
+effect-yx:22:40
 effect:DETECT_DOORS
+effect-yx:22:40
 effect:DETECT_STAIRS
+effect-yx:22:40
 effect:DETECT_GOLD
+effect-yx:22:40
 effect:DETECT_OBJECTS
+effect-yx:22:40
 effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
 effect:DETECT_INVISIBLE_MONSTERS
+effect-yx:22:40
 desc:Detects everything nearby.
 spell:Trump Lore:38:55:77:80
 desc:This working is beyond what this game can yet
@@ -3256,7 +3277,7 @@ desc:Lets you see invisible creatures for a while.
 spell:Holy Orb:18:15:47:20
 effect:BALL:HOLY_ORB:2:30
 dice:$B+3d6
-expr:B:PLAYER_LEVEL:* 3 / 2
+expr:B:PLAYER_LEVEL:* 5 / 4
 desc:Fires a ball of holy force that does double damage to evil creatures.
 spell:Protection from Evil:19:15:48:20
 effect:TIMED_INC:PROTEVIL
@@ -3365,8 +3386,8 @@ effect:CURE:STUN
 effect:CURE:CUT
 desc:Heals 2000 hit points, and all stunning and bleeding.
 spell:Holy Vision:45:45:87:80
-effect:IDENTIFY
-desc:Tells you everything about one object.
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
 spell:Divine Intervention:48:100:92:80
 effect:SPHERE:HOLY_ORB:1
 dice:777
@@ -3899,8 +3920,10 @@ spell:Detect Enchantment:13:10:39:45
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
 spell:Charm Monster:14:10:41:45
-effect:COMMAND
-desc:Takes control of a monster for a time.
+effect:BOLT_AWARE:MON_CHARM
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to turn a single monster to your side.
 spell:Dimension Door:15:10:42:45
 effect:TELEPORT_TO
 desc:Opens a gate to a place you choose nearby.
@@ -4105,9 +4128,9 @@ effect:TELEPORT
 dice:10
 desc:Teleports you a short distance.
 spell:Mind Blast:7:5:30:5
-effect:BOLT_OR_BEAM:MON_PSI
+effect:BOLT_OR_BEAM:MON_PSI:0:-10
 dice:$Dd3
-expr:D:PLAYER_LEVEL:- 1 / 4 + 3
+expr:D:PLAYER_LEVEL:- 1 / 5 + 3
 desc:Assaults a creature's mind.
 spell:Shuffle:9:7:33:5
 desc:This working is beyond what this game can yet
@@ -4121,11 +4144,11 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 4
 desc:Teleports you a long distance.
 spell:Dimension Door:15:13:42:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:TELEPORT_TO
+desc:Opens a gate onto a place you choose nearby.
 spell:Trump Spying:19:15:48:5
 effect:TIMED_INC:TELEPATHY
-dice:25+1d30
+dice:24+1d31
 desc:Grants telepathy for a while.
 spell:Teleport Away:21:20:51:5
 effect:BEAM:AWAY_ALL
@@ -4201,12 +4224,19 @@ book-graphics:?:w
 book-properties:50000:10:75 to 100
 spell:Trump Divination:35:30:72:80
 effect:DETECT_TRAPS
+effect-yx:22:40
 effect:DETECT_DOORS
+effect-yx:22:40
 effect:DETECT_STAIRS
+effect-yx:22:40
 effect:DETECT_GOLD
+effect-yx:22:40
 effect:DETECT_OBJECTS
+effect-yx:22:40
 effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
 effect:DETECT_INVISIBLE_MONSTERS
+effect-yx:22:40
 desc:Detects everything nearby.
 spell:Trump Lore:42:65:83:80
 desc:This working is beyond what this game can yet
@@ -4381,8 +4411,9 @@ effect:TIMED_INC:OPP_ACID
 effect:TIMED_INC:OPP_ELEC
 effect:TIMED_INC:OPP_FIRE
 effect:TIMED_INC:OPP_COLD
+effect:TIMED_INC:OPP_POIS
 effect:CLEAR_VALUE
-desc:Grants temporary resistance to acid, lightning, fire and cold.
+desc:Grants temporary resistance to acid, lightning, fire, cold and poison.
 spell:Animal Friendship:35:30:72:45
 effect:PROJECT_LOS:MON_CHARM_ANIMAL
 dice:$B
@@ -4552,8 +4583,10 @@ spell:Detect Enchantment:15:20:42:45
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
 spell:Charm Monster:17:17:45:45
-effect:COMMAND
-desc:Takes control of a monster for a time.
+effect:BOLT_AWARE:MON_CHARM
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to turn a single monster to your side.
 spell:Dimension Door:18:18:47:45
 effect:TELEPORT_TO
 desc:Opens a gate to a place you choose nearby.
@@ -5085,9 +5118,9 @@ effect:TELEPORT
 dice:10
 desc:Teleports you a short distance.
 spell:Mind Blast:6:6:29:5
-effect:BOLT_OR_BEAM:MON_PSI
+effect:BOLT_OR_BEAM:MON_PSI:0:-10
 dice:$Dd3
-expr:D:PLAYER_LEVEL:- 1 / 4 + 3
+expr:D:PLAYER_LEVEL:- 1 / 5 + 3
 desc:Assaults a creature's mind.
 spell:Shuffle:9:7:33:5
 desc:This working is beyond what this game can yet
@@ -5101,11 +5134,11 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 4
 desc:Teleports you a long distance.
 spell:Dimension Door:17:15:45:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:TELEPORT_TO
+desc:Opens a gate onto a place you choose nearby.
 spell:Trump Spying:20:17:50:5
 effect:TIMED_INC:TELEPATHY
-dice:25+1d30
+dice:24+1d31
 desc:Grants telepathy for a while.
 spell:Teleport Away:22:20:53:5
 effect:BEAM:AWAY_ALL
@@ -5171,12 +5204,19 @@ book-graphics:?:w
 book-properties:50000:10:75 to 100
 spell:Trump Divination:35:33:72:80
 effect:DETECT_TRAPS
+effect-yx:22:40
 effect:DETECT_DOORS
+effect-yx:22:40
 effect:DETECT_STAIRS
+effect-yx:22:40
 effect:DETECT_GOLD
+effect-yx:22:40
 effect:DETECT_OBJECTS
+effect-yx:22:40
 effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
 effect:DETECT_INVISIBLE_MONSTERS
+effect-yx:22:40
 desc:Detects everything nearby.
 spell:Trump Lore:40:65:80:80
 desc:This working is beyond what this game can yet
@@ -5560,7 +5600,7 @@ desc:Lets you see invisible creatures for a while.
 spell:Holy Orb:19:16:48:20
 effect:BALL:HOLY_ORB:2:30
 dice:$B+3d6
-expr:B:PLAYER_LEVEL:* 3 / 2
+expr:B:PLAYER_LEVEL:* 5 / 4
 desc:Fires a ball of holy force that does double damage to evil creatures.
 spell:Protection from Evil:20:18:50:20
 effect:TIMED_INC:PROTEVIL
@@ -5669,8 +5709,8 @@ effect:CURE:STUN
 effect:CURE:CUT
 desc:Heals 2000 hit points, and all stunning and bleeding.
 spell:Holy Vision:48:40:92:80
-effect:IDENTIFY
-desc:Tells you everything about one object.
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
 spell:Divine Intervention:49:100:93:80
 effect:SPHERE:HOLY_ORB:1
 dice:777
@@ -5819,8 +5859,9 @@ effect:TIMED_INC:OPP_ACID
 effect:TIMED_INC:OPP_ELEC
 effect:TIMED_INC:OPP_FIRE
 effect:TIMED_INC:OPP_COLD
+effect:TIMED_INC:OPP_POIS
 effect:CLEAR_VALUE
-desc:Grants temporary resistance to acid, lightning, fire and cold.
+desc:Grants temporary resistance to acid, lightning, fire, cold and poison.
 spell:Animal Friendship:35:35:72:45
 effect:PROJECT_LOS:MON_CHARM_ANIMAL
 dice:$B
@@ -6645,7 +6686,7 @@ desc:Lets you see invisible creatures for a while.
 spell:Holy Orb:26:26:59:20
 effect:BALL:HOLY_ORB:2:30
 dice:$B+3d6
-expr:B:PLAYER_LEVEL:* 3 / 2
+expr:B:PLAYER_LEVEL:* 5 / 4
 desc:Fires a ball of holy force that does double damage to evil creatures.
 spell:Protection from Evil:28:28:62:20
 effect:TIMED_INC:PROTEVIL
@@ -6754,8 +6795,8 @@ effect:CURE:STUN
 effect:CURE:CUT
 desc:Heals 2000 hit points, and all stunning and bleeding.
 spell:Holy Vision:48:50:92:80
-effect:IDENTIFY
-desc:Tells you everything about one object.
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
 spell:Divine Intervention:49:100:93:80
 effect:SPHERE:HOLY_ORB:1
 dice:777
@@ -6894,8 +6935,10 @@ spell:Detect Enchantment:12:12:38:45
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
 spell:Charm Monster:14:12:41:45
-effect:COMMAND
-desc:Takes control of a monster for a time.
+effect:BOLT_AWARE:MON_CHARM
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to turn a single monster to your side.
 spell:Dimension Door:15:12:42:45
 effect:TELEPORT_TO
 desc:Opens a gate to a place you choose nearby.
@@ -6946,7 +6989,7 @@ effect:ALCHEMY
 desc:Turns an object into a third of its worth in gold. Artifacts refuse.
 spell:Globe of Invulnerability:48:75:92:80
 effect:TIMED_INC:INVULN
-dice:7+1d8
+dice:7+1d9
 desc:Makes you briefly untouchable.
 book:nature book:town:[Call of the Wild]:8:nature
 book-graphics:?:y
@@ -7065,8 +7108,9 @@ effect:TIMED_INC:OPP_ACID
 effect:TIMED_INC:OPP_ELEC
 effect:TIMED_INC:OPP_FIRE
 effect:TIMED_INC:OPP_COLD
+effect:TIMED_INC:OPP_POIS
 effect:CLEAR_VALUE
-desc:Grants temporary resistance to acid, lightning, fire and cold.
+desc:Grants temporary resistance to acid, lightning, fire, cold and poison.
 spell:Animal Friendship:38:38:77:45
 effect:PROJECT_LOS:MON_CHARM_ANIMAL
 dice:$B
@@ -7664,9 +7708,9 @@ effect:TELEPORT
 dice:10
 desc:Teleports you a short distance.
 spell:Mind Blast:5:5:27:5
-effect:BOLT_OR_BEAM:MON_PSI
+effect:BOLT_OR_BEAM:MON_PSI:0:-10
 dice:$Dd3
-expr:D:PLAYER_LEVEL:- 1 / 4 + 3
+expr:D:PLAYER_LEVEL:- 1 / 5 + 3
 desc:Assaults a creature's mind.
 spell:Shuffle:7:7:30:5
 desc:This working is beyond what this game can yet
@@ -7680,11 +7724,11 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 4
 desc:Teleports you a long distance.
 spell:Dimension Door:12:12:38:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:TELEPORT_TO
+desc:Opens a gate onto a place you choose nearby.
 spell:Trump Spying:18:15:47:5
 effect:TIMED_INC:TELEPATHY
-dice:25+1d30
+dice:24+1d31
 desc:Grants telepathy for a while.
 spell:Teleport Away:20:18:50:5
 effect:BEAM:AWAY_ALL
@@ -7764,12 +7808,19 @@ book-graphics:?:w
 book-properties:50000:10:75 to 100
 spell:Trump Divination:33:30:69:80
 effect:DETECT_TRAPS
+effect-yx:22:40
 effect:DETECT_DOORS
+effect-yx:22:40
 effect:DETECT_STAIRS
+effect-yx:22:40
 effect:DETECT_GOLD
+effect-yx:22:40
 effect:DETECT_OBJECTS
+effect-yx:22:40
 effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
 effect:DETECT_INVISIBLE_MONSTERS
+effect-yx:22:40
 desc:Detects everything nearby.
 spell:Trump Lore:40:60:80:80
 desc:This working is beyond what this game can yet
@@ -8018,8 +8069,8 @@ effect:CURE:STUN
 effect:CURE:CUT
 desc:Heals 2000 hit points, and all stunning and bleeding.
 spell:Holy Vision:45:40:87:80
-effect:IDENTIFY
-desc:Tells you everything about one object.
+desc:This working is beyond what this game can yet
+desc: express, and does nothing.  See realmmap.toml.
 spell:Divine Intervention:47:90:90:80
 effect:SPHERE:HOLY_ORB:1
 dice:777
@@ -8158,8 +8209,10 @@ spell:Detect Enchantment:7:7:30:45
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
 spell:Charm Monster:8:8:32:45
-effect:COMMAND
-desc:Takes control of a monster for a time.
+effect:BOLT_AWARE:MON_CHARM
+dice:$B
+expr:B:PLAYER_LEVEL:+ 0
+desc:Attempts to turn a single monster to your side.
 spell:Dimension Door:9:9:33:45
 effect:TELEPORT_TO
 desc:Opens a gate to a place you choose nearby.
@@ -8210,7 +8263,7 @@ effect:ALCHEMY
 desc:Turns an object into a third of its worth in gold. Artifacts refuse.
 spell:Globe of Invulnerability:42:65:83:80
 effect:TIMED_INC:INVULN
-dice:7+1d8
+dice:7+1d9
 desc:Makes you briefly untouchable.
 book:nature book:town:[Call of the Wild]:8:nature
 book-graphics:?:y
@@ -8329,8 +8382,9 @@ effect:TIMED_INC:OPP_ACID
 effect:TIMED_INC:OPP_ELEC
 effect:TIMED_INC:OPP_FIRE
 effect:TIMED_INC:OPP_COLD
+effect:TIMED_INC:OPP_POIS
 effect:CLEAR_VALUE
-desc:Grants temporary resistance to acid, lightning, fire and cold.
+desc:Grants temporary resistance to acid, lightning, fire, cold and poison.
 spell:Animal Friendship:25:25:57:45
 effect:PROJECT_LOS:MON_CHARM_ANIMAL
 dice:$B
@@ -8415,7 +8469,7 @@ desc:Makes your hands glow.  Your next blows may confuse what they touch.
 spell:Mana Burst:6:4:29:5
 effect:BALL:MISSILE:2
 dice:$B+3d5
-expr:B:PLAYER_LEVEL:* 5 / 4
+expr:B:PLAYER_LEVEL:* 3 / 2
 desc:Fires a ball of pure magical force.
 spell:Fire Bolt:10:5:35:5
 effect:BOLT_OR_BEAM:FIRE
@@ -8615,7 +8669,7 @@ book-properties:400:40:10 to 100
 spell:Orb of Entropy:10:10:35:20
 effect:BALL:MON_DRAIN:2
 dice:$B+3d6
-expr:B:PLAYER_LEVEL:* 5 / 4
+expr:B:PLAYER_LEVEL:* 3 / 2
 desc:An orb of entropy, which drains the life from what it touches.
 spell:Nether Bolt:11:10:36:20
 effect:BOLT_OR_BEAM:NETHER
@@ -8928,9 +8982,9 @@ effect:TELEPORT
 dice:10
 desc:Teleports you a short distance.
 spell:Mind Blast:2:2:23:5
-effect:BOLT_OR_BEAM:MON_PSI
+effect:BOLT_OR_BEAM:MON_PSI:0:-10
 dice:$Dd3
-expr:D:PLAYER_LEVEL:- 1 / 4 + 3
+expr:D:PLAYER_LEVEL:- 1 / 5 + 3
 desc:Assaults a creature's mind.
 spell:Shuffle:4:4:26:5
 desc:This working is beyond what this game can yet
@@ -8944,11 +8998,11 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 4
 desc:Teleports you a long distance.
 spell:Dimension Door:7:7:30:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:TELEPORT_TO
+desc:Opens a gate onto a place you choose nearby.
 spell:Trump Spying:10:10:35:5
 effect:TIMED_INC:TELEPATHY
-dice:25+1d30
+dice:24+1d31
 desc:Grants telepathy for a while.
 spell:Teleport Away:14:12:41:5
 effect:BEAM:AWAY_ALL
@@ -9028,12 +9082,19 @@ book-graphics:?:w
 book-properties:50000:10:75 to 100
 spell:Trump Divination:25:25:57:80
 effect:DETECT_TRAPS
+effect-yx:22:40
 effect:DETECT_DOORS
+effect-yx:22:40
 effect:DETECT_STAIRS
+effect-yx:22:40
 effect:DETECT_GOLD
+effect-yx:22:40
 effect:DETECT_OBJECTS
+effect-yx:22:40
 effect:DETECT_VISIBLE_MONSTERS
+effect-yx:22:40
 effect:DETECT_INVISIBLE_MONSTERS
+effect-yx:22:40
 desc:Detects everything nearby.
 spell:Trump Lore:32:45:68:80
 desc:This working is beyond what this game can yet

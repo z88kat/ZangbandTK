@@ -195,8 +195,8 @@ The realms of magic
   permanent. A Mage may take any of them; a Chaos-Warrior takes Chaos and nothing else.
   Your realms decide which spellbooks you can open at all — a Priest of Death cannot read
   a Life book.
-- **Six of the seven are playable** — a hundred and ninety-two workings in
-  twenty-four books, every one of them Zangband's rather than Angband's. Sorcery is
+- **All seven are playable** — two hundred and twenty-four workings in
+  twenty-eight books, every one of them Zangband's rather than Angband's. Sorcery is
   the realm of knowing and going: detection, teleportation, enchantment, *Globe of
   Invulnerability* at the end of it, and not one attack spell in it. Chaos is the
   destructive one, and it **backfires**: a failed Chaos spell may go off as something
@@ -216,7 +216,7 @@ The realms of magic
 
 **Trump arrived with pets** — fifteen of its thirty-two spells are summons whose
 whole point is that the creature is *yours*, so it could not ship until monsters
-could take sides. All seven realms are now playable.
+could take sides. It was the last of the seven to go in.
 
 Things that fight for you
 -------------------------
@@ -333,6 +333,17 @@ Zangband and 4.2 has no vocabulary for it.
   catches more than Zangband's version did.
 - **A ring of glyphs is one glyph.** *Warding True* laid glyphs around the
   caster; 4.2's ``GLYPH`` places one, beneath you.
+- **Nothing jams a door.** In 4.2 a door is open, closed, locked or broken and
+  no effect reaches the lock, so Arcane's *Wizard Lock* makes a door along the
+  line you aim instead of jamming one that is already there. Same purpose,
+  different means — and it works in an empty corridor, where the original
+  needed a door to work on.
+- **Nothing tells you everything about an object.** 4.2 replaced whole-object
+  identification with runes learned one at a time, so there is no hidden
+  description for a spell to reveal. That is one wall and four spells behind
+  it, one in each of four realms: Sorcery's *Identify True*, Nature's *Stone
+  Tell*, Trump's *Trump Lore* and Life's *Holy Vision*. It is the single
+  commonest reason a spell in this game does nothing.
 - **Polymorph Self keeps the mutations and drops the race change.** Zangband
   rewrote your race permanently. 4.2 has shapechanges, which are better, and a
   character whose race is mangled mid-game breaks things a savefile has to

@@ -663,21 +663,38 @@ annoyance implemented. Manual chapter: pets.
 
 ### M11 — Nightmare mode
 
-- BAL-15 to BAL-17 — irreversible birth option, the full modifier set, composing with
+- BAL-15 to BAL-18 — irreversible birth option, the modifier set audited in
+  [phase1-balance-calibration.md](phase1-balance-calibration.md) §2.8, composing with
   BAL-13 rather than replacing it (hit points become `base × 0.73 × 2`).
-- Must follow M10: the pet-decay behaviour needs the allegiance model.
+- ~~Must follow M10: the pet-decay behaviour needs the allegiance model.~~ **Unblocked.**
+  M10 closed at 3.94.1, and the audit of 11 September 2026 found no pet-decay code to
+  port — it is a spoiler claim, not a Zangband behaviour. Every family this milestone
+  modifies is now built, which is what BAL-17 was waiting for.
 
-**Exit:** nightmare mode selectable and unfair as designed. Manual chapter: nightmare mode.
+**The audit changed what this milestone is.** It was written as a port of a documented
+modifier set. Zangband changes sixteen things across twenty-four sites; the spoiler
+describes about forty-five. So M11 splits in two, and the split should be visible in the
+manual chapter as well as here:
+
+| | Stage | What it is |
+|---|---|---|
+| 1 | **The mode as Zangband shipped it** | §2.8.2's sixteen, each with a source site to check against. The birth option, the score change, doubled hit points, +5 speed, waking and energy, out-of-depth generation, failing sustains and permanent drains, invisible walls, the midnight curse with its bell, Word of Recall going wrong, no stair creation, the Golem's stun immunity, and the two nightmares — the inn's through PLR-41's dream rather than the function DEC-32 dropped. |
+| 2 | **What we choose to add** | Anything from §2.8.5, each one designed and recorded as ours under BAL-18, and none of it described as restoring Zangband behaviour. The cheap and clearly-good ones first: `repro-max` 100 → 255 (a constant we already have), reflection's 1-in-10 doubled (CNT-09's own number), store owners that never rotate and carry the smallest purses (4.2 has both hooks), nastier mutations (M8's table). The cyberdemon item is refused outright — DEC-30, and our cascade already substitutes `HI_DEMON`. |
+
+**Exit:** nightmare mode selectable and unfair as designed, stage 1 complete and every
+stage-2 addition recorded as a decision. Manual chapter: nightmare mode, which per BAL-15's
+own reasoning must tell the player which half is which.
 
 ---
 
 ## 3. Requirement coverage
 
 Every requirement defined in the four Phase 1 documents appears exactly once below.
-There are **109**; the table used to account for 91 of them and to say in a footnote
+There are **110**; the table used to account for 91 of them and to say in a footnote
 that seven were unassigned, which was wrong in both directions. Rebuilt rather than
-patched, and the arithmetic is checkable: the milestone rows sum to 104, and the five
-that are not scheduled are listed under it with a reason each.
+patched, and the arithmetic is checkable: the milestone rows sum to 105, and the five
+that are not scheduled are listed under it with a reason each. (109 until 11 September
+2026, when the nightmare audit added BAL-18.)
 
 | Milestone | Requirements | Count |
 |---|---|---:|
@@ -754,8 +771,8 @@ regeneration penalty the spoiler warns about had been taken out of Zangband befo
 (DEC-45).
 | M9 | PLR-08…PLR-12, CNT-10 (+ PLR-03's two realm classes, and three M8 mutation powers) | 6 |
 | M10 | PLR-22…PLR-33 | 12 |
-| M11 | BAL-15…BAL-17 | 3 |
-| | **Scheduled** | **104** |
+| M11 | BAL-15…BAL-18 | 4 |
+| | **Scheduled** | **105** |
 
 And the five that are not:
 
@@ -767,7 +784,7 @@ And the five that are not:
 | CNT-17 | Dropped by DEC-32. Sanity loss is not being implemented; it is not Amber's. |
 | WLD-13 | Superseded by DEC-26. A town is not a persistent chunk, so there is nothing to hold. |
 
-**109 = 104 scheduled + 1 standing + 2 built-unscheduled + 2 closed.** There is no
+**110 = 105 scheduled + 1 standing + 2 built-unscheduled + 2 closed.** There is no
 PLR-39; the numbering skips it.
 
 Corrections this table carried until now, kept here because each was invisible

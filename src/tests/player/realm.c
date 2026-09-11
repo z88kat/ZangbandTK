@@ -1692,19 +1692,22 @@ static int test_trump_summons_serve_you(void *state) {
 }
 
 /**
- * And the realm's deferrals are the five that were argued for, not more.
+ * And the realm's deferrals are the four that were argued for, not more.
  *
- * A count would let a sixth in silently. These five are named because each was
+ * A count would let a fifth in silently. These four are named because each was
  * a separate judgement: Shuffle's weighted deck cannot be expressed by a
  * uniform RANDOM, Reset Recall needs a recall depth 4.2 does not keep,
- * Dimension Door needs a player-chosen destination it has no interface for,
  * Joker Card summons groups that do not exist here, and Trump Lore is
  * whole-object identification, which 4.2 replaced with runes.
+ *
+ * Dimension Door was the fifth until 3.72.1, deferred for wanting a
+ * player-chosen destination "it has no interface for". TELEPORT_TO has exactly
+ * that interface -- Sorcery's copy of the same Zangband spell had been using it
+ * since the realm went in -- so the spell works and this list is one shorter.
  */
-static int test_trumps_deferrals_are_the_five(void *state) {
+static int test_trumps_deferrals_are_the_four(void *state) {
 	static const char *const deferred[] = {
-		"Shuffle", "Reset Recall", "Dimension Door", "Joker Card",
-		"Trump Lore"
+		"Shuffle", "Reset Recall", "Joker Card", "Trump Lore"
 	};
 	const struct player_class *c = find_class("High-Mage");
 	int b, silent = 0;
@@ -1983,7 +1986,7 @@ struct test tests[] = {
 	{ "the-realm-filter-sorts-three-realms",
 	  test_the_realm_filter_sorts_three_realms },
 	{ "trump-summons-serve-you", test_trump_summons_serve_you },
-	{ "trumps-deferrals-are-the-five", test_trumps_deferrals_are_the_five },
+	{ "trumps-deferrals-are-the-four", test_trumps_deferrals_are_the_four },
 	{ "every-class-charges-zangbands-price",
 	  test_every_class_charges_zangbands_price },
 	{ "a-high-mage-holds-more-magic",
