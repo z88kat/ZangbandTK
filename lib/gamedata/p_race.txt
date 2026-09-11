@@ -66,6 +66,25 @@
 
 # 'weight' is weight info - base weight, random weight modifier.
 
+# ZangbandTK: where the imported races' figures come from, since the question
+# is the same for all of them and the answer does not belong nine times over.
+#
+# Age uses the same formula in both games -- `b_age + randint1(m_age)`
+# (player-birth.c:358, birth.c:322) -- so Zangband's pair is copied unchanged.
+#
+# Height and weight are `Rand_normal(base, mod)` in both, base being the mean
+# and mod the standard deviation, but Zangband keeps a pair per race (male and
+# female) where 4.2 keeps one. The base here is the midpoint of the two, which
+# is what 4.2 itself did to every race whose body it kept from 2.8.1 -- Human
+# 72/66 became 69, Dwarf 48/46 became 47, Half-Troll 96/84 became 90. The mod
+# is the average of the two spreads plus half the gap between the bases, so the
+# single distribution still covers both; 4.2 has no formula for that and its
+# own figures vary, so it is derived rather than looked up. See DEC-76.
+#
+# Zangband's own weight is additionally scaled by the rolled height and its
+# spread divided by three (birth.c:329); 4.2 rolls weight independently. The
+# mean is the same either way, which is what the base carries.
+
 # 'obj-flags' is for object flags (as in src/list-obj-flags.h) that
 # races possess innately.
 
@@ -404,9 +423,9 @@ hitdie:10
 exp:225
 infravision:0
 history:1
-age:20:20
-height:70:6
-weight:150:20
+age:50:50
+height:80:8
+weight:185:22
 obj-flags:SUST_CON | REGEN
 power:shift into shadow
 power-level:30
@@ -456,9 +475,9 @@ hitdie:11
 exp:140
 infravision:0
 history:1
-age:20:20
-height:70:6
-weight:150:20
+age:14:6
+height:63:8
+weight:135:32
 obj-flags:PROT_CONF
 values:RES_SOUND[1]
 
@@ -481,9 +500,9 @@ hitdie:7
 exp:100
 infravision:2
 history:1
-age:20:20
-height:70:6
-weight:150:20
+age:14:3
+height:50:3
+weight:82:12
 values:RES_ACID[1]
 # And stops being merely resistant: immune to acid above level 19
 # (files.c, RACE_YEEK).  The one thing a Yeek is actually good at.
@@ -516,9 +535,9 @@ hitdie:11
 exp:250
 infravision:2
 history:1
-age:20:20
-height:70:6
-weight:150:20
+age:75:33
+height:74:3
+weight:145:20
 obj-flags:FEATHER
 # Five resistances, each on its own threshold, exactly as the archive grants
 # them (files.c:1408).  Fire used to be given at birth, which is four levels of
@@ -561,9 +580,9 @@ hitdie:9
 exp:140
 infravision:4
 history:1
-age:20:20
-height:70:6
-weight:150:20
+age:100:25
+height:66:8
+weight:127:28
 # Both sustains from birth, and the other two on thresholds (files.c:1421).
 # Seeing the invisible was given at birth and the sustains and telepathy were
 # missing altogether -- the manual said this race "was granted nothing at all",
@@ -601,9 +620,9 @@ hitdie:11
 exp:200
 infravision:5
 history:1
-age:20:20
-height:70:6
-weight:150:20
+age:100:30
+height:69:8
+weight:165:38
 # A vampire carries its own dim light in the archive (TR_LITE, files.c:1469),
 # which was missed -- so the one race that is hurt by light also had none of
 # its own.  Everything here is granted at birth: the Vampire is the one
@@ -655,9 +674,9 @@ hitdie:12
 exp:200
 infravision:4
 history:1
-age:20:20
-height:70:6
-weight:150:20
+age:1:100
+height:64:3
+weight:190:16
 # CANT_EAT is the archive's (files.c:1439) and was missing, so a Golem ate
 # like anything else while the manual said it barely eats.  Hold life waits for
 # 35 rather than arriving at birth.
@@ -999,9 +1018,9 @@ hitdie:7
 exp:175
 infravision:4
 history:1
-age:20:20
-height:70:6
-weight:150:20
+age:50:25
+height:30:4
+weight:70:7
 obj-flags:FEATHER
 # A Sprite flies: `lev / 10` speed, so +1 at 10 and +5 at 50 (xtra1.c:2550).
 # Zangband gates the flag above level 9, which its own arithmetic makes
@@ -1035,9 +1054,9 @@ hitdie:14
 exp:255
 infravision:0
 history:1
-age:20:20
-height:70:6
-weight:150:20
+age:100:30
+height:105:17
+weight:252:88
 values:RES_CHAOS[1]
 
 power:examine your foes

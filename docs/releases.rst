@@ -45,6 +45,19 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+A Sprite and a Half-Titan stop being the same size — 11 September 2026
+-------------------------------------------------------------------------
+
+- **3.117.5** — Nine imported races shared one placeholder height, weight and
+  age, so a Sprite, a Golem and a Half-Titan were all born seventy inches and a
+  hundred and fifty pounds. They now have Zangband's own figures: a Sprite is
+  thirty inches and seventy pounds, a Half-Titan is eight foot nine and a
+  quarter of a ton, and a Golem is one year old plus however many the dice give.
+
+  Only flavour — the character sheet and nothing else reads these — but the
+  manual has always said height and weight are "randomly determined according to
+  the race of the character", and for nine races that was not true.
+
 The Sword of Chaos stops being easy to clean up — 11 September 2026
 ----------------------------------------------------------------------
 

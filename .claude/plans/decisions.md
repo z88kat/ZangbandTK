@@ -3850,3 +3850,51 @@ them, and because `-d50` is exactly `-randint1(50)` under 4.2's parser, which
 negates a whole random value and shifts the base to suit
 ([parser.c:203](../../src/parser.c#L203)). Said plainly here so nobody mistakes
 the absence of a test for an absence of thought.
+
+**DEC-76 — Nine imported races get Zangband's own bodies, and the one figure
+that had to be derived is named as derived.**
+
+Nine races shared a placeholder -- `age:20:20`, `height:70:6`, `weight:150:20`
+-- so a Sprite and a Half-Titan were born the same size and a Golem weighed
+what a man weighs. The question was whether fixing it meant looking numbers up
+or inventing them. It is almost entirely the former, and the part that is not
+is small and stated here rather than hidden in the data.
+
+**Age is a straight copy.** Both games compute it as
+`b_age + randint1(m_age)` -- [player-birth.c:358](../../src/player-birth.c#L358)
+against [birth.c:322](../zangband/src/birth.c#L322) -- so Zangband's pair goes
+across unchanged. A Golem is `1:100`, which reads oddly and is the archive's.
+
+**Height and weight are a copy through one merge.** Both games roll
+`Rand_normal(base, mod)`, base being the mean and mod the standard deviation,
+so the units match and nothing needs scaling. But Zangband keeps a *pair* per
+race, male and female, and 4.2 keeps one.
+
+*The base is not a judgement.* It is the midpoint, which is what 4.2 itself did
+to every race whose body it kept from 2.8.1: Human 72/66 became 69, Dwarf 48/46
+became 47, Half-Orc 66/62 became 64, Half-Troll 96/84 became 90, and the same
+holds for seven of the weights. Four races -- Elf, Half-Elf, High-Elf and Kobold
+-- do not follow it, and all four are cases where 4.2 redesigned the body
+outright rather than merged it. So the rule is 4.2's own, applied to races it
+never had.
+
+*The mod is a judgement, and a small one.* 4.2 has no formula: its merged
+spreads run from a little below the sum of the two sexes' to a little above,
+with no pattern. What is used here is the average of the two spreads plus half
+the gap between the bases, so the single distribution still covers both means.
+Checked against the eleven races where 4.2 made its own choice, it lands within
+about a fifth of 4.2's figure every time and never outside the range 4.2's own
+data uses. **This is the one number in the nine sets that is not a lookup**, and
+it moves nothing but the width of a flavour roll.
+
+*One thing deliberately not reproduced.* Zangband additionally scales the weight
+mean by the rolled height and divides its spread by three
+([birth.c:329](../zangband/src/birth.c#L329)); 4.2 rolls weight independently of
+height. The *mean* is the same either way, which is what the base carries, and
+correlating the two is a mechanic 4.2 does not have rather than a number that
+was dropped.
+
+**The parser trap does not apply here.** `age`, `height` and `weight` are
+`parser_getint` (init.c:4525-4527), three pairs of plain integers -- not the
+`values:` dice grammar that turned an Amulet of Destruction into a benefit
+(DEC-75). Checked rather than assumed, because that is the lesson.

@@ -793,6 +793,58 @@ static int test_the_undead_wake_in_the_dark(void *state) {
 	ok;
 }
 
+/**
+ * Every race has a body of its own.
+ *
+ * Nine imported races shared one placeholder -- `age:20:20`, `height:70:6`,
+ * `weight:150:20` -- so a Sprite and a Half-Titan were born the same size, and
+ * a Golem weighed what a man weighs. The figures exist in Zangband's own race
+ * table; nothing had to be invented, only merged, because Zangband keeps a
+ * pair per race for the two sexes and 4.2 keeps one (DEC-76).
+ *
+ * Two assertions, and the first is the one that matters: no two races may
+ * share the placeholder triple, which is what a future import silently
+ * inheriting it would look like. The second names four races whose size is
+ * part of what they are, so a merge done wrongly in the other direction --
+ * everything converging on the average -- fails as well.
+ */
+static int test_every_race_has_a_body(void *state) {
+	static const struct {
+		const char *race;
+		int age, height, weight;
+	} rows[] = {
+		{ "Sprite",     50,  30,  70 },
+		{ "Half-Titan", 100, 105, 252 },
+		{ "Yeek",       14,  50,  82 },
+		{ "Golem",      1,   64,  190 },
+	};
+	struct player_race *r;
+	size_t i;
+
+	/* Nobody is left on the placeholder. */
+	for (r = races; r; r = r->next) {
+		if (r->b_age == 20 && r->m_age == 20 && r->base_hgt == 70
+				&& r->mod_hgt == 6 && r->base_wgt == 150
+				&& r->mod_wgt == 20) {
+			printf("%s still carries the placeholder body\n", r->name);
+			require(false);
+		}
+	}
+
+	for (i = 0; i < N_ELEMENTS(rows); i++) {
+		r = race_named(rows[i].race);
+		require(r);
+		if (r->b_age != rows[i].age || r->base_hgt != rows[i].height
+				|| r->base_wgt != rows[i].weight) {
+			printf("%s: %d/%d/%d, wanted %d/%d/%d\n", rows[i].race,
+					r->b_age, r->base_hgt, r->base_wgt,
+					rows[i].age, rows[i].height, rows[i].weight);
+			require(false);
+		}
+	}
+	ok;
+}
+
 const char *suite_name = "player/race";
 struct test tests[] = {
 	{ "the-draconian-grows-into-its-scales",
@@ -829,5 +881,6 @@ struct test tests[] = {
 			test_a_mountain_costs_a_spectre_blood },
 	{ "the-undead-wake-in-the-dark",
 			test_the_undead_wake_in_the_dark },
+	{ "every-race-has-a-body", test_every_race_has_a_body },
 	{ NULL, NULL }
 };
