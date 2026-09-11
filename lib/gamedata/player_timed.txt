@@ -264,6 +264,8 @@ grade:R:10000:Mortal Wound:You have been given a mortal wound.
 on-end:You are no longer bleeding.
 msgt:CUT
 fail:4:ROCK
+# ZangbandTK: the four races with nothing to bleed (effects.c:2064, DEC-79).
+fail:1:PROT_CUT
 
 name:STUN
 desc:stunning

@@ -309,6 +309,19 @@ msg:Your {name} steadies you.
 bindui:pstun_ui_compact_0:0
 desc:stunning
 
+# ZangbandTK: a Golem, Skeleton, Spectre or Zombie does not bleed --
+# `set_cut()` zeroes the value outright for them (effects.c:2064).  4.2 had the
+# other four protections and not this one, so the races that need it had
+# nowhere to say so.  DEC-79.
+name:protection from bleeding
+type:flag
+code:PROT_CUT
+subtype:protection
+id-type:on effect
+power:10
+msg:Your {name} closes your wounds.
+desc:bleeding
+
 name:slow digestion
 type:flag
 subtype:misc ability

@@ -40,6 +40,14 @@
 int setup_tests(void **state) {
 	set_file_paths();
 	init_angband();
+	/*
+	 * Report the seed, so an intermittent failure here can be replayed.
+	 * Several tests in this suite generate a level, which makes them
+	 * sensitive to the dice in ways the assertions do not show, and without
+	 * this a one-in-twenty failure is only ever a number.
+	 */
+	(void) test_seed_rng_reported(suite_name);
+
 	/* Any race and class will do; every test sets the race it cares about */
 	if (!player_make_simple(NULL, NULL, "Tester")) return 1;
 	*state = NULL;
@@ -664,7 +672,20 @@ static bool steps_into(const char *name, const char *feat_name)
 	 */
 	for (d = 0; d < 8; d++) {
 		target = loc_sum(player->grid, ddgrid_ddd[d]);
-		if (square_in_bounds_fully(cave, target)) break;
+		if (!square_in_bounds_fully(cave, target)) continue;
+
+		/*
+		 * And nothing standing on it. `move_player()` into an occupied grid
+		 * attacks rather than moves, so the walk silently does not happen and
+		 * the test reads that as a Spectre unable to pass through rock.
+		 *
+		 * Measured before it was fixed: about one run in twenty, which is how
+		 * often level generation puts a monster next to the player. It had
+		 * been in the suite for two days and `check-flakes` -- eight passes --
+		 * misses a one-in-twenty failure about two times in three.
+		 */
+		if (square_monster(cave, target)) continue;
+		break;
 	}
 	if (d == 8) return false;
 
@@ -967,6 +988,77 @@ static int test_a_power_expression_means_what_it_says(void *state) {
 	ok;
 }
 
+/**
+ * Four races do not bleed, and one of them has to grow into it.
+ *
+ * `set_cut()` zeroes the value outright for a Golem, Skeleton, Spectre, and a
+ * Zombie above level 11 ([effects.c:2064](../../archive/zangband/src/effects.c#L2064)).
+ * 4.2 had protection from fear, blindness, confusion and stunning and not from
+ * bleeding, so the races that needed it had nowhere to say so and simply bled.
+ *
+ * The Zombie is the interesting row. Its threshold is the reason this could not
+ * be four `obj-flags:` entries: it is a level gate on a property the other
+ * three are born with, so it needs both mechanisms at once.
+ *
+ * Tested through `player_inc_timed` rather than by reading the flag, because
+ * the flag only matters if the timed effect honours it -- the whole thing hangs
+ * on one `fail:1:PROT_CUT` line in player_timed.txt, and a test that read the
+ * flag would pass with that line deleted.
+ */
+static int test_the_bloodless_do_not_bleed(void *state) {
+	static const struct { const char *race; int lev; bool bleeds; } rows[] = {
+		{ "Golem",    1,  false },
+		{ "Skeleton", 1,  false },
+		{ "Spectre",  1,  false },
+		{ "Zombie",   11, true  },	/* below the gate, it still bleeds */
+		{ "Zombie",   12, false },
+		{ "Human",    1,  true  },	/* and the control */
+	};
+	size_t i;
+
+	/*
+	 * A real level, because `player_inc_check()` reads `cave->mon_current` to
+	 * decide whether a monster is watching, and does it before asking whether
+	 * there is a cave at all. Nothing in the game reaches that with no level;
+	 * a test does.
+	 */
+	for (i = 0; i < N_ELEMENTS(rows); i++) {
+		struct player *p = grown_to(rows[i].race, rows[i].lev);
+		bool bled;
+
+		require(p);
+		p->depth = 1;
+		prepare_next_level(p);
+		p->timed[TMD_CUT] = 0;
+		player_inc_timed(p, TMD_CUT, 50, false, false, true);
+		bled = p->timed[TMD_CUT] > 0;
+
+		/*
+		 * And through a real source rather than the setter, because three of
+		 * the four places the game cuts you passed `check = false` and so went
+		 * round the whole mechanism. A character's own exertion is one of
+		 * them: the flag was right and a Skeleton still bled from casting.
+		 */
+		p->timed[TMD_CUT] = 0;
+		player_over_exert(p, PY_EXERT_CUT, 100, 50);
+		if ((p->timed[TMD_CUT] > 0) != rows[i].bleeds) {
+			printf("%s at %d bled from exertion: %s, wanted %s\n",
+					rows[i].race, rows[i].lev,
+					p->timed[TMD_CUT] > 0 ? "yes" : "no",
+					rows[i].bleeds ? "yes" : "no");
+			require(false);
+		}
+
+		if (bled != rows[i].bleeds) {
+			printf("%s at %d: %s, wanted %s\n", rows[i].race, rows[i].lev,
+					bled ? "bled" : "did not bleed",
+					rows[i].bleeds ? "bleeding" : "no bleeding");
+			require(false);
+		}
+	}
+	ok;
+}
+
 const char *suite_name = "player/race";
 struct test tests[] = {
 	{ "the-draconian-grows-into-its-scales",
@@ -1008,5 +1100,6 @@ struct test tests[] = {
 			test_the_shared_races_kept_their_powers },
 	{ "a-power-expression-means-what-it-says",
 			test_a_power_expression_means_what_it_says },
+	{ "the-bloodless-do-not-bleed", test_the_bloodless_do_not_bleed },
 	{ NULL, NULL }
 };

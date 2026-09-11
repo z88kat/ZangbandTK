@@ -4008,3 +4008,79 @@ Sprite and the Klackon get from the race `speed`/`speed_scale` pair DEC-72
 built. The Monk's is gated on level *and* condition, so it is a `gain-speed:`
 on the band rather than a second ungated pair on the class. One expression of
 "when", not two.
+
+**DEC-79 — Four races do not bleed, which needed a protection 4.2 did not have
+and three call sites that were going round the one it did.**
+
+`set_cut()` zeroes the value outright for a Golem, Skeleton, Spectre, and a
+Zombie above level 11
+([effects.c:2064](../zangband/src/effects.c#L2064)). 4.2 has protection from
+fear, blindness, confusion and stunning, and none from bleeding, so the races
+that needed it had nowhere to say so and bled like anything else.
+
+**`PROT_CUT` joins the other four.** An object flag rather than a player flag,
+for one reason: the Zombie's is a *level* gate, and DEC-72's mechanism carries
+object flags. A player flag would have covered three races and not the fourth.
+Adding it takes `OF_MAX` from 56 to 57 and therefore `OF_SIZE` from seven bytes
+to eight; the loader accepts any width up to its own ([load.c:782](../../src/load.c#L782)),
+so the width is not the problem.
+
+**The position is.** Object flags are saved as a raw bitfield
+([save.c:141](../../src/save.c#L141)), so a flag inserted *beside* the other
+four protections -- where it belongs by meaning -- shifts the bit index of every
+flag declared after it, and every savefile in existence comes back with its
+flags off by one. It is appended at the end of the list instead, with the reason
+written next to it so nobody tidies it back into place.
+
+The unit-test object kinds caught this before any reasoning did:
+`unit-test-data.h` encodes flags positionally as `.flags = { 0, 0, 8, 0 }`, and
+that stopped meaning `TAKES_FUEL`. A lantern that could no longer be refilled
+was the whole visible symptom of a savefile break.
+
+**Three call sites were bypassing the mechanism, and that is the part worth
+recording.** `TMD_CUT` already carried a `fail:` list -- `fail:4:ROCK`, for a
+character in stone form -- and of the four places the game cuts you, only
+monster melee passed `check = true`. Spell exertion
+([player-util.c:1062](../../src/player-util.c#L1062)), shards and ice
+([project-player.c:347](../../src/project-player.c#L347), 496) all passed
+`false` and went round the list entirely. So the flag was right, the data was
+right, and a Skeleton still bled from casting a spell.
+
+All three now check. *That is a change to upstream behaviour beyond this
+milestone and is deliberate*: a character in rock form also stops bleeding from
+shards, ice and its own exertion, which is what ROCK has always been supposed
+to mean. The monster-melee site checking while the other three did not reads as
+an oversight rather than a design, and the alternative -- a second guard inside
+`player_set_timed` for this one flag -- would have duplicated the mechanism to
+avoid admitting the first one was half-wired.
+
+**The test goes through exertion, not through the setter.** Asserting
+`player_inc_timed(..., check = true)` would have passed with all three call
+sites still bypassing it, which is exactly the failure this decision is about.
+Falsified by removing the race flag, by removing the `fail:` line, and by moving
+the Zombie's gate to birth.
+
+**A flake found on the way, and it was mine.** `a-spectre-walks-through-rock`
+failed about one run in twenty and had done since it was written two days ago.
+`steps_into()` sets a rock feature on a neighbouring grid and walks into it, and
+`move_player()` into an occupied grid *attacks* rather than moves -- so whenever
+level generation put a monster beside the player, the walk silently did not
+happen and the test read that as a Spectre unable to pass through rock. It now
+requires an empty neighbour. Measured at 9 failures in 150 runs before and 0 in
+200 after.
+
+Two things worth keeping from how it was found. `player/race` did not report its
+seed, so the failure was only ever a number; it does now, and the nine failing
+seeds replay clean against the fix. And **`check-flakes` runs eight passes,
+which misses a one-in-twenty failure about two times in three** -- it had passed
+this suite clean twice in a row while the flake was there. That is not an
+argument for more passes on every gate, but it is worth knowing what eight
+passes does and does not establish.
+
+*Not built: the Golem's drain-heal denial.* Zangband stops a monster healing
+itself on an experience-draining blow against these races
+([melee1.c:1330](../zangband/src/melee1.c#L1330)). 4.2's experience-drain blow
+does not heal the attacker at all -- the only blow that heals a monster is
+`UN_POWER`, draining charges ([mon-blows.c:756](../../src/mon-blows.c#L756)) --
+so there is nothing to deny. Recorded because it had been carried as
+outstanding work for some time and is not work.

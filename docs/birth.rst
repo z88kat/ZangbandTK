@@ -487,6 +487,11 @@ Skeleton
   of rations, and will be buying more. From level 30 it can recover lost
   experience, which no other race can do for itself.
 
+  And **it does not bleed**. Nothing that cuts anyone else — a shard breath, an
+  ice storm, a blade, the strain of forcing a spell you cannot afford — leaves
+  a wound on it. A Golem and a Spectre are the same; a Zombie becomes so at
+  level 12, being still fresh enough to leak before that.
+
 .. _Zombie:
 
 Zombie

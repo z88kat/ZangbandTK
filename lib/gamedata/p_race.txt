@@ -757,7 +757,9 @@ weight:190:16
 # 35 rather than arriving at birth.
 # PROT_STUN because a Golem cannot be stunned (effects.c:1875) -- one of three
 # grants the archive makes outside player_flags(), which is why it was missed.
-obj-flags:SEE_INVIS | FREE_ACT | SLOW_DIGEST | CANT_EAT | PROT_STUN
+# PROT_CUT: `set_cut()` zeroes the value outright for this race
+# (effects.c:2064).  Nothing in it bleeds.
+obj-flags:SEE_INVIS | FREE_ACT | SLOW_DIGEST | CANT_EAT | PROT_STUN | PROT_CUT
 armour:20:5
 # A Golem gets a twentieth out of food, so Zangband gives it scrolls rather
 # than rations too (birth.c:557).  It keeps its torches: only the Vampire
@@ -952,7 +954,9 @@ height:69:5
 weight:50:5
 # No SLOW_DIGEST: a skeleton gets hungry at the ordinary rate and can do
 # nothing about it, which is why the scrolls matter more to it than to the rest.
-obj-flags:SEE_INVIS | HOLD_LIFE | CANT_EAT
+# PROT_CUT: `set_cut()` zeroes the value outright for this race
+# (effects.c:2064).  Nothing in it bleeds.
+obj-flags:SEE_INVIS | HOLD_LIFE | CANT_EAT | PROT_CUT
 player-flags:UNDEAD
 values:RES_SHARD[1] | RES_POIS[3] | RES_ACID[-1]
 equip-instead:food:scroll:Remove Hunger:2:5
@@ -991,6 +995,10 @@ values:RES_NETHER[1] | RES_POIS[3] | RES_FIRE[-1]
 equip-instead:food:scroll:Remove Hunger:2:5
 gain-at:5
 gain-values:RES_COLD[1]
+# A Zombie stops bleeding only above level 11, where the Golem,
+# Skeleton and Spectre never do at all (effects.c:2064).
+gain-at:12
+gain-obj-flags:PROT_CUT
 power:recover your lost life force
 power-level:30
 power-cost:30
@@ -1020,7 +1028,9 @@ history:1
 age:100:30
 height:69:5
 weight:100:23
-obj-flags:SEE_INVIS | HOLD_LIFE | SLOW_DIGEST | CANT_EAT | PASS_WALL
+# PROT_CUT: `set_cut()` zeroes the value outright for this race
+# (effects.c:2064).  Nothing in it bleeds.
+obj-flags:SEE_INVIS | HOLD_LIFE | SLOW_DIGEST | CANT_EAT | PASS_WALL | PROT_CUT
 player-flags:UNDEAD
 values:RES_COLD[1] | RES_NETHER[1] | RES_POIS[3] | RES_ELEC[-1]
 equip-instead:food:scroll:Remove Hunger:2:5

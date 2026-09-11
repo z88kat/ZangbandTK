@@ -45,6 +45,21 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The bloodless stop bleeding — 11 September 2026
+--------------------------------------------------
+
+- **3.118.2** — A Golem, Skeleton and Spectre do not bleed, and a Zombie stops
+  at level 12. Nothing that cuts anyone else leaves a wound on them, which is
+  what Zangband does and what the manual says being made of bone or stone ought
+  to mean.
+
+  This wanted a protection the game did not have — it had protection from fear,
+  blindness, confusion and stunning, and none from bleeding. **And it turned up
+  something older.** Of the four places the game can cut you, only a monster's
+  claws consulted that kind of protection at all; spell exertion, shard breath
+  and ice storms went straight round it. So a character in stone form has been
+  bleeding from shards this whole time too. All four now check.
+
 A Mindcrafter grows into four things it never had — 11 September 2026
 ------------------------------------------------------------------------
 
