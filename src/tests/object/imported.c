@@ -1024,6 +1024,75 @@ static int test_destruction_is_never_a_gift(void *state) {
 	ok;
 }
 
+/**
+ * A `rand_range(a, b)` arrives as the range it names, at both ends.
+ *
+ * `rand_range(a, b)` is inclusive: `a + randint0(1 + b - a)`. 4.2 evaluates
+ * `base + damroll(dice, sides)` and `damroll` starts at one, so the base sits
+ * one *below* the low end and the die carries one more side than the span.
+ *
+ * This had been written out by hand six times and three of them read
+ * `a + d(b - a)` -- the right width, shifted up by one and one value short.
+ * The Scroll of Logrus did 151 to 301 where Zangband does 150 to 300, and
+ * the Amulet of Judgement could not come back in twenty turns where the
+ * original allows it.
+ * Neither is anything a player would ever notice, which is exactly why they
+ * survived: there is no symptom, only a wrong number.
+ *
+ * One row per shape rather than per object: an activation recharge, a
+ * self-damage roll and a timed effect, which is every place the form is used.
+ */
+static int test_a_range_arrives_as_its_range(void *state) {
+	struct object_kind *logrus = kind_named(TV_SCROLL, "Logrus");
+	struct object_kind *booze = kind_named(TV_POTION, "Booze");
+	const struct artifact *judgement = NULL;
+	struct ego_item *trump = ego_named("(Trump Weapon)");
+	int i;
+
+	/* Scroll of Logrus: take_hit(rand_range(150, 300)) on the reader. */
+	require(logrus);
+	require(logrus->effect);
+	{
+		/* The ball first, then the damage the reader takes. */
+		struct effect *e = logrus->effect;
+
+		while (e->next) e = e->next;
+		require(e->dice);
+		eq(dice_evaluate(e->dice, 0, MINIMISE, NULL), 150);
+		eq(dice_evaluate(e->dice, 0, MAXIMISE, NULL), 300);
+	}
+
+	/* Potion of Booze: inc_confused(rand_range(15, 35)) -- already correct,
+	 * and here so the test fails if the fix is applied in the wrong
+	 * direction as well as if it is not applied at all. */
+	require(booze);
+	require(booze->effect);
+	{
+		struct effect *e = booze->effect;
+
+		require(e->dice);
+		eq(dice_evaluate(e->dice, 0, MINIMISE, NULL), 15);
+		eq(dice_evaluate(e->dice, 0, MAXIMISE, NULL), 35);
+	}
+
+	/* An artifact recharge: rand_range(20, 40). */
+	for (i = 0; i < z_info->a_max; i++) {
+		if (a_info[i].name && !my_stricmp(a_info[i].name, "of Judgement")) {
+			judgement = &a_info[i];
+			break;
+		}
+	}
+	require(judgement);
+	eq(randcalc(judgement->time, 0, MINIMISE), 20);
+	eq(randcalc(judgement->time, 0, MAXIMISE), 40);
+
+	/* And an ego recharge: rand_range(50, 100). */
+	require(trump);
+	eq(randcalc(trump->time, 0, MINIMISE), 50);
+	eq(randcalc(trump->time, 0, MAXIMISE), 100);
+	ok;
+}
+
 const char *suite_name = "object/imported";
 struct test tests[] = {
 	{ "the-imported-artifacts-can-be-activated",
@@ -1067,5 +1136,6 @@ struct test tests[] = {
 	  test_the_rolled_modifiers_are_ranges },
 	{ "an-imported-rod-recharges", test_an_imported_rod_recharges },
 	{ "destruction-is-never-a-gift", test_destruction_is_never_a_gift },
+	{ "a-range-arrives-as-its-range", test_a_range_arrives_as_its_range },
 	{ NULL, NULL }
 };

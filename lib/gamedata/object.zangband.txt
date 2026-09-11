@@ -94,7 +94,7 @@ flags:IGNORE_FIRE | IGNORE_ACID | IGNORE_COLD | IGNORE_ELEC | EASY_KNOW
 effect:BALL:CHAOS:4
 dice:400
 effect:DAMAGE
-dice:150+d151
+dice:149+d151
 desc:The chaotic runes on this scroll look very dangerous. It creates a chaos burst (400) centered on you, but will hurt you as well.
 
 name:Fire
@@ -108,7 +108,7 @@ flags:IGNORE_FIRE | EASY_KNOW
 effect:BALL:FIRE:4
 dice:350
 effect:DAMAGE
-dice:100+d101
+dice:99+d101
 desc:This scroll creates a fire burst (350) centered on you, but will hurt you as well.
 
 name:Ice

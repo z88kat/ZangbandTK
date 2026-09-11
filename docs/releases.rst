@@ -45,6 +45,25 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+A range that was one out, in six places — 11 September 2026
+--------------------------------------------------------------
+
+- **3.117.3** — **The object-side BAL-08 sweep, third stage.** Zangband's
+  ``rand_range(a, b)`` includes both ends. Half the places that expression was
+  converted by hand wrote it as a range of the right *width* shifted up by one,
+  and one value short.
+
+  A Scroll of Logrus did 151 to 301 damage to its reader where the original does
+  150 to 300; a Scroll of Fire did 101 to 201 where it does 100 to 200. Seven
+  artifacts and one ego could not recharge in the shortest time the original
+  allows. The other three conversions were right, and nothing distinguished
+  them.
+
+  No player could ever have noticed any of this, which is exactly why it
+  survived: a number wrong by one has no symptom. It is written out once now,
+  and the converter refuses to run if a hand-written effect does not say what
+  its own source says.
+
 Two rods stop recharging instantly — 11 September 2026
 --------------------------------------------------------
 

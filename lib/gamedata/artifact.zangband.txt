@@ -13,7 +13,7 @@ armor:0:0
 flags:SEE_INVIS | HOLD_LIFE | PROT_CONF
 values:RES_CHAOS[1] | SPEED[3] | WIS[3] | INT[3] | LIGHT[1]
 act:CLAIRVOYANCE
-time:20+d20
+time:19+d21
 desc:An artifact of Zangband.
 
 name:'Frakir'
@@ -25,7 +25,7 @@ alloc:4:80 to 127
 flags:SEE_INVIS
 values:STR[1] | INT[1] | WIS[1] | DEX[1] | CON[1] | STEALTH[1] | RES_POIS[1] | SEARCH[1]
 act:DRAIN_LIFE2
-time:100+d100
+time:99+d101
 desc:An artifact of Zangband.
 
 name:of Elemental Mastery
@@ -37,7 +37,7 @@ alloc:2:105 to 127
 flags:TELEPATHY
 values:STR[4] | INT[4] | DEX[4] | SPEED[4] | STEALTH[4] | RES_FIRE[1] | RES_COLD[1] | RES_ACID[1] | RES_ELEC[1] | RES_POIS[1]
 act:MISSILE
-time:250+d250
+time:249+d251
 desc:An artifact of Zangband.
 
 name:of the Thaumaturgist
@@ -249,7 +249,7 @@ armor:2:15
 flags:SUST_CON | REGEN
 values:CON[4] | RES_COLD[1]
 act:COLD_BOLT
-time:7+d7
+time:6+d8
 desc:An artifact of Zangband.
 
 name:of Thanos
@@ -322,7 +322,7 @@ values:DEX[2] | SPEED[2] | BLOWS[2] | RES_COLD[1]
 brand:COLD_3
 brand:POIS_3
 act:COLD_BALL100
-time:5+d5
+time:4+d6
 desc:An artifact of Zangband.
 
 name:'Grayswandir'
@@ -567,7 +567,7 @@ values:CON[4] | RES_ELEC[3]
 brand:ELEC_3
 slay:DRAGON_5
 act:HASTE
-time:100+d100
+time:99+d101
 desc:An artifact of Zangband.
 
 name:of the Wandering Wizard
@@ -711,6 +711,6 @@ armor:1:35
 flags:HOLD_LIFE | SLOW_DIGEST | REGEN | SUST_STR | SUST_CON | SUST_DEX | SUST_INT | SUST_WIS
 values:RES_LIGHT[1] | RES_DARK[1] | RES_NETHER[1] | RES_NEXUS[1] | RES_DISEN[1]
 act:HASTE
-time:150+d150
+time:149+d151
 desc:An artifact of Zangband.
 

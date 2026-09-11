@@ -209,9 +209,7 @@ def match_timeout(script: str) -> str | None:
     """Translate Zangband's recharge time into 4.2's ``time:`` expression."""
     m = _TIMEOUT.search(script)
     if m:
-        low, high = int(m.group(1)), int(m.group(2))
-        span = max(1, high - low)
-        return f"{low}+d{span}"
+        return zformat.rand_range_dice(int(m.group(1)), int(m.group(2)))
     m = _TIMEOUT_FIXED.search(script)
     if m:
         return m.group(1)

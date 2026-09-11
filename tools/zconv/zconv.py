@@ -1435,6 +1435,7 @@ def cmd_objects(args) -> int:
         "to both because it cannot express anything else.")
 
     entries: list[aformat.Entry] = []
+    mistranscribed: list[str] = []
     counts = {"spellbook": 0, "inherited": 0, "present": 0, "renamed": 0,
               "rejected": 0, "deferred": 0}
 
@@ -1755,6 +1756,30 @@ def cmd_objects(args) -> int:
 
         if key in effects:
             spec = effects[key]
+
+            # Every `rand_range(a, b)` in the source has to appear among the
+            # hand-written lines as the dice expression that means it.
+            #
+            # These specs are transcribed by hand from the Lua, and three of
+            # the six `rand_range` conversions in this file were written
+            # `a+d(b-a)` -- the right width, shifted up by one and one value
+            # short. The other three were right. Nothing distinguishes the two
+            # groups but who typed them, which is why this is a check rather
+            # than a comment: a Scroll of Logrus doing 151 to 301 where the
+            # original does 150 to 300 is not something anyone will notice.
+            for low, high in re.findall(
+                    r"rand_range\((\d+),\s*(\d+)\)",
+                    "\n".join(rec.all("L"))):
+                want = zformat.rand_range_dice(int(low), int(high))
+                if not any(line == "dice:" + want for line in spec["lines"]):
+                    report.skipped.append((
+                        rec.name,
+                        "MISTRANSCRIBED: objmap.toml has no `dice:%s` for the "
+                        "source's `rand_range(%s, %s)`" % (want, low, high)))
+                    mistranscribed.append(
+                        "%s: rand_range(%s, %s) wants dice:%s"
+                        % (rec.name, low, high, want))
+
             for line in spec["lines"]:
                 tag, _, value = line.partition(":")
                 entry.pairs.append((tag, value))
@@ -1852,6 +1877,16 @@ def cmd_objects(args) -> int:
             last = kind
         lines.append("flavor:%d:%s:%s" % (base + offset, colour, adjective))
     flavour_text = "\n".join(lines) + "\n"
+
+    if mistranscribed:
+        print("object effect check")
+        print("=" * 72)
+        for line in mistranscribed:
+            print("  %s" % line)
+        print()
+        print("  FAILED -- a hand-written effect in objmap.toml does not say "
+              "what its source says")
+        return 1
 
     if args.check:
         # Does the committed data still say what this converter produces?

@@ -155,7 +155,7 @@ change reaches every savefile in the game.""" }
     "effect:BALL:CHAOS:4",
     "dice:400",
     "effect:DAMAGE",
-    "dice:150+d151",
+    "dice:149+d151",
 ], note = """`fire_ball(GF_CHAOS, 0, 400, 4)` centred on the reader, then \
 `take_hit(rand_range(150, 300))` unless chaos-resistant. 4.2 has no \
 conditional self-damage, so the second half is unconditional -- see the note \
@@ -165,7 +165,7 @@ in the report.""" }
     "effect:BALL:FIRE:4",
     "dice:350",
     "effect:DAMAGE",
-    "dice:100+d101",
+    "dice:99+d101",
 ], note = """`fire_ball(GF_FIRE, 0, 350, 4)`, then `take_hit(rand_range(100, \
 200))` unless the reader's fire resistance is good enough. Same caveat as \
 Logrus.""" }

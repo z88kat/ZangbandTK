@@ -91,6 +91,28 @@ def parse(path: str) -> list[Record]:
     return records
 
 
+def rand_range_dice(low: int, high: int) -> str:
+    """Zangband's ``rand_range(low, high)`` as a 4.2 dice expression.
+
+    `rand_range(a, b)` is `a + randint0(1 + b - a)`, inclusive at both ends.
+    4.2's `randcalc` evaluates `base + damroll(dice, sides)`, and `damroll`
+    starts at one, so the base has to sit one *below* the low end and the die
+    has to carry one more side than the span: `(low - 1) + d(high - low + 1)`.
+
+    Written down once because it had been written down six times, three of
+    them as `low + d(high - low)` -- which is the same width shifted up by one
+    and one value short. A Scroll of Logrus did 151 to 301 where Zangband does
+    150 to 300, and an artifact recharging in `rand_range(50, 100)` could not
+    come back in fifty. Nothing that small announces itself; it only stops
+    happening if there is one place to get it right.
+    """
+    if high < low:
+        low, high = high, low
+    if high == low:
+        return str(low)
+    return "%d+d%d" % (low - 1, high - low + 1)
+
+
 # --- name normalisation -------------------------------------------------
 #
 # 2.8.1-era object names are written "& Long Sword~"; 4.2 writes "Long Sword~".

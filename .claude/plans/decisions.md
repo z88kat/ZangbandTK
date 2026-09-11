@@ -3767,6 +3767,40 @@ rather than dropping it: that is six kinds in the source and two in the
 import, including the Ring of Extra Attacks, whose `+2` one time in seven has
 no form in 4.2 at all.
 
+**Stage 3: one expression, written out six times, three of them wrong.**
+
+`rand_range(a, b)` is inclusive -- `a + randint0(1 + b - a)`. 4.2 evaluates
+`base + damroll(dice, sides)` and `damroll` starts at one, so the faithful form
+is `(a - 1) + d(b - a + 1)`. Three of the six conversions in the tree read
+`a + d(b - a)` instead: the right width, shifted up by one and one value short.
+
+The Scroll of Logrus did 151 to 301 to its reader where Zangband does 150 to
+300. The Scroll of Fire did 101 to 201 where it does 100 to 200. Seven
+artifacts and one ego could not come back in the shortest recharge the original
+allows. The other three conversions -- Booze's confusion and hallucination, the
+Potion of Invulnerability -- were right. Nothing distinguishes the two groups
+but who typed them.
+
+None of it is a difference a player could detect, and that is the point worth
+recording rather than the arithmetic: a number that is wrong by one has no
+symptom at all, so it can only be caught by comparing against the source, which
+is what BAL-08 asks for and why it is worth doing on numbers that look fine.
+
+The expression now exists once, in `zformat.rand_range_dice()`, and the
+converter refuses to run if a hand-written effect in `objmap.toml` lacks the
+dice line its own source's `rand_range` calls for. That check is the durable
+part: the specs are transcribed by hand and will be again.
+
+**What else the sweep looked at and found nothing in.** `k_info`'s `extra`
+field (`W:level:extra:weight:cost`) is assigned by Zangband's parser and read
+by nothing in Zangband -- a dead field, not a dropped one. No negated dice
+expression appears in any `values:` line in the tree, so the trap above bites
+nowhere else. The 46 other `rand_range` calls in `a_info.txt` sit inside
+activation bodies whose numbers 4.2 replaces wholesale with its own named
+vocabulary, which is CNT-06's translation rather than a transcription. And
+`overrides.toml` carries no hand-written number for any object, ego or
+artifact -- one description, and nothing else.
+
 **A latent one, fixed anyway.** Zangband subtracts `randint1(-max_to_h)` when an
 ego's combat figure is negative ([object2.c:2217](../zangband/src/object2.c#L2217)),
 which is how a cursed ego gets its penalty; the converter returned `"0"` for
