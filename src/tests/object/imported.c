@@ -19,6 +19,7 @@
 
 #include "init.h"
 #include "mon-make.h"
+#include "obj-curse.h"
 #include "obj-util.h"
 #include "object.h"
 #include "player-birth.h"
@@ -1093,6 +1094,87 @@ static int test_a_range_arrives_as_its_range(void *state) {
 	ok;
 }
 
+/** The power of `name`'s curse on that artifact, or -1 if it has none. */
+static int artifact_curse_power(const char *artifact, const char *curse)
+{
+	int i, j;
+
+	for (i = 0; i < z_info->a_max; i++) {
+		if (!a_info[i].name) continue;
+		if (my_stricmp(a_info[i].name, artifact)) continue;
+		if (!a_info[i].curses) return -1;
+		for (j = 0; j < z_info->curse_max; j++) {
+			if (!curses[j].name) continue;
+			if (!my_stricmp(curses[j].name, curse))
+				return a_info[i].curses[j];
+		}
+	}
+	return -1;
+}
+
+/**
+ * Zangband's three curse tiers survive the import.
+ *
+ * The two games agree on the mechanic and disagree on where the number lives.
+ * Zangband asks *which spell*: an ordinary curse goes to `remove_curse()`, a
+ * `TR_HEAVY_CURSE` refuses it and wants the greater spell (spells3.c:1392),
+ * and a `TR_PERMA_CURSE` refuses everything (spells3.c:1402). 4.2 asks *how
+ * strong*: `uncurse_object` compares the spell's roll against the curse's
+ * power and gives up outright at 100 (effect-handler-general.c:192).
+ *
+ * So the tiers map onto 4.2's own scrolls exactly -- 30 is inside the Scroll
+ * of Remove Curse's 20+d20, 50 is outside it and inside *Remove Curse*'s
+ * 50+d50, and 100 is nobody's.
+ *
+ * Every imported curse used to come out at the same power whatever the source
+ * said, because objflagmap.toml recorded the tier flags as "4.2 expresses
+ * this" without anything here expressing it, and recorded PERMA_CURSE as a
+ * tier 4.2 does not have -- which it does. The Sword of Chaos, permanently
+ * cursed in Zangband, could be cleaned up with a common scroll.
+ *
+ * Asserted against the scroll strengths rather than the bare numbers, since
+ * the numbers are only meaningful relative to what can reach them.
+ */
+static int test_the_curse_tiers_survive(void *state) {
+	/* Scroll of Remove Curse is 20+d20; *Remove Curse* is 50+d50. */
+	const int lesser_best = 40;
+	const int greater_best = 100;
+	static const struct {
+		const char *artifact, *curse;
+		bool heavy, permanent;
+	} rows[] = {
+		{ "of Chaos", "anti-teleportation", true, true },
+		{ "of Thanos", "siren", true, false },
+		{ "'Twilight'", "ancient and foul", true, false },
+		{ "'Stormbringer'", "anti-teleportation", true, false },
+		/* Not heavy in Zangband, and must not have been swept up. */
+		{ "'Soulless One'", "dullness", false, false },
+		{ "'Terror Mask'", "teleportation", false, false },
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(rows); i++) {
+		int power = artifact_curse_power(rows[i].artifact, rows[i].curse);
+
+		if (power < 0) {
+			printf("%s has no %s curse\n", rows[i].artifact, rows[i].curse);
+			require(false);
+		}
+		if (rows[i].permanent) {
+			/* No spell in the game can shift it. */
+			require(power >= greater_best);
+		} else if (rows[i].heavy) {
+			/* The lesser scroll can never reach it; the greater can. */
+			require(power > lesser_best);
+			require(power < greater_best);
+		} else {
+			/* The lesser scroll has a chance, as it does in Zangband. */
+			require(power <= lesser_best);
+		}
+	}
+	ok;
+}
+
 const char *suite_name = "object/imported";
 struct test tests[] = {
 	{ "the-imported-artifacts-can-be-activated",
@@ -1137,5 +1219,6 @@ struct test tests[] = {
 	{ "an-imported-rod-recharges", test_an_imported_rod_recharges },
 	{ "destruction-is-never-a-gift", test_destruction_is_never_a_gift },
 	{ "a-range-arrives-as-its-range", test_a_range_arrives_as_its_range },
+	{ "the-curse-tiers-survive", test_the_curse_tiers_survive },
 	{ NULL, NULL }
 };

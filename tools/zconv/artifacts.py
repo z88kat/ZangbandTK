@@ -75,6 +75,54 @@ class ObjFlagMap:
         return "unresolved", "no disposition recorded in objflagmap.toml"
 
 
+#: Zangband's three curse tiers, as the removal difficulty 4.2 expresses them
+#: with. The two games agree on the mechanism and disagree only on where the
+#: number lives: Zangband asks *which spell*, 4.2 asks *how strong*.
+#:
+#:   ordinary          `remove_curse()`            <- Scroll of Remove Curse,
+#:                                                    strength 20+d20
+#:   TR_HEAVY_CURSE    needs `all`, the greater    <- Scroll of *Remove Curse*,
+#:                     spell (spells3.c:1392)         strength 50+d50
+#:   TR_PERMA_CURSE    never, by any spell            -- and 4.2 returns false
+#:                     (spells3.c:1402)               outright at 100
+#:                                                    (effect-handler-general.c:192)
+#:
+#: So 30 is reachable by the lesser scroll about half the time, 50 is out of
+#: its range entirely and wants the greater one or the Staff of the Magi
+#: (35+d30), and 100 is permanent. 4.2's own data uses 30 and 100 and nothing
+#: between, which is why the middle tier is a choice rather than a lookup --
+#: it is the lowest figure the lesser scroll can never reach, rounded.
+CURSE_HEAVY = 50
+CURSE_PERMANENT = 100
+
+
+def curse_power(base: int, flags: list[str]) -> tuple[int, str | None]:
+    """A named curse's removal difficulty, given the source record's tier.
+
+    Returns the power and, when the tier raised it, a note saying why.
+
+    objflagmap.toml recorded PERMA_CURSE as "4.2 has no permanent curse tier",
+    which is not so -- `uncurse_object` refuses outright at 100 and 4.2's own
+    data uses it twice -- and recorded HEAVY_CURSE as "4.2 expresses severity
+    as the power value on each named curse instead", which was true of 4.2 and
+    not true of this converter, because every imported curse came out at the
+    same power whatever the source said. The Sword of Chaos is
+    permanently cursed in Zangband and arrived here strippable by a scroll.
+    """
+    if "PERMA_CURSE" in flags:
+        return CURSE_PERMANENT, (
+            "PERMA_CURSE: never removable by any spell in Zangband "
+            "(spells3.c:1402); 4.2 refuses at power 100")
+    if "HEAVY_CURSE" in flags:
+        if base >= CURSE_HEAVY:
+            return base, None
+        return CURSE_HEAVY, (
+            "HEAVY_CURSE: needs the greater remove-curse spell in Zangband "
+            "(spells3.c:1392), which is power 50 here -- out of the lesser "
+            "scroll's 20+d20 reach")
+    return base, None
+
+
 # --- base object resolution ---------------------------------------------
 
 

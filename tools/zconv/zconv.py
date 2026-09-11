@@ -804,7 +804,11 @@ def cmd_artifacts(args) -> int:
                 slays.append(flagmap.slay[flag])
             elif disposition == "curse":
                 spec = flagmap.curse[flag]
-                curses.append(f"{spec['name']}:{spec['power']}")
+                power, why = art.curse_power(spec["power"], rec.flags())
+                curses.append(f"{spec['name']}:{power}")
+                if why:
+                    item.translations.append(
+                        f"{spec['name']} at power {power} -- {why}")
             else:
                 item.flag_dispositions.append((flag, disposition, reason))
 
@@ -1078,7 +1082,12 @@ def cmd_egos(args) -> int:
                 slays.append(flagmap.slay[flag])
             elif disposition == "curse":
                 spec_curse = flagmap.curse[flag]
-                curses.append(f"{spec_curse['name']}:{spec_curse['power']}")
+                power, why = art.curse_power(
+                    spec_curse["power"], rec.flags())
+                curses.append(f"{spec_curse['name']}:{power}")
+                if why:
+                    item.translations.append(
+                        f"{spec_curse['name']} at power {power} -- {why}")
             else:
                 item.flag_dispositions.append((flag, disposition, reason))
 
@@ -1730,7 +1739,11 @@ def cmd_objects(args) -> int:
                 slays.append(flagmap.slay[flag])
             elif disposition == "curse":
                 spec = flagmap.curse[flag]
-                curses.append("%s:%d" % (spec["name"], spec["power"]))
+                power, why = art.curse_power(spec["power"], rec.flags())
+                curses.append("%s:%d" % (spec["name"], power))
+                if why:
+                    item.translations.append(
+                        "%s at power %d -- %s" % (spec["name"], power, why))
             else:
                 item.flag_dispositions.append((flag, disposition, reason))
 

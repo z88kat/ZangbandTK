@@ -3801,6 +3801,44 @@ vocabulary, which is CNT-06's translation rather than a transcription. And
 `overrides.toml` carries no hand-written number for any object, ego or
 artifact -- one description, and nothing else.
 
+**Stage 4: a curse tier recorded as absent from 4.2, which 4.2 has.**
+
+Zangband has three curse tiers and asks *which spell*: an ordinary curse goes
+to `remove_curse()`; `TR_HEAVY_CURSE` refuses that and wants the greater spell
+([spells3.c:1392](../zangband/src/spells3.c#L1392)); `TR_PERMA_CURSE` refuses
+everything ([spells3.c:1402](../zangband/src/spells3.c#L1402)). 4.2 asks *how
+strong*: `uncurse_object` compares the spell's roll against the curse's power
+and gives up outright at 100
+([effect-handler-general.c:192](../../src/effect-handler-general.c#L192)).
+
+`objflagmap.toml` recorded HEAVY_CURSE as "4.2 expresses severity as the power
+value on each named curse instead" -- true of 4.2, and false of this converter,
+which emitted the same power whatever the source said. And it recorded
+PERMA_CURSE as "4.2 has no permanent curse tier", which is simply wrong: 4.2
+has exactly that tier and its own data uses it twice. **That is the third
+disposition this week that describes work nobody did**, after the artifact
+activations and the ego ACTIVATE, and it is worth naming as a category: a
+recorded reason reads like a decision and is indistinguishable, at a glance,
+from a gap.
+
+The Sword of Chaos is permanently cursed in Zangband and arrived here with a
+curse a common scroll could strip. Five more -- Stormbringer, Twilight, of
+Thanos and the Amulet of Destruction -- were heavy and arrived at the ordinary
+tier.
+
+The tiers now map onto 4.2's own scrolls rather than onto invented numbers: 30
+sits inside the Scroll of Remove Curse's `20+d20`, 50 sits outside it and inside
+*Remove Curse*'s `50+d50`, and 100 is nobody's. The middle figure is the only
+choice here, since 4.2's data uses 30 and 100 and nothing between; it is the
+lowest round number the lesser scroll can never reach.
+
+The same number also prices the item -- `curse_power -= power / 10`
+([obj-power.c:774](../../src/obj-power.c#L774)) -- and Zangband priced by tier
+too, at -5000, -12500 and -15000
+([object2.c:1064](../zangband/src/object2.c#L1064)). So one correction moves
+both consequences, in the same direction, at both ends. That agreement is the
+strongest evidence the mapping is the right one.
+
 **A latent one, fixed anyway.** Zangband subtracts `randint1(-max_to_h)` when an
 ego's combat figure is negative ([object2.c:2217](../zangband/src/object2.c#L2217)),
 which is how a cursed ego gets its penalty; the converter returned `"0"` for

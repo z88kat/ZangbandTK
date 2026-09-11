@@ -79,8 +79,8 @@ attack:0d0:-5:-5
 armor:0:5
 flags:NO_MAGIC | REGEN
 values:STR[-5] | INT[-5] | WIS[-5] | DEX[-5] | CON[-5]
-curse:ancient and foul:40
-curse:anti-teleportation:30
+curse:ancient and foul:50
+curse:anti-teleportation:50
 desc:With this amulet you feel like a disaster.
 
 name:Logrus

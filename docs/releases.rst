@@ -45,6 +45,23 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The Sword of Chaos stops being easy to clean up — 11 September 2026
+----------------------------------------------------------------------
+
+- **3.117.4** — **The object-side BAL-08 sweep, fourth stage: curse severity.**
+  Zangband has three tiers of curse — one a common scroll removes, one that
+  needs the greater scroll, and one nothing removes at all. Every imported
+  cursed item arrived at the first tier.
+
+  The Sword of Chaos is permanently cursed in the original; here a Scroll of
+  Remove Curse dealt with it. Stormbringer, Twilight, the Rod of Thanos and the
+  Amulet of Destruction all need the greater scroll there and did not here.
+
+  The three tiers now line up with this game's own scrolls: an ordinary curse is
+  within reach of Remove Curse, a heavy one needs \*Remove Curse\*, and a
+  permanent one cannot be removed. Heavier curses also make an item worth less
+  to a shopkeeper, in both games, so the prices move with them.
+
 A range that was one out, in six places — 11 September 2026
 --------------------------------------------------------------
 

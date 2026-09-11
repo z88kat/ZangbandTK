@@ -152,7 +152,7 @@ attack:1d1:0:0
 armor:0:0
 flags:PROT_CONF | SEE_INVIS | TELEPATHY
 values:STR[125] | INT[125] | WIS[125] | DEX[125] | CON[125] | INFRA[125] | RES_ACID[1] | RES_ELEC[1] | RES_FIRE[1] | RES_COLD[1] | RES_POIS[1] | RES_LIGHT[1] | RES_DARK[1] | RES_NEXUS[1] | LIGHT[1]
-curse:anti-teleportation:30
+curse:anti-teleportation:100
 desc:An artifact of Zangband.
 
 name:'Terror Mask'
@@ -262,9 +262,9 @@ attack:1d1:-11:-12
 armor:2:0
 flags:HOLD_LIFE | PROT_CONF
 values:STR[2] | DEX[2] | RES_DISEN[1] | RES_NEXUS[1] | RES_FIRE[3] | RES_NETHER[1] | RES_CHAOS[1] | RES_POIS[1] | RES_COLD[3]
-curse:siren:30
-curse:ancient and foul:40
-curse:teleportation:30
+curse:siren:50
+curse:ancient and foul:50
+curse:teleportation:50
 desc:An artifact of Zangband.
 
 name:of Flora
@@ -368,8 +368,8 @@ armor:0:-50
 flags:PROT_FEAR
 values:SPEED[10] | RES_FIRE[3] | RES_DISEN[1] | LIGHT[1]
 brand:FIRE_3
-curse:siren:30
-curse:ancient and foul:40
+curse:siren:50
+curse:ancient and foul:50
 desc:An artifact of Zangband.
 
 name:of Groo
@@ -673,7 +673,7 @@ attack:6d6:16:16
 armor:0:0
 flags:VAMPIRIC | FREE_ACT | HOLD_LIFE | PROT_CONF
 values:STR[2] | CON[2] | RES_NEXUS[1] | RES_CHAOS[1] | RES_NETHER[1]
-curse:anti-teleportation:30
+curse:anti-teleportation:50
 desc:An artifact of Zangband.
 
 name:of Hunger
