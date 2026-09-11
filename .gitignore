@@ -104,6 +104,51 @@ __pycache__/
 # documentation build virtualenv
 .venv-docs/
 
+# The Tcl/Tk toolchain the Tk front end links against.  The sources under
+# tcltk/tcl9.0.4 and tcltk/tk9.0.4 are vendored and tracked, because CI cannot
+# see archive/ and a front end whose toolchain lives only on one machine is not
+# buildable anywhere else.  What scripts/build-tcltk produces from them is not:
+# tcltk/build is the out-of-tree object tree and tcltk/local is the install
+# prefix, both reproducible in about two minutes.
+tcltk/build/
+tcltk/local/
+
+# And four rules above have to be undone inside it.  This repository ignores
+# `configure`, `aclocal.m4`, `*.exe` and `*.map` because for *our* source tree
+# they are build artefacts -- but in an upstream release tarball they are
+# shipped files, and Tcl's and Tk's `unix/configure` are the very things
+# scripts/build-tcltk runs first.  Without these exceptions the vendored tree
+# commits with fourteen files missing, every clone that is not this Mac fails
+# at the first configure, and nothing says why.
+!tcltk/**/configure
+!tcltk/**/aclocal.m4
+!tcltk/**/*.exe
+!tcltk/**/*.map
+
+# Vendoring an upstream release means carrying its weight, so three parts of
+# it are trimmed rather than committed.  They are ignored as well as deleted
+# because the next person to unpack a Tcl or Tk tarball over this directory --
+# to move to 9.0.5, say -- would otherwise silently add all three back, and
+# 36MB is not the kind of thing anyone notices in a diff.
+#
+#   pkgs/       the bundled thread, sqlite, itcl and tdbc packages.  We build
+#               `binaries libraries` rather than `all` precisely so this step
+#               never runs, both because we need none of the four and because
+#               the two bootstrap traps in section 2.1 of the Phase 3 plan
+#               live in it.  Verified: the toolchain builds without it.
+#   tests/      Tcl's and Tk's own suites, for `make test`, which we do not
+#               run.  Our tests are in src/tests and, from T0, tcltk-driven.
+#   doc/        nroff man pages, installed by `install-doc`, which we do not
+#               call.  The Tcl and Tk documentation is online.
+#
+# Everything else stays, including compat/, win/ and xlib/ -- decision 13 in
+# the Phase 3 plan makes Windows and Linux deliverables, so the platform trees
+# are not ours to trim even while macOS is the only one being built.
+tcltk/*/pkgs/
+tcltk/*/tests/
+tcltk/*/tests-perf/
+tcltk/*/doc/
+
 # Emscripten object trees; the wasm artefacts land in build-wasm/, matched by
 # the build*/ rule above.
 src/wasm-obj/

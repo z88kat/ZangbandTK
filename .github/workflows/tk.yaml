@@ -1,0 +1,100 @@
+name: Tk
+
+# The Tcl/Tk front end.  macOS only for now, per decision 13 in
+# .claude/plans/phase3-tcl-tk-frontend.md: all three platforms are the
+# deliverable, macOS is the one being developed and tested by hand, and the
+# Linux and Windows jobs land when there is a front end worth keeping green on
+# them rather than a toolchain.
+#
+# Right now that is exactly what this builds -- the toolchain -- because that
+# is all that exists.  It still earns its place: tcltk/ has only ever been
+# built on one Mac, and a clean runner has a different Xcode and a different
+# SDK.  Widen the paths filter and add the game build when T0's
+# TCL_Frontend.cmake lands.
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'tcltk/**'
+      - 'scripts/build-tcltk'
+      - '.github/workflows/tk.yaml'
+  pull_request:
+    paths:
+      - 'tcltk/**'
+      - 'scripts/build-tcltk'
+      - '.github/workflows/tk.yaml'
+  # The paths filters above mean a change to the game alone never runs this,
+  # so allow it to be started by hand when something needs checking anyway.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  toolchain:
+    name: Tcl/Tk 9.0.4
+    runs-on: macos-latest
+    steps:
+      - name: Clone Project
+        uses: actions/checkout@v6
+
+      # Two minutes locally, and the sources are a pinned upstream release
+      # that only changes when we deliberately move to a new one -- so key the
+      # cache on the version and the script that builds it, and skip the build
+      # entirely on a hit.
+      - name: Cache the toolchain
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: tcltk/local
+          key: tcltk-9.0.4-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('scripts/build-tcltk') }}
+
+      - name: Build Tcl and Tk
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: scripts/build-tcltk
+
+      # Checked on every run, cache hit or not, because a cache that restores
+      # an incomplete prefix is worse than no cache: the failure would surface
+      # later, in the front-end build, as a missing header nobody expected.
+      #
+      # tkInt.h is the one that matters.  The ported widget library reaches
+      # into Tk's private headers, `make install` does not install them, and a
+      # toolchain without them compiles the front end on a developer's machine
+      # -- where the source tree is right there -- and nowhere else.
+      - name: Check the prefix
+        run: |
+          for f in include/tclInt.h include/tkInt.h \
+                   lib/tclConfig.sh lib/tkConfig.sh \
+                   bin/tclsh9.0 bin/wish9.0 ; do
+            if [ ! -f tcltk/local/$f ]; then
+              echo "tcltk/local/$f is missing." >&2
+              exit 1
+            fi
+          done
+          tcltk/local/bin/tclsh9.0 <<'EOF'
+            if {[info patchlevel] ne "9.0.4"} {
+              puts stderr "wrong Tcl: [info patchlevel]"
+              exit 1
+            }
+            if {[catch {zipfs root}]} {
+              puts stderr "no zipfs -- the release build packages its Tcl with it"
+              exit 1
+            }
+            puts "tcl [info patchlevel], zipfs [zipfs root]"
+          EOF
+
+      # Aqua, not X11.  A Tk that quietly picked up an X11 header path would
+      # build, run under XQuartz, and look nothing like a Mac application --
+      # so assert the frameworks rather than trusting the configure flag.
+      - name: Check Tk is Aqua
+        run: |
+          otool -L tcltk/local/bin/wish9.0
+          if ! otool -L tcltk/local/bin/wish9.0 | grep -q Cocoa.framework ; then
+            echo "wish does not link Cocoa -- this is not an Aqua build." >&2
+            exit 1
+          fi
+          if otool -L tcltk/local/bin/wish9.0 | grep -qi 'libX11' ; then
+            echo "wish links X11." >&2
+            exit 1
+          fi

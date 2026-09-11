@@ -1,0 +1,111 @@
+#!/bin/sh
+#
+# Build Tcl and Tk 9.0.4 from the sources vendored in tcltk/, into a
+# project-local prefix the Tk front end links against.
+#
+# Use in the root directory of the game, like so:
+#    scripts/build-tcltk [prefix]
+#
+# The prefix defaults to tcltk/local, which is gitignored.  Nothing is written
+# outside the project and nothing is installed system-wide: a machine that has
+# its own Tcl keeps it, and the front end is never built against a Tcl we did
+# not build ourselves.  Point cmake at the result with
+# -DTCLTK_PREFIX=<prefix>.
+#
+# Three things here are not obvious, and each one cost a session to find:
+#
+#   1. The bundled packages are not built.  Tcl's default `all` target builds
+#      thread, sqlite, itcl and tdbc after the core, and two separate traps
+#      live in that step: `configure-packages` runs the freshly built tclsh,
+#      which is linked against its *install* path and so cannot run before
+#      `make install`; and thread3.0.6's zip step fails outright on an
+#      out-of-tree build.  We need none of the four.  Building `binaries` and
+#      `libraries` rather than `all` skips the whole step, which is why this
+#      script never hits either trap rather than working around them.
+#
+#   2. install-private-headers is not optional for us.  The ported widget
+#      library reaches into tkInt.h -- that is the concentrated risk DEC-14
+#      predicted and section 2.2 of the Phase 3 plan measured -- and a plain
+#      `make install` does not install it.  Without this target the front end
+#      compiles here, against the source tree, and nowhere else.
+#
+#   3. The build is out-of-tree, under tcltk/build.  The sources in tcltk/ are
+#      vendored and stay pristine, so `git status` after a build is clean and
+#      a rebuild never has to reason about stale objects.
+#
+# zipfs is deliberately left enabled.  It is how the front end's Tcl gets
+# packaged inside the executable for release rather than shipped as a loose
+# directory, so a toolchain built without it would pass every test here and
+# fail at packaging.
+set -o errexit
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+PREFIX=${1:-$ROOT/tcltk/local}
+BUILD=$ROOT/tcltk/build
+TCL_SRC=$ROOT/tcltk/tcl9.0.4
+TK_SRC=$ROOT/tcltk/tk9.0.4
+
+if [ ! -d "$TCL_SRC/unix" ] || [ ! -d "$TK_SRC/unix" ]; then
+	echo "No Tcl/Tk sources under $ROOT/tcltk." >&2
+	echo "Expected tcltk/tcl9.0.4 and tcltk/tk9.0.4." >&2
+	exit 1
+fi
+
+case $(uname -s) in
+Darwin)
+	JOBS=$(sysctl -n hw.activecpu)
+	# Aqua, so there is no XQuartz dependency and the windows are native.
+	TK_CONFIG='--enable-aqua --without-x'
+	;;
+*)
+	JOBS=$(nproc 2>/dev/null || echo 4)
+	TK_CONFIG=''
+	;;
+esac
+
+# Tcl first: Tk's configure needs its tclConfig.sh, and takes it from the
+# install tree rather than the build tree so that what Tk links against is
+# exactly what the game will link against.
+echo "==> Tcl 9.0.4 -> $PREFIX"
+mkdir -p "$BUILD/tcl"
+cd "$BUILD/tcl"
+if [ ! -f config.status ]; then
+	"$TCL_SRC/unix/configure" --prefix="$PREFIX"
+fi
+make -j"$JOBS" binaries libraries
+make install-binaries install-libraries install-headers install-private-headers
+
+echo "==> Tk 9.0.4 -> $PREFIX"
+mkdir -p "$BUILD/tk"
+cd "$BUILD/tk"
+if [ ! -f config.status ]; then
+	# shellcheck disable=SC2086
+	"$TK_SRC/unix/configure" --prefix="$PREFIX" --with-tcl="$PREFIX/lib" $TK_CONFIG
+fi
+make -j"$JOBS" binaries libraries
+make install-binaries install-libraries install-headers install-private-headers
+
+# Prove the things the front end actually depends on, rather than trusting
+# that a green build means a usable toolchain.  A missing tkInt.h is the
+# failure this script exists to prevent, so it is checked, not assumed.
+#
+# Nothing here opens a window.  Tk's runtime needs a display and this has to
+# pass on a headless runner, so the checks stop at "the pieces are installed
+# and the interpreter runs"; opening a window is T0's exit condition, not
+# this script's.
+echo "==> Checking the result"
+for f in include/tkInt.h include/tclInt.h lib/tclConfig.sh lib/tkConfig.sh; do
+	test -f "$PREFIX/$f" || {
+		echo "$f was not installed." >&2
+		echo "If it is a private header, the install-private-headers step" >&2
+		echo "did not run -- see the comment at the top of this script." >&2
+		exit 1
+	}
+done
+"$PREFIX/bin/tclsh9.0" <<'EOF'
+	puts "tcl  [info patchlevel]"
+	puts "zipfs [expr {[catch {zipfs root} r] ? {MISSING} : $r}]"
+	puts "tk   [lindex [glob -tails -directory [file join [file dirname [info nameofexecutable]] .. lib] tk9.*] 0]"
+EOF
+
+echo "==> Done.  Configure the game with -DTCLTK_PREFIX=$PREFIX"
