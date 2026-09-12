@@ -1237,8 +1237,17 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 	/* Save the race */
 	mon->race = race;
 
-	/* Enforce sleeping if needed */
-	if (sleep && race->sleep) {
+	/*
+	 * Enforce sleeping if needed -- never in nightmare mode, where everything
+	 * is awake when it arrives (BAL-15,
+	 * [monster2.c:1830](../archive/zangband/src/monster2.c#L1830)).
+	 *
+	 * Worth being exact about what this is and is not: the `sleep` argument is
+	 * ignored, so nothing *starts* asleep. Nothing stops a monster being slept
+	 * afterwards, and the mode's spoiler claiming otherwise is one of the
+	 * places §2.8.4 records the two disagreeing.
+	 */
+	if (sleep && race->sleep && !OPT(player, birth_nightmare)) {
 		int val = race->sleep;
 		mon->m_timed[MON_TMD_SLEEP] = ((val * 2) + randint1(val * 10));
 	}
@@ -1251,11 +1260,35 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 		mon->maxhp = MAX(mon->maxhp, 1);
 	}
 
+	/*
+	 * Twice the hit points in nightmare mode (BAL-15,
+	 * [monster2.c:1847](../archive/zangband/src/monster2.c#L1847)), capped at
+	 * 30000 -- which matters, because `maxhp` is an int16_t here too.
+	 *
+	 * BAL-16: this composes with BAL-13's lethality scalar rather than
+	 * replacing it, so the figure is `base x 0.73 x 2`. The scalar is already
+	 * in `race->avg_hp` and the dice by the time this runs.
+	 */
+	if (OPT(player, birth_nightmare))
+		mon->maxhp = (int16_t) MIN(30000, (int32_t) mon->maxhp * 2);
+
 	/* And start out fully healthy */
 	mon->hp = mon->maxhp;
 
 	/* Extract the monster base speed */
 	mon->mspeed = race->speed;
+
+	/*
+	 * Five points faster in nightmare mode (BAL-15,
+	 * [dungeon.c:2833](../archive/zangband/src/dungeon.c#L2833)), capped at
+	 * 199 because that is the width of the energy table in both games.
+	 *
+	 * Zangband adds this in its energy loop rather than at creation, which is
+	 * the same outcome -- a permanent +5 on top of whatever temporary haste or
+	 * slow is running -- and this is where 4.2 keeps a monster's speed.
+	 */
+	if (OPT(player, birth_nightmare))
+		mon->mspeed = MIN(199, mon->mspeed + 5);
 
 	/* Small racial variety */
 	if (!rf_has(race->flags, RF_UNIQUE)) {
@@ -1267,8 +1300,27 @@ static bool place_new_monster_one(struct chunk *c, struct loc grid,
 	/* Give a random starting energy */
 	mon->energy = (uint8_t)randint0(50);
 
-	/* Force monster to wait for player */
-	if (rf_has(race->flags, RF_FORCE_SLEEP))
+	/*
+	 * And twice as much in nightmare mode, so it acts sooner on arrival
+	 * (BAL-15, [monster2.c:1874](../archive/zangband/src/monster2.c#L1874)).
+	 *
+	 * The archive's base is `randint0(100)` where 4.2's is `randint0(50)`.
+	 * What transplants is the doubling, not the range: the advantage a
+	 * nightmare monster gets over an ordinary one is the same at both ends.
+	 */
+	if (OPT(player, birth_nightmare))
+		mon->energy = (uint8_t) MIN(255, mon->energy * 2);
+
+	/*
+	 * Force monster to wait for player -- but not in nightmare mode, where a
+	 * FORCE_SLEEP monster gets no grace either (BAL-15,
+	 * [monster2.c:1880](../archive/zangband/src/monster2.c#L1880)).
+	 *
+	 * This is a different thing from "starts awake" and §2.8.3 lists it as one
+	 * of the four the spoiler never mentions: MFLAG_NICE is the free first
+	 * move the engine grants, and losing it is what makes an ambush an ambush.
+	 */
+	if (rf_has(race->flags, RF_FORCE_SLEEP) && !OPT(player, birth_nightmare))
 		mflag_on(mon->mflag, MFLAG_NICE);
 
 	/* Affect light? */

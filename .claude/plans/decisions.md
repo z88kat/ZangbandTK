@@ -4121,3 +4121,47 @@ The question is which the Draconian should be, and it is a design question
 rather than a fidelity one, which is why it is here rather than answered: the
 archive's answer is available and so is the one that matches the rest of this
 game. **Left as the cone pending a ruling.**
+
+**DEC-81 — Three rulings on nightmare mode, taken before any of it was built.**
+
+The project owner, on starting M11. Each is recorded here rather than left in
+the code, because in all three cases a later reader comparing us against
+Zangband — or against the mode's own spoiler — will find a difference and needs
+to know it was chosen.
+
+**1. No score change.** Zangband adds twenty percentage points to a score
+multiplier ([scores.c:183](../zangband/src/scores.c#L183)) that it then divides
+by the race's experience factor and adds equipment value to. **4.2 has no
+multiplier to add them to.** `total_points()` is `max_exp + 100 * max_depth`
+([score.c:29](../../src/score.c#L29)) — flat, and blind to every birth option
+including the six 4.2 already ships. So this is not a number to adjust; it is a
+scoring concept to invent, and inventing one would be our design rather than a
+port. Scoring stays as it is. *Filed as a decision and not an omission: BAL-15
+asks for "an associated score multiplier" and this is the answer to that, not a
+gap in the work.*
+
+**2. The Golem keeps its stun immunity.** The spoiler says Golems lose it, and
+so does the source
+([effects.c:1876](../zangband/src/effects.c#L1876)) — but not for nightmare
+alone: `ironman_shops` and `ironman_downward` strip it too, and this game has
+neither of those options. Stripping it here would make nightmare mode carry a
+penalty that in Zangband is shared across three settings, which is a different
+bargain from the one the archive offers. PROT_CUT and PROT_STUN were both built
+for the Golem in 3.118.2 and stay unconditional.
+
+**3. Follow the numbers on the invisible walls, and expect a different
+density.** Zangband turns 1 door in 666 into an invisible wall and adds
+`Rand_normal(3, 3)` more per level ([grid.c:125](../zangband/src/grid.c#L125),
+[generate.c:945](../zangband/src/generate.c#L945)). Those figures are against
+Zangband's level generator, its level sizes and its door counts, none of which
+are ours. The numbers transplant as written; the **observed** density will not
+match Zangband's, and that is expected rather than a bug. Written down now
+because the alternative is somebody measuring it in a year and opening an
+investigation into a faithful port.
+
+*Scope note.* The mode's verification is its tests and the project owner
+playing it. The borg is deliberately **not** running a nightmare variant: the
+mode is documented as not winnable, the borg cannot leave depth 1 on most runs,
+and a second nightly job for a mode nobody has played would be speculative.
+That raises what the tests have to do, and every one of them asserts the
+behaviour off without the option and on with it.

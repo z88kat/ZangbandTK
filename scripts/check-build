@@ -79,6 +79,16 @@
 # `cmake -E copy_directory`, which compares timestamps: edit a data file, build,
 # then revert the edit within the same second and the staged copy keeps the
 # edit for ever. A `touch lib/gamedata/*.txt` and a rebuild clears it.
+#
+# And when checking a single suite by hand -- falsifying a test, say --
+# **`cmake --build build` does not build the test binaries.** The default
+# target is the game. A test binary left over from the previous build then runs
+# and reports the previous build's verdict, which looks exactly like a result.
+# It cost three wrong answers in one afternoon, twice reading as a defect in
+# code that was correct. Build `unittest-<suite>` or `run-unittest-<suite>`,
+# and never hide the build output behind `>/dev/null` while doing it: a build
+# that failed and a build that was a no-op are indistinguishable once silenced,
+# and both leave you running yesterday's binary.
 
 set -e
 

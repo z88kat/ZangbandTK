@@ -856,6 +856,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     game/basic.c
     game/carry.c
     game/integrity.c
+    game/nightmare.c
     game/roundtrip.c
     game/mage.c
     game/saves.c

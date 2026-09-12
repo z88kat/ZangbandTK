@@ -45,6 +45,28 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Nightmare mode arrives, and the monsters are worse — 12 September 2026
+--------------------------------------------------------------------------
+
+- **3.119.0** — **M11 has started.** Nightmare mode is a birth option now, off
+  by default and irreversible once chosen, and the first six of its behaviours
+  are in: monsters have twice the hit points, five more points of speed, arrive
+  awake, arrive with twice the energy, give no free first move however dangerous
+  they are, and notice you twice as fast while asleep.
+
+  Zangband's own text for the option is "this isn't even remotely fair!" and its
+  documentation says the mode is not meant to be winnable. The manual has a
+  chapter saying what it changes, what it does not change yet, and what it will
+  never change — because the mode's spoiler describes about three times as much
+  as Zangband ever built, and a player comparing the two deserves to know which
+  is which.
+
+  Two of those never-changes are decisions rather than gaps. **Your score is
+  unaffected**: Zangband gives nightmare characters a bonus on a score
+  multiplier this game has never had for any option, so adding one would be
+  inventing a system rather than porting a number. And **a Golem keeps its
+  immunity to stunning**: Zangband takes it away, but not for nightmare alone.
+
 A Draconian breathes cold as well, and for the right damage — 11 September 2026
 ----------------------------------------------------------------------------------
 
