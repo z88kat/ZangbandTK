@@ -19,6 +19,7 @@
 
 #include "init.h"
 #include "mon-make.h"
+#include "obj-curse.h"
 #include "obj-util.h"
 #include "object.h"
 #include "player-birth.h"
@@ -943,6 +944,237 @@ static int test_the_rolled_modifiers_are_ranges(void *state) {
 	ok;
 }
 
+/**
+ * An imported rod has a recharge time.
+ *
+ * Zangband keeps a rod's recharge in the kind's `pval` --
+ * `o_ptr->timeout += k_ptr->pval` (cmd6.c:806) -- and 4.2 keeps it in
+ * `time:`, defaulting a missing one to zero. The converter emitted no `time:`
+ * line, so both imported rods recharged instantly. A Rod of Havoc at depth 95
+ * throws a 150-point elemental ball, and it could be zapped every turn for
+ * ever. It parses, it generates, and it reads exactly like a rod.
+ *
+ * The numbers are Zangband's own and cross unchanged: eleven of the twelve
+ * rods that exist in both games carry the identical figure, which is what
+ * settles the units question. `obj_can_zap` refuses a rod whose timeout has
+ * not run down (obj-util.c), so a non-zero time is the whole mechanism.
+ */
+static int test_an_imported_rod_recharges(void *state) {
+	static const struct { const char *name; int time; } rows[] = {
+		{ "Havoc", 250 },
+		{ "Pesticide", 3 },
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(rows); i++) {
+		struct object_kind *kind = kind_named(TV_ROD, rows[i].name);
+		int t;
+
+		require(kind);
+		t = randcalc(kind->time, 0, MINIMISE);
+		if (t != rows[i].time) {
+			printf("%s: recharge %d, wanted %d\n", rows[i].name, t,
+					rows[i].time);
+			require(false);
+		}
+	}
+	ok;
+}
+
+/**
+ * An Amulet of Destruction is never a benefit.
+ *
+ * Zangband rolls its penalty --
+ * `object.pval = -(randint1(5) + m_bonus(-(object.pval), level))`, so -1 to
+ * -10 and worse the deeper you find it -- and what ships is a flat -5. That
+ * is a known loss, recorded in DEC-75, and this test exists because the
+ * obvious repair is wrong in a way that does not announce itself.
+ *
+ * `values:` is not parsed by the parser `combat:` and `time:` use.
+ * `parse_random` negates a whole random value on a leading minus;
+ * `dice_parse_string`, which `values:` goes through (datafile.c:245), treats
+ * a minus as part of the base number alone. `STR[-d5M5]` there is not
+ * "-1 to -10": the `-` becomes an empty base, the bare `d` becomes *zero*
+ * dice rather than one, and the result is `0 + 0d5 + M5` -- a positive bonus
+ * of up to +5 on the amulet whose entire point is ruin. It parses and the
+ * game starts.
+ *
+ * So the assertion is the sign, at both ends of the range and at both ends of
+ * the dungeon. Anything that reads like the faithful expression and is not
+ * fails here.
+ */
+static int test_destruction_is_never_a_gift(void *state) {
+	struct object_kind *kind = kind_named(TV_AMULET, "Destruction");
+	static const int mods[] = {
+		OBJ_MOD_STR, OBJ_MOD_INT, OBJ_MOD_WIS, OBJ_MOD_DEX, OBJ_MOD_CON,
+	};
+	size_t i;
+
+	require(kind);
+	for (i = 0; i < N_ELEMENTS(mods); i++) {
+		int shallow = randcalc(kind->modifiers[mods[i]], 0, MAXIMISE);
+		int deep = randcalc(kind->modifiers[mods[i]], MAX_RAND_DEPTH,
+				MAXIMISE);
+
+		if (shallow >= 0 || deep >= 0) {
+			printf("modifier %d: best case %d at the gate, %d at the "
+					"bottom\n", mods[i], shallow, deep);
+			require(false);
+		}
+	}
+	ok;
+}
+
+/**
+ * A `rand_range(a, b)` arrives as the range it names, at both ends.
+ *
+ * `rand_range(a, b)` is inclusive: `a + randint0(1 + b - a)`. 4.2 evaluates
+ * `base + damroll(dice, sides)` and `damroll` starts at one, so the base sits
+ * one *below* the low end and the die carries one more side than the span.
+ *
+ * This had been written out by hand six times and three of them read
+ * `a + d(b - a)` -- the right width, shifted up by one and one value short.
+ * The Scroll of Logrus did 151 to 301 where Zangband does 150 to 300, and
+ * the Amulet of Judgement could not come back in twenty turns where the
+ * original allows it.
+ * Neither is anything a player would ever notice, which is exactly why they
+ * survived: there is no symptom, only a wrong number.
+ *
+ * One row per shape rather than per object: an activation recharge, a
+ * self-damage roll and a timed effect, which is every place the form is used.
+ */
+static int test_a_range_arrives_as_its_range(void *state) {
+	struct object_kind *logrus = kind_named(TV_SCROLL, "Logrus");
+	struct object_kind *booze = kind_named(TV_POTION, "Booze");
+	const struct artifact *judgement = NULL;
+	struct ego_item *trump = ego_named("(Trump Weapon)");
+	int i;
+
+	/* Scroll of Logrus: take_hit(rand_range(150, 300)) on the reader. */
+	require(logrus);
+	require(logrus->effect);
+	{
+		/* The ball first, then the damage the reader takes. */
+		struct effect *e = logrus->effect;
+
+		while (e->next) e = e->next;
+		require(e->dice);
+		eq(dice_evaluate(e->dice, 0, MINIMISE, NULL), 150);
+		eq(dice_evaluate(e->dice, 0, MAXIMISE, NULL), 300);
+	}
+
+	/* Potion of Booze: inc_confused(rand_range(15, 35)) -- already correct,
+	 * and here so the test fails if the fix is applied in the wrong
+	 * direction as well as if it is not applied at all. */
+	require(booze);
+	require(booze->effect);
+	{
+		struct effect *e = booze->effect;
+
+		require(e->dice);
+		eq(dice_evaluate(e->dice, 0, MINIMISE, NULL), 15);
+		eq(dice_evaluate(e->dice, 0, MAXIMISE, NULL), 35);
+	}
+
+	/* An artifact recharge: rand_range(20, 40). */
+	for (i = 0; i < z_info->a_max; i++) {
+		if (a_info[i].name && !my_stricmp(a_info[i].name, "of Judgement")) {
+			judgement = &a_info[i];
+			break;
+		}
+	}
+	require(judgement);
+	eq(randcalc(judgement->time, 0, MINIMISE), 20);
+	eq(randcalc(judgement->time, 0, MAXIMISE), 40);
+
+	/* And an ego recharge: rand_range(50, 100). */
+	require(trump);
+	eq(randcalc(trump->time, 0, MINIMISE), 50);
+	eq(randcalc(trump->time, 0, MAXIMISE), 100);
+	ok;
+}
+
+/** The power of `name`'s curse on that artifact, or -1 if it has none. */
+static int artifact_curse_power(const char *artifact, const char *curse)
+{
+	int i, j;
+
+	for (i = 0; i < z_info->a_max; i++) {
+		if (!a_info[i].name) continue;
+		if (my_stricmp(a_info[i].name, artifact)) continue;
+		if (!a_info[i].curses) return -1;
+		for (j = 0; j < z_info->curse_max; j++) {
+			if (!curses[j].name) continue;
+			if (!my_stricmp(curses[j].name, curse))
+				return a_info[i].curses[j];
+		}
+	}
+	return -1;
+}
+
+/**
+ * Zangband's three curse tiers survive the import.
+ *
+ * The two games agree on the mechanic and disagree on where the number lives.
+ * Zangband asks *which spell*: an ordinary curse goes to `remove_curse()`, a
+ * `TR_HEAVY_CURSE` refuses it and wants the greater spell (spells3.c:1392),
+ * and a `TR_PERMA_CURSE` refuses everything (spells3.c:1402). 4.2 asks *how
+ * strong*: `uncurse_object` compares the spell's roll against the curse's
+ * power and gives up outright at 100 (effect-handler-general.c:192).
+ *
+ * So the tiers map onto 4.2's own scrolls exactly -- 30 is inside the Scroll
+ * of Remove Curse's 20+d20, 50 is outside it and inside *Remove Curse*'s
+ * 50+d50, and 100 is nobody's.
+ *
+ * Every imported curse used to come out at the same power whatever the source
+ * said, because objflagmap.toml recorded the tier flags as "4.2 expresses
+ * this" without anything here expressing it, and recorded PERMA_CURSE as a
+ * tier 4.2 does not have -- which it does. The Sword of Chaos, permanently
+ * cursed in Zangband, could be cleaned up with a common scroll.
+ *
+ * Asserted against the scroll strengths rather than the bare numbers, since
+ * the numbers are only meaningful relative to what can reach them.
+ */
+static int test_the_curse_tiers_survive(void *state) {
+	/* Scroll of Remove Curse is 20+d20; *Remove Curse* is 50+d50. */
+	const int lesser_best = 40;
+	const int greater_best = 100;
+	static const struct {
+		const char *artifact, *curse;
+		bool heavy, permanent;
+	} rows[] = {
+		{ "of Chaos", "anti-teleportation", true, true },
+		{ "of Thanos", "siren", true, false },
+		{ "'Twilight'", "ancient and foul", true, false },
+		{ "'Stormbringer'", "anti-teleportation", true, false },
+		/* Not heavy in Zangband, and must not have been swept up. */
+		{ "'Soulless One'", "dullness", false, false },
+		{ "'Terror Mask'", "teleportation", false, false },
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(rows); i++) {
+		int power = artifact_curse_power(rows[i].artifact, rows[i].curse);
+
+		if (power < 0) {
+			printf("%s has no %s curse\n", rows[i].artifact, rows[i].curse);
+			require(false);
+		}
+		if (rows[i].permanent) {
+			/* No spell in the game can shift it. */
+			require(power >= greater_best);
+		} else if (rows[i].heavy) {
+			/* The lesser scroll can never reach it; the greater can. */
+			require(power > lesser_best);
+			require(power < greater_best);
+		} else {
+			/* The lesser scroll has a chance, as it does in Zangband. */
+			require(power <= lesser_best);
+		}
+	}
+	ok;
+}
+
 const char *suite_name = "object/imported";
 struct test tests[] = {
 	{ "the-imported-artifacts-can-be-activated",
@@ -984,5 +1216,9 @@ struct test tests[] = {
 	  test_a_trump_weapon_teleports_on_purpose },
 	{ "the-rolled-modifiers-are-ranges",
 	  test_the_rolled_modifiers_are_ranges },
+	{ "an-imported-rod-recharges", test_an_imported_rod_recharges },
+	{ "destruction-is-never-a-gift", test_destruction_is_never_a_gift },
+	{ "a-range-arrives-as-its-range", test_a_range_arrives_as_its_range },
+	{ "the-curse-tiers-survive", test_the_curse_tiers_survive },
 	{ NULL, NULL }
 };

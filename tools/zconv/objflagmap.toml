@@ -160,11 +160,20 @@ cursed by carrying named curses, which the specific curse flags supply."""
 AUTO_CURSE = """Re-curses itself when uncursed. 4.2's curse model has no \
 sticky curses; removal difficulty is a property of each named curse."""
 
-HEAVY_CURSE = """Curse severity tier. 4.2 expresses severity as the power \
-value on each named curse instead."""
+HEAVY_CURSE = """Curse severity tier: Zangband's lesser remove-curse spell \
+refuses these and only the greater one will do (spells3.c:1392). 4.2 asks how \
+strong the spell is rather than which spell it was, so the tier becomes power \
+50 on each named curse this item carries -- above the Scroll of Remove Curse's \
+20+d20 and within the Scroll of *Remove Curse*'s 50+d50. Applied by \
+`artifacts.curse_power()`; this entry used to say 4.2 expressed it and not \
+that anything here did, which was true of 4.2 and false of the converter."""
 
-PERMA_CURSE = """Permanently cursed, never removable. 4.2 has no permanent \
-curse tier."""
+PERMA_CURSE = """Permanently cursed, never removable by any spell \
+(spells3.c:1402). 4.2 has exactly this tier and expresses it as power 100, \
+where `uncurse_object` returns false without rolling \
+(effect-handler-general.c:192) -- its own data uses it twice. This entry used \
+to claim 4.2 had no such tier, and on the strength of that the Sword of Chaos \
+imported with a curse any scroll could strip."""
 
 QUESTITEM = """Marks an item as a quest reward that cannot be sold. Belongs \
 with the quest system in M6, not with the object import."""

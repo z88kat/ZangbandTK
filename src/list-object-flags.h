@@ -86,4 +86,19 @@ OF(PATRON, "Patrn")
  * Zangband are not among the nine this game took.
  */
 OF(CANT_EAT, "NoEat")
+
+/*
+ * ZangbandTK (DEC-79): a body with nothing in it to bleed.  Appended, and the
+ * position is the point.
+ *
+ * `set_cut()` zeroes the value outright for a Golem, Skeleton, Spectre and a
+ * Zombie above 11 (effects.c:2064), and 4.2 had the other four protections and
+ * not this one.  It belongs beside PROT_STUN by meaning, and putting it there
+ * would shift the bit index of every flag after it -- which object flags are
+ * saved by (save.c:141 writes the raw bitfield), so every savefile in
+ * existence would come back with its flags off by one.  The unit-test kinds
+ * encode them positionally too and caught it first: `.flags = { 0, 0, 8, 0 }`
+ * stopped meaning TAKES_FUEL.
+ */
+OF(PROT_CUT, "pCut")
 OF(MAX, "")

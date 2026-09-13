@@ -2077,6 +2077,18 @@ static void monster_reduce_sleep(struct monster *mon)
 	int stealth = player->state.skills[SKILL_STEALTH];
 	uint32_t player_noise = ((uint32_t) 1) << (30 - stealth);
 	uint32_t notice = (uint32_t) randint0(1024);
+
+	/*
+	 * Sleeping monsters are twice as alert in nightmare mode (BAL-15,
+	 * [melee2.c:2818](../archive/zangband/src/melee2.c#L2818)).
+	 *
+	 * The formula either side of this is the same function in both games --
+	 * `randint0(1024)` cubed against the player's noise -- so halving the
+	 * draw transplants exactly. And because the draw is uniform, halving it
+	 * doubles the chance of noticing rather than raising it eightfold, which
+	 * is what the description says and is worth having checked.
+	 */
+	if (OPT(player, birth_nightmare)) notice /= 2;
 	struct monster_lore *lore = get_lore(mon->race);
 
 	/* Aggravation */

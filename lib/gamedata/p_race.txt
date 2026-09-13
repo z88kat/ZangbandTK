@@ -66,6 +66,25 @@
 
 # 'weight' is weight info - base weight, random weight modifier.
 
+# ZangbandTK: where the imported races' figures come from, since the question
+# is the same for all of them and the answer does not belong nine times over.
+#
+# Age uses the same formula in both games -- `b_age + randint1(m_age)`
+# (player-birth.c:358, birth.c:322) -- so Zangband's pair is copied unchanged.
+#
+# Height and weight are `Rand_normal(base, mod)` in both, base being the mean
+# and mod the standard deviation, but Zangband keeps a pair per race (male and
+# female) where 4.2 keeps one. The base here is the midpoint of the two, which
+# is what 4.2 itself did to every race whose body it kept from 2.8.1 -- Human
+# 72/66 became 69, Dwarf 48/46 became 47, Half-Troll 96/84 became 90. The mod
+# is the average of the two spreads plus half the gap between the bases, so the
+# single distribution still covers both; 4.2 has no formula for that and its
+# own figures vary, so it is derived rather than looked up. See DEC-76.
+#
+# Zangband's own weight is additionally scaled by the rolled height and its
+# spread divided by three (birth.c:329); 4.2 rolls weight independently. The
+# mean is the same either way, which is what the base carries.
+
 # 'obj-flags' is for object flags (as in src/list-obj-flags.h) that
 # races possess innately.
 
@@ -203,6 +222,15 @@ height:34:4
 weight:55:5
 obj-flags:HOLD_LIFE
 player-flags:KNOW_MUSHROOM
+# `create_food()` drops a ration at your feet (spells2.c:4117) -- an object to
+# carry, share or sell, not a full stomach, which is why this is not NOURISH.
+power:cook some food
+power-level:15
+power-cost:10
+power-stat:INT
+power-fail:10
+power-effect:CREATE_FOOD
+
 
 name:Gnome
 virtues:KNOWLEDGE
@@ -226,6 +254,20 @@ height:40:5
 weight:80:5
 obj-flags:FREE_ACT
 player-flags:KNOW_ZAPPER
+# `teleport_player(10 + plev)` (racial.c:233): a short hop that lengthens as
+# the gnome does, from 11 squares at level 1 to 60 at 50.
+power:blink
+power-level:5
+power-cost:10
+power-stat:INT
+power-fail:12
+power-effect:TELEPORT
+# The whole distance goes in the expression. `10+$B` parses -- and binds $B to
+# the *dice count*, giving `10 + 5d0` at level 5: min 15, max 10, average 12.
+# Silently, as ever. DEC-75's lesson, one file over.
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 10
+
 
 name:Dwarf
 virtues:DILIGENCE
@@ -249,6 +291,21 @@ height:47:4
 weight:135:20
 obj-flags:PROT_BLIND
 player-flags:SEE_ORE
+# Zangband's dwarf finds its way about: detect traps, doors and stairs at
+# level 5 (racial.c:216, tables.c:7754).  The Nibelung has the same power five
+# levels later, which is why the two blocks read alike.
+power:examine your surroundings
+power-level:5
+power-cost:5
+power-stat:WIS
+power-fail:12
+power-effect:DETECT_TRAPS
+power-dice:22
+power-effect:DETECT_DOORS
+power-dice:22
+power-effect:DETECT_STAIRS
+power-dice:22
+
 
 name:Half-Orc
 virtues:HONOUR
@@ -271,6 +328,15 @@ age:11:4
 height:64:2
 weight:135:15
 values:RES_DARK[1]
+# `clear_afraid()` (racial.c:240).  Removes the fear it is feeling now; it is
+# not the standing fear resistance the Barbarian carries.
+power:play tough
+power-level:3
+power-cost:5
+power-stat:WIS
+power-fail:8
+power-effect:CURE:AFRAID
+
 
 name:Half-Troll
 virtues:VALOUR
@@ -293,6 +359,22 @@ age:20:10
 height:90:16
 weight:240:60
 obj-flags:SUST_STR | REGEN
+# Identical to the Barbarian's frenzy in the archive, line for line
+# (racial.c:247 against racial.c:292): thirty hit points if not already
+# berserk, fear cleared, and 10+1d(level) turns of it.  Two levels later and
+# two points dearer.
+power:work yourself into a frenzy
+power-level:10
+power-cost:12
+power-stat:WIS
+power-fail:9
+power-effect:HEAL_HP
+power-dice:30
+power-effect:CURE:AFRAID
+power-effect:TIMED_INC:SHERO
+power-dice:10+1d$B
+power-expr:B:PLAYER_LEVEL:+ 0
+
 
 name:Dunadan
 virtues:HONOUR
@@ -387,6 +469,18 @@ values:RES_POIS[1]
 # ---------------------------------------------------------------------------
 
 # Amber's own blood: it heals fast and does not weaken.
+# `fire_bolt(GF_POIS, dir, plev)` (racial.c:354) -- damage is the character's
+# level, flat, with no dice at either end.
+power:throw a dart of poison
+power-level:12
+power-cost:8
+power-stat:DEX
+power-fail:14
+power-effect:BOLT:POIS
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:+ 0
+
+
 name:Amberite
 virtues:HONOUR
 stats:1:2:2:2:3
@@ -404,9 +498,9 @@ hitdie:10
 exp:225
 infravision:0
 history:1
-age:20:20
-height:70:6
-weight:150:20
+age:50:50
+height:80:8
+weight:185:22
 obj-flags:SUST_CON | REGEN
 power:shift into shadow
 power-level:30
@@ -456,9 +550,9 @@ hitdie:11
 exp:140
 infravision:0
 history:1
-age:20:20
-height:70:6
-weight:150:20
+age:14:6
+height:63:8
+weight:135:32
 obj-flags:PROT_CONF
 values:RES_SOUND[1]
 
@@ -481,9 +575,9 @@ hitdie:7
 exp:100
 infravision:2
 history:1
-age:20:20
-height:70:6
-weight:150:20
+age:14:3
+height:50:3
+weight:82:12
 values:RES_ACID[1]
 # And stops being merely resistant: immune to acid above level 19
 # (files.c, RACE_YEEK).  The one thing a Yeek is actually good at.
@@ -516,9 +610,9 @@ hitdie:11
 exp:250
 infravision:2
 history:1
-age:20:20
-height:70:6
-weight:150:20
+age:75:33
+height:74:3
+weight:145:20
 obj-flags:FEATHER
 # Five resistances, each on its own threshold, exactly as the archive grants
 # them (files.c:1408).  Fire used to be given at birth, which is four levels of
@@ -538,9 +632,30 @@ power-level:15
 power-cost:25
 power-stat:CON
 power-fail:12
+# Fire two times in three and cold the third, which is where the archive starts
+# every Draconian breath: `Type = (one_in_(3) ? GF_COLD : GF_FIRE)`
+# (racial.c:381).  It used to be fire only.
+#
+# Damage is `plev * 2` (racial.c:481).  It used to be `plev * 3 / 2`, which is
+# three-quarters of the archive's at every level.
+#
+# What is NOT here: from level 15 or so the archive rolls `randint1(100) < plev`
+# and, on success, replaces the element with a pair belonging to the character's
+# *class* -- shards or the elements for a Warrior, mana or disenchantment for a
+# Mage, hellfire or holy fire for a Priest, and so on through seven branches.
+# A race power has no way to ask what class is holding it, and building one is a
+# design decision rather than a conversion.  Recorded in DEC-80.
+power-effect:RANDOM
+power-dice:3
 power-effect:BREATH:FIRE:0:30
 power-dice:$B
-power-expr:B:PLAYER_LEVEL:* 3 / 2
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:BREATH:FIRE:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:BREATH:COLD:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
 
 # Zangband granted it nothing at all: its whole identity is psionics, which is PLR-06.
 name:Mindflayer
@@ -561,9 +676,9 @@ hitdie:9
 exp:140
 infravision:4
 history:1
-age:20:20
-height:70:6
-weight:150:20
+age:100:25
+height:66:8
+weight:127:28
 # Both sustains from birth, and the other two on thresholds (files.c:1421).
 # Seeing the invisible was given at birth and the sustains and telepathy were
 # missing altogether -- the manual said this race "was granted nothing at all",
@@ -601,9 +716,9 @@ hitdie:11
 exp:200
 infravision:5
 history:1
-age:20:20
-height:70:6
-weight:150:20
+age:100:30
+height:69:8
+weight:165:38
 # A vampire carries its own dim light in the archive (TR_LITE, files.c:1469),
 # which was missed -- so the one race that is hurt by light also had none of
 # its own.  Everything here is granted at birth: the Vampire is the one
@@ -655,15 +770,17 @@ hitdie:12
 exp:200
 infravision:4
 history:1
-age:20:20
-height:70:6
-weight:150:20
+age:1:100
+height:64:3
+weight:190:16
 # CANT_EAT is the archive's (files.c:1439) and was missing, so a Golem ate
 # like anything else while the manual said it barely eats.  Hold life waits for
 # 35 rather than arriving at birth.
 # PROT_STUN because a Golem cannot be stunned (effects.c:1875) -- one of three
 # grants the archive makes outside player_flags(), which is why it was missed.
-obj-flags:SEE_INVIS | FREE_ACT | SLOW_DIGEST | CANT_EAT | PROT_STUN
+# PROT_CUT: `set_cut()` zeroes the value outright for this race
+# (effects.c:2064).  Nothing in it bleeds.
+obj-flags:SEE_INVIS | FREE_ACT | SLOW_DIGEST | CANT_EAT | PROT_STUN | PROT_CUT
 armour:20:5
 # A Golem gets a twentieth out of food, so Zangband gives it scrolls rather
 # than rations too (birth.c:557).  It keeps its torches: only the Vampire
@@ -858,7 +975,9 @@ height:69:5
 weight:50:5
 # No SLOW_DIGEST: a skeleton gets hungry at the ordinary rate and can do
 # nothing about it, which is why the scrolls matter more to it than to the rest.
-obj-flags:SEE_INVIS | HOLD_LIFE | CANT_EAT
+# PROT_CUT: `set_cut()` zeroes the value outright for this race
+# (effects.c:2064).  Nothing in it bleeds.
+obj-flags:SEE_INVIS | HOLD_LIFE | CANT_EAT | PROT_CUT
 player-flags:UNDEAD
 values:RES_SHARD[1] | RES_POIS[3] | RES_ACID[-1]
 equip-instead:food:scroll:Remove Hunger:2:5
@@ -897,6 +1016,10 @@ values:RES_NETHER[1] | RES_POIS[3] | RES_FIRE[-1]
 equip-instead:food:scroll:Remove Hunger:2:5
 gain-at:5
 gain-values:RES_COLD[1]
+# A Zombie stops bleeding only above level 11, where the Golem,
+# Skeleton and Spectre never do at all (effects.c:2064).
+gain-at:12
+gain-obj-flags:PROT_CUT
 power:recover your lost life force
 power-level:30
 power-cost:30
@@ -926,7 +1049,9 @@ history:1
 age:100:30
 height:69:5
 weight:100:23
-obj-flags:SEE_INVIS | HOLD_LIFE | SLOW_DIGEST | CANT_EAT | PASS_WALL
+# PROT_CUT: `set_cut()` zeroes the value outright for this race
+# (effects.c:2064).  Nothing in it bleeds.
+obj-flags:SEE_INVIS | HOLD_LIFE | SLOW_DIGEST | CANT_EAT | PASS_WALL | PROT_CUT
 player-flags:UNDEAD
 values:RES_COLD[1] | RES_NETHER[1] | RES_POIS[3] | RES_ELEC[-1]
 equip-instead:food:scroll:Remove Hunger:2:5
@@ -999,9 +1124,9 @@ hitdie:7
 exp:175
 infravision:4
 history:1
-age:20:20
-height:70:6
-weight:150:20
+age:50:25
+height:30:4
+weight:70:7
 obj-flags:FEATHER
 # A Sprite flies: `lev / 10` speed, so +1 at 10 and +5 at 50 (xtra1.c:2550).
 # Zangband gates the flag above level 9, which its own arithmetic makes
@@ -1035,9 +1160,9 @@ hitdie:14
 exp:255
 infravision:0
 history:1
-age:20:20
-height:70:6
-weight:150:20
+age:100:30
+height:105:17
+weight:252:88
 values:RES_CHAOS[1]
 
 power:examine your foes

@@ -106,6 +106,16 @@ extern const int adj_str_hold[STAT_RANGE];
 bool earlier_object(struct object *orig, struct object *new, bool store);
 int equipped_item_slot(struct player_body body, struct object *obj);
 void calc_inventory(struct player *p);
+/**
+ * Whether a martial artist is carrying too much armour to fight bare-handed.
+ *
+ * Exported because it is now two things: the Monk's blow and armour-class
+ * penalty, and the condition on its level gates (PLR-06). It reads the
+ * equipment and the character level and nothing from `player_state`, which is
+ * what lets both callers ask it at any point.
+ */
+bool martial_armour_burdens(struct player *p, struct player_state *state);
+
 void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 				  bool update);
 void calc_digging_chances(struct player_state *state, int chances[DIGGING_MAX]);

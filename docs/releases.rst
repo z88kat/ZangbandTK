@@ -45,6 +45,166 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Nightmare mode arrives, and the monsters are worse — 12 September 2026
+--------------------------------------------------------------------------
+
+- **3.119.0** — **M11 has started.** Nightmare mode is a birth option now, off
+  by default and irreversible once chosen, and the first six of its behaviours
+  are in: monsters have twice the hit points, five more points of speed, arrive
+  awake, arrive with twice the energy, give no free first move however dangerous
+  they are, and notice you twice as fast while asleep.
+
+  Zangband's own text for the option is "this isn't even remotely fair!" and its
+  documentation says the mode is not meant to be winnable. The manual has a
+  chapter saying what it changes, what it does not change yet, and what it will
+  never change — because the mode's spoiler describes about three times as much
+  as Zangband ever built, and a player comparing the two deserves to know which
+  is which.
+
+  Two of those never-changes are decisions rather than gaps. **Your score is
+  unaffected**: Zangband gives nightmare characters a bonus on a score
+  multiplier this game has never had for any option, so adding one would be
+  inventing a system rather than porting a number. And **a Golem keeps its
+  immunity to stunning**: Zangband takes it away, but not for nightmare alone.
+
+A Draconian breathes cold as well, and for the right damage — 11 September 2026
+----------------------------------------------------------------------------------
+
+- **3.118.3** — A Draconian's breath was fire only and did three-quarters of the
+  damage the original gives. It is now **twice your character level**, and fire
+  two times in three with cold the third, which is where every Draconian breath
+  starts in Zangband. At level 30 that is 60 rather than 45.
+
+  Still not built, and the manual says so: in Zangband the breath sometimes
+  becomes something belonging to your *class* instead — shards for a Warrior,
+  disenchantment for a Mage, hellfire for a Priest — on a chance equal to your
+  character level in a hundred. A racial power here cannot ask which class is
+  holding it.
+
+The bloodless stop bleeding — 11 September 2026
+--------------------------------------------------
+
+- **3.118.2** — A Golem, Skeleton and Spectre do not bleed, and a Zombie stops
+  at level 12. Nothing that cuts anyone else leaves a wound on them, which is
+  what Zangband does and what the manual says being made of bone or stone ought
+  to mean.
+
+  This wanted a protection the game did not have — it had protection from fear,
+  blindness, confusion and stunning, and none from bleeding. **And it turned up
+  something older.** Of the four places the game can cut you, only a monster's
+  claws consulted that kind of protection at all; spell exertion, shard breath
+  and ice storms went straight round it. So a character in stone form has been
+  bleeding from shards this whole time too. All four now check.
+
+A Mindcrafter grows into four things it never had — 11 September 2026
+------------------------------------------------------------------------
+
+- **3.118.1** — **Four classes gain intrinsics on a level threshold in Zangband
+  and gained nothing here.** A Mindcrafter now resists fear at 10, sustains
+  wisdom at 20, resists confusion at 30 and reads minds at 40. A Chaos-Warrior
+  resists chaos at 30 and fear at 40. A Paladin resists fear at 40.
+
+  **And a Monk speeds up.** One point for every ten levels from level 10, and
+  free action from 25 — both of them only while it is carrying little enough
+  armour to fight bare-handed, which is the one place in the game where an
+  intrinsic depends on what you are wearing. Put plate on a Monk and it loses
+  the speed along with the blows.
+
+  The mechanism is the one the races already had, extended rather than copied,
+  with a named condition on the band. The manual has a table of what each class
+  grows into, because nothing in the game tells you it is coming.
+
+A Dwarf can find the stairs again — 11 September 2026
+--------------------------------------------------------
+
+- **3.118.0** — **The six races Angband and Zangband share had lost their racial
+  powers.** A Dwarf, Hobbit, Gnome, Half-Orc, Half-Troll and Kobold each have one
+  in Zangband, and the import took the shared races' stats and skills and stopped
+  there. A Dwarf arrived as Angband's Dwarf: the same race minus the one button
+  it can press.
+
+  A dwarf now examines its surroundings from level 5 — traps, doors and stairs.
+  A half-orc plays tough from level 3, which is the earliest racial power in the
+  game. A gnome blinks, a half-troll works itself into a frenzy, a kobold throws
+  a poison dart, and a hobbit cooks a ration of food onto the floor at its feet.
+
+  The manual's racial-power table had also gone stale twice over: it listed nine
+  powers where the game has twenty-three, having never been updated when the
+  eight deferred races landed. It is now complete and ordered by level, and each
+  of the six races has a line in its own entry.
+
+A Sprite and a Half-Titan stop being the same size — 11 September 2026
+-------------------------------------------------------------------------
+
+- **3.117.5** — Nine imported races shared one placeholder height, weight and
+  age, so a Sprite, a Golem and a Half-Titan were all born seventy inches and a
+  hundred and fifty pounds. They now have Zangband's own figures: a Sprite is
+  thirty inches and seventy pounds, a Half-Titan is eight foot nine and a
+  quarter of a ton, and a Golem is one year old plus however many the dice give.
+
+  Only flavour — the character sheet and nothing else reads these — but the
+  manual has always said height and weight are "randomly determined according to
+  the race of the character", and for nine races that was not true.
+
+The Sword of Chaos stops being easy to clean up — 11 September 2026
+----------------------------------------------------------------------
+
+- **3.117.4** — **The object-side BAL-08 sweep, fourth stage: curse severity.**
+  Zangband has three tiers of curse — one a common scroll removes, one that
+  needs the greater scroll, and one nothing removes at all. Every imported
+  cursed item arrived at the first tier.
+
+  The Sword of Chaos is permanently cursed in the original; here a Scroll of
+  Remove Curse dealt with it. Stormbringer, Twilight, the Rod of Thanos and the
+  Amulet of Destruction all need the greater scroll there and did not here.
+
+  The three tiers now line up with this game's own scrolls: an ordinary curse is
+  within reach of Remove Curse, a heavy one needs \*Remove Curse\*, and a
+  permanent one cannot be removed. Heavier curses also make an item worth less
+  to a shopkeeper, in both games, so the prices move with them.
+
+A range that was one out, in six places — 11 September 2026
+--------------------------------------------------------------
+
+- **3.117.3** — **The object-side BAL-08 sweep, third stage.** Zangband's
+  ``rand_range(a, b)`` includes both ends. Half the places that expression was
+  converted by hand wrote it as a range of the right *width* shifted up by one,
+  and one value short.
+
+  A Scroll of Logrus did 151 to 301 damage to its reader where the original does
+  150 to 300; a Scroll of Fire did 101 to 201 where it does 100 to 200. Seven
+  artifacts and one ego could not recharge in the shortest time the original
+  allows. The other three conversions were right, and nothing distinguished
+  them.
+
+  No player could ever have noticed any of this, which is exactly why it
+  survived: a number wrong by one has no symptom. It is written out once now,
+  and the converter refuses to run if a hand-written effect does not say what
+  its own source says.
+
+Two rods stop recharging instantly — 11 September 2026
+--------------------------------------------------------
+
+- **3.117.2** — **The object-side BAL-08 sweep, second stage: object kinds.**
+  Zangband keeps a rod's recharge time in the same field it keeps a ring's bonus
+  in, and the converter only ever read it as the second. Both imported rods
+  therefore arrived with no recharge at all — and a rod with no recharge is a
+  wand with infinite charges. The Rod of Havoc, found around depth 95, throws a
+  150-point elemental ball; it could be zapped every single turn, for ever.
+
+  Havoc now takes 250 turns to recharge and Pesticide 3, which are Zangband's
+  own numbers. They cross unchanged: eleven of the twelve rods that exist in
+  both games already carry the identical figure.
+
+  **And a trap worth knowing about if you ever hand-edit the data.** An object's
+  ``values:`` line is read by a different parser from its ``combat:`` and
+  ``time:`` lines, and the two disagree about a minus sign. In ``combat:``,
+  ``-d50`` means "1 to 50 *off*". In ``values:``, the same text means a *positive*
+  bonus of up to +5 — quietly, with no error. Trying it on the Amulet of
+  Destruction produced an amulet of destruction that improved all five of your
+  statistics. Its penalty stays flat, and a test now fails if anyone writes the
+  tempting version.
+
 Two egos get the half of themselves that was missing — 11 September 2026
 -------------------------------------------------------------------------
 

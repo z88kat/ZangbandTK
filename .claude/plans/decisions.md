@@ -3476,8 +3476,17 @@ light hurts. Neither is a flag or a resist, so each is a field on the race:
 saving throws), and `light`. Both are still declared in data.
 
 **What this does not cover.** Classes gate things too, and this mechanism is
-not wired to them. That is deliberate: no class currently needs it, and a
-second consumer should be added when there is a second consumer.
+not wired to them.
+
+*That sentence used to end "That is deliberate: no class currently needs it, and
+a second consumer should be added when there is a second consumer." It was
+wrong, and it is left visible rather than edited away because the claim was
+acted on.* Six classes gate something in `player_flags()`
+([files.c:1278](../zangband/src/files.c#L1278)) and four of them needed this
+mechanism: a Paladin, a Chaos-Warrior, a Mindcrafter and a Monk. The check that
+would have caught it was reading the class half of the same switch I had read
+the race half of. **DEC-78 wires it up**; what follows below is the race
+mechanism as built, which is unchanged.
 
 ---
 
@@ -3722,6 +3731,123 @@ needed checking: the units are the same and nothing is off by a factor. Under
 DEC-20 the archive is authoritative for what an imported object is, so its own
 numbers stand.
 
+**Stage 2, the object kinds: one more of the same, and one trap underneath it.**
+
+*A rod with no recharge is a wand with infinite charges.* Zangband stores a
+rod's recharge in the kind's `pval` (`o_ptr->timeout += k_ptr->pval`,
+[cmd6.c:806](../zangband/src/cmd6.c#L806)); 4.2 reads it from `time:` and
+defaults a missing one to zero. The converter emitted no `time:` line at all,
+so both imported rods recharged instantly -- including Havoc, a depth-95 rod
+that throws 150-point elemental balls, zappable every turn for ever. The units
+question answers itself from the data rather than from the code: twelve rods
+exist in both games and eleven carry the identical number (Fire Bolts 15, Acid
+Balls 27, Light 9, Recall 60), so the figure crosses 1:1 -- and the tick-rate
+difference I had reasoned my way to from first principles (Zangband runs
+`process_world()` every game turn, 4.2 every tenth) turns out to be a change
+Angband made later and never rescaled for. Worth recording as a case where the
+archive's *data* settled a question the archive's *code* would have answered
+wrongly. Wands and staves get the same treatment for their charge count, which
+nothing imported uses today.
+
+*And the trap: `values:` is not parsed by the parser the other fields use.*
+`combat:`, `time:` and `charges:` go through `parse_random`, which negates a
+whole random value on a leading minus and shifts the base to suit
+([parser.c:203](../../src/parser.c#L203)). `values:` goes through
+`dice_parse_string` ([datafile.c:245](../../src/datafile.c#L245)), a state
+machine whose only minus belongs to the base number.
+
+This was found by trying the obvious repair and measuring it. The Amulet of
+Destruction ships a flat -5 to all five statistics where Zangband rolls
+`-(randint1(5) + m_bonus(5, level))` -- -1 to -10, worse the deeper you find
+it. Writing `STR[-d5M5]` looks like the faithful form and is not: the `-`
+becomes an empty base, the bare `d` becomes *zero* dice rather than one, and
+the amulet grants **+0 to +5 to every statistic**. It parses. The game starts.
+An Amulet of Destruction that helps you.
+
+Even `parse_random`'s negation would be wrong here, because `m_bonus` is always
+non-negative and is added back after the shift, so `-d5M5` there is worst at
+the surface and mildest at the bottom -- the opposite of the original. The
+cursed rolled pvals are therefore **not representable in either parser**, the
+flat figure stays, and a test asserts the sign at both ends of the range and
+both ends of the dungeon so that the tempting repair fails rather than ships.
+
+The converter now reports any MAKE hook that sets a pval it cannot read,
+rather than dropping it: that is six kinds in the source and two in the
+import, including the Ring of Extra Attacks, whose `+2` one time in seven has
+no form in 4.2 at all.
+
+**Stage 3: one expression, written out six times, three of them wrong.**
+
+`rand_range(a, b)` is inclusive -- `a + randint0(1 + b - a)`. 4.2 evaluates
+`base + damroll(dice, sides)` and `damroll` starts at one, so the faithful form
+is `(a - 1) + d(b - a + 1)`. Three of the six conversions in the tree read
+`a + d(b - a)` instead: the right width, shifted up by one and one value short.
+
+The Scroll of Logrus did 151 to 301 to its reader where Zangband does 150 to
+300. The Scroll of Fire did 101 to 201 where it does 100 to 200. Seven
+artifacts and one ego could not come back in the shortest recharge the original
+allows. The other three conversions -- Booze's confusion and hallucination, the
+Potion of Invulnerability -- were right. Nothing distinguishes the two groups
+but who typed them.
+
+None of it is a difference a player could detect, and that is the point worth
+recording rather than the arithmetic: a number that is wrong by one has no
+symptom at all, so it can only be caught by comparing against the source, which
+is what BAL-08 asks for and why it is worth doing on numbers that look fine.
+
+The expression now exists once, in `zformat.rand_range_dice()`, and the
+converter refuses to run if a hand-written effect in `objmap.toml` lacks the
+dice line its own source's `rand_range` calls for. That check is the durable
+part: the specs are transcribed by hand and will be again.
+
+**What else the sweep looked at and found nothing in.** `k_info`'s `extra`
+field (`W:level:extra:weight:cost`) is assigned by Zangband's parser and read
+by nothing in Zangband -- a dead field, not a dropped one. No negated dice
+expression appears in any `values:` line in the tree, so the trap above bites
+nowhere else. The 46 other `rand_range` calls in `a_info.txt` sit inside
+activation bodies whose numbers 4.2 replaces wholesale with its own named
+vocabulary, which is CNT-06's translation rather than a transcription. And
+`overrides.toml` carries no hand-written number for any object, ego or
+artifact -- one description, and nothing else.
+
+**Stage 4: a curse tier recorded as absent from 4.2, which 4.2 has.**
+
+Zangband has three curse tiers and asks *which spell*: an ordinary curse goes
+to `remove_curse()`; `TR_HEAVY_CURSE` refuses that and wants the greater spell
+([spells3.c:1392](../zangband/src/spells3.c#L1392)); `TR_PERMA_CURSE` refuses
+everything ([spells3.c:1402](../zangband/src/spells3.c#L1402)). 4.2 asks *how
+strong*: `uncurse_object` compares the spell's roll against the curse's power
+and gives up outright at 100
+([effect-handler-general.c:192](../../src/effect-handler-general.c#L192)).
+
+`objflagmap.toml` recorded HEAVY_CURSE as "4.2 expresses severity as the power
+value on each named curse instead" -- true of 4.2, and false of this converter,
+which emitted the same power whatever the source said. And it recorded
+PERMA_CURSE as "4.2 has no permanent curse tier", which is simply wrong: 4.2
+has exactly that tier and its own data uses it twice. **That is the third
+disposition this week that describes work nobody did**, after the artifact
+activations and the ego ACTIVATE, and it is worth naming as a category: a
+recorded reason reads like a decision and is indistinguishable, at a glance,
+from a gap.
+
+The Sword of Chaos is permanently cursed in Zangband and arrived here with a
+curse a common scroll could strip. Five more -- Stormbringer, Twilight, of
+Thanos and the Amulet of Destruction -- were heavy and arrived at the ordinary
+tier.
+
+The tiers now map onto 4.2's own scrolls rather than onto invented numbers: 30
+sits inside the Scroll of Remove Curse's `20+d20`, 50 sits outside it and inside
+*Remove Curse*'s `50+d50`, and 100 is nobody's. The middle figure is the only
+choice here, since 4.2's data uses 30 and 100 and nothing between; it is the
+lowest round number the lesser scroll can never reach.
+
+The same number also prices the item -- `curse_power -= power / 10`
+([obj-power.c:774](../../src/obj-power.c#L774)) -- and Zangband priced by tier
+too, at -5000, -12500 and -15000
+([object2.c:1064](../zangband/src/object2.c#L1064)). So one correction moves
+both consequences, in the same direction, at both ends. That agreement is the
+strongest evidence the mapping is the right one.
+
 **A latent one, fixed anyway.** Zangband subtracts `randint1(-max_to_h)` when an
 ego's combat figure is negative ([object2.c:2217](../zangband/src/object2.c#L2217)),
 which is how a cursed ego gets its penalty; the converter returned `"0"` for
@@ -3733,3 +3859,309 @@ them, and because `-d50` is exactly `-randint1(50)` under 4.2's parser, which
 negates a whole random value and shifts the base to suit
 ([parser.c:203](../../src/parser.c#L203)). Said plainly here so nobody mistakes
 the absence of a test for an absence of thought.
+
+**DEC-76 — Nine imported races get Zangband's own bodies, and the one figure
+that had to be derived is named as derived.**
+
+Nine races shared a placeholder -- `age:20:20`, `height:70:6`, `weight:150:20`
+-- so a Sprite and a Half-Titan were born the same size and a Golem weighed
+what a man weighs. The question was whether fixing it meant looking numbers up
+or inventing them. It is almost entirely the former, and the part that is not
+is small and stated here rather than hidden in the data.
+
+**Age is a straight copy.** Both games compute it as
+`b_age + randint1(m_age)` -- [player-birth.c:358](../../src/player-birth.c#L358)
+against [birth.c:322](../zangband/src/birth.c#L322) -- so Zangband's pair goes
+across unchanged. A Golem is `1:100`, which reads oddly and is the archive's.
+
+**Height and weight are a copy through one merge.** Both games roll
+`Rand_normal(base, mod)`, base being the mean and mod the standard deviation,
+so the units match and nothing needs scaling. But Zangband keeps a *pair* per
+race, male and female, and 4.2 keeps one.
+
+*The base is not a judgement.* It is the midpoint, which is what 4.2 itself did
+to every race whose body it kept from 2.8.1: Human 72/66 became 69, Dwarf 48/46
+became 47, Half-Orc 66/62 became 64, Half-Troll 96/84 became 90, and the same
+holds for seven of the weights. Four races -- Elf, Half-Elf, High-Elf and Kobold
+-- do not follow it, and all four are cases where 4.2 redesigned the body
+outright rather than merged it. So the rule is 4.2's own, applied to races it
+never had.
+
+*The mod is a judgement, and a small one.* 4.2 has no formula: its merged
+spreads run from a little below the sum of the two sexes' to a little above,
+with no pattern. What is used here is the average of the two spreads plus half
+the gap between the bases, so the single distribution still covers both means.
+Checked against the eleven races where 4.2 made its own choice, it lands within
+about a fifth of 4.2's figure every time and never outside the range 4.2's own
+data uses. **This is the one number in the nine sets that is not a lookup**, and
+it moves nothing but the width of a flavour roll.
+
+*One thing deliberately not reproduced.* Zangband additionally scales the weight
+mean by the rolled height and divides its spread by three
+([birth.c:329](../zangband/src/birth.c#L329)); 4.2 rolls weight independently of
+height. The *mean* is the same either way, which is what the base carries, and
+correlating the two is a mechanic 4.2 does not have rather than a number that
+was dropped.
+
+**The parser trap does not apply here.** `age`, `height` and `weight` are
+`parser_getint` (init.c:4525-4527), three pairs of plain integers -- not the
+`values:` dice grammar that turned an Amulet of Destruction into a benefit
+(DEC-75). Checked rather than assumed, because that is the lesson.
+
+**DEC-77 — The six races Angband and Zangband share keep their Zangband racial
+powers, and one of them needed an effect 4.2 has not got.**
+
+A Dwarf, Hobbit, Gnome, Half-Orc, Half-Troll and Kobold each have a racial
+power in Zangband ([racial.c:216-360](../zangband/src/racial.c#L216), with
+level, cost, stat and failure from
+[tables.c:7752](../zangband/src/tables.c#L7752)) and had none here. The import
+took the eleven shared races' stats and skills and stopped, so a Dwarf arrived
+as Angband's Dwarf: the same race minus the one button it can press. Nothing
+reported it because a race with no power is a legal race, and because these are
+the races a reader is least likely to check.
+
+All six figures are the archive's. Two are powers this game already had under
+another race, which is a useful check on the shape rather than a coincidence:
+the Dwarf's detection is the Nibelung's five levels earlier, and the
+Half-Troll's frenzy is the Barbarian's, line for line in the archive, two
+levels later and two points dearer.
+
+**One is not data.** `create_food()` drops a ration of food at your feet
+([spells2.c:4117](../zangband/src/spells2.c#L4117)) and 4.2 has no effect that
+makes an object at all -- `ACQUIRE` and `CREATE_ARROWS` both consume something
+first. `CREATE_FOOD` is twenty lines mirroring `CREATE_ARROWS`, and it is
+restoration rather than invention: the behaviour is the archive's and the object
+is one 4.2 already ships. It is deliberately not `NOURISH`, because the point is
+a ration you can carry, share or sell, and a hobbit who is not hungry still
+wants it.
+
+*I had sized all six as data-only when listing the outstanding work. That was
+wrong by one, and the correction is cheap enough that it did not change the
+answer.*
+
+**The parser trap caught one, and it was mine.** `power-dice:10+$B` for the
+Gnome's `teleport_player(10 + plev)` parses, and binds `$B` to the **dice
+count** rather than adding it to the base: at level 5 it is `10 + 5d0`, which
+`dice_evaluate` reports as minimum 15, maximum 10, average 12. A range whose
+maximum is below its minimum, silently. The whole distance goes in the
+expression instead -- `power-dice:$B` with `power-expr:B:PLAYER_LEVEL:+ 10`.
+
+**And a test that counted where it should have named.** `a-race-keeps-its-power`
+asserted that sixteen races carry a power, on the model that imported races have
+them and shared ones do not. Giving the six their powers made it seven-and-
+twenty and the test went red -- correctly, because the model was wrong rather
+than the data. It now names the six races that have nothing to press (Human,
+Half-Elf, Elf, Dunadan, High-Elf, Beastman) and fails in both directions: a race
+losing a power, and a race gaining one it should not have. A count could only
+ever have said the number moved.
+
+The form already shipping on the Barbarian and the Imp, `10+1d$B`, is *correct*:
+the `1d` puts the variable in `sides`, so it is `10 + randint1(level)`, which is
+what the archive does. Measured, not assumed -- the first version of that check
+failed because the test had not set `player->lev`, and it would have been very
+easy to read that as a defect in the data rather than in the test.
+
+**DEC-78 — The level-gate mechanism serves classes too, and carries a condition
+because one class gate is not a level.**
+
+DEC-72 built level-gated intrinsics for races and recorded that no class needed
+them. Four do.
+
+| Class | Gains | At |
+|---|---|---|
+| Paladin | fear resistance | 40 |
+| Chaos-Warrior | chaos resistance, then fear resistance | 30, 40 |
+| Mindcrafter | fear resistance, sustain wisdom, confusion resistance, telepathy | 10, 20, 30, 40 |
+| Monk | speed, then free action | 10, 25 — *while unencumbered* |
+
+Two of Zangband's six gating classes needed nothing: the Warrior's fear
+resistance at 30 is 4.2's own `BRAVERY_30`, and the Ranger's `WILD_SHOT` and
+`WILD_WALK` cancel a terrain penalty this game has not got, which objflagmap
+already records as blocked on a mechanic rather than on effort.
+
+**The mechanism is the race one, shared rather than copied.**
+`struct player_race_gain` becomes `struct player_gain` and `player_class` grows
+the same list, with the three directives parsed once and each parser passing in
+the list it owns -- exactly the arrangement `power:` already uses for the same
+reason.
+
+**The condition is the only new design here, and it is deliberately a list.**
+A Monk's speed and free action arrive only while it is wearing little enough to
+fight bare-handed (`!p_ptr->state.monk_armour_stat`,
+[files.c:1301](../zangband/src/files.c#L1301)). That is the *only* conditional
+gate in the archive, for any race or class, so the temptation is a Monk special
+case. What is built instead is `gain-when:<CONDITION>` against a named list with
+one entry, because the difference in cost is a line and the difference in what
+the next one costs is a mechanism.
+
+*The predicate is a function of the player, not of `player_state`.* A gain is
+read both by `calc_bonuses()`, while that state is still being assembled, and by
+`player_flags()`, outside it. `martial_armour_burdens()` turned out to take a
+`state` argument it never used -- it reads the equipment and the character level
+-- so exporting it and dropping the dependency is what lets the two callers
+agree without ordering rules.
+
+**Speed rides on the gain rather than beside it.** Zangband hands the Monk
+`TR_SPEED`, which its `calc_bonuses()` turns into `pspeed += lev / 10`
+([xtra1.c:2550](../zangband/src/xtra1.c#L2550)) -- the same arithmetic the
+Sprite and the Klackon get from the race `speed`/`speed_scale` pair DEC-72
+built. The Monk's is gated on level *and* condition, so it is a `gain-speed:`
+on the band rather than a second ungated pair on the class. One expression of
+"when", not two.
+
+**DEC-79 — Four races do not bleed, which needed a protection 4.2 did not have
+and three call sites that were going round the one it did.**
+
+`set_cut()` zeroes the value outright for a Golem, Skeleton, Spectre, and a
+Zombie above level 11
+([effects.c:2064](../zangband/src/effects.c#L2064)). 4.2 has protection from
+fear, blindness, confusion and stunning, and none from bleeding, so the races
+that needed it had nowhere to say so and bled like anything else.
+
+**`PROT_CUT` joins the other four.** An object flag rather than a player flag,
+for one reason: the Zombie's is a *level* gate, and DEC-72's mechanism carries
+object flags. A player flag would have covered three races and not the fourth.
+Adding it takes `OF_MAX` from 56 to 57 and therefore `OF_SIZE` from seven bytes
+to eight; the loader accepts any width up to its own ([load.c:782](../../src/load.c#L782)),
+so the width is not the problem.
+
+**The position is.** Object flags are saved as a raw bitfield
+([save.c:141](../../src/save.c#L141)), so a flag inserted *beside* the other
+four protections -- where it belongs by meaning -- shifts the bit index of every
+flag declared after it, and every savefile in existence comes back with its
+flags off by one. It is appended at the end of the list instead, with the reason
+written next to it so nobody tidies it back into place.
+
+The unit-test object kinds caught this before any reasoning did:
+`unit-test-data.h` encodes flags positionally as `.flags = { 0, 0, 8, 0 }`, and
+that stopped meaning `TAKES_FUEL`. A lantern that could no longer be refilled
+was the whole visible symptom of a savefile break.
+
+**Three call sites were bypassing the mechanism, and that is the part worth
+recording.** `TMD_CUT` already carried a `fail:` list -- `fail:4:ROCK`, for a
+character in stone form -- and of the four places the game cuts you, only
+monster melee passed `check = true`. Spell exertion
+([player-util.c:1062](../../src/player-util.c#L1062)), shards and ice
+([project-player.c:347](../../src/project-player.c#L347), 496) all passed
+`false` and went round the list entirely. So the flag was right, the data was
+right, and a Skeleton still bled from casting a spell.
+
+All three now check. *That is a change to upstream behaviour beyond this
+milestone and is deliberate*: a character in rock form also stops bleeding from
+shards, ice and its own exertion, which is what ROCK has always been supposed
+to mean. The monster-melee site checking while the other three did not reads as
+an oversight rather than a design, and the alternative -- a second guard inside
+`player_set_timed` for this one flag -- would have duplicated the mechanism to
+avoid admitting the first one was half-wired.
+
+**The test goes through exertion, not through the setter.** Asserting
+`player_inc_timed(..., check = true)` would have passed with all three call
+sites still bypassing it, which is exactly the failure this decision is about.
+Falsified by removing the race flag, by removing the `fail:` line, and by moving
+the Zombie's gate to birth.
+
+**A flake found on the way, and it was mine.** `a-spectre-walks-through-rock`
+failed about one run in twenty and had done since it was written two days ago.
+`steps_into()` sets a rock feature on a neighbouring grid and walks into it, and
+`move_player()` into an occupied grid *attacks* rather than moves -- so whenever
+level generation put a monster beside the player, the walk silently did not
+happen and the test read that as a Spectre unable to pass through rock. It now
+requires an empty neighbour. Measured at 9 failures in 150 runs before and 0 in
+200 after.
+
+Two things worth keeping from how it was found. `player/race` did not report its
+seed, so the failure was only ever a number; it does now, and the nine failing
+seeds replay clean against the fix. And **`check-flakes` runs eight passes,
+which misses a one-in-twenty failure about two times in three** -- it had passed
+this suite clean twice in a row while the flake was there. That is not an
+argument for more passes on every gate, but it is worth knowing what eight
+passes does and does not establish.
+
+*Not built: the Golem's drain-heal denial.* Zangband stops a monster healing
+itself on an experience-draining blow against these races
+([melee1.c:1330](../zangband/src/melee1.c#L1330)). 4.2's experience-drain blow
+does not heal the attacker at all -- the only blow that heals a monster is
+`UN_POWER`, draining charges ([mon-blows.c:756](../../src/mon-blows.c#L756)) --
+so there is nothing to deny. Recorded because it had been carried as
+outstanding work for some time and is not work.
+
+**DEC-80 — A Draconian breathes the archive's elements for the archive's
+damage; the class table and the shape are open.**
+
+Three things were wrong with the imported breath and two of them were lookups.
+
+**Damage was three-quarters.** `fire_ball(Type, dir, plev * 2, ...)`
+([racial.c:481](../zangband/src/racial.c#L481)); ours was `plev * 3 / 2`. At
+level 30 that is 45 against 60, for the life of the character. Fixed.
+
+**Element was fire only.** Every Draconian breath in the archive starts
+`Type = (one_in_(3) ? GF_COLD : GF_FIRE)`
+([racial.c:381](../zangband/src/racial.c#L381)). Now a `RANDOM` over three
+branches, two fire and one cold. Fixed.
+
+**Open, and put to the project owner rather than decided here.**
+
+*The class table.* From level 15 the archive rolls `randint1(100) < plev` and,
+on success, replaces the element with a pair belonging to the character's class
+-- seven branches, from shards for a Warrior to mental energy for a
+Mindcrafter. A race power in this game has no way to ask which class holds it,
+and `power-when:` bands on character level cannot express it. Building it means
+either a class dimension on `struct player_power` or a new effect that reads the
+class, both of which are design rather than conversion. **Not built, and the
+manual says so in those terms.**
+
+*The shape.* Zangband throws a *ball* of radius `(plev / 15) + 1` -- two at
+level 15, four at 50 -- and what ships here is 4.2's `BREATH`, a 20-degree cone
+30 grids long. These are not near-misses of each other: a ball lands on a point
+and a cone sweeps from the caster. 4.2 has `BALL` and could do the archive's
+shape exactly, and it also has a breath mechanic that every dragon in the game
+uses and that a player would recognise as breathing.
+
+The question is which the Draconian should be, and it is a design question
+rather than a fidelity one, which is why it is here rather than answered: the
+archive's answer is available and so is the one that matches the rest of this
+game. **Left as the cone pending a ruling.**
+
+**DEC-81 — Three rulings on nightmare mode, taken before any of it was built.**
+
+The project owner, on starting M11. Each is recorded here rather than left in
+the code, because in all three cases a later reader comparing us against
+Zangband — or against the mode's own spoiler — will find a difference and needs
+to know it was chosen.
+
+**1. No score change.** Zangband adds twenty percentage points to a score
+multiplier ([scores.c:183](../zangband/src/scores.c#L183)) that it then divides
+by the race's experience factor and adds equipment value to. **4.2 has no
+multiplier to add them to.** `total_points()` is `max_exp + 100 * max_depth`
+([score.c:29](../../src/score.c#L29)) — flat, and blind to every birth option
+including the six 4.2 already ships. So this is not a number to adjust; it is a
+scoring concept to invent, and inventing one would be our design rather than a
+port. Scoring stays as it is. *Filed as a decision and not an omission: BAL-15
+asks for "an associated score multiplier" and this is the answer to that, not a
+gap in the work.*
+
+**2. The Golem keeps its stun immunity.** The spoiler says Golems lose it, and
+so does the source
+([effects.c:1876](../zangband/src/effects.c#L1876)) — but not for nightmare
+alone: `ironman_shops` and `ironman_downward` strip it too, and this game has
+neither of those options. Stripping it here would make nightmare mode carry a
+penalty that in Zangband is shared across three settings, which is a different
+bargain from the one the archive offers. PROT_CUT and PROT_STUN were both built
+for the Golem in 3.118.2 and stay unconditional.
+
+**3. Follow the numbers on the invisible walls, and expect a different
+density.** Zangband turns 1 door in 666 into an invisible wall and adds
+`Rand_normal(3, 3)` more per level ([grid.c:125](../zangband/src/grid.c#L125),
+[generate.c:945](../zangband/src/generate.c#L945)). Those figures are against
+Zangband's level generator, its level sizes and its door counts, none of which
+are ours. The numbers transplant as written; the **observed** density will not
+match Zangband's, and that is expected rather than a bug. Written down now
+because the alternative is somebody measuring it in a year and opening an
+investigation into a faithful port.
+
+*Scope note.* The mode's verification is its tests and the project owner
+playing it. The borg is deliberately **not** running a nightmare variant: the
+mode is documented as not winnable, the borg cannot leave depth 1 on most runs,
+and a second nightly job for a mode nobody has played would be speculative.
+That raises what the tests have to do, and every one of them asserts the
+behaviour off without the option and on with it.

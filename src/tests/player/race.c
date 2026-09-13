@@ -16,6 +16,8 @@
  */
 #include "unit-test.h"
 
+#include "z-dice.h"
+
 #include "init.h"
 #include "player.h"
 #include "player-birth.h"
@@ -38,6 +40,14 @@
 int setup_tests(void **state) {
 	set_file_paths();
 	init_angband();
+	/*
+	 * Report the seed, so an intermittent failure here can be replayed.
+	 * Several tests in this suite generate a level, which makes them
+	 * sensitive to the dice in ways the assertions do not show, and without
+	 * this a one-in-twenty failure is only ever a number.
+	 */
+	(void) test_seed_rng_reported(suite_name);
+
 	/* Any race and class will do; every test sets the race it cares about */
 	if (!player_make_simple(NULL, NULL, "Tester")) return 1;
 	*state = NULL;
@@ -411,7 +421,7 @@ static int test_every_level_gate_actually_opens(void *state) {
 	int gates = 0;
 
 	for (r = races; r; r = r->next) {
-		struct player_race_gain *g;
+		struct player_gain *g;
 		for (g = r->gains; g; g = g->next) {
 			int i;
 			int below = MAX(g->level - 1, 1);
@@ -662,7 +672,20 @@ static bool steps_into(const char *name, const char *feat_name)
 	 */
 	for (d = 0; d < 8; d++) {
 		target = loc_sum(player->grid, ddgrid_ddd[d]);
-		if (square_in_bounds_fully(cave, target)) break;
+		if (!square_in_bounds_fully(cave, target)) continue;
+
+		/*
+		 * And nothing standing on it. `move_player()` into an occupied grid
+		 * attacks rather than moves, so the walk silently does not happen and
+		 * the test reads that as a Spectre unable to pass through rock.
+		 *
+		 * Measured before it was fixed: about one run in twenty, which is how
+		 * often level generation puts a monster next to the player. It had
+		 * been in the suite for two days and `check-flakes` -- eight passes --
+		 * misses a one-in-twenty failure about two times in three.
+		 */
+		if (square_monster(cave, target)) continue;
+		break;
 	}
 	if (d == 8) return false;
 
@@ -793,6 +816,305 @@ static int test_the_undead_wake_in_the_dark(void *state) {
 	ok;
 }
 
+/**
+ * Every race has a body of its own.
+ *
+ * Nine imported races shared one placeholder -- `age:20:20`, `height:70:6`,
+ * `weight:150:20` -- so a Sprite and a Half-Titan were born the same size, and
+ * a Golem weighed what a man weighs. The figures exist in Zangband's own race
+ * table; nothing had to be invented, only merged, because Zangband keeps a
+ * pair per race for the two sexes and 4.2 keeps one (DEC-76).
+ *
+ * Two assertions, and the first is the one that matters: no two races may
+ * share the placeholder triple, which is what a future import silently
+ * inheriting it would look like. The second names four races whose size is
+ * part of what they are, so a merge done wrongly in the other direction --
+ * everything converging on the average -- fails as well.
+ */
+static int test_every_race_has_a_body(void *state) {
+	static const struct {
+		const char *race;
+		int age, height, weight;
+	} rows[] = {
+		{ "Sprite",     50,  30,  70 },
+		{ "Half-Titan", 100, 105, 252 },
+		{ "Yeek",       14,  50,  82 },
+		{ "Golem",      1,   64,  190 },
+	};
+	struct player_race *r;
+	size_t i;
+
+	/* Nobody is left on the placeholder. */
+	for (r = races; r; r = r->next) {
+		if (r->b_age == 20 && r->m_age == 20 && r->base_hgt == 70
+				&& r->mod_hgt == 6 && r->base_wgt == 150
+				&& r->mod_wgt == 20) {
+			printf("%s still carries the placeholder body\n", r->name);
+			require(false);
+		}
+	}
+
+	for (i = 0; i < N_ELEMENTS(rows); i++) {
+		r = race_named(rows[i].race);
+		require(r);
+		if (r->b_age != rows[i].age || r->base_hgt != rows[i].height
+				|| r->base_wgt != rows[i].weight) {
+			printf("%s: %d/%d/%d, wanted %d/%d/%d\n", rows[i].race,
+					r->b_age, r->base_hgt, r->base_wgt,
+					rows[i].age, rows[i].height, rows[i].weight);
+			require(false);
+		}
+	}
+	ok;
+}
+
+/** The named power of that race, or NULL. */
+static struct player_power *power_of(const char *race, const char *power)
+{
+	struct player_race *r = race_named(race);
+	struct player_power *pw;
+
+	if (!r) return NULL;
+	for (pw = r->powers; pw; pw = pw->next)
+		if (streq(pw->name, power)) return pw;
+	return NULL;
+}
+
+/**
+ * The six races Angband and Zangband share kept their racial powers.
+ *
+ * A Dwarf, Hobbit, Gnome, Half-Orc, Half-Troll and Kobold each have one in
+ * Zangband (racial.c, with the level, cost, stat and failure from
+ * tables.c:7752) and had none here. The import took the eleven shared races'
+ * stats and skills and stopped: a Dwarf arrived as Angband's Dwarf, which is
+ * the same race minus the one button it can press.
+ *
+ * The figures are the archive's, so this pins them rather than arguing them --
+ * an edit to p_race.txt that reprices one is a decision somebody makes.
+ */
+static int test_the_shared_races_kept_their_powers(void *state) {
+	static const struct {
+		const char *race, *power;
+		int level, cost, stat, fail;
+	} rows[] = {
+		{ "Dwarf",      "examine your surroundings",  5,  5,  STAT_WIS, 12 },
+		{ "Hobbit",     "cook some food",            15, 10,  STAT_INT, 10 },
+		{ "Gnome",      "blink",                      5, 10,  STAT_INT, 12 },
+		{ "Half-Orc",   "play tough",                 3,  5,  STAT_WIS,  8 },
+		{ "Half-Troll", "work yourself into a frenzy", 10, 12, STAT_WIS, 9 },
+		{ "Kobold",     "throw a dart of poison",    12,  8,  STAT_DEX, 14 },
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(rows); i++) {
+		struct player_power *pw = power_of(rows[i].race, rows[i].power);
+
+		if (!pw) {
+			printf("%s has no power '%s'\n", rows[i].race, rows[i].power);
+			require(false);
+		}
+		if (pw->level != rows[i].level || pw->cost != rows[i].cost
+				|| pw->stat != rows[i].stat || pw->fail != rows[i].fail) {
+			printf("%s: %d/%d/%d/%d, wanted %d/%d/%d/%d\n", rows[i].race,
+					pw->level, pw->cost, pw->stat, pw->fail,
+					rows[i].level, rows[i].cost, rows[i].stat, rows[i].fail);
+			require(false);
+		}
+	}
+	ok;
+}
+
+/**
+ * The two powers whose strength is written as an expression give the archive's
+ * numbers, measured rather than read.
+ *
+ * `power-dice` goes through the dice grammar, and DEC-75 is the reason this
+ * test exists: the same text means different things to different parsers here,
+ * and `values:[-d5M5]` looked like a penalty and granted a bonus. So the
+ * Gnome's `10+$B` and the Kobold's `$B` are evaluated at two character levels
+ * and compared against `10 + plev` and `plev`, which is what Zangband passes
+ * to `teleport_player` and `fire_bolt` (racial.c:236, 357).
+ */
+static int test_a_power_expression_means_what_it_says(void *state) {
+	struct player_power *blink = power_of("Gnome", "blink");
+	struct player_power *dart = power_of("Kobold", "throw a dart of poison");
+	static const int levels[] = { 5, 50 };
+	size_t i;
+
+	require(blink && blink->effects && blink->effects->effect);
+	require(dart && dart->effects && dart->effects->effect);
+
+	/*
+	 * And the form that was already shipping, because it is the same grammar
+	 * and the Gnome's near-identical `10+$B` proved to mean something else
+	 * entirely. A Half-Troll's frenzy is `inc_shero(10 + randint1(plev))`,
+	 * so the duration must span 11..10+level and no wider.
+	 */
+	{
+		struct player_power *rage = power_of("Half-Troll",
+				"work yourself into a frenzy");
+		struct power_effect *pe;
+		struct effect *shero = NULL;
+
+		require(rage);
+		for (pe = rage->effects; pe; pe = pe->next) {
+			struct effect *e;
+
+			for (e = pe->effect; e; e = e->next)
+				if (e->index == EF_TIMED_INC) shero = e;
+		}
+		require(shero && shero->dice);
+		player->lev = 40;
+		eq(dice_evaluate(shero->dice, 40, MINIMISE, NULL), 11);
+		eq(dice_evaluate(shero->dice, 40, MAXIMISE, NULL), 50);
+	}
+
+	for (i = 0; i < N_ELEMENTS(levels); i++) {
+		int lev = levels[i];
+		int range, damage;
+
+		player->lev = lev;
+		range = dice_evaluate(blink->effects->effect->dice, lev, AVERAGE,
+				NULL);
+		damage = dice_evaluate(dart->effects->effect->dice, lev, AVERAGE,
+				NULL);
+
+		if (range != 10 + lev || damage != lev) {
+			printf("at level %d: blink %d (wanted %d), dart %d (wanted %d)\n",
+					lev, range, 10 + lev, damage, lev);
+			require(false);
+		}
+	}
+	ok;
+}
+
+/**
+ * Four races do not bleed, and one of them has to grow into it.
+ *
+ * `set_cut()` zeroes the value outright for a Golem, Skeleton, Spectre, and a
+ * Zombie above level 11 ([effects.c:2064](../../archive/zangband/src/effects.c#L2064)).
+ * 4.2 had protection from fear, blindness, confusion and stunning and not from
+ * bleeding, so the races that needed it had nowhere to say so and simply bled.
+ *
+ * The Zombie is the interesting row. Its threshold is the reason this could not
+ * be four `obj-flags:` entries: it is a level gate on a property the other
+ * three are born with, so it needs both mechanisms at once.
+ *
+ * Tested through `player_inc_timed` rather than by reading the flag, because
+ * the flag only matters if the timed effect honours it -- the whole thing hangs
+ * on one `fail:1:PROT_CUT` line in player_timed.txt, and a test that read the
+ * flag would pass with that line deleted.
+ */
+static int test_the_bloodless_do_not_bleed(void *state) {
+	static const struct { const char *race; int lev; bool bleeds; } rows[] = {
+		{ "Golem",    1,  false },
+		{ "Skeleton", 1,  false },
+		{ "Spectre",  1,  false },
+		{ "Zombie",   11, true  },	/* below the gate, it still bleeds */
+		{ "Zombie",   12, false },
+		{ "Human",    1,  true  },	/* and the control */
+	};
+	size_t i;
+
+	/*
+	 * A real level, because `player_inc_check()` reads `cave->mon_current` to
+	 * decide whether a monster is watching, and does it before asking whether
+	 * there is a cave at all. Nothing in the game reaches that with no level;
+	 * a test does.
+	 */
+	for (i = 0; i < N_ELEMENTS(rows); i++) {
+		struct player *p = grown_to(rows[i].race, rows[i].lev);
+		bool bled;
+
+		require(p);
+		p->depth = 1;
+		prepare_next_level(p);
+		p->timed[TMD_CUT] = 0;
+		player_inc_timed(p, TMD_CUT, 50, false, false, true);
+		bled = p->timed[TMD_CUT] > 0;
+
+		/*
+		 * And through a real source rather than the setter, because three of
+		 * the four places the game cuts you passed `check = false` and so went
+		 * round the whole mechanism. A character's own exertion is one of
+		 * them: the flag was right and a Skeleton still bled from casting.
+		 */
+		p->timed[TMD_CUT] = 0;
+		player_over_exert(p, PY_EXERT_CUT, 100, 50);
+		if ((p->timed[TMD_CUT] > 0) != rows[i].bleeds) {
+			printf("%s at %d bled from exertion: %s, wanted %s\n",
+					rows[i].race, rows[i].lev,
+					p->timed[TMD_CUT] > 0 ? "yes" : "no",
+					rows[i].bleeds ? "yes" : "no");
+			require(false);
+		}
+
+		if (bled != rows[i].bleeds) {
+			printf("%s at %d: %s, wanted %s\n", rows[i].race, rows[i].lev,
+					bled ? "bled" : "did not bleed",
+					rows[i].bleeds ? "bleeding" : "no bleeding");
+			require(false);
+		}
+	}
+	ok;
+}
+
+/**
+ * A Draconian breathes fire or cold, for twice its level.
+ *
+ * Both halves were wrong. The element was fire only, where the archive rolls
+ * `one_in_(3) ? GF_COLD : GF_FIRE` on every breath
+ * ([racial.c:381](../../archive/zangband/src/racial.c#L381)); and the damage
+ * was `plev * 3 / 2` against the archive's `plev * 2`
+ * ([racial.c:481](../../archive/zangband/src/racial.c#L481)) -- three-quarters,
+ * at every level, for the life of the character.
+ *
+ * The three branches are asserted by element and by damage together, because
+ * a RANDOM chain with the right elements and the wrong dice looks correct in
+ * the data file.
+ *
+ * Not asserted, because it is not built: from around level 15 the archive
+ * substitutes a pair of elements belonging to the character's *class* on a
+ * `randint1(100) < plev` roll. A race power cannot ask what class holds it.
+ * DEC-80.
+ */
+static int test_a_draconian_breathes_two_ways(void *state) {
+	struct player_power *pw = power_of("Draconian", "breathe like a dragon");
+	struct power_effect *pe;
+	struct effect *e;
+	int fire = 0, cold = 0, other = 0;
+
+	require(pw && pw->effects);
+	pe = pw->effects;
+	require(pe->effect);
+
+	/* The chain is RANDOM over three, then the three. */
+	e = pe->effect;
+	require(e->index == EF_RANDOM);
+	require(dice_evaluate(e->dice, 1, AVERAGE, NULL) == 3);
+
+	for (e = e->next; e; e = e->next) {
+		int dam;
+
+		require(e->index == EF_BREATH);
+		player->lev = 30;
+		dam = dice_evaluate(e->dice, 30, AVERAGE, NULL);
+		if (dam != 60) {
+			printf("a branch does %d at level 30, wanted 60\n", dam);
+			require(false);
+		}
+
+		if (e->subtype == ELEM_FIRE) fire++;
+		else if (e->subtype == ELEM_COLD) cold++;
+		else other++;
+	}
+
+	eq(fire, 2);
+	eq(cold, 1);
+	eq(other, 0);
+	ok;
+}
+
 const char *suite_name = "player/race";
 struct test tests[] = {
 	{ "the-draconian-grows-into-its-scales",
@@ -829,5 +1151,13 @@ struct test tests[] = {
 			test_a_mountain_costs_a_spectre_blood },
 	{ "the-undead-wake-in-the-dark",
 			test_the_undead_wake_in_the_dark },
+	{ "every-race-has-a-body", test_every_race_has_a_body },
+	{ "the-shared-races-kept-their-powers",
+			test_the_shared_races_kept_their_powers },
+	{ "a-power-expression-means-what-it-says",
+			test_a_power_expression_means_what_it_says },
+	{ "the-bloodless-do-not-bleed", test_the_bloodless_do_not_bleed },
+	{ "a-draconian-breathes-two-ways",
+			test_a_draconian_breathes_two_ways },
 	{ NULL, NULL }
 };

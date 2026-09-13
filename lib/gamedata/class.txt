@@ -3194,6 +3194,11 @@ equip:sword:Main Gauche:1:1:none
 equip:scroll:Protection from Evil:1:1:none
 equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:BLESS_WEAPON | SHIELD_BASH
+# Zangband gives a Paladin fear resistance at 40 (files.c:1284).  4.2's own
+# Warrior gets the same thing from BRAVERY_30, which is why only this class and
+# the three below needed the mechanism.
+gain-at:40
+gain-obj-flags:PROT_FEAR
 title:Gallant
 title:Keeper
 title:Protector
@@ -5486,6 +5491,16 @@ equip:potion:Cure Light Wounds:1:1:none
 equip:soft armour:Soft Leather Armour:1:1:none
 equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:MARTIAL_ARTS
+# The two the archive gates on armour as well as on level (files.c:1301): a
+# Monk is faster from 10 and cannot be held from 25, but only while it is
+# wearing little enough to fight bare-handed.  `gain-when:UNENCUMBERED` is the
+# same test the blow count and martial armour class already use.
+gain-at:10
+gain-when:UNENCUMBERED
+gain-speed:10
+gain-at:25
+gain-when:UNENCUMBERED
+gain-obj-flags:FREE_ACT
 title:Initiate
 title:Brother
 title:Disciple
@@ -6126,6 +6141,15 @@ equip:potion:Cure Light Wounds:1:1:none
 equip:soft armour:Soft Leather Armour:1:1:none
 equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:CHOOSE_SPELLS
+# Four thresholds, which is more than any race has (files.c:1309).
+gain-at:10
+gain-obj-flags:PROT_FEAR
+gain-at:20
+gain-obj-flags:SUST_WIS
+gain-at:30
+gain-obj-flags:PROT_CONF
+gain-at:40
+gain-obj-flags:TELEPATHY
 powers:WIS:1:350
 title:Trainee
 title:Acolyte
@@ -6382,6 +6406,12 @@ equip:sword:Broad Sword:1:1:none
 equip:soft armour:Soft Leather Armour:1:1:none
 equip:scroll:Word of Recall:1:1:birth_no_recall
 player-flags:CHAOS_PATRON | CHOOSE_SPELLS
+# The patron arrives at birth and is already on player-flags; these two are
+# the gated half (files.c:1293).
+gain-at:30
+gain-values:RES_CHAOS[1]
+gain-at:40
+gain-obj-flags:PROT_FEAR
 title:Rookie
 title:Soldier
 title:Mercenary

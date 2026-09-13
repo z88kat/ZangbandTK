@@ -3684,7 +3684,7 @@ static enum parser_error parse_p_race_values(struct parser *p) {
  * more than one thing at once, and because it reads like the `power-when`
  * bands the powers already use.
  */
-static struct player_race_gain *race_gain_last(struct player_race_gain *head) {
+static struct player_gain *gain_last(struct player_gain *head) {
 	while (head && head->next) head = head->next;
 	return head;
 }
@@ -3805,12 +3805,35 @@ static enum parser_error parse_p_race_speed(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_p_race_gain_at(struct parser *p) {
-	struct player_race *r = parser_priv(p);
-	struct player_race_gain *g, *last;
+/**
+ * The conditions a `gain-when:` may name (PLR-06).
+ *
+ * One entry, which is the point: Zangband has exactly one class gate that is
+ * not a plain level, and building a named list rather than a Monk special case
+ * means the second costs a line here rather than a mechanism.
+ */
+static const char *gain_condition_names[] = {
+	"ALWAYS", "UNENCUMBERED", NULL
+};
+
+/**
+ * Gains, shared between races (PLR-01) and classes (PLR-06).
+ *
+ * Both gate intrinsics on character level in Zangband and both mean the same
+ * thing by it, so the parsing lives here once and each parser passes in the
+ * list it owns -- the same arrangement `power:` already uses.
+ *
+ *	gain-at:<level>            opens a band; everything after belongs to it
+ *	gain-when:<CONDITION>      a further condition on the open band
+ *	gain-obj-flags:<flags>     object flags the band grants
+ *	gain-values:RES_x[n] | ... resistances the band grants
+ */
+static enum parser_error parse_gain_at(struct parser *p,
+									   struct player_gain **head) {
+	struct player_gain *g, *last;
 	int level = parser_getint(p, "level");
 
-	if (!r)
+	if (!head)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	if (level < 1 || level > PY_MAX_LEVEL)
 		return PARSE_ERROR_INVALID_VALUE;
@@ -3818,24 +3841,60 @@ static enum parser_error parse_p_race_gain_at(struct parser *p) {
 	g = mem_zalloc(sizeof(*g));
 	g->level = level;
 
-	last = race_gain_last(r->gains);
+	last = gain_last(*head);
 	if (last)
 		last->next = g;
 	else
-		r->gains = g;
+		*head = g;
 
 	return PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_p_race_gain_obj_flags(struct parser *p) {
+static enum parser_error parse_gain_when(struct parser *p,
+										 struct player_gain *head) {
+	struct player_gain *g = gain_last(head);
+	const char *name = parser_getsym(p, "condition");
+	int i;
+
+	if (!g)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	for (i = 0; gain_condition_names[i]; i++)
+		if (streq(name, gain_condition_names[i])) {
+			g->condition = i;
+			return PARSE_ERROR_NONE;
+		}
+
+	return PARSE_ERROR_INVALID_VALUE;
+}
+
+static enum parser_error parse_p_race_gain_at(struct parser *p) {
 	struct player_race *r = parser_priv(p);
-	struct player_race_gain *g;
-	char *flags;
-	char *s;
 
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	g = race_gain_last(r->gains);
+	return parse_gain_at(p, &r->gains);
+}
+
+static enum parser_error parse_gain_speed(struct parser *p,
+										 struct player_gain *head) {
+	struct player_gain *g = gain_last(head);
+	int scale = parser_getint(p, "scale");
+
+	if (!g)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (scale < 1)
+		return PARSE_ERROR_INVALID_VALUE;
+	g->speed_scale = scale;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_gain_obj_flags(struct parser *p,
+											 struct player_gain *head) {
+	struct player_gain *g = gain_last(head);
+	char *flags;
+	char *s;
+
 	if (!g)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	if (!parser_hasval(p, "flags"))
@@ -3852,15 +3911,12 @@ static enum parser_error parse_p_race_gain_obj_flags(struct parser *p) {
 	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
-static enum parser_error parse_p_race_gain_values(struct parser *p) {
-	struct player_race *r = parser_priv(p);
-	struct player_race_gain *g;
+static enum parser_error parse_gain_values(struct parser *p,
+										  struct player_gain *head) {
+	struct player_gain *g = gain_last(head);
 	char *s;
 	char *t;
 
-	if (!r)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	g = race_gain_last(r->gains);
 	if (!g)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
@@ -3878,6 +3934,55 @@ static enum parser_error parse_p_race_gain_values(struct parser *p) {
 
 	string_free(s);
 	return t ? PARSE_ERROR_INVALID_VALUE : PARSE_ERROR_NONE;
+}
+
+/* Per-owner shims for the shared gain directives. */
+static enum parser_error parse_p_race_gain_when(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	return parse_gain_when(p, r->gains);
+}
+
+static enum parser_error parse_p_race_gain_obj_flags_x(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	return parse_gain_obj_flags(p, r->gains);
+}
+
+static enum parser_error parse_p_race_gain_values_x(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	return parse_gain_values(p, r->gains);
+}
+
+static enum parser_error parse_class_gain_at(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	if (!c) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	return parse_gain_at(p, &c->gains);
+}
+
+static enum parser_error parse_class_gain_when(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	if (!c) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	return parse_gain_when(p, c->gains);
+}
+
+static enum parser_error parse_class_gain_speed(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	if (!c) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	return parse_gain_speed(p, c->gains);
+}
+
+static enum parser_error parse_class_gain_obj_flags(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	if (!c) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	return parse_gain_obj_flags(p, c->gains);
+}
+
+static enum parser_error parse_class_gain_values(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	if (!c) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	return parse_gain_values(p, c->gains);
 }
 
 /**
@@ -4533,8 +4638,9 @@ static struct parser *init_parse_p_race(void) {
 		"equip-instead sym replaces sym tval sym sval int min int max",
 		parse_p_race_equip_instead);
 	parser_reg(p, "gain-at int level", parse_p_race_gain_at);
-	parser_reg(p, "gain-obj-flags ?str flags", parse_p_race_gain_obj_flags);
-	parser_reg(p, "gain-values str values", parse_p_race_gain_values);
+	parser_reg(p, "gain-when sym condition", parse_p_race_gain_when);
+	parser_reg(p, "gain-obj-flags ?str flags", parse_p_race_gain_obj_flags_x);
+	parser_reg(p, "gain-values str values", parse_p_race_gain_values_x);
 	parser_reg(p, "player-flags ?str flags", parse_p_race_play_flags);
 	parser_reg(p, "values str values", parse_p_race_values);
 	parser_reg(p, "power str name", parse_p_race_power);
@@ -4581,7 +4687,7 @@ static void cleanup_p_race(void)
 
 		/* And whatever it grew into (PLR-01). */
 		while (p->gains) {
-			struct player_race_gain *g = p->gains;
+			struct player_gain *g = p->gains;
 			p->gains = g->next;
 			mem_free(g);
 		}
@@ -6760,6 +6866,11 @@ static struct parser *init_parse_class(void) {
 	parser_reg(p, "skill-dig int base int incr", parse_class_skill_dig);
 	parser_reg(p, "hitdie int mhp", parse_class_hitdie);
 	parser_reg(p, "exp int exp", parse_class_exp);
+	parser_reg(p, "gain-at int level", parse_class_gain_at);
+	parser_reg(p, "gain-when sym condition", parse_class_gain_when);
+	parser_reg(p, "gain-speed int scale", parse_class_gain_speed);
+	parser_reg(p, "gain-obj-flags ?str flags", parse_class_gain_obj_flags);
+	parser_reg(p, "gain-values str values", parse_class_gain_values);
 	parser_reg(p, "max-attacks int max-attacks", parse_class_max_attacks);
 	parser_reg(p, "pet-upkeep-div int pet-upkeep-div", parse_class_pet_upkeep);
 	parser_reg(p, "min-weight int min-weight", parse_class_min_weight);
@@ -6837,6 +6948,13 @@ static void cleanup_class(void)
 
 		/* And its power list, if it carries one (PLR-06). */
 		power_free(c->powers);
+
+		/* And whatever it grew into (PLR-06, DEC-78). */
+		while (c->gains) {
+			struct player_gain *g = c->gains;
+			c->gains = g->next;
+			mem_free(g);
+		}
 
 		/* And the unarmed ladder, if the class has one (PLR-04). */
 		while (blow) {

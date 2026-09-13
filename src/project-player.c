@@ -343,9 +343,9 @@ static int project_player_handler_SHARD(project_player_handler_context_t *contex
 		return 0;
 	}
 
-	/* Cuts */
+	/* Cuts, checked -- see DEC-79 and the note in player_over_exert(). */
 	(void)player_inc_timed(player, TMD_CUT, randint1(context->dam), true,
-		true, false);
+		true, true);
 	return 0;
 }
 
@@ -493,8 +493,9 @@ static int project_player_handler_ICE(project_player_handler_context_t *context)
 
 	/* Cuts */
 	if (!player_resists(player, ELEM_SHARD)) {
+		/* Checked -- see DEC-79. */
 		(void)player_inc_timed(player, TMD_CUT, damroll(5, 8), true,
-			true, false);
+			true, true);
 	} else {
 		msg("You resist the effect!");
 	}

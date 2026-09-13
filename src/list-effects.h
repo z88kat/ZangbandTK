@@ -109,6 +109,7 @@ EFFECT(CURSE_WEAPON,				false,	NULL,		0,		EFINFO_NONE,	"curses your wielded mele
 EFFECT(BRAND_WEAPON,				false,	NULL,		0,		EFINFO_NONE,	"brands your wielded melee weapon",	"brand weapon")
 EFFECT(BRAND_AMMO,					false,	NULL,		0,		EFINFO_NONE,	"brands a stack of ammunition",	"brand ammunition")
 EFFECT(BRAND_BOLTS,					false,	NULL,		0,		EFINFO_NONE,	"brands bolts with fire, in an unbalanced fashion",	"brand bolts")
+EFFECT(CREATE_FOOD,					false,	NULL,		0,		EFINFO_NONE,	"conjures a ration of food at your feet",	"create food")
 EFFECT(CREATE_ARROWS,				false,	NULL,		0,		EFINFO_NONE,	"uses a staff to create a stack of arrows",	"use staff for arrows")
 EFFECT(TAP_DEVICE,					false,	NULL,		0,		EFINFO_NONE,	"drains magical energy from a staff or wand",	"tap device")
 EFFECT(TAP_UNLIFE,					false,	"dam",		1,		EFINFO_DICE,	"drains %s mana from the closest undead monster, damaging it",	"tap unlife")

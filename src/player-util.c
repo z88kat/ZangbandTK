@@ -1059,8 +1059,14 @@ void player_over_exert(struct player *p, int flag, int chance, int amount)
 	if (flag & PY_EXERT_CUT) {
 		if (randint0(100) < chance) {
 			msg("Wounds appear on your body!");
+			/*
+			 * Checked, where upstream does not check here.  TMD_CUT carries a
+			 * `fail:` list and this is one of three sites that bypassed it, so
+			 * a character that cannot bleed bled anyway from its own exertion
+			 * (ZangbandTK, DEC-79).  Monster melee already checked.
+			 */
 			(void)player_inc_timed(p, TMD_CUT, randint1(amount),
-				true, true, false);
+				true, true, true);
 		}
 	}
 

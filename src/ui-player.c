@@ -1379,6 +1379,19 @@ void write_character_dump(ang_file *fff)
 		file_putf(fff, "%08lx\n\n", (unsigned long)seed_randart);
 	}
 
+	/*
+	 * ZangbandTK (BAL-15): say so, as Zangband's dump does (files.c:2766).
+	 *
+	 * The mode changes sixteen things about how the game is played and every
+	 * one of them is invisible in a dump otherwise -- a character that died at
+	 * depth 20 under nightmare did something quite different from one that
+	 * died at depth 20 without it, and the dump is where that comparison gets
+	 * made.
+	 */
+	if (OPT(player, birth_nightmare)) {
+		file_putf(fff, "  [Nightmare Mode: ON]\n\n");
+	}
+
 	mem_free(home_list);
 	mem_free(buf);
 }

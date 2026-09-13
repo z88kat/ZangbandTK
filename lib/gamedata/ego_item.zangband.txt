@@ -99,7 +99,7 @@ values:SEARCH[d2] | RES_NEXUS[1]
 slay:EVIL_2
 curse:teleportation:30
 act:TELE_LONG
-time:50+d50
+time:49+d51
 
 name:(Pattern Weapon)
 info:0:26

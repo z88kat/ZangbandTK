@@ -122,3 +122,19 @@ BIRTH, false)
 OP(birth_percent_damage,  "To-damage is a percentage of dice (experimental)",
 BIRTH, false)
 
+/*
+ * ZangbandTK (BAL-15): Zangband's nightmare mode, whose own birth text is
+ * "Nightmare mode (this isn't even remotely fair!)" (tables.c:6287).
+ *
+ * Sixteen changes to play, every one of them keyed on this option and every one
+ * of them sourced to a site in Zangband 2.7.5 -- see
+ * .claude/plans/phase1-balance-calibration.md 2.8.2.  What the mode's own
+ * spoiler describes is about three times that; BAL-18 says the source is the
+ * port and the spoiler is a list of candidates.
+ *
+ * Irreversible for free: 4.2 refuses to modify a birth option outside birth
+ * (ui-options.c:386), which is the whole of what "irreversible" asks for.
+ */
+OP(birth_nightmare,       "Nightmare mode (this isn't even remotely fair!)",
+BIRTH, false)
+
