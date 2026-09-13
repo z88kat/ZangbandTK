@@ -4,7 +4,7 @@
  *
  * Zangband punishes a failed Death spell as surely as it lets a failed Chaos
  * one run wild, and on the same roll -- the spell's own place in its realm. The
- * punishment is graded: `(book + 2)d6` hit points out of the first three books,
+ * punishment is graded: `(book + 1)d6` hit points out of the first three books,
  * a chance of losing experience from the second half of the realm, and out of
  * the Necronomicon something worse half the time.
  *
@@ -71,7 +71,11 @@ static void healthy(void) {
 }
 
 /**
- * The damage is `(book + 2)d6`, and the deeper book hurts more.
+ * The damage is `(book + 1)d6`, and the deeper book hurts more.
+ *
+ * Zangband's is `damroll(o_ptr->sval + 1, 6)` with sval the 0-based book, so
+ * 1d6 through 4d6 -- which its own spoiler states as "1, 2, 3, or 4d6". This
+ * read `book + 2` until 3.72.1 and punished every miscast by one extra die.
  *
  * Bounded per roll, and then checked by **mean** rather than by extremes.
  * Asserting that both ends of the range turn up is the obvious thing and is
@@ -93,7 +97,7 @@ static int test_the_penalty_is_graded_by_book(void *state) {
 	int book, total[3];
 
 	for (book = 0; book < 3; book++) {
-		int dice = book + 2, i;
+		int dice = book + 1, i;
 
 		total[book] = 0;
 

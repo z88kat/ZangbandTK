@@ -1095,9 +1095,9 @@ desc = "Detects creatures nearby."
 
 [death.spells."Malediction"]
 line = 1379
-effects = [ "BALL:MANA:0", "dice:$Dd3", "expr:D:PLAYER_LEVEL:- 1 / 5 + 3" ]
-note = "DEC-53's list of elements 4.2 does not have includes GF_HELL_FIRE, and this is where it finally matters. Zangband's hell fire does double damage to *good* monsters; 4.2 has a projection that favours evil (HOLY_ORB) and none that favours good. MANA is taken instead -- the property that decides how the spell plays is that nothing resists it, which is a Death caster's answer to a resistant target. NETHER would have been the closer flavour and the worse spell: undead resist nether, and it would have handed the realm's own quarry immunity to its biggest attacks. The one-in-five extra -- fear, confusion, stunning, or on a one-in-a-thousand roll of 666 an outright death ray -- is not carried: a chain cannot roll a second effect at a probability of its own. Zangband's own comment explains the radius-0 ball rather than a bolt, and that is kept: it can be aimed at any visible monster."
-desc = "Curses a creature with unresisted force."
+effects = [ "BALL:HOLY_ORB:0", "dice:$Dd3", "expr:D:PLAYER_LEVEL:- 1 / 5 + 3" ]
+note = "GF_HELL_FIRE, which 4.2 does have an exact equivalent of after all. Through 3.72.1 this note said Zangband's hell fire doubled against *good* monsters and that 4.2 had nothing that favoured good, and took MANA on that basis. Both halves were wrong. `spells1.c` reads `/* Hellfire -- hurts Evil */` with `if (FLAG(r_ptr, RF_EVIL)) dam *= 2;`, and 4.2's HOLY_ORB is `project_monster_resist_other(context, RF_EVIL, 2, false, ...)` -- double damage to evil, no immunity for good, no resistance for anyone else. That is GF_HELL_FIRE exactly, so HOLY_ORB is taken and the unresisted-by-everything property comes with it rather than instead of the evil bonus. MANA was not wrong so much as half the spell. NETHER would have been the closer flavour and the worse spell: undead resist nether, and it would have handed the realm's own quarry immunity to its biggest attacks. The one-in-five extra -- fear, confusion, stunning, or on a one-in-a-thousand roll of 666 an outright death ray -- is not carried: a chain cannot roll a second effect at a probability of its own. Zangband's own comment explains the radius-0 ball rather than a bolt, and that is kept: it can be aimed at any visible monster."
+desc = "Curses a creature with unresisted force.  Evil creatures suffer double."
 
 [death.spells."Detect Evil"]
 line = 1403
@@ -1259,9 +1259,10 @@ desc = "Blasts, terrifies and then banishes everything in sight."
 
 [death.spells."Hellfire"]
 line = 1683
-effects = [ "BALL:MANA:3", "dice:666", "DAMAGE", "dice:49+1d51", "effect-msg:the strain of casting Hellfire" ]
-note = "DEC-53's list of elements 4.2 does not have includes GF_HELL_FIRE, and this is where it finally matters. Zangband's hell fire does double damage to *good* monsters; 4.2 has a projection that favours evil (HOLY_ORB) and none that favours good. MANA is taken instead -- the property that decides how the spell plays is that nothing resists it, which is a Death caster's answer to a resistant target. NETHER would have been the closer flavour and the worse spell: undead resist nether, and it would have handed the realm's own quarry immunity to its biggest attacks. Six hundred and sixty-six is Zangband's number and is kept, and so is the fifty to a hundred hit points it costs to cast -- which is the whole of the spell's character and the reason it is not simply the best attack in the game."
-desc = "Six hundred and sixty-six points of unresisted fire, and fifty to a hundred of your own."
+effects = [ "BALL:HOLY_ORB:3", "dice:666", "DAMAGE", "dice:49+1d51",
+            "effect-msg:the strain of casting Hellfire" ]
+note = "GF_HELL_FIRE, which 4.2 does have an exact equivalent of after all. Through 3.72.1 this note said Zangband's hell fire doubled against *good* monsters and that 4.2 had nothing that favoured good, and took MANA on that basis. Both halves were wrong. `spells1.c` reads `/* Hellfire -- hurts Evil */` with `if (FLAG(r_ptr, RF_EVIL)) dam *= 2;`, and 4.2's HOLY_ORB is `project_monster_resist_other(context, RF_EVIL, 2, false, ...)` -- double damage to evil, no immunity for good, no resistance for anyone else. That is GF_HELL_FIRE exactly, so HOLY_ORB is taken and the unresisted-by-everything property comes with it rather than instead of the evil bonus. MANA was not wrong so much as half the spell. NETHER would have been the closer flavour and the worse spell: undead resist nether, and it would have handed the realm's own quarry immunity to its biggest attacks. Six hundred and sixty-six is Zangband's number and is kept, and so is the fifty to a hundred hit points it costs to cast -- which is the whole of the spell's character and the reason it is not simply the best attack in the game."
+desc = "Six hundred and sixty-six points of unresisted fire -- double against evil -- and fifty to a hundred of your own."
 
 [death.spells."Omnicide"]
 line = 1689

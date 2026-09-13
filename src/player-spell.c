@@ -974,7 +974,7 @@ void death_miscast(struct player *p, int idx, int book)
 	}
 
 	msg("It hurts!");
-	take_hit(p, damroll(book + 2, 6), "a miscast Death spell");
+	take_hit(p, damroll(book + 1, 6), "a miscast Death spell");
 
 	/*
 	 * Zangband's `spell > 15` is the realm's midpoint: the second half of the

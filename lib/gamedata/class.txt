@@ -1134,10 +1134,10 @@ effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects creatures nearby.
 spell:Malediction:2:2:23:5
-effect:BALL:MANA:0
+effect:BALL:HOLY_ORB:0
 dice:$Dd3
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
-desc:Curses a creature with unresisted force.
+desc:Curses a creature with unresisted force.  Evil creatures suffer double.
 spell:Detect Evil:2:2:23:5
 effect:DETECT_EVIL
 effect-yx:22:40
@@ -1293,12 +1293,12 @@ expr:B:PLAYER_LEVEL:* 4
 effect:MASS_BANISH
 desc:Blasts, terrifies and then banishes everything in sight.
 spell:Hellfire:42:120:83:80
-effect:BALL:MANA:3
+effect:BALL:HOLY_ORB:3
 dice:666
 effect:DAMAGE
 dice:49+1d51
 effect-msg:the strain of casting Hellfire
-desc:Six hundred and sixty-six points of unresisted fire, and fifty to a hundred of your own.
+desc:Six hundred and sixty-six points of unresisted fire -- double against evil -- and fifty to a hundred of your own.
 spell:Omnicide:45:100:87:80
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
@@ -2455,10 +2455,10 @@ effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects creatures nearby.
 spell:Malediction:2:2:23:5
-effect:BALL:MANA:0
+effect:BALL:HOLY_ORB:0
 dice:$Dd3
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
-desc:Curses a creature with unresisted force.
+desc:Curses a creature with unresisted force.  Evil creatures suffer double.
 spell:Detect Evil:3:3:24:5
 effect:DETECT_EVIL
 effect-yx:22:40
@@ -2614,12 +2614,12 @@ expr:B:PLAYER_LEVEL:* 4
 effect:MASS_BANISH
 desc:Blasts, terrifies and then banishes everything in sight.
 spell:Hellfire:48:125:92:80
-effect:BALL:MANA:3
+effect:BALL:HOLY_ORB:3
 dice:666
 effect:DAMAGE
 dice:49+1d51
 effect-msg:the strain of casting Hellfire
-desc:Six hundred and sixty-six points of unresisted fire, and fifty to a hundred of your own.
+desc:Six hundred and sixty-six points of unresisted fire -- double against evil -- and fifty to a hundred of your own.
 spell:Omnicide:49:100:93:80
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
@@ -2996,10 +2996,10 @@ effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects creatures nearby.
 spell:Malediction:2:2:23:5
-effect:BALL:MANA:0
+effect:BALL:HOLY_ORB:0
 dice:$Dd3
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
-desc:Curses a creature with unresisted force.
+desc:Curses a creature with unresisted force.  Evil creatures suffer double.
 spell:Detect Evil:2:2:23:5
 effect:DETECT_EVIL
 effect-yx:22:40
@@ -3155,12 +3155,12 @@ expr:B:PLAYER_LEVEL:* 4
 effect:MASS_BANISH
 desc:Blasts, terrifies and then banishes everything in sight.
 spell:Hellfire:42:120:83:80
-effect:BALL:MANA:3
+effect:BALL:HOLY_ORB:3
 dice:666
 effect:DAMAGE
 dice:49+1d51
 effect-msg:the strain of casting Hellfire
-desc:Six hundred and sixty-six points of unresisted fire, and fifty to a hundred of your own.
+desc:Six hundred and sixty-six points of unresisted fire -- double against evil -- and fifty to a hundred of your own.
 spell:Omnicide:45:100:87:80
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
@@ -3428,10 +3428,10 @@ effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects creatures nearby.
 spell:Malediction:3:2:24:5
-effect:BALL:MANA:0
+effect:BALL:HOLY_ORB:0
 dice:$Dd3
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
-desc:Curses a creature with unresisted force.
+desc:Curses a creature with unresisted force.  Evil creatures suffer double.
 spell:Detect Evil:4:3:26:5
 effect:DETECT_EVIL
 effect-yx:22:40
@@ -3587,12 +3587,12 @@ expr:B:PLAYER_LEVEL:* 4
 effect:MASS_BANISH
 desc:Blasts, terrifies and then banishes everything in sight.
 spell:Hellfire:50:150:95:80
-effect:BALL:MANA:3
+effect:BALL:HOLY_ORB:3
 dice:666
 effect:DAMAGE
 dice:49+1d51
 effect-msg:the strain of casting Hellfire
-desc:Six hundred and sixty-six points of unresisted fire, and fifty to a hundred of your own.
+desc:Six hundred and sixty-six points of unresisted fire -- double against evil -- and fifty to a hundred of your own.
 spell:Omnicide:50:100:95:80
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
@@ -3981,10 +3981,10 @@ effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects creatures nearby.
 spell:Malediction:7:4:30:5
-effect:BALL:MANA:0
+effect:BALL:HOLY_ORB:0
 dice:$Dd3
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
-desc:Curses a creature with unresisted force.
+desc:Curses a creature with unresisted force.  Evil creatures suffer double.
 spell:Detect Evil:9:5:33:5
 effect:DETECT_EVIL
 effect-yx:22:40
@@ -4794,10 +4794,10 @@ effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects creatures nearby.
 spell:Malediction:5:3:27:5
-effect:BALL:MANA:0
+effect:BALL:HOLY_ORB:0
 dice:$Dd3
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
-desc:Curses a creature with unresisted force.
+desc:Curses a creature with unresisted force.  Evil creatures suffer double.
 spell:Detect Evil:7:4:30:5
 effect:DETECT_EVIL
 effect-yx:22:40
@@ -5278,10 +5278,10 @@ effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects creatures nearby.
 spell:Malediction:3:2:24:5
-effect:BALL:MANA:0
+effect:BALL:HOLY_ORB:0
 dice:$Dd3
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
-desc:Curses a creature with unresisted force.
+desc:Curses a creature with unresisted force.  Evil creatures suffer double.
 spell:Detect Evil:4:3:26:5
 effect:DETECT_EVIL
 effect-yx:22:40
@@ -5437,12 +5437,12 @@ expr:B:PLAYER_LEVEL:* 4
 effect:MASS_BANISH
 desc:Blasts, terrifies and then banishes everything in sight.
 spell:Hellfire:50:150:95:80
-effect:BALL:MANA:3
+effect:BALL:HOLY_ORB:3
 dice:666
 effect:DAMAGE
 dice:49+1d51
 effect-msg:the strain of casting Hellfire
-desc:Six hundred and sixty-six points of unresisted fire, and fifty to a hundred of your own.
+desc:Six hundred and sixty-six points of unresisted fire -- double against evil -- and fifty to a hundred of your own.
 spell:Omnicide:50:100:95:80
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
@@ -5928,10 +5928,10 @@ effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects creatures nearby.
 spell:Malediction:2:2:23:5
-effect:BALL:MANA:0
+effect:BALL:HOLY_ORB:0
 dice:$Dd3
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
-desc:Curses a creature with unresisted force.
+desc:Curses a creature with unresisted force.  Evil creatures suffer double.
 spell:Detect Evil:3:3:24:5
 effect:DETECT_EVIL
 effect-yx:22:40
@@ -6087,12 +6087,12 @@ expr:B:PLAYER_LEVEL:* 4
 effect:MASS_BANISH
 desc:Blasts, terrifies and then banishes everything in sight.
 spell:Hellfire:50:140:95:80
-effect:BALL:MANA:3
+effect:BALL:HOLY_ORB:3
 dice:666
 effect:DAMAGE
 dice:49+1d51
 effect-msg:the strain of casting Hellfire
-desc:Six hundred and sixty-six points of unresisted fire, and fifty to a hundred of your own.
+desc:Six hundred and sixty-six points of unresisted fire -- double against evil -- and fifty to a hundred of your own.
 spell:Omnicide:50:100:95:80
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
@@ -7354,10 +7354,10 @@ effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects creatures nearby.
 spell:Malediction:2:2:23:5
-effect:BALL:MANA:0
+effect:BALL:HOLY_ORB:0
 dice:$Dd3
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
-desc:Curses a creature with unresisted force.
+desc:Curses a creature with unresisted force.  Evil creatures suffer double.
 spell:Detect Evil:3:3:24:5
 effect:DETECT_EVIL
 effect-yx:22:40
@@ -7513,12 +7513,12 @@ expr:B:PLAYER_LEVEL:* 4
 effect:MASS_BANISH
 desc:Blasts, terrifies and then banishes everything in sight.
 spell:Hellfire:50:135:95:80
-effect:BALL:MANA:3
+effect:BALL:HOLY_ORB:3
 dice:666
 effect:DAMAGE
 dice:49+1d51
 effect-msg:the strain of casting Hellfire
-desc:Six hundred and sixty-six points of unresisted fire, and fifty to a hundred of your own.
+desc:Six hundred and sixty-six points of unresisted fire -- double against evil -- and fifty to a hundred of your own.
 spell:Omnicide:50:100:95:80
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
@@ -8628,10 +8628,10 @@ effect:DETECT_VISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects creatures nearby.
 spell:Malediction:1:1:21:5
-effect:BALL:MANA:0
+effect:BALL:HOLY_ORB:0
 dice:$Dd3
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
-desc:Curses a creature with unresisted force.
+desc:Curses a creature with unresisted force.  Evil creatures suffer double.
 spell:Detect Evil:2:1:23:5
 effect:DETECT_EVIL
 effect-yx:22:40
@@ -8787,12 +8787,12 @@ expr:B:PLAYER_LEVEL:* 4
 effect:MASS_BANISH
 desc:Blasts, terrifies and then banishes everything in sight.
 spell:Hellfire:39:100:78:80
-effect:BALL:MANA:3
+effect:BALL:HOLY_ORB:3
 dice:666
 effect:DAMAGE
 dice:49+1d51
 effect-msg:the strain of casting Hellfire
-desc:Six hundred and sixty-six points of unresisted fire, and fifty to a hundred of your own.
+desc:Six hundred and sixty-six points of unresisted fire -- double against evil -- and fifty to a hundred of your own.
 spell:Omnicide:41:85:81:80
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.

@@ -88,6 +88,62 @@ what its author intended; only the code is evidence of what the player got. That
 is BAL-18 now, and it applies to every requirement still resting on a document
 rather than a source line.
 
+11 September 2026 — Death, and a note that inverted its own source
+==================================================================
+
+Last of the seven. Two defects, and the first one is the most embarrassing kind
+because the reasoning that caused it is written down in full beside the thing it
+broke.
+
+**Hellfire and Malediction lost their bonus against evil.** The note on both
+said: "Zangband's hell fire does double damage to *good* monsters; 4.2 has a
+projection that favours evil (HOLY_ORB) and none that favours good. MANA is
+taken instead." Both halves are wrong, and they are wrong in a way that
+cancels out into a confident conclusion.
+
+``spells1.c`` line 1100 reads ``/* Hellfire -- hurts Evil */`` followed by
+``if (FLAG(r_ptr, RF_EVIL)) dam *= 2;``. And 4.2's HOLY_ORB handler is
+``project_monster_resist_other(context, RF_EVIL, 2, false, ...)`` -- double
+damage to evil, no immunity for anyone, no resistance for anyone. That is
+``GF_HELL_FIRE`` exactly, projection for projection. The note reached for
+HOLY_ORB, looked at it, decided it favoured the wrong side, and put it back.
+
+So the realm's opening attack and its capstone both threw unresisted damage
+with no bonus at all. Six hundred and sixty-six points against an evil unique
+should be thirteen hundred and thirty-two and has been six hundred and
+sixty-six since the realm shipped. Both now use HOLY_ORB, MANA's
+nothing-resists-it property coming along with it rather than instead of it.
+
+**A miscast Death spell hurt by one die too many, in every book.** Zangband is
+``take_hit(damroll(o_ptr->sval + 1, 6), ...)`` with sval the 0-based book --
+1d6 through 4d6, which its spoiler states as "1, 2, 3, or 4d6". Ours read
+``damroll(book + 2, 6)``: 2d6 through 5d6. The wrong formula was in three
+places that all agreed with each other -- the code, the test that checks the
+code, and the sentence in the manual describing the test -- and in none of them
+did anything disagree with ``cmd5.c``, because nothing in any of them had read
+``cmd5.c``. The test is a good one, too: it checks the *mean* over four hundred
+rolls with the statistics worked out in the comment, and it would have caught a
+wrong die count instantly. It was just checking the wrong number.
+
+The figures themselves are exact. 242 level-and-mana rows across the eight
+classes Zangband gives Death -- the most of any realm -- with nothing to
+answer for. The spoiler, again, has three faults of its own: the Monk's first
+two books are shifted a row, *Vampiric Branding* is given three or four levels
+early for four different classes, and the book listing calls a spell "Poison
+Brand" where ``tables.c`` says "Poison Branding".
+
+And the manual claimed Death was "the only realm that punishes you for casting
+it badly", eleven paragraphs after the Chaos section explains that Chaos
+backfires. What is true is narrower and better: Death is the realm where the
+spells that *work* cost you blood -- Hellfire's fifty to a hundred, Genocide's
+1d4 a monster, Mass Genocide's 1d3 -- which is Zangband's own "need their own
+blood as the focus", and which the chapter had never said.
+
+That is all seven realms read against their spoilers. The tally: **thirteen
+errors in the documents against nine in the game**, and the game's nine were
+all found by the documents being read carefully rather than by anything
+failing. Nothing in the suite was red at any point this week.
+
 11 September 2026 — Chaos, where the spoiler lost badly
 =======================================================
 

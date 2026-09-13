@@ -510,18 +510,35 @@ to borrow two of the Druid's books, now gets the whole realm on its own figures.
 Death
 -----
 
-The foulest of them, and the only realm that punishes you for casting it badly.
-Drains, nether, darkness, poison, terror, two kinds of genocide, and at the
-bottom *Hellfire* — six hundred and sixty-six points that nothing resists, and
-fifty to a hundred of your own to pay for it.
+The foulest of them, and the one that charges you in blood. Chaos punishes a
+miscast too, but Death is the realm where **the spells that work** cost you
+something: *Hellfire* takes fifty to a hundred hit points to cast, *Genocide*
+takes 1d4 for every creature it removes and *Mass Genocide* 1d3, and a failed
+cast anywhere in the realm draws blood on its own account. Zangband says it
+plainly — the most powerful spells "need their own blood as the focus".
 
 Four books: **Black Prayers**, **Black Mass**, **Black Channels** and the
 **Necronomicon**.
 
+What it does is take life and give it to you. *Vampiric Drain* and *Vampirism
+True* pull hit points out of a creature and into you; *Death Ray* draws the
+life out of anything living and does nothing at all to what is already dead;
+*Word of Death* does it to every living thing in sight at once. Around that sit
+nether and darkness bolts, *Stinking Cloud*, *Terror*, *Horrify*, *Black
+Sleep*, and two brands for your weapon. *Berserk* and *Battle Frenzy* make you
+a fighter rather than a caster — the second hastes you as well — and *Restore
+Life* puts back drained experience. *Invoke Spirits* is the realm's dice-roll: the same
+hundred-band table Chaos's *Wonder* reads from, which may as easily summon
+undead onto you as help.
+
+At the bottom of the Necronomicon: *Evocation*, which blasts, terrifies and
+banishes everything in sight in one casting, and *Hellfire* — six hundred and
+sixty-six points that nothing resists and evil creatures take twice.
+
 .. warning::
 
    **A miscast Death spell hurts.** Fail one and, on a roll against the spell's
-   depth in the realm, you take ``(book + 2)d6`` — so the deeper the book the
+   depth in the realm, you take ``(book + 1)d6`` — so the deeper the book the
    worse it is. From the second half of the realm you may lose experience with
    it, one time in six, unless you have Hold Life.
 
@@ -543,6 +560,20 @@ realm's own *Mass Genocide* would otherwise duplicate.
 
 *Enslave Undead* was on that list until pets arrived. It now does what it says,
 and binds one undead creature to you (:doc:`pets`).
+
+Three more do something wider than Zangband asked, and for one reason: 4.2's
+projections were written for a game whose player is on the other side. There is
+no dispel-the-good, so *Dispel Good* blasts everything in sight rather than
+everything that is not evil; there is no detect-the-unliving, so *Detect
+Unlife* finds every creature nearby rather than only the ones without life; and
+*Death Ray*, which in Zangband kills outright or fails, is a heavy drain here,
+still useless against the nonliving.
+
+**A Rogue and a Ranger each lose seven of the thirty-two here** — the Rogue's
+worst realm, and level with Trump for the Ranger. A Rogue's Necronomicon is the
+worst book in the game:
+four rituals of eight, no *Hellfire* among them, and two of the four inert. See
+:ref:`books-short`.
 
 Both of Death's classes cast on borrowed figures: Zangband had neither a
 Necromancer nor a Blackguard. The Necromancer takes Zangband's Mage and the
