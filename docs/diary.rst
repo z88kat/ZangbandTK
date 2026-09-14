@@ -31,6 +31,183 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+14 September 2026 — the oldest document, and the mechanics nobody wrote down
+===========================================================================
+
+The magic system overview, dated May 2000 -- five years older than the source
+it describes and by some distance the oldest thing in the archive. Steven
+flagged the age before I started, which turned out to matter less than usual:
+almost all of it is right.
+
+The structure is exact. Seven realms, four books of eight, two bought in town
+and two found below, Arcane alone buyable entire. The class entitlements match
+``tables.c`` row for row, including the two that look like mistakes and are not
+-- a Priest's second realm cannot be Life or Death, and a Ranger's first realm
+is Nature with no choice offered. The one place the document is wrong is the
+Ranger's *second* realm, where it lists six including Nature; the table gives
+five and no Nature, and ours gives the same five.
+
+**What I did not expect was how much of the casting section is implemented and
+undocumented.** Three mechanics, all live, none of them in our manual:
+
+*Armour costs mana.* The document says the threshold runs from thirty pounds
+for a Mage to forty for a Paladin. ``class.txt`` says ``magic:1:300:28`` for the
+Mage and ``magic:1:400:8`` for the Paladin -- three hundred and four hundred
+tenths of a pound, exactly. Past it you lose a point of maximum mana per ten
+tenths over.
+
+*Casting on an empty pool.* Every part of this is here: the warning, the
+"Attempt it anyway?" prompt, a failure chance that rises five points for every
+point of mana you are short, fainting that free action does not prevent, and a
+constitution hit about half the time that can be permanent. It is one of the
+better-built things in the game and it was documented in one clause of
+``attack.rst`` about hunger.
+
+*Spell durations are not cumulative.* 4.2's own behaviour, unchanged.
+
+So the magic chapter has a **Casting** section now, because a player who loses
+four points of mana to a suit of chain has no way to find out why.
+
+**One rule is genuinely gone, and it is not ours to have dropped.** Zangband
+takes mana from an intelligence-based caster wearing anything on their hands,
+unless the gloves grant free action or dexterity. 4.2 retired ``CUMBER_GLOVE``
+upstream and we never reinstated it, so a Mage here may wear gauntlets for
+nothing. Worth a note in the manual rather than a line in a plan: it is a
+difference a player meets, not work outstanding.
+
+**And one piece of flavour we never took.** ``do_cmd_destroy`` rewards a Warrior
+with ``max_exp / 20`` for burning any rare spellbook, a Paladin of Life for
+burning anyone else's, and a Paladin of Death for burning a Life book. Three
+classes' attitude to magic, expressed as a mechanic. The obstacle is that 4.2
+has no destroy command at all -- ignoring an item hides it rather than burning
+it -- so there is no moment for the reward to hang on, and inventing one is
+design rather than porting. Open question 7 in the content plan.
+
+Ten documents in, and the first where the thing worth doing was not correcting
+the game or correcting the document, but writing down what the game already
+does. The casting rules have been right since the realms went in. Nobody had
+told the player.
+
+14 September 2026 — ninety-five options, eleven of them real
+============================================================
+
+Steven asked which of Zangband's options we have not implemented. The honest
+first answer was embarrassing: a name diff says eighty-six of ninety-five are
+missing. The useful answer took another hour and is eleven.
+
+The gap between those two numbers is the whole job. Fifty-seven of Zangband's
+options describe behaviour 4.2 simply *does*, so the switch went with the
+choice: ``depth_in_feet`` is gone because the game shows feet and level
+together; ``easy_open`` is gone because opening is always the easy behaviour;
+the seven ``view_*`` lighting options collapsed into one when 4.2 rewrote
+lighting, the six ``disturb_*`` into ``disturb_near``, the five ``stack_*`` into
+``birth_stacking``. Twenty-four are present, about half of them renamed --
+``always_pickup`` is ``pickup_always``, ``hilite_player`` is
+``highlight_player``, ``ironman_downward`` is ``birth_force_descend``. Three
+stopped being options at all: ``point_based`` and ``autoroller`` are choices on
+the birth screen, and ``vanilla_town`` is meaningless in a game whose design is
+the wilderness.
+
+Two I expected to be missing and were not, which is the kind of thing that pays
+for doing this properly. ``monster_light`` did not disappear -- it became a
+per-monster field in the data, which is better than a global switch and is why
+grepping the option name finds nothing. And ``speak_unique`` is unconditional
+here: monster speech is CNT-04 and every monster that can talk does.
+
+**The eleven that are genuinely absent cluster, which is why they are one
+question and not eleven.** Seven are the ironman family -- no shops, every room
+unusual, Moria-style generation, harder quests, always-small levels, always-
+arena levels, always-autoscum -- and three more are the same knobs without the
+compulsion. They belong beside nightmare mode rather than apart from it, and
+three of them are the ironman form of the other three, so deciding either group
+decides half of the other. The eleventh is ``silly_monsters``, which turned on
+Zangband's joke monsters and which DEC-30 has effectively already refused.
+
+Open question 4 in the balance plan, with the table.
+
+And the mapping caught a wrong sentence in the decision log. The Golem note --
+the one arguing that nightmare mode should not strip a Golem's stun immunity
+because in Zangband three settings share that penalty -- says "``ironman_shops``
+and ``ironman_downward`` strip it too, and this game has neither of those
+options". We have ``ironman_downward``. The argument does not depend on it, but
+the sentence was wrong, and decisions.md says in its own header to amend rather
+than duplicate, so it is amended in place with a dated note. That is the
+opposite of the diary rule and deliberately so: a journal records what I thought
+at the time, and a decision log records what is true.
+
+14 September 2026 — the constant added so nothing could drift, and the two things that drifted
+==============================================================================================
+
+The Linux job went red and stayed red for three commits. One test out of
+fourteen hundred and thirty: ``object/imported``, thirty of thirty-one, and the
+harness prints a seed but not a name, so the first job was getting the name out
+of it. ``VERBOSE=1`` and the seed from the log reproduced it on the first try --
+``a-borrowed-lord-is-kinder``, line 652, ``sworn_low * 2 > borrowed_low * 3``.
+
+The cause was mine, and it was in the commit that was trying to prevent exactly
+this. Aligning the patron code with the Chaos Patrons manual moved the floor of
+a generous reward roll down one rung: Zangband rolls ``rand_range(5, 20)`` and
+then decrements, so the bottom *four* rungs are unreachable, not the bottom
+five its own spoiler claims. That went in as ``PATRON_NASTY_FLOOR``, with a
+comment saying it exists so the roll and the test that measures it cannot drift
+apart. Then I changed the roll and one of the three tests.
+
+**What the drift did to the measurement.** The test counts how often a roll
+lands below the floor, sworn to a Lord versus borrowing one. With the two sides
+agreed, only a nasty roll can get down there, so the count is a clean read on
+the one-in-N chance and the ratio comes out at 2.0 -- the doubling, exactly.
+With the test's floor one rung above the roll's, a *generous* roll can land on
+the rung in between, and generous rolls are five in six. Both sides picked up
+the same large constant term and the ratio collapsed towards one: 1.2 measured,
+against a bound of 1.5. Not flaky. Wrong on every seed, which is the good
+version of this bug -- a diluted statistic that still cleared the bound would
+have sat there for months.
+
+The fix is the line the new constant was added for. Measured across fourteen
+seeds afterwards, 1.838 to 2.183, and the derivation in the comment needed
+redoing too: the expected counts drop from 850 and 1700 to 670 and 1330,
+because a fifth of the ladder is rarer than a quarter.
+
+**And the third test.** ``player/virtue`` had the same line and was passing,
+which is why nothing pointed at it. It survived because its two samples are
+much further apart -- virtues at full stretch push the nasty chance from one in
+twelve to a certainty -- so the diluted ratio was still about 3.2 and cleared
+1.5 comfortably. It was measuring the wrong boundary and getting the right
+answer. That is worse than failing, so it is fixed as well.
+
+Three call sites, one changed, one caught by CI, one silently wrong: about the
+distribution I would expect from a search-and-replace I did by hand and thought
+I had finished.
+
+**Then the full run found a different one.** With the patron tests fixed I ran
+the whole suite locally rather than trusting CI, and ``player/ancient-curse``
+failed -- not every time, about one run in twelve. It had nothing to do with
+the patrons. The test drains experience six hundred times and requires at least
+ninety, and the comment justifying ninety says it is four standard deviations
+above the rate a curse with no cascade would produce. That much is true. What
+it never says is where ninety sits relative to the rate the curse *actually*
+produces, which is 17.2% -- a mean of 103 with a standard deviation of 9.4. The
+bound was 1.4 standard deviations below the middle of the distribution it was
+measuring.
+
+That is the same mistake as the patron test I fixed two entries of reasoning
+ago, and I had the corrected version of that argument open at the time. A bound
+on a sampled statistic has two distributions to clear, the one it wants to
+reject and the one it expects to see, and checking only the first is how you
+write a test that is four standard deviations rigorous and fails every twelfth
+run. Ten times the trials separates them: at six thousand the no-cascade figure
+is 667 and the real one 1030, and 850 is seven and a half standard deviations
+above the first and six below the second. Eighty consecutive runs, no failures,
+and it costs half a second.
+
+The part I cannot fix so cheaply: the seed did not pin it. Suites print
+``ZTK_TEST_SEED`` so a CI flake can be replayed, but this one seeds the RNG
+*after* generating the cave, so a fixed seed still gets a different dungeon and
+a different answer. Six failures in sixty runs at one fixed seed. The reporting
+line was added precisely so flakes would stop costing twenty whole-suite runs
+to find, and here it would have handed somebody a seed that reproduces nothing.
+Worth fixing, but not today, and not quietly in a commit about patrons.
+
 14 September 2026 — a documented file that is never opened
 ==========================================================
 

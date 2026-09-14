@@ -408,3 +408,28 @@ monster groupings.
 
    Found while checking the Ancient Curse spoiler (14 September 2026); the reasoning is in
    the development diary under that date.
+7. **Should a Warrior gain experience for burning a spellbook?** Zangband's `do_cmd_destroy`
+   ([cmd3.c:340](../../archive/zangband/src/cmd3.c#L340)) rewards destroying one of the
+   *rare* spellbooks — the two per realm found in the dungeon — with `max_exp / 20`, capped
+   at ten thousand. Who gets it is the characterful part:
+
+   - a **Warrior** gets it for any realm's rare book, because Warriors hate magic;
+   - a **Paladin** of Life gets it for any rare book that is *not* a Life book;
+   - a **Paladin of Death** gets it only for Life books.
+
+   That is three classes' attitude to magic expressed as a mechanic, and it is the kind of
+   thing DEC-30 exists to keep. We have none of it.
+
+   **The obstacle is that 4.2 has no destroy command.** Zangband hung this on `do_cmd_destroy`
+   and 4.2 replaced destruction with the ignore system (`k`), which hides an item rather than
+   burning it — so there is no moment for the reward to attach to. Reaching it would mean
+   either giving the ignore command a burn branch for rare spellbooks, or adding a deliberate
+   destroy command for them alone. Both are design, not porting, which is why this is a
+   question.
+
+   Found while checking the Zangband Magic System page (14 September 2026). The same page's
+   other casting rules all check out: the armour weight thresholds are exact, casting on an
+   empty pool carries the full penalty, and the only rule genuinely gone is the glove
+   encumbrance for intelligence casters, which **Angband 4.2 retired upstream** rather than
+   this port dropping — recorded in the manual's Casting section rather than here, since it
+   is a difference a player meets rather than work outstanding.

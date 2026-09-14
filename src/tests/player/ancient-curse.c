@@ -89,7 +89,7 @@ static void invoke(void) {
  * nothing else in the nine touches it and it cannot be undone by a later step.
  */
 static int test_the_chain_reaches_further_than_one_step(void *state) {
-	static const int trials = 600;
+	static const int trials = 6000;
 	int drained = 0, i;
 
 	for (i = 0; i < trials; i++) {
@@ -104,13 +104,28 @@ static int test_the_chain_reaches_further_than_one_step(void *state) {
 	}
 
 	/*
-	 * A single step would give 3/27 = 11.1%, or about 67 of 600. The repeat
-	 * and the cascade together push it well past that; requiring 90 is four
-	 * standard deviations above the no-cascade figure (sd ~7.7) and far below
-	 * what is actually observed, so this fails loudly if the chain is cut and
-	 * never fails on noise.
+	 * A single step would give 3/27 = 11.1%; the repeat and the cascade
+	 * together push the observed rate to 17.2%. A bound has to clear *both*
+	 * distributions -- far enough above the no-cascade figure to fail loudly
+	 * if the chain is cut, and far enough below the real one never to fail on
+	 * noise -- and the first version of this only checked the first.
+	 *
+	 * At six hundred trials it required 90, which is indeed four standard
+	 * deviations above the no-cascade 67 (sd 7.7). But the real distribution
+	 * centres on 103 with sd 9.4, so 90 sat **1.4 standard deviations below
+	 * the mean of the thing being measured** and the test failed about one run
+	 * in twelve. Measured at a fixed seed: 6 failures in 60, and the counts
+	 * ranged 91 to 125. The seed does not pin it, because the cave is
+	 * generated before `test_seed_rng_reported()` runs -- so this was not
+	 * reproducible from the CI log either.
+	 *
+	 * Ten times the trials separates the two distributions instead of hoping
+	 * they do not overlap. Six thousand puts the no-cascade figure at 667
+	 * (sd 24.3) and the real one at 1030 (sd 29.2), and 850 sits 7.5 standard
+	 * deviations above the first and 6.2 below the second. Both bounds are
+	 * derived rather than tried, and the cost is half a second.
 	 */
-	require(drained >= 90);
+	require(drained >= 850);
 
 	/* And it is not everything, which would mean the weights are broken. */
 	require(drained < trials / 2);

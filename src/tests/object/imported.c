@@ -592,7 +592,7 @@ static int test_a_lord_notices_three_different_ways(void *state) {
  * `nasty_chance *= 2` for a character without the patron flag
  * ([xtra2.c:3114](../archive/zangband/src/xtra2.c#L3114)), and `nasty_chance`
  * is the denominator of a one-in-N roll — so doubling it *halves* how often the
- * roll reaches the bottom quarter of the ladder, where everything genuinely
+ * roll reaches the bottom rungs of the ladder, where everything genuinely
  * unpleasant lives. The first version of this test asserted the opposite,
  * because "a Lord with no reason to be kind" is the reading the fiction
  * invites and the code says otherwise.
@@ -600,7 +600,7 @@ static int test_a_lord_notices_three_different_ways(void *state) {
 static int test_a_borrowed_lord_is_kinder(void *state) {
 	const struct patron *born_to = player->patron;
 	int i, sworn_low = 0, borrowed_low = 0;
-	int floor_slot = PATRON_LADDER / 4;
+	int floor_slot = PATRON_NASTY_FLOOR;
 
 	player->lev = 20;
 
@@ -627,26 +627,34 @@ static int test_a_borrowed_lord_is_kinder(void *state) {
 	 * distribution.
 	 *
 	 * The margin is 1.5, and at four thousand rolls that was not enough. The
-	 * bottom quarter of the ladder is rare, so four thousand rolls produced
-	 * only 74 to 99 events on the borrowed side and the ratio ranged from
-	 * **1.475 to 2.284** across ten seeds -- the bound sat about one and a half
-	 * standard deviations from the mean and the test failed roughly one
-	 * whole-suite run in fifteen. Found on seed 1604416127, which came in at
-	 * 1.475.
+	 * bottom of the ladder is rare, so four thousand rolls produced only 74 to
+	 * 99 events on the borrowed side and the ratio ranged from **1.475 to
+	 * 2.284** across ten seeds -- the bound sat about one and a half standard
+	 * deviations from the mean and the test failed roughly one whole-suite run
+	 * in fifteen. Found on seed 1604416127, which came in at 1.475.
 	 *
 	 * Ten times the rolls fixes it, and the figure is derived rather than
-	 * tried. Forty thousand gives about 850 events on the borrowed side and
-	 * 1700 on the sworn, so the relative error is sqrt(850)/850 = 3.4% and
-	 * sqrt(1700)/1700 = 2.4%, and the ratio carries their quadrature sum:
-	 * 2.0 x sqrt(0.034^2 + 0.024^2), about 0.083. The bound is then six
+	 * tried. Forty thousand gives about 670 events on the borrowed side and
+	 * 1330 on the sworn, so the relative error is sqrt(670)/670 = 3.9% and
+	 * sqrt(1330)/1330 = 2.7%, and the ratio carries their quadrature sum:
+	 * 2.0 x sqrt(0.039^2 + 0.027^2), about 0.095. The bound is then five
 	 * standard deviations below the mean instead of one and a half. Measured
-	 * across twelve seeds afterwards: 1.788 to 2.117.
+	 * across fourteen seeds afterwards: 1.838 to 2.183.
+	 *
+	 * `floor_slot` is `PATRON_NASTY_FLOOR` and not a quarter of the ladder
+	 * written out again, because that is the whole of what this measures. When
+	 * the floor moved from five to four in 3.72.2 the roll and this test
+	 * disagreed by one rung, and a generous roll -- which is most of them --
+	 * could suddenly land on a slot the test counted as nasty. Both sides were
+	 * diluted towards the same number and the ratio fell from 2.0 to about
+	 * 1.2, which is under the bound: the test failed on every seed. Read the
+	 * boundary from the roll, so a later move cannot do it again.
 	 *
 	 * The floor on `borrowed_low` is the part of that reasoning the test can
 	 * check for itself. If the rate ever changes enough that the counts
 	 * collapse, the standard-deviation argument above stops holding and this
-	 * says so rather than quietly becoming fragile again. 400 is fifteen
-	 * standard deviations below the expected 850, so it cannot fire by chance.
+	 * says so rather than quietly becoming fragile again. 400 is ten standard
+	 * deviations below the expected 670, so it cannot fire by chance.
 	 */
 	require(borrowed_low > 400);
 	require(sworn_low * 2 > borrowed_low * 3);

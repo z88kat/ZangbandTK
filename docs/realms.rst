@@ -579,6 +579,44 @@ Both of Death's classes cast on borrowed figures: Zangband had neither a
 Necromancer nor a Blackguard. The Necromancer takes Zangband's Mage and the
 Blackguard its Paladin.
 
+Casting
+-------
+
+Two rules apply to every realm and neither is visible from the spell list.
+
+**Armour costs you mana.** Every spellcasting class has a weight it can carry
+in armour before its casting suffers, and past that you lose one point of
+maximum mana for every ten tenths of a pound over. A Mage's allowance is thirty
+pounds and a Paladin's forty — the more a class leans on its spells, the less it
+may wear. The penalty bites hardest early, when the pool is small and a suit of
+chain is most of it, and matters little to a character with a hundred points to
+spend. Weapons, bows, rings, amulets and your light are not counted; everything
+else you are wearing is.
+
+**You may cast on an empty pool, and it will cost you.** Try a spell you cannot
+pay for and the game says so and asks whether you want to attempt it anyway.
+If you do:
+
+- the failure chance rises by **five percentage points for every point of mana
+  you are short**;
+- you will very likely **faint**, for longer the further short you were, and
+  free action does not prevent it;
+- and about half the time you **damage your constitution**, which on this path
+  can be permanent.
+
+All of that happens whether or not the spell actually goes off. It is a
+last-resort mechanism and it is meant to hurt; the one time it is worth it is
+the one time you would otherwise die.
+
+.. note::
+
+   **Gloves do not hinder a caster here.** Zangband, following older Angband,
+   took mana away from an intelligence-based caster wearing anything on their
+   hands unless it granted free action or a dexterity bonus. Angband 4.2 retired
+   that rule and this game has not reinstated it, so a Mage may wear gauntlets
+   with no penalty at all. It is the one casting restriction from the old
+   manual that is simply gone.
+
 Who can choose what
 -------------------
 

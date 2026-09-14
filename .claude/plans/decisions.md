@@ -4155,10 +4155,17 @@ gap in the work.*
 **2. The Golem keeps its stun immunity.** The spoiler says Golems lose it, and
 so does the source
 ([effects.c:1876](../zangband/src/effects.c#L1876)) — but not for nightmare
-alone: `ironman_shops` and `ironman_downward` strip it too, and this game has
-neither of those options. Stripping it here would make nightmare mode carry a
-penalty that in Zangband is shared across three settings, which is a different
-bargain from the one the archive offers. PROT_CUT and PROT_STUN were both built
+alone: `ironman_shops` and `ironman_downward` strip it too. Stripping it here
+would make nightmare mode carry a penalty that in Zangband is shared across
+three settings, which is a different bargain from the one the archive offers.
+
+> *Corrected 14 September 2026.* This read "and this game has neither of those
+> options", which is half wrong: `ironman_downward` is ours as
+> `birth_force_descend`. `ironman_shops` we do lack. The reasoning is unaffected
+> — what matters is that the penalty is shared across three settings in Zangband
+> and only one of them is nightmare — but the sentence was wrong as written.
+> Found by mapping Zangband's options page against `list-options.h`; the eleven
+> options we genuinely lack are open question 4 in the balance plan. PROT_CUT and PROT_STUN were both built
 for the Golem in 3.118.2 and stay unconditional.
 
 **3. Follow the numbers on the invisible walls, and expect a different

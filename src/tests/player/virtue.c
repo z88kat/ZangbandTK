@@ -230,10 +230,15 @@ static int test_a_standing_moves_and_stops(void *state) {
  * Sampled rather than asserted once, because the roll is a roll. The margin is
  * wide: at level 20 the nasty chance runs one in six by default, and the four
  * virtues at full stretch move it two steps either way.
+ *
+ * `floor_slot` comes from `PATRON_NASTY_FLOOR` rather than being written out
+ * again, so the boundary cannot drift away from the roll it is measuring. The
+ * margin here is wide enough that it survived the move from five to four, but
+ * the same line in object/imported was not so lucky.
  */
 static int test_the_courts_notice_how_you_lived(void *state) {
 	int i, chaotic_low = 0, orderly_low = 0;
-	int floor_slot = PATRON_LADDER / 4;
+	int floor_slot = PATRON_NASTY_FLOOR;
 
 	reselect("Human", "Chaos-Warrior");
 	patron_choose(player);

@@ -524,3 +524,45 @@ no Zangband analogue.
    though the median barely moved. Applying Zangband's ratio to a distribution that has
    itself shifted may overshoot for the monsters vanilla beefed up. Resolvable only by
    playtest; BAL-14 exists so that retuning is cheap when it is.
+4. **Which of Zangband's eleven remaining options are wanted?** The options page was mapped
+   against `list-options.h` on 14 September 2026: of its 95 named options, 24 are present
+   under the same or a new name, 57 describe behaviour 4.2 made unconditional so the switch
+   went with it, 3 were restructured into something that is not an option, and **eleven have
+   no counterpart**. They fall into two groups and one oddity.
+
+   **The ironman family — seven of nine.** `ironman_downward` and `ironman_nightmare` are
+   ours already as `birth_force_descend` and `birth_nightmare`. The rest are not:
+
+   | Option | What it does |
+   |---|---|
+   | `ironman_shops` | no shops at all |
+   | `ironman_rooms` | every room is an unusual one |
+   | `ironman_moria` | Moria-style level generation |
+   | `ironman_hard_quests` | quest monsters are harder |
+   | `ironman_small_levels` | every level is small |
+   | `ironman_empty_levels` | every level is an arena |
+   | `ironman_autoscum` | always scum for a good level |
+
+   **The same three knobs without the compulsion:** `small_levels`, `empty_levels` and
+   `auto_scum`, which make those *sometimes* rather than *always*.
+
+   **And `silly_monsters`**, which turned on Zangband's joke monsters. DEC-30 calls that
+   content drift and DEC-19 takes theme first, so this one looks like a decision already
+   made rather than a gap — worth recording as closed rather than leaving it to be found
+   again.
+
+   Why this is one question and not eleven: the seven ironman options are a single
+   difficulty concept, they sit beside nightmare mode (BAL-15…18) rather than apart from
+   it, and three of them — small levels, empty levels, autoscum — are the ironman form of
+   options in the second group, so deciding either group decides half of the other. The
+   generation-side ones (`ironman_rooms`, `ironman_moria`, `empty_levels`, `small_levels`)
+   also need a look at whether 4.2's generator has anywhere to put them, which nightmare
+   mode's own audit did not cover.
+
+   *A correction that came out of the same mapping.* The Golem note in decisions.md ("The
+   Golem keeps its stun immunity") said "`ironman_shops` and `ironman_downward` strip it
+   too, and this game has neither of those options". We do have `ironman_downward`, as
+   `birth_force_descend`. The conclusion it supports is unaffected — the penalty is shared
+   across three settings in Zangband and only one of them is nightmare — but the sentence
+   was wrong as written, and has been amended in place with a dated note, which is what
+   that file's header asks for.
