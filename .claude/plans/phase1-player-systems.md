@@ -564,3 +564,32 @@ reason PLR-24's confirmation prompt matters.
 4. **Which mutations are must-haves?** If the count needs cutting, the activatable MUT1 set
    is the most visible to players and the behavioural MUT2 set is the most characterful;
    MUT3's stat modifiers are the most replaceable.
+5. **How should a Mindcrafter recover mana?** It currently cannot. Zangband's *Psychic
+   Drain* (`mind.c:415`) fires `GF_PSI_DRAIN` and, where it bites, gives the caster
+   `(5d(damage))/4` mana back while spending up to 150 extra energy for it — the class's
+   only mana recovery, paid for with roughly a turn and a half. Ours is a psi ball and
+   nothing more, so a Mindcrafter has no way to refill a pool it depends on entirely.
+
+   Both halves are awkward and that is why this is a question rather than a fix.
+   `RESTORE_MANA` exists and would carry the gain, but 4.2 has no effect that spends
+   energy, so shipping the gain alone makes the power strictly better than Zangband's —
+   free mana, no time cost. And a chain cannot roll dice against the damage another
+   effect has just dealt, so the amount has to be approximated however it is done.
+
+   Three ways out, roughly in order of how much they change:
+
+   - **Flat restore, no cost.** `RESTORE_MANA` on a simple expression of level. Simplest,
+     and the most generous; needs a balance look at whether the Mindcrafter then has too
+     much.
+   - **Restore with a self-cost expressed differently.** Pay for it in hit points, or in a
+     timed penalty, since energy is the one currency the effect language cannot spend.
+     Closer to Zangband's intent, further from its mechanism.
+   - **Give the class mana recovery somewhere else** — a property that regenerates mana by
+     level, say — and leave Psychic Drain as the attack it currently is. Furthest from
+     Zangband, and the only option that does not distort one power to fix a class-wide
+     gap.
+
+   Found while checking the Mindcrafter spoiler against `mind.c` (14 September 2026); the
+   reasoning is in the development diary under that date. The limitation is also recorded
+   in a comment beside the power in `class.txt`, so the next reader of the data meets it
+   there too.

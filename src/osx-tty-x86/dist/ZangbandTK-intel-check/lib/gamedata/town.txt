@@ -1,0 +1,68 @@
+# File: town.txt
+#
+# The names the world's towns are drawn from (WLD-11).
+#
+# Zangband named its towns: select_town_name() in wild2.c took a generated
+# "elvish" name from Angband's syllable tables and hung a suffix on it by size
+# -- "-ville" for a hamlet, " Dun", "-ton", "-ford".  That is a name generator
+# for Middle-earth, and DEC-30 points this game the other way, so the names are
+# curated here rather than generated.
+#
+# === On the sourcing of these names, honestly ===
+#
+# The agreed reference for the setting is the Wikipedia article on the
+# Chronicles of Amber (DEC-30).  Read for place names, it yields very few:
+# Amber, Castle Amber, Tir-na Nog'th, the Forest of Arden, Avalon, and the
+# Courts of Chaos.  Four of those are already dungeon names in dungeon.txt, so
+# the article alone cannot name a world's towns.
+#
+# The lists below are therefore in two tiers, and the second wants checking
+# against the novels by somebody holding them:
+#
+#   confirmed  - present in the agreed reference.
+#   novels     - believed to be Zelazny's, from the Chronicles, but not in the
+#                article and not verified against the books.  If one of these is
+#                wrong, it is wrong here and nowhere else: delete the line.
+#
+# Nothing below is invented.  If a name is wanted that is not Zelazny's, add it
+# and say so in a comment, so the distinction survives.
+#
+# === Understanding town.txt ===
+#
+# name:settled:<name>   a place in country that is governed.  Villages, towns,
+#                       cities and great cities with people in them draw here.
+# name:lawless:<name>   a place that has fallen, or was never governed.  Towns
+#                       held by monsters, and towns standing empty, draw here.
+#
+# Order matters only in that a world assigns names in the order it places its
+# towns, so reordering the file renames the towns of every existing character's
+# world.  Adding to the end does not.
+
+# --- Settled country -------------------------------------------------------
+
+# confirmed: Corwin's lost shadow-realm, named in the reference.
+name:settled:Avalon
+
+# novels: kingdoms and places of the Golden Circle and Amber's neighbourhood.
+name:settled:Begma
+name:settled:Kashfa
+name:settled:Eregnor
+name:settled:Deiga
+name:settled:Ghenesh
+name:settled:Chantris
+name:settled:Amblerash
+name:settled:Texorami
+name:settled:Lorraine
+name:settled:Avernus
+name:settled:Weirmonken
+
+# --- Lawless country -------------------------------------------------------
+
+# novels: the Houses of the Courts of Chaos.  Used for places that have fallen,
+# on the reading that what holds a taken town owes its allegiance there.
+name:lawless:Sawall
+name:lawless:Hendrake
+name:lawless:Helgram
+name:lawless:Chanicut
+name:lawless:Minobee
+name:lawless:Karm

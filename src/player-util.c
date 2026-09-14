@@ -2203,6 +2203,79 @@ int player_power_chance(struct player *p, const struct player_power *power)
  * \return false if it could not be attempted at all, which is different from
  * being attempted and failing -- the first costs nothing.
  */
+/**
+ * Is this one of the character's *class* powers rather than its race's?
+ *
+ * The two arrive at `player_use_power()` through the same door and only one of
+ * them backfires, so the question has to be asked of the power itself.  Walking
+ * the class list is exact and needs no flag in the data: a race's powers are
+ * never in it.
+ */
+bool player_power_is_class_power(const struct player *p,
+								 const struct player_power *power)
+{
+	const struct player_power *it;
+
+	if (!p || !p->class) return false;
+
+	for (it = p->class->powers; it; it = it->next) {
+		if (it == power) return true;
+	}
+
+	return false;
+}
+
+/**
+ * A psionic power that fails may go off inside the caster's head (CNT-10).
+ *
+ * Zangband's Mindcrafter is the third thing in the game that punishes a bad
+ * casting, beside `chaos_backfires()` and `death_miscast()`, and the last of
+ * the three to be built.  `mind.c:515` rolls again at *half* the failure
+ * chance and then reads one of five bands off a d100: the shape is Zangband's
+ * and so are the boundaries.
+ *
+ * Two details worth keeping straight.  The chance is half of the failure
+ * chance rather than a fixed number, so a power the character has outgrown is
+ * both unlikely to fail and unlikely to hurt when it does -- the punishment
+ * tapers with the same curve as the risk.  And the mana storm is the only band
+ * that reaches outside the caster: it is a ball centred on them at twice their
+ * level, and it empties a part of the pool the failure has already dented.
+ *
+ * This is *not* reached by a racial power.  Zangband keeps its racial
+ * activations in `racial.c`, which charges hit points for a shortfall and has
+ * no backfire table at all, so a Draconian's breath fails quietly here as it
+ * does there.
+ */
+void player_mind_backfires(struct player *p)
+{
+	int roll = randint1(100);
+
+	if (roll < 5) {
+		msg("Oh, no!  Your mind has gone blank!");
+		player_forget_the_world(p);
+	} else if (roll < 15) {
+		msg("Weird visions seem to dance before your eyes...");
+		(void) player_inc_timed(p, TMD_IMAGE, rand_range(5, 15), true, true,
+								true);
+	} else if (roll < 45) {
+		msg("Your brain is addled!");
+		(void) player_inc_timed(p, TMD_CONFUSED, randint1(8), true, true,
+								true);
+	} else if (roll < 90) {
+		(void) player_inc_timed(p, TMD_STUN, randint1(8), true, true, true);
+	} else {
+		int drained = p->lev * MAX(1, p->lev / 10);
+
+		msg("Your mind unleashes its power in an uncontrollable storm!");
+		effect_simple(EF_SPHERE, source_player(),
+					  format("%d", p->lev * 2), PROJ_MANA,
+					  2 + p->lev / 10, 0, 0, 0, NULL);
+
+		p->csp = MAX(0, p->csp - drained);
+		p->upkeep->redraw |= (PR_MANA);
+	}
+}
+
 bool player_use_power(struct player *p, struct player_power *power, int dir)
 {
 	struct power_effect *band;
@@ -2253,6 +2326,17 @@ bool player_use_power(struct player *p, struct player_power *power, int dir)
 	if (randint0(100) < player_power_chance(p, power)) {
 		event_signal(EVENT_INPUT_FLUSH);
 		msg("You try to %s, and fail.", power->name);
+
+		/*
+		 * A failed psionic power backfires half as often as it fails.  The
+		 * chance is read again here rather than kept from the test above
+		 * because it costs nothing and says what it means.
+		 */
+		if (player_power_is_class_power(p, power)
+				&& randint1(100) < player_power_chance(p, power) / 2) {
+			player_mind_backfires(p);
+		}
+
 		return true;
 	}
 

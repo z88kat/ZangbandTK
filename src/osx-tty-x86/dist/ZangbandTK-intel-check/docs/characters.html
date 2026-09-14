@@ -1,0 +1,860 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Races and Classes &#8212; ZangbandTK</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/style.css?v=3331b61b" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=726be5cd"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'characters';</script>
+    <link rel="canonical" href="https://zangbandtk.com/characters.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Monsters" href="monsters.html" />
+    <link rel="prev" title="How Balance Differs" href="balance.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="3.5.1-rc1-282-g551c6ec6e-dirty" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">ZangbandTK</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="features.html">
+    Features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="screenshots.html">
+    Screenshots
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="play.html">
+    Play in the browser
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="download.html">
+    Download
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="releases.html">
+    Release log
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="diary.html">
+    Development diary
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="documentation.html">
+    Documentation
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/z88kat/ZangbandTK" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="features.html">
+    Features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="screenshots.html">
+    Screenshots
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="play.html">
+    Play in the browser
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="download.html">
+    Download
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="releases.html">
+    Release log
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="diary.html">
+    Development diary
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="documentation.html">
+    Documentation
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/z88kat/ZangbandTK" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="start.html">Getting Started</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="a-quick-demo.html">A quick demonstration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide.html">A Players’ Guide to ZangbandTK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="manual.html">The Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="birth.html">Creating a Character</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dungeon.html">Exploring the Dungeon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="attack.html">Attacking monsters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playing.html">Playing the Game</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command.html">Command Descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="option.html">Option Descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customize.html">Customising the game</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="differences.html">What’s Different</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="balance.html">How Balance Differs</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Races and Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="monsters.html">Monsters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="objects.html">Objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wilderness.html">The Wilderness</a></li>
+<li class="toctree-l2"><a class="reference internal" href="towns.html">Towns and Services</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quests.html">Quests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="realms.html">The Realms of Magic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutations.html">Mutations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="virtues.html">Virtues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pets.html">Pets and Allies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nightmare.html">Nightmare Mode</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="hacking/index.html">For Developers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="hacking/modifying.html">Modifying ZangbandTK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/compiling.html">Compiling Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/cmake.html">CMake Hints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/debug.html">Debug Command Descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/how-it-works.html">How It Works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/metadoc.html">Documentation on documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/borg.html">Borg</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="meta.html">Meta</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="version.html">Version Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="copying.html">Copying and licence information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="thanks.html">Credits</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="documentation.html" class="nav-link">Documentation</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="differences.html" class="nav-link">What’s Different</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Races and Classes</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="races-and-classes">
+<h1>Races and Classes<a class="headerlink" href="#races-and-classes" title="Link to this heading">#</a></h1>
+<p>Angband gives you eleven races and nine classes. ZangbandTK has twenty-eight and
+fourteen, and the new ones are not variations on the old — they are the reason
+the game feels different from the first screen.</p>
+<p><a class="reference internal" href="birth.html"><span class="doc">Creating a Character</span></a> has the full descriptions and the tables. This page is what is
+different from Angband, and why.</p>
+<section id="seventeen-new-races">
+<h2>Seventeen new races<a class="headerlink" href="#seventeen-new-races" title="Link to this heading">#</a></h2>
+<p>Curated, not imported. Zangband has twenty-one races Angband does not;
+<strong>seventeen are in</strong> and four are turned down on the evidence — the near-
+duplicates. None are waiting. The rule was
+that a race has to add a decision rather than a line on the menu — three of
+Zangband’s are a Half-Troll with one resistance swapped, and those are the ones
+that did not make it.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 18.0%" />
+<col style="width: 82.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Race</p></th>
+<th class="head"><p>What it is for</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Amberite</strong></p></td>
+<td><p>Of Amber’s own blood. Better than a human at nearly everything, heals
+unnaturally fast, and dear: 225 per cent experience. The game is named
+after these people.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Draconian</strong></p></td>
+<td><p>Breathes. The second most expensive thing you can be, and it grows into
+its scales — fire at 5, cold at 10, acid at 15, lightning at 20 and
+poison at 35.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Vampire</strong></p></td>
+<td><p>Drinks blood to heal, from level 5 — the earliest power in the game.
+Immune to darkness, and burnt by the sun: anywhere on the surface in
+daylight you take a point a turn and cannot heal — so it carries
+scrolls of Darkness instead of torches, and is the only character who
+can put out daylight to shelter in it. Food is nearly useless to it, at
+a tenth of the good it does anyone else, and it begins the game just
+after midnight.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Mindflayer</strong></p></td>
+<td><p>Enormous intelligence and wisdom, a feeble body, and it attacks minds
+directly. Sees the invisible at 15 and reads minds at 30.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Golem</strong></p></td>
+<td><p>Made, not born. Very strong, very stupid, and can turn its skin to
+stone. Twenty points of armour before it wears anything at all, and a
+point more every fifth level; immune to poison, and gets almost nothing
+out of food.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Barbarian</strong></p></td>
+<td><p>Resists fear from birth, which no other race does, and can work itself
+into a berserk frenzy.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Klackon</strong></p></td>
+<td><p>An insect that works: acid-proof, confusion-proof, spits acid, and gets
+faster as it grows.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Nibelung</strong></p></td>
+<td><p>The only race that resists disenchantment from birth.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Imp</strong></p></td>
+<td><p>A minor demon. Throws fire, and the cheapest race worth being.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Skeleton</strong></p></td>
+<td><p>Bones. Cannot eat at all and digests normally, which is the hardest
+bargain of the four undead; recovers lost experience.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Zombie</strong></p></td>
+<td><p>Immensely strong, very nearly mindless, thirteen hit dice.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Spectre</strong></p></td>
+<td><p>Barely there: the best stealth in the game, saves and devices matched by
+nothing but a High-Elf and a Mindflayer, and seven hit dice. Walks
+through walls and mountain ranges, at a hit point a turn and no healing
+while inside.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Ghoul</strong></p></td>
+<td><p>Its bare hands paralyse what they hit.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Sprite</strong></p></td>
+<td><p>Flies, and the only race that gets faster as it grows: a point of speed
+at level 10 and another every tenth after. Fragile, and puts things to
+sleep.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Half-Titan</strong></p></td>
+<td><p>The most expensive thing you can be, at 255 per cent.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Yeek</strong></p></td>
+<td><p>Immune to acid above 19, and otherwise feeble, cowardly, and cheap —
+it levels as fast as a human, which is the only kindness it is shown.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Beastman</strong></p></td>
+<td><p>Chaos-touched and born wrong, and the one race that mutates without
+being made to: one mutation at birth and a one-in-five chance at every
+level after.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Experience cost is a real dial here.</strong> Angband flattened it — nearly every
+race costs 120 per cent and the field barely matters. Zangband ran it from 100
+to 255 and used it to price what a race can do, and ZangbandTK keeps Zangband’s
+figures. So a Half-Titan is slow to level because it is a Half-Titan, and a Yeek
+is not because it is a Yeek. Read the XP column in <a class="reference internal" href="birth.html"><span class="doc">Creating a Character</span></a> as part of the
+race, not as a footnote.</p>
+</section>
+<section id="racial-powers">
+<h2>Racial powers<a class="headerlink" href="#racial-powers" title="Link to this heading">#</a></h2>
+<p>New mechanism. Angband has no such thing: a race there is a set of adjustments
+and flags, and everything a character <em>does</em> comes from a spell, an object or a
+shape.</p>
+<p>Eight of the nine new races can do something no class will ever teach — press
+<code class="docutils literal notranslate"><span class="pre">N</span></code> for the list. An Amberite shifts into shadow and, thirty levels later,
+walks the Pattern. A Draconian breathes, a Golem turns to stone, a Yeek screams,
+a Half-Titan sizes up what it is looking at.</p>
+<p>Powers cost mana where there is any and <strong>hit points where there is not</strong>, which
+is what keeps them worth having whatever class you chose. The levels, costs and
+failure rates are Zangband’s own numbers. See <a class="reference internal" href="birth.html#racial-powers"><span class="std std-ref">Racial powers</span></a>.</p>
+</section>
+<section id="the-monk-and-martial-arts">
+<h2>The Monk, and martial arts<a class="headerlink" href="#the-monk-and-martial-arts" title="Link to this heading">#</a></h2>
+<p>The first of Zangband’s five classes, and the one that needed a mechanism
+Angband does not have.</p>
+<p>In Angband, fighting bare-handed is a punishment: one point of damage a blow,
+criticals skipped outright. A Monk turns that on its head. It carries no weapon
+because it does not need one, and unarmed it climbs a ladder of seventeen
+techniques — a punch at level 1 up to a crushing blow at 48 — throwing two
+strikes a turn at the start and <strong>eight</strong> by the end, which is more than a
+Warrior gets out of any weapon in the game.</p>
+<p>Which technique lands is decided fresh on every swing, so a Grand Master usually
+— but never reliably — throws something from the top of the ladder. Some strikes
+stun; a knee doubles a male opponent up; a kick to the ankle leaves anything
+that walks limping.</p>
+<p>And it is the one class in the game that is <strong>punished for wearing armour</strong>.
+Over the weight limit and the strikes halve and every bonus withdraws; under it,
+each empty armour slot is worth armour class in its own right. See
+<a class="reference internal" href="birth.html#martial-arts"><span class="std std-ref">Martial arts</span></a>.</p>
+<p>Two more things hang off that limit. A Monk <strong>speeds up</strong> from level 10, by one
+point for every ten levels, and <strong>cannot be held</strong> from level 25 — and both of
+them go away the moment it is carrying too much armour, along with the blows and
+the armour class. Nothing else in the game gates an intrinsic on what you are
+wearing. It is the clearest statement of what the class is: a Monk’s advantages
+are all things that stop being true when it puts something on.</p>
+</section>
+<section id="what-a-class-grows-into">
+<span id="class-gates"></span><h2>What a class grows into<a class="headerlink" href="#what-a-class-grows-into" title="Link to this heading">#</a></h2>
+<p>Four classes gain something on reaching a level, the way many races do, and
+nothing tells you it is coming:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Class</p></th>
+<th class="head"><p>Gains</p></th>
+<th class="head"><p>Level</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Mindcrafter</p></td>
+<td><p>resistance to fear</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-odd"><td><p>Monk</p></td>
+<td><p>speed, while unencumbered</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-even"><td><p>Mindcrafter</p></td>
+<td><p>sustained wisdom</p></td>
+<td><p>20</p></td>
+</tr>
+<tr class="row-odd"><td><p>Monk</p></td>
+<td><p>free action, while unencumbered</p></td>
+<td><p>25</p></td>
+</tr>
+<tr class="row-even"><td><p>Chaos-Warrior</p></td>
+<td><p>resistance to chaos</p></td>
+<td><p>30</p></td>
+</tr>
+<tr class="row-odd"><td><p>Mindcrafter</p></td>
+<td><p>resistance to confusion</p></td>
+<td><p>30</p></td>
+</tr>
+<tr class="row-even"><td><p>Chaos-Warrior</p></td>
+<td><p>resistance to fear</p></td>
+<td><p>40</p></td>
+</tr>
+<tr class="row-odd"><td><p>Mindcrafter</p></td>
+<td><p>telepathy</p></td>
+<td><p>40</p></td>
+</tr>
+<tr class="row-even"><td><p>Paladin</p></td>
+<td><p>resistance to fear</p></td>
+<td><p>40</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>A Warrior’s immunity to fear at 30 is Angband’s own and works the same way. The
+four above are Zangband’s, and were missing until 3.118.1.</p>
+</section>
+<section id="the-mindcrafter-and-psionics">
+<h2>The Mindcrafter, and psionics<a class="headerlink" href="#the-mindcrafter-and-psionics" title="Link to this heading">#</a></h2>
+<p>The second of Zangband’s classes, and the opposite kind of thing to the Monk.</p>
+<p>A Mindcrafter has no spellbooks and will never find any. Its craft is twelve
+powers that arrive as it levels — and they are deliberately <strong>not a realm of
+magic</strong>: nothing to study, nothing to choose at birth, nothing that can be
+taken away. That distinction is the whole requirement, not a detail of how it
+was built.</p>
+<p>Most of the twelve grow into something else as the character does, which is
+worth knowing because it is unlike anything in Angband. <em>See what is coming</em>
+spots monsters at level 2, finds traps and doors at 5, sees invisibility at 15,
+maps the level at 20, grants telepathy from 25, detects everything at 30 and
+lights the whole level at 45 — one power, one key, for a whole career.</p>
+<p><strong>And psionic force is a new kind of damage.</strong> Every damaging type Angband has
+is an element, resisted with a flag or with armour. This one asks whether there
+is a mind there to hurt: a golem, a mould or an animated weapon is completely
+unaffected however hard it is hit, and a strange or feeble mind takes a third.
+Against anything else, nothing resists it. See <a class="reference internal" href="birth.html#psionics"><span class="std std-ref">Psionics</span></a>.</p>
+</section>
+<section id="the-chaos-warrior-and-who-owns-it">
+<h2>The Chaos-Warrior, and who owns it<a class="headerlink" href="#the-chaos-warrior-and-who-owns-it" title="Link to this heading">#</a></h2>
+<p>The third of Zangband’s classes, and the only one in the game that belongs to
+somebody.</p>
+<p>At birth a Chaos-Warrior is sworn to one of nine Lords of the Courts of Chaos.
+It does not choose which, it cannot leave, and every time it gains a level its
+Lord looks up and decides how it feels about the servant it has. Usually that is
+a gift — a healing, a raised stat, experience, an object out of nothing. Sometimes
+it is a cursed weapon, a ruined stat, monsters dropped on top of you, or the
+level destroyed around you. The class fights nearly as well as a Warrior, and
+the relationship <em>is</em> the class.</p>
+<p><strong>It also casts.</strong> A Chaos-Warrior learns Chaos magic from level 2 — all
+thirty-two spells, and it is the only class in the game with exactly one realm
+and no choice about it. Zangband is blunt on the point: they are “not interested
+in any other form of magic”. Until the Chaos realm existed there was nothing to
+give them and the class shipped unable to hold spell points at all.</p>
+<p><strong>And thirteen is an unlucky level.</strong> The odds of the cruel end of the repertoire
+are normally about one in six; on reaching level 13 they are one in two. Every
+other thirteenth level is one in three, and every fourteenth is one in twelve —
+the safest a Chaos-Warrior ever gets. It is nowhere in the interface and a player
+can only learn it by living through it.</p>
+<p><strong>The nine Lords are Zelazny’s.</strong> This is the clearest case in the game of the
+drift this project exists to undo. Zangband’s sixteen patrons were Moorcock’s
+Elric gods — Slortar, Arioch, Xiombarg, Mabelode — with Khorne, Slaanesh, Nurgle
+and Tzeentch from Warhammer among them, and not one had any connection to Amber.
+They are replaced by Swayvill the King of Chaos, Suhuy who keeps the Logrus,
+Mandor, Dara, Gramble, Jurt, Despil, Borel and Gilva. Four of them are already
+walking around in the bestiary, so you can be gifted by a Lord you later meet.</p>
+</section>
+<section id="what-every-class-costs">
+<h2>What every class costs<a class="headerlink" href="#what-every-class-costs" title="Link to this heading">#</a></h2>
+<p>Some classes learn more slowly than others, and in this game that is a real
+price rather than a formality. A Warrior needs the least experience of anyone
+to reach a level; a Warrior-Mage needs half again as much.</p>
+<p>The arrangement is Zangband’s and it is not the one most people expect. It is
+not that casters are expensive — the pure casters are among the <em>cheapest</em>
+after the Warrior, because a Mage is already paying in hit points and strength.
+What costs is having <strong>two things at once</strong>. The Warrior-Mage fights and casts,
+and pays 150 per cent. The Monk fights unarmed and casts, and pays 140. The
+Paladin and the Chaos-Warrior pay 135. The Priest, who only prays, pays 120.</p>
+<p>Ten of the eleven classes Zangband has pay something. Only the Warrior is free,
+and that is the whole of what a Warrior gets for having no magic at all.</p>
+</section>
+<section id="still-to-come">
+<h2>Still to come<a class="headerlink" href="#still-to-come" title="Link to this heading">#</a></h2>
+<p>All twenty-one of Zangband’s races have now been considered: seventeen are in,
+four were turned down as near-duplicates of races already present. Nothing is
+outstanding — the Spectre’s pass-wall, the last piece, is built (DEC-74).</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="balance.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">How Balance Differs</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="monsters.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Monsters</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#seventeen-new-races">Seventeen new races</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#racial-powers">Racial powers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-monk-and-martial-arts">The Monk, and martial arts</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-a-class-grows-into">What a class grows into</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-mindcrafter-and-psionics">The Mindcrafter, and psionics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-chaos-warrior-and-who-owns-it">The Chaos-Warrior, and who owns it</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-every-class-costs">What every class costs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#still-to-come">Still to come</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/characters.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, ZangbandTK contributors; Angband developers past and present; Zangband developers past and present.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,1642 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Playing the Game &#8212; ZangbandTK</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/style.css?v=3331b61b" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=726be5cd"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'playing';</script>
+    <link rel="canonical" href="https://zangbandtk.com/playing.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Command Descriptions" href="command.html" />
+    <link rel="prev" title="Attacking monsters" href="attack.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="3.5.1-rc1-282-g551c6ec6e-dirty" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">ZangbandTK</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="features.html">
+    Features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="screenshots.html">
+    Screenshots
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="play.html">
+    Play in the browser
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="download.html">
+    Download
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="releases.html">
+    Release log
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="diary.html">
+    Development diary
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="documentation.html">
+    Documentation
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/z88kat/ZangbandTK" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="features.html">
+    Features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="screenshots.html">
+    Screenshots
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="play.html">
+    Play in the browser
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="download.html">
+    Download
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="releases.html">
+    Release log
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="diary.html">
+    Development diary
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="documentation.html">
+    Documentation
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/z88kat/ZangbandTK" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="start.html">Getting Started</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="a-quick-demo.html">A quick demonstration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide.html">A Players’ Guide to ZangbandTK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="manual.html">The Manual</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="birth.html">Creating a Character</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dungeon.html">Exploring the Dungeon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="attack.html">Attacking monsters</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Playing the Game</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command.html">Command Descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="option.html">Option Descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customize.html">Customising the game</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="differences.html">What’s Different</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="balance.html">How Balance Differs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="characters.html">Races and Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="monsters.html">Monsters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="objects.html">Objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wilderness.html">The Wilderness</a></li>
+<li class="toctree-l2"><a class="reference internal" href="towns.html">Towns and Services</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quests.html">Quests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="realms.html">The Realms of Magic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutations.html">Mutations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="virtues.html">Virtues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pets.html">Pets and Allies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nightmare.html">Nightmare Mode</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="hacking/index.html">For Developers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="hacking/modifying.html">Modifying ZangbandTK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/compiling.html">Compiling Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/cmake.html">CMake Hints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/debug.html">Debug Command Descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/how-it-works.html">How It Works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/metadoc.html">Documentation on documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/borg.html">Borg</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="meta.html">Meta</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="version.html">Version Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="copying.html">Copying and licence information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="thanks.html">Credits</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="documentation.html" class="nav-link">Documentation</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="manual.html" class="nav-link">The Manual</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Playing the Game</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="playing-the-game">
+<span id="id1"></span><h1>Playing the Game<a class="headerlink" href="#playing-the-game" title="Link to this heading">#</a></h1>
+<p>Most of your interaction with ZangbandTK will take the form of “commands”.
+Every ZangbandTK command consists of an “underlying command” plus a variety of
+optional or required arguments, such as a repeat count, a direction, or the
+index of an inventory object. Commands are normally specified by typing a
+series of keypresses, from which the underlying command is extracted, along
+with any encoded arguments. You may choose how the standard “keyboard keys”
+are mapped to the “underlying commands” by choosing one of the two standard
+“keysets”, the “original” keyset or the “roguelike” keyset.</p>
+<p>The original keyset is very similar to the “underlying” command set, with a
+few additions (such as the ability to use the numeric “directions” to
+“walk” or the <code class="docutils literal notranslate"><span class="pre">5</span></code> key to “stay still”). The roguelike keyset provides
+similar additions, and also allows the use of the
+<code class="docutils literal notranslate"><span class="pre">h</span></code>/<code class="docutils literal notranslate"><span class="pre">j</span></code>/<code class="docutils literal notranslate"><span class="pre">k</span></code>/<code class="docutils literal notranslate"><span class="pre">l</span></code>/<code class="docutils literal notranslate"><span class="pre">y</span></code>/<code class="docutils literal notranslate"><span class="pre">u</span></code>/<code class="docutils literal notranslate"><span class="pre">b</span></code>/<code class="docutils literal notranslate"><span class="pre">n</span></code> keys to “walk” (or, in
+combination with the shift or control keys, to run or alter), which thus
+requires a variety of key mappings to allow access to the underlying
+commands used for walking/running/altering. In particular, the “roguelike”
+keyset includes many more “capital” and “control” keys, as shown below.</p>
+<p>Note that any keys that are not required for access to the underlying
+command set may be used by the user to extend the “keyset” which is being
+used, by defining new “keymaps”. To avoid the use of any “keymaps”, press
+backslash (<code class="docutils literal notranslate"><span class="pre">\</span></code>) plus the “underlying command” key. You may enter
+“control-keys” as a caret (<code class="docutils literal notranslate"><span class="pre">^</span></code>) plus the key (so <code class="docutils literal notranslate"><span class="pre">^</span></code> + <code class="docutils literal notranslate"><span class="pre">p</span></code> yields
+‘^p’).</p>
+<p>Some commands allow an optional “repeat count”, which allows you to tell
+the game that you wish to do the command multiple times, unless you press a
+key or are <a class="reference internal" href="#disturb-player"><span class="std std-ref">otherwise disturbed</span></a>. To enter a
+“repeat count”, type <code class="docutils literal notranslate"><span class="pre">0</span></code>, followed by the numerical count, followed by the
+command. You must type ‘space’ before entering certain commands. Skipping
+the numerical count yields a count of 99 for the open, tunnel, disarm,
+alter, close, aim a wand, zap a rod, and activate equipment commands.  The
+generic use an item command also defaults to having a repeat count of 99
+when it is used with a wand, staff, or rod. All other commands do not repeat
+unless requested.</p>
+<p>Some commands will prompt for extra information, such as a direction, an
+inventory or equipment item, a spell, a textual inscription, the symbol of
+a monster race, a sub-command, a verification, an amount of time, a
+quantity, a file name, or various other things. Normally you can hit return
+to choose the “default” response, or escape to cancel the command entirely.</p>
+<p>Some commands will prompt for a spell or an inventory item. Pressing space
+(or <code class="docutils literal notranslate"><span class="pre">*</span></code>) will give you a list of choices. Pressing <code class="docutils literal notranslate"><span class="pre">-</span></code> (minus) selects
+the item on the floor. Pressing a lowercase letter selects the given item.
+Pressing a capital letter selects the given item after verification.
+Pressing a numeric digit <code class="docutils literal notranslate"><span class="pre">#</span></code> selects the first item (if any) whose
+inscription contains ‘&#64;#’ or ‘&#64;x#’, where <code class="docutils literal notranslate"><span class="pre">x</span></code> is the current
+“underlying command”. You may only specify items which are “legal” for the
+command. Whenever an item inscription contains ‘!*’ or ‘!x’ (with <code class="docutils literal notranslate"><span class="pre">x</span></code>
+as above) you must verify its selection.</p>
+<p id="index-0">Some commands will prompt for a direction. You may enter a “compass”
+direction using any of the “direction keys” shown below. Sometimes, you may
+specify that you wish to use the current “target”, by pressing <code class="docutils literal notranslate"><span class="pre">t</span></code> or
+<code class="docutils literal notranslate"><span class="pre">5</span></code>, or that you wish to select a new target, by pressing <code class="docutils literal notranslate"><span class="pre">*</span></code> (see
+“Target” below).</p>
+<blockquote>
+<div><dl>
+<dt>Original Keyset Directions</dt><dd><div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>8</p></td>
+<td><p>9</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>2</p></td>
+<td><p>3</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</dd>
+<dt>Roguelike Keyset Directions</dt><dd><div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p>y</p></td>
+<td><p>k</p></td>
+<td><p>u</p></td>
+</tr>
+<tr class="row-even"><td><p>h</p></td>
+<td></td>
+<td><p>l</p></td>
+</tr>
+<tr class="row-odd"><td><p>b</p></td>
+<td><p>j</p></td>
+<td><p>n</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</dd>
+</dl>
+</div></blockquote>
+<p>Each of the standard keysets provides some short-cuts over the “underlying
+commands”. For example, both keysets allow you to “walk” by simply pressing
+an “original” direction key (or a “roguelike” direction key if you are
+using the roguelike keyset), instead of using the “walk” command plus a
+direction. The roguelike keyset allows you to “run” or “alter” by simply
+holding the shift or control modifier key down while pressing a “roguelike”
+direction key, instead of using the “run” or “alter” command plus a
+direction. Both keysets allow the use of the <code class="docutils literal notranslate"><span class="pre">5</span></code> key to “stand still”,
+which is most convenient when using the original keyset.</p>
+<section id="original-keyset-command-summary">
+<span id="index-1"></span><h2>Original Keyset Command Summary<a class="headerlink" href="#original-keyset-command-summary" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">a</span></code></p></td>
+<td><p>Aim a wand</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">A</span></code></p></td>
+<td><p>Activate an object</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">b</span></code></p></td>
+<td><p>Browse a book</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">B</span></code></p></td>
+<td><p>(unused)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">c</span></code></p></td>
+<td><p>Close a door</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">C</span></code></p></td>
+<td><p>Display character sheet</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">d</span></code></p></td>
+<td><p>Drop an item</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">D</span></code></p></td>
+<td><p>Disarm a trap or lock a door</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">e</span></code></p></td>
+<td><p>List equipped items</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">E</span></code></p></td>
+<td><p>Eat some food</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">f</span></code></p></td>
+<td><p>Fire an item</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">F</span></code></p></td>
+<td><p>Fuel your lantern/torch</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">g</span></code></p></td>
+<td><p>Get objects on floor</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">G</span></code></p></td>
+<td><p>Gain new spells/prayers</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">h</span></code></p></td>
+<td><p>Fire default ammo at target</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">H</span></code></p></td>
+<td><p>(unused)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">i</span></code></p></td>
+<td><p>List contents of pack</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">I</span></code></p></td>
+<td><p>Inspect an item</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">j</span></code></p></td>
+<td><p>(unused)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">J</span></code></p></td>
+<td><p>Quests you have taken on</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">k</span></code></p></td>
+<td><p>Ignore an item</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">K</span></code></p></td>
+<td><p>Toggle ignore</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">l</span></code></p></td>
+<td><p>Look around</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">L</span></code></p></td>
+<td><p>Locate player on map</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">m</span></code></p></td>
+<td><p>Cast a spell</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">M</span></code></p></td>
+<td><p>Display map of entire level</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">n</span></code></p></td>
+<td><p>Repeat previous command</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">N</span></code></p></td>
+<td><p>Use a racial power</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">o</span></code></p></td>
+<td><p>Open a door or chest</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">O</span></code></p></td>
+<td><p>(unused)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">p</span></code></p></td>
+<td><p>(normally unused; see note)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">P</span></code></p></td>
+<td><p>Command pets</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">q</span></code></p></td>
+<td><p>Quaff a potion</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Q</span></code></p></td>
+<td><p>Retire character &amp; quit</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">r</span></code></p></td>
+<td><p>Read a scroll</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">R</span></code></p></td>
+<td><p>Rest for a period</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">s</span></code></p></td>
+<td><p>Steal (rogues only)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">S</span></code></p></td>
+<td><p>See abilities</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">t</span></code></p></td>
+<td><p>Take off equipment</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">T</span></code></p></td>
+<td><p>Dig a tunnel</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">u</span></code></p></td>
+<td><p>Use a staff</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">U</span></code></p></td>
+<td><p>Use an item</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">v</span></code></p></td>
+<td><p>Throw an item</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">V</span></code></p></td>
+<td><p>Display version info</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">w</span></code></p></td>
+<td><p>Wear/wield equipment</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">W</span></code></p></td>
+<td><p>Walk into a trap</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">x</span></code></p></td>
+<td><p>(unused)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">X</span></code></p></td>
+<td><p>(unused)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">y</span></code></p></td>
+<td><p>(unused)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Y</span></code></p></td>
+<td><p>(unused)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">z</span></code></p></td>
+<td><p>Zap a rod</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Z</span></code></p></td>
+<td><p>(unused)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">!</span></code></p></td>
+<td><p>(unused)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^a</span></code></p></td>
+<td><p>(special - debug command)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&#64;</span></code></p></td>
+<td><p>(unused)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^b</span></code></p></td>
+<td><p>(unused)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">#</span></code></p></td>
+<td><p>(unused)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^c</span></code></p></td>
+<td><p>(special - break)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">$</span></code></p></td>
+<td><p>(unused)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^d</span></code></p></td>
+<td><p>(unused)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">%</span></code></p></td>
+<td><p>(unused)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^e</span></code></p></td>
+<td><p>Toggle inven/equip window</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">^</span></code></p></td>
+<td><p>(special - control key)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^f</span></code></p></td>
+<td><p>Repeat level feeling</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&amp;</span></code></p></td>
+<td><p>(unused)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^g</span></code></p></td>
+<td><p>Do autopickup</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">*</span></code></p></td>
+<td><p>Target monster or location</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^h</span></code></p></td>
+<td><p>(unused)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">(</span></code></p></td>
+<td><p>(unused)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^i</span></code></p></td>
+<td><p>(special - tab)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">)</span></code></p></td>
+<td><p>Dump screen to a file</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^j</span></code></p></td>
+<td><p>(special - linefeed)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">{</span></code></p></td>
+<td><p>Inscribe an object</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^k</span></code></p></td>
+<td><p>(unused)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">}</span></code></p></td>
+<td><p>Uninscribe an object</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^l</span></code></p></td>
+<td><p>Center map</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">[</span></code></p></td>
+<td><p>Display visible monster list</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^m</span></code></p></td>
+<td><p>(special - return)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">]</span></code></p></td>
+<td><p>Display visible object list</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^n</span></code></p></td>
+<td><p>(unused)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-</span></code></p></td>
+<td><p>(unused)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^o</span></code></p></td>
+<td><p>Show previous message</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">_</span></code></p></td>
+<td><p>(unused)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^p</span></code></p></td>
+<td><p>Show previous messages</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">+</span></code></p></td>
+<td><p>Alter grid</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^q</span></code></p></td>
+<td><p>(unused)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">=</span></code></p></td>
+<td><p>Set options</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^r</span></code></p></td>
+<td><p>Redraw the screen</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">;</span></code></p></td>
+<td><p>Walk (with pickup)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^s</span></code></p></td>
+<td><p>Save and don’t quit</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">:</span></code></p></td>
+<td><p>Take notes</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^t</span></code></p></td>
+<td><p>(unused)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'</span></code></p></td>
+<td><p>Target closest monster</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^u</span></code></p></td>
+<td><p>(unused)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;</span></code></p></td>
+<td><p>Enter a user pref command</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^v</span></code></p></td>
+<td><p>(unused)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">,</span></code></p></td>
+<td><p>Stay still (with pickup)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^w</span></code></p></td>
+<td><p>(special - wizard mode)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&lt;</span></code></p></td>
+<td><p>Go up staircase (see note)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^x</span></code></p></td>
+<td><p>Save and quit</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">.</span></code></p></td>
+<td><p>Run</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^y</span></code></p></td>
+<td><p>(unused)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&gt;</span></code></p></td>
+<td><p>Go down staircase (see note)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^z</span></code></p></td>
+<td><p>Borg commands (if available)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">\</span></code></p></td>
+<td><p>(special - bypass keymap)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">~</span></code></p></td>
+<td><p>Check knowledge</p></td>
+</tr>
+<tr class="row-even"><td><p>`</p></td>
+<td><p>(special - escape)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">?</span></code></p></td>
+<td><p>Display help</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">/</span></code></p></td>
+<td><p>Identify symbol</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">|</span></code></p></td>
+<td><p>List contents of quiver</p></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Three of these keys are ZangbandTK’s.</strong> <code class="docutils literal notranslate"><span class="pre">P</span></code> — <code class="docutils literal notranslate"><span class="pre">!</span></code> in the roguelike
+keyset — commands your pets (<a class="reference internal" href="pets.html"><span class="doc">Pets and Allies</span></a>); <code class="docutils literal notranslate"><span class="pre">J</span></code> — <code class="docutils literal notranslate"><span class="pre">%</span></code> — lists the work
+you have taken on (<a class="reference internal" href="quests.html"><span class="doc">Quests</span></a>); <code class="docutils literal notranslate"><span class="pre">N</span></code> — <code class="docutils literal notranslate"><span class="pre">&amp;</span></code> — uses a racial power
+(<a class="reference internal" href="birth.html#racial-powers"><span class="std std-ref">Racial powers</span></a>).</p>
+<p>Each takes a letter in the original keyset and a symbol in the roguelike
+one, because no letter is free in both: the roguelike keyset spends eight of
+them on running and eight more on walking.</p>
+</div>
+<p id="index-2">Note that the <code class="docutils literal notranslate"><span class="pre">&lt;</span></code>, <code class="docutils literal notranslate"><span class="pre">&gt;</span></code>, and <code class="docutils literal notranslate"><span class="pre">p</span></code> commands are affected by the
+autoexplore_commands option (see
+<a class="reference internal" href="option.html#autoexplore-commands-option"><span class="std std-ref">Autoexplore Commands Option</span></a>). When that
+option is off (that is the default), the commands act as described above.
+When that option is on, <code class="docutils literal notranslate"><span class="pre">&lt;</span></code> or <code class="docutils literal notranslate"><span class="pre">&gt;</span></code> will use the staircase at the player’s
+location if it is the appropriate kind of staircase or will move to the
+nearest known staircase of the appropriate kind if the player is not already
+at that kind of staircase. <code class="docutils literal notranslate"><span class="pre">p</span></code> will move to the nearest unexplored location
+when the autoexplore_commands option is on.</p>
+</section>
+<section id="roguelike-keyset-command-summary">
+<span id="index-3"></span><h2>Roguelike Keyset Command Summary<a class="headerlink" href="#roguelike-keyset-command-summary" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<tbody>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">a</span></code></p></td>
+<td><p>Zap a rod (Activate)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">A</span></code></p></td>
+<td><p>Activate an object</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">b</span></code></p></td>
+<td><p>(walk - south west)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">B</span></code></p></td>
+<td><p>(run - south west)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">c</span></code></p></td>
+<td><p>Close a door</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">C</span></code></p></td>
+<td><p>Display character sheet</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">d</span></code></p></td>
+<td><p>Drop an item</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">D</span></code></p></td>
+<td><p>Disarm a trap or lock a door</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">e</span></code></p></td>
+<td><p>List equipped items</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">E</span></code></p></td>
+<td><p>Eat some food</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">f</span></code></p></td>
+<td><p>(unused)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">F</span></code></p></td>
+<td><p>Fuel your lantern/torch</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">g</span></code></p></td>
+<td><p>Get objects on floor</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">G</span></code></p></td>
+<td><p>Gain new spells/prayers</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">h</span></code></p></td>
+<td><p>(walk - west)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">H</span></code></p></td>
+<td><p>(run - west)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">i</span></code></p></td>
+<td><p>List contents of pack</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">I</span></code></p></td>
+<td><p>Inspect an item</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">j</span></code></p></td>
+<td><p>(walk - south)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">J</span></code></p></td>
+<td><p>(run - south)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">k</span></code></p></td>
+<td><p>(walk - north)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">K</span></code></p></td>
+<td><p>(run - north)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">l</span></code></p></td>
+<td><p>(walk - east)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">L</span></code></p></td>
+<td><p>(run - east)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">m</span></code></p></td>
+<td><p>Cast a spell</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">M</span></code></p></td>
+<td><p>Display map of entire level</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">n</span></code></p></td>
+<td><p>(walk - south east)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">N</span></code></p></td>
+<td><p>(run - south east)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">o</span></code></p></td>
+<td><p>Open a door or chest</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">O</span></code></p></td>
+<td><p>Toggle ignore</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">p</span></code></p></td>
+<td><p>(normally unused; see note)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">P</span></code></p></td>
+<td><p>Browse a book</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">q</span></code></p></td>
+<td><p>Quaff a potion</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Q</span></code></p></td>
+<td><p>Retire character &amp; quit</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">r</span></code></p></td>
+<td><p>Read a scroll</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">R</span></code></p></td>
+<td><p>Rest for a period</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">s</span></code></p></td>
+<td><p>Steal (rogues only)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">S</span></code></p></td>
+<td><p>See abilities</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">t</span></code></p></td>
+<td><p>Fire an item</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">T</span></code></p></td>
+<td><p>Take off equipment</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">u</span></code></p></td>
+<td><p>(walk - north east)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">U</span></code></p></td>
+<td><p>(run - north east)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">v</span></code></p></td>
+<td><p>Throw an item</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">V</span></code></p></td>
+<td><p>Display version info</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">w</span></code></p></td>
+<td><p>Wear/wield equipment</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">W</span></code></p></td>
+<td><p>Locate player on map (Where)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">x</span></code></p></td>
+<td><p>Look around</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">X</span></code></p></td>
+<td><p>Use an item</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">y</span></code></p></td>
+<td><p>(walk - north west)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Y</span></code></p></td>
+<td><p>(run - north west)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">z</span></code></p></td>
+<td><p>Aim a wand (Zap)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">Z</span></code></p></td>
+<td><p>Use a staff (Zap)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">!</span></code></p></td>
+<td><p>Command pets</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^a</span></code></p></td>
+<td><p>(special - debug command)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&#64;</span></code></p></td>
+<td><p>Center map</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^b</span></code></p></td>
+<td><p>(alter - south west)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">#</span></code></p></td>
+<td><p>(unused)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^c</span></code></p></td>
+<td><p>(special - break)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">$</span></code></p></td>
+<td><p>(unused)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^d</span></code></p></td>
+<td><p>Ignore an item</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">%</span></code></p></td>
+<td><p>Quests you have taken on</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^e</span></code></p></td>
+<td><p>Toggle inven/equip window</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">^</span></code></p></td>
+<td><p>(special - control key)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^f</span></code></p></td>
+<td><p>Repeat level feeling</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&amp;</span></code></p></td>
+<td><p>Use a racial power</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^g</span></code></p></td>
+<td><p>Do autopickup</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">*</span></code></p></td>
+<td><p>Target monster or location</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^h</span></code></p></td>
+<td><p>(alter - west)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">(</span></code></p></td>
+<td><p>(unused)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^i</span></code></p></td>
+<td><p>(special - tab)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">)</span></code></p></td>
+<td><p>Dump screen to a file</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^j</span></code></p></td>
+<td><p>(alter - south)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">{</span></code></p></td>
+<td><p>Inscribe an object</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^k</span></code></p></td>
+<td><p>(alter - north)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">}</span></code></p></td>
+<td><p>Uninscribe an object</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^l</span></code></p></td>
+<td><p>(alter - east)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">[</span></code></p></td>
+<td><p>Display visible monster list</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^m</span></code></p></td>
+<td><p>(special - return)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">]</span></code></p></td>
+<td><p>Display visible object list</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^n</span></code></p></td>
+<td><p>(alter - south east)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">-</span></code></p></td>
+<td><p>Walk into a trap</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^o</span></code></p></td>
+<td><p>Show previous message</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">_</span></code></p></td>
+<td><p>(unused)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^p</span></code></p></td>
+<td><p>Show previous messages</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">+</span></code></p></td>
+<td><p>Alter grid</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^q</span></code></p></td>
+<td><p>(unused)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">=</span></code></p></td>
+<td><p>Set options</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^r</span></code></p></td>
+<td><p>Redraw the screen</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">;</span></code></p></td>
+<td><p>Walk (with pickup)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^s</span></code></p></td>
+<td><p>Save and don’t quit</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">:</span></code></p></td>
+<td><p>Take notes</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^t</span></code></p></td>
+<td><p>Dig a tunnel</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">'</span></code></p></td>
+<td><p>Target closest monster</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^u</span></code></p></td>
+<td><p>(alter - north east)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&quot;</span></code></p></td>
+<td><p>Enter a user pref command</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^v</span></code></p></td>
+<td><p>Repeat previous command</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">,</span></code></p></td>
+<td><p>Run</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^w</span></code></p></td>
+<td><p>(special - wizard mode)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&lt;</span></code></p></td>
+<td><p>Go up staircase (see note)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^x</span></code></p></td>
+<td><p>Save and quit</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">.</span></code></p></td>
+<td><p>Stay still (with pickup)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^y</span></code></p></td>
+<td><p>(alter - north west)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&gt;</span></code></p></td>
+<td><p>Go down staircase (see note)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">^z</span></code></p></td>
+<td><p>Borg commands (if available)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">\</span></code></p></td>
+<td><p>(special - bypass keymap)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">~</span></code></p></td>
+<td><p>Check knowledge</p></td>
+</tr>
+<tr class="row-even"><td><p>`</p></td>
+<td><p>(special - escape)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">?</span></code></p></td>
+<td><p>Display help</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">/</span></code></p></td>
+<td><p>Identify symbol</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">TAB</span></code></p></td>
+<td><p>Fire default ammo at target</p></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">|</span></code></p></td>
+<td><p>List contents of quiver</p></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p id="index-4">Note that the <code class="docutils literal notranslate"><span class="pre">&lt;</span></code>, <code class="docutils literal notranslate"><span class="pre">&gt;</span></code>, and <code class="docutils literal notranslate"><span class="pre">p</span></code> commands are affected by the
+autoexplore_commands option (see
+<a class="reference internal" href="option.html#autoexplore-commands-option"><span class="std std-ref">Autoexplore Commands Option</span></a>). When that
+option is off (that is the default), the commands act as described above. When
+that option is on, <code class="docutils literal notranslate"><span class="pre">&lt;</span></code> or <code class="docutils literal notranslate"><span class="pre">&gt;</span></code> will use the staircase at the player’s
+location if it is the appropriate kind of staircase or will move to the
+nearest known staircase of the appropriate kind if the player is not already
+at that kind of staircase. <code class="docutils literal notranslate"><span class="pre">p</span></code> will move to the nearest unexplored location
+when the autoexplore_commands option is on.</p>
+</section>
+<section id="disturb">
+<span id="index-5"></span><span id="disturb-player"></span><h2>Disturb<a class="headerlink" href="#disturb" title="Link to this heading">#</a></h2>
+<p>For commands that repeat, like resting, tunnneling or running, certain events
+will disturb the player.  That stops the command, flushes queued input from
+the keyboard or mouse, and drops any unprocessed keys from a partially
+processed keymap.  The events that disturb the player are:</p>
+<ul class="simple">
+<li><p>The command reached its goal:  the wall was tunnelled, the door or chest was opened, the specific criteria for resting was met.</p></li>
+<li><p>While running, following a precomputed path, resting, or executing a repeated command (either with an explicit repeat count or one that repeats automatically if no repeat count was specified), a keypress or, if the front end supports it, a mouse button event, interrupts the command by disturbing the player.  Since the keypress could come from a keymap, such commands will have to be last in the keymap (no further keystrokes in the action besides what the command would normally consume) to have the intended effect.  While resting, checking for an input event that disturbs the rest only happens every 128 turns.</p></li>
+<li><p>A monster’s melee attack hits the player, regardless of whether any damage was done.</p></li>
+<li><p>A monster uses a ranged attack or spell, regardless of whether the attack hits.</p></li>
+<li><p>A monster that is visible and in the line of sight and either moves or performs a melee attack on the player will disturb if the <a class="reference internal" href="option.html#disturb-near-option"><span class="std std-ref">Disturb whenever viewable monster moves</span></a> is on.  With that option on, a monster that enters the line of sight and is visible or leaves the line of sight while visible, also disturbs the player.</p></li>
+<li><p>A monster smashes open a door.</p></li>
+<li><p>The player loses hit points.</p></li>
+<li><p>The player makes a melee attack.</p></li>
+<li><p>A projection affects the player, regardless of whether it does damage.</p></li>
+<li><p>Changes to a timed effect, like confusion, can disturb the player.  If the change was initiated by the player by casting a spell or using an item, the change will not disturb the player with the exception for when an unidentified item is used.  For effects that have more than two gradations, like cuts, stunning, and the hunger meter, going up a grade will disturb the player and going down a grade will disturb if the effect has a message for entering the grade from a higher one.  For effects that have two gradations (off and on), going from off to on will disturb the player.  Otherwise, the change will disturb if the effect in question does not duplicate a state the player has from another source and the change is not due to decreasing the effect’s duration because time passed.</p></li>
+<li><p>The player tries to move into impassable terrain.</p></li>
+<li><p>While following a precomputed path or on the second or later step of running, a visible object, including gold, or visible monster in the next grid stops running.</p></li>
+<li><p>While following a precomputed path or on the second or later step of running, the next grid contains a known trap and the player is not immune to traps.</p></li>
+<li><p>If on the second or later step of a run or following a precomputed path, the player’s current grid is in an area that has had trap detection cast on it but the next grid has not had trap detection cast on it.</p></li>
+<li><p>While following a precomputed path, a known impassable grid that cannot be autmatically dealt with as the next step on the path disturbs the player.</p></li>
+<li><p>The player triggers a trap.  That disturbs even if the player passed the saving throw for the trap’s effects.</p></li>
+<li><p>The player finds a secret door or a trap on a chest.</p></li>
+<li><p>The player faints because of hunger.</p></li>
+<li><p>The player’s pack overflows.</p></li>
+<li><p>A curse on an equipped item triggers.</p></li>
+<li><p>The delayed effect of deep descent or a word of recall activates.</p></li>
+<li><p>The player’s light source has run out of fuel or is close to running out of fuel and a new “growing faint” reminder message is displayed.</p></li>
+<li><p>An item that is equipped or in the pack has recharged and that item’s inscription includes ‘!!’ or the <a class="reference internal" href="option.html#notify-recharge-option"><span class="std std-ref">notify on object recharge</span></a> is on.</p></li>
+<li><p>The player is on a visible stack of objects that are not all gold and a scan for autopickup happens (either by holding with autopickup, explicitly invoking autopickup, or having just moved to the grid).</p></li>
+<li><p>The player enters a store.</p></li>
+<li><p>The player enters a new level.</p></li>
+</ul>
+</section>
+<section id="special-keys">
+<h2>Special Keys<a class="headerlink" href="#special-keys" title="Link to this heading">#</a></h2>
+<p>Certain special keys may be intercepted by the operating system or the host
+machine, causing unexpected results. In general, these special keys are
+control keys, and often, you can disable their special effects.</p>
+<p>If you are playing on a UNIX or similar system, then ‘Ctrl-c’ will
+interrupt ZangbandTK. The second and third interrupt will induce a warning
+bell, and the fourth will induce both a warning bell and a special message,
+since the fifth will either quit without saving (if ZangbandTK was compiled
+without the SETGID option which puts the save files in a shared location for
+all users) or kill your character (if ZangbandTK was compiled with the SETGID
+option). Also, ‘Ctrl-z’ will suspend the game, and return you to the original
+command shell, until you resume the game with the ‘fg’ command. The ‘Ctrl-\’
+and ‘Ctrl-d’ and ‘Ctrl-s’ keys should not be intercepted.</p>
+<p>It is often possible to specify “control-keys” without actually pressing
+the control key, by typing a caret (<code class="docutils literal notranslate"><span class="pre">^</span></code>) followed by the key. This is
+useful for specifying control-key commands which might be caught by the
+operating system as explained above.</p>
+<p>Pressing backslash (<code class="docutils literal notranslate"><span class="pre">\</span></code>) before a command will bypass all keymaps, and
+the next keypress will be interpreted as an “underlying command” key,
+unless it is a caret (<code class="docutils literal notranslate"><span class="pre">^</span></code>), in which case the keypress after that will be
+turned into a control-key and interpreted as a command in the underlying
+ZangbandTK keyset. The backslash key is useful for creating actions which are
+not affected by any keymap definitions that may be in force, for example,
+the sequence <code class="docutils literal notranslate"><span class="pre">\</span></code> + <code class="docutils literal notranslate"><span class="pre">.</span></code> + <code class="docutils literal notranslate"><span class="pre">6</span></code> will always mean “run east”, even if the
+<code class="docutils literal notranslate"><span class="pre">.</span></code> key has been mapped to a different underlying command.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">0</span></code> and <code class="docutils literal notranslate"><span class="pre">^</span></code> and <code class="docutils literal notranslate"><span class="pre">\</span></code> keys all have special meaning when entered at
+the command prompt, and there is no “useful” way to specify any of them as
+an “underlying command”, which is okay, since they would have no effect.</p>
+<p>For many input requests or queries, the special character ‘ESCAPE’ will
+abort the command. The ‘[y/n]’ prompts may be answered with <code class="docutils literal notranslate"><span class="pre">y</span></code> or
+<code class="docutils literal notranslate"><span class="pre">n</span></code>, or ‘escape’. The ‘-more-’ message prompts may be cleared (after
+reading the displayed message) by pressing ‘ESCAPE’, ‘SPACE’,
+‘RETURN’, ‘LINEFEED’, or by any keypress, if the ‘quick_messages’
+option is turned on.</p>
+</section>
+<section id="command-counts">
+<h2>Command Counts<a class="headerlink" href="#command-counts" title="Link to this heading">#</a></h2>
+<p>Some commands can be executed a fixed number of times by preceding them
+with a count. Counted commands will execute until the count expires, until
+you type any character, or until
+<a class="reference internal" href="#disturb-player"><span class="std std-ref">something significant happens</span></a>, such as
+being attacked. Thus, a counted command doesn’t work to attack another
+creature. While the command is being repeated, the number of times left to
+be repeated will flash by on the line at the bottom of the screen.</p>
+<p>To give a count to a command, type 0, the repeat count, and then the
+command. If you want to give a movement command and you are using the
+original command set (where the movement commands are digits), press space
+after the count and you will be prompted for the command.  The open, tunnel,
+disarm, alter, close, aim a wand, use a staff, zap a rod, and activate
+equipment commands default to having a repeat count of 99.  The generic
+use an item command also defaults to having a repeat count of 99 when it is
+used with a wand, staff, rod, or equipped item.  All other commands default
+to not repeating at all.</p>
+<p>Counted commands are very useful for time consuming commands, as they
+automatically terminate on success, or if you are attacked. You may also
+terminate any counted command (or resting or running), by typing any
+character. This character is ignored, but it is safest to use a ‘SPACE’
+or ‘ESCAPE’ which are always ignored as commands in case you type the
+command just after the count expires.</p>
+</section>
+<section id="selection-of-objects">
+<h2>Selection of Objects<a class="headerlink" href="#selection-of-objects" title="Link to this heading">#</a></h2>
+<p>Many commands will also prompt for a particular object to be used.
+For example, the command to read a scroll will ask you which of the
+scrolls that you are carrying that you wish to read.  In such cases, the
+selection is made by typing a letter of the alphabet (or a number if choosing
+from the quiver).  The prompt will indicate the possible letters/numbers,
+and you will also be shown a list of the appropriate items.  Often you will
+be able to press <code class="docutils literal notranslate"><span class="pre">/</span></code> to switch between inventory and equipment, or <code class="docutils literal notranslate"><span class="pre">|</span></code> to
+select the quiver, or <code class="docutils literal notranslate"><span class="pre">-</span></code> to select the floor.  Using the right arrow also
+rotates selection between equipment, inventory, quiver, floor and back to
+equipment; the left arrow rotates in the opposite direction.</p>
+<p>The particular object may be selected by an upper case or a lower case
+letter. If lower case is used, the selection takes place immediately. If
+upper case is used, then the particular option is described, and you are
+given the option of confirming or retracting that choice. Upper case
+selection is thus safer, but requires an extra key stroke.</p>
+</section>
+<section id="index-6">
+<span id="targeting"></span><span id="id2"></span><h2>Targeting<a class="headerlink" href="#index-6" title="Link to this heading">#</a></h2>
+<p>You will use the targeting interface when you use the targeting command, <code class="docutils literal notranslate"><span class="pre">*</span></code>,
+the look command, <code class="docutils literal notranslate"><span class="pre">l</span></code> or <code class="docutils literal notranslate"><span class="pre">x</span></code>, or the options in context menus to look
+at a grid.  When other commands prompt for a target, they will automatically
+use the current target, if there is one, when the
+<a class="reference internal" href="option.html#old-target-option"><span class="std std-ref">Use old target by default</span></a> option is on.  Otherwise,
+you will be asked for a target:  ESCAPE or a mouse click with the second mouse
+button breaks out of the prompt; <code class="docutils literal notranslate"><span class="pre">5</span></code>, if there is a current target, will use
+that target; <code class="docutils literal notranslate"><span class="pre">'</span></code> will target the nearest monster; a direction key targets
+that direction rather than a specific monster or location; <code class="docutils literal notranslate"><span class="pre">*</span></code> or a mouse
+click on the map with the first mouse button will bring up the targeting
+interface to select a new target.</p>
+<p>When the targeting interface starts, it always clears the current target.  So,
+in the cases when you want to forget the current target, bring up the targeting
+interface, <code class="docutils literal notranslate"><span class="pre">*</span></code>, and then break out if it with <code class="docutils literal notranslate"><span class="pre">q</span></code> or ESCAPE.</p>
+<p>The targeting interface maintains a list of locations that it thinks you will
+find interesting.  When started by the targeting command, <code class="docutils literal notranslate"><span class="pre">*</span></code>, or from a
+command prompting for a target, that list only contains locations with monsters
+that could be reached by a “projectable” spell, missiles, or thrown objects.
+When started from the look command, the list includes locations with monsters,
+regardless of whether they could be hit by a spell or missile, the player’s
+location, objects, traps, or interesting terrain (staircases, doors, rubble,
+or stores).  The list of interesting locations can be empty if there is
+nothing appropriate nearby.</p>
+<p>The targeting interface has two modes:  one, interested targeting, restricts
+the grid under the targeting cursor to be one of the interesting locations and
+another, free targeting, that allows the cursor to move to any grid.  When
+started without a specified location (invoked by the targeting command, the
+look command, or by answering another commmand’s targeting prompt with <code class="docutils literal notranslate"><span class="pre">*</span></code>),
+the targeting interface will use interested targeting if there is any
+interesting locations (that is always the case when started from the look
+command since the player’s location is interesting) or free targeting when
+there are no interesting locations.  When started with a specified location
+(by answering a command’s target prompt with a mouse click or when invoked
+from a context menu), the targeting interface uses free targeting.  From
+within the targeting interface, you can explicitly change the targeting mode
+by these keys:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">o</span></code></dt><dd><p>Switch to free targeting.  Leave the cursor at its previous location.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">p</span></code></dt><dd><p>Switch to free targeting.  Move the cursor to the player’s location.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">m</span></code></dt><dd><p>This only does something when in free targeting and there are interesting
+locations.  If that is the case, switch to interested targeting and move
+the cursor to the interesting location nearest to the cursor’s location.</p>
+</dd>
+</dl>
+<p>Some keys or mouse input can implicitly change the targeting mode:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">&lt;</span></code>, <code class="docutils literal notranslate"><span class="pre">&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">x</span></code></dt><dd><p>These are described further below. If the new location selected by one of
+those actions is interesting, switch to interested targeting.  If the new
+location is not interesting, switch to free targeting.</p>
+</dd>
+<dt>Mouse click with the first mouse button</dt><dd><p>This will be described further below.  Shifts the location of the cursor.
+If the new location is interesting, switch to interested targeting;
+otherwise, switch to free targeting.</p>
+</dd>
+</dl>
+<p>The targeting interface will display a description of what is at the targeting
+cursor.  That will either be a very brief summary, or, for a monster or object,
+a more elaborate description.  You can toggle between those by pressing <code class="docutils literal notranslate"><span class="pre">r</span></code>
+or clicking with the first mouse button on the cursor’s location in the map.
+When the target interface is first started or the cursor moves to a new
+location, what is described will be the highest priority thing present.  A
+monster has the highest priority, followed by a trap, object, and the
+underlying terrain.  To cycle through the descriptions of the other things
+in the grid, press ENTER.</p>
+<p>At any point, you can break out of the targeting interface and not select
+a target by pressing <code class="docutils literal notranslate"><span class="pre">q</span></code> or ESCAPE, or, with the mouse, use the second
+mouse button and click on a position that is not the cursor’s current position.</p>
+<p>Use the following keys to operate on what is at the targeting cursor:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">t</span></code>, <code class="docutils literal notranslate"><span class="pre">5</span></code>, <code class="docutils literal notranslate"><span class="pre">0</span></code>, or <code class="docutils literal notranslate"><span class="pre">.</span></code></dt><dd><p>In free targeting, sets the target to the location at the cursor
+and breaks out of the targeting interface.  Targeting a location is
+slightly “dangerous”, as the target is maintained even if you are far
+away.  In interested targeting, does nothing besides trigger a warning
+bell when the location does not have a targetable monster.  When the
+location has a targetable monster, sets the target to that monster
+and breaks out of the targeting interface.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">g</span></code></dt><dd><p>Does nothing if the target interface was invoked by the targeting prompt for
+a command.  Otherwise, break out of the targeting interface and initiate
+<a class="reference internal" href="#pathfinding-player"><span class="std std-ref">pathfinding</span></a> to move the player to that location.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">k</span></code> (original keyset) or <code class="docutils literal notranslate"><span class="pre">^d</span></code> (roguelike keyset)</dt><dd><p>Does nothing when the targeting interface was invoked by the targeting command
+or another command’s targeting prompt or the currently tracked object is
+not at the cursor’s position.  Otherwise, bring up a menu to change the
+ignore settings for the tracked object.</p>
+</dd>
+</dl>
+<p>Use the following keys to change the position of the targeting cursor:</p>
+<dl class="simple">
+<dt>direction keys</dt><dd><p>In interested targeting, move to an interesting location that approximately
+lies in the key’s direction from the current cursor location.  In free
+targeting, move (by ten grids if the key is a trigger for a running keymap;
+by one grid otherwise) the cursor in the key’s direction.</p>
+</dd>
+<dt>space or <code class="docutils literal notranslate"><span class="pre">+</span></code></dt><dd><p>Does nothing in free targeting.  In interested targeting, go to the next
+interesting location.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">-</span></code></dt><dd><p>Does nothing in free targeting.  In interested targeting, go to the previous
+interesting location.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&lt;</span></code></dt><dd><p>Look for the nearest, by number of turns needed to move there, down
+staircase.  If there is one, move the targeting cursor there.  As noted
+above, can change the targeting mode.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">&gt;</span></code></dt><dd><p>Look for the nearest, by number of turns needed to move there, up
+staircase.  If there is one, move the targeting cursor there.  As noted
+above, can change the targeting mode.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">x</span></code></dt><dd><p>Look for the nearest, by number of turns needed to move there, passable
+grid that has an unknown neighbor.  If one is not found, look for the
+nearest passable grid that is next to a closed door or impassable rubble
+and that door or rubble has an unknown neighbor.  If a grid was found,
+move the targeting cursor there.  As noted above, can change the targeting
+mode.</p>
+</dd>
+</dl>
+<p>Besides the previously mentioned ways of using the mouse, you also use the
+mouse as follows from the targeting interface:</p>
+<dl class="simple">
+<dt>Click with first mouse button</dt><dd><p>Moves the targeting cursor.  If the click is on the edge of the map, the
+new location is one past the edge, coerced to the bounds of the level.
+That can shift the map.  Otherwise, the new location is the click’s location
+coerced to the bounds of the level.  As noted above, can change the
+targeting mode.</p>
+</dd>
+<dt>Click with second mouse button</dt><dd><p>Breaks out of targeting.  If using free targeting and the targeting interface
+was invoked from the targeting command or another command’s targeting prompt,
+will set the target to the cursor’s location if the click is on the cursor.</p>
+</dd>
+<dt>Control + click with second mouse button</dt><dd><p>In free targeting, targets the click’s location and breaks out of targeting.
+In interested targeting, does nothing besides trigger a warning bell if the
+click’s location does not have a targetable monster.  Otherwise, targets
+the monster and breaks out of targeting.</p>
+</dd>
+<dt>Alt (Option with the Mac front end) + click with second mouse button</dt><dd><p>Does nothing if the target interface was invoked by the targeting prompt for
+a command.  Otherwise, break out of the targeting interface and initiate
+<a class="reference internal" href="#pathfinding-player"><span class="std std-ref">pathfinding</span></a> to move the player to the click’s
+location.</p>
+</dd>
+</dl>
+<p>When targeting, it can sometimes be useful to target a grid or monster that
+is not the target you intend to hit.  The direct path a missile would follow
+to the monster could be blocked by a wall or other obstacle.  The path to
+the other location could avoid that obstacle while still hitting the intended
+target.  When invoked from the targeting command or another command’s targeting
+prompt, the targeting interface will show the path a beam spell or missile
+would follow to the targeting cursor and beyond with coloring to indicate
+what is known about the path:</p>
+<dl class="simple">
+<dt>dark gray</dt><dd><p>used for any grid whose terrain is unknown and the grids beyond it; because
+of the unknown terrain, what happens to a missile or spell is unclear</p>
+</dd>
+<dt>red</dt><dd><p>known monster; would be hit by and block a bolt spell or missile that gets
+that far</p>
+</dd>
+<dt>yellow</dt><dd><p>known and not ignored object</p>
+</dd>
+<dt>blue</dt><dd><p>terrain that would block a spell or missile</p>
+</dd>
+<dt>white</dt><dd><p>no known monster or object; terrain does not affect a spell or missile</p>
+</dd>
+</dl>
+<p>Targeting for a ball spell or breath weapon is another case where you may
+want to target a location other than the most dangerous monster.  Aiming
+a ball spell at the center of a group of monsters can be more effective than
+having the ball target a monster in that group.  Also with a ball spell,
+targeting a location near where a wall bends away can be way of attacking
+monsters shielded by that wall that are safe from other attacks.</p>
+</section>
+<section id="pathfinding">
+<span id="index-7"></span><span id="pathfinding-player"></span><h2>Pathfinding<a class="headerlink" href="#pathfinding" title="Link to this heading">#</a></h2>
+<p>If you use ‘g’ from targeting or looking to move to a location, click with
+the first mouse button on the map, click with the second mouse button on the
+map and select the option to pathfind, or use ‘&lt;’, ‘&gt;’, or ‘p’ when the
+<a class="reference internal" href="option.html#autoexplore-commands-option"><span class="std std-ref">Autoexplore Commands Option</span></a> is on, the
+game computes a path to the destination and then launches you along that path.
+The computation of the path looks for a path which will take the minimum amount
+of turns to traverse.  In doing so, it uses your current state to compute how
+many turns would be needed to open a locked door or tunnel through impassable
+rubble.  It optimistically assumes that any grid with unknown terrain is
+passable.  It pessimistically assumes that any locked doors have the hardest
+to open locks since the game does not indicate the difficulty of the lock when
+you look at the door.  The game considers paths in this order using the first
+path that is feasible given your knowledge of the map:</p>
+<ol class="arabic simple">
+<li><p>Look for paths that only go through know terrain without known traps.  Skip this class of paths if the terrain in the starting grid or destination is unknown or you are immune to traps.  When not finding a path for the autoexploration commands, also skip this class if the destination contains a known trap.</p></li>
+<li><p>Look for paths that only go through known terrain.  The paths can cross known traps.  Skip this class of paths if the terrain in the starting grid or destination is unknown.  When not finding a path for the autoexploration command and the previous class of paths was considered and did not reject a potentially shorter path that has a known trap, also skip this class.</p></li>
+<li><p>Look for paths that can pass through either known or unknown terrain and do contain known traps.  Skip this class of paths if you are immune to traps or the destination contains a known trap and not finding a path for the autoexploration commands.</p></li>
+<li><p>Look for paths that can pass through known or unknown terrain.  The paths can cross known traps.  Skip this class of paths when not finding a path for the autoexploration commands and the previous class of paths was considered and did reject a potentially shorter path that has a known trap.</p></li>
+</ol>
+<p>Note that magic mapping and enlightment do not mark floor grids as known
+terrain.  So, unless you have also seen a floor that was revealed by magic
+mapping or enlightment, pathfinding treats that floor as unknown terrain.
+Paths are never allowed to cross passable, but damaging terrain, like lava.</p>
+<p>When the game move you along the selected path, you can interrupt the process
+with a keypress (space or ESCAPE are recommended as they can not be interpreted
+as a command) or, when the front end supports it, pressing a mouse button.  The
+process will also be interrupted by other events that
+<a class="reference internal" href="#disturb-player"><span class="std std-ref">disturb</span></a>.  If following the path was interrupted and
+you have not issued another command, repeating the previous command (<code class="docutils literal notranslate"><span class="pre">n</span></code> in
+the original keyset, <code class="docutils literal notranslate"><span class="pre">^v</span></code> in the roguelike keyset) will recompute the path
+(if the path was from ‘&lt;’, ‘&gt;’, or ‘p’, it will find the nearest up staircase,
+down staircase, or unknown location, respectively, and compute a path to it
+from your current location; otherwise, it will compute a path to the original
+destination from your current location) and start along that path.</p>
+<p>Following a path can automatically open a door or dig out impassable rubble
+that is in the path.  It will only do so if you know the terrain in all the
+neighbors of the door or rubble.  If any neighbors have unknown terrain, you
+stop at the grid before the door or rubble.</p>
+</section>
+<section id="shape-changes">
+<h2>Shape Changes<a class="headerlink" href="#shape-changes" title="Link to this heading">#</a></h2>
+<p>Some classes, objects, or races may allow your character to change shape:
+becoming, for instance, a fox or a wolf.  While in the alternate shape,
+your character will not have access to items in the pack or quiver and
+will not be able to access items on the floor except for eating or pickup.
+The items your character was wearing upon changing shape will remain
+equipped and continue to affect the character’s statistics, resistances,
+number of blows, and damage.  Your character will not be able to activate
+any equipped items while in the alternate shape.  To have your character
+change back to normal, cast a spell or use one of the commands, like drop,
+that uses an item.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="attack.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Attacking monsters</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="command.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Command Descriptions</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#original-keyset-command-summary">Original Keyset Command Summary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#roguelike-keyset-command-summary">Roguelike Keyset Command Summary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#disturb">Disturb</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#special-keys">Special Keys</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#command-counts">Command Counts</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#selection-of-objects">Selection of Objects</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#index-6">Targeting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pathfinding">Pathfinding</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#shape-changes">Shape Changes</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/playing.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, ZangbandTK contributors; Angband developers past and present; Zangband developers past and present.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,1225 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Attacking monsters &#8212; ZangbandTK</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/style.css?v=3331b61b" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=726be5cd"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'attack';</script>
+    <link rel="canonical" href="https://zangbandtk.com/attack.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Playing the Game" href="playing.html" />
+    <link rel="prev" title="Exploring the Dungeon" href="dungeon.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="3.5.1-rc1-282-g551c6ec6e-dirty" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">ZangbandTK</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="features.html">
+    Features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="screenshots.html">
+    Screenshots
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="play.html">
+    Play in the browser
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="download.html">
+    Download
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="releases.html">
+    Release log
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="diary.html">
+    Development diary
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="documentation.html">
+    Documentation
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/z88kat/ZangbandTK" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="features.html">
+    Features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="screenshots.html">
+    Screenshots
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="play.html">
+    Play in the browser
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="download.html">
+    Download
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="releases.html">
+    Release log
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="diary.html">
+    Development diary
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="documentation.html">
+    Documentation
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/z88kat/ZangbandTK" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="start.html">Getting Started</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="a-quick-demo.html">A quick demonstration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide.html">A Players’ Guide to ZangbandTK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="manual.html">The Manual</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="birth.html">Creating a Character</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dungeon.html">Exploring the Dungeon</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Attacking monsters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playing.html">Playing the Game</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command.html">Command Descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="option.html">Option Descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customize.html">Customising the game</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="differences.html">What’s Different</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="balance.html">How Balance Differs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="characters.html">Races and Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="monsters.html">Monsters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="objects.html">Objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wilderness.html">The Wilderness</a></li>
+<li class="toctree-l2"><a class="reference internal" href="towns.html">Towns and Services</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quests.html">Quests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="realms.html">The Realms of Magic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutations.html">Mutations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="virtues.html">Virtues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pets.html">Pets and Allies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nightmare.html">Nightmare Mode</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="hacking/index.html">For Developers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="hacking/modifying.html">Modifying ZangbandTK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/compiling.html">Compiling Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/cmake.html">CMake Hints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/debug.html">Debug Command Descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/how-it-works.html">How It Works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/metadoc.html">Documentation on documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/borg.html">Borg</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="meta.html">Meta</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="version.html">Version Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="copying.html">Copying and licence information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="thanks.html">Credits</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="documentation.html" class="nav-link">Documentation</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="manual.html" class="nav-link">The Manual</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Attacking monsters</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="attacking-monsters">
+<h1>Attacking monsters<a class="headerlink" href="#attacking-monsters" title="Link to this heading">#</a></h1>
+<section id="attacking-and-being-attacked">
+<h2>Attacking and Being Attacked<a class="headerlink" href="#attacking-and-being-attacked" title="Link to this heading">#</a></h2>
+<p>Attacking is simple in ZangbandTK. If you move into a creature, you attack it.
+You can attack from a distance by firing a missile or by magical means
+(such as aiming a wand). Creatures attack in the same way. If they move
+into you, they attack you. Some creatures can also cast spells from a
+distance, and others can use various breath weapons (such as fire) on you
+from a distance.</p>
+<p>Creatures in walls can not be attacked by wands or other magic attacks
+normally stopped by walls, nor can they be shot at with bows and arrows.
+Tunnelling into the wall (using the “tunnel” or “alter” command) will allow
+you to attack any creature in the wall with your main weapon. This applies
+to creatures which “pass through” walls: if they “bore through” walls, the
+wall is no longer there, and the creature can be targeted normally.</p>
+<p>If you are wielding a weapon, the damage for the weapon is used when you
+hit a creature. Otherwise you get a single punch which does minimal damage.</p>
+<p>You may <code class="docutils literal notranslate"><span class="pre">w</span></code>ield one weapon for melee combat, and also one missile
+launcher (bow, crossbow or sling). You may also wear one amulet (around the
+one and only neck of the character), two rings (on the two “ring” fingers,
+i.e. the third finger of each hand: a magic ring does not function when
+worn on any other finger, nor may two be worn on the same finger), one
+light source, and a full set of armor - body armor, shield, helmet, gloves,
+boots and a cloak. Any or all of these items may provide powers to the
+character in terms of bonuses to-hit, to-damage, to-armor class, or to
+other stats.</p>
+<p>Firing a missile (while wielding the appropriate launcher) is the only way
+to get the “full” power out of the missile. You may of course throw an
+arrow at a monster without shooting it, but you will find the effects will
+not be what you had hoped.</p>
+<p>Hits and misses are determined by ability to hit versus armor class. A hit
+is a strike that does some damage; a miss may in fact reach a target, but
+fails to do any damage. Higher armor classes make it harder to do damage,
+and so lead to more misses. Characters with higher armor classes also
+receive a damage reduction. This is not true for monsters, whose AC only
+affects the character’s difficulty to hit them.</p>
+<p>If you wish to see how much damage your weapon will do, you can
+<code class="docutils literal notranslate"><span class="pre">I</span></code>nspect it. You will find the number of blows and how much damage you
+would do per round, including information on whether your weapon damages
+other types of monsters differently.</p>
+</section>
+<section id="monster-memories">
+<h2>Monster Memories<a class="headerlink" href="#monster-memories" title="Link to this heading">#</a></h2>
+<p>There are hundreds of different creatures in the pits of ZangbandTK, many of
+which have the same letter symbol and color on the screen. The exact
+species of a creature can be discovered by <code class="docutils literal notranslate"><span class="pre">l</span></code>ooking at it. It is also
+very difficult to keep track of the capabilities of various creatures.
+Luckily, ZangbandTK automatically keeps track of your experiences with a
+particular creature. This feature is called the monster memory. Your
+monster memory recalls the particular attacks of each creature (whether or
+not technically a monster) which you have suffered, as well as recalling if
+you have observed them to multiply or move erratically, or drop treasure,
+etc. Otherwise you would simply have to take notes, which is an unnecessary
+bother.</p>
+<p>If you have killed enough of a particular creature, or suffered enough
+attacks, recalling the monster memory may also provide you with information
+not otherwise available, such as an armor class, hit dice, spell types,
+frequency of spell casting, or the amount of damage for breaths or spells.
+These attacks will be color coded to inform you of whether or not you
+currently resist a specific attack. Red or orange means you do not resist
+it, yellow means you partially resist it, and green means you resist it or
+are immune. If you attack a monster with specific elemental attacks you will
+learn if the monster resists that element or if they are immune. There are
+other magical means to learn about monster’s abilities that don’t require
+you to actually experience the attacks.</p>
+<p>This memory can be used by all your characters; it is stored in a file
+called <code class="docutils literal notranslate"><span class="pre">lore.txt</span></code> in your user directory (<code class="docutils literal notranslate"><span class="pre">~/.angband/ZangbandTK</span></code> on Linux,
+<code class="docutils literal notranslate"><span class="pre">lib/user</span></code> on Windows, <code class="docutils literal notranslate"><span class="pre">Documents/ZangbandTK</span></code> on macOS).</p>
+</section>
+<section id="your-weapon">
+<h2>Your Weapon<a class="headerlink" href="#your-weapon" title="Link to this heading">#</a></h2>
+<p>Carrying a weapon in your backpack does you no good. You must wield a
+weapon before it can be used in a fight. A secondary weapon can be kept by
+keeping it in the backpack, and switching it with the primary weapon when
+needed. This is most often used when switching between two weapons, each of
+which provides a rare power that the character needs at two separate times.
+Note that a digging tool need only be carried in your pack, as when you try
+to dig your best digging tool will automatically be used.</p>
+<p id="index-0">Weapons have two main magical characteristics, their enchanted ability to
+hit and their enchanted ability to do damage, expressed as ‘(+#,+#)’. A
+normal weapon would be ‘(+0,+0)’. Many weapons in ZangbandTK have bonuses to
+hit and/or to damage.</p>
+<p id="index-1">ZangbandTK assumes that your youth in the rough environment near the dungeons
+has taught you the relative merits of different weapons, and displays as
+part of their description the damage dice which define their capabilities.
+Any damage enchantment is added to the dice roll for that weapon. The dice
+used for a given weapon is displayed as ‘XdY’. The number <code class="docutils literal notranslate"><span class="pre">X</span></code> indicates
+how many dice to roll, and number <code class="docutils literal notranslate"><span class="pre">Y</span></code> indicates how many sides they have.
+A ‘2d6’ weapon will thus give damage from 2 to 12, plus any damage bonus.
+The weight of a weapon is also a consideration. Heavy weapons may hit
+harder, but they are also harder to use. Depending on your strength,
+dexterity, character class, and weapon weight, you may get attacks more
+quickly: high dexterity and strength and low weapon weight are the main
+factors. Warriors may get up to a maximum of 6 attacks per round: pure
+spellcasters are limited to only 4: other classes may get up to 5. Your attacks
+per round with a weapon are displayed as a decimal, e.g. 2.3 or 3.4 etc.
+The fractions take the form of unused energy which is carried over to your
+next turn.</p>
+<p>Missile weapons, such as bows, have their characteristics added to those of
+the missile used, if the proper weapon/missile combination is used, and
+then the launcher multiplier is applied to the total damage, making missile
+weapons very powerful given the proper missiles, especially if they are
+enchanted. Like weapons, <code class="docutils literal notranslate"><span class="pre">I</span></code>nspecting ammunition will tell you how much
+damage you will do with your current missile launcher.</p>
+<p>Finally, some rare weapons have special abilities. These are called ego
+weapons, and are feared by great and meek. An ego weapon must be wielded to
+receive the benefit of its abilities. It should be noted that some of these
+items are considerably more powerful than others, and generally the most
+powerful items are the rarest. Some items will have an obvious effect,
+like an increase in infravision, or extra strength. These effects will be
+noticed as soon as you wield the item. Other effects, like most
+resistances, will need to be learned. You can learn them by either
+suffering an appropriate attack, or by using magical means of
+identification.</p>
+<p>Some of the more common ego weapons are described at the end of this file.</p>
+<p>Equipment that is not in the weapon or missile weapon slot can affect your
+attacks. For hand-to-hand combat, the to hit adjustments, to damage
+adjustments, extra elemental damage (called “brands”), and extra damage
+due to the target monster’s type (called “slays”) from that equipment are
+applied and can be seen on the character sheet or when the weapon is inspected.
+When a weapon is thrown or a missile is launched, only the to hit adjustments
+(and, when the <a class="reference internal" href="option.html#damage-percent-of-dice-option"><span class="std std-ref">to-damage is a percent of dice option</span></a> is on, the to damage adjustments) are
+applied from that equipment.</p>
+</section>
+<section id="your-armor-class">
+<span id="index-2"></span><h2>Your Armor Class<a class="headerlink" href="#your-armor-class" title="Link to this heading">#</a></h2>
+<p>Your armor class (or AC) is a number that describes the amount and the
+quality of armor being worn. Armor class will generally run from about 0 to
+200, though exceptionally good armor can improve even on the latter figure.</p>
+<p>The higher your armor class, the more protective it is. A negative armor
+class would actually help get you hit. Armor protects you in three manners.
+First, it makes you harder to be hit for damage. A hit for no damage counts
+as a miss, and is described as a miss. Second, good armor will absorb
+some of the damage that your character would have taken from normal
+attacks. Third, acid damage is reduced by wearing body armor (but the
+armor may be damaged instead). It is obvious that a high armor class is
+vital for surviving the deeper levels of ZangbandTK.</p>
+<p id="index-3">Armor class values are always displayed between a set of square brackets,
+as ‘[#]’ or ‘[#,+#]’. The first value is the base armor class of the
+armor. The second number is the magical bonus of the item, which is only
+displayed if known, and will always have a sign preceding the value. These
+plusses can be determined by wielding the armor in combat and being hit.
+Note that a few rings, amulets, and weapons also have the ‘[+#]’
+notation, indicating that they provide an armor bonus. Many pieces of heavy
+body armor will also have a ‘(-#)’ (in normal brackets) before the
+‘[#,+#]’, which indicates that the weight of the armor decreases your
+chances of hitting monsters. This can range from nonexistent for very light
+armor to ‘(-8)’ for the heaviest armor!</p>
+</section>
+<section id="monster-status-effects">
+<h2>Monster status effects<a class="headerlink" href="#monster-status-effects" title="Link to this heading">#</a></h2>
+<p>You will find some spells and items which can affect monsters in ways which
+do not involve directly dealing them damage.  These are ‘status effects’.
+They are listed with their effects below.  These status effects will either
+work on a monster type or they won’t; some monsters resist particular effects
+but not all do.  If the same attribute is affected by more than one of these
+status effects, the effects on that attribute do not stack, unless noted
+otherwise.</p>
+<dl class="simple">
+<dt>Hold Monster:</dt><dd><p>Paralyses a monster until you hit them or the duration lapses.
+Increases chance of player getting a critical hit.
+Normal duration 3-8 turns.</p>
+</dd>
+<dt>Stun Monster:</dt><dd><p>Reduces the monster’s melee accuracy and damage by 25%.
+1 in 10 chance that the monster will miss the turn.
+Increases chance of player getting a critical hit.
+Normal duration 5-10 turns.</p>
+</dd>
+<dt>Confuse Monster:</dt><dd><p>Monster spells fail 50% more often; that stacks with the increased failures
+from being scared.
+Monster at least 40% more likely to miss target with spells/ranged attacks.
+Monster ball, bolt, and breath spells sometimes go in the wrong direction.
+30% chance of erratic movement, more when more confused.
+If an erratic move tries to go through a wall that the monster can not
+normally go through, the monster may be lightly stunned.
+Increases chance of player getting a critical hit.
+Normal duration 5-10 turns.</p>
+</dd>
+<dt>Slow Monster:</dt><dd><p>-2 speed, more if more slowed.
+Normal duration 10 or more turns.</p>
+</dd>
+<dt>Sleep Monster:</dt><dd><p>Puts monsters to sleep, but they can wake up again quite easily.</p>
+</dd>
+<dt>Scare Monster:</dt><dd><p>Monster will run away.
+Monster spells fail 20% more often; that stacks with the increased failures
+from confusion or disenchantment.
+Increases chance of player getting a critical hit.</p>
+</dd>
+<dt>Disenchant Monster:</dt><dd><p>Monster spells fail 50% more often; that stacks with the increased failures
+from being scared.
+Normal duration 5-10 turns.</p>
+</dd>
+</dl>
+</section>
+<section id="non-melee-attacks-and-resistances">
+<h2>Non-melee attacks and resistances<a class="headerlink" href="#non-melee-attacks-and-resistances" title="Link to this heading">#</a></h2>
+<p>The player may at some time gain access to non-melee attacks, and many
+monsters also have them. Perhaps the most famous of this type of attack is
+dragon breath, but monsters may also cast spells at the player, and vice
+versa. This damage generally is not affected by armor class, and does not
+need a hit roll to hit the player or monster being aimed at.</p>
+<p>Some attacks are purely magical: attack spells which blind, confuse, slow,
+scare or paralyze the target. These attacks are resisted by monsters of
+higher level (native to deeper dungeon depths) and characters with a high
+saving throw - saving throws being dependent on class, level and wisdom.
+There are also available resistances to fear, blindness, confusion and
+stunning, and the power of “free action” prevents magical paralysis (the
+player may still be paralyzed by being “knocked out” in melee or by a stunning
+attack, but this is very rare and can be prevented with protection from
+stunning; paralysis due to fainting from hunger or casting a spell with
+with insufficient mana is also unaffected by having free action). There are
+monsters that can cause status effects such as blindness, paralysis or
+confusion through their melee attack.  Since this is a physical effect and
+not a mental one, the player will not get a saving throw.  However, having
+resistance to that effect will prevent the negative status in all cases.
+It should also be noticed that most unique monsters automatically pass their
+saving throws, and some monsters are naturally resistant to confusion, fear and
+sleep. Some monsters may have spells that ‘cause wounds’ that can be
+deadly if successful but do no damage if the saving throw is passed.
+Some melee attacks by monsters may drain a stat, as can some traps: this is
+prevented by having that stat sustained. Drained stats are temporary and
+can be restored on gaining a new character level or consuming rare items
+found in the dungeon.</p>
+<p>Some monsters may cast spells that teleport the player character. There is
+no saving throw, except to those that would actually teleport him up or
+down one dungeon level. Having resistance to nexus will also prevent being
+level-teleported, but will not help against normal teleportation spell
+attacks. The player may teleport monsters in the same way, with a spell,
+wand or rod — but in ZangbandTK a hundred and two of the imported monsters
+shrug it off. A unique that does is simply unmoved; anything else gets a
+saving throw that a heavy creature usually passes and a light one usually
+fails, so teleport-other is a reliable escape from a swarm and an unreliable
+one from the thing you most want moved. The monster recall says <em>cannot be
+teleported</em> once you have seen it happen. See <a class="reference internal" href="monsters.html"><span class="doc">Monsters</span></a>.</p>
+<p>Other attacks are usually element-based, including the aforementioned
+example of dragon breath. Many monsters can breathe various attacks or cast
+bolt or ball spells, and the player may also have access to bolt and ball
+spells (or breathe like a dragon, in some rare circumstances). The player,
+and the monsters, may be resistant to these forms of attack: resistance is
+handled in different ways for the player and the monster, and for different
+attack forms.</p>
+<p>Bolt spells will hit the first monster (or the player) in the line of fire:
+ball spells may centre on a target which may be hiding behind
+other targets. Ball spells and breath weapons affect an area: other
+monsters caught in the blast take reduced damage depending on their distance
+from the centre of the blast. Breath weapons are proportional to a
+fraction of the monster’s current hit points and drop off in power with
+distance from the monster, with a maximum cap on the
+damage (which is higher for the most common of such attacks, owing to the
+fact that the resistances are also easier to find). Bolt and ball spell
+damage is calculated differently - often (but not always) relative to
+character or monster level.</p>
+<p>In the case of fire, cold, lightning, acid and poison, if the monster has
+resistance to a player attack of this kind it will take almost no damage.
+If the player has one or more permanent sources of resistance, they will take
+1/3 of the damage they would normally take: if the player has a temporary
+source of resistance (whether from potion, spell or item activation), this
+will also reduce the damage to 1/3 of its normal level, allowing the
+character to take only 1/9 damage if they have both permanent and temporary
+resistance. Having more than one source of permanent resistance confers no
+extra bonus, and using more than one source of temporary resistance
+increases only the duration of the resistance: in both cases, either the
+resistance is present or it is not. But one permanent resistance and one
+temporary resistance are both effective simultaneously.</p>
+<p>Elemental attacks also have a chance to damage wielded equipment or destroy
+items in the character’s inventory. Fire attacks destroy scrolls, staves,
+magic books and arrows. Acid attacks destroy scrolls, staves, arrows, bolts
+and can damage armor. Electricity attacks can destroy wands, rods, rings
+and amulets. Cold attacks can destroy potions. Items in your inventory get
+a saving throw, and they are unharmed if they pass it. Having resistance to
+the element will make an item less likely to be destroyed. Items on the
+floor that get caught in an elemental ball or breath are automatically
+destroyed without a saving throw. Weapons, armor and chests can also be
+destroyed if they are lying on the floor, but cannot be harmed if they are
+in your pack.</p>
+<p>The character may also gain immunity to fire, cold, lightning and acid if
+he is fortunate to find any of the few artifacts that provide these
+immunities: immunity means that no damage is taken, and the character’s
+equipment is also totally protected. Immunities are EXTREMELY rare.</p>
+<p>Some worn items render the character vulnerable to fire, cold, lightning
+or acid.  Unless the character also wears an item that grants immunity
+to the same element, the vulnerability means that the character takes
+more damage from that element:  1/3 more if the character does not have
+a permanent source of resistance to the element and normal damage if the
+character does have a permanent source of resistance to the element.  Also,
+a character can not gain a temporary resistance to an element when a
+vulnerability to that element is present.</p>
+<p id="index-4">Another attack that the player will come into contact with all too often is
+the soul-chilling nature of the undead, which can drain the character’s
+life experience. Some monsters have a life-draining melee attack, others
+may cast ball or bolt spells or, in extreme cases, breathe the very force
+of the netherworld (shortened by the game to “nether”.) There are two
+powers which are of assistance in this case: that of “hold life” will
+prevent many experience drains (the fraction affected depends on the monster,
+and can be 95%, 90%, 75%, or 50%), and if the drain occurs, reduces the amount
+of experience lost by 90%. That of “resistance to nether forces” will provide
+resistance to nether bolts, balls and breaths, reducing the damage and
+preventing any experience drains from those attacks, but has no effect on
+melee “hits to drain experience”. Monsters caught in the blast from a nether
+ball or breath will take damage proportional to distance from the centre of
+the attack, except for undead who are totally immune. The player may find
+wands or rods of Drain Life, which are similarly ineffective on those undead
+creatures which have no life to drain: however, the real player equivalent
+attack spell is the priest/paladin spell of “Orb of Draining”, a ball spell
+which does damage to all monsters, double damage to evil monsters, and is
+resisted by none.</p>
+<p>Other attack forms are rarer, but may include: disenchantment (both in
+melee or by a monster breath), chaos (breath or melee, which if unresisted
+will cause the player to hallucinate and be confused, and may drain life
+experience), nexus (which may teleport the player to the monster, away from
+the monster, up or down a level, or swap over two of the player’s
+“internal” stats), light and darkness (which will blind a character unless
+they have protection from blindness or resistance to light or dark), sound
+(which will stun a character without sound resistance or protection from
+stunning), crystal shards (which will cut a non-resistant character),
+inertia (which will slow a character regardless of free action), gravity
+(which will blink a character, also stunning and slowing), force (which
+will stun the character), plasma (which will stun), time (which may
+drain experience regardless of hold life, or drain stats regardless of
+sustains), water bolts and balls (which may confuse and stun, and do
+considerable damage from high-level monsters), ice bolts (which may
+cut and stun, and damage potions), and mana bolts and balls (the latter
+usually known as Mana Storms.) Magic missiles are included in the “mana”
+category, whether cast by the monster or the player.</p>
+<p>In addition items on the ground are especially vulnerable to elemental
+effects.  Potions on the ground will always be destroyed by cold, shards,
+sound and force.  Scrolls, staves, books, and non-metal gear will always
+get destroyed by fire or plasma.  Scrolls, staves, and all non-mithril gear
+will be destroyed by acid.  Rings, amulets, wands and rods will be
+destroyed by lightning and plasma.  And finally nearly everything will be
+destroyed by a mana storm if left on the ground.</p>
+<p>Some attacks may stun or cut the player. These can either be spells or
+breath attacks (sound, water balls) or from melee. A stunned character
+receives a penalty to hit and is much more likely to fail a spell or
+activation. If a character gets very stunned, they may be knocked out and
+at the mercy of the enemies. A cut character will slowly lose life until
+healed either by potions, spells or natural regeneration. Both stunning and
+cut status are displayed at the bottom of the screen.</p>
+<p>There are resistances available to chaos, disenchantment, confusion, nexus,
+sound, shards, light and darkness: all of these will reduce the damage and
+prevent side-effects other than physical damage. With these resistances, as
+with nether resistance, damage is a random fraction between 1/2 and 2/3.</p>
+<p>It should be noted that not all of these are actually vital to completing
+the game: indeed, of the above list, only fire, cold, acid, lightning,
+poison and confusion resists are regarded as truly vital, with blindness,
+chaos and nether the next most desirable. Some attack forms are not
+resistible, but thankfully these are rare: resist shards will prevent all
+other magical attacks which cut (namely ice bolts), and confusion resistance
+will prevent confusion by a water bolt or ball, but there is no resistance
+to the physical damage caused by these following attacks: inertia, force,
+gravity, plasma, time, ice, water, mana. There is no resistance to any of
+the side-effects of a time attack, or indeed to anything but the stunning
+effects of a gravity attack.</p>
+</section>
+<section id="a-note-on-speed">
+<h2>A note on speed<a class="headerlink" href="#a-note-on-speed" title="Link to this heading">#</a></h2>
+<p>Monsters which do not move at normal speed generally move “slowly” (-10 to
+speed), “fairly quickly” (+5), “quickly” (+10), “very quickly” (+20) or
+“incredibly quickly” (anything past +20). Twenty-seven creatures fall in that
+last band, and the two fastest things in the game are both Zelazny’s: the
+Serpent of Chaos at +45 and the Unicorn of Order at +50. This is further
+adjusted by the fact that any non-unique monster may have a random adjustment
+from (-2) to (+2) to its own speed.</p>
+<p>Generally, (+10) is exactly double normal speed, and (-10) exactly half.
+(+20) is about three times normal speed, but after that there is less
+noticeable improvement as speed goes higher - for instance, (+30) is not
+quite four times normal speed, and higher values than this are largely
+irrelevant. The player may find items which can be worn or wielded that
+provide speed bonuses: these may include boots of speed, rings of speed and
+a few very rare artifacts. Boots will provide a random 1d10 to speed: rings
+of speed may be bigger than that - generally the best that the player will
+get is two just over (+10), but individual rings of up to (+23) speed have
+been known.</p>
+<p>Separate from the question of permanent speed (as determined by the
+player’s speed items and the monster’s natural speed) is that of temporary
+speed. The player may cast a spell of haste-self, or use a potion, staff or
+rod of speed or use an artifact activation to speed him temporarily: or a
+monster may cast a haste-self spell, or be affected by another monster
+“shrieking for help” or the player reading a scroll of aggravate monster.
+In all cases, (+10) speed is added temporarily to the affected monster or
+player. Using two or more sources of temporary speed is cumulative only in
+duration - one cannot get from normal speed to (+20) using a potion and a
+spell of speed. Spells of temporary slowing (including monsters breathing
+inertia or gravity) are handled the same way, with exactly (-10) being
+subtracted from the player or monster’s speed temporarily, for the duration
+of the spell or breath’s effect.</p>
+</section>
+<section id="ego-weapons-and-armor">
+<h2>Ego weapons and armor<a class="headerlink" href="#ego-weapons-and-armor" title="Link to this heading">#</a></h2>
+<p>Some of the ego weapons that you might find in the dungeon are listed
+below. This will give you a small taste of the items that can be found.
+However if you wish to discover these items on your own, you may not wish
+to continue. Ego weapons are denoted by the following “names”:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This list is Angband’s. ZangbandTK adds sixteen ego types of its own —
+<code class="docutils literal notranslate"><span class="pre">(Vampiric)</span></code>, <code class="docutils literal notranslate"><span class="pre">(Chaotic)</span></code>, <code class="docutils literal notranslate"><span class="pre">of</span> <span class="pre">Sharpness</span></code>, <code class="docutils literal notranslate"><span class="pre">(Trump</span> <span class="pre">Weapon)</span></code> and the
+rest — which are described in <a class="reference internal" href="objects.html"><span class="doc">Objects</span></a> rather than here.</p>
+</div>
+<section id="ego-melee-weapons">
+<h3>Ego Melee Weapons:<a class="headerlink" href="#ego-melee-weapons" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt>(Defender)</dt><dd><p>A magical weapon that actually helps the wielder defend himself, thus
+increasing his/her armor class, and protecting him/her against damage
+from fire, cold, acid, lightning, and falls. This weapon also will
+increase your stealth, let you see invisible creatures, protect you from
+paralyzation, and help you regenerate hit points and mana faster. As a
+result of the regeneration ability, you will use up food somewhat faster
+than normal while wielding such a weapon. These powerful weapons also will
+sustain one stat, though this stat will vary from weapon to weapon.</p>
+</dd>
+<dt>(Holy Avenger)</dt><dd><p>A Holy Avenger is often one of the most powerful weapons. A Holy Avenger
+will increase your wisdom and your armour class. This weapon will do
+extra damage when used against evil, demonic and undead creatures, and
+will also give you protection against fear and the ability to see invisible
+creatures. These weapons are basically extremely powerful versions of
+Blessed Blades and give melee bonuses to priests and paladins. These
+weapons, like (Defender) weapons, also will sustain one random stat.</p>
+</dd>
+<dt>(Blessed)</dt><dd><p>A blessed blade will increase your wisdom. If you are a priest or paladin,
+wielding one gives you bonuses for melee combat. Blessed blades also have
+one extra, random, power.</p>
+</dd>
+<dt>Weapon of Westernesse</dt><dd><p>A Weapon of Westernesse is one of the more powerful weapons. It does
+extra damage against orcs, trolls, and giants, while increasing your
+strength, dexterity, and constitution. It also lets you see invisible
+creatures and protects from paralyzation. These blades were made by the
+Dunedain.</p>
+</dd>
+<dt>Weapon of Extra Attacks</dt><dd><p>A weapon of extra attacks will allow the wielder to deliver extra attacks
+during each round.</p>
+</dd>
+<dt>Elemental Branded Weapons</dt><dd><p>Each of the five elemental attacks has a corresponding weapon which will
+do treble its base damage to creatures not resistant to that element and
+grant the wielder resistance to that element. (It should be noted that the
+magical damage bonus is not affected by this: a weapon of Flame ‘(2d6)
+(+5,+6)’ does 6d6+6 damage per hit, not 6d6+18, against creatures which are
+not fire-resistant.) There are weapons of Flame, Frost, Lightning, Acid and
+Poison brands.</p>
+</dd>
+<dt>Weapons of Slaying enemies</dt><dd><p>These weapons do extra damage against creatures of a vulnerable type.
+Weapons of Slay Evil and Slay Animal do double the base damage, while
+weapons of Slay Orc, Troll, Giant, Dragon, Demon and Undead do triple the
+base damage. As with elemental branded weapons, the magical damage bonus
+is not affected.</p>
+</dd>
+<dt>Weapons of *Slay*ing enemies</dt><dd><p>These weapons, in addition to doing extra damage to your enemies, have
+extra powers as well. In each case, one stat is increased. Weapons of
+*Slay* Dragon, Demon or Undead are also more powerful against their
+opponents, doing five times their base damage rather than the normal
+three.</p>
+</dd>
+<dt>Shovels, Picks, and Mattocks of Digging</dt><dd><p>These powerful diggers will dig through granite as if it were mere wood,
+and mineral veins as if they were butter. Permanent rock is still an
+impassable obstacle.  All are branded with acid, and triple their base
+damage against creatures which are not acid-resistant.</p>
+</dd>
+</dl>
+</section>
+<section id="ego-missile-launchers-and-ammo">
+<h3>Ego Missile Launchers and Ammo:<a class="headerlink" href="#ego-missile-launchers-and-ammo" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt>Launchers of Accuracy</dt><dd><p>These launchers have an unnaturally high to-hit number, making them
+extremely accurate.</p>
+</dd>
+<dt>Launchers of Power</dt><dd><p>These launchers do an unnaturally high amount of damage due to their high
+to-dam number.</p>
+</dd>
+<dt>Launchers of Extra Shots</dt><dd><p>These launchers allow the wielder to shoot more times per round than
+normal.</p>
+</dd>
+<dt>Launchers of Extra Might</dt><dd><p>These launchers have a higher base damage than normally made launchers of
+their type. For instance, a ‘Long Bow of Extra Might (x3)(+X,+Y)(+1)’
+is really a Long Bow ‘(x4)(+X,+Y)’ where ‘(+X,+Y)’ is the standard
+to-hit and to-dam. As the damage multiplier with the bow affects
+<strong>everything</strong> the base arrow damage, the magical damage bonus on both
+the bow and the arrow, and any bonuses for slaying or elemental-branded
+arrows - this makes it a powerful weapon.</p>
+</dd>
+<dt>Ammo of Wounding</dt><dd><p>This ammunition - whether it be pebbles, iron shots, arrows, bolts,
+seeker arrows or seeker bolts - has big bonuses to-hit and to-damage.</p>
+</dd>
+<dt>Ammo of Elemental Brands, and Ammo of Slaying enemies</dt><dd><p>This works in the same way as melee weapons of the same type: double
+damage for slay evil and slay animal, triple damage for all other slays
+and for all elemental brands. Unlike melee weapons, the slays and
+elemental brands <strong>do</strong> affect the magical damage bonus for ammo.</p>
+</dd>
+</dl>
+<p>These are the most common types of ego-weapon: note that they are not the
+ONLY ego-items available in the dungeon, there may be more.</p>
+<p>Apart from these there are some very rare and well made weapons in the
+dungeon with not necessarily any special abilities. These include Blades
+of Chaos, Maces of Disruption, and Scythes of Slicing.  They can also be
+ego weapons like the ones above.  For example, a Blade of Chaos (Holy
+Avenger) is much more powerful than many artifact weapons!</p>
+<p>Some pieces of armor will possess special abilities denoted by the following
+names:</p>
+</section>
+<section id="ego-armors-and-shields">
+<h3>Ego Armors and Shields:<a class="headerlink" href="#ego-armors-and-shields" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt>of Resist Acid, Lightning, Fire or Cold</dt><dd><p>A character wearing armor or a shield with one such resistance will take
+only 1/3 of normal damage from attacks involving the relevant element of
+acid, lightning, fire or cold. Note that multiple permanent sources of
+resistance are NOT cumulative: wearing two is no better than wearing one.
+However, armor which provides resistance to acid cannot itself be damaged
+by acid, and this is a good reason to wear more than one such piece of
+armor.</p>
+</dd>
+<dt>of Resistance</dt><dd><p>A character wearing armor with this ability will have resistance to Acid,
+Cold, Fire, and Lightning as explained in each part above.</p>
+</dd>
+<dt>Armor of Elvenkind</dt><dd><p>This is the same as Resistance armor, only generally better enchanted. It
+will make you more stealthy. This armor also possesses an extra
+resistance, at random from the following list: poison, light, dark,
+nexus, nether, chaos, disenchantment, sound, and shards.</p>
+</dd>
+<dt>Robes of Permanence</dt><dd><p>These robes are designed especially for wizards. Just like Elvenkind
+armor, they provide resistance to fire, cold, acid, and electricity and
+cannot be damaged by acid. They sustain all of your stats and protect you
+from a good deal of all experience draining. Also like Elvenkind armor,
+they have one random resistance.</p>
+</dd>
+<dt>Dragon Scale Mails</dt><dd><p>These extremely rare pieces of armour come in many different colors, each
+protecting you against the relevant dragons. Naturally they are all
+resistant to acid damage. They also occasionally allow you to breathe as
+a dragon would.  Dragon Scale Mails can also have egos as well.</p>
+</dd>
+</dl>
+</section>
+<section id="ego-helms">
+<h3>Ego Helms:<a class="headerlink" href="#ego-helms" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt>Stat Boosting Helms</dt><dd><p>There are magical helms found in the dungeon that have the ability to
+boost the wearer’s intelligence or wisdom. In addition to boosting the
+relevant stat these helms will also prevent that stat from being drained.</p>
+</dd>
+<dt>Crown of the Magi</dt><dd><p>This is the great crown of the wizards. The wearer will have an increased
+(and sustained) intelligence, and will also be given resistance against
+fire, frost, acid, and lightning. These valuable helms also have an
+additional random power.</p>
+</dd>
+<dt>Crown of Might</dt><dd><p>This is the crown of the warriors. The wearer will have an increased and
+sustained strength, dexterity, and constitution, and will also be immune
+to any foe’s attempt paralyze him or her.</p>
+</dd>
+<dt>Crown of Lordliness</dt><dd><p>This is the great crown of the priests. The wearer will have an increased
+and sustained wisdom and be protected against fear. These helms also have
+an additional random power.</p>
+</dd>
+<dt>Helm/Crown of Seeing</dt><dd><p>This is the great helmet or crown of the rogues. The wearer will be able
+to see invisible creatures, and will have an increased ability to locate
+traps. It is also rumored that the wearer of such a helm will not be able
+to be blinded.</p>
+</dd>
+<dt>Helm of Infravision</dt><dd><p>This helmet allows the character to see monsters even in total darkness,
+with the ability to see heat. Note that spellbooks are the same
+temperature as the surroundings, and so cannot be read unless some real
+light is present.</p>
+</dd>
+<dt>Helm of Light</dt><dd><p>In addition to providing a permanent light source for the wearer, this
+helm also provides resistance against light-based attacks.</p>
+</dd>
+<dt>Helm/Crown of Telepathy</dt><dd><p>This helm or crown grants the wearer the power of telepathy.</p>
+</dd>
+<dt>Helm of Regeneration</dt><dd><p>This helm will help you regenerate hit points and mana more quickly than
+normal, allowing you to fight longer before needing to rest. You will use
+food faster than normal while wearing this helm because of the
+regenerative effects.</p>
+</dd>
+</dl>
+</section>
+<section id="ego-cloaks">
+<h3>Ego Cloaks:<a class="headerlink" href="#ego-cloaks" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt>Cloak of Protection</dt><dd><p>This finely made cloak will come with an unnaturally high enchantment,
+is not affected by elemental based attacks, and provides resistance against
+shards.</p>
+</dd>
+<dt>Cloak of Stealth</dt><dd><p>This cloak will increase the wearer’s stealth, making the wearer less
+likely to wake up sleeping monsters.</p>
+</dd>
+<dt>Cloak of Aman</dt><dd><p>These exceptionally rare cloaks provide great stealth, have a very high
+enchantment, and one random resistance.</p>
+</dd>
+</dl>
+</section>
+<section id="ego-gloves">
+<h3>Ego Gloves:<a class="headerlink" href="#ego-gloves" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt>Gloves of Free Action</dt><dd><p>The wearer of these gloves will be resistant to paralyzing attacks.</p>
+</dd>
+<dt>Gloves of Slaying</dt><dd><p>These gloves will increase the wearer’s fighting ability by boosting the
+wearer’s to-hit and to-dam values.</p>
+</dd>
+<dt>Gloves of Agility</dt><dd><p>These gloves will increase the wearer’s dexterity.</p>
+</dd>
+<dt>Gloves of Power</dt><dd><p>These gloves will boost the wearer’s strength as well as the wearer’s to-hit
+and to-dam numbers.</p>
+</dd>
+</dl>
+</section>
+<section id="ego-boots">
+<h3>Ego Boots:<a class="headerlink" href="#ego-boots" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt>Boots of Slow Descent</dt><dd><p>These boots protect the wearer from the effects of small falls.</p>
+</dd>
+<dt>Boots of Stealth</dt><dd><p>These boots increase the wearer’s stealth, like a Cloak of Stealth.</p>
+</dd>
+<dt>Boots of Free Action</dt><dd><p>The wearer of these boots will be resistant to paralyzing attacks.</p>
+</dd>
+<dt>Boots of Speed</dt><dd><p>The wearer of these boots will become unnaturally fast.</p>
+</dd>
+</dl>
+<p>Once again, these are not necessarily the ONLY ego-items in the dungeon,
+only the most common.</p>
+<p>Apart from these there are some very rare and well-made armours in the
+dungeon with not necessarily any special abilities. These include Adamantite
+Plate Mail, Mithril Plate Mail, Mithril Chain Mail, and Elven Cloaks. The
+first three cannot be damaged by acid because of the quality metals they
+contain.</p>
+<p>There are rumors of unique “artifact” items in the dungeon - weapons and
+armor of all types. Many of these are more powerful than even the greatest
+ego-items: some are weak and have little more than a name to recommend
+them.</p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="dungeon.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Exploring the Dungeon</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="playing.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Playing the Game</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#attacking-and-being-attacked">Attacking and Being Attacked</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#monster-memories">Monster Memories</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#your-weapon">Your Weapon</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#your-armor-class">Your Armor Class</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#monster-status-effects">Monster status effects</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#non-melee-attacks-and-resistances">Non-melee attacks and resistances</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-note-on-speed">A note on speed</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ego-weapons-and-armor">Ego weapons and armor</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ego-melee-weapons">Ego Melee Weapons:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ego-missile-launchers-and-ammo">Ego Missile Launchers and Ammo:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ego-armors-and-shields">Ego Armors and Shields:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ego-helms">Ego Helms:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ego-cloaks">Ego Cloaks:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ego-gloves">Ego Gloves:</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ego-boots">Ego Boots:</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/attack.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, ZangbandTK contributors; Angband developers past and present; Zangband developers past and present.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,1316 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>The Realms of Magic &#8212; ZangbandTK</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/style.css?v=3331b61b" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=726be5cd"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'realms';</script>
+    <link rel="canonical" href="https://zangbandtk.com/realms.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Mutations" href="mutations.html" />
+    <link rel="prev" title="Quests" href="quests.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="3.5.1-rc1-282-g551c6ec6e-dirty" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">ZangbandTK</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="features.html">
+    Features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="screenshots.html">
+    Screenshots
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="play.html">
+    Play in the browser
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="download.html">
+    Download
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="releases.html">
+    Release log
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="diary.html">
+    Development diary
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="documentation.html">
+    Documentation
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/z88kat/ZangbandTK" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="features.html">
+    Features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="screenshots.html">
+    Screenshots
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="play.html">
+    Play in the browser
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="download.html">
+    Download
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="releases.html">
+    Release log
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="diary.html">
+    Development diary
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="documentation.html">
+    Documentation
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/z88kat/ZangbandTK" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="start.html">Getting Started</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="a-quick-demo.html">A quick demonstration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide.html">A Players’ Guide to ZangbandTK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="manual.html">The Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="birth.html">Creating a Character</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dungeon.html">Exploring the Dungeon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="attack.html">Attacking monsters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playing.html">Playing the Game</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command.html">Command Descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="option.html">Option Descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customize.html">Customising the game</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="differences.html">What’s Different</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="balance.html">How Balance Differs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="characters.html">Races and Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="monsters.html">Monsters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="objects.html">Objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wilderness.html">The Wilderness</a></li>
+<li class="toctree-l2"><a class="reference internal" href="towns.html">Towns and Services</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quests.html">Quests</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">The Realms of Magic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutations.html">Mutations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="virtues.html">Virtues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pets.html">Pets and Allies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nightmare.html">Nightmare Mode</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="hacking/index.html">For Developers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="hacking/modifying.html">Modifying ZangbandTK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/compiling.html">Compiling Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/cmake.html">CMake Hints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/debug.html">Debug Command Descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/how-it-works.html">How It Works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/metadoc.html">Documentation on documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/borg.html">Borg</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="meta.html">Meta</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="version.html">Version Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="copying.html">Copying and licence information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="thanks.html">Credits</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="documentation.html" class="nav-link">Documentation</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="differences.html" class="nav-link">What’s Different</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">The Realms of Magic</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="the-realms-of-magic">
+<h1>The Realms of Magic<a class="headerlink" href="#the-realms-of-magic" title="Link to this heading">#</a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>All seven realms are playable</strong> — Arcane, Life, Nature, Death, Sorcery,
+Chaos and Trump, two hundred and twenty-four workings in twenty-eight books,
+all of them Zangband’s. You choose your realms at birth and your character
+sheet records them, and that choice decides which books you can open at all.</p>
+<p>Seventeen individual spells across the seven are inert and say so in their
+own description, each for want of a mechanism this game does not have. They
+are named in the realm sections below.</p>
+</div>
+<p>Spellcasters in ZangbandTK choose realms of magic at birth, and that choice
+defines the character as much as the class does. Angband asks you what you are;
+Zangband asks you what you <em>study</em>, and this game asks both.</p>
+<section id="the-seven">
+<h2>The seven<a class="headerlink" href="#the-seven" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 12.0%" />
+<col style="width: 12.0%" />
+<col style="width: 14.0%" />
+<col style="width: 62.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Realm</p></th>
+<th class="head"><p>Stat</p></th>
+<th class="head"><p>You…</p></th>
+<th class="head"><p>What it is</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Arcane</strong></p></td>
+<td><p>INT</p></td>
+<td><p>cast spells</p></td>
+<td><p>The wizard’s realm: bolts, bindings, detections and the deep power at
+the end of it.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Life</strong></p></td>
+<td><p>WIS</p></td>
+<td><p>recite prayers</p></td>
+<td><p>Healing, blessing, protection, and the banishing of foul things.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Nature</strong></p></td>
+<td><p>WIS</p></td>
+<td><p>chant verses</p></td>
+<td><p>Both defensive and offensive; the realm that talks to animals and to
+weather.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Death</strong></p></td>
+<td><p>INT</p></td>
+<td><p>perform rituals</p></td>
+<td><p>Necromancy. Draining, cursing, and commerce with what should stay
+buried.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Sorcery</strong></p></td>
+<td><p>INT</p></td>
+<td><p>invoke workings</p></td>
+<td><p>The meta-realm: detection, identification, protection, escape and
+advantage. <em>No direct attacks at all.</em></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Chaos</strong></p></td>
+<td><p>INT</p></td>
+<td><p>unleash invocations</p></td>
+<td><p>Destruction, and the realm that changes the caster as much as the
+target.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Trump</strong></p></td>
+<td><p>INT</p></td>
+<td><p>read cards</p></td>
+<td><p>A deck that reaches places and people. Teleportation, summoning, and
+the Amber realm in everything but name.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Four of these are Angband’s own, renamed to the names this game uses
+everywhere else: <em>arcane</em> keeps its name, <em>divine</em> becomes <strong>Life</strong>, <em>shadow</em>
+becomes <strong>Death</strong>, and <em>nature</em> keeps its name. Their casting stat, verb and
+nouns are Angband’s and are unchanged — Zangband kept the same information in
+scattered per-class constants, and Angband’s way of holding it is better.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>Arcane is Zangband’s Arcane, and that is a change from Angband.</strong> The two
+games disagreed about this realm more than any other: Zangband’s Arcane was
+deliberately the weak generalist, every book buyable in town and no
+high-level power at all, while Angband’s arcane realm is the Mage’s realm,
+with two books of attacks and a <em>Wizard’s Tome of Power</em> found only in the
+dungeon. Having exactly seven realms means folding them together, and the
+fold went Zangband’s way (DEC-49, DEC-50).</p>
+<p>So <strong>a Mage no longer learns its attacks from Arcane.</strong> In thirty-two
+Arcane spells there is one ball, one bolt and one beam. That is not a
+mistake: in Zangband a Mage takes <em>two</em> realms, and the second is where the
+damage comes from. Take Chaos alongside it, and the pair is the classic
+Zangband Mage.</p>
+</div>
+</section>
+<section id="choosing-them">
+<h2>Choosing them<a class="headerlink" href="#choosing-them" title="Link to this heading">#</a></h2>
+<p>Realm choice is a birth step of its own, after race and class, because which
+realms you may study is a property of your <strong>class</strong>. That is what makes the
+combination mean something rather than merely being wide: a Paladin is offered
+Life or Death and nothing else, and a Mage is offered all seven, then the six
+it did not take.</p>
+<p>A realm already taken is not offered again. A Mage of Arcane and Arcane would
+study thirty-two spells where it should study sixty-four, which is not a choice
+anybody would make on purpose and is therefore not one you are given.</p>
+<p><strong>You begin holding the first book of every realm you study.</strong> A Mage and a
+Priest start with two, one for each slot; a Monk or a Chaos-Warrior with one;
+a Warrior or a Mindcrafter with none, having no realm to hold a book for. The
+book follows the realm you actually chose, so a Rogue who takes Death starts
+with a Necromantic Tome and not somebody else’s arcane primer. The second,
+third and fourth books of a realm are bought or found — the village bookseller
+exists for exactly that.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 22.0%" />
+<col style="width: 34.0%" />
+<col style="width: 44.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Class</p></th>
+<th class="head"><p>First realm</p></th>
+<th class="head"><p>Second realm</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Mage</p></td>
+<td><p>any of the seven</p></td>
+<td><p>any of the seven</p></td>
+</tr>
+<tr class="row-odd"><td><p>Priest</p></td>
+<td><p>Life or Death</p></td>
+<td><p>any of the other five</p></td>
+</tr>
+<tr class="row-even"><td><p>Paladin</p></td>
+<td><p>Life or Death</p></td>
+<td><p>—</p></td>
+</tr>
+<tr class="row-odd"><td><p>Rogue</p></td>
+<td><p>Arcane, Death, Sorcery or Trump</p></td>
+<td><p>—</p></td>
+</tr>
+<tr class="row-even"><td><p>Ranger</p></td>
+<td><p>Nature</p></td>
+<td><p>Arcane, Death, Sorcery, Chaos or Trump</p></td>
+</tr>
+<tr class="row-odd"><td><p>Druid</p></td>
+<td><p>Nature</p></td>
+<td><p>—</p></td>
+</tr>
+<tr class="row-even"><td><p>Necromancer</p></td>
+<td><p>Death</p></td>
+<td><p>—</p></td>
+</tr>
+<tr class="row-odd"><td><p>Blackguard</p></td>
+<td><p>Death</p></td>
+<td><p>—</p></td>
+</tr>
+<tr class="row-even"><td><p>Monk</p></td>
+<td><p>Life, Nature or Death</p></td>
+<td><p>—</p></td>
+</tr>
+<tr class="row-odd"><td><p>Chaos-Warrior</p></td>
+<td><p>Chaos</p></td>
+<td><p>—</p></td>
+</tr>
+<tr class="row-even"><td><p>Warrior-Mage</p></td>
+<td><p>Arcane</p></td>
+<td><p>any of the seven</p></td>
+</tr>
+<tr class="row-odd"><td><p>High-Mage</p></td>
+<td><p>any of the seven</p></td>
+<td><p>—</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>That is twelve of the game’s fourteen classes. The other two never reach this
+step: a Warrior studies nothing, and a Mindcrafter’s psionics are a power list
+rather than a realm — nothing to choose, nothing to find, and nothing that can
+be taken away.</p>
+<p>Two of those rows are worth reading twice. <strong>A Priest’s second realm cannot be
+Life or Death</strong> — the first slot offers the two priestly realms and the second
+offers the other five, so a Priest always ends up with one holy realm and one
+that is not. And <strong>a Ranger’s first realm is Nature and there is no choice about
+it</strong>; you are not asked, because a list of one is not a question.</p>
+<p>These entitlements are Zangband’s own, taken from the same table Zangband keeps
+them in, and the game checks itself against that table rather than against
+anybody’s idea of what a class ought to study.</p>
+</section>
+<section id="life">
+<h2>Life<a class="headerlink" href="#life" title="Link to this heading">#</a></h2>
+<p>The healing realm, and the one Zangband’s own spoiler calls “‘good’ magic”. It
+is built on cures, blessings and protection, and the handful of attacks in it
+are there for a single purpose: harming and banishing foul things. No other
+realm keeps a character alive as well, and no other realm is so uninterested in
+anything that is not evil.</p>
+<p>Four books: the <strong>Book of Common Prayer</strong> and <strong>High Mass</strong> in town, the <strong>Book
+of the Unicorn</strong> and <strong>Blessings of the Grail</strong> below.</p>
+<p>The cures run the whole length of the realm — <em>Cure Light Wounds</em>, <em>Cure Medium
+Wounds</em>, <em>Cure Critical Wounds</em>, then <em>Healing</em> at three hundred points and
+<em>Healing True</em> at two thousand — and <em>Holy Word</em> heals a thousand while it
+dispels, which makes it the one prayer that answers both halves of a bad
+situation at once. The blessings accumulate: <em>Bless</em>, then <em>Prayer</em> for four
+times as long, <em>Heroism</em>, <em>Protection from Evil</em>, and <em>Restoration</em>, which puts
+back every drained statistic and any lost experience together.</p>
+<p>The offence is pointed at evil and almost nowhere else. <em>Holy Orb</em> is a ball of
+holy force that does double damage to evil creatures, and after it comes a run
+of dispels that need no target at all — <em>Exorcism</em>, <em>Dispel Undead &amp; Demons</em>,
+<em>Dispel Evil</em>, <em>Holy Word</em> — along with <em>Banish</em>, which teleports every evil
+creature in sight away rather than killing it. At the end of the fourth book
+are <em>Divine Intervention</em>, the longest chain of effects in the realm, and <em>Holy
+Invulnerability</em>, which makes you very nearly untouchable for seven to fourteen
+turns.</p>
+<p><strong>Life is the Priest’s own realm, and the figures say so.</strong> A Priest reaches
+<em>Holy Orb</em> at level 10, where a Paladin waits until 18, a Monk 19 and a Mage
+20; and <em>Holy Invulnerability</em> at 45, where everybody else needs 50. It is also
+the one realm a High-Mage is not first into — a Priest beats it to both of
+those, by nine levels and by four. These are Zangband’s own levels and mana
+costs, class by class, unchanged.</p>
+<p><em>Holy Orb</em> goes further and pays the two priestly classes more damage for the
+same prayer: a Priest or a High-Mage adds three halves of its level to the
+3d6, and everybody else adds five quarters. Zangband tested the caster’s class
+in the spell itself, and two spells elsewhere do the same thing for the two
+mage classes — Chaos’s <em>Mana Burst</em> and Death’s <em>Orb of Entropy</em>.</p>
+<p><em>Day of the Dove</em> turns every monster in line of sight to your side. It was
+inert until pets arrived, for the same reason Nature’s <em>Animal Taming</em> was: the
+whole content of the spell is that the creatures become <em>yours</em>, and until
+recently there was no side for them to be on (<a class="reference internal" href="pets.html"><span class="doc">Pets and Allies</span></a>).</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Two of the thirty-two do nothing, and say so.</strong> <em>Bless Weapon</em> sits in
+<em>Blessings of the Grail</em> with its level and its cost, described as beyond
+what the game can express. 4.2 has a blessed-weapon property and no effect
+that confers it; chaos branding is the nearest thing the engine has and is a
+different spell wearing this one’s name. <em>Holy Vision</em> is the fourth spell
+in the game to want whole-object identification, and meets the same wall as
+Sorcery’s <em>Identify True</em>, Trump’s <em>Trump Lore</em> and Nature’s <em>Stone Tell</em>:
+4.2 replaced it with runes learned one at a time, so there is no hidden
+description left for a prayer to reveal.</p>
+<p><strong>Three more do something measurably different.</strong> Nothing here dispels
+demons by name — 4.2 dispels undead, evil, or everything — so <em>Exorcism</em> and
+<em>Dispel Undead &amp; Demons</em> hit undead by name and demons by being evil, which
+catches every other evil creature in sight along with them: wider than
+Zangband’s, not narrower. <em>Warding True</em> laid a ring of glyphs around the
+caster and now places the single glyph beneath you, the same as the lesser
+prayer does. And <em>Divine Intervention</em> does nine of the ten things
+Zangband’s did; the tenth is the angel it sent to fight for you, and this
+game has no angel among its summon types.</p>
+</div>
+</section>
+<section id="sorcery">
+<h2>Sorcery<a class="headerlink" href="#sorcery" title="Link to this heading">#</a></h2>
+<p>The meta-realm, and the first of the three new ones to arrive. Detection,
+identification, protection, escape, and every convenience a dungeon delver
+wants — and <strong>not one direct attack spell in it</strong>. That is Sorcery’s whole
+character: it makes everything else you do easier and kills nothing itself.</p>
+<p>Four books: the <strong>Beginner’s Handbook</strong>, the <strong>Master Sorcerer’s Handbook</strong>,
+<strong>Pattern Sorcery</strong> (a name this game has a better claim on than Zangband did),
+and the <strong>Grimoire of Power</strong>. The first two are sold in town; the last two are
+found below.</p>
+<p>Its best workings are the ones no other realm has. <em>Teleport Away</em> fires a beam
+that removes monsters from your path rather than killing them. <em>Telekinesis</em>
+pulls an object to your feet from anywhere you can reach — the strongest of the
+three versions in the game, lifting a pound and a half a level and needing no
+sight of what it takes, where the Chaos mutation lifts a pound a level and must
+see what it takes. <em>Recharging</em> is four times the strength of Angband’s own
+spell of that name, which is a large part of why the realm is worth studying —
+Arcane’s <em>Recharging</em> is the same spell at the same strength, twenty-one levels
+later. <em>Dimension Door</em> lets you pick the square you arrive on rather than
+taking what the dungeon gives you. And <em>Globe of Invulnerability</em> makes you very
+nearly untouchable for eight to sixteen turns.</p>
+<p><em>Charm Monster</em> turns a single creature to your side and it stays turned. It is
+the single-target twin of Life’s <em>Day of the Dove</em>, and like that prayer it was
+a different and lesser spell until pets arrived — it took a monster over for a
+while and handed it back, because there was no side for it to change to
+(<a class="reference internal" href="pets.html"><span class="doc">Pets and Allies</span></a>).</p>
+<p><strong>A Rogue and a Ranger never learn Globe of Invulnerability.</strong> Their Grimoire
+of Power holds seven workings where everyone else’s holds eight; Zangband’s
+table marks the last one unreachable for both. See <a class="reference internal" href="#books-short"><span class="std std-ref">Books that come up short</span></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Four of the thirty-two do nothing, and say so.</strong> <em>Identify True</em>, <em>Detect
+Enchantment</em>, <em>Self Knowledge</em> and <em>Explosive Rune</em> each need a mechanism
+Angband 4.2 removed or never had — whole-object identification, a
+separate is-this-magical bit, a self-knowledge readout the character sheet
+already carries, and a glyph that explodes rather than wards. They are in
+their books with their levels and costs, described as beyond what the game
+can express, rather than quietly missing: a book with a hole in it and a note
+saying so is honest, and a spell absent without explanation is not.</p>
+</div>
+</section>
+<section id="trump">
+<h2>Trump<a class="headerlink" href="#trump" title="Link to this heading">#</a></h2>
+<p>The last realm to arrive, and the one that had to wait for pets. Fifteen of its
+thirty-two spells summon a creature, and in Zangband every one of them turns on
+the same question: cast it well and the creature is <em>yours</em>, cast it badly and an
+angry group of them appears. Until monsters could take sides, all fifteen would
+have come out as the bad half — <em>Trump Cyberdemon</em> would have been sixty mana
+spent to put a hostile Cyberdemon next to you, which is not a weaker spell but
+the opposite spell. Pets closed that, and the realm went in whole.</p>
+<p>Four books: <strong>Conjurings &amp; Tricks</strong> and the <strong>Deck of Many Things</strong> in town,
+<strong>Trumps of Doom</strong> and <strong>Five Aces</strong> below.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>A Trump summon that fails simply fails here.</strong> Zangband makes the hostile
+result the price of the realm — miss the roll and the thing you called
+arrives angry. In this game only Chaos and Death punish a miscast, so a
+failed summons costs you the mana and nothing else, and every creature you
+do call is yours. That is a real softening of the realm rather than a detail
+of the translation, and it is written down here because the spoiler opens on
+the risk it removes.</p>
+</div>
+<p>What it is for is reach: a deck that goes places and fetches people. <em>Teleport</em>,
+<em>Teleport Away</em>, <em>Teleport Level</em>, <em>Word of Recall</em> and <em>Phase Door</em> are all in
+it, which makes it the realm of getting out; and the summons run from <em>Trump
+Animal</em> up through the hounds, spiders, reptiles, dragons and undead to
+<em>Trump Cyberdemon</em>. <em>Mass Trump</em> calls several at once. <em>Living Trump</em> makes
+the caster part of the deck, and <em>Trump Branding</em> puts a brand on your weapon,
+though not one you choose.</p>
+<p>It fetches more than people. <em>Trump Reach</em> pulls a distant object to you — the
+same spell as Sorcery’s <em>Telekinesis</em>, at the same pound and a half a level.
+<em>Trump Divination</em> detects everything nearby in one casting, and <em>Banish</em>
+teleports away every creature in sight rather than killing it.</p>
+<p>And it does have two attacks, which is easy to miss in a realm this busy:
+<em>Mind Blast</em> early, a bolt of psychic force that sometimes runs as a beam, and
+<em>Death Dealing</em> in the third book, which strikes every living creature in sight
+at once.</p>
+<p><strong>A Ranger loses more here than in any other realm</strong>, and a Rogue is not far
+behind. Seven of Trump’s thirty-two are unreachable for a Ranger and four for a
+Rogue, all of them in the last two books — a Ranger’s Five Aces holds four
+cards of eight. See <a class="reference internal" href="#books-short"><span class="std std-ref">Books that come up short</span></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Four of the thirty-two do nothing, and say so.</strong> <em>Reset Recall</em> would
+write the depth Word of Recall takes you to, and nothing here can. <em>Shuffle</em>
+is the deck itself — one roll read off twenty unequal outcomes, several of
+which need mechanisms this game lacks. <em>Joker Card</em> summons the groups 4.2’s
+summon table has no equivalent of. And <em>Trump Lore</em> is whole-object
+identification, the same wall as Sorcery’s <em>Identify True</em> and Nature’s
+<em>Stone Tell</em>.</p>
+<p><em>Dimension Door</em> was the fifth until recently, and should not have been. It
+lets you choose the square you arrive on, which this game can do and always
+could — Sorcery’s copy of the same spell had been doing it since that realm
+went in. Both now work.</p>
+</div>
+<p>The guard that used to keep Trump off the birth menu still covers every realm:
+<strong>if your class has no books in a realm, you are not offered it.</strong> That was not
+true before, and choosing Sorcery in the version before it shipped gave you a
+character who could never cast anything.</p>
+</section>
+<section id="chaos">
+<h2>Chaos<a class="headerlink" href="#chaos" title="Link to this heading">#</a></h2>
+<p>Sorcery’s opposite in every respect. Sorcery has no attack spell in it; Chaos is
+almost nothing else. The spoiler calls it “the very element of unmaking”, and
+what it offers instead of protection is an arsenal that runs from <em>Magic
+Missile</em> in the first book to <em>Mana Storm</em> and <em>Call the Void</em> in the last.
+<strong>Chaos has no protective spells at all</strong> — that is the realm’s own description
+of itself, and it is the thing to weigh before taking it as your only one.</p>
+<p>Four books: the <strong>Sign of Chaos</strong> and <strong>Chaos Mastery</strong> in town, <strong>Chaos
+Channels</strong> and the <strong>Armageddon Tome</strong> below.</p>
+<p>The damage is the point, and it is everywhere. Bolts of fire, chaos, mana and
+gravity; <em>Fist of Force</em>, which stuns; <em>Sonic Boom</em> and <em>Invoke Logrus</em>
+centred on you; <em>Chain Lightning</em>, which fires beams in every direction at
+once; and at the bottom of the fourth book <em>Magic Rocket</em>, <em>Mana Storm</em> at
+three hundred plus twice your level, <em>Breathe Logrus</em> — which does damage equal
+to your <em>current</em> hit points, so cast it healthy — and <em>Call the Void</em>, three
+volleys of destruction outward in every direction.</p>
+<p>It is not purely artillery. <em>Wonder</em> is a hundred-band random table that may
+clone a monster, heal it, or drop a fireball on it. <em>Polymorph Other</em> reshapes
+a creature into something else. <em>Alter Reality</em> rebuilds the level around you,
+<em>Teleport Other</em> clears a whole line of monsters from your path, and <em>Arcane
+Binding</em> recharges a wand at four times the strength of Angband’s own spell.</p>
+<p>Nothing was deferred — all thirty-two work — but several do something
+measurably different from Zangband’s, because 4.2 has no disintegration, no
+rocket and no radiation, and because a blast radius is a fixed number here
+rather than one that grows as you do. The trades are in the project’s decision
+record as DEC-53. Three are worth knowing at the table: <strong>Call the Void no
+longer punishes you for casting it beside a wall</strong>, which was the spell’s
+defining risk; <strong>Fist of Force keeps its damage and loses its ability to dig</strong>,
+since the element that did both no longer exists; and <strong>Chaos Branding gives
+fire or frost rather than a chaos brand</strong>, because 4.2 has no chaos brand to
+give.</p>
+<p><strong>And Chaos spells backfire.</strong> Fail one and you may not simply lose the mana:
+the realm produces a chaotic effect instead, and how bad it is depends on how
+deep the spell was. <em>Magic Missile</em> never backfires. <em>Call the Void</em> almost
+always does, and what you get ranges from a short teleport, through a room full
+of doors and traps, a mutation, a forgotten map and an earthquake, down to eight
+monsters landing on you and, at the very bottom, the Ancient and Foul Curse.
+This is Zangband’s own table and its own scaling — the spoiler warns that “Chaos
+spells are known to backfire easily” — and it is the price of the realm having
+no protective spells at all.</p>
+<p><em>Summon Demon</em> calls a demon of up to half again your level, and <strong>one time in
+three it serves you</strong> — the other two it does not, and says so. That is
+Zangband’s own roll, restored when pets arrived; it shipped always-hostile for
+one milestone before there was any side for a demon to be on (<a class="reference internal" href="pets.html"><span class="doc">Pets and Allies</span></a>).</p>
+<p>The <strong>Chaos-Warrior</strong> is the realm’s own class: one realm, no choice, every
+spell, from level 2. Mages, Priests and Rangers may take Chaos as one of two
+realms; a Chaos-Warrior <em>is</em> one.</p>
+<p><strong>A Ranger never reaches the realm’s last four spells</strong> — <em>Summon Demon</em>,
+<em>Mana Storm</em>, <em>Breathe Logrus</em> and <em>Call the Void</em> are all unreachable for it,
+which leaves its Armageddon Tome holding five of eight. See
+<a class="reference internal" href="#books-short"><span class="std std-ref">Books that come up short</span></a>.</p>
+<p><em>Polymorph Self</em> is here too — the same effect the Chaos mutation uses, reached
+from a second place. Chaos is the realm that twists its own caster, and that is
+the spell that does it.</p>
+</section>
+<section id="arcane">
+<h2>Arcane<a class="headerlink" href="#arcane" title="Link to this heading">#</a></h2>
+<p>The weak generalist, and the one realm where this game and Angband disagree
+outright. Detection, escape, the four temporary resistances, cures for poison
+and for light and medium wounds, <em>Stone to Mud</em>, <em>Satisfy Hunger</em>,
+<em>Recharging</em> — everything a delver wants and almost nothing that kills. Its
+whole offence is <em>Zap</em>, a weak lightning bolt; <em>Ray of Light</em>; and <em>Elemental
+Ball</em>, which throws fire, lightning, frost or acid and does not let you choose
+which.</p>
+<p>Four books: <strong>Cantrips for Beginners</strong>, <strong>Minor Arcana</strong>, <strong>Major Arcana</strong> and
+the <strong>Manual of Mastery</strong> — and <strong>all four are sold in town</strong>, for 100, 250,
+1000 and 2500 gold. That is the realm’s bargain, and it is the reason to take
+it: no other realm can be bought outright. Every other realm keeps its two best
+books in the dungeon.</p>
+<p><strong>Take it second, not first.</strong> Arcane collects the useful spells of every other
+realm, and every other realm sells them cheaper. Nineteen of its thirty-two
+appear in some realm a Mage might also be studying, and in seventeen of those
+the other realm asks a lower level and less mana — usually much less. A Mage
+reads <em>Identify</em> here at level 38 for 30 mana and in Sorcery at level 10 for 7;
+<em>Recharging</em> at 28 against Sorcery’s 7; <em>Clairvoyance</em> at 49 for a hundred mana
+against Sorcery’s 30 for forty; <em>Stone to Mud</em> at 20 against Nature’s 5. Only
+<em>Cure Poison</em> is genuinely better here. So Arcane is the realm that fills the
+gaps in another one, and a poor choice as the only realm you have — which is
+Zangband’s own advice, and it survives the port intact.</p>
+<p>Two of the thirty-two do nothing and say so. <em>Phlogiston</em> refuels a light
+source, which is a command in this game rather than a spell; and <em>Detect
+Enchantment</em> wants a single is-this-magical bit, which no longer exists now that
+an object’s properties are runes you learn one at a time.</p>
+<p>One more does something else entirely. <strong>Zangband’s Wizard Lock jammed a door shut and this one makes a
+door</strong>, because 4.2 has no jamming at all — a door is
+open, closed, locked or broken, and no spell reaches the lock. Making one along
+the line you aim serves the same purpose, and works in an empty corridor where
+the original needed a door to already be there.</p>
+<p><strong>A Ranger never learns Clairvoyance.</strong> Its Manual of Mastery holds seven
+spells where everyone else’s holds eight. That is Zangband’s own table, which
+marks the spell unreachable for that class rather than merely expensive, and it
+is not the only place it does so — see below.</p>
+</section>
+<section id="nature">
+<h2>Nature<a class="headerlink" href="#nature" title="Link to this heading">#</a></h2>
+<p>The weather at the top and the ground at the bottom, with healing, protection
+and a pair of bolts in between. <strong>It holds the only powerful healing spell
+outside Life</strong>: <em>Herbal Healing</em> mends a thousand points and cures stunning,
+bleeding and poison with it, and no realm but Life has anything of the size.
+That one spell is a large part of why a character who cannot study Life studies
+this instead.</p>
+<p>Four books: <strong>Call of the Wild</strong>, <strong>Nature Mastery</strong>, <strong>Nature’s Gifts</strong> and
+<strong>Nature’s Wrath</strong> — the last of which shares its name with the spell inside it.</p>
+<p>The protections come in two grades. <em>Resist Environment</em> covers fire, cold and
+lightning; <em>Resistance True</em> covers those three plus acid <strong>and poison</strong>, which
+is the half worth paying for — each of the four elements has a cheap spell of
+its own somewhere in the game and poison does not. <em>Stone Skin</em> hardens you for
+thirty to fifty turns, and <em>Stone Skin</em>, <em>Wall of Stone</em>, <em>Stair Building</em> and
+<em>Door Building</em> between them let you reshape the dungeon rather than fight it.</p>
+<p>The offence is weather. <em>Lightning Bolt</em> and <em>Frost Bolt</em> early, <em>Ray of
+Sunlight</em> for what cannot bear light, and then the fourth book: <em>Earthquake</em>,
+<em>Whirlwind Attack</em> — one blow into every square around you — and the three
+balls, a <em>Blizzard</em> at seventy plus your level, a <em>Lightning Storm</em> at ninety
+and a <em>Whirlpool</em> at a hundred, water being the one that batters and confuses
+as well. <em>Call Sunlight</em> floods the whole level with light and burns everything
+nearby that hates it. <em>Elemental Branding</em> puts fire or frost on your weapon,
+and does not let you pick which.</p>
+<p>At the end, <em>Nature’s Wrath</em> does three things in one casting: dispels every
+creature in sight, shakes the level apart with an earthquake, and detonates
+around you. Zangband’s third part was a disintegration ball, which this game has
+no projection for; it arrives as the walls coming down and the damage landing
+separately, which is the same event described twice rather than one effect.</p>
+<p><strong>Two of the thirty-two do nothing.</strong> <em>Stone Tell</em> would tell you everything
+about an object in a game that replaced that with runes learned one at a time,
+and <em>Protect from Corrosion</em> is an object property here rather than anything a
+spell can reach.</p>
+<p>Three more used to be inert and no longer are. <em>Animal Taming</em>, <em>Summon Animal</em>
+and <em>Animal Friendship</em> all needed a creature to be able to take your side; pets
+gave them that, and Nature is now the realm that walks into a fight with company
+(<a class="reference internal" href="pets.html"><span class="doc">Pets and Allies</span></a>).</p>
+<p>The <strong>Druid</strong> is the first class in the game to cast on borrowed figures.
+Zangband never had a Druid, so there is no row of levels and mana costs for it
+to import; it takes Zangband’s <em>Priest’s</em>, which is the only class carrying
+Nature that shares the Druid’s three magic constants. The <strong>Ranger</strong>, which used
+to borrow two of the Druid’s books, now gets the whole realm on its own figures.</p>
+</section>
+<section id="death">
+<h2>Death<a class="headerlink" href="#death" title="Link to this heading">#</a></h2>
+<p>The foulest of them, and the one that charges you in blood. Chaos punishes a
+miscast too, but Death is the realm where <strong>the spells that work</strong> cost you
+something: <em>Hellfire</em> takes fifty to a hundred hit points to cast, <em>Genocide</em>
+takes 1d4 for every creature it removes and <em>Mass Genocide</em> 1d3, and a failed
+cast anywhere in the realm draws blood on its own account. Zangband says it
+plainly — the most powerful spells “need their own blood as the focus”.</p>
+<p>Four books: <strong>Black Prayers</strong>, <strong>Black Mass</strong>, <strong>Black Channels</strong> and the
+<strong>Necronomicon</strong>.</p>
+<p>What it does is take life and give it to you. <em>Vampiric Drain</em> and <em>Vampirism
+True</em> pull hit points out of a creature and into you; <em>Death Ray</em> draws the
+life out of anything living and does nothing at all to what is already dead;
+<em>Word of Death</em> does it to every living thing in sight at once. Around that sit
+nether and darkness bolts, <em>Stinking Cloud</em>, <em>Terror</em>, <em>Horrify</em>, <em>Black
+Sleep</em>, and two brands for your weapon. <em>Berserk</em> and <em>Battle Frenzy</em> make you
+a fighter rather than a caster — the second hastes you as well — and <em>Restore
+Life</em> puts back drained experience. <em>Invoke Spirits</em> is the realm’s dice-roll: the same
+hundred-band table Chaos’s <em>Wonder</em> reads from, which may as easily summon
+undead onto you as help.</p>
+<p>At the bottom of the Necronomicon: <em>Evocation</em>, which blasts, terrifies and
+banishes everything in sight in one casting, and <em>Hellfire</em> — six hundred and
+sixty-six points that nothing resists and evil creatures take twice.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>A miscast Death spell hurts.</strong> Fail one and, on a roll against the spell’s
+depth in the realm, you take <code class="docutils literal notranslate"><span class="pre">(book</span> <span class="pre">+</span> <span class="pre">1)d6</span></code> — so the deeper the book the
+worse it is. From the second half of the realm you may lose experience with
+it, one time in six, unless you have Hold Life.</p>
+<p><strong>The Necronomicon is worse.</strong> Half of its miscasts shake the reader instead:
+fail a saving throw and you are confused, and one time in three
+hallucinating badly; make that one and fail the next and you lose a point of
+intelligence <em>and</em> a point of wisdom. It is the only spell failure in the
+game that can permanently cost a character a statistic, and it is why the
+fourth book is frightening rather than merely expensive.</p>
+</div>
+<p>Three of the thirty-two do nothing. <em>Raise the Dead</em> animates the corpses and
+skeletons actually lying on the floor near you, and 4.2 has no such object —
+there is nothing lying there to raise. Translating it as “summon undead as pets”
+would be a different spell wearing this one’s name: this one is paid for by what
+you have already killed, and that is the whole character of it. <em>Wraithform</em> needs an incorporeal player, which
+this game has no notion of. And <em>Omnicide</em> kills every creature on the level, one
+at a time, taking mana until you run out — a sweep with a running cost that the
+realm’s own <em>Mass Genocide</em> would otherwise duplicate.</p>
+<p><em>Enslave Undead</em> was on that list until pets arrived. It now does what it says,
+and binds one undead creature to you (<a class="reference internal" href="pets.html"><span class="doc">Pets and Allies</span></a>).</p>
+<p>Three more do something wider than Zangband asked, and for one reason: 4.2’s
+projections were written for a game whose player is on the other side. There is
+no dispel-the-good, so <em>Dispel Good</em> blasts everything in sight rather than
+everything that is not evil; there is no detect-the-unliving, so <em>Detect
+Unlife</em> finds every creature nearby rather than only the ones without life; and
+<em>Death Ray</em>, which in Zangband kills outright or fails, is a heavy drain here,
+still useless against the nonliving.</p>
+<p><strong>A Rogue and a Ranger each lose seven of the thirty-two here</strong> — the Rogue’s
+worst realm, and level with Trump for the Ranger. A Rogue’s Necronomicon is the
+worst book in the game:
+four rituals of eight, no <em>Hellfire</em> among them, and two of the four inert. See
+<a class="reference internal" href="#books-short"><span class="std std-ref">Books that come up short</span></a>.</p>
+<p>Both of Death’s classes cast on borrowed figures: Zangband had neither a
+Necromancer nor a Blackguard. The Necromancer takes Zangband’s Mage and the
+Blackguard its Paladin.</p>
+</section>
+<section id="who-can-choose-what">
+<h2>Who can choose what<a class="headerlink" href="#who-can-choose-what" title="Link to this heading">#</a></h2>
+<p><strong>Every class can study every realm Zangband lets it.</strong> That sounds obvious and
+was not true until recently: the entitlements were right from the start, but the
+<em>books</em> for a realm were only ever given to classes that already carried that
+kind of book, so a Mage was allowed six realms and had three. Completing it added
+forty books and three hundred and five spells (DEC-57).</p>
+<p>What it means at the table: <strong>a Mage can study Death or Life</strong>, and a <strong>Priest
+can study Arcane</strong>. That is Zangband’s Mage — a far broader class than Angband’s,
+with healing at one end and <em>Hellfire</em> at the other — and if you know Angband
+4.2, it is the biggest single change in this chapter.</p>
+<p>One oddity worth knowing, because it looks like a bug and is not. Whether you
+<em>choose</em> which spell to learn or get a random one is a property of your <strong>class</strong>,
+never of the book. So a Mage that studies Life picks its prayers, and a Priest
+reading the same book takes what it is given. Zangband does exactly this.</p>
+<p>The two classes carried over from the previous milestone are the ones the realm
+system exists for:</p>
+<ul class="simple">
+<li><p>A <strong>Warrior-Mage</strong> studies <strong>Arcane</strong> in its first slot, always, and anything
+it likes in the second. Zangband lists Arcane in both slots, so it may take it
+twice and study one realm — the table’s own answer, left as it stands.</p></li>
+<li><p>A <strong>High-Mage</strong> chooses <strong>one</strong> realm out of seven and gets no second slot,
+and is paid for it in figures: it reaches a realm’s last spells earlier and
+more cheaply than any other class, in six realms out of seven. Life is the
+exception, because Life is the Priest’s own realm and Zangband’s table says
+so.</p></li>
+</ul>
+<p>Both are entitled to Trump and both are now offered it; it was the one
+entitlement in the table that had nothing behind it, and no longer is.</p>
+<section id="books-that-come-up-short">
+<span id="books-short"></span><h3>Books that come up short<a class="headerlink" href="#books-that-come-up-short" title="Link to this heading">#</a></h3>
+<p><strong>A Rogue and a Ranger do not get all of a borrowed realm.</strong> Every realm is four
+books of eight, and for most classes that is thirty-two spells — but Zangband’s
+table marks some spells unreachable for those two rather than merely expensive,
+and a book then holds fewer than eight. Sixteen books in the game are short, and
+all sixteen belong to one of those two classes:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 16.0%" />
+<col style="width: 34.0%" />
+<col style="width: 16.0%" />
+<col style="width: 34.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Class</p></th>
+<th class="head"><p>Book</p></th>
+<th class="head"><p>Spells</p></th>
+<th class="head"><p>Realm</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Rogue</p></td>
+<td><p>Necronomicon</p></td>
+<td><p>4 of 8</p></td>
+<td><p>Death</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ranger</p></td>
+<td><p>Five Aces</p></td>
+<td><p>4 of 8</p></td>
+<td><p>Trump</p></td>
+</tr>
+<tr class="row-even"><td><p>Ranger</p></td>
+<td><p>Armageddon Tome</p></td>
+<td><p>5 of 8</p></td>
+<td><p>Chaos</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ranger</p></td>
+<td><p>Necronomicon</p></td>
+<td><p>5 of 8</p></td>
+<td><p>Death</p></td>
+</tr>
+<tr class="row-even"><td><p>Rogue</p></td>
+<td><p>Five Aces</p></td>
+<td><p>5 of 8</p></td>
+<td><p>Trump</p></td>
+</tr>
+<tr class="row-odd"><td><p>Rogue, Ranger</p></td>
+<td><p>Black Mass</p></td>
+<td><p>6 of 8</p></td>
+<td><p>Death</p></td>
+</tr>
+<tr class="row-even"><td><p>Ranger</p></td>
+<td><p>Black Channels</p></td>
+<td><p>6 of 8</p></td>
+<td><p>Death</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ranger</p></td>
+<td><p>Trumps of Doom</p></td>
+<td><p>6 of 8</p></td>
+<td><p>Trump</p></td>
+</tr>
+<tr class="row-even"><td><p>Rogue, Ranger</p></td>
+<td><p>Grimoire of Power</p></td>
+<td><p>7 of 8</p></td>
+<td><p>Sorcery</p></td>
+</tr>
+<tr class="row-odd"><td><p>Rogue</p></td>
+<td><p>Black Channels</p></td>
+<td><p>7 of 8</p></td>
+<td><p>Death</p></td>
+</tr>
+<tr class="row-even"><td><p>Rogue</p></td>
+<td><p>Trumps of Doom</p></td>
+<td><p>7 of 8</p></td>
+<td><p>Trump</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ranger</p></td>
+<td><p>Manual of Mastery</p></td>
+<td><p>7 of 8</p></td>
+<td><p>Arcane</p></td>
+</tr>
+<tr class="row-even"><td><p>Ranger</p></td>
+<td><p>Deck of Many Things</p></td>
+<td><p>7 of 8</p></td>
+<td><p>Trump</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ranger</p></td>
+<td><p>Chaos Channels</p></td>
+<td><p>7 of 8</p></td>
+<td><p>Chaos</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>A Rogue’s Necronomicon is the extreme, and worth spelling out. It holds four
+rituals of the eight — <em>Death Ray</em>, <em>Raise the Dead</em>, <em>Esoteria</em> and
+<em>Wraithform</em> — so <em>Hellfire</em>, <em>Omnicide</em>, <em>Word of Death</em> and <em>Evocation</em> are
+simply not available to a Rogue at any level. Two of the four it does get are
+among the realm’s inert spells, which leaves <strong>two working rituals in a fifty
+thousand gold book</strong>. The Ranger’s Five Aces is close behind at four cards, one
+of them inert.</p>
+<p>The fourth book of a realm is where its power lives, so this is the price those
+two classes pay for being entitled to realms they were not built for. It is
+worth knowing before you buy the book rather than after.</p>
+</section>
+</section>
+<section id="what-has-changed-and-what-has-not">
+<h2>What has changed, and what has not<a class="headerlink" href="#what-has-changed-and-what-has-not" title="Link to this heading">#</a></h2>
+<p><strong>All four of the realms Angband already had now hold Zangband’s spells</strong>:
+Life, Arcane, Nature and Death. Every realm in the game is four books of eight,
+which is Zangband’s shape throughout. This is DEC-50, taken deliberately, and it has consequences worth stating:</p>
+<ul class="simple">
+<li><p><strong>A Priest’s prayers and a Mage’s spells are different spells now</strong>, at
+different levels, in differently-named books. A Paladin gains most — Angband
+gave it three of the Priest’s books and sixteen prayers, and Zangband’s table
+gives it all thirty-two. A Ranger gains nearly as much.</p></li>
+<li><p><strong>Savefiles from before the change do not load.</strong> A book’s identity is its
+name, and every old save carries the town temple’s stock, so deleting
+<em>[Novice’s Handbook]</em> made every one of them unreadable. The game is
+pre-release and this was chosen with the numbers in hand.</p></li>
+</ul>
+<p><strong>Sorcery, Chaos and Trump took nothing away</strong>, because no class carried them
+before. Their books go on the <em>end</em> of the lists that gain them — a Mage’s four
+Arcane books are books one to four, with Sorcery’s as five to eight and Chaos’s
+as nine to twelve.</p>
+<p>That ordering is not tidiness. Your known spells are recorded by their position
+in a flat list across all of your class’s books, so appending leaves every
+position meaning what it meant, while inserting anywhere else would shift them:
+the game would load, the sheet would look reasonable, and a Priest who had
+learned Remove Fear would find they knew something else.</p>
+<p>One duplicate is visible and intended: a Mage who takes Arcane and Sorcery has
+<em>Phase Door</em> in two books, because Zangband put it in both realms and both are
+that character’s. You will only ever see the books of the realms you chose, so
+the duplicate is exactly the one Zangband showed.</p>
+<p>That is not a courtesy, it is a hazard avoided. A character’s known spells are
+stored by their position in a flat list across all of their class’s books, so
+inserting a book anywhere but the end would silently shift every spell a saved
+character knows one place along — the game would load, the sheet would look
+reasonable, and a Priest who had learned Remove Fear would find they knew
+something else instead.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="quests.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Quests</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="mutations.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Mutations</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-seven">The seven</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-them">Choosing them</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#life">Life</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#sorcery">Sorcery</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#trump">Trump</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#chaos">Chaos</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#arcane">Arcane</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#nature">Nature</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#death">Death</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#who-can-choose-what">Who can choose what</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#books-that-come-up-short">Books that come up short</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-has-changed-and-what-has-not">What has changed, and what has not</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/realms.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, ZangbandTK contributors; Angband developers past and present; Zangband developers past and present.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+  </body>
+</html>

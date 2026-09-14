@@ -1,0 +1,707 @@
+===================
+Option Descriptions
+===================
+
+Options are accessible through the ``=`` command, which provides an
+interface to the various sets of options available to the player.
+
+In the descriptions below, each option is listed as the textual summary
+which is shown on the "options" screen, plus the internal name of the
+option in brackets, followed by a textual description of the option.
+
+Various concepts are mentioned in the descriptions below, including
+:ref:`"disturb" <disturb-player>` (cancel any running, resting, or repeated
+commands, which are in progress), "flush" (forget any keypresses waiting in
+the keypress queue), "fresh" (dump any pending output to the screen), and
+"sub-windows" (see below).
+
+.. contents:: Option pages
+   :local:
+   :depth: 1
+
+User Interface Options
+======================
+
+When setting the user interface options, there are a handful of commands
+to make it easier to get to a well-known state for all of those options.
+They are:  's' to save the current selections so that they will be used
+as the starting point for future characters, 'r' to reset the current
+selections to the defaults for a new character, and 'x' to reset the
+current selections to the ZangbandTK maintainer's defaults for the user
+interface options.
+
+Rogue-like commands ``rogue_like_commands``
+  Selects the "roguelike" command set.  See :ref:`Playing the Game` for
+  some description of the command sets.  The "roguelike" command set may
+  work better for you if use a keyboard which doesn't have a numeric
+  keypad.
+
+.. _autoexplore-commands-option:
+.. index::
+   single: autoexplore; commands option
+
+Autoexplore commands ``autoexplore_commands``
+  Modifies how the commands to use staircases work: if not already at
+  the appropriate staircase, attempt to move to the nearest known
+  staircase of the appropriate kind. Adds a command, ``p``, in both
+  the original and "roguelike" command sets to move to the nearest
+  unexplored location.
+
+Use sound ``use_sound``
+  Turns on sound effects, if your system supports them.
+
+Show damage player deals to monsters ``show_damage``
+  Shows the damage that the player deals to monsters for melee and ranged 
+  combat in the messages.
+
+.. _old-target-option:
+.. index::
+   single: targeting; old target option
+
+Use old target by default ``use_old_target``
+  Forces all commands which normally ask for a "direction" to use the
+  current "target" if there is one. Use of this option can be dangerous if
+  you target locations on the ground, unless you clear them when done.
+
+Always pickup items ``pickup_always``
+  Automatically picks up items when you walk upon them, provided it is safe
+  to do so.
+
+Always pickup items matching inventory ``pickup_inven``
+  Like ``pickup_always``, but picks up an item only if it is a copy of an
+  item that you already have in your inventory.
+
+Show flavors in object descriptions ``show_flavors``
+  Display "flavors" (color or variety) in object descriptions, even for
+  objects whose type is known. This does not affect objects in stores.  
+
+Highlight target with cursor ``show_target``
+  Highlights the current targeted monster with a cursor.  Useful when 
+  combined with "use old target by default".
+
+Highlight player with cursor between turns ``highlight_player``
+  Highlights the player with a cursor.  Useful if you have trouble finding
+  the player.
+
+.. _disturb-near-option:
+.. index::
+   single: disturb; option
+
+Disturb whenever viewable monster moves ``disturb_near``
+  Disturb the player when any viewable monster moves, whenever any monster
+  becomes viewable for the first time, and also whenever any viewable
+  monster becomes no longer viewable. This option ignores the existence of
+  "telepathy" for the purpose of determining whether a monster is
+  "viewable".
+
+Show walls as solid blocks ``solid_walls``
+  Walls are solid blocks instead of # for granite and % for veins.  Veins
+  are coloured darker than granite for differentiation purposes.
+
+Show walls with shaded backgrounds ``hybrid_walls``
+  Walls appear as # and % symbols overlaid on a gray background block.  
+  This overrides ``solid_walls``.
+
+Color: Illuminate torchlight in yellow ``view_yellow_light``
+  This option causes special colors to be used for "torch-lit" grids.
+  Turning this option off will slightly improve game speed.
+
+Color: Shimmer multi-colored things ``animate_flicker``
+  Certain powerful monsters, and treasure lying on the floor, will shimmer in
+  real time, i.e. between keypresses.  With the option off they still change
+  colour, but only as game turns pass, so a shimmer becomes a slow drift.
+
+  In graphics mode this needs a tileset that can recolour a tile without
+  changing the picture on it, which means one that declares ``cycle:`` in
+  ``lib/tiles/list.txt``.  At present that is the Neon set; the four tilesets
+  inherited from Angband paint colour into their art, so nothing shimmers in
+  them and the option has no effect.
+
+Center map continuously ``center_player``
+  The map always centres on the player with this option on. With it off, it
+  is divided into 25 sections, with coordinates (0,0) to (4,4), and will
+  show one section at a time - the display will "flip" to the next section
+  when the player nears the edge.
+
+Color: Show unique monsters in purple ``purple_uniques``
+  All "unique" monsters will be shown in a light purple colour, which is
+  not used for any "normal" monsters - so you can tell at a glance that
+  they are unique. If you like the idea but don't like the colour, you can
+  edit it via the "interact with colors" option.
+
+Automatically clear -more- prompts ``auto_more``
+  The game does not wait for a keypress when it comes to a '-more-'
+  prompt, but carries on going.  
+
+Color: Player color indicates low hit points ``hp_changes_color``
+  This option makes the player ``@`` turn various shades of colour from
+  white to red, depending on percentage of HP remaining.
+
+Allow mouse clicks to move the player  ``mouse_movement``
+  Clicking on the main window will be interpreted as a move command to that
+  spot.
+
+.. _notify-recharge-option:
+
+Notify on object recharge ``notify_recharge``
+  This causes the game to print a message when any rechargeable object
+  (i.e. a rod or activatable weapon or armour item) finishes recharging. It
+  is the equivalent of inscribing '{!!}' on all such items.  
+
+Show effective speed as multiplier ``effective_speed``
+  Instead of showing absolute speed modifier (e.g. 'Slow (-2)' or 'Fast (+38)'),
+  show the effective rate at which the character is moving (e.g. 'Slow (x0.8)'
+  or 'Fast (x4.1)').
+
+
+Birth options
+=============
+
+The birth options may only be changed when creating a character or using
+the quick restart option for a dead character.  When setting the birth
+options, there are a handful of commands to make it easier to get to a
+well-known state for all of the birth options.  They are:  's' to save the
+current selections so that they will be used as the starting point for
+future characters, 'r' to reset the current selections to the defaults
+for a new character, and 'x' to reset the current selections to the
+ZangbandTK maintainer's defaults for the birth options.
+
+Generate a new, random artifact set ``birth_randarts``
+  A different set of artifacts will be created, in place of the standard
+  ones. This is intended primarily for people who have played enough to
+  know what most of the standard artifacts do and want some variety. The
+  number, findability and power of random artifacts will all match the
+  standard set - approximately.
+
+Generate connected stairs ``birth_connect_stairs``
+  With this option turned on, if you go down stairs, you start the new level
+  on an up staircase, and vice versa (if you go up stairs, you start the
+  next level on a down staircase).
+
+  With this option off, you will never start on a staircase - but other
+  staircases up and down elsewhere on the level will still be generated.
+
+Force player descent (never make up stairs) ``birth_force_descend``
+  Upwards staircases do not work.  All downward staircases, including the
+  one in town, transport the character one level below the previous maximum
+  depth.  Recalling from the dungeon works and brings the character to the
+  town.  However, recalling from town brings the character one level 
+  below the previous maximum depth.  The character cannot recall from quest
+  levels until the quest is complete, however you will be warned before
+  descending into a quest level.  Any status effects that sometimes 
+  teleports the character up and sometimes teleports them down will always
+  choose down.  When combined with the option for word of recall scrolls
+  to have no effect, this recreates the previous "ironman" option.  
+
+Word of Recall has no effect ``birth_no_recall``
+  Word of Recall scrolls have no effect.  When combined with the option
+  to force player descent, this recreates the previous "ironman" option.
+
+Restrict creation of artifacts ``birth_no_artifacts``
+  No artifacts will be created. Ever. Just *how* masochistic are you?
+
+Stack objects on the floor ``birth_stacking``
+  With this option turned on, multiple items can occupy one grid.
+
+  With this option off, items dropped on the floor will spread out instead
+  of stacking. Normal items will disappear if there is no empty grid
+  within a radius of three squares.
+
+Lose artifacts when leaving level ``birth_lose_arts``
+  Normally if you leave a level with an unidentified artifact on it you may
+  still find it later. With this option on, if you leave a level with an
+  artifact on it's gone for the rest of the game whether you knew it was
+  there or not. Note that this option has no effect on artifacts which you
+  have already identified (i.e. picked up) - these will always be
+  permanently lost if you leave a level without taking them with you.
+
+Show level feelings ``birth_feelings``
+  With this option turned on, the game will give you hints about what a new
+  level has on it.
+
+  With this option off, these hints will not be shown.
+
+Increase gold drops but disable selling ``birth_no_selling``
+  Shopkeepers will never pay you for items you sell, though they will still
+  identify unknown items for you, and will still sell you their wares. To
+  balance out income in the game, gold found in the dungeon will be
+  increased if this option is on.
+
+Start with a kit of useful gear ``birth_start_kit``
+  Start with items, a useful option for new players, or ones that wish
+  to descend immediately into the dungeon.  If turned off, the character
+  will start with additional gold with which to purchase starting gear.
+
+Monsters learn from their mistakes ``birth_ai_learn``
+  Allow monsters to learn what spell attacks you are resistant to, and to
+  use this information to choose the best attacks.  This option makes the
+  game very difficult and is not recommended.
+
+Know all runes on birth ``birth_know_runes``
+  For players who don't enjoy the "identify by use" process for wearable
+  items.  This option means all object properties are known at the outset, so
+  artifacts and ego items will be identified on walking over them.
+
+Know all flavors on birth ``birth_know_flavors``
+  For players who don't enjoy the "identify by use" process for consumable
+  items.  This option means all object flavors are known at the outset.
+
+Persistent levels (experimental) ``birth_levels_persist``
+  Each level is generated for the first time when the player enters it, and 
+  from then on when the player returns the level is as they last saw it, 
+  including monsters, items and traps.
+
+.. _damage-percent-of-dice-option:
+
+To-damage is a percentage of dice (experimental) ``birth_percent_damage``
+  Instead of bonuses to damage being just added on to damage dealt, each +1
+  adds 5% to the value of the damage dice. This option is currently not
+  very balanced.
+
+.. _cheating-options:
+
+Cheating options
+================
+
+Press ``=`` then ``x``. These are for testing the game and for looking at how it
+works from the inside — not for winning it.
+
+**Using any of them ends the character's chances of a score.** Each cheat has a
+hidden twin that is set the moment the cheat is used and is never unset, and on
+death the game says *"Score not registered for cheaters."* Turning the cheat back
+off afterwards does not undo that: the record is of having used it, not of having
+it on.
+
+ZangbandTK also says so at the time. A character who has used any of these — or
+wizard mode, or the debug commands — carries **Cheat** in red at the left of the
+status line, for as long as that character exists. It is not a punishment; it is
+so that a screenshot of a character walking about invulnerable is not mistaken
+for a bug report about hit points, which is exactly what happened once.
+
+Peek into monster creation ``cheat_hear``
+  Cheaters never win. But they can peek at monster creation.
+
+Peek into dungeon creation ``cheat_room``
+  Cheaters never win. But they can peek at room creation.
+
+Peek into something else ``cheat_xtra``
+  Cheaters never win. But they can see debugging messages.
+
+Allow player to avoid death ``cheat_live``
+   Cheaters never win. But they can cheat death.
+
+Gain a pet ``cheat_pet``
+   Asks which monster, and puts one beside you as yours. Also on the debug menu
+   as *Gain a pet* (``^A`` then ``N``).
+
+   Every route the game offers to a pet is a roll — a Trump summon, a charm
+   that has to beat a saving throw, a Chaos-Warrior's patron in a good mood — so
+   seeing what pets *do* otherwise means playing until one arrives and hoping it
+   is the kind you wanted to look at.
+
+Racial and mutation powers never fail ``cheat_powers``
+   Every racial and mutation power fires, every time. The listing shows ``0% to
+   fail`` and the roll agrees with it — both ask the same function.
+
+   This exists because some powers used to be almost untestable. A power costs
+   mana, and a character short of mana pays in hit points instead — and the
+   failure chance *also* charged 5% per point of the shortfall, so a class with
+   no spell points at all was 100% over budget on a cost-20 power and sat near
+   the 95% ceiling. A level 21 Beastman Chaos-Warrior looking at Polymorph saw
+   ``20 hp, 95% to fail``.
+
+   **That surcharge is gone** (DEC-56): a power paid for in blood is not also
+   penalised for it, because the condition charging the surcharge was the same
+   condition that made the price blood in the first place. The same character
+   now sees ``20 hp, 7% to fail``, which is what a full pool gives. Spells keep
+   their penalty, and that is not an inconsistency — a spell short of mana is
+   paid for in unconsciousness rather than blood.
+
+   So the cheat is no longer the only way to see a racial power fire. It is kept
+   because it still removes the roll entirely, which is useful when the question
+   is what a power *does* rather than whether it goes off.
+
+Take gold ``cheat_gold``
+  Asks how much and puts it in your pocket. This one is ZangbandTK's, added
+  because the :doc:`magetower <towns>` charges a fare and there was no way to
+  test whether the fares were sensible without a purse to test them with.
+
+  It is a button rather than a switch: select it, give an amount, and it turns
+  itself back off. The record that a cheat was used stays.
+
+Take hit points ``cheat_hp``
+  Asks how many and sets them there. Written into the character's hit dice
+  rather than straight into the total, so it survives levelling up and the next
+  step taken — putting it into the total alone would last until the game next
+  recalculated bonuses, which is almost immediately.
+
+  For walking through country that would otherwise kill you on the way to
+  whatever you actually meant to test.
+
+Know every place ``cheat_places``
+  Puts every town and every dungeon mouth in the world on the map at once.
+
+  The :doc:`magetower <towns>` carries you only to towns you have stood in and
+  dungeon mouths you have seen, so testing anything that happens in a particular
+  town means walking there first. With this, the magetower becomes a way of
+  getting anywhere in the world immediately.
+
+.. _debug-commands:
+
+Debug commands
+==============
+
+A second and much larger set, reached with ``^A`` — control-A. The game asks for
+confirmation the first time, and the character is marked from then on: on death
+it says *"Score not registered for wizards."*
+
+These are not options but commands. There are forty-eight of them in nine
+submenus: pick a submenu with the movement keys, then a command by its letter.
+
+They are development tools and there are no guard rails. Nothing asks whether
+you are sure.
+
+Worth knowing which of the two sets you want. The cheat options change how the
+game *behaves*; the debug commands change the *state of your game* directly.
+
+Commands marked ★ are ZangbandTK's. The rest are Angband's, and are documented
+here because they were not documented anywhere.
+
+Items
+~~~~~
+
+Making things out of nothing.
+
+.. list-table::
+   :widths: 8 32 60
+   :header-rows: 1
+
+   * - Key
+     - Command
+     - Notes
+   * - ``c``
+     - Create an object
+     - 
+   * - ``C``
+     - Create an artifact
+     - 
+   * - ``V``
+     - Create all from tval
+     - 
+   * - ``g``
+     - Acquire good
+     - 
+   * - ``v``
+     - Acquire great
+     - 
+   * - ``o``
+     - Play with item
+     - Repeatedly regenerates one item so you can see its spread of outcomes.
+
+Player
+~~~~~~
+
+Changing the character directly.
+
+.. list-table::
+   :widths: 8 32 60
+   :header-rows: 1
+
+   * - Key
+     - Command
+     - Notes
+   * - ``a``
+     - Cure everything
+     - 
+   * - ``A``
+     - Make powerful
+     - 
+   * - ``x``
+     - Increase experience
+     - 
+   * - ``h``
+     - Rerate hitpoints
+     - 
+   * - ``e``
+     - Edit player
+     - 
+   * - ``$``
+     - Gain gold ★
+     - The magetower charges a fare by distance, and there was no way to test whether the fares were sensible without a purse.
+   * - ``i``
+     - Gain hit points ★
+     - Written into the character's hit dice rather than the total, so it survives levelling and the next step taken.
+   * - ``k``
+     - Know every place ★
+     - Every town visited and every block seen, which turns the magetower into a way of getting anywhere at once.
+   * - ``N``
+     - Gain a pet ★
+     - Asks which monster and puts one beside you, already yours. ``N`` because ``p`` and ``P`` are taken elsewhere in the debug lists, which share one key namespace.
+   * - ``U``
+     - Mutations ★
+     - All ninety-six, with the character's own marked ``[*]``; select one to toggle it, Escape to leave. Chaos hands these out and the player does not choose them, so anything that touches them — Polymorph Self, the patrons, the Chaos Tower — is otherwise close to untestable on purpose. ``U`` because ``m`` and ``M`` were taken, and because ``U`` was Zangband's own key for these. To *read* what a character has, use the third page of the character sheet rather than this.
+   * - ``B``
+     - Learn all monsters ★
+     - Fills in the whole bestiary, so every monster's recall reads as though you had met and killed it. The companion to *Learn object kinds*, and what the manual's picture of the bestiary is taken through.
+   * - ``l``
+     - Learn object kinds
+     - 
+   * - ``r``
+     - Recall monster
+     - 
+   * - ``W``
+     - Erase monster recall
+     - 
+
+Teleport
+~~~~~~~~
+
+Going somewhere without walking.
+
+.. list-table::
+   :widths: 8 32 60
+   :header-rows: 1
+
+   * - Key
+     - Command
+     - Notes
+   * - ``b``
+     - To location
+     - 
+   * - ``p``
+     - Random near
+     - 
+   * - ``t``
+     - Random far
+     - 
+   * - ``j``
+     - Jump to a level
+     - No guard rails: a first-level character can jump to depth 100, and will die there.
+
+Effects
+~~~~~~~
+
+Firing off game effects by hand.
+
+.. list-table::
+   :widths: 8 32 60
+   :header-rows: 1
+
+   * - Key
+     - Command
+     - Notes
+   * - ``d``
+     - Detect all nearby
+     - 
+   * - ``u``
+     - Detect all monsters
+     - 
+   * - ``m``
+     - Map local area
+     - 
+   * - ``H``
+     - Hit all in LOS
+     - 
+   * - ``E``
+     - Perform an effect
+     - 
+   * - ``G``
+     - Graphics demo
+     - 
+
+Summon
+~~~~~~
+
+Putting monsters in front of you.
+
+.. list-table::
+   :widths: 8 32 60
+   :header-rows: 1
+
+   * - Key
+     - Command
+     - Notes
+   * - ``n``
+     - Summon specific
+     - 
+   * - ``s``
+     - Summon random
+     - 
+   * - ``y``
+     - Set allegiance ★
+     - Target a monster first, then say whether it is hostile, friendly or
+       yours. It makes a pet without doing whatever the spell that makes pets
+       does, which is what you want when the question is the AI. ``y`` because
+       ``p`` is the teleport menu's *Random near* and every debug submenu
+       shares one key namespace.
+
+Files
+~~~~~
+
+Writing things out to disk.
+
+.. list-table::
+   :widths: 8 32 60
+   :header-rows: 1
+
+   * - Key
+     - Command
+     - Notes
+   * - ``"``
+     - Create spoilers
+     - Writes the object, artifact and monster lists to files.
+   * - ``M``
+     - Write map
+     - 
+
+Statistics
+~~~~~~~~~~
+
+Generating a great many levels and counting what comes out.
+
+.. list-table::
+   :widths: 8 32 60
+   :header-rows: 1
+
+   * - Key
+     - Command
+     - Notes
+   * - ``S``
+     - Objects and monsters
+     - Generates hundreds of levels and tallies what comes out. This is where the :doc:`balance` figures came from, and it is not quick.
+   * - ``P``
+     - Pits
+     - 
+   * - ``D``
+     - Disconnected levels
+     - 
+   * - ``f``
+     - Obj/mon alternate key
+     - 
+
+Query
+~~~~~
+
+Asking the game what it thinks is where.
+
+.. list-table::
+   :widths: 8 32 60
+   :header-rows: 1
+
+   * - Key
+     - Command
+     - Notes
+   * - ``F``
+     - Feature
+     - 
+   * - ``q``
+     - Square flag
+     - 
+   * - ``_``
+     - Noise and scent
+     - 
+   * - ``L``
+     - Keystroke log
+     - 
+
+Miscellaneous
+~~~~~~~~~~~~~
+
+The rest.
+
+.. list-table::
+   :widths: 8 32 60
+   :header-rows: 1
+
+   * - Key
+     - Command
+     - Notes
+   * - ``w``
+     - Wizard light level
+     - 
+   * - ``T``
+     - Create a trap
+     - 
+   * - ``z``
+     - Banish nearby monsters
+     - 
+   * - ``>``
+     - Push objects from square
+     - 
+   * - ``X``
+     - Quit without saving
+     - Exactly that, with no confirmation.
+
+
+Window flags
+============
+
+Some platforms support "sub-windows", which are windows which can be used
+to display useful information generally available through other means. The
+best thing about these windows is that they are updated automatically
+(usually) to reflect the current state of the world. The "window options"
+can be used to specify what should be displayed in each window. The 
+possible choices should be pretty obvious.
+
+Display inven/equip
+  Display the player inventory (and sometimes the equipment).
+
+Display equip/inven
+  Display the player equipment (and sometimes the inventory).
+
+Display player (basic)
+  Display a brief description of the character, including a breakdown of
+  the current player "skills" (including attacks/shots per round).
+
+Display player (extra)
+  Display a special description of the character, including some of the
+  "flags" which pertain to a character, broken down by equipment item.
+
+Display player (compact)
+  Display a brief description of the character, including a breakdown of
+  the contributions of each equipment item to various resistances and
+  stats.
+
+Display map view
+  Display the area around the player or around the target while targeting.
+  This allows using graphical tiles in their original size.
+
+Display messages
+  Display the most recently generated "messages".
+
+Display overhead view
+  Display an overhead view of the entire dungeon level.
+
+Display monster recall
+  Display a description of the monster which has been most recently
+  attacked, targeted, or examined in some way.
+
+Display object recall
+  Display a description of the most recently selected object. Currently
+  this only affects spellbooks and prayerbooks. This window flag may be
+  usefully combined with others, such as "monster recall".
+
+Display monster list
+  Display a list of monsters you know about and their distance from you.
+
+Display status
+  Display the current status of the player, with permanent or temporary boosts,
+  resistances and status ailments (also available on the main window).
+
+Display item list
+  Display a list of items you know about and their distance from you.
+
+Left Over Information
+=====================
+
+The ``hitpoint_warn`` value, if non-zero, is the percentage of maximal
+hitpoints at which the player is warned that they may die. It is also used as
+the cut-off for using the color red to display both hitpoints and mana.
+
+The ``delay_factor`` value, if non-zero, will slow down the visual effects
+used for missile, bolt, beam, and ball attacks. The actual time delay is
+equal to ``delay_factor`` squared, in milliseconds.
+
+The ``lazymove_delay`` value, if non-zero, will allow the player to move
+diagonally by pressing the two appropriate arrow keys within the delay time.
+This may be useful particularly when using a keyboard with no numpad.

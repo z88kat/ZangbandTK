@@ -130,6 +130,9 @@ void disturb(struct player *p);
 void search(struct player *p);
 bool player_has_monster_in_view(const struct player *p);
 void player_forget_the_world(struct player *p);
+bool player_power_is_class_power(const struct player *p,
+								 const struct player_power *power);
+void player_mind_backfires(struct player *p);
 int player_power_chance(struct player *p, const struct player_power *power);
 bool player_use_power(struct player *p, struct player_power *power, int dir);
 bool player_power_aims(struct player *p, const struct player_power *power);

@@ -1,0 +1,836 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>CMake Hints &#8212; ZangbandTK</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/style.css?v=3331b61b" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=726be5cd"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'hacking/cmake';</script>
+    <link rel="canonical" href="https://zangbandtk.com/hacking/cmake.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Debug Command Descriptions" href="debug.html" />
+    <link rel="prev" title="Compiling Instructions" href="compiling.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="3.5.1-rc1-282-g551c6ec6e-dirty" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">ZangbandTK</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../features.html">
+    Features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../screenshots.html">
+    Screenshots
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../play.html">
+    Play in the browser
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../download.html">
+    Download
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../releases.html">
+    Release log
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../diary.html">
+    Development diary
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="../documentation.html">
+    Documentation
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/z88kat/ZangbandTK" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../features.html">
+    Features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../screenshots.html">
+    Screenshots
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../play.html">
+    Play in the browser
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../download.html">
+    Download
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../releases.html">
+    Release log
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../diary.html">
+    Development diary
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../documentation.html">
+    Documentation
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/z88kat/ZangbandTK" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../start.html">Getting Started</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../a-quick-demo.html">A quick demonstration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../guide.html">A Players’ Guide to ZangbandTK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../faq.html">Frequently Asked Questions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../manual.html">The Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../birth.html">Creating a Character</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../dungeon.html">Exploring the Dungeon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../attack.html">Attacking monsters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../playing.html">Playing the Game</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../command.html">Command Descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../option.html">Option Descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../customize.html">Customising the game</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../differences.html">What’s Different</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../balance.html">How Balance Differs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../characters.html">Races and Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../monsters.html">Monsters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../objects.html">Objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../wilderness.html">The Wilderness</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../towns.html">Towns and Services</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../quests.html">Quests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../realms.html">The Realms of Magic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../mutations.html">Mutations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../virtues.html">Virtues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../pets.html">Pets and Allies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../nightmare.html">Nightmare Mode</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">For Developers</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="modifying.html">Modifying ZangbandTK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="compiling.html">Compiling Instructions</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">CMake Hints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="debug.html">Debug Command Descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="how-it-works.html">How It Works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metadoc.html">Documentation on documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="borg.html">Borg</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../meta.html">Meta</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../version.html">Version Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../copying.html">Copying and licence information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../thanks.html">Credits</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../documentation.html" class="nav-link">Documentation</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">For Developers</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">CMake Hints</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="cmake-hints">
+<h1>CMake Hints<a class="headerlink" href="#cmake-hints" title="Link to this heading">#</a></h1>
+<p>To keep things simpler, <a class="reference internal" href="compiling.html"><span class="doc">Compiling Instructions</span></a> uses CMake in a standardized way:
+<code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">[options]</span> <span class="pre">-B</span> <span class="pre">build</span></code> to configure the build and
+<code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">--build</span> <span class="pre">build</span> <span class="pre">[options]</span></code> to perform the build.  Both are run in the
+top-level directory of the sources which is where CMakeLists.txt is.  Here, we
+will provide hints about ways you can use CMake to match how you want to build
+the game.</p>
+<p>CMake’s command line syntax is documented at <a class="reference external" href="https://cmake.org/cmake/help/latest/manual/cmake.1.html">cmake(1)</a>.
+CMake does have interactive interfaces which are not used here or in
+<a class="reference internal" href="compiling.html"><span class="doc">Compiling Instructions</span></a>.  If one of those is more to your liking, information about
+them are at <a class="reference external" href="https://cmake.org/cmake/help/latest/manual/ccmake.1.html">ccmake(1)</a>
+and <a class="reference external" href="https://cmake.org/cmake/help/latest/manual/cmake-gui.1.html">cmake-gui(1)</a>.
+For information about using CMake and Visual Studio, see
+<a class="reference external" href="https://learn.microsoft.com/en-us/cpp/build/cmake-projects-in-visual-studio?view=msvc-170">Microsoft’s introduction</a>.</p>
+<section id="configuring-the-build">
+<h2>Configuring the Build<a class="headerlink" href="#configuring-the-build" title="Link to this heading">#</a></h2>
+<section id="setting-the-build-and-source-directories">
+<h3>Setting the Build and Source Directories<a class="headerlink" href="#setting-the-build-and-source-directories" title="Link to this heading">#</a></h3>
+<p>Since CMake 3.13, the location of the build directories and the source
+directories can be specified with the <code class="docutils literal notranslate"><span class="pre">-B</span></code> and <code class="docutils literal notranslate"><span class="pre">-S</span></code> options when
+configuring the build: <code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">[options]</span> <span class="pre">-B</span> <span class="pre">path-to-build</span> <span class="pre">[-S</span> <span class="pre">path-to-source]</span></code>.
+In <a class="reference internal" href="compiling.html"><span class="doc">Compiling Instructions</span></a>, CMake is run where the game’s CMakeLists.txt is located
+and the build’s products are placed in the build subdirectory, so the
+configuration step looks like <code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">[options]</span> <span class="pre">-B</span> <span class="pre">build</span></code>.  If you want to
+run CMake in a different location or place the build products in a different
+location, feel free to make use the full range of what the <code class="docutils literal notranslate"><span class="pre">-B</span></code> and <code class="docutils literal notranslate"><span class="pre">-S</span></code>
+options allow.</p>
+<p>An alternate way to perform the configuration step, supported by all versions
+of CMake, is to run the configuration step in the top-level directory of where
+the build’s products will be placed and specify the path to the directory
+containing the relevant CMakeLists.txt file as the last argument:
+<code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">[options]</span> <span class="pre">path-to-source</span></code>.  So on a system that looks like Unix, these
+commands function similarly to the <code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">[options]</span> <span class="pre">-B</span> <span class="pre">build</span></code> used in
+<a class="reference internal" href="compiling.html"><span class="doc">Compiling Instructions</span></a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="n">build</span> <span class="o">&amp;&amp;</span> <span class="n">cd</span> <span class="n">build</span>
+<span class="n">cmake</span> <span class="p">[</span><span class="n">options</span><span class="p">]</span> <span class="o">..</span>
+</pre></div>
+</div>
+</section>
+<section id="choosing-the-underlying-build-tool">
+<h3>Choosing the Underlying Build Tool<a class="headerlink" href="#choosing-the-underlying-build-tool" title="Link to this heading">#</a></h3>
+<p>CMake supports a variety of native build tools:  make, ninja, ….  In
+CMake’s parlance, one selects a “generator” when configuring the build, and
+CMake uses that to set up the build directories for a native build tool.  In
+<a class="reference internal" href="compiling.html"><span class="doc">Compiling Instructions</span></a>, most examples used the default generator.  Running
+<code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">--help</span></code> will display the generators that are available and which is
+the default.</p>
+<p>One reason to choose a generator other than the default is performance.  On
+systems where the <code class="docutils literal notranslate"><span class="pre">Unix</span> <span class="pre">Makefiles</span></code> generator is the default, you might prefer
+to use the <code class="docutils literal notranslate"><span class="pre">Ninja</span></code> generator because ninja is faster than make.  Another
+reason is that the native build tool corresponding to the default generator
+is not installed but you do have access to another build tool supported by
+another generator.</p>
+<p>When configuring the build, you can specify the generator by with
+<code class="docutils literal notranslate"><span class="pre">-G</span> <span class="pre">name-of-generator</span></code>.  In <a class="reference internal" href="compiling.html"><span class="doc">Compiling Instructions</span></a>, that was used in some places
+to use the generator for ninja:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cmake</span> <span class="o">-</span><span class="n">G</span> <span class="n">Ninja</span> <span class="o">-</span><span class="n">B</span> <span class="n">build</span>
+<span class="n">cmake</span> <span class="o">--</span><span class="n">build</span> <span class="n">build</span>
+</pre></div>
+</div>
+<p>On Windows if you prefer to use Visual Studio rather than something
+like MSYS2 or Cygwin, you might install CMake and then use something like
+this from Cmd.exe’s command line to build the game and build and run the
+unit tests from the top-level directory of the game’s source files:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">call</span> <span class="s2">&quot;C:\Program Files\Microsoft Visual Studio</span><span class="se">\202</span><span class="s2">2\Enterprise\VC\Auxiliary\Build</span><span class="se">\v</span><span class="s2">cvars32.bat&quot;</span>
+<span class="n">cmake</span> <span class="o">-</span><span class="n">G</span> <span class="s2">&quot;Visual Studio 17 2022&quot;</span> <span class="o">-</span><span class="n">A</span> <span class="n">Win32</span> <span class="o">-</span><span class="n">DSUPPORT_WINDOWS_FRONTEND</span><span class="o">=</span><span class="n">ON</span> <span class="o">-</span><span class="n">DSUPPORT_BUNDLED_PNG</span><span class="o">=</span><span class="n">ON</span> <span class="o">-</span><span class="n">B</span> <span class="n">build</span>
+<span class="n">cmake</span> <span class="o">--</span><span class="n">build</span> <span class="n">build</span>
+<span class="n">cmake</span> <span class="o">--</span><span class="n">build</span> <span class="n">build</span> <span class="o">-</span><span class="n">t</span> <span class="n">allunittests</span>
+</pre></div>
+</div>
+<p>Of course, you would have to adjust the path to vcvars32.bat and, perhaps, the
+name of the generator to be compatible with the version of Visual Studio you
+have installed.</p>
+</section>
+<section id="adjusting-the-configuration-with-environment-variables">
+<h3>Adjusting the Configuration with Environment Variables<a class="headerlink" href="#adjusting-the-configuration-with-environment-variables" title="Link to this heading">#</a></h3>
+<p>CMake’s documentation on environment variables that influence how a build is
+configured is at <a class="reference external" href="https://cmake.org/cmake/help/latest/manual/cmake-env-variables.7.html#manual:cmake-env-variables(7)">cmake-env-variables(7)</a>.
+The environment variables likely to be of use when configuring the build for the
+game are <code class="docutils literal notranslate"><span class="pre">CMAKE_BUILD_TYPE</span></code>, <code class="docutils literal notranslate"><span class="pre">CMAKE_GENERATOR</span></code>, <code class="docutils literal notranslate"><span class="pre">CC</span></code> (the C compiler to
+use), <code class="docutils literal notranslate"><span class="pre">CFLAGS</span></code> (options to pass to the C compiler), <code class="docutils literal notranslate"><span class="pre">LDFLAGS</span></code> (options to
+pass when linking), <code class="docutils literal notranslate"><span class="pre">RC</span></code> (the compiler for resource files; only relevant if
+building the Windows front end), and <code class="docutils literal notranslate"><span class="pre">RCFLAGS</span></code> (options to pass when
+compiling resource files; only relevant if building the Windows front end).
+In <a class="reference internal" href="compiling.html"><span class="doc">Compiling Instructions</span></a>, the example commands do not use environment variables but
+specify everything with command line options (<code class="docutils literal notranslate"><span class="pre">-G</span> <span class="pre">name</span></code> to set the generator,
+<code class="docutils literal notranslate"><span class="pre">-DCMAKE_BUILD_TYPE=...</span></code> to set the build type, and <code class="docutils literal notranslate"><span class="pre">-DCMAKE_C_FLAGS=...</span></code>
+to set options for the C compiler).</p>
+</section>
+<section id="determining-what-variables-to-set">
+<h3>Determining What Variables To Set<a class="headerlink" href="#determining-what-variables-to-set" title="Link to this heading">#</a></h3>
+<p>Running <code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">--help-variable-list</span></code> will list CMake’s variables which have
+documentation and running <code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">--help-variable</span> <span class="pre">x</span></code> will display the
+documentation for the variable x.  Those do not provide any information about
+the variables specific to the game’s CMakeLists.txt.  For those, running
+<code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">-N</span> <span class="pre">-LH</span> <span class="pre">path-to-build</span></code> (i.e. running <code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">-N</span> <span class="pre">-LH</span>&#160; <span class="pre">.</span></code> in the build
+directory) after you have already configured a build will display a brief
+description and current setting for those variables.</p>
+</section>
+<section id="debugging-the-configuration-process">
+<h3>Debugging the Configuration Process<a class="headerlink" href="#debugging-the-configuration-process" title="Link to this heading">#</a></h3>
+<p>In some cases, CMake compiles or runs stuff during configuration to test what
+works.  When such a test fails and it is unclear from CMake’s output what
+exactly went wrong, rerunning the configuration step with <code class="docutils literal notranslate"><span class="pre">--debug-trycompile</span></code>
+in the options will leave the temporary directories CMake creates for the tests
+in place.  Then it is possible to inspect the commands that were involved the
+test and rerun them outside of CMake to better determine what went wrong.</p>
+</section>
+</section>
+<section id="performing-the-build">
+<h2>Performing the Build<a class="headerlink" href="#performing-the-build" title="Link to this heading">#</a></h2>
+<section id="using-the-native-build-tool-rather-than-cmake">
+<h3>Using the Native Build Tool Rather Than CMake<a class="headerlink" href="#using-the-native-build-tool-rather-than-cmake" title="Link to this heading">#</a></h3>
+<p>The instructions in <a class="reference internal" href="compiling.html"><span class="doc">Compiling Instructions</span></a> use <code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">--build</span> <span class="pre">path-to-build</span> <span class="pre">[options]</span></code>
+to perform the build.  You could also use native build tool directly.  For
+instance, rather than <code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">--build</span> <span class="pre">./build</span> <span class="pre">-t</span> <span class="pre">allunittests</span></code>, you could
+change directories to <code class="docutils literal notranslate"><span class="pre">./build</span></code> and run <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">allunittests</span></code> if make is the
+native build tool or run <code class="docutils literal notranslate"><span class="pre">ninja</span> <span class="pre">allunittests</span></code> if ninja is the native build
+tool.</p>
+</section>
+<section id="parallel-builds">
+<h3>Parallel Builds<a class="headerlink" href="#parallel-builds" title="Link to this heading">#</a></h3>
+<p>To speed up the build by running independent portions simultaneously, use
+<code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">--build</span> <span class="pre">path-to-build</span> <span class="pre">-j</span> <span class="pre">n</span> <span class="pre">[options]</span></code></p>
+<p>where n is the maximum number of jobs to run in parallel.  That requires CMake
+3.12 or later.  When you know the native build tools option for parallel builds,
+you can use that instead.  With GNU Make, use <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">-j</span> <span class="pre">n</span> <span class="pre">[options]</span></code>.  With
+ninja, use <code class="docutils literal notranslate"><span class="pre">ninja</span> <span class="pre">-j</span> <span class="pre">n</span> <span class="pre">[options]</span></code>.  Rather than specifying a fixed number
+for n, it can be useful to get the number of processor available on the
+machine.  For instance, on Linux use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>-j $(nproc)
+</pre></div>
+</div>
+<p>On macOS use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>-j $(sysctl -n hw.activecpu)
+</pre></div>
+</div>
+<p>On PowerShell use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>-j ${env:NUMBER_OF_PROCESSORS}
+</pre></div>
+</div>
+</section>
+<section id="useful-targets">
+<h3>Useful Targets<a class="headerlink" href="#useful-targets" title="Link to this heading">#</a></h3>
+<p>Targets that are likely to be useful with the <code class="docutils literal notranslate"><span class="pre">-t</span></code> option to
+<code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">--build</span></code> or as an argument to make or ninja:</p>
+<dl class="simple">
+<dt>all</dt><dd><p>This is the default target, used when no other targets are specified.  It
+will compile the game and, if BUILD_DOC was turned on when the build was
+configured, the user manual.  This target is common to all CMake projects.</p>
+</dd>
+<dt>alltests</dt><dd><p>Performs all the actions of the allunittests target.  If not cross-compiling
+and the test front end has been configured, builds the game, if necessary,
+and runs tests/run-test from the source directory.  This target is specific
+to the game’s CMakeLists.txt.</p>
+</dd>
+<dt>allunittests</dt><dd><p>If not cross-compiling or an emulator is available, builds, if necessary,
+all of the unit tests from src/tests in the source directory and then
+runs all of those tests.  This target is specific to the game’s
+CMakeLists.txt.</p>
+</dd>
+<dt>clean</dt><dd><p>Removes build intermediates.   Another way to do that is by running,
+<code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">--build</span> <span class="pre">path-to-build</span> <span class="pre">--clean-first</span> <span class="pre">[options]</span></code> when you also want
+to build something immediately after cleaning up the intermediates.  This
+target is common to all CMake projects.</p>
+</dd>
+<dt>coverage</dt><dd><p>Reports how well the tests performed by the <code class="docutils literal notranslate"><span class="pre">alltests</span></code> target cover the
+code.  Peforms the actions of the <code class="docutils literal notranslate"><span class="pre">resetcoverage</span></code> target to remove any
+prior coverage information.  Then performs the actions of the <code class="docutils literal notranslate"><span class="pre">alltests</span></code>
+target.  Finally, generates the coverage reports by performing the actions
+of the <code class="docutils literal notranslate"><span class="pre">reportcoverage</span></code> target.  This target is specific to the game’s
+CMakeLists.txt and is only available if SUPPORT_COVERAGE was turned on when
+the build was configured.</p>
+</dd>
+<dt>install</dt><dd><p>Builds the game, if necessary, and installs it at the location set when
+build was configured.  Useful if the build was configured with
+SHARED_INSTALL or READONLY_INSTALL turned on.  For builds configured
+with SC_INSTALL turned on (which is the default), there is an alternative
+that makes it easier to control where the game is installed:  build without
+any target specified and run
+<code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">--install</span> <span class="pre">path-to-build-directory</span> <span class="pre">--prefix</span> <span class="pre">desired-installation-location</span></code>.
+This target is common to all CMake projects.</p>
+</dd>
+<dt>OurManual</dt><dd><p>Builds the user manual.  This target is specific to the game’s
+CMakeLists.txt and is only available if BUILD_DOC was turned on when the
+build was configured.</p>
+</dd>
+<dt>print-executable-name</dt><dd><p>Writes <code class="docutils literal notranslate"><span class="pre">our-executable-name=x</span></code> to standard output where x is the file
+name (no directory information) of the game’s executable.  This target is
+specific to the game’s CMakeLists.txt.</p>
+</dd>
+<dt>print-project-name</dt><dd><p>Writes <code class="docutils literal notranslate"><span class="pre">our-project-name=x</span></code> to standard output where x is what is
+set as the project’s name by calling project() in CMakeLists.txt.  This
+target is specific to the game’s CMakeLists.txt.</p>
+</dd>
+<dt>reportcoverage</dt><dd><p>Using the current accumulated coverage data, generate a coverage report
+for each source file (each such report has a .gcov extension) and a summary,
+generated by src/gen-coverage in the source directories, across all source
+files.  That summary is written to standard output.  This target is
+specific to the game’s CMakeLists.txt and is only available if
+SUPPORT_COVERAGE was turned on when the build was configured.</p>
+</dd>
+<dt>resetcoverage</dt><dd><p>Clears any accumulated coverage data and any prior coverage report for each
+source file.  This target is specific to the game’s CMakeLists.txt and is
+only available if SUPPORT_COVERAGE was turned on when the build was
+configured.</p>
+</dd>
+<dt>run-unittest-<em>x</em></dt><dd><p>Builds, if necessary, a specific unit test and runs that test (if
+cross-compiling and an emulator is not available, running will not work).
+<em>x</em> is the name of the unit test’s source file within the source directory
+with the leading <code class="docutils literal notranslate"><span class="pre">src/tests</span></code> and trailing <code class="docutils literal notranslate"><span class="pre">.c</span></code> removed, and each <code class="docutils literal notranslate"><span class="pre">/</span></code>
+converted to a <code class="docutils literal notranslate"><span class="pre">-</span></code>.  For instance, the target <code class="docutils literal notranslate"><span class="pre">run-unittest-parse-parse</span></code>
+would build and run the tests in src/tests/parse/parse.c.  This target is
+specific to the game’s CMakeLists.txt.</p>
+</dd>
+</dl>
+</section>
+</section>
+<section id="changing-configurations">
+<h2>Changing Configurations<a class="headerlink" href="#changing-configurations" title="Link to this heading">#</a></h2>
+<p>You can continue to reuse a build directory as you make changes to the source
+code, including adding, moving, or removing files, and then rebuild.  However,
+if you want to change the configuration of the build, you will need to
+configure a new build.  That could be done in a different directory.  If you
+want to use a build directory with the same name as what you were using, you
+could use the <code class="docutils literal notranslate"><span class="pre">--fresh</span></code> option to CMake when reconfiguring (requires CMake
+3.24 or later) or remove that directory and all of its contents
+(i.e.  <code class="docutils literal notranslate"><span class="pre">rm</span> <span class="pre">-rf</span> <span class="pre">path-to-build</span></code> on Unix) and have the configuration step
+regenerate that directory.</p>
+</section>
+<section id="end-products">
+<h2>End Products<a class="headerlink" href="#end-products" title="Link to this heading">#</a></h2>
+<p>The game’s CMakeLists.txt puts the game’s executable and the lib directory it
+depends on in the subdirectory, <code class="docutils literal notranslate"><span class="pre">game</span></code>, of the build directory.  That avoids
+trouble on MSYS2 (the game’s DLLs interfere with the MinGW compiler) and
+separates the game from the other intermediates generated during the build.</p>
+<p>The compiled user’s manual for the game will be in the subdirectory,
+<code class="docutils literal notranslate"><span class="pre">manual-output/html</span></code>, of the build directory.</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="compiling.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Compiling Instructions</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="debug.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Debug Command Descriptions</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuring-the-build">Configuring the Build</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-the-build-and-source-directories">Setting the Build and Source Directories</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-the-underlying-build-tool">Choosing the Underlying Build Tool</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#adjusting-the-configuration-with-environment-variables">Adjusting the Configuration with Environment Variables</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#determining-what-variables-to-set">Determining What Variables To Set</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#debugging-the-configuration-process">Debugging the Configuration Process</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#performing-the-build">Performing the Build</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#using-the-native-build-tool-rather-than-cmake">Using the Native Build Tool Rather Than CMake</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#parallel-builds">Parallel Builds</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#useful-targets">Useful Targets</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#changing-configurations">Changing Configurations</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#end-products">End Products</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/hacking/cmake.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, ZangbandTK contributors; Angband developers past and present; Zangband developers past and present.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+  </body>
+</html>

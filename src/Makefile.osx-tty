@@ -39,13 +39,33 @@ DISPLAY_NAME = ZangbandTK
 # Nintendo binaries, so it is not what we want in a terminal on the path.
 EXE = $(OBJDIR)zangbandtk
 
-# Apple Silicon only, for the reason given in Makefile.osx (DEC-22).  11.0 is
-# the floor rather than that file's 10.9 because 11.0 is the first release
-# that ran on arm64 at all; asking for less is not honoured, it is just a
-# number clang has to raise.
+# One architecture per build, arm64 by default, for the reason given in
+# Makefile.osx (DEC-22, amended).  Intel is built by its own CI job with
+# ARCHS=x86_64 and ships as a separate tarball.
 ARCHS = arm64
-ARCHFLAGS = $(addprefix -arch ,$(ARCHS))
+
+# The architecture's mark on the released file name, derived here for the same
+# reason Makefile.osx derives it: both builds write their tarball into the same
+# directory, and sharing a name would mean the second silently replaced the
+# first.  arm64 keeps the plain name it has always had.
+ifeq ($(strip $(ARCHS)),x86_64)
+ARCHSUFFIX = -intel
+else
+ARCHSUFFIX =
+endif
+
+# 11.0 is the floor for arm64 because 11.0 is the first release that ran on
+# arm64 at all; asking for less is not honoured, it is just a number clang has
+# to raise.  That reasoning is about arm64 and nothing else, so an Intel build
+# takes Makefile.osx's 10.9 instead -- an Intel Mac too old for Big Sur can
+# still run this, and there is no cost to letting it.
+ifeq ($(strip $(ARCHS)),x86_64)
+OSXVERSFLAGS = -mmacosx-version-min=10.9
+else
 OSXVERSFLAGS = -mmacosx-version-min=11.0
+endif
+
+ARCHFLAGS = $(addprefix -arch ,$(ARCHS))
 # Makefile.osx's set, less -Wunused-macros.  main-gcu.c wraps its curses
 # include in "#define term System_term" ... "#undef term" to dodge a name
 # clash with <term.h> on AIX, and defines NCURSES_ENABLE_STDbool_H for
@@ -211,9 +231,9 @@ dist: $(EXE)
 	codesign --force --sign - $(STAGE)/zangbandtk
 	codesign --verify --strict $(STAGE)/zangbandtk
 
-	@-rm -f ../"$(PACKAGE_NAME)-osx-terminal.tar.gz"
-	(cd $(OBJDIR)dist && tar -czf - $(PACKAGE_NAME)) > ../"$(PACKAGE_NAME)-osx-terminal.tar.gz"
-	@echo "created $(PACKAGE_NAME)-osx-terminal.tar.gz"
+	@-rm -f ../"$(PACKAGE_NAME)-osx-terminal$(ARCHSUFFIX).tar.gz"
+	(cd $(OBJDIR)dist && tar -czf - $(PACKAGE_NAME)) > ../"$(PACKAGE_NAME)-osx-terminal$(ARCHSUFFIX).tar.gz"
+	@echo "created $(PACKAGE_NAME)-osx-terminal$(ARCHSUFFIX).tar.gz"
 
 
 # Allow for some introspection, matching src/Makefile and Makefile.ibm, so the
@@ -224,10 +244,16 @@ print-executable-name:
 print-package-name:
 	@echo our-package-name=$(PACKAGE_NAME)
 
+# The tarball's basename, suffix included, so a caller that has to find the file
+# afterwards asks for it rather than reassembling it and getting the Intel case
+# wrong.
+print-archive-name:
+	@echo our-archive-name=$(PACKAGE_NAME)-osx-terminal$(ARCHSUFFIX).tar.gz
+
 vars:
 	@echo LDFLAGS = $(LDFLAGS)
 	@echo CFLAGS = $(CFLAGS)
 	@echo LIBS = $(LIBS)
 	@echo EXE = $(EXE)
 
-.PHONY : all clean dist print-executable-name print-package-name vars
+.PHONY : all clean dist print-executable-name print-package-name print-archive-name vars

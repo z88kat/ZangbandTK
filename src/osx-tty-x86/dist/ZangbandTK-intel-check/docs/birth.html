@@ -1,0 +1,2554 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Creating a Character &#8212; ZangbandTK</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="_static/style.css?v=3331b61b" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=726be5cd"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'birth';</script>
+    <link rel="canonical" href="https://zangbandtk.com/birth.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Exploring the Dungeon" href="dungeon.html" />
+    <link rel="prev" title="The Manual" href="manual.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="3.5.1-rc1-282-g551c6ec6e-dirty" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class=" navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">ZangbandTK</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class=" navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="features.html">
+    Features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="screenshots.html">
+    Screenshots
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="play.html">
+    Play in the browser
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="download.html">
+    Download
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="releases.html">
+    Release log
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="diary.html">
+    Development diary
+  </a>
+</li>
+
+            <li class="nav-item dropdown">
+                <button class="btn dropdown-toggle nav-item" type="button"
+                data-bs-toggle="dropdown" aria-expanded="false"
+                aria-controls="pst-nav-more-links">
+                    More
+                </button>
+                <ul id="pst-nav-more-links" class="dropdown-menu">
+                    
+<li class=" current active">
+  <a class="nav-link dropdown-item nav-internal" href="documentation.html">
+    Documentation
+  </a>
+</li>
+
+                </ul>
+            </li>
+            
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/z88kat/ZangbandTK" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="features.html">
+    Features
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="screenshots.html">
+    Screenshots
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="play.html">
+    Play in the browser
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="download.html">
+    Download
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="releases.html">
+    Release log
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="diary.html">
+    Development diary
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="documentation.html">
+    Documentation
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/z88kat/ZangbandTK" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="start.html">Getting Started</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="a-quick-demo.html">A quick demonstration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide.html">A Players’ Guide to ZangbandTK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="faq.html">Frequently Asked Questions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="manual.html">The Manual</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Creating a Character</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dungeon.html">Exploring the Dungeon</a></li>
+<li class="toctree-l2"><a class="reference internal" href="attack.html">Attacking monsters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="playing.html">Playing the Game</a></li>
+<li class="toctree-l2"><a class="reference internal" href="command.html">Command Descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="option.html">Option Descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="customize.html">Customising the game</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="differences.html">What’s Different</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="balance.html">How Balance Differs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="characters.html">Races and Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="monsters.html">Monsters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="objects.html">Objects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wilderness.html">The Wilderness</a></li>
+<li class="toctree-l2"><a class="reference internal" href="towns.html">Towns and Services</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quests.html">Quests</a></li>
+<li class="toctree-l2"><a class="reference internal" href="realms.html">The Realms of Magic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mutations.html">Mutations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="virtues.html">Virtues</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pets.html">Pets and Allies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nightmare.html">Nightmare Mode</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="hacking/index.html">For Developers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="hacking/modifying.html">Modifying ZangbandTK</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/compiling.html">Compiling Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/cmake.html">CMake Hints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/debug.html">Debug Command Descriptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/how-it-works.html">How It Works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/metadoc.html">Documentation on documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hacking/borg.html">Borg</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="meta.html">Meta</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="version.html">Version Information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="copying.html">Copying and licence information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="thanks.html">Credits</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="documentation.html" class="nav-link">Documentation</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="manual.html" class="nav-link">The Manual</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Creating a Character</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="creating-a-character">
+<h1>Creating a Character<a class="headerlink" href="#creating-a-character" title="Link to this heading">#</a></h1>
+<p>ZangbandTK is a roleplaying game, in which you, the player, control a
+character in the world of ZangbandTK. Perhaps the most important thing you
+control is the birth of your character, in which you choose or allow to be
+chosen various attributes that will affect the future life of your
+character.</p>
+<p>At the character creation screen you will be prompted to select the
+race and class of your character. You also have the option to change the
+‘birth options’ at this time. These need to be set at the character
+creation menu and cannot be altered later in the game. They are discussed
+with the rest of the options in the “options” help file.</p>
+<section id="character-characteristics">
+<h2>Character Characteristics<a class="headerlink" href="#character-characteristics" title="Link to this heading">#</a></h2>
+<p>Each character has two primary attributes: race and class. These
+are chosen at the beginning and which will stay fixed for the entire life
+of that character. The race and class have many effects which are discussed
+in detail below.</p>
+<p>Each character has a few secondary attributes: height, weight, and
+background history. These are randomly determined according to the race of
+the character, and are only used to provide flavour to the character to
+assist in role playing.  There is an opportunity to edit background history
+during character birth.</p>
+<p>Each character also has five primary “stats”: strength, intelligence,
+wisdom, dexterity, and constitution; they modify the abilities
+of the character in a variety of ways. Every stat has a numerical value,
+ranging from a minimum of 3, up to a normal maximum of 18, and even higher,
+into the “percentile” range, represented as ‘18/01’ through ‘18/100’:
+this is the maximum that can be achieved intrinsically, for any given stat.
+These stats can be modified further by equipment, race and class bonuses up
+to a maximum of ‘18/220’.</p>
+<p>Each character also has several primary “skills”: disarming, magic devices,
+saving throws, stealth, searching ability, fighting skill, shooting skill,
+and digging skill, which are derived from the character’s race,
+class, level, stats, and current equipment. These skills have rather
+obvious effects, but will be described more completely below.</p>
+<p>Each character may have one or more “racially intrinsic skills”, based on
+the race of the character. These may include special resistances, or
+abilities such as infravision.</p>
+<p id="index-0">Each character has a number of “experience points”, which increases as the
+character defeats monsters and attempts new spells and uses new items.
+Characters also have a level, which is based on experience. The amount of
+experience required to gain a new level is dependent on the character race
+and class. Races and classes with more intrinsic benefits require more
+experience to gain levels. As the experience rises, so does the level, and
+as the level rises, certain other abilities and characteristics rise as
+well. All characters start at 0 experience and at the first level.</p>
+<p id="index-1">Each character has some gold, which can be used to buy items from the shops
+in the town. A character starts with a fixed amount of gold and some items.
+If you play with the starting kit option on (it is on by default), your
+character will have a few more useful items but less gold. A character can
+find more gold by taking it from dead monsters, finding it on the floors of
+the dungeon or by digging out veins of treasure from the walls of the dungeon.
+If you play with the no selling option off (it is on by default), you can
+sell items to the shopkeepers for gold. A shopkeeper will usually only buy
+certain classes of items, refuse to buy an item the shopkeeper believes is
+worthless and offer less gold for an item than she or he would sell it for.
+A shopkeeper also has an upper limit for the amount of gold offered for an
+item. The more generous shop-keepers will buy an item for up to 30,000 gold
+pieces, but some of the stingy ones will only pay 5,000.</p>
+<p id="index-2">Each character has an “armour class”, abbreviated to AC, representing how
+well the character can avoid damage. The armour class is affected by
+dexterity and equipment, so the concept includes both avoiding blows and
+being able to take blows without being hurt. Armour class on equipment is
+always denoted in square brackets, usually as a figure of ‘[X,+Y]’ where
+X is the intrinsic AC of the armour in question, and Y is the magical bonus
+to armour class provided by that item.</p>
+<p id="index-3">Each character has “hit points”, or hp, representing how much damage the
+character can sustain before they die. How many hit points a character has
+is determined by race, class, level and constitution, as follows: each race
+has a basic “hit dice” number - for instance, a Dwarf’s basic hit die is
+11, while a hobbit’s is 7. This is modified by class: for instance, a
+warrior gets a +9 bonus to the hit die, while a mage gets no bonus and a
+priest +2, so a dwarven warrior’s total hit die will be (11+9)=20 - meaning
+that they get between 1 and 20 hit points per level. A dwarven priest’s total
+hit die would be (11+2)=13, and that priest would get between 1 and 13 hit
+points per level. The hobbit mage would get only 1-7 hps per level. (All
+characters get the maximum at first level: thereafter it is a random roll of
+1dX where X is the hit die number, when the character goes up in level; the
+rolls are constrained so that the total hitpoints at the maximum level does
+not vary too far from the expected value.) This is further modified by
+constitution - a character with high constitution will get a flat bonus of a
+certain number of hit points per level (recalculated right back to level 1:
+if you gain an extra hit point per level, and you are 42nd level, you will
+suddenly be 42 hit points better off.)</p>
+<p id="index-4">Each character has spell points, or mana, which limits how many spells (or
+prayers) a character can cast (or pray). The maximum number of spell points
+is derived from your class, level, and the class’s spellcasting stat
+(intelligence for mages, rogues, necromancers, and blackguards, and wisdom
+for priests, paladins, druids, and rangers), and you can never have more spell
+points than the maximum.  Spell points may be regained by resting, or by
+magical means. Warriors never have any spell points. If a character gains
+enough wisdom or intelligence to get more spell points, the result is
+calculated right back to first level, just as with constitution and hit points.</p>
+<p>Lastly, each character has a base speed. Speed determines the amount of
+“energy” your character acquires in the game, and therefore how often you
+can take actions which use up energy (like moving or attacking). All
+beginning characters move at normal speed and the only way to increase
+speed is by magical means and equipment bonuses. Characters who are
+carrying too much weight will move more slowly. Extra speed is one of the
+most important boons in the game and therefore one of the rarest and most
+sought after.</p>
+</section>
+<section id="races">
+<h2>Races<a class="headerlink" href="#races" title="Link to this heading">#</a></h2>
+<p>There are twenty different races that you can choose to play in ZangbandTK —
+Angband’s eleven, and nine more brought over from Zangband. Each race has its own
+adjustments to a character’s stats and abilities. Most races also have intrinsic
+abilities.  The bonuses to statistics and the experience penalty will be
+displayed next to the races as you move to select one.</p>
+<p>Watch the experience cost in particular. Angband gives nearly every race 120 and
+treats the number as a formality; Zangband used it as the price of being
+something unusual, and those prices are kept. An Amberite costs 225 and a
+Half-Titan 255, which is to say they level at less than half a human’s pace.</p>
+<dl class="simple" id="human">
+<dt>Human</dt><dd><p>The human is the base character.  All other races are compared to them.
+Humans are average at everything and gain levels as fast as anything in the
+game – the Yeek matches them at 100 per cent and nothing beats them.  No racial adjustments or
+intrinsics occur to human characters.  Humans do not have any infravision.</p>
+</dd>
+</dl>
+<dl class="simple" id="half-elf">
+<dt>Half-Elf</dt><dd><p>Half-elves tend to be smarter and faster than a human, but not as wise or
+strong. Half-elves are slightly better at magic, disarming, saving
+throws, stealth, archery and searching, but they are not as good at
+hand-to-hand combat. Half-elves are immune to dexterity draining, and
+have weak infravision.</p>
+</dd>
+</dl>
+<dl class="simple" id="elf">
+<dt>Elf</dt><dd><p>Elves are better magicians than humans, but not as good at fighting. They
+tend to be smarter and faster than humans, though not as wise or strong.
+Elves are better at searching, disarming, perception, stealth, archery
+and magic, but they are not as good at hand-to-hand combat. They are
+resistant to attacks involving bright light, are immune to dexterity
+draining, and have fair infravision.</p>
+</dd>
+</dl>
+<dl id="hobbit">
+<dt>Hobbit</dt><dd><p>Hobbits, or Halflings, are very good at shooting, throwing, and have good
+saving throws. They also are very good at searching, disarming,
+perception, and stealth; so they make excellent rogues, but prefer to
+be called burglars. They will be much weaker than humans, and not good at
+melee fighting. Halflings have fair infravision. They have a strong hold
+on their life force, and are thus resistant to life draining. Hobbits are
+very partial to mushrooms and can identify them when found.</p>
+<p>From level 15 a hobbit can <strong>cook some food</strong>, which puts a ration on the
+floor at its feet. A hobbit need never starve, and can feed a party.</p>
+</dd>
+</dl>
+<dl id="gnome">
+<dt>Gnome</dt><dd><p>Gnomes are smaller than dwarves but larger than halflings. They, like the
+halflings, live in the earth in burrow-like homes. Gnomes make excellent
+mages, and have very good saving throws. They are good at searching,
+disarming, perception, and stealth. They have lower strength than humans
+so they are not very good at fighting with hand weapons. Gnomes have good
+infravision.  Gnomes are intrinsically protected against paralysis.  Gnomes
+are excellent at using wands and staves and can identify them when found.</p>
+<p>From level 5 a gnome can <strong>blink</strong>, a short hop that lengthens as the gnome
+does — eleven squares at the start and sixty by the end.</p>
+</dd>
+</dl>
+<dl id="dwarf">
+<dt>Dwarf</dt><dd><p>Dwarves are the headstrong miners and fighters of legend. Since dungeons
+are the natural home of a dwarf, they are excellent choices for a warrior
+or priest - or indeed, that combination of the two, the paladin. Dwarves
+tend to be stronger and tougher but slower and less intelligent than
+humans. Because they are so headstrong and are somewhat wise, they resist
+spells which are cast on them. Dwarves also have excellent infravision.
+They can never be blinded. Dwarves are excellent at digging, and can
+sense nearby buried treasure. They have one big drawback, though. Dwarves
+are loudmouthed and proud, singing in loud voices, arguing with
+themselves for no good reason, screaming out challenges at imagined foes.
+In other words, dwarves have a miserable stealth.</p>
+<p>From level 5 a dwarf can <strong>examine its surroundings</strong>, finding the traps,
+doors and stairs nearby — the earliest way any character has of seeing a
+floor before walking it.</p>
+</dd>
+</dl>
+<dl id="half-orc">
+<dt>Half-Orc</dt><dd><p>Half-Orcs make excellent warriors and decent priests, but are terrible at
+magic. They are as bad as dwarves at stealth, and horrible at searching,
+disarming, and perception. Half-Orcs are, let’s face it, ugly. Half-Orcs do
+make good warriors and rogues, for the simple reason that Half-Orcs tend to
+have great constitution and lots of hit points. Because they prefer to live
+underground rather than on the surface, half-orcs resist darkness attacks.
+They have fair infravision.</p>
+<p>From level 3 a half-orc can <strong>play tough</strong>, shrugging off the fear it is
+feeling — the earliest racial power in the game, and the only one any
+character has before level 4.</p>
+</dd>
+</dl>
+<dl id="half-troll">
+<dt>Half-Troll</dt><dd><p>Half-Trolls are incredibly strong, and have more hit points than any
+other character race. They are also very stupid and slow. They will make
+great warriors and iffy priests. They are bad at searching, disarming,
+perception, and stealth. They are so ugly that a Half-Orc grimaces in
+their presence. Half-trolls always have their strength sustained, and
+they regenerate quickly like other trolls. Unfortunately, this
+regeneration also requires them to eat more food than other races. They
+have fair infravision.</p>
+<p>From level 10 a half-troll can <strong>work itself into a frenzy</strong> — thirty hit
+points back if it is not already raging, its fear gone, and berserk for
+ten turns plus a roll against its level. The same power a Barbarian has,
+two levels later and two points dearer.</p>
+</dd>
+</dl>
+<dl class="simple" id="dunadan">
+<dt>Dunadan</dt><dd><p>Dunedain are a race of hardy men from the West. This elder race surpasses
+human abilities in every field, especially constitution. Their hardiness
+ensures that their constitution cannot be reduced. They have no infravision.</p>
+</dd>
+</dl>
+<dl class="simple" id="high-elf">
+<dt>High-Elf</dt><dd><p>High-Elves are descended from those among the Elves who heard and
+answered the call from the Valar at the very beginning of time, before
+the sun and moon were made, and lived in the Blessed Realm for many
+thousands of years before returning to mortal lands. Because of this,
+they are far superior in terms of abilities when compared to their lesser
+Elven kindred. They can also see into the invisible world of ghosts and
+wraiths. However, they find new experience harder to come by than other
+races. Like normal Elves, they resist attacks involving bright light.
+They have good infravision and can even see cold-blooded invisible
+creatures.</p>
+</dd>
+</dl>
+<dl id="kobold">
+<dt>Kobold</dt><dd><p>Kobolds are a race of small dog-headed humanoids that dwell underground.
+They have excellent infravision, and are intrinsically resistant to
+poisons of all kinds. They have a good dexterity and constitution.
+However, they are weaker than humans, and also not noted for great
+intelligence. And while their constitution makes them tough, it still
+cannot prevent the fact that they are not the biggest of creatures, and
+have few hit points.</p>
+<p>From level 12 a kobold can <strong>throw a dart of poison</strong>, for damage equal to
+its character level. Its own poison resistance is why it can handle them.</p>
+</dd>
+</dl>
+<p>The races below are Zangband’s, and are new to ZangbandTK.</p>
+<p>Several of them <strong>grow into what they are</strong> rather than arriving finished. Where
+a description gives a level — “resists fire from 5”, “reads minds at 30” — the
+property is simply absent before it and permanent after. Angband has almost
+nothing of this; in Zangband it is how half the races are shaped, and it is
+worth reading as part of the race rather than as a footnote, because it changes
+which levels are dangerous for you.</p>
+<dl class="simple" id="amberite">
+<dt>Amberite</dt><dd><p>Of Amber’s own blood, and it shows: an Amberite is better than a human at
+very nearly everything, heals unnaturally fast, and cannot have its
+constitution drained. All of which is paid for at the counter — an Amberite
+costs 225 experience for every level, the third dearest thing you can be.</p>
+</dd>
+</dl>
+<dl class="simple" id="beastman">
+<dt>Beastman</dt><dd><p>Chaos-touched and born wrong. Strong and hardy, dull and clumsy, and
+resistant to sound and confusion because it is already used to both. It is
+also the only race that mutates without being made to: one mutation at birth
+and a one-in-five chance at every level after. See <a class="reference internal" href="mutations.html"><span class="doc">Mutations</span></a>.</p>
+</dd>
+</dl>
+<dl id="yeek">
+<dt>Yeek</dt><dd><p>Feeble, cowardly, and aware of it. Weak, fragile and poor in a fight.</p>
+<p>It is resistant to acid from birth and <strong>immune to it from level 20</strong>, which
+is the one thing a Yeek is unambiguously good at — nothing corrodes it, and
+no acid attack in the game will touch it once it gets there. Beyond that its
+only kindness is the price: a Yeek levels at the same rate as a human, the
+cheapest race in the game alongside Human itself.</p>
+</dd>
+</dl>
+<dl id="draconian">
+<dt>Draconian</dt><dd><p>Winged, and descended from something that mattered. Strong, hardy, quick and
+clever, and it glides rather than falls from the moment it is born.</p>
+<p>Everything else arrives with age, one scale at a time: fire at level 5, cold
+at 10, acid at 15, lightning at 20, and poison at 35. A first-level Draconian
+is therefore a well-built creature with no protection at all, and a
+thirty-fifth-level one resists nearly everything the dungeon throws. It is the
+slowest-ripening race in the game, and at 250 experience for every level it is
+also the second dearest.</p>
+<p>It breathes from level 15, for <strong>twice your character level</strong> in damage —
+fire two times in three and cold the third, which is where every Draconian
+breath starts in Zangband. Until 3.118.3 it was fire only, and for
+three-quarters of the damage.</p>
+<p>One thing is still not built. In Zangband, with a chance equal to your
+character level in a hundred, the breath instead becomes something belonging
+to your <em>class</em> — shards or raw force for a Warrior, mana or disenchantment
+for a Mage, hellfire or holy fire for a Priest, chaos or confusion for a
+Chaos-Warrior, sound or confusion for a Monk, mental energy for a
+Mindcrafter, darkness or poison for a Rogue (<cite>racial.c:380</cite>). A racial power
+in this game has no way to ask which class is holding it, so that is a
+mechanism to design rather than a number to copy.</p>
+</dd>
+</dl>
+<dl id="mindflayer">
+<dt>Mindflayer</dt><dd><p>All mind and no body: brilliant and wise, physically wretched, and with
+excellent infravision. Its intelligence and wisdom cannot be drained — those
+two it protects from birth, because they are the only things it has.</p>
+<p>The rest of the mind opens later. It sees what is invisible from level 15, and
+from 30 it reads the thoughts of everything on the level whether it can see
+them or not. Zangband granted it no elemental resistance whatsoever, and that
+is deliberate rather than an oversight: its entire identity is psionic. It
+blasts minds from level 15, and a Mindflayer Mindcrafter is the pairing the
+race was drawn for.</p>
+</dd>
+</dl>
+<dl id="vampire">
+<dt>Vampire</dt><dd><p>A bargain rather than a gift, and the one race whose drawbacks you have to
+play around rather than simply survive. Strong and clever, it holds its life
+against draining, resists poison, cold and nether, is <em>immune</em> to darkness,
+and carries a faint light of its own — it can see one square without a torch,
+which no other race can. It sees 50 feet in the dark, as far as anything does.</p>
+<p>What it pays:</p>
+<ul>
+<li><p><strong>The sun burns it.</strong> Anywhere on the surface in daylight — town streets
+and open wilderness alike, since dawn lights the whole of it — you take a
+point of damage every turn and cannot heal at all while it lasts. At night,
+underground, or on a grid the light does not reach, you are fine.</p>
+<p>You are given the answer to this in your pack. A Vampire starts with two to
+five <strong>Scrolls of Darkness</strong> in place of the torches everyone else carries,
+and reading one puts out the ground around you — daylight included, which
+is a thing only a character the light hurts can do. The darkness is
+shelter: stand in it and the burning stops. Being immune to darkness, you
+are the one character who loses nothing by making some.</p>
+<p>So a Vampire travels by night, goes to ground by day, and spends a scroll
+when it is caught between the two.</p>
+</li>
+<li><p><strong>Food barely works.</strong> A ration feeds a Vampire a tenth of what it feeds
+anyone else. You are not meant to live on it; you are meant to drink blood,
+which is the racial power it gets at level 5. It
+strikes a monster for your character level in nether damage and heals you
+for half that level.</p></li>
+<li><p><strong>Light hurts it</strong> in the ordinary way as well: light-based attacks land
+harder on a Vampire than on anything else.</p></li>
+</ul>
+<p>Because of the sun, a Vampire <strong>begins the game just after midnight</strong> rather
+than at dawn — roughly two and a half thousand moves of darkness to reach a
+shop and a staircase before the problem starts. And because food is nearly
+useless to it, it carries scrolls of Remove Hunger rather than rations: those
+work normally, being nothing to do with eating.</p>
+</dd>
+</dl>
+<dl id="golem">
+<dt>Golem</dt><dd><p>Not alive, and built rather than born. Enormously strong and tough, extremely
+stupid, immune to poison, never held or paralysed, sees the invisible — and is
+hurt by cold.</p>
+<p>Its real advantage is that it <em>is</em> armour. A Golem has twenty points of armour
+class wearing nothing at all, and gains another point every fifth level, so a
+Golem at 50 is thirty points ahead of any other race before it puts on a
+single item. Nothing else in the game does this, and it is most of the reason
+to be one.</p>
+<p>Food is nearly useless to it — a twentieth of the good it does anyone else —
+but it digests so slowly that it rarely needs any, and it starts with scrolls
+of Remove Hunger instead of rations for when it does. From level 35 it holds its
+life against draining. A blunt instrument that costs 200 to swing.</p>
+</dd>
+</dl>
+<dl id="sprite">
+<dt>Sprite</dt><dd><p>Tiny, quick-witted and airborne. Feeble in a fight, excellent at everything
+requiring fingers or attention, resistant to light, and it falls slowly. It
+throws sleeping dust from level 12.</p>
+<p>And it is <strong>the only race that gets faster as it grows</strong>: a point of speed at
+level 10 and another every tenth level after, so a Sprite at 50 moves five
+points quicker than anything else in the game before it wears a single item.
+Nothing else does this, and at 175 experience a level it is most of what you
+are paying for.</p>
+</dd>
+</dl>
+<dl class="simple" id="half-titan">
+<dt>Half-Titan</dt><dd><p>The most expensive thing you can be born as, at 255. Vastly strong, tough,
+clumsy, and resistant to chaos — which, given what it is descended from, is
+less a resistance than a family trait.</p>
+</dd>
+</dl>
+<dl class="simple" id="barbarian">
+<dt>Barbarian</dt><dd><p>Strong, hardy, and afraid of nothing — it resists fear outright, from birth,
+which no other race does. Poor with devices, indifferent at stealth, and
+cheap at 120. From level 8 it can work itself into a frenzy: thirty hit
+points back, fear cleared, and a berserk rage for ten turns and more.</p>
+</dd>
+</dl>
+<dl class="simple" id="klackon">
+<dt>Klackon</dt><dd><p>An insect that works. Strong, hardy, diligent, resistant to acid and
+immune to confusion, and it <strong>gets faster as it grows</strong> — a point of speed
+at level 10 and another every tenth after, the same as a Sprite. Excellent
+at disarming. It spits acid from level 9, a bolt that becomes a ball at 25.</p>
+</dd>
+</dl>
+<dl class="simple" id="nibelung">
+<dt>Nibelung</dt><dd><p>A dwarf of the deep mines, and the <strong>only race in the game that resists
+disenchantment from birth</strong> — which matters more than it sounds, because
+nothing else protects your equipment that early. Wise, patient, resistant
+to darkness, and it sees fifty feet in the dark. From level 10 it examines
+its surroundings: traps, doors and stairs at once.</p>
+</dd>
+</dl>
+<dl class="simple" id="imp">
+<dt>Imp</dt><dd><p>A minor demon, and the cheapest thing worth being at 110. Feeble in mind
+and body alike, though quick and hardy enough, resistant to fire from
+birth, and it sees the
+invisible from level 10. It throws fire from level 9 — a bolt, becoming a
+ball at 30.</p>
+</dd>
+</dl>
+<dl id="skeleton">
+<dt>Skeleton</dt><dd><p>Bones, animated. It sees the invisible, holds its life against draining, is
+immune to poison and resists shards — and acid eats it. Cold from level 10.</p>
+<p><strong>It cannot eat, and it digests at the ordinary rate</strong>, which is the worst
+combination of the four undead: it gets hungry like anyone else and food is
+no use to it. So it starts with two to five scrolls of Remove Hunger instead
+of rations, and will be buying more. From level 30 it can recover lost
+experience, which no other race can do for itself.</p>
+<p>And <strong>it does not bleed</strong>. Nothing that cuts anyone else — a shard breath, an
+ice storm, a blade, the strain of forcing a spell you cannot afford — leaves
+a wound on it. A Golem and a Spectre are the same; a Zombie becomes so at
+level 12, being still fresh enough to leak before that.</p>
+</dd>
+</dl>
+<dl id="zombie">
+<dt>Zombie</dt><dd><p>Enormously strong and tough and very nearly mindless — a six-point penalty
+to both intelligence and wisdom, the heaviest in the game — with thirteen hit
+dice, the second most. Sees the invisible, holds its life, immune to poison,
+resists nether, and fire is its undoing. Cold from level 5, the earliest of
+the four.</p>
+<p>It cannot eat but digests slowly, so the hunger scrolls it starts with go
+further than a Skeleton’s. From level 30 it too can recover lost experience.</p>
+</dd>
+</dl>
+<dl id="spectre">
+<dt>Spectre</dt><dd><p>Barely there. Feeble and frail — seven hit dice and five points of strength
+gone — and in exchange the best stealth of any race in the game, a saving throw
+matched only by a High-Elf and a way with devices matched only by a
+Mindflayer, telepathy from level 35, and 180 experience a level to pay for
+it. Immune to poison, resists cold and nether, holds its life,
+sees the invisible, and lightning tears it apart.</p>
+<p>It howls from level 4 — the earliest attacking power any race has — and
+terrifies what it is aimed at.</p>
+<p><strong>And it walks through walls.</strong> Granite, veins, secret doors and mountain
+ranges all give way; only permanent wall and the edge of the world hold it.
+Stepping into rock takes no longer than stepping anywhere else.</p>
+<p><strong>It costs blood, though, and you should know how much before you choose
+one.</strong> Every turn you spend inside rock takes a hit point, and more the
+deeper you are — one on the surface and at the top of the dungeon, six at
+two thousand five hundred feet — and you cannot heal at all while you are
+in there. Cutting a corner is nothing. Crossing a vault wall is nothing.
+Tunnelling any distance will empty you.</p>
+<p>What it will not do is kill you. The damage stops when you have nothing left
+to give rather than carrying on through, so a Spectre can always come back
+out of the rock it walked into. It will come out with nothing, though, into
+whatever is waiting — and that is usually what kills a Spectre, rather than
+the rock.</p>
+<p><strong>Mountains are walls here, and they charge like walls.</strong> A range is many
+blocks across and a young Spectre has sixteen hit points, so you will reach
+the far side empty. Going round is often the better idea, and going through
+is the thing you can do that nothing else can — pick your moment.</p>
+<p>And inside rock you see the eight squares around you and nothing else, which
+is its own kind of dangerous: you can be most of the way through a mountain
+with no idea what is waiting on the far side.</p>
+</dd>
+</dl>
+<dl id="ghoul">
+<dt>Ghoul</dt><dd><p>A corpse-eater, and the one race whose <strong>bare hands paralyse</strong>: fight
+unarmed and what you hit falls asleep, which is the whole reason to be one.
+Immune to poison, resists cold, holds its life, and fire hurts it. Darkness from
+level 10, nether from 20.</p>
+<p>It senses living creatures from level 30. Zangband gave it a second power —
+eating corpses for nutrition — which has nothing to work on here, because
+this game has no corpses to eat.</p>
+</dd>
+</dl>
+<section id="racial-powers">
+<span id="id1"></span><h3>Racial powers<a class="headerlink" href="#racial-powers" title="Link to this heading">#</a></h3>
+<p>Twenty-two of these twenty-eight races can do something no amount of study will
+teach, and press <code class="docutils literal notranslate"><span class="pre">N</span></code> to do it. The Amberite can do two things, which is the
+point of being an Amberite; the Beastman can do nothing, because in Zangband its
+whole character was mutation happening <em>to</em> it rather than anything it chose.</p>
+<p>The six races Angband and Zangband share have theirs too, which is easy to miss
+if you have played Angband: a Dwarf, Hobbit, Gnome, Half-Orc, Half-Troll and
+Kobold are all ordinary in Angband and are not here. Only Human, Half-Elf, Elf,
+Dunadan, High-Elf and Beastman have nothing to press.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Race</p></th>
+<th class="head"><p>Power</p></th>
+<th class="head"><p>Level</p></th>
+<th class="head"><p>Mana</p></th>
+<th class="head"><p>Stat</p></th>
+<th class="head"><p>Failure</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Half-Orc</p></td>
+<td><p>play tough</p></td>
+<td><p>3</p></td>
+<td><p>5</p></td>
+<td><p>WIS</p></td>
+<td><p>8%</p></td>
+</tr>
+<tr class="row-odd"><td><p>Spectre</p></td>
+<td><p>howl to terrify your enemies</p></td>
+<td><p>4</p></td>
+<td><p>6</p></td>
+<td><p>INT</p></td>
+<td><p>3%</p></td>
+</tr>
+<tr class="row-even"><td><p>Dwarf</p></td>
+<td><p>examine your surroundings</p></td>
+<td><p>5</p></td>
+<td><p>5</p></td>
+<td><p>WIS</p></td>
+<td><p>12%</p></td>
+</tr>
+<tr class="row-odd"><td><p>Gnome</p></td>
+<td><p>blink</p></td>
+<td><p>5</p></td>
+<td><p>10</p></td>
+<td><p>INT</p></td>
+<td><p>12%</p></td>
+</tr>
+<tr class="row-even"><td><p>Vampire</p></td>
+<td><p>drink blood</p></td>
+<td><p>5</p></td>
+<td><p>10</p></td>
+<td><p>CON</p></td>
+<td><p>9%</p></td>
+</tr>
+<tr class="row-odd"><td><p>Barbarian</p></td>
+<td><p>work yourself into a frenzy</p></td>
+<td><p>8</p></td>
+<td><p>10</p></td>
+<td><p>WIS</p></td>
+<td><p>9%</p></td>
+</tr>
+<tr class="row-even"><td><p>Klackon</p></td>
+<td><p>spit acid</p></td>
+<td><p>9</p></td>
+<td><p>9</p></td>
+<td><p>DEX</p></td>
+<td><p>14%</p></td>
+</tr>
+<tr class="row-odd"><td><p>Imp</p></td>
+<td><p>throw fire</p></td>
+<td><p>9</p></td>
+<td><p>15</p></td>
+<td><p>WIS</p></td>
+<td><p>15%</p></td>
+</tr>
+<tr class="row-even"><td><p>Half-Troll</p></td>
+<td><p>work yourself into a frenzy</p></td>
+<td><p>10</p></td>
+<td><p>12</p></td>
+<td><p>WIS</p></td>
+<td><p>9%</p></td>
+</tr>
+<tr class="row-odd"><td><p>Nibelung</p></td>
+<td><p>examine your surroundings</p></td>
+<td><p>10</p></td>
+<td><p>5</p></td>
+<td><p>WIS</p></td>
+<td><p>10%</p></td>
+</tr>
+<tr class="row-even"><td><p>Kobold</p></td>
+<td><p>throw a dart of poison</p></td>
+<td><p>12</p></td>
+<td><p>8</p></td>
+<td><p>DEX</p></td>
+<td><p>14%</p></td>
+</tr>
+<tr class="row-odd"><td><p>Sprite</p></td>
+<td><p>throw sleeping dust</p></td>
+<td><p>12</p></td>
+<td><p>12</p></td>
+<td><p>INT</p></td>
+<td><p>15%</p></td>
+</tr>
+<tr class="row-even"><td><p>Hobbit</p></td>
+<td><p>cook some food</p></td>
+<td><p>15</p></td>
+<td><p>10</p></td>
+<td><p>INT</p></td>
+<td><p>10%</p></td>
+</tr>
+<tr class="row-odd"><td><p>Yeek</p></td>
+<td><p>scream</p></td>
+<td><p>15</p></td>
+<td><p>15</p></td>
+<td><p>WIS</p></td>
+<td><p>10%</p></td>
+</tr>
+<tr class="row-even"><td><p>Draconian</p></td>
+<td><p>breathe like a dragon</p></td>
+<td><p>15</p></td>
+<td><p>25</p></td>
+<td><p>CON</p></td>
+<td><p>12%</p></td>
+</tr>
+<tr class="row-odd"><td><p>Mindflayer</p></td>
+<td><p>blast a mind</p></td>
+<td><p>15</p></td>
+<td><p>12</p></td>
+<td><p>INT</p></td>
+<td><p>14%</p></td>
+</tr>
+<tr class="row-even"><td><p>Golem</p></td>
+<td><p>turn to stone</p></td>
+<td><p>20</p></td>
+<td><p>15</p></td>
+<td><p>CON</p></td>
+<td><p>8%</p></td>
+</tr>
+<tr class="row-odd"><td><p>Amberite</p></td>
+<td><p>shift into shadow</p></td>
+<td><p>30</p></td>
+<td><p>50</p></td>
+<td><p>INT</p></td>
+<td><p>50%</p></td>
+</tr>
+<tr class="row-even"><td><p>Skeleton</p></td>
+<td><p>recover your lost life force</p></td>
+<td><p>30</p></td>
+<td><p>30</p></td>
+<td><p>WIS</p></td>
+<td><p>18%</p></td>
+</tr>
+<tr class="row-odd"><td><p>Zombie</p></td>
+<td><p>recover your lost life force</p></td>
+<td><p>30</p></td>
+<td><p>30</p></td>
+<td><p>WIS</p></td>
+<td><p>18%</p></td>
+</tr>
+<tr class="row-even"><td><p>Ghoul</p></td>
+<td><p>sense living creatures</p></td>
+<td><p>30</p></td>
+<td><p>10</p></td>
+<td><p>WIS</p></td>
+<td><p>12%</p></td>
+</tr>
+<tr class="row-odd"><td><p>Half-Titan</p></td>
+<td><p>examine your foes</p></td>
+<td><p>35</p></td>
+<td><p>20</p></td>
+<td><p>STR</p></td>
+<td><p>12%</p></td>
+</tr>
+<tr class="row-even"><td><p>Amberite</p></td>
+<td><p>walk the Pattern</p></td>
+<td><p>40</p></td>
+<td><p>75</p></td>
+<td><p>WIS</p></td>
+<td><p>50%</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The level is when the power arrives; before it, the character simply cannot.</p>
+<p>The cost comes out of spell points where there are any — and where there are
+not, it comes out of you. The Warrior is the one class with no mana at all, and
+for it a racial power is always paid for in hit points instead, at the same
+price. So can anyone else who has run their pool down far enough. That is
+Zangband’s rule and it is what keeps the powers worth having whatever you chose
+to be; the menu tells you which pool a power is about to take from before you
+commit to it. The amount is not fixed either: it is somewhere between half the
+listed cost and all of it.</p>
+<p>The failure figure is the chance at exactly the level the power arrives, with
+an average stat. Both of the things you can do about it help: every level past
+that one takes three points off, and the stat it leans on takes off more — off
+the same table that decides how reliably a spell is cast, so a power behaves
+like a spell in the ways you would expect it to. Reaching past what is left in
+the pool makes it markedly worse, and being stunned worse still. However short
+the stat, the chance never gets worse than 95 per cent.</p>
+<p>Failing still costs the price — being told you are too junior, too confused, or
+too spent to try at all does not.</p>
+<p>The two Amberite powers are the two halves of the family. <em>Shifting into
+shadow</em> moves you a long way and leaves you briefly blind, arriving where you
+did not quite intend, which is what shadow-walking is. <em>Walking the Pattern</em>
+is the older and harder thing: at level 40 and 75 mana it undoes poison,
+blindness, confusion, stunning, cuts, fear and hallucination, restores every
+drained stat, and gives back lost experience. It is expensive because it is
+the Pattern.</p>
+</section>
+<section id="races-we-decided-against">
+<h3>Races we decided against<a class="headerlink" href="#races-we-decided-against" title="Link to this heading">#</a></h3>
+<p>Zangband has twenty-one races Angband does not. Nine are above. Four have been
+looked at and turned down, and it is worth saying why, because “it exists in the
+original” is not on its own a reason to carry something:</p>
+<p><strong>Half-Ogre, Half-Giant and Cyclops.</strong> All three are Half-Troll — which this game
+already has — with one resistance swapped. Half-Ogre resists dark, Half-Giant
+shards, Cyclops sound; their stat lines are within a point or two of the
+Half-Troll’s and of each other. Three more entries on the birth menu buying one
+resistance each is not a choice, it is a longer list.</p>
+<p><strong>Dark-Elf.</strong> A better Elf for a higher price: the same shape, with more
+intelligence and dexterity and the ability to see the invisible, at 150 instead
+of 120. A legitimate piece of design, and not a new idea — everything it does,
+an Elf already does.</p>
+<p>The rest — Barbarian, Klackon, Nibelung, Imp, and the four undead races — are not
+rejected, only waiting. The undead in particular want one mechanism between them
+and should arrive together when it exists.</p>
+</section>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h2>
+<p>Once a race has been chosen, you will need to pick a class.  The class
+is the character’s occupation and determines stat bonuses, abilities,
+hit dice, and what spells (if any) the character can learn.</p>
+<dl class="simple" id="warrior">
+<dt>Warrior</dt><dd><p>A Warrior is a hack-and-slash character, who solves most problems
+by cutting them to pieces, but will occasionally fall back on the help of
+a magical device. Their prime stats are strength, constitution, and
+dexterity, and they will strike more blows with melee weapons than any
+other class. A Warrior will be excellent at fighting, shooting and
+throwing, but bad at most other skills. A warrior has bad stealth and
+cannot learn any spells.</p>
+</dd>
+</dl>
+<dl class="simple" id="mage">
+<dt>Mage</dt><dd><p>A Mage must live by their wits. They cannot hope to simply hack their way
+through the dungeon, and so must therefore use his magic to defeat,
+deceive, confuse, and escape. A mage is not really complete without an
+assortment of magical devices to use in addition to his spells. They can
+master the higher level magical devices far easier than anyone else, and
+has the excellent saving throws to resist effects of spells cast at him.
+However, they are incredibly weak, getting few hit dice and suffering strong
+penalties to strength and constitution. Intelligence is their primary stat
+and at high levels they can cast many spells without a chance of failure.
+There is no rule that says a mage cannot become a good fighter, but spells
+are their true realm and they will get fewer blows with melee weapons than
+other classes.</p>
+</dd>
+</dl>
+<dl class="simple" id="druid">
+<dt>Druid</dt><dd><p>A Druid is a lover of nature, and at one with the natural world.  Druids
+have control of their environment and direct power over creatures, leading
+even to the ability to take their forms. Druid skills are moderate, and
+they have some fighting ability, especially when transformed.  A druid will
+usually seek to shape the flow of events to their purpose rather than
+using devices or missiles, but at high levels they do gain access to
+potent nature-based magic.  Druids rely on their wisdom, and have good
+saving throws.</p>
+</dd>
+</dl>
+<dl class="simple" id="priest">
+<dt>Priest</dt><dd><p>A Priest is a character of holy devotion. They explore the dungeon only
+to destroy the evil that lurks within, and if treasure just happens to
+fall into their packs, well, so much more to the glory of their temple!
+Priests receive their spells from a deity, and therefore do not choose
+which spells they will learn. They are familiar with magical devices,
+preferring to call them “instruments of God”, but are not as good as a
+mage in their use. Priests have great saving throws, and make passable
+fighters, better if they can find a hafted or blessed weapon.  Wisdom is
+the priest’s primary stat and at high enough levels they can cast many
+prayers without a chance of failure. Priests have poor stealth.</p>
+</dd>
+</dl>
+<dl class="simple" id="necromancer">
+<dt>Necromancer</dt><dd><p>A Necromancer seeks to master the spirits of sentient creatures, creating
+servants of their own will. They have chosen a dark and wicked path, and
+run a continual risk of harm to their own body and mind. Necromancers love
+shadows and hate light, automatically shrouding themselves in darkness.
+Their spells require high intelligence, and frequently harm the caster or
+place them in danger.  In return they achieve awesome power at high levels.
+The ultimate aim of the necromancer is to supplant the Dark Enemy and set
+up a tyranny in his place.</p>
+</dd>
+</dl>
+<dl class="simple" id="paladin">
+<dt>Paladin</dt><dd><p>A Paladin is a warrior/priest. Paladins are very good fighters, second
+only to the warrior class, but not very good at missile weapons. They
+receive prayers at a slower pace than the priest, but can use all but the
+most powerful prayers. A paladin lacks much in the way of abilities.
+Paladins have poor stealth, perception, searching, and magical device use.
+They have a decent saving throw due to their divine alliance. Their
+primary stats are strength and wisdom.</p>
+</dd>
+</dl>
+<dl class="simple" id="rogue">
+<dt>Rogue</dt><dd><p>A Rogue is a character that prefers to live by their cunning, but is
+capable of fighting their way out of a tight spot. The master of traps and
+locks, to the experienced rogue no device is impossible to overcome. A rogue
+has a high stealth enabling sneaking around many creatures without
+having to fight, or sneaking up and get the first blow. They can steal items
+from monsters, but need to be wary of being caught in the act. Rogues’
+perception is higher than any other class, and many times they will notice
+a trap or secret door before having to search. A rogue is better than
+the more fighting oriented classes with magical devices, but still cannot
+rely on their performance. Rogues can also learn a few spells, but not the
+powerful offensive spells mages can use, and there will always be a chance
+of failure even with the simplest spells. A rogue’s primary stats are
+dexterity and intelligence.</p>
+</dd>
+</dl>
+<dl class="simple" id="ranger">
+<dt>Ranger</dt><dd><p>A Ranger is at home in nature, and good at turning the environment to
+good use. Rangers are good fighters, and the best of all the classes with
+missile weapons, especially bows. The ranger learns chiefly spells of
+survival and forest craft. A ranger has good stealth, good perception,
+good searching, a good saving throw, and is good with magical devices.
+Their primary stats are strength, wisdom and dexterity.</p>
+</dd>
+</dl>
+<dl class="simple" id="blackguard">
+<dt>Blackguard</dt><dd><p>A Blackguard is a brawler of no principle, who lives for the joy of maiming
+and killing. Blackguards prefer heavy weapons and shields, and learn a few
+spells for the purpose of wreaking more destruction. Their lust for blood
+is legendary, with a blackguard in full cry nigh on impossible to kill.
+Blackguards scorn skills apart from slaughter, and require strength and
+intelligence (or rat-cunning) to thrive in the dungeon.</p>
+</dd>
+</dl>
+<p>The five classes below are Zangband’s, and are new to ZangbandTK.</p>
+<dl id="monk">
+<dt>Monk</dt><dd><p>A Monk carries no weapon because it does not need one. Where every other
+class fighting bare-handed does a single point of damage a blow, a Monk
+strikes with a trained technique — and strikes far more often than a Warrior
+with a sword ever will. It is dextrous, quick, poor with a bow it has no
+reason to carry, and expensive: a Monk costs 40 per cent more experience
+for every level, which is Zangband’s price for what the class can do.</p>
+<p>A Monk is the one class in the game that is punished for wearing armour. See
+<a class="reference internal" href="#martial-arts"><span class="std std-ref">Martial arts</span></a> for what it gains by going without, and
+what it loses by not.</p>
+</dd>
+</dl>
+<dl id="mindcrafter">
+<dt>Mindcrafter</dt><dd><p>A Mindcrafter has no spellbooks and will never find any. Its craft is twelve
+psionic powers that arrive as it grows, and it does not study them — it simply
+becomes able to do them. Wisdom is what makes them work. It is physically
+frail, with the second worst hit dice in the game, and its attacks reach for
+minds rather than bodies, which makes it formidable against most things and
+useless against a golem.</p>
+<p>See <a class="reference internal" href="#psionics"><span class="std std-ref">Psionics</span></a> for the list.</p>
+</dd>
+</dl>
+<dl id="chaos-warrior">
+<dt>Chaos-Warrior</dt><dd><p>A Chaos-Warrior is a fighter who belongs to somebody. At birth it is sworn to
+one of the nine Lords of the Courts of Chaos — it does not choose which, and
+it cannot leave — and every time it gains a level its Lord looks up and
+decides how it feels. Usually that is a gift. Sometimes it is not.</p>
+<p>It fights nearly as well as a Warrior, and it casts Chaos — every spell in the
+realm, from level 2, and no other realm ever. There is no realm choice to make
+at birth because there is nothing to choose between: a Chaos-Warrior’s magic
+is Chaos or it is nothing. See <a class="reference internal" href="#patrons"><span class="std std-ref">Patrons</span></a> and <a class="reference internal" href="realms.html"><span class="doc">The Realms of Magic</span></a>.</p>
+</dd>
+</dl>
+<dl class="simple" id="warrior-mage">
+<dt>Warrior-Mage</dt><dd><p>A fighter who casts, and the only class in the game whose first realm is
+decided for it: <strong>Arcane</strong>, always, plus any second realm you like. That is
+the class — the generalist realm, which can be bought outright in town, and
+one specialism on top of it. It fights and shoots respectably and levels
+slowly, because it is paying for both halves.</p>
+</dd>
+</dl>
+<dl id="high-mage">
+<dt>High-Mage</dt><dd><p>The specialist. It picks <strong>one</strong> realm out of all seven and gets no second
+choice at all, and in exchange Zangband’s table gives it the best figures of
+any caster: it reaches a realm’s deepest spells earlier and for less mana than
+anyone else. It also has the worst hit dice in the game and cannot fight.</p>
+<p>A High-Mage of Sorcery can do everything except kill things. A High-Mage of
+Chaos can do very little except kill things. That is the choice, and it is the
+whole class.</p>
+</dd>
+</dl>
+<div class="admonition note" id="monk-realms">
+<p class="admonition-title">Note</p>
+<p><strong>A Monk casts as well as fights.</strong> It studies one realm out of <strong>Life,
+Nature or Death</strong> — chosen at birth, permanent, and there is no second choice
+the way a Mage gets one. Its spells are learned at random rather than picked,
+which is what Zangband does for anything reading prayers.</p>
+<p>The two halves meet in your armour. A Monk’s unarmed bonuses and its spell
+points are weighed against the <em>same</em> six slots, and its tolerance is a
+Mage’s rather than a Priest’s — so a Monk in plate loses the fists and the
+magic together. Of its three realms, <strong>Death is the weakest choice</strong>: this
+game takes a spell’s casting stat from the realm, and Death casts on
+intelligence, which a Monk has least of.</p>
+</div>
+<section id="martial-arts">
+<span id="id2"></span><h3>Martial arts<a class="headerlink" href="#martial-arts" title="Link to this heading">#</a></h3>
+<p>The Monk’s unarmed attack is a ladder of seventeen techniques, from a punch at
+level 1 to a crushing blow at 48. Each one arrives at its own level and has its
+own difficulty, and what you throw is decided fresh every time you swing: the
+character gets one attempt per seven levels, each attempt turns up a technique
+at random, and the best of the ones that come off is the one that lands.</p>
+<p>So a novice punches and kicks, and a Grand Master usually — but not reliably —
+lands something from the top of the ladder. Being stunned or confused takes
+away the choosing, and you throw whatever came up. Three of the techniques do
+something beyond damage: a knee doubles a male opponent up, a kick to the ankle
+leaves anything that walks limping, and most of the upper ladder stuns.</p>
+<p>The number of strikes goes up with level as well — two at first, eight by the
+end, which is more than a Warrior gets out of any weapon in the game.</p>
+<p><strong>What armour costs.</strong> Add up what the character is wearing on its body, head,
+arm, back, hands and feet. If that comes to more than ten pounds plus another
+four tenths of a pound per level — thirty pounds at level 50 — the Monk is
+carrying too much, and:</p>
+<ul class="simple">
+<li><p>the number of strikes is halved,</p></li>
+<li><p>the bonus to hit and to damage is withdrawn, and</p></li>
+<li><p>the armour class for empty slots stops being paid.</p></li>
+</ul>
+<p>You are told when it happens: <em>the weight of your armour disrupts your balance</em>.</p>
+<p><strong>What going without pays.</strong> Under the limit, every armour slot left empty is
+worth armour class in its own right, and the body slot is worth far more than
+the rest put together — three points for every two levels, so 75 at level 50.
+The back, arm and head slots only start paying at levels 15, 10 and 4. A Monk
+who wears nothing is not undefended; it is defended by having nothing in the
+way.</p>
+<p>Wielding a weapon has no penalty attached to it. It simply switches all of the
+above off, because the ladder is only reached with empty hands — which in
+practice is the sharpest penalty in the game.</p>
+</section>
+<section id="psionics">
+<span id="id3"></span><h3>Psionics<a class="headerlink" href="#psionics" title="Link to this heading">#</a></h3>
+<p>The Mindcrafter’s twelve powers are on <code class="docutils literal notranslate"><span class="pre">N</span></code>, alongside anything the character’s
+race can do. They cost mana, they can fail, and Wisdom governs both how much
+mana there is and how reliably a power works.</p>
+<p>They are deliberately <strong>not a realm of magic</strong>. There is no book to find, no
+spell to learn, nothing to choose at birth, and nothing that can be taken from
+you: a Mindcrafter’s powers arrive purely by level.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Power</p></th>
+<th class="head"><p>Level</p></th>
+<th class="head"><p>Mana</p></th>
+<th class="head"><p>Failure</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Blast a mind</p></td>
+<td><p>1</p></td>
+<td><p>1</p></td>
+<td><p>15%</p></td>
+</tr>
+<tr class="row-odd"><td><p>See what is coming</p></td>
+<td><p>2</p></td>
+<td><p>1</p></td>
+<td><p>20%</p></td>
+</tr>
+<tr class="row-even"><td><p>Shift a short way</p></td>
+<td><p>3</p></td>
+<td><p>2</p></td>
+<td><p>25%</p></td>
+</tr>
+<tr class="row-odd"><td><p>Shift a long way</p></td>
+<td><p>7</p></td>
+<td><p>6</p></td>
+<td><p>35%</p></td>
+</tr>
+<tr class="row-even"><td><p>Dominate a mind</p></td>
+<td><p>9</p></td>
+<td><p>7</p></td>
+<td><p>50%</p></td>
+</tr>
+<tr class="row-odd"><td><p>Pulverise</p></td>
+<td><p>11</p></td>
+<td><p>7</p></td>
+<td><p>30%</p></td>
+</tr>
+<tr class="row-even"><td><p>Armour your mind</p></td>
+<td><p>13</p></td>
+<td><p>12</p></td>
+<td><p>50%</p></td>
+</tr>
+<tr class="row-odd"><td><p>Read an object</p></td>
+<td><p>15</p></td>
+<td><p>12</p></td>
+<td><p>60%</p></td>
+</tr>
+<tr class="row-even"><td><p>Send out a mind wave</p></td>
+<td><p>18</p></td>
+<td><p>10</p></td>
+<td><p>45%</p></td>
+</tr>
+<tr class="row-odd"><td><p>Channel adrenaline</p></td>
+<td><p>23</p></td>
+<td><p>15</p></td>
+<td><p>50%</p></td>
+</tr>
+<tr class="row-even"><td><p>Drain a mind</p></td>
+<td><p>25</p></td>
+<td><p>10</p></td>
+<td><p>40%</p></td>
+</tr>
+<tr class="row-odd"><td><p>Loose a telekinetic wave</p></td>
+<td><p>28</p></td>
+<td><p>20</p></td>
+<td><p>45%</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>A power is rarely one thing.</strong> Most of these grow into something else as the
+character does, and keep growing for the whole career. <em>See what is coming</em>
+starts as a way to spot monsters at level 2; by 5 it finds traps and doors, by
+15 it sees the invisible, by 20 it maps the level, from 25 to 39 it grants
+telepathy, by 30 it detects everything there is, and at 45 it lights the entire
+level. It is the same power on the same key throughout.</p>
+<p>Others switch rather than accumulate. <em>Shift a long way</em> adds banishment at 30.
+<em>Dominate a mind</em> stops being aimed at one creature and takes everything in
+sight. <em>Send out a mind wave</em> stops being a ball centred on you and strikes
+every creature in sight instead, at 25. <em>Channel adrenaline</em> gives heroism
+until 35 and berserk strength after. And <em>shift a short way</em>, a random ten-step
+hop for most of a career, becomes a <strong>dimension door</strong> at 40 — you pick the
+square you arrive on, the same way Sorcery and Trump do it.</p>
+<p><strong>Minds, not bodies.</strong> Three of the powers attack with psionic force, which is a
+kind of damage Angband does not have. It asks whether there is a mind to hurt:
+anything that has none — a golem, a mould, an animated weapon — is completely
+unaffected however hard it is hit, and creatures with strange or feeble minds
+take a third of the damage. Against everything else, nothing resists it at all.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>A failed power can go off inside your head.</strong> Half as often as a power
+fails, it backfires instead of merely fizzling, and the chance therefore
+falls away as the power becomes reliable. What you get is one of five
+things: most often a stunning, or your brain addled for a few turns; less
+often visions dancing in front of you; rarely the map wiped from your
+memory; and about one time in nine <strong>a mana storm</strong> — a ball of raw magic
+centred on you at twice your level, which also tears a hole in the pool you
+were casting from.</p>
+<p>This is the Mindcrafter’s equivalent of the Chaos backfire and the Death
+miscast, and it is the reason a low-level psionicist should think twice
+about leaning on a power it has only just learned. <strong>Racial powers do not
+backfire</strong> — a Draconian’s breath fails quietly.</p>
+<p>One mercy arrives at 30, with the class’s own resistance to confusion: from
+there the most common of the five bands stops reaching you.</p>
+</div>
+</section>
+<section id="patrons">
+<span id="id4"></span><h3>Patrons<a class="headerlink" href="#patrons" title="Link to this heading">#</a></h3>
+<p>The nine Lords are Zelazny’s, not Zangband’s. The original’s sixteen patrons
+were Moorcock’s Elric gods with four Warhammer ones among them, and not one of
+them had anything to do with Amber.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Lord</p></th>
+<th class="head"><p>Title</p></th>
+<th class="head"><p>Temperament</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Swayvill</p></td>
+<td><p>King of Chaos</p></td>
+<td><p>Erratic; rewards loyalty, punishes
+ambition</p></td>
+</tr>
+<tr class="row-odd"><td><p>Suhuy</p></td>
+<td><p>Keeper of the Logrus</p></td>
+<td><p>The gentlest; ignores rather than
+punishes</p></td>
+</tr>
+<tr class="row-even"><td><p>Mandor</p></td>
+<td><p>of House Sawall</p></td>
+<td><p>Generous, and nothing is free</p></td>
+</tr>
+<tr class="row-odd"><td><p>Dara</p></td>
+<td><p>of House Helgram</p></td>
+<td><p>Lavish to those who serve the
+dynasty</p></td>
+</tr>
+<tr class="row-even"><td><p>Gramble</p></td>
+<td><p>Duke of Sawall</p></td>
+<td><p>Plain rewards for plain service</p></td>
+</tr>
+<tr class="row-odd"><td><p>Jurt</p></td>
+<td><p>the Jealous</p></td>
+<td><p>The worst master in the Courts</p></td>
+</tr>
+<tr class="row-even"><td><p>Despil</p></td>
+<td><p>of House Sawall</p></td>
+<td><p>Mild, and mostly not thinking
+about you</p></td>
+</tr>
+<tr class="row-odd"><td><p>Borel</p></td>
+<td><p>Master of Arms of Hendrake</p></td>
+<td><p>Cares only how well you fight</p></td>
+</tr>
+<tr class="row-even"><td><p>Gilva</p></td>
+<td><p>Warrior-Maiden of Hendrake</p></td>
+<td><p>Direct; wants you to go and kill
+something</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Your Lord is shown on the character sheet, in red, because it is not a
+credential.</p>
+<p><strong>What can happen.</strong> At the generous end: a full healing, experience, a restored
+or raised stat, all five stats at once, or an object pulled out of nothing. In
+the middle, nothing at all — a Lord who is not thinking about you is a good Lord.
+At the bad end: your weapon or armour cursed, a stat drained or ruined,
+experience lost, monsters summoned on top of you, the level destroyed around you,
+or simply damage, which at a high level can kill.</p>
+<p>Some Lords will also give you a different shape for a while. Your gear merges
+into your body when that happens, so you lose every bonus it carried and cannot
+cast until you change back — which you may do whenever you like.</p>
+<p><strong>Thirteen is an unlucky level.</strong> The odds of your Lord reaching into the cruel
+end of its repertoire are normally about one in six. On reaching level 13 they
+are one in two. On every other thirteenth level they are one in three. On every
+fourteenth they are one in twelve, which is the safest a Chaos-Warrior ever gets.</p>
+</section>
+</section>
+<section id="stats">
+<h2>Stats<a class="headerlink" href="#stats" title="Link to this heading">#</a></h2>
+<p>After race and class are selected, you will be able to decide what stat
+levels your character will have, by allocating a finite number of
+“points” between the five statistics.  These points can be allocated
+by selection or with a random roller (as described below in the “Stat
+Rollers” section).  Each race/class combination also has a recommended
+default setting for these statistics.  Statistics can be permanently
+raised by various potions in the dungeon up to 18/100.  They can also be
+temporarily drained by some monster attacks.</p>
+<dl class="simple" id="index-5">
+<dt>Strength</dt><dd><p>Strength is important in fighting with weapons and in melee combat. A
+high strength can improve your chances of hitting as well as the amount
+of damage done with each hit. Characters with low strengths may receive
+penalties. Strength raises the amount of weight you can carry before
+being slowed. It also allows you to get extra blows with heavier weapons.
+Strength is one of the most important stats in the beginning of the game.</p>
+</dd>
+</dl>
+<dl class="simple" id="index-6">
+<dt>Intelligence</dt><dd><p>Intelligence affects the spellcasting abilities of spellcasters from the
+arcane and shadow realms: mages, rogues, necromancers and blackguards.
+Intelligence will affect the number of spells you may learn each level as
+well as the number of spell points you receive. Intelligence is the most
+important stat for mages and necromancers. A high intelligence may also
+improve your chances of successfully casting a spell. A good intelligence
+can also help with using magic devices, picking locks, and disarming magic
+traps.</p>
+</dd>
+</dl>
+<dl class="simple" id="index-7">
+<dt>Wisdom</dt><dd><p>The primary function of wisdom is to determine the ability of a priest or
+paladin to use prayers, and druids and rangers to use verses, just like
+intelligence affects spellcasting. Again, high wisdom will increase the
+number of mana points you have and increase the number of prayers or verses
+you can learn each level, while improving your chance of success. A good
+wisdom increases your saving throw, thereby improving your chances of
+resisting magical spells cast upon you by monsters.</p>
+</dd>
+</dl>
+<dl class="simple" id="index-8">
+<dt>Dexterity</dt><dd><p>Dexterity is a combination of agility and quickness. A high dexterity may
+allow a character to get multiple blows with lighter weapons. Dexterity
+also increases a character’s chances of hitting with any weapon and of
+dodging blows from enemies. Dexterity is also useful in picking locks,
+disarming physical traps, protecting yourself from some of the thieves that
+inhabit the dungeons, and (for rogues) stealing successfully from others.
+If the character has a high enough dexterity, thieves will never
+be successful in stealing from them.</p>
+</dd>
+</dl>
+<dl class="simple" id="index-9">
+<dt>Constitution</dt><dd><p>Constitution is a character’s ability to resist damage to his body, and
+to recover from damage received. Therefore a character with a high
+constitution will receive more hit points and also recover them faster
+while resting. Constitution is less important in the beginning of the
+game, but will be the most important stat at the end.</p>
+</dd>
+</dl>
+</section>
+<section id="skills">
+<h2>Skills<a class="headerlink" href="#skills" title="Link to this heading">#</a></h2>
+<p>Characters possess some different skills which can help them to survive.
+The starting skill levels of a character are based upon race and class.
+Skill levels may be adjusted by high or low stats, and may increase with
+the level of the character.</p>
+<dl class="simple" id="index-10">
+<dt>Infravision</dt><dd><p>Infravision is the ability to see heat sources. Since most of the dungeon
+is cool or cold, infravision will not allow the player to see walls and
+objects. Infravision will allow a character to see any warm-blooded
+creatures up to a certain distance. This ability works equally well with
+or without a light source. However, some of ZangbandTK’s creatures are
+cold-blooded, and will not be detected unless lit up by a light source.
+All non-human races have innate infravision. Humans (including Dunedain)
+cannot gain infravision unless it is magically enhanced. Infravision does
+not increase with character level, and is purely dependent on race and on
+magical equipment.</p>
+</dd>
+</dl>
+<dl class="simple" id="index-11">
+<dt>Fighting</dt><dd><p>Fighting is the ability to hit and do damage with weapons or fists.
+Normally a character gets a single blow from any weapon, but with
+high enough dexterity and strength may receive more blows with
+lighter weapons. Strength and dexterity both modify the ability to hit an
+opponent. This skill increases with the level of the character. Inspecting
+a weapon will show you how quickly you can attack with it.</p>
+</dd>
+</dl>
+<dl class="simple" id="index-12">
+<dt>Shooting Ability</dt><dd><p>Firing ammunition with a bow, sling, or crossbow is included in this skill.
+Dexterity and this skill affect the chance to hit when firing. It does
+not influence how far ammunition can be fired (that is set by the damage
+multiplier for the bow, sling, or crossbow) or the amount of damage a hit
+causes. This skill increases with the level of the character.</p>
+</dd>
+</dl>
+<dl class="simple" id="index-13">
+<dt>Throwing Skill</dt><dd><p>Throwing a weapon or ammunition is included in this skill. Weapons or
+ammunition specially designed for throwing are much better when thrown
+than other weapons or ammunition. Dexterity and this skill affect the chance
+to hit when throwing. It does not influence how far an item can be thrown
+(that is set by strength and the weight of the thrown item) or the amount
+of damage a hit causes. This skill increases with the level of the character.</p>
+</dd>
+</dl>
+<dl class="simple" id="index-14">
+<dt>Saving Throws</dt><dd><p>A Saving Throw is the ability of a character to resist the effects of a
+spell cast on him by another person/creature. This does not include
+spells cast on the player by his own stupidity, such as quaffing a nasty
+potion. This ability increases with the level of the character, but then
+most high level creatures are better at casting spells, so it tends to
+even out. A high wisdom also increases this ability. It is possible to
+get 100% saving throw, making you immune to many attacks.</p>
+</dd>
+</dl>
+<dl class="simple" id="index-15">
+<dt>Stealth</dt><dd><p>The ability to move silently about is very useful. Characters with good
+stealth can usually surprise their opponents, gaining the first blow.
+Also, creatures may fail to notice a stealthy character entirely,
+allowing a player to avoid certain fights. This skill is based upon race
+and class, but can be magically enhanced.</p>
+</dd>
+</dl>
+<dl class="simple" id="index-16">
+<dt>Disarming</dt><dd><p>Disarming is the ability to remove traps safely, and also includes
+picking locks on traps and doors. A successful disarming will gain the
+character a small amount of experience. A trap must be found before it
+can be disarmed. Traps are either physical or magical devices, so the
+character has two disarming skills.  Dexterity modifies disarming of
+physical traps, and intelligence modifies disarming of magical traps.
+Both these abilities increase with the level of the character.</p>
+</dd>
+</dl>
+<dl class="simple" id="index-17">
+<dt>Magical Devices</dt><dd><p>Using a magical device such as a wand or staff requires experience and
+knowledge. Spell users such as mages and priests are therefore much
+better at using a magical device than say a warrior. This skill is
+modified by intelligence, and increases with the level of the character.</p>
+</dd>
+</dl>
+<dl class="simple" id="index-18">
+<dt>Searching (Perception)</dt><dd><p>Perception is the ability to notice traps without actively seeking them
+out.  Rogues are the best at searching, but rangers are also good at it.
+This skill is based on race and class, and increases with character level.</p>
+</dd>
+</dl>
+</section>
+<section id="stat-bonus-tables">
+<h2>Stat Bonus Tables<a class="headerlink" href="#stat-bonus-tables" title="Link to this heading">#</a></h2>
+<p>Stats, hit dice, infravision and experience point modifications due to
+race and class are listed in the following table.  To get the total hit
+dice, add the “race” and “class” numbers: for instance, a Dwarf Priest
+has a hit die of 11+2=13 (i.e. they will get 1d13 hit points per level,
+adjusted for constitution).</p>
+<div class="pst-scrollable-table-container"><table class="table" id="index-19">
+<thead>
+<tr class="row-odd"><th class="head"><p>Race</p></th>
+<th class="head"><p>STR</p></th>
+<th class="head"><p>INT</p></th>
+<th class="head"><p>WIS</p></th>
+<th class="head"><p>DEX</p></th>
+<th class="head"><p>CON</p></th>
+<th class="head"><p>HD (base)</p></th>
+<th class="head"><p>XP/level</p></th>
+<th class="head"><p>Infra</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Human</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>10</p></td>
+<td><p>100%</p></td>
+<td><p>None</p></td>
+</tr>
+<tr class="row-odd"><td><p>Half-Elf</p></td>
+<td><p>0</p></td>
+<td><p>+1</p></td>
+<td><p>-1</p></td>
+<td><p>+1</p></td>
+<td><p>-1</p></td>
+<td><p>10</p></td>
+<td><p>120%</p></td>
+<td><p>20’</p></td>
+</tr>
+<tr class="row-even"><td><p>Elf</p></td>
+<td><p>-1</p></td>
+<td><p>+2</p></td>
+<td><p>-1</p></td>
+<td><p>+1</p></td>
+<td><p>-1</p></td>
+<td><p>9</p></td>
+<td><p>120%</p></td>
+<td><p>30’</p></td>
+</tr>
+<tr class="row-odd"><td><p>Hobbit</p></td>
+<td><p>-2</p></td>
+<td><p>+2</p></td>
+<td><p>+1</p></td>
+<td><p>+3</p></td>
+<td><p>+2</p></td>
+<td><p>7</p></td>
+<td><p>120%</p></td>
+<td><p>40’</p></td>
+</tr>
+<tr class="row-even"><td><p>Gnome</p></td>
+<td><p>-1</p></td>
+<td><p>+2</p></td>
+<td><p>0</p></td>
+<td><p>+2</p></td>
+<td><p>+1</p></td>
+<td><p>8</p></td>
+<td><p>120%</p></td>
+<td><p>40’</p></td>
+</tr>
+<tr class="row-odd"><td><p>Dwarf</p></td>
+<td><p>+2</p></td>
+<td><p>-3</p></td>
+<td><p>+2</p></td>
+<td><p>-2</p></td>
+<td><p>+2</p></td>
+<td><p>11</p></td>
+<td><p>120%</p></td>
+<td><p>50’</p></td>
+</tr>
+<tr class="row-even"><td><p>Half-Orc</p></td>
+<td><p>+2</p></td>
+<td><p>-1</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>+1</p></td>
+<td><p>10</p></td>
+<td><p>120%</p></td>
+<td><p>30’</p></td>
+</tr>
+<tr class="row-odd"><td><p>Half-Troll</p></td>
+<td><p>+4</p></td>
+<td><p>-4</p></td>
+<td><p>-2</p></td>
+<td><p>-4</p></td>
+<td><p>+3</p></td>
+<td><p>12</p></td>
+<td><p>120%</p></td>
+<td><p>30’</p></td>
+</tr>
+<tr class="row-even"><td><p>Dunadan</p></td>
+<td><p>+1</p></td>
+<td><p>+2</p></td>
+<td><p>+2</p></td>
+<td><p>+2</p></td>
+<td><p>+3</p></td>
+<td><p>10</p></td>
+<td><p>120%</p></td>
+<td><p>None</p></td>
+</tr>
+<tr class="row-odd"><td><p>High-Elf</p></td>
+<td><p>+1</p></td>
+<td><p>+3</p></td>
+<td><p>-1</p></td>
+<td><p>+3</p></td>
+<td><p>+1</p></td>
+<td><p>10</p></td>
+<td><p>145%</p></td>
+<td><p>40’</p></td>
+</tr>
+<tr class="row-even"><td><p>Kobold</p></td>
+<td><p>-1</p></td>
+<td><p>-1</p></td>
+<td><p>0</p></td>
+<td><p>+2</p></td>
+<td><p>+2</p></td>
+<td><p>8</p></td>
+<td><p>120%</p></td>
+<td><p>50’</p></td>
+</tr>
+<tr class="row-odd"><td><p>Amberite</p></td>
+<td><p>+1</p></td>
+<td><p>+2</p></td>
+<td><p>+2</p></td>
+<td><p>+2</p></td>
+<td><p>+3</p></td>
+<td><p>10</p></td>
+<td><p>225%</p></td>
+<td><p>None</p></td>
+</tr>
+<tr class="row-even"><td><p>Beastman</p></td>
+<td><p>+2</p></td>
+<td><p>-2</p></td>
+<td><p>-1</p></td>
+<td><p>-1</p></td>
+<td><p>+2</p></td>
+<td><p>11</p></td>
+<td><p>140%</p></td>
+<td><p>None</p></td>
+</tr>
+<tr class="row-odd"><td><p>Yeek</p></td>
+<td><p>-2</p></td>
+<td><p>+1</p></td>
+<td><p>+1</p></td>
+<td><p>+1</p></td>
+<td><p>-2</p></td>
+<td><p>7</p></td>
+<td><p>100%</p></td>
+<td><p>20’</p></td>
+</tr>
+<tr class="row-even"><td><p>Draconian</p></td>
+<td><p>+2</p></td>
+<td><p>+1</p></td>
+<td><p>+1</p></td>
+<td><p>+1</p></td>
+<td><p>+2</p></td>
+<td><p>11</p></td>
+<td><p>250%</p></td>
+<td><p>20’</p></td>
+</tr>
+<tr class="row-odd"><td><p>Mindflayer</p></td>
+<td><p>-3</p></td>
+<td><p>+4</p></td>
+<td><p>+4</p></td>
+<td><p>0</p></td>
+<td><p>-2</p></td>
+<td><p>9</p></td>
+<td><p>140%</p></td>
+<td><p>40’</p></td>
+</tr>
+<tr class="row-even"><td><p>Vampire</p></td>
+<td><p>+3</p></td>
+<td><p>+3</p></td>
+<td><p>-1</p></td>
+<td><p>-1</p></td>
+<td><p>+1</p></td>
+<td><p>11</p></td>
+<td><p>200%</p></td>
+<td><p>50’</p></td>
+</tr>
+<tr class="row-odd"><td><p>Golem</p></td>
+<td><p>+4</p></td>
+<td><p>-5</p></td>
+<td><p>-5</p></td>
+<td><p>-2</p></td>
+<td><p>+4</p></td>
+<td><p>12</p></td>
+<td><p>200%</p></td>
+<td><p>40’</p></td>
+</tr>
+<tr class="row-even"><td><p>Sprite</p></td>
+<td><p>-4</p></td>
+<td><p>+3</p></td>
+<td><p>+3</p></td>
+<td><p>+3</p></td>
+<td><p>-2</p></td>
+<td><p>7</p></td>
+<td><p>175%</p></td>
+<td><p>40’</p></td>
+</tr>
+<tr class="row-odd"><td><p>Half-Titan</p></td>
+<td><p>+5</p></td>
+<td><p>+1</p></td>
+<td><p>+1</p></td>
+<td><p>-2</p></td>
+<td><p>+3</p></td>
+<td><p>14</p></td>
+<td><p>255%</p></td>
+<td><p>None</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="pst-scrollable-table-container"><table class="table" id="index-20">
+<thead>
+<tr class="row-odd"><th class="head"><p>Class</p></th>
+<th class="head"><p>STR</p></th>
+<th class="head"><p>INT</p></th>
+<th class="head"><p>WIS</p></th>
+<th class="head"><p>DEX</p></th>
+<th class="head"><p>CON</p></th>
+<th class="head"><p>HD (bonus)</p></th>
+<th class="head"><p>XP/level</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Warrior</p></td>
+<td><p>+3</p></td>
+<td><p>-2</p></td>
+<td><p>-2</p></td>
+<td><p>+2</p></td>
+<td><p>+2</p></td>
+<td><p>9</p></td>
+<td><p>none</p></td>
+</tr>
+<tr class="row-odd"><td><p>Mage</p></td>
+<td><p>-3</p></td>
+<td><p>+3</p></td>
+<td><p>+0</p></td>
+<td><p>+0</p></td>
+<td><p>-2</p></td>
+<td><p>0</p></td>
+<td><p>none</p></td>
+</tr>
+<tr class="row-even"><td><p>Druid</p></td>
+<td><p>-2</p></td>
+<td><p>+0</p></td>
+<td><p>+3</p></td>
+<td><p>-2</p></td>
+<td><p>+0</p></td>
+<td><p>2</p></td>
+<td><p>none</p></td>
+</tr>
+<tr class="row-odd"><td><p>Priest</p></td>
+<td><p>-1</p></td>
+<td><p>-3</p></td>
+<td><p>+3</p></td>
+<td><p>-1</p></td>
+<td><p>+1</p></td>
+<td><p>2</p></td>
+<td><p>none</p></td>
+</tr>
+<tr class="row-even"><td><p>Necromancer</p></td>
+<td><p>-3</p></td>
+<td><p>+3</p></td>
+<td><p>+0</p></td>
+<td><p>+0</p></td>
+<td><p>-2</p></td>
+<td><p>2</p></td>
+<td><p>none</p></td>
+</tr>
+<tr class="row-odd"><td><p>Paladin</p></td>
+<td><p>+1</p></td>
+<td><p>-3</p></td>
+<td><p>+1</p></td>
+<td><p>-1</p></td>
+<td><p>+2</p></td>
+<td><p>6</p></td>
+<td><p>none</p></td>
+</tr>
+<tr class="row-even"><td><p>Rogue</p></td>
+<td><p>+0</p></td>
+<td><p>+1</p></td>
+<td><p>-3</p></td>
+<td><p>+3</p></td>
+<td><p>-1</p></td>
+<td><p>4</p></td>
+<td><p>none</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ranger</p></td>
+<td><p>+0</p></td>
+<td><p>+0</p></td>
+<td><p>+2</p></td>
+<td><p>+1</p></td>
+<td><p>-1</p></td>
+<td><p>5</p></td>
+<td><p>none</p></td>
+</tr>
+<tr class="row-even"><td><p>Blackguard</p></td>
+<td><p>+2</p></td>
+<td><p>+0</p></td>
+<td><p>-3</p></td>
+<td><p>+0</p></td>
+<td><p>+2</p></td>
+<td><p>8</p></td>
+<td><p>none</p></td>
+</tr>
+<tr class="row-odd"><td><p>Monk</p></td>
+<td><p>+2</p></td>
+<td><p>-1</p></td>
+<td><p>+1</p></td>
+<td><p>+3</p></td>
+<td><p>+2</p></td>
+<td><p>6</p></td>
+<td><p>+40%</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="ability-tables">
+<h2>Ability Tables<a class="headerlink" href="#ability-tables" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table" id="index-21">
+<thead>
+<tr class="row-odd"><th class="head"><p>Race</p></th>
+<th class="head"><p>DisarmP</p></th>
+<th class="head"><p>DisarmM</p></th>
+<th class="head"><p>Device</p></th>
+<th class="head"><p>Save</p></th>
+<th class="head"><p>Stealth</p></th>
+<th class="head"><p>Search</p></th>
+<th class="head"><p>Fight</p></th>
+<th class="head"><p>Bows</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Human</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>Half-Elf</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+<td><p>3</p></td>
+<td><p>3</p></td>
+<td><p>1</p></td>
+<td><p>3</p></td>
+<td><p>-1</p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="row-even"><td><p>Elf</p></td>
+<td><p>5</p></td>
+<td><p>5</p></td>
+<td><p>6</p></td>
+<td><p>6</p></td>
+<td><p>2</p></td>
+<td><p>6</p></td>
+<td><p>-5</p></td>
+<td><p>15</p></td>
+</tr>
+<tr class="row-odd"><td><p>Hobbit</p></td>
+<td><p>15</p></td>
+<td><p>15</p></td>
+<td><p>18</p></td>
+<td><p>18</p></td>
+<td><p>4</p></td>
+<td><p>6</p></td>
+<td><p>-10</p></td>
+<td><p>20</p></td>
+</tr>
+<tr class="row-even"><td><p>Gnome</p></td>
+<td><p>10</p></td>
+<td><p>10</p></td>
+<td><p>22</p></td>
+<td><p>12</p></td>
+<td><p>3</p></td>
+<td><p>4</p></td>
+<td><p>-8</p></td>
+<td><p>12</p></td>
+</tr>
+<tr class="row-odd"><td><p>Dwarf</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+<td><p>9</p></td>
+<td><p>9</p></td>
+<td><p>-1</p></td>
+<td><p>2</p></td>
+<td><p>15</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>Half-Orc</p></td>
+<td><p>-3</p></td>
+<td><p>-3</p></td>
+<td><p>-3</p></td>
+<td><p>-3</p></td>
+<td><p>-1</p></td>
+<td><p>-3</p></td>
+<td><p>12</p></td>
+<td><p>-5</p></td>
+</tr>
+<tr class="row-odd"><td><p>Half-Troll</p></td>
+<td><p>-5</p></td>
+<td><p>-5</p></td>
+<td><p>-8</p></td>
+<td><p>-8</p></td>
+<td><p>-2</p></td>
+<td><p>-9</p></td>
+<td><p>20</p></td>
+<td><p>-10</p></td>
+</tr>
+<tr class="row-even"><td><p>Dunadan</p></td>
+<td><p>4</p></td>
+<td><p>4</p></td>
+<td><p>5</p></td>
+<td><p>5</p></td>
+<td><p>1</p></td>
+<td><p>3</p></td>
+<td><p>15</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-odd"><td><p>High-Elf</p></td>
+<td><p>4</p></td>
+<td><p>4</p></td>
+<td><p>20</p></td>
+<td><p>20</p></td>
+<td><p>2</p></td>
+<td><p>10</p></td>
+<td><p>10</p></td>
+<td><p>25</p></td>
+</tr>
+<tr class="row-even"><td><p>Kobold</p></td>
+<td><p>10</p></td>
+<td><p>10</p></td>
+<td><p>5</p></td>
+<td><p>0</p></td>
+<td><p>3</p></td>
+<td><p>10</p></td>
+<td><p>-5</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-odd"><td><p>Amberite</p></td>
+<td><p>4</p></td>
+<td><p>4</p></td>
+<td><p>5</p></td>
+<td><p>5</p></td>
+<td><p>2</p></td>
+<td><p>3</p></td>
+<td><p>12</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>Beastman</p></td>
+<td><p>-5</p></td>
+<td><p>-5</p></td>
+<td><p>-2</p></td>
+<td><p>-1</p></td>
+<td><p>-1</p></td>
+<td><p>-1</p></td>
+<td><p>18</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-odd"><td><p>Yeek</p></td>
+<td><p>2</p></td>
+<td><p>2</p></td>
+<td><p>4</p></td>
+<td><p>10</p></td>
+<td><p>3</p></td>
+<td><p>5</p></td>
+<td><p>-10</p></td>
+<td><p>-10</p></td>
+</tr>
+<tr class="row-even"><td><p>Draconian</p></td>
+<td><p>-2</p></td>
+<td><p>-2</p></td>
+<td><p>5</p></td>
+<td><p>3</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>10</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-odd"><td><p>Mindflayer</p></td>
+<td><p>10</p></td>
+<td><p>10</p></td>
+<td><p>25</p></td>
+<td><p>15</p></td>
+<td><p>2</p></td>
+<td><p>5</p></td>
+<td><p>-16</p></td>
+<td><p>-10</p></td>
+</tr>
+<tr class="row-even"><td><p>Vampire</p></td>
+<td><p>4</p></td>
+<td><p>4</p></td>
+<td><p>10</p></td>
+<td><p>10</p></td>
+<td><p>4</p></td>
+<td><p>1</p></td>
+<td><p>10</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>Golem</p></td>
+<td><p>-5</p></td>
+<td><p>-5</p></td>
+<td><p>-5</p></td>
+<td><p>10</p></td>
+<td><p>-1</p></td>
+<td><p>-1</p></td>
+<td><p>20</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>Sprite</p></td>
+<td><p>10</p></td>
+<td><p>10</p></td>
+<td><p>10</p></td>
+<td><p>10</p></td>
+<td><p>4</p></td>
+<td><p>10</p></td>
+<td><p>-16</p></td>
+<td><p>0</p></td>
+</tr>
+<tr class="row-odd"><td><p>Half-Titan</p></td>
+<td><p>-5</p></td>
+<td><p>-5</p></td>
+<td><p>5</p></td>
+<td><p>2</p></td>
+<td><p>-2</p></td>
+<td><p>1</p></td>
+<td><p>26</p></td>
+<td><p>0</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="pst-scrollable-table-container"><table class="table" id="index-22">
+<thead>
+<tr class="row-odd"><th class="head"><p>Class</p></th>
+<th class="head"><p>DisarmP</p></th>
+<th class="head"><p>DisarmM</p></th>
+<th class="head"><p>Device</p></th>
+<th class="head"><p>Save</p></th>
+<th class="head"><p>Stealth</p></th>
+<th class="head"><p>Search</p></th>
+<th class="head"><p>Fight</p></th>
+<th class="head"><p>Bows</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Warrior</p></td>
+<td><p>25(+15)</p></td>
+<td><p>20(+10)</p></td>
+<td><p>18(+7)</p></td>
+<td><p>18(+10)</p></td>
+<td><p>0(+0)</p></td>
+<td><p>10(+12)</p></td>
+<td><p>70(+45)</p></td>
+<td><p>55(+45)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Mage</p></td>
+<td><p>30(+10)</p></td>
+<td><p>35(+12)</p></td>
+<td><p>36(+13)</p></td>
+<td><p>30(+9)</p></td>
+<td><p>2(+0)</p></td>
+<td><p>10(+12)</p></td>
+<td><p>35(+15)</p></td>
+<td><p>20(+15)</p></td>
+</tr>
+<tr class="row-even"><td><p>Druid</p></td>
+<td><p>30(+10)</p></td>
+<td><p>30(+10)</p></td>
+<td><p>24(+10)</p></td>
+<td><p>30(+10)</p></td>
+<td><p>3(+0)</p></td>
+<td><p>12(+12)</p></td>
+<td><p>45(+20)</p></td>
+<td><p>40(+30)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Priest</p></td>
+<td><p>25(+12)</p></td>
+<td><p>25(+12)</p></td>
+<td><p>30(+10)</p></td>
+<td><p>32(+12)</p></td>
+<td><p>2(+0)</p></td>
+<td><p>10(+14)</p></td>
+<td><p>45(+20)</p></td>
+<td><p>35(+20)</p></td>
+</tr>
+<tr class="row-even"><td><p>Necromancer</p></td>
+<td><p>30(+10)</p></td>
+<td><p>35(+12)</p></td>
+<td><p>36(+13)</p></td>
+<td><p>30(+9)</p></td>
+<td><p>2(+0)</p></td>
+<td><p>10(+12)</p></td>
+<td><p>35(+25)</p></td>
+<td><p>20(+15)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Paladin</p></td>
+<td><p>20(+15)</p></td>
+<td><p>20(+10)</p></td>
+<td><p>24(+10)</p></td>
+<td><p>25(+11)</p></td>
+<td><p>0(+0)</p></td>
+<td><p>10(+12)</p></td>
+<td><p>65(+40)</p></td>
+<td><p>50(+30)</p></td>
+</tr>
+<tr class="row-even"><td><p>Rogue</p></td>
+<td><p>45(+20)</p></td>
+<td><p>45(+20)</p></td>
+<td><p>32(+10)</p></td>
+<td><p>28(+10)</p></td>
+<td><p>3(+1)</p></td>
+<td><p>20(+16)</p></td>
+<td><p>35(+45)</p></td>
+<td><p>66(+30)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Ranger</p></td>
+<td><p>40(+15)</p></td>
+<td><p>30(+10)</p></td>
+<td><p>28(+10)</p></td>
+<td><p>32(+10)</p></td>
+<td><p>3(+0)</p></td>
+<td><p>15(+15)</p></td>
+<td><p>60(+40)</p></td>
+<td><p>72(+45)</p></td>
+</tr>
+<tr class="row-even"><td><p>Blackguard</p></td>
+<td><p>20(+15)</p></td>
+<td><p>20(+10)</p></td>
+<td><p>24(+10)</p></td>
+<td><p>18(+10)</p></td>
+<td><p>-1(-1)</p></td>
+<td><p>8(+10)</p></td>
+<td><p>65(+40)</p></td>
+<td><p>35(+15)</p></td>
+</tr>
+<tr class="row-odd"><td><p>Monk</p></td>
+<td><p>45(+22)</p></td>
+<td><p>45(+22)</p></td>
+<td><p>32(+11)</p></td>
+<td><p>28(+11)</p></td>
+<td><p>3(+0)</p></td>
+<td><p>10(+12)</p></td>
+<td><p>37(+17)</p></td>
+<td><p>48(+24)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>For character classes, there are two figures: the first figure is the base
+level of the skill, while the second figure (in parentheses) is the bonus
+that the character gains to this skill every ten levels. So, to find out
+the total skill value of any character’s skills, add the race value to the
+class value, and then the bonus once for every ten levels that the
+character has. Throwing skill is not shown as its adjustments for race
+and class are the same as for the shooting skill except for rogues (72(+45)),
+rangers (66(+30)), and blackguards (40(+30)).</p>
+<p>Please note, however, that these numbers are only good for comparing
+characters to each other in the absence of other bonuses from high stats
+(strength bonus to-dam, dex bonus to-hit, wisdom bonus to saving throw,
+intelligence bonus to magical device usage, etc.) or wearing magical items.</p>
+</section>
+<section id="stat-rollers">
+<h2>Stat rollers<a class="headerlink" href="#stat-rollers" title="Link to this heading">#</a></h2>
+<p>There are currently two different ways to determine the starting stats of
+your character - you can choose which one to use from the birth screen.</p>
+<dl>
+<dt>Point-based</dt><dd><p>The point-based method allows you to “buy” improvements to your basic
+stats by “spending” points on them. You have a fixed number of points to
+spend, and making small changes to a stat costs proportionally less than
+making large changes. Any unspent points are converted into your starting
+money that you can use to buy equipment at the start of the game.</p>
+<p>On selecting this option, you will find that the points have already been
+assigned to default recommended values. These represent an algorithm’s
+opinion for the ideal point spending. However, you are free to reallocate
+them as you wish.</p>
+<p>This is the recommended birth method.</p>
+</dd>
+<dt>Standard roller</dt><dd><p>The standard roller simply rolls three six-sided dice for each stat,
+leaving everything to chance. You can press <code class="docutils literal notranslate"><span class="pre">r</span></code> to re-roll the dice, or
+simply accept what luck has offered.</p>
+</dd>
+</dl>
+</section>
+<section id="character-name">
+<h2>Character Name<a class="headerlink" href="#character-name" title="Link to this heading">#</a></h2>
+<p>Once you have accepted a character you will asked to provide a name for the
+character. In general, the actual choice of a name is not important, but do
+keep in mind that it may have some effect on the game itself. For example,
+on some machines, the character name determines the filename that will be
+used to save the character to disk. The character name is used on the high
+score list.</p>
+<p>You can play a dynasty of characters. If you use a Roman numeral at the end
+of your character name (like “Fred I” or “Pimplesnarg XVI”), the game will
+automatically increment the numeral each time you die (or win!).</p>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="manual.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">The Manual</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="dungeon.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Exploring the Dungeon</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#character-characteristics">Character Characteristics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#races">Races</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#racial-powers">Racial powers</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#races-we-decided-against">Races we decided against</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#martial-arts">Martial arts</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#psionics">Psionics</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#patrons">Patrons</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stats">Stats</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#skills">Skills</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stat-bonus-tables">Stat Bonus Tables</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ability-tables">Ability Tables</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stat-rollers">Stat rollers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#character-name">Character Name</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/birth.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, ZangbandTK contributors; Angband developers past and present; Zangband developers past and present.
+      <br/>
+    
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+  </body>
+</html>

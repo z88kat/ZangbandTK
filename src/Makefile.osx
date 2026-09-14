@@ -27,11 +27,26 @@ BUNDLE_IDENTIFIER = org.zangbandtk.zangbandtk
 # vanilla ships under the Angband name.
 DISPLAY_NAME = ZangbandTK
 
-# ZangbandTK (DEC-22): Apple Silicon only. macOS Intel reaches legacy status in
-# September 2026, so there is no future in an x86_64 slice worth the build time
-# and bundle size. Vanilla builds universal here; we deliberately do not.
+# ZangbandTK (DEC-22, amended): one architecture per build, arm64 by default.
+# Intel is supported again and is built by its own CI job with ARCHS=x86_64, as
+# a separate download rather than a universal slice inside this one -- vanilla
+# builds universal here and we still deliberately do not. Two thin images cost
+# an Apple Silicon player nothing, where a fat one would make every download
+# carry a second copy of the game that most machines can never run.
 ARCHS = arm64
 ARCHFLAGS = $(addprefix -arch ,$(ARCHS))
+
+# The architecture's mark on the released file name. arm64 is the default build
+# and keeps the plain name it has always had, so nothing that points at
+# ZangbandTK-<version>-osx.dmg has to change; an Intel build names itself. This
+# is derived rather than passed in on purpose: the two builds write their image
+# into the same directory, and left to share a name the second one would
+# silently overwrite the first.
+ifeq ($(strip $(ARCHS)),x86_64)
+ARCHSUFFIX = -intel
+else
+ARCHSUFFIX =
+endif
 OSXVERSFLAGS = -mmacosx-version-min=10.9
 WARNINGS = -W -Wall -Wextra -Wno-unused-parameter \
 	-Wno-missing-field-initializers -Wwrite-strings -Wmissing-prototypes \
@@ -301,10 +316,10 @@ dist: install
 	codesign --force --deep --sign - disttemp/$(APPNAME)
 	codesign --verify --strict disttemp/$(APPNAME)
 
-	@-rm ../"$(PACKAGE_NAME)-osx.dmg"
+	@-rm ../"$(PACKAGE_NAME)-osx$(ARCHSUFFIX).dmg"
 
 	hdiutil create -quiet -fs HFS+ -volname $(PACKAGE_NAME) -srcfolder disttemp disttemp.dmg
-	hdiutil convert disttemp.dmg -quiet -format UDZO -imagekey zlib-level=6 -o ../"$(PACKAGE_NAME)-osx.dmg"
+	hdiutil convert disttemp.dmg -quiet -format UDZO -imagekey zlib-level=6 -o ../"$(PACKAGE_NAME)-osx$(ARCHSUFFIX).dmg"
 
 	rm -rf disttemp*
 
