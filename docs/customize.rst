@@ -63,15 +63,35 @@ have graphics turned on, then the game will also load some settings from
 After these are complete, the game will try to load (in order):
 
 * ``window.prf`` - loaded for all characters
-* *race*.prf - where *race* is your character's race, so something like
-  ``Dwarf.prf``
-* *class*.prf - where *class* is your character's class, so something like
-  ``Paladin.prf``
+* ``user.prf`` - also loaded for all characters, and the usual place to put
+  your own settings
 * *name*.prf - where *name* is your character's name, so something like
-  ``Balin.prf``
+  ``Balin.prf``.  If no file of that name exists, the game looks for one named
+  after the savefile instead
 
-You can save some settings - for example, keymaps - to the ``Mage.prf`` file
-if you only want them to be loaded for mages.
+.. note::
+
+   **There are no per-race or per-class pref files.**  Zangband loaded
+   ``Dwarf.prf`` and ``Paladin.prf`` alongside the character's own file, and
+   Angband 4.2 does not — a ``Mage.prf`` sitting in your user directory will
+   never be read.
+
+   What replaced them is better, because it works inside a file that *is*
+   loaded.  A pref file can carry conditional lines, so you can put everything
+   in ``user.prf`` and fence off the parts that should only apply sometimes::
+
+       ?:[EQU $CLASS Mage]
+       keymap-act:maa
+       keymap-input:0:[F1]
+       ?:1
+
+   ``?:`` takes an expression in brackets and switches the rest of the file on
+   or off; ``?:1`` switches it back on again.  The variables are ``$CLASS``,
+   ``$RACE`` and ``$SYS`` (the front end in use — ``x11``, ``sdl2``, ``win``
+   and so on), and the operators are ``EQU``, ``IOR``, ``AND`` and ``NOT``, so
+   ``?:[IOR [EQU $SYS xaw] [EQU $SYS x11]]`` is how the shipped ``font.prf``
+   picks an X11 font.  The game's own files in ``lib/customize/`` are the
+   worked examples.
 
 You may also enter single user pref commands directly, using the special "Enter a
 user pref command" command, activated by pressing ``"``.

@@ -31,6 +31,51 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+14 September 2026 — a documented file that is never opened
+==========================================================
+
+Steven asked whether the user pref files are documented. They are --
+``customize.rst`` has had a *User Pref Files* section all along, and unlike the
+debug page it is written for 4.2's behaviour rather than Zangband's: the right
+directory, the right platform paths, the right entry points. Which made the one
+thing wrong with it worth the reading.
+
+**It documents two files the game never loads.** The section says the load
+order is ``window.prf``, then *race*.prf, then *class*.prf, then *name*.prf,
+and then advises: "You can save some settings -- for example, keymaps -- to the
+``Mage.prf`` file if you only want them to be loaded for mages." That was
+Zangband's behaviour. ``process_character_pref_files()`` loads ``window.prf``,
+``user.prf``, and then the character's *name* -- falling back to the savefile's
+name if there is no file for the character. There is no race file and no class
+file, and a ``Mage.prf`` sitting in a user directory is read by nothing.
+
+So the advice was not merely stale, it was a recipe that silently does nothing.
+Somebody following it would write a file, see no keymaps, and have no way to
+tell whether they had got the syntax wrong, the directory wrong, or the idea
+wrong.
+
+**And the replacement was undocumented.** 4.2 dropped the per-race and
+per-class files because it has something better: a pref file can carry
+conditional lines. ``?:`` takes a bracketed expression and switches the rest of
+the file on or off, the variables are ``$CLASS``, ``$RACE`` and ``$SYS``, and
+the operators are ``EQU``, ``IOR``, ``AND`` and ``NOT``. The game's own
+``font.prf`` is the worked example -- ``?:[IOR [EQU $SYS xaw] [EQU $SYS x11]]``
+is how it picks an X11 font -- and it has been sitting in ``lib/customize/``
+being an example nobody was pointed at. The section now gives the class-
+conditional keymap that the ``Mage.prf`` advice was reaching for, written the
+way that actually works, with the example keyed to ``[F1]`` so it matches the
+Keymaps section twenty lines further down.
+
+``user.prf`` was missing from the list too, which is the file most people
+actually want: loaded for every character, and the natural home for exactly the
+kind of thing the conditional syntax fences off.
+
+Two documentation defects in two days, both the same shape -- a page that
+described an interface nobody had opened in a while. The debug page listed
+every command and never said the menu existed; this one listed a loading order
+with two entries that do not load. Neither would ever fail a test, and both
+cost somebody an afternoon the first time they trusted it.
+
 14 September 2026 — the page that listed the commands and not the door
 ======================================================================
 
