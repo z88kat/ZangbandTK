@@ -32,7 +32,7 @@ what comes next.
 
 
 14 September 2026 — the oldest document, and the mechanics nobody wrote down
-===========================================================================
+============================================================================
 
 The magic system overview, dated May 2000 -- five years older than the source
 it describes and by some distance the oldest thing in the archive. Steven

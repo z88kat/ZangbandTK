@@ -19,6 +19,7 @@
 
 #include "init.h"
 #include "cave.h"
+#include "obj-util.h"
 #include "game-world.h"
 #include "generate.h"
 #include "mon-make.h"
@@ -27,6 +28,7 @@
 #include "option.h"
 #include "player.h"
 #include "player-birth.h"
+#include "effects.h"
 #include "player-calcs.h"
 #include "test-utils.h"
 
@@ -303,6 +305,133 @@ static int test_monsters_arrive_with_double_energy(void *state) {
 	ok;
 }
 
+/**
+ * A sustain fails one time in thirteen (effects.c:2807).
+ *
+ * §2.8.3 calls this plausibly the cruellest thing in the mode, and no spoiler
+ * mentions sustains at all. Statistical in form only: without the option a
+ * sustain holds *every* time, by construction, so any failure at all is the
+ * guard misfiring.
+ *
+ * Six hundred attempts gives about forty-six failures expected with the mode
+ * on. The bar is set low enough that a bad run cannot reach it and high enough
+ * that zero cannot pass.
+ */
+static int test_a_sustain_sometimes_fails(void *state) {
+	int plain = 0, nasty = 0, i;
+	const int runs = 600;
+
+	for (i = 0; i < runs; i++) {
+		player->stat_cur[STAT_STR] = 18;
+		player->stat_max[STAT_STR] = 18;
+		of_on(player->state.flags, OF_SUST_STR);
+
+		nightmare(false);
+		effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_STR, 0, 0,
+				0, 0, NULL);
+		if (player->stat_cur[STAT_STR] < 18) plain++;
+
+		player->stat_cur[STAT_STR] = 18;
+		player->stat_max[STAT_STR] = 18;
+		nightmare(true);
+		effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_STR, 0, 0,
+				0, 0, NULL);
+		if (player->stat_cur[STAT_STR] < 18) nasty++;
+	}
+	nightmare(false);
+
+	if (plain != 0 || nasty < 10) {
+		printf("sustain failures over %d attempts: %d plain, %d nightmare "
+				"(plain must be none, nightmare about one in thirteen)\n",
+				runs, plain, nasty);
+		require(false);
+	}
+	ok;
+}
+
+/**
+ * And when a drain lands it sticks, twelve times in thirteen
+ * ([effects.c:2818](../../archive/zangband/src/effects.c#L2818)).
+ *
+ * The other half of the same cruelty, and a separate test because it is a
+ * separate assertion: the one above watches `stat_cur`, which moves either
+ * way, and this watches `stat_max`, which is what "permanent" means and which
+ * an ordinary drain never touches.
+ *
+ * Zangband writes the condition as `!one_in_(13)`, so the drain is temporary
+ * on its own one-in-thirteen roll -- a different draw from the one the sustain
+ * fails on, and not meant to be the same.
+ */
+static int test_a_drain_becomes_permanent(void *state) {
+	int plain = 0, nasty = 0, i;
+	const int runs = 300;
+
+	for (i = 0; i < runs; i++) {
+		player->stat_cur[STAT_STR] = 18;
+		player->stat_max[STAT_STR] = 18;
+		of_off(player->state.flags, OF_SUST_STR);
+
+		nightmare(false);
+		effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_STR, 0, 0,
+				0, 0, NULL);
+		if (player->stat_max[STAT_STR] < 18) plain++;
+
+		player->stat_cur[STAT_STR] = 18;
+		player->stat_max[STAT_STR] = 18;
+		nightmare(true);
+		effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_STR, 0, 0,
+				0, 0, NULL);
+		if (player->stat_max[STAT_STR] < 18) nasty++;
+	}
+	nightmare(false);
+
+	/* Never without the mode; nearly always with it. */
+	if (plain != 0 || nasty < runs * 4 / 5) {
+		printf("permanent drains over %d: %d plain, %d nightmare "
+				"(plain must be none, nightmare nearly all)\n",
+				runs, plain, nasty);
+		require(false);
+	}
+	ok;
+}
+
+/**
+ * Stair creation does nothing at all (dungeon.c:2913).
+ *
+ * No Deep Descent, no stair scumming, no escape hatch. Zangband forces both
+ * `create_down_stair` and `create_up_stair` off; 4.2 reaches both through one
+ * effect, so one refusal is the whole of it.
+ */
+static int test_no_stairs_can_be_made(void *state) {
+	bool made;
+
+	require(square_isfloor(cave, player->grid));
+
+	/*
+	 * Read through the square rather than the return value: `effect_simple()`
+	 * returns nothing, so what is being asserted is whether a staircase is
+	 * actually there afterwards -- which is the thing a player would notice.
+	 */
+	nightmare(false);
+	effect_simple(EF_CREATE_STAIRS, source_player(), "0", 0, 0, 0, 0, 0, NULL);
+	made = square_isstairs(cave, player->grid);
+	require(made);
+
+	/* Put the floor back, so the second half starts where the first did. */
+	square_set_feat(cave, player->grid, FEAT_FLOOR);
+	require(square_isfloor(cave, player->grid));
+
+	nightmare(true);
+	effect_simple(EF_CREATE_STAIRS, source_player(), "0", 0, 0, 0, 0, 0, NULL);
+	made = square_isstairs(cave, player->grid);
+	nightmare(false);
+	if (made) {
+		printf("stairs were made under nightmare mode\n");
+		require(false);
+	}
+	ok;
+}
+
 const char *suite_name = "game/nightmare";
 struct test tests[] = {
 	{ "nightmare-is-an-optional-birth-choice",
@@ -316,5 +445,8 @@ struct test tests[] = {
 	{ "an-ambusher-loses-its-grace", test_an_ambusher_loses_its_grace },
 	{ "monsters-arrive-with-double-energy",
 			test_monsters_arrive_with_double_energy },
+	{ "a-sustain-sometimes-fails", test_a_sustain_sometimes_fails },
+	{ "a-drain-becomes-permanent", test_a_drain_becomes_permanent },
+	{ "no-stairs-can-be-made", test_no_stairs_can_be_made },
 	{ NULL, NULL }
 };

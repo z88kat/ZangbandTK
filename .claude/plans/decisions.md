@@ -4184,3 +4184,50 @@ mode is documented as not winnable, the borg cannot leave depth 1 on most runs,
 and a second nightly job for a mode nobody has played would be speculative.
 That raises what the tests have to do, and every one of them asserts the
 behaviour off without the option and on with it.
+
+**DEC-82 — Neither of nightmare mode's two nightmares is built, for two
+different reasons, and only one of them is permanent.**
+
+Zangband calls `have_nightmare()` from two of its twenty-four nightmare sites:
+the inn ([bldg.c:865](../zangband/src/bldg.c#L865)) and a sleep attack landing
+on the player ([spells1.c:3784](../zangband/src/spells1.c#L3784)). Both are in
+§2.8.2's sixteen. Neither is being built, and the difference between the two
+answers matters more than the fact that both are no.
+
+**The sleep attack: not built *at this time*.** The project owner: *"it's not
+there, we don't invent it here at this time."*
+
+4.2 has no player sleep at all. `SLEEP_ALL`, `SLEEP_EVIL` and `SLEEP_UNDEAD`
+are monster-targeting projections; the player's timed-effect list has
+`PARALYZED` and nothing else that would serve. So Zangband's trigger has no
+hook here, and building one means giving the game a player state it has never
+had — which is adding a mechanic, not porting a behaviour, and nightmare mode
+is not the reason to add it.
+
+*Recorded as deferred rather than refused, deliberately.* This is not DEC-81's
+score multiplier, which is closed because 4.2's scoring has no multiplier for
+any option and inventing one would be our design. If a player sleep state
+arrives for some other reason — a monster spell, a realm, a mutation — then the
+hook exists and this becomes available. The answer is "no mechanism", not "no".
+
+**The inn: skipped.** The project owner: not sure what to do about it, would
+rather leave it, it is not main gameplay.
+
+Unlike the sleep attack this one *does* have a mechanism —
+`player_night_dream()` and `player_dream_chances()`
+([player-util.c:2485](../../src/player-util.c#L2485)), built for PLR-41 out of
+4.2's own parts and keyed on the town's law rather than on Zangband's sanity
+system, which DEC-32 dropped. §2.8.6 proposed pushing those chances "towards
+the dark" under nightmare.
+
+What that would take is choosing a number on a formula that is already
+documented and already has a test pinning it
+(`the-inn-dreams-by-the-law`). There is no figure in the archive to copy,
+because the archive's version of this is a function this project does not have.
+So it would be our design, on a piece of the game a player meets once a night
+at most. The existing behaviour stands unchanged with the option on.
+
+**This takes the two nightmares out of the sixteen.** What remains of M11 stage
+1 is five behaviours — sustains failing, drains sticking, invisible walls, the
+midnight curse and its bell, Word of Recall going wrong, no stair creation —
+plus the two generation guards held back for want of a test that discriminates.

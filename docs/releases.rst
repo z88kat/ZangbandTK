@@ -45,6 +45,26 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Nightmare mode takes your sustains and your stairs — 14 September 2026
+--------------------------------------------------------------------------
+
+- **3.119.1** — Three more of M11's sixteen. **A sustain now fails one time in
+  thirteen**, and when a stat drain does land it is **permanent** twelve times
+  in thirteen rather than wearing off. Nothing in Zangband's own documentation
+  mentions sustains at all, which makes this probably the cruellest thing in the
+  mode and certainly the least expected: a sustain is a property you buy once
+  and stop thinking about.
+
+  **And no stairs can be made.** Stair creation does nothing — no scumming for a
+  convenient descent, no escape hatch out of a level that has gone wrong.
+
+  Two of the sixteen are also now closed rather than pending. **Sleeping at the
+  inn is unchanged** under nightmare, and **a sleep attack cannot give you
+  nightmares because nothing in this game can put you to sleep** — monsters
+  paralyse, which is a different thing. The second is deferred rather than
+  refused: if a sleep state ever arrives for another reason, the nightmare can
+  hang off it.
+
 The Intel Mac comes back — 14 September 2026
 --------------------------------------------
 

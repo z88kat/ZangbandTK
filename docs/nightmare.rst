@@ -59,17 +59,27 @@ with twice as much. In practice it acts sooner after it appears.
 **Sleepers are twice as alert.** A sleeping monster's chance of noticing you on
 any given turn is doubled. Stealth still works; it works half as well.
 
+**Sustains fail, and drains stick.** A sustain holds twelve times in thirteen
+instead of always, and when a stat drain does land it is **permanent** twelve
+times in thirteen rather than wearing off. This is probably the cruellest thing
+in the mode and nothing in Zangband's own documentation mentions it: a sustain
+is a property you buy once and stop thinking about, and one that fails
+occasionally is a different item from one that holds.
+
+**No stairs can be made.** Stair creation does nothing — no scumming for a
+convenient descent, no escape hatch when a level turns out badly. You leave a
+floor by the stairs that are on it.
+
 Not built yet
 -------------
 
 The rest of M11, and worth listing because a player reading this should know
 what the mode does *not* currently do: more out-of-depth monsters and
-depth-restricted monsters appearing above their level; sustains that fail and
-stat drains that stick; invisible walls; the midnight curse and the bell that
-warns of it; Word of Recall sending you deeper than you asked; stair creation
-being disabled; and nightmares at the inn and from a sleep attack.
+depth-restricted monsters appearing above their level; invisible walls; the
+midnight curse and the bell that warns of it; and Word of Recall sending you
+deeper than you asked.
 
-And two things that will never be built, which are decisions rather than gaps:
+And four things that will not be built. Two are permanent decisions:
 
 - **Your score is unaffected.** Zangband gives nightmare characters a score
   bonus. This game's scoring has no multiplier of any kind to attach one to, for
@@ -78,6 +88,20 @@ And two things that will never be built, which are decisions rather than gaps:
 - **A Golem keeps its immunity to stunning.** Zangband takes it away, but not
   for nightmare alone — two other difficulty options do the same, and this game
   has neither of them.
+
+And two are about the mode's two nightmares, which Zangband triggers at the inn
+and when a sleep attack lands on you:
+
+- **Sleeping at the inn is unchanged.** This game already dreams there, in a
+  form built from its own parts and keyed on the town's law rather than on
+  Zangband's sanity system — which this project does not have and is not going
+  to. Making those dreams darker under nightmare would mean inventing a number
+  for a piece of the game you meet once a night at most.
+- **A sleep attack cannot give you nightmares, because nothing can put you to
+  sleep.** There is no player sleep in this game at all — monsters can paralyse
+  you, which is a different thing. Zangband's trigger has nowhere to attach.
+  *This one is deferred rather than refused*: if a sleep state ever arrives for
+  some other reason, the nightmare can hang off it.
 
 A note on the spoiler
 ---------------------
