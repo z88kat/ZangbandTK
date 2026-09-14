@@ -89,6 +89,18 @@
 # and never hide the build output behind `>/dev/null` while doing it: a build
 # that failed and a build that was a no-op are indistinguishable once silenced,
 # and both leave you running yesterday's binary.
+#
+# The same trap has a second half. Restoring a source file with `cp` and
+# rebuilding straight away often does **not** recompile it -- the build compares
+# timestamps at one-second granularity, and a restore inside the same second as
+# the previous build looks current. `touch` is not enough on its own; the pause
+# is. The cost of getting this wrong is not a failed run but a *passing* one:
+# the mutation stays in the binary, so the restore reports the mutation's
+# verdict and the conclusion is drawn about code that is no longer there. Two
+# working guards were deleted on the strength of it before the pattern was
+# recognised. A script doing this should assert that the file actually
+# recompiled -- grep the build log for `Building C object .*<file>` -- rather
+# than assume it.
 
 set -e
 

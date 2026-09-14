@@ -45,6 +45,24 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The wrong monsters, on the wrong floor — 14 September 2026
+--------------------------------------------------------------
+
+- **3.119.2** — Two more of M11's sixteen, and they are the two that change what
+  you *meet* rather than what it does to you. The game's ordinary rule for
+  generating something out of its depth adds a few levels at most; under
+  nightmare it multiplies, uncapped, so the fifth floor can hold something from
+  the eighty-fifth. And the monsters normally pinned to their own depth — the
+  ones the game will never generate early whatever else happens — are no longer
+  pinned. Only quest monsters still are.
+
+  **These are the two I pulled out on Friday**, saying the tests did not
+  discriminate. The tests were fine. What was wrong was the harness measuring
+  them: restoring a source file and rebuilding within the same second does not
+  recompile it, so every "restored" run was still testing the mutated binary.
+  Two working guards were deleted on the strength of a stale build. The harness
+  now asserts the file actually recompiled, and ``check-build``'s notes say why.
+
 Nightmare mode takes your sustains and your stairs — 14 September 2026
 --------------------------------------------------------------------------
 

@@ -70,14 +70,19 @@ occasionally is a different item from one that holds.
 convenient descent, no escape hatch when a level turns out badly. You leave a
 floor by the stairs that are on it.
 
+**What lives on a floor is not what should live there.** Two changes at once.
+The game's ordinary rule for putting something out of its depth adds a few
+levels at most; under nightmare it multiplies, uncapped, so a monster on the
+fifth floor can be one you would expect eighty floors down. And the monsters
+normally pinned to their own depth — the ones the game will never generate
+early, whatever else it does — are no longer pinned. Only quest monsters still
+are.
+
 Not built yet
 -------------
 
-The rest of M11, and worth listing because a player reading this should know
-what the mode does *not* currently do: more out-of-depth monsters and
-depth-restricted monsters appearing above their level; invisible walls; the
-midnight curse and the bell that warns of it; and Word of Recall sending you
-deeper than you asked.
+The rest of M11: invisible walls; the midnight curse and the bell that warns of
+it; and Word of Recall sending you deeper than you asked.
 
 And four things that will not be built. Two are permanent decisions:
 

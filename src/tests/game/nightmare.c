@@ -432,6 +432,91 @@ static int test_no_stairs_can_be_made(void *state) {
 	ok;
 }
 
+/**
+ * A FORCE_DEPTH monster can be chosen above its level (monster2.c:1735).
+ *
+ * 4.2 refuses outright; nightmare mode allows it for everything except a quest
+ * monster.
+ *
+ * Asked of the selection rather than of a sample. Every FORCE_DEPTH monster
+ * this game ships is a level-99 unique -- the four Saurons and Morgoth -- so
+ * drawing until one appears is a lottery that returns zero on both sides and
+ * says nothing. The flag is borrowed for a race that *is* chosen, sitting one
+ * level above the floor and drawn against a shallow table, so the guard is the
+ * only thing that varies between the two halves.
+ */
+static int test_a_force_depth_monster_can_come_up(void *state) {
+	struct monster_race *guinea = lookup_monster("soldier");
+	int plain = 0, nasty = 0, i;
+	const int runs = 2000;
+	const int depth = 5;
+	int kept_level;
+
+	require(guinea);
+	kept_level = guinea->level;
+	guinea->level = depth + 1;
+	rf_on(guinea->flags, RF_FORCE_DEPTH);
+
+	for (i = 0; i < runs; i++) {
+		nightmare(false);
+		if (get_mon_num(depth + 5, depth) == guinea) plain++;
+
+		nightmare(true);
+		if (get_mon_num(depth + 5, depth) == guinea) nasty++;
+	}
+	nightmare(false);
+
+	rf_off(guinea->flags, RF_FORCE_DEPTH);
+	guinea->level = kept_level;
+
+	if (plain != 0 || nasty == 0) {
+		printf("out-of-depth FORCE_DEPTH picks over %d draws: %d plain, "
+				"%d nightmare (plain must be none, nightmare must be some)\n",
+				runs, plain, nasty);
+		require(false);
+	}
+	ok;
+}
+
+/**
+ * Monsters come from far deeper than the floor they stand on
+ * (monster2.c:765).
+ *
+ * 4.2's own out-of-depth rule is capped at `depth / 4 + 2`; Zangband's
+ * nightmare branch is `1 + (level * 128 / randint1(128))`, uncapped. At depth 5
+ * that reaches far past anything the ordinary rule can produce, and the bar is
+ * set above 4.2's ceiling so the ordinary rule cannot reach it however the dice
+ * fall.
+ */
+static int test_monsters_come_from_much_deeper(void *state) {
+	int plain_max = 0, nasty_max = 0, i;
+	const int runs = 3000;
+	const int depth = 5;
+	/* 4.2's rule tops out at depth + depth/4 + 2, which is 8 here. */
+	const int beyond = 25;
+
+	for (i = 0; i < runs; i++) {
+		struct monster_race *race;
+
+		nightmare(false);
+		race = get_mon_num(depth, depth);
+		if (race && race->level > plain_max) plain_max = race->level;
+
+		nightmare(true);
+		race = get_mon_num(depth, depth);
+		if (race && race->level > nasty_max) nasty_max = race->level;
+	}
+	nightmare(false);
+
+	if (plain_max >= beyond || nasty_max < beyond) {
+		printf("deepest monster over %d draws at depth %d: %d plain, "
+				"%d nightmare (plain must stay under %d)\n",
+				runs, depth, plain_max, nasty_max, beyond);
+		require(false);
+	}
+	ok;
+}
+
 const char *suite_name = "game/nightmare";
 struct test tests[] = {
 	{ "nightmare-is-an-optional-birth-choice",
@@ -448,5 +533,9 @@ struct test tests[] = {
 	{ "a-sustain-sometimes-fails", test_a_sustain_sometimes_fails },
 	{ "a-drain-becomes-permanent", test_a_drain_becomes_permanent },
 	{ "no-stairs-can-be-made", test_no_stairs_can_be_made },
+	{ "a-force-depth-monster-can-come-up",
+			test_a_force_depth_monster_can_come_up },
+	{ "monsters-come-from-much-deeper",
+			test_monsters_come_from_much_deeper },
 	{ NULL, NULL }
 };
