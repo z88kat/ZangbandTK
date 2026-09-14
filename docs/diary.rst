@@ -31,6 +31,175 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+14 September 2026 — the page that listed the commands and not the door
+======================================================================
+
+Steven looked at Zangband's "Wizard and Debugging Modes" page and said he did
+not think we had all of it, and that it was certainly not in the manual. He was
+right twice, and wrong about which way round the gap ran, which is the
+interesting part.
+
+**Nothing documented is missing.** I diffed the page against ``ui-game.c`` by
+machine: forty-eight debug commands implemented, forty-eight described. Every
+one of Zangband's thirty-odd has a counterpart or a better replacement, and the
+four I first thought absent -- query a square flag, query a feature, the noise
+and scent peek, the keystroke log -- are all in a ``Query`` submenu I had not
+found yet.
+
+**Seven implemented commands were not documented**, and three of them are the
+ones this game added: *Mutations*, *Gain a pet* and *Set allegiance*. Those
+three exist precisely because mutations, pets and three-sided allegiance are the
+hardest things here to reach by playing -- chaos hands out mutations and you do
+not choose them; a monster's side is not something you can set from the keyboard
+-- and the page that tells a developer how to test this game did not mention any
+of them. The other four were *Gain gold*, *Gain hit points*, *Know every place*
+and *Learn all monsters*.
+
+**And the page never said how to open the menu.** No ``^A`` anywhere on it. It
+opened on "Item Creation" and listed keys, and a reader coming from Zangband's
+page -- which describes a flat ``^A``-then-a-letter interface -- would have
+tried ``^A c`` and got a category list instead. 4.2 nests the commands in nine
+categories and every key on our page is a key *within* one, which the page did
+not say, so every entry on it was subtly wrong about how to use it.
+
+**Wizard mode was not documented at all.** It appears twice in ``playing.rst``
+as ``^w (special - wizard mode)`` in a key table, and once in the options page
+as a thing that puts **Cheat** on the status line. What it does was nowhere. It
+is worth three sentences: it marks the savefile permanently on first use, it
+shows every artifact in the knowledge list whether created or not, and **it
+makes death optional** -- ``cheat_death()`` restores you and hands you back the
+game. That last one is the whole reason the mode exists and it was written down
+in no document at all.
+
+Also worth recording because it is the fourth time this week: Zangband's page
+describes wizard mode as giving verbose damage reporting and an explanation of
+why an object vanished. Ours does neither. Not a gap -- those are 2002 Zangband
+features that 4.2 never had and we never took -- but it is another line in a
+document that would have sent somebody looking for a feature that was never
+here. The page now says so.
+
+Nothing in the game changed. This was a documentation defect from end to end,
+and the machine diff is the part worth keeping: forty-eight against forty-eight
+is a number that can be re-checked in a minute, where "looks complete" is not.
+
+14 September 2026 — a curse with a third of itself missing
+==========================================================
+
+The Ancient and Foul Curse, and the spoiler that has been wrong all along in a
+way nobody could have caught without opening ``spells2.c``.
+
+**The cascade is right and the weights are exact.** Nine steps, cumulative
+weights 4, 7, 11, 14, 19, 22, 23, 24, 26 out of 27, which is the spoiler's
+4/27, 3/27, 4/27, 3/27, 5/27, 3/27, 1/27, 1/27, 2/27 to the number -- and the
+unclaimed twenty-seventh, where the curse passes without incident, is in there
+too and commented. One in six to drag in the next step, one in three to start
+over, stopping on paralysis or Cyberdemons. All Zangband's.
+
+**But the spoiler describes a 27-case curse and the source rolls
+``randint1(34)``.** The seven cases it never mentions are all at the
+dungeon-wrecking end: an earthquake of radius 5 to 15; ``destroy_area()`` to
+radius 20 followed by a 10d5 mana ball; a 10d10 teleport that also summons
+something greater twelve times in thirteen; and a wall breaker with a one-in-
+seven radius-7 ``KILL_WALL`` behind it. Three of the four only fire on the
+first round, which is presumably why the spoiler's author never saw them often
+enough to write them down. A fifth of Zangband's curse rolls reshape the level
+and none of ours do.
+
+That is not a bug -- CNT-15 cites the spoiler and DEC-16 licenses it -- but it
+is a third of a signature mechanic, and 4.2 has ``EF_DESTRUCTION``,
+``EF_EARTHQUAKE`` and a ``KILL_WALL`` sphere, so all four are expressible. Open
+question 6 in the content plan, with the re-weighting noted as arithmetic and
+the real question flagged as whether a curse that destroys the area under the
+player is wanted at all.
+
+**One real defect, and it is the patron rung again.** ``cascading`` was 7, so
+the chain could not run past the Cyberdemon step into the stat-ruin behind it.
+Zangband writes the cascade as C fall-through and *every* case ends
+``if (!one_in_(6)) break;`` -- including the Cyberdemon case, which drops into
+the default. So it is ``steps - 1``, and it says so now rather than carrying a
+magic 7. Worth noting the spoiler disagrees with both: it says the first six
+fall through and amnesia does not, which is neither what we had nor what the
+code does. Three different answers and only ``spells2.c`` counts.
+
+**And the mechanic had no test.** That is how a chain came to stop one step
+short with nothing noticing, so it has one now: the weights by census, the two
+stop conditions, and the cascade itself proved by the one signature a single
+step cannot leave -- experience loss runs far above the 3-in-27 a non-cascading
+curse would give. Checked against a deliberate regression, as the patron tests
+were: cutting the cascade to zero fails it.
+
+Also missing, and now written down: Zangband's **curse trap**
+(``fields.c:1570``) -- summon 2+1d3 monsters, then invoke the curse if the depth
+beats 1d100, one time in six again. Of the source's nine invocation sites we
+have four, and every absence is now accounted for somewhere: Shuffle deferred,
+the midnight bell listed as unbuilt nightmare content, the patron in yesterday's
+open question, and the trap in today's.
+
+Nine spoilers in, the pattern has stopped surprising me. The documents are a
+record of what somebody believed about the game in about 2002, and they are
+wrong about something roughly two times in three. What has changed is that I no
+longer read them looking for what we missed; I read them looking for which
+*source file* to open.
+
+14 September 2026 — the spoiler that had already been read properly
+===================================================================
+
+Mutations, and the first of these checks where the answer is mostly "yes,
+somebody already did this carefully". The effects were audited against
+``mutation_effect()`` rather than the spoiler when they went in, and the
+release note from that day says why in one sentence I could not improve on:
+the spoiler gives the headline of each mutation and the headline is generally
+the good half. Superhuman strength is "+4 STR" there and +4 STR, -1 INT, -1 WIS
+in the code; being puny is "-4 STR" and also *+2 DEX*. Built from the
+documentation, every good mutation would have been better than Zangband's and
+every bad one kinder. The manual already carries the regeneration-penalty
+finding too -- the spoiler warns that mutations slow your healing, which was
+true of 2.2.2d and had been taken out again by 2.7.5.
+
+So I checked the half that audit did not cover: the nine ways in and the six
+ways out.
+
+**All fifteen are accounted for**, which took some finding because they are
+spread across seven files. In: a Beastman at birth and per level
+(``player-birth.c``, ``player.c``), Polymorph Self as spell and as mutation
+(one ``EF_POLY_SELF``), a failed Chaos spell (``chaos_backfires`` cases 27 and
+28), an unresisted chaos hit at one in three (``project-player.c``), a patron's
+level-up reward (``player-util.c``), and the *Chaos deities give you gifts*
+mutation -- which works by granting ``OF_PATRON``, so ``patron_owes_reward()``
+starts returning true for a character who never swore to anybody. Out: the
+potion of New Life, a cancelling mutation, the Chaos Tower, Polymorph Self's
+shedding loop, and *strangely normal*. Two are deliberately absent with the
+decision recorded: the Eldritch Horror went with DEC-32, and Trump's *Shuffle*
+is deferred.
+
+**And one path is listed that neither game has.** PLR-34 includes "failing a
+Death spell from the Necronomicon", taken from the spoiler, which says it has a
+"chance of same effects as being blasted by an Eldritch Horror". The
+Necronomicon miscast inlines confusion, hallucination and a loss of
+intelligence and wisdom and calls nothing that mutates. And the comparison does
+not save it: ``sanity_blast()`` does not mutate either, nor does
+``have_nightmare()``. Zangband has eight ``gain_mutation()`` call sites and not
+one of them is a Death spell.
+
+Our ``death_miscast()`` is therefore right, and right for the best reason --
+somebody transcribed the code rather than the prose. But the requirement still
+reads like outstanding work, and a comment of ours in ``player-util.c`` said
+the nightmare we dropped could "sometimes grant a mutation", which it could not.
+Both now say what the source says.
+
+That second one is the whole lesson of this fortnight in miniature. The
+Hellfire bug was a note that said Zangband's hell fire hurt *good* monsters;
+the Mind Blast bug was a note that transcribed a divisor as 4 where the source
+said 5; both times the data followed the note and the note had not been checked
+against the code. A note that overstates what was dropped is the same failure
+pointing the other way -- it is how something gets restored that was never
+there. Correcting a comment nobody is reading today is cheap insurance against
+that, which is why it was worth the ten minutes.
+
+Nothing in the game changed. Eight spoilers, seven realms, a power list, a
+reward ladder and ninety-six mutations, and this is the first one where the
+implementation needed nothing at all.
+
 14 September 2026 — one rung, and nine Lords who cannot curse you
 =================================================================
 

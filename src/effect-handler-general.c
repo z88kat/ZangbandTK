@@ -3995,8 +3995,22 @@ bool effect_handler_ANCIENT_CURSE(effect_handler_context_t *context)
 	/* Cumulative weights, out of 27, for each step in ancient_curse_step(). */
 	static const int weight[] = { 4, 7, 11, 14, 19, 22, 23, 24, 26 };
 	const int steps = (int) N_ELEMENTS(weight);
-	/* The first seven may cascade into their successor. */
-	const int cascading = 7;
+	/*
+	 * All but the last may cascade into their successor.
+	 *
+	 * Zangband writes the cascade as C fall-through: every case ends
+	 * `if (!one_in_(6)) break;` and drops into the next, down to and including
+	 * the Cyberdemon case, which falls into the stat-ruin that ends the chain
+	 * ([spells2.c:3705](../archive/zangband/src/spells2.c#L3705)).  So the
+	 * amnesia and the Cyberdemons are both links and not termini.
+	 *
+	 * This read 7 until 3.72.2, which stopped the chain one short -- the
+	 * Cyberdemon step could not reach the stat-ruin behind it.  The spoiler
+	 * says something different again, that "the first six of these can fall
+	 * through" and amnesia has "no fall through", which is neither this nor
+	 * what the code does.  BAL-18: the source is the port.
+	 */
+	const int cascading = steps - 1;
 	struct player *p = player;
 	bool stop = false;
 	int rounds = 0;

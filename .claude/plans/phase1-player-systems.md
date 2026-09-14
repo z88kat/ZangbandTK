@@ -324,6 +324,17 @@ mechanism is the flavour.
 > five when the poison lands, and of those one in four is a full Polymorph Self
 > ([spells1.c:3215](../../archive/zangband/src/spells1.c#L3215)).
 >
+> **And a third is not a path in Zangband either.** This list gives "failing a Death spell
+> from the Necronomicon", on the spoiler's word that it has a "chance of same effects as
+> being blasted by an Eldritch Horror". The source does not: the Necronomicon miscast
+> ([cmd5.c:2739](../../archive/zangband/src/cmd5.c#L2739)) inlines confusion, hallucination
+> and a loss of intelligence and wisdom, and calls nothing that mutates. Nor does the
+> comparison hold — neither `sanity_blast()` nor `have_nightmare()` calls `gain_mutation()`
+> anywhere in 2.7.5. Of Zangband's eight `gain_mutation()` call sites, none is a Death
+> spell. So `death_miscast()` granting no mutation is *correct*, and this line is recorded
+> as satisfied-by-absence rather than left looking like work outstanding. BAL-18: the
+> source is the port. Checked 14 September 2026.
+>
 > Giving poison that behaviour instead was rejected: poison is one of 4.2's commonest damage
 > types, carried by dozens of monsters from the first dungeon level, and hanging a mutation
 > chance on it would mutate low-level characters constantly — which is the opposite of the

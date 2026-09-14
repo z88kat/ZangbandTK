@@ -937,6 +937,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     player/mutation.c
     player/miscast.c
     player/pet-upkeep.c
+    player/ancient-curse.c
     player/psionic-backfire.c
     player/pathfind.c
     player/playerstat.c

@@ -2,6 +2,49 @@
 Debug Command Descriptions
 ==========================
 
+There are two ways to step outside the rules, and they are separate things.
+
+Wizard mode ``^W``
+==================
+
+A toggle, not a menu. The first time you use it the game warns you that this is
+cheating, asks you to confirm, and **marks the savefile permanently** — from
+then on the character cannot be scored, and the status line carries **Cheat** in
+red whether or not the mode is currently on (:doc:`../option`).
+
+What it does while on:
+
+- The character sheet and the status line read ``[=-WIZARD-=]`` instead of your
+  title.
+- The artifact list in ``~`` shows **every** artifact, including ones that have
+  not been created.
+- **Death becomes optional.** When the character dies you are offered the chance
+  to cheat it; taking it restores hit points and spell points, clears every bad
+  effect, and returns you to play.
+
+It does not do what Zangband's wizard mode did. Zangband added verbose damage
+reporting and an explanation of why an object vanished; this game has neither,
+and the mode is a toggle around those three things.
+
+Debug mode ``^A``
+=================
+
+A menu. ``^A`` opens a list of nine categories — Items, Player, Teleport,
+Effects, Summon, Files, Statistics, Query and Misc — and each opens its own list
+of commands. The keys below are the keys *within* a category, so a command is
+two or three keystrokes rather than one: ``^A``, the category, the command.
+
+The first debug command you use asks for confirmation and marks the savefile the
+same way wizard mode does. Zangband's flat ``^A``-then-a-letter interface is not
+how this works; the categories are 4.2's.
+
+.. note::
+
+   This page is the reference for what is *there*. Three of the commands exist
+   only in this game and are the ones to reach for when testing what it added:
+   **Mutations** and **Gain a pet** under Player, and **Set allegiance** under
+   Summon.
+
 Item Creation
 =============
 
@@ -94,6 +137,30 @@ Increase experience ``x``
 Rerate hitpoints ``h``
   Rerates your hitpoints.
 
+Gain gold ``$``
+  Prompts for an amount and adds it to your purse.
+
+Gain hit points ``i``
+  Restores you to full hit points.
+
+Know every place ``k``
+  Marks every town and dungeon entrance in the wilderness as found, so the
+  world map is complete and Word of Recall will take you anywhere
+  (:doc:`../wilderness`).
+
+Mutations ``U``
+  Lists all ninety-six mutations with the character's own marked ``[*]``;
+  select one to toggle it. Chaos hands mutations out and the player does not
+  choose them, which makes everything touching them hard to test on purpose —
+  this is the way in (:doc:`../mutations`).
+
+Gain a pet ``N``
+  Prompts for a monster and places it next to you as a pet, rather than as an
+  enemy (:doc:`../pets`).
+
+Learn all monsters ``B``
+  Gives full monster recall on every monster at once.
+
 Monsters
 ========
 
@@ -103,6 +170,12 @@ Summon monster ``n``
 
 Summon random monster ``s``
   Prompts for a number and then summons that many random monsters near you.
+
+Set allegiance ``y``
+  Changes a monster between hostile, friendly and pet. The three-sided
+  allegiance model is this game's largest change to Angband's assumptions and
+  the hardest thing in it to reach by playing, so this is how to put a monster
+  on a given side and watch what follows (:doc:`../pets`).
 
 Zap monsters ``z``
   Prompts for a distance, up to the maximum sight range, and deletes all

@@ -2541,10 +2541,16 @@ bool patron_owes_reward(const struct player *p)
  *
  * Zangband's inn carried a nightmare: have_nightmare() took a monster from the
  * deepest part of the bestiary, worked a power out of its hit dice, and on a
- * failed save blasted the character's sanity -- draining intelligence and wisdom,
- * inflicting amnesia, and sometimes granting a mutation.  DEC-32 dropped that
- * whole path and kept the dream, with one constraint: no insanity, no amnesia,
- * no mutation trigger.  So this is built out of what 4.2 already has.
+ * failed save blasted the character's sanity -- hallucination, amnesia, and a
+ * loss of intelligence and wisdom.  DEC-32 dropped that whole path and kept the
+ * dream, with one constraint: no insanity, no amnesia.  So this is built out of
+ * what 4.2 already has.
+ *
+ * This comment used to add "and sometimes granting a mutation", which the
+ * spoiler implies and the source does not: neither have_nightmare() nor
+ * sanity_blast() calls gain_mutation() anywhere in 2.7.5.  Corrected 14
+ * September 2026, because a note that overstates what was dropped is how
+ * something gets restored that was never there.
  *
  * Three kinds of night, and which one you get depends on where you sleep:
  *

@@ -377,3 +377,34 @@ monster groupings.
 
    Found while checking the random-object-powers spoiler (14 September 2026); the reasoning
    is in the development diary under that date.
+6. **Should the Curse of Topi Ylinen get the four effects the spoiler left out?** CNT-15 was
+   built from [tycurse.txt](https://web.archive.org/web/20220420164258/http://www.zangband.org/spoilers/tycurse.txt)
+   under DEC-16, and that spoiler describes a **27-case** curse. The source rolls
+   `randint1(34)` ([spells2.c:3576](../../archive/zangband/src/spells2.c#L3576)) and the
+   seven cases the spoiler never mentions are all at the destructive end:
+
+   | Cases | Effect | Gate |
+   |---|---|---|
+   | 28, 29 | earthquake, radius 5 to 15 | first round only |
+   | 30, 31 | destroy the area to radius 20, then a 10d5 mana ball | first round only |
+   | 32, 33 | teleport 10d10, and 12 times in 13 a greater summoning as well | first round only |
+   | 34 | wall breaker, and 1 in 7 a radius-7 `KILL_WALL` | none |
+
+   So a fifth of Zangband's curse rolls reshape the dungeon, and none of ours do. Our
+   nine steps are the spoiler's nine and their weights are exact against it; what is
+   missing is the half of the table the spoiler did not know about. Adding them means
+   re-weighting from 27 to 34, which is arithmetic, and deciding whether a curse that can
+   `destroy_area()` under the player is wanted at all — 4.2 has `EF_DESTRUCTION`,
+   `EF_EARTHQUAKE` and a `KILL_WALL` sphere, so every one of the four is expressible.
+
+   **And one invocation path is missing.** The spoiler lists six things that invoke the
+   curse and the source has nine call sites. Ours has four: cursed equipment, a failed
+   Chaos spell, a dying Amberite's blood curse, and the debug menu. Trump's *Shuffle* is
+   deferred and recorded; the midnight bell is nightmare-mode content already listed as
+   not-yet-built; a Chaos Patron cannot invoke it, which is open question 6 in the
+   player-systems plan. The one with no entry anywhere is **Zangband's curse trap**
+   ([fields.c:1570](../../archive/zangband/src/fields.c#L1570)) — summon 2+1d3 monsters,
+   then invoke the curse if the depth beats 1d100, repeating one time in six.
+
+   Found while checking the Ancient Curse spoiler (14 September 2026); the reasoning is in
+   the development diary under that date.
