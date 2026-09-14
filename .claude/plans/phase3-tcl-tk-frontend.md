@@ -28,7 +28,7 @@ Everything in this table was measured on this Mac today, not inferred:
 | Does Tk 9.0.4 build here, without X11? | **Yes** — `libtcl9tk9.0.dylib`, `wish9.0`, Aqua (Cocoa/Carbon/QuartzCore, no X11), `arm64` | the same script, `--enable-aqua` |
 | Does the original front-end C survive complete? | **Yes** — 49,285 lines of bridge + 16,514 lines of widget library + 121 Tcl scripts, plus every image asset | §1 |
 | Can we ship the original sounds? | **No** — 208 wav files survive, but they are personal-use-only material. 4.2's own pack replaces them | §1.4 |
-| Does that C compile against Tk 9? | **Not as-is — but it converges fast.** 759 errors → **253** after a three-rule mechanical sweep, and **203 of those 253 sit in two files** | §2.2 |
+| Should we port that C? | **No — and not because it is hard.** It reaches 92 errors after four mechanical rules, then loses to Tk 9 and 4.2 on the merits, file by file | §2.2 |
 | Is there a licence problem? | **No.** All 67 front-end files carry the Angband licence, word for word identical to [LICENSE.md](../../LICENSE.md) | §1.6 |
 | Can the old bridge talk to Angband 4.2? | **No.** 774 `p_ptr->` references against a data model that no longer exists | §3.2 |
 | Do we have to guess how the UI behaved? | **No.** `interface.html` is a written interaction spec — ten mouse rules plus per-window behaviour — and the original now runs | §1.5, §8 |
@@ -55,7 +55,7 @@ The complete original stack survives across four locations, and each is the *onl
 
 | Piece | Location | Size | Verdict |
 |---|---|---|---|
-| Widget library (game-agnostic) | [archive/Tk/CommonTk-1.4/…/src/common-dll/](../../archive/Tk/CommonTk-1.4/OmnibandTk/src/common-dll/) | 16,514 lines, 11 files | **Port.** The most valuable part. |
+| Widget library (game-agnostic) | [archive/Tk/CommonTk-1.4/…/src/common-dll/](../../archive/Tk/CommonTk-1.4/OmnibandTk/src/common-dll/) | 16,514 lines, 11 files | **Reference.** Core Tk 9 now does almost all of it (§2.2). Four algorithms in `icon-dll.c` are worth reading. |
 | C↔Tcl bridge (game-coupled) | [archive/Tk/CommonTk-1.4/…/src/common/](../../archive/Tk/CommonTk-1.4/OmnibandTk/src/common/) | 49,285 lines, 32 files | **Rewrite the coupled half; port the rest.** |
 | Tcl user interface | same tree, [tk/](../../archive/Tk/CommonTk-1.4/OmnibandTk/tk/) | 121 scripts, ~108,000 lines | **Adapt.** Reuse is proportional to how many old command names survive. |
 | Game-side C | [archive/Tk/ZAngbandTk-240r5/](../../archive/Tk/ZAngbandTk-240r5/) | 75 files, Zangband 2.4.0 | **Reference only.** Superseded by our own 4.2 tree. |
@@ -260,10 +260,12 @@ between total and remaining, and total and base+bonus; double-click to buy in a 
 > confirmed live. It is a `cursor` canvas item (`-color yellow -linewidth 2`), created at
 > `main-window.tcl:1503` for the Main Window and `misc-window.tcl:426` for the Micro Map.
 >
-> That item type is implemented in **`widget2-dll.c`** — the file carrying 155 of the 253
-> remaining compile errors. So the §7 fallback of "drop the custom canvas items for a plain
-> Tk canvas" is not free: it would have to reimplement `cursor` along with `progressbar`,
-> `text` and `rectangle`. Worth knowing before that fallback is chosen, not after.
+> That item type is implemented in **`widget2-dll.c`** — the file carrying 49 of the 92
+> compile errors §2.2 measures — and that no longer argues for keeping it. The linked cursor is
+> a canvas rectangle with `-outline yellow -width 2`, `progressbar` is a core Ttk widget,
+> and `text` and `rectangle` are canvas built-ins; the whole file has **four** call sites in
+> the scripts (§2.2). Dropping it is nearly free, which is the opposite of what this note
+> used to say.
 
 Treat `interface.html` and `tips.txt` as **T5 and T7 acceptance criteria**. Each rule is a
 testable statement, and between them they define what "the menus work" actually means.
@@ -316,7 +318,7 @@ and neither is needed.
 
 ## 2. Verified build facts
 
-### 2.1 Tcl/Tk 9.0.4 on Apple Silicon — built, and now reproducible on demand
+### 2.1 Tcl/Tk 9.0.4 on macOS — built, and now reproducible on demand
 
 DEC-13 holds, and **T0's first deliverable is done**:
 [scripts/build-tcltk](../../scripts/build-tcltk) builds both from the sources vendored in
@@ -324,7 +326,7 @@ DEC-13 holds, and **T0's first deliverable is done**:
 
 | | |
 |---|---|
-| `libtcl9.0.dylib`, `libtcl9tk9.0.dylib` | `arm64`, both |
+| `libtcl9.0.dylib`, `libtcl9tk9.0.dylib` | `arm64`, both — the host's architecture, see below |
 | `tclsh9.0`, `wish9.0` | run; `zipfs root` answers `//zipfs:/` |
 | Windowing system | **Aqua** — `wish9.0` links Cocoa, Carbon and QuartzCore, and no X11 at all |
 | Private headers | `tclInt.h` and `tkInt.h` installed, which §2.2's port requires |
@@ -348,45 +350,97 @@ skips that step entirely, so neither trap fires. Do **not** reach for `--disable
 zipfs is worth keeping, because it is how the front end's Tcl gets packaged inside the
 executable instead of shipped as a loose directory.
 
+**One toolchain per architecture, and the script already does the right thing.** DEC-22 was
+amended on 14 September: macOS Intel is supported and released again, as two thin builds
+rather than a universal one. `build-tcltk` compiles for its host and nothing else, so an
+arm64 runner produces an arm64 toolchain and `macos-15-intel` produces an x86_64 one, with
+no flags to remember — which is the same reason [release.yaml](../../.github/workflows/release.yaml#L1158)
+runs two native Mac jobs instead of a matrix. The CI cache key includes `runner.arch` so the
+two never collide. Nothing to do here beyond not cross-compiling.
+
 The third trap is new and cost nothing only because the script now encodes it: **`make
 install` does not install `tkInt.h`.** The port's riskiest files reach into it (§2.2), and
 without `install-private-headers` for both Tcl and Tk the front end compiles against the
 source tree here and nowhere else — a failure that would first appear in CI, on a machine
 where nobody could see the source tree at all.
 
-### 2.2 The port measured, not guessed
+### 2.2 The port measured — and then declined
 
-Syntax-checking all 11 game-agnostic widget-library files against Tk 9.0.4 headers:
+*Settled 14 Sep. This section used to argue that the 2001 widget library ports cheaply. It
+does. The measurement stands and is reproduced below, because it is what makes the
+conclusion safe: we are not declining the port because it looked hard.*
+
+The syntax check, re-run against the headers `build-tcltk` installs, with `PLATFORM_MAC`
+defined and `dbwin.h` stubbed:
 
 | State | Errors |
 |---|---:|
-| Untouched 2001 source | **759** |
-| After a three-rule mechanical sweep | **253** |
+| Untouched 2001 source | **433** |
+| After the three-rule mechanical sweep | **203** |
+| After a fourth rule — `Tk_Offset` → `offsetof` | **92** |
 
-The sweep is three substitutions: `CONST`/`CONST84` → `const` (Tcl 9 removed the macro),
-`ClientData` → `void *`, and `int objc` → `Tcl_Size objc` in command procedures. That one
-change clears **two thirds** of the errors, because a single unparseable
-`Tcl_Obj *CONST objv[]` parameter cascades into every use of `objv` in the function body —
-238 of the original 759 errors were that cascade alone.
+The three rules are `CONST`/`CONST84` → `const`, `ClientData` → `void *`, and `int objc` →
+`Tcl_Size objc`. The fourth was missing from the original assessment and matters more than
+any of them: Tk 9 removed `Tk_Offset`, the library uses it 66 times, and each unexpanded use
+manufactures two errors — a type name where an expression was expected, plus an undeclared
+field. After it, `widget2-dll.c` falls from 160 errors to 49 and `plat-dll.c` to zero.
 
-Where the remaining 253 sit is the useful part:
+**So the port is cheap. It is also unnecessary, and that is the decision.** Taking the
+library file by file against what Tk 9 and 4.2 provide today:
 
-| File | Errors | Character |
-|---|---:|---|
-| `widget2-dll.c` | 155 | Custom canvas items — `TextItem`, `ProgressItem`, `RectItem`, `CursorItem` |
-| `widget1-dll.c` | 48 | Custom widget core — `Widget`, `TkClassProcs` |
-| `widget-dll.h` | 15 | its header |
-| everything else (8 files) | **35** | icon engine, map, event binding, struct accessors, platform, cmdinfo |
+| File | Lines | What it does | What replaces it |
+|---|---:|---|---|
+| `icon-dll.c` | 4,037 | Tile engine — *and* `GetPix8`/`SetPix16`/`SetPix24`, `CountBits(mask)`, `InitRGBInfo`, RLE encode/decode, gzip | `Tk_PhotoPutBlock` takes RGBA. The pixel-format discovery and compression solve 1999 problems |
+| `widget2-dll.c` | 2,479 | Item types named `text`, `rectangle`, `progressbar`, `cursor` | Tk canvas has `text` and `rectangle`; `ttk::progressbar` is core; the cursor is a rectangle with `-outline yellow -width 2` |
+| `widget1-dll.c` | 2,455 | A custom canvas-like widget, `TkClassProcs`, private headers | `canvas`, plus Ttk |
+| `util-dll.c` | 1,446 | Utility layer | Tcl 9 core |
+| `qebind-dll.c` | 1,211 | "Send event-like messages to scripts and bind commands to them, with %-substitution like Tk's binding model" | **Core Tk virtual events** — see below |
+| `map-dll.c` | 1,171 | Map widget over 2.4.0's cave model | Rewritten against 4.2 either way |
+| `struct-dll.c` | 1,072 | Struct→Tcl accessors for 2.9.2-era structs | Rewritten against 4.2 either way |
+| `TclTk-dll.c` | 605 | Interpreter glue | Tcl 9 core |
+| `memory-dll.c` | 372 | Debug allocator (`dbcheck`) | Tcl 9's own |
+| `plat-dll.c` | 370 | Platform layer | **Zero usable lines** — every one is inside `#ifdef PLATFORM_WIN` or `#ifdef PLATFORM_X11`, with no `#else`. Under `PLATFORM_MAC` the file compiles to nothing |
+| `cmdinfo-dll.c` | 216 | Command info registry | Our own, over `cmds_all[]` |
 
-**This confirms DEC-14's prediction precisely.** The concentrated risk is the custom widget
-implementations reaching into `tkInt.h`, and the tile/icon engine — the part actually worth
-having — is nearly clean. 35 errors across eight files is a day's work, not a rewrite.
+`qebind` is the clearest case, because it was checked by running it rather than by reading
+it. Its own header describes core Tk's virtual events, and Tk 9 does exactly that:
 
-> **A finding that amends DEC-12.** DEC-12 says platform shims are "small" and "Tk handles
-> drawing portability itself". Half right. `plat-dll.c` *is* small — 370 lines behind a
-> six-function API — but its fast blit path has exactly two implementations: a Windows DIB
-> section, and an X11 **MIT-SHM** shared pixmap. Aqua has neither, and `PLATFORM_MAC`
-> appears in the sources only inside `#error` guards — there is no macOS code behind it.
+```tcl
+bind . <<PlayerMoved>> {puts "got %d"}
+event generate . <<PlayerMoved>> -data "x=12 y=7"
+→ got x=12 y=7
+```
+
+1,211 lines for two. And `plat-dll.c` is the other end of the same argument: the file the
+plan counted as a 370-line port is 370 lines of the two platforms we are not on.
+
+**What the scripts actually depend on**, which is the cost of declining:
+
+| Script-visible API | Call sites | Files |
+|---|---:|---:|
+| `qeinstall` / `qeconfigure` / `qegenerate` | 137 | 12 |
+| `create text` / `create rectangle` | 223 | 53 |
+| `create cursor` | **3** | 3 |
+| `create progressbar` | **1** | 1 |
+
+The last two rows retire §1.5's warning that dropping the custom items "is not free". Four
+call sites. And the 223 in the row above are cheaper than they look, because Baker named his
+item types after Tk's canvas and copied its `create` syntax — moving them to a real canvas
+is close to a rename. The `qebind` rows are a real edit across twelve files, and that is the
+honest price of the decision.
+
+> **The four algorithms worth reading before writing T2.** Buried in `icon-dll.c`'s obsolete
+> plumbing are the behaviours three settled decisions depend on, and they are worth an hour
+> of reading each: `Icon_GetAsciiData` / `objcmd_ascii` (the ASCII hybrid, §6 decision 5),
+> `Icon_MakeDark` (runtime gamma-darkened variants, [OBS-47](phase3-observations.md)),
+> `objcmd_icon_dynamic` (animation frames, [OBS-36](phase3-observations.md)) and
+> `objcmd_icon_photo` (the photo and preview, [OBS-20](phase3-observations.md)). Read as
+> intent, exactly as §1.3 says to read the tile assignment data.
+
+> **A finding that amends DEC-12, and survives the decision.** DEC-12 says platform shims are
+> "small" and "Tk handles drawing portability itself". Half right. `plat-dll.c`'s fast blit
+> path has exactly two implementations: a Windows DIB section, and an X11 **MIT-SHM** shared
+> pixmap. Aqua has neither.
 >
 > DEC-12's list of what `plat.c` abstracts is also one short: besides the font chooser,
 > X-window-to-HWND conversion, `system` and the millisecond timer, there is **the desktop
@@ -394,10 +448,9 @@ having — is nearly clean. 35 errors across eight files is a day's work, not a 
 > ([OBS-37](phase3-observations.md)). On macOS that is the screen's visible frame minus menu
 > bar and Dock.
 >
-> So macOS needs a **third** `plat` backend. The good news is that the fallback already
-> exists in the same tree: `icon-dll.c` uses `Tk_PhotoPutBlock` for the portable path.
-> Start there, measure, and only write a Core Graphics fast path if the portable one is too
-> slow. Keep this behind `plat`, per DEC-12 rule 2.
+> macOS needs a `plat` backend either way — porting would not have supplied one. Start from
+> `Tk_PhotoPutBlock`, measure, and only write a Core Graphics fast path if the portable one
+> is too slow. Keep it behind `plat`, per DEC-12 rule 2.
 
 ---
 
@@ -533,11 +586,11 @@ Phase 3 — it is what turns 108,000 lines of Tcl from a rewrite into an adaptat
 taste. The left-hand column is exempt: those scripts change no matter what they are called,
 because what they *do* is being replaced.
 
-**`qebind` splits along the same line.** §4 budgets `qebind-dll.c` in the Port column, and
-that is still right for its Tcl-facing half — the machinery by which a script says "call me
-when this changes" is genuinely game-agnostic and worth having. Its game-facing half, the
-event *sources*, is replaced by one C shim that turns `event_add_handler` callbacks into
-qebind events. Port the binder, drop the sources.
+**`qebind` is replaced at both ends.** Its game-facing half — the event *sources* — becomes
+one C shim over `event_add_handler`. Its Tcl-facing half, the binder, is core Tk: a
+`<<VirtualEvent>>` carries `-data` to `%d` in a bound script, which is what `qebind-dll.c`'s
+own header set out to provide (§2.2). Nothing of it is ported. The cost is 137 call sites
+across twelve scripts, and it is the largest single edit the decision buys.
 
 ---
 
@@ -602,14 +655,22 @@ towns' names. Check them against DEC-01's Amber target before adopting them whol
 
 ---
 
-## 4. The four-way split of the old code
+## 4. The three-way split of the old code
+
+*Was four-way. The two Port rows are gone: **no 2001 C is compiled into ZangbandTK/Tk**
+(§6 decision 15). What was going to be ported is now either replaced by core Tk 9 and 4.2,
+or read as reference and written fresh — the file-by-file argument is §2.2.*
 
 | Verdict | What | Lines | Note |
 |---|---|---:|---|
-| **Port** | `icon1/2.c`, `icon-dll.c` (tile engine), `map-dll.c`, `qebind-dll.c`, `struct-dll.c`, `util-dll.c`, `cmdinfo-dll.c`, `plat*.c` | ~12,000 | Game-agnostic. 35 compile errors between them. The real prize. `qebind-dll.c` is the one exception: port its binder, drop its event sources for `game-event.h` (§3.3). |
-| **Port, with the risk** | `widget1/2-dll.c`, `canv-widget.c`, `widget.c`, `TclTk-dll.c` | ~8,000 | Private-header widgets. 203 of the 253 remaining errors. |
-| **Rewrite against 4.2** | `interp1.c`, `interp2.c`, `struct.c`, `town.c`, `describe.c`, `r_info.c`, `birth-tnb.c`, `wor-z.c`, `file_character.c`, `main-tnb.c` | ~24,800 | The bulk of Phase 3. |
+| **Reference** | the whole of `common-dll/` — `icon-dll.c`, `widget1/2-dll.c`, `qebind-dll.c`, `map-dll.c`, `struct-dll.c`, `util-dll.c`, `TclTk-dll.c`, `plat-dll.c`, `memory-dll.c`, `cmdinfo-dll.c` | ~16,500 | Read, do not compile. The four algorithms worth the reading are named in §2.2. |
+| **Rewrite against 4.2** | `interp1.c`, `interp2.c`, `struct.c`, `town.c`, `describe.c`, `r_info.c`, `birth-tnb.c`, `wor-z.c`, `file_character.c`, `main-tnb.c` | ~24,800 | The bulk of Phase 3 — and now the whole of the C. |
 | **Drop** | see below | ~10,000 | |
+
+**What goes in `src/tcl/` instead**, written against Tk 9 and 4.2 rather than inherited:
+the four seams of §3.2, the read accessors, and a tile layer over `Tk_PhotoPutBlock`. It is
+smaller than the bridge rewrite that was always going to dominate this phase, and none of
+it arrives with a 1999 pixel format in it.
 
 **Drop, with reasons:**
 
@@ -658,9 +719,8 @@ only reason any of it is in the first milestone.*
   installed.
 - `src/main-tcl.c` from [main-xxx.c](../../src/main-xxx.c): embeds the interpreter, opens one
   toplevel, registers nothing.
-- Vendor the ported widget library under `src/tcl/`, with copyright headers intact.
-- Apply the §2.2 mechanical sweep as **one reviewable commit**, separate from every
-  hand-fix that follows. It touches every file and must not hide real changes.
+- `src/tcl/` starts **empty of inherited code** (§6 decision 15). No vendoring, no
+  mechanical sweep, no 2001 file with our copyright header added to it.
 
 Four more, each moved here from a later milestone because doing it later means doing it
 twice — see §6 decisions 11–13:
@@ -717,7 +777,9 @@ text. Everything 4.2 can draw in a terminal is drawable here.
 ### T2 — Tiles
 *The 16px map from the screenshots.*
 
-- Port the icon engine and `Term_pict`; wire to 4.2's `lib/tiles/list.txt` graphics modes.
+- Write the tile layer over `Tk_PhotoPutBlock` and wire `Term_pict` to 4.2's
+  `lib/tiles/list.txt` graphics modes. Read `icon-dll.c`'s four algorithms first (§2.2);
+  do not port its pixel plumbing, which exists to discover 8- and 16-bit framebuffers.
 - **Default to the neon set (mode 7)** — generated from text shapes, so the PNG is never
   hand-edited.
 - macOS `plat` backend: `Tk_PhotoPutBlock` first, measured; Core Graphics only if needed
@@ -1038,7 +1100,7 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 
 ## 6. Decisions needed
 
-**All fourteen are settled.** Raw findings from the running original accumulate in
+**All fifteen are settled.** Raw findings from the running original accumulate in
 [phase3-observations.md](phase3-observations.md); the settled rationale for each decision
 follows below.
 
@@ -1058,6 +1120,7 @@ follows below.
 | ~~12~~ | ~~Where do the toolchain, the C and the scripts live?~~ | **Settled — `tcltk/`, `src/tcl/`, `lib/tcl/`.** See below. | — |
 | ~~13~~ | ~~Which platform first?~~ | **Settled — macOS through development; the other two before release.** See below. | — |
 | ~~14~~ | ~~Does the Tk build replace `ZangbandTK.app`?~~ | **Settled — no. Two applications, permanently.** See below. | — |
+| ~~15~~ | ~~Port the 2001 widget library?~~ | **Settled — no. None of it is compiled.** See below. | — |
 
 **Settled — Ttk, themed by platform.** Confirmed by project owner. Tk 9's native widget set
 replaces `tk/library/`'s **10,636 lines** of 1999 megawidgets — `ttk::notebook` for tabbed
@@ -1117,7 +1180,8 @@ Assign, Alternate and Sound go — ~9,000 lines. Mapping data lives in `lib/game
 indices — that half is work either way.
 
 **Settled — no isometric view.** `widget-iso.c` (1,656 lines) and `canv-widget.c` stay in the
-tree unported. They double the riskiest part of the Tk 9 port for a mode few used.
+tree unread. Nothing of the old C is compiled now (§6 decision 15), and a mode few used
+is not the place to start writing an isometric renderer from nothing.
 
 **Settled — help is Sphinx content, rendered inside the application.** Confirmed by project
 owner: in-app, not a browser hand-off. [docs/](../../docs/) is already a working Sphinx
@@ -1212,7 +1276,7 @@ no string built by concatenating fragments — because that is good practice reg
 it is the part that would make a future translation possible rather than impossible.
 
 **Settled — three homes, and each one follows an existing pattern.** The question is where
-the toolchain, the ported C and the 121 scripts live now that `archive/` is staying
+the toolchain, the C we write and the 121 scripts live now that `archive/` is staying
 untracked.
 
 | What | Where | Tracked? | Why there |
@@ -1242,9 +1306,11 @@ that is the only platform being tested by hand.
 
 *What follows from it:*
 
-- **One CI job at T0, not three.** `tk.yaml` builds macOS. Linux and Windows jobs land when
-  there is something worth keeping green on them — and they will find real breakage when
-  they do, which is the point of adding them before release rather than at it.
+- **One CI job at T0, not five.** `tk.yaml` builds macOS on `macos-latest`, which has meant
+  arm64 since macos-14. The Intel Mac job, and then Linux and Windows, land when there is
+  something worth keeping green on them — and they will find real breakage when they do,
+  which is the point of adding them before release rather than at it. Four release jobs is
+  where this ends up: two Macs under the amended DEC-22, plus Linux and Windows.
 - **Portability stays a coding discipline meanwhile**, per DEC-12's four rules. The `plat`
   layer gets its macOS backend written and its other two stubbed with `#error`, exactly as
   the original did — a stub that fails loudly at compile time is honest; a silently wrong
@@ -1267,7 +1333,7 @@ appears rather than only on the bundle:
 |---|---|---|
 | Bundle | `ZangbandTK.app` | `ZangbandTclTK.app` |
 | Identifier | `org.zangbandtk.zangbandtk` | `org.zangbandtk.zangbandtcltk` |
-| Release artefact | `<package>-osx.dmg` | `<package>-osx-tcltk.dmg` |
+| Release artefact | `<package>-osx.dmg`, `<package>-osx-intel.dmg` | `<package>-osx-tcltk.dmg`, `<package>-osx-tcltk-intel.dmg` |
 | Built by | `gmake -f Makefile.osx` | cmake, `SUPPORT_TCL_FRONTEND=ON` |
 
 The artefact suffix follows the convention the terminal builds already use —
@@ -1298,13 +1364,35 @@ Phase 3 milestone on the critical path of an application that currently works.
 - **DEC-21's "the terminal build stays the reference" gains a second referent.** Any
   divergence in behaviour between the two applications is a bug in the newer one.
 
+**Settled — no 2001 C is compiled into ZangbandTK/Tk.** Confirmed by project owner:
+*"we can't use that 25 year old code."*
+
+The measurement in §2.2 says the port is cheap — 92 errors after four mechanical rules — and
+the decision is taken anyway, on the merits rather than on difficulty. Core Tk 9 supplies
+the canvas items, the virtual events and the photo blitting the library was written to
+provide; `plat-dll.c` contains zero lines for our platform; and the pieces that are neither
+replaced nor empty are coupled to a data model 4.2 no longer has, so they were in the
+Rewrite column already.
+
+*What this costs, stated plainly:* 137 `qebind` call sites across 12 scripts and 223
+canvas-item sites across 53 have to move onto core Tk. That is real work and it is in the
+Tcl, not the C.
+
+*What it buys:* `src/tcl/` is code we wrote, against APIs that are current, with no 8-bit
+pixel paths, no RLE codec, no private-header dependency and no `#error` for the platform we
+ship on. It also deletes this plan's largest risk rather than mitigating it.
+
+*What it does not change:* the archive stays the reference it has been all along. §2.2 names
+the four algorithms in `icon-dll.c` worth reading before T2, and they are to be read the way
+§1.3 reads the tile assignment tables — as intent, never loaded as data.
+
 ---
 
 ## 7. Risks
 
 | Risk | Severity | Handling |
 |---|---|---|
-| **`widget1/2-dll.c` against Tk 9 internals.** 203 of 253 remaining errors; Tk's internals changed substantially since 8.3. | **High** — the one place this could genuinely stall | Timebox it in T0. If it resists, the fallback is a Tk canvas plus Ttk instead of custom canvas items — slower, and **not free**: it means reimplementing the four custom item types (`cursor`, `progressbar`, `text`, `rectangle`), one of which draws the linked cursor in §1.5. Decide by measurement, not by attachment to the original. |
+| **Re-basing the scripts onto core Tk.** Dropping the 2001 C moves 137 `qebind` call sites across 12 scripts, and 223 `create text`/`create rectangle` sites across 53, onto Tk's own canvas and virtual events (§2.2). | Medium | The item types were named after Tk's canvas and use its `create` syntax, so most of the 223 are close to a rename. Do it per script as its command family lands in T4–T7, never as a sweep. |
 | **The bridge rewrite is the bulk of Phase 3.** Smaller than the 26,000-line estimate now that three of §3.2's four seams already exist, but the read accessors are untouched by that. | **High**, but linear and testable | Build the four seams first (T3), then sequence the accessors by measured script demand (§3.3) so each family lands with the scripts it unlocks. Never "rewrite `interp1.c`" as one task. |
 | **Aqua has no fast blit path.** | Medium | `Tk_PhotoPutBlock` first, measured at actual size. Behind `plat`. |
 | **Phase 2 keeps moving under it.** M7/M9/M10 change races, classes, realms and pets — exactly what T4 and T8 display. | Medium | T8 after M9. T4 reads through accessors, not layouts. |
@@ -1344,16 +1432,21 @@ Phase 3 milestone on the critical path of an application that currently works.
 
 Stated plainly, so nothing here reads as more settled than it is:
 
-- **Nothing has been linked.** §2.2 is `-fsyntax-only`. The toolchain it would link against
-  now exists and is verified (§2.1), but no game object has been built against it, and link
-  errors and runtime behaviour are unmeasured.
+- **Nothing has been linked.** The toolchain exists and is verified (§2.1), but no game
+  object has been built against it. §2.2's error counts were `-fsyntax-only` and are now
+  historical: with §6 decision 15 none of that C is compiled, so what is unmeasured is our
+  own `src/tcl/`, which does not exist yet.
 - **The 121 scripts have not been run against Tk 9.** They *have* now been run against their
   own Tk 8.3.3 — see the box above — but 8.3 → 9 changes scripts too (encoding, the
   `Tcl_Size`-driven API surface, removed commands), and 108,000 lines are unaudited.
 - **The input hooks are unexercised.** They are declared, and `textui_input_init()` installs
   them, but no front end in the tree overrides one. T3 is the first (§3.2).
-- **Rendering performance is unmeasured** on the portable blit path. This is the one that
-  could change T2's design.
+- **The script re-basing is counted, not attempted.** §2.2 measures 137 `qebind` call sites
+  and 223 canvas-item sites, and argues most of the second group is close to a rename. No
+  script has actually been moved onto core Tk to check that.
+- **`Tk_PhotoPutBlock` is now the only blit path.** With decision 15 there is no inherited
+  fast path to fall back to, so T2's performance measurement decides the design rather than
+  merely confirming it.
 - **The read-accessor surface has not been mapped** to 4.2 concepts. §3.2 settles which
   third of the old bridge disappears; it does not size what remains. Until T3 produces that
   map, T4–T8 sizes are informed guesses.
@@ -1385,7 +1478,7 @@ Four layers, cheapest first. Each lands with the milestone that makes it possibl
 
 | Layer | What it asserts | Lands | Runs |
 |---|---|---|---|
-| Toolchain check | The pieces `build-tcltk` installed are the pieces the port needs — private headers, config files, zipfs | ✅ done | Every CI run, first step |
+| Toolchain check | The pieces `build-tcltk` installed are the pieces the front end needs — headers, config files, zipfs | ✅ done | Every CI run, first step |
 | `tcltest` unit tests | Individual Tcl procedures: the menu map, the tile lookup, the contents tree, formatting | T0 skeleton, real tests from T4 | Every CI run |
 | Scripted sessions | The game plays: push a command, wait for an event, answer a hook, assert what changed | T3 | Every CI run |
 | Synthesised interaction | The ten mouse rules, the Recall/Choice hand-off, grow-on-hover | T5, T7 | Every CI run if the runner allows a display; otherwise a pre-release gate |
