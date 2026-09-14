@@ -248,6 +248,20 @@ struct patron_reward {
 #define PATRON_LADDER 20
 
 /**
+ * The lowest rung a generous roll can reach.
+ *
+ * Zangband rolls `rand_range(5, 20)` and then decrements, so a roll that is not
+ * feeling cruel lands on indices 4 to 19 and the bottom *four* rungs are out of
+ * reach ([xtra2.c:3120](../archive/zangband/src/xtra2.c#L3120)).  Its own
+ * spoiler says five, and until 3.72.2 so did this, expressed as a quarter of
+ * the ladder -- which is the spoiler's arithmetic and not the game's.  BAL-18:
+ * the source is the port.
+ *
+ * Used by the roll and by the test that measures it, so the two cannot drift.
+ */
+#define PATRON_NASTY_FLOOR 4
+
+/**
  * A Lord of the Courts of Chaos (ZangbandTK, PLR-05; DEC-38).
  *
  * The ladder is a severity ordering, worst first: slot 0 is the Lord at its

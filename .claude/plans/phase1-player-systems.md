@@ -593,3 +593,35 @@ reason PLR-24's confirmation prompt matters.
    reasoning is in the development diary under that date. The limitation is also recorded
    in a comment beside the power in `class.txt`, so the next reader of the data meets it
    there too.
+6. **Which of Zangband's patron rewards are still wanted?** Eight of its thirty-one have no
+   counterpart here, and the absences look like work not yet reached rather than curation —
+   DEC-38 settles the roster and the polymorph, and says nothing about the reward set. The
+   servant rewards were filled in the same way after shipping with none of the three.
+
+   | Zangband reward | What it does | Is the effect already in the game? |
+   |---|---|---|
+   | `TY_CURSE` | invokes the Ancient and Foul Curse | **Yes** — `EF_ANCIENT_CURSE`, used by the Chaos backfire |
+   | `GENOCIDE` | genocide a monster type, no strain damage | **Yes** — `EF_BANISH`, Death's *Genocide* |
+   | `MASS_GEN` | mass genocide nearby, no strain damage | **Yes** — `EF_MASS_BANISH`, Death's *Mass Genocide* |
+   | `GOOD_OBS` | 1d3 good objects on the floor | Partly — `GOOD_OBJ` makes one |
+   | `GREA_OBS` | 1d3 great objects on the floor | Partly — `GREA_OBJ` makes one |
+   | `DO_HAVOC` | chaos damage of random type and size | Partly — Chaos's *Call Chaos* is the same idea |
+   | `POLY_WND` | polymorphs the character's wounds | Partly — Chaos's *Polymorph Self* reaches it |
+   | `HURT_LOT` | level×4 disintegration ball centred on you, which also hits you | Ours is `HURT`, a flat level×2 with no ball |
+
+   `TY_CURSE` is the one worth deciding first: the Ancient and Foul Curse is CNT-15, it is
+   built, the Chaos backfire can already invoke it, and in Zangband **nine of the sixteen
+   patrons could**. A Lord of the Courts laying it on a servant is exactly the mechanic
+   CNT-15 exists for, and no Lord can currently do it. The genocides are close behind and
+   need only a ladder slot each.
+
+   Going the other way, four of our twenty-seven are not Zangband's: `BANISH`, `HURT`,
+   `POLY_BEAST` and `POLY_WOLF`. The last two are 4.2 shapechanges under DEC-38's ruling and
+   are deliberate; the first two want checking against what they replaced.
+
+   Note that adding a reward means placing it on some Lord's twenty-rung ladder, which
+   displaces whatever is there — the servant work did this by replacing a reward the Lord
+   already gave twice, which is the pattern to follow.
+
+   Found while checking the Chaos Patrons spoiler (14 September 2026); the reasoning is in
+   the development diary under that date.

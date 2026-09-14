@@ -2435,13 +2435,14 @@ int patron_roll_slot(const struct player *p)
 	nasty = MAX(1, nasty + favour / 40);
 
 	/*
-	 * A generous roll cannot reach the bottom quarter of the ladder at all,
+	 * A generous roll cannot reach the bottom rungs of the ladder at all,
 	 * which is where everything genuinely unpleasant lives; a nasty one can
-	 * land anywhere.
+	 * land anywhere.  See PATRON_NASTY_FLOOR for where the boundary is and why
+	 * it moved by one.
 	 */
 	if (one_in_(nasty)) return randint0(PATRON_LADDER);
 
-	return rand_range(PATRON_LADDER / 4, PATRON_LADDER - 1);
+	return rand_range(PATRON_NASTY_FLOOR, PATRON_LADDER - 1);
 }
 
 void patron_bestow_reward(struct player *p)

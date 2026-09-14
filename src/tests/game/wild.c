@@ -4876,7 +4876,7 @@ static int test_only_a_chaos_warrior_is_owned(void *state) {
  */
 static int test_thirteen_is_an_unlucky_level(void *state) {
 	const int trials = 4000;
-	const int floor_slot = PATRON_LADDER / 4;
+	const int floor_slot = PATRON_NASTY_FLOOR;
 	const struct patron *keep = player->patron;
 	int lev, low[51];
 

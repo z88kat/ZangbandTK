@@ -31,6 +31,61 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+14 September 2026 — one rung, and nine Lords who cannot curse you
+=================================================================
+
+The patron spoiler is the one where most of the content is deliberately not
+ours. DEC-38 threw out Zangband's sixteen -- Moorcock's Elric gods plus four
+Warhammer ones -- for nine Lords of the Courts, so the rosters, the names and
+the favourite stats are a settled difference and not a finding. What had to
+match is the *machinery*: the ladder of twenty, the roll that indexes it, and
+the thirty-one things a Lord can do.
+
+**The machinery is right, to a rung.** The cruelty ladder is exact -- one in six
+normally, one in two at level thirteen, one in three at every other thirteenth,
+one in twelve at every fourteenth -- and so is the one-in-six mutation that
+*replaces* a reward rather than arriving beside it, in that order, which the
+comment beside it explains better than I could now. The borrowed-Lord rule is
+there too, with a note pointing out that Zangband's ``nasty_chance *= 2`` reads
+backwards from the fiction: it is a denominator, so doubling it halves the
+cruelty.
+
+**To a rung, and one rung out.** A generous roll is meant to avoid the bottom
+*four* of the twenty. Zangband rolls ``rand_range(5, 20)`` and then decrements,
+landing on 4 through 19. Ours read ``rand_range(PATRON_LADDER / 4, ...)`` --
+five through nineteen -- and avoided five. The quarter is tidy arithmetic and it
+is the spoiler's, which says in as many words that "the first five in the list
+are considered 'nasty'" and that a kind roll picks "from the 'nice' 15". The
+source says four and sixteen. BAL-18 again, and the seventh time this week that
+a number came from the spoiler where the code says something else.
+
+The fix is one constant, ``PATRON_NASTY_FLOOR``, now used by the roll *and* by
+the test that measures it -- they had the boundary written out separately, which
+is how they could have drifted apart without either being wrong on its own. With
+it moved, the test's own diagnostic line reads the theory back exactly: 393,
+141, 257 and 66 bottom-rung rolls per four thousand at levels 13, 20, 26 and 28,
+against 400, 133, 267 and 67 predicted from the cruelty odds times four rungs in
+twenty. It was 15 rungs in 20 before and the rates were all a fifth light.
+
+**And nine Lords who cannot lay the Curse.** Eight of Zangband's thirty-one
+rewards have no counterpart here, and the interesting thing is how many of them
+are *already built*. ``TY_CURSE`` invokes the Ancient and Foul Curse -- which is
+CNT-15, which is finished, which the Chaos backfire table already reaches -- and
+in Zangband nine of the sixteen patrons could lay it on you. Not one of our nine
+can. Genocide and mass genocide are the same story: the effects exist and are
+Death's *Genocide* and *Mass Genocide*, and no Lord can grant either. The rest
+-- multiple objects, havoc, polymorph wounds -- are partly reachable through
+things that exist elsewhere.
+
+That is not a defect exactly; DEC-38 settles the roster and is silent on the
+reward set, and the servant rewards went in the same way, after shipping with
+none of the three. It is a gap that nobody has walked up to yet, and it is now
+open question 6 with the table and a note that adding a reward costs a rung on
+somebody's ladder. ``TY_CURSE`` is the one I would take first: a Lord of the
+Courts laying the Ancient and Foul Curse on a servant who displeased it is the
+single most Zelazny thing in the whole mechanic, and the machinery for it has
+been sitting finished for milestones.
+
 14 September 2026 — a mapping table with a hole, and a pool with five things in it
 ==================================================================================
 
