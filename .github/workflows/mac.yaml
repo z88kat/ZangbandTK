@@ -60,6 +60,72 @@ jobs:
           fi
           scripts/smoke-tty unpacked/${package}
 
+  # The same two builds again for Intel.  They are separate jobs rather than a
+  # matrix over the two architectures because the runner label, the flags and
+  # the checks genuinely differ, and because every other workflow here spells
+  # its variants out (windows32 and windows64 are two jobs, not one matrix).
+  #
+  # macos-15-intel is a real Intel machine, not Rosetta on Apple Silicon, so
+  # everything the arm64 jobs do natively -- codesign, otool, starting the game
+  # -- happens natively here too.  It has to be named explicitly: macos-latest
+  # has meant arm64 since macos-14, and there is no label that follows the
+  # newest Intel runner the way macos-latest follows the newest one overall.
+  build-intel:
+    name: Cocoa (Intel)
+    runs-on: macos-15-intel
+    steps:
+      - name: Clone Project
+        uses: actions/checkout@v6
+
+      - name: Build
+        run: |
+          cd src
+          env OPT="-Werror" make -f Makefile.osx ARCHS=x86_64 \
+            -j$(sysctl -n hw.activecpu)
+
+      # Cheap, and the one thing a compile that succeeded cannot tell you: that
+      # it produced the architecture asked for.  A wrong ARCHS would otherwise
+      # build an arm64 application here and be found by a player.
+      - name: Check the Architecture
+        run: |
+          file ZangbandTK.app/Contents/MacOS/angband
+          file ZangbandTK.app/Contents/MacOS/angband | grep -q x86_64
+
+  terminal-intel:
+    name: Terminal (Intel)
+    runs-on: macos-15-intel
+    steps:
+      - name: Clone Project
+        uses: actions/checkout@v6
+
+      - name: Build and Package
+        run: |
+          cd src
+          env OPT="-Werror" make -f Makefile.osx-tty ARCHS=x86_64 \
+            -j$(sysctl -n hw.activecpu) dist
+
+      # The same three checks the arm64 terminal job makes -- no Homebrew in
+      # the link, the right architecture, and a game that actually starts --
+      # asked of the Intel archive.  The archive name comes from the makefile
+      # rather than being spelled out here: it carries the -intel suffix, and
+      # reassembling it in two places is how the two get out of step.
+      - name: Check and Play the Archive
+        run: |
+          archive=$(cd src && make -f Makefile.osx-tty ARCHS=x86_64 \
+            print-archive-name | sed -En 's/^our-archive-name=//p')
+          package=$(cd src && make -f Makefile.osx-tty ARCHS=x86_64 \
+            print-package-name | sed -En 's/^our-package-name=//p')
+          mkdir -p unpacked
+          tar -xzf "$archive" -C unpacked
+          otool -L unpacked/${package}/zangbandtk
+          if otool -L unpacked/${package}/zangbandtk \
+              | grep -qE '/opt/homebrew|/usr/local' ; then
+            echo "The executable links a library outside /usr/lib." >&2
+            exit 1
+          fi
+          file unpacked/${package}/zangbandtk | grep -q x86_64
+          scripts/smoke-tty unpacked/${package}
+
   cmake-curses:
     runs-on: macos-latest
     steps:

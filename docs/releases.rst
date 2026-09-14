@@ -45,6 +45,43 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The Intel Mac comes back — 14 September 2026
+--------------------------------------------
+
+- **3.120.0** — **macOS on Intel is supported again, and released.** Every
+  release from now on carries four Mac files instead of two:
+  ``ZangbandTK-<version>-osx-intel.dmg`` and
+  ``ZangbandTK-<version>-osx-terminal-intel.tar.gz`` beside the Apple Silicon
+  pair, which keep the names they have always had.
+
+  This reverses half of DEC-22, which ruled Intel Macs out on the grounds that
+  they reach legacy status this month. The other half of that decision stands
+  and is now the whole of it: **no universal binaries.** A fat image would make
+  every download carry a second copy of the game that the machine downloading it
+  can never run, and a release page can name two files as easily as one. The
+  makefiles take ``ARCHS=x86_64`` and append ``-intel`` to the file name by
+  themselves, so the two builds cannot overwrite one another.
+
+  Both Intel builds — the Cocoa application and the curses one — are built on
+  ``macos-15-intel``, a real Intel runner, rather than cross-compiled on Apple
+  Silicon. That matters for the checks rather than for the compiler: clang
+  cross-compiles either way without complaint, but the signature check, the
+  ``otool`` check for a Homebrew library that would not exist on a player's
+  machine, and the smoke test that starts the game and walks a new character
+  into the dungeon all have to run somewhere the executable can actually start.
+  On the terminal build the Homebrew check had to learn a second path —
+  Homebrew lives in ``/usr/local`` on Intel and ``/opt/homebrew`` on Apple
+  Silicon.
+
+  One difference that is not cosmetic: the Intel terminal build targets macOS
+  10.9 rather than 11.0. The 11.0 floor was never a choice, only the first
+  release that ran on arm64 at all, so it does not apply to a processor that has
+  been running macOS since 2006.
+
+  :doc:`download` now opens its macOS section by asking which Mac you have, and
+  both READMEs inside the downloads name the two files so that somebody who took
+  the wrong one can see it.
+
 Nightmare mode arrives, and the monsters are worse — 12 September 2026
 --------------------------------------------------------------------------
 

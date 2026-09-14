@@ -6,7 +6,13 @@ Terminal.app, iTerm2, or any terminal you can reach over ssh.  There is no
 window, no tileset and no sound.  If you wanted the windowed game with tiles,
 download the .dmg instead.
 
-Apple Silicon only.  Requires macOS 11 or later.
+There is a build for each kind of Mac, and this tarball is one of them:
+
+    ZangbandTK-<version>-osx-terminal.tar.gz          Apple Silicon
+    ZangbandTK-<version>-osx-terminal-intel.tar.gz    Intel
+
+The Apple Silicon build requires macOS 11 or later.  If you took the wrong one,
+the other is on the same Releases page.
 
 
 Running it

@@ -224,9 +224,24 @@ EASY_KNOW = "EASY_KNOW"
 # Per that documentation, of the eighteen imported ego types only these two
 # grant random abilities.
 
+# Zangband grants these through Lua `add_ego_power()` calls in its MAKE hook,
+# which the converter cannot read; the mapping is by hand and this table is the
+# whole of it, so an ego missing from here silently loses its random ability.
+# (Pattern Weapon) was missing until 3.72.2 and shipped with none.
+#
+# Only these three of the sixteen Zangband-only egos carry one. The rest of
+# Zangband's `add_ego_power` users are egos 4.2 already has, and those keep
+# 4.2's own definitions.
+#
+# The conditional grants alongside them are not expressible: 4.2's ego format
+# has no way to say "this flag, one time in three". (Pattern Weapon) rolls
+# separately for hold life, dexterity and fear resistance at 1-in-3 each, and
+# (Trump Weapon) for slay demon at 1-in-5; all four are dropped rather than
+# made certain, which would be a different and much stronger ego.
 [rand_ability]
 "(Trump Weapon)" = { flags = ["RAND_POWER", "RAND_HI_RES"], note = "1-in-7 extra power, plus a chance of an extra resistance" }
 "(Chaotic)" = { flags = ["RAND_HI_RES"], note = "a chance of an extra resistance" }
+"(Pattern Weapon)" = { flags = ["RAND_HI_RES"], note = "a guaranteed extra resistance -- add_ego_power(EGO_XTRA_HI_RESIST) with no condition on it" }
 
 # ---------------------------------------- ego flags needing implementation
 

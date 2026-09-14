@@ -1145,7 +1145,9 @@ date". Portability stops being insurance and becomes a deliverable.
 > [OBS-42](phase3-observations.md), the application menu, native file dialogs — need doing
 > per platform rather than macOS-first.
 >
-> *What does not change:* DEC-22 still applies — macOS means Apple Silicon only. And
+> *What does not change:* DEC-22 still applies — no universal binaries; one thin build per
+> architecture. (DEC-22 was amended on 14 September 2026: macOS Intel is supported and
+> released again, so a Tcl/Tk front end has two Mac builds to produce, not one.) And
 > "supported" should mean *built and smoke-tested* on all three; deep behavioural testing can
 > stay macOS-led without weakening the claim.
 

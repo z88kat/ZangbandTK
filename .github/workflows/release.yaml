@@ -91,6 +91,15 @@ env:
     # Used as the name when uploading or downloading the artifact holding
     # the Mac terminal archive.
     MACTTY_ARCHIVE_ARTIFACT: release-mac-terminal-archive
+    # The same three again for the Intel Mac archive, which is a separate
+    # download rather than a second slice inside the Apple Silicon one.
+    MACINTEL_ARTIFACT: release-mac-intel
+    MACINTEL_ARTIFACT_PATH: release-mac-intel.txt
+    MACINTEL_ARCHIVE_ARTIFACT: release-mac-intel-archive
+    # And for the Intel Mac terminal archive.
+    MACTTYINTEL_ARTIFACT: release-mac-terminal-intel
+    MACTTYINTEL_ARTIFACT_PATH: release-mac-terminal-intel.txt
+    MACTTYINTEL_ARCHIVE_ARTIFACT: release-mac-terminal-intel-archive
     # Used as the name when uploading or downloading the artifact for passing
     # the name of the DOS archive.
     DOS_ARTIFACT: release-dos
@@ -1146,6 +1155,207 @@ jobs:
           path: ${{ steps.create_mac_terminal_archive.outputs.archive_file }}
           retention-days: 1
 
+  # The Intel Mac builds.  Two more jobs rather than a matrix over the
+  # architecture, matching windows32 and windows64 and the rest of this file,
+  # and because the runner label differs: macos-15-intel is a real Intel
+  # machine, so the signature, the otool check and the smoke test all happen
+  # natively, exactly as they do for Apple Silicon.  macos-latest cannot be
+  # used -- it has meant arm64 since macos-14.
+  #
+  # Two thin downloads rather than one universal image is deliberate; see the
+  # note in src/Makefile.osx.  The file names carry -intel, which the makefile
+  # appends by itself when ARCHS is x86_64, so the two builds cannot overwrite
+  # each other and a player can tell at a glance which one they have.
+  mac-intel:
+    needs: [setup, docconvert]
+    name: Mac (Intel)
+    runs-on: macos-15-intel
+    steps:
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
+          echo "name=$name" >> $GITHUB_OUTPUT
+          prog=`sed -E -n -e 's/prog= //p' $CONFIG_ARTIFACT_PATH`
+          echo "prog=$prog" >> $GITHUB_OUTPUT
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      # Need commit history and tags for scripts/version.sh to work as expected
+      # so use 0 for fetch-depth.
+      - name: Clone Project
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download Artifact with Converted Documents
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.DOC_ARTIFACT }}
+
+      - name: Extract Converted Documents
+        run: |
+          tar -xf ${{ env.DOC_ARTIFACT_PATH }}
+
+      # Everything the Apple Silicon job does, with ARCHS=x86_64 added and the
+      # image named for it.  OPT and PACKAGE_NAME are passed in for the reasons
+      # spelled out on that job: the release flags, and a file name taken from
+      # the version setup decided rather than from a git describe that does not
+      # see a lightweight tag.
+      - name: Create Intel Mac Archive
+        id: create_mac_intel_archive
+        run: |
+          package_name=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+          cd src
+          env OPT="-O2 -DNDEBUG -Werror" make -f Makefile.osx ARCHS=x86_64 \
+            -j$(sysctl -n hw.activecpu) PACKAGE_NAME="$package_name" dist
+          echo "archive_file=${package_name}-osx-intel.dmg" >> $GITHUB_OUTPUT
+
+      # A build that succeeded still cannot tell you it built the architecture
+      # asked for, and shipping an arm64 binary under a name that says Intel is
+      # worse than shipping nothing.
+      - name: Check the Architecture
+        run: |
+          file ZangbandTK.app/Contents/MacOS/${{ steps.store_config.outputs.prog }}
+          file ZangbandTK.app/Contents/MacOS/${{ steps.store_config.outputs.prog }} \
+            | grep -q x86_64
+
+      # Fail the release rather than publish an image whose signature is not
+      # coherent, since that is indistinguishable to a user from a corrupt
+      # download.
+      - name: Verify the Signature in the Image
+        run: |
+          hdiutil attach -quiet -readonly -mountpoint /tmp/zbtk-verify \
+            ${{ steps.create_mac_intel_archive.outputs.archive_file }}
+          codesign --verify --strict --verbose=2 /tmp/zbtk-verify/ZangbandTK.app
+          hdiutil detach -quiet /tmp/zbtk-verify
+
+      - name: Create Artifact with Intel Mac Archive Path
+        run: |
+          echo archive_path= '${{ steps.create_mac_intel_archive.outputs.archive_file }}' > $MACINTEL_ARTIFACT_PATH
+
+      - name: Upload Artifact with Intel Mac Archive Path
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.MACINTEL_ARTIFACT }}
+          path: ${{ env.MACINTEL_ARTIFACT_PATH }}
+          retention-days: 1
+
+      - name: Upload Intel Mac Archive as Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.MACINTEL_ARCHIVE_ARTIFACT }}
+          path: ${{ steps.create_mac_intel_archive.outputs.archive_file }}
+          retention-days: 1
+
+  mac-terminal-intel:
+    needs: [setup, docconvert]
+    name: Mac (terminal, Intel)
+    runs-on: macos-15-intel
+    steps:
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
+          echo "name=$name" >> $GITHUB_OUTPUT
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      # Need commit history and tags for scripts/version.sh to work as expected
+      # so use 0 for fetch-depth.
+      - name: Clone Project
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download Artifact with Converted Documents
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.DOC_ARTIFACT }}
+
+      # Makefile.osx-tty's dist target puts docs/_build/html in the tarball if
+      # it is there, so unpack the manual before building it.
+      - name: Extract Converted Documents
+        run: |
+          tar -xf ${{ env.DOC_ARTIFACT_PATH }}
+
+      - name: Create Intel Mac Terminal Archive
+        id: create_mac_terminal_intel_archive
+        run: |
+          package_name=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+          cd src
+          env OPT="-O2 -DNDEBUG -Werror" make -f Makefile.osx-tty ARCHS=x86_64 \
+            -j$(sysctl -n hw.activecpu) PACKAGE_NAME="$package_name" dist
+          echo "archive_file=${package_name}-osx-terminal-intel.tar.gz" >> $GITHUB_OUTPUT
+          echo "package_name=$package_name" >> $GITHUB_OUTPUT
+
+      - name: Unpack the Archive
+        run: |
+          mkdir -p unpacked
+          tar -xzf ${{ steps.create_mac_terminal_intel_archive.outputs.archive_file }} -C unpacked
+
+      # Intel runners have Homebrew too, and in /usr/local rather than
+      # /opt/homebrew, so a curses that resolved to it would link here and fail
+      # on every machine without it -- the same failure the Apple Silicon job
+      # guards against, from a different directory.
+      - name: Check for Homebrew Leakage
+        run: |
+          root=unpacked/${{ steps.create_mac_terminal_intel_archive.outputs.package_name }}
+          otool -L $root/zangbandtk
+          if otool -L $root/zangbandtk | grep -qE '/opt/homebrew|/usr/local' ; then
+            echo "The executable links a library outside /usr/lib." >&2
+            exit 1
+          fi
+          file $root/zangbandtk | grep -q x86_64
+
+      # macOS does not kill an unsigned x86_64 binary on sight the way it does
+      # an arm64 one, but the tarball is signed ad-hoc all the same and a
+      # signature that did not survive tar is still a broken download.
+      - name: Verify the Signature
+        run: |
+          root=unpacked/${{ steps.create_mac_terminal_intel_archive.outputs.package_name }}
+          codesign --verify --strict --verbose=2 $root/zangbandtk
+
+      # As on Apple Silicon: the checks above say the archive is well formed,
+      # and this says the game in it runs.  The data files are pruned by hand
+      # in the dist target, so the thing most likely to be wrong is that too
+      # much was pruned, and nothing but starting the game finds that out.
+      - name: Smoke Test
+        run: |
+          root=unpacked/${{ steps.create_mac_terminal_intel_archive.outputs.package_name }}
+          test -f $root/lib/gamedata/constants.txt
+          test -f $root/README.txt
+          test -n "$(ls -A $root/docs)"
+          scripts/smoke-tty $root
+
+      - name: Create Artifact with Intel Mac Terminal Archive Path
+        run: |
+          echo archive_path= '${{ steps.create_mac_terminal_intel_archive.outputs.archive_file }}' > $MACTTYINTEL_ARTIFACT_PATH
+
+      - name: Upload Artifact with Intel Mac Terminal Archive Path
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.MACTTYINTEL_ARTIFACT }}
+          path: ${{ env.MACTTYINTEL_ARTIFACT_PATH }}
+          retention-days: 1
+
+      - name: Upload Intel Mac Terminal Archive as Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.MACTTYINTEL_ARCHIVE_ARTIFACT }}
+          path: ${{ steps.create_mac_terminal_intel_archive.outputs.archive_file }}
+          retention-days: 1
+
   dos:
     # Only setup: this job builds its own text manual rather than taking the
     # docconvert job's HTML, so waiting on docconvert would be waiting for
@@ -1289,7 +1499,7 @@ jobs:
 
   release:
     if: github.event_name == 'push'
-    needs: [ setup, source, nintendo, linux, linux-terminal, windows32, windows64, mac, mac-terminal, dos ]
+    needs: [ setup, source, nintendo, linux, linux-terminal, windows32, windows64, mac, mac-terminal, mac-intel, mac-terminal-intel, dos ]
     name: Create GitHub Release
     runs-on: ubuntu-latest
     # gh release create both makes the tag's release and uploads the files
@@ -1445,6 +1655,38 @@ jobs:
         with:
           name: ${{ env.MACTTY_ARCHIVE_ARTIFACT }}
 
+      - name: Download Artifact with Intel Mac Archive Path
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.MACINTEL_ARTIFACT }}
+
+      - name: Extract Intel Mac Archive Path and Store in Step Outputs
+        id: store_mac_intel
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' $MACINTEL_ARTIFACT_PATH`
+          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with Intel Mac Archive
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.MACINTEL_ARCHIVE_ARTIFACT }}
+
+      - name: Download Artifact with Intel Mac Terminal Archive Path
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.MACTTYINTEL_ARTIFACT }}
+
+      - name: Extract Intel Mac Terminal Archive Path and Store in Step Outputs
+        id: store_mac_terminal_intel
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' $MACTTYINTEL_ARTIFACT_PATH`
+          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with Intel Mac Terminal Archive
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.MACTTYINTEL_ARCHIVE_ARTIFACT }}
+
       - name: Download Artifact with DOS Archive Path
         uses: actions/download-artifact@v8
         with:
@@ -1481,5 +1723,7 @@ jobs:
             ${{ steps.store_nin.outputs.archive_path }} \
             ${{ steps.store_mac.outputs.archive_path }} \
             ${{ steps.store_mac_terminal.outputs.archive_path }} \
+            ${{ steps.store_mac_intel.outputs.archive_path }} \
+            ${{ steps.store_mac_terminal_intel.outputs.archive_path }} \
             ${{ steps.store_dos.outputs.archive_path }} \
             $options

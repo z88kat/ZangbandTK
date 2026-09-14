@@ -344,3 +344,36 @@ monster groupings.
 4. **Does `obj_theme` survive contact with 4.2's object generation?** CNT-12 assumes the
    four-way weighting can be applied to 4.2's allocation system. Not yet verified — and
    per BAL-08, it must be before CNT-12 is treated as settled.
+5. **Should five imported flags be rollable as random ego powers?** They are now, and
+   nothing decided that they should be. 4.2 grants an ego's "extra power" by picking at
+   random from every flag whose `subtype` is `protection` or `misc ability`
+   (`obj-make.c:407` via `create_obj_flag_mask`), and the enum's own comment calls
+   `OFT_MISC` "a good property, suitable for ego items". Five flags imported from Zangband
+   were classified `misc ability` and thereby joined that pool:
+
+   | Flag | Power | Granted deliberately by |
+   |---|---|---|
+   | `PASS_WALL` | 30 | one player race, and nothing else |
+   | `PATRON` | 12 | the (Chaotic) ego, and nothing else |
+   | `LUCK_10` | 8 | one artifact, two object kinds |
+   | `STRANGE_LUCK` | 5 | two object kinds |
+   | `EASY_ENCHANT` | 4 | one artifact, one object kind |
+
+   The pool is 21 flags, so each is about one roll in twenty-one wherever a random power is
+   granted — a Blessed Blade, a Helm of the Magi, a Weapon of Gondolin, and one time in
+   three on the whole `*Slay*` series. **A Blessed Blade can therefore let you walk through
+   walls**, and can attach a Lord of the Courts of Chaos to a character who is not a
+   Chaos-Warrior. Zangband's own list of extra powers is eight mild utility flags —
+   levitation, light, see invisible, telepathy, slow digestion, regeneration, free action,
+   hold life — and contains nothing of this kind.
+
+   **The obvious fix has a side effect**, which is why this is a question. Flag `subtype` is
+   read in exactly two places: the ego pools in `obj-make.c`, and `obj-knowledge.c`, which
+   skips `OFT_NONE` when building the rune list. So moving a flag to `OFT_NONE` takes it out
+   of the pool *and* out of rune identification — acceptable for `PASS_WALL`, which no
+   object grants, and wrong for `PATRON`, which the (Chaotic) ego grants and a player ought
+   to be able to learn. `OFT_MELEE` may be the right home for `PATRON`: out of the pool,
+   still a rune, and true of where it appears.
+
+   Found while checking the random-object-powers spoiler (14 September 2026); the reasoning
+   is in the development diary under that date.

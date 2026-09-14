@@ -11,7 +11,15 @@ Installing
 
 Drag ZangbandTK.app to your Applications folder, or anywhere else you like.
 
-This build runs on Apple Silicon Macs only. Intel Macs are not supported.
+There is a build for each kind of Mac, and this image holds one of them:
+
+  ZangbandTK-<version>-osx.dmg          Apple Silicon (M1 and later)
+  ZangbandTK-<version>-osx-intel.dmg    Intel
+
+If you took the wrong one, the other is on the same Releases page. An Intel Mac
+cannot open the Apple Silicon build at all; an Apple Silicon Mac can run the
+Intel build through Rosetta, but there is no reason to when the native one is
+right there.
 
 
 The first launch: macOS will refuse, once

@@ -14,11 +14,16 @@ Getting the game
 Releases are published on the project's `Releases page`_. A release carries a
 build for each platform, and the source:
 
-- ``ZangbandTK-<version>-osx.dmg`` — the macOS disk image: the application, this
-  manual in HTML, and the borg's documentation.
+- ``ZangbandTK-<version>-osx.dmg`` — the macOS disk image, for **Apple Silicon**:
+  the application, this manual in HTML, and the borg's documentation.
+- ``ZangbandTK-<version>-osx-intel.dmg`` — the same disk image for an **Intel
+  Mac**. Take this one if your Mac has an Intel processor; see `Which Mac build
+  do I want?`_ if you are not sure.
 - ``ZangbandTK-<version>-osx-terminal.tar.gz`` — the same game for macOS drawn
   with characters, to play in Terminal, iTerm2 or over ssh. No window, no tiles,
-  no sound. See `Playing in a terminal`_.
+  no sound. Apple Silicon. See `Playing in a terminal`_.
+- ``ZangbandTK-<version>-osx-terminal-intel.tar.gz`` — the terminal build for an
+  Intel Mac.
 - ``ZangbandTK-<version>-win64.zip`` — the Windows build, 64-bit, with the same
   manual beside it. A single executable: libpng and zlib are linked in, so there
   are no DLLs to keep track of. **Prefer this one.**
@@ -57,9 +62,6 @@ each one, but no version has been played through before it was tagged: there are
 known bugs and one milestone's worth of unfinished features, and the badge on
 the Releases page says so before you download rather than after.
 
-The disk image requires **macOS on Apple Silicon**. Intel Macs are not
-supported; they reach legacy status in September 2026.
-
 The Windows, Linux, Nintendo and DOS builds are built, packaged and smoke-tested
 by CI, but the game is developed and played on macOS here and none of the others
 is played through before a release is tagged. Read `Other platforms`_ before you
@@ -67,6 +69,41 @@ rely on one.
 
 The rest of this page is macOS. Mount the image and drag ``ZangbandTK.app``
 wherever you keep applications.
+
+Which Mac build do I want?
+--------------------------
+
+Both processors are supported, and each has its own download rather than sharing
+one universal file — so an Apple Silicon player does not carry a copy of the game
+they can never run, and neither does an Intel one.
+
+.. list-table::
+   :widths: 30 70
+   :header-rows: 1
+
+   * - Your Mac
+     - Take
+   * - **Apple Silicon** (M1 and later)
+     - ``-osx.dmg``, or ``-osx-terminal.tar.gz``. Requires macOS 11 or later.
+   * - **Intel**
+     - ``-osx-intel.dmg``, or ``-osx-terminal-intel.tar.gz``.
+
+If you do not know which you have, open the Apple menu → *About This Mac*. A
+line reading *Chip: Apple M-something* is Apple Silicon; *Processor: Intel
+something* is Intel.
+
+Taking the wrong one is not dangerous, just useless: an Intel Mac cannot open the
+Apple Silicon build at all, and an Apple Silicon Mac will run the Intel build
+through Rosetta, more slowly and only if Rosetta is installed. There is no reason
+to do that when the native build is on the same page.
+
+.. note::
+
+   **Intel support is new**, and arrived after Intel Macs were originally ruled
+   out of this project. Both builds are compiled, packaged and smoke-tested by CI
+   on a machine of the matching architecture — the Intel builds are built on a
+   real Intel runner, not cross-compiled — but the game is developed and played
+   on Apple Silicon here, so that is the build with hours on it.
 
 The first launch
 ----------------
@@ -135,6 +172,10 @@ disk image rather than something hidden inside it, because it is a different
 executable — there is no application bundle and no window server involved at
 all, which is what lets it run over ssh.
 
+On an Intel Mac the file is ``ZangbandTK-<version>-osx-terminal-intel.tar.gz``;
+everything below applies to both, and the unpacked folder is named the same
+either way.
+
 .. code-block:: sh
 
    tar -xzf ZangbandTK-<version>-osx-terminal.tar.gz
@@ -180,8 +221,9 @@ Requirements
 .. list-table::
    :widths: 30 70
 
-   * - **macOS on Apple Silicon**
-     - Intel Macs are not supported; they reach legacy status in September 2026.
+   * - **macOS**, on Apple Silicon or Intel
+     - Either builds the game for itself. To build for the *other* one, see
+       `Building for the other architecture`_.
    * - **Xcode command line tools**
      - ``xcode-select --install``
    * - CMake
@@ -226,6 +268,41 @@ that the release carries:
 It has its own object directory because the Cocoa build compiles the same
 sources with different flags; the two builds do not interfere and can both be
 present at once.
+
+Building for the other architecture
+-----------------------------------
+
+Both makefiles build for the machine they are run on. To ask for the other
+architecture, set ``ARCHS``:
+
+.. code-block:: sh
+
+   make -f Makefile.osx clean
+   make -f Makefile.osx ARCHS=x86_64
+   make -f Makefile.osx-tty clean
+   make -f Makefile.osx-tty ARCHS=x86_64
+
+``ARCHS=arm64`` is the default and is what you get without saying anything. The
+``clean`` matters: object files carry the architecture they were compiled for,
+and ``make`` will happily link a mixture and fail at the last step with a list of
+undefined symbols that says nothing about why.
+
+Clang cross-compiles between the two without any extra toolchain, so this works
+from either kind of Mac. What it cannot do is *run* the result — an Apple Silicon
+machine needs Rosetta to start an Intel build, and an Intel machine cannot start
+an arm64 one at all. CI therefore builds each architecture on a runner that
+matches it, so that the smoke test is a real one.
+
+The released file names follow ``ARCHS`` by themselves: an ``x86_64`` build
+writes ``ZangbandTK-<version>-osx-intel.dmg`` and
+``ZangbandTK-<version>-osx-terminal-intel.tar.gz``, so building both one after
+the other in the same tree does not have the second quietly overwrite the first.
+
+.. note::
+
+   Universal binaries are deliberately not built. ``ARCHS="x86_64 arm64"`` is
+   what vanilla Angband does and the makefiles would still accept it, but the
+   project ships two thin downloads instead — see DEC-22 in the decision log.
 
 The tests
 ---------

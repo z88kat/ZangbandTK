@@ -31,6 +31,145 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+14 September 2026 — a mapping table with a hole, and a pool with five things in it
+==================================================================================
+
+The random-object-powers spoiler is a different shape from the others: it is not
+a list of content but a description of a *mechanism*, three pools of abilities
+and the egos that draw from them. So the check was whether the pools exist,
+whether they hold what Zangband's hold, and whether the egos that should draw
+from them do.
+
+**The mechanism is there and is 4.2's own.** ``KF_RAND_SUSTAIN``,
+``KF_RAND_POWER``, ``KF_RAND_HI_RES``, ``KF_RAND_BASE_RES`` and
+``KF_RAND_RES_POWER`` are exactly Zangband's ``EGO_XTRA_*`` kinds under other
+names, and ``obj-make.c:398`` reads them off the ego. All twenty-two egos the
+spoiler names exist, though Zangband's Boots of Levitation are 4.2's Boots of
+Slow Descent.
+
+The pools line up better than I expected. Extra Sustains is five where Zangband
+has six, because 4.2 has no Charisma. Extra Resistances is eleven abilities of
+which nine are 4.2 elements and reachable, and the other two -- blindness and
+confusion -- exist as ``PROT_BLIND`` and ``PROT_CONF``, which 4.2 files under
+protections rather than resistances, so they come out of the *power* pool
+instead. Extra Powers is seven of eight; the missing one is permanent light,
+which 4.2 made a modifier rather than a flag, so there is no flag to roll.
+
+**One defect, and it was in the converter rather than the data.**
+``objflagmap.toml`` has a ``[rand_ability]`` table that maps Zangband's Lua
+``add_ego_power()`` calls onto 4.2's kind flags, by hand, because the converter
+cannot read Lua. It had two entries. Three Zangband-only egos make those calls,
+and **(Pattern Weapon) was not one of the two** -- so it shipped with no random
+ability at all, where Zangband gives it an unconditional extra high resist. One
+line in the table, a re-run, and a one-line diff in the generated file. The
+table now says out loud that an ego missing from it silently loses its ability,
+which is the property that let this through.
+
+**And one thing that is not a defect so much as an accident nobody chose.** 4.2
+picks an ego's extra power from every flag whose subtype is ``protection`` or
+``misc ability``, and the enum comment for that subtype reads "a good property,
+suitable for ego items". Five flags we imported from Zangband were classified
+``misc ability``: ``PASS_WALL``, ``PATRON``, ``LUCK_10``, ``STRANGE_LUCK`` and
+``EASY_ENCHANT``. So they are in the pool. **A Blessed Blade has about a
+one-in-twenty-one chance of letting the wielder walk through walls**, and a
+similar chance of attaching a Lord of the Courts of Chaos to somebody who is not
+a Chaos-Warrior. ``PASS_WALL`` is granted deliberately by one *race* and nothing
+else; ``PATRON`` by the (Chaotic) ego and nothing else. Zangband's own list of
+extra abilities is eight mild utility flags and has nothing like either.
+
+I did not fix it, because the obvious fix is wrong in an interesting way. Flag
+subtype is read in exactly two places: the ego pools, and the rune list, which
+skips ``OFT_NONE``. Moving a flag to ``OFT_NONE`` takes it out of the pool *and*
+out of rune identification -- fine for ``PASS_WALL``, which no object grants,
+and wrong for ``PATRON``, which an ego does grant and which a player ought to be
+able to learn. That is a decision with a shape, not a patch, so it is open
+question 5 in the content plan with the table and the ``OFT_MELEE`` suggestion
+written out.
+
+A note on method. Half the work here was deciding what was in scope at all. The
+spoiler describes twenty-two egos and eighteen of them are Angband's own, living
+in 4.2's ``ego_item.txt``; only sixteen egos are Zangband-only and only three of
+those carry a random ability. Comparing the other eighteen against Zangband's
+``e_info.txt`` would have produced a long list of differences and not one of
+them a defect, because the project keeps 4.2's egos. BAL-18's lesson from the
+nightmare audit -- the source is the port, the spoiler is a candidate list --
+has a companion here: the spoiler describes *Zangband's* game, and the parts of
+it we deliberately did not take are not findings.
+
+14 September 2026 — the Intel Mac, and a decision that was two decisions
+========================================================================
+
+Steven asked for an Intel Mac build and for the manual to say we support one.
+The build was an afternoon. The interesting part was reading DEC-22 again.
+
+It says *macOS means Apple Silicon only*, and the reasoning under it is that
+Intel reaches legacy status in September 2026 — this month, as it happens — so
+there is no future in it. That is a forecast, and forecasts are the part of a
+decision log that ages. But underneath it, doing most of the actual work, was a
+second claim that has not aged at all: **no universal binaries.** Those are two
+different decisions that happened to be written as one, and only the first of
+them was wrong.
+
+So the amendment keeps the shape of the thing and reverses the conclusion.
+Intel is supported. Universal is still refused, and now for its own reason
+rather than as a corollary — a fat image makes every download carry a second
+copy of the game that the machine downloading it can never run, and the
+Releases page can list two files as easily as one. That reason was always the
+better one. It was just never load-bearing while there was only one
+architecture to argue about.
+
+The code was almost nothing. ``ARCHS`` was already a variable in both
+makefiles, inherited from vanilla, and both already threaded it into
+``CFLAGS``; ``make -f Makefile.osx ARCHS=x86_64`` built and signed a working
+Intel application on the first attempt, from this arm64 machine, with no
+toolchain to install. I had half expected to spend the afternoon on that and
+did not spend ten minutes.
+
+What did need thought was the two places the architecture leaks out of the
+compiler.
+
+**The file name.** Both builds write their image into the repository root, and
+both were called ``ZangbandTK-<version>-osx.dmg``. Build one, then the other,
+and the second silently replaces the first — and since the disk images are
+byte-for-byte plausible either way, nothing tells you which one you have until
+a player cannot open it. The makefiles now derive a ``-intel`` suffix from
+``ARCHS`` rather than taking it as another thing the caller has to remember to
+pass. Deriving it is the point: a name that is composed in the workflow as well
+as in the makefile is a name that will eventually be composed two different
+ways.
+
+**The deployment target.** ``Makefile.osx-tty`` asked for macOS 11.0, and I had
+written the comment explaining why — 11.0 is the first release that ran on
+arm64, so asking for less is not honoured. Reading it back with an Intel build
+in hand, that comment is an argument about arm64 and nothing else. An Intel Mac
+has been running macOS since 2006. It now takes 10.9, the same floor
+``Makefile.osx`` has always used. A justified number is still only justified
+for the case it was written about, and this one had quietly become a default.
+
+I built both front ends for x86_64 before writing a line of workflow, because a
+CI job is an expensive place to find out that a build does not compile. Both
+were clean under ``-Werror``, and the terminal one — signed, tarred, unpacked,
+and started under Rosetta — walked a new character down to a generated level.
+That is the same check ``scripts/smoke-tty`` makes in CI, which is why it was
+worth running here first.
+
+CI itself builds on ``macos-15-intel``, a real Intel runner, rather than
+cross-compiling on Apple Silicon. Not for the compiler's sake — it clearly does
+not care — but because three of the four checks around the build need an
+executable that can actually start: the signature, the smoke test, and the
+``otool`` check that catches a curses library resolved out of Homebrew. That
+last one needed a second path, too. Homebrew is ``/opt/homebrew`` on Apple
+Silicon and ``/usr/local`` on Intel, and the existing check already looked for
+both, which was luck rather than foresight.
+
+The documentation took longer than the build, which is usual now. ``download``
+opened its macOS section by saying Intel was not supported; it now opens by
+asking which Mac you have and answering it in a table, because the first thing
+a person arriving at that page needs is to pick the right file. Both READMEs
+inside the downloads name all four files, so somebody who took the wrong one
+can work that out from the thing they already have rather than from the website
+they did not read.
+
 14 September 2026 — the third punishment, and a mercy at thirty
 ===============================================================
 

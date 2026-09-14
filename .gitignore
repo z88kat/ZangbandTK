@@ -161,8 +161,13 @@ build-asan/
 # two must not overwrite each other's .o files; see the header of
 # src/Makefile.osx-tty.  The tarball is matched by name because *.tar.gz is
 # not ignored wholesale -- the source archive is built at the top level too.
-src/osx-tty/
+# The glob rather than the one directory: OBJDIR is overridable, so a build for
+# the other architecture is normally sent somewhere like src/osx-tty-x86/ to
+# keep its objects away from the native ones, and an object tree that is not
+# ignored is an object tree that gets committed by the next "git add -A".
+src/osx-tty*/
 *-osx-terminal.tar.gz
+*-osx-terminal-intel.tar.gz
 
 # The Neon tileset writes two pictures for inspection -- a mock map and a
 # filmstrip of the colour cycle.  They live beside the source art rather than

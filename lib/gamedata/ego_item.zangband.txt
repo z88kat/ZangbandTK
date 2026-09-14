@@ -108,7 +108,7 @@ combat:d6:d6:0
 type:sword
 type:polearm
 type:hafted
-flags:FREE_ACT | SEE_INVIS
+flags:FREE_ACT | SEE_INVIS | RAND_HI_RES
 values:STR[d2] | CON[d2]
 slay:EVIL_2
 slay:DEMON_3

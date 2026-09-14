@@ -598,25 +598,38 @@ That'll create a self-contained Mac application, Angband.app, in the directory
 above src.  You may use that application where it is or move it to wherever
 is convenient for you.
 
-By default, the current Makefile.osx builds an application that'll run natively
-on x86_64 or arm64 machines.  If only one of those architectures is of interest
-to you or the version of Xcode you have doesn't support building both (a
-typical error message in that case is something like ``/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/cdefs.h:784:2: error: Unsupported architecture``),
-you can change the architectures built by setting ARCHS on the command line of
-make.  To only build for x86_64, for instance, you would use::
+**ZangbandTK differs from vanilla here.**  Vanilla's Makefile.osx builds a
+universal application by default; this one builds a single architecture, arm64,
+and ZangbandTK releases two thin downloads rather than one fat image (DEC-22).
+Both architectures are supported and released -- an Intel build is asked for by
+setting ARCHS on the make command line::
 
     cd src
     make -f Makefile.osx clean
     make -f Makefile.osx ARCHS=x86_64
 
-(the clean step is to ensure that nothing from a previous build would cause
-trouble; you'll typically need to do that if you've built it before and then
-want to change the set of architectures to use).  To build for multiple
-architectures, use a list of architectures separated by whitespace, which
-you'll have to quote.  This is the equivalent to what Makefile.osx does by
-default::
+The clean step matters: object files carry the architecture they were compiled
+for, and make will link a mixture of the two and fail at the last step with a
+list of undefined symbols that does not say why.  The same applies to
+Makefile.osx-tty, which takes ARCHS in exactly the same way.
+
+Clang cross-compiles between arm64 and x86_64 with no extra toolchain, so either
+kind of Mac can build for the other; what it cannot do is run the result without
+Rosetta, or at all in the other direction.  CI therefore builds each one on a
+runner that matches it.
+
+The released file name follows ARCHS by itself -- an x86_64 build writes
+``ZangbandTK-<version>-osx-intel.dmg`` -- so the two can be built one after the
+other in the same tree without the second overwriting the first.
+
+A universal build is still what a whitespace-separated list asks for, and is
+what vanilla does by default, but ZangbandTK does not ship one::
 
     make -f Makefile.osx ARCHS="x86_64 arm64"
+
+If the version of Xcode you have doesn't support building for a given
+architecture, a typical error message is something like
+``/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/cdefs.h:784:2: error: Unsupported architecture``.
 
 Debug build
 ~~~~~~~~~~~

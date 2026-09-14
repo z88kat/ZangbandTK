@@ -98,8 +98,9 @@ original's interface on Tcl/Tk 9.
 
 ### Requirements
 
-- **macOS on Apple Silicon.** Intel Macs are not supported (they reach legacy
-  status in September 2026).
+- **macOS**, on Apple Silicon or Intel. Both are built and released; each Mac
+  builds for itself by default, and `ARCHS=x86_64` (or `arm64`) asks for the
+  other. Apple Silicon needs macOS 11 or later.
 - **Xcode command line tools** — `xcode-select --install`
 - **CMake** — only to run the test suite. `brew install cmake`
 - **GCC** — only for `scripts/check-build`'s third pass, which reproduces what
@@ -247,10 +248,11 @@ Inside the app bundle the same file lives at
 
 ## Portability
 
-macOS is the delivery target, and the one the game is developed and played on.
-The rest are built by our own CI on every push — Windows by both MSBuild and
-nmake, Linux, Cygwin, MSYS2, DOS, the Nintendo DS and 3DS, and WebAssembly for
-the browser. DOS goes further and runs the game under DOSBox from a script,
+macOS is the delivery target, and the one the game is developed and played on —
+on Apple Silicon, with the Intel build made and smoke-tested by CI on a real
+Intel runner rather than cross-compiled. The rest are built by our own CI on
+every push — Windows by both MSBuild and nmake, Linux, Cygwin, MSYS2, DOS, the
+Nintendo DS and 3DS, and WebAssembly for the browser. DOS goes further and runs the game under DOSBox from a script,
 which is what catches a data file it cannot open. None of them is played
 through, so *builds* is a stronger claim than *works*.
 

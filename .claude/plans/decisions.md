@@ -440,18 +440,29 @@ on all three from day one — it will not catch behavioural bugs, but it catches
 rot that makes late porting expensive, which is exactly the failure mode DEC-12 guards
 against.
 
-**DEC-22 — macOS means Apple Silicon only. Intel Macs are not supported.** macOS Intel
-reaches legacy status in September 2026, so x86_64 Mac support has no future worth paying
-for.
+**DEC-22 — macOS ships one thin build per architecture, never a universal one.** Apple
+Silicon and Intel are both supported and both released, as separate downloads.
 
-*What this rules out:* universal binaries, `-arch x86_64` slices, Rosetta considerations,
-and any fat-binary packaging step.
+> **Amended 14 September 2026.** This decision originally read *macOS means Apple Silicon
+> only; Intel Macs are not supported*, on the reasoning that macOS Intel reaches legacy
+> status in September 2026 and so had no future worth paying for. Intel support was
+> requested and is now built, packaged and released. What survives the amendment is the
+> **non-universal** half, which was always the more important part of it and is now the
+> whole of it.
 
-*Cost to implement:* none. The build system carries no universal or architecture flags to
-remove — an ARM-only build is simply what happens when building on Apple Silicon, and the
-Tcl/Tk 9.0.4 verification under DEC-13 already produced pure `arm64` binaries. This decision
-is a *non*-requirement: it prevents someone adding universal2 flags later on the assumption
-they were wanted.
+*What this still rules out:* universal binaries and any fat-binary packaging step. A
+universal image would make every download carry a second copy of the game that the machine
+downloading it can never run, and the release page can name two files as easily as one.
+`ARCHS="x86_64 arm64"` is what vanilla does by default and the makefiles would still accept
+it; we do not use it.
+
+*How it is built:* `ARCHS` on the make command line, `arm64` by default, and the makefiles
+append `-intel` to the released file name by themselves when it is `x86_64` — so the two
+builds cannot overwrite each other in a shared directory. Each architecture is built on a
+CI runner that matches it (`macos-latest` and `macos-15-intel`), so that the smoke test
+actually starts the game rather than needing Rosetta. Clang cross-compiles either way
+without an extra toolchain, which is what makes a local build for the other architecture
+possible; running it is the part that needs the matching machine.
 
 *Note:* this constrains **macOS only**. Linux and Windows portability under DEC-21 is
 architecture-agnostic; x86_64 remains entirely normal there.
@@ -966,7 +977,8 @@ Deferred to their own platforms (DEC-21):
   expectation is unverified until someone runs it.
 - macOS packaging. 4.2 ships `pkg_deb`, `pkg_src` and `pkg_win` in
   [scripts/](../../scripts/) but no macOS equivalent, so a `.app` bundling step is new work
-  whenever distribution matters. Single-architecture under DEC-22, which simplifies it.
+  whenever distribution matters. One thin architecture per image under DEC-22, which
+  simplifies it.
 
 Outstanding follow-ups raised while building, rather than while planning:
 
