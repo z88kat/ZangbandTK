@@ -866,8 +866,17 @@ bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 	/* ID */
 	context->ident = true;
 
-	/* Sustain */
-	if (player_of_has(player, flag)) {
+	/*
+	 * Sustain -- which fails one time in thirteen in nightmare mode (BAL-15,
+	 * [effects.c:2807](../archive/zangband/src/effects.c#L2807)).
+	 *
+	 * §2.8.3 calls this plausibly the cruellest thing in the mode, and the
+	 * spoiler does not mention sustains at all. A sustain is a property you
+	 * buy and then stop thinking about; one that holds twelve times in
+	 * thirteen is a different item from one that holds.
+	 */
+	if (player_of_has(player, flag)
+			&& !(OPT(player, birth_nightmare) && one_in_(13))) {
 		/* Notice effect */
 		equip_learn_flag(player, flag);
 
@@ -878,8 +887,17 @@ bool effect_handler_DRAIN_STAT(effect_handler_context_t *context)
 		return (true);
 	}
 
-	/* Attempt to reduce the stat */
-	if (player_stat_dec(player, stat, false)){
+	/*
+	 * Attempt to reduce the stat -- permanently, twelve times in thirteen,
+	 * in nightmare mode ([effects.c:2818](../archive/zangband/src/effects.c#L2818)).
+	 *
+	 * The archive writes the condition as `!one_in_(13)`, so the drain is
+	 * temporary on the same one-in-thirteen roll the sustain fails on. Two
+	 * separate rolls there and two here; they are not the same draw and were
+	 * never meant to be.
+	 */
+	if (player_stat_dec(player, stat,
+			OPT(player, birth_nightmare) && !one_in_(13))){
 		int dam = effect_calculate_value(context, false);
 		char dam_text[32] = "";
 
@@ -2074,6 +2092,20 @@ bool effect_handler_CREATE_STAIRS(effect_handler_context_t *context)
 
 	/* Fails for persistent levels (for now) and arenas */
 	if (OPT(player, birth_levels_persist) || player->upkeep->arena_level) {
+		msg("Nothing happens!");
+		return false;
+	}
+
+	/*
+	 * And in nightmare mode, where there is no escape hatch at all (BAL-15,
+	 * [dungeon.c:2913](../archive/zangband/src/dungeon.c#L2913)).
+	 *
+	 * Zangband forces both `create_down_stair` and `create_up_stair` off, which
+	 * covers stair scumming and Deep Descent alike. 4.2 reaches the same two
+	 * through this effect, so one refusal here is the whole of it. §2.8.3
+	 * counts it among the four the spoiler never warns anyone about.
+	 */
+	if (OPT(player, birth_nightmare)) {
 		msg("Nothing happens!");
 		return false;
 	}

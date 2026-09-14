@@ -54,3 +54,14 @@ FEAT(INN)        /* a bed until morning (WLD-16c) */
 FEAT(MAGESMITH)  /* puts magic on an item (WLD-16c) */
 FEAT(RECHARGER)  /* puts charges back in a wand (WLD-16c) */
 FEAT(CHAOSTOWER) /* takes a mutation off you, for a price (DEC-24, PLR-13) */
+
+/*
+ * ZangbandTK (BAL-15): a wall that looks like floor, in nightmare mode.
+ *
+ * Appended, and the position is the point -- `save.c:989` writes a grid's
+ * feature as a raw byte index, so inserting a feature beside the other walls
+ * would shift every later one and every savefile in existence would come back
+ * with its terrain wrong. The same trap PROT_CUT hit in the object flags
+ * (DEC-79), one file over.
+ */
+FEAT(INVIS_WALL) /* looks like floor and is not (BAL-15, DEC-83) */

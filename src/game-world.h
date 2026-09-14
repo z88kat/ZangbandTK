@@ -44,6 +44,11 @@ struct level *level_by_depth(int depth);
 bool is_daytime(void);
 int turn_energy(int speed);
 void play_ambient_sound(void);
+/** `nightmare_bell_at()` returns this at midnight, and 1 to 4 for the bell. */
+#define NIGHTMARE_CURSE 9
+
+int nightmare_bell_at(int32_t at_turn);
+int nightmare_recall_depth(struct player *p, int depth);
 void process_world(struct chunk *c);
 void on_new_level(void);
 void process_player(void);

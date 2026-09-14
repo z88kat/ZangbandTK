@@ -4184,3 +4184,114 @@ mode is documented as not winnable, the borg cannot leave depth 1 on most runs,
 and a second nightly job for a mode nobody has played would be speculative.
 That raises what the tests have to do, and every one of them asserts the
 behaviour off without the option and on with it.
+
+**DEC-82 — Neither of nightmare mode's two nightmares is built, for two
+different reasons, and only one of them is permanent.**
+
+Zangband calls `have_nightmare()` from two of its twenty-four nightmare sites:
+the inn ([bldg.c:865](../zangband/src/bldg.c#L865)) and a sleep attack landing
+on the player ([spells1.c:3784](../zangband/src/spells1.c#L3784)). Both are in
+§2.8.2's sixteen. Neither is being built, and the difference between the two
+answers matters more than the fact that both are no.
+
+**The sleep attack: not built *at this time*.** The project owner: *"it's not
+there, we don't invent it here at this time."*
+
+4.2 has no player sleep at all. `SLEEP_ALL`, `SLEEP_EVIL` and `SLEEP_UNDEAD`
+are monster-targeting projections; the player's timed-effect list has
+`PARALYZED` and nothing else that would serve. So Zangband's trigger has no
+hook here, and building one means giving the game a player state it has never
+had — which is adding a mechanic, not porting a behaviour, and nightmare mode
+is not the reason to add it.
+
+*Recorded as deferred rather than refused, deliberately.* This is not DEC-81's
+score multiplier, which is closed because 4.2's scoring has no multiplier for
+any option and inventing one would be our design. If a player sleep state
+arrives for some other reason — a monster spell, a realm, a mutation — then the
+hook exists and this becomes available. The answer is "no mechanism", not "no".
+
+**The inn: skipped.** The project owner: not sure what to do about it, would
+rather leave it, it is not main gameplay.
+
+Unlike the sleep attack this one *does* have a mechanism —
+`player_night_dream()` and `player_dream_chances()`
+([player-util.c:2485](../../src/player-util.c#L2485)), built for PLR-41 out of
+4.2's own parts and keyed on the town's law rather than on Zangband's sanity
+system, which DEC-32 dropped. §2.8.6 proposed pushing those chances "towards
+the dark" under nightmare.
+
+What that would take is choosing a number on a formula that is already
+documented and already has a test pinning it
+(`the-inn-dreams-by-the-law`). There is no figure in the archive to copy,
+because the archive's version of this is a function this project does not have.
+So it would be our design, on a piece of the game a player meets once a night
+at most. The existing behaviour stands unchanged with the option on.
+
+**This takes the two nightmares out of the sixteen.** What remains of M11 stage
+1 is five behaviours — sustains failing, drains sticking, invisible walls, the
+midnight curse and its bell, Word of Recall going wrong, no stair creation —
+plus the two generation guards held back for want of a test that discriminates.
+
+**DEC-83 — Word of Recall is corrupted within the dungeon you are in, and the
+invisible walls keep Zangband's numbers knowing they will not mean the same
+thing.**
+
+Two rulings taken as M11 stage 1 closed.
+
+**Word of Recall stops at the bottom of the dungeon.** Zangband's corruption
+([dungeon.c:1817](../zangband/src/dungeon.c#L1817)) doubles the recall depth
+below 50, sends you halfway to 99 below that, and — a fourth branch §2.8.2's
+summary omits — drops anything past 100 to the bottom of the world. It assumes
+one continuous dungeon.
+
+This game has thirteen, each with a bottom there is no way past, and WLD-14
+added `player_dungeon_recall_depth()` precisely so recall could not land
+somewhere deeper than the dungeon goes. Doubling without a clamp would undo that
+protection for this one behaviour, and the failure would be a level the dungeon
+does not have.
+
+*The cost is real and was chosen knowing it.* In a shallow dungeon the
+corruption does little or nothing: doubling five where the dungeon ends at eight
+is eight. Someone will notice that and read it as the feature not working. It
+works; it bites where the dungeons are deep, which is where being sent deeper is
+frightening anyway, and the alternative was to reintroduce a hazard the
+wilderness work removed on purpose.
+
+The arithmetic lives in `nightmare_recall_depth()` rather than inline, because
+the roll that reaches it is one in 666 inside the world loop and that is not
+something a test can drive.
+
+**The invisible walls keep the archive's numbers.** One door in 666
+([grid.c:125](../zangband/src/grid.c#L125)) and `Rand_normal(3, 3)` per level
+([generate.c:945](../zangband/src/generate.c#L945)), transplanted as written.
+Those figures are against Zangband's generator, its level sizes and its door
+counts, and ours are none of those — so the **observed** density will not match
+Zangband's. That is expected rather than a bug, and it is written down now
+because the alternative is somebody measuring it in a year and opening an
+investigation into a faithful port.
+
+The feature itself is the secret door's trick inverted: `SECRET` is a door that
+mimics granite, and `INVIS_WALL` is granite that mimics floor. It is **appended**
+to `list-terrain.h`, not filed beside the other walls, because `save.c:989`
+writes a grid's feature as a raw byte index and inserting one would shift every
+later feature in every savefile in existence — the same trap `PROT_CUT` hit in
+the object flags (DEC-79), one file over.
+
+**DEC-84 — M11 stage 2 is deferred to after a release, not declined.**
+
+The project owner wants to release this version and take up §2.8.5's menu as a
+later step.
+
+This needs saying precisely, because the milestone's exit criterion reads
+*"stage 1 complete and every stage-2 addition recorded as a decision"* and that
+is satisfied trivially by adding nothing. **It is not satisfied here.** Nothing
+in §2.8.5 has been ruled on either way: the four the plan flags as cheap and
+clearly good — `repro-max` 100 → 255, reflection's one-in-ten doubled, store
+owners who never rotate and carry the smallest purses, nastier mutations — are
+open questions, not refused ones. The one item already closed is the cyberdemon
+combination, refused under DEC-30 long before this.
+
+So M11 stands as: **stage 1 complete, stage 2 a scheduled decision.** The
+milestone is not finished, and the difference between "we chose to add none of
+it" and "we have not chosen yet" is the whole of what this entry exists to
+record.

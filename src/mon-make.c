@@ -272,9 +272,29 @@ struct monster_race *get_mon_num(int generated_level, int current_level)
 	const struct dun_type *dungeon = mon_dungeon_here(generated_level);
 
 	/* Occasionally produce a nastier monster in the dungeon */
-	if (generated_level > 0 && one_in_(z_info->ood_monster_chance))
+	if (generated_level > 0 && OPT(player, birth_nightmare)
+			&& one_in_(z_info->ood_monster_chance)) {
+		/*
+		 * Nightmare mode (BAL-15). Zangband's own author calls this "a bizarre
+		 * calculation" and it is, but it is the one the mode ships
+		 * ([monster2.c:765](../archive/zangband/src/monster2.c#L765)):
+		 * a multiplier of one to a hundred and twenty-eight, and *not* capped
+		 * the way 4.2's own rule is. Depth 10 can become depth 1280.
+		 *
+		 * It replaces the normal boost rather than adding to it, as the
+		 * archive's `else` does. One divergence: Zangband's `else` also holds
+		 * its luck bonus, so nightmare skips that too, where ours is applied
+		 * below regardless -- a Ring of Fate still stacks here. In a mode whose
+		 * own text is "this isn't even remotely fair", restructuring our own
+		 * luck code to make it slightly less fair is not worth it.
+		 */
+		generated_level = 1 + (generated_level * z_info->max_depth
+			/ randint1(z_info->max_depth));
+	} else if (generated_level > 0
+			&& one_in_(z_info->ood_monster_chance)) {
 		generated_level += MIN(generated_level / 4 + 2,
 			z_info->ood_monster_amount);
+	}
 
 	/*
 	 * And weird luck produces one on its own account, which is not capped
@@ -309,8 +329,14 @@ struct monster_race *get_mon_num(int generated_level, int current_level)
 		if (rf_has(race->flags, RF_UNIQUE) && (race->cur_num >= race->max_num))
 			continue;
 
-		/* Some monsters never appear out of depth */
-		if (rf_has(race->flags, RF_FORCE_DEPTH) && race->level > current_level)
+		/*
+		 * Some monsters never appear out of depth -- except in nightmare
+		 * mode, where only a quest monster is still held back (BAL-15,
+		 * [monster2.c:1735](../archive/zangband/src/monster2.c#L1735)).
+		 */
+		if (rf_has(race->flags, RF_FORCE_DEPTH) && race->level > current_level
+				&& (!OPT(player, birth_nightmare)
+					|| rf_has(race->flags, RF_QUESTOR)))
 			continue;
 
 		/* Accept */

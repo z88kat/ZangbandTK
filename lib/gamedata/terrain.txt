@@ -528,3 +528,23 @@ priority:7
 flags:LOS | PROJECT | PASSABLE | FLOOR | OBJECT | EASY | TRAP | TORCH
 look-prefix:a
 desc:A made road, running between places worth reaching.
+
+# ZangbandTK (BAL-15): nightmare mode's invisible wall.
+#
+# A wall that mimics open floor, which is the secret door's trick inverted --
+# SECRET is a door that mimics granite, and this is granite that pretends to be
+# a floor.  Zangband built it as a *field* laid over a floor grid
+# (grid.c:125); 4.2 has no fields and does not need them, because `mimic` is
+# already how it shows one feature as another.
+#
+# No TORCH, deliberately: a wall that lit up like a wall would announce itself
+# the moment a lamp fell on it.
+code:INVIS_WALL
+name:open floor
+graphics:.:w
+priority:5
+mimic:FLOOR
+flags:WALL | ROCK | GRANITE
+digging:5
+confused-msg:bashes into a wall
+desc:An open floor or bare ground.  Can be walked across by anything, and can hold traps or items.  Does not break line of sight.

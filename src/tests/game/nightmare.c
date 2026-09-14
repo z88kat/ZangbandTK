@@ -19,6 +19,8 @@
 
 #include "init.h"
 #include "cave.h"
+#include "obj-util.h"
+#include "dun-type.h"
 #include "game-world.h"
 #include "generate.h"
 #include "mon-make.h"
@@ -27,6 +29,7 @@
 #include "option.h"
 #include "player.h"
 #include "player-birth.h"
+#include "effects.h"
 #include "player-calcs.h"
 #include "test-utils.h"
 
@@ -303,6 +306,432 @@ static int test_monsters_arrive_with_double_energy(void *state) {
 	ok;
 }
 
+/**
+ * A sustain fails one time in thirteen (effects.c:2807).
+ *
+ * §2.8.3 calls this plausibly the cruellest thing in the mode, and no spoiler
+ * mentions sustains at all. Statistical in form only: without the option a
+ * sustain holds *every* time, by construction, so any failure at all is the
+ * guard misfiring.
+ *
+ * Six hundred attempts gives about forty-six failures expected with the mode
+ * on. The bar is set low enough that a bad run cannot reach it and high enough
+ * that zero cannot pass.
+ */
+static int test_a_sustain_sometimes_fails(void *state) {
+	int plain = 0, nasty = 0, i;
+	const int runs = 600;
+
+	for (i = 0; i < runs; i++) {
+		player->stat_cur[STAT_STR] = 18;
+		player->stat_max[STAT_STR] = 18;
+		of_on(player->state.flags, OF_SUST_STR);
+
+		nightmare(false);
+		effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_STR, 0, 0,
+				0, 0, NULL);
+		if (player->stat_cur[STAT_STR] < 18) plain++;
+
+		player->stat_cur[STAT_STR] = 18;
+		player->stat_max[STAT_STR] = 18;
+		nightmare(true);
+		effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_STR, 0, 0,
+				0, 0, NULL);
+		if (player->stat_cur[STAT_STR] < 18) nasty++;
+	}
+	nightmare(false);
+
+	if (plain != 0 || nasty < 10) {
+		printf("sustain failures over %d attempts: %d plain, %d nightmare "
+				"(plain must be none, nightmare about one in thirteen)\n",
+				runs, plain, nasty);
+		require(false);
+	}
+	ok;
+}
+
+/**
+ * And when a drain lands it sticks, twelve times in thirteen
+ * ([effects.c:2818](../../archive/zangband/src/effects.c#L2818)).
+ *
+ * The other half of the same cruelty, and a separate test because it is a
+ * separate assertion: the one above watches `stat_cur`, which moves either
+ * way, and this watches `stat_max`, which is what "permanent" means and which
+ * an ordinary drain never touches.
+ *
+ * Zangband writes the condition as `!one_in_(13)`, so the drain is temporary
+ * on its own one-in-thirteen roll -- a different draw from the one the sustain
+ * fails on, and not meant to be the same.
+ */
+static int test_a_drain_becomes_permanent(void *state) {
+	int plain = 0, nasty = 0, i;
+	const int runs = 300;
+
+	for (i = 0; i < runs; i++) {
+		player->stat_cur[STAT_STR] = 18;
+		player->stat_max[STAT_STR] = 18;
+		of_off(player->state.flags, OF_SUST_STR);
+
+		nightmare(false);
+		effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_STR, 0, 0,
+				0, 0, NULL);
+		if (player->stat_max[STAT_STR] < 18) plain++;
+
+		player->stat_cur[STAT_STR] = 18;
+		player->stat_max[STAT_STR] = 18;
+		nightmare(true);
+		effect_simple(EF_DRAIN_STAT, source_none(), "0", STAT_STR, 0, 0,
+				0, 0, NULL);
+		if (player->stat_max[STAT_STR] < 18) nasty++;
+	}
+	nightmare(false);
+
+	/* Never without the mode; nearly always with it. */
+	if (plain != 0 || nasty < runs * 4 / 5) {
+		printf("permanent drains over %d: %d plain, %d nightmare "
+				"(plain must be none, nightmare nearly all)\n",
+				runs, plain, nasty);
+		require(false);
+	}
+	ok;
+}
+
+/**
+ * Stair creation does nothing at all (dungeon.c:2913).
+ *
+ * No Deep Descent, no stair scumming, no escape hatch. Zangband forces both
+ * `create_down_stair` and `create_up_stair` off; 4.2 reaches both through one
+ * effect, so one refusal is the whole of it.
+ */
+static int test_no_stairs_can_be_made(void *state) {
+	bool made;
+
+	require(square_isfloor(cave, player->grid));
+
+	/*
+	 * Read through the square rather than the return value: `effect_simple()`
+	 * returns nothing, so what is being asserted is whether a staircase is
+	 * actually there afterwards -- which is the thing a player would notice.
+	 */
+	nightmare(false);
+	effect_simple(EF_CREATE_STAIRS, source_player(), "0", 0, 0, 0, 0, 0, NULL);
+	made = square_isstairs(cave, player->grid);
+	require(made);
+
+	/* Put the floor back, so the second half starts where the first did. */
+	square_set_feat(cave, player->grid, FEAT_FLOOR);
+	require(square_isfloor(cave, player->grid));
+
+	nightmare(true);
+	effect_simple(EF_CREATE_STAIRS, source_player(), "0", 0, 0, 0, 0, 0, NULL);
+	made = square_isstairs(cave, player->grid);
+	nightmare(false);
+	if (made) {
+		printf("stairs were made under nightmare mode\n");
+		require(false);
+	}
+	ok;
+}
+
+/**
+ * A FORCE_DEPTH monster can be chosen above its level (monster2.c:1735).
+ *
+ * 4.2 refuses outright; nightmare mode allows it for everything except a quest
+ * monster.
+ *
+ * Asked of the selection rather than of a sample. Every FORCE_DEPTH monster
+ * this game ships is a level-99 unique -- the four Saurons and Morgoth -- so
+ * drawing until one appears is a lottery that returns zero on both sides and
+ * says nothing. The flag is borrowed for a race that *is* chosen, sitting one
+ * level above the floor and drawn against a shallow table, so the guard is the
+ * only thing that varies between the two halves.
+ */
+static int test_a_force_depth_monster_can_come_up(void *state) {
+	struct monster_race *guinea = lookup_monster("soldier");
+	int plain = 0, nasty = 0, i;
+	const int runs = 2000;
+	const int depth = 5;
+	int kept_level;
+
+	require(guinea);
+	kept_level = guinea->level;
+	guinea->level = depth + 1;
+	rf_on(guinea->flags, RF_FORCE_DEPTH);
+
+	for (i = 0; i < runs; i++) {
+		nightmare(false);
+		if (get_mon_num(depth + 5, depth) == guinea) plain++;
+
+		nightmare(true);
+		if (get_mon_num(depth + 5, depth) == guinea) nasty++;
+	}
+	nightmare(false);
+
+	rf_off(guinea->flags, RF_FORCE_DEPTH);
+	guinea->level = kept_level;
+
+	if (plain != 0 || nasty == 0) {
+		printf("out-of-depth FORCE_DEPTH picks over %d draws: %d plain, "
+				"%d nightmare (plain must be none, nightmare must be some)\n",
+				runs, plain, nasty);
+		require(false);
+	}
+	ok;
+}
+
+/**
+ * Monsters come from far deeper than the floor they stand on
+ * (monster2.c:765).
+ *
+ * 4.2's own out-of-depth rule is capped at `depth / 4 + 2`; Zangband's
+ * nightmare branch is `1 + (level * 128 / randint1(128))`, uncapped. At depth 5
+ * that reaches far past anything the ordinary rule can produce, and the bar is
+ * set above 4.2's ceiling so the ordinary rule cannot reach it however the dice
+ * fall.
+ */
+static int test_monsters_come_from_much_deeper(void *state) {
+	int plain_max = 0, nasty_max = 0, i;
+	const int runs = 3000;
+	const int depth = 5;
+	/* 4.2's rule tops out at depth + depth/4 + 2, which is 8 here. */
+	const int beyond = 25;
+
+	for (i = 0; i < runs; i++) {
+		struct monster_race *race;
+
+		nightmare(false);
+		race = get_mon_num(depth, depth);
+		if (race && race->level > plain_max) plain_max = race->level;
+
+		nightmare(true);
+		race = get_mon_num(depth, depth);
+		if (race && race->level > nasty_max) nasty_max = race->level;
+	}
+	nightmare(false);
+
+	if (plain_max >= beyond || nasty_max < beyond) {
+		printf("deepest monster over %d draws at depth %d: %d plain, "
+				"%d nightmare (plain must stay under %d)\n",
+				runs, depth, plain_max, nasty_max, beyond);
+		require(false);
+	}
+	ok;
+}
+
+/**
+ * A corrupted Word of Recall takes you deeper, and never past the bottom
+ * (dungeon.c:1817, DEC-83).
+ *
+ * Four branches, not the three §2.8.2's summary records: the archive also sends
+ * anything past 100 to the bottom of the world.
+ *
+ * The clamp is the part worth pinning. Zangband has one continuous dungeon;
+ * this game has thirteen with their own bottoms, and WLD-14 exists so recall
+ * cannot land past one. A test that only checked the doubling would pass with
+ * the clamp deleted, and the thing it protects -- arriving on a level the
+ * dungeon does not have -- is not something a player could diagnose.
+ */
+static int test_recall_twists_but_not_past_the_bottom(void *state) {
+	static const struct { int from, want; } rows[] = {
+		{ 20, 40 },		/* below 50: doubles */
+		{ 60, 79 },		/* below 99: half the way to 99 */
+		{ 120, 0 },		/* past 100: the bottom of the world */
+	};
+	int kept = player->dungeon;
+	size_t i;
+
+	/* No dungeon, so only the world's own bottom applies. */
+	player->dungeon = 0;
+	for (i = 0; i < N_ELEMENTS(rows); i++) {
+		int want = rows[i].want ? rows[i].want : z_info->max_depth - 1;
+		int got = nightmare_recall_depth(player, rows[i].from);
+
+		if (got != want) {
+			printf("recall from %d: got %d, wanted %d\n", rows[i].from, got,
+					want);
+			player->dungeon = kept;
+			require(false);
+		}
+	}
+
+	/* And inside a dungeon, never past its own bottom. */
+	{
+		struct dun_type *type = dun_type_by_index(0);
+		int got;
+
+		require(type);
+		player->dungeon = 1;
+		got = nightmare_recall_depth(player, type->max_depth);
+		if (got > type->max_depth) {
+			printf("recall from the bottom of a dungeon (%d) gave %d\n",
+					type->max_depth, got);
+			player->dungeon = kept;
+			require(false);
+		}
+
+		/* Doubling from halfway must still stop at the bottom. */
+		got = nightmare_recall_depth(player, type->max_depth / 2 + 1);
+		if (got > type->max_depth) {
+			printf("recall doubled past the dungeon's bottom: %d > %d\n",
+					got, type->max_depth);
+			player->dungeon = kept;
+			require(false);
+		}
+	}
+
+	player->dungeon = kept;
+	ok;
+}
+
+/**
+ * The bell tolls four times before midnight, and the curse lands on the hour
+ * (dungeon.c:1232).
+ *
+ * §2.8.3 counts this among the four behaviours no spoiler mentions, and calls
+ * it the one piece of mercy in the mode -- four warnings across the last hour.
+ *
+ * Tested by walking a whole game day a tick at a time and counting what the
+ * clock says, which is the only way to assert "four and exactly four": a test
+ * that checked one moment would pass with the hour wrong, and one that checked
+ * the curse alone would pass with no bell at all.
+ */
+static int test_the_bell_tolls_before_the_curse(void *state) {
+	int32_t len = 10L * z_info->day_length;
+	int32_t t;
+	int tolls[5] = { 0, 0, 0, 0, 0 };
+	int curses = 0;
+
+	for (t = 0; t < len; t += 10) {
+		int toll = nightmare_bell_at(t);
+
+		if (toll == NIGHTMARE_CURSE) curses++;
+		else if (toll >= 1 && toll <= 4) tolls[toll]++;
+		else if (toll) {
+			printf("unexpected toll %d at turn %d\n", toll, (int) t);
+			require(false);
+		}
+	}
+
+	/* Exactly one of each warning, and exactly one curse, in a day. */
+	eq(tolls[1], 1);
+	eq(tolls[2], 1);
+	eq(tolls[3], 1);
+	eq(tolls[4], 1);
+	eq(curses, 1);
+	ok;
+}
+
+/**
+ * And the four warnings come in the hour before the curse, in order.
+ *
+ * Separate from the count because the count would pass if the bell rang at
+ * four random moments of the day. What makes it a warning is that it arrives
+ * beforehand and close by.
+ */
+static int test_the_bell_comes_before_midnight(void *state) {
+	int32_t len = 10L * z_info->day_length;
+	int32_t t, at[5] = { 0, -1, -1, -1, -1 }, curse_at = -1;
+
+	for (t = 0; t < len; t += 10) {
+		int toll = nightmare_bell_at(t);
+
+		if (toll == NIGHTMARE_CURSE) curse_at = t;
+		else if (toll >= 1 && toll <= 4) at[toll] = t;
+	}
+
+	require(curse_at >= 0);
+	require(at[1] >= 0 && at[2] >= 0 && at[3] >= 0 && at[4] >= 0);
+
+	/* In order... */
+	require(at[1] < at[2] && at[2] < at[3] && at[3] < at[4]);
+
+	/* ...and all four inside the hour before midnight. */
+	{
+		int32_t hour = len / 24;
+
+		if (at[1] < curse_at - hour || at[4] >= curse_at) {
+			printf("bell at %d..%d, curse at %d, an hour is %d\n",
+					(int) at[1], (int) at[4], (int) curse_at, (int) hour);
+			require(false);
+		}
+	}
+	ok;
+}
+
+/** How many grids of that feature the level holds. */
+static int count_feat(int feat) {
+	int y, x, n = 0;
+
+	for (y = 0; y < cave->height; y++)
+		for (x = 0; x < cave->width; x++)
+			if (square(cave, loc(x, y))->feat == feat) n++;
+	return n;
+}
+
+/**
+ * A level carries invisible walls, and an ordinary one carries none
+ * (grid.c:125, generate.c:945).
+ *
+ * Twenty levels each way rather than one: the count per level is
+ * `Rand_normal(3, 3)`, which is zero often enough that a single level proves
+ * nothing either way.
+ *
+ * The plain side is the assertion that matters and it is exact -- an ordinary
+ * level must carry *none*, so any at all is the guard leaking.
+ */
+static int test_a_nightmare_level_has_invisible_walls(void *state) {
+	int plain = 0, nasty = 0, i;
+	const int levels = 20;
+	int kept = player->depth;
+
+	for (i = 0; i < levels; i++) {
+		nightmare(false);
+		player->depth = 3;
+		prepare_next_level(player);
+		plain += count_feat(FEAT_INVIS_WALL);
+
+		nightmare(true);
+		player->depth = 3;
+		prepare_next_level(player);
+		nasty += count_feat(FEAT_INVIS_WALL);
+	}
+	nightmare(false);
+	player->depth = kept;
+	prepare_next_level(player);
+
+	if (plain != 0 || nasty == 0) {
+		printf("invisible walls over %d levels each: %d plain, %d nightmare "
+				"(plain must be none, nightmare must be some)\n",
+				levels, plain, nasty);
+		require(false);
+	}
+	ok;
+}
+
+/**
+ * And it looks like floor while being a wall.
+ *
+ * The whole point of the feature, and the half a count cannot see. `mimic`
+ * decides what the player is shown (cave-map.c:99); the flags decide what the
+ * grid actually is. A feature that got one of those wrong would still be
+ * counted by the test above.
+ */
+static int test_an_invisible_wall_looks_like_floor(void *state) {
+	struct feature *f = &f_info[FEAT_INVIS_WALL];
+
+	require(f->name);
+
+	/* It is a wall: not passable, and it blocks sight. */
+	require(tf_has(f->flags, TF_WALL));
+	require(!tf_has(f->flags, TF_PASSABLE));
+	require(!tf_has(f->flags, TF_LOS));
+
+	/* And it is shown as plain floor. */
+	require(f->mimic);
+	require(f->mimic == &f_info[FEAT_FLOOR]);
+	ok;
+}
+
 const char *suite_name = "game/nightmare";
 struct test tests[] = {
 	{ "nightmare-is-an-optional-birth-choice",
@@ -316,5 +745,22 @@ struct test tests[] = {
 	{ "an-ambusher-loses-its-grace", test_an_ambusher_loses_its_grace },
 	{ "monsters-arrive-with-double-energy",
 			test_monsters_arrive_with_double_energy },
+	{ "a-sustain-sometimes-fails", test_a_sustain_sometimes_fails },
+	{ "a-drain-becomes-permanent", test_a_drain_becomes_permanent },
+	{ "no-stairs-can-be-made", test_no_stairs_can_be_made },
+	{ "a-force-depth-monster-can-come-up",
+			test_a_force_depth_monster_can_come_up },
+	{ "monsters-come-from-much-deeper",
+			test_monsters_come_from_much_deeper },
+	{ "recall-twists-but-not-past-the-bottom",
+			test_recall_twists_but_not_past_the_bottom },
+	{ "the-bell-tolls-before-the-curse",
+			test_the_bell_tolls_before_the_curse },
+	{ "the-bell-comes-before-midnight",
+			test_the_bell_comes_before_midnight },
+	{ "a-nightmare-level-has-invisible-walls",
+			test_a_nightmare_level_has_invisible_walls },
+	{ "an-invisible-wall-looks-like-floor",
+			test_an_invisible_wall_looks_like_floor },
 	{ NULL, NULL }
 };

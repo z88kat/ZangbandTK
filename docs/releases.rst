@@ -5,14 +5,12 @@ Release log
 .. note::
 
    **3.1.1 was the first release**, tagged on 18 August 2026 — a macOS disk image
-   and a source archive. The most recent is **3.49.5**, from 31 August, and both
-   are on the `Releases page`_. Every release so far is marked a pre-release.
+   and a source archive. The most recent is **3.111.3**, and all of them are on
+   the `Releases page`_. Every release so far is marked a pre-release.
 
    What follows is the development log, grouped by the milestones the work is
    organised into, newest first, with everything done since the last tag under
-   *Unreleased*. That section is large: M9 and M10 — the realms of magic and
-   pets, the two biggest pieces of work in the project — both landed after
-   3.49.5 was cut.
+   *Unreleased*.
 
    This page covers ZangbandTK only. For Angband's own long history, which this
    game is built on, see :doc:`version`.
@@ -33,8 +31,11 @@ Lord's gift. Both turned out to be data rather than the code hook they were
 recorded as needing. Two of Zangband's routes remain and want objects that do
 not exist here: a thrown figurine, and a wand of charm monster.
 
-**M11, nightmare mode, has not been started.** See :doc:`features` for what all
-of this adds up to in the game, and for what is left.
+**M11, nightmare mode, is half done.** Stage 1 — every behaviour Zangband's own
+nightmare mode has, sixteen of them — is complete. Stage 2 is the menu of things
+its spoiler describes and Zangband never built, and that is a scheduled decision
+rather than a closed one (DEC-84). See :doc:`features` for what all of this adds
+up to in the game, and for what is left.
 
 Version numbers move with the work — patch for a fix, minor for a feature,
 bumped in the commit that does it — so a build can be identified from its title
@@ -44,6 +45,84 @@ than the Angband 4.2.6 the code sits on.
 
 Unreleased
 ==========
+
+The manual stops saying M11 has not been started — 14 September 2026
+------------------------------------------------------------------------
+
+- **3.120.1** — Three status claims in the documentation had gone stale, and all
+  three would have been wrong on the face of a release tagged today. The feature
+  table said nightmare mode was **not started**; the release log said the same,
+  and also that the most recent release was **3.49.5** when two later ones are
+  tagged; and the feature summary said **nine races** when the game has
+  twenty-eight.
+
+  No code. Worth its own entry because a release is partly a claim about what is
+  in it, and these were the claims.
+
+The bell, the walls that are not floor, and a recall that lies — 14 September 2026
+-------------------------------------------------------------------------------------
+
+- **3.120.0** — **M11 stage 1 is complete.** The last three of nightmare mode's
+  sixteen behaviours are in, and every one of the sixteen is now either built or
+  closed by a decision with its reasoning written down.
+
+  **A bell tolls four times in the hour before midnight**, and on the stroke the
+  Ancient and Foul Curse falls on you wherever you are. Nothing in Zangband's own
+  documentation mentions the bell; it is the only warning the mode gives about
+  anything, and there is time to drink something or be elsewhere.
+
+  **Some walls look like open floor.** A few on every level and one door in
+  several hundred. You cannot walk through them, you cannot see past them, and
+  nothing about how they are drawn will tell you.
+
+  **Word of Recall occasionally arrives deeper than you asked** — about one in
+  six hundred and sixty-six. It will not take you past the bottom of the dungeon
+  you are recalling into, which is a deliberate departure: this game has thirteen
+  dungeons with their own floors, where Zangband had one. In a shallow dungeon
+  that makes the corruption mild; in a deep one it can end a character who was
+  going shopping.
+
+  Stage 2 — the menu of things Zangband's spoiler describes and Zangband never
+  built — is deferred until after a release, and is a scheduled decision rather
+  than a closed one.
+
+The wrong monsters, on the wrong floor — 14 September 2026
+--------------------------------------------------------------
+
+- **3.119.2** — Two more of M11's sixteen, and they are the two that change what
+  you *meet* rather than what it does to you. The game's ordinary rule for
+  generating something out of its depth adds a few levels at most; under
+  nightmare it multiplies, uncapped, so the fifth floor can hold something from
+  the eighty-fifth. And the monsters normally pinned to their own depth — the
+  ones the game will never generate early whatever else happens — are no longer
+  pinned. Only quest monsters still are.
+
+  **These are the two I pulled out on Friday**, saying the tests did not
+  discriminate. The tests were fine. What was wrong was the harness measuring
+  them: restoring a source file and rebuilding within the same second does not
+  recompile it, so every "restored" run was still testing the mutated binary.
+  Two working guards were deleted on the strength of a stale build. The harness
+  now asserts the file actually recompiled, and ``check-build``'s notes say why.
+
+Nightmare mode takes your sustains and your stairs — 14 September 2026
+--------------------------------------------------------------------------
+
+- **3.119.1** — Three more of M11's sixteen. **A sustain now fails one time in
+  thirteen**, and when a stat drain does land it is **permanent** twelve times
+  in thirteen rather than wearing off. Nothing in Zangband's own documentation
+  mentions sustains at all, which makes this probably the cruellest thing in the
+  mode and certainly the least expected: a sustain is a property you buy once
+  and stop thinking about.
+
+  **And no stairs can be made.** Stair creation does nothing — no scumming for a
+  convenient descent, no escape hatch out of a level that has gone wrong.
+
+  Two of the sixteen are also now closed rather than pending. **Sleeping at the
+  inn is unchanged** under nightmare, and **a sleep attack cannot give you
+  nightmares because nothing in this game can put you to sleep** — monsters
+  paralyse, which is a different thing. The second is deferred rather than
+  refused: if a sleep state ever arrives for another reason, the nightmare can
+  hang off it.
 
 The Intel Mac comes back — 14 September 2026
 --------------------------------------------
