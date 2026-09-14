@@ -456,12 +456,13 @@ in when the milestone lands.
      - Chapter
    * - Nightmare mode
      - M11
-     - Not started.
+     - Stage 1 complete: every behaviour Zangband's own mode has.
      - :doc:`nightmare`
 
 The world is finished — towns, services, roads, dungeons and quests all landed,
 which was Phase 2's world work — and the character is most of the way there.
-Nine races, racial powers and **every class Zangband has** are in — the Monk, the
+Twenty-eight races, racial powers for twenty-two of them, and **every class
+Zangband has** are in — the Monk, the
 Mindcrafter, the Chaos-Warrior, the Warrior-Mage and the High-Mage, which closes
 that requirement. **Virtues have landed** — eight drawn from eighteen at birth,
 moved by how you play, and read by the Lords of Chaos and by the dream at the inn

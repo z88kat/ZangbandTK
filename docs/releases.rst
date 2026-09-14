@@ -5,14 +5,12 @@ Release log
 .. note::
 
    **3.1.1 was the first release**, tagged on 18 August 2026 — a macOS disk image
-   and a source archive. The most recent is **3.49.5**, from 31 August, and both
-   are on the `Releases page`_. Every release so far is marked a pre-release.
+   and a source archive. The most recent is **3.111.3**, and all of them are on
+   the `Releases page`_. Every release so far is marked a pre-release.
 
    What follows is the development log, grouped by the milestones the work is
    organised into, newest first, with everything done since the last tag under
-   *Unreleased*. That section is large: M9 and M10 — the realms of magic and
-   pets, the two biggest pieces of work in the project — both landed after
-   3.49.5 was cut.
+   *Unreleased*.
 
    This page covers ZangbandTK only. For Angband's own long history, which this
    game is built on, see :doc:`version`.
@@ -33,8 +31,11 @@ Lord's gift. Both turned out to be data rather than the code hook they were
 recorded as needing. Two of Zangband's routes remain and want objects that do
 not exist here: a thrown figurine, and a wand of charm monster.
 
-**M11, nightmare mode, has not been started.** See :doc:`features` for what all
-of this adds up to in the game, and for what is left.
+**M11, nightmare mode, is half done.** Stage 1 — every behaviour Zangband's own
+nightmare mode has, sixteen of them — is complete. Stage 2 is the menu of things
+its spoiler describes and Zangband never built, and that is a scheduled decision
+rather than a closed one (DEC-84). See :doc:`features` for what all of this adds
+up to in the game, and for what is left.
 
 Version numbers move with the work — patch for a fix, minor for a feature,
 bumped in the commit that does it — so a build can be identified from its title
@@ -44,6 +45,19 @@ than the Angband 4.2.6 the code sits on.
 
 Unreleased
 ==========
+
+The manual stops saying M11 has not been started — 14 September 2026
+------------------------------------------------------------------------
+
+- **3.120.1** — Three status claims in the documentation had gone stale, and all
+  three would have been wrong on the face of a release tagged today. The feature
+  table said nightmare mode was **not started**; the release log said the same,
+  and also that the most recent release was **3.49.5** when two later ones are
+  tagged; and the feature summary said **nine races** when the game has
+  twenty-eight.
+
+  No code. Worth its own entry because a release is partly a claim about what is
+  in it, and these were the claims.
 
 The bell, the walls that are not floor, and a recall that lies — 14 September 2026
 -------------------------------------------------------------------------------------
