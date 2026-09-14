@@ -1262,6 +1262,50 @@ static struct chunk *cave_generate(struct player *p, int height, int width)
 			}
 		}
 
+		/*
+		 * ZangbandTK (BAL-15): nightmare mode's invisible walls.
+		 *
+		 * Zangband makes them two ways -- one door in 666 becomes one
+		 * ([grid.c:125](../archive/zangband/src/grid.c#L125)), and a level
+		 * gets `Rand_normal(3, 3)` of them scattered over its floor
+		 * ([generate.c:945](../archive/zangband/src/generate.c#L945)).
+		 * Both numbers are transplanted as written (DEC-83): they are against
+		 * Zangband's generator, its level sizes and its door counts, none of
+		 * which are ours, so the *observed* density will differ. That is
+		 * expected rather than a bug.
+		 *
+		 * Done here rather than in a builder, for the same reason the dungeon
+		 * floor is: every builder gets it and none of them has to know.
+		 */
+		if (p->depth > 0 && OPT(p, birth_nightmare)) {
+			int nm_want = Rand_normal(3, 3);
+			int nm_try, nm_y, nm_x;
+
+			/* One door in 666. */
+			for (nm_y = 0; nm_y < chunk->height; nm_y++)
+				for (nm_x = 0; nm_x < chunk->width; nm_x++) {
+					struct loc where = loc(nm_x, nm_y);
+
+					if (square_isdoor(chunk, where) && one_in_(666))
+						square_set_feat(chunk, where, FEAT_INVIS_WALL);
+				}
+
+			/* And a few laid over open floor. */
+			for (nm_try = 0; nm_want > 0 && nm_try < 2000; nm_try++) {
+				struct loc where = loc(randint0(chunk->width),
+					randint0(chunk->height));
+
+				if (!square_in_bounds_fully(chunk, where)) continue;
+				if (!square_isfloor(chunk, where)) continue;
+				if (square_object(chunk, where)) continue;
+				if (square_monster(chunk, where)) continue;
+				if (loc_eq(where, p->grid)) continue;
+
+				square_set_feat(chunk, where, FEAT_INVIS_WALL);
+				nm_want--;
+			}
+		}
+
 		/* Regenerate levels that overflow their maxima */
 		if (cave_monster_max(chunk) >= chunk->mon_size)
 			error = "too many monsters";

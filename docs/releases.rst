@@ -45,6 +45,33 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The bell, the walls that are not floor, and a recall that lies — 14 September 2026
+-------------------------------------------------------------------------------------
+
+- **3.120.0** — **M11 stage 1 is complete.** The last three of nightmare mode's
+  sixteen behaviours are in, and every one of the sixteen is now either built or
+  closed by a decision with its reasoning written down.
+
+  **A bell tolls four times in the hour before midnight**, and on the stroke the
+  Ancient and Foul Curse falls on you wherever you are. Nothing in Zangband's own
+  documentation mentions the bell; it is the only warning the mode gives about
+  anything, and there is time to drink something or be elsewhere.
+
+  **Some walls look like open floor.** A few on every level and one door in
+  several hundred. You cannot walk through them, you cannot see past them, and
+  nothing about how they are drawn will tell you.
+
+  **Word of Recall occasionally arrives deeper than you asked** — about one in
+  six hundred and sixty-six. It will not take you past the bottom of the dungeon
+  you are recalling into, which is a deliberate departure: this game has thirteen
+  dungeons with their own floors, where Zangband had one. In a shallow dungeon
+  that makes the corruption mild; in a deep one it can end a character who was
+  going shopping.
+
+  Stage 2 — the menu of things Zangband's spoiler describes and Zangband never
+  built — is deferred until after a release, and is a scheduled decision rather
+  than a closed one.
+
 The wrong monsters, on the wrong floor — 14 September 2026
 --------------------------------------------------------------
 

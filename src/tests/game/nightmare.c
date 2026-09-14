@@ -20,6 +20,7 @@
 #include "init.h"
 #include "cave.h"
 #include "obj-util.h"
+#include "dun-type.h"
 #include "game-world.h"
 #include "generate.h"
 #include "mon-make.h"
@@ -517,6 +518,220 @@ static int test_monsters_come_from_much_deeper(void *state) {
 	ok;
 }
 
+/**
+ * A corrupted Word of Recall takes you deeper, and never past the bottom
+ * (dungeon.c:1817, DEC-83).
+ *
+ * Four branches, not the three §2.8.2's summary records: the archive also sends
+ * anything past 100 to the bottom of the world.
+ *
+ * The clamp is the part worth pinning. Zangband has one continuous dungeon;
+ * this game has thirteen with their own bottoms, and WLD-14 exists so recall
+ * cannot land past one. A test that only checked the doubling would pass with
+ * the clamp deleted, and the thing it protects -- arriving on a level the
+ * dungeon does not have -- is not something a player could diagnose.
+ */
+static int test_recall_twists_but_not_past_the_bottom(void *state) {
+	static const struct { int from, want; } rows[] = {
+		{ 20, 40 },		/* below 50: doubles */
+		{ 60, 79 },		/* below 99: half the way to 99 */
+		{ 120, 0 },		/* past 100: the bottom of the world */
+	};
+	int kept = player->dungeon;
+	size_t i;
+
+	/* No dungeon, so only the world's own bottom applies. */
+	player->dungeon = 0;
+	for (i = 0; i < N_ELEMENTS(rows); i++) {
+		int want = rows[i].want ? rows[i].want : z_info->max_depth - 1;
+		int got = nightmare_recall_depth(player, rows[i].from);
+
+		if (got != want) {
+			printf("recall from %d: got %d, wanted %d\n", rows[i].from, got,
+					want);
+			player->dungeon = kept;
+			require(false);
+		}
+	}
+
+	/* And inside a dungeon, never past its own bottom. */
+	{
+		struct dun_type *type = dun_type_by_index(0);
+		int got;
+
+		require(type);
+		player->dungeon = 1;
+		got = nightmare_recall_depth(player, type->max_depth);
+		if (got > type->max_depth) {
+			printf("recall from the bottom of a dungeon (%d) gave %d\n",
+					type->max_depth, got);
+			player->dungeon = kept;
+			require(false);
+		}
+
+		/* Doubling from halfway must still stop at the bottom. */
+		got = nightmare_recall_depth(player, type->max_depth / 2 + 1);
+		if (got > type->max_depth) {
+			printf("recall doubled past the dungeon's bottom: %d > %d\n",
+					got, type->max_depth);
+			player->dungeon = kept;
+			require(false);
+		}
+	}
+
+	player->dungeon = kept;
+	ok;
+}
+
+/**
+ * The bell tolls four times before midnight, and the curse lands on the hour
+ * (dungeon.c:1232).
+ *
+ * §2.8.3 counts this among the four behaviours no spoiler mentions, and calls
+ * it the one piece of mercy in the mode -- four warnings across the last hour.
+ *
+ * Tested by walking a whole game day a tick at a time and counting what the
+ * clock says, which is the only way to assert "four and exactly four": a test
+ * that checked one moment would pass with the hour wrong, and one that checked
+ * the curse alone would pass with no bell at all.
+ */
+static int test_the_bell_tolls_before_the_curse(void *state) {
+	int32_t len = 10L * z_info->day_length;
+	int32_t t;
+	int tolls[5] = { 0, 0, 0, 0, 0 };
+	int curses = 0;
+
+	for (t = 0; t < len; t += 10) {
+		int toll = nightmare_bell_at(t);
+
+		if (toll == NIGHTMARE_CURSE) curses++;
+		else if (toll >= 1 && toll <= 4) tolls[toll]++;
+		else if (toll) {
+			printf("unexpected toll %d at turn %d\n", toll, (int) t);
+			require(false);
+		}
+	}
+
+	/* Exactly one of each warning, and exactly one curse, in a day. */
+	eq(tolls[1], 1);
+	eq(tolls[2], 1);
+	eq(tolls[3], 1);
+	eq(tolls[4], 1);
+	eq(curses, 1);
+	ok;
+}
+
+/**
+ * And the four warnings come in the hour before the curse, in order.
+ *
+ * Separate from the count because the count would pass if the bell rang at
+ * four random moments of the day. What makes it a warning is that it arrives
+ * beforehand and close by.
+ */
+static int test_the_bell_comes_before_midnight(void *state) {
+	int32_t len = 10L * z_info->day_length;
+	int32_t t, at[5] = { 0, -1, -1, -1, -1 }, curse_at = -1;
+
+	for (t = 0; t < len; t += 10) {
+		int toll = nightmare_bell_at(t);
+
+		if (toll == NIGHTMARE_CURSE) curse_at = t;
+		else if (toll >= 1 && toll <= 4) at[toll] = t;
+	}
+
+	require(curse_at >= 0);
+	require(at[1] >= 0 && at[2] >= 0 && at[3] >= 0 && at[4] >= 0);
+
+	/* In order... */
+	require(at[1] < at[2] && at[2] < at[3] && at[3] < at[4]);
+
+	/* ...and all four inside the hour before midnight. */
+	{
+		int32_t hour = len / 24;
+
+		if (at[1] < curse_at - hour || at[4] >= curse_at) {
+			printf("bell at %d..%d, curse at %d, an hour is %d\n",
+					(int) at[1], (int) at[4], (int) curse_at, (int) hour);
+			require(false);
+		}
+	}
+	ok;
+}
+
+/** How many grids of that feature the level holds. */
+static int count_feat(int feat) {
+	int y, x, n = 0;
+
+	for (y = 0; y < cave->height; y++)
+		for (x = 0; x < cave->width; x++)
+			if (square(cave, loc(x, y))->feat == feat) n++;
+	return n;
+}
+
+/**
+ * A level carries invisible walls, and an ordinary one carries none
+ * (grid.c:125, generate.c:945).
+ *
+ * Twenty levels each way rather than one: the count per level is
+ * `Rand_normal(3, 3)`, which is zero often enough that a single level proves
+ * nothing either way.
+ *
+ * The plain side is the assertion that matters and it is exact -- an ordinary
+ * level must carry *none*, so any at all is the guard leaking.
+ */
+static int test_a_nightmare_level_has_invisible_walls(void *state) {
+	int plain = 0, nasty = 0, i;
+	const int levels = 20;
+	int kept = player->depth;
+
+	for (i = 0; i < levels; i++) {
+		nightmare(false);
+		player->depth = 3;
+		prepare_next_level(player);
+		plain += count_feat(FEAT_INVIS_WALL);
+
+		nightmare(true);
+		player->depth = 3;
+		prepare_next_level(player);
+		nasty += count_feat(FEAT_INVIS_WALL);
+	}
+	nightmare(false);
+	player->depth = kept;
+	prepare_next_level(player);
+
+	if (plain != 0 || nasty == 0) {
+		printf("invisible walls over %d levels each: %d plain, %d nightmare "
+				"(plain must be none, nightmare must be some)\n",
+				levels, plain, nasty);
+		require(false);
+	}
+	ok;
+}
+
+/**
+ * And it looks like floor while being a wall.
+ *
+ * The whole point of the feature, and the half a count cannot see. `mimic`
+ * decides what the player is shown (cave-map.c:99); the flags decide what the
+ * grid actually is. A feature that got one of those wrong would still be
+ * counted by the test above.
+ */
+static int test_an_invisible_wall_looks_like_floor(void *state) {
+	struct feature *f = &f_info[FEAT_INVIS_WALL];
+
+	require(f->name);
+
+	/* It is a wall: not passable, and it blocks sight. */
+	require(tf_has(f->flags, TF_WALL));
+	require(!tf_has(f->flags, TF_PASSABLE));
+	require(!tf_has(f->flags, TF_LOS));
+
+	/* And it is shown as plain floor. */
+	require(f->mimic);
+	require(f->mimic == &f_info[FEAT_FLOOR]);
+	ok;
+}
+
 const char *suite_name = "game/nightmare";
 struct test tests[] = {
 	{ "nightmare-is-an-optional-birth-choice",
@@ -537,5 +752,15 @@ struct test tests[] = {
 			test_a_force_depth_monster_can_come_up },
 	{ "monsters-come-from-much-deeper",
 			test_monsters_come_from_much_deeper },
+	{ "recall-twists-but-not-past-the-bottom",
+			test_recall_twists_but_not_past_the_bottom },
+	{ "the-bell-tolls-before-the-curse",
+			test_the_bell_tolls_before_the_curse },
+	{ "the-bell-comes-before-midnight",
+			test_the_bell_comes_before_midnight },
+	{ "a-nightmare-level-has-invisible-walls",
+			test_a_nightmare_level_has_invisible_walls },
+	{ "an-invisible-wall-looks-like-floor",
+			test_an_invisible_wall_looks_like_floor },
 	{ NULL, NULL }
 };

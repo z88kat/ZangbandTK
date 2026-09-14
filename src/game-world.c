@@ -20,6 +20,7 @@
 #include "cmds.h"
 #include "effects.h"
 #include "game-world.h"
+#include "dun-type.h"
 #include "generate.h"
 #include "init.h"
 #include "mon-make.h"
@@ -625,6 +626,91 @@ static void update_scent(void)
 /**
  * Handle things that need updating once every 10 game turns
  */
+/**
+ * Where a corrupted Word of Recall lands, in nightmare mode (BAL-15).
+ *
+ * Zangband's four branches
+ * ([dungeon.c:1817](../archive/zangband/src/dungeon.c#L1817)) -- and there are
+ * four, where §2.8.2's summary records three: anything past 100 goes to the
+ * bottom of the world, which is the branch that turns a deep recall into the
+ * end of a character.
+ *
+ * **Clamped to the dungeon the player is actually in** (DEC-83). Zangband has
+ * one continuous dungeon and can double a depth freely. This game has thirteen,
+ * each with a bottom there is no way past, and WLD-14 added
+ * `player_dungeon_recall_depth()` precisely so that recall could not land
+ * somewhere deeper than the dungeon goes. Doubling without the clamp would undo
+ * that protection for this one behaviour.
+ *
+ * The cost is known and was chosen: in a shallow dungeon this does little or
+ * nothing, because doubling five where the dungeon ends at eight is eight. It
+ * bites where the dungeons are deep, which is where being sent deeper is
+ * frightening anyway.
+ *
+ * Separated from its caller so it can be tested: the roll that reaches it is
+ * one in 666 inside the world loop, which is not a thing a test can drive.
+ */
+/**
+ * The bell before the curse, and the curse at midnight (BAL-15,
+ * [dungeon.c:1232](../archive/zangband/src/dungeon.c#L1232)).
+ *
+ * Four warnings at 23:00, 23:15, 23:30 and 23:45, then the Ancient and Foul
+ * Curse at midnight exactly. §2.8.3 counts the bell among the four behaviours
+ * no spoiler mentions, and calls it the one piece of mercy in the mode -- and
+ * the only piece of stagecraft.
+ *
+ * It ports directly because the clocks agree: `world:day-length` is 10000 here
+ * and Zangband's `TOWN_DAWN` is 10000 too, so the arithmetic below is the
+ * archive's unchanged, including the quarter-day offset that puts midnight
+ * where Zangband puts it.
+ *
+ * Returns the quarter-hour toll number 1 to 4, `NIGHTMARE_CURSE` at midnight,
+ * or 0 at every other moment. Separated from its caller so it can be tested at
+ * a given turn rather than by waiting a game day.
+ */
+int nightmare_bell_at(int32_t at_turn)
+{
+	int32_t len = 10L * z_info->day_length;
+	int32_t tick = at_turn % len + len / 4;
+	int hour = (int) ((24 * tick / len) % 24);
+	int min = (int) ((1440 * tick / len) % 60);
+	int prev_min = (int) ((1440 * (tick - 10) / len) % 60);
+
+	/* Only on the exact minute the clock rolls over. */
+	if (min == prev_min) return 0;
+
+	if (hour == 23 && !(min % 15)) return min / 15 + 1;
+	if (!hour && !min) return NIGHTMARE_CURSE;
+
+	return 0;
+}
+
+int nightmare_recall_depth(struct player *p, int depth)
+{
+	int d = depth;
+
+	if (d < 50)
+		d *= 2;
+	else if (d < 99)
+		d = (d + 99) / 2;
+	else if (d > 100)
+		d = z_info->max_depth - 1;
+
+	/* Never past the bottom of this dungeon... */
+	if (p->dungeon) {
+		const struct dun_type *type = dun_type_by_index(p->dungeon - 1);
+
+		if (type && d > type->max_depth)
+			d = type->max_depth;
+	}
+
+	/* ...nor past the bottom of the world. */
+	if (d > z_info->max_depth - 1)
+		d = z_info->max_depth - 1;
+
+	return d;
+}
+
 void process_world(struct chunk *c)
 {
 	/*
@@ -652,6 +738,29 @@ void process_world(struct chunk *c)
 	/* Play an ambient sound at regular intervals. */
 	if (!(turn % ((10L * z_info->day_length) / 4)))
 		play_ambient_sound();
+
+	/* The bell, and then the curse (BAL-15). */
+	if (OPT(player, birth_nightmare)) {
+		int toll = nightmare_bell_at((int32_t) turn);
+
+		if (toll == NIGHTMARE_CURSE) {
+			disturb(player);
+			msg("A distant bell tolls many times, fading into a deathly "
+				"silence.");
+			effect_simple(EF_ANCIENT_CURSE, source_none(), "0", 0, 0, 0,
+				0, 0, NULL);
+		} else if (toll) {
+			static const char *tolls[] = {
+				"You hear a distant bell toll ominously.",
+				"A distant bell sounds twice.",
+				"A distant bell sounds three times.",
+				"A distant bell tolls four times.",
+			};
+
+			disturb(player);
+			msg("%s", tolls[toll - 1]);
+		}
+	}
 
 	/* Handle stores and sunshine */
 	if (!player->depth) {
@@ -1007,6 +1116,21 @@ void process_world(struct chunk *c)
 
 					if (back > 0 && !OPT(player, birth_force_descend))
 						player->recall_depth = back;
+				}
+
+				/*
+				 * And one time in 666 the way back twists (BAL-15,
+				 * [dungeon.c:1817](../archive/zangband/src/dungeon.c#L1817)).
+				 */
+				if (OPT(player, birth_nightmare) && one_in_(666)) {
+					int d = nightmare_recall_depth(player,
+						player->recall_depth);
+
+					if (d != player->recall_depth) {
+						msgt(MSG_TPLEVEL,
+							"The way back twists, and takes you deeper.");
+						player->recall_depth = d;
+					}
 				}
 
 				dungeon_change_level(player, player->recall_depth);

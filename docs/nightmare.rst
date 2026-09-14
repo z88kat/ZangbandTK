@@ -78,11 +78,24 @@ normally pinned to their own depth — the ones the game will never generate
 early, whatever else it does — are no longer pinned. Only quest monsters still
 are.
 
-Not built yet
--------------
+**Some walls look like floor.** A few on every level, and one door in several
+hundred. They are walls: you cannot walk through them, you cannot see past
+them, and nothing about how they are drawn will tell you. You find them by
+walking into them.
 
-The rest of M11: invisible walls; the midnight curse and the bell that warns of
-it; and Word of Recall sending you deeper than you asked.
+**A bell tolls before midnight, and then something answers it.** Four times in
+the last hour — at eleven, and at each quarter past — and on the stroke of
+midnight the Ancient and Foul Curse falls on you wherever you are. The bell is
+the only warning the mode gives you about anything, and it is worth heeding:
+there is time to drink something, or to be somewhere else.
+
+**Word of Recall occasionally takes you somewhere worse.** About one recall in
+six hundred and sixty-six arrives deeper than you asked — twice as deep in the
+upper dungeon, half the remaining way down in the lower. It will not take you
+past the bottom of the dungeon you are recalling into, so in a shallow one this
+does little; in a deep one it can end a character who was going shopping.
+
+Everything Zangband's nightmare mode actually does is now here.
 
 And four things that will not be built. Two are permanent decisions:
 

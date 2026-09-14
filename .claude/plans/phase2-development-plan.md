@@ -685,6 +685,18 @@ manual chapter as well as here:
 stage-2 addition recorded as a decision. Manual chapter: nightmare mode, which per BAL-15's
 own reasoning must tell the player which half is which.
 
+> **Where it stands, 14 September 2026. Stage 1 is complete**; stage 2 is a scheduled
+> decision and not a satisfied one. All sixteen of §2.8.2's behaviours are closed: twelve
+> built, four ruled out — the score multiplier and the Golem's stun immunity (DEC-81), and
+> both of the mode's nightmares (DEC-82, the sleep-attack one deferred rather than refused
+> because 4.2 has no player sleep to hang it on). DEC-83 covers the two judgements the last
+> three needed.
+>
+> **The exit criterion above reads as satisfied-by-zero and is not.** Nothing in §2.8.5 has
+> been ruled on either way; the project owner has deferred it until after a release
+> (DEC-84). The four the table flags as cheap and clearly good are open questions, not
+> refused ones, and the milestone is not finished until each has an answer.
+
 ---
 
 ## 3. Requirement coverage
