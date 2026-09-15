@@ -46,6 +46,30 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The mode that never said it was on — 15 September 2026
+------------------------------------------------------------
+
+- **3.121.0** — **A character in nightmare mode says so**, as ``Nightmare`` in
+  red on the status line, for as long as it lives. It sits beside ``Cheat``,
+  which was added in 3.43.0 for the same reason and after the same kind of
+  confusion.
+
+  Zangband showed the mode in exactly one place, the character dump
+  (``files.c:2766``), and a dump is a file you write after the character is
+  dead. In play the mode is sixteen changes and every one of them looks like the
+  ordinary game going badly — a monster with twice the hit points looks like a
+  monster, a sustain that failed looks like a sustain that was never bought, a
+  wall that looks like floor looks like floor. The option is set once at birth
+  and can never be turned off, so there was no later moment at which the game
+  would have mentioned it.
+
+  **Ours, and a display rather than a behaviour.** It changes nothing about how
+  the mode plays, which is why it is not one of stage 2's additions and needs no
+  ruling as one (DEC-84).
+
+  The manual chapter also now says where the option is, because it is not on the
+  race and class menus: ``=`` at any of them, last of the sixteen birth options.
+
 The manual stops saying M11 has not been started — 14 September 2026
 ------------------------------------------------------------------------
 

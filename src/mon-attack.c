@@ -427,6 +427,20 @@ bool make_ranged_attack(struct monster *mon)
 	bool seen = (player->timed[TMD_BLIND] == 0) && monster_is_visible(mon);
 	bool innate = false;
 
+	/*
+	 * A monster on the player's side needs something of its own to aim at
+	 * (ZangbandTK, PLR-23).
+	 *
+	 * Zangband guards the whole spell routine on the caster
+	 * ([mspells1.c:765](../archive/zangband/src/mspells1.c#L765)) because
+	 * its pets cast at other monsters through a separate routine entirely.
+	 * Here the two share one path, told apart by `target.midx`, so the guard
+	 * has to be on the target instead: with no enemy found this turn the
+	 * target *is* the player, and everything below -- the range, the clean
+	 * bolt shot, the saving throw -- would be measured against them.
+	 */
+	if (!monster_is_hostile(mon) && mon->target.midx <= 0) return false;
+
 	/* Check for cast this turn, non-innate and then innate */
 	if (!monster_can_cast(mon, false)) {
 		if (!monster_can_cast(mon, true)) {
@@ -591,6 +605,23 @@ bool make_attack_normal(struct monster *mon, struct player *p)
 
 	/* Not allowed to attack */
 	if (rf_has(mon->race->flags, RF_NEVER_BLOW)) return (false);
+
+	/*
+	 * ...nor allowed to attack the player if it is on the player's side
+	 * (ZangbandTK, PLR-23).
+	 *
+	 * Zangband's guard, in the same place
+	 * ([melee1.c:167](../archive/zangband/src/melee1.c#L167)). The movement
+	 * code decides a monster wants the grid the player is standing in and
+	 * calls this, and nothing on that path asks whose side the monster is
+	 * on. A pet that steps into you is not attacking you: most often it is
+	 * one you have just pushed past, taking its random step in a corridor
+	 * where the only two ways to go are away from you and into you.
+	 *
+	 * Here rather than only at the call site so that no path can reach a
+	 * pet's blows against the player, whatever it thinks it is doing.
+	 */
+	if (!monster_is_hostile(mon)) return false;
 
 	/* Get the monster name (or "it") */
 	monster_desc(m_name, sizeof(m_name), mon, MDESC_STANDARD);

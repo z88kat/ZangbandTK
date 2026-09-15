@@ -1923,6 +1923,21 @@ static void monster_turn(struct monster *mon)
 
 		/* The player is in the way. */
 		if (square_isplayer(cave, new)) {
+			/*
+			 * ZangbandTK (PLR-23): a monster on your side goes around you.
+			 *
+			 * `make_attack_normal()` refuses the blow anyway, so this is not
+			 * what keeps a pet from hurting you; it is what keeps it from
+			 * standing still. Falling through would spend the turn walking
+			 * into you, and a pet you have just pushed past in a corridor
+			 * would spend half its turns that way -- there being only two
+			 * directions there, and one of them being you.
+			 *
+			 * Nor does it teach you anything about NEVER_BLOW below: it
+			 * never tried to hit you, so its not hitting you is no evidence.
+			 */
+			if (!monster_is_hostile(mon)) continue;
+
 			/* Learn about if the monster attacks */
 			if (monster_is_visible(mon))
 				rf_on(lore->flags, RF_NEVER_BLOW);
@@ -1994,9 +2009,19 @@ static void monster_turn(struct monster *mon)
 		if (monster_is_visible(mon))
 			rf_on(lore->flags, RF_NEVER_MOVE);
 
-		/* Possible disturb */
-		if (monster_is_visible(mon) && monster_is_in_view(mon) && 
-			OPT(player, disturb_near))
+		/*
+		 * Possible disturb -- but only something that means you harm
+		 * (ZangbandTK, PLR-23,
+		 * [melee2.c:2551](../archive/zangband/src/melee2.c#L2551)).
+		 *
+		 * `disturb_near` is on by default and cancels resting, and a pet
+		 * follows you, so without this a player with a pet standing next to
+		 * them cannot rest at all: every turn the animal shuffles, the rest
+		 * ends. The option means "warn me when something moves in view",
+		 * and your own animal is not a warning.
+		 */
+		if (monster_is_visible(mon) && monster_is_in_view(mon) &&
+			monster_is_hostile(mon) && OPT(player, disturb_near))
 			disturb(player);		
 	}
 

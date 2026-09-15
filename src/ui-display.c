@@ -1440,6 +1440,35 @@ static size_t prt_cheat(int row, int col)
 }
 
 
+/**
+ * Say so, for the whole of the game, when the character is playing under
+ * nightmare mode.
+ *
+ * Zangband said it in one place, the character dump (files.c:2766), which is a
+ * file you write after the character is dead.  In play the mode is sixteen
+ * invisible changes and every one of them looks like the ordinary game going
+ * badly: a monster with twice the hit points looks like a monster, a sustain
+ * that failed looks like a sustain that was never bought, and a wall that looks
+ * like floor looks like floor.  The option is set once at birth and cannot be
+ * turned off, so there is no later moment at which the game would otherwise
+ * mention it.
+ *
+ * This is ours rather than a port, and it is a display rather than a behaviour
+ * -- it changes nothing about how the mode plays, which is why it is not one of
+ * stage 2's additions (DEC-84) and needs no ruling as one.
+ */
+static size_t prt_nightmare(int row, int col)
+{
+	if (OPT(player, birth_nightmare)) {
+		const char *str = "Nightmare";
+		c_put_str(COLOUR_RED, str, row, col);
+		return strlen(str) + 1;
+	}
+
+	return 0;
+}
+
+
 static size_t prt_unignore(int row, int col)
 {
 	if (player->unignoring) {
@@ -1457,9 +1486,9 @@ static size_t prt_unignore(int row, int col)
 typedef size_t status_f(int row, int col);
 
 static status_f *status_handlers[] =
-{ prt_cheat, prt_level_feeling, prt_daylight, prt_light, prt_moves,
-  prt_unignore, prt_recall, prt_descent, prt_state, prt_study, prt_tmd,
-  prt_dtrap, prt_terrain };
+{ prt_cheat, prt_nightmare, prt_level_feeling, prt_daylight, prt_light,
+  prt_moves, prt_unignore, prt_recall, prt_descent, prt_state, prt_study,
+  prt_tmd, prt_dtrap, prt_terrain };
 
 
 static void update_statusline_aux(int row, int col)

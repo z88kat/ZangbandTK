@@ -555,8 +555,17 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			/* Mark as easily visible */
 			mflag_on(mon->mflag, MFLAG_VIEW);
 
-			/* Disturb on appearance */
-			if (OPT(player, disturb_near))
+			/*
+			 * Disturb on appearance -- if it is an enemy (ZangbandTK,
+			 * PLR-23).
+			 *
+			 * The same reasoning as the disturb in `monster_turn()`: a pet
+			 * crossing in and out of view is not news, and a player with
+			 * pets would never rest through it. Zangband does not disturb
+			 * here at all ([monster2.c:1623](../archive/zangband/src/monster2.c#L1623)),
+			 * so keeping it for hostiles is the narrower change.
+			 */
+			if (monster_is_hostile(mon) && OPT(player, disturb_near))
 				disturb(player);
 
 			/* Re-draw monster window */
@@ -568,8 +577,9 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			/* Mark as not easily visible */
 			mflag_off(mon->mflag, MFLAG_VIEW);
 
-			/* Disturb on disappearance */
-			if (OPT(player, disturb_near) && !monster_is_camouflaged(mon))
+			/* Disturb on disappearance -- likewise only for an enemy */
+			if (monster_is_hostile(mon) && OPT(player, disturb_near)
+					&& !monster_is_camouflaged(mon))
 				disturb(player);
 
 			/* Re-draw monster list window */

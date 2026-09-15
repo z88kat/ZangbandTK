@@ -31,6 +31,76 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+15 September 2026 — the pet that killed its owner
+=================================================
+
+Steven was four turns into a new character when his own soldier beat him to
+death in a corridor on level one. The message log is the whole bug report:
+*You push past a soldier. The soldier hits you. The soldier misses you. The
+soldier hits you.* And then, a few turns later, *You die.*
+
+The push-past is mine and it worked exactly as designed. Walking into your own
+pet swaps places with it instead of hitting it, which is the thing that stops
+the "you just attacked your pet, it hates you now" machinery firing every time
+an animal gets into a doorway ahead of you. What I never thought about is the
+half-turn after the swap. The pet is now standing behind you in a corridor. A
+pet inside its leash has nothing it needs to do, so it moves at random. A
+corridor has two ways out of it. One of them is you.
+
+And ``monster_turn()`` resolves "this monster wants the grid the player is
+standing in" by calling ``make_attack_normal()``, which has never once asked
+whose side the monster is on. It did not need to, before there were sides.
+
+**Three symptoms, one hole.** Once I had the melee one I went looking for the
+rest of the class, and there were two more:
+
+*It can cast at you too.* 4.2 aims a monster's spells with ``target.midx``, and
+a target of zero means the player. A pet that finds nothing to fight this turn
+has a target of zero. A pet apprentice would blind and magic-missile its owner
+without ever turning hostile.
+
+*And it stops you resting.* ``disturb_near`` — "disturb whenever viewable
+monster moves", on by default — fires for any visible monster that does
+anything, and cancels rest when it does. A pet follows you, so it is always
+visible and always doing something. Steven found this one himself while trying
+to heal the character the soldier was killing: he could not rest a single turn.
+That is not a pet bug in the usual sense; the option simply means "warn me when
+something moves in view", and your own animal is not a warning.
+
+**Zangband guards all three, and I ported the feature without them.** They are
+one line each, and they are not in the interesting parts of the code — they are
+at the top of ``make_attack_normal`` (``melee1.c:167``), at the top of
+``make_attack_spell`` (``mspells1.c:765``), and wrapped round the disturb in
+``process_monster`` (``melee2.c:2551``). When I read those files I was reading
+them for the pet AI: the target search, the leash, the alignment rules. The
+guards look like noise until you know what happens without them. They are not
+noise. They are three-quarters of what makes a pet safe to stand next to.
+
+So the fix is theirs, in the same three places, plus one of my own: a pet that
+wants your square now steps around you rather than standing there bumping into
+you, because "refuse the blow and spend the turn" would cost a pet in a corridor
+half its moves.
+
+**The test that passed for the wrong reason.** I wrote three regression tests
+and two of them were green immediately, which should have made me suspicious
+and did not until I reverted the fix and watched them stay green. Every monster
+is placed with ``MFLAG_NICE`` — the engine's free first move, which suppresses
+spellcasting — so "the pet never cast at the player over four hundred attempts"
+was true of a pet that could not cast at all. Clearing the flag made the test
+fail against the unfixed code, which is the only evidence that a regression test
+is a regression test. Reverting the fix and watching the new tests go red is a
+step I will not skip again; it cost two minutes and it caught two of three.
+
+The other one failed the other way, on its own setup rather than on its
+subject. ``player_resting_cancel`` latches a static flag that swallows the
+*next* attempt to rest, so placing the hostile control in view — which disturbs
+the player — meant the control half could never start resting at all. Nothing
+wrong with the game; the test simply had to ask twice.
+
+Four turns to die, and the character was carrying nothing but a torch. Cheap as
+bug reports go.
+
+
 14 September 2026 — the oldest document, and the mechanics nobody wrote down
 ============================================================================
 

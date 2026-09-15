@@ -136,6 +136,13 @@ satisfies none of those and would otherwise sleep through its own battle.
 enemy, rolling against that creature's armour rather than against your saving
 throw.
 
+**They will not hit you, and they will not interrupt you.** An ally that steps
+into the square you are standing in is trying to get past you, not attacking
+you — it goes around instead, and waits if there is nowhere to go around to.
+Nor does its shuffling about count as something moving in view: you can rest
+with a pet standing over you, which you could not do if the game treated your
+own animal as a warning. Only a creature that has turned hostile does either.
+
 **And when two enemies meet, they fight.** Neither shoves past the other, and
 neither tramples the other underfoot — a large hostile monster cannot simply
 walk over your pet and delete it on the way to you. It has to kill it, one blow

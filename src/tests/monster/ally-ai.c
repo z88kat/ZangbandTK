@@ -32,12 +32,15 @@
 #include "game-world.h"
 #include "generate.h"
 #include "init.h"
+#include "mon-attack.h"
 #include "mon-make.h"
 #include "mon-move.h"
 #include "mon-predicate.h"
 #include "mon-util.h"
 #include "monster.h"
+#include "option.h"
 #include "player-birth.h"
+#include "player-util.h"
 #include "project.h"
 
 static void println(const char *str) {
@@ -154,6 +157,45 @@ static void clear_the_level(void) {
 		if (!mon->race) continue;
 		delete_monster_idx(cave, i);
 	}
+}
+
+/**
+ * A monster of that side, standing next to the player, on an empty level.
+ *
+ * Adjacency matters for the three tests below in a way it does not for the
+ * rest of the suite: one of them measures whether a *visible* monster
+ * disturbs the player, and a monster placed three grids away down an unlit
+ * corridor is not visible, so the test would pass whatever the code did.
+ *
+ * `place_side(..., 1)` is the obvious way to write this and is wrong about one
+ * run in ten -- the player can start in a dead end, where there is no free
+ * neighbour to place anything on and the test dies on its own setup. So the
+ * level is regenerated rather than the requirement relaxed, and cleared again
+ * after, since a fresh level arrives with its own monsters and a hostile one
+ * wandering into view would disturb the player for reasons of its own.
+ */
+static struct monster *place_next_to_the_player(const char *name,
+												enum monster_allegiance side) {
+	int attempt;
+
+	for (attempt = 0; attempt < 20; attempt++) {
+		int i;
+
+		for (i = 0; i < 8; i++) {
+			struct loc grid = loc_sum(player->grid, ddgrid_ddd[i]);
+
+			if (!square_in_bounds_fully(cave, grid)) continue;
+			if (!square_isempty(cave, grid)) continue;
+
+			return place_at(grid, name, side);
+		}
+
+		prepare_next_level(player);
+		on_new_level();
+		clear_the_level();
+	}
+
+	return NULL;
 }
 
 /**
@@ -577,6 +619,201 @@ static int test_pets_follow_you_downstairs(void *state) {
 	ok;
 }
 
+/**
+ * A pet does not attack the player, whatever the movement code asks of it.
+ *
+ * The bug this exists for killed a first level character in a corridor. The
+ * player walked into their own soldier and pushed past it, which is the
+ * intended courtesy -- and left the animal standing behind them with nowhere
+ * to go but back down the corridor or forward into them. A pet within its
+ * leash moves randomly, so every other turn its random step was the player's
+ * grid, and `monster_turn()` resolves a monster that wants the player's grid
+ * by calling `make_attack_normal()`. Nothing on that path asked whose side
+ * the monster was on, so the pet killed its owner in about four turns.
+ *
+ * The guard is in `make_attack_normal()` rather than only at that call site
+ * because it is the one place every future path has to pass through, which is
+ * where Zangband put it too.
+ */
+static int test_a_pet_does_not_attack_the_player(void *state) {
+	struct monster *pet;
+	int i;
+	int16_t keep_chp = player->chp, keep_mhp = player->mhp;
+
+	clear_the_level();
+	pet = place_next_to_the_player("soldier", MON_ALLEGIANCE_PET);
+	require(pet);
+
+	/* Fifty chances to land a blow it should not land */
+	for (i = 0; i < 50; i++) {
+		require(!make_attack_normal(pet, player));
+	}
+	eq(player->chp, keep_chp);
+	require(!player->is_dead);
+
+	/*
+	 * The same monster on the other side does hit, so the test is measuring
+	 * the side and not some other reason the blows never landed. Given a deep
+	 * pool of hit points first: a soldier's two blows outdo a first level
+	 * character, and a test that kills the player it is testing with proves
+	 * nothing about the next case in the suite.
+	 */
+	monster_set_allegiance(pet, MON_ALLEGIANCE_HOSTILE);
+	player->mhp = 5000;
+	player->chp = 5000;
+	for (i = 0; i < 50; i++) {
+		require(make_attack_normal(pet, player));
+	}
+	require(player->chp < 5000);
+
+	player->mhp = keep_mhp;
+	player->chp = keep_chp;
+
+	ok;
+}
+
+/**
+ * Nor does it cast at the player.
+ *
+ * The same defect one layer up, and the reason the guard here is not simply
+ * `!monster_is_hostile()`. In 4.2 a monster's ranged attack and a monster's
+ * ranged attack *on another monster* are one code path told apart by
+ * `target.midx`, so a pet that found nothing to fight this turn has no target
+ * -- and "no target" means the player. A pet apprentice would blind and bolt
+ * its owner without ever turning hostile.
+ */
+static int test_a_pet_does_not_cast_at_the_player(void *state) {
+	struct monster *pet, *foe;
+	int i;
+	bool cast = false;
+	int16_t keep_chp = player->chp;
+
+	clear_the_level();
+	pet = place_next_to_the_player("apprentice", MON_ALLEGIANCE_PET);
+	require(pet);
+	require(pet->target.midx == 0);
+
+	/*
+	 * Take away the free first move. Every monster is placed with MFLAG_NICE
+	 * and `monster_can_cast()` refuses while it is set, so without this the
+	 * test passes against no guard at all -- which is exactly what it did
+	 * when it was first written.
+	 */
+	mflag_off(pet->mflag, MFLAG_NICE);
+
+	/*
+	 * Four hundred chances at a one-in-twelve spell. It stands next to the
+	 * player with nothing else on the level, which is every condition the
+	 * spell code wants -- in range, in line of sight, awake.
+	 */
+	for (i = 0; i < 400; i++) {
+		require(!make_ranged_attack(pet));
+	}
+	eq(player->chp, keep_chp);
+
+	/*
+	 * Give it an enemy and it casts. This half is what stops the guard being
+	 * written as "pets never use spells", which would be a quieter version of
+	 * the same bug -- a pet that cannot fight is not a pet.
+	 */
+	foe = place_beside(pet, "kobold", MON_ALLEGIANCE_HOSTILE);
+	require(foe);
+
+	for (i = 0; i < 400 && !cast; i++) {
+		mflag_off(pet->mflag, MFLAG_NICE);
+		if (!monster_find_enemy(pet)) break;
+		cast = make_ranged_attack(pet);
+	}
+	require(cast);
+
+	ok;
+}
+
+/**
+ * A pet does not break the player's rest by moving about.
+ *
+ * `disturb_near` is on by default, it cancels resting, and `monster_turn()`
+ * fired it for any visible monster that did anything. A pet follows you, so
+ * it is always visible and always doing something: a player with one pet
+ * could not rest a single turn, which is how this was noticed -- the character
+ * bleeding in the corridor above could not heal either.
+ *
+ * The option means "warn me when something moves in view". Your own animal is
+ * not a warning.
+ */
+static int test_a_pet_does_not_break_your_rest(void *state) {
+	struct monster *pet, *foe;
+	int i;
+	bool kept = OPT(player, disturb_near);
+	int16_t keep_chp = player->chp, keep_mhp = player->mhp;
+
+	option_set(option_name(OPT_disturb_near), true);
+
+	clear_the_level();
+	pet = place_next_to_the_player("soldier", MON_ALLEGIANCE_PET);
+	require(pet);
+	require(monster_is_visible(pet));
+
+	/*
+	 * `player_resting_cancel(p, false)` first, every time. Placing a hostile
+	 * monster in view disturbs the player, and a disturb latches a static
+	 * flag that swallows the *next* attempt to rest -- so without this the
+	 * second half of the test cannot start resting at all, and fails on its
+	 * own setup rather than on anything it is measuring.
+	 */
+	player_resting_cancel(player, false);
+	player_resting_set_count(player, 100);
+	require(player_is_resting(player));
+
+	for (i = 0; i < 20; i++) {
+		/*
+		 * A scratch, to keep it active. `monster_check_active()` measures
+		 * the player -- sight, then the noise and scent maps, which a unit
+		 * test never fills in because it never takes a player turn. "The
+		 * monster is hurt" is the one test that does not, and using it for
+		 * both halves means they differ in their side and nothing else.
+		 */
+		pet->hp = pet->maxhp - 1;
+		pet->energy = z_info->move_energy;
+		mflag_off(pet->mflag, MFLAG_HANDLED);
+		process_monsters(0);
+	}
+	require(player_is_resting(player));
+
+	/*
+	 * And a hostile one still stops you, which is the whole point of the
+	 * option. Placed fresh rather than by turning this one: twenty turns of
+	 * random walk may have carried the pet out of sight, and a monster the
+	 * player cannot see disturbs nobody for reasons that have nothing to do
+	 * with what is being tested here.
+	 */
+	clear_the_level();
+	foe = place_next_to_the_player("soldier", MON_ALLEGIANCE_HOSTILE);
+	require(foe);
+	require(monster_is_visible(foe));
+
+	player->mhp = 5000;
+	player->chp = 5000;
+	player_resting_cancel(player, false);
+	player_resting_set_count(player, 100);
+	require(player_is_resting(player));
+
+	for (i = 0; i < 20 && player_is_resting(player); i++) {
+		player->chp = 5000;
+		foe->hp = foe->maxhp - 1;
+		foe->energy = z_info->move_energy;
+		mflag_off(foe->mflag, MFLAG_HANDLED);
+		process_monsters(0);
+	}
+	require(!player_is_resting(player));
+
+	player->mhp = keep_mhp;
+	player->chp = keep_chp;
+	option_set(option_name(OPT_disturb_near), kept);
+
+	ok;
+}
+
 const char *suite_name = "monster/ally-ai";
 struct test tests[] = {
 	{ "a-pet-finds-an-enemy", test_a_pet_finds_an_enemy },
@@ -594,5 +831,11 @@ struct test tests[] = {
 	{ "an-order-grants-nothing-the-race-lacks",
 	  test_an_order_grants_nothing_the_race_lacks },
 	{ "pets-follow-you-downstairs", test_pets_follow_you_downstairs },
+	{ "a-pet-does-not-attack-the-player",
+	  test_a_pet_does_not_attack_the_player },
+	{ "a-pet-does-not-cast-at-the-player",
+	  test_a_pet_does_not_cast_at_the_player },
+	{ "a-pet-does-not-break-your-rest",
+	  test_a_pet_does_not_break_your_rest },
 	{ NULL, NULL }
 };

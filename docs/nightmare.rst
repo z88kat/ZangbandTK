@@ -24,10 +24,32 @@ can only be set while creating a character, and cannot be turned off afterwards
 — that is what makes it irreversible, and it is why it appears in the birth
 menu rather than anywhere else.
 
-A character playing under it says so in its dump, as ``Nightmare Mode: ON``.
-That line exists because the mode changes how the game is played and nothing
-else in a dump would show it: a character that died at depth 20 under nightmare
-did something quite different from one that died at depth 20 without it.
+It is not on the race and class menus themselves. Press ``=`` at any of them for
+the birth options, where it is the last of the sixteen:
+
+.. code-block:: text
+
+   Nightmare mode (this isn't even remotely fair!)  : no   (birth_nightmare)
+
+Press ``y`` on it, then ``ESC`` back to the character you were making.
+
+Knowing you are in it
+---------------------
+
+A character playing under nightmare mode carries **Nightmare**, in red, on the
+status line, for as long as it lives. It sits beside ``Cheat`` and is there for
+the same reason: the mode changes sixteen things and every one of them looks,
+from inside the game, like the ordinary game going badly. A monster with twice
+the hit points looks like a monster. A sustain that failed looks like a sustain
+that was never bought. A wall that looks like floor looks like floor.
+
+This is ours. Zangband showed the mode in one place only, the character dump,
+and a dump is a file you write after the character is dead.
+
+The dump still says it too, as ``Nightmare Mode: ON``, because that is where one
+character gets compared against another: a character that died at depth 20 under
+nightmare did something quite different from one that died at depth 20 without
+it.
 
 What it changes
 ---------------
