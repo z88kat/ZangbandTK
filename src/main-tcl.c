@@ -141,7 +141,23 @@ static bool flags_applied = false;
 /* Defined below, beside the rest of the tile code. */
 static void clear_tiles(term_data *td, int x, int y, int n);
 
-static Tk_PhotoHandle tileset = NULL;
+/*
+ * The tile sheet, as our own RGBA pixels rather than a Tk photo.
+ *
+ * Tk decodes a PNG with any transparency in it very slowly -- measured on this
+ * machine, David Gervais' 4096x992 sheet takes 8.6 seconds, and the same file
+ * with every alpha byte set to 255 takes 36.  It is the transparency and not
+ * the size: the Neon sheet is fully opaque and loads in 10ms, and snapping
+ * Gervais' alpha to 0 or 255 changes nothing, so it is any non-opaque pixel at
+ * all that costs.
+ *
+ * We never display the sheet -- it is only ever a source of pixels to copy
+ * from -- so it does not need to be a Tk image.  Decoding it ourselves avoids
+ * the whole problem, and it is also what generated darkening will need when
+ * that arrives, since gamma-adjusting a tile means having its pixels to hand.
+ */
+static unsigned char *sheet = NULL;	/* RGBA, sheet_w * sheet_h * 4 */
+static int sheet_w = 0, sheet_h = 0;
 static unsigned char *cell_buf = NULL;
 static int cell_buf_size = 0;
 
@@ -301,6 +317,167 @@ static errr Term_curs_tcl(int x, int y)
 }
 
 /**
+ * Read a PNG into RGBA pixels of our own.
+ *
+ * Supports what the tile sheets actually are -- eight bits a channel, RGB or
+ * RGBA, not interlaced -- and says so plainly rather than half-supporting the
+ * rest.  Inflation is Tcl's, so there is no new dependency: Tcl has zlib built
+ * in and exposes it to C.
+ */
+static bool png_load(const char *path, unsigned char **out, int *ow, int *oh)
+{
+	ang_file *fh;
+	unsigned char *file = NULL, *idat = NULL, *raw, *img = NULL;
+	Tcl_Obj *in = NULL, *flat = NULL;
+	size_t flen = 0, ilen = 0;
+	int w = 0, h = 0, depth, ctype, inter, bpp, stride, y, x;
+	Tcl_Size rawlen;
+	bool ok = false;
+
+	fh = file_open(path, MODE_READ, FTYPE_RAW);
+	if (!fh) return false;
+
+	/* Read it whole, growing as we go: there is no file_size to ask. */
+	{
+		size_t cap = 1 << 16;
+		int got;
+
+		file = mem_alloc(cap);
+		while ((got = file_read(fh, (char *)file + flen,
+				cap - flen)) > 0) {
+			flen += (size_t)got;
+			if (flen == cap) {
+				unsigned char *bigger = mem_alloc(cap * 2);
+
+				memcpy(bigger, file, flen);
+				mem_free(file);
+				file = bigger;
+				cap *= 2;
+			}
+		}
+	}
+	file_close(fh);
+
+	if (flen < 33 || memcmp(file, "\x89PNG\r\n\x1a\n", 8) != 0) goto done;
+
+	w = (file[16] << 24) | (file[17] << 16) | (file[18] << 8) | file[19];
+	h = (file[20] << 24) | (file[21] << 16) | (file[22] << 8) | file[23];
+	depth = file[24];
+	ctype = file[25];
+	inter = file[28];
+
+	if (depth != 8 || (ctype != 2 && ctype != 6) || inter != 0) {
+		plog_fmt("Tcl/Tk: %s is a PNG shape I do not read"
+				" (depth %d, colour type %d, interlace %d).",
+				path, depth, ctype, inter);
+		goto done;
+	}
+	bpp = (ctype == 6) ? 4 : 3;
+	stride = w * bpp + 1;
+
+	/* Gather every IDAT: a large PNG is usually split across several. */
+	{
+		size_t p = 8;
+
+		idat = mem_alloc(flen);
+		while (p + 8 <= flen) {
+			size_t len = ((size_t)file[p] << 24) | ((size_t)file[p+1] << 16)
+					| ((size_t)file[p+2] << 8) | file[p+3];
+
+			if (p + 12 + len > flen) break;
+			if (memcmp(file + p + 4, "IDAT", 4) == 0) {
+				memcpy(idat + ilen, file + p + 8, len);
+				ilen += len;
+			}
+			p += 12 + len;
+		}
+	}
+	if (!ilen) goto done;
+
+	in = Tcl_NewByteArrayObj(idat, (Tcl_Size)ilen);
+	Tcl_IncrRefCount(in);
+
+	/*
+	 * Note where the answer comes back: Tcl_ZlibInflate leaves the inflated
+	 * bytes in the interpreter result, and its last argument is a gzip header
+	 * dictionary rather than an output object.  Passing an object there and
+	 * expecting it filled in fails quietly, which is exactly what happened
+	 * the first time.
+	 */
+	if (Tcl_ZlibInflate(interp, TCL_ZLIB_FORMAT_ZLIB, in,
+			(Tcl_Size)(stride * h), NULL) != TCL_OK) {
+		plog_fmt("Tcl/Tk: %s would not inflate: %s", path,
+				Tcl_GetStringResult(interp));
+		goto done;
+	}
+	flat = Tcl_GetObjResult(interp);
+	Tcl_IncrRefCount(flat);
+	raw = Tcl_GetByteArrayFromObj(flat, &rawlen);
+	if (rawlen < (Tcl_Size)stride * h) {
+		plog_fmt("Tcl/Tk: %s inflated to %d bytes, expected %d.", path,
+				(int)rawlen, stride * h);
+		goto done;
+	}
+
+	/*
+	 * Undo the per-row filters.  Every sheet we ship uses filter 0, but the
+	 * others cost a few lines and a PNG from anywhere else may well use them.
+	 */
+	img = mem_zalloc((size_t)w * h * 4);
+	for (y = 0; y < h; y++) {
+		const unsigned char *src = raw + (size_t)y * stride;
+		int ft = src[0];
+		unsigned char *cur = img + (size_t)y * w * 4;
+		const unsigned char *up = (y > 0) ? img + (size_t)(y - 1) * w * 4 : NULL;
+
+		src++;
+		for (x = 0; x < w; x++) {
+			int ch;
+
+			for (ch = 0; ch < bpp; ch++) {
+				int rv = src[x * bpp + ch];
+				int a = (x > 0) ? cur[(x - 1) * 4 + ch] : 0;
+				int b = up ? up[x * 4 + ch] : 0;
+				int c = (up && x > 0) ? up[(x - 1) * 4 + ch] : 0;
+				int v;
+
+				switch (ft) {
+					case 1: v = rv + a; break;
+					case 2: v = rv + b; break;
+					case 3: v = rv + ((a + b) >> 1); break;
+					case 4: {
+						int p = a + b - c;
+						int pa = abs(p - a), pb = abs(p - b), pc = abs(p - c);
+
+						v = rv + ((pa <= pb && pa <= pc) ? a
+								: (pb <= pc) ? b : c);
+						break;
+					}
+					default: v = rv; break;
+				}
+				cur[x * 4 + ch] = (unsigned char)(v & 0xff);
+			}
+			if (bpp == 3) cur[x * 4 + 3] = 255;
+		}
+	}
+
+	*out = img;
+	*ow = w;
+	*oh = h;
+	img = NULL;
+	ok = true;
+
+done:
+	if (in) Tcl_DecrRefCount(in);
+	if (flat) Tcl_DecrRefCount(flat);
+	if (file) mem_free(file);
+	if (idat) mem_free(idat);
+	if (img) mem_free(img);
+
+	return ok;
+}
+
+/**
  * Draw one tile into a term's tile layer, scaled to the cell.
  *
  * The sheet is addressed the way every other front end addresses it: the row
@@ -315,19 +492,17 @@ static errr Term_curs_tcl(int x, int y)
  */
 static void blit_tile(term_data *td, int x, int y, int a, int c, int comp)
 {
-	Tk_PhotoImageBlock src, dst;
+	Tk_PhotoImageBlock dst;
 	int tw, th, sx, sy, px, py, dw, dh;
 
-	if (!tileset || !td->screen || !current_graphics_mode) return;
-
-	Tk_PhotoGetImage(tileset, &src);
+	if (!sheet || !td->screen || !current_graphics_mode) return;
 
 	tw = current_graphics_mode->cell_width;
 	th = current_graphics_mode->cell_height;
 	sx = (c & 0x7f) * tw;
 	sy = (a & 0x7f) * th;
 
-	if (sx + tw > src.width || sy + th > src.height) return;
+	if (sx + tw > sheet_w || sy + th > sheet_h) return;
 
 	/*
 	 * A tile may span more than one text cell.  tile_width and tile_height
@@ -349,14 +524,13 @@ static void blit_tile(term_data *td, int x, int y, int a, int c, int comp)
 
 		for (px = 0; px < dw; px++) {
 			int tx = sx + (px * tw) / dw;
-			unsigned char *s = src.pixelPtr + ty * src.pitch
-					+ tx * src.pixelSize;
+			const unsigned char *s = sheet + ((size_t)ty * sheet_w + tx) * 4;
 			unsigned char *d = cell_buf + (py * dw + px) * 4;
 
-			d[0] = s[src.offset[0]];
-			d[1] = s[src.offset[1]];
-			d[2] = s[src.offset[2]];
-			d[3] = (src.offset[3] < src.pixelSize) ? s[src.offset[3]] : 255;
+			d[0] = s[0];
+			d[1] = s[1];
+			d[2] = s[2];
+			d[3] = s[3];
 		}
 	}
 
@@ -667,11 +841,11 @@ static bool tcl_source(const char *name)
 static bool graphics_load(graphics_mode *mode)
 {
 	char path[1024];
-	Tcl_Obj *cmd;
 
-	if (tileset) {
-		Tcl_Eval(interp, "image delete tilesheet");
-		tileset = NULL;
+	if (sheet) {
+		mem_free(sheet);
+		sheet = NULL;
+		sheet_w = sheet_h = 0;
 	}
 
 	if (!mode || mode->grafID == GRAPHICS_NONE) {
@@ -688,17 +862,10 @@ static bool graphics_load(graphics_mode *mode)
 		return false;
 	}
 
-	cmd = Tcl_ObjPrintf("image create photo tilesheet -file {%s}", path);
-	Tcl_IncrRefCount(cmd);
-	if (Tcl_EvalObjEx(interp, cmd, TCL_EVAL_GLOBAL) == TCL_OK) {
-		tileset = Tk_FindPhoto(interp, "tilesheet");
-	} else {
-		plog_fmt("Tcl/Tk: could not read %s: %s", path,
-				Tcl_GetStringResult(interp));
+	if (!png_load(path, &sheet, &sheet_w, &sheet_h)) {
+		plog_fmt("Tcl/Tk: could not read %s.", path);
+		return false;
 	}
-	Tcl_DecrRefCount(cmd);
-
-	if (!tileset) return false;
 
 	current_graphics_mode = mode;
 	use_graphics = mode->grafID;
