@@ -281,7 +281,7 @@ static errr Term_curs_tcl(int x, int y)
 static void blit_tile(term_data *td, int x, int y, int a, int c, int comp)
 {
 	Tk_PhotoImageBlock src, dst;
-	int tw, th, sx, sy, px, py;
+	int tw, th, sx, sy, px, py, dw, dh;
 
 	if (!tileset || !td->screen || !current_graphics_mode) return;
 
@@ -294,20 +294,29 @@ static void blit_tile(term_data *td, int x, int y, int a, int c, int comp)
 
 	if (sx + tw > src.width || sy + th > src.height) return;
 
-	if (cell_buf_size < td->cw * td->ch * 4) {
+	/*
+	 * A tile may span more than one text cell.  tile_width and tile_height
+	 * are the game's own answer to a square tile in a tall, narrow character
+	 * cell: it sends one tile and expects it drawn across that many columns,
+	 * and the map simply shows fewer of them.
+	 */
+	dw = td->cw * tile_width;
+	dh = td->ch * tile_height;
+
+	if (cell_buf_size < dw * dh * 4) {
 		if (cell_buf) mem_free(cell_buf);
-		cell_buf_size = td->cw * td->ch * 4;
+		cell_buf_size = dw * dh * 4;
 		cell_buf = mem_zalloc(cell_buf_size);
 	}
 
-	for (py = 0; py < td->ch; py++) {
-		int ty = sy + (py * th) / td->ch;
+	for (py = 0; py < dh; py++) {
+		int ty = sy + (py * th) / dh;
 
-		for (px = 0; px < td->cw; px++) {
-			int tx = sx + (px * tw) / td->cw;
+		for (px = 0; px < dw; px++) {
+			int tx = sx + (px * tw) / dw;
 			unsigned char *s = src.pixelPtr + ty * src.pitch
 					+ tx * src.pixelSize;
-			unsigned char *d = cell_buf + (py * td->cw + px) * 4;
+			unsigned char *d = cell_buf + (py * dw + px) * 4;
 
 			d[0] = s[src.offset[0]];
 			d[1] = s[src.offset[1]];
@@ -317,9 +326,9 @@ static void blit_tile(term_data *td, int x, int y, int a, int c, int comp)
 	}
 
 	dst.pixelPtr = cell_buf;
-	dst.width = td->cw;
-	dst.height = td->ch;
-	dst.pitch = td->cw * 4;
+	dst.width = dw;
+	dst.height = dh;
+	dst.pitch = dw * 4;
 	dst.pixelSize = 4;
 	dst.offset[0] = 0;
 	dst.offset[1] = 1;
@@ -327,7 +336,7 @@ static void blit_tile(term_data *td, int x, int y, int a, int c, int comp)
 	dst.offset[3] = 3;
 
 	Tk_PhotoPutBlock(interp, td->screen, &dst, x * td->cw, y * td->ch,
-			td->cw, td->ch, comp);
+			dw, dh, comp);
 }
 
 /**
@@ -649,7 +658,20 @@ static void graphics_init(void)
 
 	current_graphics_mode = mode;
 	use_graphics = mode->grafID;
-	tile_width = 1;
+
+	/*
+	 * A tile spans two character cells across and one down.
+	 *
+	 * The tiles are square and a character cell is not: the widest
+	 * fixed-width face on this machine measures 0.58 wide for its height, and
+	 * the tile needs 1.0, so no choice of font gets close -- squeezing a
+	 * 16x16 tile into an 11x20 cell stretches it by nearly twice.  Two cells
+	 * across makes the target 22x20, which is within a tenth of square.  The
+	 * cost is that the map shows half as many tiles across as it did
+	 * characters, which is what tile_width is for and what every other
+	 * graphical front end does.
+	 */
+	tile_width = 2;
 	tile_height = 1;
 }
 
