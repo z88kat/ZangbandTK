@@ -449,6 +449,20 @@ int main(int argc, char *argv[])
 	for (i = 1; args && (i < argc); i++) {
 		const char *arg = argv[i];
 
+#ifdef __APPLE__
+		/*
+		 * Launch Services passes a process serial number to a bundled
+		 * application -- "-psn_0_108881" and the like -- which no option here
+		 * recognises, so the game printed its usage and exited.  From the
+		 * Finder that is invisible, because stdout goes nowhere, and a
+		 * double-click simply appeared to do nothing at all.
+		 *
+		 * The Cocoa front end never met this: it supplies its own main().
+		 * Anything bundled that comes through here does.
+		 */
+		if (prefix(arg, "-psn_")) continue;
+#endif
+
 		/* Require proper options */
 		if (*arg++ != '-') goto usage;
 
@@ -574,6 +588,26 @@ int main(int argc, char *argv[])
 	/* If we were told which mode to use, then use it */
 	if (mstr)
 		ANGBAND_SYS = mstr;
+#ifdef __APPLE__
+	/*
+	 * A bundled application inherits no locale.  Launch Services starts it
+	 * with an almost empty environment -- no LANG, no LC_ALL -- so the
+	 * setlocale() below lands on "C", nl_langinfo() answers US-ASCII, and the
+	 * game quits saying it requires UTF-8.  That message goes to a stderr
+	 * nobody is reading, so double-clicking the application does nothing
+	 * whatsoever, which is a poor way to say "your locale is wrong".
+	 *
+	 * Only when the environment is genuinely silent, and only inside a bundle:
+	 * a terminal user who has set something keeps it, and one who has not
+	 * still gets the error message, where it is visible and actionable.
+	 * macOS accepts "UTF-8" on its own as an LC_CTYPE.
+	 */
+	if (macos_bundle_resources()
+			&& !getenv("LC_ALL") && !getenv("LC_CTYPE") && !getenv("LANG")) {
+		setenv("LC_CTYPE", "UTF-8", 0);
+	}
+#endif
+
 #if !defined(WINDOWS) && !defined(DJGPP)
 	if (setlocale(LC_CTYPE, "")) {
 		/* Require UTF-8 */
