@@ -30,6 +30,7 @@
 #include "ui-display.h"
 #include "ui-game.h"
 #include "main.h"
+#include "option.h"
 #include "ui-input.h"
 #include "ui-keymap.h"
 #include "ui-prefs.h"
@@ -1955,6 +1956,169 @@ static int objcmd_ask(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 /**
+ * angband_option -- read and write the game's options.
+ *
+ *    angband_option                     every option, as {name type desc value}
+ *    angband_option use_old_target      its value
+ *    angband_option use_old_target 1    set it
+ *
+ * The first of the read accessors, and the pattern the rest follow: the names
+ * are the game's own -- list-options.h through option_name() -- rather than a
+ * second set kept in step by hand, and writing goes through option_set(), so
+ * the birth-option and cheat-option rules apply to a script exactly as they
+ * apply to the options screen.
+ *
+ * The three numeric settings in struct player_options are not in that enum but
+ * are what an options dialog shows beside it, so they are named here as well.
+ * They are marked with the type "value" rather than a page, which is how a
+ * dialog knows to draw a slider instead of a checkbox.
+ */
+static const struct {
+	const char *name;
+	const char *desc;
+	int max;
+} option_value[] = {
+	{ "hitpoint_warn", "Hitpoint warning", 9 },
+	{ "lazymove_delay", "Movement delay factor", 9 },
+	{ "delay_factor", "Base delay factor", 9 },
+};
+
+/*
+ * Kept beside the table above rather than as a pointer in it: the fields live
+ * in player->opts, which does not exist until a character does, so the address
+ * has to be taken when it is asked for and not when the table is written.
+ */
+
+static uint8_t *option_value_at(int i)
+{
+	if (!player) return NULL;
+
+	switch (i) {
+	case 0: return &player->opts.hitpoint_warn;
+	case 1: return &player->opts.lazymove_delay;
+	case 2: return &player->opts.delay_factor;
+	}
+
+	return NULL;
+}
+
+static int objcmd_option(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *name;
+	int i, val;
+
+	(void)dummy;
+
+	if (objc > 3) {
+		Tcl_WrongNumArgs(ip, 1, objv, "?name? ?value?");
+		return TCL_ERROR;
+	}
+
+	if (!player) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(
+				"the options belong to a character, and there is not one yet",
+				-1));
+		return TCL_ERROR;
+	}
+
+	if (objc == 1) {
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+		for (i = 0; i < OPT_MAX; i++) {
+			Tcl_Obj *row;
+
+			/*
+			 * OPT_none is the first entry in list-options.h and carries an
+			 * empty description; it is a placeholder for index zero, not
+			 * something to put in front of a player.
+			 */
+			if (!option_name(i) || !option_desc(i) || !option_desc(i)[0])
+				continue;
+
+			row = Tcl_NewListObj(0, NULL);
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(option_name(i), -1));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(option_type_name(option_type(i)), -1));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(option_desc(i), -1));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewBooleanObj(player->opts.opt[i]));
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+
+		for (i = 0; i < (int)N_ELEMENTS(option_value); i++) {
+			Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+			uint8_t *at = option_value_at(i);
+
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(option_value[i].name, -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj("value", -1));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(option_value[i].desc, -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(at ? *at : 0));
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+
+		Tcl_SetObjResult(ip, list);
+
+		return TCL_OK;
+	}
+
+	name = Tcl_GetString(objv[1]);
+
+	for (i = 0; i < (int)N_ELEMENTS(option_value); i++) {
+		if (strcmp(name, option_value[i].name) == 0) {
+			uint8_t *at = option_value_at(i);
+
+			if (objc == 2) {
+				Tcl_SetObjResult(ip, Tcl_NewIntObj(at ? *at : 0));
+				return TCL_OK;
+			}
+			if (Tcl_GetIntFromObj(ip, objv[2], &val) != TCL_OK)
+				return TCL_ERROR;
+			if (val < 0 || val > option_value[i].max) {
+				Tcl_SetObjResult(ip, Tcl_ObjPrintf("%s runs from 0 to %d",
+						name, option_value[i].max));
+				return TCL_ERROR;
+			}
+			if (at) *at = (uint8_t)val;
+			return TCL_OK;
+		}
+	}
+
+	for (i = 0; i < OPT_MAX; i++) {
+		if (option_name(i) && strcmp(name, option_name(i)) == 0) {
+			if (objc == 2) {
+				Tcl_SetObjResult(ip, Tcl_NewBooleanObj(player->opts.opt[i]));
+				return TCL_OK;
+			}
+
+			val = obj_true(objv[2]) ? 1 : 0;
+
+			/*
+			 * option_set, not a write straight into the array: it is what
+			 * refuses a birth option after birth and what marks a character as
+			 * a cheater when a cheat option goes on.  A script has no business
+			 * getting round either.
+			 */
+			if (!option_set(name, val)) {
+				Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+						"%s cannot be changed now", name));
+				return TCL_ERROR;
+			}
+
+			return TCL_OK;
+		}
+	}
+
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf("no such option: %s", name));
+
+	return TCL_ERROR;
+}
+
+/**
  * Is there a game to ask questions of?
  *
  * The prereq predicates read the character and the level, and they do it
@@ -2818,6 +2982,7 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_push", objcmd_push, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_hook", objcmd_hook, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_ask", objcmd_ask, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_option", objcmd_option, NULL, NULL);
 
 	hooks_init();
 

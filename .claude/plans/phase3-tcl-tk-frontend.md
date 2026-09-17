@@ -986,7 +986,21 @@ work — the debug loop exists before the UI does — and one scripted session r
 > answers §8's open question about whether a runner can open a window; it is not a gate
 > until it does.
 >
-> Still open in T3: the read accessors, and the written old-command map.
+> **And the first read accessor.** `angband_option` lists every option as
+> `{name type desc value}`, reads one and writes one. The names are the game's — `list-options.h`
+> through `option_name()` — rather than a second set kept in step by hand, and writing goes
+> through `option_set()`, so the birth-option and cheat-option rules apply to a script
+> exactly as they apply to the options screen. The three numeric settings in
+> `struct player_options` are named alongside with the type `value`, which is how a dialog
+> knows to draw a slider rather than a checkbox. This is the pattern the rest of the
+> accessor families follow from T4 on.
+>
+> Thirty-nine checks. One more thing measured along the way: **Tk closes stdout whenever it
+> is not a terminal**, not only for a bundled application — so the test reports through its
+> result file and the runner prints that. Run from CI, the first version printed which
+> checks had failed precisely nowhere.
+>
+> Still open in T3: the written old-command map.
 
 ---
 

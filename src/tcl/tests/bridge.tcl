@@ -8,20 +8,31 @@
 # game questions and gives it commands, and a test can do the same.
 
 set failures 0
+set log {}
+
+# Everything is written to the result file rather than to stdout.
+#
+# Tk closes stdout when it is not a terminal -- the same redirection that hid
+# the whole of the T0 launch failure -- so a run from CI, or from a shell that
+# redirects, would print nothing at all about which check failed.  The file is
+# the report; the runner prints it.
+proc say {line} {
+	lappend ::log $line
+}
 
 proc check {what script expected} {
 	global failures
 	if {[catch {uplevel 1 $script} got]} {
-		puts "FAIL $what: error: $got"
+		say "FAIL $what: error: $got"
 		incr failures
 		return
 	}
 	if {$expected ne "" && $got ne $expected} {
-		puts "FAIL $what: got '$got', wanted '$expected'"
+		say "FAIL $what: got '$got', wanted '$expected'"
 		incr failures
 		return
 	}
-	puts "ok   $what ($got)"
+	say "ok   $what ($got)"
 }
 
 # --- the command table ------------------------------------------------------
@@ -173,6 +184,15 @@ check "and gives it back" {
 	angband_hook check
 } ""
 
+# --- the options ------------------------------------------------------------
+
+# These belong to the character, so before there is one the answer is an error
+# that says so rather than a default nobody asked for.
+check "options need a character" {
+	catch {angband_option use_old_target} e
+	set e
+} "the options belong to a character, and there is not one yet"
+
 # --- the second pass --------------------------------------------------------
 
 # Everything above ran while the front end was still starting.  This runs from
@@ -238,6 +258,31 @@ proc second_pass {} {
 		angband_ask confirm_debug
 	} 0
 
+	# The options, now that there is a character to own them.
+	check "the options are the game's own list" {
+		set names {}
+		foreach row [angband_option] { lappend names [lindex $row 0] }
+		expr {[llength $names] > 50
+				&& "use_old_target" in $names
+				&& "hitpoint_warn" in $names
+				&& "none" ni $names}
+	} 1
+
+	check "an option can be read, written and read back" {
+		angband_option use_old_target 1
+		angband_option use_old_target
+	} 1
+
+	check "a numeric setting is refused outside its range" {
+		catch {angband_option hitpoint_warn 12} e
+		set e
+	} "hitpoint_warn runs from 0 to 9"
+
+	check "an option nobody has heard of is refused" {
+		catch {angband_option nonesuch} e
+		set e
+	} "no such option: nonesuch"
+
 	foreach row [angband_hook] { angband_hook [lindex $row 0] {} }
 	check "every hook can be given back" {
 		set taken 0
@@ -249,14 +294,10 @@ proc second_pass {} {
 }
 
 proc finish {} {
-	global failures
-	if {$failures} {
-		puts "==> $failures check(s) failed."
-	} else {
-		puts "==> bridge checks passed."
-	}
+	global failures log
 	set f [open $::env(ZANGBAND_TCL_RESULT) w]
 	puts $f $failures
+	foreach line $log { puts $f $line }
 	close $f
 	exit [expr {$failures ? 1 : 0}]
 }
