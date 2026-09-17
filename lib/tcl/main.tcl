@@ -102,16 +102,21 @@ wm minsize . [expr {80 * $angband(cellw)}] [expr {24 * $angband(cellh)}]
 update idletasks
 update
 
-# The order is the contract with main-tcl.c: element 0 is the map, and the rest
-# become the game's subwindows 1, 2, 3... in the order given here.  Terms 1, 2
-# and 5 are messages, inventory and recall; 6 is the overhead map, so the list
-# is padded to put each pane on the subwindow whose content it wants.
+# The contract with main-tcl.c: one {canvas role} pair per term, the map first.
+#
+# The role is what the pane is *for*, and the C side turns it into the game's
+# window flags.  Saying it here rather than relying on position is the whole
+# point: textui_init() assigns content to subwindows by index -- 1 messages,
+# 2 inventory, 3 monster list, 4 item list, 5 recall, 6 overhead -- so a layout
+# with five panes silently got the first five of that list, and the overhead
+# map, which is index 6, simply never appeared.  Naming the role means the
+# arrangement and the content stop being the same decision.
 set angband(terms) [list \
-    $map.c \
-    $messages.c \
-    $choice.c \
-    $recall.c \
-    $overhead.c]
+    [list $map.c      map] \
+    [list $messages.c messages] \
+    [list $recall.c   recall] \
+    [list $choice.c   inventory] \
+    [list $overhead.c overhead]]
 
 # Each pane follows its own size.  <Configure> fires for every pixel of a drag,
 # so the work is deferred to idle and coalesced -- only the last size in a
@@ -123,7 +128,8 @@ proc angband_resize_now {} {
     global angband
     set angband(resizePending) 0
     set i 0
-    foreach c $angband(terms) {
+    foreach pair $angband(terms) {
+        set c [lindex $pair 0]
         if {[winfo exists $c]} {
             set cols [expr {[winfo width  $c] / $angband(cellw)}]
             set rows [expr {[winfo height $c] / $angband(cellh)}]
@@ -135,8 +141,8 @@ proc angband_resize_now {} {
     }
 }
 
-foreach c $angband(terms) {
-    bind $c <Configure> {
+foreach pair $angband(terms) {
+    bind [lindex $pair 0] <Configure> {
         if {!$angband(resizePending)} {
             set angband(resizePending) 1
             after idle angband_resize_now

@@ -88,6 +88,48 @@ struct term_data {
 static term_data td[ANGBAND_TERM_MAX];
 static int td_count = 0;
 
+/*
+ * Which of the game's subwindows each pane is, by pane order.
+ *
+ * textui_init() decides what a subwindow contains from its *index* -- 1 is
+ * messages, 2 inventory, 3 the monster list, 4 the item list, 5 recall, 6 the
+ * overhead map -- and it does so after the front end has been initialised,
+ * overwriting anything set beforehand.  Rather than fight that, each pane is
+ * given the index whose content it wants, and the indices nobody asked for
+ * are left without a term at all: subwindows_set_flags skips those, and the
+ * game is used to front ends with fewer windows than the maximum.
+ *
+ * The alternative was to set window_flag ourselves once textui_init had
+ * finished.  That was tried: the flags took, and the panes still drew their
+ * old contents, so there is more to it than the flags.  This way there is
+ * nothing to apply, nothing to time, and only one opinion about what a pane
+ * holds.
+ */
+static int pane_index[ANGBAND_TERM_MAX];
+
+/**
+ * Turn a role named in lib/tcl/main.tcl into the subwindow that holds it.
+ *
+ * The names are the front end's vocabulary and the numbers are the game's;
+ * this is the only place the two meet.  An unknown name is reported rather
+ * than quietly dropped, because a pane with no term behind it is just black
+ * and looks exactly like a broken one.
+ */
+static int role_to_index(const char *role)
+{
+	if (streq(role, "map")) return 0;
+	if (streq(role, "messages")) return 1;
+	if (streq(role, "inventory")) return 2;
+	if (streq(role, "monsters")) return 3;
+	if (streq(role, "objects")) return 4;
+	if (streq(role, "recall")) return 5;
+	if (streq(role, "overhead")) return 6;
+	if (streq(role, "player")) return 7;
+
+	plog_fmt("Tcl/Tk: main.tcl asked for a pane role I do not know: %s", role);
+	return -1;
+}
+
 /**
  * "#rrggbb" for each of the game's colours, rebuilt on TERM_XTRA_REACT.
  */
@@ -646,9 +688,23 @@ static bool terms_init(void)
 
 	td_count = (int)n;
 	for (i = 0; i < td_count; i++) {
+		Tcl_Obj **pair;
+		Tcl_Size np;
+
+		if (Tcl_ListObjGetElements(interp, elem[i], &np, &pair) != TCL_OK
+				|| np != 2) {
+			plog("Tcl/Tk: each entry in angband(terms) must be {canvas role}.");
+			return false;
+		}
+
+		pane_index[i] = role_to_index(Tcl_GetString(pair[1]));
+		if (pane_index[i] < 0) return false;
+
 		td[i].cw = cw;
 		td[i].ch = ch;
-		if (!term_data_link(&td[i], i, Tcl_GetString(elem[i]))) return false;
+
+		if (!term_data_link(&td[i], pane_index[i], Tcl_GetString(pair[0])))
+			return false;
 	}
 
 	/*
