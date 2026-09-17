@@ -1,0 +1,49 @@
+#!/bin/sh
+#
+# Drive the Tcl/Tk front end from a script and check the bridge.
+#
+# Use in the root directory of the game, like so:
+#    scripts/run-tcl-bridge-test [build-directory]
+#
+# This is the scripted session from section 9 of the Phase 3 plan.  It starts
+# the real game with the real front end, sources src/tcl/tests/bridge.tcl
+# through ZANGBAND_TCL_SCRIPT, and reads the result back out of a file -- not
+# out of the exit status, because the game's own shutdown owns that, and not
+# out of stdout, because Tk closes it for a bundled application.
+#
+# It opens a window.  That is why it is separate from scripts/run-tcl-tests,
+# which does not, and why CI does not run it yet.
+set -o errexit
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+BUILD=${1:-$ROOT/build}
+GAME=$BUILD/game/angband
+[ -x "$GAME" ] || GAME=$BUILD/angband
+
+if [ ! -x "$GAME" ]; then
+	echo "No game at $GAME." >&2
+	echo "Build it first, or give the build directory as an argument." >&2
+	exit 1
+fi
+
+RESULT=$(mktemp -t zangband-bridge)
+trap 'rm -f "$RESULT"' EXIT
+: > "$RESULT"
+
+ZANGBAND_TCL_SCRIPT=$ROOT/src/tcl/tests/bridge.tcl \
+ZANGBAND_TCL_RESULT=$RESULT \
+	"$GAME" -mtcl || true
+
+if [ ! -s "$RESULT" ]; then
+	echo "==> The script did not run to the end." >&2
+	echo "The front end failed before sourcing it, or it died part-way." >&2
+	exit 1
+fi
+
+FAILED=$(cat "$RESULT")
+if [ "$FAILED" != "0" ]; then
+	echo "==> $FAILED bridge check(s) failed." >&2
+	exit 1
+fi
+
+echo "==> Bridge checks passed."

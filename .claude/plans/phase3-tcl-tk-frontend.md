@@ -911,6 +911,36 @@ Plus:
 through an overridden hook, and read and write options. `debug.tcl` and `errorInfo.tcl`
 work — the debug loop exists before the UI does — and one scripted session runs in CI.
 
+> **Done so far: the up seam, the command table, and the harness.**
+>
+> `angband_commands` returns `{group index label key enabled level}` per command, read
+> straight out of `cmds_all[]`; `angband_command <group> <index> ?count?` runs one through
+> the same two branches as [`ui-game.c`](../../src/ui-game.c#L670) — prereq, then hook or
+> `cmdq_push_repeat` — so a menu item and its key cannot diverge. All 66 events are
+> re-emitted as `<<Angband_MAP>>` and so on. `ZANGBAND_TCL_SCRIPT` names a script the
+> front end sources once the window, the terms and the bridge exist;
+> `scripts/run-tcl-bridge-test` uses it for fourteen checks against the real game with no
+> keyboard.
+>
+> Three things it cost, all measured rather than reasoned about:
+>
+> - **Events have to be queued, not dispatched where they are signalled.** `event generate`
+>   defaults to `-when now`, which puts a Tcl script inside the game's own call stack; the
+>   first version reached Tcl's thousand-deep evaluation limit before the data files had
+>   finished loading. `-when tail` runs each binding from the event loop instead, where the
+>   state it reads is settled.
+> - **The prereq predicates are not safe to call before a game exists.** They read the
+>   character and the level without checking either — `player_can_cast_prereq` goes straight
+>   to `p->class`, and others reach `square_in_bounds(cave, ...)`, which asserts. `player`
+>   exists well before `cave` does, so the gate is `player && character_dungeon`.
+> - **`cmd_lookup_key_unktrl` turns "no key" into `@`.** Zero is not a control character but
+>   it is below 0x20, so `UN_KTRL_CAP` adds 64 to it. Every key is zero until `cmd_init()`
+>   runs inside `textui_init()`, which is after the front end starts — so a menu built at
+>   startup carries no keys and one rebuilt from an event carries all 36.
+>
+> Still open in T3: the generic `cmd_code` + typed-argument push, the seventeen input hooks,
+> the read accessors, and the written old-command map.
+
 ---
 
 ### T4 — Player, status and the Misc panel

@@ -20,11 +20,17 @@
 
 #ifdef USE_TCL
 
+#include "cmd-core.h"
+#include "game-event.h"
+#include "game-world.h"
 #include "grafmode.h"
 #include "init.h"
 #include "ui-command.h"
 #include "ui-display.h"
+#include "ui-game.h"
 #include "main.h"
+#include "ui-input.h"
+#include "ui-keymap.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
 
@@ -867,6 +873,321 @@ static int objcmd_key(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	return TCL_OK;
 }
 
+/*
+ * The game's events, by name, for binding from Tcl.
+ *
+ * Generated from the enum in game-event.h and kept honest by the assertion
+ * below: adding an event upstream without naming it here fails the build
+ * rather than producing a virtual event nobody can bind to.
+ */
+static const char *game_event_name[] = {
+	"MAP",
+	"STATS",
+	"HP",
+	"MANA",
+	"AC",
+	"EXPERIENCE",
+	"PLAYERLEVEL",
+	"PLAYERTITLE",
+	"GOLD",
+	"MONSTERHEALTH",
+	"DUNGEONLEVEL",
+	"PLAYERSPEED",
+	"RACE_CLASS",
+	"STUDYSTATUS",
+	"STATUS",
+	"DETECTIONSTATUS",
+	"FEELING",
+	"LIGHT",
+	"STATE",
+	"PLAYERMOVED",
+	"SEEFLOOR",
+	"EXPLOSION",
+	"BOLT",
+	"MISSILE",
+	"INVENTORY",
+	"EQUIPMENT",
+	"ITEMLIST",
+	"MONSTERLIST",
+	"MONSTERTARGET",
+	"OBJECTTARGET",
+	"MESSAGE",
+	"SOUND",
+	"BELL",
+	"USE_STORE",
+	"STORECHANGED",
+	"INPUT_FLUSH",
+	"MESSAGE_FLUSH",
+	"CHECK_INTERRUPT",
+	"REFRESH",
+	"NEW_LEVEL_DISPLAY",
+	"COMMAND_REPEAT",
+	"ANIMATE",
+	"CHEAT_DEATH",
+	"INITSTATUS",
+	"BIRTHPOINTS",
+	"ENTER_INIT",
+	"LEAVE_INIT",
+	"ENTER_BIRTH",
+	"LEAVE_BIRTH",
+	"ENTER_GAME",
+	"LEAVE_GAME",
+	"ENTER_WORLD",
+	"LEAVE_WORLD",
+	"ENTER_STORE",
+	"ENTER_SERVICE",
+	"LEAVE_STORE",
+	"ENTER_DEATH",
+	"LEAVE_DEATH",
+	"GEN_LEVEL_START",
+	"GEN_LEVEL_END",
+	"GEN_ROOM_START",
+	"GEN_ROOM_CHOOSE_SIZE",
+	"GEN_ROOM_CHOOSE_SUBTYPE",
+	"GEN_ROOM_END",
+	"GEN_TUNNEL_FINISHED",
+	"END",
+};
+
+/*
+ * The build breaks here, with "size of array is negative", if an event is
+ * added to game_event_type and not named above.  C99 has no static_assert.
+ */
+typedef char game_event_name_is_complete[
+		(N_ELEMENTS(game_event_name) == N_GAME_EVENTS) ? 1 : -1];
+
+/**
+ * A game event reaching Tcl.
+ *
+ * Every event becomes a Tk virtual event on ".", named <<Angband_MAP>> and so
+ * on, which a script binds to like any other.  That is the whole of the "up"
+ * seam: the game says what changed, the interface decides what to redraw, and
+ * neither knows anything about the other.
+ *
+ * This is what the archive's qebind-dll.c was for -- 1,211 lines providing
+ * "event-like messages to scripts, and the ability to bind Tcl commands to
+ * them" -- and Tk has had it since 8.5.
+ */
+static Tcl_Obj *event_script[N_GAME_EVENTS];
+
+static void event_to_tcl(game_event_type type, game_event_data *data,
+		void *user)
+{
+	(void)data;
+	(void)user;
+
+	if (type < 0 || type >= (int)N_ELEMENTS(event_script)) return;
+	if (!event_script[type]) return;
+
+	/*
+	 * The events are queued, not dispatched here -- see the -when tail in
+	 * the command built below.
+	 *
+	 * Dispatching them where they are signalled puts a Tcl script inside the
+	 * game's own call stack, part-way through whatever it was updating, and
+	 * it nests: measured during startup, the first version of this reached
+	 * Tcl's thousand-deep evaluation limit before the game had finished
+	 * reading its data files.  Queued, each binding runs from the event loop
+	 * -- which is the game asking for input, so the state it reads is
+	 * settled, and a command it pushes is one the game will take next.
+	 */
+	if (Tcl_EvalObjEx(interp, event_script[type], TCL_EVAL_GLOBAL) != TCL_OK) {
+		plog_fmt("Tcl/Tk: <<Angband_%s>>: %s", game_event_name[type],
+				Tcl_GetStringResult(interp));
+	}
+}
+
+/**
+ * Subscribe to everything the game can tell us.
+ *
+ * All of it, rather than a chosen few: a script that binds nothing pays
+ * nothing beyond one function call per event, and the alternative is editing C
+ * every time the interface wants to notice something new.
+ */
+static void events_init(void)
+{
+	int i;
+
+	/*
+	 * The command is built once per event rather than once per signal.  These
+	 * fire thousands of times in a session, and the objects are ours alone:
+	 * we hold the only reference and never write to them, which is what the
+	 * "called with shared object" panic earlier in this file was about.
+	 */
+	for (i = 0; i < (int)N_ELEMENTS(game_event_name); i++) {
+		event_script[i] = Tcl_ObjPrintf(
+				"event generate . <<Angband_%s>> -when tail",
+				game_event_name[i]);
+		Tcl_IncrRefCount(event_script[i]);
+		event_add_handler((game_event_type)i, event_to_tcl, NULL);
+	}
+}
+
+/**
+ * Is there a game to ask questions of?
+ *
+ * The prereq predicates read the character and the level, and they do it
+ * without checking: player_can_cast_prereq goes straight to p->class, and
+ * several of the others end up in square_in_bounds(cave, ...), which asserts
+ * on a NULL cave.  A menu can be built at any time -- the front end is up long
+ * before a character is -- so this is the gate in front of all of them.
+ *
+ * Measured, not guessed: a script that called angband_commands from a binding
+ * during startup aborted in square_in_bounds while the data files were still
+ * loading, because player exists well before cave does.
+ */
+static bool in_play(void)
+{
+	return player != NULL && character_dungeon;
+}
+
+/**
+ * angband_commands -- the game's own command table, for building menus from.
+ *
+ * Returns one row per command as {group index label key enabled level}, where
+ * and index address it again for angband_command below.  The label, the key
+ * and whether it is currently allowed are all the game's: ui-input.h's
+ * struct cmd_info carries a description, up to two keys, a cmd_code and a
+ * prereq predicate, and cmds_all[] groups those into named lists.
+ *
+ * T7 builds its menu bar from this rather than hand-authoring one, which is
+ * what keeps the menus and the keyboard from drifting apart.
+ */
+static int objcmd_commands(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	Tcl_Obj *list;
+	size_t g;
+
+	(void)dummy;
+	(void)objc;
+	(void)objv;
+
+	list = Tcl_NewListObj(0, NULL);
+
+	/*
+	 * cmds_all[] is declared extern with no size, so N_ELEMENTS is not
+	 * available here; the table ends with a NULL name, which is how
+	 * cmd_list_lookup_by_name finds the end too.
+	 */
+	for (g = 0; cmds_all[g].name; g++) {
+		struct command_list *group = &cmds_all[g];
+		size_t i;
+
+		for (i = 0; i < group->len; i++) {
+			struct cmd_info *c = &group->list[i];
+			Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+			unsigned char key;
+			char keybuf[3];
+
+			if (!c->desc) continue;
+
+			/*
+			 * player is NULL until a character exists, and a menu
+			 * can be built before one does, so fall back to the
+			 * original keyset rather than dereferencing it.
+			 */
+			int mode = (in_play() && OPT(player, rogue_like_commands))
+					? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+
+			/*
+			 * Written for a menu to show beside the label, so a control
+			 * key is spelled the way the game spells it, "^X".
+			 *
+			 * Note cmd_lookup_key, not cmd_lookup_key_unktrl: the latter
+			 * turns a missing key -- zero -- into "@", and every key here
+			 * is missing until textui_init has called cmd_init, which is
+			 * after the front end starts.  A menu built at startup
+			 * therefore carries no keys; one rebuilt on <<Angband_ENTER_WORLD>>
+			 * carries them all.
+			 */
+			key = c->cmd ? cmd_lookup_key(c->cmd, mode) : 0;
+			if (key && key < 0x20) {
+				keybuf[0] = '^';
+				keybuf[1] = (char)UN_KTRL_CAP(key);
+				keybuf[2] = 0;
+			} else {
+				keybuf[0] = (char)key;
+				keybuf[1] = 0;
+			}
+
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(group->name, -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj((int)i));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(c->desc, -1));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(key ? keybuf : "", -1));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewBooleanObj(in_play()
+						&& (!c->prereq || c->prereq())));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewIntObj(group->menu_level));
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+	}
+
+	Tcl_SetObjResult(ip, list);
+
+	return TCL_OK;
+}
+
+/**
+ * angband_command -- run one entry from that table.
+ *
+ * Dispatched exactly as textui_process_command does it: check the prereq, call
+ * the hook if it is a user-interface action, otherwise push the command code
+ * onto the queue.  Going through the same two branches is what stops a menu
+ * item and its key doing subtly different things.
+ *
+ * This is the "down" seam, and note what it is not: no keystroke is
+ * synthesised.  The original had no choice about that; we do.
+ */
+static int objcmd_command(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	struct cmd_info *c;
+	int g, i, count = 1;
+
+	(void)dummy;
+
+	if (objc < 3 || objc > 4) {
+		Tcl_WrongNumArgs(ip, 1, objv, "group index ?count?");
+		return TCL_ERROR;
+	}
+	if (Tcl_GetIntFromObj(ip, objv[1], &g) != TCL_OK) return TCL_ERROR;
+	if (Tcl_GetIntFromObj(ip, objv[2], &i) != TCL_OK) return TCL_ERROR;
+	if (objc == 4 && Tcl_GetIntFromObj(ip, objv[3], &count) != TCL_OK)
+		return TCL_ERROR;
+
+	{
+		int n;
+		for (n = 0; cmds_all[n].name; n++) ;
+		if (g < 0 || g >= n) {
+			Tcl_SetObjResult(ip,
+					Tcl_NewStringObj("no such command group", -1));
+			return TCL_ERROR;
+		}
+	}
+	if (i < 0 || i >= (int)cmds_all[g].len) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("no such command", -1));
+		return TCL_ERROR;
+	}
+
+	c = &cmds_all[g].list[i];
+
+	if (!in_play() || (c->prereq && !c->prereq())) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("not allowed just now", -1));
+		return TCL_ERROR;
+	}
+	if (c->hook) {
+		c->hook();
+	} else if (c->cmd) {
+		cmdq_push_repeat(c->cmd, count);
+	}
+
+	return TCL_OK;
+}
+
 /**
  * Keep the game's own animations running while it waits for a key.
  *
@@ -1413,6 +1734,28 @@ static bool terms_init(void)
 	 */
 	Term_activate(&td[0].t);
 
+	/*
+	 * The scripted-session hook, from section 9 of the Phase 3 plan.
+	 *
+	 * A script named by ZANGBAND_TCL_SCRIPT is sourced once everything above
+	 * exists -- the window, the terms, the commands, the event handlers -- so
+	 * a test can drive the game from outside without a keyboard, and quit at
+	 * the end with a status the runner can read.  The variable is not set in
+	 * ordinary play, and a script that fails is a hard error rather than a
+	 * warning, because a test that silently did not run is worse than none.
+	 */
+	{
+		const char *script = getenv("ZANGBAND_TCL_SCRIPT");
+
+		if (script && *script) {
+			if (Tcl_EvalFile(interp, script) != TCL_OK) {
+				plog_fmt("Tcl/Tk: %s: %s", script,
+						Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY));
+				return false;
+			}
+		}
+	}
+
 	return true;
 }
 
@@ -1527,6 +1870,13 @@ errr init_tcl(int argc, char **argv)
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_tileset", objcmd_tileset, NULL,
 			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_commands", objcmd_commands, NULL,
+			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_command", objcmd_command, NULL,
+			NULL);
+
+	/* The other direction: what the game tells us, as Tk virtual events. */
+	events_init();
 
 	/*
 	 * The window itself, its bindings and its font are lib/tcl/main.tcl's --
