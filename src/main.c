@@ -77,6 +77,10 @@ static const struct module modules[] =
 	{ "gcu", help_gcu, init_gcu, true, false },
 #endif /* USE_GCU */
 
+#ifdef USE_TCL
+	{ "tcl", help_tcl, init_tcl, false, false },
+#endif /* USE_TCL */
+
 #ifdef USE_TEST
 	{ "test", help_test, init_test, false, true },
 #endif /* !USE_TEST */

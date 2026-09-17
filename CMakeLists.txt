@@ -9,6 +9,7 @@ option(SUPPORT_GCU_FRONTEND "Support for GCU front end." OFF)
 option(SUPPORT_NCURSES_FRONTEND "Synonym for SUPPORT_GCU_FRONTEND for backwards compatibility." OFF)
 option(GCU_STATIC_CURSES "Link the GCU front end against static curses archives instead of the shared libraries, so the executable does not depend on the ncurses the target system happens to have.  For building a binary to hand to somebody else; needs the static libraries installed at build time." OFF)
 option(SUPPORT_SDL2_FRONTEND "Support for SDL2 front end." OFF)
+option(SUPPORT_TCL_FRONTEND "Support for Tcl/Tk front end.  Needs a toolchain from scripts/build-tcltk; see TCLTK_PREFIX." OFF)
 option(SUPPORT_X11_FRONTEND "Support for X11 Frontend." OFF)
 option(SUPPORT_SDL2_SOUND "Support for sound with SDL2." OFF)
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -405,6 +406,7 @@ add_executable(OurExecutable
         $<$<BOOL:${SOUND_SUPPORT_LIB}>:$<TARGET_OBJECTS:${SOUND_SUPPORT_LIB}>>
         $<$<BOOL:${SUPPORT_GCU_FRONTEND}>:src/main-gcu.c>
         $<$<BOOL:${SUPPORT_SDL2_FRONTEND}>:src/main-sdl2.c>
+        $<$<BOOL:${SUPPORT_TCL_FRONTEND}>:src/main-tcl.c>
         $<$<BOOL:${SUPPORT_SDL2_FRONTEND}>:src/sdl2/pui-ctrl.c>
         $<$<BOOL:${SUPPORT_SDL2_FRONTEND}>:src/sdl2/pui-dlg.c>
         $<$<BOOL:${SUPPORT_SDL2_FRONTEND}>:src/sdl2/pui-misc.c>
@@ -463,6 +465,10 @@ endif()
 if(SUPPORT_SDL2_FRONTEND)
     include(src/cmake/macros/SDL2_Frontend.cmake)
     configure_sdl2_frontend(OurExecutable)
+endif()
+if(SUPPORT_TCL_FRONTEND)
+    include(src/cmake/macros/TCL_Frontend.cmake)
+    configure_tcl_frontend(OurExecutable)
 endif()
 if(SUPPORT_WINDOWS_FRONTEND)
     include(src/cmake/modules/PNG_Detection.cmake)
