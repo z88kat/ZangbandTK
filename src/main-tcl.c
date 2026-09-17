@@ -338,25 +338,19 @@ static errr Term_curs_tcl(int x, int y)
 	Tcl_Eval(interp, cmd);
 
 	/*
-	 * Ask the term whether the cursor should be seen, rather than waiting to
-	 * be told.  Term_xtra(TERM_XTRA_SHAPE) exists for that, and the game does
-	 * send it -- but not reliably: instrumented across a whole startup and
-	 * several menus it was never sent once, because ui-init.c turns the
-	 * cursor off before anything asks and nothing turned it back on.  The
-	 * other front ends split on this too: gcu asks for it itself, while X11
-	 * and Windows ignore the message and draw the cursor wherever the game
-	 * last put it -- which is how a bright rectangle ends up parked at the top
-	 * of the map for a whole game.
+	 * Moving the cursor does not show it, and nothing here shows it either.
 	 *
-	 * Term_get_cursor is the state rather than the announcement of a change,
-	 * so it is right whether or not the message ever arrives.
+	 * ZangbandTK/Tk does not draw a terminal cursor.  What the game uses it
+	 * for on the map screen is parking it on the status line, and the status
+	 * line is being replaced rather than reproduced -- decision 9 and the T4
+	 * panels.  A bright rectangle sitting in a corner for a whole game is a
+	 * terminal's habit, not a feature to carry across.
+	 *
+	 * The machinery stays: the item exists, cursor_show works, and
+	 * TERM_XTRA_SHAPE is honoured, so anything that genuinely asks for a
+	 * cursor still gets one.  Measured across a startup and several menus the
+	 * game never asks, which is why this reads as "removed" in play.
 	 */
-	{
-		bool visible = false;
-
-		Term_get_cursor(&visible);
-		cursor_show(td, visible);
-	}
 
 	return 0;
 }
