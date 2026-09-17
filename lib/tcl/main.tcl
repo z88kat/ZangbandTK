@@ -21,6 +21,14 @@
 # and never the alignment.
 
 font create termfont -family Menlo -size 13
+
+# A second, smaller font for the minimap.  A pane's cell size comes from its
+# font, and the minimap wants small cells: more of them fit, so more of the
+# level fits, and the tiles drawn into them are correspondingly smaller.  That
+# is what makes it a map of the level rather than a second view of the corner
+# the player is standing in.
+font create minimapfont -family Menlo -size 7
+
 set angband(cellw) [font measure termfont "W"]
 set angband(cellh) [font metrics termfont -linespace]
 
@@ -79,7 +87,7 @@ ttk::panedwindow .pw.bottom -orient horizontal
 
 # The map gets the game's floor of 80x24 and the rest ask for what suits them.
 set map      [termpane .pw.top    map      80 24]
-set overhead [termpane .pw.top    overhead 28 24]
+set overhead [termpane .pw.top    overhead 32 24]
 set messages [termpane .pw.bottom messages 44 10]
 set recall   [termpane .pw.bottom recall   44 10]
 set choice   [termpane .pw.bottom choice   44 10]
@@ -111,12 +119,14 @@ update
 # with five panes silently got the first five of that list, and the overhead
 # map, which is index 6, simply never appeared.  Naming the role means the
 # arrangement and the content stop being the same decision.
+# Each entry is {canvas role font}.  The font decides the pane's cell size, so
+# it is how a pane ends up denser or coarser than its neighbours.
 set angband(terms) [list \
-    [list $map.c      map] \
-    [list $messages.c messages] \
-    [list $recall.c   recall] \
-    [list $choice.c   inventory] \
-    [list $overhead.c overhead]]
+    [list $map.c      map       termfont] \
+    [list $messages.c messages  termfont] \
+    [list $recall.c   recall    termfont] \
+    [list $choice.c   inventory termfont] \
+    [list $overhead.c minimap   minimapfont]]
 
 # Each pane follows its own size.  <Configure> fires for every pixel of a drag,
 # so the work is deferred to idle and coalesced -- only the last size in a
@@ -130,9 +140,12 @@ proc angband_resize_now {} {
     set i 0
     foreach pair $angband(terms) {
         set c [lindex $pair 0]
+        set f [lindex $pair 2]
         if {[winfo exists $c]} {
-            set cols [expr {[winfo width  $c] / $angband(cellw)}]
-            set rows [expr {[winfo height $c] / $angband(cellh)}]
+            set cw [font measure $f "W"]
+            set ch [font metrics $f -linespace]
+            set cols [expr {[winfo width  $c] / $cw}]
+            set rows [expr {[winfo height $c] / $ch}]
             if {$cols > 0 && $rows > 0} {
                 angband_resize $i $cols $rows
             }

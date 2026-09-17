@@ -22,6 +22,7 @@
 
 #include "grafmode.h"
 #include "init.h"
+#include "ui-display.h"
 #include "main.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
@@ -71,6 +72,7 @@ typedef struct term_data term_data;
 struct term_data {
 	term t;
 	char path[64];		/* the canvas widget, e.g. ".pw.top.main.c" */
+	char font[32];		/* the pane's font, which decides its cell size */
 	int cols;
 	int rows;
 	int cw;			/* cell width in pixels */
@@ -112,6 +114,23 @@ static int td_count = 0;
 static int pane_index[ANGBAND_TERM_MAX];
 
 /*
+ * The window flags each pane wants, applied once the game has settled.
+ *
+ * For most panes this is exactly what textui_init() would have chosen from
+ * the index anyway, and applying it changes nothing.  The minimap is the
+ * exception and the reason this exists: PW_MAP is the scaled whole-level map
+ * -- update_maps() hands that one straight to display_map() -- and no
+ * subwindow carries it by default, so it cannot be had by placement alone.
+ *
+ * It has to be applied after textui_init(), which runs once the front end is
+ * up and rewrites window_flag wholesale, and after the splash screen, whose
+ * drawing is the first thing to reach Term_xtra.  The first request for input
+ * is safely past both.
+ */
+static uint32_t want_flag[ANGBAND_TERM_MAX];
+static bool flags_applied = false;
+
+/*
  * The tile sheet, and a scratch cell to scale into.
  *
  * Tk 9 reads PNG itself, so there is no Img extension to find and no file
@@ -133,6 +152,20 @@ static int cell_buf_size = 0;
  * than quietly dropped, because a pane with no term behind it is just black
  * and looks exactly like a broken one.
  */
+static uint32_t role_to_flag(const char *role)
+{
+	if (streq(role, "messages")) return PW_MESSAGE;
+	if (streq(role, "inventory")) return PW_INVEN;
+	if (streq(role, "monsters")) return PW_MONLIST;
+	if (streq(role, "objects")) return PW_ITEMLIST;
+	if (streq(role, "recall")) return PW_MONSTER | PW_OBJECT;
+	if (streq(role, "overhead")) return PW_OVERHEAD;
+	if (streq(role, "minimap")) return PW_MAP;
+	if (streq(role, "player")) return PW_PLAYER_2;
+
+	return 0;
+}
+
 static int role_to_index(const char *role)
 {
 	if (streq(role, "map")) return 0;
@@ -142,6 +175,7 @@ static int role_to_index(const char *role)
 	if (streq(role, "objects")) return 4;
 	if (streq(role, "recall")) return 5;
 	if (streq(role, "overhead")) return 6;
+	if (streq(role, "minimap")) return 6;	/* same term, different flag */
 	if (streq(role, "player")) return 7;
 
 	plog_fmt("Tcl/Tk: main.tcl asked for a pane role I do not know: %s", role);
@@ -470,6 +504,15 @@ static errr Term_xtra_tcl(int n, int v)
 {
 	term_data *td = (term_data *)(Term->data);
 
+	/* See want_flag: the first request for input is past everything that
+	 * would otherwise overwrite this. */
+	/* See want_flag: the first request for input is past everything that
+	 * would otherwise overwrite this. */
+	if (!flags_applied && n == TERM_XTRA_EVENT) {
+		flags_applied = true;
+		subwindows_set_flags(want_flag, ANGBAND_TERM_MAX);
+	}
+
 	switch (n) {
 		case TERM_XTRA_EVENT:
 			if (v) {
@@ -742,9 +785,9 @@ static void build_cells(term_data *td)
 	for (y = 0; y < td->rows; y++) {
 		for (x = 0; x < td->cols; x++) {
 			Tcl_Obj *mk = Tcl_ObjPrintf(
-					"%s create text %d %d -anchor nw -font termfont"
+					"%s create text %d %d -anchor nw -font %s"
 					" -fill white -text { }",
-					td->path, x * td->cw, y * td->ch);
+					td->path, x * td->cw, y * td->ch, td->font);
 
 			Tcl_IncrRefCount(mk);
 			if (Tcl_EvalObjEx(interp, mk, TCL_EVAL_GLOBAL) == TCL_OK) {
@@ -845,11 +888,40 @@ static bool tcl_get_int(const char *name, int *out)
 	return (v && Tcl_GetIntFromObj(interp, v, out) == TCL_OK);
 }
 
-static bool term_data_link(term_data *t, int which, const char *path)
+static bool term_data_link(term_data *t, int which, const char *path,
+		const char *font)
 {
 	term *tt = &t->t;
+	Tcl_Obj *q;
 
 	my_strcpy(t->path, path, sizeof(t->path));
+	my_strcpy(t->font, font, sizeof(t->font));
+
+	/*
+	 * A pane's cell size is its font's, measured rather than assumed.  It is
+	 * per pane and not global because the minimap wants small cells: more of
+	 * them fit, so more of the level fits, and the tiles drawn into them come
+	 * out correspondingly smaller.
+	 */
+	q = Tcl_ObjPrintf("list [font measure %s W] [font metrics %s -linespace]",
+			font, font);
+	Tcl_IncrRefCount(q);
+	if (Tcl_EvalObjEx(interp, q, TCL_EVAL_GLOBAL) == TCL_OK) {
+		Tcl_Obj **e;
+		Tcl_Size ne;
+
+		if (Tcl_ListObjGetElements(NULL, Tcl_GetObjResult(interp), &ne, &e)
+				== TCL_OK && ne == 2) {
+			Tcl_GetIntFromObj(NULL, e[0], &t->cw);
+			Tcl_GetIntFromObj(NULL, e[1], &t->ch);
+		}
+	}
+	Tcl_DecrRefCount(q);
+
+	if (t->cw <= 0 || t->ch <= 0) {
+		plog_fmt("Tcl/Tk: font %s gives no usable cell size.", font);
+		return false;
+	}
 
 	/*
 	 * How many cells fit, from the size the layout gave this canvas.  The
@@ -949,18 +1021,17 @@ static bool terms_init(void)
 		Tcl_Size np;
 
 		if (Tcl_ListObjGetElements(interp, elem[i], &np, &pair) != TCL_OK
-				|| np != 2) {
-			plog("Tcl/Tk: each entry in angband(terms) must be {canvas role}.");
+				|| np != 3) {
+			plog("Tcl/Tk: angband(terms) entries must be {canvas role font}.");
 			return false;
 		}
 
 		pane_index[i] = role_to_index(Tcl_GetString(pair[1]));
 		if (pane_index[i] < 0) return false;
+		want_flag[pane_index[i]] = role_to_flag(Tcl_GetString(pair[1]));
 
-		td[i].cw = cw;
-		td[i].ch = ch;
-
-		if (!term_data_link(&td[i], pane_index[i], Tcl_GetString(pair[0])))
+		if (!term_data_link(&td[i], pane_index[i], Tcl_GetString(pair[0]),
+				Tcl_GetString(pair[2])))
 			return false;
 	}
 
