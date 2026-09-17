@@ -68,6 +68,7 @@ static Tk_Window mainwin = NULL;
 typedef struct term_data term_data;
 struct term_data {
 	term t;
+	char path[64];		/* the canvas widget, e.g. ".pw.top.main.c" */
 	int cols;
 	int rows;
 	int cw;			/* cell width in pixels */
@@ -78,7 +79,14 @@ struct term_data {
 	bool cursor_visible;
 };
 
-static term_data td_main;
+/*
+ * One per term.  Slot 0 is the map; the rest are the game's subwindows, whose
+ * contents textui_init() has already chosen -- messages, inventory, monster
+ * list, item list, recall, overhead map.  main.tcl decides how many there are
+ * and where they go, and hands back the list of canvases.
+ */
+static term_data td[ANGBAND_TERM_MAX];
+static int td_count = 0;
 
 /**
  * "#rrggbb" for each of the game's colours, rebuilt on TERM_XTRA_REACT.
@@ -99,7 +107,6 @@ static char colour_name[MAX_COLORS][8];
  * Tcl_EvalObjv: reusing and mutating them panics with "Tcl_SetStringObj called
  * with shared object" the moment the canvas has kept one.
  */
-static Tcl_Obj *cfg_widget;
 static Tcl_Obj *cfg_itemconfigure;
 static Tcl_Obj *cfg_dash_text;
 static Tcl_Obj *cfg_dash_fill;
@@ -127,7 +134,7 @@ static void cell_set(term_data *td, int x, int y, const char *ch, int attr)
 
 	if (x < 0 || y < 0 || x >= td->cols || y >= td->rows) return;
 
-	objv[0] = cfg_widget;
+	objv[0] = Tcl_NewStringObj(td->path, -1);
 	objv[1] = cfg_itemconfigure;
 	objv[2] = Tcl_NewIntObj(td->item[idx]);
 	objv[3] = cfg_dash_text;
@@ -184,11 +191,11 @@ static errr Term_curs_tcl(int x, int y)
 	char cmd[256];
 
 	strnfmt(cmd, sizeof(cmd),
-			".term coords %d %d %d %d %d ; .term itemconfigure %d -state normal",
-			td->cursor_item,
+			"%s coords %d %d %d %d %d ; %s itemconfigure %d -state normal",
+			td->path, td->cursor_item,
 			x * td->cw + 1, y * td->ch + 1,
 			(x + 1) * td->cw - 1, (y + 1) * td->ch - 1,
-			td->cursor_item);
+			td->path, td->cursor_item);
 	Tcl_Eval(interp, cmd);
 	td->cursor_visible = true;
 
@@ -426,7 +433,13 @@ static void build_cells(term_data *td)
 {
 	int x, y;
 
-	Tcl_Eval(interp, ".term delete all");
+	{
+		Tcl_Obj *del = Tcl_ObjPrintf("%s delete all", td->path);
+
+		Tcl_IncrRefCount(del);
+		Tcl_EvalObjEx(interp, del, TCL_EVAL_GLOBAL);
+		Tcl_DecrRefCount(del);
+	}
 
 	if (td->item) mem_free(td->item);
 	td->item = mem_zalloc(td->cols * td->rows * sizeof(int));
@@ -434,9 +447,9 @@ static void build_cells(term_data *td)
 	for (y = 0; y < td->rows; y++) {
 		for (x = 0; x < td->cols; x++) {
 			Tcl_Obj *mk = Tcl_ObjPrintf(
-					".term create text %d %d -anchor nw -font termfont"
+					"%s create text %d %d -anchor nw -font termfont"
 					" -fill white -text { }",
-					x * td->cw, y * td->ch);
+					td->path, x * td->cw, y * td->ch);
 
 			Tcl_IncrRefCount(mk);
 			if (Tcl_EvalObjEx(interp, mk, TCL_EVAL_GLOBAL) == TCL_OK) {
@@ -448,10 +461,18 @@ static void build_cells(term_data *td)
 	}
 
 	/* The cursor: a rectangle, hidden until the game places it. */
-	Tcl_Eval(interp,
-			".term create rectangle 0 0 0 0 -outline yellow -width 2"
-			" -state hidden");
-	Tcl_GetIntFromObj(NULL, Tcl_GetObjResult(interp), &td->cursor_item);
+	{
+		Tcl_Obj *cur = Tcl_ObjPrintf(
+				"%s create rectangle 0 0 0 0 -outline yellow -width 2"
+				" -state hidden", td->path);
+
+		Tcl_IncrRefCount(cur);
+		if (Tcl_EvalObjEx(interp, cur, TCL_EVAL_GLOBAL) == TCL_OK) {
+			Tcl_GetIntFromObj(NULL, Tcl_GetObjResult(interp),
+					&td->cursor_item);
+		}
+		Tcl_DecrRefCount(cur);
+	}
 }
 
 /**
@@ -468,31 +489,53 @@ static void build_cells(term_data *td)
 static int objcmd_resize(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		Tcl_Obj *const objv[])
 {
-	term_data *td = &td_main;
-	int cols, rows;
+	term_data *t;
+	int which, cols, rows;
 
 	(void)dummy;
 
-	if (objc != 3) {
-		Tcl_WrongNumArgs(ip, 1, objv, "cols rows");
+	if (objc != 4) {
+		Tcl_WrongNumArgs(ip, 1, objv, "term cols rows");
 		return TCL_ERROR;
 	}
-	if (Tcl_GetIntFromObj(ip, objv[1], &cols) != TCL_OK) return TCL_ERROR;
-	if (Tcl_GetIntFromObj(ip, objv[2], &rows) != TCL_OK) return TCL_ERROR;
+	if (Tcl_GetIntFromObj(ip, objv[1], &which) != TCL_OK) return TCL_ERROR;
+	if (Tcl_GetIntFromObj(ip, objv[2], &cols) != TCL_OK) return TCL_ERROR;
+	if (Tcl_GetIntFromObj(ip, objv[3], &rows) != TCL_OK) return TCL_ERROR;
 
-	if (cols < 80) cols = 80;
-	if (rows < 24) rows = 24;
-	if (cols == td->cols && rows == td->rows) return TCL_OK;
-
-	td->cols = cols;
-	td->rows = rows;
-	build_cells(td);
+	if (which < 0 || which >= td_count) return TCL_OK;
+	t = &td[which];
 
 	/*
-	 * Tell the game last.  Term_resize redraws through our hooks, so the
-	 * items it draws into have to exist first.
+	 * The map has a floor of 80x24 -- ui-init.c warns below it -- but a
+	 * subwindow has none: a messages pane three rows high is a reasonable
+	 * thing to want, and the game is happy to draw into it.
 	 */
-	Term_resize(cols, rows);
+	if (which == 0) {
+		if (cols < 80) cols = 80;
+		if (rows < 24) rows = 24;
+	} else {
+		if (cols < 1) cols = 1;
+		if (rows < 1) rows = 1;
+	}
+	if (cols == t->cols && rows == t->rows) return TCL_OK;
+
+	t->cols = cols;
+	t->rows = rows;
+	build_cells(t);
+
+	/*
+	 * Tell the game last, and about the right term: Term_resize works on
+	 * whichever is active, so this has to be bracketed rather than just
+	 * called.  The items it redraws into have to exist first, which is why
+	 * build_cells comes before it.
+	 */
+	{
+		term *old = Term;
+
+		Term_activate(&t->t);
+		Term_resize(cols, rows);
+		Term_activate(old);
+	}
 
 	return TCL_OK;
 }
@@ -507,63 +550,121 @@ static bool tcl_get_int(const char *name, int *out)
 	return (v && Tcl_GetIntFromObj(interp, v, out) == TCL_OK);
 }
 
-static bool term_data_link(term_data *td)
+static bool term_data_link(term_data *t, int which, const char *path)
 {
-	term *t = &td->t;
-	Tcl_Obj *cmd;
+	term *tt = &t->t;
 
-	td->cols = 80;
-	td->rows = 24;
+	my_strcpy(t->path, path, sizeof(t->path));
 
 	/*
-	 * The script owns the font and measures a cell from it; we tell it how
-	 * many cells we want and read the pixel size back.  Creating the font
-	 * here as well would be the obvious mistake -- Tk's `font create` fails
-	 * with "named font already exists", which fails the whole script.
+	 * How many cells fit, from the size the layout gave this canvas.  The
+	 * script has already run `update`, so these are real numbers rather than
+	 * the 1x1 an unmapped widget reports.
 	 */
-	cmd = Tcl_ObjPrintf("array set angband {cols %d rows %d}",
-			td->cols, td->rows);
-	Tcl_IncrRefCount(cmd);
-	Tcl_EvalObjEx(interp, cmd, TCL_EVAL_GLOBAL);
-	Tcl_DecrRefCount(cmd);
+	{
+		Tcl_Obj *q = Tcl_ObjPrintf(
+				"list [winfo width %s] [winfo height %s]", path, path);
+		int w = 0, h = 0;
+		Tcl_Obj **e;
+		Tcl_Size n;
+
+		Tcl_IncrRefCount(q);
+		if (Tcl_EvalObjEx(interp, q, TCL_EVAL_GLOBAL) == TCL_OK
+				&& Tcl_ListObjGetElements(NULL, Tcl_GetObjResult(interp), &n, &e)
+					== TCL_OK && n == 2) {
+			Tcl_GetIntFromObj(NULL, e[0], &w);
+			Tcl_GetIntFromObj(NULL, e[1], &h);
+		}
+		Tcl_DecrRefCount(q);
+
+		t->cols = (t->cw > 0) ? w / t->cw : 0;
+		t->rows = (t->ch > 0) ? h / t->ch : 0;
+	}
+
+	if (which == 0) {
+		if (t->cols < 80) t->cols = 80;
+		if (t->rows < 24) t->rows = 24;
+	} else {
+		if (t->cols < 1) t->cols = 1;
+		if (t->rows < 1) t->rows = 1;
+	}
+
+	build_cells(t);
+
+	term_init(tt, t->cols, t->rows, 256);
+
+	tt->soft_cursor = true;
+
+	tt->init_hook = Term_init_tcl;
+	tt->nuke_hook = Term_nuke_tcl;
+	tt->xtra_hook = Term_xtra_tcl;
+	tt->curs_hook = Term_curs_tcl;
+	tt->wipe_hook = Term_wipe_tcl;
+	tt->text_hook = Term_text_tcl;
+
+	tt->data = t;
+
+	angband_term[which] = tt;
+
+	return true;
+}
+
+/**
+ * Build the window, then a term for each canvas the script laid out.
+ */
+static bool terms_init(void)
+{
+	Tcl_Obj *list, **elem;
+	Tcl_Size n;
+	int cw, ch, i;
 
 	if (!tcl_source("main.tcl")) return false;
 
-	if (!tcl_get_int("cellw", &td->cw) || !tcl_get_int("cellh", &td->ch)
-			|| td->cw <= 0 || td->ch <= 0) {
+	if (!tcl_get_int("cellw", &cw) || !tcl_get_int("cellh", &ch)
+			|| cw <= 0 || ch <= 0) {
 		plog("Tcl/Tk: main.tcl did not report a usable cell size.");
 		return false;
 	}
 
-	build_cells(td);
+	list = Tcl_GetVar2Ex(interp, "angband", "terms", TCL_GLOBAL_ONLY);
+	if (!list || Tcl_ListObjGetElements(interp, list, &n, &elem) != TCL_OK
+			|| n < 1) {
+		plog("Tcl/Tk: main.tcl did not lay out any terms.");
+		return false;
+	}
+	if (n > ANGBAND_TERM_MAX) n = ANGBAND_TERM_MAX;
 
-	/* The four words of the inner loop that never change. */
-	cfg_widget = Tcl_NewStringObj(".term", -1);
+	/* The words of the drawing loop that never change. */
 	cfg_itemconfigure = Tcl_NewStringObj("itemconfigure", -1);
 	cfg_dash_text = Tcl_NewStringObj("-text", -1);
 	cfg_dash_fill = Tcl_NewStringObj("-fill", -1);
-	Tcl_IncrRefCount(cfg_widget);
 	Tcl_IncrRefCount(cfg_itemconfigure);
 	Tcl_IncrRefCount(cfg_dash_text);
 	Tcl_IncrRefCount(cfg_dash_fill);
 
 	colours_init();
 
-	term_init(t, td->cols, td->rows, 256);
+	td_count = (int)n;
+	for (i = 0; i < td_count; i++) {
+		td[i].cw = cw;
+		td[i].ch = ch;
+		if (!term_data_link(&td[i], i, Tcl_GetString(elem[i]))) return false;
+	}
 
-	t->soft_cursor = true;
+	/*
+	 * Now that every term exists, ask the layout what size each pane actually
+	 * ended up.  The sizes read above were taken before any term existed, so
+	 * the <Configure> events the paned window fired while it settled had
+	 * nowhere to go -- without this pass the map term keeps whatever it
+	 * measured first and draws part of itself off the edge of its own pane.
+	 */
+	Tcl_Eval(interp, "angband_resize_now");
 
-	t->init_hook = Term_init_tcl;
-	t->nuke_hook = Term_nuke_tcl;
-	t->xtra_hook = Term_xtra_tcl;
-	t->curs_hook = Term_curs_tcl;
-	t->wipe_hook = Term_wipe_tcl;
-	t->text_hook = Term_text_tcl;
-
-	t->data = td;
-
-	Term_activate(t);
-	angband_term[0] = t;
+	/*
+	 * The map is the active term when the game starts, and stays the one the
+	 * player is looking at.  Activating it last is what makes that true.
+	 */
+	Term_activate(&td[0].t);
 
 	return true;
 }
@@ -681,7 +782,7 @@ errr init_tcl(int argc, char **argv)
 	 * term_data_link measures the font, tells the script how big the grid is,
 	 * and sources it.
 	 */
-	if (!term_data_link(&td_main)) {
+	if (!terms_init()) {
 		/*
 		 * Say so where it can be seen.  stderr is gone by now -- Tk redirects
 		 * it to /dev/null for a bundled application, which is why the first
