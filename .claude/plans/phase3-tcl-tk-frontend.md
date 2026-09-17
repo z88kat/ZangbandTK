@@ -843,16 +843,41 @@ text. Everything 4.2 can draw in a terminal is drawable here.
   >
   > **What is still missing, and it is much smaller than the above:** monsters, objects,
   > traps and flavours carry one tile each in every set, so an object remembered in the dark
-  > draws as brightly as one under your torch. And the other sets cover terrain only partly
-  > — 11 dark variants in Adam Bolt, 15 in Gervais, 16 in the old set, 5 in Nomad, against
-  > Neon's 42. Generated darkening is the answer to both, and it is worth having when a
-  > second tileset becomes selectable rather than now.
-- **Generated darkening, for what the tilesets do not cover.** Terrain lighting is the
-  tileset's own and works (see above); monsters, objects, traps and flavours have one tile
-  each in every set, and the four non-Neon sets cover terrain only partly. Darken by gamma
-  on demand, as the original settled on in its last release
-  ([OBS-47](phase3-observations.md)), and cache per (tile, lighting). Worth doing when a
-  second tileset becomes selectable, which is what makes the partial coverage visible.
+  > draws as brightly as one under your torch. ~~And the other sets cover terrain only
+  > partly~~ — they do not: recounted, all five sets declare all four states for all
+  > forty-two features. See the generated-darkening bullet below, which is now done.
+- **Generated darkening, for what the tilesets do not cover.** ~~the four non-Neon sets
+  cover terrain only partly~~ — **done, and the premise was half wrong.**
+
+  > Counted across all five sets: every one declares all four lighting states for all
+  > forty-two features, and no dark entry is identical to its lit one. The earlier figures
+  > here (11 dark variants in Adam Bolt, 15 in Gervais, 5 in Nomad) came from reading one of
+  > each set's two pref files and matching the lighting field as a number when it is a name.
+  > **There is nothing to generate for terrain, in any set.**
+  >
+  > What was real is the other half: monsters, objects, traps and flavours carry one tile
+  > each, so a thing the character only remembers was drawn exactly as brightly as one in
+  > front of them. That is now dimmed in `blit_tile`, on the foreground tile only, when
+  > `square_isseen()` says the grid is remembered rather than seen.
+  >
+  > **The factor is measured, not chosen: 0.81.** Four of the five sets declare separate
+  > terrain tiles for "in line of sight" and "seen before, not now", and across 114 features
+  > the median brightness ratio between them is 0.81 (old 0.81, Adam Bolt 0.81, Gervais
+  > 0.80, Nomad 0.88). Neon is the exception — it uses one tile for both — which is why the
+  > number comes from the other four. Verified by building the same scene twice and
+  > differencing: 0.804 measured on the pixels that changed.
+  >
+  > Two things worth keeping:
+  >
+  > - **`map_info()` is not safe to call from a drawing routine** — it calls
+  >   `square_memorize()`. The predicate is `square_isseen()` instead, which is also the
+  >   distinction that matters: the lighting states `map_info` actually produces in play are
+  >   LOS, TORCH and LIT, and LIT is precisely "known, but not in view". LIGHTING_DARK only
+  >   ever appears for a `PF_UNLIGHT` character.
+  > - No cache was needed. The overlay branch of `Term_pict` fires only where something
+  >   stands on the terrain — measured at one to three cells per redraw in a town and a
+  >   dungeon, against roughly 1,900 cells in total — so the multiply happens where the
+  >   pixels are already being copied and costs nothing worth caching.
 - **Design the icon layer so a tile lookup may return an *animation*, not just a tile.**
   Zangband's sprites are frame sequences with a delay factor and a ping-pong flag — three
   fields, 74 lines of data, and 4.2 has no equivalent ([OBS-36](phase3-observations.md)).
