@@ -5,8 +5,13 @@
 # Use in the root directory of the game, like so:
 #    scripts/pkg_macos_tcltk <build-directory> [output-directory]
 #
-# The build directory is whatever was configured with SUPPORT_TCL_FRONTEND=ON;
-# the bundle is written beside it unless an output directory is given.
+# The build directory is whatever was configured with SUPPORT_TCL_FRONTEND=ON.
+# The bundle goes to ~/Desktop unless an output directory is given -- that is
+# where it gets played from, and building it straight there means there is only
+# ever one of it.  Two copies both claim org.zangbandtk.zangbandtcltk, and then
+# Launch Services decides which one your double-click starts; see the warning
+# at the end of this script.  Where there is no Desktop, as on a CI runner, the
+# bundle is written beside the build instead.
 #
 # This is a second application, not a replacement for the Cocoa one.  See
 # decision 14 in .claude/plans/phase3-tcl-tk-frontend.md: ZangbandTK.app is a
@@ -38,13 +43,19 @@
 set -o errexit
 
 if [ $# -lt 1 ] || [ $# -gt 2 ]; then
-	sed -n -e '3,9p' "$0" | sed -e 's/^# \{0,1\}//'
+	sed -n -e '3,14p' "$0" | sed -e 's/^# \{0,1\}//'
 	exit 1
 fi
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 BUILD=$1
-OUT=${2:-$BUILD}
+if [ $# -eq 2 ]; then
+	OUT=$2
+elif [ -d "$HOME/Desktop" ]; then
+	OUT=$HOME/Desktop
+else
+	OUT=$BUILD
+fi
 
 NAME=ZangbandTclTK
 IDENT=org.zangbandtk.zangbandtcltk
