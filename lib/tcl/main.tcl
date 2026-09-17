@@ -128,6 +128,42 @@ set angband(terms) [list \
     [list $choice.c   inventory termfont] \
     [list $overhead.c minimap   minimapfont]]
 
+# The menu bar, which for now carries exactly one menu: the tile sets.
+#
+# This is not the menu bar T7 builds.  That one is generated from the game's
+# own command table so that it stays in step with the keyboard; this is front
+# end configuration, which the game has no commands for, and the two will sit
+# side by side rather than one replacing the other.
+#
+# The list comes from the game -- whatever lib/tiles/list.txt declared and the
+# files for it are present -- so a set added there appears here without anyone
+# editing this file.  Choosing one goes through reset_visuals and a redraw, so
+# what you see after choosing is what you get: the preview is the real thing,
+# which is the house rule (OBS-29) and cheaper than a mock-up besides.
+menu .menubar
+. configure -menu .menubar
+
+menu .menubar.tiles -tearoff 0
+.menubar add cascade -label "Tiles" -menu .menubar.tiles
+
+set angband(tileset) [angband_tileset]
+foreach pair [angband_tilesets] {
+    lassign $pair id name
+    .menubar.tiles add radiobutton -label $name \
+        -variable angband(tileset) -value $id \
+        -command [list angband_choose_tileset $id]
+}
+
+proc angband_choose_tileset {id} {
+    global angband
+    if {[catch {angband_tileset $id} err]} {
+        tk_messageBox -icon error -title "ZangbandTK" \
+            -message "Could not use that tile set." -detail $err
+        # Put the tick back on the set that is actually in use.
+        set angband(tileset) [angband_tileset]
+    }
+}
+
 # Each pane follows its own size.  <Configure> fires for every pixel of a drag,
 # so the work is deferred to idle and coalesced -- only the last size in a
 # burst is acted on -- and rebuilding a couple of thousand canvas items per

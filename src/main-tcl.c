@@ -22,6 +22,7 @@
 
 #include "grafmode.h"
 #include "init.h"
+#include "ui-command.h"
 #include "ui-display.h"
 #include "main.h"
 #include "ui-prefs.h"
@@ -657,6 +658,139 @@ static bool tcl_source(const char *name)
 }
 
 /**
+ * Load one graphics mode's sheet, replacing whatever is loaded.
+ *
+ * GRAPHICS_NONE is a legitimate choice and means text: the sheet is dropped
+ * and Term_pict is simply never called again, because the game stops setting
+ * the high bit on the attribute.
+ */
+static bool graphics_load(graphics_mode *mode)
+{
+	char path[1024];
+	Tcl_Obj *cmd;
+
+	if (tileset) {
+		Tcl_Eval(interp, "image delete tilesheet");
+		tileset = NULL;
+	}
+
+	if (!mode || mode->grafID == GRAPHICS_NONE) {
+		current_graphics_mode = get_graphics_mode(GRAPHICS_NONE);
+		use_graphics = GRAPHICS_NONE;
+		tile_width = 1;
+		tile_height = 1;
+		return true;
+	}
+
+	path_build(path, sizeof(path), mode->path, mode->file);
+	if (!file_exists(path)) {
+		plog_fmt("Tcl/Tk: %s is missing.", path);
+		return false;
+	}
+
+	cmd = Tcl_ObjPrintf("image create photo tilesheet -file {%s}", path);
+	Tcl_IncrRefCount(cmd);
+	if (Tcl_EvalObjEx(interp, cmd, TCL_EVAL_GLOBAL) == TCL_OK) {
+		tileset = Tk_FindPhoto(interp, "tilesheet");
+	} else {
+		plog_fmt("Tcl/Tk: could not read %s: %s", path,
+				Tcl_GetStringResult(interp));
+	}
+	Tcl_DecrRefCount(cmd);
+
+	if (!tileset) return false;
+
+	current_graphics_mode = mode;
+	use_graphics = mode->grafID;
+
+	/*
+	 * Two cells across, one down, whatever the set.
+	 *
+	 * The arithmetic is the same for every square tileset: we want the drawn
+	 * tile to be about as wide as it is tall, so cw*tile_width should be near
+	 * ch, and 20/11 rounds to 2 regardless of whether the tile is 8, 16 or 32
+	 * pixels.  The tile's own size only decides how much detail survives the
+	 * scaling.
+	 */
+	tile_width = 2;
+	tile_height = 1;
+
+	return true;
+}
+
+/**
+ * angband_tilesets -- the sets that are installed, as {id name} pairs.
+ */
+static int objcmd_tilesets(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	graphics_mode *mode;
+	Tcl_Obj *list;
+
+	(void)dummy;
+	(void)objc;
+	(void)objv;
+
+	list = Tcl_NewListObj(0, NULL);
+	for (mode = graphics_modes; mode; mode = mode->pNext) {
+		Tcl_Obj *pair = Tcl_NewListObj(0, NULL);
+
+		Tcl_ListObjAppendElement(ip, pair, Tcl_NewIntObj(mode->grafID));
+		Tcl_ListObjAppendElement(ip, pair,
+				Tcl_NewStringObj(mode->menuname, -1));
+		Tcl_ListObjAppendElement(ip, list, pair);
+	}
+	Tcl_SetObjResult(ip, list);
+
+	return TCL_OK;
+}
+
+/**
+ * angband_tileset -- read or change the tile set, by id.
+ *
+ * Changing it goes through the game: reset_visuals reloads the set's pref
+ * file, which is what maps every feature, monster and object onto a tile, and
+ * do_cmd_redraw puts the result on screen.  Doing it that way rather than
+ * redrawing ourselves is what makes the preview honest -- what you see after
+ * choosing is what you get, because it went through the same path.
+ */
+static int objcmd_tileset(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	graphics_mode *mode;
+	int id;
+
+	(void)dummy;
+
+	if (objc == 1) {
+		Tcl_SetObjResult(ip, Tcl_NewIntObj(
+				current_graphics_mode ? current_graphics_mode->grafID : 0));
+		return TCL_OK;
+	}
+	if (objc != 2) {
+		Tcl_WrongNumArgs(ip, 1, objv, "?id?");
+		return TCL_ERROR;
+	}
+	if (Tcl_GetIntFromObj(ip, objv[1], &id) != TCL_OK) return TCL_ERROR;
+
+	mode = get_graphics_mode((uint8_t)id);
+	if (!mode) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("no such tile set", -1));
+		return TCL_ERROR;
+	}
+
+	if (!graphics_load(mode)) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("could not load that set", -1));
+		return TCL_ERROR;
+	}
+
+	reset_visuals(true);
+	do_cmd_redraw();
+
+	return TCL_OK;
+}
+
+/**
  * Find the tile sets, choose one, and load its sheet.
  *
  * Mode 7 is the Neon set, which is the one this project uses -- it is
@@ -667,8 +801,6 @@ static bool tcl_source(const char *name)
 static void graphics_init(void)
 {
 	graphics_mode *mode;
-	char path[1024];
-	Tcl_Obj *cmd;
 
 	if (!init_graphics_modes()) {
 		plog("Tcl/Tk: no graphics modes; running without tiles.");
@@ -681,41 +813,9 @@ static void graphics_init(void)
 		return;
 	}
 
-	path_build(path, sizeof(path), mode->path, mode->file);
-	if (!file_exists(path)) {
-		plog_fmt("Tcl/Tk: %s is missing; running without tiles.", path);
-		return;
+	if (!graphics_load(mode)) {
+		plog("Tcl/Tk: running without tiles.");
 	}
-
-	cmd = Tcl_ObjPrintf("image create photo -file {%s}", path);
-	Tcl_IncrRefCount(cmd);
-	if (Tcl_EvalObjEx(interp, cmd, TCL_EVAL_GLOBAL) == TCL_OK) {
-		tileset = Tk_FindPhoto(interp, Tcl_GetStringResult(interp));
-	} else {
-		plog_fmt("Tcl/Tk: could not read %s: %s", path,
-				Tcl_GetStringResult(interp));
-	}
-	Tcl_DecrRefCount(cmd);
-
-	if (!tileset) return;
-
-	current_graphics_mode = mode;
-	use_graphics = mode->grafID;
-
-	/*
-	 * A tile spans two character cells across and one down.
-	 *
-	 * The tiles are square and a character cell is not: the widest
-	 * fixed-width face on this machine measures 0.58 wide for its height, and
-	 * the tile needs 1.0, so no choice of font gets close -- squeezing a
-	 * 16x16 tile into an 11x20 cell stretches it by nearly twice.  Two cells
-	 * across makes the target 22x20, which is within a tenth of square.  The
-	 * cost is that the map shows half as many tiles across as it did
-	 * characters, which is what tile_width is for and what every other
-	 * graphical front end does.
-	 */
-	tile_width = 2;
-	tile_height = 1;
 }
 
 /**
@@ -988,6 +1088,14 @@ static bool terms_init(void)
 	Tcl_Size n;
 	int cw, ch, i;
 
+	/*
+	 * The tile sets have to be known before the script runs: main.tcl builds
+	 * a menu of them, and asking for a list that has not been read yet gets
+	 * an empty menu rather than an error.
+	 */
+	colours_init();
+	graphics_init();
+
 	if (!tcl_source("main.tcl")) return false;
 
 	if (!tcl_get_int("cellw", &cw) || !tcl_get_int("cellh", &ch)
@@ -1011,9 +1119,6 @@ static bool terms_init(void)
 	Tcl_IncrRefCount(cfg_itemconfigure);
 	Tcl_IncrRefCount(cfg_dash_text);
 	Tcl_IncrRefCount(cfg_dash_fill);
-
-	colours_init();
-	graphics_init();
 
 	td_count = (int)n;
 	for (i = 0; i < td_count; i++) {
@@ -1160,6 +1265,10 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_quit", objcmd_quit, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_key", objcmd_key, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_resize", objcmd_resize, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_tilesets", objcmd_tilesets, NULL,
+			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_tileset", objcmd_tileset, NULL,
+			NULL);
 
 	/*
 	 * The window itself, its bindings and its font are lib/tcl/main.tcl's --

@@ -847,6 +847,12 @@ text. Everything 4.2 can draw in a terminal is drawable here.
   > — 11 dark variants in Adam Bolt, 15 in Gervais, 16 in the old set, 5 in Nomad, against
   > Neon's 42. Generated darkening is the answer to both, and it is worth having when a
   > second tileset becomes selectable rather than now.
+- **Generated darkening, for what the tilesets do not cover.** Terrain lighting is the
+  tileset's own and works (see above); monsters, objects, traps and flavours have one tile
+  each in every set, and the four non-Neon sets cover terrain only partly. Darken by gamma
+  on demand, as the original settled on in its last release
+  ([OBS-47](phase3-observations.md)), and cache per (tile, lighting). Worth doing when a
+  second tileset becomes selectable, which is what makes the partial coverage visible.
 - **Design the icon layer so a tile lookup may return an *animation*, not just a tile.**
   Zangband's sprites are frame sequences with a delay factor and a ping-pong flag — three
   fields, 74 lines of data, and 4.2 has no equivalent ([OBS-36](phase3-observations.md)).
