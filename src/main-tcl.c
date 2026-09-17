@@ -416,6 +416,88 @@ static bool tcl_source(const char *name)
  * least debuggable outcome available.
  */
 /**
+ * Create one canvas text item per cell, plus the cursor rectangle.
+ *
+ * Called again on every resize.  The items are destroyed and remade rather
+ * than moved: at 80x24 that is 1,920 items and it happens only when the player
+ * drags the window edge, so the simpler code wins over the cleverer one.
+ */
+static void build_cells(term_data *td)
+{
+	int x, y;
+
+	Tcl_Eval(interp, ".term delete all");
+
+	if (td->item) mem_free(td->item);
+	td->item = mem_zalloc(td->cols * td->rows * sizeof(int));
+
+	for (y = 0; y < td->rows; y++) {
+		for (x = 0; x < td->cols; x++) {
+			Tcl_Obj *mk = Tcl_ObjPrintf(
+					".term create text %d %d -anchor nw -font termfont"
+					" -fill white -text { }",
+					x * td->cw, y * td->ch);
+
+			Tcl_IncrRefCount(mk);
+			if (Tcl_EvalObjEx(interp, mk, TCL_EVAL_GLOBAL) == TCL_OK) {
+				Tcl_GetIntFromObj(NULL, Tcl_GetObjResult(interp),
+						&td->item[y * td->cols + x]);
+			}
+			Tcl_DecrRefCount(mk);
+		}
+	}
+
+	/* The cursor: a rectangle, hidden until the game places it. */
+	Tcl_Eval(interp,
+			".term create rectangle 0 0 0 0 -outline yellow -width 2"
+			" -state hidden");
+	Tcl_GetIntFromObj(NULL, Tcl_GetObjResult(interp), &td->cursor_item);
+}
+
+/**
+ * angband_resize -- the canvas changed size, so the term should too.
+ *
+ * main.tcl works out how many whole cells now fit and calls this; doing the
+ * arithmetic there rather than here keeps the cell size, which the script
+ * already owns, in one place.
+ *
+ * The game has a floor of 80x24 (ui-init.c warns below it), so anything
+ * smaller is ignored rather than passed on -- the window can be dragged
+ * smaller, it just stops giving the game less than it can use.
+ */
+static int objcmd_resize(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	term_data *td = &td_main;
+	int cols, rows;
+
+	(void)dummy;
+
+	if (objc != 3) {
+		Tcl_WrongNumArgs(ip, 1, objv, "cols rows");
+		return TCL_ERROR;
+	}
+	if (Tcl_GetIntFromObj(ip, objv[1], &cols) != TCL_OK) return TCL_ERROR;
+	if (Tcl_GetIntFromObj(ip, objv[2], &rows) != TCL_OK) return TCL_ERROR;
+
+	if (cols < 80) cols = 80;
+	if (rows < 24) rows = 24;
+	if (cols == td->cols && rows == td->rows) return TCL_OK;
+
+	td->cols = cols;
+	td->rows = rows;
+	build_cells(td);
+
+	/*
+	 * Tell the game last.  Term_resize redraws through our hooks, so the
+	 * items it draws into have to exist first.
+	 */
+	Term_resize(cols, rows);
+
+	return TCL_OK;
+}
+
+/**
  * Read one integer out of the script's angband() array.
  */
 static bool tcl_get_int(const char *name, int *out)
@@ -429,7 +511,6 @@ static bool term_data_link(term_data *td)
 {
 	term *t = &td->t;
 	Tcl_Obj *cmd;
-	int x, y;
 
 	td->cols = 80;
 	td->rows = 24;
@@ -454,29 +535,7 @@ static bool term_data_link(term_data *td)
 		return false;
 	}
 
-	/* One text item per cell, created once. */
-	td->item = mem_zalloc(td->cols * td->rows * sizeof(int));
-	for (y = 0; y < td->rows; y++) {
-		for (x = 0; x < td->cols; x++) {
-			Tcl_Obj *mk = Tcl_ObjPrintf(
-					".term create text %d %d -anchor nw -font termfont"
-					" -fill white -text { }",
-					x * td->cw, y * td->ch);
-
-			Tcl_IncrRefCount(mk);
-			if (Tcl_EvalObjEx(interp, mk, TCL_EVAL_GLOBAL) == TCL_OK) {
-				Tcl_GetIntFromObj(NULL, Tcl_GetObjResult(interp),
-						&td->item[y * td->cols + x]);
-			}
-			Tcl_DecrRefCount(mk);
-		}
-	}
-
-	/* The cursor: a rectangle, hidden until the game places it. */
-	Tcl_Eval(interp,
-			".term create rectangle 0 0 0 0 -outline yellow -width 2"
-			" -state hidden");
-	Tcl_GetIntFromObj(NULL, Tcl_GetObjResult(interp), &td->cursor_item);
+	build_cells(td);
 
 	/* The four words of the inner loop that never change. */
 	cfg_widget = Tcl_NewStringObj(".term", -1);
@@ -615,6 +674,7 @@ errr init_tcl(int argc, char **argv)
 
 	Tcl_CreateObjCommand2(interp, "angband_quit", objcmd_quit, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_key", objcmd_key, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_resize", objcmd_resize, NULL, NULL);
 
 	/*
 	 * The window itself, its bindings and its font are lib/tcl/main.tcl's --

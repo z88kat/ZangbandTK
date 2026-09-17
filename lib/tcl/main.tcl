@@ -42,3 +42,37 @@ canvas .term \
     -height [expr {$angband(rows) * $angband(cellh)}] \
     -background black -highlightthickness 0 -borderwidth 0
 pack .term -fill both -expand 1
+
+# The window may be resized, and the term follows it.
+#
+# The arithmetic is here rather than in C because the cell size is already
+# this file's -- one definition of it, not two.  Only whole cells count, so
+# the canvas keeps a few pixels of black at the right and bottom rather than
+# drawing a partial row.
+#
+# <Configure> fires for every pixel of a drag, and rebuilding a couple of
+# thousand canvas items per pixel would be unusable, so the work is deferred
+# to idle and coalesced: only the last size in a burst is acted on.
+set angband(resizePending) 0
+
+proc angband_resize_now {} {
+    global angband
+    set angband(resizePending) 0
+    set cols [expr {[winfo width  .term] / $angband(cellw)}]
+    set rows [expr {[winfo height .term] / $angband(cellh)}]
+    if {$cols > 0 && $rows > 0} {
+        angband_resize $cols $rows
+    }
+}
+
+bind .term <Configure> {
+    if {!$angband(resizePending)} {
+        set angband(resizePending) 1
+        after idle angband_resize_now
+    }
+}
+
+# The game will not run in less than 80x24, so do not let the window offer it.
+wm minsize . \
+    [expr {80 * $angband(cellw)}] \
+    [expr {24 * $angband(cellh)}]
