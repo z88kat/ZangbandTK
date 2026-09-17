@@ -20,8 +20,10 @@
 
 #ifdef USE_TCL
 
+#include "grafmode.h"
 #include "init.h"
 #include "main.h"
+#include "ui-prefs.h"
 #include "ui-term.h"
 
 #include <tcl.h>
@@ -76,6 +78,8 @@ struct term_data {
 	int ascent;
 	int *item;		/* canvas item id per cell, row-major */
 	int cursor_item;
+	int image_item;		/* the tile layer, one canvas image under the text */
+	Tk_PhotoHandle screen;	/* what that image shows */
 	bool cursor_visible;
 };
 
@@ -106,6 +110,20 @@ static int td_count = 0;
  * holds.
  */
 static int pane_index[ANGBAND_TERM_MAX];
+
+/*
+ * The tile sheet, and a scratch cell to scale into.
+ *
+ * Tk 9 reads PNG itself, so there is no Img extension to find and no file
+ * format to decode by hand -- one of the things core Tk does now that the 2001
+ * front end needed a binary extension for.
+ */
+/* Defined below, beside the rest of the tile code. */
+static void clear_tiles(term_data *td, int x, int y, int n);
+
+static Tk_PhotoHandle tileset = NULL;
+static unsigned char *cell_buf = NULL;
+static int cell_buf_size = 0;
 
 /**
  * Turn a role named in lib/tcl/main.tcl into the subwindow that holds it.
@@ -199,6 +217,8 @@ static errr Term_text_tcl(int x, int y, int n, int a, const wchar_t *s)
 	char buf[MB_LEN_MAX + 1];
 	int i;
 
+	clear_tiles(td, x, y, n);
+
 	for (i = 0; i < n; i++) {
 		int len = wctomb(buf, s[i]);
 
@@ -218,6 +238,7 @@ static errr Term_wipe_tcl(int x, int y, int n)
 	term_data *td = (term_data *)(Term->data);
 	int i;
 
+	clear_tiles(td, x, y, n);
 	for (i = 0; i < n; i++) cell_set(td, x + i, y, " ", COLOUR_WHITE);
 
 	return 0;
@@ -240,6 +261,135 @@ static errr Term_curs_tcl(int x, int y)
 			td->path, td->cursor_item);
 	Tcl_Eval(interp, cmd);
 	td->cursor_visible = true;
+
+	return 0;
+}
+
+/**
+ * Draw one tile into a term's tile layer, scaled to the cell.
+ *
+ * The sheet is addressed the way every other front end addresses it: the row
+ * comes from the attribute and the column from the character, each masked to
+ * seven bits.
+ *
+ * Scaling is nearest-neighbour, done here rather than by Tk, because a Tk
+ * photo can only be scaled by whole-number zoom and subsample factors and a
+ * 16x16 tile very rarely divides a text cell exactly.  Nearest-neighbour is
+ * the honest choice for pixel art in any case -- smoothing a 16x16 tile is
+ * how you get mud.
+ */
+static void blit_tile(term_data *td, int x, int y, int a, int c, int comp)
+{
+	Tk_PhotoImageBlock src, dst;
+	int tw, th, sx, sy, px, py;
+
+	if (!tileset || !td->screen || !current_graphics_mode) return;
+
+	Tk_PhotoGetImage(tileset, &src);
+
+	tw = current_graphics_mode->cell_width;
+	th = current_graphics_mode->cell_height;
+	sx = (c & 0x7f) * tw;
+	sy = (a & 0x7f) * th;
+
+	if (sx + tw > src.width || sy + th > src.height) return;
+
+	if (cell_buf_size < td->cw * td->ch * 4) {
+		if (cell_buf) mem_free(cell_buf);
+		cell_buf_size = td->cw * td->ch * 4;
+		cell_buf = mem_zalloc(cell_buf_size);
+	}
+
+	for (py = 0; py < td->ch; py++) {
+		int ty = sy + (py * th) / td->ch;
+
+		for (px = 0; px < td->cw; px++) {
+			int tx = sx + (px * tw) / td->cw;
+			unsigned char *s = src.pixelPtr + ty * src.pitch
+					+ tx * src.pixelSize;
+			unsigned char *d = cell_buf + (py * td->cw + px) * 4;
+
+			d[0] = s[src.offset[0]];
+			d[1] = s[src.offset[1]];
+			d[2] = s[src.offset[2]];
+			d[3] = (src.offset[3] < src.pixelSize) ? s[src.offset[3]] : 255;
+		}
+	}
+
+	dst.pixelPtr = cell_buf;
+	dst.width = td->cw;
+	dst.height = td->ch;
+	dst.pitch = td->cw * 4;
+	dst.pixelSize = 4;
+	dst.offset[0] = 0;
+	dst.offset[1] = 1;
+	dst.offset[2] = 2;
+	dst.offset[3] = 3;
+
+	Tk_PhotoPutBlock(interp, td->screen, &dst, x * td->cw, y * td->ch,
+			td->cw, td->ch, comp);
+}
+
+/**
+ * Clear the tile layer behind some cells, so text is not drawn over a tile.
+ *
+ * The text items sit above the tile layer and canvas text has no background of
+ * its own, so whatever the layer holds shows through every gap in a glyph.
+ */
+static void clear_tiles(term_data *td, int x, int y, int n)
+{
+	Tk_PhotoImageBlock blk;
+	int len = n * td->cw * td->ch * 4;
+
+	if (!td->screen || n <= 0) return;
+
+	if (cell_buf_size < len) {
+		if (cell_buf) mem_free(cell_buf);
+		cell_buf_size = len;
+		cell_buf = mem_zalloc(cell_buf_size);
+	}
+	memset(cell_buf, 0, len);
+
+	blk.pixelPtr = cell_buf;
+	blk.width = n * td->cw;
+	blk.height = td->ch;
+	blk.pitch = n * td->cw * 4;
+	blk.pixelSize = 4;
+	blk.offset[0] = 0;
+	blk.offset[1] = 1;
+	blk.offset[2] = 2;
+	blk.offset[3] = 3;
+
+	Tk_PhotoPutBlock(interp, td->screen, &blk, x * td->cw, y * td->ch,
+			n * td->cw, td->ch, TK_PHOTO_COMPOSITE_SET);
+}
+
+/**
+ * Draw tiles.  The game calls this only for cells whose attribute has the
+ * high bit set, because the term below sets higher_pict.
+ */
+static errr Term_pict_tcl(int x, int y, int n, const int *ap,
+		const wchar_t *cp, const int *tap, const wchar_t *tcp)
+{
+	term_data *td = (term_data *)(Term->data);
+	int i;
+
+	for (i = 0; i < n; i++) {
+		/*
+		 * The terrain tile goes down first and the thing standing on it
+		 * second, which is what makes a monster on grass look like a monster
+		 * on grass.  Transparency comes from the sheet's own alpha.
+		 */
+		if (tap && (tap[i] != ap[i] || tcp[i] != cp[i])) {
+			blit_tile(td, x + i, y, tap[i], tcp[i], TK_PHOTO_COMPOSITE_SET);
+			blit_tile(td, x + i, y, ap[i], cp[i], TK_PHOTO_COMPOSITE_OVERLAY);
+		} else {
+			blit_tile(td, x + i, y, ap[i], cp[i], TK_PHOTO_COMPOSITE_SET);
+		}
+
+		/* Nothing textual belongs in a cell that is showing a tile. */
+		cell_set(td, x + i, y, " ", COLOUR_WHITE);
+	}
 
 	return 0;
 }
@@ -455,6 +605,55 @@ static bool tcl_source(const char *name)
 }
 
 /**
+ * Find the tile sets, choose one, and load its sheet.
+ *
+ * Mode 7 is the Neon set, which is the one this project uses -- it is
+ * generated from text shapes rather than drawn, so the sheet is never edited
+ * by hand.  Falling back to no graphics rather than failing is deliberate: a
+ * missing tile sheet should cost you tiles, not the game.
+ */
+static void graphics_init(void)
+{
+	graphics_mode *mode;
+	char path[1024];
+	Tcl_Obj *cmd;
+
+	if (!init_graphics_modes()) {
+		plog("Tcl/Tk: no graphics modes; running without tiles.");
+		return;
+	}
+
+	mode = get_graphics_mode(7);
+	if (!mode) {
+		plog("Tcl/Tk: the Neon tile set is not installed; running without tiles.");
+		return;
+	}
+
+	path_build(path, sizeof(path), mode->path, mode->file);
+	if (!file_exists(path)) {
+		plog_fmt("Tcl/Tk: %s is missing; running without tiles.", path);
+		return;
+	}
+
+	cmd = Tcl_ObjPrintf("image create photo -file {%s}", path);
+	Tcl_IncrRefCount(cmd);
+	if (Tcl_EvalObjEx(interp, cmd, TCL_EVAL_GLOBAL) == TCL_OK) {
+		tileset = Tk_FindPhoto(interp, Tcl_GetStringResult(interp));
+	} else {
+		plog_fmt("Tcl/Tk: could not read %s: %s", path,
+				Tcl_GetStringResult(interp));
+	}
+	Tcl_DecrRefCount(cmd);
+
+	if (!tileset) return;
+
+	current_graphics_mode = mode;
+	use_graphics = mode->grafID;
+	tile_width = 1;
+	tile_height = 1;
+}
+
+/**
  * Build the canvas and its cells, and wire one term to it.
  *
  * Returns false if the window could not be built.  The caller must not ignore
@@ -485,6 +684,38 @@ static void build_cells(term_data *td)
 
 	if (td->item) mem_free(td->item);
 	td->item = mem_zalloc(td->cols * td->rows * sizeof(int));
+
+	/*
+	 * The tile layer: one photo the size of the grid, shown by one canvas
+	 * image item, created before the text items so that it sits underneath
+	 * all of them.  Tiles are blitted into the photo rather than becoming
+	 * canvas items of their own -- 1,920 image items would be a different
+	 * proposition from 1,920 text items.
+	 */
+	{
+		Tcl_Obj *mk = Tcl_ObjPrintf("image create photo -width %d -height %d",
+				td->cols * td->cw, td->rows * td->ch);
+
+		Tcl_IncrRefCount(mk);
+		if (Tcl_EvalObjEx(interp, mk, TCL_EVAL_GLOBAL) == TCL_OK) {
+			/* Copy the name out: the next evaluation replaces the result. */
+			char name[64];
+			Tcl_Obj *item;
+
+			my_strcpy(name, Tcl_GetStringResult(interp), sizeof(name));
+			td->screen = Tk_FindPhoto(interp, name);
+
+			item = Tcl_ObjPrintf("%s create image 0 0 -anchor nw -image %s",
+					td->path, name);
+			Tcl_IncrRefCount(item);
+			if (Tcl_EvalObjEx(interp, item, TCL_EVAL_GLOBAL) == TCL_OK) {
+				Tcl_GetIntFromObj(NULL, Tcl_GetObjResult(interp),
+						&td->image_item);
+			}
+			Tcl_DecrRefCount(item);
+		}
+		Tcl_DecrRefCount(mk);
+	}
 
 	for (y = 0; y < td->rows; y++) {
 		for (x = 0; x < td->cols; x++) {
@@ -636,6 +867,8 @@ static bool term_data_link(term_data *t, int which, const char *path)
 	term_init(tt, t->cols, t->rows, 256);
 
 	tt->soft_cursor = true;
+	/* Only attribute/character pairs with the high bit set are tiles. */
+	tt->higher_pict = true;
 
 	tt->init_hook = Term_init_tcl;
 	tt->nuke_hook = Term_nuke_tcl;
@@ -643,6 +876,7 @@ static bool term_data_link(term_data *t, int which, const char *path)
 	tt->curs_hook = Term_curs_tcl;
 	tt->wipe_hook = Term_wipe_tcl;
 	tt->text_hook = Term_text_tcl;
+	tt->pict_hook = Term_pict_tcl;
 
 	tt->data = t;
 
@@ -685,6 +919,7 @@ static bool terms_init(void)
 	Tcl_IncrRefCount(cfg_dash_fill);
 
 	colours_init();
+	graphics_init();
 
 	td_count = (int)n;
 	for (i = 0; i < td_count; i++) {
