@@ -22,9 +22,10 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
 > **Status: playable, and most of the way built.** Ten of the eleven milestones
 > are done — the wilderness, the towns, the quests, the bestiary, the races and
 > classes, the mutations, the virtues, the seven realms of magic and the pets.
-> Nightmare mode is the one that is left. It has not been released yet, and it
-> has not been played through by anybody but its author. See
-> [Current state](#current-state).
+> The eleventh, nightmare mode, now does everything Zangband's own nightmare
+> mode did; what is left of it is a decision not yet taken rather than work not
+> yet done. It has gone out only as pre-releases, and it has not been played
+> through by anybody but its author. See [Current state](#current-state).
 
 ## Current state
 
@@ -33,7 +34,8 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
 | **Base** | Angband 4.2.6 |
 | **Platform** | macOS, Windows, Linux, DOS, Nintendo DS, 3DS and the browser (see [Portability](#portability)) |
 | **Playable** | Yes |
-| **Savefiles** | Not compatible with Angband or Zangband, and never will be |
+| **Latest release** | [3.121.0](https://github.com/z88kat/ZangbandTK/releases), 15 September 2026 — a pre-release, as all of them are so far |
+| **Savefiles** | Not compatible with Angband or Zangband, and never will be. Compatible across ZangbandTK versions: a character saved by an older build loads into a newer one |
 
 **Done:**
 
@@ -48,11 +50,11 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
   chaotic.
 - **The Ancient and Foul Curse**, with its cascade intact.
 - **A wilderness.** A world 2064 grids square, generated from a seed and never
-  stored, with the town standing in it and roads out of it. Terrain follows from
+  stored, with towns standing in it and roads between them. Terrain follows from
   height, population and law; danger follows from law alone. Deep water can be
   waded and drowned in, the world ends in open sea, and what you drop in the
   country stays where you left it until somebody finds it.
-- **Towns and dungeons.** Several towns, differing in size, in who lives in them
+- **Towns and dungeons.** A dozen towns, differing in size, in who lives in them
   and in which trades they hold, joined by routed roads; thirteen dungeons, each
   with its own depth range, its own inhabitants and its own kind of treasure.
   Six building services, including an inn that sells a night's sleep and the
@@ -65,19 +67,21 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
   by class, race and magic, and moved by what they kill, spend and spare. Read
   by the Lords of Chaos when they hand down a reward, and by the dream at the
   inn. Zangband tracked them for seven years and never once read one.
-- **Nine races and every class Zangband has**: Amberite, Beastman, Yeek,
-  Draconian, Mindflayer, Vampire, Golem, Sprite and Half-Titan; the Monk with
-  unarmed progression, the Mindcrafter with psionics, the Chaos-Warrior sworn at
-  birth to one of nine Lords of the Courts of Chaos, and the Warrior-Mage and
-  High-Mage, which are defined by the realms they choose and so arrived with
-  them. Races may have activatable powers, which Angband has no mechanism for.
-
+- **Twenty-eight races and every class Zangband has.** Seventeen races imported
+  beside Angband's own eleven: Amberite, Beastman, Yeek, Draconian, Mindflayer,
+  Vampire, Golem, Barbarian, Klackon, Nibelung, Imp, Skeleton, Zombie, Spectre,
+  Ghoul, Sprite and Half-Titan. Twenty-two of the twenty-eight carry an
+  activatable power, which Angband has no mechanism for. The classes are the
+  Monk with unarmed progression, the Mindcrafter with psionics, the
+  Chaos-Warrior sworn at birth to one of nine Lords of the Courts of Chaos, and
+  the Warrior-Mage and High-Mage, which are defined by the realms they choose
+  and so arrived with them.
 - **Seven realms of magic** where Angband has four, adding Sorcery, Chaos and
-  Trump. Chosen at birth from what your class allows, and permanent. A hundred
-  and ninety-two workings in twenty-four books, every one of them Zangband's:
-  Sorcery has no attack spell in it, Chaos backfires, and Arcane is bought
-  outright in town. Seventeen of the two hundred and twenty-four are declared
-  inert and say so where you read them.
+  Trump. Chosen at birth from what your class allows, and permanent. Two
+  hundred and twenty-four workings in twenty-eight books, every one of them
+  Zangband's: Sorcery has no attack spell in it, Chaos backfires, and Arcane is
+  bought outright in town. Seventeen of the two hundred and twenty-four are
+  declared inert and say so where you read them.
 - **Pets.** A monster can be on your side, which Angband has no notion of.
   Three sides rather than two, nine orders given as a standing policy, mana
   upkeep charged on the sum of your pets' levels, and four of them follow you
@@ -89,10 +93,27 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
   them behind, and a Beastman is born mutated and keeps changing. Getting rid
   of one is hard: the rarest potion in the game, a building only great cities
   have, or another mutation cancelling it out.
+- **Nightmare mode.** A birth option that cannot be turned off afterwards, and
+  the sixteen things Zangband's own mode does: monsters with twice the hit
+  points and ten more speed, awake from the moment the level is made, generated
+  far out of their depth and given no free move when they are summoned; stealth
+  worth half as much; sustains that hold twelve times in thirteen instead of
+  always, and drains that stick when they land; stair creation that does
+  nothing; walls that look like floor; a bell in the last hour before midnight
+  and the Ancient and Foul Curse on the stroke of it; and one Word of Recall in
+  six hundred and sixty-six that arrives deeper than you asked. The status line
+  says `Nightmare` in red for as long as the character lives — Zangband showed
+  the mode in the character dump alone, which is a file you write after you are
+  dead.
 
-**Not yet:** nightmare mode, which is the last milestone and has not been
-started. A Tcl/Tk front end is planned for a later phase, reviving the
-original's interface on Tcl/Tk 9.
+**Not yet:** nightmare mode's stage 2 — the things its spoiler describes and
+Zangband never actually built — which is a decision that has not been taken
+rather than work that has not been started, and is what keeps M11 open. A
+Tcl/Tk front end is planned for a later phase, reviving the original's
+interface on Tcl/Tk 9: Tcl and Tk 9.0.4 are in the tree, one script builds
+them, and CI keeps that toolchain green. None of the original's front-end C is
+being ported — the survey concluded it loses to Tk 9 and Angband 4.2 on the
+merits, file by file, so the front end is rebuilt on seams 4.2 already has.
 
 ## Building
 
@@ -132,7 +153,7 @@ cmake --build build --parallel
 cd build && make alltests
 ```
 
-941 unit tests and 5 integration tests. They should all pass; if they do not,
+1443 unit tests and 6 integration tests. They should all pass; if they do not,
 that is a bug worth reporting.
 
 **Both build commands above are permissive, and CI runs neither of them that
