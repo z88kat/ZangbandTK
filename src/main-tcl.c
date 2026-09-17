@@ -57,14 +57,152 @@ static Tcl_Interp *interp = NULL;
 static Tk_Window mainwin = NULL;
 
 /**
- * A term, and the Tk widget it will eventually draw into.
+ * A term and the canvas it draws into.
+ *
+ * The grid is one canvas text item per cell, created once and reconfigured as
+ * the game writes.  That is 1,920 items for an 80x24 term, which Tk handles
+ * without complaint, and it keeps T1 entirely inside core Tk -- no custom
+ * canvas item, no private header.  T2 revisits rendering anyway when tiles
+ * arrive, so the cheapest correct thing now is the right thing now.
  */
 typedef struct term_data term_data;
 struct term_data {
 	term t;
+	int cols;
+	int rows;
+	int cw;			/* cell width in pixels */
+	int ch;			/* cell height */
+	int ascent;
+	int *item;		/* canvas item id per cell, row-major */
+	int cursor_item;
+	bool cursor_visible;
 };
 
 static term_data td_main;
+
+/**
+ * "#rrggbb" for each of the game's colours, rebuilt on TERM_XTRA_REACT.
+ */
+static char colour_name[MAX_COLORS][8];
+
+/**
+ * Cached objects for the inner loop.
+ *
+ * Every cell the game writes becomes one `.term itemconfigure <id> -text <s>
+ * -fill <colour>`.  Going through Tcl_EvalObjv with prebuilt objects rather
+ * than formatting a command string for Tcl to parse is the difference between
+ * a redraw costing microseconds and costing milliseconds, and a full screen is
+ * 1,920 of them.
+ *
+ * Only the four constant words are cached.  The three that change are made
+ * fresh each call, because Tcl takes a reference to everything passed to
+ * Tcl_EvalObjv: reusing and mutating them panics with "Tcl_SetStringObj called
+ * with shared object" the moment the canvas has kept one.
+ */
+static Tcl_Obj *cfg_widget;
+static Tcl_Obj *cfg_itemconfigure;
+static Tcl_Obj *cfg_dash_text;
+static Tcl_Obj *cfg_dash_fill;
+
+static void colours_init(void)
+{
+	int i;
+
+	for (i = 0; i < MAX_COLORS; i++) {
+		strnfmt(colour_name[i], sizeof(colour_name[i]), "#%02x%02x%02x",
+				angband_color_table[i][1],
+				angband_color_table[i][2],
+				angband_color_table[i][3]);
+	}
+}
+
+/**
+ * Reconfigure one cell.
+ */
+static void cell_set(term_data *td, int x, int y, const char *ch, int attr)
+{
+	Tcl_Obj *objv[7];
+	int idx = y * td->cols + x;
+	int i;
+
+	if (x < 0 || y < 0 || x >= td->cols || y >= td->rows) return;
+
+	objv[0] = cfg_widget;
+	objv[1] = cfg_itemconfigure;
+	objv[2] = Tcl_NewIntObj(td->item[idx]);
+	objv[3] = cfg_dash_text;
+	objv[4] = Tcl_NewStringObj(ch, -1);
+	objv[5] = cfg_dash_fill;
+	objv[6] = Tcl_NewStringObj(colour_name[attr % MAX_COLORS], -1);
+
+	for (i = 0; i < 7; i++) Tcl_IncrRefCount(objv[i]);
+
+	if (Tcl_EvalObjv(interp, 7, objv, TCL_EVAL_GLOBAL) != TCL_OK) {
+		plog_fmt("Tcl/Tk: drawing failed: %s", Tcl_GetStringResult(interp));
+	}
+
+	for (i = 0; i < 7; i++) Tcl_DecrRefCount(objv[i]);
+}
+
+static errr Term_text_tcl(int x, int y, int n, int a, const wchar_t *s)
+{
+	term_data *td = (term_data *)(Term->data);
+	char buf[MB_LEN_MAX + 1];
+	int i;
+
+	for (i = 0; i < n; i++) {
+		int len = wctomb(buf, s[i]);
+
+		if (len <= 0) {
+			buf[0] = ' ';
+			len = 1;
+		}
+		buf[len] = '\0';
+		cell_set(td, x + i, y, buf, a);
+	}
+
+	return 0;
+}
+
+static errr Term_wipe_tcl(int x, int y, int n)
+{
+	term_data *td = (term_data *)(Term->data);
+	int i;
+
+	for (i = 0; i < n; i++) cell_set(td, x + i, y, " ", COLOUR_WHITE);
+
+	return 0;
+}
+
+/**
+ * Move the cursor, which is a plain canvas rectangle -- one of the four item
+ * types the 2001 widget library implemented by hand and Tk has had all along.
+ */
+static errr Term_curs_tcl(int x, int y)
+{
+	term_data *td = (term_data *)(Term->data);
+	char cmd[256];
+
+	strnfmt(cmd, sizeof(cmd),
+			".term coords %d %d %d %d %d ; .term itemconfigure %d -state normal",
+			td->cursor_item,
+			x * td->cw + 1, y * td->ch + 1,
+			(x + 1) * td->cw - 1, (y + 1) * td->ch - 1,
+			td->cursor_item);
+	Tcl_Eval(interp, cmd);
+	td->cursor_visible = true;
+
+	return 0;
+}
+
+static void grid_clear(term_data *td)
+{
+	int x, y;
+
+	for (y = 0; y < td->rows; y++)
+		for (x = 0; x < td->cols; x++)
+			cell_set(td, x, y, " ", COLOUR_WHITE);
+}
 
 /**
  * Point Tcl and Tk at their own script libraries.
@@ -117,14 +255,15 @@ static void set_script_library_paths(void)
  *
  * TERM_XTRA_EVENT is the important one: it is where the game hands control
  * back, and therefore the only place Tk gets to process anything.  Blocking
- * there when the game asks us to block is what keeps the application from
- * spinning at 100% while the player thinks.
+ * there when the game says it is willing to wait is what keeps the application
+ * from spinning at 100% while the player thinks.
  */
 static errr Term_xtra_tcl(int n, int v)
 {
+	term_data *td = (term_data *)(Term->data);
+
 	switch (n) {
 		case TERM_XTRA_EVENT:
-			/* v is true when the game is willing to wait for input. */
 			if (v) {
 				Tcl_DoOneEvent(TCL_ALL_EVENTS);
 			} else {
@@ -138,45 +277,32 @@ static errr Term_xtra_tcl(int n, int v)
 				;
 			return 0;
 
+		case TERM_XTRA_CLEAR:
+			grid_clear(td);
+			return 0;
+
+		case TERM_XTRA_FRESH:
+			/* Let Tk repaint, but do not block: the game is mid-turn. */
+			while (Tcl_DoOneEvent(TCL_WINDOW_EVENTS | TCL_IDLE_EVENTS
+					| TCL_DONT_WAIT))
+				;
+			return 0;
+
+		case TERM_XTRA_REACT:
+			/* The palette may have changed under us. */
+			colours_init();
+			return 0;
+
 		case TERM_XTRA_DELAY:
 			if (v > 0) Tcl_Sleep(v);
 			return 0;
 
-		case TERM_XTRA_CLEAR:
-		case TERM_XTRA_FRESH:
-		case TERM_XTRA_REACT:
 		case TERM_XTRA_NOISE:
 		case TERM_XTRA_SHAPE:
-			/* T1 gives these something to do. */
 			return 0;
 	}
 
 	return 1;
-}
-
-static errr Term_curs_tcl(int x, int y)
-{
-	(void)x;
-	(void)y;
-	return 0;
-}
-
-static errr Term_wipe_tcl(int x, int y, int n)
-{
-	(void)x;
-	(void)y;
-	(void)n;
-	return 0;
-}
-
-static errr Term_text_tcl(int x, int y, int n, int a, const wchar_t *s)
-{
-	(void)x;
-	(void)y;
-	(void)n;
-	(void)a;
-	(void)s;
-	return 0;
 }
 
 static void Term_init_tcl(term *t)
@@ -190,15 +316,155 @@ static void Term_nuke_tcl(term *t)
 }
 
 /**
- * Wire one term to the window.
+ * angband_key -- every keystroke arrives here from Tk's binding.
+ *
+ * Arguments are Tk's %N (keysym as a number), %s (modifier state) and %A (the
+ * character it produces, empty for a bare modifier or a function key).  The
+ * job is to turn that into what ui-event.h calls a keycode plus mods, which is
+ * the same representation the term build uses -- so a keymap written in one
+ * works in the other, which §6 decision 13 of the plan asks for.
+ */
+static int objcmd_key(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	int keysym, state;
+	const char *ch;
+	keycode_t k = 0;
+	uint8_t mods = 0;
+
+	(void)dummy;
+
+	if (objc != 4) {
+		Tcl_WrongNumArgs(ip, 1, objv, "keysym state char");
+		return TCL_ERROR;
+	}
+	if (Tcl_GetIntFromObj(ip, objv[1], &keysym) != TCL_OK) return TCL_ERROR;
+	if (Tcl_GetIntFromObj(ip, objv[2], &state) != TCL_OK) return TCL_ERROR;
+	ch = Tcl_GetString(objv[3]);
+
+	/* X11 modifier bits, which Tk reports on every platform. */
+	if (state & 0x01) mods |= KC_MOD_SHIFT;
+	if (state & 0x04) mods |= KC_MOD_CONTROL;
+	if (state & 0x08) mods |= KC_MOD_ALT;
+
+	switch (keysym) {
+		case 0xFF1B: k = ESCAPE; break;
+		case 0xFF0D: k = KC_ENTER; break;
+		case 0xFF09: k = KC_TAB; break;
+		case 0xFF08: k = KC_BACKSPACE; break;
+		case 0xFF7F: k = KC_DELETE; break;
+		case 0xFF51: k = ARROW_LEFT; break;
+		case 0xFF52: k = ARROW_UP; break;
+		case 0xFF53: k = ARROW_RIGHT; break;
+		case 0xFF54: k = ARROW_DOWN; break;
+		case 0xFF50: k = KC_HOME; break;
+		case 0xFF57: k = KC_END; break;
+		case 0xFF55: k = KC_PGUP; break;
+		case 0xFF56: k = KC_PGDOWN; break;
+		default:
+			/*
+			 * An ordinary character.  Tk has already applied shift and the
+			 * keyboard layout, so %A is what the player meant to type, and
+			 * reporting KC_MOD_SHIFT as well would make the game see it twice.
+			 */
+			if (ch[0]) {
+				k = (unsigned char)ch[0];
+				mods &= ~KC_MOD_SHIFT;
+			} else {
+				/* A bare modifier, or a key we do not map.  Ignore it. */
+				return TCL_OK;
+			}
+			break;
+	}
+
+	Term_keypress(k, mods);
+
+	return TCL_OK;
+}
+
+/**
+ * Build the canvas and its cells, and wire one term to it.
  */
 static void term_data_link(term_data *td)
 {
 	term *t = &td->t;
+	Tk_Font font;
+	Tk_FontMetrics fm;
+	Tcl_Obj *cmd;
+	int x, y;
 
-	term_init(t, 80, 24, 256);
+	td->cols = 80;
+	td->rows = 24;
 
-	/* We draw the cursor ourselves; there is no hardware one here. */
+	/*
+	 * One font for the whole grid, measured rather than assumed.  Menlo is
+	 * macOS's fixed-width face; Tk falls back on its own if it is absent,
+	 * and the measurement below is what the cell size comes from either way,
+	 * so a substitution changes the look and not the alignment.
+	 */
+	Tcl_Eval(interp, "font create termfont -family Menlo -size 13");
+	font = Tk_GetFont(interp, mainwin, "termfont");
+	if (!font) {
+		plog_fmt("Tcl/Tk: no usable font: %s", Tcl_GetStringResult(interp));
+		return;
+	}
+	Tk_GetFontMetrics(font, &fm);
+	td->cw = Tk_TextWidth(font, "W", 1);
+	td->ch = fm.linespace;
+	td->ascent = fm.ascent;
+
+	cmd = Tcl_ObjPrintf(
+			"canvas .term -width %d -height %d -background black"
+			" -highlightthickness 0 -borderwidth 0\n"
+			"pack .term -fill both -expand 1\n"
+			"wm geometry . %dx%d\n",
+			td->cols * td->cw, td->rows * td->ch,
+			td->cols * td->cw, td->rows * td->ch);
+	Tcl_IncrRefCount(cmd);
+	if (Tcl_EvalObjEx(interp, cmd, TCL_EVAL_GLOBAL) != TCL_OK) {
+		plog_fmt("Tcl/Tk: could not build the grid: %s",
+				Tcl_GetStringResult(interp));
+	}
+	Tcl_DecrRefCount(cmd);
+
+	/* One text item per cell, created once. */
+	td->item = mem_zalloc(td->cols * td->rows * sizeof(int));
+	for (y = 0; y < td->rows; y++) {
+		for (x = 0; x < td->cols; x++) {
+			Tcl_Obj *mk = Tcl_ObjPrintf(
+					".term create text %d %d -anchor nw -font termfont"
+					" -fill white -text { }",
+					x * td->cw, y * td->ch);
+
+			Tcl_IncrRefCount(mk);
+			if (Tcl_EvalObjEx(interp, mk, TCL_EVAL_GLOBAL) == TCL_OK) {
+				Tcl_GetIntFromObj(NULL, Tcl_GetObjResult(interp),
+						&td->item[y * td->cols + x]);
+			}
+			Tcl_DecrRefCount(mk);
+		}
+	}
+
+	/* The cursor: a rectangle, hidden until the game places it. */
+	Tcl_Eval(interp,
+			".term create rectangle 0 0 0 0 -outline yellow -width 2"
+			" -state hidden");
+	Tcl_GetIntFromObj(NULL, Tcl_GetObjResult(interp), &td->cursor_item);
+
+	/* The four words of the inner loop that never change. */
+	cfg_widget = Tcl_NewStringObj(".term", -1);
+	cfg_itemconfigure = Tcl_NewStringObj("itemconfigure", -1);
+	cfg_dash_text = Tcl_NewStringObj("-text", -1);
+	cfg_dash_fill = Tcl_NewStringObj("-fill", -1);
+	Tcl_IncrRefCount(cfg_widget);
+	Tcl_IncrRefCount(cfg_itemconfigure);
+	Tcl_IncrRefCount(cfg_dash_text);
+	Tcl_IncrRefCount(cfg_dash_fill);
+
+	colours_init();
+
+	term_init(t, td->cols, td->rows, 256);
+
 	t->soft_cursor = true;
 
 	t->init_hook = Term_init_tcl;
@@ -294,12 +560,8 @@ errr init_tcl(int argc, char **argv)
 	}
 
 	Tcl_CreateObjCommand2(interp, "angband_quit", objcmd_quit, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_key", objcmd_key, NULL, NULL);
 
-	/*
-	 * A placeholder, so that T0 shows something honest rather than an empty
-	 * grey rectangle that could equally be a bug.  T1 replaces the body of
-	 * this window with the term grid.
-	 */
 	if (Tcl_Eval(interp,
 			/*
 			 * An unbundled Tk application on Aqua opens a Tcl console
@@ -311,32 +573,32 @@ errr init_tcl(int argc, char **argv)
 			 */
 			"catch {console hide}\n"
 			"wm title . \"ZangbandTK\"\n"
-			"wm geometry . 640x400\n"
-			"pack [label .placeholder"
-			" -text \"ZangbandTK/Tk\\n\\nT0: the window is up.\\n"
-			"The game is running behind it with no display yet.\""
-			" -justify center -padx 40 -pady 40]\n"
 			"wm protocol . WM_DELETE_WINDOW { angband_quit }\n"
 			/*
-			 * Put the window on the screen now, before returning.
-			 *
-			 * Tk creates a toplevel but does not map it until the event loop
-			 * runs, and ours does not run until the game asks for input --
-			 * which is after init_angband() has loaded every gamedata file.
-			 * Without this the application launches, shows nothing at all for
-			 * a second or two, and then produces a window behind whatever the
-			 * player was looking at.  From the Finder that is indistinguishable
-			 * from a launch that failed.
+			 * Every keystroke goes to the game.  Binding on "." rather than on
+			 * the canvas means it works whatever has focus inside the window,
+			 * which matters now and will matter more when there are panes.
 			 */
-			"update\n"
-			"raise .\n"
-			"focus -force .\n") != TCL_OK) {
+			"bind . <Key> { angband_key %N %s %A }\n") != TCL_OK) {
 		plog_fmt("Tcl/Tk: could not build the window: %s",
 				Tcl_GetStringResult(interp));
 		return 1;
 	}
 
+	/* The canvas, its cells, and the term that draws into them. */
 	term_data_link(&td_main);
+
+	/*
+	 * Put the window on the screen now, before returning.
+	 *
+	 * Tk creates a toplevel but does not map it until the event loop runs, and
+	 * ours does not run until the game asks for input -- which is after
+	 * init_angband() has loaded every gamedata file.  Without this the
+	 * application launches, shows nothing at all for a second or two, and then
+	 * produces a window behind whatever the player was looking at.  From the
+	 * Finder that is indistinguishable from a launch that failed.
+	 */
+	Tcl_Eval(interp, "update\nraise .\nfocus -force .\n");
 
 	return 0;
 }
