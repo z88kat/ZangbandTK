@@ -161,3 +161,18 @@ jobs:
           name: ZangbandTclTK-app
           path: out/ZangbandTclTK.app
           retention-days: 7
+
+      # An experiment, not a gate.  This one starts the real game with the real
+      # front end and drives the bridge from a script, so unlike every step
+      # above it needs a window -- and whether a GitHub runner can open an Aqua
+      # window is the open question in section 8 of the Phase 3 plan.
+      #
+      # continue-on-error until that is answered.  A step that cannot fail is
+      # worth nothing as a check, which is exactly why it says so here rather
+      # than quietly passing: the value is the log, and the log answers the
+      # question one way or the other.  When it does, this either becomes a
+      # real step or moves to the local-only list beside the tests that need a
+      # player.
+      - name: Scripted session (does a runner have a window?)
+        continue-on-error: true
+        run: scripts/run-tcl-bridge-test build

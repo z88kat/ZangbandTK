@@ -30,9 +30,26 @@ RESULT=$(mktemp -t zangband-bridge)
 trap 'rm -f "$RESULT"' EXIT
 : > "$RESULT"
 
+# A watchdog, because a front end that fails to start does not fail: it sits
+# there with no window and waits.  macOS has no timeout(1), so this is the
+# shell doing it by hand.
 ZANGBAND_TCL_SCRIPT=$ROOT/src/tcl/tests/bridge.tcl \
 ZANGBAND_TCL_RESULT=$RESULT \
-	"$GAME" -mtcl || true
+	"$GAME" -mtcl &
+GAME_PID=$!
+
+WAITED=0
+while kill -0 "$GAME_PID" 2>/dev/null; do
+	if [ "$WAITED" -ge 60 ]; then
+		echo "==> The session did not finish within a minute; killing it." >&2
+		kill -9 "$GAME_PID" 2>/dev/null || true
+		break
+	fi
+	sleep 1
+	WAITED=$((WAITED + 1))
+done
+
+wait "$GAME_PID" 2>/dev/null || true
 
 if [ ! -s "$RESULT" ]; then
 	echo "==> The script did not run to the end." >&2

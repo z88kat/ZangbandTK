@@ -956,8 +956,37 @@ work — the debug loop exists before the UI does — and one scripted session r
 > the end-to-end proof belongs with T8 — at which point the harness can create a character
 > without a keyboard and the same test can watch the player move.
 >
-> Still open in T3: the seventeen input hooks, the read accessors, and the written
-> old-command map.
+> **And the sideways seam.** `angband_hook check <script>` puts a Tcl script in front of one
+> of the game's eighteen input hooks and `angband_hook check {}` gives it back. The original
+> is kept, not overwritten, which is what makes T4–T8 independent of each other: each
+> replaces exactly one prompt and the rest keep answering the way they always did. A script
+> that *fails* falls through to the original, because a dialog with a bug in it must not be
+> able to wedge the game at a prompt.
+>
+> Eight are answerable so far — `string`, `quantity`, `check`, `com`, `rep_dir`, `aim_dir`,
+> `point`, `confirm_debug`. The rest want a `struct object *` or a `struct player_ability *`
+> and wait on the read accessors; the viewport three (`get_panel`, `panel_contains`,
+> `map_is_visible`) belong with the map widget in T5.
+>
+> A script is a command prefix and answers with a list: the empty list means cancelled,
+> anything else carries the answer in its first element. Uniform across all eight, because
+> `""` is a legitimate answer to some of these prompts and a refusal in others.
+>
+> The install point is the game's first request for input — the same place the subwindow
+> flags go in — because before `textui_input_init()` there is nothing to save as the
+> original. A script asking earlier is remembered and installed there.
+>
+> `angband_ask check "Are you sure? "` asks a question the way the game asks it, through
+> `game-input.c` and therefore through whatever hook is installed. With a script on the hook
+> that is a round trip — Tcl asks the game to ask the interface, and the interface is Tcl —
+> which is how the seam is tested with no character to play, and how a dialog gets looked at
+> without reaching the point in the game that raises it.
+>
+> Thirty-four checks now. The scripted session is in CI as `continue-on-error`, which
+> answers §8's open question about whether a runner can open a window; it is not a gate
+> until it does.
+>
+> Still open in T3: the read accessors, and the written old-command map.
 
 ---
 

@@ -150,6 +150,29 @@ check "the layout reported a cell size" {
 } 1
 check "the layout built five panes" {llength $::angband(terms)} 5
 
+# --- the input hooks --------------------------------------------------------
+
+check "the hooks are listed, and none is taken yet" {
+	set taken 0
+	foreach row [angband_hook] { if {[lindex $row 1]} { incr taken } }
+	list [llength [angband_hook]] $taken
+} "8 0"
+
+check "an unknown hook is refused by name" {
+	catch {angband_hook fly {}} e
+	string match "no such hook: fly*" $e
+} 1
+
+check "a hook remembers its script" {
+	angband_hook check {say yes}
+	angband_hook check
+} "say yes"
+
+check "and gives it back" {
+	angband_hook check {}
+	angband_hook check
+} ""
+
 # --- the second pass --------------------------------------------------------
 
 # Everything above ran while the front end was still starting.  This runs from
@@ -170,6 +193,57 @@ proc second_pass {} {
 	check "the game signalled its own events" {
 		expr {"ENTER_INIT" in $::seen && "INITSTATUS" in $::seen}
 	} 1
+
+	# The round trip.  angband_ask goes through game-input.c's get_check and
+	# friends, which is to say through whatever hook is installed -- so this
+	# only answers from Tcl if the override really did replace textui's.  The
+	# hooks cannot be installed before this point: there would be nothing to
+	# save as the original.
+	angband_hook check {apply {{prompt} {list [string match "yes*" $prompt]}}}
+	check "a taken-over prompt is answered from Tcl" {
+		list [angband_ask check "yes please? "] [angband_ask check "no? "]
+	} "1 0"
+
+	angband_hook quantity {apply {{prompt max} {list [expr {$max - 1}]}}}
+	check "and the answer reaches the game as the right type" {
+		angband_ask quantity "how many? " 40
+	} 39
+
+	check "an answer outside the range is clamped, not trusted" {
+		angband_hook quantity {apply {{prompt max} {list 9999}}}
+		angband_ask quantity "how many? " 40
+	} 40
+
+	check "the empty list is a cancelled prompt" {
+		angband_hook string {apply {{prompt current} {list}}}
+		angband_ask string "name? " "Corwin"
+	} ""
+
+	check "and a list with a value in it is an answer" {
+		angband_hook string {apply {{prompt current} {list "Random"}}}
+		angband_ask string "name? " "Corwin"
+	} "Random"
+
+	check "a grid comes back as a grid" {
+		angband_hook point {apply {{} {list {12 34}}}}
+		angband_ask point
+	} "12 34"
+
+	# A dialog with a bug in it must not be able to wedge the game at a
+	# prompt, so a script that fails hands the question back to textui.  There
+	# is no keyboard here, so this only checks that it is reported and does not
+	# return the script's non-answer.
+	check "a failing script does not answer for the game" {
+		angband_hook confirm_debug {apply {{} {error "deliberate"}}}
+		angband_ask confirm_debug
+	} 0
+
+	foreach row [angband_hook] { angband_hook [lindex $row 0] {} }
+	check "every hook can be given back" {
+		set taken 0
+		foreach row [angband_hook] { if {[lindex $row 1]} { incr taken } }
+		set taken
+	} 0
 
 	finish
 }

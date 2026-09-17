@@ -22,6 +22,7 @@
 
 #include "cmd-core.h"
 #include "game-event.h"
+#include "game-input.h"
 #include "game-world.h"
 #include "grafmode.h"
 #include "init.h"
@@ -737,17 +738,21 @@ static void set_script_library_paths(void)
  * there when the game says it is willing to wait is what keeps the application
  * from spinning at 100% while the player thinks.
  */
+static void hooks_apply(void);
+
 static errr Term_xtra_tcl(int n, int v)
 {
 	term_data *td = (term_data *)(Term->data);
 
-	/* See want_flag: the first request for input is past everything that
-	 * would otherwise overwrite this. */
-	/* See want_flag: the first request for input is past everything that
-	 * would otherwise overwrite this. */
+	/*
+	 * The first request for input is past everything that would otherwise
+	 * overwrite these: textui_init() has assigned the subwindows by index and
+	 * textui_input_init() has filled the game's input hooks.
+	 */
 	if (!flags_applied && n == TERM_XTRA_EVENT) {
 		flags_applied = true;
 		subwindows_set_flags(want_flag, ANGBAND_TERM_MAX);
+		hooks_apply();
 	}
 
 	switch (n) {
@@ -1359,6 +1364,594 @@ static int objcmd_push(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	}
 
 	return TCL_OK;
+}
+
+/**
+ * The sideways seam: the game's input hooks, answerable from Tcl.
+ *
+ * game-input.h holds eighteen function pointers through which the game asks
+ * the interface a question -- how many, which direction, are you sure -- and
+ * textui_input_init() fills every one of them with the curses answer.  This
+ * lets a script take one over and give it back.
+ *
+ * One at a time is the point.  T4 to T8 each replace a single hook with a
+ * native dialog; the rest keep answering the way they always did, so the game
+ * is playable at every step rather than only at the end.  That is why the
+ * original is kept and restored rather than overwritten, and why a script that
+ * fails falls through to it: a dialog with a bug in it must not be able to
+ * wedge the game at a prompt.
+ *
+ * A script is a command prefix.  The hook's own arguments are appended to it,
+ * and it answers with a Tcl list: the empty list means the player cancelled,
+ * and anything else carries the answer in its first element.  Uniform across
+ * all of them, because "" is a legitimate answer to some of these and a
+ * refusal in others.
+ */
+enum hook_id {
+	HOOK_STRING, HOOK_QUANTITY, HOOK_CHECK, HOOK_COM,
+	HOOK_REP_DIR, HOOK_AIM_DIR, HOOK_POINT, HOOK_CONFIRM_DEBUG,
+	HOOK_MAX
+};
+
+static struct hook_slot {
+	const char *name;
+	void **pointer;		/* the game's variable */
+	void *trampoline;	/* ours, or NULL if not answerable yet */
+	void *original;		/* textui's, kept so it can be given back */
+	Tcl_Obj *script;	/* the command prefix, or NULL */
+} hooks[HOOK_MAX];
+
+static bool hooks_ready;	/* textui_input_init has run */
+
+/**
+ * Run a hook's script, with the hook's own arguments appended.
+ *
+ * Returns the result as a list, or NULL if the script failed -- in which case
+ * the caller hands the question to the original hook.  A failure is reported
+ * where it can be seen rather than swallowed: a dialog that silently stops
+ * answering looks like the game hanging.
+ */
+static Tcl_Obj *hook_eval(struct hook_slot *h, int n, Tcl_Obj **extra)
+{
+	Tcl_Obj *cmd;
+	Tcl_Obj *res;
+	int i;
+
+	cmd = Tcl_DuplicateObj(h->script);
+	Tcl_IncrRefCount(cmd);
+	for (i = 0; i < n; i++) {
+		if (Tcl_ListObjAppendElement(interp, cmd, extra[i]) != TCL_OK) {
+			Tcl_DecrRefCount(cmd);
+			return NULL;
+		}
+	}
+
+	if (Tcl_EvalObjEx(interp, cmd, TCL_EVAL_GLOBAL) != TCL_OK) {
+		plog_fmt("Tcl/Tk: %s hook: %s", h->name,
+				Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY));
+		Tcl_DecrRefCount(cmd);
+		return NULL;
+	}
+
+	Tcl_DecrRefCount(cmd);
+
+	res = Tcl_GetObjResult(interp);
+
+	/*
+	 * The result object belongs to the interpreter and the next evaluation
+	 * will overwrite it, so take a reference the caller can read at leisure.
+	 * This is the same trap as the "called with shared object" panic earlier
+	 * in this file, approached from the other side.
+	 */
+	Tcl_IncrRefCount(res);
+
+	return res;
+}
+
+/**
+ * The answer, or nothing.
+ *
+ * Pulls the first element out of the list a script returned, releasing the
+ * result either way.  A one-line wrapper, but every trampoline below needs it
+ * and each one getting the reference counting right by itself is how the
+ * earlier crash happened.
+ */
+static bool hook_answer(Tcl_Obj *res, Tcl_Obj **out)
+{
+	Tcl_Obj **elem;
+	Tcl_Size n;
+
+	*out = NULL;
+
+	if (!res) return false;
+
+	if (Tcl_ListObjGetElements(interp, res, &n, &elem) != TCL_OK || n < 1) {
+		Tcl_DecrRefCount(res);
+		return false;
+	}
+
+	*out = elem[0];
+	Tcl_IncrRefCount(*out);
+	Tcl_DecrRefCount(res);
+
+	return true;
+}
+
+/**
+ * A script's yes or no.
+ *
+ * Not Tcl_GetBooleanFromObj: in Tcl 9 that is a macro whose unused branch is a
+ * GNU statement expression, and the game builds with -pedantic.  This is the
+ * call it expands to for an int target -- the flags word carries the size of
+ * the destination -- said plainly instead.
+ */
+static bool obj_true(Tcl_Obj *o)
+{
+	int yes = 0;
+
+	if (Tcl_GetBoolFromObj(NULL, o, (int)sizeof(yes), (char *)&yes) != TCL_OK)
+		return false;
+
+	return yes ? true : false;
+}
+
+static bool tcl_get_string(const char *prompt, char *buf, size_t len)
+{
+	struct hook_slot *h = &hooks[HOOK_STRING];
+	Tcl_Obj *arg[2], *answer;
+	Tcl_Obj *res;
+
+	arg[0] = Tcl_NewStringObj(prompt, -1);
+	arg[1] = Tcl_NewStringObj(buf, -1);
+	res = hook_eval(h, 2, arg);
+
+	if (!res && h->original)
+		return ((bool (*)(const char *, char *, size_t))h->original)
+				(prompt, buf, len);
+
+	if (!hook_answer(res, &answer)) return false;
+
+	my_strcpy(buf, Tcl_GetString(answer), len);
+	Tcl_DecrRefCount(answer);
+
+	return true;
+}
+
+static int tcl_get_quantity(const char *prompt, int max)
+{
+	struct hook_slot *h = &hooks[HOOK_QUANTITY];
+	Tcl_Obj *arg[2], *answer, *res;
+	int amt = 0;
+
+	arg[0] = Tcl_NewStringObj(prompt ? prompt : "", -1);
+	arg[1] = Tcl_NewIntObj(max);
+	res = hook_eval(h, 2, arg);
+
+	if (!res && h->original)
+		return ((int (*)(const char *, int))h->original)(prompt, max);
+
+	if (!hook_answer(res, &answer)) return 0;
+
+	if (Tcl_GetIntFromObj(NULL, answer, &amt) != TCL_OK) amt = 0;
+	Tcl_DecrRefCount(answer);
+
+	/* The game trusts this: get_quantity's callers index with it. */
+	if (amt < 0) amt = 0;
+	if (amt > max) amt = max;
+
+	return amt;
+}
+
+static bool tcl_get_check(const char *prompt)
+{
+	struct hook_slot *h = &hooks[HOOK_CHECK];
+	Tcl_Obj *arg[1], *answer, *res;
+	bool yes;
+
+	arg[0] = Tcl_NewStringObj(prompt, -1);
+	res = hook_eval(h, 1, arg);
+
+	if (!res && h->original)
+		return ((bool (*)(const char *))h->original)(prompt);
+
+	/* No answer is "no": that is what escape means at this prompt. */
+	if (!hook_answer(res, &answer)) return false;
+
+	yes = obj_true(answer);
+	Tcl_DecrRefCount(answer);
+
+	return yes;
+}
+
+static bool tcl_get_com(const char *prompt, char *command)
+{
+	struct hook_slot *h = &hooks[HOOK_COM];
+	Tcl_Obj *arg[1], *answer, *res;
+	const char *s;
+
+	arg[0] = Tcl_NewStringObj(prompt, -1);
+	res = hook_eval(h, 1, arg);
+
+	if (!res && h->original)
+		return ((bool (*)(const char *, char *))h->original)(prompt, command);
+
+	if (!hook_answer(res, &answer)) return false;
+
+	s = Tcl_GetString(answer);
+	*command = s[0];
+	Tcl_DecrRefCount(answer);
+
+	return *command ? true : false;
+}
+
+static bool tcl_get_rep_dir(int *dir, bool allow_none)
+{
+	struct hook_slot *h = &hooks[HOOK_REP_DIR];
+	Tcl_Obj *arg[1], *answer, *res;
+	int d;
+
+	arg[0] = Tcl_NewBooleanObj(allow_none);
+	res = hook_eval(h, 1, arg);
+
+	if (!res && h->original)
+		return ((bool (*)(int *, bool))h->original)(dir, allow_none);
+
+	if (!hook_answer(res, &answer)) return false;
+
+	if (Tcl_GetIntFromObj(NULL, answer, &d) != TCL_OK) {
+		Tcl_DecrRefCount(answer);
+		return false;
+	}
+	Tcl_DecrRefCount(answer);
+
+	if (d < 0 || d > 9) return false;
+
+	*dir = d;
+
+	return true;
+}
+
+static bool tcl_get_aim_dir(int *dir)
+{
+	struct hook_slot *h = &hooks[HOOK_AIM_DIR];
+	Tcl_Obj *answer, *res;
+	int d;
+
+	res = hook_eval(h, 0, NULL);
+
+	if (!res && h->original)
+		return ((bool (*)(int *))h->original)(dir);
+
+	if (!hook_answer(res, &answer)) return false;
+
+	if (Tcl_GetIntFromObj(NULL, answer, &d) != TCL_OK) {
+		Tcl_DecrRefCount(answer);
+		return false;
+	}
+	Tcl_DecrRefCount(answer);
+
+	*dir = d;
+
+	return true;
+}
+
+static bool tcl_get_point(struct loc *grid)
+{
+	struct hook_slot *h = &hooks[HOOK_POINT];
+	Tcl_Obj *answer, *res, **xy;
+	Tcl_Size n;
+	int x, y;
+
+	res = hook_eval(h, 0, NULL);
+
+	if (!res && h->original)
+		return ((bool (*)(struct loc *))h->original)(grid);
+
+	if (!hook_answer(res, &answer)) return false;
+
+	if (Tcl_ListObjGetElements(interp, answer, &n, &xy) != TCL_OK || n != 2
+			|| Tcl_GetIntFromObj(NULL, xy[0], &x) != TCL_OK
+			|| Tcl_GetIntFromObj(NULL, xy[1], &y) != TCL_OK) {
+		Tcl_DecrRefCount(answer);
+		return false;
+	}
+	Tcl_DecrRefCount(answer);
+
+	*grid = loc(x, y);
+
+	return true;
+}
+
+static bool tcl_confirm_debug(void)
+{
+	struct hook_slot *h = &hooks[HOOK_CONFIRM_DEBUG];
+	Tcl_Obj *answer, *res;
+	bool yes;
+
+	res = hook_eval(h, 0, NULL);
+
+	if (!res && h->original)
+		return ((bool (*)(void))h->original)();
+
+	if (!hook_answer(res, &answer)) return false;
+
+	yes = obj_true(answer);
+	Tcl_DecrRefCount(answer);
+
+	return yes;
+}
+
+/**
+ * Fill in the table.
+ *
+ * Not a static initialiser: the hook variables are not compile-time constants
+ * everywhere, and the casts through void * want to be in one place where they
+ * can be read against game-input.h line by line.
+ */
+static void hooks_init(void)
+{
+	struct hook_slot *h = hooks;
+
+	h[HOOK_STRING].name = "string";
+	h[HOOK_STRING].pointer = (void **)&get_string_hook;
+	h[HOOK_STRING].trampoline = (void *)tcl_get_string;
+
+	h[HOOK_QUANTITY].name = "quantity";
+	h[HOOK_QUANTITY].pointer = (void **)&get_quantity_hook;
+	h[HOOK_QUANTITY].trampoline = (void *)tcl_get_quantity;
+
+	h[HOOK_CHECK].name = "check";
+	h[HOOK_CHECK].pointer = (void **)&get_check_hook;
+	h[HOOK_CHECK].trampoline = (void *)tcl_get_check;
+
+	h[HOOK_COM].name = "com";
+	h[HOOK_COM].pointer = (void **)&get_com_hook;
+	h[HOOK_COM].trampoline = (void *)tcl_get_com;
+
+	h[HOOK_REP_DIR].name = "rep_dir";
+	h[HOOK_REP_DIR].pointer = (void **)&get_rep_dir_hook;
+	h[HOOK_REP_DIR].trampoline = (void *)tcl_get_rep_dir;
+
+	h[HOOK_AIM_DIR].name = "aim_dir";
+	h[HOOK_AIM_DIR].pointer = (void **)&get_aim_dir_hook;
+	h[HOOK_AIM_DIR].trampoline = (void *)tcl_get_aim_dir;
+
+	h[HOOK_POINT].name = "point";
+	h[HOOK_POINT].pointer = (void **)&get_point_hook;
+	h[HOOK_POINT].trampoline = (void *)tcl_get_point;
+
+	h[HOOK_CONFIRM_DEBUG].name = "confirm_debug";
+	h[HOOK_CONFIRM_DEBUG].pointer = (void **)&confirm_debug_hook;
+	h[HOOK_CONFIRM_DEBUG].trampoline = (void *)tcl_confirm_debug;
+}
+
+/**
+ * Put a slot's trampoline in place, or take it out again.
+ *
+ * Only ever called once textui_input_init() has run, so that what is saved as
+ * the original is textui's answer and not a null pointer.  A script asking for
+ * a hook before then is remembered and installed at that point; see
+ * hooks_apply.
+ */
+static void hook_install(struct hook_slot *h)
+{
+	if (h->script && !h->original) {
+		h->original = *h->pointer;
+		*h->pointer = h->trampoline;
+	} else if (!h->script && h->original) {
+		*h->pointer = h->original;
+		h->original = NULL;
+	}
+}
+
+/**
+ * Install everything a script asked for before the game's own hooks existed.
+ */
+static void hooks_apply(void)
+{
+	int i;
+
+	hooks_ready = true;
+
+	for (i = 0; i < HOOK_MAX; i++)
+		hook_install(&hooks[i]);
+}
+
+/**
+ * angband_hook -- take over one of the game's prompts, or give it back.
+ *
+ *    angband_hook                      the table, as {name taken}
+ *    angband_hook check                the script answering it, or ""
+ *    angband_hook check my_yes_no      answer it with "my_yes_no <prompt>"
+ *    angband_hook check {}             give it back to the game
+ */
+static int objcmd_hook(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	struct hook_slot *h = NULL;
+	const char *name;
+	int i;
+
+	(void)dummy;
+
+	if (objc == 1) {
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+		for (i = 0; i < HOOK_MAX; i++) {
+			Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(hooks[i].name, -1));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewBooleanObj(hooks[i].script != NULL));
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+
+		Tcl_SetObjResult(ip, list);
+
+		return TCL_OK;
+	}
+
+	if (objc > 3) {
+		Tcl_WrongNumArgs(ip, 1, objv, "?name? ?script?");
+		return TCL_ERROR;
+	}
+
+	name = Tcl_GetString(objv[1]);
+	for (i = 0; i < HOOK_MAX; i++) {
+		if (strcmp(name, hooks[i].name) == 0) {
+			h = &hooks[i];
+			break;
+		}
+	}
+	if (!h) {
+		Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+				"no such hook: %s -- angband_hook with no arguments lists them",
+				name));
+		return TCL_ERROR;
+	}
+
+	if (objc == 2) {
+		Tcl_SetObjResult(ip, h->script ? h->script : Tcl_NewObj());
+		return TCL_OK;
+	}
+
+	if (h->script) {
+		Tcl_DecrRefCount(h->script);
+		h->script = NULL;
+	}
+
+	if (Tcl_GetCharLength(objv[2]) > 0) {
+		h->script = objv[2];
+		Tcl_IncrRefCount(h->script);
+	}
+
+	/*
+	 * Before textui_input_init() has run there is nothing to save as the
+	 * original, so the request is remembered and hooks_apply puts it in at the
+	 * same point the subwindow flags go in -- the game's first request for
+	 * input, which is past everything that would otherwise overwrite it.
+	 */
+	if (hooks_ready) hook_install(h);
+
+	return TCL_OK;
+}
+
+/**
+ * angband_ask -- ask a question the way the game asks it.
+ *
+ *    angband_ask check "Are you sure? "
+ *    angband_ask quantity "How many? " 40
+ *    angband_ask point
+ *
+ * This goes through game-input.c's get_check() and friends, which is to say
+ * through whatever hook is currently installed.  With a script on the hook it
+ * is a round trip -- Tcl asks the game to ask the interface, and the interface
+ * is Tcl -- which is how the sideways seam gets tested without a character to
+ * play.  It is also how a dialog gets looked at during development without
+ * having to reach the point in the game that raises it.
+ *
+ * With no script on the hook it is the curses prompt, which waits for a key.
+ * That is the honest answer to "what would the game do", and it is why the
+ * test only asks about hooks it has taken over.
+ */
+static int objcmd_ask(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what;
+
+	(void)dummy;
+
+	if (objc < 2) {
+		Tcl_WrongNumArgs(ip, 1, objv, "hook ?argument ...?");
+		return TCL_ERROR;
+	}
+
+	what = Tcl_GetString(objv[1]);
+
+	if (strcmp(what, "check") == 0 && objc == 3) {
+		Tcl_SetObjResult(ip,
+				Tcl_NewBooleanObj(get_check(Tcl_GetString(objv[2]))));
+		return TCL_OK;
+	}
+
+	if (strcmp(what, "string") == 0 && (objc == 3 || objc == 4)) {
+		char buf[256];
+
+		my_strcpy(buf, objc == 4 ? Tcl_GetString(objv[3]) : "", sizeof(buf));
+		if (!get_string(Tcl_GetString(objv[2]), buf, sizeof(buf)))
+			Tcl_SetObjResult(ip, Tcl_NewObj());
+		else
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(buf, -1));
+		return TCL_OK;
+	}
+
+	if (strcmp(what, "quantity") == 0 && objc == 4) {
+		int max;
+
+		if (Tcl_GetIntFromObj(ip, objv[3], &max) != TCL_OK) return TCL_ERROR;
+		Tcl_SetObjResult(ip,
+				Tcl_NewIntObj(get_quantity(Tcl_GetString(objv[2]), max)));
+		return TCL_OK;
+	}
+
+	if (strcmp(what, "com") == 0 && objc == 3) {
+		char c = 0;
+
+		if (!get_com(Tcl_GetString(objv[2]), &c))
+			Tcl_SetObjResult(ip, Tcl_NewObj());
+		else
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(&c, 1));
+		return TCL_OK;
+	}
+
+	if (strcmp(what, "rep_dir") == 0 && (objc == 2 || objc == 3)) {
+		int dir = 0, none = 0;
+
+		if (objc == 3 && !obj_true(objv[2])) none = 0;
+		else if (objc == 3) none = 1;
+
+		if (!get_rep_dir(&dir, none ? true : false))
+			Tcl_SetObjResult(ip, Tcl_NewObj());
+		else
+			Tcl_SetObjResult(ip, Tcl_NewIntObj(dir));
+		return TCL_OK;
+	}
+
+	if (strcmp(what, "aim_dir") == 0 && objc == 2) {
+		int dir = 0;
+
+		if (!get_aim_dir(&dir))
+			Tcl_SetObjResult(ip, Tcl_NewObj());
+		else
+			Tcl_SetObjResult(ip, Tcl_NewIntObj(dir));
+		return TCL_OK;
+	}
+
+	if (strcmp(what, "point") == 0 && objc == 2) {
+		struct loc grid = loc(0, 0);
+
+		if (!get_point(&grid)) {
+			Tcl_SetObjResult(ip, Tcl_NewObj());
+		} else {
+			Tcl_Obj *xy = Tcl_NewListObj(0, NULL);
+
+			Tcl_ListObjAppendElement(ip, xy, Tcl_NewIntObj(grid.x));
+			Tcl_ListObjAppendElement(ip, xy, Tcl_NewIntObj(grid.y));
+			Tcl_SetObjResult(ip, xy);
+		}
+		return TCL_OK;
+	}
+
+	if (strcmp(what, "confirm_debug") == 0 && objc == 2) {
+		Tcl_SetObjResult(ip, Tcl_NewBooleanObj(confirm_debug()));
+		return TCL_OK;
+	}
+
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+			"cannot ask that, or not with those arguments: %s", what));
+
+	return TCL_ERROR;
 }
 
 /**
@@ -2223,6 +2816,10 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_command", objcmd_command, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_push", objcmd_push, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_hook", objcmd_hook, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_ask", objcmd_ask, NULL, NULL);
+
+	hooks_init();
 
 	/* The other direction: what the game tells us, as Tk virtual events. */
 	events_init();
