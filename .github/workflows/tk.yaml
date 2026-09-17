@@ -6,24 +6,27 @@ name: Tk
 # Linux and Windows jobs land when there is a front end worth keeping green on
 # them rather than a toolchain.
 #
-# Right now that is exactly what this builds -- the toolchain -- because that
-# is all that exists.  It still earns its place: tcltk/ has only ever been
-# built on one Mac, and a clean runner has a different Xcode and a different
-# SDK.  Widen the paths filter and add the game build when T0's
-# TCL_Frontend.cmake lands.
+# It builds the toolchain, then the front end, then the application bundle, and
+# runs the Tcl tests.  Nothing here opens a window: whether a runner can is
+# still an open question, and until it is answered the tests that need one are
+# a local gate rather than a CI one.  See section 9 of the Phase 3 plan.
 
 on:
   push:
     branches: [ master ]
-    paths:
+    paths: &tk_paths
       - 'tcltk/**'
+      - 'lib/tcl/**'
+      - 'src/main-tcl.c'
+      - 'src/tcl/**'
+      - 'src/cmake/macros/TCL_Frontend.cmake'
       - 'scripts/build-tcltk'
+      - 'scripts/pkg_macos_tcltk'
+      - 'scripts/run-tcl-tests'
+      - 'CMakeLists.txt'
       - '.github/workflows/tk.yaml'
   pull_request:
-    paths:
-      - 'tcltk/**'
-      - 'scripts/build-tcltk'
-      - '.github/workflows/tk.yaml'
+    paths: *tk_paths
   # The paths filters above mean a change to the game alone never runs this,
   # so allow it to be started by hand when something needs checking anyway.
   workflow_dispatch:
@@ -98,3 +101,63 @@ jobs:
             echo "wish links X11." >&2
             exit 1
           fi
+
+  frontend:
+    name: Front end and bundle
+    runs-on: macos-latest
+    needs: toolchain
+    steps:
+      - name: Clone Project
+        uses: actions/checkout@v6
+
+      - name: Restore the toolchain
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: tcltk/local
+          key: tcltk-9.0.4-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('scripts/build-tcltk') }}
+
+      # Only on a cache miss -- the toolchain job above will normally have
+      # filled it, but a job is not allowed to assume another one's cache.
+      - name: Build Tcl and Tk
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: scripts/build-tcltk
+
+      - name: Configure and build
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DSUPPORT_TCL_FRONTEND=ON \
+            -DTCLTK_PREFIX="$PWD/tcltk/local"
+          cmake --build build --parallel
+
+      # Asserted rather than assumed: CMakeLists auto-enables the X11 front end
+      # when it thinks no graphical one was chosen, and a bundled application
+      # gets no arguments with which to say -mtcl, so an X11 front end sneaking
+      # back in would mean the .app launches XQuartz instead of itself.
+      - name: Check the Tcl front end is the one that is in there
+        run: |
+          otool -L build/game/angband | grep -q libtcl9tk || {
+            echo "The executable does not link Tk." >&2
+            exit 1
+          }
+          if otool -L build/game/angband | grep -qi 'libX11'; then
+            echo "The X11 front end came back." >&2
+            exit 1
+          fi
+
+      - name: Tcl tests
+        run: scripts/run-tcl-tests
+
+      # Builds ZangbandTclTK.app and runs its own checks: that nothing in it
+      # points back at the build tree, that the game data and the front end's
+      # scripts are inside it, and that the plist has no unsubstituted
+      # placeholders left in it.
+      - name: Package the application bundle
+        run: scripts/pkg_macos_tcltk build "$PWD/out"
+
+      - name: Upload the bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZangbandTclTK-app
+          path: out/ZangbandTclTK.app
+          retention-days: 7

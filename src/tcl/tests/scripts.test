@@ -1,0 +1,49 @@
+# The front end's scripts are well-formed, and say what C expects them to say.
+#
+# This is the cheapest useful test there is: a broken lib/tcl/main.tcl does not
+# fail the build, it fails at startup, and until recently it failed invisibly.
+
+package require tcltest 2.5
+namespace import ::tcltest::*
+
+test scripts-1.1 {every script in lib/tcl is syntactically complete} -body {
+    set bad {}
+    foreach f [glob -nocomplain -directory $::LIB_TCL *.tcl] {
+        set fh [open $f r]
+        set body [read $fh]
+        close $fh
+        # `info complete` is what an interactive interpreter uses to decide
+        # whether a command has finished.  It catches the breakage that
+        # actually happens in practice -- an unbalanced brace, bracket or
+        # quote -- without running anything, which matters because these
+        # scripts build windows.
+        if {![info complete $body]} {
+            lappend bad [file tail $f]
+        }
+    }
+    set bad
+} -result {}
+
+test scripts-1.2 {main.tcl exists and is where ANGBAND_DIR_TCL will look} -body {
+    file exists [file join $::LIB_TCL main.tcl]
+} -result 1
+
+test scripts-1.3 {main.tcl holds up its end of the contract with main-tcl.c} -body {
+    # main-tcl.c sets angband(cols) and angband(rows), sources this, and then
+    # reads angband(cellw) and angband(cellh) back.  If the script stops
+    # setting them the front end refuses to start, so the contract is worth
+    # asserting even though the check is only textual.
+    set fh [open [file join $::LIB_TCL main.tcl] r]
+    set body [read $fh]
+    close $fh
+
+    set missing {}
+    foreach needed {angband(cellw) angband(cellh) {canvas .term}} {
+        if {![string match "*$needed*" $body]} {
+            lappend missing $needed
+        }
+    }
+    set missing
+} -result {}
+
+cleanupTests

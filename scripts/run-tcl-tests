@@ -1,0 +1,52 @@
+#!/bin/sh
+#
+# Run the Tcl side's tests.
+#
+# Use in the root directory of the game, like so:
+#    scripts/run-tcl-tests [tcltk-prefix]
+#
+# The prefix defaults to tcltk/local, which is what scripts/build-tcltk
+# produces.  Exits non-zero if anything failed, which is the only thing CI
+# needs from it.
+#
+# These are a separate body of tests from the C unit tests in src/tests, with a
+# separate runner, deliberately: those are programs linked against angband.o
+# and are not in ctest either.  See section 9 of the Phase 3 plan.
+#
+# Nothing here opens a window.  Whether a CI runner can is still unknown, so
+# the suites that need Tk are kept apart and are not run from here yet.
+set -o errexit
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+PREFIX=${1:-$ROOT/tcltk/local}
+TCLSH=$PREFIX/bin/tclsh9.0
+
+if [ ! -x "$TCLSH" ]; then
+	echo "No tclsh at $TCLSH." >&2
+	echo "Build the toolchain first with scripts/build-tcltk." >&2
+	exit 1
+fi
+
+# tcltest reports failures in its output and still exits 0, which would make a
+# green CI job meaningless.  Read the count back out and decide here.
+OUT=$("$TCLSH" "$ROOT/src/tcl/tests/all.tcl" 2>&1)
+echo "$OUT"
+
+if echo "$OUT" | grep -qE "^(Total|.*Failed)[[:space:]]" ; then
+	FAILED=$(echo "$OUT" | sed -n 's/.*Failed[[:space:]]*\([0-9][0-9]*\).*/\1/p' \
+		| awk '{s+=$1} END {print s+0}')
+	if [ "$FAILED" -ne 0 ]; then
+		echo "==> $FAILED test(s) failed." >&2
+		exit 1
+	fi
+fi
+
+# A suite that runs no tests at all is not passing, it is missing -- which is
+# exactly what this file looked like when it was first written, so the check
+# stays.
+if ! echo "$OUT" | grep -qE "Total[[:space:]]+[1-9]"; then
+	echo "==> No tests ran." >&2
+	exit 1
+fi
+
+echo "==> Tcl tests passed."
