@@ -51,6 +51,11 @@
 
 #include "main.h"
 
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#include <limits.h>
+#endif
+
 /*
  * On some platforms, SDL2 uses a macro to replace main() with another name
  * to hook into the platform-specific initialization.  Account for that here.
@@ -158,6 +163,54 @@ static void extended_quit_hook(const char *s)
  * to leave enough space for the path separator, directory, and
  * filenames.
  */
+#ifdef __APPLE__
+/**
+ * Return this executable's Contents/Resources directory, or NULL when we are
+ * not running from inside an application bundle.
+ *
+ * A bundled application is launched with its working directory set to "/", so
+ * the DEFAULT_*_PATH of "./lib/" that a self-contained build compiles in finds
+ * nothing at all.  The Cocoa front end solves this with NSBundle; this is the
+ * same answer for a front end that is plain C, and it is deliberately in
+ * main.c rather than in one front end because any bundled build needs it.
+ *
+ * The test is narrow on purpose -- the executable must sit in
+ * <something>.app/Contents/MacOS -- so a build that is not in a bundle takes
+ * the ordinary path and nothing changes for it.
+ */
+const char *macos_bundle_resources(void)
+{
+	static char resources[1024];
+	static bool looked = false;
+	char raw[1024];
+	char resolved[PATH_MAX];
+	uint32_t size = sizeof(raw);
+	char *p;
+
+	if (looked) return (resources[0] ? resources : NULL);
+	looked = true;
+	resources[0] = '\0';
+
+	if (_NSGetExecutablePath(raw, &size) != 0) return NULL;
+	if (!realpath(raw, resolved)) return NULL;
+
+	/* .../Foo.app/Contents/MacOS/<executable> -> .../Contents/MacOS */
+	p = strrchr(resolved, '/');
+	if (!p) return NULL;
+	*p = '\0';
+	if (!suffix(resolved, "/MacOS")) return NULL;
+
+	/* -> .../Contents */
+	p = strrchr(resolved, '/');
+	if (!p) return NULL;
+	*p = '\0';
+	if (!suffix(resolved, "/Contents")) return NULL;
+
+	strnfmt(resources, sizeof(resources), "%s/Resources", resolved);
+	return resources;
+}
+#endif /* __APPLE__ */
+
 static void init_stuff(void)
 {
 	char configpath[512];
@@ -168,6 +221,19 @@ static void init_stuff(void)
 	my_strcpy(configpath, DEFAULT_CONFIG_PATH, sizeof(configpath));
 	my_strcpy(libpath, DEFAULT_LIB_PATH, sizeof(libpath));
 	my_strcpy(datapath, DEFAULT_DATA_PATH, sizeof(datapath));
+
+#ifdef __APPLE__
+	/* Inside a bundle, everything lives under Contents/Resources/lib. */
+	{
+		const char *resources = macos_bundle_resources();
+
+		if (resources) {
+			strnfmt(configpath, sizeof(configpath), "%s/lib/", resources);
+			my_strcpy(libpath, configpath, sizeof(libpath));
+			my_strcpy(datapath, configpath, sizeof(datapath));
+		}
+	}
+#endif /* __APPLE__ */
 
 	/* Make sure they're terminated */
 	configpath[511] = '\0';

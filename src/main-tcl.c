@@ -74,23 +74,41 @@ static term_data td_main;
  * executable sitting in a cmake build tree.  Rather than discover that as
  * "invalid command name" from the first script we source, say where they are.
  *
- * The environment wins if it is already set, so a developer can point a build
- * at a different toolchain without reconfiguring.  A bundled .app will carry
- * its own copy and set neither.
+ * Inside a bundle they come from Contents/Resources/tcltk, which is the copy
+ * scripts/pkg_macos_tcltk puts there; outside one they come from the build's
+ * TCLTK_PREFIX.  Either way the environment wins if it is already set, so a
+ * developer can point a build at a different toolchain without reconfiguring.
  */
 static void set_script_library_paths(void)
 {
+	static char tclbuf[1024];
+	static char tkbuf[1024];
+	const char *resources = NULL;
+
+#ifdef __APPLE__
+	resources = macos_bundle_resources();
+#endif
+
 	if (!getenv("TCL_LIBRARY")) {
-		static char buf[1024];
-		strnfmt(buf, sizeof(buf), "TCL_LIBRARY=%s/lib/tcl9.0",
-				TCLTK_PREFIX_PATH);
-		putenv(buf);
+		if (resources) {
+			strnfmt(tclbuf, sizeof(tclbuf), "TCL_LIBRARY=%s/tcltk/tcl9.0",
+					resources);
+		} else {
+			strnfmt(tclbuf, sizeof(tclbuf), "TCL_LIBRARY=%s/lib/tcl9.0",
+					TCLTK_PREFIX_PATH);
+		}
+		putenv(tclbuf);
 	}
+
 	if (!getenv("TK_LIBRARY")) {
-		static char buf[1024];
-		strnfmt(buf, sizeof(buf), "TK_LIBRARY=%s/lib/tk9.0",
-				TCLTK_PREFIX_PATH);
-		putenv(buf);
+		if (resources) {
+			strnfmt(tkbuf, sizeof(tkbuf), "TK_LIBRARY=%s/tcltk/tk9.0",
+					resources);
+		} else {
+			strnfmt(tkbuf, sizeof(tkbuf), "TK_LIBRARY=%s/lib/tk9.0",
+					TCLTK_PREFIX_PATH);
+		}
+		putenv(tkbuf);
 	}
 }
 
@@ -248,6 +266,21 @@ errr init_tcl(int argc, char **argv)
 		plog_fmt("Tcl/Tk: Tcl_Init failed: %s", Tcl_GetStringResult(interp));
 		return 1;
 	}
+
+	/*
+	 * Declare the Tk we are already linked against, before initialising it, so
+	 * that `package require Tk` is satisfied by this copy and never goes
+	 * looking for one to dlopen.
+	 *
+	 * It is worth doing because Tcl's auto_path keeps the prefix the toolchain
+	 * was *built* in: it is compiled into libtcl as TCL_PACKAGE_PATH and no
+	 * environment variable removes it.  A bundled application can therefore
+	 * still see the developer's tcltk/local/lib and, if anything asked for the
+	 * package, would load a second Tk from there -- working on the machine that
+	 * built it and nowhere else.  This closes that off rather than relying on
+	 * nothing ever asking.
+	 */
+	Tcl_StaticLibrary(interp, "Tk", Tk_Init, Tk_SafeInit);
 
 	if (Tk_Init(interp) != TCL_OK) {
 		plog_fmt("Tcl/Tk: Tk_Init failed: %s", Tcl_GetStringResult(interp));

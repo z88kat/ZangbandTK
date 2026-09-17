@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+	Info.plist for ZangbandTclTK.app, filled in by scripts/pkg_macos_tcltk.
+
+	Deliberately shorter than the Cocoa application's plist next door in
+	src/cocoa/.  There is no NSMainNibFile and no NSPrincipalClass because Tk
+	creates and owns the NSApplication itself, and there are no document types
+	yet -- the Cocoa build claims the savefile types, and two applications
+	claiming the same types would leave the Finder picking between them.
+
+	The identifier must stay different from the Cocoa one for the same reason
+	it is spelled out in decision 14 of the Phase 3 plan: two bundles sharing an
+	identifier fight over Launch Services registration, preferences and the icon
+	the Dock shows.
+-->
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleExecutable</key>
+	<string>$EXECUTABLE$</string>
+	<key>CFBundleDisplayName</key>
+	<string>$NAME$</string>
+	<key>CFBundleName</key>
+	<string>$NAME$</string>
+	<key>CFBundleIdentifier</key>
+	<string>$BUNDLE_IDENTIFIER$</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$VERSION$</string>
+	<key>CFBundleVersion</key>
+	<string>$VERSION$</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>$COPYRIGHT$</string>
+	<!--
+		Without this the window is scaled up from 72dpi and every tile in T2
+		would be judged at the wrong size, which is the one judgement that
+		counts for a tileset.
+	-->
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<!--
+		A game, not a background tool: it owns the menu bar when it is in front
+		and it appears in the Dock.
+	-->
+	<key>LSUIElement</key>
+	<false/>
+	<key>NSSupportsAutomaticGraphicsSwitching</key>
+	<true/>
+</dict>
+</plist>

@@ -1,0 +1,176 @@
+#!/bin/sh
+#
+# Assemble ZangbandTclTK.app from a cmake build of the Tcl/Tk front end.
+#
+# Use in the root directory of the game, like so:
+#    scripts/pkg_macos_tcltk <build-directory> [output-directory]
+#
+# The build directory is whatever was configured with SUPPORT_TCL_FRONTEND=ON;
+# the bundle is written beside it unless an output directory is given.
+#
+# This is a second application, not a replacement for the Cocoa one.  See
+# decision 14 in .claude/plans/phase3-tcl-tk-frontend.md: ZangbandTK.app is a
+# different play experience and stays, so this one has its own name and its own
+# bundle identifier, and src/Makefile.osx is not touched by any of it.
+#
+# Three things have to be true for the bundle to run anywhere but this machine,
+# and each has caught somebody out before:
+#
+#   1. The game's data has to be inside it.  A self-contained build compiles in
+#      DEFAULT_LIB_PATH="./lib/", and a bundle launched from the Finder has "/"
+#      for a working directory, so "./lib" is the root of the disk.  main.c
+#      detects the bundle and uses Contents/Resources/lib instead; this script
+#      is what puts the data there.
+#
+#   2. Tcl and Tk have to find their own script libraries.  They are not
+#      optional extras -- an interpreter without init.tcl cannot evaluate
+#      anything -- so Contents/Resources/tcltk carries both trees.
+#
+#   3. The two dylibs have to travel with it, and the executable has to be able
+#      to find them once they have moved.  They already carry an @rpath install
+#      name -- scripts/build-tcltk sets that at link time, because zipfs appends
+#      an archive to each dylib and install_name_tool will not touch a file with
+#      data past __LINKEDIT -- so all that is needed here is to swap the
+#      development rpath on our own executable for one relative to the bundle.
+#      The check at the end is what proves it: any remaining reference to the
+#      build tree is a bundle that would die on someone else's Mac with a dyld
+#      error and no explanation.
+set -o errexit
+
+if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+	sed -n -e '3,9p' "$0" | sed -e 's/^# \{0,1\}//'
+	exit 1
+fi
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+BUILD=$1
+OUT=${2:-$BUILD}
+
+NAME=ZangbandTclTK
+IDENT=org.zangbandtk.zangbandtcltk
+APP=$OUT/$NAME.app
+EXE=$BUILD/game/angband
+
+if [ ! -x "$EXE" ]; then
+	echo "No executable at $EXE." >&2
+	echo "Configure with -DSUPPORT_TCL_FRONTEND=ON and build first." >&2
+	exit 1
+fi
+
+# Refuse a build that has no Tcl in it rather than producing a bundle that
+# looks right and cannot start.
+if ! otool -L "$EXE" | grep -q libtcl9tk; then
+	echo "$EXE does not link Tk." >&2
+	echo "That build was configured without SUPPORT_TCL_FRONTEND." >&2
+	exit 1
+fi
+
+# Where the toolchain came from, read off the executable rather than guessed,
+# so this works for any TCLTK_PREFIX the build was pointed at.  It comes from
+# the rpath and not from otool -L, because the libraries are referenced as
+# @rpath/libtcl9.0.dylib and the rpath is the only place the real directory
+# appears.
+TCLTK_LIB=$(otool -l "$EXE" | awk '/LC_RPATH/{r=1} r&&/ path /{print $2; exit}')
+if [ -z "$TCLTK_LIB" ]; then
+	echo "$EXE has no rpath, so the Tcl/Tk it was built against cannot be" >&2
+	echo "located.  Rebuild with a current TCL_Frontend.cmake." >&2
+	exit 1
+fi
+TCLTK_PREFIX=$(dirname "$TCLTK_LIB")
+if [ ! -d "$TCLTK_LIB/tcl9.0" ] || [ ! -d "$TCLTK_LIB/tk9.0" ]; then
+	echo "No Tcl/Tk script libraries under $TCLTK_LIB." >&2
+	exit 1
+fi
+
+VERSION=$(sed -n 's/^#define VERSION_STRING[[:space:]]*"\(.*\)"/\1/p' "$ROOT/src/buildid.h")
+BASE=$(sed -n 's/^#define BASE_VERSION_STRING[[:space:]]*"\(.*\)"/\1/p' "$ROOT/src/buildid.h")
+COPYRIGHT="ZangbandTK $VERSION, based on Angband $BASE. (c) 1987-2026 Angband contributors, (c) 1997-2005 Zangband DevTeam, (c) 2026 ZangbandTK contributors"
+
+echo "==> $APP  ($VERSION)"
+rm -rf "$APP"
+mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Frameworks"
+
+# 1. The executable and the game data.
+install -m 755 "$EXE" "$APP/Contents/MacOS/$NAME"
+for d in gamedata customize screens help tiles sounds icons fonts; do
+	if [ -d "$ROOT/lib/$d" ]; then
+		mkdir -p "$APP/Contents/Resources/lib/$d"
+		# -R so tiles/ and sounds/ bring their subdirectories with them.
+		cp -R "$ROOT/lib/$d/" "$APP/Contents/Resources/lib/$d/"
+	fi
+done
+
+# 2. Tcl's and Tk's script libraries.
+mkdir -p "$APP/Contents/Resources/tcltk"
+cp -R "$TCLTK_LIB/tcl9.0" "$APP/Contents/Resources/tcltk/tcl9.0"
+cp -R "$TCLTK_LIB/tk9.0" "$APP/Contents/Resources/tcltk/tk9.0"
+# tcl9/ holds the modules -- http, msgcat, platform, tcltest -- which init.tcl
+# puts on the module path.  Missing, `package require` fails at runtime only.
+if [ -d "$TCLTK_LIB/tcl9" ]; then
+	cp -R "$TCLTK_LIB/tcl9" "$APP/Contents/Resources/tcltk/tcl9"
+fi
+
+# 3. The dylibs, copied verbatim -- they need no editing, and could not be
+#    edited if they did -- and then the executable's rpath.
+for lib in libtcl9.0.dylib libtcl9tk9.0.dylib; do
+	install -m 644 "$TCLTK_LIB/$lib" "$APP/Contents/Frameworks/$lib"
+done
+install_name_tool -delete_rpath "$TCLTK_LIB" "$APP/Contents/MacOS/$NAME" 2>/dev/null || true
+install_name_tool -add_rpath "@executable_path/../Frameworks" \
+	"$APP/Contents/MacOS/$NAME"
+
+# 4. The plist.
+#
+# Both dollars in each placeholder are backslash-escaped, and that is not
+# decoration: in a basic regular expression a trailing `$` is an end-of-line
+# anchor, so `s|$VERSION$|...|` matches only a line ending in the text
+# "$VERSION" and silently substitutes nothing.  The result is a plist full of
+# unreplaced placeholders, and the Finder reports that as "the application
+# cannot be opened because its executable is missing", which points nowhere
+# near the cause.  src/Makefile.osx escapes them for the same reason.
+sed -e 's|\$EXECUTABLE\$|'"$NAME"'|g' \
+	-e 's|\$NAME\$|'"$NAME"'|g' \
+	-e 's|\$BUNDLE_IDENTIFIER\$|'"$IDENT"'|g' \
+	-e 's|\$VERSION\$|'"$VERSION"'|g' \
+	-e 's|\$COPYRIGHT\$|'"$COPYRIGHT"'|g' \
+	"$ROOT/src/tcl/Info.plist.in" > "$APP/Contents/Info.plist"
+
+# An ad-hoc signature, so Gatekeeper treats it as a coherent bundle on this
+# machine.  A release build signs it properly; see release.yaml, which does the
+# same for ZangbandTK.app.
+codesign --force --sign - "$APP" 2>/dev/null || \
+	echo "    (could not ad-hoc sign; the bundle will still run locally)"
+
+# The check that matters: nothing in the bundle may point back at the tree it
+# was built in.
+echo "==> Checking the bundle"
+LEAKED=$(otool -L "$APP/Contents/MacOS/$NAME" "$APP/Contents/Frameworks/"*.dylib \
+	| grep -E "$TCLTK_PREFIX|$BUILD" || true)
+if [ -n "$LEAKED" ]; then
+	echo "The bundle still references its build tree:" >&2
+	echo "$LEAKED" >&2
+	exit 1
+fi
+test -f "$APP/Contents/Resources/lib/gamedata/object.txt" || {
+	echo "No game data in the bundle." >&2
+	exit 1
+}
+test -f "$APP/Contents/Resources/tcltk/tcl9.0/init.tcl" || {
+	echo "No Tcl script library in the bundle." >&2
+	exit 1
+}
+plutil -lint "$APP/Contents/Info.plist" > /dev/null
+# A plist that still has placeholders in it is syntactically valid, so plutil is
+# happy and the Finder is not.  Check for them by name.
+if grep -q '\$[A-Z_]*\$' "$APP/Contents/Info.plist"; then
+	echo "Info.plist still has unsubstituted placeholders:" >&2
+	grep -o '\$[A-Z_]*\$' "$APP/Contents/Info.plist" | sort -u >&2
+	exit 1
+fi
+test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' \
+	"$APP/Contents/Info.plist")" = "$NAME" || {
+	echo "CFBundleExecutable does not name the executable that is there." >&2
+	exit 1
+}
+
+echo "==> Done.  open $APP"

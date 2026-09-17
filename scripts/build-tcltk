@@ -12,7 +12,7 @@
 # not build ourselves.  Point cmake at the result with
 # -DTCLTK_PREFIX=<prefix>.
 #
-# Three things here are not obvious, and each one cost a session to find:
+# Four things here are not obvious, and each one cost a session to find:
 #
 #   1. The bundled packages are not built.  Tcl's default `all` target builds
 #      thread, sqlite, itcl and tdbc after the core, and two separate traps
@@ -33,10 +33,19 @@
 #      vendored and stay pristine, so `git status` after a build is clean and
 #      a rebuild never has to reason about stale objects.
 #
+#   4. The dylibs are given an @rpath install name, and tclsh and wish are given
+#      an rpath to find them by.  This has to happen at link time and cannot be
+#      fixed afterwards: zipfs appends a zip archive to the end of each dylib,
+#      so __LINKEDIT no longer reaches the end of the file and install_name_tool
+#      refuses to touch it -- "the __LINKEDIT segment does not cover the end of
+#      the file", which says nothing about the cause.  Without @rpath the
+#      application bundle would carry libraries hardwired to this machine's
+#      build tree and would fail on any other Mac with a dyld error.
+#
 # zipfs is deliberately left enabled.  It is how the front end's Tcl gets
 # packaged inside the executable for release rather than shipped as a loose
 # directory, so a toolchain built without it would pass every test here and
-# fail at packaging.
+# fail at packaging.  It is also what makes rule 4 necessary.
 set -o errexit
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -56,10 +65,16 @@ Darwin)
 	JOBS=$(sysctl -n hw.activecpu)
 	# Aqua, so there is no XQuartz dependency and the windows are native.
 	TK_CONFIG='--enable-aqua --without-x'
+	# See trap 4 above.  DYLIB_INSTALL_DIR is the variable that reaches
+	# -install_name; LIB_RUNTIME_DIR, which looks like the right one, does not.
+	INSTALL_NAME='DYLIB_INSTALL_DIR=@rpath'
+	RPATH_LDFLAGS="-Wl,-rpath,$PREFIX/lib"
 	;;
 *)
 	JOBS=$(nproc 2>/dev/null || echo 4)
 	TK_CONFIG=''
+	INSTALL_NAME=''
+	RPATH_LDFLAGS=''
 	;;
 esac
 
@@ -70,20 +85,23 @@ echo "==> Tcl 9.0.4 -> $PREFIX"
 mkdir -p "$BUILD/tcl"
 cd "$BUILD/tcl"
 if [ ! -f config.status ]; then
-	"$TCL_SRC/unix/configure" --prefix="$PREFIX"
+	"$TCL_SRC/unix/configure" --prefix="$PREFIX" LDFLAGS="$RPATH_LDFLAGS"
 fi
-make -j"$JOBS" binaries libraries
-make install-binaries install-libraries install-headers install-private-headers
+make -j"$JOBS" binaries libraries $INSTALL_NAME
+make install-binaries install-libraries install-headers install-private-headers \
+	$INSTALL_NAME
 
 echo "==> Tk 9.0.4 -> $PREFIX"
 mkdir -p "$BUILD/tk"
 cd "$BUILD/tk"
 if [ ! -f config.status ]; then
 	# shellcheck disable=SC2086
-	"$TK_SRC/unix/configure" --prefix="$PREFIX" --with-tcl="$PREFIX/lib" $TK_CONFIG
+	"$TK_SRC/unix/configure" --prefix="$PREFIX" --with-tcl="$PREFIX/lib" \
+		LDFLAGS="$RPATH_LDFLAGS" $TK_CONFIG
 fi
-make -j"$JOBS" binaries libraries
-make install-binaries install-libraries install-headers install-private-headers
+make -j"$JOBS" binaries libraries $INSTALL_NAME
+make install-binaries install-libraries install-headers install-private-headers \
+	$INSTALL_NAME
 
 # Prove the things the front end actually depends on, rather than trusting
 # that a green build means a usable toolchain.  A missing tkInt.h is the

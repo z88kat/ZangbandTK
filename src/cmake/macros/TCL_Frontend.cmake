@@ -54,6 +54,15 @@ macro(configure_tcl_frontend _NAME_TARGET)
             "Re-run scripts/build-tcltk, which runs install-private-headers.")
     endif()
 
+    # The dylibs carry an @rpath install name -- scripts/build-tcltk sets it at
+    # link time because zipfs appends an archive to each one, which puts data
+    # past __LINKEDIT and makes install_name_tool refuse to touch them
+    # afterwards.  So the executable has to supply the rpath.  For a development
+    # build that is the prefix itself; scripts/pkg_macos_tcltk swaps it for
+    # @executable_path/../Frameworks when it assembles the .app.
+    set_property(TARGET ${_NAME_TARGET} APPEND PROPERTY
+        BUILD_RPATH "${TCLTK_PREFIX}/lib")
+
     target_include_directories(${_NAME_TARGET} PRIVATE "${TCL_INCLUDE_DIR}")
     target_link_libraries(${_NAME_TARGET} PRIVATE
         "${TCL_LIBRARY}"

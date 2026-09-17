@@ -71,7 +71,13 @@ if((SUPPORT_STATS_FRONTEND) AND (NOT SUPPORT_STATS_BACKEND))
 endif()
 # If none of the graphical front ends will be configured, configure the one for
 # Windows if that's the target plaform or the X11 one for anything else.
-if((NOT SUPPORT_GCU_FRONTEND) AND (NOT SUPPORT_SDL2_FRONTEND) AND (NOT SUPPORT_WINDOWS_FRONTEND) AND (NOT SUPPORT_X11_FRONTEND))
+#
+# ZangbandTK: SUPPORT_TCL_FRONTEND counts as one of them.  Left out, a build
+# asking for only the Tcl/Tk front end also got X11 -- which is worse than
+# redundant, because main.c tries the modules in table order and X11 comes
+# first, so ZangbandTclTK.app launched XQuartz instead of itself.  A bundled
+# application is started with no arguments and cannot say -mtcl.
+if((NOT SUPPORT_GCU_FRONTEND) AND (NOT SUPPORT_SDL2_FRONTEND) AND (NOT SUPPORT_WINDOWS_FRONTEND) AND (NOT SUPPORT_X11_FRONTEND) AND (NOT SUPPORT_TCL_FRONTEND))
     if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
         set(SUPPORT_WINDOWS_FRONTEND ON)
     else()

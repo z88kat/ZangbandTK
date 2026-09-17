@@ -28,6 +28,11 @@ extern errr init_x11(int argc, char **argv);
 extern errr init_xpj(int argc, char **argv);
 extern errr init_gcu(int argc, char **argv);
 extern errr init_tcl(int argc, char **argv);
+
+#ifdef __APPLE__
+/* Contents/Resources of the enclosing .app, or NULL if not bundled. */
+extern const char *macos_bundle_resources(void);
+#endif
 extern errr init_cap(int argc, char **argv);
 extern errr init_dos(int argc, char **argv);
 extern errr init_ibm(int argc, char **argv);
