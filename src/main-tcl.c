@@ -605,8 +605,25 @@ static errr Term_pict_tcl(int x, int y, int n, const int *ap,
 			blit_tile(td, x + i, y, ap[i], cp[i], TK_PHOTO_COMPOSITE_SET);
 		}
 
-		/* Nothing textual belongs in a cell that is showing a tile. */
-		cell_set(td, x + i, y, " ", COLOUR_WHITE);
+		/*
+		 * Blank the text of every cell the tile covers, not just the one it
+		 * was queued at.
+		 *
+		 * A tile spanning tile_width cells is queued once, and the term marks
+		 * the cells after it with attribute 255 and then skips them --
+		 * "2nd byte of bigtile" in ui-term.c, which `continue`s without
+		 * calling any hook.  So nothing ever tells us to clear those cells,
+		 * and a character left there by a full-screen display stays put with
+		 * the tile drawn behind it.  That is what made every other column of
+		 * a store or a character sheet survive being closed.
+		 */
+		{
+			int dx, dy;
+
+			for (dy = 0; dy < tile_height; dy++)
+				for (dx = 0; dx < tile_width; dx++)
+					cell_set(td, x + i + dx, y + dy, " ", COLOUR_WHITE);
+		}
 	}
 
 	return 0;
