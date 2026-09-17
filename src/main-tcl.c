@@ -296,22 +296,67 @@ static errr Term_wipe_tcl(int x, int y, int n)
 }
 
 /**
+ * Show or hide a term's cursor.
+ *
+ * The game asks for this through Term_xtra(TERM_XTRA_SHAPE, 0 or 1), which
+ * ui-term.c sends whenever the cursor becomes invisible or visible again --
+ * and it is invisible for nearly all of normal play, because ui-init.c turns
+ * it off at startup.  Ignoring that signal is why a yellow rectangle used to
+ * sit wherever the cursor was last placed and stay there.
+ */
+static void cursor_show(term_data *td, bool show)
+{
+	Tcl_Obj *cmd;
+
+	if (!td->cursor_item) return;
+	td->cursor_visible = show;
+
+	cmd = Tcl_ObjPrintf("%s itemconfigure %d -state %s", td->path,
+			td->cursor_item, show ? "normal" : "hidden");
+	Tcl_IncrRefCount(cmd);
+	Tcl_EvalObjEx(interp, cmd, TCL_EVAL_GLOBAL);
+	Tcl_DecrRefCount(cmd);
+}
+
+/**
  * Move the cursor, which is a plain canvas rectangle -- one of the four item
  * types the 2001 widget library implemented by hand and Tk has had all along.
+ *
+ * Moving it does not show it: whether it is visible is the game's to say, and
+ * it says so separately.
  */
 static errr Term_curs_tcl(int x, int y)
 {
 	term_data *td = (term_data *)(Term->data);
 	char cmd[256];
 
-	strnfmt(cmd, sizeof(cmd),
-			"%s coords %d %d %d %d %d ; %s itemconfigure %d -state normal",
+	strnfmt(cmd, sizeof(cmd), "%s coords %d %d %d %d %d",
 			td->path, td->cursor_item,
 			x * td->cw + 1, y * td->ch + 1,
-			(x + 1) * td->cw - 1, (y + 1) * td->ch - 1,
-			td->path, td->cursor_item);
+			(x + tile_width) * td->cw - 1,
+			(y + tile_height) * td->ch - 1);
 	Tcl_Eval(interp, cmd);
-	td->cursor_visible = true;
+
+	/*
+	 * Ask the term whether the cursor should be seen, rather than waiting to
+	 * be told.  Term_xtra(TERM_XTRA_SHAPE) exists for that, and the game does
+	 * send it -- but not reliably: instrumented across a whole startup and
+	 * several menus it was never sent once, because ui-init.c turns the
+	 * cursor off before anything asks and nothing turned it back on.  The
+	 * other front ends split on this too: gcu asks for it itself, while X11
+	 * and Windows ignore the message and draw the cursor wherever the game
+	 * last put it -- which is how a bright rectangle ends up parked at the top
+	 * of the map for a whole game.
+	 *
+	 * Term_get_cursor is the state rather than the announcement of a change,
+	 * so it is right whether or not the message ever arrives.
+	 */
+	{
+		bool visible = false;
+
+		Term_get_cursor(&visible);
+		cursor_show(td, visible);
+	}
 
 	return 0;
 }
@@ -740,8 +785,11 @@ static errr Term_xtra_tcl(int n, int v)
 			if (v > 0) Tcl_Sleep(v);
 			return 0;
 
-		case TERM_XTRA_NOISE:
 		case TERM_XTRA_SHAPE:
+			cursor_show(td, v != 0);
+			return 0;
+
+		case TERM_XTRA_NOISE:
 			return 0;
 	}
 
