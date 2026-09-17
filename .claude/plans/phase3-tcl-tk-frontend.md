@@ -1,6 +1,6 @@
 # Phase 3 — The Tcl/Tk Front End
 
-**Status:** T0 in progress · **Phase:** 3 · **Inputs:** [decisions.md](decisions.md)
+**Status:** T0 done, T1 in progress · **Phase:** 3 · **Inputs:** [decisions.md](decisions.md)
 (DEC-12, DEC-13, DEC-14, DEC-21, DEC-22),
 [phase2-development-plan.md](phase2-development-plan.md) §5,
 [phase3-observations.md](phase3-observations.md), and the archive survey in §1 below.
@@ -740,12 +740,39 @@ twice — see §6 decisions 11–13:
 - **`.github/workflows/tk.yaml`.** macOS only to begin with (§6 decision 13), building the
   toolchain and then the front end. Cache `tcltk/local` keyed on a hash of `tcltk/` so the
   two-minute toolchain build happens once rather than per push.
-- **The test harness skeleton**, per §9 — `tcltest` wired up and running zero tests, so that
-  the first test written has somewhere to go.
+- ✅ **The test harness**, per §9 — `scripts/run-tcl-tests` and `src/tcl/tests`. Three real
+  tests rather than zero: every script in `lib/tcl` parses, `main.tcl` is where
+  `ANGBAND_DIR_TCL` looks, and it still sets `angband(cellw)`/`(cellh)` and creates
+  `.term`. The runner exits non-zero when tests fail *and* when none ran — tcltest exits 0
+  on failure, and a `package require Tk` in a headless runner silently runs nothing at all.
 
-**Exit:** `cmake -DSUPPORT_TCL_FRONTEND=ON -DTCLTK_PREFIX=…` builds; a bundled
-`ZangbandTK.app` opens an empty Tk window and closes cleanly; the macOS Tk workflow is
-green. Terminal builds unaffected — the other thirteen workflows stay green per DEC-21.
+**Exit:** ✅ **met, 17 Sep.** `cmake -DSUPPORT_TCL_FRONTEND=ON -DTCLTK_PREFIX=…` builds;
+`ZangbandTclTK.app` launches from the Finder and closes cleanly; `tk.yaml` builds the
+toolchain, the front end and the bundle, and runs the Tcl tests. Terminal builds unaffected
+and `check-build-lists` clean.
+
+> **What T0 cost that the plan did not predict, all of it bundle-only.** Every one of these
+> presented as *the application does nothing when you launch it*, and none could have been
+> found by a build that runs from a terminal:
+>
+> - Launch Services starts an application with no `LANG`, so `setlocale` lands on `"C"` and
+>   the game quits with "requires UTF-8 support" — to a stderr nobody reads.
+> - `-psn_0_xxxxxx` on some launch paths, which no option in `main.c` recognised, so it
+>   printed its usage and exited.
+> - **Tk redirects stdout and stderr to `/dev/null`** for a bundled application, which is
+>   why none of the above announced itself, and why a silent failure path in the front end
+>   became a segfault in `Term_clear` with nothing on screen.
+> - After any crash, macOS raises "it quit while reopening windows" *from inside `Tk_Init`*,
+>   before there is a window — so one crash makes every later launch look like a permanent
+>   hang. `NSQuitAlwaysKeepsWindows=false` retires it.
+> - Two bundles sharing an identifier really do fight over Launch Services, which decision
+>   14 predicted and this milestone then demonstrated by accident.
+>
+> The lesson is the one T0 was pulled forward for, and it is evidence now rather than
+> argument: **a front end that is only ever run from a terminal is not tested.** The second
+> lesson was learned later than it should have been and is worth as much — make failures
+> visible before diagnosing them. Every one of these took minutes once the front end put
+> its reason in a dialog.
 
 ---
 
