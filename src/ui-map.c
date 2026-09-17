@@ -1021,6 +1021,39 @@ void display_map(int *cy, int *cx)
  * Note that the "player" is always displayed on the map.
  */
 /**
+ * How each band of place shows on the world map.
+ *
+ * Ordered as wild_town_bands is, smallest first, so a glance at the map says
+ * which way a character would walk to find a magic shop.
+ */
+static const uint8_t wild_town_band_attr[] = {
+	COLOUR_L_UMBER, COLOUR_YELLOW, COLOUR_L_GREEN, COLOUR_L_BLUE
+};
+
+/**
+ * How many blocks across the world is, for clamping an origin against.
+ *
+ * Zero before there is a world, which is the answer a caller wants: nothing to
+ * scroll and nothing to draw.
+ */
+int world_map_blocks(void)
+{
+	return wild ? wild->blocks : 0;
+}
+
+/**
+ * Which block the player is standing in.
+ */
+struct loc world_map_player_block(void)
+{
+	int size = z_info->wild_block_size;
+
+	if (!wild || !player) return loc(0, 0);
+
+	return loc(player->wild_grid.x / size, player->wild_grid.y / size);
+}
+
+/**
  * Draw the overhead map of the world (WLD-25).
  *
  * One character per block, which is the resolution the knowledge is kept at and
@@ -1031,27 +1064,20 @@ void display_map(int *cy, int *cx)
  * Only blocks the player has been near enough to see are drawn.  The rest is
  * blank, and fills in as they travel.
  *
- * \param origin is the top-left block of the view, and is moved by the caller.
- */
-/**
- * How each band of place shows on the world map.
+ * Draws into the current term and clears nothing: the caller owns the rest of
+ * the term, which is how the same map fills a full screen under "M" and a pane
+ * in the Tk front end without either knowing about the other.
  *
- * Ordered as wild_town_bands is, smallest first, so a glance at the map says
- * which way a character would walk to find a magic shop.
+ * \param origin is the top-left block of the view, and is moved by the caller.
+ * \param at is the top-left cell to draw into.
+ * \param wid and hgt are how many blocks to draw.
  */
-static const uint8_t wild_town_band_attr[] = {
-	COLOUR_L_UMBER, COLOUR_YELLOW, COLOUR_L_GREEN, COLOUR_L_BLUE
-};
-
-static void display_world_map(struct loc origin)
+void world_map_draw(struct loc origin, struct loc at, int wid, int hgt)
 {
-	int size = z_info->wild_block_size;
-	int wid = Term->wid - 2, hgt = Term->hgt - 4;
-	struct loc here = loc(player->wild_grid.x / size,
-						  player->wild_grid.y / size);
+	struct loc here = world_map_player_block();
 	int row, col;
 
-	Term_clear();
+	if (!wild || !player) return;
 
 	for (row = 0; row < hgt; row++) {
 		for (col = 0; col < wid; col++) {
@@ -1065,8 +1091,17 @@ static void display_world_map(struct loc origin)
 			feat = wild_block_feat(wild, bx, by);
 			if (feat == FEAT_NONE) continue;
 
-			a = feat_x_attr[LIGHTING_LIT][feat];
-			c = feat_x_char[LIGHTING_LIT][feat];
+			/*
+			 * The feature's own colour and letter, not feat_x_attr and
+			 * feat_x_char.  Those carry the tile when a graphical set is in
+			 * use, and a 16-pixel tile squashed into one cell of a world map
+			 * is mush -- measured in the Tk front end's pane, where a cell is
+			 * five pixels by ten.  The world map is a schematic: what it has
+			 * to show is the shape of the coast and the colour of the places,
+			 * and a coloured letter says both at any size.
+			 */
+			a = f_info[feat].d_attr;
+			c = f_info[feat].d_char;
 
 			/*
 			 * A town is worth picking out of the country around it, and how
@@ -1086,16 +1121,27 @@ static void display_world_map(struct loc origin)
 				}
 			}
 
-			Term_queue_char(Term, col + 1, row + 1, a, c, a, c);
+			Term_queue_char(Term, at.x + col, at.y + row, a, c, a, c);
 		}
 	}
 
 	/* Where the player is, if that part of the world is on screen. */
 	if (here.x >= origin.x && here.x < origin.x + wid &&
 		here.y >= origin.y && here.y < origin.y + hgt) {
-		Term_queue_char(Term, here.x - origin.x + 1, here.y - origin.y + 1,
+		Term_queue_char(Term, at.x + here.x - origin.x,
+						at.y + here.y - origin.y,
 						COLOUR_WHITE, L'@', COLOUR_WHITE, L'@');
 	}
+}
+
+/**
+ * The world map filling the screen, under "M" on the surface.
+ */
+static void display_world_map(struct loc origin)
+{
+	Term_clear();
+
+	world_map_draw(origin, loc(1, 1), Term->wid - 2, Term->hgt - 4);
 
 	prt(format("World map -- you are at %d, %d of %d.  "
 			   "Direction keys scroll, ESC exits.",

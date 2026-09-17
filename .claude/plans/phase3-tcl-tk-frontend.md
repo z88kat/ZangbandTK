@@ -1023,6 +1023,40 @@ work — the debug loop exists before the UI does — and one scripted session r
 >
 > T3 is complete.
 
+> **Out of order, because it was asked for: the minimap now shows the world, and the map
+> names what the pointer is over.**
+>
+> The pane carried `PW_MAP`, so the game drew the level scaled to fit. That is right in a
+> dungeon and wrong on the surface, where the level is one square of wilderness and the
+> thing worth looking at is the world. It now carries no flag at all and the front end
+> decides — the same rule `do_cmd_view_map` already applies to "M", said once more where the
+> pane can hear it. Owning the redraw is also what makes panning possible: the origin is
+> ours, so a drag moves it and nothing writes over the pane to undo that.
+>
+> `display_world_map()` split into `world_map_draw(origin, at, wid, hgt)`, which clears
+> nothing and draws where it is told, plus the full-screen view that adds the legend. Two
+> callers, neither knowing about the other.
+>
+> Three things found by looking rather than reasoning:
+>
+> - **Recentring on the player whenever they are off-view makes dragging useless.** Pan
+>   further than half a pane and the player is off-view by definition, so the next redraw
+>   snaps straight back — measured, a pan of ten blocks moved nothing. The rule is to follow
+>   the player only when *the player* has moved, so a drag stays put and walking off the
+>   edge brings the map back.
+> - **The world map must not use tiles.** `feat_x_attr`/`feat_x_char` carry the tile when a
+>   graphical set is in use, and a 16-pixel tile in a five-by-ten cell is mush. It draws
+>   `f_info[]`'s own colour and letter now: the world map is a schematic, and what it has to
+>   show is the shape of the coast and the colour of the places.
+> - **`square_object()` on the remembered level turns up placeholders,** which `object_desc`
+>   renders as "(nothing)" — which is what the status bar said, at length, in a dungeon.
+>   `scan_distant_floor()` is what the look command uses and it returns only what the
+>   character has sensed. Likewise `monster_is_obvious`, not `monster_is_visible`: a status
+>   bar that named the monster pretending to be a mushroom would be giving the game away.
+>
+> `angband_describe col row` answers from what the character knows and not from what is
+> there, so the status bar is not a cheat with a nice interface on it.
+
 ---
 
 ### T4 — Player, status and the Misc panel
