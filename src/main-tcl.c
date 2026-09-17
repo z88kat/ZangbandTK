@@ -383,13 +383,51 @@ static int objcmd_key(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 /**
- * Build the canvas and its cells, and wire one term to it.
+ * Source one of the front end's scripts, by name, from ANGBAND_DIR_TCL.
+ *
+ * Everything that reads a script goes through here.  The point is that no
+ * script path is ever written down anywhere else: a development build resolves
+ * ANGBAND_DIR_TCL to lib/tcl in the source tree, a bundle to the copy in
+ * Contents/Resources, and a release will eventually resolve it inside zipfs --
+ * and none of that reaches the scripts or their callers.
  */
-static void term_data_link(term_data *td)
+static bool tcl_source(const char *name)
+{
+	char path[1024];
+
+	path_build(path, sizeof(path), ANGBAND_DIR_TCL, name);
+
+	if (Tcl_EvalFile(interp, path) != TCL_OK) {
+		plog_fmt("Tcl/Tk: %s: %s", path, Tcl_GetStringResult(interp));
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * Build the canvas and its cells, and wire one term to it.
+ *
+ * Returns false if the window could not be built.  The caller must not ignore
+ * that: without Term_activate there is no Term at all, and the first thing the
+ * game does is Term_clear, which dereferences it.  That is a segfault in
+ * init_angband with nothing on screen and nothing on stderr -- Tk closes
+ * stderr on a bundled application -- so a silent failure here is about the
+ * least debuggable outcome available.
+ */
+/**
+ * Read one integer out of the script's angband() array.
+ */
+static bool tcl_get_int(const char *name, int *out)
+{
+	Tcl_Obj *v = Tcl_GetVar2Ex(interp, "angband", name, TCL_GLOBAL_ONLY);
+
+	return (v && Tcl_GetIntFromObj(interp, v, out) == TCL_OK);
+}
+
+static bool term_data_link(term_data *td)
 {
 	term *t = &td->t;
-	Tk_Font font;
-	Tk_FontMetrics fm;
 	Tcl_Obj *cmd;
 	int x, y;
 
@@ -397,35 +435,24 @@ static void term_data_link(term_data *td)
 	td->rows = 24;
 
 	/*
-	 * One font for the whole grid, measured rather than assumed.  Menlo is
-	 * macOS's fixed-width face; Tk falls back on its own if it is absent,
-	 * and the measurement below is what the cell size comes from either way,
-	 * so a substitution changes the look and not the alignment.
+	 * The script owns the font and measures a cell from it; we tell it how
+	 * many cells we want and read the pixel size back.  Creating the font
+	 * here as well would be the obvious mistake -- Tk's `font create` fails
+	 * with "named font already exists", which fails the whole script.
 	 */
-	Tcl_Eval(interp, "font create termfont -family Menlo -size 13");
-	font = Tk_GetFont(interp, mainwin, "termfont");
-	if (!font) {
-		plog_fmt("Tcl/Tk: no usable font: %s", Tcl_GetStringResult(interp));
-		return;
-	}
-	Tk_GetFontMetrics(font, &fm);
-	td->cw = Tk_TextWidth(font, "W", 1);
-	td->ch = fm.linespace;
-	td->ascent = fm.ascent;
-
-	cmd = Tcl_ObjPrintf(
-			"canvas .term -width %d -height %d -background black"
-			" -highlightthickness 0 -borderwidth 0\n"
-			"pack .term -fill both -expand 1\n"
-			"wm geometry . %dx%d\n",
-			td->cols * td->cw, td->rows * td->ch,
-			td->cols * td->cw, td->rows * td->ch);
+	cmd = Tcl_ObjPrintf("array set angband {cols %d rows %d}",
+			td->cols, td->rows);
 	Tcl_IncrRefCount(cmd);
-	if (Tcl_EvalObjEx(interp, cmd, TCL_EVAL_GLOBAL) != TCL_OK) {
-		plog_fmt("Tcl/Tk: could not build the grid: %s",
-				Tcl_GetStringResult(interp));
-	}
+	Tcl_EvalObjEx(interp, cmd, TCL_EVAL_GLOBAL);
 	Tcl_DecrRefCount(cmd);
+
+	if (!tcl_source("main.tcl")) return false;
+
+	if (!tcl_get_int("cellw", &td->cw) || !tcl_get_int("cellh", &td->ch)
+			|| td->cw <= 0 || td->ch <= 0) {
+		plog("Tcl/Tk: main.tcl did not report a usable cell size.");
+		return false;
+	}
 
 	/* One text item per cell, created once. */
 	td->item = mem_zalloc(td->cols * td->rows * sizeof(int));
@@ -478,6 +505,8 @@ static void term_data_link(term_data *td)
 
 	Term_activate(t);
 	angband_term[0] = t;
+
+	return true;
 }
 
 /**
@@ -548,6 +577,31 @@ errr init_tcl(int argc, char **argv)
 	 */
 	Tcl_StaticLibrary(interp, "Tk", Tk_Init, Tk_SafeInit);
 
+	/*
+	 * Tell Tcl what our startup script is, before Tk starts.  This is not
+	 * bookkeeping: TkpInit on macOS decides whether to open a Tcl console
+	 * window by asking whether stdin is "nullish" and no startup script is
+	 * set (tkMacOSXInit.c, around the Tk_CreateConsoleWindow call).  A
+	 * bundled application launched from the Finder satisfies both, so Tk
+	 * builds a console -- and building it inside Tk_Init is where the
+	 * application hangs, in TkpInit's own event loop, before it has ever
+	 * returned to us.  The symptom is an application that starts, shows
+	 * nothing, and never exits.
+	 *
+	 * Naming the script we are about to source is both true and sufficient:
+	 * nothing runs it on our behalf, because we are not Tcl_Main.
+	 */
+	{
+		char path[1024];
+		Tcl_Obj *startup;
+
+		path_build(path, sizeof(path), ANGBAND_DIR_TCL, "main.tcl");
+		startup = Tcl_NewStringObj(path, -1);
+		Tcl_IncrRefCount(startup);
+		Tcl_SetStartupScript(startup, NULL);
+		Tcl_DecrRefCount(startup);
+	}
+
 	if (Tk_Init(interp) != TCL_OK) {
 		plog_fmt("Tcl/Tk: Tk_Init failed: %s", Tcl_GetStringResult(interp));
 		return 1;
@@ -562,31 +616,24 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_quit", objcmd_quit, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_key", objcmd_key, NULL, NULL);
 
-	if (Tcl_Eval(interp,
-			/*
-			 * An unbundled Tk application on Aqua opens a Tcl console
-			 * window of its own and puts it in front of everything -- the
-			 * first concrete instance of the "test it in the shape it
-			 * ships in" warning in T0.  It is harmless but it is not ours,
-			 * and it hides the game behind it.  `catch` because the command
-			 * only exists on the platforms that have a console.
-			 */
-			"catch {console hide}\n"
-			"wm title . \"ZangbandTK\"\n"
-			"wm protocol . WM_DELETE_WINDOW { angband_quit }\n"
-			/*
-			 * Every keystroke goes to the game.  Binding on "." rather than on
-			 * the canvas means it works whatever has focus inside the window,
-			 * which matters now and will matter more when there are panes.
-			 */
-			"bind . <Key> { angband_key %N %s %A }\n") != TCL_OK) {
-		plog_fmt("Tcl/Tk: could not build the window: %s",
-				Tcl_GetStringResult(interp));
+	/*
+	 * The window itself, its bindings and its font are lib/tcl/main.tcl's --
+	 * term_data_link measures the font, tells the script how big the grid is,
+	 * and sources it.
+	 */
+	if (!term_data_link(&td_main)) {
+		/*
+		 * Say so where it can be seen.  stderr is gone by now -- Tk redirects
+		 * it to /dev/null for a bundled application, which is why the first
+		 * version of this failure produced a crash report and no message
+		 * anywhere -- but Tk itself is up, so it can show a dialog.
+		 */
+		Tcl_Eval(interp,
+				"catch {tk_messageBox -icon error -title \"ZangbandTK\""
+				" -message \"The game window could not be built.\""
+				" -detail $errorInfo}");
 		return 1;
 	}
-
-	/* The canvas, its cells, and the term that draws into them. */
-	term_data_link(&td_main);
 
 	/*
 	 * Put the window on the screen now, before returning.

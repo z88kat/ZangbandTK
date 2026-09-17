@@ -315,6 +315,10 @@ extern char *ANGBAND_DIR_FONTS;
 extern char *ANGBAND_DIR_TILES;
 extern char *ANGBAND_DIR_SOUNDS;
 extern char *ANGBAND_DIR_ICONS;
+/* The Tcl/Tk front end's scripts.  Built unconditionally, like the rest: a
+ * path costs nothing in a build that has no Tk, and making it conditional
+ * would mean an #ifdef in every consumer. */
+extern char *ANGBAND_DIR_TCL;
 extern char *ANGBAND_DIR_USER;
 extern char *ANGBAND_DIR_SAVE;
 extern char *ANGBAND_DIR_PANIC;

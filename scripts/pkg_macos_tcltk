@@ -103,7 +103,7 @@ mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Framewor
 
 # 1. The executable and the game data.
 install -m 755 "$EXE" "$APP/Contents/MacOS/$NAME"
-for d in gamedata customize screens help tiles sounds icons fonts; do
+for d in gamedata customize screens help tiles sounds icons fonts tcl; do
 	if [ -d "$ROOT/lib/$d" ]; then
 		mkdir -p "$APP/Contents/Resources/lib/$d"
 		# -R so tiles/ and sounds/ bring their subdirectories with them.
@@ -164,6 +164,10 @@ if [ -n "$LEAKED" ]; then
 fi
 test -f "$APP/Contents/Resources/lib/gamedata/object.txt" || {
 	echo "No game data in the bundle." >&2
+	exit 1
+}
+test -f "$APP/Contents/Resources/lib/tcl/main.tcl" || {
+	echo "No front-end scripts in the bundle -- it would start with no window." >&2
 	exit 1
 }
 test -f "$APP/Contents/Resources/tcltk/tcl9.0/init.tcl" || {

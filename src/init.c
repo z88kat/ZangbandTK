@@ -99,6 +99,7 @@ char *ANGBAND_DIR_FONTS;
 char *ANGBAND_DIR_TILES;
 char *ANGBAND_DIR_SOUNDS;
 char *ANGBAND_DIR_ICONS;
+char *ANGBAND_DIR_TCL;
 char *ANGBAND_DIR_USER;
 char *ANGBAND_DIR_SAVE;
 char *ANGBAND_DIR_PANIC;
@@ -329,6 +330,7 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 	string_free(ANGBAND_DIR_TILES);
 	string_free(ANGBAND_DIR_SOUNDS);
 	string_free(ANGBAND_DIR_ICONS);
+	string_free(ANGBAND_DIR_TCL);
 	string_free(ANGBAND_DIR_USER);
 	string_free(ANGBAND_DIR_SAVE);
 	string_free(ANGBAND_DIR_PANIC);
@@ -355,6 +357,7 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_TILES, libpath, "tiles");
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_SOUNDS, libpath, "sounds");
 	BUILD_DIRECTORY_PATH(ANGBAND_DIR_ICONS, libpath, "icons");
+	BUILD_DIRECTORY_PATH(ANGBAND_DIR_TCL, libpath, "tcl");
 
 #ifdef PRIVATE_USER_PATH
 

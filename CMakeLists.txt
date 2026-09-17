@@ -710,6 +710,12 @@ if((SHARED_INSTALL) OR (READONLY_INSTALL))
     if((SUPPORT_WINDOWS_FRONTEND) OR (SUPPORT_SDL2_SOUND))
         set(ANGBAND_DIRS ${ANGBAND_DIRS} sounds)
     endif()
+    # The Tcl/Tk front end's scripts are data it loads at runtime, through
+    # ANGBAND_DIR_TCL, exactly as tiles and screens are.  A shared or read-only
+    # install without them produces a front end that starts and has no window.
+    if(SUPPORT_TCL_FRONTEND)
+        set(ANGBAND_DIRS ${ANGBAND_DIRS} tcl fonts tiles)
+    endif()
     foreach(ANGBAND_DIR ${ANGBAND_DIRS})
         set(ANGBAND_DEST ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME})
         install(DIRECTORY lib/${ANGBAND_DIR} DESTINATION ${ANGBAND_DEST} FILE_PERMISSIONS ${DATA_PERMISSIONS} DIRECTORY_PERMISSIONS ${DIR_PERMISSIONS} PATTERN Makefile EXCLUDE PATTERN .deps EXCLUDE)

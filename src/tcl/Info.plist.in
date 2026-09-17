@@ -51,5 +51,17 @@
 	<false/>
 	<key>NSSupportsAutomaticGraphicsSwitching</key>
 	<true/>
+	<!--
+		Do not take part in window restoration.
+		The game owns its one window and rebuilds it from scratch every launch,
+		so there is nothing for macOS to restore.  Left on, a crash makes macOS
+		put up "the last time you opened this it quit while reopening windows"
+		on the NEXT launch -- and it raises that alert from inside Tk_Init,
+		before the application has a window or a usable stderr, so it presents
+		as an application that starts and hangs with nothing on screen.  One
+		crash then looks like a permanently broken build.
+	-->
+	<key>NSQuitAlwaysKeepsWindows</key>
+	<false/>
 </dict>
 </plist>
