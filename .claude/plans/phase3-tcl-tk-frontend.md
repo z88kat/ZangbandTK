@@ -1000,12 +1000,34 @@ work — the debug loop exists before the UI does — and one scripted session r
 > result file and the runner prints that. Run from CI, the first version printed which
 > checks had failed precisely nowhere.
 >
-> Still open in T3: the written old-command map.
+> **And the map.** [phase3-command-map.md](phase3-command-map.md) — every one of the
+> original's 32 game commands, with its call count, its 4.2 concept as a symbol checked to
+> exist in this tree, and one of four verdicts. Measured, not estimated: 2,825 calls
+> across the original's Tcl, spread over 32 commands.
+>
+> What it found, and none of it was obvious beforehand:
+>
+> - **Kept names cover 53% of every call the old scripts make into C,** across fourteen
+>   families. That is the naming rule paying for itself: fourteen accessors to write, rather
+>   than 108,000 lines to re-derive.
+> - **The seams cover 38%.** Command queue, input hooks, option table and keymap API between
+>   them account for well over a third of the work, and all four are built.
+> - **Dropped is 5%,** and almost all of it is Zangband systems 4.2 does not have —
+>   `mindcraft`, `power`, `building`. Reintroducing those is a question for the game and the
+>   Amber work, not for Phase 3.
+> - **Renamed is the smallest column at 4%, and four of its five rows are one decision
+>   applied five times:** 4.2 keeps a level's objects and monsters inside `struct chunk`
+>   rather than in globals beside it.
+> - `player` alone is 434 calls across 43 scripts, a fifth of everything. **T4 is correctly
+>   first, and it is bigger relative to the rest than this milestone list makes it look.**
+>
+> T3 is complete.
 
 ---
 
 ### T4 — Player, status and the Misc panel
-`player` (36 scripts) and `power`. Delivers the Misc panel, the Progress bars, and the
+`player` (36 scripts by §3.3's count, 43 by [the command map](phase3-command-map.md)'s, and
+434 calls either way — a fifth of everything the old scripts asked C for) and `power`. Delivers the Misc panel, the Progress bars, and the
 compact character display.
 
 **Exit:** the three right-hand windows from the screenshots, live.
