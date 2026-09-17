@@ -28,9 +28,9 @@ proc check {what script expected} {
 
 set cmds [angband_commands]
 check "the command table is not empty" {expr {[llength $::cmds] > 50}} 1
-check "every row has six fields" {
+check "every row has seven fields" {
 	set bad 0
-	foreach row $::cmds { if {[llength $row] != 6} { incr bad } }
+	foreach row $::cmds { if {[llength $row] != 7} { incr bad } }
 	set bad
 } 0
 
@@ -82,6 +82,55 @@ check "angband_command refuses without a character" {
 	catch {angband_command 0 0} e
 	set e
 } "not allowed just now"
+
+# --- the command queue ------------------------------------------------------
+
+# Most table entries name a cmd_code; the rest are UI actions with a hook.
+check "the table names its command codes" {
+	set coded 0
+	foreach row $::cmds { if {[lindex $row 6] ne ""} { incr coded } }
+	expr {$coded > 60}
+} 1
+
+check "angband_push refuses a command that does not exist" {
+	catch {angband_push CMD_FLY} e
+	set e
+} "no such command: CMD_FLY"
+
+check "angband_push refuses the sentinel" {
+	catch {angband_push CMD_NULL} e
+	set e
+} "CMD_NULL is the absence of a command"
+
+check "angband_push wants argument names in pairs" {
+	catch {angband_push CMD_WALK direction} e
+	string match "wrong # args*" $e
+} 1
+
+check "angband_push refuses an argument it cannot type" {
+	catch {angband_push CMD_DROP item 3} e
+	set e
+} "item: unknown argument, or one that needs an object"
+
+check "angband_push wants a grid as a pair" {
+	catch {angband_push CMD_PATHFIND point 12} e
+	set e
+} "point: wanted a grid as {x y}"
+
+# CMD_REPEAT has no entry in the game's own command table -- it is handled in
+# the UI -- so the queue refuses it, and the refusal has to say so.
+check "angband_push reports what the queue would not take" {
+	catch {angband_push CMD_REPEAT} e
+	string match "CMD_REPEAT was not queued:*" $e
+} 1
+
+# The positive case.  This only proves the command reached the queue: nothing
+# drains CTX_GAME until there is a character, so that a pushed command is then
+# carried out is T8's to show, once birth can be driven from here too.
+check "a command with an argument reaches the queue" {
+	angband_push CMD_PATHFIND point {12 34}
+	set _ ok
+} "ok"
 
 # --- the events -------------------------------------------------------------
 

@@ -1023,6 +1023,344 @@ static void events_init(void)
 	}
 }
 
+/*
+ * The game's commands, by name, for pushing from Tcl.
+ *
+ * Generated from the enum in cmd-core.h and kept in step by the negative-size
+ * typedef below: adding a command upstream without naming it here breaks the
+ * build rather than leaving a hole in the middle of the table, which is what a
+ * name-to-code lookup by index would do.
+ */
+static const char *cmd_code_name[] = {
+	"CMD_NULL",
+	"CMD_LOADFILE",
+	"CMD_NEWGAME",
+	"CMD_BIRTH_INIT",
+	"CMD_BIRTH_RESET",
+	"CMD_CHOOSE_RACE",
+	"CMD_CHOOSE_CLASS",
+	"CMD_CHOOSE_REALM",
+	"CMD_BUY_STAT",
+	"CMD_SELL_STAT",
+	"CMD_RESET_STATS",
+	"CMD_REFRESH_STATS",
+	"CMD_ROLL_STATS",
+	"CMD_PREV_STATS",
+	"CMD_NAME_CHOICE",
+	"CMD_HISTORY_CHOICE",
+	"CMD_ACCEPT_CHARACTER",
+	"CMD_GO_UP",
+	"CMD_GO_DOWN",
+	"CMD_WALK",
+	"CMD_JUMP",
+	"CMD_PATHFIND",
+	"CMD_INSCRIBE",
+	"CMD_UNINSCRIBE",
+	"CMD_AUTOINSCRIBE",
+	"CMD_TAKEOFF",
+	"CMD_WIELD",
+	"CMD_DROP",
+	"CMD_BROWSE_SPELL",
+	"CMD_STUDY",
+	"CMD_CAST",
+	"CMD_USE_STAFF",
+	"CMD_USE_WAND",
+	"CMD_USE_ROD",
+	"CMD_ACTIVATE",
+	"CMD_EAT",
+	"CMD_QUAFF",
+	"CMD_READ_SCROLL",
+	"CMD_REFILL",
+	"CMD_USE",
+	"CMD_FIRE",
+	"CMD_THROW",
+	"CMD_PICKUP",
+	"CMD_AUTOPICKUP",
+	"CMD_IGNORE",
+	"CMD_DISARM",
+	"CMD_REST",
+	"CMD_TUNNEL",
+	"CMD_OPEN",
+	"CMD_CLOSE",
+	"CMD_RUN",
+	"CMD_EXPLORE",
+	"CMD_NAVIGATE_UP",
+	"CMD_NAVIGATE_DOWN",
+	"CMD_HOLD",
+	"CMD_ALTER",
+	"CMD_STEAL",
+	"CMD_SLEEP",
+	"CMD_SELL",
+	"CMD_BUY",
+	"CMD_STASH",
+	"CMD_RETRIEVE",
+	"CMD_SPOIL_ARTIFACT",
+	"CMD_SPOIL_MON",
+	"CMD_SPOIL_MON_BRIEF",
+	"CMD_SPOIL_OBJ",
+	"CMD_WIZ_ACQUIRE",
+	"CMD_WIZ_ADVANCE",
+	"CMD_WIZ_BANISH",
+	"CMD_WIZ_CHANGE_ITEM_QUANTITY",
+	"CMD_WIZ_COLLECT_DISCONNECT_STATS",
+	"CMD_WIZ_COLLECT_OBJ_MON_STATS",
+	"CMD_WIZ_COLLECT_PIT_STATS",
+	"CMD_WIZ_CREATE_ALL_ARTIFACT",
+	"CMD_WIZ_CREATE_ALL_ARTIFACT_FROM_TVAL",
+	"CMD_WIZ_CREATE_ALL_OBJ",
+	"CMD_WIZ_CREATE_ALL_OBJ_FROM_TVAL",
+	"CMD_WIZ_CREATE_ARTIFACT",
+	"CMD_WIZ_CREATE_OBJ",
+	"CMD_WIZ_CREATE_TRAP",
+	"CMD_WIZ_CURE_ALL",
+	"CMD_WIZ_CURSE_ITEM",
+	"CMD_WIZ_DETECT_ALL_LOCAL",
+	"CMD_WIZ_DETECT_ALL_MONSTERS",
+	"CMD_WIZ_DUMP_LEVEL_MAP",
+	"CMD_WIZ_EDIT_PLAYER_EXP",
+	"CMD_WIZ_EDIT_PLAYER_GOLD",
+	"CMD_WIZ_GAIN_GOLD",
+	"CMD_WIZ_GAIN_HP",
+	"CMD_WIZ_GAIN_PET",
+	"CMD_WIZ_KNOW_PLACES",
+	"CMD_WIZ_EDIT_PLAYER_START",
+	"CMD_WIZ_EDIT_PLAYER_STAT",
+	"CMD_WIZ_HIT_ALL_LOS",
+	"CMD_WIZ_INCREASE_EXP",
+	"CMD_WIZ_JUMP_LEVEL",
+	"CMD_WIZ_LEARN_OBJECT_KINDS",
+	"CMD_WIZ_MAGIC_MAP",
+	"CMD_WIZ_PEEK_NOISE_SCENT",
+	"CMD_WIZ_PERFORM_EFFECT",
+	"CMD_WIZ_PLAY_ITEM",
+	"CMD_WIZ_PUSH_OBJECT",
+	"CMD_WIZ_QUERY_FEATURE",
+	"CMD_WIZ_QUERY_SQUARE_FLAG",
+	"CMD_WIZ_QUIT_NO_SAVE",
+	"CMD_WIZ_RECALL_MONSTER",
+	"CMD_WIZ_RERATE",
+	"CMD_WIZ_REROLL_ITEM",
+	"CMD_WIZ_STAT_ITEM",
+	"CMD_WIZ_SUMMON_NAMED",
+	"CMD_WIZ_SUMMON_RANDOM",
+	"CMD_WIZ_SET_ALLEGIANCE",
+	"CMD_WIZ_TELEPORT_RANDOM",
+	"CMD_WIZ_TELEPORT_TO",
+	"CMD_WIZ_TWEAK_ITEM",
+	"CMD_WIZ_WIPE_RECALL",
+	"CMD_WIZ_WIZARD_LIGHT",
+	"CMD_RETIRE",
+	"CMD_HELP",
+	"CMD_REPEAT",
+	"CMD_COMMAND_MONSTER",
+};
+
+/*
+ * cmd_code has no terminator to count against, so the check is against the
+ * last command instead: inserting one anywhere above it, or adding one after
+ * it, breaks the build here with "size of array is negative".
+ */
+typedef char cmd_code_name_is_complete[
+		(N_ELEMENTS(cmd_code_name) == CMD_COMMAND_MONSTER + 1) ? 1 : -1];
+
+/**
+ * The typed arguments a command carries, by the name the game knows them by.
+ *
+ * struct command holds four slots of a tagged union and the setters are typed,
+ * so a caller has to say which setter to use.  Rather than make every script
+ * spell out the type, the names are listed here: surveyed across every
+ * cmd_set_arg_* call in the game, no argument name is used with two different
+ * types, so the name is enough.  If that ever stops being true the answer is
+ * to name the type explicitly, not to guess.
+ *
+ * "item" is missing on purpose.  It wants a struct object *, and a script has
+ * no way to name one until the read accessors land in T6; pushing a command
+ * that needs an item is a T6 problem, and saying so is better than accepting
+ * an integer that means nothing.
+ */
+static const struct {
+	const char *name;
+	enum { ARG_NUMBER, ARG_CHOICE, ARG_DIRECTION, ARG_TARGET, ARG_POINT,
+			ARG_STRING } type;
+} cmd_arg_type[] = {
+	{ "choice",		ARG_CHOICE },
+	{ "changed",	ARG_CHOICE },
+	{ "all_prop",	ARG_CHOICE },
+	{ "quantity",	ARG_NUMBER },
+	{ "index",		ARG_NUMBER },
+	{ "tval",		ARG_NUMBER },
+	{ "range",		ARG_NUMBER },
+	{ "level",		ARG_NUMBER },
+	{ "power",		ARG_NUMBER },
+	{ "depth",		ARG_NUMBER },
+	{ "depth_min",	ARG_NUMBER },
+	{ "depth_max",	ARG_NUMBER },
+	{ "direction",	ARG_DIRECTION },
+	{ "target",		ARG_TARGET },
+	{ "point",		ARG_POINT },
+	{ "name",		ARG_STRING },
+	{ "history",	ARG_STRING },
+};
+
+/**
+ * angband_push -- put a command on the game's queue, with its arguments.
+ *
+ *    angband_push CMD_WALK direction 6
+ *    angband_push CMD_PATHFIND point {12 34}
+ *    angband_push -count 99 CMD_TUNNEL direction 4
+ *
+ * This is the "down" seam in full: the command table above covers what a menu
+ * offers, and this covers everything else the game can be asked to do,
+ * including the commands that have no key at all.
+ *
+ * It is the same queue the keyboard feeds.  Nothing here synthesises a
+ * keystroke, so a command with arguments arrives complete rather than as a key
+ * followed by the prompts the game would have raised to fill it in.
+ */
+static int objcmd_push(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	/*
+	 * Everything is parsed before anything is pushed.
+	 *
+	 * There is no way to take a command back off the queue -- cmdq_release
+	 * empties the whole thing -- and a command sitting there with half its
+	 * arguments is one the game will stop and prompt for, which is the very
+	 * thing this seam exists to avoid.  So a bad argument has to be an error
+	 * before the push, not after it.
+	 */
+	struct {
+		const char *name;
+		int type;
+		int value;
+		struct loc grid;
+		const char *str;
+	} arg[CMD_MAX_ARGS];
+	struct command *cmd;
+	const char *name;
+	int code = -1, count = 1, i, nargs = 0;
+	Tcl_Size first = 1;
+
+	(void)dummy;
+
+	if (objc >= 3 && strcmp(Tcl_GetString(objv[1]), "-count") == 0) {
+		if (Tcl_GetIntFromObj(ip, objv[2], &count) != TCL_OK) return TCL_ERROR;
+		first = 3;
+	}
+
+	if (objc < first + 1 || ((objc - first - 1) & 1)) {
+		Tcl_WrongNumArgs(ip, 1, objv, "?-count n? command ?name value ...?");
+		return TCL_ERROR;
+	}
+
+	name = Tcl_GetString(objv[first]);
+	for (i = 0; i < (int)N_ELEMENTS(cmd_code_name); i++) {
+		if (strcmp(name, cmd_code_name[i]) == 0) {
+			code = i;
+			break;
+		}
+	}
+	if (code < 0) {
+		Tcl_SetObjResult(ip, Tcl_ObjPrintf("no such command: %s", name));
+		return TCL_ERROR;
+	}
+	if (code == CMD_NULL) {
+		Tcl_SetObjResult(ip,
+				Tcl_NewStringObj("CMD_NULL is the absence of a command", -1));
+		return TCL_ERROR;
+	}
+
+	if ((objc - first - 1) / 2 > CMD_MAX_ARGS) {
+		Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+				"a command carries at most %d arguments", CMD_MAX_ARGS));
+		return TCL_ERROR;
+	}
+
+	for (i = (int)first + 1; i < (int)objc; i += 2) {
+		const char *a = Tcl_GetString(objv[i]);
+		Tcl_Obj *val = objv[i + 1];
+		int n, found = -1;
+
+		for (n = 0; n < (int)N_ELEMENTS(cmd_arg_type); n++) {
+			if (strcmp(a, cmd_arg_type[n].name) == 0) {
+				found = n;
+				break;
+			}
+		}
+		if (found < 0) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"%s: unknown argument, or one that needs an object", a));
+			return TCL_ERROR;
+		}
+
+		arg[nargs].name = a;
+		arg[nargs].type = cmd_arg_type[found].type;
+
+		if (arg[nargs].type == ARG_POINT) {
+			Tcl_Obj **xy;
+			Tcl_Size np;
+			int x, y;
+
+			if (Tcl_ListObjGetElements(ip, val, &np, &xy) != TCL_OK
+					|| np != 2
+					|| Tcl_GetIntFromObj(ip, xy[0], &x) != TCL_OK
+					|| Tcl_GetIntFromObj(ip, xy[1], &y) != TCL_OK) {
+				Tcl_SetObjResult(ip,
+						Tcl_ObjPrintf("%s: wanted a grid as {x y}", a));
+				return TCL_ERROR;
+			}
+			arg[nargs].grid = loc(x, y);
+		} else if (arg[nargs].type == ARG_STRING) {
+			arg[nargs].str = Tcl_GetString(val);
+		} else if (Tcl_GetIntFromObj(ip, val, &arg[nargs].value) != TCL_OK) {
+			return TCL_ERROR;
+		}
+
+		nargs++;
+	}
+
+	/*
+	 * One return value, three meanings: the game has no handler for that code
+	 * (CMD_REPEAT and the other user-interface-only entries), the queue is
+	 * full, or a repeat was asked for where none is allowed.  cmd_idx is
+	 * static in cmd-core.c, so the message says all three rather than
+	 * guessing at one.
+	 */
+	if (cmdq_push_repeat((cmd_code)code, count) != 0) {
+		Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+				"%s was not queued: the game has no handler for it, or the"
+				" queue is full", name));
+		return TCL_ERROR;
+	}
+
+	cmd = cmdq_peek();
+
+	for (i = 0; i < nargs; i++) {
+		switch (arg[i].type) {
+		case ARG_POINT:
+			cmd_set_arg_point(cmd, arg[i].name, arg[i].grid);
+			break;
+		case ARG_STRING:
+			cmd_set_arg_string(cmd, arg[i].name, arg[i].str);
+			break;
+		case ARG_CHOICE:
+			cmd_set_arg_choice(cmd, arg[i].name, arg[i].value);
+			break;
+		case ARG_DIRECTION:
+			cmd_set_arg_direction(cmd, arg[i].name, arg[i].value);
+			break;
+		case ARG_TARGET:
+			cmd_set_arg_target(cmd, arg[i].name, arg[i].value);
+			break;
+		default:
+			cmd_set_arg_number(cmd, arg[i].name, arg[i].value);
+			break;
+		}
+	}
+
+	return TCL_OK;
+}
+
 /**
  * Is there a game to ask questions of?
  *
@@ -1044,7 +1382,8 @@ static bool in_play(void)
 /**
  * angband_commands -- the game's own command table, for building menus from.
  *
- * Returns one row per command as {group index label key enabled level}, where
+ * Returns one row per command as {group index label key enabled level code},
+ * where
  * and index address it again for angband_command below.  The label, the key
  * and whether it is currently allowed are all the game's: ui-input.h's
  * struct cmd_info carries a description, up to two keys, a cmd_code and a
@@ -1122,6 +1461,15 @@ static int objcmd_commands(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 						&& (!c->prereq || c->prereq())));
 			Tcl_ListObjAppendElement(ip, row,
 					Tcl_NewIntObj(group->menu_level));
+			/*
+			 * The cmd_code by name, so a script can push the same command
+			 * through angband_push with arguments of its own rather than
+			 * letting the game prompt for them.  Empty for the entries that
+			 * are user-interface actions with a hook and no command.
+			 */
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(
+					(c->cmd > 0 && c->cmd < (int)N_ELEMENTS(cmd_code_name))
+						? cmd_code_name[c->cmd] : "", -1));
 			Tcl_ListObjAppendElement(ip, list, row);
 		}
 	}
@@ -1874,6 +2222,7 @@ errr init_tcl(int argc, char **argv)
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_command", objcmd_command, NULL,
 			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_push", objcmd_push, NULL, NULL);
 
 	/* The other direction: what the game tells us, as Tk virtual events. */
 	events_init();

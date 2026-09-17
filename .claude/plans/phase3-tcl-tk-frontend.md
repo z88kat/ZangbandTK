@@ -938,8 +938,26 @@ work — the debug loop exists before the UI does — and one scripted session r
 >   runs inside `textui_init()`, which is after the front end starts — so a menu built at
 >   startup carries no keys and one rebuilt from an event carries all 36.
 >
-> Still open in T3: the generic `cmd_code` + typed-argument push, the seventeen input hooks,
-> the read accessors, and the written old-command map.
+> **And the down seam.** `angband_push CMD_WALK direction 6` puts a command on the game's
+> own queue with its arguments filled in, over `cmdq_push_repeat()` and the seven
+> `cmd_set_arg_*` setters. Everything is parsed before anything is pushed, because there is
+> no way to take a command back off — `cmdq_release` empties the whole queue — and a
+> half-filled command is one the game stops and prompts for, which is the thing this seam
+> exists to avoid.
+>
+> The argument types are not spelled out by the caller. Surveyed across every
+> `cmd_set_arg_*` call in the game, no argument name is used with two different types, so
+> the name is enough: `direction` is always a direction, `quantity` always a number. `item`
+> is refused with a message saying why — it wants a `struct object *`, and a script has no
+> way to name one until the read accessors land in T6.
+>
+> What this does **not** yet show is a pushed command being *carried out*. Nothing drains
+> `CTX_GAME` until there is a character, and birth is driven by `ui-birth.c`'s own menus, so
+> the end-to-end proof belongs with T8 — at which point the harness can create a character
+> without a keyboard and the same test can watch the player move.
+>
+> Still open in T3: the seventeen input hooks, the read accessors, and the written
+> old-command map.
 
 ---
 
