@@ -317,6 +317,18 @@ errr init_tcl(int argc, char **argv)
 			"The game is running behind it with no display yet.\""
 			" -justify center -padx 40 -pady 40]\n"
 			"wm protocol . WM_DELETE_WINDOW { angband_quit }\n"
+			/*
+			 * Put the window on the screen now, before returning.
+			 *
+			 * Tk creates a toplevel but does not map it until the event loop
+			 * runs, and ours does not run until the game asks for input --
+			 * which is after init_angband() has loaded every gamedata file.
+			 * Without this the application launches, shows nothing at all for
+			 * a second or two, and then produces a window behind whatever the
+			 * player was looking at.  From the Finder that is indistinguishable
+			 * from a launch that failed.
+			 */
+			"update\n"
 			"raise .\n"
 			"focus -force .\n") != TCL_OK) {
 		plog_fmt("Tcl/Tk: could not build the window: %s",
