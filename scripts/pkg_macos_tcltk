@@ -160,6 +160,25 @@ test -f "$APP/Contents/Resources/tcltk/tcl9.0/init.tcl" || {
 	exit 1
 }
 plutil -lint "$APP/Contents/Info.plist" > /dev/null
+
+# Two bundles with one identifier is the trap this project already wrote down
+# and then walked into: Launch Services picks between them, so double-clicking
+# one can start the other, and a copy left in a scratch directory quietly wins
+# over the one on the Desktop.  It is not an error -- you may well have an old
+# build lying about deliberately -- but it must not be silent.
+LSREG=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
+if [ -x "$LSREG" ]; then
+	OTHERS=$("$LSREG" -dump 2>/dev/null \
+		| grep -o "path: *[^ ]*ZangbandTclTK\.app" \
+		| sed 's/path: *//' | sort -u | grep -v "^$APP$" || true)
+	if [ -n "$OTHERS" ]; then
+		echo "    warning: other ZangbandTclTK.app bundles are registered with"
+		echo "    the same identifier, and the Finder may launch one of those:"
+		echo "$OTHERS" | sed 's/^/      /'
+		echo "    Remove them, or unregister with: $LSREG -u <path>"
+	fi
+	"$LSREG" -f "$APP" 2>/dev/null || true
+fi
 # A plist that still has placeholders in it is syntactically valid, so plutil is
 # happy and the Finder is not.  Check for them by name.
 if grep -q '\$[A-Z_]*\$' "$APP/Contents/Info.plist"; then
