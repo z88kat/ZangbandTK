@@ -826,6 +826,35 @@ static int objcmd_key(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 /**
+ * Keep the game's own animations running while it waits for a key.
+ *
+ * idle_update() is what makes shimmering things shimmer.  Every other front
+ * end calls it from its event loop when nothing else is happening -- Cocoa on
+ * a 0.2 second timer, X11 and Windows every tenth pass of a 0.02 second wait
+ * -- and ours had no equivalent, so a tileset that declares `cycle:` sat
+ * still.
+ *
+ * A Tcl timer is the natural shape for it here: the game blocks inside
+ * Tcl_DoOneEvent waiting for a keystroke, and a timer is an event like any
+ * other, so this runs without a polling loop and without waking the process
+ * when there is nothing to draw.
+ *
+ * The game decides whether anything actually moves -- idle_update() returns
+ * immediately unless the player has turned on animate_flicker, which is off
+ * by default, and unless the tileset says its colours are laid out to be
+ * cycled.
+ */
+#define ANIMATION_MS 200
+
+static void animation_tick(void *dummy)
+{
+	(void)dummy;
+
+	idle_update();
+	Tcl_CreateTimerHandler(ANIMATION_MS, animation_tick, NULL);
+}
+
+/**
  * Source one of the front end's scripts, by name, from ANGBAND_DIR_TCL.
  *
  * Everything that reads a script goes through here.  The point is that no
@@ -1332,6 +1361,9 @@ static bool terms_init(void)
 	 * measured first and draws part of itself off the edge of its own pane.
 	 */
 	Tcl_Eval(interp, "angband_resize_now");
+
+	/* Start the animation clock now that there is something to animate. */
+	Tcl_CreateTimerHandler(ANIMATION_MS, animation_tick, NULL);
 
 	/*
 	 * The map is the active term when the game starts, and stays the one the
