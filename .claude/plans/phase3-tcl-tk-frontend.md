@@ -1263,9 +1263,32 @@ knowledge browsers are **windows that open** (decision 16), not panes.
 >
 > Fifty-six bridge checks.
 >
-> Still to come in T6: artifacts (`a_info`) and the rest of 4.2's categories — ego items,
-> runes, features, traps — plus the Character window's five-tab home, of which Virtues can be
-> filled immediately.
+> **Artifacts done**, and the generic pane paid for itself: a row in `knowledge(categories)`
+> and an accessor, nothing else.
+>
+> **Knowing an artifact exists is itself a spoiler**, so the filter is the game's own
+> `artifact_is_known()` rather than anything reasoned out here — created, and not sitting
+> unidentified in the character's own pack. It was `static` in `ui-knowledge.c`; it is
+> exported now, because reimplementing it needs `find_artifact`, which is private to that
+> file, and any approximation either spoils an artifact being carried or hides one already
+> found. `info` and `lore` refuse an index the character does not know for the same reason: an
+> index is a number anybody can type.
+>
+> Two naming findings, both from looking at the output:
+>
+> - **`a_info` stores the suffix.** "of Galadriel", "'Angrist'" — the game appends them to
+>   whatever the artifact is *of*. Alone they read as fragments, and capitalising one gives
+>   "Of Galadriel". The base kind goes in front.
+> - **`kind->name` is a template, not a name**: "& Phial~", where `&` is the article and `~`
+>   the plural mark. `object_kind_name()` is what hands back a name a player would read, and
+>   it is the same call the object list already makes.
+>
+> Verified by turning `cheat_xtra` on — which the browser honours because the game's own
+> screen does — reading all 189, and turning it off again to see the honest zero return.
+> Fifty-seven bridge checks; 1,443 unit tests still pass with `artifact_is_known` exported.
+>
+> Still to come in T6: ego items, runes, features and traps — each a row and an accessor —
+> plus the Character window's five-tab home, of which Virtues can be filled immediately.
 
 > **The Character window is a five-tab home, not a screen** — Info, Flags, Mutations,
 > Virtues, Notes ([OBS-21](phase3-observations.md)). Two of those tabs are where Phase 2's

@@ -33,6 +33,9 @@
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
+#include "obj-util.h"
+#include "player-history.h"
+#include "ui-knowledge.h"
 #include "ui-command.h"
 #include "ui-display.h"
 #include "ui-game.h"
@@ -2877,6 +2880,239 @@ static int objcmd_object(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 /**
+ * angband_artifact -- the artifacts the character knows exist.
+ *
+ *    angband_artifact max            how many there are
+ *    angband_artifact list ?pattern? {index name kind level} rows
+ *    angband_artifact info <index>   one of them, as a name/value dict
+ *    angband_artifact lore <index>   what the game says about it
+ *
+ * The third table of the same shape.  What makes artifacts different is that
+ * knowing one exists is itself a spoiler, so the filter is the game's own
+ * artifact_is_known() rather than anything reasoned out here: created, and not
+ * sitting unidentified in the character's own pack.
+ */
+
+/**
+ * Build the object the game would describe, for an artifact that may be lost.
+ *
+ * desc_art_fake()'s recipe from ui-knowledge.c, without its side effects and
+ * without its first branch: that function describes the real object when the
+ * artifact still exists somewhere, which needs find_artifact and is private to
+ * that file.  A knowledge browser wants the artifact as a thing that exists in
+ * the world, not as the particular copy in somebody's pack, so the fake is the
+ * right answer here rather than a compromise.
+ *
+ * Both objects are the caller's stack, and both must be wiped.
+ */
+static bool artifact_fake(const struct artifact *art, struct object *obj,
+		struct object *known)
+{
+	if (!make_fake_artifact(obj, art)) return false;
+
+	obj->known = known;
+	known->artifact = obj->artifact;
+	known->kind = obj->kind;
+
+	/* If it was fully known before it was lost, say so in full. */
+	if (history_is_artifact_known(player, obj->artifact))
+		object_copy(known, obj);
+
+	return true;
+}
+
+/**
+ * An artifact's whole name.
+ *
+ * a_info stores the suffix -- "of Galadriel", "'Angrist'" -- because the game
+ * appends it to whatever it is an artifact *of*: a Phial, a Main Gauche.  On
+ * its own it reads as a fragment, and capitalising it produces "Of Galadriel".
+ * So the base kind goes in front of it, which is how the game says it too.
+ */
+static void artifact_full_name(const struct artifact *art, char *buf,
+		size_t len)
+{
+	struct object_kind *kind = lookup_kind(art->tval, art->sval);
+	char base[80];
+
+	if (!kind) {
+		my_strcpy(buf, art->name, len);
+		return;
+	}
+
+	/*
+	 * object_kind_name, not kind->name.  The raw field carries the game's
+	 * templating -- "& Phial~", where & is the article and ~ the plural mark
+	 * -- and printing it gives "& Phial~ of Galadriel".  This is the same
+	 * call the object list uses, and it hands back what a player would read.
+	 */
+	object_kind_name(base, sizeof(base), kind, true);
+	strnfmt(buf, len, "%s %s", base, art->name);
+}
+
+static int objcmd_artifact(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what;
+	int idx;
+
+	(void)dummy;
+
+	if (objc < 2) {
+		Tcl_WrongNumArgs(ip, 1, objv, "max|list|info|lore ?argument ...?");
+		return TCL_ERROR;
+	}
+
+	what = Tcl_GetString(objv[1]);
+
+	/*
+	 * player as well as the tables: artifact_is_known reads the character's
+	 * wizard flag and their pack, and history_is_artifact_known reads their
+	 * history.
+	 */
+	if (!a_info || !z_info || !player) {
+		Tcl_SetObjResult(ip,
+				Tcl_NewStringObj("the artifact list is not loaded yet", -1));
+		return TCL_ERROR;
+	}
+
+	if (strcmp(what, "max") == 0 && objc == 2) {
+		Tcl_SetObjResult(ip, Tcl_NewIntObj((int)z_info->a_max));
+		return TCL_OK;
+	}
+
+	if (strcmp(what, "list") == 0 && (objc == 2 || objc == 3)) {
+		const char *pattern = (objc == 3) ? Tcl_GetString(objv[2]) : NULL;
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+		int i;
+
+		for (i = 0; i < (int)z_info->a_max; i++) {
+			struct artifact *art = &a_info[i];
+			const char *tval;
+			char name[120];
+			Tcl_Obj *row;
+
+			/*
+			 * The game's own test, cheat option and all: collect_known_artifacts
+			 * shows everything when cheat_xtra is on, and a browser that
+			 * disagreed with the screen beside it would be the more confusing
+			 * of the two.
+			 */
+			if (!art->name) continue;
+			if (!OPT(player, cheat_xtra) && !artifact_is_known(i)) continue;
+
+			tval = tval_find_name(art->tval);
+			artifact_full_name(art, name, sizeof(name));
+
+			if (pattern
+					&& !Tcl_StringCaseMatch(name, pattern, TCL_MATCH_NOCASE)
+					&& !(tval && Tcl_StringCaseMatch(tval, pattern,
+							TCL_MATCH_NOCASE)))
+				continue;
+
+			row = Tcl_NewListObj(0, NULL);
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(name, -1));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(tval ? tval : "", -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(art->level));
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	if ((strcmp(what, "info") == 0 || strcmp(what, "lore") == 0)
+			&& objc == 3) {
+		struct artifact *art;
+
+		if (Tcl_GetIntFromObj(ip, objv[2], &idx) != TCL_OK) return TCL_ERROR;
+
+		if (idx < 0 || idx >= (int)z_info->a_max || !a_info[idx].name) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no such artifact: %d", idx));
+			return TCL_ERROR;
+		}
+
+		/*
+		 * And it has to be one the character knows about.  An index is a
+		 * number anybody can type, and answering for an artifact they have
+		 * never found would give away that it exists.
+		 */
+		if (!OPT(player, cheat_xtra) && !artifact_is_known(idx)) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"artifact %d is not known to this character", idx));
+			return TCL_ERROR;
+		}
+
+		art = &a_info[idx];
+
+		if (strcmp(what, "info") == 0) {
+			Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+			const char *tval = tval_find_name(art->tval);
+
+#define PUT(key, value) \
+	do { \
+		Tcl_ListObjAppendElement(ip, d, Tcl_NewStringObj((key), -1)); \
+		Tcl_ListObjAppendElement(ip, d, (value)); \
+	} while (0)
+
+			char name[120];
+
+			artifact_full_name(art, name, sizeof(name));
+
+			PUT("index", Tcl_NewIntObj(idx));
+			PUT("name", Tcl_NewStringObj(name, -1));
+			PUT("kind", Tcl_NewStringObj(tval ? tval : "", -1));
+			PUT("level", Tcl_NewIntObj(art->level));
+			PUT("cost", Tcl_NewIntObj(art->cost));
+			PUT("weight", Tcl_NewIntObj(art->weight));
+			PUT("armor_class", Tcl_NewIntObj(art->ac));
+			PUT("to_hit", Tcl_NewIntObj(art->to_h));
+			PUT("to_dam", Tcl_NewIntObj(art->to_d));
+			PUT("to_ac", Tcl_NewIntObj(art->to_a));
+			PUT("fully_known",
+					Tcl_NewBooleanObj(history_is_artifact_known(player, art)));
+
+#undef PUT
+
+			Tcl_SetObjResult(ip, d);
+			return TCL_OK;
+		}
+
+		{
+			struct object body, known_body;
+			Tcl_Obj *text;
+			textblock *tb;
+
+			memset(&body, 0, sizeof(body));
+			memset(&known_body, 0, sizeof(known_body));
+
+			if (!artifact_fake(art, &body, &known_body)) {
+				Tcl_SetObjResult(ip, Tcl_NewStringObj(
+						"Nothing is recorded about this one.", -1));
+				return TCL_OK;
+			}
+
+			tb = object_info(&body, OINFO_NONE);
+			text = textblock_to_obj(tb);
+			textblock_free(tb);
+
+			object_wipe(&known_body);
+			object_wipe(&body);
+
+			Tcl_SetObjResult(ip, text);
+			return TCL_OK;
+		}
+	}
+
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+			"expected max, list, info or lore, not: %s", what));
+
+	return TCL_ERROR;
+}
+
+/**
  * angband_option -- read and write the game's options.
  *
  *    angband_option                     every option, as {name type desc value}
@@ -3915,6 +4151,8 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_monster", objcmd_monster, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_object", objcmd_object, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_artifact", objcmd_artifact, NULL,
+			NULL);
 
 	hooks_init();
 

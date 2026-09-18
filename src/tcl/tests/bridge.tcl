@@ -277,6 +277,11 @@ check "the object list says when it is not loaded" {
 	set e
 } "the object list is not loaded yet"
 
+check "the artifact list says when it is not loaded" {
+	catch {angband_artifact max} e
+	set e
+} "the artifact list is not loaded yet"
+
 check "the knowledge window opens without a character" {
 	knowledge_window
 	list [winfo exists .knowledge] $::knowledge(count)
@@ -289,7 +294,7 @@ check "it has a pane per category" {
 		lappend panes [winfo exists .knowledge.card.body.$key]
 	}
 	list [llength $::knowledge(categories)] [lsort -unique $panes]
-} "2 1"
+} "3 1"
 
 check "the tabs switch which pane is shown" {
 	set ::knowledge(tab) objects

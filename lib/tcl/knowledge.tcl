@@ -38,6 +38,14 @@ set knowledge(categories) {
         weight   "Weight"
         aware    "Identified"
     }}
+    {artifacts ARTIFACTS angband_artifact {
+        kind        "Kind"
+        level       "Found at depth"
+        cost        "Value"
+        weight      "Weight"
+        armor_class "Armour class"
+        fully_known "Fully known"
+    }}
 }
 
 proc knowledge_cat {key what} {
@@ -91,6 +99,8 @@ proc knowledge_fill {{key ""}} {
         if {$key eq "monsters"} {
             set right [expr {$a == 0 ? "town" : $a}]
         } else {
+            # Objects and artifacts both put their kind here: it is what tells
+            # you that "Green" is a potion.
             set right $a
         }
         $list insert end [format "%-30s %5s" $name $right]
@@ -123,20 +133,31 @@ proc knowledge_show {{key ""}} {
     set idx [lindex [lindex $knowledge(rows,$key) [lindex $sel 0]] 0]
     set info [$accessor info $idx]
 
-    # The first letter only.  string totitle lowercases everything after it,
-    # which turns "Wooden Torch" into "Wooden torch" -- object names arrive
-    # capitalised the way the game means them, and only monsters are lowercase
-    # by convention.
+    # Monsters only.  Their names are lowercase by convention, so the heading
+    # capitalises the first letter; object and artifact names arrive already
+    # capitalised the way the game means them, and touching those turns
+    # "Wooden Torch" into "Wooden torch".
     set n [dict get $info name]
-    set knowledge(name,$key) "[string toupper [string index $n 0]][string range $n 1 end]"
-
     if {$key eq "monsters"} {
-        set knowledge(sub,$key) [expr {[dict get $info unique]
-            ? "a unique [dict get $info base]" : [dict get $info base]}]
-    } else {
-        set knowledge(sub,$key) [expr {[dict get $info aware]
-            ? [dict get $info kind]
-            : "[dict get $info kind], not yet identified"}]
+        set n "[string toupper [string index $n 0]][string range $n 1 end]"
+    }
+    set knowledge(name,$key) $n
+
+    switch $key {
+        monsters {
+            set knowledge(sub,$key) [expr {[dict get $info unique]
+                ? "a unique [dict get $info base]" : [dict get $info base]}]
+        }
+        objects {
+            set knowledge(sub,$key) [expr {[dict get $info aware]
+                ? [dict get $info kind]
+                : "[dict get $info kind], not yet identified"}]
+        }
+        artifacts {
+            set knowledge(sub,$key) [expr {[dict get $info fully_known]
+                ? "[dict get $info kind], and you have held it"
+                : "[dict get $info kind], not yet in your hands"}]
+        }
     }
 
     foreach {f label} $fields {
@@ -151,6 +172,10 @@ proc knowledge_show {{key ""}} {
     }
     if {$key eq "objects"} {
         set knowledge(v,$key,aware) [expr {[dict get $info aware]
+            ? "yes" : "no"}]
+    }
+    if {$key eq "artifacts"} {
+        set knowledge(v,$key,fully_known) [expr {[dict get $info fully_known]
             ? "yes" : "no"}]
     }
 

@@ -1687,8 +1687,14 @@ static int art2gid(int oid)
 
 /**
  * Check if the given artifact idx is something we should "Know" about
+ *
+ * Not static: the Tk front end's knowledge browser asks the same question, and
+ * the answer has to be the same one.  Reimplementing it there would need
+ * find_artifact, which is private to this file, and an approximation of this
+ * test either spoils an artifact the character is carrying unidentified or
+ * hides one they have already found.
  */
-static bool artifact_is_known(int a_idx)
+bool artifact_is_known(int a_idx)
 {
 	struct object *obj;
 

@@ -39,6 +39,13 @@ void do_cmd_center_map(void);
 void do_cmd_monlist(void);
 void do_cmd_itemlist(void);
 
+/*
+ * Whether the character should be told this artifact exists: created, and not
+ * sitting unidentified in their own pack.  Shared with the Tk front end's
+ * knowledge browser so both ask the same question.
+ */
+bool artifact_is_known(int a_idx);
+
 /* Exposed for use by test cases. */
 struct ui_monster_category {
 	struct ui_monster_category *next;
