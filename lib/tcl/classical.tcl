@@ -96,10 +96,10 @@ proc classical::pick {wanted} {
 proc classical::init_fonts {} {
     variable face
 
-    set face(head) [pick {"Cormorant Garamond" "Baskerville" "Hoefler Text" \
+    set face(head) [classical::pick {"Cormorant Garamond" "Baskerville" "Hoefler Text" \
                           "Georgia" "Times New Roman" Times}]
-    set face(body) [pick {"Lora" "Charter" "Georgia" "Times New Roman" Times}]
-    set face(mono) [pick {"Courier Prime" "Courier New" Courier Menlo}]
+    set face(body) [classical::pick {"Lora" "Charter" "Georgia" "Times New Roman" Times}]
+    set face(mono) [classical::pick {"Courier Prime" "Courier New" Courier Menlo}]
 
     # {name face size weight slant}
     foreach spec {
@@ -141,7 +141,7 @@ proc classical::tracked {text} {
 # A hairline.  1px frames, never -relief: a groove or a ridge reads as 3D and
 # this design has no depth in it anywhere.
 proc classical::hairline {path {colour divider} {thickness 1}} {
-    frame $path -height $thickness -bg [c $colour] -bd 0 -highlightthickness 0
+    frame $path -height $thickness -bg [classical::c $colour] -bd 0 -highlightthickness 0
     return $path
 }
 
@@ -156,11 +156,11 @@ proc classical::hairline {path {colour divider} {thickness 1}} {
 #
 # Returns the card, which is what everything else is packed into.
 proc classical::window {path title} {
-    toplevel $path -bg [c bg]
+    toplevel $path -bg [classical::c bg]
     wm title $path $title
 
     set card $path.card
-    frame $card -bg [c bg]
+    frame $card -bg [classical::c bg]
     pack $card -fill both -expand 1
 
     return $card
@@ -171,24 +171,24 @@ proc classical::window {path title} {
 # than as two labels that happen to share a row.
 proc classical::titlestrip {parent left right} {
     set f $parent.strip
-    frame $f -bg [c neutral-100]
+    frame $f -bg [classical::c neutral-100]
     pack $f -fill x
 
     set row $f.row
-    frame $row -bg [c neutral-100]
-    pack $row -fill x -padx [sp 4] -pady [sp 2]
+    frame $row -bg [classical::c neutral-100]
+    pack $row -fill x -padx [classical::sp 4] -pady [classical::sp 2]
 
-    label $row.l -text [tracked $left] -font [f kicker] \
-        -bg [c neutral-100] -fg [c neutral-600]
-    label $row.r -text [tracked $right] -font [f strip] \
-        -bg [c neutral-100] -fg [c accent-700]
-    hairline $row.rule
+    label $row.l -text [classical::tracked $left] -font [classical::f kicker] \
+        -bg [classical::c neutral-100] -fg [classical::c neutral-600]
+    label $row.r -text [classical::tracked $right] -font [classical::f strip] \
+        -bg [classical::c neutral-100] -fg [classical::c accent-700]
+    classical::hairline $row.rule
 
     pack $row.l -side left
     pack $row.r -side right
-    pack $row.rule -side left -fill x -expand 1 -padx [sp 3]
+    pack $row.rule -side left -fill x -expand 1 -padx [classical::sp 3]
 
-    pack [hairline $f.under neutral-400] -fill x
+    pack [classical::hairline $f.under neutral-400] -fill x
     return $f
 }
 
@@ -197,18 +197,18 @@ proc classical::titlestrip {parent left right} {
 # that invents its own numbering is missing the point.
 proc classical::sectionhead {parent name title numeral} {
     set f $parent.h$name
-    frame $f -bg [c bg]
+    frame $f -bg [classical::c bg]
 
     set row $f.row
-    frame $row -bg [c bg]
+    frame $row -bg [classical::c bg]
     pack $row -fill x -pady {0 4}
 
-    label $row.t -text $title -font [f section] -bg [c bg] -fg [c accent-700]
-    label $row.n -text $numeral -font [f numeral] -bg [c bg] -fg [c neutral-600]
+    label $row.t -text $title -font [classical::f section] -bg [classical::c bg] -fg [classical::c accent-700]
+    label $row.n -text $numeral -font [classical::f numeral] -bg [classical::c bg] -fg [classical::c neutral-600]
     pack $row.t -side left
     pack $row.n -side right
 
-    pack [hairline $f.rule accent] -fill x
+    pack [classical::hairline $f.rule accent] -fill x
     return $f
 }
 
@@ -218,21 +218,21 @@ proc classical::sectionhead {parent name title numeral} {
 # a character whose mana the window failed to fetch.
 proc classical::statrow {parent name label var {last 0}} {
     set f $parent.r$name
-    frame $f -bg [c bg]
+    frame $f -bg [classical::c bg]
     pack $f -fill x
 
     set row $f.row
-    frame $row -bg [c bg]
+    frame $row -bg [classical::c bg]
     pack $row -fill x -pady 4
 
-    label $row.l -text $label -font [f label] -bg [c bg] -fg [c neutral-700] \
+    label $row.l -text $label -font [classical::f label] -bg [classical::c bg] -fg [classical::c neutral-700] \
         -anchor w
-    label $row.v -textvariable $var -font [f value] -bg [c bg] -fg [c text] \
+    label $row.v -textvariable $var -font [classical::f value] -bg [classical::c bg] -fg [classical::c text] \
         -anchor e
     pack $row.l -side left
     pack $row.v -side right
 
-    if {!$last} { pack [hairline $f.rule] -fill x }
+    if {!$last} { pack [classical::hairline $f.rule] -fill x }
     return $row.v
 }
 
@@ -241,22 +241,22 @@ proc classical::statrow {parent name label var {last 0}} {
 # in the handoff because dividing by it is the obvious bug.
 proc classical::meter {parent name label var} {
     set f $parent.m$name
-    frame $f -bg [c bg]
+    frame $f -bg [classical::c bg]
 
     set row $f.row
-    frame $row -bg [c bg]
+    frame $row -bg [classical::c bg]
     pack $row -fill x -pady {0 5}
-    label $row.l -text [tracked $label] -font [f kicker] \
-        -bg [c bg] -fg [c neutral-700] -anchor w
-    label $row.v -textvariable $var -font [f figure] \
-        -bg [c bg] -fg [c text] -anchor e
+    label $row.l -text [classical::tracked $label] -font [classical::f kicker] \
+        -bg [classical::c bg] -fg [classical::c neutral-700] -anchor w
+    label $row.v -textvariable $var -font [classical::f figure] \
+        -bg [classical::c bg] -fg [classical::c text] -anchor e
     pack $row.l -side left
     pack $row.v -side right
 
-    frame $f.track -height 7 -bg [c bg] -highlightthickness 1 \
-        -highlightbackground [c neutral-400] -bd 0
+    frame $f.track -height 7 -bg [classical::c bg] -highlightthickness 1 \
+        -highlightbackground [classical::c neutral-400] -bd 0
     pack $f.track -fill x
-    frame $f.track.fill -bg [c accent-400] -bd 0 -highlightthickness 0
+    frame $f.track.fill -bg [classical::c accent-400] -bd 0 -highlightthickness 0
 
     return $f
 }
@@ -264,11 +264,11 @@ proc classical::meter {parent name label var} {
 proc classical::meter_set {f ratio} {
     if {$ratio <= 0} {
         place forget $f.track.fill
-        $f.track configure -highlightbackground [c neutral-400]
+        $f.track configure -highlightbackground [classical::c neutral-400]
         return
     }
     if {$ratio > 1.0} { set ratio 1.0 }
-    $f.track configure -highlightbackground [c accent]
+    $f.track configure -highlightbackground [classical::c accent]
     place $f.track.fill -x 0 -y 0 -relwidth $ratio -relheight 1.0
 }
 
@@ -277,11 +277,11 @@ proc classical::meter_set {f ratio} {
 # you can type into is a sheet that lies.
 proc classical::prose {parent name {height 4}} {
     set f $parent.p$name
-    frame $f -bg [c neutral-100] -highlightthickness 1 \
-        -highlightbackground [c divider] -bd 0
+    frame $f -bg [classical::c neutral-100] -highlightthickness 1 \
+        -highlightbackground [classical::c divider] -bd 0
     text $f.t -height $height -wrap word -relief flat -borderwidth 0 \
-        -highlightthickness 0 -bg [c neutral-100] -fg [c neutral-800] \
-        -font [f history] -padx [sp 4] -pady [sp 4] -spacing1 2 -spacing3 6 \
+        -highlightthickness 0 -bg [classical::c neutral-100] -fg [classical::c neutral-800] \
+        -font [classical::f history] -padx [classical::sp 4] -pady [classical::sp 4] -spacing1 2 -spacing3 6 \
         -cursor arrow
     pack $f.t -fill both -expand 1
     $f.t configure -state disabled
@@ -301,27 +301,27 @@ proc classical::prose_set {f text} {
 # right.  Bracketed keys take the accent; everything else is quiet.
 proc classical::footer {parent items statusvar} {
     set f $parent.footer
-    frame $f -bg [c neutral-100]
+    frame $f -bg [classical::c neutral-100]
     pack $f -side bottom -fill x
-    pack [hairline $f.over neutral-400] -fill x -side top
+    pack [classical::hairline $f.over neutral-400] -fill x -side top
 
     set row $f.row
-    frame $row -bg [c neutral-100]
-    pack $row -fill x -padx [sp 4] -pady [sp 3]
+    frame $row -bg [classical::c neutral-100]
+    pack $row -fill x -padx [classical::sp 4] -pady [classical::sp 3]
 
     set i 0
     foreach {key text} $items {
-        label $row.k$i -text "\[$key\]" -font [f footer] \
-            -bg [c neutral-100] -fg [c accent-700]
-        label $row.t$i -text $text -font [f footer] \
-            -bg [c neutral-100] -fg [c neutral-700]
+        label $row.k$i -text "\[$key\]" -font [classical::f footer] \
+            -bg [classical::c neutral-100] -fg [classical::c accent-700]
+        label $row.t$i -text $text -font [classical::f footer] \
+            -bg [classical::c neutral-100] -fg [classical::c neutral-700]
         pack $row.k$i -side left
-        pack $row.t$i -side left -padx [list 4 [sp 3]]
+        pack $row.t$i -side left -padx [list 4 [classical::sp 3]]
         incr i
     }
 
-    label $row.status -textvariable $statusvar -font [f footer] \
-        -bg [c neutral-100] -fg [c neutral-600]
+    label $row.status -textvariable $statusvar -font [classical::f footer] \
+        -bg [classical::c neutral-100] -fg [classical::c neutral-600]
     pack $row.status -side right
 
     return $f
@@ -332,18 +332,32 @@ proc classical::footer {parent items statusvar} {
 # is the same rule said in Tk -- bound to <Configure>, deferred to idle so a
 # drag does not re-grid on every pixel.
 proc classical::columns {container children minwidth} {
+    variable lastfit
     set n [llength $children]
-    set w [winfo width $container]
-    if {$w <= 1} { set w [winfo reqwidth $container] }
+
+    # The container's own width is meaningless until it has been mapped, and
+    # the toplevel's is what actually decides the layout, so ask that.
+    set w [winfo width [winfo toplevel $container]]
+    if {$w <= 1} { set w [winfo reqwidth [winfo toplevel $container]] }
 
     set fit [expr {$w / $minwidth}]
     if {$fit < 1} { set fit 1 }
     if {$fit > $n} { set fit $n }
 
+    # Nothing to do unless the answer changed, and this is not an optimisation.
+    # Re-gridding inside a <Configure> handler resizes the container, which
+    # fires <Configure> again -- so without this the window spends seconds
+    # churning through idle handlers before it settles, which is exactly what
+    # it looked like: an empty card, then the content some seconds later.
+    if {[info exists lastfit($container)] && $lastfit($container) eq $fit} {
+        return
+    }
+    set lastfit($container) $fit
+
     set i 0
     foreach child $children {
         grid $child -row [expr {$i / $fit}] -column [expr {$i % $fit}] \
-            -sticky new -padx [expr {[sp 6] / 2}] -pady [list 0 [sp 4]]
+            -sticky new -padx [expr {[classical::sp 6] / 2}] -pady [list 0 [classical::sp 4]]
         incr i
     }
     for {set col 0} {$col < $n} {incr col} {
@@ -353,9 +367,12 @@ proc classical::columns {container children minwidth} {
 }
 
 proc classical::responsive {container children minwidth} {
-    bind $container <Configure> [list classical::reflow_soon \
-        $container $children $minwidth]
-    columns $container $children $minwidth
+    # Bound on the toplevel, not the container: it is the window being dragged
+    # that decides how many columns fit, and a binding on the container hears
+    # its own re-grid as well as the drag.
+    bind [winfo toplevel $container] <Configure> [list \
+        classical::reflow_soon $container $children $minwidth]
+    classical::columns $container $children $minwidth
 }
 
 proc classical::reflow_soon {container children minwidth} {
@@ -367,8 +384,13 @@ proc classical::reflow_soon {container children minwidth} {
 
 proc classical::reflow_now {container children minwidth} {
     variable pending
+    variable lastfit
     unset -nocomplain pending($container)
-    if {[winfo exists $container]} { columns $container $children $minwidth }
+    if {[winfo exists $container]} {
+        classical::columns $container $children $minwidth
+    } else {
+        unset -nocomplain lastfit($container)
+    }
 }
 
 classical::init_fonts

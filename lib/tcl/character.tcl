@@ -174,7 +174,16 @@ proc character_window {} {
 
     set card [classical::window .character "Character"]
     wm protocol .character WM_DELETE_WINDOW { destroy .character }
-    wm minsize .character 620 520
+
+    # Open wide enough for three columns.
+    #
+    # Left to its own devices the window asks for whatever the layout wants
+    # before it has been mapped, which is one column, which is tall and narrow
+    # -- and then reflows to three when the player widens it, having already
+    # made a poor first impression.  Three columns and the history below them
+    # is the shape the sheet was designed in, so it opens in it.
+    wm geometry .character 1180x780
+    wm minsize .character 620 480
 
     # Keys typed here still play the game.  Without this the window would have
     # to be dismissed before the next step could be taken, which would make it
@@ -286,6 +295,13 @@ proc character_window {} {
     pack [classical::prose $body history 3] -fill both -expand 1
 
     character_refresh
+
+    # The geometry above is only a request until the window is mapped, and the
+    # column count is computed from the real width, so settle one before the
+    # other reads it.
+    update idletasks
+    classical::columns $meters [list $meters.mhp $meters.msp $meters.mxp] 220
+    classical::columns $cols $frames 260
 }
 
 # The window stays up to date whether or not anyone is looking at it: the

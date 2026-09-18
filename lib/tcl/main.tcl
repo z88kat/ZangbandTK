@@ -159,9 +159,15 @@ foreach pair [angband_tilesets] {
 # Decision 16 finished the main window at five panes, so everything else opens
 # as a window of its own and this is where they are opened from.  No
 # accelerators: every key belongs to the game.
-menu .menubar.window -tearoff 0
-.menubar add cascade -label "Window" -menu .menubar.window
-.menubar.window add command -label "Character" -command character_window
+# The path must not be .menubar.window.  On macOS Tk treats three menu names
+# as the platform's own -- .menubar.apple, .menubar.window and .menubar.help --
+# and fills them in: a menu at .menubar.window arrives with Minimize, Zoom,
+# Fill, Center, Full Screen Tile, the tab-bar commands and Bring All to Front
+# already in it, none of which this game has any use for.  Same label, ordinary
+# path, no junk.
+menu .menubar.views -tearoff 0
+.menubar add cascade -label "Window" -menu .menubar.views
+.menubar.views add command -label "Character" -command character_window
 
 # The design system first: every window is drawn with it.
 source [file join [file dirname [info script]] classical.tcl]
