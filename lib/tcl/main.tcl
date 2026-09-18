@@ -163,6 +163,8 @@ menu .menubar.window -tearoff 0
 .menubar add cascade -label "Window" -menu .menubar.window
 .menubar.window add command -label "Character" -command character_window
 
+# The design system first: every window is drawn with it.
+source [file join [file dirname [info script]] classical.tcl]
 source [file join [file dirname [info script]] character.tcl]
 
 proc angband_choose_tileset {id} {

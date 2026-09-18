@@ -68,6 +68,15 @@ macro(configure_tcl_frontend _NAME_TARGET)
         "${TCL_LIBRARY}"
         "${TK_LIBRARY}"
     )
+
+    # Core Text, for registering the bundled fonts at startup.  Tk has no API
+    # for loading a font file -- it asks the platform for a family by name --
+    # so the platform is told about lib/fonts before Tk starts.  See
+    # fonts_register() in main-tcl.c.
+    if (APPLE)
+        target_link_libraries(${_NAME_TARGET} PRIVATE
+            "-framework ApplicationServices")
+    endif()
     target_compile_definitions(${_NAME_TARGET} PRIVATE
         USE_TCL
         # Where Tcl's and Tk's own script libraries live.  A dev build runs from

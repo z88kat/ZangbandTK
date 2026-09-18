@@ -228,9 +228,21 @@ check "the character window opens without a character" {
 	list [winfo exists .character] [set ::character(v,name)]
 } "1 —"
 
-check "it holds every field it was asked to" {
-	llength $::character(fields)
-} 24
+check "it holds the stat rows its sections asked for" {
+	set wanted 0
+	foreach section $::character(sections) {
+		lassign $section name title numeral rows
+		incr wanted [expr {[llength $rows] / 2}]
+	}
+	expr {[llength $::character(fields)] == $wanted && $wanted > 10}
+} 1
+
+# The design system is what every window is drawn with, so a missing face is
+# worth knowing about here rather than in a screenshot.
+check "the three faces resolved" {
+	list [font actual cl_title -family] [font actual cl_label -family] \
+		[font actual cl_footer -family]
+} "{Cormorant Garamond} Lora {Courier Prime}"
 
 check "closing it is just closing it" {
 	destroy .character

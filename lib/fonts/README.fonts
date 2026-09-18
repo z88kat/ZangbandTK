@@ -1,0 +1,22 @@
+The three faces the Classical design system is set in.
+
+    Cormorant Garamond   headings, display figures, stat values
+    Lora                 body text, stat labels, the subhead
+    Courier Prime        the sigil, kickers, numerals, history, footer
+
+All three are SIL Open Font Licence 1.1, which is what makes shipping them
+possible; each licence is beside its font as OFL-<name>.txt.  They came from
+github.com/google/fonts.  Cormorant Garamond and Lora are variable fonts, so
+one file carries every weight; Courier Prime is three statics.
+
+They are not installed.  main-tcl.c's fonts_register() hands them to the
+platform at startup in *process* scope, so they exist for as long as the game
+runs and leave nothing behind -- Tk has no API for loading a font file, it asks
+the platform for a family by name and takes what it is given, so the platform
+has to be told first.  On macOS that is CTFontManagerRegisterFontsForURL.
+Windows wants AddFontResourceEx and Linux FcConfigAppFontAddFile; neither is
+written yet, and until they are, those builds fall back to the chain named in
+lib/tcl/classical.tcl.
+
+The .fon files here are something else entirely: bitmap fonts for the Windows
+terminal build, and nothing to do with the above.

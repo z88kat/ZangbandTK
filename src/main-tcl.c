@@ -765,6 +765,91 @@ static void grid_clear(term_data *td)
 }
 
 /**
+ * Make the bundled fonts available to Tk, without installing anything.
+ *
+ * The design system this front end is drawn to names three faces --
+ * Cormorant Garamond, Lora and Courier Prime -- and none of them is on a
+ * stock macOS.  Tk has no API for loading a font file: it asks the platform
+ * for a family by name and takes what it is given.  So the platform is told
+ * about them first.
+ *
+ * Process scope, so nothing is installed for the user and nothing survives
+ * the program exiting.  All three are SIL Open Font Licence 1.1, which is why
+ * they can be shipped at all; lib/fonts carries each licence beside its font.
+ *
+ * A font that will not register is not fatal.  lib/tcl/classical.tcl names a
+ * fallback for every face, and a sheet set in Baskerville is a lesser thing
+ * than one set in Cormorant, not a broken one.
+ */
+/*
+ * __APPLE__, not MACH_O_CARBON: the latter is the Makefile build's marker for
+ * the Cocoa front end and the cmake build does not define it, so guarding on
+ * it compiled the do-nothing branch and the fonts never appeared.
+ */
+#ifdef __APPLE__
+
+#include <ApplicationServices/ApplicationServices.h>
+
+static void fonts_register(void)
+{
+	char path[1024];
+	ang_dir *dir;
+	char name[256];
+
+	if (!ANGBAND_DIR_FONTS) return;
+
+	dir = my_dopen(ANGBAND_DIR_FONTS);
+	if (!dir) return;
+
+	while (my_dread(dir, name, sizeof(name))) {
+		CFURLRef url;
+		CFStringRef str;
+		CFErrorRef err = NULL;
+
+		if (!suffix_i(name, ".ttf") && !suffix_i(name, ".otf")) continue;
+
+		path_build(path, sizeof(path), ANGBAND_DIR_FONTS, name);
+
+		str = CFStringCreateWithCString(NULL, path, kCFStringEncodingUTF8);
+		if (!str) continue;
+
+		url = CFURLCreateWithFileSystemPath(NULL, str,
+				kCFURLPOSIXPathStyle, false);
+		CFRelease(str);
+		if (!url) continue;
+
+		if (!CTFontManagerRegisterFontsForURL(url,
+				kCTFontManagerScopeProcess, &err)) {
+			/*
+			 * Worth saying once, quietly: the usual cause is the same file
+			 * registered twice, which is harmless, and the alternative is a
+			 * dialog about typography in front of somebody trying to play.
+			 */
+			plog_fmt("Tcl/Tk: could not register the font %s.", name);
+			if (err) CFRelease(err);
+		}
+
+		CFRelease(url);
+	}
+
+	my_dclose(dir);
+}
+
+#else
+
+static void fonts_register(void)
+{
+	/*
+	 * Windows wants AddFontResourceEx and Linux FcConfigAppFontAddFile.
+	 * Neither is written yet -- decision 13 puts those platforms after macOS
+	 * -- and until they are, the fallbacks in classical.tcl are what those
+	 * builds get.
+	 */
+}
+
+#endif /* __APPLE__ */
+
+/**
  * Point Tcl and Tk at their own script libraries.
  *
  * Tcl_Init finds init.tcl by walking up from the executable, which works for a
@@ -2073,6 +2158,7 @@ enum player_field_type {
 enum player_field_id {
 	PFI_NAME, PFI_RACE, PFI_CLASS, PFI_TITLE, PFI_HISTORY,
 	PFI_LEVEL, PFI_MAX_LEV, PFI_EXP, PFI_MAX_EXP, PFI_EXP_TO_ADVANCE,
+	PFI_NEXT_LEVEL,
 	PFI_GOLD, PFI_DEPTH, PFI_MAX_DEPTH, PFI_POSITION, PFI_IN_WILD,
 	PFI_HITPOINTS, PFI_MANA, PFI_ARMOR_CLASS, PFI_TO_HIT, PFI_TO_DAM,
 	PFI_BLOWS_PER_ROUND, PFI_SHOTS_PER_ROUND, PFI_SPEED, PFI_INFRAVISION,
@@ -2096,6 +2182,7 @@ static const struct {
 	{ "exp",				PF_INT },
 	{ "max_exp",			PF_INT },
 	{ "exp_to_advance",		PF_INT },
+	{ "next_level",			PF_PAIR },
 	{ "gold",				PF_INT },
 	{ "depth",				PF_INT },
 	{ "max_depth",			PF_INT },
@@ -2179,6 +2266,27 @@ static Tcl_Obj *player_field_obj(enum player_field_id id)
 	case PFI_EXP:		return Tcl_NewIntObj((int)player->exp);
 	case PFI_MAX_EXP:	return Tcl_NewIntObj((int)player->max_exp);
 	case PFI_EXP_TO_ADVANCE:	return Tcl_NewIntObj(player_exp_to_advance());
+
+	/*
+	 * Progress through the current level, as {gained wanted} -- what a meter
+	 * needs and what exp_to_advance on its own cannot give, because the bar
+	 * has to start from the threshold the level began at rather than from
+	 * zero.  At the top of the table there is nothing left to gain, and the
+	 * pair is {0 0}, which the meter draws as an empty track.
+	 */
+	case PFI_NEXT_LEVEL: {
+		long base = (player->lev > 1)
+				? player_exp[player->lev - 2] * player->expfact / 100L : 0;
+		long want = (player->lev < PY_MAX_LEVEL)
+				? player_exp[player->lev - 1] * player->expfact / 100L : base;
+
+		pair = Tcl_NewListObj(0, NULL);
+		Tcl_ListObjAppendElement(NULL, pair,
+				Tcl_NewIntObj((int)(player->exp - base)));
+		Tcl_ListObjAppendElement(NULL, pair,
+				Tcl_NewIntObj((int)(want - base)));
+		return pair;
+	}
 	case PFI_GOLD:		return Tcl_NewIntObj((int)player->au);
 	case PFI_DEPTH:		return Tcl_NewIntObj(player->depth);
 	case PFI_MAX_DEPTH:	return Tcl_NewIntObj(player->max_depth);
@@ -3323,6 +3431,13 @@ errr init_tcl(int argc, char **argv)
 		Tcl_SetStartupScript(startup, NULL);
 		Tcl_DecrRefCount(startup);
 	}
+
+	/*
+	 * Before Tk, because Tk asks the platform for its font list as it starts
+	 * and a face registered afterwards is a face the first "font create" will
+	 * not find.
+	 */
+	fonts_register();
 
 	if (Tk_Init(interp) != TCL_OK) {
 		plog_fmt("Tcl/Tk: Tk_Init failed: %s", Tcl_GetStringResult(interp));
