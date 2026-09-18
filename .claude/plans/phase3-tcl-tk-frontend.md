@@ -1011,9 +1011,9 @@ work — the debug loop exists before the UI does — and one scripted session r
 > which is how the seam is tested with no character to play, and how a dialog gets looked at
 > without reaching the point in the game that raises it.
 >
-> Thirty-four checks now. The scripted session is in CI as `continue-on-error`, which
-> answers §8's open question about whether a runner can open a window; it is not a gate
-> until it does.
+> Thirty-four checks now, and the scripted session runs in CI. It went in as
+> `continue-on-error` to answer §8's question about whether a runner can open a window;
+> it can, so the guard is off and it is a gate like the rest.
 >
 > **And the first read accessor.** `angband_option` lists every option as
 > `{name type desc value}`, reads one and writes one. The names are the game's — `list-options.h`
@@ -1816,9 +1816,11 @@ fights:
   suites are a *second* body of tests with a different runner; do not try to merge them.
 - **macOS has no `timeout`.** Every harness here needs its own watchdog, as `smoke-tty`
   already does — a hung Tk event loop otherwise hangs the job rather than failing it.
-- A Tk test needs a display. Aqua on a CI runner is the open question: if it turns out the
-  runner cannot open a window, the first three layers still run headless and only the fourth
-  moves to a local pre-release gate. Find this out at T0, when the answer costs nothing.
+- ~~A Tk test needs a display. Aqua on a CI runner is the open question.~~ **Answered: a
+  GitHub `macos-latest` runner can open an Aqua window.** The scripted session starts the
+  real game with the real front end and drives the bridge from a script; run 35324433664 on
+  18 September 2026 reported "Bridge checks passed" inside a 1m26s workflow. All four layers
+  run in CI, and none of them moved to a local-only gate.
 
 **What cannot be asserted this way is the rendering**, and it should not be faked. Tiles are
 judged at actual size, in a running window, on something worth walking into — no golden-image

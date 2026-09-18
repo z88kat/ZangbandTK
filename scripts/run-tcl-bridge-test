@@ -12,7 +12,8 @@
 # out of stdout, because Tk closes it for a bundled application.
 #
 # It opens a window.  That is why it is separate from scripts/run-tcl-tests,
-# which does not, and why CI does not run it yet.
+# which does not -- and a GitHub macOS runner turns out to have one, so CI runs
+# this too.
 set -o errexit
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)

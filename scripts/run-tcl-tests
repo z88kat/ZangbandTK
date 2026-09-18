@@ -13,8 +13,10 @@
 # separate runner, deliberately: those are programs linked against angband.o
 # and are not in ctest either.  See section 9 of the Phase 3 plan.
 #
-# Nothing here opens a window.  Whether a CI runner can is still unknown, so
-# the suites that need Tk are kept apart and are not run from here yet.
+# Nothing here opens a window, which is why it is separate from
+# scripts/run-tcl-bridge-test -- that one starts the real game and does.  Both
+# run in CI; this one is the faster gate and fails first when a script will not
+# parse.
 set -o errexit
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)

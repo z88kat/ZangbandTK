@@ -7,9 +7,10 @@ name: Tk
 # them rather than a toolchain.
 #
 # It builds the toolchain, then the front end, then the application bundle, and
-# runs the Tcl tests.  Nothing here opens a window: whether a runner can is
-# still an open question, and until it is answered the tests that need one are
-# a local gate rather than a CI one.  See section 9 of the Phase 3 plan.
+# runs both test suites -- the ones that need no window, and the scripted
+# session at the end, which does.  A runner can open an Aqua window; that was
+# an open question until the step below answered it.  See section 9 of the
+# Phase 3 plan.
 
 on:
   push:
@@ -162,17 +163,17 @@ jobs:
           path: out/ZangbandTclTK.app
           retention-days: 7
 
-      # An experiment, not a gate.  This one starts the real game with the real
-      # front end and drives the bridge from a script, so unlike every step
-      # above it needs a window -- and whether a GitHub runner can open an Aqua
-      # window is the open question in section 8 of the Phase 3 plan.
+      # The only step here that needs a window: it starts the real game with
+      # the real front end and drives the bridge from a script.
       #
-      # continue-on-error until that is answered.  A step that cannot fail is
-      # worth nothing as a check, which is exactly why it says so here rather
-      # than quietly passing: the value is the log, and the log answers the
-      # question one way or the other.  When it does, this either becomes a
-      # real step or moves to the local-only list beside the tests that need a
-      # player.
-      - name: Scripted session (does a runner have a window?)
-        continue-on-error: true
+      # It arrived as continue-on-error, because whether a GitHub runner can
+      # open an Aqua window was an open question and a step that cannot fail is
+      # worth nothing as a check.  It can: run 35324433664 on 18 September 2026
+      # reported "Bridge checks passed" in a 1m26s workflow.  So the guard is
+      # off and this is a gate like the rest.
+      #
+      # It has its own watchdog -- see the script.  A front end that fails to
+      # start does not fail, it waits, and a job that hangs for six hours is a
+      # worse outcome than a red one.
+      - name: Scripted session
         run: scripts/run-tcl-bridge-test build
