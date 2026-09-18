@@ -70,6 +70,18 @@ proc classical::sp {n} {
     return $space($n)
 }
 
+# A two-sided pad, as -padx and -pady want it.
+#
+# There is a trap here that has cost three debugging sessions: -pady {0 [sp 4]}
+# looks right and is wrong, because braces stop substitution and Tk is handed
+# the three words "0", "[sp", "4]".  It fails with "wrong number of parts to
+# pad specification", from whichever widget happened to be next.  This exists
+# so the idiom is [classical::pad 0 4] and the braces never come up.
+proc classical::pad {a b} {
+    variable space
+    return [list $space($a) $space($b)]
+}
+
 # --- type -------------------------------------------------------------------
 #
 # Three faces, all SIL Open Font Licence and all shipped in lib/fonts:
@@ -324,6 +336,51 @@ proc classical::footer {parent items statusvar} {
         -bg [classical::c neutral-100] -fg [classical::c neutral-600]
     pack $row.status -side right
 
+    return $f
+}
+
+# A scrolling list, and a search box.
+#
+# Named scrolllist and searchbox, not listbox and entry.  A proc called
+# classical::listbox shadows Tk's own listbox for every caller inside this
+# namespace -- including its own body, which makes it recurse into itself --
+# and classical::entry does the same to entry.  The rule is that nothing in
+# here may be named after the Tk command it wraps.
+#
+# A listbox rather than anything cleverer: it is the one Tk widget that will
+# hold seven hundred rows and stay responsive, and every colour it uses can be
+# set.  The scrollbar is Ttk on purpose -- it is chrome rather than content, and
+# a scrollbar that looks like the platform's is the right kind of familiar.
+proc classical::scrolllist {parent name {width 32}} {
+    set f $parent.l$name
+    frame $f -bg [classical::c bg] -highlightthickness 1 \
+        -highlightbackground [classical::c divider] -bd 0
+
+    listbox $f.list -width $width -activestyle none -borderwidth 0 \
+        -highlightthickness 0 -relief flat \
+        -bg [classical::c neutral-100] -fg [classical::c neutral-800] \
+        -font [classical::f label] \
+        -selectbackground [classical::c accent-200] \
+        -selectforeground [classical::c accent-900] \
+        -yscrollcommand [list $f.sb set]
+    ttk::scrollbar $f.sb -orient vertical -command [list $f.list yview]
+
+    pack $f.sb -side right -fill y
+    pack $f.list -side left -fill both -expand 1
+
+    return $f
+}
+
+# A single-line entry, for a search box.
+proc classical::searchbox {parent name var} {
+    set f $parent.e$name
+    frame $f -bg [classical::c bg] -highlightthickness 1 \
+        -highlightbackground [classical::c divider] -bd 0
+    entry $f.e -textvariable $var -borderwidth 0 -highlightthickness 0 \
+        -relief flat -bg [classical::c neutral-100] \
+        -fg [classical::c neutral-800] -font [classical::f label] \
+        -insertbackground [classical::c accent-700]
+    pack $f.e -fill x -padx 6 -pady 4
     return $f
 }
 

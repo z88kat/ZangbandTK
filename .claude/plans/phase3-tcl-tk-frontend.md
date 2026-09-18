@@ -1175,6 +1175,11 @@ window, reads live, and closes without disturbing the game.
 ---
 
 ### T5 — Map widget and Micro Map
+> **On hold.** *"Right now the map works ok. I am not sure that these changes improve it."*
+> The pane carries `PW_MAP` and the game draws it, which is what the attempt in T4's week
+> failed to better. The four findings from that attempt are recorded under T3's minimap note
+> and are the starting conditions for whenever this is picked up.
+
 `cave`, `m_list`, `o_list`, `f_info`. The scrolling map widget and the level overview, with
 hover tooltips and the hovered-monster health bar.
 
@@ -1199,6 +1204,38 @@ knowledge browsers are **windows that open** (decision 16), not panes.
   `r_info.c`'s 1,737 lines were computing ([OBS-28](phase3-observations.md)).
 
 **Exit:** monster and object recall, and the knowledge menus, are native.
+
+> **Monsters done.** `angband_monster` takes `max`, `list ?pattern?`, `info <index>` and
+> `lore <index>`, and `lib/tcl/knowledge.tcl` is the browser: a filtered list on the left, the
+> facts and the game's own recall on the right, drawn with the design system.
+>
+> **A table is queried, not fetched.** This is deliberately a different shape from
+> `angband_player`: 1,014 rows rather than one record. It is also the original's shape —
+> `angband r_info` took `info`, `find`, `set` and `max` — which is §3.3's naming rule applied
+> to a command's arguments rather than to its name. `set` is not here and will not be: a
+> front end that can write to `r_info` is a front end that can cheat.
+>
+> **The recall is `lore_description()`, not a rewrite of it.** The same function the look
+> command and the knowledge screens use, with `spoilers` false, so the window cannot tell a
+> player something their character has not learned and cannot drift from what the game says.
+> A textblock comes back as wide characters, one colour per character; the colours are
+> dropped, because the prose panel sets one colour for the passage.
+>
+> Two more Tk traps, both now guarded in the design system rather than remembered:
+>
+> - **A pad written `-pady {0 [sp 4]}` does not substitute.** Third time. There is a
+>   `classical::pad` now, so the braces never come up.
+> - **Nothing in `classical` may be named after the Tk command it wraps.** A proc called
+>   `classical::listbox` shadows `listbox` for every caller in the namespace — including its
+>   own body, which makes it recurse — and `classical::entry` does it to `entry`. They are
+>   `scrolllist` and `searchbox`.
+>
+> Checked against a character who knows 32 of 1,014 races: the list, the facts, the recall
+> text, and a live search narrowing to two on "idiot". Fifty-two bridge checks.
+>
+> Still to come in T6: objects (`k_info`), artifacts (`a_info`), and the rest of 4.2's
+> knowledge categories — ego items, runes, features, traps — plus the Character window's
+> five-tab home, of which Virtues can be filled immediately.
 
 > **The Character window is a five-tab home, not a screen** — Info, Flags, Mutations,
 > Virtues, Notes ([OBS-21](phase3-observations.md)). Two of those tabs are where Phase 2's

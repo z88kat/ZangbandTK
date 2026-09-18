@@ -27,6 +27,7 @@
 #include "player-calcs.h"
 #include "grafmode.h"
 #include "init.h"
+#include "mon-lore.h"
 #include "ui-command.h"
 #include "ui-display.h"
 #include "ui-game.h"
@@ -34,8 +35,10 @@
 #include "option.h"
 #include "ui-input.h"
 #include "ui-keymap.h"
+#include "ui-mon-lore.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
+#include "z-textblock.h"
 
 #include <tcl.h>
 #include <tk.h>
@@ -2431,6 +2434,225 @@ static int objcmd_player(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 /**
+ * angband_monster -- the monster knowledge the character has.
+ *
+ *    angband_monster max              how many races there are
+ *    angband_monster list ?pattern?   {index name level unique kills} rows
+ *    angband_monster info <index>     one race, as a name/value dict
+ *    angband_monster lore <index>     the recall text, as the game writes it
+ *
+ * The second read family, and it is a different shape from angband_player on
+ * purpose: this is a table of 700-odd rows, not one record, so it is queried
+ * rather than fetched.  That shape is the original's too -- `angband r_info`
+ * took info, find, set and max, and the scripts asked it for name, unique and
+ * icon 74 times between them -- which is the naming rule from section 3.3
+ * applied to a command's arguments rather than to its name.
+ *
+ * `set` is not here and will not be: the original let a script write to
+ * r_info, and a front end that can edit the monster list is a front end that
+ * can cheat.  Reading is the whole job.
+ *
+ * What it reports is what the character knows.  A race nobody has met has no
+ * lore, and `list` says so by leaving it out rather than by naming it and
+ * showing zeroes.
+ */
+
+/**
+ * A textblock as a Tcl string.
+ *
+ * The game writes its recall into wide characters with a colour per
+ * character; the colours are dropped here, because the design system's prose
+ * panel sets one colour for the passage and the alternative is a tagged text
+ * widget nobody has asked for yet.
+ */
+static Tcl_Obj *textblock_to_obj(textblock *tb)
+{
+	const wchar_t *text = textblock_text(tb);
+	Tcl_DString utf;
+	Tcl_Obj *result;
+	size_t i;
+
+	Tcl_DStringInit(&utf);
+
+	for (i = 0; text[i]; i++) {
+		char buf[TCL_UTF_MAX + 1];
+		Tcl_Size n = Tcl_UniCharToUtf((int)text[i], buf);
+
+		Tcl_DStringAppend(&utf, buf, n);
+	}
+
+	result = Tcl_NewStringObj(Tcl_DStringValue(&utf),
+			Tcl_DStringLength(&utf));
+	Tcl_DStringFree(&utf);
+
+	return result;
+}
+
+/**
+ * Has the character met this one?
+ *
+ * Sights or kills, in this life or a previous one -- which is what the
+ * knowledge screens use, and means a race read about in a previous character's
+ * lore stays read about.
+ */
+static bool monster_known(const struct monster_lore *lore)
+{
+	return lore->sights > 0 || lore->tkills > 0;
+}
+
+static Tcl_Obj *monster_info_obj(Tcl_Interp *ip, int idx)
+{
+	struct monster_race *race = &r_info[idx];
+	struct monster_lore *lore = get_lore(race);
+	Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+
+#define PUT(key, value) \
+	do { \
+		Tcl_ListObjAppendElement(ip, d, Tcl_NewStringObj((key), -1)); \
+		Tcl_ListObjAppendElement(ip, d, (value)); \
+	} while (0)
+
+	PUT("index", Tcl_NewIntObj(idx));
+	PUT("name", Tcl_NewStringObj(race->name ? race->name : "", -1));
+	PUT("plural", Tcl_NewStringObj(race->plural ? race->plural : "", -1));
+	PUT("base", Tcl_NewStringObj(
+			(race->base && race->base->name) ? race->base->name : "", -1));
+	PUT("unique", Tcl_NewBooleanObj(rf_has(race->flags, RF_UNIQUE)));
+	PUT("level", Tcl_NewIntObj(race->level));
+	PUT("rarity", Tcl_NewIntObj(race->rarity));
+	PUT("speed", Tcl_NewIntObj(race->speed));
+	PUT("avg_hp", Tcl_NewIntObj(race->avg_hp));
+	PUT("armor_class", Tcl_NewIntObj(race->ac));
+	PUT("exp", Tcl_NewIntObj(race->mexp));
+
+	/* What this character, and this character's line, has learned. */
+	PUT("known", Tcl_NewBooleanObj(monster_known(lore)));
+	PUT("sights", Tcl_NewIntObj(lore->sights));
+	PUT("kills", Tcl_NewIntObj(lore->tkills));
+	PUT("kills_this_life", Tcl_NewIntObj(lore->pkills));
+	PUT("deaths", Tcl_NewIntObj(lore->deaths));
+
+#undef PUT
+
+	return d;
+}
+
+static int objcmd_monster(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what;
+	int idx;
+
+	(void)dummy;
+
+	if (objc < 2) {
+		Tcl_WrongNumArgs(ip, 1, objv, "max|list|info|lore ?argument ...?");
+		return TCL_ERROR;
+	}
+
+	what = Tcl_GetString(objv[1]);
+
+	/*
+	 * r_info is read at startup and is there before a character is, so max
+	 * and list answer without one.  info and lore read the lore, which is
+	 * per character.
+	 */
+	/*
+	 * l_list as well as the other two: the lore is allocated with the monster
+	 * list but the front end answers questions before init_angband has read
+	 * either, and get_lore indexes straight into it.
+	 */
+	if (!r_info || !z_info || !l_list) {
+		Tcl_SetObjResult(ip,
+				Tcl_NewStringObj("the monster list is not loaded yet", -1));
+		return TCL_ERROR;
+	}
+
+	if (strcmp(what, "max") == 0 && objc == 2) {
+		Tcl_SetObjResult(ip, Tcl_NewIntObj((int)z_info->r_max));
+		return TCL_OK;
+	}
+
+	/*
+	 * The list a browser draws: one row per race the character knows, as
+	 * {index name level unique kills}.  A pattern filters by name, matched
+	 * the way Tcl matches, because a browser's search box is the caller's
+	 * problem and glob is what a Tcl caller already has.
+	 */
+	if (strcmp(what, "list") == 0 && (objc == 2 || objc == 3)) {
+		const char *pattern = (objc == 3) ? Tcl_GetString(objv[2]) : NULL;
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+		int i;
+
+		for (i = 1; i < (int)z_info->r_max; i++) {
+			struct monster_race *race = &r_info[i];
+			struct monster_lore *lore;
+			Tcl_Obj *row;
+
+			if (!race->name) continue;
+
+			lore = get_lore(race);
+			if (!monster_known(lore)) continue;
+			if (pattern && !Tcl_StringMatch(race->name, pattern)) continue;
+
+			row = Tcl_NewListObj(0, NULL);
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(race->name, -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(race->level));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewBooleanObj(rf_has(race->flags, RF_UNIQUE)));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(lore->tkills));
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	if ((strcmp(what, "info") == 0 || strcmp(what, "lore") == 0)
+			&& objc == 3) {
+		if (Tcl_GetIntFromObj(ip, objv[2], &idx) != TCL_OK) return TCL_ERROR;
+
+		if (idx < 1 || idx >= (int)z_info->r_max || !r_info[idx].name) {
+			Tcl_SetObjResult(ip,
+					Tcl_ObjPrintf("no such monster: %d", idx));
+			return TCL_ERROR;
+		}
+
+		if (strcmp(what, "info") == 0) {
+			Tcl_SetObjResult(ip, monster_info_obj(ip, idx));
+			return TCL_OK;
+		}
+
+		/*
+		 * The game's own recall, not a rewrite of it.  lore_description is
+		 * what the "look" command and the knowledge screens both use, so a
+		 * window built on this cannot drift from what the game says -- and
+		 * spoilers stay false, because the front end has no business knowing
+		 * more than the character does.
+		 */
+		{
+			struct monster_race *race = &r_info[idx];
+			textblock *tb = textblock_new();
+			Tcl_Obj *text;
+
+			lore_description(tb, race, get_lore(race), false);
+			text = textblock_to_obj(tb);
+			textblock_free(tb);
+
+			Tcl_SetObjResult(ip, text);
+			return TCL_OK;
+		}
+	}
+
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+			"expected max, list, info or lore, not: %s", what));
+
+	return TCL_ERROR;
+}
+
+/**
  * angband_option -- read and write the game's options.
  *
  *    angband_option                     every option, as {name type desc value}
@@ -3466,6 +3688,8 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_ask", objcmd_ask, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_option", objcmd_option, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_player", objcmd_player, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_monster", objcmd_monster, NULL,
+			NULL);
 
 	hooks_init();
 

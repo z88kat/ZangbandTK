@@ -257,6 +257,31 @@ check "and it can be opened again" {
 	set was
 } 1
 
+# --- monster knowledge ------------------------------------------------------
+
+# Everything here reads r_info and the lore, and the front end is answering
+# before init_angband has read either, so it says so rather than indexing into
+# a null array.
+check "the monster list says when it is not loaded" {
+	catch {angband_monster max} e
+	set e
+} "the monster list is not loaded yet"
+
+check "and refuses a verb it does not have" {
+	catch {angband_monster sideways} e
+	set e
+} "the monster list is not loaded yet"
+
+check "the knowledge window opens without a character" {
+	knowledge_window
+	list [winfo exists .knowledge] $::knowledge(count)
+} "1 {0 known}"
+
+check "closing it is just closing it" {
+	destroy .knowledge
+	winfo exists .knowledge
+} 0
+
 # --- the second pass --------------------------------------------------------
 
 # Everything above ran while the front end was still starting.  This runs from
