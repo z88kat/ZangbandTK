@@ -441,10 +441,13 @@ reaches them by choosing them, which is now possible, and an incomplete new
 realm costs whoever chose it rather than everybody. So:
 
 1. **Sorcery, Chaos, Trump** — new content, no existing casters affected.
-   **Trump is deferred (3.56.1, DEC-54)** on monster allegiance -- 15 of its
-   32 spells are summons whose content is whether the creature is yours, and
-   4.2 has no side for a monster to be on. Birth no longer offers a realm the
-   class has no books in, which was a live trap.
+   **Trump is done (3.73.0, DEC-64 discharging DEC-54).** It was deferred whole
+   on monster allegiance: its summons' whole content is whether the creature is
+   yours, and 4.2 had no side for a monster to be on. M10 phase 7 built that
+   side. Trump now has four books and all 32 spell entries -- 27 with effects
+   and five deferred as shapes rather than as parts lists -- and `player/realm`
+   asserts that no realm is empty. Birth no longer offers a realm the class has
+   no books in, which was a live trap while Trump had none.
    **Chaos is done (3.56.0):** 32 spells in 4 books, no deferrals but six
    documented reductions (DEC-53), emitted into Mage, Priest and Ranger.
    **Sorcery is done (3.55.0):** 32 spells in 4 books, emitted by
@@ -727,7 +730,7 @@ that are not scheduled are listed under it with a reason each. (109 until 11 Sep
 | 1 | The model: 96 mutations generated out of `tables.c`, the weighted roll, the nine cancelling pairs, race affinity, Beastman birth and per-level, the savefile block (PLR-13, PLR-36, PLR-37, PLR-38) | 3.45.0 |
 | 2 | The 32 continuous mutations as player properties, through `calc_bonuses()`, and the character sheet (PLR-15, PLR-17) | 3.46.0 |
 | 3 | 24 of the 32 activatable mutations in the power list beside racial powers (PLR-16); 29 of 32 by 3.72.0 | 3.47.0 |
-| 4 | 22 of the 27 random mutations firing on their own timer, and all 5 melee mutations in the attack round (PLR-14, PLR-35) | 3.48.0 |
+| 4 | 22 of the 27 random mutations firing on their own timer, and all 5 melee mutations in the attack round (PLR-14, PLR-35); 23 of 27 by 3.122.0, when wraith form's deferral reason expired (DEC-85) | 3.48.0 |
 | 5 | The acquisition and removal paths, the DEC-38 patron carry-over, the Chaos Tower, the potion of New Life (PLR-14, PLR-34, DEC-24) | 3.49.0 |
 | 6 | What the milestone was declared complete without: the wizard grant menu, the character sheet's mutations page, the `cheat_powers` option, and the three flags and one food penalty the converter had been skipping (PLR-13, PLR-15, PLR-17) | 3.49.4–3.50.0 |
 

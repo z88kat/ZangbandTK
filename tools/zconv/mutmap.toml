@@ -438,10 +438,21 @@ normal."""
 effects = [ "LOSE_MUTATION" ]
 
 [random.WRAITH]
-line = 1680
-defer = """inc_wraith_form() turns the character incorporeal for a while: they \
-pass through walls and take damage from doing it. 4.2 has no wraith form and \
-no player-passes-walls state at all."""
+line = 1573
+note = """inc_wraith_form(rand_range(lev / 2, lev)) turns the character \
+incorporeal. This was deferred while 4.2 had no incorporeal state; the Spectre \
+work (PLR-01, DEC-74) built OF_PASS_WALL and player_can_pass_walls(), and the \
+timed effect grants that flag rather than reimplementing the movement.
+
+The earlier note said wraiths "take damage from doing it", and that is the \
+wrong way round: dungeon.c:1202 tests !p_ptr->tim.wraith_form, so wraith form \
+*suppresses* the wall damage a Spectre pays. It carries a good deal more \
+besides -- +100 AC and reflection (xtra1.c:2795), nine tenths off every blow \
+(effects.c:3285), darkness healing instead of hurting and light cutting it \
+short (spells1.c:3632, :3595). Those are code, not effect chains; the chain \
+here is only the duration."""
+effects = [ "TIMED_INC:WRAITH", "dice:$B+d$S",
+  "expr:B:PLAYER_LEVEL:/ 2 - 1", "expr:S:PLAYER_LEVEL:+ 1 / 2 + 1" ]
 
 [random.POLY_WOUND]
 line = 1691

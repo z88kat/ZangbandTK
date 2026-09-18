@@ -307,6 +307,28 @@ int player_apply_damage_reduction(struct player *p, int dam)
 		dam -= (dam * p->state.perc_dam_red) / 100 ;
 	}
 
+	/*
+	 * Wraith form takes a tenth of everything (PLR-16).
+	 *
+	 * Zangband divides in `take_hit()` itself, after every other reduction and
+	 * immediately before the hit points come off
+	 * ([effects.c:3285](../archive/zangband/src/effects.c#L3285)), so it goes
+	 * last here too -- percentage reduction from equipment compounds with it
+	 * rather than being replaced by it.
+	 *
+	 * Not `perc_dam_red += 90`, which is the obvious route and is wrong at the
+	 * bottom of the range: that reduction rounds *down* the amount removed, so
+	 * a five point blow becomes one rather than nothing.  The archive rounds
+	 * the other way and then gives a tenth of those a single point back, so
+	 * small blows mostly stop entirely and occasionally scratch.  Written as
+	 * the archive writes it, because the difference is the whole character of
+	 * the thing: a wraith is not lightly armoured, it is barely there.
+	 */
+	if (p->timed[TMD_WRAITH] && dam > 0) {
+		dam /= 10;
+		if (dam == 0 && one_in_(10)) dam = 1;
+	}
+
 	return (dam < 0) ? 0 : dam;
 }
 

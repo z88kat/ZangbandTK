@@ -4295,3 +4295,60 @@ So M11 stands as: **stage 1 complete, stage 2 a scheduled decision.** The
 milestone is not finished, and the difference between "we chose to add none of
 it" and "we have not chosen yet" is the whole of what this entry exists to
 record.
+
+---
+
+**DEC-85 — Wraith form is built whole, and a character whose form expires
+inside rock is crushed.** (PLR-16, 3.122.0. Discharges the `mutmap.toml`
+deferral of `random.WRAITH`.)
+
+The deferral said "4.2 has no wraith form and no player-passes-walls state at
+all". PLR-01/DEC-74 built `OF_PASS_WALL` and `player_can_pass_walls()`, and --
+the part that made this cheap -- gated the wall damage on the *flag* rather than
+on the Spectre race. So a timed effect with `flag-synonym:PASS_WALL:0` inherits
+the movement, the permanent-wall exception and the damage without touching any
+of them.
+
+**The note was also wrong on the facts, and this is the second time a deferral
+note has turned out to be a summary of a summary.** It said wraiths "take damage
+from doing it". `dungeon.c:1202` tests `!p_ptr->tim.wraith_form`, so the form
+*suppresses* the damage. And the form carries a great deal more than passing
+walls: +100 AC and `TR_REFLECT` (`xtra1.c:2795`), `damage /= 10` with a one in
+ten chance of a single point back (`effects.c:3285`), darkness healing rather
+than hurting (`spells1.c:3632`), and light ending the form outright wherever
+you are and whether or not you resisted it (`spells1.c:3595`). All of that is
+built. The duration is `rand_range(lev / 2, lev)` and the anti-magic gate is the
+general one the other random mutations already use.
+
+**The decision.** A timed pass-wall state makes expiry-inside-rock a reachable
+game state for the first time. Three outcomes were possible -- ejected, stuck,
+dead -- and it would have been a decision for the project owner had the archive
+been silent. It is not: the guard is `(chp > depth / 10) || !PASS_WALL`, which
+lifts the hit-point floor for exactly a character who cannot pass walls, and the
+comment beside it says plainly that everyone else in a wall dies and a pass-wall
+character does not. So: **crushed**, `1 + depth / 10` a turn, no floor, and a
+distinct message and killer ("solid rock", against the Spectre's "density").
+
+That branch existed in the archive and was deliberately left out here, on the
+recorded grounds that an ordinary character in a wall grid was a bug rather than
+a Spectre and killing them for it would hide the bug. That reasoning was right
+when it was written and is now obsolete, and the alternative is worse than the
+death it avoids: without it the character is entombed alive, unable to move in
+any direction, with nothing killing them and no way out except an escape item
+they may not have.
+
+**And the surface is not exempt from it.** The density branch is not exempt
+either -- the project owner overruled the archive-faithful reading there
+(*"Our mountains are walls so the Spector takes damage"*), and a stale comment
+in `game-world.c` still described the reasoning that ruling replaced. Corrected
+in passing. At depth 0 the crushing charge is one point a turn, which is slow
+enough to read a scroll and get out.
+
+**Interaction with the `PASS_WALL` ego pool.** `PASS_WALL` is in `OFT_MISC`,
+which is what `KF_RAND_POWER` draws from, so a character can hold the flag
+permanently from an ego item *and* be in wraith form. Checked and coherent: the
+flag is idempotent, the form's suppression covers both, and when the form ends
+the ego still carries the flag -- so that character is a Spectre again rather
+than a corpse and can walk out. Asserted, because it is the case the crushing
+branch must *not* kill. Whether those egos should be able to roll pass-wall at
+all is a separate open question and is unchanged by this.

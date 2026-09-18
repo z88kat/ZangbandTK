@@ -247,6 +247,23 @@ static int project_player_handler_POIS(project_player_handler_context_t *context
 
 static int project_player_handler_LIGHT(project_player_handler_context_t *context)
 {
+	/*
+	 * Light ends wraith form, whatever else it does (PLR-16).
+	 *
+	 * Before the resistance check and not after it, because the archive does
+	 * it after `take_hit()` and outside every branch
+	 * ([spells1.c:3595](../archive/zangband/src/spells1.c#L3595)): resisting
+	 * the light, or being immune to it and taking a flat zero, still forces a
+	 * wraith back into its body.  It is the light that does it, not the harm.
+	 *
+	 * `notify` is false so the effect's own "You feel opaque." stays out of
+	 * the way of the archive's line, which says why it happened.
+	 */
+	if (player->timed[TMD_WRAITH]) {
+		msg("The light forces you out of your incorporeal shadow form.");
+		(void)player_clear_timed(player, TMD_WRAITH, false, true);
+	}
+
 	if (player_resists(player, ELEM_LIGHT)) {
 		msg("You resist the effect!");
 		return 0;
@@ -979,16 +996,48 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 		if (self) {
 			context.dam /= 10;
 		}
+
 		/*
-		 * Account for the player's damage reduction.   That does not
-		 * affect the side effects (i.e. player_handler), so leave
-		 * context.dam unmodified.
+		 * Darkness feeds a wraith rather than hurting it (PLR-16).
+		 *
+		 * `if (p_ptr->tim.wraith_form) hp_player(dam); else take_hit(dam,
+		 * killer);` ([spells1.c:3632](../archive/zangband/src/spells1.c#L3632))
+		 * -- the same number, healing instead of harming.
+		 *
+		 * The number is `context.dam` and not `reduced`: the archive heals
+		 * whatever survived resistance, before any of the reductions that
+		 * would apply to a hit.  Running it through the wraith's own nine
+		 * tenths would heal a tenth of what the archive heals, which is the
+		 * easy mistake here and would leave darkness a rounding error rather
+		 * than a meal.
+		 *
+		 * The side-effect handler still runs, so the blindness lands as it
+		 * always did.  The archive's swap is on the hit alone.
+		 *
+		 * Only `PROJ_DARK`.  The archive's weak darkness has no player case at
+		 * all -- it darkens the grid and stops -- so there is nothing there to
+		 * turn round.
 		 */
-		reduced = player_apply_damage_reduction(player, context.dam);
-		if (reduced > 0 && OPT(player, show_damage)) {
-			msg("You take %d damage.", reduced);
+		if (typ == PROJ_DARK && player->timed[TMD_WRAITH]) {
+			int gain = MIN(context.dam, player->mhp - player->chp);
+
+			if (gain > 0) {
+				player->chp += gain;
+				player->upkeep->redraw |= (PR_HP);
+			}
+			msg("The darkness sustains you.");
+		} else {
+			/*
+			 * Account for the player's damage reduction.   That does not
+			 * affect the side effects (i.e. player_handler), so leave
+			 * context.dam unmodified.
+			 */
+			reduced = player_apply_damage_reduction(player, context.dam);
+			if (reduced > 0 && OPT(player, show_damage)) {
+				msg("You take %d damage.", reduced);
+			}
+			take_hit(player, reduced, killer);
 		}
-		take_hit(player, reduced, killer);
 	}
 
 	/* Handle side effects, possibly including extra damage */

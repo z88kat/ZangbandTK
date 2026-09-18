@@ -386,7 +386,7 @@ void player_apply_mutations(struct player *p, struct player_state *state,
  * cowardice -- being too frightened to act is not magic. That reading is
  * followed here rather than tidied into a blanket rule.
  *
- * Six have no 4.2 equivalent and simply never fire; the reasons are in
+ * Four have no 4.2 equivalent and simply never fire; the reasons are in
  * `mutmap.toml` and in the manual.
  */
 void player_mutation_turn(struct player *p)

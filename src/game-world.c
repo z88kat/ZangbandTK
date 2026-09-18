@@ -847,50 +847,69 @@ void process_world(struct chunk *c)
 	}
 
 	/*
-	 * Take damage from standing inside solid rock (PLR-01, DEC-74).
+	 * Take damage from standing inside solid rock (PLR-01, DEC-74, PLR-16).
 	 *
-	 * `1 + depth / 10` a turn with no regeneration, and it *cannot kill you*:
-	 * Zangband applies it only while `chp > depth / 10`
+	 * `1 + depth / 10` a turn with no regeneration.  Which of the two messages
+	 * you get -- and whether it can kill you -- turns on whether you can pass
+	 * walls at the moment it is charged.
+	 *
+	 * A character who can is in the rock legitimately, and the damage *cannot
+	 * kill*: Zangband applies it only while `chp > depth / 10`
 	 * ([dungeon.c:1202](../archive/zangband/src/dungeon.c#L1202)), so a
-	 * Spectre grinds down to that floor and stops rather than suffocating in
-	 * a mountain it cannot get out of. The comment there is explicit that this
-	 * is deliberate -- everyone else in a wall dies, a pass-wall character
+	 * Spectre grinds down to that floor and stops rather than suffocating in a
+	 * mountain it cannot get out of.  Death is `chp < 0`
+	 * ([player-util.c:361](../src/player-util.c#L361)), so the floor holds.
+	 *
+	 * A character who cannot is being crushed, and that one *does* kill.  The
+	 * archive's guard is `(chp > depth / 10) || !PASS_WALL`, so the floor is
+	 * lifted for exactly this case, and the comment beside it is explicit that
+	 * this is deliberate: everyone else in a wall dies, a pass-wall character
 	 * does not.
 	 *
-	 * Keyed on being able to pass walls rather than on being in one, because
-	 * an ordinary character in a wall grid is a bug rather than a Spectre, and
-	 * killing them for it would hide it.
+	 * That branch was left out when this was written, on the grounds that an
+	 * ordinary character in a wall grid is a bug rather than a Spectre and
+	 * killing them for it would hide it.  Wraith form (PLR-16) makes it a
+	 * reachable state instead of a bug: the mutation is timed, the flag is
+	 * what this reads, and a character whose form runs out inside a mountain
+	 * is solid again with rock on every side.  Zangband crushes them.  So does
+	 * this -- and it is the only thing between that character and being
+	 * entombed alive, which is a worse outcome than the death.
 	 *
-	 * **Underground only, and that is a judgement rather than a lookup.**
-	 * Zangband keyed this on `cave_wall_grid()`, which is its `FF_BLOCK` flag,
-	 * and its mountains do not carry it -- "rock face" is
+	 * Wraith form itself pays nothing while it runs.  The archive tests
+	 * `!tim.wraith_form` beside `!tim.invuln` before charging anything, so the
+	 * form suppresses the wall damage rather than causing it.
+	 *
+	 * The flag and not `player_can_pass_walls()`, which also requires the grid
+	 * to be non-permanent -- that is the movement rule, and the archive charges
+	 * on `FLAG(p_ptr, TR_PASS_WALL)` alone.  Reading the movement rule here
+	 * would crush a Spectre for standing somewhere it cannot have walked to.
+	 *
+	 * **The surface is not exempt, and that is a ruling rather than the
+	 * archive.**  Zangband keyed this on `cave_wall_grid()`, its `FF_BLOCK`
+	 * flag, and its mountains do not carry it -- "rock face" is
 	 * `HALF_LOS | USE_TRANS | ICKY | OBJECT` (`lib/edit/f_info.txt`, N:97), so
-	 * it is passable to everyone and costs energy rather than blood. A
-	 * Zangband Spectre crossing a mountain range therefore took no damage at
-	 * all, because it was not in a wall.
-	 *
-	 * Ours *are* walls -- `mountainside` is `ROCK | WALL`, and it is what a
-	 * mountain block is built from -- so the archive's own test would charge
-	 * for a crossing it never charged for. That divergence is ours, not a
-	 * design intent to punish, and a range is many blocks wide: at a point a
-	 * turn with no healing it would empty a low-level character on the way
-	 * across. So the surface is free and the dungeon is not, which is what
-	 * Zangband's numbers actually produced.
-	 *
-	 * The guard `chp > depth / 10` is what stops it killing: death is
-	 * `chp < 0` ([player-util.c:361](../src/player-util.c#L361)), so the
-	 * damage floors a Spectre at nothing left rather than through it.
+	 * a Zangband Spectre crossing a range was never in a wall and paid nothing
+	 * for it.  Ours *are* walls -- `mountainside` is `ROCK | WALL`, and it is
+	 * what a mountain block is built from -- and the project owner overruled
+	 * the archive-faithful reading: *"Our mountains are walls so the Spector
+	 * takes damage."*  At depth 0 that is one point a turn, and the floor is
+	 * at its tightest, `chp > 0`, which still survives.
 	 */
 	if (!square_ispassable(c, player->grid)
-			&& player_can_pass_walls(player, player->grid)
 			&& !player->timed[TMD_INVULN]
-			&& player->chp > player->depth / 10) {
-		msg("Your molecules feel disrupted!");
-		take_hit(player, player_apply_damage_reduction(player,
-				1 + player->depth / 10), "density");
-		no_regen = true;
-		if (player->is_dead) {
-			return;
+			&& !player->timed[TMD_WRAITH]) {
+		bool porous = player_of_has(player, OF_PASS_WALL);
+
+		if (!porous || player->chp > player->depth / 10) {
+			msg(porous ? "Your molecules feel disrupted!"
+				: "You are being crushed!");
+			take_hit(player, player_apply_damage_reduction(player,
+					1 + player->depth / 10),
+				porous ? "density" : "solid rock");
+			no_regen = true;
+			if (player->is_dead) {
+				return;
+			}
 		}
 	}
 

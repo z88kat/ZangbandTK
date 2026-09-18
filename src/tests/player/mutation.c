@@ -797,14 +797,18 @@ static int test_the_melee_dice_are_the_code_s(void *state) {
 /**
  * Every random mutation either fires or has a reason not to.
  *
- * Twenty-two of the twenty-seven are effect chains and five are not. The count
- * is the assertion, because a chain lost to a converter change leaves a
+ * Twenty-three of the twenty-seven are effect chains and four are not. The
+ * count is the assertion, because a chain lost to a converter change leaves a
  * mutation that is gained, described, saved, rolled for every single turn, and
- * silently does nothing -- indistinguishable from the six that are meant to.
+ * silently does nothing -- indistinguishable from the four that are meant to.
+ *
+ * Wraith form left this list in 3.122.0 (PLR-16). It was deferred because 4.2
+ * had no incorporeal state; the Spectre work built one, and the mutation now
+ * grants it as a timed effect.
  */
 static int test_the_random_split_is_what_was_decided(void *state) {
 	static const char *const deferred[] = {
-		"WRAITH", "CHAOS_GIFT", "WARNING", "SP_TO_HP", "HP_TO_SP"
+		"CHAOS_GIFT", "WARNING", "SP_TO_HP", "HP_TO_SP"
 	};
 	const struct mutation *m;
 	int with = 0, without = 0;
@@ -816,8 +820,8 @@ static int test_the_random_split_is_what_was_decided(void *state) {
 		if (m->fires) with++; else without++;
 	}
 
-	eq(with, 22);
-	eq(without, 5);
+	eq(with, 23);
+	eq(without, 4);
 
 	for (i = 0; i < N_ELEMENTS(deferred); i++) {
 		m = mutation_by_name(deferred[i]);
@@ -1413,8 +1417,12 @@ static int test_nothing_is_dropped_any_more(void *state) {
 	}
 
 	eq(refused, 0);
-	/* Seven since 3.72.0: GROW_MOLD was waiting on monster allegiance */
-	eq(waiting, 7);
+	/*
+	 * Six since 3.122.0: WRAITH was waiting on an incorporeal player state,
+	 * which the Spectre work built.  Seven from 3.72.0, when GROW_MOLD was
+	 * waiting on monster allegiance.
+	 */
+	eq(waiting, 6);
 
 	ok;
 }

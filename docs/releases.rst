@@ -46,6 +46,93 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The deferral that stopped being true — 18 September 2026
+------------------------------------------------------------
+
+- **3.122.0** — **Wraith form**, the one deferred mutation whose stated reason
+  had since expired (PLR-16). It was written off in 3.45.0 with
+  the note that "4.2 has no wraith form and no player-passes-walls state at
+  all", and both halves of that stopped being true when the Spectre work built
+  ``OF_PASS_WALL`` and ``player_can_pass_walls()`` (DEC-74). The timed effect
+  grants the flag through ``flag-synonym``, so it inherits the movement, the
+  permanent-wall exception and the wall damage rather than reimplementing any of
+  them.
+
+  **The deferral note was also wrong about what wraith form does**, which is the
+  reason for reading the archive rather than the note. It said wraiths "pass
+  through walls and take damage from doing it". They do not: ``dungeon.c:1202``
+  tests ``!p_ptr->tim.wraith_form`` before charging anything, so the form
+  *suppresses* the damage a Spectre pays. And it carries far more than passing
+  walls — a hundred points of armour and reflection (``xtra1.c:2795``), nine
+  tenths off every blow (``effects.c:3285``), darkness healing instead of
+  hurting and light cutting the form short wherever you are, resisted or not
+  (``spells1.c:3632``, ``:3595``). A one-line summary of a nine-hundred-line
+  function had lost all of it.
+
+  **What happens when it runs out inside a wall was the thing to settle before
+  building, and the archive is not silent: you are crushed.** The guard is
+  ``(chp > depth / 10) || !PASS_WALL``, which lifts the hit-point floor for
+  exactly that case — the comment beside it says so outright, that everyone else
+  in a wall dies and a pass-wall character does not. That branch existed here
+  and was deliberately left out, on the grounds that an ordinary character in a
+  wall grid was a bug rather than a Spectre. Wraith form makes it a reachable
+  state, so it is now built, and it is the only thing standing between that
+  character and being entombed alive with nothing killing them.
+
+  Ten tests, each asserting the same thing with the form and without it, and
+  each falsified by removing the behaviour it covers and watching exactly one
+  fail. Two of them were falsified against the *plausible wrong* build as well:
+  cancelling wraith form only on unresisted light, and writing the nine tenths
+  as ``perc_dam_red = 90``, which rounds the other way and turns a five-point
+  blow into one point rather than none.
+
+  One of those tests was rewritten because the falsification caught it. "A
+  wraith pays nothing for the rock" asserted a single turn at depth 10, where
+  the charge is two points — and the wraith's own nine tenths turns two into
+  nothing nine times in ten by itself, so the test passed against a build with
+  the suppression removed. It now runs two hundred turns.
+
+  Four deferred random mutations remain, from six when the count was last
+  stated: the warning, the two hit-point/spell-point exchanges, and the chaos
+  gift, which fires on gaining a level rather than on a turn passing.
+
+The manual catches up with the build — 18 September 2026
+------------------------------------------------------------
+
+- **3.122.0** — Five things the manual had wrong, found by checking it against
+  the data rather than against itself.
+
+  **"Races we decided against" listed eight races that are in the game.**
+  Barbarian, Klackon, Nibelung, Imp and the four undead were described as "not
+  rejected, only waiting", twenty lines below their own full entries and a
+  hundred lines above their racial powers. They arrived in 3.117.0. The count in
+  the same paragraph said nine of Zangband's twenty-one extra races were built;
+  it is seventeen.
+
+  **The appendix tables listed twenty of twenty-eight races and ten of fourteen
+  classes.** Barbarian, Klackon, Nibelung, Imp, Skeleton, Zombie, Spectre and
+  Ghoul were missing from both race tables, and the Mindcrafter, Chaos-Warrior,
+  Warrior-Mage and High-Mage from both class tables. All twenty-four rows are
+  generated from ``p_race.txt`` and ``class.txt``, and the rows that were
+  already there reproduce unchanged — which is what makes the five that did not
+  worth reporting.
+
+  **Five classes had their experience penalty listed as "none" when they have
+  one**: Mage +30%, Priest +20%, Paladin +35%, Rogue +25%, Ranger +30%.
+  ``expfact`` is ``race->r_exp + class->c_exp``, so the column is real and was
+  wrong for a third of the table. Inherited from upstream rather than introduced
+  here, and wrong either way.
+
+  **The Golem's stun immunity was nowhere in the manual.** It has ``PROT_STUN``
+  at birth and it is one of the better things about being one — a stunned
+  character fights and casts worse and can be knocked out. Its entry listed the
+  paralysis immunity beside it and stopped.
+
+  **Not bleeding was stated only in the Skeleton's entry**, which mentions in
+  passing that a Golem and a Spectre are the same and a Zombie becomes so at 12.
+  True, and not where anyone reading about a Golem would find it. Now in all
+  four.
+
 The mode that never said it was on — 15 September 2026
 ------------------------------------------------------------
 

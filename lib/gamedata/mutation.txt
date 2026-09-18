@@ -819,6 +819,10 @@ values:CON[-3]
 desc:You fade in and out of physical reality (-3 CON).
 gain:You start to fade in and out of the physical world.
 lose:You are firmly in the physical world.
+fires-effect:TIMED_INC:WRAITH
+fires-dice:$B+d$S
+fires-expr:B:PLAYER_LEVEL:/ 2 - 1
+fires-expr:S:PLAYER_LEVEL:+ 1 / 2 + 1
 
 name:POLY_WOUND
 kind:random

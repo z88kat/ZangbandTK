@@ -600,10 +600,6 @@ static int test_an_offered_realm_has_books_behind_it(void *state) {
 	}
 
 	/*
-	 * And Trump, which every one of the six casting classes below is
-	 * entitled to, is offered to none of them because it has no books.
-	 */
-	/*
 	 * Trump is offered now, to the six classes Zangband entitles to it. It
 	 * was filtered out here from 3.55.0 to 3.72.0, and the counterpart to
 	 * this loop -- "no class is offered a realm with no books" -- is what

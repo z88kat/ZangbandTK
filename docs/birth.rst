@@ -413,8 +413,10 @@ Vampire
 
 Golem
   Not alive, and built rather than born. Enormously strong and tough, extremely
-  stupid, immune to poison, never held or paralysed, sees the invisible — and is
-  hurt by cold.
+  stupid, immune to poison, never held or paralysed, **never stunned and unable
+  to bleed**, sees the invisible — and is hurt by cold. The stun immunity is
+  worth more than it sounds: a stunned character fights and casts worse and can
+  be knocked out entirely, and nothing in the dungeon can do that to a Golem.
 
   Its real advantage is that it *is* armour. A Golem has twenty points of armour
   class wearing nothing at all, and gains another point every fifth level, so a
@@ -508,7 +510,9 @@ Zombie
   the four.
 
   It cannot eat but digests slowly, so the hunger scrolls it starts with go
-  further than a Skeleton's. From level 30 it too can recover lost experience.
+  further than a Skeleton's. From level 30 it too can recover lost experience,
+  and from level 12 it stops bleeding — it is still fresh enough to leak before
+  that, which is the one way the four undead differ on this.
 
 .. _Spectre:
 
@@ -521,7 +525,8 @@ Spectre
   sees the invisible, and lightning tears it apart.
 
   It howls from level 4 — the earliest attacking power any race has — and
-  terrifies what it is aimed at.
+  terrifies what it is aimed at. Like a Golem and a Skeleton, **it does not
+  bleed**: nothing cuts it.
 
   **And it walks through walls.** Granite, veins, secret doors and mountain
   ranges all give way; only permanent wall and the edge of the world hold it.
@@ -637,9 +642,9 @@ the Pattern.
 Races we decided against
 ------------------------
 
-Zangband has twenty-one races Angband does not. Nine are above. Four have been
-looked at and turned down, and it is worth saying why, because "it exists in the
-original" is not on its own a reason to carry something:
+Zangband has twenty-one races Angband does not. Seventeen are above. Four have
+been looked at and turned down, and it is worth saying why, because "it exists
+in the original" is not on its own a reason to carry something:
 
 **Half-Ogre, Half-Giant and Cyclops.** All three are Half-Troll — which this game
 already has — with one resistance swapped. Half-Ogre resists dark, Half-Giant
@@ -652,9 +657,9 @@ intelligence and dexterity and the ability to see the invisible, at 150 instead
 of 120. A legitimate piece of design, and not a new idea — everything it does,
 an Elf already does.
 
-The rest — Barbarian, Klackon, Nibelung, Imp, and the four undead races — are not
-rejected, only waiting. The undead in particular want one mechanism between them
-and should arrive together when it exists.
+Those four are the whole of it. Barbarian, Klackon, Nibelung, Imp and the four
+undead races were on this list as waiting rather than rejected until 3.117.0;
+they arrived, and are described above with everything else.
 
 Classes
 =======
@@ -1240,6 +1245,14 @@ adjusted for constitution).
   Mindflayer     -3    +4    +4    0     -2       9         140%      40'
    Vampire       +3    +3    -1    -1    +1       11        200%      50'
     Golem        +4    -5    -5    -2    +4       12        200%      40'
+  Barbarian      +3    -2    -1    +1    +2       11        120%      None
+   Klackon       +2    -1    -1    +1    +2       12        135%      20'
+   Nibelung      +1    -1    +2    0     +2       11        135%      50'
+     Imp         -1    -1    -1    +1    +2       10        110%      30'
+   Skeleton      0     -2    -2    0     +1       10        145%      20'
+    Zombie       +2    -6    -6    +1    +4       13        135%      20'
+   Spectre       -5    +4    +4    +2    -3       7         180%      50'
+    Ghoul        0     -1    -1    -1    +1       9         125%      20'
     Sprite       -4    +3    +3    +3    -2       7         175%      40'
   Half-Titan     +5    +1    +1    -2    +3       14        255%      None
 ============== ===== ===== ===== ===== ===== =========== ========== =======
@@ -1257,15 +1270,19 @@ adjusted for constitution).
     Class       STR   INT   WIS   DEX   CON   HD (bonus)   XP/level
 ============== ===== ===== ===== ===== ===== ============ ==========
    Warrior       +3    -2    -2    +2    +2       9          none
-     Mage        -3    +3    +0    +0    -2       0          none
+     Mage        -3    +3    +0    +0    -2       0          +30%
     Druid        -2    +0    +3    -2    +0       2          none
-    Priest       -1    -3    +3    -1    +1       2          none
+    Priest       -1    -3    +3    -1    +1       2          +20%
  Necromancer     -3    +3    +0    +0    -2       2          none
-   Paladin       +1    -3    +1    -1    +2       6          none
-    Rogue        +0    +1    -3    +3    -1       4          none
-    Ranger       +0    +0    +2    +1    -1       5          none
+   Paladin       +1    -3    +1    -1    +2       6          +35%
+    Rogue        +0    +1    -3    +3    -1       4          +25%
+    Ranger       +0    +0    +2    +1    -1       5          +30%
   Blackguard     +2    +0    -3    +0    +2       8          none
      Monk        +2    -1    +1    +3    +2       6          +40%
+ Mindcrafter     -1    +0    +3    -1    -1       2          +25%
+Chaos-Warrior    +2    +1    +0    +1    +2       6          +35%
+ Warrior-Mage    +2    +2    +0    +1    +0       4          +50%
+  High-Mage      -5    +4    +0    +0    -2       0          +30%
 ============== ===== ===== ===== ===== ===== ============ ==========
  
 Ability Tables
@@ -1302,6 +1319,14 @@ Ability Tables
   Mindflayer       10        10       25      15       2        5       -16    -10
    Vampire         4         4        10      10       4        1        10     0
     Golem          -5        -5       -5      10       -1       -1       20     0
+  Barbarian        -2        -2      -10      2        -1       1        20     0
+   Klackon         10        10       5       5        0        -1       10     10
+   Nibelung        3         3        5       10       1        5        10     0
+     Imp           -3        -3       2       -1       1        -1       10    -10
+   Skeleton        -5        -5       -5      5        -1       -1       16     0
+    Zombie         -5        -5       -5      8        -1       -1       20     0
+   Spectre         10        10       25      20       5        5       -20    -10
+    Ghoul          -3        -3       -3      6        1        0        10     0
     Sprite         10        10       10      10       4        10      -16     0
   Half-Titan       -5        -5       5       2        -2       1        26     0
 ============== ========= ========= ======== ====== ========= ======== ======= ======
@@ -1330,6 +1355,10 @@ Ability Tables
     Ranger      40(+15)   30(+10)   28(+10)   32(+10)    3(+0)    15(+15)   60(+40)   72(+45)
   Blackguard    20(+15)   20(+10)   24(+10)   18(+10)    -1(-1)    8(+10)   65(+40)   35(+15)
      Monk       45(+22)   45(+22)   32(+11)   28(+11)    3(+0)    10(+12)   37(+17)   48(+24)
+ Mindcrafter    30(+15)   30(+15)   30(+10)   30(+10)    3(+0)    14(+12)   46(+17)   52(+20)
+Chaos-Warrior   20(+11)   20(+11)   25(+11)   25(+10)    0(+0)     9(+12)   71(+50)   24(+38)
+ Warrior-Mage   30(+11)   30(+11)   30(+10)    28(+9)    2(+0)    11(+12)   62(+42)   69(+50)
+  High-Mage     30(+11)   30(+11)   36(+13)    30(+9)    2(+0)    10(+12)    31(+8)   34(+10)
 ============== ========= ========= ========= ========= ========= ========= ========= =========
 
 For character classes, there are two figures: the first figure is the base

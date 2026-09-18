@@ -20,17 +20,23 @@
 #include "obj-tval.h"
 #include "player.h"
 #include "player-calcs.h"
+#include "player-timed.h"
 #include "project.h"
 
-/* 53 = TMD_MAX */
-static int16_t TEST_DATA test_timed[53] = {
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0
-};
+/*
+ * Sized by `TMD_MAX` rather than by a number, which is what it always claimed
+ * to be.
+ *
+ * It was written as `test_timed[53]` with the comment `53 = TMD_MAX`, and by
+ * the time anything read past the end it was 53 against a real `TMD_MAX` of 55
+ * -- the comment had been false for two additions without anyone noticing,
+ * because nothing indexed that high. Adding `TMD_WRAITH` gave
+ * `player_apply_damage_reduction()` a reason to, and `monster/attack` died on
+ * a global-buffer-overflow under ASAN: a two-byte read four bytes past the end.
+ *
+ * Zero-initialised by omission, which is what the explicit zeros were doing.
+ */
+static int16_t TEST_DATA test_timed[TMD_MAX] = { 0 };
 
 static char tv_sword_name[16] = "Test Sword";
 static struct object_base TEST_DATA sword_base = {

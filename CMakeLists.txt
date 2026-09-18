@@ -965,6 +965,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     player/timed.c
     player/util.c
     player/virtue.c
+    player/wraith.c
     trivial/trivial.c
     ui/menu-labels.c
     ui/scrollbar.c

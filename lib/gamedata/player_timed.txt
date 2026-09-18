@@ -598,3 +598,30 @@ desc:blessed
 grade:G:1:Blessed:A blessing settles on you.
 on-end:The blessing fades, and the beasts of the country notice.
 msgt:GENERIC
+
+# ZangbandTK (PLR-16): wraith form -- the incorporeal state the WRAITH mutation
+# drops you into, and by far the strongest thing chaos gives away by accident.
+#
+# `flag-synonym:PASS_WALL:0` is the whole of the movement rule.  It grants the
+# object flag for as long as the effect runs, so `player_can_pass_walls()` and
+# every caller of it -- the move command, the disturb check, the wall damage --
+# see a Spectre and need to know nothing about wraiths.  The permanent-wall
+# exception comes with it, so a wraith cannot walk out of the world any more
+# than a Spectre can.
+#
+# `0` and not `1` because the two are not the same thing.  An exact synonym
+# suppresses the message when the character already has the flag permanently,
+# which is right for see-invisible; but a Spectre turning into a wraith gains
+# a hundred points of armour, reflection, nine tenths off every blow and a
+# healing response to darkness, and should be told so.
+#
+# The rest is in code, because none of it is expressible here: xtra1.c:2795 for
+# the armour and the reflection, effects.c:3285 for the damage, spells1.c:3595
+# and :3632 for what light and dark do to a wraith.
+name:WRAITH
+desc:wraith form
+grade:D:10000:Wraith:You leave the physical world and turn into a wraith-being!
+on-end:You feel opaque.
+on-increase:You feel less substantial still.
+msgt:GENERIC
+flag-synonym:PASS_WALL:0

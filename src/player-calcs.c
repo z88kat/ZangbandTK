@@ -2423,6 +2423,21 @@ void calc_bonuses(struct player *p, struct player_state *state, bool known_only,
 	if (p->timed[TMD_INVULN]) {
 		state->to_a += 100;
 	}
+	/*
+	 * Wraith form: a hundred points of armour and reflection (PLR-16).
+	 *
+	 * Zangband gives these beside the invulnerability block and in the same
+	 * shape ([xtra1.c:2795](../archive/zangband/src/xtra1.c#L2795)), so they
+	 * sit here.  The pass-wall flag is *not* set here -- it comes from
+	 * `flag-synonym` in `player_timed.txt` by way of `player_flags_timed()`
+	 * above, which is what lets `player_can_pass_walls()` stay ignorant of
+	 * wraiths.  The nine tenths off incoming damage is not here either; it is
+	 * in `player_apply_damage_reduction()`, where the archive applies it.
+	 */
+	if (p->timed[TMD_WRAITH]) {
+		state->to_a += 100;
+		of_on(state->flags, OF_REFLECT);
+	}
 	if (p->timed[TMD_BLESSED]) {
 		state->to_a += 5;
 		state->to_h += 10;

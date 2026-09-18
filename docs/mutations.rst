@@ -118,14 +118,40 @@ rare — one turn in three thousand up to one in twelve thousand.
 Each is rolled separately, every turn, so three of these are three chances and
 not one. Almost all of them stop while you are under an anti-magic effect —
 cowardice is the exception, because being too frightened to act is not magic,
-and Zangband is specific about that. Four of the twenty-seven do not fire yet:
-turning briefly incorporeal, being warned about what is nearby, and trading hit
-points for spell points and back. All four still show on your character sheet.
+and Zangband is specific about that. Three of the twenty-seven do not fire yet:
+being warned about what is nearby, and trading hit points for spell points and
+back. All three still show on your character sheet.
 
-Two that used to be on this list are not. **Losing a mutation at random** works —
-that is the "strangely normal" one, and it takes a mutation back. And the
-**chaos gift** was never really missing: it has no per-turn roll because it
-fires when you gain a level, through the patron that grants it.
+.. topic:: Wraith form, and the way it kills you
+
+   One of the twenty-seven turns you incorporeal for somewhere between half
+   your level and your level in turns, and it is the strongest thing on this
+   page by a wide margin. You walk through walls. Nine tenths of every blow
+   passes through you. You gain a hundred points of armour and bolts bounce off
+   you. Darkness heals you instead of hurting you. You pay nothing for standing
+   inside rock, where a Spectre pays a point a turn.
+
+   It arrives without being asked for, roughly one turn in three thousand, and
+   it leaves the same way.
+
+   **That is the danger.** The form is temporary and the walls are not. If it
+   runs out while you are inside rock you are solid again with stone on every
+   side, and stone does not wait: you are crushed where you stand, a little
+   more each turn, and there is no floor under that damage the way there is for
+   a Spectre. Deep enough, it is quick.
+
+   Light also ends it, immediately and wherever you are — including light you
+   are otherwise immune to, and including your own. A wraith reading a scroll
+   of light inside a mountain has made a decision they will not get to revisit.
+
+   The mutation is rare and short. Treat a wall you are standing in as somewhere
+   you are passing through rather than somewhere you are, and count.
+
+Three that used to be on this list are not. **Losing a mutation at random**
+works — that is the "strangely normal" one, and it takes a mutation back.
+**Wraith form** works, and is described above. And the **chaos gift** was never
+really missing: it has no per-turn roll because it fires when you gain a level,
+through the patron that grants it.
 
 **Melee.** Five of them, and they are extra blows rather than anything else: a
 scorpion tail, horns, a beak, an elephantine trunk, a nest of tentacles.
