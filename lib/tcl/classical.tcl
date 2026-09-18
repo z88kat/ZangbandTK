@@ -16,6 +16,7 @@
 # the operating system; this is for anything that should look like the game.
 
 namespace eval classical {}
+array set classical::tabkeys {}
 
 # --- colour -----------------------------------------------------------------
 #
@@ -338,6 +339,74 @@ proc classical::footer {parent items statusvar} {
     pack $row.status -side right
 
     return $f
+}
+
+# A row of tabs.
+#
+# Not ttk::notebook: that draws the platform's tabs, which is the right default
+# and wrong here for the same reason every other widget in this file is classic
+# Tk.  These are the section head's language instead -- a word in the accent
+# with a rule under it when chosen, quiet with a hairline when not -- so a tab
+# strip and a section head read as the same idea at two sizes.
+#
+# `tabs` is {key Label key Label ...}; `var` holds the chosen key; `command`
+# runs after it changes.
+proc classical::tabstrip {parent name tabs var command} {
+    set f $parent.t$name
+    frame $f -bg [classical::c bg]
+
+    set row $f.row
+    frame $row -bg [classical::c bg]
+    pack $row -fill x
+
+    foreach {key label} $tabs {
+        set t $row.$key
+        frame $t -bg [classical::c bg]
+        pack $t -side left -padx [list 0 [classical::sp 6]]
+
+        label $t.l -text $label -font [classical::f section] \
+            -bg [classical::c bg] -fg [classical::c neutral-600] \
+            -cursor hand2
+        pack $t.l -anchor w -pady [list 0 4]
+        classical::hairline $t.rule
+        pack $t.rule -fill x
+
+        bind $t.l <Button-1> [list classical::tab_choose $f $var $key $command]
+    }
+
+    # `variable tabkeys`, not `set classical::tabkeys(...)`.  Inside a proc
+    # whose namespace is already classical, a qualified name resolves
+    # *relative* to it -- classical::classical::tabkeys -- and Tcl complains
+    # that the parent namespace does not exist.  Which is the exact mirror of
+    # the searchbox trace, where the name had to be qualified because the proc
+    # had no link to it.
+    variable tabkeys
+    set tabkeys($f) $tabs
+
+    return $f
+}
+
+proc classical::tab_choose {f var key command} {
+    upvar #0 $var current
+    set current $key
+    classical::tab_paint $f $var
+    uplevel #0 $command
+}
+
+proc classical::tab_paint {f var} {
+    variable tabkeys
+    upvar #0 $var current
+
+    foreach {key label} $tabkeys($f) {
+        set t $f.row.$key
+        if {$key eq $current} {
+            $t.l configure -fg [classical::c accent-700]
+            $t.rule configure -bg [classical::c accent]
+        } else {
+            $t.l configure -fg [classical::c neutral-600]
+            $t.rule configure -bg [classical::c divider]
+        }
+    }
 }
 
 # A scrolling list, and a search box.

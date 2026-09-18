@@ -1233,9 +1233,39 @@ knowledge browsers are **windows that open** (decision 16), not panes.
 > Checked against a character who knows 32 of 1,014 races: the list, the facts, the recall
 > text, and a live search narrowing to two on "idiot". Fifty-two bridge checks.
 >
-> Still to come in T6: objects (`k_info`), artifacts (`a_info`), and the rest of 4.2's
-> knowledge categories — ego items, runes, features, traps — plus the Character window's
-> five-tab home, of which Virtues can be filled immediately.
+> **Objects done, and the browser is now a tab strip.** `angband_object` has the same four
+> verbs, and `classical::tabstrip` is the design system's answer to a notebook — the section
+> head's language at a second size, a word in the accent with a rule under it when chosen.
+> The browser is one generic pane per category, so artifacts, ego items, runes, features and
+> traps are **a row in `knowledge(categories)` and nothing else**.
+>
+> Three things measured rather than assumed:
+>
+> - **`everseen || aware` is not the game's filter and lists four times too much.** A kind
+>   with no flavour is aware from birth — nobody needs to identify a wooden torch — so that
+>   test listed 256 kinds for a character who had seen a couple of dozen. The game's own is
+>   `(everseen || flavor) && !KF_INSTA_ART`, which also keeps a flavour in the list until it
+>   is worked out. Plus `tval > 0`, which drops `<unknown item>` and its two friends: they are
+>   markers the game draws with, not things.
+> - **A flavour is the whole name.** An unidentified potion is called "Green", not "Green
+>   Potion", so a search for "potion" found none of the forty-six this character had seen.
+>   Both lists now match the name *or* the kind — a monster's base as readily as its name,
+>   since "canine" is as likely a thing to type as "jackal" — and case-insensitively.
+> - **`string totitle` damages a name that is already capitalised**, turning "Wooden Torch"
+>   into "Wooden torch". Only the first letter, and only because monsters are lowercase by
+>   convention.
+>
+> And two more Tk traps, which between them are the same lesson from both ends: inside a
+> `classical::` proc a *qualified* name resolves relative to the namespace, so
+> `set classical::tabkeys(...)` looks for `classical::classical::` and fails — while the
+> searchbox trace needed `::` precisely because that proc had no link to the variable at all.
+> `variable` in one, `::` in the other.
+>
+> Fifty-six bridge checks.
+>
+> Still to come in T6: artifacts (`a_info`) and the rest of 4.2's categories — ego items,
+> runes, features, traps — plus the Character window's five-tab home, of which Virtues can be
+> filled immediately.
 
 > **The Character window is a five-tab home, not a screen** — Info, Flags, Mutations,
 > Virtues, Notes ([OBS-21](phase3-observations.md)). Two of those tabs are where Phase 2's

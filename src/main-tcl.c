@@ -28,6 +28,11 @@
 #include "grafmode.h"
 #include "init.h"
 #include "mon-lore.h"
+#include "obj-desc.h"
+#include "obj-info.h"
+#include "obj-make.h"
+#include "obj-pile.h"
+#include "obj-tval.h"
 #include "ui-command.h"
 #include "ui-display.h"
 #include "ui-game.h"
@@ -2593,7 +2598,17 @@ static int objcmd_monster(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 
 			lore = get_lore(race);
 			if (!monster_known(lore)) continue;
-			if (pattern && !Tcl_StringMatch(race->name, pattern)) continue;
+			/*
+			 * Name or base, and case-insensitively: the player types what
+			 * they remember, which is as often "canine" as it is "jackal".
+			 */
+			if (pattern
+					&& !Tcl_StringCaseMatch(race->name, pattern,
+							TCL_MATCH_NOCASE)
+					&& !(race->base && race->base->name
+						&& Tcl_StringCaseMatch(race->base->name, pattern,
+							TCL_MATCH_NOCASE)))
+				continue;
 
 			row = Tcl_NewListObj(0, NULL);
 			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
@@ -2640,6 +2655,215 @@ static int objcmd_monster(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			lore_description(tb, race, get_lore(race), false);
 			text = textblock_to_obj(tb);
 			textblock_free(tb);
+
+			Tcl_SetObjResult(ip, text);
+			return TCL_OK;
+		}
+	}
+
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+			"expected max, list, info or lore, not: %s", what));
+
+	return TCL_ERROR;
+}
+
+/**
+ * angband_object -- the object knowledge the character has.
+ *
+ *    angband_object max              how many kinds there are
+ *    angband_object list ?pattern?   {index name kind aware level cost} rows
+ *    angband_object info <index>     one kind, as a name/value dict
+ *    angband_object lore <index>     what the game says about it
+ *
+ * The same shape as angband_monster, for the same reason: a table of six
+ * hundred rows is queried, not fetched.  `set` is absent here too.
+ *
+ * Flavours are the thing that makes this different from monsters.  An
+ * unidentified potion is "a cloudy potion" and not "a Potion of Speed", and
+ * object_kind_name is given the kind's own `aware` flag so it says whichever
+ * of those the character has earned.  A knowledge browser that spoiled the
+ * flavours would be worse than no browser.
+ */
+
+/**
+ * Build the object the game would describe, for a kind that has no instance.
+ *
+ * This is desc_obj_fake()'s recipe from ui-knowledge.c, without its side
+ * effects: that function also re-points the recall tracker and calls
+ * handle_stuff, which is right for a screen the player asked for and wrong for
+ * an accessor somebody read in passing.
+ *
+ * The caller owns both objects and must delete them.
+ */
+static struct object *object_fake(struct object_kind *kind,
+		struct object **known)
+{
+	struct object *obj = object_new();
+
+	*known = object_new();
+
+	object_prep(obj, kind, 0, EXTREMIFY);
+
+	/* A flavoured kind the character has not identified stays unknown. */
+	if (kind->aware || !kind->flavor) object_copy(*known, obj);
+	obj->known = *known;
+
+	return obj;
+}
+
+static void object_fake_free(struct object *obj, struct object *known)
+{
+	object_delete(NULL, NULL, &known);
+	object_delete(NULL, NULL, &obj);
+}
+
+/**
+ * Does this kind belong in a knowledge browser?
+ *
+ * The game's own test, from textui_browse_object_knowledge: seen before, or
+ * flavoured -- a flavoured kind is listed from the start so its flavour shows
+ * until the character works out what it is -- and never an instant artifact,
+ * which would give away that one exists.
+ *
+ * The first version of this used `everseen || aware`, which sounds like the
+ * same thing and is not: a kind with no flavour is aware from birth, because
+ * nobody needs to identify a wooden torch.  It listed 256 kinds for a
+ * character who had seen a couple of dozen.
+ *
+ * tval zero is the placeholder kinds -- <unknown item>, <unknown treasure>,
+ * <curse object> -- which are markers the game draws with, not things.  The
+ * knowledge screen drops them through obj_group_order, which is static in
+ * ui-knowledge.c, so this drops them by their tval instead.
+ */
+static bool object_kind_known(const struct object_kind *kind)
+{
+	if (kind->tval <= 0) return false;
+	if (kf_has(kind->kind_flags, KF_INSTA_ART)) return false;
+
+	return kind->everseen || kind->flavor != NULL;
+}
+
+static int objcmd_object(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what;
+	char name[120];
+	int idx;
+
+	(void)dummy;
+
+	if (objc < 2) {
+		Tcl_WrongNumArgs(ip, 1, objv, "max|list|info|lore ?argument ...?");
+		return TCL_ERROR;
+	}
+
+	what = Tcl_GetString(objv[1]);
+
+	if (!k_info || !z_info) {
+		Tcl_SetObjResult(ip,
+				Tcl_NewStringObj("the object list is not loaded yet", -1));
+		return TCL_ERROR;
+	}
+
+	if (strcmp(what, "max") == 0 && objc == 2) {
+		Tcl_SetObjResult(ip, Tcl_NewIntObj((int)z_info->k_max));
+		return TCL_OK;
+	}
+
+	if (strcmp(what, "list") == 0 && (objc == 2 || objc == 3)) {
+		const char *pattern = (objc == 3) ? Tcl_GetString(objv[2]) : NULL;
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+		int i;
+
+		for (i = 1; i < (int)z_info->k_max; i++) {
+			struct object_kind *kind = &k_info[i];
+			const char *tval;
+			Tcl_Obj *row;
+
+			if (!kind->name) continue;
+			if (!object_kind_known(kind)) continue;
+
+			object_kind_name(name, sizeof(name), kind, kind->aware);
+			tval = tval_find_name(kind->tval);
+
+			/*
+			 * Name or kind.  An unidentified potion is called "Green" and
+			 * nothing else -- the flavour is the whole name -- so searching
+			 * for "potion" would find none of the forty-six this character
+			 * has seen unless the kind counts too.
+			 */
+			if (pattern
+					&& !Tcl_StringCaseMatch(name, pattern, TCL_MATCH_NOCASE)
+					&& !(tval && Tcl_StringCaseMatch(tval, pattern,
+							TCL_MATCH_NOCASE)))
+				continue;
+
+			row = Tcl_NewListObj(0, NULL);
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(name, -1));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(tval ? tval : "", -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewBooleanObj(kind->aware));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(kind->level));
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	if ((strcmp(what, "info") == 0 || strcmp(what, "lore") == 0)
+			&& objc == 3) {
+		struct object_kind *kind;
+
+		if (Tcl_GetIntFromObj(ip, objv[2], &idx) != TCL_OK) return TCL_ERROR;
+
+		if (idx < 1 || idx >= (int)z_info->k_max || !k_info[idx].name) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no such object: %d", idx));
+			return TCL_ERROR;
+		}
+
+		kind = &k_info[idx];
+		object_kind_name(name, sizeof(name), kind, kind->aware);
+
+		if (strcmp(what, "info") == 0) {
+			Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+
+#define PUT(key, value) \
+	do { \
+		Tcl_ListObjAppendElement(ip, d, Tcl_NewStringObj((key), -1)); \
+		Tcl_ListObjAppendElement(ip, d, (value)); \
+	} while (0)
+
+			PUT("index", Tcl_NewIntObj(idx));
+			PUT("name", Tcl_NewStringObj(name, -1));
+			PUT("kind", Tcl_NewStringObj(tval_find_name(kind->tval) ?
+					tval_find_name(kind->tval) : "", -1));
+			PUT("aware", Tcl_NewBooleanObj(kind->aware));
+			PUT("everseen", Tcl_NewBooleanObj(kind->everseen));
+			PUT("flavoured", Tcl_NewBooleanObj(kind->flavor != NULL));
+			PUT("level", Tcl_NewIntObj(kind->level));
+			PUT("cost", Tcl_NewIntObj(kind->cost));
+			PUT("weight", Tcl_NewIntObj(kind->weight));
+
+#undef PUT
+
+			Tcl_SetObjResult(ip, d);
+			return TCL_OK;
+		}
+
+		/*
+		 * The game's own description of the kind, through object_info with
+		 * OINFO_FAKE -- the same path the knowledge screen uses.
+		 */
+		{
+			struct object *known = NULL;
+			struct object *obj = object_fake(kind, &known);
+			textblock *tb = object_info(obj, OINFO_FAKE);
+			Tcl_Obj *text = textblock_to_obj(tb);
+
+			textblock_free(tb);
+			object_fake_free(obj, known);
 
 			Tcl_SetObjResult(ip, text);
 			return TCL_OK;
@@ -3690,6 +3914,7 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_player", objcmd_player, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_monster", objcmd_monster, NULL,
 			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_object", objcmd_object, NULL, NULL);
 
 	hooks_init();
 

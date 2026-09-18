@@ -272,20 +272,43 @@ check "and refuses a verb it does not have" {
 	set e
 } "the monster list is not loaded yet"
 
+check "the object list says when it is not loaded" {
+	catch {angband_object max} e
+	set e
+} "the object list is not loaded yet"
+
 check "the knowledge window opens without a character" {
 	knowledge_window
 	list [winfo exists .knowledge] $::knowledge(count)
 } "1 {0 known}"
 
+check "it has a pane per category" {
+	set panes {}
+	foreach c $::knowledge(categories) {
+		lassign $c key label accessor fields
+		lappend panes [winfo exists .knowledge.card.body.$key]
+	}
+	list [llength $::knowledge(categories)] [lsort -unique $panes]
+} "2 1"
+
+check "the tabs switch which pane is shown" {
+	set ::knowledge(tab) objects
+	knowledge_switch
+	set a [grid info .knowledge.card.body.objects]
+	set ::knowledge(tab) monsters
+	knowledge_switch
+	list [expr {$a ne ""}] [expr {[grid info .knowledge.card.body.objects] eq ""}]
+} "1 1"
+
 # The search box has no placeholder in Tk, so the hint is a label behind it.
 # Design-system machinery, and every window with a search box will use it.
 check "an empty search box shows its hint" {
-	set f .knowledge.card.body.cols.left.esearch
+	set f .knowledge.card.body.monsters.left.esearch
 	set was [winfo manager $f.hint]
-	set ::knowledge(search) "kobold"
+	set ::knowledge(search,monsters) "kobold"
 	update idletasks
 	set now [winfo manager $f.hint]
-	set ::knowledge(search) ""
+	set ::knowledge(search,monsters) ""
 	update idletasks
 	list $was $now [winfo manager $f.hint]
 } "place {} place"
