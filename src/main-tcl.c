@@ -30,15 +30,8 @@
 #include "ui-display.h"
 #include "ui-game.h"
 #include "main.h"
-#include "mon-desc.h"
-#include "mon-predicate.h"
-#include "obj-desc.h"
-#include "obj-pile.h"
-#include "target.h"
 #include "option.h"
 #include "ui-input.h"
-#include "ui-map.h"
-#include "ui-target.h"
 #include "ui-keymap.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
@@ -130,30 +123,20 @@ static int td_count = 0;
 static int pane_index[ANGBAND_TERM_MAX];
 
 /*
- * The window flags each pane wants, asserted whenever they drift.
+ * The window flags each pane wants, applied once the game has settled.
  *
- * For most panes this is what textui_init() would have chosen from the index
- * anyway.  The minimap is the exception and the reason this exists: it wants
- * *no* flag, because the front end draws that pane itself -- the world map out
- * of doors, the scaled level below ground -- and any flag on it means the game
- * draws there too.
+ * For most panes this is exactly what textui_init() would have chosen from
+ * the index anyway, and applying it changes nothing.  The minimap is the
+ * exception and the reason this exists: PW_MAP is the scaled whole-level map
+ * -- update_maps() hands that one straight to display_map() -- and no
+ * subwindow carries it by default, so it cannot be had by placement alone.
  *
- * This used to be applied once, at the first request for input, on the
- * reasoning that it was safely past textui_init().  It was, and it was not
- * enough: window_flag is also restored from the savefile and rewritten by
- * every pref file read, where ui-prefs.c fills in any subwindow the file did
- * not mention from the current set and calls subwindows_set_flags for the lot.
- * Loading a character therefore put PW_OVERHEAD back on the minimap, and the
- * game redrew the level over the world map once a turn -- which is what the
- * pane flashing black between moves was.
- *
- * So it is checked at every request for input instead.  Eight integer
- * comparisons, and subwindows_set_flags does nothing at all unless something
- * has moved.  The panes are declared in lib/tcl/main.tcl and that stays the
- * only opinion about what each one holds.
+ * It has to be applied after textui_init(), which runs once the front end is
+ * up and rewrites window_flag wholesale, and after the splash screen, whose
+ * drawing is the first thing to reach Term_xtra.  The first request for input
+ * is safely past both.
  */
 static uint32_t want_flag[ANGBAND_TERM_MAX];
-static bool want_role_minimap[ANGBAND_TERM_MAX];
 static bool flags_applied = false;
 
 /*
@@ -202,12 +185,7 @@ static uint32_t role_to_flag(const char *role)
 	if (streq(role, "objects")) return PW_ITEMLIST;
 	if (streq(role, "recall")) return PW_MONSTER | PW_OBJECT;
 	if (streq(role, "overhead")) return PW_OVERHEAD;
-	/*
-	 * No flag: the front end draws this one.  See minimap_draw -- the world
-	 * map out of doors and the scaled level below ground, which the game's
-	 * PW_MAP cannot do because it only knows about the level.
-	 */
-	if (streq(role, "minimap")) return 0;
+	if (streq(role, "minimap")) return PW_MAP;
 	if (streq(role, "player")) return PW_PLAYER_2;
 
 	return 0;
@@ -840,10 +818,6 @@ static void set_script_library_paths(void)
  * from spinning at 100% while the player thinks.
  */
 static void hooks_apply(void);
-static bool in_play(void);
-static bool minimap_dirty = true;
-static void minimap_draw(void);
-static bool minimap_dirty_get(void);
 
 static errr Term_xtra_tcl(int n, int v)
 {
@@ -856,28 +830,9 @@ static errr Term_xtra_tcl(int n, int v)
 	 */
 	if (!flags_applied && n == TERM_XTRA_EVENT) {
 		flags_applied = true;
+		subwindows_set_flags(want_flag, ANGBAND_TERM_MAX);
 		hooks_apply();
 	}
-
-	/* And then keep them that way; see want_flag. */
-	if (flags_applied && n == TERM_XTRA_EVENT) {
-		int w;
-
-		for (w = 0; w < ANGBAND_TERM_MAX; w++) {
-			if (angband_term[w] && window_flag[w] != want_flag[w]) {
-				subwindows_set_flags(want_flag, ANGBAND_TERM_MAX);
-				minimap_dirty = true;
-				break;
-			}
-		}
-	}
-
-	/*
-	 * The minimap is redrawn here rather than when the game says something
-	 * changed.  EVENT_MAP alone fires many times in a turn and the pane only
-	 * has to be right when the player can next look at it, which is now.
-	 */
-	if (n == TERM_XTRA_EVENT && minimap_dirty_get()) minimap_draw();
 
 	switch (n) {
 		case TERM_XTRA_EVENT:
@@ -2242,405 +2197,6 @@ static int objcmd_option(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 /**
- * angband_describe -- what is on the map at this cell.
- *
- *    angband_describe 34 12   ->  "Grip, Farmer Maggot's dog (unhurt)"
- *
- * The arguments are cells in the *map* pane, which is where the mouse is, and
- * the answer is one line for a status bar: a monster if one is visible, the
- * top of the object pile if not, and the terrain otherwise.  An empty string
- * means there is nothing to say -- off the map, or a square the character has
- * never seen.
- *
- * It answers from what the character knows, not from what is there.  Monsters
- * come from cave but only if monster_is_visible; objects come from
- * player->cave, which is the remembered level; and terrain that has not been
- * seen is not described at all.  A status bar that read the real level would
- * be a cheat with a nice interface on it.
- */
-static int objcmd_describe(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
-		Tcl_Obj *const objv[])
-{
-	struct monster *mon;
-	struct loc grid;
-	term *old;
-	int col, row;
-	char buf[256];
-
-	(void)dummy;
-
-	if (objc != 3) {
-		Tcl_WrongNumArgs(ip, 1, objv, "col row");
-		return TCL_ERROR;
-	}
-	if (Tcl_GetIntFromObj(ip, objv[1], &col) != TCL_OK
-			|| Tcl_GetIntFromObj(ip, objv[2], &row) != TCL_OK)
-		return TCL_ERROR;
-
-	Tcl_SetObjResult(ip, Tcl_NewObj());
-
-	if (!in_play() || td_count < 1) return TCL_OK;
-
-	/*
-	 * The conversion is the game's own, from ui-target.h, and it reads
-	 * Term->offset_* and the sidebar's width -- so the map term has to be the
-	 * active one while it happens.
-	 *
-	 * Guarded above rather than trusted: ROW_MAP and COL_MAP are where the map
-	 * starts inside the term, and integer division of a negative number
-	 * truncates towards zero, so a cell in the sidebar or the top line would
-	 * otherwise be reported as the first grid of the map.
-	 */
-	old = Term;
-	Term_activate(&td[0].t);
-
-	if (row < ROW_MAP || col < COL_MAP) {
-		Term_activate(old);
-		return TCL_OK;
-	}
-
-	grid.y = (row - ROW_MAP) / tile_height + Term->offset_y;
-	grid.x = (col - COL_MAP) / tile_width + Term->offset_x;
-
-	Term_activate(old);
-
-	if (!square_in_bounds_fully(cave, grid)) return TCL_OK;
-
-	if (loc_eq(grid, player->grid)) {
-		Tcl_SetObjResult(ip, Tcl_NewStringObj("You", -1));
-		return TCL_OK;
-	}
-
-	/*
-	 * monster_is_obvious, not monster_is_visible: it is what the look command
-	 * uses, and it is the one that knows about mimics and camouflage.  A
-	 * status bar that named the monster pretending to be a mushroom would be
-	 * giving the game away.
-	 */
-	mon = square_monster(cave, grid);
-	if (mon && monster_is_obvious(mon)) {
-		char health[64];
-
-		monster_desc(buf, sizeof(buf), mon, MDESC_CAPITAL | MDESC_IND_VIS);
-		look_mon_desc(health, sizeof(health), mon->midx);
-		Tcl_SetObjResult(ip, Tcl_ObjPrintf("%s (%s)", buf, health));
-
-		return TCL_OK;
-	}
-
-	/*
-	 * scan_distant_floor, not a walk of square_object: it is what the look
-	 * command uses and it returns only what the character has actually sensed.
-	 * Walking the remembered pile instead turns up the placeholders 4.2 leaves
-	 * for objects seen but never examined, and object_desc renders those as
-	 * "(nothing)" -- which is what the first version of this reported, at some
-	 * length, in a dungeon.
-	 */
-	{
-		int max = z_info->floor_size;
-		struct object **floor = mem_zalloc(max * sizeof(*floor));
-		int n = scan_distant_floor(floor, max, player, grid);
-
-		if (n > 0) {
-			object_desc(buf, sizeof(buf), floor[0],
-					ODESC_PREFIX | ODESC_FULL, player);
-
-			if (n > 1)
-				Tcl_SetObjResult(ip,
-						Tcl_ObjPrintf("%s, and %d more", buf, n - 1));
-			else
-				Tcl_SetObjResult(ip, Tcl_NewStringObj(buf, -1));
-		}
-
-		mem_free(floor);
-
-		if (n > 0) return TCL_OK;
-	}
-
-	if (square_isknown(cave, grid)) {
-		int feat = square(player->cave, grid)->feat;
-
-		if (feat > 0 && f_info[feat].name)
-			Tcl_SetObjResult(ip, Tcl_NewStringObj(f_info[feat].name, -1));
-	}
-
-	return TCL_OK;
-}
-
-/**
- * The minimap pane, which the front end draws rather than the game.
- *
- * It carried PW_MAP until now, which meant the game redrew it with
- * display_map() -- the level, scaled to fit.  That is the right thing in a
- * dungeon and the wrong thing on the surface, where the level is one square of
- * wilderness and the thing worth looking at is the world.
- *
- * So the pane takes no subwindow flag and the front end decides: the world map
- * out of doors, the scaled level below ground.  It is the same rule the game
- * already applies to "M" (do_cmd_view_map sends the surface to the world map),
- * said once more where the pane can hear it.
- *
- * Owning the redraw is also what makes panning possible.  The origin is ours,
- * so a drag can move it, and nothing else writes to the pane to undo that.
- */
-static int minimap_td = -1;		/* index into td[], or -1 */
-static struct loc world_origin;
-
-/**
- * Is the pane showing the world rather than the level?
- */
-/**
- * What the pane shows: the player's choice, or ours if they have not made one.
- */
-static enum { MM_AUTO, MM_LEVEL, MM_WORLD } minimap_mode = MM_AUTO;
-
-static bool minimap_is_world(void)
-{
-	if (!player || !player->in_wild || world_map_blocks() < 1) {
-		/* There is no world to show: below ground, the level is all there is. */
-		return false;
-	}
-
-	if (minimap_mode == MM_WORLD) return true;
-	if (minimap_mode == MM_LEVEL) return false;
-
-	/*
-	 * Left to itself: not simply "on the surface".  A village is on the
-	 * surface, and standing in one the useful overview is the village -- which
-	 * is what this pane showed before, in tiles.  The world map earns the pane
-	 * out on the road, where the level really is one square of grass and the
-	 * question is which way to walk.
-	 *
-	 * This is a guess about what is wanted where, which is why it is only the
-	 * default: the View menu pins it either way.
-	 */
-	return !world_map_player_in_place();
-}
-
-/**
- * Keep the origin inside the world, and follow the player when they walk off
- * the edge of what is shown.
- *
- * The second half wants care, and the first version of it got this wrong.
- * Recentring whenever the player is outside the view sounds right and makes
- * dragging useless: pan further than half a pane and the player is off-view by
- * definition, so the next redraw snaps straight back.  Measured -- a pan of
- * ten blocks moved nothing at all.
- *
- * What is actually wanted is to follow the *player*, not to police the view.
- * So the view only moves when the player's block has changed since the last
- * draw and they have left what is shown: drag wherever you like and it stays
- * there, walk off the edge and the map comes back to you.
- */
-static void world_origin_clamp(int wid, int hgt)
-{
-	static struct loc was = { -1, -1 };
-	int blocks = world_map_blocks();
-	struct loc here = world_map_player_block();
-	int maxx = MAX(0, blocks - wid), maxy = MAX(0, blocks - hgt);
-	bool moved = !loc_eq(here, was);
-
-	was = here;
-
-	if (moved
-			&& (here.x < world_origin.x || here.x >= world_origin.x + wid
-				|| here.y < world_origin.y || here.y >= world_origin.y + hgt)) {
-		world_origin.x = here.x - wid / 2;
-		world_origin.y = here.y - hgt / 2;
-	}
-
-	world_origin.x = MIN(MAX(world_origin.x, 0), maxx);
-	world_origin.y = MIN(MAX(world_origin.y, 0), maxy);
-}
-
-/**
- * Draw the pane.
- *
- * Follows update_minimap_subwindow()'s shape -- save the term, activate,
- * clear, draw, fresh, restore -- because that is what the rest of the game
- * expects of anything that writes to a term that is not the active one.
- */
-static bool minimap_dirty_get(void)
-{
-	return minimap_dirty;
-}
-
-static void minimap_draw(void)
-{
-	term *old = Term;
-	term_data *m;
-	int wid, hgt;
-
-	minimap_dirty = false;
-
-	if (minimap_td < 0 || !player || !character_dungeon) return;
-
-	m = &td[minimap_td];
-	wid = m->t.wid;
-	hgt = m->t.hgt;
-	if (wid < 1 || hgt < 1) return;
-
-	Term_activate(&m->t);
-	Term_clear();
-
-	if (minimap_is_world()) {
-		world_origin_clamp(wid, hgt);
-		world_map_draw(world_origin, loc(0, 0), wid, hgt);
-	} else {
-		display_map(NULL, NULL);
-	}
-
-	Term_fresh();
-	Term_activate(old);
-}
-
-/**
- * Mark the pane as needing a redraw.
- *
- * Registered against the handful of events that can change what it shows, and
- * acted on at the next request for input rather than there and then: the game
- * signals EVENT_MAP many times in a turn, and redrawing a 30x20 grid for each
- * of them is work nobody sees.
- */
-static void minimap_note(game_event_type type, game_event_data *data,
-		void *user)
-{
-	(void)type;
-	(void)data;
-	(void)user;
-
-	minimap_dirty = true;
-}
-
-static void minimap_init(void)
-{
-	static const game_event_type watched[] = {
-		EVENT_MAP, EVENT_PLAYERMOVED, EVENT_DUNGEONLEVEL, EVENT_ENTER_WORLD,
-		EVENT_SEEFLOOR, EVENT_ENTER_GAME
-	};
-	size_t i;
-
-	for (i = 0; i < N_ELEMENTS(watched); i++)
-		event_add_handler(watched[i], minimap_note, NULL);
-}
-
-/**
- * angband_minimap -- the pane's own state, and how to move it.
- *
- *    angband_minimap                 {world|level} ox oy blocks bx by
- *    angband_minimap pan dx dy       move the view, in blocks
- *    angband_minimap centre          put the player back in the middle
- *    angband_minimap show            auto, level or world
- *    angband_minimap show world      pin it, whatever the player is standing in
- *
- * The units are blocks rather than pixels because that is what the map is
- * drawn in; the script converts from a mouse drag using the pane's own cell
- * size, which it knows and C does not.
- */
-static int objcmd_minimap(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
-		Tcl_Obj *const objv[])
-{
-	const char *what;
-
-	(void)dummy;
-
-	if (objc == 1) {
-		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
-
-		Tcl_ListObjAppendElement(ip, list,
-				Tcl_NewStringObj(minimap_is_world() ? "world" : "level", -1));
-		Tcl_ListObjAppendElement(ip, list, Tcl_NewIntObj(world_origin.x));
-		Tcl_ListObjAppendElement(ip, list, Tcl_NewIntObj(world_origin.y));
-		Tcl_ListObjAppendElement(ip, list, Tcl_NewIntObj(world_map_blocks()));
-		/* Where the player is, in blocks: what a script needs to say where
-		 * the view is relative to them, and what a test needs to know it has
-		 * walked somewhere. */
-		{
-			struct loc here = world_map_player_block();
-
-			Tcl_ListObjAppendElement(ip, list, Tcl_NewIntObj(here.x));
-			Tcl_ListObjAppendElement(ip, list, Tcl_NewIntObj(here.y));
-		}
-		Tcl_SetObjResult(ip, list);
-
-		return TCL_OK;
-	}
-
-	what = Tcl_GetString(objv[1]);
-
-	if (strcmp(what, "show") == 0 && (objc == 2 || objc == 3)) {
-		if (objc == 2) {
-			Tcl_SetObjResult(ip, Tcl_NewStringObj(
-					minimap_mode == MM_WORLD ? "world"
-					: minimap_mode == MM_LEVEL ? "level" : "auto", -1));
-			return TCL_OK;
-		}
-
-		{
-			const char *how = Tcl_GetString(objv[2]);
-
-			if (strcmp(how, "auto") == 0) minimap_mode = MM_AUTO;
-			else if (strcmp(how, "level") == 0) minimap_mode = MM_LEVEL;
-			else if (strcmp(how, "world") == 0) minimap_mode = MM_WORLD;
-			else {
-				Tcl_SetObjResult(ip, Tcl_ObjPrintf(
-						"show wants auto, level or world, not: %s", how));
-				return TCL_ERROR;
-			}
-		}
-
-		minimap_dirty = true;
-
-		return TCL_OK;
-	}
-
-	if (strcmp(what, "centre") == 0 && objc == 2) {
-		struct loc here = world_map_player_block();
-		int wid = 0, hgt = 0;
-
-		if (minimap_td >= 0) {
-			wid = td[minimap_td].t.wid;
-			hgt = td[minimap_td].t.hgt;
-		}
-
-		world_origin.x = here.x - wid / 2;
-		world_origin.y = here.y - hgt / 2;
-		minimap_dirty = true;
-
-		return TCL_OK;
-	}
-
-	if (strcmp(what, "pan") == 0 && objc == 4) {
-		int dx, dy;
-
-		if (Tcl_GetIntFromObj(ip, objv[2], &dx) != TCL_OK
-				|| Tcl_GetIntFromObj(ip, objv[3], &dy) != TCL_OK)
-			return TCL_ERROR;
-
-		if (!minimap_is_world()) {
-			/*
-			 * Nothing to pan: the level map is scaled to fit the pane, so
-			 * there is no view to move.  Not an error -- the drag binding is
-			 * on the pane whatever it is showing.
-			 */
-			return TCL_OK;
-		}
-
-		world_origin.x += dx;
-		world_origin.y += dy;
-		minimap_dirty = true;
-
-		return TCL_OK;
-	}
-
-	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
-			"expected \"pan dx dy\", \"centre\" or \"show ?how?\", not: %s",
-			what));
-
-	return TCL_ERROR;
-}
-
-/**
  * Is there a game to ask questions of?
  *
  * The prereq predicates read the character and the level, and they do it
@@ -3337,7 +2893,6 @@ static bool terms_init(void)
 		pane_index[i] = role_to_index(Tcl_GetString(pair[1]));
 		if (pane_index[i] < 0) return false;
 		want_flag[pane_index[i]] = role_to_flag(Tcl_GetString(pair[1]));
-		want_role_minimap[i] = streq(Tcl_GetString(pair[1]), "minimap");
 
 		if (!term_data_link(&td[i], pane_index[i], Tcl_GetString(pair[0]),
 				Tcl_GetString(pair[2])))
@@ -3352,12 +2907,6 @@ static bool terms_init(void)
 	 * measured first and draws part of itself off the edge of its own pane.
 	 */
 	Tcl_Eval(interp, "angband_resize_now");
-
-	/* The pane the front end draws itself, if the layout asked for one. */
-	for (i = 0; i < td_count; i++) {
-		if (want_role_minimap[i]) minimap_td = i;
-	}
-	minimap_init();
 
 	/* Start the animation clock now that there is something to animate. */
 	Tcl_CreateTimerHandler(ANIMATION_MS, animation_tick, NULL);
@@ -3512,10 +3061,6 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_hook", objcmd_hook, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_ask", objcmd_ask, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_option", objcmd_option, NULL, NULL);
-	Tcl_CreateObjCommand2(interp, "angband_minimap", objcmd_minimap, NULL,
-			NULL);
-	Tcl_CreateObjCommand2(interp, "angband_describe", objcmd_describe, NULL,
-			NULL);
 
 	hooks_init();
 

@@ -193,53 +193,6 @@ check "options need a character" {
 	set e
 } "the options belong to a character, and there is not one yet"
 
-# --- the minimap pane and the status bar ------------------------------------
-
-check "the minimap reports which map it is showing" {
-	lassign [angband_minimap] mode ox oy blocks
-	expr {$mode in {world level} && [string is integer -strict $ox]
-			&& [string is integer -strict $oy]
-			&& [string is integer -strict $blocks]}
-} 1
-
-check "panning without a world is harmless" {
-	angband_minimap pan 3 4
-	lindex [angband_minimap] 0
-} "level"
-
-check "the minimap refuses an instruction it does not have" {
-	catch {angband_minimap sideways} e
-	string match "expected*" $e
-} 1
-
-# The pane guesses what to show; the View menu overrules the guess.  Reported
-# and set here so a layout can put it anywhere it likes.
-check "the pane starts out guessing" {angband_minimap show} "auto"
-
-check "and can be pinned either way" {
-	angband_minimap show world
-	set was [angband_minimap show]
-	angband_minimap show level
-	list $was [angband_minimap show]
-} "world level"
-
-check "an unknown way of showing it is refused" {
-	angband_minimap show auto
-	catch {angband_minimap show sideways} e
-	set e
-} "show wants auto, level or world, not: sideways"
-
-# Nothing to describe before there is a level, and asking must not reach into
-# a NULL cave to find that out.
-check "describing a cell without a game says nothing" {
-	angband_describe 20 10
-} ""
-
-check "angband_describe wants two numbers" {
-	catch {angband_describe 20} e
-	string match "wrong # args*" $e
-} 1
-
 # --- the second pass --------------------------------------------------------
 
 # Everything above ran while the front end was still starting.  This runs from

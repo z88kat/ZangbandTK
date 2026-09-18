@@ -121,21 +121,6 @@ update
 # arrangement and the content stop being the same decision.
 # Each entry is {canvas role font}.  The font decides the pane's cell size, so
 # it is how a pane ends up denser or coarser than its neighbours.
-# The two panes the front end itself reaches for: the map, which the pointer
-# hovers over, and the minimap, which is dragged and carries the status bar.
-set angband(map)     $map.c
-set angband(minimap) $overhead.c
-
-# The status bar, in the minimap's frame and under its canvas.
-#
-# -before matters.  termpane already packed the canvas with -expand 1, so it
-# has claimed the whole frame; a label packed after it would be allocated what
-# is left, which is nothing.  Putting it earlier in the packing order gives it
-# its row first and the canvas expands into the rest.
-ttk::label $overhead.status -textvariable angband(status) -anchor w \
-    -padding {4 2} -font TkSmallCaptionFont
-pack $overhead.status -side bottom -fill x -before $overhead.c
-
 set angband(terms) [list \
     [list $map.c      map       termfont] \
     [list $messages.c messages  termfont] \
@@ -168,28 +153,6 @@ foreach pair [angband_tilesets] {
         -variable angband(tileset) -value $id \
         -command [list angband_choose_tileset $id]
 }
-
-# The View menu: what the minimap pane shows.
-#
-# Left to itself the pane guesses -- the level while the player is in a town or
-# below ground, the world out on the road -- and the guess is worth having
-# because it is right most of the time.  It is only a guess though, so it is a
-# default and not a rule, and this is where it gets overruled.
-menu .menubar.view -tearoff 0
-.menubar add cascade -label "View" -menu .menubar.view
-
-set angband(minimapshow) [angband_minimap show]
-foreach {value label} {auto "Minimap: follow where I am"
-                       level "Minimap: this level"
-                       world "Minimap: the known world"} {
-    .menubar.view add radiobutton -label $label \
-        -variable angband(minimapshow) -value $value \
-        -command [list angband_minimap show $value]
-}
-
-.menubar.view add separator
-.menubar.view add command -label "Centre the minimap on me" \
-    -command { angband_minimap centre }
 
 proc angband_choose_tileset {id} {
     global angband
@@ -235,97 +198,3 @@ foreach pair $angband(terms) {
         }
     }
 }
-
-# ---------------------------------------------------------------------------
-# The minimap: what it shows, and dragging it about
-# ---------------------------------------------------------------------------
-#
-# The pane carries no subwindow flag, so the game does not draw it; main-tcl.c
-# does, and it decides between the world map out of doors and the scaled level
-# below ground.  The origin is the front end's, which is what makes a drag
-# possible -- nothing else writes to the pane to undo it.
-#
-# The drag is in blocks, not pixels.  One cell of this pane is one block of the
-# world, so the conversion is the pane's own cell size, which is known here and
-# not in C.  Whole cells only: a drag of three pixels should move nothing, and
-# rounding each event separately would make a slow drag move nothing at all, so
-# the anchor stays put and the remainder is carried.
-
-set angband(dragx) 0
-set angband(dragy) 0
-
-proc minimap_press {x y} {
-    global angband
-    set angband(dragx) $x
-    set angband(dragy) $y
-    $angband(minimap) configure -cursor fleur
-}
-
-proc minimap_release {} {
-    global angband
-    $angband(minimap) configure -cursor {}
-}
-
-proc minimap_drag {x y} {
-    global angband
-    set cw [font measure minimapfont "W"]
-    set ch [font metrics minimapfont -linespace]
-
-    set dx [expr {($x - $angband(dragx)) / $cw}]
-    set dy [expr {($y - $angband(dragy)) / $ch}]
-
-    if {$dx == 0 && $dy == 0} return
-
-    # Dragging right pulls the world right, which means looking further left.
-    angband_minimap pan [expr {-$dx}] [expr {-$dy}]
-
-    # Move the anchor by what was used, not to where the pointer is: the
-    # leftover pixels belong to the next event.
-    incr angband(dragx) [expr {$dx * $cw}]
-    incr angband(dragy) [expr {$dy * $ch}]
-}
-
-bind $angband(minimap) <ButtonPress-1>   { minimap_press %x %y }
-bind $angband(minimap) <B1-Motion>       { minimap_drag  %x %y }
-bind $angband(minimap) <ButtonRelease-1> { minimap_release }
-bind $angband(minimap) <Double-Button-1> { angband_minimap centre }
-
-# ---------------------------------------------------------------------------
-# The status bar: what is under the pointer
-# ---------------------------------------------------------------------------
-#
-# Hovering a tile on the map names it here.  It is the quickest way to learn a
-# tile set -- a sprite you cannot read is two seconds of hovering rather than a
-# look command and a prompt -- and it costs the game nothing, because
-# angband_describe answers from what the character knows and not from what is
-# there.
-#
-# A label rather than the bottom row of the minimap term: the pane is thirty
-# cells wide at this font and a monster's name is longer than that, so the
-# status bar wants the full width of its frame and a readable size, and it
-# should not eat a row of map to get them.
-
-proc map_hover {x y} {
-    global angband
-    set col [expr {$x / $angband(cellw)}]
-    set row [expr {$y / $angband(cellh)}]
-
-    if {$col == $angband(hovercol) && $row == $angband(hoverrow)} return
-
-    set angband(hovercol) $col
-    set angband(hoverrow) $row
-    set angband(status) [angband_describe $col $row]
-}
-
-proc map_unhover {} {
-    global angband
-    set angband(hovercol) -1
-    set angband(hoverrow) -1
-    set angband(status) ""
-}
-
-set angband(status) ""
-map_unhover
-
-bind $angband(map) <Motion> { map_hover %x %y }
-bind $angband(map) <Leave>  { map_unhover }

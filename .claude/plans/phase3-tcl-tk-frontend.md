@@ -1048,85 +1048,36 @@ work — the debug loop exists before the UI does — and one scripted session r
 >
 > T3 is complete.
 
-> **Out of order, because it was asked for: the minimap now shows the world, and the map
-> names what the pointer is over.**
+> **Tried and reverted: the world map in the minimap pane.**
 >
-> The pane carried `PW_MAP`, so the game drew the level scaled to fit. That is right in a
-> dungeon and wrong on the surface, where the level is one square of wilderness and the
-> thing worth looking at is the world. It now carries no flag at all and the front end
-> decides — the same rule `do_cmd_view_map` already applies to "M", said once more where the
-> pane can hear it. Owning the redraw is also what makes panning possible: the origin is
-> ours, so a drag moves it and nothing writes over the pane to undo that.
+> The pane carried `PW_MAP` — the game's own scaled level map, which fits the level to the
+> pane and follows the player. That was replaced with a front-end-drawn world map, pannable
+> by mouse drag, on the reasoning that on the surface the level is one square of wilderness.
+> Reverted at the player's request: *"The version before worked really well, it showed a good
+> scale minimap and moved with the player. The new version does not scale well, does not move
+> with the player and is hard to read."*
 >
-> `display_world_map()` split into `world_map_draw(origin, at, wid, hgt)`, which clears
-> nothing and draws where it is told, plus the full-screen view that adds the legend. Two
-> callers, neither knowing about the other.
+> Worth keeping from the attempt, for whenever it is tried again:
 >
-> Three things found by looking rather than reasoning:
+> - **`display_map()` called by hand is not the same as letting the game call it.**
+>   `update_minimap_subwindow` skips a redraw while the player is running or resting, and
+>   only clears the term when `EVENT_DUNGEONLEVEL` says the new level will not fill it.
+>   Clearing and redrawing on every event instead is what made the replacement scale badly
+>   and read worse.
+> - **A one-shot `subwindows_set_flags` does not hold.** `window_flag` is restored from the
+>   savefile and rewritten by every pref file read
+>   ([ui-prefs.c:1176](../../src/ui-prefs.c#L1176)), so a flag set at the first request for
+>   input is gone by the time a character is loaded. Anything that wants to own a pane has to
+>   assert its flags, not set them once.
+> - **A cell holds a tile or a letter, never both**, so a world map under a tile set cannot
+>   recolour a block to mark a town: the attr is a sheet row there, and recolouring picks a
+>   different row and draws whatever is in it.
+> - **The judgement that sank it was made from a rendered PNG rather than from play.** A
+>   16-pixel tile in a five-by-ten cell looks like mush close up and reads correctly at a
+>   glance, which is the only way that pane is ever read.
 >
-> - **Recentring on the player whenever they are off-view makes dragging useless.** Pan
->   further than half a pane and the player is off-view by definition, so the next redraw
->   snaps straight back — measured, a pan of ten blocks moved nothing. The rule is to follow
->   the player only when *the player* has moved, so a drag stays put and walking off the
->   edge brings the map back.
-> - **The world map must not use tiles.** `feat_x_attr`/`feat_x_char` carry the tile when a
->   graphical set is in use, and a 16-pixel tile in a five-by-ten cell is mush. It draws
->   `f_info[]`'s own colour and letter now: the world map is a schematic, and what it has to
->   show is the shape of the coast and the colour of the places.
-> - **`square_object()` on the remembered level turns up placeholders,** which `object_desc`
->   renders as "(nothing)" — which is what the status bar said, at length, in a dungeon.
->   `scan_distant_floor()` is what the look command uses and it returns only what the
->   character has sensed. Likewise `monster_is_obvious`, not `monster_is_visible`: a status
->   bar that named the monster pretending to be a mushroom would be giving the game away.
->
-> `angband_describe col row` answers from what the character knows and not from what is
-> there, so the status bar is not a cheat with a nice interface on it.
->
-> **Two things that only showed up in play, and one design note.**
->
-> - **A one-shot `subwindows_set_flags` is not enough.** The flags were applied once, at the
->   first request for input, on the reasoning that this is safely past `textui_init()`. It
->   is — and `window_flag` is *also* restored from the savefile and rewritten by every pref
->   file read, where [ui-prefs.c:1176](../../src/ui-prefs.c#L1176) fills in any subwindow the
->   file did not mention from the current set and calls `subwindows_set_flags` for the lot.
->   Loading a character put `PW_OVERHEAD` back on the minimap, and the game redrew the level
->   over the world map once a turn from `pre_turn_refresh()`. The pane is now checked at
->   every request for input — eight comparisons, and `subwindows_set_flags` does nothing
->   unless something moved. **`lib/tcl/main.tcl` is the only opinion about what a pane
->   holds**, and that is now enforced rather than declared once and hoped for.
-> - **A blank backdrop makes an empty world map look broken.** A new character has stood in
->   three or four blocks of a world 129 across, so the pane showed a handful of coloured
->   letters floating in black. Unseen blocks now draw as a dim dot, which costs nothing, says
->   how much world there is, and makes the explored part read as a trail across it. Both
->   views get it, because they are the same map.
->
-> The diagnosis took four rounds of instrumenting rather than reading: counting draws, then
-> clears, then term-hook writes, then every `cell_set` on that pane. The last one found 3,588
-> writes per turn from outside the front end's own draw — 78 × 46, the whole pane — which is
-> what pointed at `Term_pict` and therefore at a window flag nobody had asked for.
->
-> **And then a lesson about taste, paid for in builds.**
->
-> The world map was changed from tiles to `f_info[]`'s coloured letters on the grounds that a
-> 16-pixel tile in a five-by-ten cell is mush. It is — and the tiles were what the player
-> wanted, because the pane is read at a glance for shape and colour and a letter map at that
-> size reads as debris. That judgement was made from a rendered PNG and should have been
-> made by the person who plays the game. **Tiles restored.**
->
-> Three things came out of putting them back:
->
-> - **A cell holds a tile or a letter, never both.** The town and dungeon markers recolour
->   the attr, which under a tile set is a sheet row — so recolouring picked a different row
->   and drew whatever was in it. Places are now marked with a plain symbol *instead of* their
->   terrain, and only for the town itself and the mouth of a dungeon; the several-block
->   margin a place reserves keeps its terrain, because marking that punched holes in the map.
-> - **A dim backdrop for the unexplored world does not work under tiles.** `FEAT_NONE`'s dark
->   tile is pure black in the Neon set, so it cost a full-pane redraw and showed nothing.
->   Unexplored is blank again.
-> - **The pane now has a View menu**, because the rule for which map to show is a guess.
->   Left alone it shows the level in a town or below ground and the world out on the road —
->   right most of the time, and wrong often enough that guessing silently was the mistake in
->   the first place. `angband_minimap show auto|level|world` pins it.
+> The hover status bar went back with it, being part of the same commit. It is independent of
+> the pane's content and can return on its own.
 
 ---
 

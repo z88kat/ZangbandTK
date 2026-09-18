@@ -22,16 +22,6 @@ extern void move_cursor_relative(int y, int x);
 extern void print_rel(wchar_t c, uint8_t a, int y, int x);
 extern void prt_map(void);
 extern void display_map(int *cy, int *cx);
-
-/*
- * The world map, drawn into the current term without clearing it.  The
- * full-screen view under "M" and the Tk front end's minimap pane are both
- * callers; neither knows about the other.
- */
-extern void world_map_draw(struct loc origin, struct loc at, int wid, int hgt);
-extern int world_map_blocks(void);
-extern struct loc world_map_player_block(void);
-extern bool world_map_player_in_place(void);
 extern void do_cmd_view_map(void);
 void do_cmd_view_world_map(void);
 void do_cmd_quest_log(void);

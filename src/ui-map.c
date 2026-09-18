@@ -1021,65 +1021,6 @@ void display_map(int *cy, int *cx)
  * Note that the "player" is always displayed on the map.
  */
 /**
- * How each band of place shows on the world map.
- *
- * Ordered as wild_town_bands is, smallest first, so a glance at the map says
- * which way a character would walk to find a magic shop.
- */
-static const uint8_t wild_town_band_attr[] = {
-	COLOUR_L_UMBER, COLOUR_YELLOW, COLOUR_L_GREEN, COLOUR_L_BLUE
-};
-
-/**
- * How many blocks across the world is, for clamping an origin against.
- *
- * Zero before there is a world, which is the answer a caller wants: nothing to
- * scroll and nothing to draw.
- */
-int world_map_blocks(void)
-{
-	return wild ? wild->blocks : 0;
-}
-
-/**
- * Which block the player is standing in.
- */
-struct loc world_map_player_block(void)
-{
-	int size;
-
-	/*
-	 * z_info as well as the other two: the Tk front end is up and answering
-	 * before init_angband() has read the constants, and reading the block
-	 * size out of a null z_info is a segmentation fault rather than a wrong
-	 * answer.
-	 */
-	if (!z_info || !wild || !player) return loc(0, 0);
-
-	size = z_info->wild_block_size;
-	if (size < 1) return loc(0, 0);
-
-	return loc(player->wild_grid.x / size, player->wild_grid.y / size);
-}
-
-/**
- * Is the player standing in a town, or in the ground a place reserves?
- *
- * The distinction the Tk front end's pane needs: in a town or a dungeon the
- * useful overview is the level, and out on the road it is the world.
- */
-bool world_map_player_in_place(void)
-{
-	struct loc here = world_map_player_block();
-
-	if (!wild || !player) return false;
-	if (!wild_in_bounds(wild, here.x, here.y)) return false;
-
-	return wild_town_at(wild, here.x, here.y) >= 0
-		|| wild_block_at(wild, here.x, here.y)->place != 0;
-}
-
-/**
  * Draw the overhead map of the world (WLD-25).
  *
  * One character per block, which is the resolution the knowledge is kept at and
@@ -1090,20 +1031,27 @@ bool world_map_player_in_place(void)
  * Only blocks the player has been near enough to see are drawn.  The rest is
  * blank, and fills in as they travel.
  *
- * Draws into the current term and clears nothing: the caller owns the rest of
- * the term, which is how the same map fills a full screen under "M" and a pane
- * in the Tk front end without either knowing about the other.
- *
  * \param origin is the top-left block of the view, and is moved by the caller.
- * \param at is the top-left cell to draw into.
- * \param wid and hgt are how many blocks to draw.
  */
-void world_map_draw(struct loc origin, struct loc at, int wid, int hgt)
+/**
+ * How each band of place shows on the world map.
+ *
+ * Ordered as wild_town_bands is, smallest first, so a glance at the map says
+ * which way a character would walk to find a magic shop.
+ */
+static const uint8_t wild_town_band_attr[] = {
+	COLOUR_L_UMBER, COLOUR_YELLOW, COLOUR_L_GREEN, COLOUR_L_BLUE
+};
+
+static void display_world_map(struct loc origin)
 {
-	struct loc here = world_map_player_block();
+	int size = z_info->wild_block_size;
+	int wid = Term->wid - 2, hgt = Term->hgt - 4;
+	struct loc here = loc(player->wild_grid.x / size,
+						  player->wild_grid.y / size);
 	int row, col;
 
-	if (!wild || !player) return;
+	Term_clear();
 
 	for (row = 0; row < hgt; row++) {
 		for (col = 0; col < wid; col++) {
@@ -1112,8 +1060,6 @@ void world_map_draw(struct loc origin, struct loc at, int wid, int hgt)
 			wchar_t c;
 
 			if (!wild_in_bounds(wild, bx, by)) continue;
-
-			/* The world, before it is known, is blank. */
 			if (!wild_seen(wild, bx, by)) continue;
 
 			feat = wild_block_feat(wild, bx, by);
@@ -1126,73 +1072,30 @@ void world_map_draw(struct loc origin, struct loc at, int wid, int hgt)
 			 * A town is worth picking out of the country around it, and how
 			 * large it is worth telling from across the map: it is what
 			 * decides whether the walk is worth making.
-			 *
-			 * In text mode that is done by recolouring the block's own
-			 * letter.  Under a tile set it cannot be: attr and char are a
-			 * tile's row and column there, so recolouring the attr alone
-			 * picks a different row of the sheet and draws whatever happens
-			 * to be in it.  A place gets a plain marker instead -- drawn over
-			 * the terrain rather than instead of it, which is the one thing
-			 * the letters could not do.
 			 */
 			{
 				int town = wild_town_at(wild, bx, by);
-				int mark_a = -1;
-				wchar_t mark_c = L'*';
-				bool margin = false;
 
 				if (town >= 0) {
-					mark_a = wild_town_band_attr[wild->towns[town].band];
+					a = wild_town_band_attr[wild->towns[town].band];
 				} else if (wild_dungeon_in_block(wild, bx, by)) {
-					mark_a = COLOUR_L_RED;
-					mark_c = L'>';
+					a = COLOUR_L_RED;
 				} else if (wild_block_at(wild, bx, by)->place) {
 					/* The margin a town or a dungeon reserves around itself. */
-					mark_a = COLOUR_L_WHITE;
-					mark_c = L'.';
-					margin = true;
-				}
-
-				if (mark_a >= 0) {
-					if (use_graphics == GRAPHICS_NONE) {
-						a = mark_a;
-					} else if (!margin) {
-						/*
-						 * A cell holds a tile or a letter, not both, so a
-						 * marker costs the terrain underneath it.  Worth it
-						 * for the town itself and the mouth of a dungeon;
-						 * not worth it for the margin they reserve around
-						 * themselves, which is several blocks wide and would
-						 * punch a hole in the map for no information.
-						 */
-						Term_queue_char(Term, at.x + col, at.y + row,
-								mark_a, mark_c, mark_a, mark_c);
-						continue;
-					}
+					a = COLOUR_L_WHITE;
 				}
 			}
 
-			Term_queue_char(Term, at.x + col, at.y + row, a, c, a, c);
+			Term_queue_char(Term, col + 1, row + 1, a, c, a, c);
 		}
 	}
 
 	/* Where the player is, if that part of the world is on screen. */
 	if (here.x >= origin.x && here.x < origin.x + wid &&
 		here.y >= origin.y && here.y < origin.y + hgt) {
-		Term_queue_char(Term, at.x + here.x - origin.x,
-						at.y + here.y - origin.y,
+		Term_queue_char(Term, here.x - origin.x + 1, here.y - origin.y + 1,
 						COLOUR_WHITE, L'@', COLOUR_WHITE, L'@');
 	}
-}
-
-/**
- * The world map filling the screen, under "M" on the surface.
- */
-static void display_world_map(struct loc origin)
-{
-	Term_clear();
-
-	world_map_draw(origin, loc(1, 1), Term->wid - 2, Term->hgt - 4);
 
 	prt(format("World map -- you are at %d, %d of %d.  "
 			   "Direction keys scroll, ESC exits.",
