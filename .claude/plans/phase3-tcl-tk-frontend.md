@@ -1152,7 +1152,24 @@ window, reads live, and closes without disturbing the game.
 >   advances after them, so a sheet carrying them would be visibly one step stale after every
 >   step.
 >
-> Forty-seven bridge checks. Still to come in T4: nothing — the flags table, resists and the
+> Then redrawn to the Classical design system (decision 17) from the handoff in
+> [design_handoff_character_sheet](design_handoff_character_sheet/): identity header, three
+> hairline meters, three ruled stat columns, the history as prose, a keybinding strip. Opens
+> at 1180×780 in 90ms.
+>
+> Three things that cost a build each, all worth knowing before the next window:
+>
+> - **A reflow bound to the container it re-grids never settles.** Every re-grid fires
+>   another `<Configure>`; the window churned for seconds. Bind the toplevel, and only
+>   re-grid when the column count actually changed.
+> - **An unmapped widget is one cell wide**, so a layout computed before the window is mapped
+>   asks for what one column wants — narrow and tall. Set the geometry, settle it, then read
+>   a width back out of it.
+> - **Unqualified helper calls inside a namespace are a trap**, not a shorthand: they resolve
+>   against wherever the proc ended up, so a bind script, an `after idle` or a rename breaks
+>   them. Everything in `classical.tcl` is qualified.
+>
+> Forty-eight bridge checks. Still to come in T4: nothing — the flags table, resists and the
 > paper doll want equipment, and those are T6 and T7.
 
 ---
@@ -1391,7 +1408,7 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 
 ## 6. Decisions needed
 
-**All sixteen are settled.** Raw findings from the running original accumulate in
+**All seventeen are settled.** Raw findings from the running original accumulate in
 [phase3-observations.md](phase3-observations.md); the settled rationale for each decision
 follows below.
 
@@ -1413,6 +1430,7 @@ follows below.
 | ~~14~~ | ~~Does the Tk build replace `ZangbandTK.app`?~~ | **Settled — no. Two applications, permanently.** See below. | — |
 | ~~15~~ | ~~Port the 2001 widget library?~~ | **Settled — no. None of it is compiled.** See below. | — |
 | ~~16~~ | ~~How many panes does the main window end up with?~~ | **Settled — five, and no more.** Everything else is its own window. See below. | — |
+| ~~17~~ | ~~What do the windows look like?~~ | **Settled — the Classical design system**, in `lib/tcl/classical.tcl`. See below. | — |
 
 **Settled — Ttk, themed by platform.** Confirmed by project owner. Tk 9's native widget set
 replaces `tk/library/`'s **10,636 lines** of 1999 megawidgets — `ttk::notebook` for tabbed
@@ -1582,6 +1600,33 @@ them because its Main window was map and nothing else; ours is not.
 
 *What it does not change:* the five panes stay panes, detaching them is still post-T7 and
 still optional, and the main window still saves its sash positions.
+
+**Settled — every window is drawn with the Classical design system.** Confirmed by project
+owner, handing over a design for the character sheet: *"this design style we should use for
+all the windows."*
+
+The specification is [design_handoff_character_sheet](design_handoff_character_sheet/), and
+the implementation is `lib/tcl/classical.tcl` — colours, spacing, type and six components
+(title strip, section head, stat row, meter, prose panel, footer). A window that needs a
+seventh adds it there, not locally, because the point is that the knowledge browsers and the
+character sheet look like one program.
+
+*What follows from it:*
+
+- **Classic Tk widgets, not Ttk.** Ttk is themed by the platform, which is the right default
+  and exactly wrong here: this design specifies every colour, and fighting a theme for
+  control of a background is more work than not having one. Ttk stays for anything that
+  should look like the operating system.
+- **Three fonts ship with the game** — Cormorant Garamond, Lora and Courier Prime, all SIL
+  Open Font Licence 1.1, in `lib/fonts` with their licences. Tk has no API for loading a font
+  file, so `fonts_register()` in main-tcl.c hands them to the platform at startup in process
+  scope, before `Tk_Init`. macOS only so far; Windows wants `AddFontResourceEx` and Linux
+  `FcConfigAppFontAddFile`, and until those exist the fallback chain in `classical.tcl` is
+  what those builds get. A bridge check asserts all three resolved, because a missing face
+  should fail a build rather than a screenshot.
+- **What Tk cannot do is written down beside what it does instead.** Letter-spacing becomes a
+  thin space between characters; rounded corners, drop shadows and the desk ground the card
+  floated on are gone.
 
 **Settled — no per-monster sound reassignment.** Confirmed by project owner: *"do not allow
 players reassign sounds, no one will use it anyway."*
