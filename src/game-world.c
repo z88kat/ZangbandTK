@@ -901,11 +901,52 @@ void process_world(struct chunk *c)
 		bool porous = player_of_has(player, OF_PASS_WALL);
 
 		if (!porous || player->chp > player->depth / 10) {
-			msg(porous ? "Your molecules feel disrupted!"
-				: "You are being crushed!");
+			const char *what, *killer;
+
+			if (porous) {
+				what = "Your molecules feel disrupted!";
+				killer = "density";
+			} else if (player_has_mutation(player,
+					mutation_by_name("WRAITH"))) {
+				/*
+				 * Attributable, because this death is the mutation's
+				 * (PLR-16, DEC-85).
+				 *
+				 * A player crushed inside rock needs to be told that
+				 * their wraith form running out is what did it. Dying
+				 * to "solid rock" after walking through a wall on
+				 * purpose reads as a bug rather than as the risk it
+				 * is, and the risk is the point -- the project owner's
+				 * ruling was exactly that: *"so what happens when it
+				 * expires while you're inside rock. You're dead.
+				 * That's the risk."*
+				 *
+				 * Carrying the mutation is the test, rather than any
+				 * record of the form having just ended, because a
+				 * stored "was a wraith a moment ago" would be a
+				 * savefile field for one message. The residual case --
+				 * a character who holds the mutation, has never been
+				 * a wraith, and is in a wall for some other reason --
+				 * would be mis-attributed, and is the same narrow case
+				 * the generic branch below exists to catch.
+				 */
+				what = "Your form solidifies, and the rock closes!";
+				killer = "an expired wraith form";
+			} else {
+				/*
+				 * Nothing should reach this. A character with no way
+				 * through walls, who has never had one, standing
+				 * inside rock is a bug -- so it keeps a killer of its
+				 * own rather than borrowing the wraith's, and a death
+				 * to "solid rock" is worth reading as a report.
+				 */
+				what = "You are being crushed!";
+				killer = "solid rock";
+			}
+
+			msg("%s", what);
 			take_hit(player, player_apply_damage_reduction(player,
-					1 + player->depth / 10),
-				porous ? "density" : "solid rock");
+					1 + player->depth / 10), killer);
 			no_regen = true;
 			if (player->is_dead) {
 				return;

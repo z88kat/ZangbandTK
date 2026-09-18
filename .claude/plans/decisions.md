@@ -4344,6 +4344,32 @@ in `game-world.c` still described the reasoning that ruling replaced. Corrected
 in passing. At depth 0 the crushing charge is one point a turn, which is slow
 enough to read a scroll and get out.
 
+**Confirmed by the project owner, independently of the archive** (18 September
+2026): *"so what happens when it expires while you're inside rock. You're dead.
+That's the risk."* The ruling and the archive reading agree, and the code was
+checked against both rather than against either alone.
+
+**The death is attributable** (3.122.1). `died_from` is what the tomb prints
+after "by" and what the character dump prints after "Killed by", so it is the
+whole of what a player is told afterwards. Crushing a wraith and reporting
+"solid rock" reads as a bug rather than as the risk the mutation carries, which
+is the opposite of what the ruling is for. A character who holds the WRAITH
+mutation now dies of **"an expired wraith form"**, with the message "Your form
+solidifies, and the rock closes!" instead of the generic crushing line.
+
+Carrying the mutation is the test, rather than a stored record of the form
+having just ended, which would be a savefile field for one message. The generic
+"solid rock" branch is deliberately kept for a character who has never held the
+mutation, because that case is a bug and should read like one.
+
+**A Spectre is not at risk from it, and that is the race doing the work.** The
+crushing branch reads `OF_PASS_WALL` rather than `TMD_WRAITH`, so a race that
+holds the flag permanently keeps it when the form ends and falls back to the
+floored density damage. Asserted directly on the race: a Spectre at depth 30
+pays for the rock, pays from one hit point, and does not die. Had it gone the
+other way it would have been a bug -- a mutation killing a Spectre for doing
+the thing its race exists to do.
+
 **Interaction with the `PASS_WALL` ego pool.** `PASS_WALL` is in `OFT_MISC`,
 which is what `KF_RAND_POWER` draws from, so a character can hold the flag
 permanently from an ego item *and* be in wraith form. Checked and coherent: the

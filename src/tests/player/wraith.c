@@ -519,6 +519,104 @@ static int test_the_form_is_visible_and_no_longer_deferred(void *state) {
 	ok;
 }
 
+/**
+ * A Spectre outlives its own wraith form, because the race carries the flag.
+ *
+ * The crushing branch reads `OF_PASS_WALL` rather than the timed effect, so a
+ * race that has the flag permanently keeps it when the form ends and drops back
+ * to the floored density damage instead of being crushed.  This is the case
+ * that would be a bug if it went the other way -- a Spectre killed by a
+ * mutation for doing the thing its race does -- so it is asserted directly on
+ * the race rather than through a worn item.
+ */
+static int test_a_spectre_outlives_its_own_wraith_form(void *state) {
+	int i, before;
+
+	require(stand_up("Spectre", 30));
+	require(player_of_has(player, OF_PASS_WALL));
+
+	square_set_feat(cave, player->grid, lookup_feat_code("GRANITE"));
+	require(!square_ispassable(cave, player->grid));
+
+	/* In the form, and out of it, and still standing either way */
+	player_set_timed(player, TMD_WRAITH, 5, false, false);
+	resettle();
+	player->chp = 1;
+	for (i = 0; i < 200 && !player->is_dead; i++) process_world(cave);
+	require(!player->is_dead);
+
+	player_clear_timed(player, TMD_WRAITH, false, false);
+	resettle();
+	require(player_of_has(player, OF_PASS_WALL));
+
+	/*
+	 * It does pay -- proved before the survival is asserted, because a grid
+	 * that charged nothing at all would pass "it did not die" without the
+	 * race doing any of the work.
+	 */
+	player->chp = player->mhp;
+	before = player->chp;
+	process_world(cave);
+	require(player->chp < before);
+
+	/* And it pays without dying, from one hit point, which is the point */
+	player->chp = 1;
+	for (i = 0; i < 500 && !player->is_dead; i++) process_world(cave);
+	require(!player->is_dead);
+	require(player->chp >= 0);
+	ok;
+}
+
+/**
+ * The death says what killed you (PLR-16).
+ *
+ * `died_from` is what the tomb prints after "by" and what the character dump
+ * prints after "Killed by", so it is the whole of what a player is told after
+ * the fact.  "solid rock" would read as a bug rather than as the risk the
+ * mutation carries.
+ *
+ * Both branches, because the generic one is deliberately still there: a
+ * character who has never had the mutation and is somehow inside a wall should
+ * report something that reads like the bug it would be.
+ */
+static int test_the_crushing_death_names_the_mutation(void *state) {
+	const struct mutation *wraith = mutation_by_name("WRAITH");
+	int i;
+
+	notnull(wraith);
+
+	/* With the mutation: the mutation is named */
+	require(stand_up("Human", 30));
+	require(player_gain_mutation(player, wraith));
+	require(player_has_mutation(player, wraith));
+	square_set_feat(cave, player->grid, lookup_feat_code("GRANITE"));
+	require(!square_ispassable(cave, player->grid));
+
+	player->chp = 1;
+	for (i = 0; i < 500 && !player->is_dead; i++) process_world(cave);
+	require(player->is_dead);
+	require(streq(player->died_from, "an expired wraith form"));
+
+	/* Without it: the canary keeps its own killer */
+	require(stand_up("Human", 30));
+	require(!player_has_mutation(player, wraith));
+	square_set_feat(cave, player->grid, lookup_feat_code("GRANITE"));
+	require(!square_ispassable(cave, player->grid));
+
+	player->chp = 1;
+	for (i = 0; i < 500 && !player->is_dead; i++) process_world(cave);
+	require(player->is_dead);
+	require(streq(player->died_from, "solid rock"));
+
+	/* And a Spectre ground down in rock is not dying of either */
+	require(stand_up("Spectre", 30));
+	square_set_feat(cave, player->grid, lookup_feat_code("GRANITE"));
+	player->chp = 1;
+	for (i = 0; i < 500 && !player->is_dead; i++) process_world(cave);
+	require(!player->is_dead);
+	ok;
+}
+
 const char *suite_name = "player/wraith";
 struct test tests[] = {
 	{ "the-form-lasts-as-long-as-the-archive-says",
@@ -536,5 +634,9 @@ struct test tests[] = {
 	  test_the_form_and_a_worn_pass_wall_agree },
 	{ "the-form-is-visible-and-no-longer-deferred",
 	  test_the_form_is_visible_and_no_longer_deferred },
+	{ "a-spectre-outlives-its-own-wraith-form",
+	  test_a_spectre_outlives_its_own_wraith_form },
+	{ "the-crushing-death-names-the-mutation",
+	  test_the_crushing_death_names_the_mutation },
 	{ NULL, NULL }
 };

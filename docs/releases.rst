@@ -46,6 +46,48 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+You're dead, and that's the risk — 18 September 2026
+------------------------------------------------------------
+
+- **3.122.1** — The wraith-form death is **attributable**, and the manual says
+  plainly what the mutation can do to you.
+
+  The project owner ruled on the expiry case independently of the archive and
+  landed in the same place: *"so what happens when it expires while you're
+  inside rock. You're dead. That's the risk."* Good agreement, and the code was
+  re-checked against both rather than against either alone — the floor is
+  lifted by ``!porous``, so the damage applies at any hit point total and kills.
+
+  **What it did not do was say so.** ``died_from`` is what the tomb prints after
+  "by" and what the character dump prints after "Killed by", and it read "solid
+  rock". A player who walked into a wall on purpose and died of generic crushing
+  has been handed something that reads like a bug rather than like the risk they
+  took. A character holding the mutation now dies of **"an expired wraith
+  form"**, and the message is "Your form solidifies, and the rock closes!"
+
+  The generic branch stays for a character who has never held the mutation,
+  because that case *is* a bug and should read like one.
+
+  **A Spectre is safe, and it is the race doing it.** The crushing branch reads
+  ``OF_PASS_WALL``, not the timed effect, so a race holding the flag permanently
+  keeps it when the form ends and drops back to the floored density damage.
+  Asserted on the race directly: a Spectre at depth 30 pays for the rock, pays
+  from one hit point, and does not die. The same is true of anyone carrying an
+  item that grants the flag. Had it gone the other way it would have been a
+  bug — a mutation killing a Spectre for doing the thing its race is for.
+
+  **The manual leads with the danger instead of mentioning it.** The warning is
+  now the first thing in the section, and it carries the numbers that make the
+  risk calculable rather than a surprise: the form lasts between half your level
+  and your level in turns, rolled on arrival, so a level 20 character gets
+  between 10 and 20 and must assume 10. The crushing is one point a turn on the
+  surface and six at two thousand five hundred feet. Both ways it can end early
+  — light, including light you are immune to and light you cast yourself — are
+  stated, along with who is exempt.
+
+  Two tests added, both falsified: making the crushing branch ignore the
+  permanent flag fails four, and reporting the generic killer fails one.
+
 The deferral that stopped being true — 18 September 2026
 ------------------------------------------------------------
 

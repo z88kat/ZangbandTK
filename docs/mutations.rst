@@ -124,28 +124,45 @@ back. All three still show on your character sheet.
 
 .. topic:: Wraith form, and the way it kills you
 
-   One of the twenty-seven turns you incorporeal for somewhere between half
-   your level and your level in turns, and it is the strongest thing on this
-   page by a wide margin. You walk through walls. Nine tenths of every blow
-   passes through you. You gain a hundred points of armour and bolts bounce off
-   you. Darkness heals you instead of hurting you. You pay nothing for standing
-   inside rock, where a Spectre pays a point a turn.
+   .. warning::
 
-   It arrives without being asked for, roughly one turn in three thousand, and
-   it leaves the same way.
+      **If wraith form ends while you are inside rock, you die.** Not "you are
+      hurt" — you are solid again with stone on every side, you cannot move in
+      any direction, and you are crushed where you stand until you are dead.
+      There is no floor under that damage the way there is for a Spectre. At
+      two thousand five hundred feet it is six hit points a turn; on the
+      surface it is one. The death is recorded as *an expired wraith form*, so
+      you will know.
 
-   **That is the danger.** The form is temporary and the walls are not. If it
-   runs out while you are inside rock you are solid again with stone on every
-   side, and stone does not wait: you are crushed where you stand, a little
-   more each turn, and there is no floor under that damage the way there is for
-   a Spectre. Deep enough, it is quick.
+   One of the twenty-seven turns you incorporeal, and it is the strongest thing
+   on this page by a wide margin. You walk through walls. Nine tenths of every
+   blow passes through you. You gain a hundred points of armour and bolts
+   bounce off you. Darkness heals you instead of hurting you. You pay nothing
+   for standing inside rock, where a Spectre pays a point a turn.
 
-   Light also ends it, immediately and wherever you are — including light you
-   are otherwise immune to, and including your own. A wraith reading a scroll
-   of light inside a mountain has made a decision they will not get to revisit.
+   It arrives without being asked for, roughly one turn in three thousand.
 
-   The mutation is rare and short. Treat a wall you are standing in as somewhere
-   you are passing through rather than somewhere you are, and count.
+   **How long you have is the whole of the calculation, and you can do it.**
+   The form lasts somewhere between half your character level and your level,
+   in turns, rolled when it arrives — so a character at level 20 gets between
+   10 and 20 turns, and must assume 10. That is the number to count against
+   before you step into a wall, because it is the number that decides whether
+   you come out the other side. A vault wall is one or two grids thick and
+   costs nothing worth worrying about. A mountain range is many grids, and a
+   low-level wraith cannot cross one.
+
+   **Two things end it early, and neither asks.** Light ends it immediately and
+   wherever you are — including light you are otherwise immune to, and
+   including your own. A wraith reading a scroll of light inside a mountain has
+   made a decision they will not get to revisit. And any monster that breathes
+   light at you will do the same thing from across the room.
+
+   **A Spectre is safe from all of this**, and so is anyone carrying an item
+   that lets them pass walls: the form ending leaves them still able to walk
+   through rock, so they drop back to the ordinary Spectre's point a turn and
+   stroll out. For everybody else the rule is simple. Treat a wall you are
+   standing in as somewhere you are passing through rather than somewhere you
+   are, and count.
 
 Three that used to be on this list are not. **Losing a mutation at random**
 works — that is the "strangely normal" one, and it takes a mutation back.
