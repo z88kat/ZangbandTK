@@ -1081,6 +1081,29 @@ work — the debug loop exists before the UI does — and one scripted session r
 >
 > `angband_describe col row` answers from what the character knows and not from what is
 > there, so the status bar is not a cheat with a nice interface on it.
+>
+> **Two things that only showed up in play, and one design note.**
+>
+> - **A one-shot `subwindows_set_flags` is not enough.** The flags were applied once, at the
+>   first request for input, on the reasoning that this is safely past `textui_init()`. It
+>   is — and `window_flag` is *also* restored from the savefile and rewritten by every pref
+>   file read, where [ui-prefs.c:1176](../../src/ui-prefs.c#L1176) fills in any subwindow the
+>   file did not mention from the current set and calls `subwindows_set_flags` for the lot.
+>   Loading a character put `PW_OVERHEAD` back on the minimap, and the game redrew the level
+>   over the world map once a turn from `pre_turn_refresh()`. The pane is now checked at
+>   every request for input — eight comparisons, and `subwindows_set_flags` does nothing
+>   unless something moved. **`lib/tcl/main.tcl` is the only opinion about what a pane
+>   holds**, and that is now enforced rather than declared once and hoped for.
+> - **A blank backdrop makes an empty world map look broken.** A new character has stood in
+>   three or four blocks of a world 129 across, so the pane showed a handful of coloured
+>   letters floating in black. Unseen blocks now draw as a dim dot, which costs nothing, says
+>   how much world there is, and makes the explored part read as a trail across it. Both
+>   views get it, because they are the same map.
+>
+> The diagnosis took four rounds of instrumenting rather than reading: counting draws, then
+> clears, then term-hook writes, then every `cell_set` on that pane. The last one found 3,588
+> writes per turn from outside the front end's own draw — 78 × 46, the whole pane — which is
+> what pointed at `Term_pict` and therefore at a window flag nobody had asked for.
 
 ---
 

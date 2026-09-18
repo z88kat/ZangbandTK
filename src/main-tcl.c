@@ -130,18 +130,27 @@ static int td_count = 0;
 static int pane_index[ANGBAND_TERM_MAX];
 
 /*
- * The window flags each pane wants, applied once the game has settled.
+ * The window flags each pane wants, asserted whenever they drift.
  *
- * For most panes this is exactly what textui_init() would have chosen from
- * the index anyway, and applying it changes nothing.  The minimap is the
- * exception and the reason this exists: PW_MAP is the scaled whole-level map
- * -- update_maps() hands that one straight to display_map() -- and no
- * subwindow carries it by default, so it cannot be had by placement alone.
+ * For most panes this is what textui_init() would have chosen from the index
+ * anyway.  The minimap is the exception and the reason this exists: it wants
+ * *no* flag, because the front end draws that pane itself -- the world map out
+ * of doors, the scaled level below ground -- and any flag on it means the game
+ * draws there too.
  *
- * It has to be applied after textui_init(), which runs once the front end is
- * up and rewrites window_flag wholesale, and after the splash screen, whose
- * drawing is the first thing to reach Term_xtra.  The first request for input
- * is safely past both.
+ * This used to be applied once, at the first request for input, on the
+ * reasoning that it was safely past textui_init().  It was, and it was not
+ * enough: window_flag is also restored from the savefile and rewritten by
+ * every pref file read, where ui-prefs.c fills in any subwindow the file did
+ * not mention from the current set and calls subwindows_set_flags for the lot.
+ * Loading a character therefore put PW_OVERHEAD back on the minimap, and the
+ * game redrew the level over the world map once a turn -- which is what the
+ * pane flashing black between moves was.
+ *
+ * So it is checked at every request for input instead.  Eight integer
+ * comparisons, and subwindows_set_flags does nothing at all unless something
+ * has moved.  The panes are declared in lib/tcl/main.tcl and that stays the
+ * only opinion about what each one holds.
  */
 static uint32_t want_flag[ANGBAND_TERM_MAX];
 static bool want_role_minimap[ANGBAND_TERM_MAX];
@@ -832,6 +841,7 @@ static void set_script_library_paths(void)
  */
 static void hooks_apply(void);
 static bool in_play(void);
+static bool minimap_dirty = true;
 static void minimap_draw(void);
 static bool minimap_dirty_get(void);
 
@@ -846,8 +856,20 @@ static errr Term_xtra_tcl(int n, int v)
 	 */
 	if (!flags_applied && n == TERM_XTRA_EVENT) {
 		flags_applied = true;
-		subwindows_set_flags(want_flag, ANGBAND_TERM_MAX);
 		hooks_apply();
+	}
+
+	/* And then keep them that way; see want_flag. */
+	if (flags_applied && n == TERM_XTRA_EVENT) {
+		int w;
+
+		for (w = 0; w < ANGBAND_TERM_MAX; w++) {
+			if (angband_term[w] && window_flag[w] != want_flag[w]) {
+				subwindows_set_flags(want_flag, ANGBAND_TERM_MAX);
+				minimap_dirty = true;
+				break;
+			}
+		}
 	}
 
 	/*
@@ -2363,7 +2385,6 @@ static int objcmd_describe(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
  */
 static int minimap_td = -1;		/* index into td[], or -1 */
 static struct loc world_origin;
-static bool minimap_dirty = true;
 
 /**
  * Is the pane showing the world rather than the level?

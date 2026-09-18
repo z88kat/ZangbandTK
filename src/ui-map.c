@@ -1086,7 +1086,23 @@ void world_map_draw(struct loc origin, struct loc at, int wid, int hgt)
 			wchar_t c;
 
 			if (!wild_in_bounds(wild, bx, by)) continue;
-			if (!wild_seen(wild, bx, by)) continue;
+
+			/*
+			 * The world, before it is known: a dim dot for every block that
+			 * is there but has not been seen.
+			 *
+			 * This used to be left blank, which is honest and unreadable.  A
+			 * new character has stood in three or four blocks of a world 129
+			 * across, so what they saw was a handful of characters floating
+			 * in black -- reported, reasonably, as the map not working.  The
+			 * backdrop costs nothing, says how much world there is, and makes
+			 * the explored part read as a trail across it.
+			 */
+			if (!wild_seen(wild, bx, by)) {
+				Term_queue_char(Term, at.x + col, at.y + row,
+								COLOUR_L_DARK, L'.', COLOUR_L_DARK, L'.');
+				continue;
+			}
 
 			feat = wild_block_feat(wild, bx, by);
 			if (feat == FEAT_NONE) continue;
