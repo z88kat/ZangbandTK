@@ -1124,6 +1124,37 @@ survives is the part everything after it needs.
 **Exit:** the `player` family is readable from Tcl, and the character sheet opens in its own
 window, reads live, and closes without disturbing the game.
 
+> **Done.** `angband_player` gives 36 named fields — the lot as a dict, one on its own, or
+> just the names — and `lib/tcl/character.tcl` is the first window that is not a pane. It is
+> **entirely Tcl**: the four seams made it need no C at all, which is the first real evidence
+> that T3 bought what it was supposed to.
+>
+> The pattern the rest of the windows follow:
+>
+> - **Passive.** The game owns the main loop, so the window never asks and never blocks; it
+>   reads when an event says something changed. Measured at two refreshes per step, from the
+>   thirteen events that can move a field rather than from all 66.
+> - **Keys typed into it still play.** `bind .character <Key>` forwards to `angband_key`, so
+>   it is something to leave open rather than something to dismiss.
+> - **Closing is closing.** The game is not told; `character_refresh` returns immediately
+>   when there is no window, so the bindings cost nothing while it is shut.
+> - **It opens before there is a character** and shows em-dashes, because the menu is always
+>   there and an error dialog at somebody who clicked too early is not an answer.
+>
+> Two decisions worth the space:
+>
+> - **Blows are stored ×100 and shots ×10.** That is the game carrying a fraction in an int,
+>   and it is storage rather than meaning, so the accessor returns 1.33 — the number
+>   `ui-player.c` prints — and the trick stays in C.
+> - **`position` and `turn` are not on the sheet**, though `angband_player` has both. No
+>   Angband character sheet has ever shown either, and they are the two fields the game
+>   changes *without announcing*: measured, the events fire during a move and the turn counter
+>   advances after them, so a sheet carrying them would be visibly one step stale after every
+>   step.
+>
+> Forty-seven bridge checks. Still to come in T4: nothing — the flags table, resists and the
+> paper doll want equipment, and those are T6 and T7.
+
 ---
 
 ### T5 — Map widget and Micro Map

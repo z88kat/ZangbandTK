@@ -218,6 +218,33 @@ check "angband_player takes at most one field" {
 	string match "wrong # args*" $e
 } 1
 
+# --- the character window -------------------------------------------------
+
+# The first window that is not a pane.  It can be opened before there is a
+# character -- the menu is always there -- and it shows em-dashes rather than
+# raising an error dialog at somebody who clicked it too early.
+check "the character window opens without a character" {
+	character_window
+	list [winfo exists .character] [set ::character(v,name)]
+} "1 —"
+
+check "it holds every field it was asked to" {
+	llength $::character(fields)
+} 24
+
+check "closing it is just closing it" {
+	destroy .character
+	character_refresh
+	winfo exists .character
+} 0
+
+check "and it can be opened again" {
+	character_window
+	set was [winfo exists .character]
+	destroy .character
+	set was
+} 1
+
 # --- the second pass --------------------------------------------------------
 
 # Everything above ran while the front end was still starting.  This runs from

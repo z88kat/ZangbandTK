@@ -154,6 +154,17 @@ foreach pair [angband_tilesets] {
         -command [list angband_choose_tileset $id]
 }
 
+# The Window menu: the things that are not panes.
+#
+# Decision 16 finished the main window at five panes, so everything else opens
+# as a window of its own and this is where they are opened from.  No
+# accelerators: every key belongs to the game.
+menu .menubar.window -tearoff 0
+.menubar add cascade -label "Window" -menu .menubar.window
+.menubar.window add command -label "Character" -command character_window
+
+source [file join [file dirname [info script]] character.tcl]
+
 proc angband_choose_tileset {id} {
     global angband
     if {[catch {angband_tileset $id} err]} {
