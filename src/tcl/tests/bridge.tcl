@@ -193,6 +193,31 @@ check "options need a character" {
 	set e
 } "the options belong to a character, and there is not one yet"
 
+# --- the player ---------------------------------------------------------------
+
+# The names are discoverable without a character, because a window is laid out
+# before there is one to put in it.
+check "the player's fields can be listed before there is a player" {
+	set f [angband_player fields]
+	expr {[llength $f] > 30 && "level" in $f && "hitpoints" in $f
+			&& "armor_class" in $f}
+} 1
+
+check "and reading one says why it cannot" {
+	catch {angband_player level} e
+	set e
+} "there is no character yet"
+
+check "a field nobody has heard of is refused" {
+	catch {angband_player wisdom} e
+	string match "no such field: wisdom*" $e
+} 1
+
+check "angband_player takes at most one field" {
+	catch {angband_player level gold} e
+	string match "wrong # args*" $e
+} 1
+
 # --- the second pass --------------------------------------------------------
 
 # Everything above ran while the front end was still starting.  This runs from

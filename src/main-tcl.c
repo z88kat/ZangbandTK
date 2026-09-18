@@ -24,6 +24,7 @@
 #include "game-event.h"
 #include "game-input.h"
 #include "game-world.h"
+#include "player-calcs.h"
 #include "grafmode.h"
 #include "init.h"
 #include "ui-command.h"
@@ -2034,6 +2035,294 @@ static int objcmd_ask(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 /**
+ * angband_player -- read the character.
+ *
+ *    angband_player                 every field, as a name/value dict
+ *    angband_player level           one field
+ *    angband_player fields          the names, so a script can discover them
+ *
+ * The first of the big read families, and the shape the rest follow.  Three
+ * decisions are settled here rather than argued again in T5 to T9:
+ *
+ * **The names are the old ones.**  Section 3.3's rule -- keep the original's
+ * command names wherever this tree has the same concept -- applies to the
+ * field names too, so `armor_class` rather than `ac` and `blows_per_round`
+ * rather than `num_blows`.  Measured across the original's Tcl, `angband
+ * player <thing>` is 434 calls with 48 distinct things; naming them anything
+ * else turns an adaptation back into a rewrite.
+ *
+ * **One call per field, and one call for all of them.**  A status line reads
+ * one thing; a character sheet reads forty.  Making the second of those forty
+ * round trips through Tcl is the sort of thing that is invisible until a
+ * window redraws on every game event.
+ *
+ * **Reads only.**  Everything here is derived by the game and recomputed by
+ * it; the accessor never calculates.  `armor_class` is `state.ac + state.to_a`
+ * because that is what the game's own display does, not because this file has
+ * an opinion about armour.
+ */
+enum player_field_type {
+	PF_INT,		/* a number */
+	PF_STR,		/* a string */
+	PF_BOOL,	/* a truth */
+	PF_REAL,	/* a number with a fraction in it */
+	PF_PAIR,	/* two numbers, like {current maximum} or {x y} */
+	PF_LIST		/* however many the field has */
+};
+
+enum player_field_id {
+	PFI_NAME, PFI_RACE, PFI_CLASS, PFI_TITLE, PFI_HISTORY,
+	PFI_LEVEL, PFI_MAX_LEV, PFI_EXP, PFI_MAX_EXP, PFI_EXP_TO_ADVANCE,
+	PFI_GOLD, PFI_DEPTH, PFI_MAX_DEPTH, PFI_POSITION, PFI_IN_WILD,
+	PFI_HITPOINTS, PFI_MANA, PFI_ARMOR_CLASS, PFI_TO_HIT, PFI_TO_DAM,
+	PFI_BLOWS_PER_ROUND, PFI_SHOTS_PER_ROUND, PFI_SPEED, PFI_INFRAVISION,
+	PFI_LIGHT, PFI_AGE, PFI_HEIGHT, PFI_WEIGHT, PFI_TOTAL_WEIGHT,
+	PFI_NEW_SPELLS, PFI_RUNNING, PFI_RESTING, PFI_IS_DEAD, PFI_DIED_FROM,
+	PFI_INSIDE_ARENA, PFI_TURN,
+	PFI_MAX
+};
+
+static const struct {
+	const char *name;
+	enum player_field_type type;
+} player_field[] = {
+	{ "name",				PF_STR },
+	{ "race",				PF_STR },
+	{ "class",				PF_STR },
+	{ "title",				PF_STR },
+	{ "history",			PF_STR },
+	{ "level",				PF_INT },
+	{ "max_lev",			PF_INT },
+	{ "exp",				PF_INT },
+	{ "max_exp",			PF_INT },
+	{ "exp_to_advance",		PF_INT },
+	{ "gold",				PF_INT },
+	{ "depth",				PF_INT },
+	{ "max_depth",			PF_INT },
+	{ "position",			PF_PAIR },
+	{ "in_wild",			PF_BOOL },
+	{ "hitpoints",			PF_PAIR },
+	{ "mana",				PF_PAIR },
+	{ "armor_class",		PF_INT },
+	{ "to_hit",				PF_INT },
+	{ "to_dam",				PF_INT },
+	{ "blows_per_round",	PF_REAL },
+	{ "shots_per_round",	PF_REAL },
+	{ "speed",				PF_INT },
+	{ "infravision",		PF_INT },
+	{ "light",				PF_INT },
+	{ "age",				PF_INT },
+	{ "height",				PF_INT },
+	{ "weight",				PF_INT },
+	{ "total_weight",		PF_INT },
+	{ "new_spells",			PF_INT },
+	{ "running",			PF_BOOL },
+	{ "resting",			PF_BOOL },
+	{ "is_dead",			PF_BOOL },
+	{ "died_from",			PF_STR },
+	{ "inside_arena",		PF_BOOL },
+	{ "turn",				PF_INT },
+};
+
+typedef char player_field_table_is_complete[
+		(N_ELEMENTS(player_field) == PFI_MAX) ? 1 : -1];
+
+/**
+ * The class title for the character's level.
+ *
+ * Ten titles over fifty levels, so one every five, and the last one has to
+ * survive a character who has reached level 50 exactly.
+ */
+static const char *player_title(void)
+{
+	int i;
+
+	if (!player->class) return "";
+
+	i = (player->lev - 1) / 5;
+	if (i < 0) i = 0;
+	if (i > 9) i = 9;
+
+	return player->class->title[i] ? player->class->title[i] : "";
+}
+
+/**
+ * How much experience the next level wants, or zero at the top.
+ *
+ * The game keeps the table and the expfact; doing the arithmetic anywhere but
+ * here would be a second opinion about levelling.
+ */
+static int player_exp_to_advance(void)
+{
+	if (player->lev >= PY_MAX_LEVEL) return 0;
+
+	return (int)(player_exp[player->lev - 1] * player->expfact / 100L)
+			- player->exp;
+}
+
+static Tcl_Obj *player_field_obj(enum player_field_id id)
+{
+	Tcl_Obj *pair;
+
+	switch (id) {
+	case PFI_NAME:		return Tcl_NewStringObj(player->full_name, -1);
+	case PFI_RACE:		return Tcl_NewStringObj(
+								player->race ? player->race->name : "", -1);
+	case PFI_CLASS:		return Tcl_NewStringObj(
+								player->class ? player->class->name : "", -1);
+	case PFI_TITLE:		return Tcl_NewStringObj(player_title(), -1);
+	case PFI_HISTORY:	return Tcl_NewStringObj(
+								player->history ? player->history : "", -1);
+
+	case PFI_LEVEL:		return Tcl_NewIntObj(player->lev);
+	case PFI_MAX_LEV:	return Tcl_NewIntObj(player->max_lev);
+	case PFI_EXP:		return Tcl_NewIntObj((int)player->exp);
+	case PFI_MAX_EXP:	return Tcl_NewIntObj((int)player->max_exp);
+	case PFI_EXP_TO_ADVANCE:	return Tcl_NewIntObj(player_exp_to_advance());
+	case PFI_GOLD:		return Tcl_NewIntObj((int)player->au);
+	case PFI_DEPTH:		return Tcl_NewIntObj(player->depth);
+	case PFI_MAX_DEPTH:	return Tcl_NewIntObj(player->max_depth);
+	case PFI_IN_WILD:	return Tcl_NewBooleanObj(player->in_wild);
+
+	case PFI_POSITION:
+		pair = Tcl_NewListObj(0, NULL);
+		Tcl_ListObjAppendElement(NULL, pair, Tcl_NewIntObj(player->grid.x));
+		Tcl_ListObjAppendElement(NULL, pair, Tcl_NewIntObj(player->grid.y));
+		return pair;
+
+	/* Current first, then the maximum: the order they are read aloud in. */
+	case PFI_HITPOINTS:
+		pair = Tcl_NewListObj(0, NULL);
+		Tcl_ListObjAppendElement(NULL, pair, Tcl_NewIntObj(player->chp));
+		Tcl_ListObjAppendElement(NULL, pair, Tcl_NewIntObj(player->mhp));
+		return pair;
+
+	case PFI_MANA:
+		pair = Tcl_NewListObj(0, NULL);
+		Tcl_ListObjAppendElement(NULL, pair, Tcl_NewIntObj(player->csp));
+		Tcl_ListObjAppendElement(NULL, pair, Tcl_NewIntObj(player->msp));
+		return pair;
+
+	/*
+	 * The displayed armour class, which is the base plus the bonus -- what
+	 * the sidebar shows and what the old scripts meant by armor_class.
+	 */
+	case PFI_ARMOR_CLASS:
+		return Tcl_NewIntObj(player->state.ac + player->state.to_a);
+
+	case PFI_TO_HIT:			return Tcl_NewIntObj(player->state.to_h);
+	case PFI_TO_DAM:			return Tcl_NewIntObj(player->state.to_d);
+	/*
+	 * Blows are stored times a hundred and shots times ten, which is the
+	 * game's way of carrying a fraction in an int.  That is storage, not
+	 * meaning: a script asking how many blows a round gets 1.33, the same
+	 * number ui-player.c prints, and the trick stays in here.
+	 */
+	case PFI_BLOWS_PER_ROUND:
+		return Tcl_NewDoubleObj(player->state.num_blows / 100.0);
+	case PFI_SHOTS_PER_ROUND:
+		return Tcl_NewDoubleObj(player->state.num_shots / 10.0);
+	case PFI_SPEED:				return Tcl_NewIntObj(player->state.speed);
+	case PFI_INFRAVISION:		return Tcl_NewIntObj(player->state.see_infra);
+	case PFI_LIGHT:				return Tcl_NewIntObj(player->state.cur_light);
+
+	case PFI_AGE:				return Tcl_NewIntObj(player->age);
+	case PFI_HEIGHT:			return Tcl_NewIntObj(player->ht);
+	case PFI_WEIGHT:			return Tcl_NewIntObj(player->wt);
+	case PFI_TOTAL_WEIGHT:
+		return Tcl_NewIntObj(player->upkeep->total_weight);
+
+	case PFI_NEW_SPELLS:	return Tcl_NewIntObj(player->upkeep->new_spells);
+	case PFI_RUNNING:		return Tcl_NewBooleanObj(player->upkeep->running);
+	case PFI_RESTING:		return Tcl_NewBooleanObj(player->upkeep->resting);
+	case PFI_IS_DEAD:		return Tcl_NewBooleanObj(player->is_dead);
+	case PFI_DIED_FROM:		return Tcl_NewStringObj(player->died_from, -1);
+	case PFI_INSIDE_ARENA:
+		return Tcl_NewBooleanObj(player->upkeep->arena_level);
+	case PFI_TURN:			return Tcl_NewIntObj((int)turn);
+
+	case PFI_MAX:
+		break;
+	}
+
+	return Tcl_NewObj();
+}
+
+static int objcmd_player(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what;
+	int i;
+
+	(void)dummy;
+
+	if (objc > 2) {
+		Tcl_WrongNumArgs(ip, 1, objv, "?field?");
+		return TCL_ERROR;
+	}
+
+	/* The names alone, which needs no character to answer. */
+	if (objc == 2 && strcmp(Tcl_GetString(objv[1]), "fields") == 0) {
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+		for (i = 0; i < PFI_MAX; i++)
+			Tcl_ListObjAppendElement(ip, list,
+					Tcl_NewStringObj(player_field[i].name, -1));
+		Tcl_SetObjResult(ip, list);
+
+		return TCL_OK;
+	}
+
+	/*
+	 * The name is checked before the character is, so a typo is reported as a
+	 * typo whether or not a game is in progress.  The table is static; only
+	 * the values need somebody to be playing.
+	 */
+	if (objc == 2) {
+		what = Tcl_GetString(objv[1]);
+
+		for (i = 0; i < PFI_MAX; i++)
+			if (strcmp(what, player_field[i].name) == 0) break;
+
+		if (i == PFI_MAX) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"no such field: %s -- \"angband_player fields\" lists them",
+					what));
+			return TCL_ERROR;
+		}
+	}
+
+	/*
+	 * Everything else reads the character, and player->upkeep and
+	 * player->state with it.  Those exist from birth, but the front end is
+	 * answering questions well before that.
+	 */
+	if (!player || !player->upkeep) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("there is no character yet", -1));
+		return TCL_ERROR;
+	}
+
+	if (objc == 1) {
+		Tcl_Obj *dict = Tcl_NewListObj(0, NULL);
+
+		for (i = 0; i < PFI_MAX; i++) {
+			Tcl_ListObjAppendElement(ip, dict,
+					Tcl_NewStringObj(player_field[i].name, -1));
+			Tcl_ListObjAppendElement(ip, dict,
+					player_field_obj((enum player_field_id)i));
+		}
+		Tcl_SetObjResult(ip, dict);
+
+		return TCL_OK;
+	}
+
+	/* Checked above, so i is the field. */
+	Tcl_SetObjResult(ip, player_field_obj((enum player_field_id)i));
+
+	return TCL_OK;
+}
+
+/**
  * angband_option -- read and write the game's options.
  *
  *    angband_option                     every option, as {name type desc value}
@@ -3061,6 +3350,7 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_hook", objcmd_hook, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_ask", objcmd_ask, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_option", objcmd_option, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_player", objcmd_player, NULL, NULL);
 
 	hooks_init();
 
