@@ -1287,8 +1287,27 @@ knowledge browsers are **windows that open** (decision 16), not panes.
 > screen does — reading all 189, and turning it off again to see the honest zero return.
 > Fifty-seven bridge checks; 1,443 unit tests still pass with `artifact_is_known` exported.
 >
-> Still to come in T6: ego items, runes, features and traps — each a row and an accessor —
-> plus the Character window's five-tab home, of which Virtues can be filled immediately.
+> **Ego items, runes, features and traps done — seven tabs.** Each was a row in
+> `knowledge(categories)` and an accessor, and the four accessors share a verb parser, so
+> they are about sixty lines apiece rather than four copies of the same function.
+>
+> - **Runes have no table.** 4.2 keeps them behind `max_runes()`, `rune_name()`,
+>   `rune_desc()` and `player_knows_rune()`, so that accessor reads exactly like the others
+>   and is backed by four function calls rather than an array.
+> - **Terrain has no knowledge filter**, because the game has none — every feature is listed
+>   from the start. Mimics are skipped: a secret door that looks like a wall is already listed
+>   as the wall it pretends to be, and listing it twice would give the game away.
+> - **Index zero is a marker in both tables.** `FEAT_NONE` is "unknown grid" and trap zero is
+>   "no trap", and measured across all eighty rows they are the only two with no description
+>   at all. Same reasoning as the object placeholders: things the game draws with, not things.
+> - **A trap's `desc` is the readable name** — "a pit" — while `name` is the internal one.
+>
+> Fifty-eight bridge checks, including one that asserts all seven tables take the same four
+> verbs and refuse the same way, since that uniformity is the whole reason the browser can be
+> one generic pane.
+>
+> Still to come in T6: the Character window's five-tab home, of which Virtues can be filled
+> immediately.
 
 > **The Character window is a five-tab home, not a screen** — Info, Flags, Mutations,
 > Virtues, Notes ([OBS-21](phase3-observations.md)). Two of those tabs are where Phase 2's

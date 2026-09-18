@@ -282,6 +282,27 @@ check "the artifact list says when it is not loaded" {
 	set e
 } "the artifact list is not loaded yet"
 
+# Every knowledge table answers the same four verbs and refuses the same way,
+# which is what lets the browser be one generic pane per category.
+check "every table takes the same four verbs" {
+	set bad {}
+	foreach cmd {angband_monster angband_object angband_artifact angband_ego
+	             angband_rune angband_feature angband_trap} {
+		foreach verb {max list info lore} {
+			# Before a game they all refuse; what matters is that none of them
+			# refuses with "expected max, list, info or lore".
+			catch {$cmd $verb 1} e
+			if {[string match "expected max*" $e]} { lappend bad "$cmd $verb" }
+		}
+		catch {$cmd sideways} e
+		if {![string match "*not loaded yet*" $e]
+				&& ![string match "expected max*" $e]} {
+			lappend bad "$cmd sideways: $e"
+		}
+	}
+	set bad
+} ""
+
 check "the knowledge window opens without a character" {
 	knowledge_window
 	list [winfo exists .knowledge] $::knowledge(count)
@@ -294,7 +315,7 @@ check "it has a pane per category" {
 		lappend panes [winfo exists .knowledge.card.body.$key]
 	}
 	list [llength $::knowledge(categories)] [lsort -unique $panes]
-} "3 1"
+} "7 1"
 
 check "the tabs switch which pane is shown" {
 	set ::knowledge(tab) objects

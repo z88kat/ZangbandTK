@@ -46,6 +46,23 @@ set knowledge(categories) {
         armor_class "Armour class"
         fully_known "Fully known"
     }}
+    {egos "EGO ITEMS" angband_ego {
+        level   "From depth"
+        deepest "To depth"
+        cost    "Added value"
+        rating  "Level rating"
+    }}
+    {runes RUNES angband_rune {
+        kind "Kind"
+    }}
+    {features TERRAIN angband_feature {
+        kind    "Kind"
+        digging "Digging difficulty"
+        shop    "Shop number"
+    }}
+    {traps TRAPS angband_trap {
+        kind "Kind"
+    }}
 }
 
 proc knowledge_cat {key what} {
@@ -96,11 +113,13 @@ proc knowledge_fill {{key ""}} {
             set name "[string range $name 0 28]…"
         }
 
-        if {$key eq "monsters"} {
+        if {$key in {monsters egos}} {
+            # A depth.  Ego items carry the shallowest they appear at, which
+            # is the same question asked of a monster.
             set right [expr {$a == 0 ? "town" : $a}]
         } else {
-            # Objects and artifacts both put their kind here: it is what tells
-            # you that "Green" is a potion.
+            # Everything else puts its kind here: it is what tells you that
+            # "Green" is a potion.
             set right $a
         }
         $list insert end [format "%-30s %5s" $name $right]
@@ -157,6 +176,10 @@ proc knowledge_show {{key ""}} {
             set knowledge(sub,$key) [expr {[dict get $info fully_known]
                 ? "[dict get $info kind], and you have held it"
                 : "[dict get $info kind], not yet in your hands"}]
+        }
+        default {
+            set knowledge(sub,$key) [expr {[dict exists $info kind]
+                ? [dict get $info kind] : ""}]
         }
     }
 

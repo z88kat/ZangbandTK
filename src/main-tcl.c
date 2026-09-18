@@ -33,8 +33,10 @@
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
+#include "obj-knowledge.h"
 #include "obj-util.h"
 #include "player-history.h"
+#include "trap.h"
 #include "ui-knowledge.h"
 #include "ui-command.h"
 #include "ui-display.h"
@@ -3113,6 +3115,400 @@ static int objcmd_artifact(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 /**
+ * The four smaller knowledge tables: ego items, runes, features and traps.
+ *
+ * Each takes the same four verbs as angband_monster, and each is a few lines
+ * because the verb parsing is shared.  They are separate commands rather than
+ * one with a table argument because their fields have nothing in common: an
+ * ego item has a cost and a depth range, a rune has neither.
+ */
+enum table_verb {
+	TABLE_BAD, TABLE_MAX, TABLE_LIST, TABLE_INFO, TABLE_LORE
+};
+
+/**
+ * Which verb, and its argument.
+ *
+ * Sets `pattern` for list (NULL when none was given) and `idx` for info and
+ * lore.  Returns TABLE_BAD having already set the interpreter's result, so a
+ * caller can return TCL_ERROR without saying anything else.
+ */
+static enum table_verb table_verb_parse(Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[], const char **pattern, int *idx)
+{
+	const char *what;
+
+	*pattern = NULL;
+	*idx = -1;
+
+	if (objc < 2) {
+		Tcl_WrongNumArgs(ip, 1, objv, "max|list|info|lore ?argument ...?");
+		return TABLE_BAD;
+	}
+
+	what = Tcl_GetString(objv[1]);
+
+	if (strcmp(what, "max") == 0 && objc == 2) return TABLE_MAX;
+
+	if (strcmp(what, "list") == 0 && (objc == 2 || objc == 3)) {
+		if (objc == 3) *pattern = Tcl_GetString(objv[2]);
+		return TABLE_LIST;
+	}
+
+	if ((strcmp(what, "info") == 0 || strcmp(what, "lore") == 0)
+			&& objc == 3) {
+		if (Tcl_GetIntFromObj(ip, objv[2], idx) != TCL_OK) return TABLE_BAD;
+		return (strcmp(what, "info") == 0) ? TABLE_INFO : TABLE_LORE;
+	}
+
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+			"expected max, list, info or lore, not: %s", what));
+
+	return TABLE_BAD;
+}
+
+/**
+ * Does this name match what was typed?  Nothing typed matches everything.
+ */
+static bool table_matches(const char *name, const char *pattern)
+{
+	if (!pattern) return true;
+	if (!name) return false;
+
+	return Tcl_StringCaseMatch(name, pattern, TCL_MATCH_NOCASE) != 0;
+}
+
+static void table_put(Tcl_Interp *ip, Tcl_Obj *d, const char *key,
+		Tcl_Obj *value)
+{
+	Tcl_ListObjAppendElement(ip, d, Tcl_NewStringObj(key, -1));
+	Tcl_ListObjAppendElement(ip, d, value);
+}
+
+/**
+ * angband_ego -- the ego item types the character has seen.
+ */
+static int objcmd_ego(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *pattern;
+	enum table_verb verb;
+	int idx, i;
+
+	(void)dummy;
+
+	verb = table_verb_parse(ip, objc, objv, &pattern, &idx);
+	if (verb == TABLE_BAD) return TCL_ERROR;
+
+	if (!e_info || !z_info || !player) {
+		Tcl_SetObjResult(ip,
+				Tcl_NewStringObj("the ego list is not loaded yet", -1));
+		return TCL_ERROR;
+	}
+
+	if (verb == TABLE_MAX) {
+		Tcl_SetObjResult(ip, Tcl_NewIntObj((int)z_info->e_max));
+		return TCL_OK;
+	}
+
+	if (verb == TABLE_LIST) {
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+		for (i = 0; i < (int)z_info->e_max; i++) {
+			struct ego_item *ego = &e_info[i];
+			Tcl_Obj *row;
+
+			if (!ego->name) continue;
+			if (!ego->everseen && !OPT(player, cheat_xtra)) continue;
+			if (!table_matches(ego->name, pattern)) continue;
+
+			row = Tcl_NewListObj(0, NULL);
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(ego->name, -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(ego->alloc_min));
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	if (idx < 0 || idx >= (int)z_info->e_max || !e_info[idx].name) {
+		Tcl_SetObjResult(ip, Tcl_ObjPrintf("no such ego item: %d", idx));
+		return TCL_ERROR;
+	}
+	if (!e_info[idx].everseen && !OPT(player, cheat_xtra)) {
+		Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+				"ego item %d is not known to this character", idx));
+		return TCL_ERROR;
+	}
+
+	if (verb == TABLE_INFO) {
+		struct ego_item *ego = &e_info[idx];
+		Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+
+		table_put(ip, d, "index", Tcl_NewIntObj(idx));
+		table_put(ip, d, "name", Tcl_NewStringObj(ego->name, -1));
+		table_put(ip, d, "cost", Tcl_NewIntObj(ego->cost));
+		table_put(ip, d, "rating", Tcl_NewIntObj(ego->rating));
+		table_put(ip, d, "level", Tcl_NewIntObj(ego->alloc_min));
+		table_put(ip, d, "deepest", Tcl_NewIntObj(ego->alloc_max));
+		Tcl_SetObjResult(ip, d);
+		return TCL_OK;
+	}
+
+	{
+		textblock *tb = object_info_ego(&e_info[idx]);
+		Tcl_Obj *text = textblock_to_obj(tb);
+
+		textblock_free(tb);
+		Tcl_SetObjResult(ip, text);
+	}
+
+	return TCL_OK;
+}
+
+/**
+ * angband_rune -- the runes the character has learned.
+ *
+ * The only one of the four with no table of its own: 4.2 keeps runes behind
+ * max_runes(), rune_name() and rune_desc(), and what the character knows
+ * behind player_knows_rune().  So this reads exactly like the others and is
+ * backed by four function calls rather than an array.
+ */
+static int objcmd_rune(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *pattern;
+	enum table_verb verb;
+	int idx, i, n;
+
+	(void)dummy;
+
+	verb = table_verb_parse(ip, objc, objv, &pattern, &idx);
+	if (verb == TABLE_BAD) return TCL_ERROR;
+
+	if (!player) {
+		Tcl_SetObjResult(ip,
+				Tcl_NewStringObj("the rune list is not loaded yet", -1));
+		return TCL_ERROR;
+	}
+
+	n = max_runes();
+
+	if (verb == TABLE_MAX) {
+		Tcl_SetObjResult(ip, Tcl_NewIntObj(n));
+		return TCL_OK;
+	}
+
+	if (verb == TABLE_LIST) {
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+		for (i = 0; i < n; i++) {
+			const char *name = rune_name(i);
+			Tcl_Obj *row;
+
+			if (!name) continue;
+			if (!player_knows_rune(player, i)) continue;
+			if (!table_matches(name, pattern)) continue;
+
+			row = Tcl_NewListObj(0, NULL);
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(name, -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj("rune", -1));
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	if (idx < 0 || idx >= n || !rune_name(idx)) {
+		Tcl_SetObjResult(ip, Tcl_ObjPrintf("no such rune: %d", idx));
+		return TCL_ERROR;
+	}
+	if (!player_knows_rune(player, idx)) {
+		Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+				"rune %d is not known to this character", idx));
+		return TCL_ERROR;
+	}
+
+	if (verb == TABLE_INFO) {
+		Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+
+		table_put(ip, d, "index", Tcl_NewIntObj(idx));
+		table_put(ip, d, "name", Tcl_NewStringObj(rune_name(idx), -1));
+		table_put(ip, d, "kind", Tcl_NewStringObj("rune", -1));
+		Tcl_SetObjResult(ip, d);
+		return TCL_OK;
+	}
+
+	Tcl_SetObjResult(ip, Tcl_NewStringObj(
+			rune_desc(idx) ? rune_desc(idx) : "", -1));
+
+	return TCL_OK;
+}
+
+/**
+ * angband_feature -- the terrain.
+ *
+ * No knowledge filter, because the game has none: every feature is listed from
+ * the start, mimics excepted -- a secret door that looks like a wall is listed
+ * as the wall it pretends to be, and listing it twice would give the game
+ * away.
+ */
+static int objcmd_feature(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *pattern;
+	enum table_verb verb;
+	int idx, i;
+
+	(void)dummy;
+
+	verb = table_verb_parse(ip, objc, objv, &pattern, &idx);
+	if (verb == TABLE_BAD) return TCL_ERROR;
+
+	if (!f_info) {
+		Tcl_SetObjResult(ip,
+				Tcl_NewStringObj("the feature list is not loaded yet", -1));
+		return TCL_ERROR;
+	}
+
+	if (verb == TABLE_MAX) {
+		Tcl_SetObjResult(ip, Tcl_NewIntObj(FEAT_MAX));
+		return TCL_OK;
+	}
+
+	if (verb == TABLE_LIST) {
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+		/*
+		 * From one, not zero.  FEAT_NONE is "unknown grid", the marker the
+		 * game draws where nothing is known, and it is the only feature of the
+		 * forty-one with no description -- measured, along with trap zero,
+		 * which is "no trap" and the same idea.
+		 */
+		for (i = 1; i < FEAT_MAX; i++) {
+			struct feature *feat = &f_info[i];
+			Tcl_Obj *row;
+
+			if (!feat->name || feat->mimic) continue;
+			if (!table_matches(feat->name, pattern)) continue;
+
+			row = Tcl_NewListObj(0, NULL);
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(feat->name, -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj("terrain", -1));
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	if (idx < 1 || idx >= FEAT_MAX || !f_info[idx].name) {
+		Tcl_SetObjResult(ip, Tcl_ObjPrintf("no such feature: %d", idx));
+		return TCL_ERROR;
+	}
+
+	if (verb == TABLE_INFO) {
+		struct feature *feat = &f_info[idx];
+		Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+
+		table_put(ip, d, "index", Tcl_NewIntObj(idx));
+		table_put(ip, d, "name", Tcl_NewStringObj(feat->name, -1));
+		table_put(ip, d, "kind", Tcl_NewStringObj("terrain", -1));
+		table_put(ip, d, "digging", Tcl_NewIntObj(feat->dig));
+		table_put(ip, d, "shop", Tcl_NewIntObj(feat->shopnum));
+		Tcl_SetObjResult(ip, d);
+		return TCL_OK;
+	}
+
+	Tcl_SetObjResult(ip, Tcl_NewStringObj(
+			f_info[idx].desc ? f_info[idx].desc : "", -1));
+
+	return TCL_OK;
+}
+
+/**
+ * angband_trap -- the traps.
+ */
+static int objcmd_trap(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *pattern;
+	enum table_verb verb;
+	int idx, i;
+
+	(void)dummy;
+
+	verb = table_verb_parse(ip, objc, objv, &pattern, &idx);
+	if (verb == TABLE_BAD) return TCL_ERROR;
+
+	if (!trap_info || !z_info) {
+		Tcl_SetObjResult(ip,
+				Tcl_NewStringObj("the trap list is not loaded yet", -1));
+		return TCL_ERROR;
+	}
+
+	if (verb == TABLE_MAX) {
+		Tcl_SetObjResult(ip, Tcl_NewIntObj((int)z_info->trap_max));
+		return TCL_OK;
+	}
+
+	if (verb == TABLE_LIST) {
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+		/* From one: trap zero is "no trap".  See the feature list above. */
+		for (i = 1; i < (int)z_info->trap_max; i++) {
+			struct trap_kind *trap = &trap_info[i];
+			Tcl_Obj *row;
+
+			if (!trap->name) continue;
+			if (!table_matches(trap->desc ? trap->desc : trap->name, pattern))
+				continue;
+
+			row = Tcl_NewListObj(0, NULL);
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+			/* The short description is the readable one: "a pit" rather
+			 * than the internal name. */
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(
+					trap->desc ? trap->desc : trap->name, -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj("trap", -1));
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	if (idx < 1 || idx >= (int)z_info->trap_max || !trap_info[idx].name) {
+		Tcl_SetObjResult(ip, Tcl_ObjPrintf("no such trap: %d", idx));
+		return TCL_ERROR;
+	}
+
+	if (verb == TABLE_INFO) {
+		struct trap_kind *trap = &trap_info[idx];
+		Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+
+		table_put(ip, d, "index", Tcl_NewIntObj(idx));
+		table_put(ip, d, "name", Tcl_NewStringObj(
+				trap->desc ? trap->desc : trap->name, -1));
+		table_put(ip, d, "kind", Tcl_NewStringObj("trap", -1));
+		Tcl_SetObjResult(ip, d);
+		return TCL_OK;
+	}
+
+	Tcl_SetObjResult(ip, Tcl_NewStringObj(
+			trap_info[idx].text ? trap_info[idx].text : "", -1));
+
+	return TCL_OK;
+}
+
+/**
  * angband_option -- read and write the game's options.
  *
  *    angband_option                     every option, as {name type desc value}
@@ -4153,6 +4549,11 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_object", objcmd_object, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_artifact", objcmd_artifact, NULL,
 			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_ego", objcmd_ego, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_rune", objcmd_rune, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_feature", objcmd_feature, NULL,
+			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_trap", objcmd_trap, NULL, NULL);
 
 	hooks_init();
 
