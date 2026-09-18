@@ -6368,20 +6368,30 @@ power-effect:TIMED_INC:FAST
 power-dice:10+1d$B
 power-expr:B:PLAYER_LEVEL:* 3 / 2
 
-# Zangband's Psychic Drain (mind.c:415) fires GF_PSI_DRAIN and, where it bites,
-# gives the caster (5d(damage))/4 mana back and spends up to 150 extra energy
-# for it -- the class's only way to recover mana, paid for with a turn and a
-# half.  Neither half is here: 4.2 has RESTORE_MANA but no effect that spends
-# energy, and a chain cannot roll dice against the damage another effect just
-# dealt.  So this is a psi ball and nothing more, and the Mindcrafter has no
-# mana recovery at all.  Shipping the gain without the cost is a balance
-# decision rather than a mapping one and has not been taken here.
+# Psychic Drain (mind.c:415): the Mindcrafter's own way of getting mana back,
+# and the one power in the list that pays you rather than costing you.  It was a
+# psi ball and nothing more until 3.123.0 -- the note here said neither half
+# could be expressed, and both can.
+#
+# The conversion lives in `project_monster_handler_MON_PSI_DRAIN()`, which is
+# where the archive puts it too: `(5d(damage))/4` mana, capped at your maximum,
+# and nothing at all from a mind that resists or is empty.  What could not be
+# written was a *data chain* rolling dice against damage another effect had
+# just dealt; a projection handler has the damage in front of it.
+#
+# The extra cost is in the same handler, and not a step in this chain.
+# `p_ptr->energy -= randint1(150)` (mind.c:424) is on top of the turn the power
+# already costs -- 4.2's player energy is the same signed counter drained by the
+# same subtraction, so the two compose exactly as they do in the archive -- but
+# the archive pays it only `if (fire_ball(...))`, so a drain aimed at empty air
+# costs nothing extra.  A chain step would charge for the miss; the handler
+# knows whether it found a mind.
 power:drain a mind
 power-level:25
 power-cost:10
 power-stat:WIS
 power-fail:40
-power-effect:BALL:MON_PSI:0
+power-effect:BALL:MON_PSI_DRAIN:0
 power-dice:$Dd6
 power-expr:D:PLAYER_LEVEL:/ 2
 

@@ -712,6 +712,10 @@ static void project_feature_handler_MON_CHARM_UNDEAD(project_feature_handler_con
 {
 }
 
+static void project_feature_handler_MON_PSI_DRAIN(project_feature_handler_context_t *context)
+{
+}
+
 /* Psionic force leaves the room exactly as it found it (PLR-06) */
 static void project_feature_handler_MON_PSI(project_feature_handler_context_t *context)
 {

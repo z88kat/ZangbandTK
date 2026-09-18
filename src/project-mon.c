@@ -1155,6 +1155,132 @@ static void project_monster_handler_MON_CHARM_UNDEAD(project_monster_handler_con
 				  MON_MSG_IN_YOUR_THRALL);
 }
 
+/**
+ * Psychic Drain: tear at a mind and drink what comes away (PLR-06, ZangbandTK).
+ *
+ * The Mindcrafter's own mana recovery, and the reason the class can fight its
+ * way back up rather than only resting. Zangband's `GF_PSI_DRAIN`
+ * ([spells1.c:1565](../archive/zangband/src/spells1.c#L1565)) in four branches,
+ * in the order the archive tests them -- the order is the behaviour, because it
+ * is an `else if` chain and a monster that *resists* therefore yields no mana
+ * at all, not a third of it.
+ *
+ * `hdice * 2` is read as the monster's level throughout, which is DEC-61's
+ * measured identity and the same substitution `charm_monster()` above makes.
+ *
+ * The conversion is on the damage rolled rather than on hit points actually
+ * taken off, so a drain that kills outright still feeds you -- the archive
+ * makes no attempt to cap it at what the creature had left, and that is what
+ * makes the spell worth casting on something nearly dead.
+ */
+static void project_monster_handler_MON_PSI_DRAIN(project_monster_handler_context_t *context)
+{
+	struct monster *mon = context->mon;
+	int level = mon->race->level;
+
+	if (context->seen) {
+		context->obvious = true;
+		rf_on(context->lore->flags, RF_EMPTY_MIND);
+		rf_on(context->lore->flags, RF_WEIRD_MIND);
+	}
+
+	/* Whatever else happens, this is how a drained mind dies. */
+	context->die_msg = MON_MSG_MINDLESS_HUSK;
+
+	/*
+	 * The drain costs time as well as mana, and it costs it here.
+	 *
+	 * `p_ptr->energy -= randint1(150)` on top of the hundred the power already
+	 * spends ([mind.c:424](../archive/zangband/src/mind.c#L424)) -- up to a
+	 * turn and a half of standing still, which is what stops the spell being
+	 * free mana in a corridor. 4.2 drains the same signed counter from
+	 * `process_player_cleanup()`, so the two subtractions compose exactly as
+	 * the archive's do.
+	 *
+	 * Charged here rather than as a step in the power's chain because the
+	 * archive pays it on `fire_ball()` returning true: a drain aimed at empty
+	 * air costs nothing extra, and a chain step would charge for the miss.
+	 * It is charged whether or not the mind was worth taking -- an empty mind
+	 * still wastes the effort -- and whether or not it was seen, which is the
+	 * one place this parts company with the archive. There the condition is
+	 * really "was anything *obvious*", so draining a creature you cannot see
+	 * was free; that is an artefact of the return value rather than a rule,
+	 * and reproducing it would leave mana to be had for nothing in the dark.
+	 */
+	player->energy -= randint1(150);
+
+	if (rf_has(mon->race->flags, RF_EMPTY_MIND)) {
+		/* Nothing there to take. */
+		context->hurt_msg = MON_MSG_IMMUNE;
+		context->obvious = false;
+		context->dam = 0;
+		return;
+	}
+
+	if (rf_has(mon->race->flags, RF_STUPID)
+			|| rf_has(mon->race->flags, RF_WEIRD_MIND)
+			|| rf_has(mon->race->flags, RF_ANIMAL)
+			|| level > randint1(6 * context->dam)) {
+		context->dam /= 3;
+		context->hurt_msg = MON_MSG_RESIST;
+
+		/*
+		 * A powerful corrupted mind can turn the drain around, and this is
+		 * the half that makes the spell a risk rather than free mana: an
+		 * undead or demon above your own level does it one time in two, and
+		 * then you are the one losing mana and hit points.
+		 *
+		 * `player_save(power)` is `randint0(100) < save - power`
+		 * ([z-rand.h:99](../archive/zangband/src/z-rand.h#L99)), so the
+		 * creature's level comes straight off the saving throw.
+		 */
+		if ((rf_has(mon->race->flags, RF_UNDEAD)
+				|| rf_has(mon->race->flags, RF_DEMON))
+				&& level > player->lev && one_in_(2)) {
+			char m_name[80];
+
+			monster_desc(m_name, sizeof(m_name), mon,
+						 MDESC_STANDARD | MDESC_POSS);
+			context->hurt_msg = MON_MSG_NONE;
+			msg("%s corrupted mind backlashes your attack!", m_name);
+
+			if (randint0(100) < player->state.skills[SKILL_SAVE] - level) {
+				msg("You resist the effects!");
+			} else {
+				int drain = damroll(5, context->dam) / 2;
+
+				msg("Your psychic energy is drained!");
+				player->csp = MAX(0, player->csp - drain);
+				player->upkeep->redraw |= (PR_MANA);
+
+				/* The damage has already been divided by three */
+				take_hit(player, player_apply_damage_reduction(player,
+						context->dam), "a psychic backlash");
+			}
+			context->dam = 0;
+		}
+
+		/*
+		 * And no mana either way. The archive's chain puts the conversion in
+		 * an `else if` after this branch, so resisting costs you the drain
+		 * and not merely part of it.
+		 */
+		return;
+	}
+
+	if (context->dam > 0) {
+		int gain = damroll(5, context->dam) / 4;
+		char m_name[80];
+
+		monster_desc(m_name, sizeof(m_name), mon,
+					 MDESC_STANDARD | MDESC_POSS);
+		msg("You convert %s pain into psychic energy!", m_name);
+
+		player->csp = MIN(player->msp, player->csp + gain);
+		player->upkeep->redraw |= (PR_MANA);
+	}
+}
+
 static const project_monster_handler_f monster_handlers[] = {
 	#define ELEM(a) project_monster_handler_##a,
 	#include "list-elements.h"

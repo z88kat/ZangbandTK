@@ -743,3 +743,12 @@ blind-desc:something
 obvious:1
 wake:1
 color:Light Dark
+
+code:MON_PSI_DRAIN
+type:monster
+desc:tears at the minds of monsters and feeds on what comes away
+player-desc:psionic force
+blind-desc:something
+obvious:1
+wake:1
+color:Violet

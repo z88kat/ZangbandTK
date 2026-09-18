@@ -12,6 +12,7 @@
 MON_MSG(NONE,				MSG_GENERIC,	false,	"[is|are] hurt.")
 MON_MSG(DIE,				MSG_KILL,		false,	"die[s].")
 MON_MSG(DESTROYED,			MSG_KILL,		false,	"[is|are] destroyed.")
+MON_MSG(MINDLESS_HUSK,		MSG_KILL,		false,	"collapse[s], a mindless husk.")
 MON_MSG(RESIST_A_LOT,		MSG_GENERIC,	false,	"resist[s] a lot.")
 MON_MSG(HIT_HARD,			MSG_GENERIC,	false,	"[is|are] hit hard.")
 MON_MSG(RESIST,				MSG_GENERIC,	false,	"resist[s].")

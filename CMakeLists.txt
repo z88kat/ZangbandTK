@@ -960,6 +960,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     player/pathfind.c
     player/playerstat.c
     player/pscore.c
+    player/psychic-drain.c
     player/quest.c
     player/realm.c
     player/timed.c

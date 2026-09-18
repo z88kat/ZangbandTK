@@ -952,6 +952,41 @@ anything that has none — a golem, a mould, an animated weapon — is completel
 unaffected however hard it is hit, and creatures with strange or feeble minds
 take a third of the damage. Against everything else, nothing resists it at all.
 
+**Getting the mana back.** A Mindcrafter has no spellbooks, and it is easy to
+read that as having no pool either. It has one, and it refills exactly the way
+every other caster's does: by the turn, faster while you are resting, and a
+night at an inn will fill it. Nothing about the class is unusual here.
+
+What *is* unusual is that no shop sells a way to hurry it. The three things that
+restore mana outright — a mushroom of Clear Mind, a mushroom of Debility, and a
+potion of Restore Mana — are all floor finds, and the potion does not start
+appearing until around 750 feet. A Mindcrafter that has spent its pool at depth
+has the same two options as anyone else and one of its own.
+
+That one of its own is **drain a mind**, at level 25, and it is the only power
+in the list that pays you rather than costing you:
+
+- It converts what it hurts. The damage is your level halved in six-sided dice,
+  and you take back roughly five eighths of whatever landed — capped at your
+  maximum, so a nearly full pool wastes most of it. At level 25 a good drain is
+  worth more than twice the ten mana it cost.
+- **A mind that resists gives you nothing.** Not a reduced amount — nothing.
+  Animals, the stupid and the strange-minded always resist, and anything else
+  may resist on its own level. They still take a third of the damage; you simply
+  get none of it back. An empty mind gives nothing and takes nothing.
+- **It can be turned back on you.** An undead or demon above your own level
+  does it one time in two, and then a saving throw is all that stands between
+  you and losing both mana and hit points to your own spell. Draining the deep
+  dead is not a way to top up.
+- **It costs time as well as mana** — up to a turn and a half of standing still
+  on top of the turn the power takes, and only when it finds something. That is
+  the price of the fuel, and it is why the spell is not simply free mana in a
+  corridor.
+
+It is also worth casting on something nearly dead: the conversion reads the
+damage rolled and not the hit points the creature had left, so a finishing drain
+feeds you as well as a fresh one.
+
 .. warning::
 
    **A failed power can go off inside your head.** Half as often as a power

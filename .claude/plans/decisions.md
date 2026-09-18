@@ -4378,3 +4378,68 @@ the ego still carries the flag -- so that character is a Spectre again rather
 than a corpse and can walk out. Asserted, because it is the case the crushing
 branch must *not* kill. Whether those egos should be able to roll pass-wall at
 all is a separate open question and is unchanged by this.
+
+---
+
+**DEC-86 — Psychic Drain is built whole, and the premise it was asked for under
+was wrong.** (PLR-06, 3.123.0. Discharges the reduction noted against the
+Mindcrafter's eleventh power in `class.txt`.)
+
+**The correction first, because it is the part worth keeping.** This spell was
+requested on the understanding that a Mindcrafter cannot recover mana and that
+Psychic Drain was Zangband's only route. Neither is true, and I had said both.
+
+`calc_mana()` gives a power-list class a pool through the PLR-06 branch, and
+`player_regen_mana()` is called from `process_world()` for every class with no
+gate on any of them -- so a Mindcrafter regenerates exactly like every other
+caster, resting or walking, and a night at an inn fills it because our inn runs
+the world rather than setting a number. Zangband's `regenmana()`
+([dungeon.c:644](../../archive/zangband/src/dungeon.c#L644)) is equally
+unconditional, so the archive's Mindcrafter was never stranded either. Psychic
+Drain is the *fast, active* route: it turns a fight into mana instead of making
+you stop. `player/psychic-drain` asserts the regeneration directly so this
+cannot be rediscovered a third time.
+
+What *is* true, and is worth a player knowing: **no shop sells anything that
+restores mana.** Clear Mind and Debility are mushrooms and Restore Mana is a
+potion from 750 feet; all three are floor finds. The class is not stranded, but
+it cannot buy its way out of an empty pool either.
+
+**Neither end needed a decision.** The note in `class.txt` said both halves were
+inexpressible, and both are expressible exactly:
+
+- *The conversion.* `damroll(5, dam) / 4`, capped at the maximum
+  ([spells1.c:1617](../../archive/zangband/src/spells1.c#L1617)). What cannot
+  roll dice against damage another effect has just dealt is a **data chain**; a
+  projection handler has the damage in front of it, and the archive puts the
+  conversion in its own `GF_PSI_DRAIN` monster handler for the same reason.
+- *The time.* `p_ptr->energy -= randint1(150)`
+  ([mind.c:424](../../archive/zangband/src/mind.c#L424)) on top of the hundred
+  the power already spends. 4.2's `player->energy` is the same signed counter,
+  drained by the same subtraction from `process_player_cleanup()`, so the two
+  compose exactly as the archive's do. "4.2 has no effect that spends energy"
+  was true of the effect *vocabulary* and said nothing about the field.
+
+`hdice * 2` is read as the monster's level throughout, which is DEC-61's
+measured identity and the substitution `charm_monster()` already makes.
+
+**The branch order is the behaviour.** Zangband's conversion sits in an
+`else if` after the resist test, so a mind that resists yields **no** mana --
+not a third of it -- while still taking a third of the damage. That is the
+branch most likely to be written wrong and it has its own test.
+
+**One deliberate divergence.** The archive spends the extra energy on
+`fire_ball()` returning true, which for this projection means "a monster was
+*seen*". Draining something you cannot see was therefore free. That is an
+artefact of using a return value as a proxy for a hit rather than a rule, and
+reproducing it would leave mana to be had for nothing in the dark. The energy is
+charged whenever the drain resolves against a monster, seen or not, and not at
+all when it finds nothing -- which keeps the half of the archive's condition
+that was doing real work.
+
+**No other class has the same hole.** All twelve psionic powers are present at
+the archive's levels, and only this one was a shell. The other mana-gain paths
+in Zangband are natural regeneration (have it), the inn (have it), the EAT_MAGIC
+mutation (have it, as `TAP_DEVICE`) and Omnicide's soul absorption, which is a
+separately recorded realm deferral and incidental to a mass-kill spell. The two
+HP/SP exchange mutations remain deferred with their own reason.

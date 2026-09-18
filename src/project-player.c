@@ -811,6 +811,11 @@ static int project_player_handler_MON_CHARM_UNDEAD(project_player_handler_contex
 	return 0;
 }
 
+static int project_player_handler_MON_PSI_DRAIN(project_player_handler_context_t *context)
+{
+	return 0;
+}
+
 /* Psionic force, which only ever travels from the player outward (PLR-06) */
 static int project_player_handler_MON_PSI(project_player_handler_context_t *context)
 {

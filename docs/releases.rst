@@ -46,6 +46,63 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The Mindcrafter drinks what it hurts — 19 September 2026
+------------------------------------------------------------
+
+- **3.123.0** — **Psychic Drain**, the eleventh psionic power and the only one
+  that pays you. It shipped as a psi ball and nothing else, on a note in
+  ``class.txt`` saying neither half of it could be expressed here. Both can.
+
+  **First, a correction to the premise.** This was asked for on the
+  understanding that a Mindcrafter cannot recover mana at all — which I had
+  said, and which is wrong. ``calc_mana()`` gives a power-list class a pool
+  (PLR-06) and ``player_regen_mana()`` runs for every class with no gate on any
+  of them, so a Mindcrafter regenerates like every other caster and a night at
+  an inn fills it. Zangband's ``regenmana()`` is equally unconditional, so the
+  archive's Mindcrafter was not stranded either. Psychic Drain is the fast,
+  *active* route — it turns a fight into mana instead of making you stop. The
+  regeneration is now asserted in a test so it cannot be mislaid a third time.
+
+  What is true, and is now in the manual: **no shop sells anything that restores
+  mana.** Clear Mind and Debility are mushrooms and Restore Mana is a potion
+  from 750 feet; all three are floor finds. The class is not stranded, but it
+  cannot buy its way out of an empty pool.
+
+  **Neither end needed a decision.** The conversion is ``damroll(5, dam) / 4``
+  capped at the maximum, and what cannot roll dice against damage another effect
+  just dealt is a *data chain* — a projection handler has the damage in front of
+  it, which is where the archive puts this too. The extra cost is
+  ``p_ptr->energy -= randint1(150)`` on top of the turn the power already
+  spends, and 4.2's player energy is the same signed counter drained by the same
+  subtraction. "No effect that spends energy" was true of the effect vocabulary
+  and said nothing about the field.
+
+  **The branch order is the behaviour.** Zangband's conversion is an ``else if``
+  after the resist test, so a mind that resists gives **no** mana rather than a
+  third of it, while still taking a third of the damage. An empty mind gives
+  nothing and takes nothing. And an undead or demon above your level turns the
+  drain around one time in two, costing you mana and hit points unless you save.
+
+  One deliberate divergence, recorded in DEC-86: the archive charges the extra
+  time only when the ball was *seen*, so draining something invisible was free.
+  That is an artefact of reading a return value as "did it hit", and the energy
+  is now charged whenever the drain finds a mind — and still not at all when it
+  finds nothing.
+
+  **No other class has the same hole.** All twelve psionic powers are present at
+  the archive's levels and only this one was a shell; the other Zangband
+  mana-gain routes are natural regeneration, the inn, the EAT_MAGIC mutation
+  (built, as ``TAP_DEVICE``) and Omnicide's soul absorption, which is a
+  separately recorded realm deferral.
+
+  Nine tests, seven falsifications. Two of them changed the tests rather than
+  confirming them. Doubling the conversion rate did not fail the test meant to
+  pin it, because a level 25 Mindcrafter's whole pool is 26 points and the
+  ceiling was clamping every sample — the test was measuring the cap, not the
+  rate. And the suite flaked one run in eight on level generation dropping the
+  player somewhere with no free neighbour, which presented as the spell failing;
+  the setup now rebuilds the level until there is somewhere to stand a monster.
+
 You're dead, and that's the risk — 18 September 2026
 ------------------------------------------------------------
 
