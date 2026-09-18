@@ -512,9 +512,9 @@ guessing which prompt arrived. A hook is *called with* its context and *returns*
 so there is nothing to infer.
 
 **What this does not change.** The fourth row is empty on 4.2's side, and it is the bulk.
-Drawing the Misc panel means reading `player`; the Micro Map means reading `cave`; Recall
-means reading `monster_race`, `object_kind` and `artifact`; the paper doll means reading
-`player->body`. No hook and no event hands you that — every one of those is an accessor we
+Drawing the character sheet means reading `player`; the Micro Map means reading `cave`;
+Recall means reading `monster_race`, `object_kind` and `artifact`; the paper doll means
+reading `player->body`. No hook and no event hands you that — every one of those is an accessor we
 write. So the honest revision is not "the bridge collapses":
 
 - The **driving and prompting third** of the old surface is replaced by existing API.
@@ -558,8 +558,12 @@ screenshots and is where the original did its best work ([OBS-15](phase3-observa
 | Tier | Fed by | Gets you |
 |---|---|---|
 | **Term windows** | 4.2's existing `ui-term.c` hooks — `Term_text`, `Term_pict`, `Term_curs`, `Term_xtra` | The map and messages, and any full-screen display we choose not to rebuild |
-| **Canvas text laid out as a terminal** | read accessors, drawn as canvas items | Character Info (1,170 lines), the flags table (673), the Misc panel. *Looks* classic; is addressable and clickable — which is how the Misc window's `EXP` and `AC` labels toggle on click |
-| **Native widgets** | all four seams — accessors to draw, events to know when to redraw, hooks to answer prompts, the queue to act | Micro Map, Progress, Recall, Choice — and the menus |
+| **Canvas text laid out as a terminal** | read accessors, drawn as canvas items | Character Info (1,170 lines) and the flags table (673). *Looks* classic; is addressable and clickable — which is how the original's `EXP` and `AC` labels toggled on click |
+| **Native widgets** | all four seams — accessors to draw, events to know when to redraw, hooks to answer prompts, the queue to act | Micro Map, Recall, Choice, the knowledge browsers — and the menus |
+
+Note what is no longer in that table: the Misc panel and the Progress bars. Decision 16
+finished the main window at five panes, and both of those restated what the game's own
+sidebar already shows.
 
 The middle tier matters because it dissolves a false choice. A player who reads the classic
 sheet fluently loses nothing by it being a canvas, and gains hover, colour and click. Reach
@@ -1081,12 +1085,44 @@ work — the debug loop exists before the UI does — and one scripted session r
 
 ---
 
-### T4 — Player, status and the Misc panel
-`player` (36 scripts by §3.3's count, 43 by [the command map](phase3-command-map.md)'s, and
-434 calls either way — a fifth of everything the old scripts asked C for) and `power`. Delivers the Misc panel, the Progress bars, and the
-compact character display.
+### T4 — The player, and the first window that is not a pane
+`player` — 48 distinct subcommands, 434 calls across 43 scripts, a fifth of everything the old
+scripts asked C for — and `power`.
 
-**Exit:** the three right-hand windows from the screenshots, live.
+**This milestone used to deliver the Misc panel and the Progress bars. It does not any more:
+decision 16 finished the main window at five panes.** Both restated what the sidebar already
+shows — level, gold, stats, AC, hit points, hunger — in space taken from the map. What
+survives is the part everything after it needs.
+
+**Where the 48 come from in this tree,** which is what decides the work:
+
+| | Where it reads from | Examples |
+|---|---|---|
+| Straight off `struct player` | [player.h](../../src/player.h) | `name` (39), `class` (18), `race` (14), `gold` (12), `depth` (24), `max_depth`, `sex`, `history`, `position` |
+| Derived, from `player_state` | recomputed by the game; we only read | `armor_class` (`ac`/`to_a`), `to_hit` (`to_h`), `to_dam` (`to_d`), `blows_per_round` (`num_blows`), `shots_per_round` (`num_shots`), `infravision` (`see_infra`), speed, light |
+| Tracking, from `player->upkeep` | | `health_who`, `monster_race_idx`, `new_spells` (22), `running`, `command_rep` (`cmd_get_nrepeats()`) |
+| This tree's own systems | all present, none of them 4.2's | `inside_quest` (26), `pets` (10), `inside_arena` (8), `mutations`, `virtues`, `patron`, and `struct player_power` |
+| Genuinely gone | | `deadliness_conversion` (8), `life_rating` (4) — Zangband combat maths 4.2 replaced |
+
+> **`power` is a Kept family, not a dropped one.** The command map first wrote it off, reading
+> this tree as if it were stock 4.2. It is not: ZangbandTK has restored `struct player_power`,
+> mutations, pets, arenas, quests, virtues and patrons. Corrected there; noted here because it
+> is 30 calls back in scope and they belong with `player`.
+
+**What the milestone actually decides**, beyond writing reads:
+
+- **The shape of a read accessor.** `angband_option` set the pattern for a flat table.
+  `player` is nested — `player->state.to_h`, `player->upkeep->health_who` — so whether that is
+  `angband_player to_h`, a dict, or a Tcl array a script reads like a variable is settled here,
+  and T5 to T9 all inherit it.
+- **When a window redraws.** The 66 events exist; this picks which of them each window binds
+  to. Get it wrong and either everything redraws every turn or nothing updates.
+- **How a window that is not a pane behaves.** The game owns the main loop, so a toplevel is
+  passive: it reads when an event says something changed and it never blocks. First real use
+  of the "up" seam for something other than a pane.
+
+**Exit:** the `player` family is readable from Tcl, and the character sheet opens in its own
+window, reads live, and closes without disturbing the game.
 
 ---
 
@@ -1104,8 +1140,8 @@ original running side by side.
 ---
 
 ### T6 — Knowledge and recall
-`r_info` (11), `k_info` (10), `a_info`, `info`, and `describe`. Delivers the Recall window
-and the knowledge browsers.
+`r_info` (11), `k_info` (10), `a_info`, `info`, and `describe`. Recall is already a pane; the
+knowledge browsers are **windows that open** (decision 16), not panes.
 
 - The Knowledge window's tab set is **4.2's categories plus Pets, Quests and Home** — 4.2
   knows about ego items, runes, features, traps and kill counts that the original had no tab
@@ -1324,7 +1360,7 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 
 ## 6. Decisions needed
 
-**All fifteen are settled.** Raw findings from the running original accumulate in
+**All sixteen are settled.** Raw findings from the running original accumulate in
 [phase3-observations.md](phase3-observations.md); the settled rationale for each decision
 follows below.
 
@@ -1345,6 +1381,7 @@ follows below.
 | ~~13~~ | ~~Which platform first?~~ | **Settled — macOS through development; the other two before release.** See below. | — |
 | ~~14~~ | ~~Does the Tk build replace `ZangbandTK.app`?~~ | **Settled — no. Two applications, permanently.** See below. | — |
 | ~~15~~ | ~~Port the 2001 widget library?~~ | **Settled — no. None of it is compiled.** See below. | — |
+| ~~16~~ | ~~How many panes does the main window end up with?~~ | **Settled — five, and no more.** Everything else is its own window. See below. | — |
 
 **Settled — Ttk, themed by platform.** Confirmed by project owner. Tk 9's native widget set
 replaces `tk/library/`'s **10,636 lines** of 1999 megawidgets — `ttk::notebook` for tabbed
@@ -1465,10 +1502,55 @@ intent directly instead of reproducing the workaround.
   and the hover name-and-health bar ([OBS-47](phase3-observations.md) neighbours).
 - **Detachable panes are post-T7**, not T1 scope. Pane today, toplevel tomorrow is the modern
   compromise and Tk can do it, but it is real work and nothing depends on it.
+- **How many panes there are is a separate question, and decision 16 answers it: five.**
+  This decision says the panes that exist live in one window. It does not say every window
+  the original had becomes a pane, and reading it that way is what put Misc and Progress in
+  T4.
 
 *What it does not change:* the multi-monitor case is genuinely lost until detaching exists.
 That is the accepted cost, and it is the right trade for a game whose windows were only ever
 meant to be read together.
+
+**Settled — five panes, and everything else is its own window.** Confirmed by project owner:
+*"The current 4 windows are good. I am thinking that having that additional windows makes
+every very squashed and does not add real-time information that we need. So those remaining
+windows I would not add, but we can make them separate windows which open up, not part of the
+main window."*
+
+The main window is finished: map, minimap, messages, recall, choice. Nothing else goes in it.
+
+This refines decision 1 rather than reversing it. Decision 1 settled that the panes that
+exist share one window instead of being forty `wm transient` toplevels held together by a
+geometry authority. It was then read as *every* window of the original becoming a pane, which
+is what put Misc and Progress into T4 — and that reading is wrong for a reason worth writing
+down:
+
+**The sidebar already carries the real-time numbers.** Level, experience, gold, the six
+stats, armour class, hit points, light radius, hunger and the status line are all on screen
+already, in the game's own left-hand column. Misc is *"a compact character panel (level,
+race, class, gold, AC…)"* and Progress is *"HP/SP/Food as labelled bars"* — between them they
+restate what is three inches to the left, in space taken from the map. The original needed
+them because its Main window was map and nothing else; ours is not.
+
+*What follows from it:*
+
+- **T4 loses both its panels.** What survives is the `player` accessors, which everything
+  after them needs, and they get a window of their own to prove themselves in.
+- **A window that opens is a Tk toplevel with native widgets**, not a term. The five panes
+  use five of `ANGBAND_TERM_MAX`'s eight; these new windows use none of them, because they
+  are fed by read accessors rather than by `Term_text`.
+- **The `Window` menu comes back**, in a smaller form than the original's: a list of windows
+  to open, not a visibility matrix over panes. Decision 1 said what survives is pane
+  visibility toggles; with five fixed panes there is nothing to toggle, so what survives is
+  this instead.
+- **A window that opens must close without disturbing the game.** The game keeps its main
+  loop (DEC-14), so a toplevel is passive: it reads when it is told an event happened and it
+  never blocks. This is the first real exercise of the "up" seam beyond redrawing a pane.
+- **It also settles the knowledge browsers in T6** and the character sheet, the flags table
+  and the Hall of Fame wherever they land: all windows, none of them panes.
+
+*What it does not change:* the five panes stay panes, detaching them is still post-T7 and
+still optional, and the main window still saves its sash positions.
 
 **Settled — no per-monster sound reassignment.** Confirmed by project owner: *"do not allow
 players reassign sounds, no one will use it anyway."*
