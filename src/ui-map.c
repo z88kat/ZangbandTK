@@ -1046,11 +1046,37 @@ int world_map_blocks(void)
  */
 struct loc world_map_player_block(void)
 {
-	int size = z_info->wild_block_size;
+	int size;
 
-	if (!wild || !player) return loc(0, 0);
+	/*
+	 * z_info as well as the other two: the Tk front end is up and answering
+	 * before init_angband() has read the constants, and reading the block
+	 * size out of a null z_info is a segmentation fault rather than a wrong
+	 * answer.
+	 */
+	if (!z_info || !wild || !player) return loc(0, 0);
+
+	size = z_info->wild_block_size;
+	if (size < 1) return loc(0, 0);
 
 	return loc(player->wild_grid.x / size, player->wild_grid.y / size);
+}
+
+/**
+ * Is the player standing in a town, or in the ground a place reserves?
+ *
+ * The distinction the Tk front end's pane needs: in a town or a dungeon the
+ * useful overview is the level, and out on the road it is the world.
+ */
+bool world_map_player_in_place(void)
+{
+	struct loc here = world_map_player_block();
+
+	if (!wild || !player) return false;
+	if (!wild_in_bounds(wild, here.x, here.y)) return false;
+
+	return wild_town_at(wild, here.x, here.y) >= 0
+		|| wild_block_at(wild, here.x, here.y)->place != 0;
 }
 
 /**
@@ -1087,53 +1113,62 @@ void world_map_draw(struct loc origin, struct loc at, int wid, int hgt)
 
 			if (!wild_in_bounds(wild, bx, by)) continue;
 
-			/*
-			 * The world, before it is known: a dim dot for every block that
-			 * is there but has not been seen.
-			 *
-			 * This used to be left blank, which is honest and unreadable.  A
-			 * new character has stood in three or four blocks of a world 129
-			 * across, so what they saw was a handful of characters floating
-			 * in black -- reported, reasonably, as the map not working.  The
-			 * backdrop costs nothing, says how much world there is, and makes
-			 * the explored part read as a trail across it.
-			 */
-			if (!wild_seen(wild, bx, by)) {
-				Term_queue_char(Term, at.x + col, at.y + row,
-								COLOUR_L_DARK, L'.', COLOUR_L_DARK, L'.');
-				continue;
-			}
+			/* The world, before it is known, is blank. */
+			if (!wild_seen(wild, bx, by)) continue;
 
 			feat = wild_block_feat(wild, bx, by);
 			if (feat == FEAT_NONE) continue;
 
-			/*
-			 * The feature's own colour and letter, not feat_x_attr and
-			 * feat_x_char.  Those carry the tile when a graphical set is in
-			 * use, and a 16-pixel tile squashed into one cell of a world map
-			 * is mush -- measured in the Tk front end's pane, where a cell is
-			 * five pixels by ten.  The world map is a schematic: what it has
-			 * to show is the shape of the coast and the colour of the places,
-			 * and a coloured letter says both at any size.
-			 */
-			a = f_info[feat].d_attr;
-			c = f_info[feat].d_char;
+			a = feat_x_attr[LIGHTING_LIT][feat];
+			c = feat_x_char[LIGHTING_LIT][feat];
 
 			/*
 			 * A town is worth picking out of the country around it, and how
 			 * large it is worth telling from across the map: it is what
 			 * decides whether the walk is worth making.
+			 *
+			 * In text mode that is done by recolouring the block's own
+			 * letter.  Under a tile set it cannot be: attr and char are a
+			 * tile's row and column there, so recolouring the attr alone
+			 * picks a different row of the sheet and draws whatever happens
+			 * to be in it.  A place gets a plain marker instead -- drawn over
+			 * the terrain rather than instead of it, which is the one thing
+			 * the letters could not do.
 			 */
 			{
 				int town = wild_town_at(wild, bx, by);
+				int mark_a = -1;
+				wchar_t mark_c = L'*';
+				bool margin = false;
 
 				if (town >= 0) {
-					a = wild_town_band_attr[wild->towns[town].band];
+					mark_a = wild_town_band_attr[wild->towns[town].band];
 				} else if (wild_dungeon_in_block(wild, bx, by)) {
-					a = COLOUR_L_RED;
+					mark_a = COLOUR_L_RED;
+					mark_c = L'>';
 				} else if (wild_block_at(wild, bx, by)->place) {
 					/* The margin a town or a dungeon reserves around itself. */
-					a = COLOUR_L_WHITE;
+					mark_a = COLOUR_L_WHITE;
+					mark_c = L'.';
+					margin = true;
+				}
+
+				if (mark_a >= 0) {
+					if (use_graphics == GRAPHICS_NONE) {
+						a = mark_a;
+					} else if (!margin) {
+						/*
+						 * A cell holds a tile or a letter, not both, so a
+						 * marker costs the terrain underneath it.  Worth it
+						 * for the town itself and the mouth of a dungeon;
+						 * not worth it for the margin they reserve around
+						 * themselves, which is several blocks wide and would
+						 * punch a hole in the map for no information.
+						 */
+						Term_queue_char(Term, at.x + col, at.y + row,
+								mark_a, mark_c, mark_a, mark_c);
+						continue;
+					}
 				}
 			}
 

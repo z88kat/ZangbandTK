@@ -31,6 +31,7 @@ extern void display_map(int *cy, int *cx);
 extern void world_map_draw(struct loc origin, struct loc at, int wid, int hgt);
 extern int world_map_blocks(void);
 extern struct loc world_map_player_block(void);
+extern bool world_map_player_in_place(void);
 extern void do_cmd_view_map(void);
 void do_cmd_view_world_map(void);
 void do_cmd_quest_log(void);

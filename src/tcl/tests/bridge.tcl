@@ -212,6 +212,23 @@ check "the minimap refuses an instruction it does not have" {
 	string match "expected*" $e
 } 1
 
+# The pane guesses what to show; the View menu overrules the guess.  Reported
+# and set here so a layout can put it anywhere it likes.
+check "the pane starts out guessing" {angband_minimap show} "auto"
+
+check "and can be pinned either way" {
+	angband_minimap show world
+	set was [angband_minimap show]
+	angband_minimap show level
+	list $was [angband_minimap show]
+} "world level"
+
+check "an unknown way of showing it is refused" {
+	angband_minimap show auto
+	catch {angband_minimap show sideways} e
+	set e
+} "show wants auto, level or world, not: sideways"
+
 # Nothing to describe before there is a level, and asking must not reach into
 # a NULL cave to find that out.
 check "describing a cell without a game says nothing" {

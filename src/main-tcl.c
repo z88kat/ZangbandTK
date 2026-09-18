@@ -2389,9 +2389,32 @@ static struct loc world_origin;
 /**
  * Is the pane showing the world rather than the level?
  */
+/**
+ * What the pane shows: the player's choice, or ours if they have not made one.
+ */
+static enum { MM_AUTO, MM_LEVEL, MM_WORLD } minimap_mode = MM_AUTO;
+
 static bool minimap_is_world(void)
 {
-	return player != NULL && player->in_wild && world_map_blocks() > 0;
+	if (!player || !player->in_wild || world_map_blocks() < 1) {
+		/* There is no world to show: below ground, the level is all there is. */
+		return false;
+	}
+
+	if (minimap_mode == MM_WORLD) return true;
+	if (minimap_mode == MM_LEVEL) return false;
+
+	/*
+	 * Left to itself: not simply "on the surface".  A village is on the
+	 * surface, and standing in one the useful overview is the village -- which
+	 * is what this pane showed before, in tiles.  The world map earns the pane
+	 * out on the road, where the level really is one square of grass and the
+	 * question is which way to walk.
+	 *
+	 * This is a guess about what is wanted where, which is why it is only the
+	 * default: the View menu pins it either way.
+	 */
+	return !world_map_player_in_place();
 }
 
 /**
@@ -2504,9 +2527,11 @@ static void minimap_init(void)
 /**
  * angband_minimap -- the pane's own state, and how to move it.
  *
- *    angband_minimap              {world|level} originx originy blocks
- *    angband_minimap pan dx dy    move the view, in blocks
- *    angband_minimap centre       put the player back in the middle
+ *    angband_minimap                 {world|level} ox oy blocks bx by
+ *    angband_minimap pan dx dy       move the view, in blocks
+ *    angband_minimap centre          put the player back in the middle
+ *    angband_minimap show            auto, level or world
+ *    angband_minimap show world      pin it, whatever the player is standing in
  *
  * The units are blocks rather than pixels because that is what the map is
  * drawn in; the script converts from a mouse drag using the pane's own cell
@@ -2527,12 +2552,47 @@ static int objcmd_minimap(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		Tcl_ListObjAppendElement(ip, list, Tcl_NewIntObj(world_origin.x));
 		Tcl_ListObjAppendElement(ip, list, Tcl_NewIntObj(world_origin.y));
 		Tcl_ListObjAppendElement(ip, list, Tcl_NewIntObj(world_map_blocks()));
+		/* Where the player is, in blocks: what a script needs to say where
+		 * the view is relative to them, and what a test needs to know it has
+		 * walked somewhere. */
+		{
+			struct loc here = world_map_player_block();
+
+			Tcl_ListObjAppendElement(ip, list, Tcl_NewIntObj(here.x));
+			Tcl_ListObjAppendElement(ip, list, Tcl_NewIntObj(here.y));
+		}
 		Tcl_SetObjResult(ip, list);
 
 		return TCL_OK;
 	}
 
 	what = Tcl_GetString(objv[1]);
+
+	if (strcmp(what, "show") == 0 && (objc == 2 || objc == 3)) {
+		if (objc == 2) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					minimap_mode == MM_WORLD ? "world"
+					: minimap_mode == MM_LEVEL ? "level" : "auto", -1));
+			return TCL_OK;
+		}
+
+		{
+			const char *how = Tcl_GetString(objv[2]);
+
+			if (strcmp(how, "auto") == 0) minimap_mode = MM_AUTO;
+			else if (strcmp(how, "level") == 0) minimap_mode = MM_LEVEL;
+			else if (strcmp(how, "world") == 0) minimap_mode = MM_WORLD;
+			else {
+				Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+						"show wants auto, level or world, not: %s", how));
+				return TCL_ERROR;
+			}
+		}
+
+		minimap_dirty = true;
+
+		return TCL_OK;
+	}
 
 	if (strcmp(what, "centre") == 0 && objc == 2) {
 		struct loc here = world_map_player_block();
@@ -2574,7 +2634,8 @@ static int objcmd_minimap(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	}
 
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
-			"expected \"pan dx dy\" or \"centre\", not: %s", what));
+			"expected \"pan dx dy\", \"centre\" or \"show ?how?\", not: %s",
+			what));
 
 	return TCL_ERROR;
 }

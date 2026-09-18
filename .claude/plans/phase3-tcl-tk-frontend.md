@@ -1104,6 +1104,29 @@ work — the debug loop exists before the UI does — and one scripted session r
 > clears, then term-hook writes, then every `cell_set` on that pane. The last one found 3,588
 > writes per turn from outside the front end's own draw — 78 × 46, the whole pane — which is
 > what pointed at `Term_pict` and therefore at a window flag nobody had asked for.
+>
+> **And then a lesson about taste, paid for in builds.**
+>
+> The world map was changed from tiles to `f_info[]`'s coloured letters on the grounds that a
+> 16-pixel tile in a five-by-ten cell is mush. It is — and the tiles were what the player
+> wanted, because the pane is read at a glance for shape and colour and a letter map at that
+> size reads as debris. That judgement was made from a rendered PNG and should have been
+> made by the person who plays the game. **Tiles restored.**
+>
+> Three things came out of putting them back:
+>
+> - **A cell holds a tile or a letter, never both.** The town and dungeon markers recolour
+>   the attr, which under a tile set is a sheet row — so recolouring picked a different row
+>   and drew whatever was in it. Places are now marked with a plain symbol *instead of* their
+>   terrain, and only for the town itself and the mouth of a dungeon; the several-block
+>   margin a place reserves keeps its terrain, because marking that punched holes in the map.
+> - **A dim backdrop for the unexplored world does not work under tiles.** `FEAT_NONE`'s dark
+>   tile is pure black in the Neon set, so it cost a full-pane redraw and showed nothing.
+>   Unexplored is blank again.
+> - **The pane now has a View menu**, because the rule for which map to show is a guess.
+>   Left alone it shows the level in a town or below ground and the world out on the road —
+>   right most of the time, and wrong often enough that guessing silently was the mistake in
+>   the first place. `angband_minimap show auto|level|world` pins it.
 
 ---
 

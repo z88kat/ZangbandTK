@@ -169,6 +169,28 @@ foreach pair [angband_tilesets] {
         -command [list angband_choose_tileset $id]
 }
 
+# The View menu: what the minimap pane shows.
+#
+# Left to itself the pane guesses -- the level while the player is in a town or
+# below ground, the world out on the road -- and the guess is worth having
+# because it is right most of the time.  It is only a guess though, so it is a
+# default and not a rule, and this is where it gets overruled.
+menu .menubar.view -tearoff 0
+.menubar add cascade -label "View" -menu .menubar.view
+
+set angband(minimapshow) [angband_minimap show]
+foreach {value label} {auto "Minimap: follow where I am"
+                       level "Minimap: this level"
+                       world "Minimap: the known world"} {
+    .menubar.view add radiobutton -label $label \
+        -variable angband(minimapshow) -value $value \
+        -command [list angband_minimap show $value]
+}
+
+.menubar.view add separator
+.menubar.view add command -label "Centre the minimap on me" \
+    -command { angband_minimap centre }
+
 proc angband_choose_tileset {id} {
     global angband
     if {[catch {angband_tileset $id} err]} {
