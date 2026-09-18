@@ -48,7 +48,7 @@ The verdicts are four:
 | `o_list` | 49 | 8 | `cave->objects`, [`cave.h`](../../src/cave.h#L218) | **Renamed** |
 | `mindcraft` | 44 | 6 | *nothing* — a Zangband class | **Dropped** |
 | `f_info` | 40 | 7 | [`f_info`](../../src/cave.h#L135), `struct feature` | Kept |
-| `power` | 30 | 5 | *nothing* — Zangband mutations | **Dropped** |
+| `power` | 30 | 5 | [`struct player_power`](../../src/player.h), `mutations[MUT_SIZE]` | Kept |
 | `a_info` | 30 | 3 | [`a_info`](../../src/object.h#L318), `struct artifact` | Kept |
 | `m_list` | 29 | 5 | `cave->monsters`, [`cave.h`](../../src/cave.h#L221) | **Renamed** |
 | `message` | 28 | 3 | [`message.h`](../../src/message.h) | Kept |
@@ -57,7 +57,7 @@ The verdicts are four:
 | `keymap` | 22 | 5 | [`ui-keymap.h`](../../src/ui-keymap.h) | **Seam** |
 | `home` | 20 | 2 | `stores[STORE_HOME]` | **Renamed** |
 | `macro` | 16 | 1 | *nothing* — 4.2 replaced macros with keymaps | **Dropped** |
-| `building` | 14 | 1 | *nothing* — Zangband town buildings | **Dropped** |
+| `building` | 14 | 1 | *not yet* — [`WILD_SERVICE_*`](../../src/wild.h) is the start of it | **Dropped** |
 | `inkey_other` | 10 | 4 | the input hooks | **Seam** |
 | `init_icons` | 10 | 4 | `grafmode.h`, already done in T2 | **Dropped** |
 | `highscore` | 8 | 1 | [`score.h`](../../src/score.h) | Kept |
@@ -67,7 +67,7 @@ The verdicts are four:
 
 ## What the numbers say
 
-**Kept names cover 1,495 calls — 53%,** across fourteen commands. This is the payoff from the
+**Kept names cover 1,525 calls — 54%,** across fifteen commands. This is the payoff from the
 naming rule, and it is the largest column by some distance: those scripts are adapted rather
 than rewritten, and the work is writing fourteen accessor families instead of re-deriving
 what 108,000 lines of Tcl should have said.
@@ -76,11 +76,16 @@ what 108,000 lines of Tcl should have said.
 the keymap API between them account for well over a third of every call the original's
 scripts make into C — and all four are built. None of that has to be written twice.
 
-**Dropped is 142 calls, 5%,** and it is two things: a Zangband system 4.2 does not have
-(`mindcraft`, `power`, `building`, 88 calls between them) or a front-end internal already
-replaced (`system`, `macro`, `init_icons`). Nothing here is a loss. `power` and `mindcraft`
-would have to be reintroduced to the *game* first, which is a question for the Amber work and
-not for Phase 3.
+**Dropped is 112 calls, 4%,** and it is two things: a Zangband system this tree does not
+have (`mindcraft` and `building`, 58 calls between them) or a front-end internal already
+replaced (`system`, `macro`, `init_icons`). Nothing here is a loss, and `building` is "not yet" rather than "never" — `WILD_SERVICE_*`
+in wild.h is the start of it, and T7 plans the rest. Only `mindcraft` would have to be
+reintroduced to the *game* first, which is a question for the Amber work and not for Phase 3.
+
+**Corrected after the fact:** `power` was first written down as dropped, on the assumption
+that this tree is 4.2. It is not — ZangbandTK has restored `struct player_power`, mutations,
+pets, arenas, quests, virtues and patrons, so `power` is a Kept family and belongs with T4's
+`player` work. Read the 4.2 column as "what this tree has", not "what upstream 4.2 has".
 
 **Renamed is the smallest column at 108 calls, 4%,** and four of its five rows are the same
 rename: 4.2 keeps the level's objects and monsters inside `struct chunk` rather than in
