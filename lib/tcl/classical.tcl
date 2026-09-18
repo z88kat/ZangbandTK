@@ -126,6 +126,7 @@ proc classical::init_fonts {} {
         {label      body -13 normal roman}
         {note       body -13 normal italic}
         {footer     mono -12 normal roman}
+        {list       mono -13 normal roman}
         {kicker     mono -11 normal roman}
         {numeral    mono -11 normal roman}
         {figure     mono -11 normal roman}
@@ -356,10 +357,16 @@ proc classical::scrolllist {parent name {width 32}} {
     frame $f -bg [classical::c bg] -highlightthickness 1 \
         -highlightbackground [classical::c divider] -bd 0
 
+    # The mono face, not the body face.  A list is a table, its columns are
+    # padded with spaces, and a space in a proportional font is not the width
+    # of anything -- so Lora gives a ragged right-hand column however carefully
+    # the strings are formatted.  Courier Prime also puts the list in the same
+    # register as the lore panel below it, which is where a roguelike's indexes
+    # belong.
     listbox $f.list -width $width -activestyle none -borderwidth 0 \
         -highlightthickness 0 -relief flat \
         -bg [classical::c neutral-100] -fg [classical::c neutral-800] \
-        -font [classical::f label] \
+        -font [classical::f list] \
         -selectbackground [classical::c accent-200] \
         -selectforeground [classical::c accent-900] \
         -yscrollcommand [list $f.sb set]
@@ -372,16 +379,46 @@ proc classical::scrolllist {parent name {width 32}} {
 }
 
 # A single-line entry, for a search box.
-proc classical::searchbox {parent name var} {
+proc classical::searchbox {parent name var {hint "search"}} {
     set f $parent.e$name
     frame $f -bg [classical::c bg] -highlightthickness 1 \
         -highlightbackground [classical::c divider] -bd 0
     entry $f.e -textvariable $var -borderwidth 0 -highlightthickness 0 \
         -relief flat -bg [classical::c neutral-100] \
-        -fg [classical::c neutral-800] -font [classical::f label] \
+        -fg [classical::c neutral-800] -font [classical::f list] \
         -insertbackground [classical::c accent-700]
     pack $f.e -fill x -padx 6 -pady 4
+
+    # Tk entries have no placeholder, so the hint is a label behind the box,
+    # shown while it is empty.  Placed rather than packed, so it takes no space
+    # and cannot push the entry about as it appears and disappears.
+    label $f.hint -text $hint -font [classical::f list] \
+        -bg [classical::c neutral-100] -fg [classical::c neutral-500] \
+        -anchor w
+    place $f.hint -x 7 -rely 0.5 -anchor w
+    lower $f.hint $f.e
+
+    # ::$var, not $var.  This proc is handed the variable's *name* and has no
+    # global link to it, so an unqualified trace attaches to a local of that
+    # name -- which is created, traced and destroyed when the proc returns,
+    # and the hint then never hides.  The caller's own traces work because the
+    # caller has said "global".
+    trace add variable ::$var write [list classical::hint_update $f $var]
+    bind $f.e <FocusIn>  [list classical::hint_update $f $var]
+    bind $f.e <FocusOut> [list classical::hint_update $f $var]
+    classical::hint_update $f $var
+
     return $f
+}
+
+proc classical::hint_update {f var args} {
+    upvar #0 $var value
+    if {![winfo exists $f]} return
+    if {[info exists value] && $value ne ""} {
+        place forget $f.hint
+    } else {
+        place $f.hint -x 7 -rely 0.5 -anchor w
+    }
 }
 
 # Reflow a row of equal columns as the window narrows: three, then two, then

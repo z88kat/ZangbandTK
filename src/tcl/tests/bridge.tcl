@@ -277,6 +277,19 @@ check "the knowledge window opens without a character" {
 	list [winfo exists .knowledge] $::knowledge(count)
 } "1 {0 known}"
 
+# The search box has no placeholder in Tk, so the hint is a label behind it.
+# Design-system machinery, and every window with a search box will use it.
+check "an empty search box shows its hint" {
+	set f .knowledge.card.body.cols.left.esearch
+	set was [winfo manager $f.hint]
+	set ::knowledge(search) "kobold"
+	update idletasks
+	set now [winfo manager $f.hint]
+	set ::knowledge(search) ""
+	update idletasks
+	list $was $now [winfo manager $f.hint]
+} "place {} place"
+
 check "closing it is just closing it" {
 	destroy .knowledge
 	winfo exists .knowledge

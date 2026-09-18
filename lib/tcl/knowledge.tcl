@@ -32,10 +32,18 @@ proc knowledge_fill {} {
     $list delete 0 end
     foreach row $rows {
         lassign $row idx name level unique kills
+
         # Uniques are worth picking out of a list of seven hundred, and the
-        # game's own convention for that is the name alone, capitalised.
-        $list insert end [format "%-34s %3s" \
-            [expr {$unique ? [string totitle $name] : $name}] \
+        # game's own convention for that is the name capitalised.
+        if {$unique} { set name [string totitle $name] }
+
+        # A fixed width, cut rather than wrapped: the column to its right has
+        # to line up, and a name long enough to push it is rare enough that
+        # losing its tail costs less than a ragged table.
+        if {[string length $name] > 30} {
+            set name "[string range $name 0 28]\u2026"
+        }
+        $list insert end [format "%-30s %5s" $name \
             [expr {$level == 0 ? "town" : $level}]]
     }
 
@@ -114,7 +122,7 @@ proc knowledge_window {} {
     classical::sectionhead $left monsters "MONSTERS" i
     pack $left.hmonsters -fill x -pady [list 0 [classical::sp 2]]
 
-    pack [classical::searchbox $left search knowledge(search)] -fill x \
+    pack [classical::searchbox $left search knowledge(search) "search by name"] -fill x \
         -pady [list 0 [classical::sp 2]]
     pack [classical::scrolllist $left list 40] -fill both -expand 1
 
