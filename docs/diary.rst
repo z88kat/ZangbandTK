@@ -68,6 +68,35 @@ row's real width, so the text uses whatever space there is. That is a ratchet.
 Wider block, wider wraplength, wider request, wider block. It settled at
 nothing at all.
 
+**And then Steven crashed it from the menu bar.** Not the new window — the
+plain Window menu, picking "Display inventory listing". The report is an
+``abort()`` inside ``mem_free``, called from ``textui_get_item``, and I had
+already written a guard against exactly this and a paragraph of comment
+explaining why the guard worked. Both were wrong.
+
+``inkey_flag`` is 4.2's "the main loop is waiting for a command", and
+``main-win.c`` guards its menus with it, so I did too. What it does not mean is
+"no command is running". ui-input.c sets it before the main loop's ``inkey()``
+and clears it only when that ``inkey()`` finally has a key to hand back — so it
+stays true for the whole wait, and the whole wait includes the nested wait
+inside a prompt that a command has opened. A menu command that prompts leaves
+the menu bar live, and a second command starts inside the first. Which is a
+heap corruption and not a display glitch: ``textui_get_item`` keeps its floor
+and throwing lists in file statics, the inner call allocates over them and
+frees them on the way out, and the outer call then frees the same two pointers.
+
+I did not want to argue about that from the stack trace, so I took the guard
+back out and drove it: open the inventory listing from the menu, open the
+equipment listing from inside its prompt, escape out of both and let them
+unwind. Signal 6, the same abort. Put the guard back — the front end now counts
+its own depth rather than trusting a flag that means something adjacent — and
+the second command is refused and the session lives. The crash dialog Steven
+saw at 17:54 was that experiment, which I should have said before running it.
+
+The lesson is not about ``inkey_flag``. It is that I wrote a confident comment
+explaining why a borrowed flag was the right one, and the comment made the bug
+harder to find, because I read it again while looking and believed it.
+
 **The part I am actually pleased with is the message line**, and it is the part
 nobody will notice. A drop does not move an item. It pushes ``CMD_WIELD`` and
 waits, because the game owns the turn, the curse checks and the refusals — a

@@ -924,6 +924,10 @@ static void set_script_library_paths(void)
  * from spinning at 100% while the player thinks.
  */
 static void hooks_apply(void);
+/* True while a command started from the menus is running; see
+ * command_may_start(), which is where the reasoning lives. */
+static bool command_inside = false;
+
 static void command_nudge(void);
 static bool in_play(void);
 
@@ -4046,7 +4050,7 @@ static int objcmd_gear(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			return TCL_ERROR;
 		}
 
-		if (!inkey_flag) {
+		if (!inkey_flag || command_inside) {
 			Tcl_SetObjResult(ip, Tcl_NewStringObj(
 					"the game is in the middle of something else", -1));
 			return TCL_ERROR;
@@ -4102,7 +4106,7 @@ static int objcmd_gear(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			return TCL_ERROR;
 		}
 
-		if (!inkey_flag) {
+		if (!inkey_flag || command_inside) {
 			Tcl_SetObjResult(ip, Tcl_NewStringObj(
 					"the game is in the middle of something else", -1));
 			return TCL_ERROR;
@@ -4334,6 +4338,38 @@ static bool in_play(void)
 }
 
 /**
+ * Whether the interface may start a command right now.
+ *
+ * Two conditions, and the first one alone is not enough.
+ *
+ * inkey_flag is 4.2's own "the main loop is waiting for a command", and
+ * main-win.c guards its menus with it.  What it does *not* mean is "no command
+ * is running": ui-input.c sets it before the main loop's inkey() and clears it
+ * only once that inkey() has a key to return, so it stays true for the whole
+ * wait -- including the nested wait inside a prompt that a command opened.
+ *
+ * That gap is a heap corruption and not a cosmetic one.  A menu command runs
+ * inside Tcl_DoOneEvent, which is reached from the very inkey() that is
+ * waiting; if that command opens an item prompt, the prompt's own inkey()
+ * pumps Tk again, the menu bar is still live, and a second command starts
+ * inside the first.  textui_get_item keeps its floor and throwing lists in
+ * file statics, so the inner call allocates over them and frees them on the
+ * way out, and the outer call then frees the same two pointers -- which aborts
+ * in malloc with POINTER_BEING_FREED_WAS_NOT_ALLOCATED.  It is not only that
+ * function: most of 4.2's ui-* prompts keep their state in statics, because
+ * nothing in a keyboard interface can call one of them twice at once.
+ *
+ * So the front end counts for itself.  command_inside is true from the moment
+ * a menu-invoked hook is entered until it returns, and nothing the interface
+ * offers will start while it is.  It is declared beside command_nudge,
+ * because the gear commands need it too and they come first in this file.
+ */
+static bool command_may_start(void)
+{
+	return in_play() && inkey_flag && !command_inside;
+}
+
+/**
  * Can the character do this, asked quietly?
  *
  * The command table's prereq field is not a predicate.  It is the thing the
@@ -4358,23 +4394,7 @@ static bool in_play(void)
  */
 static bool command_available(const struct cmd_info *c)
 {
-	if (!in_play()) return false;
-
-	/*
-	 * And only while the game is actually waiting for a command.
-	 *
-	 * inkey_flag is 4.2's own answer to this and main-win.c guards its menus
-	 * with it too.  It is true only in the main loop's wait, and false the
-	 * moment a command starts -- including while that command is running a
-	 * prompt or a menu of its own.
-	 *
-	 * Without it the menu bar stays live during those prompts, because they
-	 * reach Tk through the same Tcl_DoOneEvent as everything else, and a
-	 * second command starts *inside* the first.  The game's interface is not
-	 * re-entrant: doing that crashed in textui_get_item's mem_free, freeing
-	 * something the outer command had already freed.
-	 */
-	if (!inkey_flag) return false;
+	if (!command_may_start()) return false;
 
 	if (!c->prereq) return true;
 
@@ -4592,18 +4612,23 @@ static int objcmd_command(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 
 	c = &cmds_all[g].list[i];
 
+	/*
+	 * Two refusals, not one: "there is no character" and "the game is busy"
+	 * are different answers to different questions, and a caller that cannot
+	 * tell them apart cannot say anything useful about either.
+	 */
 	if (!in_play()) {
 		Tcl_SetObjResult(ip, Tcl_NewStringObj("not allowed just now", -1));
 		return TCL_ERROR;
 	}
 
 	/*
-	 * Refused outright unless the game is waiting for a command.  The greyed
-	 * menu is the courtesy; this is the guarantee, and it is the one that
-	 * matters -- a command started inside another one corrupts the heap, not
-	 * merely the display.
+	 * Refused outright unless the game is idle.  The greyed menu is the
+	 * courtesy; this is the guarantee, and it is the one that matters -- a
+	 * command started inside another one corrupts the heap, not merely the
+	 * display.  See command_may_start().
 	 */
-	if (!inkey_flag) {
+	if (!command_may_start()) {
 		Tcl_SetObjResult(ip, Tcl_NewStringObj(
 				"the game is in the middle of something else", -1));
 		return TCL_ERROR;
@@ -4622,9 +4647,12 @@ static int objcmd_command(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		/*
 		 * A user-interface action runs here and now, inside the event handler
 		 * -- which is where the game would have run it too -- so there is
-		 * nothing to wake up.
+		 * nothing to wake up.  It can prompt, and its prompt pumps Tk, so the
+		 * door is held shut for as long as it runs.
 		 */
+		command_inside = true;
 		c->hook();
+		command_inside = false;
 	} else if (c->cmd) {
 		cmdq_push_repeat(c->cmd, count);
 		command_nudge();

@@ -1588,6 +1588,33 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 > building window and the generic table. The Flags tab in T6 is no longer blocked on the
 > reads, only on `ui-entry.h`'s machinery.
 
+> **`inkey_flag` is not "no command is running", and the difference is a heap
+> corruption.** The guard added with the menus was wrong, and the comment
+> explaining it was wrong in the same way: ui-input.c sets `inkey_flag` before
+> the main loop's `inkey()` and clears it only once that `inkey()` has a key to
+> return, so it stays true for the whole wait — *including* the nested wait
+> inside a prompt the command itself opened. A menu command that prompts
+> therefore left the menu bar live, and a second command started inside the
+> first.
+>
+> `textui_get_item` keeps its floor and throwing lists in file statics, so the
+> inner call allocates over them and frees them on the way out, and the outer
+> call then frees the same two pointers: `abort()` in malloc with
+> `POINTER_BEING_FREED_WAS_NOT_ALLOCATED`. It is not only that function — most
+> of 4.2's `ui-*` prompts keep their state in statics, because nothing in a
+> keyboard interface can call one of them twice at once.
+>
+> So the front end counts for itself: `command_inside` is true from the moment
+> a menu-invoked hook is entered until it returns, and `command_may_start()` is
+> `in_play() && inkey_flag && !command_inside`. Both the menu greying and the
+> dispatch refusal ask it, as do the Items window's gear actions.
+>
+> Reproduced and fixed under measurement rather than argued about: with the
+> guard removed, opening the inventory listing from the menu and then the
+> equipment listing from inside its prompt, and letting both unwind, aborts
+> with signal 6 — the player's crash report exactly. With it, the second is
+> refused and the session survives.
+
 > **The Items window — the paper doll and the pack.**
 > [lib/tcl/items.tcl](../../lib/tcl/items.tcl), to the handoff in
 > `.claude/plans/paper_doll`. Twelve equipment slots ranged around a pen-and-ink figure,
