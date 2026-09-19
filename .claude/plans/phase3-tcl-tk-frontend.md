@@ -1520,9 +1520,17 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 >   through the player's keymap and cannot find a user-interface action, so Look around, Rest
 >   and the rest showed no accelerator until `c->key[mode]` was used as the fallback. The
 >   keymap still wins where there is a code, so a rebinding shows through.
-> - **"Hidden" is left out, as its name asks.** It holds Walk, Run and Repeat, which have keys
->   and no business in a menu, beside Toggle windows and Load a single pref line, which have
->   no business near a player. The Debug groups nest under it and go with it.
+> - ~~**"Hidden" is left out, as its name asks."**~~ **Wrong, and reversed.** The game means
+>   hidden from *its own* command menu, which is a different question from whether a player
+>   would look for them — and they would: the group holds Steal from a monster, Start
+>   exploring, Repeat previous command, Alter a grid, Take notes and Centre map. It is shown
+>   as **Other**, because "Hidden" is a poor thing to call a menu somebody is reading.
+> - **The debug commands are a menu of their own, shown only in wizard mode.** Nine submenus
+>   over 48 commands. They nest, and the link is `nested_name`: the access points carry the
+>   readable names — Items, Player, Teleport — and each names the group it opens, which is how
+>   "Player" reaches "DbgPlayer" without the menu having to know the internal names. The
+>   menubar entry appears and disappears with `NOSCORE_DEBUG`, checked when the status line
+>   changes, which is when the game notices the savefile has been marked.
 >
 > Verified end to end: ^R chosen from the Utility menu redrew the map, and a command whose
 > prereq fails answers "not allowed just now" when invoked anyway. The menu greys as a

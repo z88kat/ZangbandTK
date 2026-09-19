@@ -2181,7 +2181,7 @@ enum player_field_id {
 	PFI_BLOWS_PER_ROUND, PFI_SHOTS_PER_ROUND, PFI_SPEED, PFI_INFRAVISION,
 	PFI_LIGHT, PFI_AGE, PFI_HEIGHT, PFI_WEIGHT, PFI_TOTAL_WEIGHT,
 	PFI_NEW_SPELLS, PFI_RUNNING, PFI_RESTING, PFI_IS_DEAD, PFI_DIED_FROM,
-	PFI_INSIDE_ARENA, PFI_TURN,
+	PFI_INSIDE_ARENA, PFI_WIZARD, PFI_TURN,
 	PFI_MAX
 };
 
@@ -2225,6 +2225,7 @@ static const struct {
 	{ "is_dead",			PF_BOOL },
 	{ "died_from",			PF_STR },
 	{ "inside_arena",		PF_BOOL },
+	{ "wizard",				PF_BOOL },
 	{ "turn",				PF_INT },
 };
 
@@ -2364,6 +2365,13 @@ static Tcl_Obj *player_field_obj(enum player_field_id id)
 	case PFI_DIED_FROM:		return Tcl_NewStringObj(player->died_from, -1);
 	case PFI_INSIDE_ARENA:
 		return Tcl_NewBooleanObj(player->upkeep->arena_level);
+	/*
+	 * The savefile is marked, not the session: NOSCORE_DEBUG is what the game
+	 * sets the first time the debug commands are confirmed, and it is what
+	 * player_can_debug_prereq reads afterwards.
+	 */
+	case PFI_WIZARD:
+		return Tcl_NewBooleanObj((player->noscore & NOSCORE_DEBUG) != 0);
 	case PFI_TURN:			return Tcl_NewIntObj((int)turn);
 
 	case PFI_MAX:
@@ -3909,7 +3917,7 @@ static bool command_available(const struct cmd_info *c)
  * angband_commands -- the game's own command table, for building menus from.
  *
  * Returns one row per command as
- * {groupindex group index label key enabled level code}, where
+ * {groupindex group index label key enabled level code opens}, where
  * and index address it again for angband_command below.  The label, the key
  * and whether it is currently allowed are all the game's: ui-input.h's
  * struct cmd_info carries a description, up to two keys, a cmd_code and a
@@ -4011,6 +4019,15 @@ static int objcmd_commands(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(
 					(c->cmd > 0 && c->cmd < (int)N_ELEMENTS(cmd_code_name))
 						? cmd_code_name[c->cmd] : "", -1));
+			/*
+			 * The group this entry opens, for the ones that are access points
+			 * rather than commands: the Debug group's nine entries have no
+			 * code and no key and exist to lead somewhere else.  Without the
+			 * link, a caller can see the readable name ("Player") or the group
+			 * it opens ("DbgPlayer") but has no way to join them up.
+			 */
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(
+					c->nested_name ? c->nested_name : "", -1));
 			Tcl_ListObjAppendElement(ip, list, row);
 		}
 	}

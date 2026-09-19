@@ -15,15 +15,21 @@
 # textui_process_command does -- prereq, then hook or cmdq_push_repeat.  No
 # keystroke is synthesised.
 
-# The groups that become menus, in the order the game lists them.
+# Nothing is skipped.
 #
-# "Hidden" is left out, as its name asks: it holds Walk, Run, Stand still and
-# Repeat, which already have keys and no business in a menu, alongside Toggle
-# windows and Load a single pref line, which have no business anywhere near a
-# player.  The Debug groups are nested under it and are left out with it --
-# they appear only when the character is already in wizard mode, since offering
-# them otherwise is an invitation to spoil a game.
-set commands(skip) {Hidden}
+# "Hidden" was, on the grounds that the game calls it that -- and the game
+# means hidden from its *own* command menu, which is a different question from
+# whether a player would look for them.  They would: the group holds Steal from
+# a monster, Start exploring, Repeat previous command, Alter a grid, Take notes
+# and Centre map.  It is shown as "Other", because "Hidden" is a poor thing to
+# call a menu somebody is reading.
+set commands(rename) {Hidden Other}
+
+# The debug groups are a menu of their own, and only for a character who is
+# already in wizard mode -- offering them otherwise is an invitation to spoil a
+# game.  They nest: the "Debug" group's nine entries are access points with no
+# key and no command, each naming the group it opens.
+set commands(debug) Debug
 
 # An entry's text, with the key it answers to.
 #
@@ -77,6 +83,16 @@ proc commands_label {label key target} {
     return "$label$pad\[$key\]"
 }
 
+# What a group is called in the menu bar, where that differs from what the
+# game calls it internally.
+proc commands_group_label {group} {
+    global commands
+    if {[dict exists $commands(rename) $group]} {
+        return [dict get $commands(rename) $group]
+    }
+    return $group
+}
+
 proc commands_menu_path {name} {
     # A menu path has to be a legal Tk pathname, and the group names have
     # spaces in them.
@@ -92,8 +108,8 @@ proc commands_build {} {
     # left behind would point at a destroyed menu.
     if {[info exists commands(menus)]} {
         foreach pair $commands(menus) {
-            lassign $pair group m
-            set i [.menubar index $group]
+            lassign $pair group m shown
+            set i [.menubar index $shown]
             if {$i ne "none" && $i ne ""} { .menubar delete $i }
             if {[winfo exists $m]} { destroy $m }
         }
@@ -105,25 +121,29 @@ proc commands_build {} {
     # Group the rows, keeping the game's order.
     set order {}
     array unset byname
+    array unset commands(nested)
     foreach row $rows {
-        lassign $row gidx group idx label key enabled level code
-        if {$level != 0} continue
-        if {$group in $commands(skip)} continue
-        if {$group ni $order} { lappend order $group }
-        lappend byname($group) $row
+        lassign $row gidx group idx label key enabled level code opens
+        if {$level == 0} {
+            if {$group ni $order} { lappend order $group }
+            lappend byname($group) $row
+        } else {
+            lappend commands(nested,$group) $row
+        }
     }
 
     set at 0
     foreach group $order {
+        set shown [commands_group_label $group]
         set m [commands_menu_path $group]
         if {[winfo exists $m]} { destroy $m }
         menu $m -tearoff 0 -postcommand [list commands_refresh $group]
 
         # Inserted, not appended: the game's own menus belong before the front
         # end's Tiles and Window, and those were built when the window was.
-        .menubar insert $at cascade -label $group -menu $m
+        .menubar insert $at cascade -label $shown -menu $m
         incr at
-        lappend commands(menus) [list $group $m]
+        lappend commands(menus) [list $group $m $shown]
 
         # One column width per menu, from its own widest label.
         set labels {}
@@ -132,11 +152,72 @@ proc commands_build {} {
         set commands(target,$group) $target
 
         foreach row $byname($group) {
-            lassign $row gidx g idx label key enabled level code
+            lassign $row gidx g idx label key enabled level code opens
             $m add command -label [commands_label $label $key $target] \
                 -command [list angband_command $gidx $idx]
         }
     }
+
+    commands_build_debug
+    commands_check_debug
+}
+
+# The debug menu: one submenu per category, built but not shown.
+#
+# Its nine access points carry the readable names -- Items, Player, Teleport --
+# and each names the group it opens, which is how "Player" is joined to
+# "DbgPlayer".  Without that link the menu would have to know the internal
+# names, and they are not the player's business.
+proc commands_build_debug {} {
+    global commands
+
+    set m .menubar.cmddebug
+    if {[winfo exists $m]} { destroy $m }
+    if {![info exists commands(nested,$commands(debug))]} return
+
+    menu $m -tearoff 0
+
+    foreach row $commands(nested,$commands(debug)) {
+        lassign $row gidx group idx label key enabled level code opens
+
+        if {$opens eq "" || ![info exists commands(nested,$opens)]} continue
+
+        set sub $m.[string tolower $opens]
+        menu $sub -tearoff 0
+
+        set labels {}
+        foreach r $commands(nested,$opens) { lappend labels [lindex $r 3] }
+        set target [commands_pad $labels]
+
+        foreach r $commands(nested,$opens) {
+            lassign $r rgidx rgroup ridx rlabel rkey renabled rlevel rcode
+            $sub add command -label [commands_label $rlabel $rkey $target] \
+                -command [list angband_command $rgidx $ridx]
+        }
+
+        $m add cascade -label $label -menu $sub
+    }
+}
+
+# Shown only in wizard mode, and checked when the status line changes -- which
+# is when the game notices the savefile has been marked.
+proc commands_check_debug {} {
+    global commands
+
+    if {![winfo exists .menubar.cmddebug]} return
+    if {[catch {angband_player wizard} on]} return
+
+    set shown [expr {[info exists commands(debugshown)] && $commands(debugshown)}]
+    if {$on == $shown} return
+
+    if {$on} {
+        .menubar insert [llength $commands(menus)] cascade -label Debug \
+            -menu .menubar.cmddebug
+    } else {
+        set i [.menubar index Debug]
+        if {$i ne "none" && $i ne ""} { .menubar delete $i }
+    }
+    set commands(debugshown) $on
 }
 
 # Grey out what cannot be done, just before the menu opens.
@@ -164,5 +245,6 @@ proc commands_refresh {group} {
 # The menus are built once the game has a command table to build them from.
 # cmd_init() runs inside textui_init(), which is after this file is sourced, so
 # building at source time would produce a menu bar with no accelerators in it.
+bind . <<Angband_STATUS>> {+ commands_check_debug }
 bind . <<Angband_ENTER_GAME>> {+ commands_build }
 bind . <<Angband_LEAVE_BIRTH>> {+ commands_build }

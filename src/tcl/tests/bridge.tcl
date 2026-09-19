@@ -39,11 +39,26 @@ proc check {what script expected} {
 
 set cmds [angband_commands]
 check "the command table is not empty" {expr {[llength $::cmds] > 50}} 1
-check "every row has eight fields" {
+check "every row has nine fields" {
 	set bad 0
-	foreach row $::cmds { if {[llength $row] != 8} { incr bad } }
+	foreach row $::cmds { if {[llength $row] != 9} { incr bad } }
 	set bad
 } 0
+
+# The debug groups are reached through access points that name them.  Without
+# the link, a Debug menu would have to know the internal group names.
+check "the debug access points name the groups they open" {
+	set opens {}
+	foreach row $::cmds {
+		lassign $row gidx group idx label key enabled level code opened
+		if {$group eq "Debug" && $opened ne ""} { lappend opens $opened }
+	}
+	set groups {}
+	foreach row $::cmds { lappend groups [lindex $row 1] }
+	set missing {}
+	foreach o $opens { if {$o ni $groups} { lappend missing $o } }
+	list [expr {[llength $opens] > 5}] $missing
+} "1 {}"
 
 # The groups are the game's, not ours, so name one we know and count the rest.
 check "the table names its groups" {
@@ -112,9 +127,9 @@ check "each row's group index names its group" {
 	expr {[dict size $groups] > 5}
 } 1
 
-check "the menu bar skips the hidden group" {
-	expr {"Hidden" in $::commands(skip)}
-} 1
+check "the hidden group is shown, under a readable name" {
+	list [commands_group_label Hidden] [commands_group_label Items]
+} "Other Items"
 
 # The key goes in the label, never in -accelerator: AppKit renders a lowercase
 # key equivalent as the capital, so "Throw an item", which answers to v, was
