@@ -2248,6 +2248,47 @@ bool player_power_is_class_power(const struct player *p,
 }
 
 /**
+ * Does this band's class restriction admit `p`? (PLR-01, DEC-87)
+ *
+ * The restriction is the '|'-separated text from `power-when-class`, matched
+ * against the class's name.  Matched by name rather than by index because races
+ * are parsed before classes and there was nothing to resolve against at parse
+ * time; `player/race` asserts that every name in the data names a real class,
+ * so a typo cannot quietly become a band that never fires.
+ */
+static bool power_band_admits_class(const struct player *p,
+									const struct power_effect *band)
+{
+	const char *at = band->classes;
+	size_t len;
+
+	if (!at) return true;
+	if (!p->class || !p->class->name) return false;
+
+	len = strlen(p->class->name);
+	while (*at) {
+		const char *bar = strchr(at, '|');
+		size_t run = bar ? (size_t) (bar - at) : strlen(at);
+
+		if (run == len && !strncmp(at, p->class->name, len)) return true;
+		if (!bar) break;
+		at = bar + 1;
+	}
+
+	return false;
+}
+
+/** Is this band available to `p` at all, chance aside? */
+bool power_band_applies(const struct player *p,
+						const struct power_effect *band)
+{
+	if (p->lev < band->from) return false;
+	if (band->to && p->lev > band->to) return false;
+
+	return power_band_admits_class(p, band);
+}
+
+/**
  * A psionic power that fails may go off inside the caster's head (CNT-10).
  *
  * Zangband's Mindcrafter is the third thing in the game that punishes a bad
@@ -2303,6 +2344,7 @@ bool player_use_power(struct player *p, struct player_power *power, int dir)
 	struct power_effect *band;
 	bool ident = false;
 	bool use_hp;
+	bool chosen = false;
 	int paid;
 
 	if (!power || !power->effects) return false;
@@ -2366,10 +2408,23 @@ bool player_use_power(struct player *p, struct player_power *power, int dir)
 	 * Run every band the character has grown into.  A power the player has
 	 * carried since level 2 may by now be doing four things it did not used
 	 * to; the bands it has outgrown are simply skipped.
+	 *
+	 * Bands that carry a chance are different, and are the mechanism a
+	 * Draconian's breath is built on (DEC-87): they are *alternatives*, tried
+	 * in order, and the first whose roll succeeds is the only one that runs.
+	 * Bands with no chance are unconditional and always run, so a power can mix
+	 * the two -- something it always does, plus one of several things it
+	 * sometimes does.  Writing a fallback means giving the last alternative a
+	 * chance of 101, which always wins because the roll is `randint1(100)`.
 	 */
 	for (band = power->effects; band; band = band->next) {
-		if (p->lev < band->from) continue;
-		if (band->to && p->lev > band->to) continue;
+		if (!power_band_applies(p, band)) continue;
+
+		if (band->chance) {
+			if (chosen) continue;
+			if (randint1(100) >= expression_evaluate(band->chance)) continue;
+			chosen = true;
+		}
 
 		/*
 		 * The beam chance matters to BOLT_OR_BEAM, which is what a
@@ -2394,9 +2449,14 @@ bool player_power_aims(struct player *p, const struct player_power *power)
 {
 	const struct power_effect *band;
 
+	/*
+	 * A band with a chance counts as "might fire", because the prompt has to
+	 * be decided before the roll is made -- and asking for a direction that
+	 * turns out not to be needed is harmless, where failing to ask would make
+	 * the power fire in a direction the player never chose.
+	 */
 	for (band = power ? power->effects : NULL; band; band = band->next) {
-		if (p->lev < band->from) continue;
-		if (band->to && p->lev > band->to) continue;
+		if (!power_band_applies(p, band)) continue;
 
 		if (effect_aim(band->effect)) return true;
 	}

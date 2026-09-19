@@ -25,6 +25,7 @@
 #include "obj-properties.h"
 #include "object.h"
 #include "option.h"
+#include "z-expression.h"
 
 /**
  * Indexes of the player stats (hard-coded by savefiles).
@@ -311,6 +312,8 @@ struct power_effect {
 	struct effect *effect;
 	int from;			/**< Character level this band starts at */
 	int to;				/**< And stops at; 0 for open-ended */
+	char *classes;		/**< '|'-separated class names, or NULL for any */
+	expression_t *chance;	/**< Percentage this band fires; NULL for always */
 };
 
 struct player_power {

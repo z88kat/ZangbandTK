@@ -1281,6 +1281,72 @@ static void project_monster_handler_MON_PSI_DRAIN(project_monster_handler_contex
 	}
 }
 
+/**
+ * Confusion that hurts as well as bewilders (ZangbandTK, PLR-01).
+ *
+ * Zangband's `GF_CONFUSION`
+ * ([spells1.c:1265](../archive/zangband/src/spells1.c#L1265)) is a damage type
+ * and not the status effect 4.2's `MON_CONF` is: it does its full damage *and*
+ * confuses. Only a Draconian breathes it here, and mapping it to `MON_CONF`
+ * would have turned two thirds of three classes' breath into a spell that
+ * deals nothing at all.
+ *
+ * `rand_range(10, 25)` scaled down with distance, which is `adjust_radius()` --
+ * the archive divides by `(r + 1)` after adding `r`, and so does that helper.
+ *
+ * The archive's other branch cannot be carried: a creature that *breathes*
+ * confusion resists at `dam * 2 / rand_range(7, 12)`, and 4.2 has no confusion
+ * breath -- there is no `RSF_BR_CONF` for anything to have. The branch is
+ * vacuous rather than dropped, since nothing in the bestiary could match it.
+ */
+static void project_monster_handler_CONFUSION(project_monster_handler_context_t *context)
+{
+	if (context->seen) {
+		context->obvious = true;
+		rf_on(context->lore->flags, RF_NO_CONF);
+	}
+
+	context->mon_timed[MON_TMD_CONF] = adjust_radius(context,
+													 9 + randint1(16));
+
+	if (rf_has(context->mon->race->flags, RF_NO_CONF)) {
+		context->hurt_msg = MON_MSG_RESIST_SOMEWHAT;
+		context->dam /= 2;
+	}
+}
+
+/**
+ * Holy fire: the good are untouched, the evil burn, everyone else shrugs.
+ *
+ * `GF_HOLY_FIRE` ([spells1.c:1113](../archive/zangband/src/spells1.c#L1113)),
+ * and it is *not* the same thing as hell fire, which the realms already map to
+ * `HOLY_ORB`. Hell fire doubles against evil and does nothing else, which is
+ * `HOLY_ORB` exactly. Holy fire adds an outright immunity for good creatures
+ * and a general resistance for everything that is neither -- so mapping both to
+ * `HOLY_ORB` would have collapsed a Priest's two breaths into one.
+ *
+ * `RF_GOOD` exists here, which is the only reason this is a port rather than an
+ * approximation.
+ */
+static void project_monster_handler_HOLY_FIRE(project_monster_handler_context_t *context)
+{
+	if (context->seen) context->obvious = true;
+
+	if (rf_has(context->mon->race->flags, RF_GOOD)) {
+		if (context->seen) rf_on(context->lore->flags, RF_GOOD);
+		context->hurt_msg = MON_MSG_IMMUNE;
+		context->dam = 0;
+	} else if (rf_has(context->mon->race->flags, RF_EVIL)) {
+		if (context->seen) rf_on(context->lore->flags, RF_EVIL);
+		context->hurt_msg = MON_MSG_HIT_HARD;
+		context->dam *= 2;
+	} else {
+		context->hurt_msg = MON_MSG_RESIST;
+		context->dam *= 3;
+		context->dam /= randint1(6) + 6;
+	}
+}
+
 static const project_monster_handler_f monster_handlers[] = {
 	#define ELEM(a) project_monster_handler_##a,
 	#include "list-elements.h"

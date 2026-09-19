@@ -344,17 +344,41 @@ Draconian
 
   It breathes from level 15, for **twice your character level** in damage —
   fire two times in three and cold the third, which is where every Draconian
-  breath starts in Zangband. Until 3.118.3 it was fire only, and for
-  three-quarters of the damage.
+  breath starts. Until 3.118.3 it was fire only, and for three-quarters of the
+  damage.
 
-  One thing is still not built. In Zangband, with a chance equal to your
-  character level in a hundred, the breath instead becomes something belonging
-  to your *class* — shards or raw force for a Warrior, mana or disenchantment
-  for a Mage, hellfire or holy fire for a Priest, chaos or confusion for a
-  Chaos-Warrior, sound or confusion for a Monk, mental energy for a
-  Mindcrafter, darkness or poison for a Rogue (`racial.c:380`). A racial power
-  in this game has no way to ask which class is holding it, so that is a
-  mechanism to design rather than a number to copy.
+  **And then your class takes it over.** Each time you breathe, there is a
+  chance equal to your character level in a hundred that the fire or cold is
+  replaced by something belonging to your class instead. At level 20 that is
+  about one breath in five; at 50 it is about one in two. The damage is the
+  same either way — only the element changes.
+
+  What you get is a pair, and the pair is uneven: one element comes up twice as
+  often as the other.
+
+  ================================ ====================== ======================
+  Class                            Two times in three     One time in three
+  ================================ ====================== ======================
+  Warrior, Ranger                  shards                 the elements
+  Mage, Warrior-Mage, High-Mage    disenchantment         mana
+  Priest, Paladin                  holy fire              hellfire
+  Rogue                            poison                 darkness
+  Chaos-Warrior                    confusion              chaos
+  Monk                             confusion              sound
+  Mindcrafter                      confusion              mental energy
+  ================================ ====================== ======================
+
+  **Druid, Necromancer and Blackguard get nothing here**, and always breathe
+  fire or cold. Zangband had eleven classes and a branch for every one of them;
+  those three are Angband's, and the original never had an opinion about what
+  they should breathe.
+
+  Two of these are worth knowing before you pick one. *Holy fire* cannot hurt a
+  good creature at all and is resisted by anything that is neither good nor
+  evil — it is a weapon against evil and nothing else, where *hellfire* simply
+  doubles against the evil and is resisted by nobody. And *confusion* is a real
+  damage type here, not just a status: it does its full damage and bewilders on
+  top, which is why three classes get it as their common element.
 
 .. _Mindflayer:
 

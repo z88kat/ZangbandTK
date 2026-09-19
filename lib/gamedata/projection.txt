@@ -752,3 +752,21 @@ blind-desc:something
 obvious:1
 wake:1
 color:Violet
+
+code:CONFUSION
+type:monster
+desc:hurts and bewilders monsters at once
+player-desc:confusion
+blind-desc:something
+obvious:1
+wake:1
+color:Umber
+
+code:HOLY_FIRE
+type:monster
+desc:burns the evil and leaves the good untouched
+player-desc:holy fire
+blind-desc:something
+obvious:1
+wake:1
+color:Yellow

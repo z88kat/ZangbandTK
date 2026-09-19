@@ -639,12 +639,134 @@ power-fail:12
 # Damage is `plev * 2` (racial.c:481).  It used to be `plev * 3 / 2`, which is
 # three-quarters of the archive's at every level.
 #
-# What is NOT here: from level 15 or so the archive rolls `randint1(100) < plev`
-# and, on success, replaces the element with a pair belonging to the character's
-# *class* -- shards or the elements for a Warrior, mana or disenchantment for a
-# Mage, hellfire or holy fire for a Priest, and so on through seven branches.
-# A race power has no way to ask what class is holding it, and building one is a
-# design decision rather than a conversion.  Recorded in DEC-80.
+# **And then the class takes it over.**  `randint1(100) < plev` and, on success,
+# the element is replaced by a pair belonging to the character's class
+# (racial.c:383).  That is what every band below is: `power-when-class` picks
+# the one pair that can apply, `power-chance:PLAYER_LEVEL` is the archive's own
+# roll, and the last band -- chance 101, which the roll can never beat -- is the
+# fire and cold everyone falls back to.  Only one of them fires; see DEC-87 for
+# the rule.
+#
+# The pairs are not even.  Each branch is `one_in_(3)` one way or the other and
+# the archive picks a different side each time, so the multiplicities below are
+# read off the source rather than assumed: a Warrior breathes shards twice as
+# often as the elements, and a Chaos-Warrior breathes confusion twice as often
+# as chaos.
+#
+# Three classes have no entry, and that is ours rather than the archive's.
+# Zangband has eleven classes and its switch covers all eleven, so it never
+# needed a `default:` -- the Druid, the Necromancer and the Blackguard are 4.2's
+# and simply fall through to fire and cold, which is what the archive's code
+# would do with them.  DEC-87.
+
+# Warrior, Ranger -- the elements once, shards twice.
+power-when-class:Warrior|Ranger
+power-chance:PLAYER_LEVEL:+ 0
+power-effect:RANDOM
+power-dice:3
+power-effect:BREATH:MISSILE:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:BREATH:SHARD:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:BREATH:SHARD:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+
+# Mage, Warrior-Mage, High-Mage -- mana once, disenchantment twice.
+power-when-class:Mage|Warrior-Mage|High-Mage
+power-chance:PLAYER_LEVEL:+ 0
+power-effect:RANDOM
+power-dice:3
+power-effect:BREATH:MANA:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:BREATH:DISEN:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:BREATH:DISEN:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+
+# Chaos-Warrior -- confusion twice, chaos once.
+power-when-class:Chaos-Warrior
+power-chance:PLAYER_LEVEL:+ 0
+power-effect:RANDOM
+power-dice:3
+power-effect:BREATH:CONFUSION:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:BREATH:CONFUSION:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:BREATH:CHAOS:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+
+# Monk -- confusion twice, sound once.
+power-when-class:Monk
+power-chance:PLAYER_LEVEL:+ 0
+power-effect:RANDOM
+power-dice:3
+power-effect:BREATH:CONFUSION:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:BREATH:CONFUSION:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:BREATH:SOUND:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+
+# Mindcrafter -- confusion twice, mental energy once.
+power-when-class:Mindcrafter
+power-chance:PLAYER_LEVEL:+ 0
+power-effect:RANDOM
+power-dice:3
+power-effect:BREATH:CONFUSION:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:BREATH:CONFUSION:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:BREATH:MON_PSI:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+
+# Priest, Paladin -- hellfire once, holy fire twice.
+power-when-class:Priest|Paladin
+power-chance:PLAYER_LEVEL:+ 0
+power-effect:RANDOM
+power-dice:3
+power-effect:BREATH:HOLY_ORB:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:BREATH:HOLY_FIRE:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:BREATH:HOLY_FIRE:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+
+# Rogue -- darkness once, poison twice.
+power-when-class:Rogue
+power-chance:PLAYER_LEVEL:+ 0
+power-effect:RANDOM
+power-dice:3
+power-effect:BREATH:DARK:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:BREATH:POIS:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-effect:BREATH:POIS:0:30
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+
+# And what a Draconian breathes when its class has nothing to say, which is
+# every class below level 15 more often than not.
+power-chance:101
 power-effect:RANDOM
 power-dice:3
 power-effect:BREATH:FIRE:0:30

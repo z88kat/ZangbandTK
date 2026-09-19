@@ -46,6 +46,63 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+A Draconian Mage breathes disenchantment — 19 September 2026
+------------------------------------------------------------
+
+- **3.124.0** — **The Draconian's class-substituted breath** (PLR-01, DEC-87),
+  which closes the last open half of DEC-80. From level 15, with a chance equal
+  to your character level in a hundred, the fire or cold is replaced by a pair
+  belonging to your class.
+
+  **The mechanism is general, because it will be wanted again.** A power band
+  can now carry two optional qualifiers: ``power-when-class:`` restricts it to
+  named classes, and ``power-chance:`` makes it an *alternative* — bands with a
+  chance are tried in order and the first whose roll succeeds is the only one
+  that runs, while bands without one always run. That is what lets one power
+  hold seven class tables and a fallback and fire exactly one of them. The
+  mutation firing loop reads the same two fields, because it is the same struct.
+
+  Class names are matched at use rather than resolved at parse time, because
+  races are parsed before classes — which makes a misspelling a band that
+  silently never fires. ``player/race`` now asserts that every class name used
+  by any race resolves to a real class.
+
+  **My earlier summary of the archive's table was wrong in three ways**, which
+  is the reason for re-reading it. It missed that the Ranger shares the
+  Warrior's branch, the Warrior-Mage and High-Mage the Mage's, and the Paladin
+  the Priest's. It called ``GF_MISSILE`` "raw force" where the archive calls it
+  "the elements". And it implied even splits: the archive writes ``one_in_(3)``
+  for some branches and ``!one_in_(3)`` for others, so a Warrior breathes shards
+  twice as often as the elements and a Chaos-Warrior breathes confusion twice as
+  often as chaos.
+
+  **Two elements had to be built to carry it.** Zangband's confusion is a damage
+  type that also confuses, where 4.2's ``MON_CONF`` is a status effect dealing
+  nothing — mapping one to the other would have turned two thirds of three
+  classes' breath into a spell that does no damage, which is valid and silently
+  wrong. And holy fire is not hell fire: hell fire doubles against evil and is
+  ``HOLY_ORB`` exactly, while holy fire also makes good creatures immune and
+  everything else resist, so taking ``HOLY_ORB`` for both would have collapsed a
+  Priest's pair into one element.
+
+  **Druid, Necromancer and Blackguard breathe fire and cold**, and that is a
+  judgement rather than a lookup. Zangband has exactly eleven classes and its
+  switch covers all eleven, so the missing ``default:`` is not a designed
+  fallback — it is a table that never needed one. Those three are Angband's own,
+  and falling through is the only option that invents nothing.
+
+  **The shape stays a cone**, as ruled: 4.2's breath is what every dragon in the
+  game uses and what a player reads as breathing, where the archive throws a
+  ball. Recorded again in DEC-87 so it reads as decided rather than forgotten.
+
+  Four tests, four falsifications. One of them was void the first time — the
+  build failed on an unused variable under ``-Werror`` and the stale binary
+  passed, which is exactly the false verdict the falsification harness now greps
+  for. And a test that had been passing was found stale after a restore landed
+  inside the same timestamp second: the binary had not been relinked against the
+  restored library, and 298 of 600 iterations were reporting the falsified
+  behaviour.
+
 The Mindcrafter drinks what it hurts — 19 September 2026
 ------------------------------------------------------------
 

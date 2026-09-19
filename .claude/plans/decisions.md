@@ -4113,14 +4113,10 @@ branches, two fire and one cold. Fixed.
 
 **Open, and put to the project owner rather than decided here.**
 
-*The class table.* From level 15 the archive rolls `randint1(100) < plev` and,
-on success, replaces the element with a pair belonging to the character's class
--- seven branches, from shards for a Warrior to mental energy for a
-Mindcrafter. A race power in this game has no way to ask which class holds it,
-and `power-when:` bands on character level cannot express it. Building it means
-either a class dimension on `struct player_power` or a new effect that reads the
-class, both of which are design rather than conversion. **Not built, and the
-manual says so in those terms.**
+*The class table.* **Built in 3.124.0; see DEC-87.** The reading below was also
+incomplete -- it named seven branches and missed that the Ranger shares the
+Warrior's, the Warrior-Mage and High-Mage the Mage's, and the Paladin the
+Priest's, and that the pairs are not even splits.
 
 *The shape.* Zangband throws a *ball* of radius `(plev / 15) + 1` -- two at
 level 15, four at 50 -- and what ships here is 4.2's `BREATH`, a 20-degree cone
@@ -4443,3 +4439,72 @@ in Zangband are natural regeneration (have it), the inn (have it), the EAT_MAGIC
 mutation (have it, as `TAP_DEVICE`) and Omnicide's soul absorption, which is a
 separately recorded realm deferral and incidental to a mass-kill spell. The two
 HP/SP exchange mutations remain deferred with their own reason.
+
+---
+
+**DEC-87 — A race power can be restricted by class, and by a chance that scales;
+the Draconian's breath is the first thing built on it.** (PLR-01, 3.124.0.
+Closes the class-table half of DEC-80.)
+
+**The mechanism, because it is the part that outlives this power.** `struct
+power_effect` -- the band a `power-when` opens -- gains two optional
+qualifiers, and both are general:
+
+- `power-when-class:<a>|<b>` restricts a band to those classes. Matched by class
+  *name* at use rather than by index at parse time, because races are parsed
+  before classes and there is nothing to resolve against yet. That makes a
+  misspelling a band that silently never fires, which is this project's
+  characteristic defect, so `player/race` asserts that every name used by any
+  race resolves to a real class.
+- `power-chance:<n>` or `<BASE>:<ops>` makes a band an *alternative*. Bands with
+  a chance are tried in order and **the first whose roll succeeds is the only
+  one that runs**; bands without one are unconditional and always run. So a
+  power can have something it always does plus one of several things it
+  sometimes does. The comparison is `randint1(100) < value`, which is the
+  archive's, so a fallback is written as chance 101.
+
+A `power-when-class` or `power-chance` line qualifies the current band while it
+is still empty and opens a new one once it has effects, which is what lets a run
+of alternatives be written without a `power-when` between them. The mutation
+firing loop reads the same two fields, because it is the same struct and a
+mutation that one day uses them should not find them ignored.
+
+**The table is the archive's, and my earlier summary of it was wrong in three
+ways** -- a reminder that a summary of a summary is worth nothing. It omitted
+that the Ranger shares the Warrior's branch, the Warrior-Mage and High-Mage the
+Mage's, and the Paladin the Priest's; it called `GF_MISSILE` "raw force" when
+the archive calls it "the elements"; and it implied even splits when the archive
+writes `one_in_(3)` for some branches and `!one_in_(3)` for others, so a Warrior
+breathes shards twice as often as the elements and a Chaos-Warrior breathes
+confusion twice as often as chaos.
+
+**Two elements had to be built to carry it**, and neither is a Draconian special
+case:
+
+- `PROJ_CONFUSION`. Zangband's `GF_CONFUSION` is a *damage* type that also
+  confuses; 4.2's `MON_CONF` is a status effect that does no damage at all.
+  Mapping one to the other would have turned two thirds of three classes'
+  breath into a spell that deals nothing -- valid, and silently wrong. The
+  archive's other branch, a creature that breathes confusion resisting, is
+  vacuous here: 4.2 has no `RSF_BR_CONF` for anything to have.
+- `PROJ_HOLY_FIRE`. Hell fire doubles against evil and does nothing else, which
+  is `HOLY_ORB` exactly and is the mapping the realms already use. Holy fire
+  additionally makes good creatures **immune** and everything else resist, so
+  taking `HOLY_ORB` for both would have collapsed a Priest's pair into one
+  element. `RF_GOOD` exists here, which is the only reason this is a port.
+
+**Three of our classes have no entry, and that is a judgement rather than a
+lookup.** Zangband has exactly eleven classes and its switch covers all eleven,
+so the absence of a `default:` is not a designed fallback -- it is a table that
+never needed one. The Druid, the Necromancer and the Blackguard are 4.2's own.
+They fall through to fire and cold, which is what the archive's code would do
+with them and the only option that invents nothing; assigning them elements by
+theme would be our design wearing the archive's clothes. Asserted in a test so
+it cannot drift without being noticed, and stated plainly in the manual.
+
+**The shape stays a cone, and that is not an oversight.** DEC-80's second open
+question was ball versus cone, and the project owner's position is unchanged:
+4.2's `BREATH` is the mechanism every dragon in the game uses and the one a
+player reads as breathing, where the archive's `fire_ball` of radius
+`(plev / 15) + 1` is a ball landing on a point. Recorded again here so that a
+later reader finds it decided rather than forgotten.
