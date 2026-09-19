@@ -121,7 +121,14 @@ proc commands_build {} {
     # Group the rows, keeping the game's order.
     set order {}
     array unset byname
-    array unset commands(nested)
+    # `array unset commands nested,*`, not `array unset commands(nested)`.
+    # The latter unsets one element called "nested", which does not exist, so
+    # the rows lappend onto the previous build's -- and the second build tries
+    # to create every debug submenu a second time.  Reported as
+    # "window name dbgobj already exists in parent", which is a rebuild
+    # happening at all: ENTER_GAME and LEAVE_BIRTH both fire for a new
+    # character.
+    array unset commands nested,*
     foreach row $rows {
         lassign $row gidx group idx label key enabled level code opens
         if {$level == 0} {
@@ -172,6 +179,14 @@ proc commands_build_debug {} {
     global commands
 
     set m .menubar.cmddebug
+
+    # Take the cascade out of the menubar before destroying what it points at,
+    # or the entry is left referring to a window that no longer exists.
+    if {[info exists commands(debugshown)] && $commands(debugshown)} {
+        set i [.menubar index Debug]
+        if {$i ne "none" && $i ne ""} { .menubar delete $i }
+        set commands(debugshown) 0
+    }
     if {[winfo exists $m]} { destroy $m }
     if {![info exists commands(nested,$commands(debug))]} return
 

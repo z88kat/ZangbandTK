@@ -127,6 +127,19 @@ check "each row's group index names its group" {
 	expr {[dict size $groups] > 5}
 } 1
 
+# Both ENTER_GAME and LEAVE_BIRTH fire for a new character, so the menus are
+# built twice and must survive it.  They did not: the rows accumulated and the
+# second build tried to create every debug submenu again.
+check "building the menus twice changes nothing" {
+	commands_build
+	set first [.menubar index end]
+	set items [[commands_menu_path Items] index end]
+	commands_build
+	commands_build
+	list [expr {[.menubar index end] == $first}] \
+		[expr {[[commands_menu_path Items] index end] == $items}]
+} "1 1"
+
 check "the hidden group is shown, under a readable name" {
 	list [commands_group_label Hidden] [commands_group_label Items]
 } "Other Items"
