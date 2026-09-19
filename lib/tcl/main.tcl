@@ -169,11 +169,13 @@ menu .menubar.views -tearoff 0
 .menubar add cascade -label "Window" -menu .menubar.views
 .menubar.views add command -label "Character" -command character_window
 .menubar.views add command -label "Knowledge" -command knowledge_window
+.menubar.views add command -label "Items" -command items_window
 
 # The design system first: every window is drawn with it.
 source [file join [file dirname [info script]] classical.tcl]
 source [file join [file dirname [info script]] character.tcl]
 source [file join [file dirname [info script]] knowledge.tcl]
+source [file join [file dirname [info script]] items.tcl]
 source [file join [file dirname [info script]] commands.tcl]
 
 proc angband_choose_tileset {id} {

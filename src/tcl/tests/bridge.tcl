@@ -133,11 +133,11 @@ check "each row's group index names its group" {
 check "building the menus twice changes nothing" {
 	commands_build
 	set first [.menubar index end]
-	set items [[commands_menu_path Items] index end]
+	set rows [[commands_menu_path Items] index end]
 	commands_build
 	commands_build
 	list [expr {[.menubar index end] == $first}] \
-		[expr {[[commands_menu_path Items] index end] == $items}]
+		[expr {[[commands_menu_path Items] index end] == $rows}]
 } "1 1"
 
 # The Debug menu follows player->wizard, which is what ^W toggles and what the
@@ -592,10 +592,41 @@ proc second_pass {} {
 		expr {$named == [llength [angband_gear equipment]]}
 	} 1
 
+	# Every equipment row carries the slot's type as the game names it, which
+	# is what the paper doll matches on.  The body parts are the game's
+	# ("right hand"); the types are EQUIP_RING and the rest, lower-cased.
+	check "an equipment row names its slot type" {
+		set types {}
+		foreach row [angband_gear equipment] {
+			if {[lindex $row 7] ni $types} { lappend types [lindex $row 7] }
+		}
+		expr {"weapon" in $types || ![llength [angband_gear equipment]]}
+	} 1
+
+	# Three numbers, in tenths of a pound: what is carried, where speed starts
+	# to go, and what cannot be exceeded.  The middle one is half the last,
+	# which is the rule in calc_bonuses().
+	check "burden comes back as three weights" {
+		lassign [angband_gear burden] carried slow capacity
+		list [expr {$carried >= 0}] [expr {$slow * 2 == $capacity}] \
+			[expr {$capacity > 0}]
+	} "1 1 1"
+
 	check "an item that is not there is refused" {
 		catch {angband_gear info inventory 999} e
 		set e
 	} "nothing at inventory 999"
+
+	check "nothing fits nowhere" {
+		catch {angband_gear fits inventory 999} e
+		set e
+	} ""
+
+	check "and a word that is not a subcommand is refused by name" {
+		catch {angband_gear sideways} e
+		set e
+	} "expected inventory, equipment, quiver, burden, info, lore, fits,\
+ inscribe, wield, takeoff or drop, not: sideways"
 
 	check "and a view that does not exist is refused by name" {
 		catch {angband_gear info pockets 0} e

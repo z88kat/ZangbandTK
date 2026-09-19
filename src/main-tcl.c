@@ -52,6 +52,7 @@
 #include "ui-input.h"
 #include "ui-keymap.h"
 #include "ui-mon-lore.h"
+#include "ui-object.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
 #include "z-textblock.h"
@@ -3710,10 +3711,16 @@ static int objcmd_history(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
  * angband_gear -- what the character is carrying and wearing.
  *
  *    angband_gear inventory     the pack, as {label name weight number}
- *    angband_gear equipment     what is worn, as {slot slotname label name}
+ *    angband_gear equipment     what is worn, plus a row per empty slot
  *    angband_gear quiver        the quiver, same shape as the pack
  *    angband_gear info <where> <n>   one item, as a name/value dict
  *    angband_gear lore <where> <n>   what the game says about it
+ *    angband_gear burden             {carried slow-at capacity}, in tenths
+ *    angband_gear fits <where> <n>   the equipment slots it could go in
+ *    angband_gear inscribe <where> <n> <text>   note it, or "" to erase
+ *    angband_gear wield <where> <n> ?slot?  put it on
+ *    angband_gear takeoff <where> <n>   take it off
+ *    angband_gear drop <where> <n> ?q?  put it down
  *
  * One command for all three because they are one thing: the gear list, which
  * 4.2 keeps as `struct object *` chains and presents through three views of
@@ -3731,6 +3738,44 @@ static int objcmd_history(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
  * are part of what the view shows, so "the fourth slot" has to keep meaning
  * the fourth slot whether or not anything is in it.
  */
+/**
+ * The object's symbol, as the game's data file writes it.
+ *
+ * Not object_char(), which is what the *display* would draw: that goes through
+ * x_char, and with a tile set chosen it is a tile index rather than a letter,
+ * so a window asking for it gets a box.  The paper doll wants the ASCII
+ * register whatever the map is drawn in, and d_char is where that lives.
+ */
+static wchar_t object_glyph(const struct object *obj)
+{
+	if (obj->kind->flavor) return obj->kind->flavor->d_char;
+	return obj->kind->d_char;
+}
+
+/**
+ * An equipment slot type, lower-cased: weapon, bow, ring, body_armor.
+ *
+ * The table in obj-gear.c is static and keeps only the mention strings, which
+ * are sentences ("On your right hand") rather than names.  These come from the
+ * same header, so a slot type gains a name here the moment it gains one there.
+ */
+static const char *slot_type_name(int type)
+{
+	static const char *names[] = {
+		#define EQUIP(a, b, c, d, e, f) #a,
+		#include "list-equip-slots.h"
+		#undef EQUIP
+	};
+	static char lower[32];
+	size_t i;
+
+	if (type < 0 || type >= (int)N_ELEMENTS(names)) return "";
+
+	my_strcpy(lower, names[type], sizeof(lower));
+	for (i = 0; lower[i]; i++) lower[i] = tolower((unsigned char)lower[i]);
+	return lower;
+}
+
 static struct object *gear_at(const char *where, int n, const char **slotname)
 {
 	if (slotname) *slotname = NULL;
@@ -3791,18 +3836,10 @@ static int objcmd_gear(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		return TCL_ERROR;
 	}
 
-	/* The three list views. */
-	if (objc == 2) {
-		Tcl_Obj *list;
+	/* The three list views.  Any other single word falls through. */
+	if (objc == 2 && gear_count(where) >= 0) {
 		int count = gear_count(where);
-
-		if (count < 0) {
-			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
-					"expected inventory, equipment or quiver, not: %s", where));
-			return TCL_ERROR;
-		}
-
-		list = Tcl_NewListObj(0, NULL);
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
 
 		for (i = 0; i < count; i++) {
 			const char *slotname = NULL;
@@ -3837,6 +3874,39 @@ static int objcmd_gear(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 					Tcl_NewIntObj(obj ? obj->number : 0));
 			Tcl_ListObjAppendElement(ip, row,
 					Tcl_NewIntObj(obj ? obj->weight * obj->number : 0));
+
+			/*
+			 * The item's own ASCII symbol, which is what the paper doll draws
+			 * instead of an icon sheet.  An empty slot has none; the window
+			 * fills that in from the slot's type, because "what glyph stands
+			 * for a ring slot" is a presentation question and not the game's.
+			 */
+			{
+				char glyph[8];
+				Tcl_Size n2 = obj
+					? Tcl_UniCharToUtf((int)object_glyph(obj), glyph) : 0;
+
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(glyph, n2));
+			}
+
+			/*
+			 * The slot's type and its body part, as the game names them:
+			 * "ring" and "right hand".  Between them they give a window both
+			 * the label to print and the answer to "are these two slots the
+			 * same kind of slot", without it having to guess from either.
+			 */
+			if (streq(where, "equipment")) {
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(
+						slot_type_name(player->body.slots[i].type), -1));
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(
+						player->body.slots[i].name
+							? player->body.slots[i].name : "", -1));
+			} else {
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj("", -1));
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj("", -1));
+			}
+
 			Tcl_ListObjAppendElement(ip, list, row);
 		}
 
@@ -3887,6 +3957,8 @@ static int objcmd_gear(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			table_put(ip, d, "value", Tcl_NewIntObj(object_value(obj, 1)));
 			table_put(ip, d, "known",
 					Tcl_NewBooleanObj(object_fully_known(obj)));
+			table_put(ip, d, "inscription", Tcl_NewStringObj(
+					obj->note ? quark_str(obj->note) : "", -1));
 
 			Tcl_SetObjResult(ip, d);
 			return TCL_OK;
@@ -3907,9 +3979,175 @@ static int objcmd_gear(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		}
 	}
 
+	/*
+	 * The three numbers the footer shows, in tenths of a pound, which is how
+	 * the game stores every weight: carried, the weight at which speed starts
+	 * to drop, and the most that can be carried at all.  Formatting is the
+	 * window's business.
+	 */
+	if (streq(where, "burden") && objc == 2) {
+		int cap = weight_limit(&player->state);
+		Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+
+		Tcl_ListObjAppendElement(ip, d,
+				Tcl_NewIntObj(player->upkeep->total_weight));
+		Tcl_ListObjAppendElement(ip, d, Tcl_NewIntObj(cap / 2));
+		Tcl_ListObjAppendElement(ip, d, Tcl_NewIntObj(cap));
+		Tcl_SetObjResult(ip, d);
+		return TCL_OK;
+	}
+
+	/*
+	 * Which equipment slots this item could go in, as slot numbers.
+	 *
+	 * The game's answer, not a type string compared in a script: wield_slot()
+	 * is what the wear command itself uses, and asking it means a window's
+	 * idea of "this fits here" cannot drift from the game's.  A ring names
+	 * both hands, because both are the same kind of slot.
+	 */
+	if (streq(where, "fits") && objc == 4) {
+		const char *view = Tcl_GetString(objv[2]);
+		struct object *obj;
+		Tcl_Obj *list;
+		int base;
+
+		if (Tcl_GetIntFromObj(ip, objv[3], &n) != TCL_OK) return TCL_ERROR;
+
+		obj = gear_at(view, n, NULL);
+		list = Tcl_NewListObj(0, NULL);
+		base = obj ? wield_slot(obj) : -1;
+
+		if (base >= 0) {
+			for (i = 0; i < (int)player->body.count; i++) {
+				if (slot_type_is(player, i, player->body.slots[base].type))
+					Tcl_ListObjAppendElement(ip, list, Tcl_NewIntObj(i));
+			}
+		}
+
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	/*
+	 * The inscription, which is a note and not a command: it changes nothing
+	 * about the object and costs no turn.  An empty string removes it, which
+	 * is a different command rather than an inscription of nothing.
+	 */
+	if (streq(where, "inscribe") && objc == 5) {
+		const char *view = Tcl_GetString(objv[2]);
+		const char *note;
+		struct object *obj;
+
+		if (Tcl_GetIntFromObj(ip, objv[3], &n) != TCL_OK) return TCL_ERROR;
+
+		obj = gear_at(view, n, NULL);
+		if (!obj) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("nothing at %s %d", view, n));
+			return TCL_ERROR;
+		}
+
+		if (!inkey_flag) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"the game is in the middle of something else", -1));
+			return TCL_ERROR;
+		}
+
+		note = Tcl_GetString(objv[4]);
+		if (*note) {
+			cmdq_push(CMD_INSCRIBE);
+			cmd_set_arg_item(cmdq_peek(), "item", obj);
+			cmd_set_arg_string(cmdq_peek(), "inscription", note);
+		} else {
+			cmdq_push(CMD_UNINSCRIBE);
+			cmd_set_arg_item(cmdq_peek(), "item", obj);
+		}
+
+		command_nudge();
+
+		return TCL_OK;
+	}
+
+	/*
+	 * Acting on an item, by view and position.
+	 *
+	 * These exist because angband_push cannot take one: a command argument of
+	 * type item wants a struct object *, and a script has no way to name one.
+	 * Resolving it here keeps object pointers on this side of the seam, where
+	 * they are safe from a script holding one across a turn.
+	 *
+	 * The game is still the one that acts.  Each of these pushes the command
+	 * the keyboard would have pushed, so the turn cost, the curse checks and
+	 * the messages are all the game's.
+	 */
+	if ((streq(where, "wield") || streq(where, "takeoff")
+				|| streq(where, "drop"))
+			&& (objc == 4 || objc == 5)) {
+		const char *view = Tcl_GetString(objv[2]);
+		struct object *obj;
+		int quantity = 1;
+
+		if (Tcl_GetIntFromObj(ip, objv[3], &n) != TCL_OK) return TCL_ERROR;
+		if (objc == 5 && Tcl_GetIntFromObj(ip, objv[4], &quantity) != TCL_OK)
+			return TCL_ERROR;
+
+		if (gear_count(view) < 0) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"expected inventory, equipment or quiver, not: %s", view));
+			return TCL_ERROR;
+		}
+
+		obj = gear_at(view, n, NULL);
+		if (!obj) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("nothing at %s %d", view, n));
+			return TCL_ERROR;
+		}
+
+		if (!inkey_flag) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"the game is in the middle of something else", -1));
+			return TCL_ERROR;
+		}
+
+		if (streq(where, "wield")) {
+			cmdq_push(CMD_WIELD);
+			cmd_set_arg_item(cmdq_peek(), "item", obj);
+
+			/*
+			 * A target slot, when the caller named one and something is
+			 * already in it.  do_cmd_wield() works out the slot itself from
+			 * wield_slot(), and only asks which one to displace when the
+			 * chosen slot is occupied and the item is a ring -- so this is
+			 * the one place a drop can say "that hand, not the other one".
+			 * Dropping a ring on an empty hand while the other hand is also
+			 * empty goes wherever the game prefers; there is no argument for
+			 * saying otherwise, and the ring is worn either way.
+			 */
+			if (objc == 5) {
+				struct object *held;
+				int slot = quantity;
+
+				if (slot >= 0 && slot < (int)player->body.count
+						&& (held = slot_object(player, slot)) != NULL)
+					cmd_set_arg_item(cmdq_peek(), "replace", held);
+			}
+		} else if (streq(where, "takeoff")) {
+			cmdq_push(CMD_TAKEOFF);
+			cmd_set_arg_item(cmdq_peek(), "item", obj);
+		} else {
+			cmdq_push(CMD_DROP);
+			cmd_set_arg_item(cmdq_peek(), "item", obj);
+			cmd_set_arg_number(cmdq_peek(), "quantity",
+					MIN(quantity, obj->number));
+		}
+
+		command_nudge();
+
+		return TCL_OK;
+	}
+
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
-			"expected inventory, equipment, quiver, info or lore, not: %s",
-			where));
+			"expected inventory, equipment, quiver, burden, info, lore,"
+			" fits, inscribe, wield, takeoff or drop, not: %s", where));
 
 	return TCL_ERROR;
 }

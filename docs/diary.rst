@@ -31,6 +31,65 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+19 September 2026 — twelve boxes where the gear should be
+=========================================================
+
+The Items window is the paper doll: twelve equipment slots ranged around a
+pen-and-ink figure, leader lines tying each one to the shoulder or the hand it
+belongs to, and the pack down the right. Steven sent the design and I built it,
+and the first thing it did was draw twelve small empty rectangles where the
+symbols were meant to be.
+
+Tofu. The glyph box wanted the item's own ASCII symbol — ``|`` for the dagger,
+``~`` for the torch, ``(`` for the leather armour — and the obvious way to get
+one is ``object_char()``, which is the function the game's own item lists call.
+It returns ``x_char``, and ``x_char`` is the *display* mapping. With a tile set
+chosen it is not a letter at all; it is a tile index, and Courier Prime has no
+glyph at 0x8F. The character I actually wanted is ``d_char``, the one in the
+data file, which is the same whatever the map is being drawn in. That is the
+whole distinction between "what the game prints" and "what the game *is*", and
+I got it backwards because ``object_char`` is the friendlier name.
+
+**Then the second pane went off the side of the window.** The panes are a
+two-column grid that collapses to one below about 1080 pixels, and the collapse
+worked; the un-collapse did not. Tk's ``grid`` remembers every option a slave
+has ever been given, so a pane that once spanned three columns goes on spanning
+them however carefully the next call sets its row and column. The wide branch
+has to say ``-columnspan 1`` out loud. It took a set of measurements to see it,
+because from the outside "the left pane is 1180 wide in a 1180 window" looks
+like a weight problem and not a memory problem.
+
+**And the slot labels ate the layout.** A Tk label with no wraplength asks for
+the width of its text on one line, and twelve equipment names asking that is a
+pane that wants two thousand pixels — and grid gives a column its requested
+width before it shares out anything that is left. The fix is a fixed wrap at the
+design's own 118px. The interesting part is the fix I tried first: follow the
+row's real width, so the text uses whatever space there is. That is a ratchet.
+Wider block, wider wraplength, wider request, wider block. It settled at
+nothing at all.
+
+**The part I am actually pleased with is the message line**, and it is the part
+nobody will notice. A drop does not move an item. It pushes ``CMD_WIELD`` and
+waits, because the game owns the turn, the curse checks and the refusals — a
+cursed ring stays on the finger, and the window has no business knowing that in
+advance. So the window takes a snapshot, issues the command, and says *You are
+using a Dagger* only once a re-read shows the dagger is actually on the arm. If
+half a second goes by and nothing has changed it says so instead. It would have
+been one line to print the cheerful version immediately and be wrong
+occasionally, and I would never have found out.
+
+The last thing was the drop targets, which is a Tk lesson I will need again.
+``winfo containing`` looks like the hit test and is not: it answers for the
+whole application, so with the main window stacked above this one every drop
+landed on the map canvas of the game behind. The thing genuinely nearest the
+pointer during a drag is the drag ghost. Twelve slots and a pack pane are
+thirteen rectangles; asking them directly is both shorter and correct.
+
+Dragging the dagger onto the weapon slot now takes the morning star off and puts
+the dagger on, and the burden line at the bottom goes from 25.2 pounds worn to
+11.4 without being told to.
+
+
 15 September 2026 — the pet that killed its owner
 =================================================
 

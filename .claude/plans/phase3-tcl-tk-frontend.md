@@ -1585,8 +1585,50 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 > "Dropped by a kobold shaman in town". Seventy-four bridge checks.
 >
 > Still to come in T7: the selection pane over `get_item_hook`, the transfer window, the
-> building window, the generic table and the paper doll. The Flags tab in T6 is no longer
-> blocked on the reads, only on `ui-entry.h`'s machinery.
+> building window and the generic table. The Flags tab in T6 is no longer blocked on the
+> reads, only on `ui-entry.h`'s machinery.
+
+> **The Items window — the paper doll and the pack.**
+> [lib/tcl/items.tcl](../../lib/tcl/items.tcl), to the handoff in
+> `.claude/plans/paper_doll`. Twelve equipment slots ranged around a pen-and-ink figure,
+> each tied to it by a leader line; the pack on the right in the game's own order and with
+> the game's own letters; an inscription bar, a message line, the two weight rules and the
+> footer's `burden carried / slow-at / capacity`.
+>
+> Five things decided while building it, each of which is a rule for the windows after it:
+>
+> - **The game acts; the window asks and re-reads.** A drop pushes `CMD_WIELD`,
+>   `CMD_TAKEOFF` or `CMD_DROP` and then waits. The message line reports only what a re-read
+>   confirms, because a queued command can be refused — a cursed ring stays on the finger —
+>   and a window that announced the wear before the wear happened would be lying about a
+>   turn that never occurred.
+> - **`angband_push` still refuses `item`, and that is still right.** These go through
+>   `angband_gear wield|takeoff|drop|inscribe <view> <n>`, which resolves the
+>   `struct object *` inside C from a view and a position. A script never holds an object
+>   pointer, so it cannot hold a stale one across a turn.
+> - **"Does this fit here" is `wield_slot()`'s answer**, handed over as
+>   `angband_gear fits`, and never a type string compared in Tcl. It is the predicate the
+>   wear command itself uses, so the window's idea of a legal drop cannot drift from the
+>   game's.
+> - **The glyph is `d_char`, not `object_char()`.** `object_char()` goes through `x_char`,
+>   which with a tile set chosen is a tile index — so the paper doll drew twelve boxes. The
+>   ASCII register is the design's, and it has to hold whatever the map is drawn in.
+> - **Hit-testing is geometry, not `winfo containing`.** `winfo containing` answers for the
+>   whole application, so with the main window stacked above this one every drop landed on
+>   the map canvas; and the thing nearest the pointer during a drag is the drag ghost. A
+>   dozen targets are a dozen rectangles.
+>
+> Three places where Tk cannot do what the design asks, all noted beside the code: a refused
+> drop target is tinted rather than dash-outlined, because a Tk frame border cannot be
+> dashed; the slot name's wrap width is fixed at the design's 118px flex basis rather than
+> followed from the row, because a wraplength set from a widget's own width is a ratchet; and
+> `grid` remembers `-columnspan`, so both branches of the reflow set it explicitly or the
+> second pane lays out off the side of the window.
+>
+> Not done, and the design says so itself: the accessibility fallback that would make slots
+> and rows focusable controls with activate-to-move. The half of that note which matters here
+> *is* done — the keyboard commands are wired and remain primary, and clicking a row selects
+> it — but there is no Tab-and-Return path through the doll.
 
 ---
 

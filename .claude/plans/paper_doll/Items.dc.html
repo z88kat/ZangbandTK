@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/classical-e27a4b3d-6c77-41a5-b2cb-f5f2851a486c/styles.css">
+<script src="_ds/classical-e27a4b3d-6c77-41a5-b2cb-f5f2851a486c/_ds_bundle.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Lora:ital,wght@0,400;0,500;1,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: var(--color-neutral-200); }
+  a { color: var(--color-accent-700); }
+  a:hover { color: var(--color-accent); }
+</style>
+</helmet>
+
+<div style="min-height:100%;padding:var(--space-6);background:var(--color-neutral-200);font-family:var(--font-body)">
+<div style="max-width:1180px;margin:0 auto;background:var(--color-bg);border:1px solid var(--color-neutral-400);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);overflow:hidden">
+
+  <div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) var(--space-4);border-bottom:1px solid var(--color-divider);background:var(--color-neutral-100)">
+    <span style="font-family:'Courier Prime',monospace;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--color-neutral-600)">Zangband</span>
+    <span style="flex:1;height:1px;background:var(--color-divider)"></span>
+    <span style="font-family:var(--font-heading);font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-accent-700)">Items</span>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-6);border-bottom:1px solid var(--color-divider)">
+    <span style="font-family:'Courier Prime',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--color-neutral-600)">Inscription</span>
+    <input value="{{ inscription }}" onChange="{{ onInscribe }}" placeholder="none" style="flex:1 1 240px;min-width:0;padding:6px 10px;font-family:'Courier Prime',monospace;font-size:13px;color:var(--color-text);background:var(--color-bg);border:1px solid var(--color-neutral-400);border-radius:var(--radius-sm);outline:none" style-focus="border-color:var(--color-accent);box-shadow:0 0 0 2px var(--color-accent-100)" />
+    <span style="font-family:var(--font-body);font-style:italic;font-size:13px;color:var(--color-neutral-600)">Drag an item onto a slot to wield or wear it; drag it off to stow it.</span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(520px,1fr));gap:0">
+
+    <section onDragOver="{{ onSlotDragOver }}" onDragLeave="{{ onSlotDragLeave }}" onDrop="{{ onSlotDrop }}" onDragStart="{{ onSlotDragStart }}" onDragEnd="{{ onDragEnd }}" style="padding:var(--space-6);border-right:1px solid var(--color-divider)">
+      <div style="display:flex;align-items:center;gap:var(--space-2);padding-bottom:var(--space-1);border-bottom:1px solid var(--color-accent)">
+        <h6 style="margin:0;color:var(--color-accent-700)">Equipment</h6>
+        <span style="flex:1"></span>
+        <span style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--color-neutral-600)">i</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:minmax(148px,1fr) auto minmax(148px,1fr);align-items:center;gap:var(--space-3);margin-top:var(--space-5)">
+
+        <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+          <div data-slot="head" draggable="true" style="display:flex;align-items:center;flex-direction:row-reverse;gap:var(--space-2)">
+            <span style="flex:1;min-width:10px;height:1px;background:var(--color-divider)"></span>
+            <div style="flex:none;width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--color-neutral-400);border-radius:var(--radius-sm);background:var(--color-bg);font-family:'Courier Prime',monospace;font-size:22px;color:var(--color-accent-700)">{{ headGlyph }}</div>
+            <div style="flex:1 1 118px;min-width:88px;text-align:right">
+              <div style="font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;color:var(--color-neutral-600)">Head</div>
+              <div style="font-size:13px;line-height:1.3;color:var(--color-text);text-wrap:pretty">{{ headName }}</div>
+            </div>
+          </div>
+          <div data-slot="neck" draggable="true" style="display:flex;align-items:center;flex-direction:row-reverse;gap:var(--space-2)">
+            <span style="flex:1;min-width:10px;height:1px;background:var(--color-divider)"></span>
+            <div style="flex:none;width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--color-neutral-400);border-radius:var(--radius-sm);background:var(--color-bg);font-family:'Courier Prime',monospace;font-size:22px;color:var(--color-accent-700)">{{ neckGlyph }}</div>
+            <div style="flex:1 1 118px;min-width:88px;text-align:right">
+              <div style="font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;color:var(--color-neutral-600)">Neck</div>
+              <div style="font-size:13px;line-height:1.3;color:var(--color-text);text-wrap:pretty">{{ neckName }}</div>
+            </div>
+          </div>
+          <div data-slot="weapon" draggable="true" style="display:flex;align-items:center;flex-direction:row-reverse;gap:var(--space-2)">
+            <span style="flex:1;min-width:10px;height:1px;background:var(--color-divider)"></span>
+            <div style="flex:none;width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--color-neutral-400);border-radius:var(--radius-sm);background:var(--color-bg);font-family:'Courier Prime',monospace;font-size:22px;color:var(--color-accent-700)">{{ weaponGlyph }}</div>
+            <div style="flex:1 1 118px;min-width:88px;text-align:right">
+              <div style="font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;color:var(--color-neutral-600)">Wielding</div>
+              <div style="font-size:13px;line-height:1.3;color:var(--color-text);text-wrap:pretty">{{ weaponName }}</div>
+            </div>
+          </div>
+          <div data-slot="bow" draggable="true" style="display:flex;align-items:center;flex-direction:row-reverse;gap:var(--space-2)">
+            <span style="flex:1;min-width:10px;height:1px;background:var(--color-divider)"></span>
+            <div style="flex:none;width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--color-neutral-400);border-radius:var(--radius-sm);background:var(--color-bg);font-family:'Courier Prime',monospace;font-size:22px;color:var(--color-accent-700)">{{ bowGlyph }}</div>
+            <div style="flex:1 1 118px;min-width:88px;text-align:right">
+              <div style="font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;color:var(--color-neutral-600)">Shooting</div>
+              <div style="font-size:13px;line-height:1.3;color:var(--color-text);text-wrap:pretty">{{ bowName }}</div>
+            </div>
+          </div>
+          <div data-slot="ringRight" draggable="true" style="display:flex;align-items:center;flex-direction:row-reverse;gap:var(--space-2)">
+            <span style="flex:1;min-width:10px;height:1px;background:var(--color-divider)"></span>
+            <div style="flex:none;width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--color-neutral-400);border-radius:var(--radius-sm);background:var(--color-bg);font-family:'Courier Prime',monospace;font-size:22px;color:var(--color-accent-700)">{{ ringRightGlyph }}</div>
+            <div style="flex:1 1 118px;min-width:88px;text-align:right">
+              <div style="font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;color:var(--color-neutral-600)">Right hand</div>
+              <div style="font-size:13px;line-height:1.3;color:var(--color-text);text-wrap:pretty">{{ ringRightName }}</div>
+            </div>
+          </div>
+          <div data-slot="boots" draggable="true" style="display:flex;align-items:center;flex-direction:row-reverse;gap:var(--space-2)">
+            <span style="flex:1;min-width:10px;height:1px;background:var(--color-divider)"></span>
+            <div style="flex:none;width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--color-neutral-400);border-radius:var(--radius-sm);background:var(--color-bg);font-family:'Courier Prime',monospace;font-size:22px;color:var(--color-accent-700)">{{ bootsGlyph }}</div>
+            <div style="flex:1 1 118px;min-width:88px;text-align:right">
+              <div style="font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;color:var(--color-neutral-600)">Feet</div>
+              <div style="font-size:13px;line-height:1.3;color:var(--color-text);text-wrap:pretty">{{ bootsName }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="flex:none;width:118px;display:grid;place-items:center;padding:var(--space-2) 0">
+          <svg viewBox="0 0 140 330" width="118" height="278" fill="none" stroke="#2d2b2b" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-label="Pen-and-ink figure of the adventurer">
+            <g stroke="none" fill="#eae7e7">
+              <path d="M46 82 q-20 40 -25 104 -4 54 -4 96 l28 3 q-3 -66 5 -116 7 -50 14 -80 z"></path>
+              <path d="M94 82 q20 40 25 104 4 54 4 96 l-28 3 q3 -66 -5 -116 -7 -50 -14 -80 z"></path>
+            </g>
+            <g stroke="none" fill="#f8f4f4">
+              <path d="M70 15 q20 0 20 25 0 26 -20 28 -20 -2 -20 -28 0 -25 20 -25 z"></path>
+              <path d="M50 84 q20 -12 40 0 l9 30 -3 40 h-52 l-3 -40 z"></path>
+              <path d="M47 154 h46 l7 42 h-60 z"></path>
+              <path d="M56 196 h11 l1 92 h-13 z M73 196 h11 l1 92 h-13 z"></path>
+            </g>
+            <g stroke="#7d7979" stroke-width="1">
+              <path d="M42 118 l-11 24 M40 146 l-12 24 M38 176 l-13 24 M37 208 l-13 22 M36 240 l-12 20 M36 268 l-12 16"></path>
+              <path d="M98 118 l11 24 M100 146 l12 24 M102 176 l13 24 M103 208 l13 22 M104 240 l12 20 M104 268 l12 16"></path>
+            </g>
+            <path d="M46 82 q-20 40 -25 104 -4 54 -4 96 l28 3"></path>
+            <path d="M94 82 q20 40 25 104 4 54 4 96 l-28 3"></path>
+            <path d="M50 38 q0 -27 20 -27 20 0 20 27"></path>
+            <path d="M50 38 q-4 18 2 26 M90 38 q4 18 -2 26"></path>
+            <path d="M50 42 q4 26 20 26 16 0 20 -26"></path>
+            <path d="M58 44 q4 -4 9 0 M73 44 q5 -4 9 0"></path>
+            <path d="M70 50 v8 M63 62 q7 5 14 0"></path>
+            <path d="M60 68 q10 7 20 0 l12 7 q11 5 13 21 l-4 44" ></path>
+            <path d="M60 68 l-12 7 q-11 5 -13 21 l4 44"></path>
+            <path d="M39 140 q-4 14 4 19 9 4 12 -6 l2 -14"></path>
+            <path d="M101 140 q4 14 -4 19 -9 4 -12 -6 l-2 -14"></path>
+            <path d="M43 112 q27 10 54 0" stroke="#7d7979" stroke-width="1"></path>
+            <path d="M70 78 v72" stroke="#7d7979" stroke-width="1"></path>
+            <path d="M44 150 h52 v14 h-52 z"></path>
+            <path d="M63 150 h14 v14 h-14 z" stroke="#7d7979" stroke-width="1"></path>
+            <path d="M46 164 l-5 32 q29 9 58 0 l-5 -32"></path>
+            <path d="M55 196 l1 82 M69 198 v80 M84 196 l-1 82"></path>
+            <path d="M58 226 q12 5 24 0" stroke="#7d7979" stroke-width="1"></path>
+            <path d="M56 278 q7 4 13 0 M71 278 q6 4 13 0"></path>
+            <path d="M56 278 l-4 24 q10 6 21 2 l-3 -26 M84 278 l4 24 q-10 6 -21 2 l3 -26"></path>
+            <path d="M52 302 h22 M66 302 h22" stroke="#7d7979" stroke-width="1"></path>
+          </svg>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:var(--space-3)">
+          <div data-slot="light" draggable="true" style="display:flex;align-items:center;gap:var(--space-2)">
+            <span style="flex:1;min-width:10px;height:1px;background:var(--color-divider)"></span>
+            <div style="flex:none;width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--color-neutral-400);border-radius:var(--radius-sm);background:var(--color-bg);font-family:'Courier Prime',monospace;font-size:22px;color:var(--color-accent-700)">{{ lightGlyph }}</div>
+            <div style="flex:1 1 118px;min-width:88px">
+              <div style="font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;color:var(--color-neutral-600)">Light</div>
+              <div style="font-size:13px;line-height:1.3;color:var(--color-text);text-wrap:pretty">{{ lightName }}</div>
+            </div>
+          </div>
+          <div data-slot="body" draggable="true" style="display:flex;align-items:center;gap:var(--space-2)">
+            <span style="flex:1;min-width:10px;height:1px;background:var(--color-divider)"></span>
+            <div style="flex:none;width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--color-neutral-400);border-radius:var(--radius-sm);background:var(--color-bg);font-family:'Courier Prime',monospace;font-size:22px;color:var(--color-accent-700)">{{ bodyGlyph }}</div>
+            <div style="flex:1 1 118px;min-width:88px">
+              <div style="font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;color:var(--color-neutral-600)">Body</div>
+              <div style="font-size:13px;line-height:1.3;color:var(--color-text);text-wrap:pretty">{{ bodyName }}</div>
+            </div>
+          </div>
+          <div data-slot="cloak" draggable="true" style="display:flex;align-items:center;gap:var(--space-2)">
+            <span style="flex:1;min-width:10px;height:1px;background:var(--color-divider)"></span>
+            <div style="flex:none;width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--color-neutral-400);border-radius:var(--radius-sm);background:var(--color-bg);font-family:'Courier Prime',monospace;font-size:22px;color:var(--color-accent-700)">{{ cloakGlyph }}</div>
+            <div style="flex:1 1 118px;min-width:88px">
+              <div style="font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;color:var(--color-neutral-600)">Cloak</div>
+              <div style="font-size:13px;line-height:1.3;color:var(--color-text);text-wrap:pretty">{{ cloakName }}</div>
+            </div>
+          </div>
+          <div data-slot="shield" draggable="true" style="display:flex;align-items:center;gap:var(--space-2)">
+            <span style="flex:1;min-width:10px;height:1px;background:var(--color-divider)"></span>
+            <div style="flex:none;width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--color-neutral-400);border-radius:var(--radius-sm);background:var(--color-bg);font-family:'Courier Prime',monospace;font-size:22px;color:var(--color-accent-700)">{{ shieldGlyph }}</div>
+            <div style="flex:1 1 118px;min-width:88px">
+              <div style="font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;color:var(--color-neutral-600)">Shield arm</div>
+              <div style="font-size:13px;line-height:1.3;color:var(--color-text);text-wrap:pretty">{{ shieldName }}</div>
+            </div>
+          </div>
+          <div data-slot="ringLeft" draggable="true" style="display:flex;align-items:center;gap:var(--space-2)">
+            <span style="flex:1;min-width:10px;height:1px;background:var(--color-divider)"></span>
+            <div style="flex:none;width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--color-neutral-400);border-radius:var(--radius-sm);background:var(--color-bg);font-family:'Courier Prime',monospace;font-size:22px;color:var(--color-accent-700)">{{ ringLeftGlyph }}</div>
+            <div style="flex:1 1 118px;min-width:88px">
+              <div style="font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;color:var(--color-neutral-600)">Left hand</div>
+              <div style="font-size:13px;line-height:1.3;color:var(--color-text);text-wrap:pretty">{{ ringLeftName }}</div>
+            </div>
+          </div>
+          <div data-slot="gloves" draggable="true" style="display:flex;align-items:center;gap:var(--space-2)">
+            <span style="flex:1;min-width:10px;height:1px;background:var(--color-divider)"></span>
+            <div style="flex:none;width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--color-neutral-400);border-radius:var(--radius-sm);background:var(--color-bg);font-family:'Courier Prime',monospace;font-size:22px;color:var(--color-accent-700)">{{ glovesGlyph }}</div>
+            <div style="flex:1 1 118px;min-width:88px">
+              <div style="font-family:'Courier Prime',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;color:var(--color-neutral-600)">Hands</div>
+              <div style="font-size:13px;line-height:1.3;color:var(--color-text);text-wrap:pretty">{{ glovesName }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:baseline;gap:var(--space-3);margin-top:var(--space-5);padding-top:var(--space-2);border-top:1px solid var(--color-divider);font-family:'Courier Prime',monospace;font-size:12px;color:var(--color-neutral-700)">
+        <span>Worn weight</span>
+        <span style="flex:1;height:1px;background:var(--color-divider)"></span>
+        <span style="font-feature-settings:'tnum';color:var(--color-text)">{{ wornWeight }} lb</span>
+      </div>
+    </section>
+
+    <section onDragOver="{{ onBagDragOver }}" onDragLeave="{{ onBagDragLeave }}" onDrop="{{ onBagDrop }}" onDragStart="{{ onBagDragStart }}" onDragEnd="{{ onDragEnd }}" style="padding:var(--space-6)">
+      <div style="display:flex;align-items:center;gap:var(--space-2);padding-bottom:var(--space-1);border-bottom:1px solid var(--color-accent)">
+        <h6 style="margin:0;color:var(--color-accent-700)">Inventory</h6>
+        <span style="flex:1"></span>
+        <span style="font-family:'Courier Prime',monospace;font-size:11px;color:var(--color-neutral-600)">ii</span>
+      </div>
+
+      <div style="margin-top:var(--space-3)">
+        <sc-for list="{{ bag }}" as="item" hint-placeholder-count="5">
+          <div data-idx="{{ $index }}" draggable="true" style="display:grid;grid-template-columns:auto auto 1fr auto;align-items:baseline;gap:var(--space-3);padding:9px 6px;border-bottom:1px solid var(--color-divider);cursor:grab" style-hover="background:var(--color-accent-100)">
+            <span style="font-family:'Courier Prime',monospace;font-size:12px;color:var(--color-neutral-600)">{{ item.key }}</span>
+            <span style="font-family:'Courier Prime',monospace;font-size:18px;line-height:1;color:var(--color-accent-700)">{{ item.glyph }}</span>
+            <span style="font-size:14px;line-height:1.35;color:var(--color-text);text-wrap:pretty">{{ item.name }}</span>
+            <span style="font-family:var(--font-heading);font-size:15px;font-feature-settings:'tnum';color:var(--color-neutral-600)">{{ item.weightLabel }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ bagEmpty }}" hint-placeholder-val="{{ false }}">
+        <p style="margin:var(--space-4) 0 0;font-size:13px;font-style:italic;color:var(--color-neutral-600)">Your pack is empty.</p>
+      </sc-if>
+
+      <p style="margin:var(--space-4) 0 0;font-size:13px;font-style:italic;line-height:1.6;color:var(--color-neutral-700);text-wrap:pretty">{{ hint }}</p>
+
+      <div style="display:flex;align-items:baseline;gap:var(--space-3);margin-top:var(--space-5);padding-top:var(--space-2);border-top:1px solid var(--color-divider);font-family:'Courier Prime',monospace;font-size:12px;color:var(--color-neutral-700)">
+        <span>{{ bagCountLabel }}</span>
+        <span style="flex:1;height:1px;background:var(--color-divider)"></span>
+        <span style="font-feature-settings:'tnum';color:var(--color-text)">{{ bagWeight }} lb</span>
+      </div>
+    </section>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-6);border-top:1px solid var(--color-divider);background:var(--color-neutral-100);font-family:'Courier Prime',monospace;font-size:12px;color:var(--color-neutral-700)">
+    <span><span style="color:var(--color-accent-700)">[esc]</span> close</span>
+    <span><span style="color:var(--color-accent-700)">[w]</span> wear or wield</span>
+    <span><span style="color:var(--color-accent-700)">[t]</span> take off</span>
+    <span><span style="color:var(--color-accent-700)">[d]</span> drop</span>
+    <span style="flex:1"></span>
+    <span style="font-feature-settings:'tnum'">burden {{ burden }} / 90.0 / 150.0 lb</span>
+  </div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1240,&quot;height&quot;:900}}">
+const SLOTS = [
+  ["weapon", "weapon", "Wielding"], ["bow", "bow", "Shooting"],
+  ["ringRight", "ring", "Right hand"], ["ringLeft", "ring", "Left hand"],
+  ["neck", "amulet", "Neck"], ["light", "light", "Light"],
+  ["body", "body", "Body"], ["cloak", "cloak", "Cloak"],
+  ["shield", "shield", "Shield arm"], ["head", "head", "Head"],
+  ["gloves", "gloves", "Hands"], ["boots", "boots", "Feet"]
+];
+const EMPTY = { weapon: "\u007C", bow: "\u007D", ring: "=", amulet: '"', light: "~", body: "(", cloak: "(", shield: ")", head: "]", gloves: "]", boots: "]" };
+
+class Component extends DCLogic {
+  state = {
+    inscription: "",
+    hint: "The pack is sorted the way the game sorts it \u2014 wands before scrolls, scrolls before potions.",
+    slots: {
+      weapon: { glyph: "\u007C", name: "a Main Gauche (1d5) (+0,+0)", weight: 3.0, type: "weapon" },
+      body: { glyph: "(", name: "Soft Leather Armour [8]", weight: 8.0, type: "body" },
+      light: { glyph: "~", name: "a Wooden Torch (2500 turns)", weight: 3.0, type: "light" },
+      bow: null, ringRight: null, ringLeft: null, neck: null,
+      cloak: null, shield: null, head: null, gloves: null, boots: null
+    },
+    bag: [
+      { glyph: ",", name: "5 Rations of Food", weight: 2.5, type: "food" },
+      { glyph: "!", name: "3 Flasks of oil", weight: 3.0, type: "potion" },
+      { glyph: "!", name: "2 Potions of Cure Light Wounds", weight: 0.8, type: "potion" },
+      { glyph: "?", name: "a Scroll of Word of Recall", weight: 0.5, type: "scroll" },
+      { glyph: "-", name: "a Wand of Magic Missile (12 charges)", weight: 0.3, type: "wand" }
+    ]
+  };
+
+  drag = null;
+
+  fits(item, slot) {
+    const def = SLOTS.find(s => s[0] === slot);
+    if (!def) return false;
+    if (def[1] === "ring") return item.type === "ring";
+    return item.type === def[1];
+  }
+
+  lit(el, ok) {
+    if (!el) return;
+    el.style.background = ok ? "var(--color-accent-100)" : "rgba(160,111,36,.07)";
+    el.style.outline = ok ? "1px solid var(--color-accent)" : "1px dashed var(--color-neutral-400)";
+    el.style.outlineOffset = "3px";
+  }
+  unlit(el) {
+    if (!el) return;
+    el.style.background = "";
+    el.style.outline = "";
+    el.style.outlineOffset = "";
+  }
+
+  renderVals() {
+    const s = this.state;
+    const keys = "abcdefghijklmnopqrstuvwxyz";
+    const bag = s.bag.map((it, i) => ({
+      ...it, key: keys[i] + ")",
+      weightLabel: it.weight.toFixed(1)
+    }));
+    const worn = Object.values(s.slots).reduce((t, it) => t + (it ? it.weight : 0), 0);
+    const carried = s.bag.reduce((t, it) => t + it.weight, 0);
+
+    const vals = {
+      inscription: s.inscription,
+      hint: s.hint,
+      bag,
+      bagEmpty: bag.length === 0,
+      bagCountLabel: bag.length === 1 ? "1 item" : bag.length + " items",
+      bagWeight: carried.toFixed(1),
+      wornWeight: worn.toFixed(1),
+      burden: (worn + carried).toFixed(1),
+      onInscribe: e => this.setState({ inscription: e.target.value }),
+      onDragEnd: () => { this.drag = null; },
+
+      onSlotDragStart: e => {
+        const row = e.target.closest("[data-slot]");
+        if (!row) return;
+        const slot = row.getAttribute("data-slot");
+        if (!this.state.slots[slot]) { e.preventDefault(); return; }
+        this.drag = { from: "slot", slot };
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", slot);
+      },
+      onSlotDragOver: e => {
+        const row = e.target.closest("[data-slot]");
+        if (!row || !this.drag) return;
+        const slot = row.getAttribute("data-slot");
+        const item = this.drag.from === "bag" ? this.state.bag[this.drag.index] : this.state.slots[this.drag.slot];
+        if (!item) return;
+        e.preventDefault();
+        this.lit(row, this.fits(item, slot));
+      },
+      onSlotDragLeave: e => {
+        const row = e.target.closest("[data-slot]");
+        if (row && !row.contains(e.relatedTarget)) this.unlit(row);
+      },
+      onSlotDrop: e => {
+        const row = e.target.closest("[data-slot]");
+        if (!row || !this.drag) return;
+        e.preventDefault();
+        this.unlit(row);
+        const slot = row.getAttribute("data-slot");
+        const d = this.drag;
+        this.drag = null;
+        this.setState(st => {
+          const slots = { ...st.slots };
+          let bagNext = st.bag.slice();
+          let item;
+          if (d.from === "bag") { item = bagNext[d.index]; } else { item = slots[d.slot]; }
+          if (!item) return null;
+          if (!this.fits(item, slot)) return { hint: "You cannot wear " + item.name.replace(/^(a|an|\d+) /, "") + " there." };
+          if (d.from === "bag") bagNext.splice(d.index, 1);
+          else slots[d.slot] = null;
+          const displaced = slots[slot];
+          slots[slot] = item;
+          if (displaced) bagNext = bagNext.concat([displaced]);
+          return { slots, bag: bagNext, hint: "You are using " + item.name + "." };
+        });
+      },
+
+      onBagDragStart: e => {
+        const row = e.target.closest("[data-idx]");
+        if (!row) return;
+        this.drag = { from: "bag", index: Number(row.getAttribute("data-idx")) };
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", row.getAttribute("data-idx"));
+      },
+      onBagDragOver: e => {
+        if (!this.drag || this.drag.from !== "slot") return;
+        e.preventDefault();
+        this.lit(e.currentTarget, true);
+      },
+      onBagDragLeave: e => {
+        if (!e.currentTarget.contains(e.relatedTarget)) this.unlit(e.currentTarget);
+      },
+      onBagDrop: e => {
+        this.unlit(e.currentTarget);
+        const d = this.drag;
+        this.drag = null;
+        if (!d || d.from !== "slot") return;
+        e.preventDefault();
+        this.setState(st => {
+          const item = st.slots[d.slot];
+          if (!item) return null;
+          const slots = { ...st.slots, [d.slot]: null };
+          return { slots, bag: st.bag.concat([item]), hint: "You were using " + item.name + "." };
+        });
+      }
+    };
+
+    SLOTS.forEach(([slot, type]) => {
+      const it = s.slots[slot];
+      vals[slot + "Glyph"] = it ? it.glyph : EMPTY[type];
+      vals[slot + "Name"] = it ? it.name : "\u2014";
+    });
+    return vals;
+  }
+}
+</script>
+</body>
+</html>

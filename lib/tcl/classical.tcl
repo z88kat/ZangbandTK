@@ -124,6 +124,10 @@ proc classical::init_fonts {} {
         {strip      head -14 normal roman}
         {history    mono -14 normal roman}
         {section    head -13 bold   roman}
+        {glyph      mono -22 normal roman}
+        {glyphsm    mono -18 normal roman}
+        {amount     head -15 normal roman}
+        {item       body -14 normal roman}
         {label      body -13 normal roman}
         {note       body -13 normal italic}
         {footer     mono -12 normal roman}
