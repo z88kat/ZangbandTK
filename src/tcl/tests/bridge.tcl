@@ -120,9 +120,14 @@ check "the menu bar skips the hidden group" {
 # key equivalent as the capital, so "Throw an item", which answers to v, was
 # advertised as V -- and V is Version info.
 check "a command's key is shown exactly as it must be typed" {
-	list [commands_label "Throw an item" v] [commands_label "Version info" V] \
-		[commands_label "Look around" ""]
-} {{Throw an item  [v]} {Version info  [V]} {Look around}}
+	# Padded to a column, so compare what matters: the key, in its own case,
+	# at the end, and nothing at all when there is no key.
+	# Compared, not globbed: string match reads [v] as a character class.
+	set a [commands_label "Throw an item" v 400]
+	set b [commands_label "Version info" V 400]
+	list [string range $a end-2 end] [string range $b end-2 end] \
+		[commands_label "Look around" "" 400]
+} {{[v]} {[V]} {Look around}}
 
 check "a group name becomes a legal menu path" {
 	list [commands_menu_path "Action commands"] [commands_menu_path Items]

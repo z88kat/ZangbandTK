@@ -42,6 +42,41 @@ proc commands_label {label key} {
     return "$label  \[$key\]"
 }
 
+# The key, on the right, in the menu's own font.
+#
+# Two ways of doing this were tried and photographed before this one.
+#
+# -accelerator is the obvious answer and gives a real right-hand column, but
+# Tk turns it into an NSMenuItem keyEquivalent and AppKit renders that
+# upper-cased: l, o, c, h and v all came out as capitals, and V is a different
+# command from v in this game.  Substituting MATHEMATICAL MONOSPACE letters,
+# which have no uppercase mapping, defeated the upper-casing and rendered as
+# tofu -- the menu font has no glyphs for them.
+#
+# So the key stays in the label, and the label is padded to a common width with
+# spaces measured in TkMenuFont.  A proportional font cannot be aligned to the
+# pixel this way, but it lands within a space's width, which reads as a column.
+proc commands_pad {labels} {
+    set widest 0
+    foreach l $labels {
+        set w [font measure TkMenuFont $l]
+        if {$w > $widest} { set widest $w }
+    }
+    return [expr {$widest + [font measure TkMenuFont "  "]}]
+}
+
+proc commands_label {label key target} {
+    if {$key eq ""} { return $label }
+
+    set space [font measure TkMenuFont " "]
+    set pad ""
+    set w [font measure TkMenuFont $label]
+    while {$w + [font measure TkMenuFont $pad] < $target && [string length $pad] < 80} {
+        append pad " "
+    }
+    return "$label$pad\[$key\]"
+}
+
 proc commands_menu_path {name} {
     # A menu path has to be a legal Tk pathname, and the group names have
     # spaces in them.
@@ -90,9 +125,15 @@ proc commands_build {} {
         incr at
         lappend commands(menus) [list $group $m]
 
+        # One column width per menu, from its own widest label.
+        set labels {}
+        foreach row $byname($group) { lappend labels [lindex $row 3] }
+        set target [commands_pad $labels]
+        set commands(target,$group) $target
+
         foreach row $byname($group) {
             lassign $row gidx g idx label key enabled level code
-            $m add command -label [commands_label $label $key] \
+            $m add command -label [commands_label $label $key $target] \
                 -command [list angband_command $gidx $idx]
         }
     }
@@ -115,7 +156,7 @@ proc commands_refresh {group} {
         if {$g ne $group} continue
         if {$level != 0} continue
         $m entryconfigure $i -state [expr {$enabled ? "normal" : "disabled"}] \
-            -label [commands_label $label $key]
+            -label [commands_label $label $key $commands(target,$group)]
         incr i
     }
 }
