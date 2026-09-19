@@ -120,6 +120,7 @@ deaths=0
 capped=0
 learned_total=0
 cast_total=0
+shops_total=0
 
 for class in $(echo "$classes" | tr ',' ' '); do
 	ZTK_HEADLESS_CLASS="$class"
@@ -154,6 +155,8 @@ for class in $(echo "$classes" | tr ',' ' '); do
 		# that took an afternoon of tracing. `borg_prepared()` says it in
 		# one word -- "5 Food", "30 hp", "2 cure" -- so the log says it too.
 		al=$(printf '%s\n' "$line" | sed -n 's/.*allowed=\(-*[0-9]*\).*/\1/p')
+		sh=$(printf '%s\n' "$line" | sed -n 's/.*shops=\([0-9]*\).*/\1/p')
+		shops_total=$(expr ${shops_total:-0} + ${sh:-0})
 		bl=$(printf '%s\n' "$line" | sed -n 's/.*blocked="\([^"]*\)".*/\1/p')
 		blocked_tally="$blocked_tally$bl
 "
@@ -178,8 +181,8 @@ for class in $(echo "$classes" | tr ',' ' '); do
 		# stopped early -- a run that went as deep as it was let go needs no
 		# explanation.
 		if [ "${al:-0}" -le 4 ] 2>/dev/null; then
-			printf '    allowed to depth %s, held back by: %s\n' \
-				"${al:--}" "${bl:-unknown}"
+			printf '    allowed to depth %s, held back by: %s; shops reached %s\n' \
+				"${al:--}" "${bl:-unknown}" "${sh:--}"
 		fi
 
 		# What the run exercised, which is the point of running it at all.
@@ -200,7 +203,8 @@ echo
 echo "borg-progress: $runs runs, $sum_depth depth and $sum_level levels in total,"
 echo "borg-progress: deepest $best_depth, highest $best_level,"
 echo "borg-progress: $deaths died, $capped capped, $broken broken,"
-echo "borg-progress: $learned_total spells learned, $cast_total cast"
+echo "borg-progress: $learned_total spells learned, $cast_total cast,"
+echo "borg-progress: $shops_total shops reached"
 echo "borg-progress: on $platform"
 
 # What stopped the fleet, counted. A single cause behind most of the runs is a

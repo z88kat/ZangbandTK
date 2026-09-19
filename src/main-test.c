@@ -45,6 +45,7 @@
 #include "borg/borg-flow-kill.h"
 #include "borg/borg-io.h"
 #include "borg/borg-flow-misc.h"
+#include "borg/borg-think.h"
 #include "borg/borg-store.h"
 #include "borg/borg-item.h"
 #include "borg/borg-inventory.h"
@@ -86,6 +87,28 @@ static uint32_t run_seed = 0;
 
 /* How many times the character died during the run (BRG-22). */
 static int run_deaths = 0;
+
+/**
+ * How many distinct shops this run has been inside (BRG-13).
+ *
+ * The bitmask rather than the visit count, because a borg that walks into the
+ * same General Store forty times has reached one shop.  This is the figure a
+ * reach fix is measured against: everything else about a run moves for a dozen
+ * reasons, and "held back by 5 Food" reads the same whether no shop was found
+ * or one was found and was too expensive.
+ */
+static int shops_entered_count(void)
+{
+	uint32_t m = borg_shops_entered;
+	int n = 0;
+
+	while (m) {
+		n += (int) (m & 1u);
+		m >>= 1;
+	}
+
+	return n;
+}
 
 /**
  * Turns requested before the game was ready to play them (BRG-03).
@@ -391,6 +414,19 @@ static void borg_begin_pending(void)
 	run_pending = 0;
 
 	borg_abort_reason = NULL;
+
+	/*
+	 * Reach counters, zeroed where the run starts and nowhere else.
+	 *
+	 * They were first zeroed in the status reporter, which counts deaths out
+	 * of the message log at report time -- so they were cleared immediately
+	 * before being printed and read zero for every run, including runs whose
+	 * own notes said "# Currently in store '8'". A counter that always reads
+	 * zero looks exactly like a fix that changed nothing.
+	 */
+	borg_shops_entered = 0;
+	borg_shop_visits  = 0;
+
 	borg_starting     = 1;
 	if (!borg_initialized) borg_init();
 	borg_starting     = 0;
@@ -568,7 +604,7 @@ static void c_borg_status(char *rest)
 	printf("borg-status: turn=%d depth=%d maxdepth=%d dungeon=%s clevel=%d "
 		   "hp=%d/%d ac=%d gold=%d deaths=%d weapon=%s "
 		   "grid=%d,%d level=%dx%d allowed=%d blocked=\"%s\" seed=%u "
-		   "result=%s reason=%s\n",
+		   "shops=%d visits=%d result=%s reason=%s\n",
 		   (int) turn, player ? player->depth : -1,
 		   player ? player->max_depth : -1,
 		   (player && player->dungeon
@@ -583,6 +619,7 @@ static void c_borg_status(char *rest)
 		   player ? player->grid.y : -1, player ? player->grid.x : -1,
 		   cave ? cave->height : -1, cave ? cave->width : -1,
 		   deepest_allowed, blocking_reason, run_seed,
+		   shops_entered_count(), borg_shop_visits,
 		   run_failed ? "FAILED"
 			: ((borg_abort_reason && streq(borg_abort_reason, "death"))
 			   ? "died" : (hit_time_cap ? "capped" : "ok")),

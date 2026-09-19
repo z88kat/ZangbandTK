@@ -46,6 +46,44 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+Two borg diagnoses, both wrong — 19 September 2026
+------------------------------------------------------------
+
+- **3.124.1** — A **shops-reached counter** for the borg, and the two fixes it
+  disproved (DEC-88). Only the counter shipped.
+
+  There was no figure for how many shops the borg had actually been inside, so
+  one was added. Its first reading was zero across all twelve runs, which looked
+  like confirmation of the reach bug. It was confirming nothing: the counter was
+  zeroed in the status *reporter*, so it was cleared immediately before being
+  printed — runs whose own notes read ``# Currently in store '8'`` reported
+  ``shops=0``. **A measurement that always reads zero looks exactly like a
+  behaviour that never happens**, which is the defect this counter exists to
+  catch, committed while building it.
+
+  Fixed, the baseline is **17 shops across twelve runs**. The borg reaches
+  shops, and that invalidates the premise both fixes were built on.
+
+  **The reach fix moved nothing and its diagnosis is false.** Moving the
+  ``GOAL_DARK`` resumption below the world crossing left every total and every
+  individual run byte-identical. Traced,
+  ``borg_flow_world()`` is entered 32 times in 60,000 turns **with and without
+  the change** — it was never being pre-empted. It declines because
+  ``borg_choose_town()`` finds the borg already near a town stocking what it
+  wants. There is nothing to cross to. Reverted.
+
+  **What is actually wrong** is a shop-selection defect: the borg walks to a
+  shop, records "would prefer '2'", and then leaves the *level* rather than
+  walking to store 2 — while blocked on food, in a town with a general store.
+
+  **BRG-11a is a rewrite, and the numbers say so.** Its ``CLEVEL <= 8`` list
+  matches monster names, and the names are the starting town's. Skipping those
+  checks on the surface cost the fleet nine character levels, a death and four
+  spell casts for one shop fewer and no change in depth — the fleeing is
+  protecting a level-one character from town monsters that can kill it. Upstream
+  still carries its own ``!FIX`` on this at 4.2.6, so there is nothing to
+  inherit. Not attempted.
+
 A Draconian Mage breathes disenchantment — 19 September 2026
 ------------------------------------------------------------
 

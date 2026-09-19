@@ -4508,3 +4508,74 @@ question was ball versus cone, and the project owner's position is unchanged:
 player reads as breathing, where the archive's `fire_ball` of radius
 `(plev / 15) + 1` is a ball landing on a point. Recorded again here so that a
 later reader finds it decided rather than forgotten.
+
+---
+
+**DEC-88 — Both borg diagnoses were wrong, and the measurement that showed it is
+what shipped.** (BRG-13, BRG-11a, 3.124.1.)
+
+Two problems were to be fixed. Neither was what it was described as, and the
+evidence for that is four sweeps of the same twelve runs.
+
+**The instrument came first, and the instrument was the first defect.** There
+was no figure for how many shops the borg had actually been inside, so one was
+added -- a bitmask of shops entered, reported as `shops=` beside the rest of
+`borg-status`. Its first reading was **zero across all twelve runs**, which was
+taken as confirming the reach bug. It was confirming nothing: the counter was
+being zeroed in the status *reporter*, which counts deaths out of the message
+log at report time, so it was cleared immediately before being printed. Runs
+whose own notes read `# Currently in store '8'` reported `shops=0`.
+
+Fixed, the true baseline is **17 shops across twelve runs**. The borg reaches
+shops. That single number invalidates the premise both fixes were built on, and
+it was produced by the same kind of error it was meant to catch: a measurement
+that always reads zero looks exactly like a behaviour that never happens.
+
+**Baseline, Darwin arm64, 60,000 turns, twelve runs** (Warrior, Mage, Priest,
+Warrior-Mage against seeds 1, 7, 13): 21 depth, 37 levels, 6 died, 21 spells
+learned, 20 cast, 17 shops. Held back by: 3 "2 cure", 2 "restock food < 3",
+2 "Clevel < depth", 2 "5 Food", 2 "30 hp", 1 "9 level". **Local numbers, for
+before-and-after only** -- this machine plays far longer games than the runner
+and its figures are not the fleet's.
+
+**BRG-13, the reach bug: the diagnosis is falsified.** The claim was that
+`borg_flow_old(GOAL_DARK)` returns before `borg_flow_world()` and so the
+crossing never starts. Moving the `GOAL_DARK` resumption below the crossing
+changed **nothing** -- every total and every individual run byte-identical. Then
+the reason: traced, `borg_flow_world()` is entered **32 times in 60,000 turns,
+with and without the change**. It was never being pre-empted.
+
+It declines because both choosers decline, and correctly: `borg_choose_town()`
+computes `want & ~have` and gets zero, because the town the borg is already
+standing near stocks what it wants. **There is nothing to cross to.** The change
+was reverted; a change that moves no number in this area is the thing the
+project keeps producing, and reasoning is not a reason to ship one.
+
+**What is actually happening**, measured from the notes: the borg walks to a
+shop, records `# Currently in store '8' would prefer '2'`, and then leaves the
+*level* rather than walking to store 2 -- while blocked on food, in a town with
+a general store. That is a shop-selection defect, not a reach defect, and it is
+not what was fixed here because it was not diagnosed until the reach theory had
+been disproved.
+
+**BRG-11a, and why it is not a tweak.** `scaryguy_on_level`'s `CLEVEL <= 8`
+branch matches on monster *name* and the names are the starting town's --
+filthy street urchin, Farmer Maggot, cutpurse, soldier, apprentice. Upstream's
+own `!FIX` beside it says it should track "certain attacks that are particularly
+scary" instead. Our base is 4.2.6 and the comment is still in it, so there is no
+upstream fix to inherit at our version.
+
+It connects to the finding above: a borg that flees the level cannot walk from
+one shop to another.
+
+**But removing it is measurably worse.** Skipping the name-matched scaries on
+the surface cost the fleet nine character levels (37 to 28), a death (6 to 7)
+and four spell casts (20 to 16), for one shop fewer and no change in depth. The
+fleeing is protecting a level-one character from town monsters that really can
+kill it. So the rewrite is the rewrite: a danger model keyed on what a monster
+can do, which the game already knows, and not a deletion. **Not attempted here,
+and the numbers above are the reason it should not be attempted without one.**
+
+**What shipped:** the shops counter and its reporting. Nothing else. Both
+behaviour changes were measured, found to move nothing or to move the wrong way,
+and reverted.
