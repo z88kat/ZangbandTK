@@ -490,6 +490,14 @@ static void project_object_handler_MON_PSI_DRAIN(project_object_handler_context_
 {
 }
 
+static void project_object_handler_CONFUSION(project_object_handler_context_t *context)
+{
+}
+
+static void project_object_handler_HOLY_FIRE(project_object_handler_context_t *context)
+{
+}
+
 /* Psionic force leaves the room exactly as it found it (PLR-06) */
 static void project_object_handler_MON_PSI(project_object_handler_context_t *context)
 {

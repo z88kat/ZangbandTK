@@ -413,9 +413,18 @@ void player_mutation_turn(struct player *p)
 
 		disturb(p);
 
+		/*
+		 * The same band rule the powers use, because it is the same struct:
+		 * a level range, an optional class restriction, and an optional
+		 * chance. Nothing here uses the last two yet, and reading them here
+		 * anyway is what stops a mutation that one day does silently ignoring
+		 * them.
+		 */
 		for (band = m->fires->effects; band; band = band->next) {
-			if (p->lev < band->from) continue;
-			if (band->to && p->lev > band->to) continue;
+			if (!power_band_applies(p, band)) continue;
+			if (band->chance
+					&& randint1(100) >= expression_evaluate(band->chance))
+				continue;
 
 			effect_do(band->effect, source_player(), NULL, &ident, true, 0,
 					  0, 0, NULL);

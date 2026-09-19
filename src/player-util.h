@@ -136,6 +136,8 @@ void player_mind_backfires(struct player *p);
 int player_power_chance(struct player *p, const struct player_power *power);
 bool player_use_power(struct player *p, struct player_power *power, int dir);
 bool player_power_aims(struct player *p, const struct player_power *power);
+bool power_band_applies(const struct player *p,
+						const struct power_effect *band);
 int patron_roll_slot(const struct player *p);
 void patron_bestow_reward(struct player *p);
 struct patron *patron_random(void);

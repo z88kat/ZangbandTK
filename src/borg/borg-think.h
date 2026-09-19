@@ -29,6 +29,8 @@
  * Current shop index
  */
 extern int16_t shop_num;
+extern uint32_t borg_shops_entered;
+extern int borg_shop_visits;
 
 /*
  * Strategy flags -- examine the world

@@ -52,6 +52,19 @@
 int16_t shop_num = -1;
 
 /*
+ * Which shops this character has actually stood inside, and how often
+ * (ZangbandTK, BRG-13).
+ *
+ * Reach is the hard thing to measure about this borg: depth and character level
+ * move for a dozen reasons, and a run held back by "restock food < 3" looks the
+ * same whether it could not find a shop or found one and could not afford
+ * anything.  A bitmask of shops entered separates those two, and it is the
+ * number a reach fix has to move.
+ */
+uint32_t borg_shops_entered = 0;
+int borg_shop_visits = 0;
+
+/*
  * Strategy flags -- examine the world
  */
 bool    borg_do_inven     = true; /* Acquire "inven" info */
@@ -334,6 +347,11 @@ bool borg_think(void)
         && (streq(buf, "Stor") || streq(buf, "Home"))) {
         /* Cheat the store number */
         shop_num = square_shopnum(cave, player->grid);
+
+        /* Remember that this one was reached (BRG-13) */
+        if (shop_num >= 0 && shop_num < 32)
+            borg_shops_entered |= 1u << shop_num;
+        borg_shop_visits++;
 
         /* Clear the goal (the goal was probably going to a shop number) */
         borg.goal.type = 0;

@@ -27,6 +27,7 @@
 #include "generate.h"
 #include "cmd-core.h"
 #include "player-util.h"
+#include "project.h"
 #include "effects.h"
 #include "game-world.h"
 #include "obj-tval.h"
@@ -35,6 +36,7 @@
 #include "obj-pile.h"
 #include "player-timed.h"
 #include "player-util.h"
+#include "project.h"
 #include "ui-input.h"
 
 int setup_tests(void **state) {
@@ -1073,45 +1075,324 @@ static int test_the_bloodless_do_not_bleed(void *state) {
  * a RANDOM chain with the right elements and the wrong dice looks correct in
  * the data file.
  *
- * Not asserted, because it is not built: from around level 15 the archive
- * substitutes a pair of elements belonging to the character's *class* on a
- * `randint1(100) < plev` roll. A race power cannot ask what class holds it.
- * DEC-80.
+ * And then the class takes it over (DEC-87). From level 15 the archive rolls
+ * `randint1(100) < plev` and, on success, swaps the element for a pair
+ * belonging to the character's class. Every band below is one of those pairs;
+ * the last, with a chance of 101, is the fire and cold everyone else gets.
  */
-static int test_a_draconian_breathes_two_ways(void *state) {
+
+/** What the archive's class table says, read off `racial.c:383`. */
+struct breath_group {
+	const char *classes;	/* exactly as the data spells it */
+	const char *a;			/* the element named once */
+	const char *b;			/* and the one named twice */
+};
+
+static const struct breath_group breath_table[] = {
+	{ "Warrior|Ranger",					"MISSILE",	"SHARD" },
+	{ "Mage|Warrior-Mage|High-Mage",	"MANA",		"DISEN" },
+	{ "Chaos-Warrior",					"CHAOS",	"CONFUSION" },
+	{ "Monk",							"SOUND",	"CONFUSION" },
+	{ "Mindcrafter",					"MON_PSI",	"CONFUSION" },
+	{ "Priest|Paladin",					"HOLY_ORB",	"HOLY_FIRE" },
+	{ "Rogue",							"DARK",		"POIS" },
+};
+
+/**
+ * The Draconian's breath is the archive's class table, pair by pair.
+ *
+ * The multiplicities are the point and are read off the source rather than
+ * assumed: the archive writes `one_in_(3)` for some branches and `!one_in_(3)`
+ * for others, so a Warrior breathes shards twice as often as the elements while
+ * a Chaos-Warrior breathes confusion twice as often as chaos. A port that made
+ * every pair an even split would look right and play wrong.
+ */
+static int test_a_draconian_breathes_by_its_class(void *state) {
 	struct player_power *pw = power_of("Draconian", "breathe like a dragon");
 	struct power_effect *pe;
-	struct effect *e;
-	int fire = 0, cold = 0, other = 0;
+	size_t g = 0;
+	int bands = 0;
 
 	require(pw && pw->effects);
-	pe = pw->effects;
-	require(pe->effect);
 
-	/* The chain is RANDOM over three, then the three. */
-	e = pe->effect;
-	require(e->index == EF_RANDOM);
-	require(dice_evaluate(e->dice, 1, AVERAGE, NULL) == 3);
+	for (pe = pw->effects; pe; pe = pe->next) {
+		struct effect *e = pe->effect;
+		int seen_a = 0, seen_b = 0, other = 0;
+		const char *a, *b;
 
-	for (e = e->next; e; e = e->next) {
-		int dam;
+		bands++;
+		notnull(e);
 
-		require(e->index == EF_BREATH);
-		player->lev = 30;
-		dam = dice_evaluate(e->dice, 30, AVERAGE, NULL);
-		if (dam != 60) {
-			printf("a branch does %d at level 30, wanted 60\n", dam);
-			require(false);
+		/* Every band is a RANDOM over exactly three breaths. */
+		require(e->index == EF_RANDOM);
+		require(dice_evaluate(e->dice, 1, AVERAGE, NULL) == 3);
+
+		if (g < N_ELEMENTS(breath_table)) {
+			notnull(pe->classes);
+			require(streq(pe->classes, breath_table[g].classes));
+			a = breath_table[g].a;
+			b = breath_table[g].b;
+		} else {
+			/* The fallback: no class, and it always wins */
+			null(pe->classes);
+			a = "FIRE";			/* named twice here, see below */
+			b = "COLD";
+		}
+		notnull(pe->chance);
+
+		for (e = e->next; e; e = e->next) {
+			int idx;
+
+			require(e->index == EF_BREATH);
+
+			/* Twice your level, in every branch of every band */
+			player->lev = 30;
+			if (dice_evaluate(e->dice, 30, AVERAGE, NULL) != 60) {
+				printf("%s branch does %d at level 30, wanted 60\n",
+					   pe->classes ? pe->classes : "fallback",
+					   dice_evaluate(e->dice, 30, AVERAGE, NULL));
+				require(false);
+			}
+
+			idx = proj_name_to_idx(a);
+			if (e->subtype == idx) seen_a++;
+			else if (e->subtype == proj_name_to_idx(b)) seen_b++;
+			else other++;
 		}
 
-		if (e->subtype == ELEM_FIRE) fire++;
-		else if (e->subtype == ELEM_COLD) cold++;
-		else other++;
+		eq(other, 0);
+		if (g < N_ELEMENTS(breath_table)) {
+			eq(seen_a, 1);
+			eq(seen_b, 2);
+		} else {
+			eq(seen_a, 2);		/* fire twice */
+			eq(seen_b, 1);		/* cold once */
+		}
+		g++;
 	}
 
-	eq(fire, 2);
-	eq(cold, 1);
-	eq(other, 0);
+	/* Seven class pairs and the fallback, and nothing else */
+	eq(bands, (int) N_ELEMENTS(breath_table) + 1);
+	ok;
+}
+
+/**
+ * Every class named in the data is a class that exists.
+ *
+ * `power-when-class` is matched by name at use, because races are parsed before
+ * classes and there is nothing to resolve against at parse time. A misspelled
+ * name is therefore not a parse error -- it is a band that silently never
+ * fires, which is the exact shape of defect this project keeps finding months
+ * later. This is the guard, and it covers every race rather than the Draconian.
+ */
+static int test_every_class_named_by_a_race_exists(void *state) {
+	struct player_race *r;
+	int names = 0;
+
+	for (r = races; r; r = r->next) {
+		struct player_power *pw;
+
+		for (pw = r->powers; pw; pw = pw->next) {
+			struct power_effect *pe;
+
+			for (pe = pw->effects; pe; pe = pe->next) {
+				char buf[128];
+				char *at;
+
+				if (!pe->classes) continue;
+				my_strcpy(buf, pe->classes, sizeof(buf));
+
+				for (at = strtok(buf, "|"); at; at = strtok(NULL, "|")) {
+					struct player_class *c;
+					bool found = false;
+
+					for (c = classes; c; c = c->next)
+						if (streq(c->name, at)) found = true;
+
+					if (!found) {
+						printf("%s's \"%s\" names class \"%s\", "
+							   "which does not exist\n", r->name, pw->name,
+							   at);
+						require(false);
+					}
+					names++;
+				}
+			}
+		}
+	}
+
+	/* And the mechanism is actually in use, or this has tested nothing */
+	require(names >= 10);
+	ok;
+}
+
+/**
+ * A class the archive never had breathes fire and cold, and that is ours.
+ *
+ * Zangband has eleven classes and its switch covers all eleven, so it has no
+ * `default:` -- the fallthrough here is not a rule the archive ever exercised.
+ * The Druid, the Necromancer and the Blackguard are 4.2's own, and they get the
+ * base roll, which is what the archive's code would do with them. Asserted
+ * because it is a judgement rather than a lookup and should not drift silently.
+ */
+static int test_a_class_the_archive_lacks_falls_back(void *state) {
+	static const char *const ours[] = { "Druid", "Necromancer", "Blackguard" };
+	struct player_power *pw = power_of("Draconian", "breathe like a dragon");
+	size_t i;
+
+	notnull(pw);
+
+	for (i = 0; i < N_ELEMENTS(ours); i++) {
+		struct power_effect *pe;
+
+		require(player_make_simple("Draconian", ours[i], "Tester"));
+		player->lev = 50;
+
+		for (pe = pw->effects; pe; pe = pe->next) {
+			bool applies = power_band_applies(player, pe);
+
+			/* Only the fallback may admit them */
+			if (pe->classes) require(!applies);
+			else require(applies);
+		}
+	}
+
+	/* And a class the archive does cover is admitted by its own band */
+	require(player_make_simple("Draconian", "Priest", "Tester"));
+	player->lev = 50;
+	{
+		struct power_effect *pe;
+		int admitted = 0;
+
+		for (pe = pw->effects; pe; pe = pe->next)
+			if (power_band_applies(player, pe)) admitted++;
+
+		/* Its own pair, and the fallback beneath it */
+		eq(admitted, 2);
+	}
+	ok;
+}
+
+/**
+ * Chance bands are alternatives: one fires, never both (DEC-87).
+ *
+ * Built by hand rather than through the Draconian, because this is a mechanism
+ * and not a Draconian behaviour -- the next race to want it should be able to
+ * rely on the rule rather than on this one power's data.
+ *
+ * Two alternatives and one unconditional band. Over many uses the first must
+ * win about half the time, the second the rest, *never both*, and the
+ * unconditional one must fire every single time. A build where chance bands
+ * were independent would fire both together about a quarter of the time.
+ */
+static int test_chance_bands_are_alternatives(void *state) {
+	struct player_power pw;
+	struct power_effect first, second, always;
+	struct effect e_first, e_second, e_always;
+	int i, both = 0, neither = 0, saw_first = 0, saw_second = 0;
+	int fizzled = 0;
+
+	require(player_make_simple("Human", "Warrior", "Tester"));
+	player->depth = 1;
+	prepare_next_level(player);		/* using a power reaches into `cave` */
+	player->lev = 50;
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
+	update_stuff(player);
+	player->csp = player->msp;
+	player->mhp = 5000;
+	player->chp = 5000;
+
+	memset(&pw, 0, sizeof(pw));
+	memset(&first, 0, sizeof(first));
+	memset(&second, 0, sizeof(second));
+	memset(&always, 0, sizeof(always));
+	memset(&e_first, 0, sizeof(e_first));
+	memset(&e_second, 0, sizeof(e_second));
+	memset(&e_always, 0, sizeof(e_always));
+
+	e_first.index = EF_TIMED_INC;
+	e_first.subtype = TMD_FAST;
+	e_first.dice = dice_new();
+	require(dice_parse_string(e_first.dice, "20"));
+
+	e_second.index = EF_TIMED_INC;
+	e_second.subtype = TMD_HERO;
+	e_second.dice = dice_new();
+	require(dice_parse_string(e_second.dice, "20"));
+
+	e_always.index = EF_TIMED_INC;
+	e_always.subtype = TMD_BOLD;
+	e_always.dice = dice_new();
+	require(dice_parse_string(e_always.dice, "20"));
+
+	first.effect = &e_first;
+	first.chance = expression_new();
+	expression_add_operations_string(first.chance, "+ 51");	/* half the time */
+	first.next = &second;
+
+	second.effect = &e_second;
+	second.chance = expression_new();
+	expression_add_operations_string(second.chance, "+ 101");	/* always */
+	second.next = &always;
+
+	always.effect = &e_always;			/* no chance: unconditional */
+
+	pw.name = string_make("test power");
+	pw.effects = &first;
+	pw.stat = STAT_STR;
+
+	/*
+	 * A power can fail on its own roll, and this one has no failure figure to
+	 * speak of but still gets the floor every power gets.  The unconditional
+	 * band is what says whether the cast happened at all -- it runs on every
+	 * success and on none of the failures -- so it is both the signal and the
+	 * thing being tested: if either alternative fired, the plain band must have
+	 * fired with it.
+	 */
+	for (i = 0; i < 600; i++) {
+		bool a, b;
+
+		player_clear_timed(player, TMD_FAST, false, false);
+		player_clear_timed(player, TMD_HERO, false, false);
+		player_clear_timed(player, TMD_BOLD, false, false);
+		player->csp = player->msp;
+
+		require(player_use_power(player, &pw, 0));
+
+		a = player->timed[TMD_FAST] > 0;
+		b = player->timed[TMD_HERO] > 0;
+
+		if (a || b) require(player->timed[TMD_BOLD] > 0);
+		if (player->timed[TMD_BOLD] == 0) {
+			fizzled++;
+			continue;
+		}
+
+		if (a && b) both++;
+		if (!a && !b) neither++;
+		if (a) saw_first++;
+		if (b) saw_second++;
+	}
+
+	/* Never both, and never neither: exactly one alternative every time */
+	eq(both, 0);
+	eq(neither, 0);
+
+	/* And the sample is real rather than mostly failures */
+	require(fizzled < 200);
+	require(saw_first + saw_second + fizzled == 600);
+
+	/* 51 in a hundred for the first, the rest to the second */
+	require(saw_first > (600 - fizzled) / 4);
+	require(saw_first < (3 * (600 - fizzled)) / 4);
+	require(saw_second > (600 - fizzled) / 4);
+
+	dice_free(e_first.dice);
+	dice_free(e_second.dice);
+	dice_free(e_always.dice);
+	expression_free(first.chance);
+	expression_free(second.chance);
+	string_free(pw.name);
 	ok;
 }
 
@@ -1157,7 +1438,13 @@ struct test tests[] = {
 	{ "a-power-expression-means-what-it-says",
 			test_a_power_expression_means_what_it_says },
 	{ "the-bloodless-do-not-bleed", test_the_bloodless_do_not_bleed },
-	{ "a-draconian-breathes-two-ways",
-			test_a_draconian_breathes_two_ways },
+	{ "a-draconian-breathes-by-its-class",
+			test_a_draconian_breathes_by_its_class },
+	{ "every-class-named-by-a-race-exists",
+			test_every_class_named_by_a_race_exists },
+	{ "a-class-the-archive-lacks-falls-back",
+			test_a_class_the_archive_lacks_falls_back },
+	{ "chance-bands-are-alternatives",
+			test_chance_bands_are_alternatives },
 	{ NULL, NULL }
 };

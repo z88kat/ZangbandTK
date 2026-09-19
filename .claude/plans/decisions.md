@@ -4113,14 +4113,10 @@ branches, two fire and one cold. Fixed.
 
 **Open, and put to the project owner rather than decided here.**
 
-*The class table.* From level 15 the archive rolls `randint1(100) < plev` and,
-on success, replaces the element with a pair belonging to the character's class
--- seven branches, from shards for a Warrior to mental energy for a
-Mindcrafter. A race power in this game has no way to ask which class holds it,
-and `power-when:` bands on character level cannot express it. Building it means
-either a class dimension on `struct player_power` or a new effect that reads the
-class, both of which are design rather than conversion. **Not built, and the
-manual says so in those terms.**
+*The class table.* **Built in 3.124.0; see DEC-87.** The reading below was also
+incomplete -- it named seven branches and missed that the Ranger shares the
+Warrior's, the Warrior-Mage and High-Mage the Mage's, and the Paladin the
+Priest's, and that the pairs are not even splits.
 
 *The shape.* Zangband throws a *ball* of radius `(plev / 15) + 1` -- two at
 level 15, four at 50 -- and what ships here is 4.2's `BREATH`, a 20-degree cone
@@ -4443,3 +4439,143 @@ in Zangband are natural regeneration (have it), the inn (have it), the EAT_MAGIC
 mutation (have it, as `TAP_DEVICE`) and Omnicide's soul absorption, which is a
 separately recorded realm deferral and incidental to a mass-kill spell. The two
 HP/SP exchange mutations remain deferred with their own reason.
+
+---
+
+**DEC-87 — A race power can be restricted by class, and by a chance that scales;
+the Draconian's breath is the first thing built on it.** (PLR-01, 3.124.0.
+Closes the class-table half of DEC-80.)
+
+**The mechanism, because it is the part that outlives this power.** `struct
+power_effect` -- the band a `power-when` opens -- gains two optional
+qualifiers, and both are general:
+
+- `power-when-class:<a>|<b>` restricts a band to those classes. Matched by class
+  *name* at use rather than by index at parse time, because races are parsed
+  before classes and there is nothing to resolve against yet. That makes a
+  misspelling a band that silently never fires, which is this project's
+  characteristic defect, so `player/race` asserts that every name used by any
+  race resolves to a real class.
+- `power-chance:<n>` or `<BASE>:<ops>` makes a band an *alternative*. Bands with
+  a chance are tried in order and **the first whose roll succeeds is the only
+  one that runs**; bands without one are unconditional and always run. So a
+  power can have something it always does plus one of several things it
+  sometimes does. The comparison is `randint1(100) < value`, which is the
+  archive's, so a fallback is written as chance 101.
+
+A `power-when-class` or `power-chance` line qualifies the current band while it
+is still empty and opens a new one once it has effects, which is what lets a run
+of alternatives be written without a `power-when` between them. The mutation
+firing loop reads the same two fields, because it is the same struct and a
+mutation that one day uses them should not find them ignored.
+
+**The table is the archive's, and my earlier summary of it was wrong in three
+ways** -- a reminder that a summary of a summary is worth nothing. It omitted
+that the Ranger shares the Warrior's branch, the Warrior-Mage and High-Mage the
+Mage's, and the Paladin the Priest's; it called `GF_MISSILE` "raw force" when
+the archive calls it "the elements"; and it implied even splits when the archive
+writes `one_in_(3)` for some branches and `!one_in_(3)` for others, so a Warrior
+breathes shards twice as often as the elements and a Chaos-Warrior breathes
+confusion twice as often as chaos.
+
+**Two elements had to be built to carry it**, and neither is a Draconian special
+case:
+
+- `PROJ_CONFUSION`. Zangband's `GF_CONFUSION` is a *damage* type that also
+  confuses; 4.2's `MON_CONF` is a status effect that does no damage at all.
+  Mapping one to the other would have turned two thirds of three classes'
+  breath into a spell that deals nothing -- valid, and silently wrong. The
+  archive's other branch, a creature that breathes confusion resisting, is
+  vacuous here: 4.2 has no `RSF_BR_CONF` for anything to have.
+- `PROJ_HOLY_FIRE`. Hell fire doubles against evil and does nothing else, which
+  is `HOLY_ORB` exactly and is the mapping the realms already use. Holy fire
+  additionally makes good creatures **immune** and everything else resist, so
+  taking `HOLY_ORB` for both would have collapsed a Priest's pair into one
+  element. `RF_GOOD` exists here, which is the only reason this is a port.
+
+**Three of our classes have no entry, and that is a judgement rather than a
+lookup.** Zangband has exactly eleven classes and its switch covers all eleven,
+so the absence of a `default:` is not a designed fallback -- it is a table that
+never needed one. The Druid, the Necromancer and the Blackguard are 4.2's own.
+They fall through to fire and cold, which is what the archive's code would do
+with them and the only option that invents nothing; assigning them elements by
+theme would be our design wearing the archive's clothes. Asserted in a test so
+it cannot drift without being noticed, and stated plainly in the manual.
+
+**The shape stays a cone, and that is not an oversight.** DEC-80's second open
+question was ball versus cone, and the project owner's position is unchanged:
+4.2's `BREATH` is the mechanism every dragon in the game uses and the one a
+player reads as breathing, where the archive's `fire_ball` of radius
+`(plev / 15) + 1` is a ball landing on a point. Recorded again here so that a
+later reader finds it decided rather than forgotten.
+
+---
+
+**DEC-88 — Both borg diagnoses were wrong, and the measurement that showed it is
+what shipped.** (BRG-13, BRG-11a, 3.124.1.)
+
+Two problems were to be fixed. Neither was what it was described as, and the
+evidence for that is four sweeps of the same twelve runs.
+
+**The instrument came first, and the instrument was the first defect.** There
+was no figure for how many shops the borg had actually been inside, so one was
+added -- a bitmask of shops entered, reported as `shops=` beside the rest of
+`borg-status`. Its first reading was **zero across all twelve runs**, which was
+taken as confirming the reach bug. It was confirming nothing: the counter was
+being zeroed in the status *reporter*, which counts deaths out of the message
+log at report time, so it was cleared immediately before being printed. Runs
+whose own notes read `# Currently in store '8'` reported `shops=0`.
+
+Fixed, the true baseline is **17 shops across twelve runs**. The borg reaches
+shops. That single number invalidates the premise both fixes were built on, and
+it was produced by the same kind of error it was meant to catch: a measurement
+that always reads zero looks exactly like a behaviour that never happens.
+
+**Baseline, Darwin arm64, 60,000 turns, twelve runs** (Warrior, Mage, Priest,
+Warrior-Mage against seeds 1, 7, 13): 21 depth, 37 levels, 6 died, 21 spells
+learned, 20 cast, 17 shops. Held back by: 3 "2 cure", 2 "restock food < 3",
+2 "Clevel < depth", 2 "5 Food", 2 "30 hp", 1 "9 level". **Local numbers, for
+before-and-after only** -- this machine plays far longer games than the runner
+and its figures are not the fleet's.
+
+**BRG-13, the reach bug: the diagnosis is falsified.** The claim was that
+`borg_flow_old(GOAL_DARK)` returns before `borg_flow_world()` and so the
+crossing never starts. Moving the `GOAL_DARK` resumption below the crossing
+changed **nothing** -- every total and every individual run byte-identical. Then
+the reason: traced, `borg_flow_world()` is entered **32 times in 60,000 turns,
+with and without the change**. It was never being pre-empted.
+
+It declines because both choosers decline, and correctly: `borg_choose_town()`
+computes `want & ~have` and gets zero, because the town the borg is already
+standing near stocks what it wants. **There is nothing to cross to.** The change
+was reverted; a change that moves no number in this area is the thing the
+project keeps producing, and reasoning is not a reason to ship one.
+
+**What is actually happening**, measured from the notes: the borg walks to a
+shop, records `# Currently in store '8' would prefer '2'`, and then leaves the
+*level* rather than walking to store 2 -- while blocked on food, in a town with
+a general store. That is a shop-selection defect, not a reach defect, and it is
+not what was fixed here because it was not diagnosed until the reach theory had
+been disproved.
+
+**BRG-11a, and why it is not a tweak.** `scaryguy_on_level`'s `CLEVEL <= 8`
+branch matches on monster *name* and the names are the starting town's --
+filthy street urchin, Farmer Maggot, cutpurse, soldier, apprentice. Upstream's
+own `!FIX` beside it says it should track "certain attacks that are particularly
+scary" instead. Our base is 4.2.6 and the comment is still in it, so there is no
+upstream fix to inherit at our version.
+
+It connects to the finding above: a borg that flees the level cannot walk from
+one shop to another.
+
+**But removing it is measurably worse.** Skipping the name-matched scaries on
+the surface cost the fleet nine character levels (37 to 28), a death (6 to 7)
+and four spell casts (20 to 16), for one shop fewer and no change in depth. The
+fleeing is protecting a level-one character from town monsters that really can
+kill it. So the rewrite is the rewrite: a danger model keyed on what a monster
+can do, which the game already knows, and not a deletion. **Not attempted here,
+and the numbers above are the reason it should not be attempted without one.**
+
+**What shipped:** the shops counter and its reporting. Nothing else. Both
+behaviour changes were measured, found to move nothing or to move the wrong way,
+and reverted.

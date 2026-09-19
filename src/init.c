@@ -4000,6 +4000,8 @@ static enum parser_error parse_class_gain_values(struct parser *p) {
  *	power-stat:<STAT>     what makes it more reliable
  *	power-fail:<n>        base failure, in percent
  *	power-when:<from>:<to>  opens a level band; everything after belongs to it
+ *	power-when-class:<a>|<b>  restricts the current band to those classes
+ *	power-chance:<n> or <BASE>:<ops>  makes the current band an alternative
  *	power-effect:...      appended to the current band
  *	power-dice:<dice>     dice for the last effect
  *	power-effect-msg:...  the killer string a DAMAGE effect names
@@ -4064,6 +4066,115 @@ static enum parser_error power_parse_when(struct player_power *power,
 	} else {
 		power->effects = band;
 	}
+
+	return PARSE_ERROR_NONE;
+}
+
+/**
+ * The band a `power-when-class` or `power-chance` line is talking about.
+ *
+ * The current one while it is still empty, and a fresh one once it has effects
+ * in it.  That rule is what lets a run of alternatives be written one after
+ * another without a `power-when` between them, and it is also what stops the
+ * second of them quietly overwriting the first -- which is what happened when
+ * these simply took `power_last_band()`.
+ *
+ * A `power-when` followed by a `power-when-class` therefore qualifies one band
+ * with both, because the level line opened it and left it empty.
+ */
+static struct power_effect *power_qualified_band(struct player_power *power) {
+	struct power_effect *band = power_last_band(power);
+
+	if (!band || band->effect) {
+		if (power_parse_when(power, 0, 0) != PARSE_ERROR_NONE) return NULL;
+		band = power_last_band(power);
+	}
+
+	return band;
+}
+
+/**
+ * Restrict the current band to a set of classes (PLR-01, PLR-02, DEC-87).
+ *
+ * Stored as the '|'-separated text and matched by name at use, because races
+ * are parsed *before* classes (`init.c`'s parser list) and there is no class to
+ * look up yet.  A name that matches nothing would therefore be a band that
+ * silently never fires, which is why `player/race` asserts that every name used
+ * here resolves to a real class.
+ */
+static enum parser_error power_parse_when_class(struct player_power *power,
+												const char *names) {
+	struct power_effect *band;
+
+	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!names || !names[0]) return PARSE_ERROR_INVALID_VALUE;
+
+	band = power_qualified_band(power);
+	if (!band) return PARSE_ERROR_INVALID_VALUE;
+
+	string_free(band->classes);
+	band->classes = string_make(names);
+
+	return PARSE_ERROR_NONE;
+}
+
+/**
+ * Make the current band an alternative that fires only sometimes.
+ *
+ * `<n>` for a flat percentage, or `<BASE>:<ops>` for one that scales -- the
+ * same base values and operation strings `power-expr` uses, so
+ * `power-chance:PLAYER_LEVEL:+ 0` is Zangband's `randint1(100) < plev`.
+ *
+ * The comparison is `randint1(100) < value`, which is the archive's and means a
+ * chance of `n` fires `(n - 1)` times in a hundred.  101 therefore always
+ * fires, and that is how a fallback band is written -- kept as the archive's
+ * own arithmetic rather than special-cased to a keyword.
+ */
+static enum parser_error power_parse_chance(struct player_power *power,
+											const char *text) {
+	struct power_effect *band;
+	expression_t *expression;
+	char *base, *ops;
+	enum parser_error result = PARSE_ERROR_NONE;
+
+	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!text || !text[0]) return PARSE_ERROR_INVALID_VALUE;
+
+	band = power_qualified_band(power);
+	if (!band) return PARSE_ERROR_INVALID_VALUE;
+
+	expression = expression_new();
+	if (!expression) return PARSE_ERROR_INVALID_EXPRESSION;
+
+	base = string_make(text);
+	ops = strchr(base, ':');
+	if (ops) {
+		*ops++ = '\0';
+		expression_set_base_value(expression,
+								  effect_value_base_by_name(base));
+		if (expression_add_operations_string(expression, ops) < 0) {
+			result = PARSE_ERROR_BAD_EXPRESSION_STRING;
+		}
+	} else {
+		char *end;
+		long flat = strtol(base, &end, 10);
+
+		if (*end || end == base) {
+			result = PARSE_ERROR_BAD_EXPRESSION_STRING;
+		} else if (expression_add_operations_string(expression,
+				format("+ %d", (int) flat)) < 0) {
+			result = PARSE_ERROR_BAD_EXPRESSION_STRING;
+		}
+	}
+	string_free(base);
+
+	if (result != PARSE_ERROR_NONE) {
+		expression_free(expression);
+		return result;
+	}
+
+	expression_free(band->chance);
+	band->chance = expression;
 
 	return PARSE_ERROR_NONE;
 }
@@ -4182,6 +4293,8 @@ static void power_free(struct player_power *power) {
 			struct power_effect *bnext = band->next;
 
 			free_effect(band->effect);
+			string_free(band->classes);
+			expression_free(band->chance);
 			mem_free(band);
 			band = bnext;
 		}
@@ -4251,6 +4364,20 @@ static enum parser_error parse_p_race_power_when(struct parser *p) {
 
 	return power_parse_when(r ? power_last(r->powers) : NULL,
 							parser_getint(p, "from"), parser_getint(p, "to"));
+}
+
+static enum parser_error parse_p_race_power_when_class(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+
+	return power_parse_when_class(r ? power_last(r->powers) : NULL,
+								  parser_getstr(p, "classes"));
+}
+
+static enum parser_error parse_p_race_power_chance(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+
+	return power_parse_chance(r ? power_last(r->powers) : NULL,
+							  parser_getstr(p, "chance"));
 }
 
 static enum parser_error parse_p_race_power_effect(struct parser *p) {
@@ -4655,6 +4782,9 @@ static struct parser *init_parse_p_race(void) {
 			   parse_p_race_power_effect);
 	parser_reg(p, "power-dice str dice", parse_p_race_power_dice);
 	parser_reg(p, "power-when int from int to", parse_p_race_power_when);
+	parser_reg(p, "power-when-class str classes",
+			   parse_p_race_power_when_class);
+	parser_reg(p, "power-chance str chance", parse_p_race_power_chance);
 	parser_reg(p, "power-expr sym name sym base str expr",
 			   parse_p_race_power_expr);
 	return p;
