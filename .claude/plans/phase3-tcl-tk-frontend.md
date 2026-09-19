@@ -1539,9 +1539,19 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 >   a player means by "wizard mode is on". `NOSCORE_DEBUG` is set only by `confirm_debug()`,
 >   the first time `^A` is used. Turning wizard mode on therefore left the menu absent.
 >
-> Verified end to end: ^R chosen from the Utility menu redrew the map, and a command whose
-> prereq fails answers "not allowed just now" when invoked anyway. The menu greys as a
-> courtesy; the dispatch refuses as the guarantee. Sixty-four bridge checks.
+> - **A queued command needs a nudge, or it waits for the next keypress.** `play_game()` calls
+>   `cmd_get_hook()` unconditionally every turn and that ends in `inkey()`, which blocks until
+>   a *key* arrives — so a command pushed from a Tk event handler lands on the queue while the
+>   game is still waiting, and nothing happens until the player presses something else.
+>   Reported from play: choosing "Throw an item" did nothing until a direction key was
+>   pressed, and then both ran. The push is now followed by `Term_keypress('\a')`, which
+>   `textui_process_key()` treats as no command at all. Of the four keys it ignores, `\a` is
+>   the one nothing else means: escape cancels a prompt and space pages one.
+>
+> Verified end to end: ^R chosen from the Utility menu redrew the map, "Stand still" chosen
+> from Other advanced the turn with no further key, and a command whose prereq fails answers
+> "not allowed just now" when invoked anyway. The menu greys as a courtesy; the dispatch
+> refuses as the guarantee.
 >
 > Still to come in T7: Choice, the five reusable widgets, stores and the buildings — all of
 > which want the inventory and equipment reads.

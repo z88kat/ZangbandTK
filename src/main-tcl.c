@@ -921,6 +921,7 @@ static void set_script_library_paths(void)
  * from spinning at 100% while the player thinks.
  */
 static void hooks_apply(void);
+static void command_nudge(void);
 
 static errr Term_xtra_tcl(int n, int v)
 {
@@ -1544,6 +1545,8 @@ static int objcmd_push(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			break;
 		}
 	}
+
+	command_nudge();
 
 	return TCL_OK;
 }
@@ -4048,6 +4051,28 @@ static int objcmd_commands(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 /**
+ * Wake the game up after putting something on its queue.
+ *
+ * play_game() calls cmd_get_hook() unconditionally every turn, and that ends
+ * in inkey(), which blocks until a *key* arrives.  A command pushed from a Tk
+ * event handler -- a menu item, a button -- lands on the queue while the game
+ * is still sitting in there waiting, so nothing happens until the player
+ * presses something else, and then two commands run at once.  Reported from
+ * play: choosing "Throw an item" did nothing until a direction key was
+ * pressed.
+ *
+ * So the queue push is followed by a keypress the game treats as no command at
+ * all.  textui_process_key() returns true for \0, escape, space and \a with
+ * the key left unset, and textui_process_command() returns silently on
+ * "if (!key && done)".  Of those four, \a is the one nothing else means:
+ * escape cancels a prompt and space pages one.
+ */
+static void command_nudge(void)
+{
+	Term_keypress('\a', 0);
+}
+
+/**
  * angband_command -- run one entry from that table.
  *
  * Dispatched exactly as textui_process_command does it: check the prereq, call
@@ -4101,9 +4126,15 @@ static int objcmd_command(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		return TCL_ERROR;
 	}
 	if (c->hook) {
+		/*
+		 * A user-interface action runs here and now, inside the event handler
+		 * -- which is where the game would have run it too -- so there is
+		 * nothing to wake up.
+		 */
 		c->hook();
 	} else if (c->cmd) {
 		cmdq_push_repeat(c->cmd, count);
+		command_nudge();
 	}
 
 	return TCL_OK;
