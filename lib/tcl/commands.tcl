@@ -93,6 +93,18 @@ proc commands_group_label {group} {
     return $group
 }
 
+# Where a label sits in the menu bar, or -1.
+#
+# `.menubar index Foo` raises "bad menu entry index" when there is no such
+# entry rather than answering "none", so every place that looks for one has to
+# catch.  Doing it in one place means the rebuild cannot be aborted half way by
+# a label that happens not to be there.
+proc commands_bar_index {label} {
+    if {[catch {.menubar index $label} i]} { return -1 }
+    if {$i eq "none" || $i eq ""} { return -1 }
+    return $i
+}
+
 proc commands_menu_path {name} {
     # A menu path has to be a legal Tk pathname, and the group names have
     # spaces in them.
@@ -109,8 +121,8 @@ proc commands_build {} {
     if {[info exists commands(menus)]} {
         foreach pair $commands(menus) {
             lassign $pair group m shown
-            set i [.menubar index $shown]
-            if {$i ne "none" && $i ne ""} { .menubar delete $i }
+            set i [commands_bar_index $shown]
+            if {$i >= 0} { .menubar delete $i }
             if {[winfo exists $m]} { destroy $m }
         }
     }
@@ -183,8 +195,8 @@ proc commands_build_debug {} {
     # Take the cascade out of the menubar before destroying what it points at,
     # or the entry is left referring to a window that no longer exists.
     if {[info exists commands(debugshown)] && $commands(debugshown)} {
-        set i [.menubar index Debug]
-        if {$i ne "none" && $i ne ""} { .menubar delete $i }
+        set i [commands_bar_index Debug]
+        if {$i >= 0} { .menubar delete $i }
         set commands(debugshown) 0
     }
     if {[winfo exists $m]} { destroy $m }
@@ -220,7 +232,15 @@ proc commands_check_debug {} {
     global commands
 
     if {![winfo exists .menubar.cmddebug]} return
-    if {[catch {angband_player wizard} on]} return
+
+    # Either flag.  player->wizard is what ^W toggles and what the sidebar
+    # shows, and it is what a player means by "wizard mode is on".
+    # NOSCORE_DEBUG is what the debug commands' own prereq reads, and only ^A
+    # sets it.  Keying the menu off the second alone meant it never appeared
+    # for somebody who had just turned wizard mode on.
+    if {[catch {angband_player wizard} wiz]} return
+    if {[catch {angband_player debug} dbg]} { set dbg 0 }
+    set on [expr {$wiz || $dbg}]
 
     set shown [expr {[info exists commands(debugshown)] && $commands(debugshown)}]
     if {$on == $shown} return
@@ -229,8 +249,8 @@ proc commands_check_debug {} {
         .menubar insert [llength $commands(menus)] cascade -label Debug \
             -menu .menubar.cmddebug
     } else {
-        set i [.menubar index Debug]
-        if {$i ne "none" && $i ne ""} { .menubar delete $i }
+        set i [commands_bar_index Debug]
+        if {$i >= 0} { .menubar delete $i }
     }
     set commands(debugshown) $on
 }
@@ -260,6 +280,12 @@ proc commands_refresh {group} {
 # The menus are built once the game has a command table to build them from.
 # cmd_init() runs inside textui_init(), which is after this file is sourced, so
 # building at source time would produce a menu bar with no accelerators in it.
+# do_cmd_wizard marks PR_TITLE and PR_STATUS, which player-calcs.c maps to
+# EVENT_PLAYERTITLE and EVENT_STATUS.  Both are bound, and STATE with them: the
+# check costs two accessor reads and missing it leaves the menu absent until
+# something else happens to move the status line.
 bind . <<Angband_STATUS>> {+ commands_check_debug }
+bind . <<Angband_PLAYERTITLE>> {+ commands_check_debug }
+bind . <<Angband_STATE>> {+ commands_check_debug }
 bind . <<Angband_ENTER_GAME>> {+ commands_build }
 bind . <<Angband_LEAVE_BIRTH>> {+ commands_build }

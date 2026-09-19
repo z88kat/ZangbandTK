@@ -1529,8 +1529,15 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 >   over 48 commands. They nest, and the link is `nested_name`: the access points carry the
 >   readable names — Items, Player, Teleport — and each names the group it opens, which is how
 >   "Player" reaches "DbgPlayer" without the menu having to know the internal names. The
->   menubar entry appears and disappears with `NOSCORE_DEBUG`, checked when the status line
->   changes, which is when the game notices the savefile has been marked.
+>   menubar entry appears and disappears with **`player->wizard` or `NOSCORE_DEBUG`**, checked
+>   on `EVENT_STATUS` and `EVENT_PLAYERTITLE`, which are what `do_cmd_wizard`'s
+>   `PR_STATUS | PR_TITLE` become.
+>
+>   Those are two different flags, and keying the menu off the second alone was a bug
+>   reported straight from play: `^W` sets `NOSCORE_WIZARD` and toggles `player->wizard` —
+>   which is what puts `[=-WIZARD-=]` in the sidebar and "Cheat" on the status line, and what
+>   a player means by "wizard mode is on". `NOSCORE_DEBUG` is set only by `confirm_debug()`,
+>   the first time `^A` is used. Turning wizard mode on therefore left the menu absent.
 >
 > Verified end to end: ^R chosen from the Utility menu redrew the map, and a command whose
 > prereq fails answers "not allowed just now" when invoked anyway. The menu greys as a

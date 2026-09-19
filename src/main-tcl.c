@@ -2181,7 +2181,7 @@ enum player_field_id {
 	PFI_BLOWS_PER_ROUND, PFI_SHOTS_PER_ROUND, PFI_SPEED, PFI_INFRAVISION,
 	PFI_LIGHT, PFI_AGE, PFI_HEIGHT, PFI_WEIGHT, PFI_TOTAL_WEIGHT,
 	PFI_NEW_SPELLS, PFI_RUNNING, PFI_RESTING, PFI_IS_DEAD, PFI_DIED_FROM,
-	PFI_INSIDE_ARENA, PFI_WIZARD, PFI_TURN,
+	PFI_INSIDE_ARENA, PFI_WIZARD, PFI_DEBUG, PFI_TURN,
 	PFI_MAX
 };
 
@@ -2226,6 +2226,7 @@ static const struct {
 	{ "died_from",			PF_STR },
 	{ "inside_arena",		PF_BOOL },
 	{ "wizard",				PF_BOOL },
+	{ "debug",				PF_BOOL },
 	{ "turn",				PF_INT },
 };
 
@@ -2366,11 +2367,20 @@ static Tcl_Obj *player_field_obj(enum player_field_id id)
 	case PFI_INSIDE_ARENA:
 		return Tcl_NewBooleanObj(player->upkeep->arena_level);
 	/*
-	 * The savefile is marked, not the session: NOSCORE_DEBUG is what the game
-	 * sets the first time the debug commands are confirmed, and it is what
-	 * player_can_debug_prereq reads afterwards.
+	 * Two different things, and conflating them is why the Debug menu did not
+	 * appear for a character in wizard mode.
+	 *
+	 * `wizard` is player->wizard, toggled by ^W: it is what puts [=-WIZARD-=]
+	 * in the sidebar and "Cheat" on the status line, and it is what the player
+	 * means by "wizard mode is on".
+	 *
+	 * `debug` is NOSCORE_DEBUG, which only confirm_debug() sets -- the first
+	 * time ^A is used -- and which is what player_can_debug_prereq reads.  ^W
+	 * never touches it.
 	 */
 	case PFI_WIZARD:
+		return Tcl_NewBooleanObj(player->wizard);
+	case PFI_DEBUG:
 		return Tcl_NewBooleanObj((player->noscore & NOSCORE_DEBUG) != 0);
 	case PFI_TURN:			return Tcl_NewIntObj((int)turn);
 

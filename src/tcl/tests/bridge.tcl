@@ -140,6 +140,34 @@ check "building the menus twice changes nothing" {
 		[expr {[[commands_menu_path Items] index end] == $items}]
 } "1 1"
 
+# The Debug menu follows player->wizard, which is what ^W toggles and what the
+# sidebar shows -- not NOSCORE_DEBUG, which only ^A sets.  Keying it off the
+# second alone meant it never appeared for somebody who had just turned wizard
+# mode on.
+check "the debug menu follows the wizard flag" {
+	rename angband_player _player_was
+	proc angband_player {args} {
+		if {[llength $args] == 1 && [lindex $args 0] eq "wizard"} { return 1 }
+		if {[llength $args] == 1 && [lindex $args 0] eq "debug"} { return 0 }
+		return [_player_was {*}$args]
+	}
+	commands_check_debug
+	set on [expr {[commands_bar_index Debug] >= 0}]
+
+	proc angband_player {args} {
+		if {[llength $args] == 1 && [lindex $args 0] in {wizard debug}} {
+			return 0
+		}
+		return [_player_was {*}$args]
+	}
+	commands_check_debug
+	set off [expr {[commands_bar_index Debug] < 0}]
+
+	rename angband_player {}
+	rename _player_was angband_player
+	list $on $off
+} "1 1"
+
 check "the hidden group is shown, under a readable name" {
 	list [commands_group_label Hidden] [commands_group_label Items]
 } "Other Items"
