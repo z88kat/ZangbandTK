@@ -33,6 +33,8 @@
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "obj-tval.h"
+#include "obj-gear.h"
+#include "obj-power.h"
 #include "obj-knowledge.h"
 #include "obj-util.h"
 #include "player-history.h"
@@ -922,6 +924,7 @@ static void set_script_library_paths(void)
  */
 static void hooks_apply(void);
 static void command_nudge(void);
+static bool in_play(void);
 
 static errr Term_xtra_tcl(int n, int v)
 {
@@ -3694,6 +3697,214 @@ static int objcmd_history(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 /**
+ * angband_gear -- what the character is carrying and wearing.
+ *
+ *    angband_gear inventory     the pack, as {label name weight number}
+ *    angband_gear equipment     what is worn, as {slot slotname label name}
+ *    angband_gear quiver        the quiver, same shape as the pack
+ *    angband_gear info <where> <n>   one item, as a name/value dict
+ *    angband_gear lore <where> <n>   what the game says about it
+ *
+ * One command for all three because they are one thing: the gear list, which
+ * 4.2 keeps as `struct object *` chains and presents through three views of
+ * it.  `where` is inventory, equipment or quiver, and `n` is the position in
+ * that view -- not a gear index, which is not stable across a turn.
+ *
+ * The label is the letter the player types, from gear_to_label(), so a window
+ * built on this says the same thing as the game's own prompts.
+ */
+
+/**
+ * The object at a position in one of the three views, or NULL.
+ *
+ * Equipment is addressed by slot rather than by occupancy: the empty slots
+ * are part of what the view shows, so "the fourth slot" has to keep meaning
+ * the fourth slot whether or not anything is in it.
+ */
+static struct object *gear_at(const char *where, int n, const char **slotname)
+{
+	if (slotname) *slotname = NULL;
+
+	if (streq(where, "inventory")) {
+		if (n < 0 || n >= player->upkeep->inven_cnt) return NULL;
+		return player->upkeep->inven[n];
+	}
+
+	if (streq(where, "quiver")) {
+		if (n < 0 || n >= (int)z_info->quiver_size) return NULL;
+		return player->upkeep->quiver[n];
+	}
+
+	if (streq(where, "equipment")) {
+		if (n < 0 || n >= (int)player->body.count) return NULL;
+		if (slotname) *slotname = equip_mention(player, n);
+		return slot_object(player, n);
+	}
+
+	return NULL;
+}
+
+static int gear_count(const char *where)
+{
+	if (streq(where, "inventory")) return player->upkeep->inven_cnt;
+	if (streq(where, "quiver")) return (int)z_info->quiver_size;
+	if (streq(where, "equipment")) return (int)player->body.count;
+
+	return -1;
+}
+
+static int objcmd_gear(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *where;
+	char name[120];
+	int n, i;
+
+	(void)dummy;
+
+	if (objc < 2) {
+		Tcl_WrongNumArgs(ip, 1, objv,
+				"inventory|equipment|quiver|info|lore ?argument ...?");
+		return TCL_ERROR;
+	}
+
+	where = Tcl_GetString(objv[1]);
+
+	/*
+	 * A character and their upkeep, not in_play(): the pack exists from birth
+	 * and reading it needs no level under the character's feet.  in_play()
+	 * also wants character_dungeon, which is the guard the *command* table
+	 * needs -- its prereqs read the map -- and is too strong here.
+	 */
+	if (!player || !player->upkeep) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("there is no character yet", -1));
+		return TCL_ERROR;
+	}
+
+	/* The three list views. */
+	if (objc == 2) {
+		Tcl_Obj *list;
+		int count = gear_count(where);
+
+		if (count < 0) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"expected inventory, equipment or quiver, not: %s", where));
+			return TCL_ERROR;
+		}
+
+		list = Tcl_NewListObj(0, NULL);
+
+		for (i = 0; i < count; i++) {
+			const char *slotname = NULL;
+			struct object *obj = gear_at(where, i, &slotname);
+			Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+			char label[2];
+
+			/*
+			 * An empty equipment slot is still a row: the paper doll and the
+			 * wear/wield prompt both need to show what is *not* filled.  The
+			 * pack and the quiver simply stop.
+			 */
+			if (!obj && !streq(where, "equipment")) continue;
+
+			label[0] = obj ? gear_to_label(player, obj) : ' ';
+			label[1] = 0;
+
+			if (obj) {
+				object_desc(name, sizeof(name), obj,
+						ODESC_PREFIX | ODESC_FULL, player);
+			} else {
+				my_strcpy(name, "", sizeof(name));
+			}
+
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(label[0] == ' ' ? "" : label, -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(name, -1));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(slotname ? slotname : "", -1));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewIntObj(obj ? obj->number : 0));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewIntObj(obj ? obj->weight * obj->number : 0));
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	/* info and lore, which take a view and a position. */
+	if ((streq(where, "info") || streq(where, "lore")) && objc == 4) {
+		const char *view = Tcl_GetString(objv[2]);
+		const char *slotname = NULL;
+		struct object *obj;
+
+		if (Tcl_GetIntFromObj(ip, objv[3], &n) != TCL_OK) return TCL_ERROR;
+
+		if (gear_count(view) < 0) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"expected inventory, equipment or quiver, not: %s", view));
+			return TCL_ERROR;
+		}
+
+		obj = gear_at(view, n, &slotname);
+		if (!obj) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"nothing at %s %d", view, n));
+			return TCL_ERROR;
+		}
+
+		if (streq(where, "info")) {
+			Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+			char label[2];
+
+			label[0] = gear_to_label(player, obj);
+			label[1] = 0;
+			object_desc(name, sizeof(name), obj,
+					ODESC_PREFIX | ODESC_FULL, player);
+
+			table_put(ip, d, "index", Tcl_NewIntObj(n));
+			table_put(ip, d, "label", Tcl_NewStringObj(label, -1));
+			table_put(ip, d, "name", Tcl_NewStringObj(name, -1));
+			table_put(ip, d, "slot",
+					Tcl_NewStringObj(slotname ? slotname : "", -1));
+			table_put(ip, d, "kind", Tcl_NewStringObj(
+					(obj->tval && tval_find_name(obj->tval))
+						? tval_find_name(obj->tval) : "", -1));
+			table_put(ip, d, "number", Tcl_NewIntObj(obj->number));
+			table_put(ip, d, "weight", Tcl_NewIntObj(obj->weight));
+			table_put(ip, d, "value", Tcl_NewIntObj(object_value(obj, 1)));
+			table_put(ip, d, "known",
+					Tcl_NewBooleanObj(object_fully_known(obj)));
+
+			Tcl_SetObjResult(ip, d);
+			return TCL_OK;
+		}
+
+		/*
+		 * The game's own description of this very object, not of its kind:
+		 * object_info reads the runes the character has learned, so a sword
+		 * whose brand is still unknown does not list the brand.
+		 */
+		{
+			textblock *tb = object_info(obj, OINFO_NONE);
+			Tcl_Obj *text = textblock_to_obj(tb);
+
+			textblock_free(tb);
+			Tcl_SetObjResult(ip, text);
+			return TCL_OK;
+		}
+	}
+
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+			"expected inventory, equipment, quiver, info or lore, not: %s",
+			where));
+
+	return TCL_ERROR;
+}
+
+/**
  * angband_option -- read and write the game's options.
  *
  *    angband_option                     every option, as {name type desc value}
@@ -4853,6 +5064,7 @@ errr init_tcl(int argc, char **argv)
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_history", objcmd_history, NULL,
 			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_gear", objcmd_gear, NULL, NULL);
 
 	hooks_init();
 

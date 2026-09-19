@@ -1553,8 +1553,26 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 > "not allowed just now" when invoked anyway. The menu greys as a courtesy; the dispatch
 > refuses as the guarantee.
 >
-> Still to come in T7: Choice, the five reusable widgets, stores and the buildings — all of
-> which want the inventory and equipment reads.
+> **The gear reads.** `angband_gear` takes `inventory`, `equipment` and `quiver` as three
+> views of one thing, plus `info` and `lore` on a position within a view. The label is
+> `gear_to_label()`'s, so a window says the same letter the game's own prompts do, and `lore`
+> is `object_info()` on the object itself rather than its kind — a sword whose brand is still
+> unknown does not list the brand.
+>
+> - **An empty equipment slot is still a row**, with its name. The paper doll and the wear
+>   prompt both have to show what is *not* filled; the pack and the quiver simply stop.
+> - **The guard is `player && player->upkeep`, not `in_play()`.** The pack exists from birth
+>   and reading it needs no level under the character's feet. `in_play()` also wants
+>   `character_dungeon`, which is what the *command* table needs because its prereqs read the
+>   map, and is too strong here.
+>
+> Read off a level 8 Dwarf Warrior: six things in the pack with their letters, all twelve
+> equipment slots named with three filled, an empty quiver, and provenance in the lore —
+> "Dropped by a kobold shaman in town". Seventy-four bridge checks.
+>
+> Still to come in T7: the selection pane over `get_item_hook`, the transfer window, the
+> building window, the generic table and the paper doll. The Flags tab in T6 is no longer
+> blocked on the reads, only on `ui-entry.h`'s machinery.
 
 ---
 

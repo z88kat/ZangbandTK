@@ -467,6 +467,18 @@ check "closing it is just closing it" {
 	winfo exists .knowledge
 } 0
 
+# --- the gear ---------------------------------------------------------------
+
+check "the gear wants a character" {
+	catch {angband_gear inventory} e
+	set e
+} "there is no character yet"
+
+check "and refuses a view it does not have" {
+	catch {angband_gear sideways} e
+	set e
+} "there is no character yet"
+
 # --- the second pass --------------------------------------------------------
 
 # Everything above ran while the front end was still starting.  This runs from
@@ -556,6 +568,39 @@ proc second_pass {} {
 		catch {angband_option nonesuch} e
 		set e
 	} "no such option: nonesuch"
+
+	# The three views of the gear, now that there is a character.
+	# Answering at all is the check.  How much is in them depends on the
+	# character, and at this point in the session there is barely one -- the
+	# body is not assigned until birth, so equipment can legitimately be
+	# empty.  The filled case is exercised against a real savefile instead.
+	check "the pack, what is worn and the quiver all answer" {
+		set bad {}
+		foreach view {inventory equipment quiver} {
+			if {[catch {angband_gear $view} e]} { lappend bad "$view: $e" }
+		}
+		set bad
+	} ""
+
+	# Every equipment slot is a row whether or not it holds anything: the
+	# paper doll and the wear prompt both have to show what is empty.
+	check "every equipment slot is a row, filled or not" {
+		set named 0
+		foreach row [angband_gear equipment] {
+			if {[lindex $row 3] ne ""} { incr named }
+		}
+		expr {$named == [llength [angband_gear equipment]]}
+	} 1
+
+	check "an item that is not there is refused" {
+		catch {angband_gear info inventory 999} e
+		set e
+	} "nothing at inventory 999"
+
+	check "and a view that does not exist is refused by name" {
+		catch {angband_gear info pockets 0} e
+		set e
+	} "expected inventory, equipment or quiver, not: pockets"
 
 	foreach row [angband_hook] { angband_hook [lindex $row 0] {} }
 	check "every hook can be given back" {
