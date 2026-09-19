@@ -1517,6 +1517,16 @@ static int objcmd_push(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	 * static in cmd-core.c, so the message says all three rather than
 	 * guessing at one.
 	 */
+	/*
+	 * The queue itself would survive this, but the nudge below would put a
+	 * keystroke into whatever prompt is open.  Same rule.
+	 */
+	if (player && !inkey_flag) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(
+				"the game is in the middle of something else", -1));
+		return TCL_ERROR;
+	}
+
 	if (cmdq_push_repeat((cmd_code)code, count) != 0) {
 		Tcl_SetObjResult(ip, Tcl_ObjPrintf(
 				"%s was not queued: the game has no handler for it, or the"
@@ -4111,6 +4121,23 @@ static bool in_play(void)
 static bool command_available(const struct cmd_info *c)
 {
 	if (!in_play()) return false;
+
+	/*
+	 * And only while the game is actually waiting for a command.
+	 *
+	 * inkey_flag is 4.2's own answer to this and main-win.c guards its menus
+	 * with it too.  It is true only in the main loop's wait, and false the
+	 * moment a command starts -- including while that command is running a
+	 * prompt or a menu of its own.
+	 *
+	 * Without it the menu bar stays live during those prompts, because they
+	 * reach Tk through the same Tcl_DoOneEvent as everything else, and a
+	 * second command starts *inside* the first.  The game's interface is not
+	 * re-entrant: doing that crashed in textui_get_item's mem_free, freeing
+	 * something the outer command had already freed.
+	 */
+	if (!inkey_flag) return false;
+
 	if (!c->prereq) return true;
 
 	if (c->prereq == player_can_cast_prereq)
@@ -4327,12 +4354,29 @@ static int objcmd_command(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 
 	c = &cmds_all[g].list[i];
 
+	if (!in_play()) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("not allowed just now", -1));
+		return TCL_ERROR;
+	}
+
+	/*
+	 * Refused outright unless the game is waiting for a command.  The greyed
+	 * menu is the courtesy; this is the guarantee, and it is the one that
+	 * matters -- a command started inside another one corrupts the heap, not
+	 * merely the display.
+	 */
+	if (!inkey_flag) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(
+				"the game is in the middle of something else", -1));
+		return TCL_ERROR;
+	}
+
 	/*
 	 * The real prereq here, not the quiet one: by this point the player has
 	 * chosen the command, and its message is how they are told why nothing
 	 * happened.  Menus ask command_available(); dispatch asks the game.
 	 */
-	if (!in_play() || (c->prereq && !c->prereq())) {
+	if (c->prereq && !c->prereq()) {
 		Tcl_SetObjResult(ip, Tcl_NewStringObj("not allowed just now", -1));
 		return TCL_ERROR;
 	}

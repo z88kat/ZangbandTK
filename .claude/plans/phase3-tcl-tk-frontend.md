@@ -1548,6 +1548,20 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 >   `textui_process_key()` treats as no command at all. Of the four keys it ignores, `\a` is
 >   the one nothing else means: escape cancels a prompt and space pages one.
 >
+> - **A menu command may only start while the game is waiting for one.** A crash report from
+>   play, and the worst kind: `textui_get_item` freeing something that had already been freed.
+>   The stack showed why — "View abilities" was chosen from a menu, its hook ran its own
+>   `menu_select`, that blocked in `inkey()`, `inkey()` pumped Tk, the menu bar was therefore
+>   still live, and a second command was started *inside* the first. **The game's interface is
+>   not re-entrant.**
+>
+>   The guard is `inkey_flag`, which is 4.2's own — true only in the main loop's wait, false
+>   the moment a command starts, including while that command runs a prompt of its own.
+>   [main-win.c:2980](../../src/main-win.c#L2980) guards its menus with exactly this, so the
+>   other GUI front ends met the same problem and settled it the same way. The menu greys as
+>   the courtesy and `angband_command` refuses as the guarantee — and here the guarantee is
+>   the one that matters, because the failure corrupts the heap rather than the display.
+>
 > Verified end to end: ^R chosen from the Utility menu redrew the map, "Stand still" chosen
 > from Other advanced the turn with no further key, and a command whose prereq fails answers
 > "not allowed just now" when invoked anyway. The menu greys as a courtesy; the dispatch
