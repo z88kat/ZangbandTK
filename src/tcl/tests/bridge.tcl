@@ -39,9 +39,9 @@ proc check {what script expected} {
 
 set cmds [angband_commands]
 check "the command table is not empty" {expr {[llength $::cmds] > 50}} 1
-check "every row has seven fields" {
+check "every row has eight fields" {
 	set bad 0
-	foreach row $::cmds { if {[llength $row] != 7} { incr bad } }
+	foreach row $::cmds { if {[llength $row] != 8} { incr bad } }
 	set bad
 } 0
 
@@ -49,7 +49,7 @@ check "every row has seven fields" {
 check "the table names its groups" {
 	set groups {}
 	foreach row $::cmds {
-		set g [lindex $row 0]
+		set g [lindex $row 1]
 		if {$g ni $groups} { lappend groups $g }
 	}
 	expr {"Items" in $groups && "Action commands" in $groups}
@@ -58,24 +58,27 @@ check "the table names its groups" {
 # Descriptions are what a menu shows, so none may be blank.
 check "every command has a description" {
 	set bad 0
-	foreach row $::cmds { if {[lindex $row 2] eq ""} { incr bad } }
+	foreach row $::cmds { if {[lindex $row 3] eq ""} { incr bad } }
 	set bad
 } 0
 
-# The keys are not filled in yet: cmd_init runs in textui_init, which is after
-# the front end starts.  Checked here so that the second pass below, once the
-# event loop is turning, means something.
-check "no keys before the game's UI is up" {
+# Most commands have a key even now.  cmd_init runs inside textui_init, which
+# is after the front end starts, so cmd_lookup_key answers nothing yet -- but
+# struct cmd_info carries the table's own key as well, and the accessor falls
+# back to it.  That is what lets a menu built early still show accelerators;
+# once cmd_init has run, a command with a code answers from the live keymap
+# instead, so a player's rebinding shows through.
+check "most commands carry a key even before the keymap is built" {
 	set keyed 0
-	foreach row $::cmds { if {[lindex $row 3] ne ""} { incr keyed } }
-	set keyed
-} 0
+	foreach row $::cmds { if {[lindex $row 4] ne ""} { incr keyed } }
+	expr {$keyed > 100}
+} 1
 
 # Before a character exists nothing is allowed, and asking must not crash --
 # the prereqs read the character and the level without checking either.
 check "no command is enabled without a character" {
 	set on 0
-	foreach row $::cmds { if {[lindex $row 4]} { incr on } }
+	foreach row $::cmds { if {[lindex $row 5]} { incr on } }
 	set on
 } 0
 
@@ -94,12 +97,35 @@ check "angband_command refuses without a character" {
 	set e
 } "not allowed just now"
 
+# The menu bar is generated from the table, so the two numbers in every row
+# have to address the row they came from.  If they ever stop agreeing, every
+# menu item runs the wrong command.
+check "each row's group index names its group" {
+	set groups {}
+	foreach row $::cmds {
+		lassign $row gidx group idx label key enabled level code
+		if {[dict exists $groups $gidx] && [dict get $groups $gidx] ne $group} {
+			return "group $gidx is both [dict get $groups $gidx] and $group"
+		}
+		dict set groups $gidx $group
+	}
+	expr {[dict size $groups] > 5}
+} 1
+
+check "the menu bar skips the hidden group" {
+	expr {"Hidden" in $::commands(skip)}
+} 1
+
+check "a group name becomes a legal menu path" {
+	list [commands_menu_path "Action commands"] [commands_menu_path Items]
+} ".menubar.cmdactioncommands .menubar.cmditems"
+
 # --- the command queue ------------------------------------------------------
 
 # Most table entries name a cmd_code; the rest are UI actions with a hook.
 check "the table names its command codes" {
 	set coded 0
-	foreach row $::cmds { if {[lindex $row 6] ne ""} { incr coded } }
+	foreach row $::cmds { if {[lindex $row 7] ne ""} { incr coded } }
 	expr {$coded > 60}
 } 1
 
@@ -380,12 +406,12 @@ check "closing it is just closing it" {
 # table; if the keys are still missing here, the front end and the keyboard are
 # not sharing one.
 proc second_pass {} {
-	check "the keys arrive once the game's UI is up" {
+	check "the keys are still there once the game's UI is up" {
 		set keyed 0
 		foreach row [angband_commands] {
-			if {[lindex $row 3] ne ""} { incr keyed }
+			if {[lindex $row 4] ne ""} { incr keyed }
 		}
-		expr {$keyed > 30}
+		expr {$keyed > 100}
 	} 1
 
 	# Events reaching us from the game itself, rather than ones we generated.

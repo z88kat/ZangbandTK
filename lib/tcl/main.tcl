@@ -174,6 +174,7 @@ menu .menubar.views -tearoff 0
 source [file join [file dirname [info script]] classical.tcl]
 source [file join [file dirname [info script]] character.tcl]
 source [file join [file dirname [info script]] knowledge.tcl]
+source [file join [file dirname [info script]] commands.tcl]
 
 proc angband_choose_tileset {id} {
     global angband

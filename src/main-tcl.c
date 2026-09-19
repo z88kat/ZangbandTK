@@ -36,6 +36,8 @@
 #include "obj-knowledge.h"
 #include "obj-util.h"
 #include "player-history.h"
+#include "player-timed.h"
+#include "player-util.h"
 #include "player-mutation.h"
 #include "player-virtue.h"
 #include "trap.h"
@@ -3852,10 +3854,62 @@ static bool in_play(void)
 }
 
 /**
+ * Can the character do this, asked quietly?
+ *
+ * The command table's prereq field is not a predicate.  It is the thing the
+ * game runs when the player has already pressed the key, and five of the six
+ * in cmds_all *print a message* explaining the refusal -- they are
+ * player_can_cast(p, true) and friends, where the second argument is
+ * show_msg.  The sixth, player_can_debug_prereq, goes further and puts up a
+ * confirmation dialog.
+ *
+ * Calling them to decide what a menu should grey out therefore does not work.
+ * Measured: asking all 132 in a row got as far as "Gain new spells" and stopped
+ * dead, because a run of messages reaches the -more- prompt and -more- waits
+ * for a keypress.  cmd->prereq() is called in exactly one place in the whole
+ * game -- ui-game.c's dispatch -- and 4.2's own command menu greys nothing.
+ *
+ * So the quiet half of each pair is called instead.  They already exist;
+ * only the wrappers are noisy.
+ *
+ * An unknown prereq is reported as *available* rather than called.  A new one
+ * upstream would otherwise hang the menu the first time it was opened, and
+ * "offered, then refused with a message" is what the game does anyway.
+ */
+static bool command_available(const struct cmd_info *c)
+{
+	if (!in_play()) return false;
+	if (!c->prereq) return true;
+
+	if (c->prereq == player_can_cast_prereq)
+		return player_can_cast(player, false);
+	if (c->prereq == player_can_study_prereq)
+		return player_can_study(player, false);
+	if (c->prereq == player_can_fire_prereq)
+		return player_can_fire(player, false);
+	if (c->prereq == player_can_refuel_prereq)
+		return player_can_refuel(player, false);
+	if (c->prereq == player_can_read_prereq) {
+		/* 'r' is overloaded while a monster is commanded; see the original. */
+		return player->timed[TMD_COMMAND]
+			? true : player_can_read(player, false);
+	}
+	if (c->prereq == player_can_debug_prereq) {
+		/*
+		 * The real one asks confirm_debug() and marks the savefile.  A menu
+		 * may not do either, so it reports what is already true.
+		 */
+		return (player->noscore & NOSCORE_DEBUG) != 0;
+	}
+
+	return true;
+}
+
+/**
  * angband_commands -- the game's own command table, for building menus from.
  *
- * Returns one row per command as {group index label key enabled level code},
- * where
+ * Returns one row per command as
+ * {groupindex group index label key enabled level code}, where
  * and index address it again for angband_command below.  The label, the key
  * and whether it is currently allowed are all the game's: ui-input.h's
  * struct cmd_info carries a description, up to two keys, a cmd_code and a
@@ -3912,7 +3966,16 @@ static int objcmd_commands(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			 * therefore carries no keys; one rebuilt on <<Angband_ENTER_WORLD>>
 			 * carries them all.
 			 */
+			/*
+			 * A command with a cmd_code is looked up through the keymap, so
+			 * the accelerator follows whatever the player has bound.  A
+			 * user-interface action has no code -- it is a hook -- and
+			 * cmd_lookup_key cannot find it, so its declared key is used
+			 * instead.  Without the fallback, Look around, Rest and the rest
+			 * of the hooks showed no key at all.
+			 */
 			key = c->cmd ? cmd_lookup_key(c->cmd, mode) : 0;
+			if (!key) key = (unsigned char)c->key[mode];
 			if (key && key < 0x20) {
 				keybuf[0] = '^';
 				keybuf[1] = (char)UN_KTRL_CAP(key);
@@ -3922,6 +3985,13 @@ static int objcmd_commands(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 				keybuf[1] = 0;
 			}
 
+			/*
+			 * The group's index as well as its name.  angband_command
+			 * addresses a command by two numbers, and without the first of
+			 * them a caller would have to count the groups itself to turn
+			 * a row back into something it can run.
+			 */
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj((int)g));
 			Tcl_ListObjAppendElement(ip, row,
 					Tcl_NewStringObj(group->name, -1));
 			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj((int)i));
@@ -3929,8 +3999,7 @@ static int objcmd_commands(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			Tcl_ListObjAppendElement(ip, row,
 					Tcl_NewStringObj(key ? keybuf : "", -1));
 			Tcl_ListObjAppendElement(ip, row,
-					Tcl_NewBooleanObj(in_play()
-						&& (!c->prereq || c->prereq())));
+					Tcl_NewBooleanObj(command_available(c)));
 			Tcl_ListObjAppendElement(ip, row,
 					Tcl_NewIntObj(group->menu_level));
 			/*
@@ -3995,6 +4064,11 @@ static int objcmd_command(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 
 	c = &cmds_all[g].list[i];
 
+	/*
+	 * The real prereq here, not the quiet one: by this point the player has
+	 * chosen the command, and its message is how they are told why nothing
+	 * happened.  Menus ask command_available(); dispatch asks the game.
+	 */
 	if (!in_play() || (c->prereq && !c->prereq())) {
 		Tcl_SetObjResult(ip, Tcl_NewStringObj("not allowed just now", -1));
 		return TCL_ERROR;

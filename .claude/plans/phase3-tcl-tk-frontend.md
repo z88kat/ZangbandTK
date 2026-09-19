@@ -1413,8 +1413,22 @@ adds in phase-2 M5.
 - **Every menu item displays its accelerator**, resolved through `cmd_lookup_key()` so it
   follows the player's own keymap. This is the design thesis, not a nicety: the menus teach
   the keyboard rather than replacing it ([OBS-17](phase3-observations.md)).
-- **Items grey out via the existing prereq predicates** — `player_can_read_prereq` and
-  friends. The original offered impossible actions; we should not.
+- ~~**Items grey out via the existing prereq predicates** — `player_can_read_prereq` and
+  friends.~~ **They cannot be, and this is the finding of the milestone.** Those are not
+  predicates: five of the six in `cmds_all` are `player_can_*(p, true)`, where the second
+  argument is `show_msg`, and the sixth puts up a confirmation dialog. They exist to be run
+  *after* the player has pressed the key, so the refusal explains itself.
+
+  Measured: asking all 132 in a row got as far as "Gain new spells" and stopped dead, because
+  a run of messages reaches `-more-` and `-more-` waits for a keypress. `cmd->prereq()` is
+  called in exactly one place in the whole game — [ui-game.c:671](../../src/ui-game.c#L671) —
+  and 4.2's own command menu greys nothing at all.
+
+  So the menu asks the quiet half of each pair, which already exists;
+  `command_available()` maps the six by function pointer, and **an unknown prereq is reported
+  as available rather than called**, since a new one upstream would otherwise hang the menu
+  the first time it was opened. The dispatch still calls the real one: there the message is
+  the point.
 - **T7 is five reusable widgets, not twenty screens** ([OBS-50](phase3-observations.md)):
   a **transfer window** (Store/Home — verbs, money on/off, owner), a **building window**
   (name, owner, service list), a **generic table** (Book/Powers/Mindcraft/Pets, and arguably Knowledge and
@@ -1484,6 +1498,30 @@ adds in phase-2 M5.
 playable without memorising a single command key. This is the promise in the user's brief.
 The Inventory, Recall, Choice, Book and Store rules in §1.5 are the checklist, including the
 Recall/Choice hand-off and the grow-on-hover behaviour.
+
+---
+
+> **The menu bar is generated and working.** `lib/tcl/commands.tcl` builds five menus —
+> Items, Action commands, Manage items, Information, Utility — from `angband_commands`, with
+> every label, accelerator and greyed state read from `cmds_all[]`. Nothing is hand-authored,
+> so a command added to the game appears without anyone editing the front end.
+>
+> - **Availability is a `-postcommand`**, asked the moment a menu is posted rather than
+>   tracked through events. Always right, and free the rest of the time.
+> - **Hook commands needed their declared key.** `cmd_lookup_key()` resolves a `cmd_code`
+>   through the player's keymap and cannot find a user-interface action, so Look around, Rest
+>   and the rest showed no accelerator until `c->key[mode]` was used as the fallback. The
+>   keymap still wins where there is a code, so a rebinding shows through.
+> - **"Hidden" is left out, as its name asks.** It holds Walk, Run and Repeat, which have keys
+>   and no business in a menu, beside Toggle windows and Load a single pref line, which have
+>   no business near a player. The Debug groups nest under it and go with it.
+>
+> Verified end to end: ^R chosen from the Utility menu redrew the map, and a command whose
+> prereq fails answers "not allowed just now" when invoked anyway. The menu greys as a
+> courtesy; the dispatch refuses as the guarantee. Sixty-four bridge checks.
+>
+> Still to come in T7: Choice, the five reusable widgets, stores and the buildings — all of
+> which want the inventory and equipment reads.
 
 ---
 
