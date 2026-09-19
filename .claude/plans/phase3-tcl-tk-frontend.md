@@ -1508,6 +1508,14 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 >
 > - **Availability is a `-postcommand`**, asked the moment a menu is posted rather than
 >   tracked through events. Always right, and free the rest of the time.
+> - **The key goes in the label, never in `-accelerator`.** Reported from play: "Throw an
+>   item" was advertised as **V**, and V is Version info. The accessor was right — it says
+>   `v` — but Tk turns an accelerator into an NSMenuItem `keyEquivalent`, and AppKit renders
+>   a lowercase one as the capital letter, because on a Mac a capital shown without ⇧ *means*
+>   the plain key. There is no way to make it show a lowercase letter. Worse, a key
+>   equivalent with no modifier is a real shortcut as far as AppKit is concerned, so the menu
+>   was quietly laying claim to letters the game needs. The key is part of the label now, in
+>   the brackets the design system already uses for keys.
 > - **Hook commands needed their declared key.** `cmd_lookup_key()` resolves a `cmd_code`
 >   through the player's keymap and cannot find a user-interface action, so Look around, Rest
 >   and the rest showed no accelerator until `c->key[mode]` was used as the fallback. The

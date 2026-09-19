@@ -116,6 +116,14 @@ check "the menu bar skips the hidden group" {
 	expr {"Hidden" in $::commands(skip)}
 } 1
 
+# The key goes in the label, never in -accelerator: AppKit renders a lowercase
+# key equivalent as the capital, so "Throw an item", which answers to v, was
+# advertised as V -- and V is Version info.
+check "a command's key is shown exactly as it must be typed" {
+	list [commands_label "Throw an item" v] [commands_label "Version info" V] \
+		[commands_label "Look around" ""]
+} {{Throw an item  [v]} {Version info  [V]} {Look around}}
+
 check "a group name becomes a legal menu path" {
 	list [commands_menu_path "Action commands"] [commands_menu_path Items]
 } ".menubar.cmdactioncommands .menubar.cmditems"

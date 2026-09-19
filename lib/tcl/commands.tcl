@@ -25,6 +25,23 @@
 # them otherwise is an invitation to spoil a game.
 set commands(skip) {Hidden}
 
+# An entry's text, with the key it answers to.
+#
+# Not -accelerator, and this matters.  Tk turns an accelerator into an
+# NSMenuItem keyEquivalent, and AppKit renders a lowercase key equivalent as
+# the capital letter -- so "Throw an item", which answers to v, was advertised
+# as V, and V is Version info.  A menu that teaches the wrong key is worse than
+# one that teaches none.  Worse still, a key equivalent with no modifier is a
+# real shortcut as far as AppKit is concerned, and a menu quietly claiming the
+# letters of the alphabet is not something to leave to chance.
+#
+# So the key goes in the label, in the brackets the design system uses for keys
+# everywhere else.
+proc commands_label {label key} {
+    if {$key eq ""} { return $label }
+    return "$label  \[$key\]"
+}
+
 proc commands_menu_path {name} {
     # A menu path has to be a legal Tk pathname, and the group names have
     # spaces in them.
@@ -75,7 +92,7 @@ proc commands_build {} {
 
         foreach row $byname($group) {
             lassign $row gidx g idx label key enabled level code
-            $m add command -label $label -accelerator $key \
+            $m add command -label [commands_label $label $key] \
                 -command [list angband_command $gidx $idx]
         }
     }
@@ -98,7 +115,7 @@ proc commands_refresh {group} {
         if {$g ne $group} continue
         if {$level != 0} continue
         $m entryconfigure $i -state [expr {$enabled ? "normal" : "disabled"}] \
-            -accelerator $key
+            -label [commands_label $label $key]
         incr i
     }
 }
