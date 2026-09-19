@@ -289,7 +289,7 @@ proc classical::meter_set {f ratio} {
 # A read-only prose panel: the history, and anything else the game hands us as
 # a paragraph.  A text widget because it has to wrap, disabled because a sheet
 # you can type into is a sheet that lies.
-proc classical::prose {parent name {height 4}} {
+proc classical::prose {parent name {height 4} {scroll 0}} {
     set f $parent.p$name
     frame $f -bg [classical::c neutral-100] -highlightthickness 1 \
         -highlightbackground [classical::c divider] -bd 0
@@ -297,9 +297,24 @@ proc classical::prose {parent name {height 4}} {
         -highlightthickness 0 -bg [classical::c neutral-100] -fg [classical::c neutral-800] \
         -font [classical::f history] -padx [classical::sp 4] -pady [classical::sp 4] -spacing1 2 -spacing3 6 \
         -cursor arrow
-    pack $f.t -fill both -expand 1
+    if {$scroll} {
+        ttk::scrollbar $f.sb -orient vertical -command [list $f.t yview]
+        $f.t configure -yscrollcommand [list $f.sb set]
+        pack $f.sb -side right -fill y
+    }
+    pack $f.t -side left -fill both -expand 1
     $f.t configure -state disabled
     return $f
+}
+
+# Prose that is a list of lines rather than a paragraph, so the panel must not
+# reflow it: the timeline's columns are the point of the timeline.
+proc classical::prose_set_lines {f lines} {
+    $f.t configure -state normal
+    $f.t delete 1.0 end
+    $f.t insert end [join $lines "\n"]
+    $f.t configure -state disabled
+    $f.t see 1.0
 }
 
 proc classical::prose_set {f text} {

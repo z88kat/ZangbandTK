@@ -1306,8 +1306,32 @@ knowledge browsers are **windows that open** (decision 16), not panes.
 > verbs and refuse the same way, since that uniformity is the whole reason the browser can be
 > one generic pane.
 >
-> Still to come in T6: the Character window's five-tab home, of which Virtues can be filled
-> immediately.
+> **The Character window is a four-page home.** Info, Virtues, Mutations, Notes — the
+> identity header and the three meters stay above the tabs, because they are the live part
+> and every page wants them. `angband_virtue`, `angband_mutation` and `angband_history` each
+> take one verb, `list`, since each is about *this* character and there is nothing to search.
+>
+> **Flags is not there, and that is the point.** OBS-21 asks for five tabs, but the
+> resistance grid is built from `ui-entry.h`'s iterator with a column per equipment slot, and
+> neither the equipment reads nor that machinery exist yet. An empty tab is worse than a
+> missing one; it arrives with equipment in T7.
+>
+> Three findings:
+>
+> - **`virtue_describe()` is a fragment, not a description.** It returns "neutral to", because
+>   it is written to be read as "You are neutral to Valour" — a column of them is nonsense.
+>   `virtue_line()` is the whole sentence and is what the game prints elsewhere.
+> - **A savefile can predate a feature.** Findur has no virtues at all, because `vir_types[]`
+>   is zero for characters made before the game recorded them; a new character gets eight.
+>   The page says so rather than showing an empty table that looks broken, and the same
+>   applies to mutations.
+> - **The timeline needed a panel that does not reflow.** 4.2's history is turn, depth, level
+>   and event, and the columns are the point — so `classical::prose_set_lines` sits beside
+>   `prose_set`, which flattens whitespace for a paragraph.
+>
+> Sixty-one bridge checks.
+>
+> T6 is complete but for Flags.
 
 > **The Character window is a five-tab home, not a screen** — Info, Flags, Mutations,
 > Virtues, Notes ([OBS-21](phase3-observations.md)). Two of those tabs are where Phase 2's

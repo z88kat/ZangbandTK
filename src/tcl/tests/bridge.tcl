@@ -228,6 +228,34 @@ check "the character window opens without a character" {
 	list [winfo exists .character] [set ::character(v,name)]
 } "1 —"
 
+check "the character window has a page per entry" {
+	set pages {}
+	foreach page $::character(pages) {
+		lassign $page key label numeral
+		lappend pages [winfo exists .character.card.body.$key]
+	}
+	list [llength $::character(pages)] [lsort -unique $pages]
+} "4 1"
+
+check "the pages switch" {
+	set ::character(page) notes
+	character_switch
+	set a [grid info .character.card.body.notes]
+	set ::character(page) info
+	character_switch
+	list [expr {$a ne ""}] [expr {[grid info .character.card.body.notes] eq ""}]
+} "1 1"
+
+# The three per-character lists all refuse the same way before there is one.
+check "virtues, mutations and the timeline want a character" {
+	set said {}
+	foreach cmd {angband_virtue angband_mutation angband_history} {
+		catch {$cmd list} e
+		lappend said $e
+	}
+	lsort -unique $said
+} "{there is no character yet}"
+
 check "it holds the stat rows its sections asked for" {
 	set wanted 0
 	foreach section $::character(sections) {

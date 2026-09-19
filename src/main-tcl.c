@@ -36,6 +36,8 @@
 #include "obj-knowledge.h"
 #include "obj-util.h"
 #include "player-history.h"
+#include "player-mutation.h"
+#include "player-virtue.h"
 #include "trap.h"
 #include "ui-knowledge.h"
 #include "ui-command.h"
@@ -3509,6 +3511,166 @@ static int objcmd_trap(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 /**
+ * The character window's other pages: virtues, mutations and the timeline.
+ *
+ * Three small lists rather than three tables: each is about *this* character,
+ * so there is nothing to search and nothing to look up by index.  One verb,
+ * `list`, and the caller draws it.
+ */
+
+/**
+ * angband_virtue list -- the eight a character is measured against.
+ *
+ *    {index name value description sentence}
+ *
+ * A character holds eight of the eighteen, chosen at birth from their race,
+ * class and realms, so this is their eight and not the whole table.  The
+ * sentence is virtue_line()'s, which is what the game itself prints; the parts
+ * are there as well because a table wants columns and a paragraph does not.
+ */
+static int objcmd_virtue(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	Tcl_Obj *list;
+	int i;
+
+	(void)dummy;
+
+	if (objc != 2 || strcmp(Tcl_GetString(objv[1]), "list") != 0) {
+		Tcl_WrongNumArgs(ip, 1, objv, "list");
+		return TCL_ERROR;
+	}
+	if (!player) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("there is no character yet", -1));
+		return TCL_ERROR;
+	}
+
+	list = Tcl_NewListObj(0, NULL);
+
+	for (i = 0; i < MAX_PLAYER_VIRTUES; i++) {
+		int v = player->vir_types[i];
+		char line[120];
+		Tcl_Obj *row;
+
+		/* An empty slot: a character with fewer than eight. */
+		if (!v) continue;
+
+		row = Tcl_NewListObj(0, NULL);
+		Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(v));
+		Tcl_ListObjAppendElement(ip, row,
+				Tcl_NewStringObj(virtue_name(v) ? virtue_name(v) : "", -1));
+		Tcl_ListObjAppendElement(ip, row,
+				Tcl_NewIntObj(virtue_value(player, v)));
+		Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(
+				virtue_describe(virtue_value(player, v)), -1));
+		Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(
+				virtue_line(player, i, line, sizeof(line)) ? line : "", -1));
+		Tcl_ListObjAppendElement(ip, list, row);
+	}
+
+	Tcl_SetObjResult(ip, list);
+
+	return TCL_OK;
+}
+
+/**
+ * angband_mutation list -- what has been done to this character.
+ *
+ *    {index name description power}
+ *
+ * The whole mutation list is walked and the ones the character does not have
+ * are dropped, rather than reading their flag array directly: player_has_
+ * mutation is the game's own test and the flags are a bitfield whose indices
+ * are assigned at load.
+ */
+static int objcmd_mutation(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const struct mutation *mut;
+	Tcl_Obj *list;
+
+	(void)dummy;
+
+	if (objc != 2 || strcmp(Tcl_GetString(objv[1]), "list") != 0) {
+		Tcl_WrongNumArgs(ip, 1, objv, "list");
+		return TCL_ERROR;
+	}
+	if (!player) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("there is no character yet", -1));
+		return TCL_ERROR;
+	}
+
+	list = Tcl_NewListObj(0, NULL);
+
+	for (mut = mutations; mut; mut = mut->next) {
+		Tcl_Obj *row;
+
+		if (!player_has_mutation(player, mut)) continue;
+
+		row = Tcl_NewListObj(0, NULL);
+		Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj((int)mut->midx));
+		Tcl_ListObjAppendElement(ip, row,
+				Tcl_NewStringObj(mut->name ? mut->name : "", -1));
+		Tcl_ListObjAppendElement(ip, row,
+				Tcl_NewStringObj(mut->desc ? mut->desc : "", -1));
+		Tcl_ListObjAppendElement(ip, row,
+				Tcl_NewStringObj(mut->power ? mut->power : "", -1));
+		Tcl_ListObjAppendElement(ip, list, row);
+	}
+
+	Tcl_SetObjResult(ip, list);
+
+	return TCL_OK;
+}
+
+/**
+ * angband_history list -- what has happened to this character.
+ *
+ *    {turn depth level text}
+ *
+ * 4.2's history is richer than the original had anywhere to put it: every
+ * artifact found, every level gained, every death survived, with the turn and
+ * the depth it happened at.  That is the Notes page.
+ */
+static int objcmd_history(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	struct history_info *entries = NULL;
+	Tcl_Obj *list;
+	size_t n, i;
+
+	(void)dummy;
+
+	if (objc != 2 || strcmp(Tcl_GetString(objv[1]), "list") != 0) {
+		Tcl_WrongNumArgs(ip, 1, objv, "list");
+		return TCL_ERROR;
+	}
+	if (!player) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("there is no character yet", -1));
+		return TCL_ERROR;
+	}
+
+	n = history_get_list(player, &entries);
+	list = Tcl_NewListObj(0, NULL);
+
+	for (i = 0; i < n; i++) {
+		Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+
+		Tcl_ListObjAppendElement(ip, row,
+				Tcl_NewIntObj((int)entries[i].turn));
+		Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(entries[i].dlev));
+		Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(entries[i].clev));
+		Tcl_ListObjAppendElement(ip, row,
+				Tcl_NewStringObj(entries[i].event, -1));
+		Tcl_ListObjAppendElement(ip, list, row);
+	}
+
+	Tcl_SetObjResult(ip, list);
+
+	return TCL_OK;
+}
+
+/**
  * angband_option -- read and write the game's options.
  *
  *    angband_option                     every option, as {name type desc value}
@@ -4554,6 +4716,11 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_feature", objcmd_feature, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_trap", objcmd_trap, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_virtue", objcmd_virtue, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_mutation", objcmd_mutation, NULL,
+			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_history", objcmd_history, NULL,
+			NULL);
 
 	hooks_init();
 

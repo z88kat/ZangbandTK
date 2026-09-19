@@ -45,6 +45,30 @@ set character(sections) {
     }}
 }
 
+# The pages, in order.  Flags is not here: the resistance grid is built from
+# ui-entry.h's iterator and a column per equipment slot, and neither the
+# equipment reads nor that machinery exist yet.  An empty tab would be worse
+# than a missing one; it arrives with equipment in T7.
+set character(pages) {
+    {info      INFO      i}
+    {virtues   VIRTUES   ii}
+    {mutations MUTATIONS iii}
+    {notes     NOTES     iv}
+}
+set character(page) info
+
+# The pages, in order.  Flags is not here: the resistance grid is built from
+# ui-entry.h's iterator with a column per equipment slot, and neither the
+# equipment reads nor that machinery exist yet.  An empty tab would be worse
+# than a missing one; it arrives with equipment in T7.
+set character(pages) {
+    {info      INFO      i}
+    {virtues   VIRTUES   ii}
+    {mutations MUTATIONS iii}
+    {notes     NOTES     iv}
+}
+set character(page) info
+
 # When to read again.  The handful of events that can move a field, rather than
 # all 66: EVENT_MAP alone fires many times a turn and none of them is a stat.
 set character(events) {
@@ -154,11 +178,102 @@ proc character_refresh {} {
             [expr {$most > 0 ? double($now) / $most : 0}]
     }
 
-    classical::prose_set .character.card.body.phistory \
+    classical::prose_set .character.card.body.info.phistory \
         [expr {$have ? [dict get $v history] : ""}]
+
+    character_refresh_virtues
+    character_refresh_mutations
+    character_refresh_notes
 
     set character(v,status) [expr {$have
         ? "turn [angband_player turn]" : "no character"}]
+}
+
+# A character made before the game recorded something has nothing to show for
+# it, and saying so is better than an empty table that looks broken.
+proc character_page_empty {page text} {
+    classical::prose_set .character.card.body.$page.p$page $text
+}
+
+proc character_refresh_virtues {} {
+    if {![winfo exists .character]} return
+
+    if {[catch {angband_virtue list} rows]} { set rows {} }
+
+    if {![llength $rows]} {
+        character_page_empty virtues \
+            "Nothing is recorded. A character chooses eight virtues at birth,\
+             from their race, their class and the realms they study; one made\
+             before the game kept them has none."
+        return
+    }
+
+    # The game's own sentence for each.  virtue_describe on its own is a
+    # fragment -- "neutral to" -- because it is written to be read as "You are
+    # neutral to Valour", and a column of those reads as nonsense.  virtue_line
+    # is the whole thing, and it is what the game prints elsewhere.
+    set lines {}
+    foreach row $rows {
+        lassign $row idx name value desc line
+        lappend lines [expr {$line ne "" ? $line
+            : [format "%-16s %5d %s" $name $value $desc]}]
+    }
+    classical::prose_set_lines .character.card.body.virtues.pvirtues $lines
+}
+
+proc character_refresh_mutations {} {
+    if {![winfo exists .character]} return
+
+    if {[catch {angband_mutation list} rows]} { set rows {} }
+
+    if {![llength $rows]} {
+        character_page_empty mutations \
+            "Unchanged. Nothing has rewritten this character yet."
+        return
+    }
+
+    set lines {}
+    foreach row $rows {
+        lassign $row idx name desc power
+        lappend lines $desc
+    }
+    classical::prose_set_lines .character.card.body.mutations.pmutations $lines
+}
+
+proc character_refresh_notes {} {
+    if {![winfo exists .character]} return
+
+    if {[catch {angband_history list} rows]} { set rows {} }
+
+    if {![llength $rows]} {
+        character_page_empty notes "Nothing has happened yet."
+        return
+    }
+
+    # Turn, depth, level, event.  Columns, so the panel must not reflow it --
+    # which is what prose_set_lines is for.
+    set lines {}
+    foreach row $rows {
+        lassign $row turn depth clev text
+        lappend lines [format "%8s  %-6s  %-4s  %s" $turn \
+            [expr {$depth == 0 ? "town" : "[expr {$depth * 50}] ft"}] \
+            "L$clev" $text]
+    }
+    classical::prose_set_lines .character.card.body.notes.pnotes $lines
+}
+
+proc character_switch {} {
+    global character
+
+    foreach page $character(pages) {
+        lassign $page key label numeral
+        if {$key eq $character(page)} {
+            grid .character.card.body.$key -row 0 -column 0 -sticky nsew
+        } else {
+            grid remove .character.card.body.$key
+        }
+    }
+    character_refresh
 }
 
 # --- the window ---------------------------------------------------------------
@@ -257,13 +372,38 @@ proc character_window {} {
     classical::responsive $meters \
         [list $meters.mhp $meters.msp $meters.mxp] 220
 
-    # --- stat columns ---------------------------------------------------
+    # --- the pages ------------------------------------------------------
+    set tabs {}
+    foreach page $character(pages) {
+        lassign $page key label numeral
+        lappend tabs $key $label
+    }
+    set strip [classical::tabstrip $card pages $tabs character(page) \
+        character_switch]
+    pack $strip -fill x -padx [classical::sp 6] \
+        -pady [list [classical::sp 3] [classical::sp 3]]
+
     set body $card.body
     frame $body -bg [classical::c bg]
     pack $body -fill both -expand 1 -padx [classical::sp 6] \
-        -pady [list [classical::sp 2] [classical::sp 6]]
+        -pady [list 0 [classical::sp 6]]
+    grid columnconfigure $body 0 -weight 1
+    grid rowconfigure $body 0 -weight 1
 
-    set cols $body.cols
+    # Every page in the same cell; switching raises one and removes the rest.
+    foreach page $character(pages) {
+        lassign $page key label numeral
+        frame $body.$key -bg [classical::c bg]
+    }
+
+    # The three that are a single panel apiece.
+    foreach {key height} {virtues 14 mutations 14 notes 18} {
+        pack [classical::prose $body.$key $key $height 1] \
+            -fill both -expand 1
+    }
+
+    set info $body.info
+    set cols $info.cols
     frame $cols -bg [classical::c bg]
     pack $cols -fill x
 
@@ -289,12 +429,14 @@ proc character_window {} {
     }
     classical::responsive $cols $frames 260
 
-    # --- history --------------------------------------------------------
-    classical::sectionhead $body history "HISTORY" iv
-    pack $body.hhistory -fill x -pady [list [classical::sp 4] [classical::sp 3]]
-    pack [classical::prose $body history 3] -fill both -expand 1
+    # --- the background, which belongs with the rest of the identity ----
+    classical::sectionhead $info history "HISTORY" iv
+    pack $info.hhistory -fill x \
+        -pady [list [classical::sp 4] [classical::sp 3]]
+    pack [classical::prose $info history 3] -fill both -expand 1
 
-    character_refresh
+    classical::tab_paint $strip character(page)
+    character_switch
 
     # The geometry above is only a request until the window is mapped, and the
     # column count is computed from the real width, so settle one before the
