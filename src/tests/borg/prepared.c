@@ -34,7 +34,11 @@
 #include "borg/borg-flow-misc.h"
 #include "borg/borg-magic.h"
 #include "borg/borg-prepared.h"
+#include "borg/borg-item-analyze.h"
 #include "borg/borg-trait.h"
+#include "effects.h"
+#include "obj-tval.h"
+#include "obj-util.h"
 #include "borg/borg.h"
 
 int setup_tests(void **state)
@@ -402,9 +406,75 @@ static int test_an_unknown_spell_is_not_found_by_name(void *state)
 	ok;
 }
 
+
+/**
+ * Every food in the game feeds the borg, not just the ones it has names for.
+ *
+ * `borg_notice()` classified `TV_FOOD` by a list of svals, and the list is
+ * Angband's. This game imports its own -- Strips of Venison -- so the borg
+ * counted it as nothing: it starved carrying a meal, gave "5 Food" as the
+ * reason it would not dive, and sold the venison to the General Store on the
+ * way past as worthless.
+ *
+ * Written against the *data* rather than against venison, because the next
+ * imported food would reintroduce it silently. Anything edible whose effect
+ * feeds has to count for something; anything that empties the stomach must not.
+ */
+static int test_every_food_counts_as_food(void *state) {
+	int k, fed = 0, purges = 0;
+
+	for (k = 1; k < z_info->k_max; k++) {
+		struct object_kind *kind = &k_info[k];
+		bool feeds, empties;
+
+		if (!kind->name) continue;
+		if (kind->tval != TV_FOOD && kind->tval != TV_MUSHROOM) continue;
+
+		feeds = borg_food_feeds(k);
+		empties = borg_obj_has_effect(k, EF_NOURISH, 1)
+			|| borg_obj_has_effect(k, EF_NOURISH, 2);
+
+		/*
+		 * `INC_BY` and `INC_TO` feed; `DEC_BY` and `SET_TO` are what a
+		 * mushroom of Purging does. An item can carry both -- a Scrap of
+		 * Flesh rolls one of several -- and feeding is what decides it.
+		 */
+		if (feeds) {
+			fed++;
+		} else if (empties) {
+			purges++;
+		}
+	}
+
+	/* The roster is real: this game has both kinds */
+	require(fed > 5);
+	require(purges > 0);
+
+	/*
+	 * And the one this game imported is among the fed.
+	 *
+	 * Found by scanning for the name rather than through `lookup_sval()`,
+	 * which wants the plural-marked form out of the data file and returns -1
+	 * for the name a person would write.
+	 */
+	{
+		bool found = false;
+
+		for (k = 1; k < z_info->k_max; k++) {
+			if (!k_info[k].name) continue;
+			if (!strstr(k_info[k].name, "Venison")) continue;
+			found = true;
+			require(borg_food_feeds(k));
+		}
+		require(found);
+	}
+	ok;
+}
+
 const char *suite_name = "borg/prepared";
 
 struct test tests[] = {
+	{ "every food counts as food", test_every_food_counts_as_food },
 	{ "a well supplied borg may reach depth thirty",
 	  test_a_well_supplied_borg_may_reach_depth_thirty },
 	{ "a borg that may not descend has somewhere to go",

@@ -2306,7 +2306,7 @@ static void borg_notice_inventory(void)
                 /* check for food that gives nutrition */
                 if (item->tval == TV_MUSHROOM) {
                     /* mushrooms that increase nutrition are low effect */
-                    if (borg_obj_has_effect(item->kind, EF_NOURISH, 0))
+                    if (borg_food_feeds(item->kind))
                         borg.trait[BI_FOOD_LO] += item->iqty;
                 } else /* TV_FOOD */
                 {
@@ -2320,8 +2320,28 @@ static void borg_notice_inventory(void)
                                || item->sval == sv_food_slice
                                || item->sval == sv_food_honey_cake
                                || item->sval == sv_food_waybread
-                               || item->sval == sv_food_draught)
+                               || item->sval == sv_food_draught) {
                         borg.trait[BI_FOOD_HI] += item->iqty;
+                    } else if (borg_food_feeds(item->kind)) {
+                        /*
+                         * Anything else that feeds (ZangbandTK, BRG-13).
+                         *
+                         * The list above is a list of *names*, and it is
+                         * Angband's. This game imports its own foods, and the
+                         * one it imports -- Strips of Venison -- is not on it,
+                         * so the borg counted it as no food at all: it starved
+                         * carrying a meal, reported "5 Food" as the reason it
+                         * would not dive, and sold the venison to the General
+                         * Store as worthless on the way past.
+                         *
+                         * Counted low rather than high, which is deliberate.
+                         * The named list is upstream's calibration of what a
+                         * real meal is worth and is left exactly as it was;
+                         * this is a floor under it so that an unrecognised
+                         * food is worth *something* rather than nothing.
+                         */
+                        borg.trait[BI_FOOD_LO] += item->iqty;
+                    }
                 }
 
                 /* check for food that does stuff */

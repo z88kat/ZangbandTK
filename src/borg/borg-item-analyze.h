@@ -35,6 +35,7 @@ extern void borg_item_analyze(
  * Check if an item produces a certain effect
  */
 extern bool borg_obj_has_effect(uint32_t kind, int index, int subtype);
+extern bool borg_food_feeds(uint32_t kind);
 
 /*
  * Check if an item power is "random"

@@ -4579,3 +4579,68 @@ and the numbers above are the reason it should not be attempted without one.**
 **What shipped:** the shops counter and its reporting. Nothing else. Both
 behaviour changes were measured, found to move nothing or to move the wrong way,
 and reverted.
+
+---
+
+**DEC-89 — The borg starved carrying food it had no name for.** (BRG-13,
+3.124.2.)
+
+The symptom was read as shop selection: the borg walks into a shop, records
+`# Currently in store '8' would prefer '2'`, and leaves the level. Traced, that
+is not what is wrong. It reaches the General Store perfectly well -- and **sells
+its food there**, then reports "5 Food" as the reason it will not dive.
+
+`borg_notice()` classified `TV_FOOD` by a list of **svals**, and the list is
+Angband's: apple, handful, slime mold, pint, sip, ration, slice, honey cake,
+waybread, draught. This game imports one food of its own, Strips of Venison, and
+it is not on the list. So it counted for nothing in `BI_FOOD`, the dive gate saw
+an empty larder, and the sell logic disposed of it as worthless on the way past.
+A borg starving with a meal in its pack.
+
+The mushroom branch three lines above already did it the right way, asking
+whether the item has a `NOURISH` effect. The food branch now asks the same
+question as a floor under the named list -- the names stay exactly as upstream
+calibrated them, and anything else that feeds counts as low-value food rather
+than as nothing.
+
+`NOURISH` has four subtypes and only two of them are food: `INC_BY` and
+`INC_TO`. `DEC_BY` and `SET_TO` are what a mushroom of Purging does, and
+counting those would have the borg diving on a stomach it had just emptied. The
+mushroom branch tested `INC_BY` alone, so a mushroom feeding with `INC_TO` did
+not count either; both callers now go through `borg_food_feeds()`.
+
+**Measured, twelve runs of 60,000 turns, Darwin arm64** (local figures, for
+before-and-after only):
+
+| | before | after |
+|---|---|---|
+| food in the blocked tally | 4 | **3** |
+| sum-depth | 21 | **23** |
+| deepest | 3 | **4** |
+| highest character level | 6 | **7** |
+| sum-level | 37 | 37 |
+| deaths | 6 | 6 |
+| spells cast | 20 | 18 |
+| shops reached | 17 | 16 |
+
+The clearest single run is Warrior seed 7: allowed depth 1 and held on "5 Food"
+before, allowed depth **4** and held on "restock recall" after, at character
+level 7 rather than 6. Casting and shops drift down slightly because the runs
+diverge once behaviour changes and Priest seed 7 now dies at 25,000 turns rather
+than 59,000 -- less blocked, so deeper, so deader. Both stay far inside the
+nightly's thresholds.
+
+**The other half of the tally is a different problem.** Three runs are held on
+"2 cure", and that is not this bug: there are no imported healing potions, so
+nothing is being mis-classified. The borg cannot afford or cannot find them,
+which is economics rather than naming, and is untouched here.
+
+**Guarded by data rather than by venison.** `borg/prepared` now walks every
+`TV_FOOD` and `TV_MUSHROOM` kind in the game and asserts that the ones whose
+effect feeds are recognised and the ones that empty the stomach are not, so the
+next imported food cannot reintroduce this silently. Falsified both ways:
+dropping `INC_TO` fails it, and accepting every `NOURISH` subtype fails it too.
+
+**`tests/borg/BASELINE` is not updated here.** Its own instructions say to take
+it from a nightly rather than from a local sweep, and these numbers are Darwin.
+If the nightly totals shift, that file wants refreshing from the nightly's log.

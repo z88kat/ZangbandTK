@@ -46,6 +46,44 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
+The borg starved holding a meal — 20 September 2026
+------------------------------------------------------------
+
+- **3.124.2** — The borg counts **every** food as food, not only the ones
+  Angband named (BRG-13, DEC-89).
+
+  The symptom looked like shop selection: walk into a shop, note "would prefer
+  '2'", leave the level. Traced, that is not it. The borg reaches the General
+  Store perfectly well and **sells its food there**, then gives "5 Food" as the
+  reason it will not dive.
+
+  ``borg_notice()`` classified ``TV_FOOD`` by a list of svals, and the list is
+  Angband's — apple, ration, waybread and eight more. This game imports one food
+  of its own, Strips of Venison, and it is not on the list, so it counted for
+  nothing: the dive gate saw an empty larder and the sell logic dumped the
+  venison as worthless on the way past.
+
+  The mushroom branch three lines above already asked the right question —
+  whether the item's effect feeds. The food branch now asks it too, as a floor
+  under the named list rather than a replacement: the names keep upstream's
+  calibration, and anything else that feeds counts as low-value food instead of
+  nothing. Only ``INC_BY`` and ``INC_TO`` count; ``DEC_BY`` and ``SET_TO`` are
+  what a mushroom of Purging does.
+
+  Measured over twelve runs of 60,000 turns: food in the blocked tally 4 → 3,
+  sum-depth 21 → 23, deepest 3 → 4, best character level 6 → 7. Warrior seed 7
+  went from allowed depth 1 on "5 Food" to allowed depth **4** on "restock
+  recall". Casting drifts 20 → 18 and shops 17 → 16 because the runs diverge
+  once behaviour changes — one Priest now dives further and dies sooner.
+
+  The three runs held on "2 cure" are a different problem: there are no imported
+  healing potions, so nothing is mis-classified there. That one is affordability,
+  not naming.
+
+  ``borg/prepared`` now walks every food kind in the game and asserts that what
+  feeds is recognised and what empties the stomach is not, so the next imported
+  food cannot reintroduce this quietly.
+
 Two borg diagnoses, both wrong — 19 September 2026
 ------------------------------------------------------------
 

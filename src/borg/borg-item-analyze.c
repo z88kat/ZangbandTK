@@ -21,6 +21,7 @@
 
 #ifdef ALLOW_BORG
 
+#include "../effects.h"
 #include "../init.h"
 #include "../obj-curse.h"
 #include "../obj-knowledge.h"
@@ -629,6 +630,23 @@ void borg_item_analyze(
  * index    - index of the effect
  * subtype  - subtype of the effect
  */
+/**
+ * Does eating this actually feed you? (ZangbandTK, BRG-13)
+ *
+ * `NOURISH` has four subtypes and only two of them are food: `INC_BY` (0) adds
+ * to the meter and `INC_TO` (3) tops it up to a level.  `DEC_BY` and `SET_TO`
+ * are what a mushroom of Purging does, and counting those as rations would have
+ * the borg diving on a stomach it had just emptied.
+ *
+ * The mushroom branch of the trait scan tested subtype 0 alone, so a mushroom
+ * that fed with `INC_TO` did not count either; both callers now ask this.
+ */
+bool borg_food_feeds(uint32_t kind)
+{
+    return borg_obj_has_effect(kind, EF_NOURISH, 0)
+        || borg_obj_has_effect(kind, EF_NOURISH, 3);
+}
+
 bool borg_obj_has_effect(uint32_t kind, int index, int subtype)
 {
     struct effect *ke = k_info[kind].effect;
