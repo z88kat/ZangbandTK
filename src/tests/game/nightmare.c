@@ -434,46 +434,66 @@ static int test_no_stairs_can_be_made(void *state) {
 }
 
 /**
- * A FORCE_DEPTH monster can be chosen above its level (monster2.c:1735).
+ * A FORCE_DEPTH monster can be *placed* above its level
+ * ([monster2.c:1734](../archive/zangband/src/monster2.c#L1734)).
  *
- * 4.2 refuses outright; nightmare mode allows it for everything except a quest
- * monster.
+ * Asked of placement, and that is the correction. This used to ask
+ * `get_mon_num()` -- the allocation table -- and the exemption used to live
+ * there, which is the wrong half of the mechanism and meant the behaviour never
+ * happened: the archive refuses unconditionally when *drawing* (monster2.c:821)
+ * and relaxes only when a monster is put down deliberately. With the exemption
+ * in the selector and absent from the placement gate, the selector could pick a
+ * deep monster in nightmare and placement threw it away every time.
  *
- * Asked of the selection rather than of a sample. Every FORCE_DEPTH monster
- * this game ships is a level-99 unique -- the four Saurons and Morgoth -- so
- * drawing until one appears is a lottery that returns zero on both sides and
- * says nothing. The flag is borrowed for a race that *is* chosen, sitting one
- * level above the floor and drawn against a shallow table, so the guard is the
- * only thing that varies between the two halves.
+ * A test that asked the selector could not see that, which is why it is asked
+ * of `place_new_monster()` now: the thing a player would notice is the monster
+ * standing there.
  */
 static int test_a_force_depth_monster_can_come_up(void *state) {
 	struct monster_race *guinea = lookup_monster("soldier");
-	int plain = 0, nasty = 0, i;
-	const int runs = 2000;
-	const int depth = 5;
-	int kept_level;
+	struct monster *plain, *nasty;
+	int kept_level, i, drawn_plain = 0, drawn_nasty = 0;
+	const int runs = 500;
 
 	require(guinea);
 	kept_level = guinea->level;
-	guinea->level = depth + 1;
 	rf_on(guinea->flags, RF_FORCE_DEPTH);
 
+	/* Deeper than the floor it is being put on, which is the whole case. */
+	guinea->level = cave->depth + 10;
+
+	nightmare(false);
+	plain = place_one("soldier", false);
+
+	nightmare(true);
+	nasty = place_one("soldier", false);
+
+	/*
+	 * And the allocation table refuses it on both settings, because the
+	 * exemption is not there. Without this half the exemption could be put
+	 * back in the selector and this test would still pass.
+	 */
 	for (i = 0; i < runs; i++) {
 		nightmare(false);
-		if (get_mon_num(depth + 5, depth) == guinea) plain++;
-
+		if (get_mon_num(cave->depth + 5, cave->depth) == guinea) drawn_plain++;
 		nightmare(true);
-		if (get_mon_num(depth + 5, depth) == guinea) nasty++;
+		if (get_mon_num(cave->depth + 5, cave->depth) == guinea) drawn_nasty++;
 	}
-	nightmare(false);
 
+	nightmare(false);
 	rf_off(guinea->flags, RF_FORCE_DEPTH);
 	guinea->level = kept_level;
 
-	if (plain != 0 || nasty == 0) {
-		printf("out-of-depth FORCE_DEPTH picks over %d draws: %d plain, "
-				"%d nightmare (plain must be none, nightmare must be some)\n",
-				runs, plain, nasty);
+	if (plain || !nasty) {
+		printf("out-of-depth FORCE_DEPTH placement: plain %s, nightmare %s "
+			   "(plain must be refused, nightmare must succeed)\n",
+			   plain ? "placed" : "refused", nasty ? "placed" : "refused");
+		require(false);
+	}
+	if (drawn_plain || drawn_nasty) {
+		printf("the allocation table handed out %d plain and %d nightmare "
+			   "draws of an out-of-depth FORCE_DEPTH monster; it must hand "
+			   "out none either way\n", drawn_plain, drawn_nasty);
 		require(false);
 	}
 	ok;

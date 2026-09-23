@@ -4757,3 +4757,35 @@ This predates the review window; it is not a regression from the races work.
 noting: I added a name-resolution check to `power-when-class` *because* I had
 seen how invisible a bad name is, and did not think to ask the same question of
 the base names in the line above it.
+
+---
+
+**DEC-93 — Nightmare's FORCE_DEPTH exemption moves to the placement gate, where
+the archive has it.** (BAL-15, 3.124.5.)
+
+The exemption was built into the allocation-table filter in `get_mon_num()`, and
+the placement check in `monster_can_be_placed()` kept refusing out-of-depth
+`FORCE_DEPTH` monsters unconditionally. So in nightmare mode the selector could
+pick one and placement threw it away every time: **the documented behaviour
+never happened.**
+
+The archive has it the other way round, and reading both halves is what settled
+it. Its allocation filter refuses unconditionally
+([monster2.c:821](../archive/zangband/src/monster2.c#L821)); only its placement
+function relaxes ([monster2.c:1734](../archive/zangband/src/monster2.c#L1734)).
+That is a coherent rule rather than an accident: a deep monster still never
+turns up in the ordinary random population of a shallow floor, and nightmare
+allows one that is put down **on purpose** -- a summon, a script, a quest.
+Swapping the two halves round therefore changes what the feature *is*, not just
+where it lives.
+
+**The test asked the selector, which is why this looked covered.** Its own
+comment explained the choice -- every `FORCE_DEPTH` monster the game ships is a
+level-99 unique, so sampling placement would be a lottery -- and the reasoning
+was sound for the question it asked. It could not see that the other half was
+missing. It now places the monster and asserts what a player would notice, and
+it also asserts that the allocation table refuses on **both** settings, so the
+exemption cannot be quietly moved back into the selector.
+
+Falsified both ways: removing the placement exemption fails it, and putting the
+exemption back in the selector fails it too.

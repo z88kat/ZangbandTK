@@ -330,13 +330,19 @@ struct monster_race *get_mon_num(int generated_level, int current_level)
 			continue;
 
 		/*
-		 * Some monsters never appear out of depth -- except in nightmare
-		 * mode, where only a quest monster is still held back (BAL-15,
-		 * [monster2.c:1735](../archive/zangband/src/monster2.c#L1735)).
+		 * Depth monsters never appear out of depth, and the nightmare
+		 * exemption is *not* here (BAL-15,
+		 * [monster2.c:821](../archive/zangband/src/monster2.c#L821)).
+		 *
+		 * This filter used to carry it, which put it in the wrong half of the
+		 * mechanism: the archive refuses unconditionally when drawing from the
+		 * allocation table and relaxes only when a monster is *placed*
+		 * deliberately -- a summon, a script, a quest. The effect of having it
+		 * here and not there was that the selector could pick a deep monster
+		 * in nightmare and `monster_can_be_placed()` then threw it away, so the
+		 * documented behaviour never once happened.
 		 */
-		if (rf_has(race->flags, RF_FORCE_DEPTH) && race->level > current_level
-				&& (!OPT(player, birth_nightmare)
-					|| rf_has(race->flags, RF_QUESTOR)))
+		if (rf_has(race->flags, RF_FORCE_DEPTH) && race->level > current_level)
 			continue;
 
 		/* Accept */
@@ -1185,8 +1191,19 @@ bool monster_race_fits_grid(struct chunk *c, struct loc grid,
 	if (rf_has(race->flags, RF_UNIQUE) && (race->cur_num >= race->max_num))
 		return false;
 
-	/* Depth monsters may NOT be created out of depth */
-	if (rf_has(race->flags, RF_FORCE_DEPTH) && c->depth < race->level)
+	/*
+	 * Depth monsters may NOT be created out of depth -- except in nightmare
+	 * mode, where only a quest monster is still held back (BAL-15,
+	 * [monster2.c:1734](../archive/zangband/src/monster2.c#L1734)).
+	 *
+	 * This is where the archive puts the exemption and it is the half that
+	 * matters: the allocation table already refuses these outright, so the
+	 * only way a deep monster reaches an shallow level is by being placed on
+	 * purpose, and nightmare is what allows that.
+	 */
+	if (rf_has(race->flags, RF_FORCE_DEPTH) && c->depth < race->level
+			&& (!OPT(player, birth_nightmare)
+				|| rf_has(race->flags, RF_QUESTOR)))
 		return false;
 
 	return true;
