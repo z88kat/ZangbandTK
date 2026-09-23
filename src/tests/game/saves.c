@@ -49,6 +49,12 @@
 #include "init.h"
 #include "mon-make.h"
 #include "player.h"
+#include "mon-util.h"
+#include "monster.h"
+#include "obj-tval.h"
+#include "obj-util.h"
+#include "object.h"
+#include "player-quest.h"
 #include "savefile.h"
 #include "z-file.h"
 #include "z-util.h"
@@ -137,6 +143,11 @@ static void reset_for_load(void)
 	if (cave) wipe_mon_list(cave, player);
 	cleanup_angband();
 	chunk_list_max = 0;
+	/*
+	 * `cleanup_angband()` releases the data paths, so they have to be put back
+	 * before the next `init_angband()` rather than only at startup.
+	 */
+	set_file_paths();
 	init_angband();
 }
 
@@ -359,13 +370,139 @@ static int test_every_file_was_tried(void *state) {
 	ok;
 }
 
+
+/**
+ * A taken quest still knows what it is about after a save (WLD-19, WLD-21).
+ *
+ * `struct quest` carries `race`, `kind` and `dungeon`; the writer persisted
+ * none of them, and `player_quests_reset()` puts them back only for the quests
+ * that come from `quest.txt`. So a bounty or a fetch came back pointing at
+ * nothing, and the two places that advance a quest compare against exactly
+ * those fields -- `m->race == q->race` is never true against a NULL, and
+ * `q->kind != obj->kind` is always true. The count could not move, the quest
+ * could not complete, and the slot stayed occupied for the rest of the run.
+ *
+ * Asserted through `quest_check()` and `quest_check_item()` rather than by
+ * reading the fields back, because the fields being present is not the thing
+ * that was broken -- the counting is. A version that persisted them and
+ * restored them to the wrong slot would pass a field comparison.
+ */
+static int test_a_taken_quest_survives_a_save(void *state) {
+	const char *seed = NULL;
+	char tmp[1024];
+	struct monster_race *race;
+	struct object_kind *kind = NULL;
+	struct quest *bounty, *fetch;
+	int i, k;
+
+	/* Any corpus character will do; it just has to be a real game state. */
+	for (i = 0; i < corpus_count && !seed; i++)
+		if (!save_expected_to_fail(corpus[i])) seed = corpus[i];
+	require(seed);
+
+	path_build(tmp, sizeof(tmp), SAVE_CORPUS, seed);
+	set_file_paths();
+	reset_for_load();
+	play_again = false;
+	require(savefile_load(tmp, false));
+
+	race = lookup_monster("soldier");
+	notnull(race);
+	/*
+	 * Any ordinary kind will do, found by substring: `k_info[].name` carries
+	 * the data file's plural markers, so an exact match on the name a person
+	 * would write returns nothing.
+	 */
+	for (k = 1; k < z_info->k_max && !kind; k++)
+		if (k_info[k].name && strstr(k_info[k].name, "Ration"))
+			kind = &k_info[k];
+	notnull(kind);
+
+	bounty = quest_take(player, QUEST_BOUNTY, "three soldiers", race, 3);
+	notnull(bounty);
+	bounty->dungeon = 2;
+
+	fetch = quest_take(player, QUEST_FIND_ITEM, "a flask", NULL, 1);
+	notnull(fetch);
+	fetch->kind = kind;
+
+	path_build(tmp, sizeof(tmp), ".", "questroundtrip.sav");
+	require(savefile_save(tmp));
+
+	play_again = true;
+	set_file_paths();
+	reset_for_load();
+	play_again = false;
+	require(savefile_load(tmp, false));
+	file_delete(tmp);
+
+	/* Find them again by name -- the slot order is not the assertion. */
+	bounty = fetch = NULL;
+	for (i = 0; i < (int) z_info->quest_max; i++) {
+		struct quest *q = &player->quests[i];
+
+		if (!q->name) continue;
+		if (streq(q->name, "three soldiers")) bounty = q;
+		if (streq(q->name, "a flask")) fetch = q;
+	}
+	notnull(bounty);
+	notnull(fetch);
+
+	eq(bounty->state, QUEST_TAKEN);
+	eq(fetch->state, QUEST_TAKEN);
+
+	/*
+	 * The bounty counts a kill of its own race, which is the whole point.
+	 *
+	 * The race and the kind are looked up *again* here. `reset_for_load()`
+	 * frees and rebuilds `r_info` and `k_info`, so the pointers taken before
+	 * the save are dangling by now -- and under a plain allocator they often
+	 * come back at the same address, so comparing against them passes by luck.
+	 * ASAN does not reuse the block and said so.
+	 */
+	race = lookup_monster("soldier");
+	notnull(race);
+	kind = NULL;
+	for (k = 1; k < z_info->k_max && !kind; k++)
+		if (k_info[k].name && strstr(k_info[k].name, "Ration"))
+			kind = &k_info[k];
+	notnull(kind);
+
+	{
+		struct monster mon;
+
+		memset(&mon, 0, sizeof(mon));
+		mon.race = race;
+		eq(bounty->cur_num, 0);
+		(void) quest_check(player, &mon);
+		eq(bounty->cur_num, 1);
+	}
+
+	/* And the fetch notices the thing it asked for. */
+	{
+		struct object obj;
+
+		memset(&obj, 0, sizeof(obj));
+		obj.kind = kind;
+		obj.number = 1;
+		eq(fetch->cur_num, 0);
+		(void) quest_check_item(player, &obj);
+		eq(fetch->cur_num, 1);
+	}
+
+	/* And which dungeon it was set in, checked after the counting. */
+	eq(bounty->dungeon, 2);
+
+	ok;
+}
+
 const char *suite_name = "game/saves";
 
 /*
  * Three invariant tests plus one per savefile, and the NULL the harness stops
  * on.
  */
-struct test tests[MAX_SAVES + 4];
+struct test tests[MAX_SAVES + 5];
 
 static void build_test_list(void) {
 	ang_dir *dir;
@@ -399,6 +536,9 @@ static void build_test_list(void) {
 		tests[i].func = test_one_saved_character;
 		i++;
 	}
+	tests[i].name = "a-taken-quest-survives-a-save";
+	tests[i].func = test_a_taken_quest_survives_a_save;
+	i++;
 	tests[i].name = "the-manifest-has-no-dead-entries";
 	tests[i].func = test_the_manifest_has_no_dead_entries;
 	i++;

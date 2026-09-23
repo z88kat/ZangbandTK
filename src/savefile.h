@@ -92,6 +92,7 @@ int rd_quests(void);
 int rd_quests_1(void);
 int rd_quests_2(void);
 int rd_quests_3(void);
+int rd_quests_4(void);
 int rd_artifacts(void);
 int rd_player_1(void);
 int rd_player_2(void);

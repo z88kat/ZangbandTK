@@ -847,7 +847,8 @@ int rd_object_memory(void)
  * character is still on.  That is exactly the information version 1 could hold,
  * and reading it back this way loses nothing it ever knew.
  */
-static int rd_quests_aux(bool with_state, bool with_type, bool with_max)
+static int rd_quests_aux(bool with_state, bool with_type, bool with_max,
+						 bool with_target)
 {
 	int i;
 	uint16_t tmp16u;
@@ -863,6 +864,8 @@ static int rd_quests_aux(bool with_state, bool with_type, bool with_max)
 	player_quests_reset(player);
 	for (i = 0; i < tmp16u; i++) {
 		uint16_t cur_num;
+		uint8_t dungeon = 0;
+
 		rd_byte(&player->quests[i].level);
 		rd_u16b(&cur_num);
 		player->quests[i].cur_num = cur_num;
@@ -934,6 +937,62 @@ static int rd_quests_aux(bool with_state, bool with_type, bool with_max)
 			player->quests[i].name = NULL;
 		}
 
+		/*
+		 * What the errand is about (WLD-19, WLD-21).
+		 *
+		 * `player_quests_reset()` puts `race`, `kind` and `dungeon` back only
+		 * for the quests that come from `quest.txt`; a taken quest's slot is
+		 * zeroed and nothing refills it. Before version 5 these were never
+		 * written, so every bounty and every fetch came back pointing at
+		 * nothing and could not be advanced.
+		 *
+		 * Restored for taken quests only. A fixed quest's target belongs to
+		 * `quest.txt` and the reset has already supplied it -- reading the
+		 * savefile's copy over the top would let a stale file outrank the
+		 * data, which is the mistake `name` and `max_num` above already avoid.
+		 */
+		if (with_target) {
+			char rname[128], tname[128], kname[128];
+
+			rd_string(rname, sizeof(rname));
+			rd_string(tname, sizeof(tname));
+			rd_string(kname, sizeof(kname));
+			rd_byte(&dungeon);
+
+			if (!player->quests[i].fixed) {
+				player->quests[i].race = rname[0]
+					? lookup_monster(rname) : NULL;
+				player->quests[i].dungeon = dungeon;
+				player->quests[i].kind = NULL;
+
+				if (tname[0] && kname[0]) {
+					int tv = tval_find_idx(tname);
+					int sv = (tv >= 0) ? lookup_sval(tv, kname) : -1;
+
+					if (tv >= 0 && sv >= 0)
+						player->quests[i].kind = lookup_kind(tv, sv);
+				}
+
+				/*
+				 * A target that no longer exists cannot be hunted, and
+				 * leaving the quest taken would occupy the slot for ever.
+				 * The same rule the version 3 branch above applies to a
+				 * quest whose terms were lost.
+				 */
+				if (player->quests[i].state != QUEST_UNTAKEN
+						&& ((player->quests[i].type == QUEST_FIND_ITEM
+							 && !player->quests[i].kind)
+							|| (player->quests[i].type != QUEST_FIND_ITEM
+								&& !player->quests[i].race))) {
+					note("Forgetting a quest whose target no longer exists.");
+					player->quests[i].state = QUEST_UNTAKEN;
+					player->quests[i].cur_num = 0;
+					string_free(player->quests[i].name);
+					player->quests[i].name = NULL;
+				}
+			}
+		}
+
 		if (!with_state) {
 			player->quests[i].fixed = true;
 			player->quests[i].state = player->quests[i].level
@@ -944,10 +1003,11 @@ static int rd_quests_aux(bool with_state, bool with_type, bool with_max)
 	return 0;
 }
 
-int rd_quests(void) { return rd_quests_aux(true, true, true); }
-int rd_quests_3(void) { return rd_quests_aux(true, true, false); }
-int rd_quests_2(void) { return rd_quests_aux(true, false, false); }
-int rd_quests_1(void) { return rd_quests_aux(false, false, false); }
+int rd_quests(void) { return rd_quests_aux(true, true, true, true); }
+int rd_quests_4(void) { return rd_quests_aux(true, true, true, false); }
+int rd_quests_3(void) { return rd_quests_aux(true, true, false, false); }
+int rd_quests_2(void) { return rd_quests_aux(true, false, false, false); }
+int rd_quests_1(void) { return rd_quests_aux(false, false, false, false); }
 
 
 /**

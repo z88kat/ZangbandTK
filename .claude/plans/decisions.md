@@ -4688,3 +4688,40 @@ the decision has an expiry date.
 
 The rule itself is unchanged and is the one `PROT_CUT`'s comment states:
 **append, never insert.**
+
+---
+
+**DEC-91 — A taken quest keeps its target across a save.** (WLD-19, WLD-21,
+3.124.3. Savefile quest block version 4 → 5.)
+
+`struct quest` carries `race`, `kind` and `dungeon`; `wr_quests()` persisted
+none of them, and `player_quests_reset()` restores them only for `i <
+quest_fixed` -- the quests that come from `quest.txt`. A slot holding work taken
+from a townsman was zeroed and nothing refilled it.
+
+The two places that advance a quest compare against exactly those fields:
+`m->race == q->race` is never true against a NULL, and `q->kind != obj->kind` is
+always true. So after any save and reload a bounty's kill count could not move,
+a fetch could not notice the thing it asked for, neither could reach
+`QUEST_COMPLETE`, and the slot stayed occupied for the rest of the character's
+life. No unusual savefile required -- ordinary play.
+
+`town` was added to this block earlier for the same reason and with the same
+words: *"a delivery that forgot which town was expecting it could never be
+finished."* The other three were not carried with it.
+
+Now written by name rather than by index, like every other cross-reference in
+the file, and restored for taken quests only -- a fixed quest's target belongs
+to `quest.txt` and the reset has already supplied it, so reading the savefile's
+copy over the top would let a stale file outrank the data. A target that no
+longer exists releases the slot rather than occupying it for ever, which is the
+rule the version 3 branch above it already applies to a quest whose terms were
+lost.
+
+**The test is behavioural and it earned its place twice.** It asserts through
+`quest_check()` and `quest_check_item()` rather than by reading the fields back,
+because the fields being present is not what was broken. Written the obvious
+way it held a `struct monster_race *` taken before the save and compared it
+after -- a dangling pointer into a freed `r_info`, which the ordinary allocator
+handed back at the same address so the test passed by luck. ASAN does not reuse
+the block and failed it. The lookups now happen after the reload.

@@ -450,8 +450,44 @@ void wr_quests(void)
 		 * and never equals zero.
 		 */
 		wr_u16b(player->quests[i].max_num);
+
+		/*
+		 * What the errand is *about* (WLD-19, WLD-21).
+		 *
+		 * Three fields of the struct were never written, and the reset only
+		 * puts them back for the quests that come from `quest.txt`. So a quest
+		 * taken from somebody came back with `race`, `kind` and `dungeon` all
+		 * zero, and the two places that advance it compare against exactly
+		 * those: `m->race == q->race` is never true against a NULL, and
+		 * `q->kind != obj->kind` is always true. The count could not move, the
+		 * quest could not complete, and the slot stayed taken for the rest of
+		 * the character's life.
+		 *
+		 * `town` was added to this block for the same reason and with the same
+		 * words -- "a delivery that forgot which town was expecting it could
+		 * never be finished" -- and the other three were not carried with it.
+		 *
+		 * By name rather than by index, like every other cross-reference in
+		 * this file: an index is a promise about the order of a data file.
+		 */
+		wr_string(player->quests[i].race ? player->quests[i].race->name : "");
+
+		if (player->quests[i].kind) {
+			char name[1024];
+
+			wr_string(tval_find_name(player->quests[i].kind->tval));
+			obj_desc_name_format(name, sizeof(name), 0,
+								 player->quests[i].kind->name, 0, false);
+			wr_string(name);
+		} else {
+			wr_string("");
+			wr_string("");
+		}
+
+		wr_byte(player->quests[i].dungeon);
 	}
 }
+
 
 
 void wr_player(void)
