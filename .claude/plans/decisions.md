@@ -4644,3 +4644,47 @@ dropping `INC_TO` fails it, and accepting every `NOURISH` subtype fails it too.
 **`tests/borg/BASELINE` is not updated here.** Its own instructions say to take
 it from a nightly rather than from a local sweep, and these numbers are Darwin.
 If the nightly totals shift, that file wants refreshing from the nightly's log.
+
+---
+
+**DEC-90 — The object-flag index shift is left unfixed, deliberately.**
+(3.105–3.124 review, 23 September 2026.)
+
+`895c51db3` (9 September) added `OF(PASS_WALL)` **between** `GHOUL_TOUCH` and
+`RETURN` rather than at the end of `list-object-flags.h`. Object flags are saved
+as a raw bitfield (`save.c:141`) and read back raw with no remapping and no
+rebuild from the object's kind, so eight flags moved up one bit: `RETURN`,
+`LUCK_10`, `EASY_ENCHANT`, `NO_MAGIC`, `STRANGE_LUCK`, `PSI_CRIT`, `PATRON` and
+`CANT_EAT`. `OF_SIZE` stayed at seven bytes, so an old file loads **cleanly** and
+silently means something else.
+
+Two days later `1714aae50` appended `PROT_CUT` with a comment explaining at
+length why insertion is forbidden. The rule was written down two days after it
+was broken, and the earlier line was never revisited.
+
+**Demonstrated, not inferred.** A Hammer of Returning written with the flag list
+in its pre-09-09 order and read back on the shipping build comes through as
+`OF_RETURN=0, OF_PASS_WALL=1` -- the weapon loses Returning and grants
+pass-wall. The control, written and read on the same build, round-trips
+correctly.
+
+**And the blast radius is empty.** The savefile corpus -- 31 loadable characters,
+209 objects -- contains **no object with any flag at index 45 or above**. The
+bug has no victim in the project's own evidence.
+
+**The project owner's ruling: leave it.** The game is in development, every
+release so far is marked pre-release, and old savefiles do not matter. Moving
+`PASS_WALL` to the end now would shift the same eight flags back and break any
+save written *since* 9 September, which is the set of saves that actually
+exists. Fixing it costs more than it buys.
+
+**This stops being true the moment the game ships to players who keep
+characters.** At that point the flag order is frozen and this line is a
+permanent wart: either it is corrected before the first real release, in the
+same change as any other list reordering, or it is never corrected. A later
+reader finding `PASS_WALL` in the middle of a list whose own comments forbid
+exactly that should know it was seen, measured and left on purpose -- and that
+the decision has an expiry date.
+
+The rule itself is unchanged and is the one `PROT_CUT`'s comment states:
+**append, never insert.**
