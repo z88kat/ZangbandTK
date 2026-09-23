@@ -27,6 +27,7 @@
 #include "generate.h"
 #include "cmd-core.h"
 #include "player-util.h"
+#include "message.h"
 #include "project.h"
 #include "effects.h"
 #include "game-world.h"
@@ -1412,6 +1413,75 @@ static int test_chance_bands_are_alternatives(void *state) {
 	ok;
 }
 
+
+/**
+ * A Draconian says what it breathed, in words (review of 3.105-3.124).
+ *
+ * "You breathe %s." used to be filled from the projection's `desc`, which for a
+ * monster-facing projection is a verb phrase written for a different sentence
+ * -- so three of the class bands produced "You breathe hurts and bewilders
+ * monsters at once." and the like. `player_desc` is the noun the game already
+ * uses when listing what a creature can breathe.
+ *
+ * Asserted on the message the player is shown rather than on the field, because
+ * the field being present was never the problem: the handler was reading the
+ * one next to it.
+ */
+static int test_a_draconian_says_what_it_breathed(void *state) {
+	static const char *const bands[] = {
+		"MISSILE", "SHARD", "MANA", "DISEN", "CONFUSION", "CHAOS",
+		"SOUND", "MON_PSI", "HOLY_ORB", "HOLY_FIRE", "DARK", "POIS",
+		"FIRE", "COLD"
+	};
+	size_t b;
+
+	require(player_make_simple("Draconian", "Warrior", "Tester"));
+	player->depth = 1;
+	prepare_next_level(player);
+	player->lev = 40;
+
+	for (b = 0; b < N_ELEMENTS(bands); b++) {
+		int idx = proj_name_to_idx(bands[b]);
+		uint16_t before;
+		const char *msg;
+		bool said = false;
+		int i, fresh;
+
+		require(idx >= 0);
+		before = messages_num();
+
+		effect_simple(EF_BREATH, source_player(), "20", idx, 0, 30, 0, 0,
+					  NULL);
+
+		fresh = (int) messages_num() - (int) before;
+		for (i = 0; i < fresh && i < (int) messages_num(); i++) {
+			msg = message_str((uint16_t) i);
+			if (!msg || !prefix(msg, "You breathe ")) continue;
+			said = true;
+
+			/*
+			 * The noun, and nothing that reads as a sentence. Every
+			 * `player_desc` in the game is a short noun phrase; a `desc`
+			 * written for "%s which are in line of sight" is not, and the
+			 * three that bit here all contain a verb followed by "monsters"
+			 * or "the".
+			 */
+			if (strstr(msg, "monsters") || strstr(msg, " and leaves ")) {
+				printf("breathing %s says: %s\n", bands[b], msg);
+				require(false);
+			}
+			if (!strstr(msg, projections[idx].player_desc)) {
+				printf("breathing %s says '%s', wanted the player "
+					   "description '%s'\n", bands[b], msg,
+					   projections[idx].player_desc);
+				require(false);
+			}
+		}
+		require(said);
+	}
+	ok;
+}
+
 const char *suite_name = "player/race";
 struct test tests[] = {
 	{ "the-draconian-grows-into-its-scales",
@@ -1454,6 +1524,8 @@ struct test tests[] = {
 	{ "a-power-expression-means-what-it-says",
 			test_a_power_expression_means_what_it_says },
 	{ "the-bloodless-do-not-bleed", test_the_bloodless_do_not_bleed },
+	{ "a-draconian-says-what-it-breathed",
+			test_a_draconian_says_what_it_breathed },
 	{ "a-draconian-breathes-by-its-class",
 			test_a_draconian_breathes_by_its_class },
 	{ "every-class-named-by-a-race-exists",

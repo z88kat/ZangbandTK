@@ -738,7 +738,24 @@ bool effect_handler_BREATH(effect_handler_context_t *context)
 			diameter_of_source /= 2;
 		}
 	} else if (context->origin.what == SRC_PLAYER) {
-		msgt(projections[type].msgt, "You breathe %s.", projections[type].desc);
+		/*
+		 * `player_desc` and not `desc` (ZangbandTK, review of 3.105-3.124).
+		 *
+		 * `desc` has to fit two incompatible sentences. `BALL`, `BOLT` and
+		 * `BREATH` want a noun -- "a ball of %s" -- while `PROJECT_LOS_AWARE`
+		 * wants a verb phrase, "%s which are in line of sight". The
+		 * monster-facing projections are written for the second, so a player
+		 * breathing one read "You breathe assaults the minds of monsters."
+		 *
+		 * `player_desc` is the noun the game already uses when it lists what a
+		 * creature can breathe, so it is the right string and was sitting
+		 * beside the wrong one. Four of the Draconian's class bands showed
+		 * this -- confusion, psionic force and holy fire -- and the
+		 * Mindcrafter's own psi bolt has been describing itself as "a bolt or
+		 * beam of assaults the minds of monsters" for longer.
+		 */
+		msgt(projections[type].msgt, "You breathe %s.",
+			 projections[type].player_desc);
 
 		/* Ask for a target if no direction given */
 		if (context->dir == DIR_TARGET && target_okay()) {
