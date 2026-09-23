@@ -85,6 +85,12 @@ static void healthy(int lev) {
  *
  * A Mindcrafter carries both kinds at once -- its psionics and whatever its
  * race can do -- and they reach `player_use_power()` through the same door.
+ *
+ * Asked of that door, which is the correction. This used to assert only that
+ * `player_power_is_class_power()` answered correctly for each power -- the
+ * ingredient, not the behaviour. Removing the gate from `player_use_power()`
+ * so that racial powers backfired too broke no test, while the comment above
+ * named the very function nothing called.
  */
 static int test_only_class_powers_backfire(void *state) {
 	const struct player_power *cls = player->class->powers;
@@ -104,6 +110,59 @@ static int test_only_class_powers_backfire(void *state) {
 	/* Whatever the race brought, none of it is the class's. */
 	for (; rce; rce = rce->next) {
 		require(!player_power_is_class_power(player, rce));
+	}
+
+	/*
+	 * And now through the door itself: a racial power must never backfire,
+	 * however often it fails, while a class power sometimes does.
+	 *
+	 * Driven at a level where the failure chance is high, so failures -- and
+	 * therefore backfires, which are rolled at half the failure chance -- are
+	 * common enough to count. A backfire always leaves a mark: stunned,
+	 * confused, hallucinating, mana gone, or the map forgotten. Mana is the
+	 * one signal the character cannot get from the power itself, since a power
+	 * that fails still takes its price, so the timed effects are what is
+	 * watched.
+	 */
+	{
+		struct player_power *race_power, *class_power;
+		int i, race_marks = 0, class_marks = 0;
+		const int tries = 800;
+
+		/*
+		 * A Half-Orc, because the default race has no power to test with and
+		 * "play tough" arrives at level 3 with an 8% failure -- close enough to
+		 * the Mindcrafter's own first power that the two are comparable rather
+		 * than one of them simply never failing.
+		 */
+		require(player_make_simple("Half-Orc", "Mindcrafter", "Tester"));
+		prepare_next_level(player);
+		race_power = (struct player_power *) player->race->powers;
+		class_power = (struct player_power *) player->class->powers;
+		notnull(race_power);
+		notnull(class_power);
+
+		for (i = 0; i < tries; i++) {
+			healthy(3);
+			(void) player_use_power(player, race_power, 0);
+			if (player->timed[TMD_STUN] || player->timed[TMD_CONFUSED]
+					|| player->timed[TMD_IMAGE])
+				race_marks++;
+
+			healthy(3);
+			(void) player_use_power(player, class_power, 0);
+			if (player->timed[TMD_STUN] || player->timed[TMD_CONFUSED]
+					|| player->timed[TMD_IMAGE])
+				class_marks++;
+		}
+		healthy(25);
+
+		if (race_marks != 0 || class_marks == 0) {
+			printf("over %d uses: the race's power left %d marks and the "
+				   "class's left %d (the race must leave none, the class "
+				   "must leave some)\n", tries, race_marks, class_marks);
+			require(false);
+		}
 	}
 
 	ok;

@@ -306,10 +306,26 @@ static int test_the_golem_is_made_of_something(void *state) {
  */
 static int test_the_vampire_glows_and_starves(void *state) {
 	struct player *p = grown_to("Vampire", 1);
+	int lit, unlit;
 
 	require(p);
 	require(p->race->light == 1);
-	require(p->state.cur_light >= 1);
+
+	/*
+	 * The *difference* a Vampire makes, not the total.
+	 *
+	 * This asserted `cur_light >= 1`, which the Wooden Torch in the starting
+	 * kit satisfies whether or not the race contributes anything: deleting the
+	 * line in `calc_bonuses()` that applies `race->light` broke no test at all.
+	 * `grown_to()` swaps the race and recalculates without touching the gear,
+	 * so two calls differ by exactly the race's own light and nothing else.
+	 */
+	lit = p->state.cur_light;
+	unlit = grown_to("Human", 1)->state.cur_light;
+	eq(lit - unlit, 1);
+
+	p = grown_to("Vampire", 1);
+	require(p);
 
 	require(!has_at("Vampire", 1, OF_SLOW_DIGEST));
 	require(player_has(p, PF_BLOOD_DIET));

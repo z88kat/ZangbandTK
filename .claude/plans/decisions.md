@@ -4789,3 +4789,39 @@ exemption cannot be quietly moved back into the selector.
 
 Falsified both ways: removing the placement exemption fails it, and putting the
 exemption back in the selector fails it too.
+
+---
+
+**DEC-94 — Two tests that asserted an ingredient now assert the behaviour.**
+(Review of 3.105–3.124, 3.124.6.)
+
+Four tests were named for a behaviour and checked something adjacent to it.
+`FORCE_DEPTH` is fixed in DEC-93; the mountain test turned out to be guarded
+already -- making `mountainside` permanent fails it, which is what it claims to
+cover. The other two:
+
+**The Vampire's light.** `test_the_vampire_glows_and_starves` asserted
+`cur_light >= 1`, and the Wooden Torch in the starting kit satisfies that
+whether or not the race contributes anything. Deleting the line in
+`calc_bonuses()` that applies `race->light` broke no test in the suite. It now
+compares a Vampire against a Human through `grown_to()`, which swaps the race
+and recalculates without touching the gear -- so the two differ by exactly the
+race's own light. Re-running the mutation now fails it.
+
+**The psionic backfire gate.** `test_only_class_powers_backfire` asserted that
+`player_power_is_class_power()` answered correctly for each power, and never
+called `player_use_power()` -- while its own comment said the two kinds "reach
+`player_use_power()` through the same door". Removing the gate so that racial
+powers backfired too broke nothing. It now drives eight hundred uses of a
+Half-Orc Mindcrafter's racial and class powers at level 3 and requires the race
+to leave no mark and the class to leave some. The Half-Orc is chosen because the
+default race has no power at all and "play tough" fails at 8% against the
+Mindcrafter's 15%, so the two are comparable rather than one of them never
+failing.
+
+**The shape is the finding, not the two instances.** A test that asserts the
+ingredient passes for the right reason and fails for none, and the comment above
+it usually describes the behaviour rather than the assertion -- which is what
+makes them hard to spot by reading. Four in one review window, three of them
+found by mutating the code rather than by reading the tests. Mutation over a
+sample is the only method here that has worked.
