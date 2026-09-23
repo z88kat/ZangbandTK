@@ -930,6 +930,15 @@ static int test_badeffectexpr0(void *state) {
 	/* Try to bind an expression to a variable that isn't in the dice. */
 	r = parser_parse(p, "effect-expr:N:PLAYER_LEVEL:/ 5 + 1");
 	eq(r, PARSE_ERROR_UNBOUND_EXPRESSION);
+	/*
+	 * And a base value that does not exist.  This used to be accepted:
+	 * `effect_value_base_by_name()` answers NULL for an unknown name and
+	 * `expression_evaluate()` treats a NULL base as zero, so a typo parsed
+	 * clean and the expression quietly evaluated its operations against 0.
+	 * Nearly a thousand lines of game data carry one of these names.
+	 */
+	r = parser_parse(p, "effect-expr:B:PLAYER_LEVL:/ 5");
+	eq(r, PARSE_ERROR_INVALID_EXPRESSION);
 	ok;
 }
 

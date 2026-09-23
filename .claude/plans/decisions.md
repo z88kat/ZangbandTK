@@ -4725,3 +4725,35 @@ way it held a `struct monster_race *` taken before the save and compared it
 after -- a dangling pointer into a freed `r_info`, which the ordinary allocator
 handed back at the same address so the test passed by luck. ASAN does not reuse
 the block and failed it. The lookups now happen after the reload.
+
+---
+
+**DEC-92 — An unknown expression base name is now a parse error.** (Review of
+3.105–3.124, 3.124.4.)
+
+`effect_value_base_by_name()` answers NULL for a name it does not know, thirteen
+callers passed that straight to `expression_set_base_value()`, and
+`expression_evaluate()` treats a NULL base as **zero**. So a typo in any
+`expr:`, `power-expr:` or `power-chance:` line parsed without complaint and the
+expression quietly evaluated its operations against 0.
+
+Demonstrated before fixing: changing one `power-chance:PLAYER_LEVEL:+ 0` to
+`PLAYER_LEVL` in `p_race.txt` loaded the game with no error, passed all 25 race
+tests and passed the whole 1468-test suite -- while silently making that band's
+chance zero, so the Warrior/Ranger Draconian breath substitution could never
+fire. **994 expression lines** in `lib/gamedata` are exposed, 892 of them naming
+`PLAYER_LEVEL`.
+
+All thirteen call sites now refuse the name: `PARSE_ERROR_INVALID_EXPRESSION`,
+with the expression freed. The same typo now stops the game at
+`p_race.txt line 664 column 2: invalid expression`.
+
+Guarded in `parse/ptimed`, beside the two bad-expression cases that were already
+there -- a bad operations string and an unbound variable. The third kind of
+wrong expression was the one nothing checked.
+
+This predates the review window; it is not a regression from the races work.
+`power-chance` is mine and inherited the same hole, which is the part worth
+noting: I added a name-resolution check to `power-when-class` *because* I had
+seen how invisible a bad name is, and did not think to ask the same question of
+the base names in the line above it.

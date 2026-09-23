@@ -2470,6 +2470,19 @@ static enum parser_error parse_trap_expr(struct parser *p) {
 		return PARSE_ERROR_INVALID_EXPRESSION;
 	}
 	function = effect_value_base_by_name(base);
+	if (!function) {
+		/*
+		 * An unknown base name used to be accepted (ZangbandTK, review of
+		 * 3.105-3.124).  `effect_value_base_by_name()` answers NULL, and
+		 * `expression_evaluate()` treats a NULL base as zero -- so a typo
+		 * parsed without complaint and every expression built on it
+		 * silently evaluated the operations against 0.  `PLAYER_LEVL` in a
+		 * `power-chance` made the band a chance of nothing, and the whole
+		 * 1468-test suite passed.
+		 */
+		expression_free(expression);
+		return PARSE_ERROR_INVALID_EXPRESSION;
+	}
 	expression_set_base_value(expression, function);
 
 	if (expression_add_operations_string(expression, expr) < 0) {
@@ -2590,6 +2603,19 @@ static enum parser_error parse_trap_expr_xtra(struct parser *p) {
 		return PARSE_ERROR_INVALID_EXPRESSION;
 	}
 	function = effect_value_base_by_name(base);
+	if (!function) {
+		/*
+		 * An unknown base name used to be accepted (ZangbandTK, review of
+		 * 3.105-3.124).  `effect_value_base_by_name()` answers NULL, and
+		 * `expression_evaluate()` treats a NULL base as zero -- so a typo
+		 * parsed without complaint and every expression built on it
+		 * silently evaluated the operations against 0.  `PLAYER_LEVL` in a
+		 * `power-chance` made the band a chance of nothing, and the whole
+		 * 1468-test suite passed.
+		 */
+		expression_free(expression);
+		return PARSE_ERROR_INVALID_EXPRESSION;
+	}
 	expression_set_base_value(expression, function);
 
 	if (expression_add_operations_string(expression, expr) < 0) {
@@ -4149,11 +4175,17 @@ static enum parser_error power_parse_chance(struct player_power *power,
 	base = string_make(text);
 	ops = strchr(base, ':');
 	if (ops) {
+		expression_base_value_f fn;
+
 		*ops++ = '\0';
-		expression_set_base_value(expression,
-								  effect_value_base_by_name(base));
-		if (expression_add_operations_string(expression, ops) < 0) {
-			result = PARSE_ERROR_BAD_EXPRESSION_STRING;
+		fn = effect_value_base_by_name(base);
+		if (!fn) {
+			/* An unknown base would evaluate to zero in silence. */
+			result = PARSE_ERROR_INVALID_EXPRESSION;
+		} else {
+			expression_set_base_value(expression, fn);
+			if (expression_add_operations_string(expression, ops) < 0)
+				result = PARSE_ERROR_BAD_EXPRESSION_STRING;
 		}
 	} else {
 		char *end;
@@ -4269,6 +4301,19 @@ static enum parser_error power_parse_expr(struct player_power *power,
 	if (!expression) return PARSE_ERROR_INVALID_EXPRESSION;
 
 	function = effect_value_base_by_name(base);
+	if (!function) {
+		/*
+		 * An unknown base name used to be accepted (ZangbandTK, review of
+		 * 3.105-3.124).  `effect_value_base_by_name()` answers NULL, and
+		 * `expression_evaluate()` treats a NULL base as zero -- so a typo
+		 * parsed without complaint and every expression built on it
+		 * silently evaluated the operations against 0.  `PLAYER_LEVL` in a
+		 * `power-chance` made the band a chance of nothing, and the whole
+		 * 1468-test suite passed.
+		 */
+		expression_free(expression);
+		return PARSE_ERROR_INVALID_EXPRESSION;
+	}
 	expression_set_base_value(expression, function);
 
 	if (expression_add_operations_string(expression, expr) < 0)
@@ -4554,6 +4599,11 @@ static enum parser_error parse_patron_reward_expr(struct parser *p) {
 	if (!expression) return PARSE_ERROR_INVALID_EXPRESSION;
 
 	function = effect_value_base_by_name(parser_getsym(p, "base"));
+	if (!function) {
+		/* An unknown base would evaluate to zero in silence. */
+		expression_free(expression);
+		return PARSE_ERROR_INVALID_EXPRESSION;
+	}
 	expression_set_base_value(expression, function);
 
 	if (expression_add_operations_string(expression,
@@ -5884,6 +5934,19 @@ static enum parser_error parse_shape_expr(struct parser *p) {
 		return PARSE_ERROR_INVALID_EXPRESSION;
 	}
 	function = effect_value_base_by_name(base);
+	if (!function) {
+		/*
+		 * An unknown base name used to be accepted (ZangbandTK, review of
+		 * 3.105-3.124).  `effect_value_base_by_name()` answers NULL, and
+		 * `expression_evaluate()` treats a NULL base as zero -- so a typo
+		 * parsed without complaint and every expression built on it
+		 * silently evaluated the operations against 0.  `PLAYER_LEVL` in a
+		 * `power-chance` made the band a chance of nothing, and the whole
+		 * 1468-test suite passed.
+		 */
+		expression_free(expression);
+		return PARSE_ERROR_INVALID_EXPRESSION;
+	}
 	expression_set_base_value(expression, function);
 
 	if (expression_add_operations_string(expression, expr) < 0) {
@@ -6714,6 +6777,19 @@ static enum parser_error parse_class_expr(struct parser *p) {
 		return PARSE_ERROR_INVALID_EXPRESSION;
 	}
 	function = effect_value_base_by_name(base);
+	if (!function) {
+		/*
+		 * An unknown base name used to be accepted (ZangbandTK, review of
+		 * 3.105-3.124).  `effect_value_base_by_name()` answers NULL, and
+		 * `expression_evaluate()` treats a NULL base as zero -- so a typo
+		 * parsed without complaint and every expression built on it
+		 * silently evaluated the operations against 0.  `PLAYER_LEVL` in a
+		 * `power-chance` made the band a chance of nothing, and the whole
+		 * 1468-test suite passed.
+		 */
+		expression_free(expression);
+		return PARSE_ERROR_INVALID_EXPRESSION;
+	}
 	expression_set_base_value(expression, function);
 
 	if (expression_add_operations_string(expression, expr) < 0) {

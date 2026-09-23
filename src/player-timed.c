@@ -532,6 +532,19 @@ static enum parser_error parse_player_timed_effect_expr(struct parser *p)
 		return PARSE_ERROR_INVALID_EXPRESSION;
 	}
 	function = effect_value_base_by_name(base);
+	if (!function) {
+		/*
+		 * An unknown base name used to be accepted (ZangbandTK, review of
+		 * 3.105-3.124).  `effect_value_base_by_name()` answers NULL, and
+		 * `expression_evaluate()` treats a NULL base as zero -- so a typo
+		 * parsed without complaint and every expression built on it
+		 * silently evaluated the operations against 0.  `PLAYER_LEVL` in a
+		 * `power-chance` made the band a chance of nothing, and the whole
+		 * 1468-test suite passed.
+		 */
+		expression_free(expression);
+		return PARSE_ERROR_INVALID_EXPRESSION;
+	}
 	expression_set_base_value(expression, function);
 	if (expression_add_operations_string(expression, expr) < 0) {
 		result = PARSE_ERROR_BAD_EXPRESSION_STRING;
