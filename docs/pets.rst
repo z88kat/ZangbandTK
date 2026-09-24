@@ -143,6 +143,13 @@ Nor does its shuffling about count as something moving in view: you can rest
 with a pet standing over you, which you could not do if the game treated your
 own animal as a warning. Only a creature that has turned hostile does either.
 
+Nor does the noise it makes elsewhere. A pet bursting through a door still
+announces itself — you hear a door burst open — but hearing it does not stop
+you resting, and neither does a fight you cannot make out. An ally trading
+spells with something out of your sight, or beyond it, is left to get on with
+it; a fight where you can see one of the two stops you, as it should. Anything
+aimed at *you* always stops you, seen or unseen.
+
 **And when two enemies meet, they fight.** Neither shoves past the other, and
 neither tramples the other underfoot — a large hostile monster cannot simply
 walk over your pet and delete it on the way to you. It has to kill it, one blow

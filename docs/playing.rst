@@ -276,9 +276,9 @@ processed keymap.  The events that disturb the player are:
 * The command reached its goal:  the wall was tunnelled, the door or chest was opened, the specific criteria for resting was met.
 * While running, following a precomputed path, resting, or executing a repeated command (either with an explicit repeat count or one that repeats automatically if no repeat count was specified), a keypress or, if the front end supports it, a mouse button event, interrupts the command by disturbing the player.  Since the keypress could come from a keymap, such commands will have to be last in the keymap (no further keystrokes in the action besides what the command would normally consume) to have the intended effect.  While resting, checking for an input event that disturbs the rest only happens every 128 turns.
 * A monster's melee attack hits the player, regardless of whether any damage was done.
-* A monster uses a ranged attack or spell, regardless of whether the attack hits.
+* A monster uses a ranged attack or spell on the player, regardless of whether the attack hits.
+* A monster uses a ranged attack or spell on *another monster* — one of your allies fighting, or two hostiles fighting each other — only if you could make out that it happened: one of the two within your line of sight range, and one of the two actually visible.  A battle in the dark on the far side of the level does not stop you resting.
 * A monster that is visible and in the line of sight and either moves or performs a melee attack on the player will disturb if the :ref:`Disturb whenever viewable monster moves <disturb-near-option>` is on.  With that option on, a monster that enters the line of sight and is visible or leaves the line of sight while visible, also disturbs the player.
-* A monster smashes open a door.
 * The player loses hit points.
 * The player makes a melee attack.
 * A projection affects the player, regardless of whether it does damage.

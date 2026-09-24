@@ -364,8 +364,42 @@ void do_mon_spell(int index, struct monster *mon, bool seen)
 		}
 	}
 
-	/* Tell the player what's going on */
-	disturb(player);
+	/*
+	 * Tell the player what's going on (ZangbandTK, PLR-23).
+	 *
+	 * A spell aimed at the player always interrupts, seen or not -- something
+	 * you cannot see casting at you is the most important thing on the level,
+	 * and an unseen caster that could be rested through would be a far worse
+	 * bug than the one this gate exists for.
+	 *
+	 * A spell aimed at another monster is a fight happening somewhere, and
+	 * that interrupts only if the player can actually make it out. This is
+	 * Zangband's own pair from `monst_spell_monst()`
+	 * ([mspells2.c:236](../archive/zangband/src/mspells2.c#L236)): `known`,
+	 * meaning caster or target is within sight range, *and* `see_either`,
+	 * meaning one of them is actually visible.
+	 *
+	 * Without it a pet was a rest-breaker rather than a companion. A pet is
+	 * always active whatever the distance (`monster_check_active()`), 64% of
+	 * monsters have spells, and this fired on every successful cast with no
+	 * test of distance or sight -- so an animal brawling in the dark on the
+	 * far side of the level cancelled the player's rest, run or repeated
+	 * command every time it landed one. Gating on sight rather than on
+	 * allegiance also fixes the hostile half: a fight you cannot see is not a
+	 * reason to stop resting whoever is in it.
+	 */
+	if (target_midx > 0) {
+		struct monster *t_mon = cave_monster(cave, target_midx);
+		bool see_either = monster_is_visible(mon)
+			|| (t_mon && t_mon->race && monster_is_visible(t_mon));
+		bool known = (mon->cdis <= z_info->max_sight)
+			|| (t_mon && t_mon->race && t_mon->cdis <= z_info->max_sight);
+
+		if (known && see_either) disturb(player);
+	} else {
+		disturb(player);
+	}
+
 	spell_message(mon, spell, seen, hits);
 
 	if (hits) {

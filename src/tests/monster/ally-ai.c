@@ -35,6 +35,7 @@
 #include "init.h"
 #include "mon-attack.h"
 #include "mon-make.h"
+#include "mon-spell.h"
 #include "mon-move.h"
 #include "mon-predicate.h"
 #include "mon-util.h"
@@ -43,6 +44,7 @@
 #include "player-birth.h"
 #include "player-util.h"
 #include "project.h"
+#include "trap.h"
 
 static void println(const char *str) {
 	printf("%s\n", str);
@@ -906,6 +908,235 @@ static int test_a_pet_does_not_break_your_rest(void *state) {
 	ok;
 }
 
+
+/**
+ * A fight you cannot see does not stop you resting (PLR-23, DEC-95).
+ *
+ * `do_mon_spell()` disturbed on every cast with no test of distance or sight,
+ * and a pet is always active however far away it is -- so an animal brawling
+ * in the dark on the far side of the level cancelled the player's rest, run or
+ * repeated command every time it landed a spell. 64% of monsters have spells,
+ * so this was most pets.
+ *
+ * The gate is Zangband's pair from `monst_spell_monst()`: the caster or its
+ * target within sight range, *and* one of them actually visible. Three cases,
+ * and the third is the one that matters most -- a spell aimed at the player
+ * must interrupt whether or not they can see who cast it, because an unseen
+ * caster that could be rested through is a far worse bug than the one this
+ * fixes.
+ *
+ * Asserted on whether the rest survives, which is the thing a player notices.
+ */
+static int test_an_unseen_fight_does_not_break_your_rest(void *state) {
+	struct monster *pet, *foe;
+	int spell = RSF_ARROW;
+	bool missed = false;
+	int i;
+
+	notnull(monster_spell_by_index(spell));
+
+	/* --- a pet fighting where the player cannot see it --- */
+	clear_the_level();
+	pet = place_next_to_the_player("apprentice", MON_ALLEGIANCE_PET);
+	require(pet);
+	foe = place_beside(pet, "kobold", MON_ALLEGIANCE_HOSTILE);
+	require(foe);
+	pet->target.midx = foe->midx;
+
+	/*
+	 * Too tough to kill, so the only thing that can end the rest is the line
+	 * under test. An arrow that killed the kobold would put a death and its
+	 * message between the cast and the assertion, and either half of this
+	 * test could then pass for a reason that has nothing to do with sight.
+	 */
+	foe->hp = foe->maxhp = 5000;
+
+	/* Neither of them visible: `see_either` is false and nothing else counts */
+	mflag_off(pet->mflag, MFLAG_VISIBLE);
+	mflag_off(foe->mflag, MFLAG_VISIBLE);
+
+	player_resting_cancel(player, false);
+	player_resting_set_count(player, 100);
+	require(player_is_resting(player));
+
+	do_mon_spell(spell, pet, false);
+	require(player_is_resting(player));
+
+	/* --- the same fight, in view --- */
+	mflag_on(pet->mflag, MFLAG_VISIBLE);
+
+	player_resting_cancel(player, false);
+	player_resting_set_count(player, 100);
+	require(player_is_resting(player));
+
+	do_mon_spell(spell, pet, true);
+	require(!player_is_resting(player));
+
+	/* --- and something casting at the player, unseen, always interrupts --- */
+	clear_the_level();
+	foe = place_next_to_the_player("apprentice", MON_ALLEGIANCE_HOSTILE);
+	require(foe);
+	foe->target.midx = 0;
+	mflag_off(foe->mflag, MFLAG_VISIBLE);
+
+	player->chp = player->mhp = 5000;
+
+	/*
+	 * Cast until one of them misses, and require the rest broke on *that*
+	 * cast.
+	 *
+	 * An arrow that lands disturbs through `take_hit()`, so a hit proves
+	 * nothing about this gate -- gating the player's own case wrongly would
+	 * still look right most of the time. A miss applies no effect at all
+	 * (`do_mon_spell()` runs `effect_do()` only `if (hits)`), so the only
+	 * thing left that can end the rest is the line being measured. Unchanged
+	 * hit points are how the miss is recognised.
+	 *
+	 * 300 tries against a floor of 5% misses leaves a one-in-five-million
+	 * chance of not finding one, which `require(missed)` reports as itself
+	 * rather than as a failure of the gate.
+	 */
+	for (i = 0; i < 300 && !missed; i++) {
+		player->chp = player->mhp;
+		player_resting_cancel(player, false);
+		player_resting_set_count(player, 100);
+		require(player_is_resting(player));
+
+		do_mon_spell(spell, foe, false);
+		missed = (player->chp == player->mhp);
+	}
+	require(missed);
+	require(!player_is_resting(player));
+
+	ok;
+}
+
+/**
+ * A pet penned behind a closed door, with the player on the other side.
+ *
+ * Both halves of the pen matter. The walls leave the pet one grid it could
+ * move to, and that grid is the door -- otherwise a pet with nothing to fight
+ * wanders, and `get_move_random()` only ever picks a grid that is already
+ * walkable, so it would never touch the door at all.
+ *
+ * Returns NULL if the level will not take the arrangement, so the caller can
+ * say so where it is written rather than failing here.
+ */
+static struct monster *pen_a_pet_behind_a_door(struct loc *door) {
+	int i;
+
+	for (i = 0; i < 8; i++) {
+		struct loc mid = loc_sum(player->grid, ddgrid_ddd[i]);
+		struct loc far = loc_sum(mid, ddgrid_ddd[i]);
+		struct monster *pet;
+		int j;
+
+		if (!square_in_bounds_fully(cave, mid)) continue;
+		if (!square_in_bounds_fully(cave, far)) continue;
+		if (!square_isempty(cave, mid)) continue;
+		if (!square_isempty(cave, far)) continue;
+
+		pet = place_at(far, "soldier", MON_ALLEGIANCE_PET);
+		if (!pet) continue;
+
+		for (j = 0; j < 8; j++) {
+			struct loc adj = loc_sum(far, ddgrid_ddd[j]);
+
+			if (!square_in_bounds_fully(cave, adj)) continue;
+			if (loc_eq(adj, mid)) continue;
+			square_set_feat(cave, adj, FEAT_GRANITE);
+		}
+
+		square_set_feat(cave, mid, FEAT_CLOSED);
+		square_set_door_lock(cave, mid, 0);
+		*door = mid;
+
+		player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+		update_stuff(player);
+		return pet;
+	}
+
+	return NULL;
+}
+
+/**
+ * And a pet bursting through a door does not stop you either (DEC-95).
+ *
+ * The `disturb()` on a bashed door was upstream Angband's, written for a game
+ * where everything that bashes a door is hostile. Zangband has pets and does
+ * not disturb on a bash at all. The message stays -- you did hear it -- and
+ * the interruption goes.
+ *
+ * Driven through `process_monsters()` rather than by calling
+ * `square_smash_door()` directly, because the line under test is in the
+ * monster turn and not in the door code: a test that smashed the door itself
+ * would pass whether the `disturb()` were there or not.
+ */
+static int test_a_pet_bursting_a_door_does_not_break_your_rest(void *state) {
+	struct monster *pet = NULL;
+	struct monster_race *pet_race;
+	struct loc door = loc(0, 0);
+	bool kept_open = false, kept_bash = false;
+	int16_t kept_leash = player->pet_follow_distance;
+	int attempt, i;
+
+	for (attempt = 0; attempt < 40 && !pet; attempt++) {
+		clear_the_level();
+		pet = pen_a_pet_behind_a_door(&door);
+		if (!pet) {
+			prepare_next_level(player);
+			on_new_level();
+		}
+	}
+	require(pet);
+
+	/* Bashing, not opening, so the outcome is the one being measured */
+	pet_race = pet->race;
+	kept_open = rf_has(pet_race->flags, RF_OPEN_DOOR);
+	kept_bash = rf_has(pet_race->flags, RF_BASH_DOOR);
+	rf_off(pet_race->flags, RF_OPEN_DOOR);
+	rf_on(pet_race->flags, RF_BASH_DOOR);
+
+	/* Close enough that the pet wants to come back to the player */
+	player->pet_follow_distance = 1;
+
+	/*
+	 * Two grids of the noise map, by hand.
+	 *
+	 * `get_move_advance()` finds a door by hearing something quieter on the
+	 * other side of it, and the map it reads is only written by
+	 * `make_noise()` on a player turn -- which a unit test never takes, so it
+	 * is all zeroes and the pet stands still. These are the two values
+	 * `make_noise()` would have left for this geometry: 1 at the door, which
+	 * is next to the player, and 2 where the pet is, one further out. Noise
+	 * is not recomputed while the player rests, so what is written here is
+	 * what the pet reads for the whole test, exactly as in play.
+	 */
+	cave->noise.grids[door.y][door.x] = 1;
+	cave->noise.grids[pet->grid.y][pet->grid.x] = 2;
+
+	player_resting_cancel(player, false);
+	player_resting_set_count(player, 100);
+	require(player_is_resting(player));
+
+	for (i = 0; i < 50 && !square_isbrokendoor(cave, door); i++) {
+		/* Hurt, to keep it active -- see the note in the test above */
+		pet->hp = pet->maxhp - 1;
+		pet->energy = z_info->move_energy;
+		mflag_off(pet->mflag, MFLAG_HANDLED);
+		process_monsters(0);
+	}
+
+	if (kept_open) rf_on(pet_race->flags, RF_OPEN_DOOR);
+	if (!kept_bash) rf_off(pet_race->flags, RF_BASH_DOOR);
+	player->pet_follow_distance = kept_leash;
+
+	require(square_isbrokendoor(cave, door));
+	require(player_is_resting(player));
+
+	ok;
+}
+
 const char *suite_name = "monster/ally-ai";
 struct test tests[] = {
 	{ "a-pet-finds-an-enemy", test_a_pet_finds_an_enemy },
@@ -927,6 +1158,10 @@ struct test tests[] = {
 	  test_a_pet_does_not_attack_the_player },
 	{ "a-pet-does-not-cast-at-the-player",
 	  test_a_pet_does_not_cast_at_the_player },
+	{ "an-unseen-fight-does-not-break-your-rest",
+	  test_an_unseen_fight_does_not_break_your_rest },
+	{ "a-pet-bursting-a-door-does-not-break-your-rest",
+	  test_a_pet_bursting_a_door_does_not_break_your_rest },
 	{ "a-pet-does-not-break-your-rest",
 	  test_a_pet_does_not_break_your_rest },
 	{ NULL, NULL }

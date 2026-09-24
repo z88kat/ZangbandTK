@@ -1501,8 +1501,23 @@ static bool monster_turn_can_move(struct monster *mon, const char *m_name,
 			if (will_bash) {
 				square_smash_door(cave, new);
 
+				/*
+				 * Heard, but not a reason to stop what you are doing
+				 * (ZangbandTK, PLR-23, DEC-95).
+				 *
+				 * The `disturb()` that used to be here is upstream Angband's,
+				 * written for a game where every creature that bashes a door
+				 * is hostile. Here a pet follows you everywhere and 46% of
+				 * monsters can bash, so it cancelled the player's rest, run or
+				 * repeated command whenever their own animal met a door --
+				 * at any distance, in or out of sight, since the call had no
+				 * guard of any kind.
+				 *
+				 * Zangband does not disturb on a bash at all: its whole
+				 * monster turn has two disturbs and this is not one of them.
+				 * The message stays, because you did hear it.
+				 */
 				msg("You hear a door burst open!");
-				disturb(player);
 
 				if (confused) {
 					/* Didn't learn above; apply since bashed the door. */

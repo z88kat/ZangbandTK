@@ -4825,3 +4825,72 @@ it usually describes the behaviour rather than the assertion -- which is what
 makes them hard to spot by reading. Four in one review window, three of them
 found by mutating the code rather than by reading the tests. Mutation over a
 sample is the only method here that has worked.
+
+---
+
+**DEC-95 — A fight you cannot see, and a door you only hear, no longer stop you
+resting.** (PLR-23, 3.124.9.)
+
+Steven asked how bad the pet resting problem was: "is this only the case when a
+pet is near a door and bashes the door, or is this a general rule that you can't
+rest with a pet?" Enumerating every path from a monster's turn that reaches
+`disturb()` gave the answer: the door is the loudest case, not the only one.
+Two unguarded calls fired for a pet the player could neither see nor hear.
+
+**The door.** `monster_turn_can_move()` called `disturb(player)` straight after
+`square_smash_door()`, with no test of allegiance, distance or sight. 46% of
+monster races can bash a door, a pet follows the player everywhere, and a pet is
+active at any distance because `monster_check_active()` exempts it -- so your own
+animal meeting a door anywhere on the level cancelled your rest, run or repeated
+command.
+
+**The spell.** `do_mon_spell()` disturbed on every successful cast, again with no
+guard, and 64% of monster races have spells. This is the general case: a pet
+brawling in the dark broke the player's rest every time it landed one, with no
+message to say why.
+
+**What was built.** The bash `disturb()` is gone; the message stays, because you
+did hear it. The cast `disturb()` is gated: a spell aimed at the player disturbs
+unconditionally, and a spell aimed at another monster disturbs only under
+Zangband's own pair from `monst_spell_monst()`
+([mspells2.c:236](../archive/zangband/src/mspells2.c#L236)) -- `known` (caster or
+target within `max_sight`) **and** `see_either` (one of them actually visible).
+
+**Sight, not allegiance.** Steven's call, and it fixes the hostile half too: two
+hostiles fighting each other out of sight is not a reason to stop resting either,
+and a pet exemption would have left that alone. It also means nothing changes for
+a fight the player can watch.
+
+**The second call site was a duplicate.** `make_ranged_attack()` called
+`disturb(player)` on the line before `do_mon_spell()`, which disturbs again. It
+was harmless while both were unconditional, and it would have silently defeated
+the gate. Removed rather than gated.
+
+**Divergence from upstream Angband, recorded deliberately.** The bash `disturb()`
+is upstream's line, written for a game in which everything that bashes a door is
+hostile and therefore worth waking for. That premise does not hold here.
+Zangband, which does have pets, has no disturb on a bash at all: its monster turn
+has two disturbs and this is not one of them. So the divergence is from upstream
+and the agreement is with the archive, which DEC-20 makes authoritative.
+
+**Falsified four ways**, three runs each:
+
+* Put the bash `disturb()` back -- `a-pet-bursting-a-door-does-not-break-your-rest`
+  fails.
+* Remove the gate so every cast disturbs -- the unseen-fight case fails.
+* Make a cast at a monster never disturb -- the in-view case fails.
+* Gate the player's own case on visibility -- the unseen-caster case fails.
+
+Two traps found while writing the tests, both of which would have left a test
+that proved nothing. Calling `square_smash_door()` from the test passes whether
+the `disturb()` is there or not, because the line under test is in the monster
+turn and not in the door code -- so the door test drives `process_monsters()`
+and pens the pet so that the door is the only grid it can move to. And an arrow
+that *hits* disturbs through `take_hit()`, so the unseen-caster case casts until
+one misses (unchanged hit points) and asserts on that cast.
+
+A pet will not walk into a door in a unit test without a noise map:
+`get_move_random()` only ever picks a grid that is already walkable, and
+`make_noise()` runs on a player turn, which a unit test never takes. The door
+test writes the two grids `make_noise()` would have written. Noise is not
+recomputed while the player rests, so this is what the pet reads in play too.

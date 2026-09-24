@@ -502,8 +502,13 @@ bool make_ranged_attack(struct monster *mon)
 		return true;
 	}
 
-	/* Cast the spell. */
-	disturb(player);
+	/*
+	 * Cast the spell.
+	 *
+	 * No `disturb()` here: `do_mon_spell()` on the next line does it, under
+	 * the gate described there. This one was a second, ungated call for every
+	 * cast -- harmless as a duplicate, but it would have defeated the gate.
+	 */
 	do_mon_spell(thrown_spell, mon, seen);
 
 	/* Remember what the monster did */
