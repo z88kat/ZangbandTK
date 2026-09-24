@@ -116,18 +116,20 @@ static int test_only_class_powers_backfire(void *state) {
 	 * And now through the door itself: a racial power must never backfire,
 	 * however often it fails, while a class power sometimes does.
 	 *
-	 * Driven at a level where the failure chance is high, so failures -- and
-	 * therefore backfires, which are rolled at half the failure chance -- are
-	 * common enough to count. A backfire always leaves a mark: stunned,
-	 * confused, hallucinating, mana gone, or the map forgotten. Mana is the
-	 * one signal the character cannot get from the power itself, since a power
-	 * that fails still takes its price, so the timed effects are what is
-	 * watched.
+	 * A backfire needs the power to fail *and* a second roll at half the
+	 * failure chance, and only some of the five bands leave a timed mark --
+	 * stunned, confused or hallucinating. Mana is not watched: a power that
+	 * fails takes its price anyway, so a drained pool says nothing.
+	 *
+	 * Eight thousand uses, and the number is measured rather than chosen.
+	 * At level 3 the marks arrive at roughly one use in two hundred; eight
+	 * hundred uses left none about one run in fifty, which is how this first
+	 * went red on the Windows runners a day after it was written.
 	 */
 	{
 		struct player_power *race_power, *class_power;
 		int i, race_marks = 0, class_marks = 0;
-		const int tries = 800;
+		const int tries = 8000;
 
 		/*
 		 * A Half-Orc, because the default race has no power to test with and

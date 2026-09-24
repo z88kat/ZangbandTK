@@ -29,6 +29,7 @@
 #include "test-utils.h"
 
 #include "cave.h"
+#include "player-calcs.h"
 #include "game-world.h"
 #include "generate.h"
 #include "init.h"
@@ -104,6 +105,18 @@ static struct monster *place_at(struct loc grid, const char *name,
 
 	monster_set_allegiance(square_monster(cave, grid), side);
 
+	/*
+	 * Bring the view and the monster list up to date before handing it back.
+	 *
+	 * `monster_is_visible()` reads a flag that `update_mon()` sets, and a unit
+	 * test never takes a player turn, so nothing recalculated it -- and the
+	 * helper above may have regenerated the level, which leaves the player's
+	 * view stale. Two tests asserted visibility and failed on it a few runs in
+	 * a hundred for that reason and no other.
+	 */
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+	update_stuff(player);
+
 	return square_monster(cave, grid);
 }
 
@@ -174,11 +187,39 @@ static void clear_the_level(void) {
  * after, since a fresh level arrives with its own monsters and a hostile one
  * wandering into view would disturb the player for reasons of its own.
  */
+/** How many grids next to this one a monster could be put in. */
+static int free_neighbours(struct loc grid) {
+	int i, n = 0;
+
+	for (i = 0; i < 8; i++) {
+		struct loc adj = loc_sum(grid, ddgrid_ddd[i]);
+
+		if (!square_in_bounds_fully(cave, adj)) continue;
+		if (!square_isempty(cave, adj)) continue;
+		n++;
+	}
+	return n;
+}
+
+/**
+ * A monster of that side, next to the player, with room beside it for two more.
+ *
+ * The room is the part that took three red Windows nights to notice. Every
+ * test here stands a pet next to the player and then puts one or two enemies
+ * next to the *pet*, and this used to accept the first free neighbour it found
+ * -- so a pet placed in a corridor left `place_beside()` nothing to work with
+ * and `require(foe)` failed. It is rare locally, about one run in sixty; on the
+ * Windows runners it came up three times in six pushes and kept master red.
+ *
+ * Asking for two free neighbours costs nothing -- an ordinary room grid has
+ * seven -- and makes the placement the tests depend on deterministic rather
+ * than a property of the level that happened to be generated.
+ */
 static struct monster *place_next_to_the_player(const char *name,
 												enum monster_allegiance side) {
 	int attempt;
 
-	for (attempt = 0; attempt < 20; attempt++) {
+	for (attempt = 0; attempt < 40; attempt++) {
 		int i;
 
 		for (i = 0; i < 8; i++) {
@@ -186,6 +227,14 @@ static struct monster *place_next_to_the_player(const char *name,
 
 			if (!square_in_bounds_fully(cave, grid)) continue;
 			if (!square_isempty(cave, grid)) continue;
+
+			/*
+			 * The first grid that will also hold the enemies, in the same
+			 * order as before -- skipping a cramped one rather than searching
+			 * for the roomiest, so that a level which was fine before this
+			 * check existed still puts the pet exactly where it used to.
+			 */
+			if (free_neighbours(grid) < 2) continue;
 
 			return place_at(grid, name, side);
 		}
@@ -580,7 +629,7 @@ static int test_an_order_grants_nothing_the_race_lacks(void *state) {
  * recommendation was the other way and why it lost.
  */
 static int test_pets_follow_you_downstairs(void *state) {
-	int t, best = 0;
+	int t, best = 0, placed = 0;
 
 	/*
 	 * Up to ten descents, and the question is whether the pet *can* arrive.
@@ -590,13 +639,14 @@ static int test_pets_follow_you_downstairs(void *state) {
 	 * `game/carry` measures the rate; this only has to show the reversal
 	 * happened.
 	 */
-	for (t = 0; t < 10 && best < 1; t++) {
+	for (t = 0; t < 40 && best < 1; t++) {
 		struct monster *pet;
 		int i, after = 0;
 
 		clear_the_level();
 		pet = place_side("soldier", MON_ALLEGIANCE_PET, 3);
 		if (!pet) continue;
+		placed++;
 
 		/* Down a level, the way the game does it */
 		player->depth++;
@@ -614,6 +664,18 @@ static int test_pets_follow_you_downstairs(void *state) {
 		if (after > best) best = after;
 	}
 
+	/*
+	 * Counted, because "the pet did not follow" and "there was nowhere to put
+	 * a pet" are different answers and the loop used to give the same one for
+	 * both: a `place_side()` that failed simply burned an attempt in silence.
+	 * The attempts are raised from ten to forty for the same reason -- the
+	 * placement wants a grid three away that the level may not have.
+	 */
+	if (!placed) {
+		printf("no pet could be placed in %d attempts; the follow was never "
+			   "tested\n", t);
+		require(false);
+	}
 	eq(best, 1);
 
 	ok;
@@ -745,6 +807,8 @@ static int test_a_pet_does_not_break_your_rest(void *state) {
 	struct monster *pet, *foe;
 	int i;
 	bool kept = OPT(player, disturb_near);
+	bool kept_open = false, kept_bash = false;
+	struct monster_race *pet_race;
 	int16_t keep_chp = player->chp, keep_mhp = player->mhp;
 
 	option_set(option_name(OPT_disturb_near), true);
@@ -753,6 +817,27 @@ static int test_a_pet_does_not_break_your_rest(void *state) {
 	pet = place_next_to_the_player("soldier", MON_ALLEGIANCE_PET);
 	require(pet);
 	require(monster_is_visible(pet));
+
+	/*
+	 * And it is not allowed to touch a door while this runs.
+	 *
+	 * `monster_turn()` disturbs on a bashed door -- "You hear a door burst
+	 * open!" at [mon-move.c:1505](../src/mon-move.c#L1505) -- and that path
+	 * has no pet exemption, so a pet that wandered into a door ended the rest
+	 * and the test failed on something it is not measuring. About one run in
+	 * twenty locally and three of six on the Windows runners, which is what
+	 * kept master red.
+	 *
+	 * Cleared here rather than exempted in the game, because whether your own
+	 * animal breaking down a door should wake you is a question about the game
+	 * and not about this test. What this test measures is a pet *moving* in
+	 * view, and a door is not that.
+	 */
+	pet_race = pet->race;
+	kept_open = rf_has(pet_race->flags, RF_OPEN_DOOR);
+	kept_bash = rf_has(pet_race->flags, RF_BASH_DOOR);
+	rf_off(pet_race->flags, RF_OPEN_DOOR);
+	rf_off(pet_race->flags, RF_BASH_DOOR);
 
 	/*
 	 * `player_resting_cancel(p, false)` first, every time. Placing a hostile
@@ -806,6 +891,13 @@ static int test_a_pet_does_not_break_your_rest(void *state) {
 		process_monsters(0);
 	}
 	require(!player_is_resting(player));
+
+	/*
+	 * The race is global, so the flags go back whatever happened -- the
+	 * hostile half above uses the same race as the pet.
+	 */
+	if (kept_open) rf_on(pet_race->flags, RF_OPEN_DOOR);
+	if (kept_bash) rf_on(pet_race->flags, RF_BASH_DOOR);
 
 	player->mhp = keep_mhp;
 	player->chp = keep_chp;
