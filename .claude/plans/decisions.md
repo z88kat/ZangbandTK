@@ -5089,3 +5089,41 @@ the same condition from the other side and uses the file's real bytes; the
 monster case finds the count by giving the monster hit points nothing else has
 and searching for them, so the probe does not go stale the next time a field
 moves.
+
+---
+
+**DEC-99 — The integrity check in `game/carry` now checks something.** (Review
+of 3.105–3.124, 3.124.13. Stage 4 of the review backlog.)
+
+`require_consistent()` called `cave_check_integrity()` and, when it failed,
+**printed the reason and returned**. It was a `void` function named for an
+assertion it did not make, and it had eleven call sites -- so the eleven places
+in the pet-carrying suite where a chunk, an object list or a held object could
+go wrong were checking nothing at all. The suite that covers moving monsters
+and their possessions between two chunks was the one place a consistency bug
+would have shown, and it was the one place looking away.
+
+It is now `consistent()`, returning `bool`, with the eleven call sites reading
+`require(consistent())`. A `bool` rather than an assertion inside the helper
+because `require()` returns from the enclosing test and cannot be used from one.
+
+**What it caught: nothing.** Thirty-five runs of the suite, plus the eight-pass
+flake sweep, all clean. That was the outcome to be ready for either way -- the
+instruction was to report what it caught rather than suppress it, and to stop if
+it was large. It is empty, so the carry code has been correct all along and the
+gap was only ever in the watching.
+
+**Which is exactly why the assertion was falsified in its own right.** A check
+that passes and has never been seen to fail is indistinguishable from the
+`printf` it replaced. Corrupting one monster's `midx` makes it fail and name the
+fault -- "monster 1 thinks it is monster 999" -- so the helper is now known to
+be capable of the answer it keeps giving.
+
+The suite was swept for others of the same shape and there are none: no other
+`static void` helper in `src/tests` is named for a check, and every other
+diagnostic `printf` there is followed by `require(false)`.
+
+**Unrelated, and unchanged from the earlier review:** `object/info` still varies
+about one full-suite pass in eight (it varied on pass 5 of 8 today, and passes
+standalone). None of the suites added or changed today varied across the eight
+passes.

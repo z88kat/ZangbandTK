@@ -204,12 +204,27 @@ static int best_carry(const char *race, int n, int tries) {
 }
 
 /** The level is internally consistent, and say what is wrong if not. */
-static void require_consistent(void) {
+/**
+ * Whether the chunk and the player's memory of it still agree.
+ *
+ * This used to be `require_consistent()`, a `void` function that *printed* the
+ * reason and returned -- so all eleven of its call sites were no-ops, and the
+ * eleven places a pet-carrying bug would show up were checking nothing. It was
+ * named for an assertion it did not make, which is the same shape as the four
+ * tests in DEC-94.
+ *
+ * Returning a `bool` rather than asserting inside, because the `require()`
+ * macro returns from the enclosing test and cannot be used from a helper.
+ */
+static bool consistent(void) {
 	char why[120];
 
-	if (cave_check_integrity(cave, player->cave, why, sizeof(why)) != 0) {
-		printf("  integrity: %s\n", why);
+	if (cave_check_integrity(cave, player->cave, why, sizeof(why)) == 0) {
+		return true;
 	}
+
+	printf("  integrity: %s\n", why);
+	return false;
 }
 
 /**
@@ -269,7 +284,7 @@ static int test_several_follow_and_arrive_near(void *state) {
 		}
 		arrived += here;
 		if (here == 4) full++;
-		require_consistent();
+		require(consistent());
 	}
 
 	require(wanted > 0);
@@ -310,7 +325,7 @@ static int test_only_pets_follow(void *state) {
 		eq(count_side(MON_ALLEGIANCE_FRIENDLY), 0);
 		if (count_side(MON_ALLEGIANCE_PET) > best)
 			best = count_side(MON_ALLEGIANCE_PET);
-		require_consistent();
+		require(consistent());
 	}
 
 	eq(best, 2);
@@ -412,7 +427,7 @@ static int test_the_cap_leaves_the_excess(void *state) {
 			if (count_side(MON_ALLEGIANCE_PET) > 2) over++;
 			if (count_side(MON_ALLEGIANCE_PET) > best)
 				best = count_side(MON_ALLEGIANCE_PET);
-			require_consistent();
+			require(consistent());
 		}
 
 		/* Restore before asserting, so a failure cannot leak the cap */
@@ -443,7 +458,7 @@ static int test_a_cap_of_zero_leaves_them_all(void *state) {
 	z_info->pet_max_carried = kept;
 
 	eq(count_side(MON_ALLEGIANCE_PET), 0);
-	require_consistent();
+	require(consistent());
 
 	ok;
 }
@@ -736,7 +751,7 @@ static int test_a_mimic_does_not_follow(void *state) {
 		go_down();
 
 		eq(count_side(MON_ALLEGIANCE_PET), 0);
-		require_consistent();
+		require(consistent());
 		done = 1;
 	}
 
@@ -787,7 +802,7 @@ static int test_nothing_follows_into_an_arena(void *state) {
 		on_new_level();
 
 		eq(count_side(MON_ALLEGIANCE_PET), 0);
-		require_consistent();
+		require(consistent());
 
 		/* And back out, still with nothing following */
 		player->upkeep->arena_level = false;
@@ -795,7 +810,7 @@ static int test_nothing_follows_into_an_arena(void *state) {
 		on_new_level();
 
 		eq(count_side(MON_ALLEGIANCE_PET), 0);
-		require_consistent();
+		require(consistent());
 		done = 1;
 	}
 
@@ -853,7 +868,7 @@ static int test_a_carried_unique_stays_unique(void *state) {
 		/* However it went, there is never more than one of him */
 		require(seen <= 1);
 		eq(race->cur_num, seen);
-		require_consistent();
+		require(consistent());
 
 		if (seen == 1) {
 			require(monster_is_pet(cave_monster(cave, 1))
@@ -982,7 +997,7 @@ static int test_a_stored_level_does_not_keep_them(void *state) {
 		 */
 		back = count_side(MON_ALLEGIANCE_PET);
 		require(back <= 2);
-		require_consistent();
+		require(consistent());
 		if (back == 2) done = 1;
 	}
 
@@ -1302,7 +1317,7 @@ static int test_a_pet_that_leaves_is_gone_for_good(void *state) {
 		/* Not there as a pet, and not there as anything else either */
 		eq(count_side(MON_ALLEGIANCE_PET), 0);
 		eq(monsters_after, monsters_before - 1);
-		require_consistent();
+		require(consistent());
 		done = 1;
 	}
 
@@ -1347,7 +1362,7 @@ static int test_a_pet_over_the_cap_is_still_yours(void *state) {
 		on_new_level();
 
 		if (count_side(MON_ALLEGIANCE_PET) == 6) {
-			require_consistent();
+			require(consistent());
 			done = 1;
 		}
 	}
