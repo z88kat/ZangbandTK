@@ -449,7 +449,29 @@ static bool rd_monster(struct chunk *c, struct monster *mon)
 	rd_s16b(&mon->maxhp);
 	rd_byte(&mon->mspeed);
 	rd_byte(&mon->energy);
+	/*
+	 * The timed effects, bounded (ZangbandTK, review of 3.105-3.124).
+	 *
+	 * This read `tmp8u` int16_ts straight into `mon->m_timed[MON_TMD_MAX]`
+	 * with nothing checking the count, so a savefile claiming 255 of them --
+	 * a corrupt file, a truncated one, or one written by a build with more
+	 * kinds of monster timed effect -- wrote up to 244 int16_ts off the end
+	 * of the structure. A heap overflow with file data in it.
+	 *
+	 * Refused rather than clamped, which is the idiom `rd_ignore()` already
+	 * uses two functions away for `itype_size`. Reading the surplus and
+	 * throwing it away would keep the stream aligned but would also accept a
+	 * file that cannot be right: the monsters block is versioned, so a build
+	 * that adds a timed effect bumps the version rather than widening this
+	 * count, and anything else claiming more is corrupt. The caller turns
+	 * `false` into a clean refusal of the whole savefile.
+	 */
 	rd_byte(&tmp8u);
+	if (tmp8u > MON_TMD_MAX) {
+		note(format("Monster claims %u timed effects; there are %d.",
+			(unsigned) tmp8u, (int) MON_TMD_MAX));
+		return false;
+	}
 
 	for (j = 0; j < tmp8u; j++)
 		rd_s16b(&mon->m_timed[j]);
@@ -1394,6 +1416,21 @@ int rd_ignore(void)
 					if (itype_has(itypes, j))
 						ego_ignore_toggle(i, j);
 			}
+		} else {
+			/*
+			 * Read past an ego this build no longer has (ZangbandTK,
+			 * review of 3.105-3.124).
+			 *
+			 * There was no `else` here, so a savefile written by a build
+			 * with more egos than this one left `1 + itype_size` bytes
+			 * per surplus ego unread and the stream desynchronised --
+			 * everything after it, the auto-inscriptions, was then read
+			 * out of the middle of the ego data. The loop just below
+			 * already carries a comment saying "the stream must stay
+			 * aligned", which is what makes the omission here a slip
+			 * rather than a choice.
+			 */
+			strip_bytes(1 + itype_size);
 		}
 	}
 

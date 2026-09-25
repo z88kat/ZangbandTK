@@ -878,6 +878,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     game/nightmare.c
     game/roundtrip.c
     game/mage.c
+    game/savefile-hostile.c
     game/saves.c
     game/wild.c
     game/treesight.c

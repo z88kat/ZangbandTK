@@ -5025,3 +5025,67 @@ does not lose the map either.
 Falsified four ways, one test failing each time and each on the intended
 assertion. The manual has the Golem's power in `birth.rst` and the recall note
 in `nightmare.rst`.
+
+---
+
+**DEC-98 — Three ways the loader read off the end of something.** (Review of
+3.105–3.124, 3.124.12. Stage 3 of the review backlog.)
+
+All three are reached only by a savefile this build did not write, which is why
+none had ever failed: the corpus is thirty-five files written by this game and
+`game/roundtrip` writes its own. Nothing asked what happens when the file is
+*wrong*, so `game/savefile-hostile` now does.
+
+**`loaders[]` had no terminator.** `find_loader()` scans until it meets an entry
+whose name begins with a NUL, and the table ended at `{ "history", rd_history,
+1 }`. Every block whose name and version matched nothing therefore read a whole
+`struct blockinfo` past the end of the array -- and that is precisely the case a
+savefile from another build produces, which is when a clean refusal matters
+most. One line.
+
+**`rd_ignore()` desynchronised the stream.** The ego loop read `1 + itype_size`
+bytes only while the index was below `z_info->e_max` and had no `else`, so a
+file written by a build with *more* egos left those bytes in the stream and the
+auto-inscriptions after them were read out of the middle of the ego data. The
+inscription loop twenty lines below already carries a comment saying "the stream
+must stay aligned", which is what makes this a slip rather than a choice.
+
+**A monster's timed effects were unbounded.** `rd_monster()` read a byte and
+then that many `int16_t`s into `mon->m_timed[MON_TMD_MAX]`, which holds eleven.
+A file claiming 255 wrote up to 244 `int16_t`s past the end of the monster: a
+heap overflow with file data in it.
+
+*Refused rather than clamped*, which is the idiom `rd_ignore()` already uses for
+`itype_size` a few functions away. Reading the surplus and discarding it would
+keep the stream aligned and would also accept a file that cannot be right -- the
+monsters block is versioned, so a build that adds a timed effect bumps the
+version rather than widening this count. Refusing is also what makes it
+testable: any count large enough to overrun also desynchronises the list, and a
+desynchronised list reaches `quit_fmt("Monster %d has no group")` and takes the
+process with it, so a test could not survive long enough to assert anything.
+
+**Falsification, and what it says about each test.**
+
+* The monster bound: without it the suite dies with **SIGSEGV** under the plain
+  allocator, before ASAN is even needed.
+* The ego `else`: without it `a-file-with-more-egos-keeps-its-place` fails on
+  the auto-inscription, as designed.
+* The sentinel: under ASAN the mutated build **hangs** rather than refusing --
+  discrimination, but ugly discrimination, and under the plain build the test
+  does not discriminate at all. Recorded rather than papered over: in CI this
+  fault would show as the sanitizer job timing out, not as a named failure.
+
+**One of these tests proved nothing when first written, and the way it was
+caught is the point.** `a-file-with-more-egos-keeps-its-place` set an
+auto-inscription, saved, reloaded and checked the inscription -- but
+`savefile_load()` does not clear `k_info[].note_aware`, so the value was still
+in memory and the test passed whatever the loader read. Removing the fix changed
+nothing. It now clears every `note_aware` between the save and the load. Same
+shape as the four in DEC-94, and again found by mutating rather than by reading.
+
+**The two reproductions are worth reusing.** Neither patches bytes into a
+savefile by hand. The ego case shrinks `z_info->e_max` at load time, which is
+the same condition from the other side and uses the file's real bytes; the
+monster case finds the count by giving the monster hit points nothing else has
+and searching for them, so the probe does not go stale the next time a field
+moves.

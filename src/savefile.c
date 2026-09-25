@@ -180,6 +180,17 @@ static const struct blockinfo loaders[] = {
 	{ "chunks", rd_chunks_1, 1 },
 	{ "chunks", rd_chunks, 2 },
 	{ "history", rd_history, 1 },
+	/*
+	 * The terminator, which was missing (ZangbandTK, review of 3.105-3.124).
+	 *
+	 * `find_loader()` walks this table until it meets an entry whose name
+	 * starts with a NUL, so without one it read a whole entry past the end --
+	 * on every block whose name and version match nothing here, which is
+	 * exactly the case a savefile from another build produces and exactly
+	 * when a clean refusal matters most. Latent only because the corpus never
+	 * contains an unmatched block.
+	 */
+	{ "", NULL, 0 },
 };
 
 
