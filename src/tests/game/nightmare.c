@@ -32,6 +32,11 @@
 #include "effects.h"
 #include "player-calcs.h"
 #include "test-utils.h"
+#include "mon-lore.h"
+#include "z-textblock.h"
+#include "z-form.h"
+#include "z-util.h"
+#include <wchar.h>
 
 int setup_tests(void **state) {
 	set_file_paths();
@@ -752,12 +757,84 @@ static int test_an_invisible_wall_looks_like_floor(void *state) {
 	ok;
 }
 
+/**
+ * And the recall page says so (review of 3.105-3.124).
+ *
+ * `lore_append_movement()` and `lore_append_toughness()` printed `race->speed`
+ * and `race->avg_hp`, which are the record's numbers. Nightmare places every
+ * monster at `+5` speed and twice the hit points, so in nightmare mode the
+ * recall described a game nobody was playing -- for every monster, all run.
+ *
+ * The hit points are the worse half and the review named only the speed: a
+ * page that halves what is standing in front of the player is a page that gets
+ * them killed.
+ *
+ * Read out of the rendered text rather than out of the helpers, which are
+ * static, and which is also the honest test: what is being asserted is what a
+ * player sees.
+ */
+static int test_recall_reports_what_nightmare_places(void *state) {
+	struct monster_race *race = lookup_monster("Grip, Farmer Maggot's dog");
+	struct monster_lore *lore;
+	wchar_t plain[4096], nasty[4096];
+	textblock *tb;
+	bitflag known[RF_SIZE];
+	char want[64];
+	wchar_t wwant[64];
+
+	notnull(race);
+	lore = get_lore(race);
+	notnull(lore);
+
+	/* The page only prints toughness once the armour is known */
+	lore->armour_known = true;
+	lore_update(race, lore);
+	rf_copy(known, race->flags);
+
+	nightmare(false);
+	tb = textblock_new();
+	lore_append_movement(tb, race, lore, known);
+	lore_append_toughness(tb, race, lore, known);
+	wcsncpy(plain, textblock_text(tb), N_ELEMENTS(plain) - 1);
+	plain[N_ELEMENTS(plain) - 1] = 0;
+	textblock_free(tb);
+
+	nightmare(true);
+	tb = textblock_new();
+	lore_append_movement(tb, race, lore, known);
+	lore_append_toughness(tb, race, lore, known);
+	wcsncpy(nasty, textblock_text(tb), N_ELEMENTS(nasty) - 1);
+	nasty[N_ELEMENTS(nasty) - 1] = 0;
+	textblock_free(tb);
+	nightmare(false);
+
+	/* Twice the life rating, and it was not already saying that */
+	strnfmt(want, sizeof(want), "%d", race->avg_hp * 2);
+	text_mbstowcs(wwant, want, N_ELEMENTS(wwant));
+	if (!wcsstr(nasty, wwant) || wcsstr(plain, wwant)) {
+		printf("  wanted life rating %s in nightmare and not in plain\n", want);
+		require(false);
+	}
+
+	/*
+	 * And the two pages differ. A monster whose base speed already sits in
+	 * the same word-band as base+5 would make the speed half of this
+	 * unfalsifiable on its own; Grip is 120, which is "very quickly" against
+	 * 125's "very quickly" -- so the multiplier line is what separates them,
+	 * and requiring the whole text to differ covers both.
+	 */
+	require(wcscmp(plain, nasty) != 0);
+	ok;
+}
+
 const char *suite_name = "game/nightmare";
 struct test tests[] = {
 	{ "nightmare-is-an-optional-birth-choice",
 			test_nightmare_is_an_optional_birth_choice },
 	{ "monsters-arrive-with-twice-the-hit-points",
 			test_monsters_arrive_with_twice_the_hit_points },
+	{ "recall-reports-what-nightmare-places",
+			test_recall_reports_what_nightmare_places },
 	{ "monsters-arrive-five-points-faster",
 			test_monsters_arrive_five_points_faster },
 	{ "nothing-sleeps-and-nothing-waits",

@@ -1482,6 +1482,138 @@ static int test_a_draconian_says_what_it_breathed(void *state) {
 	ok;
 }
 
+/**
+ * The Golem's power is a shield, and it costs nothing to wear.
+ *
+ * Zangband's `inc_shield()` ([racial.c:514](../archive/zangband/src/racial.c#L514))
+ * is +50 armour class and nothing else. Ours read `TIMED_INC:STONESKIN`, which
+ * is +40 *and -5 speed* -- so the Golem paid a penalty the archive never
+ * charged and got less armour for it. The name misled: Zangband's shield
+ * message is literally "Your skin turns to stone."
+ *
+ * Asserted on what the character is afterwards rather than on which timed
+ * effect the data file names, because the effect's name is the thing that was
+ * wrong. The speed half is the part that matters most and is easiest to lose:
+ * a test that only checked the armour would pass for `STONESKIN` at +50.
+ */
+static int test_the_golems_power_is_a_shield(void *state) {
+	struct player_race *golem = race_named("Golem");
+	struct player_power *power;
+	int ac_before, speed_before;
+
+	require(golem);
+
+	/*
+	 * A real birth and a real level, not `grown_to()`.
+	 *
+	 * That helper swaps the race pointer and recalculates, which is all the
+	 * intrinsic tests need; using a *power* runs the effect machinery, and
+	 * that wants a character who was born and a level under their feet. The
+	 * first version of this crashed for exactly that reason.
+	 */
+	require(player_make_simple("Golem", NULL, "Tester"));
+	prepare_next_level(player);
+	player->lev = 25;
+	calc_bonuses(player, &player->state, false, true);
+
+	power = (struct player_power *) player->race->powers;
+	require(power);
+	require(streq(power->name, "turn to stone"));
+
+	/* Enough to pay for it, and no failure worth waiting out */
+	player->csp = player->msp = 200;
+	player->chp = player->mhp;
+
+	update_stuff(player);
+	ac_before = player->state.to_a;
+	speed_before = player->state.speed;
+
+	/*
+	 * Until it lands. `power-fail:8` means a use can simply fail, and a
+	 * single attempt turns a test about the effect into a test about the
+	 * dice -- it failed about one run in ten while this was being written.
+	 */
+	{
+		int try;
+
+		for (try = 0; try < 200 && !player->timed[TMD_SHIELD]; try++) {
+			player->csp = player->msp;
+			player->chp = player->mhp;
+			require(player_use_power(player, power, 0));
+		}
+	}
+	update_stuff(player);
+
+	require(player->timed[TMD_SHIELD] > 0);
+	eq(player->state.to_a - ac_before, 50);
+	eq(player->state.speed, speed_before);
+
+	/* And it is not the one that slows you */
+	eq(player->timed[TMD_STONESKIN], 0);
+	ok;
+}
+
+/**
+ * Every flag a race or class carries can be read on the birth screen.
+ *
+ * `ui-birth.c` and `view_abilities()` both walk `player_abilities`, which is
+ * built from `player_property.txt`, and skip any flag with no record there.
+ * `UNDEAD` and `BLOOD_DIET` had none, so five races were never told they were
+ * undead and the Vampire was never told why its food does nothing -- the two
+ * flags of thirty-five that nothing could display.
+ *
+ * Written as a sweep of the data rather than as two assertions about those two
+ * flags, because two named assertions would not have caught the next flag
+ * added without a record, which is exactly how these two arrived.
+ */
+static int test_every_racial_flag_can_be_read(void *state) {
+	const struct player_race *r;
+	const struct player_class *c;
+	bitflag used[PF_SIZE];
+	int flag, missing = 0;
+
+	pf_wipe(used);
+	for (r = races; r; r = r->next) pf_union(used, r->pflags);
+	for (c = classes; c; c = c->next) pf_union(used, c->pflags);
+
+	for (flag = 1; flag < PF_MAX; flag++) {
+		const struct player_ability *a;
+		bool found = false;
+
+		if (!pf_has(used, flag)) continue;
+
+		for (a = player_abilities; a; a = a->next) {
+			if (!streq(a->type, "player")) continue;
+			if (a->index != flag) continue;
+			found = true;
+			break;
+		}
+
+		if (!found) {
+			printf("  player flag %d is carried by a race or class and has "
+				   "no player_property.txt record\n", flag);
+			missing++;
+		}
+	}
+
+	eq(missing, 0);
+
+	/* And the two that were missing are there by name, with something to say */
+	{
+		const struct player_ability *a;
+		bool undead = false, diet = false;
+
+		for (a = player_abilities; a; a = a->next) {
+			if (!streq(a->type, "player")) continue;
+			if (a->index == PF_UNDEAD) undead = a->desc && a->desc[0];
+			if (a->index == PF_BLOOD_DIET) diet = a->desc && a->desc[0];
+		}
+		require(undead);
+		require(diet);
+	}
+	ok;
+}
+
 const char *suite_name = "player/race";
 struct test tests[] = {
 	{ "the-draconian-grows-into-its-scales",
@@ -1492,6 +1624,8 @@ struct test tests[] = {
 			test_a_yeek_becomes_immune_to_acid },
 	{ "the-mindflayer-grows-into-its-mind",
 			test_the_mindflayer_grows_into_its_mind },
+	{ "the-golems-power-is-a-shield", test_the_golems_power_is_a_shield },
+	{ "every-racial-flag-can-be-read", test_every_racial_flag_can_be_read },
 	{ "the-golem-is-made-of-something",
 			test_the_golem_is_made_of_something },
 	{ "the-vampire-glows-and-starves",

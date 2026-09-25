@@ -65,6 +65,11 @@ replacing it, so a monster's hit points are ``base × 0.73 × 2``.
 top of whatever haste or slow is acting on it. At normal speed that is the
 difference between trading blows and being hit twice for every one you land.
 
+Monster recall reports both of these as they will actually be, rather than as
+the monster's record has them: in nightmare mode the page you read before
+fighting something already has the doubled hit points and the extra five points
+of speed in it.
+
 **Nothing is asleep when it arrives.** Monsters that would normally be found
 sleeping are awake from the moment the level is made. They can still be put to
 sleep afterwards — the mode does not stop that, whatever its spoiler says.

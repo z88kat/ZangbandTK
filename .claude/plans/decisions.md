@@ -4965,3 +4965,63 @@ the count at eleven fails the race test.
 instruction: the class side is tied to the `prefix_pref` enum and the
 per-class tables, and whether the borg should play the imported classes is a
 question to settle before spending that.
+
+---
+
+**DEC-97 — Four things a player could see that were wrong.** (Review of
+3.105–3.124, 3.124.11. Stage 2 of the review backlog.)
+
+**The Golem's power was the wrong effect.** `power-effect:TIMED_INC:STONESKIN`
+gives +40 armour class **and −5 speed**. Zangband's `inc_shield()`
+([racial.c:514](../archive/zangband/src/racial.c#L514),
+[effects.c:616](../archive/zangband/src/effects.c#L616)) gives +50 and nothing
+else, and our `TMD_SHIELD` is exactly that. The duration already matched --
+`rand_range(30, 50)` against `30+1d20` -- so the whole divergence was the
+effect's name having been chosen for its wording rather than its numbers. The
+Golem was paying a penalty the archive never charged and getting ten points
+less armour for it.
+
+*The name of the power stays and the wording gets worse, which is worth saying
+rather than hiding.* Zangband's shield message is literally "Your skin turns to
+stone.", so "turn to stone" is what this is over there; ours will now say "A
+mystic shield forms around your body", which is the wrong words for a Golem.
+Racial powers have no message of their own to override it with --
+`power-effect-msg` exists for mutations and sets the *killer* string, not a
+flavour line -- and inventing a timed effect for one race's wording would be a
+design decision rather than a correction, so it is left as a known cosmetic
+cost of getting the mechanics right.
+
+**`UNDEAD` and `BLOOD_DIET` had no `player_property.txt` record.** They were the
+only two of the thirty-five player flags with none, and both the birth screen
+([ui-birth.c:436](../src/ui-birth.c#L436)) and the abilities screen
+(`view_abilities()`) walk that list and skip whatever is not in it. So five
+races were never told they were undead, and the Vampire was never told why its
+food does nothing -- which is the worse of the two, because the diet is a
+mechanic and not a label. The test is a sweep of every flag any race or class
+carries rather than two assertions about these two, since two assertions would
+not catch the next one to arrive without a record, which is how these did.
+
+**Monster recall lied in nightmare mode, about hit points as well as speed.**
+`lore_append_movement()` and `lore_append_toughness()` printed `race->speed` and
+`race->avg_hp`. Nightmare places every monster at `+5` speed and twice the hit
+points (BAL-15), so the page described a game nobody was playing -- for every
+monster, all run. The independent review named the speed; the hit points are
+the worse half, because a page that halves what is in front of the player is a
+page that gets them killed.
+
+**A blinded Spectre erased its own map.** `update_view()` forgets the player's
+grid when they are blind and the grid is remembered impassable, on upstream's
+reasoning that you cannot be standing in a wall so the memory must be wrong.
+Upstream's own comment beside it said the rule "will have to be modified in
+variants that have timed effects which allow a player to move through
+impassable terrain" -- and this is that variant twice over, a Spectre always
+(PLR-01, DEC-74) and wraith form for a while (PLR-16, DEC-85). For them the
+memory is right, and the rule erased a true map one grid a turn: the trail
+through the rock they had just walked, which is the part of a map hardest to
+re-earn. Gated on `OF_PASS_WALL` rather than `player_can_pass_walls()`, matching
+what the wall damage reads, so a character legitimately inside permanent rock
+does not lose the map either.
+
+Falsified four ways, one test failing each time and each on the intended
+assertion. The manual has the Golem's power in `birth.rst` and the recall note
+in `nightmare.rst`.

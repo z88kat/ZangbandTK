@@ -911,12 +911,27 @@ equip-instead:food:scroll:Remove Hunger:2:5
 values:RES_POIS[3] | RES_COLD[-1]
 gain-at:35
 gain-obj-flags:HOLD_LIFE
+# The power is Zangband's `inc_shield()` (racial.c:514), and SHIELD rather than
+# STONESKIN is which of ours that is.  The archive gives +50 armour class and no
+# other cost; our STONESKIN is +40 *and -5 speed*, so the Golem was paying a
+# penalty the archive never charged it and getting less for it.  TMD_SHIELD is
+# +50 with nothing attached, which is the same effect exactly, and the duration
+# already matched -- `rand_range(30, 50)` against `30+1d20`.
+#
+# The name of the power stays: Zangband's shield message is literally "Your
+# skin turns to stone." (effects.c:631), so "turn to stone" *is* what this is
+# over there.  Ours says "A mystic shield forms around your body", which is the
+# wrong words for a Golem and is the one thing this change makes worse.  Racial
+# powers have no message of their own to override it with -- `power-effect-msg`
+# exists for mutations and sets the *killer* string, not a flavour line -- and
+# inventing a timed effect for one race's wording would be a design decision
+# rather than a correction.
 power:turn to stone
 power-level:20
 power-cost:15
 power-stat:CON
 power-fail:8
-power-effect:TIMED_INC:STONESKIN
+power-effect:TIMED_INC:SHIELD
 power-dice:30+1d20
 
 # Zangband's barbarian: strong, hardy, fearless and cheap.  It resists fear

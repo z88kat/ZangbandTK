@@ -453,6 +453,10 @@ Golem
   of Remove Hunger instead of rations for when it does. From level 35 it holds its
   life against draining. A blunt instrument that costs 200 to swing.
 
+  Its power, *turn to stone*, is fifty points of armour class for thirty to
+  fifty turns and costs nothing else — no loss of speed, which is what
+  distinguishes it from the Stone Skin spell the Nature realm has.
+
 .. _Sprite:
 
 Sprite

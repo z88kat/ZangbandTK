@@ -628,6 +628,42 @@ static const char *lore_describe_speed(uint8_t speed)
 }
 
 /**
+ * The speed this race is actually placed at, rather than the speed in its
+ * record (ZangbandTK, BAL-15, review of 3.105-3.124).
+ *
+ * Nightmare mode adds five points to every monster at creation
+ * (`mon-make.c`, [dungeon.c:2833](../archive/zangband/src/dungeon.c#L2833)),
+ * and recall read `race->speed`, so it described a game nobody was playing:
+ * every monster on the level was five points faster than the page said, for
+ * the whole run. The cap is 199 here for the same reason it is there -- the
+ * width of the energy table in both games.
+ */
+static uint8_t lore_placed_speed(const struct monster_race *race)
+{
+	if (OPT(player, birth_nightmare)) {
+		return (uint8_t) MIN(199, race->speed + 5);
+	}
+	return race->speed;
+}
+
+/**
+ * The hit points this race is actually placed with.
+ *
+ * Nightmare doubles them (`mon-make.c`,
+ * [monster2.c:1847](../archive/zangband/src/monster2.c#L1847)), capped at
+ * 30000 because `maxhp` is an int16_t. Same fault as the speed above and
+ * twice the size: a recall that halves what is in front of the player is
+ * worse than one that shaves five points off its speed.
+ */
+static int lore_placed_avg_hp(const struct monster_race *race)
+{
+	if (OPT(player, birth_nightmare)) {
+		return MIN(30000, race->avg_hp * 2);
+	}
+	return race->avg_hp;
+}
+
+/**
  * Append the monster speed, in words, to a textblock.
  *
  * \param tb is the textblock we are adding to.
@@ -637,10 +673,11 @@ static void lore_adjective_speed(textblock *tb, const struct monster_race *race)
 {
 	/* "at" is separate from the normal speed description in order to use the
 	 * normal text colour */
-	if (race->speed == 110)
+	if (lore_placed_speed(race) == 110)
 		textblock_append(tb, "at ");
 
-	textblock_append_c(tb, COLOUR_GREEN, "%s", lore_describe_speed(race->speed));
+	textblock_append_c(tb, COLOUR_GREEN, "%s",
+		lore_describe_speed(lore_placed_speed(race)));
 }
 
 /**
@@ -655,7 +692,8 @@ static void lore_multiplier_speed(textblock *tb, const struct monster_race *race
 	textblock_append(tb, "at ");
 
 	char buf[8] = "";
-	int multiplier = 10 * extract_energy[race->speed] / extract_energy[110];
+	int multiplier = 10 * extract_energy[lore_placed_speed(race)]
+		/ extract_energy[110];
 	uint8_t int_mul = multiplier / 10;
 	uint8_t dec_mul = multiplier % 10;
 	uint8_t attr = COLOUR_ORANGE;
@@ -664,7 +702,7 @@ static void lore_multiplier_speed(textblock *tb, const struct monster_race *race
 	textblock_append_c(tb, COLOUR_L_BLUE, "%s", buf);
 
 	textblock_append(tb, " normal speed, which is ");
-	multiplier = 100 * extract_energy[race->speed]
+	multiplier = 100 * extract_energy[lore_placed_speed(race)]
 		/ extract_energy[player->state.speed];
 	int_mul = multiplier / 100;
 	dec_mul = multiplier % 100;
@@ -676,12 +714,12 @@ static void lore_multiplier_speed(textblock *tb, const struct monster_race *race
 		strnfmt(buf, sizeof(buf), "%d.%02dx", int_mul, dec_mul);
 	}
 
-	if (player->state.speed > race->speed) {
+	if (player->state.speed > lore_placed_speed(race)) {
 		attr = COLOUR_L_GREEN;
-	} else if (player->state.speed < race->speed) {
+	} else if (player->state.speed < lore_placed_speed(race)) {
 		attr = COLOUR_RED;
 	}
-	if (player->state.speed == race->speed) {
+	if (player->state.speed == lore_placed_speed(race)) {
 		textblock_append(tb, "the same as you");
 	} else {
 		textblock_append_c(tb, attr, "%s", buf);
@@ -1021,7 +1059,7 @@ void lore_append_movement(textblock *tb, const struct monster_race *race,
 		textblock_append(tb, " erratically");
 
 		/* Occasional conjunction */
-		if (race->speed != 110) textblock_append(tb, ", and");
+		if (lore_placed_speed(race) != 110) textblock_append(tb, ", and");
 	}
 
 	/* Speed */
@@ -1131,7 +1169,7 @@ void lore_append_toughness(textblock *tb, const struct monster_race *race,
 			textblock_append(tb, "n average");
 
 		textblock_append(tb, " life rating of ");
-		textblock_append_c(tb, COLOUR_L_BLUE, "%d", race->avg_hp);
+		textblock_append_c(tb, COLOUR_L_BLUE, "%d", lore_placed_avg_hp(race));
 
 		/* Armor */
 		textblock_append(tb, ", and an armor rating of ");

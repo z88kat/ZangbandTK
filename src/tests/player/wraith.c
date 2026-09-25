@@ -617,8 +617,63 @@ static int test_the_crushing_death_names_the_mutation(void *state) {
 	ok;
 }
 
+/**
+ * Being blinded inside rock does not erase the map (review of 3.105-3.124).
+ *
+ * `update_view()` forgets the player's own grid when they are blind and the
+ * grid is remembered as impassable. Upstream's reasoning is that you cannot be
+ * standing in a wall, so the memory must be wrong -- and upstream's own comment
+ * said the rule "will have to be modified in variants that have timed effects
+ * which allow a player to move through impassable terrain". This is that
+ * variant twice over, and for a Spectre or a wraith the memory is right: it
+ * erased a true map one grid a turn, the trail through the rock they had just
+ * walked, which is the part of a map hardest to re-earn.
+ *
+ * Both sides, because a build that simply stopped forgetting anything would
+ * pass the first half: an ordinary character who somehow ends up in rock still
+ * loses the grid, since for them the memory really is wrong.
+ */
+static int test_being_blinded_in_rock_keeps_the_map(void *state) {
+	/* A Spectre remembers */
+	require(stand_up("Spectre", 10));
+	square_set_feat(cave, player->grid, lookup_feat_code("GRANITE"));
+	require(!square_ispassable(cave, player->grid));
+	square_memorize(cave, player->grid);
+	require(square_isknown(cave, player->grid));
+	require(player_of_has(player, OF_PASS_WALL));
+
+	player_set_timed(player, TMD_BLIND, 20, false, false);
+	require(player->timed[TMD_BLIND]);
+	update_view(cave, player);
+	require(square_isknown(cave, player->grid));
+
+	/* Ten more turns of it, since the rule fires once a turn */
+	{
+		int i;
+
+		for (i = 0; i < 10; i++) update_view(cave, player);
+	}
+	require(square_isknown(cave, player->grid));
+
+	/* And a Human in the same grid still forgets, which is upstream's rule */
+	require(stand_up("Human", 10));
+	square_set_feat(cave, player->grid, lookup_feat_code("GRANITE"));
+	require(!square_ispassable(cave, player->grid));
+	square_memorize(cave, player->grid);
+	require(square_isknown(cave, player->grid));
+	require(!player_of_has(player, OF_PASS_WALL));
+
+	player_set_timed(player, TMD_BLIND, 20, false, false);
+	require(player->timed[TMD_BLIND]);
+	update_view(cave, player);
+	require(!square_isknown(cave, player->grid));
+	ok;
+}
+
 const char *suite_name = "player/wraith";
 struct test tests[] = {
+	{ "being-blinded-in-rock-keeps-the-map",
+	  test_being_blinded_in_rock_keeps_the_map },
 	{ "the-form-lasts-as-long-as-the-archive-says",
 	  test_the_form_lasts_as_long_as_the_archive_says },
 	{ "a-wraith-walks-through-rock", test_a_wraith_walks_through_rock },

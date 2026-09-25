@@ -24,6 +24,7 @@
 #include "monster.h"
 #include "player-calcs.h"
 #include "player-timed.h"
+#include "player-util.h"
 #include "trap.h"
 
 /**
@@ -911,12 +912,28 @@ void update_view(struct chunk *c, struct player *p)
 	}
 	/*
 	 * If the player is blind and in terrain that was remembered to be
-	 * impassable, forget the remembered terrain.  This will have to be
-	 * modified in variants that have timed effects which allow a player
-	 * to move through impassable terrain.
+	 * impassable, forget the remembered terrain.
+	 *
+	 * Upstream's reasoning is that you cannot be standing in a wall, so the
+	 * memory must be wrong -- and upstream's own comment here said this
+	 * "will have to be modified in variants that have timed effects which
+	 * allow a player to move through impassable terrain."  This is that
+	 * variant, twice over: a Spectre passes walls always (PLR-01, DEC-74) and
+	 * wraith form passes them for a while (PLR-16, DEC-85).  For those two
+	 * the memory is correct and the grid really is a wall, so the rule erased
+	 * a true map one grid a turn for as long as they were blind -- the trail
+	 * they had just walked through the rock, which is the part of the map
+	 * hardest to re-earn.
+	 *
+	 * Gated on the flag rather than on `player_can_pass_walls()`, matching
+	 * what the wall damage in `process_player_cleanup()` reads: the movement
+	 * rule also requires the grid to be non-permanent, and a character
+	 * standing inside a permanent wall they walked into legitimately should
+	 * not lose the map either.
 	 */
 	if (p->timed[TMD_BLIND] && square_isknown(c, p->grid)
-			&& !square_ispassable(p->cave, p->grid)) {
+			&& !square_ispassable(p->cave, p->grid)
+			&& !player_of_has(p, OF_PASS_WALL)) {
 		square_forget(c, p->grid);
 	}
 
