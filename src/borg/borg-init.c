@@ -41,6 +41,7 @@
 #include "borg-messages.h"
 #include "borg-power.h"
 #include "borg-store.h"
+#include "borg-trait.h"
 #include "borg-update.h"
 #include "borg.h"
 
@@ -320,7 +321,7 @@ bool borg_init_txt_file(void)
     if (borg_cfg[BORG_ENCHANT_LIMIT] >= 15)
         borg_cfg[BORG_ENCHANT_LIMIT] = 15;
 
-    if (borg_cfg[BORG_RESPAWN_RACE] >= MAX_RACES
+    if (borg_cfg[BORG_RESPAWN_RACE] >= borg_player_race_count()
         || borg_cfg[BORG_RESPAWN_RACE] < -1)
         borg_cfg[BORG_RESPAWN_RACE] = 0;
 

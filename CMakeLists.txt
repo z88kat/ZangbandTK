@@ -862,6 +862,7 @@ endif()
 set(ANGBAND_TEST_CASE_SOURCES
     artifact/name.c
     borg/prepared.c
+    borg/traits.c
     cave/find.c
     cave/scatter.c
     cave/wild.c

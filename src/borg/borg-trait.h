@@ -62,7 +62,27 @@
  */
 #define BORG_MAX_BOOKS 32
 
-#define MAX_RACES       11
+/*
+ * How many races there are, counted rather than written down (ZangbandTK,
+ * review of 3.105-3.124).
+ *
+ * This was `#define MAX_RACES 11`, which was true of Angband and stopped being
+ * true when PLR-01 brought in Zangband's races. There are 28. The borg
+ * reincarnates with `randint0(MAX_RACES)`, so seventeen races -- every one
+ * this project added, including all five undead -- could never be rolled, and
+ * `borg_init()` rejected a configured respawn race beyond the eleventh. The
+ * nightly was therefore exercising eleven of twenty-eight races and calling
+ * that coverage.
+ *
+ * A function rather than a bigger constant, because a constant is what went
+ * stale. `ridx` is assigned 0..N-1 contiguously in `finish_parse_p_race()`,
+ * so the count is also the exclusive bound for `player_id2race()`.
+ *
+ * `borg_player_race_count` rather than `borg_race_count`, which the borg
+ * already uses for its per-*monster*-race kill tally
+ * ([borg-flow-kill.h:80](borg-flow-kill.h#L80)).
+ */
+int borg_player_race_count(void);
 
 enum borg_item_pos { BORG_INVEN = 1, BORG_EQUIP = 2, BORG_QUILL = 4 };
 

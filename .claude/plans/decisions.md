@@ -4894,3 +4894,74 @@ A pet will not walk into a door in a unit test without a noise map:
 `make_noise()` runs on a player turn, which a unit test never takes. The door
 test writes the two grids `make_noise()` would have written. Noise is not
 recomputed while the player rests, so this is what the pet reads in play too.
+
+---
+
+**DEC-96 — Three things the borg believed about the character that were not
+true.** (Review of 3.105–3.124, 3.124.10. Stage 1 of the review backlog.)
+
+All three were found by reading rather than by anything failing, which is the
+shape of a `borg.trait[]` fault: two hundred integers are computed once and
+every later decision reads the integers rather than the objects, so a wrong one
+produces odd behaviour four hundred lines from its cause and nothing crashes.
+
+**The brands were all five wrong.** `borg_notice_equipment()` read
+`item->brands[ELEM_ACID .. ELEM_POIS]`. That array is indexed by *brand index*,
+which is one-based -- every consumer in the game iterates `1 ..
+z_info->brand_max` -- and runs in reverse of `brand.txt`, because the parser
+prepends. So slot 0 is never a brand and an acid brand was invisible; the other
+four read the tail of the file and reported a weapon of Venom as lightning,
+Frost as fire, Flame as cold and Lightning as poison. `ACID_2` and all five
+`_3` brands were invisible as well. It now matches on `resist_flag`, which is
+what `borg_best_mult()` in the same tree already reads, so a brand added to the
+data file lands in the right trait without this being touched.
+
+**A scroll of Remove Hunger counted as no food.** `BI_FOOD` is the sum of the
+two calorie counts and those were fed only by `TV_FOOD` and `TV_MUSHROOM`. The
+*spell* Remove Hunger is worth an effectively infinite 1000 in the same file;
+the scroll that does the same thing was worth nothing, so a character carrying a
+stack of them read as starving, refused to dive on `BI_FOOD < 3` and treated its
+own pack as a shopping emergency.
+
+**The race cap was Angband's eleven against this game's twenty-eight.**
+`MAX_RACES 11` bounded `randint0()` in `borg_reincarnate()` and rejected any
+configured respawn race past the eleventh, so seventeen races -- every one
+PLR-01 added, including all five undead -- could never be played. It is now
+`borg_player_race_count()`, a function rather than a bigger constant, because a
+constant is what went stale. (Named for the player's race: `borg_race_count` was
+already taken by the per-monster-race kill tally, which the compiler said so.)
+
+**The order was not arbitrary and the measurement shows why.** All five undead
+races take `equip-instead:food:scroll:Remove Hunger:2:5` in place of rations, so
+raising the cap first would have handed the borg seventeen new races of which
+five start every game apparently starving. Measured before touching anything, on
+a Skeleton driven through `ZTK_HEADLESS_RACE`, which reaches those races today
+without the cap: two of three runs were held back by `restock food < 3`.
+
+**What the sweeps say.** Turn-bounded rather than clock-bounded, because
+`borg-progress` only compares uncapped runs and the nightly's ten-minute bound
+caps them; 200,000 turns, seeds 1/7/13, `0 capped` both times.
+
+* *Fleet* (Warrior, Mage, Priest, Warrior-Mage): **identical**. 12 runs, 24
+  depth, 42 levels, same twelve rows, same blocked tally. This was predicted
+  before the run and recorded: these runs die at depth 1-4 and a branded weapon
+  is a rare find there, so the unit test is what verifies the brand fix and the
+  sweep is only the regression guard.
+* *Skeleton*: food blocks **2 -> 1**, and the two that cleared it moved on to
+  the next gate rather than to nothing -- `2 cure` and `restock recall`. Seed 1
+  stopped dying and reached the shops (0 -> 3); seed 13 went from depth 0 to
+  depth 8. Sum-depth and sum-level are unchanged at 10 and 17, which is the
+  totals gate the nightly uses. Deepest fell 9 -> 8 and highest 12 -> 9, both
+  from seed 7, which used to wander to depth 9 while believing it was starving
+  and now goes shopping and stops on cure potions. Three seeds is a small
+  sample and the BASELINE file's own rule applies: rows report, totals decide.
+
+Falsified three ways, each with the relink checked: element-indexed brands again
+fails the brand test with "brand POIS_2 (index 1): ELEC is 1", which is the bug
+stated in its own words; dropping the scroll count fails the food test; capping
+the count at eleven fails the race test.
+
+**`MAX_CLASSES` is deliberately left at 9 against 14**, on the project owner's
+instruction: the class side is tied to the `prefix_pref` enum and the
+per-class tables, and whether the borg should play the imported classes is a
+question to settle before spending that.

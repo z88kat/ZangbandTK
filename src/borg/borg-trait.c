@@ -24,6 +24,7 @@
 
 #include "../effects.h"
 #include "../obj-util.h"
+#include "../obj-slays.h"
 #include "../player-calcs.h"
 #include "../player-timed.h"
 #include "../player-util.h"
@@ -1230,9 +1231,22 @@ static bool cursed_nonartifact(borg_item *item)
 /*
  * Helper function -- notice the player equipment
  */
+/*
+ * How many races the game has.  See the note in borg-trait.h.
+ */
+int borg_player_race_count(void)
+{
+    const struct player_race *r;
+    int n = 0;
+
+    for (r = races; r; r = r->next) n++;
+
+    return n;
+}
+
 static void borg_notice_equipment(void)
 {
-    int                        i, hold;
+    int                        i, bi, hold;
     const struct player_race  *rb_ptr = player->race;
     const struct player_class *cb_ptr = player->class;
 
@@ -1459,17 +1473,36 @@ static void borg_notice_equipment(void)
         borg.trait[BI_WS_GIANT]  = item->slays[RF_GIANT];
         borg.trait[BI_WS_DRAGON] = item->slays[RF_DRAGON];
 
-        /* various brands */
-        if (item->brands[ELEM_ACID])
-            borg.trait[BI_WB_ACID] = true;
-        if (item->brands[ELEM_ELEC])
-            borg.trait[BI_WB_ELEC] = true;
-        if (item->brands[ELEM_FIRE])
-            borg.trait[BI_WB_FIRE] = true;
-        if (item->brands[ELEM_COLD])
-            borg.trait[BI_WB_COLD] = true;
-        if (item->brands[ELEM_POIS])
-            borg.trait[BI_WB_POIS] = true;
+        /*
+         * Various brands (ZangbandTK, review of 3.105-3.124).
+         *
+         * `item->brands[]` is indexed by *brand index*, which is one-based --
+         * every consumer in the game iterates `1 .. z_info->brand_max` -- and
+         * runs in reverse of `brand.txt`, because the parser prepends. It is
+         * not indexed by element, and reading it as though it were got all
+         * five answers wrong: `brands[ELEM_ACID]` is slot 0, which is never a
+         * brand, so an acid brand was invisible, and the other four read the
+         * tail of the file, reporting a weapon of Venom as lightning, Frost
+         * as fire, Flame as cold and Lightning as poison. The five `_3`
+         * brands and Acid_2 were invisible as well.
+         *
+         * Matched on `resist_flag` rather than on the code's spelling or its
+         * position, because that is a real field with a real meaning and is
+         * what `borg_best_mult()` already reads. A brand added to the data
+         * file lands in the right trait without this being touched.
+         */
+        for (bi = 1; bi < z_info->brand_max; bi++) {
+            if (!item->brands[bi])
+                continue;
+
+            switch (brands[bi].resist_flag) {
+            case RF_IM_ACID: borg.trait[BI_WB_ACID] = true; break;
+            case RF_IM_ELEC: borg.trait[BI_WB_ELEC] = true; break;
+            case RF_IM_FIRE: borg.trait[BI_WB_FIRE] = true; break;
+            case RF_IM_COLD: borg.trait[BI_WB_COLD] = true; break;
+            case RF_IM_POIS: borg.trait[BI_WB_POIS] = true; break;
+            }
+        }
         if (of_has(item->flags, OF_IMPACT))
             borg.trait[BI_W_IMPACT] = true;
 
@@ -2431,6 +2464,31 @@ static void borg_notice_inventory(void)
                 borg.trait[BI_ATELEPORT] += 1;
             } else if (item->sval == sv_scroll_mass_banishment)
                 borg.trait[BI_AMASSBAN] += item->iqty;
+            else if (item->sval == sv_scroll_satisfy_hunger) {
+                /*
+                 * A scroll of Remove Hunger is food (ZangbandTK, BRG-13).
+                 *
+                 * `BI_FOOD` is the sum of the two calorie counts, and those
+                 * were fed only by `TV_FOOD` and `TV_MUSHROOM`. The *spell*
+                 * Remove Hunger is worth an effectively infinite 1000 further
+                 * down this file; the scroll that does the same thing counted
+                 * as nothing, so a character carrying a stack of them read as
+                 * having no food at all -- `borg_prepared()` refused to dive
+                 * on `BI_FOOD < 5`, and the shopping code treated the stack as
+                 * an emergency.
+                 *
+                 * That was survivable while every borg character was a race
+                 * that starts with rations. It stops being survivable the
+                 * moment the borg can roll an undead one: all five of them
+                 * take `equip-instead:food:scroll:Remove Hunger:2:5`, so they
+                 * would have started every game apparently starving.
+                 *
+                 * Counted high, beside Rations. The scroll is
+                 * `NOURISH:INC_TO:50` against a Ration's `INC_BY:30`, so it is
+                 * a meal rather than a snack on any reading.
+                 */
+                borg.trait[BI_FOOD_HI] += item->iqty;
+            }
             break;
 
         /* Rods */

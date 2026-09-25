@@ -471,7 +471,7 @@ void reincarnate_borg(void)
     if (borg_cfg[BORG_RESPAWN_RACE] != -1)
         p_race = player_id2race(borg_cfg[BORG_RESPAWN_RACE]);
     else
-        p_race = player_id2race(randint0(MAX_RACES));
+        p_race = player_id2race(randint0(borg_player_race_count()));
     if (borg_cfg[BORG_RESPAWN_CLASS] != -1)
         p_class = player_id2class(borg_cfg[BORG_RESPAWN_CLASS]);
     else
