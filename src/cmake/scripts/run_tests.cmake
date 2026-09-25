@@ -158,16 +158,23 @@ math(EXPR _DISLENGTH "${_MAXLENGTH} + 8")
 set(_PASS 0)
 set(_TOTAL 0)
 set(_EXITCODE 0)
-if(_VERBOSE)
-    if(_FORCE_PATH)
-        set(_TESTOPTS "-vf")
-    else()
-        set(_TESTOPTS "-v")
-    endif()
-elseif(_FORCE_PATH)
-    set(_TESTOPTS "-f")
+# Always `-v`, whatever the caller asked for (ZangbandTK).
+#
+# The suites print nothing per test without it -- `require()` only names the
+# test and the failing assertion `if (verbose)` -- so a failing suite echoed
+# its captured output below and that output was one line: "game/wild 99/100
+# passed". Which test, and which assertion, was not in the log at all, and
+# three separate red nights were diagnosed by reproducing the run locally
+# instead of by reading it.
+#
+# This costs nothing on a green run. The echo further down still happens only
+# when a suite fails or when the caller asked for verbose, so the detail
+# appears exactly when somebody needs it and the log is no longer for a
+# hundred passing suites.
+if(_FORCE_PATH)
+    set(_TESTOPTS "-vf")
 else()
-    unset(_TESTOPTS)
+    set(_TESTOPTS "-v")
 endif()
 set(_X ${_STARTX})
 while(_X LESS CMAKE_ARGC)

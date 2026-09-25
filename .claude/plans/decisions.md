@@ -5127,3 +5127,56 @@ diagnostic `printf` there is followed by `require(false)`.
 about one full-suite pass in eight (it varied on pass 5 of 8 today, and passes
 standalone). None of the suites added or changed today varied across the eight
 passes.
+
+---
+
+**DEC-100 — The msys2 red of 25 September, and why it took a reproduction to
+read.** (3.124.14.)
+
+Two independent failures in one run, neither caused by the four review stages.
+
+**`configure-win` burned six hours and said nothing.** It stops immediately
+after `ui/scrollbar`, and the runner's own cleanup names the orphan it had to
+kill: `Terminate orphan process: pid (5928) (shimmer)`. `ui/shimmer` is the
+suite that runs next. It hung the same way on 23 September, before any of the
+four stages, and ran clean in 5m32s on 25 September's previous push, so it is
+intermittent at roughly one run in three.
+
+*And no CMake build has ever run it.* `ui/shimmer` has been in
+`src/tests/ui/suite.mk` since 5 September and was never added to
+`CMakeLists.txt`, so the only job that runs it is the autotools one --
+`scripts/check-build` and `scripts/check-flakes` never touched it in twenty
+days. It is registered now, and passes locally in under a second, so the hang
+is specific to the Windows front-end build. That is not fixed; `configure-win`
+now carries `timeout-minutes: 15` against a well run of five and a half, so the
+next occurrence fails in fifteen minutes with a legible message instead of
+burning a runner for six hours.
+
+**`asan-ubsan-clang64` failed `game/wild` 99/100, and the log did not say
+which test.** It gave the suite and the count and nothing else -- no test name,
+no assertion. The suites print per-test lines only `if (verbose)`, and
+`run_tests.cmake` ran them without `-v`, so the output it faithfully echoed on
+failure was one line. Three red nights have now been diagnosed by reproducing
+the run locally rather than by reading it.
+
+Fixed: the runner passes `-v` always. The echo further down still happens only
+when a suite fails, so a green run's log is unchanged and a red one now carries
+`game/wild:2955: requirement 'best <= 4' failed`. The seed line was already
+there and was enough to replay -- `ZTK_TEST_SEED=1331056391` reproduces it
+first time -- but the seed alone still costs a build and a run.
+
+**What `game/wild` found is a real defect and it is not fixed yet.** On that
+seed the town Kashfa, 110x30 at (1297,953), has a road arriving at its north
+wall and another at its south wall, and its only gate is on the east wall sixty
+grids away. The generator is not at fault: tracing `wild_town_open()` shows it
+cutting all four gates for that town, north at local (87,1), south at (55,28),
+west at (1,15), east at (108,15). The composed surface chunk the player would
+walk on -- 144x144 covering x 1312..1455 -- contains **two doors in total**, the
+east gate. The two that are missing are exactly the two sides a road arrives on.
+
+So gates cut at generation are being lost somewhere between the town chunk and
+the surface, and lost selectively on the sides that matter. That is the WLD-08
+complaint the test was written for, reappearing by a different route. Not fixed
+here: the remaining work is in `wild.c`'s surface composition, which wants
+reading properly rather than a guess at the end of a long session. Recorded with
+the seed so it can be picked up cold.

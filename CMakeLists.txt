@@ -972,6 +972,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     trivial/trivial.c
     ui/menu-labels.c
     ui/scrollbar.c
+    ui/shimmer.c
     z-dice/dice.c
     z-expression/expression.c
     z-file/filename-index.c

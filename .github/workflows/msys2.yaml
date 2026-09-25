@@ -75,6 +75,14 @@ jobs:
 
   configure-win:
     runs-on: windows-latest
+    # Bounded, because it is the only job that runs `ui/shimmer` and that suite
+    # hangs on this platform about one run in three -- twice it took the whole
+    # six-hour default and reported "the job has exceeded the maximum execution
+    # time", which says nothing about what hung and burns a runner for six
+    # hours. Fifteen minutes is generous: the job takes five and a half when it
+    # is well. The hang itself is not fixed; this makes it fail quickly and
+    # legibly instead of slowly and anonymously.
+    timeout-minutes: 15
     defaults:
       # Reduce verbosity and always run with msys2 as the default shell.
       # See https://github.com/marketplace/actions/setup-msys2 .
