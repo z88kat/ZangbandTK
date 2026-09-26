@@ -5307,3 +5307,49 @@ because an sval only means anything within its own tval. Both are verified by
 reading rather than by a test: the first is unreachable without new data and the
 second sits inside an un-seamed loop in the shopping code. Said plainly rather
 than covered with a test that would prove nothing.
+
+---
+
+**DEC-103 — Five tests that were not watching what they were named for.**
+(Review of 3.105–3.124, 3.124.17.)
+
+**Nightmare's alertness had no test at all.** `monster_reduce_sleep()` halves the
+`randint0(1024)` draw in nightmare mode, doubling the chance a sleeper notices
+you, and deleting the line broke nothing. Now measured: 400 sleepers each way,
+roughly 9% waking plain against 15-21% in nightmare, stable over three runs.
+Two things had to be arranged for it to measure anything. Nightmare places
+everything awake, so the monster is put to sleep by hand. And the notice check
+is `notice^3 <= 1 << (30 - stealth)`, which at the default stealth passes for
+every draw -- the first version woke 400 of 400 both ways and proved nothing --
+so the test sets stealth to 10, where the threshold's cube root is about 101 of
+1024 and the halving is visible.
+
+**The crush formula was unpinned.** `player/wraith` asserted `chp < before`,
+which any nonzero charge satisfies. It now asserts `1 + depth / 10` exactly.
+
+**The seventeen imported races' stat lines are pinned** against
+[tables.c](../archive/zangband/src/tables.c). All seventeen already agreed when
+this was written, so it guards drift from here rather than fixing anything. The
+stat line only: Zangband's six modifiers drop CHR and the remaining five are in
+the same order, so the comparison needs no interpretation. The skills are left
+unpinned because 4.2 splits disarming into physical and magical and reconciling
+that against the archive's single number is a judgement -- pinning it would pin
+the interpretation rather than the data.
+
+**The pets test no longer leaks depth.** `pets-follow-you-downstairs` descends up
+to forty times and left the player forty levels deeper for every test after it.
+A leak fix with no test of its own: what it affects is other tests, and
+asserting that is not something a test can usefully do.
+
+**And the invisible-walls test now says what it does not cover.** The walls
+arrive two ways and the count is carried entirely by the floor scatter; the door
+conversion is `one_in_(666)` per door, so deleting that branch would not move
+the number. Reaching it reliably needs thousands of door-trials -- hundreds of
+generated levels, minutes of runtime, to cover one grid. Left uncovered on
+purpose, and the comment now says so rather than leaving a reader to assume
+both routes are watched. **Not fixed, recorded.**
+
+Falsified: removing the nightmare halving reverses the comparison (53 plain
+against 36 nightmare); changing the crush charge to `2 + depth / 10` fails the
+new assertion; changing the Spectre's constitution by one names the race, the
+stat and both values.

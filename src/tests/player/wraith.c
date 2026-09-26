@@ -238,7 +238,16 @@ static int test_a_wraith_pays_nothing_for_the_rock(void *state) {
 	player->chp = player->mhp;
 	before = player->chp;
 	process_world(cave);
-	require(player->chp < before);
+
+	/*
+	 * The amount, not merely that it hurt (DEC-103).
+	 *
+	 * This said `chp < before`, which any nonzero charge satisfies -- the
+	 * formula could have become one point, or fifty, and nothing here would
+	 * have noticed. It is `1 + depth / 10` and the character is at depth 10,
+	 * so it is two.
+	 */
+	eq(before - player->chp, 1 + player->depth / 10);
 
 	/*
 	 * The same Spectre in wraith form does not -- over two hundred turns,

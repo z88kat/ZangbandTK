@@ -1614,6 +1614,76 @@ static int test_every_racial_flag_can_be_read(void *state) {
 	ok;
 }
 
+/**
+ * Every imported race's stat line is the archive's (PLR-01, DEC-103).
+ *
+ * `game/wild` pins the experience factor, which was Zangband's balance dial,
+ * and nothing pinned anything else: the five stat modifiers, the skills, the
+ * hit die and infravision were all transcribed by hand from
+ * [tables.c](../archive/zangband/src/tables.c) and then guarded by nobody.
+ *
+ * The stat line is pinned here and the rest is not, deliberately. Stats map one
+ * to one -- Zangband's six drop CHR, which 4.2 does not have, and the remaining
+ * five are in the same order -- so the table below can be compared against the
+ * archive with no interpretation. The skills do not: 4.2 splits disarming into
+ * physical and magical, and reconciling those against the archive's single
+ * number is a judgement rather than a transcription. Pinning something that
+ * needed interpreting would pin the interpretation.
+ *
+ * All seventeen were checked against the archive when this was written and all
+ * seventeen already agreed, so what this guards is drift from here on.
+ */
+static int test_every_imported_race_keeps_its_stats(void *state) {
+	static const struct {
+		const char *name;
+		int stat[STAT_MAX];
+	} archive[] = {
+		{ "Amberite",   {  1,  2,  2,  2,  3 } },
+		{ "Beastman",   {  2, -2, -1, -1,  2 } },
+		{ "Yeek",       { -2,  1,  1,  1, -2 } },
+		{ "Draconian",  {  2,  1,  1,  1,  2 } },
+		{ "Mindflayer", { -3,  4,  4,  0, -2 } },
+		{ "Vampire",    {  3,  3, -1, -1,  1 } },
+		{ "Golem",      {  4, -5, -5, -2,  4 } },
+		{ "Barbarian",  {  3, -2, -1,  1,  2 } },
+		{ "Klackon",    {  2, -1, -1,  1,  2 } },
+		{ "Nibelung",   {  1, -1,  2,  0,  2 } },
+		{ "Imp",        { -1, -1, -1,  1,  2 } },
+		{ "Skeleton",   {  0, -2, -2,  0,  1 } },
+		{ "Zombie",     {  2, -6, -6,  1,  4 } },
+		{ "Spectre",    { -5,  4,  4,  2, -3 } },
+		{ "Ghoul",      {  0, -1, -1, -1,  1 } },
+		{ "Sprite",     { -4,  3,  3,  3, -2 } },
+		{ "Half-Titan", {  5,  1,  1, -2,  3 } },
+	};
+	size_t i;
+	int j, wrong = 0;
+
+	for (i = 0; i < N_ELEMENTS(archive); i++) {
+		const struct player_race *r = race_named(archive[i].name);
+
+		if (!r) {
+			printf("  %s is not a race any more\n", archive[i].name);
+			wrong++;
+			continue;
+		}
+
+		for (j = 0; j < STAT_MAX; j++) {
+			if (r->r_adj[j] == archive[i].stat[j]) continue;
+
+			printf("  %s stat %d is %d, the archive says %d\n",
+				   archive[i].name, j, r->r_adj[j], archive[i].stat[j]);
+			wrong++;
+		}
+	}
+
+	eq(wrong, 0);
+
+	/* And the list has not quietly shrunk under the loop. */
+	eq((int) N_ELEMENTS(archive), 17);
+	ok;
+}
+
 const char *suite_name = "player/race";
 struct test tests[] = {
 	{ "the-draconian-grows-into-its-scales",
@@ -1624,6 +1694,8 @@ struct test tests[] = {
 			test_a_yeek_becomes_immune_to_acid },
 	{ "the-mindflayer-grows-into-its-mind",
 			test_the_mindflayer_grows_into_its_mind },
+	{ "every-imported-race-keeps-its-stats",
+	  test_every_imported_race_keeps_its_stats },
 	{ "the-golems-power-is-a-shield", test_the_golems_power_is_a_shield },
 	{ "every-racial-flag-can-be-read", test_every_racial_flag_can_be_read },
 	{ "the-golem-is-made-of-something",

@@ -32,6 +32,8 @@
 #include "effects.h"
 #include "player-calcs.h"
 #include "test-utils.h"
+#include "mon-move.h"
+#include "mon-timed.h"
 #include "mon-lore.h"
 #include "z-textblock.h"
 #include "z-form.h"
@@ -703,6 +705,16 @@ static int count_feat(int feat) {
  *
  * The plain side is the assertion that matters and it is exact -- an ordinary
  * level must carry *none*, so any at all is the guard leaking.
+ *
+ * **What this does not cover, and cannot economically** (DEC-103): the walls
+ * arrive by two routes, and only one of them is measured here. The count is
+ * carried almost entirely by the `Rand_normal(3, 3)` scattered over the floor;
+ * the other route converts a door, at `one_in_(666)` per door
+ * ([generate.c:1289](../src/generate.c#L1289)), which is perhaps one level in
+ * twenty and contributes a single grid when it fires. Deleting that branch
+ * would not move this number. Reaching it reliably would need thousands of
+ * door-trials -- hundreds of generated levels -- which is minutes of runtime to
+ * cover one grid, so it is left uncovered on purpose rather than by oversight.
  */
 static int test_a_nightmare_level_has_invisible_walls(void *state) {
 	int plain = 0, nasty = 0, i;
@@ -827,6 +839,81 @@ static int test_recall_reports_what_nightmare_places(void *state) {
 	ok;
 }
 
+/**
+ * A sleeping monster is twice as likely to notice you (BAL-15, DEC-103).
+ *
+ * `monster_turn_wake()` halves the `randint0(1024)` draw in nightmare mode, and
+ * because the draw is uniform that doubles the chance of noticing rather than
+ * raising it eightfold. Nothing covered it: deleting the line broke no test,
+ * which is how it got into the review.
+ *
+ * Measured rather than asserted exactly. The rate depends on the noise map and
+ * on how far the monster is, so the figure is not a constant to pin; what is
+ * pinned is that nightmare notices strictly more often, over enough trials that
+ * the two cannot cross by luck. The monster is put to sleep by hand each time,
+ * because nightmare also places everything awake (`mon-make.c`) and a monster
+ * that was never asleep cannot wake up.
+ */
+static int test_a_sleeper_is_twice_as_alert(void *state) {
+	int woke[2] = { 0, 0 };
+	const int tries = 400;
+	int mode, i;
+
+	for (mode = 0; mode < 2; mode++) {
+		nightmare(mode == 1);
+
+		for (i = 0; i < tries; i++) {
+			struct monster *mon;
+
+			clear_the_level();
+			mon = place_one("kobold", false);
+			if (!mon) continue;
+
+			/*
+			 * Asleep, and near enough to hear. The noise map is empty in a
+			 * unit test -- nothing takes a player turn -- so the grid the
+			 * monster stands on is given the value `make_noise()` would have
+			 * left it at this range.
+			 */
+			mon->m_timed[MON_TMD_SLEEP] = 100;
+			cave->noise.grids[mon->grid.y][mon->grid.x] = 1;
+
+			/*
+			 * Quiet enough that noticing is sometimes.
+			 *
+			 * The check is `notice^3 <= 1 << (30 - stealth)` with `notice` a
+			 * draw from 1024. At the default stealth that threshold is about
+			 * 1023 cubed, so every monster notices and halving the draw
+			 * changes nothing observable -- the first version of this test
+			 * woke 400 of 400 both ways. At stealth 10 the threshold is
+			 * `1 << 20`, whose cube root is about 101, so roughly a tenth of
+			 * draws notice and half that draw notices about a fifth of the
+			 * time. Set here rather than at setup because `calc_bonuses()`
+			 * recomputes it.
+			 */
+			player->state.skills[SKILL_STEALTH] = 10;
+
+			mon->energy = z_info->move_energy;
+			mflag_off(mon->mflag, MFLAG_HANDLED);
+			process_monsters(0);
+
+			if (!mon->race || !mon->m_timed[MON_TMD_SLEEP]) woke[mode]++;
+		}
+	}
+	nightmare(false);
+
+	printf("NIGHTMARE woke %d of %d plain, %d of %d in nightmare\n",
+		   woke[0], tries, woke[1], tries);
+
+	/* It has to be doing something at all, or the comparison is of noise. */
+	require(woke[0] + woke[1] > 0);
+
+	/* And nightmare wakes strictly more of them. */
+	require(woke[1] > woke[0]);
+
+	ok;
+}
+
 const char *suite_name = "game/nightmare";
 struct test tests[] = {
 	{ "nightmare-is-an-optional-birth-choice",
@@ -837,6 +924,7 @@ struct test tests[] = {
 			test_recall_reports_what_nightmare_places },
 	{ "monsters-arrive-five-points-faster",
 			test_monsters_arrive_five_points_faster },
+	{ "a-sleeper-is-twice-as-alert", test_a_sleeper_is_twice_as_alert },
 	{ "nothing-sleeps-and-nothing-waits",
 			test_nothing_sleeps_and_nothing_waits },
 	{ "an-ambusher-loses-its-grace", test_an_ambusher_loses_its_grace },

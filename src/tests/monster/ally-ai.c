@@ -632,6 +632,13 @@ static int test_an_order_grants_nothing_the_race_lacks(void *state) {
  */
 static int test_pets_follow_you_downstairs(void *state) {
 	int t, best = 0, placed = 0;
+	/*
+	 * Put back afterwards. The loop below descends up to forty times and this
+	 * used to leave the player forty levels deeper than it found them, for
+	 * every test that runs after it -- the nightmare suite's own descent test
+	 * next door saves and restores, and this did not.
+	 */
+	int kept_depth = player->depth;
 
 	/*
 	 * Up to ten descents, and the question is whether the pet *can* arrive.
@@ -676,10 +683,12 @@ static int test_pets_follow_you_downstairs(void *state) {
 	if (!placed) {
 		printf("no pet could be placed in %d attempts; the follow was never "
 			   "tested\n", t);
+		player->depth = kept_depth;
 		require(false);
 	}
 	eq(best, 1);
 
+	player->depth = kept_depth;
 	ok;
 }
 
