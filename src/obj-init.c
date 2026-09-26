@@ -2438,6 +2438,18 @@ static enum parser_error parse_ego_act(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	}
 	e->activation = findact(name);
+
+	/*
+	 * A misspelt activation is an error (ZangbandTK, DEC-102).
+	 *
+	 * `findact()` answers NULL for a name it does not know and this returned
+	 * `PARSE_ERROR_NONE`, so `act:Ligthning Bolt` produced an ego with no
+	 * activation at all -- an item that reads as activatable in the data file
+	 * and does nothing in the hand.
+	 */
+	if (!e->activation)
+		return PARSE_ERROR_UNRECOGNISED_ACTIVATION;
+
 	return PARSE_ERROR_NONE;
 }
 
@@ -2949,8 +2961,12 @@ static enum parser_error parse_artifact_act(struct parser *p) {
 	k = lookup_kind(a->tval, a->sval);
 	if ((a->tval == TV_LIGHT) && (k->kidx >= z_info->ordinary_kind_max)) {
 		k->activation = findact(name);
+		if (!k->activation)
+			return PARSE_ERROR_UNRECOGNISED_ACTIVATION;
 	} else {
 		a->activation = findact(name);
+		if (!a->activation)
+			return PARSE_ERROR_UNRECOGNISED_ACTIVATION;
 	}
 	return PARSE_ERROR_NONE;
 }

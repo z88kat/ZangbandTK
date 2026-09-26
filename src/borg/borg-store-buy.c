@@ -279,10 +279,22 @@ bool borg_think_shop_buy_useful(void)
             /* Skip it if I just sold this item. XXX XXX*/
 
             /* Special check for 'immediate shopping' */
+            /*
+             * Starving: food, or the scroll that is food (ZangbandTK).
+             *
+             * The inner test was `tval != TV_SCROLL && sval != satisfy`, so a
+             * scroll of any kind satisfied it -- `tval != TV_SCROLL` is false
+             * for every scroll, which made the whole conjunction false and let
+             * the purchase through. A borg with no food would buy Deep Descent
+             * while it starved. The sval test is the one that was meant to
+             * carry it -- and it has to be paired with the tval, because an
+             * sval only means anything within its own tval and a wand that
+             * happened to share the number would otherwise walk through.
+             */
             if (borg.trait[BI_FOOD] == 0
-                && (item->tval != TV_FOOD
-                    && (item->tval != TV_SCROLL
-                        && item->sval != sv_scroll_satisfy_hunger)))
+                && item->tval != TV_FOOD
+                && !(item->tval == TV_SCROLL
+                     && item->sval == sv_scroll_satisfy_hunger))
                 continue;
 
             /* Don't fill up on attack wands, its ok to buy a few */

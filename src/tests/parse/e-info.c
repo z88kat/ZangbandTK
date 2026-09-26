@@ -425,12 +425,21 @@ static int test_act0(void *state) {
 	ok;
 }
 
+/*
+ * ZangbandTK (DEC-102): an activation nobody has is now an error.
+ *
+ * This asserted PARSE_ERROR_NONE and a null activation -- it pinned the
+ * lenient behaviour, which is what let `act:` swallow a typo and produce an
+ * ego that reads as activatable in the data file and does nothing in the hand.
+ * `parse/typos` covers the rule for every directive of this shape; this keeps
+ * the ego-specific case where the rest of the ego parsing is.
+ */
 static int test_act_bad0(void *state) {
 	struct parser *p = (struct parser*) state;
 	enum parser_error r = parser_parse(p, "act:XYZZY");
 	struct ego_item *e;
 
-	eq(r, PARSE_ERROR_NONE);
+	eq(r, PARSE_ERROR_UNRECOGNISED_ACTIVATION);
 	e = (struct ego_item*) parser_priv(p);
 	notnull(e);
 	null(e->activation);

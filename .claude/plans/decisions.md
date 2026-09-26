@@ -5249,3 +5249,61 @@ untouched.
 in 426 ends up ten grids from its gate. That is the cutter walking along the
 wall past shops, it is the documented fallback, and tightening it is a separate
 question about the town generator rather than part of this fix.
+
+---
+
+**DEC-102 — Five parser guards, one shared test, and one item that was not a
+defect.** (Review of 3.105–3.124, 3.124.16.)
+
+A directive that resolves a name and then returns `PARSE_ERROR_NONE` whatever
+came back is the most persistent shape in this codebase: the data file loads,
+the game starts, and the thing the line was for is silently absent. It has now
+been closed three times -- the unknown expression base (`c7fa35de7`), the
+unknown class name in a power band, and these.
+
+**Guarded.** `grab_virtues()` refused rather than dropping the surplus, which
+was the urgent one: `MAX_CLASS_VIRTUES` is 4 and two classes already list four,
+so the next virtue anybody adds to a class was the one that would vanish.
+`armour:` refuses a negative base or scale -- a negative scale takes armour
+class away as the character grows. `power-expr:` with no dice to bind to is
+`PARSE_ERROR_MISSING_FIELD` rather than success. `act:` on an ego or an artifact
+refuses an activation nobody has. And `mutation-affinity:` is checked at the end
+of the *mutation* parser, walking the races, because `p_race.txt` is read first
+and the name cannot be resolved when it is written.
+
+**One shared test, not five.** `parse/typos` is a table of directives, the lines
+that set a record up, and the line with the typo; adding a guarded directive
+means adding three strings. It asserts only that the parse fails, not which
+error, because the code matters to nobody and pinning it would make the test
+something to edit whenever one is renamed. A per-case flag moves the assertion
+from the line to `finish` for names that cannot be resolved until a whole file
+has been read -- the mutation affinity is the only one so far. Falsified five
+ways, each naming its own case.
+
+**`bindui:` is not a defect, and this is why.** The review had it as a sixth
+guard: `bind_player_ability_to_ui_entry_by_name()` answers non-zero for a UI
+entry it cannot find and both calls were cast to `(void)`. Writing the guard
+broke `parse/pprop`, and the reason is that the UI entry table is built by the
+front end in `textui_knowledge_init()`, while `player_property.txt` is parsed by
+`init_angband()` well before any front end exists. **Every** bind fails at that
+point, in every build, and a headless or unit-test build has no such table at
+all. The `(void)` is load-bearing. A note now sits above
+`finish_parse_player_prop()` so it is not "fixed" again, and validating those
+names would need a pass that runs after the front end is up -- different work
+from a parser guard. Third item in this review to turn out not to be a defect.
+
+**And one existing test pinned the old behaviour.** `parse/e-info`'s `act_bad0`
+asserted `PARSE_ERROR_NONE` for `act:XYZZY`. Updated, same shape as the
+`doors <= 8` bound in DEC-101.
+
+**Two one-liners alongside.** `view_abilities()` bounds its 32-entry
+`ability_list` on both loops -- the most any race and class match today is
+eleven, so this is for the day somebody adds the twenty-second property rather
+than for a live overflow. And the borg's starving-shopper gate had
+`tval != TV_SCROLL && sval != satisfy_hunger`, which is false for every scroll,
+so a borg with no food would buy Deep Descent while it starved; the test is now
+`tval != TV_FOOD && !(tval == TV_SCROLL && sval == satisfy_hunger)`, paired
+because an sval only means anything within its own tval. Both are verified by
+reading rather than by a test: the first is unreachable without new data and the
+second sits inside an un-seamed loop in the shopping code. Said plainly rather
+than covered with a test that would prove nothing.

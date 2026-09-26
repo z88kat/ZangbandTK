@@ -2089,6 +2089,21 @@ static errr run_parse_player_prop(struct parser *p) {
 	return parse_file_quit_not_found(p, "player_property");
 }
 
+/*
+ * Note on the `(void)` casts below (ZangbandTK, review of 3.105-3.124).
+ *
+ * `bind_player_ability_to_ui_entry_by_name()` answers non-zero for a UI entry
+ * it cannot find, and the review flagged discarding that as a silent typo hole
+ * of the same shape as `act:` and `power-expr:`. It is not one, and the reason
+ * is worth leaving here so it is not "fixed" again: the UI entry table is built
+ * by the front end in `textui_knowledge_init()`, while this file is parsed by
+ * `init_angband()` well before any front end exists. Every bind therefore fails
+ * at this point, in every build, and a headless or unit-test build has no such
+ * table at all. Discarding the result is what makes that tolerable.
+ *
+ * Validating a `bindui:` name would need a pass that runs after the front end
+ * is up, which is a different piece of work from a parser guard.
+ */
 static errr finish_parse_player_prop(struct parser *p) {
 	struct embryo_player_ability *embryo = embryo_player_abilities;
 	struct embryo_player_ability *target;
@@ -3390,7 +3405,22 @@ static enum parser_error grab_virtues(struct parser *p, int *out, int max)
 
 		for (i = 1; i < V_MAX; i++) {
 			if (my_stricmp(s, virtue_code(i))) continue;
-			if (n < max) out[n++] = i;
+
+			/*
+			 * Refused rather than dropped (ZangbandTK, DEC-102).
+			 *
+			 * This was `if (n < max) out[n++] = i;` -- the surplus went
+			 * silently nowhere, and the record parsed as though it had asked
+			 * for fewer virtues than it did. There is no headroom left for
+			 * that to stay quiet in: `MAX_CLASS_VIRTUES` is 4 and two classes
+			 * already list four, so the next virtue anybody adds to a class
+			 * is the one that vanishes.
+			 */
+			if (n >= max) {
+				string_free(flags);
+				return PARSE_ERROR_TOO_MANY_ENTRIES;
+			}
+			out[n++] = i;
 			found = true;
 			break;
 		}
@@ -3756,6 +3786,20 @@ static enum parser_error parse_p_race_armour(struct parser *p) {
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	r->armour = parser_getint(p, "armour");
 	r->armour_scale = parser_getint(p, "scale");
+
+	/*
+	 * Neither is allowed to be negative (ZangbandTK, DEC-102).
+	 *
+	 * `calc_bonuses()` adds `armour` and then `lev / armour_scale`, guarding
+	 * only against a scale of zero -- which is meaningful and means "no bonus
+	 * per level". A negative scale divides the level by it and *subtracts*
+	 * armour as the character grows, and a negative base is armour class the
+	 * race is born owing. Both parsed happily and neither is anything a data
+	 * file could mean.
+	 */
+	if (r->armour < 0 || r->armour_scale < 0)
+		return PARSE_ERROR_INVALID_VALUE;
+
 	return PARSE_ERROR_NONE;
 }
 
@@ -4295,7 +4339,17 @@ static enum parser_error power_parse_expr(struct player_power *power,
 	enum parser_error result;
 
 	if (!power) return PARSE_ERROR_MISSING_RECORD_HEADER;
-	if (!effect || !effect->dice) return PARSE_ERROR_NONE;
+
+	/*
+	 * Nothing to bind the expression to (ZangbandTK, DEC-102).
+	 *
+	 * This returned `PARSE_ERROR_NONE`, so a `power-expr:` written before its
+	 * `power-dice:`, or after an effect that has no dice, vanished without
+	 * complaint -- and the power then ran with the expression's name unbound.
+	 * Same shape as the unknown expression base that `c7fa35de7` closed, one
+	 * function further up.
+	 */
+	if (!effect || !effect->dice) return PARSE_ERROR_MISSING_FIELD;
 
 	expression = expression_new();
 	if (!expression) return PARSE_ERROR_INVALID_EXPRESSION;
@@ -5629,6 +5683,29 @@ static errr finish_parse_mutation(struct parser *p) {
 	(void) n;
 
 	parser_destroy(p);
+	/*
+	 * Every race's `mutation-affinity` names a mutation that exists
+	 * (ZangbandTK, DEC-102).
+	 *
+	 * Checked here rather than where it is parsed, because `p_race.txt` is
+	 * read before `mutation.txt` and the name cannot be resolved yet. It was
+	 * resolved at runtime instead, inside `mutation_roll()` behind an
+	 * `if (favoured && ...)`, so a typo produced a race that quietly had no
+	 * affinity at all -- the one thing the directive exists to give it.
+	 */
+	{
+		const struct player_race *r;
+
+		for (r = races; r; r = r->next) {
+			if (!r->mutation_affinity) continue;
+			if (mutation_by_name(r->mutation_affinity)) continue;
+
+			plog_fmt("p_race.txt: %s has mutation-affinity:%s, which is not "
+					 "a mutation", r->name, r->mutation_affinity);
+			return PARSE_ERROR_INVALID_VALUE;
+		}
+	}
+
 	return 0;
 }
 

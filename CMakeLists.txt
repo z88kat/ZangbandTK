@@ -935,6 +935,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     parse/pprop.c
     parse/proj.c
     parse/ptimed.c
+    parse/typos.c
     parse/r-info.c
     parse/readstore.c
     parse/realm.c

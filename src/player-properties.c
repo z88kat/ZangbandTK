@@ -65,8 +65,20 @@ static void view_abilities(void)
 	int num_abilities = 0;
 	struct player_ability ability_list[32];
 
+	/*
+	 * Bounded (ZangbandTK, DEC-102).
+	 *
+	 * Neither loop below checked `ability_list`, which is 32 entries on the
+	 * stack. The most any race and class can match today is eleven -- a
+	 * Spectre and a Necromancer -- so there is plenty of room and this has
+	 * never overflowed; it is one comparison against the day somebody adds
+	 * the twenty-second racial property.
+	 */
+	#define ROOM_LEFT (num_abilities < (int) N_ELEMENTS(ability_list))
+
 	/* Count the number of class powers we have */
-	for (ability = player_abilities; ability; ability = ability->next) {
+	for (ability = player_abilities; ability && ROOM_LEFT;
+			ability = ability->next) {
 		if (class_has_ability(player->class, ability)) {
 			memcpy(&ability_list[num_abilities], ability,
 				   sizeof(struct player_ability));
@@ -75,13 +87,16 @@ static void view_abilities(void)
 	}
 
 	/* Count the number of race powers we have */
-	for (ability = player_abilities; ability; ability = ability->next) {
+	for (ability = player_abilities; ability && ROOM_LEFT;
+			ability = ability->next) {
 		if (race_has_ability(player->race, ability)) {
 			memcpy(&ability_list[num_abilities], ability,
 				   sizeof(struct player_ability));
 			ability_list[num_abilities++].group = PLAYER_FLAG_RACE;
 		}
 	}
+
+	#undef ROOM_LEFT
 
 	/* View choices until user exits */
 	view_ability_menu(ability_list, num_abilities);
