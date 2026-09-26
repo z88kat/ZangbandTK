@@ -5388,3 +5388,57 @@ green Windows run to confirm, and the next push is that test.**
 
 The suite had never run under CMake until 25 September, which is why eight weeks
 of flake sweeps never saw it. That part of DEC-100 stands.
+
+---
+
+**DEC-105 — A retry loop that retried the same level forty times, and what
+three msys2 test failures have in common.** (3.124.19.)
+
+**The failure.** `monster/ally-ai:1100: requirement 'pet' failed` --
+`a-pet-bursting-a-door-does-not-break-your-rest` could not set itself up. The
+runner's log named the suite, the test, the file, the line and the assertion,
+and printed the seed, so `ZTK_TEST_SEED=1659870424` reproduced it locally first
+try. The `-v` change in `88891efd6` paid for itself here: the previous three
+failures each cost a local reproduction to identify.
+
+**It is not Windows-specific.** That seed fails on macOS exactly as it failed on
+the runner. Three of the four msys2 failures this week have now turned out to be
+tests, and **none of the three was a platform fault.**
+
+**The mechanism, measured rather than reasoned.** The test took whatever level
+the previous test left and regenerated only after a failure, and it inherited
+its depth the same way. `pets-follow-you-downstairs` used to leak depth -- it
+descended forty times and never put it back -- so the door test ran at depth
+forty-odd, where each retry generated a different dungeon level and forty tries
+were forty chances. DEC-103 fixed that leak, which dropped the door test to
+depth 0. **Depth 0 is the wilderness surface, and it is seeded per world**, so
+`prepare_next_level()` regenerates the *same* surface every time: instrumented
+on the failing seed, all forty attempts had the player at 79,80 with three free
+neighbours. The retry loop was one attempt repeated forty times, and on a world
+whose surface does not admit the pen it failed all forty.
+
+So a hygiene fix turned a loop that looked like robustness into a loop that was
+worth nothing, and the test that depended on the leak was the one that broke.
+
+**The fix** is for the test to say what it needs rather than inherit it: depth
+1, and a fresh level generated on *every* attempt rather than only after a
+failure. On the failing seed the setup now succeeds on the first attempt; across
+twenty-one seeds, no failures; 18 of 20 runs need one attempt and none needs
+more than two.
+
+**The blind spot, which is worth more than the fix.** It is not the platform and
+it is not ASAN. All three of these failures were seed-dependent at a rate of
+roughly one seed in many, and:
+
+* `scripts/check-flakes` runs eight passes, so it samples **eight** seeds.
+* CI runs a different seed on every push, so over a week it samples far more.
+
+CI is not testing something the local gate cannot; it is testing *more seeds*.
+Raising the pass count would narrow the gap and would also make the sweep
+proportionally slower, which is why the better answer is the one applied here:
+**a test that depends on ambient state -- the current level, the current depth,
+what the previous test left behind -- is the thing to fix, not the seed count.**
+Every one of the three had that shape. The door test inherited a level and a
+depth; `ui/shimmer` (DEC-104) placed a monster at a hard-coded grid and asserted
+it arrived; and `pets-follow-you-downstairs` leaked the depth that hid the first
+one. A test that generates what it needs has no seed sensitivity to sample.

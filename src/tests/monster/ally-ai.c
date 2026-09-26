@@ -1087,15 +1087,35 @@ static int test_a_pet_bursting_a_door_does_not_break_your_rest(void *state) {
 	struct loc door = loc(0, 0);
 	bool kept_open = false, kept_bash = false;
 	int16_t kept_leash = player->pet_follow_distance;
+	int kept_depth = player->depth;
 	int attempt, i;
 
+	/*
+	 * A level of its own, underground, generated fresh on every attempt
+	 * (DEC-105).
+	 *
+	 * This used to take whatever level the previous test left behind and only
+	 * regenerate after a failure. Two things were wrong with that. The
+	 * inherited level is the one `pets-follow-you-downstairs` was last on,
+	 * which puts the player in a corridor often enough that the first attempt
+	 * usually failed -- measured at one free neighbour in twelve runs of
+	 * twelve. And the depth was whatever that test left, which used to be
+	 * forty-odd and became zero the moment its depth leak was fixed. Depth
+	 * zero is the wilderness surface, where the player is hemmed in about one
+	 * arrival in twelve, so the retry loop went from "forty different dungeon
+	 * levels" to "forty surfaces", and forty tries of a thing that fails one
+	 * time in twelve comes up tails eventually. It came up tails on a Windows
+	 * runner the day the leak was fixed.
+	 *
+	 * So the test says what it needs: a dungeon level, fresh each time.
+	 */
+	player->depth = 1;
+
 	for (attempt = 0; attempt < 40 && !pet; attempt++) {
+		prepare_next_level(player);
+		on_new_level();
 		clear_the_level();
 		pet = pen_a_pet_behind_a_door(&door);
-		if (!pet) {
-			prepare_next_level(player);
-			on_new_level();
-		}
 	}
 	require(pet);
 
@@ -1139,6 +1159,7 @@ static int test_a_pet_bursting_a_door_does_not_break_your_rest(void *state) {
 	if (kept_open) rf_on(pet_race->flags, RF_OPEN_DOOR);
 	if (!kept_bash) rf_off(pet_race->flags, RF_BASH_DOOR);
 	player->pet_follow_distance = kept_leash;
+	player->depth = kept_depth;
 
 	require(square_isbrokendoor(cave, door));
 	require(player_is_resting(player));
