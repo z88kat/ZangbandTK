@@ -52,6 +52,8 @@
 #include "player-util.h"
 #include "mon-util.h"
 #include "obj-util.h"
+#include "player-mutation.h"
+#include "player-timed.h"
 #include "savefile.h"
 #include "z-file.h"
 #include "z-util.h"
@@ -731,6 +733,81 @@ static int test_every_rename_points_somewhere_real(void *state) {
 	ok;
 }
 
+/**
+ * A race with gains, a mutation and a timed effect comes back as itself
+ * (DEC-103, the corpus gap).
+ *
+ * The savefile corpus is thirty-five files written between 30 August and
+ * 3 September, so nothing in it was written by a build that has the races,
+ * the mutations or the timed effects this project added after that -- and the
+ * self-built round trip covered spell lists and pet allegiance and nothing
+ * else. Refreshing the corpus would only fix that until the next feature; a
+ * character built here and round-tripped covers it permanently.
+ *
+ * A Beastman, because it is the one race that mutates on its own (PLR-36) and
+ * so exercises the mutation list without being made to; grown to a level where
+ * its race has handed out something, with a timed effect running that is not
+ * the default. What is asserted is the three things a savefile records
+ * separately and could lose separately: which race, which mutations, and what
+ * is currently running on the character.
+ */
+static int test_a_mutated_character_survives_a_round_trip(void *state) {
+	char race_name[64];
+	int mutations_before = 0, mutations_after = 0, i;
+	int16_t wraith_left;
+
+	fresh_game();
+	require(player_make_simple("Beastman", "Warrior", "Tester"));
+	prepare_next_level(player);
+	on_new_level();
+
+	player->lev = player->max_lev = 30;
+	player->upkeep->update |= (PU_BONUS | PU_HP);
+	update_stuff(player);
+
+	/* Something to carry: a mutation it did not have to roll for. */
+	{
+		const struct mutation *m = mutation_by_name("SHRIEK");
+
+		notnull(m);
+		player_gain_mutation(player, m);
+	}
+
+	/* And something running. */
+	player_set_timed(player, TMD_WRAITH, 50, false, false);
+	wraith_left = player->timed[TMD_WRAITH];
+	require(wraith_left > 0);
+
+	my_strcpy(race_name, player->race->name, sizeof(race_name));
+	for (i = 0; i < MUTATION_MAX; i++)
+		if (player_has_mutation(player, mutation_by_index(i)))
+			mutations_before++;
+	require(mutations_before > 0);
+
+	require(savefile_save(savename));
+	reset_before_load();
+	require(savefile_load(savename, false));
+
+	notnull(player);
+	notnull(player->race);
+	require(streq(player->race->name, race_name));
+
+	for (i = 0; i < MUTATION_MAX; i++)
+		if (player_has_mutation(player, mutation_by_index(i)))
+			mutations_after++;
+
+	if (mutations_after != mutations_before)
+		printf("  came back with %d mutations, went in with %d\n",
+			   mutations_after, mutations_before);
+	eq(mutations_after, mutations_before);
+
+	/* Named, not just counted: the right one, not merely as many. */
+	require(player_has_mutation(player, mutation_by_name("SHRIEK")));
+
+	eq(player->timed[TMD_WRAITH], wraith_left);
+	ok;
+}
+
 const char *suite_name = "game/roundtrip";
 struct test tests[] = {
 	{ "a-caster-survives-a-round-trip",
@@ -745,6 +822,8 @@ struct test tests[] = {
 	  test_the_sides_survive_a_round_trip },
 	{ "the-player-block-says-version-six",
 	  test_the_player_block_says_version_six },
+	{ "a-mutated-character-survives-a-round-trip",
+	  test_a_mutated_character_survives_a_round_trip },
 	{ "the-pet-orders-survive-a-save",
 	  test_the_pet_orders_survive_a_save },
 	{ "a-vanished-object-is-only-lost", test_a_vanished_object_is_only_lost },

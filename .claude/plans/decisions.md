@@ -5353,3 +5353,38 @@ Falsified: removing the nightmare halving reverses the comparison (53 plain
 against 36 nightmare); changing the crush charge to `2 + depth / 10` fails the
 new assertion; changing the Spectre's constitution by one names the race, the
 stat and both values.
+
+---
+
+**DEC-104 — The corpus gap closed by round trip, and `ui/shimmer` was aborting
+all along.** (3.124.18.)
+
+**The corpus gap.** The thirty-five savefiles were written between 30 August and
+3 September, so nothing in the corpus came from a build with the races, the
+mutations or the timed effects added since -- and `game/roundtrip` covered spell
+lists and pet allegiance and nothing else. Refreshing the corpus would fix that
+until the next feature; a character built in the test and round-tripped fixes it
+permanently. `a-mutated-character-survives-a-round-trip` builds a Beastman at
+level 30 with a named mutation and a timed effect running, and requires the
+race, the mutation *by name* and the remaining duration all to survive. Falsified
+twice: not writing the mutations reports "came back with 0, went in with 2", and
+zeroing `TMD_WRAITH` on the way out fails the duration.
+
+**And the flake sweep found something the single run missed.** `ui/shimmer`
+aborted on pass 6 of 8 -- **locally, on macOS**, which contradicts what DEC-100
+recorded. It is `Assertion failed: (m), function t_add_monster`: the suite placed
+its monster at a hard-coded `loc(5, 5)` and asserts it arrived, so on a level
+where that grid is rock the binary aborts rather than failing. Three runs in
+forty. It now walks the level for an empty grid; 0 in 60 after.
+
+**This is very likely the six-hour `configure-win` job as well**, and DEC-100's
+reading of "a hang specific to the Windows front end" was wrong. An abort under
+the Windows runner can sit waiting on an error dialog rather than exiting, which
+is exactly what "Terminate orphan process: pid (5928) (shimmer)" looks like from
+the outside. The `timeout-minutes: 15` added then stays, because a bound on that
+job is worth having regardless, but the cause was a test placing a monster in
+a wall and not the platform. **Stated as likely rather than proved: it needs a
+green Windows run to confirm, and the next push is that test.**
+
+The suite had never run under CMake until 25 September, which is why eight weeks
+of flake sweeps never saw it. That part of DEC-100 stands.

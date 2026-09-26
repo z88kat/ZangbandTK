@@ -106,9 +106,31 @@ int teardown_tests(void *state) {
  * back the grid description the map would build for it.
  */
 static struct monster *shimmering_monster(struct grid_data *g) {
-	/* Multi-hued, and every version of the game has had one. */
-	struct monster *mon = t_add_monster(cave, loc(5, 5),
-										"baby multi-hued dragon");
+	/*
+	 * On a grid the level actually has (ZangbandTK, DEC-103).
+	 *
+	 * This placed at `loc(5, 5)` and `t_add_monster()` asserts the monster
+	 * arrived, so on a level where (5,5) is rock -- which a randomly generated
+	 * one often is -- the suite aborted instead of failing. Measured at three
+	 * runs in forty locally, and it is the likeliest reading of the six-hour
+	 * `configure-win` job as well: an abort on Windows can sit waiting on an
+	 * error dialog rather than exiting, which is what "terminate orphan
+	 * process: shimmer" looks like from the runner's side.
+	 *
+	 * Nothing here cares where the monster stands; it is read for its colour.
+	 */
+	struct monster *mon = NULL;
+	struct loc at;
+
+	for (at.y = 1; at.y < cave->height - 1 && !mon; at.y++)
+		for (at.x = 1; at.x < cave->width - 1; at.x++) {
+			if (!square_isempty(cave, at)) continue;
+
+			mon = t_add_monster(cave, at, "baby multi-hued dragon");
+			break;
+		}
+
+	if (!mon) return NULL;
 
 	/* As the Neon set's preference file would leave it. */
 	monster_x_attr[mon->race->ridx] = 0x80 | TEST_ROW;
