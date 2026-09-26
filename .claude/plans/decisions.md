@@ -5180,3 +5180,72 @@ complaint the test was written for, reappearing by a different route. Not fixed
 here: the remaining work is in `wild.c`'s surface composition, which wants
 reading properly rather than a guess at the end of a long session. Recorded with
 the seed so it can be picked up cold.
+
+---
+
+**DEC-101 — A town gets a gate for every road that reaches it, not one a
+side.** (WLD-08, 3.124.15. Closes the `game/wild` failure recorded in DEC-100.)
+
+**The defect.** `wild_town_road_gate()` scanned the block columns a town spans
+and `return`ed on the first one carrying a road; `wild_town_open()` called it
+once per side and cut one gate. So a side crossed by two roads gated the
+westmost or northmost of them and walled off the rest. The traveller walks a
+road across the country, arrives at the town, and there is no door.
+
+**Not seed-dependent, and not rare.** The old lookup returned on its first
+match, so the second road was *always* ungated -- reproducible by construction
+rather than by seed hunting, and true since WLD-08 landed. Measured across
+twelve worlds (144 towns, 576 sides): 287 sides carry a road, eight carry more
+than one, ten roads in total arrive at a wall with no way through, and **eight
+towns in 144 -- one in eighteen -- have at least one**. It is a property of
+large towns: every affected side spans five, seven or nine block columns, never
+three, because a short side cannot reach two road blocks.
+
+**The fix.** `wild_town_road_gates()` fills an array instead of returning the
+first, `wild_town_open()` cuts a gate for each road and keeps the middle-of-the
+-side fallback for a side no road reaches, and `wild_town_cut_gate()` refuses a
+spot where a gate already stands -- without that, the second cut on a side lays
+a gate over the first, because a door is not passable so the inward scan steps
+past it, finds the first gate's paving and reports success. `WILD_TOWN_GATES`
+goes from 8 to 64: the largest town is 132x34 against a sixteen-grid block, so
+at worst (10 + 10 + 4 + 4) gates of two grids is 56.
+
+**How the test was got right, which took three attempts.** The obvious test is
+a distance threshold, and it is much the weaker. The gate is cut at the road's
+block centre and then walked along the wall past anything with a shop behind
+it, so a legitimate gate can sit several grids off its road. Measured over
+eighteen worlds and 426 arrivals: 355 land on the gate exactly, 406 are within
+one grid, and the two worst are 8 and 10, both on a 132x34 great city where the
+road meets the wall near a corner. A threshold of half a block failed a
+legitimate world; a threshold of a full block passed, but then caught the old
+behaviour on only **three seeds in five** -- a regression guard that hides
+itself two runs in five is not one.
+
+So the test counts instead: a town has two grids of gate for every road that
+arrives plus every side none does, exactly. Drift cannot affect a count. That
+catches the old behaviour on **six seeds in eight**, and the two it does not are
+worlds where no town has two roads on a side -- nothing to catch, which the
+count makes exact rather than approximate. A loose distance check rides
+alongside so that two gates at the wrong end of a wall would still be caught.
+
+**Two other things it turned up.**
+
+*The old test could fail for the wrong reason.* `the-road-runs-up-to-a-gate`
+builds a 144-grid window around the town centre and scans it for doors, and a
+town is up to 132 wide against a window snapped to blocks -- so a large town
+near its window's edge has gates outside it, which the test counted as missing.
+That is how this defect was first mis-read: three of Kashfa's four gates were
+simply west of x=1312. The new test skips towns the window does not wholly
+contain and says how many it skipped.
+
+*`the-town-gates-are-narrow` pinned the old rule.* It asserted `doors <= 8` --
+two tiles a side, four sides -- which stopped being true the moment a side could
+have more than one gate. It now asserts that gates come in pairs and that the
+doors are at most a fifth of the boundary, which is what "narrow" means when the
+count is set by the roads; `holes == 0`, the assertion the test exists for, is
+untouched.
+
+**Residual, reported rather than tuned away.** The shop drift is real: one road
+in 426 ends up ten grids from its gate. That is the cutter walking along the
+wall past shops, it is the documented fallback, and tightening it is a separate
+question about the town generator rather than part of this fix.

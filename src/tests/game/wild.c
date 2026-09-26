@@ -287,8 +287,24 @@ static int test_the_town_gates_are_narrow(void *state) {
 	/* Gated, not merely holed. */
 	require(doors >= 2);
 
-	/* Two tiles a side, four sides, and nothing gets through anywhere else. */
-	require(doors <= 8);
+	/* Every gate is two tiles, so an odd count is half a gate somewhere. */
+	eq(doors % 2, 0);
+
+	/*
+	 * And still narrow (DEC-101).
+	 *
+	 * This said `doors <= 8` -- two tiles a side, four sides -- which stopped
+	 * being the rule when a side started getting a gate for every road that
+	 * arrives at it rather than one for the side. A great city spanning ten
+	 * blocks across can legitimately want ten gates on its north wall.
+	 *
+	 * So the bound is a proportion of the wall rather than a count of sides: a
+	 * town is gated, not colonnaded. A fifth is comfortably above the most
+	 * that can be cut -- twenty-eight gates on the largest town against a
+	 * boundary of 324 -- and far below a wall with holes in it, which is what
+	 * this test exists to catch and what `holes` below still measures exactly.
+	 */
+	require(doors * 5 <= 2 * (wid - 2) + 2 * (hgt - 2));
 	eq(holes, 0);
 
 	ok;
@@ -2863,6 +2879,192 @@ static int test_no_road_goes_nowhere(void *state) {
 		require(ends > 0);
 		wild_free(w);
 	}
+
+	ok;
+}
+
+/**
+ * Every road that reaches a town wall has a gate where it arrives (WLD-08,
+ * DEC-101).
+ *
+ * The test below this one measures the worst gap in a world and is the one a
+ * player would recognise. This one states the rule that produces that number,
+ * and states it per *road* rather than per town: `wild_town_open()` used to cut
+ * one gate a side and `wild_town_road_gate()` returned the first road it found,
+ * so a side crossed by two roads gated one and walled off the other. One town
+ * in eighteen, measured, and always -- there was nothing random about which
+ * road lost.
+ *
+ * Roads are read from the block map and gates from the rendered ground, which
+ * is the pairing that matters: the block map is where the road was decided and
+ * the ground is what the traveller actually walks into.
+ *
+ * Towns the window does not wholly contain are skipped and counted. A town is
+ * up to 132 grids wide against a 144-grid window that is snapped to blocks, so
+ * a large town near the edge of its window has gates outside it -- and a test
+ * that measured those towns anyway would report a missing gate that is merely
+ * off-screen. That is exactly how this defect was first mis-read.
+ */
+static int test_every_road_to_a_town_has_a_gate(void *state) {
+	int size = z_info->wild_block_size;
+	int idx, checked = 0, skipped = 0, wrong = 0, far = 0;
+
+	notnull(wild);
+
+	for (idx = 0; idx < wild_town_count(wild); idx++) {
+		struct loc org = wild_town_origin_of(wild, idx);
+		int w = wild->towns[idx].wid, h = wild->towns[idx].hgt;
+		struct loc centre = loc(org.x + w / 2, org.y + h / 2);
+		struct loc offset;
+		struct chunk *c = wild_surface(wild, player, centre, &offset);
+		int bx0, bx1, by0, by1, side, b;
+		int want = 0, doors = 0;
+		struct loc g;
+
+		notnull(c);
+
+		/* Only towns wholly inside the window; see the note above. */
+		if (org.x < offset.x || org.y < offset.y
+				|| org.x + w > offset.x + c->width
+				|| org.y + h > offset.y + c->height) {
+			skipped++;
+			cave_free(c);
+			continue;
+		}
+
+		bx0 = org.x / size;
+		bx1 = (org.x + w - 1) / size;
+		by0 = org.y / size;
+		by1 = (org.y + h - 1) / size;
+
+		/* How many gates this town's roads ask for. */
+		for (side = 0; side < 4; side++) {
+			int outside = (side == 0) ? by0 - 1 : (side == 1) ? by1 + 1 :
+				(side == 2) ? bx0 - 1 : bx1 + 1;
+			int inside = (side == 0) ? by0 : (side == 1) ? by1 :
+				(side == 2) ? bx0 : bx1;
+			int first = (side < 2) ? bx0 : by0;
+			int last = (side < 2) ? bx1 : by1;
+			int roads = 0;
+
+			for (b = first; b <= last; b++) {
+				if (side < 2) {
+					if (!wild_road_at(wild, b, outside)) continue;
+					if (!wild_road_at(wild, b, inside)) continue;
+				} else {
+					if (!wild_road_at(wild, outside, b)) continue;
+					if (!wild_road_at(wild, inside, b)) continue;
+				}
+				roads++;
+			}
+
+			/* A gate for each road, or one for the side if none came. */
+			want += roads ? roads : 1;
+			checked += roads;
+		}
+
+		/* And how many it has. */
+		for (g.y = org.y; g.y < org.y + h; g.y++)
+			for (g.x = org.x; g.x < org.x + w; g.x++) {
+				struct loc at = loc(g.x - offset.x, g.y - offset.y);
+
+				if (!square_in_bounds_fully(c, at)) continue;
+				if (square_iscloseddoor(c, at) || square_isopendoor(c, at))
+					doors++;
+			}
+
+		/*
+		 * Counted, not measured.
+		 *
+		 * A distance threshold was the obvious way to write this and is much
+		 * the weaker test: the gate is cut at the road's block centre and then
+		 * walked along the wall past anything with a shop behind it, so a
+		 * legitimate gate can sit several grids off its road -- measured over
+		 * eighteen worlds, 355 of 426 arrivals land on the gate exactly, 406
+		 * are within one grid, and the two worst are 8 and 10 on a great city.
+		 * Any threshold loose enough to admit those also admits some of the
+		 * gaps the defect produced, and a threshold of one block caught the
+		 * old behaviour on only three seeds in five.
+		 *
+		 * The count does not care about drift. A side with two roads has two
+		 * gates or it does not, whatever grid they ended up on, and that is
+		 * exactly the thing that was wrong.
+		 */
+		if (doors != want * 2) {
+			printf("%s (%dx%d): %d roads and idle sides want %d gates, the "
+				   "wall has %d\n",
+				   wild->towns[idx].name ? wild->towns[idx].name : "?",
+				   w, h, want, want * 2 / 2, doors / 2);
+			wrong++;
+		}
+
+		/*
+		 * And a road still arrives near its gate, which the count alone would
+		 * not notice -- two gates at the wrong end of the wall would satisfy
+		 * it. Loose on purpose, for the drift above; the count is what pins
+		 * the defect and this pins the placement.
+		 */
+		for (side = 0; side < 4; side++) {
+			int outside = (side == 0) ? by0 - 1 : (side == 1) ? by1 + 1 :
+				(side == 2) ? bx0 - 1 : bx1 + 1;
+			int inside = (side == 0) ? by0 : (side == 1) ? by1 : bx1;
+			int first = (side < 2) ? bx0 : by0;
+			int last = (side < 2) ? bx1 : by1;
+
+			if (side == 2) inside = bx0;
+
+			for (b = first; b <= last; b++) {
+				struct loc arrive;
+				int near = 9999;
+
+				if (side < 2) {
+					if (!wild_road_at(wild, b, outside)) continue;
+					if (!wild_road_at(wild, b, inside)) continue;
+					arrive = loc(b * size + size / 2,
+								 (side == 0) ? org.y : org.y + h - 1);
+				} else {
+					if (!wild_road_at(wild, outside, b)) continue;
+					if (!wild_road_at(wild, inside, b)) continue;
+					arrive = loc((side == 2) ? org.x : org.x + w - 1,
+								 b * size + size / 2);
+				}
+
+				arrive.x = MAX(org.x + 1, MIN(arrive.x, org.x + w - 2));
+				arrive.y = MAX(org.y + 1, MIN(arrive.y, org.y + h - 2));
+
+				for (g.y = org.y; g.y < org.y + h; g.y++)
+					for (g.x = org.x; g.x < org.x + w; g.x++) {
+						struct loc at = loc(g.x - offset.x, g.y - offset.y);
+						int d;
+
+						if (!square_in_bounds_fully(c, at)) continue;
+						if (!square_iscloseddoor(c, at)
+								&& !square_isopendoor(c, at)) continue;
+
+						d = distance(g, arrive);
+						if (d < near) near = d;
+					}
+
+				if (near > size) {
+					printf("%s: a road arrives at %d,%d and the nearest gate "
+						   "is %d grids away\n",
+						   wild->towns[idx].name ? wild->towns[idx].name : "?",
+						   arrive.x, arrive.y, near);
+					far++;
+				}
+			}
+		}
+
+		cave_free(c);
+	}
+
+	printf("GATES %d roads arrive at a town wall, %d towns skipped as "
+		   "larger than their window\n", checked, skipped);
+
+	/* A world with no roads at all would pass anything. */
+	require(checked > 4);
+	eq(wrong, 0);
+	eq(far, 0);
 
 	ok;
 }
@@ -6256,6 +6458,8 @@ struct test tests[] = {
 	{ "the-quality-ladder-is-a-ladder", test_the_quality_ladder_is_a_ladder },
 	{ "a-blessed-beast-bounds-away", test_a_blessed_beast_bounds_away },
 	{ "a-seed-keeps-its-world", test_a_seed_keeps_its_world },
+	{ "every-road-to-a-town-has-a-gate",
+			test_every_road_to_a_town_has_a_gate },
 	{ "a-road-out-of-a-gate-goes-somewhere", test_a_road_out_of_a_gate_goes_somewhere },
 	{ "work-is-offered-where-there-is-a-door", test_work_is_offered_where_there_is_a_door },
 	{ "every-race-is-playable", test_every_race_is_playable },

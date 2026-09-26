@@ -2473,7 +2473,18 @@ void wild_town_free(void)
  * because the surface is rebuilt as the player walks and the town is not: the
  * gates belong to the town, and where they are does not change.
  */
-#define WILD_TOWN_GATES 8
+/*
+ * Room for every gate a town can want (ZangbandTK, WLD-08, DEC-101).
+ *
+ * This was 8 -- two grids each for four gates, one a side -- which is what a
+ * town needed while only one gate a side was ever cut. A side now gets a gate
+ * for every road that arrives at it, so the bound is the number of block
+ * columns or rows a town can span: the largest town is 132x34 against a
+ * sixteen-grid block, so at worst ten blocks across and four down, and
+ * (10 + 10 + 4 + 4) gates of two grids is 56. Sixty-four leaves room and keeps
+ * the number round.
+ */
+#define WILD_TOWN_GATES 64
 
 static struct {
 	struct loc grid;		/**< Where in the town chunk */
@@ -2583,6 +2594,22 @@ static bool wild_town_cut_gate(struct chunk *town, int idx, struct loc start,
 	lane[0] = start;
 	lane[1] = loc_sum(start, across);
 
+	/*
+	 * Not where a gate already stands. A side can now be cut more than once,
+	 * and the second cut would otherwise happily lay a gate over the first --
+	 * a door is not passable, so the inward scan below steps past it, finds
+	 * the first gate's paving and reports success. That would spend two of the
+	 * town's gate slots on one doorway and record it twice for the closing
+	 * tick.
+	 */
+	for (i = 0; i < 2; i++) {
+		if (!square_in_bounds_fully(town, lane[i]))
+			return false;
+		if (square_iscloseddoor(town, lane[i])
+				|| square_isopendoor(town, lane[i]))
+			return false;
+	}
+
 	for (i = 0; i < 2; i++) {
 		struct loc grid = lane[i];
 
@@ -2638,7 +2665,7 @@ static bool wild_town_cut_gate(struct chunk *town, int idx, struct loc start,
 }
 
 /**
- * Where a road arrives at one side of a town, in the town's own coordinates.
+ * Where the roads arrive at one side of a town, in the town's own coordinates.
  *
  * Roads are drawn along the middle of the blocks that carry them, so a road
  * coming in from the north runs down the centre column of some block.  The gates
@@ -2652,24 +2679,34 @@ static bool wild_town_cut_gate(struct chunk *town, int idx, struct loc start,
  * So the gate goes where the road comes in.  That is also the right way round:
  * a town does not put its gate somewhere and hope a road turns up.
  *
+ * **Every** road, not the first (DEC-101).  This used to return on the first
+ * block it matched, and `wild_town_open()` cut one gate a side, so a town whose
+ * side was crossed by two roads gated one of them and left the other running
+ * into a blank wall.  That was not rare and not random: it happened to about
+ * one town in eighteen, always, and the long side of a large town is where it
+ * happens, because that is what spans enough blocks for a second road.
+ *
  * \param side is 0 north, 1 south, 2 west, 3 east.
- * \return the coordinate along that side, or -1 if no road arrives there.
+ * \param out receives the coordinate along that side of each arriving road.
+ * \param max is how many `out` holds.
+ * \return how many roads arrive there, which may be none.
  */
-static int wild_town_road_gate(struct wilderness *w, int idx, int side)
+static int wild_town_road_gates(struct wilderness *w, int idx, int side,
+								int *out, int max)
 {
 	int size = z_info->wild_block_size;
 	struct loc org = wild_town_origin_of(w, idx);
 	int wid = w->towns[idx].wid, hgt = w->towns[idx].hgt;
 	int bx0 = org.x / size, bx1 = (org.x + wid - 1) / size;
 	int by0 = org.y / size, by1 = (org.y + hgt - 1) / size;
-	int b;
+	int b, found = 0;
 
 	if (side < 2) {
-		/* North or south: look for a road in the block row beyond. */
+		/* North or south: look for roads in the block row beyond. */
 		int outside = (side == 0) ? by0 - 1 : by1 + 1;
 		int inside = (side == 0) ? by0 : by1;
 
-		for (b = bx0; b <= bx1; b++) {
+		for (b = bx0; b <= bx1 && found < max; b++) {
 			int local;
 
 			if (!wild_road_at(w, b, outside)) continue;
@@ -2684,28 +2721,28 @@ static int wild_town_road_gate(struct wilderness *w, int idx, int side)
 			 * is much the better one.
 			 */
 			local = b * size + size / 2 - org.x;
-			return MAX(1, MIN(local, wid - 3));
+			out[found++] = MAX(1, MIN(local, wid - 3));
 		}
 	} else {
 		int outside = (side == 2) ? bx0 - 1 : bx1 + 1;
 		int inside = (side == 2) ? bx0 : bx1;
 
-		for (b = by0; b <= by1; b++) {
+		for (b = by0; b <= by1 && found < max; b++) {
 			int local;
 
 			if (!wild_road_at(w, outside, b)) continue;
 			if (!wild_road_at(w, inside, b)) continue;
 
 			local = b * size + size / 2 - org.y;
-			return MAX(1, MIN(local, hgt - 3));
+			out[found++] = MAX(1, MIN(local, hgt - 3));
 		}
 	}
 
-	return -1;
+	return found;
 }
 
 /**
- * Give the town one gate on each of its four sides.
+ * Give the town a gate for every road that reaches it, and one a side besides.
  *
  * Tried from the middle of each side outwards, so a gate stands where a gate
  * would: at the end of a street rather than in a corner.
@@ -2719,7 +2756,7 @@ static void wild_town_open(struct chunk *town, int idx)
 	wild_town_wall(town);
 
 	/*
-	 * Each side in turn, working outwards from where its road arrives -- or
+	 * Each side in turn, working outwards from where its roads arrive -- or
 	 * from the middle, if nothing was paved to that side.  A town wants a way
 	 * out on every side whether or not anybody built a road to it.
 	 *
@@ -2728,38 +2765,59 @@ static void wild_town_open(struct chunk *town, int idx)
 	 * middle of the side then put the gate as far from the traveller as it
 	 * could.  Measured: trying the road alone left one town in twelve with its
 	 * gate twelve to seventeen grids from where the road stopped.
+	 *
+	 * **A gate for each road, not for each side** (DEC-101).  This loop used to
+	 * ask for one road per side and cut one gate; a side crossed by two roads
+	 * gated the westmost or northmost and the other ran into a blank wall.
+	 * Measured across twelve worlds: 287 town sides carry a road, eight of them
+	 * carry more than one, and one town in eighteen had a road arriving at a
+	 * wall with no way through it.  Nothing seed-dependent about it -- the old
+	 * lookup returned on its first match, so the second road was *always*
+	 * ungated, and had been since WLD-08.
 	 */
 	for (side = 0; side < 4; side++) {
-		int road = wild ? wild_town_road_gate(wild, idx, side) : -1;
+		int roads[WILD_TOWN_GATES / 2];
 		int span = (side < 2) ? w : h;
-		int from = (road >= 0) ? road : span / 2;
+		int found = wild ? wild_town_road_gates(wild, idx, side, roads,
+												(int) N_ELEMENTS(roads)) : 0;
+		int which;
 
-		for (i = 0; i < span - 3; i++) {
-			int at = from + ((i % 2) ? -((i + 1) / 2) : (i / 2));
-			bool cut;
+		/* No road to this side: one gate, from the middle out, as before. */
+		if (!found) {
+			roads[0] = span / 2;
+			found = 1;
+		}
 
-			if (at < 1 || at > span - 3) continue;
+		for (which = 0; which < found; which++) {
+			int from = roads[which];
 
-			switch (side) {
-				case 0:
-					cut = wild_town_cut_gate(town, idx, loc(at, 1),
-											 loc(0, 1), loc(1, 0), h / 2);
-					break;
-				case 1:
-					cut = wild_town_cut_gate(town, idx, loc(at, h - 2),
-											 loc(0, -1), loc(1, 0), h / 2);
-					break;
-				case 2:
-					cut = wild_town_cut_gate(town, idx, loc(1, at),
-											 loc(1, 0), loc(0, 1), w / 2);
-					break;
-				default:
-					cut = wild_town_cut_gate(town, idx, loc(w - 2, at),
-											 loc(-1, 0), loc(0, 1), w / 2);
-					break;
+			for (i = 0; i < span - 3; i++) {
+				int at = from + ((i % 2) ? -((i + 1) / 2) : (i / 2));
+				bool cut;
+
+				if (at < 1 || at > span - 3) continue;
+
+				switch (side) {
+					case 0:
+						cut = wild_town_cut_gate(town, idx, loc(at, 1),
+												 loc(0, 1), loc(1, 0), h / 2);
+						break;
+					case 1:
+						cut = wild_town_cut_gate(town, idx, loc(at, h - 2),
+												 loc(0, -1), loc(1, 0), h / 2);
+						break;
+					case 2:
+						cut = wild_town_cut_gate(town, idx, loc(1, at),
+												 loc(1, 0), loc(0, 1), w / 2);
+						break;
+					default:
+						cut = wild_town_cut_gate(town, idx, loc(w - 2, at),
+												 loc(-1, 0), loc(0, 1), w / 2);
+						break;
+				}
+
+				if (cut) break;
 			}
-
-			if (cut) break;
 		}
 	}
 }
