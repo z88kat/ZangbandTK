@@ -461,8 +461,20 @@ Golem
 
 Sprite
   Tiny, quick-witted and airborne. Feeble in a fight, excellent at everything
-  requiring fingers or attention, resistant to light, and it falls slowly. It
-  throws sleeping dust from level 12.
+  requiring fingers or attention, resistant to light, and it falls slowly.
+
+  **Its sleeping dust has two forms, and the second is the one worth waiting
+  for.** From level 12 it puts to sleep whatever is standing next to you — the
+  eight adjacent squares and nothing further, so it is what you reach for when
+  something already has hold of you. From level 25 the same handful of dust
+  reaches every monster you can see, which makes it an opening move rather than
+  an escape: you can settle a room from its doorway before you walk into it.
+  The power is twice your character level either way, and it is also how long
+  the sleep lasts — so the dust is broad rather than long, and anything you
+  then hit wakes up at once.
+
+  Until 3.124.20 it was the line-of-sight form from level 12, which gave a
+  Sprite the whole room thirteen levels early.
 
   And it is **the only race that gets faster as it grows**: a point of speed at
   level 10 and another every tenth level after, so a Sprite at 50 moves five

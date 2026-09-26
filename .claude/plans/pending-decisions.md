@@ -6,7 +6,13 @@ is said so it can be taken in one line.
 
 ---
 
-## 1. The Sprite's sleeping dust is stronger than the archive's
+## 1. ~~The Sprite's sleeping dust is stronger than the archive's~~ — DECIDED
+
+**Ruled 27 September 2026: restore the two forms, keep the doubled power.**
+Built in 3.124.20, recorded as DEC-106. Left here for the reasoning; the
+original text follows.
+
+### The original entry
 
 **The choice.** Whether to keep our version or restore Zangband's two bands.
 
@@ -185,3 +191,52 @@ one road in 426.
 blank wall — is zero. Ten grids on the largest town, once in four hundred, is
 a short walk along a wall, not a dead end, and the fix risks the thing that is
 currently working.
+
+---
+
+## 9. Uniques and our timed-effect saving throw
+
+**The choice.** Whether a unique monster can be slept, slowed, confused or
+frightened at all. This came out of the Sprite decision (DEC-106) and is wider
+than that race: it is the model, not one power.
+
+**Archive.** Flat immunity, checked before anything else. `spells1.c` gates
+`GF_OLD_SLEEP`, `GF_OLD_SLOW`, `GF_OLD_CONF` and `GF_TURN_ALL` on
+`FLAG(r_ptr, RF_UNIQUE)` first, so a unique is never slept, slowed, confused or
+made to flee, by anything, at any character level.
+
+**Ours.** 4.2's graded model. `mon-timed.c:74` gives a unique a *second* saving
+throw and resists if either succeeds — `resist_chance = MIN(90, race->level +
+MAX(0, 25 - timer/2))`, so the effective resist is `1 - (1-p)²`. Concretely, a
+level-20 unique against a level-25 Sprite's dust: `p = 0.20`, effective resist
+36%, so **it is slept about two tries in three**. At the 90 cap — a race level
+of 90 or above, which is Morgoth's neighbourhood — it is 99% and the exposure
+is negligible. So the gap is at *low and mid-level uniques*, which is where a
+player meets most of them.
+
+**Cost.** Small in code, wide in consequence. A `unique_immune` column in
+`list-mon-timed.h` and a check in `does_resist()` is perhaps ten lines. What it
+touches is every source of those four effects in the game — spells, wands,
+staves, racial and class powers, monster spells — and the balance that has been
+played and swept against them since the races landed.
+
+**Recommendation: restore the archive's flat immunity, for the four effects the
+archive covers.** The argument that carried the Sprite carries here and is
+stronger: DEC-20 makes the archive authoritative where nobody decided otherwise,
+and nobody decided this — it is 4.2's model surviving because the port never
+asked the question. And the category matters. A unique is the fight the game
+means you to have; sleeping one and walking round it, or sleeping it and taking
+free swings, is not a tactic the design intends to sell for twelve mana.
+
+**Two honest caveats.** First, 4.2's graded model is *deliberate* — upstream
+replaced flat immunities with saving throws on purpose, and we are a port onto
+4.2, so this is one of the places where the two parents genuinely disagree
+rather than one of them being silent. That is a real argument for leaving it.
+Second, if you want a narrower change: **sleep and hold** are the two that
+remove a monster from the fight outright, while slow, confusion and fear only
+degrade it. Restoring immunity for those two alone would take most of the value
+for a fraction of the blast radius — though it is a third position belonging to
+neither game, and would need recording as ours.
+
+**Not built. Nothing has been changed for this.**
+

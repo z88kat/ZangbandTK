@@ -1270,11 +1270,32 @@ obj-flags:FEATHER
 # redundant -- 9/10 is 0 -- so the scale alone reproduces every level.
 speed:0:10
 values:RES_LIGHT[1]
+# The dust has two forms, and the level gate between them is the archive's
+# (racial.c:575, DEC-106).  Below 25 it is `sleep_monsters_touch()` --
+# `project(0, 1, px, py, ...)`, a radius-one ball on the player, so the eight
+# adjacent squares and nothing further.  At 25 and above it is
+# `sleep_monsters()`, which is `project_hack()` over everything in line of
+# sight.  Shipping only the second form gave a Sprite the whole room thirteen
+# levels early; the level, cost, stat and failure rate below were transcribed
+# from tables.c:8004 exactly and are untouched.
+#
+# **The doubled power is deliberate and is not a transcription slip.**  The
+# archive passes `p_ptr->lev` and uses it only as a saving-throw power, with
+# the sleep itself fixed at 500 turns (spells1.c, GF_OLD_SLEEP).  Ours is one
+# number doing both jobs: `project_monster_sleep()` puts it straight into
+# `MON_TMD_SLEEP`, so it is the duration as well as the save.  Passing `lev`
+# alone would give a twelfth-level Sprite a twelve-turn sleep against the
+# archive's five hundred, which is further from the archive than doubling it.
 power:throw sleeping dust
 power-level:12
 power-cost:12
 power-stat:INT
 power-fail:15
+power-when:12:24
+power-effect:TOUCH:SLEEP_ALL
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 2
+power-when:25:50
 power-effect:PROJECT_LOS:SLEEP_ALL
 power-dice:$B
 power-expr:B:PLAYER_LEVEL:* 2

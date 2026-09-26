@@ -5442,3 +5442,68 @@ Every one of the three had that shape. The door test inherited a level and a
 depth; `ui/shimmer` (DEC-104) placed a monster at a hard-coded grid and asserted
 it arrived; and `pets-follow-you-downstairs` leaked the depth that hid the first
 one. A test that generates what it needs has no seed sensitivity to sample.
+
+---
+
+**DEC-106 — The Sprite's dust gets the archive's two forms back, and keeps our
+power value.** (PLR-01, 3.124.20. Settles item 1 of `pending-decisions.md`.)
+
+The project owner's ruling: **restore the two forms, keep the doubled power.**
+
+**What was wrong.** Zangband gives the power two forms either side of level 25
+([racial.c:575](../archive/zangband/src/racial.c#L575)). Below it,
+`sleep_monsters_touch()` — `project(0, 1, px, py, ...)`, a radius-one ball on
+the player, so the eight adjacent squares and nothing further. At 25 and above,
+`sleep_monsters()`, which is `project_hack()` over everything in line of sight.
+We shipped only the second, from level 12, so a Sprite could settle a room from
+its doorway thirteen levels early.
+
+**Measured, before deciding.** Against a level-10, ten-dice monster at
+character level 12: the archive lands 47% of the time on the eight adjacent
+squares; ours landed 77% on everything in sight. Ours lands roughly 1.6-2x as
+often at every level. Ours is *weaker* on duration -- 24 turns at level 12
+against the archive's flat 500, and `monster_reduce_sleep()` eats that fast at
+close range -- so the divergence was broader-and-easier but much shorter.
+
+**Where it came from.** The level, cost, stat and failure rate match
+`tables.c:8004` exactly, so that row was transcribed carefully; the two forms
+exist only in `racial.c`, and the table's own description says merely "You can
+throw magic dust which induces sleep". The divergence lands precisely where the
+table stops and the switch begins. The Sprite's block in `p_race.txt` cites
+`xtra1.c:2550` for the flying speed and reasons about a redundant gate there,
+and says nothing at all about the power -- the same author reading the archive
+closely for one property and not the other.
+
+**The doubled power is kept, deliberately, and this is why.** The archive
+passes `p_ptr->lev` and uses it *only* as a saving-throw power, with the sleep
+fixed at 500 turns. Ours is one number doing both jobs: `project_monster_sleep()`
+writes it straight into `MON_TMD_SLEEP`, so it is the duration as well as the
+save. Passing `lev` alone would give a twelfth-level Sprite a twelve-turn sleep
+against the archive's five hundred, which is *further* from the archive than
+doubling it. A reader who finds a number matching neither game should find this
+paragraph rather than assume a slip.
+
+**Data only, no new code.** Level bands are the mechanism the Draconian already
+uses (`p_race.txt:1005`, two bands with different effects), and `EFFECT(TOUCH)`
+is "on all adjacent squares" with radius defaulting to 1 -- `activation.txt:830`
+already ships `TOUCH_AWARE:SLEEP_ALL`. Level, cost, stat and failure rate are
+untouched.
+
+**The test asserts reach, not the data file**, because the effect's name is what
+was wrong: the contact form works at 12, it does *not* reach three grids at 12,
+and the same monster is reachable at 25. It takes all three -- any two pass for
+a build that is still wrong.
+
+**And the first version of that test proved less than it looked.** The
+"contact form works" check reused `carved`, the flag the level-carving loop had
+already set, so it was true whatever the power did -- dropping the low band
+entirely passed the whole test. Caught by falsifying, not by reading, which is
+the third time that shape has been caught this month. It has its own counter
+now. Falsified three ways: both bands `PROJECT_LOS` reports the dust reaching
+three grids 47 times in 60 at level 12; both bands `TOUCH` reports it never
+reaching at 25; the low band dropped reports the contact form missing.
+
+**Raised separately, not built:** whether a unique should be sleepable at all.
+The archive gives uniques flat immunity to sleep, slow, confusion and fear;
+ours gives them a double saving throw. That is the model rather than this race,
+and it is item 9 of `pending-decisions.md`.

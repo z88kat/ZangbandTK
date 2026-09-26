@@ -36,6 +36,8 @@
 #include "obj-make.h"
 #include "obj-pile.h"
 #include "player-timed.h"
+#include "mon-timed.h"
+#include "monster.h"
 #include "player-util.h"
 #include "project.h"
 #include "ui-input.h"
@@ -1684,6 +1686,139 @@ static int test_every_imported_race_keeps_its_stats(void *state) {
 	ok;
 }
 
+/**
+ * The Sprite's dust reaches the room only from level 25 (DEC-106).
+ *
+ * Zangband gives the power two forms either side of 25
+ * ([racial.c:575](../archive/zangband/src/racial.c#L575)): below it,
+ * `sleep_monsters_touch()`, which is a radius-one ball on the player and so
+ * the eight adjacent squares; at 25 and above, `sleep_monsters()`, which is
+ * every monster in line of sight. We shipped only the second, from level 12.
+ *
+ * Asserted on *reach* rather than on which effect the data file names, because
+ * the name is what was wrong. Three things, and it takes all three: the
+ * contact form works at 12, it does **not** reach a monster three grids away
+ * at 12, and the same monster is reachable at 25. Any two of those pass for a
+ * build that is still wrong -- two bands both set to `PROJECT_LOS` satisfy the
+ * first and third, two set to `TOUCH` satisfy the first and second, and
+ * dropping the low band entirely satisfies the second and third.
+ *
+ * A corridor of floor is carved so the distant target is certainly in line of
+ * sight. Placing it on whatever the generator produced would make "did not
+ * reach" ambiguous between the band being right and a wall being in the way.
+ */
+static int test_the_dust_reaches_further_at_twenty_five(void *state) {
+	struct player_power *power;
+	struct monster *near_mon = NULL, *far_mon = NULL;
+	struct loc dir_grid[4];
+	int d, i, slept_far_at_12 = 0, slept_far_at_25 = 0, slept_near_at_12 = 0;
+	bool carved = false;
+
+	require(player_make_simple("Sprite", "Mage", "Tester"));
+	prepare_next_level(player);
+	on_new_level();
+
+	power = (struct player_power *) player->race->powers;
+	notnull(power);
+	require(streq(power->name, "throw sleeping dust"));
+
+	/* A straight run of floor, so line of sight at three grids is certain. */
+	for (d = 0; d < 8 && !carved; d++) {
+		struct loc step = ddgrid_ddd[d];
+		bool room = true;
+
+		for (i = 0; i < 4; i++) {
+			dir_grid[i] = loc(player->grid.x + step.x * (i + 1),
+							  player->grid.y + step.y * (i + 1));
+			if (!square_in_bounds_fully(cave, dir_grid[i])) room = false;
+		}
+		if (!room) continue;
+
+		for (i = 0; i < 4; i++) {
+			if (square_monster(cave, dir_grid[i])) continue;
+			square_set_feat(cave, dir_grid[i], FEAT_FLOOR);
+		}
+		carved = true;
+	}
+	require(carved);
+
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+	update_stuff(player);
+
+	/* One in contact, one three grids off and visible. */
+	require(square_isempty(cave, dir_grid[0]));
+	require(square_isempty(cave, dir_grid[2]));
+	near_mon = t_add_monster(cave, dir_grid[0], "grid bug");
+	far_mon = t_add_monster(cave, dir_grid[2], "grid bug");
+	notnull(near_mon);
+	notnull(far_mon);
+	require(los(cave, player->grid, far_mon->grid));
+	eq(distance(player->grid, far_mon->grid), 3);
+
+	/* --- level 12: the contact form --- */
+	player->lev = player->max_lev = 12;
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
+	update_stuff(player);
+	player->msp = 5000;
+
+	for (i = 0; i < 60; i++) {
+		player->csp = player->msp;
+		player->chp = player->mhp;
+		mon_clear_timed(near_mon, MON_TMD_SLEEP, 0);
+		mon_clear_timed(far_mon, MON_TMD_SLEEP, 0);
+
+		require(player_use_power(player, power, 0));
+
+		if (far_mon->m_timed[MON_TMD_SLEEP]) slept_far_at_12++;
+		if (near_mon->m_timed[MON_TMD_SLEEP]) slept_near_at_12++;
+	}
+
+	/*
+	 * It works at all -- the contact form is not simply absent.
+	 *
+	 * Its own counter, and that matters: this first read `require(carved)`,
+	 * reusing the flag the carving loop had already set, so it was true
+	 * whatever the power did. Dropping the low band outright passed the whole
+	 * test. Found by falsifying, not by reading.
+	 */
+	if (!slept_near_at_12) {
+		printf("  at level 12 the dust never slept the monster in contact in "
+			   "60 tries; the contact form is missing\n");
+		require(false);
+	}
+
+	/* And it does not reach three grids. Once would be once too often. */
+	if (slept_far_at_12) {
+		printf("  at level 12 the dust reached three grids away %d times in "
+			   "60; it should reach one\n", slept_far_at_12);
+		require(false);
+	}
+
+	/* --- level 25: the line-of-sight form --- */
+	player->lev = player->max_lev = 25;
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
+	update_stuff(player);
+	player->msp = 5000;
+
+	for (i = 0; i < 60 && !slept_far_at_25; i++) {
+		player->csp = player->msp;
+		player->chp = player->mhp;
+		mon_clear_timed(far_mon, MON_TMD_SLEEP, 0);
+
+		require(player_use_power(player, power, 0));
+
+		if (far_mon->m_timed[MON_TMD_SLEEP]) slept_far_at_25++;
+	}
+
+	if (!slept_far_at_25) {
+		printf("  at level 25 the dust never reached three grids away in 60 "
+			   "tries; it should reach line of sight\n");
+		require(false);
+	}
+
+	ok;
+}
+
 const char *suite_name = "player/race";
 struct test tests[] = {
 	{ "the-draconian-grows-into-its-scales",
@@ -1694,6 +1829,8 @@ struct test tests[] = {
 			test_a_yeek_becomes_immune_to_acid },
 	{ "the-mindflayer-grows-into-its-mind",
 			test_the_mindflayer_grows_into_its_mind },
+	{ "the-dust-reaches-further-at-twenty-five",
+	  test_the_dust_reaches_further_at_twenty_five },
 	{ "every-imported-race-keeps-its-stats",
 	  test_every_imported_race_keeps_its_stats },
 	{ "the-golems-power-is-a-shield", test_the_golems_power_is_a_shield },
