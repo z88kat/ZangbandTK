@@ -862,6 +862,32 @@ light:1
 # way to put the sun out.  Both are substitutions, not additions.
 equip-instead:food:scroll:Remove Hunger:2:5
 equip-instead:light:scroll:Darkness:2:5
+# Biting is how a Vampire eats, and until 3.124.22 it was not (DEC-108).
+#
+# The archive feeds the Vampire on a successful bite: `food += MIN(5000,
+# 100 * damage)`, never past Bloated (racial.c:548).  A ration is 5000 on its
+# 15000 scale, so the rule is "a hundred food a point of damage, capped at one
+# ration", and the cap is the useful way to read it.  Ours is a 0-100 scale
+# where a ration is 30, which is the same proportion, so the same rule is
+# `damage * 30 / 50` -- and with our damage being `PLAYER_LEVEL` that is
+# `lev * 3 / 5`, reaching exactly one ration at level 50 and never exceeding
+# it.  No cap is needed because the character level cannot.
+#
+# This is the half that makes `player-flags:BLOOD_DIET` fair.  Ordinary food
+# gives a Vampire a tenth, which is the archive's penalty, and the archive's
+# remedy is the bite; we shipped the penalty without the remedy.  The bite is
+# not itself reduced -- the tenth applies to `tval_is_edible` objects and a
+# racial power has no object -- which is the point.
+#
+# **It feeds whether or not the bolt finds anything, and that is a divergence.**
+# The archive only feeds inside `if (drain_gain_life(dir, dummy))`, and our
+# effect chain has no way to make one effect depend on another's success:
+# `effect_do()` simply runs them in order.  Building that would be a new
+# mechanism rather than the nutrition the ruling asked for.  The practical
+# exposure is small -- ten mana for `lev * 3 / 5` food, against a drain of one
+# food a player turn, so a Vampire biting empty air runs out of mana long
+# before it outpaces its own digestion -- but it is real and it is written
+# down rather than discovered.
 power:drink blood
 power-level:5
 power-cost:10
@@ -873,6 +899,9 @@ power-expr:B:PLAYER_LEVEL:+ 0
 power-effect:HEAL_HP
 power-dice:$B
 power-expr:B:PLAYER_LEVEL:/ 2
+power-effect:NOURISH:INC_BY
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:* 3 / 5
 
 # Not living. Nothing gets into it, and the cold gets to it.
 name:Golem

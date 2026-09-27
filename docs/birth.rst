@@ -419,11 +419,23 @@ Vampire
 
     So a Vampire travels by night, goes to ground by day, and spends a scroll
     when it is caught between the two.
-  - **Food barely works.** A ration feeds a Vampire a tenth of what it feeds
-    anyone else. You are not meant to live on it; you are meant to drink blood,
-    which is the racial power it gets at level 5. It
-    strikes a monster for your character level in nether damage and heals you
-    for half that level.
+  - **Food barely works, and blood does.** A ration feeds a Vampire a tenth of
+    what it feeds anyone else. You are not meant to live on it; you are meant
+    to drink blood, which is the racial power it gets at level 5. It strikes a
+    monster for your character level in nether damage, heals you for half that
+    level, and — this is the part that makes the diet a trade rather than a
+    punishment — it **feeds you**.
+
+    How much is worth knowing, because it decides how you play the race. A bite
+    is worth three fifths of your character level, where a ration is worth
+    thirty to anyone else and three to you. So at level 20 a bite feeds you as
+    much as four rations would, and at 50 as much as ten — a full ration's
+    worth, which is the most a bite can ever give. A Vampire that fights is a
+    Vampire that eats, and one that avoids fights goes hungry no matter what it
+    is carrying.
+
+    Until 3.124.22 the bite did not feed at all, which left the race with the
+    penalty and none of the remedy.
   - **Light hurts it** in the ordinary way as well: light-based attacks land
     harder on a Vampire than on anything else.
 

@@ -503,6 +503,105 @@ static int test_a_vampire_gets_little_from_food(void *state) {
 	ok;
 }
 
+/**
+ * And biting is how it eats (DEC-108).
+ *
+ * `BLOOD_DIET` gives a Vampire a tenth of what food is worth, which is the
+ * archive's penalty; the archive's remedy is that a successful bite feeds it,
+ * and we shipped the penalty without the remedy. The rule is `100 food per
+ * point of damage, capped at one ration` -- on our 0-100 scale where a ration
+ * is 30 that is `damage * 3 / 5`, and our bite does `PLAYER_LEVEL`.
+ *
+ * Three things, and the third is the one the ruling was about. The bite feeds
+ * at all; it feeds by the archive's amount and not a token; and it feeds a
+ * Vampire **better than food does**, which is what makes the diet a trade
+ * rather than a penalty. A test that only checked "food went up" would pass for
+ * a single point.
+ */
+static int test_a_vampire_feeds_by_biting(void *state) {
+	struct player_power *power;
+	int before, gained, from_a_ration;
+
+	require(player_make_simple("Vampire", "Mage", "Tester"));
+	prepare_next_level(player);
+	on_new_level();
+
+	power = (struct player_power *) player->race->powers;
+	notnull(power);
+	require(streq(power->name, "drink blood"));
+
+	player->lev = player->max_lev = 20;
+	player->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
+	update_stuff(player);
+	player->msp = 5000;
+
+	/*
+	 * Hungry, so there is room to be fed, and re-set before each try: a
+	 * character at Full is not fed by anything and the test would read that
+	 * as the power doing nothing.
+	 */
+	{
+		int try;
+
+		/*
+		 * Bounded, and that is not a formality.
+		 *
+		 * This was `for (;;)` with a break on being fed, because the power can
+		 * fail its roll and a failure is not what is being measured. With the
+		 * nutrition taken out -- which is the first thing falsification does --
+		 * it is never fed, so the loop never ended and the suite hung instead
+		 * of failing. That is the `ui/shimmer` shape that cost a Windows runner
+		 * six hours, written fresh. At 9% failure, sixty tries miss only once
+		 * in 10^63.
+		 */
+		gained = 0;
+		for (try = 0; try < 60 && gained <= 0; try++) {
+			player->csp = player->msp;
+			player->chp = player->mhp;
+			player_set_timed(player, TMD_FOOD, 20, false, false);
+			before = player->timed[TMD_FOOD];
+
+			require(player_use_power(player, power, 0));
+
+			gained = player->timed[TMD_FOOD] - before;
+		}
+
+		if (gained <= 0) {
+			printf("  sixty bites fed the Vampire nothing at all\n");
+			require(false);
+		}
+	}
+
+	/* The archive's amount, in our units: lev * 3 / 5, so 12 at level 20. */
+	/*
+	 * The archive's amount, in our units: `lev * 3 / 5`, so 12 at level 20 --
+	 * and `NOURISH` multiplies the data file's figure by `food_value`, since
+	 * the file speaks in percent of the bar and the timer counts hundredths.
+	 * A ration is 30 in the file and 3000 here, so a bite at 20 is 40% of a
+	 * ration, which is what the archive's curve gives at that level.
+	 *
+	 * That it is 1200 rather than 120 is also the proof that the blood diet
+	 * does not bite the bite: the tenth applies to `tval_is_edible` objects
+	 * and a racial power has none.
+	 */
+	eq(gained, (player->lev * 3 / 5) * z_info->food_value);
+
+	/*
+	 * And it beats eating. `fed_as()` measures what a ration is worth to each
+	 * race, so this is the comparison the diet is about: a Vampire that bites
+	 * does better than a Vampire that eats, by a wide margin rather than a
+	 * point or two.
+	 */
+	from_a_ration = fed_as("Vampire");
+	require(from_a_ration > 0);
+	if (gained <= from_a_ration * 2) {
+		printf("  a bite is worth %d and a ration %d; biting is supposed to "
+			   "be how a Vampire eats\n", gained, from_a_ration);
+		require(false);
+	}
+	ok;
+}
+
 /*
  * And it burns in the sun
  * ([dungeon.c:1014](../archive/zangband/src/dungeon.c#L1014)): a point a turn
@@ -1847,6 +1946,7 @@ struct test tests[] = {
 			test_every_level_gate_actually_opens },
 	{ "a-vampire-gets-little-from-food",
 			test_a_vampire_gets_little_from_food },
+	{ "a-vampire-feeds-by-biting", test_a_vampire_feeds_by_biting },
 	{ "the-sun-burns-a-vampire-outdoors",
 			test_the_sun_burns_a_vampire_outdoors },
 	{ "a-vampire-can-put-out-the-daylight",

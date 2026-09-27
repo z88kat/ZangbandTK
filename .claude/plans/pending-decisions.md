@@ -35,7 +35,14 @@ authoritative where nobody decided otherwise.
 
 ---
 
-## 2. The Vampire's bite: range, damage, and the food it does not give
+## 2. ~~The Vampire's bite: range, damage, and the food it does not give~~ — PART DECIDED
+
+**Ruled 27 September 2026: add the nutrition; range and damage stay.** The
+nutrition is built in 3.124.22, recorded as DEC-108. The range and the damage
+curve remain as ours, deliberately and by the same ruling. Original entry
+follows.
+
+### The original entry
 
 **The choice.** Three separable divergences. They can be taken apart.
 

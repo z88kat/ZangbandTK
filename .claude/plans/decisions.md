@@ -5573,3 +5573,53 @@ often and a broken effect shows both never. Falsified three ways: removing the
 gate reports the unique affected 34-40 times in 40; gating stun as well fails
 the test that says stun is *not* gated; moving the gate before the `NOFAIL`
 check fails the test that a hurt unique still flees.
+
+---
+
+**DEC-108 — A Vampire is fed by biting.** (PLR-01, 3.124.22. Settles the
+nutrition half of item 2 of `pending-decisions.md`.)
+
+The project owner's ruling: **add the nutrition, and only that.** The range and
+the damage curve stay as ours.
+
+**Why the nutrition was the hole.** `player-flags:BLOOD_DIET` gives a Vampire a
+tenth of what food is worth, which is the archive's penalty. The archive's
+*remedy* is that a successful bite feeds it -- `food += MIN(5000, 100 * damage)`
+([racial.c:548](../archive/zangband/src/racial.c#L548)) -- and we shipped the
+penalty without the remedy, leaving the race eating Remove Hunger scrolls.
+
+**The archive's rule, converted rather than approximated.** A ration is 5000 on
+the archive's 15000 scale and 30 on our 0-100 one, which is the same proportion,
+so "a hundred food per point of damage, capped at one ration" becomes
+`damage * 30 / 50`. Our bite does `PLAYER_LEVEL`, so the expression is
+`lev * 3 / 5` -- and it reaches exactly one ration at level 50 and cannot
+exceed it, so the archive's cap needs no separate clause.
+
+**What it is worth, which is the question that was asked.** The drain is one per
+player turn at normal speed. A ration feeds a Vampire 3, so three turns. A bite
+feeds it 3 at level 5, 7 at 12, 12 at 20, 18 at 30 and 30 at 50 -- **four
+rations' worth at level 20 and ten at 50**. So a Vampire that fights is fed and
+one that avoids fights is not, which is the loop the race is built around. The
+bite is not itself reduced by the diet: the tenth applies to `tval_is_edible`
+objects and a racial power has none, which the test pins by asserting the full
+amount rather than a tenth of it.
+
+**One divergence, and it is a limitation rather than a choice.** The archive
+feeds only inside `if (drain_gain_life(dir, dummy))`. Our effect chain has no
+way to make one effect depend on another's success -- `effect_do()` runs them in
+order and ORs the results -- so ours feeds whether or not the bolt finds
+anything. Building that dependency would be a new mechanism rather than the
+nutrition the ruling asked for. The exposure is small: ten mana buys
+`lev * 3 / 5` food against a drain of one a turn, so a Vampire biting empty air
+runs out of mana long before it outpaces its own digestion. Written into
+`p_race.txt` beside the power as well, so it is found rather than discovered.
+
+**Falsification caught a hang in the new test, not a fault in the change.** The
+test retried the bite until it was fed, because the power can fail its roll --
+as `for (;;)`. With the nutrition removed it is never fed, so the loop never
+ended and the suite *hung* instead of failing. That is the `ui/shimmer` shape
+from DEC-104 written fresh, four days after fixing it, and it is the second
+unbounded-retry hang this month. It is now sixty tries, which at a 9% failure
+rate misses once in 10^63. Falsified twice after that: removing the nutrition
+reports "sixty bites fed the Vampire nothing at all", and replacing the rule
+with a token point fails the exact-amount assertion.
