@@ -88,6 +88,31 @@ drop. There is no way to seek this out — you cannot tell in advance which
 monsters were wanted, and the same monster is not always wanted twice — but it
 is a reason to read what the dead say rather than scroll past it.
 
+Uniques cannot be put out of the fight
+--------------------------------------
+
+A unique monster is **never** put to sleep, slowed, confused or frightened by
+anything you do to it. Not rarely, not with a good saving throw — never, at any
+character level, from any spell, wand, staff, scroll or racial power. It is
+Zangband's rule and it is deliberate: the unique is the fight the game means you
+to have, and none of those four is a way around it.
+
+That is a change from Angband, which gives a unique a stiff saving throw against
+all four rather than an exemption, so a low-level unique there can be slept by a
+determined caster. If you have played 4.2 and expect *Sleep Monsters* to work on
+Bullroarer, it will not.
+
+Four things this does **not** cover, and they are the ones worth knowing:
+
+- **Stunning and holding still work**, because Zangband does not exempt uniques
+  from those. A unique can be stunned by a heavy blow like anything else.
+- **Damage still breaks its nerve.** A unique badly enough hurt flees, the same
+  as any other monster. The immunity is to being *frightened by an effect*, not
+  to fear itself, and a wounded unique running for a corridor is ordinary play.
+- **It is not protection from harm.** Everything that does damage still does it.
+- **Non-uniques are unchanged** — they keep the graded saving throw, so the same
+  spell that bounces off a unique may well work on its escort.
+
 Monsters that will not be moved
 -------------------------------
 

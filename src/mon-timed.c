@@ -43,12 +43,13 @@ static struct mon_timed_effect {
 	bool gets_save;
 	enum stack_type stacking;
 	int flag_resist;
+	bool uniq_immune;
 	int max_timer;
 	int message_begin;
 	int message_end;
 	int message_increase;
 } effects[] = {
-	#define MON_TMD(a, b, c, d, e, f, g, h) { #a, b, STACK_##c, d, e, f, g, h },
+	#define MON_TMD(a, b, c, d, e, f, g, h, i) { #a, b, STACK_##c, d, e, f, g, h, i },
 	#include "list-mon-timed.h"
 	#undef MON_TMD
 };
@@ -101,6 +102,31 @@ static bool does_resist(const struct monster *mon, int effect_type, int timer, i
 	/* Sometimes the game can override the monster's innate resistance */
 	if (flag & MON_TMD_FLG_NOFAIL) {
 		return false;
+	}
+
+	/*
+	 * A unique is simply not subject to some of these (ZangbandTK, DEC-107).
+	 *
+	 * Zangband gates `GF_OLD_SLEEP`, `GF_OLD_SLOW`, `GF_OLD_CONF` and
+	 * `GF_TURN_ALL` on `FLAG(r_ptr, RF_UNIQUE)` before any other test
+	 * ([spells1.c](../archive/zangband/src/spells1.c)), so a unique is never
+	 * slept, slowed, confused or frightened by an effect, at any character
+	 * level. 4.2 replaced those flat immunities with the graded saving throw
+	 * below, which gives a unique a second roll and no more; the project owner
+	 * ruled for Zangband's model knowingly, and the decision records why.
+	 *
+	 * *After* the `NOFAIL` return above, and that placement is the whole of
+	 * how morale is kept working. `monster_scared_by_damage()` is the one
+	 * caller that passes `NOFAIL`, and it is a monster's nerve breaking rather
+	 * than a spell landing -- uniques flee when badly hurt in both games, and
+	 * gating this earlier would have stopped that.
+	 *
+	 * *Before* the flag check, so a unique is never used to teach the player
+	 * that its race has `RF_NO_SLEEP`. The archive learns that flag inside the
+	 * branch a unique never reaches either.
+	 */
+	if (effect->uniq_immune && monster_is_unique(mon)) {
+		return true;
 	}
 
 	/* Check resistances from monster flags */

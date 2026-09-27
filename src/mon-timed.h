@@ -34,7 +34,7 @@
  * Monster Timed Effects
  */
 enum {
-	#define MON_TMD(a, b, c, d, e, f, g, h) MON_TMD_##a,
+	#define MON_TMD(a, b, c, d, e, f, g, h, i) MON_TMD_##a,
 	#include "list-mon-timed.h"
 	#undef MON_TMD
 };

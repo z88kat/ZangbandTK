@@ -5507,3 +5507,69 @@ reaching at 25; the low band dropped reports the contact form missing.
 The archive gives uniques flat immunity to sleep, slow, confusion and fear;
 ours gives them a double saving throw. That is the model rather than this race,
 and it is item 9 of `pending-decisions.md`.
+
+---
+
+**DEC-107 — A unique cannot be slept, slowed, confused or frightened.**
+(3.124.21. Settles item 9 of `pending-decisions.md`.)
+
+The project owner's ruling: restore Zangband's flat immunity for all four.
+
+**This is a knowing divergence from upstream, not a gap.** Zangband gates
+`GF_OLD_SLEEP`, `GF_OLD_SLOW`, `GF_OLD_CONF` and `GF_TURN_ALL` on
+`FLAG(r_ptr, RF_UNIQUE)` before any other test
+([spells1.c](../archive/zangband/src/spells1.c)). 4.2 **deliberately** replaced
+those flat immunities with a graded saving throw, and the port inherited 4.2's
+model without anybody choosing it. So this is one of the places the two parents
+genuinely disagree rather than one being silent, and we are choosing Zangband
+over Angband with the owner's ruling. It will read as a regression to anyone
+who knows 4.2, which is why it is written down here and in the manual in those
+terms.
+
+**What it was worth in practice.** Against Bullroarer the Hobbit (depth 5, and
+one of the few low uniques carrying none of the four resist flags), 4.2's model
+let a strong effect land **34 to 40 times in 40** -- the graded save at that
+level is the monster's own level, five, doubled to about a ten per cent resist.
+So "a unique gets a second roll" was in practice "a unique is slept".
+
+**Blast radius, checked before building.**
+
+* `does_resist()` is the single choke point. Every `mon_inc_timed()`,
+  `mon_set_timed()` and `mon_dec_timed()` path reaches it, so player spells,
+  wands, staves, scrolls, racial and class powers, and monster-on-monster casts
+  are all covered by one gate and cannot diverge from each other.
+* Nothing in quest, vault or level-generation logic reads these four timers, so
+  no content depends on a unique being sleepable.
+* **The borg already believed this.** Its danger model excludes uniques from
+  sleep reasoning (`borg-danger.c:2467`), and all four of its attack valuations
+  -- `BORG_ATTACK_OLD_SLEEP`, `OLD_SLOW`, `OLD_CONF`, `TURN_ALL` -- already test
+  `RF_UNIQUE`. So the borg has been modelling the archive's rule all along and
+  the game was the thing out of step. No nightly behaviour change is expected;
+  if anything this removes a mismatch where the borg occasionally got a result
+  it had not planned for.
+
+**Placement is load-bearing, in two directions.** The gate sits *after* the
+`MON_TMD_FLG_NOFAIL` return and *before* the resist-flag check.
+
+* After `NOFAIL`, because the one caller that passes it is
+  `monster_scared_by_damage()` -- a monster's nerve breaking rather than a spell
+  landing. Uniques flee when badly hurt in both games, and a gate one line
+  earlier would have stopped that silently.
+* Before the flag check, so a unique is never used to teach the player that its
+  race has `RF_NO_SLEEP`. The archive learns that flag inside a branch a unique
+  never reaches either.
+
+**Scoped by a table column, not a blanket check**, because `MON_TMD_FAST` is in
+the same table and a unique immune to *haste* would be the change doing harm.
+`uniq_immune` is true for SLEEP, SLOW, CONF and FEAR and false for everything
+else -- stunning and holding included, which Zangband does not gate.
+
+**The test measures across attempts, because it has to.** "Immune" and
+"resisted" are indistinguishable from a single attempt, so `monster/uniques`
+pairs the unique with a control -- the large kobold, also depth 5, also carrying
+none of the four flags -- and drives both through the same loop forty times.
+Immunity is "the unique never, the control often"; a missing gate shows both
+often and a broken effect shows both never. Falsified three ways: removing the
+gate reports the unique affected 34-40 times in 40; gating stun as well fails
+the test that says stun is *not* gated; moving the gate before the `NOFAIL`
+check fails the test that a hurt unique still flees.

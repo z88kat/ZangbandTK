@@ -899,6 +899,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     monster/restele.c
     monster/shapechanger.c
     monster/speech.c
+    monster/uniques.c
     object/alloc.c
     object/attack.c
     object/imported.c

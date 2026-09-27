@@ -194,7 +194,12 @@ currently working.
 
 ---
 
-## 9. Uniques and our timed-effect saving throw
+## 9. ~~Uniques and our timed-effect saving throw~~ — DECIDED
+
+**Ruled 27 September 2026: restore the archive's flat immunity, all four
+effects.** Built in 3.124.21, recorded as DEC-107. Original entry follows.
+
+### The original entry
 
 **The choice.** Whether a unique monster can be slept, slowed, confused or
 frightened at all. This came out of the Sprite decision (DEC-106) and is wider
