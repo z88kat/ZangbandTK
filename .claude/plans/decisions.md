@@ -5671,3 +5671,54 @@ design**, which is what makes it the accident and makes this ruling narrow.
 Falsified twice: removing the exclusion puts wall-walking on 41 of 1000 egos,
 and widening it to telepathy fails the test that says the rest of the pool is
 untouched.
+
+---
+
+**DEC-110 — The Draconian's Druid, Necromancer and Blackguard keep the
+fire-and-cold fallback.** (PLR-01, settles item 7 of `pending-decisions.md`.
+Nothing built.)
+
+The project owner's ruling: leave it.
+
+Zangband has eleven classes and its breath switch
+([racial.c:383](../archive/zangband/src/racial.c#L383)) covers all eleven, so it
+never needed a default. The Druid, the Necromancer and the Blackguard are 4.2's
+and have no archive answer; they fall through to fire and cold, which is what
+the archive's own code would do with a class it does not know.
+
+**Why leaving it is the answer rather than the absence of one.** Giving those
+three bespoke element pairs would be us designing rather than importing, and
+there is no complaint attached: fire and cold is the pair every Draconian
+starts with and a perfectly reasonable breath for all three. The fallback is
+already documented where it happens (`p_race.txt`, beside the bands) and in
+DEC-87. This entry exists so that a later reader finds a ruling rather than an
+oversight.
+
+Revisit if somebody plays a Draconian Necromancer far enough to find it dull.
+That is a play report, not a code review finding.
+
+---
+
+**DEC-111 — The road-to-gate drift stays as it is.** (WLD-08, settles item 8 of
+`pending-decisions.md`. Nothing built.)
+
+The project owner's ruling: leave it.
+
+DEC-101 fixed roads arriving at an ungated wall, which was the defect. What
+remains is drift: the gate is cut at the road's block centre and then walked
+along the wall past anything with a shop behind it. Measured over eighteen
+worlds and 426 arrivals: **355 land on the gate exactly, 406 are within one
+grid, and the two worst are 8 and 10**, both on a 132x34 great city where the
+road meets the wall near a corner. Before DEC-101 the routine case was twelve
+to twenty-six.
+
+**Why leaving it is right.** The number that mattered -- roads arriving at a
+blank wall -- is zero. Ten grids on the largest town, once in four hundred, is
+a short walk along a wall and not a dead end. Closing it means making the
+cutter move a shop or refuse to place one behind a road's column, which is a
+change to town layout in exchange for one road in 426, and risks the thing that
+is currently working.
+
+The measurement is in DEC-101 and the tolerance in `game/wild`'s
+`every-road-to-a-town-has-a-gate` is set at one block, which admits this drift
+deliberately. Nothing here is unexamined.

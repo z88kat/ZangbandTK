@@ -138,7 +138,12 @@ addition *recorded as a decision* — declining counts.
 
 ---
 
-## 6. Open question 5 — `PASS_WALL` in the random-power pool
+## 6. ~~Open question 5 — `PASS_WALL` in the random-power pool~~ — DECIDED
+
+**Ruled 28 September 2026: take it out of the pool.** Built in 3.124.23,
+recorded as DEC-109. Original entry follows.
+
+### The original entry
 
 **The choice.** Whether a randomly generated ego may grant permanent wall-walking.
 
@@ -157,7 +162,11 @@ depends on it.
 
 ---
 
-## 7. The Draconian's Druid, Necromancer and Blackguard breath
+## 7. ~~The Draconian's Druid, Necromancer and Blackguard breath~~ — DECIDED
+
+**Ruled 28 September 2026: leave it.** Recorded as DEC-110. Nothing built. Original entry follows.
+
+### The original entry
 
 **The choice.** Whether to leave three classes on the fallback or give them
 entries.
@@ -179,7 +188,11 @@ plays a Draconian Necromancer and finds it dull.
 
 ---
 
-## 8. The road-to-gate drift
+## 8. ~~The road-to-gate drift~~ — DECIDED
+
+**Ruled 28 September 2026: leave it.** Recorded as DEC-111. Nothing built. Original entry follows.
+
+### The original entry
 
 **The choice.** Whether ten grids is close enough.
 
