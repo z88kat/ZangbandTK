@@ -243,6 +243,14 @@ static bool mutation_allowed(const struct player *p, const struct mutation *mut)
  * takes hypnotic gaze six times in ten, and a Beastman polymorph self only one
  * time in ten. Both figures live in `p_race.txt` beside the mutation they
  * favour.
+ *
+ * The comparison is strict, and that is not a slip. Zangband writes
+ * `randint1(10) < 7` for the Vampire and `randint1(10) < 2` for the Beastman
+ * ([mutation.c:535](../archive/zangband/src/mutation.c#L535)), so the stored
+ * number is one above the tenths it grants. Written `<=` it reads as seven
+ * times in ten and two, which is what this did until DEC-114 -- the manual,
+ * both comments here and the archive all said six and one while the code did
+ * seven and two.
  */
 const struct mutation *mutation_roll(const struct player *p)
 {
@@ -273,7 +281,7 @@ const struct mutation *mutation_roll(const struct player *p)
 			mutation_by_name(p->race->mutation_affinity);
 
 		if (favoured && mutation_allowed(p, favoured)
-				&& randint1(10) <= p->race->mutation_chance) {
+				&& randint1(10) < p->race->mutation_chance) {
 			chosen = favoured;
 		}
 	}

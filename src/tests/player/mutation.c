@@ -228,29 +228,57 @@ static int test_iron_skin_sheds_all_three(void *state) {
 }
 
 /**
- * A race with an affinity gets its own mutation more often than chance.
+ * A race affinity grants its mutation at the rate the archive gives (DEC-114).
  *
- * PLR-38, and the numbers are not uniform: a Vampire takes hypnotic gaze six
- * times in ten and a Beastman polymorph self only one time in ten, which the
- * spoiler does not say. Sampled, because the override is a roll on top of a
- * roll.
+ * Not merely "more often than chance" -- the rate itself, because the rate was
+ * wrong. `mutation_roll` compared `randint1(10) <= chance`, which reads the
+ * stored 7 and 2 as seven times in ten and two. Zangband writes
+ * `randint1(10) < 7` and `randint1(10) < 2`
+ * ([mutation.c:535](../archive/zangband/src/mutation.c#L535)), the manual says
+ * six and one, and both comments on the port's own code said six and one while
+ * the code did seven and two. The test that stood here could not tell the two
+ * apart: it allowed 500 to 800 gazes in 1000, and 600 and 700 both sit inside
+ * that. It passed on the day the rate was wrong.
  *
- * The margin is what discriminates. Hypnotic gaze has a weight of 2 out of
- * 193, so an unweighted character would draw it about one time in a hundred;
- * a Vampire should draw it more than half the time.
+ * === Sizing ===
+ *
+ * The band has to separate 60 per cent from 70, so it is derived from the
+ * measured rates rather than the nominal ones. The affinity roll is not the
+ * only way in: hypnotic gaze can also come up on the weighted roll underneath,
+ * which lifts the true figures slightly. Measured over 200,000 rolls each:
+ *
+ *     correct (`<`)    gaze 0.60447    polymorph 0.10558
+ *     wrong   (`<=`)   gaze 0.70415    polymorph 0.20481
+ *
+ * At 3000 rolls the correct rate sits at least 5.4 sigma inside both edges of
+ * each band, and the wrong rate falls 6.1 sigma (gaze) and 9.3 sigma
+ * (polymorph) beyond the upper edge. So this is a decision, not a coin toss,
+ * and it fails if the comparison is loosened back.
+ *
+ * The lower edge is doing work too: with no affinity at all, gaze is weight 2
+ * of 193 and would land near 30 rather than 317.
  */
-static int test_a_race_affinity_beats_the_roll(void *state) {
+static int test_a_race_affinity_grants_at_the_archive_rate(void *state) {
 	const struct player_race *keep = player->race;
-	struct player_race *r;
-	int i, gazes = 0;
+	struct player_race *r, *vampire = NULL, *beastman = NULL;
+	int i, gazes = 0, polys = 0;
+	const int n = 3000;
 
 	for (r = races; r; r = r->next) {
-		if (streq(r->name, "Vampire")) player->race = r;
+		if (streq(r->name, "Vampire")) vampire = r;
+		if (streq(r->name, "Beastman")) beastman = r;
 	}
-	notnull(player->race);
-	require(player->race->mutation_affinity);
+	notnull(vampire);
+	notnull(beastman);
+	require(vampire->mutation_affinity);
+	require(beastman->mutation_affinity);
 
-	for (i = 0; i < 1000; i++) {
+	/* The stored numbers are the archive's, and are not what is granted. */
+	eq(vampire->mutation_chance, 7);
+	eq(beastman->mutation_chance, 2);
+
+	player->race = vampire;
+	for (i = 0; i < n; i++) {
 		const struct mutation *m;
 
 		flag_wipe(player->mutations, MUT_SIZE);
@@ -258,8 +286,22 @@ static int test_a_race_affinity_beats_the_roll(void *state) {
 		if (m && streq(m->name, "HYPN_GAZE")) gazes++;
 	}
 
-	require(gazes > 500);
-	require(gazes < 800);
+	player->race = beastman;
+	for (i = 0; i < n; i++) {
+		const struct mutation *m;
+
+		flag_wipe(player->mutations, MUT_SIZE);
+		m = mutation_roll(player);
+		if (m && streq(m->name, "POLYMORPH")) polys++;
+	}
+
+	/* Six times in ten, not seven: 1813 expected, 2112 if it were `<=`. */
+	require(gazes > 1660);
+	require(gazes < 1960);
+
+	/* One time in ten, not two: 317 expected, 614 if it were `<=`. */
+	require(polys > 224);
+	require(polys < 410);
 
 	player->race = (struct player_race *)keep;
 	ok;
@@ -1796,7 +1838,8 @@ struct test tests[] = {
 	{ "cancelling-mutations-drive-each-other-out",
 	  test_cancelling_mutations_drive_each_other_out },
 	{ "iron-skin-sheds-all-three", test_iron_skin_sheds_all_three },
-	{ "a-race-affinity-beats-the-roll", test_a_race_affinity_beats_the_roll },
+	{ "a-race-affinity-grants-at-the-archive-rate",
+	  test_a_race_affinity_grants_at_the_archive_rate },
 	{ "a-beastman-is-born-mutated", test_a_beastman_is_born_mutated },
 	{ "an-unknown-mutation-is-survivable",
 	  test_an_unknown_mutation_is_survivable },

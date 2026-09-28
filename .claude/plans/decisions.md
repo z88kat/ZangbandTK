@@ -5838,3 +5838,76 @@ the borg was fine. A gate that reads its inputs by pattern can fail in a way
 that accuses the thing it is measuring, and the more specific the message the
 more convincing the accusation. The nightly's own arithmetic had no test until
 now; it does now, and it is cheap.
+
+---
+
+**DEC-114 — The race mutation affinities granted seven and two tenths, not six
+and one.** (PLR-38, 3.124.26. Steven's ruling: "Looks like we got the mutation
+rate wrong in the code. We should correct it.")
+
+`mutation_roll` overrode the weighted roll with the race's favoured mutation on
+`randint1(10) <= p->race->mutation_chance`. `randint1(10)` is 1 to 10
+inclusive, so with the stored 7 a Vampire took hypnotic gaze seven times in ten
+and with the stored 2 a Beastman took polymorph self two times in ten. The
+intended figures are six and one.
+
+**Three sources agree, and they were all already in the tree.**
+
+1. The manual, `docs/`, says six and one. Left untouched -- it was right.
+2. Two comments on the port's own code say six and one:
+   `src/init.c:3449` ("`mutation-affinity:HYPN_GAZE:7` is a Vampire: when a
+   mutation is rolled, six times in ten it is that one instead") and
+   `src/player-mutation.c:243`.
+3. The archive, which is authoritative under DEC-20, writes the comparison
+   strict, with the same literals:
+
+```c
+if (p_ptr->rp.prace == RACE_VAMPIRE && ... && (randint1(10) < 7))
+else if (p_ptr->rp.prace == RACE_BEASTMAN && ... && (randint1(10) < 2))
+```
+
+   ([mutation.c:535](../archive/zangband/src/mutation.c#L535))
+
+So the stored number is one above the tenths it grants, and the operator
+carries that. **Fixed the operator, not the data and not the manual**, per the
+ruling.
+
+**Measured, not reasoned.** 200,000 rolls per race, each operator:
+
+| | operator | HYPN_GAZE | POLYMORPH |
+|---|---|---|---|
+| before | `<=` | 0.70415 | 0.20481 |
+| after | `<` | 0.60447 | 0.10558 |
+
+The figures sit slightly above the nominal 0.60 and 0.10 because the favoured
+mutation can also come up on the weighted roll underneath.
+
+**The shape is not copied anywhere else.** Every `randint1(N) <= x` in `src`
+was checked against its intent: two in `player-attack.c` are vanilla crit code
+where `randint1(den) <= num` is the correct idiom for num/den; one in
+`effect-handler-general.c` is vanilla enchanting with the `<=` documented as
+deliberate; one in `player-virtue.c` matches the archive's own `<=`. This was
+the only instance.
+
+**No test pinned the wrong rate, but the test that stood there could not tell.**
+`a-race-affinity-beats-the-roll` allowed 500 to 800 gazes in 1000, and both 600
+and 700 sit inside that. It passed on the day the rate was wrong, and it passed
+under both operators when checked. Replaced with
+`a-race-affinity-grants-at-the-archive-rate`, which asserts the stored 7 and 2,
+then samples 3000 rolls per race against bands derived from the measurements
+above: the correct rate sits at least 5.4 sigma inside both edges, the wrong
+rate falls 6.1 sigma (gaze) and 9.3 sigma (polymorph) outside. It now covers the
+Beastman, which nothing sampled before.
+
+Falsified three ways: flipping the operator back fails it on
+`gazes < 1960` across five seeds; removing the affinity fails the notnull guard;
+zeroing the stored chance fails the `eq` guard. Twenty-five seeds clean with the
+fix. The lower rate edge is defence in depth rather than independently
+falsifiable -- the stored-value guards fire first -- and is justified by
+arithmetic: with no affinity, gaze is weight 2 of 193 and lands near 30.
+
+**Separate finding, not fixed.** The archive gives five races an affinity;
+`p_race.txt` has four. The Imp's `HORNS:7` is missing, though both the Imp
+(`p_race.txt:1080`) and HORNS (`mutation.txt:675`) exist. That is a data gap
+rather than this defect, and it is outside the ruling, so it is recorded here
+and left for a decision.
