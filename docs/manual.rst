@@ -19,7 +19,7 @@ explain the wilderness, the towns, pets, mutations, patrons or the realms. Those
 have pages of their own.
 
 :doc:`birth` is the furthest from its inherited form: it carries the full race
-and class tables for all twenty races and fourteen classes, and the racial
+and class tables for all twenty-eight races and fourteen classes, and the racial
 powers, martial arts, psionics and patrons sections are this game's own.
 
 .. toctree::

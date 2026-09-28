@@ -98,8 +98,8 @@ New mechanism. Angband has no such thing: a race there is a set of adjustments
 and flags, and everything a character *does* comes from a spell, an object or a
 shape.
 
-Eight of the nine new races can do something no class will ever teach — press
-``N`` for the list. An Amberite shifts into shadow and, thirty levels later,
+Twenty-two of the twenty-eight races can do something no class will ever teach —
+press ``N`` for the list. An Amberite shifts into shadow and, thirty levels later,
 walks the Pattern. A Draconian breathes, a Golem turns to stone, a Yeek screams,
 a Half-Titan sizes up what it is looking at.
 

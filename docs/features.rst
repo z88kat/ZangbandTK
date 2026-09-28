@@ -135,16 +135,17 @@ See :doc:`monsters` and :doc:`objects` for the detail.
 Races, classes and racial powers
 --------------------------------
 
-- **Twenty races**, up from Angband's eleven. Amberite, Draconian, Vampire,
-  Mindflayer, Golem, Sprite, Half-Titan, Yeek and Beastman. Curated rather than
-  imported wholesale, and four of Zangband's were turned down on the evidence.
+- **Twenty-eight races**, up from Angband's eleven. Amberite, Draconian,
+  Vampire, Mindflayer, Golem, Sprite, Half-Titan, Yeek and Beastman among them.
+  Curated rather than imported wholesale, and four of Zangband's were turned
+  down on the evidence. The list is ``lib/gamedata/p_race.txt``.
 - **Experience cost as a real dial.** Angband flattened nearly every race to 120
   per cent; Zangband ran 100 to 255 and priced races with it. Zangband's figures
   are kept, so a Half-Titan is genuinely slow to level.
-- **Racial powers**, on ``N`` — a mechanism Angband has no equivalent of. Eight
-  of the nine new races can do something no class teaches, from a Vampire
-  drinking blood at level 5 to an Amberite walking the Pattern at 40. Paid for
-  in mana, or in hit points where there is none.
+- **Racial powers**, on ``N`` — a mechanism Angband has no equivalent of.
+  Twenty-two of the twenty-eight races can do something no class teaches, from a
+  Vampire drinking blood at level 5 to an Amberite walking the Pattern at 40.
+  Paid for in mana, or in hit points where there is none.
 - **The Monk**, and **martial arts** with it: seventeen unarmed techniques,
   eight strikes a turn at the top, and the only class in the game that is
   punished for wearing armour. Angband's answer for an empty weapon slot is one

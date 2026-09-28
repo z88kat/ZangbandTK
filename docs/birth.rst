@@ -141,8 +141,10 @@ sought after.
 Races
 =====
 
-There are twenty different races that you can choose to play in ZangbandTK —
-Angband's eleven, and nine more brought over from Zangband. Each race has its own
+There are twenty-eight different races that you can choose to play in
+ZangbandTK — Angband's eleven, and seventeen more brought over from Zangband.
+The list itself lives in ``lib/gamedata/p_race.txt``, which is what the birth
+menu is built from. Each race has its own
 adjustments to a character's stats and abilities. Most races also have intrinsic
 abilities.  The bonuses to statistics and the experience penalty will be
 displayed next to the races as you move to select one.

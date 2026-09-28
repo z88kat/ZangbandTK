@@ -284,8 +284,9 @@ Cast a spell (``m`` in both keysets)
   some light present. This command takes some energy.
 
 Use a power (``N``) or Use a power (``&``)
-  Some characters can do things no spellbook teaches. Eight of the twenty races
-  carry something they can do by blood — an Amberite walks into shadow, a
+  Some characters can do things no spellbook teaches. Most of the races —
+  twenty-two of the twenty-eight — carry something they can do by blood, an
+  Amberite walks into shadow, a
   Draconian breathes, a Vampire drinks — and the Mindcrafter's entire craft is a
   list of twelve psionic powers rather than a realm of magic. This command lists
   everything your character can call on from either source, what each costs, and
