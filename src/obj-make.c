@@ -405,6 +405,26 @@ void ego_apply_magic(struct object *obj, int level)
 		of_on(obj->flags, get_new_attr(obj->flags, newf));
 	} else if (kf_has(obj->ego->kind_flags, KF_RAND_POWER) || (pick == 1)) {
 		create_obj_flag_mask(newf, false, OFT_PROT, OFT_MISC, OFT_MAX);
+
+		/*
+		 * Not walking through walls (ZangbandTK, DEC-109).
+		 *
+		 * `OF_PASS_WALL` is `subtype:misc ability`, which is what this pool
+		 * draws from, so any ego with `RAND_POWER` could roll permanent
+		 * wall-walking -- far the largest power in a pool whose next biggest
+		 * is telepathy, and an accident of a new flag landing in an old
+		 * grouping rather than anything designed.
+		 *
+		 * Removed here rather than by giving the flag a different subtype,
+		 * and the difference matters: `OFT_MISC` is read by four other
+		 * places. `obj-power.c` prices misc abilities as a group,
+		 * `obj-info.c` and `ui-knowledge.c` use it to decide what a player is
+		 * told about an item. Reclassifying would have taken "lets you walk
+		 * through walls" out of the item description to fix the loot table,
+		 * which is a worse trade than one line here.
+		 */
+		of_off(newf, OF_PASS_WALL);
+
 		of_on(obj->flags, get_new_attr(obj->flags, newf));
 	} else if (kf_has(obj->ego->kind_flags, KF_RAND_BASE_RES) || (pick > 1)) {
 		/* Get a base resist if available, mark it as random */

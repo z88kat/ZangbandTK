@@ -5623,3 +5623,51 @@ unbounded-retry hang this month. It is now sixty tries, which at a 9% failure
 rate misses once in 10^63. Falsified twice after that: removing the nutrition
 reports "sixty bites fed the Vampire nothing at all", and replacing the rule
 with a token point fails the exact-amount assertion.
+
+---
+
+**DEC-109 — A random ego cannot roll walking through walls.** (3.124.23.
+Settles open question 5 and item 6 of `pending-decisions.md`.)
+
+The project owner's ruling: take `PASS_WALL` out of the random-power pool.
+
+**What it was.** `ego_apply_magic()` builds the extra-power pool from every
+flag whose subtype is `protection` or `misc ability`, and the enum comment for
+the latter reads "a good property, suitable for ego items" -- so membership of
+that subtype *is* membership of the loot table, and a flag added for another
+reason joins it by doing nothing. Measured: **41 of 1000** `RAND_POWER` egos
+rolled it, about one in twenty-four, which is the pool's 1-in-21 less the rolls
+that landed on a flag the item already had. Thirty points of power in a pool
+whose next largest is telepathy, and it removes the dungeon as an obstacle.
+
+**The narrow fix, and why the obvious one is wrong.** `OFT_MISC` is read in
+four places, not one: the pool, `obj-power.c`'s pricing of "misc abilities" as
+a group, and both `obj-info.c` and `ui-knowledge.c`, which use it to decide what
+a player is told about an item. The development diary had reached the same
+conclusion from the other side -- that moving a flag to `OFT_NONE` would take it
+out of rune identification too. So the flag keeps its subtype, its description
+and its rune behaviour, and is removed at the point of the draw instead:
+`of_off(newf, OF_PASS_WALL)`, one line, nothing else moves. The test pins that
+narrowness explicitly by requiring telepathy to still come up.
+
+**And it makes `PASS_WALL` unobtainable as an item property, which is the
+intent.** No artifact, ego or object grants it; it exists on the Spectre
+(`p_race.txt`) and on wraith form (`player_timed.txt`) and nowhere else. The
+pool was the only route, and it was an accidental one. `docs/mutations.rst` had
+told players that "anyone carrying an item that lets them pass walls" was safe
+from wraith-form expiry -- true only because of this accident, and corrected.
+
+**The other four flags in the same position are not the same case, and this is
+a correction to my own first answer.** I reported that none of the five
+ZangbandTK-added `misc ability` flags appears on designed content. That was
+wrong: I grepped only the base data files and not the `.zangband` ones.
+Checked properly, `PATRON` is granted by the (Chaotic) ego and by a mutation,
+`LUCK_10` by an artifact and an object, `STRANGE_LUCK` by an object and
+`EASY_ENCHANT` by an artifact. All four are designed properties that legitimately
+reach a player by a designed route, so their presence in the random pool is at
+worst mild duplication. **`PASS_WALL` is the only one that appears nowhere by
+design**, which is what makes it the accident and makes this ruling narrow.
+
+Falsified twice: removing the exclusion puts wall-walking on 41 of 1000 egos,
+and widening it to telepathy fails the test that says the rest of the pool is
+untouched.

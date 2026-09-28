@@ -157,12 +157,12 @@ back. All three still show on your character sheet.
    made a decision they will not get to revisit. And any monster that breathes
    light at you will do the same thing from across the room.
 
-   **A Spectre is safe from all of this**, and so is anyone carrying an item
-   that lets them pass walls: the form ending leaves them still able to walk
-   through rock, so they drop back to the ordinary Spectre's point a turn and
-   stroll out. For everybody else the rule is simple. Treat a wall you are
-   standing in as somewhere you are passing through rather than somewhere you
-   are, and count.
+   **A Spectre is safe from all of this.** The form ending leaves it still able
+   to walk through rock, so it drops back to the ordinary Spectre's point a turn
+   and strolls out. Nothing else in the game confers that safety: no item grants
+   passing walls, and since 3.124.23 no random ego can roll it either. For
+   everybody else the rule is simple. Treat a wall you are standing in as
+   somewhere you are passing through rather than somewhere you are, and count.
 
 Three that used to be on this list are not. **Losing a mutation at random**
 works — that is the "strangely normal" one, and it takes a mutation back.

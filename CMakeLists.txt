@@ -905,6 +905,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     object/imported.c
     object/info.c
     object/pile.c
+    object/randpower.c
     object/slays.c
     object/util.c
     parse/a-info.c
