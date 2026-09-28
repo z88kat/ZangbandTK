@@ -473,7 +473,18 @@ moved by how you play, and read by the Lords of Chaos and by the dream at the in
 Zangband's own thirty-two spells in four books. Trump came last, with pets,
 because fifteen of its spells turn on a creature being *yours*. M9 is closed.
 
-A **Tcl/Tk front end** is planned for a later phase, reviving the original's
-interface on Tcl/Tk 9. There is an irony in it: the original ZangbandTK
-supported Windows and X11 and never supported macOS at all, so the Tcl/Tk front
-end will be the new port when it arrives, not the other way round.
+A **Tcl/Tk front end** revives the original's interface on Tcl/Tk 9, rebuilt
+rather than ported. It is in the tree and CI builds it on every push: ``src/main-tcl.c``
+and ``src/tcl/``, with Tcl and Tk vendored under ``tcltk/``. The Tk workflow
+compiles it, checks the binary really links Tk rather than quietly falling back
+to X11, runs the Tcl-side tests, packages ``ZangbandTclTK.app`` and then drives
+the real game through the real front end from a script.
+
+It is **not what the releases ship**: that bundle is a CI artifact, and the
+download is still the Cocoa build. Where it stands milestone by milestone is in
+``.claude/plans/phase3-tcl-tk-frontend.md``, which stays current in a way a line
+here would not. The build recipe is in the README.
+
+There is an irony in it: the original ZangbandTK supported Windows and X11 and
+never supported macOS at all, so this is the *new* port, not the other way
+round.

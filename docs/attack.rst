@@ -436,10 +436,13 @@ noticeable improvement as speed goes higher - for instance, (+30) is not
 quite four times normal speed, and higher values than this are largely
 irrelevant. The player may find items which can be worn or wielded that
 provide speed bonuses: these may include boots of speed, rings of speed and
-a few very rare artifacts. Boots will provide a random 1d10 to speed: rings
-of speed may be bigger than that - generally the best that the player will
-get is two just over (+10), but individual rings of up to (+23) speed have
-been known.
+a few very rare artifacts. Boots and rings of speed are rolled the same way —
+a small base plus a bonus that grows with depth — and they stop at the same
+ceiling, so no single item of either kind will take you past (+10); a ring is
+not the bigger prize the older manuals made it. Two rings together can reach
+(+20), and that is the usual route to serious speed. The figures themselves are
+in ``lib/gamedata/object.txt`` and ``lib/gamedata/ego_item.txt``, which is where
+a balance pass would move them.
 
 Separate from the question of permanent speed (as determined by the
 player's speed items and the monster's natural speed) is that of temporary
@@ -554,19 +557,30 @@ Launchers of Extra Might
   their type. For instance, a 'Long Bow of Extra Might (x3)(+X,+Y)(+1)'
   is really a Long Bow '(x4)(+X,+Y)' where '(+X,+Y)' is the standard
   to-hit and to-dam. As the damage multiplier with the bow affects
-  **everything** the base arrow damage, the magical damage bonus on both
-  the bow and the arrow, and any bonuses for slaying or elemental-branded
-  arrows - this makes it a powerful weapon.
+  **everything** — the base arrow damage and the magical damage bonus on both
+  the bow and the arrow — this makes it a powerful weapon. A brand or slay on
+  the ammunition adds to that multiplier rather than being multiplied by it;
+  see "Ammo of Elemental Brands" below.
 
 Ammo of Wounding
   This ammunition - whether it be pebbles, iron shots, arrows, bolts,
   seeker arrows or seeker bolts - has big bonuses to-hit and to-damage.
 
 Ammo of Elemental Brands, and Ammo of Slaying enemies
-  This works in the same way as melee weapons of the same type: double
-  damage for slay evil and slay animal, triple damage for all other slays
-  and for all elemental brands. Unlike melee weapons, the slays and
-  elemental brands **do** affect the magical damage bonus for ammo.
+  This does **not** work the way melee weapons of the same type do. On a melee
+  weapon the brand or slay multiplies the damage. On ammo it is *added to the
+  launcher's own multiplier* instead: fire a branded arrow that would treble
+  damage from an x3 bow and the shot is multiplied by six, not by nine. The
+  effect is still large, but it adds where you might expect it to compound.
+
+  Only the **best** brand or slay applies, and the game looks at the bow and the
+  arrow together to find it. A brand on your launcher and a different brand on
+  your ammunition do not stack; you get whichever of the two is worth more
+  against the creature in front of you.
+
+  Unlike melee weapons, the slays and elemental brands **do** affect the
+  magical damage bonus for ammo — the to-dam of both bow and arrow is added
+  before the multiplier is applied.
 
 These are the most common types of ego-weapon: note that they are not the 
 ONLY ego-items available in the dungeon, there may be more.

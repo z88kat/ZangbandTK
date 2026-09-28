@@ -127,10 +127,13 @@ Run (``.``) or Run (``,``)
 
 Go up staircase (``<``)
   Climbs up an up staircase you are standing on. There is always at least
-  one staircase going up on every level except for the town level (this
-  doesn't mean it's easy to find). Going up a staircase will take you to a
-  new dungeon level unless you are at 50 feet (dungeon level 1), in which
-  case you will return to the town level. Note that whenever you leave a
+  one staircase going up on every level underground (this doesn't mean it's
+  easy to find). Going up a staircase will take you to a new dungeon level
+  unless you are on the shallowest level of the dungeon you are in, in which
+  case you come out on **the surface of the world, at the mouth you went down
+  by**. That is not the town level: dungeon mouths open wherever they open, and
+  the shallowest level of a dungeon is the top of its own depth range rather
+  than 50 feet. See :doc:`dungeon`. Note that whenever you leave a
   level (not the town), you will never find it again. This means that for
   all intents and purposes, any objects on that level are destroyed. This
   includes artifacts unless the "Lose artifacts when leaving level" option
@@ -145,10 +148,12 @@ Go up staircase (``<``)
   path is calculated and what happens when following the path.
 
 Go down staircase (``>``)
-  Descends a down staircase you are standing on. There are always at least
-  one staircase going down on each level, except for the town which has
-  only one, and "quest" levels, which have none until the quest monster is
-  killed. Going down a staircase will take you to a new dungeon level. See
+  Descends a down staircase you are standing on. There is always at least
+  one staircase going down on each level, with three exceptions: the town,
+  which has only one; "quest" levels, which have none until the quest monster
+  is killed; and the deepest level of a dungeon, which has none at all — to go
+  further down you must leave and find a dungeon that reaches deeper. Going
+  down a staircase will take you to a new dungeon level. See
   "Go Up Staircase" for more info. This command takes some energy. If the
   :ref:`Autoexplore Commands Option <autoexplore-commands-option>` is on,
   you are not on an down staircase, you are not confused, and no monsters are

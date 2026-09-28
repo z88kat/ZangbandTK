@@ -114,7 +114,7 @@ exists for exactly that.
      - Second realm
    * - Mage
      - any of the seven
-     - any of the seven
+     - any of the other six
    * - Priest
      - Life or Death
      - any of the other five
@@ -144,7 +144,7 @@ exists for exactly that.
      - —
    * - Warrior-Mage
      - Arcane
-     - any of the seven
+     - any of the other six
    * - High-Mage
      - any of the seven
      - —
@@ -159,6 +159,12 @@ Life or Death** — the first slot offers the two priestly realms and the second
 offers the other five, so a Priest always ends up with one holy realm and one
 that is not. And **a Ranger's first realm is Nature and there is no choice about
 it**; you are not asked, because a list of one is not a question.
+
+**No class studies the same realm twice.** Whatever the entitlement table lists,
+a realm taken in the first slot is struck off the menu the second slot offers,
+so two slots always mean two realms. That matters for the Mage and the
+Warrior-Mage, both of which are entitled to realms that overlap between slots;
+the second question simply has one fewer row than the first.
 
 These entitlements are Zangband's own, taken from the same table Zangband keeps
 them in, and the game checks itself against that table rather than against
@@ -640,8 +646,10 @@ The two classes carried over from the previous milestone are the ones the realm
 system exists for:
 
 - A **Warrior-Mage** studies **Arcane** in its first slot, always, and anything
-  it likes in the second. Zangband lists Arcane in both slots, so it may take it
-  twice and study one realm — the table's own answer, left as it stands.
+  else it likes in the second. Zangband lists Arcane in both slots, but a realm
+  already taken is struck off the menu the next slot offers, so the second
+  question is asked about the other six and a Warrior-Mage always ends up
+  studying two realms rather than one twice.
 - A **High-Mage** chooses **one** realm out of seven and gets no second slot,
   and is paid for it in figures: it reaches a realm's last spells earlier and
   more cheaply than any other class, in six realms out of seven. Life is the

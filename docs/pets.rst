@@ -249,8 +249,8 @@ arriving around you is a mess to look at and worse to move through. If you have
 more than four, the nearest four come and the rest stay where they were.
 
 The mana upkeep has usually settled the question well before the fourth one
-anyway — see `What they cost`_, where the third young red dragon costs 93 per
-cent of a caster's regeneration. Four is the limit you notice with a stable of
+anyway — see `What they cost`_, where the fourth young red dragon costs a
+level-30 Mage 95 per cent of its regeneration. Four is the limit you notice with a stable of
 cheap animals; the upkeep is the limit you notice with a stable worth having.
 
 
@@ -351,8 +351,9 @@ Keeping control of a charmed creature takes concentration, and past a point it
 takes more than you have to spare.
 
 **A few are free.** You maintain ``1 + level/20`` of them for nothing — two at
-level 20, three at 48. A Mage divides by 15 instead and a High-Mage by 12, so
-they keep four and five where a Warrior keeps three.
+level 20, three at 40. The divisor is a class property, ``pet-upkeep-div`` in
+``lib/gamedata/class.txt``: a Mage divides by 15 and a High-Mage by 12, so at
+level 48 they keep four and five where a Warrior keeps three.
 
 **Past that, the whole stable is charged.** Not the extra one: *all* of them.
 The bill is the sum of your pets' levels, as a percentage of your mana
@@ -360,7 +361,7 @@ regeneration, and it is never less than 5% or more than 95%.
 
 That is a cliff and it is meant to be, and for pets worth having it is a very
 steep one. Here is a level 30 Mage, who has 120 spell points, regains **36 per
-hundred turns** with no pets, and keeps two free:
+hundred turns** with no pets, and keeps three free — ``1 + 30/15``:
 
 .. list-table::
    :header-rows: 1
@@ -371,41 +372,41 @@ hundred turns** with no pets, and keeps two free:
      - Upkeep
      - sp per 100 turns
      - against none
-   * - 2 soldiers (level 2)
-     - 4
+   * - 3 soldiers (level 2)
+     - 6
      - 0%
      - 36
      - 100%
-   * - 3 soldiers
-     - 6
-     - 6%
-     - 34
-     - 94%
+   * - 4 soldiers
+     - 8
+     - 8%
+     - 33
+     - 92%
    * - 10 soldiers
      - 20
      - 20%
      - 29
      - 80%
-   * - 2 young red dragons (level 31)
-     - 62
+   * - 3 young red dragons (level 31)
+     - 93
      - 0%
      - 36
      - 100%
-   * - **3 young red dragons**
-     - 93
-     - **93%**
-     - **2**
-     - **5%**
-   * - 4 young red dragons
+   * - **4 young red dragons**
      - 124
-     - 95%
-     - 1
-     - 2%
+     - **95%**
+     - **1**
+     - **2%**
 
-Read the fifth row before you charm a third dragon. Two are free; the third
-takes you from thirty-six spell points per hundred turns to two. A caster with
+Read the last row before you charm a fourth dragon. Three are free; the fourth
+takes you from thirty-six spell points per hundred turns to one. A caster with
 an army of deep pets **cannot cast**, and that — rather than the limit of four
 — is what actually decides the size of a stable worth having.
+
+Note where the cliff is. It is at the free allowance, not at any particular
+weight of pet: three level-31 dragons cost nothing at all, and the fourth costs
+almost everything. Your own allowance depends on your class and your level, so
+work it out before you go looking rather than after.
 
 Shallow pets are cheap: a dozen level-2 soldiers come to 24%. They are also a
 dozen things that die to the first breath weapon.

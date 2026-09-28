@@ -408,7 +408,9 @@ weapons, they are ready to enter the dungeon. Move on top of the ``>`` symbol
 and use the "Down" command (``>``).
 
 Your character will enter a maze of interconnecting staircases and finally
-arrive somewhere on the first level of the dungeon. Each level of the
+arrive somewhere on the shallowest level of that dungeon — which is the top of
+its own depth range and not necessarily 50 feet, since a dungeon may begin well
+below the surface. Each level of the
 dungeon is fifty feet high (thus dungeon level "Lev 1" is often called "50
 ft"), and is divided into (large) rectangular regions (several times larger
 than the screen) by permanent rock. Once you leave a level by a staircase,
@@ -416,7 +418,7 @@ you will never again find your way back to that region of that level, but
 there are an infinite number of other regions at that same "depth" that you
 can explore later. Monsters, of course, can use the stairs, and you may
 eventually encounter them again, but they will not chase you up or down
-stairs.
+stairs. Your pets are the exception and do follow you — see :doc:`pets`.
 
 In the dungeon, there are many things to find, but your character must
 survive many horrible and challenging encounters to find the treasure lying
@@ -494,12 +496,14 @@ doors, these commands do not work if you are carrying the chest.
 
 One item in particular will be discussed here. The scroll of "Word of
 Recall" can be found within the dungeon, or bought at the alchemist in town.
-All classes start with one of these scrolls in their inventory. It acts in
-two manners, depending upon your current location. If read within the
-dungeon, it will teleport you back to town. If read in town, it will
-teleport you back down to the deepest level of the dungeon which your
-character has previously been on. This makes the scroll very useful for
-getting back to the deeper levels of ZangbandTK. Once the scroll has been read
+It acts in two manners, depending upon your current location. If read
+underground, it lifts you out to **the surface of the world at the mouth you
+went down by** — not to a town, which may be days away across the map. If read
+on the surface, it takes you back down to the deepest level you had reached in
+**the dungeon you were last in**, as described under `The Dungeons`_ above; it
+is not a way into a dungeon you have never entered, and not a way to
+the deepest level you have ever reached anywhere. This makes the scroll very
+useful for getting back to the deeper levels of ZangbandTK. Once the scroll has been read
 it takes a while for the spell to act, so don't expect it to save you in a
 crisis. During this time the word 'recall' will appear on the bottom of the
 screen below the dungeon. Reading a second scroll before the first takes
@@ -630,10 +634,11 @@ commands to use them. A ``<`` represents an up staircase and a ``>``
 represents a down staircase. You must move your character over the
 staircase before you can use it.
 
-Most levels have at least one up staircase and at least two down staircases.
-You may have trouble finding some well hidden secret doors, or you may have
-to dig through obstructions to get to them, but you can always find the stairs
-if you look hard enough.  Stairs, like permanent rock, and shop entrances,
+Most levels carry one to three down staircases and one or two up. The deepest
+level of a dungeon is the exception and carries no way down at all, because
+there is nothing below it — see `The Dungeons`_. You may have trouble finding
+some well hidden secret doors, or you may have to dig through obstructions to
+get to them, but you can always find the stairs if you look hard enough.  Stairs, like permanent rock, and shop entrances,
 cannot be destroyed by any means.
 
 Many secret doors are used within the dungeon to confuse and demoralize

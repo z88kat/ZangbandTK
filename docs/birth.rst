@@ -121,9 +121,14 @@ suddenly be 42 hit points better off.)
 
 Each character has spell points, or mana, which limits how many spells (or
 prayers) a character can cast (or pray). The maximum number of spell points
-is derived from your class, level, and the class's spellcasting stat
-(intelligence for mages, rogues, necromancers, and blackguards, and wisdom
-for priests, paladins, druids, and rangers), and you can never have more spell
+is derived from your class, your level, and the spellcasting stat of the realm
+or realms you study. **The casting stat is a property of the realm, not of the
+class** — Life and Nature cast on wisdom, and the other five realms on
+intelligence — so the same class can cast on either, depending on what it chose
+at birth. A Mage that took Life casts on wisdom; a Priest that took Arcane casts
+on intelligence. Where a character studies two realms the two stats are
+averaged. The stat for each realm is set in ``lib/gamedata/realm.txt``. You can
+never have more spell
 points than the maximum.  Spell points may be regained by resting, or by
 magical means. Warriors never have any spell points. If a character gains
 enough wisdom or intelligence to get more spell points, the result is
@@ -1136,9 +1141,10 @@ Strength
    see: INT; intelligence
 
 Intelligence
-  Intelligence affects the spellcasting abilities of spellcasters from the
-  arcane and shadow realms: mages, rogues, necromancers and blackguards.
-  Intelligence will affect the number of spells you may learn each level as
+  Intelligence affects the spellcasting abilities of anyone studying the
+  Arcane, Death, Sorcery, Chaos or Trump realms — which is a matter of the
+  realm chosen at birth rather than of the class, so it is not a fixed list of
+  classes. Intelligence will affect the number of spells you may learn each level as
   well as the number of spell points you receive. Intelligence is the most
   important stat for mages and necromancers. A high intelligence may also
   improve your chances of successfully casting a spell. A good intelligence
@@ -1150,9 +1156,11 @@ Intelligence
    see: WIS; wisdom
 
 Wisdom
-  The primary function of wisdom is to determine the ability of a priest or
-  paladin to use prayers, and druids and rangers to use verses, just like
-  intelligence affects spellcasting. Again, high wisdom will increase the
+  The primary function of wisdom is to determine the ability of anyone
+  studying the Life realm to use prayers, and anyone studying Nature to use
+  verses, just as intelligence serves the other five realms. As with
+  intelligence, it follows the realm and not the class: a Priest who took
+  Arcane in its second slot does not cast that realm on wisdom. Again, high wisdom will increase the
   number of mana points you have and increase the number of prayers or verses
   you can learn each level, while improving your chance of success. A good
   wisdom increases your saving throw, thereby improving your chances of
