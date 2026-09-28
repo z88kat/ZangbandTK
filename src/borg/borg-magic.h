@@ -326,6 +326,9 @@ extern bool borg_spell_legal_fail(const enum borg_spells spell, int allow_fail);
  * Find the fail rate for a spell
  */
 extern int borg_spell_fail_rate(const enum borg_spells spell);
+extern int borg_spell_fail_rate_by_index(int spell_num);
+extern bool borg_heal_by_effect(int allow_fail);
+extern int  borg_heals_by_effect;
 
 /*
  * Initialize the book information

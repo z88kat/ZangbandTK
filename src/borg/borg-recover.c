@@ -100,8 +100,8 @@ bool borg_recover(void)
             || borg_activate_item(act_cure_full)
             || borg_activate_item(act_cure_full2)
             || borg_activate_item(act_cure_temp)
-            || borg_activate_item(act_heal3) || borg_spell(MINOR_HEALING)
-            || borg_spell(HEALING) || borg_spell(HERBAL_CURING)
+            || borg_activate_item(act_heal3) || (borg_spell(MINOR_HEALING) || borg_heal_by_effect(40))
+            || (borg_spell(HEALING) || borg_heal_by_effect(40)) || borg_spell(HERBAL_CURING)
             || borg_spell(HOLY_WORD))
 
         {
@@ -120,8 +120,8 @@ bool borg_recover(void)
             || borg_activate_item(act_cure_full)
             || borg_activate_item(act_cure_full2)
             || borg_activate_item(act_cure_temp)
-            || borg_activate_item(act_heal3) || borg_spell(MINOR_HEALING)
-            || borg_spell(HEALING) || borg_spell(HERBAL_CURING)
+            || borg_activate_item(act_heal3) || (borg_spell(MINOR_HEALING) || borg_heal_by_effect(40))
+            || (borg_spell(HEALING) || borg_heal_by_effect(40)) || borg_spell(HERBAL_CURING)
             || borg_spell(HOLY_WORD)) {
             /* Take note */
             borg_note(format("# Cure Heavy Stun - danger %d", p));
@@ -132,8 +132,8 @@ bool borg_recover(void)
 
     /* Cure cuts */
     if (borg.trait[BI_ISCUT] && (q < 75)) {
-        if (borg_activate_item(act_cure_light) || borg_spell(MINOR_HEALING)
-            || borg_spell(HEALING) || borg_spell(HERBAL_CURING)
+        if (borg_activate_item(act_cure_light) || (borg_spell(MINOR_HEALING) || borg_heal_by_effect(40))
+            || (borg_spell(HEALING) || borg_heal_by_effect(40)) || borg_spell(HERBAL_CURING)
             || borg_spell(HOLY_WORD)) {
             /* Take note */
             borg_note(format("# Cure Cuts - danger %d", p));
@@ -184,8 +184,8 @@ bool borg_recover(void)
     if ((borg.trait[BI_CURHP] < borg.trait[BI_MAXHP] / 2) && (q < 75) && p == 0
         && (borg.trait[BI_CURSP] > borg.trait[BI_MAXSP] / 4)) {
         if (borg_activate_item(act_heal1) || borg_activate_item(act_heal2)
-            || borg_activate_item(act_heal3) || borg_spell(HEALING)
-            || borg_spell(HOLY_WORD) || borg_spell(MINOR_HEALING)
+            || borg_activate_item(act_heal3) || (borg_spell(HEALING) || borg_heal_by_effect(40))
+            || borg_spell(HOLY_WORD) || (borg_spell(MINOR_HEALING) || borg_heal_by_effect(40))
             || borg_spell(HEROISM)) {
             /* Take note */
             borg_note(format("# heal damage (recovering)"));

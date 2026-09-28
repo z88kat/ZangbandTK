@@ -5722,3 +5722,63 @@ is currently working.
 The measurement is in DEC-101 and the tolerance in `game/wild`'s
 `every-road-to-a-town-has-a-gate` is set at one block, which admits this drift
 deliberately. Nothing here is unexamined.
+
+---
+
+**DEC-112 — The borg's heal lookup works, and it is not what keeps the borg
+shallow.** (BRG-07, 3.124.24. The scoped experiment from the review.)
+
+The project owner asked for a cheap experiment before committing a week to the
+other 74 enum mappings: wire the existing effect-based lookup into the heal
+family only, measure, and decide from the result.
+
+**The prediction, written before any measurement** (kept at
+`scratchpad/prediction.md` during the work and reproduced here): heals cast
+should rise from ~0; caster depth should move from 1-2 toward the Warrior's 4;
+the `30 hp`/`40 hp` entries in the blocked tally should fall; the Warrior, having
+no spells, is the control and should not move. The informative negative was
+named in advance as *heals rise but depth does not*.
+
+**The result: depth did not move, and heals barely rose -- for a reason neither
+arm of the prediction covered.**
+
+| | baseline | after |
+|---|---|---|
+| total depth over 12 runs | 23 | 23 |
+| deepest | 4 | 4 |
+| healing spells used | 4 | 3 |
+| heals cast by the new lookup | 0 | 0 |
+
+Both sweeps turn-bounded at 200,000 turns, same seeds, `0 capped` in each.
+
+**Why, traced rather than reasoned.** The helper is reached and it works. On a
+200,000-turn Mage run it was called 30 times and found a castable heal once; on
+a Priest run, twice and never. The reason is in the trace: at the moment of
+asking, `Cure Light Wounds` is learned, its book is carried, it costs **2** spell
+points and the character has **1**. The lookup is correctly refusing a spell the
+borg cannot pay for.
+
+So the caster borg is not blocked by spell naming, and not by the lookup. **It
+dies at character level 1-7, where it has one to three spell points, before a
+mana pool exists to cast anything from.** That is upstream of everything the 74
+remaining mappings would fix.
+
+**Recommendation: do not spend the week.** The realm-blind lookup is a real
+defect and this experiment closed a real part of it, but it is not the depth
+constraint and finishing it would not move the nightly. Whatever is keeping
+characters from surviving to level 10 is the thing to look at, and it is shared
+with the Warrior -- which reaches depth 4 with no spells at all.
+
+**What landed anyway, and why.** The helper and its eighteen call sites are
+correct, tested and harmless: a caster that *does* have mana now heals with
+whatever its realm calls the spell. Keeping it removes one confound from any
+later work on the depth problem. The mechanism is instrumented in the nightly --
+`heals=` and `healcast=` on the exercise line, totalled in the sweep summary --
+so the question can be re-asked cheaply if the mana picture changes.
+
+**One correction to method.** Three diagnostic readings in this work said
+"never called" when the truth was "stderr never reached me": `borg-progress`
+captures the run's output into a variable and prints only selected lines. I
+caught it by tracing a line that is certainly executed and seeing that report
+zero too. Two of the three earlier conclusions in this session would have been
+wrong had I not checked.

@@ -260,7 +260,7 @@ static bool borg_heal(int danger)
                 || /* Holy Word */
                 (borg.trait[BI_CURHP] > 550 && borg_spell_fail(HOLY_WORD, 15))
                 || /* Holy Word */
-                borg_spell_fail(HEALING, 15)
+                (borg_spell_fail(HEALING, 15) || borg_heal_by_effect(15))
                 || borg_quaff_potion(sv_potion_life)
                 || borg_zap_rod(sv_rod_healing))) {
             borg_note("# Healing in Questor Combat.");
@@ -354,7 +354,7 @@ static bool borg_heal(int danger)
     if (pct_down >= 30 && (pct_down <= 40 || borg.trait[BI_CLEVEL] < 10)
         && ((danger) < borg.trait[BI_CURHP] + clw_heal)
         && (clw_heal > danger / 3) && /* No rope-a-doping */
-        (borg_spell_fail(MINOR_HEALING, allow_fail)
+        ((borg_spell_fail(MINOR_HEALING, allow_fail) || borg_heal_by_effect(allow_fail))
             || borg_quaff_potion(sv_potion_cure_light)
             || borg_activate_item(act_cure_light))) {
         borg_note("# Healing Level 1.");
@@ -406,7 +406,7 @@ static bool borg_heal(int danger)
             || borg_activate_item(act_heal1) || borg_activate_item(act_heal2)
             || borg_activate_item(act_heal3)
             || borg_use_staff_fail(sv_staff_healing)
-            || borg_spell_fail(HEALING, allow_fail))) {
+            || (borg_spell_fail(HEALING, allow_fail) || borg_heal_by_effect(allow_fail)))) {
         borg_note("# Healing Level 6.");
         return true;
     }
@@ -428,7 +428,7 @@ static bool borg_heal(int danger)
             || (borg_fighting_evil_unique
                 && borg_spell_fail(HOLY_WORD, allow_fail))
             || /* holy word */
-            borg_spell_fail(HEALING, allow_fail)
+            (borg_spell_fail(HEALING, allow_fail) || borg_heal_by_effect(allow_fail))
             || (((!borg.trait[BI_ATELEPORT] && !borg.trait[BI_AESCAPE])
                     || rod_good)
                 && borg_zap_rod(sv_rod_healing))
@@ -446,7 +446,7 @@ static bool borg_heal(int danger)
             (((!borg.trait[BI_ATELEPORT] && !borg.trait[BI_AESCAPE])
                  || rod_good)
                 && borg_zap_rod(sv_rod_healing))
-            || borg_spell_fail(HEALING, allow_fail)
+            || (borg_spell_fail(HEALING, allow_fail) || borg_heal_by_effect(allow_fail))
             || borg_use_staff_fail(sv_staff_healing)
             || borg_quaff_potion(sv_potion_healing)
             || borg_activate_item(act_cure_full)
@@ -464,7 +464,7 @@ static bool borg_heal(int danger)
         && ((borg_fighting_evil_unique
                 && borg_spell_fail(HOLY_WORD, allow_fail))
             || /* holy word */
-            borg_spell_fail(HEALING, allow_fail)
+            (borg_spell_fail(HEALING, allow_fail) || borg_heal_by_effect(allow_fail))
             || borg_use_staff_fail(sv_staff_healing)
             || (((!borg.trait[BI_ATELEPORT] && !borg.trait[BI_AESCAPE])
                     || rod_good)
@@ -523,7 +523,7 @@ static bool borg_heal(int danger)
             || borg_eat(TV_MUSHROOM, sv_mush_purging)
             || borg_activate_item(act_shroom_purging) ||
             /* buy time */
-            borg_quaff_crit(true) || borg_spell_fail(HEALING, 60)
+            borg_quaff_crit(true) || (borg_spell_fail(HEALING, 60) || borg_heal_by_effect(60))
             || borg_spell_fail(HOLY_WORD, 60)
             || borg_use_staff_fail(sv_staff_healing)) {
             borg_note("# Curing.");
@@ -549,7 +549,7 @@ static bool borg_heal(int danger)
         borg.trait[BI_CURSP] = borg.trait[BI_MAXSP];
 
         if (borg_spell(CURE_POISON) || borg_spell(HERBAL_CURING)
-            || borg_spell(HOLY_WORD) || borg_spell(HEALING)) {
+            || borg_spell(HOLY_WORD) || (borg_spell(HEALING) || borg_heal_by_effect(40))) {
             /* verify use of spell */
             /* borg_keypress('y'); */
 
@@ -602,7 +602,7 @@ static bool borg_heal(int danger)
         if (borg_quaff_potion(sv_potion_cure_serious)
             || borg_quaff_potion(sv_potion_cure_light)
             || borg_quaff_crit(borg.trait[BI_CURHP] < 10)
-            || borg_spell(MINOR_HEALING)
+            || (borg_spell(MINOR_HEALING) || borg_heal_by_effect(40))
             || borg_quaff_potion(sv_potion_cure_critical)) {
             return true;
         }
@@ -638,7 +638,7 @@ static bool borg_heal(int danger)
         }
 
         /* Cast a spell, go into negative mana */
-        if (borg_spell(MINOR_HEALING)) {
+        if ((borg_spell(MINOR_HEALING) || borg_heal_by_effect(40))) {
             /* verify use of spell */
             /* borg_keypress('y'); */
 

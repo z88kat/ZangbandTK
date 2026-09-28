@@ -37,6 +37,10 @@
 
 borg_magic *borg_magics = NULL; 
 
+/* How many times `borg_heal_by_effect()` has cast something (DEC-112). */
+int borg_heals_by_effect = 0;
+
+
 
 static borg_spell_rating *borg_spell_ratings;
 
@@ -555,10 +559,29 @@ bool borg_spell_okay(const enum borg_spells spell)
  */
 int borg_spell_fail_rate(const enum borg_spells spell)
 {
+    int spell_num = borg_get_spell_number(spell);
+
+    if (spell_num < 0)
+        return 100;
+
+    return borg_spell_fail_rate_by_index(spell_num);
+}
+
+/*
+ * The same calculation, for a spell the borg found by what it does rather
+ * than by name (ZangbandTK, BRG-07, DEC-112).
+ *
+ * Split out of `borg_spell_fail_rate()` rather than copied. A second copy of
+ * this formula would be a second thing to keep in step with the game's own
+ * failure calculation, and the two would drift the first time either changed.
+ * The enum version above is now the lookup and this is the arithmetic.
+ */
+int borg_spell_fail_rate_by_index(int spell_num)
+{
     int chance, minfail;
 
-    int spell_num = borg_get_spell_number(spell);
-    if (spell_num < 0)
+    if (!borg_magics || spell_num < 0
+        || spell_num >= player->class->magic.total_spells)
         return 100;
 
     borg_magic *as = &borg_magics[spell_num];
@@ -732,6 +755,52 @@ bool borg_spell_by_index(int spell_num)
 
     as->times++;
 
+    return true;
+}
+
+/*
+ * Cast the best healing spell this character has, whatever it is called
+ * (ZangbandTK, BRG-07, DEC-112).
+ *
+ * The borg asks for heals by enum -- `HEALING` and `MINOR_HEALING` -- and its
+ * enum table is keyed by Angband's spell names. DEC-50 replaced the realms'
+ * spell lists with Zangband's, so in this game `MINOR_HEALING` names nothing
+ * at all and `HEALING` is a level-20 prayer. A caster's actual heals below
+ * that -- Cure Light Wounds at level 1, First Aid and Cure Medium at 5, Cure
+ * Critical at 9 -- are invisible to it, so a caster borg had no castable heal
+ * until level 20 and never lived to reach it.
+ *
+ * Every one of them carries `EF_HEAL_HP`, which is what this asks for. The
+ * effect is the durable thing: a spell renamed again still heals.
+ *
+ * Deliberately scoped to healing. The same blindness applies to detection,
+ * escapes, buffs and seventy-odd other mappings, and this is an experiment to
+ * find out whether closing it moves anything before that week is spent.
+ */
+bool borg_heal_by_effect(int allow_fail)
+{
+    int num = borg_best_spell_with_effect(EF_HEAL_HP);
+
+    if (num < 0)
+        return false;
+
+    if (borg_spell_fail_rate_by_index(num) > allow_fail)
+        return false;
+
+    if (!borg_spell_by_index(num))
+        return false;
+
+    /*
+     * Counted, because this is an experiment (DEC-112).
+     *
+     * The `heals=` figure on the exercise line counts *distinct* healing
+     * spells that have ever worked, which a test-cast sets just as well as a
+     * deliberate heal -- the baseline showed 4 of those with this helper
+     * absent entirely. This counts the helper actually firing, so the
+     * mechanism can be told apart from the borg happening to cast a heal for
+     * some other reason.
+     */
+    borg_heals_by_effect++;
     return true;
 }
 

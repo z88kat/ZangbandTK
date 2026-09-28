@@ -120,6 +120,11 @@ deaths=0
 capped=0
 learned_total=0
 cast_total=0
+# Healing spells actually cast, which is the mechanism BRG-07/DEC-112 is about:
+# a caster that never heals is the thing that experiment exists to detect, and
+# depth alone cannot tell it apart from a borg that heals and dies anyway.
+heal_total=0
+healcast_total=0
 shops_total=0
 
 for class in $(echo "$classes" | tr ',' ' '); do
@@ -193,8 +198,12 @@ for class in $(echo "$classes" | tr ',' ' '); do
 			printf '%s\n' "$ex" | sed 's/^borg-exercise: /    exercised: /'
 			el=$(printf '%s\n' "$ex" | sed -n 's/.*learned=\([0-9]*\).*/\1/p')
 			ec=$(printf '%s\n' "$ex" | sed -n 's/.*cast=\([0-9]*\).*/\1/p')
+			eh=$(printf '%s\n' "$ex" | sed -n 's/.*heals=\([0-9]*\).*/\1/p')
+			ehc=$(printf '%s\n' "$ex" | sed -n 's/.*healcast=\([0-9]*\).*/\1/p')
 			learned_total=$(expr $learned_total + ${el:-0})
 			cast_total=$(expr $cast_total + ${ec:-0})
+			heal_total=$(expr $heal_total + ${eh:-0})
+			healcast_total=$(expr $healcast_total + ${ehc:-0})
 		fi
 	done
 done
@@ -204,6 +213,7 @@ echo "borg-progress: $runs runs, $sum_depth depth and $sum_level levels in total
 echo "borg-progress: deepest $best_depth, highest $best_level,"
 echo "borg-progress: $deaths died, $capped capped, $broken broken,"
 echo "borg-progress: $learned_total spells learned, $cast_total cast,"
+echo "borg-progress: $heal_total healing spells used, $healcast_total heals cast by effect,"
 echo "borg-progress: $shops_total shops reached"
 echo "borg-progress: on $platform"
 

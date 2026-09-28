@@ -20,6 +20,7 @@
 #include "buildid.h"
 #include "cave.h"
 #include "dun-type.h"
+#include "effects.h"
 #include "generate.h"
 #include "wild.h"
 #include "mon-make.h"
@@ -564,6 +565,7 @@ static void c_borg_status(char *rest)
 		int k, n = (int) messages_num();
 
 		run_deaths = 0;
+		borg_heals_by_effect = 0;
 		for (k = 0; k < n; k++) {
 			const char *m = message_str((int16_t) k);
 
@@ -1285,7 +1287,7 @@ static void c_borg_towns(char *rest)
 static void c_borg_exercise(char *rest)
 {
 	int i, learned = 0, worked = 0;
-	int pets = 0, muts = 0;
+	int pets = 0, muts = 0, healed = 0;
 
 	if (!player) {
 		printf("borg-exercise: FAILED no character\n");
@@ -1316,8 +1318,29 @@ static void c_borg_exercise(char *rest)
 					if (ridx < 16) r_learned[ridx]++;
 				}
 				if (f & PY_SPELL_WORKED) {
+					const struct effect *e;
+
 					worked++;
 					if (ridx < 16) r_worked[ridx]++;
+
+					/*
+					 * And whether any of them healed (BRG-07, DEC-112).
+					 *
+					 * The experiment behind `borg_heal_by_effect()` is about
+					 * whether a caster borg can heal at all below level 20,
+					 * so the mechanism has to be counted separately from
+					 * depth: a depth change with no heals cast would be
+					 * something else moving, and heals cast with no depth
+					 * change is the informative negative.
+					 *
+					 * Counted off `EF_HEAL_HP`, which is what the helper asks
+					 * for, so the number and the mechanism cannot disagree.
+					 */
+					for (e = book->spells[k].effect; e; e = e->next) {
+						if (e->index != EF_HEAL_HP) continue;
+						healed++;
+						break;
+					}
 				}
 			}
 		}
@@ -1350,10 +1373,12 @@ static void c_borg_exercise(char *rest)
 		}
 	}
 
-	printf("borg-exercise: spells learned=%d cast=%d of %d | pets=%d | "
-		   "mutations=%d | maxdepth=%d clevel=%d deaths=%d\n",
-		   learned, worked, player->class->magic.total_spells, pets, muts,
-		   player->max_depth, player->lev, run_deaths);
+	printf("borg-exercise: spells learned=%d cast=%d of %d | heals=%d "
+		   "healcast=%d | pets=%d | mutations=%d | maxdepth=%d clevel=%d "
+		   "deaths=%d\n",
+		   learned, worked, player->class->magic.total_spells, healed,
+		   borg_heals_by_effect, pets, muts, player->max_depth, player->lev,
+		   run_deaths);
 	fflush(stdout);
 }
 
