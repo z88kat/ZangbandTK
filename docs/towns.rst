@@ -345,12 +345,12 @@ town to run anything.
    lamplight or waits, and waiting a hundred turns at a time with ``R`` is not
    waiting, it is bookkeeping.
 
-   Zangband's inn also carried a nightmare vision. It is **not** built yet, and
-   when it is it will not be Zangband's: what that actually did was a sanity
-   blast — draining wits, inflicting amnesia, sometimes granting a mutation — in
-   service of the game's Lovecraft material, which this one is deliberately
-   moving away from. The dream is worth keeping and the machinery behind it is
-   not.
+   Zangband's inn also carried a nightmare vision, and the dream described
+   above is what became of it — deliberately not Zangband's own. What that one
+   actually did was a sanity blast: draining wits, inflicting amnesia,
+   sometimes granting a mutation, in service of the game's Lovecraft material,
+   which this one is moving away from. The idea was worth keeping and the
+   machinery behind it was not (DEC-32, DEC-33).
 
 The magetower
 -------------

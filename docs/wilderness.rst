@@ -11,10 +11,12 @@ walking, out into whatever country the world put there.
 
 .. note::
 
-   **Milestone M4.** The world generates, the town stands in it, and you can
-   walk out of the town and back into it. Several things stated in the Phase 1
-   requirements are not here yet, and are listed under `What is not here yet`_
-   at the end of this chapter rather than being quietly omitted.
+   The world work is done: the world generates, towns stand in it with their
+   shops and services, roads run between them, dungeon mouths open on it, and
+   there is work to be had in the towns (see :doc:`quests`). What is still
+   narrower here than in Zangband is narrower by choice or by shape rather than
+   by being unfinished, and is listed under `Where this is narrower than
+   Zangband`_ at the end of this chapter rather than being quietly omitted.
 
 The world
 ---------
@@ -83,15 +85,19 @@ turn, for as long as you stay in — and the game asks you to confirm before you
 step in. Anything that lets you float over the ground carries you over water as
 well, at no cost and no matter what you are carrying.
 
-**Most things cannot follow you in.** Deep water drowns whatever is not built for
-it, and a monster that would drown keeps out — so wading is a reliable way of
-breaking pursuit from almost anything that walks. Almost: a few dozen creatures
-are at home in water and will come after you, and everything that lives in the
-sea is already there.
+**Do not count on it to break pursuit.** A monster that would drown keeps out of
+deep water, so wading does shake off the things that merely walk. But two large
+groups of the imported bestiary are unbothered: the ones that swim cross deep
+water without being fish, and the ones that fly cross anything at all without
+touching it — the flyers are the larger group of the two, and a raven or a
+dragon will come over the water after you as though it were not there. The
+counts are in ``lib/gamedata/monster.zangband.txt``, as ``CAN_SWIM`` and
+``CAN_FLY``; between them they cover a couple of hundred creatures, which is not
+a rounding error you can wade away from.
 
-Nothing that swims can come ashore, either. A shark cannot follow you onto the
-beach any more than a wolf can follow you into the deep, so the waterline is a
-line both ways.
+Only true fish are barred from the shore. A shark cannot follow you onto the
+beach, and neither can a kraken — but a lizardman swims and walks, so the
+waterline is a line both ways only for the things that live in the sea.
 
 Rivers and lakes
 ----------------
@@ -340,30 +346,18 @@ is carried across that — including across saving and reloading while you are
 still underground. A character who walks into a town, goes down the stairs and
 comes back up a week later finds the town as they left it, not blank.
 
-.. _what is not here yet:
+.. _where this is narrower than zangband:
 
-What is not here yet
---------------------
+Where this is narrower than Zangband
+------------------------------------
 
 Stated plainly, because a manual that only describes what works is not much use
 for judging what to expect:
-
-**There are no quests.** Nothing in the world asks anything of you: you walk, you
-find, you go down. Quests are milestone M6, and the design already allows for
-quest-giving to be a property any building carries rather than a building type of
-its own, so the inn and the magetower are candidates to hand them out. Until then
-the world is somewhere to explore rather than somewhere with anything to say.
 
 **Two kinds of townsfolk are missing, and were always missing.** Of Zangband's
 six, four are built; the elf, dwarf and lizardfolk types exist in its own source
 only as unused constants, so there is nothing to port and nothing was lost
 (DEC-31).
-
-**The inn sells a bed but not a dream.** Zangband's inn carried a nightmare
-vision, and that is not built. It is not blocked on anything — it will be made out
-of effects the game already has, and possibly out of showing you somewhere real on
-the world map, which is a more Zelazny thing for a night in a strange inn to do
-than a saving throw (DEC-32).
 
 **Dungeon character is broad rather than particular.** Each dungeon has its own
 depth range, floor, shape, inhabitants and kind of treasure (see :doc:`dungeon`),
