@@ -15,6 +15,7 @@
 #
 # Usage: scripts/borg-progress [-x exe] [-n turns] [-m minutes]
 #                              [-c class[,class...]] [-b baseline] [seed...]
+#        scripts/borg-progress --self-test
 #
 # -b compares the run against a committed baseline and fails if a number has
 # dropped materially. That is the point of the nightly: deaths are not failures
@@ -30,6 +31,46 @@
 # level and that is ordinary play (see c_borg_status). The exit status is
 # non-zero only for a crash, an abort or a wedge, which is what CI should care
 # about.
+
+# Pull one numeric field out of a borg-exercise line.
+#
+# The [ |] anchor is load-bearing, and the reason is worth keeping. sed is
+# greedy, so an unanchored .*cast= runs to the *last* cast= on the line -- and
+# healcast= ends in cast=. Adding that counter on 28 September silently made
+# every night report its casting as zero, and the nightly then failed with
+# "spells cast less than halved", which points at the borg rather than at this
+# line. The real figure that night was 14, exactly the baseline.
+#
+# Any field whose name ends in another field's name does it again. The anchor is
+# what stops it, --self-test is what notices if the anchor goes.
+exfield() {
+	printf '%s\n' "$2" | sed -n "s/.*[ |]$1=\\([0-9]*\\).*/\\1/p"
+}
+
+if [ "$1" = "--self-test" ]; then
+	# Every value distinct, so a field picking up its neighbour's number shows
+	# up as a wrong value rather than a coincidence.
+	l='borg-exercise: spells learned=4 cast=7 of 224 | heals=3 healcast=2 | pets=1 | mutations=0 | maxdepth=5 clevel=6 deaths=8'
+	st_fail=0
+	st_check() {
+		got=$(exfield "$1" "$l")
+		if [ "$got" != "$2" ]; then
+			echo "borg-progress: self-test: $1 gave '$got', wanted '$2'" >&2
+			st_fail=$((st_fail + 1))
+		fi
+	}
+	st_check learned 4
+	st_check cast 7
+	st_check heals 3
+	st_check healcast 2
+	st_check deaths 8
+	if [ "$st_fail" -ne 0 ]; then
+		echo "borg-progress: self-test FAILED ($st_fail)" >&2
+		exit 1
+	fi
+	echo "borg-progress: self-test passed"
+	exit 0
+fi
 
 exe=build-strict/game/angband
 turns=40000
@@ -196,10 +237,10 @@ for class in $(echo "$classes" | tr ',' ' '); do
 		ex=$(printf '%s\n' "$out" | grep '^borg-exercise:')
 		if [ -n "$ex" ]; then
 			printf '%s\n' "$ex" | sed 's/^borg-exercise: /    exercised: /'
-			el=$(printf '%s\n' "$ex" | sed -n 's/.*learned=\([0-9]*\).*/\1/p')
-			ec=$(printf '%s\n' "$ex" | sed -n 's/.*cast=\([0-9]*\).*/\1/p')
-			eh=$(printf '%s\n' "$ex" | sed -n 's/.*heals=\([0-9]*\).*/\1/p')
-			ehc=$(printf '%s\n' "$ex" | sed -n 's/.*healcast=\([0-9]*\).*/\1/p')
+			el=$(exfield learned "$ex")
+			ec=$(exfield cast "$ex")
+			eh=$(exfield heals "$ex")
+			ehc=$(exfield healcast "$ex")
 			learned_total=$(expr $learned_total + ${el:-0})
 			cast_total=$(expr $cast_total + ${ec:-0})
 			heal_total=$(expr $heal_total + ${eh:-0})

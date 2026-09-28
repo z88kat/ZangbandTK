@@ -5782,3 +5782,59 @@ captures the run's output into a variable and prints only selected lines. I
 caught it by tracing a line that is certainly executed and seeing that report
 zero too. Two of the three earlier conclusions in this session would have been
 wrong had I not checked.
+
+---
+
+**DEC-113 — A new counter swallowed an old one's number, and the nightly
+blamed the borg.** (BRG-18, 3.124.25. The red night of 28 September.)
+
+The nightly went red with `REGRESSION -- spells cast less than halved, was 14
+over 12 runs, now 0 across 12 runs`. Nothing had regressed. The fleet cast 14
+spells that night, which is the baseline figure exactly.
+
+`borg-progress` reads its totals out of the `borg-exercise:` line with sed:
+
+```sh
+ec=$(printf '%s\n' "$ex" | sed -n 's/.*cast=\([0-9]*\).*/\1/p')
+```
+
+`.*` is greedy, so `.*cast=` runs to the **last** `cast=` on the line. DEC-112
+added `healcast=` to that line, which ends in `cast=`. From that commit on, the
+casting total was reading the heal-by-effect counter -- zero -- and the gate
+fired on it.
+
+The per-run rows in the same output showed `cast=4`, `cast=3`, `cast=1` while
+the summary said `0 cast`. That contradiction is what gave it away; the log had
+both numbers on screen at once.
+
+**Fix.** The extraction is one function, anchored so a field name cannot be
+matched inside a longer one:
+
+```sh
+exfield() {
+	printf '%s\n' "$2" | sed -n "s/.*[ |]$1=\\([0-9]*\\).*/\\1/p"
+}
+```
+
+`[ |]cast=` cannot match inside `healcast=`, where the preceding character is
+`l`. All four totals now go through it, so there is one pattern rather than
+four copies to keep in step.
+
+**Test.** `scripts/borg-progress --self-test` runs the extractor over a line
+whose five fields all hold different numbers, so a field picking up its
+neighbour's value shows as a wrong number rather than a coincidence. It is in
+`check-build` beside `check-build-lists`. Falsified twice: removing the anchor
+makes it fail with `cast gave '2', wanted '7'` -- the production bug exactly --
+and replaying the twelve real exercise lines from run 36425828188 through the
+shipped function returns 14, the baseline.
+
+**The baseline does not need retaking.** All four totals from that night pass
+their thresholds once parsed correctly: cast 14 against 14, learned 19 against
+20, level 29 against 39 (the limit is a third), depth 17 against 18 (the limit
+is two fifths).
+
+**What this cost and what it says.** The failure message named the borg, and
+the borg was fine. A gate that reads its inputs by pattern can fail in a way
+that accuses the thing it is measuring, and the more specific the message the
+more convincing the accusation. The nightly's own arithmetic had no test until
+now; it does now, and it is cheap.

@@ -281,6 +281,13 @@ run "$PYTHON" scripts/tiles/borrow-tiles.py --check
 echo "check-build: checking the build input lists (scripts/check-build-lists)"
 run scripts/check-build-lists
 
+# The nightly's own arithmetic, which nothing else exercises. It reads its
+# figures out of a printf in main-test.c with sed, so a new counter can quietly
+# capture an existing one's number -- healcast= swallowing cast= took a night in
+# September and reported it as a borg regression rather than a parsing one.
+echo "check-build: checking the nightly's field parsing (scripts/borg-progress --self-test)"
+run sh scripts/borg-progress --self-test
+
 if [ "$1" = "--tests" ]; then
 	echo "check-build: running the unit tests"
 	# LANG matters: the suite compares rendered text and the C locale mangles
