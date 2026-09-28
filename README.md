@@ -19,13 +19,16 @@ system that Zangband never had.
 ZangbandTK puts the first on top of the second. It is not a port: Zangband's
 2005 codebase is not what is worth preserving. Its *character* is.
 
-> **Status: playable, and most of the way built.** Ten of the eleven milestones
-> are done — the wilderness, the towns, the quests, the bestiary, the races and
-> classes, the mutations, the virtues, the seven realms of magic and the pets.
-> The eleventh, nightmare mode, now does everything Zangband's own nightmare
-> mode did; what is left of it is a decision not yet taken rather than work not
-> yet done. It has gone out only as pre-releases, and it has not been played
-> through by anybody but its author. See [Current state](#current-state).
+> **Status: playable, and most of the way built.** Every gameplay milestone but
+> the last is closed — the wilderness, the towns, the quests, the bestiary, the
+> races and classes, the mutations, the virtues, the seven realms of magic and
+> the pets. The last one is nightmare mode, and what remains of it is a decision
+> not yet taken rather than work not yet done. Beside the game there are two
+> workstreams the milestones do not cover: a [Tcl/Tk front end](#the-tcltk-front-end),
+> which is built and exercised by CI, and [the borg](#the-borg), which is the
+> only thing here that plays the game. It has gone out only as pre-releases, and
+> it has not been played through by anybody but its author. See
+> [Current state](#current-state).
 
 ## Current state
 
@@ -34,8 +37,8 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
 | **Base** | Angband 4.2.6 |
 | **Platform** | macOS, Windows, Linux, DOS, Nintendo DS, 3DS and the browser (see [Portability](#portability)) |
 | **Playable** | Yes |
-| **Latest release** | [3.121.0](https://github.com/z88kat/ZangbandTK/releases), 15 September 2026 — a pre-release, as all of them are so far |
-| **Savefiles** | Not compatible with Angband or Zangband, and never will be. Compatible across ZangbandTK versions: a character saved by an older build loads into a newer one |
+| **Releases** | On the [Releases page](https://github.com/z88kat/ZangbandTK/releases), and every one of them so far is a pre-release. The version in the tree is ahead of the newest tag most of the time; `src/buildid.h` is the authority for what you have built |
+| **Savefiles** | Not compatible with Angband or Zangband, and never will be. Across ZangbandTK versions the rule is that **content can be dropped and identity cannot be invented**: a character whose objects have been renamed or removed wakes up without them and loads, and a caster whose spell list was replaced under it is refused rather than guessed at. The refusals in force are named, with reasons, in [tests/saves/EXPECTED-FAILURES](tests/saves/EXPECTED-FAILURES) |
 
 **Done:**
 
@@ -92,47 +95,145 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
   A Lord of the Courts may hand one down instead of a favour, raw chaos leaves
   them behind, and a Beastman is born mutated and keeps changing. Getting rid
   of one is hard: the rarest potion in the game, a building only great cities
-  have, or another mutation cancelling it out.
+  have, or another mutation cancelling it out. **Some of the ninety-six do
+  nothing**, and say so: they need machinery 4.2 has not got — a charisma stat
+  it removed, an identification moment it replaced with runes — and they were
+  left in rather than dropped, because a mutation that vanishes out of a
+  savefile is worse than one that has no effect. [docs/mutations.rst](docs/mutations.rst)
+  names them and says what each one is waiting for.
 - **Nightmare mode.** A birth option that cannot be turned off afterwards, and
-  the sixteen things Zangband's own mode does: monsters with twice the hit
-  points and ten more speed, awake from the moment the level is made, generated
-  far out of their depth and given no free move when they are summoned; stealth
-  worth half as much; sustains that hold twelve times in thirteen instead of
-  always, and drains that stick when they land; stair creation that does
-  nothing; walls that look like floor; a bell in the last hour before midnight
-  and the Ancient and Foul Curse on the stroke of it; and one Word of Recall in
-  six hundred and sixty-six that arrives deeper than you asked. The status line
-  says `Nightmare` in red for as long as the character lives — Zangband showed
-  the mode in the character dump alone, which is a file you write after you are
-  dead.
+  twelve of the sixteen things Zangband's own mode does: monsters with twice the
+  hit points and five more speed, awake from the moment the level is made,
+  generated far out of their depth and given no free move when they are
+  summoned; stealth worth half as much; sustains that hold twelve times in
+  thirteen instead of always, and drains that stick when they land; stair
+  creation that does nothing; walls that look like floor; a bell in the last
+  hour before midnight and the Ancient and Foul Curse on the stroke of it; and
+  one Word of Recall in six hundred and sixty-six that arrives deeper than you
+  asked. The status line says `Nightmare` in red for as long as the character
+  lives — Zangband showed the mode in the character dump alone, which is a file
+  you write after you are dead.
+
+  **The other four were closed by a ruling rather than built**, and the rulings
+  are in the decision log rather than in the code, because a reader comparing us
+  against Zangband will find the difference and needs to know it was chosen.
+  Zangband adds twenty points to a score multiplier; 4.2's score is
+  `max_exp + 100 * max_depth`, flat and blind to every birth option, so there is
+  nothing to add them to and inventing one would be our design. Zangband strips
+  the Golem's stun immunity, but not for nightmare alone — the penalty is shared
+  across three of its settings and only one of them is this, so stripping it here
+  would be a different bargain from the one the archive offers, and the Golem
+  keeps it. And the mode's two nightmares are not built: one has no hook,
+  because 4.2 has no player sleep state for it to land on, and the other would
+  mean choosing a number nobody has a source for. See DEC-81 and DEC-82.
 
 **Not yet:** nightmare mode's stage 2 — the things its spoiler describes and
 Zangband never actually built — which is a decision that has not been taken
-rather than work that has not been started, and is what keeps M11 open. A
-Tcl/Tk front end is planned for a later phase, reviving the original's
-interface on Tcl/Tk 9: Tcl and Tk 9.0.4 are in the tree, one script builds
-them, and CI keeps that toolchain green. None of the original's front-end C is
-being ported — the survey concluded it loses to Tk 9 and Angband 4.2 on the
-merits, file by file, so the front end is rebuilt on seams 4.2 already has.
+rather than work that has not been started, and is what keeps the milestone
+open. See DEC-84.
+
+## The Tcl/Tk front end
+
+The original's interface, rebuilt on Tcl/Tk 9 rather than ported. It is **in the
+tree and CI builds it on every push**: [src/main-tcl.c](src/main-tcl.c) and
+[src/tcl/](src/tcl/), with Tcl and Tk 9.0.4 vendored under [tcltk/](tcltk/) and
+one script that builds them. The [Tk workflow](.github/workflows/tk.yaml)
+compiles the front end, asserts that the binary links Tk and has not quietly
+fallen back to X11, runs the Tcl-side tests, packages `ZangbandTclTK.app`, and
+then starts the real game with the real front end and drives it from a script.
+
+It is **not what the releases ship**. The bundle is a CI artifact; the download
+is still the Cocoa build below. Where it stands milestone by milestone is in
+[.claude/plans/phase3-tcl-tk-frontend.md](.claude/plans/phase3-tcl-tk-frontend.md),
+which is the honest account and is worth more than a line here that would go
+stale between one week and the next.
+
+To build it:
+
+```sh
+scripts/build-tcltk                         # Tcl and Tk 9.0.4 into tcltk/local
+cmake -S . -B build -G Ninja \
+  -DSUPPORT_TCL_FRONTEND=ON \
+  -DTCLTK_PREFIX="$PWD/tcltk/local"
+cmake --build build --parallel
+scripts/pkg_macos_tcltk build "$PWD/out"    # ZangbandTclTK.app, optional
+scripts/run-tcl-tests                       # the Tcl side's own tests
+scripts/run-tcl-bridge-test build           # ...and the scripted session; opens a window
+```
+
+None of the original's front-end C is being compiled in — the survey concluded
+it loses to Tk 9 and Angband 4.2 on the merits, file by file, so the front end is
+rebuilt on seams 4.2 already has and the 2001 sources are read as reference.
+
+There is some irony here: the original ZangbandTK supported Windows and X11 and
+never supported macOS at all, so this is the *new* port, not the other way round.
+
+## The borg
+
+**Nothing else in this repository plays the game.** The unit suites test rules in
+isolation and are good at it; not one of them walks a character out of a town,
+across the wilderness, into a dungeon and back. Angband's borg does, and it is
+here as test infrastructure rather than as entertainment — a character that plays
+for a million turns walks through more allegiance, spell-casting, mutation and
+wilderness code than any fixture anybody is going to write.
+
+The borg's own switch is on by default, but it needs the test front end with it,
+and that one is not — without it there is no `-mtest` display module and the run
+dies before it starts:
+
+```sh
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DSUPPORT_BORG=ON -DSUPPORT_TEST_FRONTEND=ON
+cmake --build build --parallel
+
+scripts/borg-smoke -x build/game/angband        # fixed seeds; non-zero on a break
+scripts/borg-progress -x build/game/angband     # how far it actually gets
+```
+
+`borg-smoke` exits non-zero on a crash, an abort or a wedge, and prints the seed
+so the run can be repeated rather than reported as a rumour. `borg-progress`
+sweeps classes against fixed seeds and reports depth and character level, which
+is the regression signal: a borg parked on the first floor exercises almost none
+of the mutations, the deeper realms' spells or the out-of-depth monsters.
+
+**A dead character is not a failure**, and neither is one that runs out of clock.
+The borg dies often and at low level, so pass-and-fail says nothing here. What
+the fleet managed is committed in [tests/borg/BASELINE](tests/borg/BASELINE) and
+a drop against it is the regression — the same shape as `EXPECTED-FAILURES`, a
+statement of what is true now that somebody has to change on purpose. The
+[nightly workflow](.github/workflows/borg.yaml) runs the sweep against that
+baseline and posts the table to the run summary.
+
+The headless commands the front end adds, and what the borg does and does not
+understand about this game, are documented in
+[docs/hacking/borg.rst](docs/hacking/borg.rst). The plan is
+[.claude/plans/borg-development-plan.md](.claude/plans/borg-development-plan.md).
 
 ## Building
 
 ### Requirements
 
-- **macOS**, on Apple Silicon or Intel. Both are built and released; each Mac
-  builds for itself by default, and `ARCHS=x86_64` (or `arm64`) asks for the
-  other. Apple Silicon needs macOS 11 or later.
+- **macOS**, on Apple Silicon or Intel, for the Cocoa build below. Both are built
+  and released; `Makefile.osx` builds **arm64** unless told otherwise, and
+  `ARCHS=x86_64` asks for Intel, as a separate download rather than a universal
+  slice. For other platforms see [Elsewhere](#elsewhere).
 - **Xcode command line tools** — `xcode-select --install`
-- **CMake** — only to run the test suite. `brew install cmake`
-- **GCC** — only for `scripts/check-build`'s third pass, which reproduces what
-  CI's Linux runners see. `brew install gcc` lands it as `gcc-16` beside the
-  system clang; nothing else in the build uses it and `cc` stays clang.
-- **Sphinx** — only to build the manual, which is `scripts/check-build`'s
-  fourth pass. One `venv` in the tree; see [docs/README.md](docs/README.md).
-- **Python 3.11+** — only for the data conversion tools. macOS ships 3.9, which
-  has no `tomllib`; `brew install python@3.13` adds `python3.13` beside it
-  without displacing the system `python3`. Name it explicitly when running the
-  tools — `python3.13 tools/zconv/zconv.py analyse`. See
+- **CMake** — for the test suite, the borg and the Tcl/Tk front end.
+  `brew install cmake`. The Cocoa build below does not use it.
+- **Ninja** — for `scripts/check-build` and `scripts/check-flakes`, which
+  configure their build trees with it and ask it which suites exist rather than
+  globbing for them. `brew install ninja`.
+- **GCC** — for `scripts/check-build`'s GCC pass, which reproduces what CI's
+  Linux runners see. `brew install gcc` lands it as `gcc-16` beside the system
+  clang; nothing else in the build uses it and `cc` stays clang.
+- **Sphinx** — for the manual, which `scripts/check-build` also builds. One
+  `venv` in the tree; see [docs/README.md](docs/README.md).
+- **Python 3.11+** — for the data conversion tools *and* for
+  `scripts/check-build`, which runs the converter's own checks against the
+  shipped data. macOS ships 3.9, which has no `tomllib`; `brew install python@3.13`
+  adds `python3.13` beside it without displacing the system `python3`. The gate
+  finds a usable one itself, or says so and exits non-zero; running the tools by
+  hand means naming it — `python3.13 tools/zconv/zconv.py analyse`. See
   [tools/zconv/README.md](tools/zconv/README.md).
 
 ### The game
@@ -145,6 +246,25 @@ make -f Makefile.osx -j$(sysctl -n hw.activecpu)
 That produces `ZangbandTK.app` in the repository root. Double-click it, or
 `open ZangbandTK.app`.
 
+### Elsewhere
+
+Every other platform builds through CMake or autoconf, and the recipes are
+Angband's own, which this game has not changed:
+[docs/hacking/compiling.rst](docs/hacking/compiling.rst) covers Linux and other
+UNIX, Windows with MinGW, MSYS2 and Visual Studio, and the cross builds; and
+[docs/hacking/cmake.rst](docs/hacking/cmake.rst) covers the options. The short
+version on Linux is a front-end option and a build directory:
+
+```sh
+cmake -S . -B build -DSUPPORT_GCU_FRONTEND=ON   # or SDL2, or X11, which is the default
+cmake --build build --parallel
+```
+
+What CI actually runs on each platform is in
+[.github/workflows/](.github/workflows/) — `linux.yaml`, `windows.yaml`,
+`msys2.yaml`, `cygwin.yaml`, `dos.yaml`, `nintendo.yaml`, `wasm.yaml` and the
+rest — and those are the commands kept working, dependencies included.
+
 ### The tests
 
 ```sh
@@ -153,8 +273,12 @@ cmake --build build --parallel
 cd build && make alltests
 ```
 
-1443 unit tests and 6 integration tests. They should all pass; if they do not,
-that is a bug worth reporting.
+Unit tests under [src/tests/](src/tests/), and six end-to-end tests under
+[tests/](tests/) that feed input to the test front end and diff the output. They
+should all pass; if they do not, that is a bug worth reporting. How many there
+are is not written down here on purpose — it moves most weeks, and a number in a
+README that nobody re-counts is worse than no number. Each suite reports its own
+`N/M passed` as it finishes.
 
 **Both build commands above are permissive, and CI runs neither of them that
 way.** The macOS job builds with `env OPT="-Werror"`; every Linux job
@@ -162,27 +286,37 @@ configures CMake with `-Werror`. A warning that scrolls past here is fatal
 there, which has let defects reach master. Before pushing:
 
 ```sh
-scripts/check-build           # every build and the manual, with CI's flags
+scripts/check-build           # every build, the manual and the data checks
 scripts/check-build --tests   # ...and run the unit tests after
 ```
 
 Its exit code is the answer; it does not print a verdict for you to read past.
 
-It runs three builds and the manual, because CI runs all four and none of them
-subsumes another:
+It runs several passes, because CI runs all of them and none subsumes another:
+the macOS build through `Makefile.osx` with clang; the Linux `-Werror` jobs in
+their CMake shape, once with clang and once with GCC, which sees things clang
+does not; the manual through Sphinx with `-W`; the hand-maintained build lists;
+the converter's data checks; and a sanitizer build. **The list of passes and the
+reason for each is the comment at the top of the script**, which is kept current
+because the script is — rather than repeated here, where it would not be.
 
-| | Compiler | Adds |
-|---|---|---|
-| `Makefile.osx` | clang | `-Wshadow`, `-Wwrite-strings`, `-Wmissing-prototypes`, `-Wnested-externs`, `-Wunused-macros`; c99 |
-| CMake | clang | `-pedantic`; gnu99; builds and runs the unit tests |
-| CMake | GCC | `-Wlogical-op`, and everything else GCC sees that clang does not |
-| Sphinx | — | `-W`, so a broken directive or a bad cross reference is fatal |
+Two of them are worth knowing about before you meet them:
 
-A defect can pass any three of them. `depth > 0 \|\| depth > 0` is an error to
-GCC and silent to clang; a pointer of the wrong type is fatal to both, and was
-caught by neither until the flags were being passed; and a malformed `.rst`
-directive is fatal to none of the three, but fails the job that publishes
-[zangbandtk.com](https://zangbandtk.com/).
+- **The data checks** (`zconv realms --check`, and the same for mutations,
+  artifacts, egos and objects) ask whether the shipped game data is still what
+  the converter produces from Zangband's own tables. A spell keyed under a name
+  the source table does not have comes out with its level, mana and failure rate
+  and *no effect at all* — which looks exactly like a deliberate deferral. One
+  shipped that way and was found by accident.
+- **The sanitizer pass** reproduces the msys2 ASAN/UBSAN job, and does it
+  **without** the frontend options the rest of the script passes. That last part
+  is the point: `game/saves` failed two Windows runs while every other job was
+  green, and it was neither the sanitizers nor Windows — the savefile corpus is
+  staged by a step that hung off `SUPPORT_TEST_FRONTEND`, which one workflow
+  passes and the other does not. The only way to see it is to build the way that
+  job builds.
+
+A defect can pass every pass but one, which is why none of them is optional.
 
 The GCC pass needs Homebrew's compiler — `brew install gcc`, which lands as
 `gcc-16` beside the system clang without displacing it. `cc` stays clang,
@@ -273,20 +407,49 @@ macOS is the delivery target, and the one the game is developed and played on �
 on Apple Silicon, with the Intel build made and smoke-tested by CI on a real
 Intel runner rather than cross-compiled. The rest are built by our own CI on
 every push — Windows by both MSBuild and nmake, Linux, Cygwin, MSYS2, DOS, the
-Nintendo DS and 3DS, and WebAssembly for the browser. DOS goes further and runs the game under DOSBox from a script,
-which is what catches a data file it cannot open. None of them is played
-through, so *builds* is a stronger claim than *works*.
-
-There is some irony here: the original ZangbandTK supported Windows and X11 and
-never supported macOS at all, so the Tcl/Tk front end will be the *new* port
-when it arrives, not the other way round.
+Nintendo DS and 3DS, and WebAssembly for the browser. DOS goes further and runs
+the game under DOSBox-X from a script — the same scripted session the native
+end-to-end tests use, so the two cannot drift apart — which is what catches a
+data file it cannot open. None of them is played through, so *builds* is a
+stronger claim than *works*.
 
 ## Tools
 
 `tools/zconv` converts Zangband's data files onto Angband 4.2's model. Its
 primary output is a review report, not the data files — every value it produces
 names the rule that produced it, a confidence level, and whether the tool had to
-invent it. See [tools/zconv/README.md](tools/zconv/README.md).
+invent it. See [tools/zconv/README.md](tools/zconv/README.md). Its `--check`
+modes are also a pass of the pre-push gate, above.
+
+## Where the reasoning is kept
+
+The manual is [docs/](docs/) — `index.rst` is the front of it, and it is
+published at [zangbandtk.com](https://zangbandtk.com/). Chapters for the
+wilderness, the towns, the quests, the realms, the pets, the mutations, the
+virtues and nightmare mode are written for a player rather than for a
+contributor, and are the best description of what this game actually is.
+[docs/releases.rst](docs/releases.rst) is the release log and
+[docs/diary.rst](docs/diary.rst) is the development journal, including the parts
+that turned out to be wrong.
+
+The plans and the decision log are in [.claude/plans/](.claude/plans/), and they
+are the project's memory:
+
+- **`decisions.md`** is where every *why is it like this* question is answered —
+  numbered, dated, and written at the moment the call was made rather than
+  reconstructed afterwards. If something here differs from Zangband, or from
+  Angband, the reason is in there.
+- **`phase2-development-plan.md`** is the gameplay milestones, M0 to M11, with
+  what each one delivered and at which version, including the several occasions
+  where a milestone was declared complete and was not.
+- **`phase3-tcl-tk-frontend.md`** is the front end;
+  **`borg-development-plan.md`** is the borg; and
+  **`pending-decisions.md`** is what is waiting on the project owner.
+
+[CONTRIBUTING.md](CONTRIBUTING.md) is Angband's, unchanged, and describes
+upstream's process and its repository rather than this one; the git advice in it
+applies here, the addresses do not. [docs/hacking/](docs/hacking/) is upstream's
+too, with a ZangbandTK section added to the pages where this game diverges.
 
 ## Credit
 
@@ -303,8 +466,8 @@ entirely deserved, and the Ancient and Foul Curse, which bears Topi's name, is
 the proof.
 
 **AngbandTk and ZAngbandTk** — **Tim Baker**, who between 1997 and 2001 wrote
-the Tcl/Tk framework, tile engine and interface that a later phase of this
-project intends to revive. Roughly 49,000 lines of it survive in the archives.
+the Tcl/Tk framework, tile engine and interface that this project's front end is
+rebuilding. Roughly 49,000 lines of it survive in the archives.
 
 **Roger Zelazny**, whose *Chronicles of Amber* gave Zangband its princes,
 its Pattern and its Trumps. **H. P. Lovecraft**, whose Mythos gave it everything
