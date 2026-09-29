@@ -5977,6 +5977,13 @@ gap that remains is that the borg has no model for classes whose abilities are
 powers rather than book spells** -- that wants its own decision, and it is the
 honest caveat on this one.
 
+**The nightly baseline does not need retaking.** The cap is read only by
+`borg_reincarnate_player()`, which the harness never reaches -- a run ends at
+its first death. Checked rather than argued: the same twelve-run fleet, same
+seeds, same turn budget, with the count pinned to 9 and then counted as 14, is
+**byte-identical** row for row and total for total. So raising it cannot move
+`tests/borg/BASELINE`, and the nightly's random stream is untouched.
+
 **Test.** `borg/traits:the-borg-can-roll-every-class` mirrors the race test:
 the count equals the list, every index it can roll is a class, one past the end
 is not. Asserted as a property of the list, not as the number 14. Falsified
