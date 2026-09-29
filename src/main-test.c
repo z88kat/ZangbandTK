@@ -1379,6 +1379,33 @@ static void c_borg_exercise(char *rest)
 		   learned, worked, player->class->magic.total_spells, healed,
 		   borg_heals_by_effect, pets, muts, player->max_depth, player->lev,
 		   run_deaths);
+
+	/*
+	 * What killed it, which nothing reported before (BRG-23).
+	 *
+	 * The nightly has counted deaths since BRG-05 and every run dies, so the
+	 * count carries no information: twelve of twelve, every night. The
+	 * question the depth stall actually raises is *what* kills a character at
+	 * clevel 1-7, and that has never been written down -- the reasoning about
+	 * it has been guesswork on top of a number that is always the same.
+	 *
+	 * `died_from` is set in `take_hit()` before the cheat-death event
+	 * ([player-util.c:399](player-util.c#L399)) precisely so that something
+	 * looking on can read it, and the harness does not cheat death unless
+	 * asked, so a run ends at its first death with this still standing.
+	 *
+	 * Depth here is `depth`, not `max_depth`: where it died, not how deep it
+	 * ever reached. The two differ often and the difference is the point --
+	 * a character that died in town after reaching depth 4 is a different
+	 * story from one that died on the floor it was exploring.
+	 */
+	if (run_deaths > 0) {
+		printf("borg-death: cause=%s | depth=%d | clevel=%d | maxdepth=%d "
+			   "| mhp=%d | gold=%d\n",
+			   player->died_from[0] ? player->died_from : "(unrecorded)",
+			   player->depth, player->lev, player->max_depth, player->mhp,
+			   (int) player->au);
+	}
 	fflush(stdout);
 }
 

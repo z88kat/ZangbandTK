@@ -5990,3 +5990,71 @@ is not. Asserted as a property of the list, not as the number 14. Falsified
 twice -- pinning the count to 9 fails it (the original bug) and to 13 fails it
 (off by one). The reincarnation path itself is not driven end to end by a test,
 since that needs a death mid-run; the bound it rolls against is.
+
+---
+
+**DEC-116 — What actually kills the borg, measured for the first time.**
+(BRG-23, 3.124.28. The depth-constraint investigation. Distribution only; no
+fix in this entry.)
+
+The nightly has counted deaths since BRG-05 and every run dies, so the count
+is twelve of twelve every night and carries no signal. Nothing reported
+*causes*. `borg-death:` now does: cause, depth died at, character level,
+max depth reached, max hit points and gold. `borg-progress` tallies it.
+
+**The sample.** Forty-two runs -- all fourteen classes against seeds 1, 7 and
+13 -- turn-bounded at 200,000. 37 died, **0 capped, 0 broken**.
+
+**What killed them.**
+
+| deaths | killer | hp | damage |
+|---|---|---|---|
+| 7 | giant white mouse | 1 | 1d2 |
+| 5 | insect swarm | 3 | 1d2 + 1d2 |
+| 3 | grid bug | 4 | 1d4 |
+| 3 | grey mold | 2 | -- |
+| 2 | giant white louse | 1 | 1d1 |
+| 2+2+2 | soldier, scout, kobold archer | | |
+| 11 | singletons, incl. 3 uniques and 1 lava death | | |
+
+**Seventeen of thirty-seven -- 46 per cent -- are `MULTIPLY` breeders.** Mouse
+carries the flag itself; louse, insect swarm and grid bug inherit it from
+`base:insect` in `monster_base.txt`. Every one of them has between one and
+four hit points and hits for 1d1 to 1d4. A further three are grey mold, which
+is `NEVER_MOVE` and cannot pursue at all. **Twenty of thirty-seven deaths are
+to monsters that are individually trivial**, and three of those to a monster
+that has to be walked up to.
+
+**Where and when.** Depth 0: 7. Depth 1: 26. Depth 2: 2. Depth 3: 2. So 33 of
+37 die at depth 1 or on the surface. Character level 1: 12. Level 3: 9. Level
+4: 6. Twenty-four of thirty-seven die at level 3 or below.
+
+**Gold at death ran from 109 to 4092**, most in the hundreds or low thousands.
+These characters are not poor. Whatever "restock" and "2 cure" mean as
+blockers, it is not that the borg cannot afford the goods.
+
+**Which framing this supports.** Overwhelmingly "the borg plays badly" rather
+than "the game is harder here". Difficulty does not explain dying to a
+stationary monster three times, and it does not explain a character with 147
+hit points and 4092 gold being killed at depth 3 by a one-hit-point louse.
+
+Two threads pull the other way and are worth keeping honest about. Eight of
+the seventeen breeder deaths are Zangband imports -- insect swarm and grid bug
+are ours -- so the imported population did add breeders to the early game.
+And the seven surface deaths are in the wilderness and town, which are also
+ours: four to ordinary NPCs, two to uniques (Fang, Martti Ihrasaari), one to
+lava, all at levels 1 to 4 with 10 to 37 hit points.
+
+**The breeder defence exists and is not working.** This is the most useful
+single thing the distribution turned up. `borg-danger.c:2422` raises danger
+for `RF_MULTIPLY`, `:2703` raises it further below clevel 20, and
+`borg-caution.c:1265` has an explicit "prevent breeder explosions when low
+level" gated on clevel < 15. Every death above is inside those bands. But
+`breeder_level` is only set true at `borg-think-dungeon.c:1372`, under
+`if (j >= 3)` -- three breeders must already be visible -- and what it then
+does is close doors. By the time three lice are on screen the level is
+already lost, and containment is not the same as leaving.
+
+**Not proposed here.** The candidate work is calibration of that trip point
+and a leave-the-level response rather than a containment one, but this entry
+is the measurement, and the measurement is what did not exist before.
