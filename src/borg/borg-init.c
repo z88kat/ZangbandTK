@@ -325,7 +325,7 @@ bool borg_init_txt_file(void)
         || borg_cfg[BORG_RESPAWN_RACE] < -1)
         borg_cfg[BORG_RESPAWN_RACE] = 0;
 
-    if (borg_cfg[BORG_RESPAWN_CLASS] >= MAX_CLASSES
+    if (borg_cfg[BORG_RESPAWN_CLASS] >= borg_player_class_count()
         || borg_cfg[BORG_RESPAWN_CLASS] < -1)
         borg_cfg[BORG_RESPAWN_CLASS] = 0;
 

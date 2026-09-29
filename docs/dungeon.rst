@@ -496,17 +496,19 @@ doors, these commands do not work if you are carrying the chest.
 
 One item in particular will be discussed here. The scroll of "Word of
 Recall" can be found within the dungeon, or bought at the alchemist in town.
-It acts in two manners, depending upon your current location. If read
-underground, it lifts you out to **the surface of the world at the mouth you
-went down by** — not to a town, which may be days away across the map. If read
-on the surface, it takes you back down to the deepest level you had reached in
-**the dungeon you were last in**, as described under `The Dungeons`_ above; it
-is not a way into a dungeon you have never entered, and not a way to
-the deepest level you have ever reached anywhere. This makes the scroll very
-useful for getting back to the deeper levels of ZangbandTK. Once the scroll has been read
-it takes a while for the spell to act, so don't expect it to save you in a
-crisis. During this time the word 'recall' will appear on the bottom of the
-screen below the dungeon. Reading a second scroll before the first takes
+All classes start with one of these scrolls in their inventory, unless you
+began the game with the "Word of Recall has no effect" birth option, in which
+case you are given none. It acts in two manners, depending upon your current
+location. If read underground, it lifts you out to **the surface of the world
+at the mouth you went down by** — not to a town, which may be days away across
+the map. If read on the surface, it takes you back down to the deepest level
+you had reached in **the dungeon you were last in**, as described under
+`The Dungeons`_ above; it is not a way into a dungeon you have never entered,
+and not a way to the deepest level you have ever reached anywhere. This makes
+the scroll very useful for getting back to the deeper levels of ZangbandTK.
+Once the scroll has been read it takes a while for the spell to act, so don't
+expect it to save you in a crisis. During this time the word 'recall' will
+appear on the bottom of the screen below the dungeon. Reading a second scroll before the first takes
 effect will cancel the action.
 
 You may "inscribe" any object with a textual inscription of your choice.

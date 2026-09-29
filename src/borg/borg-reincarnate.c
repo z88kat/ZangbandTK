@@ -475,7 +475,7 @@ void reincarnate_borg(void)
     if (borg_cfg[BORG_RESPAWN_CLASS] != -1)
         p_class = player_id2class(borg_cfg[BORG_RESPAWN_CLASS]);
     else
-        p_class = player_id2class(randint0(MAX_CLASSES));
+        p_class = player_id2class(randint0(borg_player_class_count()));
     player_generate(player, p_race, p_class, false);
 
     /* The dungeon is not ready nor is the player */

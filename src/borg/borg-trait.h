@@ -609,7 +609,26 @@ extern const char *prefix_pref[];
 #define CLASS_RANGER      7
 #define CLASS_BLACKGUARD  8
 
-#define MAX_CLASSES 9 /* Max # of classes 0 = warrior, 5 = Paladin */
+/*
+ * How many classes there are, counted rather than written down (ZangbandTK,
+ * BRG-19, DEC-115).
+ *
+ * This was `#define MAX_CLASSES 9`, true of Angband and untrue here: the game
+ * has fourteen. The borg reincarnates with `randint0(MAX_CLASSES)`, so Monk,
+ * Mindcrafter, Chaos-Warrior, Warrior-Mage and High-Mage could never be
+ * rolled, and `borg_init()` reset a respawn class beyond the ninth.
+ *
+ * A function rather than a bigger constant, for the reason the race side gave:
+ * a constant is what went stale. `cidx` is assigned 0..N-1 contiguously in
+ * `finish_parse_class()`, so the count is also the exclusive bound for
+ * `player_id2class()`.
+ *
+ * The `CLASS_*` indices above stay. They are what `borg_prepare_book_info()`
+ * switches on and what the startup check in `borg_init()` validates; the five
+ * this game adds sit past the last of them and fall to that switch's default,
+ * which BRG-09 made safe.
+ */
+int borg_player_class_count(void);
 
 /*
  * helper to determine if swaps are being used.

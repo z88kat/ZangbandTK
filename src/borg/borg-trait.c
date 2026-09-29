@@ -1244,6 +1244,19 @@ int borg_player_race_count(void)
     return n;
 }
 
+/*
+ * How many classes the game has.  See the note in borg-trait.h.
+ */
+int borg_player_class_count(void)
+{
+    const struct player_class *c;
+    int n = 0;
+
+    for (c = classes; c; c = c->next) n++;
+
+    return n;
+}
+
 static void borg_notice_equipment(void)
 {
     int                        i, bi, hold;

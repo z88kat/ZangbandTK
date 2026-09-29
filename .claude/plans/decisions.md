@@ -5911,3 +5911,75 @@ arithmetic: with no affinity, gaze is weight 2 of 193 and lands near 30.
 (`p_race.txt:1080`) and HORNS (`mutation.txt:675`) exist. That is a data gap
 rather than this defect, and it is outside the ruling, so it is recorded here
 and left for a decision.
+
+---
+
+**DEC-115 — The borg plays all fourteen classes, and four of the five new ones
+play as well as the old.** (BRG-19, 3.124.27. Supersedes the note in DEC-96
+that held this open.)
+
+**The ruling.** Asked whether the borg should play the imported classes, the
+project owner said yes. DEC-96 left `MAX_CLASSES` at 9 against 14 pending
+exactly that answer; this supersedes it.
+
+**The scope was smaller than I said, and the earlier estimate was wrong.** I
+rated this medium on the grounds that it was tied to the `prefix_pref` enum and
+per-class tables. Reading it: `prefix_pref` is the `BI_*` trait-name table and
+is not class-indexed, and nothing in `src/borg` is dimensioned by
+`MAX_CLASSES`. There were three sites -- the define, the respawn config bound
+in `borg-init.c`, and `randint0(MAX_CLASSES)` in `borg-reincarnate.c`. It is
+the same shape as the race fix and took the same treatment: the constant is
+replaced by `borg_player_class_count()`, because a constant is what went stale.
+The `CLASS_*` indices 0-8 stay; they are what `borg_prepare_book_info()`
+switches on and what the startup check validates.
+
+**What the cap does and does not gate.** It gates random reincarnation and the
+respawn config bound only. It never gated an explicitly named class, so
+`borg-progress -c Mindcrafter` already worked -- which meant the five could be
+measured for playability *before* the cap moved. The nightly has in fact been
+playing Warrior-Mage, an imported class, all along.
+
+**Pre-registered, then measured.** The prediction was written first: no crash
+(BRG-09 already made the ratings switch fall through safely), they still learn
+and cast, and their depth is indistinguishable from the rated classes -- with
+the negative named in advance as "reachable but not playable". Fifteen runs,
+turn-bounded at 200,000, seeds 1/7/13:
+
+| class | depth | levels | note |
+|---|---|---|---|
+| Monk | 7 | 13 | seed 7 survived the full 200k at depth 4 |
+| Chaos-Warrior | 6 | 12 | |
+| High-Mage | 5 | 9 | |
+| Warrior-Mage | 4 | 9 | seed 1 survived the full 200k |
+| **Mindcrafter** | **3** | **3** | every run died at clevel 1, depth 1 |
+
+`0 broken`, 36 spells learned, 30 cast.
+
+**The controlled comparison, which is the valuable part.** Excluding
+Warrior-Mage, which appears in both sets, the imported classes averaged 1.75
+depth per run against the rated casters' 1.67 on the same seeds and turn
+budget. Classes the borg has **no spell ratings for at all** play as well as
+classes it has hand-written tables for. That is independent support for
+DEC-112: the spell tables are not what keeps the borg shallow.
+
+**The exception, and it is a real one.** The Mindcrafter is reachable but not
+meaningfully played. `class.txt` gives it **zero** `spell:` lines and twelve
+`power:` lines -- it has no spellbooks, and its whole craft is on the `N`
+power path. The borg models book spells only, so it plays a Mindcrafter as a
+bare fighter with none of its twelve abilities: all three runs died at
+character level 1 on depth 1, none reaching a shop, `0 cast of 0`.
+
+**Shipped anyway, and why.** The Mindcrafter was already reachable by name, so
+the cap raise does not create the problem; nothing crashes; and the cap is a
+contiguous bound, so index 10 cannot be skipped without a different mechanism.
+Four of five are no worse served than the classes the borg already plays. **The
+gap that remains is that the borg has no model for classes whose abilities are
+powers rather than book spells** -- that wants its own decision, and it is the
+honest caveat on this one.
+
+**Test.** `borg/traits:the-borg-can-roll-every-class` mirrors the race test:
+the count equals the list, every index it can roll is a class, one past the end
+is not. Asserted as a property of the list, not as the number 14. Falsified
+twice -- pinning the count to 9 fails it (the original bug) and to 13 fails it
+(off by one). The reincarnation path itself is not driven end to end by a test,
+since that needs a death mid-run; the bound it rolls against is.

@@ -254,6 +254,41 @@ static int test_the_borg_can_roll_every_race(void *state) {
 	ok;
 }
 
+/**
+ * The borg can roll every class the game has.
+ *
+ * `MAX_CLASSES` was 9 against this game's 14, so reincarnation could never
+ * produce Monk, Mindcrafter, Chaos-Warrior, Warrior-Mage or High-Mage, and
+ * `borg_init()` reset a respawn class beyond the ninth. Asserted as a property
+ * of the list rather than as the number 14, for the reason the race test above
+ * gives.
+ *
+ * Reachable is not the same as well played: the borg has no spell ratings for
+ * these five and plays them unrated (BRG-09), and the Mindcrafter in
+ * particular has no book spells at all, so the borg never uses its craft
+ * (DEC-115). That is a separate gap; this test is about reachability.
+ */
+static int test_the_borg_can_roll_every_class(void *state) {
+	const struct player_class *c;
+	int n = 0;
+
+	for (c = classes; c; c = c->next) n++;
+
+	/* Every class is reachable ... */
+	eq(borg_player_class_count(), n);
+
+	/* ... and every index it can roll is a class. */
+	for (n = 0; n < borg_player_class_count(); n++)
+		notnull(player_id2class(n));
+
+	/* One past the end is not, so the bound is exclusive as rolled. */
+	require(!player_id2class(borg_player_class_count()));
+
+	/* And there is more here than Angband's nine, which is the point. */
+	require(borg_player_class_count() > 9);
+	ok;
+}
+
 const char *suite_name = "borg/traits";
 struct test tests[] = {
 	{ "a-brand-is-read-as-its-own-element",
@@ -262,5 +297,7 @@ struct test tests[] = {
 	  test_remove_hunger_scrolls_are_food },
 	{ "the-borg-can-roll-every-race",
 	  test_the_borg_can_roll_every_race },
+	{ "the-borg-can-roll-every-class",
+	  test_the_borg_can_roll_every_class },
 	{ NULL, NULL }
 };
