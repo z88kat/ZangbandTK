@@ -1366,14 +1366,55 @@ bool borg_think_dungeon(void)
             j++;
     }
 
-    /* hack -- close doors on breeder levels */
-    if (j >= 3) {
+    /*
+     * Breeder thresholds, restored to the archive's (ZangbandTK, BRG-24,
+     * DEC-117).
+     *
+     * These two had drifted in opposite directions, and both the wrong way.
+     * Door closing is containment and fired at three breeders; leaving is the
+     * response that actually works and needed `clevel + 2`. So the borg
+     * reached for the weaker answer first and the stronger one late -- at
+     * character level 1 it barricaded at three and would not leave until
+     * three, and at level 3 it would not leave until five.
+     *
+     * Zangband's own borg has both numbers the other way round:
+     * `j >= 8` to close doors and `j >= MIN(lev, 5)` to leave
+     * ([zborg8.c:1864](../archive/zangband/src/zborg8.c#L1864)), so it leaves
+     * on a single awake breeder at level 1 and rises to five by level 5.
+     * DEC-20 makes the archive authoritative and it is also the more cautious
+     * of the two exactly where DEC-116 measured the deaths: twelve at
+     * character level 1, fifteen more at levels 3 and 4.
+     *
+     * Breeders double, so the difference between leaving at one and leaving
+     * at three is not two monsters but however many turns doubling takes.
+     *
+     * **This did not reduce breeder deaths, and the numbers are kept here so
+     * nobody re-runs the experiment.** Measured over the same 42-run sweep as
+     * DEC-116: breeder deaths 17 -> 16, total depth 72 -> 72, deaths 37 -> 38.
+     * All noise. A probe at this line showed why it is not a threshold
+     * problem: the leaving branch already fired hundreds to thousands of times
+     * per run under *both* settings, and the character died anyway.
+     *
+     * The reason is that leaving is not an answer to these monsters. Insect
+     * swarm and giant white louse run at speed 120 against the player's 110
+     * ([player-calcs.c:2080](../player-calcs.c#L2080)); giant white mouse and
+     * grid bug match it at 110. Two of the four are faster and the other two
+     * cannot be shaken, and all of them multiply while the borg walks to a
+     * staircase it may not have found. "Head for the stairs" spends the turns
+     * that the doubling needs.
+     *
+     * Kept because DEC-20 makes the archive authoritative and this removes an
+     * unexplained divergence at no measured cost -- not because it worked.
+     * DEC-117 has the numbers and what the real answer would have to look
+     * like.
+     */
+    if (j >= 8) {
         /* set the flag to close doors */
         breeder_level = true;
     }
 
     /* Caution from breeders */
-    if ((j >= MIN(borg.trait[BI_CLEVEL] + 2, 5))
+    if ((j >= MIN(borg.trait[BI_CLEVEL], 5))
         && (borg.trait[BI_RECALL] <= 0 || borg.trait[BI_CLEVEL] < 35)) {
         /* Ignore monsters from caution */
         if (!borg.goal.ignoring && borg_t >= 2500) {

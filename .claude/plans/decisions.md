@@ -6058,3 +6058,80 @@ already lost, and containment is not the same as leaving.
 **Not proposed here.** The candidate work is calibration of that trip point
 and a leave-the-level response rather than a containment one, but this entry
 is the measurement, and the measurement is what did not exist before.
+
+---
+
+**DEC-117 — Leaving the level is not an answer to something faster than you.**
+(BRG-24, 3.124.29. The breeder calibration, and a failure by its own
+pre-registered criteria.)
+
+**The ruling was to calibrate**, on my own recommendation from DEC-116:
+breeders were 17 of 37 deaths, the defence tripped late and answered with
+containment, so lower the trip point and give it leaving.
+
+**Half that scoping was wrong.** Leaving already existed, immediately below
+the door-closing branch. The two thresholds had drifted in opposite
+directions from the archive's, and both the wrong way:
+
+| | archive (`zborg8.c:1864`) | ours before |
+|---|---|---|
+| close doors | `j >= 8` | `j >= 3` |
+| leave the level | `j >= MIN(lev, 5)` | `j >= MIN(lev + 2, 5)` |
+
+So the borg reached for containment early and leaving late -- at character
+level 1 it barricaded at three breeders and would not leave until three; at
+level 3 it would not leave until five. Both were set to the archive's values,
+which DEC-20 makes authoritative and which are also the more cautious exactly
+where DEC-116 measured the deaths.
+
+**Pre-registered before measuring**, and reproduced here: breeder deaths to
+fall below 10; total deaths 37 to roughly 30-33; depth to hold or sag, not
+rise. Failure named in advance as depth below 55, or breeder deaths not below
+12, or total deaths above 37.
+
+**The result, same 42 runs, same classes, same seeds, same budget:**
+
+| | before (DEC-116) | after |
+|---|---|---|
+| breeder deaths | 17 | **16** |
+| total deaths | 37 | 38 |
+| total depth | 72 | **72** |
+| levels | 143 | 140 |
+| deepest | 4 | 5 |
+
+**That is failure criterion F2: breeder deaths did not fall below 12.** Nothing
+moved. Depth was identical to the unit.
+
+**Why, probed rather than guessed.** A counter at the trip site showed the
+leaving branch firing **246, 1226, 17 and 59 times** in four runs under the new
+thresholds, and 1730, 372, 1 and 32 under the old. It fires constantly under
+both. On Priest seed 1 the change did exactly what it was meant to -- trips
+went from 1 to 17 out of 17 sightings -- and the character still died. The trip
+point was never the binding constraint.
+
+**The actual reason.** Leaving cannot work against these monsters. Insect
+swarm and giant white louse move at speed 120 against the player's 110
+(`player-calcs.c:2080`); giant white mouse and grid bug match it at 110. **Two
+of the four are faster than the borg and the other two cannot be shaken**, and
+all four multiply during every turn spent walking to a staircase that may not
+have been found yet. "Head for the stairs" spends precisely the turns the
+doubling needs.
+
+**Kept, but not because it worked.** The archive's numbers are authoritative
+under DEC-20 and the measurement shows no cost -- depth identical, deaths +1 on
+n=42, which is noise. Keeping them removes an unexplained divergence. The code
+comment says the same so the experiment is not re-run.
+
+**What the real answer would have to be**, not attempted here: something that
+does not require out-walking the swarm. Reading a Phase Door or Teleport
+scroll, taking a known staircase only when one is already adjacent, or refusing
+to engage the first breeder at all and treating its grid as forbidden. All
+three are a different piece of work from a threshold.
+
+**And the finding that matters more than this change.** Depth did not move,
+and it would not have moved even if breeder deaths had gone to zero: the fleet
+sits at 72 depth over 42 runs in both arms. **Breeders were killing the fleet
+but were never the depth ceiling.** Anyone planning work on the depth stall
+should start from that rather than from the death distribution -- the two are
+separate problems, and DEC-116's 46 per cent was a mortality statistic, not a
+constraint.
