@@ -79,8 +79,9 @@ pets away, and the behaviour reads as a bug when you meet it without knowing the
 
 **What.** Two things, and the second is the bigger one.
 
-First, the spell exists and `docs/realms.rst` never names it: five classes carry it
-(`lib/gamedata/class.txt:552, 2085, 3977, 4640, 7057`, all `effect:ALCHEMY`). A grep for
+First, the spell exists and `docs/realms.rst` never names it: six classes carry it -- Mage,
+Priest, Rogue, Ranger, Warrior-Mage and High-Mage
+(`lib/gamedata/class.txt:553, 2086, 3978, 4641, 7058, 8332`, all `effect:ALCHEMY`). A grep for
 "alchemy" across `docs/realms.rst` returns **zero** hits. `[verified here]`
 
 Second, the terms of the object-to-gold conversion are documented nowhere at all — not for the
@@ -380,7 +381,7 @@ having a 160-line chapter of its own. That was tier 2 and should already be fixe
 - `INVULN` firing **unasked** costs 25 virtue points — -5 Temperance, Honour and Sacrifice, -10
   Valour (`src/player-virtue.c:353-357`). `docs/virtues.rst:41-42` presents that charge as
   something the player chooses to do.
-- Melee mutation blows stop once the monster dies (`src/player-mutation.c:440-441`), so a
+- Melee mutation blows stop once the monster dies (`src/player-mutation.c:448-449`), so a
   character with five of them does not always land five.
 
 `[read by review]`
@@ -486,15 +487,22 @@ ten" and a Beastman polymorphs "one time in ten". Two code comments (`src/init.c
 (`archive/zangband/src/mutation.c:535, 553`) produces exactly those figures, via
 `randint1(10) < 7` and `< 2`.
 
-This build uses `randint1(10) <= affinity` (`src/player-mutation.c:276`) with affinities of 7
-and 2 (`lib/gamedata/p_race.txt:535, 784`), producing **70%** and **20%**.
+**RESOLVED before this file was written, and this entry was stale on arrival.** The build did
+use `randint1(10) <= affinity` with affinities of 7 and 2
+(`lib/gamedata/p_race.txt:535` Beastman, `:824` Vampire), producing 70% and 20%. The project
+owner ruled it a code defect on 28 September; it was fixed the same day in `7c971aa70` and
+recorded as DEC-114. `src/player-mutation.c:284` now reads `randint1(10) <`, and the measured
+rates are 0.60447 and 0.10558 over 200,000 rolls each.
 
-**So the manual, both comments, and the archive agree with each other and disagree with the
-code.** That is the shape of a code defect, not a documentation defect, and it should go to
-`pending-decisions.md` for a ruling rather than being written up either way.
+Two citation faults went with it, both worth naming because they are the kind this file is
+most exposed to. `src/player-mutation.c:276` was the operator's line *before* DEC-114 added
+nine lines of comment above it -- the fix shifted everything past line 242 down by eight, and
+this file was written from the review rather than from the tree. And `p_race.txt:784` is the
+Mindflayer's `TENTACLES:7`, not the Vampire's affinity, which is at `:824`.
 
-`[read by review]` — the affinity values and the comparison operator both want a second read
-before the entry is acted on.
+Nothing to write. Kept rather than deleted because the mistake it records -- a backlog entry
+citing line numbers that a commit moved between the reading and the writing -- is the standing
+hazard for every other entry here.
 
 ---
 
