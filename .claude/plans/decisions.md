@@ -6220,6 +6220,25 @@ which against a cyclic graph with a branching factor of four explores 4^64
 paths and never reaches the bound. Both are now a path mark plus a cleared
 mark, which also stops a shared tail being walked once per race.
 
+**Five concatenation defects, found by reading the output and not by any
+test.** The chains are built from fragments, so a fragment can be correct in
+isolation and wrong in every sentence it lands in. Sampling one history per
+race missed all five; sampling six each found them. A Zombie had "patchy no
+hair left" because a chart-103 alternative was not a noun phrase an adjective
+could precede. An Imp was "summoned by accident who had not read far enough",
+because chart 100 continues with "who" and chart 99 had an alternative that
+was not a person -- the accident now lives in chart 100 as "who did not mean
+to", where it is grammatical after all three. A Mind Flayer had "four
+tentacles you do not", an alternative that leaned on its sibling for its verb
+when only one is ever drawn. A Draconian was "the runt of a clutch of a
+Draconian Soldier", one "of" too many. And a Sprite was "a changeling left in
+place of a Sprite Dew-Gatherer", which inverts the sense -- a changeling is
+left in place of a human child, not of its own parent.
+
+None of these is catchable by the suite as written: all five end in a full
+stop, terminate, and reach 100. The test proves the structure; only reading
+proves the sentences.
+
 **No manual change.** `docs/birth.rst:25` already said background history is
 "randomly determined according to the race of the character". That was false
 for seventeen races and is now true -- the same shape as DEC-114, where the

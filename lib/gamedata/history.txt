@@ -555,7 +555,7 @@ phrase:You are the first hatchling
 chart:88:89:67
 phrase:You are one of several hatchlings 
 chart:88:89:100
-phrase:You are the runt of a clutch 
+phrase:You are the smallest hatchling 
 chart:89:104:25
 phrase:of a Draconian Soldier.  
 chart:89:104:50
@@ -581,7 +581,7 @@ phrase:You are one of several children
 chart:92:93:67
 phrase:You are the first child 
 chart:92:93:100
-phrase:You are a changeling left in place 
+phrase:You are an afterthought, the child 
 chart:93:107:33
 phrase:of a Sprite Dew-Gatherer.  
 chart:93:107:67
@@ -627,13 +627,15 @@ phrase:You were summoned by a Warlock
 chart:99:100:67
 phrase:You were summoned by an apprentice 
 chart:99:100:100
-phrase:You were summoned by accident 
-chart:100:118:33
+phrase:You were summoned by a scholar 
+chart:100:118:25
 phrase:who had not read far enough.  
-chart:100:118:67
+chart:100:118:50
 phrase:who has since been eaten.  
-chart:100:118:100
+chart:100:118:75
 phrase:who wanted somebody taller.  
+chart:100:118:100
+phrase:who did not mean to.  
 chart:101:102:25
 phrase:You have sunken eyes, 
 chart:101:102:50
@@ -655,7 +657,7 @@ phrase:black hair, and a complexion best not discussed.
 chart:103:0:75
 phrase:brown hair, and a greenish complexion.
 chart:103:0:100
-phrase:no hair left, and a greyish complexion.
+phrase:white hair, and a greyish complexion.
 chart:110:111:33
 phrase:You have pale pink eyes, 
 chart:110:111:67
@@ -671,7 +673,7 @@ phrase:a damp hide,
 chart:112:0:33
 phrase:and four tentacles you keep tidy.
 chart:112:0:67
-phrase:and four tentacles you do not.
+phrase:and four tentacles you do not keep tidy.
 chart:112:0:100
 phrase:and rather more tentacles than four.
 chart:113:114:33
