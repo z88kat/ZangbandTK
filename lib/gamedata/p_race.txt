@@ -497,7 +497,7 @@ skill-dig:0
 hitdie:10
 exp:225
 infravision:0
-history:1
+history:70
 age:50:50
 height:80:8
 weight:185:22
@@ -549,7 +549,7 @@ skill-dig:0
 hitdie:11
 exp:140
 infravision:0
-history:1
+history:78
 age:14:6
 height:63:8
 weight:135:32
@@ -574,7 +574,7 @@ skill-dig:0
 hitdie:7
 exp:100
 infravision:2
-history:1
+history:80
 age:14:3
 height:50:3
 weight:82:12
@@ -609,7 +609,7 @@ skill-dig:0
 hitdie:11
 exp:250
 infravision:2
-history:1
+history:88
 age:75:33
 height:74:3
 weight:145:20
@@ -797,7 +797,7 @@ skill-dig:0
 hitdie:9
 exp:140
 infravision:4
-history:1
+history:94
 age:100:25
 height:66:8
 weight:127:28
@@ -837,7 +837,7 @@ skill-dig:0
 hitdie:11
 exp:200
 infravision:5
-history:1
+history:82
 age:100:30
 height:69:8
 weight:165:38
@@ -920,7 +920,7 @@ skill-dig:0
 hitdie:12
 exp:200
 infravision:4
-history:1
+history:96
 age:1:100
 height:64:3
 weight:190:16
@@ -983,7 +983,7 @@ skill-dig:0
 hitdie:11
 exp:120
 infravision:0
-history:1
+history:72
 age:14:8
 height:80:6
 weight:195:18
@@ -1019,7 +1019,7 @@ skill-dig:0
 hitdie:12
 exp:135
 infravision:2
-history:1
+history:90
 age:20:3
 height:57:3
 weight:75:4
@@ -1058,7 +1058,7 @@ skill-dig:0
 hitdie:11
 exp:135
 infravision:5
-history:1
+history:76
 age:40:12
 height:41:3
 weight:85:5
@@ -1093,7 +1093,7 @@ skill-dig:0
 hitdie:10
 exp:110
 infravision:3
-history:1
+history:99
 age:13:4
 height:66:1
 weight:135:5
@@ -1135,7 +1135,7 @@ skill-dig:0
 hitdie:10
 exp:145
 infravision:2
-history:1
+history:86
 age:100:35
 height:69:5
 weight:50:5
@@ -1172,7 +1172,7 @@ skill-dig:0
 hitdie:13
 exp:135
 infravision:2
-history:1
+history:83
 age:100:30
 height:69:5
 weight:100:23
@@ -1211,7 +1211,7 @@ skill-dig:0
 hitdie:7
 exp:180
 infravision:5
-history:1
+history:87
 age:100:30
 height:69:5
 weight:100:23
@@ -1251,7 +1251,7 @@ skill-dig:0
 hitdie:9
 exp:125
 infravision:2
-history:1
+history:85
 age:100:30
 height:69:5
 weight:100:23
@@ -1289,7 +1289,7 @@ skill-dig:0
 hitdie:7
 exp:175
 infravision:4
-history:1
+history:92
 age:50:25
 height:30:4
 weight:70:7
@@ -1346,7 +1346,7 @@ skill-dig:0
 hitdie:14
 exp:255
 infravision:0
-history:1
+history:74
 age:100:30
 height:105:17
 weight:252:88

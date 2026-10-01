@@ -6135,3 +6135,78 @@ but were never the depth ceiling.** Anyone planning work on the depth stall
 should start from that rather than from the death distribution -- the two are
 separate problems, and DEC-116's 46 per cent was a mortality statistic, not a
 constraint.
+
+---
+
+**DEC-118 — The seventeen imported races get their own backstories.** (PLR-39,
+3.124.30. Voice ruled by the project owner; two sub-questions inferred and
+marked as such.)
+
+**The defect.** All seventeen races brought over from Zangband carried
+`history:1`, which is the chain Angband writes for a Human. A Golem's
+character sheet described its blue eyes and straight black hair; a Skeleton's
+gave it a complexion.
+
+**Checked first whether this was a port rather than authorship, and it is
+not.** Zangband 2.7.5 deleted the player-history feature outright --
+`save.c:904` writes four empty strings where history used to be and
+`load.c:1270` reads and discards. There is no history text in the archive for
+any race, so DEC-20 offers nothing here. What the archive *does* give is
+voice and fact: `lib/help/charattr.txt` has about 1,840 words of Zangband's
+own race prose, and `docs/birth.rst` has ours.
+
+**The ruling: comic social satire, in Angband's own register** -- the social
+ladder played straight-faced, the humour coming from the form being applied
+without comment rather than from jokes. A Skeleton with a doting parent, a
+Golem whose maker was careless, an Imp summoned by somebody who should have
+read further.
+
+**Two sub-questions were not answered and are recorded as inferred, so either
+can be overturned cheaply.** The **Imp is summoned** rather than born, which
+gives the made chain a second occupant instead of leaving it for the Golem
+alone. The **Vampire keeps parentage**, being the most obviously once-human of
+the five undead; the owner's ruling named Skeleton, Zombie, Spectre and Ghoul
+and did not mention it.
+
+**The structural constraint that shaped the whole topology**, found by reading
+rather than by a failure: `chart:3:50`. Chart 3 is the family-standing line and
+it leads to the *human* tail, so only a race ending on human eyes, hair and
+complexion may route through it. Half-Troll and Kobold already skip chart 3 for
+exactly this reason, and the new races with their own bodies follow them.
+
+**Tail reuse did most of the work.** Amberite, Barbarian and Half-Titan take
+the human tail outright; the Nibelung, which our own manual calls "a dwarf of
+the deep mines", takes the dwarf tail, beard included; Beastman and Yeek take
+the kobold tail. Seven of the seventeen therefore needed no descriptors
+written at all. The Skeleton and the Spectre have nothing to describe, so each
+ends on a single terminal line instead.
+
+57 new charts and 187 new phrases, against an estimate of ~40 and ~150. The
+overrun is two tails I had planned to share and split after reading the
+output: Draconian with Klackon produced a Draconian with "a dull chitinous
+shell", and Sprite with Imp would have put leathery wings on a sprite.
+
+**The test, `player/backstory`.** Four assertions: every chain terminates,
+every chart's rolls reach 100, every race's generated history ends on a full
+stop, and only Human and Dunadan still use chart 1. The second matters more
+than it looks -- `get_history()` asserts rather than returning short when a
+roll exceeds the last cutoff, so a chart stopping at 97 is a crash for three
+characters in a hundred.
+
+Falsified four ways, each reproducing a real failure: sending the Golem back
+to chart 1, dropping chart 116's last cutoff to 97, pointing the Spectre's
+terminal chart at itself, and changing a terminal fragment's full stop to a
+comma.
+
+**Two defects in my own test, both found by falsifying and neither by
+reading.** The cycle case did not fail the suite, it *hung* it -- the
+full-stop test calls the real `get_history()`, which has no cycle check and
+appends for ever. And the first cycle detector bounded recursion at depth 64,
+which against a cyclic graph with a branching factor of four explores 4^64
+paths and never reaches the bound. Both are now a path mark plus a cleared
+mark, which also stops a shared tail being walked once per race.
+
+**No manual change.** `docs/birth.rst:25` already said background history is
+"randomly determined according to the race of the character". That was false
+for seventeen races and is now true -- the same shape as DEC-114, where the
+documentation was right and the code was wrong.

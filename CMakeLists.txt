@@ -957,6 +957,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     player/race.c
     player/inven-carry-num.c
     player/inven-wield.c
+    player/backstory.c
     player/mutation.c
     player/miscast.c
     player/pet-upkeep.c

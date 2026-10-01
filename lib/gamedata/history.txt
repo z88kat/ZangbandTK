@@ -30,6 +30,39 @@
 #   Half-Orc      --> 19 --> 20 -->  2 -->  3 --> 50 --> 51 --> 52 --> 53
 #   Half-Troll    --> 21 --> 22 --> 62 --> 63 --> 64 --> 65 --> 66
 #   Kobold        --> 23 --> 24 --> 25 --> 26 --> 67 --> 68 --> 69
+#
+# ZangbandTK (PLR-39, DEC-118).  The seventeen imported races all pointed at
+# chart 1, so a Golem's sheet described its blue eyes and straight black hair.
+# Register is Angband's own -- the social ladder played straight-faced -- on
+# the project owner's ruling; the humour is the form applied without comment.
+#
+# Only a race ending on the human tail may route through chart 3, because
+# `chart:3:50` leads there.  Half-Troll and Kobold already skip it for the same
+# reason, and the new races with their own tails follow them.
+#
+#   Amberite      --> 70 --> 71 -->  3 --> 50 --> 51 --> 52 --> 53
+#   Barbarian     --> 72 --> 73 -->  3 --> 50 --> 51 --> 52 --> 53
+#   Half-Titan    --> 74 --> 75 -->  3 --> 50 --> 51 --> 52 --> 53
+#   Vampire       --> 82 -->  2 -->  3 --> 50 --> 51 --> 52 --> 53
+#   Nibelung      --> 76 --> 77 --> 57 --> 58 --> 59 --> 60 --> 61
+#   Beastman      --> 78 --> 79 --> 67 --> 68 --> 69
+#   Yeek          --> 80 --> 81 --> 67 --> 68 --> 69
+#   Zombie        --> 83 --> 84 --> 101 --> 102 --> 103
+#   Ghoul         --> 85 --> 84 --> 101 --> 102 --> 103
+#   Skeleton      --> 86 --> 120 --> 116
+#   Spectre       --> 87 --> 121 --> 117
+#   Draconian     --> 88 --> 89 --> 104 --> 105 --> 106
+#   Klackon       --> 90 --> 91 --> 122 --> 123 --> 124
+#   Sprite        --> 92 --> 93 --> 107 --> 108 --> 109
+#   Mindflayer    --> 94 --> 95 --> 110 --> 111 --> 112
+#   Golem         --> 96 --> 97 --> 98 --> 113 --> 114 --> 115
+#   Imp           --> 99 --> 100 --> 118 --> 125 --> 126 --> 127
+#
+# The Golem and the Imp are the two that are not born, so they take a made
+# chain -- material and maker, or summoner and mistake -- with charts 98 and
+# 118 standing where chart 3 stands for everyone else.  The Skeleton and the
+# Spectre have nothing to describe, so their chains end on one terminal line
+# instead of eyes, hair and complexion.
 
 # This table *must* be correct or the history may look very silly.
 
@@ -411,3 +444,379 @@ phrase:and small, sharp teeth.
 chart:69:0:100
 phrase:and large, sharp teeth.
 
+# === ZangbandTK: the seventeen imported races (PLR-39) ===
+
+chart:70:71:25
+phrase:You are one of several children 
+chart:70:71:50
+phrase:You are a late and unexpected child 
+chart:70:71:75
+phrase:You are the unacknowledged child 
+chart:70:71:100
+phrase:You are the acknowledged child 
+chart:71:3:25
+phrase:of a Prince of Amber.  
+chart:71:3:50
+phrase:of a Princess of Amber.  
+chart:71:3:75
+phrase:of a Lord of the Courts of Chaos.  
+chart:71:3:100
+phrase:of someone the family does not discuss.  
+chart:72:73:33
+phrase:You are the child of a tribal 
+chart:72:73:67
+phrase:You are the firstborn of a tribal 
+chart:72:73:100
+phrase:You were orphaned young and raised by a tribal 
+chart:73:3:25
+phrase:Hunter.  
+chart:73:3:50
+phrase:Raider.  
+chart:73:3:75
+phrase:Shield-Bearer.  
+chart:73:3:100
+phrase:Chieftain.  
+chart:74:75:33
+phrase:Your mother was a Titan. 
+chart:74:75:67
+phrase:Your father was a Titan. 
+chart:74:75:100
+phrase:Your grandmother was a Titan. 
+chart:75:3:33
+phrase:The family does not discuss it.  
+chart:75:3:67
+phrase:The village was rebuilt.  
+chart:75:3:100
+phrase:Nobody thought to ask.  
+chart:76:77:50
+phrase:You are one of several children of a Nibelung 
+chart:76:77:100
+phrase:You are the only child of a Nibelung 
+chart:77:57:25
+phrase:Miner.  
+chart:77:57:50
+phrase:Smith.  
+chart:77:57:75
+phrase:Hoard-Keeper.  
+chart:77:57:100
+phrase:Grudge-Bearer.  
+chart:78:79:33
+phrase:Your mother was touched by Chaos 
+chart:78:79:67
+phrase:Your father was touched by Chaos 
+chart:78:79:100
+phrase:Both your parents were touched by Chaos 
+chart:79:67:33
+phrase:and you are the result.  
+chart:79:67:67
+phrase:shortly before you were born.  
+chart:79:67:100
+phrase:and nobody is sure what you are.  
+chart:80:81:33
+phrase:You are the smallest of 
+chart:80:81:67
+phrase:You are the loudest of 
+chart:80:81:100
+phrase:You come from 
+chart:81:67:33
+phrase:a burrow of six yeeks.  
+chart:81:67:67
+phrase:a burrow of nine yeeks.  
+chart:81:67:100
+phrase:a burrow of twelve yeeks.  
+chart:82:2:33
+phrase:Before all this, you were the first child 
+chart:82:2:67
+phrase:Before all this, you were one of several children 
+chart:82:2:100
+phrase:Before all this, you were the unacknowledged child 
+chart:83:84:33
+phrase:You are the first child 
+chart:83:84:67
+phrase:You are one of several children 
+chart:83:84:100
+phrase:You are the only child 
+chart:84:101:25
+phrase:of a Necromancer.  
+chart:84:101:50
+phrase:of a Grave-Digger.  
+chart:84:101:75
+phrase:of a Physician with unusual interests.  
+chart:84:101:100
+phrase:of a hobbyist.  
+chart:85:84:33
+phrase:You are the hungriest of several children 
+chart:85:84:67
+phrase:You are the first child 
+chart:85:84:100
+phrase:You are the only child 
+chart:88:89:33
+phrase:You are the first hatchling 
+chart:88:89:67
+phrase:You are one of several hatchlings 
+chart:88:89:100
+phrase:You are the runt of a clutch 
+chart:89:104:25
+phrase:of a Draconian Soldier.  
+chart:89:104:50
+phrase:of a Draconian Priest.  
+chart:89:104:75
+phrase:of a Draconian Noble.  
+chart:89:104:100
+phrase:of two who never married.  
+chart:90:91:33
+phrase:You are the four thousandth child 
+chart:90:91:67
+phrase:You are the eleven thousandth child 
+chart:90:91:100
+phrase:You are the ninety thousandth child 
+chart:91:122:33
+phrase:of the Queen.  
+chart:91:122:67
+phrase:of the Queen, who is busy.  
+chart:91:122:100
+phrase:of the Queen, who has not met you.  
+chart:92:93:33
+phrase:You are one of several children 
+chart:92:93:67
+phrase:You are the first child 
+chart:92:93:100
+phrase:You are a changeling left in place 
+chart:93:107:33
+phrase:of a Sprite Dew-Gatherer.  
+chart:93:107:67
+phrase:of a Sprite Thorn-Rider.  
+chart:93:107:100
+phrase:of a Sprite Trickster.  
+chart:94:95:33
+phrase:You are the first child 
+chart:94:95:67
+phrase:You are one of several children 
+chart:94:95:100
+phrase:You are the only child 
+chart:95:110:33
+phrase:of a Mind Flayer Savant.  
+chart:95:110:67
+phrase:of a Mind Flayer Thrall-Keeper.  
+chart:95:110:100
+phrase:of two who shared a thought.  
+chart:96:97:25
+phrase:You were cut from granite 
+chart:96:97:50
+phrase:You were shaped from river clay 
+chart:96:97:75
+phrase:You were poured from bronze 
+chart:96:97:100
+phrase:You were assembled from spare parts 
+chart:97:98:25
+phrase:by a careful Alchemist.  
+chart:97:98:50
+phrase:by a careless Alchemist.  
+chart:97:98:75
+phrase:by a Sage in a hurry.  
+chart:97:98:100
+phrase:by somebody who has since left.  
+chart:98:113:33
+phrase:You have outlasted them.  
+chart:98:113:67
+phrase:You were not the first attempt.  
+chart:98:113:100
+phrase:Nobody has come to collect you.  
+chart:99:100:33
+phrase:You were summoned by a Warlock 
+chart:99:100:67
+phrase:You were summoned by an apprentice 
+chart:99:100:100
+phrase:You were summoned by accident 
+chart:100:118:33
+phrase:who had not read far enough.  
+chart:100:118:67
+phrase:who has since been eaten.  
+chart:100:118:100
+phrase:who wanted somebody taller.  
+chart:101:102:25
+phrase:You have sunken eyes, 
+chart:101:102:50
+phrase:You have clouded eyes, 
+chart:101:102:75
+phrase:You have one good eye, 
+chart:101:102:100
+phrase:You have milky eyes, 
+chart:102:103:33
+phrase:thinning 
+chart:102:103:67
+phrase:patchy 
+chart:102:103:100
+phrase:matted 
+chart:103:0:25
+phrase:grey hair, and a complexion that is going.
+chart:103:0:50
+phrase:black hair, and a complexion best not discussed.
+chart:103:0:75
+phrase:brown hair, and a greenish complexion.
+chart:103:0:100
+phrase:no hair left, and a greyish complexion.
+chart:110:111:33
+phrase:You have pale pink eyes, 
+chart:110:111:67
+phrase:You have lidless eyes, 
+chart:110:111:100
+phrase:You have four eyes, 
+chart:111:112:33
+phrase:a mauve hide, 
+chart:111:112:67
+phrase:a greyish hide, 
+chart:111:112:100
+phrase:a damp hide, 
+chart:112:0:33
+phrase:and four tentacles you keep tidy.
+chart:112:0:67
+phrase:and four tentacles you do not.
+chart:112:0:100
+phrase:and rather more tentacles than four.
+chart:113:114:33
+phrase:You have eyes of polished jet, 
+chart:113:114:67
+phrase:You have eyes of green glass, 
+chart:113:114:100
+phrase:You have two eyes that do not match, 
+chart:114:115:33
+phrase:a seam down one side, 
+chart:114:115:67
+phrase:a maker's mark on one heel, 
+chart:114:115:100
+phrase:a crack nobody has mentioned, 
+chart:115:0:33
+phrase:and a very hard complexion.
+chart:115:0:67
+phrase:and the complexion of wet clay.
+chart:115:0:100
+phrase:and a faint smell of the forge.
+chart:116:0:25
+phrase:Your bones are in good order.
+chart:116:0:50
+phrase:Your bones are yellowed with age.
+chart:116:0:75
+phrase:You are missing a rib, and nobody has mentioned it.
+chart:116:0:100
+phrase:You are held together largely by habit.
+chart:117:0:25
+phrase:You cast no shadow.
+chart:117:0:50
+phrase:You do not disturb the dust.
+chart:117:0:75
+phrase:You are told that you used to be taller.
+chart:117:0:100
+phrase:You are difficult to look at directly.
+chart:118:125:33
+phrase:You have outlasted them.  
+chart:118:125:67
+phrase:Nobody has come to collect you.  
+chart:118:125:100
+phrase:The circle is still on the floor somewhere.  
+chart:120:116:25
+phrase:of a Necromancer.  
+chart:120:116:50
+phrase:of a Grave-Digger.  
+chart:120:116:75
+phrase:of a Physician with unusual interests.  
+chart:120:116:100
+phrase:of a hobbyist.  
+chart:121:117:25
+phrase:of a Necromancer.  
+chart:121:117:50
+phrase:of a Grave-Digger.  
+chart:121:117:75
+phrase:of a Physician with unusual interests.  
+chart:121:117:100
+phrase:of a hobbyist.  
+chart:86:120:33
+phrase:You are the tidiest of several children 
+chart:86:120:67
+phrase:You are the first child 
+chart:86:120:100
+phrase:You are the only child 
+chart:87:121:33
+phrase:You are the quietest of several children 
+chart:87:121:67
+phrase:You are the first child 
+chart:87:121:100
+phrase:You are the only child 
+chart:104:105:25
+phrase:You have gold eyes, 
+chart:104:105:50
+phrase:You have red eyes, 
+chart:104:105:75
+phrase:You have black eyes, 
+chart:104:105:100
+phrase:You have slitted eyes, 
+chart:105:106:25
+phrase:green scales, 
+chart:105:106:50
+phrase:bronze scales, 
+chart:105:106:75
+phrase:black scales, 
+chart:105:106:100
+phrase:scales nobody can name the colour of, 
+chart:106:0:25
+phrase:and a wingspan you are proud of.
+chart:106:0:50
+phrase:and wings that do not work.
+chart:106:0:75
+phrase:and a faint smell of smoke.
+chart:106:0:100
+phrase:and one tooth that will not sit right.
+chart:107:108:33
+phrase:You have bright green eyes, 
+chart:107:108:67
+phrase:You have amber eyes, 
+chart:107:108:100
+phrase:You have eyes like dewdrops, 
+chart:108:109:33
+phrase:gossamer wings, 
+chart:108:109:67
+phrase:wings like a dragonfly's, 
+chart:108:109:100
+phrase:one wing slightly shorter, 
+chart:109:0:33
+phrase:and skin like a new leaf.
+chart:109:0:67
+phrase:and skin like birch bark.
+chart:109:0:100
+phrase:and a very small face.
+chart:122:123:33
+phrase:You have black compound eyes, 
+chart:122:123:67
+phrase:You have dull red compound eyes, 
+chart:122:123:100
+phrase:You have eyes that do not move, 
+chart:123:124:33
+phrase:a lacquered black carapace, 
+chart:123:124:67
+phrase:a dull brown carapace, 
+chart:123:124:100
+phrase:a carapace scuffed from work, 
+chart:124:0:33
+phrase:and an impressive set of mandibles.
+chart:124:0:67
+phrase:and mandibles you keep clean.
+chart:124:0:100
+phrase:and a faint smell of formic acid.
+chart:125:126:33
+phrase:You have coal-black eyes, 
+chart:125:126:67
+phrase:You have small yellow eyes, 
+chart:125:126:100
+phrase:You have eyes that catch the light, 
+chart:126:127:33
+phrase:leathery wings, 
+chart:126:127:67
+phrase:wings folded out of the way, 
+chart:126:127:100
+phrase:one horn shorter than the other, 
+chart:127:0:33
+phrase:and skin the colour of soot.
+chart:127:0:67
+phrase:and skin the colour of embers.
+chart:127:0:100
+phrase:and a smell of sulphur you have stopped noticing.
