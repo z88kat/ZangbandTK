@@ -6139,8 +6139,9 @@ constraint.
 ---
 
 **DEC-118 — The seventeen imported races get their own backstories.** (PLR-39,
-3.124.30. Voice ruled by the project owner; two sub-questions inferred and
-marked as such.)
+3.124.30. All four design questions ruled by the project owner -- the voice
+with the work, the Imp and the Vampire after it, both matching the default
+it was built to.)
 
 **The defect.** All seventeen races brought over from Zangband carried
 `history:1`, which is the chain Angband writes for a Human. A Golem's
@@ -6161,12 +6162,25 @@ without comment rather than from jokes. A Skeleton with a doting parent, a
 Golem whose maker was careless, an Imp summoned by somebody who should have
 read further.
 
-**Two sub-questions were not answered and are recorded as inferred, so either
-can be overturned cheaply.** The **Imp is summoned** rather than born, which
-gives the made chain a second occupant instead of leaving it for the Golem
-alone. The **Vampire keeps parentage**, being the most obviously once-human of
-the five undead; the owner's ruling named Skeleton, Zombie, Spectre and Ghoul
-and did not mention it.
+**Two sub-questions were built to a default and have since been ruled on.
+Both rulings matched the default, so nothing was rebuilt.**
+
+The **Imp is summoned** rather than born -- ruled, in the owner's words,
+because it "gives us a bit of variety". That is a content reason rather than a
+structural one and it is the better of the two arguments: the made chain was
+defensible with the Golem alone, but a chain with one occupant is a special
+case rather than a structure, and a summoning that went wrong reads nothing
+like a workshop that did.
+
+The **Vampire keeps parentage** -- ruled. It is the most obviously once-human
+of the five undead, and the original ruling on the raised undead named
+Skeleton, Zombie, Spectre and Ghoul without mentioning it, which is what left
+it open.
+
+So all four of the design questions this entry rests on -- the parallel origin
+chain, the raised undead keeping parentage, which races lose their physical
+descriptors, and the voice -- are settled by the project owner rather than by
+default. Nothing in this entry is now an inference.
 
 **The structural constraint that shaped the whole topology**, found by reading
 rather than by a failure: `chart:3:50`. Chart 3 is the family-standing line and
