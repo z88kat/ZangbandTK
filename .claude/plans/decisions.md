@@ -6434,3 +6434,59 @@ the manual, in the race's own entry.
 This is the fourth item in the review to dissolve on inspection, which is a
 good outcome rather than a disappointing one: the work was establishing that
 there was nothing to do.
+
+---
+
+**DEC-123 — The starving-shopper gate was already fixed, was never a
+precedence bug, and is measurably inert.** (BRG-25. A reported defect that
+does not reproduce, plus the measurement nobody had.)
+
+**It does not reproduce.** `borg-store-buy.c:283` is a comment in this tree.
+The gate was corrected on 26 September in `17c5aa61d` and recorded in DEC-102.
+The reviewer's line number is upstream's, not ours.
+
+**And it was not a precedence bug**, which matters because the suggested class
+of fix would not have worked. The original was *fully parenthesised*:
+
+```c
+if (borg.trait[BI_FOOD] == 0
+    && (item->tval != TV_FOOD
+        && (item->tval != TV_SCROLL
+            && item->sval != sv_scroll_satisfy_hunger)))
+```
+
+There is no precedence ambiguity there to resolve and adding parentheses
+changes nothing. It is a **De Morgan error**: "skip unless food, or the
+satisfy-hunger scroll" negates to `!food && !(scroll && satisfy)`, which is
+`!food && (!scroll || !satisfy)`. The author wrote the third `&&` where the
+negated form needs `||`. The *effect* the reviewer described was right -- every
+scroll exempt, because `tval != TV_SCROLL` is false for a scroll and collapses
+the conjunction -- but the diagnosis was not.
+
+**Upstream still carries it.** `angband/angband` master has the identical
+expression at the identical lines 282-286. So we have diverged deliberately,
+and the practical consequence is worth writing down: **a future re-vendor of
+the borg from upstream will silently revert this.** The same applies to every
+other borg fix in this project. That is a re-vendor hazard rather than
+anything to do now.
+
+**The measurement, which is the part that did not exist.** Pre-registered
+prediction: no movement, because the gate tests `BI_FOOD == 0` exactly -- not
+"hungry" -- and DEC-116 catalogued 37 deaths across 42 runs without a single
+starvation among them. Measured on the nightly's own twelve-run fleet at its
+own budget, per DEC-120, with the fix in and then reverted to upstream's form:
+
+**Byte-identical, run for run. 30 depth, 64 levels, 29 learned, 24 cast in
+both arms. No starvation death in either.**
+
+So the fix is correct and currently buys nothing observable. That is not an
+argument for reverting it -- the logic is demonstrably wrong and a borg that
+reaches zero food in a shop stocking scrolls would do the wrong thing -- but
+it is an argument against the instinct to cover it with a test. DEC-102
+declined to test it on the grounds that it sits in an un-seamed loop and a
+test would prove nothing; the measurement now supports that from the other
+direction. The path the bug lives on is not reached by any run the fleet
+makes.
+
+**Nothing changed.** This entry is the verification, and it is the fifth item
+in this review to dissolve on inspection.
