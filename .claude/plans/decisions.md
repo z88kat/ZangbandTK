@@ -6547,3 +6547,73 @@ of `p_race.txt` left the line present in source and absent from the build, and
 the probe measured 1.08 per cent -- 32 against a lower edge of 1660, hundreds
 of sigma out. That is precisely the failure the band exists to catch, observed
 by accident rather than designed for.
+
+---
+
+**DEC-125 — The borg plays nightmare mode, as crash detection and nothing
+else.** (BRG-26, 3.124.34. Reverses the project owner's earlier decline and my
+earlier advice; the measurement is why.)
+
+**Both of us were against this, and I was wrong for a reason I can name.** The
+mode was declined once on the grounds that there was enough unfinished work,
+and I agreed on the grounds that a borg which dies at depth 1-4 unaided would
+die faster in nightmare and execute nothing. That second argument was an
+assumption, and it is false.
+
+**Measured before recommending**, same twelve-run fleet, same seeds, same
+budget, with the option on:
+
+| | depth | levels | deepest | died | broken |
+|---|---|---|---|---|---|
+| standard | 30 | 64 | 9 | 12 | 0 |
+| nightmare | 17 | 23 | 2 | 12 | **0** |
+
+Runs survived between **141 and 109,342 turns**, median around eleven
+thousand. Long enough to generate levels, meet monsters at doubled hit points
+and +5 speed, and cross midnight in the longer ones. The Mage is close to
+hopeless -- one run lasted 141 turns -- but nothing wedged and nothing
+crashed.
+
+**What it is for, and what it is not.** Crash detection. Nightmare's content
+is about depth and survival; a borg that reaches depth 2 cannot say whether
+the mode is correctly brutal, only that its code does not fall over when a
+game walks through it. Today the sixteen behaviours are exercised by
+`game/nightmare` in isolation and by nothing in play, and **if anything from
+M11 stage 2 ships this arm is the only thing that will ever execute it.** That
+is the whole argument; it is narrow and it is real.
+
+**The gate needed no new mechanism, which is what made this cheap.**
+`borg-progress` already ends `[ $broken -gt 0 ] && exit $broken` followed by
+`[ -z "$baseline" ] && exit 0`. Run without `-b` it fails for a crash, an
+abort or a wedge and passes otherwise. So there is deliberately **no nightmare
+baseline**: a near-zero baseline would drift, and after DEC-120 cost a day by
+going red over one character level, a gate with no number in it is the point
+rather than a shortcut.
+
+**Four things the project owner asked to get right.**
+
+*The arm is named where a reader will see it.* `main-test.c` appends
+`[NIGHTMARE]` to the line that opens every run, and `borg-progress` prints a
+four-line banner of its own. Both, because the script captures each run's
+output into a variable and prints only the lines it parses -- a marker that
+lives only in the C would never reach the log, which is exactly how a heal
+counter came to read as "never called" in September.
+
+*Neither arm can mask the other.* The nightmare step runs **after** the
+standard one and carries `if: always()`, so a crash here cannot skip the
+baseline comparison and a regression there cannot skip this. A binary check
+keeps a failed build from printing a second, more confusing error under the
+first.
+
+*Time-boxed* at five minutes a run against the standard arm's ten, since these
+die faster; the job's own two-hour bound is unchanged.
+
+*What green means is documented where it is read* -- in the workflow comment,
+in the step summary GitHub renders on the run page, and in the sweep's own
+banner. Green means the code did not fall over. It does not mean the mode is
+balanced.
+
+**It found nothing today.** `0 broken` across twelve runs. The value is
+prospective, and that is the honest case: three defects this fortnight passed
+unit tests and were caught only by a running game -- the ally-ai depth
+inheritance, the wilderness gate, and `ui/shimmer`.

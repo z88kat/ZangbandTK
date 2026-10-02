@@ -493,9 +493,40 @@ static void borg_begin_pending(void)
 		borg_note("# ZangbandTK: death is cheated; deaths are still counted");
 	}
 
+	/*
+	 * `ZTK_NIGHTMARE` plays the same fleet with nightmare mode on (BRG-26).
+	 *
+	 * Set as an option rather than at birth because that is how the mode is
+	 * reached in play and in `game/nightmare`: it is a birth *option* but
+	 * every one of the sixteen behaviours reads `OPT(player,
+	 * birth_nightmare)` where it acts, so a character that acquires it before
+	 * its first level generates meets all of them.
+	 *
+	 * The point of the arm is narrow and worth stating here rather than only
+	 * in a decision entry. It is **crash detection**. Nightmare's content is
+	 * about depth and survival, and a borg that reaches depth 2 cannot say
+	 * whether the mode is correctly brutal -- only that its code paths do not
+	 * fall over when a game actually walks through them. Today those paths are
+	 * exercised by `game/nightmare` in isolation and by nothing in play.
+	 *
+	 * Measured before it was built: the same twelve runs reach 17 depth
+	 * against 30, 23 character levels against 64, and survive between 141 and
+	 * 109,342 turns. Long enough to generate levels and meet monsters at
+	 * doubled hit points; far too short to judge balance.
+	 */
+	if (getenv("ZTK_NIGHTMARE")) {
+		player->opts.opt[OPT_birth_nightmare] = true;
+		borg_note("# ZangbandTK: nightmare mode is on for this run");
+	}
+
 	borg_cmd_start();
 
-	printf("borg-run: started for %d turns at turn %d\n", turns, (int) turn);
+	/*
+	 * The arm is named on the line that opens every run, so a log read six
+	 * months from now cannot be mistaken for the other one.
+	 */
+	printf("borg-run: started for %d turns at turn %d%s\n", turns, (int) turn,
+		   OPT(player, birth_nightmare) ? " [NIGHTMARE]" : "");
 	fflush(stdout);
 }
 

@@ -83,6 +83,47 @@ jobs:
             -b tests/borg/BASELINE \
             1 7 13 2>&1 | tee borg-nightly.txt
 
+      # The same fleet again with nightmare mode on (BRG-26).
+      #
+      # This arm is crash detection and nothing else. Nightmare's content is
+      # about depth and survival, and the borg reaches depth 2 in it -- it
+      # cannot tell you the mode is balanced, only that its code paths do not
+      # fall over when a game walks through them. Today those paths run in
+      # `game/nightmare` in isolation and nowhere else, and if anything from
+      # M11 stage 2 ever ships this is the only thing that will execute it in
+      # play.
+      #
+      # No `-b`, which is the whole gate: `borg-progress` exits non-zero for a
+      # crash, an abort or a wedge, and exits zero otherwise when it has no
+      # baseline to compare against. A nightmare baseline would be near zero
+      # and would drift, so there is deliberately no number here that can go
+      # red by one character level the way DEC-120 did.
+      #
+      # `if: always()` so the two arms cannot hide each other: a crash here
+      # must not skip the standard run, and a regression there must not skip
+      # this. The binary check keeps a failed build from producing a second,
+      # more confusing error underneath the first.
+      #
+      # Five minutes rather than ten: these runs die faster, and the cap is
+      # insurance against one that somehow does not.
+      - name: Play it again, with nightmares
+        if: always()
+        env:
+          LANG: en_US.UTF-8
+          ZTK_NIGHTMARE: '1'
+        run: |
+          set -o pipefail
+          if [ ! -x build/game/angband ]; then
+            echo "no binary -- the build did not get that far; skipping"
+            exit 0
+          fi
+          scripts/borg-progress \
+            -x build/game/angband \
+            -n 2000000 \
+            -m 5 \
+            -c "${{ github.event.inputs.classes || 'Warrior,Mage,Priest,Warrior-Mage' }}" \
+            1 7 13 2>&1 | tee borg-nightmare.txt
+
       # The run page, rather than sixty lines of log somebody has to expand.
       # GitHub renders whatever is appended here as markdown, and the table
       # borg-progress already prints is the right shape for it.
@@ -100,8 +141,20 @@ jobs:
             cat borg-nightly.txt || echo "(no output -- the run did not get that far)"
             echo '```'
             echo
-            echo "Baseline: \`tests/borg/BASELINE\`. A drop is a regression;"
-            echo "deaths and time caps are not. To reproduce a run:"
+            echo "### Nightmare arm"
+            echo
+            echo '```'
+            cat borg-nightmare.txt || echo "(no output -- the run did not get that far)"
+            echo '```'
+            echo
+            echo "**The nightmare arm is crash detection.** Green means the"
+            echo "code did not fall over, *not* that the mode is balanced --"
+            echo "the borg reaches depth 2 in it. It has no baseline on"
+            echo "purpose, so it can only go red for a crash, an abort or a"
+            echo "wedge."
+            echo
+            echo "Baseline: \`tests/borg/BASELINE\`, standard arm only. A drop"
+            echo "is a regression; deaths and time caps are not. To reproduce:"
             echo
             echo '```'
             echo "scripts/borg-progress -c <class> <seed>"
@@ -124,6 +177,7 @@ jobs:
           name: borg-nightly
           path: |
             borg-nightly.txt
+            borg-nightmare.txt
             ~/.angband/**/archive/borg-log.txt
           if-no-files-found: warn
           retention-days: 90

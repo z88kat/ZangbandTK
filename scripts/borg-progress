@@ -132,6 +132,21 @@ if [ -n "$minutes" ]; then
 else
 	echo "borg-progress: $turns turns, seeds [$seeds]"
 fi
+
+# Which arm this is, said by the sweep rather than only by the runs.
+#
+# `main-test.c` marks every run it starts, but this script captures each run's
+# output into a variable and prints only the lines it parses, so a marker that
+# only exists down there never reaches the log. That is exactly how a heal
+# counter came to be read as "never called" in September. Printed here, a
+# nightmare sweep is identifiable from its first line whether it ran in CI or
+# by hand.
+if [ -n "$ZTK_NIGHTMARE" ]; then
+	echo "borg-progress: NIGHTMARE MODE -- this arm is crash detection only."
+	echo "borg-progress: green means the code did not fall over, not that the"
+	echo "borg-progress: mode is balanced. Deaths are expected and are not"
+	echo "borg-progress: failures; only a crash, an abort or a wedge is."
+fi
 printf '%-15s %6s %7s %7s %7s  %s\n' class seed turns depth clevel outcome
 
 broken=0
