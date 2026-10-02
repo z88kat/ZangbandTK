@@ -6337,3 +6337,100 @@ before this, so the number the gate holds us to is still reachable. Reverting
 restores the behaviour that passed, which is the correct repair rather than
 moving the goalposts to fit a regression. That is what `tests/borg/BASELINE`
 says in its own words -- *do not update it to make a red night green*.
+
+---
+
+**DEC-121 — The Skeleton keeps the twentieth we give it.** (PLR-13,
+pending-decisions item 3, food half. Settles that item in full.)
+
+**The ruling: leave the food alone.**
+
+The archive gives a Skeleton *nothing* from food -- `cmd6.c:109` drops most of
+it on the floor with "The food falls through your jaws!" and vanishes the
+rest, and neither branch calls `set_food`. The `/20` is for Golem, Zombie,
+Spectre and Ghoul; the Skeleton is excluded from it. Ours gives the Skeleton
+`/20` like the others, so we are kinder than the archive and stay that way.
+
+Consistent with DEC-119 on the same race and the same pending item: making a
+hard race harder for fidelity's sake is not worth it when the drawback is
+invisible until it bites.
+
+**And it was never worth much either way, which is worth recording so the
+question is not reopened on principle.** A Ration of Food is `NOURISH:INC_BY`
+of 30, which is 3000 units, so a twentieth is **150** -- about 150 player
+turns against a drain of 10 per 100 game turns. A Remove Hunger scroll takes
+food to 5001, roughly 4,900 units or 4,900 player turns, for 10 gold at an
+Alchemist that always stocks it. Per gold that is 50 units from food against
+490 from scrolls. **Food is a rounding error in a Skeleton's diet.** Closing
+the divergence would have taken away something worth three per cent of what
+actually feeds it.
+
+---
+
+**DEC-122 — The Ghoul is fine, and this one dissolves on inspection.**
+(PLR-13, BRG-xx. Investigation and recommendation; no ruling sought on the
+numbers because nothing needs changing.)
+
+**First, a correction.** Two earlier statements of mine conflicted. I once
+said the Skeleton had the hardest bargain of the undead because the other
+three digest slowly; later I said the Ghoul shares its bind. The second is
+right and the first was wrong. Measured from `p_race.txt`:
+
+| race | `CANT_EAT` | `SLOW_DIGEST` |
+|---|---|---|
+| Skeleton | yes | no |
+| **Ghoul** | yes | **no** |
+| Zombie, Spectre | yes | yes |
+| Vampire | no (`BLOOD_DIET`, a tenth) | no |
+
+Zombie, Spectre and Golem digest slowly. The Ghoul does not, and neither does
+the Skeleton. Two races share that bind.
+
+**All of it is faithful.** The archive's Ghoul
+([files.c](../archive/zangband/src/files.c)) is `HOLD_LIFE | CANT_EAT |
+GHOUL_TOUCH | IM_POIS | RES_COLD | HURT_FIRE`, dark at 10 and nether at 20,
+with **no `TR_SLOW_DIGEST`** -- exactly ours. It is also in the `/20` food
+group, so unlike the Skeleton our twentieth is correct for it.
+
+**The one real gap, and it is bigger than a flag.** The archive gives the
+Ghoul *two* racial powers (`tables.c:8014`):
+
+```
+RACE_GHOUL  "Eat corpse/skeleton"   level  1, cost  0, CON, fail  0
+RACE_GHOUL  "Sense living"          level 30, cost 10, WIS, fail 12
+```
+
+We ship the second. The first is **level one, free, and cannot fail** --
+`eat_corpse()` ([racial.c:78](../archive/zangband/src/racial.c#L78)) grants
+2000 food from a corpse and 1000 from a skeleton, reading Zangband *fields*,
+which 4.2 has no concept of. So the archive's Ghoul feeds itself on the dead
+from the moment it is rolled, and ours cannot. `docs/birth.rst:625` already
+says so plainly.
+
+**Can it sustain itself without that? Yes, comfortably.** Same arithmetic as
+the Skeleton:
+
+| source | units | player turns | gold |
+|---|---|---|---|
+| Ration of Food (a twentieth) | 150 | 150 | 3 |
+| **Remove Hunger scroll** | **4,900** | **4,900** | **10** |
+| archive corpse, scaled to our units | 1,333 | 1,333 | free |
+
+Birth to starving is about 8,900 player turns, the starting kit is 2-5
+scrolls, and the Alchemist stocks more permanently at 10 gold. **The lost
+corpse power is worth 27 per cent of one scroll.** DEC-116 measured characters
+dying with 109 to 4,092 gold in hand; a scroll every 4,900 turns is not a
+constraint on anything.
+
+**Recommendation: leave it, and close the item.** Our Ghoul is in exactly the
+position Steven has just ruled acceptable for the Skeleton, so ruling
+otherwise would be inconsistent on the same day. Porting corpse-eating means
+inventing corpse objects for a game that has none -- a feature, not a gap --
+to supply a food source worth a quarter of a ten-gold scroll. And the
+precedents both point the same way: DEC-119 declined the potion smash because
+an unsignposted death reads as a bug, and here the absence *is* signposted, in
+the manual, in the race's own entry.
+
+This is the fourth item in the review to dissolve on inspection, which is a
+good outcome rather than a disappointing one: the work was establishing that
+there was nothing to do.
