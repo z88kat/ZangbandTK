@@ -6279,3 +6279,61 @@ and a reason -- which makes it a feature to schedule, not a gap to close.
 food-falls-through half is a different question and is bound up with whether a
 Skeleton can feed itself at all, which is reported separately and not decided
 here.
+
+---
+
+**DEC-120 — The breeder thresholds go back to ours. DEC-117 kept a change
+that bought nothing and cost seven depth.** (BRG-24, 3.124.32. Three red
+nightlies, 30 September to 2 October.)
+
+**The failure.** `REGRESSION -- character levels down more than a third
+across the fleet, was 39 in total, now 27`. Not a crash, not a test, `0
+broken`: the totals gate in `borg-progress`, which trips below 70 per cent of
+baseline, so the trip point is 27.3 and the fleet scored 27. It failed by one
+character level.
+
+**It was not noise.** All three nights returned **identically** 15 depth and
+27 levels. The night before the first failure returned 17 and 29 and passed.
+A deterministic step, not drift.
+
+**What moved it.** Three candidates and two fall immediately. The mutation
+rate fix (DEC-114) cannot touch this fleet -- the nightly's characters are
+Human, which has no `mutation_affinity`, and the operator change consumes the
+same `randint1` either way. The `MAX_CLASSES` raise (DEC-115) was *proved*
+byte-identical on this exact twelve-run fleet before it shipped. That leaves
+DEC-117's breeder thresholds, which were a deliberate behaviour change.
+
+**Reproduced, with the nightly's own command.** On Darwin at 2,000,000 turns
+and a ten-minute bound:
+
+| thresholds | depth | levels | deepest |
+|---|---|---|---|
+| ours (`j >= 3`, `MIN(lev + 2, 5)`) | **30** | **64** | 9 |
+| archive (`j >= 8`, `MIN(lev, 5)`) | 23 | 57 | 5 |
+
+Seven depth and seven levels, in the same direction and much the same
+proportion as CI's 17 to 15 and 29 to 27.
+
+**So DEC-117's "no measured cost" was wrong**, and wrong in a way worth
+naming: it rested on a 42-run sweep over fourteen classes, where the cost
+averaged into noise against 72 total depth. The nightly measures twelve runs
+of four classes. A change can be free across a wide sample and expensive on
+the narrow one that gates the build, and the gated sample is the one that has
+to be measured.
+
+**And DEC-20 was the wrong argument for keeping it.** The archive is
+authoritative for the *game's* behaviour -- what a player experiences. A borg
+threshold is not that. Our borg descends from Angband 4.2's borg; Zangband's
+`zborg` is a different program solving the same problem, so matching a
+constant across the two is not fidelity, it is coincidence with a citation.
+DEC-20 should not be reached for again to justify a tooling heuristic.
+
+**Reverted.** The change achieved nothing it was built for and cost
+measurably. Archive alignment does not survive either of those on its own.
+
+**The baseline does not need retaking.** It is not stale: the fleet returned
+39 levels when the baseline was taken and the gate passed at 29 two days
+before this, so the number the gate holds us to is still reachable. Reverting
+restores the behaviour that passed, which is the correct repair rather than
+moving the goalposts to fit a regression. That is what `tests/borg/BASELINE`
+says in its own words -- *do not update it to make a red night green*.

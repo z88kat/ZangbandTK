@@ -1367,54 +1367,44 @@ bool borg_think_dungeon(void)
     }
 
     /*
-     * Breeder thresholds, restored to the archive's (ZangbandTK, BRG-24,
-     * DEC-117).
+     * Breeder thresholds: ours, not the archive's, and reverted to ours after
+     * measuring (ZangbandTK, BRG-24, DEC-117 then DEC-120).
      *
-     * These two had drifted in opposite directions, and both the wrong way.
-     * Door closing is containment and fired at three breeders; leaving is the
-     * response that actually works and needed `clevel + 2`. So the borg
-     * reached for the weaker answer first and the stronger one late -- at
-     * character level 1 it barricaded at three and would not leave until
-     * three, and at level 3 it would not leave until five.
+     * Zangband's own borg closes doors at `j >= 8` and leaves at
+     * `j >= MIN(lev, 5)` ([zborg8.c:1864](../archive/zangband/src/zborg8.c#L1864)),
+     * which is more cautious than ours at exactly the character levels where
+     * DEC-116 measured the deaths. Both were tried. Both are now back.
      *
-     * Zangband's own borg has both numbers the other way round:
-     * `j >= 8` to close doors and `j >= MIN(lev, 5)` to leave
-     * ([zborg8.c:1864](../archive/zangband/src/zborg8.c#L1864)), so it leaves
-     * on a single awake breeder at level 1 and rises to five by level 5.
-     * DEC-20 makes the archive authoritative and it is also the more cautious
-     * of the two exactly where DEC-116 measured the deaths: twelve at
-     * character level 1, fifteen more at levels 3 and 4.
+     * **Why they went back.** The archive's values did not reduce breeder
+     * deaths -- 17 to 16 over the same 42-run sweep, which is noise -- and a
+     * probe at this line showed why: the leaving branch already fires hundreds
+     * to thousands of times per run under either setting and the character
+     * dies anyway. Leaving is not an answer to these monsters. Insect swarm
+     * and giant white louse run at speed 120 against the player's 110
+     * ([player-calcs.c:2080](../player-calcs.c#L2080)), mouse and grid bug
+     * match it, and all four multiply while the borg walks to a staircase it
+     * may not have found.
      *
-     * Breeders double, so the difference between leaving at one and leaving
-     * at three is not two monsters but however many turns doubling takes.
+     * So the archive's values bought nothing. What they cost took another
+     * three nights to show, because the 42-run sweep averaged it away: on the
+     * nightly's own twelve-run fleet at its own budget they cost **7 depth and
+     * 7 levels**, 30/64 against 23/57, and that was enough to fail the
+     * BASELINE gate on three consecutive nights.
      *
-     * **This did not reduce breeder deaths, and the numbers are kept here so
-     * nobody re-runs the experiment.** Measured over the same 42-run sweep as
-     * DEC-116: breeder deaths 17 -> 16, total depth 72 -> 72, deaths 37 -> 38.
-     * All noise. A probe at this line showed why it is not a threshold
-     * problem: the leaving branch already fired hundreds to thousands of times
-     * per run under *both* settings, and the character died anyway.
-     *
-     * The reason is that leaving is not an answer to these monsters. Insect
-     * swarm and giant white louse run at speed 120 against the player's 110
-     * ([player-calcs.c:2080](../player-calcs.c#L2080)); giant white mouse and
-     * grid bug match it at 110. Two of the four are faster and the other two
-     * cannot be shaken, and all of them multiply while the borg walks to a
-     * staircase it may not have found. "Head for the stairs" spends the turns
-     * that the doubling needs.
-     *
-     * Kept because DEC-20 makes the archive authoritative and this removes an
-     * unexplained divergence at no measured cost -- not because it worked.
-     * DEC-117 has the numbers and what the real answer would have to look
-     * like.
+     * **And DEC-20 was the wrong argument for keeping them.** The archive is
+     * authoritative for the *game's* behaviour -- what a player experiences.
+     * This is a borg heuristic, and our borg descends from Angband 4.2's,
+     * not from Zangband's `zborg`. They are different programs solving the
+     * same problem, so matching a number across them is not fidelity, it is
+     * coincidence with a citation.
      */
-    if (j >= 8) {
+    if (j >= 3) {
         /* set the flag to close doors */
         breeder_level = true;
     }
 
     /* Caution from breeders */
-    if ((j >= MIN(borg.trait[BI_CLEVEL], 5))
+    if ((j >= MIN(borg.trait[BI_CLEVEL] + 2, 5))
         && (borg.trait[BI_RECALL] <= 0 || borg.trait[BI_CLEVEL] < 35)) {
         /* Ignore monsters from caution */
         if (!borg.goal.ignoring && borg_t >= 2500) {
