@@ -67,7 +67,14 @@ rebalance in search of a complaint.
 
 ---
 
-## 3. The Skeleton's potions smashing on the drinker
+## 3. ~~The Skeleton's potions smashing on the drinker~~ — POTION HALF DECIDED
+
+**Ruled 2 October 2026: potions work normally. "It is magic." Recorded as
+DEC-119; no code change was needed, since this tree never implemented it.
+The food-falls-through half of this entry remains open and is bound up with
+the hunger question.** Original entry follows.
+
+### The original entry
 
 **The choice.** Whether to import it at all.
 

@@ -6243,3 +6243,39 @@ proves the sentences.
 "randomly determined according to the race of the character". That was false
 for seventeen races and is now true -- the same shape as DEC-114, where the
 documentation was right and the code was wrong.
+
+---
+
+**DEC-119 — A Skeleton's potions work normally. Declined against the archive,
+deliberately.** (PLR-13, pending-decisions item 3, potion half.)
+
+**The ruling, in the project owner's words: "it's magic."**
+
+**What the archive does.** `cmd6.c:200`: a Skeleton that quaffs anything gets
+the potion's effect, and then "Some of the fluid falls through your jaws!" and
+`potion_smash_effect()` fires **at its own grid** -- the shatter effect of the
+potion it just drank, on itself. A Potion of Death quaffed by a level-two
+Skeleton detonates where it stands.
+
+**What we do: nothing.** No `potion_smash_effect` exists in this tree and the
+quaff path has no race hook, so this has always been declined by omission.
+This entry makes it a decision instead.
+
+**Why declining is right, and it is not a fidelity shrug.** DEC-20 makes the
+archive authoritative for *behaviour*, and this is behaviour, so the bar for
+refusing it is a reason rather than a preference. The reason is signposting.
+Every other Skeleton drawback is visible before it costs you: `CANT_EAT` is on
+the character sheet, the starting kit is scrolls instead of rations, and the
+manual says so. This one is invisible until it happens, happens at the moment
+a character is already drinking a potion to survive, and presents as the
+potion malfunctioning rather than as a racial trait. A new player's reading is
+"the game is broken", not "Skeletons are like that". It was flavour in 1998
+when the audience read the source; today it reads as a bug report.
+
+If it is ever wanted it needs a message before the first time, a manual entry
+and a reason -- which makes it a feature to schedule, not a gap to close.
+
+**Scope.** This settles the potion half of pending item 3 only. The
+food-falls-through half is a different question and is bound up with whether a
+Skeleton can feed itself at all, which is reported separately and not decided
+here.
