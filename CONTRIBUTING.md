@@ -139,6 +139,42 @@ working guards were deleted on the strength of this before the pattern was
 recognised. Pause, `touch` the file, and assert that it actually recompiled —
 grep the build log for `Building C object .*<file>` — rather than assuming it.
 
+## Deletes fail on this mount, so move instead
+
+`rm` does not work reliably in this checkout. Renames do. So when something
+has to go, move it to `deleted/` rather than removing it:
+
+```sh
+mv .git/index.lock deleted/git/index.lock
+```
+
+`deleted/` is in `.gitignore` except for its `.gitkeep`, so the folder
+survives a clone and nothing you put in it is ever committed.
+
+**The valuable case is git's own litter.** A stranded `.git/index.lock` blocks
+every write to the repository until it is gone, and on this mount "gone" has
+to mean "moved". The same goes for `.git/refs/**/*.lock`, a leftover
+`next-index-*.lock`, and the `tmp_obj_*` files git leaves under
+`.git/objects/` when an operation is interrupted. `git fsck` will name the
+ones that matter.
+
+**Move them into `deleted/`, not aside in place.** Renaming a lock to
+`index.lock.old` works and is the obvious thing to reach for at two in the
+morning, but it leaves the litter where the next person will find it and
+wonder, and the piles compound: this folder was created to collect three
+separate generations of exactly that, including a `_stale_locks/` directory
+someone had already made for the same purpose. One pile, in one place.
+
+Two things it is worth being clear about.
+
+`.gitignore` has no authority inside `.git/`, so moving a file out of there is
+not "ignoring" it — it is getting it out of git's way, which is the whole
+point. Nothing needs to be ignored for that to work.
+
+And **`deleted/` is a holding area, not a bin.** Nothing in it is gone. If
+something genuinely has to be destroyed — a credential, anything sensitive —
+do that from a real terminal, because moving it here does not.
+
 ## If behaviour changes, the manual changes
 
 ZangbandTK ships its own manual in [docs/](docs/), because the game differs from

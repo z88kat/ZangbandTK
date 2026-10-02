@@ -1,0 +1,10 @@
+This folder exists because deletes fail on this mount and renames do not.
+
+Move things here instead of removing them.  Everything below this file is
+ignored by git; this file is tracked so the folder survives a clone.
+
+It is a holding area, not a bin.  Nothing in here is gone.  If something
+genuinely needs to be destroyed -- a credential, anything sensitive -- do it
+from a real terminal, because moving it here does not.
+
+See "Deletes fail on this mount" in CONTRIBUTING.md.

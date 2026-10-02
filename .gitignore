@@ -176,3 +176,21 @@ src/osx-tty*/
 scripts/tiles/neon/preview.png
 scripts/tiles/neon/preview-actual-size.png
 scripts/tiles/neon/cycle.png
+# Where files go when they cannot be deleted.
+#
+# Unlink fails on this mount and rename does not, so the way to get rid of
+# something is to move it here rather than to remove it.  `scripts/` and the
+# build trees are not the problem -- git's own litter is: a stranded
+# `.git/index.lock` blocks every write until it is gone, and gone has to mean
+# moved.
+#
+# `deleted/*` with an exception rather than plain `deleted/`, because git does
+# not descend into an ignored directory and would never find the .gitkeep that
+# keeps the folder alive through a clone.
+#
+# Note what this cannot do: .gitignore has no authority inside .git/, so the
+# files moved out of there are untracked only because nothing looks at them.
+# That is fine -- the point of moving them is that git stops tripping over
+# them, not that git stops seeing them.
+deleted/*
+!deleted/.gitkeep
