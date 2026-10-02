@@ -6490,3 +6490,60 @@ makes.
 
 **Nothing changed.** This entry is the verification, and it is the fifth item
 in this review to dissolve on inspection.
+
+---
+
+**DEC-124 — The Imp gets its horns.** (PLR-38, 3.124.33. Closes the question
+DEC-114 left open.)
+
+**The ruling: add it.** The archive has a view, nobody overruled it, the
+mutation is real and functional, and the Imp arrived in a later import wave
+than the affinity work.
+
+**What the archive gives.** `RACE_IMP` takes `MUT2_HORNS` on
+`randint1(10) < 7` ([mutation.c:541](../archive/zangband/src/mutation.c#L541))
+-- the same `7` as the Vampire's gaze, the Yeek's shriek and the Mindflayer's
+tentacles. Only the Beastman differs, at `2`. Since DEC-114 made the
+comparison strict, a stored `7` grants six times in ten, and the measurement
+agrees: **0.60353 over 200,000 rolls**, against the Vampire's 0.60447.
+
+**Why it was missing, which is the part that makes the ruling easy.** Nothing
+anywhere records a decision to leave it out -- the only mention in this log
+before now is DEC-114's own note. And there is a plain explanation: the Imp
+was one of eight races deferred to a later wave (CNT-11), while the four
+affinities that do exist were carried over with the first. This is the same
+class as DEC-106's Sprite, where the archive's behaviour lived somewhere the
+import did not look. DEC-20 makes the archive authoritative in exactly that
+situation.
+
+**The mutation is built, and is not one of the inert ones.** `HORNS` is
+`kind:melee` with a `6d2` blow at weight 15 -- a real extra attack, the same
+kind as `TENTACLES`, whose affinity we already ship. The three that do nothing
+are the silly voice, the illusory normal appearance and bad luck, all for want
+of charisma or an identify moment (`docs/mutations.rst:50`).
+
+**Small, and worth saying so.** An Imp has no `mutation-rate`: only the
+Beastman mutates spontaneously. An Imp meets mutations through chaos damage
+(one in three per hit), a patron's reward (one in six, and it may be a
+Chaos-Warrior), and potions. So this is a rare event with a decisive effect
+when it fires -- 1.08 per cent becomes 60. It is a fidelity fix rather than a
+balance change, which is also why it is safe.
+
+**One data line and one sentence**, exactly as scoped.
+`mutation-affinity:HORNS:7` in `p_race.txt`, and `docs/mutations.rst:229` now
+names five races instead of four.
+
+**Test.** The Imp joins `a-race-affinity-grants-at-the-archive-rate`: the
+stored 7 is asserted, then 3000 rolls against the band already used for the
+Vampire, whose rate it shares. Falsified three ways -- removing the line fails
+the affinity guard, changing 7 to 5 fails the stored-value check, and
+`HORNZ` fails at **startup** with `p_race.txt: Imp has
+mutation-affinity:HORNZ, which is not a mutation`, which confirms DEC-102's
+post-load validation covers this line and not merely the general case.
+
+*The rate band itself is defence in depth, because the stored-value guards
+fire before it.* It is not idle, though: during this work a stale staged copy
+of `p_race.txt` left the line present in source and absent from the build, and
+the probe measured 1.08 per cent -- 32 against a lower edge of 1660, hundreds
+of sigma out. That is precisely the failure the band exists to catch, observed
+by accident rather than designed for.

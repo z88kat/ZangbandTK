@@ -228,9 +228,9 @@ three.
 
 Some races take more readily to particular changes. A Vampire's gaze turns
 hypnotic six times out of ten; a Mindflayer sprouts tentacles as often; a Yeek
-learns to shriek. A Beastman tends towards polymorphing itself, but only one
-time in ten — the source is specific about that, where the documentation is
-not.
+learns to shriek, and an Imp grows horns. A Beastman tends towards polymorphing
+itself, but only one time in ten — the source is specific about that, where the
+documentation is not.
 
 Three mutations have conditions attached, and no Zangband document mentions
 them. The Midas touch only comes to the already-rich: a thousand gold for every

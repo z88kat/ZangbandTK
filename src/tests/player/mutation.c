@@ -247,8 +247,16 @@ static int test_iron_skin_sheds_all_three(void *state) {
  * only way in: hypnotic gaze can also come up on the weighted roll underneath,
  * which lifts the true figures slightly. Measured over 200,000 rolls each:
  *
- *     correct (`<`)    gaze 0.60447    polymorph 0.10558
+ *     correct (`<`)    gaze 0.60447    polymorph 0.10558    horns 0.60353
  *     wrong   (`<=`)   gaze 0.70415    polymorph 0.20481
+ *
+ * The Imp was added later (DEC-124): the archive gives it `HORNS` at the same
+ * `< 7` as the Vampire and it measures the same, 0.60353. Its contrast is much
+ * wider than the Vampire's, because the question for a race the archive gives
+ * an affinity and we did not is 60 per cent against the 0.01079 measured with
+ * the line absent -- `HORNS` is weight 2 of 193 on the ordinary roll. The same
+ * band separates both: at 3000 rolls the no-affinity rate sits hundreds of
+ * sigma below its lower edge.
  *
  * At 3000 rolls the correct rate sits at least 5.4 sigma inside both edges of
  * each band, and the wrong rate falls 6.1 sigma (gaze) and 9.3 sigma
@@ -260,22 +268,26 @@ static int test_iron_skin_sheds_all_three(void *state) {
  */
 static int test_a_race_affinity_grants_at_the_archive_rate(void *state) {
 	const struct player_race *keep = player->race;
-	struct player_race *r, *vampire = NULL, *beastman = NULL;
-	int i, gazes = 0, polys = 0;
+	struct player_race *r, *vampire = NULL, *beastman = NULL, *imp = NULL;
+	int i, gazes = 0, polys = 0, horns = 0;
 	const int n = 3000;
 
 	for (r = races; r; r = r->next) {
 		if (streq(r->name, "Vampire")) vampire = r;
 		if (streq(r->name, "Beastman")) beastman = r;
+		if (streq(r->name, "Imp")) imp = r;
 	}
 	notnull(vampire);
 	notnull(beastman);
+	notnull(imp);
 	require(vampire->mutation_affinity);
 	require(beastman->mutation_affinity);
+	require(imp->mutation_affinity);
 
 	/* The stored numbers are the archive's, and are not what is granted. */
 	eq(vampire->mutation_chance, 7);
 	eq(beastman->mutation_chance, 2);
+	eq(imp->mutation_chance, 7);
 
 	player->race = vampire;
 	for (i = 0; i < n; i++) {
@@ -295,9 +307,23 @@ static int test_a_race_affinity_grants_at_the_archive_rate(void *state) {
 		if (m && streq(m->name, "POLYMORPH")) polys++;
 	}
 
+	player->race = imp;
+	for (i = 0; i < n; i++) {
+		const struct mutation *m;
+
+		flag_wipe(player->mutations, MUT_SIZE);
+		m = mutation_roll(player);
+		if (m && streq(m->name, "HORNS")) horns++;
+	}
+
 	/* Six times in ten, not seven: 1813 expected, 2112 if it were `<=`. */
 	require(gazes > 1660);
 	require(gazes < 1960);
+
+	/* The same band, and the same rate: 1811 expected. Without the affinity
+	 * line at all it is 32, which is what this is really guarding. */
+	require(horns > 1660);
+	require(horns < 1960);
 
 	/* One time in ten, not two: 317 expected, 614 if it were `<=`. */
 	require(polys > 224);

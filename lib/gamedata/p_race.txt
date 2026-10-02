@@ -1078,6 +1078,7 @@ power-dice:22
 # A minor demon.  Fire is its element from birth, and it sees the invisible
 # from level 10.  Cheap for what it is, at 110.
 name:Imp
+mutation-affinity:HORNS:7
 virtues:FAITH
 stats:-1:-1:-1:1:2
 skill-disarm-phys:-3
