@@ -688,7 +688,31 @@ manual chapter as well as here:
 stage-2 addition recorded as a decision. Manual chapter: nightmare mode, which per BAL-15's
 own reasoning must tell the player which half is which.
 
-> **Where it stands, 14 September 2026. Stage 1 is complete**; stage 2 is a scheduled
+> **M11 is complete, 4 October 2026.** Every part of the exit criterion above is
+> now met, checked against the tree rather than assumed:
+>
+> - *Selectable and unfair as designed* — yes, and since DEC-125 the borg plays
+>   it nightly as crash detection.
+> - *Stage 1 complete* — since 14 September; all sixteen of §2.8.2 closed,
+>   twelve built and four ruled out.
+> - *Every stage-2 addition recorded as a decision* — all four of the cheap and
+>   clearly-good items are now rulings rather than open questions: `repro-max`
+>   to 255 (DEC-126), the player's reflection doubled (DEC-127), poor and
+>   permanent shopkeepers (DEC-128), nastier mutations (DEC-129). The
+>   cyberdemon item stays refused under DEC-30.
+> - *A manual chapter telling the player which half is which* — `nightmare.rst`
+>   keeps the sixteen it ports separate from the four that are ours, under
+>   their own heading, so the chapter never claims Zangband did something it
+>   did not.
+>
+> The rest of §2.8.5 remains what DEC-84 called it: a list of ideas, not a port
+> we failed to notice. Nothing there is owed.
+>
+> **The note below is what stood before that**, and is kept because it records
+> why the milestone was held open rather than closed trivially by adding
+> nothing.
+>
+> **Where it stood, 14 September 2026. Stage 1 is complete**; stage 2 is a scheduled
 > decision and not a satisfied one. All sixteen of §2.8.2's behaviours are closed: twelve
 > built, four ruled out — the score multiplier and the Golem's stun immunity (DEC-81), and
 > both of the mode's nightmares (DEC-82, the sleep-attack one deferred rather than refused
