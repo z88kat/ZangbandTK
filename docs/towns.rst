@@ -271,8 +271,11 @@ somewhere else are sitting. And since a town that has fallen keeps no services
 at all, the work dries up exactly where you would expect it to, without any
 rule needing to say so. About half the towns in a world are hiring.
 
-You can carry several jobs at once. Any building that hires will tell you how
-far along you are, or pay you when you are done.
+You can carry eight jobs at once, and a ninth is refused. Any building that
+hires will tell you how far along you are, or pay you when you are done — twenty
+gold for each creature asked for, multiplied by how deep that creature lives,
+and never less than twenty in total. See :doc:`quests` for the rest of the
+terms.
 
 What you dream at the inn
 -------------------------
@@ -315,6 +318,15 @@ sleep and a frontier town is not:
 
 Most nights, in either, are just a night. And a town that has fallen has no inn
 at all, so the worst country never gets the chance to give you the worst dreams.
+
+**What you bring to the bed matters too.** The table above is the law of the
+place; your virtues shift it from there. **Enlightenment** and **Knowledge**
+make a true dream likelier — a vision is clearer to somebody who has spent their
+life looking — and **Unlife** and **Chance** make a dark one likelier. They are
+added to the chance rather than replacing it, and twenty points of virtue are
+worth one percentage point, so where you sleep still matters most; but a
+scholarly character and a necromancer sleeping in the same bed are not having
+the same night. See :doc:`virtues`.
 
 Nothing in a town is free. The prices are in ``constants.txt`` and are pitched so
 a character of level five feels them and one of level thirty does not, which is

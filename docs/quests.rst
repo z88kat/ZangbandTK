@@ -37,7 +37,10 @@ What you may be asked
 ground or below, because a bounty is about the creature and not the place. The
 work is drawn near your own depth, so it is neither trivial nor suicidal, and
 never on a unique — there is only one of those and a bounty on it could be
-impossible to fill.
+impossible to fill. Collecting one is also the only thing in the game that moves
+your **Justice** virtue, which it does by five points each time: nothing else
+writes to it at all, so a character who wants to be seen as just has exactly one
+way of getting there. See :doc:`virtues`.
 
 **A delivery.** Carry word to a named town. It is finished by arriving, and only
 by arriving: killing the person who asked you does not deliver the parcel.
@@ -68,9 +71,26 @@ not in that list: you are on those from birth, and putting "kill the Serpent of
 Chaos" at the top of a first-level character's list would give away the ending
 and tell you nothing you can act on.
 
-You can carry several jobs at once. Any building that hires will tell you how far
-along you are, or pay you when you are done — the reward scales with what you
-were asked to kill and how many of them.
+You can carry **eight** jobs at once. Ask for a ninth and you are told *"You've
+enough on your plate already."* The two quests the game ends on do not take any
+of the eight, because nobody handed them to you. The number is in
+``constants.txt`` as ``wild:quest-slots``.
+
+Any building that hires will tell you how far along you are, or pay you when you
+are done. The reward is worked out rather than haggled: **twenty gold for each
+creature you were asked for, multiplied by how deep that creature lives**, with
+a floor of twenty gold so that nothing pays nothing. A job for six of something
+at depth 20 is worth two and a half thousand; the same six at depth 2 are worth
+three hundred and sixty. Taking work you can barely survive is where the money
+is, which is the point of being told the depth before you accept.
+
+**How deep the work is drawn.** A bounty picks from anything living down to
+four levels below the deepest you have been. A job down a named dungeon goes to
+six below that, then is pulled back inside the range that dungeon actually
+covers — so a shallow dungeon cannot be made to give you deep work however far
+you have travelled, and a deep one will not offer you anything above its own
+mouth. In both cases the reference is the deepest you have *been*, not where you
+are now, so the offers get harder after a deep dive and stay there.
 
 Giving up
 ---------
@@ -122,3 +142,17 @@ depends on what the world can supply: an errand to another town needs another
 town, a job down a particular dungeon needs one you have found, and there is no
 sense sending you to look at a place you are standing in. Every kind falls back
 to a bounty, which needs nothing but a bestiary.
+
+**The six are not offered equally often, though**, and it is worth knowing that
+before you conclude the world only wants vermin killed. The roll picks a place
+to start in a fixed order — finding a place, then a delivery, then a dungeon
+job, then a fetch — and works down from wherever it landed, taking the first
+kind the world can supply. So a fetch is reachable from every starting point and
+finding a place from only one, and the four are offered in that order of
+likelihood. One roll in five starts past the end of the list and offers none of
+them. A killing in the open is then tried one time in three. Everything that
+falls through all of it becomes a bounty, which needs nothing but a bestiary.
+
+Expect more bounties than anything else, and most of all early on, when you have
+found one dungeon and heard of one town and most of the list has nothing to work
+with.

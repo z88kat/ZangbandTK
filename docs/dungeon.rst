@@ -312,9 +312,15 @@ but some do not, especially those which involve "using" objects.
 
 Stores do not always have everything in stock. As the game progresses, they
 may get new items so check from time to time. Stores restock after 10000
-game turns have passed, but the inventory will never change while you are
-in town, even if you save the game and return. You must be in the dungeon
-for the store to restock. Also, if you sell them an item, it may get sold
+game turns have passed, and a shop's shelves will not change while you stand
+in front of them — walking out of a shop and back in does not re-roll it.
+
+That turn count is the rule you will meet least often, though. **The rule that
+actually governs what is on the shelves is which town you are in.** A trade
+restocks when you carry your custom to a *different* town, at that town's own
+standard, so a general store in a great city holds better things than the one in
+the village you started in — and coming home again restocks it back down. See
+:doc:`towns`. Also, if you sell them an item, it may get sold
 to a customer while you are adventuring, so don't always expect to be able
 to get back everything you have sold. If you have a lot of spare gold, you
 can purchase every item in a store, which will induce the store owner to
