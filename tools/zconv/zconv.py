@@ -1968,6 +1968,13 @@ _ENTRY = re.compile(
     r'\s*(A_[A-Z]+|-?\d+)\s*,\s*(-?\d+)\s*,\s*(-?\d+)\s*\}', re.S)
 
 
+#: Mutations nightmare mode weighs double.  Ours; see DEC-129.
+NIGHTMARE_WORSE = frozenset({
+    "PUNY", "MORONIC", "ALBINO", "FLESH_ROT", "BLANK_FAC",
+    "SHORT_LEG", "ARTHRITIS", "VULN_ELEM", "XTRA_NOIS", "XTRA_FAT",
+})
+
+
 def _mutation_weights() -> tuple[dict[int, int], dict[int, str]]:
     """How often each mutation comes up, and what it needs first.
 
@@ -2541,6 +2548,23 @@ def cmd_mutations(args) -> int:
                 % (chance, int(chance) * 100))
 
         entry.set("weight", weights.get(index, 0))
+
+        # Ours, not Zangband's (BAL-18, DEC-129).
+        #
+        # Nightmare mode weighs these ten double. They are the twelve DEC-45
+        # calls "simply bad" less the two that do nothing -- a silly voice and
+        # bad luck both lost their mechanism when 4.2 dropped charisma and the
+        # identify moment, and making a no-op likelier is not making anything
+        # nastier.
+        #
+        # A list here rather than a rule over the modifiers, because the
+        # modifiers cannot tell a penalty from a gift that costs something:
+        # `PUNY` is `STR[-4] | DEX[2]` and `HYPER_STR` is
+        # `STR[4] | INT[-1] | WIS[-1]`, eighteen continuous mutations carry a
+        # negative value and only nine are harmful. A derived rule would make
+        # nightmare kinder in half the cases.
+        if code in NIGHTMARE_WORSE:
+            entry.set("nightmare-worse", 1)
         if index in gates:
             entry.set("requires", gates[index])
             item.fields["requires"] = rules.Value(

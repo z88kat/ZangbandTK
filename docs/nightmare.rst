@@ -124,8 +124,8 @@ does little; in a deep one it can end a character who was going shopping.
 
 Everything Zangband's nightmare mode actually does is now here.
 
-And three things it does not do
--------------------------------
+And four things it does not do
+------------------------------
 
 These are **ours**, not Zangband's. Its spoiler describes a long menu of ideas
 its code never implemented; three of them were worth building, and they are
@@ -142,6 +142,16 @@ turns aside nine bolts in ten ordinarily, and eight in ten here. Monsters that
 reflect are unaffected — they bounce your bolts back exactly as often as they
 always did. The property is still worth having; it is just no longer close to
 a guarantee.
+
+**The changes chaos works on you are worse ones.** Ten of the mutations are
+pure penalty — puny, moronic, albino, rotting flesh, a blank face, short legs,
+arthritis, elemental vulnerability, extra noise, extra fat — and in nightmare
+mode each is twice as likely to be the one you get. A mutation lands on one of
+them about one time in eight ordinarily, and closer to one in five here. Two
+others are just as bad on paper and are not touched, because they do nothing
+at all: a silly voice and bad luck both lost their mechanism when 4.2 removed
+charisma and the identify moment, and making a no-op likelier is not making
+anything nastier.
 
 **The shopkeepers are poor, and they never leave.** Each shop is run by
 whichever of its owners has the smallest purse, and the usual rotation that

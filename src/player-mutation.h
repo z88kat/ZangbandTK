@@ -63,6 +63,13 @@ struct mutation {
 
 	int chance;			/**< Random: one turn in this many */
 	int weight;			/**< How often selection lands on it */
+	/**
+	 * Twice as likely in nightmare mode (BAL-18, DEC-129).
+	 *
+	 * Marked in the data rather than derived, because harm is not derivable:
+	 * see `mutation_weight()`.
+	 */
+	bool nightmare_worse;
 
 	int gate;			/**< A prerequisite, or none */
 	int gate_value;
@@ -140,6 +147,7 @@ bool player_gain_mutation(struct player *p, const struct mutation *mut);
 bool player_lose_mutation(struct player *p, const struct mutation *mut);
 bool player_lose_random_mutation(struct player *p);
 const struct mutation *mutation_roll(const struct player *p);
+int mutation_weight(const struct player *p, const struct mutation *m);
 bool player_mutate(struct player *p);
 int mutation_regen_penalty(const struct player *p);
 

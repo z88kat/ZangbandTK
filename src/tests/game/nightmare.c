@@ -27,6 +27,7 @@
 #include "mon-move.h"
 #include "mon-aura.h"
 #include "store.h"
+#include "player-mutation.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "option.h"
@@ -1142,6 +1143,68 @@ static int test_nightmare_shopkeepers_are_poor_and_permanent(void *state) {
 	ok;
 }
 
+/** The ten the data marks as worse in nightmare. */
+static bool is_marked_harmful(const struct mutation *m) {
+	static const char *ten[] = {
+		"PUNY", "MORONIC", "ALBINO", "FLESH_ROT", "BLANK_FAC",
+		"SHORT_LEG", "ARTHRITIS", "VULN_ELEM", "XTRA_NOIS", "XTRA_FAT"
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(ten); i++)
+		if (streq(m->name, ten[i])) return true;
+
+	return false;
+}
+
+static int harmful_in(int n) {
+	int i, got = 0;
+
+	for (i = 0; i < n; i++) {
+		const struct mutation *m;
+
+		flag_wipe(player->mutations, MUT_SIZE);
+		m = mutation_roll(player);
+		if (m && is_marked_harmful(m)) got++;
+	}
+	return got;
+}
+
+/**
+ * Harmful mutations are twice as likely in nightmare (BAL-18, DEC-129).
+ *
+ * Ours, not a port. The spoiler says "nastier mutations" and nothing more, so
+ * what that means is our design: the ten continuous mutations that are purely
+ * harmful *and* do something, weighted double. The two that are simply bad but
+ * inert -- a silly voice and bad luck -- are left alone, because making a
+ * no-op more likely is not making anything nastier.
+ *
+ * Asserted as a distribution, not as the field. The easy mistake in a
+ * weighting change is to check `nightmare_worse` is set and call it tested,
+ * which would pass against a `mutation_roll()` that never reads it. So this
+ * rolls twenty thousand mutations each way and counts where they land.
+ *
+ * Bands from the measurement rather than the arithmetic: 2426 and 4362 of
+ * 20,000, which is 0.1213 and 0.2181. Each edge is 5.5 sigma out and the two
+ * do not come close to touching -- 2690 against 4040.
+ */
+static int test_nightmare_mutations_are_nastier(void *state) {
+	int plain, nasty;
+	const int n = 20000;
+
+	nightmare(false);
+	plain = harmful_in(n);
+	nightmare(true);
+	nasty = harmful_in(n);
+	nightmare(false);
+
+	require(plain > 2170);
+	require(plain < 2690);
+	require(nasty > 4040);
+	require(nasty < 4690);
+	ok;
+}
+
 const char *suite_name = "game/nightmare";
 struct test tests[] = {
 	{ "nightmare-is-an-optional-birth-choice",
@@ -1183,5 +1246,7 @@ struct test tests[] = {
 	  test_the_players_reflection_fails_twice_as_often },
 	{ "nightmare-shopkeepers-are-poor-and-permanent",
 	  test_nightmare_shopkeepers_are_poor_and_permanent },
+	{ "nightmare-mutations-are-nastier",
+	  test_nightmare_mutations_are_nastier },
 	{ NULL, NULL }
 };

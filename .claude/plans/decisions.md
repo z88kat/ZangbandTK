@@ -6754,3 +6754,67 @@ Falsified twice: disabling the nightmare branch fails it, and taking the
 separate from the list of sixteen above it. That list is a port; these three
 are a design, and folding them together would make the chapter claim Zangband
 did things it never did.
+
+---
+
+**DEC-129 — Nastier mutations: the ten that are pure penalty, weighted
+double.** (M11 stage 2, BAL-18, 3.124.38. Fourth and last of the §2.8.5 menu.)
+
+**Ours, not a port.** The spoiler says "nastier mutations" and nothing else,
+so what that means is a design rather than a number to copy.
+
+**What it is.** In nightmare mode the roll weighs ten mutations double. They
+are DEC-45's twelve "simply bad" continuous mutations, less two: `PUNY`,
+`MORONIC`, `ALBINO`, `FLESH_ROT`, `BLANK_FAC`, `SHORT_LEG`, `ARTHRITIS`,
+`VULN_ELEM`, `XTRA_NOIS`, `XTRA_FAT`. Weight 24 of 193 becomes 48 of 217.
+Measured: a mutation lands on one of them **0.1213** of the time ordinarily
+and **0.2181** in nightmare -- about one in eight becoming one in five.
+
+**The two left out, said plainly so nobody reads ten where twelve were
+described and assumes an omission.** A silly voice and bad luck are in the bad
+twelve and are deliberately untouched, because they do nothing: both lost
+their mechanism when 4.2 removed charisma and the identify moment
+(`docs/mutations.rst:50`). Making a no-op more likely is not making anything
+nastier; it would only crowd out mutations that do work, which is a different
+change and a milder one.
+
+**Why it is a mark in the data and not a rule derived from it.** This is worth
+recording rather than only avoiding, because the derivation is the obvious
+shortcut and it is wrong. Eighteen continuous mutations carry a negative
+value; only nine of those are harmful. The other nine are gifts that cost
+something, and **nothing in the data distinguishes the two shapes**:
+
+```
+PUNY       values:STR[-4] | DEX[2]
+HYPER_STR  values:STR[4] | INT[-1] | WIS[-1]
+```
+
+A rule of "continuous with any negative modifier" would have doubled nine
+penalties and nine gifts, making nightmare *kinder* in half the cases. A sum
+of modifiers does no better -- `XTRA_FAT` is `CON[2] | SPEED[-2]`, which nets
+zero and is plainly bad, because speed is not worth what constitution is. And
+`BLANK_FAC` has no `values:` line at all. So the ten are marked:
+`nightmare-worse:1`.
+
+**Gated at the use site**, in `mutation_weight()`, for the same reason as the
+breeder cap: `weight:` lives in `mutation.txt` and editing it there would make
+every game nastier.
+
+**One function, because there are two loops.** `mutation_roll()` sums the
+weights and then walks them again to find where the roll landed. If the two
+disagree, the sum is larger than the walk and the last mutation in the list
+silently absorbs the difference. Both call `mutation_weight()`.
+
+**The gate caught one thing reading did not.** `mutation.txt` is generated,
+and `zconv mutations --check` regenerates it and compares -- so ten
+hand-added lines failed the build until the converter was taught to emit them
+(`NIGHTMARE_WORSE` in `zconv.py`). That list is hardcoded there on purpose
+and says so: it is our design, not something read out of the archive, and the
+converter is where our designs have to be written down or the next
+regeneration silently drops them.
+
+**Tested as a distribution, not as the field.** Twenty thousand rolls each
+way; bands from the measurement at 5.5 sigma, and they do not come close to
+touching -- 2690 against 4040. Falsified three ways: the roll ignoring the
+mark, the marks removed from the data, and -- the one the shared helper
+exists for -- doubling only the sum and not the walk. All three fail it.

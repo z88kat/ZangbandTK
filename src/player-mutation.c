@@ -252,6 +252,27 @@ static bool mutation_allowed(const struct player *p, const struct mutation *mut)
  * both comments here and the archive all said six and one while the code did
  * seven and two.
  */
+/**
+ * How heavily the roll weighs this mutation for this character (DEC-129).
+ *
+ * Doubled in nightmare mode for the ten continuous mutations that are purely
+ * harmful and that actually do something. Gated here at the use site rather
+ * than by editing `weight:` in `mutation.txt`, which is global and would make
+ * every game nastier.
+ *
+ * A function rather than the test written twice, because `mutation_roll()`
+ * sums the weights and then walks them again to find the roll: two loops that
+ * must agree, or the sum and the walk disagree and the last mutation in the
+ * list absorbs the difference.
+ */
+int mutation_weight(const struct player *p, const struct mutation *m)
+{
+	if (p && m->nightmare_worse && OPT(p, birth_nightmare))
+		return m->weight * 2;
+
+	return m->weight;
+}
+
 const struct mutation *mutation_roll(const struct player *p)
 {
 	const struct mutation *m, *chosen = NULL;
@@ -261,18 +282,18 @@ const struct mutation *mutation_roll(const struct player *p)
 
 	for (m = mutations; m; m = m->next) {
 		if (!mutation_allowed(p, m)) continue;
-		total += m->weight;
+		total += mutation_weight(p, m);
 	}
 	if (total <= 0) return NULL;
 
 	roll = randint0(total);
 	for (m = mutations; m; m = m->next) {
 		if (!mutation_allowed(p, m)) continue;
-		if (roll < m->weight) {
+		if (roll < mutation_weight(p, m)) {
 			chosen = m;
 			break;
 		}
-		roll -= m->weight;
+		roll -= mutation_weight(p, m);
 	}
 
 	/* And what this race tends towards, if it tends towards anything. */

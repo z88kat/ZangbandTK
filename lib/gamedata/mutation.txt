@@ -949,6 +949,7 @@ lose:Your muscles revert to normal.
 name:PUNY
 kind:continuous
 weight:3
+nightmare-worse:1
 values:STR[-4] | DEX[2]
 desc:You are puny (-4 STR, +2 DEX).
 gain:Your muscles wither away...
@@ -965,6 +966,7 @@ lose:Your brain reverts to normal.
 name:MORONIC
 kind:continuous
 weight:3
+nightmare-worse:1
 values:INT[-4] | WIS[-4]
 flags:PROT_FEAR | PROT_CONF
 desc:You are moronic (-4 INT, -4 WIS, immune to fear, immune to confusion).
@@ -982,6 +984,7 @@ lose:You become ordinarily resilient again.
 name:XTRA_FAT
 kind:continuous
 weight:2
+nightmare-worse:1
 values:CON[2] | SPEED[-2]
 desc:You are extremely fat (+2 CON, -2 speed).
 gain:You become sickeningly fat!
@@ -990,6 +993,7 @@ lose:You benefit from a miracle diet!
 name:ALBINO
 kind:continuous
 weight:2
+nightmare-worse:1
 values:CON[-4] | RES_DARK[1]
 desc:You are albino (-4 CON, resist darkness).
 gain:You turn into an albino! You feel frail...
@@ -998,6 +1002,7 @@ lose:You are no longer an albino!
 name:FLESH_ROT
 kind:continuous
 weight:3
+nightmare-worse:1
 values:CON[-2]
 flags:HOLD_LIFE
 suppresses:REGEN
@@ -1016,6 +1021,7 @@ lose:Your voice returns to normal.
 name:BLANK_FAC
 kind:continuous
 weight:2
+nightmare-worse:1
 flags:SEE_INVIS
 desc:Your face is featureless (see invisible).
 gain:Your face becomes completely featureless!
@@ -1048,6 +1054,7 @@ lose:You become susceptible to magic again.
 name:XTRA_NOIS
 kind:continuous
 weight:3
+nightmare-worse:1
 values:STEALTH[-3]
 desc:You make a lot of strange noise (-3 stealth).
 gain:You start making strange noise!
@@ -1072,6 +1079,7 @@ lose:Your extra legs disappear!
 name:SHORT_LEG
 kind:continuous
 weight:2
+nightmare-worse:1
 values:CON[1] | SPEED[-3]
 desc:Your legs are short stubs (+1 CON, -3 speed).
 gain:Your legs turn into short stubs!
@@ -1165,6 +1173,7 @@ lose:Your muscles stiffen.
 name:ARTHRITIS
 kind:continuous
 weight:3
+nightmare-worse:1
 values:DEX[-3]
 desc:Your joints ache constantly (-3 DEX).
 gain:Your joints suddenly hurt.
@@ -1180,6 +1189,7 @@ lose:Your black aura swirls and fades.
 name:VULN_ELEM
 kind:continuous
 weight:1
+nightmare-worse:1
 requires:mutations:3
 values:RES_ACID[-1] | RES_ELEC[-1] | RES_FIRE[-1] | RES_COLD[-1]
 desc:You are susceptible to damage from the elements (vulnerable to acid, vulnerable to electricity, vulnerable to fire, vulnerable to cold).

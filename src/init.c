@@ -5277,6 +5277,24 @@ static enum parser_error parse_mutation_chance(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+/*
+ * Mutations nightmare mode makes twice as likely (BAL-18, DEC-129).
+ *
+ * A mark in the data rather than a rule derived from the modifiers, because
+ * the modifiers cannot tell a penalty from a gift that costs something.
+ * Eighteen continuous mutations carry a negative value and only nine of them
+ * are harmful: `PUNY` is `STR[-4] | DEX[2]` and `HYPER_STR` is
+ * `STR[4] | INT[-1] | WIS[-1]`, and nothing in the data distinguishes them.
+ * A derived rule would have made nightmare *kinder* in half the cases.
+ */
+static enum parser_error parse_mutation_nightmare(struct parser *p) {
+	struct mutation *m = parser_priv(p);
+
+	if (!m) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	m->nightmare_worse = parser_getint(p, "worse") != 0;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_mutation_weight(struct parser *p) {
 	struct mutation *m = parser_priv(p);
 
@@ -5626,6 +5644,7 @@ static struct parser *init_parse_mutation(void) {
 	parser_reg(p, "difficulty int difficulty", parse_mutation_difficulty);
 	parser_reg(p, "chance int chance", parse_mutation_chance);
 	parser_reg(p, "weight int weight", parse_mutation_weight);
+	parser_reg(p, "nightmare-worse int worse", parse_mutation_nightmare);
 	parser_reg(p, "requires str requires", parse_mutation_requires);
 	parser_reg(p, "armour int armour", parse_mutation_armour);
 	parser_reg(p, "save int save", parse_mutation_save);
