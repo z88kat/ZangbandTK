@@ -452,6 +452,12 @@ Vampire
   useless to it, it carries scrolls of Remove Hunger rather than rations: those
   work normally, being nothing to do with eating.
 
+  **The midnight start is not the Vampire's alone.** It belongs to being undead,
+  so a Skeleton, a Zombie, a Spectre and a Ghoul all begin the game at the same
+  hour. Only the Vampire has a reason to care, since only the Vampire burns —
+  for the other four it is atmosphere, and the first thing it costs them is a
+  torch.
+
 .. _Golem:
 
 Golem
@@ -585,7 +591,8 @@ Spectre
 
   It howls from level 4 — the earliest attacking power any race has — and
   terrifies what it is aimed at. Like a Golem and a Skeleton, **it does not
-  bleed**: nothing cuts it.
+  bleed**: nothing cuts it. It cannot eat either, and starts with hunger scrolls
+  in place of rations; it digests slowly, so they last.
 
   **And it walks through walls.** Granite, veins, secret doors and mountain
   ranges all give way; only permanent wall and the edge of the world hold it.
@@ -624,6 +631,11 @@ Ghoul
   It senses living creatures from level 30. Zangband gave it a second power —
   eating corpses for nutrition — which has nothing to work on here, because
   this game has no corpses to eat.
+
+  It cannot eat ordinary food either, and digests at the ordinary rate, which
+  puts it where the Skeleton is: it starts with scrolls of Remove Hunger instead
+  of rations and will be buying more. A corpse-eater with nothing to eat is an
+  expensive thing to be.
 
 .. _racial-powers:
 
@@ -683,9 +695,14 @@ The failure figure is the chance at exactly the level the power arrives, with
 an average stat. Both of the things you can do about it help: every level past
 that one takes three points off, and the stat it leans on takes off more — off
 the same table that decides how reliably a spell is cast, so a power behaves
-like a spell in the ways you would expect it to. Reaching past what is left in
-the pool makes it markedly worse, and being stunned worse still. However short
-the stat, the chance never gets worse than 95 per cent.
+like a spell in the ways you would expect it to. Being stunned makes it worse,
+and so does **being afraid** — a flat twenty points, which is the one input to
+the figure that has nothing to do with your character and everything to do with
+the moment, and is easy to blame on the dice instead. Reaching past what is left
+in the pool does *not* make it worse: that would charge you twice for one
+shortfall, once in blood and once in failure, and the second charge was taken
+out (DEC-56). However short the stat, the chance never gets worse than 95 per
+cent.
 
 Failing still costs the price — being told you are too junior, too confused, or
 too spent to try at all does not.
@@ -1004,6 +1021,15 @@ every creature in sight instead, at 25. *Channel adrenaline* gives heroism
 until 35 and berserk strength after. And *shift a short way*, a random ten-step
 hop for most of a career, becomes a **dimension door** at 40 — you pick the
 square you arrive on, the same way Sorcery and Trump do it.
+
+Three more grow and are easy to miss, because nothing announces it. *Armour
+your mind* starts as a shield and then collects a resistance every four levels
+from 17 — acid, fire, cold, electricity, poison — so by 33 it is the broadest
+single piece of protection a Mindcrafter has, and the class's answer to having
+no realm to find it in. *Pulverise* goes from a blast centred on what you hit to
+one a square wider at 21. And *loose a telekinetic wave* doubles its reach and
+goes from three times your level to four at 40, which is the largest single step
+any of the twelve takes.
 
 **Minds, not bodies.** Three of the powers attack with psionic force, which is a
 kind of damage Angband does not have. It asks whether there is a mind to hurt:
