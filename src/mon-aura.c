@@ -45,10 +45,27 @@
 #include "player-util.h"
 
 /**
- * One bolt in this many gets through a reflector.  Zangband's `!one_in_(10)`,
- * used on both sides.
+ * One bolt in this many gets through a reflector.  Zangband's `!one_in_(10)`.
  */
 #define REFLECT_FAILS_IN 10
+
+/**
+ * And one in this many against a player in nightmare mode (BAL-18, DEC-127).
+ *
+ * Ours, not a port: the spoiler says "reflection's one-in-ten doubled" and
+ * says nothing about which side, so taking it at all is our design.
+ *
+ * It is applied to the *player* only. Nightmare exists to be harder, and
+ * doubling a monster's reflection would make monsters harder to shoot, which
+ * is the opposite. The archive supports treating the two separately even
+ * though it is silent on nightmare: it has no shared constant at all, but two
+ * independent `one_in_(10)` tests, the player's at
+ * [spells1.c:3116](../archive/zangband/src/spells1.c#L3116) and the monster's
+ * at [spells1.c:4670](../archive/zangband/src/spells1.c#L4670). 4.2 unified
+ * them; a one-sided change here restores the original's separation rather
+ * than breaking a deliberate pairing.
+ */
+#define NIGHTMARE_REFLECT_FAILS_IN (REFLECT_FAILS_IN / 2)
 
 /**
  * Average hit points per hit die, over the 69 Zangband monsters carrying an
@@ -178,6 +195,23 @@ bool aura_bolt_reflects(bool has_flag, int rad)
 	if (rad > 0) return false;
 
 	return !one_in_(REFLECT_FAILS_IN);
+}
+
+/**
+ * Whether a bolt bounces off the player specifically.
+ *
+ * Separate from `aura_bolt_reflects()` so that nightmare mode can make the
+ * player's reflection fail twice as often without touching the monsters',
+ * which the shared helper could not express. See `NIGHTMARE_REFLECT_FAILS_IN`
+ * for why only one side moves.
+ */
+bool player_bolt_reflects(bool has_flag, int rad)
+{
+	if (!has_flag) return false;
+	if (rad > 0) return false;
+
+	return !one_in_(OPT(player, birth_nightmare)
+		? NIGHTMARE_REFLECT_FAILS_IN : REFLECT_FAILS_IN);
 }
 
 /**

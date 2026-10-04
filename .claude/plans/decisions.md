@@ -6671,3 +6671,39 @@ because `cmake --build build-strict` builds the game and not the test
 binaries, and I had hidden the output behind `>/dev/null`. Both are written
 down in `CONTRIBUTING.md` as the two traps that cost an afternoon, and I
 walked into both in one command.
+
+---
+
+**DEC-127 — The player's bolt reflection fails twice as often in nightmare,
+and the monsters' does not.** (M11 stage 2, BAL-18, 3.124.36. Second of three.)
+
+**Ours, not a port.** The spoiler says "reflection's one-in-ten doubled" and
+does not say whose, so taking it at all is our design under BAL-18.
+
+**The ambiguity, and how it was settled.** 4.2 has one shared constant,
+`REFLECT_FAILS_IN`, read by both the player's reflection
+(`project-player.c`) and the monsters' (`project-mon.c`). Doubling it would
+have made monsters harder to shoot, which is the opposite of what the mode is
+for. The project owner's reading -- harder for the player -- is the one taken.
+
+**The archive supports treating the sides separately, and is worth citing
+because a later reader will find a one-sided change to a shared constant and
+wonder.** Zangband has no shared constant at all: two independent `one_in_(10)`
+tests, the player's at
+[spells1.c:3116](../archive/zangband/src/spells1.c#L3116) and the monsters' at
+[spells1.c:4670](../archive/zangband/src/spells1.c#L4670). 4.2 unified them. So
+splitting them here restores the original's separation rather than breaking a
+deliberate pairing. The archive is silent on nightmare itself, so the
+*direction* is ours and the *separation* is the archive's.
+
+`player_bolt_reflects()` is the player's side; `aura_bolt_reflects()` keeps the
+monsters'. The constant stays private to `mon-aura.c`.
+
+**Measured, then sized from the measurement.** Over 3000 rolls each: the
+player reflects 2696 ordinarily and 2397 in nightmare -- 0.90 against 0.80 --
+and the monsters reflect 2710 **with the option on**, unchanged. Each band
+edge is 5.5 sigma out and the player's two do not overlap, 2520 against 2610.
+
+Falsified twice: removing the gate fails it, and -- the one that matters --
+putting the gate in the *shared* helper so monsters get it too also fails it,
+on the assertion that the monsters' rate has not moved.

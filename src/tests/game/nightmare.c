@@ -25,6 +25,7 @@
 #include "generate.h"
 #include "mon-make.h"
 #include "mon-move.h"
+#include "mon-aura.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "option.h"
@@ -1025,6 +1026,61 @@ static int test_sterilize_still_works_in_nightmare(void *state) {
 	ok;
 }
 
+/**
+ * The player's bolt reflection fails twice as often (BAL-18, DEC-127).
+ *
+ * Ours, not a port. Applied to the player only: nightmare exists to be
+ * harder, and doubling a monster's reflection would make monsters harder to
+ * shoot. The archive has no shared constant -- two independent `one_in_(10)`
+ * tests, one per side -- so a one-sided change restores its separation rather
+ * than breaking a pairing.
+ *
+ * Sampled rather than asserted against the constant, because the constant is
+ * private to `mon-aura.c` and because the failure this guards against is the
+ * gate being applied to the wrong side or to neither.
+ */
+static int test_the_players_reflection_fails_twice_as_often(void *state) {
+	int i, plain = 0, nasty = 0, mons = 0;
+	const int n = 3000;
+
+	nightmare(false);
+	for (i = 0; i < n; i++)
+		if (player_bolt_reflects(true, 0)) plain++;
+
+	nightmare(true);
+	for (i = 0; i < n; i++)
+		if (player_bolt_reflects(true, 0)) nasty++;
+
+	/* The monsters' side must not have moved with it. */
+	for (i = 0; i < n; i++)
+		if (aura_bolt_reflects(true, 0)) mons++;
+	nightmare(false);
+
+	/*
+	 * Bands from the measured rates, not the nominal ones: 2696, 2397 and
+	 * 2710 of 3000, which are 0.90, 0.80 and 0.90. Each edge is 5.5 sigma
+	 * out, and the player's two bands do not overlap -- 2520 against 2610 --
+	 * so this separates them rather than merely describing them.
+	 */
+	require(plain > 2610);
+	require(plain < 2790);
+	require(nasty > 2280);
+	require(nasty < 2520);
+
+	/*
+	 * And the monsters' rate is unchanged with the option on. This is the
+	 * assertion the entry exists for: a gate written into the shared helper
+	 * would pass every line above and fail this one.
+	 */
+	require(mons > 2610);
+	require(mons < 2790);
+
+	/* A ball is never reflected, either way. */
+	require(!player_bolt_reflects(true, 3));
+	require(!player_bolt_reflects(false, 0));
+	ok;
+}
+
 const char *suite_name = "game/nightmare";
 struct test tests[] = {
 	{ "nightmare-is-an-optional-birth-choice",
@@ -1062,5 +1118,7 @@ struct test tests[] = {
 	  test_a_nightmare_level_holds_more_breeders },
 	{ "sterilize-still-works-in-nightmare",
 	  test_sterilize_still_works_in_nightmare },
+	{ "the-players-reflection-fails-twice-as-often",
+	  test_the_players_reflection_fails_twice_as_often },
 	{ NULL, NULL }
 };

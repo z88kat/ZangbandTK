@@ -24,6 +24,7 @@ void monster_aura_touch(struct player *p, struct monster *mon);
 void player_aura_touch(struct player *p, struct monster *mon);
 
 bool aura_bolt_reflects(bool has_flag, int rad);
+bool player_bolt_reflects(bool has_flag, int rad);
 bool aura_reflect_target(struct loc from, struct loc *to);
 
 #endif /* MON_AURA_H */

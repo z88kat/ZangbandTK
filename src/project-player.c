@@ -932,7 +932,7 @@ bool project_p(struct source origin, int r, struct loc grid, int dam, int typ,
 			 * two reflectors facing each other would volley until the stack
 			 * ran out.
 			 */
-			if (!reflecting && aura_bolt_reflects(player_of_has(player,
+			if (!reflecting && player_bolt_reflects(player_of_has(player,
 					OF_REFLECT), r)) {
 				equip_learn_flag(player, OF_REFLECT);
 				msg(blind ? "Something bounces!" : "The attack bounces!");
