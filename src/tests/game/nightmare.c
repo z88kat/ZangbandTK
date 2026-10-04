@@ -24,6 +24,7 @@
 #include "game-world.h"
 #include "generate.h"
 #include "mon-make.h"
+#include "mon-move.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "option.h"
@@ -914,6 +915,116 @@ static int test_a_sleeper_is_twice_as_alert(void *state) {
 	ok;
 }
 
+/** Live monsters on the level. */
+static int monster_count(void) {
+	int i, n = 0;
+
+	for (i = 1; i < cave_monster_max(cave); i++)
+		if (cave_monster(cave, i)->race) n++;
+
+	return n;
+}
+
+/**
+ * A nightmare level holds more breeders (BAL-18, DEC-126).
+ *
+ * Ours, not a port. Asserted as behaviour rather than as the constant,
+ * because the number is easy to check and proves nothing: the failure this
+ * guards against is a cap raised somewhere the breeding path does not read.
+ * So the level is given 150 breeders on the books -- over the ordinary cap of
+ * 100, under the nightmare one -- and a breeder is asked to take its turn.
+ *
+ * Driven through `process_monsters()` because `monster_turn_multiply()` is
+ * static, which is the same route `ally-ai` takes to reach
+ * `monster_check_active()`. `multiply_monster()` is public but is the wrong
+ * target: it has no cap in it and would pass against the bug.
+ *
+ * Four hundred turns rather than a handful, because breeding is a roll and
+ * not a certainty. The adjacency loop counts the breeder's own square, so
+ * `k` is never zero and the `k == 0` shortcut is dead code -- every attempt
+ * goes through `one_in_(k * repro_monster_rate)`, which at k of 1 is one in
+ * twenty. Twenty turns would leave this failing one run in three; four
+ * hundred puts it at one in five million.
+ */
+static int test_a_nightmare_level_holds_more_breeders(void *state) {
+	struct monster *mouse;
+	int i, grew_plain, grew_nasty, before;
+
+	clear_the_level();
+	nightmare(false);
+	mouse = place_one("giant white mouse", false);
+	require(mouse);
+	require(rf_has(mouse->race->flags, RF_MULTIPLY));
+
+	eq(repro_monster_cap(), z_info->repro_monster_max);
+	before = monster_count();
+	for (i = 0; i < 400; i++) {
+		cave->num_repro = 150;
+		mouse->energy = z_info->move_energy;
+		cave->noise.grids[mouse->grid.y][mouse->grid.x] = 1;
+		mflag_on(mouse->mflag, MFLAG_ACTIVE);
+		mflag_off(mouse->mflag, MFLAG_HANDLED);
+		process_monsters(0);
+	}
+	grew_plain = monster_count() - before;
+
+	clear_the_level();
+	nightmare(true);
+	mouse = place_one("giant white mouse", false);
+	require(mouse);
+
+	eq(repro_monster_cap(), NIGHTMARE_REPRO_MAX);
+	before = monster_count();
+	for (i = 0; i < 400; i++) {
+		cave->num_repro = 150;
+		mouse->energy = z_info->move_energy;
+		cave->noise.grids[mouse->grid.y][mouse->grid.x] = 1;
+		mflag_on(mouse->mflag, MFLAG_ACTIVE);
+		mflag_off(mouse->mflag, MFLAG_HANDLED);
+		process_monsters(0);
+	}
+	grew_nasty = monster_count() - before;
+
+	nightmare(false);
+	cave->num_repro = 0;
+	clear_the_level();
+
+	/* The cap refuses before anything is rolled, so this one is exact. */
+	eq(grew_plain, 0);
+	require(grew_nasty > 0);
+	ok;
+}
+
+/**
+ * Sterilisation still stops breeding when the cap has moved (DEC-126).
+ *
+ * `effect_handler_STERILIZE()` works by *adding* the cap to `num_repro` to
+ * push it past itself. Raise the cap in `multiply_monster()` alone and the
+ * effect goes on adding 100 against a bar of 255, so the scroll a player
+ * reaches for on a breeder level silently does nothing -- in the one mode
+ * where they most need it. Both read `repro_monster_cap()`; this is what says
+ * so.
+ */
+static int test_sterilize_still_works_in_nightmare(void *state) {
+	clear_the_level();
+	nightmare(true);
+	cave->num_repro = 0;
+
+	{
+		struct effect effect = { 0 };
+		bool ident = false;
+
+		effect.index = EF_STERILIZE;
+		require(effect_do(&effect, source_player(), NULL, &ident, true, 0, 0,
+						  0, NULL));
+	}
+
+	require(cave->num_repro >= repro_monster_cap());
+	nightmare(false);
+	cave->num_repro = 0;
+	ok;
+}
+
 const char *suite_name = "game/nightmare";
 struct test tests[] = {
 	{ "nightmare-is-an-optional-birth-choice",
@@ -947,5 +1058,9 @@ struct test tests[] = {
 			test_a_nightmare_level_has_invisible_walls },
 	{ "an-invisible-wall-looks-like-floor",
 			test_an_invisible_wall_looks_like_floor },
+	{ "a-nightmare-level-holds-more-breeders",
+	  test_a_nightmare_level_holds_more_breeders },
+	{ "sterilize-still-works-in-nightmare",
+	  test_sterilize_still_works_in_nightmare },
 	{ NULL, NULL }
 };

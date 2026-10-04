@@ -1216,6 +1216,29 @@ static bool get_move(struct monster *mon, int *dir, bool *good)
  *
  * Returns true if the monster successfully reproduced.
  */
+/**
+ * How many breeders this level will hold (BAL-18, DEC-126).
+ *
+ * 100 ordinarily, `NIGHTMARE_REPRO_MAX` in nightmare mode. Gated here at the
+ * use site rather than by changing `mon-gen:repro-max` in `constants.txt`,
+ * which is the obvious move and the wrong one: the constant is global, so the
+ * data edit would raise the cap for every game including the nightly, whose
+ * own measurements say breeders are already the largest single cause of borg
+ * death (DEC-116).
+ *
+ * A function rather than the test written out twice, because it is read in
+ * two places and they have to agree. `effect_handler_STERILIZE()` stops
+ * breeding by *adding* the cap to `num_repro` to push it past itself -- so a
+ * cap raised in one place and not the other would leave sterilisation adding
+ * 100 against a bar of 255 and silently doing nothing in the mode where a
+ * player most needs it.
+ */
+int repro_monster_cap(void)
+{
+	return OPT(player, birth_nightmare)
+		? NIGHTMARE_REPRO_MAX : z_info->repro_monster_max;
+}
+
 bool multiply_monster(const struct monster *mon)
 {
 	struct loc grid;
@@ -1265,7 +1288,7 @@ static bool monster_turn_multiply(struct monster *mon)
 	struct monster_lore *lore = get_lore(mon->race);
 
 	/* Too many breeders on the level already */
-	if (cave->num_repro >= z_info->repro_monster_max) return false;
+	if (cave->num_repro >= repro_monster_cap()) return false;
 
 	/* No breeding in single combat */
 	if (player->upkeep->arena_level) return false;  

@@ -25,6 +25,7 @@ enum monster_stagger {
 	 INNATE_STAGGER = 2
 };
 
+int repro_monster_cap(void);
 bool multiply_monster(const struct monster *mon);
 bool monster_find_enemy(struct monster *mon);
 bool monster_may_open_doors(const struct monster *mon);

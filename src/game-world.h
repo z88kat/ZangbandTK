@@ -47,6 +47,15 @@ void play_ambient_sound(void);
 /** `nightmare_bell_at()` returns this at midnight, and 1 to 4 for the bell. */
 #define NIGHTMARE_CURSE 9
 
+/**
+ * How many breeders a nightmare level will hold (BAL-18, DEC-126).
+ *
+ * Ours, not a port: the spoiler names 255 and we are choosing to take it, so
+ * it is our design under BAL-18 rather than Zangband behaviour restored.
+ * `repro_monster_cap()` in `mon-move.c` is the only thing that should read it.
+ */
+#define NIGHTMARE_REPRO_MAX 255
+
 int nightmare_bell_at(int32_t at_turn);
 int nightmare_recall_depth(struct player *p, int depth);
 void process_world(struct chunk *c);

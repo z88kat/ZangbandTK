@@ -6617,3 +6617,57 @@ balanced.
 prospective, and that is the honest case: three defects this fortnight passed
 unit tests and were caught only by a running game -- the ally-ai depth
 inheritance, the wilderness gate, and `ui/shimmer`.
+
+---
+
+**DEC-126 — A nightmare level holds 255 breeders.** (M11 stage 2, BAL-18,
+3.124.35. First of three the project owner took from the §2.8.5 menu.)
+
+**Ours, not a port.** The spoiler names 255 and we are choosing to take it, so
+this is our design under BAL-18 rather than Zangband behaviour restored. The
+manual's nightmare chapter says so separately from the twelve it describes as
+ported.
+
+**Gated at the use site, which was the one way this breaks the build.**
+`mon-gen:repro-max` is a named constant in `constants.txt` and editing it there
+is the obvious move and the wrong one: it is global, so 255 would apply to
+every game including the nightly -- whose own measurement says breeders are
+already the largest single cause of borg death at 100 (DEC-116), and whose
+baseline would then go permanently red.
+
+**And the gate needed a shared helper, not two edits.** `repro_monster_cap()`
+is read in two places that have to agree. `effect_handler_STERILIZE()` stops
+breeding by *adding* the cap to `num_repro` to push it past itself -- so a cap
+raised in `monster_turn_multiply()` alone would leave the scroll adding 100
+against a bar of 255 and **silently doing nothing in the mode where a player
+most needs it.** Found by reading the effect before writing the change rather
+than by a failing test.
+
+**Tested as behaviour, both with the option and without**, which took three
+attempts and each failure is worth keeping:
+
+- `multiply_monster()` is public and was the obvious target. It has no cap in
+  it -- the cap is in its static caller -- so the first test passed against the
+  bug.
+- Driven through `process_monsters()` instead, the breeder never acted:
+  `monster_check_active()` wants it in view, wounded, or audible. Setting the
+  noise grid is what this file already does for its sleeper test.
+- Twenty turns was too few. The adjacency loop counts the breeder's own square,
+  so `k` is never zero and the `k == 0` shortcut in that condition is dead
+  code; every attempt rolls `one_in_(k * repro_monster_rate)`, one in twenty at
+  `k` of 1. Four hundred turns puts a false failure at one in five million.
+
+A probe at the cap confirmed the mechanism before the instrumentation came
+out: **400 of 400 ordinary attempts refused by the cap, none in nightmare**,
+and 19 breedings through the roll, which is the 5 per cent expected.
+
+Falsified twice and independently: putting the breeding path back on the old
+constant fails the breeder test and leaves sterilisation passing; putting
+sterilisation back fails that one and leaves the breeder test passing. Each
+test guards its own half.
+
+*One process note.* Two of the runs above were read off a stale binary,
+because `cmake --build build-strict` builds the game and not the test
+binaries, and I had hidden the output behind `>/dev/null`. Both are written
+down in `CONTRIBUTING.md` as the two traps that cost an afternoon, and I
+walked into both in one command.

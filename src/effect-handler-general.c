@@ -28,6 +28,7 @@
 #include "mon-desc.h"
 #include "mon-lore.h"
 #include "mon-make.h"
+#include "mon-move.h"
 #include "mon-predicate.h"
 #include "mon-summon.h"
 #include "mon-util.h"
@@ -4334,7 +4335,7 @@ bool effect_handler_STERILIZE(effect_handler_context_t *context)
 	context->ident = true;
 
 	msg("You suddenly have a headache!");
-	cave->num_repro += z_info->repro_monster_max;
+	cave->num_repro += repro_monster_cap();
 
 	return true;
 }
