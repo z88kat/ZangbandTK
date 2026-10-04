@@ -12,6 +12,12 @@ Where work comes from
 From a building. Walk into an inn that is hiring and you will be offered a job
 before you are offered a bed.
 
+**Not in the village you start in, though.** The starting village is given one
+service and one only — a magetower, so that the travel network has a node you
+can leave from on your first day. It has no inn, so the paragraph above
+describes something you cannot do at home. The first work you are offered will
+be somewhere you have walked to.
+
 Quest-giving is a **property a building carries**, not a building of its own.
 There is no quest-giver's hut and there never will be: the inn simply has the
 property at the moment, and it could as easily be the magetower commissioning a

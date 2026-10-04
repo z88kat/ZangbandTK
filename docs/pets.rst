@@ -192,10 +192,20 @@ Five of them are a leash:
    * - **Seek and destroy**
      - Go anywhere. They will cross the level for a fight and you will lose
        track of them.
+
    * - **Give me space**
      - Keep ten squares off, and take no fight closer to you than that.
    * - **Stay away**
      - Twenty-five squares. For when the thing following you breathes fire.
+
+.. note::
+
+   **Ten squares is a hard limit on every setting above.** A pet more than ten squares
+   from you abandons whatever it is doing and comes back, whichever setting it
+   is on — "Seek and destroy" included. So that setting does not mean "go
+   anywhere": it means "go anywhere within ten squares". A pet that seems to
+   give up on a fight across the room has not lost its nerve; it has hit the
+   leash.
 
 The last two are the ones to reach for before you cast something with a radius.
 A pet that is keeping its distance also refuses to start a fight near you, which

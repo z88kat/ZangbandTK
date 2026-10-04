@@ -234,7 +234,10 @@ documentation is not.
 
 Three mutations have conditions attached, and no Zangband document mentions
 them. The Midas touch only comes to the already-rich: a thousand gold for every
-level you have, in hand at the moment it would arrive. A silly voice and a
+level you have, in hand at the moment it would arrive. What it pays when it
+does arrive is a third of the object's real value, capped at thirty thousand,
+with artifacts refusing and a stack of cheap items paying nothing — the same
+terms as Sorcery's *Alchemy*, set out under that realm. A silly voice and a
 vulnerability to the elements only come to characters who are mutated already,
 with three or more. That last is exactly what it sounds like — the more chaos
 has hold of you, the worse the changes it offers.

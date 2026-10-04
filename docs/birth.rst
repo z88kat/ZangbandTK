@@ -1103,6 +1103,14 @@ At the bad end: your weapon or armour cursed, a stat drained or ruined,
 experience lost, monsters summoned on top of you, the level destroyed around you,
 or simply damage, which at a high level can kill.
 
+**How kindly a Lord treats you is not only a matter of its level.** Four of
+your virtues are read when the roll is made: Chance and Individualism make a
+favour more likely, Harmony and Temperance make it less. A reckless,
+self-willed character is rewarded more often than a harmonious and temperate
+one, which is the kind of patron these are. Nothing on the character sheet
+connects the two, so it is written here: the way you play changes what your
+Lord does, not merely how often it does it.
+
 Some Lords will also give you a different shape for a while. Your gear merges
 into your body when that happens, so you lose every bonus it carried and cannot
 cast until you change back — which you may do whenever you like.

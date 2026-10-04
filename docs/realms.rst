@@ -252,6 +252,15 @@ Four books: the **Beginner's Handbook**, the **Master Sorcerer's Handbook**,
 and the **Grimoire of Power**. The first two are sold in town; the last two are
 found below.
 
+*Alchemy* turns an object into gold, and its terms are worth knowing before
+you use it, because none of them is recoverable afterwards. You are paid **a
+third of what the object is really worth**, not a third of what a shop would
+offer, capped at thirty thousand gold. Artifacts refuse. A worthless object is
+destroyed and pays nothing. And the division happens **before** the quantity
+multiplies, so a stack of ten two-gold items pays nothing at all — ten times a
+third of two, rounded down each time, is zero. The Midas touch mutation works
+the same way and on the same terms.
+
 Its best workings are the ones no other realm has. *Teleport Away* fires a beam
 that removes monsters from your path rather than killing them. *Telekinesis*
 pulls an object to your feet from anywhere you can reach — the strongest of the
@@ -308,6 +317,15 @@ Four books: **Conjurings & Tricks** and the **Deck of Many Things** in town,
    do call is yours. That is a real softening of the realm rather than a detail
    of the translation, and it is written down here because the spoiler opens on
    the risk it removes.
+
+.. note::
+
+   **Three of the cards do not fetch what they are named after.** *Trump
+   Cyberdemon* summons a greater demon — there are no cyberdemons in this
+   game, and that is a deliberate refusal rather than an omission.
+   *Phantasmal Servant* summons an ordinary undead creature, and *Conjure
+   Elemental* summons a Maia, not an earth elemental. The other eight cards
+   do what they say.
 
 What it is for is reach: a deck that goes places and fetches people. *Teleport*,
 *Teleport Away*, *Teleport Level*, *Word of Recall* and *Phase Door* are all in
@@ -588,7 +606,24 @@ Blackguard its Paladin.
 Casting
 -------
 
-Two rules apply to every realm and neither is visible from the spell list.
+Four rules apply to every realm and none of them is visible from the spell
+list.
+
+**Your failure chance has a floor and a ceiling.** However good you become,
+most characters never get below **5 per cent** — only a class with a
+zero-failure ability escapes it, and nothing else does, at any level, with any
+statistic. At the other end no spell ever reads worse than **50 per cent**
+however hopeless the pairing, so a very hard spell cast by a very unsuitable
+character is a coin flip rather than the impossibility the raw numbers imply.
+Being stunned is added *after* the cap, so a stunned caster can be worse than
+fifty.
+
+**A Necromancer casts badly in the light.** A character who draws on unlight —
+the Necromancer is the one you will meet — takes a flat **+25** to its failure
+chance whenever it is standing on a lit square. Not a penalty for carrying a
+light source: a penalty for the square under your feet being lit, by your
+lantern, by someone else's, or by the room. It is the single largest casting
+modifier in the game and the spell list gives no sign of it.
 
 **Armour costs you mana.** Every spellcasting class has a weight it can carry
 in armour before its casting suffers, and past that you lose one point of

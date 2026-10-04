@@ -34,7 +34,9 @@ and 22, which are adjacent to corrections that landed.
 
 # Band A — a player changes what they do
 
-## 1. The patron's cruelty shifts with your virtues
+## ~~1. The patron's cruelty shifts with your virtues~~ — WRITTEN
+
+**WRITTEN 4 October 2026** — `docs/birth.rst`, the Patrons section. Verified first: `player-util.c:2515` reads Chance and Individualism up, Harmony and Temperance down.
 
 **What.** The Chaos-Warrior's reward roll is not purely level-driven. `Chance` and
 `Individualism` make the Lord of Chaos gentler; `Harmony` and `Temperance` make it harsher.
@@ -55,7 +57,9 @@ is three steps, all four at cap is twelve — the review's tier 3 found `virtues
 
 ---
 
-## 2. A pet more than ten squares away abandons its fight and comes looking for you
+## ~~2. A pet more than ten squares away abandons its fight and comes looking for you~~ — WRITTEN
+
+**WRITTEN 4 October 2026** — `docs/pets.rst`, as a note below the leash table rather than inside it. Verified: `PET_SEEK_DIST` is 10 at `monster.h:422`, applied at `mon-move.c:1035`.
 
 **What.** `PET_SEEK_DIST` is a hard override on *every* leash setting, including "Seek and
 destroy". A pet whose distance from you exceeds ten has its follow distance clamped and breaks
@@ -75,7 +79,9 @@ pets away, and the behaviour reads as a bug when you meet it without knowing the
 
 ---
 
-## 3. Sorcery's *Alchemy* spell is not mentioned anywhere in the manual, nor are its terms
+## ~~3. Sorcery's *Alchemy* spell is not mentioned anywhere in the manual, nor are its terms~~ — WRITTEN
+
+**WRITTEN 4 October 2026** — `docs/realms.rst` Sorcery section, with the terms, and a cross-reference from `docs/mutations.rst` for the Midas touch, which shares them.
 
 **What.** Two things, and the second is the bigger one.
 
@@ -100,7 +106,25 @@ work it out, and there is no way to work it out except by losing the items.
 
 ---
 
-## 4. "Your character survives an upgrade" is no longer safe to promise
+## 4. ~~"Your character survives an upgrade" is no longer safe to promise~~ — DROPPED, NOT TRUE
+
+**Verified 4 October 2026 and not written, because it does not hold up.** The
+entry rested on the decision log alone and said so. Traced:
+
+- **DEC-57 is mischaracterised.** It is "Every entitlement Zangband gives is
+  carried over" -- it does not refuse to load a saved caster.
+- **DEC-90 says the opposite of what is claimed here.** Its own words are that
+  an old file loads *cleanly*, that "the blast radius is empty", and that every
+  release so far is pre-release so old savefiles do not matter.
+- **There is no version gate.** The entry asked whether one had since been
+  added that refuses old files; `src/savefile.c` has none, so nothing has
+  closed and nothing has broken.
+
+The residue is DEC-90's silent-misinterpretation point, which DEC-90 itself
+weighed and accepted. `docs/download.rst:328` is not currently false, so
+writing a warning there would be documenting a problem the game does not have.
+**Revisit if the project ever ships non-pre-release**, which is the condition
+DEC-90 names. Original entry follows.
 
 **What.** `docs/download.rst:328` promises that a character survives an upgrade. Three
 decisions have made that conditional: DEC-50 invalidated every casting class's savefile;
@@ -124,7 +148,9 @@ everything else here; if the version gate has closed it, say so and move on.
 
 ---
 
-## 5. Three Trump summons do not summon what their names say
+## ~~5. Three Trump summons do not summon what their names say~~ — WRITTEN
+
+**WRITTEN 4 October 2026** — `docs/realms.rst`, Trump section. All three re-verified against `class.txt`: Cyberdemon gives `HI_DEMON`, Phantasmal Servant `UNDEAD`, Conjure Elemental `AINU`. The entry's "Also" about a count of twelve against fourteen did not reproduce -- no such count is in the chapter now.
 
 **What.** *Trump Cyberdemon* is `effect:SUMMON_PET:HI_DEMON` — a greater demon, not a
 Cyberdemon. *Phantasmal Servant* is `SUMMON_PET:UNDEAD`. *Conjure Elemental* is
@@ -144,7 +170,9 @@ two not counted). That was a tier 2 finding and may already be fixed — check b
 
 ---
 
-## 6. A Necromancer casts 25 points worse on a lit square
+## ~~6. A Necromancer casts 25 points worse on a lit square~~ — WRITTEN
+
+**WRITTEN 4 October 2026** — `docs/realms.rst`, Casting section. Verified at `player-spell.c:683`.
 
 **What.** A flat +25 to the failure chance whenever a character with `PF_UNLIGHT` stands on a
 lit square.
@@ -162,7 +190,9 @@ flip, and the player has no way to attribute the swing to the square they are st
 
 ---
 
-## 7. Spell failure floors at 5% and caps at 50%
+## ~~7. Spell failure floors at 5% and caps at 50%~~ — WRITTEN
+
+**WRITTEN 4 October 2026** — `docs/realms.rst`, Casting section, including that stun is applied after the cap. Verified at `player-spell.c:677` and the lines below it.
 
 **What.** A character without `PF_ZERO_FAIL` never gets below 5% failure however good they get.
 Every character caps at 50% however bad the odds look — but stunning is applied *after* the cap,
@@ -182,7 +212,9 @@ of curing it. That is a nice detail and is documented nowhere.
 
 ---
 
-## 8. There is no inn in the starting village, so the quest chapter's opening advice never applies at home
+## ~~8. There is no inn in the starting village, so the quest chapter's opening advice never applies at home~~ — WRITTEN
+
+**WRITTEN 4 October 2026** — `docs/quests.rst`, immediately under the advice it contradicts. Verified: `wild.c:1182` gives the starting town `WILD_SERVICE_MAGETOWER` and nothing else. `towns.rst:207` was checked and does *not* already cover this -- its warning is about fallen towns.
 
 **What.** `docs/quests.rst` tells the player to "walk into an inn that is hiring". The starting
 village returns a service mask of magetower and nothing else, so a player following the
