@@ -6707,3 +6707,50 @@ edge is 5.5 sigma out and the player's two do not overlap, 2520 against 2610.
 Falsified twice: removing the gate fails it, and -- the one that matters --
 putting the gate in the *shared* helper so monsters get it too also fails it,
 on the assertion that the monsters' rate has not moved.
+
+---
+
+**DEC-128 — Nightmare shopkeepers are poor and permanent.** (M11 stage 2,
+BAL-18, 3.124.37. Third of three, and closes the §2.8.5 menu the project owner
+took.)
+
+**Ours, not a port**, and two thirds of the spoiler's item rather than three:
+"never rotate" and "the smallest purses" are built, and **"+20 greed" is
+dropped rather than reinvented.** 4.2 removed haggling and has no greed field,
+so there is nothing to add 20 to; turning it into a price multiplier would be
+inventing a mechanic and calling it a port.
+
+**One change, not two, and the reason matters.** Both halves live in
+`store_shuffle()`, because that function is also what `store_reset()` calls to
+seat a store's first owner. Choosing the poorest there makes the rotation stop
+being a rotation on its own -- every later shuffle picks the shopkeeper the
+shop already has. Gating the periodic shuffle in `store_update()` as well would
+have been a second place for the two halves to disagree.
+
+**The early return is load-bearing.** `store_shuffle()` ends with
+
+```c
+while (o == store->owner)
+    o = store_choose_owner(store);
+```
+
+which retries until it draws somebody other than the incumbent. "The poorest"
+is a single fixed answer, so reaching that loop in nightmare against a shop
+whose owner is already the poorest spins for ever. This project has hung its
+own suite twice on unbounded retries; this one was seen before it was written
+rather than after.
+
+**Tested both ways, and both halves from one assertion set.** Twenty shuffles
+move the owner twenty times ordinarily -- the retry loop guarantees it -- and
+zero times in nightmare, which is what "never rotate" means in practice. The
+purse is checked against the minimum computed from the store's own owner list
+rather than against a number, so adding a shopkeeper cannot quietly invalidate
+it.
+
+Falsified twice: disabling the nightmare branch fails it, and taking the
+*richest* owner instead of the poorest fails it.
+
+**The manual gets its own section**, "And three things it does not do", kept
+separate from the list of sixteen above it. That list is a port; these three
+are a design, and folding them together would make the chapter claim Zangband
+did things it never did.

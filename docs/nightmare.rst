@@ -124,6 +124,32 @@ does little; in a deep one it can end a character who was going shopping.
 
 Everything Zangband's nightmare mode actually does is now here.
 
+And three things it does not do
+-------------------------------
+
+These are **ours**, not Zangband's. Its spoiler describes a long menu of ideas
+its code never implemented; three of them were worth building, and they are
+kept separate from the list above because that list is a port and this one is
+a design. Nothing here is restoring anything.
+
+**Breeders fill a level two and a half times over.** The cap on how many
+breeding monsters a level will hold rises from 100 to 255. A floor of giant
+white lice or mice, left alone, becomes very much worse than it would
+ordinarily be. Scrolls of Sterilize still work and still stop it.
+
+**Your bolts bounce off you half as reliably.** A character with reflection
+turns aside nine bolts in ten ordinarily, and eight in ten here. Monsters that
+reflect are unaffected — they bounce your bolts back exactly as often as they
+always did. The property is still worth having; it is just no longer close to
+a guarantee.
+
+**The shopkeepers are poor, and they never leave.** Each shop is run by
+whichever of its owners has the smallest purse, and the usual rotation that
+replaces a shopkeeper every so often does not happen. So the cap on what any
+shop will pay you for a find is the lowest it can be, for the whole game, and
+waiting for a richer buyer is not a plan.
+
+
 And four things that will not be built. Two are permanent decisions:
 
 - **Your score is unaffected.** Zangband gives nightmare characters a score

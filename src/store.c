@@ -1604,11 +1604,49 @@ static struct owner *store_choose_owner(struct store *s) {
 }
 
 /**
+ * The owner of this store with the smallest purse.
+ */
+static struct owner *store_poorest_owner(struct store *s)
+{
+	struct owner *o, *poorest = s->owners;
+
+	for (o = s->owners; o; o = o->next)
+		if (o->max_cost < poorest->max_cost) poorest = o;
+
+	return poorest;
+}
+
+/**
  * Shuffle one of the stores.
+ *
+ * In nightmare mode the shopkeepers never rotate and the one you get is the
+ * one with the smallest purse (BAL-18, DEC-128). Ours, not a port: the
+ * spoiler asks for both, and for "+20 greed" as well, which has no meaning
+ * here because 4.2 removed haggling -- so that third is dropped rather than
+ * reinvented as a price multiplier.
+ *
+ * Both behaviours live here rather than one here and one at the periodic
+ * shuffle in `store_update()`, because this function is also what
+ * `store_reset()` calls to seat the first owner. Make the choice poorest-only
+ * and the rotation stops being a rotation on its own: every later shuffle
+ * picks the same shopkeeper it already has. One change, and no second place
+ * for the two halves to disagree.
+ *
+ * The early return matters. The loop below retries until it draws somebody
+ * other than the incumbent, and "the poorest" is a single fixed answer -- so
+ * reaching that loop in nightmare would spin for ever against a shop whose
+ * owner is already the poorest.
  */
 void store_shuffle(struct store *store)
 {
-	struct owner *o = store->owner;
+	struct owner *o;
+
+	if (OPT(player, birth_nightmare)) {
+		store->owner = store_poorest_owner(store);
+		return;
+	}
+
+	o = store->owner;
 
 	while (o == store->owner)
 	    o = store_choose_owner(store);

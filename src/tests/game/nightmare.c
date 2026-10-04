@@ -26,6 +26,7 @@
 #include "mon-make.h"
 #include "mon-move.h"
 #include "mon-aura.h"
+#include "store.h"
 #include "mon-util.h"
 #include "monster.h"
 #include "option.h"
@@ -1081,6 +1082,66 @@ static int test_the_players_reflection_fails_twice_as_often(void *state) {
 	ok;
 }
 
+/**
+ * Shopkeepers never rotate, and the one you get is the poorest (DEC-128).
+ *
+ * Ours, not a port. The spoiler's third element, "+20 greed", is dropped
+ * rather than reinvented: 4.2 removed haggling and has no greed field.
+ *
+ * Both halves fall out of one change, so both are asserted here. Ordinarily a
+ * shuffle must land on somebody new -- that is what the retry loop in
+ * `store_shuffle()` is for -- so twenty shuffles move the owner around. In
+ * nightmare the answer is a single fixed shopkeeper, so twenty shuffles leave
+ * it where it is, which is what "never rotate" means in practice.
+ *
+ * The purse is checked against the actual minimum over the store's own owner
+ * list rather than against a number, so adding a shopkeeper cannot quietly
+ * invalidate it.
+ */
+static int test_nightmare_shopkeepers_are_poor_and_permanent(void *state) {
+	struct store *s = &stores[0];
+	struct owner *o;
+	int32_t lowest;
+	int i, moved_plain = 0, moved_nasty = 0;
+	struct owner *first;
+
+	notnull(s->owners);
+	lowest = s->owners->max_cost;
+	for (o = s->owners; o; o = o->next)
+		if (o->max_cost < lowest) lowest = o->max_cost;
+
+	/* There has to be a choice to make, or neither half means anything. */
+	require(s->owners->next);
+
+	nightmare(false);
+	first = s->owner;
+	for (i = 0; i < 20; i++) {
+		struct owner *was = s->owner;
+
+		store_shuffle(s);
+		if (s->owner != was) moved_plain++;
+	}
+
+	nightmare(true);
+	store_shuffle(s);
+	first = s->owner;
+	for (i = 0; i < 20; i++) {
+		struct owner *was = s->owner;
+
+		store_shuffle(s);
+		if (s->owner != was) moved_nasty++;
+	}
+	nightmare(false);
+
+	/* Ordinarily every shuffle lands on somebody new. */
+	eq(moved_plain, 20);
+
+	/* In nightmare it never moves, and it sits on the smallest purse. */
+	eq(moved_nasty, 0);
+	eq(first->max_cost, lowest);
+	ok;
+}
+
 const char *suite_name = "game/nightmare";
 struct test tests[] = {
 	{ "nightmare-is-an-optional-birth-choice",
@@ -1120,5 +1181,7 @@ struct test tests[] = {
 	  test_sterilize_still_works_in_nightmare },
 	{ "the-players-reflection-fails-twice-as-often",
 	  test_the_players_reflection_fails_twice_as_often },
+	{ "nightmare-shopkeepers-are-poor-and-permanent",
+	  test_nightmare_shopkeepers_are_poor_and_permanent },
 	{ NULL, NULL }
 };
