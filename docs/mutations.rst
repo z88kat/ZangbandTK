@@ -122,6 +122,15 @@ and Zangband is specific about that. Three of the twenty-seven do not fire yet:
 being warned about what is nearby, and trading hit points for spell points and
 back. All three still show on your character sheet.
 
+**Occasional invulnerability is not free, twice over.** Carrying it costs two
+points of wisdom permanently, in the same way wraith form costs constitution.
+And every time it fires — which it does unasked, by definition — the game
+charges it against your virtues as though you had chosen it: five points off
+Temperance, five off Honour, five off Sacrifice and ten off Valour, twenty-five
+points in all, which is the largest single virtue charge anywhere in the game.
+A character who happens to have this mutation will slide down four scales
+without ever having decided anything. See :doc:`virtues`.
+
 .. topic:: Wraith form, and the way it kills you
 
    .. warning::
@@ -141,6 +150,13 @@ back. All three still show on your character sheet.
    for standing inside rock, where a Spectre pays a point a turn.
 
    It arrives without being asked for, roughly one turn in three thousand.
+
+   **It also costs you three points of constitution for as long as you have
+   it** — not while the form is running, but permanently, from the moment the
+   mutation arrives until something takes it away. You fade in and out of
+   physical reality and your body is the thing that suffers for it. On a frail
+   character that is a meaningful share of the hit points, and it is the reason
+   this is not simply the best mutation in the game.
 
    **How long you have is the whole of the calculation, and you can do it.**
    The form lasts somewhere between half your character level and your level,
@@ -178,6 +194,13 @@ a mutated Warrior and a mutated Mage bite equally often. They are the reason a
 low-level character with the right mutations hits harder than their class says
 they should.
 
+**They stop when the thing you are hitting dies.** They are tried in a fixed
+order and the sequence ends the moment the monster is dead, so a character with
+all five does not land five blows on something your weapon had already finished
+— the extras are spent on the next monster's turn, not wasted on this one's
+corpse. Against anything that survives a round they all land; against the small
+things they mostly do not come up at all.
+
 .. warning::
 
    **The melee dice are not what Zangband's own text says.** Every one of the
@@ -207,6 +230,14 @@ the reason there is no generic "random mutation" source:
 - **Chaos itself.** Being hit by raw chaos without resisting it.
 - **Polymorph Self**, whether cast or mutated into.
 - **A spell going badly wrong**, if it was a chaos or death spell.
+
+**However it arrives, gaining one moves you a point up the Chance virtue.** The
+game counts a mutation as courting chaos whether or not you courted it, so a
+Beastman — which collects one every few levels for nothing it chose to do —
+drifts steadily up that scale over a career, and a character who has taken a few
+from bad luck with a chaos breath will find the scale has noticed. It is a
+single point each time, so it is slow; it is also the only thing on the list
+that accumulates. See :doc:`virtues`.
 
 Everything on that list works except the two that go through a magic realm —
 Polymorph Self cast as a Chaos spell, and a Chaos or Death spell going wrong.

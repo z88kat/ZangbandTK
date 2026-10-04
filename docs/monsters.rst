@@ -136,6 +136,12 @@ It applies to every way the game has of moving a monster against its will — th
 teleport-other effects, the blink a nexus attack causes, and the shove of a
 gravity attack — so there is no side door.
 
+**It also refuses to be moved towards you.** The swap-position mutation trades
+your square for a monster's, and a monster with this flag will not make the
+trade: you get ``Your teleportation is blocked!`` and neither of you moves. The
+flag reads as a defence against being sent away, and it is, but it is a defence
+against being brought closer as well.
+
 Things it is a mistake to touch
 -------------------------------
 

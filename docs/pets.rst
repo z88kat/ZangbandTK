@@ -465,6 +465,13 @@ Turning on a creature that trusted you costs you virtue: a gain in
 Individualism and a loss in Honour, Justice and Compassion. Those are real
 numbers here and other things read them.
 
+**Making one costs virtue too**, in the opposite direction and much more
+quietly. Every successful charm takes a point off your Individualism — taking a
+creature into your service is a step away from standing alone — and if what you
+charmed was an animal it adds a point to Nature. A character who builds a
+menagerie of beasts will find both scales have moved a long way without a single
+message saying so. See :doc:`virtues`.
+
 Walking into your own pet does **not** hurt it. You change places with it —
 "you push past it" — which is what stops the whole mechanism firing every time
 an animal gets into a doorway ahead of you.

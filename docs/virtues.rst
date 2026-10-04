@@ -36,9 +36,13 @@ be told:
   of the towns — is noted, and not kindly.
 - **Striking something asleep** costs you Compassion, and Honour as well
   unless you are a Rogue, for whom it is simply the job.
-- **Hasting yourself** is impatient and industrious at once. **Making yourself
-  invulnerable** is the largest single mark against you anywhere in the game,
-  and most of it lands on Valour.
+- **Hasting yourself** is impatient and industrious at once. **Becoming
+  invulnerable** is the largest single mark against you anywhere in the game —
+  twenty-five points across four virtues, most of them off Valour. Note the
+  wording: it is the state that is charged, not the decision to enter it, so the
+  mutation that makes a character invulnerable at random is charged the full
+  amount every time it fires, without the character having chosen anything. See
+  :doc:`mutations`.
 - **Digging** is diligent. **Clearing a stand of trees** is diligent and
   something else besides.
 - **Mapping a level** you have not walked is knowledge got cheaply.
