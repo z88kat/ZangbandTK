@@ -19,6 +19,86 @@ the keypress queue), "fresh" (dump any pending output to the screen), and
    :local:
    :depth: 1
 
+The options menu
+================
+
+``=`` opens a menu rather than a single screen, and not everything on it is an
+option in the on/off sense. The whole of it:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 10 34 56
+
+   * - Key
+     - Entry
+     - What it is
+   * - ``a``
+     - User interface options
+     - The on/off settings described below.
+   * - ``b``
+     - Birth (difficulty) options
+     - Fixed once the character exists. See `Birth options`_.
+   * - ``x``
+     - Cheat options
+     - Marks the character unscored, permanently.
+   * - ``w``
+     - Subwindow setup
+     - What each sub-window displays. See `Window flags`_.
+   * - ``i``
+     - Item ignoring setup
+     - Which kinds of object to hide.
+   * - ``{``
+     - Auto-inscription setup
+     - Inscriptions applied automatically by object kind.
+   * - ``d``
+     - Set base delay factor
+     - The ``delay_factor`` value described under `Left Over Information`_.
+   * - ``h``
+     - Set hitpoint warning
+     - The ``hitpoint_warn`` value, likewise.
+   * - ``m``
+     - Set movement delay
+     - The ``lazymove_delay`` value, likewise.
+   * - ``o``
+     - Set sidebar mode
+     - See below.
+   * - ``s``
+     - Save subwindow setup to pref file
+     - Writes the ``w`` settings out.
+   * - ``t``
+     - Save autoinscriptions to pref file
+     - Writes the ``{`` settings out, so a new character starts with them.
+   * - ``u``
+     - Save char screen options to pref file
+     - Writes out how you have arranged the character sheet.
+   * - ``p``
+     - Load a user pref file
+     - Reads a file in and applies it. ``"`` applies a single line instead.
+   * - ``e``
+     - Edit keymaps
+     - See :doc:`customization <customize>`.
+   * - ``c``
+     - Edit colours
+     - Likewise.
+   * - ``v``
+     - Save visuals
+     - Likewise.
+
+**Sidebar mode** (``=`` then ``o``) is the one that changes the shape of the
+main screen rather than a value in it. It cycles between three positions for
+the block of character information — **Left**, which is where it has always
+been; **Top**, which lays it along the top of the screen and gives the map the
+full width; and **None**, which removes it and gives the map everything. The
+screen names the current mode and any key but ``ESC`` cycles to the next; the
+choice is kept with your other preferences.
+
+On a wide terminal **Top** is usually the better arrangement, since the
+wilderness and the world map are both wider than they are tall. **None** is
+worth knowing about for screenshots and for very small terminals, but it takes
+the hit point and mana readouts with it — the status line along the bottom
+stays, so you keep your conditions and lose the two numbers that tell you how
+the fight is going.
+
 User Interface Options
 ======================
 

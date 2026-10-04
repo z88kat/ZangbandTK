@@ -115,6 +115,12 @@ Walk (``W``) or Walk (``-``)
   disarm it. This command may take a count, requires a direction, and takes
   some energy.
 
+Walk (with pickup) (``;`` in both keysets)
+  Takes a single step in a direction, picking up what you step onto if you
+  normally pick things up. It is what the direction keys already do, named as
+  a command so that it can be given a repeat count or bound to something else.
+  This command may take a count, requires a direction, and takes some energy.
+
 Run (``.``) or Run (``,``)
   This command will move in the given direction, following any bends in the
   corridor, until you either have to make a "choice" between two directions
@@ -187,6 +193,13 @@ Get objects (``g``)
   no time, and objects take 1/10th of a normal turn each (maximum time cost
   is a full turn). You may pick up objects until the floor is empty or your
   backpack is full.
+
+Do autopickup (``^g`` in both keysets)
+  Takes the gold, and then takes only what you have already said you want —
+  what your inscriptions and pickup options mark as yours — leaving the rest
+  where it lies. Where ``g`` offers you everything on the floor, this offers
+  you nothing: it is the same pass the game makes for you when you walk onto a
+  pile, run by hand. It costs a tenth of a turn an item, up to a full turn.
 
 Rest (``R``)
   Resting is better for you than repeatedly staying still, and can be told
@@ -300,11 +313,18 @@ Use a power (``N``) or Use a power (``&``)
 
   A power draws on spell points like a spell. A character with none left — and
   a warrior never has any, having no spells at all — pays in hit points
-  instead, at the same price, and the menu says which before you commit. The listed failure chance
+  instead, at the same price, and the menu says which before you commit. The
+  price itself is not the figure in the menu: it is rolled each time, somewhere
+  between half that figure and all of it, so a power is never quite something
+  you can budget for. The listed failure chance
   falls as you gain levels past the level the power arrives at, and falls
-  further as you raise the stat it leans on. Failing still costs the price;
+  further as you raise the stat it leans on; being stunned raises it, and so
+  does being afraid. Failing still costs the price;
   being told you are too junior, too confused, or too spent costs nothing.
-  This command takes some energy.
+
+  A *racial* power that fails simply fails. A Mindcrafter's psionics are the
+  exception: half as often as one of those fails, it goes off inside your head
+  instead — see :ref:`Psionics <psionics>`. This command takes some energy.
 
 Object Manipulation Commands
 ============================
@@ -407,6 +427,14 @@ Zap a rod (``z``) or Activate a rod (``a``)
   the type of rod, and whether you are aware of its type) and can use a
   target. This command takes some energy.
 
+Use an item (``U``) or Use an item (``X``)
+  One command for all of the above. Rather than deciding whether the thing in
+  your hand wants quaffing, reading, aiming, using, zapping or activating, pick
+  it from a single list of everything you are carrying that can be used at all,
+  and the game does the right verb for it. The effect, the failure chance and
+  the energy are whatever the specific command would have been; nothing is
+  cheaper or dearer for going through here.
+
 Throwing and Missile Weapons
 ============================
 
@@ -444,6 +472,13 @@ Targeting Mode (``*``)
   current target is a monster, the status of that monster is tracked in the
   sidebar.  For more details about the targeting interface that this
   command uses, see :ref:`Targeting <targeting>`.
+
+Target closest monster (``'`` in both keysets)
+  Targets the nearest thing you can see that is worth shooting at, without
+  opening the targeting interface at all. The cursor jumps to it for a moment
+  so you can see what you got. If there is nothing in sight it does nothing and
+  leaves the old target alone. It is the quick version of ``*`` and costs no
+  energy.
 
 Looking Commands
 ================
@@ -492,6 +527,12 @@ List visible items (``]``)
   each there are and where they are on the level relative to your current
   location.
 
+Center map (``^l``) or Center map (``@``)
+  Puts your own square back in the middle of the view. Useful after ``L`` has
+  left the map looking somewhere else, and on a screen wide enough that the
+  view does not scroll until you reach its edge. It costs no energy and changes
+  nothing but what you are looking at.
+
 Message Commands
 ================
 
@@ -503,6 +544,12 @@ Repeat level feeling ('^f')
 View previous messages ('^p')
   This command shows you all the recent messages. You can scroll through
   them, or exit with ESCAPE.
+
+Show previous message ('^o')
+  Reprints the most recent message on the top line, marked with ``>``, without
+  taking over the screen the way ``^p`` does. It is for the one line that got
+  overwritten before you had finished reading it. It shows the last message
+  only — pressing it again shows the same one.
 
 Take notes (``:``)
   This command allows you to take notes, which will then appear in your
@@ -517,6 +564,14 @@ Take notes (``:``)
 
 Game Status Commands
 ====================
+
+View abilities (``S`` in both keysets)
+  Lists what your class and your race give you that is not a spell, a power or
+  a number on the character sheet — the standing properties, class first and
+  race second, each with a description you can read. It is where you find out
+  what *holds its life* or *does not bleed* actually means for the character
+  you are playing, rather than inferring it from a line in this manual. It
+  costs no energy.
 
 Character Description (``C``)
   Brings up a full description of your character, including your skill
@@ -717,6 +772,13 @@ Interact with colors - option submenu
   systems. NOTE: It is commonly used to brighten the 'Light Dark' color
   (eg. Cave Spiders) on displays with bad alpha settings.
 
+Load a single pref line (``"`` in both keysets)
+  Prompts for one line of user-pref syntax and runs it immediately, exactly as
+  though it had been read out of a pref file. It is for trying a single setting
+  without editing a file and reloading it; nothing is saved, so a line entered
+  this way lasts until you quit. ``=`` then ``p`` loads a whole file instead.
+  See :doc:`customization <customize>` for the syntax.
+
 Help Commands
 =============
 
@@ -758,6 +820,27 @@ Game Version (``V``)
 
 Extra Commands
 ==============
+
+Repeat previous command (``n``) or Repeat previous command ('^v')
+  Does the last thing you did again, with the same item, direction and target.
+  It is the one to reach for when you are drinking a stack of potions, firing
+  the same arrows at the same monster, or tunnelling through a wall — and it
+  costs whatever the command it repeats costs.
+
+Toggle wizard mode ('^w' in both keysets)
+  Turns on the debugging mode, which is not a way to play the game. It warns
+  you the first time and asks you to confirm, and once you agree the character
+  is marked as unscored for good — the mark is in the savefile and switching
+  the mode back off does not remove it. See :ref:`debug commands
+  <debug-commands>` for what it opens up.
+
+Borg commands ('^z' in both keysets)
+  Hands the character to the automatic player, if the game was built with it.
+  Like wizard mode it warns you once, asks you to confirm, and permanently
+  marks the character as unscored; unlike wizard mode its own warning is that
+  the game may crash and the savefile may not survive. It exists to play the
+  game unattended for testing, not to play it for you. If the build does not
+  include the borg, the key does nothing.
 
 Toggle Choice Window ('^e')
   Toggles the display in any sub-windows (if available) which are
