@@ -185,7 +185,11 @@ which says nothing about what swims.
 None of it can reach you on the sand. The sea is dangerous to enter, not
 dangerous to stand beside.
 
-Monsters cannot swim, so deep water is a reliable way of breaking pursuit.
+**Nothing arrives next to you.** The country is repopulated as you walk through
+it, but never within eight grids of where you are standing, so whatever you meet
+in the open you meet at a distance and get at least one look at first. It is the
+reason the wilderness never does what a dungeon level sometimes does and puts
+something in your face unannounced.
 
 What you leave behind
 ---------------------
@@ -233,8 +237,18 @@ The world map
 
 Press ``M`` on the surface and you get the overhead map of the world: one
 character per block, drawn from the same terrain the ground is drawn from, so
-what the map calls forest is what you walk into. Towns are picked out in white,
-and ``@`` is you. Direction keys scroll it; ``ESC`` closes it.
+what the map calls forest is what you walk into. ``@`` is you. Direction keys
+scroll it; ``ESC`` closes it.
+
+Places are picked out in colour rather than all in one, and the bottom of the
+screen names the colours as it draws them, so you do not have to remember which
+is which: **village**, **town**, **city** and **great city** each have their own,
+and a **dungeon** mouth is light red. Blocks drawn in light white are neither —
+they are the margin a town or a dungeon keeps clear around itself, which is why
+they are never built right up against each other.
+
+The line below the map tells you where you are in world coordinates and how
+large the world is, which is the only place either figure is shown.
 
 The world is 129 blocks across and a screen is eighty columns, so the map pans
 rather than shrinking to fit. Squeezing a hundred and twenty-nine rows into

@@ -408,6 +408,24 @@ since the element that did both no longer exists; and **Chaos Branding gives
 fire or frost rather than a chaos brand**, because 4.2 has no chaos brand to
 give.
 
+Two more are worth knowing if you are counting on them. **Call Chaos no longer
+rolls its damage type.** Zangband picked one of thirty elements and then one of
+three shapes; the three shapes are kept and each has been given one element
+permanently, so the roll still decides what arrives but no longer decides what
+it is made of. You get a ball of chaos, a scatter of plasma, or a wide sphere of
+mana, and those are the only three things it can ever be. And **Magic Rocket is
+shards.** It was a rocket, which almost nothing resisted; shards is the element
+4.2 has that cuts, so **shard resistance now blunts it** — on either side of the
+fight, which matters more than it sounds, because a good deal of what lives
+below two thousand feet resists shards and nothing resisted a rocket.
+
+The frozen radius is the other thing you will feel rather than read about.
+Zangband grew five of these blasts as the caster grew; here each is fixed at the
+size it has the day you learn it, so they never get any wider however high you
+go: *Flash of Light* 1, *Mana Burst* 2, *Disintegrate* 3, *Sonic Boom* 4,
+*Invoke Logrus* 6. The damage still climbs. The area does not, and a level-45
+*Sonic Boom* covers exactly what a level-25 one did.
+
 **And Chaos spells backfire.** Fail one and you may not simply lose the mana:
 the realm produces a chaotic effect instead, and how bad it is depends on how
 deep the spell was. *Magic Missile* never backfires. *Call the Void* almost
