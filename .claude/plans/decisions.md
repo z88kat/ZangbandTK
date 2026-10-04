@@ -6882,3 +6882,65 @@ borg reaches town while blocked and still does not come away with the potions.
 That points at the buying decision rather than at travel. It is a session's
 work to find and probably a small change, but it is a different question from
 this one and this entry is the measurement.
+
+---
+
+**DEC-131 — The buying decision is not one bug, and the dominant one is that
+the borg does not go shopping.** (BRG-27, continued. Diagnosis; nothing fixed,
+and the reason for not fixing is the finding.)
+
+DEC-130 localised the depth constraint to a shopping failure: blocked on "2
+cure" in 46 per cent of long-survivor samples, median 3,368 gold, against a
+20-gold potion the alchemist stocks `always`. Four causes were possible --
+never enters the shop, enters but does not recognise the stock, recognises it
+and declines, or buys and loses them. **Measured rather than reasoned, and it
+is two of the four at once.**
+
+**A probe in the buy loop, counting what happens to a Cure Light Wounds ware
+over 300,000 turns:**
+
+| run | CLW wares seen | rejected | lost on power | shops entered | visits |
+|---|---|---|---|---|---|
+| Warrior-Mage 1 | 0 | 0 | 0 | 4 | 64 |
+| Warrior-Mage 13 | 0 | 0 | 0 | **0** | **0** |
+| Priest 1 | 36 | 0 | **36** | **0** | **0** |
+| Priest 13 | 0 | 0 | 0 | **0** | **0** |
+
+**Three of the four entered no shop at all in 300,000 turns** while blocked on
+a potion they could have bought 168 of. That is the dominant failure and it is
+upstream of everything else: no valuation rule matters to a borg that never
+reaches the counter. (`shops` is a popcount of distinct shops, not a bitmask
+-- checked, because summing a bitmask would have made this number meaningless
+and it does not.)
+
+**And where it does evaluate, it always loses.** Priest seed 1 considered a
+Cure Light Wounds 36 times and rejected it 36 times, never on `borg_good_buy`
+and never for want of gold, but on the power comparison every time -- 813,962
+against a running best of 841,464. The buy loop takes one best item per pass,
+so a potion worth 550 never wins against whatever else is on the shelf.
+
+**One clean mismatch found by reading, which is real but is not the whole
+story.** `borg_power()` rewards Cure Light Wounds only below character level
+8 (`borg-power.c:1513`), while `borg_prepared()` goes on demanding two cures
+until level 30. Above 8 the potion is worth literally nothing to the
+purchasing score and the readiness rule still refuses to descend without it.
+That gap is where Warrior-Mage seed 1 spent 360,000 turns. It accounts for
+**44 per cent** of the blocked samples -- character level 8 is the single
+largest bucket at 43 of 128 -- and the other 56 per cent sit below 8, where
+the potion *is* valued at 550 and still not bought.
+
+**So this is bigger than a session, and the evidence rather than the estimate
+says so.** Closing the clevel-8 gap is a defensible one-line change and I can
+make the case for it, but on its own it would move nothing: it addresses the
+44 per cent of samples where the borg is not in a shop anyway. The real
+question -- why a borg with 3,368 gold, a standing readiness block and 300,000
+turns does not walk into a shop -- is a different piece of work in
+`borg_think_shop*` and the goal selection that feeds it.
+
+**My pre-registered prediction for this pass was that it would be the
+recognition case**, the venison shape, because that is this project's history.
+It is not: `borg_good_buy` rejected the potion zero times in every run, and
+the sval lookup resolves. Second wrong prediction in two passes on this
+problem, both plausible, both answered by measurement rather than by argument.
+
+**Not attempted**, per the standing instruction to say so rather than start.
