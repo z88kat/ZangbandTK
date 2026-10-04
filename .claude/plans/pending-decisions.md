@@ -100,7 +100,18 @@ half is more defensible than the potion half if you want only one.
 
 ---
 
-## 4. Seventeen races share the Human backstory
+## 4. ~~Seventeen races share the Human backstory~~ — DECIDED AND BUILT
+
+**Ruled and shipped 1-2 October 2026.** The voice was ruled as comic social
+satire in Angband's own register; the Imp was ruled summoned and the Vampire
+ruled to keep parentage. Built in `287c54b46` as DEC-118: 57 charts and 187
+phrases, `player/backstory` holding the chains together, and five
+concatenation defects found afterwards by reading the output and fixed in
+`e0156c542`. No manual change was needed -- `docs/birth.rst:25` already said
+background history is determined by race, which this made true. Original entry
+follows.
+
+### The original entry
 
 **The choice.** Whether to write seventeen backstories, and who writes them.
 
@@ -122,7 +133,29 @@ content pass near a release.
 
 ---
 
-## 5. M11 stage 2 — the §2.8.5 menu
+## 5. M11 stage 2 — the §2.8.5 menu — THREE OF FOUR DECIDED
+
+**Ruled 3-4 October 2026: take all three of the ones that could be ruled on.**
+`repro-max` 100 to 255 (DEC-126), the player's reflection failing twice as
+often (DEC-127), and shopkeepers who never rotate and carry the smallest
+purses (DEC-128). All three are ours under BAL-18 rather than ports, all three
+are gated on the birth option, and the manual describes them in a section of
+their own kept separate from the sixteen it ports.
+
+**Still open: nastier mutations.** It cannot be ruled on as written -- "nastier"
+is not a change until somebody says which mutations and by how much -- so it
+needs a scoping pass first. That is owed by me, not by the project owner.
+
+**This is what M11's exit criterion now waits on.** The criterion is *"stage 1
+complete and every stage-2 addition recorded as a decision"*, and DEC-84
+established that declining counts as recording. Three are recorded. The fourth
+is neither taken nor refused, so the milestone is one ruling short.
+
+Original entry follows, and its recommendations are superseded: the
+shopkeepers it said to leave were taken, on the grounds that "players notice
+and complain" is a weak objection to an opt-in mode advertised as brutal.
+
+### The original entry
 
 **The choice.** DEC-84 records that nothing in §2.8.5 has been ruled either way.
 Four items are flagged cheap and clearly good. A view on each:
