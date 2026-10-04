@@ -32,6 +32,39 @@ and 22, which are adjacent to corrections that landed.
 
 ---
 
+## Where this stands — 4 October 2026
+
+All twenty-five are now resolved. **Twenty written, four dropped, one (25) stale on arrival.**
+
+Dropped, each with its reopening condition in the entry: **4** (savefile compatibility — the
+decision log says the opposite of the claim), **22** (nightmare caps — real code, unreachable
+at the current lethality scalar; and the arrival-energy half is backwards), **24** (the Imp's
+affinity — it has one, and the manual already says so), and half of **13** (`RES_TELE` does
+not block teleport-to; only the swap).
+
+**What the exercise actually caught.** The dropped entries are not the headline. Four entries
+turned out to sit *next to a false sentence that the tier passes had left standing* — a claim
+corrected in one passage and restated, uncorrected, somewhere else in the same file:
+
+| Entry | File | The sentence that was still there |
+|---|---|---|
+| 9 | `wilderness.rst:188` | "Monsters cannot swim, so deep water is a reliable way of breaking pursuit." |
+| 10 | `birth.rst` | "Reaching past what is left in the pool makes it markedly worse" — the DEC-56 penalty. |
+| 20 | `dungeon.rst` | "You must be in the dungeon for the store to restock." |
+| 21 | `wilderness.rst:236` | "Towns are picked out in white." |
+
+All four are fixed. The pattern is worth keeping: **a correction that rewrites one passage does
+not find the same claim restated elsewhere in the file**, and the backlog's "check first" notes
+pointed at exactly the places where this had happened. Checking first paid for itself four
+times and cost nothing.
+
+Line numbers in the entries below were indicative, as warned. Roughly a third had drifted —
+`wild.c`'s sea constants by five, `ui-options.c` and `ui-map.c` by a few, `player-mutation.c`
+by the eight that entry 25 records. Every citation used for a write was re-read; the corrected
+reference is in the entry.
+
+---
+
 # Band A — a player changes what they do
 
 ## ~~1. The patron's cruelty shifts with your virtues~~ — WRITTEN
@@ -233,7 +266,26 @@ fails silently — there is no message explaining why the village has no inn.
 
 # Band B — a player is surprised, but not misled into a decision
 
-## 9. Flying and swimming monsters cross water; the sea has a danger floor
+## ~~9. Flying and swimming monsters cross water; the sea has a danger floor~~ — MOSTLY ABSORBED; ONE PART WRITTEN
+
+**Checked 4 October 2026.** Two of the three facts were already in the chapter.
+
+- **The crossing rule: already written**, at `wilderness.rst:89-100`, and it points at the
+  data file for the counts rather than restating them. The citation had drifted: the comment
+  carrying 117/91 is `mon-move.c:191-202` and the test `:203-208`.
+- **The sea's danger floor and density: already written**, at `wilderness.rst:179-186`. Both
+  constants moved too — `WILD_SEA_DENSITY` is `wild.c:3871`, `WILD_SEA_DEPTH` is `:3878`,
+  applied at `:3962` and `:3998`.
+- **The 8-grid exclusion: WRITTEN 4 October 2026** — `docs/wilderness.rst`, end of "What
+  lives there". Verified at `wild.c:3969`.
+
+**And one thing this entry missed.** `wilderness.rst:188` still read *"Monsters cannot swim,
+so deep water is a reliable way of breaking pursuit"* — stranded in a later section, ninety
+lines below the paragraph that says the opposite, and flatly false. The tier 1 pass rewrote
+the deep-water section and did not find the same claim restated elsewhere in the file.
+**Removed.** Worth recording as a pattern, not a one-off.
+
+Original entry follows.
 
 **What.** Three related facts. 117 imported races have `RF_CAN_FLY` and 91 have `RF_CAN_SWIM`,
 so deep water stops far less than it appears to. The open sea has a danger floor of 8 and a
@@ -252,7 +304,20 @@ danger floor and the 8-grid exclusion are separate and were almost certainly not
 
 ---
 
-## 10. Racial powers: the price is randomised, and fear makes them harder
+## ~~10. Racial powers: the price is randomised, and fear makes them harder~~ — HALF ABSORBED, HALF WRITTEN
+
+**WRITTEN 4 October 2026.** The randomised price was already in `birth.rst` ("somewhere
+between half the listed cost and all of it"); it was *not* in `command.rst`, and now is.
+Fear was in neither and is now in both. Verified: `player-util.c:2377` (price),
+`:2201` (`if (p->timed[TMD_AFRAID]) chance += 20;`). The price is charged before the failure
+roll, so a failed power still costs — `command.rst` already said so.
+
+**The "check first" note was right and the check paid for itself.** `birth.rst` still read
+*"Reaching past what is left in the pool makes it markedly worse"* — the mana-shortfall
+penalty DEC-56 removed. The tier 1 fix rewrote the surrounding sentences and left the claim
+standing. **Corrected**, with DEC-56 cited, since a reader who meets the behaviour will want
+to know it is deliberate. Second false claim found adjacent to a backlog entry rather than by
+it. Original entry follows.
 
 **What.** Two things the powers section omits. The cost you pay is
 `randint1(cost - cost/2) + cost/2` — somewhere between half and all of the listed figure, not
@@ -271,7 +336,18 @@ now says before adding to it.
 
 ---
 
-## 11. The Mindcrafter's psionics have three undocumented growth bands and a backfire
+## ~~11. The Mindcrafter's psionics have three undocumented growth bands and a backfire~~ — WRITTEN
+
+**WRITTEN 4 October 2026** — `docs/birth.rst`, the psionics section, after the two paragraphs
+that stop short of these three. All three re-verified against `class.txt`: the resistance
+ladder is `power-when:17/21/25/29/33` on *armour your mind* (acid, fire, cold, elec, pois);
+*pulverise* is `BALL:SOUND:1` then `:2` at 21; *loose a telekinetic wave* is `SPOT:FORCE:4` at
+three times level, then `:8` at four times, at 40.
+
+**The backfire half was already written** and written well — `birth.rst` has it as a warning
+block, including the five bands and that racial powers do not backfire. What was missing was
+any mention of it on `command.rst`'s "Use a power", which is where a player meets the command;
+a cross-reference was added there.
 
 **What.** *Armour your mind* grows a resistance ladder at levels 17, 21, 25, 29 and 33 — acid,
 fire, cold, electricity, poison. *Pulverise* goes from radius 1 to radius 2 at level 21. *Loose
@@ -291,7 +367,19 @@ failure generally and never mentions that the Mindcrafter's failures bite back.
 
 ---
 
-## 12. All five undead races start just after midnight, not only the Vampire
+## ~~12. All five undead races start just after midnight, not only the Vampire~~ — WRITTEN
+
+**WRITTEN 4 October 2026** — `docs/birth.rst`, one shared paragraph under the Vampire where
+the midnight start is introduced, and the food scrolls added to the Spectre and Ghoul entries.
+Verified: `player-birth.c:1485` keys on `PF_UNDEAD`; the flag is on Vampire, Skeleton, Zombie,
+Spectre and Ghoul and on nothing else (Golem is not undead).
+
+**The "Also" undercounts.** Six races take Remove Hunger scrolls in place of rations, not
+four and not two: Vampire, Golem, Skeleton, Zombie, Spectre and Ghoul (`equip-instead` at
+`p_race.txt:863, 939, 1150, 1183, 1224, 1262`). The manual already had four of the six; the
+two missing were Spectre and Ghoul, which is what was written. The Ghoul is the sharper case
+— `CANT_EAT` without `SLOW_DIGEST`, so it is as badly placed as a Skeleton, and its entry
+said nothing about food at all while calling it a corpse-eater.
 
 **What.** The midnight start is driven by `PF_UNDEAD`, so Skeleton, Zombie, Spectre and Ghoul
 get it too. The manual attributes it solely to the Vampire's sunlight problem, which leaves the
@@ -309,7 +397,20 @@ five.
 
 ---
 
-## 13. `RES_TELE` blocks your own teleport-to, not just teleport-away
+## ~~13. `RES_TELE` blocks your own teleport-to, not just teleport-away~~ — HALF WRITTEN, HALF DROPPED
+
+**Half of this does not reproduce.** The claim is that `RES_TELE` stops a monster being
+"swapped with *or pulled to* you". Traced: there are four `RF_RES_TELE` sites in the tree
+(`effect-handler-general.c:4310`, `mon-util.c:209/212/218`) and none of them is in
+`effect_handler_TELEPORT_TO`. **A monster with `RES_TELE` can be pulled to you.** Dropped.
+Reopen if a `RES_TELE` test is ever added to `TELEPORT_TO`.
+
+**The swap half holds and is WRITTEN 4 October 2026** — `docs/monsters.rst`, under the list
+that presented itself as exhaustive ("so there is no side door"). Verified at
+`effect-handler-general.c:4310`, inside `effect_handler_SWAP_POS`. The only thing in the game
+that casts `SWAP_POS` is the swap-position mutation (`mutation.txt:208-219`), and
+`mutations.rst:81-83` **already documents the interaction correctly** — so the gap was only
+ever in `monsters.rst`, which is a narrower job than the entry describes.
 
 **What.** A monster with `RES_TELE` also refuses to be swapped with or pulled to you — "Your
 teleportation is blocked!"
@@ -321,7 +422,23 @@ presents the list as exhaustive.
 
 ---
 
-## 14. Quest terms: the pay is a formula, there are eight slots, and the offers are not uniform
+## ~~14. Quest terms: the pay is a formula, there are eight slots, and the offers are not uniform~~ — WRITTEN
+
+**WRITTEN 4 October 2026** — `docs/quests.rst` (all four, plus the Justice note) and
+`docs/towns.rst` (pay and slot count, with a pointer to `quests.rst` for the rest). All four
+re-verified; three citations had drifted.
+
+- Pay: `ui-map.c:1711-1712`, `max_num * (race->level + 1) * 20`, floored at 20. Written as
+  prose with a worked example rather than as a formula.
+- Slots: `constants.txt:542` (`wild:quest-slots:8`), refusal at six sites in `ui-map.c`, not
+  the two cited. The chapter now names the data file rather than only the number.
+- Depth: bounty `max_depth + 4` at `ui-map.c:1769`; dungeon job `rand_range(min, max)` clamped
+  to `max_depth + 6` and back up to the dungeon's own minimum, `:1582-1584`. The clamp runs
+  both ways, which the entry did not say and which is the part a player feels.
+- Offer roll: `ui-map.c:1746-1759`. `randint0(5)` descending over four cases, so one roll in
+  five offers none of them, and the kinds low in the switch are reachable from more starting
+  points than the kinds high in it. Written as an order of likelihood rather than a table.
+- Justice: `mon-speech.c:182`, +5, and the comment confirms it is the virtue's only writer.
 
 **What.** Four things, all in the same chapter.
 
@@ -346,7 +463,12 @@ is the only writer to Justice in the game.
 
 ---
 
-## 15. Virtues change the inn's dream odds
+## ~~15. Virtues change the inn's dream odds~~ — WRITTEN
+
+**WRITTEN 4 October 2026** — `docs/towns.rst`, immediately below the law table so the two
+cannot be read apart. Verified at `player-util.c:2688-2702`: Enlightenment plus Knowledge over
+twenty on the true chance, Unlife plus Chance over twenty on the dark. `virtues.rst:70-76`
+already said the same thing from its side and the two now agree.
 
 **What.** `docs/towns.rst:299-315` presents the dream table as a pure function of the town's
 law. Enlightenment and Knowledge also raise the true-dream chance; Unlife and Chance raise the
@@ -359,7 +481,19 @@ two virtue consumers, so the two pages need to agree.
 
 ---
 
-## 16. Eleven commands have keys in the tables and no description anywhere
+## ~~16. Eleven commands have keys in the tables and no description anywhere~~ — WRITTEN
+
+**WRITTEN 4 October 2026** — `docs/command.rst`, eleven entries in the existing per-command
+format, each filed in the section its command belongs to rather than in a list of leftovers.
+All eleven re-verified in `ui-game.c` and confirmed absent from `command.rst` first. Each was
+read in its handler before being described, which changed three of them:
+
+- `^o` shows the **most recent** message only (`ui-knowledge.c:3831-3835` prints `message_str(0)`);
+  pressing it again shows the same line. "Previous" in the key table is misleading.
+- `^g` always takes the gold and then takes only what inscriptions and options already mark as
+  yours (`cmd-pickup.c:408-438`) — it is the walk-onto-a-pile pass run by hand, not a bulk `g`.
+- `S` lists the **class and race properties**, class first (`player-properties.c:62-102`), not
+  powers; it is where "holds its life" is explained in the game rather than in the manual.
 
 **What.** These appear in the `docs/playing.rst` keyset tables — so they are discoverable — but
 no chapter says what they do.
@@ -384,7 +518,20 @@ no chapter says what they do.
 
 ---
 
-## 17. Sidebar mode, and four options-menu entries
+## ~~17. Sidebar mode, and four options-menu entries~~ — WRITTEN
+
+**WRITTEN 4 October 2026** — `docs/option.rst`, as a new "The options menu" section at the
+top. Rather than describing the four undocumented entries and leaving the rest implicit, the
+whole menu is now tabulated with its keys, which also gives the three "Left Over Information"
+values the keys they were missing. Sidebar mode gets prose below it.
+
+Verified: the menu is `ui-options.c:2092-2114` (the entry is at `:2104`, as cited);
+`do_cmd_sidebar_mode` is `:1133-1163`; the three modes are `SIDEBAR_LEFT/TOP/NONE` at
+`ui-term.h:248-250`, consumed at `ui-display.c:961` and `:965` and `:1513`, and saved with the
+character (`save.c:335`, `load.c:677`). **None** keeps the bottom status line and loses the hit
+point and mana readouts — worth checking, because the obvious guess is that it loses both.
+
+`birth_nightmare` was indeed already fixed; the note can go.
 
 **What.** `=` then `o` cycles the sidebar between Left, Top and None. It changes the entire
 main-screen layout and no in-scope chapter mentions it. Four further menu entries are
@@ -403,7 +550,18 @@ having a 160-line chapter of its own. That was tier 2 and should already be fixe
 
 # Band C — completeness, small surprises, and one open question
 
-## 18. Mutation side-effects that are never stated where the mutation is described
+## ~~18. Mutation side-effects that are never stated where the mutation is described~~ — WRITTEN
+
+**WRITTEN 4 October 2026** — all four, each beside the thing it is about rather than collected
+in one place: `docs/mutations.rst` for the Chance virtue (under "How you get them"), the WRAITH
+constitution cost (inside the wraith-form topic), the INVULN wisdom cost and virtue charge
+(under "Random"), and the melee blows; `docs/virtues.rst` for who is doing the choosing.
+
+All four verified: `player-mutation.c:174` (Chance +1 on any gain); `mutation.txt:818`
+(`CON[-3]`) and `:907` (`WIS[-2]`); `player-virtue.c:346-358` — note that the charge is in
+`virtue_note_timed()`, keyed on `TMD_INVULN` rising from zero, which is *why* the mutation is
+charged identically to a deliberate potion and is the detail that makes `virtues.rst`'s wording
+wrong; `player-mutation.c:501` (`if (*dead) return;` between blows).
 
 - Gaining **any** mutation raises the Chance virtue by 1 (`src/player-mutation.c:174`). A
   Beastman triggers this every few levels and will drift up the Chance scale without knowing
@@ -423,7 +581,10 @@ correction about who is choosing.
 
 ---
 
-## 19. Charming a monster moves two virtues, and the manual documents only the loss
+## ~~19. Charming a monster moves two virtues, and the manual documents only the loss~~ — WRITTEN
+
+**WRITTEN 4 October 2026** — `docs/pets.rst`, directly after the existing note about turning on
+a pet, so the two directions sit together. Verified at `project-mon.c:1121-1124`.
 
 **What.** Charming gives -1 Individualism always, and +1 Nature if the target is an animal.
 `docs/pets.rst` documents only the virtue *loss* from turning on a pet.
@@ -434,7 +595,14 @@ correction about who is choosing.
 
 ---
 
-## 20. Per-town store restocking is the rule a player actually notices
+## ~~20. Per-town store restocking is the rule a player actually notices~~ — WRITTEN
+
+**WRITTEN 4 October 2026** — `docs/dungeon.rst`. Verified at `store.c:1492-1511`.
+
+The entry undersells the problem: `dungeon.rst` did not merely omit the per-town rule, it
+asserted *"You must be in the dungeon for the store to restock"*, which the per-town rule makes
+false — walking to another town restocks without going underground. The false sentence is gone
+and the two chapters now agree, with `dungeon.rst` pointing at `towns.rst` for the detail.
 
 **What.** `docs/dungeon.rst:313-321` documents only the daily / 10,000-turn restock and says
 "you must be in the dungeon for the store to restock". The rule a player meets is the per-town
@@ -447,7 +615,16 @@ correctly, so this is a matter of making the two agree.
 
 ---
 
-## 21. The world map prints more than the manual describes
+## ~~21. The world map prints more than the manual describes~~ — WRITTEN
+
+**WRITTEN 4 October 2026** — `docs/wilderness.rst`, the world-map section. Verified at
+`ui-map.c:1100-1119` (coordinates, world size, legend) and `:1083-1085` (the margin colour).
+
+**The "check first" was worth doing and came out the other way.** `wilderness.rst:236` still
+read "Towns are picked out in white", which the band colours make false — towns are drawn in
+one of four colours by band (`wild_town_band_attr`, `ui-map.c:1042-1044`), dungeons in light
+red, and light white means a reserved margin and nothing else. The tier 2 fix did not reach it.
+Corrected and the legend written out, naming the bands rather than the colour values.
 
 **What.** World coordinates, the world's size, and a colour legend naming the four town bands
 plus "dungeon". Blocks reserved as a town's or dungeon's margin are drawn in light white.
@@ -461,7 +638,27 @@ the corrected text may already describe the legend.
 
 ---
 
-## 22. Nightmare mode's multipliers have caps, and one base differs from Zangband's
+## 22. ~~Nightmare mode's multipliers have caps, and one base differs from Zangband's~~ — DROPPED, UNREACHABLE AND PART UNTRUE
+
+**Verified 4 October 2026 and not written.** The two caps are real code and neither can be
+reached; the third claim is contradicted by the code it cites.
+
+- **The hit point cap cannot bite at the current balance.** `mon-make.c:1316` caps the doubled
+  total at 30,000, but BAL-13's lethality scalar has already run by then: `lethality:hit-points`
+  is 73 (`constants.txt:444`). The largest `hit-points` in the bestiary is Morgoth's 20,000, so
+  the doubled figure is about 29,200 and the cap is never reached by anything. Writing it would
+  put a number in the manual that no player can ever meet.
+- **The speed cap cannot be reached either.** `:1334` caps at 199; the fastest base speed in
+  the data is 160, and nightmare adds five.
+- **The arrival-energy claim is backwards.** The entry says the `randint0(50)` base makes
+  "twice as much" understate the divergence. The comment at `:1346-1353` says the opposite and
+  is right: what was transplanted is the doubling, not the range, so a nightmare monster's
+  advantage over an ordinary one is the same in both games. `nightmare.rst` is accurate as it
+  stands.
+
+**Reopen if `lethality:hit-points` in `constants.txt` is raised towards 100**, which is the
+named playtest dial — at 100 Morgoth's doubled total is 40,000 and the cap starts to bite, and
+nightmare.rst's multiplier becomes conditional for the deepest uniques. Original entry follows.
 
 **What.** `docs/nightmare.rst:62, 65` states the multipliers unqualified. Monster hit points are
 capped at 30,000 and speed at 199. The arrival-energy doubling works on a `randint0(50)` base
@@ -477,7 +674,22 @@ claim), so the surrounding text has moved.
 
 ---
 
-## 23. Two of Chaos's six changed spells are never named
+## ~~23. Two of Chaos's six changed spells are never named~~ — WRITTEN
+
+**WRITTEN 4 October 2026** — `docs/realms.rst`, Chaos section, after the three already named.
+The entry is marked `[decision log]` and the warning on it was the right one, so both claims
+were traced to the data before writing. Both hold: *Call Chaos* is `effect:RANDOM` over three
+fixed shapes with one element each (`class.txt:705-712`), and *Magic Rocket* is
+`effect:BALL:SHARD:2` (`:715`). DEC-53 confirms the reasoning for both.
+
+The frozen radius was written as well, with the five spells and their sizes rather than the
+generic statement at `realms.rst:378`: *Flash of Light* 1, *Mana Burst* 2, *Disintegrate* 3,
+*Sonic Boom* 4, *Invoke Logrus* 6, each read from `class.txt` rather than from DEC-53, and each
+matching it.
+
+**One thing to note about DEC-53 itself**, which is not a job but will mislead the next reader:
+its *Summon Demon* paragraph says "4.2 has no pets ... so every demon it calls is hostile",
+which pets superseded. `realms.rst` already has the current behaviour (one in three serves you).
 
 **What.** `docs/realms.rst:380-386` says "Three are worth knowing at the table" and names three.
 Not named: *Call Chaos* no longer rolls its damage type (Zangband rolled one of thirty; here the
@@ -496,7 +708,23 @@ in a rebalance.
 
 ---
 
-## 24. The Imp lost its mutation affinity and nothing records it
+## 24. ~~The Imp lost its mutation affinity and nothing records it~~ — DROPPED, NOT TRUE
+
+**Verified 4 October 2026 and not written, because the Imp did not lose it.**
+`p_race.txt:1081` is `mutation-affinity:HORNS:7`, immediately under `name:Imp` at `:1080` — the
+very line the entry cites as the race's location, one line above the affinity it says is
+absent. Five races carry an affinity, not four: Beastman `POLYMORPH:2`, Yeek `SHRIEK:7`,
+Mindflayer `TENTACLES:7`, Vampire `HYPN_GAZE:7`, Imp `HORNS:7`.
+
+`docs/mutations.rst:231` **already documents it** — "an Imp grows horns", in the sentence that
+carries the other four. So there is nothing missing from the docs, nothing to record in
+`decisions.md`, and no drop to explain. **Reopen only if the directive is removed from
+`p_race.txt`**, at which point `mutations.rst:231` becomes false and is the thing to fix.
+
+This is the second entry in twenty-five to be false rather than stale, and both were
+`[read by review]` or `[decision log]` claims of *absence* — which is the shape to distrust:
+an absence is established by a grep that found nothing, and a grep of the wrong file or the
+wrong spelling finds nothing too. Original entry follows.
 
 **What.** Zangband gives an Imp HORNS 60% of the time. `lib/gamedata/p_race.txt` gives mutation
 affinities to four races and the Imp is not among them (the race is at `p_race.txt:1080`).
