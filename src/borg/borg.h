@@ -117,6 +117,25 @@ extern const char *borg_abort_reason;
  * diagnosis. This counts decisions rather than turns, and running out of them
  * is a failure with its own name.
  */
+#define BORG_TRACE_MAX 400
+
+/**
+ * One periodic reading of where the borg is and why it is not deeper
+ * (BRG-27).
+ */
+struct borg_trace_sample {
+    int32_t turn;
+    int16_t depth, clevel, chp, mhp;
+    int32_t gold;
+    int allowed;
+    const char *why;
+};
+
+extern int32_t borg_trace_every;
+extern int32_t borg_trace_next;
+extern int     borg_trace_used;
+extern struct borg_trace_sample borg_trace[BORG_TRACE_MAX];
+
 extern int32_t borg_step_limit;
 extern int32_t borg_step_count;
 

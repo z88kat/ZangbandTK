@@ -6818,3 +6818,67 @@ way; bands from the measurement at 5.5 sigma, and they do not come close to
 touching -- 2690 against 4040. Falsified three ways: the roll ignoring the
 mark, the marks removed from the data, and -- the one the shared helper
 exists for -- doubling only the sum and not the walk. All three fail it.
+
+---
+
+**DEC-130 — The borg is not descending because it will not buy two
+twenty-gold potions.** (BRG-27, 3.124.39. Diagnosis of the depth constraint.
+Nothing fixed.)
+
+**The question, narrowed by two failures before it.** DEC-116 established what
+kills the fleet; DEC-117 then established that was the wrong question for
+depth, because removing the largest cause of death moved nothing and depth sat
+at 72 in both arms. What was never asked is what a run that *survives* does
+instead of descending.
+
+**Separating the populations, which nobody had done: eight of the twelve
+gated runs survive past 30,000 turns.** Four die early. The eight are the
+interesting group and they reach 191,057, 293,881 and 429,797 turns.
+
+**Measured, not reasoned.** `borg-status` samples `borg_prepared()` once, at
+the end. `ZTK_BORG_TRACE=<turns>` now samples it as the run goes, on the game
+clock rather than the decision clock so a borg that thinks hard and moves
+little cannot fill the buffer standing still. Across the eight long survivors,
+279 samples:
+
+| share | blocker |
+|---|---|
+| **45.9%** | **2 cure** |
+| 16.5% | 30 hp |
+| 13.3% | Clevel < depth |
+| 12.5% | restock recall |
+| 11.8% | 50 hp, light, food |
+
+And it believed itself allowed to depth 1 or 2 in **88 per cent** of samples.
+
+**It can afford them, overwhelmingly.** At the 128 moments blocked on "2
+cure", gold ran from 134 to 9,643 with a **median of 3,368**. Every one of
+them held over 100 gold and 93 per cent held over 500. The requirement is
+`BI_ACLW + BI_ACSW + BI_ACCW < 2` -- *any two* of Cure Light, Serious or
+Critical Wounds. Cure Light Wounds costs **20 gold** and the alchemist stocks
+it `always:`. A median-case borg could buy 168 of them.
+
+**One run says it plainly.** Warrior-Mage seed 1, 429,797 turns: blocked on
+"2 cure" continuously from turn 45,248 to turn 405,713 -- **360,000 turns** --
+while its gold climbed from 951 to 8,798 and its character level from 4 to 8,
+oscillating between depth 0 and depth 1. Several of those samples are in town.
+
+**So the depth constraint is a shopping failure, not an economy, a levelling
+deadlock or a danger model.** The borg has the money, the shop has the goods
+permanently, and the gate is two of the cheapest potions in the game.
+
+**My prediction was wrong, and in a way worth recording.** I pre-registered a
+self-imposed deadlock -- `Clevel < depth` standing while experience at depth 1
+proved too thin to clear it -- and named "rotating blockers would mean a
+supply problem" as the falsifier. Neither happened. `Clevel < depth` is 13 per
+cent, the blocker does not rotate, and the shape I predicted (one standing
+blocker, gold accumulating, level nearly flat) was right about everything
+except *which* blocker, which is the only part that matters. The reasoning was
+plausible and the measurement disagreed.
+
+**Not fixed here**, and the next step is narrow rather than large: 92 of the
+128 blocked samples are at depth 1 or deeper and 36 are on the surface, so the
+borg reaches town while blocked and still does not come away with the potions.
+That points at the buying decision rather than at travel. It is a session's
+work to find and probably a small change, but it is a different question from
+this one and this entry is the measurement.

@@ -487,6 +487,24 @@ static void borg_begin_pending(void)
 	borg_headless = true;
 	borg_trace_keys = (getenv("ZTK_BORG_KEYS") != NULL);
 
+	/*
+	 * `ZTK_BORG_TRACE=<turns>` samples readiness as the run goes (BRG-27).
+	 *
+	 * The existing `blocked=` on `borg-status` is one reading taken at the
+	 * end, which answers what stopped a character and not what stopped it for
+	 * the preceding hundred thousand turns. That gap is the whole of what is
+	 * unknown about the depth constraint: DEC-116 established what kills the
+	 * fleet and DEC-117 established that killing less would not have made it
+	 * descend, so what a surviving run does instead has never been looked at.
+	 */
+	{
+		const char *env = getenv("ZTK_BORG_TRACE");
+
+		borg_trace_used  = 0;
+		borg_trace_every = (env && *env) ? strtol(env, NULL, 10) : 0;
+		borg_trace_next  = borg_trace_every ? (int32_t) turn : 0;
+	}
+
 	if (want_deathless && borg_cfg) {
 		borg_cfg[BORG_CHEAT_DEATH] = 1;
 		option_set("cheat_live", true);
@@ -1430,6 +1448,19 @@ static void c_borg_exercise(char *rest)
 	 * a character that died in town after reaching depth 4 is a different
 	 * story from one that died on the floor it was exploring.
 	 */
+	if (borg_trace_used > 0) {
+		int i;
+
+		for (i = 0; i < borg_trace_used; i++) {
+			const struct borg_trace_sample *t = &borg_trace[i];
+
+			printf("borg-trace: turn=%d depth=%d clevel=%d gold=%d "
+				   "hp=%d/%d allowed=%d why=\"%s\"\n",
+				   (int) t->turn, t->depth, t->clevel, (int) t->gold,
+				   t->chp, t->mhp, t->allowed, t->why);
+		}
+	}
+
 	if (run_deaths > 0) {
 		printf("borg-death: cause=%s | depth=%d | clevel=%d | maxdepth=%d "
 			   "| mhp=%d | gold=%d\n",

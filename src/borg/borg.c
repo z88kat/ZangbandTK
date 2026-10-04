@@ -26,6 +26,7 @@
 #include "../ui-keymap.h"
 
 #include "borg-init.h"
+#include "borg-prepared.h"
 #include "borg-io.h"
 #include "borg-log.h"
 #include "borg-messages-react.h"
@@ -176,6 +177,12 @@ int32_t     borg_turn_limit   = 0;
 const char *borg_abort_reason = NULL;
 int32_t     borg_step_limit   = 0;
 int32_t     borg_step_count   = 0;
+
+/* BRG-27: periodic readiness sampling, off unless asked for. */
+int32_t     borg_trace_every = 0;
+int32_t     borg_trace_next  = 0;
+int         borg_trace_used  = 0;
+struct borg_trace_sample borg_trace[BORG_TRACE_MAX];
 bool        borg_headless     = false;
 
 void borg_update_entrypoint(bool start)
@@ -264,6 +271,50 @@ static struct keypress internal_borg_inkey(int flush_first)
      * is thinking without the game clock moving, so the run has not finished
      * -- it has stopped getting anywhere, and says so.
      */
+    /*
+     * A periodic reading of why the borg is not going deeper (BRG-27).
+     *
+     * `borg-status` samples `borg_prepared()` once, at the end of the run, so
+     * the nightly can say what stopped a character but not what stopped it
+     * for the preceding hundred thousand turns. DEC-116 answered what kills
+     * the fleet; DEC-117 then showed that was the wrong question for depth,
+     * because removing the largest cause of death would not have moved it.
+     * The question left is what a run that *survives* does instead of
+     * descending, and nothing has ever looked at that.
+     *
+     * Sampled on the game clock rather than the decision clock, because a
+     * borg that thinks hard and moves little would otherwise fill the buffer
+     * while standing still.
+     */
+    if (borg_trace_every > 0 && borg_active && player
+            && turn >= borg_trace_next) {
+        borg_trace_next = turn + borg_trace_every;
+
+        if (borg_trace_used < BORG_TRACE_MAX) {
+            struct borg_trace_sample *t = &borg_trace[borg_trace_used++];
+            int d;
+
+            t->turn   = (int32_t) turn;
+            t->depth  = borg.trait[BI_CDEPTH];
+            t->clevel = borg.trait[BI_CLEVEL];
+            t->gold   = borg.trait[BI_GOLD];
+            t->chp    = borg.trait[BI_CURHP];
+            t->mhp    = borg.trait[BI_MAXHP];
+            t->allowed = -1;
+            t->why    = "-";
+
+            for (d = 1; d <= 127; d++) {
+                const char *r = borg_prepared(d);
+
+                if (r) {
+                    t->allowed = d - 1;
+                    t->why = r;
+                    break;
+                }
+            }
+        }
+    }
+
     if (borg_step_limit && borg_active) {
         if (++borg_step_count > borg_step_limit) {
             borg_note("# ZangbandTK: step budget spent without the clock "
