@@ -6944,3 +6944,68 @@ the sval lookup resolves. Second wrong prediction in two passes on this
 problem, both plausible, both answered by measurement rather than by argument.
 
 **Not attempted**, per the standing instruction to say so rather than start.
+
+---
+
+**DEC-132 — Nothing connects "I am blocked on a purchasable item" to "buy
+it". That is the depth constraint, and it is not a rewrite.** (BRG-27,
+concluded. Diagnosis; the fix is named and not attempted.)
+
+**First, a correction to DEC-131, which got its headline wrong.** That entry
+said the borg does not go shopping. It does. The figure came from a four-run
+probe bounded by `-m 3`, and the clock truncated the runs rather than the
+behaviour stopping them. Measured properly on the gated twelve-run fleet:
+**690 shop visits across 27 distinct shops, and only 3 of 12 runs entered
+none.** DEC-116's count stands and the two figures were never in conflict --
+mine was an artifact.
+
+**The split the project owner asked for resolves entirely to one side.** Of
+the 128 samples blocked on "2 cure", **every one is in a run that was
+shopping** -- 100 per cent. The three runs that never entered a shop
+contributed zero cure-blocked samples; they died of other things. So this is
+not a travel problem and not "shopping is never proposed". The borg is in the
+shop.
+
+**What it does there.** Warrior-Mage seed 1: 429,797 turns, **144 shop
+visits**, 9,858 gold at death, blocked on "2 cure" for 360,000 turns. In that
+whole run it made **twelve purchase decisions**, and a Cure Light Wounds was
+on the shelf and evaluated at every one of them. It won none. What it bought
+instead: three Scrolls of Remove Curse, three of Word of Recall, and **six
+Staves of Teleportation**.
+
+**The mechanism, stated plainly.**
+
+1. `borg_prepared()` refuses to descend without two cure potions, until
+   character level 30.
+2. `borg_power()` rewards Cure Light Wounds 550 below character level 8 and
+   **nothing at all** at or above it (`borg-power.c:1513`).
+3. The buy loop takes the single best ware per pass on `borg_power()` delta
+   alone. The measured gap was 813,962 against 841,464 -- a staff beats a
+   potion by 27,502, so even restoring the 550 would not change the outcome.
+4. **`borg-store-buy.c` calls `borg_prepared()` zero times.** The purchase
+   decision has no way to know what the readiness rule is withholding
+   permission for. `borg_prepared()` is consumed in caution, escape, stairs,
+   flow, power, think-dungeon and the log -- in none of the shop files.
+
+So the borg stands at a counter it has reached 144 times, holding enough gold
+for 168 of the potion that is the single thing standing between it and the
+next floor, and buys a sixth teleport staff. Not because it misvalues the
+potion against the staff -- that judgement is defensible on its own terms --
+but because **nothing in the purchase decision is aware that one of those two
+items lifts a block and the other does not.**
+
+**Size: a session, not a rewrite.** The missing piece is one wire, in one
+function. `borg_think_shop_buy_useful()` should ask `borg_prepared()` what is
+blocking the next level and prefer a ware that satisfies it, ahead of the
+ordinary power comparison. Aligning the level-8 cutoff to the level-30 demand
+is a sensible tidy alongside it but is **demonstrably insufficient alone**, by
+the 27,502 figure above -- which is worth recording, because it is exactly the
+plausible one-line fix that would have moved nothing and made this the fourth
+such attempt.
+
+**Not attempted here**, per the standing instruction. Three predictions have
+now been wrong on this problem -- spell naming, a level deadlock, and the
+venison-shaped recognition failure -- and each was settled by measuring rather
+than arguing. This one should be measured the same way: pre-registered, on the
+gated fleet, and with the baseline retaken from a nightly if depth actually
+moves.
