@@ -7045,3 +7045,84 @@ own: all fourteen classes carry
 
 **No manual change is wanted.** Duplicating the sentence into `birth.rst`
 would give it two homes to drift between.
+
+---
+
+**DEC-134 — The borg's buy step is unreachable, not mistuned; wiring readiness
+into it makes the fleet worse, and the change is reverted.** (Borg heuristic.
+Fourth attempt at the depth constraint. No code change kept.)
+
+DEC-127 through DEC-132 each tried to fix the borg's buying decision by
+changing how a purchase is valued. All three failed for the same reason, which
+none of them established: **the code they changed never runs.**
+
+`borg_choose_shop()` was instrumented at every exit over a 300,000 turn run
+(Warrior-Mage, seed 1, the run DEC-132 reported on):
+
+      9143  calls            126  rejected -- in the dungeon
+                            9017  in town
+                               0  rejected -- "sitting on level forever"
+                               0  rejected -- time_this_panel
+
+      of the 9017 in town:
+            8835  "go home and put on our best stuff"   (98.0%)
+              11  Step 1, sell to the home
+             171  Step 2, sell to the shops
+               0  Step 3, BUY FROM THE SHOPS
+
+Step 3 is the only step that buys for the player, and it was reached **zero
+times**. Two things starve it. `borg.goal.do_best` is set once per arrival in
+town and cleared only by `borg_best_stuff()`, which runs only inside the home;
+the walk there costs about two hundred `borg_choose_shop()` calls, each of
+which re-answers "go home", so forty-four round trips account for 8,835 of the
+9,017. In the ~182 calls that do get past it, Steps 1 and 2 `return true` the
+moment they find anything to move, and they always found something. The borg
+banked 5,966 gold, sat at depth 2, and reported "2 cure" as its blocker for the
+whole run without evaluating a single purchase.
+
+That is a real and previously unrecorded finding, and it is why the earlier
+three attempts could not have worked.
+
+**The fix that follows from it does not help.** Letting buying have the first
+look when `borg_prepared(MAXDEPTH+1)` reports a blocker -- a reordering, not an
+override, with the sell steps still running on the same call if nothing is
+bought, and only the NULL/non-NULL result used so the prose reason is never
+matched -- was pre-registered and measured on the gated twelve:
+
+      Warrior      1    depth 4 > 1     gold  4092 > 110     DOWN
+      Warrior      7    depth 3 > 7     gold  1905 > 3316    UP
+      Warrior     13    depth 9 > 2     gold 11200 > 188     DOWN
+      Warrior-Mage 1    depth 2 > 3     gold     0 > 3749    UP
+      (eight others unchanged)
+
+      sum maxdepth  29 > 24      sum gold  20619 > 9613 (46%)
+
+The mechanism works -- the borg does now buy, and spends more than half its
+gold doing it. The outcome is worse. Pre-registered P2 was "maxdepth rises on
+at least 3 of 12": two did. Pre-registered F2 was "any run regresses below
+baseline, revert": two did, one from depth 9 to depth 2. **Reverted on the
+criteria as written, not re-argued after the fact.**
+
+**The conclusion, stated plainly because this was the fourth attempt.** The
+honest reading is not that the readiness model and the purchase model are too
+far apart to wire together -- it is more specific than that. `borg_power()`'s
+purchase valuation has never once been exercised in town in these runs, so it
+has never been tuned against anything. Wiring readiness into it does not
+mistune it; it exposes that it was never tuned. Given a blocker and a purse,
+it spends the purse on wares that do not clear the blocker and leaves the borg
+poorer at the same depth.
+
+**What this means for the next person, so a fifth theory is not tried the same
+way.** Any further work here has to start by making Step 3 reachable *and*
+giving its valuation something to be measured against -- in that order, as two
+changes, not one. A reordering alone is now known to be net-negative, and the
+numbers above are the baseline to beat. The `do_best` starvation is separately
+worth fixing on its own merits (98% of the town brain spent re-deciding to walk
+home is a defect whatever buying does), and that one can be measured
+independently of any purchase question.
+
+The twelve-run comparison was taken on Darwin arm64 before and after on the
+same machine. `tests/borg/BASELINE` is a Linux x86_64 baseline and
+`borg-progress` correctly skipped its gate as not comparable across platforms;
+nothing was suppressed, and no baseline was retaken because no improvement was
+kept.
