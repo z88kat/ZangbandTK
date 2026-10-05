@@ -133,7 +133,7 @@ content pass near a release.
 
 ---
 
-## 5. M11 stage 2 — the §2.8.5 menu — THREE OF FOUR DECIDED
+## 5. ~~M11 stage 2 — the §2.8.5 menu~~ — ALL FOUR DECIDED, M11 CLOSED
 
 **Ruled 3-4 October 2026: take all three of the ones that could be ruled on.**
 `repro-max` 100 to 255 (DEC-126), the player's reflection failing twice as
@@ -142,14 +142,17 @@ purses (DEC-128). All three are ours under BAL-18 rather than ports, all three
 are gated on the birth option, and the manual describes them in a section of
 their own kept separate from the sixteen it ports.
 
-**Still open: nastier mutations.** It cannot be ruled on as written -- "nastier"
-is not a change until somebody says which mutations and by how much -- so it
-needs a scoping pass first. That is owed by me, not by the project owner.
+**Nastier mutations was the last of the four and is now settled too.** It was
+scoped first, because it could not be ruled on as written, then ruled and
+built as DEC-129: the ten continuous mutations that are pure penalty weighted
+double, measured at 0.1213 to 0.2181. **With that, M11's exit criterion is
+met and the milestone is closed** -- recorded in
+`phase2-development-plan.md`.
 
-**This is what M11's exit criterion now waits on.** The criterion is *"stage 1
-complete and every stage-2 addition recorded as a decision"*, and DEC-84
-established that declining counts as recording. Three are recorded. The fourth
-is neither taken nor refused, so the milestone is one ruling short.
+**This was what M11's exit criterion waited on, and it no longer does.** The
+criterion is *"stage 1 complete and every stage-2 addition recorded as a
+decision"*, and DEC-84 established that declining counts as recording. All
+four are recorded.
 
 Original entry follows, and its recommendations are superseded: the
 shopkeepers it said to leave were taken, on the grounds that "players notice

@@ -7009,3 +7009,39 @@ venison-shaped recognition failure -- and each was settled by measuring rather
 than arguing. This one should be measured the same way: pre-registered, on the
 gated fleet, and with the baseline retaken from a nightly if depth actually
 moves.
+
+---
+
+**DEC-133 — A correction I made twice and never wrote down: the Word of Recall
+sentence was never missing.** (Documentation review. No change; the record is
+the point.)
+
+During the readiness reviews of 3 and 4 October I twice reported, as the one
+outstanding player-facing gap, that the manual nowhere says a character starts
+with a Scroll of Word of Recall. **It does, and it did at the time I said
+otherwise.** `docs/dungeon.rst:499`:
+
+> "All classes start with one of these scrolls in their inventory, unless you
+> began the game with the 'Word of Recall has no effect' birth option, in which
+> case you are given none."
+
+That is exactly right, including the exception, and it is in the chapter where
+Word of Recall is explained rather than in `birth.rst` where I was looking.
+
+**What actually happened**, traced: the sentence *was* removed on 28 September
+in `dc2001069`, by the manual pass, on suspicion rather than evidence. The
+project owner restored it himself the next day in `3ec73b940` -- before I first
+reported it missing. I grepped `birth.rst`, found nothing, saw the
+`dungeon.rst` hit in the same search and read it as being about the birth
+option rather than the starting kit, and concluded a gap that had already been
+closed.
+
+**Recorded because this class of thing is the one that gets lost.** A wrong
+conclusion that is corrected in conversation and nowhere else will be
+rediscovered by whoever reads the old report. The verification stands on its
+own: all fourteen classes carry
+`equip:scroll:Word of Recall:1:1:birth_no_recall`, the trailing option is an
+*exclusion* applied at `player-birth.c:669`, and no race replaces it.
+
+**No manual change is wanted.** Duplicating the sentence into `birth.rst`
+would give it two homes to drift between.
