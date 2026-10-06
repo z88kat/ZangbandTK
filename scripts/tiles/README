@@ -53,6 +53,21 @@ yet".  A wrong portrait says something false.
 Around 120 uniques per set therefore render as text, and the audit does not
 count that as a gap.
 
+Mimics are left out too, and for a harder reason
+------------------------------------------------
+
+A feature with `mimic:` in terrain.txt is never drawn as itself, so it cannot
+have a tile gap.  `map_info()` replaces its index with the mimic's before the
+renderer sees it (cave-map.c:99 and :133), the knowledge screen's feature list
+skips mimics outright (ui-knowledge.c:2488), and `angband_feature` applies the
+same filter -- three independent paths, no fourth.
+
+Two features are mimics: SECRET mimics GRANITE, and INVIS_WALL, which is
+nightmare mode's wall that pretends to be floor, mimics FLOOR.  INVIS_WALL is
+this project's own and no shipped set declares it, so until the audit learned
+about `mimic:` it read as a gap in all five sets.  Giving it the floor tile
+would have worked and would have been worse: five sets of data nothing reads.
+
 Nothing else here makes a claim that strong, which is why BASE_ALIAS exists.
 Angband has no fish, no wall monsters and no animated weapons, so those had
 nothing to borrow and used to be letters; a fish drawn as a snake asserts only
@@ -77,7 +92,21 @@ Every one of these produced a file that parsed cleanly and did nothing:
   rather than complaining, so a coordinate that is not really in the sheet
   draws some other picture.
 
-`--check` on each script is what proves these stayed avoided.  Names come from
+`--check` is what proves these stayed avoided -- but it is not on every script,
+and the difference matters before you run one:
+
+    borrow-tiles.py --check     read-only; verifies and returns
+    make-services.py --check    read-only; verifies and returns
+    build-neon.py --check       **regenerates first**, then reports.  Harmless,
+                                because the set is generated whole and the
+                                output is deterministic
+    make-terrain.py             **has no --check at all.**  Running it rewrites
+                                the row and truncates the sheet back to it,
+                                which drops the services row below -- so it is
+                                the one script you cannot run to find out
+                                whether anything is wrong
+
+Names come from
 the data files and borrowed coordinates are copied from lines the set already
 uses, so all four are avoided by construction -- but by construction is a claim
 that needs testing, not asserting.

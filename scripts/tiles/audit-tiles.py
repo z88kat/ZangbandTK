@@ -145,7 +145,33 @@ def main():
     mons = []
     for f in MONSTERS:
         mons += records(f, fields=('base', 'flags'))
-    terrain = [r['code'] for r in records('terrain.txt', start='code')]
+    # A feature that mimics another is never drawn as itself, so it cannot have
+    # a tile gap: there is no code path that would consult one.
+    #
+    #   - map_info() replaces the index with the mimic's before the renderer
+    #     sees it, twice -- once for the real feature and once for the
+    #     remembered one (cave-map.c:99 and :133).  grid_data_as_text() and
+    #     Term_pict are handed FEAT_FLOOR, never FEAT_INVIS_WALL.
+    #   - The knowledge screen's feature list skips mimics outright
+    #     (ui-knowledge.c:2488), so display_feature_subtype()'s four-state tile
+    #     draw -- the one place that does index by the feature's own fidx --
+    #     never runs for one.
+    #   - angband_feature applies the same filter, so the front end's Features
+    #     tab does not list them either.
+    #
+    # Two features are mimics: SECRET, which mimics GRANITE, and INVIS_WALL,
+    # which mimics FLOOR.  INVIS_WALL is the one that made this show up -- it
+    # is this project's own addition and no shipped set declares it, so it read
+    # as five gaps.  SECRET never did, only because Angband's inherited pref
+    # files happen to declare it; those entries are dead rather than wrong and
+    # are left alone.
+    #
+    # Adding floor tiles for INVIS_WALL would have worked and would have been
+    # worse: five sets of data that nothing reads, and a later reader having to
+    # rediscover why.
+    terrain = [r['code'] for r in records('terrain.txt', start='code',
+                                          fields=('mimic',))
+               if not r.get('mimic')]
     objects = [(r['type'], obj_name(r['name']))
                for r in records('object.txt', fields=('type',))
                if r.get('type') and r['type'] not in FLAVOURED]
