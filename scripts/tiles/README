@@ -92,24 +92,44 @@ Every one of these produced a file that parsed cleanly and did nothing:
   rather than complaining, so a coordinate that is not really in the sheet
   draws some other picture.
 
-`--check` is what proves these stayed avoided -- but it is not on every script,
-and the difference matters before you run one:
+`--check` is what proves these stayed avoided.  Names come from the data files
+and borrowed coordinates are copied from lines the set already uses, so all
+four are avoided by construction -- but by construction is a claim that needs
+testing, not asserting.
 
-    borrow-tiles.py --check     read-only; verifies and returns
-    make-services.py --check    read-only; verifies and returns
-    build-neon.py --check       **regenerates first**, then reports.  Harmless,
-                                because the set is generated whole and the
-                                output is deterministic
-    make-terrain.py             **has no --check at all.**  Running it rewrites
-                                the row and truncates the sheet back to it,
-                                which drops the services row below -- so it is
-                                the one script you cannot run to find out
-                                whether anything is wrong
+Every script now has one, and three of the four write nothing:
 
-Names come from
-the data files and borrowed coordinates are copied from lines the set already
-uses, so all four are avoided by construction -- but by construction is a claim
-that needs testing, not asserting.
+    audit-tiles.py              read-only
+    borrow-tiles.py --check     read-only
+    make-services.py --check    read-only
+    make-terrain.py --check     read-only
+    build-neon.py --check       **regenerates first**, then reports.  Harmless
+                                by hand, because the set is generated whole and
+                                the output is deterministic -- but it is why
+                                check-build does not run it
+
+make-terrain.py used to have no --check, and a bare run did the destructive
+thing: it rewrote the row and truncated each sheet back to it, dropping the
+services row below.  Somebody reaching for it to find out whether anything was
+wrong got three rewritten sheets instead, with a paragraph in this file as the
+only warning.  It now refuses without an explicit `--write`, and `--write`
+names the sets whose services row it just dropped and tells you to re-run
+make-services.py.
+
+What runs these
+---------------
+
+    scripts/check-build    audit-tiles, make-terrain --check,
+                           make-services --check, borrow-tiles --check
+    linux.yaml, Tiles job  the same four, plus regenerating the Neon set and
+                           diffing graf-neo.prf, which catches generated data
+                           that has gone stale rather than missing
+
+No paths filter on the CI job, deliberately.  The way this went red was a
+gamedata change invalidating a tiles artifact -- MON_PSI_DRAIN added to
+projection.txt, no set regenerated -- so a filter would have to name every
+directory that can invalidate a tileset, and that list is a guess which has
+already been wrong once.
 
 Replacing a placeholder with real art
 -------------------------------------

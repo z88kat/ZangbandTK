@@ -499,13 +499,115 @@ def chain(directory):
         open(path, 'w', encoding='utf-8').write(text)
 
 
+def rows_used(directory, name, tile_h):
+    """The sheet rows a generated prf points at, as plain row numbers."""
+    path = os.path.join(TILES, directory, name)
+    if not os.path.exists(path):
+        return []
+    seen = re.findall(r'^(?:feat|GF|trap):\w+:[\w*]+:0x([0-9A-Fa-f]{2}):',
+                      open(path, encoding='utf-8').read(), re.M)
+    return sorted({int(v, 16) - 0x80 for v in seen})
+
+
+def check():
+    """Verify what is on disk, writing nothing.
+
+    Two questions, and the second is the one this script needs asking of it.
+
+    Is every coordinate real?  The renderer takes a cell index modulo the sheet
+    size rather than complaining, so a row that is not in the sheet draws some
+    other picture instead of failing -- one of the four silent failures in the
+    README.
+
+    Is the services row still below the terrain row?  That is the ordering rule
+    as an assertion rather than a sentence.  `emit` reclaims its row by
+    truncating the sheet back to it, which deletes everything underneath, and
+    what lives underneath is make-services.py's row.  If a previous run dropped
+    it, the services prf still names rows that are no longer in the sheet and
+    six buildings quietly draw as something else.
+    """
+    problems = 0
+    for directory in sorted(TARGETS):
+        sheet, tile_w, tile_h = TARGETS[directory]
+        path = os.path.join(TILES, directory, sheet)
+        if not os.path.exists(path):
+            print('  %-10s no %s' % (directory, sheet))
+            problems += 1
+            continue
+        pixels = read_png(path)
+        height, width = len(pixels), len(pixels[0])
+        rows = height // tile_h
+
+        feat = rows_used(directory, 'feat-ztk.prf', tile_h)
+        serv = rows_used(directory, 'serv-ztk.prf', tile_h)
+
+        outside = [r for r in feat + serv if r >= rows]
+        if outside:
+            print('  %-10s rows %s are not in a sheet of %d rows'
+                  % (directory, ', '.join(str(r) for r in sorted(outside)),
+                     rows))
+            problems += 1
+            continue
+
+        note = ''
+        if feat and serv:
+            if min(serv) <= max(feat):
+                print('  %-10s services row %d is not below terrain row %d'
+                      % (directory, min(serv), max(feat)))
+                problems += 1
+                continue
+            note = ', services row %d' % min(serv)
+        elif feat and not serv:
+            note = ', no services row'
+
+        print('  %-10s terrain row %s%s; sheet is %d rows x %d cols'
+              % (directory, max(feat) if feat else '-', note, rows,
+                 width // tile_w))
+
+    print('\n%d problems' % problems)
+    return 1 if problems else 0
+
+
+USAGE = """\
+scripts/tiles/make-terrain.py --check    verify what is on disk; writes nothing
+scripts/tiles/make-terrain.py --write    regenerate the terrain row
+
+--write is destructive in a way that is not obvious, which is why it has to be
+asked for.  Reclaiming the terrain row means truncating each sheet back to it,
+and that deletes every row underneath -- which is where make-services.py put
+the six service buildings.  So --write is always followed by re-running
+make-services.py, and it says so when it is done.
+
+A bare run used to do all of that.  Somebody reaching for this script to find
+out whether anything was wrong got a rewrite of three sheets instead, and the
+only warning was a paragraph in the README.
+"""
+
+
 def main():
+    if '--check' in sys.argv:
+        return check()
+
+    if '--write' not in sys.argv:
+        sys.stdout.write(USAGE)
+        return 2
+
+    dropped = []
     for directory in sorted(TARGETS):
         sheet, tw, th = TARGETS[directory]
+        if os.path.exists(os.path.join(TILES, directory, 'serv-ztk.prf')):
+            dropped.append(directory)
         row, n, w, h = emit(directory, sheet, tw, th)
         chain(directory)
         print('  %-10s %d features into new row %d (0x%02X); sheet now %dx%d'
               % (directory, n, row, row + 0x80, w, h))
+
+    if dropped:
+        print('\n  The services row was below the terrain row in %s,'
+              '\n  so it has just been truncated away.  Run this next:'
+              '\n\n    scripts/tiles/make-services.py'
+              '\n    scripts/tiles/audit-tiles.py'
+              % ', '.join(dropped))
     return 0
 
 

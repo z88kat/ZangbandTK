@@ -27,6 +27,60 @@ jobs:
       - name: Check hand-maintained build lists
         run: scripts/check-build-lists
 
+  tiles:
+    name: Tiles
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Project
+        uses: actions/checkout@v6
+
+      # The tile data, which nothing was checking automatically.
+      #
+      # It is here rather than in a workflow of its own, and with no paths
+      # filter, and that is the whole point.  The way this went red was a
+      # *gamedata* change invalidating a *tiles* artifact: MON_PSI_DRAIN was
+      # added to projection.txt by the Psychic Drain commit, no tileset was
+      # regenerated, and the Neon set had no picture for it for three weeks.
+      # Nobody noticed because nothing ran the audit.
+      #
+      # So any filter would have to name every directory that can invalidate a
+      # tileset -- lib/gamedata for the things being drawn, lib/tiles for the
+      # sheets, scripts/tiles for the generators -- and that list is a guess
+      # which has already been wrong once.  linux.yaml runs on everything, this
+      # needs a checkout and Python and nothing else, and it takes seconds.  A
+      # filter here would only be able to cost us the next one.
+      #
+      # These are the three read-only checks.  build-neon.py is not among them
+      # because its --check regenerates first, which a gate must not do.
+      - name: Audit the tilesets for anything with no tile
+        run: python3 scripts/tiles/audit-tiles.py
+
+      - name: Check the generated terrain row and its ordering
+        run: python3 scripts/tiles/make-terrain.py --check
+
+      - name: Check the generated service buildings
+        run: python3 scripts/tiles/make-services.py --check
+
+      - name: Check the borrowed tiles
+        run: python3 scripts/tiles/borrow-tiles.py --check
+
+      # The audit answers "is anything undrawn", which is not the same question
+      # as "is what is drawn still what the generator would produce".  A
+      # projection whose colour changed, or a monster renamed, leaves a tile in
+      # place and makes it wrong -- and the audit is satisfied by a line
+      # existing.  Regenerating and diffing is what catches that.
+      #
+      # The prf only, deliberately.  The PNG is written through zlib and
+      # compressed output is not guaranteed identical across zlib builds, so
+      # diffing it would flake on a runner that differs from the machine the
+      # set was built on.  The prf is plain text and deterministic, and it is
+      # the half that carries the failure anyway: a missing or moved tile is a
+      # changed line in there.
+      - name: The Neon set is still what its generator produces
+        run: |
+          python3 scripts/tiles/build-neon.py >/dev/null
+          git diff --exit-code -- lib/tiles/neon/graf-neo.prf
+
   tests:
     name: Tests
     runs-on: ubuntu-latest

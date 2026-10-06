@@ -269,6 +269,36 @@ run "$PYTHON" tools/zconv/zconv.py objects --check
 echo "check-build: checking the borrowed monster tiles (borrow-tiles.py --check)"
 run "$PYTHON" scripts/tiles/borrow-tiles.py --check
 
+# The rest of the tile data, which was the same lesson again and had not been
+# learned from it.
+#
+# `audit-tiles.py` answers the one question that matters -- is anything in the
+# game still without a tile -- and exits non-zero when the answer is yes.  It
+# had been red for three weeks: the Psychic Drain commit added MON_PSI_DRAIN to
+# projection.txt, no tileset was regenerated, and the Neon set had no picture
+# for it.  Nothing ran the audit, so nothing said so.  It is the same shape as
+# the five converter passes above -- data regenerating into something stale --
+# it is read-only, and it costs a fraction of a second.
+#
+# The two generator checks beside it cover what the audit cannot see.  The
+# audit is satisfied by a line existing; it does not ask whether the line's
+# coordinates are still inside the sheet.  They can stop being inside it:
+# make-terrain.py reclaims its row by truncating the sheet back to it, which
+# deletes the services row underneath, and the services prf then names rows
+# that are gone.  The renderer takes a cell index modulo the sheet size rather
+# than complaining, so the six service buildings would quietly draw as
+# something else.  Demonstrated rather than reasoned about, in a scratch copy.
+#
+# build-neon.py is deliberately not here: its --check regenerates before it
+# reports, and a gate must not rewrite tracked files underneath somebody with
+# uncommitted work.  CI runs it on a clean checkout and diffs the prf instead.
+echo "check-build: auditing the tilesets (audit-tiles.py)"
+run "$PYTHON" scripts/tiles/audit-tiles.py
+echo "check-build: checking the generated terrain (make-terrain.py --check)"
+run "$PYTHON" scripts/tiles/make-terrain.py --check
+echo "check-build: checking the service buildings (make-services.py --check)"
+run "$PYTHON" scripts/tiles/make-services.py --check
+
 # The build-input lists, which linux.yaml runs as its own step.
 #
 # This was a separate script you had to remember, and three pushes in a row
