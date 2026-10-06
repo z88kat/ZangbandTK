@@ -7126,3 +7126,87 @@ same machine. `tests/borg/BASELINE` is a Linux x86_64 baseline and
 `borg-progress` correctly skipped its gate as not comparable across platforms;
 nothing was suppressed, and no baseline was retaken because no improvement was
 kept.
+
+---
+
+**DEC-135 — The town brain's first step always eats it: position decides the
+monopoly, not the step.** (Borg heuristic. Fifth measurement on the depth
+constraint. No code change kept. Supersedes the framing of the `do_best` task
+spun out of DEC-134.)
+
+The task was to fix `do_best` starving `borg_choose_shop()`. It does starve it,
+but not for the reason DEC-134 gave, and fixing it exposed something larger.
+
+**First, a correction to DEC-134.** It reported the `do_best` branch taking
+8,835 of 9,017 town calls as "roughly two hundred per walk home, forty-four
+round trips". That was a mean, and the mean was hiding the shape. Recording the
+calls per town visit:
+
+      49 town visits, do_best calls each:
+      visits  1-42   4 4 2 2 8 2 4 2 6 4 2 2 2 4 2 4 2 8 2 6 2 6 4 2 2 2 2
+                     4 2 6 12 4 4 4 4 2 2 2 2 2 4 2
+      visit     43   8509
+      visits 44-49   5 28 5 27 39 63
+
+There is no two-hundred-call walk. There are forty-two short visits in which
+the flag never cleared at all, then one visit of 8,509 calls at game turn
+138,746 where it finally did, and after that it clears normally every time.
+`borg_best_stuff()`, the only thing that clears it, runs only inside the home;
+of the 47 times it ran there it cleared the flag 44 times, so the flag is not
+failing to clear when it is reached. **The defect is that the branch pre-empts
+unconditionally and those early visits are two to twelve calls long, so it
+consumed 100% of the borg's town calls on forty-two consecutive trips.**
+
+That also kills the obvious fix before it costs anything: a per-visit attempt
+budget cannot bite on visits that are four calls long.
+
+**The change tried instead** was to move the branch below the two sell steps,
+leaving buying untouched and still last -- so that going home to re-equip
+happens when the borg has nothing to sell, which is when the trip is free.
+Pre-registered on the stated expectation that selling, not buying, would be
+what got reached, and that gold rising with depth flat would be success.
+
+      counters, Warrior-Mage seed 1
+                    do_best   Step 1   Step 2   clears
+      before           8835       11      171       44
+      after               0     8652       97        2
+
+      gated twelve, same machine
+      sum maxdepth  29 > 20   (1 up, 3 down, 8 same)
+      sum gold   20619 > 8682 (42%)
+
+Reverted: F1 (clears collapse, the flag stops being honoured) and F2 (maxdepth
+falls) both fired, and gold fell rather than rose, so the pre-registered
+success case did not happen either.
+
+**The finding, which is the point of the entry.** The ~8,650 calls did not
+disperse. They moved wholesale from `do_best` to whichever step was now first.
+Yesterday's reordering did the same thing with buying: put buying first and
+buying took the mass, gold fell to 46%, depth fell. Today: put selling first
+and selling took the mass, gold fell to 42%, depth fell. Two independent
+reorderings, the same signature both times.
+
+So the defect is not in `do_best`, and was not in `borg_power()` either.
+`borg_choose_shop()` is re-asked every step and re-decides from scratch, and
+every step returns true for having *found* something rather than for having
+*done* it. Whichever step is first therefore absorbs the entire town brain for
+as long as it can find anything at all, and the steps below it are dead. There
+is no ordering of these steps that is correct, because the problem is the
+early-return structure, not the order.
+
+**What this closes.** Five attempts have now been measured: three on purchase
+valuation (DEC-127 to DEC-132), one on buy-before-sell (DEC-134), one on
+do_best demotion (here). The first three changed code that never ran; the last
+two moved the monopoly without removing it. Reordering is exhausted as an
+approach and should not be tried a sixth time. Anything further has to change
+how `borg_choose_shop()` terminates -- a step that returns true should be
+making progress toward completing, and the function should not be re-deciding
+its whole plan on every step of a walk it already committed to. That is a
+structural change to the borg's town loop, not a heuristic tweak, and it wants
+scoping as its own piece of work rather than being attempted inside a
+depth-constraint investigation.
+
+Measured before and after on the same machine (Darwin arm64);
+`tests/borg/BASELINE` is Linux x86_64 and its gate correctly skips as
+non-comparable, so the comparison above is against a local baseline taken from
+the unmodified tree. Nothing suppressed; no baseline retaken, nothing kept.
