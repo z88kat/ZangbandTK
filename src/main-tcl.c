@@ -1188,8 +1188,30 @@ static void event_to_tcl(game_event_type type, game_event_data *data,
 	 * settled, and a command it pushes is one the game will take next.
 	 */
 	if (Tcl_EvalObjEx(interp, event_script[type], TCL_EVAL_GLOBAL) != TCL_OK) {
+		/*
+		 * Be precise about what this catches, because it is narrower than it
+		 * looks.  The script here is `event generate . <<Angband_X>> -when
+		 * tail`, so this branch is that *command* failing -- which is rare and
+		 * structural, a window gone or an event name the build never
+		 * registered.  A failing *binding* does not come through here at all:
+		 * -when tail means Tk runs it from the event loop later, where an
+		 * error is already a background error and reaches the sink through
+		 * Tk's own path and the handler lib/tcl/errorInfo.tcl installs.
+		 *
+		 * Tcl_BackgroundException is still right for the narrow case, and for
+		 * the same reason: this function has no caller to return a failure to,
+		 * and the report below goes to the stderr Tk redirects to /dev/null
+		 * for a bundled application.  Without it, the one failure that would
+		 * stop every binding in the front end from ever running is the one
+		 * failure nobody would see.
+		 *
+		 * plog_fmt stays for a terminal run, where stderr is real and a person
+		 * may well not have a window open.  It reports errorInfo rather than
+		 * the bare result so the two paths say the same thing.
+		 */
+		Tcl_BackgroundException(interp, TCL_ERROR);
 		plog_fmt("Tcl/Tk: <<Angband_%s>>: %s", game_event_name[type],
-				Tcl_GetStringResult(interp));
+				Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY));
 	}
 }
 
@@ -1630,6 +1652,16 @@ static Tcl_Obj *hook_eval(struct hook_slot *h, int n, Tcl_Obj **extra)
 	}
 
 	if (Tcl_EvalObjEx(interp, cmd, TCL_EVAL_GLOBAL) != TCL_OK) {
+		/*
+		 * Unlike the event dispatcher above, this one is load-bearing: the
+		 * script here is the front end's own hook, run directly, so a failure
+		 * in it arrives nowhere else.  Before this, a native dialog that threw
+		 * silently handed the question back to textui -- the game carried on
+		 * with the terminal prompt and the only account of why went to a
+		 * stderr that is /dev/null for a bundled application.  The caller's
+		 * fallback is still right; it just should not be quiet.
+		 */
+		Tcl_BackgroundException(interp, TCL_ERROR);
 		plog_fmt("Tcl/Tk: %s hook: %s", h->name,
 				Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY));
 		Tcl_DecrRefCount(cmd);

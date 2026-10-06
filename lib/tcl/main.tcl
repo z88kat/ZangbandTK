@@ -170,8 +170,20 @@ menu .menubar.views -tearoff 0
 .menubar.views add command -label "Character" -command character_window
 .menubar.views add command -label "Knowledge" -command knowledge_window
 .menubar.views add command -label "Items" -command items_window
+.menubar.views add separator
+.menubar.views add command -label "Console" -command console_window
+.menubar.views add command -label "Errors" -command errorsink_window
 
-# The design system first: every window is drawn with it.
+# The debug pair first, and before the design system, for the reason T3's exit
+# criterion puts them first: the debug loop has to exist before the UI does.
+# errorInfo.tcl installs the background error handler at source time, so an
+# error raised while any of the files below are being sourced -- or at any
+# point afterwards, in a binding or an `after` script -- lands somewhere a
+# person can read instead of on the stderr Tk has already closed.
+source [file join [file dirname [info script]] errorInfo.tcl]
+source [file join [file dirname [info script]] debug.tcl]
+
+# Then the design system: every window below is drawn with it.
 source [file join [file dirname [info script]] classical.tcl]
 source [file join [file dirname [info script]] character.tcl]
 source [file join [file dirname [info script]] knowledge.tcl]

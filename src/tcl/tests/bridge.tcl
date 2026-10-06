@@ -479,6 +479,102 @@ check "and refuses a view it does not have" {
 	set e
 } "there is no character yet"
 
+# --- the debug console and the error sink -----------------------------------
+
+# T3's exit criterion is that the debug loop exists before the UI does, so
+# these run in the first pass, before there is a character.  That is also where
+# they are worth most: the errors this front end has actually lost were all
+# raised during startup, which is before anyone has opened a window.
+
+check "the background error handler is the sink" {
+	interp bgerror {}
+} "::errorsink::background"
+
+# The sink has to work with nothing on screen, because an error at startup
+# happens long before a person thinks to open a window.  The records are the
+# thing; the window is a view of them.
+check "the sink records with no window open" {
+	errorsink::clear
+	errorsink::note "a line"
+	list [winfo exists .errors] [errorsink::text]
+} "0 {a line}"
+
+# The one this was built for: a binding that throws is reported instead of
+# vanishing.  Before the sink there was nowhere for it to go -- Tk's default
+# handler puts up a modal dialog, which is unusable for something that fails
+# once per redraw, and the plog in main-tcl.c goes to the stderr Tk redirects
+# to /dev/null for a bundled application.
+#
+# Three details here are not incidental, and each was a wrong first attempt:
+#
+#   - The binding goes on ".", because that is what main-tcl.c generates the
+#     events on.  Bound to a frame that is never packed, the binding does not
+#     fire at all: Tk does not deliver a virtual event to an unmapped widget,
+#     so the first version of this check passed the error nowhere and then
+#     reported the empty sink as the failure.
+#   - `-when tail`, because that is what main-tcl.c uses, and it is the whole
+#     difference.  Generated `-when now` the script runs inside this one's call
+#     stack and its error is an ordinary error, not a background one.
+#   - BELL, because nothing else binds it and the game does not signal it
+#     during startup, so a deliberately broken script cannot leak into the
+#     checks that follow.  The binding is removed either way.
+#   - The `update` before generating, because a queued virtual event aimed at a
+#     window that is not realised yet is discarded rather than delivered.  The
+#     front end has already done this by the time a script runs -- main.tcl
+#     updates before measuring, and main-tcl.c updates again before returning
+#     -- so this one is belt and braces, and costs nothing.
+check "a deliberately broken script's error reaches the sink" {
+	errorsink::clear
+	bind . <<Angband_BELL>> { error "deliberately broken" }
+	update
+	event generate . <<Angband_BELL>> -when tail
+	update
+	bind . <<Angband_BELL>> {}
+	list [errorsink::count] \
+		[string match "*deliberately broken*" [errorsink::text]]
+} "1 1"
+
+# A message alone names the symptom; the trace names the line.  The 2001 window
+# captured errorInfo and this would be a regression without it.
+check "and brings its stack trace with it" {
+	string match "*while executing*" [errorsink::text]
+} 1
+
+# The console, which is the half that answers questions rather than reporting
+# them: "what does this accessor actually return" asked against the running
+# game.  `fields` is used because it is the one player call that works before
+# there is a character.
+check "the console evaluates an accessor and returns what it returns" {
+	expr {[console::eval {angband_player fields}] eq [angband_player fields]}
+} 1
+
+check "the console evaluates at the global level" {
+	console::eval {llength $angband(terms)}
+} 5
+
+# An error at the console is text, not an exception -- the caller is a typist
+# -- and it goes to the sink as well, so a mistake made while debugging is
+# recorded next to the bug being chased.
+check "a console error is returned rather than raised, and is recorded" {
+	errorsink::clear
+	set r [console::eval {angband_player wisdom}]
+	list [console::failed] [errorsink::count] \
+		[string match "no such field: wisdom*" $r]
+} "1 1 1"
+
+check "and a good result is not an error" {
+	console::eval {expr {6 * 7}}
+	list [console::failed] $::console::P(result)
+} "0 42"
+
+# `info complete` decides when a command has finished, so a pasted multi-line
+# proc accumulates instead of failing on its first line.
+check "an unfinished command is held rather than run" {
+	info complete "proc p {} \{"
+} 0
+
+errorsink::clear
+
 # --- the second pass --------------------------------------------------------
 
 # Everything above ran while the front end was still starting.  This runs from
