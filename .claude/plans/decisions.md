@@ -7210,3 +7210,68 @@ Measured before and after on the same machine (Darwin arm64);
 `tests/borg/BASELINE` is Linux x86_64 and its gate correctly skips as
 non-comparable, so the comparison above is against a local baseline taken from
 the unmodified tree. Nothing suppressed; no baseline retaken, nothing kept.
+
+---
+
+**DEC-136 — A tile may not assert an identity it does not have. Adam Bolt's own
+Zangband art is therefore imported, and automatic portrait-borrowing stays
+banned.** (Tilesets. Settles a policy that three documents stated and none
+owned, and corrects the reason all three gave for it.)
+
+**The policy, stated properly.** The rule is not "uniques get no tiles". It is
+that a picture may not assert an identity it does not have. A portrait of a
+named monster used for a *different* named monster says something false. An
+abstract or generic picture — a silhouette carrying only kind and colour — says
+only what is true of both, and is fine.
+
+That single sentence decides every case the project has actually faced:
+
+- Automatic borrowing by base and depth: **banned**, because its output is a
+  named monster's portrait on another named monster.
+- Neon's base-silhouette-in-the-monster's-colour: **fine**, and this is why.
+- `BASE_ALIAS` drawing a fish as a snake: **fine** — it asserts long and
+  legless, which is true.
+- Adam Bolt's drawing of Robin Hood, used for Robin Hood: **fine**, and better
+  than fine. It is the thing itself.
+
+**The reason that was recorded was wrong.** `lib/tiles/README`,
+`scripts/tiles/README` and `docs/releases.rst` all justified leaving uniques as
+text by saying a borrowed tile would put the Mouth of Sauron's face on the
+Amber princes. That is a true statement about automatic borrowing and a false
+account of the policy — because **the Neon set already ships Oberon, Dworkin
+and Mandor sharing a tile with the Mouth of Sauron.** All three are
+`base:person`, `color:v`; all four resolve to `0x9D:0x9C`, along with eleven
+other monsters. Collision was never the objection and cannot have been: 1,013
+monsters share 31 silhouettes in that set. The objection was always to the
+*kind of claim*, and saying so is what makes the import below obviously
+allowed rather than obviously a reversal.
+
+**Licensing — settled by the project owner, and already relied upon.** Adam
+Bolt's tiles may be "redistributed and used for any purpose, with or without
+modification", as quoted in `lib/tiles/README`. The project has acted on that
+permission before: `make-terrain.py` appends a generated wilderness row to that
+same sheet, recorded there under "modified". Zangband's own changelog credits
+the additions in its copy to Adam Bolt himself — *"Adam Bolt's tiles are now
+finished and every monster/object/spell effect has a tile"*
+(`archive/zangband/z_update.txt`) — so the Zangband rows are his work under his
+terms, not a third party's. Owner's words: *"We have already modified those
+tiles for the wilderness. The license allows us to distribute and modify
+them."*
+
+**What follows.** `scripts/tiles/import-zangband-tiles.py` lifts 65 of Adam
+Bolt's Zangband unique tiles into `lib/tiles/adam-bolt/`, taking Adam Bolt's
+missing-unique count from 127 to 62.
+
+**Adam Bolt's set only, and the other three were checked rather than assumed.**
+The `old` 8x8 art exists but `graf-xxx.prf` names three assignments in total,
+so nothing says which cell is which monster; the Tk-side configs that might are
+Tim Baker's, under a not-for-profit licence this project cannot ship. Nomad's
+is a modern set with no 2001 counterpart. Gervais' is mapped-only and
+byte-identical to Angband's, which is worth more than sixty-five tiles.
+
+**The remaining 62 stay letters**, and that is the policy working rather than
+failing. They are this project's own additions (`Wolf-Sauron`,
+`Serpent-Sauron`, `Vampire-Sauron` are shapechange variants), later Zangband
+monsters, or renamed ones. Normalising punctuation and articles recovers none;
+fuzzy matching offers two candidates, neither convincing. An ASCII letter says
+*not drawn yet*, which is true.

@@ -1,11 +1,13 @@
 Tiles for the things Angband does not have
 ==========================================
 
-    audit-tiles.py     what each set does not draw; fails if there is a gap
-    borrow-tiles.py    give a thing with no tile one that already exists
-    make-terrain.py    draw the wilderness for the sets that have none
-    make-services.py   draw the six service buildings
-    build-neon.py      build the Neon set, which is generated whole
+    audit-tiles.py              what each set does not draw; fails on a gap
+    borrow-tiles.py             give a thing with no tile one that exists
+    make-terrain.py             draw the wilderness for sets that have none
+    make-services.py            draw the six service buildings
+    build-neon.py               build the Neon set, generated whole
+    import-zangband-tiles.py    bring Adam Bolt's Zangband uniques into his
+                                Angband sheet
 
 Run the audit first.  It is the only one that answers the question that
 matters -- is anything in the game still without a tile -- and it exits
@@ -39,19 +41,28 @@ generated has a licensing dividend as well: the art is this project's own.
 **Draw a picture** -- not done for these sets, and not planned.  Four sheets at
 three tile sizes is four times the work and four chances to be inconsistent.
 
-Uniques are left alone
-----------------------
+Uniques are not borrowed for
+----------------------------
 
-Deliberately, and it is the most important thing here.  A borrowed tile is a
-fair stand-in for a common monster and a lie about a named one -- and the lie
-is bad in a specific way.  Matched on base and depth, Oberon of Amber, Dworkin
-Barimen and Mandor all come out wearing the Mouth of Sauron's face.  For a game
-whose whole purpose is to move away from that, three Amber princes in Tolkien's
-clothing is worse than no picture at all.  An ASCII letter says "not drawn
-yet".  A wrong portrait says something false.
+The rule is DEC-18, and it is the most important thing here: **a picture may
+not assert an identity it does not have.**  A borrowed tile is a fair stand-in
+for a common monster and a lie about a named one, because what it borrows is
+some *other* named monster's portrait.  An ASCII letter says "not drawn yet".
+A wrong portrait says something false.
 
-Around 120 uniques per set therefore render as text, and the audit does not
-count that as a gap.
+Stated that way rather than as "no tiles for uniques", because the latter is
+not what the project does and never was.  The Neon set gives every unique a
+tile -- a base silhouette in the monster's own colour -- and Oberon, Dworkin,
+Mandor and the Mouth of Sauron all share `0x9D:0x9C` there, with eleven others.
+That is allowed: a violet humanoid asserts violet and humanoid, which is true
+of all of them.  1,013 monsters share 31 silhouettes in that set and none of
+them is a lie.
+
+The same rule is what lets `import-zangband-tiles.py` give sixty-five of them
+Adam Bolt's own drawings, since a drawing of Robin Hood used for Robin Hood
+asserts exactly what is true.  After that import, 62 uniques render as text in
+Adam Bolt's set and around 125 in the other three, and the audit does not count
+any of it as a gap.
 
 Mimics are left out too, and for a harder reason
 ------------------------------------------------
@@ -99,14 +110,16 @@ testing, not asserting.
 
 Every script now has one, and three of the four write nothing:
 
-    audit-tiles.py              read-only
-    borrow-tiles.py --check     read-only
-    make-services.py --check    read-only
-    make-terrain.py --check     read-only
-    build-neon.py --check       **regenerates first**, then reports.  Harmless
-                                by hand, because the set is generated whole and
-                                the output is deterministic -- but it is why
-                                check-build does not run it
+    audit-tiles.py                        read-only
+    borrow-tiles.py --check               read-only
+    make-services.py --check              read-only
+    make-terrain.py --check               read-only
+    import-zangband-tiles.py --check      read-only
+    build-neon.py --check                 **regenerates first**, then reports.
+                                          Harmless by hand, because the set is
+                                          generated whole and the output is
+                                          deterministic -- but it is why
+                                          check-build does not run it
 
 make-terrain.py used to have no --check, and a bare run did the destructive
 thing: it rewrote the row and truncated each sheet back to it, dropping the
@@ -120,8 +133,9 @@ What runs these
 ---------------
 
     scripts/check-build    audit-tiles, make-terrain --check,
-                           make-services --check, borrow-tiles --check
-    linux.yaml, Tiles job  the same four, plus regenerating the Neon set and
+                           make-services --check, borrow-tiles --check,
+                           import-zangband-tiles --check
+    linux.yaml, Tiles job  the same five, plus regenerating the Neon set and
                            diffing graf-neo.prf, which catches generated data
                            that has gone stale rather than missing
 
@@ -141,7 +155,15 @@ thing that had no tile from any other file.
 One ordering rule
 -----------------
 
-`make-terrain.py` and `make-services.py` both append a row to the same sheet,
-and terrain's row is above services'.  If terrain is re-run it must be run
-first, because it truncates the sheet back to its own row.
-`make-services.py --check` says so if it happens.
+Three scripts append rows to the same sheet, and each truncates back to its own
+row when re-run -- so a later one's rows are destroyed by an earlier one.  The
+order is:
+
+    make-terrain.py --write        terrain row
+    make-services.py --write       services row, below terrain
+    import-zangband-tiles.py --write   imported uniques, below both
+
+Run any of them and every one after it has to be run again.  `make-terrain.py
+--write` names the sets whose services row it just dropped; `make-services.py
+--check` and `import-zangband-tiles.py --check` both assert that nothing
+generated sits below them.

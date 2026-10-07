@@ -298,6 +298,8 @@ echo "check-build: checking the generated terrain (make-terrain.py --check)"
 run "$PYTHON" scripts/tiles/make-terrain.py --check
 echo "check-build: checking the service buildings (make-services.py --check)"
 run "$PYTHON" scripts/tiles/make-services.py --check
+echo "check-build: checking the imported uniques (import-zangband-tiles.py --check)"
+run "$PYTHON" scripts/tiles/import-zangband-tiles.py --check
 
 # The build-input lists, which linux.yaml runs as its own step.
 #

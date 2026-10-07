@@ -500,11 +500,19 @@ def chain(directory):
 
 
 def rows_used(directory, name, tile_h):
-    """The sheet rows a generated prf points at, as plain row numbers."""
+    """The sheet rows a generated prf points at, as plain row numbers.
+
+    Matched from the end of the line rather than the start.  A directive-led
+    pattern has to enumerate the directives and guess at the shape of the key
+    between them -- and `monster:` keys are names, with spaces, commas and
+    accents in them, which `\\w+` does not match.  The first version of this
+    read every feat: line and silently none of uniq-ztk.prf's, so the ordering
+    check it exists for passed by finding nothing.
+    """
     path = os.path.join(TILES, directory, name)
     if not os.path.exists(path):
         return []
-    seen = re.findall(r'^(?:feat|GF|trap):\w+:[\w*]+:0x([0-9A-Fa-f]{2}):',
+    seen = re.findall(r':0x([0-9A-Fa-f]{2}):0x[0-9A-Fa-f]{2}\s*$',
                       open(path, encoding='utf-8').read(), re.M)
     return sorted({int(v, 16) - 0x80 for v in seen})
 
@@ -540,8 +548,9 @@ def check():
 
         feat = rows_used(directory, 'feat-ztk.prf', tile_h)
         serv = rows_used(directory, 'serv-ztk.prf', tile_h)
+        uniq = rows_used(directory, 'uniq-ztk.prf', tile_h)
 
-        outside = [r for r in feat + serv if r >= rows]
+        outside = [r for r in feat + serv + uniq if r >= rows]
         if outside:
             print('  %-10s rows %s are not in a sheet of %d rows'
                   % (directory, ', '.join(str(r) for r in sorted(outside)),
@@ -549,15 +558,24 @@ def check():
             problems += 1
             continue
 
-        note = ''
-        if feat and serv:
-            if min(serv) <= max(feat):
-                print('  %-10s services row %d is not below terrain row %d'
-                      % (directory, min(serv), max(feat)))
+        # terrain, then services, then the imported uniques -- each below the
+        # last, because each truncates the sheet back to its own row on a
+        # re-run and would take the ones after it with it.
+        order = [('terrain', feat), ('services', serv), ('imports', uniq)]
+        present = [(label, r) for label, r in order if r]
+        broken = False
+        for (la, ra), (lb, rb) in zip(present, present[1:]):
+            if min(rb) <= max(ra):
+                print('  %-10s %s row %d is not below %s row %d'
+                      % (directory, lb, min(rb), la, max(ra)))
                 problems += 1
-                continue
-            note = ', services row %d' % min(serv)
-        elif feat and not serv:
+                broken = True
+        if broken:
+            continue
+
+        note = ''.join(', %s row %d' % (label, min(r))
+                       for label, r in present[1:])
+        if feat and not serv:
             note = ', no services row'
 
         print('  %-10s terrain row %s%s; sheet is %d rows x %d cols'
@@ -595,19 +613,23 @@ def main():
     dropped = []
     for directory in sorted(TARGETS):
         sheet, tw, th = TARGETS[directory]
-        if os.path.exists(os.path.join(TILES, directory, 'serv-ztk.prf')):
-            dropped.append(directory)
+        below = [f for f in ('serv-ztk.prf', 'uniq-ztk.prf')
+                 if os.path.exists(os.path.join(TILES, directory, f))]
+        if below:
+            dropped.append('%s (%s)' % (directory, ', '.join(below)))
         row, n, w, h = emit(directory, sheet, tw, th)
         chain(directory)
         print('  %-10s %d features into new row %d (0x%02X); sheet now %dx%d'
               % (directory, n, row, row + 0x80, w, h))
 
     if dropped:
-        print('\n  The services row was below the terrain row in %s,'
-              '\n  so it has just been truncated away.  Run this next:'
-              '\n\n    scripts/tiles/make-services.py'
+        print('\n  Rows below the terrain row have just been truncated away:'
+              '\n    %s'
+              '\n\n  Run these next, in this order:'
+              '\n\n    scripts/tiles/make-services.py --write'
+              '\n    scripts/tiles/import-zangband-tiles.py --write'
               '\n    scripts/tiles/audit-tiles.py'
-              % ', '.join(dropped))
+              % '\n    '.join(dropped))
     return 0
 
 

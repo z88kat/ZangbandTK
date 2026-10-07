@@ -64,6 +64,9 @@ jobs:
       - name: Check the borrowed tiles
         run: python3 scripts/tiles/borrow-tiles.py --check
 
+      - name: Check the imported Zangband uniques
+        run: python3 scripts/tiles/import-zangband-tiles.py --check
+
       # The audit answers "is anything undrawn", which is not the same question
       # as "is what is drawn still what the generator would produce".  A
       # projection whose colour changed, or a monster renamed, leaves a tile in
