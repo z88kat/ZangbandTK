@@ -1713,7 +1713,7 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 
 ## 6. Decisions needed
 
-**All seventeen are settled.** Raw findings from the running original accumulate in
+**All eighteen are settled.** Raw findings from the running original accumulate in
 [phase3-observations.md](phase3-observations.md); the settled rationale for each decision
 follows below.
 
@@ -1735,7 +1735,8 @@ follows below.
 | ~~14~~ | ~~Does the Tk build replace `ZangbandTK.app`?~~ | **Settled — no. Two applications, permanently.** See below. | — |
 | ~~15~~ | ~~Port the 2001 widget library?~~ | **Settled — no. None of it is compiled.** See below. | — |
 | ~~16~~ | ~~How many panes does the main window end up with?~~ | **Settled — five, and no more.** Everything else is its own window. See below. | — |
-| ~~17~~ | ~~What do the windows look like?~~ | **Settled — the Classical design system**, in `lib/tcl/classical.tcl`. See below. | — |
+| ~~17~~ | ~~What do the windows look like?~~ | **Superseded by 18.** Was the Classical design system, in `lib/tcl/classical.tcl`. See below. | — |
+| ~~18~~ | ~~What do the windows look like? (again)~~ | **Settled — Tk's own widgets, in Tk's `classic` theme.** No design system of our own. See below. | — |
 
 **Settled — Ttk, themed by platform.** Confirmed by project owner. Tk 9's native widget set
 replaces `tk/library/`'s **10,636 lines** of 1999 megawidgets — `ttk::notebook` for tabbed
@@ -1932,6 +1933,34 @@ character sheet look like one program.
 - **What Tk cannot do is written down beside what it does instead.** Letter-spacing becomes a
   thin space between characters; rounded corners, drop shadows and the desk ground the card
   floated on are gone.
+
+**Settled (decision 18) — the windows are Tk's own widgets, in Tk's `classic` theme.
+Supersedes 17.** Confirmed by project owner: *"we should not invent our own UI design. It
+should look and feel like TK"*, and like Tk from the 1990s, which was the reason for choosing
+Tk in the first place. Decision 17 went the other way: it
+built a design system of our own, with its own fonts, a tab strip, a search box with a fake
+placeholder and hairline frames, which could have been drawn with any toolkit.
+
+The specification is [design_handoff_knowledge_tk](design_handoff_knowledge_tk/), and the
+knowledge browser is the first window rebuilt to it.
+
+*What follows from it:*
+
+- **Tk's `classic` theme, for the whole program.** It is Tk's own Motif-era look: a
+  `#d9d9d9` ground, raised and sunken relief, diamond radio buttons filled `#b03060`. It ships
+  with Tk and draws itself the same way on every platform. This amends decision 6, which
+  themed Ttk by the platform: left to the platform, Tk on a Mac draws its buttons, radio
+  buttons and scrollbars as Aqua controls, which is not the look being asked for. Set once,
+  in `main.tcl`, with Helvetica 12 bold as the controls' font, which was Tk's X11 default.
+  Being program-wide, it also gives the main window's sashes the classic look.
+- **Stock widgets only.** Ttk widgets for everything Ttk has; the classic `listbox` and
+  `text` for the two it does not, coloured from the theme rather than by hand. Fonts are
+  Helvetica and Courier, named directly, as a 1990s Tk program named them. A bridge check
+  walks the knowledge window and fails on any widget class outside the stock list.
+- **The Classical design system is on its way out.** `classical.tcl` stays only until the
+  character sheet and the items window are rebuilt the same way. Then it goes, and so do
+  the three font families it brought into `lib/fonts` and `fonts_register()` in main-tcl.c,
+  which exists only to load them.
 
 **Settled — no per-monster sound reassignment.** Confirmed by project owner: *"do not allow
 players reassign sounds, no one will use it anyway."*

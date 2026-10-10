@@ -40,6 +40,17 @@ set angband(cellh) [font metrics termfont -linespace]
 wm title . "ZangbandTK"
 wm protocol . WM_DELETE_WINDOW { angband_quit }
 
+# Tk's classic look, in every window: decision 18 in the Phase 3 plan.
+#
+# The windows are meant to look like Tk on X11 in the 1990s: Motif relief, a
+# grey ground, diamond radio buttons and bold Helvetica.  That is Tk's own
+# `classic` theme, which ships with Tk and draws itself the same way on every
+# platform.  Left alone, Tk on a Mac draws its controls as Aqua ones instead.
+# It applies to every Ttk widget in the program, the sashes between the panes
+# below included.
+ttk::style theme use classic
+ttk::style configure . -font {Helvetica 12 bold}
+
 # Every keystroke goes to the game.  Bound on "." rather than on the canvas so
 # it works whatever has focus inside the window, which will matter more once
 # there are panes.
@@ -183,7 +194,8 @@ menu .menubar.views -tearoff 0
 source [file join [file dirname [info script]] errorInfo.tcl]
 source [file join [file dirname [info script]] debug.tcl]
 
-# Then the design system: every window below is drawn with it.
+# Then the design system, which the character sheet and the items window are
+# still drawn with.  The knowledge browser no longer is: see decision 18.
 source [file join [file dirname [info script]] classical.tcl]
 source [file join [file dirname [info script]] character.tcl]
 source [file join [file dirname [info script]] knowledge.tcl]

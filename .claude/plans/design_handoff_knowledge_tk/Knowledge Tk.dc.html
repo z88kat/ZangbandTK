@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  html, body { margin: 0; background: #5f6b74; }
+  a { color: #000080; }
+  a:hover { color: #b03060; }
+  ::selection { background: #c3c3c3; color: #000000; }
+</style>
+</helmet>
+
+<div ref="{{ rootRef }}" onKeyDown="{{ onRootKey }}" style="--wm:#9fb0c0;--wm-hi:#dce4ec;--wm-lo:#56636f;--ind-rot:45deg;--ind-rad:0px;--sel:#b03060;position:relative;min-height:100vh;box-sizing:border-box;padding:28px 20px;background-color:#5f6b74;background-image:repeating-conic-gradient(#68757e 0 25%, #5f6b74 0 50%);background-size:4px 4px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;font-weight:700;line-height:1.25;color:#000000">
+
+<sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeMenu }}" style="position:fixed;inset:0;z-index:25"></div>
+</sc-if>
+
+<sc-if value="{{ iconified }}" hint-placeholder-val="{{ false }}">
+  <button onClick="{{ restore }}" title="Click to restore" style="position:absolute;top:28px;left:20px;width:84px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 4px 4px;font:inherit;font-size:11px;background:#d9d9d9;border:0;cursor:pointer;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+    <span style="width:48px;height:48px;display:grid;place-items:center;background:#000000;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff;font-family:'Courier New',Courier,monospace;font-size:30px;color:#e0c000">?</span>
+    <span>Knowledge</span>
+  </button>
+</sc-if>
+
+<sc-if value="{{ visible }}" hint-placeholder-val="{{ true }}">
+<div style="max-width:{{ winMax }};margin:0 auto;padding:5px;background:var(--wm);box-shadow:inset 2px 2px 0 var(--wm-hi), inset -2px -2px 0 var(--wm-lo), 0 0 0 1px #000000">
+
+  <div style="display:flex;gap:2px;height:24px">
+    <div style="flex:none;width:24px;display:grid;place-items:center;box-shadow:inset 2px 2px 0 var(--wm-hi), inset -2px -2px 0 var(--wm-lo)">
+      <div style="width:12px;height:4px;box-shadow:inset 1px 1px 0 var(--wm-hi), inset -1px -1px 0 var(--wm-lo)"></div>
+    </div>
+    <div style="flex:1;min-width:0;display:grid;place-items:center;box-shadow:inset 2px 2px 0 var(--wm-hi), inset -2px -2px 0 var(--wm-lo);white-space:nowrap;overflow:hidden">Zangband: Knowledge</div>
+    <button onClick="{{ iconify }}" title="Iconify" style="flex:none;width:24px;display:grid;place-items:center;padding:0;background:transparent;border:0;cursor:pointer;box-shadow:inset 2px 2px 0 var(--wm-hi), inset -2px -2px 0 var(--wm-lo)" style-active="box-shadow:inset 2px 2px 0 var(--wm-lo), inset -2px -2px 0 var(--wm-hi)">
+      <span style="width:4px;height:4px;box-shadow:inset 1px 1px 0 var(--wm-hi), inset -1px -1px 0 var(--wm-lo)"></span>
+    </button>
+    <button onClick="{{ toggleMax }}" title="Maximize" style="flex:none;width:24px;display:grid;place-items:center;padding:0;background:transparent;border:0;cursor:pointer;box-shadow:inset 2px 2px 0 var(--wm-hi), inset -2px -2px 0 var(--wm-lo)" style-active="box-shadow:inset 2px 2px 0 var(--wm-lo), inset -2px -2px 0 var(--wm-hi)">
+      <span style="width:12px;height:12px;box-shadow:inset 1px 1px 0 var(--wm-hi), inset -1px -1px 0 var(--wm-lo)"></span>
+    </button>
+  </div>
+
+  <div style="margin-top:4px;background:#d9d9d9;box-shadow:0 0 0 1px var(--wm-lo)">
+
+    <div style="position:relative;z-index:30;display:flex;flex-wrap:wrap;gap:2px;padding:2px;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+      <sc-for list="{{ menus }}" as="m" hint-placeholder-count="3">
+        <div style="position:relative">
+          <button onClick="{{ m.toggle }}" style="padding:4px 10px;font:inherit;color:#000000;background:{{ m.bg }};border:0;cursor:pointer;box-shadow:{{ m.relief }}"><span style="text-decoration:underline">{{ m.first }}</span>{{ m.rest }}</button>
+          <sc-if value="{{ m.isOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:100%;left:0;min-width:230px;padding:2px;background:#d9d9d9;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+              <div style="margin:5px 6px;border-top:1px dashed #000000"></div>
+              <sc-for list="{{ m.entries }}" as="e" hint-placeholder-count="3">
+                <sc-if value="{{ e.sep }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin:4px 2px;border-top:1px solid #828282;border-bottom:1px solid #ffffff"></div>
+                </sc-if>
+                <sc-if value="{{ e.item }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ e.run }}" style="display:grid;grid-template-columns:18px 1fr auto;align-items:center;gap:6px;width:100%;padding:4px 8px 4px 6px;font:inherit;text-align:left;color:{{ e.fg }};background:transparent;border:0;cursor:pointer" style-hover="background:#ececec;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+                    <span style="display:grid;place-items:center"><span style="width:8px;height:8px;transform:rotate(var(--ind-rot));border-radius:var(--ind-rad);background:{{ e.dotFill }};box-shadow:{{ e.dotBevel }}"></span></span>
+                    <span><span style="text-decoration:underline">{{ e.first }}</span>{{ e.rest }}</span>
+                    <span style="font-weight:400">{{ e.accel }}</span>
+                  </button>
+                </sc-if>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:10px 10px 4px">
+      <span>Category:</span>
+      <sc-for list="{{ cats }}" as="c" hint-placeholder-count="7">
+        <button onClick="{{ c.pick }}" style="display:flex;align-items:center;gap:6px;padding:2px 4px;font:inherit;color:#000000;background:transparent;border:0;cursor:pointer" style-hover="background:#ececec">
+          <span style="width:9px;height:9px;margin:0 2px;transform:rotate(var(--ind-rot));border-radius:var(--ind-rad);background:{{ c.fill }};box-shadow:{{ c.bevel }}"></span>
+          <span>{{ c.label }}</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:6px 10px 2px">
+      <label style="display:flex;align-items:center;gap:6px;flex:1 1 260px;min-width:0">
+        <span><span style="text-decoration:underline">F</span>ind:</span>
+        <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="" style="flex:1;min-width:0;padding:3px 4px;font-family:'Courier New',Courier,monospace;font-size:14px;font-weight:400;color:#000000;background:#ffffff;border:0;border-radius:0;outline:1px solid #d9d9d9;box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff" style-focus="outline:1px solid #000000" />
+      </label>
+      <div style="position:relative;z-index:30;display:flex;align-items:center;gap:6px">
+        <span>Sort by:</span>
+        <button onClick="{{ toggleSort }}" style="display:flex;align-items:center;gap:14px;min-width:130px;justify-content:space-between;padding:4px 8px;font:inherit;color:#000000;background:#d9d9d9;border:0;cursor:pointer;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282" style-hover="background:#ececec">
+          <span>{{ sortLabel }}</span>
+          <span style="width:10px;height:5px;box-shadow:inset 1px 1px 0 #ffffff, inset -1px -1px 0 #828282, 0 0 0 1px #d9d9d9"></span>
+        </button>
+        <sc-if value="{{ sortOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:100%;right:0;min-width:150px;padding:2px;background:#d9d9d9;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+            <sc-for list="{{ sorts }}" as="o" hint-placeholder-count="3">
+              <button onClick="{{ o.pick }}" style="display:block;width:100%;padding:4px 10px;font:inherit;text-align:left;color:#000000;background:transparent;border:0;cursor:pointer" style-hover="background:#ececec;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">{{ o.label }}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:6px 12px;padding:6px 10px 10px">
+
+      <div style="position:relative;flex:1 1 300px;min-width:0;margin-top:10px;padding:14px 8px 8px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff, inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+        <span style="position:absolute;top:-8px;left:8px;padding:0 4px;background:#d9d9d9">{{ listTitle }}</span>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) auto;padding:0 22px 3px 6px;font-weight:400">
+          <span>Name</span><span>{{ rightHead }}</span>
+        </div>
+        <div style="display:flex;height:430px">
+          <div ref="{{ listRef }}" tabindex="0" onScroll="{{ syncBars }}" onKeyDown="{{ onListKey }}" style="flex:1;min-width:0;overflow-y:auto;scrollbar-width:none;padding:2px;background:#ffffff;outline:1px solid #d9d9d9;box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff;font-family:'Courier New',Courier,monospace;font-size:14px;font-weight:400" style-focus="outline:1px solid #000000">
+            <sc-for list="{{ rows }}" as="r" hint-placeholder-count="20">
+              <div data-row="{{ r.i }}" onClick="{{ r.select }}" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;height:19px;align-items:center;padding:0 4px;cursor:default;background:{{ r.bg }};box-shadow:{{ r.relief }}">
+                <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</span>
+                <span>{{ r.right }}</span>
+              </div>
+            </sc-for>
+            <sc-if value="{{ listEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:4px;color:#828282">{{ emptyText }}</div>
+            </sc-if>
+          </div>
+          <div data-bar="list" style="flex:none;width:15px;display:flex;flex-direction:column;background:#c3c3c3;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff">
+            <button onClick="{{ listUp }}" style="flex:none;height:15px;padding:0;background:transparent;border:0;cursor:pointer;display:grid;place-items:center">
+              <svg width="13" height="13" viewBox="0 0 13 13"><polygon points="6.5,1.5 12,11.5 1,11.5" fill="#d9d9d9"></polygon><polyline points="1,11.5 6.5,1.5" stroke="#ffffff" stroke-width="1.5" fill="none"></polyline><polyline points="6.5,1.5 12,11.5 1,11.5" stroke="#828282" stroke-width="1.5" fill="none"></polyline></svg>
+            </button>
+            <div onMouseDown="{{ listTrough }}" style="position:relative;flex:1;margin:0 1px">
+              <div onMouseDown="{{ listThumbDown }}" style="position:absolute;left:0;right:0;top:{{ listTop }}%;height:{{ listH }}%;min-height:12px;background:#d9d9d9;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282"></div>
+            </div>
+            <button onClick="{{ listDown }}" style="flex:none;height:15px;padding:0;background:transparent;border:0;cursor:pointer;display:grid;place-items:center">
+              <svg width="13" height="13" viewBox="0 0 13 13"><polygon points="1,1.5 12,1.5 6.5,11.5" fill="#d9d9d9"></polygon><polyline points="6.5,11.5 1,1.5 12,1.5" stroke="#ffffff" stroke-width="1.5" fill="none"></polyline><polyline points="12,1.5 6.5,11.5" stroke="#828282" stroke-width="1.5" fill="none"></polyline></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div style="flex:2 1 440px;min-width:0;display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 4px 2px">
+          <span style="flex:none;width:40px;height:40px;display:grid;place-items:center;background:#000000;box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff;font-family:'Courier New',Courier,monospace;font-size:28px;font-weight:700;line-height:1;color:{{ d.color }}">{{ d.glyph }}</span>
+          <div style="min-width:0">
+            <div style="font-size:20px;line-height:1.15">{{ d.title }}</div>
+            <div style="font-weight:400;font-style:oblique">{{ d.kind }}</div>
+          </div>
+        </div>
+
+        <div style="position:relative;margin-top:10px;padding:16px 10px 10px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff, inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+          <span style="position:absolute;top:-8px;left:8px;padding:0 4px;background:#d9d9d9">Facts</span>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px 18px">
+            <sc-for list="{{ d.facts }}" as="f" hint-placeholder-count="7">
+              <div style="display:grid;grid-template-columns:116px minmax(0,1fr);align-items:center;gap:8px">
+                <span style="font-weight:400;text-align:right">{{ f.k }}:</span>
+                <span style="padding:2px 6px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="position:relative;flex:1;margin-top:12px;padding:16px 10px 10px;display:flex;flex-direction:column;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff, inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+          <span style="position:absolute;top:-8px;left:8px;padding:0 4px;background:#d9d9d9">What Is Known</span>
+          <div style="flex:1;display:flex;min-height:150px">
+            <div ref="{{ textRef }}" onScroll="{{ syncBars }}" style="flex:1;min-width:0;overflow-y:auto;scrollbar-width:none;padding:6px 8px;background:#ffffff;box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff;font-family:'Courier New',Courier,monospace;font-size:14px;font-weight:400;line-height:1.45;text-wrap:pretty"><span style="font-weight:700">{{ d.recallHead }}</span> {{ d.recallBody }}</div>
+            <div style="flex:none;width:15px;display:flex;flex-direction:column;background:#c3c3c3;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff">
+              <button onClick="{{ textUp }}" style="flex:none;height:15px;padding:0;background:transparent;border:0;cursor:pointer;display:grid;place-items:center">
+                <svg width="13" height="13" viewBox="0 0 13 13"><polygon points="6.5,1.5 12,11.5 1,11.5" fill="#d9d9d9"></polygon><polyline points="1,11.5 6.5,1.5" stroke="#ffffff" stroke-width="1.5" fill="none"></polyline><polyline points="6.5,1.5 12,11.5 1,11.5" stroke="#828282" stroke-width="1.5" fill="none"></polyline></svg>
+              </button>
+              <div onMouseDown="{{ textTrough }}" style="position:relative;flex:1;margin:0 1px">
+                <div onMouseDown="{{ textThumbDown }}" style="position:absolute;left:0;right:0;top:{{ textTop }}%;height:{{ textH }}%;min-height:12px;background:#d9d9d9;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282"></div>
+              </div>
+              <button onClick="{{ textDown }}" style="flex:none;height:15px;padding:0;background:transparent;border:0;cursor:pointer;display:grid;place-items:center">
+                <svg width="13" height="13" viewBox="0 0 13 13"><polygon points="1,1.5 12,1.5 6.5,11.5" fill="#d9d9d9"></polygon><polyline points="6.5,11.5 1,1.5 12,1.5" stroke="#ffffff" stroke-width="1.5" fill="none"></polyline><polyline points="12,1.5 6.5,11.5" stroke="#828282" stroke-width="1.5" fill="none"></polyline></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin:0 2px;border-top:1px solid #828282;border-bottom:1px solid #ffffff"></div>
+
+    <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:10px;padding:10px">
+      <button onClick="{{ prev }}" style="min-width:96px;padding:5px 12px;font:inherit;color:{{ prevFg }};background:#d9d9d9;border:0;cursor:pointer;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282" style-hover="background:#ececec" style-active="box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff"><span style="text-decoration:underline">P</span>revious</button>
+      <button onClick="{{ next }}" style="min-width:96px;padding:5px 12px;font:inherit;color:{{ nextFg }};background:#d9d9d9;border:0;cursor:pointer;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282" style-hover="background:#ececec" style-active="box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff"><span style="text-decoration:underline">N</span>ext</button>
+      <div style="padding:3px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff">
+        <button onClick="{{ iconify }}" style="min-width:96px;padding:5px 12px;font:inherit;color:#000000;background:#d9d9d9;border:0;cursor:pointer;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282" style-hover="background:#ececec" style-active="box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff"><span style="text-decoration:underline">C</span>lose</button>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:4px;padding:0 4px 4px">
+      <span style="flex:1 1 300px;min-width:0;padding:2px 6px;font-weight:400;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ status }}</span>
+      <span style="padding:2px 8px;font-weight:400;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff;white-space:nowrap">{{ position }}</span>
+    </div>
+  </div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;indicator&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;diamond&quot;,&quot;circle&quot;],&quot;default&quot;:&quot;diamond&quot;,&quot;tsType&quot;:&quot;'diamond'|'circle'&quot;},&quot;frame&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;steel&quot;,&quot;olive&quot;,&quot;plum&quot;],&quot;default&quot;:&quot;steel&quot;,&quot;tsType&quot;:&quot;'steel'|'olive'|'plum'&quot;}}">
+const COL = { w: "#ffffff", s: "#9a9a9a", u: "#a0652a", U: "#c88a44", g: "#2fa82f", G: "#5fe05f", b: "#4a6aff", B: "#7ad0ff", y: "#ffe040", o: "#ff8a1a", r: "#e03030", v: "#d040d0" };
+const M = [
+  ["filthy street urchin",0,"t","U","townsfolk",110,"1d4",1,0,12,3],
+  ["scrawny cat",0,"f","u","feline",110,"1d2",1,0,4,1],
+  ["scruffy little dog",0,"C","u","canine",110,"1d3",1,0,5,2],
+  ["blubbering idiot",0,"t","U","townsfolk",110,"1d2",1,0,3,0],
+  ["boil-covered wretch",0,"t","g","townsfolk",110,"1",0,0,6,0],
+  ["village idiot",0,"t","U","townsfolk",120,"4d4",1,0,2,0],
+  ["pitiful-looking beggar",0,"t","U","townsfolk",110,"1d4",1,0,4,1],
+  ["mangy-looking leper",0,"t","U","townsfolk",110,"1d1",1,0,2,0],
+  ["squint-eyed rogue",0,"t","b","townsfolk",110,"2d8",8,0,3,1],
+  ["singing, happy drunk",0,"t","U","townsfolk",110,"2d3",1,0,5,0],
+  ["aimless-looking merchant",0,"t","U","townsfolk",110,"3d3",1,0,3,0],
+  ["mean-looking mercenary",0,"t","r","townsfolk",110,"5d8",20,0,2,0],
+  ["battle-scarred veteran",0,"t","w","townsfolk",110,"7d8",30,0,1,0],
+  ["grey mold",1,"m","s","mold",110,"28",1,3,2,0],
+  ["grey mushroom patch",1,",","s","mushroom",110,"2",1,1,1,0],
+  ["giant white centipede",1,"c","w","centipede",110,"11",10,6,1,0],
+  ["giant white mouse",1,"r","w","rodent",110,"4",4,1,3,1],
+  ["small kobold",1,"k","y","kobold",110,"8",16,5,2,1],
+  ["rock lizard",1,"R","U","reptile",110,"3",4,3,1,0],
+  ["wild dog",1,"C","U","canine",110,"5",3,1,1,0],
+  ["soldier ant",1,"a","u","ant",110,"6",3,3,1,0],
+  ["fruit bat",1,"b","o","bat",120,"5",3,1,1,0],
+  ["kobold",2,"k","g","kobold",110,"12",16,5,1,0],
+  ["soldier",2,"p","u","person",110,"15",16,40,1,0],
+  ["cutpurse",2,"p","b","person",110,"12",12,8,1,0],
+  ["acolyte",2,"p","g","person",110,"18",20,20,1,0],
+  ["blue yeek",2,"y","b","yeek",110,"6",14,1,1,0],
+  ["woodsman",0,"t","g","townsfolk",110,"6d8",8,0,1,0],
+  ["agent of black market",0,"t","v","townsfolk",110,"3d8",8,0,1,0],
+  ["newt",1,"R","y","reptile",110,"3",8,1,1,0],
+  ["swordfish",8,"l","b","fish",120,"20",12,30,1,0],
+  ["white deer",1,"q","w","quadruped",120,"6",8,2,1,0]
+];
+const FLAVOUR = {
+  townsfolk: "He wanders the streets of the town.", feline: "A thin, hungry-looking cat.", canine: "It snaps and barks at your heels.",
+  mold: "A small, strange growth.", mushroom: "A cluster of pale grey caps.", centipede: "It is about four feet long and carnivorous.",
+  rodent: "It is about the size of a small dog.", kobold: "A small, dog-headed humanoid.", reptile: "A small, scaly creature.",
+  ant: "A large ant with powerful mandibles.", bat: "A fast-moving pest from the caves.", person: "A human who has taken to the dungeon.",
+  yeek: "A small blue humanoid. It looks harmless.", fish: "A large fish with a long, sharp bill.", quadruped: "A graceful, timid animal."
+};
+const OVERRIDE = { "boil-covered wretch": "Ugly doesn't begin to describe him. He can clear webs. Nothing is known about his attack." };
+const ord = n => n + (n % 10 === 1 && n !== 11 ? "st" : n % 10 === 2 && n !== 12 ? "nd" : n % 10 === 3 && n !== 13 ? "rd" : "th");
+
+const monsters = M.map(([name, depth, glyph, c, kind, speed, hp, ac, exp, seen, slain], order) => ({
+  name, order, depth, seen, right: depth ? String(depth) : "town", glyph, color: COL[c], kind,
+  facts: [["Native depth", depth ? "Level " + depth + " (" + depth * 50 + " ft)" : "Town"], ["Speed", speed === 110 ? "Normal (+0)" : "+" + (speed - 110)], ["Hit points", hp], ["Armour class", ac], ["Experience", exp], ["Times seen", seen], ["Slain, all lives", slain]],
+  recallHead: "The " + name + " ('" + glyph + "')",
+  recallBody: (slain ? "You have slain " + slain + " of these." : "No battles to the death are recalled.") + " " + (OVERRIDE[name] ? OVERRIDE[name].split(". He")[0] + "." : FLAVOUR[kind]) +
+    " This creature " + (depth ? "is normally found at depths of " + depth * 50 + " feet" : "lives in the town") + ", and moves " + (speed > 110 ? "quickly" : "at normal speed") +
+    ". A kill of this creature is worth " + exp + " points for a " + ord(1) + " level character." + (OVERRIDE[name] ? " He" + OVERRIDE[name].split(". He").slice(1).join(". He") : "")
+}));
+const obj = (name, level, glyph, c, kind, weight, cost, seen, text, order) => ({
+  name, order, depth: level, seen, right: String(level), glyph, color: COL[c], kind,
+  facts: [["Level", level], ["Weight", weight + " lb"], ["Base cost", cost + " gp"], ["Times seen", seen]],
+  recallHead: name + " ('" + glyph + "')", recallBody: text
+});
+const terr = (name, glyph, c, pass, sight, text, order) => ({
+  name, order, depth: 0, seen: 99, right: glyph, glyph, color: COL[c], kind: "terrain feature",
+  facts: [["Symbol", "'" + glyph + "'"], ["Passable", pass], ["Blocks sight", sight]],
+  recallHead: name + ".", recallBody: text
+});
+const DATA = {
+  monsters,
+  objects: [
+    obj("Ration of Food", 0, ",", "U", "food", 0.5, 3, 5, "It provides 5000 turns of nourishment.", 0),
+    obj("Wooden Torch", 1, "~", "u", "light source", 3.0, 1, 2, "It radiates light out to radius 2 when fuelled.", 1),
+    obj("Flask of oil", 1, "!", "y", "flask", 1.0, 3, 3, "It can be thrown for fire damage, or used to refuel a lantern.", 2),
+    obj("Main Gauche", 2, "|", "w", "dagger", 3.0, 25, 1, "A parrying dagger. It does 1d5 damage.", 3),
+    obj("Soft Leather Armour", 1, "(", "u", "soft armour", 8.0, 18, 1, "It gives a base armour class of 8.", 4),
+    obj("Potion of Cure Light Wounds", 1, "!", "B", "potion", 0.4, 20, 2, "It heals 15 hit points, cures blindness and reduces bleeding.", 5),
+    obj("Scroll of Word of Recall", 15, "?", "w", "scroll", 0.5, 150, 1, "It returns you to the town, or from the town to the deepest level reached.", 6),
+    obj("Wand of Magic Missile", 3, "-", "G", "wand", 1.0, 100, 1, "It fires a bolt of magic for 3d4 damage.", 7)
+  ],
+  artifacts: [], ego: [], runes: [],
+  terrain: [
+    terr("open floor", ".", "w", "Yes", "No", "A plain stretch of floor.", 0),
+    terr("granite wall", "#", "w", "No", "Yes", "Solid rock. It can be tunnelled through, slowly.", 1),
+    terr("up staircase", "<", "w", "Yes", "No", "A staircase leading up.", 2),
+    terr("down staircase", ">", "w", "Yes", "No", "A staircase leading down.", 3),
+    terr("General Store entrance", "1", "U", "Yes", "Yes", "The door of the General Store.", 4),
+    terr("tree", "%", "g", "Yes", "Yes", "A tree. It slows movement and blocks line of sight.", 5)
+  ],
+  traps: [
+    { name: "trap door", order: 0, depth: 1, seen: 2, right: "1", glyph: "^", color: COL.w, kind: "trap", facts: [["Native depth", "Level 1 (50 ft)"], ["Times seen", 2], ["Disarmed", 0]], recallHead: "A trap door ('^').", recallBody: "It drops you to the next level of the dungeon." }
+  ]
+};
+const CATS = [["monsters", "Monsters"], ["objects", "Objects"], ["artifacts", "Artifacts"], ["ego", "Ego Items"], ["runes", "Runes"], ["terrain", "Terrain"], ["traps", "Traps"]];
+const SORTS = [["depth", "Depth"], ["name", "Name"], ["seen", "Times seen"]];
+const WM = { steel: ["#9fb0c0", "#dce4ec", "#56636f"], olive: ["#a8ad8c", "#e2e5d2", "#5d614a"], plum: ["#ae9cae", "#e6dce6", "#5f4f5f"] };
+const RAISED = "inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282";
+const SUNKEN = "inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff";
+
+class Component extends DCLogic {
+  rootRef = React.createRef();
+  listRef = React.createRef();
+  textRef = React.createRef();
+  state = {
+    cat: "monsters", sort: "depth", query: "", menu: null, sel: { monsters: "boil-covered wretch" },
+    status: "Select an entry to recall what is known of it.", iconified: false, maxed: false,
+    bars: { listTop: 0, listH: 100, textTop: 0, textH: 100 }
+  };
+  pendingScroll = true;
+
+  componentDidMount() { this.applyVars(); this.afterRender(); }
+  componentDidUpdate() { this.applyVars(); this.afterRender(); }
+  applyVars() {
+    const el = this.rootRef.current;
+    if (!el) return;
+    const diamond = (this.props.indicator ?? "diamond") === "diamond";
+    el.style.setProperty("--ind-rot", diamond ? "45deg" : "0deg");
+    el.style.setProperty("--ind-rad", diamond ? "0px" : "50%");
+    const wm = WM[this.props.frame ?? "steel"] || WM.steel;
+    el.style.setProperty("--wm", wm[0]); el.style.setProperty("--wm-hi", wm[1]); el.style.setProperty("--wm-lo", wm[2]);
+  }
+  afterRender() {
+    const list = this.listRef.current;
+    if (this.pendingScroll && list) {
+      this.pendingScroll = false;
+      const row = list.querySelector('[data-sel="1"]') || list.querySelector('[data-row="' + this.selIndex() + '"]');
+      if (row) {
+        const top = row.offsetTop, bottom = top + row.offsetHeight;
+        if (top < list.scrollTop) list.scrollTop = top - 2;
+        else if (bottom > list.scrollTop + list.clientHeight) list.scrollTop = bottom - list.clientHeight + 2;
+      }
+    }
+    this.syncBars();
+  }
+  syncBars = () => {
+    const m = el => el ? [el.scrollTop / el.scrollHeight * 100, Math.min(100, el.clientHeight / el.scrollHeight * 100)] : [0, 100];
+    const [lt, lh] = m(this.listRef.current), [tt, th] = m(this.textRef.current);
+    const b = this.state.bars;
+    if (Math.abs(b.listTop - lt) + Math.abs(b.listH - lh) + Math.abs(b.textTop - tt) + Math.abs(b.textH - th) > 0.2)
+      this.setState({ bars: { listTop: lt, listH: lh, textTop: tt, textH: th } });
+  };
+
+  rows() {
+    const s = this.state;
+    const q = s.query.trim().toLowerCase();
+    let r = DATA[s.cat].filter(e => !q || e.name.toLowerCase().includes(q));
+    const by = { depth: (a, b) => a.depth - b.depth || a.order - b.order, name: (a, b) => a.name.localeCompare(b.name), seen: (a, b) => b.seen - a.seen || a.order - b.order }[s.sort];
+    return r.slice().sort(by);
+  }
+  selIndex(rows) {
+    rows = rows || this.rows();
+    const i = rows.findIndex(e => e.name === this.state.sel[this.state.cat]);
+    return i < 0 ? 0 : i;
+  }
+  selectAt(i) {
+    const rows = this.rows();
+    if (!rows.length) return;
+    const n = Math.max(0, Math.min(rows.length - 1, i));
+    this.pendingScroll = true;
+    if (this.textRef.current) this.textRef.current.scrollTop = 0;
+    this.setState(s => ({ sel: { ...s.sel, [s.cat]: rows[n].name }, status: "Recalled: " + rows[n].name + "." }));
+  }
+  step(ref, px) { const el = ref.current; if (el) el.scrollTop += px; }
+  trough(ref) {
+    return e => {
+      if (e.target !== e.currentTarget) return;
+      const el = ref.current; if (!el) return;
+      const thumb = e.currentTarget.firstElementChild.getBoundingClientRect();
+      el.scrollTop += (e.clientY < thumb.top ? -1 : 1) * (el.clientHeight - 19);
+    };
+  }
+  thumbDown(ref) {
+    return e => {
+      e.preventDefault(); e.stopPropagation();
+      const el = ref.current; if (!el) return;
+      const troughH = e.currentTarget.parentElement.clientHeight;
+      const y0 = e.clientY, s0 = el.scrollTop;
+      const move = ev => { el.scrollTop = s0 + (ev.clientY - y0) / troughH * el.scrollHeight; };
+      const up = () => { window.removeEventListener("mousemove", move); window.removeEventListener("mouseup", up); };
+      window.addEventListener("mousemove", move); window.addEventListener("mouseup", up);
+    };
+  }
+  setCat(cat) {
+    this.pendingScroll = true;
+    if (this.listRef.current) this.listRef.current.scrollTop = 0;
+    this.setState({ cat, menu: null, status: CATS.find(c => c[0] === cat)[1] + ": " + DATA[cat].length + " known." });
+  }
+
+  renderVals() {
+    const s = this.state;
+    const rows = this.rows();
+    const si = this.selIndex(rows);
+    const cur = rows[si];
+    const catLabel = CATS.find(c => c[0] === s.cat)[1];
+    const dot = on => on ? ["var(--sel)", "inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff"] : ["#d9d9d9", "inset 1px 1px 0 #ffffff, inset -1px -1px 0 #828282"];
+    const close = fn => () => { this.setState({ menu: null }); fn(); };
+    const say = msg => close(() => this.setState({ status: msg }));
+    const iconify = () => this.setState({ iconified: true, menu: null });
+
+    const MENUS = [
+      ["File", [["Dump to File\u2026", "Ctrl+S", say("Knowledge written to zangband-knowledge.txt.")], null, ["Close", "Esc", close(iconify)]]],
+      ["View", CATS.map(([id, label]) => [label, "", () => this.setCat(id), id === s.cat])],
+      ["Help", [["On Knowledge\u2026", "F1", say("Pick a category, then an entry. Arrow keys move the selection.")], ["About Zangband\u2026", "", say("Zangband: a variant of Angband.")]]]
+    ];
+    const menus = MENUS.map(([name, entries]) => {
+      const open = s.menu === name;
+      return {
+        first: name[0], rest: name.slice(1), isOpen: open,
+        bg: open ? "#ececec" : "transparent", relief: open ? RAISED : "none",
+        toggle: () => this.setState(st => ({ menu: st.menu === name ? null : name })),
+        entries: entries.map(e => {
+          if (!e) return { sep: true, item: false };
+          const radio = e.length > 3;
+          const [fill, bevel] = radio ? dot(e[3]) : ["transparent", "none"];
+          return { sep: false, item: true, first: e[0][0], rest: e[0].slice(1), accel: e[1], run: e[2], fg: "#000000", dotFill: fill, dotBevel: bevel };
+        })
+      };
+    });
+
+    const cats = CATS.map(([id, label]) => {
+      const [fill, bevel] = dot(id === s.cat);
+      return { label, fill, bevel, pick: () => this.setCat(id) };
+    });
+
+    const d = cur ? {
+      title: cur.name.charAt(0).toUpperCase() + cur.name.slice(1), kind: cur.kind, glyph: cur.glyph, color: cur.color,
+      facts: cur.facts.map(([k, v]) => ({ k, v: String(v) })), recallHead: cur.recallHead, recallBody: cur.recallBody
+    } : { title: "Nothing selected", kind: catLabel.toLowerCase(), glyph: " ", color: "#000000", facts: [], recallHead: "", recallBody: "Nothing is known." };
+
+    const b = s.bars;
+    return {
+      rootRef: this.rootRef, listRef: this.listRef, textRef: this.textRef,
+      visible: !s.iconified, iconified: s.iconified, winMax: s.maxed ? "none" : "1080px",
+      restore: () => this.setState({ iconified: false }), iconify, toggleMax: () => this.setState(st => ({ maxed: !st.maxed })),
+      menus, menuOpen: !!s.menu, closeMenu: () => this.setState({ menu: null }),
+      cats,
+      query: s.query,
+      onQuery: e => { this.pendingScroll = true; this.setState({ query: e.target.value }); },
+      sortLabel: SORTS.find(o => o[0] === s.sort)[1],
+      sortOpen: s.menu === "sort",
+      toggleSort: () => this.setState(st => ({ menu: st.menu === "sort" ? null : "sort" })),
+      sorts: SORTS.map(([id, label]) => ({ label, pick: () => { this.pendingScroll = true; this.setState({ sort: id, menu: null }); } })),
+      listTitle: catLabel + " \u2014 " + DATA[s.cat].length + " known",
+      rightHead: s.cat === "terrain" ? "Symbol" : s.cat === "objects" ? "Level" : "Depth",
+      rows: rows.map((e, i) => ({
+        i, name: e.name, right: e.right,
+        bg: i === si ? "#c3c3c3" : "transparent", relief: i === si ? "inset 1px 1px 0 #ffffff, inset -1px -1px 0 #828282" : "none",
+        select: () => { this.listRef.current && this.listRef.current.focus(); this.selectAt(i); }
+      })),
+      listEmpty: rows.length === 0,
+      emptyText: s.query ? "No matches." : "Nothing is known yet.",
+      d,
+      onListKey: e => {
+        const k = e.key, page = 20;
+        const map = { ArrowDown: si + 1, ArrowUp: si - 1, Home: 0, End: rows.length - 1, PageDown: si + page, PageUp: si - page };
+        if (k in map) { e.preventDefault(); this.selectAt(map[k]); }
+      },
+      onRootKey: e => { if (e.key === "Escape") { if (s.menu) this.setState({ menu: null }); else iconify(); } },
+      syncBars: this.syncBars,
+      listTop: b.listTop, listH: b.listH, textTop: b.textTop, textH: b.textH,
+      listUp: () => this.step(this.listRef, -19), listDown: () => this.step(this.listRef, 19),
+      textUp: () => this.step(this.textRef, -20), textDown: () => this.step(this.textRef, 20),
+      listTrough: this.trough(this.listRef), textTrough: this.trough(this.textRef),
+      listThumbDown: this.thumbDown(this.listRef), textThumbDown: this.thumbDown(this.textRef),
+      prev: () => this.selectAt(si - 1), next: () => this.selectAt(si + 1),
+      prevFg: rows.length && si > 0 ? "#000000" : "#a3a3a3",
+      nextFg: rows.length && si < rows.length - 1 ? "#000000" : "#a3a3a3",
+      status: s.status,
+      position: rows.length ? (si + 1) + " of " + rows.length : "0 of 0"
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -431,36 +431,39 @@ check "the knowledge window opens without a character" {
 	list [winfo exists .knowledge] $::knowledge(count)
 } "1 {0 known}"
 
-check "it has a pane per category" {
-	set panes {}
+check "it has a radio button per category" {
+	set radios {}
 	foreach c $::knowledge(categories) {
-		lassign $c key label accessor fields
-		lappend panes [winfo exists .knowledge.card.body.$key]
+		lappend radios [winfo class .knowledge.f.cat.[lindex $c 0]]
 	}
-	list [llength $::knowledge(categories)] [lsort -unique $panes]
-} "7 1"
+	list [llength $::knowledge(categories)] [lsort -unique $radios]
+} "7 TRadiobutton"
 
-check "the tabs switch which pane is shown" {
-	set ::knowledge(tab) objects
+check "choosing a category changes the list and its facts" {
+	set ::knowledge(cat) objects
 	knowledge_switch
-	set a [grid info .knowledge.card.body.objects]
-	set ::knowledge(tab) monsters
+	set a [list [.knowledge.f.body.list cget -text] \
+		[winfo exists .knowledge.f.body.detail.facts.vweight]]
+	set ::knowledge(cat) monsters
 	knowledge_switch
-	list [expr {$a ne ""}] [expr {[grid info .knowledge.card.body.objects] eq ""}]
-} "1 1"
+	lappend a [winfo exists .knowledge.f.body.detail.facts.vweight]
+} "{Objects — 0 known} 1 0"
 
-# The search box has no placeholder in Tk, so the hint is a label behind it.
-# Design-system machinery, and every window with a search box will use it.
-check "an empty search box shows its hint" {
-	set f .knowledge.card.body.monsters.left.esearch
-	set was [winfo manager $f.hint]
-	set ::knowledge(search,monsters) "kobold"
-	update idletasks
-	set now [winfo manager $f.hint]
-	set ::knowledge(search,monsters) ""
-	update idletasks
-	list $was $now [winfo manager $f.hint]
-} "place {} place"
+# Decision 18: the window is Tk's own widgets in Tk's classic theme, and
+# nothing drawn by hand.  A widget class outside this list is a widget somebody
+# invented, which is the thing the decision rules out.
+check "it is built from stock Tk widgets in the classic theme" {
+	set stock {Toplevel Menu TFrame TLabel TLabelframe TRadiobutton TEntry
+	           TMenubutton TButton TScrollbar TSeparator Listbox Text Canvas}
+	set odd {}
+	set todo .knowledge
+	while {[llength $todo]} {
+		set todo [lassign $todo w]
+		if {[winfo class $w] ni $stock} { lappend odd "$w [winfo class $w]" }
+		lappend todo {*}[winfo children $w]
+	}
+	list [ttk::style theme use] $odd
+} "classic {}"
 
 check "closing it is just closing it" {
 	destroy .knowledge

@@ -31,6 +31,83 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+10 October 2026 — the toolkit I chose and then hid
+==================================================
+
+The reason this front end is Tcl/Tk at all is that the original was, and the
+point was for it to look like a Tk program from the 1990s. Today Steven looked
+at the Knowledge window and said what I should have said a month ago: *"we
+should not invent our own UI design. It should look and feel like TK."*
+
+What I had built instead was a design system. Decision 17 called it Classical:
+three typefaces shipped in ``lib/fonts`` and registered with the platform at
+startup, because Tk cannot load a font file; a warm grey palette with an old
+gold accent; a tab strip made of labels with rules under them; a search box
+whose placeholder is a second label hidden behind the entry; and hairlines
+everywhere, because, in my own comment, "a groove or a ridge reads as 3D and
+this design has no depth in it anywhere". It was careful work, and nearly every
+line of it went on stopping Tk from looking like Tk. The window that came out
+looked like a web page. It could have been drawn with any toolkit, which is a
+poor thing to be able to say about a front end whose one defining choice was the
+toolkit.
+
+So decision 18 replaces it, and the Knowledge window is the first one rebuilt:
+a listbox, a text widget, radio buttons, an option menu, labelframes, and a
+status bar made of sunken labels. Nothing is drawn by hand, and a bridge check
+walks the window and fails on any widget class that Tk did not ship.
+
+**The catch was the Mac.** Using the stock widgets is not enough on its own to
+look like 1996. Tk on macOS draws its buttons, radio buttons and scrollbars as
+Aqua controls, which is decision 6 doing what it says: Ttk themed by the
+platform. The look Steven meant is Tk's ``classic`` theme. It ships with Tk,
+draws itself instead of asking the platform, and it is the Motif look exactly:
+the ``#d9d9d9`` ground, diamond radio buttons filled ``#b03060``, and the
+sunken ring round the default button. I checked that with a short probe script
+before writing the window, because finding out afterwards that half of it was
+Aqua would have cost another round trip. It is one line in ``main.tcl``, and
+it applies to the whole program, so the sashes between the main window's panes
+became grey Motif bars too. That is where everything is heading anyway, and the
+decision says so, so that it does not look like an accident.
+
+The theme has one gap. It never sets a field colour, so asking it for an
+entry's background returns an empty string, and the first run of the new window
+died with ``unknown color name ""``. The entry falls back to white internally,
+and the lookup has to be given that default.
+
+**Rebuilding it turned up two bugs the old window had all along.** The
+knowledge windows pass every key to the game so that they can stay open while
+you play, and the search box was inside that. Typing "kobold" into it filtered
+the list and also sent k, o, b, o, l and d to the game. Now Find keeps what is
+typed into it and the list keeps its arrow keys; everything else still goes to
+the game. The other bug was ``string totitle``, used to capitalise unique
+monsters. It lowercases everything after the first letter, so "Grip, Farmer
+Maggot's Dog" would have come out as "Grip, farmer maggot's dog". Anglim has
+not met a unique, so it never appeared in any screenshot of the window.
+
+**The glyph box was the d_char lesson again**, three weeks after the paper doll
+taught it. The window wanted each thing's symbol, ``r`` for the mouse and
+``!`` for the potion, and the obvious source is the display mapping, which under
+a tile set holds a tile's coordinates. This time I went to ``d_char`` first,
+and to the flavour's glyph for a flavoured object, because that is what the map
+shows for a potion nobody has identified. The rule for which one the map uses
+is a static function in ``ui-object.c``, so I copied it rather than calling it,
+with a comment saying where it came from. Lava came out as a red ``#``, the
+General Store as an umber ``1`` and a glyph of warding as a yellow ``;``, and I
+checked those against the data files, not against what I expected to see.
+
+Earlier the same day Steven tried to build the app from the README and could
+not. It said how to compile the front end but not where the result went, and
+following it, the ``cmake`` call refused to run because the README's own test
+recipe had already set up a Make build in the same ``build`` directory: two
+recipes in one README, sending two generators to one directory. The Tk build
+has a directory of its own now, and ``scripts/build-tcl-app`` runs all three
+steps.
+
+What is left of Classical is the character sheet and the Items window, the
+paper doll. Both get rebuilt the same way, and then ``classical.tcl`` and its
+three typefaces go.
+
+
 19 September 2026 — twelve boxes where the gear should be
 =========================================================
 

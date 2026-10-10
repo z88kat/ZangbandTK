@@ -2574,6 +2574,41 @@ static Tcl_Obj *textblock_to_obj(textblock *tb)
 }
 
 /**
+ * Add `glyph` and `colour` to an info dict: the character the game prints for
+ * a thing in text mode, and its colour as the map's "#rrggbb".
+ *
+ * The d_ fields, not the x_ ones.  With a tile set in use the x_ fields hold a
+ * tile's coordinates rather than a character, and printed as one they are a
+ * random letter in a random colour.
+ */
+static void glyph_put(Tcl_Interp *ip, Tcl_Obj *d, wchar_t ch, uint8_t attr)
+{
+	char buf[TCL_UTF_MAX + 1];
+	Tcl_Size n = Tcl_UniCharToUtf((int)ch, buf);
+
+	Tcl_ListObjAppendElement(ip, d, Tcl_NewStringObj("glyph", -1));
+	Tcl_ListObjAppendElement(ip, d, Tcl_NewStringObj(buf, n));
+	Tcl_ListObjAppendElement(ip, d, Tcl_NewStringObj("colour", -1));
+	Tcl_ListObjAppendElement(ip, d,
+			Tcl_NewStringObj(colour_name[attr % MAX_COLORS], -1));
+}
+
+/**
+ * An object kind's glyph, chosen the way the map chooses it: the flavour's,
+ * except for a scroll that has been identified, which has its own.  That rule
+ * is use_flavor_glyph() in ui-object.c, which is static.
+ */
+static void kind_glyph_put(Tcl_Interp *ip, Tcl_Obj *d,
+		const struct object_kind *kind)
+{
+	if (kind->flavor && !(kind->tval == TV_SCROLL && kind->aware)) {
+		glyph_put(ip, d, kind->flavor->d_char, kind->flavor->d_attr);
+	} else {
+		glyph_put(ip, d, kind->d_char, kind->d_attr);
+	}
+}
+
+/**
  * Has the character met this one?
  *
  * Sights or kills, in this life or a previous one -- which is what the
@@ -2609,6 +2644,7 @@ static Tcl_Obj *monster_info_obj(Tcl_Interp *ip, int idx)
 	PUT("avg_hp", Tcl_NewIntObj(race->avg_hp));
 	PUT("armor_class", Tcl_NewIntObj(race->ac));
 	PUT("exp", Tcl_NewIntObj(race->mexp));
+	glyph_put(ip, d, race->d_char, race->d_attr);
 
 	/* What this character, and this character's line, has learned. */
 	PUT("known", Tcl_NewBooleanObj(monster_known(lore)));
@@ -2925,6 +2961,7 @@ static int objcmd_object(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			PUT("level", Tcl_NewIntObj(kind->level));
 			PUT("cost", Tcl_NewIntObj(kind->cost));
 			PUT("weight", Tcl_NewIntObj(kind->weight));
+			kind_glyph_put(ip, d, kind);
 
 #undef PUT
 
@@ -3150,6 +3187,13 @@ static int objcmd_artifact(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			PUT("to_ac", Tcl_NewIntObj(art->to_a));
 			PUT("fully_known",
 					Tcl_NewBooleanObj(history_is_artifact_known(player, art)));
+
+			/* An artifact looks like the object it is made from. */
+			{
+				const struct object_kind *kind =
+					lookup_kind(art->tval, art->sval);
+				if (kind) kind_glyph_put(ip, d, kind);
+			}
 
 #undef PUT
 
@@ -3498,6 +3542,7 @@ static int objcmd_feature(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		table_put(ip, d, "kind", Tcl_NewStringObj("terrain", -1));
 		table_put(ip, d, "digging", Tcl_NewIntObj(feat->dig));
 		table_put(ip, d, "shop", Tcl_NewIntObj(feat->shopnum));
+		glyph_put(ip, d, feat->d_char, feat->d_attr);
 		Tcl_SetObjResult(ip, d);
 		return TCL_OK;
 	}
@@ -3573,6 +3618,7 @@ static int objcmd_trap(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		table_put(ip, d, "name", Tcl_NewStringObj(
 				trap->desc ? trap->desc : trap->name, -1));
 		table_put(ip, d, "kind", Tcl_NewStringObj("trap", -1));
+		glyph_put(ip, d, trap->d_char, trap->d_attr);
 		Tcl_SetObjResult(ip, d);
 		return TCL_OK;
 	}
