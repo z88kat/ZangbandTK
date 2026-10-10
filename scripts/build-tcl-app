@@ -1,0 +1,80 @@
+#!/bin/sh
+#
+# Build ZangbandTclTK.app, from a fresh clone or over an earlier build.
+#
+# Use in the root directory of the game, like so:
+#    scripts/build-tcl-app [output-directory]
+#
+# The app goes to ~/Desktop unless an output directory is given, which is
+# scripts/pkg_macos_tcltk's own default: that script is the last step here and
+# the reasons for the default are at the top of it.
+#
+# It runs the three steps in the README, each skipped when it has nothing to do:
+#
+#   1. Tcl and Tk, through scripts/build-tcltk, only when tcltk/local has no Tk
+#      in it.  That build takes minutes and its result does not change.
+#   2. The game, in build-tcl.  Configured every time, which is quick and makes
+#      sure the options are the ones below; Ninja then rebuilds only what
+#      changed.
+#   3. The bundle, every time.  It holds a copy of the game, so a rebuild that
+#      is not packaged again never reaches the app.
+#
+# The build directory is build-tcl rather than build because the README's test
+# build sets up build with Make, and CMake will not reuse a build directory with
+# a different generator.
+set -o errexit
+
+if [ $# -gt 1 ]; then
+	sed -n -e '3,10p' "$0" | sed -e 's/^# \{0,1\}//'
+	exit 1
+fi
+
+if [ "$(uname -s)" != Darwin ]; then
+	echo "ZangbandTclTK.app is a macOS bundle; this only runs on macOS." >&2
+	exit 1
+fi
+
+if ! command -v ninja >/dev/null 2>&1; then
+	echo "No ninja.  Install it with: brew install ninja" >&2
+	exit 1
+fi
+
+# Made absolute before the cd below, so a relative path means what it meant
+# where the script was started.
+if [ $# -eq 1 ]; then
+	case $1 in
+	/*) OUT=$1 ;;
+	*) OUT=$PWD/$1 ;;
+	esac
+fi
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+PREFIX=$ROOT/tcltk/local
+BUILD=$ROOT/build-tcl
+cd "$ROOT"
+
+# CMake's own message for this names neither directory nor fix.
+if [ -f "$BUILD/CMakeCache.txt" ] &&
+	! grep -q '^CMAKE_GENERATOR:INTERNAL=Ninja$' "$BUILD/CMakeCache.txt"; then
+	echo "$BUILD was set up with a generator other than Ninja." >&2
+	echo "Remove it and run this again." >&2
+	exit 1
+fi
+
+if [ -f "$PREFIX/lib/tkConfig.sh" ]; then
+	echo "==> Tcl and Tk are already in $PREFIX"
+else
+	scripts/build-tcltk "$PREFIX"
+fi
+
+echo "==> The game, in $BUILD"
+cmake -S . -B "$BUILD" -G Ninja \
+	-DSUPPORT_TCL_FRONTEND=ON \
+	-DTCLTK_PREFIX="$PREFIX"
+cmake --build "$BUILD" --parallel
+
+if [ -n "${OUT:-}" ]; then
+	scripts/pkg_macos_tcltk "$BUILD" "$OUT"
+else
+	scripts/pkg_macos_tcltk "$BUILD"
+fi

@@ -148,17 +148,58 @@ is still the Cocoa build below. Where it stands milestone by milestone is in
 which is the honest account and is worth more than a line here that would go
 stale between one week and the next.
 
-To build it:
+To build the app:
 
 ```sh
-scripts/build-tcltk                         # Tcl and Tk 9.0.4 into tcltk/local
-cmake -S . -B build -G Ninja \
+scripts/build-tcl-app
+```
+
+That leaves `ZangbandTclTK.app` on `~/Desktop`, replacing any copy already
+there. To put it somewhere else, give a directory: `scripts/build-tcl-app out`.
+Run it again after every change. The app holds its own copy of the game, its
+data and the Tcl/Tk libraries, so it runs from anywhere, and a rebuild that has
+not been packaged again never reaches it.
+
+The script runs three steps, and they can also be run one at a time.
+`scripts/build-tcltk` is only the first of them: it builds Tcl and Tk, not the
+game, and it only has to be run once. The game gets its own build directory,
+`build-tcl`, because [the tests](#the-tests) set up `build` with Make, and CMake
+will not reuse a build directory with a different generator.
+
+```sh
+# 1. Tcl and Tk 9.0.4, into tcltk/local. Once.
+scripts/build-tcltk
+
+# 2. The game, at build-tcl/game/angband.
+cmake -S . -B build-tcl -G Ninja \
   -DSUPPORT_TCL_FRONTEND=ON \
   -DTCLTK_PREFIX="$PWD/tcltk/local"
-cmake --build build --parallel
-scripts/pkg_macos_tcltk build "$PWD/out"    # ZangbandTclTK.app, optional
-scripts/run-tcl-tests                       # the Tcl side's own tests
-scripts/run-tcl-bridge-test build           # ...and the scripted session; opens a window
+cmake --build build-tcl --parallel
+
+# 3. The app, at ~/Desktop/ZangbandTclTK.app.
+scripts/pkg_macos_tcltk build-tcl
+```
+
+Keep one copy of the app. Every copy has the same bundle identifier, so with
+two of them the Finder may open the old one, and `pkg_macos_tcltk` warns when it
+finds more than one.
+
+Step 3 is not needed to play. The binary from step 2 runs as it is, started
+from the repository root:
+
+```sh
+build-tcl/game/angband -mtcl
+```
+
+It looks for its data in `./lib/` relative to the directory it was started in.
+From the root that is the tree's own `lib/`, so an edit to `lib/tcl/` shows up
+the next time it starts, with no rebuild.
+
+The tests run against the build from step 2:
+
+```sh
+scripts/run-tcl-tests                 # the Tcl side's own tests
+scripts/run-tcl-bridge-test build-tcl # ...and the scripted session; opens a window
 ```
 
 None of the original's front-end C is being compiled in — the survey concluded
