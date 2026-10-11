@@ -154,8 +154,10 @@ To build the app:
 scripts/build-tcl-app
 ```
 
-That leaves `ZangbandTKGUI.app` on `~/Desktop`, replacing any copy already
-there. To put it somewhere else, give a directory: `scripts/build-tcl-app out`.
+That leaves `ZangbandTKGUI.app` in `~/Applications`, replacing any copy already
+there; Spotlight and Launchpad find it. To put it somewhere else, give a
+directory: `scripts/build-tcl-app out`. Not the Desktop if iCloud syncs it: the
+sync gets in the way of a bundle being built, and uploads every build.
 Run it again after every change. The app holds its own copy of the game, its
 data and the Tcl/Tk libraries, so it runs from anywhere, and a rebuild that has
 not been packaged again never reaches it.
@@ -176,7 +178,7 @@ cmake -S . -B build-tcl -G Ninja \
   -DTCLTK_PREFIX="$PWD/tcltk/local"
 cmake --build build-tcl --parallel
 
-# 3. The app, at ~/Desktop/ZangbandTKGUI.app.
+# 3. The app, at ~/Applications/ZangbandTKGUI.app.
 scripts/pkg_macos_tcltk build-tcl
 ```
 

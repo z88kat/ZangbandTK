@@ -6,12 +6,14 @@
 #    scripts/pkg_macos_tcltk <build-directory> [output-directory]
 #
 # The build directory is whatever was configured with SUPPORT_TCL_FRONTEND=ON.
-# The bundle goes to ~/Desktop unless an output directory is given -- that is
-# where it gets played from, and building it straight there means there is only
-# ever one of it.  Two copies both claim org.zangbandtk.zangbandtkgui, and then
-# Launch Services decides which one your double-click starts; see the warning
-# at the end of this script.  Where there is no Desktop, as on a CI runner, the
-# bundle is written beside the build instead.
+# The bundle goes to ~/Applications unless an output directory is given: the
+# per-user Applications folder, where Spotlight and Launchpad find it, and
+# building it straight there means there is only ever one of it.  Two copies
+# both claim org.zangbandtk.zangbandtkgui, and then Launch Services decides
+# which one your double-click starts; see the warning at the end.  Not the
+# Desktop, where it used to go: with iCloud's Desktop and Documents on, every
+# build was uploaded, and the file provider's handling of it cost a blank icon,
+# an unsigned bundle, a quarantine mark and a conflict copy in one afternoon.
 #
 # This is a second application, not a replacement for the Cocoa one.  See
 # decision 14 in .claude/plans/phase3-tcl-tk-frontend.md: ZangbandTK.app is a
@@ -43,7 +45,7 @@
 set -o errexit
 
 if [ $# -lt 1 ] || [ $# -gt 2 ]; then
-	sed -n -e '3,14p' "$0" | sed -e 's/^# \{0,1\}//'
+	sed -n -e '3,16p' "$0" | sed -e 's/^# \{0,1\}//'
 	exit 1
 fi
 
@@ -51,10 +53,9 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 BUILD=$1
 if [ $# -eq 2 ]; then
 	OUT=$2
-elif [ -d "$HOME/Desktop" ]; then
-	OUT=$HOME/Desktop
 else
-	OUT=$BUILD
+	OUT=$HOME/Applications
+	mkdir -p "$OUT"
 fi
 
 NAME=ZangbandTKGUI
@@ -102,8 +103,9 @@ echo "==> $APP  ($VERSION)"
 # Assembled beside where it goes, under a name the Finder does not treat as a
 # bundle, and renamed into place only once it is whole and checked.
 #
-# Built in place, the bundle is watched being made: the Desktop is the Finder's,
-# and with iCloud's Desktop and Documents on it is the file provider's too.
+# Built in place, the bundle is watched being made: a folder the Finder shows,
+# the Desktop above all, is the Finder's, and with iCloud's Desktop and
+# Documents on it is the file provider's too.
 # Both look at a new .app the moment its folder appears, before it has a plist
 # or an icon, so the Finder caches a blank icon for it, and the Finder
 # information they attach makes codesign refuse the bundle outright as
@@ -231,7 +233,7 @@ xattr -dr com.apple.quarantine "$APP" 2>/dev/null || true
 # Two bundles with one identifier is the trap this project already wrote down
 # and then walked into: Launch Services picks between them, so double-clicking
 # one can start the other, and a copy left in a scratch directory quietly wins
-# over the one on the Desktop.  It is not an error -- you may well have an old
+# over the one in Applications.  It is not an error -- you may well have an old
 # build lying about deliberately -- but it must not be silent.
 LSREG=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 if [ -x "$LSREG" ]; then
