@@ -221,6 +221,13 @@ rm -rf "$FINAL"
 mv "$APP" "$FINAL"
 APP=$FINAL
 
+# Built here, so not a download, and it must not be marked as one.  A bundle
+# that turned up on the Desktop carrying com.apple.quarantine -- with no agent
+# and no date, so from nothing that downloaded it -- was refused by Gatekeeper
+# on opening ("Apple could not verify ... is free of malware"), which applies
+# to a quarantined bundle the notarisation a local build can never have.
+xattr -dr com.apple.quarantine "$APP" 2>/dev/null || true
+
 # Two bundles with one identifier is the trap this project already wrote down
 # and then walked into: Launch Services picks between them, so double-clicking
 # one can start the other, and a copy left in a scratch directory quietly wins
