@@ -357,6 +357,11 @@ def main():
               % (directory, got, missing, named,
                  '; prf chained' if linked else ''))
     print('\n  Run scripts/tiles/audit-tiles.py to see the gap count fall.')
+    print('  A new prf also has to be added by hand to the set\'s Makefile'
+          '\n  DATA line, or a packaged build installs the sheet without it:'
+          '\n  the tiles ship and nothing references them.  '
+          'scripts/check-build-lists\n  is what says so, and it is the'
+          ' authoritative list rather than this one.')
     return 0
 
 
