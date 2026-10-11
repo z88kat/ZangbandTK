@@ -2612,14 +2612,22 @@ static void glyph_put(Tcl_Interp *ip, Tcl_Obj *d, wchar_t ch, uint8_t attr)
 }
 
 /**
- * An object kind's glyph, chosen the way the map chooses it: the flavour's,
- * except for a scroll that has been identified, which has its own.  That rule
- * is use_flavor_glyph() in ui-object.c, which is static.
+ * Does an object kind look like its flavour?  The way the map decides it: yes,
+ * except for a scroll that has been identified, which has a glyph of its own.
+ * That rule is use_flavor_glyph() in ui-object.c, which is static.
+ */
+static bool kind_shows_flavour(const struct object_kind *kind)
+{
+	return kind->flavor && !(kind->tval == TV_SCROLL && kind->aware);
+}
+
+/**
+ * An object kind's glyph, chosen the way the map chooses it.
  */
 static void kind_glyph_put(Tcl_Interp *ip, Tcl_Obj *d,
 		const struct object_kind *kind)
 {
-	if (kind->flavor && !(kind->tval == TV_SCROLL && kind->aware)) {
+	if (kind_shows_flavour(kind)) {
 		glyph_put(ip, d, kind->flavor->d_char, kind->flavor->d_attr);
 	} else {
 		glyph_put(ip, d, kind->d_char, kind->d_attr);
@@ -3810,9 +3818,10 @@ static int objcmd_history(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 /**
  * angband_gear -- what the character is carrying and wearing.
  *
- *    angband_gear inventory     the pack, as {label name weight number}
+ *    angband_gear inventory     the pack, a row per item
  *    angband_gear equipment     what is worn, plus a row per empty slot
  *    angband_gear quiver        the quiver, same shape as the pack
+ *    angband_gear slots         {used size}: the pack's slots, quiver included
  *    angband_gear info <where> <n>   one item, as a name/value dict
  *    angband_gear lore <where> <n>   what the game says about it
  *    angband_gear burden             {carried slow-at capacity}, in tenths
@@ -3848,8 +3857,19 @@ static int objcmd_history(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
  */
 static wchar_t object_glyph(const struct object *obj)
 {
-	if (obj->kind->flavor) return obj->kind->flavor->d_char;
+	if (kind_shows_flavour(obj->kind)) return obj->kind->flavor->d_char;
 	return obj->kind->d_char;
+}
+
+/**
+ * And its colour, by the same rule, as the map's "#rrggbb".
+ */
+static const char *object_colour(const struct object *obj)
+{
+	uint8_t attr = kind_shows_flavour(obj->kind)
+		? obj->kind->flavor->d_attr : obj->kind->d_attr;
+
+	return colour_name[attr % MAX_COLORS];
 }
 
 /**
@@ -4007,6 +4027,14 @@ static int objcmd_gear(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 				Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj("", -1));
 			}
 
+			/*
+			 * The symbol's colour, last so that a caller reading the first
+			 * nine fields is unaffected.  Empty for an empty slot, like the
+			 * symbol.
+			 */
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(obj ? object_colour(obj) : "", -1));
+
 			Tcl_ListObjAppendElement(ip, list, row);
 		}
 
@@ -4077,6 +4105,21 @@ static int objcmd_gear(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			Tcl_SetObjResult(ip, text);
 			return TCL_OK;
 		}
+	}
+
+	/*
+	 * How full the pack is, as the game counts it: pack_slots_used() includes
+	 * the slots the quiver takes, which is why it is not the length of the
+	 * inventory list.
+	 */
+	if (streq(where, "slots") && objc == 2) {
+		Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+
+		Tcl_ListObjAppendElement(ip, d,
+				Tcl_NewIntObj(pack_slots_used(player)));
+		Tcl_ListObjAppendElement(ip, d, Tcl_NewIntObj(z_info->pack_size));
+		Tcl_SetObjResult(ip, d);
+		return TCL_OK;
 	}
 
 	/*
@@ -4246,8 +4289,8 @@ static int objcmd_gear(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	}
 
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
-			"expected inventory, equipment, quiver, burden, info, lore,"
-			" fits, inscribe, wield, takeoff or drop, not: %s", where));
+			"expected inventory, equipment, quiver, slots, burden, info,"
+			" lore, fits, inscribe, wield, takeoff or drop, not: %s", where));
 
 	return TCL_ERROR;
 }

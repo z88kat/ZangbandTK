@@ -322,7 +322,7 @@ check "angband_player takes at most one field" {
 proc stock_widgets_only {top} {
 	set stock {Toplevel Menu TFrame TLabel TLabelframe TRadiobutton TEntry
 	           TMenubutton TButton TScrollbar TSeparator TProgressbar
-	           Listbox Text Canvas}
+	           Listbox Text Canvas Label}
 	set odd {}
 	set todo $top
 	while {[llength $todo]} {
@@ -493,6 +493,34 @@ check "it is built from stock Tk widgets in the classic theme" {
 check "closing it is just closing it" {
 	destroy .knowledge
 	winfo exists .knowledge
+} 0
+
+# --- the items window ------------------------------------------------------
+
+# Like the other two, it opens before there is a character and says nothing
+# rather than "Your pack is empty", which would be a different claim.
+check "the items window opens without a character" {
+	items_window
+	list [winfo exists .items] [.items.f.body.inv.list.t get 1.0 end-1c]
+} "1 {}"
+
+check "it is built from stock Tk widgets in the classic theme" {
+	stock_widgets_only .items
+} "classic {}"
+
+# Every button and menu entry that acts on an item is off until one is chosen.
+check "with nothing chosen, nothing can be done" {
+	set off {}
+	foreach b {wear takeoff drop inspect} {
+		lappend off [.items.f.btns.$b instate disabled]
+	}
+	list [items_can] [lsort -unique $off]
+} "{0 0 0 0 0} 1"
+
+check "closing it is just closing it" {
+	destroy .items
+	items_refresh
+	winfo exists .items
 } 0
 
 # --- the gear ---------------------------------------------------------------
@@ -736,6 +764,27 @@ proc second_pass {} {
 			[expr {$capacity > 0}]
 	} "1 1 1"
 
+	# A row's tenth field is its symbol's colour, in the map's own form, or
+	# empty for an empty slot.
+	check "a gear row carries its symbol's colour" {
+		set bad {}
+		foreach view {inventory equipment} {
+			foreach row [angband_gear $view] {
+				set colour [lindex $row 9]
+				if {[llength $row] != 10} { lappend bad "$view: [llength $row]" }
+				if {$colour ne "" && ![regexp {^#[0-9a-f]{6}$} $colour]} {
+					lappend bad "$view: $colour"
+				}
+			}
+		}
+		set bad
+	} ""
+
+	check "the pack's slots come back as used and size" {
+		lassign [angband_gear slots] used size
+		list [expr {$used >= 0}] [expr {$size > 0 && $used <= $size}]
+	} "1 1"
+
 	check "an item that is not there is refused" {
 		catch {angband_gear info inventory 999} e
 		set e
@@ -749,8 +798,8 @@ proc second_pass {} {
 	check "and a word that is not a subcommand is refused by name" {
 		catch {angband_gear sideways} e
 		set e
-	} "expected inventory, equipment, quiver, burden, info, lore, fits,\
- inscribe, wield, takeoff or drop, not: sideways"
+	} "expected inventory, equipment, quiver, slots, burden, info, lore,\
+ fits, inscribe, wield, takeoff or drop, not: sideways"
 
 	check "and a view that does not exist is refused by name" {
 		catch {angband_gear info pockets 0} e

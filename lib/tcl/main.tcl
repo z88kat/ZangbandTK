@@ -194,8 +194,8 @@ menu .menubar.views -tearoff 0
 source [file join [file dirname [info script]] errorInfo.tcl]
 source [file join [file dirname [info script]] debug.tcl]
 
-# Then the design system, which only the items window is still drawn with.  The
-# character sheet and the knowledge browser no longer are: see decision 18.
+# Then the design system, which no window is drawn with any more: all three
+# were rebuilt in stock Tk (decision 18).  It goes next, with its fonts.
 source [file join [file dirname [info script]] classical.tcl]
 source [file join [file dirname [info script]] character.tcl]
 source [file join [file dirname [info script]] knowledge.tcl]

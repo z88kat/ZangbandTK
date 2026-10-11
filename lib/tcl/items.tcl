@@ -1,32 +1,33 @@
 # The Items window: the paper doll and the pack.
 #
-# Two panes of one thing.  On the left, twelve equipment slots ranged around a
-# pen-and-ink figure, each tied to it by a leader line; on the right, the pack,
-# in the game's own order with the game's own selection letters.  Items move
-# between them by dragging, and the keyboard commands keep working throughout.
-# The spec is in .claude/plans/paper_doll, and it is drawn to the same
-# Classical design system as the character sheet.
+# Two views of one thing.  On the left, the equipment slots ranged around a
+# figure, each tied to it by a dotted leader; on the right, the pack, in the
+# game's own order with the game's own letters.  Items move between them by
+# dragging, by the buttons and by the letter keys, and the keyboard commands
+# keep working throughout.
 #
-# Two things about it are worth knowing before reading the rest.
+# Decision 18 builds it from Tk's own widgets in Tk's classic theme, to the
+# handoff in .claude/plans/design_handoff_items_tk.  The doll is one canvas,
+# because a canvas is Tk's widget for drawing; the pack is a text widget used
+# as a list, because each row needs a coloured symbol on a black cell and a
+# listbox has one colour per row.
 #
-# The game stays authoritative.  Nothing here moves an item: a drop pushes the
-# command the keyboard would have pushed and then waits to be told what
-# happened, so the turn cost, the curse checks and the messages are the game's.
-# That is why the message line reports only what a re-read confirms.
-#
-# The figure is vector line art, not a bitmap.  Its path data is the design's,
-# transcribed from the handoff's SVG and flattened onto a canvas by
-# items_flatten below, so a change to the drawing is a change to a string.
+# The game stays authoritative.  Nothing here moves an item: every action
+# pushes the command the keyboard would have pushed and then waits to be told
+# what happened, so the turn cost, the curse checks and the messages are the
+# game's.  That is why the message line reports only what a re-read confirms.
 
-set items(dash) "—"
+set items(dir) [file dirname [info script]]
 set items(message) ""
-set items(burden) ""
 set items(inscription) ""
 set items(sel) {}
+set items(selname) ""
 set items(expect) {}
 set items(expectafter) ""
 set items(drag) {}
 set items(lit) {}
+set items(packrows) {}
+foreach v {sel worn packcount packweight burden capacity} { set items(v,$v) "" }
 
 # When to read again.  Equipment and inventory for the obvious reason, stats
 # because carrying capacity is strength, and the two birth events because the
@@ -38,213 +39,39 @@ set items(events) {
 # --- the slots ----------------------------------------------------------------
 #
 # The design's order, by slot type: head down the left, light down the right,
-# so the leader lines meet the figure where the gear would be.  This is a
-# preference and not a requirement -- a body with different slots, which
-# shapechange can produce, keeps the game's own order for whatever is left
-# over rather than losing a row.
+# so the leaders meet the figure where the gear would be.  This is a preference
+# and not a requirement -- a body with different slots, which shapechange can
+# produce, keeps the game's own order for whatever is left over rather than
+# losing a row.
 set items(order,left)  {hat amulet weapon bow ring boots}
 set items(order,right) {light body_armor cloak shield ring gloves}
 
-# What to call a slot.  The game's own body-part names are "weapon", "shooting"
-# and "back", which are the places rather than the things; these are the
-# design's words for them.  Anything unlisted falls back to the body part,
-# which is always right if not always graceful.
+# What to call a slot, in the design's words.  Anything unlisted falls back to
+# the game's body part, which is always right if not always graceful.
 foreach {type text} {
-    weapon      "Wielding"
-    bow         "Shooting"
-    amulet      "Neck"
-    light       "Light"
-    body_armor  "Body"
-    cloak       "Cloak"
-    shield      "Shield arm"
-    hat         "Head"
-    gloves      "Hands"
-    boots       "Feet"
+    hat Helm  amulet Amulet  weapon Weapon  bow Bow  ring Ring  boots Boots
+    light Light  body_armor Body  cloak Cloak  shield Shield  gloves Gloves
 } { set items(label,$type) $text }
 
-# What an *empty* slot shows.  Not the game's business: an empty slot has no
-# object and so no symbol, but a doll with nine blank boxes reads as broken
-# rather than as unequipped.  These are the symbols the game uses for the kinds
-# of thing that go there.
+# What an *empty* slot shows.  An empty slot has no object and so no symbol,
+# but a doll of blank wells reads as broken rather than as unequipped, so it
+# shows the symbol the game uses for the kind of thing that goes there.
 foreach {type text} {
-    weapon      "|"
-    bow         "\}"
-    ring        "="
-    amulet      "\""
-    light       "~"
-    body_armor  "\["
-    cloak       "("
-    shield      ")"
-    hat         "\]"
-    gloves      "\]"
-    boots       "\]"
+    hat "\]"  amulet "\""  weapon "|"  bow "\}"  ring "="  boots "\]"
+    light "~"  body_armor "("  cloak "("  shield ")"  gloves "\]"
 } { set items(slotglyph,$type) $text }
 
-# --- the figure ---------------------------------------------------------------
-#
-# The handoff's SVG, path by path, in document order: the cloak behind, the
-# body over it, the hatching, then the contours.  Two line weights and two
-# fills, as the design says and no more -- the hatching down both cloak edges
-# is what makes it read as pen and ink rather than as an outline, and is not
-# optional.
-#
-# {kind colour width path}
-set items(figure,paths) {
-    {fill   #eae7e7 0   {M46 82 q-20 40 -25 104 -4 54 -4 96 l28 3 q-3 -66 5 -116 7 -50 14 -80 z}}
-    {fill   #eae7e7 0   {M94 82 q20 40 25 104 4 54 4 96 l-28 3 q3 -66 -5 -116 -7 -50 -14 -80 z}}
-    {fill   #f8f4f4 0   {M70 15 q20 0 20 25 0 26 -20 28 -20 -2 -20 -28 0 -25 20 -25 z}}
-    {fill   #f8f4f4 0   {M50 84 q20 -12 40 0 l9 30 -3 40 h-52 l-3 -40 z}}
-    {fill   #f8f4f4 0   {M47 154 h46 l7 42 h-60 z}}
-    {fill   #f8f4f4 0   {M56 196 h11 l1 92 h-13 z M73 196 h11 l1 92 h-13 z}}
-    {stroke #7d7979 1   {M42 118 l-11 24 M40 146 l-12 24 M38 176 l-13 24 M37 208 l-13 22 M36 240 l-12 20 M36 268 l-12 16}}
-    {stroke #7d7979 1   {M98 118 l11 24 M100 146 l12 24 M102 176 l13 24 M103 208 l13 22 M104 240 l12 20 M104 268 l12 16}}
-    {stroke #2d2b2b 1.6 {M46 82 q-20 40 -25 104 -4 54 -4 96 l28 3}}
-    {stroke #2d2b2b 1.6 {M94 82 q20 40 25 104 4 54 4 96 l-28 3}}
-    {stroke #2d2b2b 1.6 {M50 38 q0 -27 20 -27 20 0 20 27}}
-    {stroke #2d2b2b 1.6 {M50 38 q-4 18 2 26 M90 38 q4 18 -2 26}}
-    {stroke #2d2b2b 1.6 {M50 42 q4 26 20 26 16 0 20 -26}}
-    {stroke #2d2b2b 1.6 {M58 44 q4 -4 9 0 M73 44 q5 -4 9 0}}
-    {stroke #2d2b2b 1.6 {M70 50 v8 M63 62 q7 5 14 0}}
-    {stroke #2d2b2b 1.6 {M60 68 q10 7 20 0 l12 7 q11 5 13 21 l-4 44}}
-    {stroke #2d2b2b 1.6 {M60 68 l-12 7 q-11 5 -13 21 l4 44}}
-    {stroke #2d2b2b 1.6 {M39 140 q-4 14 4 19 9 4 12 -6 l2 -14}}
-    {stroke #2d2b2b 1.6 {M101 140 q4 14 -4 19 -9 4 -12 -6 l-2 -14}}
-    {stroke #7d7979 1   {M43 112 q27 10 54 0}}
-    {stroke #7d7979 1   {M70 78 v72}}
-    {stroke #2d2b2b 1.6 {M44 150 h52 v14 h-52 z}}
-    {stroke #7d7979 1   {M63 150 h14 v14 h-14 z}}
-    {stroke #2d2b2b 1.6 {M46 164 l-5 32 q29 9 58 0 l-5 -32}}
-    {stroke #2d2b2b 1.6 {M55 196 l1 82 M69 198 v80 M84 196 l-1 82}}
-    {stroke #7d7979 1   {M58 226 q12 5 24 0}}
-    {stroke #2d2b2b 1.6 {M56 278 q7 4 13 0 M71 278 q6 4 13 0}}
-    {stroke #2d2b2b 1.6 {M56 278 l-4 24 q10 6 21 2 l-3 -26 M84 278 l4 24 q-10 6 -21 2 l3 -26}}
-    {stroke #7d7979 1   {M52 302 h22 M66 302 h22}}
-}
-
-# The design's viewBox and its rendered size.
-set items(figure,w) 140
-set items(figure,h) 330
-set items(figure,scale) 0.843
-
-# An SVG path to a list of polylines.
-#
-# Only the commands the figure uses: absolute M, relative l h v q, and z.  A
-# curve becomes eight segments, which at this size is smooth and is a tenth of
-# the canvas items that Tk's own -smooth would cost.
-#
-# Tk has no path item, so this is the whole of the SVG support there is going
-# to be; a path with a command not listed here silently loses it, which is why
-# the figure data above is transcribed rather than fetched.
-proc items_flatten {d} {
-    set subpaths {}
-    set pts {}
-    set x 0.0
-    set y 0.0
-    set startx 0.0
-    set starty 0.0
-    set cmd ""
-
-    set toks [regexp -all -inline {[A-Za-z]|-?[0-9]*\.?[0-9]+} $d]
-    set n [llength $toks]
-    set i 0
-
-    while {$i < $n} {
-        set tok [lindex $toks $i]
-
-        if {[regexp {^[A-Za-z]$} $tok]} {
-            set cmd $tok
-            incr i
-            if {$cmd eq "z" || $cmd eq "Z"} {
-                if {[llength $pts] >= 4} {
-                    lappend pts $startx $starty
-                    lappend subpaths $pts
-                }
-                set pts {}
-                set x $startx
-                set y $starty
-            }
-            continue
-        }
-
-        switch -exact -- $cmd {
-            M {
-                if {[llength $pts] >= 4} { lappend subpaths $pts }
-                set x [lindex $toks $i]
-                set y [lindex $toks [expr {$i + 1}]]
-                incr i 2
-                set pts [list $x $y]
-                set startx $x
-                set starty $y
-                # A pair after an M is a lineto, in SVG and here.
-                set cmd L
-            }
-            L {
-                set x [lindex $toks $i]
-                set y [lindex $toks [expr {$i + 1}]]
-                incr i 2
-                lappend pts $x $y
-            }
-            l {
-                set x [expr {$x + [lindex $toks $i]}]
-                set y [expr {$y + [lindex $toks [expr {$i + 1}]]}]
-                incr i 2
-                lappend pts $x $y
-            }
-            h { set x [expr {$x + [lindex $toks $i]}] ; incr i ; lappend pts $x $y }
-            v { set y [expr {$y + [lindex $toks $i]}] ; incr i ; lappend pts $x $y }
-            q {
-                set cx [expr {$x + [lindex $toks $i]}]
-                set cy [expr {$y + [lindex $toks [expr {$i + 1}]]}]
-                set ex [expr {$x + [lindex $toks [expr {$i + 2}]]}]
-                set ey [expr {$y + [lindex $toks [expr {$i + 3}]]}]
-                incr i 4
-                for {set s 1} {$s <= 8} {incr s} {
-                    set t [expr {$s / 8.0}]
-                    set u [expr {1.0 - $t}]
-                    lappend pts \
-                        [expr {$u * $u * $x + 2 * $u * $t * $cx + $t * $t * $ex}] \
-                        [expr {$u * $u * $y + 2 * $u * $t * $cy + $t * $t * $ey}]
-                }
-                set x $ex
-                set y $ey
-            }
-            default { incr i }
-        }
-    }
-
-    if {[llength $pts] >= 4} { lappend subpaths $pts }
-    return $subpaths
-}
-
-proc items_figure_draw {c} {
-    global items
-
-    set scale $items(figure,scale)
-    $c delete all
-
-    foreach spec $items(figure,paths) {
-        lassign $spec kind colour width d
-        foreach sub [items_flatten $d] {
-            set coords {}
-            foreach {px py} $sub {
-                lappend coords [expr {$px * $scale}] [expr {$py * $scale}]
-            }
-            if {$kind eq "fill"} {
-                if {[llength $coords] >= 6} {
-                    $c create polygon {*}$coords -fill $colour -outline {}
-                }
-            } elseif {[llength $coords] >= 4} {
-                $c create line {*}$coords -fill $colour -width $width \
-                    -capstyle round -joinstyle round
-            }
-        }
-    }
+# The doll panel's measurements, in pixels: the design's.  The labels are a
+# fixed width so that the wells line up in two straight columns.
+array set items {
+    doll,bd 2  doll,padx 14  doll,pady 10
+    doll,label 52  doll,gap 6  doll,well 40  doll,row 44  doll,leader 24
+    doll,spritew 120  doll,spriteh 240
 }
 
 # --- reading the game ----------------------------------------------------------
 
-# Tenths of a pound, which is how the game stores every weight, as the one
-# decimal the design asks for.
+# Tenths of a pound, which is how the game stores every weight, to one decimal.
 proc items_weight {tenths} {
     if {![string is integer -strict $tenths]} { return "0.0" }
     return [format "%d.%d" [expr {$tenths / 10}] [expr {$tenths % 10}]]
@@ -255,6 +82,13 @@ proc items_gear {what args} {
     return $result
 }
 
+proc items_row {view index} {
+    foreach row [items_gear $view] {
+        if {[lindex $row 0] == $index} { return $row }
+    }
+    return {}
+}
+
 # The slots in the order the design draws them: a template of types, filled
 # from the body the character actually has, with anything unmatched appended.
 # Returns two lists of rows, left and right.
@@ -263,7 +97,6 @@ proc items_arrange {rows} {
 
     set pool $rows
     set out {}
-
     foreach side {left right} {
         set column {}
         foreach type $items(order,$side) {
@@ -292,7 +125,6 @@ proc items_arrange {rows} {
             lappend right $row
         }
     }
-
     return [list $left $right]
 }
 
@@ -356,125 +188,202 @@ proc items_expect_clear {} {
     }
 }
 
-# --- pieces --------------------------------------------------------------------
+# Every command goes through here, so a refusal from the bridge -- the game is
+# mid-prompt, most often -- says so in the message line instead of raising a
+# background error nobody sees.
+proc items_do {argv} {
+    global items
 
-# A label, a hairline, a value: the worn-weight and carried-weight rules under
-# each pane.  The same shape as the title strip, one size down, which is what
-# makes the two read as the same document.
-proc items_rule {parent name} {
-    set f $parent.u$name
-    frame $f -bg [classical::c bg]
-    pack [classical::hairline $f.over] -fill x -side top
-
-    set row $f.row
-    frame $row -bg [classical::c bg]
-    pack $row -fill x -pady [classical::pad 2 1]
-
-    label $row.l -textvariable items(v,$name,label) \
-        -font [classical::f footer] -bg [classical::c bg] \
-        -fg [classical::c neutral-700]
-    label $row.v -textvariable items(v,$name,value) \
-        -font [classical::f footer] -bg [classical::c bg] \
-        -fg [classical::c text]
-    classical::hairline $row.rule
-    pack $row.l -side left
-    pack $row.v -side right
-    pack $row.rule -side left -fill x -expand 1 -padx [classical::sp 3]
-
-    return $f
+    if {[catch {angband_gear {*}$argv} err]} {
+        items_expect_clear
+        set items(message) $err
+        return 0
+    }
+    return 1
 }
 
-# A scrolling area for the pack.
-#
-# The design gives the pane no scrollbar because a web page grows; a window
-# cannot, and twenty-three items at forty pixels is taller than any sensible
-# window.  So the list scrolls and nothing else does.
-proc items_scroller {parent name} {
-    set f $parent.s$name
-    frame $f -bg [classical::c bg]
+# --- the doll ------------------------------------------------------------------
 
-    canvas $f.c -bg [classical::c bg] -highlightthickness 0 -bd 0 \
-        -yscrollcommand [list $f.sb set]
-    ttk::scrollbar $f.sb -orient vertical -command [list $f.c yview]
-    pack $f.sb -side right -fill y
-    pack $f.c -side left -fill both -expand 1
+proc items_doll_canvas {} { return .items.f.body.eq.doll }
 
-    frame $f.c.inner -bg [classical::c bg]
-    $f.c create window 0 0 -anchor nw -window $f.c.inner -tags inner
+# The slots are rebuilt only when the body changes, which is almost never --
+# but shapechange does change it, and a doll that kept twelve slots for a body
+# with four would be showing gear the character does not have.
+proc items_build_slots {rows} {
+    global items
 
-    bind $f.c.inner <Configure> [list items_scroller_fit $f]
-    bind $f.c <Configure> [list items_scroller_fit $f]
-    # Braced, not [list]: the %D has to survive until the event, and a list
-    # built here would have expr fold it at bind time.
-    bind $f.c <MouseWheel> {%W yview scroll [expr {-(%D)}] units}
+    set c [items_doll_canvas]
+    $c delete slot
+    array unset items well,*
 
-    return $f
+    lassign [items_arrange $rows] left right
+    set n [expr {max(6, [llength $left], [llength $right])}]
+
+    set o $items(doll,bd)
+    set label $items(doll,label)
+    set gap $items(doll,gap)
+    set well $items(doll,well)
+    set leader $items(doll,leader)
+    set height [expr {$n * $items(doll,row) - ($items(doll,row) - $well)}]
+
+    # The sprite, centred between the two columns of wells.
+    set sx1 [expr {$o + $items(doll,padx) + $label + $gap + $well + $leader}]
+    set sx2 [expr {$sx1 + $items(doll,spritew)}]
+    set width [expr {2 * $items(doll,padx) + 2 * ($label + $gap + $well + $leader)
+        + $items(doll,spritew)}]
+    $c configure -width $width -height [expr {$height + 2 * $items(doll,pady)}]
+    $c coords sprite [expr {($sx1 + $sx2) / 2}] \
+        [expr {$o + $items(doll,pady) + $height / 2}]
+
+    foreach {side column} [list left $left right $right] {
+        set r 0
+        foreach row $column {
+            lassign $row slot
+            set y1 [expr {$o + $items(doll,pady) + $r * $items(doll,row)}]
+            set y2 [expr {$y1 + $well}]
+            set cy [expr {$y1 + $well / 2}]
+
+            if {$side eq "left"} {
+                set x1 [expr {$o + $items(doll,padx) + $label + $gap}]
+                set x2 [expr {$x1 + $well}]
+                set lx [expr {$x1 - $gap}]
+                set anchor e
+                set lead [list $x2 $cy $sx1 $cy]
+            } else {
+                set x1 [expr {$sx2 + $leader}]
+                set x2 [expr {$x1 + $well}]
+                set lx [expr {$x2 + $gap}]
+                set anchor w
+                set lead [list $sx2 $cy $x1 $cy]
+            }
+
+            $c create line {*}$lead -fill #606060 -dash . -tags slot
+            $c create rectangle $x1 $y1 $x2 $y2 -fill black -outline #606060 \
+                -tags [list slot s$slot]
+            $c create text [expr {($x1 + $x2) / 2}] $cy -anchor center \
+                -font {Courier 18 bold} -tags [list slot s$slot g$slot]
+            $c create text $lx $cy -anchor $anchor -font {Helvetica 12} \
+                -fill #c0c0c0 -tags [list slot s$slot l$slot]
+            set items(well,$slot) [list $x1 $y1 $x2 $y2]
+
+            $c bind s$slot <ButtonPress-1> \
+                [list items_press $c [list equipment $slot] %X %Y]
+            $c bind s$slot <Double-1> [list items_takeoff_slot $slot]
+            incr r
+        }
+    }
+    $c raise selring
+    $c raise hover
 }
 
-proc items_scroller_fit {f} {
-    if {![winfo exists $f.c]} return
-    $f.c itemconfigure inner -width [winfo width $f.c]
-    $f.c configure -scrollregion [$f.c bbox all]
-}
+proc items_refresh_slots {} {
+    global items
 
-# One equipment slot: a leader line, a glyph box, a label and a name.
-#
-# `side` is which column it is in, and the row is built mirrored for the left
-# one so that the leader lines all point inward at the figure.  The connector
-# expands, which is what keeps it visible at every width -- it is the line that
-# says this box belongs to that shoulder.
-proc items_slotrow {parent name side} {
-    set f $parent.r$name
-    frame $f -bg [classical::c bg] -bd 0 -highlightthickness 0
-
-    set conn $f.conn
-    frame $conn -height 1 -bg [classical::c divider] -bd 0 -highlightthickness 0
-
-    set box $f.box
-    frame $box -width 46 -height 46 -bg [classical::c bg] \
-        -bd 0 -highlightthickness 1 \
-        -highlightbackground [classical::c neutral-400]
-    pack propagate $box 0
-    label $box.g -textvariable items(v,$name,glyph) \
-        -font [classical::f glyph] -bg [classical::c bg] \
-        -fg [classical::c accent-700]
-    pack $box.g -expand 1
-
-    set text $f.text
-    frame $text -bg [classical::c bg]
-    set anchor [expr {$side eq "left" ? "e" : "w"}]
-    label $text.l -textvariable items(v,$name,label) -font [classical::f tiny] \
-        -bg [classical::c bg] -fg [classical::c neutral-600] -anchor $anchor
-    label $text.n -textvariable items(v,$name,name) -font [classical::f label] \
-        -bg [classical::c bg] -fg [classical::c text] -anchor $anchor \
-        -justify [expr {$side eq "left" ? "right" : "left"}] -wraplength 118
-    pack $text.l $text.n -fill x
-
-    # The 118 is the design's flex basis for this block, and it is fixed
-    # rather than followed from the row's real width.  Both halves of that
-    # matter.
-    #
-    # Fixed, because a Tk label with no wraplength asks for the width of its
-    # text in one line, and twelve equipment names asking that is a pane that
-    # wants two thousand pixels -- grid gives a column its requested width
-    # before it shares out what is left, so the other pane goes off the side
-    # of the window.
-    #
-    # Not followed, because a wraplength set from the widget's own width is a
-    # ratchet: wider block, wider wraplength, wider request, wider block.  The
-    # first version of this did exactly that and settled at nothing.
-
-    if {$side eq "left"} {
-        pack $conn -side right -fill x -expand 1 -padx [classical::pad 2 1]
-        pack $box -side right
-        pack $text -side right -fill x -expand 1 -padx [classical::pad 1 2]
-    } else {
-        pack $conn -side left -fill x -expand 1 -padx [classical::pad 1 2]
-        pack $box -side left
-        pack $text -side left -fill x -expand 1 -padx [classical::pad 2 1]
+    set rows [items_gear equipment]
+    set shape {}
+    foreach row $rows { lappend shape [lindex $row 7] }
+    if {![info exists items(shape)] || $items(shape) ne $shape} {
+        set items(shape) $shape
+        items_build_slots $rows
     }
 
-    return $f
+    set c [items_doll_canvas]
+    set worn 0
+    foreach row $rows {
+        lassign $row slot label name mention number weight glyph type part colour
+        incr worn $weight
+
+        $c itemconfigure l$slot -text [expr {[info exists items(label,$type)]
+            ? $items(label,$type) : [string totitle $part]}]
+        if {$name eq ""} {
+            $c itemconfigure g$slot -fill #3a3a3a -text [expr {
+                [info exists items(slotglyph,$type)] ? $items(slotglyph,$type) : "."}]
+        } else {
+            $c itemconfigure g$slot -text $glyph \
+                -fill [expr {$colour ne "" ? $colour : "white"}]
+        }
+    }
+
+    # The worn weight is the sum of the slots, which is not a number the game
+    # keeps: total_weight counts the pack too.
+    set items(v,worn) [expr {[llength $rows] ? "[items_weight $worn] lb" : ""}]
+}
+
+# --- the pack ------------------------------------------------------------------
+
+proc items_pack_text {} { return .items.f.body.inv.list.t }
+
+proc items_refresh_pack {} {
+    global items
+
+    set t [items_pack_text]
+    $t configure -state normal
+    $t delete 1.0 end
+
+    # No character is not the same as an empty pack, and says nothing.
+    set have [expr {![catch {angband_gear inventory} rows]}]
+    if {!$have} { set rows {} }
+    set items(packrows) $rows
+    set carried 0
+
+    if {$have && ![llength $rows]} {
+        $t insert end "Your pack is empty." empty
+    }
+    foreach row $rows {
+        lassign $row index label name mention number weight glyph type part colour
+        incr carried $weight
+        if {$colour eq ""} { set colour white }
+        $t tag configure fg$colour -foreground $colour
+        $t tag raise fg$colour
+        $t insert end "$label)\t" {} " $glyph " [list glyph fg$colour] \
+            "\t$name\t[items_weight $weight] lb\n" {}
+    }
+    $t tag raise glyph
+    $t configure -state disabled
+
+    set n [llength $rows]
+    lassign [items_gear slots] used size
+    set items(v,packcount) [expr {$used eq "" ? ""
+        : "$n [expr {$n == 1 ? {item} : {items}}], $used of $size slots"}]
+    set items(v,packweight) [expr {$have ? "[items_weight $carried] lb" : ""}]
+}
+
+# The weight column is a right-aligned tab at the far edge, which moves when
+# the list is resized.
+proc items_pack_tabs {} {
+    set t [items_pack_text]
+    if {![winfo exists $t]} return
+    set cw [font measure {Courier 12} 0]
+    set inset [expr {2 * ([$t cget -padx] + [$t cget -borderwidth]
+        + [$t cget -highlightthickness]) + 4}]
+    set right [expr {max(12 * $cw, [winfo width $t] - $inset)}]
+    $t configure -tabs [list [expr {3 * $cw}] [expr {7 * $cw}] $right right]
+}
+
+proc items_refresh_burden {} {
+    global items
+
+    set b [items_gear burden]
+    set bar .items.f.tools.burden
+    if {[llength $b] != 3} {
+        set items(v,burden) ""
+        set items(v,capacity) ""
+        $bar configure -value 0
+        return
+    }
+
+    # Green until speed starts to suffer, gold past it -- which is the line the
+    # game draws, at half of what can be carried at all.
+    lassign $b carried slow capacity
+    set items(v,burden) "[items_weight $carried] / [items_weight $slow] lb"
+    set items(v,capacity) "Capacity [items_weight $capacity] lb"
+    $bar configure -maximum [expr {max(1, $capacity)}] \
+        -value [expr {min($carried, $capacity)}]
+    set colour [expr {$carried > $slow ? "#c09020" : "#38a038"}]
+    if {![info exists items(burdencolour)] || $items(burdencolour) ne $colour} {
+        set items(burdencolour) $colour
+        ttk::style configure Burden.Horizontal.TProgressbar -background $colour
+    }
 }
 
 # --- painting ------------------------------------------------------------------
@@ -487,255 +396,275 @@ proc items_refresh {} {
     items_refresh_slots
     items_refresh_pack
     items_refresh_burden
+
+    # A selection is a position, and positions move when the gear does: if the
+    # thing at that position is not the thing that was chosen, nothing is.
+    if {[llength $items(sel)]} {
+        if {[lindex [items_row {*}$items(sel)] 2] ne $items(selname)} {
+            items_select_none
+        }
+    }
+    items_paint_selection
+    items_actions
     items_expect_settle
 }
 
-# The slot rows are rebuilt only when the body changes, which is almost never
-# -- but shapechange does change it, and a window that kept twelve rows for a
-# body with four would be showing gear the character does not have.
-proc items_refresh_slots {} {
+# Which item is chosen: the yellow ring on a slot, or the raised band on a row.
+proc items_paint_selection {} {
     global items
 
-    set rows [items_gear equipment]
-    set shape {}
-    foreach row $rows { lappend shape [lindex $row 7] }
+    if {![winfo exists .items]} return
+    set c [items_doll_canvas]
+    set t [items_pack_text]
 
-    if {![info exists items(shape)] || $items(shape) ne $shape} {
-        set items(shape) $shape
-        items_build_slots $rows
+    lassign $items(sel) view index
+    if {$view eq "equipment" && [info exists items(well,$index)]} {
+        lassign $items(well,$index) x1 y1 x2 y2
+        $c coords selring [expr {$x1 - 2}] [expr {$y1 - 2}] \
+            [expr {$x2 + 2}] [expr {$y2 + 2}]
+        $c itemconfigure selring -state normal
+    } else {
+        $c itemconfigure selring -state hidden
     }
 
-    foreach row $rows {
-        lassign $row slot label name mention number weight glyph type part
-
-        set key s$slot
-        if {![winfo exists .items.card.body.eq.grid.r$key]} continue
-
-        if {[info exists items(label,$type)]} {
-            set items(v,$key,label) [classical::tracked \
-                [string toupper $items(label,$type)]]
-        } else {
-            set items(v,$key,label) [classical::tracked [string toupper $part]]
-        }
-
-        if {$name eq ""} {
-            set items(v,$key,name) $items(dash)
-            set items(v,$key,glyph) [expr {[info exists items(slotglyph,$type)]
-                ? $items(slotglyph,$type) : "."}]
-            .items.card.body.eq.grid.r$key.box.g configure \
-                -fg [classical::c neutral-400]
-        } else {
-            set items(v,$key,name) $name
-            set items(v,$key,glyph) $glyph
-            .items.card.body.eq.grid.r$key.box.g configure \
-                -fg [classical::c accent-700]
+    $t tag remove chosen 1.0 end
+    if {$view eq "inventory"} {
+        set i 0
+        foreach row $items(packrows) {
+            if {[lindex $row 0] == $index} {
+                set line [expr {$i + 1}]
+                $t tag add chosen $line.0 "$line.0 lineend + 1 char"
+                $t see $line.0
+                break
+            }
+            incr i
         }
     }
-
-    # The worn weight is the sum of the slots, which is not a number the game
-    # keeps: total_weight counts the pack too.
-    set worn 0
-    foreach row $rows { incr worn [lindex $row 5] }
-    set items(v,worn,label) "Worn weight"
-    set items(v,worn,value) "[items_weight $worn] lb"
 }
 
-proc items_build_slots {rows} {
+proc items_select {view index} {
     global items
 
-    set grid .items.card.body.eq.grid
-    foreach child [winfo children $grid] {
-        if {$child ne "$grid.figure"} { destroy $child }
-    }
-    # Only this grid's targets.  A blanket unset takes the pack pane's
-    # registration with it, and the take-off half of the interaction then
-    # silently does nothing.
-    array unset items target,$grid.*
-    set items(lit) {}
+    set row [items_row $view $index]
+    set items(sel) [list $view $index]
+    set items(selname) [lindex $row 2]
+    set items(v,sel) [lindex $row 2]
 
-    lassign [items_arrange $rows] left right
-
-    foreach {side column} [list left $left right $right] {
-        set col [expr {$side eq "left" ? 0 : 2}]
-        set r 0
-        foreach row $column {
-            set slot [lindex $row 0]
-            set f [items_slotrow $grid s$slot $side]
-            grid $f -row $r -column $col -sticky ew \
-                -pady [classical::pad 1 1]
-            set items(target,$f) [list slot $slot]
-            items_draggable $f [list equipment $slot]
-            incr r
-        }
-    }
-
-    grid $grid.figure -row 0 -column 1 -rowspan 6 -padx [classical::sp 3]
-    grid columnconfigure $grid 0 -weight 1 -minsize 148
-    grid columnconfigure $grid 2 -weight 1 -minsize 148
-    grid columnconfigure $grid 1 -weight 0
-}
-
-proc items_refresh_pack {} {
-    global items
-
-    set inner .items.card.body.pack.spack.c.inner
-    foreach child [winfo children $inner] { destroy $child }
-    array unset items cells,*
-
-    set rows [items_gear inventory]
-
-    if {![llength $rows]} {
-        label $inner.empty -text "Your pack is empty." \
-            -font [classical::f note] -bg [classical::c bg] \
-            -fg [classical::c neutral-600] -anchor w
-        grid $inner.empty -row 0 -column 0 -columnspan 4 -sticky w \
-            -pady [classical::sp 2]
-        set items(v,carried,label) "Nothing carried"
-        set items(v,carried,value) "0.0 lb"
-        return
-    }
-
-    set carried 0
-    set r 0
-    foreach row $rows {
-        lassign $row index label name mention number weight glyph type part
-        incr carried $weight
-
-        set cells {}
-        lappend cells [label $inner.k$index -text "$label)" \
-            -font [classical::f footer] -bg [classical::c bg] \
-            -fg [classical::c neutral-600] -anchor w]
-        lappend cells [label $inner.g$index -text $glyph \
-            -font [classical::f glyphsm] -bg [classical::c bg] \
-            -fg [classical::c accent-700] -anchor w]
-        lappend cells [label $inner.n$index -text $name \
-            -font [classical::f item] -bg [classical::c bg] \
-            -fg [classical::c text] -anchor w -justify left -wraplength 320]
-        lappend cells [label $inner.w$index -text [items_weight $weight] \
-            -font [classical::f amount] -bg [classical::c bg] \
-            -fg [classical::c neutral-600] -anchor e]
-
-        set c 0
-        foreach cell $cells {
-            grid $cell -row $r -column $c -sticky ew \
-                -padx [expr {$c == 0 ? 0 : [classical::sp 3]}] -pady 5
-            incr c
-        }
-        grid [classical::hairline $inner.d$index] -row [expr {$r + 1}] \
-            -column 0 -columnspan 4 -sticky ew
-
-        set items(cells,$index) $cells
-        items_draggable_cells $cells [list inventory $index]
-        incr r 2
-    }
-
-    grid columnconfigure $inner 2 -weight 1
-
+    set info [items_gear info $view $index]
+    set items(inscription) [expr {[dict exists $info inscription]
+        ? [dict get $info inscription] : ""}]
     items_paint_selection
-
-    set items(v,carried,label) [expr {[llength $rows] == 1
-        ? "1 item" : "[llength $rows] items"}]
-    set items(v,carried,value) "[items_weight $carried] lb"
+    items_actions
 }
 
-proc items_refresh_burden {} {
+proc items_select_none {} {
+    global items
+    set items(sel) {}
+    set items(selname) ""
+    set items(v,sel) ""
+    set items(inscription) ""
+}
+
+# Up and down the pack with the keyboard.
+proc items_step {how} {
     global items
 
-    set b [items_gear burden]
-    if {[llength $b] != 3} {
-        set items(burden) ""
+    set n [llength $items(packrows)]
+    if {!$n} return
+    set at -1
+    lassign $items(sel) view index
+    if {$view eq "inventory"} {
+        set i 0
+        foreach row $items(packrows) {
+            if {[lindex $row 0] == $index} { set at $i ; break }
+            incr i
+        }
+    }
+    switch -- $how {
+        up    { set at [expr {$at <= 0 ? 0 : $at - 1}] }
+        down  { set at [expr {min($n - 1, $at + 1)}] }
+        first { set at 0 }
+        last  { set at [expr {$n - 1}] }
+    }
+    items_select inventory [lindex $items(packrows) $at 0]
+}
+
+# --- the commands --------------------------------------------------------------
+
+# What the selection allows: {wear takeoff drop inspect inscribe}, each 0 or 1.
+proc items_can {} {
+    global items
+
+    lassign $items(sel) view index
+    if {$view eq "" || $items(selname) eq ""} { return {0 0 0 0 0} }
+    if {$view eq "equipment"} { return {0 1 1 1 1} }
+    set fits [expr {[llength [items_gear fits inventory $index]] > 0}]
+    return [list $fits 0 1 1 1]
+}
+
+# Buttons and menu entries that do not apply to the selection are disabled.
+proc items_actions {} {
+    if {![winfo exists .items]} return
+    set w .items.f
+    set m .items.mb.items
+    foreach action {wear takeoff drop inspect inscribe} on [items_can] {
+        if {[winfo exists $w.btns.$action]} {
+            $w.btns.$action state [expr {$on ? "!disabled" : "disabled"}]
+        }
+        set state [expr {$on ? "normal" : "disabled"}]
+        switch $action {
+            inscribe {
+                $w.tools.inscribe state [expr {$on ? "!disabled" : "disabled"}]
+                $m entryconfigure "Inscribe" -state $state
+                $m entryconfigure "Uninscribe" -state $state
+            }
+            default { $m entryconfigure [items_menu_label $action] -state $state }
+        }
+    }
+}
+
+proc items_menu_label {action} {
+    return [dict get {
+        wear "Wear/Wield" takeoff "Take Off" drop "Drop" inspect "Inspect"
+    } $action]
+}
+
+proc items_wear {} {
+    global items
+    lassign [items_can] can
+    if {!$can} return
+    lassign $items(sel) view index
+    items_expect wield $items(selname)
+    items_do [list wield $view $index]
+}
+
+proc items_takeoff {} {
+    global items
+    lassign [items_can] - can
+    if {!$can} return
+    lassign $items(sel) view index
+    items_expect takeoff $items(selname)
+    items_do [list takeoff $view $index]
+}
+
+proc items_takeoff_slot {slot} {
+    items_select equipment $slot
+    items_takeoff
+}
+
+# Drop is the game's drop, which puts down one of a stack unless told more,
+# and the message says so rather than claiming the whole stack went.
+proc items_drop {} {
+    global items
+    lassign [items_can] - - can
+    if {!$can} return
+    lassign $items(sel) view index
+    set number [lindex [items_row $view $index] 4]
+    items_expect drop [expr {$number > 1
+        ? "one of your $items(selname)" : $items(selname)}]
+    items_do [list drop $view $index]
+}
+
+# What the game says about this very object: object_info, which reads the
+# runes the character has learned.
+proc items_inspect {} {
+    global items
+    lassign [items_can] - - - can
+    if {!$can} return
+    lassign $items(sel) view index
+    set row [items_row $view $index]
+    set lore [items_gear lore $view $index]
+    set items(message) "You examine $items(selname). It weighs\
+        [items_weight [lindex $row 5]] lb."
+    tk_messageBox -parent .items -icon info -title "Inspect" \
+        -message [string toupper $items(selname) 0 0] \
+        -detail [regsub -all {[ \t]+\n} [string trim $lore] "\n"]
+}
+
+proc items_inscribe {{text ""} {erase 0}} {
+    global items
+    lassign [items_can] - - - - can
+    if {!$can} {
+        set items(message) "Choose an item first."
         return
     }
-    lassign $b carried slow capacity
-    set items(burden) [format "burden %s / %s / %s lb" \
-        [items_weight $carried] [items_weight $slow] [items_weight $capacity]]
+    lassign $items(sel) view index
+    set note [expr {$erase ? "" : $items(inscription)}]
+    if {[items_do [list inscribe $view $index $note]]} {
+        set items(message) [expr {$note eq ""
+            ? "Uninscribed $items(selname)." : "Inscribed $items(selname)."}]
+    }
+}
+
+# The letter keys act on the selection when it allows them, and otherwise go to
+# the game as they always did, so with nothing chosen 'w' still asks the game's
+# own question.
+proc items_letter {action n s a} {
+    set i [lsearch {wear takeoff drop inspect} $action]
+    if {[lindex [items_can] $i]} {
+        items_$action
+    } else {
+        angband_key $n $s $a
+    }
+}
+
+proc items_help {} {
+    global items
+    set items(message) "Drag an item onto a slot to wear it and off again to\
+        stow it, or choose one and use the buttons."
 }
 
 # --- dragging ------------------------------------------------------------------
 #
 # Tk has no drag and drop, so this is the whole of it: press, motion, release,
-# and a borrowed toplevel for the thing being carried.  The rules are the
-# design's -- both directions, plus the ring-to-ring case -- and the answer to
-# "does this go here" is the game's, asked through angband_gear fits, so a slot
-# the window thinks is compatible is one the wear command will accept.
-#
-# Two compromises against the spec, both Tk's fault and neither hidden:
-# a refused target is drawn with a tinted background rather than a dashed
-# outline, because a Tk frame border cannot be dashed; and the ghost follows
-# the pointer at an offset, because winfo containing returns the topmost window
-# and a ghost under the pointer would be the only thing it ever found.
+# and a borrowed toplevel for the thing being carried.  The answer to "does
+# this go here" is the game's, asked through angband_gear fits, so a slot the
+# window thinks is compatible is one the wear command will accept.
 
-proc items_draggable {f source} {
-    items_draggable_cells [list $f {*}[items_descendants $f]] $source
-}
-
-proc items_descendants {w} {
-    set out {}
-    foreach child [winfo children $w] {
-        lappend out $child {*}[items_descendants $child]
-    }
-    return $out
-}
-
-proc items_draggable_cells {cells source} {
-    foreach w $cells {
-        $w configure -cursor hand2
-        bind $w <ButtonPress-1>   [list items_press $source %X %Y]
-        bind $w <B1-Motion>       [list items_motion %X %Y]
-        bind $w <ButtonRelease-1> [list items_release %X %Y]
-    }
-}
-
-proc items_press {source X Y} {
+proc items_press {w source X Y} {
     global items
 
     lassign $source view index
-
-    # An empty slot has nothing to pick up, and the design says so: no drag
-    # starts rather than a drag that can only fail.
-    if {$view eq "equipment"} {
-        set row [items_row equipment $index]
-        if {[lindex $row 2] eq ""} { set items(drag) {} ; return }
-    }
-
-    set items(drag) [list $view $index $X $Y 0]
     items_select $view $index
+    focus $w
+
+    # An empty slot has nothing to pick up: no drag starts rather than a drag
+    # that can only fail.
+    if {$items(selname) eq ""} { set items(drag) {} ; return }
+    set items(drag) [list $view $index $X $Y 0 $w]
 }
 
 proc items_motion {X Y} {
     global items
 
     if {![llength $items(drag)]} return
-    lassign $items(drag) view index x0 y0 started
+    lassign $items(drag) view index x0 y0 started w
 
     if {!$started} {
         if {abs($X - $x0) < 4 && abs($Y - $y0) < 4} return
         set row [items_row $view $index]
-        items_ghost_show [lindex $row 6] [lindex $row 2]
-        set items(drag) [list $view $index $x0 $y0 1]
+        items_ghost_show [lindex $row 6] [lindex $row 9]
+        lset items(drag) 4 1
     }
 
     items_ghost_move $X $Y
-    items_light [items_target $X $Y] $view $index
+    items_light [items_target $X $Y] $view $index $w
 }
 
 proc items_release {X Y} {
     global items
 
     if {![llength $items(drag)]} return
-    lassign $items(drag) view index x0 y0 started
+    lassign $items(drag) view index x0 y0 started w
 
     items_ghost_hide
-    items_light {} $view $index
+    items_light {} $view $index $w
     set items(drag) {}
     if {!$started} return
 
     set target [items_target $X $Y]
     if {![llength $target]} return
-
-    set row [items_row $view $index]
-    set name [lindex $row 2]
-    if {$name eq ""} return
+    set name $items(selname)
 
     switch -exact -- [lindex $target 0] {
         pack {
@@ -766,221 +695,167 @@ proc items_release {X Y} {
     }
 }
 
-# Every command goes through here, so a refusal from the bridge -- the game is
-# mid-prompt, most often -- says so in the message line instead of raising a
-# background error nobody sees.
-proc items_do {argv} {
+# The drop target under the pointer.
+#
+# Geometry, not winfo containing, which answers for the whole application: with
+# the main window stacked above this one every drop would land on the map, and
+# the thing nearest the pointer during a drag is the ghost.  The wells are
+# rectangles on one canvas and the pack is one widget, so ask them directly.
+proc items_target {X Y} {
     global items
 
-    if {[catch {angband_gear {*}$argv} err]} {
-        items_expect_clear
-        set items(message) $err
+    set c [items_doll_canvas]
+    set x [expr {$X - [winfo rootx $c]}]
+    set y [expr {$Y - [winfo rooty $c]}]
+    if {$x >= 0 && $y >= 0 && $x < [winfo width $c] && $y < [winfo height $c]} {
+        foreach key [array names items well,*] {
+            lassign $items($key) x1 y1 x2 y2
+            if {$x >= $x1 - 4 && $x <= $x2 + 4 && $y >= $y1 - 4 && $y <= $y2 + 4} {
+                return [list slot [string range $key 5 end]]
+            }
+        }
+        return {}
     }
-}
 
-proc items_row {view index} {
-    foreach row [items_gear $view] {
-        if {[lindex $row 0] == $index} { return $row }
+    set p .items.f.body.inv
+    set x [expr {$X - [winfo rootx $p]}]
+    set y [expr {$Y - [winfo rooty $p]}]
+    if {$x >= 0 && $y >= 0 && $x < [winfo width $p] && $y < [winfo height $p]} {
+        return [list pack]
     }
     return {}
 }
 
-# The drop target under the pointer.
-#
-# Geometry, not winfo containing.  The obvious implementation asks Tk what
-# window is at the pointer and walks up to a registered ancestor, and it is
-# wrong twice over: winfo containing answers for the whole application, so with
-# the main window stacked above this one every drop lands on the map canvas;
-# and the thing nearest the pointer during a drag is the ghost.  There are a
-# dozen targets and they are all rectangles, so this asks them directly.
-#
-# The smallest match wins, so a target inside another target still gets the
-# drop.
-proc items_target {X Y} {
-    global items
-
-    set best {}
-    set area 0
-
-    foreach key [array names items target,*] {
-        set w [string range $key 7 end]
-        if {![winfo exists $w] || ![winfo ismapped $w]} continue
-
-        set x [winfo rootx $w]
-        set y [winfo rooty $w]
-        set width [winfo width $w]
-        set height [winfo height $w]
-        if {$X < $x || $X >= $x + $width} continue
-        if {$Y < $y || $Y >= $y + $height} continue
-
-        set size [expr {$width * $height}]
-        if {$best eq "" || $size < $area} {
-            set best $items($key)
-            set area $size
-        }
-    }
-
-    return $best
-}
-
-# Light the hovered target, and only it.  A refused target still lights, which
-# is the design's point: the player should see that the slot was understood.
-proc items_light {target view index} {
+# Light the hovered target, and only it.  A refused target still lights, in
+# red, which is the design's point: the player should see that the slot was
+# understood and is saying no.
+proc items_light {target view index w} {
     global items
 
     if {$items(lit) eq $target} return
-    items_light_one $items(lit) none
     set items(lit) $target
+
+    set c [items_doll_canvas]
+    set t [items_pack_text]
+    $c itemconfigure hover -state hidden
+    $t configure -highlightbackground [ttk::style lookup . -background]
+    items_cursor $w ""
     if {![llength $target]} return
 
-    set ok 0
     switch -exact -- [lindex $target 0] {
-        pack { set ok [expr {$view eq "equipment"}] }
+        pack {
+            if {$view eq "equipment"} {
+                $t configure -highlightbackground black
+            } else {
+                items_cursor $w X_cursor
+            }
+        }
         slot {
+            set slot [lindex $target 1]
             set ok [expr {$view ne "equipment"
-                && [lindex $target 1] in [items_gear fits $view $index]}]
+                && $slot in [items_gear fits $view $index]}]
+            lassign $items(well,$slot) x1 y1 x2 y2
+            $c coords hover [expr {$x1 - 2}] [expr {$y1 - 2}] \
+                [expr {$x2 + 2}] [expr {$y2 + 2}]
+            $c itemconfigure hover -state normal \
+                -outline [expr {$ok ? "#ffff00" : "#ff0000"}]
+            if {!$ok} { items_cursor $w X_cursor }
         }
     }
-    items_light_one $target [expr {$ok ? "yes" : "no"}]
 }
 
-proc items_light_one {target state} {
-    if {![llength $target]} return
-
-    switch -exact -- $state {
-        yes  { set bg [classical::c accent-100] ; set edge [classical::c accent] }
-        no   { set bg [classical::c neutral-200] ; set edge [classical::c neutral-400] }
-        none {
-            # Back to whatever it was before the pointer arrived, which is not
-            # always the plain ground: a selected slot keeps its tint.
-            set bg [items_base_bg $target]
-            set edge [classical::c neutral-400]
-        }
-    }
-
-    if {[lindex $target 0] eq "pack"} {
-        set w .items.card.body.pack
-        if {[winfo exists $w]} {
-            $w configure -highlightbackground \
-                [expr {$state eq "none" ? [classical::c bg] : $edge}]
-        }
-        return
-    }
-
-    set box .items.card.body.eq.grid.rs[lindex $target 1].box
-    if {![winfo exists $box]} return
-    $box configure -bg $bg -highlightbackground $edge
-    $box.g configure -bg $bg
+# The drag's source keeps its own cursor when nothing is wrong: the pack list
+# has an arrow, where a text widget would otherwise have an I-beam.
+proc items_cursor {w cursor} {
+    if {$cursor eq "" && [winfo class $w] eq "Text"} { set cursor arrow }
+    $w configure -cursor $cursor
 }
 
-# The colour a target sits at when nothing is hovering over it.
-proc items_base_bg {target} {
-    global items
-
-    if {[lindex $target 0] eq "slot" && [llength $items(sel)]
-            && $items(sel) eq [list equipment [lindex $target 1]]} {
-        return [classical::c accent-100]
-    }
-    return [classical::c bg]
-}
-
-proc items_ghost_show {glyph name} {
-    set g .itemghost
+# The thing being carried, drawn inside the window: a plain label placed over
+# everything else, a little below and to the right of the pointer so that it is
+# never what the pointer is over.  Not the usual borderless toplevel: on macOS
+# one of those is never drawn while the game's event loop is the one running,
+# and the ghost came out as an empty white shape.  Inside the window is also
+# the only place a drop can land.
+proc items_ghost_show {glyph colour} {
+    set g .items.f.ghost
     if {![winfo exists $g]} {
-        toplevel $g -bg [classical::c accent-100] -bd 0 \
-            -highlightthickness 1 -highlightbackground [classical::c accent]
-        wm overrideredirect $g 1
-        catch {wm attributes $g -topmost 1}
-        label $g.g -font [classical::f glyphsm] \
-            -bg [classical::c accent-100] -fg [classical::c accent-700]
-        label $g.n -font [classical::f label] \
-            -bg [classical::c accent-100] -fg [classical::c accent-900]
-        pack $g.g -side left -padx [classical::pad 2 1] -pady 3
-        pack $g.n -side left -padx [classical::pad 1 2] -pady 3
+        label $g -font {Courier 18 bold} -background black -padx 8 -pady 2 \
+            -relief raised -borderwidth 1
     }
-    $g.g configure -text $glyph
-    $g.n configure -text $name
-    wm deiconify $g
-    raise $g
+    $g configure -text $glyph \
+        -foreground [expr {$colour ne "" ? $colour : "white"}]
 }
 
 proc items_ghost_move {X Y} {
-    if {![winfo exists .itemghost]} return
-    # Offset, so the pointer is never over the ghost: winfo containing returns
-    # the topmost window, and the ghost would be it.
-    wm geometry .itemghost "+[expr {$X + 14}]+[expr {$Y + 14}]"
+    set g .items.f.ghost
+    if {![winfo exists $g]} return
+    place $g -x [expr {$X - [winfo rootx .items.f] + 14}] \
+        -y [expr {$Y - [winfo rooty .items.f] + 14}]
+    raise $g
 }
 
 proc items_ghost_hide {} {
-    if {[winfo exists .itemghost]} { wm withdraw .itemghost }
+    if {[winfo exists .items.f.ghost]} { place forget .items.f.ghost }
 }
 
-# --- selection and inscription -------------------------------------------------
-#
-# The inscription bar acts on one item, so there has to be one: clicking a row
-# picks it, and the bar then shows and sets that item's note.
-proc items_select {view index} {
-    global items
+# --- the pack's mouse and keys -------------------------------------------------
 
-    set items(sel) [list $view $index]
-    items_paint_selection
-    set info [items_gear info $view $index]
-    if {[dict exists $info inscription]} {
-        set items(inscription) [dict get $info inscription]
-    } else {
-        set items(inscription) ""
-    }
-    if {[dict exists $info name]} {
-        set items(v,sel) [dict get $info name]
-    } else {
-        set items(v,sel) ""
-    }
+# Which pack row a point in the list is, or "".
+proc items_pack_at {x y} {
+    global items
+    set line [lindex [split [[items_pack_text] index @$x,$y] .] 0]
+    set row [lindex $items(packrows) [expr {$line - 1}]]
+    return [lindex $row 0]
 }
 
-# Which row the inscription bar is pointed at.  The design does not draw a
-# selection, because a web page can put the inscription beside the item; a
-# window has one bar for twelve slots and twenty-three rows, and a bar that
-# acts on an item the player cannot see is a bar that will inscribe the wrong
-# thing.
-proc items_paint_selection {} {
-    global items
-
-    if {![winfo exists .items]} return
-
-    foreach key [array names items cells,*] {
-        set index [string range $key 6 end]
-        set lit [expr {$items(sel) eq [list inventory $index]}]
-        set bg [expr {$lit ? [classical::c accent-100] : [classical::c bg]}]
-        foreach w $items($key) {
-            if {[winfo exists $w]} { $w configure -bg $bg }
-        }
-    }
-
-    foreach key [array names items target,*] {
-        set target $items($key)
-        if {[lindex $target 0] ne "slot"} continue
-        set box .items.card.body.eq.grid.rs[lindex $target 1].box
-        if {![winfo exists $box]} continue
-        if {$items(lit) eq $target} continue
-        set bg [items_base_bg $target]
-        $box configure -bg $bg
-        $box.g configure -bg $bg
-    }
-}
-
-proc items_inscribe {} {
-    global items
-
-    if {![llength $items(sel)]} {
-        set items(message) "Choose an item first."
-        return
-    }
-    lassign $items(sel) view index
-    items_do [list inscribe $view $index $items(inscription)]
-    set items(message) "Inscribed $items(v,sel)."
+proc items_pack_press {x y X Y} {
+    set index [items_pack_at $x $y]
+    if {$index eq ""} return
+    items_press [items_pack_text] [list inventory $index] $X $Y
 }
 
 # --- the window ----------------------------------------------------------------
+
+proc items_menus {} {
+    set mb .items.mb
+    menu $mb
+    .items configure -menu $mb
+
+    menu $mb.file
+    $mb add cascade -label File -underline 0 -menu $mb.file
+    $mb.file add command -label Close -underline 0 -accelerator Esc \
+        -command {destroy .items}
+
+    menu $mb.items
+    $mb add cascade -label Items -underline 0 -menu $mb.items
+    $mb.items add command -label "Wear/Wield" -underline 0 -accelerator W \
+        -command items_wear
+    $mb.items add command -label "Take Off" -underline 0 -accelerator T \
+        -command items_takeoff
+    $mb.items add command -label "Drop" -underline 0 -accelerator D \
+        -command items_drop
+    $mb.items add command -label "Inspect" -underline 0 -accelerator I \
+        -command items_inspect
+    $mb.items add separator
+    $mb.items add command -label "Inscribe" -underline 2 -command items_inscribe
+    $mb.items add command -label "Uninscribe" -underline 0 \
+        -command {items_inscribe "" 1}
+
+    # Not $mb.help: on macOS Tk treats a menu with that name as the platform's
+    # own Help menu and fills it with things this window does not have.
+    menu $mb.about
+    $mb add cascade -label Help -underline 0 -menu $mb.about
+    $mb.about add command -label "On Items..." -underline 0 -accelerator F1 \
+        -command items_help
+}
+
+# A sunken read-out, as the other windows have.
+proc items_readout {w var args} {
+    ttk::label $w -textvariable $var -relief sunken -borderwidth 1 \
+        -padding {4 1} {*}$args
+    return $w
+}
 
 proc items_window {} {
     global items
@@ -991,114 +866,179 @@ proc items_window {} {
         return
     }
 
-    set card [classical::window .items "Items"]
+    toplevel .items
+    wm title .items "Zangband: Items"
     wm protocol .items WM_DELETE_WINDOW { destroy .items }
-    wm geometry .items 1180x740
-    wm minsize .items 560 520
+    wm minsize .items 960 600
+
+    items_menus
+
+    # One Ttk frame under everything, because that is what carries the theme's
+    # grey: the toplevel itself is drawn by the platform.
+    set w .items.f
+    ttk::frame $w
+    pack $w -fill both -expand 1
+
+    set ground [ttk::style lookup . -background]
+    set field  [ttk::style lookup TEntry -fieldbackground {} white]
+    set chosen [ttk::style lookup . -selectbackground]
+
+    # --- status, buttons and the rule over them, packed first so that they
+    # keep their room when the window is made smaller
+    ttk::frame $w.status
+    pack $w.status -side bottom -fill x -padx 2 -pady 2
+    items_readout $w.status.msg items(message) -font {Helvetica 12} -anchor w
+    items_readout $w.status.cap items(v,capacity) -font {Helvetica 12} \
+        -anchor center -width -18
+    pack $w.status.cap -side right
+    pack $w.status.msg -side left -fill x -expand 1 -padx {0 2}
+
+    ttk::frame $w.btns
+    pack $w.btns -side bottom -fill x -padx 10 -pady 10
+    foreach {action text} {
+        wear "Wear/Wield" takeoff "Take Off" drop "Drop" inspect "Inspect"
+    } {
+        ttk::button $w.btns.$action -text $text -underline 0 -width 11 \
+            -command items_$action
+        pack $w.btns.$action -side left -padx {0 10}
+    }
+    ttk::button $w.btns.close -text Close -underline 0 -width 10 \
+        -default active -command {destroy .items}
+    pack $w.btns.close -side right
+
+    ttk::separator $w.sep -orient horizontal
+    pack $w.sep -side bottom -fill x
+
+    # --- inscription and burden
+    set tl $w.tools
+    ttk::frame $tl
+    pack $tl -side bottom -fill x -padx 10 -pady {4 8}
+    ttk::label $tl.il -text "Inscription:" -underline 2
+    ttk::entry $tl.insc -textvariable items(inscription) -font {Courier 12} \
+        -width 22
+    ttk::button $tl.inscribe -text Inscribe -command items_inscribe
+    ttk::label $tl.bl -text "Burden:"
+    ttk::progressbar $tl.burden -style Burden.Horizontal.TProgressbar \
+        -length 160
+    items_readout $tl.bv items(v,burden) -anchor e -width -16
+    pack $tl.il -side left
+    pack $tl.insc -side left -padx {4 6}
+    pack $tl.inscribe -side left
+    pack $tl.bv -side right
+    pack $tl.burden -side right -padx {4 6}
+    pack $tl.bl -side right
+
+    # The entry keeps what is typed into it.  Without its own bindtags the
+    # toplevel's bindings would run after the entry's, and every letter typed
+    # here would be inserted and played -- or worn, dropped or inspected.
+    bindtags $tl.insc [list $tl.insc TEntry all]
+    bind $tl.insc <Return> { items_inscribe ; break }
+    bind $tl.insc <Escape> { destroy .items ; break }
+
+    # --- the two panes
+    set body $w.body
+    ttk::frame $body
+    pack $body -fill both -expand 1 -padx 10 -pady {10 4}
+
+    set eq $body.eq
+    ttk::labelframe $eq -text Equipment -padding 8
+    canvas $eq.doll -background black -relief sunken \
+        -borderwidth $items(doll,bd) -highlightthickness 0
+    if {[lsearch -exact [image names] items_doll] < 0} {
+        image create photo items_doll -file [file join $items(dir) doll.png]
+    }
+    $eq.doll create image 0 0 -image items_doll -anchor center -tags sprite
+    $eq.doll create rectangle 0 0 0 0 -outline #ffff00 -dash . -state hidden \
+        -tags selring
+    $eq.doll create rectangle 0 0 0 0 -width 2 -state hidden -tags hover
+    bind $eq.doll <B1-Motion> { items_motion %X %Y }
+    bind $eq.doll <ButtonRelease-1> { items_release %X %Y }
+
+    ttk::frame $eq.read
+    ttk::label $eq.read.sl -text "Selected:" -font {Helvetica 12}
+    items_readout $eq.read.sv items(v,sel) -anchor w
+    ttk::label $eq.read.wl -text "Worn:" -font {Helvetica 12}
+    items_readout $eq.read.wv items(v,worn) -anchor e -width -8
+    grid $eq.read.sl -row 0 -column 0 -sticky e -padx {0 6} -pady 2
+    grid $eq.read.sv -row 0 -column 1 -sticky ew -pady 2
+    grid $eq.read.wl -row 1 -column 0 -sticky e -padx {0 6} -pady 2
+    grid $eq.read.wv -row 1 -column 1 -sticky w -pady 2
+    grid columnconfigure $eq.read 1 -weight 1
+
+    pack $eq.doll -anchor n
+    pack $eq.read -fill x -pady {8 0}
+
+    set inv $body.inv
+    ttk::labelframe $inv -text Inventory -padding 8
+    ttk::frame $inv.hdr
+    ttk::label $inv.hdr.i -text "Item" -font {Helvetica 12}
+    ttk::label $inv.hdr.w -text "Weight" -font {Helvetica 12}
+    pack $inv.hdr.i -side left -padx {4 0}
+    pack $inv.hdr.w -side right -padx {0 24}
+
+    ttk::frame $inv.list
+    set t $inv.list.t
+    text $t -width 44 -height 14 -wrap none -font {Courier 12} \
+        -background $field -foreground black -cursor arrow \
+        -relief sunken -borderwidth 2 -highlightthickness 2 \
+        -highlightcolor black -highlightbackground $ground \
+        -padx 4 -pady 4 -spacing1 3 -spacing3 3 -insertwidth 0 \
+        -yscrollcommand [list $inv.list.sb set]
+    ttk::scrollbar $inv.list.sb -orient vertical -command [list $t yview]
+    pack $inv.list.sb -side right -fill y
+    pack $t -side left -fill both -expand 1
+
+    # Not "sel": that is the text widget's own selection tag.
+    $t tag configure glyph -background black -font {Courier 12 bold}
+    $t tag configure chosen -background $chosen -relief raised -borderwidth 1
+    $t tag configure empty -foreground #828282
+    $t tag raise glyph
+
+    bind $t <Configure> { items_pack_tabs }
+    bind $t <ButtonPress-1> { items_pack_press %x %y %X %Y ; break }
+    bind $t <B1-Motion> { items_motion %X %Y ; break }
+    bind $t <ButtonRelease-1> { items_release %X %Y ; break }
+    bind $t <Double-1> { items_wear ; break }
+    bind $t <Up>     { items_step up ; break }
+    bind $t <Down>   { items_step down ; break }
+    bind $t <Home>   { items_step first ; break }
+    bind $t <End>    { items_step last ; break }
+    bind $t <Return> { items_wear ; break }
+
+    ttk::frame $inv.foot
+    ttk::label $inv.foot.l -text "Pack:" -font {Helvetica 12}
+    items_readout $inv.foot.n items(v,packcount) -anchor w
+    items_readout $inv.foot.w items(v,packweight) -anchor e -width -8
+    pack $inv.foot.l -side left -padx {0 6}
+    pack $inv.foot.w -side right
+    pack $inv.foot.n -side left -fill x -expand 1 -padx {0 6}
+
+    pack $inv.hdr -fill x
+    pack $inv.foot -side bottom -fill x -pady {8 0}
+    pack $inv.list -fill both -expand 1
+
+    grid $eq  -row 0 -column 0 -sticky nsew -padx {0 12}
+    grid $inv -row 0 -column 1 -sticky nsew
+    grid columnconfigure $body 1 -weight 1
+    grid rowconfigure $body 0 -weight 1
 
     # Keys typed here still play the game, so the window can be left open and
     # the letter commands keep working -- which is the design's requirement
     # that dragging be an addition to the keyboard and never a replacement.
+    # w, t, d and i act on the selection when it allows them.
     bind .items <Key> { angband_key %N %s %A }
     bind .items <Escape> { destroy .items ; break }
+    bind .items <F1> { items_help ; break }
+    foreach {k action} {w wear t takeoff d drop i inspect} {
+        bind .items <Key-$k> "items_letter $action %N %s %A ; break"
+        bind .items <Alt-$k> "items_$action ; break"
+    }
+    bind .items <Alt-s> { focus .items.f.tools.insc ; break }
+    bind .items <Alt-c> { destroy .items ; break }
     bind .items <Destroy> { if {"%W" eq ".items"} { items_forget } }
 
-    classical::titlestrip $card ZANGBAND ITEMS
-    classical::footer $card {
-        esc "close"
-        w   "wear or wield"
-        t   "take off"
-        d   "drop"
-    } items(burden)
-
-    # --- the inscription bar --------------------------------------------
-    set insc $card.insc
-    frame $insc -bg [classical::c bg]
-    pack $insc -fill x -padx [classical::sp 6] -pady [classical::pad 3 3]
-
-    label $insc.k -text [classical::tracked "INSCRIPTION"] \
-        -font [classical::f kicker] -bg [classical::c bg] \
-        -fg [classical::c neutral-600]
-    pack $insc.k -side left -padx [classical::pad 1 3]
-
-    set box [classical::searchbox $insc note items(inscription) "none"]
-    pack $box -side left -fill x -expand 1
-    $box.e configure -width 24
-    bind $box.e <Return> { items_inscribe ; break }
-
-    # The entry keeps the game's keys out of the field.  Tk runs the toplevel's
-    # bindings after the widget's own, so without this every letter typed here
-    # would be inserted *and* played.
-    bindtags $box.e [list $box.e Entry all]
-
-    label $insc.help \
-        -text "Drag an item onto a slot to wield or wear it; drag it off to stow it." \
-        -font [classical::f note] -bg [classical::c bg] \
-        -fg [classical::c neutral-600]
-    pack $insc.help -side left -padx [classical::pad 3 1]
-
-    pack [classical::hairline $card.iunder] -fill x
-
-    # --- the two panes ---------------------------------------------------
-    set body $card.body
-    frame $body -bg [classical::c bg]
-    pack $body -fill both -expand 1
-
-    set eq $body.eq
-    frame $eq -bg [classical::c bg]
-    frame $body.div -bg [classical::c divider] -width 1 -height 1 -bd 0 \
-        -highlightthickness 0
-    set pk $body.pack
-    frame $pk -bg [classical::c bg] -bd 0 -highlightthickness 1 \
-        -highlightbackground [classical::c bg]
-
-    # The whole pane is the take-off target, as the design says: dropping a
-    # worn item anywhere in the pack's half of the window stows it.
-    set items(target,$pk) [list pack]
-
-    # --- equipment -------------------------------------------------------
-    classical::sectionhead $eq eq "Equipment" i
-    pack $eq.heq -fill x -padx [classical::sp 6] -pady [classical::pad 6 1]
-
-    set grid $eq.grid
-    frame $grid -bg [classical::c bg]
-    pack $grid -fill x -padx [classical::sp 4] -pady [classical::pad 4 1]
-
-    canvas $grid.figure -bg [classical::c bg] -highlightthickness 0 -bd 0 \
-        -width [expr {round($items(figure,w) * $items(figure,scale))}] \
-        -height [expr {round($items(figure,h) * $items(figure,scale))}]
-    items_figure_draw $grid.figure
-
-    pack [items_rule $eq worn] -fill x -padx [classical::sp 6] \
-        -pady [classical::pad 4 6]
-
-    # --- the pack --------------------------------------------------------
-    classical::sectionhead $pk pk "Inventory" ii
-    pack $pk.hpk -fill x -padx [classical::sp 6] -pady [classical::pad 6 1]
-
-    pack [items_scroller $pk pack] -fill both -expand 1 \
-        -padx [classical::sp 6] -pady [classical::pad 3 1]
-
-    label $pk.msg -textvariable items(message) -font [classical::f note] \
-        -bg [classical::c bg] -fg [classical::c neutral-700] -anchor w \
-        -justify left
-    pack $pk.msg -fill x -padx [classical::sp 6] -pady [classical::pad 3 1]
-
-    pack [items_rule $pk carried] -fill x -padx [classical::sp 6] \
-        -pady [classical::pad 3 6]
-
-    # Two columns when there is room for both, stacked when there is not --
-    # the design's auto-fit at a 520px track, said in Tk.
-    grid rowconfigure $body 0 -weight 1
-    bind .items <Configure> { items_reflow_soon }
-    items_reflow
-
     items_refresh
-
-    # The geometry above is a request until the window is mapped, and the
-    # column count is read from the real width.
-    update idletasks
-    items_reflow
+    focus $t
 }
 
 # Dropping the window drops everything that pointed into it, so a later refresh
@@ -1106,72 +1046,14 @@ proc items_window {} {
 proc items_forget {} {
     global items
 
-    array unset items target,*
-    array unset items cells,*
-    unset -nocomplain items(shape)
+    array unset items well,*
+    unset -nocomplain items(shape) items(burdencolour)
     set items(lit) {}
     set items(drag) {}
+    set items(packrows) {}
+    items_select_none
     items_expect_clear
     items_ghost_hide
-}
-
-proc items_reflow_soon {} {
-    global items
-
-    if {[info exists items(reflowpending)]} return
-    set items(reflowpending) 1
-    after idle { unset -nocomplain items(reflowpending) ; items_reflow }
-}
-
-proc items_reflow {} {
-    global items
-
-    if {![winfo exists .items]} return
-    set body .items.card.body
-
-    set w [winfo width .items]
-    if {$w <= 1} { set w [winfo reqwidth .items] }
-    set wide [expr {$w >= 1080}]
-
-    # The two pieces of running prose follow the window rather than their own
-    # frames, which is what stops them ratcheting: the window's width is the
-    # one number in the layout that the layout does not decide.
-    if {[winfo exists .items.card.insc.help]} {
-        .items.card.insc.help configure -wraplength \
-            [expr {max(240, $w - 420)}]
-    }
-    if {[winfo exists .items.card.body.pack.msg]} {
-        .items.card.body.pack.msg configure -wraplength \
-            [expr {max(240, ($wide ? $w / 2 : $w) - 80)}]
-    }
-
-    if {[info exists items(wide)] && $items(wide) eq $wide} return
-    set items(wide) $wide
-
-
-    if {$wide} {
-        # -columnspan 1 is not noise.  grid remembers every option it has ever
-        # been given for a slave, so a pane that once spanned three columns
-        # goes on spanning them however carefully the row and column are set
-        # -- and the second pane is then laid out off the side of the window.
-        grid $body.eq   -row 0 -column 0 -columnspan 1 -sticky nsew
-        grid $body.div  -row 0 -column 1 -columnspan 1 -sticky ns
-        grid $body.pack -row 0 -column 2 -columnspan 1 -sticky nsew
-        grid rowconfigure $body 1 -weight 0
-        grid rowconfigure $body 2 -weight 0
-        grid columnconfigure $body 0 -weight 1 -uniform pane
-        grid columnconfigure $body 1 -weight 0 -uniform ""
-        grid columnconfigure $body 2 -weight 1 -uniform pane
-    } else {
-        grid $body.eq   -row 0 -column 0 -columnspan 3 -sticky nsew
-        grid $body.div  -row 1 -column 0 -columnspan 3 -sticky ew
-        grid $body.pack -row 2 -column 0 -columnspan 3 -sticky nsew
-        grid rowconfigure $body 0 -weight 0
-        grid rowconfigure $body 2 -weight 1
-        grid columnconfigure $body 0 -weight 1 -uniform ""
-        grid columnconfigure $body 1 -weight 0 -uniform ""
-        grid columnconfigure $body 2 -weight 0 -uniform ""
-    }
 }
 
 # Up to date whether or not anyone is looking: the bindings live on "." and
