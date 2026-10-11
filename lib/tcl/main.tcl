@@ -68,10 +68,11 @@ bind . <Key> { angband_key %N %s %A }
 # assigns messages, inventory, monster list, item list, recall and overhead to
 # subwindows 1 to 6 in that order, and these are simply terms 1, 5, 2 and 6.
 #
-# Two of the original's panels are not here and cannot be yet: Progress (the
-# HP/SP/Food bars) and the graphical Micro Map are native widgets rather than
-# term views, so they arrive with T4 and T5.  The overhead pane stands in for
-# the Micro Map meanwhile.
+# The original's Progress window -- the HP, SP and food bars, and here
+# experience too -- sits under the overhead view, as it sat under the original's
+# Micro Map: a strip of Tk's own widgets rather than a term, filled in by
+# lib/tcl/progress.tcl.  The graphical Micro Map is still to come (T5), and the
+# overhead pane stands in for it meanwhile.
 
 proc termpane {parent name cols rows} {
     # A term is a black canvas and nothing else.  The frame around it is what
@@ -94,11 +95,14 @@ proc termpane {parent name cols rows} {
 
 ttk::panedwindow .pw -orient vertical
 ttk::panedwindow .pw.top -orient horizontal
+ttk::panedwindow .pw.top.side -orient vertical
 ttk::panedwindow .pw.bottom -orient horizontal
 
 # The map gets the game's floor of 80x24 and the rest ask for what suits them.
-set map      [termpane .pw.top    map      80 24]
-set overhead [termpane .pw.top    overhead 32 24]
+# The overhead view and the Progress strip share the column beside the map,
+# and between them come to the map's height.
+set map      [termpane .pw.top      map      80 24]
+set overhead [termpane .pw.top.side overhead 32 19]
 set messages [termpane .pw.bottom messages 44 10]
 set recall   [termpane .pw.bottom recall   44 10]
 
@@ -109,8 +113,15 @@ set recall   [termpane .pw.bottom recall   44 10]
 set choice [ttk::frame .pw.bottom.choice \
     -width [expr {44 * $angband(cellw)}] -height [expr {10 * $angband(cellh)}]]
 
+# The Progress strip likewise: a frame here, its bars from progress.tcl.
+ttk::style configure Progress.TFrame -background black
+set strip [ttk::frame .pw.top.side.progress -style Progress.TFrame \
+    -width [expr {32 * $angband(cellw)}] -height [expr {5 * $angband(cellh)}]]
+
+.pw.top.side add $overhead -weight 1
+.pw.top.side add $strip -weight 0
 .pw.top    add $map      -weight 4
-.pw.top    add $overhead -weight 1
+.pw.top    add .pw.top.side -weight 1
 .pw.bottom add $messages -weight 2
 .pw.bottom add $recall   -weight 2
 .pw.bottom add $choice   -weight 2
@@ -172,8 +183,9 @@ foreach pair [angband_tilesets] {
 
 # The Window menu: the things that are not panes.
 #
-# Decision 16 finished the main window at five panes, so everything else opens
-# as a window of its own and this is where they are opened from.  No
+# Decision 16 finished the main window at its panes -- five, and the Progress
+# strip under the overhead view -- so everything else opens as a window of its
+# own and this is where they are opened from.  No
 # accelerators: every key belongs to the game.
 # The path must not be .menubar.window.  On macOS Tk treats three menu names
 # as the platform's own -- .menubar.apple, .menubar.window and .menubar.help --
@@ -208,6 +220,7 @@ source [file join [file dirname [info script]] items.tcl]
 source [file join [file dirname [info script]] book.tcl]
 source [file join [file dirname [info script]] store.tcl]
 source [file join [file dirname [info script]] building.tcl]
+source [file join [file dirname [info script]] progress.tcl]
 source [file join [file dirname [info script]] choice.tcl]
 source [file join [file dirname [info script]] commands.tcl]
 

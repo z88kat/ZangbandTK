@@ -2166,7 +2166,7 @@ enum player_field_id {
 	PFI_BLOWS_PER_ROUND, PFI_SHOTS_PER_ROUND, PFI_SPEED, PFI_INFRAVISION,
 	PFI_LIGHT, PFI_AGE, PFI_HEIGHT, PFI_WEIGHT, PFI_TOTAL_WEIGHT,
 	PFI_NEW_SPELLS, PFI_RUNNING, PFI_RESTING, PFI_IS_DEAD, PFI_DIED_FROM,
-	PFI_INSIDE_ARENA, PFI_WIZARD, PFI_DEBUG, PFI_TURN,
+	PFI_INSIDE_ARENA, PFI_WIZARD, PFI_DEBUG, PFI_TURN, PFI_METERS,
 	PFI_MAX
 };
 
@@ -2214,6 +2214,7 @@ static const struct {
 	{ "wizard",				PF_BOOL },
 	{ "debug",				PF_BOOL },
 	{ "turn",				PF_INT },
+	{ "meters",				PF_LIST },
 };
 
 typedef char player_field_table_is_complete[
@@ -2252,6 +2253,37 @@ static int player_exp_to_advance(void)
 			- player->exp;
 }
 
+/*
+ * Progress through the current level: what has been gained since the level
+ * began, and what the next one wants on top of that.  Both zero at the top of
+ * the table.
+ */
+static void player_level_progress(long *gained, long *wanted)
+{
+	long base = (player->lev > 1)
+			? player_exp[player->lev - 2] * player->expfact / 100L : 0;
+	long want = (player->lev < PY_MAX_LEVEL)
+			? player_exp[player->lev - 1] * player->expfact / 100L : base;
+
+	*gained = (player->lev < PY_MAX_LEVEL) ? player->exp - base : 0;
+	*wanted = want - base;
+}
+
+/* One of the Progress pane's meters: {name value current maximum colour}. */
+static Tcl_Obj *player_meter(const char *name, long value, long cur, long max,
+		uint8_t attr)
+{
+	Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+
+	Tcl_ListObjAppendElement(NULL, row, Tcl_NewStringObj(name, -1));
+	Tcl_ListObjAppendElement(NULL, row, Tcl_NewWideIntObj(value));
+	Tcl_ListObjAppendElement(NULL, row, Tcl_NewWideIntObj(cur));
+	Tcl_ListObjAppendElement(NULL, row, Tcl_NewWideIntObj(max));
+	Tcl_ListObjAppendElement(NULL, row,
+			Tcl_NewStringObj(colour_name[attr % MAX_COLORS], -1));
+	return row;
+}
+
 static Tcl_Obj *player_field_obj(enum player_field_id id)
 {
 	Tcl_Obj *pair;
@@ -2280,17 +2312,47 @@ static Tcl_Obj *player_field_obj(enum player_field_id id)
 	 * pair is {0 0}, which the meter draws as an empty track.
 	 */
 	case PFI_NEXT_LEVEL: {
-		long base = (player->lev > 1)
-				? player_exp[player->lev - 2] * player->expfact / 100L : 0;
-		long want = (player->lev < PY_MAX_LEVEL)
-				? player_exp[player->lev - 1] * player->expfact / 100L : base;
+		long gained, wanted;
 
+		player_level_progress(&gained, &wanted);
 		pair = Tcl_NewListObj(0, NULL);
-		Tcl_ListObjAppendElement(NULL, pair,
-				Tcl_NewIntObj((int)(player->exp - base)));
-		Tcl_ListObjAppendElement(NULL, pair,
-				Tcl_NewIntObj((int)(want - base)));
+		Tcl_ListObjAppendElement(NULL, pair, Tcl_NewIntObj((int)gained));
+		Tcl_ListObjAppendElement(NULL, pair, Tcl_NewIntObj((int)wanted));
 		return pair;
+	}
+
+	/*
+	 * The Progress pane's four meters, a {name value current maximum colour}
+	 * row each: hp, sp, food and exp.  The colours are the game's judgement
+	 * of how things stand, so they are made here rather than in a script --
+	 * player_hp_attr() and player_sp_attr() as the sidebar has them, the
+	 * hunger grade's colour as the status line has it, and experience green
+	 * unless it has been drained, as prt_exp() has it.  Food's maximum is
+	 * PY_FOOD_MAX, the top of the scale the grades are cut from.  Experience's
+	 * value is the total and its bar is the way through this level.
+	 */
+	case PFI_METERS: {
+		struct timed_grade *grade = timed_effects[TMD_FOOD].grade;
+		int food = player->timed[TMD_FOOD];
+		long gained, wanted;
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+		while (grade->next && food > grade->max) grade = grade->next;
+		player_level_progress(&gained, &wanted);
+
+		Tcl_ListObjAppendElement(NULL, list, player_meter("hp",
+				player->chp, player->chp, player->mhp,
+				player_hp_attr(player)));
+		Tcl_ListObjAppendElement(NULL, list, player_meter("sp",
+				player->csp, player->csp, player->msp,
+				player_sp_attr(player)));
+		Tcl_ListObjAppendElement(NULL, list, player_meter("food",
+				food, food, PY_FOOD_MAX, grade->color));
+		Tcl_ListObjAppendElement(NULL, list, player_meter("exp",
+				player->exp, gained, wanted,
+				player->exp >= player->max_exp
+					? COLOUR_L_GREEN : COLOUR_YELLOW));
+		return list;
 	}
 	case PFI_GOLD:		return Tcl_NewIntObj((int)player->au);
 	case PFI_DEPTH:		return Tcl_NewIntObj(player->depth);

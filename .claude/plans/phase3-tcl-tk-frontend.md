@@ -1922,6 +1922,19 @@ main window."*
 
 The main window is finished: map, minimap, messages, recall, choice. Nothing else goes in it.
 
+**Amended, 11 October 2026: the Progress strip comes back, under the minimap.** Confirmed by
+project owner: *"EXP and AC labels - for that we would need to re-introduce the progress
+window under the minimap which we originally skipped. In this progress window we would show
+the HP, SP, FD (Food), we could expand to show the EXP (the progress bar would show the
+current EXP to NEXT level)."* It takes its height from the overhead view's column rather than
+from the map, so the squashing this decision was about does not come back.
+[lib/tcl/progress.tcl](../../lib/tcl/progress.tcl): HP, SP and food as the original had them,
+and experience, whose bar is the way through the current level and whose number switches
+between the total and what the next level wants when clicked — the original Misc window's EXP
+label. The numbers' colours are the game's (`angband_player meters`): `player_hp_attr()`, the
+hunger grade's, and the sidebar's for drained experience. The AC half of that Misc rule —
+total, or base plus bonus — has no home yet.
+
 This refines decision 1 rather than reversing it. Decision 1 settled that the panes that
 exist share one window instead of being forty `wm transient` toplevels held together by a
 geometry authority. It was then read as *every* window of the original becoming a pane, which

@@ -915,6 +915,23 @@ proc second_pass {} {
 		list [angband_service] [winfo exists .building]
 	} "{} 0"
 
+	# The Progress strip: four meters, each {name value current maximum
+	# colour}, in the colours the game's own display gives them.
+	check "the Progress strip's meters are the game's" {
+		set shape {}
+		foreach row [angband_player meters] {
+			lappend shape [lindex $row 0] [llength $row] \
+				[string match "#??????" [lindex $row 4]]
+		}
+		set shape
+	} "hp 5 1 sp 5 1 food 5 1 exp 5 1"
+
+	check "and the strip is Tk's own widgets" {
+		progress_refresh
+		list [string is integer -strict [[progress_frame].vhp cget -text]] \
+			[stock_widgets_only [progress_frame]]
+	} "1 {classic {}}"
+
 	# DEC-136: a character made now sells for gold, as in Zangband.
 	check "a new character is born able to sell" {
 		angband_option birth_no_selling
