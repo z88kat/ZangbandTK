@@ -4,24 +4,35 @@
 # window with the map, the minimap, the messages and the recall).  Most of the
 # time it shows the pack, and clicking an item opens a menu of what can be done
 # with it -- the game's own item menu, the same entries greyed the same way,
-# each with the key that does it from the keyboard.  When the game asks for an
-# item -- "Quaff which potion?" -- it shows the question and exactly the items
-# the game will accept, and a click answers it.  The keyboard answers it as it
-# always did: the game's own prompt is still running, and the pane only offers
-# a second way in.  See angband_choice in main-tcl.c for both.
+# each with the key that does it from the keyboard.
+#
+# When the game asks a question it shows that instead, and a click answers it:
+# an item ("Quaff which potion?"), a spell ("Cast which spell?", with the
+# level, mana, failure and information columns of the game's spell menu), or a
+# choice from one of the game's menus -- racial, class and mutation powers, the
+# Mindcrafter's psionics, pet orders, the town's services.  The keyboard answers
+# it as it always did: the game's own prompt is still running, and the pane only
+# offers a second way in.  See angband_choice in main-tcl.c for all of it.
 #
 # It is a text widget rather than a term, because a term cannot be clicked on,
 # and it is drawn the way its neighbours are: black, in the term's font, each
 # name in the colour the game's own item list gives it.
 
 set choicepane(open) 0
+set choicepane(kind) ""
 set choicepane(rows) {}
+set choicepane(valid) {}
+set choicepane(first) 2
 set choicepane(hot) ""
 
 proc choice_text {} { return .pw.bottom.choice.t }
 
-# Each row's line in the text, counting the header as line 1.
-proc choice_line {i} { return [expr {$i + 2}] }
+# Each row's line in the text.  The header takes one line, and a spell list a
+# second for its column headings.
+proc choice_line {i} {
+    global choicepane
+    return [expr {$i + $choicepane(first)}]
+}
 
 proc choice_refresh {} {
     global choicepane
@@ -30,40 +41,95 @@ proc choice_refresh {} {
     if {![winfo exists $t]} return
 
     if {[catch {angband_choice} state]} {
-        set state {0 ""}
+        set state {0 "" ""}
         set rows {}
         set have 0
     } else {
         set rows [angband_choice list]
         set have 1
     }
-    lassign $state open prompt
+    lassign $state open prompt kind
     set choicepane(open) $open
+    set choicepane(kind) $kind
     set choicepane(rows) $rows
+    set choicepane(valid) {}
+    set choicepane(first) 2
     set choicepane(hot) ""
 
     $t configure -state normal
     $t delete 1.0 end
 
     # The header: the game's question while it is asking, the burden line the
-    # game's own inventory window puts there otherwise.
+    # game's own inventory window puts there otherwise.  Wrapped by hand to the
+    # pane, because a menu's question is whatever sentence the game printed
+    # above it and the list itself must not wrap.
+    set cols [choice_cols]
     if {$open} {
-        $t insert end $prompt prompt "  " {} "(click to choose)" hint "\n"
+        set lines [choice_wrap $prompt $cols]
+        set last [lindex $lines end]
+        set hint "(click to choose)"
+        foreach line [lrange $lines 0 end-1] { $t insert end $line prompt "\n" }
+        if {[string length "$last  $hint"] <= $cols} {
+            $t insert end $last prompt "  $hint" hint "\n"
+        } else {
+            $t insert end $last prompt "\n" {} $hint hint "\n"
+            lappend lines $hint
+        }
+        set choicepane(first) [expr {[llength $lines] + 1}]
     } elseif {$have} {
         $t insert end [angband_choice burden] hint "\n"
     } else {
         $t insert end "\n"
     }
 
-    foreach row $rows {
-        lassign $row n view label name weight glyph gcolour ncolour
-        foreach c [list $gcolour $ncolour] {
-            if {$c ne ""} { $t tag configure fg$c -foreground $c }
+    switch -- $kind {
+        spell {
+            # The game's spell menu, column for column.  The name column gives
+            # way to the information column, which is the one that says what
+            # a spell does: at a term's width the game's own 30 characters of
+            # name leave no room for it at all.
+            set infow 0
+            foreach row $rows {
+                set infow [expr {max($infow, [string length [lindex $row 6]])}]
+            }
+            set infow [expr {min($infow, 16)}]
+            set namew [expr {max(10, min(26, $cols - 18 - $infow))}]
+            $t insert end [format "   %-*s %2s %4s %4s  %s\n" $namew \
+                Name Lv Mana Fail Info] hint
+            incr choicepane(first)
+            foreach row $rows {
+                lassign $row n label name level mana fail comment colour valid
+                $t tag configure fg$colour -foreground $colour
+                $t insert end "$label) " [expr {$valid ? "label" : "off"}] \
+                    [format "%-*s %2d %4d %3d%%  %s" $namew \
+                        [string range $name 0 [expr {$namew - 1}]] \
+                        $level $mana $fail $comment] \
+                    [expr {$valid ? "fg$colour" : "off"}] "\n"
+                lappend choicepane(valid) $valid
+            }
         }
-        set where [expr {$open && $view ne "inventory" ? "  ($view)" : ""}]
-        $t insert end "$label) " label " $glyph " [list glyph fg$gcolour] \
-            " $name" fg$ncolour $where hint \
-            "\t[choice_weight $weight] lb\n" weight
+        menu {
+            foreach row $rows {
+                lassign $row n label text valid
+                set tag [expr {$valid ? "label" : "off"}]
+                $t insert end [expr {$label ne "" ? "$label) " : "   "}] $tag \
+                    $text [expr {$valid ? {} : "off"}] "\n"
+                lappend choicepane(valid) $valid
+            }
+        }
+        default {
+            foreach row $rows {
+                lassign $row n view label name weight glyph gcolour ncolour
+                foreach c [list $gcolour $ncolour] {
+                    if {$c ne ""} { $t tag configure fg$c -foreground $c }
+                }
+                set where [expr {$open && $view ne "inventory" ? "  ($view)" : ""}]
+                $t insert end "$label) " label " $glyph " [list glyph fg$gcolour] \
+                    " $name" fg$ncolour $where hint \
+                    "\t[choice_weight $weight] lb\n" weight
+                lappend choicepane(valid) 1
+            }
+        }
     }
     if {$have && ![llength $rows]} {
         $t insert end [expr {$open ? "Nothing to choose." : "Your pack is empty."}] hint
@@ -71,6 +137,30 @@ proc choice_refresh {} {
     $t tag raise glyph
     $t configure -state disabled
     $t yview moveto 0
+}
+
+# How many of the term font's characters fit across the pane.
+proc choice_cols {} {
+    set t [choice_text]
+    return [expr {max(30, ([winfo width $t] - 2 * [$t cget -padx])
+        / [font measure termfont 0])}]
+}
+
+# Words into lines of at most `cols` characters.
+proc choice_wrap {text cols} {
+    set lines {}
+    set line ""
+    foreach word [split $text " "] {
+        if {$word eq ""} continue
+        if {$line ne "" && [string length "$line $word"] > $cols} {
+            lappend lines $line
+            set line $word
+        } else {
+            set line [expr {$line eq "" ? $word : "$line $word"}]
+        }
+    }
+    lappend lines $line
+    return $lines
 }
 
 proc choice_weight {tenths} {
@@ -89,9 +179,17 @@ proc choice_tabs {} {
 proc choice_row_at {x y} {
     global choicepane
     set line [lindex [split [[choice_text] index @$x,$y] .] 0]
-    set i [expr {$line - 2}]
+    set i [expr {$line - $choicepane(first)}]
     if {$i < 0 || $i >= [llength $choicepane(rows)]} { return "" }
     return $i
+}
+
+# Whether a row can be chosen: everything in the pack can be clicked for its
+# menu, and while the game is asking, whatever the game would accept.
+proc choice_row_ok {i} {
+    global choicepane
+    if {$i eq ""} { return 0 }
+    return [expr {[lindex $choicepane(valid) $i] ne "0"}]
 }
 
 # The row under the pointer lights up, which is the whole of the invitation to
@@ -101,6 +199,7 @@ proc choice_motion {x y} {
     global choicepane
 
     set i [choice_row_at $x $y]
+    if {![choice_row_ok $i]} { set i "" }
     if {$i eq $choicepane(hot)} return
     set t [choice_text]
     $t tag remove hot 1.0 end
@@ -116,7 +215,7 @@ proc choice_click {x y X Y} {
     global choicepane
 
     set i [choice_row_at $x $y]
-    if {$i eq ""} return
+    if {![choice_row_ok $i]} return
     if {!$choicepane(open)} {
         choice_menu $i $X $Y
         return
@@ -187,6 +286,7 @@ proc choice_build {} {
     $t tag configure hint -foreground #808080
     $t tag configure label -foreground white
     $t tag configure weight -foreground #c0c0c0
+    $t tag configure off -foreground #606060
     $t tag configure glyph -background black
     $t tag configure hot -background #303060
 
@@ -194,7 +294,12 @@ proc choice_build {} {
     # cursor nobody can see.  Without them, keys go on to "." and so to the
     # game, as they do from every other pane.
     bindtags $t [list $t . all]
-    bind $t <Configure> { choice_tabs }
+    bind $t <Configure> {
+        choice_tabs
+        # A question's lines and a spell list's columns are sized to the
+        # pane, so follow it.
+        if {$choicepane(open)} { choice_refresh }
+    }
     bind $t <Motion> { choice_motion %x %y }
     bind $t <Leave> { choice_motion -1 -1 }
     bind $t <ButtonPress-1> { choice_click %x %y %X %Y }

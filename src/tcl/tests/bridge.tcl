@@ -801,7 +801,7 @@ proc second_pass {} {
 		list [angband_choice] \
 			[expr {[llength $rows] == [llength [angband_gear inventory]]}] \
 			$eight $e
-	} "{0 {}} 1 1 {the game is not asking for an item}"
+	} "{0 {} {}} 1 1 {the game is not asking for anything}"
 
 	# An item's menu is the game's item menu: Inspect first, always, with the
 	# key the game gives it; it is the window's to show, never a command.

@@ -55,6 +55,7 @@
 #include "option.h"
 #include "ui-input.h"
 #include "ui-keymap.h"
+#include "ui-menu.h"
 #include "ui-mon-lore.h"
 #include "ui-object.h"
 #include "ui-output.h"
@@ -4237,11 +4238,34 @@ static int objcmd_gear(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
  */
 static bool (*choice_original)(struct object **choice, const char *pmt,
 		const char *str, cmd_code cmd, item_tester tester, int mode);
-static struct object **choice_offered;
+/*
+ * What the pane is offering, if anything: the game's item prompt, its spell
+ * prompt, or one of its dynamic menus -- the racial, class and mutation powers,
+ * pet orders, the town's services and the rest.  One at a time; a prompt that
+ * opens inside another is the game's alone.
+ */
+enum choice_kind { CHOICE_NONE, CHOICE_ITEM, CHOICE_SPELL, CHOICE_MENU };
+static const char *choice_kind_name[] = { "", "item", "spell", "menu" };
+static enum choice_kind choice_kind;
 static int choice_count;
-static struct object *choice_picked;
-static bool choice_open;
 static char choice_prompt[160];
+
+/* An item prompt's offer, and what was clicked. */
+static struct object **choice_offered;
+static struct object *choice_picked;
+
+/* A spell prompt's. */
+static int (*spell_original)(struct player *p, const char *verb,
+		struct object *book, const char *error,
+		bool (*spell_filter)(const struct player *p, int spell));
+static int *choice_spells;
+static bool (*choice_spell_ok)(const struct player *p, int spell);
+static int choice_spell_picked;
+
+/* A dynamic menu's. */
+static struct menu *choice_menu;
+static int choice_menu_picked;
+static bool choice_menu_has_pick;
 
 /* Tell the pane to look again, queued like every other event. */
 static void choice_signal(void)
@@ -4259,14 +4283,14 @@ static bool choice_get_item(struct object **choice, const char *pmt,
 	bool ok;
 
 	/* Paranoia: a prompt inside a prompt is the game's alone. */
-	if (choice_open) return choice_original(choice, pmt, str, cmd, tester,
-			mode);
+	if (choice_kind != CHOICE_NONE)
+		return choice_original(choice, pmt, str, cmd, tester, mode);
 
 	choice_offered = mem_zalloc(max * sizeof(*choice_offered));
 	choice_count = scan_items(choice_offered, max, player, mode, tester);
 	my_strcpy(choice_prompt, pmt ? pmt : "", sizeof(choice_prompt));
 	choice_picked = NULL;
-	choice_open = true;
+	choice_kind = CHOICE_ITEM;
 	choice_signal();
 
 	ok = choice_original(choice, pmt, str, cmd, tester, mode);
@@ -4276,7 +4300,7 @@ static bool choice_get_item(struct object **choice, const char *pmt,
 		ok = true;
 	}
 
-	choice_open = false;
+	choice_kind = CHOICE_NONE;
 	choice_picked = NULL;
 	choice_count = 0;
 	mem_free(choice_offered);
@@ -4286,12 +4310,176 @@ static bool choice_get_item(struct object **choice, const char *pmt,
 	return ok;
 }
 
+/**
+ * The spell prompt, wrapped the same way: the book's spells are recorded
+ * before the game's own spell menu opens, and a click answers with one of
+ * them.  The game asks "which spell" through get_spell_from_book_hook --
+ * including from inside textui_get_spell(), now that ui-spell.c asks through
+ * the hook rather than calling past it.
+ */
+static int choice_get_spell(struct player *p, const char *verb,
+		struct object *book, const char *error,
+		bool (*spell_filter)(const struct player *p, int spell))
+{
+	const struct class_book *cb = player_object_to_book(p, book);
+	int spell;
+
+	if (choice_kind != CHOICE_NONE || !cb)
+		return spell_original(p, verb, book, error, spell_filter);
+
+	choice_count = spell_collect_from_book(p, book, &choice_spells);
+	choice_spell_ok = spell_filter;
+	choice_spell_picked = -1;
+	strnfmt(choice_prompt, sizeof(choice_prompt), "%s which %s?", verb,
+			cb->realm->spell_noun);
+	my_strcap(choice_prompt);
+	choice_kind = CHOICE_SPELL;
+	choice_signal();
+
+	spell = spell_original(p, verb, book, error, spell_filter);
+	if (spell < 0 && choice_spell_picked >= 0) spell = choice_spell_picked;
+
+	choice_kind = CHOICE_NONE;
+	choice_count = 0;
+	mem_free(choice_spells);
+	choice_spells = NULL;
+	choice_spell_ok = NULL;
+	choice_signal();
+
+	return spell;
+}
+
+/*
+ * The top line of the main screen.  A dynamic menu has no title; whoever opens
+ * one prints what it is about there first -- "You are a Human Mindcrafter,
+ * and have 5 of 10 spell points." -- and the pane uses that.
+ */
+static void screen_top_line(char *buf, size_t len)
+{
+	term *old = Term;
+	Tcl_DString ds;
+	int x, a;
+	wchar_t c;
+	size_t n;
+
+	Tcl_DStringInit(&ds);
+	Term_activate(term_screen);
+	for (x = 0; x < Term->wid; x++) {
+		char u[TCL_UTF_MAX + 1];
+
+		if (Term_what(x, 0, &a, &c)) break;
+		Tcl_DStringAppend(&ds, u, Tcl_UniCharToUtf((int)c, u));
+	}
+	Term_activate(old);
+
+	my_strcpy(buf, Tcl_DStringValue(&ds), len);
+	Tcl_DStringFree(&ds);
+	for (n = strlen(buf); n > 0 && buf[n - 1] == ' '; n--) buf[n - 1] = 0;
+}
+
+/**
+ * Every dynamic menu, wrapped through the hook ui-menu.c keeps for it: the
+ * entries are read off the menu itself, the menu runs as it always did, and a
+ * click answers with an entry's value.  That one wrapper covers the racial,
+ * class and mutation powers -- the Mindcrafter's psionics among them -- pet
+ * orders, the town's buildings and the game's other menus of the same kind.
+ */
+static int choice_menu_select(struct menu *m)
+{
+	int value;
+
+	if (choice_kind != CHOICE_NONE) return menu_dynamic_select_default(m);
+
+	choice_menu = m;
+	choice_count = menu_dynamic_count(m);
+	choice_menu_has_pick = false;
+	screen_top_line(choice_prompt, sizeof(choice_prompt));
+	if (!choice_prompt[0])
+		my_strcpy(choice_prompt, "Choose one.", sizeof(choice_prompt));
+	choice_kind = CHOICE_MENU;
+	choice_signal();
+
+	value = menu_dynamic_select_default(m);
+	if (value == -1 && choice_menu_has_pick) value = choice_menu_picked;
+
+	choice_kind = CHOICE_NONE;
+	choice_count = 0;
+	choice_menu = NULL;
+	choice_menu_has_pick = false;
+	choice_signal();
+
+	return value;
+}
+
 /* Once, after textui_input_init(), so what is wrapped is textui's prompt. */
 static void choice_install(void)
 {
 	if (choice_original || !get_item_hook) return;
 	choice_original = get_item_hook;
 	get_item_hook = choice_get_item;
+
+	spell_original = get_spell_from_book_hook;
+	get_spell_from_book_hook = choice_get_spell;
+
+	menu_dynamic_select_hook = choice_menu_select;
+}
+
+/**
+ * A spell as the pane lists it, in the state and colour the game's own spell
+ * menu gives it (spell_menu_display() in ui-spell.c):
+ *    {n label name level mana fail comment colour valid}
+ */
+static Tcl_Obj *choice_spell_row(Tcl_Interp *ip, int n, int sidx)
+{
+	const struct class_spell *spell = spell_by_index(player, sidx);
+	Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+	char help[30] = "";
+	char label[2];
+	const char *comment = "";
+	int attr;
+
+	if (!spell) return row;
+
+	if (spell->slevel >= 99) {
+		comment = "illegible";
+		attr = COLOUR_L_DARK;
+	} else if (player->spell_flags[sidx] & PY_SPELL_FORGOTTEN) {
+		comment = "forgotten";
+		attr = COLOUR_YELLOW;
+	} else if (player->spell_flags[sidx] & PY_SPELL_LEARNED) {
+		if (player->spell_flags[sidx] & PY_SPELL_WORKED) {
+			get_spell_info(sidx, help, sizeof(help));
+			comment = help;
+			attr = COLOUR_WHITE;
+		} else {
+			comment = "untried";
+			attr = COLOUR_L_GREEN;
+		}
+	} else if (spell->slevel <= player->lev) {
+		comment = "unknown";
+		attr = COLOUR_L_BLUE;
+	} else {
+		comment = "difficult";
+		attr = COLOUR_RED;
+	}
+
+	label[0] = (n < (int) strlen(all_letters_nohjkl))
+		? all_letters_nohjkl[n] : 0;
+	label[1] = 0;
+
+	Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(n));
+	Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(label, -1));
+	Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(spell->name, -1));
+	Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(spell->slevel));
+	Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(spell->smana));
+	Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(spell_chance(sidx)));
+	Tcl_ListObjAppendElement(ip, row,
+			Tcl_NewStringObj(help[0] ? help + (help[0] == ' ') : comment, -1));
+	Tcl_ListObjAppendElement(ip, row,
+			Tcl_NewStringObj(colour_name[attr % MAX_COLORS], -1));
+	Tcl_ListObjAppendElement(ip, row, Tcl_NewBooleanObj(
+			choice_spell_ok ? choice_spell_ok(player, sidx) : true));
+	return row;
 }
 
 /**
@@ -4504,9 +4692,15 @@ static bool item_act(struct object *obj, int id)
 /**
  * angband_choice -- what the Choice pane shows, and what it can do.
  *
- *    angband_choice           {open prompt}: whether the game is asking
+ *    angband_choice           {open prompt kind}: whether the game is
+ *                             asking, and whether for an item, a spell or
+ *                             from a menu
  *    angband_choice list      the rows: what the prompt offers while it is
- *                             open, the pack otherwise
+ *                             open, the pack otherwise.  An item row is
+ *                             {n view label name weight glyph glyph-colour
+ *                             name-colour}, a spell row {n label name level
+ *                             mana fail comment colour valid}, a menu row
+ *                             {n label text valid}
  *    angband_choice burden    the header the game's own inventory window has
  *    angband_choice pick <n>  answer the open prompt with row n
  *    angband_choice actions <n>       what can be done with pack item n, as
@@ -4529,9 +4723,12 @@ static int objcmd_choice(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	if (objc == 1) {
 		Tcl_Obj *d = Tcl_NewListObj(0, NULL);
 
-		Tcl_ListObjAppendElement(ip, d, Tcl_NewBooleanObj(choice_open));
 		Tcl_ListObjAppendElement(ip, d,
-				Tcl_NewStringObj(choice_open ? choice_prompt : "", -1));
+				Tcl_NewBooleanObj(choice_kind != CHOICE_NONE));
+		Tcl_ListObjAppendElement(ip, d, Tcl_NewStringObj(
+				choice_kind != CHOICE_NONE ? choice_prompt : "", -1));
+		Tcl_ListObjAppendElement(ip, d,
+				Tcl_NewStringObj(choice_kind_name[choice_kind], -1));
 		Tcl_SetObjResult(ip, d);
 		return TCL_OK;
 	}
@@ -4541,10 +4738,32 @@ static int objcmd_choice(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	if (streq(what, "list") && objc == 2) {
 		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
 
-		if (choice_open) {
+		if (choice_kind == CHOICE_ITEM) {
 			for (i = 0; i < choice_count; i++)
 				Tcl_ListObjAppendElement(ip, list,
 						choice_row(ip, i, choice_offered[i]));
+		} else if (choice_kind == CHOICE_SPELL) {
+			for (i = 0; i < choice_count; i++)
+				Tcl_ListObjAppendElement(ip, list,
+						choice_spell_row(ip, i, choice_spells[i]));
+		} else if (choice_kind == CHOICE_MENU) {
+			for (i = 0; i < choice_count; i++) {
+				Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+				const char *text;
+				int value;
+				bool valid;
+				char label[2] = "";
+
+				text = menu_dynamic_entry(choice_menu, i, &value, &valid,
+						&label[0]);
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(label, -1));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(text ? text : "", -1));
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewBooleanObj(valid));
+				Tcl_ListObjAppendElement(ip, list, row);
+			}
 		} else {
 			for (i = 0; i < z_info->pack_size; i++) {
 				struct object *obj = player->upkeep->inven[i];
@@ -4576,14 +4795,41 @@ static int objcmd_choice(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 
 	if (streq(what, "pick") && objc == 3) {
 		if (Tcl_GetIntFromObj(ip, objv[2], &n) != TCL_OK) return TCL_ERROR;
-		if (!choice_open) {
+		if (choice_kind == CHOICE_NONE) {
 			Tcl_SetObjResult(ip, Tcl_NewStringObj(
-					"the game is not asking for an item", -1));
+					"the game is not asking for anything", -1));
 			return TCL_ERROR;
 		}
 		if (n < 0 || n >= choice_count) {
 			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no such choice: %d", n));
 			return TCL_ERROR;
+		}
+
+		/* The game's own answer to "may this one be chosen", asked again. */
+		if (choice_kind == CHOICE_SPELL) {
+			if (choice_spell_ok && !choice_spell_ok(player, choice_spells[n])) {
+				Tcl_SetObjResult(ip, Tcl_NewStringObj(
+						"that cannot be chosen", -1));
+				return TCL_ERROR;
+			}
+			choice_spell_picked = choice_spells[n];
+			Term_keypress(ESCAPE, 0);
+			return TCL_OK;
+		}
+		if (choice_kind == CHOICE_MENU) {
+			bool valid;
+			int value;
+
+			if (!menu_dynamic_entry(choice_menu, n, &value, &valid, NULL)
+					|| !valid) {
+				Tcl_SetObjResult(ip, Tcl_NewStringObj(
+						"that cannot be chosen", -1));
+				return TCL_ERROR;
+			}
+			choice_menu_picked = value;
+			choice_menu_has_pick = true;
+			Term_keypress(ESCAPE, 0);
+			return TCL_OK;
 		}
 
 		/*

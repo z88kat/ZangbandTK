@@ -1337,7 +1337,55 @@ void menu_dynamic_calc_location(struct menu *m, int mx, int my)
 	menu_layout(m, &r);
 }
 
+/**
+ * ZangbandTK: a front end that offers a dynamic menu another way as well --
+ * the Tcl/Tk front end's Choice pane, which can be clicked -- puts its own
+ * function here, and that function runs the menu with
+ * menu_dynamic_select_default() as it always ran.  NULL, as it is for every
+ * other front end, changes nothing.
+ */
+int (*menu_dynamic_select_hook)(struct menu *m) = NULL;
+
 int menu_dynamic_select(struct menu *m)
+{
+	if (menu_dynamic_select_hook) return menu_dynamic_select_hook(m);
+	return menu_dynamic_select_default(m);
+}
+
+/**
+ * The entries of a dynamic menu, read-only, for whatever offers it another
+ * way: how many there are, and each one's text, value, validity and the
+ * letter the menu shows for it.
+ */
+int menu_dynamic_count(struct menu *m)
+{
+	struct menu_entry *entry;
+	int n = 0;
+
+	for (entry = menu_priv(m); entry; entry = entry->next) n++;
+	return n;
+}
+
+const char *menu_dynamic_entry(struct menu *m, int i, int *value, bool *valid,
+		char *label)
+{
+	struct menu_entry *entry = menu_priv(m);
+	int n;
+
+	if (i < 0) return NULL;
+	for (n = 0; entry && n < i; n++) entry = entry->next;
+	if (!entry) return NULL;
+
+	if (value) *value = entry->value;
+	if (valid) *valid = (entry->valid == MN_ROW_VALID);
+	if (label) {
+		*label = (m->selections && i < (int) strlen(m->selections))
+			? m->selections[i] : 0;
+	}
+	return entry->text;
+}
+
+int menu_dynamic_select_default(struct menu *m)
 {
 	ui_event e = menu_select(m, 0, true);
 	struct menu_entry *entry;

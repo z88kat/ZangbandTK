@@ -396,6 +396,12 @@ int textui_get_spell(struct player *p, const char *verb,
 		*rtn_book = book;
 	}
 
-	return textui_get_spell_from_book(p, verb, book, spell_error,
-		spell_filter);
+	/*
+	 * Through the hook rather than to textui's own function, which is what
+	 * the hook holds unless a front end has put something in front of it.
+	 * ZangbandTK's Tcl/Tk front end does, to offer the spell list in its
+	 * Choice pane as well, and calling past the hook skipped it for every
+	 * spell cast this way -- which is nearly all of them.
+	 */
+	return get_spell_from_book(p, verb, book, spell_error, spell_filter);
 }
