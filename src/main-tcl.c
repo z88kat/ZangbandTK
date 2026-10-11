@@ -859,6 +859,35 @@ static void choice_install(void);
 static void store_notice(game_event_type type, game_event_data *data,
 		void *user);
 
+/**
+ * A key the bridge sends the game itself -- the nudge after a push, the Escape
+ * that ends a prompt a click has answered -- as opposed to one the player
+ * typed.
+ *
+ * Term_flush() asks the front end to flush and then forgets every queued key,
+ * and this front end's flush runs Tk's pending events.  So a menu click or a
+ * timer handled there pushed its command, sent its key, and lost the key a
+ * moment later: the command sat on the queue until the player pressed
+ * something else.  Measured at the start of a game, where the first level's
+ * flushes come thick and fast: a command pushed as the level appeared waited
+ * for a second nudge.  A key sent while a flush is running is kept back and
+ * sent at the next wait instead.  The player's own keys are not -- discarding
+ * those is what a flush is for.
+ */
+static bool flushing;
+static keycode_t keys_owed[8];
+static int keys_owed_n;
+
+static void bridge_key(keycode_t key)
+{
+	if (flushing) {
+		if (keys_owed_n < (int)N_ELEMENTS(keys_owed))
+			keys_owed[keys_owed_n++] = key;
+		return;
+	}
+	Term_keypress(key, 0);
+}
+
 static errr Term_xtra_tcl(int n, int v)
 {
 	term_data *td = (term_data *)(Term->data);
@@ -877,6 +906,15 @@ static errr Term_xtra_tcl(int n, int v)
 
 	switch (n) {
 		case TERM_XTRA_EVENT:
+			/* What was owed since the last flush, before waiting again. */
+			if (keys_owed_n) {
+				int i;
+
+				for (i = 0; i < keys_owed_n; i++)
+					Term_keypress(keys_owed[i], 0);
+				keys_owed_n = 0;
+				return 0;
+			}
 			if (v) {
 				Tcl_DoOneEvent(TCL_ALL_EVENTS);
 			} else {
@@ -886,8 +924,10 @@ static errr Term_xtra_tcl(int n, int v)
 			return 0;
 
 		case TERM_XTRA_FLUSH:
+			flushing = true;
 			while (Tcl_DoOneEvent(TCL_ALL_EVENTS | TCL_DONT_WAIT))
 				;
+			flushing = false;
 			return 0;
 
 		case TERM_XTRA_CLEAR:
@@ -5026,7 +5066,7 @@ static int objcmd_choice(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 				return TCL_ERROR;
 			}
 			choice_spell_picked = choice_spells[n];
-			Term_keypress(ESCAPE, 0);
+			bridge_key(ESCAPE);
 			return TCL_OK;
 		}
 		if (choice_kind == CHOICE_MENU) {
@@ -5041,12 +5081,12 @@ static int objcmd_choice(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			}
 			choice_menu_picked = value;
 			choice_menu_has_pick = true;
-			Term_keypress(ESCAPE, 0);
+			bridge_key(ESCAPE);
 			return TCL_OK;
 		}
 		if (choice_kind == CHOICE_CHECK) {
 			choice_check_picked = (n == 0);
-			Term_keypress(ESCAPE, 0);
+			bridge_key(ESCAPE);
 			return TCL_OK;
 		}
 
@@ -5055,7 +5095,7 @@ static int objcmd_choice(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		 * the cancel into this answer.
 		 */
 		choice_picked = choice_offered[n];
-		Term_keypress(ESCAPE, 0);
+		bridge_key(ESCAPE);
 		return TCL_OK;
 	}
 
@@ -6084,7 +6124,7 @@ static int objcmd_commands(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
  */
 static void command_nudge(void)
 {
-	Term_keypress('\a', 0);
+	bridge_key('\a');
 }
 
 /**
