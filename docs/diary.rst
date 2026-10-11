@@ -31,6 +31,53 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+11 October 2026 — the last window, and the design system with it
+================================================================
+
+The Items window was the third and last, and it went more smoothly than the
+other two, because most of what mattered in it was already right. The rules
+were the old window's and they stayed: the game decides everything, the window
+pushes the same command the keyboard would and reports only what it sees
+afterwards, "does this fit" is the game's own question, and drops are
+hit-tested by geometry. Only the drawing changed: a black canvas with Steven's
+pixel doll on it, and a text widget doing the job of a list, because each row
+needs its symbol in the game's colour on a black cell and a listbox has one
+colour per row.
+
+The design picked the doll by the character's sex, and 4.2 has none, so it is
+always the default one. Its burden bar had a tick at the weight limit, which
+Tk's stock progress bar cannot draw; the read-out gives the limit instead, and
+the bar turns gold past it.
+
+**The drag ghost took three tries.** The obvious version is a small borderless
+window that follows the pointer, and on macOS it came out as an empty white
+shape. I tried it in a bare ``wish`` to see why: a Ttk label in a borderless
+window is never drawn there, and a plain label is. So I used the plain label,
+and inside the game it was still a white shape. Whatever the difference is, it
+belongs to the game's event loop, not to the widget, and I stopped looking
+for it. The ghost is now a label placed inside the Items window, which is the
+only place a drop can land anyway.
+
+Two of my test runs went wrong for reasons that had nothing to do with the
+window. In the first, I dragged a torch onto a slot that already held an
+identical torch. The window looked for a change, found none, and correctly
+reported that the torch had stayed where it was. The swap had also left a
+``-more-`` prompt on the game's screen, and with nobody there to press a key,
+every command after it was refused as "in the middle of something else". The
+second run pressed a key after each step, as a player would, and everything
+passed. It also turned up one real bug: dropping from a stack of two rations
+puts down one, which is the game's default, but the message said "You drop 2
+Rations of Food". It now says "one of your".
+
+With that window done, nothing was drawn with Classical any more, so it went:
+``classical.tcl``, the three typefaces and their licences, the C code that
+registered them with macOS, and the extra framework that code needed. The Tk
+build no longer bundles ``lib/fonts`` at all. A bridge check now fails if the
+design system's namespace or any of its fonts come back. It arrived on
+18 September, with the first character sheet, and lasted a little over three
+weeks.
+
+
 11 October 2026 — the notes nobody ever wrote in
 ================================================
 

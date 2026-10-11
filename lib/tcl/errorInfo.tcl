@@ -12,10 +12,9 @@
 # notes was found by making the failure visible first and diagnosing it second.
 # This is that step, made permanent.
 #
-# Deliberately plain.  No `classical::` anything: this is the window you look at
-# when the other windows are broken, so it depends on nothing that can break,
-# and it is a text widget and a scrollbar on purpose rather than for want of
-# effort.
+# Deliberately plain: this is the window you look at when the other windows
+# are broken, so it depends on nothing that can break, and it is a text widget
+# and a scrollbar on purpose rather than for want of effort.
 #
 # It records whether or not it is open.  An error at startup happens long
 # before anyone has thought to open a window, so records are buffered and the

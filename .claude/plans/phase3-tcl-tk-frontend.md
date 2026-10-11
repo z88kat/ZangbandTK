@@ -1907,6 +1907,8 @@ them because its Main window was map and nothing else; ours is not.
 *What it does not change:* the five panes stay panes, detaching them is still post-T7 and
 still optional, and the main window still saves its sash positions.
 
+**Superseded by decision 18, below, and since removed. Kept as it was decided.**
+
 **Settled — every window is drawn with the Classical design system.** Confirmed by project
 owner, handing over a design for the character sheet: *"this design style we should use for
 all the windows."*
@@ -1957,12 +1959,14 @@ knowledge browser is the first window rebuilt to it.
   `text` for the two it does not, coloured from the theme rather than by hand. Fonts are
   Helvetica and Courier, named directly, as a 1990s Tk program named them. A bridge check
   walks each rebuilt window and fails on any widget class outside the stock list.
-- **The Classical design system is on its way out.** The character sheet and then the
-  items window followed the knowledge browser, to
+- **The Classical design system is gone.** The character sheet and then the items window
+  followed the knowledge browser, to
   [design_handoff_character_tk](design_handoff_character_tk/) and
-  [design_handoff_items_tk](design_handoff_items_tk/), so nothing is drawn with
-  `classical.tcl` any more. It goes next, and so do the three font families it brought into
-  `lib/fonts` and `fonts_register()` in main-tcl.c, which exists only to load them.
+  [design_handoff_items_tk](design_handoff_items_tk/). With no window left drawn with it,
+  `classical.tcl` was deleted, and with it the three font families it brought into
+  `lib/fonts`, their licences, `fonts_register()` in main-tcl.c and the Core Text link that
+  needed. The Tk build no longer installs or bundles `lib/fonts` at all. A bridge check fails
+  if the design system's namespace or its fonts come back.
 
 **Settled — no per-monster sound reassignment.** Confirmed by project owner: *"do not allow
 players reassign sounds, no one will use it anyway."*

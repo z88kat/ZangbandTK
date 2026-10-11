@@ -396,12 +396,12 @@ check "it holds the stat rows its sections asked for" {
 	expr {[llength $::character(fields)] == $wanted && $wanted > 10}
 } 1
 
-# The design system still draws the items window, so a missing face is worth
-# knowing about here rather than in a screenshot.
-check "the three faces resolved" {
-	list [font actual cl_title -family] [font actual cl_label -family] \
-		[font actual cl_footer -family]
-} "{Cormorant Garamond} Lora {Courier Prime}"
+# Decision 18 retired the Classical design system with its last window.  Its
+# namespace and its named fonts coming back would mean somebody had brought it
+# back.
+check "the design system is gone, fonts and all" {
+	list [namespace exists ::classical] [lsearch -all -inline [font names] cl_*]
+} "0 {}"
 
 check "closing it is just closing it" {
 	destroy .character

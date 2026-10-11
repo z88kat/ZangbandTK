@@ -41,8 +41,7 @@ set commands(debug) Debug
 # real shortcut as far as AppKit is concerned, and a menu quietly claiming the
 # letters of the alphabet is not something to leave to chance.
 #
-# So the key goes in the label, in the brackets the design system uses for keys
-# everywhere else.
+# So the key goes in the label, in brackets.
 proc commands_label {label key} {
     if {$key eq ""} { return $label }
     return "$label  \[$key\]"

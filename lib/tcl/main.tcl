@@ -185,7 +185,7 @@ menu .menubar.views -tearoff 0
 .menubar.views add command -label "Console" -command console_window
 .menubar.views add command -label "Errors" -command errorsink_window
 
-# The debug pair first, and before the design system, for the reason T3's exit
+# The debug pair first, before the windows, for the reason T3's exit
 # criterion puts them first: the debug loop has to exist before the UI does.
 # errorInfo.tcl installs the background error handler at source time, so an
 # error raised while any of the files below are being sourced -- or at any
@@ -194,9 +194,8 @@ menu .menubar.views -tearoff 0
 source [file join [file dirname [info script]] errorInfo.tcl]
 source [file join [file dirname [info script]] debug.tcl]
 
-# Then the design system, which no window is drawn with any more: all three
-# were rebuilt in stock Tk (decision 18).  It goes next, with its fonts.
-source [file join [file dirname [info script]] classical.tcl]
+# Then the windows, which are Tk's own widgets in Tk's classic theme and
+# nothing else (decision 18).
 source [file join [file dirname [info script]] character.tcl]
 source [file join [file dirname [info script]] knowledge.tcl]
 source [file join [file dirname [info script]] items.tcl]

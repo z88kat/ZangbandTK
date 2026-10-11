@@ -788,91 +788,6 @@ static void grid_clear(term_data *td)
 }
 
 /**
- * Make the bundled fonts available to Tk, without installing anything.
- *
- * The design system this front end is drawn to names three faces --
- * Cormorant Garamond, Lora and Courier Prime -- and none of them is on a
- * stock macOS.  Tk has no API for loading a font file: it asks the platform
- * for a family by name and takes what it is given.  So the platform is told
- * about them first.
- *
- * Process scope, so nothing is installed for the user and nothing survives
- * the program exiting.  All three are SIL Open Font Licence 1.1, which is why
- * they can be shipped at all; lib/fonts carries each licence beside its font.
- *
- * A font that will not register is not fatal.  lib/tcl/classical.tcl names a
- * fallback for every face, and a sheet set in Baskerville is a lesser thing
- * than one set in Cormorant, not a broken one.
- */
-/*
- * __APPLE__, not MACH_O_CARBON: the latter is the Makefile build's marker for
- * the Cocoa front end and the cmake build does not define it, so guarding on
- * it compiled the do-nothing branch and the fonts never appeared.
- */
-#ifdef __APPLE__
-
-#include <ApplicationServices/ApplicationServices.h>
-
-static void fonts_register(void)
-{
-	char path[1024];
-	ang_dir *dir;
-	char name[256];
-
-	if (!ANGBAND_DIR_FONTS) return;
-
-	dir = my_dopen(ANGBAND_DIR_FONTS);
-	if (!dir) return;
-
-	while (my_dread(dir, name, sizeof(name))) {
-		CFURLRef url;
-		CFStringRef str;
-		CFErrorRef err = NULL;
-
-		if (!suffix_i(name, ".ttf") && !suffix_i(name, ".otf")) continue;
-
-		path_build(path, sizeof(path), ANGBAND_DIR_FONTS, name);
-
-		str = CFStringCreateWithCString(NULL, path, kCFStringEncodingUTF8);
-		if (!str) continue;
-
-		url = CFURLCreateWithFileSystemPath(NULL, str,
-				kCFURLPOSIXPathStyle, false);
-		CFRelease(str);
-		if (!url) continue;
-
-		if (!CTFontManagerRegisterFontsForURL(url,
-				kCTFontManagerScopeProcess, &err)) {
-			/*
-			 * Worth saying once, quietly: the usual cause is the same file
-			 * registered twice, which is harmless, and the alternative is a
-			 * dialog about typography in front of somebody trying to play.
-			 */
-			plog_fmt("Tcl/Tk: could not register the font %s.", name);
-			if (err) CFRelease(err);
-		}
-
-		CFRelease(url);
-	}
-
-	my_dclose(dir);
-}
-
-#else
-
-static void fonts_register(void)
-{
-	/*
-	 * Windows wants AddFontResourceEx and Linux FcConfigAppFontAddFile.
-	 * Neither is written yet -- decision 13 puts those platforms after macOS
-	 * -- and until they are, the fallbacks in classical.tcl are what those
-	 * builds get.
-	 */
-}
-
-#endif /* __APPLE__ */
-
-/**
  * Point Tcl and Tk at their own script libraries.
  *
  * Tcl_Init finds init.tcl by walking up from the executable, which works for a
@@ -2564,9 +2479,9 @@ static int objcmd_player(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
  * A textblock as a Tcl string.
  *
  * The game writes its recall into wide characters with a colour per
- * character; the colours are dropped here, because the design system's prose
- * panel sets one colour for the passage and the alternative is a tagged text
- * widget nobody has asked for yet.
+ * character; the colours are dropped here, because the windows set the
+ * passage in one colour and the alternative is a tagged text widget nobody
+ * has asked for yet.
  */
 static Tcl_Obj *textblock_to_obj(textblock *tb)
 {
@@ -5588,13 +5503,6 @@ errr init_tcl(int argc, char **argv)
 		Tcl_SetStartupScript(startup, NULL);
 		Tcl_DecrRefCount(startup);
 	}
-
-	/*
-	 * Before Tk, because Tk asks the platform for its font list as it starts
-	 * and a face registered afterwards is a face the first "font create" will
-	 * not find.
-	 */
-	fonts_register();
 
 	if (Tk_Init(interp) != TCL_OK) {
 		plog_fmt("Tcl/Tk: Tk_Init failed: %s", Tcl_GetStringResult(interp));

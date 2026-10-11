@@ -22,7 +22,7 @@
 #
 # Deliberately plain, for the same reason as errorInfo.tcl: this is the window
 # you use when the other windows are wrong, so it uses nothing that can be
-# wrong.  No `classical::`.
+# wrong.
 #
 # It is also the one window that does *not* forward keys to the game.  Every
 # other toplevel in lib/tcl binds <Key> to angband_key so it can be left open
@@ -262,9 +262,7 @@ proc console_window {} {
 
 # console::wrap --
 #
-#   Fold a list of words into lines of at most `width` characters.  Here rather
-#   than in the design system because this file does not use the design system,
-#   and it is six lines.
+#   Fold a list of words into lines of at most `width` characters.
 proc console::wrap {words width} {
     set lines {}
     set line ""
