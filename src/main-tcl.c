@@ -41,7 +41,9 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "player-mutation.h"
+#include "obj-ignore.h"
 #include "player-spell.h"
+#include "store.h"
 #include "player-virtue.h"
 #include "trap.h"
 #include "ui-knowledge.h"
@@ -58,6 +60,7 @@
 #include "ui-output.h"
 #include "ui-player.h"
 #include "ui-prefs.h"
+#include "ui-spell.h"
 #include "ui-term.h"
 #include "z-textblock.h"
 
@@ -849,6 +852,7 @@ static bool command_inside = false;
 
 static void command_nudge(void);
 static bool in_play(void);
+static bool command_may_start(void);
 static void choice_install(void);
 
 static errr Term_xtra_tcl(int n, int v)
@@ -4334,13 +4338,180 @@ static Tcl_Obj *choice_row(Tcl_Interp *ip, int n, struct object *obj)
 }
 
 /**
- * angband_choice -- what the Choice pane shows, and its one action.
+ * What can be done with an item, as the game's own item menu decides it.
+ *
+ * context_menu_object() in ui-context.c, test for test and in its order, so
+ * the pane's menu offers what the game's would and greys what the game's
+ * greys: a wand with no charges, a scroll with no light to read it by.  The
+ * two entries that are not commands get ids of their own.
+ */
+#define ACTION_INSPECT  (-1)
+#define ACTION_DROP_ALL (-2)
+
+struct item_action {
+	int id;				/* a cmd_code, or one of the two above */
+	const char *label;
+	bool valid;
+};
+
+static int item_actions(struct object *obj, struct item_action *out, int max)
+{
+	int n = 0;
+	bool equipped = object_is_equipped(player->body, obj);
+
+#define ACT(i, l, v) \
+	do { \
+		if (n < max) { \
+			out[n].id = (i); \
+			out[n].label = (l); \
+			out[n].valid = (v); \
+			n++; \
+		} \
+	} while (0)
+
+	ACT(ACTION_INSPECT, "Inspect", true);
+
+	if (obj_can_browse(obj)) {
+		if (obj_can_cast_from(obj) && player_can_cast(player, false))
+			ACT(CMD_CAST, "Cast", true);
+		if (obj_can_study(obj) && player_can_study(player, false))
+			ACT(CMD_STUDY, "Study", true);
+		if (player_can_read(player, false))
+			ACT(CMD_BROWSE_SPELL, "Browse", true);
+	} else if (obj_is_useable(obj)) {
+		if (tval_is_wand(obj))
+			ACT(CMD_USE_WAND, "Aim", obj_has_charges(obj));
+		else if (tval_is_rod(obj))
+			ACT(CMD_USE_ROD, "Zap", obj_can_zap(obj));
+		else if (tval_is_staff(obj))
+			ACT(CMD_USE_STAFF, "Use", obj_has_charges(obj));
+		else if (tval_is_scroll(obj))
+			ACT(CMD_READ_SCROLL, "Read", player_can_read(player, false));
+		else if (tval_is_potion(obj))
+			ACT(CMD_QUAFF, "Quaff", true);
+		else if (tval_is_edible(obj))
+			ACT(CMD_EAT, "Eat", true);
+		else if (obj_is_activatable(obj))
+			ACT(CMD_ACTIVATE, "Activate",
+					equipped && obj_can_activate(obj));
+		else if (obj_can_fire(obj))
+			ACT(CMD_FIRE, "Fire", true);
+		else
+			ACT(CMD_USE, "Use", true);
+	}
+
+	if (obj_can_refill(obj))
+		ACT(CMD_REFILL, "Refill", true);
+
+	if (equipped && obj_can_takeoff(obj))
+		ACT(CMD_TAKEOFF, "Take off", true);
+	else if (!equipped && obj_can_wear(obj))
+		ACT(CMD_WIELD, "Equip", true);
+
+	if (object_is_carried(player, obj)) {
+		if (!square_isshop(cave, player->grid)
+				|| square(cave, player->grid)->feat == FEAT_HOME) {
+			ACT(CMD_DROP, "Drop", true);
+			if (obj->number > 1)
+				ACT(ACTION_DROP_ALL, "Drop All", true);
+		} else if (store_will_buy_tester(obj)) {
+			ACT(CMD_DROP, "Sell", true);
+		}
+	} else {
+		ACT(CMD_PICKUP, "Pick up", inven_carry_okay(obj));
+	}
+
+	if (obj_can_throw(obj))
+		ACT(CMD_THROW, "Throw", true);
+
+	ACT(CMD_INSCRIBE, "Inscribe", true);
+	if (obj_has_inscrip(obj))
+		ACT(CMD_UNINSCRIBE, "Uninscribe", true);
+
+	ACT(CMD_IGNORE, object_is_ignored(obj) ? "Unignore" : "Ignore", true);
+
+#undef ACT
+	return n;
+}
+
+/* The key the player would press for it, as the menu bar shows keys. */
+static Tcl_Obj *action_key(int id)
+{
+	int mode = OPT(player, rogue_like_commands)
+		? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	unsigned char key;
+	char buf[3] = "";
+
+	if (id == ACTION_INSPECT) key = 'I';
+	else if (id == ACTION_DROP_ALL) return Tcl_NewStringObj("", -1);
+	else key = cmd_lookup_key((cmd_code)id, mode);
+
+	if (key && key < 0x20) {
+		buf[0] = '^';
+		buf[1] = (char)UN_KTRL_CAP(key);
+	} else if (key) {
+		buf[0] = (char)key;
+	}
+	return Tcl_NewStringObj(buf, -1);
+}
+
+/**
+ * Do one of them, as context_menu_object() does once something is chosen:
+ * the inscription checks first (!d, !q and the rest, which can ask "Really
+ * ...?"), then the command with the item set, or for the two that are menus
+ * of the game's own, that menu.
+ */
+static bool item_act(struct object *obj, int id)
+{
+	int mode = OPT(player, rogue_like_commands)
+		? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+	unsigned char cmdkey = cmd_lookup_key((cmd_code)id, mode);
+	bool pushed = false;
+
+	if (id == ACTION_DROP_ALL) {
+		cmdq_push(CMD_DROP);
+		cmd_set_arg_item(cmdq_peek(), "item", obj);
+		cmd_set_arg_number(cmdq_peek(), "quantity", obj->number);
+		return true;
+	}
+
+	if (!key_confirm_command(cmdkey)
+			|| !get_item_allow(obj, cmdkey, (cmd_code)id, false))
+		return false;
+
+	if (id == CMD_IGNORE) {
+		textui_cmd_ignore_menu(obj);
+	} else if (id == CMD_BROWSE_SPELL) {
+		textui_book_browse(obj);
+	} else if (id == CMD_CAST) {
+		cmdq_push(CMD_CAST);
+		cmd_set_arg_item(cmdq_peek(), "book", obj);
+		pushed = true;
+	} else {
+		cmdq_push((cmd_code)id);
+		cmd_set_arg_item(cmdq_peek(), "item", obj);
+		if (id == CMD_DROP && square_isshop(cave, player->grid)) {
+			struct command *gc = cmdq_peek();
+			gc->code = (square(cave, player->grid)->feat == FEAT_HOME)
+				? CMD_STASH : CMD_SELL;
+		}
+		pushed = true;
+	}
+
+	return pushed;
+}
+
+/**
+ * angband_choice -- what the Choice pane shows, and what it can do.
  *
  *    angband_choice           {open prompt}: whether the game is asking
  *    angband_choice list      the rows: what the prompt offers while it is
  *                             open, the pack otherwise
  *    angband_choice burden    the header the game's own inventory window has
  *    angband_choice pick <n>  answer the open prompt with row n
+ *    angband_choice actions <n>       what can be done with pack item n, as
+ *                                     {id label key valid}
+ *    angband_choice act <n> <id>      do it
  */
 static int objcmd_choice(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		Tcl_Obj *const objv[])
@@ -4424,8 +4595,74 @@ static int objcmd_choice(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		return TCL_OK;
 	}
 
+	/* The item menu, between prompts, for an item in the pack. */
+	if ((streq(what, "actions") && objc == 3)
+			|| (streq(what, "act") && objc == 4)) {
+		struct item_action acts[24];
+		struct object *obj;
+		int count, id = 0, k;
+
+		if (Tcl_GetIntFromObj(ip, objv[2], &n) != TCL_OK) return TCL_ERROR;
+		if (objc == 4 && Tcl_GetIntFromObj(ip, objv[3], &id) != TCL_OK)
+			return TCL_ERROR;
+
+		obj = (n >= 0 && n < z_info->pack_size)
+			? player->upkeep->inven[n] : NULL;
+		if (!obj) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("nothing at inventory %d", n));
+			return TCL_ERROR;
+		}
+		count = item_actions(obj, acts, (int)N_ELEMENTS(acts));
+
+		if (objc == 3) {
+			Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+			for (k = 0; k < count; k++) {
+				Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(acts[k].id));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(acts[k].label, -1));
+				Tcl_ListObjAppendElement(ip, row, action_key(acts[k].id));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewBooleanObj(acts[k].valid));
+				Tcl_ListObjAppendElement(ip, list, row);
+			}
+			Tcl_SetObjResult(ip, list);
+			return TCL_OK;
+		}
+
+		/*
+		 * Asked again rather than trusted: the menu was built a moment ago
+		 * and the game has had a turn since if anything else happened.
+		 */
+		for (k = 0; k < count; k++)
+			if (acts[k].id == id) break;
+		if (k == count || !acts[k].valid || id == ACTION_INSPECT) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"that cannot be done with it just now", -1));
+			return TCL_ERROR;
+		}
+		if (!command_may_start()) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"the game is in the middle of something else", -1));
+			return TCL_ERROR;
+		}
+
+		/*
+		 * Inside a command for as long as this runs: the inscription checks
+		 * and the ignore and browse menus can all prompt, and a prompt pumps
+		 * Tk, so the door is held shut as it is for a menu's hook.
+		 */
+		command_inside = true;
+		if (item_act(obj, id)) command_nudge();
+		command_inside = false;
+		return TCL_OK;
+	}
+
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
-			"expected list, burden or pick <n>, not: %s", what));
+			"expected list, burden, pick <n>, actions <n> or act <n> <id>,"
+			" not: %s", what));
 	return TCL_ERROR;
 }
 

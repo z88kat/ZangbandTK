@@ -2,11 +2,13 @@
 #
 # The original's Choice window, as a pane (decision 16 puts it in the main
 # window with the map, the minimap, the messages and the recall).  Most of the
-# time it shows the pack.  When the game asks for an item -- "Quaff which
-# potion?" -- it shows the question and exactly the items the game will
-# accept, and a click answers it.  The keyboard answers it as it always did:
-# the game's own prompt is still running, and the pane only offers a second
-# way in.  See angband_choice in main-tcl.c for how a click becomes an answer.
+# time it shows the pack, and clicking an item opens a menu of what can be done
+# with it -- the game's own item menu, the same entries greyed the same way,
+# each with the key that does it from the keyboard.  When the game asks for an
+# item -- "Quaff which potion?" -- it shows the question and exactly the items
+# the game will accept, and a click answers it.  The keyboard answers it as it
+# always did: the game's own prompt is still running, and the pane only offers
+# a second way in.  See angband_choice in main-tcl.c for both.
 #
 # It is a text widget rather than a term, because a term cannot be clicked on,
 # and it is drawn the way its neighbours are: black, in the term's font, each
@@ -92,12 +94,13 @@ proc choice_row_at {x y} {
     return $i
 }
 
-# While the game is asking, the row under the pointer lights up, which is the
-# whole of the invitation to click it.
+# The row under the pointer lights up, which is the whole of the invitation to
+# click it: to answer the game's question while it is asking, and for the
+# item's menu otherwise.
 proc choice_motion {x y} {
     global choicepane
 
-    set i [expr {$choicepane(open) ? [choice_row_at $x $y] : ""}]
+    set i [choice_row_at $x $y]
     if {$i eq $choicepane(hot)} return
     set t [choice_text]
     $t tag remove hot 1.0 end
@@ -109,15 +112,62 @@ proc choice_motion {x y} {
     $t configure -cursor [expr {$i ne "" ? "hand2" : "arrow"}]
 }
 
-proc choice_click {x y} {
+proc choice_click {x y X Y} {
     global choicepane
 
-    if {!$choicepane(open)} return
     set i [choice_row_at $x $y]
     if {$i eq ""} return
+    if {!$choicepane(open)} {
+        choice_menu $i $X $Y
+        return
+    }
     if {[catch {angband_choice pick [lindex $choicepane(rows) $i 0]} err]} {
         bgerror $err
     }
+}
+
+# An item's menu: its name, then what can be done with it.  The entries and
+# which are greyed are the game's -- angband_choice actions asks the same
+# questions the game's own item menu asks -- and each carries its key in
+# brackets, as the menu bar's do, so the menu teaches the keyboard rather than
+# replacing it.
+proc choice_menu {i X Y} {
+    global choicepane
+
+    if {$choicepane(open)} return
+    lassign [lindex $choicepane(rows) $i] n view label name
+    if {[catch {angband_choice actions $n} actions]} return
+
+    set m .pw.bottom.choice.menu
+    destroy $m
+    menu $m -tearoff 0
+    $m add command -label [string toupper $name 0 0] -state disabled
+    $m add separator
+    set texts {}
+    foreach action $actions { lappend texts [lindex $action 1] }
+    set column [commands_pad $texts]
+    foreach action $actions {
+        lassign $action id text key valid
+        $m add command -label [commands_label $text $key $column] \
+            -state [expr {$valid ? "normal" : "disabled"}] \
+            -command [list choice_act $n $id $name]
+    }
+    tk_popup $m $X $Y
+}
+
+proc choice_act {n id name} {
+    # Inspect is the window's: the game's description in a dialog, as the
+    # Items window shows it, rather than a screen drawn over the map.
+    if {$id == -1} {
+        set lore [angband_gear lore inventory $n]
+        tk_messageBox -parent . -icon info -title "Inspect" \
+            -message [string toupper $name 0 0] \
+            -detail [regsub -all {[ \t]+\n} [string trim $lore] "\n"]
+        return
+    }
+    # Refused only when the game has something else on screen, a -more- or a
+    # prompt, and then the game's own screen is the explanation.
+    if {[catch {angband_choice act $n $id}]} { bell }
 }
 
 proc choice_build {} {
@@ -147,7 +197,15 @@ proc choice_build {} {
     bind $t <Configure> { choice_tabs }
     bind $t <Motion> { choice_motion %x %y }
     bind $t <Leave> { choice_motion -1 -1 }
-    bind $t <ButtonPress-1> { choice_click %x %y }
+    bind $t <ButtonPress-1> { choice_click %x %y %X %Y }
+    # The menu from the other button too, which is where the original kept it;
+    # Control-click is the Mac's right button.
+    foreach b {<ButtonPress-3> <Control-ButtonPress-1>} {
+        bind $t $b {
+            set i [choice_row_at %x %y]
+            if {$i ne ""} { choice_menu $i %X %Y }
+        }
+    }
     bind $t <MouseWheel> { %W yview scroll [expr {-(%D)}] units }
 }
 

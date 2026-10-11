@@ -803,6 +803,26 @@ proc second_pass {} {
 			$eight $e
 	} "{0 {}} 1 1 {the game is not asking for an item}"
 
+	# An item's menu is the game's item menu: Inspect first, always, with the
+	# key the game gives it; it is the window's to show, never a command.
+	check "an item's menu starts with Inspect, which is not a command" {
+		if {![llength [angband_gear inventory]]} {
+			catch {angband_choice actions 0} e
+			list skip $e
+		} else {
+			set first [lindex [angband_choice actions 0] 0]
+			catch {angband_choice act 0 -1} e
+			list $first $e
+		}
+	} [expr {[llength [angband_gear inventory]]
+		? "{-1 Inspect I 1} {that cannot be done with it just now}"
+		: "skip {nothing at inventory 0}"}]
+
+	check "and an item that is not there has no menu" {
+		catch {angband_choice actions 999} e
+		set e
+	} "nothing at inventory 999"
+
 	check "the pack's slots come back as used and size" {
 		lassign [angband_gear slots] used size
 		list [expr {$used >= 0}] [expr {$size > 0 && $used <= $size}]
