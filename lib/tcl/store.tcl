@@ -24,6 +24,7 @@ set store(stock) {}
 set store(wares) {}
 set store(qbuy) 1
 set store(qsell) 1
+set store(note) ""
 
 set store(refresh) {GOLD INVENTORY EQUIPMENT STORECHANGED}
 
@@ -65,6 +66,17 @@ proc store_refresh {} {
     set store(owner) [expr {$home ? "Your home." : "$owner, who will pay up\
         to $purse gold for any one thing."}]
     set store(gold) "Gold: $gold"
+
+    # A character born with no selling gives rather than sells, which is the
+    # game's own word for it ("Give which item?"), and the window says why
+    # nothing is paid rather than leaving a column of dashes to explain itself.
+    if {[catch {angband_option birth_no_selling} nosell]} { set nosell 0 }
+    if {!$home} {
+        $w.body.sell.act.do configure -text [expr {$nosell ? "Give" : "Sell"}]
+        set store(note) [expr {$nosell ? "This character was born with no\
+            selling: shops pay nothing, and gold found in the dungeon is worth\
+            five times as much." : ""}]
+    }
 
     set store(stock) [angband_store stock]
     set store(wares) [angband_store wares]
@@ -159,9 +171,11 @@ proc store_trade {side {quantity ""}} {
         set store(msg) $err
         return
     }
+    if {[catch {angband_option birth_no_selling} nosell]} { set nosell 0 }
     set store(msg) [dict get {
         buy,0 "Bought" sell,0 "Sold" buy,1 "Took" sell,1 "Left"
     } $side,$store(home)]
+    if {$side eq "sell" && !$store(home) && $nosell} { set store(msg) "Gave" }
     # Say how many of how many: a stack's name is the whole stack.
     append store(msg) [expr {$number > 1 ? " $q of $name." : " $name."}]
 }
@@ -200,6 +214,10 @@ proc store_side {parent side title verb} {
     }
     $tv tag configure short -foreground #909090
 
+    if {$side eq "sell"} {
+        ttk::label $f.note -textvariable store(note) -font {Helvetica 12} \
+            -wraplength 380 -justify left
+    }
     ttk::frame $f.act
     ttk::label $f.act.l -text "Quantity:" -font {Helvetica 12}
     ttk::spinbox $f.act.q -from 1 -to 1 -width 4 -font {Courier 12} \
@@ -217,6 +235,9 @@ proc store_side {parent side title verb} {
     grid $tv -row 0 -column 0 -sticky nsew
     grid $f.sb -row 0 -column 1 -sticky ns
     grid $f.act -row 1 -column 0 -columnspan 2 -sticky w -pady {8 0}
+    if {$side eq "sell"} {
+        grid $f.note -row 2 -column 0 -columnspan 2 -sticky w -pady {6 0}
+    }
     grid rowconfigure $f 0 -weight 1
     grid columnconfigure $f 0 -weight 1
 
@@ -305,6 +326,7 @@ proc store_window {} {
     bind .store <Alt-b> { store_trade buy ; break }
     bind .store <Alt-t> { store_trade buy ; break }
     bind .store <Alt-s> { store_trade sell ; break }
+    bind .store <Alt-g> { store_trade sell ; break }
 
     focus $body.buy.tv
 }
