@@ -328,7 +328,7 @@ check "angband_player takes at most one field" {
 proc stock_widgets_only {top} {
 	set stock {Toplevel Menu TFrame TLabel TLabelframe TRadiobutton TEntry
 	           TMenubutton TButton TScrollbar TSeparator TProgressbar
-	           Listbox Text Canvas Label}
+	           Treeview Listbox Text Canvas Label}
 	set odd {}
 	set todo $top
 	while {[llength $todo]} {
@@ -527,6 +527,25 @@ check "closing it is just closing it" {
 	destroy .items
 	items_refresh
 	winfo exists .items
+} 0
+
+# --- the spell book ---------------------------------------------------------
+
+check "the spell book wants a character" {
+	catch {angband_book books} e
+	set e
+} "there is no character yet"
+
+check "the spell book window opens without a character" {
+	book_window
+	list [winfo exists .book] [llength [.book.f.body.tv children {}]] \
+		[stock_widgets_only .book]
+} "1 0 {classic {}}"
+
+check "and closes" {
+	destroy .book
+	book_refresh
+	winfo exists .book
 } 0
 
 # --- the gear ---------------------------------------------------------------
@@ -822,6 +841,17 @@ proc second_pass {} {
 		catch {angband_choice actions 999} e
 		set e
 	} "nothing at inventory 999"
+
+	# The spell book's view of the character: the books carried that can be
+	# read, and a refusal by name for a pack position that is not one.
+	check "the spell book lists books and refuses what is not one" {
+		set books [angband_book books]
+		set shapes {}
+		foreach row $books { lappend shapes [llength $row] }
+		catch {angband_book spells 999} e
+		list [expr {[lsort -unique $shapes] in {{} 3}}] \
+			[string is boolean -strict [angband_book chooses]] $e
+	} "1 1 {no book at inventory 999}"
 
 	check "the pack's slots come back as used and size" {
 		lassign [angband_gear slots] used size

@@ -4425,6 +4425,49 @@ static void choice_install(void)
 }
 
 /**
+ * A spell's state as the game's own spell menu shows it, spell_menu_display()
+ * in ui-spell.c: a word or the spell's information, and the colour for it.
+ * `state` is the word whatever the comment is, so a window can sort and colour
+ * by it.
+ */
+static const char *spell_state(int sidx, char *help, size_t len,
+		const char **state, int *attr)
+{
+	const struct class_spell *spell = spell_by_index(player, sidx);
+	const char *comment = "";
+
+	help[0] = 0;
+	*state = "";
+	*attr = COLOUR_WHITE;
+	if (!spell) return "";
+
+	if (spell->slevel >= 99) {
+		comment = *state = "illegible";
+		*attr = COLOUR_L_DARK;
+	} else if (player->spell_flags[sidx] & PY_SPELL_FORGOTTEN) {
+		comment = *state = "forgotten";
+		*attr = COLOUR_YELLOW;
+	} else if (player->spell_flags[sidx] & PY_SPELL_LEARNED) {
+		if (player->spell_flags[sidx] & PY_SPELL_WORKED) {
+			get_spell_info(sidx, help, len);
+			comment = help + (help[0] == ' ');
+			*state = "known";
+			*attr = COLOUR_WHITE;
+		} else {
+			comment = *state = "untried";
+			*attr = COLOUR_L_GREEN;
+		}
+	} else if (spell->slevel <= player->lev) {
+		comment = *state = "unknown";
+		*attr = COLOUR_L_BLUE;
+	} else {
+		comment = *state = "difficult";
+		*attr = COLOUR_RED;
+	}
+	return comment;
+}
+
+/**
  * A spell as the pane lists it, in the state and colour the game's own spell
  * menu gives it (spell_menu_display() in ui-spell.c):
  *    {n label name level mana fail comment colour valid}
@@ -4435,33 +4478,13 @@ static Tcl_Obj *choice_spell_row(Tcl_Interp *ip, int n, int sidx)
 	Tcl_Obj *row = Tcl_NewListObj(0, NULL);
 	char help[30] = "";
 	char label[2];
-	const char *comment = "";
+	const char *comment, *state;
 	int attr;
 
 	if (!spell) return row;
 
-	if (spell->slevel >= 99) {
-		comment = "illegible";
-		attr = COLOUR_L_DARK;
-	} else if (player->spell_flags[sidx] & PY_SPELL_FORGOTTEN) {
-		comment = "forgotten";
-		attr = COLOUR_YELLOW;
-	} else if (player->spell_flags[sidx] & PY_SPELL_LEARNED) {
-		if (player->spell_flags[sidx] & PY_SPELL_WORKED) {
-			get_spell_info(sidx, help, sizeof(help));
-			comment = help;
-			attr = COLOUR_WHITE;
-		} else {
-			comment = "untried";
-			attr = COLOUR_L_GREEN;
-		}
-	} else if (spell->slevel <= player->lev) {
-		comment = "unknown";
-		attr = COLOUR_L_BLUE;
-	} else {
-		comment = "difficult";
-		attr = COLOUR_RED;
-	}
+	comment = spell_state(sidx, help, sizeof(help), &state, &attr);
+	(void)state;
 
 	label[0] = (n < (int) strlen(all_letters_nohjkl))
 		? all_letters_nohjkl[n] : 0;
@@ -4473,8 +4496,7 @@ static Tcl_Obj *choice_spell_row(Tcl_Interp *ip, int n, int sidx)
 	Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(spell->slevel));
 	Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(spell->smana));
 	Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(spell_chance(sidx)));
-	Tcl_ListObjAppendElement(ip, row,
-			Tcl_NewStringObj(help[0] ? help + (help[0] == ' ') : comment, -1));
+	Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(comment, -1));
 	Tcl_ListObjAppendElement(ip, row,
 			Tcl_NewStringObj(colour_name[attr % MAX_COLORS], -1));
 	Tcl_ListObjAppendElement(ip, row, Tcl_NewBooleanObj(
@@ -4909,6 +4931,193 @@ static int objcmd_choice(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
 			"expected list, burden, pick <n>, actions <n> or act <n> <id>,"
 			" not: %s", what));
+	return TCL_ERROR;
+}
+
+/**
+ * angband_book -- the Spell Book window's view of the character's magic.
+ *
+ *    angband_book books           {n name realm} for each book in the pack the
+ *                                 character can read, n its pack position
+ *    angband_book spells <n>      the spells of book n, as {sidx name level
+ *                                 mana fail info state castable learnable}
+ *    angband_book text <sidx>     the spell's own description
+ *    angband_book chooses         whether this class picks the spell it
+ *                                 learns, or learns one at random from a book
+ *    angband_book cast <sidx>     cast it
+ *    angband_book study <n> ?sidx?  learn from book n: that spell for a class
+ *                                 that chooses, a random one otherwise
+ *
+ * Read from the game's own tables, and acted on by pushing the game's own
+ * commands with their arguments filled in -- do_cmd_cast() takes a "spell",
+ * do_cmd_study() a "spell" or an "item" -- so the turn, the "not enough mana,
+ * attempt it anyway?" question and the aiming are the game's, exactly as from
+ * the keyboard.  `state` is the word from spell_menu_display(): known,
+ * untried, unknown, difficult, forgotten or illegible.
+ */
+static int objcmd_book(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what;
+	int i, n, sidx;
+
+	(void)dummy;
+
+	if (objc < 2) {
+		Tcl_WrongNumArgs(ip, 1, objv, "books|spells|text|chooses|cast|study ?arg ...?");
+		return TCL_ERROR;
+	}
+	if (!player || !player->upkeep || !player->class) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("there is no character yet", -1));
+		return TCL_ERROR;
+	}
+	what = Tcl_GetString(objv[1]);
+
+	if (streq(what, "books") && objc == 2) {
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+		char name[120];
+
+		for (i = 0; i < z_info->pack_size; i++) {
+			struct object *obj = player->upkeep->inven[i];
+			const struct class_book *cb;
+			Tcl_Obj *row;
+
+			if (!obj) break;
+			if (!obj_can_browse(obj)) continue;
+			cb = player_object_to_book(player, obj);
+			if (!cb) continue;
+
+			object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL,
+					player);
+			row = Tcl_NewListObj(0, NULL);
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(name, -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(
+					cb->realm && cb->realm->name ? cb->realm->name : "", -1));
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	if (streq(what, "chooses") && objc == 2) {
+		Tcl_SetObjResult(ip,
+				Tcl_NewBooleanObj(player_has(player, PF_CHOOSE_SPELLS)));
+		return TCL_OK;
+	}
+
+	if ((streq(what, "spells") && objc == 3)
+			|| (streq(what, "study") && (objc == 3 || objc == 4))) {
+		struct object *obj;
+		const struct class_book *cb;
+
+		if (Tcl_GetIntFromObj(ip, objv[2], &n) != TCL_OK) return TCL_ERROR;
+		obj = (n >= 0 && n < z_info->pack_size)
+			? player->upkeep->inven[n] : NULL;
+		cb = obj && obj_can_browse(obj)
+			? player_object_to_book(player, obj) : NULL;
+		if (!cb) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no book at inventory %d", n));
+			return TCL_ERROR;
+		}
+
+		if (streq(what, "spells")) {
+			Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+			for (i = 0; i < cb->num_spells; i++) {
+				const struct class_spell *spell = &cb->spells[i];
+				Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+				char help[30];
+				const char *info, *state;
+				int attr;
+
+				sidx = spell->sidx;
+				info = spell_state(sidx, help, sizeof(help), &state, &attr);
+
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(sidx));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(spell->name, -1));
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(spell->slevel));
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(spell->smana));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewIntObj(spell_chance(sidx)));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(streq(state, "known") ? info : "", -1));
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(state, -1));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewBooleanObj(spell_okay_to_cast(player, sidx)));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewBooleanObj(spell_okay_to_study(player, sidx)));
+				Tcl_ListObjAppendElement(ip, list, row);
+			}
+			Tcl_SetObjResult(ip, list);
+			return TCL_OK;
+		}
+
+		/* study */
+		if (!command_may_start()) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"the game is in the middle of something else", -1));
+			return TCL_ERROR;
+		}
+		/*
+		 * Whether the character can study at all just now -- blind, no
+		 * light, nothing left to learn -- is the game's to say, and it says
+		 * why as the command starts; only the spell itself is checked here.
+		 */
+		if (player_has(player, PF_CHOOSE_SPELLS)) {
+			if (objc != 4 || Tcl_GetIntFromObj(ip, objv[3], &sidx) != TCL_OK
+					|| !spell_okay_to_study(player, sidx)) {
+				Tcl_SetObjResult(ip, Tcl_NewStringObj(
+						"that cannot be learned just now", -1));
+				return TCL_ERROR;
+			}
+			cmdq_push(CMD_STUDY);
+			cmd_set_arg_choice(cmdq_peek(), "spell", sidx);
+		} else {
+			cmdq_push(CMD_STUDY);
+			cmd_set_arg_item(cmdq_peek(), "item", obj);
+		}
+		command_nudge();
+		return TCL_OK;
+	}
+
+	if ((streq(what, "text") || streq(what, "cast")) && objc == 3) {
+		const struct class_spell *spell;
+
+		if (Tcl_GetIntFromObj(ip, objv[2], &sidx) != TCL_OK) return TCL_ERROR;
+		spell = spell_by_index(player, sidx);
+		if (!spell) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no such spell: %d", sidx));
+			return TCL_ERROR;
+		}
+
+		if (streq(what, "text")) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(spell->text ? spell->text : "",
+					-1));
+			return TCL_OK;
+		}
+
+		if (!command_may_start()) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"the game is in the middle of something else", -1));
+			return TCL_ERROR;
+		}
+		/* As for study: the game says why it cannot be cast just now. */
+		if (!spell_okay_to_cast(player, sidx)) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"that cannot be cast just now", -1));
+			return TCL_ERROR;
+		}
+		cmdq_push(CMD_CAST);
+		cmd_set_arg_choice(cmdq_peek(), "spell", sidx);
+		command_nudge();
+		return TCL_OK;
+	}
+
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+			"expected books, spells, text, chooses, cast or study, not: %s",
+			what));
 	return TCL_ERROR;
 }
 
@@ -6253,6 +6462,7 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_dump", objcmd_dump, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_choice", objcmd_choice, NULL,
 			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_book", objcmd_book, NULL, NULL);
 
 	hooks_init();
 

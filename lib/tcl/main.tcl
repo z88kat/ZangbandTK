@@ -186,6 +186,7 @@ menu .menubar.views -tearoff 0
 .menubar.views add command -label "Character" -command character_window
 .menubar.views add command -label "Knowledge" -command knowledge_window
 .menubar.views add command -label "Items" -command items_window
+.menubar.views add command -label "Spell Book" -command book_window
 .menubar.views add separator
 .menubar.views add command -label "Console" -command console_window
 .menubar.views add command -label "Errors" -command errorsink_window
@@ -204,6 +205,7 @@ source [file join [file dirname [info script]] debug.tcl]
 source [file join [file dirname [info script]] character.tcl]
 source [file join [file dirname [info script]] knowledge.tcl]
 source [file join [file dirname [info script]] items.tcl]
+source [file join [file dirname [info script]] book.tcl]
 source [file join [file dirname [info script]] choice.tcl]
 source [file join [file dirname [info script]] commands.tcl]
 
