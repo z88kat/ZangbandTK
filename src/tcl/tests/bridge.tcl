@@ -328,7 +328,7 @@ check "angband_player takes at most one field" {
 proc stock_widgets_only {top} {
 	set stock {Toplevel Menu TFrame TLabel TLabelframe TRadiobutton TEntry
 	           TMenubutton TButton TScrollbar TSeparator TProgressbar
-	           Treeview Listbox Text Canvas Label}
+	           Treeview TSpinbox Listbox Text Canvas Label}
 	set odd {}
 	set todo $top
 	while {[llength $todo]} {
@@ -547,6 +547,13 @@ check "and closes" {
 	book_refresh
 	winfo exists .book
 } 0
+
+# --- the store --------------------------------------------------------------
+
+check "the store wants a character" {
+	catch {angband_store} e
+	set e
+} "there is no character yet"
 
 # --- the gear ---------------------------------------------------------------
 
@@ -852,6 +859,13 @@ proc second_pass {} {
 		list [expr {[lsort -unique $shapes] in {{} 3}}] \
 			[string is boolean -strict [angband_book chooses]] $e
 	} "1 1 {no book at inventory 999}"
+
+	# Not in a store, so the store is empty and its lists are refused by name;
+	# and no Store window, which opens only on walking into one.
+	check "outside a store there is no store" {
+		catch {angband_store stock} e
+		list [angband_store] $e [winfo exists .store]
+	} "{} {you are not in a store} 0"
 
 	check "the pack's slots come back as used and size" {
 		lassign [angband_gear slots] used size

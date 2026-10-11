@@ -855,6 +855,8 @@ static void command_nudge(void);
 static bool in_play(void);
 static bool command_may_start(void);
 static void choice_install(void);
+static void store_notice(game_event_type type, game_event_data *data,
+		void *user);
 
 static errr Term_xtra_tcl(int n, int v)
 {
@@ -4422,6 +4424,9 @@ static void choice_install(void)
 	get_spell_from_book_hook = choice_get_spell;
 
 	menu_dynamic_select_hook = choice_menu_select;
+
+	event_add_handler(EVENT_LEAVE_WORLD, store_notice, NULL);
+	event_add_handler(EVENT_ENTER_WORLD, store_notice, NULL);
 }
 
 /**
@@ -5118,6 +5123,243 @@ static int objcmd_book(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
 			"expected books, spells, text, chooses, cast or study, not: %s",
 			what));
+	return TCL_ERROR;
+}
+
+/**
+ * Whether the character is inside a store, as the Store window needs to know.
+ *
+ * Not from the store's own three events.  cmd-cave.c signals ENTER_STORE,
+ * USE_STORE and LEAVE_STORE and then removes every handler of each type, so a
+ * subscription to them -- including the front end's own, which turns every
+ * event into a Tk one -- lasts exactly one visit.  enter_store() and
+ * leave_store() in ui-store.c signal LEAVE_WORLD and ENTER_WORLD, which are
+ * never removed, so those are what this follows.
+ */
+static bool store_inside;
+
+static void store_notice(game_event_type type, game_event_data *data,
+		void *user)
+{
+	(void)data;
+	(void)user;
+
+	if (type == EVENT_LEAVE_WORLD)
+		store_inside = player && cave && store_at(cave, player->grid);
+	else
+		store_inside = false;
+}
+
+/* What the store would buy or take: the game's own sell prompt's list. */
+static int store_wares(struct store *store, struct object **list, int max)
+{
+	return scan_items(list, max, player,
+			USE_EQUIP | USE_INVEN | USE_FLOOR | USE_QUIVER,
+			store->feat == FEAT_HOME ? NULL : store_will_buy_tester);
+}
+
+/**
+ * angband_store -- the store the character is in, for the Store window.
+ *
+ *    angband_store             {} outside a store, otherwise {name owner
+ *                              purse home gold}
+ *    angband_store stock       {n name number weight price glyph colour
+ *                              afford}, price for one, 0 at home
+ *    angband_store wares       what the store would buy -- or the home take --
+ *                              as {n name number weight price glyph colour
+ *                              worn}, price offered for one
+ *    angband_store lore <n>    what the game says about stock item n
+ *    angband_store buy <n> <quantity>     buy, or take from the home
+ *    angband_store sell <n> <quantity>    sell, or leave in the home
+ *
+ * The lists are the store screen's: store_stock_list() for the shelves, the
+ * sell prompt's own items and filter for the wares, price_item() for both
+ * prices.  Buying and selling push CMD_BUY, CMD_RETRIEVE, CMD_SELL or
+ * CMD_STASH with the item and quantity filled in, which is what the store
+ * screen pushes once it has asked, and then run the queue as the store screen
+ * does after a key -- cmdq_pop(CTX_STORE) and the notice and handle that
+ * follow.  The usual nudge does not do it here: the store's menu passes its
+ * handler only the keys it knows, so a key it does not know never reaches the
+ * line that runs the queue.
+ */
+static int objcmd_store(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	struct store *store;
+	const char *what;
+	struct object **list;
+	char name[120];
+	int i, n, count, max, qty;
+	bool home;
+
+	(void)dummy;
+
+	if (!player || !player->upkeep) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("there is no character yet", -1));
+		return TCL_ERROR;
+	}
+	store = (store_inside && cave) ? store_at(cave, player->grid) : NULL;
+
+	if (objc == 1) {
+		Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+
+		if (store) {
+			Tcl_ListObjAppendElement(ip, d, Tcl_NewStringObj(
+					f_info[store->feat].name ? f_info[store->feat].name : "",
+					-1));
+			Tcl_ListObjAppendElement(ip, d, Tcl_NewStringObj(
+					store->owner && store->owner->name
+						? store->owner->name : "", -1));
+			Tcl_ListObjAppendElement(ip, d, Tcl_NewIntObj(
+					store->owner ? store->owner->max_cost : 0));
+			Tcl_ListObjAppendElement(ip, d,
+					Tcl_NewBooleanObj(store->feat == FEAT_HOME));
+			Tcl_ListObjAppendElement(ip, d, Tcl_NewIntObj((int)player->au));
+		}
+		Tcl_SetObjResult(ip, d);
+		return TCL_OK;
+	}
+
+	if (!store) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("you are not in a store", -1));
+		return TCL_ERROR;
+	}
+	what = Tcl_GetString(objv[1]);
+	home = (store->feat == FEAT_HOME);
+
+	if ((streq(what, "stock") || streq(what, "wares")) && objc == 2) {
+		Tcl_Obj *rows = Tcl_NewListObj(0, NULL);
+		bool stock = streq(what, "stock");
+
+		max = stock ? z_info->store_inven_max
+			: z_info->pack_size + z_info->quiver_size + player->body.count
+				+ z_info->floor_size;
+		list = mem_zalloc(max * sizeof(*list));
+		if (stock) {
+			store_stock_list(store, list, max);
+			count = max;
+		} else {
+			count = store_wares(store, list, max);
+		}
+
+		for (i = 0; i < count; i++) {
+			struct object *obj = list[i];
+			Tcl_Obj *row;
+			char glyph[8];
+			int price;
+
+			if (!obj) continue;
+			object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL
+					| (stock ? ODESC_STORE : 0), player);
+			price = home ? 0 : price_item(store, obj, !stock, 1);
+
+			row = Tcl_NewListObj(0, NULL);
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(name, -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(obj->number));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(obj->weight));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(price));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(glyph,
+					Tcl_UniCharToUtf((int)object_glyph(obj), glyph)));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(object_colour(obj), -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewBooleanObj(stock
+					? (home || player->au >= price)
+					: object_is_equipped(player->body, obj)));
+			Tcl_ListObjAppendElement(ip, rows, row);
+		}
+		mem_free(list);
+		Tcl_SetObjResult(ip, rows);
+		return TCL_OK;
+	}
+
+	if ((streq(what, "lore") && objc == 3)
+			|| ((streq(what, "buy") || streq(what, "sell")) && objc == 4)) {
+		bool stock = !streq(what, "sell");
+		struct object *obj;
+
+		if (Tcl_GetIntFromObj(ip, objv[2], &n) != TCL_OK) return TCL_ERROR;
+		if (objc == 4 && Tcl_GetIntFromObj(ip, objv[3], &qty) != TCL_OK)
+			return TCL_ERROR;
+
+		max = stock ? z_info->store_inven_max
+			: z_info->pack_size + z_info->quiver_size + player->body.count
+				+ z_info->floor_size;
+		list = mem_zalloc(max * sizeof(*list));
+		if (stock) {
+			store_stock_list(store, list, max);
+			count = max;
+		} else {
+			count = store_wares(store, list, max);
+		}
+		obj = (n >= 0 && n < count) ? list[n] : NULL;
+		mem_free(list);
+		if (!obj) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("nothing at %d", n));
+			return TCL_ERROR;
+		}
+
+		if (streq(what, "lore")) {
+			textblock *tb = object_info(obj, OINFO_NONE);
+			Tcl_Obj *text = textblock_to_obj(tb);
+
+			textblock_free(tb);
+			Tcl_SetObjResult(ip, text);
+			return TCL_OK;
+		}
+
+		if (qty < 1 || qty > obj->number) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"there are %d to choose from", obj->number));
+			return TCL_ERROR;
+		}
+		if (stock && !home && player->au < price_item(store, obj, false, qty)) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"You do not have enough gold for this item.", -1));
+			return TCL_ERROR;
+		}
+		if (stock && qty > inven_carry_num(player, obj)) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"You cannot carry that many items.", -1));
+			return TCL_ERROR;
+		}
+
+		/*
+		 * The store screen is the one waiting, not the main loop, so
+		 * inkey_flag is not the test; command_inside still is.
+		 */
+		if (command_inside) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"the game is in the middle of something else", -1));
+			return TCL_ERROR;
+		}
+
+		if (stock)
+			cmdq_push(home ? CMD_RETRIEVE : CMD_BUY);
+		else
+			cmdq_push(home ? CMD_STASH : CMD_SELL);
+		cmd_set_arg_item(cmdq_peek(), "item", obj);
+		cmd_set_arg_number(cmdq_peek(), "quantity", qty);
+
+		/*
+		 * As the store screen does: store_purchase() and store_sell() clear
+		 * the message line before a trade, so a trade's message does not
+		 * stop at -more- behind the last one.  Then as store_menu_handle()
+		 * does once it has pushed a command.
+		 */
+		msg_flag = false;
+		command_inside = true;
+		cmdq_pop(CTX_STORE);
+		event_signal(EVENT_INVENTORY);
+		event_signal(EVENT_EQUIPMENT);
+		notice_stuff(player);
+		handle_stuff(player);
+		command_inside = false;
+		return TCL_OK;
+	}
+
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+			"expected stock, wares, lore, buy or sell, not: %s", what));
 	return TCL_ERROR;
 }
 
@@ -6463,6 +6705,7 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_choice", objcmd_choice, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_book", objcmd_book, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_store", objcmd_store, NULL, NULL);
 
 	hooks_init();
 

@@ -1255,6 +1255,13 @@ static void refresh_stock(game_event_type type, game_event_data *unused, void *u
 
 	store_stock_list(ctx->store, ctx->list, z_info->store_inven_max);
 
+	/*
+	 * ZangbandTK: a trade that changed the stock changed the gold too, and
+	 * a trade made other than from this screen's own keys -- the Tcl/Tk
+	 * front end's Store window -- has nothing else to say so.
+	 */
+	ctx->flags |= STORE_GOLD_CHANGE;
+
 	/* Display the store */
 	store_display_recalc(ctx);
 	store_menu_recalc(menu);
