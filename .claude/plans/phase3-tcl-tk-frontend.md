@@ -1956,11 +1956,12 @@ knowledge browser is the first window rebuilt to it.
 - **Stock widgets only.** Ttk widgets for everything Ttk has; the classic `listbox` and
   `text` for the two it does not, coloured from the theme rather than by hand. Fonts are
   Helvetica and Courier, named directly, as a 1990s Tk program named them. A bridge check
-  walks the knowledge window and fails on any widget class outside the stock list.
-- **The Classical design system is on its way out.** `classical.tcl` stays only until the
-  character sheet and the items window are rebuilt the same way. Then it goes, and so do
-  the three font families it brought into `lib/fonts` and `fonts_register()` in main-tcl.c,
-  which exists only to load them.
+  walks each rebuilt window and fails on any widget class outside the stock list.
+- **The Classical design system is on its way out.** The character sheet followed the
+  knowledge browser, to [design_handoff_character_tk](design_handoff_character_tk/), so
+  `classical.tcl` now draws only the items window and stays until that is rebuilt the same
+  way. Then it goes, and so do the three font families it brought into `lib/fonts` and
+  `fonts_register()` in main-tcl.c, which exists only to load them.
 
 **Settled — no per-monster sound reassignment.** Confirmed by project owner: *"do not allow
 players reassign sounds, no one will use it anyway."*

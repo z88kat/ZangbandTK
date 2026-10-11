@@ -516,7 +516,7 @@ static void prt_speed(int row, int col)
 	c_put_str(attr, format("%-11s", buf), row, col);
 }
 
-static int fmt_depth(char buf[], int max)
+int fmt_depth(char buf[], int max)
 {
 	if (!player->depth) {
 		/*

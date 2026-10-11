@@ -31,6 +31,74 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+11 October 2026 — the notes nobody ever wrote in
+================================================
+
+The character sheet went the same way as the Knowledge window the day before:
+Steven sent a design in stock Tk widgets and I rebuilt the window to it. Most of
+the design carried straight over. A few parts of it described a game that is
+not this one, and the work was mostly finding those.
+
+**Sex.** The design gave the character a Sex field. Angband 4.2 removed sex
+from the game, so there is nothing to show, and the Title row now stands on
+its own.
+
+**Notes.** The design made Notes an editable text box, "saved with the
+character". There is nowhere to save it: that would mean a new field in the
+savefile, and the savefile rules here are strict. Before saying so, Steven
+asked whether the original had ever had a notes feature at all, so I went and
+looked. It had a Notes page, for ZangbandTK only, next to Mutations and
+Virtues. It opened a text file named after the character and displayed it,
+and nothing ever saved what you typed into it. The game wrote that file:
+Zangband's ``auto_notes`` option logged level-ups, quests, uniques and
+artifacts, and its ``:`` command appended a line you typed. 4.2 keeps both of
+those in the character's history, and ``:`` still adds to it. That history is
+what our Notes page already showed. So the page stays as it was, the editable
+box goes, and there is a comment on the code saying why, so that nobody adds
+it back later.
+
+**"Town".** The design's Depth field said Town at depth zero, and so had the
+old window. Here depth zero is the whole world, and the sidebar already has a
+comment saying that "Town" was wrong nearly everywhere it appeared. The sidebar
+names the town you are in or says "wilderness", so the bridge now returns that
+same text, through the same function, instead of a second guess at it.
+
+**The progress bars.** The design said classic Tk has no progress bar, and
+asked for one drawn on a canvas. Tk has had ``ttk::progressbar`` since 8.5, and
+in the classic theme it is exactly the bar in the design: a sunken grey trough
+and a raised coloured fill. Drawing one by hand would have been inventing a
+widget, which is what decision 18 says not to do. The hit point bar turns
+yellow and then red by the game's own rule and the player's hit point warning
+setting.
+
+Two mistakes of my own. The old file had a comment explaining that ``expr``
+turns the string "+3" back into the number 3 and so loses the sign. I kept the
+comment and the helper it describes, and then put the result through ``expr``
+anyway, so "To hit" came out as 3. The second was a modal dialog that grabbed
+before it was on screen, which Tk refuses. My first test of that fix failed
+too, but the fault was in the test, not the window: the test script had a
+helper of its own called ``grab``, which hid Tk's ``grab`` command for the
+whole session.
+
+Change Name and Dump to File are new, and both are the game's own operations
+rather than copies. Renaming does what the game's character screen does, which
+is to copy the name into one field; it keeps the game's refusal for a name set
+on the command line, and it leaves the savefile's name alone. The dump is the
+game's ``dump_save()``. It cannot just write a file: it draws the character
+screen onto the main term and reads the cells back, so the bridge saves the
+screen around it the way the character screen does, and it refuses while
+another command is running.
+
+The Tk app has an icon now, the same one ZangbandTK.app uses. It was not enough
+to put the file in the bundle. When the plist names no icon, Tk sets the Dock
+icon itself at startup, to its own feather where it can find one, so the plist
+has to name the file. The packaging script now fails if it names one the
+bundle does not contain.
+
+That leaves the Items window, the paper doll, as the last thing drawn with
+Classical.
+
+
 10 October 2026 — the toolkit I chose and then hid
 ==================================================
 

@@ -315,6 +315,24 @@ check "angband_player takes at most one field" {
 
 # --- the character window -------------------------------------------------
 
+# Decision 18: the windows are Tk's own widgets in Tk's classic theme, and
+# nothing drawn by hand.  A widget class outside this list is a widget somebody
+# invented, which is the thing the decision rules out.  Returns the theme and
+# whatever did not belong.
+proc stock_widgets_only {top} {
+	set stock {Toplevel Menu TFrame TLabel TLabelframe TRadiobutton TEntry
+	           TMenubutton TButton TScrollbar TSeparator TProgressbar
+	           Listbox Text Canvas}
+	set odd {}
+	set todo $top
+	while {[llength $todo]} {
+		set todo [lassign $todo w]
+		if {[winfo class $w] ni $stock} { lappend odd "$w [winfo class $w]" }
+		lappend todo {*}[winfo children $w]
+	}
+	list [ttk::style theme use] $odd
+}
+
 # The first window that is not a pane.  It can be opened before there is a
 # character -- the menu is always there -- and it shows em-dashes rather than
 # raising an error dialog at somebody who clicked it too early.
@@ -326,20 +344,38 @@ check "the character window opens without a character" {
 check "the character window has a page per entry" {
 	set pages {}
 	foreach page $::character(pages) {
-		lassign $page key label numeral
-		lappend pages [winfo exists .character.card.body.$key]
+		lappend pages [winfo exists .character.f.page.[lindex $page 0]]
 	}
 	list [llength $::character(pages)] [lsort -unique $pages]
-} "4 1"
+} "5 1"
 
 check "the pages switch" {
 	set ::character(page) notes
 	character_switch
-	set a [grid info .character.card.body.notes]
+	set a [grid info .character.f.page.notes]
 	set ::character(page) info
 	character_switch
-	list [expr {$a ne ""}] [expr {[grid info .character.card.body.notes] eq ""}]
+	list [expr {$a ne ""}] [expr {[grid info .character.f.page.notes] eq ""}]
 } "1 1"
+
+check "it is built from stock Tk widgets in the classic theme" {
+	stock_widgets_only .character
+} "classic {}"
+
+# The two things the sheet can do to the character, and both want one.
+check "renaming and dumping want a character" {
+	set said {}
+	foreach cmd {{angband_rename Bob} {angband_dump suggest}
+	             {angband_dump write /tmp/never.txt}} {
+		catch $cmd e
+		lappend said $e
+	}
+	lsort -unique $said
+} "{there is no character yet}"
+
+check "the place is a field, for the sheet's Depth" {
+	expr {"place" in [angband_player fields]}
+} 1
 
 # The three per-character lists all refuse the same way before there is one.
 check "virtues, mutations and the timeline want a character" {
@@ -354,14 +390,14 @@ check "virtues, mutations and the timeline want a character" {
 check "it holds the stat rows its sections asked for" {
 	set wanted 0
 	foreach section $::character(sections) {
-		lassign $section name title numeral rows
+		lassign $section name title rows
 		incr wanted [expr {[llength $rows] / 2}]
 	}
 	expr {[llength $::character(fields)] == $wanted && $wanted > 10}
 } 1
 
-# The design system is what every window is drawn with, so a missing face is
-# worth knowing about here rather than in a screenshot.
+# The design system still draws the items window, so a missing face is worth
+# knowing about here rather than in a screenshot.
 check "the three faces resolved" {
 	list [font actual cl_title -family] [font actual cl_label -family] \
 		[font actual cl_footer -family]
@@ -449,20 +485,9 @@ check "choosing a category changes the list and its facts" {
 	lappend a [winfo exists .knowledge.f.body.detail.facts.vweight]
 } "{Objects — 0 known} 1 0"
 
-# Decision 18: the window is Tk's own widgets in Tk's classic theme, and
-# nothing drawn by hand.  A widget class outside this list is a widget somebody
-# invented, which is the thing the decision rules out.
+# Decision 18, as for the character window.
 check "it is built from stock Tk widgets in the classic theme" {
-	set stock {Toplevel Menu TFrame TLabel TLabelframe TRadiobutton TEntry
-	           TMenubutton TButton TScrollbar TSeparator Listbox Text Canvas}
-	set odd {}
-	set todo .knowledge
-	while {[llength $todo]} {
-		set todo [lassign $todo w]
-		if {[winfo class $w] ni $stock} { lappend odd "$w [winfo class $w]" }
-		lappend todo {*}[winfo children $w]
-	}
-	list [ttk::style theme use] $odd
+	stock_widgets_only .knowledge
 } "classic {}"
 
 check "closing it is just closing it" {

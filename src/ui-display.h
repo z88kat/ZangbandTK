@@ -29,6 +29,7 @@ extern const char *window_flag_desc[32];
 
 uint8_t monster_health_attr(void);
 void cnv_stat(int val, char *out_val, size_t out_len);
+int fmt_depth(char buf[], int max);
 void allow_animations(void);
 void disallow_animations(void);
 void idle_update(void);

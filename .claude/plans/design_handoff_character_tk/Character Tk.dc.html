@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  html, body { margin: 0; background: #5f6b74; }
+  a { color: #000080; }
+  a:hover { color: #b03060; }
+  ::selection { background: #c3c3c3; color: #000000; }
+</style>
+</helmet>
+
+<div ref="{{ rootRef }}" onKeyDown="{{ onRootKey }}" style="--wm:#9fb0c0;--wm-hi:#dce4ec;--wm-lo:#56636f;--ind-rot:45deg;--ind-rad:0px;--sel:#b03060;position:relative;min-height:100vh;box-sizing:border-box;padding:28px 20px;background-color:#5f6b74;background-image:repeating-conic-gradient(#68757e 0 25%, #5f6b74 0 50%);background-size:4px 4px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:13px;font-weight:700;line-height:1.25;color:#000000">
+
+<sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeMenu }}" style="position:fixed;inset:0;z-index:25"></div>
+</sc-if>
+
+<sc-if value="{{ iconified }}" hint-placeholder-val="{{ false }}">
+  <button onClick="{{ restore }}" title="Click to restore" style="position:absolute;top:28px;left:20px;width:84px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 4px 4px;font:inherit;font-size:11px;background:#d9d9d9;border:0;cursor:pointer;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+    <span style="width:48px;height:48px;display:grid;place-items:center;background:#000000;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff;font-family:'Courier New',Courier,monospace;font-size:30px;color:#ffffff">@</span>
+    <span>Character</span>
+  </button>
+</sc-if>
+
+<sc-if value="{{ visible }}" hint-placeholder-val="{{ true }}">
+<div style="max-width:{{ winMax }};margin:0 auto;padding:5px;background:var(--wm);box-shadow:inset 2px 2px 0 var(--wm-hi), inset -2px -2px 0 var(--wm-lo), 0 0 0 1px #000000">
+
+  <div style="display:flex;gap:2px;height:24px">
+    <div style="flex:none;width:24px;display:grid;place-items:center;box-shadow:inset 2px 2px 0 var(--wm-hi), inset -2px -2px 0 var(--wm-lo)">
+      <div style="width:12px;height:4px;box-shadow:inset 1px 1px 0 var(--wm-hi), inset -1px -1px 0 var(--wm-lo)"></div>
+    </div>
+    <div style="flex:1;min-width:0;display:grid;place-items:center;box-shadow:inset 2px 2px 0 var(--wm-hi), inset -2px -2px 0 var(--wm-lo);white-space:nowrap;overflow:hidden">Zangband: Character</div>
+    <button onClick="{{ iconify }}" title="Iconify" style="flex:none;width:24px;display:grid;place-items:center;padding:0;background:transparent;border:0;cursor:pointer;box-shadow:inset 2px 2px 0 var(--wm-hi), inset -2px -2px 0 var(--wm-lo)" style-active="box-shadow:inset 2px 2px 0 var(--wm-lo), inset -2px -2px 0 var(--wm-hi)">
+      <span style="width:4px;height:4px;box-shadow:inset 1px 1px 0 var(--wm-hi), inset -1px -1px 0 var(--wm-lo)"></span>
+    </button>
+    <button onClick="{{ toggleMax }}" title="Maximize" style="flex:none;width:24px;display:grid;place-items:center;padding:0;background:transparent;border:0;cursor:pointer;box-shadow:inset 2px 2px 0 var(--wm-hi), inset -2px -2px 0 var(--wm-lo)" style-active="box-shadow:inset 2px 2px 0 var(--wm-lo), inset -2px -2px 0 var(--wm-hi)">
+      <span style="width:12px;height:12px;box-shadow:inset 1px 1px 0 var(--wm-hi), inset -1px -1px 0 var(--wm-lo)"></span>
+    </button>
+  </div>
+
+  <div style="margin-top:4px;background:#d9d9d9;box-shadow:0 0 0 1px var(--wm-lo)">
+
+    <div style="position:relative;z-index:30;display:flex;flex-wrap:wrap;gap:2px;padding:2px;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+      <sc-for list="{{ menus }}" as="m" hint-placeholder-count="3">
+        <div style="position:relative">
+          <button onClick="{{ m.toggle }}" style="padding:4px 10px;font:inherit;color:#000000;background:{{ m.bg }};border:0;cursor:pointer;box-shadow:{{ m.relief }}"><span style="text-decoration:underline">{{ m.first }}</span>{{ m.rest }}</button>
+          <sc-if value="{{ m.isOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:100%;left:0;min-width:230px;padding:2px;background:#d9d9d9;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+              <div style="margin:5px 6px;border-top:1px dashed #000000"></div>
+              <sc-for list="{{ m.entries }}" as="e" hint-placeholder-count="3">
+                <sc-if value="{{ e.sep }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin:4px 2px;border-top:1px solid #828282;border-bottom:1px solid #ffffff"></div>
+                </sc-if>
+                <sc-if value="{{ e.item }}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{ e.run }}" style="display:grid;grid-template-columns:18px 1fr auto;align-items:center;gap:6px;width:100%;padding:4px 8px 4px 6px;font:inherit;text-align:left;color:#000000;background:transparent;border:0;cursor:pointer" style-hover="background:#ececec;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+                    <span style="display:grid;place-items:center"><span style="width:8px;height:8px;transform:rotate(var(--ind-rot));border-radius:var(--ind-rad);background:{{ e.dotFill }};box-shadow:{{ e.dotBevel }}"></span></span>
+                    <span><span style="text-decoration:underline">{{ e.first }}</span>{{ e.rest }}</span>
+                    <span style="font-weight:400">{{ e.accel }}</span>
+                  </button>
+                </sc-if>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:6px 12px;padding:10px 10px 0">
+
+      <div style="position:relative;flex:1 1 420px;min-width:0;margin-top:10px;padding:16px 10px 10px;display:flex;flex-wrap:wrap;align-items:flex-start;gap:12px 16px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff, inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+        <span style="position:absolute;top:-8px;left:8px;padding:0 4px;background:#d9d9d9">Character</span>
+        <span style="flex:none;width:64px;height:64px;display:grid;place-items:center;background:#000000;box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff;font-family:'Courier New',Courier,monospace;font-size:44px;font-weight:700;line-height:1;color:#ffffff">@</span>
+        <div style="flex:1 1 300px;min-width:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px 14px">
+          <sc-for list="{{ ident }}" as="f" hint-placeholder-count="8">
+            <div style="display:grid;grid-template-columns:52px minmax(0,1fr);align-items:center;gap:8px">
+              <span style="font-weight:400;text-align:right">{{ f.k }}:</span>
+              <span style="padding:2px 6px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.v }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="position:relative;flex:1 1 340px;min-width:0;margin-top:10px;padding:16px 10px 10px;display:flex;flex-direction:column;gap:9px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff, inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+        <span style="position:absolute;top:-8px;left:8px;padding:0 4px;background:#d9d9d9">Condition</span>
+        <sc-for list="{{ meters }}" as="mt" hint-placeholder-count="3">
+          <div style="display:grid;grid-template-columns:76px minmax(0,1fr) 64px;align-items:center;gap:8px">
+            <span style="font-weight:400;text-align:right">{{ mt.k }}:</span>
+            <div style="height:14px;padding:2px;background:#c3c3c3;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff">
+              <div style="width:{{ mt.pct }}%;height:100%;background:{{ mt.color }};box-shadow:inset 1px 1px 0 rgba(255,255,255,.55), inset -1px -1px 0 rgba(0,0,0,.35)"></div>
+            </div>
+            <span style="padding:1px 6px;text-align:right;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff;white-space:nowrap">{{ mt.v }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;padding:14px 10px 2px">
+      <span>Page:</span>
+      <sc-for list="{{ pages }}" as="p" hint-placeholder-count="5">
+        <button onClick="{{ p.pick }}" style="display:flex;align-items:center;gap:6px;padding:2px 4px;font:inherit;color:#000000;background:transparent;border:0;cursor:pointer" style-hover="background:#ececec">
+          <span style="width:9px;height:9px;margin:0 2px;transform:rotate(var(--ind-rot));border-radius:var(--ind-rad);background:{{ p.fill }};box-shadow:{{ p.bevel }}"></span>
+          <span><span style="text-decoration:underline">{{ p.first }}</span>{{ p.rest }}</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="padding:4px 10px 10px;min-height:250px">
+
+      <sc-if value="{{ isInfo }}" hint-placeholder-val="{{ true }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:6px 12px">
+          <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+            <div style="position:relative;margin-top:10px;padding:16px 10px 10px;display:flex;flex-direction:column;gap:6px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff, inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+              <span style="position:absolute;top:-8px;left:8px;padding:0 4px;background:#d9d9d9">{{ g.title }}</span>
+              <sc-for list="{{ g.rows }}" as="f" hint-placeholder-count="5">
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) 104px;align-items:center;gap:8px">
+                  <span style="font-weight:400">{{ f.k }}:</span>
+                  <span style="padding:2px 6px;text-align:right;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff;white-space:nowrap;overflow:hidden">{{ f.v }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
+        <div style="position:relative;margin-top:10px;padding:16px 10px 10px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff, inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+          <span style="position:absolute;top:-8px;left:8px;padding:0 4px;background:#d9d9d9">Background</span>
+          <div style="max-width:68ch;min-height:160px;padding:8px 10px;background:#ffffff;box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff;font-family:'Courier New',Courier,monospace;font-size:14px;font-weight:400;line-height:1.5;text-wrap:pretty">{{ history }}</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isVirtues }}" hint-placeholder-val="{{ false }}">
+        <div style="position:relative;margin-top:10px;padding:16px 10px 10px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff, inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+          <span style="position:absolute;top:-8px;left:8px;padding:0 4px;background:#d9d9d9">Virtues</span>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px 18px">
+            <sc-for list="{{ virtues }}" as="f" hint-placeholder-count="8">
+              <div style="display:grid;grid-template-columns:104px minmax(0,1fr);align-items:center;gap:8px">
+                <span style="font-weight:400;text-align:right">{{ f.k }}:</span>
+                <span style="padding:2px 6px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ f.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:12px;font-weight:400">Your virtues are untested. Deeds in the dungeon will shift them.</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isMutations }}" hint-placeholder-val="{{ false }}">
+        <div style="position:relative;margin-top:10px;padding:16px 10px 10px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff, inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+          <span style="position:absolute;top:-8px;left:8px;padding:0 4px;background:#d9d9d9">Mutations</span>
+          <div style="min-height:160px;padding:4px 6px;background:#ffffff;box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff;font-family:'Courier New',Courier,monospace;font-size:14px;font-weight:400;color:#828282">You have no mutations.</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isNotes }}" hint-placeholder-val="{{ false }}">
+        <div style="position:relative;margin-top:10px;padding:16px 10px 10px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff, inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282">
+          <span style="position:absolute;top:-8px;left:8px;padding:0 4px;background:#d9d9d9">Notes</span>
+          <textarea value="{{ notes }}" onChange="{{ onNotes }}" rows="8" style="display:block;width:100%;box-sizing:border-box;resize:vertical;padding:6px 8px;font-family:'Courier New',Courier,monospace;font-size:14px;font-weight:400;line-height:1.45;color:#000000;background:#ffffff;border:0;border-radius:0;outline:1px solid #d9d9d9;box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff" style-focus="outline:1px solid #000000"></textarea>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="margin:0 2px;border-top:1px solid #828282;border-bottom:1px solid #ffffff"></div>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px">
+      <button onClick="{{ openRename }}" style="min-width:110px;padding:5px 12px;font:inherit;color:#000000;background:#d9d9d9;border:0;cursor:pointer;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282" style-hover="background:#ececec" style-active="box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff">Change <span style="text-decoration:underline">N</span>ame&#8230;</button>
+      <button onClick="{{ dump }}" style="min-width:110px;padding:5px 12px;font:inherit;color:#000000;background:#d9d9d9;border:0;cursor:pointer;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282" style-hover="background:#ececec" style-active="box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff"><span style="text-decoration:underline">D</span>ump to File&#8230;</button>
+      <span style="flex:1"></span>
+      <div style="padding:3px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff">
+        <button onClick="{{ iconify }}" style="min-width:96px;padding:5px 12px;font:inherit;color:#000000;background:#d9d9d9;border:0;cursor:pointer;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282" style-hover="background:#ececec" style-active="box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff"><span style="text-decoration:underline">C</span>lose</button>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:4px;padding:0 4px 4px">
+      <span style="flex:1 1 300px;min-width:0;padding:2px 6px;font-weight:400;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ status }}</span>
+      <span style="padding:2px 8px;font-weight:400;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff;white-space:nowrap">Turn 1</span>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ renameOpen }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:20px">
+    <div style="width:min(100%,380px);padding:5px;background:var(--wm);box-shadow:inset 2px 2px 0 var(--wm-hi), inset -2px -2px 0 var(--wm-lo), 0 0 0 1px #000000, 6px 6px 0 rgba(0,0,0,.35)">
+      <div style="display:grid;place-items:center;height:22px;box-shadow:inset 2px 2px 0 var(--wm-hi), inset -2px -2px 0 var(--wm-lo)">Change Name</div>
+      <div style="margin-top:4px;padding:14px 14px 10px;background:#d9d9d9;box-shadow:0 0 0 1px var(--wm-lo)">
+        <label style="display:flex;flex-direction:column;gap:6px">
+          <span>Enter a new name for your character:</span>
+          <input ref="{{ renameRef }}" value="{{ draft }}" onChange="{{ onDraft }}" onKeyDown="{{ onDraftKey }}" maxlength="15" style="padding:3px 4px;font-family:'Courier New',Courier,monospace;font-size:14px;font-weight:400;color:#000000;background:#ffffff;border:0;border-radius:0;outline:1px solid #d9d9d9;box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff" style-focus="outline:1px solid #000000" />
+        </label>
+        <div style="margin:14px -14px 10px;border-top:1px solid #828282;border-bottom:1px solid #ffffff"></div>
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px">
+          <div style="padding:3px;box-shadow:inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff">
+            <button onClick="{{ confirmRename }}" style="min-width:84px;padding:5px 12px;font:inherit;color:#000000;background:#d9d9d9;border:0;cursor:pointer;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282" style-hover="background:#ececec" style-active="box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff">OK</button>
+          </div>
+          <button onClick="{{ cancelRename }}" style="min-width:84px;padding:5px 12px;font:inherit;color:#000000;background:#d9d9d9;border:0;cursor:pointer;box-shadow:inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282" style-hover="background:#ececec" style-active="box-shadow:inset 2px 2px 0 #828282, inset -2px -2px 0 #ffffff">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;indicator&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;diamond&quot;,&quot;circle&quot;],&quot;default&quot;:&quot;diamond&quot;,&quot;tsType&quot;:&quot;'diamond'|'circle'&quot;},&quot;frame&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;steel&quot;,&quot;olive&quot;,&quot;plum&quot;],&quot;default&quot;:&quot;steel&quot;,&quot;tsType&quot;:&quot;'steel'|'olive'|'plum'&quot;}}">
+const PAGES = [["info", "Info"], ["history", "History"], ["virtues", "Virtues"], ["mutations", "Mutations"], ["notes", "Notes"]];
+const WM = { steel: ["#9fb0c0", "#dce4ec", "#56636f"], olive: ["#a8ad8c", "#e2e5d2", "#5d614a"], plum: ["#ae9cae", "#e6dce6", "#5f4f5f"] };
+const RAISED = "inset 2px 2px 0 #ffffff, inset -2px -2px 0 #828282";
+const HISTORY = "You are one of several children of a Guildsman. You are a well liked child. You have brown eyes, straight brown hair, and a very dark complexion.";
+
+class Component extends DCLogic {
+  rootRef = React.createRef();
+  renameRef = React.createRef();
+  state = {
+    page: "info", menu: null, iconified: false, maxed: false,
+    name: "Steven", draft: "", renameOpen: false, notes: "",
+    status: "Human Warrior, not yet below ground."
+  };
+
+  componentDidMount() { this.applyVars(); }
+  componentDidUpdate(_, prev) {
+    this.applyVars();
+    if (this.state.renameOpen && !prev.renameOpen && this.renameRef.current) { this.renameRef.current.focus(); this.renameRef.current.select(); }
+  }
+  applyVars() {
+    const el = this.rootRef.current;
+    if (!el) return;
+    const diamond = (this.props.indicator ?? "diamond") === "diamond";
+    el.style.setProperty("--ind-rot", diamond ? "45deg" : "0deg");
+    el.style.setProperty("--ind-rad", diamond ? "0px" : "50%");
+    const wm = WM[this.props.frame ?? "steel"] || WM.steel;
+    el.style.setProperty("--wm", wm[0]); el.style.setProperty("--wm-hi", wm[1]); el.style.setProperty("--wm-lo", wm[2]);
+  }
+  setPage(page) { this.setState({ page, menu: null }); }
+
+  renderVals() {
+    const s = this.state;
+    const dot = on => on ? ["var(--sel)", "inset 1px 1px 0 #828282, inset -1px -1px 0 #ffffff"] : ["#d9d9d9", "inset 1px 1px 0 #ffffff, inset -1px -1px 0 #828282"];
+    const close = fn => () => { this.setState({ menu: null }); fn(); };
+    const iconify = () => this.setState({ iconified: true, menu: null });
+    const openRename = () => this.setState({ renameOpen: true, draft: this.state.name, menu: null });
+    const dump = () => this.setState({ menu: null, status: "Character dump written to " + this.state.name.toLowerCase() + ".txt." });
+    const confirmRename = () => {
+      const n = this.state.draft.trim();
+      this.setState(n ? { name: n, renameOpen: false, status: "You are now known as " + n + "." } : { renameOpen: false });
+    };
+
+    const MENUS = [
+      ["File", [["Change Name\u2026", "N", openRename], ["Dump to File\u2026", "Ctrl+S", close(dump)], null, ["Close", "Esc", close(iconify)]]],
+      ["View", PAGES.map(([id, label]) => [label, "", () => this.setPage(id), id === s.page])],
+      ["Help", [["On Character\u2026", "F1", close(() => this.setState({ status: "Choose a page to see more of your character." }))], ["About Zangband\u2026", "", close(() => this.setState({ status: "Zangband: a variant of Angband." }))]]]
+    ];
+    const menus = MENUS.map(([name, entries]) => {
+      const open = s.menu === name;
+      return {
+        first: name[0], rest: name.slice(1), isOpen: open,
+        bg: open ? "#ececec" : "transparent", relief: open ? RAISED : "none",
+        toggle: () => this.setState(st => ({ menu: st.menu === name ? null : name })),
+        entries: entries.map(e => {
+          if (!e) return { sep: true, item: false };
+          const [fill, bevel] = e.length > 3 ? dot(e[3]) : ["transparent", "none"];
+          return { sep: false, item: true, first: e[0][0], rest: e[0].slice(1), accel: e[1], run: e[2], dotFill: fill, dotBevel: bevel };
+        })
+      };
+    });
+    const pages = PAGES.map(([id, label]) => {
+      const [fill, bevel] = dot(id === s.page);
+      return { first: label[0], rest: label.slice(1), fill, bevel, pick: () => this.setPage(id) };
+    });
+    const kv = rows => rows.map(([k, v]) => ({ k, v: String(v) }));
+
+    return {
+      rootRef: this.rootRef, renameRef: this.renameRef,
+      visible: !s.iconified, iconified: s.iconified, winMax: s.maxed ? "none" : "1080px",
+      restore: () => this.setState({ iconified: false }), iconify, toggleMax: () => this.setState(st => ({ maxed: !st.maxed })),
+      menus, menuOpen: !!s.menu, closeMenu: () => this.setState({ menu: null }),
+      ident: kv([["Name", s.name], ["Level", 1], ["Race", "Human"], ["Gold", 140], ["Class", "Warrior"], ["Depth", "Town"], ["Title", "Rookie"], ["Sex", "Male"]]),
+      meters: [
+        { k: "Hit points", v: "20 / 20", pct: 100, color: "#38a038" },
+        { k: "Mana", v: "0 / 0", pct: 0, color: "#4060d0" },
+        { k: "Experience", v: "0 / 10", pct: 0, color: "#c09020" }
+      ],
+      pages,
+      isInfo: s.page === "info", isHistory: s.page === "history", isVirtues: s.page === "virtues", isMutations: s.page === "mutations", isNotes: s.page === "notes",
+      groups: [
+        { title: "Fighting", rows: kv([["Armour class", 10], ["To hit", "+4"], ["To damage", "+3"], ["Blows / round", "2.77"], ["Shots / round", "0.0"]]) },
+        { title: "Being", rows: kv([["Speed", "110 (Normal)"], ["Infravision", "0 ft"], ["Light radius", 0], ["Age", 18], ["Height / weight", "55 / 228"], ["Burden", "16.9 lb"]]) },
+        { title: "Standing", rows: kv([["Experience", 0], ["Current depth", "Town"], ["Deepest reached", "\u2014"], ["Title", "Rookie"]]) }
+      ],
+      history: HISTORY,
+      virtues: kv([["Valour", "Neutral"], ["Honour", "Neutral"], ["Justice", "Neutral"], ["Vitality", "Neutral"], ["Individualism", "Neutral"], ["Temperance", "Neutral"], ["Patience", "Neutral"], ["Diligence", "Neutral"]]),
+      notes: s.notes, onNotes: e => this.setState({ notes: e.target.value }),
+      openRename, dump,
+      renameOpen: s.renameOpen, draft: s.draft,
+      onDraft: e => this.setState({ draft: e.target.value }),
+      onDraftKey: e => { if (e.key === "Enter") { e.preventDefault(); confirmRename(); } if (e.key === "Escape") { e.stopPropagation(); this.setState({ renameOpen: false }); } },
+      confirmRename, cancelRename: () => this.setState({ renameOpen: false }),
+      onRootKey: e => {
+        if (e.key !== "Escape") return;
+        if (s.renameOpen) this.setState({ renameOpen: false });
+        else if (s.menu) this.setState({ menu: null });
+        else iconify();
+      },
+      status: s.status
+    };
+  }
+}
+</script>
+</body>
+</html>

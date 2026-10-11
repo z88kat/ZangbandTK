@@ -194,8 +194,8 @@ menu .menubar.views -tearoff 0
 source [file join [file dirname [info script]] errorInfo.tcl]
 source [file join [file dirname [info script]] debug.tcl]
 
-# Then the design system, which the character sheet and the items window are
-# still drawn with.  The knowledge browser no longer is: see decision 18.
+# Then the design system, which only the items window is still drawn with.  The
+# character sheet and the knowledge browser no longer are: see decision 18.
 source [file join [file dirname [info script]] classical.tcl]
 source [file join [file dirname [info script]] character.tcl]
 source [file join [file dirname [info script]] knowledge.tcl]

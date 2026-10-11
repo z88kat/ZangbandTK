@@ -44,6 +44,7 @@
 #include "player-virtue.h"
 #include "trap.h"
 #include "ui-knowledge.h"
+#include "ui-birth.h"
 #include "ui-command.h"
 #include "ui-display.h"
 #include "ui-game.h"
@@ -53,6 +54,8 @@
 #include "ui-keymap.h"
 #include "ui-mon-lore.h"
 #include "ui-object.h"
+#include "ui-output.h"
+#include "ui-player.h"
 #include "ui-prefs.h"
 #include "ui-term.h"
 #include "z-textblock.h"
@@ -2229,7 +2232,8 @@ enum player_field_id {
 	PFI_NAME, PFI_RACE, PFI_CLASS, PFI_TITLE, PFI_HISTORY,
 	PFI_LEVEL, PFI_MAX_LEV, PFI_EXP, PFI_MAX_EXP, PFI_EXP_TO_ADVANCE,
 	PFI_NEXT_LEVEL,
-	PFI_GOLD, PFI_DEPTH, PFI_MAX_DEPTH, PFI_POSITION, PFI_IN_WILD,
+	PFI_GOLD, PFI_DEPTH, PFI_PLACE, PFI_MAX_DEPTH, PFI_POSITION,
+	PFI_IN_WILD,
 	PFI_HITPOINTS, PFI_MANA, PFI_ARMOR_CLASS, PFI_TO_HIT, PFI_TO_DAM,
 	PFI_BLOWS_PER_ROUND, PFI_SHOTS_PER_ROUND, PFI_SPEED, PFI_INFRAVISION,
 	PFI_LIGHT, PFI_AGE, PFI_HEIGHT, PFI_WEIGHT, PFI_TOTAL_WEIGHT,
@@ -2255,6 +2259,7 @@ static const struct {
 	{ "next_level",			PF_PAIR },
 	{ "gold",				PF_INT },
 	{ "depth",				PF_INT },
+	{ "place",				PF_STR },
 	{ "max_depth",			PF_INT },
 	{ "position",			PF_PAIR },
 	{ "in_wild",			PF_BOOL },
@@ -2362,6 +2367,19 @@ static Tcl_Obj *player_field_obj(enum player_field_id id)
 	case PFI_GOLD:		return Tcl_NewIntObj((int)player->au);
 	case PFI_DEPTH:		return Tcl_NewIntObj(player->depth);
 	case PFI_MAX_DEPTH:	return Tcl_NewIntObj(player->max_depth);
+
+	/*
+	 * Where the player is, as the sidebar says it: a dungeon depth, or at
+	 * depth zero the town they are standing in or "wilderness".  Depth zero is
+	 * the whole world here, so a window that turned it into "Town" would be
+	 * wrong a thousand grids out in open country.
+	 */
+	case PFI_PLACE: {
+		char buf[64];
+
+		fmt_depth(buf, sizeof(buf));
+		return Tcl_NewStringObj(buf, -1);
+	}
 	case PFI_IN_WILD:	return Tcl_NewBooleanObj(player->in_wild);
 
 	case PFI_POSITION:
@@ -4740,6 +4758,131 @@ static int objcmd_command(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 /**
+ * angband_rename <name> -- what 'c' does on the game's character screen.
+ *
+ * That is all it does: do_cmd_change_name() copies the new name into
+ * full_name and nothing else, so the savefile keeps its name and nothing on
+ * the main screen shows it to redraw.  The game's refusal is kept, in the
+ * game's words, for a name fixed on the command line with -n.  The length is
+ * the game's too: PLAYER_NAME_LEN, the size of full_name and of the buffer
+ * get_character_name() is given.
+ */
+static int objcmd_rename(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *name;
+	Tcl_Size len;
+
+	(void)dummy;
+
+	if (objc != 2) {
+		Tcl_WrongNumArgs(ip, 1, objv, "name");
+		return TCL_ERROR;
+	}
+	if (!in_play()) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("there is no character yet", -1));
+		return TCL_ERROR;
+	}
+	if (arg_force_name) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(
+				"You are not allowed to change your name!", -1));
+		return TCL_ERROR;
+	}
+
+	name = Tcl_GetStringFromObj(objv[1], &len);
+	if (len == 0) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("a name cannot be empty", -1));
+		return TCL_ERROR;
+	}
+	if (len >= PLAYER_NAME_LEN) {
+		Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+				"a name can be at most %d characters", PLAYER_NAME_LEN - 1));
+		return TCL_ERROR;
+	}
+
+	my_strcpy(player->full_name, name, sizeof(player->full_name));
+	Tcl_SetObjResult(ip, Tcl_NewStringObj(player->full_name, -1));
+
+	return TCL_OK;
+}
+
+/**
+ * angband_dump -- what 'f' does on the game's character screen.
+ *
+ *    angband_dump suggest       the file the game would offer, in the user
+ *                               directory and named for the character
+ *    angband_dump write <path>  write the character dump there
+ *
+ * The dump is the game's own, dump_save(), so the file is the same one the
+ * character screen writes.  It is not a pure read: write_character_dump()
+ * draws the character screen onto the main term and reads it back off the
+ * cells, so the screen is saved around it exactly as the character screen
+ * saves it, and the main term is made current for the length of it.  Drawing
+ * on the screen in the middle of another command's prompt is what
+ * command_may_start() exists to refuse, and while it runs the door is held
+ * shut, because screen_save() can stop at a -more- prompt.
+ */
+static int objcmd_dump(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what;
+
+	(void)dummy;
+
+	if (objc < 2) {
+		Tcl_WrongNumArgs(ip, 1, objv, "suggest|write ?path?");
+		return TCL_ERROR;
+	}
+	what = Tcl_GetString(objv[1]);
+
+	if (!in_play()) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("there is no character yet", -1));
+		return TCL_ERROR;
+	}
+
+	if (strcmp(what, "suggest") == 0 && objc == 2) {
+		char fname[80];
+		char path[1024];
+
+		player_safe_name(fname, sizeof(fname), player->full_name, false);
+		my_strcat(fname, ".txt", sizeof(fname));
+		path_build(path, sizeof(path), ANGBAND_DIR_USER, fname);
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(path, -1));
+		return TCL_OK;
+	}
+
+	if (strcmp(what, "write") == 0 && objc == 3) {
+		term *old = Term;
+		bool ok;
+
+		if (!command_may_start()) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"the game is in the middle of something else", -1));
+			return TCL_ERROR;
+		}
+
+		command_inside = true;
+		Term_activate(term_screen);
+		screen_save();
+		ok = dump_save(Tcl_GetString(objv[2]));
+		screen_load();
+		Term_activate(old);
+		command_inside = false;
+
+		if (!ok) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("could not write %s",
+					Tcl_GetString(objv[2])));
+			return TCL_ERROR;
+		}
+		return TCL_OK;
+	}
+
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+			"expected suggest or write <path>, not: %s", what));
+	return TCL_ERROR;
+}
+
+/**
  * Keep the game's own animations running while it waits for a key.
  *
  * idle_update() is what makes shimmering things shimmer.  Every other front
@@ -5453,6 +5596,8 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_history", objcmd_history, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_gear", objcmd_gear, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_rename", objcmd_rename, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_dump", objcmd_dump, NULL, NULL);
 
 	hooks_init();
 
