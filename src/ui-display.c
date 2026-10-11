@@ -3015,7 +3015,8 @@ static void ui_enter_world(game_event_type type, game_event_data *data,
 	event_add_handler(EVENT_ENTER_STORE, enter_store, NULL);
 
 	/*
-	 * Enter a magetower (ZangbandTK, WLD-16c).  Removed before it is added,
+	 * Enter a service building (ZangbandTK, WLD-16c) -- on USE_SERVICE, the
+	 * middle of the three player-util.c signals.  Removed before it is added,
 	 * because this function runs more than once: EVENT_ENTER_WORLD is signalled
 	 * when a game starts *and* every time the player leaves a store.  Without
 	 * this the handler stacked up, and the tower's menu then opened once per
@@ -3027,8 +3028,8 @@ static void ui_enter_world(game_event_type type, game_event_data *data,
 	 * duplicates away.  That will not do here: the menu has to stay available
 	 * for the next tower, and there may be no shop in between to re-register it.
 	 */
-	event_remove_handler(EVENT_ENTER_SERVICE, ui_enter_service, NULL);
-	event_add_handler(EVENT_ENTER_SERVICE, ui_enter_service, NULL);
+	event_remove_handler(EVENT_USE_SERVICE, ui_enter_service, NULL);
+	event_add_handler(EVENT_USE_SERVICE, ui_enter_service, NULL);
 
 	/* Display an explosion */
 	event_add_handler(EVENT_EXPLOSION, display_explosion, NULL);

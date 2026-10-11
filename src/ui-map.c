@@ -1145,7 +1145,7 @@ static void magetower_travel(void)
 						  player->grid.y + player->wild_offset.y);
 	struct menu *m;
 	char *labels;
-	int count, chosen, i;
+	int count, chosen, i, namew;
 
 	count = wild_travel_places(wild, from, places, TRAVEL_MAX);
 
@@ -1172,10 +1172,23 @@ static void magetower_travel(void)
 	 */
 	labels = menu_dynamic_labels(m);
 
+	/*
+	 * The name column as wide as the longest name.  It was a fixed 24, and
+	 * "The Grove of the Unicorn" fills that exactly, so its kind ran on after
+	 * one space -- "The Grove of the Unicorn dungeon" -- and the columns below
+	 * it no longer lined up.  The Tk front end's Building window also splits
+	 * the line where there are two spaces or more, which this guarantees.
+	 */
+	for (namew = 0, i = 0; i < count; i++) {
+		int len = (int) strlen(places[i].name ? places[i].name : "somewhere");
+
+		namew = MAX(namew, len);
+	}
+
 	for (i = 0; i < count; i++) {
 		char line[80];
 
-		strnfmt(line, sizeof(line), "%-24s %-11s %6d au",
+		strnfmt(line, sizeof(line), "%-*s  %-11s %6d au", namew,
 				places[i].name ? places[i].name : "somewhere",
 				places[i].what, (int) places[i].cost);
 

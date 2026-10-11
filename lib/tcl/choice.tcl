@@ -8,9 +8,10 @@
 #
 # When the game asks a question it shows that instead, and a click answers it:
 # an item ("Quaff which potion?"), a spell ("Cast which spell?", with the
-# level, mana, failure and information columns of the game's spell menu), or a
+# level, mana, failure and information columns of the game's spell menu), a
 # choice from one of the game's menus -- racial, class and mutation powers, the
-# Mindcrafter's psionics, pet orders, the town's services.  The keyboard answers
+# Mindcrafter's psionics, pet orders, the town's services -- or yes or no ("A
+# bed until morning for 50 au?").  The keyboard answers
 # it as it always did: the game's own prompt is still running, and the pane only
 # offers a second way in.  See angband_choice in main-tcl.c for all of it.
 #
@@ -108,7 +109,7 @@ proc choice_refresh {} {
                 lappend choicepane(valid) $valid
             }
         }
-        menu {
+        menu - check {
             foreach row $rows {
                 lassign $row n label text valid
                 set tag [expr {$valid ? "label" : "off"}]

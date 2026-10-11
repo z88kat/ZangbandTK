@@ -207,6 +207,7 @@ source [file join [file dirname [info script]] knowledge.tcl]
 source [file join [file dirname [info script]] items.tcl]
 source [file join [file dirname [info script]] book.tcl]
 source [file join [file dirname [info script]] store.tcl]
+source [file join [file dirname [info script]] building.tcl]
 source [file join [file dirname [info script]] choice.tcl]
 source [file join [file dirname [info script]] commands.tcl]
 

@@ -555,6 +555,39 @@ check "the store wants a character" {
 	set e
 } "there is no character yet"
 
+# --- the town's buildings ---------------------------------------------------
+
+check "a building wants a character" {
+	catch {angband_service} e
+	set e
+} "there is no character yet"
+
+# Opened by a building's first question, but it can be built at any time, and
+# it is Tk's own widgets like the other windows.
+check "the building window is stock Tk" {
+	building_window
+	list [winfo exists .building] [stock_widgets_only .building]
+} "1 {classic {}}"
+
+check "and closes" {
+	building_close
+	winfo exists .building
+} 0
+
+check "with nothing being asked there is no building window" {
+	building_check
+	winfo exists .building
+} 0
+
+# The game lays a menu line out in columns with spaces; the window splits it
+# where there are two or more, and a last column in gold is the price.
+check "a building's menu line splits into its columns" {
+	list [building_row menu {0 a {Bind your wounds              120 au} 1}] \
+		[building_row menu {3 d {The Grove of the Unicorn  dungeon       1755 au} 1}] \
+		[building_row menu {4 q {Nothing today} 1}]
+} "{0 a {Bind your wounds} 120 1} {3 d {The Grove of the Unicorn (dungeon)} 1755 1}\
+ {4 q {Nothing today} {} 1}"
+
 # --- the gear ---------------------------------------------------------------
 
 check "the Choice pane's command wants a character" {
@@ -866,6 +899,12 @@ proc second_pass {} {
 		catch {angband_store stock} e
 		list [angband_store] $e [winfo exists .store]
 	} "{} {you are not in a store} 0"
+
+	# Nor in a building: a visit is what ENTER_SERVICE and LEAVE_SERVICE
+	# bracket, and none is under way.
+	check "outside a building there is no visit" {
+		list [angband_service] [winfo exists .building]
+	} "{} 0"
 
 	# DEC-136: a character made now sells for gold, as in Zangband.
 	check "a new character is born able to sell" {

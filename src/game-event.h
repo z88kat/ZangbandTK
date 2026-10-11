@@ -88,6 +88,8 @@ typedef enum game_event_type
 	EVENT_LEAVE_WORLD,
 	EVENT_ENTER_STORE,
 	EVENT_ENTER_SERVICE,	/* ZangbandTK: a service building (WLD-16c) */
+	EVENT_USE_SERVICE,		/* ZangbandTK: the visit itself */
+	EVENT_LEAVE_SERVICE,	/* ZangbandTK: and out of it again */
 	EVENT_LEAVE_STORE,
 	EVENT_ENTER_DEATH,
 	EVENT_LEAVE_DEATH,

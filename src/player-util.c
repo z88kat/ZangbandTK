@@ -2002,7 +2002,19 @@ void player_handle_post_move(struct player *p, bool eval_trap,
 		 */
 		p->upkeep->energy_use = 0;
 
+		/*
+		 * Three signals, as a store has: arriving, the visit, leaving.  The
+		 * visit is the whole of the middle one -- every menu and question the
+		 * building puts is asked from its handler -- and the other two are
+		 * for a front end that shows the building in a window of its own, so
+		 * that it knows a visit has begun before the building asks anything,
+		 * and when it is over.  One event would not do: handlers are called
+		 * newest first, and the building's is re-registered on every
+		 * ENTER_WORLD, so it would always be the first to hear.
+		 */
 		event_signal(EVENT_ENTER_SERVICE);
+		event_signal(EVENT_USE_SERVICE);
+		event_signal(EVENT_LEAVE_SERVICE);
 		return;
 	}
 

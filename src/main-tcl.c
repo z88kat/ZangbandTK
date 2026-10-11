@@ -63,6 +63,7 @@
 #include "ui-prefs.h"
 #include "ui-spell.h"
 #include "ui-term.h"
+#include "wild.h"
 #include "z-textblock.h"
 
 #include <tcl.h>
@@ -1060,6 +1061,8 @@ static const char *game_event_name[] = {
 	"LEAVE_WORLD",
 	"ENTER_STORE",
 	"ENTER_SERVICE",
+	"USE_SERVICE",
+	"LEAVE_SERVICE",
 	"LEAVE_STORE",
 	"ENTER_DEATH",
 	"LEAVE_DEATH",
@@ -4242,12 +4245,16 @@ static bool (*choice_original)(struct object **choice, const char *pmt,
 		const char *str, cmd_code cmd, item_tester tester, int mode);
 /*
  * What the pane is offering, if anything: the game's item prompt, its spell
- * prompt, or one of its dynamic menus -- the racial, class and mutation powers,
- * pet orders, the town's services and the rest.  One at a time; a prompt that
- * opens inside another is the game's alone.
+ * prompt, one of its dynamic menus -- the racial, class and mutation powers,
+ * pet orders, the town's services and the rest -- or a yes-or-no question.
+ * One at a time; a prompt that opens inside another is the game's alone.
  */
-enum choice_kind { CHOICE_NONE, CHOICE_ITEM, CHOICE_SPELL, CHOICE_MENU };
-static const char *choice_kind_name[] = { "", "item", "spell", "menu" };
+enum choice_kind {
+	CHOICE_NONE, CHOICE_ITEM, CHOICE_SPELL, CHOICE_MENU, CHOICE_CHECK
+};
+static const char *choice_kind_name[] = {
+	"", "item", "spell", "menu", "check"
+};
 static enum choice_kind choice_kind;
 static int choice_count;
 static char choice_prompt[160];
@@ -4268,6 +4275,10 @@ static int choice_spell_picked;
 static struct menu *choice_menu;
 static int choice_menu_picked;
 static bool choice_menu_has_pick;
+
+/* A yes-or-no question's: -1 until a click answers it, then 1 or 0. */
+static bool (*check_original)(const char *prompt);
+static int choice_check_picked = -1;
 
 /* Tell the pane to look again, queued like every other event. */
 static void choice_signal(void)
@@ -4413,6 +4424,70 @@ static int choice_menu_select(struct menu *m)
 	return value;
 }
 
+/**
+ * The game's yes-or-no question, wrapped the same way: the question is
+ * recorded, the game's own prompt runs and still takes 'y' from the keyboard,
+ * and a click on Yes or No answers it.  The town's buildings ask this way --
+ * "A bed until morning for 50 au?" -- and so do the people in them who hand
+ * out work, and so does much of the rest of the game.
+ *
+ * Pending messages are flushed first, as the game's prompt does before it
+ * shows the question.  Done here as well so that the flush happens before the
+ * pane offers Yes and No: otherwise the -more- that ends a run of messages
+ * would still be waiting for its key while the question was on offer, and the
+ * click meant for the question would go to the -more-.
+ */
+static bool choice_get_check(const char *prompt)
+{
+	size_t n;
+	bool yes;
+
+	if (choice_kind != CHOICE_NONE) return check_original(prompt);
+
+	event_signal(EVENT_MESSAGE_FLUSH);
+
+	my_strcpy(choice_prompt, prompt ? prompt : "", sizeof(choice_prompt));
+	for (n = strlen(choice_prompt); n > 0 && choice_prompt[n - 1] == ' '; n--)
+		choice_prompt[n - 1] = 0;
+	choice_count = 2;
+	choice_check_picked = -1;
+	choice_kind = CHOICE_CHECK;
+	choice_signal();
+
+	yes = check_original(prompt);
+	if (!yes && choice_check_picked >= 0) yes = (choice_check_picked == 1);
+
+	choice_kind = CHOICE_NONE;
+	choice_count = 0;
+	choice_check_picked = -1;
+	choice_signal();
+
+	return yes;
+}
+
+/**
+ * The service building being visited, or -1 -- for the Building window, which
+ * shows a building while it is asking something and closes when the visit is
+ * over.
+ *
+ * A visit is the whole of EVENT_USE_SERVICE's handler, ui_enter_service():
+ * every menu and question the building puts is asked from inside it.
+ * player-util.c signals EVENT_ENTER_SERVICE just before it and
+ * EVENT_LEAVE_SERVICE just after, as a store has three, and this follows
+ * those two.
+ */
+static int service_visit = -1;
+
+static void service_notice(game_event_type type, game_event_data *data,
+		void *user)
+{
+	(void)data;
+	(void)user;
+
+	service_visit = (type == EVENT_ENTER_SERVICE && player && cave)
+		? wild_service_at(cave, player->grid) : -1;
+}
+
 /* Once, after textui_input_init(), so what is wrapped is textui's prompt. */
 static void choice_install(void)
 {
@@ -4425,8 +4500,13 @@ static void choice_install(void)
 
 	menu_dynamic_select_hook = choice_menu_select;
 
+	check_original = get_check_hook;
+	get_check_hook = choice_get_check;
+
 	event_add_handler(EVENT_LEAVE_WORLD, store_notice, NULL);
 	event_add_handler(EVENT_ENTER_WORLD, store_notice, NULL);
+	event_add_handler(EVENT_ENTER_SERVICE, service_notice, NULL);
+	event_add_handler(EVENT_LEAVE_SERVICE, service_notice, NULL);
 }
 
 /**
@@ -4720,14 +4800,15 @@ static bool item_act(struct object *obj, int id)
  * angband_choice -- what the Choice pane shows, and what it can do.
  *
  *    angband_choice           {open prompt kind}: whether the game is
- *                             asking, and whether for an item, a spell or
- *                             from a menu
+ *                             asking, and whether for an item, a spell, from
+ *                             a menu, or yes or no
  *    angband_choice list      the rows: what the prompt offers while it is
  *                             open, the pack otherwise.  An item row is
  *                             {n view label name weight glyph glyph-colour
  *                             name-colour}, a spell row {n label name level
  *                             mana fail comment colour valid}, a menu row
- *                             {n label text valid}
+ *                             {n label text valid}, and a question's two
+ *                             rows are menu rows, Yes and then No
  *    angband_choice burden    the header the game's own inventory window has
  *    angband_choice pick <n>  answer the open prompt with row n
  *    angband_choice actions <n>       what can be done with pack item n, as
@@ -4789,6 +4870,20 @@ static int objcmd_choice(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 				Tcl_ListObjAppendElement(ip, row,
 						Tcl_NewStringObj(text ? text : "", -1));
 				Tcl_ListObjAppendElement(ip, row, Tcl_NewBooleanObj(valid));
+				Tcl_ListObjAppendElement(ip, list, row);
+			}
+		} else if (choice_kind == CHOICE_CHECK) {
+			static const char *answer[2][2] = { { "y", "Yes" }, { "n", "No" } };
+
+			for (i = 0; i < 2; i++) {
+				Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(answer[i][0], -1));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(answer[i][1], -1));
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewBooleanObj(true));
 				Tcl_ListObjAppendElement(ip, list, row);
 			}
 		} else {
@@ -4855,6 +4950,11 @@ static int objcmd_choice(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			}
 			choice_menu_picked = value;
 			choice_menu_has_pick = true;
+			Term_keypress(ESCAPE, 0);
+			return TCL_OK;
+		}
+		if (choice_kind == CHOICE_CHECK) {
+			choice_check_picked = (n == 0);
 			Term_keypress(ESCAPE, 0);
 			return TCL_OK;
 		}
@@ -5385,6 +5485,53 @@ static int objcmd_store(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
 			"expected stock, wares, lore, buy or sell, not: %s", what));
 	return TCL_ERROR;
+}
+
+/**
+ * angband_service -- the town's service building being visited, for the
+ * Building window.
+ *
+ *    angband_service    {} outside one, and inside {service name town gold}:
+ *                       the building's number (enum wild_service), what the
+ *                       game calls it -- "healer", "magetower" -- the town it
+ *                       stands in, and the character's gold
+ *
+ * What the building is asking is angband_choice's, as the Choice pane shows
+ * it, and is answered the same way; this says only whose question it is.
+ */
+static int objcmd_service(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	Tcl_Obj *d;
+	const char *town = "";
+
+	(void)dummy;
+
+	if (!player || !player->upkeep) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("there is no character yet", -1));
+		return TCL_ERROR;
+	}
+	if (objc != 1) {
+		Tcl_WrongNumArgs(ip, 1, objv, "");
+		return TCL_ERROR;
+	}
+	if (service_visit < 0) return TCL_OK;
+
+	if (wild && player->in_wild) {
+		int t = wild_town_here(wild, loc(player->grid.x + player->wild_offset.x,
+				player->grid.y + player->wild_offset.y));
+
+		if (t >= 0 && wild->towns[t].name) town = wild->towns[t].name;
+	}
+
+	d = Tcl_NewListObj(0, NULL);
+	Tcl_ListObjAppendElement(ip, d, Tcl_NewIntObj(service_visit));
+	Tcl_ListObjAppendElement(ip, d,
+			Tcl_NewStringObj(wild_service_name(service_visit), -1));
+	Tcl_ListObjAppendElement(ip, d, Tcl_NewStringObj(town, -1));
+	Tcl_ListObjAppendElement(ip, d, Tcl_NewWideIntObj(player->au));
+	Tcl_SetObjResult(ip, d);
+	return TCL_OK;
 }
 
 /**
@@ -6730,6 +6877,8 @@ errr init_tcl(int argc, char **argv)
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_book", objcmd_book, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_store", objcmd_store, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_service", objcmd_service, NULL,
+			NULL);
 
 	hooks_init();
 
