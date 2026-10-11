@@ -254,7 +254,13 @@ check "bindings fire for the game's events" {llength $::seen} 7
 check "the layout reported a cell size" {
 	expr {$::angband(cellw) > 0 && $::angband(cellh) > 0}
 } 1
-check "the layout built five panes" {llength $::angband(terms)} 5
+# Five panes, four of them terms: the fifth is the Choice pane, a list rather
+# than a term, so that it can be clicked.
+check "the layout built five panes, four of them terms" {
+	list [llength $::angband(terms)] \
+		[expr {[llength [.pw.top panes]] + [llength [.pw.bottom panes]]}] \
+		[winfo class .pw.bottom.choice.t]
+} "4 5 Text"
 
 # --- the input hooks --------------------------------------------------------
 
@@ -525,6 +531,11 @@ check "closing it is just closing it" {
 
 # --- the gear ---------------------------------------------------------------
 
+check "the Choice pane's command wants a character" {
+	catch {angband_choice} e
+	set e
+} "there is no character yet"
+
 check "the gear wants a character" {
 	catch {angband_gear inventory} e
 	set e
@@ -606,7 +617,7 @@ check "the console evaluates an accessor and returns what it returns" {
 
 check "the console evaluates at the global level" {
 	console::eval {llength $angband(terms)}
-} 5
+} 4
 
 # An error at the console is text, not an exception -- the caller is a typist
 # -- and it goes to the sink as well, so a mistake made while debugging is
@@ -779,6 +790,18 @@ proc second_pass {} {
 		}
 		set bad
 	} ""
+
+	# Between prompts the Choice pane shows the pack, and has nothing to
+	# answer: a pick is refused rather than kept for a prompt to come.
+	check "the Choice pane is idle between prompts" {
+		set rows [angband_choice list]
+		set eight 1
+		foreach row $rows { if {[llength $row] != 8} { set eight 0 } }
+		catch {angband_choice pick 0} e
+		list [angband_choice] \
+			[expr {[llength $rows] == [llength [angband_gear inventory]]}] \
+			$eight $e
+	} "{0 {}} 1 1 {the game is not asking for an item}"
 
 	check "the pack's slots come back as used and size" {
 		lassign [angband_gear slots] used size

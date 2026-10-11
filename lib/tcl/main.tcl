@@ -101,7 +101,13 @@ set map      [termpane .pw.top    map      80 24]
 set overhead [termpane .pw.top    overhead 32 24]
 set messages [termpane .pw.bottom messages 44 10]
 set recall   [termpane .pw.bottom recall   44 10]
-set choice   [termpane .pw.bottom choice   44 10]
+
+# The Choice pane is not a term: it is lib/tcl/choice.tcl's, a list that can
+# be clicked to answer the game's item prompts.  Its frame is made here, at a
+# term's size, so that it takes its place in the layout with the others; the
+# list goes into it when choice.tcl is sourced below.
+set choice [ttk::frame .pw.bottom.choice \
+    -width [expr {44 * $angband(cellw)}] -height [expr {10 * $angband(cellh)}]]
 
 .pw.top    add $map      -weight 4
 .pw.top    add $overhead -weight 1
@@ -136,7 +142,6 @@ set angband(terms) [list \
     [list $map.c      map       termfont] \
     [list $messages.c messages  termfont] \
     [list $recall.c   recall    termfont] \
-    [list $choice.c   inventory termfont] \
     [list $overhead.c minimap   minimapfont]]
 
 # The menu bar, which for now carries exactly one menu: the tile sets.
@@ -199,6 +204,7 @@ source [file join [file dirname [info script]] debug.tcl]
 source [file join [file dirname [info script]] character.tcl]
 source [file join [file dirname [info script]] knowledge.tcl]
 source [file join [file dirname [info script]] items.tcl]
+source [file join [file dirname [info script]] choice.tcl]
 source [file join [file dirname [info script]] commands.tcl]
 
 proc angband_choose_tileset {id} {

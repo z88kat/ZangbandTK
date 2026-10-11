@@ -41,6 +41,7 @@
 #include "player-timed.h"
 #include "player-util.h"
 #include "player-mutation.h"
+#include "player-spell.h"
 #include "player-virtue.h"
 #include "trap.h"
 #include "ui-knowledge.h"
@@ -848,6 +849,7 @@ static bool command_inside = false;
 
 static void command_nudge(void);
 static bool in_play(void);
+static void choice_install(void);
 
 static errr Term_xtra_tcl(int n, int v)
 {
@@ -862,6 +864,7 @@ static errr Term_xtra_tcl(int n, int v)
 		flags_applied = true;
 		subwindows_set_flags(want_flag, ANGBAND_TERM_MAX);
 		hooks_apply();
+		choice_install();
 	}
 
 	switch (n) {
@@ -4211,6 +4214,222 @@ static int objcmd_gear(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 /**
+ * The Choice pane: the item prompt, answerable with the mouse.
+ *
+ * When the game asks for an item -- "Quaff which potion?" -- the pane lists
+ * what it will accept, and clicking one answers the question.  The game's own
+ * prompt is not replaced but wrapped: it runs exactly as it always did, so the
+ * letters, '/' for the equipment, '-' for the floor and @q1-style inscriptions
+ * all keep working from the keyboard.
+ *
+ * Before the prompt opens, the wrapper records what it offers, through
+ * scan_items() with the prompt's own tester and mode, which is how the game
+ * itself gathers items from the pack, the body, the quiver and the floor -- so
+ * the pane cannot offer something the prompt would refuse.  A click records the
+ * object and presses Escape; when the game's prompt then comes back
+ * empty-handed, the wrapper answers with the recorded object instead.  So no
+ * letter is ever synthesised for the item, and a click does not depend on
+ * which of the prompt's lists happens to be on screen.
+ */
+static bool (*choice_original)(struct object **choice, const char *pmt,
+		const char *str, cmd_code cmd, item_tester tester, int mode);
+static struct object **choice_offered;
+static int choice_count;
+static struct object *choice_picked;
+static bool choice_open;
+static char choice_prompt[160];
+
+/* Tell the pane to look again, queued like every other event. */
+static void choice_signal(void)
+{
+	if (Tcl_Eval(interp, "event generate . <<Angband_CHOOSE>> -when tail")
+			!= TCL_OK)
+		Tcl_BackgroundException(interp, TCL_ERROR);
+}
+
+static bool choice_get_item(struct object **choice, const char *pmt,
+		const char *str, cmd_code cmd, item_tester tester, int mode)
+{
+	int max = z_info->pack_size + z_info->quiver_size
+		+ player->body.count + z_info->floor_size;
+	bool ok;
+
+	/* Paranoia: a prompt inside a prompt is the game's alone. */
+	if (choice_open) return choice_original(choice, pmt, str, cmd, tester,
+			mode);
+
+	choice_offered = mem_zalloc(max * sizeof(*choice_offered));
+	choice_count = scan_items(choice_offered, max, player, mode, tester);
+	my_strcpy(choice_prompt, pmt ? pmt : "", sizeof(choice_prompt));
+	choice_picked = NULL;
+	choice_open = true;
+	choice_signal();
+
+	ok = choice_original(choice, pmt, str, cmd, tester, mode);
+
+	if (!ok && choice_picked) {
+		*choice = choice_picked;
+		ok = true;
+	}
+
+	choice_open = false;
+	choice_picked = NULL;
+	choice_count = 0;
+	mem_free(choice_offered);
+	choice_offered = NULL;
+	choice_signal();
+
+	return ok;
+}
+
+/* Once, after textui_input_init(), so what is wrapped is textui's prompt. */
+static void choice_install(void)
+{
+	if (choice_original || !get_item_hook) return;
+	choice_original = get_item_hook;
+	get_item_hook = choice_get_item;
+}
+
+/**
+ * One row of the pane:
+ *    {n view label name weight glyph glyph-colour name-colour}
+ *
+ * The name's colour is the one the game's own item list gives it, its kind's
+ * base colour, with an unreadable book in slate (show_obj() in ui-object.c);
+ * the symbol's is the map's.
+ */
+static Tcl_Obj *choice_row(Tcl_Interp *ip, int n, struct object *obj)
+{
+	Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+	const char *view;
+	char name[120];
+	char label[2];
+	char glyph[8];
+	Tcl_Size glen;
+	uint8_t attr = obj->kind->base->attr;
+
+	if (object_is_equipped(player->body, obj)) view = "equipment";
+	else if (object_is_in_quiver(player, obj)) view = "quiver";
+	else if (object_is_carried(player, obj)) view = "inventory";
+	else view = "floor";
+
+	label[0] = streq(view, "floor") ? '-' : gear_to_label(player, obj);
+	label[1] = 0;
+	object_desc(name, sizeof(name), obj, ODESC_PREFIX | ODESC_FULL, player);
+	glen = Tcl_UniCharToUtf((int)object_glyph(obj), glyph);
+	if (tval_is_book_k(obj->kind) && !player_object_to_book(player, obj))
+		attr = COLOUR_SLATE;
+
+	Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(n));
+	Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(view, -1));
+	Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(label, -1));
+	Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(name, -1));
+	Tcl_ListObjAppendElement(ip, row,
+			Tcl_NewIntObj(obj->weight * obj->number));
+	Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(glyph, glen));
+	Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(object_colour(obj), -1));
+	Tcl_ListObjAppendElement(ip, row,
+			Tcl_NewStringObj(colour_name[attr % MAX_COLORS], -1));
+	return row;
+}
+
+/**
+ * angband_choice -- what the Choice pane shows, and its one action.
+ *
+ *    angband_choice           {open prompt}: whether the game is asking
+ *    angband_choice list      the rows: what the prompt offers while it is
+ *                             open, the pack otherwise
+ *    angband_choice burden    the header the game's own inventory window has
+ *    angband_choice pick <n>  answer the open prompt with row n
+ */
+static int objcmd_choice(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what;
+	int i, n;
+
+	(void)dummy;
+
+	if (!player || !player->upkeep) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("there is no character yet", -1));
+		return TCL_ERROR;
+	}
+
+	if (objc == 1) {
+		Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+
+		Tcl_ListObjAppendElement(ip, d, Tcl_NewBooleanObj(choice_open));
+		Tcl_ListObjAppendElement(ip, d,
+				Tcl_NewStringObj(choice_open ? choice_prompt : "", -1));
+		Tcl_SetObjResult(ip, d);
+		return TCL_OK;
+	}
+
+	what = Tcl_GetString(objv[1]);
+
+	if (streq(what, "list") && objc == 2) {
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+		if (choice_open) {
+			for (i = 0; i < choice_count; i++)
+				Tcl_ListObjAppendElement(ip, list,
+						choice_row(ip, i, choice_offered[i]));
+		} else {
+			for (i = 0; i < z_info->pack_size; i++) {
+				struct object *obj = player->upkeep->inven[i];
+
+				if (!obj) break;
+				Tcl_ListObjAppendElement(ip, list, choice_row(ip, i, obj));
+			}
+		}
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	/*
+	 * Built as show_obj_list() builds it, weight_remaining() and all.  That
+	 * counts down to 60% of the weight limit while speed starts to drop at
+	 * 50%, which is the game's inconsistency and not one to fix in a header
+	 * that is meant to say what the game says.
+	 */
+	if (streq(what, "burden") && objc == 2) {
+		int diff = weight_remaining(player);
+
+		Tcl_SetObjResult(ip, Tcl_ObjPrintf("Burden %d.%d lb (%d.%d lb %s)",
+				player->upkeep->total_weight / 10,
+				player->upkeep->total_weight % 10,
+				abs(diff) / 10, abs(diff) % 10,
+				(diff < 0 ? "overweight" : "remaining")));
+		return TCL_OK;
+	}
+
+	if (streq(what, "pick") && objc == 3) {
+		if (Tcl_GetIntFromObj(ip, objv[2], &n) != TCL_OK) return TCL_ERROR;
+		if (!choice_open) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"the game is not asking for an item", -1));
+			return TCL_ERROR;
+		}
+		if (n < 0 || n >= choice_count) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no such choice: %d", n));
+			return TCL_ERROR;
+		}
+
+		/*
+		 * Escape ends the game's prompt as a cancel, and the wrapper turns
+		 * the cancel into this answer.
+		 */
+		choice_picked = choice_offered[n];
+		Term_keypress(ESCAPE, 0);
+		return TCL_OK;
+	}
+
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+			"expected list, burden or pick <n>, not: %s", what));
+	return TCL_ERROR;
+}
+
+/**
  * angband_option -- read and write the game's options.
  *
  *    angband_option                     every option, as {name type desc value}
@@ -5549,6 +5768,8 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_gear", objcmd_gear, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_rename", objcmd_rename, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_dump", objcmd_dump, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_choice", objcmd_choice, NULL,
+			NULL);
 
 	hooks_init();
 
