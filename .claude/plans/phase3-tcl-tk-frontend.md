@@ -1689,6 +1689,22 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 > **On hold: the keymap and macro editor** (owner's decision, 11 October 2026). The design
 > notes above stand; it is the one T7 screen not started, and it waits until it is asked for.
 
+> **The Recall pane follows the pointer**, as `interface.html` has it: an item pointed at in
+> the Choice pane or the Items window, or chosen in the Store window, is described in the
+> Recall pane. The bridge tracks the object (`track_object()` and a redraw, which is what the
+> game's own item menu does as its cursor moves), so the pane shows the game's recall, and a
+> monster looked at afterwards takes it back the same way. `angband_choice recall`,
+> `angband_gear recall` and `angband_store recall` share one helper; a store's stock is as
+> safe to track as the pack, because `object_delete()` stops tracking whatever it deletes.
+
+> **Deferred: the Recall window growing on hover** (owner's decision, 11 October 2026). The
+> original's grew to show the whole of a recall while the pointer was inside it and shrank
+> back when it left — `NSRecall::Expand` in `recall.tcl`, and only when the text did not fit,
+> which is why it is rarely seen. Ours is a pane (decision 16), and the game cuts off what
+> does not fit its rows, so a long description loses its end: the issue exists. But growing
+> a pane squeezes the map, and an overlay would be new behaviour rather than the original's,
+> and neither is right yet. Left until there is a better idea of how to handle it.
+
 ---
 
 ### T8 — Birth

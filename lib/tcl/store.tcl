@@ -153,15 +153,23 @@ proc store_pick {side} {
 }
 
 # A row chosen by hand.  A refusal is about the row it refused, so choosing
-# another clears it rather than leaving it under the wrong thing.
+# another clears it rather than leaving it under the wrong thing.  And what is
+# chosen is described in the Recall pane, as the original's store did -- for
+# the table being used, which is the one with the keyboard, so that a refresh
+# re-selecting rows on both sides does not swap the pane to the other one.
 proc store_select {side} {
     global store
 
     store_pick $side
-    set id [lindex [.store.f.body.$side.tv selection] 0]
+    set tv .store.f.body.$side.tv
+    set id [lindex [$tv selection] 0]
     if {$store(refused) ni [list "" $side,[string range $id 1 end]]} {
         set store(msg) ""
         set store(refused) ""
+    }
+    if {$id ne "" && [focus] eq $tv} {
+        catch {angband_store recall [expr {$side eq "buy" ? "stock" : "wares"}] \
+            [string range $id 1 end]}
     }
 }
 

@@ -27,6 +27,7 @@ set items(expectafter) ""
 set items(drag) {}
 set items(lit) {}
 set items(packrows) {}
+set items(recalled) {}
 foreach v {sel worn packcount packweight burden capacity} { set items(v,$v) "" }
 
 # When to read again.  Equipment and inventory for the obvious reason, stats
@@ -268,6 +269,7 @@ proc items_build_slots {rows} {
 
             $c bind s$slot <ButtonPress-1> \
                 [list items_press $c [list equipment $slot] %X %Y]
+            $c bind s$slot <Enter> [list items_recall equipment $slot]
             $c bind s$slot <Double-1> [list items_takeoff_slot $slot]
             incr r
         }
@@ -396,6 +398,9 @@ proc items_refresh {} {
     items_refresh_slots
     items_refresh_pack
     items_refresh_burden
+    # Positions move when the gear does, so the next one pointed at is asked
+    # about afresh.
+    set items(recalled) {}
 
     # A selection is a position, and positions move when the gear does: if the
     # thing at that position is not the thing that was chosen, nothing is.
@@ -455,6 +460,19 @@ proc items_select {view index} {
         ? [dict get $info inscription] : ""}]
     items_paint_selection
     items_actions
+    items_recall $view $index
+}
+
+# What is pointed at or chosen is described in the Recall pane, as the
+# original's Inventory window did -- the game's recall of it, by tracking it the
+# way the game's own item menu does.  Asked once per item rather than on every
+# movement of the pointer across it.
+proc items_recall {view index} {
+    global items
+
+    if {[list $view $index] eq $items(recalled)} return
+    set items(recalled) [list $view $index]
+    catch {angband_gear recall $view $index}
 }
 
 proc items_select_none {} {
@@ -809,6 +827,11 @@ proc items_pack_at {x y} {
     return [lindex $row 0]
 }
 
+proc items_pack_hover {x y} {
+    set index [items_pack_at $x $y]
+    if {$index ne ""} { items_recall inventory $index }
+}
+
 proc items_pack_press {x y X Y} {
     set index [items_pack_at $x $y]
     if {$index eq ""} return
@@ -996,6 +1019,7 @@ proc items_window {} {
 
     bind $t <Configure> { items_pack_tabs }
     bind $t <ButtonPress-1> { items_pack_press %x %y %X %Y ; break }
+    bind $t <Motion> { items_pack_hover %x %y }
     bind $t <B1-Motion> { items_motion %X %Y ; break }
     bind $t <ButtonRelease-1> { items_release %X %Y ; break }
     bind $t <Double-1> { items_wear ; break }

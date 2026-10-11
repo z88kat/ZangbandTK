@@ -882,6 +882,15 @@ proc second_pass {} {
 		set e
 	} "nothing at inventory 999"
 
+	# Pointing at an item in the pack puts it in the Recall pane, by tracking
+	# it as the game's own item menu does; a row with nothing in it is refused.
+	check "an item pointed at is the one the Recall pane describes" {
+		catch {angband_choice recall 999} e
+		list [expr {[llength [angband_gear inventory]]
+			? [angband_choice recall 0] : "empty"}] $e
+	} [list [expr {[llength [angband_gear inventory]] ? "" : "empty"}] \
+		"no item at row 999"]
+
 	# The spell book's view of the character: the books carried that can be
 	# read, and a refusal by name for a pack position that is not one.
 	check "the spell book lists books and refuses what is not one" {
@@ -921,6 +930,11 @@ proc second_pass {} {
 		set e
 	} "nothing at inventory 999"
 
+	check "and is not described in the Recall pane either" {
+		catch {angband_gear recall inventory 999} e
+		set e
+	} "nothing at inventory 999"
+
 	check "nothing fits nowhere" {
 		catch {angband_gear fits inventory 999} e
 		set e
@@ -930,7 +944,7 @@ proc second_pass {} {
 		catch {angband_gear sideways} e
 		set e
 	} "expected inventory, equipment, quiver, slots, burden, info, lore,\
- fits, inscribe, wield, takeoff or drop, not: sideways"
+ recall, fits, inscribe, wield, takeoff or drop, not: sideways"
 
 	check "and a view that does not exist is refused by name" {
 		catch {angband_gear info pockets 0} e

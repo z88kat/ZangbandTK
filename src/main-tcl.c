@@ -3752,6 +3752,7 @@ static int objcmd_history(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
  *    angband_gear slots         {used size}: the pack's slots, quiver included
  *    angband_gear info <where> <n>   one item, as a name/value dict
  *    angband_gear lore <where> <n>   what the game says about it
+ *    angband_gear recall <where> <n> show it in the Recall pane
  *    angband_gear burden             {carried slow-at capacity}, in tenths
  *    angband_gear fits <where> <n>   the equipment slots it could go in
  *    angband_gear inscribe <where> <n> <text>   note it, or "" to erase
@@ -3822,6 +3823,26 @@ static const char *slot_type_name(int type)
 	my_strcpy(lower, names[type], sizeof(lower));
 	for (i = 0; lower[i]; i++) lower[i] = tolower((unsigned char)lower[i]);
 	return lower;
+}
+
+/**
+ * Describe an object in the Recall pane, the way the game's own item menu does
+ * as its cursor moves: track it and redraw the subwindows, so that what the
+ * pane shows is the game's recall, origin and all, and a monster looked at
+ * afterwards takes the pane back the same way.  The original's windows did this
+ * for whatever was pointed at or chosen in them -- the Choice and Inventory
+ * windows, the store, the equipment icons -- and so do these.
+ *
+ * Not while the game is part way through drawing something else.  A store's
+ * stock can be tracked as safely as the pack: object_delete() stops tracking
+ * whatever it deletes, and that is how a store disposes of what it sells out.
+ */
+static void recall_object(struct object *obj)
+{
+	if (!obj || command_inside || !player || !player->upkeep) return;
+	if (tracked_object_is(player->upkeep, obj)) return;
+	track_object(player->upkeep, obj);
+	redraw_stuff(player);
 }
 
 static struct object *gear_at(const char *where, int n, const char **slotname)
@@ -3970,8 +3991,9 @@ static int objcmd_gear(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		return TCL_OK;
 	}
 
-	/* info and lore, which take a view and a position. */
-	if ((streq(where, "info") || streq(where, "lore")) && objc == 4) {
+	/* info, lore and recall, which take a view and a position. */
+	if ((streq(where, "info") || streq(where, "lore")
+			|| streq(where, "recall")) && objc == 4) {
 		const char *view = Tcl_GetString(objv[2]);
 		const char *slotname = NULL;
 		struct object *obj;
@@ -3989,6 +4011,11 @@ static int objcmd_gear(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
 					"nothing at %s %d", view, n));
 			return TCL_ERROR;
+		}
+
+		if (streq(where, "recall")) {
+			recall_object(obj);
+			return TCL_OK;
 		}
 
 		if (streq(where, "info")) {
@@ -4218,7 +4245,8 @@ static int objcmd_gear(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
 			"expected inventory, equipment, quiver, slots, burden, info,"
-			" lore, fits, inscribe, wield, takeoff or drop, not: %s", where));
+			" lore, recall, fits, inscribe, wield, takeoff or drop, not: %s",
+			where));
 
 	return TCL_ERROR;
 }
@@ -4811,6 +4839,7 @@ static bool item_act(struct object *obj, int id)
  *                             rows are menu rows, Yes and then No
  *    angband_choice burden    the header the game's own inventory window has
  *    angband_choice pick <n>  answer the open prompt with row n
+ *    angband_choice recall <n>        show item row n in the Recall pane
  *    angband_choice actions <n>       what can be done with pack item n, as
  *                                     {id label key valid}
  *    angband_choice act <n> <id>      do it
@@ -4965,6 +4994,25 @@ static int objcmd_choice(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		 */
 		choice_picked = choice_offered[n];
 		Term_keypress(ESCAPE, 0);
+		return TCL_OK;
+	}
+
+	/* The Recall pane follows the pointer: see recall_object(). */
+	if (streq(what, "recall") && objc == 3) {
+		struct object *obj = NULL;
+
+		if (Tcl_GetIntFromObj(ip, objv[2], &n) != TCL_OK) return TCL_ERROR;
+		if (choice_kind == CHOICE_ITEM) {
+			if (n >= 0 && n < choice_count) obj = choice_offered[n];
+		} else if (choice_kind == CHOICE_NONE) {
+			if (n >= 0 && n < z_info->pack_size)
+				obj = player->upkeep->inven[n];
+		}
+		if (!obj) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no item at row %d", n));
+			return TCL_ERROR;
+		}
+		recall_object(obj);
 		return TCL_OK;
 	}
 
@@ -5258,6 +5306,27 @@ static int store_wares(struct store *store, struct object **list, int max)
 			store->feat == FEAT_HOME ? NULL : store_will_buy_tester);
 }
 
+/* Row n of the shelves, or of the wares, as angband_store lists them. */
+static struct object *store_row(struct store *store, bool stock, int n)
+{
+	int max = stock ? z_info->store_inven_max
+		: z_info->pack_size + z_info->quiver_size + player->body.count
+			+ z_info->floor_size;
+	struct object **list = mem_zalloc(max * sizeof(*list));
+	struct object *obj;
+	int count;
+
+	if (stock) {
+		store_stock_list(store, list, max);
+		count = max;
+	} else {
+		count = store_wares(store, list, max);
+	}
+	obj = (n >= 0 && n < count) ? list[n] : NULL;
+	mem_free(list);
+	return obj;
+}
+
 /**
  * angband_store -- the store the character is in, for the Store window.
  *
@@ -5269,6 +5338,7 @@ static int store_wares(struct store *store, struct object **list, int max)
  *                              as {n name number weight price glyph colour
  *                              worn}, price offered for one
  *    angband_store lore <n>    what the game says about stock item n
+ *    angband_store recall stock|wares <n>  show row n in the Recall pane
  *    angband_store buy <n> <quantity>     buy, or take from the home
  *    angband_store sell <n> <quantity>    sell, or leave in the home
  *
@@ -5374,6 +5444,26 @@ static int objcmd_store(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		return TCL_OK;
 	}
 
+	/* As the original's store did for whatever was chosen in it. */
+	if (streq(what, "recall") && objc == 4) {
+		const char *side = Tcl_GetString(objv[2]);
+		struct object *obj;
+
+		if (!streq(side, "stock") && !streq(side, "wares")) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"expected stock or wares, not: %s", side));
+			return TCL_ERROR;
+		}
+		if (Tcl_GetIntFromObj(ip, objv[3], &n) != TCL_OK) return TCL_ERROR;
+		obj = store_row(store, streq(side, "stock"), n);
+		if (!obj) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("nothing at %d", n));
+			return TCL_ERROR;
+		}
+		recall_object(obj);
+		return TCL_OK;
+	}
+
 	if ((streq(what, "lore") && objc == 3)
 			|| ((streq(what, "buy") || streq(what, "sell")) && objc == 4)) {
 		bool stock = !streq(what, "sell");
@@ -5383,18 +5473,7 @@ static int objcmd_store(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		if (objc == 4 && Tcl_GetIntFromObj(ip, objv[3], &qty) != TCL_OK)
 			return TCL_ERROR;
 
-		max = stock ? z_info->store_inven_max
-			: z_info->pack_size + z_info->quiver_size + player->body.count
-				+ z_info->floor_size;
-		list = mem_zalloc(max * sizeof(*list));
-		if (stock) {
-			store_stock_list(store, list, max);
-			count = max;
-		} else {
-			count = store_wares(store, list, max);
-		}
-		obj = (n >= 0 && n < count) ? list[n] : NULL;
-		mem_free(list);
+		obj = store_row(store, stock, n);
 		if (!obj) {
 			Tcl_SetObjResult(ip, Tcl_ObjPrintf("nothing at %d", n));
 			return TCL_ERROR;
@@ -5483,7 +5562,7 @@ static int objcmd_store(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	}
 
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
-			"expected stock, wares, lore, buy or sell, not: %s", what));
+			"expected stock, wares, lore, recall, buy or sell, not: %s", what));
 	return TCL_ERROR;
 }
 

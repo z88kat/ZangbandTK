@@ -195,7 +195,9 @@ proc choice_row_ok {i} {
 
 # The row under the pointer lights up, which is the whole of the invitation to
 # click it: to answer the game's question while it is asking, and for the
-# item's menu otherwise.
+# item's menu otherwise.  An item pointed at is described in the Recall pane,
+# as the original's Choice window did, so the pane answers "what is this?"
+# before the click rather than after it.
 proc choice_motion {x y} {
     global choicepane
 
@@ -208,6 +210,9 @@ proc choice_motion {x y} {
     if {$i ne ""} {
         set line [choice_line $i]
         $t tag add hot $line.0 "$line.0 lineend + 1 char"
+        if {$choicepane(kind) in {"" item}} {
+            catch {angband_choice recall [lindex $choicepane(rows) $i 0]}
+        }
     }
     $t configure -cursor [expr {$i ne "" ? "hand2" : "arrow"}]
 }
