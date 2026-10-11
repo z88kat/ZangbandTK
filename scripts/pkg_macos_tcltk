@@ -98,6 +98,21 @@ BASE=$(sed -n 's/^#define BASE_VERSION_STRING[[:space:]]*"\(.*\)"/\1/p' "$ROOT/s
 COPYRIGHT="ZangbandTK $VERSION, based on Angband $BASE. (c) 1987-2026 Angband contributors, (c) 1997-2005 Zangband DevTeam, (c) 2026 ZangbandTK contributors"
 
 echo "==> $APP  ($VERSION)"
+
+# Assembled beside where it goes, under a name the Finder does not treat as a
+# bundle, and renamed into place only once it is whole and checked.
+#
+# Built in place, the bundle is watched being made: the Desktop is the Finder's,
+# and with iCloud's Desktop and Documents on it is the file provider's too.
+# Both look at a new .app the moment its folder appears, before it has a plist
+# or an icon, so the Finder caches a blank icon for it, and the Finder
+# information they attach makes codesign refuse the bundle outright as
+# "detritus" -- which left it unsigned, quietly, on every build to the Desktop.
+# A rename within one directory is one step, so neither ever sees it half done,
+# and a build that fails a check leaves the previous app where it was.
+FINAL=$APP
+APP=$OUT/.$NAME.app.partial
+trap 'rm -rf "$OUT/.$NAME.app.partial"' EXIT
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/Frameworks"
 
@@ -153,7 +168,9 @@ sed -e 's|\$EXECUTABLE\$|'"$NAME"'|g' \
 
 # An ad-hoc signature, so Gatekeeper treats it as a coherent bundle on this
 # machine.  A release build signs it properly; see release.yaml, which does the
-# same for ZangbandTK.app.
+# same for ZangbandTK.app.  Extended attributes first, because codesign refuses
+# a bundle that carries any: whatever the copies above brought with them.
+xattr -cr "$APP"
 codesign --force --sign - "$APP" 2>/dev/null || \
 	echo "    (could not ad-hoc sign; the bundle will still run locally)"
 
@@ -186,6 +203,23 @@ test -n "$ICON" && test -f "$APP/Contents/Resources/$ICON" || {
 	exit 1
 }
 plutil -lint "$APP/Contents/Info.plist" > /dev/null
+# A plist that still has placeholders in it is syntactically valid, so plutil is
+# happy and the Finder is not.  Check for them by name.
+if grep -q '\$[A-Z_]*\$' "$APP/Contents/Info.plist"; then
+	echo "Info.plist still has unsubstituted placeholders:" >&2
+	grep -o '\$[A-Z_]*\$' "$APP/Contents/Info.plist" | sort -u >&2
+	exit 1
+fi
+test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' \
+	"$APP/Contents/Info.plist")" = "$NAME" || {
+	echo "CFBundleExecutable does not name the executable that is there." >&2
+	exit 1
+}
+
+# Whole and checked, so into place.
+rm -rf "$FINAL"
+mv "$APP" "$FINAL"
+APP=$FINAL
 
 # Two bundles with one identifier is the trap this project already wrote down
 # and then walked into: Launch Services picks between them, so double-clicking
@@ -205,17 +239,5 @@ if [ -x "$LSREG" ]; then
 	fi
 	"$LSREG" -f "$APP" 2>/dev/null || true
 fi
-# A plist that still has placeholders in it is syntactically valid, so plutil is
-# happy and the Finder is not.  Check for them by name.
-if grep -q '\$[A-Z_]*\$' "$APP/Contents/Info.plist"; then
-	echo "Info.plist still has unsubstituted placeholders:" >&2
-	grep -o '\$[A-Z_]*\$' "$APP/Contents/Info.plist" | sort -u >&2
-	exit 1
-fi
-test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' \
-	"$APP/Contents/Info.plist")" = "$NAME" || {
-	echo "CFBundleExecutable does not name the executable that is there." >&2
-	exit 1
-}
 
 echo "==> Done.  open $APP"
