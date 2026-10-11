@@ -139,7 +139,7 @@ tree and CI builds it on every push**: [src/main-tcl.c](src/main-tcl.c) and
 [src/tcl/](src/tcl/), with Tcl and Tk 9.0.4 vendored under [tcltk/](tcltk/) and
 one script that builds them. The [Tk workflow](.github/workflows/tk.yaml)
 compiles the front end, asserts that the binary links Tk and has not quietly
-fallen back to X11, runs the Tcl-side tests, packages `ZangbandTclTK.app`, and
+fallen back to X11, runs the Tcl-side tests, packages `ZangbandTKGUI.app`, and
 then starts the real game with the real front end and drives it from a script.
 
 It is **not what the releases ship**. The bundle is a CI artifact; the download
@@ -154,7 +154,7 @@ To build the app:
 scripts/build-tcl-app
 ```
 
-That leaves `ZangbandTclTK.app` on `~/Desktop`, replacing any copy already
+That leaves `ZangbandTKGUI.app` on `~/Desktop`, replacing any copy already
 there. To put it somewhere else, give a directory: `scripts/build-tcl-app out`.
 Run it again after every change. The app holds its own copy of the game, its
 data and the Tcl/Tk libraries, so it runs from anywhere, and a rebuild that has
@@ -176,7 +176,7 @@ cmake -S . -B build-tcl -G Ninja \
   -DTCLTK_PREFIX="$PWD/tcltk/local"
 cmake --build build-tcl --parallel
 
-# 3. The app, at ~/Desktop/ZangbandTclTK.app.
+# 3. The app, at ~/Desktop/ZangbandTKGUI.app.
 scripts/pkg_macos_tcltk build-tcl
 ```
 

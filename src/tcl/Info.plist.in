@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
-	Info.plist for ZangbandTclTK.app, filled in by scripts/pkg_macos_tcltk.
+	Info.plist for ZangbandTKGUI.app, filled in by scripts/pkg_macos_tcltk.
 
 	Deliberately shorter than the Cocoa application's plist next door in
 	src/cocoa/.  There is no NSMainNibFile and no NSPrincipalClass because Tk

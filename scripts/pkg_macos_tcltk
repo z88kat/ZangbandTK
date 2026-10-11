@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Assemble ZangbandTclTK.app from a cmake build of the Tcl/Tk front end.
+# Assemble ZangbandTKGUI.app from a cmake build of the Tcl/Tk front end.
 #
 # Use in the root directory of the game, like so:
 #    scripts/pkg_macos_tcltk <build-directory> [output-directory]
@@ -8,7 +8,7 @@
 # The build directory is whatever was configured with SUPPORT_TCL_FRONTEND=ON.
 # The bundle goes to ~/Desktop unless an output directory is given -- that is
 # where it gets played from, and building it straight there means there is only
-# ever one of it.  Two copies both claim org.zangbandtk.zangbandtcltk, and then
+# ever one of it.  Two copies both claim org.zangbandtk.zangbandtkgui, and then
 # Launch Services decides which one your double-click starts; see the warning
 # at the end of this script.  Where there is no Desktop, as on a CI runner, the
 # bundle is written beside the build instead.
@@ -57,8 +57,8 @@ else
 	OUT=$BUILD
 fi
 
-NAME=ZangbandTclTK
-IDENT=org.zangbandtk.zangbandtcltk
+NAME=ZangbandTKGUI
+IDENT=org.zangbandtk.zangbandtkgui
 APP=$OUT/$NAME.app
 EXE=$BUILD/game/angband
 
@@ -195,10 +195,10 @@ plutil -lint "$APP/Contents/Info.plist" > /dev/null
 LSREG=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 if [ -x "$LSREG" ]; then
 	OTHERS=$("$LSREG" -dump 2>/dev/null \
-		| grep -o "path: *[^ ]*ZangbandTclTK\.app" \
+		| grep -o "path: *[^ ]*$NAME\.app" \
 		| sed 's/path: *//' | sort -u | grep -v "^$APP$" || true)
 	if [ -n "$OTHERS" ]; then
-		echo "    warning: other ZangbandTclTK.app bundles are registered with"
+		echo "    warning: other $NAME.app bundles are registered with"
 		echo "    the same identifier, and the Finder may launch one of those:"
 		echo "$OTHERS" | sed 's/^/      /'
 		echo "    Remove them, or unregister with: $LSREG -u <path>"

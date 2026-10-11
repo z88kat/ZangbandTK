@@ -149,7 +149,7 @@ jobs:
       - name: Tcl tests
         run: scripts/run-tcl-tests
 
-      # Builds ZangbandTclTK.app and runs its own checks: that nothing in it
+      # Builds ZangbandTKGUI.app and runs its own checks: that nothing in it
       # points back at the build tree, that the game data and the front end's
       # scripts are inside it, and that the plist has no unsubstituted
       # placeholders left in it.
@@ -159,8 +159,8 @@ jobs:
       - name: Upload the bundle
         uses: actions/upload-artifact@v4
         with:
-          name: ZangbandTclTK-app
-          path: out/ZangbandTclTK.app
+          name: ZangbandTKGUI-app
+          path: out/ZangbandTKGUI.app
           retention-days: 7
 
       # The only step here that needs a window: it starts the real game with

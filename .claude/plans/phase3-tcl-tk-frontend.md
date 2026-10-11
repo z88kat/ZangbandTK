@@ -734,7 +734,7 @@ twice — see §6 decisions 11–13:
   reads a script goes through one function, so a dev build can point at the source tree and
   a release build at zipfs without a single `source` path changing. Deciding this at T9,
   when there are 121 scripts, means editing 121 scripts.
-- **A minimal `ZangbandTclTK.app` bundle**, identifier `org.zangbandtk.zangbandtcltk` — a
+- **A minimal `ZangbandTKGUI.app` bundle**, identifier `org.zangbandtk.zangbandtkgui` — a
   second application beside the Cocoa one, never a replacement for it (§6 decision 14). Unbundled Tk on Aqua
   opens a window, but the application menu, Dock identity, activation and the native file
   dialogs all behave differently from a bundled app — and T7 commits to the application menu
@@ -751,7 +751,7 @@ twice — see §6 decisions 11–13:
   on failure, and a `package require Tk` in a headless runner silently runs nothing at all.
 
 **Exit:** ✅ **met, 17 Sep.** `cmake -DSUPPORT_TCL_FRONTEND=ON -DTCLTK_PREFIX=…` builds;
-`ZangbandTclTK.app` launches from the Finder and closes cleanly; `tk.yaml` builds the
+`ZangbandTKGUI.app` launches from the Finder and closes cleanly; `tk.yaml` builds the
 toolchain, the front end and the bundle, and runs the Tcl tests. Terminal builds unaffected
 and `check-build-lists` clean.
 
@@ -1703,7 +1703,7 @@ palette — presented as one categorised list, so a dead control is structurally
 and the player never has to know which layer owns a setting
 ([OBS-13](phase3-observations.md), [OBS-34](phase3-observations.md)); keymap UI;
 help via the Sphinx manual (DEC-17), replacing TkHtml and reusing the `.book`/`.page` tree as its index; the 32 startup tips, rewritten for whatever the UI actually ends up doing; Ttk restyling; zipfs packaging of the Tcl into the
-app bundle; and the release `ZangbandTclTK.app`, which by here is T0's minimal bundle grown
+app bundle; and the release `ZangbandTKGUI.app`, which by here is T0's minimal bundle grown
 up rather than a new piece of work — shipping *beside* `ZangbandTK.app`, which Phase 3 never
 touches (§6 decision 14), so the download page has to say in a line which is which.
 
@@ -2047,16 +2047,21 @@ release … the current version remains, it is built and will always be playable
 
 `ZangbandTK.app` — `main-cocoa.c`, built by `gmake -f Makefile.osx`, identifier
 `org.zangbandtk.zangbandtk` — is not a stepping stone to anything and is not deprecated by
-this phase. The Tk front end ships beside it as its own application, **`ZangbandTclTK.app`**.
+this phase. The Tk front end ships beside it as its own application, **`ZangbandTKGUI.app`**.
 Confirmed by project owner as the naming convention, which settles it everywhere the name
 appears rather than only on the bundle:
 
 | | Cocoa, today | Tcl/Tk, from T0 |
 |---|---|---|
-| Bundle | `ZangbandTK.app` | `ZangbandTclTK.app` |
-| Identifier | `org.zangbandtk.zangbandtk` | `org.zangbandtk.zangbandtcltk` |
+| Bundle | `ZangbandTK.app` | `ZangbandTKGUI.app` |
+| Identifier | `org.zangbandtk.zangbandtk` | `org.zangbandtk.zangbandtkgui` |
 | Release artefact | `<package>-osx.dmg`, `<package>-osx-intel.dmg` | `<package>-osx-tcltk.dmg`, `<package>-osx-tcltk-intel.dmg` |
 | Built by | `gmake -f Makefile.osx` | cmake, `SUPPORT_TCL_FRONTEND=ON` |
+
+> **Renamed on 11 October 2026**, at the project owner's request: the bundle was
+> `ZangbandTclTK.app`, identifier `org.zangbandtk.zangbandtcltk`, until then. The identifier
+> followed the name so the two cannot drift apart. The release artefact names above are
+> unchanged, because nothing has shipped under them yet.
 
 The artefact suffix follows the convention the terminal builds already use —
 `-osx-terminal.tar.gz`, `-linux64-terminal.tar.gz` — so the download page reads as one
@@ -2179,7 +2184,7 @@ Stated plainly, so nothing here reads as more settled than it is:
   file decodes (§1.3), but no tile has been mapped to a 4.2 index, and nothing has been
   judged at actual size in a running window — which is the only judgement that counts.
 - **Code signing the bundle is unsolved**, and known to be unsolved rather than untried:
-  `ZangbandTclTK.app` assembles, launches from the Finder and runs with the build tree
+  `ZangbandTKGUI.app` assembles, launches from the Finder and runs with the build tree
   absent, but `codesign --verify --strict` fails on both Tcl dylibs for the zipfs reason in
   §7. Everything T0–T8 needs works; the release step does not yet.
 - **The sound event mapping is sketched, not written.** §1.4 confirms 7 exact name matches

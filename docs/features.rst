@@ -477,7 +477,7 @@ A **Tcl/Tk front end** revives the original's interface on Tcl/Tk 9, rebuilt
 rather than ported. It is in the tree and CI builds it on every push: ``src/main-tcl.c``
 and ``src/tcl/``, with Tcl and Tk vendored under ``tcltk/``. The Tk workflow
 compiles it, checks the binary really links Tk rather than quietly falling back
-to X11, runs the Tcl-side tests, packages ``ZangbandTclTK.app`` and then drives
+to X11, runs the Tcl-side tests, packages ``ZangbandTKGUI.app`` and then drives
 the real game through the real front end from a script.
 
 It is **not what the releases ship**: that bundle is a CI artifact, and the
