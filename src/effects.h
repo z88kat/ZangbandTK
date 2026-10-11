@@ -54,7 +54,7 @@ bool effect_do(struct effect *effect,
 	int beam,
 	int boost,
 	struct command *cmd);
-void effect_simple(int index,
+bool effect_simple(int index,
 	struct source origin,
 	const char *dice_string,
 	int subtype,

@@ -519,8 +519,13 @@ bool effect_do(struct effect *effect,
  * Perform a single effect with a simple dice string and parameters
  * Calling with ident a valid pointer will (depending on effect) give success
  * information; ident = NULL will ignore this
+ *
+ * ZangbandTK: returns what effect_do() does, whether the effect was used.  It
+ * used to be thrown away, and a town's service needs it: an effect that asks
+ * for an item and is given none -- nothing to recharge, or the prompt
+ * escaped -- reports false, and that is when a fee should be handed back.
  */
-void effect_simple(int index,
+bool effect_simple(int index,
 				   struct source origin,
 				   const char *dice_string,
 				   int subtype,
@@ -533,6 +538,7 @@ void effect_simple(int index,
 	struct effect effect;
 	int dir = DIR_TARGET;
 	bool dummy_ident = false;
+	bool used;
 
 	/* Set all the values */
 	memset(&effect, 0, sizeof(effect));
@@ -554,8 +560,10 @@ void effect_simple(int index,
 		ident = &dummy_ident;
 	}
 
-	effect_do(&effect, origin, NULL, ident, true, dir, 0, 0, NULL);
+	used = effect_do(&effect, origin, NULL, ident, true, dir, 0, 0, NULL);
 	dice_free(effect.dice);
+
+	return used;
 }
 
 /**

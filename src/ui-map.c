@@ -1902,6 +1902,13 @@ static void service_inn(void)
  * strength zero, which is the worst odds the game has.  Both were reported from
  * play as taking the money and doing nothing.
  * \param subtype selects which kind, and matters for the same reason.
+ *
+ * Paid before the effect runs, since the effect is what asks which item, and
+ * handed back when it then does nothing -- when there is nothing it could work
+ * on ("You have nothing to recharge.") or the item prompt is escaped.  Both
+ * used to keep the fee, which was being charged for walking in.  Work that is
+ * done and goes badly is a different thing and is paid for: an enchantment
+ * that fails, or a recharge that destroys the wand, still counts as used.
  */
 static void service_effect(const char *what, int effect, int32_t price,
 						   const char *dice, int subtype)
@@ -1912,7 +1919,14 @@ static void service_effect(const char *what, int effect, int32_t price,
 	if (!service_pay(price, what))
 		return;
 
-	effect_simple(effect, source_player(), dice, subtype, 0, 0, 0, 0, NULL);
+	if (!effect_simple(effect, source_player(), dice, subtype, 0, 0, 0, 0,
+					   NULL)) {
+		player->au += price;
+		player->upkeep->redraw |= PR_GOLD;
+		msg("Your %d au is handed back.", (int) price);
+		return;
+	}
+
 	player->upkeep->energy_use = z_info->move_energy;
 }
 

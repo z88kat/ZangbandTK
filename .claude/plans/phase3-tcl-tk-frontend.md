@@ -1657,6 +1657,38 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 > *is* done — the keyboard commands are wired and remain primary, and clicking a row selects
 > it — but there is no Tab-and-Return path through the doll.
 
+> **The Building window — the town's services.**
+> [lib/tcl/building.tcl](../../lib/tcl/building.tcl). The six service buildings — healer,
+> inn, magetower, magesmith, recharger, Chaos Tower — each run as a short conversation from
+> `ui_enter_service()`: a dynamic menu, a yes-or-no on a price, an item prompt, and in a
+> building that hands out work the quest talk before any of it. The window shows whichever
+> of those is open, with the prices in a column of their own, and answers through
+> `angband_choice` exactly as the Choice pane does, so the conversation stays the game's.
+>
+> - **It opens on the building's first question, not at the door.** The inn by day and a
+>   magetower with nowhere to go say their piece and ask nothing; a window that opened for
+>   those would open and close again in the same instant.
+> - **A visit is three events, as a store's is.** `EVENT_ENTER_SERVICE`, `USE_SERVICE`,
+>   `LEAVE_SERVICE`, with the building on the middle one. With one event the front end could
+>   not know a visit had begun: handlers are called newest first, and the building's is
+>   re-registered on every `ENTER_WORLD`, so it always heard first and ran the whole visit
+>   before anything else was told.
+> - **`get_check` is wrapped**, as the item, spell and menu prompts are: Yes and No are rows,
+>   in this window and in the Choice pane, for every yes-or-no question the game asks.
+> - **The menu lines are split where the game left two spaces**, which the magetower did not
+>   always leave — a 24-character name ran into its kind — so its name column is now as wide
+>   as the longest name, on the main screen too.
+>
+> Found on the way, and fixed game-side: the recharger and the magesmith took their fee
+> before the item prompt, so a character with nothing to recharge, or who escaped the
+> prompt, paid for nothing. `effect_simple()` now hands back `effect_do()`'s "was it used",
+> which it had been discarding, and the fee is returned when it was not. A failed
+> enchantment or a recharge that destroys the wand is still paid for: that is the work going
+> badly, not the work not being done.
+
+> **On hold: the keymap and macro editor** (owner's decision, 11 October 2026). The design
+> notes above stand; it is the one T7 screen not started, and it waits until it is asked for.
+
 ---
 
 ### T8 — Birth
