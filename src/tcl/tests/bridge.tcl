@@ -975,6 +975,108 @@ proc second_pass {} {
 		set taken
 	} 0
 
+	# Character creation (T8).  Nothing is asked until the splash is past.
+	check "nothing is asked about a character before creation begins" {
+		catch {angband_birth answer back} e
+		list [angband_birth] [winfo exists .birth] $e
+	} "{} 0 {the game is not asking anything about the character}"
+
+	birth_pass
+}
+
+# --- the third pass: making a character -------------------------------------
+
+# Past the splash and through the Birth window -- the first point at which
+# this session has a character the game is really playing.  The runner gives
+# the game a save directory of its own, so this is always a new character.
+proc birth_pass {} {
+	set ::birthseen {}
+	set ::birthstep ""
+	bind . <<Angband_BIRTHVIEW>> {+
+		after cancel $::birthstep
+		set ::birthstep [after 300 birth_pass_step]
+	}
+	bind . <<Angband_ENTER_GAME>> {+ after 300 birth_pass_done }
+	set ::birthwatch [after 30000 {
+		check "the character was made in the Birth window" {
+			list timed out at $::birthseen
+		} "made"
+		finish
+	}]
+	angband_key 0 0 " "
+}
+
+proc birth_pass_step {} {
+	lassign [angband_birth] stage
+	if {$stage eq ""} return
+	lappend ::birthseen $stage
+
+	switch -- $stage {
+		race {
+			check "the Birth window asks for a race, from the game's list" {
+				lassign [angband_birth choices] cursor rows
+				list [winfo exists .birth] [expr {[llength $rows] > 10}] \
+					[lindex $rows 0 1] [stock_widgets_only .birth]
+			} "1 1 Human {classic {}}"
+
+			check "and describes it in the game's words" {
+				string match "*Hit die:*XP mod:*" [angband_birth describe 0]
+			} 1
+
+			# The rest at random, as '@' does on the text screen.
+			birth_answer finish
+		}
+		confirm {
+			check "the character waits to be confirmed" {
+				set c [angband_birth character]
+				list [expr {[dict get $c name] ne ""}] \
+					[expr {[dict get $c race] ne ""}] \
+					[expr {[dict get $c hitpoints] > 0}]
+			} "1 1 1"
+			birth_next
+		}
+		default {
+			# A stage the random finish should have answered; take it
+			# forward so that the pass still ends.
+			birth_next
+		}
+	}
+}
+
+proc birth_pass_done {} {
+	after cancel $::birthwatch
+	check "the character was made in the Birth window" {
+		list [winfo exists .birth] [expr {[angband_player race] ne ""}] \
+			[expr {[lindex [angband_player hitpoints] 1] > 0}]
+	} "0 1 1"
+	set ::waits 0
+	birth_pass_ready
+}
+
+# The note on angband_push above: with a character in play the queue is
+# drained, so a command pushed now is carried out.  Pushed once the game is
+# waiting for a command -- the menu bar's own test, a command being enabled --
+# and holding still takes a turn, which the turn counter shows.
+proc birth_pass_ready {} {
+	set enabled [llength [lsearch -all -index 5 [angband_commands] 1]]
+	if {!$enabled && [incr ::waits] < 50} {
+		after 200 birth_pass_ready
+		return
+	}
+	set ::turn0 [angband_player turn]
+	set ::pushed [catch {angband_push CMD_HOLD} ::pusherr]
+	set ::waits 0
+	birth_pass_held
+}
+
+proc birth_pass_held {} {
+	if {[angband_player turn] == $::turn0 && [incr ::waits] < 25} {
+		after 200 birth_pass_held
+		return
+	}
+	check "a pushed command is carried out once there is a character" {
+		list [expr {[angband_player turn] > $::turn0}] $::pushed $::pusherr
+	} "1 0 {}"
 	finish
 }
 

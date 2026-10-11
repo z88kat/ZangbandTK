@@ -858,6 +858,10 @@ static bool command_may_start(void);
 static void choice_install(void);
 static void store_notice(game_event_type type, game_event_data *data,
 		void *user);
+static void birth_view_tk(enum birth_stage stage, int slot,
+		struct birth_answer *answer);
+static void birth_points_notice(game_event_type type, game_event_data *data,
+		void *user);
 
 /**
  * A key the bridge sends the game itself -- the nudge after a push, the Escape
@@ -4633,6 +4637,9 @@ static void choice_install(void)
 	check_original = get_check_hook;
 	get_check_hook = choice_get_check;
 
+	birth_view_hook = birth_view_tk;
+	event_add_handler(EVENT_BIRTHPOINTS, birth_points_notice, NULL);
+
 	event_add_handler(EVENT_LEAVE_WORLD, store_notice, NULL);
 	event_add_handler(EVENT_ENTER_WORLD, store_notice, NULL);
 	event_add_handler(EVENT_ENTER_SERVICE, service_notice, NULL);
@@ -5713,6 +5720,409 @@ static int objcmd_service(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	Tcl_ListObjAppendElement(ip, d, Tcl_NewWideIntObj(player->au));
 	Tcl_SetObjResult(ip, d);
 	return TCL_OK;
+}
+
+/**
+ * Character creation in a window of its own (T8).
+ *
+ * ui-birth.c keeps the stages -- quick start, race, class, realms, how the
+ * stats are made, the points or the roller, name, history, confirmation --
+ * their order, stepping back, and what each pushes.  It asks its view for
+ * each stage's input through birth_view_hook, and this is the view: it tells
+ * the Birth window which stage is asking and runs Tk until the window has
+ * answered, which is what inkey() would have been doing while it waited for a
+ * key.  The answer is in the stage's own terms (struct birth_answer), so
+ * whatever the window does, the stage does the same as it would for the key.
+ */
+static enum birth_stage birth_stage_now;
+static int birth_slot_now;
+static bool birth_asking;
+static struct birth_answer *birth_pending;
+
+/* The point costs, as the game last reported them (EVENT_BIRTHPOINTS). */
+static int birth_spent[STAT_MAX], birth_cost[STAT_MAX], birth_left;
+
+static void birth_points_notice(game_event_type type, game_event_data *data,
+		void *user)
+{
+	int i;
+
+	(void)type;
+	(void)user;
+
+	for (i = 0; i < STAT_MAX; i++) {
+		birth_spent[i] = data->birthpoints.points[i];
+		birth_cost[i] = data->birthpoints.inc_points[i];
+	}
+	birth_left = data->birthpoints.remaining;
+}
+
+static void birth_view_tk(enum birth_stage stage, int slot,
+		struct birth_answer *answer)
+{
+	birth_stage_now = stage;
+	birth_slot_now = slot;
+	birth_pending = answer;
+	birth_asking = true;
+
+	/* The screen behind the window says what the text one would. */
+	Term_fresh();
+
+	if (Tcl_Eval(interp, "event generate . <<Angband_BIRTHVIEW>> -when tail")
+			!= TCL_OK)
+		Tcl_BackgroundException(interp, TCL_ERROR);
+
+	while (birth_asking)
+		Tcl_DoOneEvent(TCL_ALL_EVENTS);
+
+	birth_pending = NULL;
+}
+
+static const char *birth_stage_word(enum birth_stage stage)
+{
+	switch (stage) {
+		case BIRTH_QUICKSTART:		return "quickstart";
+		case BIRTH_RACE_CHOICE:		return "race";
+		case BIRTH_CLASS_CHOICE:	return "class";
+		case BIRTH_REALM_CHOICE:	return "realm";
+		case BIRTH_ROLLER_CHOICE:	return "method";
+		case BIRTH_POINTBASED:		return "points";
+		case BIRTH_ROLLER:			return "roller";
+		case BIRTH_NAME_CHOICE:		return "name";
+		case BIRTH_HISTORY_CHOICE:	return "history";
+		case BIRTH_FINAL_CONFIRM:	return "confirm";
+		default:					return "";
+	}
+}
+
+/* What the describing functions write, gathered rather than drawn. */
+static Tcl_DString birth_text;
+
+static void birth_text_out(uint8_t attr, const char *str)
+{
+	(void)attr;
+	Tcl_DStringAppend(&birth_text, str, -1);
+}
+
+/* A stat's value as the game prints it: "18/50", trimmed. */
+static Tcl_Obj *birth_stat_obj(int value)
+{
+	char buf[32];
+	char *p = buf;
+
+	cnv_stat(value, buf, sizeof(buf));
+	while (*p == ' ') p++;
+	return Tcl_NewStringObj(p, -1);
+}
+
+/**
+ * angband_birth -- character creation, for the Birth window.
+ *
+ *    angband_birth             {} unless the game is asking, and then
+ *                              {stage slot}: quickstart, race, class, realm
+ *                              (slot 0 or 1), method, points, roller, name,
+ *                              history or confirm
+ *    angband_birth question    what a menu stage asks, as the screen puts it
+ *    angband_birth choices     {cursor rows}: a menu stage's choices in its
+ *                              own order, and the one it starts on
+ *    angband_birth describe <n>      a race or a class, in the screen's
+ *                              words, or a realm and this class's books in it
+ *    angband_birth stats       {name self race class best}, a row a stat
+ *    angband_birth points      {left rows}: what is left to spend, and a
+ *                              {spent cost can-buy can-sell} row a stat
+ *    angband_birth character   the character so far, as a name/value list
+ *    angband_birth random_name a name, from the game's own generator
+ *    angband_birth answer <verb> ?arg?
+ *                              answer the stage: choose <row>, back, random,
+ *                              finish, options, quit, use, redo, change,
+ *                              reroll, previous, buy <stat>, sell <stat>,
+ *                              reset, accept, startover, name <text>,
+ *                              history <text>
+ */
+static int objcmd_birth(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what;
+	int i, n;
+
+	(void)dummy;
+
+	if (objc == 1) {
+		Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+
+		if (birth_asking) {
+			Tcl_ListObjAppendElement(ip, d,
+					Tcl_NewStringObj(birth_stage_word(birth_stage_now), -1));
+			Tcl_ListObjAppendElement(ip, d, Tcl_NewIntObj(birth_slot_now));
+		}
+		Tcl_SetObjResult(ip, d);
+		return TCL_OK;
+	}
+
+	what = Tcl_GetString(objv[1]);
+
+	/* Everything else is about the character being made. */
+	if (!player || !player->race || !player->class) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("there is no character yet", -1));
+		return TCL_ERROR;
+	}
+
+	if (streq(what, "random_name") && objc == 2) {
+		char name[PLAYER_NAME_LEN];
+
+		player_random_name(name, sizeof(name));
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(name, -1));
+		return TCL_OK;
+	}
+
+	if (streq(what, "stats") && objc == 2) {
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+		for (i = 0; i < STAT_MAX; i++) {
+			Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+			char name[16];
+
+			my_strcpy(name, stat_names[i], sizeof(name));
+			for (n = (int)strlen(name); n > 0
+					&& (name[n - 1] == ' ' || name[n - 1] == ':'); n--)
+				name[n - 1] = 0;
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(name, -1));
+			Tcl_ListObjAppendElement(ip, row,
+					birth_stat_obj(player->stat_max[i]));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewIntObj(player->race->r_adj[i]));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewIntObj(player->class->c_adj[i]));
+			Tcl_ListObjAppendElement(ip, row,
+					birth_stat_obj(player->state.stat_top[i]));
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	if (streq(what, "points") && objc == 2) {
+		Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+		Tcl_Obj *rows = Tcl_NewListObj(0, NULL);
+
+		for (i = 0; i < STAT_MAX; i++) {
+			Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(birth_spent[i]));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(birth_cost[i]));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewBooleanObj(birth_cost[i] <= birth_left));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewBooleanObj(birth_spent[i] > 0));
+			Tcl_ListObjAppendElement(ip, rows, row);
+		}
+		Tcl_ListObjAppendElement(ip, d, Tcl_NewIntObj(birth_left));
+		Tcl_ListObjAppendElement(ip, d, rows);
+		Tcl_SetObjResult(ip, d);
+		return TCL_OK;
+	}
+
+	if (streq(what, "character") && objc == 2) {
+		Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+		Tcl_Obj *realms = Tcl_NewListObj(0, NULL);
+
+#define BIRTH_PUT(key, obj) do { \
+		Tcl_ListObjAppendElement(ip, d, Tcl_NewStringObj(key, -1)); \
+		Tcl_ListObjAppendElement(ip, d, obj); \
+	} while (0)
+		BIRTH_PUT("name", Tcl_NewStringObj(player->full_name, -1));
+		BIRTH_PUT("race", Tcl_NewStringObj(player->race->name, -1));
+		BIRTH_PUT("class", Tcl_NewStringObj(player->class->name, -1));
+		for (i = 0; i < REALM_CHOICES; i++) {
+			if (player->realm[i])
+				Tcl_ListObjAppendElement(ip, realms,
+						Tcl_NewStringObj(player->realm[i]->name, -1));
+		}
+		BIRTH_PUT("realms", realms);
+		BIRTH_PUT("patron", Tcl_NewStringObj(
+				player->patron ? player->patron->name : "", -1));
+		BIRTH_PUT("patron_title", Tcl_NewStringObj(
+				(player->patron && player->patron->title)
+					? player->patron->title : "", -1));
+		BIRTH_PUT("patron_text", Tcl_NewStringObj(
+				(player->patron && player->patron->text)
+					? player->patron->text : "", -1));
+		BIRTH_PUT("history", Tcl_NewStringObj(
+				player->history ? player->history : "", -1));
+		BIRTH_PUT("hitpoints", Tcl_NewIntObj(player->mhp));
+		BIRTH_PUT("mana", Tcl_NewIntObj(player->msp));
+#undef BIRTH_PUT
+		Tcl_SetObjResult(ip, d);
+		return TCL_OK;
+	}
+
+	/* The rest are about the stage being asked. */
+	if (!birth_asking) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(
+				"the game is not asking anything about the character", -1));
+		return TCL_ERROR;
+	}
+
+	if (streq(what, "question") && objc == 2) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(
+				birth_question(birth_stage_now), -1));
+		return TCL_OK;
+	}
+
+	if (streq(what, "choices") && objc == 2) {
+		const char *names[64];
+		int cursor;
+		Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+		Tcl_Obj *rows = Tcl_NewListObj(0, NULL);
+
+		n = birth_choices(birth_stage_now, names, (int)N_ELEMENTS(names),
+				&cursor);
+		for (i = 0; i < n; i++) {
+			Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(names[i] ? names[i] : "", -1));
+			Tcl_ListObjAppendElement(ip, rows, row);
+		}
+		Tcl_ListObjAppendElement(ip, d, Tcl_NewIntObj(cursor));
+		Tcl_ListObjAppendElement(ip, d, rows);
+		Tcl_SetObjResult(ip, d);
+		return TCL_OK;
+	}
+
+	/*
+	 * A realm has no description of its own -- the text screen offers the
+	 * names alone -- so it is described from what the game knows of it for
+	 * this character: what its magic is called and which stat it draws on,
+	 * and the class's books in it, spell by spell, with the level each is
+	 * learned at.
+	 */
+	if (streq(what, "describe") && objc == 3
+			&& birth_stage_now == BIRTH_REALM_CHOICE) {
+		const struct magic_realm *offered[REALM_MAX];
+		const struct magic_realm *realm;
+		const struct class_magic *magic = &player->class->magic;
+		Tcl_Obj *text = Tcl_NewObj();
+		char stat[16];
+		int b, k;
+
+		if (Tcl_GetIntFromObj(ip, objv[2], &n) != TCL_OK) return TCL_ERROR;
+		k = player_realm_offer(player, birth_slot_now, offered, REALM_MAX);
+		if (n < 0 || n >= k) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no realm at row %d", n));
+			return TCL_ERROR;
+		}
+		realm = offered[n];
+
+		my_strcpy(stat, stat_names[realm->stat], sizeof(stat));
+		for (k = (int)strlen(stat); k > 0
+				&& (stat[k - 1] == ' ' || stat[k - 1] == ':'); k--)
+			stat[k - 1] = 0;
+		Tcl_AppendPrintfToObj(text, "%c%ss, %s from %ss.  Studied with %s.\n",
+				toupper((unsigned char)realm->spell_noun[0]),
+				realm->spell_noun + 1, realm->verb, realm->book_noun, stat);
+
+		for (b = 0; b < magic->num_books; b++) {
+			const struct class_book *book = &magic->books[b];
+			struct object_kind *kind = lookup_kind(book->tval, book->sval);
+			char name[80];
+
+			if (book->realm != realm || !kind) continue;
+			object_kind_name(name, sizeof(name), kind, true);
+			Tcl_AppendPrintfToObj(text, "\n%s%s\n", name,
+					book->dungeon ? " (found in the dungeon)" : "");
+			for (k = 0; k < book->num_spells; k++)
+				Tcl_AppendPrintfToObj(text, "  %2d  %s\n",
+						book->spells[k].slevel, book->spells[k].name);
+		}
+		Tcl_SetObjResult(ip, text);
+		return TCL_OK;
+	}
+
+	if (streq(what, "describe") && objc == 3) {
+		void (*old)(uint8_t, const char *) = text_out_hook;
+		int indent = text_out_indent;
+		Tcl_Obj *text;
+
+		if (Tcl_GetIntFromObj(ip, objv[2], &n) != TCL_OK) return TCL_ERROR;
+
+		Tcl_DStringInit(&birth_text);
+		text_out_hook = birth_text_out;
+		text_out_indent = 0;
+		birth_describe(birth_stage_now, n);
+		text_out_hook = old;
+		text_out_indent = indent;
+
+		text = Tcl_NewStringObj(Tcl_DStringValue(&birth_text), -1);
+		Tcl_DStringFree(&birth_text);
+		Tcl_SetObjResult(ip, text);
+		return TCL_OK;
+	}
+
+	if (streq(what, "answer") && (objc == 3 || objc == 4)) {
+		static const struct {
+			const char *verb;
+			int key;
+			int arg;		/* 0 none, 1 a row or stat, 2 text */
+		} verbs[] = {
+			{ "choose",		0,				1 },
+			{ "back",		ESCAPE,			0 },
+			{ "random",		'*',			0 },
+			{ "finish",		'@',			0 },
+			{ "options",	'=',			0 },
+			{ "quit",		KTRL('X'),		0 },
+			{ "use",		'y',			0 },
+			{ "redo",		'n',			0 },
+			{ "change",		'c',			0 },
+			{ "reroll",		'r',			0 },
+			{ "previous",	'p',			0 },
+			{ "buy",		'+',			1 },
+			{ "sell",		'-',			1 },
+			{ "reset",		'r',			0 },
+			{ "accept",		KC_ENTER,		0 },
+			{ "startover",	'S',			0 },
+			{ "name",		KC_ENTER,		2 },
+			{ "history",	'n',			2 },
+		};
+		const char *verb = Tcl_GetString(objv[2]);
+		struct birth_answer *a = birth_pending;
+		size_t v;
+
+		for (v = 0; v < N_ELEMENTS(verbs); v++)
+			if (streq(verbs[v].verb, verb)) break;
+		if (v == N_ELEMENTS(verbs)) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no such answer: %s", verb));
+			return TCL_ERROR;
+		}
+		if ((verbs[v].arg != 0) != (objc == 4)) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(verbs[v].arg
+					? "%s wants one more argument"
+					: "%s takes no argument", verb));
+			return TCL_ERROR;
+		}
+		if (verbs[v].arg == 1
+				&& Tcl_GetIntFromObj(ip, objv[3], &a->choice) != TCL_OK)
+			return TCL_ERROR;
+		if (verbs[v].arg == 2)
+			my_strcpy(a->text, Tcl_GetString(objv[3]), sizeof(a->text));
+
+		a->key.type = EVT_KBRD;
+		a->key.code = (keycode_t)verbs[v].key;
+		a->key.mods = 0;
+
+		/* The quick start takes its "use as it is" as 'y', not Enter. */
+		if (streq(verb, "accept") && birth_stage_now == BIRTH_QUICKSTART)
+			a->key.code = 'y';
+
+		birth_asking = false;
+		return TCL_OK;
+	}
+
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf("expected question, choices, describe,"
+			" stats, points, character, random_name or answer, not: %s",
+			what));
+	return TCL_ERROR;
 }
 
 /**
@@ -7060,6 +7470,7 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_store", objcmd_store, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_service", objcmd_service, NULL,
 			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_birth", objcmd_birth, NULL, NULL);
 
 	hooks_init();
 

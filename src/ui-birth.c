@@ -57,23 +57,7 @@
  * A local-to-this-file global to hold the most important bit of state
  * between calls to the game proper.  Probably not strictly necessary,
  * but reduces complexity a bit. */
-enum birth_stage
-{
-	BIRTH_BACK = -1,
-	BIRTH_RESET = 0,
-	BIRTH_QUICKSTART,
-	BIRTH_RACE_CHOICE,
-	BIRTH_CLASS_CHOICE,
-	BIRTH_REALM_CHOICE,
-	BIRTH_ROLLER_CHOICE,
-	BIRTH_POINTBASED,
-	BIRTH_ROLLER,
-	BIRTH_NAME_CHOICE,
-	BIRTH_HISTORY_CHOICE,
-	BIRTH_FINAL_CONFIRM,
-	BIRTH_COMPLETE
-};
-
+/* enum birth_stage is in ui-birth.h, for a front end's view of each stage. */
 
 enum birth_questions
 {
@@ -94,6 +78,7 @@ enum birth_rollers
 
 
 static void finish_with_random_choices(enum birth_stage current);
+static bool birth_view_ask(enum birth_stage stage, struct birth_answer *answer);
 static void point_based_start(void);
 static bool quickstart_allowed = false;
 bool arg_force_name;
@@ -115,7 +100,9 @@ static enum birth_stage textui_birth_quickstart(void)
 
 	do {
 		/* Get a key */
-		struct keypress ke = inkey();
+		struct birth_answer answer;
+		struct keypress ke = birth_view_ask(BIRTH_QUICKSTART, &answer)
+			? answer.key : inkey();
 		
 		if (ke.code == 'N' || ke.code == 'n') {
 			cmdq_push(CMD_BIRTH_RESET);
@@ -229,6 +216,29 @@ static region roller_region = {ROLLER_COL, TABLE_ROW, 34, MENU_ROWS};
  * than once in setup_menus(), and this says which slot is being filled.
  */
 static int realm_slot = 0;
+
+/**
+ * A front end's own view of each stage, or NULL for the text screens
+ * (ZangbandTK, T8).  See struct birth_answer.
+ */
+void (*birth_view_hook)(enum birth_stage stage, int slot,
+		struct birth_answer *answer) = NULL;
+
+/*
+ * Ask the front end's view for a stage's input, if there is one.  Each stage
+ * calls this where it would otherwise wait for a key, and carries on with the
+ * answer exactly as it would with the key: so going back, the random choices,
+ * and what each answer pushes stay in this file, said once.
+ */
+static bool birth_view_ask(enum birth_stage stage, struct birth_answer *answer)
+{
+	if (!birth_view_hook) return false;
+
+	memset(answer, 0, sizeof(*answer));
+	answer->choice = -1;
+	birth_view_hook(stage, realm_slot, answer);
+	return true;
+}
 
 /**
  * We use different menu "browse functions" to display the help text
@@ -389,7 +399,12 @@ static void skill_help(const int r_skills[], const int c_skills[], int mhp, int 
 		text_out_e("\n");
 }
 
-static void race_help(int i, void *db, const region *l)
+/*
+ * A race, as the screen describes it beside the menu -- through whatever
+ * text_out_hook is, so that a front end's view can describe it in the same
+ * words (birth_describe()).
+ */
+static void race_describe(int i)
 {
 	int j;
 	struct player_race *r = player_id2race(i);
@@ -400,13 +415,6 @@ static void race_help(int i, void *db, const region *l)
 	int flag_space = 3;
 
 	if (!r) return;
-
-	/* Output to the screen */
-	text_out_hook = text_out_to_screen;
-	
-	/* Indent output */
-	text_out_indent = RACE_AUX_COL;
-	Term_gotoxy(RACE_AUX_COL, TABLE_ROW);
 
 	for (j = 0; j < len; j++) {  
 		const char *name = stat_names_reduced[j];
@@ -447,12 +455,27 @@ static void race_help(int i, void *db, const region *l)
 		text_out_e("\n");
 		n_flags++;
 	}
+}
+
+static void race_help(int i, void *db, const region *l)
+{
+	if (!player_id2race(i)) return;
+
+	/* Output to the screen */
+	text_out_hook = text_out_to_screen;
+	
+	/* Indent output */
+	text_out_indent = RACE_AUX_COL;
+	Term_gotoxy(RACE_AUX_COL, TABLE_ROW);
+
+	race_describe(i);
 
 	/* Reset text_out() indentation */
 	text_out_indent = 0;
 }
 
-static void class_help(int i, void *db, const region *l)
+/* A class, as race_describe() describes a race. */
+static void class_describe(int i)
 {
 	int j;
 	struct player_class *c = player_id2class(i);
@@ -463,14 +486,7 @@ static void class_help(int i, void *db, const region *l)
 	int n_flags = 0;
 	int flag_space = 5;
 
-	if (!c) return;
-
-	/* Output to the screen */
-	text_out_hook = text_out_to_screen;
-	
-	/* Indent output */
-	text_out_indent = CLASS_AUX_COL;
-	Term_gotoxy(CLASS_AUX_COL, TABLE_ROW);
+	if (!c || !r) return;
 
 	for (j = 0; j < len; j++) {  
 		const char *name = stat_names_reduced[j];
@@ -538,6 +554,20 @@ static void class_help(int i, void *db, const region *l)
 		text_out_e("\n");
 		n_flags++;
 	}
+}
+
+static void class_help(int i, void *db, const region *l)
+{
+	if (!player_id2class(i)) return;
+
+	/* Output to the screen */
+	text_out_hook = text_out_to_screen;
+	
+	/* Indent output */
+	text_out_indent = CLASS_AUX_COL;
+	Term_gotoxy(CLASS_AUX_COL, TABLE_ROW);
+
+	class_describe(i);
 
 	/* Reset text_out() indentation */
 	text_out_indent = 0;
@@ -784,6 +814,67 @@ static void free_birth_menu(struct menu *menu)
 		mem_free((char**)data->items);
 		mem_free(data);
 	}
+
+	/* So that a view asking after a freed menu finds none (T8). */
+	menu->menu_data = NULL;
+}
+
+/* The menu a stage asks from, or NULL for a stage that is not a menu. */
+static struct menu *birth_stage_menu(enum birth_stage stage)
+{
+	switch (stage) {
+		case BIRTH_RACE_CHOICE:		return &race_menu;
+		case BIRTH_CLASS_CHOICE:	return &class_menu;
+		case BIRTH_REALM_CHOICE:	return &realm_menu;
+		case BIRTH_ROLLER_CHOICE:	return &roller_menu;
+		default:					return NULL;
+	}
+}
+
+/**
+ * The question a menu stage asks, as the screen prints it over the menu, or
+ * "" for a stage that is not a menu (ZangbandTK, T8).
+ */
+const char *birth_question(enum birth_stage stage)
+{
+	struct menu *m = birth_stage_menu(stage);
+	struct birthmenu_data *d = m ? menu_priv(m) : NULL;
+
+	return (d && d->hint) ? d->hint : "";
+}
+
+/**
+ * A menu stage's choices in the menu's own order -- a view's answer is a row
+ * of this -- and the row the menu's cursor starts on (ZangbandTK, T8).
+ *
+ * 
+eturn how many there are, or 0 for a stage that is not a menu.
+ */
+int birth_choices(enum birth_stage stage, const char **names, int max,
+		int *cursor)
+{
+	struct menu *m = birth_stage_menu(stage);
+	struct birthmenu_data *d = m ? menu_priv(m) : NULL;
+	int i, n;
+
+	if (cursor) *cursor = 0;
+	if (!d) return 0;
+
+	n = MIN(m->count, max);
+	for (i = 0; i < n; i++) names[i] = d->items[i];
+	if (cursor) *cursor = m->cursor;
+	return n;
+}
+
+/**
+ * Describe a race at BIRTH_RACE_CHOICE, or a class at BIRTH_CLASS_CHOICE, in
+ * the words the screen puts beside the menu -- through text_out_hook, which
+ * the caller sets (ZangbandTK, T8).
+ */
+void birth_describe(enum birth_stage stage, int index)
+{
+	if (stage == BIRTH_RACE_CHOICE) race_describe(index);
+	else if (stage == BIRTH_CLASS_CHOICE) class_describe(index);
 }
 
 static void free_birth_menus(void)
@@ -1024,9 +1115,25 @@ static enum birth_stage menu_question(enum birth_stage current,
 	current_menu->cmd_keys = "?=*@\x18";	 /* ?, =, *, @, <ctl-X> */
 
 	while (next == BIRTH_RESET) {
+		struct birth_answer answer;
+
 		/* Display the menu, wait for a selection of some sort to be made. */
 		menu_data->stage_inout = current;
-		cx = menu_select(current_menu, EVT_KBRD, false);
+		if (birth_view_ask(current, &answer)) {
+			/* A row is a selection, as Enter on it is; the rest are keys. */
+			memset(&cx, 0, sizeof(cx));
+			if (answer.choice >= 0 && answer.choice < current_menu->count) {
+				current_menu->cursor = answer.choice;
+				cx.type = EVT_SELECT;
+			} else if (answer.key.code == ESCAPE) {
+				cx.type = EVT_ESCAPE;
+			} else {
+				cx.type = EVT_KBRD;
+				cx.key = answer.key;
+			}
+		} else {
+			cx = menu_select(current_menu, EVT_KBRD, false);
+		}
 
 		/* As all the menus are displayed in "hierarchical" style, we allow
 		   use of "back" (left arrow key or equivalent) to step back in 
@@ -1133,7 +1240,17 @@ static enum birth_stage roller_command(bool first_call)
 	prt(prompt, Term->hgt - 1, Term->wid / 2 - promptlen / 2);
 	
 	/* Get the response. */
-	in = inkey_m();
+	{
+		struct birth_answer answer;
+
+		if (birth_view_ask(BIRTH_ROLLER, &answer)) {
+			memset(&in, 0, sizeof(in));
+			in.type = EVT_KBRD;
+			in.key = answer.key;
+		} else {
+			in = inkey_m();
+		}
+	}
 
 	/* Analyse the command */
 	if (in.type == EVT_KBRD) {
@@ -1348,8 +1465,20 @@ static enum birth_stage point_based_command(void)
 	/* Place cursor just after cost of current stat */
 	Term_gotoxy(COSTS_COL + 4, COSTS_ROW + stat);
 
-	/* Get input. */
-	in = inkey_m();
+	/* Get input.  A view says which stat a '+' or '-' is for. */
+	{
+		struct birth_answer answer;
+
+		if (birth_view_ask(BIRTH_POINTBASED, &answer)) {
+			if (answer.choice >= 0 && answer.choice < STAT_MAX)
+				stat = answer.choice;
+			memset(&in, 0, sizeof(in));
+			in.type = EVT_KBRD;
+			in.key = answer.key;
+		} else {
+			in = inkey_m();
+		}
+	}
 
 	/* Figure out what to do. */
 	if (in.type == EVT_KBRD) {
@@ -1497,6 +1626,8 @@ static enum birth_stage get_name_command(void)
 {
 	enum birth_stage next;
 	char name[PLAYER_NAME_LEN];
+	struct birth_answer answer;
+	bool named = false;
 
 	/* Use frontend-provided savefile name if requested */
 	if (arg_name[0]) {
@@ -1509,9 +1640,18 @@ static enum birth_stage get_name_command(void)
 	 * to overwriting an existing savefile, confirm that's okay with the
 	 * player.
 	 */
+	if (!arg_force_name) {
+		if (birth_view_ask(BIRTH_NAME_CHOICE, &answer)) {
+			my_strcpy(name, answer.text, sizeof(name));
+			named = answer.key.code != ESCAPE && name[0];
+		} else {
+			named = get_character_name(name, sizeof(name));
+		}
+	}
+
 	if (arg_force_name) {
 		next = BIRTH_HISTORY_CHOICE;
-	} else if (get_character_name(name, sizeof(name))
+	} else if (named
 			&& (savefile[0]
 			|| !savefile_name_already_used(name, true, true)
 			|| get_check("A savefile for that name exists.  Overwrite it? "))) {
@@ -1725,13 +1865,16 @@ static enum birth_stage get_history_command(void)
 	enum birth_stage next = 0;
 	struct keypress ke;
 	char old_history[240];
+	struct birth_answer answer;
+	bool viewed;
 
 	/* Save the original history */
 	my_strcpy(old_history, player->history, sizeof(old_history));
 
 	/* Ask for some history */
 	prt("Accept character history? [y/n]", 0, 0);
-	ke = inkey();
+	viewed = birth_view_ask(BIRTH_HISTORY_CHOICE, &answer);
+	ke = viewed ? answer.key : inkey();
 
 	/* Quit, go back, change history, or accept */
 	if (ke.code == KTRL('X')) {
@@ -1745,7 +1888,10 @@ static enum birth_stage get_history_command(void)
 		char history[240];
 		my_strcpy(history, player->history, sizeof(history));
 
-		switch (edit_text(history, sizeof(history))) {
+		/* A view brings the new history with it. */
+		if (viewed) my_strcpy(history, answer.text, sizeof(history));
+
+		switch (viewed ? 0 : edit_text(history, sizeof(history))) {
 			case -1:
 				if (terms_disconnecting) {
 					quit(NULL);
@@ -1779,7 +1925,12 @@ static enum birth_stage get_confirm_command(void)
 	prt(prompt, Term->hgt - 1, Term->wid / 2 - strlen(prompt) / 2);
 
 	/* Get a key */
-	ke = inkey();
+	{
+		struct birth_answer answer;
+
+		ke = birth_view_ask(BIRTH_FINAL_CONFIRM, &answer)
+			? answer.key : inkey();
+	}
 	
 	/* Start over */
 	if (ke.code == 'S' || ke.code == 's') {

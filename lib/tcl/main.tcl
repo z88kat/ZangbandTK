@@ -221,6 +221,7 @@ source [file join [file dirname [info script]] book.tcl]
 source [file join [file dirname [info script]] store.tcl]
 source [file join [file dirname [info script]] building.tcl]
 source [file join [file dirname [info script]] progress.tcl]
+source [file join [file dirname [info script]] birth.tcl]
 source [file join [file dirname [info script]] choice.tcl]
 source [file join [file dirname [info script]] commands.tcl]
 

@@ -1729,6 +1729,41 @@ sequencing against M9's real state rather than leaving T8 blocked longer than ne
 **Exit:** graphical character creation covering ZangbandTK's races, classes, realms and
 patrons.
 
+> **The Birth window — first cut, 11 October 2026.**
+> [lib/tcl/birth.tcl](../../lib/tcl/birth.tcl), designed from stock Tk in the Store and
+> Building windows' style (owner's choice: *"You design it"*). Exactly the shape this section
+> predicted: `textui_do_birth()` is untouched as a state machine, and each stage asks its view
+> for its input through one hook, `birth_view_hook`, at the one place it would have waited for
+> a key. The answer is in the stage's own terms (`struct birth_answer`: a row, or a key the
+> stage already understands, or a name or history), so stepping back, the realm question
+> skipped when there is no choice, the random choices and what each answer pushes all stay in
+> `ui-birth.c`, said once. With the hook NULL the text screens run as before.
+>
+> - **The descriptions are the game's words.** `race_help()` and `class_help()` were split so
+>   the describing half writes through `text_out_hook`, and the bridge points that at a
+>   buffer: the window shows what the text screen shows beside its menus. A realm has no
+>   description in the data, so it is described from the class's books in it — the spells and
+>   the levels they come at — and the stat it is studied with.
+> - **The patron is shown, not chosen**, on the confirmation, with its title and text: the game
+>   assigns it at birth on purpose ("a Chaos-Warrior does not pick its Lord").
+> - **The birth options are the game's own screen** in the main window; the Birth window steps
+>   aside for it and comes back with the next question.
+> - **Found on the way: the bridge's own keys were lost in a flush.** `Term_flush()` asks the
+>   front end to flush and then forgets the key queue, and this front end's flush runs Tk's
+>   events — so a command pushed by a click or a timer handled there lost its nudge, and sat
+>   until the player pressed something else. Measured at the start of a game. The bridge's
+>   keys (the nudge, and the Escape that ends a prompt a click answered) are now kept back
+>   during a flush and sent at the next wait; the player's own keys are still flushed.
+> - **The bridge test now makes a character**, through the window, in a save directory of its
+>   own — the runner used to start the game on the player's default savefile, which was safe
+>   only because the test never got past the splash. It also shows, at last, that a pushed
+>   command is carried out once there is a character.
+>
+> Checked by making characters in it: a Human Mage of Arcane and Life on point-based stats
+> (a point sold and bought back), and an Amberite Chaos-Warrior on the roller with two rerolls
+> and Previous, a random name, an edited history, and Back from the confirmation. Not yet seen
+> in a session: the quick start, which needs a dead character's savefile.
+
 ---
 
 ### T9 — Finish
