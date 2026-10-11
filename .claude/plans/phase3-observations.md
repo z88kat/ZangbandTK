@@ -2506,7 +2506,8 @@ selector shown.**
 4.2 keeps the purse — [store.c:239](../../src/store.c#L239) parses it per owner and
 [store.c:669](../../src/store.c#L669) caps what a shop will pay — but **`birth_no_selling`
 defaults to `true`** ([list-options.h:110](../../src/list-options.h#L110)), *"Increase gold
-drops but disable selling"*.
+drops but disable selling"*. **Since DEC-136 it defaults to `false`**, as Zangband had it,
+so the note below describes characters born with the option on.
 
 So with the default option set, `Sell ▾` and `Purse` are meaningless. **Drop them, do not
 grey them:** this is not a transient "you cannot sell right now", it is a permanent property

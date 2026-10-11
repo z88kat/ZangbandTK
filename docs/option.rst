@@ -307,6 +307,12 @@ Increase gold drops but disable selling ``birth_no_selling``
   balance out income in the game, gold found in the dungeon will be
   increased if this option is on.
 
+  It is off by default.  Zangband always paid for what you sold, and
+  ZangbandTK keeps that; Angband 4.2, which ZangbandTK is built on, turns it
+  on.  Like every birth option it is chosen when a character is created and
+  cannot be changed afterwards, so a character made before this default
+  changed keeps what it was born with.
+
 Start with a kit of useful gear ``birth_start_kit``
   Start with items, a useful option for new players, or ones that wish
   to descend immediately into the dungeon.  If turned off, the character

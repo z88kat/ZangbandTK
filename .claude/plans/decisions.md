@@ -7210,3 +7210,33 @@ Measured before and after on the same machine (Darwin arm64);
 `tests/borg/BASELINE` is Linux x86_64 and its gate correctly skips as
 non-comparable, so the comparison above is against a local baseline taken from
 the unmodified tree. Nothing suppressed; no baseline retaken, nothing kept.
+
+**DEC-136 — Shops buy again: `birth_no_selling` is off by default.** (Project
+owner's ruling, 11 October 2026. One default in `list-options.h`; the manual's
+birth, dungeon and options pages say so.)
+
+Angband 4.2 turns on *"Increase gold drops but disable selling"* by default:
+shops pay nothing for what is sold to them, and gold found below the town is
+multiplied by five to make up for it (`obj-make.c`). Zangband had no such
+option and always paid. It came up from play, through the Tk front end's Store
+window: a character sold things and got nothing, with no price on the sell
+side. The window was showing the option correctly; the option was the
+surprise. The owner's words: *"change the default to off for new characters,
+thats the zangband way."*
+
+*What it changes.* New characters sell for gold and find 4.2's ordinary amount
+of gold, not five times it. A player can still turn the option on when creating
+a character, and the Store window still says "Give", and why, for one that has
+it.
+
+*What it does not change.* Birth options are fixed at birth and kept in the
+savefile, so every existing character keeps the option it was born with,
+including the ones made under the old default. Nothing about prices, purses or
+what each shop will buy is touched.
+
+*Worth knowing for the borg.* The borg's sell and buy logic already handles both
+settings (`borg-store.c`, `borg-store-sell.c`), but a borg character made under
+the new default is a different economy: it sells its finds and picks up a fifth
+of the gold. A move in the nightly sweep against `tests/borg/BASELINE` after
+this change may be this and not a regression, and should be read that way
+before anything is retuned.

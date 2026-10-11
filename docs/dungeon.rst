@@ -297,10 +297,12 @@ character will start with more items but with less gold.
 
 You may enter any open store to buy items of the appropriate type.
 The price the shopkeeper requests is dependent on the price of the item.
-By default stores will not buy items from the player. If you choose to play
-with the no selling option off (it is on by default), they will buy, but
-each shopkeeper has a maximum amount she or he is willing to offer for any item,
-regardless of how much it is actually worth.
+Stores will buy items from the player, as they did in Zangband, but each
+shopkeeper has a maximum amount she or he is willing to offer for any item,
+regardless of how much it is actually worth. A character born with the no
+selling option on gets nothing for what it sells, and finds more gold in the
+dungeon instead; the option is off unless you turn it on when you create the
+character.
 
 Once inside a store, you will see the name and race of the store owner, the
 name of the store, the maximum amount of cash that the store owner will pay

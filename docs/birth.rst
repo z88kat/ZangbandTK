@@ -70,8 +70,8 @@ If you play with the starting kit option on (it is on by default), your
 character will have a few more useful items but less gold. A character can
 find more gold by taking it from dead monsters, finding it on the floors of
 the dungeon or by digging out veins of treasure from the walls of the dungeon.
-If you play with the no selling option off (it is on by default), you can
-sell items to the shopkeepers for gold. A shopkeeper will usually only buy
+With the no selling option off (it is off by default, as it was in Zangband),
+you can sell items to the shopkeepers for gold. A shopkeeper will usually only buy
 certain classes of items, refuse to buy an item the shopkeeper believes is
 worthless and offer less gold for an item than she or he would sell it for.
 A shopkeeper also has an upper limit for the amount of gold offered for an

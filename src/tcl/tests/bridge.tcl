@@ -867,6 +867,11 @@ proc second_pass {} {
 		list [angband_store] $e [winfo exists .store]
 	} "{} {you are not in a store} 0"
 
+	# DEC-136: a character made now sells for gold, as in Zangband.
+	check "a new character is born able to sell" {
+		angband_option birth_no_selling
+	} 0
+
 	check "the pack's slots come back as used and size" {
 		lassign [angband_gear slots] used size
 		list [expr {$used >= 0}] [expr {$size > 0 && $used <= $size}]
