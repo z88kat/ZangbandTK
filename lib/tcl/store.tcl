@@ -18,6 +18,7 @@
 # windows have it.
 
 set store(msg) ""
+set store(refused) ""
 set store(gold) ""
 set store(owner) ""
 set store(stock) {}
@@ -70,12 +71,22 @@ proc store_refresh {} {
     # A character born with no selling gives rather than sells, which is the
     # game's own word for it ("Give which item?"), and the window says why
     # nothing is paid rather than leaving a column of dashes to explain itself.
+    # The note has a line of its own under both tables, there only when it has
+    # something to say, so that the two sides stay the same shape.
     if {[catch {angband_option birth_no_selling} nosell]} { set nosell 0 }
+    set store(note) ""
     if {!$home} {
         $w.body.sell.act.do configure -text [expr {$nosell ? "Give" : "Sell"}]
-        set store(note) [expr {$nosell ? "This character was born with no\
-            selling: shops pay nothing, and gold found in the dungeon is worth\
-            five times as much." : ""}]
+        if {$nosell} {
+            set store(note) "This character was born with no selling: shops\
+                pay nothing, and gold found in the dungeon is worth five times\
+                as much."
+        }
+    }
+    if {$store(note) eq ""} {
+        pack forget $w.note
+    } elseif {[winfo manager $w.note] eq ""} {
+        pack $w.note -side bottom -fill x -padx 12 -pady {6 0} -after $w.desc
     }
 
     set store(stock) [angband_store stock]
@@ -141,6 +152,19 @@ proc store_pick {side} {
     }
 }
 
+# A row chosen by hand.  A refusal is about the row it refused, so choosing
+# another clears it rather than leaving it under the wrong thing.
+proc store_select {side} {
+    global store
+
+    store_pick $side
+    set id [lindex [.store.f.body.$side.tv selection] 0]
+    if {$store(refused) ni [list "" $side,[string range $id 1 end]]} {
+        set store(msg) ""
+        set store(refused) ""
+    }
+}
+
 proc store_text {name text} {
     set t .store.f.desc.t
     $t configure -state normal
@@ -161,6 +185,8 @@ proc store_trade {side {quantity ""}} {
     set w .store.f.body.$side
     set id [lindex [$w.tv selection] 0]
     if {$id eq ""} return
+    # A double-click or Return on a greyed row is the greyed button pressed.
+    if {[$w.act.do instate disabled]} { bell; return }
     set n [string range $id 1 end]
     set q [expr {$quantity ne "" ? $quantity
         : $store([expr {$side eq "buy" ? "qbuy" : "qsell"}])}]
@@ -169,8 +195,10 @@ proc store_trade {side {quantity ""}} {
 
     if {[catch {angband_store $side $n $q} err]} {
         set store(msg) $err
+        set store(refused) $side,$n
         return
     }
+    set store(refused) ""
     if {[catch {angband_option birth_no_selling} nosell]} { set nosell 0 }
     set store(msg) [dict get {
         buy,0 "Bought" sell,0 "Sold" buy,1 "Took" sell,1 "Left"
@@ -214,10 +242,6 @@ proc store_side {parent side title verb} {
     }
     $tv tag configure short -foreground #909090
 
-    if {$side eq "sell"} {
-        ttk::label $f.note -textvariable store(note) -font {Helvetica 12} \
-            -wraplength 380 -justify left
-    }
     ttk::frame $f.act
     ttk::label $f.act.l -text "Quantity:" -font {Helvetica 12}
     ttk::spinbox $f.act.q -from 1 -to 1 -width 4 -font {Courier 12} \
@@ -235,13 +259,10 @@ proc store_side {parent side title verb} {
     grid $tv -row 0 -column 0 -sticky nsew
     grid $f.sb -row 0 -column 1 -sticky ns
     grid $f.act -row 1 -column 0 -columnspan 2 -sticky w -pady {8 0}
-    if {$side eq "sell"} {
-        grid $f.note -row 2 -column 0 -columnspan 2 -sticky w -pady {6 0}
-    }
     grid rowconfigure $f 0 -weight 1
     grid columnconfigure $f 0 -weight 1
 
-    bind $tv <<TreeviewSelect>> [list store_pick $side]
+    bind $tv <<TreeviewSelect>> [list store_select $side]
     bind $tv <Double-1> "if {\[%W identify region %x %y\] eq {cell}} { store_trade $side 1 }"
     bind $tv <Return> [list store_trade $side]
     return $f
@@ -309,6 +330,10 @@ proc store_window {} {
         -highlightbackground $ground -padx 4 -pady 4 -state disabled
     $w.desc.t tag configure head -font {Courier 12 bold}
     pack $w.desc.t -fill x
+
+    # Packed by store_refresh, and only for a character born with no selling.
+    ttk::label $w.note -textvariable store(note) -font {Helvetica 12} \
+        -wraplength 900 -justify left
 
     set body $w.body
     ttk::frame $body

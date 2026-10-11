@@ -5190,7 +5190,8 @@ static int objcmd_store(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	struct object **list;
 	char name[120];
 	int i, n, count, max, qty;
-	bool home;
+	bool home, more;
+	term *old;
 
 	(void)dummy;
 
@@ -5343,11 +5344,31 @@ static int objcmd_store(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 
 		/*
 		 * As the store screen does: store_purchase() and store_sell() clear
-		 * the message line before a trade, so a trade's message does not
-		 * stop at -more- behind the last one.  Then as store_menu_handle()
-		 * does once it has pushed a command.
+		 * the message line before a trade, and their prompts write over
+		 * what was on it, so a trade's message does not stop at -more-
+		 * behind the last one or land on the last one's leftovers.  Then
+		 * as store_menu_handle() does once it has pushed a command.
+		 *
+		 * With auto_more on for the trade itself.  A trade says two or three
+		 * things -- "Agreed!", what was bought for how much, what is now in
+		 * the pack -- and when they do not fit on the line together the
+		 * game stops at -more- for a key.  Here that wait would be inside
+		 * this command, with the Store window in front taking the keys, so
+		 * the game would sit at -more- until the player thought to click
+		 * the main window and press one.  Every message still goes to the
+		 * message log and the Messages pane.
+		 *
+		 * And the main screen brought up to date at the end, which the
+		 * store screen's wait for its next key would otherwise leave until
+		 * that key: the last of the trade's messages on the top line, and
+		 * the shelves as they are now.
 		 */
+		old = Term;
+		Term_activate(term_screen);
 		msg_flag = false;
+		prt("", 0, 0);
+		more = OPT(player, auto_more);
+		OPT(player, auto_more) = true;
 		command_inside = true;
 		cmdq_pop(CTX_STORE);
 		event_signal(EVENT_INVENTORY);
@@ -5355,6 +5376,9 @@ static int objcmd_store(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		notice_stuff(player);
 		handle_stuff(player);
 		command_inside = false;
+		OPT(player, auto_more) = more;
+		Term_fresh();
+		Term_activate(old);
 		return TCL_OK;
 	}
 
