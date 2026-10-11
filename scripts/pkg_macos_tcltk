@@ -111,6 +111,11 @@ for d in gamedata customize screens help tiles sounds icons fonts tcl; do
 	fi
 done
 
+# The icon: the same file ZangbandTK.app ships, under the name Info.plist.in
+# gives as CFBundleIconFile.
+install -m 644 "$ROOT/src/cocoa/ZangbandTK_Icons.icns" \
+	"$APP/Contents/Resources/$NAME.icns"
+
 # 2. Tcl's and Tk's script libraries.
 mkdir -p "$APP/Contents/Resources/tcltk"
 cp -R "$TCLTK_LIB/tcl9.0" "$APP/Contents/Resources/tcltk/tcl9.0"
@@ -172,6 +177,12 @@ test -f "$APP/Contents/Resources/lib/tcl/main.tcl" || {
 }
 test -f "$APP/Contents/Resources/tcltk/tcl9.0/init.tcl" || {
 	echo "No Tcl script library in the bundle." >&2
+	exit 1
+}
+ICON=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIconFile" \
+	"$APP/Contents/Info.plist" 2>/dev/null || true)
+test -n "$ICON" && test -f "$APP/Contents/Resources/$ICON" || {
+	echo "The plist names an icon the bundle does not have: '$ICON'." >&2
 	exit 1
 }
 plutil -lint "$APP/Contents/Info.plist" > /dev/null

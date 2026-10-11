@@ -37,6 +37,14 @@
 	<key>NSHumanReadableCopyright</key>
 	<string>$COPYRIGHT$</string>
 	<!--
+		The game's own icon, the one ZangbandTK.app uses; pkg_macos_tcltk
+		copies it in under this name.  It has to be named here: when the plist
+		names no icon, Tk sets the Dock icon at startup itself (TkMacOSXInit.c),
+		to its own feather where it can find one and the generic one where not.
+	-->
+	<key>CFBundleIconFile</key>
+	<string>$NAME$.icns</string>
+	<!--
 		Without this the window is scaled up from 72dpi and every tile in T2
 		would be judged at the wrong size, which is the one judgement that
 		counts for a tileset.
