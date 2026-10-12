@@ -1891,6 +1891,56 @@ static int test_a_high_mage_holds_more_magic(void *state) {
 }
 
 /**
+ * Mana is worked from the realms a character studies, not every realm its class
+ * could have (PLR-08, PLR-10).
+ *
+ * The casting stat belongs to the realm, and where a character studies two the
+ * two are averaged -- which the manual said, and which the code did not: it
+ * averaged every realm the class has books for, so a Mage's mana came from the
+ * same five-to-two mix of intelligence and wisdom whichever two it had chosen.
+ * A Mage with wisdom at its floor is the clearest case: two intelligence realms
+ * should give it more mana than one of each.
+ */
+static int test_mana_follows_the_realms_studied(void *state) {
+	const struct magic_realm *sorcery = find_realm("sorcery");
+	const struct magic_realm *chaos = find_realm("chaos");
+	const struct magic_realm *life = find_realm("life");
+	int both_int, int_and_wis;
+
+	notnull(sorcery);
+	notnull(chaos);
+	notnull(life);
+	eq(sorcery->stat, STAT_INT);
+	eq(chaos->stat, STAT_INT);
+	eq(life->stat, STAT_WIS);
+
+	require(player_make_simple(NULL, "Mage", "Tester"));
+	while (player->lev < 20)
+		player_exp_gain(player, player_exp[player->lev - 1] + 1);
+
+	/* Clever and unworldly. */
+	player->stat_cur[STAT_INT] = player->stat_max[STAT_INT] = 18 + 100;
+	player->stat_cur[STAT_WIS] = player->stat_max[STAT_WIS] = 3;
+
+	player->realm[0] = sorcery;
+	player->realm[1] = chaos;
+	calc_bonuses(player, &player->state, false, true);
+	both_int = player->msp;
+
+	player->realm[1] = life;
+	calc_bonuses(player, &player->state, false, true);
+	int_and_wis = player->msp;
+
+	require(both_int > 0);
+	require(both_int > int_and_wis);
+
+	player_realm_default(player);
+	calc_bonuses(player, &player->state, false, true);
+
+	ok;
+}
+
+/**
  * Every class Zangband has charges Zangband's price for itself (BAL-04, DEC-71).
  *
  * The experience factor is Zangband's balance dial: 4.2 leaves it at zero for
@@ -2045,5 +2095,7 @@ struct test tests[] = {
 	  test_a_high_mage_holds_more_magic },
 	{ "every-town-book-is-sold-in-town",
 	  test_every_town_book_is_sold_in_town },
+	{ "mana-follows-the-realms-studied",
+	  test_mana_follows_the_realms_studied },
 	{ NULL, NULL }
 };

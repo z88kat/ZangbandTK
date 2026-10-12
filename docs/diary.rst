@@ -31,6 +31,31 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+12 October 2026 — every Mage was the same Mage
+==============================================
+
+The manual says the casting stat belongs to the realm, not the class: Life and
+Nature cast on wisdom, the other five on intelligence, and a character studying
+two averages the two. That was decided on purpose and written down. The code
+did something else. To work out mana and how many spells a character can learn,
+it averaged the stat of every realm the *class* has books for. In Angband that is
+the same thing, because a class has one fixed set of books. Here it is not. A
+Mage holds books for all seven realms, five on intelligence and two on wisdom,
+so every Mage's mana came from the same five-to-two mix, whatever two realms it
+had chosen.
+
+The numbers were worse than that sounds. A level-twenty High-Mage studies one
+realm, Sorcery, on an intelligence of 18/70, and had 62 mana; worked from the
+realm it actually studies, it has 125. A Priest of Life and Nature with a
+wisdom of 18/50 had 21, because most of its average was an intelligence of 10
+it never casts on. It has 61 now. The characters who chose realms that match
+their best stat were the ones hit hardest, which is exactly backwards.
+
+Spell failure was right all along, because it reads each spell's own realm.
+Only the mana and the spell count were wrong, and both came from one small
+function, which now averages the realms the character chose.
+
+
 12 October 2026 — the question that did nothing, and the spell that waited for it
 =================================================================================
 

@@ -1239,16 +1239,33 @@ void calc_inventory(struct player *p)
 }
 
 /**
- * Average of the player's spell stats across all the realms they can cast
- * from, rounded up
+ * Average of the player's spell stats across the realms they study, rounded
+ * up -- the stat their mana and their number of spells are worked from.
  *
- * If the player can only cast from a single realm, this is simple the stat
- * for that realm
+ * The realms the character chose at birth (PLR-08), which is what the manual
+ * has always said: a Mage who took Life casts partly on wisdom, and one who
+ * took Sorcery and Chaos casts on intelligence alone.  It used to be every
+ * realm the *class* has books for, which in 4.2 was the same thing -- one class,
+ * one fixed set of books -- and here is not: a Mage holds books for all seven
+ * realms, five on intelligence and two on wisdom, so every Mage's mana was
+ * worked from the same five-to-two mix whatever it had chosen.  Spell failure
+ * was always right, because it reads each spell's own realm.
+ *
+ * Before any realm is chosen -- early in birth -- the class's realms stand in.
  */
 static int average_spell_stat(struct player *p, struct player_state *state)
 {
-	int i, count, sum = 0;
-	struct magic_realm *realm = class_magic_realms(p->class, &count), *r_next;
+	int i, count, sum = 0, slot, studied = 0;
+	struct magic_realm *realm, *r_next;
+
+	for (slot = 0; slot < REALM_CHOICES; slot++) {
+		if (!p->realm[slot]) continue;
+		sum += state->stat_ind[p->realm[slot]->stat];
+		studied++;
+	}
+	if (studied) return (sum + studied - 1) / studied;
+
+	realm = class_magic_realms(p->class, &count);
 
 	for (i = count; i > 0; i--) {
 		sum += state->stat_ind[realm->stat];
