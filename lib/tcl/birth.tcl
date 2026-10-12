@@ -92,7 +92,7 @@ proc birth_steps {} {
     foreach step $birth(steps) {
         set l .birth.f.steps.s$i
         $l configure -font [expr {$i == $at ? {Helvetica 12 bold} : {Helvetica 12}}] \
-            -foreground [expr {$at >= 0 && $i > $at ? "#909090" : "black"}]
+            -foreground [expr {$at < 0 || $i > $at ? "#909090" : "black"}]
         incr i
     }
 }
@@ -313,9 +313,15 @@ proc birth_confirm_page {} {
     pack $p -fill both -expand 1 -padx 10 -pady {4 0}
     set birth(question) "This is your character.  Create Character to begin,\
         or Start Over."
+    birth_summary $p.t
+    focus .birth.f.btns.next
+}
+
+# The character as it stands: name, race and class and realms, hit points and
+# mana, the stats, the patron if there is one, and the history.
+proc birth_summary {t} {
     if {[catch {angband_birth character} c]} return
 
-    set t $p.t
     $t configure -state normal
     $t delete 1.0 end
     $t insert end [dict get $c name] head "\n"
@@ -340,7 +346,6 @@ proc birth_confirm_page {} {
     }
     $t insert end "\n[string trim [dict get $c history]]\n"
     $t configure -state disabled
-    focus .birth.f.btns.next
 }
 
 proc birth_quickstart_page {} {
@@ -348,11 +353,10 @@ proc birth_quickstart_page {} {
 
     set p .birth.f.quickstart
     pack $p -fill both -expand 1 -padx 10 -pady {4 0}
-    set birth(question) "Start again from your last character?"
-    if {![catch {angband_birth character} c]} {
-        $p.who configure -text "[dict get $c name], the [dict get $c race]\
-            [dict get $c class]."
-    }
+    set birth(question) "Start again from your last character?  Play Again\
+        makes the same character afresh; you can change the name and history,\
+        or make a new one."
+    birth_summary $p.t
     focus $p.act.use
 }
 
@@ -520,13 +524,17 @@ proc birth_window {} {
     ttk::button $p.over -text "Start Over" -command {birth_answer startover}
     pack $p.over -anchor w -pady {8 0}
 
-    # The quick start.
+    # The quick start: the last character, and what to do with it.
     set p $w.quickstart
     ttk::frame $p
-    ttk::label $p.who -font {Helvetica 14}
-    pack $p.who -anchor w -pady {6 12}
     ttk::frame $p.act
-    pack $p.act -anchor w
+    pack $p.act -side bottom -anchor w -pady {8 0}
+    text $p.t -width 60 -height 14 -wrap word -font {Courier 12} \
+        -background $field -foreground black -relief sunken -borderwidth 2 \
+        -highlightthickness 0 -padx 8 -pady 8 -state disabled
+    $p.t tag configure head -font {Courier 14 bold}
+    $p.t tag configure bold -font {Courier 12 bold}
+    pack $p.t -fill both -expand 1 -pady {6 0}
     ttk::button $p.act.use -text "Play Again" -default active \
         -command {birth_answer use}
     ttk::button $p.act.change -text "Change Name and History" \
