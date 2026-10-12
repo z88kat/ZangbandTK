@@ -1842,6 +1842,22 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 > - **Not `wm resizable 0 0` on a new window.** On Tk 9 for macOS the Tomb window made that
 >   way was never painted — white until withdrawn and shown again.
 >
+> **Startup tips, 12 October 2026.** [lib/tcl/tips.tcl](../../lib/tcl/tips.tcl) is the
+> original's Tips window — "Welcome to", "Did you know..." on pale yellow, Back and Next,
+> n/N, and "Show this window every time the game starts" — opening once a session when the
+> first game is under way, and from a new **Help ▸ Tips…**. It carries on from the last tip
+> seen. Both settings are the front end's first persistent ones:
+> [lib/tcl/settings.tcl](../../lib/tcl/settings.tcl) keeps `tk-settings.txt` in the user
+> folder (`angband_path user`), a key and value a line, for the next front-end setting too.
+>
+> The tips are [lib/tcl/tips.txt](../../lib/tcl/tips.txt), 83 of them, not the original's 32:
+> of those, most named things this front end does not have. Each new one was checked against
+> the code rather than the manual, and the checking turned up disagreements between the two
+> that are the game's to settle, not the front end's — inn beds that can never be reached,
+> "sold in town" books that are not stocked, recall depth that cannot be reset in a dungeon.
+> None of those is in a tip. The bridge test checks that every tip fits the window without
+> scrolling, and its runner now passes `-duser=` so a test never writes the player's settings.
+
 > Still to come: the **tile icon on the tombstone** (OBS-46) — no window can show a tile yet,
 > which is also why the Character window's portrait is an `@`; the **Character Record** and
 > the **Hall of Fame**, where View scores is still the game's screen; and the winner's

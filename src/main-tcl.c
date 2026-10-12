@@ -7398,6 +7398,33 @@ static int objcmd_rename(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 /**
+ * angband_path -- where the game keeps things, for what the front end keeps
+ * beside them.
+ *
+ *    angband_path user      the player's own folder: pref files, character
+ *                           dumps, and the front end's settings
+ */
+static int objcmd_path(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what;
+
+	(void)dummy;
+
+	if (objc != 2) {
+		Tcl_WrongNumArgs(ip, 1, objv, "user");
+		return TCL_ERROR;
+	}
+	what = Tcl_GetString(objv[1]);
+	if (streq(what, "user")) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(ANGBAND_DIR_USER, -1));
+		return TCL_OK;
+	}
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf("expected user, not: %s", what));
+	return TCL_ERROR;
+}
+
+/**
  * angband_dump -- what 'f' does on the game's character screen.
  *
  *    angband_dump suggest       the file the game would offer, in the user
@@ -8234,6 +8261,7 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_gear", objcmd_gear, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_rename", objcmd_rename, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_dump", objcmd_dump, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_path", objcmd_path, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_choice", objcmd_choice, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_book", objcmd_book, NULL, NULL);

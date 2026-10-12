@@ -32,7 +32,8 @@ RESULT=$(mktemp -t zangband-bridge)
 # make a character, and without these the game would load whatever the
 # player's own default savefile holds -- and could write it back.  And -c, so
 # that the game starts at the Choose Game window as the application does, and
-# goes back to it after the last pass's New Game.
+# goes back to it after the last pass's New Game.  The user folder is its own
+# too, for the front end's settings, which the Tips window writes.
 SAVE=$(mktemp -d -t zangband-bridge-save)
 trap 'rm -f "$RESULT"; rm -rf "$SAVE"' EXIT
 : > "$RESULT"
@@ -42,7 +43,7 @@ trap 'rm -f "$RESULT"; rm -rf "$SAVE"' EXIT
 # shell doing it by hand.
 ZANGBAND_TCL_SCRIPT=$ROOT/src/tcl/tests/bridge.tcl \
 ZANGBAND_TCL_RESULT=$RESULT \
-	"$GAME" -mtcl -dsave="$SAVE" -c -uBridge &
+	"$GAME" -mtcl -dsave="$SAVE" -duser="$SAVE/user" -c -uBridge &
 GAME_PID=$!
 
 WAITED=0

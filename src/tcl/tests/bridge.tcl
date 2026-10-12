@@ -1159,6 +1159,81 @@ proc birth_pass_held {} {
 	check "a pushed command is carried out once there is a character" {
 		list [expr {[angband_player turn] > $::turn0}] $::pushed $::pusherr
 	} "1 0 {}"
+	set ::waits 0
+	tips_pass
+}
+
+# --- the Tips window --------------------------------------------------------
+
+# The runner's user folder is new each time, so this is a first start: the
+# Tips window opens on its own once the game is under way, at the first tip.
+proc tips_pass {} {
+	if {![winfo exists .tips] && [incr ::waits] < 25} {
+		after 200 tips_pass
+		return
+	}
+	check "the Tips window opens when the first game starts, at the first tip" {
+		list [winfo exists .tips] $::tips(at) \
+			[expr {$::tips(of) eq "1/[llength $::tips(list)]"}] \
+			[stock_widgets_only .tips]
+	} "1 0 1 {classic {}}"
+
+	check "there are tips, and each is a sentence or more" {
+		set short {}
+		foreach tip $::tips(list) {
+			if {![regexp {[.!?]\)?$} $tip] || [string length $tip] < 30} {
+				lappend short $tip
+			}
+		}
+		list [expr {[llength $::tips(list)] >= 32}] $short
+	} "1 {}"
+
+	# The original's box is ten lines of text; a tip that needs scrolling
+	# would have nothing to say that it did.
+	check "every tip fits the window without scrolling" {
+		set over {}
+		set i 0
+		foreach tip $::tips(list) {
+			tips_show $i
+			update idletasks
+			if {[lindex [.tips.f.tip yview] 1] < 1.0} { lappend over [expr {$i + 1}] }
+			incr i
+		}
+		set over
+	} ""
+
+	# Where it left off, and whether it opens at all, are the front end's
+	# settings, in the user folder -- the runner's own.
+	check "the tips carry on where they left off, from the settings file" {
+		tips_show 4
+		tips_close
+		settings_load
+		set last [settings_get tips,last ""]
+		tips_window
+		set at $::tips(at)
+		tips_close
+		list $last $at [expr {[file dirname $::settings(file)] eq [angband_path user]}] \
+			[file exists $::settings(file)]
+	} "4 5 1 1"
+
+	check "and whether the window opens at the start is kept" {
+		set ::tips(show) 0
+		settings_set tips,show 0
+		settings_load
+		set r [settings_get tips,show 1]
+		settings_set tips,show 1
+		set r
+	} 0
+
+	check "the Help menu opens the tips" {
+		set i [.menubar index Help]
+		set m [.menubar entrycget $i -menu]
+		$m invoke 0
+		set r [winfo exists .tips]
+		tips_close
+		set r
+	} 1
+
 	death_pass
 }
 

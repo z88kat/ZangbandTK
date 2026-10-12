@@ -1,0 +1,178 @@
+# The tips the Tips window shows, one a session, in this order.
+#
+# One tip to a paragraph, with a blank line between them; lines starting with
+# # are notes like this one and are never shown.  A tip has to be true of the
+# front end and the game as they are -- check it against the code, not the
+# manual, which has been wrong before -- and short enough to fit the window
+# without scrolling, which the bridge test checks.
+#
+# Keys are the original keyset's, with the roguelike key after where it
+# differs.  The order mixes the windows with the game on purpose, so that a
+# player who sees one tip a session does not get ten about inscriptions in a
+# row.
+
+These tips open each time the game starts, carrying on from the last one you saw. Help ▸ Tips… brings them back whenever you like, and the box below stops them opening at the start.
+
+When the game asks you to choose an item, a spell or a yes or no, the Choice pane in the bottom right lists the answers. Click one to choose it. The keys still work as they always did.
+
+Press Return for a menu of every command. The menu bar has the same commands, with each one's key in brackets, and the ones you cannot use just now are greyed out.
+
+Click the EXP row of the Progress strip, under the map overview, to switch between your total experience and what the next level still needs.
+
+Rest with 'R' and then Return to rest "as needed": until your hit points and mana are full and every ailment has passed. It also waits out a Word of Recall you have read.
+
+Move the pointer over an item in the Choice pane or the Items window, and the Recall pane describes it.
+
+'n' repeats your last command, with the same item and the same target. (Roguelike keys: Ctrl-V.)
+
+Your starting village has a general store, an alchemist, a bookseller, your home and a magetower. For weapons, armour, a healer or an inn, travel to a larger town.
+
+Click an item in the Choice pane while the game is not asking anything, and a menu offers what you can do with it: wield it, read it, drop it, inscribe it and the rest. Right-click or Control-click does the same.
+
+Drag an item from the Items window's pack list onto the doll to wear it. The slot's outline turns yellow where the item fits and red where it does not. Drag a worn item back into the list to take it off.
+
+A magetower flies you to any town you have stood in, or any dungeon entrance you have seen, for 15 gold for each block of the world map you cross.
+
+Inscribe an item =g and you pick it up whenever you walk over it. =g5 picks it up only while you carry fewer than five, and !g means never pick it up by itself.
+
+The dividers between the panes of the main window can be dragged, and each pane redraws at its new size: give the map more room, or the messages more lines.
+
+Word of Recall read in a dungeon takes you up to that dungeon's entrance, not to a town. Read on the surface, it takes you down to the deepest level you reached in the last dungeon you were in.
+
+In the Store window, a double-click buys or sells a single item. To trade more, set the Quantity first and press Return or the button.
+
+The Store window lists what you are wearing in Your Pack, marked (worn), so you can sell it without taking it off first.
+
+Inscribe an item !* and the game asks before anything risky is done with it. ! and one command's key, such as !d or !k, asks only before that command.
+
+There is only one home. Its door in every town opens onto the same rooms, so what you leave in one town is waiting in the next.
+
+Turn on "Use autoexplore commands" in the options, and 'p' walks you towards the nearest place you have not explored, while '<' and '>' walk you to the nearest staircase you know of. Neither will start while a monster is in view.
+
+In the Choose Game window, type the first letters of a name to jump to it. Click a column's heading to sort: by name, by level with the living first, or by when each was last saved.
+
+Inscribe an item @1 and it answers to '1' whenever the game asks for an item. @q1, @r1 or @m1 keep that to quaffing, reading or casting.
+
+The stairs in your starting village lead down into the Vaults of Amber, which go no deeper than level 15.
+
+Items you cannot afford are greyed out in the Store window. The line with the owner's name says the most they will pay for any one item.
+
+'h' fires at the nearest monster you can see, and the apostrophe key targets the closest monster without opening the targeting screen. (Roguelike keys: Tab fires.)
+
+Opening a dead character's savefile in the Choose Game window makes a new character in its place, with the quick start offered.
+
+Healers mend hit points at 4 gold each, cure every ailment for 60 gold, and restore drained stats or lost experience for 400. They only offer what you need.
+
+'U' uses any item that can be used -- a potion, a scroll, food, a wand, a staff or a rod -- from a single list. (Roguelike keys: 'X'.)
+
+The Items window's Drop button puts down one item from a stack, not the whole stack.
+
+Every dungeon has a bottom. When a staircase down says the dungeon goes no deeper, find another dungeon that goes further.
+
+Ctrl-O shows the last message again, and Ctrl-P opens the whole message history.
+
+Keys you press with the Character, Knowledge, Spell Book, Store or Building window in front still reach the game, so those windows can stay open while you play.
+
+Inscribe two weapons both @w0, and with the original keys 'x' swaps between them.
+
+Cities have a magesmith, who enchants a weapon or armour for 250 gold, and a recharger, at 120 gold. A recharge can still destroy the wand or staff, but you get your gold back if nothing happens.
+
+The Knowledge window's Find box narrows the list as you type, and Dump to File writes only what is listed -- so Find chooses what goes in the file.
+
+'T' keeps digging until you are through or something disturbs you: one keypress is enough. (Roguelike keys: Ctrl-T.)
+
+The game is won in the Courts of Chaos, which run from level 75 to 110. Oberon waits on level 99, and the Serpent of Chaos on level 100.
+
+The hit point warning is in the Options window, on the Interface page. Fall that low and the game warns you, and the HP bar under the map overview turns red. It starts at 30%.
+
+Inns hire adventurers, and 'J' lists the jobs you have taken on. You can hold eight at a time, and any inn will pay for finished work. (Roguelike keys: '%'.)
+
+Vampires get a tenth of the nourishment from food. Their racial power drinks blood instead, and daylight burns them on the surface.
+
+In the Spell Book window, click a column's heading to sort by it, and click it again to reverse the order. Double-click a spell to cast it, or to study it if you have not learned it yet.
+
+A job to fetch something is done the moment it is in your pack, so buying the thing counts.
+
+'N' lists your racial powers, a Mindcrafter's psionics and the powers your mutations give. Short of mana, a power takes hit points instead. (Roguelike keys: '&'.)
+
+Preferences in the application menu, Command-comma, opens the Options window. Its status line says whether this character can still make the high scores.
+
+Only great cities have a Chaos Tower, where 2,500 gold removes the one mutation you choose.
+
+Mages choose two of the seven realms of magic. Warrior-Mages study Arcane and one other, Priests Life or Death and one other, and High-Mages a single realm.
+
+The Tiles menu changes the tile set at once: the map redraws with the new set while you watch. The Options window's Display page offers the same choice.
+
+Carry no more than half your weight limit and you can wade through deep water; heavier, and you slowly drown. Feather Falling keeps you afloat.
+
+Golems, Skeletons, Zombies, Spectres and Ghouls get little from food, and start with Scrolls of Remove Hunger instead. Potions nourish them as usual.
+
+In the Birth window, Finish at Random makes the rest of the character for you from any of the list pages, and Birth Options… changes the birth options first.
+
+All four books of Arcane magic can be bought in town. The two most powerful books of every other realm are found only in the dungeon.
+
+Inscribe a rod, or anything you can activate, with !! and the game tells you when it has recharged.
+
+A failed Chaos spell can backfire, sometimes with a mutation, and a failed Death spell hurts its caster. A failed Trump spell simply fails.
+
+Bounty kills count wherever you make them, but a job to clear the open country only counts kills above ground.
+
+The Character window's Change Name… renames your character. The savefile keeps its old name.
+
+Draconians gain resistances as they grow: fire at level 5, cold at 10, acid at 15, lightning at 20 and poison at 35.
+
+Day and night each last 5,000 game turns at normal speed. Above ground, the status line says which it is.
+
+Priests, Paladins and Monks do not choose their spells: studying one of their books teaches a spell from it at random.
+
+When rolling a character's stats in the Birth window, Previous brings back the roll before the one you just made.
+
+A Mindcrafter's power can backfire when it fails, stunning or confusing the caster or setting off a storm of mana. A failed racial power simply fails.
+
+Ignore an item with 'k' and it is no longer shown. 'K' switches between showing ignored items and hiding them. (Roguelike keys: Ctrl-D and 'O'.)
+
+Beastmen are born mutated, and have a one in five chance of a new mutation each time they gain a level.
+
+Walk into a pet to swap places with it. Hurting a pet, or putting it to sleep, turns it against you.
+
+The Tomb window's buttons are the game's own death menu: look back over your messages, your history and your gear, write a character dump, or start a new game.
+
+A Chaos-Warrior's patron may reward them as they gain levels. One reward in six is a mutation, and not every reward is kind.
+
+Up to four pets follow you on the stairs, and each may decide to stay behind at any change of level.
+
+Above ground, 'M' shows the map of the whole world rather than the land around you.
+
+Uniques cannot be put to sleep, slowed, confused or frightened, though stunning and holding them still work.
+
+Inscribe ammunition @f0, or a throwing weapon @v0, to keep it in the quiver's slot 0, @f1 for slot 1, and so on. (Roguelike keys: @t0 for ammunition.)
+
+A Golem has an armour class of 20 with nothing on, and gains one more every five levels. Klackons and Sprites get faster by one every ten levels.
+
+Attacking a sleeping monster costs you Compassion, and Honour too unless you are a Rogue. Rogues can steal from monsters with 's'.
+
+Closing the main window, or choosing Quit from the application menu, saves your character first.
+
+Walk into a white deer and it heals you, once. The Unicorn of Amber does more: it cures you, and restores your stats and experience.
+
+{??} after an item's name means it has runes you have not learned yet.
+
+A Ghoul fighting bare-handed sends whatever it hits to sleep.
+
+Visit the same kind of shop in a different town and you will find a fresh stock.
+
+Gaining a level restores all your drained stats.
+
+Wielding a Chaotic weapon, or having the Chaos Gift mutation, brings any character to the attention of a chaos patron.
+
+A monster wreathed in fire will not follow you into water.
+
+Spectres walk through rock, losing hit points for every turn spent inside it, though the rock itself can never kill them.
+
+If a job cannot be done, walk into any inn that is hiring to give it up.
+
+Kill one of the Amberites and they may curse you with their dying breath: half the time, your weapon and armour are blood-cursed.
+
+A weapon of Sharpness doubles its damage on one blow in six.
+
+If wraith form ends while you are inside rock, it kills you.

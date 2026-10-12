@@ -31,6 +31,35 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+12 October 2026 — eighty-three things that are true
+===================================================
+
+The original greeted you with a Tips window: "Welcome to ZAngbandTk", a tip on
+pale yellow under "Did you know...", Back and Next, and a box to stop it
+appearing. That window is back as it was. Its 32 tips are not. Most of them
+described something this front end does not have: popup menus on the Micro Map,
+a Setup button before the game opens, a Recall window that grows under the
+pointer. A tip that sends somebody looking for a menu that is not there is
+worse than no tip.
+
+So there are new ones, 83 of them, about the windows and about the game, and
+each was checked against the code rather than the manual. That was the right
+order, because the manual turned out to be wrong in places. It says the first
+two Sorcery, Chaos and Trump books are sold in town; the bookseller stocks none
+of them. It describes sleeping at an inn and dreaming of far places; every inn
+also hands out work, and the job board deals with every visit before the bed is
+offered, so in practice nobody can sleep at an inn at all. And when Word of
+Recall asks whether to set your recall depth to where you are, saying yes
+changes nothing: going back down, the game uses the deepest level you have
+reached in that dungeon, which the answer never touches. None of those made it into a tip. They are the
+game's to settle, and they are written down for when it does.
+
+The tips also needed the front end's first setting that lasts between
+sessions: whether the window opens, and which tip comes next. There was nowhere
+to keep that, so there is now a small file in the player's own folder, and the
+next front-end setting can go in it too.
+
+
 12 October 2026 — the white window again
 ========================================
 

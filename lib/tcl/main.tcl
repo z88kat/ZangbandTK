@@ -210,6 +210,12 @@ menu .menubar.views -tearoff 0
 .menubar.views add command -label "Console" -command console_window
 .menubar.views add command -label "Errors" -command errorsink_window
 
+# Help, last, as on every Mac.  Not .menubar.help, for the reason above: Tk
+# would hand it to macOS, which adds a search field this game has no use for.
+menu .menubar.about -tearoff 0
+.menubar add cascade -label "Help" -menu .menubar.about
+.menubar.about add command -label "Tips…" -command tips_window
+
 # The debug pair first, before the windows, for the reason T3's exit
 # criterion puts them first: the debug loop has to exist before the UI does.
 # errorInfo.tcl installs the background error handler at source time, so an
@@ -218,6 +224,7 @@ menu .menubar.views -tearoff 0
 # person can read instead of on the stderr Tk has already closed.
 source [file join [file dirname [info script]] errorInfo.tcl]
 source [file join [file dirname [info script]] debug.tcl]
+source [file join [file dirname [info script]] settings.tcl]
 
 # Then the windows, which are Tk's own widgets in Tk's classic theme and
 # nothing else (decision 18).
@@ -231,6 +238,7 @@ source [file join [file dirname [info script]] progress.tcl]
 source [file join [file dirname [info script]] birth.tcl]
 source [file join [file dirname [info script]] choose.tcl]
 source [file join [file dirname [info script]] tomb.tcl]
+source [file join [file dirname [info script]] tips.tcl]
 source [file join [file dirname [info script]] options.tcl]
 source [file join [file dirname [info script]] choice.tcl]
 source [file join [file dirname [info script]] commands.tcl]
