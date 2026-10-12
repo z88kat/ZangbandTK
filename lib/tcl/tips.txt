@@ -111,7 +111,7 @@ Golems, Skeletons, Zombies, Spectres and Ghouls get little from food, and start 
 
 In the Birth window, Finish at Random makes the rest of the character for you from any of the list pages, and Birth Options… changes the birth options first.
 
-All four books of Arcane magic can be bought in town. The two most powerful books of every other realm are found only in the dungeon.
+The bookseller always has the first two books of every realm, and all four of Arcane. The last two books of every other realm are found only in the dungeon.
 
 Inscribe a rod, or anything you can activate, with !! and the game tells you when it has recharged.
 

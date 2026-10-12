@@ -31,6 +31,33 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+12 October 2026 — a bed nobody could sleep in
+=============================================
+
+Two of the things the tips turned up are fixed, and they turned out to be the
+same mistake twice: something new was added, and the thing next to it quietly
+stopped working.
+
+The inn first. When inns started handing out work, the work was put in front
+of the bed: walk in, deal with the job, then the bed. But the job code settles
+every visit one way or another. It pays you, or asks after a job you still owe,
+or offers you one, and then the visit is over. So the bed was never reached, and
+nor was anything that happened in it. There is a whole system of dreams behind
+that bed, keyed on how lawful the town is and on the sleeper's virtues, with
+tests of its own, and nobody had dreamed since the release that added the work.
+The original's inn showed a list, E) Eat and R) Rest, so ours does now: ask
+about work, take a bed, or nothing today. There is a test that walks a
+character in before dawn and takes the bed. Against the old code it fails.
+
+The books were simpler. The three new realms each got a book type of their own
+in September, and the bookseller's stock list was never told about them. So the
+first books of Sorcery, Chaos and Trump were marked as town books, priced, and
+sold nowhere. A Mage who chose Chaos started with its first book and could never
+buy the second. Three lines in ``store.txt``, and a test that checks every
+class's every town book is on the shelf, so the next realm cannot be left off
+the same way.
+
+
 12 October 2026 — eighty-three things that are true
 ===================================================
 

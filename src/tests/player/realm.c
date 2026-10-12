@@ -33,6 +33,7 @@
 #include "player-calcs.h"
 #include "effects.h"
 #include "player-spell.h"
+#include "store.h"
 #include "test-utils.h"
 
 int setup_tests(void **state) {
@@ -1941,6 +1942,53 @@ static int test_every_class_charges_zangbands_price(void *state) {
 }
 
 const char *suite_name = "player/realm";
+/**
+ * Every realm's town books are on the bookseller's shelves (CNT-10).
+ *
+ * class.txt marks each book as a town book or a dungeon book, and a town book
+ * is one the bookseller always has -- but only for the book types store.txt
+ * names, and adding a type does not add it there.  Sorcery, Chaos and Trump
+ * were given their types on 1 September 2026 and never put on the list, so
+ * their town books were sold nowhere: a Mage who chose Chaos started with its
+ * first book and could never buy the second.  This asks the question for
+ * every class's every town book, so a realm added later cannot be left off
+ * the same way.
+ */
+static int test_every_town_book_is_sold_in_town(void *state) {
+	const struct store *seller = NULL;
+	const struct player_class *c;
+	int n, i, town = 0, missing = 0;
+
+	for (n = 0; n < (int) z_info->store_max; n++)
+		if (stores[n].feat == FEAT_STORE_BOOK) seller = &stores[n];
+	notnull(seller);
+
+	for (c = classes; c; c = c->next) {
+		for (i = 0; i < c->magic.num_books; i++) {
+			const struct class_book *book = &c->magic.books[i];
+			const struct object_kind *kind = lookup_kind(book->tval,
+														 book->sval);
+			bool stocked = false;
+			size_t k;
+
+			if (book->dungeon) continue;
+			town++;
+			for (k = 0; k < seller->always_num; k++)
+				if (seller->always_table[k] == kind) stocked = true;
+			if (!stocked) {
+				printf("%s's %s is a town book the bookseller never has\n",
+					   c->name, kind->name);
+				missing++;
+			}
+		}
+	}
+
+	require(town > 0);
+	eq(missing, 0);
+
+	ok;
+}
+
 struct test tests[] = {
 	{ "seven-realms-exist", test_seven_realms_exist },
 	{ "every-realm-is-fully-described",
@@ -1987,5 +2035,7 @@ struct test tests[] = {
 	  test_every_class_charges_zangbands_price },
 	{ "a-high-mage-holds-more-magic",
 	  test_a_high_mage_holds_more_magic },
+	{ "every-town-book-is-sold-in-town",
+	  test_every_town_book_is_sold_in_town },
 	{ NULL, NULL }
 };

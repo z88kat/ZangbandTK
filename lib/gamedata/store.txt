@@ -144,10 +144,16 @@ always:prayer book
 always:magic book
 always:nature book
 always:shadow book
+always:sorcery book
+always:chaos book
+always:deck
 buy:magic book
 buy:prayer book
 buy:nature book
 buy:shadow book
+buy:sorcery book
+buy:chaos book
+buy:deck
 
 # Alchemist
 store:STORE_ALCHEMY
