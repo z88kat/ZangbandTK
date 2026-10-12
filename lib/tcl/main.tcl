@@ -38,7 +38,13 @@ set angband(cellh) [font metrics termfont -linespace]
 # decision instead, by naming this file as the startup script beforehand.
 
 wm title . "ZangbandTK"
+
+# Closing the window, and Quit from the application menu, save the character
+# and end the game, from wherever the game is -- angband_quit in main-tcl.c.
+# Without ::tk::mac::Quit, Tk's own Quit ends the process outright and nothing
+# is saved.
 wm protocol . WM_DELETE_WINDOW { angband_quit }
+proc ::tk::mac::Quit {} { angband_quit }
 
 # Tk's classic look, in every window: decision 18 in the Phase 3 plan.
 #

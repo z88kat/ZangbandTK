@@ -7327,11 +7327,23 @@ static bool terms_init(void)
 }
 
 /**
- * angband_quit -- the Tcl side of closing the window.
+ * angband_quit -- the Tcl side of closing the window, and of Quit.
  *
- * The game owns the main loop, so a Tk event handler cannot end the program by
- * returning.  quit() unwinds through the game's own shutdown, which is what
- * saves the character, so the window manager's close button routes here.
+ * This used to call quit() and nothing else, on the understanding that quit()
+ * unwinds through the game's own shutdown and that is what saves the
+ * character.  It does not: quit() tears down, and saving is the game's to do
+ * before that.  So closing the window threw away everything since the last
+ * save, and a new character that had not yet been saved was lost outright.
+ * Reported from play as a character that could not be continued.
+ *
+ * Now a closing window is what it is to the SDL2 front end: the game's own
+ * disconnect.  With terms_disconnecting set, every wait for a key returns at
+ * once; prompts and menus take that as Escape, so the game backs out of
+ * whatever it was asking -- a store, an item prompt, a -more- -- to its main
+ * loop, which saves the character and ends the game, and close_game() leaves
+ * out its "Press Return" for a display that is going away.  With no character
+ * in play -- the splash, character creation, a death already recorded --
+ * there is nothing to save, and it quits as before.
  *
  * Note the signature: this is Tcl_ObjCmdProc2, which takes Tcl_Size.  Tcl 9
  * keeps the older int-based Tcl_ObjCmdProc and Tcl_CreateObjCommand for
@@ -7346,9 +7358,13 @@ static int objcmd_quit(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	(void)objc;
 	(void)objv;
 
-	quit(NULL);
+	if (!in_play() || !character_generated || player->is_dead
+			|| !player->upkeep || !player->upkeep->playing) {
+		quit(NULL);
+		return TCL_OK;
+	}
 
-	/* Not reached. */
+	terms_disconnecting = 1;
 	return TCL_OK;
 }
 

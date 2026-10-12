@@ -223,14 +223,36 @@ static void init_stuff(void)
 	my_strcpy(datapath, DEFAULT_DATA_PATH, sizeof(datapath));
 
 #ifdef __APPLE__
-	/* Inside a bundle, everything lives under Contents/Resources/lib. */
+	/*
+	 * Inside a bundle, the game's own files live under Contents/Resources/lib,
+	 * and what the player makes -- savefiles, scores, panic saves, the user
+	 * folder -- lives where the Cocoa build keeps it, ~/Documents/VERSION_NAME.
+	 *
+	 * It all used to go under Contents/Resources/lib, which put a character's
+	 * savefile inside the application: building or reinstalling the
+	 * application replaces the bundle, and the character went with it.
+	 * Reported from play as a character that could not be continued the next
+	 * time the game was started.  The Cocoa build's folder rather than one of
+	 * this build's own, because it is the same game: the same characters and
+	 * the same scores, whichever front end they are played in.
+	 */
 	{
 		const char *resources = macos_bundle_resources();
 
 		if (resources) {
+			const char *home = getenv("HOME");
+			struct passwd *pw;
+
 			strnfmt(configpath, sizeof(configpath), "%s/lib/", resources);
 			my_strcpy(libpath, configpath, sizeof(libpath));
-			my_strcpy(datapath, configpath, sizeof(datapath));
+			if ((!home || !home[0]) && (pw = getpwuid(getuid())) != NULL)
+				home = pw->pw_dir;
+			if (home && home[0]) {
+				strnfmt(datapath, sizeof(datapath), "%s/Documents/%s/", home,
+						VERSION_NAME);
+			} else {
+				my_strcpy(datapath, configpath, sizeof(datapath));
+			}
 		}
 	}
 #endif /* __APPLE__ */
