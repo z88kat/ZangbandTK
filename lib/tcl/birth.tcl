@@ -127,8 +127,20 @@ proc birth_menu_page {changed} {
     pack $p -fill both -expand 1 -padx 10 -pady {4 0}
 
     set birth(question) [angband_birth question]
+
+    # A class with two realms is asked twice, once a realm, and the two
+    # questions have to look like two: which one it is comes first, as in
+    # the original's two screens, and the second names the first.
     if {$birth(stage) eq "realm"} {
-        append birth(question) [expr {$birth(slot) ? "  Your second realm." : "  Your first realm."}]
+        set hint $birth(question)
+        if {$birth(slot) == 0} {
+            set birth(question) "Choose your first realm of magic.  $hint"
+        } else {
+            set first ""
+            catch {set first [lindex [dict get [angband_birth character] realms] 0]}
+            set birth(question) "Choose your second realm of magic[expr {$first ne ""
+                ? ", to study beside [string totitle $first]" : ""}].  $hint"
+        }
     }
     lassign [angband_birth choices] cursor rows
     set birth(rows) $rows
@@ -158,17 +170,23 @@ proc birth_menu_page {changed} {
     birth_describe
 }
 
-# The race or class chosen in the list, in the game's words, or the realm and
-# this class's books in it.  How the stats are made has only its question.
+# The race, class or realm chosen in the list: in words first, as the
+# original's window described it, and then by the game's own numbers -- or,
+# for a realm, this class's books in it.  How the stats are made has only its
+# question.
 proc birth_describe {} {
     global birth
 
     set tv .birth.f.menu.list.tv
     set id [lindex [$tv selection] 0]
     set text ""
+    set prose ""
     if {$id ne "" && $birth(stage) in {race class realm}} {
-        if {[catch {angband_birth describe [string range $id 1 end]} text]} {
-            set text ""
+        set n [string range $id 1 end]
+        set name [lindex [lsearch -inline -index 0 $birth(rows) $n] 1]
+        if {[catch {angband_birth describe $n} text]} { set text "" }
+        if {[catch {angband_birth prose $birth(stage) $name} prose]} {
+            set prose ""
         }
     }
     set t .birth.f.menu.desc.t
@@ -177,6 +195,7 @@ proc birth_describe {} {
     if {$id ne ""} {
         $t insert end [lindex [$tv item $id -values] 0] head "\n\n"
     }
+    if {$prose ne ""} { $t insert end $prose prose "\n\n" }
     $t insert end [string trimright $text]
     $t configure -state disabled
 }
@@ -469,6 +488,7 @@ proc birth_window {} {
         -background $field -foreground black -relief sunken -borderwidth 2 \
         -highlightthickness 0 -padx 6 -pady 6 -state disabled
     $p.desc.t tag configure head -font {Courier 12 bold}
+    $p.desc.t tag configure prose -font {Helvetica 13} -spacing3 2
     pack $p.desc.t -fill both -expand 1
 
     # Point-based stats.

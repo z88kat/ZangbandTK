@@ -3624,6 +3624,28 @@ static enum parser_error parse_p_race_infravision(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+/*
+ * A race or a class described, for whoever is choosing one (ZangbandTK, T8):
+ * one more line of it.  Lines are joined as the other descriptions are, a
+ * continuation starting with a space; a line that does not start with one
+ * begins a new paragraph.  "description" rather than "desc", which class.txt
+ * already uses for its spells.
+ */
+static char *description_append(char *desc, const char *text)
+{
+	if (desc && text[0] != ' ') desc = string_append(desc, "\n\n");
+	return string_append(desc, text);
+}
+
+static enum parser_error parse_p_race_description(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->desc = description_append(r->desc, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_p_race_history(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	if (!r)
@@ -4860,6 +4882,7 @@ static struct parser *init_parse_p_race(void) {
 	parser_reg(p, "hitdie int mhp", parse_p_race_hitdie);
 	parser_reg(p, "exp int exp", parse_p_race_exp);
 	parser_reg(p, "infravision int infra", parse_p_race_infravision);
+	parser_reg(p, "description str text", parse_p_race_description);
 	parser_reg(p, "history uint hist", parse_p_race_history);
 	parser_reg(p, "age int base_age int mod_age", parse_p_race_age);
 	parser_reg(p, "height int base_hgt int mod_hgt", parse_p_race_height);
@@ -4936,6 +4959,7 @@ static void cleanup_p_race(void)
 			mem_free(k);
 		}
 
+		string_free(p->desc);
 		string_free((char *)p->name);
 		mem_free(p);
 		p = next;
@@ -5054,6 +5078,15 @@ struct file_parser rename_parser = {
  * ------------------------------------------------------------------------
  * Initialize player magic realms
  * ------------------------------------------------------------------------ */
+static enum parser_error parse_realm_description(struct parser *p) {
+	struct magic_realm *realm = parser_priv(p);
+
+	if (!realm)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	realm->desc = description_append(realm->desc, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_realm_name(struct parser *p) {
 	struct magic_realm *h = parser_priv(p);
 	struct magic_realm *realm = mem_zalloc(sizeof *realm);
@@ -5118,6 +5151,7 @@ static struct parser *init_parse_realm(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_realm_name);
+	parser_reg(p, "description str text", parse_realm_description);
 	parser_reg(p, "virtues str virtues", parse_realm_virtues);
 	parser_reg(p, "stat sym stat", parse_realm_stat);
 	parser_reg(p, "verb str verb", parse_realm_verb);
@@ -5193,6 +5227,7 @@ static void cleanup_realm(void)
 		string_free(p->verb);
 		string_free(p->spell_noun);
 		string_free(p->book_noun);
+		string_free(p->desc);
 		mem_free(p);
 		p = next;
 	}
@@ -6178,6 +6213,15 @@ static enum parser_error parse_class_name(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_class_description(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->desc = description_append(c->desc, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_class_stats(struct parser *p) {
 	struct player_class *c = parser_priv(p);
 
@@ -7154,6 +7198,7 @@ static struct parser *init_parse_class(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "name str name", parse_class_name);
+	parser_reg(p, "description str text", parse_class_description);
 	parser_reg(p, "virtues str virtues", parse_class_virtues);
 	parser_reg(p, "stats int str int int int wis int dex int con",
 			   parse_class_stats);
@@ -7291,6 +7336,7 @@ static void cleanup_class(void)
 		for (i = (int) N_ELEMENTS(c->title) - 1; i >= 0; --i) {
 			string_free((char *)c->title[i]);
 		}
+		string_free(c->desc);
 		string_free((char *)c->name);
 		mem_free(c);
 		c = next;

@@ -14,6 +14,7 @@ int setup_tests(void **state) {
 
 int teardown_tests(void *state) {
 	struct player_race *pr = parser_priv(state);
+	string_free(pr->desc);
 	string_free((char *)pr->name);
 	mem_free(pr);
 	parser_destroy(state);
@@ -68,6 +69,8 @@ static int test_missing_record_header0(void *state) {
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	r = parser_parse(p, "values:RES_LIGHT[1]");
 	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
+	r = parser_parse(p, "description:Pointy ears.");
+	eq(r, PARSE_ERROR_MISSING_RECORD_HEADER);
 	ok;
 }
 
@@ -79,6 +82,26 @@ static int test_name0(void *state) {
 	pr = parser_priv(state);
 	require(pr);
 	require(streq(pr->name, "Half-Elf"));
+	ok;
+}
+
+/*
+ * A description joins its lines as the other descriptions do, a continuation
+ * starting with a space; a line that does not starts a new paragraph (T8).
+ */
+static int test_description0(void *state) {
+	enum parser_error r = parser_parse(state, "description:Pointy ears,");
+	struct player_race *pr;
+
+	eq(r, PARSE_ERROR_NONE);
+	r = parser_parse(state, "description: and a long life.");
+	eq(r, PARSE_ERROR_NONE);
+	r = parser_parse(state, "description:From level 5 it sings.");
+	eq(r, PARSE_ERROR_NONE);
+	pr = parser_priv(state);
+	require(pr);
+	require(streq(pr->desc,
+		"Pointy ears, and a long life.\n\nFrom level 5 it sings."));
 	ok;
 }
 
@@ -404,6 +427,7 @@ const char *suite_name = "parse/p-info";
 struct test tests[] = {
 	{ "missing_record_header0", test_missing_record_header0 },
 	{ "name0", test_name0 },
+	{ "description0", test_description0 },
 	{ "stats0", test_stats0 },
 	{ "skill_disarm0", test_skill_disarm0 },
 	{ "skill_device0", test_skill_device0 },

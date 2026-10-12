@@ -346,6 +346,7 @@ struct player_power {
 struct player_race {
 	struct player_race *next;
 	const char *name;
+	char *desc;		/**< What the race is, for choosing one (ZangbandTK, T8) */
 	int virtues[MAX_RACE_VIRTUES];	/**< Virtues this race brings (PLR-19) */
 	char *mutation_affinity;	/**< A mutation this race tends to (PLR-38) */
 	int mutation_chance;		/**< ...this often in ten, when one is rolled */
@@ -535,6 +536,7 @@ struct magic_realm {
 	char *verb;
 	char *spell_noun;
 	char *book_noun;
+	char *desc;		/**< What the realm is, for choosing one (ZangbandTK, T8) */
 };
 
 /**
@@ -637,6 +639,7 @@ enum {
 struct player_class {
 	struct player_class *next;
 	const char *name;
+	char *desc;		/**< What the class is, for choosing one (ZangbandTK, T8) */
 	unsigned int cidx;
 	int virtues[MAX_CLASS_VIRTUES];	/**< Virtues this class brings (PLR-19) */
 

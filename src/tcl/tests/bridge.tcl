@@ -1023,6 +1023,21 @@ proc birth_pass_step {} {
 				string match "*Hit die:*XP mod:*" [angband_birth describe 0]
 			} 1
 
+			# And in words, from each data file's description: every race,
+			# class and realm has one.
+			check "and in prose, every race, class and realm of them" {
+				set bare {}
+				foreach kind {race class realm} {
+					foreach name [angband_birth names $kind] {
+						if {[angband_birth prose $kind $name] eq ""} {
+							lappend bare "$kind $name"
+						}
+					}
+				}
+				list [string match "The human is*" [angband_birth prose race Human]] \
+					[llength [angband_birth names class]] $bare
+			} "1 14 {}"
+
 			# The rest at random, as '@' does on the text screen.
 			birth_answer finish
 		}

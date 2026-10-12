@@ -76,6 +76,21 @@ static int test_stat_bad0(void *state) {
 	ok;
 }
 
+/* A realm's description, joined as a race's is (T8). */
+static int test_description0(void *state) {
+	struct parser *p = (struct parser*) state;
+	struct magic_realm *realm;
+
+	eq(parser_parse(p, "description:The healing realm,"), PARSE_ERROR_NONE);
+	eq(parser_parse(p, "description: and a good one."), PARSE_ERROR_NONE);
+	eq(parser_parse(p, "description:Four books."), PARSE_ERROR_NONE);
+	realm = (struct magic_realm*) parser_priv(p);
+	notnull(realm);
+	require(streq(realm->desc,
+		"The healing realm, and a good one.\n\nFour books."));
+	ok;
+}
+
 static int test_verb0(void *state) {
 	struct parser *p = (struct parser*) state;
 	enum parser_error r = parser_parse(p, "verb:perform");
@@ -188,6 +203,7 @@ struct test tests[] = {
 	{ "name0", test_name0 },
 	{ "stat0", test_stat0 },
 	{ "stat_bad0", test_stat_bad0 },
+	{ "description0", test_description0 },
 	{ "verb0", test_verb0 },
 	{ "spell_noun0", test_spell_noun0 },
 	{ "book_noun0", test_book_noun0 },

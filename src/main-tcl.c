@@ -5832,6 +5832,11 @@ static Tcl_Obj *birth_stat_obj(int value)
  *                              own order, and the one it starts on
  *    angband_birth describe <n>      a race or a class, in the screen's
  *                              words, or a realm and this class's books in it
+ *    angband_birth prose race|class|realm <name>
+ *                              one described in words, from its data file's
+ *                              description, or "" where there is none
+ *    angband_birth names race|class|realm   every one's name, in the game's
+ *                              order
  *    angband_birth stats       {name self race class best}, a row a stat
  *    angband_birth points      {left rows}: what is left to spend, and a
  *                              {spent cost can-buy can-sell} row a stat
@@ -5961,6 +5966,73 @@ static int objcmd_birth(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		return TCL_OK;
 	}
 
+	/*
+	 * A race, a class or a realm in words, which the text screen has no room
+	 * for and the original's Birth window had: the description in its data
+	 * file, paragraphs and all.  By name, since a realm's row in the window
+	 * is its place among those this class is offered, not in the game.
+	 */
+	if ((streq(what, "prose") && objc == 4)
+			|| (streq(what, "names") && objc == 3)) {
+		const char *kind = Tcl_GetString(objv[2]);
+		const char *want = (objc == 4) ? Tcl_GetString(objv[3]) : NULL;
+		Tcl_Obj *names = Tcl_NewListObj(0, NULL);
+		const char *desc = NULL;
+		bool found = false;
+
+		if (streq(kind, "race")) {
+			struct player_race *r;
+
+			for (r = races; r; r = r->next) {
+				Tcl_ListObjAppendElement(ip, names,
+						Tcl_NewStringObj(r->name, -1));
+				if (want && streq(r->name, want)) {
+					found = true;
+					desc = r->desc;
+				}
+			}
+		} else if (streq(kind, "class")) {
+			struct player_class *c;
+
+			for (c = classes; c; c = c->next) {
+				Tcl_ListObjAppendElement(ip, names,
+						Tcl_NewStringObj(c->name, -1));
+				if (want && streq(c->name, want)) {
+					found = true;
+					desc = c->desc;
+				}
+			}
+		} else if (streq(kind, "realm")) {
+			struct magic_realm *m;
+
+			for (m = realms; m; m = m->next) {
+				Tcl_ListObjAppendElement(ip, names,
+						Tcl_NewStringObj(m->name, -1));
+				if (want && streq(m->name, want)) {
+					found = true;
+					desc = m->desc;
+				}
+			}
+		} else {
+			Tcl_DecrRefCount(names);
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"expected race, class or realm, not: %s", kind));
+			return TCL_ERROR;
+		}
+
+		if (!want) {
+			Tcl_SetObjResult(ip, names);
+			return TCL_OK;
+		}
+		Tcl_DecrRefCount(names);
+		if (!found) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no %s called %s", kind, want));
+			return TCL_ERROR;
+		}
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(desc ? desc : "", -1));
+		return TCL_OK;
+	}
+
 	/* The rest are about the stage being asked. */
 	if (!birth_asking) {
 		Tcl_SetObjResult(ip, Tcl_NewStringObj(
@@ -6024,9 +6096,9 @@ static int objcmd_birth(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		for (k = (int)strlen(stat); k > 0
 				&& (stat[k - 1] == ' ' || stat[k - 1] == ':'); k--)
 			stat[k - 1] = 0;
-		Tcl_AppendPrintfToObj(text, "%c%ss, %s from %ss.  Studied with %s.\n",
-				toupper((unsigned char)realm->spell_noun[0]),
-				realm->spell_noun + 1, realm->verb, realm->book_noun, stat);
+		Tcl_AppendPrintfToObj(text, "You %s %ss from %ss, and study them"
+				" with %s.\n", realm->verb, realm->spell_noun,
+				realm->book_noun, stat);
 
 		for (b = 0; b < magic->num_books; b++) {
 			const struct class_book *book = &magic->books[b];
@@ -6125,7 +6197,8 @@ static int objcmd_birth(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	}
 
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf("expected question, choices, describe,"
-			" stats, points, character, random_name or answer, not: %s",
+			" prose, names, stats, points, character, random_name or answer,"
+			" not: %s",
 			what));
 	return TCL_ERROR;
 }

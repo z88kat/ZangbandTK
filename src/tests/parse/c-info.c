@@ -82,6 +82,7 @@ int teardown_tests(void *state) {
 	struct player_class *c = (struct player_class*) parser_priv(p);
 	int i;
 
+	string_free(c->desc);
 	string_free((char *)c->name);
 	for (i = 0; i < PY_MAX_LEVEL / 5; i++) {
 		string_free((char *)c->title[i]);
@@ -223,6 +224,24 @@ static int test_name0(void *state) {
 	eq(c->magic.num_books, 0);
 	null(c->magic.books);
 	eq(c->magic.total_spells, 0);
+	ok;
+}
+
+/*
+ * A class's description, joined as a race's is: a continuation starts with a
+ * space, and a line that does not starts a new paragraph (T8).  Not "desc",
+ * which is a spell's.
+ */
+static int test_description0(void *state) {
+	struct parser *p = (struct parser*) state;
+	struct player_class *c;
+
+	eq(parser_parse(p, "description:Lives by its wits,"), PARSE_ERROR_NONE);
+	eq(parser_parse(p, "description: mostly."), PARSE_ERROR_NONE);
+	eq(parser_parse(p, "description:And by spells."), PARSE_ERROR_NONE);
+	c = (struct player_class*) parser_priv(p);
+	notnull(c);
+	require(streq(c->desc, "Lives by its wits, mostly.\n\nAnd by spells."));
 	ok;
 }
 
@@ -1292,6 +1311,7 @@ const char *suite_name = "parse/c-info";
 struct test tests[] = {
 	{ "missing_record_header0", test_missing_record_header0 },
 	{ "name0", test_name0 },
+	{ "description0", test_description0 },
 	{ "stats0", test_stats0 },
 	{ "skill_disarm_phys0", test_skill_disarm_phys0 },
 	{ "skill_disarm_magic0", test_skill_disarm_magic0 },

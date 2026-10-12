@@ -6,6 +6,11 @@
 # verb: verb used for creating a magic effect
 # spell-noun: name of magic effects
 # book-noun: type of book used
+# description: the realm described, for whoever is choosing one -- the
+#   character creation window shows it above this class's books in it.  Lines
+#   are joined, a continuation starting with a space; a line that does not
+#   start with one begins a new paragraph.  The opening of the realm's section
+#   in the manual (docs/realms.rst).
 
 # Seven realms, which is Zangband's number and Zangband's list (PLR-09).
 #
@@ -32,6 +37,13 @@
 # costs nothing but the `book:` lines that name it.
 
 name:arcane
+description:The weak generalist, and the one realm where this game and Angband
+description: disagree outright. Detection, escape, the four temporary resistances,
+description: cures for poison and for light and medium wounds, Stone to Mud, Satisfy
+description: Hunger, Recharging -- everything a delver wants and almost nothing that
+description: kills. Its whole offence is Zap, a weak lightning bolt; Ray of Light;
+description: and Elemental Ball, which throws fire, lightning, frost or acid and does
+description: not let you choose which.
 virtues:ENCHANT | KNOWLEDGE
 stat:INT
 verb:cast
@@ -39,6 +51,11 @@ spell-noun:spell
 book-noun:magic book
 
 name:life
+description:The healing realm, and the one Zangband's own spoiler calls "'good'
+description: magic". It is built on cures, blessings and protection, and the handful
+description: of attacks in it are there for a single purpose: harming and banishing
+description: foul things. No other realm keeps a character alive as well, and no
+description: other realm is so uninterested in anything that is not evil.
 virtues:VITALITY | COMPASSION
 stat:WIS
 verb:recite
@@ -46,6 +63,12 @@ spell-noun:prayer
 book-noun:prayer book
 
 name:nature
+description:The weather at the top and the ground at the bottom, with healing,
+description: protection and a pair of bolts in between. It holds the only powerful
+description: healing spell outside Life: Herbal Healing mends a thousand points and
+description: cures stunning, bleeding and poison with it, and no realm but Life has
+description: anything of the size. That one spell is a large part of why a character
+description: who cannot study Life studies this instead.
 virtues:NATURE | HARMONY
 stat:WIS
 verb:chant
@@ -53,6 +76,13 @@ spell-noun:verse
 book-noun:nature book
 
 name:death
+description:The foulest of them, and the one that charges you in blood. Chaos
+description: punishes a miscast too, but Death is the realm where the spells that
+description: work cost you something: Hellfire takes fifty to a hundred hit points to
+description: cast, Genocide takes 1d4 for every creature it removes and Mass Genocide
+description: 1d3, and a failed cast anywhere in the realm draws blood on its own
+description: account. Zangband says it plainly -- the most powerful spells "need
+description: their own blood as the focus".
 virtues:UNLIFE | CHANCE
 stat:INT
 verb:perform
@@ -67,6 +97,11 @@ book-noun:shadow book
 # Enchantment and knowledge are what it moves, as arcane does -- it is the
 # scholar's realm without the fire.
 name:sorcery
+description:The meta-realm, and the first of the three new ones to arrive.
+description: Detection, identification, protection, escape, and every convenience a
+description: dungeon delver wants -- and not one direct attack spell in it. That is
+description: Sorcery's whole character: it makes everything else you do easier and
+description: kills nothing itself.
 virtues:KNOWLEDGE | ENCHANT
 stat:INT
 verb:invoke
@@ -76,6 +111,13 @@ book-noun:sorcery book
 # Chaos is the destructive one, and the reason a Chaos-Warrior is what it is.
 # Casting it courts the Courts: V_CHANCE is the virtue mutations move too.
 name:chaos
+description:Sorcery's opposite in every respect. Sorcery has no attack spell in it;
+description: Chaos is almost nothing else. The spoiler calls it "the very element of
+description: unmaking", and what it offers instead of protection is an arsenal that
+description: runs from Magic Missile in the first book to Mana Storm and Call the
+description: Void in the last. Chaos has no protective spells at all -- that is the
+description: realm's own description of itself, and it is the thing to weigh before
+description: taking it as your only one.
 virtues:CHANCE | INDIVIDUALISM
 stat:INT
 verb:unleash
@@ -87,6 +129,14 @@ book-noun:chaos book
 # took it from Zelazny and it is the only realm that arrives here already at
 # home.
 name:trump
+description:The last realm to arrive, and the one that had to wait for pets. Fifteen
+description: of its thirty-two spells summon a creature, and in Zangband every one of
+description: them turns on the same question: cast it well and the creature is yours,
+description: cast it badly and an angry group of them appears. Until monsters could
+description: take sides, all fifteen would have come out as the bad half -- Trump
+description: Cyberdemon would have been sixty mana spent to put a hostile Cyberdemon
+description: next to you, which is not a weaker spell but the opposite spell. Pets
+description: closed that, and the realm went in whole.
 virtues:INDIVIDUALISM | KNOWLEDGE
 stat:INT
 verb:read
