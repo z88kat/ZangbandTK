@@ -922,10 +922,11 @@ proc second_pass {} {
 		set shape {}
 		foreach row [angband_player meters] {
 			lappend shape [lindex $row 0] [llength $row] \
-				[string match "#??????" [lindex $row 4]]
+				[string match "#??????" [lindex $row 4]] \
+				[expr {[lindex $row 5] in {good fair poor {}}}]
 		}
 		set shape
-	} "hp 5 1 sp 5 1 food 5 1 exp 5 1"
+	} "hp 6 1 1 sp 6 1 1 food 6 1 1 exp 6 1 1"
 
 	check "and the strip is Tk's own widgets" {
 		progress_refresh

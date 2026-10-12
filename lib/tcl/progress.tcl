@@ -18,7 +18,8 @@ set progress(exp) total
 set progress(pending) 0
 
 # {meter label bar-colour}: the original's red, blue and dark red, and the
-# Character window's gold for experience.
+# Character window's gold for experience.  Hit points change with how many are
+# left -- see progress_refresh.
 set progress(meters) {
     hp   HP  #d03030
     sp   SP  #3050d0
@@ -46,8 +47,13 @@ proc progress_build {} {
         grid configure $f.b$meter -padx 6
     }
     grid columnconfigure $f 2 -weight 1
-    # The rows stay together at the top; a taller strip is room below them.
-    grid rowconfigure $f 4 -weight 1
+    # The rows stay together at the top, a taller strip being room below
+    # them -- but they still give way together when it is made shorter than
+    # they need, rather than the last of them falling off the bottom.  The
+    # space below takes nearly all the growth and none of the shrinking,
+    # having no height of its own to give.
+    grid rowconfigure $f {0 1 2 3} -weight 1
+    grid rowconfigure $f 4 -weight 1000
 
     # The experience number is the clickable one, as it was in the original.
     foreach w [list $f.lexp $f.vexp $f.bexp] {
@@ -88,7 +94,8 @@ proc progress_refresh {} {
     }
 
     foreach row $meters {
-        lassign $row meter value cur max colour
+        lassign $row meter value cur max colour state
+        if {$meter eq "hp"} { progress_hp_colour $state }
         if {$meter eq "exp"} {
             # The sidebar's words: NXT for what is wanted, and in lower case
             # while experience is drained.  At the top level there is no next.
@@ -107,8 +114,43 @@ proc progress_refresh {} {
     }
 }
 
+# The hit point bar by the game's own rule, player_hp_attr(): green at full,
+# yellow while hurt, red at or below the warning level set in the options --
+# the colour of the number beside it, and of the Character window's bar,
+# drawn in the same colours as that bar.
+proc progress_hp_colour {state} {
+    global progress
+
+    set colour [dict get {good #38a038 fair #c8a000 poor #c03030} \
+        [expr {$state in {good fair poor} ? $state : "good"}]]
+    # Only when it changes: configuring a style redraws every widget using it.
+    if {[info exists progress(hpcolour)] && $progress(hpcolour) eq $colour} return
+    set progress(hpcolour) $colour
+    ttk::style configure Progresshp.Horizontal.TProgressbar -background $colour
+}
+
+# The strip starts at the height its rows need.  The paned window hands out
+# what the column has in order, and the minimap above asks for most of it, so
+# the strip came last and short -- the experience row cut off until the sash
+# was dragged.  So the sash is placed once the layout is real, and the minimap
+# gives way; after that it is wherever the player puts it.
+proc progress_fit {} {
+    set f [progress_frame]
+    set side .pw.top.side
+    update idletasks
+    set want [winfo reqheight $f]
+    set total [winfo height $side]
+    if {$total <= $want} return
+    $side sashpos 0 [expr {$total - $want}]
+    update idletasks
+    # The sash has a thickness of its own, so measure what that left.
+    set short [expr {$want - [winfo height $f]}]
+    if {$short > 0} { $side sashpos 0 [expr {[$side sashpos 0] - $short}] }
+}
+
 progress_build
 progress_refresh
+after idle progress_fit
 
 foreach event {HP MANA EXPERIENCE PLAYERLEVEL STATUS REFRESH
         ENTER_GAME LEAVE_BIRTH ENTER_WORLD} {

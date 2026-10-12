@@ -2319,11 +2319,24 @@ static void player_level_progress(long *gained, long *wanted)
 	*wanted = want - base;
 }
 
-/* One of the Progress pane's meters: {name value current maximum colour}. */
+/*
+ * One of the Progress pane's meters: {name value current maximum colour
+ * state}.  The state is the colour's meaning -- good, fair or poor -- for a
+ * bar, which has to be drawn in colours that read on grey rather than the
+ * game's, which are for black.
+ */
 static Tcl_Obj *player_meter(const char *name, long value, long cur, long max,
 		uint8_t attr)
 {
 	Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+	const char *state;
+
+	switch (attr) {
+		case COLOUR_GREEN: case COLOUR_L_GREEN:		state = "good"; break;
+		case COLOUR_YELLOW: case COLOUR_ORANGE:		state = "fair"; break;
+		case COLOUR_RED: case COLOUR_L_RED:			state = "poor"; break;
+		default:									state = ""; break;
+	}
 
 	Tcl_ListObjAppendElement(NULL, row, Tcl_NewStringObj(name, -1));
 	Tcl_ListObjAppendElement(NULL, row, Tcl_NewWideIntObj(value));
@@ -2331,6 +2344,7 @@ static Tcl_Obj *player_meter(const char *name, long value, long cur, long max,
 	Tcl_ListObjAppendElement(NULL, row, Tcl_NewWideIntObj(max));
 	Tcl_ListObjAppendElement(NULL, row,
 			Tcl_NewStringObj(colour_name[attr % MAX_COLORS], -1));
+	Tcl_ListObjAppendElement(NULL, row, Tcl_NewStringObj(state, -1));
 	return row;
 }
 
@@ -2372,8 +2386,8 @@ static Tcl_Obj *player_field_obj(enum player_field_id id)
 	}
 
 	/*
-	 * The Progress pane's four meters, a {name value current maximum colour}
-	 * row each: hp, sp, food and exp.  The colours are the game's judgement
+	 * The Progress pane's four meters, a {name value current maximum colour
+	 * state} row each: hp, sp, food and exp.  The colours are the game's judgement
 	 * of how things stand, so they are made here rather than in a script --
 	 * player_hp_attr() and player_sp_attr() as the sidebar has them, the
 	 * hunger grade's colour as the status line has it, and experience green
