@@ -1815,6 +1815,39 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 > Still to come from the list above: tile size, pane fonts and the palette on the Display
 > page, and the item-ignoring and auto-inscription setups, which are still the game's screens.
 
+> **Choosing a character, and the death flow — first cut, 12 October 2026.** The native
+> launcher promised for T9 under T1, and the Tomb window, as views of the game's own screens
+> rather than replacements for them.
+>
+> - **Choose Game** ([lib/tcl/choose.tcl](../../lib/tcl/choose.tcl)) is `select_savefile()`'s
+>   view, through `select_savefile_hook` in ui-game.c: the original's window — name, what is
+>   known of the character, the living in bold — with a Saved column for its Version, which
+>   4.2 does not record, and the startup window's New beside Open. What is offered, which is
+>   chosen first and what a new character is saved as stay in ui-game.c. A savefile's
+>   description is split into fields by the bridge (`angband_savefile list`), matching race
+>   and class against the game's lists because either can contain a space. A bundle with no
+>   `-u` or `-n` now starts in `GAME_SELECT` (main.c), so every character is reachable, and
+>   **New Game comes back here, not to a new character** (OBS-46), with New preselected.
+>   Browse… is not carried over: every savefile lives in the one save folder.
+> - **The Tomb window** ([lib/tcl/tomb.tcl](../../lib/tcl/tomb.tcl)) is `death_screen()`'s
+>   view, through `death_view_hook` in ui-death.c: the tombstone, retirement or crown screen
+>   *as the game drew it*, read back off the main screen, beside the game's nine actions by
+>   their own names and keys. Messages, scores, examining, history and spoilers run as they do
+>   from the menu, on the main window, with the Tomb window stepping aside until it is asked
+>   again; the file dump is a save dialog; New Game and Quit are confirmed in the window.
+> - **The views go in at startup.** A key typed ahead of the splash took the game into the
+>   savefile choice before any wait, and the bridge's hooks went in at the first wait, so the
+>   text menu came up. The three views (birth, savefile, death) wrap nothing, so they are set
+>   when the bridge starts, and each runs the first-wait setup itself if nothing has yet.
+> - **Not `wm resizable 0 0` on a new window.** On Tk 9 for macOS the Tomb window made that
+>   way was never painted — white until withdrawn and shown again.
+>
+> Still to come: the **tile icon on the tombstone** (OBS-46) — no window can show a tile yet,
+> which is also why the Character window's portrait is an `@`; the **Character Record** and
+> the **Hall of Fame**, where View scores is still the game's screen; and the winner's
+> **Kingly** window — `display_winner()` still shows the crown on the main screen and waits
+> for a key before the Tomb window opens.
+
 ---
 
 ## 6. Decisions needed

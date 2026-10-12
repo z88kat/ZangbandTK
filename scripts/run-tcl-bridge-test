@@ -28,9 +28,11 @@ if [ ! -x "$GAME" ]; then
 fi
 
 RESULT=$(mktemp -t zangband-bridge)
-# A save directory of its own, and a name in it nobody plays.  The last pass
-# makes a character, and without these the game would load whatever the
-# player's own default savefile holds -- and could write it back.
+# A save directory of its own, and a name in it nobody plays.  The later passes
+# make a character, and without these the game would load whatever the
+# player's own default savefile holds -- and could write it back.  And -c, so
+# that the game starts at the Choose Game window as the application does, and
+# goes back to it after the last pass's New Game.
 SAVE=$(mktemp -d -t zangband-bridge-save)
 trap 'rm -f "$RESULT"; rm -rf "$SAVE"' EXIT
 : > "$RESULT"
@@ -40,7 +42,7 @@ trap 'rm -f "$RESULT"; rm -rf "$SAVE"' EXIT
 # shell doing it by hand.
 ZANGBAND_TCL_SCRIPT=$ROOT/src/tcl/tests/bridge.tcl \
 ZANGBAND_TCL_RESULT=$RESULT \
-	"$GAME" -mtcl -dsave="$SAVE" -uBridge &
+	"$GAME" -mtcl -dsave="$SAVE" -c -uBridge &
 GAME_PID=$!
 
 WAITED=0

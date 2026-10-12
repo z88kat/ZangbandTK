@@ -31,6 +31,49 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+12 October 2026 — the white window again
+========================================
+
+Two screens were left that only the keyboard could get through: choosing a
+character, and the tombstone. The original had a window for each. Its Choose
+Game window listed every savefile, the living in bold and the dead in plain
+type, and its Tomb window put the RIP stone on black with a few buttons
+underneath. Both of ours are views of the game's own screens rather than new
+ones. The game still decides what is offered, which character comes first,
+what a new one is saved as, and what each death-menu action does. The windows
+only show the choice and pass back the answer.
+
+The tombstone is not redrawn in Tk at all. The game draws ``dead.txt`` with the
+character's facts on the main screen, as it always has, and the window reads
+the screen back a row at a time. So the retirement scene came with it for
+nothing.
+
+**The Tomb window came up white.** The right size, the right title, and nothing
+in it, for six seconds and more, until it was sent away for the Messages screen
+and brought back, when it painted perfectly. That is the same empty white shape
+the Items window's drag ghost made yesterday, and yesterday I stopped looking.
+This time there was only one thing the window did that the Choose Game window
+did not, ``wm resizable .tomb 0 0``, and taking it out was the whole fix. A
+fixed-size window seemed the natural thing to ask for. On Tk 9 for macOS it
+means a window that is never drawn.
+
+The test run found a real bug as well. The bridge test pushes a command early
+on, and the key that nudges the game to run it was still waiting when the
+splash screen came up. The splash took that key and went on, so the game reached
+the choice of savefile without ever stopping to wait. The bridge put its hooks
+in at the first wait, which had not happened yet, so the game found no view and
+drew its old text menu. A player who presses a key before the splash appears
+would get the same. The views do not wrap anything of the game's, so they now go
+in when the bridge starts.
+
+Launched from the Finder, the application now opens on the Choose Game window.
+Until today it loaded whichever savefile was named after the account, and every
+other character was out of reach. New Game after a death comes back to the
+window too. The original's death screen ended with the game exiting, which got a
+"hmmmm" when we played it through, and 4.2's menu already had the New Game to
+do better with.
+
+
 11 October 2026 — the last window, and the design system with it
 ================================================================
 

@@ -19,6 +19,10 @@
 #ifndef UI_DEATH_H
 #define UI_DEATH_H
 
+#include "ui-menu.h"
+
+extern int (*death_view_hook)(const menu_action *actions, int count);
+
 extern void death_screen(void);
 
 #endif /* !UI_DEATH_H */

@@ -638,6 +638,18 @@ int main(int argc, char *argv[])
 	}
 #endif
 
+#ifdef __APPLE__
+	/*
+	 * A bundle started from the Finder has no command line to name a
+	 * character, so it starts where the original did: choosing which one to
+	 * play or making a new one (T9).  Without this it always loaded the save
+	 * named after the account, and every other character was out of reach.
+	 * A -u or -n given on a command line still means what it says.
+	 */
+	if (macos_bundle_resources() && !arg_name[0] && !new_game)
+		select_game = true;
+#endif
+
 #ifdef UNIX
 
 	/* Get the "user name" as default player name, unless set with -u switch */

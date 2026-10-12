@@ -46,10 +46,12 @@
 #include "player-spell.h"
 #include "store.h"
 #include "player-virtue.h"
+#include "savefile.h"
 #include "trap.h"
 #include "ui-knowledge.h"
 #include "ui-birth.h"
 #include "ui-command.h"
+#include "ui-death.h"
 #include "ui-display.h"
 #include "ui-game.h"
 #include "main.h"
@@ -863,8 +865,12 @@ static void birth_view_tk(enum birth_stage stage, int slot,
 		struct birth_answer *answer);
 static void birth_points_notice(game_event_type type, game_event_data *data,
 		void *user);
+static int chooser_view_tk(const char **entries, const char **names,
+		int count, int cursor, bool retry);
+static int death_view_tk(const menu_action *actions, int count);
 static void events_register(void);
 static void bridge_reinstall_if_due(void);
+static void bridge_first_wait(void);
 static void bridge_reinit(void);
 static void (*bridge_reinit_prev)(void);
 static bool bridge_reinstall_due;
@@ -904,22 +910,31 @@ static void bridge_key(keycode_t key)
 	Term_keypress(key, 0);
 }
 
+/*
+ * The first time the game waits is past everything that would otherwise
+ * overwrite these: textui_init() has assigned the subwindows by index and
+ * textui_input_init() has filled the game's input hooks.  That is usually a
+ * request for a key, but not always: a key typed ahead of the splash screen
+ * takes the game straight on to choosing a character, and the first wait is
+ * then the Choose Game window's -- so the views call this too.
+ */
+static void bridge_first_wait(void)
+{
+	if (flags_applied) return;
+	flags_applied = true;
+	subwindows_set_flags(want_flag, ANGBAND_TERM_MAX);
+	hooks_apply();
+	choice_install();
+}
+
 static errr Term_xtra_tcl(int n, int v)
 {
 	term_data *td = (term_data *)(Term->data);
 
-	/*
-	 * The first request for input is past everything that would otherwise
-	 * overwrite these: textui_init() has assigned the subwindows by index and
-	 * textui_input_init() has filled the game's input hooks.
-	 */
-	if (!flags_applied && n == TERM_XTRA_EVENT) {
-		flags_applied = true;
-		subwindows_set_flags(want_flag, ANGBAND_TERM_MAX);
-		hooks_apply();
-		choice_install();
+	if (n == TERM_XTRA_EVENT) {
+		bridge_first_wait();
+		bridge_reinstall_if_due();
 	}
-	if (n == TERM_XTRA_EVENT) bridge_reinstall_if_due();
 
 	switch (n) {
 		case TERM_XTRA_EVENT:
@@ -4672,8 +4687,21 @@ static void choice_hooks_install(void)
 
 	check_original = get_check_hook;
 	get_check_hook = choice_get_check;
+}
 
+/*
+ * The front end's own views of the game's screens: character creation, the
+ * choice of savefile and the death screen.  Nothing of the game's is wrapped,
+ * so they go in at the start rather than at the first wait -- with a key
+ * typed ahead of the splash screen, the choice of savefile came before any
+ * wait, found no view and drew the text menu.  Nothing the game resets
+ * touches them.
+ */
+static void views_install(void)
+{
 	birth_view_hook = birth_view_tk;
+	select_savefile_hook = chooser_view_tk;
+	death_view_hook = death_view_tk;
 }
 
 /* What this file follows itself -- again whenever a reset sweeps them. */
@@ -5864,6 +5892,7 @@ static void birth_view_tk(enum birth_stage stage, int slot,
 		struct birth_answer *answer)
 {
 	/* After New Game, the first thing the game waits for is this. */
+	bridge_first_wait();
 	bridge_reinstall_if_due();
 
 	birth_stage_now = stage;
@@ -6300,6 +6329,389 @@ static int objcmd_birth(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf("expected question, choices, describe,"
 			" prose, names, stats, points, character, random_name or answer,"
 			" not: %s",
+			what));
+	return TCL_ERROR;
+}
+
+/**
+ * Choosing a character (T9).
+ *
+ * play_game() asks which savefile to play when it is started with -c -- as the
+ * bundle now is -- and again after New Game.  select_savefile() in ui-game.c
+ * gathers the choices, a new character and every savefile in the save
+ * directory, and asks its view through select_savefile_hook; this is the view.
+ * It tells the Choose Game window the game is asking and runs Tk until the
+ * window has answered, as the Birth window's view does.  Which savefile is the
+ * default, what a new character is saved as and what happens to one that will
+ * not load stay in ui-game.c.
+ */
+static bool chooser_asking;
+static int chooser_answer;
+static const char **chooser_names;
+static int chooser_count, chooser_cursor;
+static bool chooser_retry;
+
+static int chooser_view_tk(const char **entries, const char **names,
+		int count, int cursor, bool retry)
+{
+	(void)entries;
+
+	/* At the start, and after New Game, the first thing the game waits for. */
+	bridge_first_wait();
+	bridge_reinstall_if_due();
+
+	chooser_names = names;
+	chooser_count = count;
+	chooser_cursor = cursor;
+	chooser_retry = retry;
+	chooser_answer = -1;
+	chooser_asking = true;
+
+	Term_fresh();
+
+	if (Tcl_Eval(interp, "event generate . <<Angband_CHOOSEGAME>> -when tail")
+			!= TCL_OK)
+		Tcl_BackgroundException(interp, TCL_ERROR);
+
+	while (chooser_asking)
+		Tcl_DoOneEvent(TCL_ALL_EVENTS);
+
+	chooser_names = NULL;
+	return chooser_answer;
+}
+
+/* The last place in [start, end) that `what` begins, or NULL. */
+static const char *chooser_last(const char *start, const char *end,
+		const char *what)
+{
+	size_t n = strlen(what);
+	const char *p;
+
+	for (p = end - n; p >= start; p--) {
+		if (!strncmp(p, what, n)) return p;
+	}
+	return NULL;
+}
+
+/**
+ * A savefile's description as wr_description() in save.c writes it, in its
+ * fields: {state name level race class depth killer}, the state being alive,
+ * dead, invalid or unknown.  The two forms are "Name, L12 Race Class, at DL5"
+ * and "Name, dead (killer)".  A race or a class can have a space in its name,
+ * so the pair is split where it matches a race and a class the game knows.
+ */
+static void chooser_fields(Tcl_Obj *row, const char *desc)
+{
+	const char *state = "unknown";
+	Tcl_Obj *name = Tcl_NewObj(), *race = Tcl_NewObj(), *cls = Tcl_NewObj();
+	Tcl_Obj *killer = Tcl_NewObj();
+	int level = 0, depth = 0;
+	const char *end = desc ? desc + strlen(desc) : NULL;
+	const char *p, *q;
+
+	if (!desc || !desc[0]) {
+		/* Nothing said: an old savefile, or not one at all. */
+	} else if (streq(desc, "Invalid savefile")) {
+		state = "invalid";
+	} else if ((p = strstr(desc, ", dead (")) != NULL && suffix(desc, ")")) {
+		state = "dead";
+		Tcl_SetStringObj(name, desc, (Tcl_Size)(p - desc));
+		Tcl_SetStringObj(killer, p + 8, (Tcl_Size)(end - 1 - (p + 8)));
+	} else if ((q = chooser_last(desc, end, ", at DL")) != NULL) {
+		depth = atoi(q + 7);
+		for (p = chooser_last(desc, q, ", L"); p;
+				p = chooser_last(desc, p, ", L")) {
+			if (isdigit((unsigned char)p[3])) break;
+		}
+		if (p) {
+			const char *rc = p + 3;
+			struct player_race *r;
+			struct player_class *c;
+			bool split = false;
+
+			state = "alive";
+			Tcl_SetStringObj(name, desc, (Tcl_Size)(p - desc));
+			level = atoi(rc);
+			while (isdigit((unsigned char)*rc)) rc++;
+			if (*rc == ' ') rc++;
+			for (r = races; r && !split; r = r->next) {
+				size_t n = strlen(r->name);
+
+				if (strncmp(rc, r->name, n) || rc[n] != ' ') continue;
+				for (c = classes; c && !split; c = c->next) {
+					if ((size_t)(q - (rc + n + 1)) == strlen(c->name)
+							&& !strncmp(rc + n + 1, c->name,
+							strlen(c->name))) {
+						Tcl_SetStringObj(race, r->name, -1);
+						Tcl_SetStringObj(cls, c->name, -1);
+						split = true;
+					}
+				}
+			}
+			if (!split && rc < q)
+				Tcl_SetStringObj(race, rc, (Tcl_Size)(q - rc));
+		}
+	}
+
+	Tcl_ListObjAppendElement(NULL, row, Tcl_NewStringObj(state, -1));
+	Tcl_ListObjAppendElement(NULL, row, name);
+	Tcl_ListObjAppendElement(NULL, row, Tcl_NewIntObj(level));
+	Tcl_ListObjAppendElement(NULL, row, race);
+	Tcl_ListObjAppendElement(NULL, row, cls);
+	Tcl_ListObjAppendElement(NULL, row, Tcl_NewIntObj(depth));
+	Tcl_ListObjAppendElement(NULL, row, killer);
+}
+
+/**
+ * angband_savefile -- which character to play, for the Choose Game window.
+ *
+ *    angband_savefile              {} unless the game is asking, and then
+ *                                  {cursor retry}: the choice it starts on, and
+ *                                  whether the one chosen last would not load
+ *    angband_savefile list         a row per choice, in the game's order:
+ *                                  {n file path state name level race class
+ *                                  depth killer}, the state being new for a
+ *                                  new character and otherwise alive, dead,
+ *                                  invalid or unknown
+ *    angband_savefile answer <n>   play choice n; -1 quits
+ */
+static int objcmd_savefile(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what;
+	int i;
+
+	(void)dummy;
+
+	if (objc == 1) {
+		Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+
+		if (chooser_asking) {
+			Tcl_ListObjAppendElement(ip, d, Tcl_NewIntObj(chooser_cursor));
+			Tcl_ListObjAppendElement(ip, d, Tcl_NewBooleanObj(chooser_retry));
+		}
+		Tcl_SetObjResult(ip, d);
+		return TCL_OK;
+	}
+
+	what = Tcl_GetString(objv[1]);
+	if (!chooser_asking) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("the game is not asking which"
+				" character to play", -1));
+		return TCL_ERROR;
+	}
+
+	if (streq(what, "list")) {
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+		if (objc != 2) {
+			Tcl_WrongNumArgs(ip, 2, objv, "");
+			return TCL_ERROR;
+		}
+		for (i = 0; i < chooser_count; i++) {
+			Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(i));
+			if (chooser_names[i]) {
+				char path[1024];
+
+				path_build(path, sizeof(path), ANGBAND_DIR_SAVE,
+						chooser_names[i]);
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(chooser_names[i], -1));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(path, -1));
+				chooser_fields(row, savefile_get_description(path));
+			} else {
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewObj());
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewObj());
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj("new", -1));
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewObj());
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(0));
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewObj());
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewObj());
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(0));
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewObj());
+			}
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	if (streq(what, "answer")) {
+		int n;
+
+		if (objc != 3) {
+			Tcl_WrongNumArgs(ip, 2, objv, "n");
+			return TCL_ERROR;
+		}
+		if (Tcl_GetIntFromObj(ip, objv[2], &n) != TCL_OK) return TCL_ERROR;
+		if (n < -1 || n >= chooser_count) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no choice %d", n));
+			return TCL_ERROR;
+		}
+		chooser_answer = n;
+		chooser_asking = false;
+		return TCL_OK;
+	}
+
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf("expected list or answer, not: %s",
+			what));
+	return TCL_ERROR;
+}
+
+/**
+ * The death screen (T9).
+ *
+ * death_screen() in ui-death.c draws the tombstone -- or the retirement -- on
+ * the main screen and then asks its view, through death_view_hook, which of
+ * its actions to take; this is the view, for the Tomb window.  An action other
+ * than New Game and Quit runs as it does from the game's own menu, with its
+ * screens on the main window, and the window is asked again once it is done.
+ */
+static bool death_asking;
+static int death_answer;
+static const menu_action *death_actions_now;
+static int death_count;
+
+static int death_view_tk(const menu_action *actions, int count)
+{
+	bridge_first_wait();
+
+	death_actions_now = actions;
+	death_count = count;
+	death_answer = -1;
+	death_asking = true;
+
+	/* The tombstone, on the screen behind the window. */
+	Term_fresh();
+
+	if (Tcl_Eval(interp, "event generate . <<Angband_DEATHVIEW>> -when tail")
+			!= TCL_OK)
+		Tcl_BackgroundException(interp, TCL_ERROR);
+
+	/* Quitting from the window's menu or the application leaves as Quit. */
+	while (death_asking && !terms_disconnecting)
+		Tcl_DoOneEvent(TCL_ALL_EVENTS);
+
+	death_asking = false;
+	death_actions_now = NULL;
+	return death_answer;
+}
+
+/**
+ * angband_death -- the death screen, for the Tomb window.
+ *
+ *    angband_death              {} unless the game is asking, and then
+ *                               {how actions}: how is dead, retired or winner,
+ *                               and actions the menu's, a {key name} each
+ *    angband_death tomb         the main screen as the game drew it, a string
+ *                               a row, with the blank rows at the end left off
+ *    angband_death answer <key> take the action with that key, as from the
+ *                               menu; New Game and Quit are taken as confirmed
+ */
+static int objcmd_death(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what;
+	int i;
+
+	(void)dummy;
+
+	if (objc == 1) {
+		Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+
+		if (death_asking && player) {
+			Tcl_Obj *acts = Tcl_NewListObj(0, NULL);
+			const char *how = player->total_winner ? "winner"
+				: streq(player->died_from, "Retiring") ? "retired" : "dead";
+
+			for (i = 0; i < death_count; i++) {
+				const menu_action *a = &death_actions_now[i];
+				char key[2] = { a->tag, 0 };
+				Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+
+				if (a->flags & MN_ACT_HIDDEN) continue;
+				Tcl_ListObjAppendElement(ip, row, Tcl_NewStringObj(key, -1));
+				Tcl_ListObjAppendElement(ip, row,
+						Tcl_NewStringObj(a->name, -1));
+				Tcl_ListObjAppendElement(ip, acts, row);
+			}
+			Tcl_ListObjAppendElement(ip, d, Tcl_NewStringObj(how, -1));
+			Tcl_ListObjAppendElement(ip, d, acts);
+		}
+		Tcl_SetObjResult(ip, d);
+		return TCL_OK;
+	}
+
+	what = Tcl_GetString(objv[1]);
+	if (!death_asking) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("the game is not at the death"
+				" screen", -1));
+		return TCL_ERROR;
+	}
+
+	if (streq(what, "tomb")) {
+		Tcl_Obj *rows = Tcl_NewListObj(0, NULL);
+		Tcl_Size n, used = 0;
+		term *old = Term;
+		int x, y;
+
+		if (objc != 2) {
+			Tcl_WrongNumArgs(ip, 2, objv, "");
+			return TCL_ERROR;
+		}
+		Term_activate(term_screen);
+		for (y = 0; y < Term->hgt; y++) {
+			Tcl_DString ds;
+			int a;
+			wchar_t c;
+			int len;
+
+			Tcl_DStringInit(&ds);
+			for (x = 0; x < Term->wid; x++) {
+				char u[TCL_UTF_MAX + 1];
+
+				if (Term_what(x, y, &a, &c)) break;
+				Tcl_DStringAppend(&ds, u, Tcl_UniCharToUtf((int)c, u));
+			}
+			len = Tcl_DStringLength(&ds);
+			while (len > 0 && Tcl_DStringValue(&ds)[len - 1] == ' ') len--;
+			Tcl_ListObjAppendElement(ip, rows,
+					Tcl_NewStringObj(Tcl_DStringValue(&ds), len));
+			Tcl_DStringFree(&ds);
+			if (len) used = y + 1;
+		}
+		Term_activate(old);
+
+		Tcl_ListObjLength(ip, rows, &n);
+		if (used < n) Tcl_ListObjReplace(ip, rows, used, n - used, 0, NULL);
+		Tcl_SetObjResult(ip, rows);
+		return TCL_OK;
+	}
+
+	if (streq(what, "answer")) {
+		const char *key;
+
+		if (objc != 3) {
+			Tcl_WrongNumArgs(ip, 2, objv, "key");
+			return TCL_ERROR;
+		}
+		key = Tcl_GetString(objv[2]);
+		for (i = 0; i < death_count; i++) {
+			if (key[0] && !key[1] && death_actions_now[i].tag == key[0]) break;
+		}
+		if (i == death_count) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no action %s", key));
+			return TCL_ERROR;
+		}
+		death_answer = i;
+		death_asking = false;
+		return TCL_OK;
+	}
+
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf("expected tomb or answer, not: %s",
 			what));
 	return TCL_ERROR;
 }
@@ -7034,7 +7446,11 @@ static int objcmd_dump(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		term *old = Term;
 		bool ok;
 
-		if (!command_may_start()) {
+		/*
+		 * The death screen waits on the Tomb window and nothing else, so
+		 * a dump from there is the one its own File dump would write.
+		 */
+		if (!command_may_start() && !death_asking) {
 			Tcl_SetObjResult(ip, Tcl_NewStringObj(
 					"the game is in the middle of something else", -1));
 			return TCL_ERROR;
@@ -7825,8 +8241,12 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_service", objcmd_service, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_birth", objcmd_birth, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_savefile", objcmd_savefile, NULL,
+			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_death", objcmd_death, NULL, NULL);
 
 	hooks_init();
+	views_install();
 
 	/* The other direction: what the game tells us, as Tk virtual events. */
 	events_init();

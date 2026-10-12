@@ -369,6 +369,16 @@ static menu_action death_actions[] =
 
 
 /**
+ * A front end's own view of the death menu, or NULL for the menu here
+ * (ZangbandTK, T9).  It is given the menu's actions, with the tombstone already
+ * on the screen behind it, and returns the index of the one chosen, or -1 to
+ * leave as Quit does.  New Game and Quit come back already confirmed: the view
+ * is where they are asked.  Every other action runs here as it does from the
+ * menu, and the view is asked again when it is done.
+ */
+int (*death_view_hook)(const menu_action *actions, int count) = NULL;
+
+/**
  * Handle character death
  */
 void death_screen(void)
@@ -389,6 +399,24 @@ void death_screen(void)
 	/* Flush all input and output */
 	event_signal(EVENT_INPUT_FLUSH);
 	event_signal(EVENT_MESSAGE_FLUSH);
+
+	if (death_view_hook) {
+		while (!play_again && !terms_disconnecting) {
+			int i = death_view_hook(death_actions,
+				(int)N_ELEMENTS(death_actions));
+
+			if (i < 0 || i >= (int)N_ELEMENTS(death_actions)
+					|| !death_actions[i].action) {
+				break;
+			}
+			if (death_actions[i].action == death_new_game) {
+				play_again = true;
+			} else {
+				death_actions[i].action(death_actions[i].name, i);
+			}
+		}
+		return;
+	}
 
 	/* Display and use the death menu */
 	death_menu = menu_new_action(death_actions,

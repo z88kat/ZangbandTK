@@ -917,6 +917,17 @@ static void cleanup_savefile_selection_strings(char **entries, int count)
 }
 
 /**
+ * A front end's own view of the savefile menu, or NULL for the menu below
+ * (ZangbandTK, T9).  It is given the menu's choices as they are gathered here:
+ * entries[i] is the line the menu would show and names[i] the savefile's name
+ * in the save directory, NULL for the new game, which is entry 0 when one is
+ * allowed.  It returns the entry chosen, or -1 to quit as Escape does here;
+ * what each answer then does stays in this file.
+ */
+int (*select_savefile_hook)(const char **entries, const char **names,
+	int count, int cursor, bool retry) = NULL;
+
+/**
  * Help play_game():  implement the savefile selection menu.
  *
  * \param retry flags that this is a repeated call because the savefile selected
@@ -1027,14 +1038,26 @@ static void select_savefile(bool retry, bool *new_game)
 	m->cursor = default_entry;
 	m->flags |= MN_DBL_TAP;
 
-	screen_save();
-	prt("Select the save to use (movement keys and enter or mouse) or quit",
-		0, 0);
-	prt("(escape or second mouse button).", 1, 0);
-	prt((retry) ? "The previously selected savefile was unusable." : "",
-		2, 0);
-	selection = menu_select(m, 0, false);
-	screen_load();
+	if (select_savefile_hook) {
+		int chosen = select_savefile_hook((const char **)entries,
+			(const char **)names, count, default_entry, retry);
+
+		if (chosen >= 0 && chosen < count) {
+			selection.type = EVT_SELECT;
+			m->cursor = chosen;
+		} else {
+			selection.type = EVT_ESCAPE;
+		}
+	} else {
+		screen_save();
+		prt("Select the save to use (movement keys and enter or mouse) or quit",
+			0, 0);
+		prt("(escape or second mouse button).", 1, 0);
+		prt((retry) ? "The previously selected savefile was unusable." : "",
+			2, 0);
+		selection = menu_select(m, 0, false);
+		screen_load();
+	}
 
 	if (selection.type == EVT_SELECT) {
 		if (m->cursor == 0 && allow_new_game) {

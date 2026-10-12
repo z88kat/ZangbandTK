@@ -892,17 +892,6 @@ proc second_pass {} {
 	} [list [expr {[llength [angband_gear inventory]] ? "" : "empty"}] \
 		"no item at row 999"]
 
-	# The spell book's view of the character: the books carried that can be
-	# read, and a refusal by name for a pack position that is not one.
-	check "the spell book lists books and refuses what is not one" {
-		set books [angband_book books]
-		set shapes {}
-		foreach row $books { lappend shapes [llength $row] }
-		catch {angband_book spells 999} e
-		list [expr {[lsort -unique $shapes] in {{} 3}}] \
-			[string is boolean -strict [angband_book chooses]] $e
-	} "1 1 {no book at inventory 999}"
-
 	# Not in a store, so the store is empty and its lists are refused by name;
 	# and no Store window, which opens only on walking into one.
 	check "outside a store there is no store" {
@@ -977,23 +966,29 @@ proc second_pass {} {
 		set taken
 	} 0
 
-	# Character creation (T8).  Nothing is asked until the splash is past.
+	# Character creation (T8).  Nothing is asked until the splash is past and
+	# a new character has been chosen, and until then there is none at all.
 	check "nothing is asked about a character before creation begins" {
 		catch {angband_birth answer back} e
 		list [angband_birth] [winfo exists .birth] $e
-	} "{} 0 {the game is not asking anything about the character}"
+	} "{} 0 {there is no character yet}"
 
 	birth_pass
 }
 
 # --- the third pass: making a character -------------------------------------
 
-# Past the splash and through the Birth window -- the first point at which
-# this session has a character the game is really playing.  The runner gives
-# the game a save directory of its own, so this is always a new character.
+# Past the splash, the Choose Game window and the Birth window -- the first
+# point at which this session has a character the game is really playing.  The
+# runner gives the game a save directory of its own, so this is always a new
+# character.
 proc birth_pass {} {
 	set ::birthseen {}
 	set ::birthstep ""
+	set ::chooses 0
+	bind . <<Angband_CHOOSEGAME>> {+
+		after 300 [list choose_pass [incr ::chooses]]
+	}
 	bind . <<Angband_BIRTHVIEW>> {+
 		after cancel $::birthstep
 		set ::birthstep [after 300 birth_pass_step]
@@ -1005,7 +1000,38 @@ proc birth_pass {} {
 		} "made"
 		finish
 	}]
-	angband_key 0 0 " "
+	if {[llength [angband_savefile]]} {
+		# Already choosing: the key that follows angband_push in the first
+		# pass is the one the splash took.
+		after 300 [list choose_pass [incr ::chooses]]
+	} else {
+		angband_key 0 0 " "
+	}
+}
+
+# The Choose Game window: at the start, with nothing in the save directory
+# but a new character to make, and again after New Game, where the character
+# just finished is among the dead and a new one is still what is offered.
+proc choose_pass {n} {
+	if {$n == 1} {
+		check "the game starts at the Choose Game window, offering a new character" {
+			list [angband_savefile] \
+				[lmap row [angband_savefile list] {lindex $row 3}] \
+				[.choose.f.btns.new cget -default] \
+				[.choose.f.btns.open instate disabled] \
+				[stock_widgets_only .choose]
+		} "{0 0} new active 1 {classic {}}"
+		choose_new
+		return
+	}
+
+	after cancel $::deathwatch
+	check "New Game goes back to the Choose Game window, the character dead" {
+		set row [lsearch -inline -index 1 [angband_savefile list] Bridge]
+		list [lindex $row 3] [lindex $row 9] \
+			[.choose.f.list.tv selection] [.choose.f.btns.new cget -default]
+	} "dead Retiring {} active"
+	finish
 }
 
 proc birth_pass_step {} {
@@ -1074,6 +1100,17 @@ proc birth_pass_done {} {
 			[expr {[lindex [angband_player hitpoints] 1] > 0}]
 	} "0 1 1"
 
+	# The spell book's view of the character: the books carried that can be
+	# read, and a refusal by name for a pack position that is not one.
+	check "the spell book lists books and refuses what is not one" {
+		set books [angband_book books]
+		set shapes {}
+		foreach row $books { lappend shapes [llength $row] }
+		catch {angband_book spells 999} e
+		list [expr {[lsort -unique $shapes] in {{} 3}}] \
+			[string is boolean -strict [angband_book chooses]] $e
+	} "1 1 {no book at inventory 999}"
+
 	# The options, now that the character exists: a birth option is the
 	# character's, which option_set() alone does not enforce, and each row
 	# says whether it can be changed so a window can grey it.
@@ -1122,7 +1159,70 @@ proc birth_pass_held {} {
 	check "a pushed command is carried out once there is a character" {
 		list [expr {[angband_player turn] > $::turn0}] $::pushed $::pusherr
 	} "1 0 {}"
-	finish
+	death_pass
+}
+
+# --- the fourth pass: the end of a character --------------------------------
+
+# Retired from the menu, as a player would: the death screen asks the Tomb
+# window, which shows the game's own tombstone with the game's menu beside it,
+# and New Game there goes back to the Choose Game window.
+proc death_pass {} {
+	bind . <<Angband_CHOOSE>> {+
+		if {![catch {angband_choice} state]} {
+			lassign $state open prompt kind
+			if {$open && $kind eq "check" && [string match "*retire*" $prompt]} {
+				after 300 { angband_choice pick 0; after 500 { angband_key 0 0 @ } }
+			}
+		}
+	}
+	bind . <<Angband_DEATHVIEW>> {+ after 500 death_pass_tomb }
+	set ::deathwatch [after 20000 {
+		check "the character retired to the Tomb window" {
+			list timed out: dead [angband_player is_dead] tomb [winfo exists .tomb]
+		} "retired"
+		finish
+	}]
+	set row [lsearch -inline -index 3 [angband_commands] "Retire*"]
+	angband_command [lindex $row 0] [lindex $row 2]
+	death_pass_more
+}
+
+# Past the -more- that retiring ends with.
+proc death_pass_more {} {
+	if {![catch {angband_player is_dead} dead] && $dead} {
+		angband_key 0 0 " "
+		return
+	}
+	after 200 death_pass_more
+}
+
+proc death_pass_tomb {} {
+	check "the death screen asks the Tomb window, with the game's menu" {
+		lassign [angband_death] how actions
+		list $how [join [lmap a $actions {lindex $a 0}] ""] \
+			[winfo exists .tomb] [stock_widgets_only .tomb]
+	} "retired imfvxhsnq 1 {classic {}}"
+
+	check "the tombstone is the one the game drew" {
+		set tomb [angband_death tomb]
+		list [expr {[lsearch -glob $tomb "*[angband_player name]*"] >= 0}] \
+			[expr {[lsearch -glob $tomb "*Retired on Level*"] >= 0}]
+	} "1 1"
+
+	# The game is waiting on the window and nothing else, so a dump is safe.
+	check "the character can be dumped from the death screen" {
+		set fd [file tempfile path]
+		close $fd
+		set r [list [catch {angband_dump write $path} e] $e \
+			[expr {[file size $path] > 1000}]]
+		file delete $path
+		set r
+	} "0 {} 1"
+
+	# New Game, confirmed as the window confirms it.
+	proc ::tk_messageBox {args} { return yes }
+	tomb_act n
 }
 
 proc finish {} {
