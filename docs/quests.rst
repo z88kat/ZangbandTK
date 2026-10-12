@@ -9,8 +9,9 @@ work you are offered, accept, carry about with you, and hand back.
 Where work comes from
 ---------------------
 
-From a building. Walk into an inn that is hiring and you will be offered a job
-before you are offered a bed.
+From a building. Walk into an inn and the innkeeper asks what you are after:
+work, or a bed for the night. Ask about work and you will be offered a job if
+there is one, paid for one you have finished, or asked after one you still owe.
 
 **Not in the village you start in, though.** The starting village is given one
 service and one only — a magetower, so that the travel network has a node you
@@ -28,7 +29,8 @@ and a new kind of terrain.
 The inn has it for a reason worth knowing. It is where people who have been
 somewhere else are sitting — and because a town that has fallen keeps no services
 at all, the work dries up exactly where you would expect it to, without any rule
-needing to say so. About half the towns in a world are hiring.
+needing to say so. Every inn is hiring; a village has no inn, and nor does a
+town that has fallen.
 
 What you may be asked
 ---------------------

@@ -2039,24 +2039,88 @@ static void service_enchant(void)
 				   EF_ENCHANT, z_info->enchant_cost, "1", chosen);
 }
 
+/**
+ * What a building that hires offers as you walk in: the work, and what the
+ * building is for (WLD-16d).
+ *
+ * The work used to be dealt with first on every visit, and the building's own
+ * business after it -- except that quest_giver_business() settles every visit
+ * one way or another, by paying, by asking after a job still owed or by making
+ * an offer, so the building's own business was never reached.  The inn is the
+ * building that hires, so nobody could take a bed, and nobody dreamed
+ * (PLR-41).  The original's buildings listed what they offered -- its inn's
+ * was E) Eat and R) Rest -- and so does this: one choice a visit, so that a
+ * player who wants a bed is not walked through a job offer every night first.
+ */
+enum { VISIT_NOTHING = 0, VISIT_WORK, VISIT_OWN };
+
+static int service_visit_choice(int service)
+{
+	struct menu *m;
+	char *labels;
+	int chosen;
+	const char *work = quest_carried(player, true)
+		? "Be paid for the work you have done"
+		: quest_carried(player, false) ? "Talk about the work you owe"
+		: "Ask about work";
+
+	m = menu_dynamic_new();
+	if (!m) return VISIT_NOTHING;
+
+	labels = menu_dynamic_labels(m);
+
+	menu_dynamic_add_label(m, work, 0, VISIT_WORK, labels);
+	if (service == WILD_SERVICE_INN)
+		menu_dynamic_add_label(m, format("%-28s %5d au", "A bed until morning",
+			(int) z_info->inn_cost), 0, VISIT_OWN, labels);
+	else
+		menu_dynamic_add_label(m, format("What the %s offers",
+			wild_service_name(service)), 0, VISIT_OWN, labels);
+	menu_dynamic_add_label(m, "Nothing today", 'q', VISIT_NOTHING, labels);
+
+	screen_save();
+	menu_dynamic_calc_location(m, 0, 0);
+	region_erase_bordered(&m->boundary);
+	prt(format("%s  You have %d au.", service == WILD_SERVICE_INN
+		? "The innkeeper looks up." : "Somebody looks up.",
+		(int) player->au), 0, 0);
+
+	chosen = menu_dynamic_select(m);
+
+	menu_dynamic_free(m);
+	string_free(labels);
+	screen_load();
+
+	return chosen;
+}
+
 /** Somebody walked into a service building. */
 void ui_enter_service(game_event_type type, game_event_data *data, void *user)
 {
 	int service = wild_service_at(cave, player->grid);
 
 	/*
-	 * Work first, if this building carries it (WLD-16d).  A property of the
+	 * Work, if this building carries it (WLD-16d).  A property of the
 	 * building rather than a building of its own, so this asks the town which
-	 * of its doors has work behind it rather than checking for a quest hut.
+	 * of its doors has work behind it rather than checking for a quest hut;
+	 * and offered beside the building's own business, not instead of it.
 	 */
 	if (service >= 0 && player->in_wild && wild) {
 		int town = wild_town_here(wild,
 								  loc(player->grid.x + player->wild_offset.x,
 									  player->grid.y + player->wild_offset.y));
 
-		if (wild_gives_quests(wild, town, service) &&
-			quest_giver_business(town))
-			return;
+		if (wild_gives_quests(wild, town, service)) {
+			switch (service_visit_choice(service)) {
+				case VISIT_WORK:
+					(void)quest_giver_business(town);
+					return;
+				case VISIT_OWN:
+					break;
+				default:
+					return;
+			}
+		}
 	}
 
 	switch (service) {

@@ -43,6 +43,10 @@
 #include "dun-type.h"
 #include "wild.h"
 #include "z-util.h"
+#include "game-input.h"
+#include "ui-map.h"
+#include "ui-menu.h"
+#include "ui-term.h"
 
 /**
  * Find somewhere near the player that will hold a monster.
@@ -6384,6 +6388,124 @@ static int test_a_character_at_sea_still_finds_ground(void *state) {
 }
 
 const char *suite_name = "game/wild";
+/*
+ * A terminal for the town's menus to draw on, which draws nowhere.  The unit
+ * tests have no front end, and a building's menu saves and restores the screen
+ * around itself.
+ */
+static errr quiet_text(int x, int y, int n, int a, const wchar_t *s) { return 0; }
+static errr quiet_wipe(int x, int y, int n) { return 0; }
+static errr quiet_curs(int x, int y) { return 0; }
+static errr quiet_xtra(int n, int v) { return 0; }
+
+/* What the inn offered as the character walked in. */
+static char inn_offered[4][80];
+static int inn_offered_count;
+
+/* Take the bed, and note what else was offered. */
+static int inn_take_the_bed(struct menu *m)
+{
+	int i, value, pick = -1;
+
+	inn_offered_count = 0;
+	for (i = 0; i < menu_dynamic_count(m); i++) {
+		const char *text = menu_dynamic_entry(m, i, &value, NULL, NULL);
+
+		if (inn_offered_count < 4)
+			my_strcpy(inn_offered[inn_offered_count++], text, 80);
+		if (prefix(text, "A bed until morning")) pick = value;
+	}
+	return pick;
+}
+
+static bool inn_say_yes(const char *prompt) { return true; }
+
+/**
+ * An inn that hires still sells a bed (WLD-16d, PLR-41).
+ *
+ * Work is a property a building carries, and the inn carries it.  It was dealt
+ * with on the way in, before the inn's own business -- and the work settled
+ * every visit one way or another, by paying, by asking after a job still owed
+ * or by making an offer, so the bed was never reached.  Nobody could sleep at
+ * an inn, so nobody dreamed, and the manual described both.  Now the inn says
+ * what it offers and the character chooses; this walks one into an inn an
+ * hour before dawn, takes the bed, and wakes in daylight with the bed paid for.
+ *
+ * Last in the list, because it moves the character to another town.
+ */
+static int test_an_inn_that_hires_still_sells_a_bed(void *state) {
+	int size = z_info->wild_block_size;
+	int (*was_menu)(struct menu *) = menu_dynamic_select_hook;
+	bool (*was_check)(const char *) = get_check_hook;
+	int32_t was_turn = turn, gold = 1000;
+	term quiet, *was_term = Term;
+	struct loc g, inn = loc(-1, -1);
+	int i, hiring = -1;
+
+	for (i = 0; i < wild_town_count(wild) && hiring < 0; i++)
+		if (wild_gives_quests(wild, i, WILD_SERVICE_INN)) hiring = i;
+
+	/*
+	 * Every town with an inn hires, and a world with no town at all beyond
+	 * the starting village is legal and rare; that world has nothing to test.
+	 */
+	if (hiring < 0) ok;
+
+	/* Go there, as the magetower takes you. */
+	player->wild_grid = loc(wild->towns[hiring].block.x * size + size / 2,
+							wild->towns[hiring].block.y * size + size / 2);
+	player->upkeep->generate_level = true;
+	player->upkeep->scroll_world = true;
+	prepare_next_level(player);
+	player->upkeep->generate_level = false;
+	player->upkeep->scroll_world = false;
+
+	/* An inn of that town, and the character at its door. */
+	for (g.y = 0; g.y < cave->height && inn.x < 0; g.y++)
+		for (g.x = 0; g.x < cave->width && inn.x < 0; g.x++)
+			if (wild_service_at(cave, g) == WILD_SERVICE_INN &&
+				wild_town_here(wild, loc(g.x + player->wild_offset.x,
+										 g.y + player->wild_offset.y)) == hiring)
+				inn = g;
+	require(inn.x >= 0);
+	monster_swap(player->grid, inn);
+
+	/* Late in the night, and gold to pay with. */
+	turn = 10L * z_info->day_length * 3 - 100;
+	require(!is_daytime());
+	player->au = gold;
+
+	term_init(&quiet, 80, 24, 32);
+	quiet.text_hook = quiet_text;
+	quiet.wipe_hook = quiet_wipe;
+	quiet.curs_hook = quiet_curs;
+	quiet.xtra_hook = quiet_xtra;
+	Term_activate(&quiet);
+	menu_dynamic_select_hook = inn_take_the_bed;
+	get_check_hook = inn_say_yes;
+
+	ui_enter_service(EVENT_USE_SERVICE, NULL, NULL);
+
+	menu_dynamic_select_hook = was_menu;
+	get_check_hook = was_check;
+	Term_activate(was_term);
+	term_nuke(&quiet);
+
+	/* It offered the work and the bed both... */
+	eq(inn_offered_count, 3);
+	require(strstr(inn_offered[0], "work") != NULL);
+	require(prefix(inn_offered[1], "A bed until morning"));
+
+	/* ...and the bed was bought and slept in. */
+	eq(player->au, gold - z_info->inn_cost);
+	require(is_daytime());
+	require(!player->is_dead);
+
+	turn = was_turn;
+
+	ok;
+}
+
 struct test tests[] = {
 	/*
 	 * First on purpose.  This is the only test that loads a savefile holding a
@@ -6497,6 +6619,7 @@ struct test tests[] = {
 	{ "a-shark-is-not-a-tree", test_a_shark_is_not_a_tree },
 	{ "the-sea-has-fish-in-it", test_the_sea_has_fish_in_it },
 	{ "a-patron-waits-until-the-level-is-settled", test_a_patron_waits_until_the_level_is_settled },
+	{ "an-inn-that-hires-still-sells-a-bed", test_an_inn_that_hires_still_sells_a_bed },
 
 	{ NULL, NULL }
 };

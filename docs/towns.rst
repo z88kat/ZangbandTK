@@ -256,9 +256,9 @@ colour of its own. All of them charge.
 Work
 ----
 
-Some buildings hand out work. Walk into an inn that is hiring and you are
-offered a job before you are offered a bed: kill so many of a creature, come
-back, and be paid.
+Some buildings hand out work. Walk into an inn and the innkeeper asks what you
+are after: work, or a bed for the night. Ask about work and you may be offered a
+job — kill so many of a creature, come back, and be paid.
 
 Quest-giving is a **property a building carries**, not a building of its own.
 Nothing in the game has a "quest giver's hut"; the inn simply has the property
@@ -269,7 +269,8 @@ than a new building.
 The inn has it for a reason worth knowing: it is where people who have been
 somewhere else are sitting. And since a town that has fallen keeps no services
 at all, the work dries up exactly where you would expect it to, without any
-rule needing to say so. About half the towns in a world are hiring.
+rule needing to say so. Every inn is hiring; a village has no inn, and nor
+does a town that has fallen.
 
 You can carry eight jobs at once, and a ninth is refused. Any building that
 hires will tell you how far along you are, or pay you when you are done — twenty

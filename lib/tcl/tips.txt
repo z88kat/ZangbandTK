@@ -87,6 +87,8 @@ The hit point warning is in the Options window, on the Interface page. Fall that
 
 Inns hire adventurers, and 'J' lists the jobs you have taken on. You can hold eight at a time, and any inn will pay for finished work. (Roguelike keys: '%'.)
 
+An inn's bed lasts until morning and costs 25 gold, and some nights you dream. A true dream puts a place you have not found on the world map, and the better governed the town, the likelier one is.
+
 Vampires get a tenth of the nourishment from food. Their racial power drinks blood instead, and daylight burns them on the surface.
 
 In the Spell Book window, click a column's heading to sort by it, and click it again to reverse the order. Double-click a spell to cast it, or to study it if you have not learned it yet.
@@ -169,7 +171,7 @@ A monster wreathed in fire will not follow you into water.
 
 Spectres walk through rock, losing hit points for every turn spent inside it, though the rock itself can never kill them.
 
-If a job cannot be done, walk into any inn that is hiring to give it up.
+If a job cannot be done, ask about work at any inn, and you can give it up there.
 
 Kill one of the Amberites and they may curse you with their dying breath: half the time, your weapon and armour are blood-cursed.
 
