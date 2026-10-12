@@ -877,8 +877,13 @@ static void birth_points_notice(game_event_type type, game_event_data *data,
  * for a second nudge.  A key sent while a flush is running is kept back and
  * sent at the next wait instead.  The player's own keys are not -- discarding
  * those is what a flush is for.
+ *
+ * Counted, not set: flushes nest.  A menu action handled inside one prompts,
+ * and its prompts flush in turn, and a flag cleared by the inner flush let
+ * the nudge after the action through to a queue the outer one then emptied --
+ * the Retire chosen from the menu, asked, confirmed and then never done.
  */
-static bool flushing;
+static int flushing;
 static keycode_t keys_owed[8];
 static int keys_owed_n;
 
@@ -928,10 +933,10 @@ static errr Term_xtra_tcl(int n, int v)
 			return 0;
 
 		case TERM_XTRA_FLUSH:
-			flushing = true;
+			flushing++;
 			while (Tcl_DoOneEvent(TCL_ALL_EVENTS | TCL_DONT_WAIT))
 				;
-			flushing = false;
+			flushing--;
 			return 0;
 
 		case TERM_XTRA_CLEAR:
@@ -6615,13 +6620,22 @@ static int objcmd_command(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	if (c->hook) {
 		/*
 		 * A user-interface action runs here and now, inside the event handler
-		 * -- which is where the game would have run it too -- so there is
-		 * nothing to wake up.  It can prompt, and its prompt pumps Tk, so the
-		 * door is held shut for as long as it runs.
+		 * -- which is where the game would have run it too.  It can prompt,
+		 * and its prompt pumps Tk, so the door is held shut for as long as it
+		 * runs.
+		 *
+		 * And then the game is woken, as for a push.  This used to say there
+		 * was nothing to wake, but most of these actions end by queueing the
+		 * command they asked about -- Retire queues CMD_RETIRE once the '@' is
+		 * typed, Rest queues CMD_REST with its count -- and the game, back in
+		 * the wait the handler interrupted, left it on the queue until the
+		 * player pressed another key.  When nothing was queued the nudge is no
+		 * command at all.
 		 */
 		command_inside = true;
 		c->hook();
 		command_inside = false;
+		command_nudge();
 	} else if (c->cmd) {
 		cmdq_push_repeat(c->cmd, count);
 		command_nudge();
@@ -7118,6 +7132,37 @@ static int objcmd_resize(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		Term_activate(old);
 	}
 
+	/*
+	 * And a subwindow drawn again at its new size.  Nothing else asks for
+	 * that: Term_resize() leaves its EVT_RESIZE in the resized term's own
+	 * key queue, which for the map is the game's -- that is how the map is
+	 * redrawn -- and for a subwindow is read by nobody.  So a pane dragged
+	 * to a new size stayed blank until what it shows next changed; reported
+	 * from play with the minimap.  Asked for through the game's own redraw
+	 * flags, for what this pane shows and not the map, which would draw
+	 * over a store's screen; and then the end of an update, which is when
+	 * the minimap and the overhead view draw themselves.
+	 */
+	if (which > 0 && player && player->upkeep && character_generated) {
+		uint32_t flags = 0;
+		int j;
+
+		for (j = 0; j < ANGBAND_TERM_MAX; j++)
+			if (angband_term[j] == &t->t) flags = window_flag[j];
+
+		/* The messages pane is drawn on EVENT_STATE, not EVENT_MESSAGE. */
+		if (flags & PW_MESSAGE) player->upkeep->redraw |= PR_STATE;
+		if (flags & PW_MONSTER) player->upkeep->redraw |= PR_MONSTER;
+		if (flags & PW_OBJECT) player->upkeep->redraw |= PR_OBJECT;
+		if (flags & PW_MONLIST) player->upkeep->redraw |= PR_MONLIST;
+		if (flags & PW_ITEMLIST) player->upkeep->redraw |= PR_ITEMLIST;
+		if (flags & (PW_INVEN | PW_EQUIP))
+			player->upkeep->redraw |= PR_INVEN | PR_EQUIP;
+		redraw_stuff(player);
+		if ((flags & (PW_MAP | PW_OVERHEAD)) && character_dungeon)
+			event_signal(EVENT_END);
+	}
+
 	return TCL_OK;
 }
 
@@ -7341,9 +7386,11 @@ static bool terms_init(void)
  * once; prompts and menus take that as Escape, so the game backs out of
  * whatever it was asking -- a store, an item prompt, a -more- -- to its main
  * loop, which saves the character and ends the game, and close_game() leaves
- * out its "Press Return" for a display that is going away.  With no character
- * in play -- the splash, character creation, a death already recorded --
- * there is nothing to save, and it quits as before.
+ * out its "Press Return" for a display that is going away.  A character who
+ * has just died is the same: the death screen takes the disconnect as leaving
+ * it, and the game goes on to record the death -- the savefile the next start
+ * offers its quick start from.  Before there is a character -- the splash,
+ * character creation -- there is nothing to save, and it quits as before.
  *
  * Note the signature: this is Tcl_ObjCmdProc2, which takes Tcl_Size.  Tcl 9
  * keeps the older int-based Tcl_ObjCmdProc and Tcl_CreateObjCommand for
@@ -7358,8 +7405,7 @@ static int objcmd_quit(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	(void)objc;
 	(void)objv;
 
-	if (!in_play() || !character_generated || player->is_dead
-			|| !player->upkeep || !player->upkeep->playing) {
+	if (!player || !player->upkeep || !character_generated) {
 		quit(NULL);
 		return TCL_OK;
 	}

@@ -46,7 +46,8 @@ proc progress_build {} {
         grid configure $f.b$meter -padx 6
     }
     grid columnconfigure $f 2 -weight 1
-    grid rowconfigure $f {0 1 2 3} -weight 1
+    # The rows stay together at the top; a taller strip is room below them.
+    grid rowconfigure $f 4 -weight 1
 
     # The experience number is the clickable one, as it was in the original.
     foreach w [list $f.lexp $f.vexp $f.bexp] {
