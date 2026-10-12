@@ -20,6 +20,7 @@
 
 #ifdef USE_TCL
 
+#include "buildid.h"
 #include "cmd-core.h"
 #include "game-event.h"
 #include "cmds.h"
@@ -72,6 +73,11 @@
 
 #include <tcl.h>
 #include <tk.h>
+
+#ifdef __APPLE__
+/* In tcl/menukeys.c, which has to reach past Tk to AppKit. */
+extern void tcl_menu_keys_literal(void);
+#endif
 
 /*
  * This is ZangbandTK/Tk -- the front end the whole of Phase 3 is about.  It is
@@ -1061,11 +1067,34 @@ static int objcmd_key(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			if (ch[0]) {
 				k = (unsigned char)ch[0];
 				mods &= ~KC_MOD_SHIFT;
+			} else if ((mods & KC_MOD_CONTROL) && keysym > 0x20
+					&& keysym < 0x7f) {
+				/*
+				 * Control and a key that has a character.  On the Mac,
+				 * Tk reports no character for it at all -- %A is empty
+				 * for Control-F -- so it was taken for a bare modifier
+				 * and dropped, and none of the game's ^ commands could
+				 * be typed.  The keysym is the key's own character.
+				 */
+				k = (keycode_t)keysym;
 			} else {
 				/* A bare modifier, or a key we do not map.  Ignore it. */
 				return TCL_OK;
 			}
 			break;
+	}
+
+	/*
+	 * Control as ui-event.h says a front end sends it: on a letter it is part
+	 * of the code, KTRL('F') with no KC_MOD_CONTROL, which is what the game's
+	 * command table and keymaps look for.  X11's Tk has already made the
+	 * control character, and only the modifier has to go.
+	 */
+	if ((mods & KC_MOD_CONTROL) && ENCODE_KTRL(k)) {
+		k = KTRL(k);
+		mods &= ~KC_MOD_CONTROL;
+	} else if (!MODS_INCLUDE_CONTROL(k)) {
+		mods &= ~KC_MOD_CONTROL;
 	}
 
 	Term_keypress(k, mods);
@@ -7422,7 +7451,7 @@ static int objcmd_commands(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			struct cmd_info *c = &group->list[i];
 			Tcl_Obj *row = Tcl_NewListObj(0, NULL);
 			unsigned char key;
-			char keybuf[3];
+			char keybuf[8];
 
 			if (!c->desc) continue;
 
@@ -7455,7 +7484,21 @@ static int objcmd_commands(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			 */
 			key = c->cmd ? cmd_lookup_key(c->cmd, mode) : 0;
 			if (!key) key = (unsigned char)c->key[mode];
-			if (key && key < 0x20) {
+			/*
+			 * The keys above ASCII are the game's own codes for
+			 * keys with no character, KC_TAB being the roguelike
+			 * keyset's Fire at nearest target.  Passed through as
+			 * a byte they were not even valid UTF-8, so Tab and
+			 * Enter, which a keymap can also bind, are named the
+			 * way Tk names them, and any other is left out.
+			 */
+			if (key == KC_TAB) {
+				my_strcpy(keybuf, "Tab", sizeof(keybuf));
+			} else if (key == KC_ENTER) {
+				my_strcpy(keybuf, "Return", sizeof(keybuf));
+			} else if (key >= 0x7f) {
+				key = 0;
+			} else if (key && key < 0x20) {
 				keybuf[0] = '^';
 				keybuf[1] = (char)UN_KTRL_CAP(key);
 				keybuf[2] = 0;
@@ -7691,6 +7734,23 @@ static int objcmd_rename(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	my_strcpy(player->full_name, name, sizeof(player->full_name));
 	Tcl_SetObjResult(ip, Tcl_NewStringObj(player->full_name, -1));
 
+	return TCL_OK;
+}
+
+/**
+ * angband_version -- the game's name and version, as its own Version info
+ * command gives them: for the About window.
+ */
+static int objcmd_version(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	(void)dummy;
+
+	if (objc != 1) {
+		Tcl_WrongNumArgs(ip, 1, objv, "");
+		return TCL_ERROR;
+	}
+	Tcl_SetObjResult(ip, Tcl_NewStringObj(buildid, -1));
 	return TCL_OK;
 }
 
@@ -8625,6 +8685,15 @@ errr init_tcl(int argc, char **argv)
 		Tcl_DecrRefCount(startup);
 	}
 
+#ifdef __APPLE__
+	/*
+	 * The menus' keys are the characters the game reads, not shortcuts for
+	 * AppKit to move about the keyboard; it has to be said before Tk_Init,
+	 * which is where the application finishes launching and is asked.
+	 */
+	tcl_menu_keys_literal();
+#endif
+
 	if (Tk_Init(interp) != TCL_OK) {
 		plog_fmt("Tcl/Tk: Tk_Init failed: %s", Tcl_GetStringResult(interp));
 		return 1;
@@ -8672,6 +8741,8 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_rename", objcmd_rename, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_dump", objcmd_dump, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_path", objcmd_path, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_version", objcmd_version, NULL,
+			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_choice", objcmd_choice, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_book", objcmd_book, NULL, NULL);

@@ -161,30 +161,26 @@ set angband(terms) [list \
     [list $recall.c   recall    termfont] \
     [list $overhead.c minimap   minimapfont]]
 
-# The menu bar, which for now carries exactly one menu: the tile sets.
-#
-# This is not the menu bar T7 builds.  That one is generated from the game's
-# own command table so that it stays in step with the keyboard; this is front
-# end configuration, which the game has no commands for, and the two will sit
-# side by side rather than one replacing the other.
-#
-# The list comes from the game -- whatever lib/tiles/list.txt declared and the
-# files for it are present -- so a set added there appears here without anyone
-# editing this file.  Choosing one goes through reset_visuals and a redraw, so
-# what you see after choosing is what you get: the preview is the real thing,
-# which is the house rule (OBS-29) and cheaper than a mock-up besides.
+# The menu bar.  The game's menus -- File, Inventory, Action, Other -- are
+# commands.tcl's, built from the game's command table once there is one; these
+# are the front end's own, Window and Help, which come after them.
 menu .menubar
 . configure -menu .menubar
 
-menu .menubar.tiles -tearoff 0
-.menubar add cascade -label "Tiles" -menu .menubar.tiles
-
+# The tile sets, which Other > Preferences > Tiles lists.
+#
+# The list comes from the game -- whatever lib/tiles/list.txt declared and the
+# files for it are present -- so a set added there appears without anyone
+# editing this file.  Choosing one goes through reset_visuals and a redraw, so
+# what you see after choosing is what you get: the preview is the real thing,
+# which is the house rule (OBS-29) and cheaper than a mock-up besides.
 set angband(tileset) [angband_tileset]
-foreach pair [angband_tilesets] {
-    lassign $pair id name
-    .menubar.tiles add radiobutton -label $name \
-        -variable angband(tileset) -value $id \
-        -command [list angband_choose_tileset $id]
+proc angband_tiles_menu {m} {
+    foreach pair [angband_tilesets] {
+        lassign $pair id name
+        $m add radiobutton -label $name -variable angband(tileset) -value $id \
+            -command [list angband_choose_tileset $id]
+    }
 }
 
 # The Window menu: the things that are not panes.
@@ -216,6 +212,39 @@ menu .menubar.views -tearoff 0
 menu .menubar.about -tearoff 0
 .menubar add cascade -label "Help" -menu .menubar.about
 .menubar.about add command -label "Tips…" -command tips_window
+.menubar.about add separator
+.menubar.about add command -label "About ZangbandTK…" -command about_window
+
+# About, in the Help menu and in the application menu -- which on the Mac
+# calls tkAboutDialog when there is one, and otherwise shows Tk's own.
+proc about_window {} {
+    if {[winfo exists .about]} {
+        raise .about
+        return
+    }
+    toplevel .about
+    wm title .about "About ZangbandTK"
+    set w .about.f
+    ttk::frame $w -padding 16
+    pack $w -fill both -expand 1
+    ttk::label $w.name -text "ZangbandTK" -font {Times 24 bold}
+    ttk::label $w.version -text [angband_version]
+    ttk::label $w.about -wraplength 380 -justify center -text "Zangband's\
+        world on the Angband 4.2 engine, played through a Tk front end after\
+        the original ZangbandTk."
+    ttk::label $w.licence -wraplength 380 -justify center -text "Under the\
+        Angband licence: free to copy and share for educational, research and\
+        not-for-profit purposes.  Built on Angband 4.2 and on Zangband."
+    ttk::button $w.ok -text OK -width 10 -default active \
+        -command {destroy .about}
+    pack $w.name $w.version -pady 2
+    pack $w.about $w.licence -pady {10 0}
+    pack $w.ok -pady {16 0}
+    bind .about <Return> {destroy .about}
+    bind .about <Escape> {destroy .about}
+    focus $w.ok
+}
+proc tkAboutDialog {} { about_window }
 
 # The debug pair first, before the windows, for the reason T3's exit
 # criterion puts them first: the debug loop has to exist before the UI does.

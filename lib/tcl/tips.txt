@@ -15,7 +15,7 @@ These tips open each time the game starts, carrying on from the last one you saw
 
 When the game asks you to choose an item, a spell or a yes or no, the Choice pane in the bottom right lists the answers. Click one to choose it. The keys still work as they always did.
 
-Press Return for a menu of every command. The menu bar has the same commands, with each one's key in brackets, and the ones you cannot use just now are greyed out.
+Press Return for a menu of every command. The menu bar has the same commands, with each one's key on the right, and the ones you cannot use just now are greyed out.
 
 Click the EXP row of the Progress strip, under the map overview, to switch between your total experience and what the next level still needs.
 
@@ -107,7 +107,7 @@ Only great cities have a Chaos Tower, where 2,500 gold removes the one mutation 
 
 Mages choose two of the seven realms of magic. Warrior-Mages study Arcane and one other, Priests Life or Death and one other, and High-Mages a single realm.
 
-The Tiles menu changes the tile set at once: the map redraws with the new set while you watch. The Options window's Display page offers the same choice.
+Other ▸ Preferences ▸ Tiles changes the tile set at once: the map redraws with the new set while you watch. The Options window's Display page offers the same choice.
 
 Carry no more than half your weight limit and you can wade through deep water; heavier, and you slowly drown. Feather Falling keeps you afloat.
 

@@ -69,6 +69,17 @@ macro(configure_tcl_frontend _NAME_TARGET)
         "${TK_LIBRARY}"
     )
 
+    # The menus' keys are kept from being translated for the keyboard layout
+    # through the Objective-C runtime, from C, in a file of its own: the
+    # runtime's headers and the game's cannot be included together.  Tk links
+    # libobjc itself, but a two-level namespace means the executable has to
+    # name it too.
+    if(APPLE)
+        target_sources(${_NAME_TARGET} PRIVATE
+            "${CMAKE_SOURCE_DIR}/src/tcl/menukeys.c")
+        target_link_libraries(${_NAME_TARGET} PRIVATE objc)
+    endif()
+
     target_compile_definitions(${_NAME_TARGET} PRIVATE
         USE_TCL
         # Where Tcl's and Tk's own script libraries live.  A dev build runs from

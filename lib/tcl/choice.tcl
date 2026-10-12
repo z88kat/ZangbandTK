@@ -233,31 +233,37 @@ proc choice_click {x y X Y} {
 
 # An item's menu: its name, then what can be done with it.  The entries and
 # which are greyed are the game's -- angband_choice actions asks the same
-# questions the game's own item menu asks -- and each carries its key in
-# brackets, as the menu bar's do, so the menu teaches the keyboard rather than
-# replacing it.
+# questions the game's own item menu asks -- and each carries its key in the
+# menu's right-hand column, as the menu bar's do, so the menu teaches the
+# keyboard rather than replacing it.
 proc choice_menu {i X Y} {
+    set m [choice_menu_build $i]
+    if {$m ne ""} { tk_popup $m $X $Y }
+}
+
+# Built apart from posting it.  On the Mac tk_popup does not return until the
+# menu is closed, so a test cannot post it -- and it was by not being tested
+# that this menu went missing, still calling the procs that drew the menu
+# bar's keys in brackets after they were gone.
+proc choice_menu_build {i} {
     global choicepane
 
-    if {$choicepane(open)} return
+    if {$choicepane(open)} { return "" }
     lassign [lindex $choicepane(rows) $i] n view label name
-    if {[catch {angband_choice actions $n} actions]} return
+    if {[catch {angband_choice actions $n} actions]} { return "" }
 
     set m .pw.bottom.choice.menu
     destroy $m
     menu $m -tearoff 0
     $m add command -label [string toupper $name 0 0] -state disabled
     $m add separator
-    set texts {}
-    foreach action $actions { lappend texts [lindex $action 1] }
-    set column [commands_pad $texts]
     foreach action $actions {
         lassign $action id text key valid
-        $m add command -label [commands_label $text $key $column] \
+        $m add command -label $text -accelerator [commands_accel $key] \
             -state [expr {$valid ? "normal" : "disabled"}] \
             -command [list choice_act $n $id $name]
     }
-    tk_popup $m $X $Y
+    return $m
 }
 
 proc choice_act {n id name} {

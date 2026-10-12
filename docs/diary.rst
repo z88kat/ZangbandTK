@@ -31,6 +31,51 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+12 October 2026 — a menu bar somebody laid out
+==============================================
+
+The menus were the game's own command groups, generated straight from its
+command table: Items, Action commands, Manage items, Information, Utility, and a
+group the game calls Hidden, shown as Other. Generating them that way meant
+nothing could be missed and nothing could drift, which is why it was done. It
+also meant that every entry was the game's full description of the command,
+"Take off/unwield an item [t]", in menus arranged the way a programmer filed
+them rather than the way a player looks for them.
+
+Steven laid out a replacement on the original's lines: File, Inventory with Magic
+and Use under it, Action with Alter, Looking, Movement and Resting, Other with
+Preferences. Short names: Drink Potion, Take Off, Fire at Nearest. The game
+still supplies everything except the arrangement. Each entry names its command,
+and the key, the greying and what happens when you choose it still come from the
+game, so the roguelike keys show up as they should.
+
+What the generated menus had for free, the laid-out ones have to earn. A test
+now fails if any of the game's seventy-five commands is in no menu at all.
+Writing the layout found one that the plan had left out, the Borg, which is in
+this build. Writing it also turned up one name worth arguing over. The game's
+`Q` is "Retire character and quit", and the original's menu had a plain "Quit".
+In this game the command behind it ends the character for good, so it is called
+Retire.
+
+The keys moved as well. They had been in brackets at the end of each label,
+padded with spaces to look like a column, because the Mac's own shortcut column
+had shown Throw's ``v`` as V, which is Version info. The way out was to use the
+Mac's own convention. On a Mac a capital shown on its own means the plain key,
+so ``V`` is asked for as Shift-V, and the menu shows ⇧V like any other Mac
+menu. The German keyboard was the last surprise. Since macOS 12, a shortcut is
+moved to wherever its character sits on the layout in use, so ``{`` came out as
+Ö and ``?`` as ß. Tk never switches that off, so the game now does, for the
+whole application, as it starts.
+
+As soon as the menu said ⌃F, Steven tried it, and nothing happened. It never
+had worked. On the Mac, Tk reports Control and a letter with no character at
+all. The front end took that for a lone Control key and threw it away, so none
+of the game's ``^`` commands could be typed: not Feeling, not Save, not Message
+History. Nobody noticed while the keys sat in brackets, and it took a menu that
+looked like a Mac's to get them pressed. They work now, and a bridge check
+presses ^A the way the Mac sends it.
+
+
 12 October 2026 — the memorial
 ==============================
 

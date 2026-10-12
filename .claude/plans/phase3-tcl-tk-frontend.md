@@ -1520,7 +1520,8 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 >
 > - **Availability is a `-postcommand`**, asked the moment a menu is posted rather than
 >   tracked through events. Always right, and free the rest of the time.
-> - **The key goes in the label, never in `-accelerator`.** Reported from play: "Throw an
+> - **The key goes in the label, never in `-accelerator`.** _Reversed 12 October 2026 — see
+>   the menu bar note in §5: `Shift-V` is drawn as ⇧V._ Reported from play: "Throw an
 >   item" was advertised as **V**, and V is Version info. The accessor was right — it says
 >   `v` — but Tk turns an accelerator into an NSMenuItem `keyEquivalent`, and AppKit renders
 >   a lowercase one as the capital letter, because on a Mac a capital shown without ⇧ _means_
@@ -1906,6 +1907,42 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 > Not testable end to end: a scored death and a winner both need a game played to that
 > point. The bridge test checks the pieces — the live entry, a record kept and found — and
 > the crown window was checked with the crown screen as `display_winner()` lays it out.
+
+> **The menu bar, laid out as the original's, 12 October 2026.** T7 built the menus from the
+> game's own command groups — Items, Action commands, Manage items, Information, Utility, and
+> "Hidden" shown as Other — one entry a command under the game's long descriptions. Complete,
+> and hard to read. The project owner's layout ([menu-structure.md](menu-structure.md)) is the
+> original ZangbandTk's: **File**, **Inventory** (Magic and Use under it), **Action** (Alter,
+> Looking, Movement, Resting), **Other** (Preferences, with the tile sets moved under it), then
+> Window and **Help**, which gains the game's Help and an About window. `commands(layout)` in
+> [lib/tcl/commands.tcl](../../lib/tcl/commands.tcl) names each command by its description
+> in `cmds_all[]`; its key, its greying and its dispatch are still the game's, so the
+> roguelike keyset shows its own keys. A bridge check fails if any of the game's commands has
+> no place, which is what keeps a hand-made layout honest. `Q` is labelled **Retire**: it ends
+> the character, and "Quit" beside "Quit with Save" would invite losing one. Preferences ▸
+> Options opens the Tk Options window, as the original's did, standing in for the game's
+> options screen in that count; `=` still opens the screen.
+>
+> The keys moved into the menus' own right-hand column, as `-accelerator`, reversing T7's
+> "the key goes in the label" (above). AppKit draws a key equivalent as a key, so `v` showed
+> as V; asking for an uppercase key as `Shift-V` makes it draw ⇧V, and `^S` as `Control-s`
+> draws ⌃S, which is the Mac's own convention. The fear that a modifier-less key equivalent
+> is a live shortcut was checked with real keystrokes: Tk runs no menu command from one, and
+> each key reached the game once. What was not foreseen is that since macOS 12 AppKit moves a
+> key equivalent to where its character sits on the current layout, which on a German one
+> showed `{` as Ö and `?` as ß. AppKit asks the application's delegate once, as it finishes
+> launching, whether to do this at all; Tk is its own delegate and does not answer, so
+> [src/tcl/menukeys.c](../../src/tcl/menukeys.c) gives Tk's class the answer before `Tk_Init`
+> launches it, through the Objective-C runtime from C. Once for the whole application: a walk
+> of the menu bar's items, tried first, could not reach the Choice pane's item menu, which
+> pops up. The file is separate because the runtime's `object_copy()` and the game's cannot
+> share a translation unit.
+>
+> Showing ⌃F got it pressed, and it did nothing: no Control-letter key had ever reached the
+> game. Tk on the Mac reports one with an empty `%A`, and `angband_key` dropped every key
+> without a character as a bare modifier. It now takes the keysym when Control is held and
+> encodes it as [ui-event.h](../../src/ui-event.h) asks — `KTRL('F')`, no `KC_MOD_CONTROL` —
+> which also drops the modifier X11's Tk left on a control character it had already made.
 
 ---
 

@@ -133,12 +133,51 @@ check "each row's group index names its group" {
 check "building the menus twice changes nothing" {
 	commands_build
 	set first [.menubar index end]
-	set rows [[commands_menu_path Items] index end]
+	set rows [[commands_menu_path Inventory] index end]
+	set help [.menubar.about index end]
 	commands_build
 	commands_build
 	list [expr {[.menubar index end] == $first}] \
-		[expr {[[commands_menu_path Items] index end] == $rows}]
-} "1 1"
+		[expr {[[commands_menu_path Inventory] index end] == $rows}] \
+		[expr {[.menubar.about index end] == $help}]
+} "1 1 1"
+
+# The menus are the original's layout (menu-structure.md), and every one of
+# the game's commands is somewhere in them -- a command added to the game and
+# given no place fails here.  The layout may name one the game lacks only if
+# it is the Borg's, which a build can leave out.
+check "the menu bar is the original's, and every command has a place" {
+	commands_build
+	set bar {}
+	for {set i 0} {$i <= [.menubar index end]} {incr i} {
+		if {[.menubar type $i] eq "cascade"} {
+			lappend bar [.menubar entrycget $i -label]
+		}
+	}
+	set placed $commands(instead)
+	foreach {name entries} [array get commands entries,*] {
+		foreach e $entries { lappend placed [lindex $e 1] }
+	}
+	set missing {}
+	foreach row [angband_commands] {
+		lassign $row gidx group idx label key enabled level
+		if {$level == 0 && $label ni $placed} { lappend missing $label }
+	}
+	set extra [lsearch -all -inline -not -exact $commands(absent) "Borg commands"]
+	list $bar $missing $extra
+} "{File Inventory Action Other Window Help} {} {}"
+
+check "the entries carry their own short names and the game's keys" {
+	set m [commands_menu_path Inventory]
+	set magic [$m entrycget [$m index Magic] -menu]
+	set o [commands_menu_path Other]
+	set prefs [$o entrycget [$o index Preferences] -menu]
+	list [$m entrycget 0 -label] [$m entrycget 0 -accelerator] \
+		[$magic entrycget 2 -label] [$magic entrycget 2 -accelerator] \
+		[$prefs entrycget 0 -label] [$prefs entrycget 0 -command] \
+		[$prefs entrycget 0 -accelerator] \
+		[expr {"Interact with options" in $commands(instead)}]
+} "Equipment e {Drink Potion} q Options options_window {} 1"
 
 # The Debug menu follows player->wizard, which is what ^W toggles and what the
 # sidebar shows -- not NOSCORE_DEBUG, which only ^A sets.  Keying it off the
@@ -168,22 +207,16 @@ check "the debug menu follows the wizard flag" {
 	list $on $off
 } "1 1"
 
-check "the hidden group is shown, under a readable name" {
-	list [commands_group_label Hidden] [commands_group_label Items]
-} "Other Items"
-
-# The key goes in the label, never in -accelerator: AppKit renders a lowercase
-# key equivalent as the capital, so "Throw an item", which answers to v, was
-# advertised as V -- and V is Version info.
+# AppKit draws a key equivalent as a key, so v is shown as V -- and V is
+# Version info, not Throw.  On the Mac an uppercase key has to be asked for as
+# Shift-V, which is drawn as ⇧V, and ^S as Control-s; anywhere else the
+# accelerator is drawn as given, and the game's own spelling is the one to give.
 check "a command's key is shown exactly as it must be typed" {
-	# Padded to a column, so compare what matters: the key, in its own case,
-	# at the end, and nothing at all when there is no key.
-	# Compared, not globbed: string match reads [v] as a character class.
-	set a [commands_label "Throw an item" v 400]
-	set b [commands_label "Version info" V 400]
-	list [string range $a end-2 end] [string range $b end-2 end] \
-		[commands_label "Look around" "" 400]
-} {{[v]} {[V]} {Look around}}
+	set got {}
+	foreach k {v V ^S | Tab ""} { lappend got [commands_accel $k] }
+	set got
+} [expr {[tk windowingsystem] eq "aqua"
+	? {v Shift-V Control-s | Tab {}} : {v V ^S | Tab {}}}]
 
 check "a group name becomes a legal menu path" {
 	list [commands_menu_path "Action commands"] [commands_menu_path Items]
@@ -1239,6 +1272,28 @@ proc birth_pass_held {} {
 	check "a pushed command is carried out once there is a character" {
 		list [expr {[angband_player turn] > $::turn0}] $::pushed $::pusherr
 	} "1 0 {}"
+
+	# The roguelike keyset fires at the nearest target with Tab, which the
+	# game codes as KC_TAB, above ASCII.  It came through as that byte, which
+	# is not even valid UTF-8, and a menu cannot show it.  The keyset is the
+	# character's, so this waits for one to be in play.
+	check "a key with no character is named, not passed as a byte" {
+		set was [angband_option rogue_like_commands]
+		angband_option rogue_like_commands 1
+		set row [lsearch -inline -index 3 [angband_commands] \
+			"Fire at nearest target"]
+		angband_option rogue_like_commands $was
+		lindex $row 4
+	} Tab
+
+	# The Choice pane's item menu, built as clicking the first item builds
+	# it.  It went missing when the menu bar's keys moved out of brackets: it
+	# still called the procs that put them there, and nothing tested it.
+	check "clicking an item builds its menu, with the keys in their own column" {
+		set m [choice_menu_build 0]
+		list [$m entrycget 2 -label] [$m entrycget 2 -accelerator]
+	} [list Inspect [commands_accel I]]
+
 	set ::waits 0
 	tips_pass
 }
@@ -1308,7 +1363,7 @@ proc tips_pass {} {
 	check "the Help menu opens the tips" {
 		set i [.menubar index Help]
 		set m [.menubar entrycget $i -menu]
-		$m invoke 0
+		$m invoke [$m index "Tips…"]
 		set r [winfo exists .tips]
 		tips_close
 		set r
@@ -1359,6 +1414,31 @@ proc door_wait {} {
 		lassign [angband_option scoring] cheated wizard eligible
 		list [string match "Debug Command*" $top] $wizard $eligible
 	} "1 0 1"
+	angband_key 0xff1b 0 "\x1b"
+	after 500 ctrl_pass
+}
+
+# The same door from the keyboard, with Control and a letter as Tk on the Mac
+# reports them: the letter's keysym, the Control bit, and no character at all.
+# Taken for a bare modifier and dropped until 12 October 2026, so none of the
+# game's ^ commands could be typed -- reported as ^F, Feeling, doing nothing.
+proc ctrl_pass {} {
+	set ::ctrlbefore [door_top_line]
+	angband_key 97 4 ""
+	set ::waits 0
+	ctrl_wait
+}
+
+proc ctrl_wait {} {
+	set top [door_top_line]
+	if {![string match "Debug Command*" $top] && [incr ::waits] < 25} {
+		after 200 ctrl_wait
+		return
+	}
+	check "Control-A, as the Mac's Tk reports it, is the game's ^A" {
+		list [string match "Debug Command*" $::ctrlbefore] \
+			[string match "Debug Command*" $top]
+	} "0 1"
 	angband_key 0xff1b 0 "\x1b"
 	after 500 death_pass
 }

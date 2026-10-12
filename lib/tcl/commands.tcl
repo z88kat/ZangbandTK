@@ -1,10 +1,18 @@
-# The menu bar, generated from the game's own command table.
+# The menu bar, laid out as the original's was.
 #
-# This is what the front end is for.  Every entry, its label, its keyboard
-# accelerator and whether it can be used right now come from cmds_all[] by way
-# of angband_commands -- nothing here is hand-authored, so a command added to
-# the game appears in the menus without anyone editing this file, and a menu
-# item and its key can never drift apart.
+# File, Inventory, Action and Other, with Magic and Use under Inventory and
+# Alter, Looking, Movement and Resting under Action, as ZangbandTk had them --
+# the layout agreed in .claude/plans/menu-structure.md, 12 October 2026.  It
+# replaced menus that were the game's own command groups, one entry a command
+# under the game's long descriptions, which were complete and hard to read.
+#
+# What the layout decides is where each command goes and what it is called.
+# Everything else is still the game's: each entry names a command by its
+# description in cmds_all[], and its key, whether it can be used now, and what
+# choosing it does all come from angband_commands -- so the roguelike keyset
+# shows its own keys, and a command the game does not have is not shown.  A
+# bridge check fails if any of the game's commands is in none of the menus, so
+# a command added to the game has to be given a place.
 #
 # The accelerators are the point rather than a decoration.  They are resolved
 # through cmd_lookup_key() against the player's own keyset, so the menus teach
@@ -14,16 +22,127 @@
 # Choosing an item runs angband_command, which dispatches exactly as
 # textui_process_command does -- prereq, then hook or cmdq_push_repeat.  No
 # keystroke is synthesised.
-
-# Nothing is skipped.
 #
-# "Hidden" was, on the grounds that the game calls it that -- and the game
-# means hidden from its *own* command menu, which is a different question from
-# whether a player would look for them.  They would: the group holds Steal from
-# a monster, Start exploring, Repeat previous command, Alter a grid, Take notes
-# and Centre map.  It is shown as "Other", because "Hidden" is a poor thing to
-# call a menu somebody is reading.
-set commands(rename) {Hidden Other}
+# An item is {cmd Label "the game's description"}, {menu Label {items}},
+# {tk Label script} for the front end's own, {tiles Label} for the tile sets,
+# or "-" for a rule.  {instead Label "the game's description" script} is a
+# front-end window standing in for one of the game's commands -- the Options
+# window for the game's options screen, as the original's Preferences had it.
+# It counts as that command's place, and shows no key, because the key still
+# does what the game does with it.
+set commands(layout) {
+    File {
+        {cmd Save "Save and don't quit"}
+        -
+        {cmd "Quit with Save" "Save and quit"}
+        {cmd Retire "Retire character and quit"}
+    }
+    Inventory {
+        {cmd Equipment "Display equipment listing"}
+        {cmd Inventory "Display inventory listing"}
+        {cmd Quiver "Display quiver listing"}
+        -
+        {menu Magic {
+            {cmd Activate "Activate an object"}
+            {cmd "Aim Wand" "Aim a wand"}
+            {cmd "Drink Potion" "Quaff a potion"}
+            {cmd "Read Scroll" "Read a scroll"}
+            {cmd "Use Staff" "Use a staff"}
+            {cmd "Zap Rod" "Zap a rod"}
+            -
+            {cmd Browse "Browse a book"}
+            {cmd Study "Gain new spells"}
+            {cmd Cast "Cast a spell"}
+            {cmd "Use Power" "Use a power"}
+        }}
+        {menu Use {
+            {cmd Drop "Drop an item"}
+            {cmd "Pick Up" "Pick up objects"}
+            {cmd "Take Off" "Take off/unwield an item"}
+            {cmd Wear/Wield "Wear/wield an item"}
+            {cmd Ignore "Ignore an item"}
+            -
+            {cmd "Eat Food" "Eat some food"}
+            {cmd "Fire Missile" "Fire your missile weapon"}
+            {cmd "Fire at Nearest" "Fire at nearest target"}
+            {cmd "Fuel Light" "Fuel your light source"}
+            {cmd Throw "Throw an item"}
+            {cmd "Use Any Item" "Use an item"}
+        }}
+        -
+        {cmd Inspect "Examine an item"}
+        -
+        {cmd Inscribe "Inscribe an object"}
+        {cmd Uninscribe "Uninscribe an object"}
+        {cmd "Show Ignored" "Toggle ignoring of items"}
+        {cmd Autopickup "Do autopickup"}
+    }
+    Action {
+        {menu Alter {
+            {cmd Alter "Alter a grid"}
+            {cmd Close "Close a door"}
+            {cmd Disarm "Disarm a trap or chest"}
+            {cmd Open "Open a door or a chest"}
+            {cmd Tunnel "Dig a tunnel"}
+            {cmd "Walk into Trap" "Walk into a trap"}
+        }}
+        {menu Looking {
+            {cmd Look "Look around"}
+            {cmd Map "Full dungeon map"}
+            {cmd Locate "Locate player on map"}
+            {cmd "Center Map" "Center map"}
+            {cmd "Item List" "Display visible item list"}
+            {cmd "Monster List" "Display visible monster list"}
+        }}
+        {menu Movement {
+            {cmd "Go Down" "Go down staircase"}
+            {cmd "Go Up" "Go up staircase"}
+            {cmd Run "Start running"}
+            {cmd Walk "Walk"}
+            {cmd Explore "Start exploring"}
+        }}
+        {menu Resting {
+            {cmd Rest "Rest for a while"}
+            {cmd Stay "Stand still"}
+        }}
+        -
+        {cmd Note "Take notes"}
+        {cmd Repeat "Repeat previous command"}
+        {cmd Target "Target monster or location"}
+        {cmd "Target Closest" "Target closest monster"}
+        -
+        {cmd Pets "Command pets"}
+        {cmd Steal "Steal from a monster"}
+    }
+    Other {
+        {cmd "Character Info" "Character description"}
+        {cmd Feeling "Repeat level feeling"}
+        {cmd Knowledge "Check knowledge"}
+        {cmd "Quest Status" "Things you have taken on"}
+        {cmd Abilities "View abilities"}
+        {cmd "Identify Symbol" "Identify symbol"}
+        -
+        {cmd "Previous Message" "Show previous message"}
+        {cmd "Message History" "Show previous messages"}
+        {cmd "Screen Dump" {Save "screen dump"}}
+        -
+        {menu Preferences {
+            {instead Options "Interact with options" options_window}
+            {tiles Tiles}
+            {cmd "Load Pref Line" "Load a single pref line"}
+        }}
+        -
+        {cmd Redraw "Redraw the screen"}
+        {cmd Version "Version info"}
+        {cmd "Wizard Mode" "Toggle wizard mode"}
+        {cmd "Debug Commands" "Debug mode commands"}
+        {cmd Borg "Borg commands"}
+        {cmd "Toggle Windows" "Toggle windows"}
+    }
+}
+
+# The game's Help goes at the top of the front end's Help menu, above Tips.
+set commands(help) "Help"
 
 # The debug groups are a menu of their own, and only for a character who is
 # already in wizard mode -- offering them otherwise is an invitation to spoil a
@@ -31,65 +150,40 @@ set commands(rename) {Hidden Other}
 # key and no command, each naming the group it opens.
 set commands(debug) Debug
 
-# An entry's text, with the key it answers to.
+# The key an entry answers to, as its -accelerator.
 #
-# Not -accelerator, and this matters.  Tk turns an accelerator into an
-# NSMenuItem keyEquivalent, and AppKit renders a lowercase key equivalent as
-# the capital letter -- so "Throw an item", which answers to v, was advertised
-# as V, and V is Version info.  A menu that teaches the wrong key is worse than
-# one that teaches none.  Worse still, a key equivalent with no modifier is a
-# real shortcut as far as AppKit is concerned, and a menu quietly claiming the
-# letters of the alphabet is not something to leave to chance.
+# An accelerator is what puts the keys in a column of their own down the right
+# of the menu, where every other application keeps its shortcuts.  It replaced
+# keys in brackets at the end of the label, padded with spaces to line up --
+# which they never quite did, a proportional font being what it is.
 #
-# So the key goes in the label, in brackets.
-proc commands_label {label key} {
-    if {$key eq ""} { return $label }
-    return "$label  \[$key\]"
-}
-
-# The key, on the right, in the menu's own font.
+# On the Mac, Tk hands an accelerator to AppKit as the item's key equivalent,
+# and AppKit draws a key equivalent as a key, not a character: v is shown as V,
+# and V would be too.  That was why there were no accelerators before, since V
+# is Version info and v is Throw.  The answer is to describe the key the way
+# the Mac does: an uppercase key is passed as Shift-V and drawn as ⇧V, ^S as
+# Control-s and drawn as ⌃S, and the menu then reads like any other Mac menu.
 #
-# Two ways of doing this were tried and photographed before this one.
+# Two things had to be ruled out first, and both were tried rather than taken
+# on trust.  A key equivalent is not a second way in for the key: Tk's menus
+# run nothing from one, so the key reaches the game once, through Tk's own
+# bindings, and at most the menu title flashes.  And since macOS 12 AppKit
+# moves a key equivalent to wherever its character is on the current keyboard
+# layout, which on a German one showed { as Ö, ? as ß and ) as 0.  The front
+# end turns that off for the whole application as it starts, in
+# src/tcl/menukeys.c.
 #
-# -accelerator is the obvious answer and gives a real right-hand column, but
-# Tk turns it into an NSMenuItem keyEquivalent and AppKit renders that
-# upper-cased: l, o, c, h and v all came out as capitals, and V is a different
-# command from v in this game.  Substituting MATHEMATICAL MONOSPACE letters,
-# which have no uppercase mapping, defeated the upper-casing and rendered as
-# tofu -- the menu font has no glyphs for them.
-#
-# So the key stays in the label, and the label is padded to a common width with
-# spaces measured in TkMenuFont.  A proportional font cannot be aligned to the
-# pixel this way, but it lands within a space's width, which reads as a column.
-proc commands_pad {labels} {
-    set widest 0
-    foreach l $labels {
-        set w [font measure TkMenuFont $l]
-        if {$w > $widest} { set widest $w }
+# Elsewhere Tk draws an accelerator as the text it is given, so the game's own
+# spelling stands: v, V, ^S.
+proc commands_accel {key} {
+    if {$key eq "" || [tk windowingsystem] ne "aqua"} { return $key }
+    if {[string length $key] == 2 && [string index $key 0] eq "^"} {
+        return "Control-[string tolower [string index $key 1]]"
     }
-    return [expr {$widest + [font measure TkMenuFont "  "]}]
-}
-
-proc commands_label {label key target} {
-    if {$key eq ""} { return $label }
-
-    set space [font measure TkMenuFont " "]
-    set pad ""
-    set w [font measure TkMenuFont $label]
-    while {$w + [font measure TkMenuFont $pad] < $target && [string length $pad] < 80} {
-        append pad " "
+    if {[string length $key] == 1 && [string is upper $key]} {
+        return "Shift-$key"
     }
-    return "$label$pad\[$key\]"
-}
-
-# What a group is called in the menu bar, where that differs from what the
-# game calls it internally.
-proc commands_group_label {group} {
-    global commands
-    if {[dict exists $commands(rename) $group]} {
-        return [dict get $commands(rename) $group]
-    }
-    return $group
+    return $key
 }
 
 # Where a label sits in the menu bar, or -1.
@@ -128,10 +222,10 @@ proc commands_build {} {
 
     set commands(rows) $rows
     set commands(menus) {}
+    set commands(absent) {}
+    set commands(instead) {}
+    set commands(byname) [dict create]
 
-    # Group the rows, keeping the game's order.
-    set order {}
-    array unset byname
     # `array unset commands nested,*`, not `array unset commands(nested)`.
     # The latter unsets one element called "nested", which does not exist, so
     # the rows lappend onto the previous build's -- and the second build tries
@@ -140,44 +234,102 @@ proc commands_build {} {
     # happening at all: ENTER_GAME and LEAVE_BIRTH both fire for a new
     # character.
     array unset commands nested,*
+    array unset commands entries,*
     foreach row $rows {
         lassign $row gidx group idx label key enabled level code opens
         if {$level == 0} {
-            if {$group ni $order} { lappend order $group }
-            lappend byname($group) $row
+            dict set commands(byname) $label $row
         } else {
             lappend commands(nested,$group) $row
         }
     }
 
+    # Inserted, not appended: the game's menus belong before the front end's
+    # Window and Help, and those were built when the window was.
     set at 0
-    foreach group $order {
-        set shown [commands_group_label $group]
-        set m [commands_menu_path $group]
-        if {[winfo exists $m]} { destroy $m }
-        menu $m -tearoff 0 -postcommand [list commands_refresh $group]
-
-        # Inserted, not appended: the game's own menus belong before the front
-        # end's Tiles and Window, and those were built when the window was.
-        .menubar insert $at cascade -label $shown -menu $m
+    foreach {title items} $commands(layout) {
+        set m [commands_menu_path $title]
+        commands_fill $m $items
+        .menubar insert $at cascade -label $title -menu $m
         incr at
-        lappend commands(menus) [list $group $m $shown]
-
-        # One column width per menu, from its own widest label.
-        set labels {}
-        foreach row $byname($group) { lappend labels [lindex $row 3] }
-        set target [commands_pad $labels]
-        set commands(target,$group) $target
-
-        foreach row $byname($group) {
-            lassign $row gidx g idx label key enabled level code opens
-            $m add command -label [commands_label $label $key $target] \
-                -command [list angband_command $gidx $idx]
-        }
+        lappend commands(menus) [list $title $m $title]
     }
 
+    commands_help
     commands_build_debug
     commands_check_debug
+}
+
+# One menu of the layout, and the ones under it.
+proc commands_fill {m items} {
+    global commands
+
+    if {[winfo exists $m]} { destroy $m }
+    menu $m -tearoff 0 -postcommand [list commands_refresh $m]
+    set commands(entries,$m) {}
+
+    set n 0
+    foreach item $items {
+        switch -- [lindex $item 0] {
+            - {
+                $m add separator
+            }
+            cmd {
+                lassign $item kind label desc
+                if {![dict exists $commands(byname) $desc]} {
+                    # Borg commands, in a build without the Borg.
+                    lappend commands(absent) $desc
+                    continue
+                }
+                lassign [dict get $commands(byname) $desc] gidx g idx name key
+                $m add command -command [list angband_command $gidx $idx] \
+                    -label $label -accelerator [commands_accel $key]
+                lappend commands(entries,$m) [list [$m index end] $desc $label]
+            }
+            menu {
+                lassign $item kind label sub
+                set child $m.m[incr n]
+                commands_fill $child $sub
+                $m add cascade -label $label -menu $child
+            }
+            tk {
+                lassign $item kind label script
+                $m add command -label $label -command $script
+            }
+            instead {
+                lassign $item kind label desc script
+                $m add command -label $label -command $script
+                lappend commands(instead) $desc
+            }
+            tiles {
+                lassign $item kind label
+                set child $m.tiles
+                menu $child -tearoff 0
+                angband_tiles_menu $child
+                $m add cascade -label $label -menu $child
+            }
+        }
+    }
+}
+
+# The game's Help, at the top of the front end's Help menu: built with the
+# others, since its key is the game's, and replaced when they are.
+proc commands_help {} {
+    global commands
+
+    set m .menubar.about
+    if {![winfo exists $m]} return
+    if {[info exists commands(helpshown)] && $commands(helpshown)} {
+        $m delete 0
+        set commands(helpshown) 0
+    }
+    if {![dict exists $commands(byname) $commands(help)]} return
+    lassign [dict get $commands(byname) $commands(help)] gidx g idx name key
+    $m insert 0 command -command [list angband_command $gidx $idx] \
+        -label Help -accelerator [commands_accel $key]
+    $m configure -postcommand [list commands_refresh $m]
+    set commands(entries,$m) [list [list 0 $commands(help) Help]]
+    set commands(helpshown) 1
 }
 
 # The debug menu: one submenu per category, built but not shown.
@@ -211,13 +363,10 @@ proc commands_build_debug {} {
         set sub $m.[string tolower $opens]
         menu $sub -tearoff 0
 
-        set labels {}
-        foreach r $commands(nested,$opens) { lappend labels [lindex $r 3] }
-        set target [commands_pad $labels]
-
         foreach r $commands(nested,$opens) {
             lassign $r rgidx rgroup ridx rlabel rkey renabled rlevel rcode
-            $sub add command -label [commands_label $rlabel $rkey $target] \
+            $sub add command -label $rlabel \
+                -accelerator [commands_accel $rkey] \
                 -command [list angband_command $rgidx $ridx]
         }
 
@@ -258,21 +407,24 @@ proc commands_check_debug {} {
 #
 # A postcommand rather than an event handler: availability changes with almost
 # everything the player does, and asking at the moment somebody looks is both
-# always right and free the rest of the time.
-proc commands_refresh {group} {
+# always right and free the rest of the time.  The key is asked again too, in
+# case the keyset has changed since the menu was built.
+proc commands_refresh {m} {
     global commands
 
+    if {![info exists commands(entries,$m)]} return
     if {[catch {angband_commands} rows]} return
 
-    set m [commands_menu_path $group]
-    set i 0
+    set by [dict create]
     foreach row $rows {
-        lassign $row gidx g idx label key enabled level code
-        if {$g ne $group} continue
-        if {$level != 0} continue
+        if {[lindex $row 6] == 0} { dict set by [lindex $row 3] $row }
+    }
+    foreach entry $commands(entries,$m) {
+        lassign $entry i desc label
+        if {![dict exists $by $desc]} continue
+        lassign [dict get $by $desc] gidx g idx name key enabled
         $m entryconfigure $i -state [expr {$enabled ? "normal" : "disabled"}] \
-            -label [commands_label $label $key $commands(target,$group)]
-        incr i
+            -accelerator [commands_accel $key]
     }
 }
 
