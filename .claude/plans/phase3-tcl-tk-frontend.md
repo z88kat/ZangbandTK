@@ -15,29 +15,29 @@ decision in Phase 1 and 2 stands unchanged.
 
 ## 0. Is a build possible?
 
-**Yes — in stages, and the first stage is genuinely close. What is *not* possible is
+**Yes — in stages, and the first stage is genuinely close. What is _not_ possible is
 unzipping the 2001 sources and typing `make`.** Three of the four things the original build
 needed are gone: its build tool (Jam), its Tcl (8.3.3) and its game (Zangband 2.4.0). The
 fourth — the front end itself — survives complete, and measurably ports.
 
 Everything in this table was measured on this Mac today, not inferred:
 
-| Question | Answer | Evidence |
-|---|---|---|
-| Does Tcl 9.0.4 build here? | **Yes** — `libtcl9.0.dylib`, `tclsh9.0`, `arm64`, zipfs present | [scripts/build-tcltk](../../scripts/build-tcltk), from [tcltk/](../../tcltk/) |
-| Does Tk 9.0.4 build here, without X11? | **Yes** — `libtcl9tk9.0.dylib`, `wish9.0`, Aqua (Cocoa/Carbon/QuartzCore, no X11), `arm64` | the same script, `--enable-aqua` |
-| Does the original front-end C survive complete? | **Yes** — 49,285 lines of bridge + 16,514 lines of widget library + 121 Tcl scripts, plus every image asset | §1 |
-| Can we ship the original sounds? | **No** — 208 wav files survive, but they are personal-use-only material. 4.2's own pack replaces them | §1.4 |
-| Should we port that C? | **No — and not because it is hard.** It reaches 92 errors after four mechanical rules, then loses to Tk 9 and 4.2 on the merits, file by file | §2.2 |
-| Is there a licence problem? | **No.** All 67 front-end files carry the Angband licence, word for word identical to [LICENSE.md](../../LICENSE.md) | §1.6 |
-| Can the old bridge talk to Angband 4.2? | **No.** 774 `p_ptr->` references against a data model that no longer exists | §3.2 |
-| Do we have to guess how the UI behaved? | **No.** `interface.html` is a written interaction spec — ten mouse rules plus per-window behaviour — and the original now runs | §1.5, §8 |
+| Question                                        | Answer                                                                                                                                        | Evidence                                                                      |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Does Tcl 9.0.4 build here?                      | **Yes** — `libtcl9.0.dylib`, `tclsh9.0`, `arm64`, zipfs present                                                                               | [scripts/build-tcltk](../../scripts/build-tcltk), from [tcltk/](../../tcltk/) |
+| Does Tk 9.0.4 build here, without X11?          | **Yes** — `libtcl9tk9.0.dylib`, `wish9.0`, Aqua (Cocoa/Carbon/QuartzCore, no X11), `arm64`                                                    | the same script, `--enable-aqua`                                              |
+| Does the original front-end C survive complete? | **Yes** — 49,285 lines of bridge + 16,514 lines of widget library + 121 Tcl scripts, plus every image asset                                   | §1                                                                            |
+| Can we ship the original sounds?                | **No** — 208 wav files survive, but they are personal-use-only material. 4.2's own pack replaces them                                         | §1.4                                                                          |
+| Should we port that C?                          | **No — and not because it is hard.** It reaches 92 errors after four mechanical rules, then loses to Tk 9 and 4.2 on the merits, file by file | §2.2                                                                          |
+| Is there a licence problem?                     | **No.** All 67 front-end files carry the Angband licence, word for word identical to [LICENSE.md](../../LICENSE.md)                           | §1.6                                                                          |
+| Can the old bridge talk to Angband 4.2?         | **No.** 774 `p_ptr->` references against a data model that no longer exists                                                                   | §3.2                                                                          |
+| Do we have to guess how the UI behaved?         | **No.** `interface.html` is a written interaction spec — ten mouse rules plus per-window behaviour — and the original now runs                | §1.5, §8                                                                      |
 
 So the honest shape of the answer:
 
 - **A window that plays the game** — Tk toplevel, tiles, keyboard, message line — is a
   small, self-contained piece of work (T1–T2). This is the milestone worth aiming at first,
-  and it is worth having *for its own sake*: it is what makes Phase 2's wilderness
+  and it is worth having _for its own sake_: it is what makes Phase 2's wilderness
   observable, which is [phase2 §5](phase2-development-plan.md#5-a-note-on-phase-3-timing)'s
   argument.
 - **The accessible UI in the screenshots** — the menus, the Micro Map, the Misc panel, the
@@ -51,14 +51,14 @@ So the honest shape of the answer:
 
 ### 1.1 The four pieces
 
-The complete original stack survives across four locations, and each is the *only* copy:
+The complete original stack survives across four locations, and each is the _only_ copy:
 
-| Piece | Location | Size | Verdict |
-|---|---|---|---|
-| Widget library (game-agnostic) | [archive/Tk/CommonTk-1.4/…/src/common-dll/](../../archive/Tk/CommonTk-1.4/OmnibandTk/src/common-dll/) | 16,514 lines, 11 files | **Reference.** Core Tk 9 now does almost all of it (§2.2). Four algorithms in `icon-dll.c` are worth reading. |
-| C↔Tcl bridge (game-coupled) | [archive/Tk/CommonTk-1.4/…/src/common/](../../archive/Tk/CommonTk-1.4/OmnibandTk/src/common/) | 49,285 lines, 32 files | **Rewrite the coupled half; port the rest.** |
-| Tcl user interface | same tree, [tk/](../../archive/Tk/CommonTk-1.4/OmnibandTk/tk/) | 121 scripts, ~108,000 lines | **Adapt.** Reuse is proportional to how many old command names survive. |
-| Game-side C | [archive/Tk/ZAngbandTk-240r5/](../../archive/Tk/ZAngbandTk-240r5/) | 75 files, Zangband 2.4.0 | **Reference only.** Superseded by our own 4.2 tree. |
+| Piece                          | Location                                                                                              | Size                        | Verdict                                                                                                       |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Widget library (game-agnostic) | [archive/Tk/CommonTk-1.4/…/src/common-dll/](../../archive/Tk/CommonTk-1.4/OmnibandTk/src/common-dll/) | 16,514 lines, 11 files      | **Reference.** Core Tk 9 now does almost all of it (§2.2). Four algorithms in `icon-dll.c` are worth reading. |
+| C↔Tcl bridge (game-coupled)    | [archive/Tk/CommonTk-1.4/…/src/common/](../../archive/Tk/CommonTk-1.4/OmnibandTk/src/common/)         | 49,285 lines, 32 files      | **Rewrite the coupled half; port the rest.**                                                                  |
+| Tcl user interface             | same tree, [tk/](../../archive/Tk/CommonTk-1.4/OmnibandTk/tk/)                                        | 121 scripts, ~108,000 lines | **Adapt.** Reuse is proportional to how many old command names survive.                                       |
+| Game-side C                    | [archive/Tk/ZAngbandTk-240r5/](../../archive/Tk/ZAngbandTk-240r5/)                                    | 75 files, Zangband 2.4.0    | **Reference only.** Superseded by our own 4.2 tree.                                                           |
 
 Plus assets: `archive/Tk/image/` (Adam Bolt 16px, feature and town overlays, David Gervais
 32px, isometric variants, UI button art), audited in §1.3; and `archive/Tk/sounds1`–`sounds4`
@@ -78,12 +78,12 @@ Plus assets: `archive/Tk/image/` (Adam Bolt 16px, feature and town overlays, Dav
 
 Not a thin skin. Broken down:
 
-| Part | Lines | What it is |
-|---|---:|---|
-| `tk/*.tcl` (69 files) | 86,265 | The application: main window, menus, birth, stores, buildings, knowledge, inventory, pets, options, keymaps |
-| `tk/library/*.tcl` (26 files) | 10,636 | A general-purpose megawidget set — tabbed frames, toolbars, balloons, list canvases, progress windows |
-| `tk/vault/*.tcl` | 6,065 | The tile-assignment editor |
-| `tk/msgs/` | 34 catalogues | Message localisation, already externalised |
+| Part                          |         Lines | What it is                                                                                                  |
+| ----------------------------- | ------------: | ----------------------------------------------------------------------------------------------------------- |
+| `tk/*.tcl` (69 files)         |        86,265 | The application: main window, menus, birth, stores, buildings, knowledge, inventory, pets, options, keymaps |
+| `tk/library/*.tcl` (26 files) |        10,636 | A general-purpose megawidget set — tabbed frames, toolbars, balloons, list canvases, progress windows       |
+| `tk/vault/*.tcl`              |         6,065 | The tile-assignment editor                                                                                  |
+| `tk/msgs/`                    | 34 catalogues | Message localisation, already externalised                                                                  |
 
 The `library/` set is the one piece with a modern alternative: Tk 9 ships **Ttk**, which
 covers tabbed frames, toolbars, progress bars and notebooks natively. Replacing
@@ -96,32 +96,32 @@ appearance — and native appearance on macOS is most of what "accessible" means
 from all 121 scripts and all 16 tile configuration files, then searching the whole archive
 for each. Every image the shipped UI actually loads is present. The only apparent misses
 are shell-variable interpolations (`$charName.gif`, `preview-$prefix.gif`), dead code
-(`adam16_shape.gif`, inside `if 0 {…}`), and one asset behind both a dead branch *and* a
+(`adam16_shape.gif`, inside `if 0 {…}`), and one asset behind both a dead branch _and_ a
 `file exists` guard (`darken.gif`). Nothing real is absent.
 
 What that comes to, by kind:
 
-| Asset | Files | Size | 4.2 equivalent? |
-|---|---:|---|---|
-| Adam Bolt map tiles | `adam16.gif` | 512×560 (32×35 tiles) | **Yes, and better** — see below |
-| David Gervais 32px | `dg/dg_*.gif` | 42 sheets, incl. `dg_iso32.gif` (756×735) | Yes, `lib/tiles/gervais/` |
-| "Original" 32px masked set | 13 files (`masked`, `potion`, `jelly`, `vortex`, `mushroom`, `dragon`, …) | 32px | Roughly, `lib/tiles/old/` |
-| **Wall/terrain overlay** | `feature16/32.gif`, `adam16_feature.gif` | 256×64, 512×128, 160×160 | **No** |
-| **Town and wilderness tiles** | `town16/24/32.gif` | 176×128 … 352×256 | **No** |
-| **The Pattern** | `pattern16.gif` | 160×32, 10 tiles | **No** |
-| **Micro Map tiles** | `dg/micromap4x4/6x6/8x8.gif` | 24×20 … 48×40 | **No** |
-| **Building service icons** | `dg/townactions.gif` | 256×288, 72 icons at 32px | **No** |
-| **UI chrome** | 39 files — toolbar buttons, nav arrows, checkboxes, the 13 Misc-panel stat icons | 16–20px | **No** |
-| Tileset previews | `preview-*.gif` | 13 | n/a — for the options dialog |
+| Asset                         |                                                                            Files | Size                                      | 4.2 equivalent?                 |
+| ----------------------------- | -------------------------------------------------------------------------------: | ----------------------------------------- | ------------------------------- |
+| Adam Bolt map tiles           |                                                                     `adam16.gif` | 512×560 (32×35 tiles)                     | **Yes, and better** — see below |
+| David Gervais 32px            |                                                                    `dg/dg_*.gif` | 42 sheets, incl. `dg_iso32.gif` (756×735) | Yes, `lib/tiles/gervais/`       |
+| "Original" 32px masked set    |        13 files (`masked`, `potion`, `jelly`, `vortex`, `mushroom`, `dragon`, …) | 32px                                      | Roughly, `lib/tiles/old/`       |
+| **Wall/terrain overlay**      |                                         `feature16/32.gif`, `adam16_feature.gif` | 256×64, 512×128, 160×160                  | **No**                          |
+| **Town and wilderness tiles** |                                                               `town16/24/32.gif` | 176×128 … 352×256                         | **No**                          |
+| **The Pattern**               |                                                                  `pattern16.gif` | 160×32, 10 tiles                          | **No**                          |
+| **Micro Map tiles**           |                                                     `dg/micromap4x4/6x6/8x8.gif` | 24×20 … 48×40                             | **No**                          |
+| **Building service icons**    |                                                             `dg/townactions.gif` | 256×288, 72 icons at 32px                 | **No**                          |
+| **UI chrome**                 | 39 files — toolbar buttons, nav arrows, checkboxes, the 13 Misc-panel stat icons | 16–20px                                   | **No**                          |
+| Tileset previews              |                                                                  `preview-*.gif` | 13                                        | n/a — for the options dialog    |
 
 The rows marked **No** are the answer to "do we have the original graphics". The map tiles
-are the *least* valuable thing in the archive, because 4.2 maintains its own copies. What
+are the _least_ valuable thing in the archive, because 4.2 maintains its own copies. What
 4.2 has none of is everything that made ZangbandTK look like ZangbandTK rather than
 Angband-with-tiles: the shaded wall overlay, the town buildings, the Micro Map, the
 building-service icons, the Misc panel, and the toolbar.
 
 **`pattern16.gif` deserves singling out.** Ten 16px tiles for Zangband's Pattern — which is
-the Pattern *of Amber*. It is the one piece of original art that is directly on DEC-01's
+the Pattern _of Amber_. It is the one piece of original art that is directly on DEC-01's
 target, and it exists nowhere else.
 
 > **A bonus:** `dg/misc-win/stats.gif` (190×193) is not a tile sheet — it is a **rendered
@@ -129,7 +129,7 @@ target, and it exists nowhere else.
 > original runs (§8), but still the clearest single statement of how that panel was meant to
 > be read.
 
-#### The catch: the tile *art* survives, the tile *indices* do not transfer
+#### The catch: the tile _art_ survives, the tile _indices_ do not transfer
 
 The archive's Adam Bolt sheet and 4.2's are the same artwork, independently reorganised.
 4.2's is 512×**976** against the archive's 512×**560** — 4.2 added terrain rows at the top
@@ -139,7 +139,7 @@ pixels differ**. Same art, different addresses.
 That matters because the labour in `archive/Tk/ZAngbandTk-240r5/ZAngbandTk/tk/config/` is
 **8,344 lines of assignment data** — `adam-assign` (1,493 lines), `dg32-assign` (1,561),
 `classic-assign` (430), plus `*-alternate` (per-terrain variants), `*-sprite` (animation)
-and the `.vlt` town vault layouts. Every line is keyed to *Zangband 2.4.0's* feature,
+and the `.vlt` town vault layouts. Every line is keyed to _Zangband 2.4.0's_ feature,
 monster and object indices. It is marked `# Automatically generated. Do not edit.` because
 the in-game vault editor produced it.
 
@@ -147,17 +147,17 @@ So: **read it as intent, do not load it as data.** Phase-2 milestones are adding
 renumbering content anyway, so no index-keyed table from 2001 could survive. For the map
 tiles this costs nothing — 4.2's `graf-*.prf` files already do the job. It only bites for
 the sets 4.2 has no assignment path for at all (town, feature overlay, pattern), and there
-the old files say *which tile the author chose* for each concept, which is the part worth
+the old files say _which tile the author chose_ for each concept, which is the part worth
 knowing.
 
 ### 1.4 The sounds — present, and mostly unusable
 
 Two packs survive, and they are in completely different legal positions.
 
-| Pack | Files | Format | Ships? |
-|---|---:|---|---|
-| Default, in `CommonTk-1.4/OmnibandTk/lib/sound/` | 27 wav, 404 KB | 25 of 27 are 8-bit; 23 at ≤11 kHz | **Doubtful** |
-| Grundman's Ultimate Sound Collection, `archive/Tk/sounds1`–`sounds4` | 208 wav, 17.5 MB | 69% 8-bit; 56% at ≤11 kHz; only 3 files at 44.1 kHz | **No** |
+| Pack                                                                 |            Files | Format                                              | Ships?       |
+| -------------------------------------------------------------------- | ---------------: | --------------------------------------------------- | ------------ |
+| Default, in `CommonTk-1.4/OmnibandTk/lib/sound/`                     |   27 wav, 404 KB | 25 of 27 are 8-bit; 23 at ≤11 kHz                   | **Doubtful** |
+| Grundman's Ultimate Sound Collection, `archive/Tk/sounds1`–`sounds4` | 208 wav, 17.5 MB | 69% 8-bit; 56% at ≤11 kHz; only 3 files at 44.1 kHz | **No**       |
 
 **The 208-file collection cannot be redistributed.** Its own `readme.txt`, from the author:
 
@@ -179,20 +179,20 @@ fighting for in either pack: **69%** of the Grundman files are 8-bit and **56%**
 3.2 MB, under a Creative Commons **non-commercial** licence — which is exactly the footing
 ZangbandTK itself ships on. Use it.
 
-#### What *is* worth taking: the event vocabulary
+#### What _is_ worth taking: the event vocabulary
 
 The valuable artefact here is not audio, it is `archive/Tk/grund/grund.snd` — **919 event
 bindings** across five groups (`event`, `monster`, `monster_spell`, `monster_attack`,
 `martial_art`). That is design data, not copyrighted material, and it is a far richer
 vocabulary than 4.2's:
 
-| | ZangbandTK (`grund.snd`) | Angband 4.2 (`sound.prf`) |
-|---|---:|---:|
-| Total bindings | 919 | 149 |
-| Distinct event names | 211 symbolic + 672 per-monster | 149 |
-| Per-monster sounds | **672 monsters** | none |
-| Monster spells / attacks / martial arts | separate groups | folded into the flat list |
-| Ambient day / night / dungeon-depth beds | none | **8** |
+|                                          |       ZangbandTK (`grund.snd`) | Angband 4.2 (`sound.prf`) |
+| ---------------------------------------- | -----------------------------: | ------------------------: |
+| Total bindings                           |                            919 |                       149 |
+| Distinct event names                     | 211 symbolic + 672 per-monster |                       149 |
+| Per-monster sounds                       |               **672 monsters** |                      none |
+| Monster spells / attacks / martial arts  |                separate groups | folded into the flat list |
+| Ambient day / night / dungeon-depth beds |                           none |                     **8** |
 
 The two lists barely overlap by name — 7 exact matches — but that understates it badly. Most
 of the difference is Zangband's four-character truncation against 4.2's full spelling, and
@@ -219,35 +219,35 @@ The single most useful thing in the archive is not code. It is
 directory, and it means **the interaction model does not have to be reverse-engineered from
 screenshots**.
 
-| File | Size | What it is |
-|---|---:|---|
-| `interface.html` | 11 KB | **The interaction specification.** Window-by-window behaviour, then ten numbered mouse rules. |
-| `tips.txt` | 2.3 KB | **32 one-line tips**, each naming one affordance. The startup Tips window cycles them. |
-| `TANG.html` | 36 KB | *The Angband Newbie Guide*, shipped in-game |
-| `variant-faq.txt` | 31 KB | Angband variant FAQ |
-| `changes.html` | 76 KB | Release notes back to ZAngbandTk 2.2.5r1 |
-| `options.txt` | 29 KB | Option reference |
-| `contents`, `contents-zkb`, `help-index` | 14 KB | The help tree (see below) |
-| `performance.html`, `files.html`, `about.html`, `original.html` | 6 KB | Author's notes, including his own performance advice |
-| `msgs/` | 34 catalogues | **English *and* Japanese**, `en.msg` + `ja.msg` per area. Not carried forward — §6 decision 11 |
+| File                                                            |          Size | What it is                                                                                     |
+| --------------------------------------------------------------- | ------------: | ---------------------------------------------------------------------------------------------- |
+| `interface.html`                                                |         11 KB | **The interaction specification.** Window-by-window behaviour, then ten numbered mouse rules.  |
+| `tips.txt`                                                      |        2.3 KB | **32 one-line tips**, each naming one affordance. The startup Tips window cycles them.         |
+| `TANG.html`                                                     |         36 KB | _The Angband Newbie Guide_, shipped in-game                                                    |
+| `variant-faq.txt`                                               |         31 KB | Angband variant FAQ                                                                            |
+| `changes.html`                                                  |         76 KB | Release notes back to ZAngbandTk 2.2.5r1                                                       |
+| `options.txt`                                                   |         29 KB | Option reference                                                                               |
+| `contents`, `contents-zkb`, `help-index`                        |         14 KB | The help tree (see below)                                                                      |
+| `performance.html`, `files.html`, `about.html`, `original.html` |          6 KB | Author's notes, including his own performance advice                                           |
+| `msgs/`                                                         | 34 catalogues | **English _and_ Japanese**, `en.msg` + `ja.msg` per area. Not carried forward — §6 decision 11 |
 
 #### What `interface.html` pins down
 
 Ten numbered mouse rules for the Main Window, which between them are the whole
 mouse-driven game:
 
-| Gesture | Effect |
-|---|---|
-| Left-click | Step one grid toward the click; hold to walk continuously |
-| Shift-left-click, or right-click | **Run** in that direction |
-| Control-left-click | `Alter (+)` — tunnel, open, disarm |
-| Hover | `Look` — describes the grid; over a monster, shows the health bar and recall |
-| Right-click *while prompted for an item* | Popup menu of inventory choices |
-| Control-right-click | Cascading menu of items to use, unprompted |
-| Click *while prompted for a direction* | Aim that way; right-click targets what is under the pointer |
-| Left-click *while targeting* | Target the monster there, else the location |
-| Click during `-more-` | Skip the prompt (with `quick_messages`) |
-| Click during a repeated command | Interrupt the run, rest or tunnel |
+| Gesture                                  | Effect                                                                       |
+| ---------------------------------------- | ---------------------------------------------------------------------------- |
+| Left-click                               | Step one grid toward the click; hold to walk continuously                    |
+| Shift-left-click, or right-click         | **Run** in that direction                                                    |
+| Control-left-click                       | `Alter (+)` — tunnel, open, disarm                                           |
+| Hover                                    | `Look` — describes the grid; over a monster, shows the health bar and recall |
+| Right-click _while prompted for an item_ | Popup menu of inventory choices                                              |
+| Control-right-click                      | Cascading menu of items to use, unprompted                                   |
+| Click _while prompted for a direction_   | Aim that way; right-click targets what is under the pointer                  |
+| Left-click _while targeting_             | Target the monster there, else the location                                  |
+| Click during `-more-`                    | Skip the prompt (with `quick_messages`)                                      |
+| Click during a repeated command          | Interrupt the run, rest or tunnel                                            |
 
 And per window: the Micro Map's popup resolution menu, click-drag scroll, and Shift-click to
 pin the Main Window; the Recall Window growing on pointer-enter and shrinking on leave;
@@ -286,7 +286,7 @@ The tree comes from `tk/doc/contents`, a small declarative format worth keeping:
 .stop
 ```
 
-`help-html.tcl` then *generates* the Table of Contents page from that tree at runtime.
+`help-html.tcl` then _generates_ the Table of Contents page from that tree at runtime.
 
 **But TkHtml has to go.** It is a binary Tcl extension by D. Richard Hipp, 1997–98, against
 Tk 8.0-era internals, and the archive ships only its `pkgIndex.tcl` and `COPYRIGHT` — the
@@ -295,7 +295,7 @@ Tkhtml3 is also long unmaintained, and it is **LGPL v2**, a different licence fr
 everything else here. Three independent reasons, any one sufficient.
 
 DEC-17 already commits ZangbandTK to a Sphinx manual in [docs/](../../docs/). The help
-system should render *that*, and the `contents` format is a good model for its index. New
+system should render _that_, and the `contents` format is a good model for its index. New
 decision in §6.
 
 ### 1.6 Licensing — checked, and clear
@@ -310,7 +310,7 @@ That is the **Angband licence**, word for word — the licence ZangbandTK alread
 per [LICENSE.md](../../LICENSE.md). Nothing to resolve. Keep the copyright headers on
 anything ported, exactly as DEC-20 already requires for Zangband code.
 
-Two dependencies are *not* clear and must stay out: **BASS** (music, non-commercial
+Two dependencies are _not_ clear and must stay out: **BASS** (music, non-commercial
 licence, Windows-only) and **Hermes**. Both are already `#ifdef`-optional in the original
 and neither is needed.
 
@@ -324,19 +324,19 @@ DEC-13 holds, and **T0's first deliverable is done**:
 [scripts/build-tcltk](../../scripts/build-tcltk) builds both from the sources vendored in
 [tcltk/](../../tcltk/) into `tcltk/local`, in about two minutes on this Mac. Result, 11 Sep:
 
-| | |
-|---|---|
-| `libtcl9.0.dylib`, `libtcl9tk9.0.dylib` | `arm64`, both — the host's architecture, see below |
-| `tclsh9.0`, `wish9.0` | run; `zipfs root` answers `//zipfs:/` |
-| Windowing system | **Aqua** — `wish9.0` links Cocoa, Carbon and QuartzCore, and no X11 at all |
-| Private headers | `tclInt.h` and `tkInt.h` installed, which §2.2's port requires |
-| Prefix | project-local, gitignored; no system Tcl is touched or needed |
+|                                         |                                                                            |
+| --------------------------------------- | -------------------------------------------------------------------------- |
+| `libtcl9.0.dylib`, `libtcl9tk9.0.dylib` | `arm64`, both — the host's architecture, see below                         |
+| `tclsh9.0`, `wish9.0`                   | run; `zipfs root` answers `//zipfs:/`                                      |
+| Windowing system                        | **Aqua** — `wish9.0` links Cocoa, Carbon and QuartzCore, and no X11 at all |
+| Private headers                         | `tclInt.h` and `tkInt.h` installed, which §2.2's port requires             |
+| Prefix                                  | project-local, gitignored; no system Tcl is touched or needed              |
 
 **Both bootstrap traps are avoided by construction rather than worked around**, which is
 worth recording because the workaround was the plan:
 
 1. **The one DEC-13 records.** Tcl's `configure-packages` step runs the freshly built
-   `tclsh`, which is linked against its *install* path. On a clean tree that dylib does not
+   `tclsh`, which is linked against its _install_ path. On a clean tree that dylib does not
    exist yet, so the step dies with "cannot find a usable native Tcl 9 tclsh" although the
    core compiled fine.
 
@@ -366,18 +366,18 @@ where nobody could see the source tree at all.
 
 ### 2.2 The port measured — and then declined
 
-*Settled 14 Sep. This section used to argue that the 2001 widget library ports cheaply. It
+_Settled 14 Sep. This section used to argue that the 2001 widget library ports cheaply. It
 does. The measurement stands and is reproduced below, because it is what makes the
-conclusion safe: we are not declining the port because it looked hard.*
+conclusion safe: we are not declining the port because it looked hard._
 
 The syntax check, re-run against the headers `build-tcltk` installs, with `PLATFORM_MAC`
 defined and `dbwin.h` stubbed:
 
-| State | Errors |
-|---|---:|
-| Untouched 2001 source | **433** |
-| After the three-rule mechanical sweep | **203** |
-| After a fourth rule — `Tk_Offset` → `offsetof` | **92** |
+| State                                          |  Errors |
+| ---------------------------------------------- | ------: |
+| Untouched 2001 source                          | **433** |
+| After the three-rule mechanical sweep          | **203** |
+| After a fourth rule — `Tk_Offset` → `offsetof` |  **92** |
 
 The three rules are `CONST`/`CONST84` → `const`, `ClientData` → `void *`, and `int objc` →
 `Tcl_Size objc`. The fourth was missing from the original assessment and matters more than
@@ -388,19 +388,19 @@ field. After it, `widget2-dll.c` falls from 160 errors to 49 and `plat-dll.c` to
 **So the port is cheap. It is also unnecessary, and that is the decision.** Taking the
 library file by file against what Tk 9 and 4.2 provide today:
 
-| File | Lines | What it does | What replaces it |
-|---|---:|---|---|
-| `icon-dll.c` | 4,037 | Tile engine — *and* `GetPix8`/`SetPix16`/`SetPix24`, `CountBits(mask)`, `InitRGBInfo`, RLE encode/decode, gzip | `Tk_PhotoPutBlock` takes RGBA. The pixel-format discovery and compression solve 1999 problems |
-| `widget2-dll.c` | 2,479 | Item types named `text`, `rectangle`, `progressbar`, `cursor` | Tk canvas has `text` and `rectangle`; `ttk::progressbar` is core; the cursor is a rectangle with `-outline yellow -width 2` |
-| `widget1-dll.c` | 2,455 | A custom canvas-like widget, `TkClassProcs`, private headers | `canvas`, plus Ttk |
-| `util-dll.c` | 1,446 | Utility layer | Tcl 9 core |
-| `qebind-dll.c` | 1,211 | "Send event-like messages to scripts and bind commands to them, with %-substitution like Tk's binding model" | **Core Tk virtual events** — see below |
-| `map-dll.c` | 1,171 | Map widget over 2.4.0's cave model | Rewritten against 4.2 either way |
-| `struct-dll.c` | 1,072 | Struct→Tcl accessors for 2.9.2-era structs | Rewritten against 4.2 either way |
-| `TclTk-dll.c` | 605 | Interpreter glue | Tcl 9 core |
-| `memory-dll.c` | 372 | Debug allocator (`dbcheck`) | Tcl 9's own |
-| `plat-dll.c` | 370 | Platform layer | **Zero usable lines** — every one is inside `#ifdef PLATFORM_WIN` or `#ifdef PLATFORM_X11`, with no `#else`. Under `PLATFORM_MAC` the file compiles to nothing |
-| `cmdinfo-dll.c` | 216 | Command info registry | Our own, over `cmds_all[]` |
+| File            | Lines | What it does                                                                                                   | What replaces it                                                                                                                                               |
+| --------------- | ----: | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `icon-dll.c`    | 4,037 | Tile engine — _and_ `GetPix8`/`SetPix16`/`SetPix24`, `CountBits(mask)`, `InitRGBInfo`, RLE encode/decode, gzip | `Tk_PhotoPutBlock` takes RGBA. The pixel-format discovery and compression solve 1999 problems                                                                  |
+| `widget2-dll.c` | 2,479 | Item types named `text`, `rectangle`, `progressbar`, `cursor`                                                  | Tk canvas has `text` and `rectangle`; `ttk::progressbar` is core; the cursor is a rectangle with `-outline yellow -width 2`                                    |
+| `widget1-dll.c` | 2,455 | A custom canvas-like widget, `TkClassProcs`, private headers                                                   | `canvas`, plus Ttk                                                                                                                                             |
+| `util-dll.c`    | 1,446 | Utility layer                                                                                                  | Tcl 9 core                                                                                                                                                     |
+| `qebind-dll.c`  | 1,211 | "Send event-like messages to scripts and bind commands to them, with %-substitution like Tk's binding model"   | **Core Tk virtual events** — see below                                                                                                                         |
+| `map-dll.c`     | 1,171 | Map widget over 2.4.0's cave model                                                                             | Rewritten against 4.2 either way                                                                                                                               |
+| `struct-dll.c`  | 1,072 | Struct→Tcl accessors for 2.9.2-era structs                                                                     | Rewritten against 4.2 either way                                                                                                                               |
+| `TclTk-dll.c`   |   605 | Interpreter glue                                                                                               | Tcl 9 core                                                                                                                                                     |
+| `memory-dll.c`  |   372 | Debug allocator (`dbcheck`)                                                                                    | Tcl 9's own                                                                                                                                                    |
+| `plat-dll.c`    |   370 | Platform layer                                                                                                 | **Zero usable lines** — every one is inside `#ifdef PLATFORM_WIN` or `#ifdef PLATFORM_X11`, with no `#else`. Under `PLATFORM_MAC` the file compiles to nothing |
+| `cmdinfo-dll.c` |   216 | Command info registry                                                                                          | Our own, over `cmds_all[]`                                                                                                                                     |
 
 `qebind` is the clearest case, because it was checked by running it rather than by reading
 it. Its own header describes core Tk's virtual events, and Tk 9 does exactly that:
@@ -416,12 +416,12 @@ plan counted as a 370-line port is 370 lines of the two platforms we are not on.
 
 **What the scripts actually depend on**, which is the cost of declining:
 
-| Script-visible API | Call sites | Files |
-|---|---:|---:|
-| `qeinstall` / `qeconfigure` / `qegenerate` | 137 | 12 |
-| `create text` / `create rectangle` | 223 | 53 |
-| `create cursor` | **3** | 3 |
-| `create progressbar` | **1** | 1 |
+| Script-visible API                         | Call sites | Files |
+| ------------------------------------------ | ---------: | ----: |
+| `qeinstall` / `qeconfigure` / `qegenerate` |        137 |    12 |
+| `create text` / `create rectangle`         |        223 |    53 |
+| `create cursor`                            |      **3** |     3 |
+| `create progressbar`                       |      **1** |     1 |
 
 The last two rows retire §1.5's warning that dropping the custom items "is not free". Four
 call sites. And the 223 in the row above are cheaper than they look, because Baker named his
@@ -456,11 +456,11 @@ honest price of the decision.
 
 ## 3. Architecture
 
-*Rewritten 11 Sep 2026. The previous version modelled the bridge as 190 accessor commands
+_Rewritten 11 Sep 2026. The previous version modelled the bridge as 190 accessor commands
 with Tcl reading game state and replying in keystrokes — the original's model, which it was
 forced into because 2.4.0 offered nothing else. 4.2 offers three more seams, and two of them
 retire whole command families outright. Everything below is checked against the tree rather
-than inferred from the archive.*
+than inferred from the archive._
 
 ### 3.1 What the original actually looked like
 
@@ -491,24 +491,24 @@ do the same, and it is what makes T1 useful on its own.
 The original bridge had **one** seam and everything followed from it: Tcl read game state
 through accessor commands, and pushed keystrokes back. That is why there are 190 commands,
 why `angband keypress` is the second most-used family in the whole script tree, and why
-`inkey_flags` exists at all — with only keystrokes to reply with, Tcl had to *infer* what
+`inkey_flags` exists at all — with only keystrokes to reply with, Tcl had to _infer_ what
 the game was currently asking before it could answer.
 
 4.2 has four seams. Three of them did not exist in 2001, and two of those retire a command
 family outright:
 
-| Direction | 4.2's seam | Retires | Verified at |
-|---|---|---|---|
-| **UI drives the game** | the typed command queue — `cmdq_push()` plus `cmd_set_arg_item / _direction / _point / _number / _string / _choice / _target` | `angband keypress` synthesis | [cmd-core.h:317-383](../../src/cmd-core.h#L317) |
-| **Game says something changed** | `event_add_handler()` / `event_add_handler_set()` over **66** event types | `qebind`'s game-coupled half | [game-event.h:29](../../src/game-event.h#L29), [:211](../../src/game-event.h#L211) |
-| **Game asks the UI a question** | **17 input hooks** — `get_item_hook`, `get_spell_from_book_hook`, `get_point_hook`, `get_quantity_hook`, `get_check_hook`, `view_abilities_hook` and the rest | `inkey_flags` inference | [game-input.h](../../src/game-input.h), installed at [ui-input.c:1788](../../src/ui-input.c#L1788) |
-| **UI reads state to draw** | nothing — this is the bridge we write | — | — |
+| Direction                       | 4.2's seam                                                                                                                                                    | Retires                      | Verified at                                                                                        |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------- |
+| **UI drives the game**          | the typed command queue — `cmdq_push()` plus `cmd_set_arg_item / _direction / _point / _number / _string / _choice / _target`                                 | `angband keypress` synthesis | [cmd-core.h:317-383](../../src/cmd-core.h#L317)                                                    |
+| **Game says something changed** | `event_add_handler()` / `event_add_handler_set()` over **66** event types                                                                                     | `qebind`'s game-coupled half | [game-event.h:29](../../src/game-event.h#L29), [:211](../../src/game-event.h#L211)                 |
+| **Game asks the UI a question** | **17 input hooks** — `get_item_hook`, `get_spell_from_book_hook`, `get_point_hook`, `get_quantity_hook`, `get_check_hook`, `view_abilities_hook` and the rest | `inkey_flags` inference      | [game-input.h](../../src/game-input.h), installed at [ui-input.c:1788](../../src/ui-input.c#L1788) |
+| **UI reads state to draw**      | nothing — this is the bridge we write                                                                                                                         | —                            | —                                                                                                  |
 
 **What this changes, concretely.** `keypress` (32 scripts) and `inkey_flags` (18) are the
-two largest families after `player`, and between them they are the *whole* of the old
+two largest families after `player`, and between them they are the _whole_ of the old
 input model. Both are replaced by API that already exists and is already typed: the front
 end pushes a `CMD_DROP` carrying an object pointer rather than synthesising `d` and then
-guessing which prompt arrived. A hook is *called with* its context and *returns* an answer,
+guessing which prompt arrived. A hook is _called with_ its context and _returns_ an answer,
 so there is nothing to infer.
 
 **What this does not change.** The fourth row is empty on 4.2's side, and it is the bulk.
@@ -527,10 +527,10 @@ write. So the honest revision is not "the bridge collapses":
 was going to be the fiddliest, not in the two-thirds that is merely long.
 
 > **The trap in the third row, and it is the important one.** The hooks belong to the
-> *text UI*, not to the front end. [`textui_init()`](../../src/ui-init.c#L44) calls
+> _text UI_, not to the front end. [`textui_init()`](../../src/ui-init.c#L44) calls
 > `textui_input_init()`, which installs all seventeen, and `main.c` calls it at
 > [line 565](../../src/main.c#L565) — before `play_game()`. So `main-tcl.c` links the whole
-> text UI and overrides hooks *after* that call, one at a time.
+> text UI and overrides hooks _after_ that call, one at a time.
 >
 > That is exactly the property that makes T1 → T7 incremental: **each native dialog is one
 > hook reassignment**, and everything not yet converted keeps working because the term
@@ -538,7 +538,7 @@ was going to be the fiddliest, not in the two-thirds that is merely long.
 > real rather than administrative.
 >
 > The caution: **nothing in the tree overrides an input hook today.** `main-gcu.c`,
-> `main-sdl2.c` and `main-win.c` all set *term* hooks and take textui's input hooks as they
+> `main-sdl2.c` and `main-win.c` all set _term_ hooks and take textui's input hooks as they
 > come. The seam is real, it is declared, and it is unexercised — T3 is its first consumer,
 > so budget for finding its rough edges rather than assuming a clean fit.
 
@@ -555,11 +555,11 @@ DEC-14 settles the model: `main-tcl.c` is a term backend, the game keeps its mai
 That gets you part of the UI. **Three tiers, not two** — the middle one is invisible from
 screenshots and is where the original did its best work ([OBS-15](phase3-observations.md)):
 
-| Tier | Fed by | Gets you |
-|---|---|---|
-| **Term windows** | 4.2's existing `ui-term.c` hooks — `Term_text`, `Term_pict`, `Term_curs`, `Term_xtra` | The map and messages, and any full-screen display we choose not to rebuild |
-| **Canvas text laid out as a terminal** | read accessors, drawn as canvas items | Character Info (1,170 lines) and the flags table (673). *Looks* classic; is addressable and clickable — which is how the original's `EXP` and `AC` labels toggled on click |
-| **Native widgets** | all four seams — accessors to draw, events to know when to redraw, hooks to answer prompts, the queue to act | Micro Map, Recall, Choice, the knowledge browsers — and the menus |
+| Tier                                   | Fed by                                                                                                       | Gets you                                                                                                                                                                   |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Term windows**                       | 4.2's existing `ui-term.c` hooks — `Term_text`, `Term_pict`, `Term_curs`, `Term_xtra`                        | The map and messages, and any full-screen display we choose not to rebuild                                                                                                 |
+| **Canvas text laid out as a terminal** | read accessors, drawn as canvas items                                                                        | Character Info (1,170 lines) and the flags table (673). _Looks_ classic; is addressable and clickable — which is how the original's `EXP` and `AC` labels toggled on click |
+| **Native widgets**                     | all four seams — accessors to draw, events to know when to redraw, hooks to answer prompts, the queue to act | Micro Map, Recall, Choice, the knowledge browsers — and the menus                                                                                                          |
 
 Note what is no longer in that table: the Misc panel and the Progress bars. Decision 16
 finished the main window at five panes, and both of those restated what the game's own
@@ -567,30 +567,30 @@ sidebar already shows.
 
 The middle tier matters because it dissolves a false choice. A player who reads the classic
 sheet fluently loses nothing by it being a canvas, and gains hover, colour and click. Reach
-for it wherever the classic layout *is* the right layout — bounded by §6 decision 9, which
+for it wherever the classic layout _is_ the right layout — bounded by §6 decision 9, which
 makes native the default and this the argued exception.
 
 Measured demand per command family, as script count. Read it now as **two lists, not one**:
 
-| Replaced by a 4.2 seam | Scripts | Still ours to write | Scripts |
-|---|---:|---|---:|
-| `keypress` → command queue | 32 | `player` | 36 |
-| `inkey_flags` → input hooks | 18 | `r_info` | 11 |
-| `sound` → `sound-core.c` (§4) | 9 | `k_info` / `inventory` | 10 each |
-| `setting` → 4.2's option table | 7 | `o_list` / `info` | 8 each |
-| `keymap` → 4.2's keymap API | 5 | `cave` | 7 |
-| | | `spell` / `mindcraft` | 6 each |
-| | | `store` / `m_list` / `power` / `equipment` | 5 each |
-| | | `game` / `system` | 10 each |
+| Replaced by a 4.2 seam         | Scripts | Still ours to write                        | Scripts |
+| ------------------------------ | ------: | ------------------------------------------ | ------: |
+| `keypress` → command queue     |      32 | `player`                                   |      36 |
+| `inkey_flags` → input hooks    |      18 | `r_info`                                   |      11 |
+| `sound` → `sound-core.c` (§4)  |       9 | `k_info` / `inventory`                     | 10 each |
+| `setting` → 4.2's option table |       7 | `o_list` / `info`                          |  8 each |
+| `keymap` → 4.2's keymap API    |       5 | `cave`                                     |       7 |
+|                                |         | `spell` / `mindcraft`                      |  6 each |
+|                                |         | `store` / `m_list` / `power` / `equipment` |  5 each |
+|                                |         | `game` / `system`                          | 10 each |
 
 **The rule this sets, and it applies to the right-hand column: keep the old command names
 wherever 4.2 has an equivalent concept.** It is the single highest-leverage decision in
 Phase 3 — it is what turns 108,000 lines of Tcl from a rewrite into an adaptation. Where
 4.2's concept genuinely differs, rename deliberately and fix the scripts; never rename for
 taste. The left-hand column is exempt: those scripts change no matter what they are called,
-because what they *do* is being replaced.
+because what they _do_ is being replaced.
 
-**`qebind` is replaced at both ends.** Its game-facing half — the event *sources* — becomes
+**`qebind` is replaced at both ends.** Its game-facing half — the event _sources_ — becomes
 one C shim over `event_add_handler`. Its Tcl-facing half, the binder, is core Tk: a
 `<<VirtualEvent>>` carries `-data` to `%d` in a bound script, which is what `qebind-dll.c`'s
 own header set out to provide (§2.2). Nothing of it is ported. The cost is 137 call sites
@@ -605,14 +605,14 @@ evidence of a hand-authored world. They are, and the evidence is stronger than t
 editor. But it does not carry over, because **Zangband changed its wilderness architecture
 between the version ZangbandTK was built on and the version this project derives from.**
 
-| | ZAngbandTk 2.4.0r5 (the running reference) | Zangband 2.7.5-preview ([archive/zangband/](../../archive/zangband/), the Phase 1–2 source) |
-|---|---|---|
-| `w_info.txt` | 1.1 KB | 23.7 KB |
-| Hand-drawn map rows (`W:D:`) | **10** — a literal 10×10 ASCII world | **0** |
-| What the file defines instead | Terrain letters, five towns at fixed coordinates, roads with N/S/E/W flags, a fixed start | **232 wilderness block types**, each as bounds in a 256×256×256 parameter space |
-| Parameters | none | `hgtmin/hgtmax` (height), `popmin/popmax` (population), `lawmin/lawmax` (law vs chaos), plus a generator function number |
-| Towns | 5 static templates, `t0000001.txt`–`t0000005.txt`, selected by `$TOWN` | generated |
-| World | **authored** | **generated** |
+|                               | ZAngbandTk 2.4.0r5 (the running reference)                                                | Zangband 2.7.5-preview ([archive/zangband/](../../archive/zangband/), the Phase 1–2 source)                              |
+| ----------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `w_info.txt`                  | 1.1 KB                                                                                    | 23.7 KB                                                                                                                  |
+| Hand-drawn map rows (`W:D:`)  | **10** — a literal 10×10 ASCII world                                                      | **0**                                                                                                                    |
+| What the file defines instead | Terrain letters, five towns at fixed coordinates, roads with N/S/E/W flags, a fixed start | **232 wilderness block types**, each as bounds in a 256×256×256 parameter space                                          |
+| Parameters                    | none                                                                                      | `hgtmin/hgtmax` (height), `popmin/popmax` (population), `lawmin/lawmax` (law vs chaos), plus a generator function number |
+| Towns                         | 5 static templates, `t0000001.txt`–`t0000005.txt`, selected by `$TOWN`                    | generated                                                                                                                |
+| World                         | **authored**                                                                              | **generated**                                                                                                            |
 
 2.4.0's whole world is these ten lines, towns and roads included:
 
@@ -629,19 +629,19 @@ between the version ZangbandTK was built on and the version this project derives
 ##########
 ```
 
-2.7.5 has no such map. Its `w_info.txt` is a table of block *types* selected by position in
+2.7.5 has no such map. Its `w_info.txt` is a table of block _types_ selected by position in
 parameter space — which is precisely the "height/population/law decision tree" the
 [Phase 2 M4 table](phase2-development-plan.md) already cites.
 
-**Settled — the wilderness stays generated.** Confirmed by project owner: *"I would not
-implement a static map - we stay with our generated one."* This changes nothing in Phase 2;
+**Settled — the wilderness stays generated.** Confirmed by project owner: _"I would not
+implement a static map - we stay with our generated one."_ This changes nothing in Phase 2;
 M4 was already built on 2.7.5's generator. Recording it because the running reference
-demonstrates the *other* design persuasively, and someone will ask again.
+demonstrates the _other_ design persuasively, and someone will ask again.
 
 **Three consequences for Phase 3, which is why this sits here and not only in Phase 2:**
 
 1. **It settles §6 decision 2 harder.** `town.vlt` and `t0000001-dg32.vlt`–`t0000004…` are
-   icon assignments *per static town template*. With generated towns there are no templates
+   icon assignments _per static town template_. With generated towns there are no templates
    to paint, so the vault editor loses its main use case outright rather than merely being
    redundant. Drop `tk/vault/` — 6,065 lines — without hesitation.
 2. **The overhead world map (WLD-25) has a different hook.** 2.7.5's `w_info.txt` carries an
@@ -653,7 +653,7 @@ demonstrates the *other* design persuasively, and someone will ask again.
    from §1.5 still apply, but "fit the whole world in the window" does not. Design the
    Micro Map around the current chunk neighbourhood, not the world.
 
-*Content worth keeping regardless:* the five town names — **Outpost, Telmora, Morivant,
+_Content worth keeping regardless:_ the five town names — **Outpost, Telmora, Morivant,
 Angwil** and **Wilderness** — are Zangband's own, and are cheap to preserve as generated
 towns' names. Check them against DEC-01's Amber target before adopting them wholesale.
 
@@ -661,15 +661,15 @@ towns' names. Check them against DEC-01's Amber target before adopting them whol
 
 ## 4. The three-way split of the old code
 
-*Was four-way. The two Port rows are gone: **no 2001 C is compiled into ZangbandTK/Tk**
+_Was four-way. The two Port rows are gone: **no 2001 C is compiled into ZangbandTK/Tk**
 (§6 decision 15). What was going to be ported is now either replaced by core Tk 9 and 4.2,
-or read as reference and written fresh — the file-by-file argument is §2.2.*
+or read as reference and written fresh — the file-by-file argument is §2.2._
 
-| Verdict | What | Lines | Note |
-|---|---|---:|---|
-| **Reference** | the whole of `common-dll/` — `icon-dll.c`, `widget1/2-dll.c`, `qebind-dll.c`, `map-dll.c`, `struct-dll.c`, `util-dll.c`, `TclTk-dll.c`, `plat-dll.c`, `memory-dll.c`, `cmdinfo-dll.c` | ~16,500 | Read, do not compile. The four algorithms worth the reading are named in §2.2. |
-| **Rewrite against 4.2** | `interp1.c`, `interp2.c`, `struct.c`, `town.c`, `describe.c`, `r_info.c`, `birth-tnb.c`, `wor-z.c`, `file_character.c`, `main-tnb.c` | ~24,800 | The bulk of Phase 3 — and now the whole of the C. |
-| **Drop** | see below | ~10,000 | |
+| Verdict                 | What                                                                                                                                                                                  |   Lines | Note                                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------: | ------------------------------------------------------------------------------ |
+| **Reference**           | the whole of `common-dll/` — `icon-dll.c`, `widget1/2-dll.c`, `qebind-dll.c`, `map-dll.c`, `struct-dll.c`, `util-dll.c`, `TclTk-dll.c`, `plat-dll.c`, `memory-dll.c`, `cmdinfo-dll.c` | ~16,500 | Read, do not compile. The four algorithms worth the reading are named in §2.2. |
+| **Rewrite against 4.2** | `interp1.c`, `interp2.c`, `struct.c`, `town.c`, `describe.c`, `r_info.c`, `birth-tnb.c`, `wor-z.c`, `file_character.c`, `main-tnb.c`                                                  | ~24,800 | The bulk of Phase 3 — and now the whole of the C.                              |
+| **Drop**                | see below                                                                                                                                                                             | ~10,000 |                                                                                |
 
 **What goes in `src/tcl/` instead**, written against Tk 9 and 4.2 rather than inherited:
 the four seams of §3.2, the read accessors, and a tile layer over `Tk_PhotoPutBlock`. It is
@@ -681,14 +681,14 @@ it arrives with a 1999 pixel format in it.
 - **`sound.c` (2,705 lines) and all seven sound backends.** 4.2 already has
   [sound-core.c](../../src/sound-core.c), [snd-sdl.c](../../src/snd-sdl.c) and **213**
   packaged sounds. Building a second sound system beside it would be perverse. This is
-  *better* than DEC-12's "sound is already solved — seven pluggable backends exist": the
+  _better_ than DEC-12's "sound is already solved — seven pluggable backends exist": the
   right move is to drop all seven and expose 4.2's own to Tcl. **The 208 archived `.wav`
   files go too** — they are personal-use-only material that cannot be redistributed
   (§1.4). What survives from the old sound system is `grund.snd`'s event vocabulary.
 - **Jam / JamTk / the `.jamtk` project files.** Replaced by a `TCL_Frontend.cmake` module
   matching the existing [src/cmake/macros/](../../src/cmake/macros/) pattern.
 - **The `common-dll` / `main-boot.c` DLL split and the stub generator** (`shlib.c`,
-  `stubs.c`, all ten `*-dll.h`). That existed so one launcher could host four *bands. We
+  `stubs.c`, all ten `*-dll.h`). That existed so one launcher could host four \*bands. We
   ship one game; link it statically.
 - **`dbwin`, `TclZip`, `TkHtml`, `Img`, `UpgradeTool`, `install.exe`.** All three binary Tcl
   extensions the original needed are dead, and **Tk 9 core replaces every one**: PNG reading
@@ -701,7 +701,7 @@ it arrives with a 1999 pixel format in it.
 - **`savefile-z.c` (1,240 lines).** It existed to read savefile metadata without loading a
   game, for the Open dialog's character list. 4.2 has that as public API —
   `savefile_getter`, `got_savefile()`, `get_savefile_details()` returning `{fnam, desc,
-  foff}` ([ui-game.h:50](../../src/ui-game.h#L50)). Dropped, not rewritten. See
+foff}` ([ui-game.h:50](../../src/ui-game.h#L50)). Dropped, not rewritten. See
   [OBS-01](phase3-observations.md).
 
 **Two open calls, not yet decided** — see §6.
@@ -713,8 +713,9 @@ it arrives with a 1999 pixel format in it.
 Each ends with something runnable. T1 is the one to aim at before deciding anything else.
 
 ### T0 — Build foundation
-*No visible change. Everything here is cheap now and expensive to retrofit, which is the
-only reason any of it is in the first milestone.*
+
+_No visible change. Everything here is cheap now and expensive to retrofit, which is the
+only reason any of it is in the first milestone._
 
 - ✅ **`scripts/build-tcltk`** — done, 11 Sep. Builds both from `tcltk/` into `tcltk/local`
   in about two minutes; see §2.1 for what it verifies and the three traps it encodes.
@@ -747,7 +748,7 @@ twice — see §6 decisions 11–13:
 - ✅ **The test harness**, per §9 — `scripts/run-tcl-tests` and `src/tcl/tests`. Three real
   tests rather than zero: every script in `lib/tcl` parses, `main.tcl` is where
   `ANGBAND_DIR_TCL` looks, and it still sets `angband(cellw)`/`(cellh)` and creates
-  `.term`. The runner exits non-zero when tests fail *and* when none ran — tcltest exits 0
+  `.term`. The runner exits non-zero when tests fail _and_ when none ran — tcltest exits 0
   on failure, and a `package require Tk` in a headless runner silently runs nothing at all.
 
 **Exit:** ✅ **met, 17 Sep.** `cmake -DSUPPORT_TCL_FRONTEND=ON -DTCLTK_PREFIX=…` builds;
@@ -756,7 +757,7 @@ toolchain, the front end and the bundle, and runs the Tcl tests. Terminal builds
 and `check-build-lists` clean.
 
 > **What T0 cost that the plan did not predict, all of it bundle-only.** Every one of these
-> presented as *the application does nothing when you launch it*, and none could have been
+> presented as _the application does nothing when you launch it_, and none could have been
 > found by a build that runs from a terminal:
 >
 > - Launch Services starts an application with no `LANG`, so `setlocale` lands on `"C"` and
@@ -766,7 +767,7 @@ and `check-build-lists` clean.
 > - **Tk redirects stdout and stderr to `/dev/null`** for a bundled application, which is
 >   why none of the above announced itself, and why a silent failure path in the front end
 >   became a segfault in `Term_clear` with nothing on screen.
-> - After any crash, macOS raises "it quit while reopening windows" *from inside `Tk_Init`*,
+> - After any crash, macOS raises "it quit while reopening windows" _from inside `Tk_Init`_,
 >   before there is a window — so one crash makes every later launch look like a permanent
 >   hang. `NSQuitAlwaysKeepsWindows=false` retires it.
 > - Two bundles sharing an identifier really do fight over Launch Services, which decision
@@ -781,7 +782,8 @@ and `check-build-lists` clean.
 ---
 
 ### T1 — A window that plays
-*First playable ZangbandTK/Tk. The milestone that pays for itself.*
+
+_First playable ZangbandTK/Tk. The milestone that pays for itself._
 
 - Term hooks: `Term_text`, `Term_wipe`, `Term_curs`, `Term_xtra` (clear, flush, react,
   event, delay), plus font metrics and resize.
@@ -794,19 +796,20 @@ and `check-build-lists` clean.
 text. Everything 4.2 can draw in a terminal is drawable here.
 
 > **On the pre-game shell.** The original opened a launcher — New / Open / Setup / Quit —
-> *before* any game existed, and drove startup from Tcl ([OBS-01](phase3-observations.md)).
+> _before_ any game existed, and drove startup from Tcl ([OBS-01](phase3-observations.md)).
 > DEC-14 accommodates that without amendment: 4.2 initialises the front end before
 > [main.c:579](../../src/main.c#L579)'s `play_game(GAME_SELECT | GAME_NEW | GAME_LOAD)`, so
 > there is already a window where Tk is alive and no game has started. T1 uses the
 > term-rendered `GAME_SELECT` path; the native launcher lands in T9.
 
 > This is where the phase-2 §5 argument cashes out. From T1 on, the wilderness generator is
-> observable. If M4 is being built at the same time, T0–T1 should come *before* it.
+> observable. If M4 is being built at the same time, T0–T1 should come _before_ it.
 
 ---
 
 ### T2 — Tiles
-*The 16px map from the screenshots.*
+
+_The 16px map from the screenshots._
 
 - Write the tile layer over `Tk_PhotoPutBlock` and wire `Term_pict` to 4.2's
   `lib/tiles/list.txt` graphics modes. Read `icon-dll.c`'s four algorithms first (§2.2);
@@ -824,71 +827,73 @@ text. Everything 4.2 can draw in a terminal is drawable here.
   findings converge here and should land together: composable modes (§6 decision 5) and
   animation frames ([OBS-36](phase3-observations.md)).
 
-  > **Lighting turned out to be already done, and by the tileset rather than the front
-  > end.** This bullet used to say that 4.2 hands the front end four states per grid
-  > (`LIGHTING_LOS/TORCH/LIT/DARK`, [cave.h:139](../../src/cave.h#L139)) and handles them by
-  > shifting a colour attribute, which works for a letter and not for a tile — so darkened
-  > variants would have to be generated by gamma, as the original settled on in its last
-  > release ([OBS-47](phase3-observations.md)).
-  >
-  > That is not what happens. `feat_x_attr[lighting][feat]`
-  > ([ui-map.c:231](../../src/ui-map.c#L231)) indexes the *pref file* by lighting state, and
-  > the Neon set declares all four for all 42 features — 168 `feat:` entries. Measured from
-  > the sheet, mean brightness per tile:
-  >
-  > | | torch | los/lit | dark |
-  > |---|---:|---:|---:|
-  > | Wall (`CLOSED`) | 137 | 98 | 63 |
-  > | `MAGMA` | 133 | 82 | 45 |
-  > | `RUBBLE` | 80 | 63 | 38 |
-  > | `FLOOR` | 9 | 5 | 3 |
-  >
-  > A two- to threefold range, and visible in play. Nothing to build for terrain.
-  >
-  > **What is still missing, and it is much smaller than the above:** monsters, objects,
-  > traps and flavours carry one tile each in every set, so an object remembered in the dark
-  > draws as brightly as one under your torch. ~~And the other sets cover terrain only
-  > partly~~ — they do not: recounted, all five sets declare all four states for all
-  > forty-two features. See the generated-darkening bullet below, which is now done.
+    > **Lighting turned out to be already done, and by the tileset rather than the front
+    > end.** This bullet used to say that 4.2 hands the front end four states per grid
+    > (`LIGHTING_LOS/TORCH/LIT/DARK`, [cave.h:139](../../src/cave.h#L139)) and handles them by
+    > shifting a colour attribute, which works for a letter and not for a tile — so darkened
+    > variants would have to be generated by gamma, as the original settled on in its last
+    > release ([OBS-47](phase3-observations.md)).
+    >
+    > That is not what happens. `feat_x_attr[lighting][feat]`
+    > ([ui-map.c:231](../../src/ui-map.c#L231)) indexes the _pref file_ by lighting state, and
+    > the Neon set declares all four for all 42 features — 168 `feat:` entries. Measured from
+    > the sheet, mean brightness per tile:
+    >
+    > |                 | torch | los/lit | dark |
+    > | --------------- | ----: | ------: | ---: |
+    > | Wall (`CLOSED`) |   137 |      98 |   63 |
+    > | `MAGMA`         |   133 |      82 |   45 |
+    > | `RUBBLE`        |    80 |      63 |   38 |
+    > | `FLOOR`         |     9 |       5 |    3 |
+    >
+    > A two- to threefold range, and visible in play. Nothing to build for terrain.
+    >
+    > **What is still missing, and it is much smaller than the above:** monsters, objects,
+    > traps and flavours carry one tile each in every set, so an object remembered in the dark
+    > draws as brightly as one under your torch. ~~And the other sets cover terrain only
+    > partly~~ — they do not: recounted, all five sets declare all four states for all
+    > forty-two features. See the generated-darkening bullet below, which is now done.
+
 - **Generated darkening, for what the tilesets do not cover.** ~~the four non-Neon sets
   cover terrain only partly~~ — **done, and the premise was half wrong.**
 
-  > Counted across all five sets: every one declares all four lighting states for all
-  > forty-two features, and no dark entry is identical to its lit one. The earlier figures
-  > here (11 dark variants in Adam Bolt, 15 in Gervais, 5 in Nomad) came from reading one of
-  > each set's two pref files and matching the lighting field as a number when it is a name.
-  > **There is nothing to generate for terrain, in any set.**
-  >
-  > What was real is the other half: monsters, objects, traps and flavours carry one tile
-  > each, so a thing the character only remembers was drawn exactly as brightly as one in
-  > front of them. That is now dimmed in `blit_tile`, on the foreground tile only, when
-  > `square_isseen()` says the grid is remembered rather than seen.
-  >
-  > **The factor is measured, not chosen: 0.81.** Four of the five sets declare separate
-  > terrain tiles for "in line of sight" and "seen before, not now", and across 114 features
-  > the median brightness ratio between them is 0.81 (old 0.81, Adam Bolt 0.81, Gervais
-  > 0.80, Nomad 0.88). Neon is the exception — it uses one tile for both — which is why the
-  > number comes from the other four. Verified by building the same scene twice and
-  > differencing: 0.804 measured on the pixels that changed.
-  >
-  > Two things worth keeping:
-  >
-  > - **`map_info()` is not safe to call from a drawing routine** — it calls
-  >   `square_memorize()`. The predicate is `square_isseen()` instead, which is also the
-  >   distinction that matters: the lighting states `map_info` actually produces in play are
-  >   LOS, TORCH and LIT, and LIT is precisely "known, but not in view". LIGHTING_DARK only
-  >   ever appears for a `PF_UNLIGHT` character.
-  > - No cache was needed. The overlay branch of `Term_pict` fires only where something
-  >   stands on the terrain — measured at one to three cells per redraw in a town and a
-  >   dungeon, against roughly 1,900 cells in total — so the multiply happens where the
-  >   pixels are already being copied and costs nothing worth caching.
-- **Design the icon layer so a tile lookup may return an *animation*, not just a tile.**
+    > Counted across all five sets: every one declares all four lighting states for all
+    > forty-two features, and no dark entry is identical to its lit one. The earlier figures
+    > here (11 dark variants in Adam Bolt, 15 in Gervais, 5 in Nomad) came from reading one of
+    > each set's two pref files and matching the lighting field as a number when it is a name.
+    > **There is nothing to generate for terrain, in any set.**
+    >
+    > What was real is the other half: monsters, objects, traps and flavours carry one tile
+    > each, so a thing the character only remembers was drawn exactly as brightly as one in
+    > front of them. That is now dimmed in `blit_tile`, on the foreground tile only, when
+    > `square_isseen()` says the grid is remembered rather than seen.
+    >
+    > **The factor is measured, not chosen: 0.81.** Four of the five sets declare separate
+    > terrain tiles for "in line of sight" and "seen before, not now", and across 114 features
+    > the median brightness ratio between them is 0.81 (old 0.81, Adam Bolt 0.81, Gervais
+    > 0.80, Nomad 0.88). Neon is the exception — it uses one tile for both — which is why the
+    > number comes from the other four. Verified by building the same scene twice and
+    > differencing: 0.804 measured on the pixels that changed.
+    >
+    > Two things worth keeping:
+    >
+    > - **`map_info()` is not safe to call from a drawing routine** — it calls
+    >   `square_memorize()`. The predicate is `square_isseen()` instead, which is also the
+    >   distinction that matters: the lighting states `map_info` actually produces in play are
+    >   LOS, TORCH and LIT, and LIT is precisely "known, but not in view". LIGHTING_DARK only
+    >   ever appears for a `PF_UNLIGHT` character.
+    > - No cache was needed. The overlay branch of `Term_pict` fires only where something
+    >   stands on the terrain — measured at one to three cells per redraw in a town and a
+    >   dungeon, against roughly 1,900 cells in total — so the multiply happens where the
+    >   pixels are already being copied and costs nothing worth caching.
+
+- **Design the icon layer so a tile lookup may return an _animation_, not just a tile.**
   Zangband's sprites are frame sequences with a delay factor and a ping-pong flag — three
   fields, 74 lines of data, and 4.2 has no equivalent ([OBS-36](phase3-observations.md)).
   Cheap to add now, threaded through everything if retrofitted. Authoring any sprites in the
   first pass is a separate question.
 - **The Photo feature and the tileset preview are the same feature** — the original's
-  preview specs *are* photo captures, same file format
+  preview specs _are_ photo captures, same file format
   ([OBS-20](phase3-observations.md)). Build one and the other is nearly free; store
   monsters and objects by name, not by index.
 - **A tileset chooser with a live preview**, settled in [OBS-02](phase3-observations.md):
@@ -903,7 +908,8 @@ corridor.
 ---
 
 ### T3 — The bridge spine
-*No new UI. Everything after this depends on it.*
+
+_No new UI. Everything after this depends on it._
 
 **Build all four seams from §3.2 before any of the read accessors.** They are what every
 later milestone is written against, and three of the four are thin wrappers over API that
@@ -927,7 +933,7 @@ Plus:
 
 - **Expose 4.2's command table** — [`cmds_all[]`](../../src/ui-game.c#L386)'s named groups,
   [`struct cmd_info`](../../src/ui-input.h#L44)'s label, keys, `cmd_code` and prereq
-  predicate, and `cmd_lookup_key()` for the *live* binding. This is what lets T7 generate
+  predicate, and `cmd_lookup_key()` for the _live_ binding. This is what lets T7 generate
   the menu bar instead of hand-authoring it ([OBS-17](phase3-observations.md)).
 - Establish the naming rule from §3.3 as a **written map**: old command → 4.2 concept →
   kept, renamed, replaced by a seam, or dropped. This document is the deliverable, and it is
@@ -980,7 +986,7 @@ work — the debug loop exists before the UI does — and one scripted session r
 > is refused with a message saying why — it wants a `struct object *`, and a script has no
 > way to name one until the read accessors land in T6.
 >
-> What this does **not** yet show is a pushed command being *carried out*. Nothing drains
+> What this does **not** yet show is a pushed command being _carried out_. Nothing drains
 > `CTX_GAME` until there is a character, and birth is driven by `ui-birth.c`'s own menus, so
 > the end-to-end proof belongs with T8 — at which point the harness can create a character
 > without a keyboard and the same test can watch the player move.
@@ -989,7 +995,7 @@ work — the debug loop exists before the UI does — and one scripted session r
 > of the game's eighteen input hooks and `angband_hook check {}` gives it back. The original
 > is kept, not overwritten, which is what makes T4–T8 independent of each other: each
 > replaces exactly one prompt and the rest keep answering the way they always did. A script
-> that *fails* falls through to the original, because a dialog with a bug in it must not be
+> that _fails_ falls through to the original, because a dialog with a bug in it must not be
 > able to wedge the game at a prompt.
 >
 > Eight are answerable so far — `string`, `quantity`, `check`, `com`, `rep_dir`, `aim_dir`,
@@ -1057,9 +1063,9 @@ work — the debug loop exists before the UI does — and one scripted session r
 > The pane carried `PW_MAP` — the game's own scaled level map, which fits the level to the
 > pane and follows the player. That was replaced with a front-end-drawn world map, pannable
 > by mouse drag, on the reasoning that on the surface the level is one square of wilderness.
-> Reverted at the player's request: *"The version before worked really well, it showed a good
+> Reverted at the player's request: _"The version before worked really well, it showed a good
 > scale minimap and moved with the player. The new version does not scale well, does not move
-> with the player and is hard to read."*
+> with the player and is hard to read."_
 >
 > Worth keeping from the attempt, for whenever it is tried again:
 >
@@ -1086,6 +1092,7 @@ work — the debug loop exists before the UI does — and one scripted session r
 ---
 
 ### T4 — The player, and the first window that is not a pane
+
 `player` — 48 distinct subcommands, 434 calls across 43 scripts, a fifth of everything the old
 scripts asked C for — and `power`.
 
@@ -1096,13 +1103,13 @@ survives is the part everything after it needs.
 
 **Where the 48 come from in this tree,** which is what decides the work:
 
-| | Where it reads from | Examples |
-|---|---|---|
-| Straight off `struct player` | [player.h](../../src/player.h) | `name` (39), `class` (18), `race` (14), `gold` (12), `depth` (24), `max_depth`, `sex`, `history`, `position` |
-| Derived, from `player_state` | recomputed by the game; we only read | `armor_class` (`ac`/`to_a`), `to_hit` (`to_h`), `to_dam` (`to_d`), `blows_per_round` (`num_blows`), `shots_per_round` (`num_shots`), `infravision` (`see_infra`), speed, light |
-| Tracking, from `player->upkeep` | | `health_who`, `monster_race_idx`, `new_spells` (22), `running`, `command_rep` (`cmd_get_nrepeats()`) |
-| This tree's own systems | all present, none of them 4.2's | `inside_quest` (26), `pets` (10), `inside_arena` (8), `mutations`, `virtues`, `patron`, and `struct player_power` |
-| Genuinely gone | | `deadliness_conversion` (8), `life_rating` (4) — Zangband combat maths 4.2 replaced |
+|                                 | Where it reads from                  | Examples                                                                                                                                                                       |
+| ------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Straight off `struct player`    | [player.h](../../src/player.h)       | `name` (39), `class` (18), `race` (14), `gold` (12), `depth` (24), `max_depth`, `sex`, `history`, `position`                                                                   |
+| Derived, from `player_state`    | recomputed by the game; we only read | `armor_class` (`ac`/`to_a`), `to_hit` (`to_h`), `to_dam` (`to_d`), `blows_per_round` (`num_blows`), `shots_per_round` (`num_shots`), `infravision` (`see_infra`), speed, light |
+| Tracking, from `player->upkeep` |                                      | `health_who`, `monster_race_idx`, `new_spells` (22), `running`, `command_rep` (`cmd_get_nrepeats()`)                                                                           |
+| This tree's own systems         | all present, none of them 4.2's      | `inside_quest` (26), `pets` (10), `inside_arena` (8), `mutations`, `virtues`, `patron`, and `struct player_power`                                                              |
+| Genuinely gone                  |                                      | `deadliness_conversion` (8), `life_rating` (4) — Zangband combat maths 4.2 replaced                                                                                            |
 
 > **`power` is a Kept family, not a dropped one.** The command map first wrote it off, reading
 > this tree as if it were stock 4.2. It is not: ZangbandTK has restored `struct player_power`,
@@ -1148,7 +1155,7 @@ window, reads live, and closes without disturbing the game.
 >   `ui-player.c` prints — and the trick stays in C.
 > - **`position` and `turn` are not on the sheet**, though `angband_player` has both. No
 >   Angband character sheet has ever shown either, and they are the two fields the game
->   changes *without announcing*: measured, the events fire during a move and the turn counter
+>   changes _without announcing_: measured, the events fire during a move and the turn counter
 >   advances after them, so a sheet carrying them would be visibly one step stale after every
 >   step.
 >
@@ -1175,7 +1182,8 @@ window, reads live, and closes without disturbing the game.
 ---
 
 ### T5 — Map widget and Micro Map
-> **On hold.** *"Right now the map works ok. I am not sure that these changes improve it."*
+
+> **On hold.** _"Right now the map works ok. I am not sure that these changes improve it."_
 > The pane carries `PW_MAP` and the game draws it, which is what the attempt in T4's week
 > failed to better. The four findings from that attempt are recorded under T3's minimap note
 > and are the starting conditions for whenever this is picked up.
@@ -1193,6 +1201,7 @@ original running side by side.
 ---
 
 ### T6 — Knowledge and recall
+
 `r_info` (11), `k_info` (10), `a_info`, `info`, and `describe`. Recall is already a pane; the
 knowledge browsers are **windows that open** (decision 16), not panes.
 
@@ -1249,14 +1258,14 @@ knowledge browsers are **windows that open** (decision 16), not panes.
 >   markers the game draws with, not things.
 > - **A flavour is the whole name.** An unidentified potion is called "Green", not "Green
 >   Potion", so a search for "potion" found none of the forty-six this character had seen.
->   Both lists now match the name *or* the kind — a monster's base as readily as its name,
+>   Both lists now match the name _or_ the kind — a monster's base as readily as its name,
 >   since "canine" is as likely a thing to type as "jackal" — and case-insensitively.
 > - **`string totitle` damages a name that is already capitalised**, turning "Wooden Torch"
 >   into "Wooden torch". Only the first letter, and only because monsters are lowercase by
 >   convention.
 >
 > And two more Tk traps, which between them are the same lesson from both ends: inside a
-> `classical::` proc a *qualified* name resolves relative to the namespace, so
+> `classical::` proc a _qualified_ name resolves relative to the namespace, so
 > `set classical::tabkeys(...)` looks for `classical::classical::` and fails — while the
 > searchbox trace needed `::` precisely because that proc had no link to the variable at all.
 > `variable` in one, `::` in the other.
@@ -1277,7 +1286,7 @@ knowledge browsers are **windows that open** (decision 16), not panes.
 > Two naming findings, both from looking at the output:
 >
 > - **`a_info` stores the suffix.** "of Galadriel", "'Angrist'" — the game appends them to
->   whatever the artifact is *of*. Alone they read as fragments, and capitalising one gives
+>   whatever the artifact is _of_. Alone they read as fragments, and capitalising one gives
 >   "Of Galadriel". The base kind goes in front.
 > - **`kind->name` is a template, not a name**: "& Phial~", where `&` is the article and `~`
 >   the plural mark. `object_kind_name()` is what hands back a name a player would read, and
@@ -1309,7 +1318,7 @@ knowledge browsers are **windows that open** (decision 16), not panes.
 > **The Character window is a four-page home.** Info, Virtues, Mutations, Notes — the
 > identity header and the three meters stay above the tabs, because they are the live part
 > and every page wants them. `angband_virtue`, `angband_mutation` and `angband_history` each
-> take one verb, `list`, since each is about *this* character and there is nothing to search.
+> take one verb, `list`, since each is about _this_ character and there is nothing to search.
 >
 > **Flags is not there, and that is the point.** OBS-21 asks for five tabs, but the
 > resistance grid is built from `ui-entry.h`'s iterator with a column per equipment slot, and
@@ -1354,12 +1363,12 @@ knowledge browsers are **windows that open** (decision 16), not panes.
 > term build cannot recolour at all, so this is additive.
 
 > **No selectable element without its selector shown.** The rule is broader than menus: the
-> store's hover tooltip reads *"g) a Katana"*, spell tables carry their letters, menus carry
+> store's hover tooltip reads _"g) a Katana"_, spell tables carry their letters, menus carry
 > their accelerators ([OBS-48](phase3-observations.md)). A mouse-driven player is taught the
 > keyboard continuously, in every list. That is the front end's thesis in one line.
 
 > **Show the whole space, and make the delta unmissable.** The original consistently shows
-> what you *don't* have alongside what you do — every equipment slot drawn even when empty,
+> what you _don't_ have alongside what you do — every equipment slot drawn even when empty,
 > all forty flags listed, all four realm books on the Book menu when you own one
 > ([OBS-38](phase3-observations.md)). That is the front end's real thesis, and it is what
 > accelerators-beside-menu-items are for too: the UI teaches the game's shape rather than
@@ -1371,12 +1380,12 @@ knowledge browsers are **windows that open** (decision 16), not panes.
 > reproduced a usability problem rather than a feature: the coupled window group
 > ([OBS-16](phase3-observations.md)) and the Flags table, whose greyed-out rows outnumber
 > its marks and whose labels sit a screen away from them
-> ([OBS-22](phase3-observations.md)). The *ideas* — placeholder equipment slots,
+> ([OBS-22](phase3-observations.md)). The _ideas_ — placeholder equipment slots,
 > accelerators beside menu items, the linked cursor, the live character in the score table —
 > are what to carry across. The 1999 pixel arrangements around them are not.
 
 > **One universal detail pane, with a typed API.** Recall is not the monster-memory window —
-> it is the detail pane for *everything*, driven by whatever the pointer is over, with
+> it is the detail pane for _everything_, driven by whatever the pointer is over, with
 > `RecallArtifact` / `RecallMonster` / `RecallObject` / `RecallSpell` / `RecallQuest` / … and
 > **25 of 69 scripts feeding it** ([OBS-41](phase3-observations.md)). Build one widget with
 > that typed API rather than a detail display per window: one thing to get right, and one
@@ -1397,13 +1406,14 @@ knowledge browsers are **windows that open** (decision 16), not panes.
 > **Empty states must explain themselves.** The original showed a blank Notes tab when
 > note-taking was switched off, with no hint why ([OBS-22](phase3-observations.md)). Same
 > failure class as offering menu items the character cannot use: the interface knows what
-> the player needs to know and does not say it. Every empty panel says *why* it is empty,
+> the player needs to know and does not say it. Every empty panel says _why_ it is empty,
 > with the fix one click away.
 
 ---
 
 ### T7 — The menus
-*The milestone the whole front end exists for.*
+
+_The milestone the whole front end exists for._
 
 `inventory` (10), `equipment`, `store`, `home`, `spell`, `mindcraft`, `keymap`, `macro`.
 Delivers Choice, the Inven/Book/Action menu bar, stores, and the building services Zangband
@@ -1417,18 +1427,19 @@ adds in phase-2 M5.
   friends.~~ **They cannot be, and this is the finding of the milestone.** Those are not
   predicates: five of the six in `cmds_all` are `player_can_*(p, true)`, where the second
   argument is `show_msg`, and the sixth puts up a confirmation dialog. They exist to be run
-  *after* the player has pressed the key, so the refusal explains itself.
+  _after_ the player has pressed the key, so the refusal explains itself.
 
-  Measured: asking all 132 in a row got as far as "Gain new spells" and stopped dead, because
-  a run of messages reaches `-more-` and `-more-` waits for a keypress. `cmd->prereq()` is
-  called in exactly one place in the whole game — [ui-game.c:671](../../src/ui-game.c#L671) —
-  and 4.2's own command menu greys nothing at all.
+    Measured: asking all 132 in a row got as far as "Gain new spells" and stopped dead, because
+    a run of messages reaches `-more-` and `-more-` waits for a keypress. `cmd->prereq()` is
+    called in exactly one place in the whole game — [ui-game.c:671](../../src/ui-game.c#L671) —
+    and 4.2's own command menu greys nothing at all.
 
-  So the menu asks the quiet half of each pair, which already exists;
-  `command_available()` maps the six by function pointer, and **an unknown prereq is reported
-  as available rather than called**, since a new one upstream would otherwise hang the menu
-  the first time it was opened. The dispatch still calls the real one: there the message is
-  the point.
+    So the menu asks the quiet half of each pair, which already exists;
+    `command_available()` maps the six by function pointer, and **an unknown prereq is reported
+    as available rather than called**, since a new one upstream would otherwise hang the menu
+    the first time it was opened. The dispatch still calls the real one: there the message is
+    the point.
+
 - **T7 is five reusable widgets, not twenty screens** ([OBS-50](phase3-observations.md)):
   a **transfer window** (Store/Home — verbs, money on/off, owner), a **building window**
   (name, owner, service list), a **generic table** (Book/Powers/Mindcraft/Pets, and arguably Knowledge and
@@ -1438,9 +1449,9 @@ adds in phase-2 M5.
   command.** The original's unevenness is unfinished work, not a design
   ([OBS-43](phase3-observations.md)): the change log shows commands being converted one per
   release for three years until development stopped. But the fix is not to finish the
-  conversion. The test is what the command asks: *choosing from a list* (eat, quaff, read,
-  drop, throw) is served completely by a good generic pane; *understanding a structured
-  space* (equipment, a realm's books, a store, knowledge) earns a bespoke window because the
+  conversion. The test is what the command asks: _choosing from a list_ (eat, quaff, read,
+  drop, throw) is served completely by a good generic pane; _understanding a structured
+  space_ (equipment, a realm's books, a store, knowledge) earns a bespoke window because the
   structure is the information. That bounds this milestone instead of leaving it open-ended.
 - **The Book window as a sortable five-column table** — Name, Lv, Mana, Fail, Info — which
   is [ui-spell.c:249](../../src/ui-spell.c#L249)'s existing header and
@@ -1471,17 +1482,18 @@ adds in phase-2 M5.
 > the same concern as "how are objects described?" ([OBS-34](phase3-observations.md)). Each
 > needs a small declarative map, and anything unmapped falls through to a default so a new
 > 4.2 entry can never go missing — only uncategorised.
+
 - **Two accelerator namespaces, kept apart.** Game keys (`^F`, `^P`, `^Q`, `^T`, `^S`, `^X`
-  and every letter command) stay literal Control, because they *are* the keymap the menus
+  and every letter command) stay literal Control, because they _are_ the keymap the menus
   teach. Application commands (Save, Quit, Close Window, Preferences) follow the platform —
   ⌘S, ⌘Q, ⌘W, ⌘, — and on macOS Quit and Preferences belong in the application menu, not
   File. Bind both, display the platform one ([OBS-42](phase3-observations.md)).
 - **⌘Q must be safe**, and destructive commands must be named for what they do. "Quit" in
-  the original discards the session; 4.2's `Q` *retires the character permanently*. Neither
+  the original discards the session; 4.2's `Q` _retires the character permanently_. Neither
   may be labelled "Quit" ([OBS-42](phase3-observations.md)).
 - **Three key collisions to resolve game-side first**, not here: `p` (Zangband pets vs 4.2
   "start exploring"), `U` (Zangband racial powers vs 4.2 "use an item"), and `Ctrl+T`
-  (Zangband time-of-day vs 4.2's *alternate* binding for tunnel — the cheap one to fix).
+  (Zangband time-of-day vs 4.2's _alternate_ binding for tunnel — the cheap one to fix).
   An accelerator that displays one thing and does another is worse than none.
 - **The keymap editor keeps the keyboard picture and drops the encoding.** Press the chord to
   pick a key, then choose the action from T3's command list rather than typing `\e` into a
@@ -1491,7 +1503,7 @@ adds in phase-2 M5.
   builds; the original's X11 keysym names were not.
 - **Ship zero default macros.** The original's sixteen were a workaround for missing arrow
   and keypad handling — `Control-1..9` for directional alter, arrows for directional run —
-  all native in 4.2 ([OBS-32](phase3-observations.md)). Keep the macro *capability*, in
+  all native in 4.2 ([OBS-32](phase3-observations.md)). Keep the macro _capability_, in
   Preferences, as a power-user convenience rather than a headline.
 
 **Exit:** a full game — shopping, spellcasting, equipping, quaffing, reading, activating —
@@ -1511,7 +1523,7 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 > - **The key goes in the label, never in `-accelerator`.** Reported from play: "Throw an
 >   item" was advertised as **V**, and V is Version info. The accessor was right — it says
 >   `v` — but Tk turns an accelerator into an NSMenuItem `keyEquivalent`, and AppKit renders
->   a lowercase one as the capital letter, because on a Mac a capital shown without ⇧ *means*
+>   a lowercase one as the capital letter, because on a Mac a capital shown without ⇧ _means_
 >   the plain key. There is no way to make it show a lowercase letter. Worse, a key
 >   equivalent with no modifier is a real shortcut as far as AppKit is concerned, so the menu
 >   was quietly laying claim to letters the game needs. The key is part of the label now, in
@@ -1521,7 +1533,7 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 >   and the rest showed no accelerator until `c->key[mode]` was used as the fallback. The
 >   keymap still wins where there is a code, so a rebinding shows through.
 > - ~~**"Hidden" is left out, as its name asks."**~~ **Wrong, and reversed.** The game means
->   hidden from *its own* command menu, which is a different question from whether a player
+>   hidden from _its own_ command menu, which is a different question from whether a player
 >   would look for them — and they would: the group holds Steal from a monster, Start
 >   exploring, Repeat previous command, Alter a grid, Take notes and Centre map. It is shown
 >   as **Other**, because "Hidden" is a poor thing to call a menu somebody is reading.
@@ -1533,34 +1545,33 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 >   on `EVENT_STATUS` and `EVENT_PLAYERTITLE`, which are what `do_cmd_wizard`'s
 >   `PR_STATUS | PR_TITLE` become.
 >
->   Those are two different flags, and keying the menu off the second alone was a bug
->   reported straight from play: `^W` sets `NOSCORE_WIZARD` and toggles `player->wizard` —
->   which is what puts `[=-WIZARD-=]` in the sidebar and "Cheat" on the status line, and what
->   a player means by "wizard mode is on". `NOSCORE_DEBUG` is set only by `confirm_debug()`,
->   the first time `^A` is used. Turning wizard mode on therefore left the menu absent.
+>     Those are two different flags, and keying the menu off the second alone was a bug
+>     reported straight from play: `^W` sets `NOSCORE_WIZARD` and toggles `player->wizard` —
+>     which is what puts `[=-WIZARD-=]` in the sidebar and "Cheat" on the status line, and what
+>     a player means by "wizard mode is on". `NOSCORE_DEBUG` is set only by `confirm_debug()`,
+>     the first time `^A` is used. Turning wizard mode on therefore left the menu absent.
 >
 > - **A queued command needs a nudge, or it waits for the next keypress.** `play_game()` calls
 >   `cmd_get_hook()` unconditionally every turn and that ends in `inkey()`, which blocks until
->   a *key* arrives — so a command pushed from a Tk event handler lands on the queue while the
+>   a _key_ arrives — so a command pushed from a Tk event handler lands on the queue while the
 >   game is still waiting, and nothing happens until the player presses something else.
 >   Reported from play: choosing "Throw an item" did nothing until a direction key was
 >   pressed, and then both ran. The push is now followed by `Term_keypress('\a')`, which
 >   `textui_process_key()` treats as no command at all. Of the four keys it ignores, `\a` is
 >   the one nothing else means: escape cancels a prompt and space pages one.
->
 > - **A menu command may only start while the game is waiting for one.** A crash report from
 >   play, and the worst kind: `textui_get_item` freeing something that had already been freed.
 >   The stack showed why — "View abilities" was chosen from a menu, its hook ran its own
 >   `menu_select`, that blocked in `inkey()`, `inkey()` pumped Tk, the menu bar was therefore
->   still live, and a second command was started *inside* the first. **The game's interface is
+>   still live, and a second command was started _inside_ the first. **The game's interface is
 >   not re-entrant.**
 >
->   The guard is `inkey_flag`, which is 4.2's own — true only in the main loop's wait, false
->   the moment a command starts, including while that command runs a prompt of its own.
->   [main-win.c:2980](../../src/main-win.c#L2980) guards its menus with exactly this, so the
->   other GUI front ends met the same problem and settled it the same way. The menu greys as
->   the courtesy and `angband_command` refuses as the guarantee — and here the guarantee is
->   the one that matters, because the failure corrupts the heap rather than the display.
+>     The guard is `inkey_flag`, which is 4.2's own — true only in the main loop's wait, false
+>     the moment a command starts, including while that command runs a prompt of its own.
+>     [main-win.c:2980](../../src/main-win.c#L2980) guards its menus with exactly this, so the
+>     other GUI front ends met the same problem and settled it the same way. The menu greys as
+>     the courtesy and `angband_command` refuses as the guarantee — and here the guarantee is
+>     the one that matters, because the failure corrupts the heap rather than the display.
 >
 > Verified end to end: ^R chosen from the Utility menu redrew the map, "Stand still" chosen
 > from Other advanced the turn with no further key, and a command whose prereq fails answers
@@ -1574,10 +1585,10 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 > unknown does not list the brand.
 >
 > - **An empty equipment slot is still a row**, with its name. The paper doll and the wear
->   prompt both have to show what is *not* filled; the pack and the quiver simply stop.
+>   prompt both have to show what is _not_ filled; the pack and the quiver simply stop.
 > - **The guard is `player && player->upkeep`, not `in_play()`.** The pack exists from birth
 >   and reading it needs no level under the character's feet. `in_play()` also wants
->   `character_dungeon`, which is what the *command* table needs because its prereqs read the
+>   `character_dungeon`, which is what the _command_ table needs because its prereqs read the
 >   map, and is too strong here.
 >
 > Read off a level 8 Dwarf Warrior: six things in the pack with their letters, all twelve
@@ -1592,7 +1603,7 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 > corruption.** The guard added with the menus was wrong, and the comment
 > explaining it was wrong in the same way: ui-input.c sets `inkey_flag` before
 > the main loop's `inkey()` and clears it only once that `inkey()` has a key to
-> return, so it stays true for the whole wait — *including* the nested wait
+> return, so it stays true for the whole wait — _including_ the nested wait
 > inside a prompt the command itself opened. A menu command that prompts
 > therefore left the menu bar live, and a second command started inside the
 > first.
@@ -1654,7 +1665,7 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 >
 > Not done, and the design says so itself: the accessibility fallback that would make slots
 > and rows focusable controls with activate-to-move. The half of that note which matters here
-> *is* done — the keyboard commands are wired and remain primary, and clicking a row selects
+> _is_ done — the keyboard commands are wired and remain primary, and clicking a row selects
 > it — but there is no Tab-and-Return path through the doll.
 
 > **The Building window — the town's services.**
@@ -1708,19 +1719,20 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 ---
 
 ### T8 — Birth
+
 `birth-tnb.c` is 3,716 lines, but **less of it is ours to rewrite than that suggests**.
 4.2's [ui-birth.c:60](../../src/ui-birth.c#L60) already carries the whole wizard as a state
 machine — quickstart, race, class, **realm** (with `REALM_CHOICES 2`, matching Zangband's
 Realm 1 / Realm 2), roller choice, point-based, roller, name, history, final confirm — and
 `BIRTH_BACK` gives the `< Back` button its semantics for free
-([OBS-14](phase3-observations.md)). So T8 is *give native views to stages that already
-exist*, not *build a wizard*.
+([OBS-14](phase3-observations.md)). So T8 is _give native views to stages that already
+exist_, not _build a wizard_.
 
 No autoroller: 4.2 removed it and we are leaving it removed. Descriptions come from game
 data, never from the old `msgs/birth/en.msg` catalogue, or the Moorcock patrons walk back
 into a game whose data already excluded them ([OBS-12](phase3-observations.md)).
 
-Still **last** — but re-check the assumption. M9's realm and book *structure* is already in
+Still **last** — but re-check the assumption. M9's realm and book _structure_ is already in
 the tree: six realms × four books, all twenty-four present in
 [class.txt](../../lib/gamedata/class.txt) ([OBS-39](phase3-observations.md)). What may still
 move is spell content and balance, not the shape T8's views display. Worth re-reading this
@@ -1731,7 +1743,7 @@ patrons.
 
 > **The Birth window — first cut, 11 October 2026.**
 > [lib/tcl/birth.tcl](../../lib/tcl/birth.tcl), designed from stock Tk in the Store and
-> Building windows' style (owner's choice: *"You design it"*). Exactly the shape this section
+> Building windows' style (owner's choice: _"You design it"_). Exactly the shape this section
 > predicted: `textui_do_birth()` is untouched as a state machine, and each stage asks its view
 > for its input through one hook, `birth_view_hook`, at the one place it would have waited for
 > a key. The answer is in the stage's own terms (`struct birth_answer`: a row, or a key the
@@ -1767,6 +1779,7 @@ patrons.
 ---
 
 ### T9 — Finish
+
 The **death flow**: tombstone from [lib/screens/dead.txt](../../lib/screens/) with the
 character's tile icon added, 4.2's nine-action death menu as native UI, the optional
 **Character Record** (dump + message log + photo attached to the score entry — a feature 4.2
@@ -1787,7 +1800,7 @@ and the player never has to know which layer owns a setting
 ([OBS-13](phase3-observations.md), [OBS-34](phase3-observations.md)); keymap UI;
 help via the Sphinx manual (DEC-17), replacing TkHtml and reusing the `.book`/`.page` tree as its index; the 32 startup tips, rewritten for whatever the UI actually ends up doing; Ttk restyling; zipfs packaging of the Tcl into the
 app bundle; and the release `ZangbandTKGUI.app`, which by here is T0's minimal bundle grown
-up rather than a new piece of work — shipping *beside* `ZangbandTK.app`, which Phase 3 never
+up rather than a new piece of work — shipping _beside_ `ZangbandTK.app`, which Phase 3 never
 touches (§6 decision 14), so the download page has to say in a line which is which.
 
 **Exit:** a double-clickable ZangbandTK.app with no external Tcl dependency.
@@ -1811,9 +1824,9 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 > - **A page's defaults**: saved for new characters, restored from them, or reset to the
 >   game's own — the options screen's s, r and x — with birth restore and reset only while a
 >   character is being made, as there.
->
-> Still to come from the list above: tile size, pane fonts and the palette on the Display
-> page, and the item-ignoring and auto-inscription setups, which are still the game's screens.
+>   e
+>   Still to come from the list above: tile size, pane fonts and the palette on the Display
+>   page, and the item-ignoring and auto-inscription setups, which are still the game's screens.
 
 > **Choosing a character, and the death flow — first cut, 12 October 2026.** The native
 > launcher promised for T9 under T1, and the Tomb window, as views of the game's own screens
@@ -1831,7 +1844,7 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 >   Browse… is not carried over: every savefile lives in the one save folder.
 > - **The Tomb window** ([lib/tcl/tomb.tcl](../../lib/tcl/tomb.tcl)) is `death_screen()`'s
 >   view, through `death_view_hook` in ui-death.c: the tombstone, retirement or crown screen
->   *as the game drew it*, read back off the main screen, beside the game's nine actions by
+>   _as the game drew it_, read back off the main screen, beside the game's nine actions by
 >   their own names and keys. Messages, scores, examining, history and spoilers run as they do
 >   from the menu, on the main window, with the Tomb window stepping aside until it is asked
 >   again; the file dump is a save dialog; New Game and Quit are confirmed in the window.
@@ -1870,11 +1883,29 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 > Finish at Random, Reroll and Previous, the Options tabs (Cheats moved to h, C being Close)
 > and the home's Leave.
 
-> Still to come: the **tile icon on the tombstone** (OBS-46) — no window can show a tile yet,
-> which is also why the Character window's portrait is an `@`; the **Character Record** and
-> the **Hall of Fame**, where View scores is still the game's screen; and the winner's
-> **Kingly** window — `display_winner()` still shows the crown on the main screen and waits
-> for a key before the Tomb window opens.
+> **The death flow, finished, 12 October 2026.** OBS-46's four steps, each the original's:
+>
+> - **Tiles in windows.** `angband_tile player <photo> ?size?` copies the character's own tile
+>   — the one the map draws, `<player>` in the set's prefs, by race and class — into a photo,
+>   nearest-neighbour. The Character window's portrait is that tile, the `@` only in text
+>   mode, and the tombstone carries it between "RIP" and the name. `<<TilesChanged>>` redraws
+>   both when the set changes.
+> - **The Kingly window.** `display_winner()` asks the death view with no actions while the
+>   crown is on the screen, and the window shows it read back, gold and white, with Continue.
+>   `crown.txt` had carried `\"` since upstream moved it out of a C string in 2015; fixed.
+> - **The Hall of Fame** ([lib/tcl/fame.tcl](../../lib/tcl/fame.tcl)), OBS-23's: the table
+>   (`angband_scores`) three lines an entry on black, the living character placed by the
+>   game's own prediction and drawn in blue, Score and Sort menus, a status bar for the
+>   record. View scores in the Tomb window opens it, and so does the Window menu.
+> - **The Character Record** ([lib/tcl/record.tcl](../../lib/tcl/record.tcl)): offered on the
+>   way out of the Tomb window for a game that made the table, keeping the dump, the message
+>   log (`angband_messages`) and a photo — the map's tiles at the moment the game leaves a dead
+>   character's world, before the tombstone covers them. A folder under `records` in the
+>   user folder, matched to its score by who, turn, points and how.
+>
+> Not testable end to end: a scored death and a winner both need a game played to that
+> point. The bridge test checks the pieces — the live entry, a record kept and found — and
+> the crown window was checked with the crown screen as `display_winner()` lays it out.
 
 ---
 
@@ -1884,26 +1915,26 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 [phase3-observations.md](phase3-observations.md); the settled rationale for each decision
 follows below.
 
-| # | Question | Recommendation | Blocks |
-|---|---|---|---|
-| ~~1~~ | ~~One window with panes, or many toplevels?~~ | **Settled — panes.** See below. | — |
-| ~~2~~ | ~~The four data editors~~ | **Settled — dropped.** ZangbandTK ships no data editors. See below. | — |
-| ~~3~~ | ~~Isometric view~~ | **Settled — dropped**, files kept. See below. | — |
-| ~~4~~ | ~~Tile assignment~~ | **Settled — 4.2's.** See below. | — |
-| ~~5~~ | ~~Composable graphics modes~~ | **Settled — adopt composability.** See below. | — |
-| ~~6~~ | ~~Replace `tk/library/` with Ttk?~~ | **Settled — Ttk, themed by platform.** See below. | — |
-| ~~7~~ | ~~Revive the Sound Window's per-monster tier?~~ | **Settled — no.** See below. | — |
-| ~~8~~ | ~~What renders the in-game help?~~ | **Settled — Sphinx content, rendered in-app.** See below. | — |
-| ~~9~~ | ~~Term, native, or canvas-styled-classic?~~ | **Settled — native widgets where possible.** See below. | — |
-| ~~10~~ | ~~Release target?~~ | **Settled — macOS, Windows and Linux: whatever Tk supports.** See below. | — |
-| ~~11~~ | ~~Localisation?~~ | **Settled — none. English only.** See below. | — |
-| ~~12~~ | ~~Where do the toolchain, the C and the scripts live?~~ | **Settled — `tcltk/`, `src/tcl/`, `lib/tcl/`.** See below. | — |
-| ~~13~~ | ~~Which platform first?~~ | **Settled — macOS through development; the other two before release.** See below. | — |
-| ~~14~~ | ~~Does the Tk build replace `ZangbandTK.app`?~~ | **Settled — no. Two applications, permanently.** See below. | — |
-| ~~15~~ | ~~Port the 2001 widget library?~~ | **Settled — no. None of it is compiled.** See below. | — |
-| ~~16~~ | ~~How many panes does the main window end up with?~~ | **Settled — five, and no more.** Everything else is its own window. See below. | — |
-| ~~17~~ | ~~What do the windows look like?~~ | **Superseded by 18.** Was the Classical design system, in `lib/tcl/classical.tcl`. See below. | — |
-| ~~18~~ | ~~What do the windows look like? (again)~~ | **Settled — Tk's own widgets, in Tk's `classic` theme.** No design system of our own. See below. | — |
+| #      | Question                                                | Recommendation                                                                                   | Blocks |
+| ------ | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------ |
+| ~~1~~  | ~~One window with panes, or many toplevels?~~           | **Settled — panes.** See below.                                                                  | —      |
+| ~~2~~  | ~~The four data editors~~                               | **Settled — dropped.** ZangbandTK ships no data editors. See below.                              | —      |
+| ~~3~~  | ~~Isometric view~~                                      | **Settled — dropped**, files kept. See below.                                                    | —      |
+| ~~4~~  | ~~Tile assignment~~                                     | **Settled — 4.2's.** See below.                                                                  | —      |
+| ~~5~~  | ~~Composable graphics modes~~                           | **Settled — adopt composability.** See below.                                                    | —      |
+| ~~6~~  | ~~Replace `tk/library/` with Ttk?~~                     | **Settled — Ttk, themed by platform.** See below.                                                | —      |
+| ~~7~~  | ~~Revive the Sound Window's per-monster tier?~~         | **Settled — no.** See below.                                                                     | —      |
+| ~~8~~  | ~~What renders the in-game help?~~                      | **Settled — Sphinx content, rendered in-app.** See below.                                        | —      |
+| ~~9~~  | ~~Term, native, or canvas-styled-classic?~~             | **Settled — native widgets where possible.** See below.                                          | —      |
+| ~~10~~ | ~~Release target?~~                                     | **Settled — macOS, Windows and Linux: whatever Tk supports.** See below.                         | —      |
+| ~~11~~ | ~~Localisation?~~                                       | **Settled — none. English only.** See below.                                                     | —      |
+| ~~12~~ | ~~Where do the toolchain, the C and the scripts live?~~ | **Settled — `tcltk/`, `src/tcl/`, `lib/tcl/`.** See below.                                       | —      |
+| ~~13~~ | ~~Which platform first?~~                               | **Settled — macOS through development; the other two before release.** See below.                | —      |
+| ~~14~~ | ~~Does the Tk build replace `ZangbandTK.app`?~~         | **Settled — no. Two applications, permanently.** See below.                                      | —      |
+| ~~15~~ | ~~Port the 2001 widget library?~~                       | **Settled — no. None of it is compiled.** See below.                                             | —      |
+| ~~16~~ | ~~How many panes does the main window end up with?~~    | **Settled — five, and no more.** Everything else is its own window. See below.                   | —      |
+| ~~17~~ | ~~What do the windows look like?~~                      | **Superseded by 18.** Was the Classical design system, in `lib/tcl/classical.tcl`. See below.    | —      |
+| ~~18~~ | ~~What do the windows look like? (again)~~              | **Settled — Tk's own widgets, in Tk's `classic` theme.** No design system of our own. See below. | —      |
 
 **Settled — Ttk, themed by platform.** Confirmed by project owner. Tk 9's native widget set
 replaces `tk/library/`'s **10,636 lines** of 1999 megawidgets — `ttk::notebook` for tabbed
@@ -1914,11 +1945,11 @@ platform**, so on macOS they look like macOS. The hand-drawn megawidgets look li
 Windows 98 everywhere, permanently, because they draw their own bevels. With #10 making
 Windows and Linux deliverables, that is no longer a cosmetic preference.
 
-*Execution is incremental, not a big-bang port:* Ttk for everything touched from T4 onward,
+_Execution is incremental, not a big-bang port:_ Ttk for everything touched from T4 onward,
 and `tk/library/` shrinks to nothing as its consumers are replaced. Nothing is ported for
 its own sake.
 
-*One caveat to watch:* `ttk::treeview` is less flexible than a hand-drawn canvas list, so
+_One caveat to watch:_ `ttk::treeview` is less flexible than a hand-drawn canvas list, so
 tile-heavy rows — Knowledge with an icon per entry
 ([OBS-24](phase3-observations.md)) — may still want a custom canvas item. That is a
 per-widget call at the time, not a reason to keep the old toolkit.
@@ -1928,7 +1959,7 @@ order for any screen is:
 
 1. **Native Ttk** — the default, and the answer for anything list-shaped, sortable or
    form-like.
-2. **Canvas-styled-classic** — only where the classic layout genuinely *is* the best layout.
+2. **Canvas-styled-classic** — only where the classic layout genuinely _is_ the best layout.
 3. **Term** — a stopgap for what we choose not to rebuild, never a target.
 
 This narrows the middle tier considerably from
@@ -1937,12 +1968,12 @@ This narrows the middle tier considerably from
 > **One case worth arguing at T6 rather than assuming now.** The character sheet is the place
 > where canvas-classic has a real claim: it is the most recognisable artefact in the game,
 > fluent players read it at a glance, and the original spent ~1,850 lines reproducing it
-> precisely so it could stay classic *and* become clickable. A native re-layout would be
+> precisely so it could stay classic _and_ become clickable. A native re-layout would be
 > better information design and would cost those players something real. Flagged as a T6
 > decision under this policy, not an exception to it.
 
 **Settled — composable graphics modes.** Confirmed by project owner. The original derived
-twelve icon sets from ~3 orthogonal axes — creatures as tiles *or* ASCII, three terrain
+twelve icon sets from ~3 orthogonal axes — creatures as tiles _or_ ASCII, three terrain
 layers, three sizes — from four image files
 ([OBS-02](phase3-observations.md)). Seeing the ASCII hybrid run settled it: it is a legible
 mode a letters-reader would choose, not a degraded fallback. 4.2's one-sheet-per-mode model
@@ -1954,7 +1985,7 @@ creature/terrain/size axes, with animation frames
 ([OBS-36](phase3-observations.md)) and runtime-generated darkened variants
 ([OBS-47](phase3-observations.md)).
 
-**Settled — no data editors.** Confirmed by project owner: *"a very 1990s thing."* Vault,
+**Settled — no data editors.** Confirmed by project owner: _"a very 1990s thing."_ Vault,
 Assign, Alternate and Sound go — ~9,000 lines. Mapping data lives in `lib/gamedata/` and
 `lib/customize/` where it can be diffed and reviewed.
 
@@ -1979,34 +2010,34 @@ project with **37** chapters.
 > The `.book`/`.page` tree from `tk/doc/contents` ([§1.5](#)) becomes the contents sidebar,
 > and Sphinx's own toctree generates it rather than a hand-maintained file.
 >
-> Keep "open the full manual in a browser" as a *secondary* action for anything the text
+> Keep "open the full manual in a browser" as a _secondary_ action for anything the text
 > widget renders poorly — wide tables, diagrams. Secondary, not the primary path.
 
 **Settled — release target is macOS, Windows and Linux: whatever Tk supports.** Confirmed by
 project owner. This is firmer than DEC-21, which deferred Windows and Linux to "a later
 date". Portability stops being insurance and becomes a deliverable.
 
-> *What changes:* CI must build the Tk front end on all three, not just keep the terminal
+> _What changes:_ CI must build the Tk front end on all three, not just keep the terminal
 > builds green. The `plat` layer needs three real backends rather than one plus intentions
 > ([§2.2](#)). And platform conventions — the accelerator namespaces in
 > [OBS-42](phase3-observations.md), the application menu, native file dialogs — need doing
 > per platform rather than macOS-first.
 >
-> *What does not change:* DEC-22 still applies — no universal binaries; one thin build per
+> _What does not change:_ DEC-22 still applies — no universal binaries; one thin build per
 > architecture. (DEC-22 was amended on 14 September 2026: macOS Intel is supported and
 > released again, so a Tcl/Tk front end has two Mac builds to produce, not one.) And
-> "supported" should mean *built and smoke-tested* on all three; deep behavioural testing can
+> "supported" should mean _built and smoke-tested_ on all three; deep behavioural testing can
 > stay macOS-led without weakening the claim.
 
-**Settled — one window, Ttk panes.** Confirmed by project owner: *"the window model - use
-panes."*
+**Settled — one window, Ttk panes.** Confirmed by project owner: _"the window model - use
+panes."_
 
 The original built one composed window out of toplevels because Tk 8.0 gave it no choice —
 `wm transient` on ~40 windows, a 317-line central geometry authority, and layout bands at
 800px ([OBS-16](phase3-observations.md), [OBS-37](phase3-observations.md)). We express that
 intent directly instead of reproducing the workaround.
 
-*What follows from it:*
+_What follows from it:_
 
 - **The `Window` menu mostly disappears.** `Arrange Windows` and `Maximize Windows` manage a
   problem panes do not have — and `Arrange` is the feature that most visibly broke on a
@@ -2016,8 +2047,8 @@ intent directly instead of reproducing the workaround.
   `Save Window Positions` menu item and is the same 317 lines' worth of concept applied to
   sashes.
 - **A hidden pane folds into its neighbour rather than vanishing** — the original's own
-  precedent, from the 2.4.0r5 change log: *"When the Message Window is closed, it is
-  integrated into the top of the Main Window."*
+  precedent, from the 2.4.0r5 change log: _"When the Message Window is closed, it is
+  integrated into the top of the Main Window."_
 - **Fonts are per pane** ([OBS-30](phase3-observations.md)), and a term pane's font sets its
   grid, so its font control belongs beside its tile-size control rather than in a list.
 - **The map pane owns its four overlay planes** — tiles, the linked cursor, status badges,
@@ -2029,23 +2060,23 @@ intent directly instead of reproducing the workaround.
   the original had becomes a pane, and reading it that way is what put Misc and Progress in
   T4.
 
-*What it does not change:* the multi-monitor case is genuinely lost until detaching exists.
+_What it does not change:_ the multi-monitor case is genuinely lost until detaching exists.
 That is the accepted cost, and it is the right trade for a game whose windows were only ever
 meant to be read together.
 
 **Settled — five panes, and everything else is its own window.** Confirmed by project owner:
-*"The current 4 windows are good. I am thinking that having that additional windows makes
+_"The current 4 windows are good. I am thinking that having that additional windows makes
 every very squashed and does not add real-time information that we need. So those remaining
 windows I would not add, but we can make them separate windows which open up, not part of the
-main window."*
+main window."_
 
 The main window is finished: map, minimap, messages, recall, choice. Nothing else goes in it.
 
 **Amended, 11 October 2026: the Progress strip comes back, under the minimap.** Confirmed by
-project owner: *"EXP and AC labels - for that we would need to re-introduce the progress
+project owner: _"EXP and AC labels - for that we would need to re-introduce the progress
 window under the minimap which we originally skipped. In this progress window we would show
 the HP, SP, FD (Food), we could expand to show the EXP (the progress bar would show the
-current EXP to NEXT level)."* It takes its height from the overhead view's column rather than
+current EXP to NEXT level)."_ It takes its height from the overhead view's column rather than
 from the map, so the squashing this decision was about does not come back.
 [lib/tcl/progress.tcl](../../lib/tcl/progress.tcl): HP, SP and food as the original had them,
 and experience, whose bar is the way through the current level and whose number switches
@@ -2056,18 +2087,18 @@ total, or base plus bonus — has no home yet.
 
 This refines decision 1 rather than reversing it. Decision 1 settled that the panes that
 exist share one window instead of being forty `wm transient` toplevels held together by a
-geometry authority. It was then read as *every* window of the original becoming a pane, which
+geometry authority. It was then read as _every_ window of the original becoming a pane, which
 is what put Misc and Progress into T4 — and that reading is wrong for a reason worth writing
 down:
 
 **The sidebar already carries the real-time numbers.** Level, experience, gold, the six
 stats, armour class, hit points, light radius, hunger and the status line are all on screen
-already, in the game's own left-hand column. Misc is *"a compact character panel (level,
-race, class, gold, AC…)"* and Progress is *"HP/SP/Food as labelled bars"* — between them they
+already, in the game's own left-hand column. Misc is _"a compact character panel (level,
+race, class, gold, AC…)"_ and Progress is _"HP/SP/Food as labelled bars"_ — between them they
 restate what is three inches to the left, in space taken from the map. The original needed
 them because its Main window was map and nothing else; ours is not.
 
-*What follows from it:*
+_What follows from it:_
 
 - **T4 loses both its panels.** What survives is the `player` accessors, which everything
   after them needs, and they get a window of their own to prove themselves in.
@@ -2084,14 +2115,14 @@ them because its Main window was map and nothing else; ours is not.
 - **It also settles the knowledge browsers in T6** and the character sheet, the flags table
   and the Hall of Fame wherever they land: all windows, none of them panes.
 
-*What it does not change:* the five panes stay panes, detaching them is still post-T7 and
+_What it does not change:_ the five panes stay panes, detaching them is still post-T7 and
 still optional, and the main window still saves its sash positions.
 
 **Superseded by decision 18, below, and since removed. Kept as it was decided.**
 
 **Settled — every window is drawn with the Classical design system.** Confirmed by project
-owner, handing over a design for the character sheet: *"this design style we should use for
-all the windows."*
+owner, handing over a design for the character sheet: _"this design style we should use for
+all the windows."_
 
 The specification is [design_handoff_character_sheet](design_handoff_character_sheet/), and
 the implementation is `lib/tcl/classical.tcl` — colours, spacing, type and six components
@@ -2099,7 +2130,7 @@ the implementation is `lib/tcl/classical.tcl` — colours, spacing, type and six
 seventh adds it there, not locally, because the point is that the knowledge browsers and the
 character sheet look like one program.
 
-*What follows from it:*
+_What follows from it:_
 
 - **Classic Tk widgets, not Ttk.** Ttk is themed by the platform, which is the right default
   and exactly wrong here: this design specifies every colour, and fighting a theme for
@@ -2117,8 +2148,8 @@ character sheet look like one program.
   floated on are gone.
 
 **Settled (decision 18) — the windows are Tk's own widgets, in Tk's `classic` theme.
-Supersedes 17.** Confirmed by project owner: *"we should not invent our own UI design. It
-should look and feel like TK"*, and like Tk from the 1990s, which was the reason for choosing
+Supersedes 17.** Confirmed by project owner: _"we should not invent our own UI design. It
+should look and feel like TK"_, and like Tk from the 1990s, which was the reason for choosing
 Tk in the first place. Decision 17 went the other way: it
 built a design system of our own, with its own fonts, a tab strip, a search box with a fake
 placeholder and hairline frames, which could have been drawn with any toolkit.
@@ -2126,7 +2157,7 @@ placeholder and hairline frames, which could have been drawn with any toolkit.
 The specification is [design_handoff_knowledge_tk](design_handoff_knowledge_tk/), and the
 knowledge browser is the first window rebuilt to it.
 
-*What follows from it:*
+_What follows from it:_
 
 - **Tk's `classic` theme, for the whole program.** It is Tk's own Motif-era look: a
   `#d9d9d9` ground, raised and sunken relief, diamond radio buttons filled `#b03060`. It ships
@@ -2148,24 +2179,24 @@ knowledge browser is the first window rebuilt to it.
   needed. The Tk build no longer installs or bundles `lib/fonts` at all. A bridge check fails
   if the design system's namespace or its fonts come back.
 
-**Settled — no per-monster sound reassignment.** Confirmed by project owner: *"do not allow
-players reassign sounds, no one will use it anyway."*
+**Settled — no per-monster sound reassignment.** Confirmed by project owner: _"do not allow
+players reassign sounds, no one will use it anyway."_
 
 `grund.snd` bound sounds to 672 individual monsters and the Tcl Sound Window let players
 rebind them live. Reviving that would mean adding a per-monster tier to 4.2's
 `sound-core.c`, which is flat and message-driven, and then a UI to edit it. Both are
 dropped.
 
-*What this rules out:* the Sound Window's assignment editor, the per-monster tier in
+_What this rules out:_ the Sound Window's assignment editor, the per-monster tier in
 `sound-core.c`, and any attempt to carry the 672 index-keyed bindings forward. T9 maps the
 211 symbolic events onto 4.2's 149 and stops there. `sound.tcl` (2,705 lines of C behind it)
 shrinks to a volume and on/off control.
 
-*What it does not rule out:* the symbolic monster-spell and martial-art events. Those are
+_What it does not rule out:_ the symbolic monster-spell and martial-art events. Those are
 names, not indices, and they are the part of the old vocabulary worth having.
 
 **Settled — no localisation. English only.** Confirmed by project owner. The archive ships
-34 message catalogues in English *and* Japanese, and `msgs/` is listed in §1.5 as an asset
+34 message catalogues in English _and_ Japanese, and `msgs/` is listed in §1.5 as an asset
 because it is one — but it is an asset for a project with translators, and this one has
 none.
 
@@ -2173,7 +2204,7 @@ This is a decision that has to be taken at T0 rather than discovered at T9, whic
 only reason it is worth a paragraph. Every widget from T4 on either routes its strings
 through a catalogue or does not, and retrofitting the first answer across a finished UI
 means touching every string in it. Write English literals; do not wrap them in `msgcat`;
-do not carry `msgs/` forward. The one thing to keep is the *habit* the catalogues enforced —
+do not carry `msgs/` forward. The one thing to keep is the _habit_ the catalogues enforced —
 no string built by concatenating fragments — because that is good practice regardless and
 it is the part that would make a future translation possible rather than impossible.
 
@@ -2181,12 +2212,12 @@ it is the part that would make a future translation possible rather than impossi
 the toolchain, the C we write and the 121 scripts live now that `archive/` is staying
 untracked.
 
-| What | Where | Tracked? | Why there |
-|---|---|---|---|
-| Tcl/Tk 9.0.4 sources | [tcltk/](../../tcltk/) | **Yes** | CI cannot see `archive/`, and a toolchain that exists on one Mac is not a build |
-| What `build-tcltk` produces | `tcltk/build`, `tcltk/local` | No | Reproducible in two minutes; gitignored |
-| Ported widget library and bridge | `src/tcl/` | Yes | It is C we compile, and it sits beside the other front ends |
-| The Tcl UI | `lib/tcl/` | Yes | It is data the game loads at runtime, like `lib/tiles/` and `lib/screens/` |
+| What                             | Where                        | Tracked? | Why there                                                                       |
+| -------------------------------- | ---------------------------- | -------- | ------------------------------------------------------------------------------- |
+| Tcl/Tk 9.0.4 sources             | [tcltk/](../../tcltk/)       | **Yes**  | CI cannot see `archive/`, and a toolchain that exists on one Mac is not a build |
+| What `build-tcltk` produces      | `tcltk/build`, `tcltk/local` | No       | Reproducible in two minutes; gitignored                                         |
+| Ported widget library and bridge | `src/tcl/`                   | Yes      | It is C we compile, and it sits beside the other front ends                     |
+| The Tcl UI                       | `lib/tcl/`                   | Yes      | It is data the game loads at runtime, like `lib/tiles/` and `lib/screens/`      |
 
 `lib/tcl/` is the one worth arguing, and the argument is that it buys the whole of 4.2's
 existing path machinery for three lines: a `char *ANGBAND_DIR_TCL` beside the other
@@ -2196,17 +2227,17 @@ others at [init.c:355](../../src/init.c#L355), and its `string_free`. Install ru
 then all handle it already, because they handle `lib/` subdirectories generically. Putting
 the scripts anywhere else means teaching every one of those about a new kind of thing.
 
-*And `archive/` stays exactly as it is* — gitignored, untracked, the reference copy. Nothing
+_And `archive/` stays exactly as it is_ — gitignored, untracked, the reference copy. Nothing
 is built from it. When the port needs something out of it, that thing is copied into the
 project and tracked, which is what happened to Tcl/Tk on 11 Sep and is the precedent for
 the widget library, the four tile sets in T2, and `grund.snd`'s vocabulary in T9.
 
 **Settled — macOS through development, all three before release.** Confirmed by project
-owner, and it narrows decision 10 rather than reopening it: the *deliverable* is still
-macOS, Windows and Linux. The *sequence* is macOS until the front end is finished, because
+owner, and it narrows decision 10 rather than reopening it: the _deliverable_ is still
+macOS, Windows and Linux. The _sequence_ is macOS until the front end is finished, because
 that is the only platform being tested by hand.
 
-*What follows from it:*
+_What follows from it:_
 
 - **One CI job at T0, not five.** `tk.yaml` builds macOS on `macos-latest`, which has meant
   arm64 since macos-14. The Intel Mac job, and then Linux and Windows, land when there is
@@ -2221,9 +2252,9 @@ that is the only platform being tested by hand.
   half is testable, because the separation is a data-structure decision
   ([OBS-42](phase3-observations.md)) and merging them would be the expensive mistake.
 
-**Settled — two macOS applications, permanently.** Confirmed by project owner: *"we want to
+**Settled — two macOS applications, permanently.** Confirmed by project owner: _"we want to
 keep the existing build because this is a different play experience. The TK is a separate
-release … the current version remains, it is built and will always be playable."*
+release … the current version remains, it is built and will always be playable."_
 
 `ZangbandTK.app` — `main-cocoa.c`, built by `gmake -f Makefile.osx`, identifier
 `org.zangbandtk.zangbandtk` — is not a stepping stone to anything and is not deprecated by
@@ -2231,12 +2262,12 @@ this phase. The Tk front end ships beside it as its own application, **`Zangband
 Confirmed by project owner as the naming convention, which settles it everywhere the name
 appears rather than only on the bundle:
 
-| | Cocoa, today | Tcl/Tk, from T0 |
-|---|---|---|
-| Bundle | `ZangbandTK.app` | `ZangbandTKGUI.app` |
-| Identifier | `org.zangbandtk.zangbandtk` | `org.zangbandtk.zangbandtkgui` |
+|                  | Cocoa, today                                   | Tcl/Tk, from T0                                            |
+| ---------------- | ---------------------------------------------- | ---------------------------------------------------------- |
+| Bundle           | `ZangbandTK.app`                               | `ZangbandTKGUI.app`                                        |
+| Identifier       | `org.zangbandtk.zangbandtk`                    | `org.zangbandtk.zangbandtkgui`                             |
 | Release artefact | `<package>-osx.dmg`, `<package>-osx-intel.dmg` | `<package>-osx-tcltk.dmg`, `<package>-osx-tcltk-intel.dmg` |
-| Built by | `gmake -f Makefile.osx` | cmake, `SUPPORT_TCL_FRONTEND=ON` |
+| Built by         | `gmake -f Makefile.osx`                        | cmake, `SUPPORT_TCL_FRONTEND=ON`                           |
 
 > **Renamed on 11 October 2026**, at the project owner's request: the bundle was
 > `ZangbandTclTK.app`, identifier `org.zangbandtk.zangbandtcltk`, until then. The identifier
@@ -2249,13 +2280,13 @@ family rather than three unrelated files. `release.yaml` codesigns and verifies
 `ZangbandTK.app` by name at [line 1009](../../.github/workflows/release.yaml#L1009); the
 new bundle needs the same treatment, not a copy of the step that happens to work.
 
-*Why this is the better answer, and not merely the owner's answer:* the two are genuinely
+_Why this is the better answer, and not merely the owner's answer:_ the two are genuinely
 different games to sit down to. One is a terminal the player reads; the other is a menu bar
 they browse. Replacing the first with the second would take something away from the player
 who already prefers it, in exchange for nothing they asked for — and it would put every
 Phase 3 milestone on the critical path of an application that currently works.
 
-*What follows from it:*
+_What follows from it:_
 
 - **`Makefile.osx` is never touched by Phase 3.** The Tk build is a cmake target from T0
   onward, and the two build systems do not meet.
@@ -2272,7 +2303,7 @@ Phase 3 milestone on the critical path of an application that currently works.
   divergence in behaviour between the two applications is a bug in the newer one.
 
 **Settled — no 2001 C is compiled into ZangbandTK/Tk.** Confirmed by project owner:
-*"we can't use that 25 year old code."*
+_"we can't use that 25 year old code."_
 
 The measurement in §2.2 says the port is cheap — 92 errors after four mechanical rules — and
 the decision is taken anyway, on the merits rather than on difficulty. Core Tk 9 supplies
@@ -2281,15 +2312,15 @@ provide; `plat-dll.c` contains zero lines for our platform; and the pieces that 
 replaced nor empty are coupled to a data model 4.2 no longer has, so they were in the
 Rewrite column already.
 
-*What this costs, stated plainly:* 137 `qebind` call sites across 12 scripts and 223
+_What this costs, stated plainly:_ 137 `qebind` call sites across 12 scripts and 223
 canvas-item sites across 53 have to move onto core Tk. That is real work and it is in the
 Tcl, not the C.
 
-*What it buys:* `src/tcl/` is code we wrote, against APIs that are current, with no 8-bit
+_What it buys:_ `src/tcl/` is code we wrote, against APIs that are current, with no 8-bit
 pixel paths, no RLE codec, no private-header dependency and no `#error` for the platform we
 ship on. It also deletes this plan's largest risk rather than mitigating it.
 
-*What it does not change:* the archive stays the reference it has been all along. §2.2 names
+_What it does not change:_ the archive stays the reference it has been all along. §2.2 names
 the four algorithms in `icon-dll.c` worth reading before T2, and they are to be read the way
 §1.3 reads the tile assignment tables — as intent, never loaded as data.
 
@@ -2297,16 +2328,16 @@ the four algorithms in `icon-dll.c` worth reading before T2, and they are to be 
 
 ## 7. Risks
 
-| Risk | Severity | Handling |
-|---|---|---|
-| **Re-basing the scripts onto core Tk.** Dropping the 2001 C moves 137 `qebind` call sites across 12 scripts, and 223 `create text`/`create rectangle` sites across 53, onto Tk's own canvas and virtual events (§2.2). | Medium | The item types were named after Tk's canvas and use its `create` syntax, so most of the 223 are close to a rename. Do it per script as its command family lands in T4–T7, never as a sweep. |
-| **The bridge rewrite is the bulk of Phase 3.** Smaller than the 26,000-line estimate now that three of §3.2's four seams already exist, but the read accessors are untouched by that. | **High**, but linear and testable | Build the four seams first (T3), then sequence the accessors by measured script demand (§3.3) so each family lands with the scripts it unlocks. Never "rewrite `interp1.c`" as one task. |
-| **Aqua has no fast blit path.** | Medium | `Tk_PhotoPutBlock` first, measured at actual size. Behind `plat`. |
-| **Phase 2 keeps moving under it.** M7/M9/M10 change races, classes, realms and pets — exactly what T4 and T8 display. | Medium | T8 after M9. T4 reads through accessors, not layouts. |
-| **108,000 lines of unfamiliar Tcl.** | Medium | `debug.tcl` and `errorInfo.tcl` land in T3, before the UI work. Adapt scripts as their command family lands, never speculatively. |
-| **Two front ends diverging.** | Low | The term build stays the reference. No gameplay logic in `src/tcl/` — ever. |
-| **The Tcl/Tk dylibs cannot be code signed.** zipfs appends a zip archive to each one, and `codesign` rejects the trailing data exactly as `install_name_tool` does — `main executable failed strict validation`, on the dylib itself. The bundle runs locally unsigned; a **notarised release cannot ship it as it stands**. | **Medium**, and it lands at T9 | Decide before T9, not during it. The bundle already carries Tcl's and Tk's script libraries as ordinary files in `Contents/Resources/tcltk`, so the appended archive is redundant there — the likely answer is a release toolchain built without zipfs, keeping it only where we actually want it, which is our own scripts. Measure before committing to that: §6 decision 12 wants zipfs for `lib/tcl/`. |
-| **The input hooks are declared but unexercised.** No front end in the tree overrides one; T3 is the first (§3.2). | Medium | Override one hook early — `get_check_hook` is the smallest — and prove the round trip before T7 depends on sixteen more. |
+| Risk                                                                                                                                                                                                                                                                                                                         | Severity                          | Handling                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Re-basing the scripts onto core Tk.** Dropping the 2001 C moves 137 `qebind` call sites across 12 scripts, and 223 `create text`/`create rectangle` sites across 53, onto Tk's own canvas and virtual events (§2.2).                                                                                                       | Medium                            | The item types were named after Tk's canvas and use its `create` syntax, so most of the 223 are close to a rename. Do it per script as its command family lands in T4–T7, never as a sweep.                                                                                                                                                                                                                |
+| **The bridge rewrite is the bulk of Phase 3.** Smaller than the 26,000-line estimate now that three of §3.2's four seams already exist, but the read accessors are untouched by that.                                                                                                                                        | **High**, but linear and testable | Build the four seams first (T3), then sequence the accessors by measured script demand (§3.3) so each family lands with the scripts it unlocks. Never "rewrite `interp1.c`" as one task.                                                                                                                                                                                                                   |
+| **Aqua has no fast blit path.**                                                                                                                                                                                                                                                                                              | Medium                            | `Tk_PhotoPutBlock` first, measured at actual size. Behind `plat`.                                                                                                                                                                                                                                                                                                                                          |
+| **Phase 2 keeps moving under it.** M7/M9/M10 change races, classes, realms and pets — exactly what T4 and T8 display.                                                                                                                                                                                                        | Medium                            | T8 after M9. T4 reads through accessors, not layouts.                                                                                                                                                                                                                                                                                                                                                      |
+| **108,000 lines of unfamiliar Tcl.**                                                                                                                                                                                                                                                                                         | Medium                            | `debug.tcl` and `errorInfo.tcl` land in T3, before the UI work. Adapt scripts as their command family lands, never speculatively.                                                                                                                                                                                                                                                                          |
+| **Two front ends diverging.**                                                                                                                                                                                                                                                                                                | Low                               | The term build stays the reference. No gameplay logic in `src/tcl/` — ever.                                                                                                                                                                                                                                                                                                                                |
+| **The Tcl/Tk dylibs cannot be code signed.** zipfs appends a zip archive to each one, and `codesign` rejects the trailing data exactly as `install_name_tool` does — `main executable failed strict validation`, on the dylib itself. The bundle runs locally unsigned; a **notarised release cannot ship it as it stands**. | **Medium**, and it lands at T9    | Decide before T9, not during it. The bundle already carries Tcl's and Tk's script libraries as ordinary files in `Contents/Resources/tcltk`, so the appended archive is redundant there — the likely answer is a release toolchain built without zipfs, keeping it only where we actually want it, which is our own scripts. Measure before committing to that: §6 decision 12 wants zipfs for `lib/tcl/`. |
+| **The input hooks are declared but unexercised.** No front end in the tree overrides one; T3 is the first (§3.2).                                                                                                                                                                                                            | Medium                            | Override one hook early — `get_check_hook` is the smallest — and prove the round trip before T7 depends on sixteen more.                                                                                                                                                                                                                                                                                   |
 
 ---
 
@@ -2333,7 +2364,7 @@ the four algorithms in `icon-dll.c` worth reading before T2, and they are to be 
 >
 > One caveat that follows from that, and it is not a small one: CrossOver means the reference
 > is exercising the **`PLATFORM_WIN`** code path — the Windows DIB blit, `tkWinInt.h`, the
-> DirectSound/WaveMix layer. Behaviour observed there is the *Windows* behaviour. For most of
+> DirectSound/WaveMix layer. Behaviour observed there is the _Windows_ behaviour. For most of
 > `interface.html` that is irrelevant, since the rules are Tcl-level. It is not irrelevant for
 > redraw timing, blit performance, or anything touching `plat.c` — so do not use the reference
 > to set performance expectations for the Aqua path.
@@ -2344,7 +2375,7 @@ Stated plainly, so nothing here reads as more settled than it is:
   object has been built against it. §2.2's error counts were `-fsyntax-only` and are now
   historical: with §6 decision 15 none of that C is compiled, so what is unmeasured is our
   own `src/tcl/`, which does not exist yet.
-- **The 121 scripts have not been run against Tk 9.** They *have* now been run against their
+- **The 121 scripts have not been run against Tk 9.** They _have_ now been run against their
   own Tk 8.3.3 — see the box above — but 8.3 → 9 changes scripts too (encoding, the
   `Tcl_Size`-driven API surface, removed commands), and 108,000 lines are unaudited.
 - **The input hooks are unexercised.** They are declared, and `textui_input_init()` installs
@@ -2359,7 +2390,7 @@ Stated plainly, so nothing here reads as more settled than it is:
   third of the old bridge disappears; it does not size what remains. Until T3 produces that
   map, T4–T8 sizes are informed guesses.
 - **Windows and Linux are untried** for the front end, deliberately, per §6 decision 13 —
-  which now says *when* they get tried rather than leaving it open.
+  which now says _when_ they get tried rather than leaving it open.
 - **The graphics are audited for presence, not for fitness.** Every asset is there and every
   file decodes (§1.3), but no tile has been mapped to a 4.2 index, and nothing has been
   judged at actual size in a running window — which is the only judgement that counts.
@@ -2376,7 +2407,7 @@ Stated plainly, so nothing here reads as more settled than it is:
 ## 9. How this gets tested
 
 The plan turns `interface.html` into "ten testable statements" (§1.5) and sets T5's and T7's
-exits as *checked against the original running side by side*. That is a person with two
+exits as _checked against the original running side by side_. That is a person with two
 windows open, and it does not survive being done twenty times.
 
 It should not have to. **This is the most testable front end the project will ever have**,
@@ -2384,16 +2415,16 @@ and for a reason peculiar to it: the UI is written in a scripting language, and 
 the game to that language deliberately. `main-gcu.c` and `main-cocoa.c` can only be driven
 from outside, through a pseudo-terminal, one keystroke at a time — which is exactly what
 [scripts/smoke-tty](../../scripts/smoke-tty) does and why it is 150 lines of pty handling.
-A Tk build can be driven from *inside*, in the same language the UI is written in.
+A Tk build can be driven from _inside_, in the same language the UI is written in.
 
 Four layers, cheapest first. Each lands with the milestone that makes it possible.
 
-| Layer | What it asserts | Lands | Runs |
-|---|---|---|---|
-| Toolchain check | The pieces `build-tcltk` installed are the pieces the front end needs — headers, config files, zipfs | ✅ done | Every CI run, first step |
-| `tcltest` unit tests | Individual Tcl procedures: the menu map, the tile lookup, the contents tree, formatting | T0 skeleton, real tests from T4 | Every CI run |
-| Scripted sessions | The game plays: push a command, wait for an event, answer a hook, assert what changed | T3 | Every CI run |
-| Synthesised interaction | The ten mouse rules, the Recall/Choice hand-off, grow-on-hover | T5, T7 | Every CI run if the runner allows a display; otherwise a pre-release gate |
+| Layer                   | What it asserts                                                                                      | Lands                           | Runs                                                                      |
+| ----------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------------------------------------------------------------- |
+| Toolchain check         | The pieces `build-tcltk` installed are the pieces the front end needs — headers, config files, zipfs | ✅ done                         | Every CI run, first step                                                  |
+| `tcltest` unit tests    | Individual Tcl procedures: the menu map, the tile lookup, the contents tree, formatting              | T0 skeleton, real tests from T4 | Every CI run                                                              |
+| Scripted sessions       | The game plays: push a command, wait for an event, answer a hook, assert what changed                | T3                              | Every CI run                                                              |
+| Synthesised interaction | The ten mouse rules, the Recall/Choice hand-off, grow-on-hover                                       | T5, T7                          | Every CI run if the runner allows a display; otherwise a pre-release gate |
 
 **The scripted session is the one that matters**, and §3.2's four seams are what make it
 possible. A test pushes `CMD_WALK` with a typed direction, waits for `EVENT_PLAYERMOVED`,
@@ -2404,8 +2435,8 @@ purchase or a spell cast without a single synthetic keystroke. `scripts/smoke-tk
 non-zero with the last state if not.
 
 **Synthesised interaction is Tk's own trick.** `event generate` delivers a real
-`<Button-1>` to a real widget through the real binding, so *"Control-left-click is
-`Alter (+)`"* becomes an assertion rather than a checklist line. Write each of the ten rules
+`<Button-1>` to a real widget through the real binding, so _"Control-left-click is
+`Alter (+)`"_ becomes an assertion rather than a checklist line. Write each of the ten rules
 as one test as its rule is implemented, and T5's exit condition stops being a person with
 two windows open and becomes a suite that stays true afterwards.
 
@@ -2414,7 +2445,7 @@ fights:
 
 - The unit tests in [src/tests/](../../src/tests/) are C programs linked against
   `angband.o`, they are **not** in ctest, and the test front end is off by default. The Tcl
-  suites are a *second* body of tests with a different runner; do not try to merge them.
+  suites are a _second_ body of tests with a different runner; do not try to merge them.
 - **macOS has no `timeout`.** Every harness here needs its own watchdog, as `smoke-tty`
   already does — a hung Tk event loop otherwise hangs the job rather than failing it.
 - ~~A Tk test needs a display. Aqua on a CI runner is the open question.~~ **Answered: a

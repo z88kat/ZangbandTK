@@ -162,6 +162,27 @@ proc character_refresh {} {
     character_refresh_notes $have
 
     set character(turn) [expr {$have ? "Turn [angband_player turn]" : ""}]
+    character_portrait
+}
+
+# The character's own tile, as the map draws it -- the original's portrait
+# was the character's icon -- or the "@" while the game is drawing letters.
+proc character_portrait_image {} {
+    # Not named character_portrait: an image is a command as well, and would
+    # take the place of the procedure below.
+    if {"character_tile" ni [image names]} {
+        image create photo character_tile
+    }
+    return character_tile
+}
+
+proc character_portrait {} {
+    set g .character.f.top.id.glyph
+    if {![winfo exists $g]} return
+    set tile [expr {![catch {angband_tile player [character_portrait_image] 64} ok]
+        && $ok}]
+    $g itemconfigure tile -state [expr {$tile ? "normal" : "hidden"}]
+    $g itemconfigure letter -state [expr {$tile ? "hidden" : "normal"}]
 }
 
 # The game's own rule for the colour of hit points, player_hp_attr(): full,
@@ -496,7 +517,9 @@ proc character_window {} {
     canvas $id.glyph -width 64 -height 64 -background black \
         -relief sunken -borderwidth 2 -highlightthickness 0
     $id.glyph create text 34 34 -text "@" -fill white -anchor center \
-        -font {Courier 32 bold}
+        -font {Courier 32 bold} -tags letter
+    $id.glyph create image 34 34 -image [character_portrait_image] \
+        -anchor center -tags tile -state hidden
     ttk::frame $id.fields
     grid $id.glyph -row 0 -column 0 -sticky nw -padx {0 10}
     grid $id.fields -row 0 -column 1 -sticky new
@@ -663,3 +686,4 @@ proc character_window {} {
 foreach event $character(events) {
     bind . <<Angband_$event>> {+ character_refresh }
 }
+bind . <<TilesChanged>> {+ character_portrait }

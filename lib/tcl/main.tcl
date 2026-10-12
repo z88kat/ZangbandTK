@@ -206,6 +206,7 @@ menu .menubar.views -tearoff 0
 .menubar.views add command -label "Items" -command items_window
 .menubar.views add command -label "Spell Book" -command book_window
 .menubar.views add command -label "Options" -command options_window
+.menubar.views add command -label "Hall of Fame" -command fame_window
 .menubar.views add separator
 .menubar.views add command -label "Console" -command console_window
 .menubar.views add command -label "Errors" -command errorsink_window
@@ -240,6 +241,8 @@ source [file join [file dirname [info script]] birth.tcl]
 source [file join [file dirname [info script]] choose.tcl]
 source [file join [file dirname [info script]] tomb.tcl]
 source [file join [file dirname [info script]] tips.tcl]
+source [file join [file dirname [info script]] record.tcl]
+source [file join [file dirname [info script]] fame.tcl]
 source [file join [file dirname [info script]] options.tcl]
 source [file join [file dirname [info script]] choice.tcl]
 source [file join [file dirname [info script]] commands.tcl]
@@ -251,7 +254,11 @@ proc angband_choose_tileset {id} {
             -message "Could not use that tile set." -detail $err
         # Put the tick back on the set that is actually in use.
         set angband(tileset) [angband_tileset]
+        return
     }
+    # The windows that show a tile of their own -- the Character window's
+    # portrait, the tombstone -- draw it again from the new set.
+    event generate . <<TilesChanged>> -when tail
 }
 
 # Each pane follows its own size.  <Configure> fires for every pixel of a drag,

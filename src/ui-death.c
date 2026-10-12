@@ -152,6 +152,16 @@ static void display_winner(void)
 	put_str_centred(i, 0, wid, "All Hail the Mighty Champion!");
 
 	event_signal(EVENT_INPUT_FLUSH);
+
+	/*
+	 * A front end's view is asked to show the crown, with no actions to offer
+	 * -- the original had a window of its own for it -- and the tombstone
+	 * follows when it is dismissed, as it does after the key.
+	 */
+	if (death_view_hook) {
+		(void)death_view_hook(NULL, 0);
+		return;
+	}
 	pause_line(Term);
 }
 
@@ -375,6 +385,9 @@ static menu_action death_actions[] =
  * leave as Quit does.  New Game and Quit come back already confirmed: the view
  * is where they are asked.  Every other action runs here as it does from the
  * menu, and the view is asked again when it is done.
+ *
+ * A winner's crown comes first, and the view is asked about that too, with no
+ * actions: it shows the crown until it is dismissed.
  */
 int (*death_view_hook)(const menu_action *actions, int count) = NULL;
 

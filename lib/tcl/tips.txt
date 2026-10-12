@@ -143,6 +143,8 @@ Walk into a pet to swap places with it. Hurting a pet, or putting it to sleep, t
 
 The Tomb window's buttons are the game's own death menu: look back over your messages, your history and your gear, write a character dump, or start a new game.
 
+Window ▸ Hall of Fame shows every score, and where your character would stand if it died now. When a game ends, you can keep its character dump, its messages and a photo of the last thing it saw, to read again from its entry.
+
 A Chaos-Warrior's patron may reward them as they gain levels. One reward in six is a mutation, and not every reward is kind.
 
 Up to four pets follow you on the stairs, and each may decide to stay behind at any change of level.

@@ -1134,6 +1134,46 @@ proc birth_pass_done {} {
 		set r
 	} "{classic {}} 1"
 
+	# The character's own tile, for the windows that show one (OBS-46): the
+	# one the map draws, or the "@" while the game is drawing letters.
+	check "the character's tile is the portrait, and its letter in text mode" {
+		image create photo probe_tile
+		set ok [angband_tile player probe_tile 64]
+		set big [expr {max([image width probe_tile], [image height probe_tile])}]
+		character_window
+		update
+		set shown [.character.f.top.id.glyph itemcget tile -state]
+		set was [angband_tileset]
+		set text [expr {[catch {angband_tileset 0}] ? "?"
+			: [angband_tile player probe_tile 64]}]
+		event generate . <<TilesChanged>>
+		update
+		set letter [.character.f.top.id.glyph itemcget letter -state]
+		angband_tileset $was
+		event generate . <<TilesChanged>>
+		update
+		destroy .character
+		image delete probe_tile
+		list $ok $big $shown $text $letter
+	} "1 64 normal 0 normal"
+
+	# The Hall of Fame is the game's table, and the character being played is
+	# in it where its score would put it, as the game's own prediction does.
+	check "the Hall of Fame places the character being played" {
+		set mine {}
+		foreach row [angband_scores] {
+			if {[dict get $row you]} { set mine $row }
+		}
+		fame_window
+		update
+		set r [list [dict get $mine how] \
+			[expr {[dict get $mine who] eq [angband_player name]}] \
+			[expr {[llength [.fame.f.list.t tag ranges you]] > 0}] \
+			[stock_widgets_only .fame]]
+		destroy .fame
+		set r
+	} "{nobody (yet!)} 1 1 {classic {}}"
+
 	# A notch of the wheel is a few rows.  Tk 9 reports one as 120, and the
 	# page used to scroll by that many units -- to the end, at once.
 	check "a notch of the wheel scrolls the Options page a little" {
@@ -1364,6 +1404,32 @@ proc death_pass_tomb {} {
 		list $how [join [lmap a $actions {lindex $a 0}] ""] \
 			[winfo exists .tomb] [stock_widgets_only .tomb]
 	} "retired imfvxhsnq 1 {classic {}}"
+
+	check "the tombstone carries the character's tile" {
+		llength [.tomb.f.top.c find withtag portrait]
+	} 1
+
+	# A retirement is not scored, so there is nothing to keep a record
+	# against -- but a record kept for a game that was is its dump, its
+	# messages and a photo of the last thing seen, found again by its score.
+	check "a retired character is not scored, and offered no record" {
+		dict get [angband_death entry] scored
+	} 0
+
+	check "a Character Record keeps what it is asked to, and finds its score" {
+		set entry [dict replace [angband_death entry] scored 1]
+		if {"record_last_sight" ni [image names]} {
+			image create photo record_last_sight
+		}
+		set ::record(hasphoto) [angband_death photo record_last_sight]
+		set ::record(dump) 1
+		set ::record(messages) 1
+		set ::record(photo) 1
+		record_keep $entry
+		set dir [record_for $entry]
+		list [expr {$dir ne ""}] [lsort [record_contents $dir]] \
+			[expr {[file size [file join $dir dump.txt]] > 1000}]
+	} "1 {{character dump} {message log} photo} 1"
 
 	check "the tombstone is the one the game drew" {
 		set tomb [angband_death tomb]

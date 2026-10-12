@@ -31,6 +31,39 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+12 October 2026 — the memorial
+==============================
+
+The original's death was four steps: the tombstone, a dialog asking what to keep
+of the character, the Hall of Fame, and out. We had the first. Now we have all
+four, and none of them is new invention. Each is the original's window, built
+from the game's own data.
+
+The tombstone got the character's own tile, which is what made the original's
+stone yours rather than anybody's. That needed windows to be able to show a tile
+at all, so the Character window's portrait stopped being an "@" at the same time.
+It is the tile the map draws, so a set with a tile per race and class gives each
+character their own.
+
+The Hall of Fame is the score table, three lines an entry, the way the original
+printed it, with the character you are playing slotted in where its score would
+put it, killed by "nobody (yet!)". That is the game's own prediction, the one its
+text screen makes; the window just shows it in blue.
+
+The record is the part I like best, and it is the part 4.2 never had. When a
+game ends, you can keep its character dump, its message log and a photo of the
+last thing it saw, and they sit against its score from then on. The photo was
+the awkward one. The death screen draws the tombstone straight over the map, so
+by the time anybody can be asked what to keep, there is nothing left to
+photograph. So the front end takes it earlier, at the moment the game lets go of
+a dead character's world, and holds on to it in case it is wanted.
+
+The winner's crown has a window of its own too. While checking it, the crown
+turned out to have had backslashes in it since 2015, when upstream moved it out
+of a C string into a data file and the escapes came along. Nobody wins often
+enough to have noticed.
+
+
 12 October 2026 — shortcuts nobody could press
 ==============================================
 

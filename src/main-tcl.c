@@ -47,6 +47,7 @@
 #include "store.h"
 #include "player-virtue.h"
 #include "savefile.h"
+#include "score.h"
 #include "trap.h"
 #include "ui-knowledge.h"
 #include "ui-birth.h"
@@ -860,6 +861,8 @@ static bool in_play(void);
 static bool command_may_start(void);
 static void choice_install(void);
 static void store_notice(game_event_type type, game_event_data *data,
+		void *user);
+static void last_sight_notice(game_event_type type, game_event_data *data,
 		void *user);
 static void birth_view_tk(enum birth_stage stage, int slot,
 		struct birth_answer *answer);
@@ -4709,6 +4712,7 @@ static void choice_events_register(void)
 {
 	event_add_handler(EVENT_BIRTHPOINTS, birth_points_notice, NULL);
 	event_add_handler(EVENT_LEAVE_WORLD, store_notice, NULL);
+	event_add_handler(EVENT_LEAVE_WORLD, last_sight_notice, NULL);
 	event_add_handler(EVENT_ENTER_WORLD, store_notice, NULL);
 	event_add_handler(EVENT_ENTER_SERVICE, service_notice, NULL);
 	event_add_handler(EVENT_LEAVE_SERVICE, service_notice, NULL);
@@ -6570,6 +6574,9 @@ static int objcmd_savefile(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
  * than New Game and Quit runs as it does from the game's own menu, with its
  * screens on the main window, and the window is asked again once it is done.
  */
+static Tcl_Obj *score_fields(const struct high_score *sc, int rank, bool you);
+static unsigned char *last_sight;
+static int last_sight_w, last_sight_h;
 static bool death_asking;
 static int death_answer;
 static const menu_action *death_actions_now;
@@ -6605,11 +6612,18 @@ static int death_view_tk(const menu_action *actions, int count)
  *
  *    angband_death              {} unless the game is asking, and then
  *                               {how actions}: how is dead, retired or winner,
- *                               and actions the menu's, a {key name} each
+ *                               and actions the menu's, a {key name} each --
+ *                               or crown, with none, while a winner's crown is
+ *                               on the screen, answered with continue
  *    angband_death tomb         the main screen as the game drew it, a string
  *                               a row, with the blank rows at the end left off
  *    angband_death answer <key> take the action with that key, as from the
  *                               menu; New Game and Quit are taken as confirmed
+ *    angband_death entry        the character's score, as the Hall of Fame
+ *                               has it (score_fields), and `scored`: whether
+ *                               enter_score() put it on the table
+ *    angband_death photo <img>  the last thing the character saw, into a
+ *                               photo image; 0 when there is none to give
  */
 static int objcmd_death(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		Tcl_Obj *const objv[])
@@ -6624,7 +6638,8 @@ static int objcmd_death(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 
 		if (death_asking && player) {
 			Tcl_Obj *acts = Tcl_NewListObj(0, NULL);
-			const char *how = player->total_winner ? "winner"
+			const char *how = !death_actions_now ? "crown"
+				: player->total_winner ? "winner"
 				: streq(player->died_from, "Retiring") ? "retired" : "dead";
 
 			for (i = 0; i < death_count; i++) {
@@ -6699,6 +6714,18 @@ static int objcmd_death(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			return TCL_ERROR;
 		}
 		key = Tcl_GetString(objv[2]);
+
+		/* The crown has one answer, which is to go on to the tombstone. */
+		if (!death_actions_now) {
+			if (!streq(key, "continue")) {
+				Tcl_SetObjResult(ip, Tcl_ObjPrintf("expected continue, not: %s",
+						key));
+				return TCL_ERROR;
+			}
+			death_answer = -1;
+			death_asking = false;
+			return TCL_OK;
+		}
 		for (i = 0; i < death_count; i++) {
 			if (key[0] && !key[1] && death_actions_now[i].tag == key[0]) break;
 		}
@@ -6711,10 +6738,267 @@ static int objcmd_death(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		return TCL_OK;
 	}
 
-	Tcl_SetObjResult(ip, Tcl_ObjPrintf("expected tomb or answer, not: %s",
-			what));
+	if (streq(what, "entry")) {
+		struct high_score e;
+		Tcl_Obj *d;
+		bool scored;
+
+		if (objc != 2) {
+			Tcl_WrongNumArgs(ip, 2, objv, "");
+			return TCL_ERROR;
+		}
+		build_score(&e, player, player->died_from, NULL);
+		d = score_fields(&e, 0, true);
+
+		/* enter_score()'s own tests, so the record and the table agree. */
+		scored = !player_used_cheat_option(player)
+			&& !(player->noscore & (NOSCORE_WIZARD | NOSCORE_DEBUG))
+			&& (player->total_winner
+				|| (!streq(player->died_from, "Interrupting")
+					&& !streq(player->died_from, "Retiring")));
+#ifdef ALLOW_BORG
+#ifndef SCORE_BORGS
+		if (player->noscore & NOSCORE_BORG) scored = false;
+#endif
+#endif
+		Tcl_ListObjAppendElement(ip, d, Tcl_NewStringObj("scored", -1));
+		Tcl_ListObjAppendElement(ip, d, Tcl_NewBooleanObj(scored));
+		Tcl_SetObjResult(ip, d);
+		return TCL_OK;
+	}
+
+	if (streq(what, "photo")) {
+		Tk_PhotoHandle photo;
+		Tk_PhotoImageBlock blk;
+
+		if (objc != 3) {
+			Tcl_WrongNumArgs(ip, 2, objv, "photo");
+			return TCL_ERROR;
+		}
+		photo = Tk_FindPhoto(ip, Tcl_GetString(objv[2]));
+		if (!photo) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no photo image named %s",
+					Tcl_GetString(objv[2])));
+			return TCL_ERROR;
+		}
+		if (!last_sight) {
+			Tcl_SetObjResult(ip, Tcl_NewBooleanObj(false));
+			return TCL_OK;
+		}
+		blk.pixelPtr = last_sight;
+		blk.width = last_sight_w;
+		blk.height = last_sight_h;
+		blk.pitch = last_sight_w * 4;
+		blk.pixelSize = 4;
+		blk.offset[0] = 0;
+		blk.offset[1] = 1;
+		blk.offset[2] = 2;
+		blk.offset[3] = 3;
+		Tk_PhotoBlank(photo);
+		if (Tk_PhotoSetSize(ip, photo, last_sight_w, last_sight_h) != TCL_OK
+				|| Tk_PhotoPutBlock(ip, photo, &blk, 0, 0, last_sight_w,
+					last_sight_h, TK_PHOTO_COMPOSITE_SET) != TCL_OK)
+			return TCL_ERROR;
+		Tcl_SetObjResult(ip, Tcl_NewBooleanObj(true));
+		return TCL_OK;
+	}
+
+	Tcl_SetObjResult(ip, Tcl_ObjPrintf("expected tomb, answer, entry or"
+			" photo, not: %s", what));
 	return TCL_ERROR;
 }
+
+/**
+ * The Hall of Fame (T9).
+ *
+ * A score's fields as a {name value} list: what the Hall of Fame shows, and
+ * what a Character Record is matched to its score by.  The race and the class
+ * by name, the numbers as numbers, and `you` for the character being played
+ * -- or just finished.
+ */
+static Tcl_Obj *score_fields(const struct high_score *sc, int rank, bool you)
+{
+	Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+	const struct player_race *r = player_id2race(atoi(sc->p_r));
+	const struct player_class *c = player_id2class(atoi(sc->p_c));
+	char who[sizeof(sc->who)], day[sizeof(sc->day)];
+	size_t n;
+
+	my_strcpy(who, sc->who, sizeof(who));
+	for (n = strlen(who); n > 0 && who[n - 1] == ' '; n--) who[n - 1] = 0;
+	my_strcpy(day, sc->day, sizeof(day));
+
+#define SCORE_FIELD(name, obj) do { \
+		Tcl_ListObjAppendElement(NULL, d, Tcl_NewStringObj(name, -1)); \
+		Tcl_ListObjAppendElement(NULL, d, obj); \
+	} while (0)
+	SCORE_FIELD("rank", Tcl_NewIntObj(rank));
+	SCORE_FIELD("pts", Tcl_NewWideIntObj(atol(sc->pts)));
+	SCORE_FIELD("gold", Tcl_NewWideIntObj(atol(sc->gold)));
+	SCORE_FIELD("turns", Tcl_NewWideIntObj(atol(sc->turns)));
+	SCORE_FIELD("day", Tcl_NewStringObj(day, -1));
+	SCORE_FIELD("who", Tcl_NewStringObj(who, -1));
+	SCORE_FIELD("race", Tcl_NewStringObj(r ? r->name : "", -1));
+	SCORE_FIELD("class", Tcl_NewStringObj(c ? c->name : "", -1));
+	SCORE_FIELD("cur_lev", Tcl_NewIntObj(atoi(sc->cur_lev)));
+	SCORE_FIELD("max_lev", Tcl_NewIntObj(atoi(sc->max_lev)));
+	SCORE_FIELD("cur_dun", Tcl_NewIntObj(atoi(sc->cur_dun)));
+	SCORE_FIELD("max_dun", Tcl_NewIntObj(atoi(sc->max_dun)));
+	SCORE_FIELD("how", Tcl_NewStringObj(sc->how, -1));
+	SCORE_FIELD("you", Tcl_NewBooleanObj(you));
+#undef SCORE_FIELD
+
+	return d;
+}
+
+/**
+ * angband_scores -- the Hall of Fame (T9).
+ *
+ *    angband_scores     every score on the table, best first, as score_fields
+ *                       lists.  The character being played is among them, where
+ *                       its score would put it, killed by "nobody (yet!)" --
+ *                       the game's own prediction, predict_score() -- and a
+ *                       character at its death screen is found as itself.
+ *                       Either is marked `you`.
+ */
+static int objcmd_scores(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	struct high_score scores[MAX_HISCORES];
+	size_t i, you = MAX_HISCORES;
+	Tcl_Obj *list;
+
+	(void)dummy;
+
+	if (objc != 1) {
+		Tcl_WrongNumArgs(ip, 1, objv, "");
+		return TCL_ERROR;
+	}
+
+	highscore_read(scores, N_ELEMENTS(scores));
+
+	if (player && player->upkeep && character_generated && player->race
+			&& player->class) {
+		if (!player->is_dead) {
+			struct high_score live;
+
+			build_score(&live, player, "nobody (yet!)", NULL);
+			you = highscore_add(&live, scores, N_ELEMENTS(scores));
+		} else {
+			struct high_score dead;
+
+			build_score(&dead, player, player->died_from, NULL);
+			for (i = 0; i < N_ELEMENTS(scores) && scores[i].what[0]; i++) {
+				if (streq(scores[i].who, dead.who)
+						&& streq(scores[i].turns, dead.turns)
+						&& streq(scores[i].how, dead.how)
+						&& streq(scores[i].pts, dead.pts)) {
+					you = i;
+					break;
+				}
+			}
+		}
+	}
+
+	list = Tcl_NewListObj(0, NULL);
+	for (i = 0; i < N_ELEMENTS(scores) && scores[i].what[0]; i++)
+		Tcl_ListObjAppendElement(ip, list,
+				score_fields(&scores[i], (int)i + 1, i == you));
+	Tcl_SetObjResult(ip, list);
+	return TCL_OK;
+}
+
+/**
+ * angband_messages ?count? -- the message log, oldest first: the last `count`
+ * messages, or all of them, each with its repeat count as the game's own
+ * message screen shows it.  For a Character Record (T9).
+ */
+static int objcmd_messages(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	int count = -1, n, age;
+	Tcl_Obj *list;
+
+	(void)dummy;
+
+	if (objc > 2) {
+		Tcl_WrongNumArgs(ip, 1, objv, "?count?");
+		return TCL_ERROR;
+	}
+	if (objc == 2 && Tcl_GetIntFromObj(ip, objv[1], &count) != TCL_OK)
+		return TCL_ERROR;
+
+	n = messages_num();
+	if (count >= 0 && count < n) n = count;
+
+	list = Tcl_NewListObj(0, NULL);
+	for (age = n - 1; age >= 0; age--) {
+		uint16_t times = message_count((uint16_t)age);
+
+		Tcl_ListObjAppendElement(ip, list, times > 1
+			? Tcl_ObjPrintf("%s <%dx>", message_str((uint16_t)age), times)
+			: Tcl_NewStringObj(message_str((uint16_t)age), -1));
+	}
+	Tcl_SetObjResult(ip, list);
+	return TCL_OK;
+}
+
+/**
+ * The last thing the character saw: the map's tiles, kept at the moment the
+ * game leaves the world of a character who has died -- before the tombstone
+ * is drawn over them.  A Character Record's photo (T9, OBS-46); the original
+ * kept one too.  Only the tile layer, so a game played in letters has none.
+ */
+static void last_sight_notice(game_event_type type, game_event_data *data,
+		void *user)
+{
+	Tk_PhotoImageBlock b;
+	int x, y, x0, y0, x1 = -1, y1 = -1;
+
+	(void)type;
+	(void)data;
+	(void)user;
+
+	if (last_sight) mem_free(last_sight);
+	last_sight = NULL;
+
+	if (!player || !player->is_dead || !td[0].screen) return;
+	if (!Tk_PhotoGetImage(td[0].screen, &b) || b.width <= 0 || b.height <= 0)
+		return;
+
+	/* Only where there are tiles: not the sidebar's margin around them. */
+	x0 = b.width;
+	y0 = b.height;
+	for (y = 0; y < b.height; y++) {
+		for (x = 0; x < b.width; x++) {
+			if (!b.pixelPtr[y * b.pitch + x * b.pixelSize + b.offset[3]])
+				continue;
+			x0 = MIN(x0, x);
+			y0 = MIN(y0, y);
+			x1 = MAX(x1, x);
+			y1 = MAX(y1, y);
+		}
+	}
+	if (x1 < 0) return;
+
+	last_sight_w = x1 - x0 + 1;
+	last_sight_h = y1 - y0 + 1;
+	last_sight = mem_zalloc((size_t)last_sight_w * last_sight_h * 4);
+	for (y = 0; y < last_sight_h; y++) {
+		for (x = 0; x < last_sight_w; x++) {
+			const unsigned char *src = b.pixelPtr + (y + y0) * b.pitch
+				+ (x + x0) * b.pixelSize;
+			unsigned char *dst = last_sight
+				+ ((size_t)y * last_sight_w + x) * 4;
+
+			dst[0] = src[b.offset[0]];
+			dst[1] = src[b.offset[1]];
+			dst[2] = src[b.offset[2]];
+			dst[3] = src[b.offset[3]];
+		}
+	}
+}
+
 
 /**
  * angband_option -- read and write the game's options.
@@ -7651,6 +7935,118 @@ static int objcmd_tilesets(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 }
 
 /**
+ * One of the current set's tiles, into a photo image for a window to show (T9).
+ *
+ * Scaled to `size` pixels on its longer side, nearest-neighbour as the panes
+ * scale, with the sheet's own alpha -- so a tile drawn over black in a pane
+ * is drawn over whatever the window puts behind it.  False, and the photo left
+ * alone, when the game is drawing letters rather than tiles, or the glyph is
+ * not a tile at all.
+ */
+static bool tile_to_photo(Tk_PhotoHandle photo, int a, int c, int size)
+{
+	Tk_PhotoImageBlock blk;
+	unsigned char *buf;
+	int tw, th, sx, sy, dw, dh, px, py;
+
+	if (!sheet || !current_graphics_mode || use_graphics == GRAPHICS_NONE)
+		return false;
+	if (!(a & 0x80)) return false;
+
+	tw = current_graphics_mode->cell_width;
+	th = current_graphics_mode->cell_height;
+	sx = (c & 0x7f) * tw;
+	sy = (a & 0x7f) * th;
+	if (tw <= 0 || th <= 0 || sx + tw > sheet_w || sy + th > sheet_h)
+		return false;
+
+	if (size <= 0) {
+		dw = tw;
+		dh = th;
+	} else {
+		dw = MAX(1, size * tw / MAX(tw, th));
+		dh = MAX(1, size * th / MAX(tw, th));
+	}
+
+	buf = mem_zalloc((size_t)dw * dh * 4);
+	for (py = 0; py < dh; py++) {
+		int ty = sy + (py * th) / dh;
+
+		for (px = 0; px < dw; px++) {
+			int tx = sx + (px * tw) / dw;
+
+			memcpy(buf + ((size_t)py * dw + px) * 4,
+				   sheet + ((size_t)ty * sheet_w + tx) * 4, 4);
+		}
+	}
+
+	blk.pixelPtr = buf;
+	blk.width = dw;
+	blk.height = dh;
+	blk.pitch = dw * 4;
+	blk.pixelSize = 4;
+	blk.offset[0] = 0;
+	blk.offset[1] = 1;
+	blk.offset[2] = 2;
+	blk.offset[3] = 3;
+
+	Tk_PhotoBlank(photo);
+	if (Tk_PhotoSetSize(interp, photo, dw, dh) != TCL_OK
+			|| Tk_PhotoPutBlock(interp, photo, &blk, 0, 0, dw, dh,
+				TK_PHOTO_COMPOSITE_SET) != TCL_OK) {
+		mem_free(buf);
+		return false;
+	}
+	mem_free(buf);
+	return true;
+}
+
+/**
+ * angband_tile -- the current set's tiles, for the windows (T9).
+ *
+ *    angband_tile player <photo> ?size?
+ *        the character's own tile into a photo image: the one the map draws,
+ *        which the set's prefs choose by race and class.  Scaled to `size`
+ *        pixels on its longer side, or the tile's own size.  1, or 0 when
+ *        the game is drawing letters, so that a window can show the letter.
+ *
+ * The windows showed an "@" where the original showed the character's tile --
+ * on the Character window, and on the tombstone (OBS-46).
+ */
+static int objcmd_tile(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	Tk_PhotoHandle photo;
+	const char *what;
+	int size = 0;
+
+	(void)dummy;
+
+	if (objc < 3 || objc > 4) {
+		Tcl_WrongNumArgs(ip, 1, objv, "player photo ?size?");
+		return TCL_ERROR;
+	}
+	what = Tcl_GetString(objv[1]);
+	if (!streq(what, "player")) {
+		Tcl_SetObjResult(ip, Tcl_ObjPrintf("expected player, not: %s", what));
+		return TCL_ERROR;
+	}
+	photo = Tk_FindPhoto(ip, Tcl_GetString(objv[2]));
+	if (!photo) {
+		Tcl_SetObjResult(ip, Tcl_ObjPrintf("no photo image named %s",
+				Tcl_GetString(objv[2])));
+		return TCL_ERROR;
+	}
+	if (objc == 4 && Tcl_GetIntFromObj(ip, objv[3], &size) != TCL_OK)
+		return TCL_ERROR;
+
+	Tcl_SetObjResult(ip, Tcl_NewBooleanObj(monster_x_attr && monster_x_char
+			&& tile_to_photo(photo, monster_x_attr[0], monster_x_char[0],
+				size)));
+	return TCL_OK;
+}
+
+/**
  * angband_tileset -- read or change the tile set, by id.
  *
  * Changing it goes through the game: reset_visuals reloads the set's pref
@@ -8245,6 +8641,7 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_resize", objcmd_resize, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_tilesets", objcmd_tilesets, NULL,
 			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_tile", objcmd_tile, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_tileset", objcmd_tileset, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_commands", objcmd_commands, NULL,
@@ -8285,6 +8682,10 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_savefile", objcmd_savefile, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_death", objcmd_death, NULL, NULL);
+	Tcl_CreateObjCommand2(interp, "angband_scores", objcmd_scores, NULL,
+			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_messages", objcmd_messages, NULL,
+			NULL);
 
 	hooks_init();
 	views_install();
