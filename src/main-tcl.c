@@ -22,6 +22,7 @@
 
 #include "cmd-core.h"
 #include "game-event.h"
+#include "cmds.h"
 #include "game-input.h"
 #include "game-world.h"
 #include "player-calcs.h"
@@ -6206,9 +6207,18 @@ static int objcmd_birth(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 /**
  * angband_option -- read and write the game's options.
  *
- *    angband_option                     every option, as {name type desc value}
+ *    angband_option                     every option, as
+ *                                       {name type desc value changeable}
  *    angband_option use_old_target      its value
  *    angband_option use_old_target 1    set it
+ *    angband_option save interface|birth      a page's options as the
+ *                                       defaults for new characters
+ *    angband_option restore interface|birth   back to those defaults
+ *    angband_option reset interface|birth     back to the game's own
+ *    angband_option scoring             {cheated wizard eligible}: whether a
+ *                                       cheat or wizard mode has been used,
+ *                                       and whether the character can still
+ *                                       go on the high-score list
  *
  * The first of the read accessors, and the pattern the rest follow: the names
  * are the game's own -- list-options.h through option_name() -- rather than a
@@ -6220,7 +6230,34 @@ static int objcmd_birth(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
  * are what an options dialog shows beside it, so they are named here as well.
  * They are marked with the type "value" rather than a page, which is how a
  * dialog knows to draw a slider instead of a checkbox.
+ *
+ * What option_set() does not do is refuse a birth option once there is a
+ * character: the game's own options screen enforces that by greying the page,
+ * and this said option_set() did it, which let a script change a birth option
+ * in the middle of a game.  Refused here now, and reported in the list as
+ * whether each option can be changed at all, so a window can grey it too.
+ *
+ * Four cheats are things done rather than settings -- take gold, take hit
+ * points, gain a pet, know every place -- and the options screen does each
+ * once and switches it back off, leaving the score option that records it.
+ * Setting one here does the same.  They act on the game, so only while it is
+ * waiting for a command; each asks what it wants through get_string, which a
+ * window can answer through angband_hook.
  */
+static bool option_changeable(int opt)
+{
+	return option_type(opt) != OP_BIRTH || !character_generated;
+}
+
+static const struct {
+	const char *name;
+	void (*act)(struct command *cmd);
+} option_cheat_action[] = {
+	{ "cheat_gold", do_cmd_wiz_gain_gold },
+	{ "cheat_hp", do_cmd_wiz_gain_hp },
+	{ "cheat_pet", do_cmd_wiz_gain_pet },
+	{ "cheat_places", do_cmd_wiz_know_places },
+};
 static const struct {
 	const char *name;
 	const char *desc;
@@ -6293,6 +6330,8 @@ static int objcmd_option(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 					Tcl_NewStringObj(option_desc(i), -1));
 			Tcl_ListObjAppendElement(ip, row,
 					Tcl_NewBooleanObj(player->opts.opt[i]));
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewBooleanObj(option_changeable(i)));
 			Tcl_ListObjAppendElement(ip, list, row);
 		}
 
@@ -6306,6 +6345,7 @@ static int objcmd_option(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			Tcl_ListObjAppendElement(ip, row,
 					Tcl_NewStringObj(option_value[i].desc, -1));
 			Tcl_ListObjAppendElement(ip, row, Tcl_NewIntObj(at ? *at : 0));
+			Tcl_ListObjAppendElement(ip, row, Tcl_NewBooleanObj(true));
 			Tcl_ListObjAppendElement(ip, list, row);
 		}
 
@@ -6315,6 +6355,60 @@ static int objcmd_option(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	}
 
 	name = Tcl_GetString(objv[1]);
+
+	/* By enter_score()'s own tests, so the window cannot disagree with it. */
+	if (objc == 2 && streq(name, "scoring")) {
+		Tcl_Obj *d = Tcl_NewListObj(0, NULL);
+		bool cheated = player_used_cheat_option(player);
+		bool wizard = (player->noscore
+				& (NOSCORE_WIZARD | NOSCORE_DEBUG)) != 0;
+#ifdef ALLOW_BORG
+		if (player->noscore & NOSCORE_BORG) wizard = true;
+#endif
+
+		Tcl_ListObjAppendElement(ip, d, Tcl_NewBooleanObj(cheated));
+		Tcl_ListObjAppendElement(ip, d, Tcl_NewBooleanObj(wizard));
+		Tcl_ListObjAppendElement(ip, d, Tcl_NewBooleanObj(!cheated && !wizard));
+		Tcl_SetObjResult(ip, d);
+		return TCL_OK;
+	}
+
+	/* A page's defaults, as the options screen's s, r and x keys. */
+	if (objc == 3 && (streq(name, "save") || streq(name, "restore")
+			|| streq(name, "reset"))) {
+		const char *which = Tcl_GetString(objv[2]);
+		int page;
+		bool done = true;
+
+		if (streq(which, "interface")) {
+			page = OP_INTERFACE;
+		} else if (streq(which, "birth")) {
+			page = OP_BIRTH;
+		} else {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"expected interface or birth, not: %s", which));
+			return TCL_ERROR;
+		}
+		if (!streq(name, "save") && page == OP_BIRTH && character_generated) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"birth options are fixed once a character is made", -1));
+			return TCL_ERROR;
+		}
+
+		if (streq(name, "save"))
+			done = options_save_custom(&player->opts, page);
+		else if (streq(name, "restore"))
+			done = options_restore_custom(&player->opts, page);
+		else
+			options_restore_maintainer(&player->opts, page);
+
+		if (!done) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("the %s defaults could not be"
+					" %s", which, streq(name, "save") ? "saved" : "read"));
+			return TCL_ERROR;
+		}
+		return TCL_OK;
+	}
 
 	for (i = 0; i < (int)N_ELEMENTS(option_value); i++) {
 		if (strcmp(name, option_value[i].name) == 0) {
@@ -6343,18 +6437,43 @@ static int objcmd_option(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 				return TCL_OK;
 			}
 
+			size_t c;
+
 			val = obj_true(objv[2]) ? 1 : 0;
+
+			if (!option_changeable(i)) {
+				Tcl_SetObjResult(ip, Tcl_NewStringObj(
+						"birth options are fixed once a character is made",
+						-1));
+				return TCL_ERROR;
+			}
+
+			for (c = 0; c < N_ELEMENTS(option_cheat_action); c++)
+				if (streq(name, option_cheat_action[c].name)) break;
+			if (val && c < N_ELEMENTS(option_cheat_action)
+					&& !command_may_start()) {
+				Tcl_SetObjResult(ip, Tcl_NewStringObj(
+						"the game is in the middle of something else", -1));
+				return TCL_ERROR;
+			}
 
 			/*
 			 * option_set, not a write straight into the array: it is what
-			 * refuses a birth option after birth and what marks a character as
-			 * a cheater when a cheat option goes on.  A script has no business
-			 * getting round either.
+			 * marks a character as a cheater when a cheat option goes on.  A
+			 * script has no business getting round that.
 			 */
 			if (!option_set(name, val)) {
 				Tcl_SetObjResult(ip, Tcl_ObjPrintf(
 						"%s cannot be changed now", name));
 				return TCL_ERROR;
+			}
+
+			if (val && c < N_ELEMENTS(option_cheat_action)) {
+				command_inside = true;
+				option_cheat_action[c].act(NULL);
+				command_inside = false;
+				player->opts.opt[i] = false;
+				handle_stuff(player);
 			}
 
 			return TCL_OK;

@@ -200,13 +200,10 @@ proc birth_describe {} {
     $t configure -state disabled
 }
 
-# The birth options are the game's own screen, drawn in the main window and
-# answered from its keyboard, so the window steps aside until the game asks
-# its next question.
+# The birth options are on the Options window's Birth tab, which can change
+# them for as long as the character is being made.
 proc birth_options {} {
-    wm withdraw .birth
-    focus -force .
-    birth_answer options
+    options_window birth
 }
 
 proc birth_choose {} {

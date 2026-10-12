@@ -1792,6 +1792,29 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 
 **Exit:** a double-clickable ZangbandTK.app with no external Tcl dependency.
 
+> **The Options window — first cut, 12 October 2026.**
+> [lib/tcl/options.tcl](../../lib/tcl/options.tcl), stock Tk: a notebook with the game's
+> pages — Interface with the three numeric settings under it, Birth, Cheats — and the front
+> end's Display beside them. Generated from `angband_option`, so an option added to
+> list-options.h appears without anyone editing the window. Opened from the Window menu,
+> from Preferences in the application menu, and by the Birth window's Birth Options button,
+> which used to drop into the text screen.
+>
+> - **Birth options are refused once a character exists.** `option_set()` never did that —
+>   the game's options screen enforces it by greying the page — and the bridge's comment said
+>   it did, so a script could change a birth option mid-game. The bridge refuses it now, and
+>   each option row says whether it can be changed, which is what greys the window.
+> - **Four cheats are actions:** take gold, set hit points, gain a pet, know every place. As
+>   on the game's screen, each is done once and switches itself back off, leaving its score
+>   option set; the window answers the game's own `get_string` prompt from a field beside the
+>   button, through `angband_hook`. Any cheat asks first, since it cannot be taken back.
+> - **A page's defaults**: saved for new characters, restored from them, or reset to the
+>   game's own — the options screen's s, r and x — with birth restore and reset only while a
+>   character is being made, as there.
+>
+> Still to come from the list above: tile size, pane fonts and the palette on the Display
+> page, and the item-ignoring and auto-inscription setups, which are still the game's screens.
+
 ---
 
 ## 6. Decisions needed

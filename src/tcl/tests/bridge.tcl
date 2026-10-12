@@ -328,7 +328,8 @@ check "angband_player takes at most one field" {
 proc stock_widgets_only {top} {
 	set stock {Toplevel Menu TFrame TLabel TLabelframe TRadiobutton TEntry
 	           TMenubutton TButton TScrollbar TSeparator TProgressbar
-	           Treeview TSpinbox Listbox Text Canvas Label}
+	           Treeview TSpinbox Listbox Text Canvas Label TCheckbutton
+	           TNotebook}
 	set odd {}
 	set todo $top
 	while {[llength $todo]} {
@@ -1060,10 +1061,38 @@ proc birth_pass_step {} {
 
 proc birth_pass_done {} {
 	after cancel $::birthwatch
+
+	# The race's checks run only if the race is the first thing seen, so
+	# say so when it was not, rather than passing without them.  Seen once,
+	# not reproduced: the pass went straight to the confirmation.
+	check "the Birth window was seen asking for the race first" {
+		lindex $::birthseen 0
+	} "race"
 	check "the character was made in the Birth window" {
 		list [winfo exists .birth] [expr {[angband_player race] ne ""}] \
 			[expr {[lindex [angband_player hitpoints] 1] > 0}]
 	} "0 1 1"
+
+	# The options, now that the character exists: a birth option is the
+	# character's, which option_set() alone does not enforce, and each row
+	# says whether it can be changed so a window can grey it.
+	check "a birth option is fixed once the character exists" {
+		catch {angband_option birth_no_selling 1} e
+		set row [lsearch -inline -index 0 [angband_option] birth_no_selling]
+		list $e [lindex $row 4] \
+			[lindex [lsearch -inline -index 0 [angband_option] use_old_target] 4]
+	} "{birth options are fixed once a character is made} 0 1"
+
+	check "the Options window is Tk's own widgets, birth options greyed" {
+		options_window
+		set dis 0
+		foreach w [winfo children .options.f.nb.birth.scroll.c.in] {
+			if {[$w instate disabled]} { incr dis }
+		}
+		set r [list [stock_widgets_only .options] [expr {$dis > 10}]]
+		destroy .options
+		set r
+	} "{classic {}} 1"
 	set ::waits 0
 	birth_pass_ready
 }
