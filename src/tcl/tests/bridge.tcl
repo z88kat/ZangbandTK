@@ -1076,7 +1076,9 @@ proc birth_pass_step {} {
 					[expr {[dict get $c race] ne ""}] \
 					[expr {[dict get $c hitpoints] > 0}]
 			} "1 1 1"
-			birth_next
+			# Return, on the button that has the focus -- which did nothing
+			# until the window pressed it.  The pass ends only if it works.
+			event generate .birth.f.btns.next <Return>
 		}
 		default {
 			# A stage the random finish should have answered; take it
@@ -1131,6 +1133,44 @@ proc birth_pass_done {} {
 		destroy .options
 		set r
 	} "{classic {}} 1"
+
+	# A notch of the wheel is a few rows.  Tk 9 reports one as 120, and the
+	# page used to scroll by that many units -- to the end, at once.
+	check "a notch of the wheel scrolls the Options page a little" {
+		options_window interface
+		update
+		set c .options.f.nb.interface.scroll.c
+		set before [lindex [$c yview] 0]
+		event generate $c <MouseWheel> -delta -120
+		update
+		set after [lindex [$c yview] 0]
+		destroy .options
+		list $before [expr {$after > 0 && $after < 0.5}]
+	} "0.0 1"
+
+	# The underlined letters.  On the Mac, Option and a letter arrives as the
+	# character it types -- Option-B is "∫" -- so the shortcut is read back from
+	# the key: Carbon's code for B is 11, in the top byte of Tk's key code.
+	# Elsewhere it is Alt, bound as it always was.
+	check "an underlined letter chooses its tab, but not in a text field" {
+		options_window interface
+		update
+		if {[tk windowingsystem] eq "aqua"} {
+			set code [expr {(11 << 24) | 0x222B}]
+			set took [accel_option .options .options.f.nb $code]
+			set tab [.options.f.nb select]
+			ttk::entry .options.probe
+			set typing [accel_option .options .options.probe $code]
+			destroy .options.probe
+			set r [list $took $tab $typing]
+		} else {
+			uplevel #0 [bind .options <Alt-b>]
+			set r [list 1 [.options.f.nb select] 0]
+		}
+		destroy .options
+		set r
+	} "1 .options.f.nb.birth 0"
+
 	set ::waits 0
 	birth_pass_ready
 }
@@ -1234,7 +1274,53 @@ proc tips_pass {} {
 		set r
 	} 1
 
-	death_pass
+	door_pass
+}
+
+# --- a door in the command menus --------------------------------------------
+
+# "Debug mode commands" is no command but the door ^A opens, and clicking it
+# did nothing: it has neither a hook nor a command to push.  It presses the key
+# now, and the game puts up the prompt the key does, "Debug Command:" -- whose
+# own confirmation comes later, when a debug command is chosen.  Escaped here,
+# so the character is not marked.
+proc door_pass {} {
+	set row [lsearch -inline -index 3 [angband_commands] "Debug mode commands"]
+	angband_command [lindex $row 0] [lindex $row 2]
+	set ::waits 0
+	door_wait
+}
+
+# The main screen's top line, where the game puts its prompts.
+proc door_top_line {} {
+	set c [lindex $::angband(terms) 0 0]
+	set cells {}
+	foreach id [$c find all] {
+		if {[$c type $id] ne "text"} continue
+		lassign [$c coords $id] x y
+		if {int($y / $::angband(cellh)) != 0} continue
+		dict set cells [expr {int($x / $::angband(cellw))}] [$c itemcget $id -text]
+	}
+	set line ""
+	foreach col [lsort -integer [dict keys $cells]] {
+		while {[string length $line] < $col} { append line " " }
+		append line [dict get $cells $col]
+	}
+	string trim $line
+}
+
+proc door_wait {} {
+	set top [door_top_line]
+	if {![string match "Debug Command*" $top] && [incr ::waits] < 25} {
+		after 200 door_wait
+		return
+	}
+	check "the Debug mode commands entry opens what ^A opens" {
+		lassign [angband_option scoring] cheated wizard eligible
+		list [string match "Debug Command*" $top] $wizard $eligible
+	} "1 0 1"
+	angband_key 0xff1b 0 "\x1b"
+	after 500 death_pass
 }
 
 # --- the fourth pass: the end of a character --------------------------------

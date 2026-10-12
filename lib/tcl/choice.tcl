@@ -317,7 +317,9 @@ proc choice_build {} {
             if {$i ne ""} { choice_menu $i %X %Y }
         }
     }
-    bind $t <MouseWheel> { %W yview scroll [expr {-(%D)}] units }
+    # Three lines a notch, as Tk's own lists scroll.  Tk 9 reports a notch as
+    # 120, and this used to scroll by that many lines -- to the end, at once.
+    bind $t <MouseWheel> { tk::MouseWheel %W y %D -40.0 }
 }
 
 choice_build

@@ -377,6 +377,17 @@ proc birth_quickstart_page {} {
 }
 
 # Next: whatever accepting means at this stage.
+# Press the first of these buttons that is on show and can be pressed.
+proc birth_press {args} {
+    foreach b $args {
+        if {[winfo exists $b] && [winfo ismapped $b] && ![$b instate disabled]} {
+            $b invoke
+            return
+        }
+    }
+    bell
+}
+
 proc birth_next {} {
     global birth
 
@@ -576,10 +587,26 @@ proc birth_window {} {
     pack $p.act.use $p.act.change $p.act.redo -side left -padx {0 8}
 
     # Return is Next and Escape is Back, as Enter and ESC are on the text
-    # screen; the history keeps its Return for new lines.
+    # screen; the history keeps its Return for new lines.  A button with the
+    # focus is pressed -- which on most pages is Next itself, and on the quick
+    # start is Play Again.  It used to be left alone, on the understanding that
+    # a focused button takes Return for itself; a ttk button does not, so on
+    # four pages Return did nothing at all.
     bind .birth <Return> {
-        if {[winfo class %W] ni {Text TButton}} { birth_next ; break }
+        switch -- [winfo class %W] {
+            Text {}
+            TButton { if {![%W instate disabled]} { %W invoke } ; break }
+            default { birth_next ; break }
+        }
     }
+
+    # The underlined letters.  Reroll and Random share R, and only one of them
+    # is ever there to press.
+    accel_bind .birth r {
+        birth_press .birth.f.roller.act.roll .birth.f.btns.random ; break
+    }
+    accel_bind .birth f { birth_press .birth.f.btns.finish ; break }
+    accel_bind .birth p { birth_press .birth.f.roller.act.prev ; break }
     bind .birth <Escape> {
         if {$birth(stage) ne "quickstart"} { birth_answer back }
         break

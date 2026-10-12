@@ -641,13 +641,13 @@ proc character_window {} {
     bind .character <Escape> { destroy .character ; break }
     bind .character <Control-s> { character_dump ; break }
     bind .character <F1> { character_help ; break }
-    bind .character <Alt-n> { character_rename ; break }
-    bind .character <Alt-d> { character_dump ; break }
-    bind .character <Alt-c> { destroy .character ; break }
+    accel_bind .character n { character_rename ; break }
+    accel_bind .character d { character_dump ; break }
+    accel_bind .character c { destroy .character ; break }
     foreach page $character(pages) {
         lassign $page key label under
         set letter [string tolower [string index $label $under]]
-        bind .character <Alt-$letter> \
+        accel_bind .character $letter \
             [list apply {{key} {
                 set ::character(page) $key
                 character_switch

@@ -69,6 +69,8 @@ Healers mend hit points at 4 gold each, cure every ailment for 60 gold, and rest
 
 The Items window's Drop button puts down one item from a stack, not the whole stack.
 
+In most windows the underlined letter on a button or a tab is its shortcut: hold Option (Alt on other systems) and press the letter. In a field you are typing in, Option and a letter types a character instead.
+
 Every dungeon has a bottom. When a staircase down says the dungeon goes no deeper, find another dungeon that goes further.
 
 Ctrl-O shows the last message again, and Ctrl-P opens the whole message history.

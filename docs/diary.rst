@@ -31,6 +31,39 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+12 October 2026 — shortcuts nobody could press
+==============================================
+
+Every window has underlined letters, as the original's did: the O of Open, the
+C of Close. On X11 and Windows that means Alt and the letter. On the Mac the
+Alt key is Option, and Option and a letter is a character in its own right:
+Option-O types "ø". Tk reports the character, not the letter, so a binding on
+Alt-O never fires, and nor does one on Option-O. Every shortcut in every window
+had been doing nothing on the machine the game is developed on, and nobody had
+pressed one to find out. The research agent found it by reading Tk's source. I
+found it again by pressing the keys, which is the only way it could have been
+found in the first place.
+
+The fix reads the letter back from the key rather than from the character it
+makes. Tk's key code carries the Mac's own code for the physical key, so
+Option-O is still recognisably the O key. Nine underlines turned out to have
+no shortcut behind them at all, in the Birth window, on the Options tabs and on
+the home's Leave button, and they have one now.
+
+Three smaller things went with it. A notch of the mouse wheel scrolled the
+Options window to the end, because Tk 9 reports a notch as 120 and the code
+scrolled 120 lines. Return did nothing on four of the Birth window's pages. And
+Debug mode commands in the Other menu did nothing when clicked, because it is
+not a command but the door that ^A opens; a click now presses ^A.
+
+The manual got its own sweep, a dozen claims checked against the code. Most had
+simply been overtaken: "no class starts with a spellbook", "five books of each
+realm", a road through one block in a hundred when it is three. One was the
+other way about. The manual said a killing blow with a Vampiric weapon heals
+you. The code said it does not, and the original agrees with the code: "If the
+monster is dead, the drain does not work."
+
+
 12 October 2026 — every Mage was the same Mage
 ==============================================
 

@@ -7343,6 +7343,19 @@ static int objcmd_command(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	} else if (c->cmd) {
 		cmdq_push_repeat(c->cmd, count);
 		command_nudge();
+	} else if (c->nested_prompt) {
+		/*
+		 * Not a command but a door to some: "Debug mode commands" is what
+		 * the keyboard's ^A opens -- the game confirms debug mode, marks the
+		 * character, and asks which debug command.  It has neither a hook
+		 * nor a command to push, so this did nothing at all.  The commands
+		 * behind it have a menu of their own; a click here does what the key
+		 * does, by pressing it, and the game's own prompt does the rest.
+		 */
+		keycode_t key = c->key[OPT(player, rogue_like_commands) ? 1 : 0];
+
+		if (!key) key = c->key[0];
+		if (key) bridge_key(key);
 	}
 
 	return TCL_OK;

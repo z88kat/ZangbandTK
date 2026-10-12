@@ -1055,10 +1055,10 @@ proc items_window {} {
     bind .items <F1> { items_help ; break }
     foreach {k action} {w wear t takeoff d drop i inspect} {
         bind .items <Key-$k> "items_letter $action %N %s %A ; break"
-        bind .items <Alt-$k> "items_$action ; break"
+        accel_bind .items $k "items_$action ; break"
     }
-    bind .items <Alt-s> { focus .items.f.tools.insc ; break }
-    bind .items <Alt-c> { destroy .items ; break }
+    accel_bind .items s { focus .items.f.tools.insc ; break }
+    accel_bind .items c { destroy .items ; break }
     bind .items <Destroy> { if {"%W" eq ".items"} { items_forget } }
 
     items_refresh

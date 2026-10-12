@@ -267,8 +267,8 @@ proc building_window {} {
 
     bind .building <Key> { building_key %W %K %N %s %A }
     bind .building <Escape> { building_leave ; break }
-    bind .building <Alt-c> { building_choose ; break }
-    bind .building <Alt-l> { building_leave ; break }
+    accel_bind .building c { building_choose ; break }
+    accel_bind .building l { building_leave ; break }
 
     focus $tv
 }

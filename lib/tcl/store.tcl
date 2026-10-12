@@ -360,10 +360,12 @@ proc store_window {} {
 
     bind .store <Key> { store_key %W %K %N %s %A }
     bind .store <Escape> { store_leave ; break }
-    bind .store <Alt-b> { store_trade buy ; break }
-    bind .store <Alt-t> { store_trade buy ; break }
-    bind .store <Alt-s> { store_trade sell ; break }
-    bind .store <Alt-g> { store_trade sell ; break }
+    accel_bind .store b { store_trade buy ; break }
+    accel_bind .store t { store_trade buy ; break }
+    accel_bind .store s { store_trade sell ; break }
+    accel_bind .store g { store_trade sell ; break }
+    # The home's Leave, which puts an item in it: Sell's place, and its letter.
+    accel_bind .store l { store_trade sell ; break }
 
     focus $body.buy.tv
 }

@@ -614,10 +614,10 @@ proc knowledge_window {} {
     bind .knowledge <Escape> { destroy .knowledge ; break }
     bind .knowledge <Control-s> { knowledge_dump ; break }
     bind .knowledge <F1> { knowledge_help ; break }
-    bind .knowledge <Alt-f> { focus .knowledge.f.tools.find ; break }
-    bind .knowledge <Alt-p> { .knowledge.f.btns.prev invoke ; break }
-    bind .knowledge <Alt-n> { .knowledge.f.btns.next invoke ; break }
-    bind .knowledge <Alt-c> { destroy .knowledge ; break }
+    accel_bind .knowledge f { focus .knowledge.f.tools.find ; break }
+    accel_bind .knowledge p { .knowledge.f.btns.prev invoke ; break }
+    accel_bind .knowledge n { .knowledge.f.btns.next invoke ; break }
+    accel_bind .knowledge c { destroy .knowledge ; break }
 
     knowledge_switch
     focus $l.lb

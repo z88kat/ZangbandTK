@@ -1858,6 +1858,18 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 > None of those is in a tip. The bridge test checks that every tip fits the window without
 > scrolling, and its runner now passes `-duser=` so a test never writes the player's settings.
 
+> **The underlined letters, 12 October 2026.** Every Alt shortcut in every window did nothing
+> on the Mac: Option and a letter is a character there (Option-O is "ø"), Tk reports the
+> character, and neither `<Alt-o>` nor `<Option-o>` ever matches. Decided with the project owner:
+> keep the original's modifier rather than move to Command or drop the shortcuts.
+> [lib/tcl/accel.tcl](../../lib/tcl/accel.tcl)'s `accel_bind` binds Alt for X11 and Windows
+> and, on the Mac, reads the letter back from the key pressed -- Carbon's key code, in the
+> top byte of Tk's -- as a US-layout position: exact on US and UK keyboards, a few letters
+> off on layouts that move them. In a field for typing, Option and a letter types the
+> character. Underlines that had no shortcut behind them got one: the Birth window's Random,
+> Finish at Random, Reroll and Previous, the Options tabs (Cheats moved to h, C being Close)
+> and the home's Leave.
+
 > Still to come: the **tile icon on the tombstone** (OBS-46) — no window can show a tile yet,
 > which is also why the Character window's portrait is an `@`; the **Character Record** and
 > the **Hall of Fame**, where View scores is still the game's screen; and the winner's

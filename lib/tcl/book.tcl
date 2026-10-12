@@ -373,8 +373,8 @@ proc book_window {} {
     bind .book <Key> { book_key %W %K %N %s %A }
     bind .book <Escape> { destroy .book ; break }
     bind .book <F1> { book_help ; break }
-    bind .book <Alt-c> { book_cast ; break }
-    bind .book <Alt-s> { book_study ; break }
+    accel_bind .book c { book_cast ; break }
+    accel_bind .book s { book_study ; break }
 
     book_refresh
     focus $tv

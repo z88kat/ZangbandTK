@@ -175,7 +175,7 @@ proc options_scrolled {parent} {
     set f [ttk::frame $parent.scroll]
     set c [canvas $f.c -highlightthickness 0 -borderwidth 0 \
         -background [ttk::style lookup . -background] \
-        -yscrollcommand [list $f.sb set]]
+        -yscrollincrement 20 -yscrollcommand [list $f.sb set]]
     ttk::scrollbar $f.sb -orient vertical -command [list $c yview]
     set inner [ttk::frame $c.in]
     $c create window 0 0 -window $inner -anchor nw
@@ -286,7 +286,7 @@ proc options_build {} {
     # Cheats: a warning, the settings, then the things done once.  Short
     # enough not to scroll.
     set p [ttk::frame $nb.cheat -padding 10]
-    $nb add $p -text "Cheats" -underline 0
+    $nb add $p -text "Cheats" -underline 1
     set warn [ttk::frame $p.warn]
     ttk::label $warn.icon -text "!" -font {Helvetica 30 bold}
     ttk::label $warn.text -font {Helvetica 12} -wraplength 460 -justify left \
@@ -335,13 +335,21 @@ proc options_build {} {
     }
 
     bind .options <Escape> {destroy .options}
-    bind .options <Alt-c> {destroy .options}
+    accel_bind .options c {destroy .options}
+    # The tabs answer their underlined letters too.  Cheats is h, because C
+    # is Close.
+    foreach {letter page} {i interface b birth h cheat d display} {
+        accel_bind .options $letter \
+            [list .options.f.nb select .options.f.nb.$page]
+    }
     # The wheel scrolls the page showing, wherever the pointer is in the
-    # window -- not only over the gaps between the options.
+    # window -- not only over the gaps between the options.  Three rows a
+    # notch, as Tk's own lists scroll: Tk 9 reports a notch as 120, and this
+    # used to scroll by that many units, which is the whole page at once.
     bind .options <MouseWheel> {
         if {[winfo class %W] ni {TSpinbox TEntry}} {
             set c "[.options.f.nb select].scroll.c"
-            if {[winfo exists $c]} { $c yview scroll [expr {-(%D)}] units }
+            if {[winfo exists $c]} { tk::MouseWheel $c y %D -40.0 }
         }
     }
     bind .options <FocusIn> {if {"%W" eq ".options"} options_refresh}

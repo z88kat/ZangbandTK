@@ -293,9 +293,9 @@ proc choose_window {} {
     }
     bind $tv <KeyPress> { choose_typed %A }
     bind .choose <Return> { choose_default ; break }
-    bind .choose <Alt-o> { choose_open ; break }
-    bind .choose <Alt-n> { choose_new ; break }
-    bind .choose <Alt-q> { choose_quit ; break }
+    accel_bind .choose o { choose_open ; break }
+    accel_bind .choose n { choose_new ; break }
+    accel_bind .choose q { choose_quit ; break }
 }
 
 bind . <<Angband_CHOOSEGAME>> {+ choose_show }
