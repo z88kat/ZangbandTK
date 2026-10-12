@@ -401,8 +401,14 @@ proc birth_next {} {
 }
 
 # Closing the window is quitting, as Ctrl-X is on the text screen -- asked
-# first, because it cannot be taken back.
+# first, because it cannot be taken back.  Unless the game is not asking
+# anything, in which case the character is made and the window is merely
+# still there: then closing it closes it.
 proc birth_close {} {
+    if {[catch {angband_birth} here] || ![llength $here]} {
+        destroy .birth
+        return
+    }
     if {[tk_messageBox -parent .birth -icon question -type yesno \
             -title "Quit" -message "Quit without making a character?"] eq "yes"} {
         birth_answer quit

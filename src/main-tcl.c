@@ -863,6 +863,12 @@ static void birth_view_tk(enum birth_stage stage, int slot,
 		struct birth_answer *answer);
 static void birth_points_notice(game_event_type type, game_event_data *data,
 		void *user);
+static void events_register(void);
+static void bridge_reinstall_if_due(void);
+static void bridge_reinit(void);
+static void (*bridge_reinit_prev)(void);
+static bool bridge_reinstall_due;
+static bool store_inside;
 
 /**
  * A key the bridge sends the game itself -- the nudge after a push, the Escape
@@ -913,6 +919,7 @@ static errr Term_xtra_tcl(int n, int v)
 		hooks_apply();
 		choice_install();
 	}
+	if (n == TERM_XTRA_EVENT) bridge_reinstall_if_due();
 
 	switch (n) {
 		case TERM_XTRA_EVENT:
@@ -1218,8 +1225,17 @@ static void events_init(void)
 				"event generate . <<Angband_%s>> -when tail",
 				game_event_name[i]);
 		Tcl_IncrRefCount(event_script[i]);
-		event_add_handler((game_event_type)i, event_to_tcl, NULL);
 	}
+	events_register();
+}
+
+/* The handlers that pass each event on -- again after a reset sweeps them. */
+static void events_register(void)
+{
+	int i;
+
+	for (i = 0; i < (int)N_ELEMENTS(game_event_name); i++)
+		event_add_handler((game_event_type)i, event_to_tcl, NULL);
 }
 
 /*
@@ -4643,9 +4659,9 @@ static void service_notice(game_event_type type, game_event_data *data,
 }
 
 /* Once, after textui_input_init(), so what is wrapped is textui's prompt. */
-static void choice_install(void)
+/* The game's prompts, wrapped -- once per set the game puts in. */
+static void choice_hooks_install(void)
 {
-	if (choice_original || !get_item_hook) return;
 	choice_original = get_item_hook;
 	get_item_hook = choice_get_item;
 
@@ -4658,12 +4674,79 @@ static void choice_install(void)
 	get_check_hook = choice_get_check;
 
 	birth_view_hook = birth_view_tk;
-	event_add_handler(EVENT_BIRTHPOINTS, birth_points_notice, NULL);
+}
 
+/* What this file follows itself -- again whenever a reset sweeps them. */
+static void choice_events_register(void)
+{
+	event_add_handler(EVENT_BIRTHPOINTS, birth_points_notice, NULL);
 	event_add_handler(EVENT_LEAVE_WORLD, store_notice, NULL);
 	event_add_handler(EVENT_ENTER_WORLD, store_notice, NULL);
 	event_add_handler(EVENT_ENTER_SERVICE, service_notice, NULL);
 	event_add_handler(EVENT_LEAVE_SERVICE, service_notice, NULL);
+}
+
+static void choice_install(void)
+{
+	if (choice_original || !get_item_hook) return;
+	choice_hooks_install();
+	choice_events_register();
+
+	if (reinit_hook != bridge_reinit) {
+		bridge_reinit_prev = reinit_hook;
+		reinit_hook = bridge_reinit;
+	}
+}
+
+/**
+ * Starting again after New Game.
+ *
+ * The death screen's New Game does not leave the process: play_game() calls
+ * cleanup_angband(), which takes every handler off every event -- this front
+ * end's along with the game's -- and then textui_init(), which sets every
+ * subwindow back to the game's own assignment by index.  So the second
+ * character played in a session had a front end that heard nothing: the Birth
+ * window was not told the character was made and stayed open, and the
+ * Progress strip went on showing the last character.  (The prompt hooks
+ * survive: textui_init() puts the game's own back only on the first start.)
+ *
+ * The game calls reinit_hook just before textui_init(), so this wraps it to
+ * note that a reinstall is due, and the reinstall happens at the next point
+ * the game waits -- a request for a key, or the Birth window's question --
+ * which is after textui_init().  The event handlers and the subwindows are put
+ * back; the prompt wrappers only if the game did replace them, since wrapping
+ * a wrapper would have it call itself.
+ */
+static void bridge_reinit(void)
+{
+	if (bridge_reinit_prev) bridge_reinit_prev();
+	bridge_reinstall_due = true;
+}
+
+static void bridge_reinstall_if_due(void)
+{
+	int i;
+
+	if (!bridge_reinstall_due) return;
+	bridge_reinstall_due = false;
+
+	events_register();
+	choice_events_register();
+	subwindows_set_flags(want_flag, ANGBAND_TERM_MAX);
+
+	if (get_item_hook != choice_get_item) {
+		/* A prompt a script took over is taken over again from the new one. */
+		for (i = 0; i < HOOK_MAX; i++) {
+			if (hooks[i].script) {
+				hooks[i].original = NULL;
+				hook_install(&hooks[i]);
+			}
+		}
+		choice_hooks_install();
+	}
+
+	store_inside = false;
+	service_visit = -1;
 }
 
 /**
@@ -5780,6 +5863,9 @@ static void birth_points_notice(game_event_type type, game_event_data *data,
 static void birth_view_tk(enum birth_stage stage, int slot,
 		struct birth_answer *answer)
 {
+	/* After New Game, the first thing the game waits for is this. */
+	bridge_reinstall_if_due();
+
 	birth_stage_now = stage;
 	birth_slot_now = slot;
 	birth_pending = answer;
