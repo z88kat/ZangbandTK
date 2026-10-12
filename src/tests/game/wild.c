@@ -1628,6 +1628,8 @@ static bool recall_say_yes(const char *prompt)
  * dungeon's record, which nothing lowered -- so yes did nothing.  And the
  * question was asked against the deepest the player had been anywhere, so it
  * came up at the bottom of a shallow dungeon, where there was nothing to set.
+ * A yes now sets the recall depth alone, and leaves the deepest level reached
+ * where it was.
  */
 static int test_setting_the_recall_depth_sets_it(void *state) {
 	struct wild_dungeon *first = wild_dungeon_by_index(wild, 0);
@@ -1644,6 +1646,7 @@ static int test_setting_the_recall_depth_sets_it(void *state) {
 	player->dungeon = first->type + 1;
 	player->depth = ta->min_depth + 3;
 	player_note_dungeon_depth(player);
+	player->max_depth = ta->min_depth + 3;
 	player->depth = ta->min_depth + 1;
 	player->word_recall = 0;
 
@@ -1655,6 +1658,26 @@ static int test_setting_the_recall_depth_sets_it(void *state) {
 	require(recall_asked);
 	require(player->word_recall > 0);
 	eq(player_dungeon_recall_depth(player), ta->min_depth + 1);
+
+	/*
+	 * And that is all it changed: the deepest the character has been is
+	 * still the deepest, which 4.2's yes lowered with it.
+	 */
+	eq(player->max_depth, ta->min_depth + 3);
+
+	/*
+	 * Under forced descent recall always goes one below the deepest level, so
+	 * there is nothing to set and nothing is asked.
+	 */
+	player->word_recall = 0;
+	player->depth = ta->min_depth + 2;
+	player->opts.opt[OPT_birth_force_descend] = true;
+	recall_asked = false;
+	effect_simple(EF_RECALL, source_player(), "0", 0, 0, 0, 0, 0, NULL);
+	player->opts.opt[OPT_birth_force_descend] = false;
+	require(!recall_asked);
+	eq(player_dungeon_recall_depth(player), ta->min_depth + 1);
+	player->depth = ta->min_depth + 1;
 
 	/*
 	 * Standing where recall already comes back to, there is nothing to ask --

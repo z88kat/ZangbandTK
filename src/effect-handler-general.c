@@ -1233,12 +1233,20 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 		 * came up at the bottom of a shallow dungeon, where recall would bring
 		 * them straight back anyway; and a yes set only the player's own
 		 * depths, which recall back down does not read, so it did nothing.
+		 *
+		 * A yes sets the recall depth and nothing else.  4.2's also lowered
+		 * the deepest the character has been, because that was the recall
+		 * depth there; here it is a separate thing -- the inns pitch their work
+		 * from it and the character sheet shows it -- and turning back should
+		 * not unmake it.  Not asked under forced descent, whose recall always
+		 * goes one below the deepest level, so a yes would change nothing.
 		 */
 		if (player->depth > 0) {
 			if (player->depth != player_dungeon_recall_depth(player)
-					&& !OPT(player, birth_levels_persist)) {
+					&& !OPT(player, birth_levels_persist)
+					&& !OPT(player, birth_force_descend)) {
 				if (get_check("Set recall depth to current depth? ")) {
-					player->recall_depth = player->max_depth = player->depth;
+					player->recall_depth = player->depth;
 					player_set_dungeon_recall_depth(player, player->depth);
 				}
 			} else {
