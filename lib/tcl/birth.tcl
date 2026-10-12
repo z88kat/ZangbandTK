@@ -417,6 +417,16 @@ proc birth_close {} {
 
 # --- the window ----------------------------------------------------------------
 
+# A text with a scrollbar beside it, so that a description longer than the
+# box says so -- the wheel alone scrolled it, with nothing to show there was
+# more.
+proc birth_scrolled {t sb pady} {
+    ttk::scrollbar $sb -orient vertical -command [list $t yview]
+    $t configure -yscrollcommand [list $sb set]
+    pack $sb -side right -fill y -pady $pady
+    pack $t -side left -fill both -expand 1 -pady $pady
+}
+
 proc birth_window {} {
     global birth
 
@@ -492,7 +502,7 @@ proc birth_window {} {
         -highlightthickness 0 -padx 6 -pady 6 -state disabled
     $p.desc.t tag configure head -font {Courier 12 bold}
     $p.desc.t tag configure prose -font {Helvetica 13} -spacing3 2
-    pack $p.desc.t -fill both -expand 1
+    birth_scrolled $p.desc.t $p.desc.sb 0
 
     # Point-based stats.
     set p $w.points
@@ -533,7 +543,7 @@ proc birth_window {} {
     text $p.t -width 60 -height 8 -wrap word -font {Helvetica 13} \
         -background $field -foreground black -relief sunken -borderwidth 2 \
         -highlightthickness 1 -padx 6 -pady 6 -undo 1
-    pack $p.t -fill both -expand 1 -pady {6 0}
+    birth_scrolled $p.t $p.sb {6 0}
 
     # The character as made.
     set p $w.confirm
@@ -543,9 +553,9 @@ proc birth_window {} {
         -highlightthickness 0 -padx 8 -pady 8 -state disabled
     $p.t tag configure head -font {Courier 14 bold}
     $p.t tag configure bold -font {Courier 12 bold}
-    pack $p.t -fill both -expand 1 -pady {6 0}
     ttk::button $p.over -text "Start Over" -command {birth_answer startover}
-    pack $p.over -anchor w -pady {8 0}
+    pack $p.over -side bottom -anchor w -pady {8 0}
+    birth_scrolled $p.t $p.sb {6 0}
 
     # The quick start: the last character, and what to do with it.
     set p $w.quickstart
@@ -557,7 +567,7 @@ proc birth_window {} {
         -highlightthickness 0 -padx 8 -pady 8 -state disabled
     $p.t tag configure head -font {Courier 14 bold}
     $p.t tag configure bold -font {Courier 12 bold}
-    pack $p.t -fill both -expand 1 -pady {6 0}
+    birth_scrolled $p.t $p.sb {6 0}
     ttk::button $p.act.use -text "Play Again" -default active \
         -command {birth_answer use}
     ttk::button $p.act.change -text "Change Name and History" \

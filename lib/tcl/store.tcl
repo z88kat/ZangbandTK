@@ -337,7 +337,11 @@ proc store_window {} {
         -highlightthickness 1 -highlightcolor black \
         -highlightbackground $ground -padx 4 -pady 4 -state disabled
     $w.desc.t tag configure head -font {Courier 12 bold}
-    pack $w.desc.t -fill x
+    # A scrollbar, so that a description longer than five lines says so.
+    ttk::scrollbar $w.desc.sb -orient vertical -command [list $w.desc.t yview]
+    $w.desc.t configure -yscrollcommand [list $w.desc.sb set]
+    pack $w.desc.sb -side right -fill y
+    pack $w.desc.t -side left -fill x -expand 1
 
     # Packed by store_refresh, and only for a character born with no selling.
     ttk::label $w.note -textvariable store(note) -font {Helvetica 12} \
