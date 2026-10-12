@@ -1611,6 +1611,162 @@ static int test_each_dungeon_remembers_its_own_depth(void *state) {
 	ok;
 }
 
+/* Answers "Set recall depth to current depth?", and notes that it was asked. */
+static bool recall_asked;
+static bool recall_say_yes(const char *prompt)
+{
+	recall_asked = true;
+	return true;
+}
+
+/**
+ * Saying yes to "Set recall depth to current depth?" sets it (WLD-14).
+ *
+ * Word of recall read in a dungeon above the deepest point reached in it asks
+ * whether to come back to here instead.  The answer set the player's own
+ * recall and maximum depths, as 4.2 does, and recall back down reads the
+ * dungeon's record, which nothing lowered -- so yes did nothing.  And the
+ * question was asked against the deepest the player had been anywhere, so it
+ * came up at the bottom of a shallow dungeon, where there was nothing to set.
+ */
+static int test_setting_the_recall_depth_sets_it(void *state) {
+	struct wild_dungeon *first = wild_dungeon_by_index(wild, 0);
+	bool (*was_check)(const char *) = get_check_hook;
+	int16_t was_max = player->max_depth, was_recall = player->recall_depth;
+	struct dun_type *ta;
+
+	notnull(first);
+	ta = dun_type_by_index(first->type);
+	notnull(ta);
+	require(ta->max_depth >= ta->min_depth + 3);
+
+	/* Three levels down the first dungeon, and back up to the first. */
+	player->dungeon = first->type + 1;
+	player->depth = ta->min_depth + 3;
+	player_note_dungeon_depth(player);
+	player->depth = ta->min_depth + 1;
+	player->word_recall = 0;
+
+	get_check_hook = recall_say_yes;
+	recall_asked = false;
+	effect_simple(EF_RECALL, source_player(), "0", 0, 0, 0, 0, 0, NULL);
+
+	/* It was asked, and recall now comes back to here. */
+	require(recall_asked);
+	require(player->word_recall > 0);
+	eq(player_dungeon_recall_depth(player), ta->min_depth + 1);
+
+	/*
+	 * Standing where recall already comes back to, there is nothing to ask --
+	 * however deep the player has been in some other dungeon.
+	 */
+	player->word_recall = 0;
+	player->max_depth = ta->min_depth + 20;
+	recall_asked = false;
+	effect_simple(EF_RECALL, source_player(), "0", 0, 0, 0, 0, 0, NULL);
+	require(!recall_asked);
+	eq(player_dungeon_recall_depth(player), ta->min_depth + 1);
+
+	get_check_hook = was_check;
+	player->word_recall = 0;
+	player->max_depth = was_max;
+	player->recall_depth = was_recall;
+	first->max_depth = 0;
+	player->dungeon = 0;
+	player->depth = 0;
+
+	ok;
+}
+
+/* Answers "Reset to which level?" with `reset_answer`, noting what was offered. */
+static const char *reset_answer;
+static char reset_offered[16];
+static int reset_asked;
+static bool reset_say(const char *prompt, char *buf, size_t len)
+{
+	reset_asked++;
+	my_strcpy(reset_offered, buf, sizeof(reset_offered));
+	if (!reset_answer) return false;
+	my_strcpy(buf, reset_answer, len);
+	return true;
+}
+
+/**
+ * Trump's Reset Recall sets the level recall brings you back to (WLD-14).
+ *
+ * Zangband's spell ([cmd5.c:1980]): in a dungeon, ask for a level from the
+ * dungeon's first to the deeper of where you stand and where recall would take
+ * you, offering the deepest; write it to the dungeon's record.  It was one of
+ * Trump's deferrals for want of a recall depth to write, and this game keeps
+ * one for each dungeon.
+ */
+static int test_reset_recall_chooses_the_level(void *state) {
+	struct wild_dungeon *first = wild_dungeon_by_index(wild, 0);
+	bool (*was_string)(const char *, char *, size_t) = get_string_hook;
+	struct dun_type *ta;
+	char answer[16];
+	int top;
+
+	notnull(first);
+	ta = dun_type_by_index(first->type);
+	notnull(ta);
+	require(ta->max_depth >= ta->min_depth + 5);
+	top = MAX(ta->min_depth, 1);
+
+	/* Five levels down the first dungeon, and back up to the second. */
+	player->dungeon = first->type + 1;
+	player->depth = ta->min_depth + 5;
+	player_note_dungeon_depth(player);
+	player->depth = ta->min_depth + 2;
+	get_string_hook = reset_say;
+
+	/* The deepest is offered, and a level in range is taken. */
+	strnfmt(answer, sizeof(answer), "%d", ta->min_depth + 1);
+	reset_answer = answer;
+	reset_asked = 0;
+	require(effect_simple(EF_RESET_RECALL, source_player(), "0", 0, 0, 0, 0,
+						  0, NULL));
+	eq(reset_asked, 1);
+	eq(atoi(reset_offered), ta->min_depth + 5);
+	eq(player_dungeon_recall_depth(player), ta->min_depth + 1);
+
+	/*
+	 * Nothing below where recall went before or where you stand: the deeper
+	 * of the two is now where you stand, two levels down.
+	 */
+	reset_answer = "999";
+	require(effect_simple(EF_RESET_RECALL, source_player(), "0", 0, 0, 0, 0,
+						  0, NULL));
+	eq(player_dungeon_recall_depth(player), ta->min_depth + 2);
+
+	/* Nothing above the dungeon's first level. */
+	reset_answer = "0";
+	require(effect_simple(EF_RESET_RECALL, source_player(), "0", 0, 0, 0, 0,
+						  0, NULL));
+	eq(player_dungeon_recall_depth(player), top);
+
+	/* Escaping the question leaves it as it was, and casts nothing. */
+	reset_answer = NULL;
+	require(!effect_simple(EF_RESET_RECALL, source_player(), "0", 0, 0, 0, 0,
+						   0, NULL));
+	eq(player_dungeon_recall_depth(player), top);
+
+	/* And above ground there is no dungeon to set it in, nor any question. */
+	player->depth = 0;
+	reset_answer = "5";
+	reset_asked = 0;
+	require(!effect_simple(EF_RESET_RECALL, source_player(), "0", 0, 0, 0, 0,
+						   0, NULL));
+	eq(reset_asked, 0);
+
+	get_string_hook = was_string;
+	first->max_depth = 0;
+	player->dungeon = 0;
+	player->depth = 0;
+
+	ok;
+}
+
 /**
  * The world puts a way down within reach of the character who starts in it.
  *
@@ -6550,6 +6706,8 @@ struct test tests[] = {
 	{ "every-dungeon-opens-somewhere", test_every_dungeon_opens_somewhere },
 	{ "a-dungeon-has-a-bottom", test_a_dungeon_has_a_bottom },
 	{ "each-dungeon-remembers-its-own-depth", test_each_dungeon_remembers_its_own_depth },
+	{ "setting-the-recall-depth-sets-it", test_setting_the_recall_depth_sets_it },
+	{ "reset-recall-chooses-the-level", test_reset_recall_chooses_the_level },
 	{ "the-first-dungeon-is-reachable", test_the_first_dungeon_is_reachable },
 	{ "a-dungeon-theme-shifts-what-it-yields", test_a_dungeon_theme_shifts_what_it_yields },
 	{ "a-theme-does-not-reduce-what-is-found", test_a_theme_does_not_reduce_what_is_found },

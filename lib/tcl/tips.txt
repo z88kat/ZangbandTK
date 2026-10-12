@@ -39,6 +39,8 @@ The dividers between the panes of the main window can be dragged, and each pane 
 
 Word of Recall read in a dungeon takes you up to that dungeon's entrance, not to a town. Read on the surface, it takes you down to the deepest level you reached in the last dungeon you were in.
 
+Read Word of Recall partway up a dungeon and it asks whether to set your recall depth to where you are. Say yes, and the next recall down brings you back to that level rather than the deepest one.
+
 In the Store window, a double-click buys or sells a single item. To trade more, set the Quantity first and press Return or the button.
 
 The Store window lists what you are wearing in Your Pack, marked (worn), so you can sell it without taking it off first.

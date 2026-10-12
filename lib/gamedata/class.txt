@@ -1349,8 +1349,8 @@ spell:Shuffle:5:5:27:5
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
 spell:Reset Recall:6:6:29:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RESET_RECALL
+desc:Sets the level Word of Recall brings you back to in this dungeon, from its first level to the deepest you have reached in it.
 spell:Teleport:7:7:30:5
 effect:TELEPORT
 dice:$B
@@ -2863,8 +2863,8 @@ spell:Shuffle:6:5:29:5
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
 spell:Reset Recall:7:7:30:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RESET_RECALL
+desc:Sets the level Word of Recall brings you back to in this dungeon, from its first level to the deepest you have reached in it.
 spell:Teleport:9:9:33:5
 effect:TELEPORT
 dice:$B
@@ -4215,8 +4215,8 @@ spell:Shuffle:9:7:33:5
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
 spell:Reset Recall:11:9:36:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RESET_RECALL
+desc:Sets the level Word of Recall brings you back to in this dungeon, from its first level to the deepest you have reached in it.
 spell:Teleport:13:11:39:5
 effect:TELEPORT
 dice:$B
@@ -5211,8 +5211,8 @@ spell:Shuffle:9:7:33:5
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
 spell:Reset Recall:10:8:35:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RESET_RECALL
+desc:Sets the level Word of Recall brings you back to in this dungeon, from its first level to the deepest you have reached in it.
 spell:Teleport:13:10:39:5
 effect:TELEPORT
 dice:$B
@@ -7901,8 +7901,8 @@ spell:Shuffle:7:7:30:5
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
 spell:Reset Recall:8:7:32:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RESET_RECALL
+desc:Sets the level Word of Recall brings you back to in this dungeon, from its first level to the deepest you have reached in it.
 spell:Teleport:10:10:35:5
 effect:TELEPORT
 dice:$B
@@ -9183,8 +9183,8 @@ spell:Shuffle:4:4:26:5
 desc:This working is beyond what this game can yet
 desc: express, and does nothing.  See realmmap.toml.
 spell:Reset Recall:5:5:27:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RESET_RECALL
+desc:Sets the level Word of Recall brings you back to in this dungeon, from its first level to the deepest you have reached in it.
 spell:Teleport:6:5:29:5
 effect:TELEPORT
 dice:$B

@@ -179,6 +179,33 @@ void player_note_dungeon_depth(struct player *p)
 }
 
 /**
+ * Set the level word of recall brings the player back to in the dungeon they
+ * are in (WLD-14): the yes to "Set recall depth to current depth?", and
+ * Trump's Reset Recall.
+ *
+ * player_note_dungeon_depth() only ever raises a dungeon's record, which is
+ * right for walking down it, and this is the one way to lower it.  The
+ * question used to set only the player's own recall and maximum depths, as
+ * 4.2 does -- and recall back down reads the dungeon's record instead, so a
+ * yes changed nothing at all.
+ */
+void player_set_dungeon_recall_depth(struct player *p, int depth)
+{
+	int i;
+
+	if (!p->dungeon || !wild || depth <= 0)
+		return;
+
+	for (i = 0; i < wild_dungeon_count(wild); i++) {
+		struct wild_dungeon *mouth = wild_dungeon_by_index(wild, i);
+
+		if (mouth->type != p->dungeon - 1) continue;
+		mouth->max_depth = depth;
+		break;
+	}
+}
+
+/**
  * The depth word of recall should return the player to (WLD-14).
  */
 int player_dungeon_recall_depth(struct player *p)

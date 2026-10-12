@@ -8,7 +8,7 @@ The Realms of Magic
    all of them Zangband's. You choose your realms at birth and your character
    sheet records them, and that choice decides which books you can open at all.
 
-   Seventeen individual spells across the seven are inert and say so in their
+   Sixteen individual spells across the seven are inert and say so in their
    own description, each for want of a mechanism this game does not have. They
    are named in the realm sections below.
 
@@ -352,18 +352,22 @@ cards of eight. See :ref:`books-short`.
 
 .. note::
 
-   **Four of the thirty-two do nothing, and say so.** *Reset Recall* would
-   write the depth Word of Recall takes you to, and nothing here can. *Shuffle*
-   is the deck itself — one roll read off twenty unequal outcomes, several of
-   which need mechanisms this game lacks. *Joker Card* summons the groups 4.2's
-   summon table has no equivalent of. And *Trump Lore* is whole-object
-   identification, the same wall as Sorcery's *Identify True* and Nature's
-   *Stone Tell*.
+   **Three of the thirty-two do nothing, and say so.** *Shuffle* is the deck
+   itself — one roll read off twenty unequal outcomes, several of which need
+   mechanisms this game lacks. *Joker Card* summons the groups 4.2's summon
+   table has no equivalent of. And *Trump Lore* is whole-object identification,
+   the same wall as Sorcery's *Identify True* and Nature's *Stone Tell*.
 
    *Dimension Door* was the fifth until recently, and should not have been. It
    lets you choose the square you arrive on, which this game can do and always
    could — Sorcery's copy of the same spell had been doing it since that realm
    went in. Both now work.
+
+   *Reset Recall* was the fourth. Each dungeon remembers the level Word of
+   Recall brings you back to, and now the spell can set it: cast in a dungeon,
+   it asks which level, anywhere from the dungeon's first to the deepest you
+   have reached in it, and offers the deepest. Above ground there is no dungeon
+   to set, and it is not cast.
 
 The guard that used to keep Trump off the birth menu still covers every realm:
 **if your class has no books in a realm, you are not offered it.** That was not

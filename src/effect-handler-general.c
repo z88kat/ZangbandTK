@@ -18,6 +18,7 @@
  */
 
 #include "cave.h"
+#include "dun-type.h"
 #include "effect-handler.h"
 #include "player-mutation.h"
 #include "player-virtue.h"
@@ -1225,12 +1226,20 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 
 	/* Activate recall */
 	if (!player->word_recall) {
-		/* Reset recall depth */
+		/*
+		 * Reset recall depth -- against this dungeon's own record, which is
+		 * where recall brings the player back to (WLD-14), rather than the
+		 * deepest they have been anywhere.  Asked against that, the question
+		 * came up at the bottom of a shallow dungeon, where recall would bring
+		 * them straight back anyway; and a yes set only the player's own
+		 * depths, which recall back down does not read, so it did nothing.
+		 */
 		if (player->depth > 0) {
-			if (player->depth != player->max_depth
+			if (player->depth != player_dungeon_recall_depth(player)
 					&& !OPT(player, birth_levels_persist)) {
 				if (get_check("Set recall depth to current depth? ")) {
 					player->recall_depth = player->max_depth = player->depth;
+					player_set_dungeon_recall_depth(player, player->depth);
 				}
 			} else {
 				player->recall_depth = player->max_depth;
@@ -1256,6 +1265,47 @@ bool effect_handler_RECALL(effect_handler_context_t *context)
 	/* Redraw status line */
 	player->upkeep->redraw |= PR_STATUS;
 	handle_stuff(player);
+
+	return true;
+}
+
+/**
+ * Choose the level word of recall brings you back to in this dungeon: Trump's
+ * Reset Recall (Zangband, cmd5.c:1980).
+ *
+ * Anywhere from the dungeon's own first level to the deeper of where you stand
+ * and where recall would take you now -- so the way back down can be brought
+ * nearer the surface, or put back where it was, but never below anywhere you
+ * have been.  Zangband's range, prompt and default, and its dungeon-only rule:
+ * in the open there is no dungeon to set it in, and the spell is not cast.
+ */
+bool effect_handler_RESET_RECALL(effect_handler_context_t *context)
+{
+	const struct dun_type *type;
+	char buf[16];
+	int shallowest, deepest, depth;
+
+	context->ident = true;
+
+	if (player->depth <= 0 || !player->dungeon) {
+		msg("You must be in a dungeon to set where recall brings you back.");
+		return false;
+	}
+
+	type = dun_type_by_index(player->dungeon - 1);
+	shallowest = type ? MAX(type->min_depth, 1) : 1;
+	deepest = MAX(player->depth, player_dungeon_recall_depth(player));
+	if (deepest < shallowest) deepest = shallowest;
+
+	/* The deepest is offered, as Zangband offered it. */
+	strnfmt(buf, sizeof(buf), "%d", deepest);
+	if (!get_string(format("Reset to which level (%d-%d)? ", shallowest,
+			deepest), buf, sizeof(buf)))
+		return false;
+
+	depth = MIN(MAX(atoi(buf), shallowest), deepest);
+	player_set_dungeon_recall_depth(player, depth);
+	msg("Recall depth set to level %d.", depth);
 
 	return true;
 }

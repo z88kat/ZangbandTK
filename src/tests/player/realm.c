@@ -782,9 +782,13 @@ static int test_the_realm_filter_sorts_three_realms(void *state) {
  * which catches a spell quietly *gaining* the deferral wording to make the
  * first half pass.
  *
- * Eighty-three as the realms stand, down from a hundred and twenty when M10
- * began: five of the seventeen deferred spells were waiting on monster
- * allegiance, and it arrived.
+ * A hundred and seven as the realms stand.  Eighty-three was the figure here
+ * once, down from a hundred and twenty when M10 began -- five of the seventeen
+ * deferred spells were waiting on monster allegiance, and it arrived -- and the
+ * figure rose again when Trump came in with deferrals of its own, which
+ * trumps-deferrals-are-the-three names.  Reset Recall left the list once each
+ * dungeon kept a recall depth that could be written, one spell fewer in each of
+ * the six classes that hold Trump.
  *
  * What is left is twelve distinct spells across the six realms, counted once
  * per entitled class. Sorcery's four -- Identify True, Detect Enchantment,
@@ -829,7 +833,7 @@ static int test_a_spell_without_an_effect_says_so(void *state) {
 		}
 	}
 
-	eq(effectless, 113);
+	eq(effectless, 107);
 
 	ok;
 }
@@ -1689,22 +1693,26 @@ static int test_trump_summons_serve_you(void *state) {
 }
 
 /**
- * And the realm's deferrals are the four that were argued for, not more.
+ * And the realm's deferrals are the three that were argued for, not more.
  *
- * A count would let a fifth in silently. These four are named because each was
- * a separate judgement: Shuffle's weighted deck cannot be expressed by a
- * uniform RANDOM, Reset Recall needs a recall depth 4.2 does not keep,
- * Joker Card summons groups that do not exist here, and Trump Lore is
- * whole-object identification, which 4.2 replaced with runes.
+ * A count would let a fourth in silently. These three are named because each
+ * was a separate judgement: Shuffle's weighted deck cannot be expressed by a
+ * uniform RANDOM, Joker Card summons groups that do not exist here, and Trump
+ * Lore is whole-object identification, which 4.2 replaced with runes.
  *
  * Dimension Door was the fifth until 3.72.1, deferred for wanting a
  * player-chosen destination "it has no interface for". TELEPORT_TO has exactly
  * that interface -- Sorcery's copy of the same Zangband spell had been using it
  * since the realm went in -- so the spell works and this list is one shorter.
+ *
+ * Reset Recall was the fourth, deferred because the recall depth it writes was
+ * not one 4.2 kept.  This game keeps one for each dungeon (WLD-14), and fixing
+ * the "Set recall depth?" question that never wrote it gave it a way to be
+ * written; RESET_RECALL is the spell, and the list is shorter again.
  */
-static int test_trumps_deferrals_are_the_four(void *state) {
+static int test_trumps_deferrals_are_the_three(void *state) {
 	static const char *const deferred[] = {
-		"Shuffle", "Reset Recall", "Joker Card", "Trump Lore"
+		"Shuffle", "Joker Card", "Trump Lore"
 	};
 	const struct player_class *c = find_class("High-Mage");
 	int b, silent = 0;
@@ -2030,7 +2038,7 @@ struct test tests[] = {
 	{ "the-realm-filter-sorts-three-realms",
 	  test_the_realm_filter_sorts_three_realms },
 	{ "trump-summons-serve-you", test_trump_summons_serve_you },
-	{ "trumps-deferrals-are-the-four", test_trumps_deferrals_are_the_four },
+	{ "trumps-deferrals-are-the-three", test_trumps_deferrals_are_the_three },
 	{ "every-class-charges-zangbands-price",
 	  test_every_class_charges_zangbands_price },
 	{ "a-high-mage-holds-more-magic",

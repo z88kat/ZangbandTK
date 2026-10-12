@@ -31,6 +31,29 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+12 October 2026 — the question that did nothing, and the spell that waited for it
+=================================================================================
+
+Word of Recall, read partway up a dungeon, asks: "Set recall depth to current
+depth?" That is Angband's question, and in Angband the answer works, because
+Angband has one recall depth. This game gave every dungeon its own, so that
+recall takes you back down the dungeon you came up rather than to the deepest
+level you have reached anywhere. Recall now read the dungeon's depth, and the
+question went on writing Angband's. So a yes did nothing. The question was also
+asked at the wrong times: it compared where you stood with the deepest you had
+been anywhere, so at the bottom of a shallow dungeon it asked something with
+nothing behind it.
+
+Fixing it meant writing a dungeon's recall depth for the first time, and that
+was the one thing Trump's *Reset Recall* had been waiting for. It was one of the
+realm's four deferrals, and the reason was written down: "there is no effect
+that writes the recall depth and no interface that asks for one." Now there is
+the first, and Zangband's own spell supplies the second. Cast in a dungeon, it
+asks "Reset to which level?", anywhere from the dungeon's first level to the
+deepest you have reached in it, and offers the deepest, as Zangband did. Trump
+has three spells that do nothing now, and the game has sixteen.
+
+
 12 October 2026 — a bed nobody could sleep in
 =============================================
 

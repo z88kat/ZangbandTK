@@ -1336,10 +1336,8 @@ shape, not as a list of missing parts."""
 
 [trump.spells."Reset Recall"]
 line = 1980
-defer = """Sets the depth Word of Recall will take you to, from the levels \
-you have reached. 4.2 recalls to `max_depth` and offers no choice; there is no \
-effect that writes the recall depth and no interface that asks for one. \
-Building both to carry one spell is the wrong way round."""
+effects = [ "RESET_RECALL" ]
+desc = "Sets the level Word of Recall brings you back to in this dungeon, from its first level to the deepest you have reached in it."
 
 [trump.spells."Teleport"]
 line = 2016

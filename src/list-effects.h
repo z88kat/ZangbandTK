@@ -182,3 +182,11 @@ EFFECT(SWAP_POS,					true,	NULL,		0,		EFINFO_NONE,	"exchanges you with a monster
 EFFECT(STERILIZE,					false,	NULL,		0,		EFINFO_NONE,	"stops everything on the level from breeding",	"sterilize")
 
 EFFECT(FETCH,						true,	"weight",	1,		EFINFO_DICE,	"pulls an object weighing up to %s to your feet",	"fetch an object")
+
+/*
+ * ZangbandTK: choose the level word of recall brings you back to in this
+ * dungeon -- Trump's Reset Recall ([cmd5.c:1980]).  Somewhere from the
+ * dungeon's first level to the deepest recall would take you, written to the
+ * dungeon's own record, which is what recall back down reads (WLD-14).
+ */
+EFFECT(RESET_RECALL,				false,	NULL,		0,		EFINFO_NONE,	"lets you choose the level word of recall brings you back to in this dungeon",	"reset recall")

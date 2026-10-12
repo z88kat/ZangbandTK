@@ -63,6 +63,7 @@ enum
 int dungeon_get_next_level(struct player *p, int dlev, int added);
 const struct dun_type *player_dungeon_at_stairs(struct player *p);
 void player_note_dungeon_depth(struct player *p);
+void player_set_dungeon_recall_depth(struct player *p, int depth);
 int player_dungeon_recall_depth(struct player *p);
 void player_set_recall_depth(struct player *p);
 bool player_get_recall_depth(struct player *p);
