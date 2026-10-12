@@ -108,8 +108,9 @@ Your home village
 The village you start in is the one exception (WLD-12). Its shops are fixed
 rather than drawn: a **general store**, an **alchemist**, a **bookseller** and
 your **home**. That is what nobody can begin without -- food and light, a potion
-of cure light wounds, somewhere to leave what will not fit in your pack, and a
-spellbook, since no class starts with one.
+of cure light wounds, somewhere to leave what will not fit in your pack, and the
+next book of your magic: a caster starts with the first book of each realm it
+studies, and the bookseller has the second.
 
 It has no armoury and no weaponsmith. Those are in the next town along, and
 finding them is the first thing the world asks of you.
@@ -289,10 +290,12 @@ not yet found appears on the world map, and you wake knowing its name and where
 it stands. This is the reason to pay for a bed on a night you could have walked
 through.
 
-It shows you where the place is. It does not take you there — the magetower
-carries you only to places you have actually stood in, and a dream is not a
-visit. You still have to make the walk, but you now know which way to walk, which
-is the hard part.
+It shows you where the place is. For a town that is all it does: the magetower
+carries you only to towns you have actually stood in, and a dream is not a
+visit, so you still have to make the walk — but you now know which way to walk,
+which is the hard part. A dungeon mouth is different. The mages need only to
+have seen one, and a dreamed one has been seen, so it goes straight onto their
+list.
 
 **A dark dream sets something hunting you.** It will be something you have met:
 whatever you have seen and remember, leaning towards the worst of it. If you

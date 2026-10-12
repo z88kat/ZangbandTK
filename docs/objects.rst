@@ -10,10 +10,11 @@ Three new weapon properties
 These are the mechanics most likely to change how you fight, and all three can
 appear on artifacts or on ordinary ego items.
 
-**Vampiric.** Drains life from living creatures to heal you. The drain is capped
-at the damage actually dealt, so a killing blow heals you for the monster's
-remaining health rather than for the overkill. Undead and other non-living
-creatures give you nothing. Found on artifacts and on the ``(Vampiric)`` ego.
+**Vampiric.** Drains life from living creatures to heal you, by the damage each
+blow deals. A killing blow drains nothing — the life has gone with the monster,
+as it had in Zangband — so it is the blows that do not kill that feed you.
+Undead and other non-living creatures give you nothing. Found on artifacts and
+on the ``(Vampiric)`` ego.
 
 **Vorpal.** One blow in six cuts far deeper than it should, doubling that blow's
 damage. It multiplies the weapon's own contribution rather than your damage

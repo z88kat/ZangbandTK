@@ -124,8 +124,8 @@ Every town is on the network. The roads are laid as a spanning tree over the
 towns first, so there is always a road out of the starting village and following
 roads from it reaches every other town in the world; then any two towns within
 ``wild:road-dist`` blocks of each other get a road directly between them, so
-settled country ends up with a network rather than a single thread. About one
-block of the world in a hundred carries a road.
+settled country ends up with a network rather than a single thread. About three
+blocks of the world in a hundred carry a road.
 
 If you are lost, find a road and walk along it. It goes somewhere.
 :doc:`towns` covers what you will find at the other end.

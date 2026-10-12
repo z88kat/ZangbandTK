@@ -207,8 +207,10 @@ Rest (``R``)
   conditions are met. In any case, you always wake up when anything
   :ref:`disturbing happens <disturb-player>`, or when you press any key.
   To rest, enter the Rest command, followed by the number of turns you want
-  to rest, or ``*`` to rest until your hitpoints and mana are restored, or
-  ``&`` to rest until you are fully "healed". This command may take an
+  to rest; or ``!`` to rest until your hitpoints *or* your mana are restored,
+  ``*`` until both are, or ``&`` -- what the prompt offers -- to rest as
+  needed: until both are restored, every ailment has passed, and a Word of
+  Recall or Deep Descent you have read has taken you. This command may take an
   argument (used for the number of turns to rest), and takes some energy.
 
 Alter Commands
@@ -283,11 +285,11 @@ Gain new spells (``G``)
   new spells, the word "Study" will appear on the status line at the bottom
   of the screen. If you have a book in your possession, containing spells
   which you may learn, then you may choose to study that book. Most classes
-  may actually choose which spell to study, but if you are a priest or paladin,
-  your gods will choose a prayer for you. There are five books of each
-  realm, but hybrid classes - paladins, rogues, rangers and blackguards - can
-  only cast from two or three of these.  Higher level books are normally found
-  only in the dungeon. This command takes some energy.
+  may actually choose which spell to study, but priests, paladins and monks
+  are taught one at random from the book. Every realm has four books of eight
+  spells; the first two are sold in town and the last two are normally found
+  only in the dungeon, and a rogue or a ranger cannot learn every spell in a
+  realm it borrows (see :ref:`books-short`). This command takes some energy.
 
 Cast a spell (``m`` in both keysets)
   To cast a spell, you must have previously learned the spell and must have

@@ -1286,8 +1286,10 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	if (!stop) {
 		/*
 		 * ZangbandTK: OF_VAMPIRIC gives permanently what TMD_ATT_VAMP gives
-		 * temporarily.  The drain is capped at the monster's remaining hit
-		 * points above, so a killing blow does not heal for the overkill.
+		 * temporarily.  A killing blow drains nothing: the monster is gone by
+		 * here, and Zangband's drain stopped at a kill too ("If the monster is
+		 * dead, the drain does not work", cmd1.c:1832).  The drain is the
+		 * damage dealt, capped at the hit points the monster had.
 		 */
 		bool vampiric = p->timed[TMD_ATT_VAMP] ||
 			player_of_has(p, OF_VAMPIRIC);

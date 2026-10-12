@@ -25,14 +25,14 @@ H:Never underestimate the value of constitution. Hitpoints keep you alive.
 H:Inscribe items with the '{' command.
 H:Inscribe an item with "!s" to get confirmation before selling it.
 H:Inscribe an item with "!d" to get confirmation before dropping it.
-H:Inscribe an item with "!k" to get confirmation before destroying it.
+H:Inscribe an item with "!k" to get confirmation before ignoring it.
 H:Inscribe an item with "!v" to get confirmation before throwing it.
 H:Inscribe an item with "!*" to get confirmation before doing anything to it.
 H:You can use the 'I' command to inspect items and get details on them.
 H:Use '=' to check out the options and customize your game.
 H:Be sure to set your hitpoint warning in the options menu ('=').
 H:Flasks of oil make a good throwing weapon early on.
-H:Word of Recall will send you to and from the dungeon.
+H:Word of Recall takes you up to a dungeon's entrance, and back down again.
 H:You can never teleport into a vault, even if you're already standing in it. 
 H:The only way to protect your inventory from damage is through immunities.
 H:+10 speed means you move twice as fast as normal. 
@@ -109,4 +109,4 @@ H:Melee attacks, damage, and some effects will wake sleeping monsters.
 H:Time spent within sight or hearing range will eventually wake sleepers.
 H:Stealth is very helpful against sleeping monsters but not against alert ones.
 H:Inspect your racial and class abilities with the S command.
-H:When shapechanged inspect items with I. Resume your shape with m or p.
+H:When shapechanged inspect items with I. Using an item offers to change back.

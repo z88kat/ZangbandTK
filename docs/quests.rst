@@ -39,10 +39,9 @@ What you may be asked
 ground or below, because a bounty is about the creature and not the place. The
 work is drawn near your own depth, so it is neither trivial nor suicidal, and
 never on a unique — there is only one of those and a bounty on it could be
-impossible to fill. Collecting one is also the only thing in the game that moves
-your **Justice** virtue, which it does by five points each time: nothing else
-writes to it at all, so a character who wants to be seen as just has exactly one
-way of getting there. See :doc:`virtues`.
+impossible to fill. Collecting one does not move your **Justice** virtue: that
+rises when a unique you kill turns out to have had a price on its head, and falls
+when you turn a pet against you. See :doc:`virtues`.
 
 **A delivery.** Carry word to a named town. It is finished by arriving, and only
 by arriving: killing the person who asked you does not deliver the parcel.

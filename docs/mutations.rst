@@ -229,7 +229,8 @@ the reason there is no generic "random mutation" source:
   interest in you, which means more of the others.
 - **Chaos itself.** Being hit by raw chaos without resisting it.
 - **Polymorph Self**, whether cast or mutated into.
-- **A spell going badly wrong**, if it was a chaos or death spell.
+- **A Chaos spell going badly wrong.** A failed Death spell hurts, but it does
+  not change you.
 
 **However it arrives, gaining one moves you a point up the Chance virtue.** The
 game counts a mutation as courting chaos whether or not you courted it, so a
@@ -239,13 +240,12 @@ from bad luck with a chaos breath will find the scale has noticed. It is a
 single point each time, so it is slow; it is also the only thing on the list
 that accumulates. See :doc:`virtues`.
 
-Everything on that list works except the two that go through a magic realm —
-Polymorph Self cast as a Chaos spell, and a Chaos or Death spell going wrong.
-Those wait for the realms themselves. The Polymorph Self *mutation* works now,
-and so does everything else: a Lord of the Courts replaces one favour in six
-with a mutation instead, the chaos gift makes a Lord take an interest in a
-character who never swore to one, and unresisted chaos changes you one time in
-three.
+Everything on that list works. The two that go through a magic realm waited for
+the realms and arrived with Chaos: *Polymorph Self* is a Chaos spell as well as a
+mutation, and a Chaos spell that backfires can change you. A Lord of the Courts
+replaces one favour in six with a mutation instead, the chaos gift makes a Lord
+take an interest in a character who never swore to one, and unresisted chaos
+changes you one time in three.
 
 .. note::
 

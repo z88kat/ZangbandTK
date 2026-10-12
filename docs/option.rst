@@ -264,8 +264,9 @@ Generate connected stairs ``birth_connect_stairs``
 Force player descent (never make up stairs) ``birth_force_descend``
   Upwards staircases do not work.  All downward staircases, including the
   one in town, transport the character one level below the previous maximum
-  depth.  Recalling from the dungeon works and brings the character to the
-  town.  However, recalling from town brings the character one level 
+  depth.  Recalling from the dungeon works and brings the character up to
+  the dungeon's entrance.  However, recalling from the surface brings the
+  character one level
   below the previous maximum depth.  The character cannot recall from quest
   levels until the quest is complete, however you will be warned before
   descending into a quest level.  Any status effects that sometimes 
