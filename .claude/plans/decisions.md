@@ -7401,7 +7401,8 @@ play. Reproduced against `71f960b5d` in a worktree, so it predates this work.
 The bridge has failed throughout at `the character was made in the Birth
 window: timed out at {race confirm}` -- present before the first change, and
 after all of them, at 125 ok either way. It is why items 4 and 5 could only be
-measured on paths that do not need a character in play.
+measured here on paths that do not need a character in play. **It is a local
+failure, not a code one: see the correction below.**
 
 `check-flakes` reports `game/nightmare` varying. It is not random: seed
 3829040037 fails 22/23 deterministically, six times out of six, and
@@ -7411,6 +7412,23 @@ under-powered at 400 samples rather than a behaviour change -- the same class
 of mistake as the twenty-turn breeder loop. Whether to widen the sample or
 loosen the threshold is a judgement about what the test is for, so it is left
 for its owner.
+
+**Correction, from CI, after the above was written.** The Birth-window
+failure is *not* pre-existing in the code and CI did not reproduce it. The Tk
+arm on `7cc073832` -- the commit holding all six changes -- ran the bridge on
+a clean macOS runner and passed **171 ok, 0 failed**. The local run was
+**125 ok and 1 failed**, and the difference is not one check: the Birth
+timeout aborted the passes after it, so roughly forty-five checks never ran
+on this machine at all. The failure is local to this checkout, almost
+certainly window focus, since the Birth pass drives the window with synthetic
+keystrokes.
+
+Two things follow. The prediction in the report that CI would reproduce it was
+wrong, and said so. And the verification is *stronger* than claimed above, not
+weaker: the paths that need a character in play -- the ones items 4 and 5
+could not reach here -- were exercised on CI and passed. The local comparisons
+stay valid as comparisons, because the same truncation applies before and
+after, but "125 ok" was never the whole bridge.
 
 **What is verified and what is not.** Everything above was built and run on
 macOS: the bridge after every change, the mechanism tests for the plog hook
