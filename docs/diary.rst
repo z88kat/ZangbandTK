@@ -31,6 +31,38 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+13 October 2026 — Neon for colour-blind eyes
+============================================
+
+Neon now comes in two versions. The second, "Neon tiles, colour-blind safe",
+has the same tiles in different colours. Choosing the colour-blind palette while
+the map is in Neon switches to it, and choosing the game's palette again
+switches back. If you pick it as a tile set yourself, it stays.
+
+What to measure follows from how the tiles are drawn. In Neon, monsters of
+one kind share a silhouette: every hound is the same hound,
+and only its colour says whether it breathes fire or frost. Across all the
+monsters there are 3,312 such pairs of colours. With the same simulation the
+palette checks use, Neon loses 246 of them to deuteranopia, the commonest kind
+of colour blindness, 172 to protanopia and 56 to tritanopia. Lost means the
+two colours come out too close to tell apart. The new colours lose 7, 6 and 24.
+The colours that carry a meaning, hit points going from green to yellow to red
+among them, used to fall as close as 6.9 for someone with protanopia. Now
+none is closer than 12.
+
+Nobody picked the colours by eye. A script searched for them, starting from
+Neon's own, under rules meant to keep the result recognisably Neon. Each colour
+stays near its own hue. The colours stay in rainbow order, because a shimmering
+monster cycles through them. Each brightness step stays about where it was,
+because the lighting steps through them. And nothing anyone could tell apart
+before becomes harder to tell apart now. It gives some things up. Red leans to
+crimson, orange to amber and green to aquamarine. Most of the 24 pairs still
+lost are light blue against light green for tritanopia: pushing green towards
+blue saves the common kinds of colour blindness and costs the rare one. The
+script stays in the tree, so the search can be run again whenever Neon's own
+colours change.
+
+
 13 October 2026 — the Display page
 ==================================
 

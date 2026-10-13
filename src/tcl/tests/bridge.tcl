@@ -1635,6 +1635,27 @@ proc display_pass {} {
 			[dict get [concat {*}[angband_palette]] "Light Green"]
 	} "{#88f8e0} 1 colourblind #00ff00"
 
+	# A palette cannot recolour a tile, so with Neon on the map the colour-blind
+	# palette brings Neon's colour-blind sheet (mode 8), and leaving it brings
+	# Neon back.  A sheet chosen by hand is left alone: here 8 itself, which
+	# stays when the palette goes.
+	check "the colour-blind palette brings Neon's colour-blind tiles" {
+		set was [angband_tileset]
+		angband_choose_tileset 7
+		set said [display_palette colourblind]
+		set with [angband_tileset]
+		set custom [display_palette custom]
+		set custom [list $custom [angband_tileset]]
+		display_palette game
+		set back [angband_tileset]
+		angband_choose_tileset 8
+		display_palette colourblind
+		display_palette game
+		set own [angband_tileset]
+		angband_choose_tileset $was
+		list $with [string match "*colour-blind*" $said] $custom $back $own
+	} "8 1 {{} 8} 7 8"
+
 	door_pass
 }
 

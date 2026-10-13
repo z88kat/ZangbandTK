@@ -549,7 +549,14 @@ Preferences ▸ Options, or Preferences in the application menu):
   made for colour-blind players, and your own.  Click a colour in the row of
   swatches to change it, which makes the palette your own.  The palettes colour
   the map when it is drawn in letters, the sidebar, the messages, the lists and
-  the health and mana bars.  A tile set keeps the colours of its tiles.
+  the health and mana bars.  A tile set keeps the colours of its tiles -- with
+  one exception: Neon comes in a second version, "Neon tiles, colour-blind
+  safe", the same tiles in colours chosen so that monsters of one kind stay
+  apart for players who are red-green or blue-yellow colour-blind.
+  Choosing the colour-blind palette while the map is in Neon switches to it,
+  and choosing the game's or the high-contrast palette switches back.  It can
+  be chosen as a tile set of its own as well, and then stays whatever the
+  palette.
 
 Everything on the Display page takes effect at once, and is kept for the next
 session in ``tk-settings.txt``, in the same user folder as your pref files.

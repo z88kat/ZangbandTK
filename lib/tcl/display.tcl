@@ -171,7 +171,16 @@ proc display_palette_colours {key} {
     return $colours
 }
 
-# Use a palette, and remember it.
+# Use a palette, and remember it.  Returns what else it changed, in words,
+# or "".
+#
+# A palette cannot reach a tile's colours, which are in the sheet -- so the
+# colour-blind palette, with the map in Neon, chooses Neon's colour-blind sheet
+# with it: the same tiles, in colours chosen for the purpose (mode 8, made by
+# build-neon.py from palette.txt's cbhue lines).  Leaving that palette for
+# another of the named ones goes back to Neon, but only if it was the palette
+# that left it: a set chosen by hand is the player's.  A palette of the
+# player's own begins as a copy of the one in use, so it keeps the tiles too.
 proc display_palette {key} {
     global display
     if {[catch {angband_palette set [display_palette_colours $key]} err]} {
@@ -179,7 +188,20 @@ proc display_palette {key} {
     }
     set display(palette) $key
     settings_set display,palette $key
+    set said ""
+    if {$key eq "colourblind" && [angband_tileset] == 7} {
+        if {[angband_choose_tileset 8]} {
+            settings_set display,pairedtiles 1
+            set said "The map's tiles are now Neon's colour-blind set."
+        }
+    } elseif {$key ni {colourblind custom}
+            && [settings_get display,pairedtiles 0] && [angband_tileset] == 8} {
+        if {[angband_choose_tileset 7]} {
+            set said "The map's tiles are Neon's own again."
+        }
+    }
     event generate . <<PaletteChanged>> -when tail
+    return $said
 }
 
 # One colour changed by hand: the player's own palette, starting from the one
@@ -330,8 +352,9 @@ proc display_page {p} {
     grid $c.swatches -row 1 -column 0 -columnspan $i -sticky ew -pady {8 0}
     ttk::label $c.note -wraplength 380 -justify left -font {Helvetica 11} \
         -text "The game's colours: the map drawn in letters, the sidebar, the\
-            messages and the lists.  A tile set keeps its own.  Click a colour\
-            to change it."
+            messages and the lists.  A tile set keeps its own -- but with Neon,\
+            the colour-blind palette chooses Neon's colour-blind tiles too.\
+            Click a colour to change it."
     grid $c.note -row 2 -column 0 -columnspan $i -sticky w -pady {6 0}
     bind $c.swatches <Configure> display_swatches
 
@@ -410,9 +433,10 @@ proc display_font_chosen {key} {
 
 proc display_palette_chosen {key} {
     global display options
-    if {[catch {display_palette $key} err]} {
-        set options(msg) $err
+    if {[catch {display_palette $key} said]} {
+        set options(msg) $said
         return
     }
+    set options(msg) $said
     display_swatches
 }

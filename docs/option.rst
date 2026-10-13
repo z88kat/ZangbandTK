@@ -193,9 +193,10 @@ Color: Shimmer multi-colored things ``animate_flicker``
 
   In graphics mode this needs a tileset that can recolour a tile without
   changing the picture on it, which means one that declares ``cycle:`` in
-  ``lib/tiles/list.txt``.  At present that is the Neon set; the four tilesets
-  inherited from Angband paint colour into their art, so nothing shimmers in
-  them and the option has no effect.
+  ``lib/tiles/list.txt``.  At present that is the Neon set, in both its
+  versions -- the second in colours made for colour-blind players; the four
+  tilesets inherited from Angband paint colour into their art, so nothing
+  shimmers in them and the option has no effect.
 
 Center map continuously ``center_player``
   The map always centres on the player with this option on. With it off, it

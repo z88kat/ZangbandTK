@@ -76,9 +76,13 @@ jobs:
       # set was built on.  The prf is plain text and deterministic, and it is
       # the half that carries the failure anyway: a missing or moved tile is a
       # changed line in there.
+      #
+      # With --check, since this step regenerates anyway, so that a change to
+      # Neon's colours or to the monsters fails here if it costs the
+      # colour-blind sheet its contrast or its meaning pairs.
       - name: The Neon set is still what its generator produces
         run: |
-          python3 scripts/tiles/build-neon.py >/dev/null
+          python3 scripts/tiles/build-neon.py --check >/dev/null
           git diff --exit-code -- lib/tiles/neon/graf-neo.prf
 
   tests:

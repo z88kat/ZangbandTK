@@ -2032,8 +2032,17 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 >   12 CIEDE2000 apart — under simulated protanopia, deuteranopia and tritanopia too, for the
 >   colour-blind palette (Machado 2009) — and nothing the game separates merged. The game's own
 >   palette falls to 2.5 (Green and Light Red, protanopia); the colour-blind one's worst is 14.
-> - **A tile set keeps its colours**: they are in its sheet. Neon's ten hues could be recoloured
->   as the sheet loads, but a colour-blind Neon is a design of its own and is not done.
+> - **A tile set keeps its colours**: they are in its sheet — so Neon has a second sheet,
+>   **"Neon tiles, colour-blind safe"** (mode 8, `16x16-cb.png`), the same drawing in the
+>   `cbhue:` colours of [palette.txt](../../scripts/tiles/neon/palette.txt), served by the same
+>   graf-neo.prf. Its measure is the same-kind monster pairs (one silhouette, told apart by
+>   colour; 3,312 of them) a simulated dichromat loses: Neon 246 deuteranopia / 172 protanopia /
+>   56 tritanopia, the cb sheet 7 / 6 / 24, and the meaning pairs from 6.9 to 12.4. Found by
+>   [neon-colourblind.py](../../scripts/tiles/neon-colourblind.py)'s OKLCH search under rules that
+>   keep it Neon (hue angles, spectrum order for the shimmer, tone lightness and gaps, contrast
+>   floors); `build-neon.py --check` checks the result, and linux.yaml now runs it. The
+>   colour-blind palette chooses it when the map is in Neon and leaving that palette for a named
+>   one goes back (`display,pairedtiles`), but a set picked by hand is left alone.
 > - **A leak found on the way**: every pane rebuild left its old tile photo behind, megabytes a
 >   resize. `build_cells` deletes it now.
 

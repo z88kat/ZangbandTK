@@ -38,6 +38,47 @@ hue:purple:C9A0FF:A855FF:6E2BB0:3D1861
 hue:magenta:FF8BE8:FF2BD1:A81C8A:5C0F4C
 hue:grey:F0F0FF:B4B4D8:6E6E88:3D3D4C
 
+# cbhue:<name>:<pale>:<neon>:<dim>:<shadow>
+#
+# The same ten hues for a colour-blind player: "Neon tiles, colour-blind safe"
+# in the tile sets, a second sheet with the same layout, so graf-neo.prf
+# serves both.  Every attr line below maps onto these just as it maps onto
+# the hues above.
+#
+# Not chosen by eye, and not by hand.  The measure is what colour blindness
+# costs on a map of tiles: two monsters of the same kind -- the same
+# silhouette -- told apart only by their colour, a fire hound from a cold one.
+# 3,312 such pairs of colours.  Under the Machado (2009) simulation, Neon above
+# loses 246 of them to deuteranopia, 172 to protanopia and 56 to tritanopia.
+# These lose 7, 6 and 24.  The pairs the game gives a meaning to -- hit points
+# green to yellow to red, good and bad effects, a monster's health -- stay at
+# least 12 CIEDE2000 apart under all three; in Neon they fall to 6.9.
+#
+# Found by scripts/tiles/neon-colourblind.py, which searches in OKLCH under
+# rules that keep it Neon: each hue near its own angle (green may lean to
+# blue-green, which is what parts it from red), the hues still in spectrum
+# order for the shimmer to walk, each tone near Neon's lightness and at least
+# 70% of its colour, a colour's tones as far apart as Neon's, grey grey,
+# every slot over the same contrast floor as Neon's, and nothing normal
+# vision could tell apart lost.  Run it with no arguments for the numbers.
+#
+# What it gives up: red leans to crimson, orange to amber and green to
+# aquamarine, which is the price of keeping them apart for a dichromat.  The
+# losses left are mostly Light Blue against Light Green under tritanopia --
+# leaning green towards blue to save the common forms costs the rare one
+# that -- and a few pairs that can only be parted by lightness, where the
+# tones already are.
+cbhue:red:FF7388:E73B62:B20D41:62212C
+cbhue:orange:ECC78A:E5A621:8F6712:583D05
+cbhue:yellow:FFFB8E:FAF125:948E15:524F09
+cbhue:green:ABFADE:18FBC6:52C8A4:03644D
+cbhue:teal:67BDAD:1B9E8C:02695C:003A32
+cbhue:cyan:BDF5FE:67EBFD:15B0C1:094C54
+cbhue:blue:6C97FC:2D62FC:0A02E1:010557
+cbhue:purple:DBB9FC:C281FB:A51BF6:5F0291
+cbhue:magenta:D885C2:C83FAC:AC0892:4C0440
+cbhue:grey:FFFFFF:BFC0CA:6D6E7D:353535
+
 # attr:<game colour code>:<hue>:<tone>
 #
 # Chosen by hue family and then by lightness, never by taste.  Angband's

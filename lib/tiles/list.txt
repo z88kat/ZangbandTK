@@ -72,6 +72,17 @@ extra:0:0:0
 # its picture -- which is what lets a shimmering monster shimmer in graphics
 # mode.  The third number is how many of those hues the shimmer walks through:
 # nine, because the tenth is grey and a rainbow through grey looks like the
-# colour failing.  Only this set is laid out that way; the others must not
-# claim it.
+# colour failing.  Only Neon's two sheets are laid out that way; the others
+# must not claim it.
+cycle:10:4:9
+
+# The same set for a colour-blind player: the same layout and the same pref
+# file, in colours chosen so that what Neon's colours tell apart stays apart
+# under protanopia, deuteranopia and tritanopia.  Made from the cbhue lines of
+# scripts/tiles/neon/palette.txt, which say how and give the numbers.
+name:8:Neon tiles, colour-blind safe
+directory:neon
+size:16:16:16x16-cb.png
+pref:graf-neo.prf
+extra:0:0:0
 cycle:10:4:9

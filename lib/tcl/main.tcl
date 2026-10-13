@@ -284,6 +284,9 @@ source [file join [file dirname [info script]] options.tcl]
 source [file join [file dirname [info script]] choice.tcl]
 source [file join [file dirname [info script]] commands.tcl]
 
+# Change the tile set, and remember it.  1 if it changed.  A set chosen here is
+# the player's own choice, which the colour-blind palette then leaves alone
+# (display.tcl); the palette marks its own choice again after calling this.
 proc angband_choose_tileset {id} {
     global angband
     if {[catch {angband_tileset $id} err]} {
@@ -291,12 +294,15 @@ proc angband_choose_tileset {id} {
             -message "Could not use that tile set." -detail $err
         # Put the tick back on the set that is actually in use.
         set angband(tileset) [angband_tileset]
-        return
+        return 0
     }
+    set angband(tileset) $id
     settings_set display,tileset $id
+    settings_set display,pairedtiles 0
     # The windows that show a tile of their own -- the Character window's
     # portrait, the tombstone -- draw it again from the new set.
     event generate . <<TilesChanged>> -when tail
+    return 1
 }
 
 # Each pane follows its own size.  <Configure> fires for every pixel of a drag,

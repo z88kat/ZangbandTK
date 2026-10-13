@@ -61,6 +61,9 @@ SRC = os.path.join(HERE, 'neon')
 OUT = os.path.join(ROOT, 'lib', 'tiles', 'neon')
 
 TILE = 16
+# The colour-blind sheet: the same layout in palette.txt's cbhue colours, so
+# graf-neo.prf serves it too.  list.txt names it as a set of its own.
+CB_SHEET = '16x16-cb.png'
 # Brightest first, so a lighting offset is simply a step along this list.
 TONES = ('pale', 'neon', 'dim', 'shadow')
 MONSTERS = ('monster.txt', 'monster.zangband.txt', 'monster.zangbandtk.txt')
@@ -173,6 +176,16 @@ def read_palette():
         elif bits[0] == 'trap-lighting':
             trap_lighting[bits[1]] = int(bits[2])
     return hues, attrs, lighting, trap_lighting
+
+
+def read_cb_hues():
+    """palette.txt's cbhue lines: the same hues, recoloured for colour blindness."""
+    cb = {}
+    for line in open(os.path.join(SRC, 'palette.txt'), encoding='utf-8'):
+        bits = line.strip().split(':')
+        if bits[0] == 'cbhue':
+            cb[bits[1]] = dict(zip(TONES, bits[2:2 + len(TONES)]))
+    return cb
 
 
 def read_cycle_declaration():
@@ -556,6 +569,13 @@ def main():
     with open(os.path.join(OUT, 'graf-neo.prf'), 'w', encoding='utf-8') as f:
         f.write(HEADER + '\n'.join(lines) + '\n')
 
+    # The colour-blind sheet: the same drawing, the cbhue colours.
+    cb = read_cb_hues()
+    if cb:
+        plain, sheet.hues = sheet.hues, cb
+        write_png(os.path.join(OUT, CB_SHEET), sheet.render())
+        sheet.hues = plain
+
     print('  %d shapes -> %dx%d sheet (%d rows of colour x %d columns)'
           % (len(sheet.columns), width, height,
              height // TILE, width // TILE))
@@ -565,6 +585,7 @@ def main():
 
     if check:
         report(sheet, used, blame)
+        report_colourblind(sheet, used)
     if preview:
         make_preview(sheet)
         # And again at actual size.  Brightness cannot be judged at 3x: a
@@ -572,6 +593,9 @@ def main():
         # pixels wide and simply absent when it is one, which is how the
         # floor and the road shipped invisible.
         make_preview(sheet, zoom=1, filename='preview-actual-size.png')
+        if read_cb_hues():
+            make_preview(sheet, filename='preview-colourblind.png',
+                         source=CB_SHEET)
     if cycle:
         make_cycle_strip(sheet)
     return 0
@@ -708,6 +732,73 @@ def report(sheet, used, blame):
           % (len(named), len(used_feats)))
 
 
+def report_colourblind(sheet, used):
+    """The colour-blind sheet: the same drawing, and as legible, and safe.
+
+    How much it saves is for neon-colourblind.py to say; this is what
+    must hold whatever the numbers: every slot over the same contrast floor
+    as Neon's own for what it draws, the pairs the game gives a meaning to
+    apart under every simulated colour blindness, and the sheet the same
+    picture as Neon's with only the colours changed.
+    """
+    hues, attrs = read_palette()[:2]
+    cb = read_cb_hues()
+    print('\n  --- the colour-blind sheet ---')
+    assert list(cb) == list(hues), 'cbhue lines must name the hues, in hue order'
+
+    slot_of = {hues[h][t].upper(): (h, t) for h in hues for t in TONES}
+    failures = []
+    for hexs, kinds in used.items():
+        h, t = slot_of[hexs.upper()]
+        if kinds & {'monster', 'object', 'flavour', 'trap', 'effect'}:
+            floor = 3.0
+        elif 'terrain' in kinds:
+            floor = 2.5
+        else:
+            continue
+        if contrast_on_black(cb[h][t]) < floor:
+            failures.append('%s %s #%s at %.1f:1, under %.1f'
+                            % (h, t, cb[h][t], contrast_on_black(cb[h][t]), floor))
+    for f in failures:
+        print('    TOO DARK  ' + f)
+    assert not failures, '%d colour-blind slots below their floor' % len(failures)
+    print('    every slot clears the floor Neon\'s own does')
+
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        'check_palettes', os.path.join(ROOT, 'scripts', 'palettes',
+                                       'check-palettes.py'))
+    cp = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cp)
+    meaning = [('G', 'y'), ('y', 'r'), ('G', 'r'), ('G', 'R'), ('g', 'r'),
+               ('g', 'R'), ('y', 'o'), ('o', 'R'), ('o', 'r'), ('R', 'r'),
+               ('G', 'o')]
+
+    def colour(table, code):
+        h, t = attrs[code]
+        return '#' + table[h][t]
+
+    worst = min((cp.difference(colour(cb, a), colour(cb, b), v), v or 'normal',
+                 a, b)
+                for v in [None] + list(cp.CVD) for a, b in meaning)
+    plain = min((cp.difference(colour(hues, a), colour(hues, b), v), v, a, b)
+                for v in cp.CVD for a, b in meaning)
+    print('    meaning pairs: closest %.1f (%s, %s/%s); Neon\'s own %.1f'
+          % (worst[0], worst[1], worst[2], worst[3], plain[0]))
+    assert worst[0] >= 12, 'a pair with a meaning is under 12 for %s' % worst[1]
+
+    neon_px = read_png(os.path.join(OUT, '16x16.png'))
+    cb_px = read_png(os.path.join(OUT, CB_SHEET))
+    assert len(neon_px) == len(cb_px) and len(neon_px[0]) == len(cb_px[0]), \
+        'the colour-blind sheet is not the same size'
+    mapping = {rgb(hues[h][t]) + (255,): rgb(cb[h][t]) + (255,)
+               for h in hues for t in TONES}
+    wrong = sum(1 for a, b in zip(neon_px, cb_px) for p, q in zip(a, b)
+                if mapping.get(p, p) != q)
+    assert not wrong, '%d pixels differ from Neon\'s by more than colour' % wrong
+    print('    the same picture as Neon\'s, in the cbhue colours')
+
+
 # --- the preview -----------------------------------------------------------
 #
 # Composed by reading the generated prf and cutting cells out of the generated
@@ -788,14 +879,14 @@ def read_prf():
     return out
 
 
-def make_preview(sheet, zoom=3, filename='preview.png'):
+def make_preview(sheet, zoom=3, filename='preview.png', source='16x16.png'):
     prf = read_prf()
     first = {}
     for index, _, tval in read_flavours():
         first.setdefault(tval, index)
     map_flavour = {ch: first[tval] for ch, tval in MAP_OBJ_TVAL.items()
                    if tval in first}
-    px = read_png(os.path.join(OUT, '16x16.png'))
+    px = read_png(os.path.join(OUT, source))
     missing = []
     widths = {len(row) for row in MAP}
     assert len(widths) == 1, 'the preview map is ragged: %s' % widths
