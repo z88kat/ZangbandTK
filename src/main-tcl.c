@@ -914,6 +914,30 @@ static void command_inside_leave(const bool *guard)
 static void command_nudge(void);
 static bool in_play(void);
 static bool command_may_start(void);
+
+/**
+ * Finish a command that has no answer to give.
+ *
+ * A Tcl command returns whatever is in the interpreter's result, and the
+ * drawing path puts things there: cell_set evaluates a canvas itemconfigure
+ * for every cell it touches, graphics_load builds an image, and the game's
+ * own redraw runs both. A command that does its work and then returns TCL_OK
+ * without clearing the result hands that leftover back as its value.
+ *
+ * It is not theoretical and it is not small. Before this, `angband_tileset 1`
+ * returned two megabytes of pixel data as its result, and
+ * `angband_resize 0 80 24` returned "4228", a canvas item id. Neither command
+ * has anything to say; both said whatever Tk had said last.
+ *
+ * objcmd_refont already called Tcl_ResetResult for exactly this reason. This
+ * is that, named, so the next command that answers with nothing says so.
+ */
+static int command_done(Tcl_Interp *ip)
+{
+	Tcl_ResetResult(ip);
+	return TCL_OK;
+}
+
 static void choice_install(void);
 static void store_notice(game_event_type type, game_event_data *data,
 		void *user);
@@ -1684,7 +1708,7 @@ static int objcmd_push(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 
 	command_nudge();
 
-	return TCL_OK;
+	return command_done(ip);
 }
 
 /**
@@ -5623,7 +5647,7 @@ static int objcmd_book(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			cmd_set_arg_item(cmdq_peek(), "item", obj);
 		}
 		command_nudge();
-		return TCL_OK;
+		return command_done(ip);
 	}
 
 	if ((streq(what, "text") || streq(what, "cast")) && objc == 3) {
@@ -5656,7 +5680,7 @@ static int objcmd_book(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		cmdq_push(CMD_CAST);
 		cmd_set_arg_choice(cmdq_peek(), "spell", sidx);
 		command_nudge();
-		return TCL_OK;
+		return command_done(ip);
 	}
 
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
@@ -5950,7 +5974,7 @@ static int objcmd_store(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		OPT(player, auto_more) = more;
 		Term_fresh();
 		Term_activate(old);
-		return TCL_OK;
+		return command_done(ip);
 	}
 
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
@@ -8298,7 +8322,7 @@ static int objcmd_tileset(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	if (character_dungeon)
 		do_cmd_redraw();
 
-	return TCL_OK;
+	return command_done(ip);
 }
 
 static void build_cells(term_data *td);
@@ -8500,7 +8524,7 @@ static int objcmd_palette(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		}
 		colours_init();
 		if (character_dungeon) do_cmd_redraw();
-		return TCL_OK;
+		return command_done(ip);
 	}
 
 	Tcl_WrongNumArgs(ip, 1, objv, "?set {name colour ...}?");
@@ -8580,7 +8604,7 @@ static int objcmd_sound(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			return TCL_ERROR;
 		}
 		event_signal_message(EVENT_SOUND, type, NULL);
-		return TCL_OK;
+		return command_done(ip);
 	}
 	if (objc == 2 && streq(what, "last")) {
 		Tcl_SetObjResult(ip, Tcl_NewStringObj(
@@ -8847,7 +8871,7 @@ static int objcmd_resize(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			event_signal(EVENT_END);
 	}
 
-	return TCL_OK;
+	return command_done(ip);
 }
 
 /**
