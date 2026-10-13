@@ -363,6 +363,27 @@ proc help_split {target} {
     return [list $doc $anchor]
 }
 
+# The first of some targets that the manual has: the page, and the place on it
+# when one is named.  For the windows' F1, which each know what they would
+# like to show and have to settle for what is there -- a realm of magic the
+# manual has no section for gets its chapter instead.
+proc help_first {args} {
+    foreach target $args {
+        if {$target eq ""} continue
+        set at [string first # $target]
+        set doc [expr {$at < 0 ? $target : [string range $target 0 $at-1]}]
+        set anchor [expr {$at < 0 ? "" : [string range $target $at+1 end]}]
+        if {$doc eq "" || ![llength [help_page $doc]]} continue
+        if {$anchor eq ""} { return $doc }
+        foreach op [help_page $doc] {
+            if {[lindex $op 0] eq "M" && [lindex $op 1] eq $anchor} {
+                return $target
+            }
+        }
+    }
+    return @contents
+}
+
 proc help_open_url {url} {
     global helpwin
     switch -- [tk windowingsystem] {

@@ -1966,8 +1966,15 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 >   whose `<<TreeviewSelect>>` showed the page again. The tree now ignores the item the window
 >   selected itself, and a bridge check counts the pages shown.
 >
-> Still to do: the windows' own F1 entries put a sentence in the status line rather than
-> opening their chapter; and no chapter has a picture yet, so images are left out.
+> No chapter has a picture yet, so images are left out.
+>
+> **F1, 13 October 2026.** Each window's F1 and its Help ▸ On … entry open the manual where it
+> covers what the window shows: the Character window's page (Info and History →
+> *Character Characteristics*, Virtues, Mutations, Notes → *Message Commands*), the Spell
+> Book's realm, the Knowledge window's *Game Status Commands*, the Items window's
+> *Inventory Commands*. `help_first` takes the first target the manual has, so a realm with
+> no section of its own gets its chapter. The one-line hint on using the window still goes in
+> its status line, since the manual covers the game and not the windows.
 
 > **Character portraits, 13 October 2026.** The Character window, the tombstone and the
 > Character Record showed the character's map tile, which at 64 pixels was a smudge of a few
@@ -1992,6 +1999,12 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 >   palette, a class's from the class's, each falling back on the other. One shared palette
 >   let a Necromancer's skull staff recolour a Klackon's carapace.
 > - The map tile is still the fallback where there is no portrait to draw.
+> - **The Birth window shows it too**, beside the steps: the race or class under the cursor
+>   while one is being chosen, and at the end the character as made, which a bridge check
+>   compares with what the windows show in play. Until a class is chosen the races are shown
+>   as Rangers — the game's own class then is only the last in its list, and a Ranger wears
+>   nothing on its head. Rolling again rolls the height and weight, so a reroll can turn a man
+>   into a woman: the picture is always the one the character would have if made then.
 
 ---
 

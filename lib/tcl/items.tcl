@@ -626,8 +626,11 @@ proc items_letter {action n s a} {
     }
 }
 
+# F1: the manual on the inventory commands, which are what the window does,
+# and how to use the window in the status line.
 proc items_help {} {
     global items
+    help_window [help_first command#inventory-commands command]
     set items(message) "Drag an item onto a slot to wear it and off again to\
         stow it, or choose one and use the buttons."
 }

@@ -25,6 +25,7 @@ set birth(rolled) 0
 set birth(history) ""
 set birth(name) ""
 set birth(keep) 0
+set birth(classchosen) 0
 
 # The steps along the top, and which of them each stage belongs to.
 set birth(steps) {Race Class Realms Stats Name History Confirm}
@@ -53,6 +54,9 @@ proc birth_show {} {
     set changed [expr {$stage ne $birth(stage) || $slot != $birth(slot)}]
     set birth(stage) $stage
     set birth(slot) $slot
+    if {$stage in {realm method points roller name history confirm}} {
+        set birth(classchosen) 1
+    }
 
     # A new history has gone in; the stage asks again, and the answer is
     # the one already given -- keep it.
@@ -77,8 +81,59 @@ proc birth_show {} {
         quickstart { birth_quickstart_page }
     }
     birth_buttons
+    birth_portrait
     if {[wm state .birth] eq "withdrawn"} { wm deiconify .birth }
     raise .birth
+}
+
+# The character being made, as its portrait will show it: the race or class
+# under the cursor while one is being chosen, and whether it is a man or a
+# woman from what birth has rolled so far.  Rolling again rolls the height
+# and weight that decide that, so a reroll can change it -- the picture is
+# always the one the character would have if it were made now.
+#
+# Until a class has been chosen, the races are shown as Rangers: the game's
+# own class then is only the last in its list, and a Ranger wears nothing on
+# its head to hide the hair, the ears or the horns that tell races apart.
+proc birth_portrait {} {
+    global birth
+
+    set art .birth.f.head.art
+    if {![winfo exists $art]} return
+    set race ""
+    set class ""
+    if {![catch {angband_birth character} c]} {
+        if {[dict exists $c race]} { set race [dict get $c race] }
+        if {[dict exists $c class]} { set class [dict get $c class] }
+    }
+    if {$birth(stage) in {race class}} {
+        set id [lindex [.birth.f.menu.list.tv selection] 0]
+        if {$id ne ""} {
+            set n [string range $id 1 end]
+            set name [lindex [lsearch -inline -index 0 $birth(rows) $n] 1]
+            if {$name ne "" && $birth(stage) eq "race"} { set race $name }
+            if {$name ne "" && $birth(stage) eq "class"} { set class $name }
+        }
+    }
+    set dress [list $class]
+    if {$birth(stage) eq "race" && !$birth(classchosen)} {
+        set dress [list Ranger $class]
+    }
+    set drawn 0
+    foreach c $dress {
+        if {[portrait_put_for birth_likeness 64 $race $c [portrait_sex]]} {
+            set drawn 1
+            break
+        }
+    }
+    if {$drawn} {
+        if {![winfo ismapped $art]} {
+            pack $art -side right -anchor n -padx {6 10} -pady {10 4} \
+                -before .birth.f.head.text
+        }
+    } else {
+        pack forget $art
+    }
 }
 
 # The row of steps, the current one in bold and those still to come greyed.
@@ -90,7 +145,7 @@ proc birth_steps {} {
     set at [lsearch $birth(steps) $now]
     set i 0
     foreach step $birth(steps) {
-        set l .birth.f.steps.s$i
+        set l .birth.f.head.text.steps.s$i
         $l configure -font [expr {$i == $at ? {Helvetica 12 bold} : {Helvetica 12}}] \
             -foreground [expr {$at < 0 || $i > $at ? "#909090" : "black"}]
         incr i
@@ -198,6 +253,7 @@ proc birth_describe {} {
     if {$prose ne ""} { $t insert end $prose prose "\n\n" }
     $t insert end [string trimright $text]
     $t configure -state disabled
+    birth_portrait
 }
 
 # The birth options are on the Options window's Birth tab, which can change
@@ -443,6 +499,7 @@ proc birth_window {} {
 
     toplevel .birth
     wm title .birth "Zangband: New Character"
+    set birth(classchosen) 0
     wm protocol .birth WM_DELETE_WINDOW birth_close
     wm minsize .birth 720 520
 
@@ -456,23 +513,36 @@ proc birth_window {} {
     ttk::frame $w
     pack $w -fill both -expand 1
 
-    # The steps, and the question.
-    ttk::frame $w.steps
-    pack $w.steps -fill x -padx 10 -pady {10 4}
+    # The steps and the question, and beside them the character as it is
+    # being made.
+    set h $w.head
+    ttk::frame $h
+    pack $h -fill x
+    # Not called birth_portrait: an image is a command as well, and would
+    # take the place of the procedure that draws it.
+    if {"birth_likeness" ni [image names]} { image create photo birth_likeness }
+    label $h.art -image birth_likeness -background black -relief sunken \
+        -borderwidth 1
+    pack $h.art -side right -anchor n -padx {6 10} -pady {10 4}
+    set t $h.text
+    ttk::frame $t
+    pack $t -side left -fill x -expand 1 -anchor n
+    ttk::frame $t.steps
+    pack $t.steps -fill x -padx 10 -pady {10 4}
     set i 0
     foreach step $birth(steps) {
         if {$i} {
-            ttk::label $w.steps.a$i -text "›" -foreground #909090
-            pack $w.steps.a$i -side left -padx 4
+            ttk::label $t.steps.a$i -text "›" -foreground #909090
+            pack $t.steps.a$i -side left -padx 4
         }
-        ttk::label $w.steps.s$i -text $step
-        pack $w.steps.s$i -side left
+        ttk::label $t.steps.s$i -text $step
+        pack $t.steps.s$i -side left
         incr i
     }
-    ttk::separator $w.rule -orient horizontal
-    pack $w.rule -fill x
-    ttk::label $w.q -textvariable birth(question) -wraplength 680 -justify left
-    pack $w.q -anchor w -padx 10 -pady {8 4}
+    ttk::separator $t.rule -orient horizontal
+    pack $t.rule -fill x -padx {0 4}
+    ttk::label $t.q -textvariable birth(question) -wraplength 600 -justify left
+    pack $t.q -anchor w -padx 10 -pady {8 4}
 
     # The buttons, packed before the pages so that they keep their room.
     set b $w.btns

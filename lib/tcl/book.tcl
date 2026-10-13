@@ -223,8 +223,21 @@ proc book_sort {column} {
     book_show
 }
 
+# F1: the manual on the realm of the book being read -- or its chapter on the
+# realms, before there is a book -- and how to use the window in the status
+# line.
 proc book_help {} {
     global book
+    set realm ""
+    if {[info exists book(books)]} {
+        foreach row $book(books) {
+            if {[lindex $row 0] eq $book(n)} {
+                set realm [string tolower [lindex $row 2]]
+            }
+        }
+    }
+    help_window [help_first [expr {$realm ne "" ? "realms#$realm" : ""}] \
+        [expr {$realm ne "" ? "birth#$realm" : ""}] realms]
     set book(msg) "Choose a book and a spell; double-click to cast it, or to\
         learn it if it is new.  Click a heading to sort."
 }

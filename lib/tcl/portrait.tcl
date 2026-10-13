@@ -63,21 +63,27 @@ proc portrait_sex {} {
 # its size that fits in size pixels, on its class's backdrop or, with ground
 # 0, on nothing.  1 if there was one to draw.
 proc portrait_put {photo size {ground 1}} {
-    global portrait
-
-    if {![portrait_load]} { return 0 }
     if {[catch {angband_player race} race]
             || [catch {angband_player class} class]} {
         return 0
     }
-    set col [lsearch -exact $portrait(races) $race]
-    set row [lsearch -exact $portrait(classes) $class]
+    return [portrait_put_for $photo $size $race $class [portrait_sex] $ground]
+}
+
+# Any race and class's, as a man (M) or a woman (F) -- for the Birth window,
+# which shows the one under the cursor before it is chosen.
+proc portrait_put_for {photo size race class sex {ground 1}} {
+    global portrait
+
+    if {![portrait_load]} { return 0 }
+    set col [lsearch -exact -nocase $portrait(races) $race]
+    set row [lsearch -exact -nocase $portrait(classes) $class]
     if {$col < 0 || $row < 0} { return 0 }
 
     set s $portrait(size)
     set zoom [expr {max(1, $size / $s)}]
     set fx [expr {$col * $s}]
-    set fy [expr {(2 * $row + ([portrait_sex] eq "F")) * $s}]
+    set fy [expr {(2 * $row + ($sex eq "F")) * $s}]
 
     $photo blank
     $photo configure -width [expr {$s * $zoom}] -height [expr {$s * $zoom}]

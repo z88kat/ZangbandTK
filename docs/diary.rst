@@ -31,6 +31,26 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+13 October 2026 — the face at birth, and F1
+===========================================
+
+The portrait now appears while a character is being made, top right in the
+Birth window. It shows whatever race or class is under the cursor, so choosing
+a race is choosing a face. One wrinkle: until a class is picked, the game's
+class is simply the last one in its list, which made every race a High-Mage.
+Now each one is shown as a Ranger until then, because a Ranger has nothing on
+its head to hide an elf's ears or an imp's horns. Rerolling rolls height and
+weight as well, so the occasional reroll turns a man into a woman. Stopping
+that would mean saving a sex the game does not have, and this way the picture
+is always the one the character would get.
+
+F1 in the Character, Items, Knowledge and Spell Book windows used to put a
+sentence in the status line. Now it opens the manual at the place that covers
+what the window shows: the Spell Book opens at its book's realm, and the
+Character window opens wherever its current page is about. The sentence still
+appears, because the manual explains the game, not the windows.
+
+
 13 October 2026 — a face for every character
 ============================================
 

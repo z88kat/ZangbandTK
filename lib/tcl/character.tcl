@@ -431,8 +431,20 @@ proc character_dump {} {
     set character(msg) "Character dump written to [file tail $file]."
 }
 
+# F1: the manual where it covers what the page shows -- the attributes a
+# character has, its virtues, its mutations, the notes it keeps -- and, in the
+# status line, how to use the window, which the manual does not cover.
 proc character_help {} {
     global character
+    set where {
+        info      birth#character-characteristics
+        history   birth#character-characteristics
+        virtues   virtues
+        mutations mutations
+        notes     command#message-commands
+    }
+    help_window [help_first [expr {[dict exists $where $character(page)]
+        ? [dict get $where $character(page)] : ""}] birth]
     set character(msg) "Choose a page to read. Keys the window does not use\
         itself go to the game, so it can stay open while you play."
 }

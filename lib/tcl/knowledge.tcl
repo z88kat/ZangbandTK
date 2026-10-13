@@ -408,13 +408,13 @@ proc knowledge_dump {} {
     set knowledge(msg) "Wrote [llength $knowledge(rows)] to [file tail $file]."
 }
 
+# F1: the manual on the game's knowledge menu, which this window is, and how
+# to use the window in the status line.
 proc knowledge_help {} {
-    tk_messageBox -parent .knowledge -icon info -title "On Knowledge" \
-        -message "Knowledge" \
-        -detail "Choose a category, then an entry in the list, to read what\
-your character has learned about it. Find narrows the list as you type.\n\nKeys\
-the window does not use itself go to the game, so it can stay open while you\
-play."
+    global knowledge
+    help_window [help_first command#game-status-commands command]
+    set knowledge(msg) "Choose a category, then an entry, to read what your\
+        character has learned about it.  Find narrows the list as you type."
 }
 
 # What the window uses itself stays here: what is typed into Find, and the

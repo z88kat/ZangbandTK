@@ -1099,10 +1099,35 @@ proc birth_pass_step {} {
 					[llength [angband_birth names class]] $bare
 			} "1 14 {}"
 
+			# Beside the steps, the character as its portrait will show it:
+			# while a race is being chosen, the one under the cursor.
+			check "the Birth window shows the race under the cursor" {
+				update
+				set tv .birth.f.menu.list.tv
+				$tv selection set [lindex [$tv children {}] 0]
+				update
+				set one [birth_likeness data]
+				$tv selection set [lindex [$tv children {}] 3]
+				update
+				set other [birth_likeness data]
+				list [winfo ismapped .birth.f.head.art] \
+					[image width birth_likeness] [expr {$one ne $other}]
+			} "1 64 1"
+
 			# The rest at random, as '@' does on the text screen.
 			birth_answer finish
 		}
 		confirm {
+			# What the Birth window shows at the end is what the windows will
+			# show in play: the same race, class and sex, from the same rolls.
+			check "the portrait at birth is the one the character will have" {
+				image create photo probe_birth
+				portrait_put probe_birth 64
+				set same [expr {[probe_birth data] eq [birth_likeness data]}]
+				image delete probe_birth
+				set same
+			} 1
+
 			check "the character waits to be confirmed" {
 				set c [angband_birth character]
 				list [expr {[dict get $c name] ne ""}] \
@@ -1508,6 +1533,29 @@ proc help_pass {} {
 		list [expr {[llength $::helpwin(results)] > 3}] \
 			[expr {"wilderness" in [lrange $::helpwin(results) 0 2]}]
 	} "1 1"
+
+	# F1 in a window opens the manual where it covers what the window shows:
+	# the Character window's page, the Spell Book's realm or, with no book,
+	# the realms.
+	check "each window's F1 opens its place in the manual" {
+		set got {}
+		set was $::book(n)
+		set ::book(n) ""
+		set page $::character(page)
+		foreach do {items_help knowledge_help book_help} {
+			$do
+			lappend got [lindex $::helpwin(history) $::helpwin(at)]
+		}
+		foreach ::character(page) {virtues info} {
+			character_help
+			lappend got [lindex $::helpwin(history) $::helpwin(at)]
+		}
+		set ::book(n) $was
+		set ::character(page) $page
+		destroy .help
+		set got
+	} "{command inventory-commands} {command game-status-commands} {realms {}}\
+ {virtues {}} {birth character-characteristics}"
 
 	check "Help ▸ Help opens the Help window" {
 		destroy .help
