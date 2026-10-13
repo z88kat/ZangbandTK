@@ -248,5 +248,8 @@ proc record_window {dir} {
     }
 
     bind .recordview <Escape> { destroy .recordview }
+    bind .recordview <F1> {
+        help_window [help_first dungeon#upon-death-and-dying dungeon] ; break
+    }
     accel_bind .recordview c { destroy .recordview ; break }
 }

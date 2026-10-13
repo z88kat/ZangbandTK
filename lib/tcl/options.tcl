@@ -225,6 +225,12 @@ proc options_build {} {
     $mb add cascade -label File -underline 0 -menu $mb.file
     $mb.file add command -label "Close" -underline 0 -accelerator Esc \
         -command {destroy .options}
+    # Not $mb.help: on macOS Tk treats a menu with that name as the platform's
+    # own Help menu and fills it with things this window does not have.
+    menu $mb.about
+    $mb add cascade -label Help -underline 0 -menu $mb.about
+    $mb.about add command -label "On Options..." -underline 0 -accelerator F1 \
+        -command options_help
 
     set w .options.f
     ttk::frame $w
@@ -334,6 +340,7 @@ proc options_build {} {
     sound_page $p
 
     bind .options <Escape> {destroy .options}
+    bind .options <F1> {options_help; break}
     accel_bind .options c {destroy .options}
     # The tabs answer their underlined letters too.  Cheats is h, because C
     # is Close.
@@ -352,6 +359,20 @@ proc options_build {} {
         }
     }
     bind .options <FocusIn> {if {"%W" eq ".options"} options_refresh}
+}
+
+# F1: the manual where it covers the page showing -- the game's options by
+# their kind, and the front end's own, Display and Sound, in its section of
+# the customising chapter.
+proc options_help {} {
+    set page [winfo name [.options.f.nb select]]
+    help_window [help_first [dict get {
+        interface option#user-interface-options
+        birth option#birth-options
+        cheat option#cheating-options
+        display customize#tcl-tk
+        sound customize#tcl-tk
+    } $page] option]
 }
 
 # Save, restore and reset, for a page of the game's options.

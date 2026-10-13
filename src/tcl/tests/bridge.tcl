@@ -1562,6 +1562,57 @@ proc help_pass {} {
 	} "{command inventory-commands} {command game-status-commands} {realms {}}\
  {virtues {}} {birth character-characteristics}"
 
+	# And the rest of the windows.  Every place their F1 names has to be in
+	# the manual -- help_first settles for a chapter, or the contents, when
+	# it is not, which would be a renamed heading going unnoticed.
+	check "every place a window's F1 names is in the manual" {
+		set missing {}
+		foreach t {towns#your-house dungeon#town-buildings towns#services
+				dungeon#upon-death-and-dying dungeon#winning-the-game
+				option#user-interface-options option#birth-options
+				option#cheating-options customize#tcl-tk customize#keymaps
+				birth#races birth#classes realms#choosing-them birth#stats
+				birth#creating-a-character start playing#playing-the-game} {
+			if {[help_first $t] ne $t} { lappend missing $t }
+		}
+		set missing
+	} {}
+
+	# Where they land: the shop or the home, a service, the Hall of Fame,
+	# each Options tab, a stage of birth, and the main window's own F1.
+	check "and the other windows' F1 open theirs" {
+		set got {}
+		set home $::store(home)
+		foreach ::store(home) {0 1} {
+			store_help
+			lappend got [lindex $::helpwin(history) $::helpwin(at) 1]
+		}
+		set ::store(home) $home
+		foreach do {building_help fame_help} {
+			$do
+			lappend got [lindex $::helpwin(history) $::helpwin(at) 1]
+		}
+		options_window
+		foreach tab {interface birth cheat display sound} {
+			.options.f.nb select .options.f.nb.$tab
+			options_help
+			lappend got [lindex $::helpwin(history) $::helpwin(at) 1]
+		}
+		destroy .options
+		set stage $::birth(stage)
+		foreach ::birth(stage) {race realm roller name} {
+			birth_help
+			lappend got [lindex $::helpwin(history) $::helpwin(at) 1]
+		}
+		set ::birth(stage) $stage
+		catch {uplevel #0 [bind . <F1>]}
+		lappend got [lindex $::helpwin(history) $::helpwin(at)]
+		destroy .help
+		set got
+	} "town-buildings your-house services upon-death-and-dying\
+ user-interface-options birth-options cheating-options tcl-tk tcl-tk\
+ races choosing-them stats creating-a-character {playing playing-the-game}"
+
 	check "Help ▸ Help opens the Help window" {
 		destroy .help
 		.menubar.about invoke 0

@@ -677,10 +677,22 @@ proc birth_window {} {
     }
     accel_bind .birth f { birth_press .birth.f.btns.finish ; break }
     accel_bind .birth p { birth_press .birth.f.roller.act.prev ; break }
+    bind .birth <F1> { birth_help ; break }
     bind .birth <Escape> {
         if {$birth(stage) ne "quickstart"} { birth_answer back }
         break
     }
+}
+
+# F1: the manual on what the stage is asking -- the races, the classes, the
+# realms of magic, the stats -- and on making a character for the rest.
+proc birth_help {} {
+    global birth
+    set where [dict create race birth#races class birth#classes \
+        realm realms#choosing-them method birth#stats points birth#stats \
+        roller birth#stats]
+    help_window [help_first [expr {[dict exists $where $birth(stage)]
+        ? [dict get $where $birth(stage)] : ""}] birth#creating-a-character birth]
 }
 
 bind . <<Angband_BIRTHVIEW>> {+ birth_show }

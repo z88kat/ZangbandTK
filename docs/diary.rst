@@ -31,6 +31,23 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+14 October 2026 — F1, everywhere
+================================
+
+F1 now opens the manual from every window that has a place in it, at the place
+that covers that window. In a shop it goes to the shops, and at home to the
+house. In the Options window it goes to whichever kind of option is on the
+tab showing. While making a character it goes to whatever the current step is
+asking about: races, classes, magic or stats. In the main window it opens at
+Playing the Game, and ``?`` still opens the contents, as it always has. The
+windows that have their own menus got a Help menu too, so the key can be
+found without already knowing it.
+
+The test for this checks that every place a window points to still exists in
+the manual. If a heading were renamed, F1 would quietly fall back to the start
+of the chapter, and nobody would notice for months.
+
+
 13 October 2026 — the keymap editor
 ===================================
 

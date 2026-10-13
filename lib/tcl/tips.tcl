@@ -139,6 +139,7 @@ proc tips_window {} {
     foreach key {Left b less} { bind .tips <KeyPress-$key> tips_back }
     foreach key {Right n greater Return} { bind .tips <KeyPress-$key> tips_next }
     bind .tips <Escape> tips_close
+    bind .tips <F1> { help_window [help_first start] ; break }
 
     tips_show [expr {[settings_get tips,last -1] + 1}]
     focus .tips

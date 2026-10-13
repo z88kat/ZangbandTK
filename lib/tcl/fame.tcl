@@ -171,6 +171,12 @@ proc fame_dump {} {
     set ::fame(msg) "Scores written to [file tail $file]."
 }
 
+# F1: the manual on the end of a character, which is what puts one here --
+# the tombstone, the record and the high score list.
+proc fame_help {} {
+    help_window [help_first dungeon#upon-death-and-dying dungeon]
+}
+
 proc fame_window {} {
     global fame
 
@@ -200,6 +206,11 @@ proc fame_window {} {
         $mb.sort add radiobutton -label $label -variable fame(sort) \
             -value $value -command fame_refresh
     }
+    # Not $mb.help, for the reason store.tcl gives.
+    menu $mb.about -tearoff 0
+    $mb add cascade -label Help -underline 0 -menu $mb.about
+    $mb.about add command -label "On the Hall of Fame..." -underline 0 \
+        -accelerator F1 -command fame_help
 
     set w .fame.f
     ttk::frame $w
@@ -232,6 +243,7 @@ proc fame_window {} {
     $f.t tag bind more <Leave> { %W configure -cursor {} }
 
     bind .fame <Escape> { destroy .fame }
+    bind .fame <F1> { fame_help ; break }
     bind .fame <Up> {
         if {$fame(picked) > 0} { fame_pick [expr {$fame(picked) - 1}] ; .fame.f.list.t see e$fame(picked).first }
     }

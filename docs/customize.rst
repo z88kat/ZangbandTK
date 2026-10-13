@@ -546,7 +546,9 @@ Tcl/Tk
 ~~~~~~
 
 The Tcl/Tk front end, ``ZangbandTKGUI.app``, keeps the map and its panes in one
-window.  Drag the dividers between the panes to change their sizes.  How the
+window.  Drag the dividers between the panes to change their sizes.  F1 in any
+window opens this manual where it covers that window -- in the main window, at
+Playing the Game.  How the
 window draws is set on the Display page of the Options window (Other ▸
 Preferences ▸ Options, or Preferences in the application menu):
 

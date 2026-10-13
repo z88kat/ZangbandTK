@@ -302,6 +302,7 @@ proc choose_window {} {
     }
     bind $tv <KeyPress> { choose_typed %A }
     bind .choose <Return> { choose_default ; break }
+    bind .choose <F1> { help_window [help_first start] ; break }
     accel_bind .choose o { choose_open ; break }
     accel_bind .choose n { choose_new ; break }
     accel_bind .choose q { choose_quit ; break }

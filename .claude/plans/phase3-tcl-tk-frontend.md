@@ -2166,6 +2166,20 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 > - Not drawn: the function keys and the keypad, which `tk_keypress()` does not read yet
 >   (the keypad arrives as the digits), so nothing can be bound to them from here.
 
+> **F1 everywhere, 14 October 2026.** The four windows' F1 (Character, Items, Knowledge,
+> Spell Book) and the Keymaps window's are joined by every other window that has a place in
+> the manual, each through `help_first` with a fallback: the Store (the shops, or the house
+> for the home), Buildings (services), the Hall of Fame, the record viewer and the Tomb (the
+> end of a character; the winner's at winning), Options by its tab (each kind of the game's
+> options; Display and Sound at the Tk section), Birth by its stage (races, classes, realms,
+> stats, making a character), Choose Game and Tips (getting started), and the main window
+> (playing the game — the game's own `?` keeps the contents). Store, Buildings, Options and
+> the Hall of Fame gain a Help menu with the "On …" entry the others have. Left out: the
+> Character Record's question, modal with a grab, where a Help window could not be used;
+> Console, Errors and About, which the manual does not cover. Bridge checks: every place
+> named is in the manual (a renamed heading would otherwise fall back silently), and the
+> procs land where they should.
+
 ---
 
 ## 6. Decisions needed

@@ -180,6 +180,11 @@ proc building_key {w keysym n s a} {
 
 # --- the window ----------------------------------------------------------------
 
+# F1: the manual on the town's services, which this window is.
+proc building_help {} {
+    help_window [help_first towns#services towns]
+}
+
 proc building_window {} {
     global building
 
@@ -199,6 +204,11 @@ proc building_window {} {
     $mb add cascade -label File -underline 0 -menu $mb.file
     $mb.file add command -label "Leave" -underline 0 -accelerator Esc \
         -command building_leave
+    # Not $mb.help, for the reason store.tcl gives.
+    menu $mb.about
+    $mb add cascade -label Help -underline 0 -menu $mb.about
+    $mb.about add command -label "On Services..." -underline 0 -accelerator F1 \
+        -command building_help
 
     set w .building.f
     ttk::frame $w
@@ -267,6 +277,7 @@ proc building_window {} {
 
     bind .building <Key> { building_key %W %K %N %s %A }
     bind .building <Escape> { building_leave ; break }
+    bind .building <F1> { building_help ; break }
     accel_bind .building c { building_choose ; break }
     accel_bind .building l { building_leave ; break }
 

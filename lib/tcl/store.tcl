@@ -26,6 +26,7 @@ set store(wares) {}
 set store(qbuy) 1
 set store(qsell) 1
 set store(note) ""
+set store(home) 0
 
 set store(refresh) {GOLD INVENTORY EQUIPMENT STORECHANGED}
 
@@ -219,6 +220,13 @@ proc store_trade {side {quantity ""}} {
 # What the window uses itself stays here: the keys that move about the tables
 # and what is typed into a quantity.  Everything else goes to the game, whose
 # store screen is still listening.
+# F1: the manual on the town's shops, or on the house for the home.
+proc store_help {} {
+    global store
+    help_window [help_first [expr {$store(home) ? "towns#your-house"
+        : "dungeon#town-buildings"}] dungeon]
+}
+
 proc store_key {w keysym n s a} {
     switch -- [winfo class $w] {
         TSpinbox { return }
@@ -295,6 +303,12 @@ proc store_window {} {
     $mb add cascade -label File -underline 0 -menu $mb.file
     $mb.file add command -label "Leave the Store" -underline 0 \
         -accelerator Esc -command store_leave
+    # Not $mb.help: on macOS Tk treats a menu with that name as the platform's
+    # own Help menu and fills it with things this window does not have.
+    menu $mb.about
+    $mb add cascade -label Help -underline 0 -menu $mb.about
+    $mb.about add command -label "On Stores..." -underline 0 -accelerator F1 \
+        -command store_help
 
     set w .store.f
     ttk::frame $w
@@ -360,6 +374,7 @@ proc store_window {} {
 
     bind .store <Key> { store_key %W %K %N %s %A }
     bind .store <Escape> { store_leave ; break }
+    bind .store <F1> { store_help ; break }
     accel_bind .store b { store_trade buy ; break }
     accel_bind .store t { store_trade buy ; break }
     accel_bind .store s { store_trade sell ; break }

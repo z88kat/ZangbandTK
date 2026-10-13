@@ -98,6 +98,9 @@ proc tomb_kingly {} {
         pack $w.go -pady {10 0}
         bind .kingly <Return> tomb_kingly_done
         bind .kingly <Escape> tomb_kingly_done
+        bind .kingly <F1> {
+            help_window [help_first dungeon#winning-the-game dungeon] ; break
+        }
     }
 
     set c .kingly.f.c
@@ -263,6 +266,9 @@ proc tomb_window {how actions} {
 
     bind .tomb <KeyPress> { tomb_key %A }
     bind .tomb <Escape> { tomb_act q }
+    bind .tomb <F1> {
+        help_window [help_first dungeon#upon-death-and-dying dungeon] ; break
+    }
 }
 
 bind . <<Angband_DEATHVIEW>> {+ tomb_show }

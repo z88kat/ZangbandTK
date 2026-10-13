@@ -69,6 +69,11 @@ ttk::style configure . -font {Helvetica 12 bold}
 # there are panes.
 bind . <Key> { angband_key %N %s %A }
 
+# Except F1, which the game does not read: the manual on playing, as F1 opens
+# the manual where it covers each of the other windows.  The game's own ? opens
+# the Help window at its contents.
+bind . <F1> { help_window [help_first playing#playing-the-game playing] ; break }
+
 # The layout.
 #
 # One window with panels inside it, rather than the original's six independent
