@@ -956,7 +956,7 @@ proc second_pass {} {
 			[stock_widgets_only [progress_frame]]
 	} "1 {classic {}}"
 
-	# DEC-136: a character made now sells for gold, as in Zangband.
+	# DEC-137: a character made now sells for gold, as in Zangband.
 	check "a new character is born able to sell" {
 		angband_option birth_no_selling
 	} 0

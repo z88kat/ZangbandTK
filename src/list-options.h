@@ -107,7 +107,7 @@ OP(birth_lose_arts,       "Lose artifacts when leaving level",
 BIRTH, false)
 OP(birth_feelings,        "Show level feelings",
 BIRTH, true)
-/* ZangbandTK (DEC-136): off, as Zangband had it; 4.2 turns it on. */
+/* ZangbandTK (DEC-137): off, as Zangband had it; 4.2 turns it on. */
 OP(birth_no_selling,      "Increase gold drops but disable selling",
 BIRTH, false)
 OP(birth_start_kit,       "Start with a kit of useful gear",
