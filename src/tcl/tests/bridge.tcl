@@ -1167,9 +1167,10 @@ proc birth_pass_done {} {
 		set r
 	} "{classic {}} 1"
 
-	# The character's own tile, for the windows that show one (OBS-46): the
-	# one the map draws, or the "@" while the game is drawing letters.
-	check "the character's tile is the portrait, and its letter in text mode" {
+	# The windows that show the character (OBS-46) show its portrait, which
+	# is the same whether the map is drawn in tiles or in letters.  The map
+	# tile is still there to fall back on, and in letters there is none.
+	check "the Character window shows the portrait, in tiles and in letters" {
 		image create photo probe_tile
 		set ok [angband_tile player probe_tile 64]
 		set big [expr {max([image width probe_tile], [image height probe_tile])}]
@@ -1181,14 +1182,62 @@ proc birth_pass_done {} {
 			: [angband_tile player probe_tile 64]}]
 		event generate . <<TilesChanged>>
 		update
+		set still [.character.f.top.id.glyph itemcget tile -state]
 		set letter [.character.f.top.id.glyph itemcget letter -state]
 		angband_tileset $was
 		event generate . <<TilesChanged>>
 		update
 		destroy .character
 		image delete probe_tile
-		list $ok $big $shown $text $letter
-	} "1 64 normal 0 normal"
+		list $ok $big $shown $text $still $letter \
+			[image width character_tile]
+	} "1 64 normal 0 normal hidden 64"
+
+	# 784 portraits, made by scripts/portraits/build-portraits.py: one for
+	# every race and class the game has, as a man and as a woman, each with a
+	# figure in it -- a cell left empty would be a blank square in a window.
+	check "every race and class the game has, has a portrait" {
+		portrait_load
+		set races [angband_birth names race]
+		set classes [angband_birth names class]
+		set missing {}
+		foreach r $races {
+			if {$r ni $::portrait(races)} { lappend missing $r }
+		}
+		foreach c $classes {
+			if {$c ni $::portrait(classes)} { lappend missing $c }
+		}
+		set empty 0
+		set s $::portrait(size)
+		for {set row 0} {$row < 2 * [llength $::portrait(classes)]} {incr row} {
+			for {set col 0} {$col < [llength $::portrait(races)]} {incr col} {
+				if {[portrait_sheet transparency get \
+						[expr {$col * $s + $s / 2}] [expr {$row * $s + $s - 4}]]} {
+					incr empty
+				}
+			}
+		}
+		list [llength $races] [llength $classes] $missing $empty
+	} "28 14 {} 0"
+
+	# The game has no sex for a character; the portrait takes one from what
+	# birth rolled, so it is the same every time.  On its class's backdrop in a
+	# window, and on nothing on the tombstone.
+	check "a portrait is the same every time, on its backdrop or on nothing" {
+		image create photo probe_portrait
+		set sex [portrait_sex]
+		set drawn [portrait_put probe_portrait 64]
+		set size [list [image width probe_portrait] [image height probe_portrait]]
+		set row [lsearch -exact $::portrait(classes) [angband_player class]]
+		set ground [portrait_sheet get [expr {$row * 32}] \
+			[expr {2 * [llength $::portrait(classes)] * 32}]]
+		set corner [probe_portrait get 0 0]
+		portrait_put probe_portrait 64 0
+		set bare [probe_portrait transparency get 0 0]
+		image delete probe_portrait
+		list [expr {$sex in {M F}}] [expr {[portrait_sex] eq $sex}] $drawn \
+			$size [expr {$corner eq $ground}] $bare
+	} "1 1 1 {64 64} 1 1"
 
 	# The Hall of Fame is the game's table, and the character being played is
 	# in it where its score would put it, as the game's own prediction does.
@@ -1601,7 +1650,7 @@ proc death_pass_tomb {} {
 			[winfo exists .tomb] [stock_widgets_only .tomb]
 	} "retired imfvxhsnq 1 {classic {}}"
 
-	check "the tombstone carries the character's tile" {
+	check "the tombstone carries the character's portrait" {
 		llength [.tomb.f.top.c find withtag portrait]
 	} 1
 

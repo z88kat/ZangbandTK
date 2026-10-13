@@ -1969,6 +1969,30 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 > Still to do: the windows' own F1 entries put a sentence in the status line rather than
 > opening their chapter; and no chapter has a picture yet, so images are left out.
 
+> **Character portraits, 13 October 2026.** The Character window, the tombstone and the
+> Character Record showed the character's map tile, which at 64 pixels was a smudge of a few
+> dozen. They show a portrait now: a 32×32 bust for every race and class, as a man and as a
+> woman — 784 — agreed from a sample of ten. None is drawn on its own.
+> [scripts/portraits/build-portraits.py](../../scripts/portraits/build-portraits.py) composes
+> each from small text grids in [art.py](../../scripts/portraits/art.py): a body for the sex
+> and the race's build, the race's head and what it adds to one (ears, tusks, horns, a beard,
+> wings, a Mindflayer's tentacles), the class's clothes, headgear and what it carries, and an
+> outline. A new race or class is one entry, not twenty-eight pictures.
+>
+> - **One sheet and an index**, `lib/tcl/portraits/`, committed so a build needs no Python.
+>   The figures are on nothing and each class's backdrop is a cell of its own:
+>   [portrait.tcl](../../lib/tcl/portrait.tcl) sets the figure on it in the windows, and on
+>   the bare stone on the tombstone. The script fails when a race or class in `lib/gamedata`
+>   has no art, and the Tk workflow runs `--check`, which fails when the sheet is not what
+>   the art makes.
+> - **The game has no sex** — 4.2 took it out — so a portrait takes one from the parity of
+>   the age, height and weight that birth rolled. Random, never changed afterwards, and
+>   nothing in the savefile.
+> - **Each layer takes its colours from its owner first**: a race's grids from the race's
+>   palette, a class's from the class's, each falling back on the other. One shared palette
+>   let a Necromancer's skull staff recolour a Klackon's carapace.
+> - The map tile is still the fallback where there is no portrait to draw.
+
 ---
 
 ## 6. Decisions needed

@@ -1,0 +1,48 @@
+# The character portraits: made by scripts/portraits/build-portraits.py
+# from scripts/portraits/art.py.  Do not edit; change those and run it.
+#
+# A race is a column and a class two rows, a man's and a woman's, in the
+# order listed here.  The class backdrops are the last row, by class.
+size	32
+race	Human
+race	Half-Elf
+race	Elf
+race	Hobbit
+race	Gnome
+race	Dwarf
+race	Half-Orc
+race	Half-Troll
+race	Dunadan
+race	High-Elf
+race	Kobold
+race	Amberite
+race	Beastman
+race	Yeek
+race	Draconian
+race	Mindflayer
+race	Vampire
+race	Golem
+race	Barbarian
+race	Klackon
+race	Nibelung
+race	Imp
+race	Skeleton
+race	Zombie
+race	Spectre
+race	Ghoul
+race	Sprite
+race	Half-Titan
+class	Warrior
+class	Mage
+class	Druid
+class	Priest
+class	Necromancer
+class	Paladin
+class	Rogue
+class	Ranger
+class	Blackguard
+class	Monk
+class	Mindcrafter
+class	Chaos-Warrior
+class	Warrior-Mage
+class	High-Mage

@@ -165,8 +165,10 @@ proc character_refresh {} {
     character_portrait
 }
 
-# The character's own tile, as the map draws it -- the original's portrait
-# was the character's icon -- or the "@" while the game is drawing letters.
+# The character's portrait (portrait.tcl): its race and class, a man or a
+# woman, on the class's backdrop.  The original's was the character's icon;
+# without a portrait to draw it is still the map tile, or the "@" while the
+# game is drawing letters.
 proc character_portrait_image {} {
     # Not named character_portrait: an image is a command as well, and would
     # take the place of the procedure below.
@@ -179,8 +181,7 @@ proc character_portrait_image {} {
 proc character_portrait {} {
     set g .character.f.top.id.glyph
     if {![winfo exists $g]} return
-    set tile [expr {![catch {angband_tile player [character_portrait_image] 64} ok]
-        && $ok}]
+    set tile [portrait_draw [character_portrait_image] 64]
     $g itemconfigure tile -state [expr {$tile ? "normal" : "hidden"}]
     $g itemconfigure letter -state [expr {$tile ? "hidden" : "normal"}]
 }

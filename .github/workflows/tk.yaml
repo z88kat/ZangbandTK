@@ -24,6 +24,9 @@ on:
       - 'scripts/build-tcltk'
       - 'scripts/pkg_macos_tcltk'
       - 'scripts/run-tcl-tests'
+      - 'scripts/portraits/**'
+      - 'lib/gamedata/p_race.txt'
+      - 'lib/gamedata/class.txt'
       - 'CMakeLists.txt'
       - '.github/workflows/tk.yaml'
   pull_request:
@@ -148,6 +151,12 @@ jobs:
 
       - name: Tcl tests
         run: scripts/run-tcl-tests
+
+      # The character portraits are made from scripts/portraits/art.py and
+      # committed; this fails when the sheet is not what the art makes, or a
+      # race or class in lib/gamedata has none.
+      - name: Portraits are current
+        run: python3 scripts/portraits/build-portraits.py --check
 
       # Builds ZangbandTKGUI.app and runs its own checks: that nothing in it
       # points back at the build tree, that the game data and the front end's

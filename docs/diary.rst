@@ -31,6 +31,35 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+13 October 2026 — a face for every character
+============================================
+
+The Character window had a portrait, and it was the character's map tile
+blown up to 64 pixels: a smudge, and the same smudge for every elf. Steven
+asked whether a pixel-art portrait for every race and class, as a man or a
+woman, was possible. That is 784 pictures, and drawing them one at a time
+would never have come out consistent.
+
+So none of them is drawn on its own. A portrait is a stack of small text
+grids: a body for the sex and the race's build, the race's head and whatever it
+adds to one, the class's clothes and headgear and whatever it carries, then an
+outline. Sixty-five grids make all 784. A Dwarf's beard is one grid wherever a
+Dwarf goes, and a Half-Orc in a Rogue's hood is just the hood laid over the
+tusks. A sample of ten came first, and the rest followed once it was liked.
+
+The sample had found most of what was wrong. A helm or a hood hid the hair, so
+the man and the woman under it were the same picture, until long hair was let
+out below the helm and inside the hood. The Imp's horns came through a horned
+helm, giving it four. The full set found a quieter fault: one palette served
+every layer, so a Necromancer's skull staff would have turned a Klackon's shell
+almost black.
+
+The game has no sex for a character, because 4.2 took it out. The portrait
+takes one from the age, height and weight the character was born with. That
+makes it random, and it is the same every time, without the savefile knowing
+anything about it.
+
+
 13 October 2026 — the manual, inside the game
 =============================================
 

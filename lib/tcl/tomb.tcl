@@ -55,8 +55,9 @@ proc tomb_draw {} {
     tomb_portrait $rows $pad $ch
 }
 
-# The character's own tile on the stone, which the text screen cannot have and
-# the original's Tomb window did (OBS-46).  In the gap the game's screens leave
+# The character on the stone, which the text screen cannot have and the
+# original's Tomb window did (OBS-46): its portrait, set on the stone rather
+# than on the backdrop the other windows give it.  In the gap the game's screens leave
 # between the top of the stone and the name: rows 4 to 6, in the middle of the
 # columns death_screen() centres its words in, 8 to 39.  Only where that gap
 # is empty, so a screen drawn differently loses the tile rather than its words.
@@ -72,7 +73,7 @@ proc tomb_portrait {{rows ""} {pad 14} {ch 0}} {
     # The image is not called tomb_portrait: an image is a command too.
     if {"tomb_tile" ni [image names]} { image create photo tomb_tile }
     set size [expr {int($ch * 2.6)}]
-    if {[catch {angband_tile player tomb_tile $size} ok] || !$ok} return
+    if {![portrait_draw tomb_tile $size 0]} return
     set cw [expr {[font measure termfont [string repeat 0 40]] / 40.0}]
     $c create image [expr {$pad + 23.5 * $cw}] [expr {$pad + 5.5 * $ch}] \
         -image tomb_tile -anchor center -tags portrait

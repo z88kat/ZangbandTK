@@ -97,11 +97,12 @@ proc record_offer {} {
     ttk::frame $w -padding 10
     pack $w -fill both -expand 1
 
-    # The character's tile beside the question, as the original had its icon.
+    # The character's portrait beside the question, as the original had its
+    # icon.
     ttk::frame $w.top
     pack $w.top -fill x
     if {"record_tile" ni [image names]} { image create photo record_tile }
-    if {![catch {angband_tile player record_tile 32} ok] && $ok} {
+    if {[portrait_draw record_tile 32]} {
         label $w.top.tile -image record_tile -background black \
             -relief sunken -borderwidth 1
         pack $w.top.tile -side left -anchor n -padx {0 10}

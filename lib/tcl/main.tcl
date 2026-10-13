@@ -256,6 +256,7 @@ source [file join [file dirname [info script]] errorInfo.tcl]
 source [file join [file dirname [info script]] debug.tcl]
 source [file join [file dirname [info script]] settings.tcl]
 source [file join [file dirname [info script]] accel.tcl]
+source [file join [file dirname [info script]] portrait.tcl]
 
 # Then the windows, which are Tk's own widgets in Tk's classic theme and
 # nothing else (decision 18).
