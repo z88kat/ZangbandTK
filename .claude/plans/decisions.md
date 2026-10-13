@@ -7310,7 +7310,7 @@ before anything is retuned.
 
 ---
 
-**DEC-136 — The Tcl/Tk front end code review: five items, five dispositions,
+**DEC-138 — The Tcl/Tk front end code review: five items, five dispositions,
 and two of them were not the defect they were reported as.** (Front end.
 Reviewed against `71f960b5d`; built, run and measured on macOS, which the
 reviewing session could not do.)
