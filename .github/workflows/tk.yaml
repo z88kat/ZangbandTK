@@ -25,6 +25,7 @@ on:
       - 'scripts/pkg_macos_tcltk'
       - 'scripts/run-tcl-tests'
       - 'scripts/portraits/**'
+      - 'scripts/palettes/**'
       - 'lib/gamedata/p_race.txt'
       - 'lib/gamedata/class.txt'
       - 'CMakeLists.txt'
@@ -157,6 +158,12 @@ jobs:
       # race or class in lib/gamedata has none.
       - name: Portraits are current
         run: python3 scripts/portraits/build-portraits.py --check
+
+      # The Display page's palettes keep every difference the game gives a
+      # meaning to -- the colour-blind one under simulated colour blindness
+      # too -- and the high-contrast one stays readable on black.
+      - name: Palettes pass their checks
+        run: python3 scripts/palettes/check-palettes.py
 
       # Builds ZangbandTKGUI.app and runs its own checks: that nothing in it
       # points back at the build tree, that the game data and the front end's

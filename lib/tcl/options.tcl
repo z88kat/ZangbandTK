@@ -5,7 +5,8 @@
 # file -- and the front end's beside them, so that the player never has to
 # know which layer owns a setting.  A tab a page: Interface, with the three
 # numeric settings under it; Birth, which can be changed only while a
-# character is being made; Cheats; and Display, the front end's.
+# character is being made; Cheats; and Display, the front end's own, which is
+# display.tcl's: the tile set and its size, the panes' fonts and the colours.
 #
 # Every change is made through angband_option and so through the game's own
 # rules: a birth option is refused once a character exists, a cheat marks the
@@ -320,19 +321,10 @@ proc options_build {} {
         incr r
     }
 
-    # Display: the front end's, beside the game's.
+    # Display: the front end's, beside the game's -- display.tcl's.
     set p [ttk::frame $nb.display -padding 8]
     $nb add $p -text "Display" -underline 0
-    ttk::labelframe $p.tiles -text "Tile set" -padding 8
-    pack $p.tiles -anchor nw -fill x
-    set i 0
-    foreach pair [angband_tilesets] {
-        lassign $pair id name
-        ttk::radiobutton $p.tiles.t$i -text $name -variable angband(tileset) \
-            -value $id -command [list angband_choose_tileset $id]
-        pack $p.tiles.t$i -anchor w -pady 1
-        incr i
-    }
+    display_page $p
 
     bind .options <Escape> {destroy .options}
     accel_bind .options c {destroy .options}

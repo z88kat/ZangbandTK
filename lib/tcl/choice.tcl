@@ -144,7 +144,7 @@ proc choice_refresh {} {
 proc choice_cols {} {
     set t [choice_text]
     return [expr {max(30, ([winfo width $t] - 2 * [$t cget -padx])
-        / [font measure termfont 0])}]
+        / [font measure panefont 0])}]
 }
 
 # Words into lines of at most `cols` characters.
@@ -288,7 +288,7 @@ proc choice_build {} {
     pack propagate $f 0
 
     set t $f.t
-    text $t -font termfont -background black -foreground white \
+    text $t -font panefont -background black -foreground white \
         -borderwidth 0 -highlightthickness 0 -padx 4 -pady 2 \
         -wrap none -cursor arrow -insertwidth 0 -state disabled \
         -selectbackground black -inactiveselectbackground black

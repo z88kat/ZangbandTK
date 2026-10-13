@@ -31,6 +31,39 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+13 October 2026 — the Display page
+==================================
+
+The Options window had a Display tab with one thing on it, the tile set, and
+it did not remember even that: every session started on Neon. It now has
+the tile set, the tile size, a font for each kind of pane, and the colours,
+and every one of them is still there next time.
+
+The fonts were less simple than they look. In a terminal pane the font is
+the grid: each cell's size is measured from it, so a bigger font means fewer
+rows and columns, not just larger letters. The cells were measured once, when
+a pane was made, so changing the font meant measuring every pane again.
+Rebuilding them that way turned up an old leak. Every time a pane was rebuilt,
+which happens on every resize, it left its previous picture of the map behind,
+a few megabytes each time.
+
+The colours are the part worth the most. There are three palettes besides the
+game's own: high contrast, colour-blind safe, and whatever you make by clicking
+a swatch. They are not chosen by eye. A small script checks them the way
+accessibility work does. It measures contrast against the black background,
+and how far apart the pairs the game uses to mean something stay: hit points
+going from green to yellow to red, good effects and bad ones. For the
+colour-blind palette it does that again under a simulation of each kind of
+colour blindness. In the game's own palette, for someone with protanopia,
+green and light red come out 2.5 apart, close enough to be the same colour.
+In the colour-blind palette nothing that matters is closer than 14.
+
+One thing the palettes cannot reach is the tiles. Neon's colours are painted
+into its sheet, so with tiles on, the monsters keep their colours whatever the
+palette says. A colour-blind Neon would be worth having, but it is a piece of
+design on its own.
+
+
 13 October 2026 — the face at birth, and F1
 ===========================================
 

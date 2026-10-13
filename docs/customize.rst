@@ -296,6 +296,9 @@ Colours
 
 The "Interact with colors" options submenu (``=``, then ``c``) allows you to change how different colours are displayed.  Depending on what kind of computer you have, this may or may not have any effect.
 
+In the Tcl/Tk front end, the Display page of the Options window has ready-made
+palettes as well, among them one made for colour-blind players; see `Tcl/Tk`_.
+
 The interface is quite clunky.  You can move through the colours using ``n`` for 'next colour' and ``N`` for 'previous colour'.  Then upper and lower case ``r``, ``g`` and ``b`` will let you tweak the color.  You can then save the results to user pref file.
 
 
@@ -318,7 +321,7 @@ and graphical tile set, are controlled by the front end, rather than the core
 of the game itself.  Each front end has its own mechanism for setting those
 details and recording them between game sessions.  Below are brief descriptions
 for what you can configure with the standard `Windows`_, `X11`_, `SDL2`_ and
-`Mac`_ front ends.
+`Mac`_ front ends, and with the `Tcl/Tk`_ one.
 
 Windows
 ~~~~~~~
@@ -527,3 +530,27 @@ menus), and, in that Terminal window, run this::
 
 to clear the contents of the preferences file and any cached preferences that
 may be retained in memory.
+
+Tcl/Tk
+~~~~~~
+
+The Tcl/Tk front end, ``ZangbandTKGUI.app``, keeps the map and its panes in one
+window.  Drag the dividers between the panes to change their sizes.  How the
+window draws is set on the Display page of the Options window (Other ▸
+Preferences ▸ Options, or Preferences in the application menu):
+
+* **Tile set** chooses the graphical tiles, or None to draw the map in letters.
+* **Tile size** draws the map's tiles Small, Medium or Large.  The overhead map
+  uses the same size, so its tiles grow too.
+* **Fonts** sets the font and size of the map, of the text panes beside and
+  below it, and of the overhead map.  A pane's font decides how many rows and
+  columns fit in it, so a larger font shows less of the map.
+* **Colours** offers the game's colours, a high-contrast palette, a palette
+  made for colour-blind players, and your own.  Click a colour in the row of
+  swatches to change it, which makes the palette your own.  The palettes colour
+  the map when it is drawn in letters, the sidebar, the messages, the lists and
+  the health and mana bars.  A tile set keeps the colours of its tiles.
+
+Everything on the Display page takes effect at once, and is kept for the next
+session in ``tk-settings.txt``, in the same user folder as your pref files.
+Display Defaults puts it all back.

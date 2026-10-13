@@ -1582,6 +1582,59 @@ proc help_key_wait {} {
 		catch {destroy .help}
 		set r
 	} 1
+	display_pass
+}
+
+# --- the Display page -------------------------------------------------------
+
+# The front end's own options: the tile size, the panes' fonts and the
+# colours, each kept in the settings.  With a character in play, so that what
+# each asks of the game -- a redraw -- is the real thing.
+proc display_pass {} {
+	check "the tile size changes, and is kept" {
+		set was [angband_tilescale]
+		display_tilescale 2
+		set now [angband_tilescale]
+		settings_load
+		set kept [settings_get display,tilescale 1]
+		display_tilescale $was
+		catch {angband_tilescale 9} e
+		list $now $kept $e
+	} "2 2 {the tile scale runs from 1 to 4}"
+
+	# A pane's cell is its font's: the second cell of the messages pane sits
+	# one character of the new font along, which it does only if the pane was
+	# measured again.
+	check "a pane's font measures the pane again" {
+		set c [lindex $::angband(terms) 1 0]
+		lassign [font configure panefont -family] family
+		set size [font configure panefont -size]
+		display_font panes $family 17
+		update
+		set at [lindex [$c coords [lindex [$c find all] 2]] 0]
+		set want [font measure panefont W]
+		set kept [lindex [settings_get display,font,panes {}] 1]
+		display_font panes $family $size
+		update
+		list [expr {$at == $want}] $kept \
+			[expr {[lindex [$c coords [lindex [$c find all] 2]] 0]
+				== [font measure panefont W]}]
+	} "1 17 1"
+
+	check "a palette changes the game's colours, and the game's come back" {
+		display_palette colourblind
+		update
+		set cb [dict get [concat {*}[angband_palette]] "Light Green"]
+		set bar [ttk::style configure Progresssp.Horizontal.TProgressbar \
+			-background]
+		set kept [settings_get display,palette game]
+		display_palette game
+		update
+		list $cb [expr {$bar eq [dict get [lindex [dict get \
+			[display_palettes] colourblind] 2] mana]}] $kept \
+			[dict get [concat {*}[angband_palette]] "Light Green"]
+	} "{#88f8e0} 1 colourblind #00ff00"
+
 	door_pass
 }
 

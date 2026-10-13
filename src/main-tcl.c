@@ -132,6 +132,7 @@ struct term_data {
 	int cursor_item;
 	int image_item;		/* the tile layer, one canvas image under the text */
 	Tk_PhotoHandle screen;	/* what that image shows */
+	char screen_name[64];	/* the photo's name, to delete it by */
 	bool cursor_visible;
 };
 
@@ -7934,6 +7935,12 @@ static bool tcl_source(const char *name)
  * and Term_pict is simply never called again, because the game stops setting
  * the high bit on the attribute.
  */
+/*
+ * How big a tile is drawn, as a multiple of the smallest: Small, Medium and
+ * Large on the Display page are 1, 2 and 3.
+ */
+static int tile_scale = 1;
+
 static bool graphics_load(graphics_mode *mode)
 {
 	char path[1024];
@@ -7967,16 +7974,17 @@ static bool graphics_load(graphics_mode *mode)
 	use_graphics = mode->grafID;
 
 	/*
-	 * Two cells across, one down, whatever the set.
+	 * Two cells across, one down, whatever the set -- times the tile scale.
 	 *
 	 * The arithmetic is the same for every square tileset: we want the drawn
 	 * tile to be about as wide as it is tall, so cw*tile_width should be near
 	 * ch, and 20/11 rounds to 2 regardless of whether the tile is 8, 16 or 32
 	 * pixels.  The tile's own size only decides how much detail survives the
-	 * scaling.
+	 * scaling.  The scale is the Display page's tile size: 2x2 cells, 4x2,
+	 * 6x3, as the game's other front ends multiply theirs.
 	 */
-	tile_width = 2;
-	tile_height = 1;
+	tile_width = 2 * tile_scale;
+	tile_height = tile_scale;
 
 	return true;
 }
@@ -8165,31 +8173,258 @@ static int objcmd_tileset(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	return TCL_OK;
 }
 
+static void build_cells(term_data *td);
+
 /**
- * Find the tile sets, choose one, and load its sheet.
+ * angband_tilescale ?n? -- read or change how big a tile is drawn: n times
+ * the smallest, two cells across and one down.  1 to 4; the Display page
+ * offers 1, 2 and 3 as Small, Medium and Large.
  *
- * Mode 7 is the Neon set, which is the one this project uses -- it is
- * generated from text shapes rather than drawn, so the sheet is never edited
- * by hand.  Falling back to no graphics rather than failing is deliberate: a
- * missing tile sheet should cost you tiles, not the game.
+ * The game's own setting, tile_width and tile_height, as the other front
+ * ends' tile multipliers are, so the map's layout follows it -- and the
+ * overhead map's with it, which lays itself out by the same two numbers.
+ * Drawn again through do_cmd_redraw, which centres the map for the new size.
+ * Without tiles there is nothing to scale, and the scale waits for a set.
+ */
+static int objcmd_tilescale(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	int n;
+
+	(void)dummy;
+
+	if (objc == 2) {
+		if (Tcl_GetIntFromObj(ip, objv[1], &n) != TCL_OK) return TCL_ERROR;
+		if (n < 1 || n > 4) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"the tile scale runs from 1 to 4", -1));
+			return TCL_ERROR;
+		}
+		tile_scale = n;
+		if (use_graphics != GRAPHICS_NONE) {
+			tile_width = 2 * tile_scale;
+			tile_height = tile_scale;
+			if (character_dungeon) do_cmd_redraw();
+		}
+	} else if (objc != 1) {
+		Tcl_WrongNumArgs(ip, 1, objv, "?scale?");
+		return TCL_ERROR;
+	}
+	Tcl_SetObjResult(ip, Tcl_NewIntObj(tile_scale));
+	return TCL_OK;
+}
+
+/**
+ * angband_refont -- measure every pane again from its font, after the Display
+ * page has changed one.
+ *
+ * A pane's cell is its font's, measured when the pane was made; a font
+ * configured afterwards would draw its letters at the new size in the old
+ * cells.  So each pane is measured again, its cells rebuilt for however many
+ * now fit its canvas, the game told the new size, and everything drawn again.
+ */
+static int objcmd_refont(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	int i;
+
+	(void)dummy;
+	(void)objv;
+
+	if (objc != 1) {
+		Tcl_WrongNumArgs(ip, 1, objv, "");
+		return TCL_ERROR;
+	}
+
+	for (i = 0; i < td_count; i++) {
+		term_data *t = &td[i];
+		int cw = 0, ch = 0, w = 0, h = 0, cols, rows;
+		Tcl_Obj *q = Tcl_ObjPrintf("list [font measure %s W]"
+				" [font metrics %s -linespace]"
+				" [winfo width %s] [winfo height %s]",
+				t->font, t->font, t->path, t->path);
+		Tcl_Obj **e;
+		Tcl_Size ne;
+
+		Tcl_IncrRefCount(q);
+		if (Tcl_EvalObjEx(ip, q, TCL_EVAL_GLOBAL) == TCL_OK
+				&& Tcl_ListObjGetElements(NULL, Tcl_GetObjResult(ip), &ne, &e)
+					== TCL_OK && ne == 4) {
+			Tcl_GetIntFromObj(NULL, e[0], &cw);
+			Tcl_GetIntFromObj(NULL, e[1], &ch);
+			Tcl_GetIntFromObj(NULL, e[2], &w);
+			Tcl_GetIntFromObj(NULL, e[3], &h);
+		}
+		Tcl_DecrRefCount(q);
+		if (cw <= 0 || ch <= 0) continue;
+
+		cols = w / cw;
+		rows = h / ch;
+		if (t == &td[0]) {
+			if (cols < 80) cols = 80;
+			if (rows < 24) rows = 24;
+		} else {
+			if (cols < 1) cols = 1;
+			if (rows < 1) rows = 1;
+		}
+
+		t->cw = cw;
+		t->ch = ch;
+		t->cols = cols;
+		t->rows = rows;
+		build_cells(t);
+		{
+			term *old = Term;
+
+			Term_activate(&t->t);
+			Term_resize(cols, rows);
+			Term_activate(old);
+		}
+	}
+
+	/* Everything again, in every pane: the map, the sidebar, the lists. */
+	do_cmd_redraw();
+	Tcl_ResetResult(ip);
+	return TCL_OK;
+}
+
+/**
+ * angband_palette -- the game's colours, by name.
+ *
+ *    angband_palette                 {name #rrggbb} for each of the game's
+ *                                    named colours, in the game's order
+ *    angband_palette set {name #rrggbb ...}
+ *                                    change some, and draw everything again
+ *
+ * The game's own colour table, which its pref files' color: lines change
+ * too, so a palette from the Display page is the same thing those are --
+ * and it colours the map in letters, the sidebar, the messages and the
+ * lists, and the numbers the Progress strip reads from the game.  Tiles have
+ * their colours in the sheet and keep them.
+ */
+static int objcmd_palette(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	int i;
+
+	(void)dummy;
+
+	if (objc == 1) {
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+		/* The named ones: Shade, the last basic colour, has no name. */
+		for (i = 0; i < BASIC_COLORS && color_table[i].name[0]; i++) {
+			Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+
+			Tcl_ListObjAppendElement(ip, row,
+					Tcl_NewStringObj(color_table[i].name, -1));
+			Tcl_ListObjAppendElement(ip, row, Tcl_ObjPrintf("#%02x%02x%02x",
+					angband_color_table[i][1], angband_color_table[i][2],
+					angband_color_table[i][3]));
+			Tcl_ListObjAppendElement(ip, list, row);
+		}
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	if (objc == 3 && streq(Tcl_GetString(objv[1]), "set")) {
+		Tcl_Obj **e;
+		Tcl_Size ne, k;
+
+		if (Tcl_ListObjGetElements(ip, objv[2], &ne, &e) != TCL_OK)
+			return TCL_ERROR;
+		if (ne % 2) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"expected name colour pairs", -1));
+			return TCL_ERROR;
+		}
+		/* Every pair checked before any is applied: all or nothing. */
+		for (k = 0; k < ne; k += 2) {
+			const char *name = Tcl_GetString(e[k]);
+			const char *hex = Tcl_GetString(e[k + 1]);
+			unsigned int r, g, b;
+			char tail;
+
+			for (i = 0; i < BASIC_COLORS && color_table[i].name[0]; i++)
+				if (my_stricmp(name, color_table[i].name) == 0) break;
+			if (i == BASIC_COLORS || !color_table[i].name[0]) {
+				Tcl_SetObjResult(ip, Tcl_ObjPrintf("no such colour: %s",
+						name));
+				return TCL_ERROR;
+			}
+			if (sscanf(hex, "#%02x%02x%02x%c", &r, &g, &b, &tail) != 3
+					|| strlen(hex) != 7) {
+				Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+						"not a colour: %s -- expected #rrggbb", hex));
+				return TCL_ERROR;
+			}
+		}
+		for (k = 0; k < ne; k += 2) {
+			const char *name = Tcl_GetString(e[k]);
+			unsigned int r = 0, g = 0, b = 0;
+
+			for (i = 0; i < BASIC_COLORS && color_table[i].name[0]; i++)
+				if (my_stricmp(name, color_table[i].name) == 0) break;
+			sscanf(Tcl_GetString(e[k + 1]), "#%02x%02x%02x", &r, &g, &b);
+			angband_color_table[i][1] = (uint8_t)r;
+			angband_color_table[i][2] = (uint8_t)g;
+			angband_color_table[i][3] = (uint8_t)b;
+		}
+		colours_init();
+		if (character_dungeon) do_cmd_redraw();
+		return TCL_OK;
+	}
+
+	Tcl_WrongNumArgs(ip, 1, objv, "?set {name colour ...}?");
+	return TCL_ERROR;
+}
+
+static bool tcl_get_int(const char *name, int *out);
+
+/**
+ * Find the tile sets.  Before main.tcl, which lists them in its menus.
+ */
+static bool graphics_modes_known = false;
+
+static void graphics_modes_init(void)
+{
+	graphics_modes_known = init_graphics_modes();
+	if (!graphics_modes_known)
+		plog("Tcl/Tk: no graphics modes; running without tiles.");
+}
+
+/**
+ * Load the set main.tcl asked for, and at the size it asked for.
+ *
+ * Those are the player's choices from the Display page, kept in the front
+ * end's settings and read by main.tcl into angband(graphics) and
+ * angband(tilescale).  Without them it is mode 7, the Neon set, which is the
+ * one this project uses -- it is generated from text shapes rather than
+ * drawn, so the sheet is never edited by hand.  Falling back to Neon and then
+ * to no graphics rather than failing is deliberate: a missing tile sheet
+ * should cost you tiles, not the game.
  */
 static void graphics_init(void)
 {
-	graphics_mode *mode;
+	graphics_mode *mode = NULL;
+	int want = 7, scale = 1;
 
-	if (!init_graphics_modes()) {
-		plog("Tcl/Tk: no graphics modes; running without tiles.");
+	if (tcl_get_int("tilescale", &scale) && scale >= 1 && scale <= 4)
+		tile_scale = scale;
+	if (!graphics_modes_known) return;
+	tcl_get_int("graphics", &want);
+
+	if (want == GRAPHICS_NONE) {
+		graphics_load(NULL);
 		return;
 	}
-
-	mode = get_graphics_mode(7);
-	if (!mode) {
-		plog("Tcl/Tk: the Neon tile set is not installed; running without tiles.");
-		return;
-	}
-
-	if (!graphics_load(mode)) {
-		plog("Tcl/Tk: running without tiles.");
+	mode = get_graphics_mode((uint8_t)want);
+	if (!mode || !graphics_load(mode)) {
+		mode = get_graphics_mode(7);
+		if (!mode || !graphics_load(mode)) {
+			plog("Tcl/Tk: running without tiles.");
+			graphics_load(NULL);
+		}
 	}
 }
 
@@ -8226,6 +8461,22 @@ static void build_cells(term_data *td)
 	td->item = mem_zalloc(td->cols * td->rows * sizeof(int));
 
 	/*
+	 * The last build's photo goes with its canvas item.  It used to be left
+	 * behind: deleting the item does not delete the image, so every resize
+	 * kept a photo the size of the pane -- megabytes for the map, and a drag
+	 * resizes many times.
+	 */
+	if (td->screen_name[0]) {
+		Tcl_Obj *gone = Tcl_ObjPrintf("image delete %s", td->screen_name);
+
+		Tcl_IncrRefCount(gone);
+		Tcl_EvalObjEx(interp, gone, TCL_EVAL_GLOBAL);
+		Tcl_DecrRefCount(gone);
+		td->screen_name[0] = '\0';
+		td->screen = NULL;
+	}
+
+	/*
 	 * The tile layer: one photo the size of the grid, shown by one canvas
 	 * image item, created before the text items so that it sits underneath
 	 * all of them.  Tiles are blitted into the photo rather than becoming
@@ -8244,6 +8495,7 @@ static void build_cells(term_data *td)
 
 			my_strcpy(name, Tcl_GetStringResult(interp), sizeof(name));
 			td->screen = Tk_FindPhoto(interp, name);
+			my_strcpy(td->screen_name, name, sizeof(td->screen_name));
 
 			item = Tcl_ObjPrintf("%s create image 0 0 -anchor nw -image %s",
 					td->path, name);
@@ -8500,9 +8752,15 @@ static bool terms_init(void)
 	 * an empty menu rather than an error.
 	 */
 	colours_init();
-	graphics_init();
+	graphics_modes_init();
 
 	if (!tcl_source("main.tcl")) return false;
+
+	/* The set the player chose, which main.tcl has read from the settings. */
+	graphics_init();
+	Tcl_SetVar2Ex(interp, "angband", "tileset", Tcl_NewIntObj(
+			current_graphics_mode ? current_graphics_mode->grafID : 0),
+			TCL_GLOBAL_ONLY);
 
 	if (!tcl_get_int("cellw", &cw) || !tcl_get_int("cellh", &ch)
 			|| cw <= 0 || ch <= 0) {
@@ -8756,6 +9014,12 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_dump", objcmd_dump, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_path", objcmd_path, NULL, NULL);
 	Tcl_CreateObjCommand2(interp, "angband_version", objcmd_version, NULL,
+			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_tilescale", objcmd_tilescale, NULL,
+			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_refont", objcmd_refont, NULL,
+			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_palette", objcmd_palette, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_choice", objcmd_choice, NULL,
 			NULL);

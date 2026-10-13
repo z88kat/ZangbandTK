@@ -417,6 +417,10 @@ T	p0	, then
 T	p0 code	c
 T	p0	) allows you to change how different colours are displayed. Depending on what kind of computer you have, this may or may not have any effect.
 T	p0	\n
+T	p0	In the Tcl/Tk front end, the Display page of the Options window has ready-made palettes as well, among them one made for colour-blind players; see 
+L	p0 link	12	#tcl-tk	Tcl/Tk
+T	p0	.
+T	p0	\n
 T	p0	The interface is quite clunky. You can move through the colours using 
 T	p0 code	n
 T	p0	 for ‘next colour’ and 
@@ -449,14 +453,16 @@ M	id4
 T	h2	Interface details
 T	h2	\n
 T	p0	Some aspects of how the game is presented, notably the font, window placement and graphical tile set, are controlled by the front end, rather than the core of the game itself. Each front end has its own mechanism for setting those details and recording them between game sessions. Below are brief descriptions for what you can configure with the standard 
-L	p0 link	12	#windows	Windows
+L	p0 link	13	#windows	Windows
 T	p0	, 
-L	p0 link	13	#x11	X11
+L	p0 link	14	#x11	X11
 T	p0	, 
-L	p0 link	14	#sdl2	SDL2
+L	p0 link	15	#sdl2	SDL2
 T	p0	 and 
-L	p0 link	15	#mac	Mac
-T	p0	 front ends.
+L	p0 link	16	#mac	Mac
+T	p0	 front ends, and with the 
+L	p0 link	17	#tcl-tk	Tcl/Tk
+T	p0	 one.
 T	p0	\n
 M	windows
 T	h3	Windows
@@ -464,7 +470,7 @@ T	h3	\n
 T	p0	With the Windows front end, the game, by default, displays several of the the subwindows and uses David Gervais’s graphical tiles to display the map. You can close a subwindow with the standard close control on the window’s upper right corner. Closing the main window with the standard control causes the game to save its current state and then exit. You can reopen or also close a subwindow via the “Visibility” menu, the first entry in the “Window” menu for the main window. To move a window, use the standard procedure: position the mouse pointer on the window’s title bar and then click and drag the mouse to change the window’s position. Click and drag on the edges or corners of a window to change its size. To select the font for a window, use the “Font” menu, the second entry in the “Window” menu for the main window.
 T	p0	\n
 T	p0	The “Term Options” entry in the “Window” menu for the main window is a shortcut to access the core game’s method for selecting the contents of the subwindows. You can read more about that in 
-L	p0 link	16	#id2	Showing extra info in subwindows
+L	p0 link	18	#id2	Showing extra info in subwindows
 T	p0	. The “Reset Layout” will rearrange the windows to conform with the current size and will have a similar result to what you would get from restarting the Windows interface without a preset configuration.
 T	p0	\n
 T	p0	The “Bizarre Display” entry in the “Window” menu allows to toggle on or off an alternate text display algorithm for each window. That was added for compatibility with Windows Vista and later. The default setting, on, should likely be used, unless text display is garbled on your system and the off setting allows text to be displayed properly.
@@ -511,13 +517,13 @@ T	p0	\n
 T	p0	At the end of the menu bar are two toggle buttons labeled “Move” and “Size”. When the rectangle next to “Move” is empty, the positions of the subwindows are fixed in place. Clicking “Move” in that state will turn it on, turn off “Size”, disable input to the game’s core, and cause clicks and drags within the displayed to change the positions of those windows. Clicking “Move” when it is on will turn it off and restore passing input to the game’s core. When the rectangle next to “Size” is empty, the size of the subwindows are fixed. Clicking “Size” in that state will turn it on, turn off “Move”, disable input to the game’s core, and cause clicks and drags withing the displayed windows to change the sizes for those subwindows. Clicking “Size” when it is on will turn it off and restore passing input to the game’s core.
 T	p0	\n
 T	p0	Within “Menu”, the first entries control properties for each of the displayed terminal windows within that application window. For the main window, you can set the font, graphical tile set, whether the window is shown with borders or not, and whether or not the window will be shown on top of the other windows. For subwindows, you can set the font, the purpose (which is a shortcut for enabling the subwindow content as described in 
-L	p0 link	17	#id2	Showing extra info in subwindows
+L	p0 link	19	#id2	Showing extra info in subwindows
 T	p0	), the opaqueness (“alpha”) of the window, whether the window is shown with borders or not, and whether or not the window will be shown on top of the other windows.
 T	p0	\n
 T	p0	Below the entries for the contained terminal windows, is an entry, “Fullscreen” for toggling fullscreen mode for that application window. That entry will display a filled rectangle at the end of the entry when fullscreen mode is on and an empty rectangle when fullscreen mode is off.
 T	p0	\n
 T	p0	In the primary application window which contains the main window, there is an entry, “Send Keypad Modifier”, after that for whether key strokes from the numeric keypad will be sent to the game with the keypad modifier set. That entry will have an empty rectangle at the end when the modifier is not sent and a filled rectangle when the modifier is sent. Sending the modifier allows some predefined keymaps to work, for instance shift with 8 from the numeric keypad to run north, at the cost of compatibility issues with some keyboard layouts that differ from the standard English keyboard layout for which normal keys have equivalents on the numeric keypad. 
-L	p0 link	18	https://github.com/angband/angband/issues/4522	https://github.com/angband/angband/issues/4522
+L	p0 link	20	https://github.com/angband/angband/issues/4522	https://github.com/angband/angband/issues/4522
 T	p0	 has an example of the problems that can be avoided by not sending the keypad modifier.
 T	p0	\n
 T	p0	Below “Send Keypad Modifier” in the primary application window’s “Menu” is “Menu Shortcuts…”. That allows you to set a keystroke to transfer control to a window’s menu. By default, no such keystrokes are defined. That avoids potential conflicts with any keymaps you may have. While in the menus, keystrokes can be used for navigation. The in-game horizontal and vertical movement keys will work to move between controls as will Tab (to go to the “next” control) and Shift-Tab (to go to the previous control). Enter will activate a menu item if it can be activated. Trying to descend further into the menus with the in-game movement keys will also activate if a menu item if it is as deep as you can go. Below “Menu Shortcuts…” is “Windows”: use that to bring up or hide one of the additional application windows.
@@ -527,14 +533,14 @@ T	p0	\n
 T	p0	When you leave the game, the current settings for the SDL interface are saved as 
 T	p0 code	sdl2init.txt
 T	p0	 in the same directory as is used for preference files, see 
-L	p0 link	19	#id1	User Pref Files
+L	p0 link	21	#id1	User Pref Files
 T	p0	 for details. Those settings will be automatically reloaded the next time you start the SDL2 interface.
 T	p0	\n
 M	mac
 T	h3	Mac
 T	h3	\n
 T	p0	With the Mac-specific front end, you can use Apple’s standard mechanisms to control window placement: click and drag on a window’s title bar to move it, click and drag on a window’s edge or corner to change the window’s dimensions, and click the red button at the top left corner of a subwindow to close it. To reopen a subwindow that you closed, use the Window menu from the Mac’s menu bar while the game is the active application and select the entry near the bottom of that menu that corresponds to the subwindow you want to see. For a subwindow’s entry to be enabled in the Window menu, that subwindow must be configured to display at least one category of information: see 
-L	p0 link	20	#id2	Showing extra info in subwindows
+L	p0 link	22	#id2	Showing extra info in subwindows
 T	p0	 for details.
 T	p0	\n
 T	p0	To change the font for a window, click on the window’s title bar and select “Edit Font” from the Settings menu in the Mac’s menu bar. That will open a dialog which displays the family, typeface and size for the current font. Changing the selection for any of those will change the font in the window.
@@ -547,4 +553,31 @@ T	p0	 within your user directory. If you suspect those settings have been corrup
 T	p0	\n
 T	pre0 prelast	defaults delete org.zangbandtk.zangbandtk\n
 T	p0	to clear the contents of the preferences file and any cached preferences that may be retained in memory.
+T	p0	\n
+M	tcl-tk
+T	h3	Tcl/Tk
+T	h3	\n
+T	p0	The Tcl/Tk front end, 
+T	p0 code	ZangbandTKGUI.app
+T	p0	, keeps the map and its panes in one window. Drag the dividers between the panes to change their sizes. How the window draws is set on the Display page of the Options window (Other ▸ Preferences ▸ Options, or Preferences in the application menu):
+T	p0	\n
+T	li1	•\t
+T	li1 strong	Tile set
+T	li1	 chooses the graphical tiles, or None to draw the map in letters.
+T	li1	\n
+T	li1	•\t
+T	li1 strong	Tile size
+T	li1	 draws the map’s tiles Small, Medium or Large. The overhead map uses the same size, so its tiles grow too.
+T	li1	\n
+T	li1	•\t
+T	li1 strong	Fonts
+T	li1	 sets the font and size of the map, of the text panes beside and below it, and of the overhead map. A pane’s font decides how many rows and columns fit in it, so a larger font shows less of the map.
+T	li1	\n
+T	li1	•\t
+T	li1 strong	Colours
+T	li1	 offers the game’s colours, a high-contrast palette, a palette made for colour-blind players, and your own. Click a colour in the row of swatches to change it, which makes the palette your own. The palettes colour the map when it is drawn in letters, the sidebar, the messages, the lists and the health and mana bars. A tile set keeps the colours of its tiles.
+T	li1	\n
+T	p0	Everything on the Display page takes effect at once, and is kept for the next session in 
+T	p0 code	tk-settings.txt
+T	p0	, in the same user folder as your pref files. Display Defaults puts it all back.
 T	p0	\n

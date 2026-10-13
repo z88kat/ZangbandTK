@@ -15,19 +15,26 @@
 #
 #   $angband(cellw) $angband(cellh)   one cell, in pixels
 #
-# The font is created here, not in C, so that changing it is a one-line edit in
-# a data file -- and the cell size is measured from whatever this creates
-# rather than assumed anywhere, so a different family or size changes the look
-# and never the alignment.
+# The fonts are created here, not in C, and the cell size is measured from
+# whatever this creates rather than assumed anywhere, so a different family or
+# size changes the look and never the alignment.
+#
+# Three of them, from the Display page (display.tcl) by way of the front end's
+# settings, which have to be read first: termfont for the map, panefont for the
+# text panes beside it, and minimapfont, a smaller one, for the overhead map.
+# A pane's cell size comes from its font, and the overhead map wants small
+# cells: more of them fit, so more of the level fits, and the tiles drawn into
+# them are correspondingly smaller.  That is what makes it a map of the level
+# rather than a second view of the corner the player is standing in.
+source [file join [file dirname [info script]] settings.tcl]
+source [file join [file dirname [info script]] display.tcl]
+display_fonts_create
 
-font create termfont -family Menlo -size 13
-
-# A second, smaller font for the minimap.  A pane's cell size comes from its
-# font, and the minimap wants small cells: more of them fit, so more of the
-# level fits, and the tiles drawn into them are correspondingly smaller.  That
-# is what makes it a map of the level rather than a second view of the corner
-# the player is standing in.
-font create minimapfont -family Menlo -size 7
+# The tile set and its size, for main-tcl.c to load once this has run; and
+# the colours, before anything is drawn in them.
+set angband(graphics) [settings_get display,tileset 7]
+set angband(tilescale) [settings_get display,tilescale 1]
+display_palette_start
 
 set angband(cellw) [font measure termfont "W"]
 set angband(cellh) [font metrics termfont -linespace]
@@ -157,8 +164,8 @@ update
 # it is how a pane ends up denser or coarser than its neighbours.
 set angband(terms) [list \
     [list $map.c      map       termfont] \
-    [list $messages.c messages  termfont] \
-    [list $recall.c   recall    termfont] \
+    [list $messages.c messages  panefont] \
+    [list $recall.c   recall    panefont] \
     [list $overhead.c minimap   minimapfont]]
 
 # The menu bar.  The game's menus -- File, Inventory, Action, Other -- are
@@ -254,7 +261,6 @@ proc tkAboutDialog {} { about_window }
 # person can read instead of on the stderr Tk has already closed.
 source [file join [file dirname [info script]] errorInfo.tcl]
 source [file join [file dirname [info script]] debug.tcl]
-source [file join [file dirname [info script]] settings.tcl]
 source [file join [file dirname [info script]] accel.tcl]
 source [file join [file dirname [info script]] portrait.tcl]
 
@@ -287,6 +293,7 @@ proc angband_choose_tileset {id} {
         set angband(tileset) [angband_tileset]
         return
     }
+    settings_set display,tileset $id
     # The windows that show a tile of their own -- the Character window's
     # portrait, the tombstone -- draw it again from the new set.
     event generate . <<TilesChanged>> -when tail

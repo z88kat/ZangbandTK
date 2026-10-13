@@ -68,10 +68,12 @@ set character(pages) {
 set character(page) info
 
 # The three bars: {name label field colour}.
+# The bars' colours are roles in the palette chosen on the Display page
+# (display_role): the hit point bar's changes with how many are left.
 set character(bars) {
-    hp   "Hit points" hitpoints  #38a038
-    sp   "Mana"       mana       #4060d0
-    xp   "Experience" next_level #c09020
+    hp   "Hit points" hitpoints  good
+    sp   "Mana"       mana       mana
+    xp   "Experience" next_level exp
 }
 
 # When to read again.  The handful of events that can move a field, rather than
@@ -147,7 +149,7 @@ proc character_refresh {} {
     }
 
     # The bars.  A maximum of zero is an empty bar, never a full one.
-    foreach {name label field colour} $character(bars) {
+    foreach {name label field role} $character(bars) {
         lassign [expr {$have ? [dict get $v $field] : {0 0}}] now most
         set character(v,$name) [expr {$have ? "$now / $most" : $character(dash)}]
         $w.top.cond.p$name configure -maximum [expr {$most > 0 ? $most : 1}] \
@@ -192,16 +194,16 @@ proc character_portrait {} {
 proc character_hp_colour {v} {
     global character
 
-    set colour #38a038
+    set colour [display_role good]
     if {[dict size $v]} {
         lassign [dict get $v hitpoints] now most
         if {[catch {angband_option hitpoint_warn} warn]} { set warn 0 }
         if {$now >= $most} {
-            set colour #38a038
+            set colour [display_role good]
         } elseif {$now > $most * $warn / 10} {
-            set colour #c8a000
+            set colour [display_role fair]
         } else {
-            set colour #c03030
+            set colour [display_role poor]
         }
     }
 
@@ -553,9 +555,9 @@ proc character_window {} {
     set cond $w.top.cond
     ttk::labelframe $cond -text Condition -padding 8
     set r 0
-    foreach {name label fieldname colour} $character(bars) {
+    foreach {name label fieldname role} $character(bars) {
         set style [expr {$name eq "hp" ? "HP" : [string toupper $name]}].Horizontal.TProgressbar
-        ttk::style configure $style -background $colour
+        ttk::style configure $style -background [display_role $role]
         set character(v,$name) $character(dash)
         ttk::label $cond.l$name -text "$label:" -font {Helvetica 12}
         ttk::progressbar $cond.p$name -style $style -length 160
@@ -700,3 +702,16 @@ foreach event $character(events) {
     bind . <<Angband_$event>> {+ character_refresh }
 }
 bind . <<TilesChanged>> {+ character_portrait }
+
+# A new palette: the bars in its colours, and the hit point bar worked out
+# again in them.
+bind . <<PaletteChanged>> {+
+    foreach {name label field role} $character(bars) {
+        if {$name ne "hp"} {
+            ttk::style configure [string toupper $name].Horizontal.TProgressbar \
+                -background [display_role $role]
+        }
+    }
+    unset -nocomplain character(hpcolour)
+    if {[winfo exists .character]} { character_refresh }
+}

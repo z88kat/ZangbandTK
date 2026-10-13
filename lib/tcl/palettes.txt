@@ -1,0 +1,86 @@
+# The palettes on the Options window's Display page, besides the game's own.
+#
+# A palette gives the game's named colours new values -- the colours the map is
+# drawn in when it is drawn in letters, the sidebar, the messages, the lists --
+# and the front end's own roles: the health bar's good, fair and poor, and the
+# mana, food and experience bars.  A colour a palette leaves out keeps the
+# game's value.  Tile sets have their colours in their sheets and keep them.
+#
+# Checked by scripts/palettes/check-palettes.py, which fails when a palette
+# loses a difference the game gives a meaning to: hit points going from green
+# to yellow to red, good and bad effects, a monster's health bar.  The
+# colour-blind palette is checked under simulated protanopia, deuteranopia and
+# tritanopia too.  Change a colour here, run that, and look at the result in
+# the game -- the numbers say whether a pair can be told apart, not whether
+# the palette is pleasant.
+#
+#   palette  <key>  <label>
+#   colour   <the game's name>  #rrggbb
+#   role     good|fair|poor|mana|food|exp  #rrggbb
+#
+# Fields are separated by tabs.
+
+palette	contrast	High contrast
+colour	White	#ffffff
+colour	Slate	#a8a8a8
+colour	Orange	#ff8c1a
+colour	Red	#ff3030
+colour	Green	#2bbf5a
+colour	Blue	#5c82ff
+colour	Umber	#c8843c
+colour	Light Dark	#8c8c8c
+colour	Light Slate	#d8d8d8
+colour	Light Purple	#ff66ff
+colour	Yellow	#ffff40
+colour	Light Red	#ff8a8a
+colour	Light Green	#7dff7d
+colour	Light Blue	#66ffff
+colour	Light Umber	#e0a868
+colour	Purple	#d65ad6
+colour	Violet	#a070ff
+colour	Teal	#20c0c0
+colour	Mud	#a8a85a
+colour	Light Yellow	#ffffb0
+colour	Magenta-Pink	#ff4fc0
+colour	Light Teal	#60ffe0
+colour	Light Violet	#c8baff
+colour	Light Pink	#ffb4cc
+colour	Mustard	#d8d830
+colour	Blue Slate	#b8d0e0
+colour	Deep Light Blue	#40c0ff
+role	good	#3cc864
+role	fair	#ffd21a
+role	poor	#ff4040
+role	mana	#5a82ff
+role	food	#c86060
+role	exp	#f0b030
+
+palette	colourblind	Colour-blind safe
+colour	Red	#a83c00
+colour	Light Red	#f850a0
+colour	Orange	#e69f00
+colour	Yellow	#fff060
+colour	Light Yellow	#fff8a8
+colour	Green	#007058
+colour	Light Green	#88f8e0
+colour	Blue	#3a7ad8
+colour	Light Blue	#88d0f8
+colour	Teal	#00a8c0
+colour	Light Teal	#7af0f0
+colour	Umber	#a0682c
+colour	Light Umber	#d0a060
+colour	Mud	#8c8c48
+colour	Mustard	#c8b400
+colour	Purple	#b058b0
+colour	Light Purple	#e090e0
+colour	Magenta-Pink	#cc79a7
+colour	Light Pink	#f0b0c8
+colour	Violet	#8a62e8
+colour	Light Violet	#c0b0ff
+colour	Deep Light Blue	#3098ff
+role	good	#56b4e9
+role	fair	#f0e442
+role	poor	#d55e00
+role	mana	#8a62e8
+role	food	#a0682c
+role	exp	#e69f00

@@ -1825,9 +1825,9 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 > - **A page's defaults**: saved for new characters, restored from them, or reset to the
 >   game's own — the options screen's s, r and x — with birth restore and reset only while a
 >   character is being made, as there.
->   e
->   Still to come from the list above: tile size, pane fonts and the palette on the Display
->   page, and the item-ignoring and auto-inscription setups, which are still the game's screens.
+>
+>   Still to come from the list above: the item-ignoring and auto-inscription setups, which
+>   are still the game's screens. The Display page is done — see its note below.
 
 > **Choosing a character, and the death flow — first cut, 12 October 2026.** The native
 > launcher promised for T9 under T1, and the Tomb window, as views of the game's own screens
@@ -2005,6 +2005,37 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 >   as Rangers — the game's own class then is only the last in its list, and a Ranger wears
 >   nothing on its head. Rolling again rolls the height and weight, so a reroll can turn a man
 >   into a woman: the picture is always the one the character would have if made then.
+
+> **The Display page, 13 October 2026.** The Options window's Display tab
+> ([display.tcl](../../lib/tcl/display.tcl)) is the front-end option table OBS-34 asked for: the
+> tile set, the tile size, the panes' fonts and the colours, each in the front end's settings
+> and put back at the start of every session — the tile set too, which until now went back to
+> Neon every time. Every change shows at once in the main window, the only honest preview.
+>
+> - **Tile size** is the game's own tile_width × tile_height, as the other front ends multiply
+>   theirs: Small, Medium and Large are 2×1, 4×2 and 6×3 cells (`angband_tilescale`). The
+>   overhead map lays itself out by the same two numbers, so it coarsens with the map; its own
+>   font is what makes its cells smaller again.
+> - **Fonts**, per OBS-30, are per area and next to the tile size, because a term pane's font is
+>   its grid: the map's, the text panes' (messages, recall, the Choice pane and the Progress
+>   strip, now `panefont`) and the overhead map's. Only fixed-width families are offered.
+>   Changing one re-measures every pane (`angband_refont`) — cells were measured once, when a
+>   pane was made. The windows' own text is not yet adjustable.
+> - **Colours**, per OBS-29: the game's palette, High contrast, Colour-blind safe and the
+>   player's own, with the game's twenty-eight colours as swatches, any of which can be clicked
+>   to change. A palette is the game's colour table (`angband_palette`) plus the front end's
+>   roles — the health bar's good, fair and poor, and the mana, food and experience bars — so
+>   the semantic slots OBS-29 asked for are named and not hard-coded. The palettes are in
+>   [palettes.txt](../../lib/tcl/palettes.txt) and **validated** by
+>   [check-palettes.py](../../scripts/palettes/check-palettes.py), which the Tk workflow runs:
+>   WCAG contrast on black (4.5:1 for High contrast), the pairs the game gives a meaning to kept
+>   12 CIEDE2000 apart — under simulated protanopia, deuteranopia and tritanopia too, for the
+>   colour-blind palette (Machado 2009) — and nothing the game separates merged. The game's own
+>   palette falls to 2.5 (Green and Light Red, protanopia); the colour-blind one's worst is 14.
+> - **A tile set keeps its colours**: they are in its sheet. Neon's ten hues could be recoloured
+>   as the sheet loads, but a colour-blind Neon is a design of its own and is not done.
+> - **A leak found on the way**: every pane rebuild left its old tile photo behind, megabytes a
+>   resize. `build_cells` deletes it now.
 
 ---
 

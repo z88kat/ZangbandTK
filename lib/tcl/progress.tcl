@@ -17,14 +17,15 @@
 set progress(exp) total
 set progress(pending) 0
 
-# {meter label bar-colour}: the original's red, blue and dark red, and the
-# Character window's gold for experience.  Hit points change with how many are
-# left -- see progress_refresh.
+# {meter label role}: the bar's colour, a role in the palette chosen on the
+# Display page (display_role) -- in the game's palette the original's blue and
+# dark red, and the Character window's gold for experience.  Hit points change
+# with how many are left -- see progress_hp_colour.
 set progress(meters) {
-    hp   HP  #d03030
-    sp   SP  #3050d0
-    food FD  #a04848
-    exp  EXP #c09020
+    hp   HP  good
+    sp   SP  mana
+    food FD  food
+    exp  EXP exp
 }
 
 proc progress_frame {} { return .pw.top.side.progress }
@@ -33,13 +34,14 @@ proc progress_build {} {
     global progress
 
     set f [progress_frame]
-    foreach {meter label colour} $progress(meters) {
+    foreach {meter label role} $progress(meters) {
         set style Progress$meter.Horizontal.TProgressbar
-        ttk::style configure $style -background $colour -troughcolor #c0c0c0 \
+        ttk::style configure $style -background [display_role $role] \
+            -troughcolor #c0c0c0 \
             -borderwidth 1
-        label $f.l$meter -text $label -font termfont -anchor w \
+        label $f.l$meter -text $label -font panefont -anchor w \
             -background black -foreground white
-        label $f.v$meter -font termfont -anchor e -width 8 \
+        label $f.v$meter -font panefont -anchor e -width 8 \
             -background black -foreground white
         ttk::progressbar $f.b$meter -style $style -orient horizontal \
             -mode determinate -length 80
@@ -86,7 +88,7 @@ proc progress_refresh {} {
     if {![winfo exists $f.lhp]} return
 
     if {[catch {angband_player meters} meters]} {
-        foreach {meter label colour} $progress(meters) {
+        foreach {meter label role} $progress(meters) {
             $f.v$meter configure -text ""
             $f.b$meter configure -value 0
         }
@@ -121,8 +123,8 @@ proc progress_refresh {} {
 proc progress_hp_colour {state} {
     global progress
 
-    set colour [dict get {good #38a038 fair #c8a000 poor #c03030} \
-        [expr {$state in {good fair poor} ? $state : "good"}]]
+    set colour [display_role [expr {$state in {good fair poor} ? $state : "good"}]]
+    set progress(hpstate) $state
     # Only when it changes: configuring a style redraws every widget using it.
     if {[info exists progress(hpcolour)] && $progress(hpcolour) eq $colour} return
     set progress(hpcolour) $colour
@@ -155,4 +157,17 @@ after idle progress_fit
 foreach event {HP MANA EXPERIENCE PLAYERLEVEL STATUS REFRESH
         ENTER_GAME LEAVE_BIRTH ENTER_WORLD} {
     bind . <<Angband_$event>> {+ progress_schedule }
+}
+
+# A new palette: the bars in its colours.
+bind . <<PaletteChanged>> {+
+    foreach {meter label role} $progress(meters) {
+        if {$meter ne "hp"} {
+            ttk::style configure Progress$meter.Horizontal.TProgressbar \
+                -background [display_role $role]
+        }
+    }
+    unset -nocomplain progress(hpcolour)
+    progress_hp_colour [expr {[info exists progress(hpstate)]
+        ? $progress(hpstate) : "good"}]
 }
