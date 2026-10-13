@@ -7307,3 +7307,116 @@ the new default is a different economy: it sells its finds and picks up a fifth
 of the gold. A move in the nightly sweep against `tests/borg/BASELINE` after
 this change may be this and not a regression, and should be read that way
 before anything is retuned.
+
+---
+
+**DEC-136 — The Tcl/Tk front end code review: five items, five dispositions,
+and two of them were not the defect they were reported as.** (Front end.
+Reviewed against `71f960b5d`; built, run and measured on macOS, which the
+reviewing session could not do.)
+
+Five findings came from a session that could not build or commit. Each was
+verified here before being fixed, and two turned out to be a different defect
+from the one reported. All five are fixed; a sixth was found while verifying
+the fourth.
+
+**1. plog went to /dev/null (fixed, 3.124.40).** `plog_aux` is set by
+`main-win.c` and `main-nds.c` and was never set here, so all 23 `plog` and
+`plog_fmt` sites fell through to a labelled `fprintf` to a stderr Tk points at
+`/dev/null` for a bundled application. Routed into `lib/tcl/errorInfo.tcl`,
+which buffers records made before its window exists -- the case that matters,
+since almost everything `plog` says happens during startup. stderr is still
+written for a terminal run. **One correction to the report:** the
+`<<Angband_*>>` site at `:1255` was never silent. It calls
+`Tcl_BackgroundException` first, which reaches the sink; the `plog_fmt` beside
+it is a deliberate second channel for terminal runs and its comment says so.
+
+**2. `command_inside` (hardened, 3.124.41 -- not a defect).** Said plainly
+because the review called it one: none of the five sites can leak the flag.
+Every one is entered through a `command_may_start()` check so they cannot
+nest, there is no `setjmp` or `longjmp` anywhere in the game source, and no
+early return sits between any set and its clear. No path leaves it set. It was
+still worth closing, because the failure mode if one ever did is silent and
+permanent -- every menu command, gear action and book command refused for the
+rest of the process, with no message anywhere -- and an invariant whose breach
+cannot be noticed should not be maintained by hand in five places. The clear is
+now attached to the scope with `__attribute__((cleanup))`, and a missing
+attribute is a hard `#error` rather than the silent no-op `ATTRIBUTE()` gives.
+
+**3. Seven unfailable bridge checks (fixed, 3.124.42).** `$expected ne "" &&`
+in `check` skipped the comparison whenever the expectation was empty, which is
+this file's normal way of saying "and `bad` came back empty". **The review
+predicted three would start failing; one did.** `:839` and `:885` both run and
+genuinely pass. `:503` was hiding this:
+
+      angband_ego max 1  ->  "expected max, list, info or lore, not: max"
+
+`table_verb_parse` accepts `max` only at `objc == 2`, so a trailing argument
+falls past every branch into the unknown-verb message, which then names the
+verb you gave as not being one of the verbs it expects. `objcmd_monster`,
+`_object` and `_artifact` each carry their own copy of the same bug; the check
+missed them only because before a game they stop earlier at their "not loaded
+yet" guard. Fixed in the cause: a known verb with the wrong arity is an arity
+complaint, in all four parsers.
+
+**4. Stale interpreter results (fixed, 3.124.44).** Measured rather than
+counted: `angband_tileset 1` returned **2,146,856 bytes of pixel data** as its
+result and `angband_resize 0 80 24` returned `"4228"`, a canvas item id.
+**Seven commands at eight sites, not the nine reported** -- and two that do
+return something on purpose (`angband_tilescale`, `angband_sound volume`) were
+left alone. Done as a named `command_done()` so the reasoning sits in one
+place.
+
+**5. The hang family (fixed, 3.124.45 and .46).**
+
+*`choice.tcl:230` is not a hang.* Measured inside the running game:
+
+      a genuine background error    sink count 0 -> 1
+      bgerror "a refused pick"      sink count 1 -> 1, returns in 1ms
+      errorsink::record ...         sink count 1 -> 2
+
+In this build of Tk 9.0 `bgerror` as a command returns immediately, puts up no
+dialog, and does not reach the handler installed with `interp bgerror`. The
+message is discarded. So the defect is real and routine, as the review said,
+but it is the opposite shape: not the game stopping, but a click that does
+nothing and says nothing. Routed to the sink.
+
+*Destroy-before-telling is a hang, and the reasoning holds.* `choose_answer`,
+`tomb_kingly_done` and the New Game and Quit arms of `tomb_act` destroyed the
+window and then told the game. Both `death_view_tk` and the savefile chooser
+park the game in a `while (asking) Tcl_DoOneEvent(...)` loop, so a refused
+answer leaves the game still asking with nothing on screen to ask with. The
+answer only sets a variable and returns, so answering first costs nothing and
+a refusal now leaves the window up.
+
+**6. Found while verifying 4: `angband_tileset` before a game is a segfault
+(fixed, 3.124.43).** `reset_visuals` walks `f_info`, `k_info`, `r_info` and
+`trap_info`, none of which exists until `init_angband` has run;
+EXC_BAD_ACCESS at 0x28 is the first read of `feat->d_attr` off a null
+`f_info`. The Display page is reachable from Choose Game, so this is ordinary
+play. Reproduced against `71f960b5d` in a worktree, so it predates this work.
+
+**Two pre-existing failures, neither caused here and neither fixed.**
+
+The bridge has failed throughout at `the character was made in the Birth
+window: timed out at {race confirm}` -- present before the first change, and
+after all of them, at 125 ok either way. It is why items 4 and 5 could only be
+measured on paths that do not need a character in play.
+
+`check-flakes` reports `game/nightmare` varying. It is not random: seed
+3829040037 fails 22/23 deterministically, six times out of six, and
+identically on `71f960b5d`. The diagnostic line is `NIGHTMARE woke 42 of 400
+plain, 83 of 400 in nightmare`, so it is the wake-rate comparison being
+under-powered at 400 samples rather than a behaviour change -- the same class
+of mistake as the twenty-turn breeder loop. Whether to widen the sample or
+loosen the threshold is a judgement about what the test is for, so it is left
+for its owner.
+
+**What is verified and what is not.** Everything above was built and run on
+macOS: the bridge after every change, the mechanism tests for the plog hook
+and the scope guard, the before-and-after measurements for the result leak,
+and the segfault reproduced and fixed. `check-build --tests`,
+`check-build-lists` and `run-tcl-tests` all pass. Nothing here has been looked
+at in a window: no screenshot, no human eye on a dialog. What that leaves
+unproven is appearance and focus -- that the sink's window is legible, that a
+Tomb left up by a refused answer looks right rather than merely existing.
