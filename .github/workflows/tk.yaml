@@ -27,6 +27,8 @@ on:
       - 'src/cocoa/snd-cocoa.m'
       - 'scripts/build-tcltk'
       - 'scripts/pkg_macos_tcltk'
+      - 'scripts/dmg_macos_tcltk'
+      - 'src/tcl/dmg-readme.txt'
       - 'scripts/run-tcl-tests'
       - 'scripts/portraits/**'
       - 'scripts/palettes/**'
@@ -171,16 +173,25 @@ jobs:
 
       # Builds ZangbandTKGUI.app and runs its own checks: that nothing in it
       # points back at the build tree, that the game data and the front end's
-      # scripts are inside it, and that the plist has no unsubstituted
-      # placeholders left in it.
+      # scripts are inside it, that the plist has no unsubstituted
+      # placeholders left in it, and that its ad-hoc signature verifies.
       - name: Package the application bundle
         run: scripts/pkg_macos_tcltk build "$PWD/out"
 
-      - name: Upload the bundle
+      # On a disk image, as a release ships it, so what is downloaded from
+      # here is what a player would get: an .app uploaded as an artifact is
+      # zipped and loses what its signature seals.  No manual inside -- the
+      # release builds that first.
+      - name: Put it on a disk image
+        run: |
+          version=$(sed -n 's/^#define VERSION_STRING[[:space:]]*"\(.*\)"/\1/p' src/buildid.h)
+          scripts/dmg_macos_tcltk out/ZangbandTKGUI.app "out/ZangbandTK-$version-osx-tk.dmg"
+
+      - name: Upload the disk image
         uses: actions/upload-artifact@v4
         with:
-          name: ZangbandTKGUI-app
-          path: out/ZangbandTKGUI.app
+          name: ZangbandTKGUI-dmg
+          path: out/*.dmg
           retention-days: 7
 
       # The only step here that needs a window: it starts the real game with

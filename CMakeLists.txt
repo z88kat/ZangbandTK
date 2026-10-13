@@ -1,4 +1,18 @@
 cmake_minimum_required(VERSION 3.7...3.26 FATAL_ERROR)
+
+# The oldest macOS the Tk front end's application runs on: 11, the first for
+# Apple Silicon, as its Info.plist says (src/tcl/Info.plist.in).  Left alone,
+# the compiler targets the macOS it is running on, and a bundle built on a
+# current Mac or runner refused to open on anything older.  Here, before
+# project(), because that is when CMake reads it; a value given on the command
+# line or in the environment wins.
+if(CMAKE_HOST_APPLE AND SUPPORT_TCL_FRONTEND
+        AND "${CMAKE_OSX_DEPLOYMENT_TARGET}" STREQUAL ""
+        AND NOT DEFINED ENV{MACOSX_DEPLOYMENT_TARGET})
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING
+        "The oldest macOS to run on" FORCE)
+endif()
+
 project(Angband LANGUAGES C)
 string(TOLOWER ${PROJECT_NAME} OUR_EXECUTABLE_NAME)
 

@@ -1,0 +1,76 @@
+#!/bin/sh
+#
+# Put ZangbandTKGUI.app on a disk image, as src/Makefile.osx's dist target does
+# for ZangbandTK.app.
+#
+# Use in the root directory of the game, like so:
+#    scripts/dmg_macos_tcltk <app> <image.dmg>
+#
+# The app is what scripts/pkg_macos_tcltk made, and signed.  The image holds
+# what ZangbandTK.app's holds: the application, the manual in HTML when
+# docs/_build/html exists (the release builds it first), the borg's notes, the
+# licence, and a README that explains the first launch, which macOS refuses
+# for any application without a paid Developer ID -- see src/tcl/dmg-readme.txt.
+#
+# The signature is checked again on the copy inside the image, mounted, since
+# that is the one a player gets: a copy that loses an extended attribute or a
+# file on the way in is a bundle macOS will call damaged.
+set -o errexit
+
+if [ $# -ne 2 ]; then
+	sed -n -e '3,7p' "$0" | sed -e 's/^# \{0,1\}//'
+	exit 1
+fi
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+APP=$1
+DMG=$2
+NAME=$(basename "$APP")
+VOLUME=$(basename "$DMG" .dmg)
+
+if [ ! -d "$APP/Contents/MacOS" ]; then
+	echo "No application at $APP." >&2
+	exit 1
+fi
+codesign --verify --strict "$APP" || {
+	echo "$APP is not validly signed; scripts/pkg_macos_tcltk signs it." >&2
+	exit 1
+}
+
+STAGE=$(mktemp -d "${TMPDIR:-/tmp}/zangbandtk-dmg.XXXXXX")
+trap 'rm -rf "$STAGE"' EXIT
+
+echo "==> $DMG"
+# ditto rather than cp: it is the copy that keeps a bundle's signature and
+# metadata whole.
+ditto "$APP" "$STAGE/image/$NAME"
+if [ -d "$ROOT/docs/_build/html" ]; then
+	mkdir -p "$STAGE/image/Docs"
+	(cd "$ROOT/docs/_build/html" && tar -cf - .) | (cd "$STAGE/image/Docs" && tar -xf -)
+else
+	echo "    (no docs/_build/html, so no manual in the image)"
+fi
+cp "$ROOT/src/borg/borg.txt" "$STAGE/image/borg.txt"
+cp "$ROOT/src/tcl/dmg-readme.txt" "$STAGE/image/README.txt"
+cp "$ROOT/LICENSE.md" "$STAGE/image/LICENSE.md"
+
+rm -f "$DMG"
+hdiutil create -quiet -fs HFS+ -volname "$VOLUME" -srcfolder "$STAGE/image" \
+	"$STAGE/raw.dmg"
+hdiutil convert "$STAGE/raw.dmg" -quiet -format UDZO -imagekey zlib-level=6 \
+	-o "$DMG"
+
+echo "==> Checking the copy in the image"
+MOUNT="$STAGE/mount"
+mkdir -p "$MOUNT"
+hdiutil attach -quiet -readonly -nobrowse -mountpoint "$MOUNT" "$DMG"
+OK=0
+codesign --verify --strict --verbose=1 "$MOUNT/$NAME" && OK=1
+hdiutil detach -quiet "$MOUNT"
+if [ "$OK" != 1 ]; then
+	echo "The application in the image does not verify." >&2
+	rm -f "$DMG"
+	exit 1
+fi
+
+echo "==> Done.  $DMG"

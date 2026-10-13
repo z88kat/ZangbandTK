@@ -143,10 +143,29 @@ if [ -d "$TCLTK_LIB/tcl9" ]; then
 	cp -R "$TCLTK_LIB/tcl9" "$APP/Contents/Resources/tcltk/tcl9"
 fi
 
-# 3. The dylibs, copied verbatim -- they need no editing, and could not be
-#    edited if they did -- and then the executable's rpath.
+# 3. The dylibs, cut back to their Mach-O image, and then the executable's
+#    rpath.
+#
+#    scripts/build-tcltk leaves zipfs on, so each dylib has a zip of its own
+#    script library appended after __LINKEDIT -- 1.2 MB in Tcl's, 0.3 MB in
+#    Tk's.  codesign refuses any binary with data past its end ("main
+#    executable failed strict validation", said of the dylib), and that left
+#    every bundle unsigned.  In here the archives are redundant: the same
+#    libraries are in Contents/Resources/tcltk as ordinary files, which is
+#    where main-tcl.c points TCL_LIBRARY and TK_LIBRARY.  So the copies lose
+#    them and the toolchain keeps its zipfs.  The image itself is untouched,
+#    which is why nothing here needs install_name_tool on a dylib.
 for lib in libtcl9.0.dylib libtcl9tk9.0.dylib; do
-	install -m 644 "$TCLTK_LIB/$lib" "$APP/Contents/Frameworks/$lib"
+	END=$(otool -l "$TCLTK_LIB/$lib" | awk '
+		/segname __LINKEDIT/ { seg = 1 }
+		seg && /fileoff/ { off = $2 }
+		seg && /filesize/ { print off + $2; exit }')
+	if [ -z "$END" ]; then
+		echo "$TCLTK_LIB/$lib has no __LINKEDIT segment." >&2
+		exit 1
+	fi
+	head -c "$END" "$TCLTK_LIB/$lib" > "$APP/Contents/Frameworks/$lib"
+	chmod 644 "$APP/Contents/Frameworks/$lib"
 done
 install_name_tool -delete_rpath "$TCLTK_LIB" "$APP/Contents/MacOS/$NAME" 2>/dev/null || true
 install_name_tool -add_rpath "@executable_path/../Frameworks" \
@@ -168,13 +187,20 @@ sed -e 's|\$EXECUTABLE\$|'"$NAME"'|g' \
 	-e 's|\$COPYRIGHT\$|'"$COPYRIGHT"'|g' \
 	"$ROOT/src/tcl/Info.plist.in" > "$APP/Contents/Info.plist"
 
-# An ad-hoc signature, so Gatekeeper treats it as a coherent bundle on this
-# machine.  A release build signs it properly; see release.yaml, which does the
-# same for ZangbandTK.app.  Extended attributes first, because codesign refuses
-# a bundle that carries any: whatever the copies above brought with them.
+# An ad-hoc signature, the same as the release gives ZangbandTK.app: no
+# Developer ID, but a bundle whose every piece is sealed, which is what
+# Gatekeeper and codesign --verify ask of it.  Extended attributes first,
+# because codesign refuses a bundle that carries any: whatever the copies
+# above brought with them.  The dylibs before the bundle, since sealing the
+# bundle records their signatures.  A failure stops the build: an unsigned or
+# half-signed bundle is not one to hand anybody.
 xattr -cr "$APP"
-codesign --force --sign - "$APP" 2>/dev/null || \
-	echo "    (could not ad-hoc sign; the bundle will still run locally)"
+codesign --force --sign - "$APP/Contents/Frameworks/"*.dylib
+codesign --force --sign - "$APP"
+codesign --verify --strict --verbose=1 "$APP" || {
+	echo "The bundle's signature does not verify." >&2
+	exit 1
+}
 
 # The check that matters: nothing in the bundle may point back at the tree it
 # was built in.
@@ -217,6 +243,22 @@ test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' \
 	echo "CFBundleExecutable does not name the executable that is there." >&2
 	exit 1
 }
+# Every binary must run on the macOS the plist promises.  The compiler's
+# default is the macOS it ran on, which made a bundle that would not open on
+# anything older than the machine that built it.
+MIN_OS=$(/usr/libexec/PlistBuddy -c "Print :LSMinimumSystemVersion" \
+	"$APP/Contents/Info.plist")
+for bin in "$APP/Contents/MacOS/$NAME" "$APP/Contents/Frameworks/"*.dylib; do
+	NEEDS=$(otool -l "$bin" | awk '
+		/LC_BUILD_VERSION/ { b = 1 }
+		b && /minos/ { print $2; exit }')
+	if [ -n "$NEEDS" ] && [ "$(printf '%s\n%s\n' "$NEEDS" "$MIN_OS" \
+			| sort -V | tail -1)" != "$MIN_OS" ]; then
+		echo "$(basename "$bin") needs macOS $NEEDS; the plist promises $MIN_OS." >&2
+		echo "Rebuild Tcl and Tk (scripts/build-tcl-app does) and the game." >&2
+		exit 1
+	fi
+done
 
 # Whole and checked, so into place.
 rm -rf "$FINAL"

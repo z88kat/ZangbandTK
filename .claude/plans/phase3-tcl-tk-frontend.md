@@ -348,7 +348,9 @@ Both live in the `packages` step, and ZangbandTK needs none of the four bundled 
 (thread, sqlite, itcl, tdbc). Building `binaries libraries` rather than the default `all`
 skips that step entirely, so neither trap fires. Do **not** reach for `--disable-zipfs`:
 zipfs is worth keeping, because it is how the front end's Tcl gets packaged inside the
-executable instead of shipped as a loose directory.
+executable instead of shipped as a loose directory. _(T9 went the other way on packaging —
+loose files, sealed by the signature — and kept zipfs for the toolchain; see "Release
+packaging" in the T9 notes.)_
 
 **One toolchain per architecture, and the script already does the right thing.** DEC-22 was
 amended on 14 September: macOS Intel is supported and released again, as two thin builds
@@ -2105,6 +2107,38 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 >   would replace the critical tier, a design change); `BELL`'s binding cannot sound
 >   (`bell()` is EVENT_BELL); `DROP` plays for anything landing on the floor.
 
+> **Release packaging, 13 October 2026.** `ZangbandTKGUI.app` is signed and ships: a
+> `mac-tk` job in release.yaml attaches `ZangbandTK-<version>-osx-tk.dmg` beside the Cocoa
+> images, Apple Silicon only for now (project owner). The bar it had to clear is the one
+> ZangbandTK.app clears — an ad-hoc signature that passes `codesign --verify --strict` — since
+> no image here is notarised; "a notarised release" in §7 overstated it.
+>
+> - **The zips are cut off, not built out.** Measured first: the appended archives are 1.16 MB
+>   (Tcl) and 0.30 MB (Tk), after `__LINKEDIT`, and nothing reads them — main-tcl.c points
+>   `TCL_LIBRARY` and `TK_LIBRARY` at the loose copies in `Contents/Resources/tcltk`, and no
+>   script uses zipfs. So [pkg_macos_tcltk](../../scripts/pkg_macos_tcltk) copies each dylib only
+>   as far as the end of its Mach-O image, signs the dylibs and then the bundle, and fails on a
+>   signature that does not verify — where it used to swallow the failure, so every bundle so
+>   far had gone out unsigned. The toolchain keeps zipfs; decision 12's zipfs for `lib/tcl/`
+>   is not used either: the scripts ship as files, and the signature seals them, which is the
+>   tamper-proofing an archive would have given.
+> - **One stray read, left alone.** Tcl's own `tcl_findLibrary` (auto.tcl) mounts any Tk zip
+>   it finds at the toolchain's configured `libdir` as a side effect. `TK_LIBRARY` is searched
+>   first, and on any other Mac the path does not exist, so it changes nothing; patching
+>   vendored Tcl for it would.
+> - **The oldest macOS was the build machine's.** Nothing set one, so a bundle built here
+>   needed macOS 26. Now 11.0, the first for Apple Silicon: `MACOSX_DEPLOYMENT_TARGET` in
+>   build-tcltk, `CMAKE_OSX_DEPLOYMENT_TARGET` before `project()` for a Tk build, and
+>   `LSMinimumSystemVersion` in the plist — and pkg_macos_tcltk refuses a binary that needs
+>   newer than the plist says. build-tcl-app rebuilds a toolchain made before this, once.
+> - **The image** ([dmg_macos_tcltk](../../scripts/dmg_macos_tcltk)) holds what the Cocoa one
+>   does — the app, the manual, borg.txt, the licence and a README for the first launch
+>   ([src/tcl/dmg-readme.txt](../../src/tcl/dmg-readme.txt)) — and verifies the signature again
+>   on the copy inside. The release builds it Release (`-O3 -DNDEBUG`) and runs the bridge test
+>   on that build first; tk.yaml uploads the image from every commit instead of a loose app.
+> - The download page says which Mac application is which, and that they share
+>   `~/Documents/ZangbandTK`.
+
 ---
 
 ## 6. Decisions needed
@@ -2534,7 +2568,7 @@ the four algorithms in `icon-dll.c` worth reading before T2, and they are to be 
 | **Phase 2 keeps moving under it.** M7/M9/M10 change races, classes, realms and pets — exactly what T4 and T8 display.                                                                                                                                                                                                        | Medium                            | T8 after M9. T4 reads through accessors, not layouts.                                                                                                                                                                                                                                                                                                                                                      |
 | **108,000 lines of unfamiliar Tcl.**                                                                                                                                                                                                                                                                                         | Medium                            | `debug.tcl` and `errorInfo.tcl` land in T3, before the UI work. Adapt scripts as their command family lands, never speculatively.                                                                                                                                                                                                                                                                          |
 | **Two front ends diverging.**                                                                                                                                                                                                                                                                                                | Low                               | The term build stays the reference. No gameplay logic in `src/tcl/` — ever.                                                                                                                                                                                                                                                                                                                                |
-| **The Tcl/Tk dylibs cannot be code signed.** zipfs appends a zip archive to each one, and `codesign` rejects the trailing data exactly as `install_name_tool` does — `main executable failed strict validation`, on the dylib itself. The bundle runs locally unsigned; a **notarised release cannot ship it as it stands**. | **Medium**, and it lands at T9    | Decide before T9, not during it. The bundle already carries Tcl's and Tk's script libraries as ordinary files in `Contents/Resources/tcltk`, so the appended archive is redundant there — the likely answer is a release toolchain built without zipfs, keeping it only where we actually want it, which is our own scripts. Measure before committing to that: §6 decision 12 wants zipfs for `lib/tcl/`. |
+| ~~**The Tcl/Tk dylibs cannot be code signed.**~~ **Resolved 13 October 2026**, not by a second toolchain but by cutting the archives off the bundle's copies — see "Release packaging" in the T9 notes. zipfs appends a zip archive to each one, and `codesign` rejects the trailing data exactly as `install_name_tool` does — `main executable failed strict validation`, on the dylib itself. The bundle runs locally unsigned; a **notarised release cannot ship it as it stands**. | **Medium**, and it lands at T9    | Decide before T9, not during it. The bundle already carries Tcl's and Tk's script libraries as ordinary files in `Contents/Resources/tcltk`, so the appended archive is redundant there — the likely answer is a release toolchain built without zipfs, keeping it only where we actually want it, which is our own scripts. Measure before committing to that: §6 decision 12 wants zipfs for `lib/tcl/`. |
 | **The input hooks are declared but unexercised.** No front end in the tree overrides one; T3 is the first (§3.2).                                                                                                                                                                                                            | Medium                            | Override one hook early — `get_check_hook` is the smallest — and prove the round trip before T7 depends on sixteen more.                                                                                                                                                                                                                                                                                   |
 
 ---
@@ -2592,10 +2626,9 @@ Stated plainly, so nothing here reads as more settled than it is:
 - **The graphics are audited for presence, not for fitness.** Every asset is there and every
   file decodes (§1.3), but no tile has been mapped to a 4.2 index, and nothing has been
   judged at actual size in a running window — which is the only judgement that counts.
-- **Code signing the bundle is unsolved**, and known to be unsolved rather than untried:
-  `ZangbandTKGUI.app` assembles, launches from the Finder and runs with the build tree
-  absent, but `codesign --verify --strict` fails on both Tcl dylibs for the zipfs reason in
-  §7. Everything T0–T8 needs works; the release step does not yet.
+- ~~**Code signing the bundle is unsolved.**~~ Solved, 13 October 2026: the appended zips are
+  cut off the bundle's copies of the dylibs and the bundle is signed ad-hoc, as
+  ZangbandTK.app is. See "Release packaging" in the T9 notes.
 - ~~**The sound event mapping is sketched, not written.**~~ Walked, 13 October 2026: see
   "The original's sound events" in the T9 notes.
 

@@ -31,6 +31,34 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+13 October 2026 — the Tk app, packed to ship
+============================================
+
+The Tk app can go out with a release now, as a third Mac download beside the
+two that already exist. It was blocked on signing, and the fix turned out to be
+smaller than the plan expected.
+
+Tcl hides a zip of its own scripts on the end of its libraries, and Apple's
+signing tool refuses any file with something stuck on the end of it. The plan
+had assumed the answer was a second build of Tcl without that feature. But the
+app never reads those zips: it carries the same scripts as ordinary files and
+points Tcl at them. So the packaging script now cuts the zips off its copies of
+the libraries, and the app signs cleanly. It is signed the same way the main
+Mac app is: no paid Apple identity, but proof that nothing has been altered.
+Until now the script had been trying to sign it all along, failing, and
+staying quiet about it, so every copy built so far was unsigned.
+
+A worse problem turned up while checking. Nothing said which version of macOS
+the app was built for, so it was built for whatever this Mac runs, and it would
+have refused to open on anything older. It is now built for macOS 11, the
+first version Apple Silicon Macs shipped with. The packaging refuses any build
+that needs more than that.
+
+The download is Apple Silicon only for now, and the download page now explains
+which Mac app is which. Both keep their characters in the same folder, so
+either can carry on a game the other started.
+
+
 13 October 2026 — the original's sounds, by name
 ==================================================
 

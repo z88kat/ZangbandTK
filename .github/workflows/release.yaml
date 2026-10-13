@@ -100,6 +100,10 @@ env:
     MACTTYINTEL_ARTIFACT: release-mac-terminal-intel
     MACTTYINTEL_ARTIFACT_PATH: release-mac-terminal-intel.txt
     MACTTYINTEL_ARCHIVE_ARTIFACT: release-mac-terminal-intel-archive
+    # And for ZangbandTKGUI.app, the Tk front end's own image.
+    MACTK_ARTIFACT: release-mac-tk
+    MACTK_ARTIFACT_PATH: release-mac-tk.txt
+    MACTK_ARCHIVE_ARTIFACT: release-mac-tk-archive
     # Used as the name when uploading or downloading the artifact for passing
     # the name of the DOS archive.
     DOS_ARTIFACT: release-dos
@@ -1356,6 +1360,98 @@ jobs:
           path: ${{ steps.create_mac_terminal_intel_archive.outputs.archive_file }}
           retention-days: 1
 
+  # ZangbandTKGUI.app, the Tcl/Tk front end, beside ZangbandTK.app rather
+  # than in place of it (decision 14 of the Phase 3 plan).  Apple Silicon
+  # only for now: an Intel image would need its own Tcl/Tk built on an Intel
+  # runner.
+  #
+  # Tcl and Tk come from the cache the Tk workflow fills, under the same key,
+  # and are built here only when it is empty.  scripts/pkg_macos_tcltk makes
+  # and signs the bundle -- ad-hoc, as ZangbandTK.app is -- and refuses one
+  # whose signature does not verify; scripts/dmg_macos_tcltk puts it on an
+  # image with the manual, and checks the signature again on the copy inside.
+  # The bridge test runs on this build too, since it is the one that ships.
+  mac-tk:
+    needs: [setup, docconvert]
+    name: Mac (Tk)
+    runs-on: macos-latest
+    steps:
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
+          echo "name=$name" >> $GITHUB_OUTPUT
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Clone Project
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download Artifact with Converted Documents
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.DOC_ARTIFACT }}
+
+      - name: Extract Converted Documents
+        run: |
+          tar -xf ${{ env.DOC_ARTIFACT_PATH }}
+
+      - name: Restore the Tcl/Tk toolchain
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: tcltk/local
+          key: tcltk-9.0.4-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('scripts/build-tcltk') }}
+
+      - name: Build Tcl and Tk
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: scripts/build-tcltk
+
+      - name: Build the game
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DSUPPORT_TCL_FRONTEND=ON \
+            -DTCLTK_PREFIX="$PWD/tcltk/local" \
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --parallel
+
+      - name: Scripted session
+        run: scripts/run-tcl-bridge-test build
+
+      - name: Create Tk Mac Archive
+        id: create_mac_tk_archive
+        run: |
+          package_name=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+          scripts/pkg_macos_tcltk build "$RUNNER_TEMP/app"
+          scripts/dmg_macos_tcltk "$RUNNER_TEMP/app/ZangbandTKGUI.app" \
+            "${package_name}-osx-tk.dmg"
+          echo "archive_file=${package_name}-osx-tk.dmg" >> $GITHUB_OUTPUT
+
+      - name: Create Artifact with Tk Mac Archive Path
+        run: |
+          echo archive_path= '${{ steps.create_mac_tk_archive.outputs.archive_file }}' > $MACTK_ARTIFACT_PATH
+
+      - name: Upload Artifact with Tk Mac Archive Path
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.MACTK_ARTIFACT }}
+          path: ${{ env.MACTK_ARTIFACT_PATH }}
+          retention-days: 1
+
+      - name: Upload Tk Mac Archive as Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.MACTK_ARCHIVE_ARTIFACT }}
+          path: ${{ steps.create_mac_tk_archive.outputs.archive_file }}
+          retention-days: 1
+
   dos:
     # Only setup: this job builds its own text manual rather than taking the
     # docconvert job's HTML, so waiting on docconvert would be waiting for
@@ -1499,7 +1595,7 @@ jobs:
 
   release:
     if: github.event_name == 'push'
-    needs: [ setup, source, nintendo, linux, linux-terminal, windows32, windows64, mac, mac-terminal, mac-intel, mac-terminal-intel, dos ]
+    needs: [ setup, source, nintendo, linux, linux-terminal, windows32, windows64, mac, mac-terminal, mac-intel, mac-terminal-intel, mac-tk, dos ]
     name: Create GitHub Release
     runs-on: ubuntu-latest
     # gh release create both makes the tag's release and uploads the files
@@ -1687,6 +1783,22 @@ jobs:
         with:
           name: ${{ env.MACTTYINTEL_ARCHIVE_ARTIFACT }}
 
+      - name: Download Artifact with Tk Mac Archive Path
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.MACTK_ARTIFACT }}
+
+      - name: Extract Tk Mac Archive Path and Store in Step Outputs
+        id: store_mac_tk
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' $MACTK_ARTIFACT_PATH`
+          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with Tk Mac Archive
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.MACTK_ARCHIVE_ARTIFACT }}
+
       - name: Download Artifact with DOS Archive Path
         uses: actions/download-artifact@v8
         with:
@@ -1725,5 +1837,6 @@ jobs:
             ${{ steps.store_mac_terminal.outputs.archive_path }} \
             ${{ steps.store_mac_intel.outputs.archive_path }} \
             ${{ steps.store_mac_terminal_intel.outputs.archive_path }} \
+            ${{ steps.store_mac_tk.outputs.archive_path }} \
             ${{ steps.store_dos.outputs.archive_path }} \
             $options

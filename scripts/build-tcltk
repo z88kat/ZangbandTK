@@ -42,10 +42,12 @@
 #      application bundle would carry libraries hardwired to this machine's
 #      build tree and would fail on any other Mac with a dyld error.
 #
-# zipfs is deliberately left enabled.  It is how the front end's Tcl gets
-# packaged inside the executable for release rather than shipped as a loose
-# directory, so a toolchain built without it would pass every test here and
-# fail at packaging.  It is also what makes rule 4 necessary.
+# zipfs is left enabled: tclsh and wish find their libraries through it, and
+# it is what makes rule 4 necessary.  The application does not use it.  Its
+# bundle carries Tcl's and Tk's libraries as ordinary files, sealed by its
+# signature, and scripts/pkg_macos_tcltk cuts the appended archives off its
+# copies of the dylibs, because codesign will not sign a binary with data
+# past its end.
 set -o errexit
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -69,6 +71,16 @@ Darwin)
 	# -install_name; LIB_RUNTIME_DIR, which looks like the right one, does not.
 	INSTALL_NAME='DYLIB_INSTALL_DIR=@rpath'
 	RPATH_LDFLAGS="-Wl,-rpath,$PREFIX/lib"
+	# The oldest macOS the libraries run on, and so the application that
+	# carries them: 11, the first for Apple Silicon, which is what the game's
+	# own build asks for (CMakeLists.txt) and the bundle's plist promises.
+	# Left alone, clang targets the macOS it runs on, so a toolchain built on
+	# a current Mac put that version in every dylib.  The environment is what
+	# clang reads, so it reaches Tcl's and Tk's makefiles without patching
+	# them -- and a toolchain built before this has to be built again, from a
+	# clean tcltk/build, to change.
+	MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET:-11.0}
+	export MACOSX_DEPLOYMENT_TARGET
 	;;
 *)
 	JOBS=$(nproc 2>/dev/null || echo 4)

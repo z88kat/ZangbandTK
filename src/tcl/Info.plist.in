@@ -30,6 +30,13 @@
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
+	<!--
+		The oldest macOS this runs on.  scripts/build-tcltk and CMakeLists.txt
+		build for it, and scripts/pkg_macos_tcltk refuses a bundle with a
+		binary that needs anything newer.
+	-->
+	<key>LSMinimumSystemVersion</key>
+	<string>11.0</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$VERSION$</string>
 	<key>CFBundleVersion</key>

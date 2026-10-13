@@ -24,6 +24,10 @@ build for each platform, and the source:
   no sound. Apple Silicon. See `Playing in a terminal`_.
 - ``ZangbandTK-<version>-osx-terminal-intel.tar.gz`` — the terminal build for an
   Intel Mac.
+- ``ZangbandTK-<version>-osx-tk.dmg`` — ``ZangbandTKGUI.app``, the same game
+  through a second front end modelled on the 1990s ZangbandTk, with the manual
+  and the borg's documentation. Apple Silicon only. See `Two Mac
+  applications`_.
 - ``ZangbandTK-<version>-win64.zip`` — the Windows build, 64-bit, with the same
   manual beside it. A single executable: libpng and zlib are linked in, so there
   are no DLLs to keep track of. **Prefer this one.**
@@ -67,8 +71,8 @@ by CI, but the game is developed and played on macOS here and none of the others
 is played through before a release is tagged. Read `Other platforms`_ before you
 rely on one.
 
-The rest of this page is macOS. Mount the image and drag ``ZangbandTK.app``
-wherever you keep applications.
+The rest of this page is macOS. Mount the image and drag ``ZangbandTK.app``, or
+``ZangbandTKGUI.app``, wherever you keep applications.
 
 Which Mac build do I want?
 --------------------------
@@ -84,7 +88,8 @@ they can never run, and neither does an Intel one.
    * - Your Mac
      - Take
    * - **Apple Silicon** (M1 and later)
-     - ``-osx.dmg``, or ``-osx-terminal.tar.gz``. Requires macOS 11 or later.
+     - ``-osx.dmg``, or ``-osx-terminal.tar.gz``, or ``-osx-tk.dmg`` for the Tk
+       front end. Requires macOS 11 or later.
    * - **Intel**
      - ``-osx-intel.dmg``, or ``-osx-terminal-intel.tar.gz``.
 
@@ -104,6 +109,23 @@ to do that when the native build is on the same page.
    on a machine of the matching architecture — the Intel builds are built on a
    real Intel runner, not cross-compiled — but the game is developed and played
    on Apple Silicon here, so that is the build with hours on it.
+
+Two Mac applications
+--------------------
+
+The Mac disk images hold one of two applications, and they are the same game.
+``ZangbandTK.app``, in ``-osx.dmg`` and ``-osx-intel.dmg``, is the Mac front end
+that comes with Angband 4.2, where the game draws everything itself in windows of
+text or tiles. ``ZangbandTKGUI.app``, in ``-osx-tk.dmg``, is a front end modelled
+on ZangbandTk, the Zangband of the late 1990s: the map and its panes in the main
+window, the character, the inventory, the spell books and the shops in windows
+of their own, and the original's menus. It is the newer of the two, Apple
+Silicon only for now, and still being finished.
+
+They can be installed side by side, and they share one folder of characters and
+scores, ``Documents/ZangbandTK`` in your home folder, so a character made in one
+can be carried on in the other. The first launch below is the same for both,
+with ``ZangbandTKGUI`` in place of ``ZangbandTK`` for the second.
 
 The first launch
 ----------------
