@@ -8274,8 +8274,29 @@ static int objcmd_tileset(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		return TCL_ERROR;
 	}
 
-	reset_visuals(true);
-	do_cmd_redraw();
+	/*
+	 * Both of these need more than a tile sheet, and the Display page is
+	 * reachable from the Choose Game window, before the game has read
+	 * anything.
+	 *
+	 * reset_visuals() walks f_info, k_info, r_info and trap_info to put the
+	 * default attr and char back; none of them exists until init_angband
+	 * has run, and `angband_tileset 1` before that dereferenced a null
+	 * f_info and took the process down with SIGSEGV at offset 0x28 -- the
+	 * first read of feat->d_attr. Checked per array, the way every other
+	 * command in this file checks the list it is about to walk.
+	 *
+	 * do_cmd_redraw() wants a dungeon to draw, and is guarded here the same
+	 * way angband_tilescale guards its own.
+	 *
+	 * Loading the sheet above is not conditional: choosing a tile set with
+	 * no game in play is a reasonable thing to do, and it takes effect when
+	 * one starts. It is only these two that have to wait.
+	 */
+	if (f_info && k_info && r_info && trap_info && z_info)
+		reset_visuals(true);
+	if (character_dungeon)
+		do_cmd_redraw();
 
 	return TCL_OK;
 }
