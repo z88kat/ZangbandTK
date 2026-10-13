@@ -31,6 +31,36 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+13 October 2026 — the manual, inside the game
+=============================================
+
+The original's Help window was a browser for its HTML manual, drawn by TkHtml, a
+1998 extension that will not build against Tk 9. We have a manual, the one this
+site is built from, so the only question was how to show it without a web view.
+The answer is the one the plan settled on long ago and nobody had tried: Sphinx
+writes the pages for a Tk text widget instead of a browser. A small builder walks
+each chapter and writes down what to insert, a line at a time: this text, in
+bold; a link to that place on that page; an anchor here. The window just does
+what it is told. A text widget has no tables, so the builder lays them out in a
+fixed-width font itself.
+
+So the Help window is the original's, piece by piece: the Contents tree beside
+the page, Back and Next, a Section menu of the chapters, and a Search the
+original never had. ``?`` opens it, as it did there. Only the player's manual
+goes in. This diary does not, and a link to a page that is not there opens the
+website instead.
+
+It hung the first time a chapter was opened. Showing a page selects it in the
+Contents. Selecting raises an event once the code that did it has finished, and
+the event showed the page, which selected it again. A flag was meant to stop
+that, and it was cleared before the event arrived. The home page has no entry in
+the tree, which is why it opened and why the first test passed.
+
+The pages are generated and committed, so the game still builds without Python,
+and a workflow checks that they match the manual. This machine's Sphinx and the
+newest one made them identically, and that is what lets the check be strict.
+
+
 12 October 2026 — a menu bar somebody laid out
 ==============================================
 

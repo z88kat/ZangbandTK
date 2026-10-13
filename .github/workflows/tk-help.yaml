@@ -1,0 +1,62 @@
+name: Tk help
+
+# The Tk front end's Help window reads the manual from lib/tcl/help, which
+# scripts/build-tk-help makes from docs/ and which is committed, so that a
+# build of the game needs no Python.  This checks that it was made again after
+# the manual last changed: a page edited in docs/ and not rebuilt would be read
+# in the game as it was before.
+#
+# A job of its own rather than a step in tk.yaml, which builds the whole
+# toolchain on macOS: this needs only Sphinx, and runs for any change to the
+# manual -- most of which have nothing to do with the front end.
+
+on:
+  push:
+    branches: [ master ]
+    paths: &help_paths
+      - 'docs/**'
+      - 'lib/tcl/help/**'
+      - 'scripts/build-tk-help'
+      - '.github/workflows/tk-help.yaml'
+  pull_request:
+    paths: *help_paths
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  help:
+    name: Help pages match the manual
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone Project
+        uses: actions/checkout@v6
+        with:
+          # conf.py asks scripts/version.sh for the version, which needs the
+          # tags.
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: docs/requirements.txt
+
+      - name: Install Sphinx
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r docs/requirements.txt
+
+      - name: Build the pages
+        run: scripts/build-tk-help
+
+      - name: Compare with what is committed
+        run: |
+          if [ -n "$(git status --porcelain lib/tcl/help)" ]; then
+            git status --short lib/tcl/help
+            git diff --stat lib/tcl/help
+            echo "::error::lib/tcl/help is not what docs/ makes.  Run scripts/build-tk-help and commit the result."
+            exit 1
+          fi

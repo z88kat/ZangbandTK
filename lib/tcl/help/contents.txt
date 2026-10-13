@@ -1,0 +1,262 @@
+book	Getting Started	start
+page	A quick demonstration	a-quick-demo
+book	A Players’ Guide to ZangbandTK	guide
+page	The basics	guide#the-basics
+page	Fighting Power	guide#fighting-power
+page	Plan to be deep	guide#plan-to-be-deep
+page	On Bad Luck	guide#on-bad-luck
+page	Face-palm Tips	guide#face-palm-tips
+page	Surviving to clvl 31 / dlvl 36	guide#surviving-to-clvl-31-dlvl-36
+stop
+book	Frequently Asked Questions	faq
+page	Issues and problems	faq#issues-and-problems
+page	Development	faq#development
+stop
+stop
+book	The Manual	manual
+book	Creating a Character	birth
+page	Character Characteristics	birth#character-characteristics
+page	Races	birth#races
+page	Classes	birth#classes
+page	Stats	birth#stats
+page	Skills	birth#skills
+page	Stat Bonus Tables	birth#stat-bonus-tables
+page	Ability Tables	birth#ability-tables
+page	Stat rollers	birth#stat-rollers
+page	Character Name	birth#character-name
+stop
+book	Exploring the Dungeon	dungeon
+page	Symbols On Your Map	dungeon#symbols-on-your-map
+page	The Dungeons	dungeon#the-dungeons
+page	The Town Level	dungeon#the-town-level
+page	Townspeople	dungeon#townspeople
+page	Town Buildings	dungeon#town-buildings
+page	Within The Dungeon	dungeon#within-the-dungeon
+page	Objects Found In The Dungeon	dungeon#objects-found-in-the-dungeon
+page	Cursed Objects	dungeon#cursed-objects
+page	Mining	dungeon#mining
+page	Traps	dungeon#traps
+page	Staircases, Secret Doors, Passages, and Rooms	dungeon#staircases-secret-doors-passages-and-rooms
+page	Level and object feelings	dungeon#level-and-object-feelings
+page	Winning The Game	dungeon#winning-the-game
+page	Upon Death and Dying	dungeon#upon-death-and-dying
+stop
+book	Attacking monsters	attack
+page	Attacking and Being Attacked	attack#attacking-and-being-attacked
+page	Monster Memories	attack#monster-memories
+page	Your Weapon	attack#your-weapon
+page	Your Armor Class	attack#your-armor-class
+page	Monster status effects	attack#monster-status-effects
+page	Non-melee attacks and resistances	attack#non-melee-attacks-and-resistances
+page	A note on speed	attack#a-note-on-speed
+page	Ego weapons and armor	attack#ego-weapons-and-armor
+stop
+book	Playing the Game	playing
+page	Original Keyset Command Summary	playing#original-keyset-command-summary
+page	Roguelike Keyset Command Summary	playing#roguelike-keyset-command-summary
+page	Disturb	playing#disturb
+page	Special Keys	playing#special-keys
+page	Command Counts	playing#command-counts
+page	Selection of Objects	playing#selection-of-objects
+page	Targeting	playing#targeting
+page	Pathfinding	playing#pathfinding
+page	Shape Changes	playing#shape-changes
+stop
+book	Command Descriptions	command
+page	Inventory Commands	command#inventory-commands
+page	Movement Commands	command#movement-commands
+page	Resting Commands	command#resting-commands
+page	Alter Commands	command#alter-commands
+page	Spell Commands	command#spell-commands
+page	Object Manipulation Commands	command#object-manipulation-commands
+page	Magical Object Commands	command#magical-object-commands
+page	Throwing and Missile Weapons	command#throwing-and-missile-weapons
+page	Looking Commands	command#looking-commands
+page	Message Commands	command#message-commands
+page	Game Status Commands	command#game-status-commands
+page	Saving and Exiting Commands	command#saving-and-exiting-commands
+page	User Pref File Commands	command#user-pref-file-commands
+page	Help Commands	command#help-commands
+page	Extra Commands	command#extra-commands
+page	Special Keys	command#special-keys
+page	Command Counts	command#command-counts
+stop
+book	Option Descriptions	option
+page	The options menu	option#the-options-menu
+page	User Interface Options	option#user-interface-options
+page	Birth options	option#birth-options
+page	Cheating options	option#cheating-options
+page	Debug commands	option#debug-commands
+page	Window flags	option#window-flags
+page	Left Over Information	option#left-over-information
+stop
+book	Customising the game	customize
+page	User Pref Files	customize#user-pref-files
+page	Ignoring items	customize#ignoring-items
+page	Inscribing items	customize#inscribing-items
+page	Showing extra info in subwindows	customize#showing-extra-info-in-subwindows
+page	Keymaps	customize#keymaps
+page	Colours	customize#colours
+page	Visuals	customize#visuals
+page	Interface details	customize#interface-details
+stop
+stop
+book	What’s Different	differences
+book	How Balance Differs	balance
+page	Monsters die sooner	balance#monsters-die-sooner
+page	Why scale rather than import	balance#why-scale-rather-than-import
+page	Experience is unchanged	balance#experience-is-unchanged
+page	Tuning it yourself	balance#tuning-it-yourself
+page	Savefiles	balance#savefiles
+stop
+book	Races and Classes	characters
+page	Seventeen new races	characters#seventeen-new-races
+page	Racial powers	characters#racial-powers
+page	The Monk, and martial arts	characters#the-monk-and-martial-arts
+page	What a class grows into	characters#what-a-class-grows-into
+page	The Mindcrafter, and psionics	characters#the-mindcrafter-and-psionics
+page	The Chaos-Warrior, and who owns it	characters#the-chaos-warrior-and-who-owns-it
+page	What every class costs	characters#what-every-class-costs
+page	Still to come	characters#still-to-come
+stop
+book	Monsters	monsters
+page	Where the new monsters come from	monsters#where-the-new-monsters-come-from
+page	Monsters that are not what they appear	monsters#monsters-that-are-not-what-they-appear
+page	The blood curse of Amber	monsters#the-blood-curse-of-amber
+page	Monsters that talk	monsters#monsters-that-talk
+page	Uniques cannot be put out of the fight	monsters#uniques-cannot-be-put-out-of-the-fight
+page	Monsters that will not be moved	monsters#monsters-that-will-not-be-moved
+page	Things it is a mistake to touch	monsters#things-it-is-a-mistake-to-touch
+page	Five that will not hold still	monsters#five-that-will-not-hold-still
+page	The one that may not be there	monsters#the-one-that-may-not-be-there
+page	How dangerous are they?	monsters#how-dangerous-are-they
+page	Rooms full of them	monsters#rooms-full-of-them
+page	Not yet implemented	monsters#not-yet-implemented
+page	Things that live in the water	monsters#things-that-live-in-the-water
+page	Not everything is there to be fought	monsters#not-everything-is-there-to-be-fought
+page	Things that fly, and things that swim	monsters#things-that-fly-and-things-that-swim
+stop
+book	Objects	objects
+page	Three new weapon properties	objects#three-new-weapon-properties
+page	New artifacts	objects#new-artifacts
+page	New ego types	objects#new-ego-types
+page	New objects	objects#new-objects
+page	The Ring of Fate	objects#the-ring-of-fate
+page	The Ancient and Foul Curse	objects#the-ancient-and-foul-curse
+page	Activations	objects#activations
+page	The lotus	objects#the-lotus
+page	Seven more from Zangband	objects#seven-more-from-zangband
+page	Not yet implemented	objects#not-yet-implemented
+stop
+book	The Wilderness	wilderness
+page	The world	wilderness#the-world
+page	Terrain	wilderness#terrain
+page	Deep water	wilderness#deep-water
+page	Rivers and lakes	wilderness#rivers-and-lakes
+page	Travel	wilderness#travel
+page	What lives there	wilderness#what-lives-there
+page	What you leave behind	wilderness#what-you-leave-behind
+page	What you wounded	wilderness#what-you-wounded
+page	The world map	wilderness#the-world-map
+page	What you know	wilderness#what-you-know
+page	Day and night	wilderness#day-and-night
+page	Leaving the town	wilderness#leaving-the-town
+page	Going down	wilderness#going-down
+page	Where this is narrower than Zangband	wilderness#where-this-is-narrower-than-zangband
+stop
+book	Towns and Services	towns
+page	Where places stand	towns#where-places-stand
+page	The size bands	towns#the-size-bands
+page	Which shops a place keeps	towns#which-shops-a-place-keeps
+page	How good a shop is	towns#how-good-a-shop-is
+page	Your home village	towns#your-home-village
+page	Your house	towns#your-house
+page	What they are called	towns#what-they-are-called
+page	Who lives there	towns#who-lives-there
+page	Services	towns#services
+page	Work	towns#work
+page	What you dream at the inn	towns#what-you-dream-at-the-inn
+page	The magetower	towns#the-magetower
+page	Walls and gates	towns#walls-and-gates
+page	Roads	towns#roads
+page	Finding your way	towns#finding-your-way
+stop
+book	Quests	quests
+page	Where work comes from	quests#where-work-comes-from
+page	What you may be asked	quests#what-you-may-be-asked
+page	Carrying and reporting	quests#carrying-and-reporting
+page	Giving up	quests#giving-up
+page	What the game is won by	quests#what-the-game-is-won-by
+stop
+book	The Realms of Magic	realms
+page	The seven	realms#the-seven
+page	Choosing them	realms#choosing-them
+page	Life	realms#life
+page	Sorcery	realms#sorcery
+page	Trump	realms#trump
+page	Chaos	realms#chaos
+page	Arcane	realms#arcane
+page	Nature	realms#nature
+page	Death	realms#death
+page	Casting	realms#casting
+page	Who can choose what	realms#who-can-choose-what
+page	What has changed, and what has not	realms#what-has-changed-and-what-has-not
+stop
+book	Mutations	mutations
+page	The four kinds	mutations#the-four-kinds
+page	How you get them	mutations#how-you-get-them
+page	How you get rid of them	mutations#how-you-get-rid-of-them
+page	A note on the descriptions	mutations#a-note-on-the-descriptions
+page	If you are carrying a great many	mutations#if-you-are-carrying-a-great-many
+stop
+book	Virtues	virtues
+page	The eighteen	virtues#the-eighteen
+page	How they move	virtues#how-they-move
+page	What reads them	virtues#what-reads-them
+page	Where to see them	virtues#where-to-see-them
+page	Where this came from	virtues#where-this-came-from
+stop
+book	Pets and Allies	pets
+page	Whose side a monster is on	pets#whose-side-a-monster-is-on
+page	Telling them apart	pets#telling-them-apart
+page	Saved games	pets#saved-games
+page	How they fight	pets#how-they-fight
+page	Giving orders	pets#giving-orders
+page	Between levels	pets#between-levels
+page	What they cost	pets#what-they-cost
+page	What they earn you	pets#what-they-earn-you
+page	Losing one	pets#losing-one
+page	Getting one	pets#getting-one
+page	Still to come	pets#still-to-come
+stop
+book	Nightmare Mode	nightmare
+page	Choosing it	nightmare#choosing-it
+page	Knowing you are in it	nightmare#knowing-you-are-in-it
+page	What it changes	nightmare#what-it-changes
+page	And four things it does not do	nightmare#and-four-things-it-does-not-do
+page	A note on the spoiler	nightmare#a-note-on-the-spoiler
+stop
+stop
+book	Meta	meta
+book	Version Information	version
+page	ZangbandTK	version#zangbandtk
+page	Angband	version#angband
+page	Brief Version History	version#brief-version-history
+page	Some of the changes between Angband 2.6.1 and 3.0.6	version#some-of-the-changes-between-angband-2-6-1-and-3-0-6
+page	A Posting from the Original Author	version#a-posting-from-the-original-author
+page	Previous Versions (outdated)	version#previous-versions-outdated
+page	Contributors (incomplete)	version#contributors-incomplete
+stop
+book	Copying and licence information	copying
+page	Copyright	copying#copyright
+page	Exceptions	copying#exceptions
+page	A note for anyone deriving from this	copying#a-note-for-anyone-deriving-from-this
+stop
+book	Credits	thanks
+page	Version 4.2.x	thanks#version-4-2-x
+page	Previous maintainers	thanks#previous-maintainers
+page	Contributors	thanks#contributors
+page	Version 4.0.x	thanks#version-4-0-x
+page	Version 4.1.x	thanks#version-4-1-x
+stop
+stop

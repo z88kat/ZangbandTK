@@ -12,8 +12,9 @@
 #
 # Always pick up os, to get os.environ, as used below.
 import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import sys
+# _ext holds tkhelp, the builder for the Tk front end's Help window.
+sys.path.insert(0, os.path.abspath('_ext'))
 
 
 # -- Project information -----------------------------------------------------
@@ -59,6 +60,7 @@ master_doc = 'index'
 extensions = [
     "myst_parser",
     "sphinx_design",
+    "tkhelp",
 ]
 
 # Add any paths that contain templates here, relative to this directory.

@@ -1,0 +1,365 @@
+H	A Players’ Guide to ZangbandTK
+M	a-players-guide-to-zangbandtk
+T	h1	A Players’ Guide to ZangbandTK
+T	h1	\n
+T	p0	This guide assumes familiarity with the basic mechanics of the game. If you’re completely new to the game, check out the manual and just start playing, get into the dungeon and try, well, whatever seems to be prudent. You’ll probably die rather quickly, but the following will make much more sense to you if you have just a little actual gameplay experience.
+T	p0	\n
+T	p0 note strong	Note
+T	p0 note	\n
+T	p0 note strong	This guide is inherited, and it is older than the game.
+T	p0 note	 It was written by an Angband player for Angband 3.5.0 — several versions before the 4.2.6 that ZangbandTK is built on — and has not been revised for ZangbandTK. It knows nothing of the wilderness, and its judgement about when a fight is worth taking is calibrated to Angband’s monster numbers, which ZangbandTK changes on purpose: every monster carries 73% of Angband’s hit points and 50% of its armour class, so fights resolve faster in both directions. Read 
+L	p0 note link	1	balance	How Balance Differs
+T	p0 note	 alongside it.
+T	p0 note	\n
+T	p0 note	Where it named Angband’s endgame it has been corrected to this game’s, and where it named Angband as the game you are playing it now says “the game”. Nothing else has been touched. The character dump below is a real Angband 3.5.0 one and its layout is not today’s — 4.2 has no Perception line, for instance — and the character advice throughout is written for Angband’s nine classes rather than this game’s fourteen.
+T	p0 note	\n
+T	p0 note	It is still a handy source of hints and habits. Just don’t take it as an authority.
+T	p0 note	\n
+M	the-basics
+T	h2	The basics
+T	h2	\n
+T	p0	As borrowed from a classic rgra post, there’s not much that you actually have to do. Your one and only mission is to slay the Serpent of Chaos on the hundredth level of the Courts of Chaos. In order to get there, you need to go down a lot of stairs and kill Oberon on the ninety-ninth. That’s about it - everything else is optional. Of course, before you can kill Oberon you’ll need lots of experience and good equipment, but by the time you get that deep you’ll have both. Just see to it that you don’t die along the way.
+T	p0	\n
+T	p0	One thing this guide’s original could take for granted and you cannot: depth is no longer enough. ZangbandTK has thirteen dungeons, each ending at the bottom of its own range, so getting deeper means walking across the world to find one that reaches deeper. The Courts of Chaos are where the game ends, and finding their entrance is part of the task. See 
+L	p0 link	2	dungeon	Exploring the Dungeon
+T	p0	 and 
+L	p0 link	3	wilderness	The Wilderness
+T	p0	.
+T	p0	\n
+T	p0	The one and most important thing you need to get in your head is that you can’t possibly kill every monster on every level. Think of the game as forays into the dungeon from which you want to return with cool stuff; think of the shallower levels as obstacles you need to overcome on your way deeper into the dungeon; or whatever you like. Just never-ever think of it as a killing spree. Until you find Oberon, your task is to survive and eventually get to level 99.
+T	p0	\n
+T	p0	The next point is that you don’t need to fight any particular monster (other than the big two). Yes, there might be a rather impressive hoard in that vault – but if the monsters guarding it are too many or too fierce, well, just give it a pass. The game offers an endless supply of monsters and treasure and everything. There will always be another day – provided you live to see another day. Sometimes you just have to bug out and run for your life.
+T	p0	\n
+T	p0	So, let me recap, the vital points are:
+T	p0	\n
+T	li1	•\t
+T	li1	go down a lot of stairs
+T	li1	\n
+T	li1	•\t
+T	li1	find the Courts of Chaos
+T	li1	\n
+T	li1	•\t
+T	li1	kill Oberon (dl 99)
+T	li1	\n
+T	li1	•\t
+T	li1	kill the Serpent of Chaos (dl 100)
+T	li1	\n
+T	li1	•\t
+T	li1	Quick start
+T	li1	\n
+T	p0	From this point, the guide assumes that you are playing a fighting class (warrior, ranger, rogue or paladin) and race (Dunedain, High-Elf, Dwarf, Half-Orc, Half-Troll.) First, use the ‘cost-based’ stats selection, and create a character with 3 or 4 blows (Don’t pick a class/race combinations, like Dwarf Ranger, that can only get 2 blows.)
+T	p0	\n
+T	p0	First, set your stats to get maximum blows. If you have a combination with good dexterity, select 18/10 dexterity, and then set your strength to 17 or 18. Set your spell-casting stat to something low but usable (~12), and spend the rest on constitution. For a beginning character, constitution is least important, because it doesn’t add significant HP until well above 18.
+T	p0	\n
+T	p0	Example character:
+T	p0	\n
+T	pre0	 [Angband 3.5.0 Character Dump]\n
+T	pre0	\n
+T	pre0	Name   Anar         Age            102          Self  RB  CB  EB   Best\n
+T	pre0	Sex    Female       Height       5'11"   STR:     17  +1  +0  +0     18\n
+T	pre0	Race   High-Elf     Weight    14st 0lb   INT:     10  +3  +2  +0     15\n
+T	pre0	Class  Ranger       Turns used:          WIS:     10  -1  -2  +0      7\n
+T	pre0	Title  Runner       Game             1   DEX:     18  +3  +1  +0  18/40\n
+T	pre0	HP     14/14        Standard         0   CON:     10  +1  -1  +0     10\n
+T	pre0	SP     0/0          Resting          0\n
+T	pre0	\n
+T	pre0	Level                  1    Armor        [0,+2]    Saving Throw     49%\n
+T	pre0	Cur Exp                0                           Stealth         Good\n
+T	pre0	Max Exp                0    Melee        1d4,+2    Disarming        36%\n
+T	pre0	Adv Exp               23    To-hit        23,+4    Magic Devices     55\n
+T	pre0	                            Blows      2.0/turn    Perception   1 in 20\n
+T	pre0	Gold                 139                           Searching        27%\n
+T	pre0	Burden          18.5 lbs    Shoot to-dam     +0    Infravision    40 ft\n
+T	pre0	Speed             Normal    To-hit        33,+4\n
+T	pre0 prelast	Max Depth           Town    Shots        1/turn\n
+M	a-fighting-chance
+T	h3	A Fighting Chance
+T	h3	\n
+T	p0	For a melee character, the most important measure of power is how much damage they can do in a single turn. Consider the above cl 1 character with 3 blows from a Rapier (+7,+9), in a fight vs an out-of-depth Bullroarer, with no escapes, no ranged weapons, and no armor. On the face, she has no chance. However, if she can get in the first blow, she in fact has a 71% chance of killing Bullroarer in a single turn, and a 95% chance of frightening him.
+T	p0	\n
+T	p0	Further, with full buffing (!Hero, ?Blessing ?Berserk Strength), the character has an 81% chance of killing him in a single turn. As well as improving the to-hit probability from 91% to 95%, this corresponds to a 50% reduction in the chance of failure in a dangerous situation. Finally, assuming ‘Anar’ does win this battle, she gets 450 experience, and immediately goes jumps to cl 8.
+T	p0	\n
+M	missile-damage
+T	h3	Missile Damage
+T	h3	\n
+T	p0	With proper preparation even a weak character has an almost guaranteed chance of killing Bullroarer, if you meet him at a distance (across a lighted room). An unenchanted longbow does 7.5 damage/shot with ordinary (unenchanted) arrows. However, flasks of oil do 7HP nominal damage when thrown, and do triple damage (21HP) vs fire-vulnerable monsters. Bullroarer has 60 HP, so even a small stack of oil will finish him off.
+T	p0	\n
+M	summary
+T	h3	Summary
+T	h3	\n
+T	li1	•\t
+T	li1	Character power is more closely associated with damage output rather than HP or character level.
+T	li1	\n
+T	li1	•\t
+T	li1	If you preserve your supplies, you can fight well above your weight. Early in the game, this means using flasks of oil against worthwhile targets; later in the game this means using branded or slaying “ego” ammunition. Good ammunition is too valuable to waste on less valuable targets (like red jellies, or groups of orcs.)
+T	li1	\n
+T	li1	•\t
+T	li1	Buffing, generally with !Heroism, can be very helpful to get starting characters out of sticky situations.
+T	li1	\n
+T	li1	•\t
+T	li1	Going deeper in the dungeon is often a more conservative (safer) strategy than staying at a shallow (cl < dl) depth. (cl: character level; dl: dungeon level) HP and character level are easy to come by.
+T	li1	\n
+T	li1	•\t
+T	li1	Starting Equipment
+T	li1	\n
+M	fighting-power
+T	h2	Fighting Power
+T	h2	\n
+T	p0	Buy a light weapon that gives you the maximum possible blows, with the highest dice available. This is generally a Rapier, Main Gauche, or Dagger. If these are not available, you may be better off quitting and restarting.
+T	p0	\n
+M	plan-to-be-deep
+T	h2	Plan to be deep
+T	h2	\n
+T	p0	Always make sure to have a scroll of recall, even on your first trip into the dungeon. Monsters and items at dl 5 (250’) and deeper are much (~100x) more valuable than items at dl 1. (The example above may be contrived, but it is representative.)
+T	p0	\n
+T	p0	To survive deep(er) you will want:
+T	p0	\n
+T	li1	1.\t
+T	li1	Escapes:
+T	li1	\n
+T	li2	•\t
+T	li2	3+ ?Phase Door
+T	li2	\n
+T	li2	•\t
+T	li2	1 ?Recall
+T	li2	\n
+T	li1	2.\t
+T	li1	Protection from secondary effects (confusion, blindness, poison)
+T	li1	\n
+T	li2	•\t
+T	li2	1 !CLW (for identification and blindness)
+T	li2	\n
+T	li2	•\t
+T	li2	1+ !CSW (for identification and confusion)
+T	li2	\n
+T	li1	3.\t
+T	li1	Buffing
+T	li1	\n
+T	li2	•\t
+T	li2	1 !Hero (for protection from fear.)
+T	li2	\n
+T	li1	4.\t
+T	li1	Ranged attack to soften up a (single) unique
+T	li1	\n
+T	li2	•\t
+T	li2	~5 Flasks of Oil to kill dangerous and/or valuable monsters (throw oil for damage with the 
+T	li2 code	v
+T	li2	 throw command)
+T	li2	\n
+T	li2	•\t
+T	li2	~10-20 Iron shots (or arrows for Rangers) to throw at non-dangerous monsters with annoying side effects. (Stat drainers and acid damagers that are between you and the stairs down.) extra arrows for a ranger (shoot arrows with the 
+T	li2 code	f
+T	li2	 fire command.) Shots can be reused; oil can’t.
+T	li2	\n
+T	li1	5.\t
+T	li1	Armor
+T	li1	\n
+T	p0	Don’t bother buying armor - it’s very expensive in comparison to AC. You will find it in the dungeon soon enough.
+T	p0	\n
+T	p0	Your starting equipment will include more than enough food and illumination for the first trip down.
+T	p0	\n
+M	the-first-trip
+T	h3	The first trip
+T	h3	\n
+T	p0	It’s quite possible to get to 500’ (dl 10) or deeper in the first trip into the dungeon. Plan to return when you run out of either escapes (?Phase door), protection from side-effects (curing potions), or damage (arrows if you are a ranger, flasks of oil if you are otherwise weak.)
+T	p0	\n
+T	p0	Since you don’t have much, don’t spend it on less valuable monsters.
+T	p0	\n
+M	what-to-kill
+T	h3	What to kill
+T	h3	\n
+T	li1	•\t
+T	li1	Any mobs of monsters that you can defeat (kill or frighten) in a single turn and either give good experience (a pack of wolves) or good drops (weaker orcs, novice humans.) If you are deep enough, this is likely to increase your character by several levels in a single battle.
+T	li1	\n
+T	li1	•\t
+T	li1	Uniques with good drops (Bullroarer, Brodda, Wormtongue)
+T	li1	\n
+T	li1	•\t
+T	li1	Easy kills that are likely to drop something worthwhile.
+T	li1	\n
+M	what-to-ignore
+T	h3	What to ignore
+T	h3	\n
+T	li1	•\t
+T	li1	Monsters that will damage or destroy gear. (jellies, water hounds, etc)
+T	li1	\n
+T	li1	•\t
+T	li1	Non-valuable monsters that are likely to use up consumables (baby gold dragons, groups of spell-casters in line-of-sight, etc)
+T	li1	\n
+T	li1	•\t
+T	li1	Mobs that you can’t dominate.
+T	li1	\n
+T	li1	•\t
+T	li1	Uniques with escorts you can’t dominate
+T	li1	\n
+T	li1	•\t
+T	li1	Monsters at shallow depth. Drops for any given monster get better the deeper you go. Killing a novice mage at dl 1 generally gives nothing; at dl 20 he’s likely to drop something worth hundreds of gold. Wormtongue has, on average, a noticeably better drop at dl 20 than dl 10.
+T	li1	\n
+T	li1	•\t
+T	li1	Things that waste effort. (Run-away breeders, low-EXP monsters with no drop. Just close the door and move on.)
+T	li1	\n
+M	what-to-avoid
+T	h3	What to avoid
+T	h3	\n
+T	li1	•\t
+T	li1	Anything that can kill you in a single turn.
+T	li1	\n
+M	on-bad-luck
+T	h2	On Bad Luck
+T	h2	\n
+T	p0	This is rule number one: don’t take unnecessary risks. If you take enough low-probability chances of death, you’ll never survive to fight Oberon. Such deaths are generally called ‘stupid’, but that’s not always accurate. Sometimes it’s just bad luck. But given enough chances, you are guaranteed to receive it. It’s the trick to extremely fast dives: the fewer moves you make, the less chance any one of them will be fatal, even if on average, your individual moves are riskier than in slower play. But the strategy applies more generally: unless you are exceedingly careful in play, messing around long enough at any one depth guarantees that something bad will eventually happen.
+T	p0	\n
+M	face-palm-tips
+T	h2	Face-palm Tips
+T	h2	\n
+T	p0	The preceding is good advice; however, it does not offer much more than generalizations, albeit valid, for the “intermediate” (?) player. The following is intended to state what many perceive to be blatantly obvious, hence “you did WHAT!” face-palm deaths. This really should be cleaned up and refactored, but placing here for now.
+T	p0	\n
+T	p0	WARNING. I have yet to win. This is a compilation of some of the better tips I’ve learned while trying to explore the depths… (to Level ~35). Additional advice would be greatly appreciated!
+T	p0	\n
+M	start-simple
+T	h3	Start simple
+T	h3	\n
+T	p0	Begin your career as a warrior. Warriors are relatively simple to begin with, and are less likely to be eaten by a pack of jackals.
+T	p0	\n
+M	focus
+T	h3	Focus!
+T	h3	\n
+T	p0	This is a very harsh game, in that the character you’ve been playing for months could be killed by a single careless action. Playing when tired or drunk is probably a good way to leave yourself with nothing but a sad tale to share on the forums. If you have the ability to sense monsters or traps then use it. This is particularly important when you begin to encounter monsters that, without the appropriate gear, will kill your character in a single move.
+T	p0	\n
+M	use-that-stuff
+T	h3	Use that stuff
+T	h3	\n
+T	p0	The game has potions, spell books, wands, staffs, rods, activate-able items, melee weapons, ranged weapons, and whatnot. They’re meant to be used, for crying out loud! It can take a while to get used to using all the different types of items, but they work best when used in concert. For those able to use magic devices, rods wands and staves can be very useful when your mana is running low, and allow you access to spells that may not normally be available to your class. They are also very useful for dealing with monsters that
+T	p0	\n
+M	rangers-have-a-bow
+T	h3	Rangers have a bow
+T	h3	\n
+T	p0	Really a subset of the previous point, but it happens so often… Don’t try to play a ranger like a warrior – rely on the bow! Similarly for mages, don’t do a Gandalf. He may be able to draw a sword and rush headlong in to a pack or orcs, but mages are considerably more fragile. Priests are better equipped to engage in melee combat - with their healing abilities compensating for their somewhat fragile nature.
+T	p0	\n
+M	stockpile
+T	h3	Stockpile!
+T	h3	\n
+T	p0	Players may not be inclined to carry multiples of an item, or do so in a limited quantity, perhaps due to weight encumbrance concerns. Don’t be afraid to carry a LOT of an item, particularly the basics – food, light, projectiles, cure potions, “run away” scrolls, etc. Don’t be afraid to MAX OUT important items! Some monsters will steal or destroy your items, so it’s worth carrying additional quantities of key items - such as Scrolls of Recall or important spell/prayer books. This becomes very important when you reach dungeon levels in which monsters develop fire and acid-based attacks. Mages and priests tend to start out with low strength, and so are very limited in how much stuff they can carry, so consider carrying additional copies of the spellbooks that you know you can’t afford to lose during a fight.
+T	p0	\n
+M	an-item-you-don-t-use-is-useless
+T	h3	An item you don’t use is useless
+T	h3	\n
+T	p0	Common fallacy: you find an incredibly powerful Staff of Mighty BOOM! (3 charges), or a single Potion of become Chuck Norris, and then you keep carrying it around and never actually use it. It could be a life insurance, but you might still reconsider your strategy: maybe you’ve become too careful lately (the game rewards deliberate risk-taking, after all).
+T	p0	\n
+M	identifying-your-items
+T	h3	Identifying your items
+T	h3	\n
+T	p0	Many items found, especially early in the game, will be unidentified or partially identified. Weapons and armour can be identified by being worn and used in combat, and can be removed if found to be of poor quality. Some characters learn to cast spells to identify the runes on wearable items that define their properties.
+T	p0	\n
+T	p0	Staves, rods and wands can often be identified by being used against monsters, but be aware that some of these magical items can have negative effects. Only use this approach when facing easily defeated monsters. Consuming unidentified potions and mushrooms can be risky, so the risk-averse player may prefer to sell them in the town. Ammunition can normally be identified by being thrown or fired at a monster, and typically the worst thing that can happen is that the attack does little damage to the monster. As with staves, wands and rods, do this when facing a monster than can be easily defeated.
+T	p0	\n
+T	p0	Scrolls can normally be identified by being read, but some scrolls have negative effects. Your character may have a very short life if they read a scroll that summons a horde of undead monsters. If using this approach, it’s a good idea to position your character on top of some stairs so you can quickly escape if a mysterious scroll leaves your character surrounded by monsters.
+T	p0	\n
+T	p0	With weapons and armour, your character will in time learn their inscribed runes.
+T	p0	\n
+M	the-dungeon-is-dark
+T	h3	The dungeon is dark
+T	h3	\n
+T	p0	Players will readily note that corridors are unlit; however, what may not be blatantly obvious is that the dungeon gets darker with depth, until it’s pitch black. ALWAYS carry a light source. DON’T drop a light source for more loot!
+T	p0	\n
+M	you-can-run-away
+T	h3	You can RUN AWAY
+T	h3	\n
+T	p0	There is NO RULE that you have to clean out a dungeon – AT ALL. See something you can’t handle? Don’t be afraid to leave – NOW. Sure you could try to avoid it, but then again, it could be a hummerhorn. Half way through the level? You can still LEAVE NOW. Nearly finished with the level? You can still leave NOW. Think of it as a tactical strike, not a genocide mission.
+T	p0	\n
+M	get-away-now
+T	h3	Get away NOW!
+T	h3	\n
+T	p0	Sure, you should pay more attention and not get yourself in a next turn = death situation, but this is not always avoidable and no one (presumably) is so meticulously patient. ALWAYS carry get away items – Phase Door, Teleport, Recall, Teleport Level, etc. When you can, stockpile those that work NOW. If a unique starts chasing you, you don’t want to be waiting for Recall to kick in.
+T	p0	\n
+T	p0	You should seriously consider a quick escape if dealing with a situation in which monsters are breeding explosively. Some classes, such as mages, are more easily able to handle these though the use of spells that affect multiple monsters simultaneously, but even they should consider leaving if it becomes apparent that the monsters are breeding more quickly than the player can kill them.
+T	p0	\n
+M	level-1-is-still-there
+T	h3	Level 1 is still there
+T	h3	\n
+T	p0	Don’t forget that you can always replay, and re-re-play the early levels for ANY reason whatsoever. Recalled from a depth too deep? Dive from level 1 and reset the depth. Want to fill your armor slots? Need a few more gold? Even if you’re on a streak diving through the dungeon, step back and reassess whether you want to return to an earlier level – you never know what could be lurking around the corner.
+T	p0	\n
+M	black-market-deals
+T	h3	Black Market Deals
+T	h3	\n
+T	p0	Don’t be afraid to buy from the “blackmarket”. Sure the prices are more expensive than the other stores, but it tends to offer a good selection of items and it can be worth the gold versus not having it in the dungeon. You can always get more gold, but the RNG is random. It’s just another store – don’t worry about the name. The blackmarket is often a good source of potions to increase your stats, so it’s worth checking it each time you visit the town - and try to have enough gold to purchase potions for the most important stats for your character.
+T	p0	\n
+M	try-a-different-strategy
+T	h3	Try a Different Strategy
+T	h3	\n
+T	p0	Sure, what you’re doing kinda works, but your characters keep dying off. Playing conservatively? Try playing a character as though the “iron-man” stairs setting is in effect. You’ll probably want some ranged weapons for this, but you may be surprised how fast you can level if you DIVE! Granted, the lower levels are harder, but the deeper you go, the more experience per kill you get. Still fight conservatively, but dive aggressively. Once your character has gotten a decent complement of items and spells … (what next?). Don’t be afraid to throw away characters – DIVE aggressively until you get a good feel for your character and you’ve leveled up.
+T	p0	\n
+M	on-depth-and-item-value
+T	h3	On Depth and Item Value
+T	h3	\n
+T	p0	Whenever you kill a monster that may drop an item, a lot of randomness is played out. No need to go into detail just here (if you really want to know, you can look it up in the spoilers), suffice it to say that depth is the single most important factor. You may, of course, find rather valuable and/or useful stuff even on the very first level, but the chances are rather small.
+T	p0	\n
+T	p0	In short: if you want to find better things, you need to go deeper.
+T	p0	\n
+M	the-monster-barely-matters
+T	h3	The monster barely matters
+T	h3	\n
+T	p0	If a monster drops an item, it can be anything. Really. You may find rare spellbooks on illiterate Trolls, and jellies may drop artifact weapons. Some rare monsters, like powerful dragons, will carry good or even exceptional objects – but still, the dungeon level is the most important factor. What was “exceptional” on dl8 will probably be rather uninteresting on level 30.
+T	p0	\n
+M	regarding-artifacts
+T	h3	Regarding Artifacts
+T	h3	\n
+T	p0	For every single wearable item, there is a small chance that it will be an artifact. This might seem slim, but considering the number of monsters you will slay, it soon adds up. If you work through a large room full of orcs, there’s about a one-in-ten chance that you’ll discover at least one artifact among the carnage. Artifacts typically have impressive statistics and an ability that can be activated.
+T	p0	\n
+M	surviving-to-clvl-31-dlvl-36
+T	h2	Surviving to clvl 31 / dlvl 36
+T	h2	\n
+T	p0	Additional tips learned from various failed attempts. Still have not beat angband, but making considerable progress of late, particularly with my (now) current character.
+T	p0	\n
+M	run-away
+T	h3	RUN AWAY!
+T	h3	\n
+T	p0	Very first tip is a basic tenet repeated throughout the guide; however, it is far too easy to become engrossed in your achievements (eg an awesome artifact, maximizing stats, a slightly better item, gaining a second blow, getting a speed bonus, etc) and lose it all due to something very avoidable had you been paying diligent attention.
+T	p0	\n
+T	p0	While playing, always make sure to check for the basics – particularly monsters, stairs, and traps. Don’t lose a character, asserting that you can kill a “C” easily only to discover that a “wild dog” is a far cry from a “hellhound”.
+T	p0	\n
+T	p0	Similarly, if you just got some nice artifacts / other equipment or achieved a significant accomplishment – save your game and take a break. You don’t have to continue to play to enjoy your past success, and when you return you will likely be more able to play diligently.
+T	p0	\n
+T	p0	See a few uniques or other monsters that might possibly give you some trouble – maybe? Perhaps with only slight difficulty? See a vault with some cool treasure, but a few troublesome monsters / uniques? If you’re not highly confident (perhaps even 100%) that you can easily survive the level, you can leave on the spot. Just enter the level, immediately do your detection routine (monsters, stairs / traps, etc) assess the immediate threat, and use the stairs immediately if you want to. You can go up as readily as you came down, and you can go down as readily as you came up. Further, artifacts can be regenerated (unless you disabled that option) and as you dive, even better items will be available. So, if you skip out on levels just because you want to play it very conservatively, you will still find great items and better yet, you have a higher chance of survival.
+T	p0	\n
+M	information-awareness
+T	h3	Information Awareness
+T	h3	\n
+T	p0	The game offers a LOT of information on a LOT of different screens. If you haven’t already, try enabling multiple consoles – ALL of them – and then try out different options / combinations. Being able to view a lot of information simultaneously at a glance is a considerable benefit over having to be diligent enough to manually check each relevant screen each time.
+T	p0	\n
+T	p0	Also, change the text size. Sure you may be accustomed to your terminal font and size for reading; however, you can read and make sense from context a lot easier than you can reliably identify the glyph, color, and relative position of every character on the screen. This may be a text-based game, but you don’t have to play with a tiny (or even normal size font). Using a slightly larger font makes identifying things a LOT easier. The SDL2 interface is perhaps the easiest for using multiple terminals and changing fonts.
+T	p0	\n
+T	p0	This alone has greatly contributed to my survivability!
+T	p0	\n
+M	start-from-the-beginning
+T	h3	Start from the Beginning
+T	h3	\n
+T	p0	Trying to mature your character through the clvl / dlvl 20s can be challenging until you can survive even lower depths. One tip here is to use Recall exclusively to return from the dungeon and use the stairs to return back down to the level you left.
+T	p0	\n
+T	p0	Yes, this is more work, and as your clvl increases, the early levels become exceptionally easy; however, it guarantees that you will always enter a level on stairs, facilitating running away.
+T	p0	\n
+M	item-collecting
+T	h3	Item Collecting
+T	h3	\n
+T	p0	Its easy to stockpile, but you’ll run out of space VERY quickly. Further, what was useful may not be useful now and what’s useful now may not be useful later. It can be easy to try to grab everything in sight and then return to town when your inventory is full; however, when you reach this point, try continuing to dive, even with a full inventory.
+T	p0	\n
+T	p0	As your character progresses and you continue to dive you will find better classes of items. Don’t be afraid to toss the less valuable stuff to make room, so you can continue diving.
+T	p0	\n
+T	p0	This is particularly important while diving. If you let a full inventory be a limiting factor, you won’t be able to get nearly as deep as if you are willing to discard items along the way.
+T	p0	\n
+M	take-a-break
+T	h3	Take a Break
+T	h3	\n
+T	p0	Again, this is another basic tip repeated thorough out the guide; however, learn to stop playing. You can always save your game and resume later when you would be in your prime and optimally ready to play as opposed to trying to continue to play as drowsiness sets in.
+T	p0	\n
+T	p0	This may be difficult at first, but it can help you avoid running decent characters into the ground for avoidable mistakes…
+T	p0	\n
+M	don-t-forget-your-ranged-attacks
+T	h3	Don’t forget your Ranged Attacks!
+T	h3	\n
+T	p0	Granted, as your character develops, you become more powerful at melee; however, this does not preclude you from using ranged attacks! It is far to easy to start playing a ranger like a warrior mage if you get a good melee weapon, but don’t forget your ranged skill! You may be “Superb” at Fighting, but ranger’s are even better at Shooting – perhaps even “Legendary” or better.
+T	p0	\n
+T	p0	This can be a hard one to do diligently, especially if your melee weapon is powerful, but try to play diligently and use ranged attacks. Try earlier levels where survivability is much higher and try to play without melee attacks for awhile to get used to using the bow again.
+T	p0	\n
+T	p0	Even as your character matures, try to keep in mind your race / class core strengths.
+T	p0	\n

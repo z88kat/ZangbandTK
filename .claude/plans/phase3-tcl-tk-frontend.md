@@ -1911,8 +1911,7 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 > **The menu bar, laid out as the original's, 12 October 2026.** T7 built the menus from the
 > game's own command groups — Items, Action commands, Manage items, Information, Utility, and
 > "Hidden" shown as Other — one entry a command under the game's long descriptions. Complete,
-> and hard to read. The project owner's layout ([menu-structure.md](menu-structure.md)) is the
-> original ZangbandTk's: **File**, **Inventory** (Magic and Use under it), **Action** (Alter,
+> and hard to read. The project owner's layout is the original ZangbandTk's: **File**, **Inventory** (Magic and Use under it), **Action** (Alter,
 > Looking, Movement, Resting), **Other** (Preferences, with the tile sets moved under it), then
 > Window and **Help**, which gains the game's Help and an About window. `commands(layout)` in
 > [lib/tcl/commands.tcl](../../lib/tcl/commands.tcl) names each command by its description
@@ -1943,6 +1942,32 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 > without a character as a bare modifier. It now takes the keysym when Control is held and
 > encodes it as [ui-event.h](../../src/ui-event.h) asks — `KTRL('F')`, no `KC_MOD_CONTROL` —
 > which also drops the modifier X11's Tk left on a control character it had already made.
+
+> **The Help window, 13 October 2026.** [lib/tcl/help.tcl](../../lib/tcl/help.tcl) is the
+> original's help browser — Contents tree, Back and Next, a Section menu of the chapters, a
+> status bar — drawing the Sphinx manual into a text widget, as settled in §6.
+> [docs/\_ext/tkhelp.py](../../docs/_ext/tkhelp.py) is a Sphinx builder that writes each page
+> as instructions to insert — text with tags, links, anchors — with the layout decided there:
+> indents, bullets, and tables laid out in the fixed font. `contents.txt` is the tree, in the
+> shape of the original's `tk/doc/contents`. The scope is the four parts of the player's
+> manual (`tkhelp_roots`); a link to any other page opens the website.
+>
+> - **The pages are committed**, under `lib/tcl/help/`, by `scripts/build-tk-help`, so a
+>   build needs no Python. [tk-help.yaml](../../.github/workflows/tk-help.yaml) fails when
+>   they no longer match `docs/`. Sphinx 7.4 on Python 3.9 and 9.1 on 3.13 made them
+>   byte for byte the same, which is what lets that check be strict.
+> - **`?` opens the window**, as the original's did: `do_cmd_help` asks a new
+>   `help_view_hook`, and the terminal builds keep `lib/help`. Help ▸ Help opens it directly,
+>   so it is never greyed — the manual can be read during a `-more-`.
+> - **Search** ranks the pages by how often they mention the words and marks them on the page;
+>   Find Again steps through. **Open in Browser** is the secondary path the decision kept for
+>   anything the widget draws poorly.
+> - **It hung the first time a chapter was opened**: showing a page selected its Contents item,
+>   whose `<<TreeviewSelect>>` showed the page again. The tree now ignores the item the window
+>   selected itself, and a bridge check counts the pages shown.
+>
+> Still to do: the windows' own F1 entries put a sentence in the status line rather than
+> opening their chapter; and no chapter has a picture yet, so images are left out.
 
 ---
 

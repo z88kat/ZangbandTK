@@ -142,10 +142,10 @@ check "building the menus twice changes nothing" {
 		[expr {[.menubar.about index end] == $help}]
 } "1 1 1"
 
-# The menus are the original's layout (menu-structure.md), and every one of
-# the game's commands is somewhere in them -- a command added to the game and
-# given no place fails here.  The layout may name one the game lacks only if
-# it is the Borg's, which a build can leave out.
+# The menus are the original's layout, and every one of the game's commands is
+# somewhere in them -- a command added to the game and given no place fails
+# here.  The layout may name one the game lacks only if it is the Borg's, which
+# a build can leave out.
 check "the menu bar is the original's, and every command has a place" {
 	commands_build
 	set bar {}
@@ -1369,6 +1369,122 @@ proc tips_pass {} {
 		set r
 	} 1
 
+	help_pass
+}
+
+# --- the Help window --------------------------------------------------------
+
+# The manual, as scripts/build-tk-help made it from docs/: every page the
+# Contents names is there, and every link in it leads to a page that is, and
+# to a place on that page.  A link that does not is the builder's fault or a
+# page that has gone, and either way a player would click it and get nothing.
+proc help_pass {} {
+	check "the Help window carries the manual's pages" {
+		set missing {}
+		foreach doc [help_docs] {
+			if {![llength [help_page $doc]]} { lappend missing $doc }
+		}
+		list [expr {[llength [help_docs]] >= 25}] $missing
+	} "1 {}"
+
+	check "every link in the manual leads to a page, and a place on it" {
+		set marks [dict create]
+		foreach doc [help_docs] {
+			foreach op [help_page $doc] {
+				if {[lindex $op 0] eq "M"} { dict lappend marks $doc [lindex $op 1] }
+			}
+		}
+		set targets {}
+		foreach doc [help_docs] {
+			foreach op [help_page $doc] {
+				if {[lindex $op 0] eq "L"} { lappend targets $doc [lindex $op 3] }
+			}
+		}
+		set queue [help_contents]
+		while {[llength $queue]} {
+			set queue [lassign $queue node]
+			lappend targets "" [lindex $node 2]
+			lappend queue {*}[lindex $node 3]
+		}
+		set broken {}
+		foreach {from target} $targets {
+			if {[regexp {^(https?|mailto):} $target]} continue
+			set at [string first # $target]
+			set doc [expr {$at < 0 ? $target : [string range $target 0 $at-1]}]
+			set anchor [expr {$at < 0 ? "" : [string range $target $at+1 end]}]
+			if {$doc eq ""} { set doc $from }
+			if {![dict exists $marks $doc]} {
+				lappend broken "$from -> $target"
+			} elseif {$anchor ne "" && $anchor ni [dict get $marks $doc]} {
+				lappend broken "$from -> $target"
+			}
+		}
+		list [expr {[llength $targets] > 300}] [lrange $broken 0 4]
+	} "1 {}"
+
+	check "the Help window opens at its contents, goes to a place, and back" {
+		catch {destroy .help}
+		help_window
+		update
+		set first $::helpwin(doc)
+		help_show birth#races
+		update
+		set t .help.f.pw.page.t
+		set top [string trim [$t get @0,0 "@0,0 lineend"]]
+		set at $::helpwin(doc)
+		help_show attack
+		help_back
+		set back $::helpwin(doc)
+		help_next
+		list $first $at $top $back $::helpwin(doc)
+	} "@contents birth Races birth attack"
+
+	# Showing a page selects it in the Contents tree, and the tree's
+	# <<TreeviewSelect>> must not show it again: it did, which selected it
+	# again, and the game spun for ever the first time a chapter was opened.
+	check "a page selects its Contents entry, and nothing more" {
+		set ::shows 0
+		trace add execution help_show enter {apply {args { incr ::shows }}}
+		help_show dungeon
+		set ::shows 0
+		update
+		update
+		trace remove execution help_show enter {apply {args { incr ::shows }}}
+		list $::shows [.help.f.pw.side.nb.contents.tv selection]
+	} "0 t:dungeon"
+
+	check "Search finds the pages that mention a word, most mentions first" {
+		set ::helpwin(query) Wilderness
+		help_search
+		list [expr {[llength $::helpwin(results)] > 3}] \
+			[expr {"wilderness" in [lrange $::helpwin(results) 0 2]}]
+	} "1 1"
+
+	check "Help ▸ Help opens the Help window" {
+		destroy .help
+		.menubar.about invoke 0
+		set r [winfo exists .help]
+		destroy .help
+		set r
+	} 1
+
+	# The original's ? opened its help browser, and so does this one's:
+	# do_cmd_help asks the front end through help_view_hook.
+	angband_key 63 0 ?
+	set ::waits 0
+	help_key_wait
+}
+
+proc help_key_wait {} {
+	if {![winfo exists .help] && [incr ::waits] < 25} {
+		after 200 help_key_wait
+		return
+	}
+	check "the game's ? opens the Help window" {
+		set r [winfo exists .help]
+		catch {destroy .help}
+		set r
+	} 1
 	door_pass
 }
 

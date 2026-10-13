@@ -465,10 +465,22 @@ bool show_file(const char *name, const char *what, int line, int mode)
 
 
 /**
+ * A front end's own help, or NULL for the help files here (ZangbandTK, T9).
+ * The Tk front end's Help window reads the manual, as the original
+ * ZangbandTk's ? did; the terminal builds keep these files.
+ */
+void (*help_view_hook)(void) = NULL;
+
+/**
  * Peruse the On-Line-Help
  */
 void do_cmd_help(void)
 {
+	if (help_view_hook) {
+		help_view_hook();
+		return;
+	}
+
 	/* Save screen */
 	screen_save();
 

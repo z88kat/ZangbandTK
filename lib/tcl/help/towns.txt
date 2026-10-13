@@ -1,0 +1,396 @@
+H	Towns and Services
+M	towns-and-services
+T	h1	Towns and Services
+T	h1	\n
+T	p0 note strong	Note
+T	p0 note	\n
+T	p0 note strong	Written.
+T	p0 note	 Milestone 
+T	p0 note strong	M5
+T	p0 note	 is complete and this chapter covers it: WLD-10 to WLD-12, WLD-14 to WLD-18, and WLD-16a to WLD-16c.
+T	p0 note	\n
+T	p0 note	One requirement is deliberately outstanding. 
+T	p0 note strong	WLD-16d
+T	p0 note	 makes quest-giving a property any building may carry rather than a building type of its own; it is designed and nothing here forecloses it, but there are no quests to give until milestone 
+T	p0 note strong	M6
+T	p0 note	, so there is nothing yet to describe.
+T	p0 note	\n
+T	p0	The world holds a dozen places, not one. They differ in how much ground they cover, how many trades they keep, and which trades those are, so that walking to a town you have not seen before is worth the road.
+T	p0	\n
+M	where-places-stand
+T	h2	Where places stand
+T	h2	\n
+T	p0	A town needs settled country. The world map carries a population and a law value for every block of it, and places are sited where both run high and the ground is dry – never in water, never on a mountain, and never within twelve blocks of another town. Lawless country is where the ruins and the monsters are, and it is mostly empty of towns for that reason.
+T	p0	\n
+M	the-size-bands
+T	h2	The size bands
+T	h2	\n
+T	p0	Four sizes, keyed on the population of the country around them:
+T	p0	\n
+T	th0	Band        Size      What it is\n
+T	rule0	──────────────────────────────────────────────────────────────────────────────────────────\n
+T	tr0	Village     66 x 22   A hamlet. Three or four trades, no more.\n
+T	tr0 odd	Town        88 x 26   Five or six trades, and always more than the village you started in.\n
+T	tr0	City        110 x 30  Six or seven. The magic shop is usually here.\n
+T	tr0 odd	Great city  132 x 34  Seven or eight. The black market, when there is one, is here.\n
+T	tbllast0	\n
+T	p0	The village you begin in is the smallest place in the world, deliberately. It is the reference the others are larger than.
+T	p0	\n
+M	which-shops-a-place-keeps
+T	h2	Which shops a place keeps
+T	h2	\n
+T	p0	Not every place carries all eight shops. How many it keeps follows from its size band; 
+T	p0 em	which
+T	p0	 ones it keeps follows from the country around it:
+T	p0	\n
+T	li1	•\t
+T	li1	the 
+T	li1 strong	armoury
+T	li1	 and the 
+T	li1 strong	weaponsmith
+T	li1	 follow people and order;
+T	li1	\n
+T	li1	•\t
+T	li1	the 
+T	li1 strong	bookseller
+T	li1	 gathers where it is safe to gather, so lawless country sometimes has none at all;
+T	li1	\n
+T	li1	•\t
+T	li1	the 
+T	li1 strong	alchemist
+T	li1	 follows population;
+T	li1	\n
+T	li1	•\t
+T	li1	the 
+T	li1 strong	magic shop
+T	li1	 wants both people and law, which is why it is a city trade;
+T	li1	\n
+T	li1	•\t
+T	li1	the 
+T	li1 strong	black market
+T	li1	 keeps out of the light, and appears where law is thin and people are many – which is rare, and worth the walk.
+T	li1	\n
+T	p0	Two towns of the same size need not hold the same shops. The choice is made once, when the world is generated, from the world seed and the town’s own position, so a given world always has the same places in it however you reach them.
+T	p0	\n
+M	how-good-a-shop-is
+T	h2	How good a shop is
+T	h2	\n
+T	p0	A shop is not only a trade, it is a trade at a standard, and the standard is on the sign: a plain 
+T	p0 strong	Weapon Smiths
+T	p0	, or an 
+T	p0 strong	Advanced
+T	p0	, 
+T	p0 strong	Expert
+T	p0	 or 
+T	p0 strong	Arcane
+T	p0	 one. Three rungs above plain, and they mean something —
+T	p0	\n
+T	li1	•\t
+T	li1	the goods are drawn from the deeper end of what that trade sells;
+T	li1	\n
+T	li1	•\t
+T	li1	there is better magic on them, which is where the real difference lies: an arcane shop’s shelves carry roughly three times the plusses of a plain one’s;
+T	li1	\n
+T	li1	•\t
+T	li1	and the shelves are fuller, so there is more to choose from.
+T	li1	\n
+T	p0	Which rung a shop gets comes from the country the town stands in, scored once when the world is made. Magic is what mostly decides it — for a magic shop or a bookseller almost entirely, and for arms and armour it is people and order first with magic behind them, since the top of that ladder is enchanted steel. A general store climbs on people alone; there is no arcane bread.
+T	p0	\n
+T	p0	It is deliberately rare. Measured across a great many worlds, seven shops in ten are plain and one in fifty is arcane, so the top of the ladder is somewhere you travel to rather than something your nearest city happens to have.
+T	p0	\n
+T	p0	Two exceptions. The 
+T	p0 strong	black market
+T	p0	 has no rung, because it is already the top of every ladder — it will sell you anything, pitched at how deep you have been. And your 
+T	p0 strong	home village
+T	p0	 is plain, whatever the country around it says: a character who happened to start next to an arcane weaponsmith would be playing a different game, and would not have chosen it.
+T	p0	\n
+T	p0	One consequence worth knowing: a trade’s shelves are restocked when you carry your custom to a 
+T	p0 em	different
+T	p0	 town, at that town’s standard. Walking out of a shop and back in does not change what is in it.
+T	p0	\n
+M	your-home-village
+T	h2	Your home village
+T	h2	\n
+T	p0	The village you start in is the one exception (WLD-12). Its shops are fixed rather than drawn: a 
+T	p0 strong	general store
+T	p0	, an 
+T	p0 strong	alchemist
+T	p0	, a 
+T	p0 strong	bookseller
+T	p0	 and your 
+T	p0 strong	home
+T	p0	. That is what nobody can begin without – food and light, a potion of cure light wounds, somewhere to leave what will not fit in your pack, and the next book of your magic: a caster starts with the first book of each realm it studies, and the bookseller has the second.
+T	p0	\n
+T	p0	It has no armoury and no weaponsmith. Those are in the next town along, and finding them is the first thing the world asks of you.
+T	p0	\n
+M	your-house
+T	h2	Your house
+T	h2	\n
+T	p0 strong	There is one house, and every town’s front door opens onto it.
+T	p0	 Every town in the world keeps a home, whatever else it does or does not carry — but they are all the same house. Leave a sword in your village, walk four days to a great city, open the door there, and the sword is on the shelf.
+T	p0	\n
+T	p0	This is deliberate, and it is the one place where a shop and your house behave differently. A 
+T	p0 em	shop’s
+T	p0	 shelves are restocked when you carry your custom to another town, because a weaponsmith in another town is another weaponsmith. Your house is not another house. The alternative — a house per town — would strand your spare gear in whichever village you happened to be standing in when you outgrew it, days of walking away, with nothing in the game to remind you which village it was.
+T	p0	\n
+T	p0	So the house travels with you, and the only cost of walking away from it is the walk back.
+T	p0	\n
+M	what-they-are-called
+T	h2	What they are called
+T	h2	\n
+T	p0	Every town has a name, and the status line shows it while you are inside its walls — where Angband showed 
+T	p0 code	Town
+T	p0	, which here was wrong nearly everywhere it appeared: depth zero is the whole world, so it said the same thing a thousand grids out in open country as it did in a market square. Outside a town it now says 
+T	p0 code	wilderness
+T	p0	; inside one it says the name.
+T	p0	\n
+T	p0	The name tells you something. A place in governed country takes its name from one list, a place that has fallen or stands empty from another — so 
+T	p0 em	Sawall
+T	p0	 is not somewhere to go shopping. No two towns in a world share a name, and a world always calls its towns the same thing, since the names come from its seed rather than from the savefile.
+T	p0	\n
+T	p0 note strong	Note
+T	p0 note	\n
+T	p0 note strong	On the names themselves.
+T	p0 note	 Zangband generated them: an elvish name from Angband’s syllable tables with a size suffix hung on it — 
+T	p0 note code	-ville
+T	p0 note	 for a hamlet, then 
+T	p0 note code	Dun
+T	p0 note	, 
+T	p0 note code	-ton
+T	p0 note	, 
+T	p0 note code	-ford
+T	p0 note	. That is a name generator for Middle-earth, and DEC-30 points this game at Amber, so the names are curated in 
+T	p0 note code	lib/gamedata/town.txt
+T	p0 note	 instead.
+T	p0 note	\n
+T	p0 note	The sourcing is recorded honestly in that file. The agreed reference for the setting yields almost no place names — Amber, Castle Amber, Tir-na Nog’th, the Forest of Arden, Avalon, the Courts of Chaos, and four of those are already dungeons. So only 
+T	p0 note em	Avalon
+T	p0 note	 is confirmed from it. The rest are believed to be Zelazny’s, from the Chronicles, but have not been checked against the books. Nothing in the list is invented. If one of them is wrong it is wrong in that one file, and deleting the line is the whole fix.
+T	p0 note	\n
+M	who-lives-there
+T	h2	Who lives there
+T	h2	\n
+T	p0	A town is not always people.
+T	p0	\n
+T	th0	Inhabitants  How often      What you find\n
+T	rule0	────────────────────────────────────────────────────────────────────────────────────────────────\n
+T	tr0	Villagers    about 3 in 5   Beggars, drunks, merchants, mercenaries, the odd rogue. An ordinary\n
+T	tr0	                            town.\n
+T	tr0 odd	Beasts       about 1 in 4   Emptied once, and the animals moved back in. The shops still stand.\n
+T	tr0	Monsters     about 1 in 10  Taken, and still held. Fewer of them than a town has people, and\n
+T	tr0	                            dangerous in proportion to the country around it.\n
+T	tr0 odd	Abandoned    about 1 in 20  Nobody at all. The streets and the shops are exactly as they were.\n
+T	tbllast0	\n
+T	p0	Law decides it, mostly — a town in country nobody polices has more often than not been taken — with population second: land that can barely support a town is land the animals get back. A 
+T	p0 strong	larger town holds out longer
+T	p0	, so a great city is much less likely to have fallen than a hamlet, which is both the obvious reading and the one that costs you least: a village of four trades is a nuisance to lose, the only great city within reach takes the magic shop and the black market with it.
+T	p0	\n
+T	p0	Your home village always has people in it. That is fixed rather than rolled: the opening should not depend on luck.
+T	p0	\n
+T	p0 strong	The sidebar tells you.
+T	p0	 Under the place’s name it says what kind of place it is — 
+T	p0 code	village
+T	p0	, 
+T	p0 code	town
+T	p0	, 
+T	p0 code	city
+T	p0	, 
+T	p0 code	great city
+T	p0	 — and if it has fallen it says so in red: 
+T	p0 code	city, taken
+T	p0	, 
+T	p0 code	town, wild
+T	p0	, 
+T	p0 code	village, empty
+T	p0	. Worth reading before you walk the streets looking for an inn that was never there.
+T	p0	\n
+T	p0	A town that has been taken still trades. Its shops are doors in walls rather than shopkeepers, so you can walk in past whatever is holding the place — which is either a convenience or an oddity depending on how you look at it.
+T	p0	\n
+M	services
+T	h2	Services
+T	h2	\n
+T	p0	Buildings with something behind the door, as against shops, which sell things. There are six. The magetower is a 
+T	p0 code	9
+T	p0	; the other five are each a 
+T	p0 code	+
+T	p0	 in a colour of its own. All of them charge.
+T	p0	\n
+T	th0	Building     Found in         What it does\n
+T	rule0	────────────────────────────────────────────────────────────────────────────────────────────────\n
+T	tr0	Magetower    town and up      Carries you to somewhere you already know. See below.\n
+T	tr0 odd	Inn          town and up      A bed until morning, for 25 gold. Only sells you one at night —\n
+T	tr0 odd	                              the innkeeper will tell you to travel while it is light otherwise.\n
+T	tr0 odd	                              And you may dream. See below.\n
+T	tr0	Healer       town and up      Binds wounds (4 gold a hit point), cures poison, cuts, stunning,\n
+T	tr0	                              blindness and confusion (60), restores drained stats (400),\n
+T	tr0	                              restores lost levels (400). Only offers what you actually need.\n
+T	tr0 odd	Magesmith    city and up      Puts magic on a weapon or a suit of armour, 250 gold a go. Asks\n
+T	tr0 odd	                              which first: a weapon gets both its to-hit and its to-damage,\n
+T	tr0 odd	                              which is why it costs twice what a scroll of one or the other\n
+T	tr0 odd	                              does.\n
+T	tr0	Recharger    city and up      Puts charges back in a wand or a staff, 120 gold, at the same\n
+T	tr0	                              strength as a scroll of Recharging. It can still fail and destroy\n
+T	tr0	                              the item — that is the ordinary recharging risk, not a swindle.\n
+T	tr0 odd	Chaos tower  great city only  Takes one mutation off you, 2500 gold, and you choose which. The\n
+T	tr0 odd	                              rarest service in the game and deliberately so: it is the only way\n
+T	tr0 odd	                              to pick, where a potion of New Life takes the lot. See Mutations.\n
+T	tbllast0	\n
+M	work
+T	h2	Work
+T	h2	\n
+T	p0	Some buildings hand out work. Walk into an inn and the innkeeper asks what you are after: work, or a bed for the night. Ask about work and you may be offered a job — kill so many of a creature, come back, and be paid.
+T	p0	\n
+T	p0	Quest-giving is a 
+T	p0 strong	property a building carries
+T	p0	, not a building of its own. Nothing in the game has a “quest giver’s hut”; the inn simply has the property at the moment, and it could as easily be the magetower commissioning a retrieval. That is deliberate — it means new sources of work cost a line rather than a new building.
+T	p0	\n
+T	p0	The inn has it for a reason worth knowing: it is where people who have been somewhere else are sitting. And since a town that has fallen keeps no services at all, the work dries up exactly where you would expect it to, without any rule needing to say so. Every inn is hiring; a village has no inn, and nor does a town that has fallen.
+T	p0	\n
+T	p0	You can carry eight jobs at once, and a ninth is refused. Any building that hires will tell you how far along you are, or pay you when you are done — twenty gold for each creature asked for, multiplied by how deep that creature lives, and never less than twenty in total. See 
+L	p0 link	1	quests	Quests
+T	p0	 for the rest of the terms.
+T	p0	\n
+M	what-you-dream-at-the-inn
+T	h2	What you dream at the inn
+T	h2	\n
+T	p0	A bed is not only a way of skipping the night. Some nights you dream, and what you dream depends on where you are sleeping.
+T	p0	\n
+T	p0 strong	A true dream shows you a place.
+T	p0	 The nearest town or dungeon mouth you have not yet found appears on the world map, and you wake knowing its name and where it stands. This is the reason to pay for a bed on a night you could have walked through.
+T	p0	\n
+T	p0	It shows you where the place is. For a town that is all it does: the magetower carries you only to towns you have actually stood in, and a dream is not a visit, so you still have to make the walk — but you now know which way to walk, which is the hard part. A dungeon mouth is different. The mages need only to have seen one, and a dreamed one has been seen, so it goes straight onto their list.
+T	p0	\n
+T	p0 strong	A dark dream sets something hunting you.
+T	p0	 It will be something you have met: whatever you have seen and remember, leaning towards the worst of it. If you hold your nerve you merely remember the thing in the morning. If you do not, you wake frightened or confused, and it wears off. A character who has met nothing memorable yet has nothing to dream about.
+T	p0	\n
+T	p0 strong	Which you get depends on the law of the town.
+T	p0	 A lawful city is a good place to sleep and a frontier town is not:
+T	p0	\n
+T	th0	Where you sleep                         A true dream         A dark dream\n
+T	rule0	───────────────────────────────────────────────────────────────────────────────\n
+T	tr0	A town at the edge of what is governed  about 1 night in 11  about 1 night in 4\n
+T	tr0 odd	A well-ordered city                     about 1 night in 4   almost never\n
+T	tbllast0	\n
+T	p0	Most nights, in either, are just a night. And a town that has fallen has no inn at all, so the worst country never gets the chance to give you the worst dreams.
+T	p0	\n
+T	p0 strong	What you bring to the bed matters too.
+T	p0	 The table above is the law of the place; your virtues shift it from there. 
+T	p0 strong	Enlightenment
+T	p0	 and 
+T	p0 strong	Knowledge
+T	p0	 make a true dream likelier — a vision is clearer to somebody who has spent their life looking — and 
+T	p0 strong	Unlife
+T	p0	 and 
+T	p0 strong	Chance
+T	p0	 make a dark one likelier. They are added to the chance rather than replacing it, and twenty points of virtue are worth one percentage point, so where you sleep still matters most; but a scholarly character and a necromancer sleeping in the same bed are not having the same night. See 
+L	p0 link	2	virtues	Virtues
+T	p0	.
+T	p0	\n
+T	p0	Nothing in a town is free. The prices are in 
+T	p0 code	constants.txt
+T	p0	 and are pitched so a character of level five feels them and one of level thirty does not, which is the same shape as the magetower’s fare: a service is a use for gold, and gold stops being scarce.
+T	p0	\n
+T	p0 note strong	Note
+T	p0 note	\n
+T	p0 note strong	On “lost levels”.
+T	p0 note	 Some attacks drain experience rather than hit points — undead touches, nether, a few traps. The message is 
+T	p0 note em	“You feel your life draining away”
+T	p0 note	, or 
+T	p0 note em	“slipping away”
+T	p0 note	 if you have Hold Life, which halves it.
+T	p0 note	\n
+T	p0 note	Since your level is computed from your experience, draining it can take a level off you, and with it hit points, spell points and access to spells. The game remembers the most experience you have ever had, so the loss is recoverable: the healer puts you back to your peak, as a Potion of Restore Life Levels does. What it cannot give back is experience you never earned.
+T	p0 note	\n
+T	p0	A town that has fallen has none of them. Nobody is running a teleport network or an inn out of somewhere held by monsters, and there is nobody in an abandoned town to run anything.
+T	p0	\n
+T	p0 note strong	Note
+T	p0 note	\n
+T	p0 note strong	The inn earns its keep here in a way it would not in Angband.
+T	p0 note	 Resting duplicates a command the game already has — but daylight is what reveals the overworld, so a character who arrives somewhere at dusk either gropes about by lamplight or waits, and waiting a hundred turns at a time with 
+T	p0 note code	R
+T	p0 note	 is not waiting, it is bookkeeping.
+T	p0 note	\n
+T	p0 note	Zangband’s inn also carried a nightmare vision, and the dream described above is what became of it — deliberately not Zangband’s own. What that one actually did was a sanity blast: draining wits, inflicting amnesia, sometimes granting a mutation, in service of the game’s Lovecraft material, which this one is moving away from. The idea was worth keeping and the machinery behind it was not (DEC-32, DEC-33).
+T	p0 note	\n
+M	the-magetower
+T	h2	The magetower
+T	h2	\n
+T	p0	Some towns keep a tower of the mages, drawn 
+T	p0 code	9
+T	p0	. Walk into it and they will carry you to somewhere you already know, for a fee.
+T	p0	\n
+T	p0 strong	Where they are.
+T	p0	 Anything above a village keeps one, unless it has fallen — nobody runs a teleport network out of somewhere held by monsters, and there is nobody in an abandoned town to run one. So: towns, cities and great cities yes; other villages no.
+T	p0	\n
+T	p0 strong	Your home village always has one
+T	p0	 whatever its size, because every journey begins at home and a network you cannot leave from has one node fewer than it needs.
+T	p0	\n
+T	p0	In practice that is most of the world’s towns — eleven of twelve on a world measured, the twelfth being abandoned.
+T	p0	\n
+T	p0 note strong	Note
+T	p0 note	\n
+T	p0 note	This was scored on population and law at first, in the same style as the trades, and the scoring was worse than useless because it was not legible. Measured on a real world, every one of its band-one 
+T	p0 note em	towns
+T	p0 note	 scored just under the threshold, so a town never had a tower and only cities did — and nothing told the player that. Walking into two towns in a row and finding no tower in either is how it was reported.
+T	p0 note	\n
+T	p0 note	A rule you can hold in your head is worth more than variation you cannot see the shape of. What is lost is the sense that a magetower is a city’s privilege; what is gained is being able to plan a journey.
+T	p0 note	\n
+T	p0 strong	Where it will take you.
+T	p0	 Your home village always counts, from the first turn. Beyond that, two different bars, deliberately:
+T	p0	\n
+T	li1	•\t
+T	li1	a 
+T	li1 strong	town
+T	li1	 has to have been 
+T	li1 em	stood in
+T	li1	. Seeing it across a field is not having been there, and the first crossing of the world should stay worth making.
+T	li1	\n
+T	li1	•\t
+T	li1	a 
+T	li1 strong	dungeon mouth
+T	li1	 only has to have been 
+T	li1 em	seen
+T	li1	. It is a staircase in a field with nothing to be inside of.
+T	li1	\n
+T	p0 strong	What it costs.
+T	p0	 Gold, by the distance: 
+T	p0 code	wild:travel-cost
+T	p0	 in 
+T	p0 code	constants.txt
+T	p0	 is the fare per block, 15 by default. A twenty-block hop is 300 gold, which is real money at level five and nothing at level thirty — which is the right shape. The network is a convenience you grow into, not a way past the early game. You cannot travel on credit; if you are short, the mages tell you the price and you walk.
+T	p0	\n
+T	p0	You have to be standing in a tower to use one, so a village with no tower is a place you walk out of. Getting back from a dungeon mouth is your problem — that is what Word of Recall is for.
+T	p0	\n
+M	walls-and-gates
+T	h2	Walls and gates
+T	h2	\n
+T	p0	Every place is walled, with gates no more than two grids wide. A gate has a door on each grid; you open it to pass through, and it swings shut behind you after a while. Monsters do not walk in through an open gate as a matter of course, but a gate you leave standing open is a gate.
+T	p0	\n
+M	roads
+T	h2	Roads
+T	h2	\n
+T	p0	The towns are joined by roads, and following one is how you find the next place.
+T	p0	\n
+T	p0	A road is routed rather than drawn: it takes the cheapest way across the country, so it runs down the valleys, keeps out of the swamp and goes round a mountain instead of over it. It keeps to the land, too – if two towns end up on either side of an inland sea a causeway is built, but that is the exception, not a short cut across every bay.
+T	p0	\n
+T	p0	Every town 
+T	p0 strong	and every dungeon
+T	p0	 is on the network. The roads are laid as a spanning tree over the towns first, so there is always a road out of your home village and following it reaches every other town. Any two towns within thirty blocks of each other then get a road directly between them, so settled country ends up with a network rather than a single thread. Finally every dungeon mouth gets a spur to the nearest town.
+T	p0	\n
+T	p0	That last part is not decoration. Measured before it existed, six of the thirteen dungeon mouths happened to sit on a road and the rest were between eleven and sixty-two blocks from one — up to a thousand grids of open country to search with nothing to follow. Better siting cannot fix it: a dungeon stands in the kind of country it belongs in, and the deep ones belong a long way from any town. So the road goes to them instead.
+T	p0	\n
+T	p0	A road is two grids wide. That is not for looks, and it is not arbitrary either. One grid is too few: where a road turns a right angle in the block you are standing in, a single-grid corner is one square of floor at right angles to the way you are going, and the road reads as though it stopped — the first report of this was a road that “appears to end at the beach” after a long walk, when in fact it had turned. Two grids makes a corner a two-by-two block of paving, which reads as a turn. Three was tried first and looked like a motorway.
+T	p0	\n
+T	p0	About three blocks in a hundred have a road through them.
+T	p0	\n
+T	p0	If you are lost, find a road and walk along it. It goes somewhere — a town, or a way down.
+T	p0	\n
+M	finding-your-way
+T	h2	Finding your way
+T	h2	\n
+T	p0	Press 
+T	p0 code	M
+T	p0	 on the surface for the world map. It shows only the country you have travelled near, and colours each place by its band – village, town, city, great city – so you can tell from across the map which way to walk for a magic shop. Roads you have seen are drawn on it too.
+T	p0	\n
+T	p0	What you have explored is remembered while you are down in the dungeon, so coming back up puts you in a town you know rather than one you have to learn again.
+T	p0	\n

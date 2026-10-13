@@ -1,0 +1,112 @@
+H	Quests
+M	quests
+T	h1	Quests
+T	h1	\n
+T	p0	Angband has two quests and you are on both of them from the moment you are born: kill Sauron, then kill Morgoth. Nobody gives them to you and there is nothing to report back. ZangbandTK keeps that shape for the ending and adds the other kind — work you are offered, accept, carry about with you, and hand back.
+T	p0	\n
+M	where-work-comes-from
+T	h2	Where work comes from
+T	h2	\n
+T	p0	From a building. Walk into an inn and the innkeeper asks what you are after: work, or a bed for the night. Ask about work and you will be offered a job if there is one, paid for one you have finished, or asked after one you still owe.
+T	p0	\n
+T	p0 strong	Not in the village you start in, though.
+T	p0	 The starting village is given one service and one only — a magetower, so that the travel network has a node you can leave from on your first day. It has no inn, so the paragraph above describes something you cannot do at home. The first work you are offered will be somewhere you have walked to.
+T	p0	\n
+T	p0	Quest-giving is a 
+T	p0 strong	property a building carries
+T	p0	, not a building of its own. There is no quest-giver’s hut and there never will be: the inn simply has the property at the moment, and it could as easily be the magetower commissioning a retrieval or a temple sending you on a pilgrimage. That is deliberate, and it means a new source of work costs a line rather than a new building, a new door and a new kind of terrain.
+T	p0	\n
+T	p0	The inn has it for a reason worth knowing. It is where people who have been somewhere else are sitting — and because a town that has fallen keeps no services at all, the work dries up exactly where you would expect it to, without any rule needing to say so. Every inn is hiring; a village has no inn, and nor does a town that has fallen.
+T	p0	\n
+M	what-you-may-be-asked
+T	h2	What you may be asked
+T	h2	\n
+T	p0 strong	A bounty.
+T	p0	 Kill so many of a creature. It counts wherever you find them, above ground or below, because a bounty is about the creature and not the place. The work is drawn near your own depth, so it is neither trivial nor suicidal, and never on a unique — there is only one of those and a bounty on it could be impossible to fill. Collecting one does not move your 
+T	p0 strong	Justice
+T	p0	 virtue: that rises when a unique you kill turns out to have had a price on its head, and falls when you turn a pet against you. See 
+L	p0 link	1	virtues	Virtues
+T	p0	.
+T	p0	\n
+T	p0 strong	A delivery.
+T	p0	 Carry word to a named town. It is finished by arriving, and only by arriving: killing the person who asked you does not deliver the parcel.
+T	p0	\n
+T	p0 strong	Finding a place.
+T	p0	 Somebody has heard of a town nobody here has been to. Go and look at it. This is the only kind of work that gives you knowledge of the world rather than asking for it back, and it pairs well with a magetower — once you have stood in a place, the mages will carry you there again.
+T	p0	\n
+T	p0 strong	A killing down a particular dungeon.
+T	p0	 Not just the creature but the place: so many of them, at a named depth of a named dungeon. Only dungeons you have already found, and only depths that dungeon actually reaches — a job at a depth its dungeon does not go to could never be done.
+T	p0	\n
+T	p0 strong	A killing in the open.
+T	p0	 The same, but it counts only what dies above ground. What you kill underground is nobody’s business.
+T	p0	\n
+T	p0 strong	Fetching something.
+T	p0	 Bring a particular thing back. It is finished by having it, and the check is on your pack rather than on the floor — buying it, or taking it out of a chest, is fetching it just as much as finding it lying about.
+T	p0	\n
+M	carrying-and-reporting
+T	h2	Carrying and reporting
+T	h2	\n
+T	p0	Press 
+T	p0 code	J
+T	p0	 for the list of what you have taken on, how far along each is, and where the ones about travelling are pointing. The quests the game is 
+T	p0 em	won
+T	p0	 by are not in that list: you are on those from birth, and putting “kill the Serpent of Chaos” at the top of a first-level character’s list would give away the ending and tell you nothing you can act on.
+T	p0	\n
+T	p0	You can carry 
+T	p0 strong	eight
+T	p0	 jobs at once. Ask for a ninth and you are told 
+T	p0 em	“You’ve enough on your plate already.”
+T	p0	 The two quests the game ends on do not take any of the eight, because nobody handed them to you. The number is in 
+T	p0 code	constants.txt
+T	p0	 as 
+T	p0 code	wild:quest-slots
+T	p0	.
+T	p0	\n
+T	p0	Any building that hires will tell you how far along you are, or pay you when you are done. The reward is worked out rather than haggled: 
+T	p0 strong	twenty gold for each creature you were asked for, multiplied by how deep that creature lives
+T	p0	, with a floor of twenty gold so that nothing pays nothing. A job for six of something at depth 20 is worth two and a half thousand; the same six at depth 2 are worth three hundred and sixty. Taking work you can barely survive is where the money is, which is the point of being told the depth before you accept.
+T	p0	\n
+T	p0 strong	How deep the work is drawn.
+T	p0	 A bounty picks from anything living down to four levels below the deepest you have been. A job down a named dungeon goes to six below that, then is pulled back inside the range that dungeon actually covers — so a shallow dungeon cannot be made to give you deep work however far you have travelled, and a deep one will not offer you anything above its own mouth. In both cases the reference is the deepest you have 
+T	p0 em	been
+T	p0	, not where you are now, so the offers get harder after a deep dive and stay there.
+T	p0	\n
+M	giving-up
+T	h2	Giving up
+T	h2	\n
+T	p0	Walk into a building that hires while you owe it something and it will list what you are carrying and offer to let you off. Pick a job, confirm, and it is gone.
+T	p0	\n
+T	p0	This matters more than it sounds. Without it, a bounty on something twenty levels deeper than you can survive occupies one of your slots until the character dies — taken, impossible to finish, impossible to be rid of. Giving up is what makes taking work on a guess a reasonable thing to do.
+T	p0	\n
+T	p0	There is no penalty at present beyond the walk back. Whether the trade should remember, and charge you for it later, is not decided.
+T	p0	\n
+T	p0	Work is reported at 
+T	p0 em	any
+T	p0	 building that hires, not only the one that sent you. Walk into an inn four days away with the job done and somebody there will settle up — by remarkable good fortune, the very person who wanted it is drinking in this one too.
+T	p0	\n
+T	p0	That is a small mercy and a deliberate one. The alternative is a character who finished a job in the wrong half of the world walking back across it to be paid, which is not an interesting journey. It is also the sort of coincidence the novels are built on.
+T	p0	\n
+M	what-the-game-is-won-by
+T	h2	What the game is won by
+T	h2	\n
+T	p0	Two quests, and they are not offered to you by anybody: 
+T	p0 strong	Oberon
+T	p0	, at the ninety-ninth level of the Courts of Chaos, and then 
+T	p0 strong	the Serpent of Chaos
+T	p0	 at the hundredth.
+T	p0	\n
+T	p0	Angband ends at Sauron and Morgoth. Zangband replaced them with Oberon and the Serpent, and that replacement was already the right one for this game — the Serpent is Zelazny’s, not a generic dark lord. The bestiary’s own description of it has been sitting in the imported data all along: 
+T	p0 em	“The Unicorn of Order fought with Serpent and stole one of its eyes, known as the Jewel of Judgement. With the Jewel, Dworkin drew the Pattern and thus gave birth to the infinite worlds of shadow.”
+T	p0	 The 
+L	p0 link	2	monsters	Unicorn
+T	p0	 is in this game. The Serpent is the other half of her.
+T	p0	\n
+T	p0	A quest names its dungeon as well as its depth, which Angband never needed to do: it has one dungeon, so a depth is a place. Here the Courts of Chaos run from 75 to 110 and the Abyss from 90 to 127, so depth 100 is two different places — and without naming the dungeon the ending could have been reached in the wrong one.
+T	p0	\n
+T	p0	All six of Zangband’s kinds of work are now written. Which one you are offered depends on what the world can supply: an errand to another town needs another town, a job down a particular dungeon needs one you have found, and there is no sense sending you to look at a place you are standing in. Every kind falls back to a bounty, which needs nothing but a bestiary.
+T	p0	\n
+T	p0 strong	The six are not offered equally often, though
+T	p0	, and it is worth knowing that before you conclude the world only wants vermin killed. The roll picks a place to start in a fixed order — finding a place, then a delivery, then a dungeon job, then a fetch — and works down from wherever it landed, taking the first kind the world can supply. So a fetch is reachable from every starting point and finding a place from only one, and the four are offered in that order of likelihood. One roll in five starts past the end of the list and offers none of them. A killing in the open is then tried one time in three. Everything that falls through all of it becomes a bounty, which needs nothing but a bestiary.
+T	p0	\n
+T	p0	Expect more bounties than anything else, and most of all early on, when you have found one dungeon and heard of one town and most of the list has nothing to work with.
+T	p0	\n

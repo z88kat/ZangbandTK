@@ -1,0 +1,147 @@
+H	Frequently Asked Questions
+M	frequently-asked-questions
+T	h1	Frequently Asked Questions
+T	h1	\n
+T	p0	The best place to ask about ZangbandTK is its own 
+L	p0 link	1	https://github.com/z88kat/ZangbandTK/issues	issue tracker
+T	p0	. The 
+L	p0 link	2	https://angband.live/forums/	Angband forum
+T	p0	 is the place for questions about Angband itself, which is what ZangbandTK is built on and what most of its mechanics still come from.
+T	p0	\n
+M	contents
+T	p0 note strong	Contents
+T	p0 note	\n
+T	li1 note	•\t
+M	id1
+L	li1 note link	3	#issues-and-problems	Issues and problems
+T	li1 note	\n
+T	li2 note	•\t
+M	id2
+L	li2 note link	4	#how-do-i-report-a-bug	How do I report a bug?
+T	li2 note	\n
+T	li2 note	•\t
+M	id3
+L	li2 note link	5	#dark-monsters-are-hard-to-see	Dark monsters are hard to see
+T	li2 note	\n
+T	li2 note	•\t
+M	id4
+L	li2 note link	6	#how-do-i-avoid-the-couldn-t-load-the-requested-x11-font-10x20-message	How do I avoid the “Couldn’t load the requested X11 font (10x20)” message?
+T	li2 note	\n
+T	li2 note	•\t
+M	id5
+L	li2 note link	7	#is-there-a-way-to-disable-that-thing-that-pops-up-when-you-hit-the-enter-key	Is there a way to disable that thing that pops up when you hit the enter key?
+T	li2 note	\n
+T	li1 note	•\t
+M	id6
+L	li1 note link	8	#development	Development
+T	li1 note	\n
+T	li2 note	•\t
+M	id7
+L	li2 note link	9	#where-does-development-happen	Where does development happen?
+T	li2 note	\n
+M	issues-and-problems
+T	h2	Issues and problems
+T	h2	\n
+M	how-do-i-report-a-bug
+T	h3	How do I report a bug?
+T	h3	\n
+T	p0	Open an issue on the 
+L	p0 link	10	https://github.com/z88kat/ZangbandTK/issues	issue tracker
+T	p0	. If you are sure the bug is Angband’s rather than this game’s, it is worth reporting upstream as well.
+T	p0	\n
+T	p0	Bug reports should include:
+T	p0	\n
+T	li1	•\t
+T	li1	your current operating system (e.g. Windows 10)
+T	li1	\n
+T	li1	•\t
+T	li1	what version the problem appeared in
+T	li1	\n
+T	li1	•\t
+T	li1	the best steps you can figure out to reproduce the bug.
+T	li1	\n
+T	p0	Savefiles that show the problem might be requested, because they help tracking bugs down.
+T	p0	\n
+M	dark-monsters-are-hard-to-see
+T	h3	Dark monsters are hard to see
+T	h3	\n
+T	p0	Fix (reduce) the alpha on your screen, or use the “Interact with colors” screen under the options (
+T	p0 code	=
+T	p0	) menu. Navigate to the 
+T	p0 code	8
+T	p0	 using 
+T	p0 code	n
+T	p0	 and increase the color intensity with r(ed)/g(reen)/b(lue).
+T	p0	\n
+M	how-do-i-avoid-the-couldn-t-load-the-requested-x11-font-10x20-message
+M	x11-fonts
+T	h3	How do I avoid the “Couldn’t load the requested X11 font (10x20)” message?
+T	h3	\n
+T	p0	The X11 frontend requires 
+T	p0 em	legacy bitmap fonts
+T	p0	. Many modern systems no longer install those fonts by default, or install them in locations that X11 does not search automatically.
+T	p0	\n
+T	p0	Common ways to resolve this include:
+T	p0	\n
+T	li1	•\t
+T	li1	Install legacy X11 bitmap font packages provided by your operating system (package names vary by distribution).
+T	li1	\n
+T	li1	•\t
+T	li1	Explicitly select an installed bitmap font by setting the 
+T	li1 code	ANGBAND_X11_FONT
+T	li1	 environment variable.
+T	li1	\n
+T	li1	•\t
+T	li1	Use a different front end (SDL2, Windows, macOS) that does not rely on X11 bitmap fonts.
+T	li1	\n
+T	p0	On Linux, the required font is typically provided as 
+T	p0 code	10x20.pcf.gz
+T	p0	. If your distribution allows searching packages by installed files, look for a package that provides that file. Common examples include:
+T	p0	\n
+T	li1	•\t
+T	li1	Debian/Ubuntu and derivatives: 
+T	li1 code	xfonts-base
+T	li1	\n
+T	li1	•\t
+T	li1	Red Hat–derived distributions: 
+T	li1 code	xorg-x11-fonts-misc
+T	li1	\n
+T	li1	•\t
+T	li1	Arch Linux: 
+T	li1 code	xorg-fonts-misc
+T	li1	\n
+T	p0	Depending on the distribution and configuration, installing these packages may not be sufficient if X11 is not configured to search the installed font paths.
+T	p0	\n
+T	p0	If none of the above works, please check the forums for distribution-specific advice, or open an issue including your OS, distribution, and ZangbandTK version.
+T	p0	\n
+M	is-there-a-way-to-disable-that-thing-that-pops-up-when-you-hit-the-enter-key
+T	h3	Is there a way to disable that thing that pops up when you hit the enter key?
+T	h3	\n
+T	p0	Go into the options menu, choose “Edit keymaps”, then “Create a keymap”. Press Enter at the “Key” prompt and a single space as the “Action”.
+T	p0	\n
+T	p0	And then you’ll probably want to choose to “Save keymaps to a file”, and either choose the file name so that it is one automatically loaded when a character is loaded or combine the contents of the saved file with one of the automatically loaded preference files. That allows the change to stay in effect the next time you load the game.
+T	p0	\n
+T	p0	This just replaces the default action of Enter with a “do nothing but don’t tell me about help” action. If you want to keep the menu available, say on the ‘Tab’ key, you can also remap the Tab keypress to the 
+T	p0 code	\\n
+T	p0	 action.
+T	p0	\n
+M	development
+T	h2	Development
+T	h2	\n
+M	where-does-development-happen
+T	h3	Where does development happen?
+T	h3	\n
+T	p0	On GitHub, at 
+L	p0 link	11	https://github.com/z88kat/ZangbandTK	https://github.com/z88kat/ZangbandTK
+T	p0	 — issues, discussion and pull requests all in the one place.
+T	p0	\n
+T	p0 note strong	Note
+T	p0 note	\n
+T	p0 note	This section used to answer questions about contributing to 
+T	p0 note em	Angband
+T	p0 note	: post on their forums, their developers will file it, and a patch that does not suit them may mean 
+T	p0 note em	“you may just be better off writing a variant”
+T	p0 note	. All of which is true, and none of which is about this game — it was pointing anyone who wanted to help at the wrong project. Writing a variant is advice this project has already taken.
+T	p0 note	\n
+M	issue-tracker
+M	angband-forum

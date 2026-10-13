@@ -1,0 +1,663 @@
+H	Option Descriptions
+M	option-descriptions
+T	h1	Option Descriptions
+T	h1	\n
+T	p0	Options are accessible through the 
+T	p0 code	=
+T	p0	 command, which provides an interface to the various sets of options available to the player.
+T	p0	\n
+T	p0	In the descriptions below, each option is listed as the textual summary which is shown on the “options” screen, plus the internal name of the option in brackets, followed by a textual description of the option.
+T	p0	\n
+T	p0	Various concepts are mentioned in the descriptions below, including 
+L	p0 link	1	playing#disturb-player	“disturb”
+T	p0	 (cancel any running, resting, or repeated commands, which are in progress), “flush” (forget any keypresses waiting in the keypress queue), “fresh” (dump any pending output to the screen), and “sub-windows” (see below).
+T	p0	\n
+M	option-pages
+T	p0 note strong	Option pages
+T	p0 note	\n
+T	li1 note	•\t
+M	id3
+L	li1 note link	2	#the-options-menu	The options menu
+T	li1 note	\n
+T	li1 note	•\t
+M	id4
+L	li1 note link	3	#user-interface-options	User Interface Options
+T	li1 note	\n
+T	li1 note	•\t
+M	id5
+L	li1 note link	4	#birth-options	Birth options
+T	li1 note	\n
+T	li1 note	•\t
+M	id6
+L	li1 note link	5	#cheating-options	Cheating options
+T	li1 note	\n
+T	li1 note	•\t
+M	id7
+L	li1 note link	6	#debug-commands	Debug commands
+T	li1 note	\n
+T	li1 note	•\t
+M	id8
+L	li1 note link	7	#window-flags	Window flags
+T	li1 note	\n
+T	li1 note	•\t
+M	id9
+L	li1 note link	8	#left-over-information	Left Over Information
+T	li1 note	\n
+M	the-options-menu
+T	h2	The options menu
+T	h2	\n
+T	p0 code	=
+T	p0	 opens a menu rather than a single screen, and not everything on it is an option in the on/off sense. The whole of it:
+T	p0	\n
+T	th0	Key  Entry                                  What it is\n
+T	rule0	────────────────────────────────────────────────────────────────────────────────────────────────\n
+T	tr0	a    User interface options                 The on/off settings described below.\n
+T	tr0 odd	b    Birth (difficulty) options             Fixed once the character exists. See Birth options.\n
+T	tr0	x    Cheat options                          Marks the character unscored, permanently.\n
+T	tr0 odd	w    Subwindow setup                        What each sub-window displays. See Window flags.\n
+T	tr0	i    Item ignoring setup                    Which kinds of object to hide.\n
+T	tr0 odd	{    Auto-inscription setup                 Inscriptions applied automatically by object kind.\n
+T	tr0	d    Set base delay factor                  The delay_factor value described under Left Over\n
+T	tr0	                                            Information.\n
+T	tr0 odd	h    Set hitpoint warning                   The hitpoint_warn value, likewise.\n
+T	tr0	m    Set movement delay                     The lazymove_delay value, likewise.\n
+T	tr0 odd	o    Set sidebar mode                       See below.\n
+T	tr0	s    Save subwindow setup to pref file      Writes the w settings out.\n
+T	tr0 odd	t    Save autoinscriptions to pref file     Writes the { settings out, so a new character starts\n
+T	tr0 odd	                                            with them.\n
+T	tr0	u    Save char screen options to pref file  Writes out how you have arranged the character\n
+T	tr0	                                            sheet.\n
+T	tr0 odd	p    Load a user pref file                  Reads a file in and applies it. " applies a single\n
+T	tr0 odd	                                            line instead.\n
+T	tr0	e    Edit keymaps                           See customization.\n
+T	tr0 odd	c    Edit colours                           Likewise.\n
+T	tr0	v    Save visuals                           Likewise.\n
+T	tbllast0	\n
+T	p0 strong	Sidebar mode
+T	p0	 (
+T	p0 code	=
+T	p0	 then 
+T	p0 code	o
+T	p0	) is the one that changes the shape of the main screen rather than a value in it. It cycles between three positions for the block of character information — 
+T	p0 strong	Left
+T	p0	, which is where it has always been; 
+T	p0 strong	Top
+T	p0	, which lays it along the top of the screen and gives the map the full width; and 
+T	p0 strong	None
+T	p0	, which removes it and gives the map everything. The screen names the current mode and any key but 
+T	p0 code	ESC
+T	p0	 cycles to the next; the choice is kept with your other preferences.
+T	p0	\n
+T	p0	On a wide terminal 
+T	p0 strong	Top
+T	p0	 is usually the better arrangement, since the wilderness and the world map are both wider than they are tall. 
+T	p0 strong	None
+T	p0	 is worth knowing about for screenshots and for very small terminals, but it takes the hit point and mana readouts with it — the status line along the bottom stays, so you keep your conditions and lose the two numbers that tell you how the fight is going.
+T	p0	\n
+M	user-interface-options
+T	h2	User Interface Options
+T	h2	\n
+T	p0	When setting the user interface options, there are a handful of commands to make it easier to get to a well-known state for all of those options. They are: ‘s’ to save the current selections so that they will be used as the starting point for future characters, ‘r’ to reset the current selections to the defaults for a new character, and ‘x’ to reset the current selections to the ZangbandTK maintainer’s defaults for the user interface options.
+T	p0	\n
+T	dt0 strong	Rogue-like commands 
+T	dt0 strong code	rogue_like_commands
+T	dt0	\n
+T	p1	Selects the “roguelike” command set. See 
+L	p1 link	9	playing#playing-the-game	Playing the Game
+T	p1	 for some description of the command sets. The “roguelike” command set may work better for you if use a keyboard which doesn’t have a numeric keypad.
+T	p1	\n
+M	index-0
+M	autoexplore-commands-option
+T	dt0 strong	Autoexplore commands 
+T	dt0 strong code	autoexplore_commands
+T	dt0	\n
+T	p1	Modifies how the commands to use staircases work: if not already at the appropriate staircase, attempt to move to the nearest known staircase of the appropriate kind. Adds a command, 
+T	p1 code	p
+T	p1	, in both the original and “roguelike” command sets to move to the nearest unexplored location.
+T	p1	\n
+T	dt0 strong	Use sound 
+T	dt0 strong code	use_sound
+T	dt0	\n
+T	p1	Turns on sound effects, if your system supports them.
+T	p1	\n
+T	dt0 strong	Show damage player deals to monsters 
+T	dt0 strong code	show_damage
+T	dt0	\n
+T	p1	Shows the damage that the player deals to monsters for melee and ranged combat in the messages.
+T	p1	\n
+M	index-1
+M	old-target-option
+T	dt0 strong	Use old target by default 
+T	dt0 strong code	use_old_target
+T	dt0	\n
+T	p1	Forces all commands which normally ask for a “direction” to use the current “target” if there is one. Use of this option can be dangerous if you target locations on the ground, unless you clear them when done.
+T	p1	\n
+T	dt0 strong	Always pickup items 
+T	dt0 strong code	pickup_always
+T	dt0	\n
+T	p1	Automatically picks up items when you walk upon them, provided it is safe to do so.
+T	p1	\n
+T	dt0 strong	Always pickup items matching inventory 
+T	dt0 strong code	pickup_inven
+T	dt0	\n
+T	p1	Like 
+T	p1 code	pickup_always
+T	p1	, but picks up an item only if it is a copy of an item that you already have in your inventory.
+T	p1	\n
+T	dt0 strong	Show flavors in object descriptions 
+T	dt0 strong code	show_flavors
+T	dt0	\n
+T	p1	Display “flavors” (color or variety) in object descriptions, even for objects whose type is known. This does not affect objects in stores.
+T	p1	\n
+T	dt0 strong	Highlight target with cursor 
+T	dt0 strong code	show_target
+T	dt0	\n
+T	p1	Highlights the current targeted monster with a cursor. Useful when combined with “use old target by default”.
+T	p1	\n
+T	dt0 strong	Highlight player with cursor between turns 
+T	dt0 strong code	highlight_player
+T	dt0	\n
+T	p1	Highlights the player with a cursor. Useful if you have trouble finding the player.
+T	p1	\n
+M	index-2
+M	disturb-near-option
+T	dt0 strong	Disturb whenever viewable monster moves 
+T	dt0 strong code	disturb_near
+T	dt0	\n
+T	p1	Disturb the player when any viewable monster moves, whenever any monster becomes viewable for the first time, and also whenever any viewable monster becomes no longer viewable. This option ignores the existence of “telepathy” for the purpose of determining whether a monster is “viewable”.
+T	p1	\n
+T	dt0 strong	Show walls as solid blocks 
+T	dt0 strong code	solid_walls
+T	dt0	\n
+T	p1	Walls are solid blocks instead of # for granite and % for veins. Veins are coloured darker than granite for differentiation purposes.
+T	p1	\n
+T	dt0 strong	Show walls with shaded backgrounds 
+T	dt0 strong code	hybrid_walls
+T	dt0	\n
+T	p1	Walls appear as # and % symbols overlaid on a gray background block. This overrides 
+T	p1 code	solid_walls
+T	p1	.
+T	p1	\n
+T	dt0 strong	Color: Illuminate torchlight in yellow 
+T	dt0 strong code	view_yellow_light
+T	dt0	\n
+T	p1	This option causes special colors to be used for “torch-lit” grids. Turning this option off will slightly improve game speed.
+T	p1	\n
+T	dt0 strong	Color: Shimmer multi-colored things 
+T	dt0 strong code	animate_flicker
+T	dt0	\n
+T	p1	Certain powerful monsters, and treasure lying on the floor, will shimmer in real time, i.e. between keypresses. With the option off they still change colour, but only as game turns pass, so a shimmer becomes a slow drift.
+T	p1	\n
+T	p1	In graphics mode this needs a tileset that can recolour a tile without changing the picture on it, which means one that declares 
+T	p1 code	cycle:
+T	p1	 in 
+T	p1 code	lib/tiles/list.txt
+T	p1	. At present that is the Neon set; the four tilesets inherited from Angband paint colour into their art, so nothing shimmers in them and the option has no effect.
+T	p1	\n
+T	dt0 strong	Center map continuously 
+T	dt0 strong code	center_player
+T	dt0	\n
+T	p1	The map always centres on the player with this option on. With it off, it is divided into 25 sections, with coordinates (0,0) to (4,4), and will show one section at a time - the display will “flip” to the next section when the player nears the edge.
+T	p1	\n
+T	dt0 strong	Color: Show unique monsters in purple 
+T	dt0 strong code	purple_uniques
+T	dt0	\n
+T	p1	All “unique” monsters will be shown in a light purple colour, which is not used for any “normal” monsters - so you can tell at a glance that they are unique. If you like the idea but don’t like the colour, you can edit it via the “interact with colors” option.
+T	p1	\n
+T	dt0 strong	Automatically clear -more- prompts 
+T	dt0 strong code	auto_more
+T	dt0	\n
+T	p1	The game does not wait for a keypress when it comes to a ‘-more-’ prompt, but carries on going.
+T	p1	\n
+T	dt0 strong	Color: Player color indicates low hit points 
+T	dt0 strong code	hp_changes_color
+T	dt0	\n
+T	p1	This option makes the player 
+T	p1 code	@
+T	p1	 turn various shades of colour from white to red, depending on percentage of HP remaining.
+T	p1	\n
+T	dt0 strong	Allow mouse clicks to move the player 
+T	dt0 strong code	mouse_movement
+T	dt0	\n
+T	p1	Clicking on the main window will be interpreted as a move command to that spot.
+T	p1	\n
+M	notify-recharge-option
+T	dt0 strong	Notify on object recharge 
+T	dt0 strong code	notify_recharge
+T	dt0	\n
+T	p1	This causes the game to print a message when any rechargeable object (i.e. a rod or activatable weapon or armour item) finishes recharging. It is the equivalent of inscribing ‘{!!}’ on all such items.
+T	p1	\n
+T	dt0 strong	Show effective speed as multiplier 
+T	dt0 strong code	effective_speed
+T	dt0	\n
+T	p1	Instead of showing absolute speed modifier (e.g. ‘Slow (-2)’ or ‘Fast (+38)’), show the effective rate at which the character is moving (e.g. ‘Slow (x0.8)’ or ‘Fast (x4.1)’).
+T	p1	\n
+M	birth-options
+T	h2	Birth options
+T	h2	\n
+T	p0	The birth options may only be changed when creating a character or using the quick restart option for a dead character. When setting the birth options, there are a handful of commands to make it easier to get to a well-known state for all of the birth options. They are: ‘s’ to save the current selections so that they will be used as the starting point for future characters, ‘r’ to reset the current selections to the defaults for a new character, and ‘x’ to reset the current selections to the ZangbandTK maintainer’s defaults for the birth options.
+T	p0	\n
+T	dt0 strong	Generate a new, random artifact set 
+T	dt0 strong code	birth_randarts
+T	dt0	\n
+T	p1	A different set of artifacts will be created, in place of the standard ones. This is intended primarily for people who have played enough to know what most of the standard artifacts do and want some variety. The number, findability and power of random artifacts will all match the standard set - approximately.
+T	p1	\n
+T	dt0 strong	Generate connected stairs 
+T	dt0 strong code	birth_connect_stairs
+T	dt0	\n
+T	p1	With this option turned on, if you go down stairs, you start the new level on an up staircase, and vice versa (if you go up stairs, you start the next level on a down staircase).
+T	p1	\n
+T	p1	With this option off, you will never start on a staircase - but other staircases up and down elsewhere on the level will still be generated.
+T	p1	\n
+T	dt0 strong	Force player descent (never make up stairs) 
+T	dt0 strong code	birth_force_descend
+T	dt0	\n
+T	p1	Upwards staircases do not work. All downward staircases, including the one in town, transport the character one level below the previous maximum depth. Recalling from the dungeon works and brings the character up to the dungeon’s entrance. However, recalling from the surface brings the character one level below the previous maximum depth. The character cannot recall from quest levels until the quest is complete, however you will be warned before descending into a quest level. Any status effects that sometimes teleports the character up and sometimes teleports them down will always choose down. When combined with the option for word of recall scrolls to have no effect, this recreates the previous “ironman” option.
+T	p1	\n
+T	dt0 strong	Word of Recall has no effect 
+T	dt0 strong code	birth_no_recall
+T	dt0	\n
+T	p1	Word of Recall scrolls have no effect. When combined with the option to force player descent, this recreates the previous “ironman” option.
+T	p1	\n
+T	dt0 strong	Restrict creation of artifacts 
+T	dt0 strong code	birth_no_artifacts
+T	dt0	\n
+T	p1	No artifacts will be created. Ever. Just 
+T	p1 em	how
+T	p1	 masochistic are you?
+T	p1	\n
+T	dt0 strong	Stack objects on the floor 
+T	dt0 strong code	birth_stacking
+T	dt0	\n
+T	p1	With this option turned on, multiple items can occupy one grid.
+T	p1	\n
+T	p1	With this option off, items dropped on the floor will spread out instead of stacking. Normal items will disappear if there is no empty grid within a radius of three squares.
+T	p1	\n
+T	dt0 strong	Lose artifacts when leaving level 
+T	dt0 strong code	birth_lose_arts
+T	dt0	\n
+T	p1	Normally if you leave a level with an unidentified artifact on it you may still find it later. With this option on, if you leave a level with an artifact on it’s gone for the rest of the game whether you knew it was there or not. Note that this option has no effect on artifacts which you have already identified (i.e. picked up) - these will always be permanently lost if you leave a level without taking them with you.
+T	p1	\n
+T	dt0 strong	Show level feelings 
+T	dt0 strong code	birth_feelings
+T	dt0	\n
+T	p1	With this option turned on, the game will give you hints about what a new level has on it.
+T	p1	\n
+T	p1	With this option off, these hints will not be shown.
+T	p1	\n
+T	dt0 strong	Increase gold drops but disable selling 
+T	dt0 strong code	birth_no_selling
+T	dt0	\n
+T	p1	Shopkeepers will never pay you for items you sell, though they will still identify unknown items for you, and will still sell you their wares. To balance out income in the game, gold found in the dungeon will be increased if this option is on.
+T	p1	\n
+T	p1	It is off by default. Zangband always paid for what you sold, and ZangbandTK keeps that; Angband 4.2, which ZangbandTK is built on, turns it on. Like every birth option it is chosen when a character is created and cannot be changed afterwards, so a character made before this default changed keeps what it was born with.
+T	p1	\n
+T	dt0 strong	Start with a kit of useful gear 
+T	dt0 strong code	birth_start_kit
+T	dt0	\n
+T	p1	Start with items, a useful option for new players, or ones that wish to descend immediately into the dungeon. If turned off, the character will start with additional gold with which to purchase starting gear.
+T	p1	\n
+T	dt0 strong	Monsters learn from their mistakes 
+T	dt0 strong code	birth_ai_learn
+T	dt0	\n
+T	p1	Allow monsters to learn what spell attacks you are resistant to, and to use this information to choose the best attacks. This option makes the game very difficult and is not recommended.
+T	p1	\n
+T	dt0 strong	Know all runes on birth 
+T	dt0 strong code	birth_know_runes
+T	dt0	\n
+T	p1	For players who don’t enjoy the “identify by use” process for wearable items. This option means all object properties are known at the outset, so artifacts and ego items will be identified on walking over them.
+T	p1	\n
+T	dt0 strong	Know all flavors on birth 
+T	dt0 strong code	birth_know_flavors
+T	dt0	\n
+T	p1	For players who don’t enjoy the “identify by use” process for consumable items. This option means all object flavors are known at the outset.
+T	p1	\n
+T	dt0 strong	Persistent levels (experimental) 
+T	dt0 strong code	birth_levels_persist
+T	dt0	\n
+T	p1	Each level is generated for the first time when the player enters it, and from then on when the player returns the level is as they last saw it, including monsters, items and traps.
+T	p1	\n
+M	damage-percent-of-dice-option
+T	dt0 strong	To-damage is a percentage of dice (experimental) 
+T	dt0 strong code	birth_percent_damage
+T	dt0	\n
+T	p1	Instead of bonuses to damage being just added on to damage dealt, each +1 adds 5% to the value of the damage dice. This option is currently not very balanced.
+T	p1	\n
+M	cheating-options
+M	id1
+T	h2	Cheating options
+T	h2	\n
+T	p0	Press 
+T	p0 code	=
+T	p0	 then 
+T	p0 code	x
+T	p0	. These are for testing the game and for looking at how it works from the inside — not for winning it.
+T	p0	\n
+T	p0 strong	Using any of them ends the character’s chances of a score.
+T	p0	 Each cheat has a hidden twin that is set the moment the cheat is used and is never unset, and on death the game says 
+T	p0 em	“Score not registered for cheaters.”
+T	p0	 Turning the cheat back off afterwards does not undo that: the record is of having used it, not of having it on.
+T	p0	\n
+T	p0	ZangbandTK also says so at the time. A character who has used any of these — or wizard mode, or the debug commands — carries 
+T	p0 strong	Cheat
+T	p0	 in red at the left of the status line, for as long as that character exists. It is not a punishment; it is so that a screenshot of a character walking about invulnerable is not mistaken for a bug report about hit points, which is exactly what happened once.
+T	p0	\n
+T	dt0 strong	Peek into monster creation 
+T	dt0 strong code	cheat_hear
+T	dt0	\n
+T	p1	Cheaters never win. But they can peek at monster creation.
+T	p1	\n
+T	dt0 strong	Peek into dungeon creation 
+T	dt0 strong code	cheat_room
+T	dt0	\n
+T	p1	Cheaters never win. But they can peek at room creation.
+T	p1	\n
+T	dt0 strong	Peek into something else 
+T	dt0 strong code	cheat_xtra
+T	dt0	\n
+T	p1	Cheaters never win. But they can see debugging messages.
+T	p1	\n
+T	dt0 strong	Allow player to avoid death 
+T	dt0 strong code	cheat_live
+T	dt0	\n
+T	p1	Cheaters never win. But they can cheat death.
+T	p1	\n
+T	dt0 strong	Gain a pet 
+T	dt0 strong code	cheat_pet
+T	dt0	\n
+T	p1	Asks which monster, and puts one beside you as yours. Also on the debug menu as 
+T	p1 em	Gain a pet
+T	p1	 (
+T	p1 code	^A
+T	p1	 then 
+T	p1 code	N
+T	p1	).
+T	p1	\n
+T	p1	Every route the game offers to a pet is a roll — a Trump summon, a charm that has to beat a saving throw, a Chaos-Warrior’s patron in a good mood — so seeing what pets 
+T	p1 em	do
+T	p1	 otherwise means playing until one arrives and hoping it is the kind you wanted to look at.
+T	p1	\n
+T	dt0 strong	Racial and mutation powers never fail 
+T	dt0 strong code	cheat_powers
+T	dt0	\n
+T	p1	Every racial and mutation power fires, every time. The listing shows 
+T	p1 code	0% to fail
+T	p1	 and the roll agrees with it — both ask the same function.
+T	p1	\n
+T	p1	This exists because some powers used to be almost untestable. A power costs mana, and a character short of mana pays in hit points instead — and the failure chance 
+T	p1 em	also
+T	p1	 charged 5% per point of the shortfall, so a class with no spell points at all was 100% over budget on a cost-20 power and sat near the 95% ceiling. A level 21 Beastman Chaos-Warrior looking at Polymorph saw 
+T	p1 code	20 hp, 95% to fail
+T	p1	.
+T	p1	\n
+T	p1 strong	That surcharge is gone
+T	p1	 (DEC-56): a power paid for in blood is not also penalised for it, because the condition charging the surcharge was the same condition that made the price blood in the first place. The same character now sees 
+T	p1 code	20 hp, 7% to fail
+T	p1	, which is what a full pool gives. Spells keep their penalty, and that is not an inconsistency — a spell short of mana is paid for in unconsciousness rather than blood.
+T	p1	\n
+T	p1	So the cheat is no longer the only way to see a racial power fire. It is kept because it still removes the roll entirely, which is useful when the question is what a power 
+T	p1 em	does
+T	p1	 rather than whether it goes off.
+T	p1	\n
+T	dt0 strong	Take gold 
+T	dt0 strong code	cheat_gold
+T	dt0	\n
+T	p1	Asks how much and puts it in your pocket. This one is ZangbandTK’s, added because the 
+L	p1 link	10	towns	magetower
+T	p1	 charges a fare and there was no way to test whether the fares were sensible without a purse to test them with.
+T	p1	\n
+T	p1	It is a button rather than a switch: select it, give an amount, and it turns itself back off. The record that a cheat was used stays.
+T	p1	\n
+T	dt0 strong	Take hit points 
+T	dt0 strong code	cheat_hp
+T	dt0	\n
+T	p1	Asks how many and sets them there. Written into the character’s hit dice rather than straight into the total, so it survives levelling up and the next step taken — putting it into the total alone would last until the game next recalculated bonuses, which is almost immediately.
+T	p1	\n
+T	p1	For walking through country that would otherwise kill you on the way to whatever you actually meant to test.
+T	p1	\n
+T	dt0 strong	Know every place 
+T	dt0 strong code	cheat_places
+T	dt0	\n
+T	p1	Puts every town and every dungeon mouth in the world on the map at once.
+T	p1	\n
+T	p1	The 
+L	p1 link	11	towns	magetower
+T	p1	 carries you only to towns you have stood in and dungeon mouths you have seen, so testing anything that happens in a particular town means walking there first. With this, the magetower becomes a way of getting anywhere in the world immediately.
+T	p1	\n
+M	debug-commands
+M	id2
+T	h2	Debug commands
+T	h2	\n
+T	p0	A second and much larger set, reached with 
+T	p0 code	^A
+T	p0	 — control-A. The game asks for confirmation the first time, and the character is marked from then on: on death it says 
+T	p0 em	“Score not registered for wizards.”
+T	p0	\n
+T	p0	These are not options but commands. There are forty-eight of them in nine submenus: pick a submenu with the movement keys, then a command by its letter.
+T	p0	\n
+T	p0	They are development tools and there are no guard rails. Nothing asks whether you are sure.
+T	p0	\n
+T	p0	Worth knowing which of the two sets you want. The cheat options change how the game 
+T	p0 em	behaves
+T	p0	; the debug commands change the 
+T	p0 em	state of your game
+T	p0	 directly.
+T	p0	\n
+T	p0	Commands marked ★ are ZangbandTK’s. The rest are Angband’s, and are documented here because they were not documented anywhere.
+T	p0	\n
+M	items
+T	h3	Items
+T	h3	\n
+T	p0	Making things out of nothing.
+T	p0	\n
+T	th0	Key  Command               Notes\n
+T	rule0	────────────────────────────────────────────────────────────────────────────────────────────────\n
+T	tr0	c    Create an object\n
+T	tr0 odd	C    Create an artifact\n
+T	tr0	V    Create all from tval\n
+T	tr0 odd	g    Acquire good\n
+T	tr0	v    Acquire great\n
+T	tr0 odd	o    Play with item        Repeatedly regenerates one item so you can see its spread of\n
+T	tr0 odd	                           outcomes.\n
+T	tbllast0	\n
+M	player
+T	h3	Player
+T	h3	\n
+T	p0	Changing the character directly.
+T	p0	\n
+T	th0	Key  Command               Notes\n
+T	rule0	────────────────────────────────────────────────────────────────────────────────────────────────\n
+T	tr0	a    Cure everything\n
+T	tr0 odd	A    Make powerful\n
+T	tr0	x    Increase experience\n
+T	tr0 odd	h    Rerate hitpoints\n
+T	tr0	e    Edit player\n
+T	tr0 odd	$    Gain gold ★           The magetower charges a fare by distance, and there was no way to\n
+T	tr0 odd	                           test whether the fares were sensible without a purse.\n
+T	tr0	i    Gain hit points ★     Written into the character’s hit dice rather than the total, so it\n
+T	tr0	                           survives levelling and the next step taken.\n
+T	tr0 odd	k    Know every place ★    Every town visited and every block seen, which turns the magetower\n
+T	tr0 odd	                           into a way of getting anywhere at once.\n
+T	tr0	N    Gain a pet ★          Asks which monster and puts one beside you, already yours. N because\n
+T	tr0	                           p and P are taken elsewhere in the debug lists, which share one key\n
+T	tr0	                           namespace.\n
+T	tr0 odd	U    Mutations ★           All ninety-six, with the character’s own marked [*]; select one to\n
+T	tr0 odd	                           toggle it, Escape to leave. Chaos hands these out and the player does\n
+T	tr0 odd	                           not choose them, so anything that touches them — Polymorph Self, the\n
+T	tr0 odd	                           patrons, the Chaos Tower — is otherwise close to untestable on\n
+T	tr0 odd	                           purpose. U because m and M were taken, and because U was Zangband’s\n
+T	tr0 odd	                           own key for these. To read what a character has, use the third page\n
+T	tr0 odd	                           of the character sheet rather than this.\n
+T	tr0	B    Learn all monsters ★  Fills in the whole bestiary, so every monster’s recall reads as\n
+T	tr0	                           though you had met and killed it. The companion to Learn object\n
+T	tr0	                           kinds, and what the manual’s picture of the bestiary is taken\n
+T	tr0	                           through.\n
+T	tr0 odd	l    Learn object kinds\n
+T	tr0	r    Recall monster\n
+T	tr0 odd	W    Erase monster recall\n
+T	tbllast0	\n
+M	teleport
+T	h3	Teleport
+T	h3	\n
+T	p0	Going somewhere without walking.
+T	p0	\n
+T	th0	Key  Command          Notes\n
+T	rule0	────────────────────────────────────────────────────────────────────────────────────────────────\n
+T	tr0	b    To location\n
+T	tr0 odd	p    Random near\n
+T	tr0	t    Random far\n
+T	tr0 odd	j    Jump to a level  No guard rails: a first-level character can jump to depth 100, and will\n
+T	tr0 odd	                      die there.\n
+T	tbllast0	\n
+M	effects
+T	h3	Effects
+T	h3	\n
+T	p0	Firing off game effects by hand.
+T	p0	\n
+T	th0	Key  Command              Notes\n
+T	rule0	───────────────────────────────\n
+T	tr0	d    Detect all nearby\n
+T	tr0 odd	u    Detect all monsters\n
+T	tr0	m    Map local area\n
+T	tr0 odd	H    Hit all in LOS\n
+T	tr0	E    Perform an effect\n
+T	tr0 odd	G    Graphics demo\n
+T	tbllast0	\n
+M	summon
+T	h3	Summon
+T	h3	\n
+T	p0	Putting monsters in front of you.
+T	p0	\n
+T	th0	Key  Command           Notes\n
+T	rule0	────────────────────────────────────────────────────────────────────────────────────────────────\n
+T	tr0	n    Summon specific\n
+T	tr0 odd	s    Summon random\n
+T	tr0	y    Set allegiance ★  Target a monster first, then say whether it is hostile, friendly or\n
+T	tr0	                       yours. It makes a pet without doing whatever the spell that makes pets\n
+T	tr0	                       does, which is what you want when the question is the AI. y because p is\n
+T	tr0	                       the teleport menu’s Random near and every debug submenu shares one key\n
+T	tr0	                       namespace.\n
+T	tbllast0	\n
+M	files
+T	h3	Files
+T	h3	\n
+T	p0	Writing things out to disk.
+T	p0	\n
+T	th0	Key  Command          Notes\n
+T	rule0	─────────────────────────────────────────────────────────────────────────────\n
+T	tr0	"    Create spoilers  Writes the object, artifact and monster lists to files.\n
+T	tr0 odd	M    Write map\n
+T	tbllast0	\n
+M	statistics
+T	h3	Statistics
+T	h3	\n
+T	p0	Generating a great many levels and counting what comes out.
+T	p0	\n
+T	th0	Key  Command                Notes\n
+T	rule0	────────────────────────────────────────────────────────────────────────────────────────────────\n
+T	tr0	S    Objects and monsters   Generates hundreds of levels and tallies what comes out. This is\n
+T	tr0	                            where the How Balance Differs figures came from, and it is not\n
+T	tr0	                            quick.\n
+T	tr0 odd	P    Pits\n
+T	tr0	D    Disconnected levels\n
+T	tr0 odd	f    Obj/mon alternate key\n
+T	tbllast0	\n
+M	query
+T	h3	Query
+T	h3	\n
+T	p0	Asking the game what it thinks is where.
+T	p0	\n
+T	th0	Key  Command          Notes\n
+T	rule0	───────────────────────────\n
+T	tr0	F    Feature\n
+T	tr0 odd	q    Square flag\n
+T	tr0	_    Noise and scent\n
+T	tr0 odd	L    Keystroke log\n
+T	tbllast0	\n
+M	miscellaneous
+T	h3	Miscellaneous
+T	h3	\n
+T	p0	The rest.
+T	p0	\n
+T	th0	Key  Command                   Notes\n
+T	rule0	──────────────────────────────────────────────────────────────────\n
+T	tr0	w    Wizard light level\n
+T	tr0 odd	T    Create a trap\n
+T	tr0	z    Banish nearby monsters\n
+T	tr0 odd	>    Push objects from square\n
+T	tr0	X    Quit without saving       Exactly that, with no confirmation.\n
+T	tbllast0	\n
+M	window-flags
+T	h2	Window flags
+T	h2	\n
+T	p0	Some platforms support “sub-windows”, which are windows which can be used to display useful information generally available through other means. The best thing about these windows is that they are updated automatically (usually) to reflect the current state of the world. The “window options” can be used to specify what should be displayed in each window. The possible choices should be pretty obvious.
+T	p0	\n
+T	dt0 strong	Display inven/equip
+T	dt0	\n
+T	p1	Display the player inventory (and sometimes the equipment).
+T	p1	\n
+T	dt0 strong	Display equip/inven
+T	dt0	\n
+T	p1	Display the player equipment (and sometimes the inventory).
+T	p1	\n
+T	dt0 strong	Display player (basic)
+T	dt0	\n
+T	p1	Display a brief description of the character, including a breakdown of the current player “skills” (including attacks/shots per round).
+T	p1	\n
+T	dt0 strong	Display player (extra)
+T	dt0	\n
+T	p1	Display a special description of the character, including some of the “flags” which pertain to a character, broken down by equipment item.
+T	p1	\n
+T	dt0 strong	Display player (compact)
+T	dt0	\n
+T	p1	Display a brief description of the character, including a breakdown of the contributions of each equipment item to various resistances and stats.
+T	p1	\n
+T	dt0 strong	Display map view
+T	dt0	\n
+T	p1	Display the area around the player or around the target while targeting. This allows using graphical tiles in their original size.
+T	p1	\n
+T	dt0 strong	Display messages
+T	dt0	\n
+T	p1	Display the most recently generated “messages”.
+T	p1	\n
+T	dt0 strong	Display overhead view
+T	dt0	\n
+T	p1	Display an overhead view of the entire dungeon level.
+T	p1	\n
+T	dt0 strong	Display monster recall
+T	dt0	\n
+T	p1	Display a description of the monster which has been most recently attacked, targeted, or examined in some way.
+T	p1	\n
+T	dt0 strong	Display object recall
+T	dt0	\n
+T	p1	Display a description of the most recently selected object. Currently this only affects spellbooks and prayerbooks. This window flag may be usefully combined with others, such as “monster recall”.
+T	p1	\n
+T	dt0 strong	Display monster list
+T	dt0	\n
+T	p1	Display a list of monsters you know about and their distance from you.
+T	p1	\n
+T	dt0 strong	Display status
+T	dt0	\n
+T	p1	Display the current status of the player, with permanent or temporary boosts, resistances and status ailments (also available on the main window).
+T	p1	\n
+T	dt0 strong	Display item list
+T	dt0	\n
+T	p1	Display a list of items you know about and their distance from you.
+T	p1	\n
+M	left-over-information
+T	h2	Left Over Information
+T	h2	\n
+T	p0	The 
+T	p0 code	hitpoint_warn
+T	p0	 value, if non-zero, is the percentage of maximal hitpoints at which the player is warned that they may die. It is also used as the cut-off for using the color red to display both hitpoints and mana.
+T	p0	\n
+T	p0	The 
+T	p0 code	delay_factor
+T	p0	 value, if non-zero, will slow down the visual effects used for missile, bolt, beam, and ball attacks. The actual time delay is equal to 
+T	p0 code	delay_factor
+T	p0	 squared, in milliseconds.
+T	p0	\n
+T	p0	The 
+T	p0 code	lazymove_delay
+T	p0	 value, if non-zero, will allow the player to move diagonally by pressing the two appropriate arrow keys within the delay time. This may be useful particularly when using a keyboard with no numpad.
+T	p0	\n

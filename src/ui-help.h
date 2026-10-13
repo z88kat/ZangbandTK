@@ -6,6 +6,8 @@
 #ifndef UI_HELP_H
 #define UI_HELP_H
 
+extern void (*help_view_hook)(void);
+
 extern bool show_file(const char *name, const char *what, int line, int mode);
 extern void do_cmd_help(void);
 

@@ -1,0 +1,40 @@
+H	Getting Started
+M	getting-started
+T	h1	Getting Started
+T	h1	\n
+T	p0	If you have never played a roguelike before, read these in order. The demonstration walks through an actual character’s first few minutes; the guide explains what the demonstration skipped over.
+T	p0	\n
+T	p0	\n
+T	li1	•\t
+L	li1 link	1	a-quick-demo	A quick demonstration
+T	li1	\n
+T	li1	•\t
+L	li1 link	2	guide	A Players’ Guide to ZangbandTK
+T	li1	\n
+T	li2	•\t
+L	li2 link	3	guide#the-basics	The basics
+T	li2	\n
+T	li2	•\t
+L	li2 link	4	guide#fighting-power	Fighting Power
+T	li2	\n
+T	li2	•\t
+L	li2 link	5	guide#plan-to-be-deep	Plan to be deep
+T	li2	\n
+T	li2	•\t
+L	li2 link	6	guide#on-bad-luck	On Bad Luck
+T	li2	\n
+T	li2	•\t
+L	li2 link	7	guide#face-palm-tips	Face-palm Tips
+T	li2	\n
+T	li2	•\t
+L	li2 link	8	guide#surviving-to-clvl-31-dlvl-36	Surviving to clvl 31 / dlvl 36
+T	li2	\n
+T	li1	•\t
+L	li1 link	9	faq	Frequently Asked Questions
+T	li1	\n
+T	li2	•\t
+L	li2 link	10	faq#issues-and-problems	Issues and problems
+T	li2	\n
+T	li2	•\t
+L	li2 link	11	faq#development	Development
+T	li2	\n

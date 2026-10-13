@@ -1,0 +1,232 @@
+H	Mutations
+M	mutations
+T	h1	Mutations
+T	h1	\n
+T	p0	Exposure to chaos changes you, permanently and not always for the better.
+T	p0	\n
+T	p0	There are ninety-six ways it can, and you do not choose between them. A mutation arrives because something happened to you — a spell went wrong, a Lord of Chaos took an interest, you were standing in the wrong place when something breathed — and what you get is what the roll gives you.
+T	p0	\n
+M	the-four-kinds
+T	h2	The four kinds
+T	h2	\n
+T	p0 strong	Continuous.
+T	p0	 Simply true of you from the moment you have them. Superhuman strength, a moronic mind, skin turned to steel, wings, a rotting body, good luck, bad luck. Thirty-two of them, and twelve are purely bad.
+T	p0	\n
+T	p0	These act on your character directly, the way a shapechange does rather than the way a ring does — there is nothing to wear and nothing to take off. They show up on your character sheet under 
+T	p0 strong	Mutations
+T	p0	 — press 
+T	p0 code	C
+T	p0	, then 
+T	p0 code	h
+T	p0	 twice to reach that page — and in your stats, armour, speed, saving throw and resistances without being labelled.
+T	p0	\n
+T	p0 warn strong	Warning
+T	p0 warn	\n
+T	p0 warn strong	A mutation is rarely only what it is called.
+T	p0 warn	 Superhuman strength is +4 STR and also -1 INT and -1 WIS; being puny is -4 STR and 
+T	p0 warn em	+2 DEX
+T	p0 warn	; a moronic mind is -4 INT and -4 WIS and makes you immune to fear and confusion; iron skin is +25 AC and -3 DEX. The Zangband spoiler gives the headline of each and stops, and the headline is generally the good half. What this game implements is what Zangband’s code did, which is harsher on the good mutations and kinder on the bad ones.
+T	p0 warn	\n
+T	p0 warn strong	Your character sheet tells you all of it.
+T	p0 warn	 Everything in the bracket after a mutation’s description is generated from what the mutation actually does, so the two cannot come apart: every stat it moves, every resistance it grants, every vulnerability it opens, and everything it takes away. It was not always so — a living computer brain used to advertise its four points of intelligence and wisdom and say nothing about the vulnerability to electricity that comes with it.
+T	p0 warn	\n
+T	p0	Three mutations take something away rather than adding anything. Rotting flesh stops you regenerating — including the regeneration from a ring you are wearing — and the panic-hit power and the warning mutation both stop you resisting fear, however you came by the resistance. Three more make ordinary food barely feed you: a beak, a mouth that eats rock, and a taste for blood all leave you a twentieth of what you swallow. Potions still work normally.
+T	p0	\n
+T	p0	Three of the thirty-two do nothing at all. A silly voice and an illusory normal appearance changed only your charisma, and there is no charisma in Angband 4.2 — the stat was removed in 4.2.0. 
+T	p0 strong	Bad luck
+T	p0	 is the third: everything it did happened at the moment an object was identified, and 4.2 has no such moment — you learn what a thing is one rune at a time by carrying and using it, so it never stops being unknown and there is nothing for the curse to hang on. You can still gain all three, they are still described on your sheet, and they have no effect. They were left in rather than dropped because a mutation that vanishes from a savefile is worse than one that does nothing.
+T	p0	\n
+T	p0	Its twin, 
+T	p0 strong	good luck
+T	p0	, does work — but only half of it. One time in thirteen an object generated near you rolls against a level twenty deeper than it should, which is a real if occasional gift. The other half made your sense of an object’s worth reliable, and that is the same wall bad luck ran into: there is no such sense here to make reliable.
+T	p0	\n
+T	p0 strong	Activatable.
+T	p0	 Powers you invoke, at a cost in mana — or in blood, if you are not a caster. Spitting acid, breathing fire, eating rock, turning objects to gold, teleporting at will. Thirty-two, each with its own level, price, and a stat it is rolled against.
+T	p0	\n
+T	p0	They appear in the same list as your racial and class powers, after them, and work the same way — the same failure roll, the same fall back to hit points when you are short of mana. Some grow with you: spitting acid throws a wider ball from level 30, breathing fire from level 40, and hardening yourself against the elements resists more of them the higher you go.
+T	p0	\n
+T	p0 strong	Three of the thirty-two cannot be used yet.
+T	p0	 They are listed with 
+T	p0 em	not yet
+T	p0	 beside them rather than hidden, because your character sheet describes them and you would come looking.
+T	p0	\n
+T	p0	Two came off that list with the magic realms. 
+T	p0 strong	Swap position
+T	p0	 works — you and the monster change places, unless it is one of the things that will not be teleported, in which case neither of you moves. 
+T	p0 strong	Sterility
+T	p0	 works too: it stops every breeder on the level and gives you a headache worth seventeen to thirty-four hit points. That is not permanent, and it was not in Zangband either — breeding starts again once enough breeders have died.
+T	p0	\n
+T	p0	The Midas touch was on that list too once, marked 
+T	p0 em	dropped
+T	p0	: turning objects into gold needed a mechanic the game was not going to build for one mutation. It turned out not to be for one mutation — Sorcery’s 
+T	p0 em	Alchemy
+T	p0	 spell and a random-artifact power want the same thing — so it was built once for all three, and the Midas touch works (DEC-52). What they need is machinery Angband 4.2 does not have, and in most cases inventing it to carry one mutation would be the wrong way round:
+T	p0	\n
+T	th0	Mutation      What it needs\n
+T	rule0	────────────────────────────────────────────────────────────────────────────────────────────────\n
+T	tr0	Sense curses  Something hidden to reveal. 4.2 has no pseudo-identification; curses are runes you\n
+T	tr0	              learn by carrying the thing.\n
+T	tr0 odd	Weigh magic   Reporting how long your effects have left. 4.2 puts that on the status line\n
+T	tr0 odd	              already.\n
+T	tr0	Launcher      A throwing multiplier. Throwing is a command in 4.2, not something a power can\n
+T	tr0	              invoke.\n
+T	tbllast0	\n
+T	p0 strong	Random.
+T	p0	 Things that happen to you without being asked for. Berserker fits, a body that brews its own alcohol, attracting demons, occasionally becoming invulnerable, occasionally dropping your weapon. Twenty-seven, most of them rare — one turn in three thousand up to one in twelve thousand.
+T	p0	\n
+T	p0	Each is rolled separately, every turn, so three of these are three chances and not one. Almost all of them stop while you are under an anti-magic effect — cowardice is the exception, because being too frightened to act is not magic, and Zangband is specific about that. Three of the twenty-seven do not fire yet: being warned about what is nearby, and trading hit points for spell points and back. All three still show on your character sheet.
+T	p0	\n
+T	p0 strong	Occasional invulnerability is not free, twice over.
+T	p0	 Carrying it costs two points of wisdom permanently, in the same way wraith form costs constitution. And every time it fires — which it does unasked, by definition — the game charges it against your virtues as though you had chosen it: five points off Temperance, five off Honour, five off Sacrifice and ten off Valour, twenty-five points in all, which is the largest single virtue charge anywhere in the game. A character who happens to have this mutation will slide down four scales without ever having decided anything. See 
+L	p0 link	1	virtues	Virtues
+T	p0	.
+T	p0	\n
+T	p0 note strong	Wraith form, and the way it kills you
+T	p0 note	\n
+T	p0 warn strong	Warning
+T	p0 warn	\n
+T	p0 warn strong	If wraith form ends while you are inside rock, you die.
+T	p0 warn	 Not “you are hurt” — you are solid again with stone on every side, you cannot move in any direction, and you are crushed where you stand until you are dead. There is no floor under that damage the way there is for a Spectre. At two thousand five hundred feet it is six hit points a turn; on the surface it is one. The death is recorded as 
+T	p0 warn em	an expired wraith form
+T	p0 warn	, so you will know.
+T	p0 warn	\n
+T	p0	One of the twenty-seven turns you incorporeal, and it is the strongest thing on this page by a wide margin. You walk through walls. Nine tenths of every blow passes through you. You gain a hundred points of armour and bolts bounce off you. Darkness heals you instead of hurting you. You pay nothing for standing inside rock, where a Spectre pays a point a turn.
+T	p0	\n
+T	p0	It arrives without being asked for, roughly one turn in three thousand.
+T	p0	\n
+T	p0 strong	It also costs you three points of constitution for as long as you have it
+T	p0	 — not while the form is running, but permanently, from the moment the mutation arrives until something takes it away. You fade in and out of physical reality and your body is the thing that suffers for it. On a frail character that is a meaningful share of the hit points, and it is the reason this is not simply the best mutation in the game.
+T	p0	\n
+T	p0 strong	How long you have is the whole of the calculation, and you can do it.
+T	p0	 The form lasts somewhere between half your character level and your level, in turns, rolled when it arrives — so a character at level 20 gets between 10 and 20 turns, and must assume 10. That is the number to count against before you step into a wall, because it is the number that decides whether you come out the other side. A vault wall is one or two grids thick and costs nothing worth worrying about. A mountain range is many grids, and a low-level wraith cannot cross one.
+T	p0	\n
+T	p0 strong	Two things end it early, and neither asks.
+T	p0	 Light ends it immediately and wherever you are — including light you are otherwise immune to, and including your own. A wraith reading a scroll of light inside a mountain has made a decision they will not get to revisit. And any monster that breathes light at you will do the same thing from across the room.
+T	p0	\n
+T	p0 strong	A Spectre is safe from all of this.
+T	p0	 The form ending leaves it still able to walk through rock, so it drops back to the ordinary Spectre’s point a turn and strolls out. Nothing else in the game confers that safety: no item grants passing walls, and since 3.124.23 no random ego can roll it either. For everybody else the rule is simple. Treat a wall you are standing in as somewhere you are passing through rather than somewhere you are, and count.
+T	p0	\n
+T	p0	Three that used to be on this list are not. 
+T	p0 strong	Losing a mutation at random
+T	p0	 works — that is the “strangely normal” one, and it takes a mutation back. 
+T	p0 strong	Wraith form
+T	p0	 works, and is described above. And the 
+T	p0 strong	chaos gift
+T	p0	 was never really missing: it has no per-turn roll because it fires when you gain a level, through the patron that grants it.
+T	p0	\n
+T	p0 strong	Melee.
+T	p0	 Five of them, and they are extra blows rather than anything else: a scorpion tail, horns, a beak, an elephantine trunk, a nest of tentacles.
+T	p0	\n
+T	p0	They land once each per melee round, after your weapon, and cost you nothing — a mutated Warrior and a mutated Mage bite equally often. They are the reason a low-level character with the right mutations hits harder than their class says they should.
+T	p0	\n
+T	p0 strong	They stop when the thing you are hitting dies.
+T	p0	 They are tried in a fixed order and the sequence ends the moment the monster is dead, so a character with all five does not land five blows on something your weapon had already finished — the extras are spent on the next monster’s turn, not wasted on this one’s corpse. Against anything that survives a round they all land; against the small things they mostly do not come up at all.
+T	p0	\n
+T	p0 warn strong	Warning
+T	p0 warn	\n
+T	p0 warn strong	The melee dice are not what Zangband’s own text says.
+T	p0 warn	 Every one of the five states its damage the wrong way round: a scorpion tail is written “3d7” and rolls 
+T	p0 warn strong	7d3
+T	p0 warn	, an elephantine trunk is written “1d4” and rolls a flat 
+T	p0 warn strong	4d1
+T	p0 warn	. The code fills in two variables and then passes them in the other order, and the result is that all five hit harder than advertised. This game uses what the code rolls and the descriptions have been corrected to match.
+T	p0 warn	\n
+T	p0 em	Zangband files these in three groups rather than four, because thirty-two flags is what fits in a machine word and it had three words to spend. The grouping above is what the spoiler describes and what a player actually meets.
+T	p0	\n
+M	how-you-get-them
+T	h2	How you get them
+T	h2	\n
+T	p0	Every route is chaos of one sort or another — that is the point of them, and the reason there is no generic “random mutation” source:
+T	p0	\n
+T	li1	•\t
+T	li1 strong	Being a Beastman.
+T	li1	 One at character creation, and a one-in-five chance at every level after. This is what a Beastman 
+T	li1 em	is
+T	li1	.
+T	li1	\n
+T	li1	•\t
+T	li1 strong	A Chaos patron’s regard.
+T	li1	 A Lord of the Courts may hand one down as a level-up reward.
+T	li1	\n
+T	li1	•\t
+T	li1 strong	The gift mutation.
+T	li1	 One of the ninety-six makes the Chaos deities take an interest in you, which means more of the others.
+T	li1	\n
+T	li1	•\t
+T	li1 strong	Chaos itself.
+T	li1	 Being hit by raw chaos without resisting it.
+T	li1	\n
+T	li1	•\t
+T	li1 strong	Polymorph Self
+T	li1	, whether cast or mutated into.
+T	li1	\n
+T	li1	•\t
+T	li1 strong	A Chaos spell going badly wrong.
+T	li1	 A failed Death spell hurts, but it does not change you.
+T	li1	\n
+T	p0 strong	However it arrives, gaining one moves you a point up the Chance virtue.
+T	p0	 The game counts a mutation as courting chaos whether or not you courted it, so a Beastman — which collects one every few levels for nothing it chose to do — drifts steadily up that scale over a career, and a character who has taken a few from bad luck with a chaos breath will find the scale has noticed. It is a single point each time, so it is slow; it is also the only thing on the list that accumulates. See 
+L	p0 link	2	virtues	Virtues
+T	p0	.
+T	p0	\n
+T	p0	Everything on that list works. The two that go through a magic realm waited for the realms and arrived with Chaos: 
+T	p0 em	Polymorph Self
+T	p0	 is a Chaos spell as well as a mutation, and a Chaos spell that backfires can change you. A Lord of the Courts replaces one favour in six with a mutation instead, the chaos gift makes a Lord take an interest in a character who never swore to one, and unresisted chaos changes you one time in three.
+T	p0	\n
+T	p0 note strong	Note
+T	p0 note	\n
+T	p0 note strong	Polymorph Self does less here than in Zangband, on purpose.
+T	p0 note	 Zangband’s version could change your sex and your race outright, permanently. This game’s shapechanges you instead — the same decision the Chaos patron’s “Thou needst a new form, mortal!” already got, for the same reason. What is left of it is the mutation reroll: it sheds some of what you have and gives you more, and how much of each depends on your level. At level 40 it is frightening. At level 5 it usually does nothing at all.
+T	p0 note	\n
+T	p0	Some races take more readily to particular changes. A Vampire’s gaze turns hypnotic six times out of ten; a Mindflayer sprouts tentacles as often; a Yeek learns to shriek, and an Imp grows horns. A Beastman tends towards polymorphing itself, but only one time in ten — the source is specific about that, where the documentation is not.
+T	p0	\n
+T	p0	Three mutations have conditions attached, and no Zangband document mentions them. The Midas touch only comes to the already-rich: a thousand gold for every level you have, in hand at the moment it would arrive. What it pays when it does arrive is a third of the object’s real value, capped at thirty thousand, with artifacts refusing and a stack of cheap items paying nothing — the same terms as Sorcery’s 
+T	p0 em	Alchemy
+T	p0	, set out under that realm. A silly voice and a vulnerability to the elements only come to characters who are mutated already, with three or more. That last is exactly what it sounds like — the more chaos has hold of you, the worse the changes it offers.
+T	p0	\n
+M	how-you-get-rid-of-them
+T	h2	How you get rid of them
+T	h2	\n
+T	p0	Barely at all, which is what makes them matter:
+T	p0	\n
+T	li1	•\t
+T	li1 strong	A potion of New Life
+T	li1	, which strips away every mutation at once and is the deepest, most expensive potion in the game. Zangband’s also re-rolled your hit points; this one does not, because Angband 4.2 fixes those at birth.
+T	li1	\n
+T	li1	•\t
+T	li1 strong	Gaining a mutation that cancels one you have.
+T	li1	 Nine such pairs. Becoming superhumanly strong ends being puny; growing a beak replaces a trunk. Iron skin is the interesting one — it drives out scales, rotting flesh and warts all at once, while any one of those three drives out the iron skin. Scales and warts get along fine together.
+T	li1	\n
+T	li1	•\t
+T	li1 strong	The Chaos Tower
+T	li1	, a building service that exists for this and nothing else. Only great cities have one, and it costs 2500 gold a mutation — but it is the only route that lets you 
+T	li1 em	choose
+T	li1	 which one goes. Everything else takes whichever it likes, or takes all of them.
+T	li1	\n
+T	li1	•\t
+T	li1 strong	The “strangely normal” mutation
+T	li1	, which occasionally removes mutations — including, eventually, itself.
+T	li1	\n
+T	li1	•\t
+T	li1 strong	Polymorph Self
+T	li1	, which sometimes takes one away instead of adding one.
+T	li1	\n
+T	p0 note strong	Note
+T	p0 note	\n
+T	p0 note strong	Mutations do not slow your healing.
+T	p0 note	 The Zangband spoiler warns that they do, and that was true of version 2.2.2d — but the mechanic had been taken out again by the version this game is built from, and it is not reinstated here. What mutations cost you instead is that you do not choose them: twelve of the continuous ones are simply bad, and being resilient or able to eat rock makes you hungrier. See DEC-45.
+T	p0 note	\n
+M	a-note-on-the-descriptions
+T	h2	A note on the descriptions
+T	h2	\n
+T	p0	Each mutation’s text is Zangband’s sentence with a bracket this game writes itself, listing every effect the mutation carries. That is deliberate: the brackets Zangband shipped were unreliable in three separate ways. Twelve of them named a change to your charisma, and there is no charisma in Angband 4.2 — the stat was removed in 4.2.0. All five melee mutations stated their damage dice the wrong way round. And six named some of their effects and not others, the worst hiding a vulnerability behind a pair of stat bonuses.
+T	p0	\n
+T	p0	Generating the bracket instead of curating it is what stops that recurring. The cost is the occasional redundancy — being completely fearless reads 
+T	p0 em	(immune to fear)
+T	p0	, which you had probably guessed — and that is a fair price for never again being told half of what a mutation does.
+T	p0	\n
+M	if-you-are-carrying-a-great-many
+T	h2	If you are carrying a great many
+T	h2	\n
+T	p0	You can hold eighty-nine mutations at once — all ninety-six less the seven that cancelling pairs make unreachable together. The power list and the Chaos Tower show all of them. Only the first fifty-one get a letter to press; past that, move the cursor to the one you want.
+T	p0	\n

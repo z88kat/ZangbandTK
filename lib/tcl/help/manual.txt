@@ -1,0 +1,255 @@
+H	The Manual
+M	the-manual
+T	h1	The Manual
+T	h1	\n
+T	p0	The reference manual: character creation, the dungeon, combat, and the full command and option lists.
+T	p0	\n
+T	p0	These chapters are inherited from Angband, which ZangbandTK is built on, and they describe the mechanics the two games share. Where a chapter here and a page under 
+L	p0 link	1	differences	What’s Different
+T	p0	 disagree, the latter is correct — those pages are written for this game and these were adapted to it.
+T	p0	\n
+T	p0	All seven have been checked against the game as it stands, and the statements that were Angband’s rather than this game’s have been corrected: the endgame, the map symbols, the keysets, the command and option lists, the file paths and the front ends. What has 
+T	p0 em	not
+T	p0	 been done is a rewrite — the prose, the examples and the emphasis are still Angband’s, and these chapters do not attempt to explain the wilderness, the towns, pets, mutations, patrons or the realms. Those have pages of their own.
+T	p0	\n
+L	p0 link	2	birth	Creating a Character
+T	p0	 is the furthest from its inherited form: it carries the full race and class tables for all twenty-eight races and fourteen classes, and the racial powers, martial arts, psionics and patrons sections are this game’s own.
+T	p0	\n
+T	p0	\n
+T	li1	•\t
+L	li1 link	3	birth	Creating a Character
+T	li1	\n
+T	li2	•\t
+L	li2 link	4	birth#character-characteristics	Character Characteristics
+T	li2	\n
+T	li2	•\t
+L	li2 link	5	birth#races	Races
+T	li2	\n
+T	li2	•\t
+L	li2 link	6	birth#classes	Classes
+T	li2	\n
+T	li2	•\t
+L	li2 link	7	birth#stats	Stats
+T	li2	\n
+T	li2	•\t
+L	li2 link	8	birth#skills	Skills
+T	li2	\n
+T	li2	•\t
+L	li2 link	9	birth#stat-bonus-tables	Stat Bonus Tables
+T	li2	\n
+T	li2	•\t
+L	li2 link	10	birth#ability-tables	Ability Tables
+T	li2	\n
+T	li2	•\t
+L	li2 link	11	birth#stat-rollers	Stat rollers
+T	li2	\n
+T	li2	•\t
+L	li2 link	12	birth#character-name	Character Name
+T	li2	\n
+T	li1	•\t
+L	li1 link	13	dungeon	Exploring the Dungeon
+T	li1	\n
+T	li2	•\t
+L	li2 link	14	dungeon#symbols-on-your-map	Symbols On Your Map
+T	li2	\n
+T	li2	•\t
+L	li2 link	15	dungeon#the-dungeons	The Dungeons
+T	li2	\n
+T	li2	•\t
+L	li2 link	16	dungeon#the-town-level	The Town Level
+T	li2	\n
+T	li2	•\t
+L	li2 link	17	dungeon#townspeople	Townspeople
+T	li2	\n
+T	li2	•\t
+L	li2 link	18	dungeon#town-buildings	Town Buildings
+T	li2	\n
+T	li2	•\t
+L	li2 link	19	dungeon#within-the-dungeon	Within The Dungeon
+T	li2	\n
+T	li2	•\t
+L	li2 link	20	dungeon#objects-found-in-the-dungeon	Objects Found In The Dungeon
+T	li2	\n
+T	li2	•\t
+L	li2 link	21	dungeon#cursed-objects	Cursed Objects
+T	li2	\n
+T	li2	•\t
+L	li2 link	22	dungeon#mining	Mining
+T	li2	\n
+T	li2	•\t
+L	li2 link	23	dungeon#traps	Traps
+T	li2	\n
+T	li2	•\t
+L	li2 link	24	dungeon#staircases-secret-doors-passages-and-rooms	Staircases, Secret Doors, Passages, and Rooms
+T	li2	\n
+T	li2	•\t
+L	li2 link	25	dungeon#level-and-object-feelings	Level and object feelings
+T	li2	\n
+T	li2	•\t
+L	li2 link	26	dungeon#winning-the-game	Winning The Game
+T	li2	\n
+T	li2	•\t
+L	li2 link	27	dungeon#upon-death-and-dying	Upon Death and Dying
+T	li2	\n
+T	li1	•\t
+L	li1 link	28	attack	Attacking monsters
+T	li1	\n
+T	li2	•\t
+L	li2 link	29	attack#attacking-and-being-attacked	Attacking and Being Attacked
+T	li2	\n
+T	li2	•\t
+L	li2 link	30	attack#monster-memories	Monster Memories
+T	li2	\n
+T	li2	•\t
+L	li2 link	31	attack#your-weapon	Your Weapon
+T	li2	\n
+T	li2	•\t
+L	li2 link	32	attack#your-armor-class	Your Armor Class
+T	li2	\n
+T	li2	•\t
+L	li2 link	33	attack#monster-status-effects	Monster status effects
+T	li2	\n
+T	li2	•\t
+L	li2 link	34	attack#non-melee-attacks-and-resistances	Non-melee attacks and resistances
+T	li2	\n
+T	li2	•\t
+L	li2 link	35	attack#a-note-on-speed	A note on speed
+T	li2	\n
+T	li2	•\t
+L	li2 link	36	attack#ego-weapons-and-armor	Ego weapons and armor
+T	li2	\n
+T	li1	•\t
+L	li1 link	37	playing	Playing the Game
+T	li1	\n
+T	li2	•\t
+L	li2 link	38	playing#original-keyset-command-summary	Original Keyset Command Summary
+T	li2	\n
+T	li2	•\t
+L	li2 link	39	playing#roguelike-keyset-command-summary	Roguelike Keyset Command Summary
+T	li2	\n
+T	li2	•\t
+L	li2 link	40	playing#disturb	Disturb
+T	li2	\n
+T	li2	•\t
+L	li2 link	41	playing#special-keys	Special Keys
+T	li2	\n
+T	li2	•\t
+L	li2 link	42	playing#command-counts	Command Counts
+T	li2	\n
+T	li2	•\t
+L	li2 link	43	playing#selection-of-objects	Selection of Objects
+T	li2	\n
+T	li2	•\t
+L	li2 link	44	playing#index-6	Targeting
+T	li2	\n
+T	li2	•\t
+L	li2 link	45	playing#pathfinding	Pathfinding
+T	li2	\n
+T	li2	•\t
+L	li2 link	46	playing#shape-changes	Shape Changes
+T	li2	\n
+T	li1	•\t
+L	li1 link	47	command	Command Descriptions
+T	li1	\n
+T	li2	•\t
+L	li2 link	48	command#inventory-commands	Inventory Commands
+T	li2	\n
+T	li2	•\t
+L	li2 link	49	command#movement-commands	Movement Commands
+T	li2	\n
+T	li2	•\t
+L	li2 link	50	command#resting-commands	Resting Commands
+T	li2	\n
+T	li2	•\t
+L	li2 link	51	command#alter-commands	Alter Commands
+T	li2	\n
+T	li2	•\t
+L	li2 link	52	command#spell-commands	Spell Commands
+T	li2	\n
+T	li2	•\t
+L	li2 link	53	command#object-manipulation-commands	Object Manipulation Commands
+T	li2	\n
+T	li2	•\t
+L	li2 link	54	command#magical-object-commands	Magical Object Commands
+T	li2	\n
+T	li2	•\t
+L	li2 link	55	command#throwing-and-missile-weapons	Throwing and Missile Weapons
+T	li2	\n
+T	li2	•\t
+L	li2 link	56	command#looking-commands	Looking Commands
+T	li2	\n
+T	li2	•\t
+L	li2 link	57	command#message-commands	Message Commands
+T	li2	\n
+T	li2	•\t
+L	li2 link	58	command#game-status-commands	Game Status Commands
+T	li2	\n
+T	li2	•\t
+L	li2 link	59	command#saving-and-exiting-commands	Saving and Exiting Commands
+T	li2	\n
+T	li2	•\t
+L	li2 link	60	command#user-pref-file-commands	User Pref File Commands
+T	li2	\n
+T	li2	•\t
+L	li2 link	61	command#help-commands	Help Commands
+T	li2	\n
+T	li2	•\t
+L	li2 link	62	command#extra-commands	Extra Commands
+T	li2	\n
+T	li2	•\t
+L	li2 link	63	command#special-keys	Special Keys
+T	li2	\n
+T	li2	•\t
+L	li2 link	64	command#command-counts	Command Counts
+T	li2	\n
+T	li1	•\t
+L	li1 link	65	option	Option Descriptions
+T	li1	\n
+T	li2	•\t
+L	li2 link	66	option#the-options-menu	The options menu
+T	li2	\n
+T	li2	•\t
+L	li2 link	67	option#user-interface-options	User Interface Options
+T	li2	\n
+T	li2	•\t
+L	li2 link	68	option#birth-options	Birth options
+T	li2	\n
+T	li2	•\t
+L	li2 link	69	option#cheating-options	Cheating options
+T	li2	\n
+T	li2	•\t
+L	li2 link	70	option#debug-commands	Debug commands
+T	li2	\n
+T	li2	•\t
+L	li2 link	71	option#window-flags	Window flags
+T	li2	\n
+T	li2	•\t
+L	li2 link	72	option#left-over-information	Left Over Information
+T	li2	\n
+T	li1	•\t
+L	li1 link	73	customize	Customising the game
+T	li1	\n
+T	li2	•\t
+L	li2 link	74	customize#user-pref-files	User Pref Files
+T	li2	\n
+T	li2	•\t
+L	li2 link	75	customize#ignoring-items	Ignoring items
+T	li2	\n
+T	li2	•\t
+L	li2 link	76	customize#inscribing-items	Inscribing items
+T	li2	\n
+T	li2	•\t
+L	li2 link	77	customize#showing-extra-info-in-subwindows	Showing extra info in subwindows
+T	li2	\n
+T	li2	•\t
+L	li2 link	78	customize#keymaps	Keymaps
+T	li2	\n
+T	li2	•\t
+L	li2 link	79	customize#colours	Colours
+T	li2	\n
+T	li2	•\t
+L	li2 link	80	customize#visuals	Visuals
+T	li2	\n
+T	li2	•\t
+L	li2 link	81	customize#interface-details	Interface details
+T	li2	\n

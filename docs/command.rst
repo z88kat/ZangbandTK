@@ -785,10 +785,16 @@ Help Commands
 =============
 
 Help (``?``)
-  Brings up the ZangbandTK on-line help system: the command list, the map
-  symbols, the towns and their services, the dungeons of the world, and the
-  cheat and debug commands. It is a short reference rather than a manual —
-  this documentation is the long form, and the help system points at it.
+  In the Tcl/Tk front end, ``ZangbandTKGUI.app``, opens the Help window: this
+  manual, with its contents beside it, links between its pages and a search
+  of all of them. Help ▸ Help opens the same window, and Help ▸ Open in
+  Browser shows the page being read on the website.
+
+  Elsewhere it brings up the ZangbandTK on-line help system: the command list,
+  the map symbols, the towns and their services, the dungeons of the world,
+  and the cheat and debug commands. It is a short reference rather than a
+  manual — this documentation is the long form, and the help system points at
+  it.
 
   The help files are just text files in a particular format, in
   ``lib/help/``, so you can add your own.

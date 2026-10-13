@@ -1,0 +1,37 @@
+#!/bin/sh
+#
+# Build the Tk front end's Help window pages from the manual.
+#
+# Use in the root directory of the game, like so:
+#    scripts/build-tk-help [output-directory]
+#
+# The output goes to lib/tcl/help unless a directory is given, and lib/tcl/help
+# is committed: a build of the game then needs no Python.  Run this after
+# changing the manual and commit what it changes; the tk-help workflow fails
+# when the committed pages are not what this makes.
+#
+# It needs Sphinx and the extensions in docs/requirements.txt.  The project's
+# docs virtual environment, .venv-docs, is used when there is one.
+#
+# The builder is docs/_ext/tkhelp.py, which says what goes in and the format.
+set -o errexit
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+OUT=${1:-$ROOT/lib/tcl/help}
+
+if [ -x "$ROOT/.venv-docs/bin/sphinx-build" ]; then
+	SPHINX=$ROOT/.venv-docs/bin/sphinx-build
+elif command -v sphinx-build >/dev/null 2>&1; then
+	SPHINX=sphinx-build
+else
+	echo "No sphinx-build.  Install docs/requirements.txt, or make .venv-docs." >&2
+	exit 1
+fi
+
+# A doctree cache of its own, under the output's parent, so a run never
+# reuses one the HTML build made with a different builder's links in it.
+CACHE=$(mktemp -d)
+trap 'rm -rf "$CACHE"' EXIT
+
+mkdir -p "$OUT"
+"$SPHINX" -E -W --keep-going -q -b tkhelp -d "$CACHE" "$ROOT/docs" "$OUT"

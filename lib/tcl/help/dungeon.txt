@@ -1,0 +1,488 @@
+H	Exploring the Dungeon
+M	exploring-the-dungeon
+T	h1	Exploring the Dungeon
+T	h1	\n
+T	p0	After you have created your character, you will begin your ZangbandTK adventure. Symbols appearing on your screen will represent the dungeon’s walls, floor, objects, features, and creatures lurking about. In order to direct your character through their adventure, you will enter single character commands (see 
+L	p0 link	1	command#command-descriptions	the Command Descriptions section
+T	p0	 for descriptions of many of the most useful commands; the 
+L	p0 link	2	playing#playing-the-game	Playing the Game section
+T	p0	 and the in-game help, 
+T	p0 code	?
+T	p0	, have a full list but only with the briefest of descriptions for each command).
+T	p0	\n
+M	symbols-on-your-map
+M	index-0
+T	h2	Symbols On Your Map
+T	h2	\n
+T	p0	Symbols on your map can be broken down into three categories: Features of the dungeon such as walls, floor, doors, and traps; Objects which can be picked up such as treasure, weapons, magical devices, etc; and creatures which may or may not move about the dungeon, but are mostly harmful to your character’s well being.
+T	p0	\n
+T	p0	Some symbols are used to represent more than one type of entity, and some symbols are used to represent entities in more than one category. The “@” symbol (by default) is used to represent the character.
+T	p0	\n
+T	p0	It will not be necessary to remember all of the symbols and their meanings. The “slash” command (
+T	p0 code	/
+T	p0	) will identify any character appearing on your map, and there is a comprehensive menu of terrain, objects, monsters and so on using the “tilde” (
+T	p0 code	~
+T	p0	) command. The in-game help (
+T	p0 code	?
+T	p0	) has a symbol list of its own.
+T	p0	\n
+T	p0	Note that you can use a “user pref file” to change any of these symbols to something you are more comfortable with.
+T	p0	\n
+M	features-that-do-not-block-line-of-sight
+T	h3	Features that do not block line of sight
+T	h3	\n
+T	tr0	.  A floor space       1  Entrance to General Store\n
+T	tr0 odd	.  A trap (hidden)     2  Entrance to Armoury\n
+T	tr0	^  A trap (known)      3  Entrance to Weapon Smith\n
+T	tr0 odd	;  A glyph of warding  4  Entrance to Bookseller\n
+T	tr0	'  An open door        5  Entrance to Alchemy Shop\n
+T	tr0 odd	'  A broken door       6  Entrance to Magic Shop\n
+T	tr0	<  A staircase up      7  Entrance to the Black Market\n
+T	tr0 odd	>  A staircase down    8  Entrance to your Home\n
+T	tr0	#  A pool of lava      9  Entrance to the magetower\n
+T	tbllast0	\n
+T	p0	The other five town services are all 
+T	p0 code	+
+T	p0	, each in a colour of its own: the inn in brown, the healer in green, the magesmith in red, the recharger in blue and the chaos tower in violet. Looking at one (
+T	p0 code	l
+T	p0	) names it. 
+L	p0 link	3	towns	Towns and Services
+T	p0	 says which places have which.
+T	p0	\n
+M	features-that-block-line-of-sight
+T	h3	Features that block line of sight
+T	h3	\n
+T	tr0	#  A secret door     #  A wall\n
+T	tr0 odd	+  A closed door     %  A mineral vein\n
+T	tr0	+  A locked door     *  A mineral vein with treasure\n
+T	tr0 odd	:  A pile of rubble  :  A pile of passable rubble\n
+T	tbllast0	\n
+M	out-in-the-country
+T	h3	Out in the country
+T	h3	\n
+T	p0	The wilderness has terrain the dungeon does not. None of it blocks line of sight except the trees.
+T	p0	\n
+T	tr0	.  Grass (green)            ~  Shallow water — wadeable\n
+T	tr0 odd	.  Bare earth (brown)       ~  Deep water — you can drown in it\n
+T	tr0	.  Sand (yellow)            ~  Open sea, where the world ends\n
+T	tr0 odd	.  Mud — slow going, unlit  :  A mountainside — impassable\n
+T	tr0	%  A tree — blocks sight\n
+T	tbllast0	\n
+T	p0	Note that 
+T	p0 code	%
+T	p0	 is a tree above ground and a mineral vein below it, and that 
+T	p0 code	:
+T	p0	 is a mountainside above ground and rubble below it. The colour tells them apart, and so does looking. 
+L	p0 link	4	wilderness	The Wilderness
+T	p0	 covers what the terrain does to you.
+T	p0	\n
+M	objects
+T	h3	Objects
+T	h3	\n
+T	tr0	!  A potion (or flask)         /  A pole-arm\n
+T	tr0 odd	?  A scroll (or book)          |  An edged weapon\n
+T	tr0	,  A mushroom (or food)        \\  A hafted weapon\n
+T	tr0 odd	-  A wand or rod               }  A sling, bow, or x-bow\n
+T	tr0	_  A staff                     {  A shot, arrow, or bolt\n
+T	tr0 odd	=  A ring                      (  Soft armour\n
+T	tr0	"  An amulet                   [  Hard armour\n
+T	tr0 odd	$  Gold or gems                ]  Misc. armour\n
+T	tr0	~  Lights, Tools, Chests, etc  )  A shield\n
+T	tr0 odd	&  Multiple items\n
+T	tbllast0	\n
+M	monsters
+T	h3	Monsters
+T	h3	\n
+T	tr0	$  Creeping Coins     ,  Mushroom Patch\n
+T	tr0 odd	a  Giant Ant          A  Ainu\n
+T	tr0	b  Giant Bat          B  Bird\n
+T	tr0 odd	c  Giant Centipede    C  Canine (Dog)\n
+T	tr0	d  Dragon             D  Ancient Dragon\n
+T	tr0 odd	e  Floating Eye       E  Elemental\n
+T	tr0	f  Feline (Cat)       F  Dragon Fly\n
+T	tr0 odd	g  Golem              G  Ghost\n
+T	tr0	h  Humanoid           H  Hybrid\n
+T	tr0 odd	i  Icky-Thing         I  Insect\n
+T	tr0	j  Jelly              J  Snake\n
+T	tr0 odd	k  Kobold             K  Killer Beetle\n
+T	tr0	l  Tree/Ent           L  Lich\n
+T	tr0 odd	m  Mold               M  Multi-Headed Hydra\n
+T	tr0	n  Naga               N  Fish and other swimmers\n
+T	tr0 odd	o  Orc                O  Ogre\n
+T	tr0	p  Human “person”     P  Giant “person”\n
+T	tr0 odd	q  Quadruped          Q  Quylthulg (Pulsing Flesh Mound)\n
+T	tr0	r  Rodent             R  Reptile/Amphibian\n
+T	tr0 odd	s  Skeleton           S  Spider/Scorpion/Tick\n
+T	tr0	t  Townsperson        T  Troll\n
+T	tr0 odd	u  Minor Demon        U  Major Demon\n
+T	tr0	v  Vortex             V  Vampire\n
+T	tr0 odd	w  Worm or Worm Mass  W  Wight/Wraith\n
+T	tr0	x  Lurker             X  Xorn/Xaren\n
+T	tr0 odd	y  Yeek               Y  Yeti\n
+T	tr0	z  Zombie/Mummy       Z  Zephyr Hound\n
+T	tbllast0	\n
+T	p0	Two more classes are ZangbandTK’s, and display as punctuation because Angband has no letter for them: 
+T	p0 code	#
+T	p0	 is a wall monster — sentient stone and the mists that drift between it — and 
+T	p0 code	|
+T	p0	 is an animated weapon. Both look exactly like the terrain and the treasure they sit among, which is the point. Other monsters disguise themselves as objects and take that object’s symbol; 
+L	p0 link	5	monsters	Monsters
+T	p0	 has the list.
+T	p0	\n
+M	the-dungeons
+T	h2	The Dungeons
+T	h2	\n
+T	p0	Angband has one dungeon, and depth is the only thing that tells its fortieth level from its fourth. ZangbandTK has several, and they are places.
+T	p0	\n
+T	p0	Each dungeon covers a 
+T	p0 strong	range of depths
+T	p0	, and it ends at the bottom of that range. When you reach the deepest level of a dungeon there is no way further down from it; to go deeper you must leave, cross the world, and find a dungeon that reaches deeper. This is deliberate, and it is what the world is for.
+T	p0	\n
+T	p0	Each also remembers 
+T	p0 strong	its own depth
+T	p0	. Word of recall returns you to how far down you had got in the dungeon you were last in — not to the deepest level you have ever reached anywhere, which might be on the far side of the world and, worse, deeper than the dungeon you are standing on goes.
+T	p0	\n
+T	p0	And each has a 
+T	p0 strong	character
+T	p0	: its own floor underfoot, and its own preference in how its levels are laid out, so the caverns under Kolvir are caverns and the city in the sky is a maze.
+T	p0	\n
+M	what-lives-there
+T	h3	What lives there
+T	h3	\n
+T	p0	Each dungeon is home to some kinds of creature and not others, and most of what you meet is what lives there. The Caverns of Kolvir run to trolls, giants and golems; Tir-na Nog’th to vortices, wraiths and ghosts; Arden to animals and trees. Something from elsewhere turns up now and then — a dungeon is not sealed — but it is the exception, and measurement puts it at rather less than a fifth of what is met.
+T	p0	\n
+T	p0	This is worth knowing before you dive. A dungeon whose inhabitants you are badly equipped for is more dangerous than its depth suggests; one you are well equipped for is less. Fire is a poor idea in Arden.
+T	p0	\n
+T	p0	Zangband said this by putting a habitat flag for each of its dungeons on every one of its nine hundred monsters. ZangbandTK says it through Angband 4.2’s own taxonomy instead — the monster 
+T	p0 em	kinds
+T	p0	 a dungeon is home to, and the flags it claims — which is a dozen lines per dungeon rather than a flag field on a thousand monsters, and covers the monsters Angband brought as well as the ones Zangband did. What it cannot express is that one particular creature belongs in one particular place; that is a finer grain than this mechanism has.
+T	p0	\n
+M	what-is-found-there
+T	h3	What is found there
+T	h3	\n
+T	p0	Each dungeon runs to its own kind of treasure, weighted across four rough proportions: coin and jewellery, arms and armour, wands and potions and scrolls, and useful gear.
+T	p0	\n
+T	p0	Rebma is rich and Garnath is not. The Grove of the Unicorn and Tir-na Nog’th yield around three quarters magic and almost nothing to fight with, against a game-wide half and a fifth. The Caverns of Kolvir, being a mine, yield tools.
+T	p0	\n
+T	p0	Nothing is impossible anywhere — a sword can still be found in the Grove. It is a matter of proportion, and of where it is worth going to look. The proportions change 
+T	p0 em	what
+T	p0	 a dungeon yields and not 
+T	p0 em	how much
+T	p0	: a lopsided dungeon is not a poorer one.
+T	p0	\n
+M	id1
+T	p0 strong	The dungeons of the world
+T	p0	\n
+T	th0	Dungeon                      Depths  What it is\n
+T	rule0	────────────────────────────────────────────────────────────────────────────────────────────────\n
+T	tr0	The Vaults of Amber          1–15    Cellars, and older cellars beneath those, under the one\n
+T	tr0	                                     true city.\n
+T	tr0 odd	Arden                        1–20    Julian’s forest, and whatever Julian keeps in it.\n
+T	tr0	Faiella-Bionin               8–30    The stairway to Rebma, running down beneath the sea.\n
+T	tr0 odd	Garnath                      15–40   The valley Corwin’s blood cursed, where the Black Road\n
+T	tr0 odd	                                     runs.\n
+T	tr0	The Caverns of Kolvir        20–45   The mountain Amber stands on is hollow further down than\n
+T	tr0	                                     anyone has gone.\n
+T	tr0 odd	Rebma                        25–50   Amber’s reflection, drowned, and its stairs still walked.\n
+T	tr0	The Grove of the Unicorn     30–55   Something in here is watching, and it is not hostile.\n
+T	tr0 odd	Tir-na Nog’th                35–65   The city in the sky, which is only there by moonlight.\n
+T	tr0	A Broken Pattern             40–75   A shadow where the Pattern is flawed, and the flaw is\n
+T	tr0	                                     spreading.\n
+T	tr0 odd	Thelbane                     55–90   The black tower at the Courts, cut from a single stone.\n
+T	tr0	The Keep of the Four Worlds  60–95   Four elements, one fortress, and a sorcerer who wanted all\n
+T	tr0	                                     of it.\n
+T	tr0 odd	The Courts of Chaos          75–110  The far pole of everything. Order thins out here, and then\n
+T	tr0 odd	                                     stops.\n
+T	tr0	The Abyss                    90–127  Past the Courts there is an edge, and past the edge there\n
+T	tr0	                                     is this.\n
+T	tbllast0	\n
+T	p0	Where a dungeon opens follows from the country: the Caverns of Kolvir open high in settled land, the Abyss in empty lowland. Most open on or near a road, since a dungeon nobody can find is a dungeon nobody uses. The staircase in your home village leads into the Vaults of Amber, so you need not find anything before your first descent.
+T	p0	\n
+M	the-town-level
+T	h2	The Town Level
+T	h2	\n
+T	p0	The town level is where you will begin your adventure. A town consists of its shops (each with an entrance), some townspeople, and a wall around it with gates in it. The first time you are in town it will be daytime, but note that the sun rises and falls (rather instantly) as time passes.
+T	p0	\n
+T	p0	Not every town holds all eight shops — see 
+L	p0 link	6	towns	Towns and Services
+T	p0	.
+T	p0	\n
+M	townspeople
+T	h2	Townspeople
+T	h2	\n
+T	p0	The town contains many different kinds of people. There are the street urchins, young children who will mob an adventurer for money, and seem to come out of the woodwork when excited. Blubbering idiots are a constant annoyance, but not harmful. Public drunks wander about the town singing, and are of no threat to anyone. Sneaky rogues hang about watching for a likely victim to mug. And finally, no town would be complete without a swarm of half drunk warriors, who take offense or become annoyed just for the fun of it. (There are assumed to be other people in the town, but they are not represented on the screen as they do not interact with the player in any way.)
+T	p0	\n
+T	p0	Most of the townspeople should be avoided by the largest possible distance when you wander from store to store. Fights will break out, though, so be prepared. Since your character grew up in this world of intrigue, no experience is awarded for killing the town inhabitants, though you may acquire treasure.
+T	p0	\n
+M	town-buildings
+T	h2	Town Buildings
+T	h2	\n
+T	p0	Your character will begin their adventure with some basic supplies and some extra gold with which to purchase more supplies at the town stores. If you choose to play with the starting kit option on (it is on by default), your character will start with more items but with less gold.
+T	p0	\n
+T	p0	You may enter any open store to buy items of the appropriate type. The price the shopkeeper requests is dependent on the price of the item. Stores will buy items from the player, as they did in Zangband, but each shopkeeper has a maximum amount she or he is willing to offer for any item, regardless of how much it is actually worth. A character born with the no selling option on gets nothing for what it sells, and finds more gold in the dungeon instead; the option is off unless you turn it on when you create the character.
+T	p0	\n
+T	p0	Once inside a store, you will see the name and race of the store owner, the name of the store, the maximum amount of cash that the store owner will pay for any one item, and the store inventory, listed along with the prices.
+T	p0	\n
+T	p0	You can press 
+T	p0 code	?
+T	p0	 for a partial list of the available commands. Note that many of the commands which work in the dungeon work in the stores as well, but some do not, especially those which involve “using” objects.
+T	p0	\n
+T	p0	Stores do not always have everything in stock. As the game progresses, they may get new items so check from time to time. Stores restock after 10000 game turns have passed, and a shop’s shelves will not change while you stand in front of them — walking out of a shop and back in does not re-roll it.
+T	p0	\n
+T	p0	That turn count is the rule you will meet least often, though. 
+T	p0 strong	The rule that actually governs what is on the shelves is which town you are in.
+T	p0	 A trade restocks when you carry your custom to a 
+T	p0 em	different
+T	p0	 town, at that town’s own standard, so a general store in a great city holds better things than the one in the village you started in — and coming home again restocks it back down. See 
+L	p0 link	7	towns	Towns and Services
+T	p0	. Also, if you sell them an item, it may get sold to a customer while you are adventuring, so don’t always expect to be able to get back everything you have sold. If you have a lot of spare gold, you can purchase every item in a store, which will induce the store owner to bring out new stock, and perhaps even retire.
+T	p0	\n
+T	p0	Store owners will not accept known harmful or useless items. If an object is unidentified, a store owner will accept it (paying out some gold if selling is on), identify the object, and then either add it to store’s stock if it is good or throw it away. You can use this feature to learn item flavors or the magical properties, called “runes”, of items that can be equipped.
+T	p0	\n
+M	index-1
+T	dt0 strong	The General Store (
+T	dt0 strong code	1
+T	dt0 strong	)
+T	dt0	\n
+T	p1	The General Store sells foods, some clothing, torches, oil, shovels and picks. All of these items and some others can be sold back to the general store for money. The general store restocks like every store, but the inventory types never change.
+T	p1	\n
+M	index-2
+T	dt0 strong	The Armoury (
+T	dt0 strong code	2
+T	dt0 strong	)
+T	dt0	\n
+T	p1	The Armoury is where the town’s armour is fashioned. All sorts of protective gear may be bought and sold here. The deeper into the dungeon you progress the more exotic the equipment you will find stocked in the armoury. However, some armour types will never appear here unless you sell them.
+T	p1	\n
+M	index-3
+T	dt0 strong	The Weaponsmith’s Shop (
+T	dt0 strong code	3
+T	dt0 strong	)
+T	dt0	\n
+T	p1	The Weaponsmith’s Shop is where the town’s weapons are fashioned. Hand and missile weapons may be purchased and sold here, along with arrows, bolts, and shots. As with the armoury, not all weapon types will be stocked here, unless they are sold to the shop by the player first.
+T	p1	\n
+M	index-4
+T	dt0 strong	The Bookseller (
+T	dt0 strong code	4
+T	dt0 strong	)
+T	dt0	\n
+T	p1	The Bookseller holds supplies of the simpler books needed by magic users, and will buy the more advanced books which can be found in the dungeon.
+T	p1	\n
+M	index-5
+T	dt0 strong	The Alchemy shop (
+T	dt0 strong code	5
+T	dt0 strong	)
+T	dt0	\n
+T	p1	The Alchemy Shop deals in all types of potions and scrolls.
+T	p1	\n
+M	index-6
+T	dt0 strong	The Magic User’s Shop (
+T	dt0 strong code	6
+T	dt0 strong	)
+T	dt0	\n
+T	p1	The Magic User’s Shop deals in all sorts of rings, wands, amulets, and staves. Giving (or selling when selling is on) a useful wand or staff with no charges to the Magic User’s Shop is a convenient way to recharge the item, if you have enough gold to buy it back.
+T	p1	\n
+M	index-7
+T	dt0 strong	The Black Market (
+T	dt0 strong code	7
+T	dt0 strong	)
+T	dt0	\n
+T	p1	The Black Market will sell and buy anything at extortionate prices. However it occasionally has 
+T	p1 strong	very
+T	p1	 good items in it. With the exception of artifacts, every item found in the dungeon may appear in the black market.
+T	p1	\n
+M	index-8
+T	dt0 strong	Your Home (
+T	dt0 strong code	8
+T	dt0 strong	)
+T	dt0	\n
+T	p1	This is your house where you can store objects that you cannot carry on your travels, or will need at a later date.
+T	p1	\n
+M	within-the-dungeon
+T	h2	Within The Dungeon
+T	h2	\n
+T	p0	Once your character is adequately supplied with food, light, armor, and weapons, they are ready to enter the dungeon. Move on top of the 
+T	p0 code	>
+T	p0	 symbol and use the “Down” command (
+T	p0 code	>
+T	p0	).
+T	p0	\n
+T	p0	Your character will enter a maze of interconnecting staircases and finally arrive somewhere on the shallowest level of that dungeon — which is the top of its own depth range and not necessarily 50 feet, since a dungeon may begin well below the surface. Each level of the dungeon is fifty feet high (thus dungeon level “Lev 1” is often called “50 ft”), and is divided into (large) rectangular regions (several times larger than the screen) by permanent rock. Once you leave a level by a staircase, you will never again find your way back to that region of that level, but there are an infinite number of other regions at that same “depth” that you can explore later. Monsters, of course, can use the stairs, and you may eventually encounter them again, but they will not chase you up or down stairs. Your pets are the exception and do follow you — see 
+L	p0 link	8	pets	Pets and Allies
+T	p0	.
+T	p0	\n
+T	p0	In the dungeon, there are many things to find, but your character must survive many horrible and challenging encounters to find the treasure lying about.
+T	p0	\n
+T	p0	There are two sources for light once inside the dungeon. Permanent light which has been magically placed within rooms, and a light source carried by the player. If neither is present, the character will be unable to see. This will affect searching, picking locks, disarming traps, reading scrolls, casting spells, browsing books, etc. So be very careful not to run out of light!
+T	p0	\n
+T	p0	A character must wield a torch or lamp in order to supply his own light. A torch or lamp burns fuel as it is used, and once it is out of fuel, it stops supplying light. You will be warned as the light approaches this point. You may use the “Fuel” command (
+T	p0 code	F
+T	p0	) to refuel your lantern (with flasks of oil), and it is a good idea to carry extra torches or flasks of oil, as appropriate. There are rumours of objects of exceptional power which glow with their own never-ending light.
+T	p0	\n
+T	p0	These last two paragraphs apply to most classes, but not to necromancers. Necromancers dislike light, and shroud themselves in darkness. They are usually better off not carrying a light, but also do not gain any of the bonuses that may come from magical light sources.
+T	p0	\n
+M	objects-found-in-the-dungeon
+T	h2	Objects Found In The Dungeon
+T	h2	\n
+T	p0	The mines are full of objects just waiting to be picked up and used. How did they get there? Well, the main source for useful items are all the foolish adventurers that proceeded into the dungeon before you. They get killed, and the helpful creatures scatter the various treasure throughout the dungeon.
+T	p0	\n
+T	p0	Several objects may occupy a given floor location, which may or may not also contain one creature. However, doors, rubble, traps, and staircases cannot coexist with items. As below, any item may actually be a “stack” of up to 40 identical items. With the default options, multiple stacks can be in the same grid forming a “pile”.
+T	p0	\n
+T	p0	You pick up objects by moving on top of them. You can carry up to 23 different items in your backpack while wearing and wielding up to 12 others. Although you are limited to 23 different items, each item may actually be a “stack” of up to 40 similar items. If you 
+T	p0 code	t
+T	p0	ake
+T	p0	 off an item, it will go into your backpack if there is room: if there is no room in your backpack, it will drop onto the floor, so be careful when swapping one wielded weapon or worn piece of armor for another when your pack is full.
+T	p0	\n
+T	p0	You are, however, limited in the total amount of weight that you can carry. If you exceed this value, you become slower, making it easier for monsters to chase you. Note that there is no upper bound on how much you can carry, if you do not mind being slow. Your weight “limit” is determined by your strength.
+T	p0	\n
+T	p0	Many objects found within the dungeon have special commands for their use. Wands must be Aimed, staves must be Used, scrolls must be Read, and potions must be Quaffed. You may, in general, not only use items in your pack, but also items on the ground, if you are standing on top of them. At the beginning of the game all items are assigned a random ‘flavor’. For example potions of ‘cure light wounds’ could be ‘red potions’. If you have never used, sold, or bought one of these potions, you will only see the flavor. You can learn what type of item it is by selling it to a store, or using it (learning by use for wands, staves, and rods can require some work as you may need the right target or something appropriate nearby to identify what the device did). Lastly, items in stores that you have not yet identified the flavor of will be labeled ‘{unseen}’.
+T	p0	\n
+T	p0	Chests are complex objects, containing traps, locks, and possibly treasure or other objects inside them once they are opened. Many of the commands that apply to traps or doors also apply to chests and, like traps and doors, these commands do not work if you are carrying the chest.
+T	p0	\n
+T	p0	One item in particular will be discussed here. The scroll of “Word of Recall” can be found within the dungeon, or bought at the alchemist in town. All classes start with one of these scrolls in their inventory, unless you began the game with the “Word of Recall has no effect” birth option, in which case you are given none. It acts in two manners, depending upon your current location. If read underground, it lifts you out to 
+T	p0 strong	the surface of the world at the mouth you went down by
+T	p0	 — not to a town, which may be days away across the map. If read on the surface, it takes you back down to the deepest level you had reached in 
+T	p0 strong	the dungeon you were last in
+T	p0	, as described under 
+L	p0 link	9	#the-dungeons	The Dungeons
+T	p0	 above; it is not a way into a dungeon you have never entered, and not a way to the deepest level you have ever reached anywhere. This makes the scroll very useful for getting back to the deeper levels of ZangbandTK. Once the scroll has been read it takes a while for the spell to act, so don’t expect it to save you in a crisis. During this time the word ‘recall’ will appear on the bottom of the screen below the dungeon. Reading a second scroll before the first takes effect will cancel the action.
+T	p0	\n
+T	p0	You may “inscribe” any object with a textual inscription of your choice. These inscriptions are not limited in length, though you may not be able to see the whole inscription on the item. The game applies special meaning to inscriptions containing any text of the form ‘@#’, ‘@x#’, ‘!!’, ‘!x’, ‘!*’, ‘^x’, ‘^*’, or ‘=g`; see 
+L	p0 link	10	customize#inscribing	the section on inscribing
+T	p0	 for more details.
+T	p0	\n
+T	p0	The game provides some “fake” inscriptions to help you keep track of your possessions. Weapons, armor and jewellery which have properties you don’t know about yet will get a ‘{??}’ label. Weapons, armor, and jewellery with a known curse get a ‘{cursed}’ label. Wands, staves and rods can get a ‘{tried}’ label after use, particularly if they have an effect on a monster and were tested in the absence of monsters. Unidentified wands or staves with no remaining charges will have an ‘{empty}’ label. Items which are marked as ignored will have a ‘{ignored}’ label. If an item has more than one of those labels or also has an inscription you provided, all the labels will be shown in one set of brackets, separated by commas, and the inscription you provided, if any, will be first. For instance, you could see ‘{empty, tried}’ on an unidentified wand or staff or ‘{cursed, ??}’ on a piece of armor with ooe or more known curses and one or more unidentified magical properties.
+T	p0	\n
+T	p0	It is rumored that rings of power and extra rare spell books may be found deeper in the dungeon…
+T	p0	\n
+T	p0	And lastly, a final warning: not all objects are what they seem. The line between tasty food and a poisonous mushroom is a fine one, and sometimes a chest full of treasure will grow teeth in its lid and bite your hand off…
+T	p0	\n
+M	cursed-objects
+T	h2	Cursed Objects
+T	h2	\n
+T	p0	Some objects, often objects of great power, have been cursed. There are many curses in the game, and they can appear on any wearable object. Curses may have a negative (or sometimes positive) effect on an object’s properties, or cause bad things to happen to the player at random.
+T	p0	\n
+T	p0	You can choose to wear the object in spite of its curses, or attempt to uncurse it using magic. A warning: failed uncursing leads to the object becoming fragile, and a fragile object may be destroyed on future curse removal attempts. It is up to you to balance the risks and rewards in your use of cursed items.
+T	p0	\n
+M	mining
+T	h2	Mining
+T	h2	\n
+T	p0	Some treasure within the dungeon can be found only by mining it out of the walls. Many rich strikes exist within each level, but must be found and mined. Quartz veins are the richest, yielding the most metals and gems, but magma veins will have some hoards hidden within.
+T	p0	\n
+T	p0	Mining is rather difficult without a pick or shovel. Picks and shovels have an additional magical ability expressed as ‘(+#)’. The higher the number, the better the magical digging ability of the tool. A pick or shovel also has plusses to hit and damage, and can be used as a weapon, because, in fact, it is one.
+T	p0	\n
+T	p0	When a vein of quartz or magma is located, the character may wield his pick or shovel and begin digging out a section. When that section is removed, he can locate another section of the vein and begin the process again. Since granite rock is much harder to dig through, it is much faster to follow the vein exactly and dig around the granite. Eventually, it becomes easier to simply kill monsters and discover items in the dungeon to sell, than to walk around digging for treasure. But, early on, mineral veins can be a wonderful source of easy treasure.
+T	p0	\n
+T	p0	If the character has a scroll, staff, or spell of treasure location, they can immediately locate all strikes of treasure within a vein shown on the screen. This makes mining much easier and more profitable.
+T	p0	\n
+T	p0	Note that a character with high strength and/or a heavy weapon does not need a shovel/pick to dig, but even the strongest character will benefit from a pick if trying to dig through a granite wall.
+T	p0	\n
+T	p0	It is sometimes possible to get a character trapped within the dungeon by using various magical spells and items, encountering the right kind of trap, or entering the dungeon (either by word of recall or by a staircase when playing with disconnected stairs) and finding yourself in a part that has no passable route to a staircase. So it can be a good idea to always carry some kind of digging tool, even when you are not planning on tunneling for treasure.
+T	p0	\n
+T	p0	There are rumors of certain incredibly profitable rooms buried deep in the dungeon and completely surrounded by permanent rock and granite walls, requiring a digging implement or magical means to enter. The same rumors imply that these rooms are guarded by incredibly powerful monsters, so beware!
+T	p0	\n
+M	traps
+T	h2	Traps
+T	h2	\n
+T	p0	There are many traps located in the dungeon of varying danger. These traps are hidden from sight and are triggered only when your character walks over them. If you have found a trap you can attempt to 
+T	p0 code	D
+T	p0	isarm
+T	p0	 it, but failure may mean activating it. Traps can be physical dangers such as pits, or magical runes or inscriptions which will cause an effect when triggered. Your character may be better at disarming one of these types of traps than the other.
+T	p0	\n
+T	p0	All characters have a chance to notice traps when they first come into view (dependent on searching skill). Some players will also get access to magical means of detecting all traps within a certain radius. If you use such a spell or device and are still within the area it checked, there will be a ‘DTrap’ label in green on the bottom of the screen, below the dungeon map. If you are on the boundary of an area where a trap detection was done (the current square was affected by a trap detection effect but one or more of the four neighbors in the cardinal directions was not), there will be a ‘DTrap’ label in yellow on the bottom of the screen.
+T	p0	\n
+T	p0	Some monsters have the ability to create new traps on the level that may be hidden, even if the player is in a detected zone. The detection only finds the traps that exist at the time of detection, it does not inform you of new ones that have since been created.
+T	p0	\n
+M	staircases-secret-doors-passages-and-rooms
+T	h2	Staircases, Secret Doors, Passages, and Rooms
+T	h2	\n
+T	p0	Staircases are the manner in which you get deeper or climb out of the dungeon. The symbols for the up and down staircases are the same as the commands to use them. A 
+T	p0 code	<
+T	p0	 represents an up staircase and a 
+T	p0 code	>
+T	p0	 represents a down staircase. You must move your character over the staircase before you can use it.
+T	p0	\n
+T	p0	Most levels carry one to three down staircases and one or two up. The deepest level of a dungeon is the exception and carries no way down at all, because there is nothing below it — see 
+L	p0 link	11	#the-dungeons	The Dungeons
+T	p0	. You may have trouble finding some well hidden secret doors, or you may have to dig through obstructions to get to them, but you can always find the stairs if you look hard enough. Stairs, like permanent rock, and shop entrances, cannot be destroyed by any means.
+T	p0	\n
+T	p0	Many secret doors are used within the dungeon to confuse and demoralize adventurers foolish enough to enter, although all secret doors can be discovered by stepping adjacent to them. Secret doors will sometimes hide rooms or corridors, or even entire sections of that level of the dungeon. Sometimes they simply hide small empty closets or even dead ends. Secret doors always look like granite walls, just like traps always look like normal floors.
+T	p0	\n
+T	p0	Creatures in the dungeon will generally know and use these secret doors, and can often be counted on to leave them open behind them when they pass through.
+T	p0	\n
+M	level-and-object-feelings
+M	index-9
+T	h2	Level and object feelings
+T	h2	\n
+T	p0	Unless you have disabled the option to get feelings you will get a message upon entering a dungeon giving you a general feel of how dangerous that level is.
+T	p0	\n
+T	p0	The possible messages are :
+T	p0	\n
+T	tr0	1  “This seems a quiet, peaceful place”\n
+T	tr0 odd	2  “This seems a tame, sheltered place”\n
+T	tr0	3  “This place seems reasonably safe”\n
+T	tr0 odd	4  “This place does not seem too risky”\n
+T	tr0	5  “You feel nervous about this place”\n
+T	tr0 odd	6  “You feel anxious about this place”\n
+T	tr0	7  “This place seems terribly dangerous”\n
+T	tr0 odd	8  “This place seems murderous”\n
+T	tr0	9  “Omens of death haunt this place”\n
+T	tbllast0	\n
+T	p0	This feeling depends only on the monsters present in the dungeon when you first enter it. It will not get reduced to safer feeling as you kill monsters neither will it increase if new ones are summoned. This feeling also depends on your current dungeon depth. A dungeon you feel nervous about at 2000’ is way more dangerous than a murderous one at 50’.
+T	p0	\n
+T	p0	Once you have explored a certain amount of the dungeon you will also get a feeling about how good are the objects lying on the floor of the dungeon.
+T	p0	\n
+T	p0	The possible messages are :
+T	p0	\n
+T	tr0	1  “there is naught but cobwebs here.”\n
+T	tr0 odd	2  “there are only scraps of junk here.”\n
+T	tr0	3  “there aren’t many treasures here.”\n
+T	tr0 odd	4  “there may not be much interesting here.”\n
+T	tr0	5  “there may be something worthwhile here.”\n
+T	tr0 odd	6  “there are good treasures here.”\n
+T	tr0	7  “there are very good treasures here.”\n
+T	tr0 odd	8  “there are excellent treasures here.”\n
+T	tr0	9  “there are superb treasures here.”\n
+T	tr0 odd	$  “you sense an item of wondrous power!”\n
+T	tbllast0	\n
+T	p0	The last message indicates an artifact is present and is only possible if the option to lose artifacts is on (if that option is off, an artifact will guarantee a feeling of 5 or better).
+T	p0	\n
+T	p0	You may review your level feeling any time by using the ^f command. You may also consult it by checking the LF: indicator at the bottom left of the screen. The first number after it is the level feeling and the second one is the object feeling. The second one will be ? if you need to explore more before getting a feeling about the value of the treasures present in the dungeon.
+T	p0	\n
+M	winning-the-game
+M	index-10
+T	h2	Winning The Game
+T	h2	\n
+T	p0	The game ends in Amber, not in Angband. There are two things to kill and you are on both quests from the moment you are born; nobody offers them to you and there is nothing to report back.
+T	p0	\n
+T	p0	Both are in 
+T	p0 strong	the Courts of Chaos
+T	p0	, which runs from level 75 to level 110, so the last part of the game is a matter of crossing the world to find its entrance rather than of going down far enough. Depth alone will not do it: the Abyss also reaches past level 100, and the hundredth level of the Abyss has nothing on it to kill.
+T	p0	\n
+T	p0 strong	Oberon, King of Amber
+T	p0	 is on level 99 (4950’) of the Courts. You will not be able to go below his level until you have killed him. When he dies a magical staircase appears, which is how you reach level 100.
+T	p0	\n
+T	p0 strong	The Serpent of Chaos
+T	p0	 lurks on level 100, and holds that level the same way. It is the older thing: the Unicorn of Order fought with the Serpent and stole one of its eyes, the Jewel of Judgement, and with the Jewel Dworkin drew the Pattern and gave birth to the infinite worlds of shadow. Killing it is the end of the game.
+T	p0	\n
+T	p0	If you should actually survive that, you will receive the status of WINNER. You may continue to explore, and may even save the game and play more later, but since you have defeated the toughest creature alive, there is really not much point.
+T	p0	\n
+T	p0 note strong	Note
+T	p0 note	\n
+T	p0 note	Sauron and Morgoth are still in the bestiary as deep uniques. They are no longer what the game is about, and killing them ends nothing. See 
+L	p0 note link	12	quests	Quests
+T	p0 note	.
+T	p0 note	\n
+T	p0	When you are ready to retire, press the 
+T	p0 code	Q
+T	p0	 key to have your character entered into the high score list as a winner. Note that until you retire, you can still be killed, so you may want to retire before wandering into yet another horde of greater demons.
+T	p0	\n
+M	upon-death-and-dying
+M	index-11
+T	h2	Upon Death and Dying
+T	h2	\n
+T	p0	If your character falls below 0 hit points, they have died and cannot be restored (with the exception that blackguards can go below zero hit points in some circumstances and live to tell tale). A tombstone showing information about your character will be displayed. You are also permitted to get a record of your character, and all your equipment (identified) either on the screen or in a file.
+T	p0	\n
+T	p0	Your character will leave behind a reduced save file, which contains only your option choices. It may be restored, in which case a new character is generated exactly as if the file was not there.
+T	p0	\n
+T	p0	There are a variety of ways to “cheat” death (including using a special “cheating option”) when it would otherwise occur. This will fully heal your character, returning him to the town, and marking him in various ways as a character which has cheated death. Cheating death, like using any of the “cheating options”, will prevent your character from appearing on the high score list.
+T	p0	\n

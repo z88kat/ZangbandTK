@@ -2,9 +2,9 @@
 #
 # File, Inventory, Action and Other, with Magic and Use under Inventory and
 # Alter, Looking, Movement and Resting under Action, as ZangbandTk had them --
-# the layout agreed in .claude/plans/menu-structure.md, 12 October 2026.  It
-# replaced menus that were the game's own command groups, one entry a command
-# under the game's long descriptions, which were complete and hard to read.
+# the layout the project owner drew up on 12 October 2026.  It replaced menus
+# that were the game's own command groups, one entry a command under the
+# game's long descriptions, which were complete and hard to read.
 #
 # What the layout decides is where each command goes and what it is called.
 # Everything else is still the game's: each entry names a command by its
@@ -312,8 +312,13 @@ proc commands_fill {m items} {
     }
 }
 
-# The game's Help, at the top of the front end's Help menu: built with the
-# others, since its key is the game's, and replaced when they are.
+# Help, at the top of the front end's Help menu.  It opens the Help window,
+# which stands in for the game's help as the Options window does for its
+# options -- and the game's ? opens the same window, through help_view_hook.
+# Opened here directly rather than through the game, so it is never greyed:
+# the manual can be read during a -more- or before there is a character.  The
+# key shown is still the game's, and the entry is built with the others, and
+# replaced when they are, so it follows the keyset.
 proc commands_help {} {
     global commands
 
@@ -325,10 +330,9 @@ proc commands_help {} {
     }
     if {![dict exists $commands(byname) $commands(help)]} return
     lassign [dict get $commands(byname) $commands(help)] gidx g idx name key
-    $m insert 0 command -command [list angband_command $gidx $idx] \
-        -label Help -accelerator [commands_accel $key]
-    $m configure -postcommand [list commands_refresh $m]
-    set commands(entries,$m) [list [list 0 $commands(help) Help]]
+    $m insert 0 command -command help_window -label Help \
+        -accelerator [commands_accel $key]
+    lappend commands(instead) $commands(help)
     set commands(helpshown) 1
 }
 

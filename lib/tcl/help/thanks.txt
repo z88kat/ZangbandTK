@@ -1,0 +1,1146 @@
+H	Credits
+M	credits
+T	h1	Credits
+T	h1	\n
+M	version-4-2-x
+T	h2	Version 4.2.x
+T	h2	\n
+T	p0	Code contribution:
+T	p0	\n
+T	li1	•\t
+T	li1	Adam Goodman (agoodman)
+T	li1	\n
+T	li1	•\t
+T	li1	Adriankhl
+T	li1	\n
+T	li1	•\t
+T	li1	Adrian Siekierka (asiekierka)
+T	li1	\n
+T	li1	•\t
+T	li1	Alberto Mardegan (mardy)
+T	li1	\n
+T	li1	•\t
+T	li1	Alex Mooney
+T	li1	\n
+T	li1	•\t
+T	li1	Alexandre Detiste
+T	li1	\n
+T	li1	•\t
+T	li1	Andre Maroneze
+T	li1	\n
+T	li1	•\t
+T	li1	Andrew York
+T	li1	\n
+T	li1	•\t
+T	li1	Anna Sidwell (takkaria)
+T	li1	\n
+T	li1	•\t
+T	li1	ArmiesAndCastles (v-chirkov)
+T	li1	\n
+T	li1	•\t
+T	li1	bacchist
+T	li1	\n
+T	li1	•\t
+T	li1	Ben Collver
+T	li1	\n
+T	li1	•\t
+T	li1	Ben Semmler (molybdenum)
+T	li1	\n
+T	li1	•\t
+T	li1	Bardur Arantsson
+T	li1	\n
+T	li1	•\t
+T	li1	Bill Peterson
+T	li1	\n
+T	li1	•\t
+T	li1	Binrui Dong
+T	li1	\n
+T	li1	•\t
+T	li1	bron
+T	li1	\n
+T	li1	•\t
+T	li1	Cameron Ball
+T	li1	\n
+T	li1	•\t
+T	li1	Colin Woodbury
+T	li1	\n
+T	li1	•\t
+T	li1	Cuboideb (Diego Gonzalez)
+T	li1	\n
+T	li1	•\t
+T	li1	Dag Arneson (sanedragon)
+T	li1	\n
+T	li1	•\t
+T	li1	Daniel Burgener
+T	li1	\n
+T	li1	•\t
+T	li1	David Medley
+T	li1	\n
+T	li1	•\t
+T	li1	Derakon
+T	li1	\n
+T	li1	•\t
+T	li1	Diego Herrera
+T	li1	\n
+T	li1	•\t
+T	li1	Eastwind921
+T	li1	\n
+T	li1	•\t
+T	li1	edz314
+T	li1	\n
+T	li1	•\t
+T	li1	Elly Fong-Jones (elly)
+T	li1	\n
+T	li1	•\t
+T	li1	Eric Branlund (backwardsEric)
+T	li1	\n
+T	li1	•\t
+T	li1	Erik Osheim (d_m)
+T	li1	\n
+T	li1	•\t
+T	li1	fizzix (Aaron Bader)
+T	li1	\n
+T	li1	•\t
+T	li1	floyza
+T	li1	\n
+T	li1	•\t
+T	li1	fruviad
+T	li1	\n
+T	li1	•\t
+T	li1	hardfau1t
+T	li1	\n
+T	li1	•\t
+T	li1	jdholbrook81
+T	li1	\n
+T	li1	•\t
+T	li1	jefetienne
+T	li1	\n
+T	li1	•\t
+T	li1	Joan Andrés
+T	li1	\n
+T	li1	•\t
+T	li1	John Weismiller (emar)
+T	li1	\n
+T	li1	•\t
+T	li1	Jordan Philyaw (philyawj)
+T	li1	\n
+T	li1	•\t
+T	li1	Justin Chua
+T	li1	\n
+T	li1	•\t
+T	li1	Justin Holbrook (jdholbrook81)
+T	li1	\n
+T	li1	•\t
+T	li1	Klaas van Aarsen
+T	li1	\n
+T	li1	•\t
+T	li1	kleo
+T	li1	\n
+T	li1	•\t
+T	li1	Kusunose Toru
+T	li1	\n
+T	li1	•\t
+T	li1	Lars Haugseth
+T	li1	\n
+T	li1	•\t
+T	li1	Lemon Rush (ThirdLemon)
+T	li1	\n
+T	li1	•\t
+T	li1	magnate (Chris Carr)
+T	li1	\n
+T	li1	•\t
+T	li1	MarbleDice
+T	li1	\n
+T	li1	•\t
+T	li1	memmaker
+T	li1	\n
+T	li1	•\t
+T	li1	Michael Courtney (wobbly)
+T	li1	\n
+T	li1	•\t
+T	li1	Mikolaj Konarski
+T	li1	\n
+T	li1	•\t
+T	li1	Nima Hoda
+T	li1	\n
+T	li1	•\t
+T	li1	Paul Johnson
+T	li1	\n
+T	li1	•\t
+T	li1	pav1388
+T	li1	\n
+T	li1	•\t
+T	li1	piels
+T	li1	\n
+T	li1	•\t
+T	li1	PowerWyrm
+T	li1	\n
+T	li1	•\t
+T	li1	pwinckles (moosferatu)
+T	li1	\n
+T	li1	•\t
+T	li1	Rodent/Sideways/sulkasormi
+T	li1	\n
+T	li1	•\t
+T	li1	Ryan Schmidt
+T	li1	\n
+T	li1	•\t
+T	li1	Sean Dewar (seandewar)
+T	li1	\n
+T	li1	•\t
+T	li1	Shanoah Alkire
+T	li1	\n
+T	li1	•\t
+T	li1	spenserblack
+T	li1	\n
+T	li1	•\t
+T	li1	Stefan Strogin
+T	li1	\n
+T	li1	•\t
+T	li1	tangar
+T	li1	\n
+T	li1	•\t
+T	li1	Tim Schumacher (timschumi)
+T	li1	\n
+T	li1	•\t
+T	li1	Tom Morton (tom)
+T	li1	\n
+T	li1	•\t
+T	li1	Tykhon Tarnavsky (tikhont)
+T	li1	\n
+T	li1	•\t
+T	li1	Vic K
+T	li1	\n
+T	li1	•\t
+T	li1	wkmanire
+T	li1	\n
+T	li1	•\t
+T	li1	wobbly
+T	li1	\n
+T	li1	•\t
+T	li1	Yutao Yuan (infmagic2047)
+T	li1	\n
+T	p0	Thanks are due to many people for, reporting bugs, suggesting changes and contributing to discussion which has influenced this version. The following is an (undoubtedly poor) attempt to list you all, please let me know if you think you ought to be included:
+T	p0	\n
+T	li1	•\t
+T	li1	Adam
+T	li1	\n
+T	li1	•\t
+T	li1	Anarchic Fox
+T	li1	\n
+T	li1	•\t
+T	li1	animal_waves
+T	li1	\n
+T	li1	•\t
+T	li1	AnonymousHero
+T	li1	\n
+T	li1	•\t
+T	li1	Anthon van der Neut (AvdN)
+T	li1	\n
+T	li1	•\t
+T	li1	Antoine
+T	li1	\n
+T	li1	•\t
+T	li1	Aodhlin
+T	li1	\n
+T	li1	•\t
+T	li1	archolewa
+T	li1	\n
+T	li1	•\t
+T	li1	Aszazin
+T	li1	\n
+T	li1	•\t
+T	li1	Atriel
+T	li1	\n
+T	li1	•\t
+T	li1	bio_hazard
+T	li1	\n
+T	li1	•\t
+T	li1	Bogatyr
+T	li1	\n
+T	li1	•\t
+T	li1	bughunter
+T	li1	\n
+T	li1	•\t
+T	li1	bunnies
+T	li1	\n
+T	li1	•\t
+T	li1	cacheflood
+T	li1	\n
+T	li1	•\t
+T	li1	Capn_Carpaccio
+T	li1	\n
+T	li1	•\t
+T	li1	Carg
+T	li1	\n
+T	li1	•\t
+T	li1	Carnivean
+T	li1	\n
+T	li1	•\t
+T	li1	cccfire
+T	li1	\n
+T	li1	•\t
+T	li1	Chud
+T	li1	\n
+T	li1	•\t
+T	li1	cjslates
+T	li1	\n
+T	li1	•\t
+T	li1	ClaytonAguiar
+T	li1	\n
+T	li1	•\t
+T	li1	Clearshade
+T	li1	\n
+T	li1	•\t
+T	li1	clouded
+T	li1	\n
+T	li1	•\t
+T	li1	Cold_Heart
+T	li1	\n
+T	li1	•\t
+T	li1	Combatereak
+T	li1	\n
+T	li1	•\t
+T	li1	damerell
+T	li1	\n
+T	li1	•\t
+T	li1	Darin
+T	li1	\n
+T	li1	•\t
+T	li1	David Chmelik (dchmelik)
+T	li1	\n
+T	li1	•\t
+T	li1	debo (cyberdemons pls)
+T	li1	\n
+T	li1	•\t
+T	li1	Den XingJing (MicroMilo)
+T	li1	\n
+T	li1	•\t
+T	li1	desstorm
+T	li1	\n
+T	li1	•\t
+T	li1	dionysian
+T	li1	\n
+T	li1	•\t
+T	li1	Djbanete
+T	li1	\n
+T	li1	•\t
+T	li1	dos350
+T	li1	\n
+T	li1	•\t
+T	li1	Dragget
+T	li1	\n
+T	li1	•\t
+T	li1	dr-kraemer-everett
+T	li1	\n
+T	li1	•\t
+T	li1	drquicksilver
+T	li1	\n
+T	li1	•\t
+T	li1	Ed_47569
+T	li1	\n
+T	li1	•\t
+T	li1	Egavactip
+T	li1	\n
+T	li1	•\t
+T	li1	emulord
+T	li1	\n
+T	li1	•\t
+T	li1	EpicMan
+T	li1	\n
+T	li1	•\t
+T	li1	Eric
+T	li1	\n
+T	li1	•\t
+T	li1	Estie
+T	li1	\n
+T	li1	•\t
+T	li1	Estragon
+T	li1	\n
+T	li1	•\t
+T	li1	Evilpotatoe
+T	li1	\n
+T	li1	•\t
+T	li1	ewert
+T	li1	\n
+T	li1	•\t
+T	li1	Flambard
+T	li1	\n
+T	li1	•\t
+T	li1	floatRand
+T	li1	\n
+T	li1	•\t
+T	li1	FogSpear
+T	li1	\n
+T	li1	•\t
+T	li1	fph
+T	li1	\n
+T	li1	•\t
+T	li1	Gauss
+T	li1	\n
+T	li1	•\t
+T	li1	Geoff Hill (yes, that one)
+T	li1	\n
+T	li1	•\t
+T	li1	geoff_tewierik
+T	li1	\n
+T	li1	•\t
+T	li1	gglibertine
+T	li1	\n
+T	li1	•\t
+T	li1	Glorfindel
+T	li1	\n
+T	li1	•\t
+T	li1	Goaticus
+T	li1	\n
+T	li1	•\t
+T	li1	Grotug
+T	li1	\n
+T	li1	•\t
+T	li1	gtrudeau88
+T	li1	\n
+T	li1	•\t
+T	li1	Gwarl
+T	li1	\n
+T	li1	•\t
+T	li1	half
+T	li1	\n
+T	li1	•\t
+T	li1	HallucinationMushroom
+T	li1	\n
+T	li1	•\t
+T	li1	HebrewToYou
+T	li1	\n
+T	li1	•\t
+T	li1	Holy_Rage
+T	li1	\n
+T	li1	•\t
+T	li1	Hounded
+T	li1	\n
+T	li1	•\t
+T	li1	Hrrunstar
+T	li1	\n
+T	li1	•\t
+T	li1	Huqhox
+T	li1	\n
+T	li1	•\t
+T	li1	ImEsteban
+T	li1	\n
+T	li1	•\t
+T	li1	Ingwe Ingweron
+T	li1	\n
+T	li1	•\t
+T	li1	JBright
+T	li1	\n
+T	li1	•\t
+T	li1	Jeff Greene (nppangband)
+T	li1	\n
+T	li1	•\t
+T	li1	jevansau
+T	li1	\n
+T	li1	•\t
+T	li1	jml34
+T	li1	\n
+T	li1	•\t
+T	li1	jsv
+T	li1	\n
+T	li1	•\t
+T	li1	Julian (jl8e)
+T	li1	\n
+T	li1	•\t
+T	li1	juliusyang
+T	li1	\n
+T	li1	•\t
+T	li1	Jungle_Boy
+T	li1	\n
+T	li1	•\t
+T	li1	kandrc
+T	li1	\n
+T	li1	•\t
+T	li1	kaypy
+T	li1	\n
+T	li1	•\t
+T	li1	khearn
+T	li1	\n
+T	li1	•\t
+T	li1	kineahora
+T	li1	\n
+T	li1	•\t
+T	li1	Kinematics
+T	li1	\n
+T	li1	•\t
+T	li1	lanactoor
+T	li1	\n
+T	li1	•\t
+T	li1	lonadar
+T	li1	\n
+T	li1	•\t
+T	li1	luneya
+T	li1	\n
+T	li1	•\t
+T	li1	malcontent
+T	li1	\n
+T	li1	•\t
+T	li1	Mark
+T	li1	\n
+T	li1	•\t
+T	li1	MattB
+T	li1	\n
+T	li1	•\t
+T	li1	Mike
+T	li1	\n
+T	li1	•\t
+T	li1	misanthropope
+T	li1	\n
+T	li1	•\t
+T	li1	MITZE
+T	li1	\n
+T	li1	•\t
+T	li1	MKula
+T	li1	\n
+T	li1	•\t
+T	li1	Mondkalb
+T	li1	\n
+T	li1	•\t
+T	li1	Monkey Face
+T	li1	\n
+T	li1	•\t
+T	li1	Moving Pictures
+T	li1	\n
+T	li1	•\t
+T	li1	mrfy
+T	li1	\n
+T	li1	•\t
+T	li1	Muscleguy
+T	li1	\n
+T	li1	•\t
+T	li1	MWGE
+T	li1	\n
+T	li1	•\t
+T	li1	Naranathu Bhranthan
+T	li1	\n
+T	li1	•\t
+T	li1	Narry
+T	li1	\n
+T	li1	•\t
+T	li1	NCountr
+T	li1	\n
+T	li1	•\t
+T	li1	Netbrian
+T	li1	\n
+T	li1	•\t
+T	li1	NightLizard
+T	li1	\n
+T	li1	•\t
+T	li1	Nomad
+T	li1	\n
+T	li1	•\t
+T	li1	olivertheorem
+T	li1	\n
+T	li1	•\t
+T	li1	Once
+T	li1	\n
+T	li1	•\t
+T	li1	Oraticus
+T	li1	\n
+T	li1	•\t
+T	li1	Pahasusi
+T	li1	\n
+T	li1	•\t
+T	li1	Patashu
+T	li1	\n
+T	li1	•\t
+T	li1	Pete Mack
+T	li1	\n
+T	li1	•\t
+T	li1	Philip
+T	li1	\n
+T	li1	•\t
+T	li1	Pondlife
+T	li1	\n
+T	li1	•\t
+T	li1	Pussy Galore
+T	li1	\n
+T	li1	•\t
+T	li1	quarague
+T	li1	\n
+T	li1	•\t
+T	li1	Quirk
+T	li1	\n
+T	li1	•\t
+T	li1	Raerick
+T	li1	\n
+T	li1	•\t
+T	li1	Raxmei
+T	li1	\n
+T	li1	•\t
+T	li1	RegalStar
+T	li1	\n
+T	li1	•\t
+T	li1	renato
+T	li1	\n
+T	li1	•\t
+T	li1	robinjohnson
+T	li1	\n
+T	li1	•\t
+T	li1	Rydel
+T	li1	\n
+T	li1	•\t
+T	li1	Saru
+T	li1	\n
+T	li1	•\t
+T	li1	Scatha
+T	li1	\n
+T	li1	•\t
+T	li1	schatz
+T	li1	\n
+T	li1	•\t
+T	li1	scrarth
+T	li1	\n
+T	li1	•\t
+T	li1	Sebastian Jensen (gonX)
+T	li1	\n
+T	li1	•\t
+T	li1	Selkie
+T	li1	\n
+T	li1	•\t
+T	li1	shirish
+T	li1	\n
+T	li1	•\t
+T	li1	Sinquen
+T	li1	\n
+T	li1	•\t
+T	li1	Sky
+T	li1	\n
+T	li1	•\t
+T	li1	smbhax
+T	li1	\n
+T	li1	•\t
+T	li1	spara
+T	li1	\n
+T	li1	•\t
+T	li1	Sparrow the Dunadan
+T	li1	\n
+T	li1	•\t
+T	li1	Sphara
+T	li1	\n
+T	li1	•\t
+T	li1	superuser-does
+T	li1	\n
+T	li1	•\t
+T	li1	swaggert
+T	li1	\n
+T	li1	•\t
+T	li1	the Invisible Stalker
+T	li1	\n
+T	li1	•\t
+T	li1	Sylvain frOOm (froom)
+T	li1	\n
+T	li1	•\t
+T	li1	Therem Harth
+T	li1	\n
+T	li1	•\t
+T	li1	Thraalbee
+T	li1	\n
+T	li1	•\t
+T	li1	Tibarius
+T	li1	\n
+T	li1	•\t
+T	li1	Timo Pietilä
+T	li1	\n
+T	li1	•\t
+T	li1	TJA
+T	li1	\n
+T	li1	•\t
+T	li1	TJS
+T	li1	\n
+T	li1	•\t
+T	li1	topazg
+T	li1	\n
+T	li1	•\t
+T	li1	Torr
+T	li1	\n
+T	li1	•\t
+T	li1	Turmfalke2
+T	li1	\n
+T	li1	•\t
+T	li1	tyreforhyred
+T	li1	\n
+T	li1	•\t
+T	li1	Ugramoth
+T	li1	\n
+T	li1	•\t
+T	li1	Vivit
+T	li1	\n
+T	li1	•\t
+T	li1	Voovus
+T	li1	\n
+T	li1	•\t
+T	li1	Vorczar
+T	li1	\n
+T	li1	•\t
+T	li1	Werbaer
+T	li1	\n
+T	li1	•\t
+T	li1	whartung
+T	li1	\n
+T	li1	•\t
+T	li1	Whelk
+T	li1	\n
+T	li1	•\t
+T	li1	will_asher
+T	li1	\n
+T	li1	•\t
+T	li1	WindLord
+T	li1	\n
+T	li1	•\t
+T	li1	Wiwaxia
+T	li1	\n
+T	li1	•\t
+T	li1	Xaxyx
+T	li1	\n
+T	li1	•\t
+T	li1	Youssarian
+T	li1	\n
+T	li1	•\t
+T	li1	Zikke
+T	li1	\n
+T	li1	•\t
+T	li1	Zirael
+T	li1	\n
+T	p0	Special thanks to Luke McConnell for many, many conversations on game design which influenced design decisions across the breadth and depth of Angband.
+T	p0	\n
+M	previous-maintainers
+T	h2	Previous maintainers
+T	h2	\n
+T	dt0 strong	Angband 3.0.8 - 3.5.1:
+T	dt0	\n
+T	p1	Anna Sidwell <anna at takkaria.org>
+T	p1	\n
+T	dt0 strong	Angband 2.9.0 - 3.0.6:
+T	dt0	\n
+T	p1	Robert Ruehlmann <rr9 at thangorodrim.net>
+T	p1	\n
+T	dt0 strong	Angband 2.7.0 - 2.8.5:
+T	dt0	\n
+T	p1	Ben Harrison <benh at phial.com>
+T	p1	\n
+T	dt0 strong	Angband 2.0 - 2.4 - 2.6.1:
+T	dt0	\n
+T	p1	Alex Cutler, Andy Astrand, Sean Marsh, Geoff Hill, Charles Teague, Charles Swiger
+T	p1	\n
+T	p0	Based on Moria, Copyright 
+T	p0	©
+T	p0	 1985 Robert Alan Koeneke and Umoria, Copyright 
+T	p0	©
+T	p0	 1989 James E. Wilson
+T	p0	\n
+M	contributors
+T	h2	Contributors
+T	h2	\n
+T	p0	Many thanks go to the following people who have contributed patches, bugfixes, and other stuff for Angband prior to 4.0:
+T	p0	\n
+T	p0	Peter Berger, Andrew Hill, Werner Baer, Tom Morton, “Cyric the Mad”, Chris Kern, Jurriaan Kalkman, Alexander Wilkins, Mauro Scarpa, “facade”, Dennis van Es, Kenneth A. Strom, Wei-Hwa Huang, Nikodemus, Timo Pietilä, Shayne Steele, Dr. Andrew White, Greg Flint, Christopher Jeris, Ian Parkhouse, “Warhammer”, Scott Holder, Brent Ross, Kazuo Ito, Willem Siemelink, “Luthien”, David J. Grabiner, Ilya Bely, “chungkuo”, Kieron Dunbar, George W. Harris, Joseph Oberlander, Paul Moore, Andreas Tophinke, Leon Marrick, Peter J. Rowe, Wim Benthem, Jaroslav Sladek, Keith Perkins, Hugo Kornelis, Pete Mack, Marco K, Frank Palazzolo, Christer Nyfalt, Andrew Doull, Kenneth Boyd, Iain McFall, Christophe Cavalaria, Brendon Oliver, “Zaxx”, “theninja”, “Twilight Forest”, “jbu”, “AnonymousHero”, Stefan O’Rear, “SilverD”, Ed Graham, Tobias Franke, “rhinocesaurus”, “Bron”, “Mangojuice”, Chris Robertson, Joe Buck, “tigen”, “Big Al”, Paul Blay, J. D. White, Rowan Beentje, “pelpel”, Shanoah Alkire, Alexander Philips, “mikon”, “Antoine”, “Irashtar”, “roustk”, Diego Gonzalez, Takeshi Mogami, Julian Lighton, Aram Harrow, William Tanksley, Chris Ang, Dean Anderson, Daniel Nash, David Blackston, Heino Vander Sanden, Mark Kvale, Sheldon Simms, Topi Ylinen, “Gileba”, Jeff Greene, Joshua Middendorf, Tom Demuyt, Alexander Ulyanov, Alexander Malmberg, Chris R. Martin, Chris Herborth, Craig Oliver, “DarkGod”, David Boeren, David DeLaney, David Kahane, Dennis Payne, Desvignes Sebastien, Ekkehard Kraemer, Eugene Hung, HansJoachim Baader, Heiko Herold, John Rauser, Jonathan Sari, Joseph William Dixon, Joseph Hall, John M. Kewley, Ken Wigle, Keith H. Randall, Kevin Bracey, Mike Marcelais, Maarten Hazewinkel, Peter Ammon, Peter Seebach, Randy Hutson, Scott Egashira, Skirmantas Kligys, Steve Linberg, Silas Dunsmore, Tom Harris, Ron Anderson, Ross E. Becker, Denis Eropkin, Torbjorn Lindgren, Lars Haugseth, Jon Taylor, Roland Jay Roberts, “Sergey”, “cb”, Michael Pope, “hmj”, Colin Spry, Ed Cogburn, “Yendor”, Thomas Dedorson, “Ewert”, Rooslan S. Khayrov, Thapper, “Max Stats”, “SSK”, “ChodTheWacko”, “Zaxx”, Jonas Lith, Jens Schou, “Lebannen”, Daniel Santos, Edd Barrett (vext01), mtadd, Peter Denison (noz), Kiyoshi Aman (Aerdan), David Barr (david3x3x3), Chris Weisiger (Derakon), Buzzkill, Scott Michael, LastQuestion, danial.santos, LuthienCeleste, shadowsun
+T	p0	\n
+T	dt0 strong	Raymond “Shockbolt” Gaustadnes
+T	dt0	\n
+T	p1	The Shockbolt tiles.
+T	p1	\n
+T	dt0 strong	Greg Wooledge <greg at wooledge.org>
+T	dt0	\n
+T	p1	Basic autoconf support, the original random artifact generator, and various ideas for rebalancing the game including the new list of magic spells
+T	p1	\n
+T	dt0 strong	Tim Baker <dbaker at direct.ca>
+T	dt0	\n
+T	p1	Made the “easy patch” and organized the patches for the Angband 2.8.5 beta
+T	p1	\n
+T	dt0 strong	Eytan Zweig <eytanzw at yahoo.com>
+T	dt0	\n
+T	p1	Many bug reports and patches
+T	p1	\n
+T	dt0 strong	Jonathan Ellis <jonathan at franz-liszt.freeserve.co.uk>
+T	dt0	\n
+T	p1	Updated edit and help files; added tons of new monsters, artifacts, vaults, objects, as well as a new player race, and rebalanced many things
+T	p1	\n
+T	dt0 strong	John I’anson-Holton <jianson at milbank.com>
+T	dt0	\n
+T	p1	Many bugfixes and patches
+T	p1	\n
+T	dt0 strong	Steven Fuerst <sfuerst at physics.usyd.edu.au>
+T	dt0	\n
+T	p1	Improved X11, XAW, and GTK code
+T	p1	\n
+T	dt0 strong	“Bablos” <angband at blueyonder.co.uk>
+T	dt0	\n
+T	p1	Updated Amiga code
+T	p1	\n
+T	dt0 strong	Matthias Kurzke <mawende at gmx.net>
+T	dt0	\n
+T	p1	Ego-item patch and various code changes for the JLE patch
+T	p1	\n
+T	dt0 strong	Keldon Jones <keldon at umr.edu>
+T	dt0	\n
+T	p1	Improved Monster AI
+T	p1	\n
+T	dt0 strong	Adam Bolt
+T	dt0	\n
+T	p1	16x16 tiles
+T	p1	\n
+T	dt0 strong	Arcum Dagsson
+T	dt0	\n
+T	p1	Configurable artifact activations
+T	p1	\n
+T	dt0 strong	“Prfnoff”
+T	dt0	\n
+T	p1	Customizable player races, player history, shop owners, …
+T	p1	\n
+T	dt0 strong	Mark Howson
+T	dt0	\n
+T	p1	Improvements to the Amiga code
+T	p1	\n
+T	dt0 strong	Musus Umbra
+T	dt0	\n
+T	p1	Improvements to the Acorn RISC OS code
+T	p1	\n
+T	dt0 strong	Hallvard B. Furuseth
+T	dt0	\n
+T	p1	Many improvements to the autoconf support, code-cleanups, and tons of bugfixes
+T	p1	\n
+T	dt0 strong	Kusunose Toru
+T	dt0	\n
+T	p1	Various bugfixes
+T	p1	\n
+T	dt0 strong	Eddie Grove
+T	dt0	\n
+T	p1	Bugfixes, patches and radical ideas too numerous to count (but in particular for ID-by-use).
+T	p1	\n
+T	dt0 strong	Nomad
+T	dt0	\n
+T	p1	8x16 tiles, loads of new room templates
+T	p1	\n
+T	dt0 strong	The UPX team (Markus Oberhumer and Laszlo Molnar)
+T	dt0	\n
+T	p1	The UPX packer for executables 
+L	p1 link	1	http://upx.tsx.org/	http://upx.tsx.org/
+T	p1	 is used to reduce the size of the Windows and DOS binaries.
+T	p1	\n
+T	dt0 strong	qwerty
+T	dt0	\n
+T	p1	LaTeX-based help file generation
+T	p1	\n
+T	dt0 strong	Federico Poloni (fph)
+T	dt0	\n
+T	p1	Manual and documentation updates, formatting in reStructuredText
+T	p1	\n
+T	dt0 strong	Peter Ammon (ridiculous_fish)
+T	dt0	\n
+T	p1	Rewritten OSX main-cocoa interface
+T	p1	\n
+T	dt0 strong	William Moore (MarbleDice)
+T	dt0	\n
+T	p1	Bitflag code and numerous other improvements and fixes during 3.1.x
+T	p1	\n
+T	dt0 strong	Antony Sidwell (ajps)
+T	dt0	\n
+T	p1	Default point-based stat allocations, and numerous UI improvements, original core-UI split code
+T	p1	\n
+T	dt0 strong	“PowerWyrm”
+T	dt0	\n
+T	p1	Numerous bug fixes and code improvements
+T	p1	\n
+M	version-4-0-x
+T	h2	Version 4.0.x
+T	h2	\n
+T	p0	Code contribution:
+T	p0	\n
+T	li2	•\t
+T	li2	Aaron Bader (fizzix)
+T	li2	\n
+T	li2	•\t
+T	li2	Antony Sidwell (ajps)
+T	li2	\n
+T	li2	•\t
+T	li2	Andi Sidwell (takkaria)
+T	li2	\n
+T	li2	•\t
+T	li2	Bardur Arantsson
+T	li2	\n
+T	li2	•\t
+T	li2	Ben Semmler (molybdenum)
+T	li2	\n
+T	li2	•\t
+T	li2	Chris Carr (magnate)
+T	li2	\n
+T	li2	•\t
+T	li2	Christian Heckendorf
+T	li2	\n
+T	li2	•\t
+T	li2	Elly Fong-Jones (elly)
+T	li2	\n
+T	li2	•\t
+T	li2	Elsairon
+T	li2	\n
+T	li2	•\t
+T	li2	Erik Osheim (d_m)
+T	li2	\n
+T	li2	•\t
+T	li2	flaviommedeiros
+T	li2	\n
+T	li2	•\t
+T	li2	Jagath Samarabandu
+T	li2	\n
+T	li2	•\t
+T	li2	Jose Antonio Dura
+T	li2	\n
+T	li2	•\t
+T	li2	Kevin J. Fletcher
+T	li2	\n
+T	li2	•\t
+T	li2	LostTemplar
+T	li2	\n
+T	li2	•\t
+T	li2	Michel Carroll
+T	li2	\n
+T	li2	•\t
+T	li2	Nick McConnell
+T	li2	\n
+T	li2	•\t
+T	li2	Nomad
+T	li2	\n
+T	li2	•\t
+T	li2	Peter Denison (noz)
+T	li2	\n
+T	li2	•\t
+T	li2	phantom-voltage
+T	li2	\n
+T	li2	•\t
+T	li2	PowerWyrm
+T	li2	\n
+T	li2	•\t
+T	li2	redlumf
+T	li2	\n
+T	li2	•\t
+T	li2	Robert Au (myshkin)
+T	li2	\n
+T	li2	•\t
+T	li2	Rydelfox
+T	li2	\n
+T	li2	•\t
+T	li2	Timothy Collett
+T	li2	\n
+T	p0	Beta testing and bug reporting/fixing:
+T	p0	\n
+T	li2	•\t
+T	li2	Ingwe Ingweron
+T	li2	\n
+T	li2	•\t
+T	li2	Nomad
+T	li2	\n
+T	li2	•\t
+T	li2	MattB
+T	li2	\n
+T	li2	•\t
+T	li2	Thraalbeast
+T	li2	\n
+T	li2	•\t
+T	li2	tumbleweed
+T	li2	\n
+T	li2	•\t
+T	li2	AndyHK
+T	li2	\n
+T	li2	•\t
+T	li2	Rhonwyn
+T	li2	\n
+T	li2	•\t
+T	li2	Jungle_Boy
+T	li2	\n
+T	li2	•\t
+T	li2	Darin
+T	li2	\n
+T	li2	•\t
+T	li2	StMicah
+T	li2	\n
+T	li2	•\t
+T	li2	debo
+T	li2	\n
+T	li2	•\t
+T	li2	pen
+T	li2	\n
+T	li2	•\t
+T	li2	topazg
+T	li2	\n
+T	li2	•\t
+T	li2	wobbly
+T	li2	\n
+T	li2	•\t
+T	li2	DeusIrae
+T	li2	\n
+T	li2	•\t
+T	li2	Timo Pietilä
+T	li2	\n
+T	li2	•\t
+T	li2	ranger jeff
+T	li2	\n
+T	li2	•\t
+T	li2	passer_by
+T	li2	\n
+T	li2	•\t
+T	li2	Runaway1956
+T	li2	\n
+T	li2	•\t
+T	li2	mrrstark
+T	li2	\n
+T	li2	•\t
+T	li2	Estie
+T	li2	\n
+T	li2	•\t
+T	li2	shreesh
+T	li2	\n
+T	li2	•\t
+T	li2	elliptic
+T	li2	\n
+T	li2	•\t
+T	li2	Gorbad
+T	li2	\n
+T	li2	•\t
+T	li2	letslaugh
+T	li2	\n
+T	li2	•\t
+T	li2	ShadowTechnology
+T	li2	\n
+T	li2	•\t
+T	li2	bryan.g.hutchinson
+T	li2	\n
+T	li2	•\t
+T	li2	Werbaer
+T	li2	\n
+T	li2	•\t
+T	li2	fph
+T	li2	\n
+T	li2	•\t
+T	li2	yyt16384
+T	li2	\n
+T	li2	•\t
+T	li2	kandrc
+T	li2	\n
+T	li2	•\t
+T	li2	Nivra
+T	li2	\n
+T	li2	•\t
+T	li2	Tarrasque
+T	li2	\n
+T	li2	•\t
+T	li2	Egavactip
+T	li2	\n
+T	li2	•\t
+T	li2	zog
+T	li2	\n
+T	li2	•\t
+T	li2	troycheek
+T	li2	\n
+M	version-4-1-x
+T	h2	Version 4.1.x
+T	h2	\n
+T	p0	Code contribution:
+T	p0	\n
+T	li1	•\t
+T	li1	Alex Mooney
+T	li1	\n
+T	li1	•\t
+T	li1	Andi Sidwell (takkaria)
+T	li1	\n
+T	li1	•\t
+T	li1	AndreyB
+T	li1	\n
+T	li1	•\t
+T	li1	Bardur Arantsson
+T	li1	\n
+T	li1	•\t
+T	li1	Ben Semmler
+T	li1	\n
+T	li1	•\t
+T	li1	crayonsmelting
+T	li1	\n
+T	li1	•\t
+T	li1	Derakon
+T	li1	\n
+T	li1	•\t
+T	li1	Erik Osheim (d_m)
+T	li1	\n
+T	li1	•\t
+T	li1	fizzix (Aaron Bader)
+T	li1	\n
+T	li1	•\t
+T	li1	Flavio Medeiros
+T	li1	\n
+T	li1	•\t
+T	li1	Graeme Russ
+T	li1	\n
+T	li1	•\t
+T	li1	Gwilim Owen
+T	li1	\n
+T	li1	•\t
+T	li1	Jean-François Caron
+T	li1	\n
+T	li1	•\t
+T	li1	kaypy
+T	li1	\n
+T	li1	•\t
+T	li1	Kevin J. Fletcher
+T	li1	\n
+T	li1	•\t
+T	li1	Nomad
+T	li1	\n
+T	li1	•\t
+T	li1	Pete McIlroy
+T	li1	\n
+T	li1	•\t
+T	li1	Peter (Hermann Döppes)
+T	li1	\n
+T	li1	•\t
+T	li1	Peter McIlroy
+T	li1	\n
+T	li1	•\t
+T	li1	phantom-voltage
+T	li1	\n
+T	li1	•\t
+T	li1	PowerWyrm
+T	li1	\n
+T	li1	•\t
+T	li1	rmzelle
+T	li1	\n
+T	li1	•\t
+T	li1	rowanbeentje
+T	li1	\n
+T	li1	•\t
+T	li1	Tiara Smith
+T	li1	\n
+T	li1	•\t
+T	li1	Twisted Pair in my Hair
+T	li1	\n
+T	li1	•\t
+T	li1	Vic K (t4nk)
+T	li1	\n
+T	li1	•\t
+T	li1	William Orr
+T	li1	\n
+T	p0	Thanks are due for contributing to discussion which has influenced this version to a great many people (too many to list) on
+T	p0	\n
+T	li1	•\t
+T	li1	the Angband forums (
+L	li1 link	2	https://angband.live/forums/	https://angband.live/forums/
+T	li1	)
+T	li1	\n
+T	li1	•\t
+T	li1	the #angband-dev and #angband IRC channels on libera.chat
+T	li1	\n
+T	li1	•\t
+T	li1	the roguelikes subreddit (
+L	li1 link	3	https://www.reddit.com/r/roguelikes/	https://www.reddit.com/r/roguelikes/
+T	li1	)
+T	li1	\n
+T	li1	•\t
+T	li1	the #band channel on the roguelikes discord
+T	li1	\n
+T	p0	Special thanks to Luke McConnell for many, many conversations on game design which influenced design decisions across the breadth and depth of Angband.
+T	p0	\n

@@ -19,6 +19,8 @@ Press Return for a menu of every command. The menu bar has the same commands, wi
 
 Click the EXP row of the Progress strip, under the map overview, to switch between your total experience and what the next level still needs.
 
+Press ? to read the manual in the Help window. The Contents beside the page has every chapter, Search finds a word on every page, and Back and Next retrace the links you have followed.
+
 Rest with 'R' and then Return to rest "as needed": until your hit points and mana are full and every ailment has passed. It also waits out a Word of Recall you have read.
 
 Move the pointer over an item in the Choice pane or the Items window, and the Recall pane describes it.

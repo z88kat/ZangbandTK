@@ -1,0 +1,148 @@
+H	Nightmare Mode
+M	nightmare-mode
+T	h1	Nightmare Mode
+T	h1	\n
+T	p0 note strong	Note
+T	p0 note	\n
+T	p0 note strong	Being written.
+T	p0 note	 This chapter is filled in by milestone 
+T	p0 note strong	M11
+T	p0 note	 as each piece lands, and says at the bottom what is not built yet. Per DEC-17 the milestone is not complete until the chapter is.
+T	p0 note	\n
+T	p0 note	Requirements: BAL-15 to BAL-18.
+T	p0 note	\n
+T	p0	An irreversible choice made at birth, designed to be unfair. Zangband’s own description of the option is 
+T	p0 em	“this isn’t even remotely fair!”
+T	p0	, and its documentation says the mode is 
+T	p0 em	“not intended to be winnable”
+T	p0	. This chapter says exactly what it changes, so that a player choosing it knows what they are accepting — and exactly what it does not, because the mode has a spoiler that describes about three times as much as Zangband ever built.
+T	p0	\n
+M	choosing-it
+T	h2	Choosing it
+T	h2	\n
+T	p0 strong	Nightmare mode
+T	p0	 is a birth option, off by default. Like every birth option it can only be set while creating a character, and cannot be turned off afterwards — that is what makes it irreversible, and it is why it appears in the birth menu rather than anywhere else.
+T	p0	\n
+T	p0	It is not on the race and class menus themselves. Press 
+T	p0 code	=
+T	p0	 at any of them for the birth options, where it is the last of the sixteen:
+T	p0	\n
+T	pre0 prelast	Nightmare mode (this isn't even remotely fair!)  : no   (birth_nightmare)\n
+T	p0	Press 
+T	p0 code	y
+T	p0	 on it, then 
+T	p0 code	ESC
+T	p0	 back to the character you were making.
+T	p0	\n
+M	knowing-you-are-in-it
+T	h2	Knowing you are in it
+T	h2	\n
+T	p0	A character playing under nightmare mode carries 
+T	p0 strong	Nightmare
+T	p0	, in red, on the status line, for as long as it lives. It sits beside 
+T	p0 code	Cheat
+T	p0	 and is there for the same reason: the mode changes sixteen things and every one of them looks, from inside the game, like the ordinary game going badly. A monster with twice the hit points looks like a monster. A sustain that failed looks like a sustain that was never bought. A wall that looks like floor looks like floor.
+T	p0	\n
+T	p0	This is ours. Zangband showed the mode in one place only, the character dump, and a dump is a file you write after the character is dead.
+T	p0	\n
+T	p0	The dump still says it too, as 
+T	p0 code	Nightmare Mode: ON
+T	p0	, because that is where one character gets compared against another: a character that died at depth 20 under nightmare did something quite different from one that died at depth 20 without it.
+T	p0	\n
+M	what-it-changes
+T	h2	What it changes
+T	h2	\n
+T	p0	Monsters, so far. Each of these is what Zangband does, with the source it comes from.
+T	p0	\n
+T	p0 strong	Twice the hit points.
+T	p0	 Everything you meet has double what it would otherwise have. This composes with the game’s own lethality scaling rather than replacing it, so a monster’s hit points are 
+T	p0 code	base × 0.73 × 2
+T	p0	.
+T	p0	\n
+T	p0 strong	Five points of speed.
+T	p0	 A permanent 
+T	p0 code	+5
+T	p0	 on every monster in the game, on top of whatever haste or slow is acting on it. At normal speed that is the difference between trading blows and being hit twice for every one you land.
+T	p0	\n
+T	p0	Monster recall reports both of these as they will actually be, rather than as the monster’s record has them: in nightmare mode the page you read before fighting something already has the doubled hit points and the extra five points of speed in it.
+T	p0	\n
+T	p0 strong	Nothing is asleep when it arrives.
+T	p0	 Monsters that would normally be found sleeping are awake from the moment the level is made. They can still be put to sleep afterwards — the mode does not stop that, whatever its spoiler says.
+T	p0	\n
+T	p0 strong	Nothing waits for you.
+T	p0	 Ordinarily the game marks certain dangerous monsters so that they give you one free move when they first appear — the courtesy that stops a summoned horror acting before you have seen it. Under nightmare there is no such courtesy.
+T	p0	\n
+T	p0 strong	Everything arrives half-started.
+T	p0	 A monster placed on a level begins with a random amount of energy towards its next turn, and under nightmare it begins with twice as much. In practice it acts sooner after it appears.
+T	p0	\n
+T	p0 strong	Sleepers are twice as alert.
+T	p0	 A sleeping monster’s chance of noticing you on any given turn is doubled. Stealth still works; it works half as well.
+T	p0	\n
+T	p0 strong	Sustains fail, and drains stick.
+T	p0	 A sustain holds twelve times in thirteen instead of always, and when a stat drain does land it is 
+T	p0 strong	permanent
+T	p0	 twelve times in thirteen rather than wearing off. This is probably the cruellest thing in the mode and nothing in Zangband’s own documentation mentions it: a sustain is a property you buy once and stop thinking about, and one that fails occasionally is a different item from one that holds.
+T	p0	\n
+T	p0 strong	No stairs can be made.
+T	p0	 Stair creation does nothing — no scumming for a convenient descent, no escape hatch when a level turns out badly. You leave a floor by the stairs that are on it.
+T	p0	\n
+T	p0 strong	What lives on a floor is not what should live there.
+T	p0	 Two changes at once. The game’s ordinary rule for putting something out of its depth adds a few levels at most; under nightmare it multiplies, uncapped, so a monster on the fifth floor can be one you would expect eighty floors down. And the monsters normally pinned to their own depth — the ones the game will never generate early, whatever else it does — are no longer pinned. Only quest monsters still are.
+T	p0	\n
+T	p0 strong	Some walls look like floor.
+T	p0	 A few on every level, and one door in several hundred. They are walls: you cannot walk through them, you cannot see past them, and nothing about how they are drawn will tell you. You find them by walking into them.
+T	p0	\n
+T	p0 strong	A bell tolls before midnight, and then something answers it.
+T	p0	 Four times in the last hour — at eleven, and at each quarter past — and on the stroke of midnight the Ancient and Foul Curse falls on you wherever you are. The bell is the only warning the mode gives you about anything, and it is worth heeding: there is time to drink something, or to be somewhere else.
+T	p0	\n
+T	p0 strong	Word of Recall occasionally takes you somewhere worse.
+T	p0	 About one recall in six hundred and sixty-six arrives deeper than you asked — twice as deep in the upper dungeon, half the remaining way down in the lower. It will not take you past the bottom of the dungeon you are recalling into, so in a shallow one this does little; in a deep one it can end a character who was going shopping.
+T	p0	\n
+T	p0	Everything Zangband’s nightmare mode actually does is now here.
+T	p0	\n
+M	and-four-things-it-does-not-do
+T	h2	And four things it does not do
+T	h2	\n
+T	p0	These are 
+T	p0 strong	ours
+T	p0	, not Zangband’s. Its spoiler describes a long menu of ideas its code never implemented; three of them were worth building, and they are kept separate from the list above because that list is a port and this one is a design. Nothing here is restoring anything.
+T	p0	\n
+T	p0 strong	Breeders fill a level two and a half times over.
+T	p0	 The cap on how many breeding monsters a level will hold rises from 100 to 255. A floor of giant white lice or mice, left alone, becomes very much worse than it would ordinarily be. Scrolls of Sterilize still work and still stop it.
+T	p0	\n
+T	p0 strong	Your bolts bounce off you half as reliably.
+T	p0	 A character with reflection turns aside nine bolts in ten ordinarily, and eight in ten here. Monsters that reflect are unaffected — they bounce your bolts back exactly as often as they always did. The property is still worth having; it is just no longer close to a guarantee.
+T	p0	\n
+T	p0 strong	The changes chaos works on you are worse ones.
+T	p0	 Ten of the mutations are pure penalty — puny, moronic, albino, rotting flesh, a blank face, short legs, arthritis, elemental vulnerability, extra noise, extra fat — and in nightmare mode each is twice as likely to be the one you get. A mutation lands on one of them about one time in eight ordinarily, and closer to one in five here. Two others are just as bad on paper and are not touched, because they do nothing at all: a silly voice and bad luck both lost their mechanism when 4.2 removed charisma and the identify moment, and making a no-op likelier is not making anything nastier.
+T	p0	\n
+T	p0 strong	The shopkeepers are poor, and they never leave.
+T	p0	 Each shop is run by whichever of its owners has the smallest purse, and the usual rotation that replaces a shopkeeper every so often does not happen. So the cap on what any shop will pay you for a find is the lowest it can be, for the whole game, and waiting for a richer buyer is not a plan.
+T	p0	\n
+T	p0	And four things that will not be built. Two are permanent decisions:
+T	p0	\n
+T	li1	•\t
+T	li1 strong	Your score is unaffected.
+T	li1	 Zangband gives nightmare characters a score bonus. This game’s scoring has no multiplier of any kind to attach one to, for any birth option, so adding one would be inventing a system rather than porting a number.
+T	li1	\n
+T	li1	•\t
+T	li1 strong	A Golem keeps its immunity to stunning.
+T	li1	 Zangband takes it away, but not for nightmare alone — two other difficulty options do the same, and this game has neither of them.
+T	li1	\n
+T	p0	And two are about the mode’s two nightmares, which Zangband triggers at the inn and when a sleep attack lands on you:
+T	p0	\n
+T	li1	•\t
+T	li1 strong	Sleeping at the inn is unchanged.
+T	li1	 This game already dreams there, in a form built from its own parts and keyed on the town’s law rather than on Zangband’s sanity system — which this project does not have and is not going to. Making those dreams darker under nightmare would mean inventing a number for a piece of the game you meet once a night at most.
+T	li1	\n
+T	li1	•\t
+T	li1 strong	A sleep attack cannot give you nightmares, because nothing can put you to sleep.
+T	li1	 There is no player sleep in this game at all — monsters can paralyse you, which is a different thing. Zangband’s trigger has nowhere to attach. 
+T	li1 em	This one is deferred rather than refused
+T	li1	: if a sleep state ever arrives for some other reason, the nightmare can hang off it.
+T	li1	\n
+M	a-note-on-the-spoiler
+T	h2	A note on the spoiler
+T	h2	\n
+T	p0	If you find Zangband’s own nightmare documentation, it describes a great deal more than this: doubled monster damage, monsters that never miss, spells that never fail, resurrection, home robbery, and about thirty other things. Most of it was never written. Zangband 2.7.5 checks its nightmare flag in twenty-four places and does nineteen things, and this game is built from those. Anything added beyond them will be described here as ours, and not as restoring something.
+T	p0	\n

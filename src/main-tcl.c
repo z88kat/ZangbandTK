@@ -56,6 +56,7 @@
 #include "ui-death.h"
 #include "ui-display.h"
 #include "ui-game.h"
+#include "ui-help.h"
 #include "main.h"
 #include "option.h"
 #include "ui-input.h"
@@ -4721,9 +4722,21 @@ static void choice_hooks_install(void)
 	get_check_hook = choice_get_check;
 }
 
+/**
+ * The game's ? -- the help -- opens the Help window, which reads the manual,
+ * as the original's did.  Unlike the views below it asks nothing of the
+ * game: the window opens beside the map and the command is over.
+ */
+static void help_view_tk(void)
+{
+	if (Tcl_Eval(interp, "help_window") != TCL_OK) {
+		plog_fmt("Tcl/Tk: the Help window: %s", Tcl_GetStringResult(interp));
+	}
+}
+
 /*
  * The front end's own views of the game's screens: character creation, the
- * choice of savefile and the death screen.  Nothing of the game's is wrapped,
+ * choice of savefile, the death screen and the help.  Nothing of the game's is wrapped,
  * so they go in at the start rather than at the first wait -- with a key
  * typed ahead of the splash screen, the choice of savefile came before any
  * wait, found no view and drew the text menu.  Nothing the game resets
@@ -4734,6 +4747,7 @@ static void views_install(void)
 	birth_view_hook = birth_view_tk;
 	select_savefile_hook = chooser_view_tk;
 	death_view_hook = death_view_tk;
+	help_view_hook = help_view_tk;
 }
 
 /* What this file follows itself -- again whenever a reset sweeps them. */

@@ -1,0 +1,16 @@
+H	Meta
+M	meta
+T	h1	Meta
+T	h1	\n
+T	p0	Licensing, history, and the very long list of people whose work this is built on. The version history and credits below are Angband’s and Zangband’s; they are kept as they were, because the debt they record is real.
+T	p0	\n
+T	p0	\n
+T	li1	•\t
+L	li1 link	1	version	Version Information
+T	li1	\n
+T	li1	•\t
+L	li1 link	2	copying	Copying and licence information
+T	li1	\n
+T	li1	•\t
+L	li1 link	3	thanks	Credits
+T	li1	\n
