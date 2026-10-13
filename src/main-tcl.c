@@ -8985,11 +8985,87 @@ static int objcmd_quit(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 const char help_tcl[] = "Tcl/Tk front end";
 
 /**
+ * Where plog() goes on this front end.
+ *
+ * plog's default is a labelled fprintf to stderr, and for a bundled
+ * application Tk has already pointed stderr at /dev/null -- so every one of
+ * this file's plog and plog_fmt calls was being written to nowhere.  Two of
+ * them matter more than the rest: tcl_source() reports a front end script that
+ * failed to source, and an interpreter that could not be created or
+ * initialised reports that, and in both cases the game then carries on with no
+ * user interface and nothing said about why.
+ *
+ * lib/tcl/errorInfo.tcl already exists to solve exactly this, so this routes
+ * into it rather than opening a second channel: the sink buffers records made
+ * before its window exists, which is the case that matters here, since almost
+ * everything plog has to say happens during startup.
+ *
+ * stderr is still written.  A terminal run has a real one, and the sink's own
+ * window is no use to somebody reading a log after the fact.  This is the same
+ * argument the <<Angband_*>> path above makes for keeping both.
+ *
+ * Three guards, none of them theoretical:
+ *
+ *   - The sink is a script, sourced by lib/tcl/main.tcl, so for the whole of
+ *     startup before that line it does not exist.  Tcl_FindCommand is the
+ *     question "is it there yet", and the answer is no for Tcl_Init and
+ *     Tk_Init failures, which keep the old stderr-only behaviour by default.
+ *
+ *   - plog is called during shutdown, including from quit(), so the
+ *     interpreter may be gone or going.
+ *
+ *   - If the sink itself fails, Tcl will report that error, and reporting it
+ *     must not re-enter here and recurse.  stderr already has the message.
+ *
+ * The interpreter's result is saved and restored around the call.  Callers
+ * here log and then return a failure the caller above reads out of the
+ * interpreter, so logging must not be able to change what they read.
+ */
+static void hook_plog(const char *str)
+{
+	static bool inside = false;
+
+	/* Say it on stderr whatever happens, exactly as the default would. */
+	(void)fprintf(stderr, "%s: %s\n", argv0 ? argv0 : "?", str ? str : "");
+
+	if (!str || !interp || Tcl_InterpDeleted(interp) || inside) return;
+
+	/* Before lib/tcl/main.tcl has sourced the sink there is nowhere to put it. */
+	if (!Tcl_FindCommand(interp, "::errorsink::record", NULL, TCL_GLOBAL_ONLY))
+		return;
+
+	inside = true;
+	{
+		Tcl_InterpState  state = Tcl_SaveInterpState(interp, TCL_OK);
+		Tcl_Obj         *av[3];
+		int              i;
+
+		av[0] = Tcl_NewStringObj("::errorsink::record", -1);
+		av[1] = Tcl_NewStringObj("plog", -1);
+		av[2] = Tcl_NewStringObj(str, -1);
+		for (i = 0; i < 3; i++) Tcl_IncrRefCount(av[i]);
+
+		(void)Tcl_EvalObjv(interp, 3, av, TCL_EVAL_GLOBAL);
+
+		for (i = 0; i < 3; i++) Tcl_DecrRefCount(av[i]);
+		(void)Tcl_RestoreInterpState(interp, state);
+	}
+	inside = false;
+}
+
+/**
  * Bring up the interpreter and the window.
  */
 errr init_tcl(int argc, char **argv)
 {
 	(void)argc;
+
+	/*
+	 * Before anything that can fail.  The hook falls back to stderr on its
+	 * own until the sink exists, so installing it this early costs nothing
+	 * and means no failure between here and there is routed by accident.
+	 */
+	plog_aux = hook_plog;
 
 	/*
 	 * Tcl insists on knowing where the executable is before an interpreter
