@@ -282,6 +282,7 @@ source [file join [file dirname [info script]] record.tcl]
 source [file join [file dirname [info script]] fame.tcl]
 source [file join [file dirname [info script]] options.tcl]
 source [file join [file dirname [info script]] sound.tcl]
+source [file join [file dirname [info script]] keymap.tcl]
 source [file join [file dirname [info script]] choice.tcl]
 source [file join [file dirname [info script]] commands.tcl]
 

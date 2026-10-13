@@ -81,6 +81,9 @@
 #ifdef __APPLE__
 /* In tcl/menukeys.c, which has to reach past Tk to AppKit. */
 extern void tcl_menu_keys_literal(void);
+/* In tcl/keyboard.c, which asks Carbon what the keyboard types. */
+extern void tcl_keyboard_char(int vk, int shifted, char *out, size_t len);
+extern const char *tcl_keyboard_type(void);
 #endif
 
 /*
@@ -1027,24 +1030,16 @@ static void Term_nuke_tcl(term *t)
  * job is to turn that into what ui-event.h calls a keycode plus mods, which is
  * the same representation the term build uses -- so a keymap written in one
  * works in the other, which §6 decision 13 of the plan asks for.
+ *
+ * tk_keypress() does the turning, false for a key the game has no use for;
+ * the Keymaps window's capture goes through it too, so a key bound there is
+ * the key that typing it sends.
  */
-static int objcmd_key(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
-		Tcl_Obj *const objv[])
+static bool tk_keypress(int keysym, int state, const char *ch,
+		struct keypress *kp)
 {
-	int keysym, state;
-	const char *ch;
 	keycode_t k = 0;
 	uint8_t mods = 0;
-
-	(void)dummy;
-
-	if (objc != 4) {
-		Tcl_WrongNumArgs(ip, 1, objv, "keysym state char");
-		return TCL_ERROR;
-	}
-	if (Tcl_GetIntFromObj(ip, objv[1], &keysym) != TCL_OK) return TCL_ERROR;
-	if (Tcl_GetIntFromObj(ip, objv[2], &state) != TCL_OK) return TCL_ERROR;
-	ch = Tcl_GetString(objv[3]);
 
 	/* X11 modifier bits, which Tk reports on every platform. */
 	if (state & 0x01) mods |= KC_MOD_SHIFT;
@@ -1086,7 +1081,7 @@ static int objcmd_key(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 				k = (keycode_t)keysym;
 			} else {
 				/* A bare modifier, or a key we do not map.  Ignore it. */
-				return TCL_OK;
+				return false;
 			}
 			break;
 	}
@@ -1104,7 +1099,28 @@ static int objcmd_key(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		mods &= ~KC_MOD_CONTROL;
 	}
 
-	Term_keypress(k, mods);
+	kp->type = EVT_KBRD;
+	kp->code = k;
+	kp->mods = mods;
+	return true;
+}
+
+static int objcmd_key(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	int keysym, state;
+	struct keypress kp;
+
+	(void)dummy;
+
+	if (objc != 4) {
+		Tcl_WrongNumArgs(ip, 1, objv, "keysym state char");
+		return TCL_ERROR;
+	}
+	if (Tcl_GetIntFromObj(ip, objv[1], &keysym) != TCL_OK) return TCL_ERROR;
+	if (Tcl_GetIntFromObj(ip, objv[2], &state) != TCL_OK) return TCL_ERROR;
+	if (tk_keypress(keysym, state, Tcl_GetString(objv[3]), &kp))
+		Term_keypress(kp.code, kp.mods);
 
 	return TCL_OK;
 }
@@ -8471,6 +8487,288 @@ static int objcmd_sound(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	return TCL_ERROR;
 }
 
+/*
+ * Keymaps, for the Keymaps window (keymap.tcl).  Everything is in 4.2's own
+ * text form, what keymap-act: and keymap-input: lines in a pref file hold, so
+ * a key bound here is bound for the text front end too and the other way
+ * round.  Always the keyset in use: a keymap belongs to the original keys or
+ * to the roguelike ones.
+ *
+ *   angband_keymap list                {trigger action user} for each keymap,
+ *                                      the game's own as well as the player's
+ *   angband_keymap trigger KEYSYM STATE CHAR
+ *                                      a key as Tk reports it, as a trigger --
+ *                                      tk_keypress(), as typing it would send
+ *                                      -- or "" for a key the game ignores
+ *   angband_keymap readable TEXT       the keys of TEXT, as a person reads them
+ *   angband_keymap command TEXT        what the first key of TEXT does in the
+ *                                      keyset, by the command's name, or ""
+ *   angband_keymap action GROUP INDEX  the key that runs a command, as an
+ *                                      action; angband_commands' numbering
+ *   angband_keymap set TRIGGER ACTION  bind, as the player's own
+ *   angband_keymap remove TRIGGER      unbind; 1 if there was a keymap
+ *   angband_keymap save                write the player's keymaps into the
+ *                                      user folder's user.prf, which every
+ *                                      character loads, under the title the
+ *                                      game's options screen uses
+ *
+ * Each key's text is the trigger form, backslash doubled.  keymap_dump()
+ * writes actions without the doubling, which its parser then reads as an
+ * escape; built a key at a time, the text here round-trips exactly.
+ */
+static int keymap_mode_now(void)
+{
+	return (player && OPT(player, rogue_like_commands))
+		? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+}
+
+static void keymap_key_text(char *buf, size_t len, struct keypress kp)
+{
+	struct keypress one[2] = { KEYPRESS_NULL, KEYPRESS_NULL };
+
+	one[0] = kp;
+	one[0].type = EVT_KBRD;
+	buf[0] = 0;
+	keypress_to_text(buf, len, one, true);
+}
+
+static void keymap_text(char *buf, size_t len, const struct keypress *keys)
+{
+	size_t n;
+
+	buf[0] = 0;
+	for (n = 0; keys[n].type == EVT_KBRD; n++) {
+		char one[64];
+
+		keymap_key_text(one, sizeof(one), keys[n]);
+		my_strcat(buf, one, len);
+	}
+}
+
+struct keymap_listing {
+	Tcl_Interp *ip;
+	Tcl_Obj *list;
+};
+
+static void keymap_list_one(struct keypress trigger,
+		const struct keypress *actions, bool user, void *data)
+{
+	struct keymap_listing *l = data;
+	Tcl_Obj *row = Tcl_NewListObj(0, NULL);
+	char buf[1024];
+
+	keymap_key_text(buf, sizeof(buf), trigger);
+	Tcl_ListObjAppendElement(l->ip, row, Tcl_NewStringObj(buf, -1));
+	keymap_text(buf, sizeof(buf), actions);
+	Tcl_ListObjAppendElement(l->ip, row, Tcl_NewStringObj(buf, -1));
+	Tcl_ListObjAppendElement(l->ip, row, Tcl_NewBooleanObj(user));
+	Tcl_ListObjAppendElement(l->ip, l->list, row);
+}
+
+/* The keys of a text, and how many; 0 for a text that is not keys. */
+static size_t keymap_parse(const char *text, struct keypress *keys, size_t max)
+{
+	size_t n = 0;
+
+	keypress_from_text(keys, max, text);
+	while (n < max && keys[n].type == EVT_KBRD) n++;
+	return n;
+}
+
+static int objcmd_keymap(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what = objc > 1 ? Tcl_GetString(objv[1]) : "";
+	int mode = keymap_mode_now();
+	struct keypress keys[KEYMAP_ACTION_MAX + 2];
+	char buf[1024];
+
+	(void)dummy;
+
+	if (objc == 2 && streq(what, "list")) {
+		struct keymap_listing l = { ip, Tcl_NewListObj(0, NULL) };
+
+		keymap_visit(mode, keymap_list_one, &l);
+		Tcl_SetObjResult(ip, l.list);
+		return TCL_OK;
+	}
+
+	if (objc == 5 && streq(what, "trigger")) {
+		int keysym, state;
+		struct keypress kp;
+
+		if (Tcl_GetIntFromObj(ip, objv[2], &keysym) != TCL_OK) return TCL_ERROR;
+		if (Tcl_GetIntFromObj(ip, objv[3], &state) != TCL_OK) return TCL_ERROR;
+		buf[0] = 0;
+		if (tk_keypress(keysym, state, Tcl_GetString(objv[4]), &kp))
+			keymap_key_text(buf, sizeof(buf), kp);
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(buf, -1));
+		return TCL_OK;
+	}
+
+	if (objc == 3 && streq(what, "readable")) {
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+		size_t i, n = keymap_parse(Tcl_GetString(objv[2]), keys,
+				N_ELEMENTS(keys));
+
+		for (i = 0; i < n; i++) {
+			buf[0] = 0;
+			keypress_to_readable(buf, sizeof(buf), keys[i]);
+			Tcl_ListObjAppendElement(ip, list, Tcl_NewStringObj(buf, -1));
+		}
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+
+	if (objc == 3 && streq(what, "command")) {
+		const char *desc = "";
+		size_t g, i;
+
+		if (keymap_parse(Tcl_GetString(objv[2]), keys, N_ELEMENTS(keys))
+				&& !keys[0].mods) {
+			if (keys[0].code == KC_ENTER) desc = "Show the command menu";
+			/* The top-level groups, which are the ones keys reach. */
+			for (g = 0; cmds_all[g].name && !desc[0]; g++) {
+				if (cmds_all[g].keymap) continue;
+				for (i = 0; i < cmds_all[g].len; i++) {
+					const struct cmd_info *c = &cmds_all[g].list[i];
+					keycode_t k = c->key[mode] ? c->key[mode] : c->key[0];
+
+					if (k && k == keys[0].code) {
+						desc = c->desc;
+						break;
+					}
+				}
+			}
+		}
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(desc, -1));
+		return TCL_OK;
+	}
+
+	if (objc == 4 && streq(what, "action")) {
+		int g, i, ng = 0;
+		const struct cmd_info *c;
+		struct keypress kp = KEYPRESS_NULL;
+
+		if (Tcl_GetIntFromObj(ip, objv[2], &g) != TCL_OK) return TCL_ERROR;
+		if (Tcl_GetIntFromObj(ip, objv[3], &i) != TCL_OK) return TCL_ERROR;
+		while (cmds_all[ng].name) ng++;
+		if (g < 0 || g >= ng || i < 0 || (size_t)i >= cmds_all[g].len) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj("no such command", -1));
+			return TCL_ERROR;
+		}
+		c = &cmds_all[g].list[i];
+		/* As angband_commands finds it: the keyset's key, or the hook's. */
+		kp.code = c->cmd ? cmd_lookup_key(c->cmd, mode) : 0;
+		if (!kp.code) kp.code = c->key[mode] ? c->key[mode] : c->key[0];
+		buf[0] = 0;
+		if (kp.code) keymap_key_text(buf, sizeof(buf), kp);
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(buf, -1));
+		return TCL_OK;
+	}
+
+	if (objc == 4 && streq(what, "set")) {
+		struct keypress trigger[4];
+		size_t n;
+
+		/* Room for more than one, or a second key would be cut off unseen. */
+		if (keymap_parse(Tcl_GetString(objv[2]), trigger, 4) != 1) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("not one key: %s",
+					Tcl_GetString(objv[2])));
+			return TCL_ERROR;
+		}
+		n = keymap_parse(Tcl_GetString(objv[3]), keys, N_ELEMENTS(keys));
+		if (n < 1 || n > KEYMAP_ACTION_MAX) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf(
+					"an action is 1 to %d keys", KEYMAP_ACTION_MAX));
+			return TCL_ERROR;
+		}
+		keys[n].type = EVT_NONE;
+		keymap_add(mode, trigger[0], keys, true);
+		return TCL_OK;
+	}
+
+	if (objc == 3 && streq(what, "remove")) {
+		struct keypress trigger[4];
+
+		if (keymap_parse(Tcl_GetString(objv[2]), trigger, 4) != 1) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("not one key: %s",
+					Tcl_GetString(objv[2])));
+			return TCL_ERROR;
+		}
+		Tcl_SetObjResult(ip, Tcl_NewBooleanObj(keymap_remove(mode,
+				trigger[0])));
+		return TCL_OK;
+	}
+
+	if (objc == 2 && streq(what, "save")) {
+		if (!player) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"there is no character yet", -1));
+			return TCL_ERROR;
+		}
+		path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "user.prf");
+		if (!prefs_save(buf, keymap_dump, "Dump keymaps")) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("could not write %s", buf));
+			return TCL_ERROR;
+		}
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(buf, -1));
+		return TCL_OK;
+	}
+
+	Tcl_WrongNumArgs(ip, 1, objv, "list | trigger KEYSYM STATE CHAR | "
+			"readable TEXT | command TEXT | action GROUP INDEX | "
+			"set TRIGGER ACTION | remove TRIGGER | save");
+	return TCL_ERROR;
+}
+
+/*
+ * The keyboard, for the Keymaps window's picture of it.
+ *
+ *   angband_keyboard type               ansi, iso or jis
+ *   angband_keyboard char VK SHIFTED    what the key with macOS virtual key
+ *                                       code VK types on the layout in use
+ *
+ * Off the Mac there is no asking, and the window draws US keycaps: type is
+ * ansi and char is "".
+ */
+static int objcmd_keyboard(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what = objc > 1 ? Tcl_GetString(objv[1]) : "";
+
+	(void)dummy;
+
+	if (objc == 2 && streq(what, "type")) {
+#ifdef __APPLE__
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(tcl_keyboard_type(), -1));
+#else
+		Tcl_SetObjResult(ip, Tcl_NewStringObj("ansi", -1));
+#endif
+		return TCL_OK;
+	}
+	if (objc == 4 && streq(what, "char")) {
+		int vk, shifted;
+		char buf[16] = "";
+
+		if (Tcl_GetIntFromObj(ip, objv[2], &vk) != TCL_OK) return TCL_ERROR;
+		/* An int, 0 or 1: Tcl 9's Tcl_GetBooleanFromObj is a GNU
+		 * statement expression, which -pedantic refuses. */
+		if (Tcl_GetIntFromObj(ip, objv[3], &shifted) != TCL_OK)
+			return TCL_ERROR;
+#ifdef __APPLE__
+		tcl_keyboard_char(vk, shifted, buf, sizeof(buf));
+#else
+		(void)vk;
+#endif
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(buf, -1));
+		return TCL_OK;
+	}
+
+	Tcl_WrongNumArgs(ip, 1, objv, "type | char VK SHIFTED");
+	return TCL_ERROR;
+}
+
 static bool tcl_get_int(const char *name, int *out);
 
 /**
@@ -9114,6 +9412,10 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_palette", objcmd_palette, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_sound", objcmd_sound, NULL,
+			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_keymap", objcmd_keymap, NULL,
+			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_keyboard", objcmd_keyboard, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_choice", objcmd_choice, NULL,
 			NULL);

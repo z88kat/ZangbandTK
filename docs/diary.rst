@@ -31,6 +31,35 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+13 October 2026 — the keymap editor
+===================================
+
+The Tk front end has a Keymaps window now, under Other ▸ Preferences. The
+original had one too. It drew a picture of a keyboard, which was the right idea,
+because a picture shows at a glance which keys are taken in a way a list
+cannot. Then it made you type what the key should do in a code, ``\e`` for
+Escape, which nobody could manage.
+
+So the picture stays and the code goes. You press a key, or click it, and pick
+what it should do from the game's own list of commands, or press Record and
+type the keys it should send. Each key is coloured by what it does now. Hold
+Shift or Control to see those keys. Every change is kept straight away for
+every character, in the same form the text front end uses, so a key bound in
+one works in the other.
+
+The keyboard it draws is the one on the desk. It asks macOS what each key types,
+so a German keyboard shows its umlauts, its Z and Y the German way round, and
+the extra key beside Shift. The game cannot read a key like ö, so that one is
+drawn but cannot be bound.
+
+One thing turned up while testing it. The automatic check that makes a new
+character presses Return, and a pressed key goes to whichever window has the
+focus. While the Mac was in use, the game apparently could not take the focus,
+and that check failed every time, even on a build that had passed an hour
+earlier. It is not a fault in the game. The scripts that make characters
+without pressing keys carried on working.
+
+
 13 October 2026 — the Tk app, packed to ship
 ============================================
 

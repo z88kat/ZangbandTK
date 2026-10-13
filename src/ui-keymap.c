@@ -163,6 +163,16 @@ void keymap_free(void)
 /**
  * Append active keymaps to a given file.
  */
+void keymap_visit(int keymap, keymap_visit_fn fn, void *data)
+{
+	struct keymap *k;
+
+	assert(keymap >= 0 && keymap < KEYMAP_MODE_MAX);
+	for (k = keymaps[keymap]; k; k = k->next)
+		fn(k->key, k->actions, k->user, data);
+}
+
+
 void keymap_dump(ang_file *fff)
 {
 	int mode;

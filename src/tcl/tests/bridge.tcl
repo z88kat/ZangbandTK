@@ -1720,7 +1720,64 @@ proc sound_pass_done {} {
 	check "a game action is heard only with use_sound on" {
 		list [expr {$::sound_after_off eq $::sound_quiet}] $heard
 	} "1 NOTHING_TO_OPEN"
-	after 500 door_pass
+	after 500 keymap_pass
+}
+
+# --- keymaps --------------------------------------------------------------------
+
+# The Keymaps window binds a key the way typing it is read -- tk_keypress(),
+# shared with angband_key -- and keeps what is bound in 4.2's own form, in the
+# user folder's user.prf, which every character loads.
+proc keymap_pass {} {
+	check "the keyboard's own keycaps, and its shape" {
+		list [expr {[angband_keyboard type] in {ansi iso jis}}] \
+			[expr {[string tolower [angband_keyboard char 0 0]] eq "a"}]
+	} "1 1"
+
+	check "a key is bound as typing it is read" {
+		list [angband_keymap trigger 113 0 q] [angband_keymap trigger 102 4 ""] \
+			[angband_keymap trigger 65289 1 ""] \
+			[angband_keymap trigger 65505 1 ""] \
+			[angband_keymap command q]
+	} "q ^f {{S}\[Tab\]} {} {Quaff a potion}"
+
+	check "Other > Preferences > Keymaps is the Keymaps window" {
+		set m [commands_menu_path Other]
+		set i [$m.m1 index Keymaps]
+		$m.m1 invoke $i
+		update
+		set ok [winfo exists .keymap]
+		list $ok {*}[stock_widgets_only .keymap]
+	} "1 classic {}"
+
+	# Bound through the window as a player would: choose the key by pressing
+	# it, choose a command, Bind -- and it is in user.prf; Remove, and it is
+	# gone from both.  The key goes to the window's own handler, as its
+	# <KeyPress> binding passes it, rather than through event generate: a
+	# generated key goes where the focus is, which a script cannot count on
+	# while somebody else is using the machine.
+	check "a key bound in the window is the game's keymap, and kept" {
+		# Caught: it ends in break, which is how a binding stops there.
+		catch {keymap_key .keymap.f.kb 70 1 F}
+		set ::keymap(filter) "Rest for a while"
+		keymap_fill_commands
+		.keymap.f.lower.sel.cmds selection set 0
+		keymap_command_chosen
+		keymap_bind
+		set bound [lindex [lsearch -inline -index 0 [angband_keymap list] F] 1]
+		set prf [file join [angband_path user] user.prf]
+		set f [open $prf]
+		set kept [string match "*keymap-act:R\nkeymap-input:0:F*" [read $f]]
+		close $f
+		keymap_remove
+		set f [open $prf]
+		set gone [expr {![string match "*keymap-input:0:F*" [read $f]]}]
+		close $f
+		destroy .keymap
+		list $bound $kept $gone [lsearch -index 0 [angband_keymap list] F]
+	} "R 1 1 -1"
+
+	after 300 door_pass
 }
 
 # --- a door in the command menus --------------------------------------------

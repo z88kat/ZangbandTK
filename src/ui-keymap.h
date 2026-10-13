@@ -61,4 +61,12 @@ void keymap_free(void);
  */
 void keymap_dump(ang_file *fff);
 
+/**
+ * Call fn for every keymap of a mode, in the order keymap_find() searches
+ * them -- for a front end that lists them (ZangbandTK's Keymaps window).
+ */
+typedef void (*keymap_visit_fn)(struct keypress trigger,
+		const struct keypress *actions, bool user, void *data);
+void keymap_visit(int keymap, keymap_visit_fn fn, void *data);
+
 #endif /* UI_KEYMAP_H */

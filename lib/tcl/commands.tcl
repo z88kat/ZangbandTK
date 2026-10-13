@@ -129,6 +129,7 @@ set commands(layout) {
         -
         {menu Preferences {
             {instead Options "Interact with options" options_window}
+            {tk Keymaps keymap_window}
             {tiles Tiles}
             {cmd "Load Pref Line" "Load a single pref line"}
         }}

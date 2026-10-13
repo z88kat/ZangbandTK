@@ -76,8 +76,10 @@ macro(configure_tcl_frontend _NAME_TARGET)
     # name it too.
     if(APPLE)
         target_sources(${_NAME_TARGET} PRIVATE
-            "${CMAKE_SOURCE_DIR}/src/tcl/menukeys.c")
-        target_link_libraries(${_NAME_TARGET} PRIVATE objc)
+            "${CMAKE_SOURCE_DIR}/src/tcl/menukeys.c"
+            "${CMAKE_SOURCE_DIR}/src/tcl/keyboard.c")
+        # Carbon for keyboard.c's layout queries (TIS, UCKeyTranslate).
+        target_link_libraries(${_NAME_TARGET} PRIVATE objc "-framework Carbon")
     endif()
 
     target_compile_definitions(${_NAME_TARGET} PRIVATE

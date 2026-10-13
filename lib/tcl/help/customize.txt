@@ -315,6 +315,10 @@ T	p0	You can set up keymaps in ZangbandTK, which allow you to map a single keypr
 T	p0 code	\\
 T	p0	 before pressing the key.
 T	p0	\n
+T	p0	In the Tcl/Tk front end, Other ▸ Preferences ▸ Keymaps opens a window that draws your keyboard, with what each key types on the layout you use, coloured by what it does: one of your keymaps, one of the game’s own, a command, or nothing. Hold Shift or Control to see those keys, and point at a key to read what it does. Press a key, or click it, to choose it; then pick a command from the list, or press Record and type the keys the keymap should send, and click Bind. Remove takes your keymap off the key again. There is nothing to save: every change is written at once to 
+T	p0 code	user.prf
+T	p0	 in your user folder, which every character loads, in the same form the options menu below uses, so a keymap made in either front end works in the other.
+T	p0	\n
 T	p0	To set up keymaps, go to the options menu (
 T	p0 code	=
 T	p0	) and select “Edit keymaps” (

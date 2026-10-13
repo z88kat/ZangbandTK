@@ -235,6 +235,17 @@ Keymaps
 
 You can set up keymaps in ZangbandTK, which allow you to map a single keypress, the trigger, to a series of keypresses, the action.  For example you might map the key F1 to "maa" (the keypresses to cast "Magic Missile" as a spellcaster).  This can speed up access to commonly-used features.  To bypass a keymap that's been assigned to a key, press ``\`` before pressing the key.
 
+In the Tcl/Tk front end, Other ▸ Preferences ▸ Keymaps opens a window that draws
+your keyboard, with what each key types on the layout you use, coloured by what
+it does: one of your keymaps, one of the game's own, a command, or nothing.
+Hold Shift or Control to see those keys, and point at a key to read what it
+does.  Press a key, or click it, to choose it; then pick a command from the
+list, or press Record and type the keys the keymap should send, and click Bind.
+Remove takes your keymap off the key again.  There is nothing to save: every
+change is written at once to ``user.prf`` in your user folder, which every
+character loads, in the same form the options menu below uses, so a keymap
+made in either front end works in the other.
+
 To set up keymaps, go to the options menu (``=``) and select "Edit keymaps" (``e``).  There, you can check if a key triggers a keymap:  select "Query a keymap" (``c``) and then press the key to check.  You can also remove an existing keymap:  select "Remove a keymap" (``e``) and then press the key that trigger the keymap to be removed.  To add a new keymap (or overwrite an existing one), select "Create a keymap" (``d``), it will then prompt you for the key that triggers the keymap.  After pressing the trigger key, you'll be prompted for the keymap's action, the series of keypresses that'll be generated when the trigger key is pressed.  If you make a mistake while entering the keypresses for the action, press ``Control-u`` to erase the keypresses already entered for the action.  Once you've finished entering the keypresses for the action, press ``=`` to end the sequence; you'll then be prompted for whether to keep the newly entered keymap.
 
 Within the action for a keymap, it is frequently useful to temporarily suppress -more- prompts since they can swallow keypresses from the keymap.  To disable those prompts from within the action, include ``(``.  To reenable the prompts, include ``)``.  So, a typical action where -more- prompts could happen would look like this: ``(`` your keypresses here ``)``.

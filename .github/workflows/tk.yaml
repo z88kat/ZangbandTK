@@ -25,6 +25,9 @@ on:
       - 'src/sound-core.c'
       - 'src/sound.h'
       - 'src/cocoa/snd-cocoa.m'
+      # The keymap list the Keymaps window reads.
+      - 'src/ui-keymap.c'
+      - 'src/ui-keymap.h'
       - 'scripts/build-tcltk'
       - 'scripts/pkg_macos_tcltk'
       - 'scripts/dmg_macos_tcltk'

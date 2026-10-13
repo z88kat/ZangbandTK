@@ -1700,8 +1700,8 @@ Recall/Choice hand-off and the grow-on-hover behaviour.
 > enchantment or a recharge that destroys the wand is still paid for: that is the work going
 > badly, not the work not being done.
 
-> **On hold: the keymap and macro editor** (owner's decision, 11 October 2026). The design
-> notes above stand; it is the one T7 screen not started, and it waits until it is asked for.
+> ~~**On hold: the keymap and macro editor**~~ (owner's decision, 11 October 2026). Asked for
+> and built on 13 October: see "The Keymaps window" in the T9 notes.
 
 > **The Recall pane follows the pointer**, as `interface.html` has it: an item pointed at in
 > the Choice pane or the Items window, or chosen in the Store window, is described in the
@@ -2138,6 +2138,33 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 >   on that build first; tk.yaml uploads the image from every commit instead of a loose app.
 > - The download page says which Mac application is which, and that they share
 >   `~/Documents/ZangbandTK`.
+
+> **The Keymaps window, 13 October 2026.** OBS-31's design, built: the keyboard picture kept,
+> the encoding gone ([keymap.tcl](../../lib/tcl/keymap.tcl), Other ▸ Preferences ▸ Keymaps).
+>
+> - **The keyboard is the player's own.** [keyboard.c](../../src/tcl/keyboard.c) asks macOS,
+>   through `UCKeyTranslate`, what each key types plain and shifted, and whether the board is
+>   ANSI or ISO, so a German one shows its umlauts, its Z and Y, and its < > key beside Shift.
+>   A key whose character the game cannot read (ö) is drawn grey and cannot be bound. Each key
+>   is coloured by what it does — the player's keymap, the game's (pref.prf's 118), a command,
+>   nothing — in the layer shown; holding Shift or Control shows those, and pointing reads it.
+> - **Capture, not encode.** A key is chosen by pressing it — through `tk_keypress()`, now
+>   shared by `angband_key`, so the trigger is exactly what typing sends — or by clicking it.
+>   What it does is a command from the same table as the menus, or keys recorded with
+>   Record. Nobody types `\e`.
+> - **4.2's own keymaps, in 4.2's own form**: `angband_keymap` over ui-keymap.c, which gained
+>   `keymap_visit()` to list them. Every Bind and Remove writes the player's keymaps into the
+>   user folder's `user.prf`, which every character loads (owner's choice), with `prefs_save()`
+>   under the title the options screen uses — so the text front end reads them and writes the
+>   same section. Text a key at a time, backslashes doubled, so it round-trips exactly;
+>   keymap_dump's own action text does not.
+> - **The game's own keymaps** come back from pref.prf with every character, so the window
+>   offers Remove only for the player's and says to bind a game keymap's key to something
+>   else instead.
+> - **No macros.** 4.2 has none, and needs none: a recorded keymap is what a macro was, and
+>   the original's sixteen defaults are native (OBS-32).
+> - Not drawn: the function keys and the keypad, which `tk_keypress()` does not read yet
+>   (the keypad arrives as the digits), so nothing can be bound to them from here.
 
 ---
 
