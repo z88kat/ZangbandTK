@@ -90,7 +90,7 @@ static int check_devices(struct object *obj)
 	/* Roll for usage */
 	if (randint1(1000) < fail) {
 		event_signal(EVENT_INPUT_FLUSH);
-		msg("You failed to %s properly.", action);
+		msgt(MSG_FAIL, "You failed to %s properly.", action);
 		return (fail < 1001) ? 0 : -1;
 	}
 
@@ -755,7 +755,7 @@ void do_cmd_read_scroll(struct command *cmd)
 			tval_is_scroll,
 			USE_INVEN | USE_FLOOR) != CMD_OK) return;
 
-	(void)use_aux(cmd, obj, USE_SINGLE, MSG_GENERIC);
+	(void)use_aux(cmd, obj, USE_SINGLE, MSG_READ);
 }
 
 /**

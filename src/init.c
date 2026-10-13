@@ -2686,6 +2686,20 @@ static enum parser_error parse_trap_msg(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_trap_msgt(struct parser *p) {
+	struct trap_kind *t = parser_priv(p);
+	int msg_index = message_lookup_by_name(parser_getsym(p, "type"));
+
+	if (!t) {
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	}
+	if (msg_index < 0) {
+		return PARSE_ERROR_INVALID_MESSAGE;
+	}
+	t->msgt = msg_index;
+	return PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_trap_msg_good(struct parser *p) {
 	struct trap_kind *t = parser_priv(p);
 
@@ -2735,6 +2749,7 @@ static struct parser *init_parse_trap(void) {
 	parser_reg(p, "save str flags", parse_trap_save_flags);
 	parser_reg(p, "desc str text", parse_trap_desc);
 	parser_reg(p, "msg str text", parse_trap_msg);
+	parser_reg(p, "msgt sym type", parse_trap_msgt);
 	parser_reg(p, "msg-good str text", parse_trap_msg_good);
 	parser_reg(p, "msg-bad str text", parse_trap_msg_bad);
 	parser_reg(p, "msg-xtra str text", parse_trap_msg_xtra);

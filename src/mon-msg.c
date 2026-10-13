@@ -23,6 +23,7 @@
 #include "mon-util.h"
 #include "game-input.h"
 #include "player-calcs.h"
+#include "player-quest.h"
 
 /**
  * Maxinum number of stacked monster messages
@@ -454,7 +455,7 @@ static int get_message_type(int msg_code, const struct monster_race *race)
 	if (type == MSG_KILL) {
 		/* Play a special sound if the monster was unique */
 		if (rf_has(race->flags, RF_UNIQUE)) {
-			if (race->base == lookup_monster_base("Morgoth")) {
+			if (quest_is_final_race(player, race)) {
 				type = MSG_KILL_KING;
 			} else {
 				type = MSG_KILL_UNIQUE;

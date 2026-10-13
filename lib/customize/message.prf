@@ -472,6 +472,92 @@ message:DRAIN_STAT:w
 # MSG_MULTIPLY (sound only)
 message:MULTIPLY:w
 
+# ZangbandTK's, for the sounds of ZangbandTk's that 4.2 had no message for.
+
+# MSG_FAIL
+message:FAIL:w
+
+# MSG_READ
+message:READ:w
+
+# MSG_BOLT
+message:BOLT:w
+
+# MSG_BALL
+message:BALL:w
+
+# MSG_BEAM
+message:BEAM:w
+
+# MSG_MON_HEX
+message:MON_HEX:w
+
+# MSG_MON_MIND
+message:MON_MIND:w
+
+# MSG_MON_WOUND
+message:MON_WOUND:w
+
+# MSG_MON_HEAL
+message:MON_HEAL:w
+
+# MSG_MON_DARK
+message:MON_DARK:w
+
+# MSG_MON_BOULDER
+message:MON_BOULDER:w
+
+# MSG_UNIQUE
+message:UNIQUE:w
+
+# MSG_WADE
+message:WADE:w
+
+# MSG_STEAL
+message:STEAL:w
+
+# MSG_DAMAGE_ARMOUR
+message:DAMAGE_ARMOUR:w
+
+# MSG_DRAIN_EXP
+message:DRAIN_EXP:w
+
+# MSG_DISENCHANT
+message:DISENCHANT:w
+
+# MSG_DRAIN_CHARGES
+message:DRAIN_CHARGES:w
+
+# MSG_EARTHQUAKE
+message:EARTHQUAKE:w
+
+# MSG_DESTRUCTION
+message:DESTRUCTION:w
+
+# MSG_TRAP
+message:TRAP:w
+
+# MSG_PIT
+message:PIT:w
+
+# MSG_TRAPDOOR
+message:TRAPDOOR:w
+
+# MSG_QUEST_DONE
+message:QUEST_DONE:w
+
+# MSG_WIN
+message:WIN:w
+
+# MSG_LEVEL_DOWN
+message:LEVEL_DOWN:w
+
+# MSG_MUTATE
+message:MUTATE:w
+
+# MSG_UNMUTATE
+message:UNMUTATE:w
+
 message:BOLD:w
 
 ?:1

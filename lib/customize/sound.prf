@@ -511,3 +511,81 @@ sound:IDENT_EGO:id_ego_whoa id_ego_woohoo id_ego_yeah id_ego_yeah2 id_ego_yes
 # Identify a good artifact.
 sound:IDENT_ART:id_good_hey id_good_hey2 id_good_hmm id_good_huh id_good_ooh id_good_ooo id_good_wow
 
+
+#
+# ZangbandTK
+#
+# Sounds for what ZangbandTk had sounds for and 4.2 had no message for: its
+# event list (archive/Tk/grund/grund.snd), walked against this game in October
+# 2026.  Every Dubtrain file is already bound above, so these share them.
+#
+
+# A spell, device, power or disarm fails.
+sound:FAIL:id_bad_hmph id_bad_aww pls_man_sigh
+
+# Read a scroll.
+sound:READ:plm_book_pageturn
+
+# A bolt, ball or beam, the player's or a monster's.
+sound:BOLT:plm_aim_wand plm_zap_rod pls_tone_elec
+sound:BALL:amb_thunder_roll amb_gong_low plm_spell2
+sound:BEAM:pls_tone_elec plm_zap_rod
+
+# A monster blinds, confuses, slows or holds.
+sound:MON_HEX:mco_dino_slur mco_strange_music mco_thoing_backwards
+
+# A monster's mind blast, brain smash, mana drain or amnesia.
+sound:MON_MIND:mco_dub_wobble pls_tone_blurk amb_pulse_low
+
+# A monster's curse that wounds.
+sound:MON_WOUND:sum_laugh_evil2 mco_creature_groan pls_man_argoh
+
+# A monster heals or hastes itself.
+sound:MON_HEAL:pls_bell_chime_new sum_bell_crystal pls_bell_sustain
+
+# A monster darkens the room.
+sound:MON_DARK:amb_door_doom amb_pulse_low sum_ghost_oooo
+
+# A monster throws a boulder.
+sound:MON_BOULDER:mco_thud_crash mco_rubber_thud
+
+# A unique comes into view.
+sound:UNIQUE:sum_bell_tone amb_gong_strike sum_gong_temple
+
+# Step into water.
+sound:WADE:mco_liquid_squirt amb_dungeon_echowet
+
+# A thief takes something.
+sound:STEAL:mco_scurry_dry plm_coins_shake sto_man_haha
+
+# Acid damages armour.
+sound:DAMAGE_ARMOUR:plm_metal_clank mco_liquid_squirt
+
+# Experience drained.
+sound:DRAIN_EXP:sum_ghost_moan pls_man_oooh
+
+# An item disenchanted.
+sound:DISENCHANT:mco_dub_wobble id_bad_ohh
+
+# Charges drained from the pack.
+sound:DRAIN_CHARGES:pls_tone_elec plm_click_dry
+
+# An earthquake, and *destruction*.
+sound:EARTHQUAKE:amb_thunder_roll mco_thud_crash plm_bang_dumpster
+sound:DESTRUCTION:amb_door_doom amb_gong_low plm_break_shatter
+
+# Traps: one that goes off, a pit, a trap door.
+sound:TRAP:plm_click_switch3 mco_spray_long
+sound:PIT:mco_thud_crash plm_wood_thud
+sound:TRAPDOOR:plm_close_hatch plm_floor_creak
+
+# A quest done, and the game won.
+sound:QUEST_DONE:id_ego_yes id_ego_woohoo sto_bell_ringing
+sound:WIN:amb_guitar_chord sum_gong_temple id_ego_woohoo
+
+# A level lost.
+sound:LEVEL_DOWN:pls_man_sigh id_bad_aww
+
+# A mutation gained, and one lost.
+sound:MUTATE:mco_dub_wobble pls_tone_blurk sum_piano_scrape
+sound:UNMUTATE:pls_bell_chime_new pls_man_sigh

@@ -28,6 +28,11 @@
 # msg: activation message
 #    This is shown to the user when the trap is triggered.
 
+# msgt: message type
+#    The message type of the activation message, from list-message.h, and so
+#    the sound it plays (sound.prf).  Without one the message is GENERIC and
+#    silent.
+
 # save: object flags that provide a saving throw
 # msg-good: save message
 # msg-bad: fail to save message
@@ -95,6 +100,7 @@ effect:DAMAGE
 dice:2d8
 save:FEATHER
 desc:It looks like floor, but step incautiously and you will fall through.
+msgt:TRAPDOOR
 msg:You fall through a trap door!
 msg-good:You float gently down to the next level.
 
@@ -109,6 +115,7 @@ effect:DAMAGE
 dice:2d6
 save:FEATHER
 desc:A hole dug to snare the unwary.
+msgt:PIT
 msg:You fall into a pit!
 msg-good:You float gently to the bottom of the pit.
 
@@ -127,6 +134,7 @@ effect-xtra:TIMED_INC:CUT
 dice-xtra:4d6
 save:FEATHER
 desc:A hole dug to snare the unwary, with spikes.
+msgt:PIT
 msg:You fall into a spiked pit!
 msg-good:You float gently to the bottom of the pit, neatly avoiding the spikes.
 msg-xtra:You are impaled!
@@ -146,6 +154,7 @@ effect-xtra:TIMED_INC:POISONED
 dice-xtra:8d6
 save:FEATHER
 desc:A hole dug to snare the unwary, with poisoned spikes.
+msgt:PIT
 msg:You fall into a spiked pit!
 msg-good:You float gently to the bottom of the pit, neatly avoiding the spikes.
 msg-xtra:You are impaled on poisonous spikes!
@@ -237,6 +246,7 @@ effect:SPOT:FIRE:0
 dice:4d$S
 expr:S:DUNGEON_LEVEL:/ 2
 desc:A strange coloured spot on the ground - beware its fiery attack.
+msgt:TRAP
 msg:You are enveloped in flames!
 
 # spot -- acid
@@ -250,6 +260,7 @@ effect:SPOT:ACID:0
 dice:4d$S
 expr:S:DUNGEON_LEVEL:/ 2
 desc:A strange coloured spot on the ground - beware its acidic attack.
+msgt:TRAP
 msg:You are splashed with acid!
 
 # dart -- slow
@@ -319,6 +330,7 @@ flags:TRAP | FLOOR
 effect:TIMED_INC:BLIND
 dice:25+1d50
 desc:A trap that releases gas to blind you.
+msgt:TRAP
 msg:You are surrounded by a black gas!
 
 # gas -- confuse
@@ -331,6 +343,7 @@ flags:TRAP | FLOOR
 effect:TIMED_INC:CONFUSED
 dice:10+1d20
 desc:A trap that releases gas to confuse you.
+msgt:TRAP
 msg:You are surrounded by a gas of scintillating colors!
 
 # gas -- poison
@@ -343,6 +356,7 @@ flags:TRAP | FLOOR
 effect:TIMED_INC:POISONED
 dice:10+1d20
 desc:A trap that releases gas to poison you.
+msgt:TRAP
 msg:You are surrounded by a pungent green gas!
 
 # gas -- sleep
@@ -355,6 +369,7 @@ flags:TRAP | FLOOR
 effect:TIMED_INC:PARALYZED
 dice:5+1d10
 desc:A trap that releases gas to put you to sleep.
+msgt:TRAP
 msg:You are surrounded by a strange white mist!
 
 # alarm -- aggravation
@@ -368,6 +383,7 @@ effect:WAKE
 effect:PROJECT_LOS:MON_SPEED
 dice:25
 desc:A trap that wakes nearby monsters and impels them toward you.
+msgt:TRAP
 msg:A high-pitched whistle blares through the dungeon!
 
 # alarm -- siren
@@ -379,6 +395,7 @@ visibility:60+d10
 flags:TRAP | FLOOR | MAGICAL
 effect:WAKE
 desc:A trap that wakes nearby monsters.
+msgt:TRAP
 msg:A horn blast sounds!
 
 # explosion -- mine
@@ -392,6 +409,7 @@ effect:SPOT:SHARD:2
 dice:$B
 expr:B:DUNGEON_LEVEL:* 2
 desc:A trap that blows up the floor.
+msgt:TRAP
 msg:The floor explodes around you!
 
 # explosion -- blast
@@ -413,6 +431,7 @@ effect:SPOT:FORCE:2
 dice:$B
 expr:B:DUNGEON_LEVEL:+ 0
 desc:A trap that creates an explosion.
+msgt:TRAP
 msg:The air seems to catch fire!
 
 # mental assault -- mind blast
@@ -428,6 +447,7 @@ expr:S:DUNGEON_LEVEL:/ 10
 effect:TIMED_INC:CONFUSED
 dice:3+1d4
 desc:A trap that blasts your senses.
+msgt:TRAP
 msg:You feel pressure on your mind.
 msg-good:You shake your head and are back to normal.
 msg-bad:Your mind is blasted by psionic energy!
@@ -451,6 +471,7 @@ dice:3+1d4
 effect:TIMED_INC:BLIND
 dice:7+1d8
 desc:A trap that blasts your senses.
+msgt:TRAP
 msg:You feel pressure on your mind.
 msg-good:You shake your head and are back to normal.
 msg-bad:Your mind is blasted by psionic energy!
@@ -469,6 +490,7 @@ effect:TIMED_INC_NO_RES:STUN
 dice:2d20
 effect:RUBBLE
 desc:A trap that drops a boulder on you.
+msgt:TRAP
 msg:A rock falls on your head!
 
 # dungeon alter -- earthquake
@@ -483,6 +505,7 @@ dice:$Dd5
 expr:D:DUNGEON_LEVEL:/ 10 + 1
 effect:EARTHQUAKE:NONE:5
 desc:A trap that causes an earthquake.
+msgt:TRAP
 msg:The ground shakes.
 
 name:ancient mechanism:block fall trap
@@ -492,6 +515,7 @@ visibility:40+d5
 flags:TRAP | FLOOR | ONETIME | DELAY
 effect:GRANITE
 desc:A pressure plate that drops a stone block behind you.
+msgt:TRAP
 msg:A section of the ceiling falls in behind you!
 
 # dungeon alter - stone to mud
@@ -509,6 +533,7 @@ dice:$B
 expr:B:DUNGEON_LEVEL:+ 0
 effect:RUBBLE
 desc:A trap that clears the surrounding area.
+msgt:TRAP
 msg:The trap explodes, blasting the area clear!
 
 # blinding flash
@@ -522,6 +547,7 @@ effect:BALL:LIGHT:4
 dice:$Dd8
 expr:D:DUNGEON_LEVEL:/ 10 + 2
 desc:A trap that creates a ball of light.
+msgt:TRAP
 msg:A blazing light descends on you!
 
 # blinding trap
@@ -537,6 +563,7 @@ expr:D:DUNGEON_LEVEL:/ 10 + 2
 effect:DRAIN_LIGHT
 dice:100+1d100
 desc:A trap that envelops you in darkness.
+msgt:TRAP
 msg:Everything starts to fade...
 
 # mana drain
@@ -549,6 +576,7 @@ flags:TRAP | FLOOR | MAGICAL
 effect:DRAIN_MANA
 dice:1d$D
 expr:D:DUNGEON_LEVEL:/ 2 + 1
+msgt:TRAP
 msg:You feel your energies sap away.
 desc:A trap that drains your mana.
 
@@ -566,6 +594,7 @@ dice:150
 effect:DAMAGE
 dice:$D
 expr:D:DUNGEON_LEVEL:/ 2
+msgt:TRAP
 msg:Blades whirl around you, slicing your skin!
 desc:A trap designed to bleed you to death.
 
@@ -580,5 +609,6 @@ effect:TIMED_INC:STONESKIN
 dice:20+1d20
 effect:TIMED_INC:STUN
 dice:20+1d20
+msgt:TRAP
 msg:You feel yourself turning to stone!
 desc:A trap that stuns you and gives you stoneskin.

@@ -516,7 +516,7 @@ static bool do_cmd_tunnel_test(struct player *p, struct loc grid)
 
 	/* Titanium */
 	if (square_isperm(cave, grid)) {
-		msg("This seems to be permanent rock.");
+		msgt(MSG_HITWALL, "This seems to be permanent rock.");
 		if (!square_isperm(p->cave, grid)) {
 			square_memorize(cave, grid);
 			square_light_spot(cave, grid);
@@ -901,7 +901,7 @@ static bool do_cmd_disarm_aux(struct loc grid)
 		}
 	} else if (randint0(100) < chance) {
 		event_signal(EVENT_INPUT_FLUSH);
-		msg("You failed to disarm the %s.", trap->kind->name);
+		msgt(MSG_FAIL, "You failed to disarm the %s.", trap->kind->name);
 
 		/* Player can try again */
 		more = true;
@@ -1302,8 +1302,14 @@ void move_player(int dir, bool disarm)
 		}
 
 		if (step) {
+			bool was_wet = square_iswater(cave, player->grid);
+
 			/* Move player */
 			monster_swap(player->grid, grid);
+
+			/* Stepping into water, heard as the step in, not every step */
+			if (!was_wet && square_iswater(cave, player->grid))
+				sound(MSG_WADE);
 
 			player_handle_post_move(player, true, false);
 			cmdq_push(CMD_AUTOPICKUP);

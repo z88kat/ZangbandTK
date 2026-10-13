@@ -525,9 +525,9 @@ extern void hit_trap(struct loc grid, int delayed)
 		/* Disturb the player */
 		disturb(player);
 
-		/* Give a message */
+		/* Give a message, with its sound */
 		if (trap->kind->msg)
-			msg("%s", trap->kind->msg);
+			msgt(trap->kind->msgt, "%s", trap->kind->msg);
 
 		/* Test for save due to flag */
 		for (flag = of_next(trap->kind->save_flags, FLAG_START);
@@ -550,8 +550,11 @@ extern void hit_trap(struct loc grid, int delayed)
 
 		/* Save, or fire off the trap */
 		if (saved) {
+			/* A dart that misses is heard to miss */
 			if (trap->kind->msg_good)
-				msg("%s", trap->kind->msg_good);
+				msgt(trf_has(trap->kind->flags, TRF_SAVE_ARMOR)
+					? MSG_MISS : MSG_GENERIC, "%s",
+					trap->kind->msg_good);
 		} else {
 			if (trap->kind->msg_bad)
 				msg("%s", trap->kind->msg_bad);

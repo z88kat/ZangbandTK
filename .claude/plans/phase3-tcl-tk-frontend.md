@@ -2072,6 +2072,39 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 > - `angband_sound ready | volume | play | last`; `last` is the message the game last asked to
 >   hear, which the bridge checks read, since none can listen.
 
+> **The original's sound events, 13 October 2026.** `grund.snd`'s 211 symbolic events (the
+> `event`, `monster_spell`, `monster_attack` and `martial_art` groups; the per-monster one
+> stays out, decision 7) walked against this game one by one: 138 already sounded, 1 sounds
+> wrong (being gorged shares HUNGRY, and stays so), 1 is gone (the EXPLODE blow), and 71 were
+> things this game does that never reached the sound system.
+>
+> - **28 message types**, appended to [list-message.h](../../src/list-message.h) after 4.2's
+>   because a savefile keeps a message's type by number: FAIL, READ, BOLT, BALL, BEAM, MON_HEX,
+>   MON_MIND, MON_WOUND, MON_HEAL, MON_DARK, MON_BOULDER, UNIQUE, WADE, STEAL, DAMAGE_ARMOUR,
+>   DRAIN_EXP, DISENCHANT, DRAIN_CHARGES, EARTHQUAKE, DESTRUCTION, TRAP, PIT, TRAPDOOR,
+>   QUEST_DONE, WIN, LEVEL_DOWN, MUTATE, UNMUTATE. Bound in sound.prf to Dubtrain files already
+>   in use (every one of the 213 was bound), listed in message.prf.
+> - **Mostly data**: 44 monster spells gained a `msgt:` (bolts, balls, beams, the hexes, mind
+>   attacks, curses, heals, darkness, boulders, and SHOOT for arrows and shots, BR_ELEMENTS for
+>   mana breath), and trap.txt gained a `msgt:` directive, on 25 traps. In code the player's
+>   bolts, balls and beams sound through `effect_sound()`, for SRC_PLAYER only, since a
+>   monster's spell message already carries its own.
+> - **A unique's arrival** sounds once a level (`unique_announced()`, keyed on when the level
+>   was made), **wading** on the step into water rather than every step, and the **drain**
+>   on the drain messages rather than in `player_exp_lose()`, so a worn item draining
+>   silently every few turns stays silent.
+> - **Existing types that were never used**: IDENT_ART, IDENT_EGO and IDENT_BAD were bound to 17
+>   files and nothing played them. Now an artifact first touched, an ego first told apart in
+>   the pack or underfoot (not across a room), and a curse's rune learned. Powers that work
+>   sound as spells; selling plays the till; restores, permanent rock and a dart that misses
+>   have sounds.
+> - **KILL_KING** was Morgoth's (base "Morgoth"); it is now the fixed quests' races,
+>   `quest_is_final_race()`, so Oberon and the Serpent of Chaos get the fanfare.
+> - **Fixed**: summons and TELE_TO played their sound twice (effect and spell message).
+> - **Left as they are**: martial-art strikes keep the hit and critical sounds (a strike's own
+>   would replace the critical tier, a design change); `BELL`'s binding cannot sound
+>   (`bell()` is EVENT_BELL); `DROP` plays for anything landing on the floor.
+
 ---
 
 ## 6. Decisions needed
@@ -2563,9 +2596,8 @@ Stated plainly, so nothing here reads as more settled than it is:
   `ZangbandTKGUI.app` assembles, launches from the Finder and runs with the build tree
   absent, but `codesign --verify --strict` fails on both Tcl dylibs for the zipfs reason in
   §7. Everything T0–T8 needs works; the release step does not yet.
-- **The sound event mapping is sketched, not written.** §1.4 confirms 7 exact name matches
-  and 11 obvious truncations; the remaining ~190 symbolic events have not been walked
-  against 4.2's list one by one.
+- ~~**The sound event mapping is sketched, not written.**~~ Walked, 13 October 2026: see
+  "The original's sound events" in the T9 notes.
 
 ---
 

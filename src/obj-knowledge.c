@@ -959,6 +959,10 @@ void object_see(struct player *p, struct object *obj)
  */
 void object_touch(struct player *p, struct object *obj)
 {
+	/* An artifact found is heard, the first time it is touched */
+	if (obj->artifact && !obj->known->artifact)
+		sound(MSG_IDENT_ART);
+
 	/* Automatically notice artifacts, mark as assessed */
 	obj->known->artifact = obj->artifact;
 	obj->known->notice |= OBJ_NOTICE_ASSESSED;
@@ -1154,6 +1158,13 @@ void player_know_object(struct player *p, struct object *obj)
 
 	/* Set ego type, jewellery type if known */
 	if (player_knows_ego(p, obj->ego, obj)) {
+		/*
+		 * Heard when an ego is first told apart, if it is in the pack or
+		 * underfoot: one seen across a room is not a find yet.
+		 */
+		if (!obj->known->ego && !obj->artifact
+				&& (object_is_carried(p, obj) || loc_eq(obj->grid, p->grid)))
+			sound(MSG_IDENT_EGO);
 		seen = obj->ego->everseen;
 		obj->known->ego = obj->ego;
 	} else {
@@ -1365,9 +1376,10 @@ static void player_learn_rune(struct player *p, size_t i, bool message)
 	/* Nothing learned */
 	if (!learned) return;
 
-	/* Give a message */
+	/* Give a message: a curse's rune is bad news, and sounds like it */
 	if (message)
-		msgt(MSG_RUNE, "You have learned the rune of %s.", rune_name(i));
+		msgt((r->variety == RUNE_VAR_CURSE) ? MSG_IDENT_BAD : MSG_RUNE,
+			"You have learned the rune of %s.", rune_name(i));
 
 	/* Update knowledge */
 	update_player_object_knowledge(p);

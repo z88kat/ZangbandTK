@@ -164,7 +164,7 @@ bool player_gain_mutation(struct player *p, const struct mutation *mut)
 
 	flag_on(p->mutations, MUT_SIZE, mut->midx + 1);
 
-	if (mut->gain) msg("%s", mut->gain);
+	if (mut->gain) msgt(MSG_MUTATE, "%s", mut->gain);
 
 	/*
 	 * Courting chaos, and the game notices (PLR-20). Zangband writes this at
@@ -186,7 +186,7 @@ bool player_lose_mutation(struct player *p, const struct mutation *mut)
 
 	flag_off(p->mutations, MUT_SIZE, mut->midx + 1);
 
-	if (mut->lose) msg("%s", mut->lose);
+	if (mut->lose) msgt(MSG_UNMUTATE, "%s", mut->lose);
 
 	p->upkeep->update |= (PU_BONUS | PU_HP | PU_SPELLS);
 	p->upkeep->redraw |= (PR_STATS | PR_HP | PR_MANA);

@@ -334,6 +334,32 @@ static void path_analyse(struct chunk *c, struct loc grid)
 }
 
 /**
+ * Whether a unique has been announced on this level already: its sound is for
+ * the first sight of it, not for every time it steps back into view.  A level
+ * is known by when it was made, so going back to a kept one after another
+ * announces again.
+ */
+static bool unique_announced(const struct chunk *c,
+		const struct monster *mon)
+{
+	static const struct monster_race *heard[16];
+	static int n_heard = 0;
+	static int32_t level_turn = -1;
+	static int level_depth = -1;
+	int i;
+
+	if (c->turn != level_turn || c->depth != level_depth) {
+		level_turn = c->turn;
+		level_depth = c->depth;
+		n_heard = 0;
+	}
+	for (i = 0; i < n_heard; i++)
+		if (heard[i] == mon->race) return true;
+	if (n_heard < (int)N_ELEMENTS(heard)) heard[n_heard++] = mon->race;
+	return false;
+}
+
+/**
  * This function updates the monster record of the given monster
  *
  * This involves extracting the distance to the player (if requested),
@@ -567,6 +593,11 @@ void update_mon(struct monster *mon, struct chunk *c, bool full)
 			 */
 			if (monster_is_hostile(mon) && OPT(player, disturb_near))
 				disturb(player);
+
+			/* A unique's arrival is heard, once a level (ZangbandTk's) */
+			if (monster_is_hostile(mon) && monster_is_unique(mon)
+					&& !unique_announced(c, mon))
+				sound(MSG_UNIQUE);
 
 			/* Re-draw monster window */
 			player->upkeep->redraw |= PR_MONLIST;
@@ -1217,7 +1248,7 @@ static void player_kill_monster(struct monster *mon, struct player *p,
 
 	/* Play a special sound if the monster was unique */
 	if (monster_is_unique(mon)) {
-		if (mon->race->base == lookup_monster_base("Morgoth"))
+		if (quest_is_final_race(player, mon->race))
 			soundfx = MSG_KILL_KING;
 		else
 			soundfx = MSG_KILL_UNIQUE;

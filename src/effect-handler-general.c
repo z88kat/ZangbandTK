@@ -849,7 +849,7 @@ bool effect_handler_RESTORE_STAT(effect_handler_context_t *context)
 	update_stuff(player);
 
 	/* Message */
-	msg("You feel less %s.", desc_stat(stat, false));
+	msgt(MSG_RECOVER, "You feel less %s.", desc_stat(stat, false));
 
 	return (true);
 }
@@ -971,7 +971,7 @@ bool effect_handler_RESTORE_EXP(effect_handler_context_t *context)
 	if (player->exp < player->max_exp) {
 		/* Message */
 		if (context->origin.what != SRC_NONE)
-			msg("You feel your life energies returning.");
+			msgt(MSG_RECOVER, "You feel your life energies returning.");
 		player_exp_gain(player, player->max_exp - player->exp);
 
 		/* Recalculate max. hitpoints */
@@ -1011,7 +1011,7 @@ bool effect_handler_LOSE_EXP(effect_handler_context_t *context)
 	int amount = effect_calculate_value(context, false);
 
 	if (player->exp > 0 && !player_of_has(player, OF_HOLD_LIFE)) {
-		msg("You feel your memories fade.");
+		msgt(MSG_DRAIN_EXP, "You feel your memories fade.");
 		player_exp_lose(player, amount / 2, false);
 	} else if (player_of_has(player, OF_HOLD_LIFE)) {
 		equip_learn_flag(player, OF_HOLD_LIFE);
@@ -2254,7 +2254,7 @@ bool effect_handler_DISENCHANT(effect_handler_context_t *context)
 	}
 
 	/* Message */
-	msg("Your %s (%c) %s disenchanted!", o_name,
+	msgt(MSG_DISENCHANT, "Your %s (%c) %s disenchanted!", o_name,
 		gear_to_label(player, obj),
 		((obj->number != 1) ? "were" : "was"));
 
@@ -2431,7 +2431,8 @@ bool effect_handler_SUMMON(effect_handler_context_t *context)
 	int fallback_type = summon_fallback_type(summon_type);
 	int count = 0, val = 0, attempts = 0;
 
-	sound(message_type);
+	/* A monster's summoning spell has played it already, with its message. */
+	if (context->origin.what != SRC_MONSTER) sound(message_type);
 
 	/* No summoning in arena levels */
 	if (player->upkeep->arena_level) return true;
@@ -3034,8 +3035,8 @@ bool effect_handler_TELEPORT_TO(effect_handler_context_t *context)
 		}
 	}
 
-	/* Sound */
-	sound(MSG_TELEPORT);
+	/* Sound, unless a monster's spell has played it with its message */
+	if (context->origin.what != SRC_MONSTER) sound(MSG_TELEPORT);
 
 	/* Move player or monster */
 	monster_swap(start, land);
@@ -3945,7 +3946,7 @@ static void ancient_curse_step(struct player *p, int step, bool *stop)
 			break;
 
 		case 3:
-			msg("Your memories of hard-won experience fade.");
+			msgt(MSG_DRAIN_EXP, "Your memories of hard-won experience fade.");
 			player_exp_lose(p, p->exp / 16, false);
 			break;
 

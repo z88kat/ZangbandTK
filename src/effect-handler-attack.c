@@ -35,6 +35,15 @@
 #include "trap.h"
 
 
+/**
+ * The sound of a bolt, beam or ball the player made.  A monster's has played
+ * already, with its spell's message (msgt: in monster_spell.txt).
+ */
+static void effect_sound(effect_handler_context_t *context, int type)
+{
+	if (context->origin.what == SRC_PLAYER) sound(type);
+}
+
 static void get_target(struct source origin, int dir, struct loc *grid,
 					   int *flags)
 {
@@ -128,6 +137,8 @@ bool effect_handler_BOLT(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
 	int flg = PROJECT_STOP | PROJECT_KILL;
+
+	effect_sound(context, MSG_BOLT);
 	(void) project_aimed(context->origin, context->subtype, context->dir, dam,
 						 flg, context->obj);
 	if (!player->timed[TMD_BLIND])
@@ -144,6 +155,8 @@ bool effect_handler_BEAM(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
 	int flg = PROJECT_BEAM | PROJECT_KILL;
+
+	effect_sound(context, MSG_BEAM);
 	(void) project_aimed(context->origin, context->subtype, context->dir, dam,
 						 flg, context->obj);
 	if (!player->timed[TMD_BLIND])
@@ -174,6 +187,8 @@ bool effect_handler_LINE(effect_handler_context_t *context)
 {
 	int dam = effect_calculate_value(context, true);
 	int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_KILL;
+
+	effect_sound(context, MSG_BEAM);
 	if (project_aimed(context->origin, context->subtype, context->dir, dam, flg, context->obj))
 		context->ident = true;
 	return true;
@@ -599,6 +614,8 @@ bool effect_handler_BALL(effect_handler_context_t *context)
 
 	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
+	effect_sound(context, MSG_BALL);
+
 	/* Player or monster? */
 	switch (context->origin.what) {
 		case SRC_MONSTER: {
@@ -820,6 +837,8 @@ bool effect_handler_ARC(effect_handler_context_t *context)
 
 	int flg = PROJECT_ARC | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
+	effect_sound(context, MSG_BEAM);
+
 	/* Radius of zero means no fixed limit. */
 	if (rad == 0) {
 		rad = z_info->max_range;
@@ -880,6 +899,8 @@ bool effect_handler_SHORT_BEAM(effect_handler_context_t *context)
 	int diameter_of_source = rad;
 
 	int flg = PROJECT_ARC | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+
+	effect_sound(context, MSG_BEAM);
 
 	/* Player or monster? */
 	if (context->origin.what == SRC_MONSTER) {
@@ -997,6 +1018,8 @@ bool effect_handler_SWARM(effect_handler_context_t *context)
 
 	int flg = PROJECT_THRU | PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
+	effect_sound(context, MSG_BALL);
+
 	/* Ask for a target if no direction given (early detonation) */
 	if ((context->dir == DIR_TARGET) && target_okay()) {
 		target_get(&target);
@@ -1083,6 +1106,8 @@ bool effect_handler_STAR_BALL(effect_handler_context_t *context)
 	struct loc target;
 
 	int flg = PROJECT_STOP | PROJECT_THRU | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
+
+	effect_sound(context, MSG_BALL);
 
 	for (i = 0; i < 8; i++) {
 		/* Use the current direction */
@@ -1198,6 +1223,8 @@ bool effect_handler_DESTRUCTION(effect_handler_context_t *context)
 		msg("The ground shakes for a moment.");
 		return true;
 	}
+
+	sound(MSG_DESTRUCTION);
 
 	/* Big area of affect */
 	for (grid.y = (py - r); grid.y <= (py + r); grid.y++) {
@@ -1336,7 +1363,7 @@ bool effect_handler_EARTHQUAKE(effect_handler_context_t *context)
 
 	if ((player->depth) && ((!player->upkeep->arena_level)
 							|| (context->origin.what == SRC_MONSTER))) {
-		msg("The ground shakes! The ceiling caves in!");
+		msgt(MSG_EARTHQUAKE, "The ground shakes! The ceiling caves in!");
 	} else {
 		/* No effect in town or arena */
 		msg("The ground shakes for a moment.");

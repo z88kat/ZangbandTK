@@ -284,7 +284,7 @@ static void steal_player_item(melee_effect_handler_context_t *context)
 				(split ? "one of your" : "your"), o_name);
 		} else {
 			/* Message */
-			msg("%s %s (%c) was stolen!",
+			msgt(MSG_STEAL, "%s %s (%c) was stolen!",
 				(split ? "One of your" : "Your"), o_name,
 				gear_to_label(context->p, obj));
 
@@ -619,10 +619,10 @@ static void melee_effect_experience(melee_effect_handler_context_t *context,
 		int32_t d = drain_amount +
 			(context->p->exp/100) * z_info->life_drain_percent;
 		if (player_of_has(context->p, OF_HOLD_LIFE)) {
-			msg("You feel your life slipping away!");
+			msgt(MSG_DRAIN_EXP, "You feel your life slipping away!");
 			player_exp_lose(context->p, d / 10, false);
 		} else {
-			msg("You feel your life draining away!");
+			msgt(MSG_DRAIN_EXP, "You feel your life draining away!");
 			player_exp_lose(context->p, d, false);
 		}
 	}
@@ -745,7 +745,7 @@ static void melee_effect_handler_DRAIN_CHARGES(melee_effect_handler_context_t *c
 		if (unpower) {
 			int heal = context->rlev * unpower;
 
-			msg("Energy drains from your pack!");
+			msgt(MSG_DRAIN_CHARGES, "Energy drains from your pack!");
 
 			context->obvious = true;
 
@@ -805,7 +805,7 @@ static void melee_effect_handler_EAT_GOLD(melee_effect_handler_context_t *contex
         }
 
         /* Let the player know they were robbed */
-        msg("Your purse feels lighter.");
+        msgt(MSG_STEAL, "Your purse feels lighter.");
         if (current_player->au)
             msg("%d coins were stolen!", gold);
         else

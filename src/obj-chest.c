@@ -726,7 +726,7 @@ bool do_cmd_disarm_chest(struct object *obj)
 		/* Failure -- Keep trying */
 		more = true;
 		event_signal(EVENT_INPUT_FLUSH);
-		msg("You failed to disarm the chest.");
+		msgt(MSG_FAIL, "You failed to disarm the chest.");
 	} else {
 		/* Failure -- Set off the trap */
 		if (!player_is_trapsafe(player)) {

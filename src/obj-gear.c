@@ -419,7 +419,7 @@ bool minus_ac(struct player *p)
 		if (obj->el_info[ELEM_ACID].flags & EL_INFO_IGNORE) {
 			msg("Your %s is unaffected!", o_name);
 		} else {
-			msg("Your %s is damaged!", o_name);
+			msgt(MSG_DAMAGE_ARMOUR, "Your %s is damaged!", o_name);
 
 			/* Damage the item */
 			obj->to_a--;

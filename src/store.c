@@ -2120,7 +2120,7 @@ void do_cmd_sell(struct command *cmd)
 	if (OPT(player, birth_no_selling)) {
 		msg("You had %s (%c).", o_name, label);
 	} else {
-		msg("You sold %s (%c) for %d gold.", o_name, label, price);
+		msgt(MSG_STORE5, "You sold %s (%c) for %d gold.", o_name, label, price);
 
 		/* Analyze the prices (and comment verbally) */
 		purchase_analyze(price, value, dummy);

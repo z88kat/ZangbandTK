@@ -1005,7 +1005,7 @@ void process_world(struct chunk *c)
 		if (one_in_(2)) {
 			/* Life draining */
 			int drain = 100 + (player->exp / 100) * z_info->life_drain_percent;
-			msg("The Black Breath dims your life force.");
+			msgt(MSG_DRAIN_EXP, "The Black Breath dims your life force.");
 			player_exp_lose(player, drain, false);
 		}
 	}

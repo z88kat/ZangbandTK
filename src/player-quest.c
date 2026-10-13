@@ -166,6 +166,23 @@ struct file_parser quests_parser = {
 /**
  * Check if the given level is a quest level.
  */
+/**
+ * Whether a race is one the game ends on: the monster a fixed quest is for,
+ * Oberon and the Serpent of Chaos.  Its death has the fanfare 4.2 kept for
+ * Morgoth (MSG_KILL_KING), who is no longer the end of anything here.
+ */
+bool quest_is_final_race(const struct player *p,
+		const struct monster_race *race)
+{
+	size_t i;
+
+	if (!p || !p->quests || !race) return false;
+	for (i = 0; i < z_info->quest_max; i++) {
+		if (p->quests[i].fixed && p->quests[i].race == race) return true;
+	}
+	return false;
+}
+
 bool is_quest(struct player *p, int level)
 {
 	size_t i;
@@ -345,7 +362,7 @@ bool quest_check_item(struct player *p, const struct object *obj)
 			q->cur_num = q->max_num;
 			q->state = QUEST_COMPLETE;
 			any = true;
-			msg("%s: done.", q->name ? q->name : "That errand");
+			msgt(MSG_QUEST_DONE, "%s: done.", q->name ? q->name : "That errand");
 		}
 	}
 
@@ -382,7 +399,7 @@ bool quest_check_arrival(struct player *p, int town)
 		q->state = QUEST_COMPLETE;
 		any = true;
 
-		msg("%s: done.", q->name ? q->name : "That errand");
+		msgt(MSG_QUEST_DONE, "%s: done.", q->name ? q->name : "That errand");
 	}
 
 	return any;
@@ -482,6 +499,9 @@ bool quest_check(struct player *p, const struct monster *m)
 	}
 
 	if (completed) {
+		/* Heard, unless it is the last, which has a sound of its own */
+		if (unfinished) sound(MSG_QUEST_DONE);
+
 		/* Build magical stairs */
 		build_quest_stairs(p, m->grid);
 
@@ -489,7 +509,7 @@ bool quest_check(struct player *p, const struct monster *m)
 		if (unfinished == 0) {
 			p->total_winner = true;
 			p->upkeep->redraw |= (PR_TITLE);
-			msg("*** CONGRATULATIONS ***");
+			msgt(MSG_WIN, "*** CONGRATULATIONS ***");
 			msg("You have won the game!");
 			msg("You may retire (key is shift-q) when you are ready.");
 		}

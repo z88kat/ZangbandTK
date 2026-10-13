@@ -231,10 +231,12 @@ static void adjust_level(struct player *p, bool verbose)
 	handle_stuff(p);
 
 	bool owed_reward = false;
+	int was_lev = p->lev;
 
 	while ((p->lev > 1) &&
 	       (p->exp < (player_exp[p->lev-2] * p->expfact / 100L)))
 		p->lev--;
+	if (p->lev < was_lev) sound(MSG_LEVEL_DOWN);
 
 
 	while ((p->lev < PY_MAX_LEVEL) &&

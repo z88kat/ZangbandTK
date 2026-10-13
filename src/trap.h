@@ -52,6 +52,7 @@ struct trap_kind
 	char *text;					/**< Text  */
 	char *desc;					/**< Short description  */
 	char *msg;					/**< Message on hitting */
+	int msgt;					/**< Its message type, for its sound */
 	char *msg_good;				/**< Message on saving */
 	char *msg_bad;				/**< Message on failing to save */
 	char *msg_xtra;				/**< Message on getting an extra effect */

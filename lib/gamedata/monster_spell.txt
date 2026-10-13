@@ -164,6 +164,7 @@ message-vis:{name} spits {type} at you.
 message-invis:You hear a soft sound.
 
 name:SHOT
+msgt:SHOOT
 hit:50
 effect:BOLT:ARROW
 dice:$Dd5
@@ -187,6 +188,7 @@ message-invis:You hear something heavy whirl through the air.
 message-miss:{name} slings a seeker shot, but misses.
 
 name:ARROW
+msgt:SHOOT
 hit:50
 effect:BOLT:ARROW
 dice:$Dd6
@@ -216,6 +218,7 @@ message-invis:You hear a loud thwang.
 message-miss:{name} fires a seeker arrow, but misses.
 
 name:BOLT
+msgt:SHOOT
 hit:50
 effect:BOLT:ARROW
 dice:$Dd7
@@ -423,6 +426,7 @@ message-vis:{name} breathes force.
 message-invis:You hear a staccato roar.
 
 name:BR_MANA
+msgt:BR_ELEMENTS
 hit:100
 effect:BREATH:MANA:0:30
 lore:mana
@@ -431,6 +435,7 @@ message-vis:{name} breathes raw magic.
 message-invis:You hear a scintillating roar.
 
 name:BOULDER
+msgt:MON_BOULDER
 hit:60
 effect:BOLT:ARROW
 dice:$Dd12
@@ -451,6 +456,7 @@ message-vis:{name} weaves a web.
 message-invis:You hear soft rustling.
 
 name:BA_ACID
+msgt:BALL
 hit:100
 effect:BALL:ACID:2
 dice:15+1d$S
@@ -463,6 +469,7 @@ message-vis:{name} casts a ball of acid.
 message-invis:Something mumbles.
 
 name:BA_ELEC
+msgt:BALL
 hit:100
 effect:BALL:ELEC:2
 dice:8+1d$S
@@ -475,6 +482,7 @@ message-vis:{name} casts a ball of lightning.
 message-invis:Something mumbles.
 
 name:BA_FIRE
+msgt:BALL
 hit:100
 effect:BALL:FIRE:2
 dice:10+1d$S
@@ -494,6 +502,7 @@ message-vis:{name} conjures up a firestorm.
 message-invis:Something murmurs deeply.
 
 name:BA_COLD
+msgt:BALL
 hit:100
 effect:BALL:COLD:2
 dice:10+1d$S
@@ -513,6 +522,7 @@ message-vis:{name} calls up a blizzard.
 message-invis:Something chants coldly.
 
 name:BA_POIS
+msgt:BALL
 hit:100
 effect:BALL:POIS:2
 dice:$Dd4
@@ -531,6 +541,7 @@ message-vis:{name} unleashes a storm of corrosive toxins.
 message-invis:Something murmurs viciously.
 
 name:BA_SHAR
+msgt:BALL
 hit:100
 effect:BALL:SHARD:2
 dice:10+1d$S
@@ -548,6 +559,7 @@ message-vis:{name} invokes a storm of knives!
 message-invis:Something chants powerfully.
 
 name:BA_NETH
+msgt:BALL
 hit:100
 effect:BALL:NETHER:2
 dice:$B+10d10
@@ -565,6 +577,7 @@ message-vis:{name} creates a storm of nether magics.
 message-invis:Something intones with deadly menace.
 
 name:BA_WATE
+msgt:BALL
 hit:100
 effect:BALL:WATER:2
 dice:50+1d$S
@@ -576,6 +589,7 @@ message-vis:{name} creates a whirlpool of water.
 message-invis:Something gurgles.
 
 name:BA_MANA
+msgt:BALL
 hit:100
 effect:BALL:MANA:2
 dice:$B+10d10
@@ -586,6 +600,7 @@ message-vis:{name} invokes a storm of raw magic.
 message-invis:Something screams loudly.
 
 name:BA_HOLY
+msgt:BALL
 hit:100
 effect:BALL:HOLY_ORB:2
 dice:10+1d$S
@@ -596,6 +611,7 @@ message-vis:{name} casts an orb of draining.
 message-invis:Something chants.
 
 name:BA_DARK
+msgt:BALL
 hit:100
 effect:BALL:DARK:2
 dice:$B+10d10
@@ -613,6 +629,7 @@ message-vis:{name} invokes a storm of darkness.
 message-invis:Something chants powerfully.
 
 name:BA_LIGHT
+msgt:BALL
 hit:100
 effect:BALL:LIGHT:2
 dice:10+1d$S
@@ -630,6 +647,7 @@ message-vis:{name} invokes a starburst.
 message-invis:Something chants powerfully.
 
 name:STORM
+msgt:BALL
 hit:100
 effect:BALL:WATER:3
 dice:30+$Dd5
@@ -653,6 +671,7 @@ message-vis:{name} creates a tempest of wind and water.
 message-invis:Something chants fluidly.
 
 name:DRAIN_MANA
+msgt:MON_MIND
 hit:100
 effect:DRAIN_MANA
 dice:d$S
@@ -663,6 +682,7 @@ message-vis:{name} drains your mana away.
 message-invis:Something moans.
 
 name:MIND_BLAST
+msgt:MON_MIND
 hit:100
 effect:DAMAGE
 dice:8d8
@@ -677,6 +697,7 @@ message-invis:Something focuses on your mind.
 message-save:You shake off a pounding headache.
 
 name:BRAIN_SMASH
+msgt:MON_MIND
 hit:100
 effect:DAMAGE
 dice:12d15
@@ -697,6 +718,7 @@ message-invis:Something focuses on your mind.
 message-save:You shake off a splitting migraine.
 
 name:WOUND
+msgt:MON_WOUND
 hit:100
 effect:DAMAGE
 dice:$Dd5
@@ -740,6 +762,7 @@ message-invis:Something screams the word 'DIE!'
 message-save:Your body spasms briefly.
 
 name:BO_ACID
+msgt:BOLT
 hit:100
 effect:BOLT:ACID
 dice:$B+7d8
@@ -752,6 +775,7 @@ message-vis:{name} casts a bolt of acid.
 message-invis:Something mumbles.
 
 name:BO_ELEC
+msgt:BOLT
 hit:100
 effect:BOLT:ELEC
 dice:$B+4d8
@@ -764,6 +788,7 @@ message-vis:{name} casts a bolt of lightning.
 message-invis:Something mumbles.
 
 name:BO_FIRE
+msgt:BOLT
 hit:100
 effect:BOLT:FIRE
 dice:$B+9d8
@@ -776,6 +801,7 @@ message-vis:{name} casts a bolt of fire.
 message-invis:Something mumbles.
 
 name:BO_COLD
+msgt:BOLT
 hit:100
 effect:BOLT:COLD
 dice:$B+6d8
@@ -788,6 +814,7 @@ message-vis:{name} casts a bolt of frost.
 message-invis:Something mumbles.
 
 name:BO_POIS
+msgt:BOLT
 hit:100
 effect:BOLT:POIS
 dice:$B+9d8
@@ -800,6 +827,7 @@ message-vis:{name} spews a stream of poison.
 message-invis:Something retches.
 
 name:BO_NETH
+msgt:BOLT
 hit:100
 effect:BOLT:NETHER
 dice:$B+5d5
@@ -811,6 +839,7 @@ message-vis:{name} casts a bolt of nether.
 message-invis:Something mumbles.
 
 name:BO_WATE
+msgt:BOLT
 hit:100
 effect:BOLT:WATER
 dice:$B+10d10
@@ -822,6 +851,7 @@ message-vis:{name} fires a jet of water.
 message-invis:Something gurgles.
 
 name:BO_MANA
+msgt:BOLT
 hit:100
 effect:BOLT:MANA
 dice:50+1d$S
@@ -832,6 +862,7 @@ message-vis:{name} casts a bolt of raw magic.
 message-invis:Something screams.
 
 name:BO_PLAS
+msgt:BOLT
 hit:100
 effect:BOLT:PLASMA
 dice:$B+8d7
@@ -843,6 +874,7 @@ message-vis:{name} casts a bolt of plasma.
 message-invis:Something screams.
 
 name:BO_ICE
+msgt:BOLT
 hit:100
 effect:BOLT:ICE
 dice:$B+6d6
@@ -854,6 +886,7 @@ message-vis:{name} shoots a spear of ice.
 message-invis:Something mumbles.
 
 name:MISSILE
+msgt:BOLT
 hit:100
 effect:BOLT:MISSILE
 dice:$B+2d6
@@ -864,6 +897,7 @@ message-vis:{name} fires a magic missile.
 message-invis:Something mumbles.
 
 name:BE_ELEC
+msgt:BEAM
 hit:100
 effect:SHORT_BEAM:ELEC:5
 dice:$B+5d5
@@ -875,6 +909,7 @@ message-vis:{name} shoots a spark of lightning at {target}.
 message-invis:You feel a crackling in the air.
 
 name:BE_NETH
+msgt:BEAM
 hit:100
 effect:SHORT_BEAM:NETHER:10
 dice:$B+5d5
@@ -904,6 +939,7 @@ message-invis:Something makes scary noises.
 message-save:You fight off a sense of dread.
 
 name:BLIND
+msgt:MON_HEX
 hit:100
 effect:TIMED_INC:BLIND
 dice:11+1d4
@@ -915,6 +951,7 @@ message-invis:Something mumbles.
 message-save:You repel a sudden bleariness.
 
 name:CONF
+msgt:MON_HEX
 hit:100
 effect:TIMED_INC:CONFUSED
 dice:3+1d4
@@ -926,6 +963,7 @@ message-invis:Something messes with your mind.
 message-save:You retain your presence of mind.
 
 name:SLOW
+msgt:MON_HEX
 hit:100
 effect:TIMED_INC:SLOW
 dice:3+1d4
@@ -937,6 +975,7 @@ message-invis:Something mumbles.
 message-save:You fight off a sense of sluggishness.
 
 name:HOLD
+msgt:MON_HEX
 hit:100
 effect:TIMED_INC:PARALYZED
 dice:3+1d4
@@ -948,6 +987,7 @@ message-invis:Something mumbles.
 message-save:You fight off a sense of torpidity.
 
 name:HASTE
+msgt:MON_HEAL
 hit:100
 effect:MON_TIMED_INC:FAST
 dice:50
@@ -957,6 +997,7 @@ message-vis:{name} concentrates on {pronoun} body.
 message-invis:Something mutters.
 
 name:HEAL
+msgt:MON_HEAL
 hit:100
 effect:MON_HEAL_HP
 dice:$B
@@ -967,6 +1008,7 @@ message-vis:{name} magically starts closing wounds.
 message-invis:Something mutters.
 
 name:HEAL_KIN
+msgt:MON_HEAL
 hit:100
 effect:MON_HEAL_KIN
 dice:$B
@@ -1035,6 +1077,7 @@ message-invis:Something commands you to go far away.
 message-save:You feel unstable for a second, but it passes.
 
 name:DARKNESS
+msgt:MON_DARK
 hit:100
 effect:DARKEN_AREA
 effect:BALL:DARK_WEAK:3
@@ -1054,6 +1097,7 @@ message-vis:{name} cackles evilly about traps.
 message-invis:Something cackles evilly.
 
 name:FORGET
+msgt:MON_MIND
 hit:100
 effect:TIMED_INC:AMNESIA
 dice:3

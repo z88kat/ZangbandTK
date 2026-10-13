@@ -2428,7 +2428,7 @@ bool player_use_power(struct player *p, struct player_power *power, int dir)
 
 	if (randint0(100) < player_power_chance(p, power)) {
 		event_signal(EVENT_INPUT_FLUSH);
-		msg("You try to %s, and fail.", power->name);
+		msgt(MSG_FAIL, "You try to %s, and fail.", power->name);
 
 		/*
 		 * A failed psionic power backfires half as often as it fails.  The
@@ -2442,6 +2442,9 @@ bool player_use_power(struct player *p, struct player_power *power, int dir)
 
 		return true;
 	}
+
+	/* A power that works sounds like a spell cast, as the realms' do. */
+	sound(MSG_SPELL);
 
 	/*
 	 * Run every band the character has grown into.  A power the player has

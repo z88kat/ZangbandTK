@@ -31,6 +31,32 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+13 October 2026 — the original's sounds, by name
+==================================================
+
+The original's sound pack cannot ship, but its list of events can: 211 things
+it had a sound for, from failing to cast a spell to a monster's mind blast.
+Each was checked against this game. 138 already make a sound, and one more
+makes the wrong one. One, a monster that explodes, no longer exists. The other
+71 are things this game does that never reached the speakers at all. A monster casting a fire bolt, a ball of
+frost or a curse was silent, apart from its message. So were falling into a
+pit, losing a level, a thief taking your purse, and gaining a mutation.
+
+They all have sounds now, chosen from 4.2's pack, which is all in use
+already, so they share files. Most of the work was data: a line on each
+monster spell and each trap naming the sound it makes. Three of 4.2's own
+sounds turned out never to play at all: finding an artifact, telling an ego
+item apart, and learning that something is cursed, seventeen recordings
+between them. They play now. And the fanfare 4.2 kept for killing Morgoth is
+for Oberon and the Serpent of Chaos, since this game ends with them, not him.
+
+One rule ran through it: a sound is for news. A unique is announced the first
+time it is seen on a level, not every time it steps back into view. Wading is
+heard on the step into water, not on every step through a lake. And a ring
+that quietly drains experience every few turns makes no sound, because
+nothing is said about it either.
+
+
 13 October 2026 — sound
 =======================
 

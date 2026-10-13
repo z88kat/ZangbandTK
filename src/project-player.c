@@ -207,7 +207,7 @@ static int project_player_handler_COLD(project_player_handler_context_t *context
 				equip_learn_flag(player, OF_HOLD_LIFE);
 			} else {
 				int drain = context->dam;
-				msg("The cold withers your life force!");
+				msgt(MSG_DRAIN_EXP, "The cold withers your life force!");
 				player_exp_lose(player, drain, false);
 			}
 		}
@@ -302,7 +302,7 @@ static int project_player_handler_DARK(project_player_handler_context_t *context
 				equip_learn_flag(player, OF_HOLD_LIFE);
 			} else {
 				int drain = context->dam;
-				msg("The darkness steals your life force!");
+				msgt(MSG_DRAIN_EXP, "The darkness steals your life force!");
 				player_exp_lose(player, drain, false);
 			}
 		}
@@ -415,7 +415,7 @@ static int project_player_handler_NETHER(project_player_handler_context_t *conte
 	}
 
 	/* Life draining */
-	msg("You feel your life force draining away!");
+	msgt(MSG_DRAIN_EXP, "You feel your life force draining away!");
 	player_exp_lose(player, drain, false);
 
 	/* Powerful nether attacks have further side-effects */
@@ -454,7 +454,7 @@ static int project_player_handler_CHAOS(project_player_handler_context_t *contex
 	/* Life draining */
 	if (!player_of_has(player, OF_HOLD_LIFE)) {
 		int drain = ((player->exp * 3)/ (100 * 2)) * z_info->life_drain_percent;
-		msg("You feel your life force draining away!");
+		msgt(MSG_DRAIN_EXP, "You feel your life force draining away!");
 		player_exp_lose(player, drain, false);
 	} else {
 		equip_learn_flag(player, OF_HOLD_LIFE);
@@ -581,7 +581,7 @@ static int project_player_handler_TIME(project_player_handler_context_t *context
 	if (one_in_(2)) {
 		/* Life draining */
 		int drain = 100 + (player->exp / 100) * z_info->life_drain_percent;
-		msg("You feel your life force draining away!");
+		msgt(MSG_DRAIN_EXP, "You feel your life force draining away!");
 		player_exp_lose(player, drain, false);
 	} else if (!one_in_(5)) {
 		/* Drain some stats */

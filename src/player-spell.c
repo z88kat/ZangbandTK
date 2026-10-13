@@ -1024,7 +1024,7 @@ bool spell_cast(int spell_index, int dir, struct command *cmd)
 		int idx = spell_realm_index(player, spell);
 
 		event_signal(EVENT_INPUT_FLUSH);
-		msg("You failed to concentrate hard enough!");
+		msgt(MSG_FAIL, "You failed to concentrate hard enough!");
 
 		/*
 		 * Chaos and Death do not merely fail (CNT-10). The chance is the
