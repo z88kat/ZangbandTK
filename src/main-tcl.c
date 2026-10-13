@@ -867,6 +867,50 @@ static void hooks_apply(void);
  * command_may_start(), which is where the reasoning lives. */
 static bool command_inside = false;
 
+/*
+ * Holding the door shut, in a way that cannot forget to open it again.
+ *
+ * This flag is the whole of the defence described at command_may_start():
+ * while it is true the menus are greyed, menu dispatch is refused, and the
+ * Items window's gear actions are refused, because 4.2's ui-* prompts keep
+ * their state in file statics and a second command started inside the first
+ * frees the first's lists out from under it.
+ *
+ * It was set and cleared as five separate pairs of bare assignments.  Nothing
+ * was wrong with any of them -- every one of the five is entered through a
+ * command_may_start() check so they cannot nest, there is no setjmp or
+ * longjmp anywhere in the game, and no early return sits between a set and
+ * its clear -- so this is not fixing a path that leaks the flag today.  It is
+ * that the failure mode if one ever did is silent and permanent: nothing
+ * clears the flag on any other path, so command_may_start() would answer
+ * false for the rest of the process and every menu command, gear action and
+ * book command would be refused for ever, with no message and nothing in a
+ * log.  An invariant whose breach cannot be noticed should not be maintained
+ * by hand in five places.
+ *
+ * So the clear is attached to the scope instead.  Open a block, declare the
+ * guard, and the flag is true until the block ends however it ends.
+ *
+ * Deliberately a hard error rather than a silent no-op when the attribute is
+ * missing: ATTRIBUTE() in h-basic.h expands to nothing off GCC and Clang, and
+ * a guard that quietly stops guarding is worse than no guard.  The front end
+ * is built against a Tcl/Tk this project compiles itself, by GCC or Clang.
+ */
+#if defined(__GNUC__) || defined(__clang__)
+static void command_inside_leave(const bool *guard)
+{
+	(void)guard;
+	command_inside = false;
+}
+#define COMMAND_INSIDE_HELD						\
+	bool command_inside_guard_					\
+		ATTRIBUTE((cleanup(command_inside_leave)))		\
+		= (command_inside = true);				\
+	(void)command_inside_guard_
+#else
+# error "the Tcl front end needs __attribute__((cleanup)); see command_inside"
+#endif
+
 static void command_nudge(void);
 static bool in_play(void);
 static bool command_may_start(void);
@@ -5369,9 +5413,10 @@ static int objcmd_choice(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		 * and the ignore and browse menus can all prompt, and a prompt pumps
 		 * Tk, so the door is held shut as it is for a menu's hook.
 		 */
-		command_inside = true;
-		if (item_act(obj, id)) command_nudge();
-		command_inside = false;
+		{
+			COMMAND_INSIDE_HELD;
+			if (item_act(obj, id)) command_nudge();
+		}
 		return TCL_OK;
 	}
 
@@ -5842,13 +5887,14 @@ static int objcmd_store(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		prt("", 0, 0);
 		more = OPT(player, auto_more);
 		OPT(player, auto_more) = true;
-		command_inside = true;
-		cmdq_pop(CTX_STORE);
-		event_signal(EVENT_INVENTORY);
-		event_signal(EVENT_EQUIPMENT);
-		notice_stuff(player);
-		handle_stuff(player);
-		command_inside = false;
+		{
+			COMMAND_INSIDE_HELD;
+			cmdq_pop(CTX_STORE);
+			event_signal(EVENT_INVENTORY);
+			event_signal(EVENT_EQUIPMENT);
+			notice_stuff(player);
+			handle_stuff(player);
+		}
 		OPT(player, auto_more) = more;
 		Term_fresh();
 		Term_activate(old);
@@ -7315,9 +7361,10 @@ static int objcmd_option(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			}
 
 			if (val && c < N_ELEMENTS(option_cheat_action)) {
-				command_inside = true;
-				option_cheat_action[c].act(NULL);
-				command_inside = false;
+				{
+					COMMAND_INSIDE_HELD;
+					option_cheat_action[c].act(NULL);
+				}
 				player->opts.opt[i] = false;
 				handle_stuff(player);
 			}
@@ -7684,9 +7731,10 @@ static int objcmd_command(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		 * player pressed another key.  When nothing was queued the nudge is no
 		 * command at all.
 		 */
-		command_inside = true;
-		c->hook();
-		command_inside = false;
+		{
+			COMMAND_INSIDE_HELD;
+			c->hook();
+		}
 		command_nudge();
 	} else if (c->cmd) {
 		cmdq_push_repeat(c->cmd, count);
@@ -7861,13 +7909,14 @@ static int objcmd_dump(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			return TCL_ERROR;
 		}
 
-		command_inside = true;
-		Term_activate(term_screen);
-		screen_save();
-		ok = dump_save(Tcl_GetString(objv[2]));
-		screen_load();
-		Term_activate(old);
-		command_inside = false;
+		{
+			COMMAND_INSIDE_HELD;
+			Term_activate(term_screen);
+			screen_save();
+			ok = dump_save(Tcl_GetString(objv[2]));
+			screen_load();
+			Term_activate(old);
+		}
 
 		if (!ok) {
 			Tcl_SetObjResult(ip, Tcl_ObjPrintf("could not write %s",
