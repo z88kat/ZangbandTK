@@ -25,7 +25,8 @@
 #
 # An item is {cmd Label "the game's description"}, {menu Label {items}},
 # {tk Label script} for the front end's own, {tiles Label} for the tile sets,
-# or "-" for a rule.  {instead Label "the game's description" script} is a
+# {option Label name} for one of the game's options as a tick, or "-" for a
+# rule.  {instead Label "the game's description" script} is a
 # front-end window standing in for one of the game's commands -- the Options
 # window for the game's options screen, as the original's Preferences had it.
 # It counts as that command's place, and shows no key, because the key still
@@ -138,6 +139,8 @@ set commands(layout) {
         {cmd "Debug Commands" "Debug mode commands"}
         {cmd Borg "Borg commands"}
         {cmd "Toggle Windows" "Toggle windows"}
+        -
+        {option "Use Sound" use_sound}
     }
 }
 
@@ -235,6 +238,7 @@ proc commands_build {} {
     # character.
     array unset commands nested,*
     array unset commands entries,*
+    array unset commands options,*
     foreach row $rows {
         lassign $row gidx group idx label key enabled level code opens
         if {$level == 0} {
@@ -267,6 +271,7 @@ proc commands_fill {m items} {
     if {[winfo exists $m]} { destroy $m }
     menu $m -tearoff 0 -postcommand [list commands_refresh $m]
     set commands(entries,$m) {}
+    set commands(options,$m) {}
 
     set n 0
     foreach item $items {
@@ -307,6 +312,14 @@ proc commands_fill {m items} {
                 menu $child -tearoff 0
                 angband_tiles_menu $child
                 $m add cascade -label $label -menu $child
+            }
+            option {
+                # The Options window's own variable, so a tick here and a
+                # tick there are the same tick.
+                lassign $item kind label name
+                $m add checkbutton -label $label -variable options(o,$name) \
+                    -command [list options_set $name]
+                lappend commands(options,$m) [list [$m index end] $name]
             }
         }
     }
@@ -417,6 +430,20 @@ proc commands_refresh {m} {
     global commands
 
     if {![info exists commands(entries,$m)]} return
+
+    # The game's options as they are now: the character's, which a pref
+    # file or the game's own options screen may have changed since.
+    if {[info exists commands(options,$m)] && ![catch {angband_option} orows]} {
+        foreach entry $commands(options,$m) {
+            lassign $entry i name
+            set row [lsearch -inline -index 0 $orows $name]
+            if {$row eq ""} continue
+            set ::options(o,$name) [lindex $row 3]
+            $m entryconfigure $i \
+                -state [expr {[lindex $row 4] ? "normal" : "disabled"}]
+        }
+    }
+
     if {[catch {angband_commands} rows]} return
 
     set by [dict create]

@@ -71,6 +71,9 @@
 #include "ui-term.h"
 #include "wild.h"
 #include "z-textblock.h"
+#ifdef SOUND
+#include "sound.h"
+#endif
 
 #include <tcl.h>
 #include <tk.h>
@@ -880,6 +883,8 @@ static int chooser_view_tk(const char **entries, const char **names,
 		int count, int cursor, bool retry);
 static int death_view_tk(const menu_action *actions, int count);
 static void events_register(void);
+static void sound_seen(game_event_type type, game_event_data *data,
+		void *user);
 static void bridge_reinstall_if_due(void);
 static void bridge_first_wait(void);
 static void bridge_reinit(void);
@@ -1285,6 +1290,7 @@ static void events_register(void)
 
 	for (i = 0; i < (int)N_ELEMENTS(game_event_name); i++)
 		event_add_handler((game_event_type)i, event_to_tcl, NULL);
+	event_add_handler(EVENT_SOUND, sound_seen, NULL);
 }
 
 /*
@@ -8379,6 +8385,92 @@ static int objcmd_palette(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	return TCL_ERROR;
 }
 
+/*
+ * Sound.  The game plays its own: message.c's sound() signals EVENT_SOUND when
+ * the character's use_sound option is on, and sound-core.c plays what
+ * sound.prf binds to the message through the module main.c started -- here,
+ * on the Mac, the Cocoa front end's, snd-cocoa.m.  This is what the front
+ * end needs around that:
+ *
+ *   angband_sound ready          1 if a module has the game's sounds loaded
+ *   angband_sound volume ?0-100? how loud from now on; kept by sound-core.c
+ *                                across a restart, so it can be set first
+ *   angband_sound play NAME      a message's sound, now, whatever use_sound
+ *                                says: the Options window's Try button
+ *   angband_sound last           the message whose sound the game last asked
+ *                                for, by its MSG_ name, or ""
+ */
+static const char *sound_msg_names[] = {
+	#define MSG(x, s) #x,
+	#include "list-message.h"
+	#undef MSG
+};
+static int sound_last = -1;
+static int sound_volume = 100;
+
+static void sound_seen(game_event_type type, game_event_data *data,
+		void *user)
+{
+	(void)type;
+	(void)user;
+	sound_last = data->message.type;
+}
+
+static int objcmd_sound(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what = objc > 1 ? Tcl_GetString(objv[1]) : "";
+
+	(void)dummy;
+
+	if (objc == 2 && streq(what, "ready")) {
+#ifdef SOUND
+		Tcl_SetObjResult(ip, Tcl_NewBooleanObj(is_sound_inited()));
+#else
+		Tcl_SetObjResult(ip, Tcl_NewBooleanObj(0));
+#endif
+		return TCL_OK;
+	}
+	if ((objc == 2 || objc == 3) && streq(what, "volume")) {
+		if (objc == 3) {
+			int v;
+
+			if (Tcl_GetIntFromObj(ip, objv[2], &v) != TCL_OK) return TCL_ERROR;
+			if (v < 0 || v > 100) {
+				Tcl_SetObjResult(ip, Tcl_NewStringObj(
+						"the volume runs from 0 to 100", -1));
+				return TCL_ERROR;
+			}
+			sound_volume = v;
+#ifdef SOUND
+			(void)sound_set_volume(v);
+#endif
+		}
+		Tcl_SetObjResult(ip, Tcl_NewIntObj(sound_volume));
+		return TCL_OK;
+	}
+	if (objc == 3 && streq(what, "play")) {
+		int type = message_lookup_by_name(Tcl_GetString(objv[2]));
+
+		if (type <= MSG_GENERIC || type >= MSG_MAX) {
+			Tcl_SetObjResult(ip, Tcl_ObjPrintf("no such message: %s",
+					Tcl_GetString(objv[2])));
+			return TCL_ERROR;
+		}
+		event_signal_message(EVENT_SOUND, type, NULL);
+		return TCL_OK;
+	}
+	if (objc == 2 && streq(what, "last")) {
+		Tcl_SetObjResult(ip, Tcl_NewStringObj(
+				(sound_last > MSG_GENERIC && sound_last < MSG_MAX)
+				? sound_msg_names[sound_last] : "", -1));
+		return TCL_OK;
+	}
+
+	Tcl_WrongNumArgs(ip, 1, objv, "ready | volume ?0-100? | play NAME | last");
+	return TCL_ERROR;
+}
+
 static bool tcl_get_int(const char *name, int *out);
 
 /**
@@ -9020,6 +9112,8 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_refont", objcmd_refont, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_palette", objcmd_palette, NULL,
+			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_sound", objcmd_sound, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_choice", objcmd_choice, NULL,
 			NULL);

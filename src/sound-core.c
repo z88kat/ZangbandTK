@@ -28,7 +28,7 @@
 #include "snd-win.h"
 #endif
 
-#if defined(MACH_O_CARBON) && defined(SOUND) && !defined(SOUND_SDL) && !defined(SOUND_SDL2)
+#if (defined(MACH_O_CARBON) || defined(SOUND_COCOA)) && defined(SOUND) && !defined(SOUND_SDL) && !defined(SOUND_SDL2)
 #include "cocoa/snd-cocoa.h"
 #endif
 
@@ -54,6 +54,16 @@ struct msg_snd_data
  */
 static struct msg_snd_data message_sounds[MSG_MAX];
 
+/*
+ * The volume set by sound_set_volume(), as a percentage, given to each module
+ * as it starts: a front end can set it before the sound is started, and a
+ * restart does not lose it.
+ */
+static int volume = 100;
+
+/* Whether a module has been opened by init_sound() and not closed since. */
+static bool audio_open = false;
+
 /**
  * List of sound modules in the order they should be tried.
  */
@@ -65,7 +75,7 @@ static const struct sound_module sound_modules[] =
 #if (!defined(WIN32_CONSOLE_MODE) && defined(WINDOWS) && defined(SOUND) && !defined(SOUND_SDL) && !defined(SOUND_SDL2))
 	{ "win", "Windows sound module", init_sound_win },
 #endif
-#if (defined(MACH_O_CARBON) && defined(SOUND) && !defined(SOUND_SDL) && !defined(SOUND_SDL2))
+#if ((defined(MACH_O_CARBON) || defined(SOUND_COCOA)) && defined(SOUND) && !defined(SOUND_SDL) && !defined(SOUND_SDL2))
 	{ "cocoa", "Cocoa sound module", init_sound_cocoa },
 #endif
 	{ "", "", NULL },
@@ -378,9 +388,12 @@ errr init_sound(const char *soundstr, int argc, char **argv)
 		return 1;
 	if (!hooks.open_audio_hook())
 		return 1;
+	if (hooks.set_volume_hook)
+		hooks.set_volume_hook(volume);
 
 	/* Enable sound */
 	event_add_handler(EVENT_SOUND, play_sound, NULL);
+	audio_open = true;
 
 	/* Success */
 	return (0);
@@ -391,6 +404,8 @@ errr init_sound(const char *soundstr, int argc, char **argv)
  */
 void close_sound(void)
 {
+	audio_open = false;
+
 	if (0 == next_sound_id) return;	/* Never opened */
 
 	/*
@@ -422,7 +437,23 @@ void close_sound(void)
  */
 bool is_sound_inited(void)
 {
-	return next_sound_id != 0;
+	/*
+	 * Not next_sound_id != 0, which it was: the pref parser lists sound.prf's
+	 * sounds whether or not a module could be opened to play them.
+	 */
+	return audio_open;
+}
+
+/**
+ * Set how loud sounds are played from now on, as a percentage of full volume.
+ * Returns false if the sound module in use cannot change it.
+ */
+bool sound_set_volume(int percent)
+{
+	if (percent < 0) percent = 0;
+	if (percent > 100) percent = 100;
+	volume = percent;
+	return hooks.set_volume_hook ? hooks.set_volume_hook(percent) : false;
 }
 
 /**

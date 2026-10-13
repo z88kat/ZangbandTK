@@ -561,3 +561,10 @@ Preferences ▸ Options, or Preferences in the application menu):
 Everything on the Display page takes effect at once, and is kept for the next
 session in ``tk-settings.txt``, in the same user folder as your pref files.
 Display Defaults puts it all back.
+
+The Sound page beside it switches the game's sounds on and off and sets how
+loud they are; Try plays one, so the volume can be set before a game is
+started.  The switch is the ``use_sound`` option, so it belongs to the character
+and starts off for a new one; Other ▸ Use Sound switches it as well.  The volume
+is kept in ``tk-settings.txt``.  The sounds are Angband 4.2's, and which one
+plays for what is set in ``lib/customize/sound.prf``, as for every front end.

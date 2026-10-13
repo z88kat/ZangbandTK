@@ -21,6 +21,10 @@ on:
       - 'src/main-tcl.c'
       - 'src/tcl/**'
       - 'src/cmake/macros/TCL_Frontend.cmake'
+      # The sound the Tk build compiles in on macOS, which no other job builds.
+      - 'src/sound-core.c'
+      - 'src/sound.h'
+      - 'src/cocoa/snd-cocoa.m'
       - 'scripts/build-tcltk'
       - 'scripts/pkg_macos_tcltk'
       - 'scripts/run-tcl-tests'

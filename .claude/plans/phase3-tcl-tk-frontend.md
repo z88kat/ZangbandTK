@@ -2046,6 +2046,32 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 > - **A leak found on the way**: every pane rebuild left its old tile photo behind, megabytes a
 >   resize. `build_cells` deletes it now.
 
+> **Sound, 13 October 2026.** The Tk front end was silent with everything else in place: the
+> bundle carried `lib/sounds`, `pref.prf` loaded `sound.prf`, the character had `use_sound` —
+> but the build compiled no sound module, so `init_sound()` found none. On macOS it now builds
+> the Cocoa front end's own, [snd-cocoa.m](../../src/cocoa/snd-cocoa.m) (NSSound), chosen by
+> `SOUND_COCOA` without the rest of what `MACH_O_CARBON` brings (`configure_tcl_sound` in
+> TCL_Frontend.cmake). No new library in the bundle; SDL2 sound still takes over when asked for.
+>
+> - **The switch is the game's `use_sound`**, per character and off for a new one as in 4.2
+>   (project owner, 13 October): Other ▸ Use Sound, as the original had it, the Interface tab,
+>   and the Options window's new **Sound** tab ([sound.tcl](../../lib/tcl/sound.tcl)) — one
+>   variable, so the three agree. A menu item kind `{option Label name}` in commands.tcl.
+> - **The volume is the front end's**, in tk-settings.txt. 4.2's sound API had none, so
+>   `sound_hooks` has an optional `set_volume_hook` and sound-core.c a `sound_set_volume()`
+>   that keeps the value and hands it to each module as it opens. Try plays a sound whatever
+>   `use_sound` says, so the volume can be set before a game.
+> - **Sounds load when first played.** The Cocoa module preloads all of sound.prf's for the
+>   Mac client; for this one that put 2.5 s on every start. Loading on demand costs ~23 ms the
+>   first time each file plays. Preloading is now `MACH_O_CARBON`'s only.
+> - **`is_sound_inited()` lied**: it was `next_sound_id != 0`, true whenever sound.prf had been
+>   parsed, module or none. It now says what its comment always said — a module is open.
+> - **Licence:** §1.4 has the Dubtrain pack as Creative Commons non-commercial, from
+>   sound.prf's 2009 header. [copying.rst](../../docs/copying.rst) has it as CC BY 4.0, which is
+>   how Angband 4.2 ships it; the Sound tab credits it that way.
+> - `angband_sound ready | volume | play | last`; `last` is the message the game last asked to
+>   hear, which the bridge checks read, since none can listen.
+
 ---
 
 ## 6. Decisions needed

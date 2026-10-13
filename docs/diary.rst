@@ -31,6 +31,34 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+13 October 2026 — sound
+=======================
+
+The Tk front end had never made a sound, and everything it needed was already
+in the box. The app carried 4.2's sound pack, the game read the file that says
+which sound goes with which message, and every character had a "Use sound"
+option. What was missing was the piece of code that actually plays a file, so
+the game looked for one, found none, and said nothing. The Mac version of the
+plain Angband front end has that piece, a small one built on the sound support
+macOS already has, and the Tk build now uses it too. Nothing new goes into the
+app to make it work.
+
+Sound is switched on in Other ▸ Use Sound, where the original had it, or on a
+new Sound page in the Options window, which also has a volume control and a
+Try button. It stays off for a new character, as 4.2 has it.
+
+Two things turned up on the way. Loading every sound when the game starts, as
+the Mac front end does, added two and a half seconds to every start, so each
+sound now loads the first time it plays instead. And the game's own check for
+whether sound was working said yes whether or not anything could play it.
+
+What is not coming back is the original's Sound window, where a player could
+choose a sound for every event and every monster. No one would use it, and the
+mapping is a text file now. What is worth keeping from the original is its
+list of events. Zangband had sounds for things 4.2 has no message for, and
+those are next.
+
+
 13 October 2026 — Neon for colour-blind eyes
 ============================================
 

@@ -128,7 +128,10 @@ Autoexplore commands ``autoexplore_commands``
   unexplored location.
 
 Use sound ``use_sound``
-  Turns on sound effects, if your system supports them.
+  Turns on sound effects, if your system supports them.  It is kept with each
+  character, and a new character starts with it off.  In the Tcl/Tk front end
+  it is also Other ▸ Use Sound, and the Sound page of the Options window, which
+  sets the volume too.
 
 Show damage player deals to monsters ``show_damage``
   Shows the damage that the player deals to monsters for melee and ranged 

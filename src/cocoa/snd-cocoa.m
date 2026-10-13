@@ -17,7 +17,7 @@
  */
 
 #include "angband.h"
-#if defined(MACH_O_CARBON) && defined(SOUND) && !defined(SOUND_SDL) && !defined(SOUND_SDL2)
+#if (defined(MACH_O_CARBON) || defined(SOUND_COCOA)) && defined(SOUND) && !defined(SOUND_SDL) && !defined(SOUND_SDL2)
 #include "sound.h"
 #include "snd-cocoa.h"
 #import <Cocoa/Cocoa.h>
@@ -45,6 +45,9 @@ struct cocoa_sample {
  * https://wiki.lazarus.freepascal.org/macOS_NSSound there are more but mp3
  * and wav are likely the most useful for Angband)
  */
+/* How loud each sound is played, from 0 to 1; set_volume_cocoa() sets it. */
+static float sound_volume = 1.0f;
+
 static const struct sound_file_type supported_sound_formats[] = {
 	{ ".mp3", COCOA_SOUND_BRIDGED_NSSOUND },
 	{ ".wav", COCOA_SOUND_BRIDGED_NSSOUND },
@@ -117,6 +120,7 @@ static bool play_sound_cocoa(struct sound_data *data)
 					if ([sound isPlaying]) {
 						[sound stop];
 					}
+					[sound setVolume:sound_volume];
 					[sound play];
 				}
 			}
@@ -187,6 +191,15 @@ static bool close_audio_cocoa(void)
 }
 
 /**
+ * Set the volume for sounds played from now on.
+ */
+static bool set_volume_cocoa(int percent)
+{
+	sound_volume = percent / 100.0f;
+	return true;
+}
+
+/**
  * Return the supported sound formats.
  */
 static const struct sound_file_type *supported_files_cocoa(void)
@@ -202,15 +215,20 @@ errr init_sound_cocoa(struct sound_hooks *hooks, int argc, char **argv)
 	/*
 	 * Load all the sounds when sound.prf is parsed to mimic the past
 	 * behavior of the Mac client and avoid lag when a sound is first
-	 * played.
+	 * played.  Not for the Tk front end, which uses this module too
+	 * (SOUND_COCOA): loading all 213 took two and a half seconds off every
+	 * start, and loading one when it is first played costs milliseconds.
 	 */
+#ifdef MACH_O_CARBON
 	(void) set_preloaded_sounds(true);
+#endif
 	hooks->open_audio_hook = open_audio_cocoa;
 	hooks->close_audio_hook = close_audio_cocoa;
 	hooks->load_sound_hook = load_sound_cocoa;
 	hooks->unload_sound_hook = unload_sound_cocoa;
 	hooks->play_sound_hook = play_sound_cocoa;
 	hooks->supported_files_hook = supported_files_cocoa;
+	hooks->set_volume_hook = set_volume_cocoa;
 	return 0;
 }
 

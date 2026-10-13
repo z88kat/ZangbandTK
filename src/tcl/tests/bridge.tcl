@@ -362,7 +362,7 @@ proc stock_widgets_only {top} {
 	set stock {Toplevel Menu TFrame TLabel TLabelframe TRadiobutton TEntry
 	           TMenubutton TButton TScrollbar TSeparator TProgressbar
 	           Treeview TSpinbox Listbox Text Canvas Label TCheckbutton
-	           TNotebook}
+	           TNotebook TScale}
 	set odd {}
 	set todo $top
 	while {[llength $todo]} {
@@ -1656,7 +1656,71 @@ proc display_pass {} {
 		list $with [string match "*colour-blind*" $said] $custom $back $own
 	} "8 1 {{} 8} 7 8"
 
-	door_pass
+	sound_pass
+}
+
+# --- sound --------------------------------------------------------------------
+
+# The game plays its own sounds when the character's use_sound is on; the
+# front end starts the module (on the Mac, snd-cocoa.m), keeps the volume and
+# shows the switch.  Whether anything is audible no check can say: what they
+# read is the message whose sound the game asked for.
+proc sound_pass {} {
+	check "the game's sounds are loaded" {
+		angband_sound ready
+	} 1
+
+	check "the volume is set, and runs from 0 to 100" {
+		set was [angband_sound volume]
+		set v [angband_sound volume 40]
+		catch {angband_sound volume 101} e
+		angband_sound volume $was
+		list $v $e
+	} "40 {the volume runs from 0 to 100}"
+
+	check "Try plays a sound with the game's sound off" {
+		angband_option use_sound 0
+		angband_sound play LEVEL
+		angband_sound last
+	} LEVEL
+
+	# The tick in Other is the option: the menu shows it as it is when
+	# opened, and choosing it changes the character's.
+	check "Other > Use Sound is the character's use_sound" {
+		set m [commands_menu_path Other]
+		angband_option use_sound 1
+		commands_refresh $m
+		set shown $::options(o,use_sound)
+		$m invoke [$m index "Use Sound"]
+		list $shown [lindex [lsearch -inline -index 0 [angband_option] \
+			use_sound] 3]
+	} "1 0"
+
+	# Opening where there is nothing to open says so, with a sound: asked
+	# for only when use_sound is on.
+	set ::sound_quiet [angband_sound last]
+	angband_key 111 0 o
+	angband_key 52 0 4
+	after 800 sound_pass_on
+}
+
+proc sound_pass_on {} {
+	set ::sound_after_off [angband_sound last]
+	angband_key 0xff1b 0 "\x1b"
+	angband_option use_sound 1
+	angband_key 111 0 o
+	angband_key 52 0 4
+	after 800 sound_pass_done
+}
+
+proc sound_pass_done {} {
+	set heard [angband_sound last]
+	angband_key 0xff1b 0 "\x1b"
+	angband_option use_sound 0
+	check "a game action is heard only with use_sound on" {
+		list [expr {$::sound_after_off eq $::sound_quiet}] $heard
+	} "1 NOTHING_TO_OPEN"
+	after 500 door_pass
 }
 
 # --- a door in the command menus --------------------------------------------

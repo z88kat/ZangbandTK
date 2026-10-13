@@ -5,8 +5,9 @@
 # file -- and the front end's beside them, so that the player never has to
 # know which layer owns a setting.  A tab a page: Interface, with the three
 # numeric settings under it; Birth, which can be changed only while a
-# character is being made; Cheats; and Display, the front end's own, which is
-# display.tcl's: the tile set and its size, the panes' fonts and the colours.
+# character is being made; Cheats; Display, the front end's own, which is
+# display.tcl's: the tile set and its size, the panes' fonts and the colours;
+# and Sound, sound.tcl's: the game's use_sound beside the front end's volume.
 #
 # Every change is made through angband_option and so through the game's own
 # rules: a birth option is refused once a character exists, a cheat marks the
@@ -77,6 +78,7 @@ proc options_refresh {} {
                 : "No cheats have been used.")}]
         set options(score) "High score: [expr {$eligible ? "eligible" : "not eligible"}]"
     }
+    sound_page_refresh
 }
 
 # The checkbutton or spinbox standing for an option, wherever it is.
@@ -326,11 +328,16 @@ proc options_build {} {
     $nb add $p -text "Display" -underline 0
     display_page $p
 
+    # Sound: sound.tcl's.
+    set p [ttk::frame $nb.sound -padding 8]
+    $nb add $p -text "Sound" -underline 0
+    sound_page $p
+
     bind .options <Escape> {destroy .options}
     accel_bind .options c {destroy .options}
     # The tabs answer their underlined letters too.  Cheats is h, because C
     # is Close.
-    foreach {letter page} {i interface b birth h cheat d display} {
+    foreach {letter page} {i interface b birth h cheat d display s sound} {
         accel_bind .options $letter \
             [list .options.f.nb select .options.f.nb.$page]
     }

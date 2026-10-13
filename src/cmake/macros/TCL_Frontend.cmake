@@ -92,3 +92,18 @@ macro(configure_tcl_frontend _NAME_TARGET)
     message(STATUS "Support for Tcl/Tk front end - Ready (${TCLTK_PREFIX})")
 
 endmacro()
+
+# Sound for the Tk front end on macOS: the Cocoa front end's module,
+# src/cocoa/snd-cocoa.m, which plays the game's sounds through NSSound and so
+# needs nothing the system does not have.  SOUND switches the game's sound
+# support on, in the core as well as main.c, and SOUND_COCOA chooses that
+# module without the rest of the Cocoa front end that MACH_O_CARBON brings.
+macro(configure_tcl_sound _NAME_TARGET _CORE_TARGET _SOUND_TARGET)
+    foreach(_target ${_NAME_TARGET} ${_CORE_TARGET} ${_SOUND_TARGET})
+        target_compile_definitions(${_target} PRIVATE SOUND SOUND_COCOA)
+    endforeach()
+    target_include_directories(${_SOUND_TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/src")
+    target_compile_options(${_SOUND_TARGET} PRIVATE -fobjc-arc)
+    target_link_libraries(${_NAME_TARGET} PRIVATE "-framework Cocoa")
+    message(STATUS "Support for sound with Cocoa - Ready")
+endmacro()

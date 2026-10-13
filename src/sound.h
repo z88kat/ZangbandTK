@@ -79,12 +79,15 @@ struct sound_hooks
 	bool (*unload_sound_hook)(struct sound_data *data);
 	bool (*play_sound_hook)(struct sound_data *data);
 	const struct sound_file_type *(*supported_files_hook)(void);
+	/* Optional: the loudness of what is played next, 0 to 100. */
+	bool (*set_volume_hook)(int percent);
 };
 
 bool set_preloaded_sounds(bool new_setting);
 errr init_sound(const char *soundstr, int argc, char **argv);
 void close_sound(void);
 bool is_sound_inited(void);
+bool sound_set_volume(int percent);
 errr register_sound_pref_parser(struct parser *p);
 void print_sound_help(void);
 

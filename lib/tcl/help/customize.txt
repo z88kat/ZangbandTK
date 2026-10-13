@@ -581,3 +581,11 @@ T	p0	Everything on the Display page takes effect at once, and is kept for the ne
 T	p0 code	tk-settings.txt
 T	p0	, in the same user folder as your pref files. Display Defaults puts it all back.
 T	p0	\n
+T	p0	The Sound page beside it switches the game’s sounds on and off and sets how loud they are; Try plays one, so the volume can be set before a game is started. The switch is the 
+T	p0 code	use_sound
+T	p0	 option, so it belongs to the character and starts off for a new one; Other ▸ Use Sound switches it as well. The volume is kept in 
+T	p0 code	tk-settings.txt
+T	p0	. The sounds are Angband 4.2’s, and which one plays for what is set in 
+T	p0 code	lib/customize/sound.prf
+T	p0	, as for every front end.
+T	p0	\n
