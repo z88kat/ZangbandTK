@@ -194,8 +194,17 @@ proc choose_typed {char} {
 # --- answering ------------------------------------------------------------------
 
 proc choose_answer {n} {
+    # The game first, the window afterwards, and only if the game took it.
+    #
+    # angband_savefile answer can refuse, and the game is sitting in a
+    # Tcl_DoOneEvent loop waiting for this answer: destroying the chooser
+    # first means a refusal leaves nothing on screen to answer with, and
+    # nothing will ever arrive, so the game waits for ever behind no window.
+    # Answering first costs nothing -- the answer only sets a variable and
+    # returns, the game does not resume until this binding does -- and a
+    # refusal now leaves the chooser up to try again.
+    if {[catch {angband_savefile answer $n}]} { bell; return }
     destroy .choose
-    if {[catch {angband_savefile answer $n}]} bell
 }
 
 proc choose_open {} {
