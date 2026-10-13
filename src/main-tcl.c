@@ -2972,6 +2972,19 @@ static int objcmd_monster(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		}
 	}
 
+	/*
+	 * A verb this does know, given the wrong number of arguments, is an arity
+	 * complaint and not an unknown verb.  Saying so matters because the
+	 * sentence below otherwise comes out as "expected max, list, info or
+	 * lore, not: max", which contradicts itself and sends the reader looking
+	 * for a spelling mistake that is not there.
+	 */
+	if (strcmp(what, "max") == 0 || strcmp(what, "list") == 0
+			|| strcmp(what, "info") == 0 || strcmp(what, "lore") == 0) {
+		Tcl_WrongNumArgs(ip, 1, objv, "max | list ?pattern? | info n | lore n");
+		return TCL_ERROR;
+	}
+
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
 			"expected max, list, info or lore, not: %s", what));
 
@@ -3180,6 +3193,19 @@ static int objcmd_object(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			Tcl_SetObjResult(ip, text);
 			return TCL_OK;
 		}
+	}
+
+	/*
+	 * A verb this does know, given the wrong number of arguments, is an arity
+	 * complaint and not an unknown verb.  Saying so matters because the
+	 * sentence below otherwise comes out as "expected max, list, info or
+	 * lore, not: max", which contradicts itself and sends the reader looking
+	 * for a spelling mistake that is not there.
+	 */
+	if (strcmp(what, "max") == 0 || strcmp(what, "list") == 0
+			|| strcmp(what, "info") == 0 || strcmp(what, "lore") == 0) {
+		Tcl_WrongNumArgs(ip, 1, objv, "max | list ?pattern? | info n | lore n");
+		return TCL_ERROR;
 	}
 
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
@@ -3422,6 +3448,19 @@ static int objcmd_artifact(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		}
 	}
 
+	/*
+	 * A verb this does know, given the wrong number of arguments, is an arity
+	 * complaint and not an unknown verb.  Saying so matters because the
+	 * sentence below otherwise comes out as "expected max, list, info or
+	 * lore, not: max", which contradicts itself and sends the reader looking
+	 * for a spelling mistake that is not there.
+	 */
+	if (strcmp(what, "max") == 0 || strcmp(what, "list") == 0
+			|| strcmp(what, "info") == 0 || strcmp(what, "lore") == 0) {
+		Tcl_WrongNumArgs(ip, 1, objv, "max | list ?pattern? | info n | lore n");
+		return TCL_ERROR;
+	}
+
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
 			"expected max, list, info or lore, not: %s", what));
 
@@ -3473,6 +3512,19 @@ static enum table_verb table_verb_parse(Tcl_Interp *ip, Tcl_Size objc,
 			&& objc == 3) {
 		if (Tcl_GetIntFromObj(ip, objv[2], idx) != TCL_OK) return TABLE_BAD;
 		return (strcmp(what, "info") == 0) ? TABLE_INFO : TABLE_LORE;
+	}
+
+	/*
+	 * A verb this does know, given the wrong number of arguments, is an arity
+	 * complaint and not an unknown verb.  Saying so matters because the
+	 * sentence below otherwise comes out as "expected max, list, info or
+	 * lore, not: max", which contradicts itself and sends the reader looking
+	 * for a spelling mistake that is not there.
+	 */
+	if (strcmp(what, "max") == 0 || strcmp(what, "list") == 0
+			|| strcmp(what, "info") == 0 || strcmp(what, "lore") == 0) {
+		Tcl_WrongNumArgs(ip, 1, objv, "max | list ?pattern? | info n | lore n");
+		return TABLE_BAD;
 	}
 
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
