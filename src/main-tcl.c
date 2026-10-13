@@ -870,9 +870,77 @@ static void hooks_apply(void);
  * command_may_start(), which is where the reasoning lives. */
 static bool command_inside = false;
 
+/*
+ * Holding the door shut, in a way that cannot forget to open it again.
+ *
+ * This flag is the whole of the defence described at command_may_start():
+ * while it is true the menus are greyed, menu dispatch is refused, and the
+ * Items window's gear actions are refused, because 4.2's ui-* prompts keep
+ * their state in file statics and a second command started inside the first
+ * frees the first's lists out from under it.
+ *
+ * It was set and cleared as five separate pairs of bare assignments.  Nothing
+ * was wrong with any of them -- every one of the five is entered through a
+ * command_may_start() check so they cannot nest, there is no setjmp or
+ * longjmp anywhere in the game, and no early return sits between a set and
+ * its clear -- so this is not fixing a path that leaks the flag today.  It is
+ * that the failure mode if one ever did is silent and permanent: nothing
+ * clears the flag on any other path, so command_may_start() would answer
+ * false for the rest of the process and every menu command, gear action and
+ * book command would be refused for ever, with no message and nothing in a
+ * log.  An invariant whose breach cannot be noticed should not be maintained
+ * by hand in five places.
+ *
+ * So the clear is attached to the scope instead.  Open a block, declare the
+ * guard, and the flag is true until the block ends however it ends.
+ *
+ * Deliberately a hard error rather than a silent no-op when the attribute is
+ * missing: ATTRIBUTE() in h-basic.h expands to nothing off GCC and Clang, and
+ * a guard that quietly stops guarding is worse than no guard.  The front end
+ * is built against a Tcl/Tk this project compiles itself, by GCC or Clang.
+ */
+#if defined(__GNUC__) || defined(__clang__)
+static void command_inside_leave(const bool *guard)
+{
+	(void)guard;
+	command_inside = false;
+}
+#define COMMAND_INSIDE_HELD						\
+	bool command_inside_guard_					\
+		ATTRIBUTE((cleanup(command_inside_leave)))		\
+		= (command_inside = true);				\
+	(void)command_inside_guard_
+#else
+# error "the Tcl front end needs __attribute__((cleanup)); see command_inside"
+#endif
+
 static void command_nudge(void);
 static bool in_play(void);
 static bool command_may_start(void);
+
+/**
+ * Finish a command that has no answer to give.
+ *
+ * A Tcl command returns whatever is in the interpreter's result, and the
+ * drawing path puts things there: cell_set evaluates a canvas itemconfigure
+ * for every cell it touches, graphics_load builds an image, and the game's
+ * own redraw runs both. A command that does its work and then returns TCL_OK
+ * without clearing the result hands that leftover back as its value.
+ *
+ * It is not theoretical and it is not small. Before this, `angband_tileset 1`
+ * returned two megabytes of pixel data as its result, and
+ * `angband_resize 0 80 24` returned "4228", a canvas item id. Neither command
+ * has anything to say; both said whatever Tk had said last.
+ *
+ * objcmd_refont already called Tcl_ResetResult for exactly this reason. This
+ * is that, named, so the next command that answers with nothing says so.
+ */
+static int command_done(Tcl_Interp *ip)
+{
+	Tcl_ResetResult(ip);
+	return TCL_OK;
+}
+
 static void choice_install(void);
 static void store_notice(game_event_type type, game_event_data *data,
 		void *user);
@@ -1656,7 +1724,7 @@ static int objcmd_push(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 
 	command_nudge();
 
-	return TCL_OK;
+	return command_done(ip);
 }
 
 /**
@@ -2944,6 +3012,19 @@ static int objcmd_monster(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		}
 	}
 
+	/*
+	 * A verb this does know, given the wrong number of arguments, is an arity
+	 * complaint and not an unknown verb.  Saying so matters because the
+	 * sentence below otherwise comes out as "expected max, list, info or
+	 * lore, not: max", which contradicts itself and sends the reader looking
+	 * for a spelling mistake that is not there.
+	 */
+	if (strcmp(what, "max") == 0 || strcmp(what, "list") == 0
+			|| strcmp(what, "info") == 0 || strcmp(what, "lore") == 0) {
+		Tcl_WrongNumArgs(ip, 1, objv, "max | list ?pattern? | info n | lore n");
+		return TCL_ERROR;
+	}
+
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
 			"expected max, list, info or lore, not: %s", what));
 
@@ -3152,6 +3233,19 @@ static int objcmd_object(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			Tcl_SetObjResult(ip, text);
 			return TCL_OK;
 		}
+	}
+
+	/*
+	 * A verb this does know, given the wrong number of arguments, is an arity
+	 * complaint and not an unknown verb.  Saying so matters because the
+	 * sentence below otherwise comes out as "expected max, list, info or
+	 * lore, not: max", which contradicts itself and sends the reader looking
+	 * for a spelling mistake that is not there.
+	 */
+	if (strcmp(what, "max") == 0 || strcmp(what, "list") == 0
+			|| strcmp(what, "info") == 0 || strcmp(what, "lore") == 0) {
+		Tcl_WrongNumArgs(ip, 1, objv, "max | list ?pattern? | info n | lore n");
+		return TCL_ERROR;
 	}
 
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
@@ -3394,6 +3488,19 @@ static int objcmd_artifact(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		}
 	}
 
+	/*
+	 * A verb this does know, given the wrong number of arguments, is an arity
+	 * complaint and not an unknown verb.  Saying so matters because the
+	 * sentence below otherwise comes out as "expected max, list, info or
+	 * lore, not: max", which contradicts itself and sends the reader looking
+	 * for a spelling mistake that is not there.
+	 */
+	if (strcmp(what, "max") == 0 || strcmp(what, "list") == 0
+			|| strcmp(what, "info") == 0 || strcmp(what, "lore") == 0) {
+		Tcl_WrongNumArgs(ip, 1, objv, "max | list ?pattern? | info n | lore n");
+		return TCL_ERROR;
+	}
+
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
 			"expected max, list, info or lore, not: %s", what));
 
@@ -3445,6 +3552,19 @@ static enum table_verb table_verb_parse(Tcl_Interp *ip, Tcl_Size objc,
 			&& objc == 3) {
 		if (Tcl_GetIntFromObj(ip, objv[2], idx) != TCL_OK) return TABLE_BAD;
 		return (strcmp(what, "info") == 0) ? TABLE_INFO : TABLE_LORE;
+	}
+
+	/*
+	 * A verb this does know, given the wrong number of arguments, is an arity
+	 * complaint and not an unknown verb.  Saying so matters because the
+	 * sentence below otherwise comes out as "expected max, list, info or
+	 * lore, not: max", which contradicts itself and sends the reader looking
+	 * for a spelling mistake that is not there.
+	 */
+	if (strcmp(what, "max") == 0 || strcmp(what, "list") == 0
+			|| strcmp(what, "info") == 0 || strcmp(what, "lore") == 0) {
+		Tcl_WrongNumArgs(ip, 1, objv, "max | list ?pattern? | info n | lore n");
+		return TABLE_BAD;
 	}
 
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
@@ -5385,9 +5505,10 @@ static int objcmd_choice(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		 * and the ignore and browse menus can all prompt, and a prompt pumps
 		 * Tk, so the door is held shut as it is for a menu's hook.
 		 */
-		command_inside = true;
-		if (item_act(obj, id)) command_nudge();
-		command_inside = false;
+		{
+			COMMAND_INSIDE_HELD;
+			if (item_act(obj, id)) command_nudge();
+		}
 		return TCL_OK;
 	}
 
@@ -5542,7 +5663,7 @@ static int objcmd_book(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			cmd_set_arg_item(cmdq_peek(), "item", obj);
 		}
 		command_nudge();
-		return TCL_OK;
+		return command_done(ip);
 	}
 
 	if ((streq(what, "text") || streq(what, "cast")) && objc == 3) {
@@ -5575,7 +5696,7 @@ static int objcmd_book(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		cmdq_push(CMD_CAST);
 		cmd_set_arg_choice(cmdq_peek(), "spell", sidx);
 		command_nudge();
-		return TCL_OK;
+		return command_done(ip);
 	}
 
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
@@ -5858,17 +5979,18 @@ static int objcmd_store(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		prt("", 0, 0);
 		more = OPT(player, auto_more);
 		OPT(player, auto_more) = true;
-		command_inside = true;
-		cmdq_pop(CTX_STORE);
-		event_signal(EVENT_INVENTORY);
-		event_signal(EVENT_EQUIPMENT);
-		notice_stuff(player);
-		handle_stuff(player);
-		command_inside = false;
+		{
+			COMMAND_INSIDE_HELD;
+			cmdq_pop(CTX_STORE);
+			event_signal(EVENT_INVENTORY);
+			event_signal(EVENT_EQUIPMENT);
+			notice_stuff(player);
+			handle_stuff(player);
+		}
 		OPT(player, auto_more) = more;
 		Term_fresh();
 		Term_activate(old);
-		return TCL_OK;
+		return command_done(ip);
 	}
 
 	Tcl_SetObjResult(ip, Tcl_ObjPrintf(
@@ -7331,9 +7453,10 @@ static int objcmd_option(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			}
 
 			if (val && c < N_ELEMENTS(option_cheat_action)) {
-				command_inside = true;
-				option_cheat_action[c].act(NULL);
-				command_inside = false;
+				{
+					COMMAND_INSIDE_HELD;
+					option_cheat_action[c].act(NULL);
+				}
 				player->opts.opt[i] = false;
 				handle_stuff(player);
 			}
@@ -7700,9 +7823,10 @@ static int objcmd_command(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		 * player pressed another key.  When nothing was queued the nudge is no
 		 * command at all.
 		 */
-		command_inside = true;
-		c->hook();
-		command_inside = false;
+		{
+			COMMAND_INSIDE_HELD;
+			c->hook();
+		}
 		command_nudge();
 	} else if (c->cmd) {
 		cmdq_push_repeat(c->cmd, count);
@@ -7877,13 +8001,14 @@ static int objcmd_dump(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			return TCL_ERROR;
 		}
 
-		command_inside = true;
-		Term_activate(term_screen);
-		screen_save();
-		ok = dump_save(Tcl_GetString(objv[2]));
-		screen_load();
-		Term_activate(old);
-		command_inside = false;
+		{
+			COMMAND_INSIDE_HELD;
+			Term_activate(term_screen);
+			screen_save();
+			ok = dump_save(Tcl_GetString(objv[2]));
+			screen_load();
+			Term_activate(old);
+		}
 
 		if (!ok) {
 			Tcl_SetObjResult(ip, Tcl_ObjPrintf("could not write %s",
@@ -8189,10 +8314,31 @@ static int objcmd_tileset(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		return TCL_ERROR;
 	}
 
-	reset_visuals(true);
-	do_cmd_redraw();
+	/*
+	 * Both of these need more than a tile sheet, and the Display page is
+	 * reachable from the Choose Game window, before the game has read
+	 * anything.
+	 *
+	 * reset_visuals() walks f_info, k_info, r_info and trap_info to put the
+	 * default attr and char back; none of them exists until init_angband
+	 * has run, and `angband_tileset 1` before that dereferenced a null
+	 * f_info and took the process down with SIGSEGV at offset 0x28 -- the
+	 * first read of feat->d_attr. Checked per array, the way every other
+	 * command in this file checks the list it is about to walk.
+	 *
+	 * do_cmd_redraw() wants a dungeon to draw, and is guarded here the same
+	 * way angband_tilescale guards its own.
+	 *
+	 * Loading the sheet above is not conditional: choosing a tile set with
+	 * no game in play is a reasonable thing to do, and it takes effect when
+	 * one starts. It is only these two that have to wait.
+	 */
+	if (f_info && k_info && r_info && trap_info && z_info)
+		reset_visuals(true);
+	if (character_dungeon)
+		do_cmd_redraw();
 
-	return TCL_OK;
+	return command_done(ip);
 }
 
 static void build_cells(term_data *td);
@@ -8394,7 +8540,7 @@ static int objcmd_palette(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		}
 		colours_init();
 		if (character_dungeon) do_cmd_redraw();
-		return TCL_OK;
+		return command_done(ip);
 	}
 
 	Tcl_WrongNumArgs(ip, 1, objv, "?set {name colour ...}?");
@@ -8474,7 +8620,7 @@ static int objcmd_sound(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			return TCL_ERROR;
 		}
 		event_signal_message(EVENT_SOUND, type, NULL);
-		return TCL_OK;
+		return command_done(ip);
 	}
 	if (objc == 2 && streq(what, "last")) {
 		Tcl_SetObjResult(ip, Tcl_NewStringObj(
@@ -9023,7 +9169,7 @@ static int objcmd_resize(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 			event_signal(EVENT_END);
 	}
 
-	return TCL_OK;
+	return command_done(ip);
 }
 
 /**
@@ -9283,11 +9429,87 @@ static int objcmd_quit(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 const char help_tcl[] = "Tcl/Tk front end";
 
 /**
+ * Where plog() goes on this front end.
+ *
+ * plog's default is a labelled fprintf to stderr, and for a bundled
+ * application Tk has already pointed stderr at /dev/null -- so every one of
+ * this file's plog and plog_fmt calls was being written to nowhere.  Two of
+ * them matter more than the rest: tcl_source() reports a front end script that
+ * failed to source, and an interpreter that could not be created or
+ * initialised reports that, and in both cases the game then carries on with no
+ * user interface and nothing said about why.
+ *
+ * lib/tcl/errorInfo.tcl already exists to solve exactly this, so this routes
+ * into it rather than opening a second channel: the sink buffers records made
+ * before its window exists, which is the case that matters here, since almost
+ * everything plog has to say happens during startup.
+ *
+ * stderr is still written.  A terminal run has a real one, and the sink's own
+ * window is no use to somebody reading a log after the fact.  This is the same
+ * argument the <<Angband_*>> path above makes for keeping both.
+ *
+ * Three guards, none of them theoretical:
+ *
+ *   - The sink is a script, sourced by lib/tcl/main.tcl, so for the whole of
+ *     startup before that line it does not exist.  Tcl_FindCommand is the
+ *     question "is it there yet", and the answer is no for Tcl_Init and
+ *     Tk_Init failures, which keep the old stderr-only behaviour by default.
+ *
+ *   - plog is called during shutdown, including from quit(), so the
+ *     interpreter may be gone or going.
+ *
+ *   - If the sink itself fails, Tcl will report that error, and reporting it
+ *     must not re-enter here and recurse.  stderr already has the message.
+ *
+ * The interpreter's result is saved and restored around the call.  Callers
+ * here log and then return a failure the caller above reads out of the
+ * interpreter, so logging must not be able to change what they read.
+ */
+static void hook_plog(const char *str)
+{
+	static bool inside = false;
+
+	/* Say it on stderr whatever happens, exactly as the default would. */
+	(void)fprintf(stderr, "%s: %s\n", argv0 ? argv0 : "?", str ? str : "");
+
+	if (!str || !interp || Tcl_InterpDeleted(interp) || inside) return;
+
+	/* Before lib/tcl/main.tcl has sourced the sink there is nowhere to put it. */
+	if (!Tcl_FindCommand(interp, "::errorsink::record", NULL, TCL_GLOBAL_ONLY))
+		return;
+
+	inside = true;
+	{
+		Tcl_InterpState  state = Tcl_SaveInterpState(interp, TCL_OK);
+		Tcl_Obj         *av[3];
+		int              i;
+
+		av[0] = Tcl_NewStringObj("::errorsink::record", -1);
+		av[1] = Tcl_NewStringObj("plog", -1);
+		av[2] = Tcl_NewStringObj(str, -1);
+		for (i = 0; i < 3; i++) Tcl_IncrRefCount(av[i]);
+
+		(void)Tcl_EvalObjv(interp, 3, av, TCL_EVAL_GLOBAL);
+
+		for (i = 0; i < 3; i++) Tcl_DecrRefCount(av[i]);
+		(void)Tcl_RestoreInterpState(interp, state);
+	}
+	inside = false;
+}
+
+/**
  * Bring up the interpreter and the window.
  */
 errr init_tcl(int argc, char **argv)
 {
 	(void)argc;
+
+	/*
+	 * Before anything that can fail.  The hook falls back to stderr on its
+	 * own until the sink exists, so installing it this early costs nothing
+	 * and means no failure between here and there is routed by accident.
+	 */
+	plog_aux = hook_plog;
 
 	/*
 	 * Tcl insists on knowing where the executable is before an interpreter

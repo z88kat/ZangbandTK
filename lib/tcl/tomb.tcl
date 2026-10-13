@@ -135,14 +135,24 @@ proc tomb_kingly {} {
 }
 
 proc tomb_kingly_done {} {
+    # As in choose_answer: the game is waiting in a Tcl_DoOneEvent loop, so a
+    # refusal with the crown already destroyed would leave it waiting with
+    # nothing on screen to answer from.
+    if {[catch {angband_death answer continue}]} { bell; return }
     destroy .kingly
-    catch {angband_death answer continue}
 }
 
 # --- answering ------------------------------------------------------------------
 
 proc tomb_act {key} {
     global choose
+
+    # Whether this answer closes the Tomb.  The window is destroyed after the
+    # game has taken the answer and not before, for the reason in
+    # choose_answer: angband_death answer can refuse, the game is waiting for
+    # it in a Tcl_DoOneEvent loop, and a refusal with the Tomb already gone
+    # leaves the game waiting for ever with nothing on screen to answer from.
+    set close 0
 
     switch -- $key {
         f {
@@ -163,13 +173,13 @@ proc tomb_act {key} {
             # The chooser offers the character just finished first; a new
             # one is what was asked for.
             set choose(fresh) 1
-            destroy .tomb
+            set close 1
         }
         q {
             if {[tk_messageBox -parent .tomb -icon question -type yesno \
                     -title "Quit" -message "Do you want to quit?"] ne "yes"} return
             record_offer
-            destroy .tomb
+            set close 1
         }
         default {
             # The game's own screen, on the main window, which has the keys.
@@ -177,7 +187,8 @@ proc tomb_act {key} {
             focus .
         }
     }
-    if {[catch {angband_death answer $key}]} bell
+    if {[catch {angband_death answer $key}]} { bell; return }
+    if {$close} { destroy .tomb }
 }
 
 # What the Character window's Dump to File does, from here.

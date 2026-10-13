@@ -227,7 +227,18 @@ proc choice_click {x y X Y} {
         return
     }
     if {[catch {angband_choice pick [lindex $choicepane(rows) $i 0]} err]} {
-        bgerror $err
+        # Not `bgerror`.  Measured in this build of Tk 9.0: calling it as a
+        # command returns in a millisecond and the message goes nowhere at
+        # all -- it does not reach the handler errorInfo.tcl installs with
+        # `interp bgerror`, and it puts up no dialog.  A refused pick is
+        # routine, which is exactly why losing the reason is the wrong
+        # outcome: this is the click that did nothing and said nothing.
+        #
+        # The sink is where it belongs anyway, for the reason errorsink's own
+        # `background` gives: a modal dialog over a game that is mid-turn,
+        # waiting in the very prompt this click was answering, is the wrong
+        # shape even when it works.
+        errorsink::record "choice pick" $err $::errorInfo
     }
 }
 

@@ -27,7 +27,12 @@ proc check {what script expected} {
 		incr failures
 		return
 	}
-	if {$expected ne "" && $got ne $expected} {
+	# No `$expected ne ""` here.  It was, and an empty expectation is the
+	# normal way a check in this file says "and `bad` came back empty", so
+	# that guard turned seven of them into checks that could not fail --
+	# including one whose body cannot raise either, because its own `catch`es
+	# swallow everything, leaving it incapable of reporting anything at all.
+	if {$got ne $expected} {
 		say "FAIL $what: got '$got', wanted '$expected'"
 		incr failures
 		return
