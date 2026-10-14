@@ -159,6 +159,73 @@ captures use the debug commands to set the scene, and any character that has
 touched them carries that marker for as long as it exists — see
 :doc:`the cheating options <option>`.
 
+The Tk front end
+================
+
+Everything above is the game drawn in characters, which every front end shares.
+``ZangbandTKGUI.app`` puts windows around it, modelled on the 1990s ZangbandTk,
+and these five are screen captures of it on a Mac: one new character, a
+Half-Elf Ranger, from the Birth window to the first steps in town.
+
+.. image:: screenshots/tk-birth.png
+   :alt: The Birth window at its last step, Confirm, showing a Half-Elf Ranger
+         of the Nature and Arcane realms with its hit points, five stats and
+         family history, a pixel-art portrait at the top right, and the steps
+         Race, Class, Realms, Stats, Name, History and Confirm across the top.
+   :width: 100%
+
+Making a character, without the text screens. The steps run along the top, and
+Back goes back through them. The portrait at the corner follows the choices
+— there is one for every race and class, as a man and as a woman — and it is the
+one the character keeps for the rest of its life.
+
+.. image:: screenshots/tk-main.png
+   :alt: The main window: the map in Neon tiles with the village of Avernus at
+         the bottom of the view and the sidebar of stats on the left, the
+         overhead map and bars for hit points, spell points, food and
+         experience on the right, and three panes below, the last listing the
+         pack.
+   :width: 100%
+
+The main window, a moment into the game, in the Neon tiles. The map has the
+game's own sidebar and status line. Beside it is the overhead map, with bars for
+hit points, spell points, food and experience under it. Below are the messages,
+the recall pane, and the Choice pane, which shows the pack and answers the
+game's questions about items with a click.
+
+.. image:: screenshots/tk-character.png
+   :alt: The Character window's Info page, with the portrait, name, race, class,
+         title, level, gold and place, bars for hit points, mana and
+         experience, and three panels headed Fighting, Being and Standing.
+   :width: 100%
+
+The Character window. Info is the first of its five pages. The others are the
+character's background, its virtues, its mutations, and the game's notes on what
+has happened to it. A Ranger has no mana at the first level, so that bar is
+empty.
+
+.. image:: screenshots/tk-items.png
+   :alt: The Items window, with a paper doll on black between twelve equipment
+         slots on the left, the pack listed with weights on the right, and an
+         inscription field, a burden bar and buttons to wear, take off, drop and
+         inspect below.
+   :width: 100%
+
+The Items window: what is worn, on a paper doll, and what is carried, beside it.
+The burden bar says how near the character is to being slowed by its load.
+
+.. image:: screenshots/tk-keymaps.png
+   :alt: The Keymaps window, drawing a German Mac keyboard with its umlauts,
+         function keys, arrows and numeric keypad, the keys coloured by what
+         they do, with a list of commands to bind a key to below.
+   :width: 100%
+
+The Keymaps window draws the keyboard macOS says you have, so a German keyboard
+shows its umlauts. Blue keys are the game's own keymaps (the number row and
+the keypad walk), green ones are yours, and grey ones are keys the game cannot
+read. Click a key, then choose a command for it or record the keys it should
+press.
+
 How these were made
 ===================
 
@@ -171,6 +238,10 @@ normally use, so the whole world fits in one frame.
 
 That means these cannot drift from the game. They are not screenshots of a build
 somebody had lying about; regenerating them runs the current code.
+
+The Tk front end's pictures are the exception: they are screen captures, taken by
+a script that makes a character in a session of its own, opens each window and
+photographs it on its own.
 
 Still to come
 =============
