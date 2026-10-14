@@ -34,7 +34,7 @@ set keymap(msg) ""
 # which switches what the picture shows; gap:width is space.  Two shapes:
 # ANSI, and ISO, which has a key beside the left Shift and a taller Return.
 set keymap(rows,ansi) {
-    {Escape:1.5}
+    {Escape:1.5 gap:0.5 F1 F2 F3 F4 gap:0.5 F5 F6 F7 F8 gap:0.5 F9 F10 F11 F12}
     {0x32 0x12 0x13 0x14 0x15 0x17 0x16 0x1A 0x1C 0x19 0x1D 0x1B 0x18 BackSpace:2}
     {Tab:1.5 0x0C 0x0D 0x0E 0x0F 0x11 0x10 0x20 0x22 0x1F 0x23 0x21 0x1E 0x2A:1.5}
     {gap:1.75 0x00 0x01 0x02 0x03 0x05 0x04 0x26 0x28 0x25 0x29 0x27 Return:2.25}
@@ -42,7 +42,7 @@ set keymap(rows,ansi) {
     {Control:1.5 gap:2.5 space:6 gap:2.5 Control:1.5}
 }
 set keymap(rows,iso) {
-    {Escape:1.5}
+    {Escape:1.5 gap:0.5 F1 F2 F3 F4 gap:0.5 F5 F6 F7 F8 gap:0.5 F9 F10 F11 F12}
     {0x0A 0x12 0x13 0x14 0x15 0x17 0x16 0x1A 0x1C 0x19 0x1D 0x1B 0x18 BackSpace:2}
     {Tab:1.5 0x0C 0x0D 0x0E 0x0F 0x11 0x10 0x20 0x22 0x1F 0x23 0x21 0x1E Return:1.5}
     {gap:1.75 0x00 0x01 0x02 0x03 0x05 0x04 0x26 0x28 0x25 0x29 0x27 0x2A Return:1.25}
@@ -62,12 +62,33 @@ set keymap(us) {
     0x2D {n N} 0x2E {m M} 0x2B {, <} 0x2F {. >} 0x2C {/ ?} 0x0A {§ ±}
 }
 
-# The keys that type no character, as Tk names their keysyms, and their caps.
+# The keys that type no character, or that the game tells apart from the ones
+# that type the same -- the function keys and the keypad -- by their X11
+# keysyms, and their caps.
 set keymap(special) {
     Escape {0xFF1B esc} Tab {0xFF09 tab} BackSpace {0xFF08 delete}
     Return {0xFF0D return} space {0x20 space}
     Left {0xFF51 ←} Up {0xFF52 ↑} Right {0xFF53 →}
     Down {0xFF54 ↓}
+    F1 {0xFFBE F1} F2 {0xFFBF F2} F3 {0xFFC0 F3} F4 {0xFFC1 F4}
+    F5 {0xFFC2 F5} F6 {0xFFC3 F6} F7 {0xFFC4 F7} F8 {0xFFC5 F8}
+    F9 {0xFFC6 F9} F10 {0xFFC7 F10} F11 {0xFFC8 F11} F12 {0xFFC9 F12}
+    KP_0 {0xFFB0 0} KP_1 {0xFFB1 1} KP_2 {0xFFB2 2} KP_3 {0xFFB3 3}
+    KP_4 {0xFFB4 4} KP_5 {0xFFB5 5} KP_6 {0xFFB6 6} KP_7 {0xFFB7 7}
+    KP_8 {0xFFB8 8} KP_9 {0xFFB9 9} KP_Decimal {0xFFAE .}
+    KP_Enter {0xFF8D enter} KP_Add {0xFFAB +} KP_Subtract {0xFFAD −}
+    KP_Multiply {0xFFAA *} KP_Divide {0xFFAF /} KP_Equal {0xFFBD =}
+    Clear {0xFF0B clear}
+}
+
+# The keypad, as the Mac's is laid out, beside the arrows: name, column and
+# row in keys from its top left, width and height.
+set keymap(keypad) {
+    Clear 0 0 1 1  KP_Equal 1 0 1 1  KP_Divide 2 0 1 1  KP_Multiply 3 0 1 1
+    KP_7 0 1 1 1  KP_8 1 1 1 1  KP_9 2 1 1 1  KP_Subtract 3 1 1 1
+    KP_4 0 2 1 1  KP_5 1 2 1 1  KP_6 2 2 1 1  KP_Add 3 2 1 1
+    KP_1 0 3 1 1  KP_2 1 3 1 1  KP_3 2 3 1 1  KP_Enter 3 3 1 2
+    KP_0 0 4 2 1  KP_Decimal 2 4 1 1
 }
 
 proc keymap_window {} {
@@ -106,6 +127,9 @@ proc keymap_keys {} {
         }
     }
     foreach name {Left Up Right Down} {
+        dict set keymap(keys) k$name [list special $name]
+    }
+    foreach {name col row w h} $keymap(keypad) {
         dict set keymap(keys) k$name [list special $name]
     }
 }
@@ -155,6 +179,12 @@ proc keymap_does {trigger} {
     }
     set cmd [angband_keymap command $trigger]
     if {$cmd ne ""} { return [list command $cmd] }
+    # The game has no use for F1, and the main window opens the manual with
+    # it -- until the player binds it (main.tcl).
+    if {$trigger eq {[F1]}} {
+        return {free "nothing in the game: in the main window it opens the\
+            manual, until you bind it"}
+    }
     return {free ""}
 }
 
@@ -182,7 +212,7 @@ proc keymap_build {} {
 
     toplevel .keymap
     wm title .keymap "Zangband: Keymaps"
-    wm minsize .keymap 760 600
+    wm minsize .keymap 860 600
 
     set mb .keymap.mb
     menu $mb
@@ -202,15 +232,15 @@ proc keymap_build {} {
     ttk::frame $w -padding 10
     pack $w -fill both -expand 1
 
-    ttk::label $w.status -textvariable keymap(msg) -font {Helvetica 12} \
+    ttk::label $w.status -textvariable keymap(msg) -font [uifont 12] \
         -relief sunken -borderwidth 1 -anchor w -padding {4 1}
     pack $w.status -side bottom -fill x -pady {8 0}
 
-    ttk::label $w.keyset -font {Helvetica 12} -textvariable keymap(keyset)
+    ttk::label $w.keyset -font [uifont 12] -textvariable keymap(keyset)
     pack $w.keyset -anchor w
 
     # The keyboard, then what the colours mean, then which layer it shows.
-    canvas $w.kb -width 720 -height 250 -highlightthickness 1 \
+    canvas $w.kb -width 840 -height 230 -highlightthickness 1 \
         -background #d9d9d9 -takefocus 1
     pack $w.kb -fill x -pady {6 4}
     set lg [ttk::frame $w.legend]
@@ -219,20 +249,20 @@ proc keymap_build {} {
             command "A command" free "Nothing" none "Not a key the game reads"} {
         canvas $lg.c$kind -width 14 -height 14 -highlightthickness 0 \
             -background [keymap_colour $kind]
-        ttk::label $lg.l$kind -text $text -font {Helvetica 11}
+        ttk::label $lg.l$kind -text $text -font [uifont 11]
         pack $lg.c$kind -side left -padx {0 4}
         pack $lg.l$kind -side left -padx {0 14}
     }
     set ly [ttk::frame $w.layers]
     pack $ly -fill x -pady {4 8}
-    ttk::label $ly.l -text "Showing:" -font {Helvetica 12}
+    ttk::label $ly.l -text "Showing:" -font [uifont 12]
     pack $ly.l -side left
     foreach {layer text} {plain "The keys" shift "With Shift" control "With Control"} {
         ttk::radiobutton $ly.$layer -text $text -variable keymap(layer) \
             -value $layer -command keymap_layer_chosen
         pack $ly.$layer -side left -padx {6 0}
     }
-    ttk::label $ly.hint -font {Helvetica 11} -foreground #555 \
+    ttk::label $ly.hint -font [uifont 11] -foreground #555 \
         -text "  — or hold Shift or Control.  Press a key to choose it."
     pack $ly.hint -side left
 
@@ -247,32 +277,32 @@ proc keymap_build {} {
     grid columnconfigure $lo 1 -weight 2
     grid rowconfigure $lo 0 -weight 1
 
-    ttk::label $sel.key -textvariable keymap(keyname) -font {Helvetica 20 bold}
-    ttk::label $sel.now -textvariable keymap(now) -font {Helvetica 12} \
+    ttk::label $sel.key -textvariable keymap(keyname) -font [uifont 20 bold]
+    ttk::label $sel.now -textvariable keymap(now) -font [uifont 12] \
         -wraplength 420 -justify left
     grid $sel.key -row 0 -column 0 -columnspan 3 -sticky w
     grid $sel.now -row 1 -column 0 -columnspan 3 -sticky w -pady {0 8}
 
-    ttk::label $sel.cl -text "Make it do a command:" -font {Helvetica 12}
+    ttk::label $sel.cl -text "Make it do a command:" -font [uifont 12]
     ttk::entry $sel.filter -textvariable keymap(filter) -width 24
     bind $sel.filter <KeyRelease> {keymap_fill_commands; break}
     grid $sel.cl -row 2 -column 0 -sticky w
     grid $sel.filter -row 2 -column 1 -columnspan 2 -sticky ew
     listbox $sel.cmds -height 8 -exportselection 0 -activestyle none \
-        -yscrollcommand [list $sel.sb set] -font {Helvetica 12}
+        -yscrollcommand [list $sel.sb set] -font [uifont 12]
     ttk::scrollbar $sel.sb -orient vertical -command [list $sel.cmds yview]
     bind $sel.cmds <<ListboxSelect>> keymap_command_chosen
     grid $sel.cmds -row 3 -column 0 -columnspan 2 -sticky nsew -pady {4 0}
     grid $sel.sb -row 3 -column 2 -sticky ns -pady {4 0}
 
-    ttk::label $sel.rl -text "Or keys pressed:" -font {Helvetica 12}
+    ttk::label $sel.rl -text "Or keys pressed:" -font [uifont 12]
     ttk::button $sel.record -text "Record" -width 8 -command keymap_record
     ttk::button $sel.clear -text "Clear" -width 8 -command keymap_clear
     grid $sel.rl -row 4 -column 0 -sticky w -pady {8 0}
     grid $sel.record -row 4 -column 1 -sticky w -pady {8 0}
     grid $sel.clear -row 4 -column 2 -sticky w -pady {8 0}
 
-    ttk::label $sel.will -textvariable keymap(will) -font {Helvetica 12} \
+    ttk::label $sel.will -textvariable keymap(will) -font [uifont 12] \
         -wraplength 420 -justify left
     grid $sel.will -row 5 -column 0 -columnspan 3 -sticky w -pady {8 0}
 
@@ -313,6 +343,8 @@ proc keymap_build {} {
     keymap_keys
     keymap_fill_commands
 }
+
+bind . <<WindowTextChanged>> {+ if {[winfo exists .keymap]} keymap_draw }
 
 proc keymap_colour {kind} {
     dict get {mine #a8dca0 game #c9def2 command #ffffff free #ededed
@@ -359,7 +391,8 @@ proc keymap_draw {} {
     global keymap
     set c .keymap.f.kb
     $c delete all
-    set u 40
+    # Keys as large as their caps: the window text's size decides both.
+    set u [ui_scaled 36]
     set pad 3
     set y 8
     set view $keymap(view)
@@ -380,7 +413,7 @@ proc keymap_draw {} {
                     -fill [keymap_colour [expr {$on ? "modon" : "mod"}]] \
                     -tags [list mod m$name]
                 $c create text [expr {($x + $x2) / 2}] [expr {($y + $y2) / 2}] \
-                    -text [string tolower $name] -font {Helvetica 10} \
+                    -text [string tolower $name] -font [uifont 10] \
                     -fill #444 -tags [list mod m$name]
                 $c bind m$name <ButtonRelease-1> [list keymap_toggle_layer \
                     [string tolower $name]]
@@ -393,7 +426,7 @@ proc keymap_draw {} {
         set y [expr {$y + $u}]
     }
     # The arrows, to the right of the main block, as an inverted T.
-    set ax [expr {8 + 15.75 * $u}]
+    set ax [expr {8 + 15.5 * $u}]
     set ay [expr {8 + 4 * $u}]
     keymap_draw_key $c kUp [expr {$ax + $u}] $ay [expr {$ax + 2 * $u - $pad}] \
         [expr {$ay + $u - $pad}]
@@ -403,7 +436,16 @@ proc keymap_draw {} {
             [expr {$ay + $u - $pad}]
         set ax [expr {$ax + $u}]
     }
-    $c configure -height [expr {$y + 8}] -width [expr {8 + 19 * $u}]
+    # The keypad, level with the number row.
+    set kx [expr {8 + 19 * $u}]
+    set ky [expr {8 + $u}]
+    foreach {name col row w h} $keymap(keypad) {
+        set x [expr {$kx + $col * $u}]
+        set y1 [expr {$ky + $row * $u}]
+        keymap_draw_key $c k$name $x $y1 [expr {$x + $w * $u - $pad}] \
+            [expr {$y1 + $h * $u - $pad}]
+    }
+    $c configure -height [expr {$y + 8}] -width [expr {8 + 23 * $u + 8}]
 }
 
 proc keymap_draw_key {c id x y x2 y2} {
@@ -413,7 +455,8 @@ proc keymap_draw_key {c id x y x2 y2} {
     set key [dict get $keymap(keys) $id]
     if {[lindex $key 0] eq "special"} {
         set cap [lindex [dict get $keymap(special) [lindex $key 1]] 1]
-        set font {Helvetica 10}
+        # A word small, a keypad digit or sign as large as any other key's.
+        set font [expr {[string length $cap] == 1 ? [uifont 13] : [uifont 10]}]
     } else {
         lassign $key - - plain shifted
         set cap [string toupper $plain]
@@ -422,7 +465,7 @@ proc keymap_draw_key {c id x y x2 y2} {
         if {$keymap(view) eq "plain" && ![string is alpha -strict $plain]} {
             set cap $plain
         }
-        set font {Helvetica 13}
+        set font [uifont 13]
     }
     set chosen [expr {$trigger ne "" && $trigger eq $keymap(selected)}]
     $c create rectangle $x $y $x2 $y2 -fill [keymap_colour $kind] \
@@ -460,7 +503,7 @@ proc keymap_what {kind text} {
         mine { return "your keymap, $text" }
         game { return "the game's keymap, $text" }
         command { return $text }
-        free { return "nothing" }
+        free { return [expr {$text ne "" ? $text : "nothing"}] }
         default { return "" }
     }
 }

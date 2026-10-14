@@ -220,12 +220,24 @@ proc items_build_slots {rows} {
     lassign [items_arrange $rows] left right
     set n [expr {max(6, [llength $left], [llength $right])}]
 
+    # The design's measurements are for text of 13.  The wells and rows grow
+    # with the window text, and the label column is as wide as the widest
+    # label in the font it is drawn in -- a fixed one cut "Weapon" off at the
+    # canvas edge once the text was larger.
     set o $items(doll,bd)
     set label $items(doll,label)
+    foreach row $rows {
+        lassign $row - - - - - - - type part
+        set text [expr {[info exists items(label,$type)] ? $items(label,$type)
+            : [string totitle $part]}]
+        set label [expr {max($label, [font measure [uifont 12] $text] + 2)}]
+    }
     set gap $items(doll,gap)
-    set well $items(doll,well)
+    set well [ui_scaled $items(doll,well)]
+    set rowh [ui_scaled $items(doll,row)]
     set leader $items(doll,leader)
-    set height [expr {$n * $items(doll,row) - ($items(doll,row) - $well)}]
+    # Never shorter than the figure, which is pixel art and does not scale.
+    set height [expr {max($n * $rowh - ($rowh - $well), $items(doll,spriteh))}]
 
     # The sprite, centred between the two columns of wells.
     set sx1 [expr {$o + $items(doll,padx) + $label + $gap + $well + $leader}]
@@ -240,7 +252,7 @@ proc items_build_slots {rows} {
         set r 0
         foreach row $column {
             lassign $row slot
-            set y1 [expr {$o + $items(doll,pady) + $r * $items(doll,row)}]
+            set y1 [expr {$o + $items(doll,pady) + $r * $rowh}]
             set y2 [expr {$y1 + $well}]
             set cy [expr {$y1 + $well / 2}]
 
@@ -262,8 +274,8 @@ proc items_build_slots {rows} {
             $c create rectangle $x1 $y1 $x2 $y2 -fill black -outline #606060 \
                 -tags [list slot s$slot]
             $c create text [expr {($x1 + $x2) / 2}] $cy -anchor center \
-                -font {Courier 18 bold} -tags [list slot s$slot g$slot]
-            $c create text $lx $cy -anchor $anchor -font {Helvetica 12} \
+                -font [uifont Courier 18 bold] -tags [list slot s$slot g$slot]
+            $c create text $lx $cy -anchor $anchor -font [uifont 12] \
                 -fill #c0c0c0 -tags [list slot s$slot l$slot]
             set items(well,$slot) [list $x1 $y1 $x2 $y2]
 
@@ -276,6 +288,15 @@ proc items_build_slots {rows} {
     }
     $c raise selring
     $c raise hover
+}
+
+# The doll is laid out for the window text's size, so laid out again for a new
+# one.
+bind . <<WindowTextChanged>> {+
+    if {[winfo exists .items]} {
+        unset -nocomplain items(shape)
+        items_refresh_slots
+    }
 }
 
 proc items_refresh_slots {} {
@@ -352,10 +373,13 @@ proc items_refresh_pack {} {
 
 # The weight column is a right-aligned tab at the far edge, which moves when
 # the list is resized.
+# Measured in the window text's own font, so measured again when it changes.
+bind . <<WindowTextChanged>> {+ items_pack_tabs }
+
 proc items_pack_tabs {} {
     set t [items_pack_text]
     if {![winfo exists $t]} return
-    set cw [font measure {Courier 12} 0]
+    set cw [font measure [uifont Courier 12] 0]
     set inset [expr {2 * ([$t cget -padx] + [$t cget -borderwidth]
         + [$t cget -highlightthickness]) + 4}]
     set right [expr {max(12 * $cw, [winfo width $t] - $inset)}]
@@ -801,7 +825,7 @@ proc items_cursor {w cursor} {
 proc items_ghost_show {glyph colour} {
     set g .items.f.ghost
     if {![winfo exists $g]} {
-        label $g -font {Courier 18 bold} -background black -padx 8 -pady 2 \
+        label $g -font [uifont Courier 18 bold] -background black -padx 8 -pady 2 \
             -relief raised -borderwidth 1
     }
     $g configure -text $glyph \
@@ -913,8 +937,8 @@ proc items_window {} {
     # keep their room when the window is made smaller
     ttk::frame $w.status
     pack $w.status -side bottom -fill x -padx 2 -pady 2
-    items_readout $w.status.msg items(message) -font {Helvetica 12} -anchor w
-    items_readout $w.status.cap items(v,capacity) -font {Helvetica 12} \
+    items_readout $w.status.msg items(message) -font [uifont 12] -anchor w
+    items_readout $w.status.cap items(v,capacity) -font [uifont 12] \
         -anchor center -width -18
     pack $w.status.cap -side right
     pack $w.status.msg -side left -fill x -expand 1 -padx {0 2}
@@ -940,7 +964,7 @@ proc items_window {} {
     ttk::frame $tl
     pack $tl -side bottom -fill x -padx 10 -pady {4 8}
     ttk::label $tl.il -text "Inscription:" -underline 2
-    ttk::entry $tl.insc -textvariable items(inscription) -font {Courier 12} \
+    ttk::entry $tl.insc -textvariable items(inscription) -font [uifont Courier 12] \
         -width 22
     ttk::button $tl.inscribe -text Inscribe -command items_inscribe
     ttk::label $tl.bl -text "Burden:"
@@ -981,9 +1005,9 @@ proc items_window {} {
     bind $eq.doll <ButtonRelease-1> { items_release %X %Y }
 
     ttk::frame $eq.read
-    ttk::label $eq.read.sl -text "Selected:" -font {Helvetica 12}
+    ttk::label $eq.read.sl -text "Selected:" -font [uifont 12]
     items_readout $eq.read.sv items(v,sel) -anchor w
-    ttk::label $eq.read.wl -text "Worn:" -font {Helvetica 12}
+    ttk::label $eq.read.wl -text "Worn:" -font [uifont 12]
     items_readout $eq.read.wv items(v,worn) -anchor e -width -8
     grid $eq.read.sl -row 0 -column 0 -sticky e -padx {0 6} -pady 2
     grid $eq.read.sv -row 0 -column 1 -sticky ew -pady 2
@@ -997,14 +1021,14 @@ proc items_window {} {
     set inv $body.inv
     ttk::labelframe $inv -text Inventory -padding 8
     ttk::frame $inv.hdr
-    ttk::label $inv.hdr.i -text "Item" -font {Helvetica 12}
-    ttk::label $inv.hdr.w -text "Weight" -font {Helvetica 12}
+    ttk::label $inv.hdr.i -text "Item" -font [uifont 12]
+    ttk::label $inv.hdr.w -text "Weight" -font [uifont 12]
     pack $inv.hdr.i -side left -padx {4 0}
     pack $inv.hdr.w -side right -padx {0 24}
 
     ttk::frame $inv.list
     set t $inv.list.t
-    text $t -width 44 -height 14 -wrap none -font {Courier 12} \
+    text $t -width 44 -height 14 -wrap none -font [uifont Courier 12] \
         -background $field -foreground black -cursor arrow \
         -relief sunken -borderwidth 2 -highlightthickness 2 \
         -highlightcolor black -highlightbackground $ground \
@@ -1015,7 +1039,7 @@ proc items_window {} {
     pack $t -side left -fill both -expand 1
 
     # Not "sel": that is the text widget's own selection tag.
-    $t tag configure glyph -background black -font {Courier 12 bold}
+    $t tag configure glyph -background black -font [uifont Courier 12 bold]
     $t tag configure chosen -background $chosen -relief raised -borderwidth 1
     $t tag configure empty -foreground #828282
     $t tag raise glyph
@@ -1033,7 +1057,7 @@ proc items_window {} {
     bind $t <Return> { items_wear ; break }
 
     ttk::frame $inv.foot
-    ttk::label $inv.foot.l -text "Pack:" -font {Helvetica 12}
+    ttk::label $inv.foot.l -text "Pack:" -font [uifont 12]
     items_readout $inv.foot.n items(v,packcount) -anchor w
     items_readout $inv.foot.w items(v,packweight) -anchor e -width -8
     pack $inv.foot.l -side left -padx {0 6}

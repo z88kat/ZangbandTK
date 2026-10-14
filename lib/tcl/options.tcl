@@ -239,9 +239,9 @@ proc options_build {} {
     # Status, and the button to close, before the tabs keep their room.
     ttk::frame $w.status
     pack $w.status -side bottom -fill x -padx 2 -pady 2
-    ttk::label $w.status.msg -textvariable options(msg) -font {Helvetica 12} \
+    ttk::label $w.status.msg -textvariable options(msg) -font [uifont 12] \
         -relief sunken -borderwidth 1 -anchor w -padding {4 1}
-    ttk::label $w.status.score -textvariable options(score) -font {Helvetica 12} \
+    ttk::label $w.status.score -textvariable options(score) -font [uifont 12] \
         -relief sunken -borderwidth 1 -anchor center -width -20 -padding {4 1}
     pack $w.status.score -side right -padx {2 0}
     pack $w.status.msg -side left -fill x -expand 1
@@ -270,7 +270,7 @@ proc options_build {} {
         lassign $row name type desc
         if {$type ne "value"} continue
         set f [ttk::frame $inner.v$name]
-        ttk::spinbox $f.s -from 0 -to 9 -width 3 -font {Courier 12} \
+        ttk::spinbox $f.s -from 0 -to 9 -width 3 -font [uifont Courier 12] \
             -textvariable options(o,$name) -command [list options_value $name]
         bind $f.s <Return> [list options_value $name]
         bind $f.s <FocusOut> [list options_value $name]
@@ -286,7 +286,7 @@ proc options_build {} {
     set p [ttk::frame $nb.birth -padding 8]
     $nb add $p -text "Birth" -underline 0
     ttk::label $p.note -textvariable options(birthnote) -wraplength 500 \
-        -justify left -font {Helvetica 12}
+        -justify left -font [uifont 12]
     pack $p.note -anchor w -pady {0 6}
     options_page_buttons $p birth
     set inner [options_scrolled $p]
@@ -297,8 +297,8 @@ proc options_build {} {
     set p [ttk::frame $nb.cheat -padding 10]
     $nb add $p -text "Cheats" -underline 1
     set warn [ttk::frame $p.warn]
-    ttk::label $warn.icon -text "!" -font {Helvetica 30 bold}
-    ttk::label $warn.text -font {Helvetica 12} -wraplength 460 -justify left \
+    ttk::label $warn.icon -text "!" -font [uifont 30 bold]
+    ttk::label $warn.text -font [uifont 12] -wraplength 460 -justify left \
         -text "Using any cheat marks this character.  A marked character can\
             no longer be entered on the high-score list."
     pack $warn.icon -side left -padx {6 14}
@@ -311,7 +311,7 @@ proc options_build {} {
 
     set a [ttk::labelframe $p.acts -text "One-Time Actions" -padding {10 6}]
     pack $a -fill x -pady {12 0}
-    ttk::label $a.note -font {Helvetica 12} \
+    ttk::label $a.note -font [uifont 12] \
         -text "Each takes effect once, when its button is pressed."
     grid $a.note -row 0 -column 0 -columnspan 3 -sticky w -pady {0 8}
     set r 1
@@ -320,7 +320,7 @@ proc options_build {} {
         grid $a.l$r -row $r -column 0 -sticky e -padx {0 8} -pady 3
         if {$field ne ""} {
             ttk::entry $a.e$r -textvariable options($field) -width 16 \
-                -font {Courier 12}
+                -font [uifont Courier 12]
             grid $a.e$r -row $r -column 1 -sticky w -pady 3
         }
         ttk::button $a.b$r -text $verb -width 9 \

@@ -241,7 +241,10 @@ it does: one of your keymaps, one of the game's own, a command, or nothing.
 Hold Shift or Control to see those keys, and point at a key to read what it
 does.  Press a key, or click it, to choose it; then pick a command from the
 list, or press Record and type the keys the keymap should send, and click Bind.
-Remove takes your keymap off the key again.  There is nothing to save: every
+Remove takes your keymap off the key again.  The function keys and the keypad
+can be bound like any other; the keypad already walks, as the game's own
+keymaps have it, and runs with Shift.  F1 opens this manual from the main
+window until you bind it, and then it is yours.  There is nothing to save: every
 change is written at once to ``user.prf`` in your user folder, which every
 character loads, in the same form the options menu below uses, so a keymap
 made in either front end works in the other.
@@ -557,7 +560,10 @@ Preferences ▸ Options, or Preferences in the application menu):
   uses the same size, so its tiles grow too.
 * **Fonts** sets the font and size of the map, of the text panes beside and
   below it, and of the overhead map.  A pane's font decides how many rows and
-  columns fit in it, so a larger font shows less of the map.
+  columns fit in it, so a larger font shows less of the map.  **Window text**
+  sets the size of the text in every other window -- the Character, Items and
+  Knowledge windows, the shops, the Options window itself and the manual in the
+  Help window -- with headings and the rest scaled to match.
 * **Colours** offers the game's colours, a high-contrast palette, a palette
   made for colour-blind players, and your own.  Click a colour in the row of
   swatches to change it, which makes the palette your own.  The palettes colour

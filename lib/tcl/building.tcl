@@ -215,12 +215,11 @@ proc building_window {} {
     pack $w -fill both -expand 1
 
     set field [ttk::style lookup TEntry -fieldbackground {} white]
-    ttk::style configure Building.Treeview -font {Helvetica 12} \
-        -rowheight [expr {[font metrics {Helvetica 12} -linespace] + 6}] \
-        -fieldbackground $field -background $field
-    ttk::style configure Building.Treeview.Heading -font {Helvetica 12 bold}
+    ui_treeview Building.Treeview [uifont 12] \
+                -fieldbackground $field -background $field
+    ttk::style configure Building.Treeview.Heading -font [uifont 12 bold]
 
-    ttk::label $w.where -textvariable building(where) -font {Helvetica 12}
+    ttk::label $w.where -textvariable building(where) -font [uifont 12]
     pack $w.where -anchor w -padx 10 -pady {10 2}
     ttk::label $w.ask -textvariable building(ask) -wraplength 560 -justify left
     pack $w.ask -anchor w -padx 10 -pady {2 6}
@@ -229,9 +228,9 @@ proc building_window {} {
     # that they keep their room when the window is made smaller
     ttk::frame $w.status
     pack $w.status -side bottom -fill x -padx 2 -pady 2
-    ttk::label $w.status.msg -textvariable building(msg) -font {Helvetica 12} \
+    ttk::label $w.status.msg -textvariable building(msg) -font [uifont 12] \
         -relief sunken -borderwidth 1 -anchor w -padding {4 1}
-    ttk::label $w.status.gold -textvariable building(gold) -font {Helvetica 12} \
+    ttk::label $w.status.gold -textvariable building(gold) -font [uifont 12] \
         -relief sunken -borderwidth 1 -anchor center -width -16 -padding {4 1}
     pack $w.status.gold -side right -padx {2 0}
     pack $w.status.msg -side left -fill x -expand 1

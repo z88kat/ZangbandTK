@@ -97,16 +97,16 @@ proc tips_window {} {
     ttk::frame $w -padding {10 6 10 0}
     pack $w -fill both -expand 1
 
-    ttk::label $w.head -text "Welcome to ZangbandTK" -font {Times 24 bold}
+    ttk::label $w.head -text "Welcome to ZangbandTK" -font [uifont Times 24 bold]
     pack $w.head -anchor w -pady {0 6}
 
     # The tip, on the original's pale yellow.  Only the window's own bindings:
     # it is something to read, not to type in or select from.
     set t $w.tip
-    text $t -width 52 -height 9 -wrap word -font {Helvetica 12} \
+    text $t -width 52 -height 9 -wrap word -font [uifont 12] \
         -background #FFFFE0 -foreground black -relief sunken -borderwidth 1 \
         -highlightthickness 0 -cursor {} -takefocus 0 -padx 0 -pady 0
-    $t tag configure head -font {Helvetica 12 bold} -lmargin1 20 \
+    $t tag configure head -font [uifont 12 bold] -lmargin1 20 \
         -spacing1 16 -spacing3 12
     $t tag configure body -lmargin1 20 -lmargin2 20 -rmargin 20 -spacing2 2
     bindtags $t [list $t .tips all]

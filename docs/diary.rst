@@ -31,6 +31,25 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+14 October 2026 — bigger text, and the rest of the keyboard
+===========================================================
+
+The text in the windows can be made bigger now: Character, Items, the shops,
+the Options window itself, and the manual in the Help window. It is one
+setting on the Display page, Window text, and everything else scales from it,
+so a heading stays the same amount bigger than the text under it. Before this,
+every window had its sizes written in by hand, more than a hundred of them, and
+none could change. Two windows had been laid out to the pixel, and the bigger
+text simply ran off the edge. The paper doll in the Items window cut "Weapon"
+down to "eapon". Both lay themselves out again now when the size changes.
+
+The function keys and the number pad now reach the game. The number pad used to
+arrive as the ordinary number keys. That is why the game's own number-pad
+keymaps, walking and running with Shift, had never worked in this window,
+although they had been there all along. F1 still opens the manual, unless you
+bind something else to it.
+
+
 14 October 2026 — F1, everywhere
 ================================
 

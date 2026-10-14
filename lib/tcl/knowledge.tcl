@@ -344,7 +344,7 @@ proc knowledge_facts {} {
         set row [expr {$i / 2}]
         set col [expr {($i % 2) * 2}]
         set knowledge(v,$field) "—"
-        ttk::label $f.l$field -text "$label:" -font {Helvetica 12}
+        ttk::label $f.l$field -text "$label:" -font [uifont 12]
         ttk::label $f.v$field -textvariable knowledge(v,$field) \
             -relief sunken -borderwidth 1 -anchor w -padding {4 1}
         grid $f.l$field -row $row -column $col -sticky e -pady 3 \
@@ -507,7 +507,7 @@ proc knowledge_window {} {
     ttk::frame $w.tools
     pack $w.tools -fill x -padx 10 -pady 4
     ttk::label $w.tools.fl -text "Find:" -underline 0
-    ttk::entry $w.tools.find -textvariable knowledge(query) -font {Courier 12}
+    ttk::entry $w.tools.find -textvariable knowledge(query) -font [uifont Courier 12]
     ttk::label $w.tools.sl -text "Sort by:"
     ttk::menubutton $w.tools.sort -textvariable knowledge(sort) \
         -menu $w.tools.sort.m -width 8
@@ -525,9 +525,9 @@ proc knowledge_window {} {
     # that they keep their room when the window is made smaller
     ttk::frame $w.status
     pack $w.status -side bottom -fill x -padx 2 -pady 2
-    ttk::label $w.status.msg -textvariable knowledge(msg) -font {Helvetica 12} \
+    ttk::label $w.status.msg -textvariable knowledge(msg) -font [uifont 12] \
         -relief sunken -borderwidth 1 -anchor w -padding {4 1}
-    ttk::label $w.status.pos -textvariable knowledge(pos) -font {Helvetica 12} \
+    ttk::label $w.status.pos -textvariable knowledge(pos) -font [uifont 12] \
         -relief sunken -borderwidth 1 -anchor center -width 12 -padding {4 1}
     pack $w.status.pos -side right
     pack $w.status.msg -side left -fill x -expand 1 -padx {0 2}
@@ -552,9 +552,9 @@ proc knowledge_window {} {
 
     set l $body.list
     ttk::labelframe $l -padding 6
-    ttk::label $l.hdr -textvariable knowledge(header) -font {Courier 12} \
+    ttk::label $l.hdr -textvariable knowledge(header) -font [uifont Courier 12] \
         -padding {3 0}
-    listbox $l.lb -width 40 -height 22 -font {Courier 12} \
+    listbox $l.lb -width 40 -height 22 -font [uifont Courier 12] \
         -selectmode browse -exportselection 0 -activestyle none \
         -background $field -foreground black \
         -selectbackground $chosen -selectforeground black -selectborderwidth 1 \
@@ -578,21 +578,21 @@ proc knowledge_window {} {
     canvas $h.glyph -width 40 -height 40 -background black \
         -relief sunken -borderwidth 2 -highlightthickness 0
     $h.glyph create text 22 22 -tags glyph -anchor center \
-        -font {Courier 20 bold}
-    ttk::label $h.name -textvariable knowledge(name) -font {Helvetica 18 bold}
-    ttk::label $h.kind -textvariable knowledge(kind) -font {Helvetica 12 italic}
+        -font [uifont Courier 20 bold]
+    ttk::label $h.name -textvariable knowledge(name) -font [uifont 18 bold]
+    ttk::label $h.kind -textvariable knowledge(kind) -font [uifont 12 italic]
     grid $h.glyph -row 0 -column 0 -rowspan 2 -sticky w -padx {0 10}
     grid $h.name  -row 0 -column 1 -sticky w
     grid $h.kind  -row 1 -column 1 -sticky w
 
     ttk::labelframe $d.facts -text Facts -padding 8
     ttk::labelframe $d.known -text "What Is Known" -padding 6
-    text $d.known.txt -height 8 -width 40 -wrap word -font {Courier 12} \
+    text $d.known.txt -height 8 -width 40 -wrap word -font [uifont Courier 12] \
         -background $field -foreground black \
         -relief sunken -borderwidth 2 -highlightthickness 1 \
         -highlightcolor black -highlightbackground $ground -padx 4 -pady 4 \
         -yscrollcommand [list $d.known.sb set]
-    $d.known.txt tag configure head -font {Courier 12 bold}
+    $d.known.txt tag configure head -font [uifont Courier 12 bold]
     ttk::scrollbar $d.known.sb -orient vertical -command [list $d.known.txt yview]
     pack $d.known.sb -side right -fill y
     pack $d.known.txt -side left -fill both -expand 1

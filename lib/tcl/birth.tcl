@@ -146,7 +146,7 @@ proc birth_steps {} {
     set i 0
     foreach step $birth(steps) {
         set l .birth.f.head.text.steps.s$i
-        $l configure -font [expr {$i == $at ? {Helvetica 12 bold} : {Helvetica 12}}] \
+        $l configure -font [expr {$i == $at ? [uifont 12 bold] : [uifont 12]}] \
             -foreground [expr {$at < 0 || $i > $at ? "#909090" : "black"}]
         incr i
     }
@@ -285,7 +285,7 @@ proc birth_stat_rows {table extra} {
         lassign $row name self race class best
         set c 0
         foreach v [list $name $self [format %+d $race] [format %+d $class] $best] {
-            ttk::label $table.v$r,$c -text $v -anchor e -font {Courier 12}
+            ttk::label $table.v$r,$c -text $v -anchor e -font [uifont Courier 12]
             grid $table.v$r,$c -row $r -column $c -sticky ew -padx 6 -pady 1
             incr c
         }
@@ -311,7 +311,7 @@ proc birth_points_page {} {
         lassign $row cost next buy sell
         incr spent $cost
         set stat [expr {$r - 1}]
-        ttk::label $table.v$r,5 -text $cost -anchor e -font {Courier 12}
+        ttk::label $table.v$r,5 -text $cost -anchor e -font [uifont Courier 12]
         grid $table.v$r,5 -row $r -column 5 -sticky ew -padx 6
         ttk::frame $table.b$r
         ttk::button $table.b$r.sell -text "−" -width 2 \
@@ -504,10 +504,9 @@ proc birth_window {} {
     wm minsize .birth 720 520
 
     set field [ttk::style lookup TEntry -fieldbackground {} white]
-    ttk::style configure Birth.Treeview -font {Helvetica 12} \
-        -rowheight [expr {[font metrics {Helvetica 12} -linespace] + 6}] \
-        -fieldbackground $field -background $field
-    ttk::style configure Birth.Treeview.Heading -font {Helvetica 12 bold}
+    ui_treeview Birth.Treeview [uifont 12] \
+                -fieldbackground $field -background $field
+    ttk::style configure Birth.Treeview.Heading -font [uifont 12 bold]
 
     set w .birth.f
     ttk::frame $w
@@ -578,11 +577,11 @@ proc birth_window {} {
     }
     ttk::labelframe $p.desc -text Description -padding 6
     pack $p.desc -side left -fill both -expand 1 -padx {12 0}
-    text $p.desc.t -width 44 -height 14 -wrap word -font {Courier 12} \
+    text $p.desc.t -width 44 -height 14 -wrap word -font [uifont Courier 12] \
         -background $field -foreground black -relief sunken -borderwidth 2 \
         -highlightthickness 0 -padx 6 -pady 6 -state disabled
-    $p.desc.t tag configure head -font {Courier 12 bold}
-    $p.desc.t tag configure prose -font {Helvetica 13} -spacing3 2
+    $p.desc.t tag configure head -font [uifont Courier 12 bold]
+    $p.desc.t tag configure prose -font [uifont 13] -spacing3 2
     birth_scrolled $p.desc.t $p.desc.sb 0
 
     # Point-based stats.
@@ -612,7 +611,7 @@ proc birth_window {} {
     # The name.
     set p $w.name
     ttk::frame $p
-    ttk::entry $p.e -textvariable birth(name) -width 32 -font {Helvetica 14}
+    ttk::entry $p.e -textvariable birth(name) -width 32 -font [uifont 14]
     ttk::button $p.random -text "Random Name" \
         -command {set birth(name) [angband_birth random_name]}
     grid $p.e $p.random -sticky w -padx {0 8} -pady 8
@@ -621,7 +620,7 @@ proc birth_window {} {
     # The history.
     set p $w.history
     ttk::frame $p
-    text $p.t -width 60 -height 8 -wrap word -font {Helvetica 13} \
+    text $p.t -width 60 -height 8 -wrap word -font [uifont 13] \
         -background $field -foreground black -relief sunken -borderwidth 2 \
         -highlightthickness 1 -padx 6 -pady 6 -undo 1
     birth_scrolled $p.t $p.sb {6 0}
@@ -629,11 +628,11 @@ proc birth_window {} {
     # The character as made.
     set p $w.confirm
     ttk::frame $p
-    text $p.t -width 60 -height 16 -wrap word -font {Courier 12} \
+    text $p.t -width 60 -height 16 -wrap word -font [uifont Courier 12] \
         -background $field -foreground black -relief sunken -borderwidth 2 \
         -highlightthickness 0 -padx 8 -pady 8 -state disabled
-    $p.t tag configure head -font {Courier 14 bold}
-    $p.t tag configure bold -font {Courier 12 bold}
+    $p.t tag configure head -font [uifont Courier 14 bold]
+    $p.t tag configure bold -font [uifont Courier 12 bold]
     ttk::button $p.over -text "Start Over" -command {birth_answer startover}
     pack $p.over -side bottom -anchor w -pady {8 0}
     birth_scrolled $p.t $p.sb {6 0}
@@ -643,11 +642,11 @@ proc birth_window {} {
     ttk::frame $p
     ttk::frame $p.act
     pack $p.act -side bottom -anchor w -pady {8 0}
-    text $p.t -width 60 -height 14 -wrap word -font {Courier 12} \
+    text $p.t -width 60 -height 14 -wrap word -font [uifont Courier 12] \
         -background $field -foreground black -relief sunken -borderwidth 2 \
         -highlightthickness 0 -padx 8 -pady 8 -state disabled
-    $p.t tag configure head -font {Courier 14 bold}
-    $p.t tag configure bold -font {Courier 12 bold}
+    $p.t tag configure head -font [uifont Courier 14 bold]
+    $p.t tag configure bold -font [uifont Courier 12 bold]
     birth_scrolled $p.t $p.sb {6 0}
     ttk::button $p.act.use -text "Play Again" -default active \
         -command {birth_answer use}

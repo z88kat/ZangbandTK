@@ -2163,8 +2163,8 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 >   else instead.
 > - **No macros.** 4.2 has none, and needs none: a recorded keymap is what a macro was, and
 >   the original's sixteen defaults are native (OBS-32).
-> - Not drawn: the function keys and the keypad, which `tk_keypress()` does not read yet
->   (the keypad arrives as the digits), so nothing can be bound to them from here.
+> - ~~Not drawn: the function keys and the keypad~~ — read and drawn since 14 October; see
+>   the note below.
 
 > **F1 everywhere, 14 October 2026.** The four windows' F1 (Character, Items, Knowledge,
 > Spell Book) and the Keymaps window's are joined by every other window that has a place in
@@ -2179,6 +2179,26 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 > Console, Errors and About, which the manual does not cover. Bridge checks: every place
 > named is in the manual (a renamed heading would otherwise fall back silently), and the
 > procs land where they should.
+
+> **The function keys and the keypad, 14 October 2026.** `tk_keypress()` reads F1–F15 as the
+> game's `KC_F1`… and the keypad as its own keys, marked `KC_MOD_KEYPAD` as the Cocoa front
+> end marks them, Shift and Control kept on them where the game keeps them — so pref.prf's
+> keypad keymaps, which walk on `{K}1` and run on `{SK}1`, work at last: the keypad used to
+> arrive as the number row. The Keymaps window draws the function row and a Mac keypad.
+> F1 stays the main window's manual (`main_f1`) unless the player has a keymap of their own
+> on it, which then wins.
+
+> **The windows' own text, 14 October 2026.** One size on the Display page, "Window text",
+> 13 by default, for everything that is not a pane. No window names a size any more: it asks
+> `uifont` for the size it wants at 13 and gets a named font that follows the setting; the
+> Help window's fonts are made the same way (`ui_font_create`), Tk's standard fonts and ttk's
+> default (which `main.tcl` sets) scale with it, and a Treeview style registered with
+> `ui_treeview` gets its row height back. 113 literal fonts converted; a bridge check fails if
+> a script names one again. Two windows had fixed pixel layouts that the text outgrew: the
+> Items window's paper doll, whose label column is now measured from its labels and whose
+> wells scale, and the Keymaps keyboard, whose keys scale; both lay out again on
+> `<<WindowTextChanged>>`, as do the Items list's tab stops. Menus are the Mac's and keep
+> the system size.
 
 ---
 

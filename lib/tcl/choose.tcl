@@ -243,10 +243,9 @@ proc choose_window {} {
     wm minsize .choose 600 360
 
     set field [ttk::style lookup TEntry -fieldbackground {} white]
-    ttk::style configure Choose.Treeview -font {Helvetica 12} \
-        -rowheight [expr {[font metrics {Helvetica 12} -linespace] + 6}] \
-        -fieldbackground $field -background $field
-    ttk::style configure Choose.Treeview.Heading -font {Helvetica 12 bold}
+    ui_treeview Choose.Treeview [uifont 12] \
+                -fieldbackground $field -background $field
+    ttk::style configure Choose.Treeview.Heading -font [uifont 12 bold]
 
     set w .choose.f
     ttk::frame $w
@@ -259,14 +258,14 @@ proc choose_window {} {
 
     # --- status, buttons and the rule over them, packed before the list so
     # that they keep their room when the window is made smaller
-    ttk::label $w.status -textvariable choose(msg) -font {Helvetica 12} \
+    ttk::label $w.status -textvariable choose(msg) -font [uifont 12] \
         -relief sunken -borderwidth 1 -anchor w -padding {4 1}
     pack $w.status -side bottom -fill x -padx 2 -pady 2
 
     set b $w.btns
     ttk::frame $b
     pack $b -side bottom -fill x -padx 10 -pady 10
-    ttk::label $b.file -textvariable choose(file) -font {Helvetica 12}
+    ttk::label $b.file -textvariable choose(file) -font [uifont 12]
     ttk::button $b.open -text "Open" -underline 0 -width 9 -command choose_open
     ttk::button $b.new -text "New" -underline 0 -width 9 -command choose_new
     ttk::button $b.quit -text "Quit" -underline 0 -width 9 -command choose_quit
@@ -289,8 +288,8 @@ proc choose_window {} {
         $tv heading $col -anchor w -command [list choose_sort $col]
         $tv column $col -anchor w -width $width -stretch $stretch
     }
-    $tv tag configure alive -font {Helvetica 12 bold}
-    $tv tag configure dead -font {Helvetica 12}
+    $tv tag configure alive -font [uifont 12 bold]
+    $tv tag configure dead -font [uifont 12]
     grid $tv -row 0 -column 0 -sticky nsew
     grid $f.sb -row 0 -column 1 -sticky ns
     grid rowconfigure $f 0 -weight 1

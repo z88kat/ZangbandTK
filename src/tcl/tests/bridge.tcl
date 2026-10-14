@@ -1677,6 +1677,39 @@ proc display_pass {} {
 				== [font measure panefont W]}]
 	} "1 17 1"
 
+	# The windows' text is one size, which every window's fonts follow -- and
+	# Tk's own, and the height of a list's rows -- and which is kept.
+	check "the window text sets every window's fonts, and is kept" {
+		set was $::display(uisize)
+		set body [uifont 12]
+		ui_treeview Probe.Treeview $body
+		set rows [ttk::style lookup Probe.Treeview -rowheight]
+		set tk [font configure TkDefaultFont -size]
+		display_uisize 17
+		set got [list [font configure $body -size] \
+			[font configure helpbody -size] \
+			[expr {[ttk::style lookup Probe.Treeview -rowheight] > $rows}] \
+			[expr {[font configure TkDefaultFont -size] > $tk}] \
+			[settings_get display,font,windows {}]]
+		catch {display_uisize 40} e
+		display_uisize $was
+		lappend got [font configure $body -size] $e
+	} "16 17 1 1 17 12 {a size from 9 to 24}"
+
+	# And none of them names a size of its own, which would not follow it.
+	check "no window's script names a font size outright" {
+		set named {}
+		foreach f [glob -directory $::display(dir) *.tcl] {
+			set h [open $f]
+			set text [read $h]
+			close $h
+			if {[regexp {\{(Helvetica|Courier|Times) [0-9]} $text]} {
+				lappend named [file tail $f]
+			}
+		}
+		set named
+	} {}
+
 	check "a palette changes the game's colours, and the game's come back" {
 		display_palette colourblind
 		update
@@ -1796,6 +1829,27 @@ proc keymap_pass {} {
 			[angband_keymap trigger 65505 1 ""] \
 			[angband_keymap command q]
 	} "q ^f {{S}\[Tab\]} {} {Quaff a potion}"
+
+	# The function keys and the keypad are game keys: the keypad marked as
+	# such, as pref.prf's walking keymaps want it, Shift and Control kept on
+	# it, and F1 the main window's manual until the player binds it.
+	check "the function keys and the keypad reach the game" {
+		list [angband_keymap trigger [expr 0xFFC2] 0 ""] \
+			[angband_keymap trigger [expr 0xFFB1] 0 1] \
+			[angband_keymap trigger [expr 0xFFB1] 1 1] \
+			[angband_keymap trigger [expr 0xFF8D] 0 ""] \
+			[lindex [lsearch -exact -inline -index 0 [angband_keymap list] \
+				"{K}1"] 1]
+	} {{[F5]} {{K}1} {{SK}1} {{K}[Enter]} {;1}}
+
+	check "F1 is the manual's until the player binds it" {
+		set before [main_f1_bound [expr 0xFFBE] 0 ""]
+		angband_keymap set {[F1]} C
+		set bound [main_f1_bound [expr 0xFFBE] 0 ""]
+		set shifted [main_f1_bound [expr 0xFFBE] 1 ""]
+		angband_keymap remove {[F1]}
+		list $before $bound $shifted [main_f1_bound [expr 0xFFBE] 0 ""]
+	} "0 1 0 0"
 
 	check "Other > Preferences > Keymaps is the Keymaps window" {
 		set m [commands_menu_path Other]

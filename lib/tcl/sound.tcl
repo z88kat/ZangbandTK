@@ -34,7 +34,7 @@ proc sound_page {p} {
         -variable options(o,use_sound) \
         -command {options_set use_sound}
     ttk::label $p.play.note -wraplength 460 -justify left \
-        -font {Helvetica 11} -text "Kept with each character, as the game's\
+        -font [uifont 11] -text "Kept with each character, as the game's\
             other options are, and off for a new one.  Other ▸ Use Sound\
             switches it too."
     pack $p.play.on -anchor w
@@ -51,7 +51,7 @@ proc sound_page {p} {
     grid $p.vol.try -row 0 -column 2 -padx {12 0}
     grid columnconfigure $p.vol 0 -weight 1
 
-    ttk::label $p.credit -wraplength 460 -justify left -font {Helvetica 11} \
+    ttk::label $p.credit -wraplength 460 -justify left -font [uifont 11] \
         -text "The sounds are Angband 4.2's, made by Dubtrain and shared under\
             the Creative Commons Attribution 4.0 licence.  Which sound goes\
             with what is in lib/customize/sound.prf."

@@ -94,6 +94,120 @@ proc display_font {key family size} {
     event generate . <<FontsChanged>> -when tail
 }
 
+# --- the windows' own text -------------------------------------------------------
+#
+# Everything in the windows that is not a pane -- the labels, lists and buttons,
+# the Character window's sheet, the shops' prices, the manual in the Help
+# window -- is one size on the Display page: the size of ordinary text in them,
+# 13 by default, as macOS has it.  Every other size in the windows is that one
+# scaled, so a heading written as 18 beside text of 13 stays half as large
+# again whatever the setting.  No window names a size outright: it asks uifont
+# for the size it wants at 13 and gets a named font, which changes with the
+# setting and takes every widget and canvas item using it along.  Tk's own
+# named fonts, which a widget with no font of its own uses, scale the same way,
+# and a Treeview style registered with ui_treeview has its rows made tall
+# enough again.
+
+set display(uibase) 13
+set display(uisize) 13
+set display(uirange) {9 24}
+set display(uistyles) {}
+
+# A size as it is at the current setting, from the size it is at 13.
+proc ui_scaled {size} {
+    global display
+    expr {max(6, round($size * $display(uisize) / double($display(uibase))))}
+}
+
+# A named font that follows the setting: ui_font_create name family size
+# ?bold? ?italic?.  The Help window's fonts are made this way under their own
+# names; uifont makes the rest.
+proc ui_font_create {name family size args} {
+    global display
+    set spec [list -family $family -size [ui_scaled $size] \
+        -weight [expr {"bold" in $args ? "bold" : "normal"}] \
+        -slant [expr {"italic" in $args ? "italic" : "roman"}]]
+    if {$name in [font names]} {
+        font configure $name {*}$spec
+    } else {
+        font create $name {*}$spec
+    }
+    set display(ui,$name) [list $family $size $args]
+    return $name
+}
+
+# The font for text of a size, at 13, in the windows: uifont ?family? size
+# ?bold? ?italic?, Helvetica unless another family is named.  The same request
+# is the same font, made once.
+proc uifont {args} {
+    global display
+    set family Helvetica
+    if {![string is integer -strict [lindex $args 0]]} {
+        set args [lassign $args family]
+    }
+    set args [lassign $args size]
+    set name [string tolower "ui-$family-$size[join [lmap a $args {string cat - $a}] {}]"]
+    if {![info exists display(ui,$name)]} {
+        ui_font_create $name $family $size {*}$args
+    }
+    return $name
+}
+
+# A Treeview style in a window's font, its rows tall enough for it -- now and
+# whenever the size changes.
+proc ui_treeview {style font args} {
+    global display
+    ttk::style configure $style -font $font \
+        -rowheight [expr {[font metrics $font -linespace] + 6}] {*}$args
+    dict set display(uistyles) $style $font
+}
+
+# Change the size of the windows' text, and keep it.
+proc display_uisize {size} {
+    global display
+    lassign $display(uirange) lo hi
+    if {![string is integer -strict $size] || $size < $lo || $size > $hi} {
+        return -code error "a size from $lo to $hi"
+    }
+    display_uisize_apply $size
+    settings_set display,font,windows $size
+    event generate . <<WindowTextChanged>> -when tail
+}
+
+proc display_uisize_apply {size} {
+    global display
+    set display(uisize) $size
+    foreach key [array names display ui,*] {
+        set name [string range $key 3 end]
+        lassign $display($key) family base styles
+        ui_font_create $name $family $base {*}$styles
+    }
+    # Tk's own, from the sizes they had before anything here touched them.
+    foreach f {TkDefaultFont TkTextFont TkHeadingFont TkCaptionFont
+            TkSmallCaptionFont TkIconFont TkTooltipFont TkFixedFont} {
+        if {$f ni [font names]} continue
+        if {![info exists display(tk,$f)]} {
+            set display(tk,$f) [font configure $f -size]
+        }
+        set was $display(tk,$f)
+        set now [ui_scaled [expr {abs($was)}]]
+        font configure $f -size [expr {$was < 0 ? -$now : $now}]
+    }
+    dict for {style font} $display(uistyles) {
+        ttk::style configure $style \
+            -rowheight [expr {[font metrics $font -linespace] + 6}]
+    }
+}
+
+# The size kept last time, before any window is built.
+proc display_uisize_start {} {
+    global display
+    lassign $display(uirange) lo hi
+    set size [settings_get display,font,windows $display(uibase)]
+    if {![string is integer -strict $size]} { set size $display(uibase) }
+    display_uisize_apply [expr {max($lo, min($hi, $size))}]
+}
+
 # --- tiles --------------------------------------------------------------------------
 
 proc display_tilescale {n} {
@@ -258,6 +372,7 @@ proc display_defaults {} {
     set angband(cellh) [font metrics termfont -linespace]
     wm minsize . [expr {80 * $angband(cellw)}] [expr {24 * $angband(cellh)}]
     event generate . <<FontsChanged>> -when tail
+    catch {display_uisize $display(uibase)}
     catch {display_tilescale 1}
     catch {display_palette game}
     if {[angband_tileset] != 7} { angband_choose_tileset 7 }
@@ -303,7 +418,7 @@ proc display_page {p} {
         pack $left.size.s$n -anchor w -pady 1
     }
     ttk::label $left.size.note -wraplength 180 -justify left \
-        -font {Helvetica 11} -text "The map's tiles, and the overhead\
+        -font [uifont 11] -text "The map's tiles, and the overhead\
             map's with them."
     pack $left.size.note -anchor w -pady {4 0}
 
@@ -336,6 +451,20 @@ proc display_page {p} {
         grid $right.fonts.s$key -row $r -column 2 -sticky w -padx {6 0} -pady 2
         incr r
     }
+    # And the windows' own text, which is a size and no more: the system's
+    # family, as the rest of a Mac's windows have it.
+    lassign $display(uirange) lo hi
+    set display(size,windows) $display(uisize)
+    ttk::label $right.fonts.lwindows -text "Window text:"
+    ttk::label $right.fonts.fwindows -text "Every window but the map's" \
+        -font [uifont 11]
+    ttk::spinbox $right.fonts.swindows -from $lo -to $hi -width 4 \
+        -textvariable display(size,windows) -command display_uisize_chosen
+    bind $right.fonts.swindows <Return> display_uisize_chosen
+    bind $right.fonts.swindows <FocusOut> display_uisize_chosen
+    grid $right.fonts.lwindows -row $r -column 0 -sticky e -padx {0 6} -pady 2
+    grid $right.fonts.fwindows -row $r -column 1 -sticky w -pady 2
+    grid $right.fonts.swindows -row $r -column 2 -sticky w -padx {6 0} -pady 2
 
     ttk::labelframe $right.colours -text "Colours" -padding 8
     pack $right.colours -fill x -pady {10 0}
@@ -350,7 +479,7 @@ proc display_page {p} {
     canvas $c.swatches -height 44 -background black -highlightthickness 0 \
         -relief sunken -borderwidth 1
     grid $c.swatches -row 1 -column 0 -columnspan $i -sticky ew -pady {8 0}
-    ttk::label $c.note -wraplength 380 -justify left -font {Helvetica 11} \
+    ttk::label $c.note -wraplength 380 -justify left -font [uifont 11] \
         -text "The game's colours: the map drawn in letters, the sidebar, the\
             messages and the lists.  A tile set keeps its own -- but with Neon,\
             the colour-blind palette chooses Neon's colour-blind tiles too.\
@@ -371,6 +500,7 @@ proc display_page_refresh {} {
         set display(family,$key) [font configure $name -family]
         set display(size,$key) [font configure $name -size]
     }
+    set display(size,windows) $display(uisize)
     set angband(tileset) [angband_tileset]
     display_swatches
 }
@@ -418,6 +548,17 @@ proc display_scale_chosen {n} {
         return
     }
     set options(msg) "Tiles drawn [lindex $display(scales) [expr {2 * $n - 1}]]."
+}
+
+proc display_uisize_chosen {} {
+    global display options
+    if {$display(size,windows) == $display(uisize)} return
+    if {[catch {display_uisize $display(size,windows)} err]} {
+        set options(msg) "The window text takes $err."
+        set display(size,windows) $display(uisize)
+        return
+    }
+    set options(msg) ""
 }
 
 proc display_font_chosen {key} {

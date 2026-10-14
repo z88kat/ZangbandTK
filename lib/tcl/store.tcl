@@ -259,8 +259,8 @@ proc store_side {parent side title verb} {
     $tv tag configure short -foreground #909090
 
     ttk::frame $f.act
-    ttk::label $f.act.l -text "Quantity:" -font {Helvetica 12}
-    ttk::spinbox $f.act.q -from 1 -to 1 -width 4 -font {Courier 12} \
+    ttk::label $f.act.l -text "Quantity:" -font [uifont 12]
+    ttk::spinbox $f.act.q -from 1 -to 1 -width 4 -font [uifont Courier 12] \
         -textvariable store([expr {$side eq "buy" ? "qbuy" : "qsell"}])
     ttk::button $f.act.do -text $verb -underline 0 -width 8 \
         -command [list store_trade $side]
@@ -316,21 +316,20 @@ proc store_window {} {
 
     set ground [ttk::style lookup . -background]
     set field  [ttk::style lookup TEntry -fieldbackground {} white]
-    ttk::style configure Store.Treeview -font {Helvetica 12} \
-        -rowheight [expr {[font metrics {Helvetica 12} -linespace] + 6}] \
-        -fieldbackground $field -background $field
-    ttk::style configure Store.Treeview.Heading -font {Helvetica 12 bold}
+    ui_treeview Store.Treeview [uifont 12] \
+                -fieldbackground $field -background $field
+    ttk::style configure Store.Treeview.Heading -font [uifont 12 bold]
 
-    ttk::label $w.owner -textvariable store(owner) -font {Helvetica 12}
+    ttk::label $w.owner -textvariable store(owner) -font [uifont 12]
     pack $w.owner -anchor w -padx 10 -pady {10 4}
 
     # --- status, buttons and the rule over them, packed before the tables so
     # that they keep their room when the window is made smaller
     ttk::frame $w.status
     pack $w.status -side bottom -fill x -padx 2 -pady 2
-    ttk::label $w.status.msg -textvariable store(msg) -font {Helvetica 12} \
+    ttk::label $w.status.msg -textvariable store(msg) -font [uifont 12] \
         -relief sunken -borderwidth 1 -anchor w -padding {4 1}
-    ttk::label $w.status.gold -textvariable store(gold) -font {Helvetica 12} \
+    ttk::label $w.status.gold -textvariable store(gold) -font [uifont 12] \
         -relief sunken -borderwidth 1 -anchor center -width -16 -padding {4 1}
     pack $w.status.gold -side right -padx {2 0}
     pack $w.status.msg -side left -fill x -expand 1
@@ -346,11 +345,11 @@ proc store_window {} {
 
     ttk::labelframe $w.desc -text Description -padding 6
     pack $w.desc -side bottom -fill x -padx 10 -pady {6 0}
-    text $w.desc.t -height 5 -width 60 -wrap word -font {Courier 12} \
+    text $w.desc.t -height 5 -width 60 -wrap word -font [uifont Courier 12] \
         -background $field -foreground black -relief sunken -borderwidth 2 \
         -highlightthickness 1 -highlightcolor black \
         -highlightbackground $ground -padx 4 -pady 4 -state disabled
-    $w.desc.t tag configure head -font {Courier 12 bold}
+    $w.desc.t tag configure head -font [uifont Courier 12 bold]
     # A scrollbar, so that a description longer than five lines says so.
     ttk::scrollbar $w.desc.sb -orient vertical -command [list $w.desc.t yview]
     $w.desc.t configure -yscrollcommand [list $w.desc.sb set]
@@ -358,7 +357,7 @@ proc store_window {} {
     pack $w.desc.t -side left -fill x -expand 1
 
     # Packed by store_refresh, and only for a character born with no selling.
-    ttk::label $w.note -textvariable store(note) -font {Helvetica 12} \
+    ttk::label $w.note -textvariable store(note) -font [uifont 12] \
         -wraplength 900 -justify left
 
     set body $w.body

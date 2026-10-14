@@ -28,19 +28,21 @@ set helpwin(shown) 1
 set helpwin(status) ""
 set helpwin(section) ""
 
-foreach {name spec} {
-    helpbody   {-family Helvetica -size 13}
-    helpem     {-family Helvetica -size 13 -slant italic}
-    helpstrong {-family Helvetica -size 13 -weight bold}
-    helpboth   {-family Helvetica -size 13 -weight bold -slant italic}
-    helpcode   {-family Courier -size 13}
-    helpcodeb  {-family Courier -size 13 -weight bold}
-    helph1     {-family Helvetica -size 22 -weight bold}
-    helph2     {-family Helvetica -size 17 -weight bold}
-    helph3     {-family Helvetica -size 14 -weight bold}
-    helph4     {-family Helvetica -size 13 -weight bold}
+# Sized as the windows' text is, so the Display page's Window text sets them
+# too (display.tcl).
+foreach {name family size styles} {
+    helpbody   Helvetica 13 {}
+    helpem     Helvetica 13 italic
+    helpstrong Helvetica 13 bold
+    helpboth   Helvetica 13 {bold italic}
+    helpcode   Courier   13 {}
+    helpcodeb  Courier   13 bold
+    helph1     Helvetica 22 bold
+    helph2     Helvetica 17 bold
+    helph3     Helvetica 14 bold
+    helph4     Helvetica 13 bold
 } {
-    if {$name ni [font names]} { font create $name {*}$spec }
+    ui_font_create $name $family $size {*}$styles
 }
 
 # --- the pages ---------------------------------------------------------------
@@ -723,7 +725,7 @@ proc help_window {{target ""}} {
 
     set c [ttk::frame $nb.contents -padding 4]
     $nb add $c -text Contents
-    ttk::style configure Help.Treeview -font {Helvetica 13} -rowheight 22
+    ui_treeview Help.Treeview [uifont 13]
     ttk::treeview $c.tv -show tree -selectmode browse -style Help.Treeview \
         -yscrollcommand [list $c.sb set]
     $c.tv column #0 -width 290

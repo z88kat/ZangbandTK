@@ -65,7 +65,7 @@ proc book_refresh {} {
             unset short
         }
         if {![llength $books]} {
-            ttk::label $w.books.list.none -font {Helvetica 12} \
+            ttk::label $w.books.list.none -font [uifont 12] \
                 -text [expr {[catch {angband_player name}]
                     ? "" : "You carry no book you can read."}]
             pack $w.books.list.none -side left -padx {16 0}
@@ -316,7 +316,7 @@ proc book_window {} {
     pack $w.status -side bottom -fill x -padx 2 -pady 2
     foreach {name var width} {msg msg 0 mana mana -14 learn learn -12} {
         ttk::label $w.status.$name -textvariable book($var) \
-            -font {Helvetica 12} -relief sunken -borderwidth 1 -padding {4 1} \
+            -font [uifont 12] -relief sunken -borderwidth 1 -padding {4 1} \
             -anchor [expr {$name eq "msg" ? "w" : "center"}]
         if {$width} { $w.status.$name configure -width $width }
     }
@@ -340,11 +340,11 @@ proc book_window {} {
     # --- the description
     ttk::labelframe $w.desc -text Description -padding 6
     pack $w.desc -side bottom -fill x -padx 10 -pady {6 0}
-    text $w.desc.t -height 4 -width 60 -wrap word -font {Courier 12} \
+    text $w.desc.t -height 4 -width 60 -wrap word -font [uifont Courier 12] \
         -background $field -foreground black -relief sunken -borderwidth 2 \
         -highlightthickness 1 -highlightcolor black \
         -highlightbackground $ground -padx 4 -pady 4 -state disabled
-    $w.desc.t tag configure head -font {Courier 12 bold}
+    $w.desc.t tag configure head -font [uifont Courier 12 bold]
     pack $w.desc.t -fill x
 
     # --- the table
@@ -352,10 +352,9 @@ proc book_window {} {
     ttk::labelframe $body -text Spells -padding 6
     pack $body -fill both -expand 1 -padx 10 -pady {6 0}
 
-    ttk::style configure Book.Treeview -font {Helvetica 12} \
-        -rowheight [expr {[font metrics {Helvetica 12} -linespace] + 6}] \
-        -fieldbackground $field -background $field
-    ttk::style configure Book.Treeview.Heading -font {Helvetica 12 bold}
+    ui_treeview Book.Treeview [uifont 12] \
+                -fieldbackground $field -background $field
+    ttk::style configure Book.Treeview.Heading -font [uifont 12 bold]
 
     set tv $body.tv
     ttk::treeview $tv -style Book.Treeview -show headings -selectmode browse \

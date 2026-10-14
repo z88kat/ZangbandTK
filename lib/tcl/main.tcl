@@ -29,6 +29,9 @@
 source [file join [file dirname [info script]] settings.tcl]
 source [file join [file dirname [info script]] display.tcl]
 display_fonts_create
+# And the windows' own text, at the size kept last time, before any window
+# asks for a font.
+display_uisize_start
 
 # The tile set and its size, for main-tcl.c to load once this has run; and
 # the colours, before anything is drawn in them.
@@ -62,17 +65,38 @@ proc ::tk::mac::Quit {} { angband_quit }
 # It applies to every Ttk widget in the program, the sashes between the panes
 # below included.
 ttk::style theme use classic
-ttk::style configure . -font {Helvetica 12 bold}
+ttk::style configure . -font [uifont 12 bold]
 
 # Every keystroke goes to the game.  Bound on "." rather than on the canvas so
 # it works whatever has focus inside the window, which will matter more once
 # there are panes.
 bind . <Key> { angband_key %N %s %A }
 
-# Except F1, which the game does not read: the manual on playing, as F1 opens
-# the manual where it covers each of the other windows.  The game's own ? opens
-# the Help window at its contents.
-bind . <F1> { help_window [help_first playing#playing-the-game playing] ; break }
+# Except F1, which opens the manual on playing, as F1 opens the manual where it
+# covers each of the other windows; the game's own ? opens it at the contents.
+# The function keys are game keys too, which a keymap can be put on, and a
+# player who puts one on F1 has chosen what F1 does: the game has it then.
+bind . <F1> { main_f1 %N %s %A ; break }
+
+proc main_f1 {keysym state char} {
+    if {[main_f1_bound $keysym $state $char]} {
+        angband_key $keysym $state $char
+    } else {
+        help_window [help_first playing#playing-the-game playing]
+    }
+}
+
+# Whether the player has a keymap of their own on this F1 -- with or without
+# Shift or Control, which are other keys -- in the keyset in use.
+proc main_f1_bound {keysym state char} {
+    if {[catch {angband_keymap trigger $keysym $state $char} trigger]
+            || $trigger eq "" || [catch {angband_keymap list} maps]} {
+        return 0
+    }
+    # -exact: a trigger such as [F1] is a glob pattern otherwise, "F or 1".
+    set row [lsearch -exact -inline -index 0 $maps $trigger]
+    expr {$row ne "" && [lindex $row 2]}
+}
 
 # The layout.
 #
@@ -239,7 +263,7 @@ proc about_window {} {
     set w .about.f
     ttk::frame $w -padding 16
     pack $w -fill both -expand 1
-    ttk::label $w.name -text "ZangbandTK" -font {Times 24 bold}
+    ttk::label $w.name -text "ZangbandTK" -font [uifont Times 24 bold]
     ttk::label $w.version -text [angband_version]
     ttk::label $w.about -wraplength 380 -justify center -text "Zangband's\
         world on the Angband 4.2 engine, played through a Tk front end after\

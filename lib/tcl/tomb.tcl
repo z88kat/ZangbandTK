@@ -236,7 +236,7 @@ proc tomb_window {how actions} {
     ttk::frame $w
     pack $w -fill both -expand 1
 
-    ttk::label $w.status -textvariable tomb(msg) -font {Helvetica 12} \
+    ttk::label $w.status -textvariable tomb(msg) -font [uifont 12] \
         -relief sunken -borderwidth 1 -anchor w -padding {4 1}
     pack $w.status -side bottom -fill x -padx 2 -pady 2
 

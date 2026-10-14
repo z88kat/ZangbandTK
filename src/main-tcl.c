@@ -1103,6 +1103,38 @@ static void Term_nuke_tcl(term *t)
  * the Keymaps window's capture goes through it too, so a key bound there is
  * the key that typing it sends.
  */
+/*
+ * A key of the numeric keypad, by X11's keysym, as the game's keycode; 0 for
+ * any other key.  The digits and operators are what Tk reports on the Mac,
+ * where Num Lock is always on; the rest are a PC keypad with it off.
+ */
+static keycode_t tk_keypad_code(int keysym)
+{
+	if (keysym >= 0xFFB0 && keysym <= 0xFFB9)
+		return (keycode_t)('0' + (keysym - 0xFFB0));
+	switch (keysym) {
+		case 0xFFAA: return '*';
+		case 0xFFAB: return '+';
+		case 0xFFAD: return '-';
+		case 0xFFAE: return '.';
+		case 0xFFAF: return '/';
+		case 0xFFBD: return '=';
+		case 0xFF8D: return KC_ENTER;
+		case 0xFF95: return KC_HOME;
+		case 0xFF96: return ARROW_LEFT;
+		case 0xFF97: return ARROW_UP;
+		case 0xFF98: return ARROW_RIGHT;
+		case 0xFF99: return ARROW_DOWN;
+		case 0xFF9A: return KC_PGUP;
+		case 0xFF9B: return KC_PGDOWN;
+		case 0xFF9C: return KC_END;
+		case 0xFF9D: return KC_BEGIN;
+		case 0xFF9E: return KC_INSERT;
+		case 0xFF9F: return KC_DELETE;
+		default: return 0;
+	}
+}
+
 static bool tk_keypress(int keysym, int state, const char *ch,
 		struct keypress *kp)
 {
@@ -1114,7 +1146,20 @@ static bool tk_keypress(int keysym, int state, const char *ch,
 	if (state & 0x04) mods |= KC_MOD_CONTROL;
 	if (state & 0x08) mods |= KC_MOD_ALT;
 
-	switch (keysym) {
+	/*
+	 * The function keys, F1 to F15, which X11 numbers from 0xFFBE; and the
+	 * keypad, which the game tells apart from the keys it copies by
+	 * KC_MOD_KEYPAD, as the Cocoa front end sets it.  pref.prf walks on the
+	 * keypad's digits and runs on them with Shift, so Shift and Control stay
+	 * on a keypad key where the game keeps them on any other -- which used
+	 * to arrive as a plain digit, so none of those keymaps ever matched.
+	 */
+	if (keysym >= 0xFFBE && keysym <= 0xFFCC) {
+		k = (keycode_t)(KC_F1 + (keysym - 0xFFBE));
+	} else if ((k = tk_keypad_code(keysym)) != 0) {
+		mods |= KC_MOD_KEYPAD;
+		if (!MODS_INCLUDE_SHIFT(k)) mods &= ~KC_MOD_SHIFT;
+	} else switch (keysym) {
 		case 0xFF1B: k = ESCAPE; break;
 		case 0xFF0D: k = KC_ENTER; break;
 		case 0xFF09: k = KC_TAB; break;

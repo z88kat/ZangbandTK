@@ -248,7 +248,7 @@ proc character_refresh_virtues {have} {
     destroy {*}[winfo children $f]
 
     if {![llength $rows]} {
-        ttk::label $f.none -font {Helvetica 12} -wraplength 520 -justify left \
+        ttk::label $f.none -font [uifont 12] -wraplength 520 -justify left \
             -text [expr {$have
                 ? "Nothing is recorded. A character chooses eight virtues at\
                    birth, from their race, their class and the realms they\
@@ -265,7 +265,7 @@ proc character_refresh_virtues {have} {
         if {$value != 0} { set untested 0 }
         set r [expr {$i / 2}]
         set c [expr {($i % 2) * 2}]
-        ttk::label $f.l$i -text "$name:" -font {Helvetica 12}
+        ttk::label $f.l$i -text "$name:" -font [uifont 12]
         ttk::label $f.v$i -text [character_standing $desc] \
             -relief sunken -borderwidth 1 \
             -anchor w -padding {4 1}
@@ -277,7 +277,7 @@ proc character_refresh_virtues {have} {
     grid columnconfigure $f {1 3} -weight 1 -uniform value
 
     if {$untested} {
-        ttk::label $f.note -font {Helvetica 12} -text \
+        ttk::label $f.note -font [uifont 12] -text \
             "Your virtues are untested. What you kill, spend and spare will move them."
         grid $f.note -row [expr {($i + 1) / 2}] -column 0 -columnspan 4 \
             -sticky w -pady {12 0}
@@ -370,7 +370,7 @@ proc character_rename {} {
     ttk::label $d.f.l -text "Enter a new name for your character:"
     set character(newname) $name
     # The game's limit, PLAYER_NAME_LEN less the terminator.
-    ttk::entry $d.f.e -width 20 -font {Courier 12} \
+    ttk::entry $d.f.e -width 20 -font [uifont Courier 12] \
         -textvariable character(newname) \
         -validate key -validatecommand {expr {[string length %P] <= 31}}
     ttk::separator $d.f.sep -orient horizontal
@@ -490,7 +490,7 @@ proc character_menus {} {
 proc character_row {parent row col field label {anchor w} {width ""}} {
     global character
     set character(v,$field) $character(dash)
-    ttk::label $parent.l$field$col -text "$label:" -font {Helvetica 12}
+    ttk::label $parent.l$field$col -text "$label:" -font [uifont 12]
     ttk::label $parent.v$field$col -textvariable character(v,$field) \
         -relief sunken -borderwidth 1 -anchor $anchor -padding {4 1}
     if {$width ne ""} { $parent.v$field$col configure -width $width }
@@ -532,7 +532,7 @@ proc character_window {} {
     canvas $id.glyph -width 64 -height 64 -background black \
         -relief sunken -borderwidth 2 -highlightthickness 0
     $id.glyph create text 34 34 -text "@" -fill white -anchor center \
-        -font {Courier 32 bold} -tags letter
+        -font [uifont Courier 32 bold] -tags letter
     $id.glyph create image 34 34 -image [character_portrait_image] \
         -anchor center -tags tile -state hidden
     ttk::frame $id.fields
@@ -559,7 +559,7 @@ proc character_window {} {
         set style [expr {$name eq "hp" ? "HP" : [string toupper $name]}].Horizontal.TProgressbar
         ttk::style configure $style -background [display_role $role]
         set character(v,$name) $character(dash)
-        ttk::label $cond.l$name -text "$label:" -font {Helvetica 12}
+        ttk::label $cond.l$name -text "$label:" -font [uifont 12]
         ttk::progressbar $cond.p$name -style $style -length 160
         ttk::label $cond.v$name -textvariable character(v,$name) \
             -relief sunken -borderwidth 1 -anchor e -width -10 -padding {4 1}
@@ -591,10 +591,10 @@ proc character_window {} {
     # that they keep their room when the window is made smaller
     ttk::frame $w.status
     pack $w.status -side bottom -fill x -padx 2 -pady 2
-    ttk::label $w.status.msg -textvariable character(msg) -font {Helvetica 12} \
+    ttk::label $w.status.msg -textvariable character(msg) -font [uifont 12] \
         -relief sunken -borderwidth 1 -anchor w -padding {4 1}
     ttk::label $w.status.turn -textvariable character(turn) \
-        -font {Helvetica 12} -relief sunken -borderwidth 1 -anchor center \
+        -font [uifont 12] -relief sunken -borderwidth 1 -anchor center \
         -width -14 -padding {4 1}
     pack $w.status.turn -side right
     pack $w.status.msg -side left -fill x -expand 1 -padx {0 2}
@@ -657,7 +657,7 @@ proc character_window {} {
         set f $pg.$key.f
         ttk::labelframe $f -text $title -padding 6
         pack $f -fill both -expand 1
-        text $f.t -height 8 -width $width -wrap $wrap -font {Courier 12} \
+        text $f.t -height 8 -width $width -wrap $wrap -font [uifont Courier 12] \
             -background $field -foreground black \
             -relief sunken -borderwidth 2 -highlightthickness 1 \
             -highlightcolor black -highlightbackground $ground \
