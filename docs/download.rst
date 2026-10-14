@@ -364,9 +364,9 @@ thirty-five in the corpus are refused on that rule, and each is recorded with it
 reason.
 
 Everything Zangband is known for is now in the game — the wilderness, the towns,
-the dungeons, the bestiary, mutations, chaos patrons, the seven realms and pets.
-Nightmare mode is the one milestone still to come; :doc:`features` is the honest
-inventory of what is in and what is not. If you have played Angband before,
+the dungeons, the bestiary, mutations, chaos patrons, the seven realms, pets and
+nightmare mode; :doc:`features` is the honest inventory of what is in and what
+is not. If you have played Angband before,
 :doc:`balance` is the shortest account of what will kill you that would not have
 before.
 

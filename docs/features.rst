@@ -282,6 +282,60 @@ Two of Zangband's routes are still missing, and both want an object rather than
 a mechanism: a thrown magical figurine, and a wand of charm monster. See
 :doc:`pets`.
 
+Nightmare mode
+--------------
+
+An irreversible choice at birth, as unfair as Zangband meant it to be — its own
+description is *"this isn't even remotely fair!"* Off by default; press ``=`` at
+the birth menus to find it.
+
+- **Monsters have twice the hit points and five more points of speed**, and none
+  of them is asleep, or waiting for you, when it arrives.
+- **Sustains fail one time in thirteen, drains stick, and no stairs can be
+  made**, so neither scumming nor patience is a way out.
+- **The floor lies.** What lives on a level is not what should, a few walls on
+  every level look like floor, a bell tolls before midnight and something
+  answers it, and a recall now and again lands you deeper than you asked.
+- **Four of its own**, kept apart from the port because Zangband described them
+  and never built them: breeders that fill a level two and a half times over,
+  reflection that fails twice as often, nastier mutations, and shopkeepers who
+  are poor and never leave.
+
+See :doc:`nightmare`, which says what it does and, as plainly, what it does not.
+
+The original's interface
+------------------------
+
+The game comes as two Mac applications. ``ZangbandTK.app`` is Angband 4.2's own
+front end, where the game draws everything in windows of text or tiles.
+``ZangbandTKGUI.app`` brings back the Zangband of the late 1990s, ZangbandTk,
+rebuilt on Tcl/Tk 9 rather than ported:
+
+- **Windows of its own**: the map and its panes in the main one, and the
+  character, the items on a paper doll, the knowledge browser, the spell books,
+  the shops and the buildings each in theirs. Pointing at an item recalls it,
+  and the Choice pane answers the game's prompts with a click.
+- **The original's way in and out**: a Choose Game window, a Birth window with a
+  portrait for every race and class, the tombstone, the Hall of Fame, a
+  character record, and tips at the start.
+- **The original's menu bar**, built from the game's own commands, so every
+  entry shows its key in the keyset you play with.
+- **Everything set in one Options window**: the tile set, the fonts, the size of
+  every window's text, and palettes including high contrast and colour-blind,
+  with a colour-blind version of the Neon tiles to go with it.
+- **Sound and your own music.** Angband 4.2's sounds, with 38 more for events
+  the original sounded and 4.2 did not; and music from a folder of your own,
+  shuffled. Both are off until you turn them on.
+- **A Keymaps window** that draws your own keyboard, and the function keys and
+  numeric keypad as game keys.
+- **The manual inside the game**, in a Help window, with F1 opening it at the
+  part about whichever window you are in.
+
+Both read one folder of characters, so a character can be carried from one to
+the other. There is an irony in it: the original ZangbandTk ran on Windows and
+X11 and never on the Mac, so this is the *new* port, not the old one returning.
+See :doc:`download` and the Tcl/Tk section of :doc:`customize`.
+
 Tunable without a rebuild
 -------------------------
 
@@ -455,10 +509,10 @@ in when the milestone lands.
      - Milestone
      - Where it stands
      - Chapter
-   * - Nightmare mode
-     - M11
-     - Stage 1 complete: every behaviour Zangband's own mode has.
-     - :doc:`nightmare`
+   * - The Tk front end
+     - T9
+     - Being finished. Ships from the next release, for Apple Silicon.
+     - :doc:`customize`
 
 The world is finished — towns, services, roads, dungeons and quests all landed,
 which was Phase 2's world work — and the character is most of the way there.
@@ -472,19 +526,3 @@ moved by how you play, and read by the Lords of Chaos and by the dream at the in
 **The realms have arrived too**: all seven, chosen at birth, each carrying
 Zangband's own thirty-two spells in four books. Trump came last, with pets,
 because fifteen of its spells turn on a creature being *yours*. M9 is closed.
-
-A **Tcl/Tk front end** revives the original's interface on Tcl/Tk 9, rebuilt
-rather than ported. It is in the tree and CI builds it on every push: ``src/main-tcl.c``
-and ``src/tcl/``, with Tcl and Tk vendored under ``tcltk/``. The Tk workflow
-compiles it, checks the binary really links Tk rather than quietly falling back
-to X11, runs the Tcl-side tests, packages ``ZangbandTKGUI.app`` and then drives
-the real game through the real front end from a script.
-
-It is **not what the releases ship**: that bundle is a CI artifact, and the
-download is still the Cocoa build. Where it stands milestone by milestone is in
-``.claude/plans/phase3-tcl-tk-frontend.md``, which stays current in a way a line
-here would not. The build recipe is in the README.
-
-There is an irony in it: the original ZangbandTK supported Windows and X11 and
-never supported macOS at all, so this is the *new* port, not the other way
-round.

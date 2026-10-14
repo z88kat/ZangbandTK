@@ -5,7 +5,7 @@ Release log
 .. note::
 
    **3.1.1 was the first release**, tagged on 18 August 2026 — a macOS disk image
-   and a source archive. The most recent is **3.111.3**, and all of them are on
+   and a source archive. The most recent is **3.121.0**, of 15 September, and all of them are on
    the `Releases page`_. Every release so far is marked a pre-release.
 
    What follows is the development log, grouped by the milestones the work is
@@ -17,7 +17,7 @@ Release log
 
 .. _Releases page: https://github.com/z88kat/ZangbandTK/releases
 
-Development is tracked by milestone. **M0 to M10 are complete**: the balance
+Development is tracked by milestone. **M0 to M11 are complete**: the balance
 scalars, the bestiary and treasure, the effects and vaults, the wilderness, the
 towns, the quests, the races and classes, the mutations and virtues, and all
 seven realms of magic. The Warrior-Mage and the High-Mage, which M7 could not
@@ -31,11 +31,17 @@ Lord's gift. Both turned out to be data rather than the code hook they were
 recorded as needing. Two of Zangband's routes remain and want objects that do
 not exist here: a thrown figurine, and a wand of charm monster.
 
-**M11, nightmare mode, is half done.** Stage 1 — every behaviour Zangband's own
-nightmare mode has, sixteen of them — is complete. Stage 2 is the menu of things
-its spoiler describes and Zangband never built, and that is a scheduled decision
-rather than a closed one (DEC-84). See :doc:`features` for what all of this adds
-up to in the game, and for what is left.
+**M11, nightmare mode, is done**, closed on 4 October. Stage 1 is every
+behaviour Zangband's own nightmare mode has: sixteen, twelve of them built and
+four ruled out. Stage 2 was the menu of things its spoiler describes and
+Zangband never built, and it ended in four additions of our own (DEC-126 to
+DEC-129): more breeders, weaker reflection, nastier mutations, and poor
+shopkeepers who never leave. :doc:`nightmare` keeps the two halves apart.
+
+**Phase 3, the Tk front end, is at T9, its last milestone**: the game through a
+second Mac application modelled on the original ZangbandTk, told below under
+*Unreleased*. See :doc:`features` for what all of this adds up to in the game,
+and for what is left.
 
 Version numbers move with the work — patch for a fix, minor for a feature,
 bumped in the commit that does it — so a build can be identified from its title
@@ -45,6 +51,1024 @@ than the Angband 4.2.6 the code sits on.
 
 Unreleased
 ==========
+
+The Tk front end, ZangbandTKGUI.app — 17 September to 14 October 2026
+------------------------------------------------------------------------
+
+Phase 3 rebuilt the original ZangbandTk's interface as a second Mac application,
+``ZangbandTKGUI.app``, which the next release ships as
+``ZangbandTK-<version>-osx-tk.dmg`` beside ``ZangbandTK.app``. Its work was
+tracked by milestones of its own, T0 to T9, and did not move the version
+number, so it is told here in one place rather than version by version.
+:doc:`download` says which Mac application is which.
+
+- **The windows.** The map and its panes in one main window, and around it the
+  Character window with its five pages, the Items window with a paper doll and
+  the pack, a Knowledge browser over seven kinds of thing the game knows, the
+  Spell Book, and Store and Building windows that open as you walk in. The
+  Choice pane answers the game's prompts with a click, and the Recall pane
+  describes whatever item the pointer is over, as the original's did. F1 opens
+  the manual from every window, at the page for that window, and the manual is
+  readable inside the game, in a Help window built from the same source as
+  these pages.
+- **The original's way in and out.** A Choose Game window; a Birth window that
+  makes a character without the text screens and describes each race, class and
+  realm in words; a portrait for every race and class, as a man and as a woman;
+  the original's Tomb window, with the Hall of Fame and a character record on
+  the way out; and 88 startup tips, each checked against the game as it is.
+- **The original's menu bar**, laid out as ZangbandTk had it and built from the
+  game's own command table, so each entry shows its key in the keyset you play
+  with.
+- **Options in one window**: the game's own options, page by page, and the front
+  end's — the tile set and its size, the panes' fonts, the size of every
+  window's text, and the colours, including a high-contrast palette and a
+  colour-blind one. With the Neon tiles, a colour-blind version of Neon too
+  (graphics mode 8): the same drawing, in colours chosen so that monsters of one
+  kind stay apart for a red-green or blue-yellow colour-blind player.
+- **Sound and music.** Angband 4.2's sounds, switched on with Other ▸ Use Sound
+  and given a volume, and 38 new kinds of sound for events the original sounded
+  and 4.2 did not: a monster's bolt or curse, falling into a pit, a quest done, a
+  thief's success, a unique arriving, each of a monk's ten strikes. Music of your
+  own, from a folder you choose, plays under it in a shuffled order.
+- **A Keymaps window** that draws your keyboard as macOS reports it, and binds a
+  key to a command, or to keys recorded, without typing an encoded string. The
+  function keys and the numeric keypad are game keys: the keypad walks, and
+  runs with Shift, as the game's own keymaps always meant it to.
+- **Shipping it.** Signed ad hoc like the Cocoa application, built for macOS 11
+  and later on Apple Silicon, and checked on every push by a scripted session
+  of the real game through the real front end.
+
+The new sounds and the colour-blind Neon are the game's, not only this front
+end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
+front end reads.
+
+The Tk front end stops failing in silence — 13 October 2026
+------------------------------------------------------------
+
+- **3.124.46** — **The Choose Game and Tomb windows tell the game what you
+  chose before they close**, so a refused answer no longer leaves the game
+  waiting behind no window.
+
+  ``choose_answer``, ``tomb_kingly_done`` and the New Game and Quit arms of
+  ``tomb_act`` all destroyed their window first and answered second. The window
+  is the only way to answer: ``death_view_tk`` and the savefile chooser both
+  park the game in a ``while (asking) Tcl_DoOneEvent(...)`` loop, and both
+  answers can be refused — ``angband_death answer`` rejects a key that is not on
+  the menu it is offering. Under the old order the window was already gone by
+  then. The bell rang, the game was still asking, and there was nothing on
+  screen to answer with. That is the hang, and the bell was the only sign of it.
+
+  Answering first costs nothing. The answer sets a variable and returns, and
+  the game does not resume until the binding does, so the window still goes
+  before anything is drawn over it; a refusal now leaves it up to try again.
+  ``tomb_act`` carries this on a ``close`` flag, because its Dump and Hall of
+  Fame arms return early and its default arm withdraws the Tomb rather than
+  destroying it. The bridge test, which starts at the Choose Game window and
+  answers it, is unchanged at 125 ok with its one pre-existing failure, later
+  in the Birth window.
+
+- **3.124.45** — **A refused pick in the Choice pane is recorded instead of
+  discarded.** ``choice_click`` calls ``bgerror $err`` when
+  ``angband_choice pick`` refuses, and the review rated it the likeliest hang
+  in ordinary play: a modal dialog with a grab, posted while the game is
+  blocked in the prompt the click was answering.
+
+  Measured in this build of Tk 9.0, it is not a hang. Inside the running game a
+  genuine background error moved the error sink's count from 0 to 1;
+  ``bgerror "a refused pick"`` left it at 1 and returned in a millisecond; and
+  ``errorsink::record`` moved it to 2. Called as a command, ``bgerror`` puts up
+  no dialog and never reaches the handler installed with ``interp bgerror``, so
+  the message was thrown away. The defect is real and the opposite shape to the
+  report: not the game stopping, but a click that did nothing and said nothing.
+  It now goes to the sink, where it belonged regardless — the sink's own
+  ``background`` already argues that a modal dialog over a game in mid-turn is
+  the wrong shape even when it works.
+
+- **3.124.44** — **A Tk command with nothing to return returns nothing**,
+  rather than whatever the drawing path last left in the interpreter's result.
+
+  ``cell_set`` evaluates a canvas ``itemconfigure`` per cell, ``graphics_load``
+  builds an image, and the game's redraw runs both, so a command that does its
+  work and returns ``TCL_OK`` without clearing the result hands the leftover
+  back as its value. ``objcmd_refont`` called ``Tcl_ResetResult`` for exactly
+  this reason and nothing else did. Measured by calling each command and
+  reading what came back: ``angband_tileset 1`` returned 2,146,856 bytes of
+  pixel data, and ``angband_resize 0 80 24`` returned "4228", a canvas item id.
+  Both now come back empty.
+
+  Seven commands rather than the nine the review counted, at eight return
+  sites: push, book (two), store, tileset, palette, sound and resize. The other
+  five are the same mechanism on paths that need a character in play, which the
+  bridge cannot reach while its Birth pass is failing. ``angband_tilescale`` and
+  ``angband_sound volume`` return a value on purpose, for their query forms, and
+  are left alone. The reset is a named ``command_done()`` rather than eight bare
+  calls, so the reasoning lives in one place.
+
+- **3.124.43** — **Choosing a tile set before starting a game no longer
+  crashes it.** ``angband_tileset 1`` at the Choose Game window took the process
+  down with SIGSEGV, at 0x28 in ``reset_visuals`` called from
+  ``objcmd_tileset``. It walks ``f_info``, ``k_info``, ``r_info`` and
+  ``trap_info`` to put the default attr and char back, and none of them exists
+  until ``init_angband`` has read the data files. The Display page is reachable
+  from Choose Game, so this is an ordinary thing to do.
+
+  Each array is now checked before it is walked, the way every other command in
+  the file checks its list, and the redraw waits for ``character_dungeon`` as
+  ``angband_tilescale`` already does. Loading the sheet stays unconditional: a
+  tile set chosen with no game in play takes effect when one starts. Found while
+  measuring the stale results 3.124.44 fixes, not reported by the review, and
+  reproduced against the review base 71f960b5d, so it predates that day's work.
+  Exit 139 before, exit 0 after.
+
+- **3.124.42** — **Seven checks in the bridge test could not fail**, and the
+  one that now can found a real fault: a known verb given the wrong number of
+  arguments was reported as an unknown verb.
+
+  ``bridge.tcl``'s ``check`` proc compared only when the expectation was
+  non-empty, and an empty expectation is the file's normal way of saying "and
+  the list of problems came back empty". So seven checks asserted nothing. One
+  of them, "every table takes the same four verbs", could not have reported
+  anything anyway, because its own catches swallowed every error its body could
+  raise.
+
+  With the guard removed, one of the seven fails rather than the three the
+  review predicted. ``angband_ego max 1`` answered "expected max, list, info or
+  lore, not: max" — ``table_verb_parse`` accepts ``max`` only with no further
+  argument, so a trailing one fell past every branch into the unknown-verb
+  message, which then named the verb you gave as not one it expects. The
+  sentence contradicts itself and sends the reader after a spelling mistake
+  that is not there. ``objcmd_monster``, ``_object`` and ``_artifact`` carry
+  copies of the same parse and the same bug; the check missed them only because
+  before a game they stop earlier, at their "not loaded yet" guard.
+
+  All four parsers now answer a known verb with the wrong arity through
+  ``Tcl_WrongNumArgs`` and keep the unknown-verb sentence for verbs that really
+  are unknown. The check failed against the unfixed code and passes after, and
+  the bridge is back to 125 ok and its one unrelated pre-existing failure.
+
+- **3.124.41** — **The flag that stops one command starting inside another is
+  cleared by the scope that sets it**, not by hand at five sites. This is
+  hardening, not a fix: the review called ``command_inside`` a defect and it is
+  not one today.
+
+  The flag is the whole of the defence at ``command_may_start()``. While it is
+  set, menu dispatch, gear actions and book commands are refused, because 4.2's
+  ``ui-*`` prompts keep their state in file statics and a second command
+  started inside the first frees the first's lists under it. None of the five
+  sites can currently leak it: each is entered through a
+  ``command_may_start()`` check so they cannot nest, there is no ``setjmp`` or
+  ``longjmp`` anywhere in the game source, and no early return sits between a
+  set and its clear.
+
+  It is worth hardening because a leak would be silent and permanent. Nothing
+  else clears the flag, so every menu command, gear action and book command
+  would be refused for the rest of the process, with no message and nothing in
+  a log — and adding an early return inside one of those blocks is an ordinary
+  edit. The clear is now attached with ``__attribute__((cleanup))`` and each
+  region is a block. A compiler without the attribute is a hard ``#error``
+  rather than the silent no-op ``ATTRIBUTE()`` gives, because a guard that
+  quietly stops guarding is worse than none. Verified to release on a normal
+  exit, an early return and a return from a nested block.
+
+- **3.124.40** — **What the Tk front end logs reaches its error window**
+  instead of ``/dev/null``. The first of the fixes from the code review of the
+  Tcl/Tk front end, each verified here before it was fixed.
+
+  ``plog_aux`` is set by ``main-win.c`` and ``main-nds.c`` and was never set in
+  ``main-tcl.c``, so all 23 ``plog`` and ``plog_fmt`` calls there fell through
+  to a labelled ``fprintf`` to stderr — and a bundled Tk application has stderr
+  pointed at ``/dev/null``. The two that matter most are a front end script
+  that failed to source, and ``Tcl_Init`` or ``Tk_Init`` failing: in each case
+  the game carried on with no user interface and said nothing about why.
+
+  ``lib/tcl/errorInfo.tcl`` exists for this, and buffers records made before
+  its window exists, which is the case that matters since almost everything
+  ``plog`` says happens during startup. So the messages go there rather than to
+  a second channel, and stderr is still written for a terminal run. The hook
+  checks that the sink command exists yet, that the interpreter is not being
+  deleted (``plog`` is called from ``quit()``), and that it is not re-entering
+  itself, and it saves and restores the interpreter result, which callers read
+  after logging a failure. Verified by wrapping ``errorsink::record`` and
+  sourcing a script that fails on purpose; with the one assignment removed the
+  wrapper recorded nothing.
+
+The borg will not buy a twenty-gold potion — 4 October 2026
+------------------------------------------------------------
+
+- **3.124.39** — **Why the borg does not descend: it will not buy two cure
+  potions it can easily afford** (BRG-27, DEC-130). Diagnosis only; nothing is
+  fixed.
+
+  3.124.28 established what kills the fleet, and 3.124.29 that removing the
+  largest cause moved depth not at all, so this looks at the runs that survive:
+  eight of the twelve gated runs pass 30,000 turns, reaching 191k, 294k and
+  430k. ``ZTK_BORG_TRACE`` now samples ``borg_prepared()`` as a run goes, on the
+  game clock rather than the decision clock, so a borg that thinks hard and
+  moves little cannot fill the buffer standing still. It is off unless asked
+  for.
+
+  Across the eight long survivors, 279 samples: the blocker is "2 cure" in 45.9
+  per cent of them, hit points in 20, ``Clevel < depth`` in 13.3 and restock
+  recall in 12.5, and the borg believed itself allowed to depth 1 or 2 in 88
+  per cent. **It can afford them.** At the 128 moments blocked on cure, gold ran
+  from 134 to 9,643 with a median of 3,368, and 93 per cent held over 500. The
+  requirement is any two of Cure Light, Serious or Critical Wounds; Cure Light
+  Wounds is 20 gold, the alchemist always stocks it, and the median borg could
+  buy 168. Warrior-Mage seed 1 was blocked on "2 cure" continuously from turn
+  45,248 to 405,713 while its gold climbed from 951 to 8,798 and its level from
+  4 to 8, oscillating between depth 0 and 1.
+
+  The pre-registered prediction was wrong. It expected a ``Clevel < depth``
+  deadlock and named rotating blockers as the falsifier; the blocker does not
+  rotate and ``Clevel < depth`` is 13 per cent. The shape was right — one
+  standing blocker, gold accumulating, level nearly flat — and the identity of
+  the blocker, the only part that matters, was not. 36 of the 128 blocked
+  samples are on the surface, so the borg reaches town while blocked and still
+  comes away without potions. The next step is the buying decision, not travel.
+
+Nightmare gets nastier, by our design — 4 October 2026
+------------------------------------------------------------
+
+- **3.124.38** — **In nightmare the ten purely harmful mutations are weighted
+  double** (M11 stage 2, BAL-18, DEC-129). The fourth and last of the stage 2
+  menu, and ours: the spoiler says "nastier mutations" and nothing else.
+
+  The ten are DEC-45's twelve "simply bad" continuous mutations less two. Weight
+  24 of 193 becomes 48 of 217, so a mutation lands on one of them 0.1213 of the
+  time ordinarily and 0.2181 in nightmare — about one in eight becoming one in
+  five. The two left out, a silly voice and bad luck, are as bad on paper and
+  do nothing at all, having lost their mechanism when 4.2 removed charisma and
+  the identify moment. Making a no-op likelier makes nothing nastier.
+
+  **The ten are marked in the data rather than derived from it**, because the
+  derivation is the obvious shortcut and it is wrong. Eighteen continuous
+  mutations carry a negative value and only nine are harmful; the rest are
+  gifts that cost something. ``PUNY`` is ``STR[-4] | DEX[2]`` and ``HYPER_STR``
+  is ``STR[4] | INT[-1] | WIS[-1]``, and nothing in the data tells them apart,
+  so a derived rule would have made nightmare kinder in half the cases. A sum
+  does no better: ``XTRA_FAT`` nets zero and is plainly bad.
+
+  The doubling is applied in ``mutation_weight()``, at the use site as the
+  breeder cap is, and in one function because ``mutation_roll()`` sums the
+  weights and then walks them — if the two disagree, the last mutation in the
+  list silently absorbs the difference. ``mutation.txt`` is generated, so the
+  ten new marks failed zconv's check until the converter was taught to emit
+  them; the list lives there because the converter is where our designs have to
+  live, or the next regeneration drops them. Tested as a distribution over
+  20,000 rolls each way, and falsified three ways, one of them doubling the sum
+  but not the walk.
+
+- **3.124.37** — **Nightmare shopkeepers are the poorest the shop has, and
+  never change** (M11 stage 2, BAL-18, DEC-128). Two thirds of the spoiler's
+  item: "+20 greed" is dropped rather than reinvented, because 4.2 removed
+  haggling and has no greed field to add 20 to, and turning it into a price
+  multiplier would be inventing a mechanic and calling it a port.
+
+  Both halves are one change in ``store_shuffle()``, which ``store_reset()``
+  also calls to seat a store's first owner. Choosing the poorest there means
+  every later shuffle picks the shopkeeper the shop already has, so the rotation
+  stops by itself. The early return is load-bearing: ``store_shuffle()`` ends
+  with a loop that retries until it draws somebody other than the incumbent,
+  and "the poorest" is one fixed answer, so reaching that loop in nightmare
+  would spin for ever. This project has hung its own suite twice on unbounded
+  retries; this one was seen before it was written.
+
+  Twenty shuffles move the owner twenty times ordinarily and none in
+  nightmare. The purse is checked against the minimum of the store's own owner
+  list rather than a number, so adding a shopkeeper cannot quietly invalidate
+  it. The manual gives these additions a section of their own, apart from the
+  sixteen ported behaviours, because that list is a port and these are a design.
+
+- **3.124.36** — **In nightmare the player's bolt reflection fails twice as
+  often, and the monsters' does not** (M11 stage 2, BAL-18, DEC-127). The
+  spoiler says "reflection's one-in-ten doubled" without saying whose, and 4.2
+  reads one shared constant for both sides, so doubling it would have made
+  monsters harder to shoot — the opposite of what nightmare is for. The project
+  owner's reading is taken: harder for the player.
+
+  The archive supports the split. Zangband has two independent ``one_in_(10)``
+  tests, the player's at ``spells1.c:3116`` and the monsters' at
+  ``spells1.c:4670``; 4.2 unified them, so separating them restores the
+  original's shape rather than breaking a deliberate pairing. The direction is
+  ours and the separation is the archive's. ``player_bolt_reflects()`` is the
+  player's side and ``aura_bolt_reflects()`` keeps the monsters'.
+
+  Over 3,000 rolls each, the player reflects 2,696 ordinarily and 2,397 in
+  nightmare, 0.90 against 0.80, and monsters reflect 2,710 with the option on,
+  unchanged. The test counts three rates rather than two because one
+  falsification — putting the gate in the shared helper so monsters get it too
+  — fails only on the assertion that the monsters' rate has not moved.
+
+- **3.124.35** — **A nightmare level holds 255 breeders** (M11 stage 2,
+  BAL-18, DEC-126). The first of the three the project owner took from the
+  stage 2 menu, and ours rather than a port: the spoiler names 255 and we are
+  choosing it.
+
+  It is gated where it is used, not set in ``constants.txt``.
+  ``mon-gen:repro-max`` is global, so 255 would reach every game including the
+  nightly, where breeders at the ordinary cap of 100 are already the largest
+  single cause of borg death, and the baseline would go permanently red. The
+  gate also needed a shared helper rather than two edits:
+  ``effect_handler_STERILIZE()`` stops breeding by adding the cap to
+  ``num_repro``, so raising the cap only in the breeding path would leave the
+  scroll adding 100 against a bar of 255 and doing nothing in the mode where a
+  player most needs it. Both read ``repro_monster_cap()`` now. Found by reading
+  the effect, not by a failing test.
+
+  The test took three attempts. ``multiply_monster()`` is public but the cap is
+  in its static caller, so the first version passed against the bug; driven
+  through ``process_monsters()`` the breeder never acted until the noise grid
+  was set; and twenty turns was too few. Four hundred puts a false failure at
+  one in five million. A probe confirmed the mechanism first: 400 of 400
+  ordinary attempts refused by the cap, none in nightmare. Two of the
+  falsification runs were read off a stale binary, ``cmake --build
+  build-strict`` building the game and not the tests with its output sent to
+  ``/dev/null`` — both traps already in ``CONTRIBUTING.md``, both hit in one
+  command.
+
+Nightmare for the borg, horns for the Imp — 2 October 2026
+------------------------------------------------------------
+
+- **3.124.34** — **The borg plays nightmare mode in the nightly, as crash
+  detection and nothing else** (BRG-26, DEC-125). The project owner's ruling,
+  reversing an earlier decline and the advice behind it.
+
+  The argument had been that a borg dying at depth 1 to 4 unaided would die
+  faster in nightmare and execute nothing. That was an assumption and it is false. The
+  same twelve-run fleet with the option on reached 17 depth against 30 and 23
+  levels against 64, with runs surviving between 141 and 109,342 turns and none
+  broken — long enough to generate levels and meet monsters at doubled hit
+  points and +5 speed. A borg that reaches depth 2 cannot say whether nightmare
+  is correctly brutal, only that its code does not fall over when a game walks
+  through it, and the sixteen behaviours otherwise run only in isolation, in
+  ``game/nightmare``.
+
+  The gate needed no new mechanism: ``borg-progress`` with no baseline exits
+  non-zero for a crash, an abort or a wedge and zero otherwise. There is
+  deliberately no nightmare baseline, because a near-zero one would drift, and
+  after a day lost to the standard gate going red over one character level
+  (3.124.32), a gate with no number in it is the point. ``main-test.c`` marks
+  every run ``[NIGHTMARE]`` and ``borg-progress`` prints its own banner; the
+  step runs after the standard one under ``if: always()`` so neither arm can
+  skip the other; it is time-boxed at
+  five minutes a run against the standard ten; and what green means — the code
+  did not fall over, not that the mode is balanced — is written in the
+  workflow, the step summary and the banner. It found nothing on the day, 0
+  broken in twelve runs; three defects that fortnight passed unit tests and
+  were caught only by a running game.
+
+- **3.124.33** — **The Imp gets its horns** (PLR-38, DEC-124). The archive
+  gives the Imp the HORNS mutation affinity at the Vampire's rate, six times in
+  ten, and the import had left it out; this is the project owner's ruling on
+  the question 3.124.26 left open.
+
+  Nothing recorded a decision to drop it. The Imp was one of eight races
+  deferred to a later wave and the four affinities that exist came over with
+  the first — the same kind of miss as the Sprite's dust in 3.124.20. HORNS is a
+  working mutation, a 6d2 melee blow of the same kind as the TENTACLES affinity
+  already shipped. An Imp has no mutation rate, so it meets mutations only
+  through chaos damage, a patron's reward and potions; when one does come, the
+  chance that it is horns goes from 1.08 per cent to 60. It measures 0.60353
+  over 200,000 rolls against the Vampire's 0.60447. Fidelity rather than
+  balance, which is also why it is safe.
+
+  One data line, and one sentence in ``docs/mutations.rst``, which now names
+  five races where it named four. Falsified three ways; a misspelt ``HORNZ``
+  stops the game at startup with "p_race.txt: Imp has mutation-affinity:HORNZ,
+  which is not a mutation", confirming 3.124.16's check covers this line. The
+  rate band in the test has already earned its place by accident: a stale
+  staged copy left the line in the source and out of the build, and the probe
+  read 32 against a lower edge of 1,660.
+
+- **3.124.32** — **The borg's breeder thresholds go back to ours**, reverting
+  3.124.29 (BRG-24, DEC-120). Three red nightlies, 30 September to 2 October,
+  all returned 15 depth and 27 levels where the night before had returned 17
+  and 29. The totals gate trips below 70 per cent of baseline, at 27.3, so the
+  fleet failed by one character level, deterministically, three nights running.
+
+  Two of the three candidates fell at once: the mutation rate fix cannot touch a
+  fleet of Humans, which have no affinity, and the class-count raise of
+  3.124.27 had been shown byte-identical on this exact fleet. Reproduced with
+  the nightly's own command, 2,000,000 turns: our thresholds give 30 depth and
+  64 levels, the archive's 23 and 57.
+
+  **3.124.29's "no measured cost" was wrong**, and in a way worth naming. It
+  rested on a 42-run sweep over fourteen classes, where the cost averaged into
+  noise against 72 total depth; the nightly measures twelve runs of four
+  classes. A change can be free across a wide sample and expensive on the
+  narrow one that gates the build, and the gated sample is the one that has to
+  be measured. **DEC-20 was the wrong argument too.** The archive is
+  authoritative for what a player experiences, and a borg threshold is not
+  that: ours descends from Angband 4.2's borg and Zangband's zborg is a
+  different program, so matching a constant across the two is coincidence with
+  a citation. The baseline is untouched — the gate passed at 29 levels two days
+  earlier, and reverting restores the behaviour that passed.
+
+A Golem no longer has straight black hair — 2 October 2026
+------------------------------------------------------------
+
+- **3.124.31** — **Five backstory fragments that read correctly alone and
+  wrongly in a sentence** (DEC-118). A Zombie had "patchy no hair left"; an Imp
+  was "summoned by accident who had not read far enough"; a Mind Flayer had
+  "four tentacles you do not", an alternative leaning on its sibling for a verb
+  when only one is ever drawn; a Draconian was "the runt of a clutch of a
+  Draconian Soldier"; and a Sprite was "a changeling left in place of a Sprite
+  Dew-Gatherer", which inverts the sense.
+
+  Sampling one history per race missed all five, and sampling six each found
+  them. None is catchable by ``player/backstory``: all five terminate, reach
+  100 and end in a full stop. The suite proves the structure and only reading
+  proves the sentences, which is worth saying because the suite passing is
+  what stopped the first look.
+
+- **3.124.30** — **The seventeen races imported from Zangband get backstories
+  of their own** (PLR-39, DEC-118). All seventeen used ``history:1``, the chain
+  Angband writes for a Human, so a Golem's character sheet described its blue
+  eyes and a Skeleton's gave it a complexion.
+
+  Zangband 2.7.5 deleted player history outright — ``save.c:904`` writes four
+  empty strings where it was and ``load.c:1270`` reads and discards them — so
+  the archive has no text to port, only voice and fact in
+  ``lib/help/charattr.txt``. The register is the project owner's ruling: comic
+  social satire in Angband's own manner, played straight-faced. A Skeleton with
+  a doting parent, a Golem whose maker was careless, an Imp summoned by
+  somebody who had not read far enough. Two sub-questions were inferred rather
+  than ruled and are marked so in DEC-118: the Imp is summoned rather than
+  born, and the Vampire keeps parentage.
+
+  Chart 3 is the family-standing line and leads to the human tail, so only a
+  race ending on human eyes and hair may pass through it; Half-Troll and Kobold
+  already skip it and the new races follow them. Reuse did most of the work —
+  Amberite, Barbarian and Half-Titan take the human tail, the Nibelung the
+  dwarf one with its beard, Beastman and Yeek the kobold one — so seven of the
+  seventeen needed no descriptors written, and the Skeleton and Spectre end on
+  a single line. 57 charts and 187 phrases, against an estimate of 40 and 150,
+  because two shared tails were split after reading the output: sharing the
+  Klackon's gave a Draconian a chitinous shell, and sharing the Imp's would have
+  given a Sprite leathery wings.
+
+  ``player/backstory`` asserts that every chain terminates, every chart's rolls
+  reach 100, every history ends on a full stop, and only Human and Dunadan
+  still use chart 1. The cutoff check matters more than it looks:
+  ``get_history()`` asserts when a roll exceeds the last cutoff, so a chart
+  stopping at 97 is a crash for three characters in a hundred. Two of the four
+  falsifications found faults in the test itself — a chart pointing at itself
+  hung the suite rather than failing it, and the first cycle detector, bounded
+  at depth 64, would have explored 4^64 paths. ``docs/birth.rst`` already said
+  background history depends on race; that was false for seventeen races and is
+  now true.
+
+What kills the borg, and a pass over the manual — 29 September 2026
+------------------------------------------------------------------------
+
+- **3.124.29** — **The borg's breeder thresholds are set to the archive's, and
+  it made no difference** (BRG-24, DEC-117) — a failure by criteria written
+  down before the measurement. 3.124.32 reverts it.
+
+  Half of the scoping in 3.124.28 was wrong: leaving the level already existed,
+  directly below the door-closing branch. What had happened was that both
+  thresholds had drifted from Zangband's borg in opposite directions. We closed
+  doors at three breeders where it uses eight, and would not leave until
+  ``MIN(clevel + 2, 5)`` where it uses ``MIN(clevel, 5)``, so at character level
+  1 the borg barricaded at three and would not leave until three.
+
+  Pre-registered: breeder deaths below 10, total deaths 30 to 33, depth holding
+  or sagging, with failure named in advance as depth below 55, breeder deaths
+  not below 12, or deaths above 37. The same 42 runs gave breeder deaths 17 →
+  16, deaths 37 → 38, depth 72 → 72 and levels 143 → 140, which is failure
+  criterion F2. A counter at the trip site showed the leaving branch firing
+  constantly under both settings, and on Priest seed 1 the change did exactly
+  what it was for, trips going from 1 to 17 of 17 sightings, and the character
+  still died.
+
+  **Leaving cannot work against these monsters.** Insect swarm and giant white
+  louse move at 120 against the player's 110, giant white mouse and grid bug
+  match it, and all four multiply during every turn spent walking to a
+  staircase that may not have been found. It was kept on the grounds that the
+  archive is authoritative under DEC-20 and the measurement showed no cost.
+  What outlives the change is that breeders kill the fleet but were never the
+  depth ceiling: DEC-116's 46 per cent is a mortality statistic, not a
+  constraint, and depth work should not start from it.
+
+- **3.124.28** — **The nightly records what killed each borg** (BRG-23,
+  DEC-116). It had counted deaths since BRG-05, but every run dies, so the
+  count read twelve of twelve every night and carried no information.
+  ``borg-death:`` now reports the cause, the depth of death, character level,
+  maximum depth reached, maximum hit points and gold, and ``borg-progress``
+  tallies cause, depth and level beside the blocked-by tally. It records where
+  the character died rather than how deep it ever got, because the two often
+  differ and the difference is the story.
+
+  The first measurement, 42 runs over all fourteen classes on seeds 1, 7 and
+  13, 37 dead: **17 of the 37 deaths are breeders** — giant white mouse, insect
+  swarm, grid bug and giant white louse, every one of one to four hit points,
+  hitting for 1d1 to 1d4. Three more are grey mold, which cannot move. 33 of 37
+  die at depth 1 or on the surface and 24 at character level 3 or below, and
+  gold at death runs from 109 to 4,092, so it is not poverty. No fix here; the
+  measurement is the thing that did not exist.
+
+- **3.124.27** — **A review pass over the manual**, and the borg counts its
+  classes instead of assuming Angband's nine (BRG-19, DEC-115).
+
+  The 28 September review read 25 of the 44 files in ``docs/``. Its ninety or
+  so factual corrections had already landed; this records the other half, a
+  backlog of 24 behaviours that exist in the code, that a player would notice,
+  and that no chapter describes — banded by how much a player would want to
+  know, from the Chaos patron's cruelty shifting with your virtues to a pet
+  more than ten squares away abandoning its fight to come looking for you. Each
+  is a writing job rather than a defect. A 25th entry is a conflict for a
+  ruling rather than for the manual — the Vampire's and Beastman's affinity
+  rates — and is the one 3.124.26 fixed. The dungeon chapter now says that
+  every class starts with a scroll of Word of Recall, unless the game began
+  with the "Word of Recall has no effect" birth option.
+
+  ``MAX_CLASSES`` was 9 against this game's 14, so the borg could never
+  reincarnate as a Monk, Mindcrafter, Chaos-Warrior, Warrior-Mage or High-Mage.
+  It is now ``borg_player_class_count()``, a function rather than a bigger
+  constant for the reason 3.124.10 gave for races. Measured before building,
+  with the prediction written first: fifteen runs of the five classes, 0
+  broken, 36 spells learned and 30 cast. Excluding Warrior-Mage, which the
+  nightly already plays, the imported classes averaged 1.75 depth a run against
+  the rated casters' 1.67 on the same seeds, so classes the borg has no spell
+  ratings for play as well as those it has tables for.
+
+  **The Mindcrafter is the exception.** Its craft is twelve powers and no book
+  spells, which the borg does not model, and all three runs died at character
+  level 1 on depth 1 having cast nothing. It ships anyway — it was already
+  reachable by name and nothing crashes — and a borg model for classes whose
+  abilities are powers wants its own decision. The nightly is unaffected: the
+  bound is read only on reincarnation, which a run that ends at its first death
+  never reaches, and the twelve-run fleet is byte-identical with the count
+  pinned to 9 and counted as 14.
+
+Seven in ten where the manual said six — 28 September 2026
+------------------------------------------------------------
+
+- **3.124.26** — **A Vampire's hypnotic gaze affinity grants six times in ten
+  and a Beastman's polymorph one in ten**, as the manual said; the code granted
+  seven and two (PLR-38, DEC-114).
+
+  ``mutation_roll`` compared ``randint1(10) <= mutation_chance``, and
+  ``randint1(10)`` runs from 1 to 10 inclusive, so a stored 7 granted seven
+  times in ten. The manual, two comments on this port's own code and the
+  archive all said six and one; the archive writes the comparison strict with
+  the same literals, ``randint1(10) < 7`` (``mutation.c:535``). The stored
+  number is one above the tenths it grants and the operator carries that, so
+  the operator is what changed and the data and manual were right. Over 200,000
+  rolls per race, gaze 0.70415 → 0.60447 and polymorph 0.20481 → 0.10558,
+  slightly above nominal because the favoured mutation can also come up on the
+  weighted roll underneath. Every other ``randint1(N) <= x`` in ``src`` was
+  checked against its intent and is correct.
+
+  The test that stood here allowed 500 to 800 gazes in 1,000 and passed under
+  both operators. Its replacement rolls 3,000 per race, with the correct rate at
+  least 5.4 sigma inside both edges and the wrong one 6.1 and 9.3 sigma outside,
+  and covers the Beastman, which nothing sampled before. A separate finding is
+  recorded rather than acted on: the archive gives five races an affinity and
+  ``p_race.txt`` has four, the Imp's horns missing.
+
+- **3.124.25** — **The nightly's red "spells cast less than halved — was 14,
+  now 0" was the gate misreading its own input** (BRG-18, DEC-113). Nothing
+  had regressed: the fleet cast 14 spells that night, the baseline exactly.
+
+  ``borg-progress`` read its totals with ``sed``, and ``.*`` is greedy, so
+  ``.*cast=`` ran to the last ``cast=`` on the line — which from 3.124.24 on
+  was the new ``healcast=`` counter, reading zero. The per-run rows in the same
+  output still said ``cast=4``, ``cast=3``, ``cast=1`` while the summary said 0,
+  and that contradiction gave it away. The four extractions are now one
+  anchored function; ``[ |]cast=`` cannot match inside ``healcast=``.
+
+  ``borg-progress --self-test`` runs the extractor over a line whose five
+  fields all hold different numbers, so a field picking up its neighbour's
+  value reads as a wrong number rather than a coincidence, and ``check-build``
+  runs it. Without the anchor it fails with "cast gave '2', wanted '7'", the
+  production bug exactly. The baseline needed no retaking: parsed correctly,
+  all four totals from that night pass. A gate that reads its inputs by pattern
+  can fail in a way that accuses the thing it is measuring, and the more
+  specific the message, the more convincing the accusation.
+
+- **3.124.24** — **The borg finds its healing spells by what they do, not by
+  name** (BRG-07, DEC-112), so a caster in a realm that names them differently
+  no longer falls through to potions. The heal and cure call sites now fall
+  back to ``borg_best_spell_with_effect(EF_HEAL_HP)``.
+
+  It was run as an experiment, with the prediction written first: heals cast
+  would rise and caster depth would follow. Neither happened. Twelve runs of
+  200,000 turns on the same seeds gave 23 depth before and 23 after. The lookup
+  is reached and works — the trace shows it correctly declining Cure Light
+  Wounds because the spell costs two points and the character has one. The
+  caster borg dies at character level 1 to 7, before it has a mana pool to cast
+  from, and the Warrior reaches depth 4 with no spells at all.
+
+  So the remaining 74 enum mappings are not worth the week. This lands because
+  it is correct, tested and harmless and removes one confound, and the nightly
+  now counts ``heals=`` and ``healcast=`` so the question can be re-asked
+  cheaply. ``borg_spell_fail_rate`` is split rather than copied, because a
+  second copy of that formula would drift.
+
+- **3.124.23** — **A random ego power can no longer be walking through
+  walls** (DEC-109). ``ego_apply_magic()`` draws its extra power from every flag
+  in the "protection" and "misc ability" subtypes, whose own comment reads "a
+  good property, suitable for ego items", and ``PASS_WALL`` joined by doing
+  nothing: 41 of 1,000 ``RAND_POWER`` egos rolled it, about one in
+  twenty-four.
+
+  Reclassifying it was checked and ruled out — ``OFT_MISC`` is read in four
+  places, including pricing and the two that decide what a player is told about
+  an item — so the flag keeps its subtype and is removed at the draw, with a
+  test requiring telepathy still to come up so the exclusion stays narrow.
+  ``PASS_WALL`` is now unobtainable from items, as intended: only the Spectre
+  and wraith form grant it. ``docs/mutations.rst`` had told players an item
+  could, which was true only because of the accident, and is corrected. A
+  correction to the first answer, too: all five of this game's misc flags had
+  been reported as undesigned, from a search of only the base data files. Four are
+  granted by an ego, an artifact, an object or a mutation, and ``PASS_WALL`` is
+  the only one that appears nowhere by design.
+
+The Sprite, the uniques and the Vampire, as Zangband had them — 27 September 2026
+-------------------------------------------------------------------------------------
+
+- **3.124.22** — **A Vampire is fed by its bite** (PLR-01, DEC-108). Its blood
+  diet gives it a tenth of what food is worth, which is the archive's penalty;
+  the archive's remedy is that a successful bite feeds it, and the port shipped
+  the penalty without the remedy, so the race lived on Remove Hunger scrolls.
+
+  The archive's rule converts rather than approximates. A ration is 5,000 of
+  15,000 there and 30 of 100 here, so "a hundred food per point of damage,
+  capped at one ration" becomes ``damage * 30 / 50``. Our bite does
+  ``PLAYER_LEVEL``, so ``lev * 3 / 5``, which reaches exactly one ration at
+  level 50 and cannot exceed it. The drain is one a turn, a ration feeds a
+  Vampire 3, and a bite feeds it 12 at level 20 and 30 at level 50 — four
+  rations and ten. A Vampire that fights is fed. The bite escapes the diet's
+  tenth because that applies to edible objects and a racial power has none,
+  which the test pins by asserting the full amount.
+
+  One divergence, recorded: the archive feeds only on a successful drain, and
+  ours feeds whether or not the bolt finds anything, because the effect chain
+  cannot make one effect depend on another. At ten mana a bite against a drain
+  of one a turn, biting air runs out of mana first. Range and damage stay ours,
+  by the same ruling. Falsification caught an unbounded retry in the new test,
+  which never ended once the nutrition was removed; it is bounded now.
+
+- **3.124.21** — **A unique cannot be slept, slowed, confused or frightened**
+  (DEC-107). Zangband gates all four on ``RF_UNIQUE`` before any other test.
+  4.2 deliberately replaced those flat immunities with a graded saving throw,
+  and the port inherited 4.2's model without anyone choosing it, so restoring
+  Zangband's is a knowing divergence from upstream — recorded as such, because
+  it will read as a regression to anyone who knows 4.2. Against Bullroarer the
+  Hobbit, 4.2's model let a strong effect land 34 to 40 times in 40: "a unique
+  gets a second roll" was in practice "a unique is slept".
+
+  ``does_resist()`` is the single choke point, so spells, wands, staves,
+  scrolls, racial and class powers and monster-on-monster casts all pass one
+  gate, and no quest, vault or generation logic reads these timers. The borg
+  already believed this — its danger model and all four of its attack
+  valuations test ``RF_UNIQUE`` — so the game was the thing out of step. The
+  gate sits after the ``NOFAIL`` return, which is how fear from damage says
+  "this is morale, not a spell", and uniques flee when hurt in both games. It
+  is scoped by a table column because haste is in the same table. The test
+  pairs the unique with a same-depth control over forty attempts each, since
+  immune and resisted look identical from one, and the monster chapter of the
+  manual has the rule.
+
+- **3.124.20** — **The Sprite's sleeping dust has both of Zangband's forms
+  back** (PLR-01, DEC-106). Below level 25 it is a radius-one ball on the
+  player, the eight adjacent squares; from 25 it is everything in line of
+  sight. Only the second was shipped, from level 12, so a Sprite could settle a
+  room from its doorway thirteen levels early.
+
+  The level, cost, stat and failure rate already matched ``tables.c`` exactly
+  and are untouched; the two forms exist only in ``racial.c``, which is where
+  the import stopped reading. **The doubled power is kept deliberately**,
+  though it lands the dust 1.6 to 2 times as often as the archive's at every
+  level. The archive uses the character level only as a saving-throw power,
+  with the sleep fixed at 500 turns; ours is one number doing both jobs, so
+  passing the level alone would give a twelfth-level Sprite a twelve-turn
+  sleep, which is further from the archive than doubling it.
+
+  Data only. The test asserts reach rather than which effect the file names,
+  since the name is what was wrong: contact works at 12, does not reach three
+  grids at 12, and does at 25. Falsification caught its first version reusing a
+  flag so that the contact assertion was always true. The manual has both
+  forms and the threshold.
+
+A road that arrived at a blank wall — 26 September 2026
+------------------------------------------------------------
+
+- **3.124.19** — **A test's retry loop that retried the same level forty
+  times** now asks for a fresh level on each attempt (DEC-105).
+  ``monster/ally-ai``'s door test failed to set itself up on a Windows runner,
+  and because the log now named the test, the assertion and the seed
+  (3.124.14), ``ZTK_TEST_SEED=1659870424`` reproduced it here first try — and
+  on macOS too, so it is not Windows-specific.
+
+  The test inherited its level and depth from whatever ran before.
+  ``pets-follow-you-downstairs`` used to leak depth, so the door test ran deep
+  and each retry was a different dungeon level. 3.124.17 fixed that leak and
+  dropped it to depth 0, the wilderness surface, which is seeded per world, so
+  every retry got the same surface: all forty attempts had the player at 79,80
+  with three free neighbours. A hygiene fix turned a loop that looked like
+  robustness into one worth nothing. The test now asks for depth 1 and a fresh
+  level every attempt; across twenty-one seeds nothing fails, and 18 of 20 need
+  one attempt and none more than two.
+
+  The blind spot matters more than the fix. These failures are seed-dependent,
+  ``check-flakes`` samples eight seeds and CI a new one on every push, so CI is
+  not testing something we cannot, only more seeds. The answer is tests that do
+  not depend on ambient state, which all three of that week's failures did.
+
+- **3.124.18** — **A mutated character is checked through a save and
+  reload**, closing the gap in the savefile corpus, and ``ui/shimmer`` stops
+  aborting (DEC-104). The corpus is thirty-five files from 30 August to 3
+  September, so nothing in it was written by a build with the races, mutations
+  or timed effects added since. Refreshing it would fix that until the next
+  feature; ``a-mutated-character-survives-a-round-trip`` builds a level 30
+  Beastman with a named mutation and a timed effect running, and requires the
+  race, the mutation by name and the remaining duration to survive, which fixes
+  it for good.
+
+  The flake sweep then caught ``ui/shimmer`` aborting on macOS. It placed its
+  monster at a fixed ``loc(5, 5)`` and the helper asserts the monster arrived,
+  so on a level where that grid is rock the binary aborted rather than failing:
+  three runs in forty, and none in sixty once it walks the level for an empty
+  grid. That is very likely the six-hour Windows job of 3.124.14 as well, since
+  an abort there can sit on an error dialog rather than exiting. Stated as
+  likely, not proved; the fifteen-minute bound stays either way.
+
+- **3.124.17** — **Five tests that were not watching what they were named
+  for** (DEC-103). Nightmare's alertness had no test: ``monster_reduce_sleep()``
+  halves the notice draw, and deleting the line broke nothing. It is now
+  measured over 400 sleepers each way, about 9 per cent waking ordinarily
+  against 15 to 21 per cent in nightmare — after a first version that woke 400
+  of 400 both ways, because the notice check passes every draw at the default
+  stealth; stealth 10 puts it where halving shows. The crush formula's test
+  asserted "some damage" and now asserts ``1 + depth/10``. The seventeen
+  imported races' stat lines are pinned against the archive's ``tables.c``, all
+  already agreeing. The pets test no longer leaves the player forty levels
+  deeper than it found them. And the invisible-walls test now says what it
+  does not cover: the door conversion is ``one_in_(666)`` per door, left
+  uncovered on purpose rather than by oversight.
+
+- **3.124.16** — **Five data-file directives that silently did nothing with a
+  bad value are now parse errors** (DEC-102). A directive that resolves a name
+  and returns success whatever came back is the most persistent shape in this
+  codebase: the file loads, the game starts, and the thing the line was for is
+  absent.
+
+  ``grab_virtues()`` refuses a surplus virtue rather than dropping it — the
+  urgent one, since ``MAX_CLASS_VIRTUES`` is 4 and two classes already list
+  four, so the next virtue added to either would have vanished. ``armour:``
+  refuses a negative base or scale, ``power-expr:`` with no dice to bind to is
+  an error, ``act:`` refuses an activation that does not exist on egos and
+  artifacts, and ``mutation-affinity:`` is checked once the mutations are
+  parsed, because ``p_race.txt`` is read first. One shared test rather than
+  five: ``parse/typos`` is a table of directive, fixture and typo, so guarding
+  another directive means adding three strings.
+
+  ``bindui:`` is **not** a defect. Writing its guard broke ``parse/pprop``,
+  because the UI entry table is built by the front end and
+  ``player_property.txt`` is parsed long before any front end exists, so every
+  bind fails there in every build. A note now says so, so that it is not fixed
+  again. Also, ``view_abilities()`` bounds its 32-entry array, and the borg's
+  starving-shopper gate no longer exempts every scroll — both verified by
+  reading, since a test of either would prove nothing.
+
+- **3.124.15** — **A town gets a gate for every road that reaches it, not one
+  a side** (WLD-08, DEC-101). ``wild_town_road_gate()`` returned on the first
+  road it found and ``wild_town_open()`` cut one gate per side, so a side
+  crossed by two roads gated one and walled off the other: walk the road,
+  arrive at the town, no door. Nothing about it depended on the seed — the
+  second road was always ungated, and had been since WLD-08. Across twelve
+  worlds 287 town sides carry a road and eight carry more than one, and one
+  town in eighteen had a road arriving at a blank wall, always a large town,
+  because a short side cannot reach two roads.
+
+  A gate is now cut per road, with the middle-of-the-side fallback kept for
+  sides no road reaches, and the cutter refuses a spot where a gate already
+  stands — otherwise the second cut lays a gate over the first, since a door is
+  not passable, so the inward scan steps past it and reports success.
+  ``WILD_TOWN_GATES`` goes from 8 to 64, sized from the largest town.
+
+  The test counts gates rather than measuring distance, and that took three
+  attempts. Gates drift along the wall past shops — of 426 arrivals over
+  eighteen worlds, 355 land exactly, 406 within one grid, the worst 10 out — so
+  any distance threshold loose enough to admit that also admits some of the
+  gaps the defect produced. The count catches the old behaviour on six worlds
+  in eight, and the other two have nothing to catch. This closes the
+  ``game/wild`` failure recorded in 3.124.14.
+
+The review backlog, four stages in a day — 25 September 2026
+------------------------------------------------------------
+
+- **3.124.14** — **A failing test now says which test, and a Windows hang
+  fails in fifteen minutes instead of six hours** (DEC-100). Two unrelated
+  failures in one msys2 run.
+
+  ``configure-win`` ran for six hours and reported only that it had exceeded
+  the maximum execution time. It stopped after ``ui/scrollbar``, and the
+  runner's cleanup named the orphan, ``shimmer``. No CMake build had ever run
+  ``ui/shimmer``: it has been in ``src/tests/ui/suite.mk`` since 5 September and
+  was never added to ``CMakeLists.txt``, so neither ``check-build`` nor
+  ``check-flakes`` had touched it in twenty days. It is registered now. The
+  hang is not fixed here — 3.124.18 found its likely cause — but
+  ``configure-win`` has ``timeout-minutes: 15`` against a good run of five and a
+  half, so the next one fails legibly instead of slowly.
+
+  ``asan-ubsan-clang64`` failed ``game/wild`` 99/100 without naming the test or
+  the assertion, because the suites print per-test lines only when verbose and
+  ``run_tests.cmake`` ran them without ``-v``; three red nights had been
+  diagnosed by reproducing locally rather than by reading the log. The runner
+  passes ``-v`` always and echoes only on failure, so a green log is unchanged
+  and a red one carries the file, line and assertion. What ``game/wild`` found
+  is real: on one seed a town has roads arriving at its north and south walls
+  and its only gate on the east wall, sixty grids away. 3.124.15 fixes it.
+
+- **3.124.13** — **The integrity check in the pet-carrying suite checks
+  something** (DEC-99), stage 4 of the backlog. ``require_consistent()`` in
+  ``game/carry`` printed the reason when ``cave_check_integrity()`` failed and
+  then returned, so its eleven call sites, in the one suite that moves monsters
+  and their possessions between two chunks, were checking nothing. It is now
+  ``require(consistent())`` at all eleven. It caught nothing in thirty-five runs
+  and the eight-pass flake sweep, so the carry code has been right all along —
+  which is why the assertion was falsified on its own account: corrupting one
+  monster's index fails it with "monster 1 thinks it is monster 999".
+
+- **3.124.12** — **Three ways the savefile loader read off the end of
+  something** (DEC-98), stage 3 of the backlog, each reached only by a
+  savefile this build did not write.
+
+  ``loaders[]`` had no terminator, so ``find_loader()`` read a whole entry past
+  the end of the array for any block whose name and version matched nothing —
+  which is what a file from another build looks like, when a clean refusal
+  matters most. ``rd_ignore()`` read per-ego bytes only up to its own ``e_max``
+  and left the rest in the stream, so a file from a build with more egos had
+  its auto-inscriptions read out of the middle of the ego data. And
+  ``rd_monster()`` read a count and then that many timed effects into an array
+  of eleven, so a file claiming 255 wrote 244 past the end of the monster. That
+  count is now refused rather than clamped.
+
+  The new suite ``game/savefile-hostile`` patches no bytes by hand: the ego
+  case shrinks ``e_max`` at load time, and the monster case finds the count by
+  searching for hit points nothing else has. Without the monster bound the
+  suite dies with SIGSEGV; without the sentinel it hangs under ASAN and does
+  not discriminate otherwise, which DEC-98 records rather than hides. The ego
+  test proved nothing as first written, because ``savefile_load()`` does not
+  clear the value it was checking. Found by mutating.
+
+- **3.124.11** — **Four things a player could see that were wrong** (DEC-97),
+  stage 2 of the backlog.
+
+  **The Golem's stone skin was the wrong effect.** ``STONESKIN`` is +40 armour
+  and −5 speed; Zangband's is +50 armour and nothing else, which is our
+  ``TMD_SHIELD`` exactly. The duration already matched, so the Golem paid a
+  penalty the archive never charged and got ten points less armour for it. The
+  power keeps its name, because Zangband's message is "Your skin turns to
+  stone."; ours now says "a mystic shield", the one thing this makes worse, and
+  DEC-97 says why that is left alone.
+
+  ``UNDEAD`` and ``BLOOD_DIET`` were the only two of thirty-five flags with no
+  ``player_property.txt`` record, so the birth and abilities screens could not
+  show them: five races were never told they were undead, and the Vampire was
+  never told why its food does nothing. The test sweeps every flag a race or
+  class carries. Monster recall printed the base speed and hit points, so in
+  nightmare it understated every monster by five points of speed and half its
+  hit points. And a blinded Spectre erased its own map one grid a turn — the
+  trail through the rock it had just walked. Upstream's comment on that rule
+  predicted us: it "will have to be modified in variants that have timed
+  effects which allow a player to move through impassable terrain". The
+  manual's birth and nightmare chapters are updated.
+
+- **3.124.10** — **Three things the borg believed that were not true**
+  (DEC-96), stage 1 of the backlog from the review of 3.105 to 3.124.
+
+  **All five weapon brands were read wrongly.** ``borg_notice_equipment()``
+  indexed ``item->brands[]`` by element, but that array is indexed by brand —
+  one-based, and in reverse of ``brand.txt`` because the parser prepends — so
+  an acid brand was invisible and the other four read the tail of the file: a
+  weapon of Venom reported as lightning, Frost as fire, Flame as cold,
+  Lightning as poison. It now matches on ``resist_flag``, as
+  ``borg_best_mult()`` already did. **A scroll of Remove Hunger counted as no
+  food**, though the spell that does the same is worth 1000 further down the
+  same file, so a
+  character carrying a stack read as starving. And ``MAX_RACES`` was Angband's
+  11 against this game's 28, so the seventeen races PLR-01 added could never be
+  rolled or configured. It is now ``borg_player_race_count()``, because a
+  constant is what went stale.
+
+  The order mattered: all five undead races start with Remove Hunger scrolls
+  instead of rations, so raising the cap first would have made them starve.
+  Measured turn-bounded, the twelve-run fleet was identical, as predicted,
+  since those runs die at depth 1 to 4, where a branded weapon is a rare find.
+  A Skeleton sweep went from two of three runs held back by "restock food < 3"
+  to one, and both that cleared it moved on to the next gate. ``MAX_CLASSES``
+  stayed at 9 pending a ruling, which 3.124.27 acted on.
+
+A pet that would not let you rest — 24 September 2026
+------------------------------------------------------------
+
+- **3.124.9** — **A fight you cannot see no longer stops you resting**
+  (PLR-23, DEC-95). Two unguarded calls to ``disturb()`` in the monster turn
+  meant, between them, that you could not rest with a pet.
+
+  A bashed door disturbed you wherever it was. 46 per cent of races can bash,
+  a pet follows you everywhere, and a pet is active at any distance, so your
+  own animal meeting a door anywhere on the level cancelled your rest. That
+  call is upstream Angband's, written for a game where everything that bashes
+  a door is hostile; Zangband, which has pets, does not disturb on a bash at
+  all. The message stays, because you did hear it.
+
+  And every successful monster spell disturbed you. 64 per cent of races have
+  spells, and a pet brawling in the dark broke your rest each time it landed
+  one. A spell aimed at another monster now disturbs you only under Zangband's
+  own pair of tests from ``monst_spell_monst()`` — caster or target within
+  sight range, and one of them visible — while a spell aimed at you disturbs
+  whether or not you can see who cast it. ``make_ranged_attack()`` called
+  ``disturb()`` on the line before, a harmless duplicate while both were
+  unconditional and one that would have quietly defeated the gate; it is gone.
+  Gating on sight rather than allegiance fixes the hostile half too: two
+  monsters fighting out of sight is no reason to stop resting either. The
+  manual has the new rule.
+
+- **3.124.8** — **Two flaky tests that kept the Windows runners red are
+  steady.** msys2 failed three of six pushes on the same suite,
+  ``monster/ally-ai``, which was flaking at 10 per cent locally — 12 failures
+  in 120 runs — for three separate reasons: a pet placed in a corridor left
+  nowhere for the enemies each test needs, visibility was asserted without the
+  view being recalculated, and one test's own pet bashed a door and disturbed
+  the rest it was testing, which is the defect 3.124.9 fixes. After the fix,
+  300 runs and none failed. ``player/psionic-backfire`` was flaking at 2 per
+  cent under ASAN, 800 uses leaving no mark about one run in fifty; it uses
+  eight thousand now, measured rather than guessed.
+
+A bounty forgot its target in the save — 23 September 2026
+------------------------------------------------------------
+
+- **3.124.7** — **A Draconian says what it breathed, in words.** "You breathe
+  %s." was filled from the projection's ``desc``, which is written for the
+  monster-facing sentence "%s which are in line of sight", so the class breaths
+  produced lines like "You breathe hurts and bewilders monsters at once."
+  ``player_desc`` is the noun the game already uses when it lists what a
+  creature can breathe, and it was sitting next to the wrong field. The one
+  line fixes the confusion, psionic force and holy fire breaths, and the
+  Mindcrafter's psi bolt, which had been describing itself as "a bolt or beam
+  of assaults the minds of monsters" for rather longer than the Draconian has
+  existed. Found by the independent review of 3.105 to 3.124.
+
+- **3.124.6** — **Two tests that checked an ingredient now check the
+  behaviour** (DEC-94). The Vampire's light test asserted ``cur_light >= 1``,
+  which the starting torch satisfies whatever the race contributes; it now
+  compares a Vampire with a Human in the same gear. The psionic backfire test
+  asked which powers count as class powers and never used one; it now drives
+  eight hundred uses of a Half-Orc Mindcrafter's racial and class powers and
+  requires the race to leave no mark and the class to leave some.
+
+- **3.124.5** — **Nightmare's FORCE_DEPTH exemption moves to where monsters
+  are placed**, so it finally happens (BAL-15, DEC-93). It sat in the
+  allocation filter in ``get_mon_num()`` while ``monster_can_be_placed()`` went
+  on refusing out-of-depth ``FORCE_DEPTH`` monsters, so in nightmare the
+  selector could pick one and placement threw it away every time. The archive
+  has it the other way round — its allocation filter refuses unconditionally
+  (``monster2.c:821``) and only placement relaxes (``monster2.c:1734``) — so a
+  deep monster still never appears in a shallow floor's random population, and
+  nightmare allows one put down on purpose: a summon, a script, a quest. The
+  test had asked the selector, which is why this looked covered; it now places
+  the monster, and also asserts that the allocation table refuses on both
+  settings.
+
+- **3.124.4** — **A misspelt base name in an expression is a parse error**
+  (DEC-92). ``effect_value_base_by_name()`` answers NULL for a name it does not
+  know, thirteen callers passed that on, and a NULL base evaluates as zero — so
+  a typo in any ``expr:``, ``power-expr:`` or ``power-chance:`` line parsed
+  clean and silently computed against 0. Demonstrated before fixing:
+  ``PLAYER_LEVL`` in one ``power-chance:`` line loaded with no error and passed
+  all 1,468 tests, while making the Warrior and Ranger Draconian's breath
+  substitution impossible. 994 expression lines in ``lib/gamedata`` were
+  exposed, 892 of them naming ``PLAYER_LEVEL``. The same typo now stops at
+  "p_race.txt line 664 column 2: invalid expression".
+
+  ``power-chance:`` inherited this, which is the part worth recording: a name
+  check had been added to ``power-when-class:`` just after seeing how invisible
+  a bad name is, and the same question was not asked of the base name on the
+  line above.
+
+- **3.124.3** — **A quest taken from a townsman keeps its target across a
+  save** (WLD-19, WLD-21, DEC-91). ``struct quest`` carries ``race``, ``kind``
+  and ``dungeon``, the writer persisted none of them, and
+  ``player_quests_reset()`` restores them only for the fixed quests in
+  ``quest.txt``. Both places that advance a quest compare against exactly those
+  fields, so after any save and reload a bounty's kill count could not move, a
+  fetch could not notice its item, neither could complete, and the slot stayed
+  taken for the rest of the run. Ordinary play, no unusual savefile needed.
+  ``town`` had been added to the block for exactly this reason; the other three
+  were not carried with it.
+
+  The quest block goes from version 4 to 5, written by name rather than by
+  index and restored for taken quests only, and a target that no longer exists
+  releases the slot rather than holding it for ever. The test asserts through
+  ``quest_check()`` and ``quest_check_item()`` and caught itself as well as the
+  defect: written the obvious way, it compared a pointer taken before the save
+  with one taken after, dangling into a freed ``r_info`` that the allocator
+  happened to hand back at the same address. ASAN failed it.
 
 The borg starved holding a meal — 20 September 2026
 ------------------------------------------------------------

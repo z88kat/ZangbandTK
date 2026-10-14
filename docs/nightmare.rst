@@ -3,9 +3,8 @@ Nightmare Mode
 
 .. note::
 
-   **Being written.** This chapter is filled in by milestone **M11** as each
-   piece lands, and says at the bottom what is not built yet. Per DEC-17 the
-   milestone is not complete until the chapter is.
+   **Complete.** This chapter was written by milestone **M11** as each piece
+   landed, and the milestone closed with it on 4 October 2026 (DEC-17).
 
    Requirements: BAL-15 to BAL-18.
 
@@ -128,7 +127,7 @@ And four things it does not do
 ------------------------------
 
 These are **ours**, not Zangband's. Its spoiler describes a long menu of ideas
-its code never implemented; three of them were worth building, and they are
+its code never implemented; four of them were worth building, and they are
 kept separate from the list above because that list is a port and this one is
 a design. Nothing here is restoring anything.
 

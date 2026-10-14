@@ -31,6 +31,22 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+14 October 2026 — the pages that were not missing
+=================================================
+
+I asked for the four unwritten pages of the site to be written. There were
+none. The note saying four were unwritten dated from August, before Features,
+Screenshots, Download and the Release log existed, and nobody had checked it
+since. What had actually gone stale was worse, because it looked finished. The
+release log was forty-four versions behind. Four pages still said nightmare
+mode was half done, ten days after M11 closed. And the Features page described
+the Tk front end as a CI artifact nobody downloads, when it has a disk image
+of its own from the next release. A status sentence written by hand is true on
+the day it is written. Now the log has the Tk work in one section, since none
+of it moved the version number, and nightmare mode is under what is in the
+game rather than what is not.
+
+
 14 October 2026 — your own music
 ================================
 

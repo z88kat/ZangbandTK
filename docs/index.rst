@@ -18,11 +18,12 @@ ZangbandTK puts the first on top of the second. It is not a port: Zangband's
 
 .. note::
 
-   **Status: feature-complete but for one milestone.** Everything Zangband is
-   known for is in — the wilderness, the towns and their services, thirteen
-   dungeons, the bestiary, mutations, chaos patrons, seven realms of magic and
-   pets. What is left is nightmare mode, and the polish that turns a working
-   game into one worth standing behind. :doc:`features` is the honest
+   **Status: feature-complete.** Everything Zangband is known for is in — the
+   wilderness, the towns and their services, thirteen dungeons, the bestiary,
+   mutations, chaos patrons, seven realms of magic, pets and nightmare mode.
+   What is left is the polish that turns a working game into one worth
+   standing behind, and a second Mac front end modelled on the original
+   ZangbandTk. :doc:`features` is the honest
    inventory, and every release so far is still marked a pre-release.
    Development happens at `GitHub`_.
 
@@ -80,8 +81,8 @@ Start here
       :link: releases
       :link-type: doc
 
-      What changed in each version, by milestone. M0 to M9 are complete and
-      M10, pets, is all but done. M11, nightmare mode, is the last.
+      What changed in each version, by milestone. M0 to M11 are complete,
+      and the Tk front end is at its last milestone.
 
 
 What makes it Zangband

@@ -4,10 +4,10 @@ T	h1	Nightmare Mode
 T	h1	\n
 T	p0 note strong	Note
 T	p0 note	\n
-T	p0 note strong	Being written.
-T	p0 note	 This chapter is filled in by milestone 
+T	p0 note strong	Complete.
+T	p0 note	 This chapter was written by milestone 
 T	p0 note strong	M11
-T	p0 note	 as each piece lands, and says at the bottom what is not built yet. Per DEC-17 the milestone is not complete until the chapter is.
+T	p0 note	 as each piece landed, and the milestone closed with it on 4 October 2026 (DEC-17).
 T	p0 note	\n
 T	p0 note	Requirements: BAL-15 to BAL-18.
 T	p0 note	\n
@@ -105,7 +105,7 @@ T	h2	And four things it does not do
 T	h2	\n
 T	p0	These are 
 T	p0 strong	ours
-T	p0	, not Zangband’s. Its spoiler describes a long menu of ideas its code never implemented; three of them were worth building, and they are kept separate from the list above because that list is a port and this one is a design. Nothing here is restoring anything.
+T	p0	, not Zangband’s. Its spoiler describes a long menu of ideas its code never implemented; four of them were worth building, and they are kept separate from the list above because that list is a port and this one is a design. Nothing here is restoring anything.
 T	p0	\n
 T	p0 strong	Breeders fill a level two and a half times over.
 T	p0	 The cap on how many breeding monsters a level will hold rises from 100 to 255. A floor of giant white lice or mice, left alone, becomes very much worse than it would ordinarily be. Scrolls of Sterilize still work and still stop it.
