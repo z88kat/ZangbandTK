@@ -1235,8 +1235,8 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 		 * class.txt) -- except on a critical, which keeps the critical's,
 		 * because how hard a blow landed is the news.
 		 */
-		int sound = (msg_type == MSG_HIT && ma_blow->msgt)
-			? ma_blow->msgt : msg_type;
+		uint32_t sound = (msg_type == MSG_HIT && ma_blow->msgt > 0)
+			? (uint32_t)ma_blow->msgt : msg_type;
 
 		strnfmt(blow_msg, sizeof(blow_msg), ma_blow->desc, m_name);
 
