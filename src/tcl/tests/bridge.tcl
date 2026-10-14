@@ -1767,6 +1767,58 @@ proc sound_pass {} {
 		list $v $e
 	} "40 {the volume runs from 0 to 100}"
 
+	# The player's own music.  Whether anything is heard depends on the
+	# machine having an output, which a CI runner may not, so the playlist is
+	# checked against a stand-in for music.m: the folder and the folders in
+	# it read, what is not music left out, each track played in a shuffled
+	# order, one that will not play passed over, and the next begun when one
+	# ends.
+	check "music plays a folder of the player's own, in turn" {
+		set dir [file join [angband_path user] music-probe]
+		file delete -force $dir
+		file mkdir [file join $dir inner]
+		foreach f {a.mp3 b.ogg inner/c.flac bad.mp3 notes.txt} {
+			close [open [file join $dir $f] w]
+		}
+		rename angband_music real_angband_music
+		set ::probe_played {}
+		set ::probe_state stopped
+		proc angband_music {what args} {
+			switch -- $what {
+				here { return 1 }
+				play {
+					set f [file tail [lindex $args 0]]
+					if {$f eq "bad.mp3"} { return 0 }
+					lappend ::probe_played $f
+					set ::probe_state playing
+					return 1
+				}
+				state { return [list $::probe_state 1.0 2.0] }
+				stop { set ::probe_state stopped }
+				default { return }
+			}
+		}
+		set was [list $::music(on) $::music(dir)]
+		set ::music(on) 1
+		set ::music(dir) $dir
+		music_start
+		set found [lsort [lmap f $::music(list) {file tail $f}]]
+		music_next
+		music_next
+		music_next
+		set before [llength $::probe_played]
+		set ::probe_state ended
+		music_tick
+		set advanced [expr {[llength $::probe_played] == $before + 1}]
+		music_stop
+		lassign $was ::music(on) ::music(dir)
+		rename angband_music {}
+		rename real_angband_music angband_music
+		file delete -force $dir
+		list $found [llength [lsort -unique $::probe_played]] \
+			[expr {"bad.mp3" in $::probe_played}] $advanced
+	} "{a.mp3 b.ogg bad.mp3 c.flac} 3 0 1"
+
 	check "Try plays a sound with the game's sound off" {
 		angband_option use_sound 0
 		angband_sound play LEVEL

@@ -194,3 +194,7 @@ scripts/tiles/neon/cycle.png
 # them, not that git stops seeing them.
 deleted/*
 !deleted/.gitkeep
+
+# Music for trying the Tk front end's music player: hundreds of megabytes,
+# and the player's own, never the game's.
+tests/music/

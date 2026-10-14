@@ -107,5 +107,10 @@ macro(configure_tcl_sound _NAME_TARGET _CORE_TARGET _SOUND_TARGET)
     target_include_directories(${_SOUND_TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/src")
     target_compile_options(${_SOUND_TARGET} PRIVATE -fobjc-arc)
     target_link_libraries(${_NAME_TARGET} PRIVATE "-framework Cocoa")
+    # And the player's own music, through AVFoundation (src/tcl/music.m).
+    target_sources(${_NAME_TARGET} PRIVATE "${CMAKE_SOURCE_DIR}/src/tcl/music.m")
+    set_source_files_properties("${CMAKE_SOURCE_DIR}/src/tcl/music.m"
+        PROPERTIES COMPILE_OPTIONS -fobjc-arc)
+    target_link_libraries(${_NAME_TARGET} PRIVATE "-framework AVFoundation")
     message(STATUS "Support for sound with Cocoa - Ready")
 endmacro()

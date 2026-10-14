@@ -81,6 +81,14 @@
 #ifdef __APPLE__
 /* In tcl/menukeys.c, which has to reach past Tk to AppKit. */
 extern void tcl_menu_keys_literal(void);
+#ifdef SOUND_COCOA
+/* In tcl/music.m, which plays the player's own music through NSSound. */
+extern bool tcl_music_play(const char *path, double volume);
+extern void tcl_music_stop(void);
+extern void tcl_music_pause(bool pause);
+extern void tcl_music_volume(double volume);
+extern const char *tcl_music_state(double *position, double *length);
+#endif
 /* In tcl/keyboard.c, which asks Carbon what the keyboard types. */
 extern void tcl_keyboard_char(int vk, int shifted, char *out, size_t len);
 extern const char *tcl_keyboard_type(void);
@@ -8960,6 +8968,86 @@ static int objcmd_keyboard(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	return TCL_ERROR;
 }
 
+/*
+ * The player's own music (music.tcl), one track at a time.
+ *
+ *   angband_music play PATH VOLUME   from the start, at 0 to 100; 1 if it
+ *                                    plays, 0 if the file cannot be played
+ *   angband_music stop | pause | resume
+ *   angband_music volume 0-100       the track playing, from now
+ *   angband_music state              {stopped|paused|playing|ended position
+ *                                    length}, in seconds
+ *
+ * Only where the Cocoa sound module is (music.m); elsewhere play is always 0
+ * and state stopped, and the Sound page says there is no music here.
+ */
+static int objcmd_music(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
+		Tcl_Obj *const objv[])
+{
+	const char *what = objc > 1 ? Tcl_GetString(objv[1]) : "";
+	int v = 0;
+
+	(void)dummy;
+
+	if ((objc == 4 && streq(what, "play")) || (objc == 3 && streq(what, "volume"))) {
+		if (Tcl_GetIntFromObj(ip, objv[objc - 1], &v) != TCL_OK) return TCL_ERROR;
+		if (v < 0 || v > 100) {
+			Tcl_SetObjResult(ip, Tcl_NewStringObj(
+					"the volume runs from 0 to 100", -1));
+			return TCL_ERROR;
+		}
+	}
+	if (objc == 4 && streq(what, "play")) {
+#ifdef SOUND_COCOA
+		Tcl_SetObjResult(ip, Tcl_NewIntObj(tcl_music_play(
+				Tcl_GetString(objv[2]), v / 100.0)));
+#else
+		Tcl_SetObjResult(ip, Tcl_NewIntObj(0));
+#endif
+		return TCL_OK;
+	}
+	if (objc == 3 && streq(what, "volume")) {
+#ifdef SOUND_COCOA
+		tcl_music_volume(v / 100.0);
+#endif
+		return TCL_OK;
+	}
+	if (objc == 2 && (streq(what, "stop") || streq(what, "pause")
+			|| streq(what, "resume"))) {
+#ifdef SOUND_COCOA
+		if (streq(what, "stop")) tcl_music_stop();
+		else tcl_music_pause(streq(what, "pause"));
+#endif
+		return TCL_OK;
+	}
+	if (objc == 2 && streq(what, "state")) {
+		double position = 0, length = 0;
+		const char *state = "stopped";
+		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
+
+#ifdef SOUND_COCOA
+		state = tcl_music_state(&position, &length);
+#endif
+		Tcl_ListObjAppendElement(ip, list, Tcl_NewStringObj(state, -1));
+		Tcl_ListObjAppendElement(ip, list, Tcl_NewDoubleObj(position));
+		Tcl_ListObjAppendElement(ip, list, Tcl_NewDoubleObj(length));
+		Tcl_SetObjResult(ip, list);
+		return TCL_OK;
+	}
+	if (objc == 2 && streq(what, "here")) {
+#ifdef SOUND_COCOA
+		Tcl_SetObjResult(ip, Tcl_NewBooleanObj(1));
+#else
+		Tcl_SetObjResult(ip, Tcl_NewBooleanObj(0));
+#endif
+		return TCL_OK;
+	}
+
+	Tcl_WrongNumArgs(ip, 1, objv, "play PATH VOLUME | stop | pause | resume | "
+			"volume 0-100 | state | here");
+	return TCL_ERROR;
+}
+
 static bool tcl_get_int(const char *name, int *out);
 
 /**
@@ -9683,6 +9771,8 @@ errr init_tcl(int argc, char **argv)
 	Tcl_CreateObjCommand2(interp, "angband_keymap", objcmd_keymap, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_keyboard", objcmd_keyboard, NULL,
+			NULL);
+	Tcl_CreateObjCommand2(interp, "angband_music", objcmd_music, NULL,
 			NULL);
 	Tcl_CreateObjCommand2(interp, "angband_choice", objcmd_choice, NULL,
 			NULL);

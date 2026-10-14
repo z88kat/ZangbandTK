@@ -587,3 +587,10 @@ started.  The switch is the ``use_sound`` option, so it belongs to the character
 and starts off for a new one; Other ▸ Use Sound switches it as well.  The volume
 is kept in ``tk-settings.txt``.  The sounds are Angband 4.2's, and which one
 plays for what is set in ``lib/customize/sound.prf``, as for every front end.
+
+Under them, **Your music** plays music of your own while you play: no music
+comes with the game, so choose a folder of it.  The folders inside it are read
+too, and the tracks play in a shuffled order, with a volume of their own and
+Previous, Pause and Next.  MP3, AAC, FLAC, Ogg, Opus, WAV and AIFF all play.
+Whether it is on, the folder and the volume are kept in ``tk-settings.txt``,
+for every character.

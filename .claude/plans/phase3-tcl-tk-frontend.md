@@ -2206,6 +2206,19 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 > thud files. A critical keeps the critical's sound: how hard a blow landed is the news. A
 > unit test walks the ladder.
 
+> **The player's own music, 14 October 2026.**
+>
+> - **Music** (OBS-33): a folder of the player's own, read three folders deep, played in a
+>   shuffled order with its own volume, Previous, Pause and Next, on the Sound page
+>   ([music.tcl](../../lib/tcl/music.tcl)); off by default, kept in tk-settings.txt. Played by
+>   [music.m](../../src/tcl/music.m) through AVAudioEngine, after NSSound and AVAudioPlayer were
+>   tried and refused Ogg and Opus — AVAudioPlayer opens them and will not play them — which
+>   is what free music mostly comes in; all of MP3, AAC, FLAC, Ogg, Opus, WAV, AIFF and CAF play.
+>   No new library: AVFoundation is the system's. The bridge checks the playlist against a
+>   stand-in, since a CI runner may have no audio output. Music lives beside the Cocoa sound
+>   module, so a build with SDL2 sound has none. `tests/music/` is gitignored: it is where the
+>   owner keeps music to try it with, hundreds of megabytes of it.
+
 ---
 
 ## 6. Decisions needed

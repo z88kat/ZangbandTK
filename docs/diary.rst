@@ -31,6 +31,20 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+14 October 2026 — your own music
+================================
+
+The Sound page now plays music of your own. No music comes with the game, so
+there is nothing to license. You point it at a folder, and it plays what is in
+there, folders and all, in a shuffled order, with Previous, Pause and Next.
+Getting the formats right took three tries. Free music usually comes as Ogg.
+The first player macOS offers would not open an Ogg file at all. The second
+opened one and then would not play it. The third, macOS's audio engine, plays
+everything: MP3, AAC, FLAC, Ogg, Opus and the rest. I put some music in a
+folder of the project to try it with. It is two hundred megabytes, so git has
+been told to leave it alone.
+
+
 14 October 2026 — a monk's kick
 ===============================
 

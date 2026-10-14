@@ -595,3 +595,9 @@ T	p0	. The sounds are Angband 4.2’s, and which one plays for what is set in
 T	p0 code	lib/customize/sound.prf
 T	p0	, as for every front end.
 T	p0	\n
+T	p0	Under them, 
+T	p0 strong	Your music
+T	p0	 plays music of your own while you play: no music comes with the game, so choose a folder of it. The folders inside it are read too, and the tracks play in a shuffled order, with a volume of their own and Previous, Pause and Next. MP3, AAC, FLAC, Ogg, Opus, WAV and AIFF all play. Whether it is on, the folder and the volume are kept in 
+T	p0 code	tk-settings.txt
+T	p0	, for every character.
+T	p0	\n

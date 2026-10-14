@@ -11,7 +11,7 @@
 # 4.2 -- and the volume is the front end's, kept in tk-settings.txt beside the
 # Display page's settings.  That is all there is: which sound goes with which
 # message is sound.prf, a text file, and there is no editor for it (decision
-# 7, OBS-35).
+# 7, OBS-35).  Below the game's sounds, music of the player's own: music.tcl.
 #
 # Built from Tk's own widgets in the classic theme (decision 18).
 
@@ -50,6 +50,9 @@ proc sound_page {p} {
     grid $p.vol.n -row 0 -column 1 -padx {8 0}
     grid $p.vol.try -row 0 -column 2 -padx {12 0}
     grid columnconfigure $p.vol 0 -weight 1
+
+    # The player's own music, music.tcl's.
+    pack [music_section $p] -fill x -pady {10 0}
 
     ttk::label $p.credit -wraplength 460 -justify left -font [uifont 11] \
         -text "The sounds are Angband 4.2's, made by Dubtrain and shared under\
