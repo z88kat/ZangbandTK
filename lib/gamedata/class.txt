@@ -5607,23 +5607,43 @@ title:Flower Master
 title:Dragon Master
 title:Grand Master
 # The unarmed ladder: level, difficulty, dice, effect, stun magnitude, message.
+# blow-msgt, after a blow, is its sound, by message type (list-message.h): the
+# ten strikes ZangbandTk had sounds for, shared out among the seventeen.  A
+# critical keeps the critical's sound.
 blow:1:0:1d4:NONE:0:You punch %s.
+blow-msgt:MA_PUNCH
 blow:2:0:1d5:NONE:0:You kick %s.
+blow-msgt:MA_KICK
 blow:3:0:1d6:NONE:0:You strike %s.
+blow-msgt:MA_STRIKE
 blow:5:5:2d3:KNEE:0:You knee %s.
+blow-msgt:MA_KNEE
 blow:7:5:1d7:NONE:0:You hit %s with your elbow.
+blow-msgt:MA_ELBOW
 blow:9:10:2d4:NONE:0:You butt %s.
+blow-msgt:MA_STRIKE
 blow:11:10:2d5:SLOW:0:You kick %s.
+blow-msgt:MA_KICK
 blow:13:12:3d5:STUN:6:You uppercut %s.
+blow-msgt:MA_UPPERCUT
 blow:16:15:6d3:STUN:8:You double-kick %s.
+blow-msgt:MA_DOUBLE_KICK
 blow:20:20:4d6:NONE:0:You hit %s with a cat's claw.
+blow-msgt:MA_STRIKE
 blow:25:25:4d7:STUN:10:You hit %s with a jump kick.
+blow-msgt:MA_FLYING_KICK
 blow:29:25:5d6:NONE:0:You hit %s with an eagle's claw.
+blow-msgt:MA_STRIKE
 blow:33:30:5d8:STUN:10:You hit %s with a circle kick.
+blow-msgt:MA_KICK
 blow:37:35:6d8:STUN:10:You hit %s with an iron fist.
+blow-msgt:MA_PUNCH
 blow:41:35:7d8:STUN:12:You hit %s with a flying kick.
+blow-msgt:MA_FLYING_KICK
 blow:45:35:7d10:STUN:16:You hit %s with a dragon fist.
+blow-msgt:MA_DRAGON_FIST
 blow:48:35:7d12:STUN:18:You hit %s with a crushing blow.
+blow-msgt:MA_CRUSHING_BLOW
 
 
 ############### MINDCRAFTER ###############

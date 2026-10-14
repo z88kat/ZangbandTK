@@ -1230,13 +1230,20 @@ bool py_attack_real(struct player *p, struct loc grid, bool *fear)
 	 */
 	if (ma_blow && dmg > 0) {
 		char blow_msg[120];
+		/*
+		 * And its own sound, a punch or a flying kick (blow-msgt in
+		 * class.txt) -- except on a critical, which keeps the critical's,
+		 * because how hard a blow landed is the news.
+		 */
+		int sound = (msg_type == MSG_HIT && ma_blow->msgt)
+			? ma_blow->msgt : msg_type;
 
 		strnfmt(blow_msg, sizeof(blow_msg), ma_blow->desc, m_name);
 
 		if (OPT(p, show_damage))
-			msgt(msg_type, "%s (%d)", blow_msg, dmg);
+			msgt(sound, "%s (%d)", blow_msg, dmg);
 		else
-			msgt(msg_type, "%s", blow_msg);
+			msgt(sound, "%s", blow_msg);
 	}
 
 	for (i = 0; i < N_ELEMENTS(melee_hit_types); i++) {

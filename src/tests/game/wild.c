@@ -4626,6 +4626,31 @@ static int test_the_monk_has_a_ladder(void *state) {
 }
 
 /**
+ * And each rung is heard as itself (blow-msgt in class.txt): a punch sounds
+ * like a punch and a crushing blow like a crushing blow, from the ten
+ * martial-art sounds ZangbandTk had, rather than all of them like any hit.
+ */
+static int test_the_monk_ladder_has_sounds(void *state) {
+	struct player_class *c, *monk = NULL;
+	struct class_blow *blow;
+
+	for (c = classes; c; c = c->next)
+		if (streq(c->name, "Monk")) monk = c;
+	notnull(monk);
+	notnull(monk->blows);
+
+	for (blow = monk->blows; blow; blow = blow->next)
+		require(blow->msgt >= MSG_MA_PUNCH && blow->msgt <= MSG_MA_CRUSHING_BLOW);
+
+	eq(monk->blows->msgt, MSG_MA_PUNCH);
+	blow = monk->blows;
+	while (blow->next) blow = blow->next;
+	eq(blow->msgt, MSG_MA_CRUSHING_BLOW);
+
+	ok;
+}
+
+/**
  * A Monk's bare hands are its weapon, so the blows have to arrive.
  *
  * This is the requirement PLR-04 actually states -- unarmed as a progression
@@ -6784,6 +6809,7 @@ struct test tests[] = {
 	{ "a-character-at-sea-still-finds-ground",
 	  test_a_character_at_sea_still_finds_ground },
 	{ "the-monk-has-a-ladder", test_the_monk_has_a_ladder },
+	{ "the-monk-ladder-has-sounds", test_the_monk_ladder_has_sounds },
 	{ "bare-hands-are-a-progression", test_bare_hands_are_a_progression },
 	{ "armour-takes-the-balance", test_armour_takes_the_balance },
 	{ "a-monk-hits-harder-than-a-bare-fist", test_a_monk_hits_harder_than_a_bare_fist },

@@ -7103,6 +7103,26 @@ static enum parser_error parse_class_blow(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+/**
+ * `blow-msgt:<type>` gives the strike above it a sound of its own, by message
+ * type -- the martial artist's punch, kick and dragon fist, which ZangbandTk
+ * had sounds for and a plain hit does not tell apart.
+ */
+static enum parser_error parse_class_blow_msgt(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	struct class_blow *last;
+	int msg_index;
+
+	if (!c) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!c->blows) return PARSE_ERROR_MISSING_RECORD_HEADER;
+	msg_index = message_lookup_by_name(parser_getsym(p, "type"));
+	if (msg_index < 0) return PARSE_ERROR_INVALID_MESSAGE;
+	for (last = c->blows; last->next; last = last->next)
+		;
+	last->msgt = msg_index;
+	return PARSE_ERROR_NONE;
+}
+
 /* ---- the class's copies (PLR-06) ---- */
 
 /**
@@ -7264,6 +7284,7 @@ static struct parser *init_parse_class(void) {
 	parser_reg(p, "desc str desc", parse_class_desc);
 	parser_reg(p, "blow int level int chance sym dice sym effect int power "
 			   "str desc", parse_class_blow);
+	parser_reg(p, "blow-msgt sym type", parse_class_blow_msgt);
 	parser_reg(p, "powers sym stat int first int weight",
 			   parse_class_powers);
 	parser_reg(p, "power str name", parse_class_power);

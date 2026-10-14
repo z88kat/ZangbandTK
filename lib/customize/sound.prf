@@ -589,3 +589,16 @@ sound:LEVEL_DOWN:pls_man_sigh id_bad_aww
 # A mutation gained, and one lost.
 sound:MUTATE:mco_dub_wobble pls_tone_blurk sum_piano_scrape
 sound:UNMUTATE:pls_bell_chime_new pls_man_sigh
+
+# A martial artist's strikes, each its own (class.txt's blow-msgt).  A
+# critical keeps the critical's sound.
+sound:MA_PUNCH:plc_hit_body
+sound:MA_KICK:mco_rubber_thud plc_hit_hay
+sound:MA_STRIKE:mco_squish_hit
+sound:MA_KNEE:mco_tube_hit
+sound:MA_ELBOW:mco_squish_snap
+sound:MA_UPPERCUT:plc_hit_body mco_tube_hit
+sound:MA_DOUBLE_KICK:mco_rubber_thud mco_squish_hit
+sound:MA_FLYING_KICK:mco_thud_crash
+sound:MA_DRAGON_FIST:plm_bang_metal
+sound:MA_CRUSHING_BLOW:plm_break_smash

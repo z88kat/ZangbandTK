@@ -31,6 +31,16 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+14 October 2026 — a monk's kick
+===============================
+
+A monk's strikes have sounds of their own now. The original had ten: a punch,
+a kick, an elbow, up to a dragon fist and a crushing blow. The seventeen
+strikes share them out, so a flying kick no longer sounds like any other
+hit. A critical still sounds like a critical, because how hard the blow
+landed matters more than how it was thrown.
+
+
 14 October 2026 — bigger text, and the rest of the keyboard
 ===========================================================
 

@@ -2200,6 +2200,12 @@ touches (§6 decision 14), so the download page has to say in a line which is wh
 > `<<WindowTextChanged>>`, as do the Items list's tab stops. Menus are the Mac's and keep
 > the system size.
 
+> **The martial artist's strikes, 14 October 2026** (owner's call). `blow-msgt:` after each
+> of the Monk's seventeen blows in class.txt names its sound, from ten new types —
+> `MA_PUNCH` … `MA_CRUSHING_BLOW`, the original's martial_art group — bound to Dubtrain hit and
+> thud files. A critical keeps the critical's sound: how hard a blow landed is the news. A
+> unit test walks the ladder.
+
 ---
 
 ## 6. Decisions needed

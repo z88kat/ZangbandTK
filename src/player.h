@@ -624,6 +624,7 @@ struct class_blow {
 	int ds;				/**< Damage sides */
 	int effect;			/**< One of the MA_* below */
 	int power;			/**< Stun magnitude, for MA_STUN */
+	int msgt;			/**< Its sound, a message type; 0 for a plain hit's */
 };
 
 /**

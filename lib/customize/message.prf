@@ -558,6 +558,36 @@ message:MUTATE:w
 # MSG_UNMUTATE
 message:UNMUTATE:w
 
+# MSG_MA_PUNCH
+message:MA_PUNCH:w
+
+# MSG_MA_KICK
+message:MA_KICK:w
+
+# MSG_MA_STRIKE
+message:MA_STRIKE:w
+
+# MSG_MA_KNEE
+message:MA_KNEE:w
+
+# MSG_MA_ELBOW
+message:MA_ELBOW:w
+
+# MSG_MA_UPPERCUT
+message:MA_UPPERCUT:w
+
+# MSG_MA_DOUBLE_KICK
+message:MA_DOUBLE_KICK:w
+
+# MSG_MA_FLYING_KICK
+message:MA_FLYING_KICK:w
+
+# MSG_MA_DRAGON_FIST
+message:MA_DRAGON_FIST:w
+
+# MSG_MA_CRUSHING_BLOW
+message:MA_CRUSHING_BLOW:w
+
 message:BOLD:w
 
 ?:1
