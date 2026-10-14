@@ -102,6 +102,23 @@ The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
 
+The six-hundred-level crash was a depth — 14 October 2026
+----------------------------------------------------------
+
+- **3.124.47** — **A hard-centre level with no greater vault for its depth
+  gives up and lets the generator choose again**, instead of crashing.
+
+  The phase 2 plan had carried a known defect since 3 September: a crash at
+  about six hundred level generations in one process, found by the pet tests.
+  It was never a count. Those tests went down one level at a time with no
+  floor, and below depth 128 no greater vault is allowed, so ``random_vault()``
+  returned NULL and ``vault_chunk()`` used it. No way down in the game goes past
+  127, so no player could have met it: 15,000 levels at real depths made no
+  crash and held the same memory throughout. ``hard_centre_gen()`` now checks
+  its centre, which also covers a vault that fails to build, and
+  ``game/generations`` makes every depth, holds the floor and checks that a long
+  run stores nothing behind it.
+
 The Tk front end stops failing in silence — 13 October 2026
 ------------------------------------------------------------
 

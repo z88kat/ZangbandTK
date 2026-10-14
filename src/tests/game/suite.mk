@@ -1,4 +1,5 @@
-TESTPROGS += game/basic game/carry game/integrity game/nightmare \
+TESTPROGS += game/basic game/carry game/generations game/integrity \
+	game/nightmare \
 	game/roundtrip \
 	game/mage \
 	game/wild \

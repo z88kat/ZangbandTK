@@ -901,6 +901,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     effects/info.c
     game/basic.c
     game/carry.c
+    game/generations.c
     game/integrity.c
     game/nightmare.c
     game/roundtrip.c

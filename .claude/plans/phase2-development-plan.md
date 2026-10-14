@@ -1010,7 +1010,26 @@ anything more.
 - The DEC-16 documentation pass in M0 may add requirements. Three came from four documents;
   thirty remain unread.
 
-### Known defect: a crash at about six hundred level generations in one process
+### Resolved: the crash at about six hundred level generations was a depth, not a count
+
+> **Diagnosed on 14 October 2026; the account below is kept as it was written.** It was
+> never reachable in play. `game/carry`'s `go_down()` adds one to the depth and never
+> stops, and the depth carried over from test to test, so the big samples walked the
+> player below the bottom of the world (depth 127). No greater vault is allowed past
+> 128, `random_vault()` returned NULL, and the first hard-centre level made down there
+> dereferenced it in `vault_chunk()`. Reproduced: stepping the depth up one at a time
+> crashes with exit 139 at about 148. Not reproduced at legal depths: 15,000 levels in
+> one process, every depth and the surface, no crash and memory flat at about 21 MB from
+> the first thousand to the last; 3,000 more under AddressSanitizer and UBSan, clean.
+> Every way down — stairs, recall, nightmare's deeper recall, deep descent, trapdoors,
+> teleport level, the wizard's jump — stops at 127.
+>
+> So nothing was accumulating, and "about six hundred" was the suite's total, not the
+> cause. `vault_chunk()` now returns NULL when there is no vault, and
+> `hard_centre_gen()` gives up on a NULL centre with an error so that the generator
+> chooses again (it already crashed on the other NULL, a vault that would not build).
+> `game/generations` defends it: every depth makes a level, no way down goes below
+> the bottom, a centre with no vault gives up, and 150 levels leave nothing stored.
 
 Generating roughly six hundred levels inside a single process aborts with a
 segmentation fault. It is **pre-existing and unrelated to pets** — proved by

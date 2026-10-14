@@ -3402,7 +3402,7 @@ struct chunk *moria_gen(struct player *p, int min_height, int min_width,
 /**
  * Make a chunk consisting only of a greater vault
  * \param p is the player
- * \return a pointer to the generated chunk
+ * \return a pointer to the generated chunk, or NULL if there is none
  */
 static struct chunk *vault_chunk(struct player *p)
 {
@@ -3411,6 +3411,13 @@ static struct chunk *vault_chunk(struct player *p)
 	struct vault *v = random_vault(p->depth, vname);
 	struct chunk *c;
 	bool built;
+
+	/*
+	 * No greater vault is allowed at this depth.  None is below the bottom
+	 * of the world, which no way down reaches, but a test that walked
+	 * there once crashed here (game/generations).
+	 */
+	if (!v) return NULL;
 
 	/* Make the chunk */
 	c = cave_new(v->hgt, v->wid);
@@ -3504,6 +3511,12 @@ struct chunk *hard_centre_gen(struct player *p, int min_height, int min_width,
 	int i, k, cavern_area;
 	struct loc grid;
 	struct loc floor[4];
+
+	/* No vault for the depth, or it would not build: another profile */
+	if (!centre) {
+		*p_error = "no greater vault could be made for the centre";
+		return NULL;
+	}
 
 	/* No persistent levels of this type for now */
 	if (dun->persist) {
