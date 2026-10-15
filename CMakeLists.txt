@@ -606,6 +606,13 @@ if(BUILD_DOC)
         COMMAND "${CMAKE_COMMAND}" "-E" "copy_directory"
         "${CMAKE_CURRENT_SOURCE_DIR}/docs/_templates"
         "${_OUTDIR}/_templates"
+        # ZangbandTK: and _ext, which conf.py puts on the path for tkhelp, the
+        # Tk Help window's builder.  Without it every build of the manual from
+        # here -- the release's -- stopped at "No module named 'tkhelp'", which
+        # a sphinx-build run in docs/ itself never shows.
+        COMMAND "${CMAKE_COMMAND}" "-E" "copy_directory"
+        "${CMAKE_CURRENT_SOURCE_DIR}/docs/_ext"
+        "${_OUTDIR}/_ext"
         VERBATIM
     )
     set_target_properties(OurManualConf PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${_OUTDIR}")
