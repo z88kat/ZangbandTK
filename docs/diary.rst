@@ -31,6 +31,21 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+15 October 2026 — ZangbandTK on Windows and Linux
+===================================================
+
+With the names sorted out, the Tk front end went to the other two platforms
+the same afternoon. Linux was nearly free: Tk built once it had zip to pack its
+own scripts with, and the first real fault was ours — two procedures defined in
+a namespace that only exists on a Mac, which stopped the whole window. Windows
+took more, almost all of it things the Mac could never have shown us: no main()
+for the Tk build, Alt arriving as Num Lock, the keypad arriving as plain digits,
+F10 opening the menus as well as reaching the game. Both now build and pass the
+same scripted session as the Mac on every push, and the packages are started
+once more to prove they run on the Tcl and Tk they carry. Nobody has played
+either yet, and there is no sound on them; that comes next, through SDL.
+
+
 15 October 2026 — the name was on the wrong application
 =========================================================
 

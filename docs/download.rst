@@ -34,6 +34,9 @@ build for each platform, and the source:
 - ``Zangband-<version>-win32.zip`` — a 32-bit Windows build, for older machines
   and older Windows. It runs on 64-bit Windows too, and needs the two DLLs beside
   the executable.
+- ``ZangbandTK-<version>-win64-tk.zip`` — ``ZangbandTK.exe``, the Tk front end,
+  for 64-bit Windows, with Tcl and Tk beside it. No sound or music yet. See
+  `ZangbandTK on Windows and Linux`_.
 - ``Zangband-<version>-linux64.AppImage`` — the Linux build, 64-bit. One file:
   make it executable and run it. Carries three front ends, chosen with ``-m``:
   ``-msdl2`` for tiles, ``-mx11`` for a plain window, and ``-mgcu`` to play in a
@@ -41,6 +44,9 @@ build for each platform, and the source:
 - ``Zangband-<version>-linux64-terminal.tar.gz`` — the Linux terminal build:
   the curses front end on its own, with no FUSE and no graphics stack, for a
   server you reach over ssh. See `The Linux terminal build`_.
+- ``ZangbandTK-<version>-linux64-tk.AppImage`` — the Tk front end for 64-bit
+  Linux, one file as the other AppImage is. No sound or music yet. See
+  `ZangbandTK on Windows and Linux`_.
 - ``Zangband-<version>-nintendo.zip`` — the Nintendo DS ROM and the 3DS build,
   with the data the card needs. Text mode, no tiles or sound.
 - ``Zangband-<version>-dos.zip`` — the DOS build, for a 386 or better with a
@@ -386,6 +392,42 @@ is not. If you have played Angband before,
 before.
 
 
+ZangbandTK on Windows and Linux
+===============================
+
+``ZangbandTK``, the front end modelled on the 1990s ZangbandTk — see `Two Mac
+applications`_ — has a download for Windows and one for Linux as well as the
+Mac's. It is the same game, built from the same Tcl and Tk.
+
+**Windows.** Unzip ``ZangbandTK-<version>-win64-tk.zip`` and keep the folder
+together: ``ZangbandTK.exe`` needs the DLLs beside it, and finds its data in the
+``lib`` and ``tcltk`` folders next to it. Characters are kept in
+``lib\user\save``, as ``Zangband.exe`` keeps its own, so a character can be
+carried from one to the other by copying its savefile. SmartScreen will stop
+the first launch, as it does ``Zangband.exe``'s; the ``README.txt`` in the zip
+says how past it.
+
+**Linux.** One file, needing nothing installed but an X11 desktop — or Wayland,
+through XWayland:
+
+.. code-block:: sh
+
+   chmod +x ZangbandTK-<version>-linux64-tk.AppImage
+   ./ZangbandTK-<version>-linux64-tk.AppImage
+
+Characters go to ``~/.angband/ZangbandTK``, which the other Linux downloads use
+too, so all three share them.
+
+.. note::
+
+   **Two things the Mac has and these do not, yet.** There is no sound or music:
+   the game's Use Sound switch does nothing, and the Options window greys out
+   the volume and music controls. And the Keymaps window always draws a US
+   keyboard, whatever the layout. Both are planned. Beyond that, CI builds both
+   on every push, plays a scripted session through the real front end and starts
+   the packaged game to check it runs on what it carries — but nobody has played
+   either through yet.
+
 Linux
 =====
 
@@ -556,6 +598,9 @@ AppImage.
 The DS and 3DS builds come from
 Angband's own ports and are packaged the same way. The DOS build is a DJGPP
 cross build, smoke-tested under DOSBox-X on every push.
+
+ZangbandTK's Windows and Linux downloads are built and checked the same way;
+`ZangbandTK on Windows and Linux`_ says what they lack.
 
 Nobody plays the game on any of them here, though, so all are **untested in
 play**:

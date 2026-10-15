@@ -143,12 +143,13 @@ The original's interface, rebuilt on Tcl/Tk 9 rather than ported. It is **in the
 tree and CI builds it on every push**: [src/main-tcl.c](src/main-tcl.c) and
 [src/tcl/](src/tcl/), with Tcl and Tk 9.0.4 vendored under [tcltk/](tcltk/) and
 one script that builds them. The [Tk workflow](.github/workflows/tk.yaml)
-compiles the front end, asserts that the binary links Tk and has not quietly
-fallen back to X11, runs the Tcl-side tests, packages `ZangbandTK.app`, and
-then starts the real game with the real front end and drives it from a script.
+compiles the front end on macOS, Linux and Windows, runs the Tcl-side tests,
+starts the real game with the real front end and drives it from a script, and
+packages it: `ZangbandTK.app`, an AppImage and a zip, each started once more to
+check it runs on the Tcl and Tk it carries rather than the build machine's.
 
-It is **not what the releases ship**. The bundle is a CI artifact; the download
-is still the Cocoa build below. Where it stands milestone by milestone is in
+The releases ship it from the next one on, for all three, beside the Zangband
+downloads. Where it stands milestone by milestone is in
 [.claude/plans/phase3-tcl-tk-frontend.md](.claude/plans/phase3-tcl-tk-frontend.md),
 which is the honest account and is worth more than a line here that would go
 stale between one week and the next.
@@ -208,6 +209,13 @@ The tests run against the build from step 2:
 scripts/run-tcl-tests                 # the Tcl side's own tests
 scripts/run-tcl-bridge-test build-tcl # ...and the scripted session; opens a window
 ```
+
+On Linux and on Windows the steps are the same, from a shell with a C compiler,
+CMake, Ninja and `zip` — on Windows, MSYS2's MINGW64 shell, since the front end
+needs GCC or clang and not MSVC — and the last one is `scripts/pkg_linux_tcltk`
+(an AppImage, with linuxdeploy) or `scripts/pkg_win_tcltk` (a zip) in place of
+`pkg_macos_tcltk`. On Linux the bridge test wants a display; `xvfb-run` gives
+it one. [tk.yaml](.github/workflows/tk.yaml) is the worked example of both.
 
 None of the original's front-end C is being compiled in — the survey concluded
 it loses to Tk 9 and Angband 4.2 on the merits, file by file, so the front end is

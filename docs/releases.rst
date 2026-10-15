@@ -39,7 +39,8 @@ DEC-129): more breeders, weaker reflection, nastier mutations, and poor
 shopkeepers who never leave. :doc:`nightmare` keeps the two halves apart.
 
 **Phase 3, the Tk front end, is at T9, its last milestone**: the game through a
-second Mac application modelled on the original ZangbandTk, told below under
+second application modelled on the original ZangbandTk, for the Mac, Windows
+and Linux, told below under
 *Unreleased*. See :doc:`features` for what all of this adds up to in the game,
 and for what is left.
 
@@ -57,7 +58,8 @@ The Tk front end, ZangbandTK.app — 17 September to 14 October 2026
 
 Phase 3 rebuilt the original ZangbandTk's interface as a second Mac application,
 ``ZangbandTK.app``, which the next release ships as
-``ZangbandTK-<version>-osx-tk.dmg`` beside ``Zangband.app``. Its work was
+``ZangbandTK-<version>-osx-tk.dmg`` beside ``Zangband.app`` — and, from 15
+October, for Windows and Linux too (below). Its work was
 tracked by milestones of its own, T0 to T9, and did not move the version
 number, so it is told here in one place rather than version by version.
 :doc:`download` says which Mac application is which.
@@ -101,6 +103,28 @@ number, so it is told here in one place rather than version by version.
 The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
+
+ZangbandTK on Windows and Linux — 15 October 2026
+-------------------------------------------------
+
+- **ZangbandTK for Windows and Linux.** The Tk front end has two more
+  downloads: ``ZangbandTK-<version>-win64-tk.zip`` and
+  ``ZangbandTK-<version>-linux64-tk.AppImage``. Built, packaged and checked on
+  every push, as the Mac's is, but not yet played through, and with no sound or
+  music yet. See :doc:`download`. Fixed on the way, for those two:
+
+  - F10, and Alt and a letter, go to the game, as every other key in the main
+    window does, rather than opening the menu bar as well. On Windows, Alt is
+    Alt rather than Num Lock, and the keypad's keys are the keypad's.
+  - With no character named, the application opens at the Choose Game window,
+    as the Mac's does, rather than loading the save named after the account.
+  - The map and panes start in a fixed-width face the machine has — Consolas
+    on Windows, DejaVu Sans Mono on Linux — rather than a proportional stand-in
+    for the Mac's Menlo.
+  - No menu has a dashed tear-off line at the top.
+
+- **On the Mac as well**, the music folder starts in your own Music folder. It
+  was a folder called ``~`` wherever the game had been started.
 
 Two applications, two names — 15 October 2026
 ---------------------------------------------

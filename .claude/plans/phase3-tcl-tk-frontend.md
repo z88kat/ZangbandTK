@@ -2564,6 +2564,34 @@ _What follows from it:_
   half is testable, because the separation is a data-structure decision
   ([OBS-42](phase3-observations.md)) and merging them would be the expensive mistake.
 
+> **Windows and Linux built, 15 October 2026.** Once the applications had their right
+> names ([DEC-143](decisions.md)), the project owner chose the order and the terms: the
+> builds first and sound after; on Windows the characters beside the game, in
+> `lib\user\save`, as `Zangband.exe` keeps them; work committed to master, with CI as the
+> Windows machine; and the two downloads in the next release once CI passes them.
+>
+> - **Linux**: `ZangbandTK-<version>-linux64-tk.AppImage`, from Tcl and Tk built on
+>   ubuntu-22.04 with X11 and Xft, by `scripts/pkg_linux_tcltk`. Saves in
+>   `~/.angband/ZangbandTK`, shared with the other Linux downloads.
+> - **Windows**: `ZangbandTK-<version>-win64-tk.zip`, MinGW-w64 under MSYS2 (MSVC has no
+>   cleanup attribute), a GUI-subsystem `ZangbandTK.exe` with `tcl90.dll`,
+>   `tcl9tk90.dll`, `zlib1.dll` and `libtommath.dll` beside it, by
+>   `scripts/pkg_win_tcltk`.
+> - **One rule for the script libraries**: `tcltk/` beside the game's `lib/`, in the
+>   bundle, the AppImage and the zip alike. `scripts/run-tcl-package-test` starts each
+>   package and checks Tcl, Tk and the front end's scripts all came from inside it.
+> - **tk.yaml** builds, tests (183 bridge checks, under Xvfb on Linux) and packages all
+>   three on every push; release.yaml has `linux-tk` and `windows-tk` beside `mac-tk`.
+>
+> What the two lack, written down where the players read it: sound and music (SDL2's,
+> per DEC-12 rule 4, is the next stage), and the Keymaps window's real keyboard, which
+> only the Mac reads (Carbon); elsewhere it is drawn as a US one. Fixed on the way, for
+> every platform: Aqua-only procedures defined unconditionally, F10 and Alt-letter
+> reaching the menu bar as well as the game, Menlo as a default face, tear-off menus,
+> `~/Music` (Tcl 9 does not expand `~`), Alt read as Num Lock on Windows, the keypad
+> arriving as digits on Windows. Not yet looked at: window sizes in fixed pixels, laid
+> out at a Mac's 72 dpi, on Windows' 96.
+
 **Settled — two macOS applications, permanently.** Confirmed by project owner: _"we want to
 keep the existing build because this is a different play experience. The TK is a separate
 release … the current version remains, it is built and will always be playable."_
@@ -2712,8 +2740,9 @@ Stated plainly, so nothing here reads as more settled than it is:
 - **The read-accessor surface has not been mapped** to 4.2 concepts. §3.2 settles which
   third of the old bridge disappears; it does not size what remains. Until T3 produces that
   map, T4–T8 sizes are informed guesses.
-- **Windows and Linux are untried** for the front end, deliberately, per §6 decision 13 —
-  which now says _when_ they get tried rather than leaving it open.
+- ~~**Windows and Linux are untried** for the front end, deliberately, per §6 decision 13 —
+  which now says _when_ they get tried rather than leaving it open.~~ Tried, 15 October
+  2026: both build, run the scripted session and ship. See the note under decision 13.
 - **The graphics are audited for presence, not for fitness.** Every asset is there and every
   file decodes (§1.3), but no tile has been mapped to a 4.2 index, and nothing has been
   judged at actual size in a running window — which is the only judgement that counts.

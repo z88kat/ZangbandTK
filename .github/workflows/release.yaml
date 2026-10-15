@@ -10,6 +10,9 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+'
       - '[0-9]+.[0-9]+.[0-9]+-*'
   pull_request:
+  # Every job but the last, started by hand: a rehearsal of a release, which
+  # publishes nothing, because the release job runs only for a pushed tag.
+  workflow_dispatch:
 
 # Creating a release writes to the repository, and the token does not get that
 # by default -- the repository hands workflows read-only contents unless they
@@ -104,6 +107,13 @@ env:
     MACTK_ARTIFACT: release-mac-tk
     MACTK_ARTIFACT_PATH: release-mac-tk.txt
     MACTK_ARCHIVE_ARTIFACT: release-mac-tk-archive
+    # And for ZangbandTK on Linux and on Windows.
+    LINUXTK_ARTIFACT: release-linux-tk
+    LINUXTK_ARTIFACT_PATH: release-linux-tk.txt
+    LINUXTK_ARCHIVE_ARTIFACT: release-linux-tk-archive
+    WINTK_ARTIFACT: release-win-tk
+    WINTK_ARTIFACT_PATH: release-win-tk.txt
+    WINTK_ARCHIVE_ARTIFACT: release-win-tk-archive
     # Used as the name when uploading or downloading the artifact for passing
     # the name of the DOS archive.
     DOS_ARTIFACT: release-dos
@@ -1460,6 +1470,14 @@ jobs:
             "${package_name}-osx-tk.dmg"
           echo "archive_file=${package_name}-osx-tk.dmg" >> $GITHUB_OUTPUT
 
+      # The bundle that goes on the image, started and asked where Tcl, Tk
+      # and its scripts came from, as tk.yaml asks it on every push.
+      - name: The bundle runs on what it carries
+        run: |
+          tkapp=${{ steps.store_config.outputs.tkapp }}
+          scripts/run-tcl-package-test "$RUNNER_TEMP/app/$tkapp.app" \
+            "$RUNNER_TEMP/app/$tkapp.app/Contents/MacOS/$tkapp"
+
       - name: Create Artifact with Tk Mac Archive Path
         run: |
           echo archive_path= '${{ steps.create_mac_tk_archive.outputs.archive_file }}' > $MACTK_ARTIFACT_PATH
@@ -1476,6 +1494,221 @@ jobs:
         with:
           name: ${{ env.MACTK_ARCHIVE_ARTIFACT }}
           path: ${{ steps.create_mac_tk_archive.outputs.archive_file }}
+          retention-days: 1
+
+  # ZangbandTK for Linux, as tk.yaml builds and checks it on every push:
+  # ZangbandTK-<version>-linux64-tk.AppImage, from Tcl and Tk built here on
+  # ubuntu-22.04, whose glibc is the oldest the AppImage runs on, as the other
+  # Linux downloads' is.  The bridge test runs on this build too, under Xvfb,
+  # and the AppImage is started through its own AppRun and asked where Tcl,
+  # Tk and its scripts came from.
+  linux-tk:
+    needs: [setup, docconvert]
+    name: Linux (Tk)
+    runs-on: ubuntu-22.04
+    env:
+      # The game refuses to start in a locale that is not UTF-8.
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+    steps:
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          tkapp=`sed -E -n -e 's/tkapp= //p' $CONFIG_ARTIFACT_PATH`
+          echo "tkapp=$tkapp" >> $GITHUB_OUTPUT
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Clone Project
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download Artifact with Converted Documents
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.DOC_ARTIFACT }}
+
+      - name: Extract Converted Documents
+        run: |
+          tar -xf ${{ env.DOC_ARTIFACT_PATH }}
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libx11-dev libxft-dev \
+            libfontconfig1-dev zip xvfb xauth libfuse2 file
+
+      - name: Restore the Tcl/Tk toolchain
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: tcltk/local
+          key: tcltk-9.0.4-ubuntu-22.04-${{ runner.arch }}-${{ hashFiles('scripts/build-tcltk') }}
+
+      - name: Build Tcl and Tk
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: scripts/build-tcltk
+
+      - name: Build the game
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror -DUSE_PRIVATE_PATHS" \
+            -DSUPPORT_TCL_FRONTEND=ON \
+            -DTCLTK_PREFIX="$PWD/tcltk/local"
+          cmake --build build --parallel
+
+      - name: Scripted session
+        run: xvfb-run -a -s "-screen 0 1600x1200x24" scripts/run-tcl-bridge-test build
+
+      - name: Install linuxdeploy
+        run: |
+          curl -sSLo /usr/local/bin/linuxdeploy \
+            https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod a+x /usr/local/bin/linuxdeploy
+          linuxdeploy --version
+
+      - name: Create Tk Linux Archive
+        id: create_linux_tk_archive
+        run: |
+          package_name=${{ steps.store_config.outputs.tkapp }}-${{ steps.store_config.outputs.version }}
+          scripts/pkg_linux_tcltk build "$package_name"
+          echo "archive_file=${package_name}-linux64-tk.AppImage" >> $GITHUB_OUTPUT
+
+      - name: The AppImage runs on what it carries
+        run: |
+          ./${{ steps.create_linux_tk_archive.outputs.archive_file }} --appimage-extract >/dev/null
+          xvfb-run -a -s "-screen 0 1600x1200x24" \
+            scripts/run-tcl-package-test squashfs-root squashfs-root/AppRun
+
+      - name: Create Artifact with Tk Linux Archive Path
+        run: |
+          echo archive_path= '${{ steps.create_linux_tk_archive.outputs.archive_file }}' > $LINUXTK_ARTIFACT_PATH
+
+      - name: Upload Artifact with Tk Linux Archive Path
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.LINUXTK_ARTIFACT }}
+          path: ${{ env.LINUXTK_ARTIFACT_PATH }}
+          retention-days: 1
+
+      - name: Upload Tk Linux Archive as Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.LINUXTK_ARCHIVE_ARTIFACT }}
+          path: ${{ steps.create_linux_tk_archive.outputs.archive_file }}
+          retention-days: 1
+
+  # ZangbandTK for Windows, as tk.yaml builds and checks it on every push:
+  # ZangbandTK-<version>-win64-tk.zip, built with MinGW-w64 under MSYS2, as
+  # the 64-bit Windows download is.  The bridge test runs on this build too,
+  # and the folder the zip holds is started from its own ZangbandTK.exe and
+  # asked where Tcl, Tk and its scripts came from.
+  windows-tk:
+    needs: [setup, docconvert]
+    name: Windows (Tk)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-gcc
+            make
+            zip
+
+      - name: Download Artifact with Configuration Information
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.CONFIG_ARTIFACT }}
+
+      - name: Extract Configuration Information and Store in Step Outputs
+        id: store_config
+        run: |
+          tkapp=`sed -E -n -e 's/tkapp= //p' $CONFIG_ARTIFACT_PATH`
+          echo "tkapp=$tkapp" >> $GITHUB_OUTPUT
+          version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
+          echo "version=$version" >> $GITHUB_OUTPUT
+
+      - name: Clone Project
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Download Artifact with Converted Documents
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.DOC_ARTIFACT }}
+
+      - name: Extract Converted Documents
+        run: |
+          tar -xf ${{ env.DOC_ARTIFACT_PATH }}
+
+      - name: Restore the Tcl/Tk toolchain
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: tcltk/local
+          key: tcltk-9.0.4-${{ runner.os }}-mingw64-${{ hashFiles('scripts/build-tcltk') }}
+
+      - name: Build Tcl and Tk
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: scripts/build-tcltk
+
+      - name: Build the game
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror -DUSE_PRIVATE_PATHS" \
+            -DSUPPORT_TCL_FRONTEND=ON \
+            -DTCLTK_PREFIX="$(cygpath -m "$PWD/tcltk/local")"
+          cmake --build build --parallel
+
+      - name: Scripted session
+        run: scripts/run-tcl-bridge-test build
+
+      - name: Create Tk Windows Archive
+        id: create_win_tk_archive
+        run: |
+          package_name=${{ steps.store_config.outputs.tkapp }}-${{ steps.store_config.outputs.version }}
+          scripts/pkg_win_tcltk build "$package_name"
+          echo "archive_file=${package_name}-win64-tk.zip" >> $GITHUB_OUTPUT
+          echo "package_name=$package_name" >> $GITHUB_OUTPUT
+
+      - name: The folder runs on what it carries
+        run: |
+          dir=${{ steps.create_win_tk_archive.outputs.package_name }}
+          scripts/run-tcl-package-test "$dir" "$dir/ZangbandTK.exe"
+
+      - name: Create Artifact with Tk Windows Archive Path
+        run: |
+          echo archive_path= '${{ steps.create_win_tk_archive.outputs.archive_file }}' > $WINTK_ARTIFACT_PATH
+
+      - name: Upload Artifact with Tk Windows Archive Path
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.WINTK_ARTIFACT }}
+          path: ${{ env.WINTK_ARTIFACT_PATH }}
+          retention-days: 1
+
+      - name: Upload Tk Windows Archive as Artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ env.WINTK_ARCHIVE_ARTIFACT }}
+          path: ${{ steps.create_win_tk_archive.outputs.archive_file }}
           retention-days: 1
 
   dos:
@@ -1621,7 +1854,7 @@ jobs:
 
   release:
     if: github.event_name == 'push'
-    needs: [ setup, source, nintendo, linux, linux-terminal, windows32, windows64, mac, mac-terminal, mac-intel, mac-terminal-intel, mac-tk, dos ]
+    needs: [ setup, source, nintendo, linux, linux-terminal, windows32, windows64, mac, mac-terminal, mac-intel, mac-terminal-intel, mac-tk, linux-tk, windows-tk, dos ]
     name: Create GitHub Release
     runs-on: ubuntu-latest
     # gh release create both makes the tag's release and uploads the files
@@ -1825,6 +2058,38 @@ jobs:
         with:
           name: ${{ env.MACTK_ARCHIVE_ARTIFACT }}
 
+      - name: Download Artifact with Tk Linux Archive Path
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.LINUXTK_ARTIFACT }}
+
+      - name: Extract Tk Linux Archive Path and Store in Step Outputs
+        id: store_linux_tk
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' $LINUXTK_ARTIFACT_PATH`
+          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with Tk Linux Archive
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.LINUXTK_ARCHIVE_ARTIFACT }}
+
+      - name: Download Artifact with Tk Windows Archive Path
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.WINTK_ARTIFACT }}
+
+      - name: Extract Tk Windows Archive Path and Store in Step Outputs
+        id: store_win_tk
+        run: |
+          archive_path=`sed -E -n -e 's/archive_path= //p' $WINTK_ARTIFACT_PATH`
+          echo "archive_path=$archive_path" >> $GITHUB_OUTPUT
+
+      - name: Download Artifact with Tk Windows Archive
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ env.WINTK_ARCHIVE_ARTIFACT }}
+
       - name: Download Artifact with DOS Archive Path
         uses: actions/download-artifact@v8
         with:
@@ -1864,5 +2129,7 @@ jobs:
             ${{ steps.store_mac_intel.outputs.archive_path }} \
             ${{ steps.store_mac_terminal_intel.outputs.archive_path }} \
             ${{ steps.store_mac_tk.outputs.archive_path }} \
+            ${{ steps.store_linux_tk.outputs.archive_path }} \
+            ${{ steps.store_win_tk.outputs.archive_path }} \
             ${{ steps.store_dos.outputs.archive_path }} \
             $options
