@@ -69,7 +69,7 @@ Module.zbtkOnQuit = function () {
       'border:1px solid #34323a;border-radius:10px;background:#16151a';
 
     var h = document.createElement('div');
-    h.textContent = 'ZangbandTK has exited';
+    h.textContent = 'Zangband has exited';
     h.style.cssText = 'font-size:1.35rem;font-weight:600;margin-bottom:0.6rem';
 
     var p = document.createElement('div');

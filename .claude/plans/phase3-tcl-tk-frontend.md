@@ -2576,15 +2576,26 @@ appears rather than only on the bundle:
 
 |                  | Cocoa, today                                   | Tcl/Tk, from T0                                            |
 | ---------------- | ---------------------------------------------- | ---------------------------------------------------------- |
-| Bundle           | `ZangbandTK.app`                               | `ZangbandTKGUI.app`                                        |
+| Bundle           | `Zangband.app`                                 | `ZangbandTK.app`                                           |
 | Identifier       | `org.zangbandtk.zangbandtk`                    | `org.zangbandtk.zangbandtkgui`                             |
-| Release artefact | `<package>-osx.dmg`, `<package>-osx-intel.dmg` | `<package>-osx-tcltk.dmg`, `<package>-osx-tcltk-intel.dmg` |
+| Release artefact | `Zangband-<version>-osx.dmg`, `-osx-intel.dmg` | `ZangbandTK-<version>-osx-tk.dmg`                          |
 | Built by         | `gmake -f Makefile.osx`                        | cmake, `SUPPORT_TCL_FRONTEND=ON`                           |
 
 > **Renamed on 11 October 2026**, at the project owner's request: the bundle was
 > `ZangbandTclTK.app`, identifier `org.zangbandtk.zangbandtcltk`, until then. The identifier
 > followed the name so the two cannot drift apart. The release artefact names above are
 > unchanged, because nothing has shipped under them yet.
+
+> **Renamed again on 15 October 2026 ([DEC-143](decisions.md)),** at the project owner's
+> request, so that the name ZangbandTK is on the application with Tk in it. The Cocoa
+> application was `ZangbandTK.app` up to 3.128.0 and is `Zangband.app`; the Tk one was
+> `ZangbandTKGUI.app` and is `ZangbandTK.app`. This time the identifiers do **not** follow
+> the names, against the 11 October rule and deliberately: the Cocoa application keeps
+> `org.zangbandtk.zangbandtk`, which its players' preferences are filed under, and the Tk
+> one keeps `org.zangbandtk.zangbandtkgui`, because every `ZangbandTK.app` already
+> downloaded still claims the Cocoa identifier. The shared folder of characters keeps its
+> name too. The artefacts in the table are the ones the release workflow now writes; the
+> `-osx-tcltk` names first planned here never shipped.
 
 The artefact suffix follows the convention the terminal builds already use —
 `-osx-terminal.tar.gz`, `-linux64-terminal.tar.gz` — so the download page reads as one

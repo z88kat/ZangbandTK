@@ -173,14 +173,14 @@ jobs:
             -DSUPPORT_GCU_FRONTEND=ON \
             -DGCU_STATIC_CURSES=ON
           cmake --build build --parallel
-          scripts/pkg_linux_tty ZangbandTK-ci
+          scripts/pkg_linux_tty Zangband-ci
 
       - name: Check and Play the Archive
         run: |
           mkdir -p unpacked
-          tar -xzf ZangbandTK-ci-linux64-terminal.tar.gz -C unpacked
-          ldd unpacked/ZangbandTK-ci/zangbandtk
-          if ldd unpacked/ZangbandTK-ci/zangbandtk \
+          tar -xzf Zangband-ci-linux64-terminal.tar.gz -C unpacked
+          ldd unpacked/Zangband-ci/zangband
+          if ldd unpacked/Zangband-ci/zangband \
               | grep -qE 'libncurses|libtinfo|libX11|libSDL'; then
             echo "The executable depends on a library it should not." >&2
             exit 1
@@ -188,7 +188,7 @@ jobs:
           # Debian's base image has no libncursesw.so.6, which is precisely the
           # machine a dynamically linked build cannot start on.
           docker run --rm \
-            -v "$PWD/unpacked/ZangbandTK-ci:/game:ro" \
+            -v "$PWD/unpacked/Zangband-ci:/game:ro" \
             -v "$PWD/scripts/smoke-tty:/smoke-tty:ro" \
             debian:12 \
             sh -c 'apt-get update -qq >/dev/null && \

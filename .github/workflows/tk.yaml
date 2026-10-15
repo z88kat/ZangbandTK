@@ -174,7 +174,7 @@ jobs:
       - name: Palettes pass their checks
         run: python3 scripts/palettes/check-palettes.py
 
-      # Builds ZangbandTKGUI.app and runs its own checks: that nothing in it
+      # Builds ZangbandTK.app and runs its own checks: that nothing in it
       # points back at the build tree, that the game data and the front end's
       # scripts are inside it, that the plist has no unsubstituted
       # placeholders left in it, and that its ad-hoc signature verifies.
@@ -188,12 +188,12 @@ jobs:
       - name: Put it on a disk image
         run: |
           version=$(sed -n 's/^#define VERSION_STRING[[:space:]]*"\(.*\)"/\1/p' src/buildid.h)
-          scripts/dmg_macos_tcltk out/ZangbandTKGUI.app "out/ZangbandTK-$version-osx-tk.dmg"
+          scripts/dmg_macos_tcltk out/ZangbandTK.app "out/ZangbandTK-$version-osx-tk.dmg"
 
       - name: Upload the disk image
         uses: actions/upload-artifact@v4
         with:
-          name: ZangbandTKGUI-dmg
+          name: ZangbandTK-dmg
           path: out/*.dmg
           retention-days: 7
 

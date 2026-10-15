@@ -619,7 +619,7 @@ Rosetta, or at all in the other direction.  CI therefore builds each one on a
 runner that matches it.
 
 The released file name follows ARCHS by itself -- an x86_64 build writes
-``ZangbandTK-<version>-osx-intel.dmg`` -- so the two can be built one after the
+``Zangband-<version>-osx-intel.dmg`` -- so the two can be built one after the
 other in the same tree without the second overwriting the first.
 
 A universal build is still what a whitespace-separated list asks for, and is

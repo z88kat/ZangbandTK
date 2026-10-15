@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Assemble ZangbandTKGUI.app from a cmake build of the Tcl/Tk front end.
+# Assemble ZangbandTK.app from a cmake build of the Tcl/Tk front end.
 #
 # Use in the root directory of the game, like so:
 #    scripts/pkg_macos_tcltk <build-directory> [output-directory]
@@ -16,7 +16,7 @@
 # an unsigned bundle, a quarantine mark and a conflict copy in one afternoon.
 #
 # This is a second application, not a replacement for the Cocoa one.  See
-# decision 14 in .claude/plans/phase3-tcl-tk-frontend.md: ZangbandTK.app is a
+# decision 14 in .claude/plans/phase3-tcl-tk-frontend.md: Zangband.app is a
 # different play experience and stays, so this one has its own name and its own
 # bundle identifier, and src/Makefile.osx is not touched by any of it.
 #
@@ -58,7 +58,14 @@ else
 	mkdir -p "$OUT"
 fi
 
-NAME=ZangbandTKGUI
+# ZangbandTK, since this is the one with Tk in it (DEC-143); it was
+# ZangbandTKGUI.app until then, and never shipped under that name.  The
+# identifier is the one it had, deliberately, and must not follow the name:
+# org.zangbandtk.zangbandtk is the Cocoa application's, which was called
+# ZangbandTK.app up to 3.128.0 and is still installed under that name on the
+# Macs of everyone who downloaded it.  Two bundles claiming one identifier is
+# the fight decision 14 is there to prevent.
+NAME=ZangbandTK
 IDENT=org.zangbandtk.zangbandtkgui
 APP=$OUT/$NAME.app
 EXE=$BUILD/game/angband
@@ -128,9 +135,9 @@ for d in gamedata customize screens help tiles sounds icons tcl; do
 	fi
 done
 
-# The icon: the same file ZangbandTK.app ships, under the name Info.plist.in
+# The icon: the same file Zangband.app ships, under the name Info.plist.in
 # gives as CFBundleIconFile.
-install -m 644 "$ROOT/src/cocoa/ZangbandTK_Icons.icns" \
+install -m 644 "$ROOT/src/cocoa/Zangband_Icons.icns" \
 	"$APP/Contents/Resources/$NAME.icns"
 
 # 2. Tcl's and Tk's script libraries.
@@ -187,7 +194,7 @@ sed -e 's|\$EXECUTABLE\$|'"$NAME"'|g' \
 	-e 's|\$COPYRIGHT\$|'"$COPYRIGHT"'|g' \
 	"$ROOT/src/tcl/Info.plist.in" > "$APP/Contents/Info.plist"
 
-# An ad-hoc signature, the same as the release gives ZangbandTK.app: no
+# An ad-hoc signature, the same as the release gives Zangband.app: no
 # Developer ID, but a bundle whose every piece is sealed, which is what
 # Gatekeeper and codesign --verify ask of it.  Extended attributes first,
 # because codesign refuses a bundle that carries any: whatever the copies
@@ -277,13 +284,22 @@ xattr -dr com.apple.quarantine "$APP" 2>/dev/null || true
 # one can start the other, and a copy left in a scratch directory quietly wins
 # over the one in Applications.  It is not an error -- you may well have an old
 # build lying about deliberately -- but it must not be silent.
+#
+# Found by identifier, not by name.  The name was the test until DEC-143, and
+# then it pointed the wrong way twice: an old ZangbandTKGUI.app has this
+# identifier and another name, and an old ZangbandTK.app -- the Cocoa
+# application, as it was called up to 3.128.0 -- has this name and another
+# identifier.  The dump gives each bundle's path a few lines before its
+# identifier, with Launch Services' own handle, " (0x...)", after the path.
 LSREG=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 if [ -x "$LSREG" ]; then
 	OTHERS=$("$LSREG" -dump 2>/dev/null \
-		| grep -o "path: *[^ ]*$NAME\.app" \
-		| sed 's/path: *//' | sort -u | grep -v "^$APP$" || true)
+		| awk -v id="$IDENT" '
+			/^path:/ { sub(/^path: */, ""); sub(/ \(0x[0-9a-f]+\)$/, ""); path = $0 }
+			/^identifier:/ && $2 == id { print path }' \
+		| sort -u | grep -v -x -F "$APP" || true)
 	if [ -n "$OTHERS" ]; then
-		echo "    warning: other $NAME.app bundles are registered with"
+		echo "    warning: other bundles are registered with $IDENT,"
 		echo "    the same identifier, and the Finder may launch one of those:"
 		echo "$OTHERS" | sed 's/^/      /'
 		echo "    Remove them, or unregister with: $LSREG -u <path>"

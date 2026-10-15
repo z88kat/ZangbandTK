@@ -89,7 +89,7 @@ endif()
 # ZangbandTK: SUPPORT_TCL_FRONTEND counts as one of them.  Left out, a build
 # asking for only the Tcl/Tk front end also got X11 -- which is worse than
 # redundant, because main.c tries the modules in table order and X11 comes
-# first, so ZangbandTKGUI.app launched XQuartz instead of itself.  A bundled
+# first, so the Tk application launched XQuartz instead of itself.  A bundled
 # application is started with no arguments and cannot say -mtcl.
 if((NOT SUPPORT_GCU_FRONTEND) AND (NOT SUPPORT_SDL2_FRONTEND) AND (NOT SUPPORT_WINDOWS_FRONTEND) AND (NOT SUPPORT_X11_FRONTEND) AND (NOT SUPPORT_TCL_FRONTEND))
     if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -498,6 +498,12 @@ endif()
 if(SUPPORT_TCL_FRONTEND)
     include(src/cmake/macros/TCL_Frontend.cmake)
     configure_tcl_frontend(OurExecutable)
+    # ZangbandTK (DEC-143): the core library is told too, because USE_TCL is
+    # what makes this binary ZangbandTK rather than Zangband (APP_NAME in
+    # buildid.h), and the Hall of Fame and the main term's name are drawn in
+    # OurCoreLib.  Left to OurExecutable alone, as USE_TEST once was, the Tk
+    # application would show Zangband's name in exactly those two places.
+    target_compile_definitions(OurCoreLib PRIVATE -D USE_TCL)
     if(APPLE AND NOT SUPPORT_SDL2_SOUND)
         configure_tcl_sound(OurExecutable OurCoreLib ${SOUND_SUPPORT_LIB})
     endif()

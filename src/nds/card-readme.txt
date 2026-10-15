@@ -1,5 +1,5 @@
-ZangbandTK for Nintendo DS and 3DS
-==================================
+Zangband for Nintendo DS and 3DS
+================================
 
 Rebuilding the spirit of Zangband on a modern Angband.
 
@@ -9,8 +9,8 @@ Rebuilding the spirit of Zangband on a modern Angband.
 What is in this zip
 -------------------
 
-  ZangbandTK-<version>.nds   The DS ROM.
-  ZangbandTK-<version>.3dsx  The 3DS build, for the Homebrew Launcher.
+  Zangband-<version>.nds     The DS ROM.
+  Zangband-<version>.3dsx    The 3DS build, for the Homebrew Launcher.
   zangbandtk/                The game's data. This is not optional.
   LICENSE.md                 The licence this game is distributed under.
   README.txt                 This file.
@@ -58,7 +58,7 @@ patching. Where you stand depends on how you are launching it:
   the ROM with the driver for your card using dlditool, which comes with
   devkitPro:
 
-    dlditool <driver>.dldi ZangbandTK.nds
+    dlditool <driver>.dldi Zangband-<version>.nds
 
   In an emulator, the driver has to match the card the emulator pretends to
   be -- mpcf.dldi for DeSmuME's GBA Movie Player, r4tf.dldi for an emulated
@@ -77,8 +77,8 @@ limitation of this port rather than of the game; the other builds let you keep
 as many characters as you like.
 
 Back it up by copying that file somewhere else. Savefiles are not compatible
-with Angband or Zangband, and not with a different version of ZangbandTK
-either.
+with Angband or the original Zangband, and not with a different version of
+this game either.
 
 
 Things to know
@@ -103,7 +103,7 @@ settings are in zangbandtk/lib/gamedata/constants.txt on the card -- look for
 wild:blocks, wild:block-size and wild:towns, and the comments around them.
 Nothing needs rebuilding; the game reads that file at startup.
 
-The DS has 4 MB of memory, and ZangbandTK asks more of it than Angband does --
+The DS has 4 MB of memory, and this game asks more of it than Angband does --
 1013 monsters against Angband's 624 or so, and a wilderness on top. The
 wilderness is the cheap part, about 98 KB for the whole world, because it is
 generated from a seed as you walk rather than stored; the bestiary is what

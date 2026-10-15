@@ -61,6 +61,12 @@
 #define kVK_ANSI_KeypadEnter 0x4C
 
 static NSString * const AngbandDirectoryNameLib = @"lib";
+/*
+ * ZangbandTK (DEC-143): the project's name, not the application's.  This
+ * application is Zangband.app, and its characters stay in
+ * ~/Documents/ZangbandTK, where every build before the rename put them and
+ * where ZangbandTK.app, the Tk front end, looks for them too.
+ */
 static NSString * const AngbandDirectoryNameBase = @VERSION_NAME;
 
 static NSString * const FallbackFontName = @"Menlo";
@@ -4126,7 +4132,7 @@ static void Term_init_cocoa(term *t)
 	/* Set its title and, for auxiliary terms, tentative size */
 	if (termIdx == 0)
 	{
-	    [window setTitle:@VERSION_NAME];
+	    [window setTitle:@APP_NAME];
 	}
 	else
 	{
@@ -5293,7 +5299,7 @@ static NSString* get_lib_directory(void)
 
     if( !libExists || !isDirectory )
     {
-	NSLog( @"%@: can't find %@/ in bundle: isDirectory: %d libExists: %d", @VERSION_NAME, AngbandDirectoryNameLib, isDirectory, libExists );
+	NSLog( @"%@: can't find %@/ in bundle: isDirectory: %d libExists: %d", @APP_NAME, AngbandDirectoryNameLib, isDirectory, libExists );
 
 	NSAlert *alert = [[NSAlert alloc] init];
 	/*
@@ -5303,7 +5309,7 @@ static NSString* get_lib_directory(void)
 	alert.alertStyle = NSCriticalAlertStyle;
 	alert.messageText = @"MissingResources";
 	alert.informativeText = [NSString stringWithFormat:@"%@ %@",
-		@VERSION_NAME,
+		@APP_NAME,
 		@"was unable to find required resources and must quit. Please report a bug on the Angband forums."];
 	[alert addButtonWithTitle:@"Quit"];
 	[alert runModal];
@@ -6157,7 +6163,7 @@ static void cocoa_reinit(void)
 	NSMenu *windowsMenu = [[NSApplication sharedApplication] windowsMenu];
 	[windowsMenu addItem: [NSMenuItem separatorItem]];
 
-	NSMenuItem *angbandItem = [[NSMenuItem alloc] initWithTitle: @VERSION_NAME action: @selector(selectWindow:) keyEquivalent: @"0"];
+	NSMenuItem *angbandItem = [[NSMenuItem alloc] initWithTitle: @APP_NAME action: @selector(selectWindow:) keyEquivalent: @"0"];
 	[angbandItem setTarget: self];
 	[angbandItem setTag: AngbandWindowMenuItemTagBase];
 	[windowsMenu addItem: angbandItem];

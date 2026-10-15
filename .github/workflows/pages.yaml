@@ -121,19 +121,19 @@ jobs:
         run: |
           make -C src -f Makefile.wasm -j$(nproc) test-exe \
             EMSDK="$GITHUB_WORKSPACE/emsdk"
-          ./run-tests build-wasm/zangbandtk-test
+          ./run-tests build-wasm/zangband-test
 
-      # index.html so the address is /play/ and not /play/zangbandtk.html.  The
+      # index.html so the address is /play/ and not /play/zangband.html.  The
       # page asks for the other three files by relative name, so renaming only
       # the page is safe.
       - name: Add the browser build to the site
         run: |
           mkdir -p docs/_build/html/play
-          cp build-wasm/zangbandtk.js \
-             build-wasm/zangbandtk.wasm \
-             build-wasm/zangbandtk.data \
+          cp build-wasm/zangband.js \
+             build-wasm/zangband.wasm \
+             build-wasm/zangband.data \
              docs/_build/html/play/
-          cp build-wasm/zangbandtk.html docs/_build/html/play/index.html
+          cp build-wasm/zangband.html docs/_build/html/play/index.html
           ls -l docs/_build/html/play
 
       # enablement makes this workflow the authoritative source for the site.

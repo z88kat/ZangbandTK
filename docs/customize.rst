@@ -548,7 +548,7 @@ may be retained in memory.
 Tcl/Tk
 ~~~~~~
 
-The Tcl/Tk front end, ``ZangbandTKGUI.app``, keeps the map and its panes in one
+The Tcl/Tk front end, ``ZangbandTK.app``, keeps the map and its panes in one
 window.  Drag the dividers between the panes to change their sizes.  F1 in any
 window opens this manual where it covers that window -- in the main window, at
 Playing the Game.  How the

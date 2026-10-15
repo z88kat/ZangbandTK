@@ -3,7 +3,7 @@
 # Build a Linux AppImage from a self-contained build of the game.
 #
 # Use in the root directory of the game, like so:
-#    scripts/pkg_appimage ZangbandTK-3.5.1 [output.AppImage]
+#    scripts/pkg_appimage Zangband-3.5.1 [output.AppImage]
 #
 # Expects:
 #   - a self-contained build in build/game: the executable beside its lib
@@ -60,7 +60,7 @@ fi
 # Named for the game rather than for the CMake project, which is still Angband
 # because it also names the install paths.  Nobody running this should have to
 # know that.
-cp build/game/angband "$APPDIR/zangbandtk-bin"
+cp build/game/angband "$APPDIR/zangband-bin"
 
 # The game resolves its data as ./lib, relative to the working directory, so
 # AppRun has to be in the data directory before it execs.  It cannot simply run
@@ -81,7 +81,7 @@ HERE="$(dirname "$(readlink -f "$0")")"
 # tilesets and the sounds do not.
 export LD_LIBRARY_PATH="$HERE/usr/lib:$LD_LIBRARY_PATH"
 cd "$HERE/usr/share/ZangbandTK"
-exec "$HERE/usr/bin/zangbandtk" "$@"
+exec "$HERE/usr/bin/zangband" "$@"
 APPRUN
 chmod a+x "$APPRUN_DIR/AppRun"
 
@@ -103,16 +103,16 @@ done
 
 linuxdeploy \
 	--appdir "$APPDIR" \
-	--executable "$APPDIR/zangbandtk-bin" \
-	--desktop-file lib/icons/zangbandtk.desktop \
-	--icon-file lib/icons/zangbandtk.png \
+	--executable "$APPDIR/zangband-bin" \
+	--desktop-file lib/icons/zangband.desktop \
+	--icon-file lib/icons/zangband.png \
 	--custom-apprun "$APPRUN_DIR/AppRun" \
 	$EXTRA_LIBS
 
 # linuxdeploy copies the executable into usr/bin under the name it was given, so
 # put it where AppRun expects and drop the staging copy.
-mv "$APPDIR/usr/bin/zangbandtk-bin" "$APPDIR/usr/bin/zangbandtk"
-rm -f "$APPDIR/zangbandtk-bin"
+mv "$APPDIR/usr/bin/zangband-bin" "$APPDIR/usr/bin/zangband"
+rm -f "$APPDIR/zangband-bin"
 
 # linuxdeploy names its output from the desktop file, so find whatever it wrote
 # rather than guessing at the name.

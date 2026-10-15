@@ -1,6 +1,6 @@
 # Application icon artwork
 
-`ZangbandTK_Icons.icns` is built from these, and they are kept so it can be
+`Zangband_Icons.icns` is built from these, and they are kept so it can be
 rebuilt or altered without starting over.
 
 | File | What it is |
@@ -44,4 +44,4 @@ Requires ImageMagick (`brew install imagemagick`) and `iconutil`, which ships
 with macOS.
 
     magick zangbandtk-icon-1024.png -resize 512x512 icon_512x512.png   # &c.
-    iconutil -c icns ZangbandTK.iconset -o ZangbandTK_Icons.icns
+    iconutil -c icns Zangband.iconset -o Zangband_Icons.icns

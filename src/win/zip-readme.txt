@@ -1,5 +1,5 @@
-ZangbandTK
-==========
+Zangband
+========
 
 Rebuilding the spirit of Zangband on a modern Angband.
 
@@ -9,15 +9,15 @@ Rebuilding the spirit of Zangband on a modern Angband.
 Installing
 ----------
 
-Extract the WHOLE folder somewhere and keep it together. ZangbandTK looks for
-its data in the lib folder beside the executable, so moving ZangbandTK.exe out
+Extract the WHOLE folder somewhere and keep it together. Zangband looks for
+its data in the lib folder beside the executable, so moving Zangband.exe out
 on its own will stop it starting.
 
 Anywhere you can write to is fine: your Desktop, Documents, or a games folder.
 Program Files is a poor choice, because the game saves into its own lib\user
 folder and Windows restricts writing there.
 
-Then run ZangbandTK.exe.
+Then run Zangband.exe.
 
 Releases carry two Windows builds, and the name of the zip says which one you
 have. The 64-bit build (win64) is the one to prefer; it is a single executable
@@ -30,7 +30,7 @@ Windows will warn you, once
 ---------------------------
 
 Windows marks anything downloaded from the internet, so the first time you run
-ZangbandTK you will probably see:
+Zangband you will probably see:
 
   "Windows protected your PC. Microsoft Defender SmartScreen prevented an
    unrecognised app from starting."
@@ -54,7 +54,7 @@ saves being asked about the files inside:
   3. Extract the zip as normal.
 
 Your antivirus may also take an interest, for the same reason: an unsigned
-executable from an unknown publisher. Nothing in ZangbandTK talks to the
+executable from an unknown publisher. Nothing in Zangband talks to the
 network. If you would rather satisfy yourself of that, the complete source is
 at the address below and the game can be built from it.
 
@@ -62,13 +62,13 @@ at the address below and the game can be built from it.
 What is in this folder
 ----------------------
 
-  ZangbandTK.exe   The game.
+  Zangband.exe     The game.
   lib\             Its data. Do not separate this from the executable.
   lib\user\save    Where your savefiles will go.
   docs\            The manual, in HTML. Open docs\index.html in a browser.
   lib\user\borg.txt  Documentation for the borg, the automatic player.
   changes.txt      Angband's changelog, which this game is built on. For
-                   ZangbandTK's own history see the Release log on the site.
+                   this game's own history see the Release log on the site.
   LICENSE.md       The licence this game is distributed under.
   README.txt       This file.
 
@@ -80,8 +80,8 @@ executable.
 Before you start
 ----------------
 
-Savefiles are NOT compatible with Angband or Zangband, and never will be. Do
-not point ZangbandTK at a savefile you care about.
+Savefiles are NOT compatible with Angband or with the original Zangband, and
+never will be. Do not point this game at a savefile you care about.
 
 The game is early. It is playable and already feels different from Angband,
 but a good deal of Zangband is still missing. The Features page on the site
@@ -106,7 +106,7 @@ Bugs, build failures and questions:
 Licence
 -------
 
-ZangbandTK is available under the Angband licence: it may be copied and
+This game is available under the Angband licence: it may be copied and
 distributed for educational, research, and not for profit purposes provided
 that the copyright and statement are included in all such copies. Other
 copyrights may also apply. In practice that means non-commercial distribution,

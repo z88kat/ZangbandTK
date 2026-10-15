@@ -163,7 +163,7 @@ The Tk front end
 ================
 
 Everything above is the game drawn in characters, which every front end shares.
-``ZangbandTKGUI.app`` puts windows around it, modelled on the 1990s ZangbandTk,
+``ZangbandTK.app`` puts windows around it, modelled on the 1990s ZangbandTk,
 and these five are screen captures of it on a Mac: one new character, a
 Half-Elf Ranger, from the Birth window to the first steps in town.
 

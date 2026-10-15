@@ -785,7 +785,7 @@ Help Commands
 =============
 
 Help (``?``)
-  In the Tcl/Tk front end, ``ZangbandTKGUI.app``, opens the Help window: this
+  In the Tcl/Tk front end, ``ZangbandTK.app``, opens the Help window: this
   manual, with its contents beside it, links between its pages and a search
   of all of them. Help ▸ Help opens the same window, and Help ▸ Open in
   Browser shows the page being read on the website.

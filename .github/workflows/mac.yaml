@@ -52,8 +52,8 @@ jobs:
             | sed -En 's/^our-package-name=//p')
           mkdir -p unpacked
           tar -xzf ${package}-osx-terminal.tar.gz -C unpacked
-          otool -L unpacked/${package}/zangbandtk
-          if otool -L unpacked/${package}/zangbandtk \
+          otool -L unpacked/${package}/zangband
+          if otool -L unpacked/${package}/zangband \
               | grep -qE '/opt/homebrew|/usr/local' ; then
             echo "The executable links a library outside /usr/lib." >&2
             exit 1
@@ -88,8 +88,8 @@ jobs:
       # build an arm64 application here and be found by a player.
       - name: Check the Architecture
         run: |
-          file ZangbandTK.app/Contents/MacOS/angband
-          file ZangbandTK.app/Contents/MacOS/angband | grep -q x86_64
+          file Zangband.app/Contents/MacOS/angband
+          file Zangband.app/Contents/MacOS/angband | grep -q x86_64
 
   terminal-intel:
     name: Terminal (Intel)
@@ -117,13 +117,13 @@ jobs:
             print-package-name | sed -En 's/^our-package-name=//p')
           mkdir -p unpacked
           tar -xzf "$archive" -C unpacked
-          otool -L unpacked/${package}/zangbandtk
-          if otool -L unpacked/${package}/zangbandtk \
+          otool -L unpacked/${package}/zangband
+          if otool -L unpacked/${package}/zangband \
               | grep -qE '/opt/homebrew|/usr/local' ; then
             echo "The executable links a library outside /usr/lib." >&2
             exit 1
           fi
-          file unpacked/${package}/zangbandtk | grep -q x86_64
+          file unpacked/${package}/zangband | grep -q x86_64
           scripts/smoke-tty unpacked/${package}
 
   cmake-curses:

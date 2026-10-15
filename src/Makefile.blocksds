@@ -25,9 +25,9 @@ export ZFILES           :=      $(ZFILES)
 # Named for this game rather than for $(PROGNAME), which is angband: that
 # variable names the executable and is left alone, but the ROM is what somebody
 # sees in their flashcart menu and it should not say Angband.
-NAME			:= ZangbandTK
+NAME			:= Zangband
 
-GAME_TITLE		:= ZangbandTK
+GAME_TITLE		:= Zangband
 GAME_DESCRIPTION	:= Zangband on a modern Angband
 GAME_AUTHOR		:= ZangbandTK contributors
 # The DS icon is 4bpp: ndstool decodes this PNG to RGBA, truncates each channel

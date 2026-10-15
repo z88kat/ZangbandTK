@@ -7,6 +7,11 @@ front end to Zangband, and this is a rebuild of that game rather than a
 different one wearing its coat. Where the 2005 version is meant, it is called
 *the original* below.
 
+From one source it builds two applications. **ZangbandTK** has the original's
+kind of interface, rebuilt in Tcl/Tk. **Zangband** is every other build — the
+Mac application, the terminal builds, Windows, Linux, the browser and the rest
+— and up to 3.128.0 it was called ZangbandTK too, though it has no Tk in it.
+
 Zangband was one of the great Angband variants — a wilderness to cross, towns to
 visit, mutations, pets, chaos patrons, and a bestiary drawn from Roger Zelazny's
 Amber and H. P. Lovecraft's Mythos as much as from Tolkien. Its development
@@ -139,7 +144,7 @@ tree and CI builds it on every push**: [src/main-tcl.c](src/main-tcl.c) and
 [src/tcl/](src/tcl/), with Tcl and Tk 9.0.4 vendored under [tcltk/](tcltk/) and
 one script that builds them. The [Tk workflow](.github/workflows/tk.yaml)
 compiles the front end, asserts that the binary links Tk and has not quietly
-fallen back to X11, runs the Tcl-side tests, packages `ZangbandTKGUI.app`, and
+fallen back to X11, runs the Tcl-side tests, packages `ZangbandTK.app`, and
 then starts the real game with the real front end and drives it from a script.
 
 It is **not what the releases ship**. The bundle is a CI artifact; the download
@@ -154,7 +159,7 @@ To build the app:
 scripts/build-tcl-app
 ```
 
-That leaves `ZangbandTKGUI.app` in `~/Applications`, replacing any copy already
+That leaves `ZangbandTK.app` in `~/Applications`, replacing any copy already
 there; Spotlight and Launchpad find it. To put it somewhere else, give a
 directory: `scripts/build-tcl-app out`. Not the Desktop if iCloud syncs it: the
 sync gets in the way of a bundle being built, and uploads every build.
@@ -178,7 +183,7 @@ cmake -S . -B build-tcl -G Ninja \
   -DTCLTK_PREFIX="$PWD/tcltk/local"
 cmake --build build-tcl --parallel
 
-# 3. The app, at ~/Applications/ZangbandTKGUI.app.
+# 3. The app, at ~/Applications/ZangbandTK.app.
 scripts/pkg_macos_tcltk build-tcl
 ```
 
@@ -286,8 +291,8 @@ cd src
 make -f Makefile.osx -j$(sysctl -n hw.activecpu)
 ```
 
-That produces `ZangbandTK.app` in the repository root. Double-click it, or
-`open ZangbandTK.app`.
+That produces `Zangband.app` in the repository root. Double-click it, or
+`open Zangband.app`.
 
 ### Elsewhere
 
@@ -442,7 +447,7 @@ Setting both lethality values to `100` gives behaviour identical to vanilla
 Angband 4.2 — a supported configuration, and a useful comparison.
 
 Inside the app bundle the same file lives at
-`ZangbandTK.app/Contents/Resources/lib/gamedata/constants.txt`.
+`Zangband.app/Contents/Resources/lib/gamedata/constants.txt`.
 
 ## Portability
 

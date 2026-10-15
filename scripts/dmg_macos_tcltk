@@ -1,13 +1,13 @@
 #!/bin/sh
 #
-# Put ZangbandTKGUI.app on a disk image, as src/Makefile.osx's dist target does
-# for ZangbandTK.app.
+# Put ZangbandTK.app on a disk image, as src/Makefile.osx's dist target does
+# for Zangband.app.
 #
 # Use in the root directory of the game, like so:
 #    scripts/dmg_macos_tcltk <app> <image.dmg>
 #
 # The app is what scripts/pkg_macos_tcltk made, and signed.  The image holds
-# what ZangbandTK.app's holds: the application, the manual in HTML when
+# what Zangband.app's holds: the application, the manual in HTML when
 # docs/_build/html exists (the release builds it first), the borg's notes, the
 # licence, and a README that explains the first launch, which macOS refuses
 # for any application without a paid Developer ID -- see src/tcl/dmg-readme.txt.

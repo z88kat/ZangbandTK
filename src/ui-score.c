@@ -145,9 +145,9 @@ static void display_scores_aux(const struct high_score scores[], int from,
 		/* Title */
 		if (k > 0) {
 			put_str(format("%s Hall of Fame (from position %d)",
-				VERSION_NAME, k + 1), 0, 21);
+				APP_NAME, k + 1), 0, 21);
 		} else {
-			put_str(format("%s Hall of Fame", VERSION_NAME), 0, 30);
+			put_str(format("%s Hall of Fame", APP_NAME), 0, 30);
 		}
 
 		display_score_page(scores, k, count, highlight);

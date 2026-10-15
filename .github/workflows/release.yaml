@@ -100,7 +100,7 @@ env:
     MACTTYINTEL_ARTIFACT: release-mac-terminal-intel
     MACTTYINTEL_ARTIFACT_PATH: release-mac-terminal-intel.txt
     MACTTYINTEL_ARCHIVE_ARTIFACT: release-mac-terminal-intel-archive
-    # And for ZangbandTKGUI.app, the Tk front end's own image.
+    # And for ZangbandTK.app, the Tk front end's own image.
     MACTK_ARTIFACT: release-mac-tk
     MACTK_ARTIFACT_PATH: release-mac-tk.txt
     MACTK_ARCHIVE_ARTIFACT: release-mac-tk-archive
@@ -152,6 +152,20 @@ jobs:
           name=$(sed -En 's/^DISPLAY_NAME[[:space:]]*=[[:space:]]*//p' src/Makefile.osx)
           test -n "$name"
           echo "name=$name" >> $GITHUB_OUTPUT
+          # Two downloads are not the game's (DEC-143).  The Tk image carries
+          # the Tk application, which is ZangbandTK, so it is named from the
+          # NAME that scripts/pkg_macos_tcltk gives the bundle.  The source
+          # archive is the whole project, both applications, so it is named
+          # for the project: VERSION_NAME, which also names the folder the
+          # characters are kept in.  Neither is called anything ending in
+          # "name": the jobs read this back with sed 's/name= //p', which would
+          # find that too.
+          tkapp=$(sed -En 's/^NAME=//p' scripts/pkg_macos_tcltk)
+          test -n "$tkapp"
+          echo "tkapp=$tkapp" >> $GITHUB_OUTPUT
+          project=$(sed -En 's/^#define VERSION_NAME[[:space:]]*"(.*)"/\1/p' src/buildid.h)
+          test -n "$project"
+          echo "project=$project" >> $GITHUB_OUTPUT
 
       # On a tag push the tag is the version, verbatim.  Do not use
       # scripts/version.sh for it: that is a git describe, so it only returns
@@ -197,6 +211,8 @@ jobs:
       - name: Create Artifact with Configuration Details
         run: |
           echo name= '${{ steps.get_names.outputs.name }}' > $CONFIG_ARTIFACT_PATH
+          echo tkapp= '${{ steps.get_names.outputs.tkapp }}' >> $CONFIG_ARTIFACT_PATH
+          echo project= '${{ steps.get_names.outputs.project }}' >> $CONFIG_ARTIFACT_PATH
           echo prog= '${{ steps.get_names.outputs.prog }}' >> $CONFIG_ARTIFACT_PATH
           echo version= '${{ steps.get_release_vars.outputs.version }}' >> $CONFIG_ARTIFACT_PATH
           echo prerelease= '${{ steps.get_release_vars.outputs.prerelease }}' >> $CONFIG_ARTIFACT_PATH
@@ -284,6 +300,8 @@ jobs:
           echo "prog=$prog" >> $GITHUB_OUTPUT
           version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
           echo "version=$version" >> $GITHUB_OUTPUT
+          project=`sed -E -n -e 's/project= //p' $CONFIG_ARTIFACT_PATH`
+          echo "project=$project" >> $GITHUB_OUTPUT
 
       - name: Install Build Dependencies
         run: |
@@ -297,10 +315,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Named for the project rather than the game (DEC-143): the source
+      # builds both applications, Zangband and ZangbandTK.
       - name: Create source archive (CMake-era)
         id: create_source_archive
         run: |
-          archive_prefix=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+          archive_prefix=${{ steps.store_config.outputs.project }}-${{ steps.store_config.outputs.version }}
 
           # Export tracked files only
           git archive \
@@ -369,13 +389,13 @@ jobs:
         run: |
           cd src
           env CFLAGS="-Werror" make -f Makefile.blocksds -j$(nproc)
-          test -e ZangbandTK.nds
+          test -e Zangband.nds
 
       - name: Upload the ROM
         uses: actions/upload-artifact@v6
         with:
           name: release-nds-rom
-          path: src/ZangbandTK.nds
+          path: src/Zangband.nds
           retention-days: 1
 
   n3ds:
@@ -440,8 +460,9 @@ jobs:
       # neither -- copying all of it, as the job this replaces did, made a 24 MB
       # download that was 22 MB of files the DS would never read.
       #
-      # The folder is named for the game because main-nds.c looks for its data at
-      # /zangbandtk/lib on the card, and both builds share that file.
+      # The folder is named for the project, not the game (DEC-143), because
+      # main-nds.c looks for its data at /zangbandtk/lib on the card, and both
+      # builds share that file.
       - name: Create Nintendo Archive
         id: create_nintendo_archive
         run: |
@@ -457,7 +478,7 @@ jobs:
           # fails the build if an entry has been renamed rather than shipping a
           # value the machine cannot hold.
           scripts/nds_constants zangbandtk/lib/gamedata/constants.txt
-          mv ZangbandTK.nds ${archive_prefix}.nds
+          mv Zangband.nds ${archive_prefix}.nds
           mv angband.3dsx ${archive_prefix}.3dsx
           sed -e "s/<version>/${{ steps.store_config.outputs.version }}/g" \
             src/nds/card-readme.txt > README.txt
@@ -590,8 +611,8 @@ jobs:
         run: |
           ./${{ steps.create_linux_archive.outputs.archive_file }} --appimage-extract >/dev/null
           test -f squashfs-root/usr/share/ZangbandTK/lib/gamedata/constants.txt
-          test -x squashfs-root/usr/bin/zangbandtk
-          file squashfs-root/usr/bin/zangbandtk | grep -q "x86-64"
+          test -x squashfs-root/usr/bin/zangband
+          file squashfs-root/usr/bin/zangband | grep -q "x86-64"
 
       - name: Create Artifact with Linux Archive Path
         run: |
@@ -703,12 +724,12 @@ jobs:
       - name: Check the Executable Stands Alone
         run: |
           root=unpacked/${{ steps.create_linux_terminal_archive.outputs.package_name }}
-          ldd $root/zangbandtk
-          if ldd $root/zangbandtk | grep -qE 'libncurses|libtinfo|libX11|libSDL'; then
+          ldd $root/zangband
+          if ldd $root/zangband | grep -qE 'libncurses|libtinfo|libX11|libSDL'; then
             echo "The executable depends on a library it should have linked in or never wanted." >&2
             exit 1
           fi
-          file $root/zangbandtk | grep -q "x86-64"
+          file $root/zangband | grep -q "x86-64"
 
       # Play it, on a distribution that is not the one it was built on and has
       # no ncurses of its own.  Debian's base image has no libncursesw.so.6 at
@@ -809,7 +830,7 @@ jobs:
           cmake --build build --parallel
           # The executable is named for the CMake project, which is still
           # Angband and stays that way because it also names the install paths.
-          # Nobody should have to find angband.exe in a ZangbandTK download, and
+          # Nobody should have to find angband.exe in a Zangband download, and
           # the Windows build locates its data relative to its own directory
           # rather than by its name, so renaming it here is safe.  pkg_win takes
           # whatever *.exe it finds.
@@ -1019,7 +1040,7 @@ jobs:
         run: |
           hdiutil attach -quiet -readonly -mountpoint /tmp/zbtk-verify \
             ${{ steps.create_mac_archive.outputs.archive_file }}
-          codesign --verify --strict --verbose=2 /tmp/zbtk-verify/ZangbandTK.app
+          codesign --verify --strict --verbose=2 "/tmp/zbtk-verify/${{ steps.store_config.outputs.name }}.app"
           hdiutil detach -quiet /tmp/zbtk-verify
 
       - name: Create Artifact with Mac Archive Path
@@ -1111,12 +1132,12 @@ jobs:
       - name: Check for Homebrew Leakage
         run: |
           root=unpacked/${{ steps.create_mac_terminal_archive.outputs.package_name }}
-          otool -L $root/zangbandtk
-          if otool -L $root/zangbandtk | grep -qE '/opt/homebrew|/usr/local' ; then
+          otool -L $root/zangband
+          if otool -L $root/zangband | grep -qE '/opt/homebrew|/usr/local' ; then
             echo "The executable links a library outside /usr/lib." >&2
             exit 1
           fi
-          file $root/zangbandtk | grep -q arm64
+          file $root/zangband | grep -q arm64
 
       # An unsigned or incoherently signed executable is killed on sight by
       # macOS on Apple Silicon, so check the signature survived the trip
@@ -1124,7 +1145,7 @@ jobs:
       - name: Verify the Signature
         run: |
           root=unpacked/${{ steps.create_mac_terminal_archive.outputs.package_name }}
-          codesign --verify --strict --verbose=2 $root/zangbandtk
+          codesign --verify --strict --verbose=2 $root/zangband
 
       # Everything above says the archive is well formed.  This says the game
       # in it runs: scripts/smoke-tty starts the curses front end on a
@@ -1225,8 +1246,8 @@ jobs:
       # worse than shipping nothing.
       - name: Check the Architecture
         run: |
-          file ZangbandTK.app/Contents/MacOS/${{ steps.store_config.outputs.prog }}
-          file ZangbandTK.app/Contents/MacOS/${{ steps.store_config.outputs.prog }} \
+          file ${{ steps.store_config.outputs.name }}.app/Contents/MacOS/${{ steps.store_config.outputs.prog }}
+          file ${{ steps.store_config.outputs.name }}.app/Contents/MacOS/${{ steps.store_config.outputs.prog }} \
             | grep -q x86_64
 
       # Fail the release rather than publish an image whose signature is not
@@ -1236,7 +1257,7 @@ jobs:
         run: |
           hdiutil attach -quiet -readonly -mountpoint /tmp/zbtk-verify \
             ${{ steps.create_mac_intel_archive.outputs.archive_file }}
-          codesign --verify --strict --verbose=2 /tmp/zbtk-verify/ZangbandTK.app
+          codesign --verify --strict --verbose=2 "/tmp/zbtk-verify/${{ steps.store_config.outputs.name }}.app"
           hdiutil detach -quiet /tmp/zbtk-verify
 
       - name: Create Artifact with Intel Mac Archive Path
@@ -1315,12 +1336,12 @@ jobs:
       - name: Check for Homebrew Leakage
         run: |
           root=unpacked/${{ steps.create_mac_terminal_intel_archive.outputs.package_name }}
-          otool -L $root/zangbandtk
-          if otool -L $root/zangbandtk | grep -qE '/opt/homebrew|/usr/local' ; then
+          otool -L $root/zangband
+          if otool -L $root/zangband | grep -qE '/opt/homebrew|/usr/local' ; then
             echo "The executable links a library outside /usr/lib." >&2
             exit 1
           fi
-          file $root/zangbandtk | grep -q x86_64
+          file $root/zangband | grep -q x86_64
 
       # macOS does not kill an unsigned x86_64 binary on sight the way it does
       # an arm64 one, but the tarball is signed ad-hoc all the same and a
@@ -1328,7 +1349,7 @@ jobs:
       - name: Verify the Signature
         run: |
           root=unpacked/${{ steps.create_mac_terminal_intel_archive.outputs.package_name }}
-          codesign --verify --strict --verbose=2 $root/zangbandtk
+          codesign --verify --strict --verbose=2 $root/zangband
 
       # As on Apple Silicon: the checks above say the archive is well formed,
       # and this says the game in it runs.  The data files are pruned by hand
@@ -1360,17 +1381,21 @@ jobs:
           path: ${{ steps.create_mac_terminal_intel_archive.outputs.archive_file }}
           retention-days: 1
 
-  # ZangbandTKGUI.app, the Tcl/Tk front end, beside ZangbandTK.app rather
-  # than in place of it (decision 14 of the Phase 3 plan).  Apple Silicon
-  # only for now: an Intel image would need its own Tcl/Tk built on an Intel
-  # runner.
+  # ZangbandTK.app, the Tcl/Tk front end, beside Zangband.app rather than in
+  # place of it (decision 14 of the Phase 3 plan).  Apple Silicon only for
+  # now: an Intel image would need its own Tcl/Tk built on an Intel runner.
   #
   # Tcl and Tk come from the cache the Tk workflow fills, under the same key,
   # and are built here only when it is empty.  scripts/pkg_macos_tcltk makes
-  # and signs the bundle -- ad-hoc, as ZangbandTK.app is -- and refuses one
+  # and signs the bundle -- ad-hoc, as Zangband.app is -- and refuses one
   # whose signature does not verify; scripts/dmg_macos_tcltk puts it on an
   # image with the manual, and checks the signature again on the copy inside.
   # The bridge test runs on this build too, since it is the one that ships.
+  #
+  # The image is named for this application, not for the game the other
+  # downloads are named for (DEC-143), and keeps -osx-tk, so that it cannot be
+  # taken for the ZangbandTK-<version>-osx.dmg that held Zangband.app, under
+  # its old name, up to 3.128.0.
   mac-tk:
     needs: [setup, docconvert]
     name: Mac (Tk)
@@ -1384,8 +1409,8 @@ jobs:
       - name: Extract Configuration Information and Store in Step Outputs
         id: store_config
         run: |
-          name=`sed -E -n -e 's/name= //p' $CONFIG_ARTIFACT_PATH`
-          echo "name=$name" >> $GITHUB_OUTPUT
+          tkapp=`sed -E -n -e 's/tkapp= //p' $CONFIG_ARTIFACT_PATH`
+          echo "tkapp=$tkapp" >> $GITHUB_OUTPUT
           version=`sed -E -n -e 's/version= //p' $CONFIG_ARTIFACT_PATH`
           echo "version=$version" >> $GITHUB_OUTPUT
 
@@ -1428,9 +1453,10 @@ jobs:
       - name: Create Tk Mac Archive
         id: create_mac_tk_archive
         run: |
-          package_name=${{ steps.store_config.outputs.name }}-${{ steps.store_config.outputs.version }}
+          tkapp=${{ steps.store_config.outputs.tkapp }}
+          package_name=$tkapp-${{ steps.store_config.outputs.version }}
           scripts/pkg_macos_tcltk build "$RUNNER_TEMP/app"
-          scripts/dmg_macos_tcltk "$RUNNER_TEMP/app/ZangbandTKGUI.app" \
+          scripts/dmg_macos_tcltk "$RUNNER_TEMP/app/$tkapp.app" \
             "${package_name}-osx-tk.dmg"
           echo "archive_file=${package_name}-osx-tk.dmg" >> $GITHUB_OUTPUT
 

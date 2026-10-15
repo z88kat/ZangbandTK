@@ -306,9 +306,9 @@ See :doc:`nightmare`, which says what it does and, as plainly, what it does not.
 The original's interface
 ------------------------
 
-The game comes as two Mac applications. ``ZangbandTK.app`` is Angband 4.2's own
+The game comes as two Mac applications. ``Zangband.app`` is Angband 4.2's own
 front end, where the game draws everything in windows of text or tiles.
-``ZangbandTKGUI.app`` brings back the Zangband of the late 1990s, ZangbandTk,
+``ZangbandTK.app`` brings back the Zangband of the late 1990s, ZangbandTk,
 rebuilt on Tcl/Tk 9 rather than ported:
 
 - **Windows of its own**: the map and its panes in the main one, and the

@@ -7606,3 +7606,66 @@ touch -- and stay as they are.
 Nothing among the mutations is now waiting: player/mutation's split tests
 count 31 activatable powers and one refused, 26 random mutations that fire and
 the chaos gift, which acts on level gain.
+
+**DEC-143 — The applications are named for what they are: Zangband, and
+ZangbandTK for the one with Tk in it (15 October 2026, the project owner).**
+
+The project was named for the Tk front end it meant to end up with, and every
+build carried the name: the Cocoa application, the terminal builds, Windows,
+Linux, the Nintendo builds and the browser, none of which has any Tk in it. When
+the Tk front end was built it had to be called ZangbandTKGUI.app, because its own
+name was taken. The project owner: "I would like to change the name of the built
+binary to Zangband and the TK version to ZangbandTK … I know some people might
+have the ZangbandTK binary, we just live with that."
+
+**Renamed (3.128.1).**
+
+- The Cocoa application is `Zangband.app`. `DISPLAY_NAME` in `src/Makefile.osx`,
+  which the release workflow reads, renames every download with it:
+  `Zangband-<version>-osx.dmg` and `-osx-intel.dmg`, the terminal tarballs,
+  Windows, Linux, Nintendo and DOS.
+- The Tk application is `ZangbandTK.app`, in `ZangbandTK-<version>-osx-tk.dmg`.
+  It never shipped as ZangbandTKGUI.app.
+- The programs: `zangband` in the Mac and Linux terminal builds and the AppImage,
+  `Zangband.exe`, `ZANGBAND.EXE` (eight characters exactly; it was
+  `ANGBAND.EXE`), `Zangband.nds`, and the browser build's `zangband.*`.
+- What the player sees comes from `APP_NAME` in `buildid.h` — window titles, the
+  Windows menu, the Hall of Fame, the main term's name. It is ZangbandTK when
+  built with `USE_TCL`, which CMakeLists now gives the core library as well as
+  the front end, and Zangband otherwise. The title screen's banner says
+  Zangband, in both.
+
+**Kept, on the owner's ruling on four questions.**
+
+1. **The folder of characters.** `VERSION_NAME` stays "ZangbandTK", so
+   `~/Documents/ZangbandTK`, `~/.angband/ZangbandTK` and `/zangbandtk/` on a DS
+   card are where they were. Both Mac applications share the first, and moving
+   it would have hidden every existing character.
+2. **The bundle identifiers.** Zangband.app keeps `org.zangbandtk.zangbandtk`,
+   which its preferences are filed under. ZangbandTK.app keeps
+   `org.zangbandtk.zangbandtkgui`, because every ZangbandTK.app already
+   downloaded claims the other, and two bundles with one identifier is the
+   fight decision 14 of the Phase 3 plan exists to prevent. For these two
+   bundles this reverses the 11 October rule that the identifier follows the
+   name.
+3. **The project's name**: the repository, zangbandtk.com, the `ZangbandTK (…)`
+   markers in the source, the copyright line, the source archive
+   (`ZangbandTK-<version>.tar.gz`), and the "ZangbandTK 3.x" stamp in character
+   dumps, the scores and the version command — where "Zangband 3.x" would read
+   as the 2005 original's line.
+4. **The `-osx-tk` suffix** on the Tk image, so that it cannot be taken for the
+   `ZangbandTK-<version>-osx.dmg` that held the Cocoa application up to 3.128.0.
+
+**Not renamed**: the CMake project and `PROGNAME`, still Angband and angband
+for the reasons the release workflow gives (they name the install paths, and the
+Windows and Nintendo binaries before packaging renames them); the AppImage's
+internal `usr/share/ZangbandTK`; and the Cocoa bundle's executable,
+`Contents/MacOS/angband`.
+
+**Early adopters.** Somebody with the old ZangbandTK.app who drags the new one
+into the same folder is asked by the Finder whether to replace it, and saying
+yes swaps the Cocoa application for the Tk one. Their characters are safe either
+way. The download page and both disk images' READMEs say so.
+`scripts/pkg_macos_tcltk` now finds duplicate registrations by identifier rather
+than by name: after the rename, the name would have flagged the wrong bundles in
+both directions.

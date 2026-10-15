@@ -6585,7 +6585,7 @@ static void start_window(struct sdlpui_window *window)
 	}
 #endif
 
-	window->window = SDL_CreateWindow(VERSION_NAME,
+	window->window = SDL_CreateWindow(APP_NAME,
 			window->full_rect.x, window->full_rect.y,
 			window->full_rect.w, window->full_rect.h,
 			window_flags);

@@ -75,21 +75,21 @@ jobs:
         run: |
           make -C src -f Makefile.wasm -j$(nproc) test-exe \
             EMSDK="$GITHUB_WORKSPACE/emsdk"
-          ./run-tests build-wasm/zangbandtk-test
+          ./run-tests build-wasm/zangband-test
 
       # A page that cannot find its own files is not caught by compiling or by
       # the tests, so check the four things the deployment actually consists of
       # are present and not empty.
       - name: Check the deployable files
         run: |
-          for f in zangbandtk.html zangbandtk.js zangbandtk.wasm \
-                   zangbandtk.data; do
+          for f in zangband.html zangband.js zangband.wasm \
+                   zangband.data; do
             if [ ! -s "build-wasm/$f" ]; then
               echo "missing or empty: build-wasm/$f" >&2
               exit 1
             fi
           done
-          ls -l build-wasm/zangbandtk.*
+          ls -l build-wasm/zangband.*
 
       # The desktop SDL2 front end shares main-sdl2.c with the browser build,
       # and every browser-only change in it sits behind __EMSCRIPTEN__.  Compile

@@ -2238,7 +2238,7 @@ static void save_prefs(void)
 	if (!fff) return;
 
 	/* Header */
-	file_putf(fff, "# %s X11 settings\n\n", VERSION_NAME);
+	file_putf(fff, "# %s X11 settings\n\n", APP_NAME);
 
 	/* Number of term windows to open */
 	file_putf(fff, "TERM_WINS=%d\n\n", term_windows_open);

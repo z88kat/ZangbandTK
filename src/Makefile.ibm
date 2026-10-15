@@ -51,8 +51,10 @@ default: edit install
 # we include it
 include Makefile.inc
 
-# Ensure that the executable's name fits in DOS's limits
-EXEBASE != echo $(PROGNAME) | head -c 8
+# Named for the game (DEC-143) rather than for $(PROGNAME), which is still
+# angband because it also names the Windows and Nintendo binaries.  The name
+# has to fit DOS's eight characters, and Zangband is exactly eight.
+EXEBASE = zangband
 EXE = $(EXEBASE).exe
 
 

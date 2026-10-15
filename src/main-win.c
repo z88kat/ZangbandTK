@@ -400,7 +400,7 @@ static char *ini_file = NULL;
 /**
  * Name of application
  */
-static const char *AppName = VERSION_NAME;
+static const char *AppName = APP_NAME;
 
 /**
  * Name of sub-window type
@@ -2857,7 +2857,7 @@ static void init_windows(void)
 	                       td->size_wid, td->size_hgt,
 	                       HWND_DESKTOP, NULL, hInstance, NULL);
 	my_td = NULL;
-	if (!td->w) quit_fmt("Failed to create %s window", VERSION_NAME);
+	if (!td->w) quit_fmt("Failed to create %s window", APP_NAME);
 
 	term_data_link(td);
 	term_screen = &td->t;
@@ -3788,7 +3788,7 @@ static void process_menus(WORD wCmd)
 			
 			if (MessageBox(NULL,
 					"This will reset the size and layout of the angband windows\n based on your screen size. Do you want to continue?",
-					VERSION_NAME, MB_YESNO|MB_ICONWARNING) == IDYES) {
+					APP_NAME, MB_YESNO|MB_ICONWARNING) == IDYES) {
 				term *old = Term;
 				RECT rc;
 

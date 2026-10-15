@@ -31,6 +31,22 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+15 October 2026 — the name was on the wrong application
+=========================================================
+
+I made this mistake right at the start and have known about it for a while.
+The game was called ZangbandTK because the plan was to end up with a Tk front
+end, like the original, and to get it running in a console and everywhere else
+Angband runs on the way there. So the application called ZangbandTK had no Tk
+in it, and when the Tk front end was finally built it had to be called
+ZangbandTKGUI, because its own name was taken. I kept putting off the fix
+because it touches every build script, every workflow and the manual. Now the
+Tk application is ZangbandTK and everything else is Zangband. The project keeps
+its name, and so does the folder the characters live in, so nobody loses a
+save. Anyone who downloaded the old ZangbandTK.app will find the name now means
+the other one. Early adopter syndrome.
+
+
 15 October 2026 — and the mutations
 ===================================
 

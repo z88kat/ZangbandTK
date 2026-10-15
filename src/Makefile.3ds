@@ -48,7 +48,7 @@ GFXBUILD	:=	$(BUILD)
 #GFXBUILD	:=	$(ROMFS)/gfx
 
 # Application information
-APP_TITLE	:=	ZangbandTK
+APP_TITLE	:=	Zangband
 APP_DESCRIPTION	:=	Zangband rebuilt on a modern Angband.
 APP_AUTHOR	:=	ZangbandTK contributors
 ICON		:=	nds/zangbandtk-48.png

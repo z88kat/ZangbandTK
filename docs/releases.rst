@@ -52,12 +52,12 @@ than the Angband 4.2.6 the code sits on.
 Unreleased
 ==========
 
-The Tk front end, ZangbandTKGUI.app — 17 September to 14 October 2026
-------------------------------------------------------------------------
+The Tk front end, ZangbandTK.app — 17 September to 14 October 2026
+---------------------------------------------------------------------
 
 Phase 3 rebuilt the original ZangbandTk's interface as a second Mac application,
-``ZangbandTKGUI.app``, which the next release ships as
-``ZangbandTK-<version>-osx-tk.dmg`` beside ``ZangbandTK.app``. Its work was
+``ZangbandTK.app``, which the next release ships as
+``ZangbandTK-<version>-osx-tk.dmg`` beside ``Zangband.app``. Its work was
 tracked by milestones of its own, T0 to T9, and did not move the version
 number, so it is told here in one place rather than version by version.
 :doc:`download` says which Mac application is which.
@@ -101,6 +101,27 @@ number, so it is told here in one place rather than version by version.
 The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
+
+Two applications, two names — 15 October 2026
+---------------------------------------------
+
+- **3.128.1** — **The Mac application is Zangband.app** (DEC-143). It was
+  ZangbandTK.app, and it never had any Tk in it. The name ZangbandTK passes to
+  the application that does, the Tk front end above, which was to have shipped
+  as ZangbandTKGUI.app.
+
+  Every download but two is now ``Zangband-<version>``: the Mac disk images and
+  terminal builds, Windows, Linux, Nintendo and DOS. The Tk image is
+  ``ZangbandTK-<version>-osx-tk.dmg``, and the source archive keeps the
+  project's name. The programs follow: ``zangband`` in a terminal and in the
+  AppImage, ``Zangband.exe``, ``ZANGBAND.EXE``. Window titles, menus and the
+  Hall of Fame say Zangband, or ZangbandTK in the Tk application, and the title
+  screen says Zangband in both.
+
+  **Nothing moves.** Characters stay in ``Documents/ZangbandTK`` on a Mac and
+  ``~/.angband/ZangbandTK`` elsewhere, and Zangband.app keeps its preferences.
+  An old ZangbandTK.app can be deleted, but read :doc:`download` before letting
+  the Finder replace it with the new one.
 
 Five mutations that did nothing — 15 October 2026
 -------------------------------------------------

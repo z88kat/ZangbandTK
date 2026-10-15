@@ -14,40 +14,41 @@ Getting the game
 Releases are published on the project's `Releases page`_. A release carries a
 build for each platform, and the source:
 
-- ``ZangbandTK-<version>-osx.dmg`` — the macOS disk image, for **Apple Silicon**:
-  the application, this manual in HTML, and the borg's documentation.
-- ``ZangbandTK-<version>-osx-intel.dmg`` — the same disk image for an **Intel
+- ``Zangband-<version>-osx.dmg`` — the macOS disk image, for **Apple Silicon**:
+  ``Zangband.app``, this manual in HTML, and the borg's documentation.
+- ``Zangband-<version>-osx-intel.dmg`` — the same disk image for an **Intel
   Mac**. Take this one if your Mac has an Intel processor; see `Which Mac build
   do I want?`_ if you are not sure.
-- ``ZangbandTK-<version>-osx-terminal.tar.gz`` — the same game for macOS drawn
+- ``Zangband-<version>-osx-terminal.tar.gz`` — the same game for macOS drawn
   with characters, to play in Terminal, iTerm2 or over ssh. No window, no tiles,
   no sound. Apple Silicon. See `Playing in a terminal`_.
-- ``ZangbandTK-<version>-osx-terminal-intel.tar.gz`` — the terminal build for an
+- ``Zangband-<version>-osx-terminal-intel.tar.gz`` — the terminal build for an
   Intel Mac.
-- ``ZangbandTK-<version>-osx-tk.dmg`` — ``ZangbandTKGUI.app``, the same game
+- ``ZangbandTK-<version>-osx-tk.dmg`` — ``ZangbandTK.app``, the same game
   through a second front end modelled on the 1990s ZangbandTk, with the manual
   and the borg's documentation. Apple Silicon only. See `Two Mac
   applications`_.
-- ``ZangbandTK-<version>-win64.zip`` — the Windows build, 64-bit, with the same
+- ``Zangband-<version>-win64.zip`` — the Windows build, 64-bit, with the same
   manual beside it. A single executable: libpng and zlib are linked in, so there
   are no DLLs to keep track of. **Prefer this one.**
-- ``ZangbandTK-<version>-win32.zip`` — a 32-bit Windows build, for older machines
+- ``Zangband-<version>-win32.zip`` — a 32-bit Windows build, for older machines
   and older Windows. It runs on 64-bit Windows too, and needs the two DLLs beside
   the executable.
-- ``ZangbandTK-<version>-linux64.AppImage`` — the Linux build, 64-bit. One file:
+- ``Zangband-<version>-linux64.AppImage`` — the Linux build, 64-bit. One file:
   make it executable and run it. Carries three front ends, chosen with ``-m``:
   ``-msdl2`` for tiles, ``-mx11`` for a plain window, and ``-mgcu`` to play in a
   terminal with no display at all.
-- ``ZangbandTK-<version>-linux64-terminal.tar.gz`` — the Linux terminal build:
+- ``Zangband-<version>-linux64-terminal.tar.gz`` — the Linux terminal build:
   the curses front end on its own, with no FUSE and no graphics stack, for a
   server you reach over ssh. See `The Linux terminal build`_.
-- ``ZangbandTK-<version>-nintendo.zip`` — the Nintendo DS ROM and the 3DS build,
+- ``Zangband-<version>-nintendo.zip`` — the Nintendo DS ROM and the 3DS build,
   with the data the card needs. Text mode, no tiles or sound.
-- ``ZangbandTK-<version>-dos.zip`` — the DOS build, for a 386 or better with a
+- ``Zangband-<version>-dos.zip`` — the DOS build, for a 386 or better with a
   DPMI host. Text mode, CP437, and the manual as plain text beside it. Needs
   ``CWSDPMI.EXE``, which is not in the zip; see `DOS`_.
 - ``ZangbandTK-<version>.tar.gz`` — the source, with the build system already
-  generated.
+  generated. Named for the project rather than the game, since it builds both
+  applications.
 
 .. _Releases page: https://github.com/z88kat/ZangbandTK/releases
 
@@ -55,11 +56,14 @@ Take the newest release on that page. The :doc:`release log <releases>` says wha
 each version changed, and the game is moving quickly enough that the difference
 between two of them is worth reading.
 
-Two notes for anyone reaching for an older one. The first release, **3.1.1** from
+Three notes for anyone reaching for an older one. The first release, **3.1.1** from
 18 August 2026, was cut before the Windows builds were packaged, so it carries the
-disk image and the source archive and nothing else. And for one release after that
+disk image and the source archive and nothing else. For one release after that
 the 32-bit zip was named ``-win.zip``, before the 64-bit build arrived and both
-were named for their architecture.
+were named for their architecture. And up to **3.128.0** every file was named
+``ZangbandTK-<version>``, and ``-osx.dmg`` held ``ZangbandTK.app``: that is the
+application now called ``Zangband.app``. The name ZangbandTK passed to the Tk
+front end, the one with Tk in it — see `Two Mac applications`_.
 
 Every release so far is marked a **pre-release**. CI builds, signs and verifies
 each one, but no version has been played through before it was tagged: there are
@@ -71,8 +75,8 @@ by CI, but the game is developed and played on macOS here and none of the others
 is played through before a release is tagged. Read `Other platforms`_ before you
 rely on one.
 
-The rest of this page is macOS. Mount the image and drag ``ZangbandTK.app``, or
-``ZangbandTKGUI.app``, wherever you keep applications.
+The rest of this page is macOS. Mount the image and drag ``Zangband.app``, or
+``ZangbandTK.app``, wherever you keep applications.
 
 Which Mac build do I want?
 --------------------------
@@ -114,9 +118,9 @@ Two Mac applications
 --------------------
 
 The Mac disk images hold one of two applications, and they are the same game.
-``ZangbandTK.app``, in ``-osx.dmg`` and ``-osx-intel.dmg``, is the Mac front end
+``Zangband.app``, in ``-osx.dmg`` and ``-osx-intel.dmg``, is the Mac front end
 that comes with Angband 4.2, where the game draws everything itself in windows of
-text or tiles. ``ZangbandTKGUI.app``, in ``-osx-tk.dmg``, is a front end modelled
+text or tiles. ``ZangbandTK.app``, in ``-osx-tk.dmg``, is a front end modelled
 on ZangbandTk, the Zangband of the late 1990s: the map and its panes in the main
 window, the character, the inventory, the spell books and the shops in windows
 of their own, and the original's menus. It is the newer of the two, Apple
@@ -125,20 +129,30 @@ Silicon only for now, and still being finished.
 They can be installed side by side, and they share one folder of characters and
 scores, ``Documents/ZangbandTK`` in your home folder, so a character made in one
 can be carried on in the other. The first launch below is the same for both,
-with ``ZangbandTKGUI`` in place of ``ZangbandTK`` for the second.
+with ``ZangbandTK`` in place of ``Zangband`` for the second.
+
+.. important::
+
+   **Up to 3.128.0, Zangband.app was called ZangbandTK.app.** It had no Tk in
+   it, and the name now belongs to the application that does. An old
+   ``ZangbandTK.app`` from 3.128.0 or earlier is ``Zangband.app`` under its old
+   name and can be deleted. Look before letting the Finder replace it with the
+   new ``ZangbandTK.app``: doing so swaps one application for the other.
+   Characters are safe either way. Neither application keeps them inside itself,
+   and the folder they live in kept its name for exactly this reason.
 
 The first launch
 ----------------
 
-The first time you open ZangbandTK, macOS will refuse, with words to the effect
-that it *could not verify that ZangbandTK is free of malware that may harm your
+The first time you open Zangband, macOS will refuse, with words to the effect
+that it *could not verify that Zangband is free of malware that may harm your
 Mac or compromise your privacy*.
 
 That reads as an accusation, and it is not one. macOS is saying it cannot tell
 **who** made the application — not that it found anything wrong with it. Apple's
 Gatekeeper passes an application without comment only if it was signed with a
 paid Developer ID certificate and submitted to Apple for notarization.
-ZangbandTK is signed, but ad-hoc: the signature is valid and proves the bundle
+Zangband is signed, but ad-hoc: the signature is valid and proves the bundle
 has not been altered since it was built, but it carries no registered developer
 identity, because this project has not bought one.
 
@@ -146,11 +160,11 @@ identity, because this project has not bought one.
 
    **Open it once through System Settings.**
 
-   1. Try to open ZangbandTK normally and let it be refused. Click *Done*. This
+   1. Try to open Zangband normally and let it be refused. Click *Done*. This
       step is required — macOS does not offer the next one until something has
       actually been blocked.
    2. Open **System Settings → Privacy & Security**, and scroll down to
-      *Security*. There will be a line saying ZangbandTK was blocked.
+      *Security*. There will be a line saying Zangband was blocked.
    3. Click **Open Anyway** and confirm with Touch ID or your password.
 
    macOS remembers, and afterwards the application opens by double-clicking like
@@ -168,14 +182,14 @@ without needing the refused attempt first:
 
 .. code-block:: sh
 
-   xattr -dr com.apple.quarantine /Applications/ZangbandTK.app
+   xattr -dr com.apple.quarantine /Applications/Zangband.app
 
 Verifying it, if you would like to
 ----------------------------------
 
 .. code-block:: sh
 
-   codesign --verify --strict --verbose=2 /Applications/ZangbandTK.app
+   codesign --verify --strict --verbose=2 /Applications/Zangband.app
 
 That should report ``valid on disk`` and ``satisfies its Designated
 Requirement``. This tells you the bundle is internally consistent and unmodified
@@ -188,21 +202,21 @@ downloads it without passing through this page.
 Playing in a terminal
 =====================
 
-``ZangbandTK-<version>-osx-terminal.tar.gz`` is the curses build: the same game,
+``Zangband-<version>-osx-terminal.tar.gz`` is the curses build: the same game,
 drawn with characters, inside a terminal. It is a separate download from the
 disk image rather than something hidden inside it, because it is a different
 executable — there is no application bundle and no window server involved at
 all, which is what lets it run over ssh.
 
-On an Intel Mac the file is ``ZangbandTK-<version>-osx-terminal-intel.tar.gz``;
+On an Intel Mac the file is ``Zangband-<version>-osx-terminal-intel.tar.gz``;
 everything below applies to both, and the unpacked folder is named the same
 either way.
 
 .. code-block:: sh
 
-   tar -xzf ZangbandTK-<version>-osx-terminal.tar.gz
-   cd ZangbandTK-<version>
-   ./zangbandtk
+   tar -xzf Zangband-<version>-osx-terminal.tar.gz
+   cd Zangband-<version>
+   ./zangband
 
 Keep the executable and the ``lib`` directory beside it together, and start the
 game from inside the unpacked folder — that is where it looks for its data.
@@ -212,16 +226,16 @@ applications, so the direct way is the one to use:
 
 .. code-block:: sh
 
-   xattr -d com.apple.quarantine zangbandtk
+   xattr -d com.apple.quarantine zangband
 
 Unpacking with ``tar`` in a terminal, rather than by double-clicking the
 archive, usually avoids the mark in the first place.
 
 .. important::
 
-   **The terminal build does not share savefiles with the application.** Its
+   **The terminal build does not share savefiles with the applications.** Its
    characters live in ``~/.angband/ZangbandTK``; the ``.app``'s live in
-   ``~/Documents/Angband``. This follows from the terminal build using the Unix
+   ``~/Documents/ZangbandTK``. This follows from the terminal build using the Unix
    convention for a user's data rather than the macOS one, and it means the two
    can be run side by side without treading on each other — but a character
    started in one will not appear in the other.
@@ -230,8 +244,8 @@ Nothing is written inside the unpacked folder while you play, so it can be
 deleted or replaced with a newer version without taking your characters with it.
 
 80x24 is the minimum size and is cramped; 100x40 or larger is much better. The
-front end can split the window into subwindows — ``./zangbandtk -mgcu -n2``
-through ``-n6`` — and ``./zangbandtk -h`` lists the rest. Your terminal must be
+front end can split the window into subwindows — ``./zangband -mgcu -n2``
+through ``-n6`` — and ``./zangband -h`` lists the rest. Your terminal must be
 set to UTF-8, which Terminal.app and iTerm2 both are by default.
 
 Building it from source
@@ -264,11 +278,11 @@ The game
    cd ZangbandTK/src
    make -f Makefile.osx -j$(sysctl -n hw.activecpu)
 
-That produces ``ZangbandTK.app`` in the repository root. Double-click it, or:
+That produces ``Zangband.app`` in the repository root. Double-click it, or:
 
 .. code-block:: sh
 
-   open ZangbandTK.app
+   open Zangband.app
 
 The terminal build
 ------------------
@@ -278,7 +292,7 @@ The terminal build
    cd ZangbandTK/src
    make -f Makefile.osx-tty -j$(sysctl -n hw.activecpu)
 
-That produces ``src/osx-tty/zangbandtk``. It links Apple's curses in
+That produces ``src/osx-tty/zangband``. It links Apple's curses in
 ``/usr/lib`` deliberately, not Homebrew's, so that the executable runs on a
 machine with no Homebrew on it. Add the ``dist`` target to build the tarball
 that the release carries:
@@ -316,8 +330,8 @@ an arm64 one at all. CI therefore builds each architecture on a runner that
 matches it, so that the smoke test is a real one.
 
 The released file names follow ``ARCHS`` by themselves: an ``x86_64`` build
-writes ``ZangbandTK-<version>-osx-intel.dmg`` and
-``ZangbandTK-<version>-osx-terminal-intel.tar.gz``, so building both one after
+writes ``Zangband-<version>-osx-intel.dmg`` and
+``Zangband-<version>-osx-terminal-intel.tar.gz``, so building both one after
 the other in the same tree does not have the second quietly overwrite the first.
 
 .. note::
@@ -344,8 +358,9 @@ Before you start
 
 .. important::
 
-   **Savefiles are not compatible** with Angband or Zangband, and never will be.
-   Do not point ZangbandTK at a savefile you care about.
+   **Savefiles are not compatible** with Angband or the original Zangband, and
+   never will be.
+   Do not point the game at a savefile you care about.
 
 **Your character survives an upgrade.** A ZangbandTK savefile is written in
 blocks, each carrying its own version, and the loader keeps a reader for every
@@ -378,8 +393,8 @@ The AppImage needs no installation and nothing installed alongside it:
 
 .. code-block:: sh
 
-   chmod +x ZangbandTK-<version>-linux64.AppImage
-   ./ZangbandTK-<version>-linux64.AppImage
+   chmod +x Zangband-<version>-linux64.AppImage
+   ./Zangband-<version>-linux64.AppImage
 
 It bundles its own SDL2, X11 and ncurses libraries, so it does not care which
 distribution it is on, and it is built against an older glibc than the current
@@ -388,7 +403,9 @@ distributions may need ``libfuse2`` installed for AppImages to mount; failing
 that, ``--appimage-extract`` unpacks it into a directory you can run from.
 
 Saves go to ``~/.angband/ZangbandTK``, outside the image, which is read only.
-That path is inherited from Angband and kept so that nothing has to move later.
+That path is inherited from Angband and kept so that nothing has to move later,
+which is also why it still carries the project's name: ZangbandTK was the game's
+name too, up to 3.128.0.
 
 There is no 32-bit Linux build. Ubuntu dropped the i386 archive in 19.10, Fedora
 and Arch dropped 32-bit years ago, and the source archive covers anyone still
@@ -405,9 +422,9 @@ are most of its size and no use at all without a display.
 
 .. code-block:: sh
 
-   tar -xzf ZangbandTK-<version>-linux64-terminal.tar.gz
-   cd ZangbandTK-<version>
-   ./zangbandtk
+   tar -xzf Zangband-<version>-linux64-terminal.tar.gz
+   cd Zangband-<version>
+   ./zangband
 
 The executable, its data, and nothing else. Keep the ``lib`` directory beside
 the executable and start the game from inside the unpacked folder — that is
@@ -462,15 +479,15 @@ anyone who wants to try the full-size world can, without rebuilding anything.
    TWiLight Menu++ or the Homebrew Menu, do this for you as they launch, and a
    DSi or 3DS running from its own SD card does not need it at all. Launching the
    ``.nds`` directly, or in an emulator, generally does: patch it with
-   ``dlditool <driver>.dldi ZangbandTK.nds``, using the driver for the card in
-   question. The ``README.txt`` in the zip goes through this.
+   ``dlditool <driver>.dldi Zangband-<version>.nds``, using the driver for the
+   card in question. The ``README.txt`` in the zip goes through this.
 
 There is **one save slot**, at ``/zangbandtk/lib/save/PLAYER``. That is this
 port's limitation, not the game's.
 
 .. note::
 
-   **The DS has 4 MB of memory**, and ZangbandTK asks more of it than Angband
+   **The DS has 4 MB of memory**, and the game asks more of it than Angband
    does: 1013 monsters against Angband's 624 or so. The wilderness is not the
    problem — the whole world costs about 98 KB, because it is generated from a
    seed as you walk rather than stored — but the bestiary is real. If memory runs
@@ -501,12 +518,13 @@ better, and it will run under DOSBox, DOSBox-X, or on the real thing.
    will be found. This is how DJGPP programs have always been distributed; it is
    not something missing from the build.
 
-Unpack the zip and the game is in a folder called ``angband``, and the
-executable is ``ANGBAND.EXE``. That is not a mistake: DOS filenames are eight
-characters and the internal project name is still Angband, the same name that
-gives the game its data paths on every other platform.
+Unpack the zip and the game is in a folder called ``zangband``, and the
+executable is ``ZANGBAND.EXE`` — exactly the eight characters a DOS filename
+allows. Up to 3.128.0 both were ``angband``, after the internal project name
+that still gives the game its data paths on every other platform.
 
-Which is also why the data files are not named quite as they are elsewhere.
+Those eight characters are also why the data files are not named quite as they
+are elsewhere.
 Anything whose name is too long for DOS is shortened when the archive is built
 — ``monster_spell.txt`` becomes ``monster2.txt``, the Zangband bestiary becomes
 ``monster3.txt`` — and the build asks for the short names to match. Nothing is

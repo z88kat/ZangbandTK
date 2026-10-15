@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Build ZangbandTKGUI.app, from a fresh clone or over an earlier build.
+# Build ZangbandTK.app from a fresh clone or over an earlier build.
 #
 # Use in the root directory of the game, like so:
 #    scripts/build-tcl-app [output-directory]
@@ -30,7 +30,7 @@ if [ $# -gt 1 ]; then
 fi
 
 if [ "$(uname -s)" != Darwin ]; then
-	echo "ZangbandTKGUI.app is a macOS bundle; this only runs on macOS." >&2
+	echo "ZangbandTK.app is a macOS bundle; this only runs on macOS." >&2
 	exit 1
 fi
 

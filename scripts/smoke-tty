@@ -43,7 +43,7 @@ ROWS, COLS = 45, 110
 # exists and a level was generated around them.
 #
 # The needles are text the game prints, not text it is built from.  The title
-# is drawn as ASCII art, letter by letter, so "ZangbandTK" never actually
+# is drawn as ASCII art, letter by letter, so "Zangband" never actually
 # appears on the splash screen and is not something to look for.
 MILESTONES = [
     ("splash", "zangbandtk.com", "the executable did not draw lib/screens/news.txt"),
@@ -125,7 +125,7 @@ def main():
     if len(sys.argv) not in (2, 3):
         sys.exit('usage: smoke-tty <game-directory> [executable]')
     game_dir = sys.argv[1]
-    executable = sys.argv[2] if len(sys.argv) == 3 else 'zangbandtk'
+    executable = sys.argv[2] if len(sys.argv) == 3 else 'zangband'
 
     if not os.access(os.path.join(game_dir, executable), os.X_OK):
         sys.exit('smoke-tty: %s/%s is not an executable' % (game_dir, executable))

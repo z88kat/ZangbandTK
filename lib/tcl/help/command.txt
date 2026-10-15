@@ -672,7 +672,7 @@ T	dt0 strong code	?
 T	dt0 strong	)
 T	dt0	\n
 T	p1	In the Tcl/Tk front end, 
-T	p1 code	ZangbandTKGUI.app
+T	p1 code	ZangbandTK.app
 T	p1	, opens the Help window: this manual, with its contents beside it, links between its pages and a search of all of them. Help ▸ Help opens the same window, and Help ▸ Open in Browser shows the page being read on the website.
 T	p1	\n
 T	p1	Elsewhere it brings up the ZangbandTK on-line help system: the command list, the map symbols, the towns and their services, the dungeons of the world, and the cheat and debug commands. It is a short reference rather than a manual — this documentation is the long form, and the help system points at it.

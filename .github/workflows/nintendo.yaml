@@ -96,8 +96,8 @@ jobs:
       - name: Upload the ROM
         uses: actions/upload-artifact@v6
         with:
-          name: zangbandtk-nds-rom
-          path: src/ZangbandTK.nds
+          name: zangband-nds-rom
+          path: src/Zangband.nds
           if-no-files-found: error
           retention-days: 14
 

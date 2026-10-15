@@ -3,7 +3,7 @@
 # Build the Linux terminal tarball from a self-contained build of the game.
 #
 # Use in the root directory of the game, like so:
-#    scripts/pkg_linux_tty ZangbandTK-3.5.1 [output.tar.gz]
+#    scripts/pkg_linux_tty Zangband-3.5.1 [output.tar.gz]
 #
 # Expects a self-contained build in build/game -- the executable beside its lib
 # directory, which is what a CMake build with SC_INSTALL produces.  Configure it
@@ -65,8 +65,8 @@ cp build/game/lib/tiles/list.txt "$ROOT/lib/tiles/"
 
 # Named for the game rather than for the CMake project, which is still Angband
 # because it also names the install paths.  Same rename the AppImage does.
-cp build/game/angband "$ROOT/zangbandtk"
-chmod 755 "$ROOT/zangbandtk"
+cp build/game/angband "$ROOT/zangband"
+chmod 755 "$ROOT/zangband"
 
 cp scripts/linux-tty-readme.txt "$ROOT/README.txt"
 # The licence travels with every copy, which is what the Angband licence asks.

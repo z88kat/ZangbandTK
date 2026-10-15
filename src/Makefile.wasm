@@ -1,7 +1,7 @@
 #
 # File: Makefile.wasm
 #
-# WebAssembly build of ZangbandTK, via Emscripten and the SDL2 frontend.
+# WebAssembly build of Zangband, via Emscripten and the SDL2 frontend.
 #
 # Objects go into a directory of their own rather than beside the sources.  The
 # native builds (Makefile.osx above all) leave their .o files in src/, and a
@@ -15,7 +15,7 @@ WASMDIR = ../build-wasm
 # Written at the foot of this file; see the note there.
 FLAGS_STAMP = $(OBJDIR)/flags.stamp
 
-all: $(WASMDIR)/zangbandtk.html
+all: $(WASMDIR)/zangband.html
 
 # The toolchain is addressed directly rather than through emsdk_env.sh, which
 # refuses to run: it insists on python 3.10 and the copy emsdk vendors is 3.9.
@@ -125,7 +125,7 @@ $(WASMDIR)/lib.stamp:
 	@touch $@
 	@echo "     STAGE lib -> $(WASMDIR)/lib ($$(du -sh $(WASMDIR)/lib | cut -f1))"
 
-$(WASMDIR)/zangbandtk.html: $(OBJS) $(WASMDIR)/lib.stamp wasm/shell.html wasm/pre.js
+$(WASMDIR)/zangband.html: $(OBJS) $(WASMDIR)/lib.stamp wasm/shell.html wasm/pre.js
 	@printf "%10s %s\n" LINK $@
 	@$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS)
 
@@ -163,13 +163,13 @@ TESTCFLAGS = -I. $(OPT) $(WARNINGS) -DUSE_TEST -DHAVE_MKSTEMP
 TESTLDFLAGS = $(ASYNCIFY) -sALLOW_MEMORY_GROWTH=1 -sINITIAL_MEMORY=268435456 \
 	-sSTACK_SIZE=5242880 -sNODERAWFS=1 -sEXIT_RUNTIME=1
 
-test-exe: $(WASMDIR)/zangbandtk-test
+test-exe: $(WASMDIR)/zangband-test
 
-$(WASMDIR)/zangbandtk-test: $(TESTOBJS)
+$(WASMDIR)/zangband-test: $(TESTOBJS)
 	@mkdir -p $(WASMDIR)
 	@printf "%10s %s\n" LINK $@.js
 	@$(CC) $(TESTCFLAGS) -o $@.js $(TESTOBJS) $(TESTLDFLAGS)
-	@printf '#!/bin/sh\nexec node "%s" "$$@"\n' "$$(cd $(WASMDIR) && pwd)/zangbandtk-test.js" > $@
+	@printf '#!/bin/sh\nexec node "%s" "$$@"\n' "$$(cd $(WASMDIR) && pwd)/zangband-test.js" > $@
 	@chmod +x $@
 
 $(TESTOBJDIR)/%.o : %.c Makefile.wasm $(FLAGS_STAMP)
@@ -187,7 +187,7 @@ $(TESTOBJDIR)/%.o : %.c Makefile.wasm $(FLAGS_STAMP)
 PORT ?= 8402
 
 serve: all
-	@echo "ZangbandTK at http://localhost:$(PORT)/zangbandtk.html"
+	@echo "Zangband at http://localhost:$(PORT)/zangband.html"
 	@cd $(WASMDIR) && python3 -m http.server $(PORT)
 
 .PHONY: serve

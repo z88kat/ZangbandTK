@@ -20,12 +20,24 @@ OPT ?= -O2
 #DEBUGGED_ENTITLEMENT ?= yes
 
 # for consistency with older versions, use a lower case bundle ID
+#
+# ZangbandTK (DEC-143): this application was ZangbandTK.app up to 3.128.0 and
+# keeps the identifier it had then, although it no longer matches the name.
+# The identifier is what its preferences -- fonts, window layout, the tile set
+# -- are filed under, so changing it would reset them for everyone, and the
+# name ZangbandTK now belongs to the Tk application, which has an identifier
+# of its own (scripts/pkg_macos_tcltk).
 BUNDLE_IDENTIFIER = org.zangbandtk.zangbandtk
 
 # ZangbandTK: the name shown in the Dock, menu bar and About box. Kept separate
 # from NAME, which still resolves the plist template and icon filenames that
 # vanilla ships under the Angband name.
-DISPLAY_NAME = ZangbandTK
+#
+# Zangband, not the project's name (DEC-143): ZangbandTK is the Tcl/Tk front
+# end, and this application has no Tk in it.  The release workflow reads this
+# line to name every download but two -- the source archive and the Tk image
+# keep the project's name -- so changing it renames them all at once.
+DISPLAY_NAME = Zangband
 
 # ZangbandTK (DEC-22, amended): one architecture per build, arm64 by default.
 # Intel is supported again and is built by its own CI job with ARCHS=x86_64, as
@@ -38,7 +50,7 @@ ARCHFLAGS = $(addprefix -arch ,$(ARCHS))
 
 # The architecture's mark on the released file name. arm64 is the default build
 # and keeps the plain name it has always had, so nothing that points at
-# ZangbandTK-<version>-osx.dmg has to change; an Intel build names itself. This
+# Zangband-<version>-osx.dmg has to change; an Intel build names itself. This
 # is derived rather than passed in on purpose: the two builds write their image
 # into the same directory, and left to share a name the second one would
 # silently overwrite the first.
