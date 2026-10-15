@@ -102,6 +102,24 @@ The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
 
+Five mutations that did nothing — 15 October 2026
+-------------------------------------------------
+
+- **3.128.0** — **Five mutations work** (DEC-142).
+
+  - **Weigh magic** tells you how long each magic on you has left, which the
+    status line never says.
+  - **Launcher** throws an object as hard as a sling would: twice the damage
+    of an ordinary throw, three times from level 30.
+  - **Warning** now and then tells you how dangerous the level is, from
+    *lonely* to *utterly terrified*. Your own creatures do not count.
+  - **Magical healing** and **painful clarity** trade spell points and hit
+    points, one for the other.
+
+  Four more do nothing and will stay that way: *Detect curses*, which would
+  sense curses before you know them, *Bad luck*, and the two that only ever
+  changed charisma.
+
 Shuffle, and every spell that can work does — 15 October 2026
 --------------------------------------------------------------
 

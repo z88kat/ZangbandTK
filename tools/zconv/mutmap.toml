@@ -151,9 +151,12 @@ effects = [ "LIGHT_AREA", "SPHERE:LIGHT_WEAK:2", "dice:2d$S",
 
 [DET_CURSE]
 line = 1081
-defer = """Marks every cursed object in the pack as felt-cursed. 4.2 has no \
+reject = """Marks every cursed object in the pack as felt-cursed. 4.2 has no \
 pseudo-identification to mark: curses are runes, learned by carrying and using \
-the object, and there is no hidden cursed-or-not bit for this to reveal."""
+the object, and there is no hidden cursed-or-not bit for this to reveal. \
+Refused by the project owner on 15 October 2026 (DEC-142): it would bring \
+back the pseudo-identification 4.2 removed on purpose, as Detect Enchantment \
+would, and adds nothing to play."""
 
 [BERSERK]
 line = 1096
@@ -251,9 +254,14 @@ effects = [ "TAP_DEVICE" ]
 
 [WEIGH_MAG]
 line = 1217
-defer = """report_magics() prints how many turns are left on each of your \
-timed effects. 4.2 shows them on the status line continuously, so this power \
-would tell the player something already on screen."""
+note = """report_magics(): every timed effect running, and how long it has \
+left, in Zangband's words from "for a short time" to "for an incredibly long \
+time". Deferred until 3.128.0 on the grounds that 4.2 shows timed effects on \
+the status line -- which it does by name and never by duration, so the power \
+does tell you something the screen does not. Hunger, cuts, stunning and \
+bloodlust are graded by how bad they are, not how long, and are left out. \
+DEC-142."""
+effects = [ "REPORT_MAGICS" ]
 
 [STERILITY]
 line = 1223
@@ -313,10 +321,12 @@ effects = [ "BOLT:COLD", "dice:$B", "expr:B:PLAYER_LEVEL:* 2" ]
 
 [LAUNCHER]
 line = 1327
-defer = """do_cmd_throw_aux(2 + level/30) throws an object with a damage \
-multiplier. 4.2's throwing is a command rather than an effect -- there is \
-nothing for a power to invoke, and the multiplier has no home in the object's \
-own damage calculation."""
+note = """do_cmd_throw_aux(2 + level/30): the throw command, with the \
+multiplier a launcher of that might would give, so x2 to level 29 and x3 \
+after. Deferred until 3.128.0 because throwing is a command and not an \
+effect; THROW is the effect, and it runs the command with the might set for \
+that one throw. DEC-142."""
+effects = [ "THROW", "dice:$B", "expr:B:PLAYER_LEVEL:/ 30 + 2" ]
 
 # ---------------------------------------------------------------------------
 # Random mutations: what fires, on the turn the roll comes up.
@@ -497,10 +507,13 @@ effects = [ "ALTER_REALITY" ]
 
 [random.WARNING]
 line = 1860
-defer = """Counts the dangerous monsters within a radius and warns about them \
-by name and number, then offers to read a scroll of protection. It is a piece \
-of user interface rather than an effect, and 4.2 has nothing that produces \
-that message."""
+note = """Every hostile creature on the level at your level or above adds \
+how far above, plus one, and the sum is one of six feelings from "lonely" to \
+"utterly terrified". This deferral used to describe a later Zangband's \
+warning -- by name and number within a radius, with a scroll offered -- and \
+2.7.5's is only the feeling. Your own creatures are left out of the sum, which \
+Zangband did not do. DEC-142."""
+effects = [ "SENSE_DANGER" ]
 
 [random.INVULN]
 line = 1913
@@ -509,14 +522,13 @@ effects = [ "TIMED_INC:INVULN", "dice:8+1d8" ]
 
 [random.SP_TO_HP]
 line = 1928
-defer = """Converts spell points into hit points at a rate that depends on how \
-many of each the character has. 4.2 has no effect that reads one pool to fill \
-the other, and the exchange rate is the whole mechanic."""
+note = "Heals your wounds with your spell points, point for point, as far as either goes. Deferred until 3.128.0 for want of an effect that reads both pools; SP_TO_HP is it. DEC-142."
+effects = [ "SP_TO_HP" ]
 
 [random.HP_TO_SP]
 line = 1948
-defer = """The reverse, and unavailable for the same reason. Both would need an \
-effect built to read both pools."""
+note = "The reverse: spell points back from hit points, point for point, as far as either goes -- every hit point if that is what is missing, which leaves you at none and alive. DEC-142."
+effects = [ "HP_TO_SP" ]
 
 [random.DISARM]
 line = 1969
@@ -545,11 +557,13 @@ reliable and never will be."""
 
 [continuous.BAD_LUCK]
 line = 2032
-defer = """The whole of it hangs on identify_item() (spells3.c:2032), which \
+reject = """The whole of it hangs on identify_item() (spells3.c:2032), which \
 rerolls or curses an object one time in thirteen at the moment it becomes \
 known. 4.2 has no such moment -- identification was replaced by runes learned \
 one at a time by use, so an object never stops being unknown and there is \
 nothing to attach the reroll to. Its twin good luck kept the half that does \
 have a home; this one has no half that does. Gained, described, saved and \
 shown on the character sheet like any other, and pinned inert by \
-player/mutation's the-inert-continuous-mutations-are-inert."""
+player/mutation's the-inert-continuous-mutations-are-inert. Refused by the \
+project owner on 15 October 2026 (DEC-142): the moment it hung on does not \
+exist here, and building one is not worth it."""

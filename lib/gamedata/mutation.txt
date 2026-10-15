@@ -262,6 +262,7 @@ weight:2
 desc:You can feel the danger of evil magic.
 gain:You can feel evil magics.
 lose:You can no longer feel evil magics.
+unavailable:rejected
 
 name:BERSERK
 kind:activatable
@@ -426,6 +427,7 @@ weight:2
 desc:You can feel the strength of the magics affecting you.
 gain:You feel you can better understand the magic around you.
 lose:You no longer sense magic.
+power-effect:REPORT_MAGICS
 
 name:STERILITY
 kind:activatable
@@ -555,6 +557,9 @@ values:DEX[-1]
 desc:You can hurl objects with great force (-1 DEX).
 gain:Your throwing arm feels much stronger.
 lose:Your throwing arm feels much weaker.
+power-effect:THROW
+power-dice:$B
+power-expr:B:PLAYER_LEVEL:/ 30 + 2
 
 name:BERS_RAGE
 kind:random
@@ -899,6 +904,7 @@ suppresses:PROT_FEAR
 desc:You receive warnings about your foes (cannot resist fear).
 gain:You suddenly feel paranoid.
 lose:You no longer feel paranoid.
+fires-effect:SENSE_DANGER
 
 name:INVULN
 kind:random
@@ -918,6 +924,7 @@ weight:2
 desc:Your blood sometimes rushes to your muscles.
 gain:You are subject to fits of magical healing.
 lose:You are no longer subject to fits of magical healing.
+fires-effect:SP_TO_HP
 
 name:HP_TO_SP
 kind:random
@@ -926,6 +933,7 @@ weight:1
 desc:Your blood sometimes rushes to your head.
 gain:You are subject to fits of painful clarity.
 lose:You are no longer subject to fits of painful clarity.
+fires-effect:HP_TO_SP
 
 name:DISARM
 kind:random
@@ -1185,6 +1193,7 @@ weight:1
 desc:There is a black aura surrounding you.
 gain:There is a malignant black aura surrounding you...
 lose:Your black aura swirls and fades.
+unavailable:rejected
 
 name:VULN_ELEM
 kind:continuous

@@ -52,6 +52,7 @@ typedef struct attack_result (*ranged_attack) (struct player *p,
 extern void do_cmd_fire(struct command *cmd);
 extern void do_cmd_fire_at_nearest(void);
 extern void do_cmd_throw(struct command *cmd);
+void player_throw_with_might(struct player *p, int might, struct command *cmd);
 
 
 extern int breakage_chance(const struct object *obj, bool hit_target);

@@ -592,12 +592,19 @@ static int o_melee_damage(struct player *p, const struct monster *mon,
  *
  * Factor in damage dice, to-dam, multiplier and any brand or slay.
  */
+/*
+ * ZangbandTK: the multiplier a throw gets with no launcher in hand -- one,
+ * except while the LAUNCHER mutation's power is throwing, which throws as
+ * hard as a launcher would (player_throw_with_might()).
+ */
+static int throw_might = 1;
+
 static int ranged_damage(struct player *p, const struct monster *mon,
 						 struct object *missile, struct object *launcher,
 						 int b, int s)
 {
 	int dmg;
-	int mult = (launcher ? p->state.ammo_mult : 1);
+	int mult = (launcher ? p->state.ammo_mult : throw_might);
 
 	/* If we have a slay or brand, modify the multiplier appropriately */
 	if (b) {
@@ -632,7 +639,7 @@ static int o_ranged_damage(struct player *p, const struct monster *mon,
 		struct object *missile, struct object *launcher,
 		int b, int s, uint32_t *msg_type)
 {
-	int mult = (launcher ? p->state.ammo_mult : 1);
+	int mult = (launcher ? p->state.ammo_mult : throw_might);
 	int dice = missile->dd;
 	int sides, deadliness, dmg, add = 0;
 	bool extra;
@@ -1909,6 +1916,32 @@ void do_cmd_throw(struct command *cmd) {
 
 	ranged_helper(player, obj, dir, range, shots, attack, ranged_hit_types,
 				  (int) N_ELEMENTS(ranged_hit_types));
+}
+
+/**
+ * Throw an object as hard as a launcher of the given might would loose it
+ * (ZangbandTK, the LAUNCHER mutation).
+ *
+ * Zangband's do_cmd_throw_aux(mult) ([cmd2.c:2789](../archive/zangband/src/cmd2.c#L2789))
+ * fires the thrown object through the launcher code with no launcher and a
+ * multiplier of its own.  This is the throw command, asking for the object
+ * and the direction as it always does, with the multiplier a launcher would
+ * have given.
+ */
+void player_throw_with_might(struct player *p, int might, struct command *cmd)
+{
+	struct command throw;
+
+	/* A command already holding its item and target, or one to ask for them */
+	if (!cmd) {
+		memset(&throw, 0, sizeof(throw));
+		throw.code = CMD_THROW;
+		cmd = &throw;
+	}
+
+	throw_might = MAX(1, might);
+	do_cmd_throw(cmd);
+	throw_might = 1;
 }
 
 /**

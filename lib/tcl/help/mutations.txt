@@ -32,7 +32,7 @@ T	p0 warn	 Everything in the bracket after a mutation’s description is generat
 T	p0 warn	\n
 T	p0	Three mutations take something away rather than adding anything. Rotting flesh stops you regenerating — including the regeneration from a ring you are wearing — and the panic-hit power and the warning mutation both stop you resisting fear, however you came by the resistance. Three more make ordinary food barely feed you: a beak, a mouth that eats rock, and a taste for blood all leave you a twentieth of what you swallow. Potions still work normally.
 T	p0	\n
-T	p0	Three of the thirty-two do nothing at all. A silly voice and an illusory normal appearance changed only your charisma, and there is no charisma in Angband 4.2 — the stat was removed in 4.2.0. 
+T	p0	Three of the thirty-two do nothing at all, and will stay that way. A silly voice and an illusory normal appearance changed only your charisma, and there is no charisma in Angband 4.2 — the stat was removed in 4.2.0. 
 T	p0 strong	Bad luck
 T	p0	 is the third: everything it did happened at the moment an object was identified, and 4.2 has no such moment — you learn what a thing is one rune at a time by carrying and using it, so it never stops being unknown and there is nothing for the curse to hang on. You can still gain all three, they are still described on your sheet, and they have no effect. They were left in rather than dropped because a mutation that vanishes from a savefile is worse than one that does nothing.
 T	p0	\n
@@ -45,36 +45,59 @@ T	p0	 Powers you invoke, at a cost in mana — or in blood, if you are not a cas
 T	p0	\n
 T	p0	They appear in the same list as your racial and class powers, after them, and work the same way — the same failure roll, the same fall back to hit points when you are short of mana. Some grow with you: spitting acid throws a wider ball from level 30, breathing fire from level 40, and hardening yourself against the elements resists more of them the higher you go.
 T	p0	\n
-T	p0 strong	Three of the thirty-two cannot be used yet.
-T	p0	 They are listed with 
-T	p0 em	not yet
-T	p0	 beside them rather than hidden, because your character sheet describes them and you would come looking.
-T	p0	\n
-T	p0	Two came off that list with the magic realms. 
-T	p0 strong	Swap position
-T	p0	 works — you and the monster change places, unless it is one of the things that will not be teleported, in which case neither of you moves. 
-T	p0 strong	Sterility
-T	p0	 works too: it stops every breeder on the level and gives you a headache worth seventeen to thirty-four hit points. That is not permanent, and it was not in Zangband either — breeding starts again once enough breeders have died.
-T	p0	\n
-T	p0	The Midas touch was on that list too once, marked 
+T	p0 strong	One of the thirty-two cannot be used, and will not be.
+T	p0	 
+T	p0 em	Detect curses
+T	p0	 is listed with 
 T	p0 em	dropped
-T	p0	: turning objects into gold needed a mechanic the game was not going to build for one mutation. It turned out not to be for one mutation — Sorcery’s 
-T	p0 em	Alchemy
-T	p0	 spell and a random-artifact power want the same thing — so it was built once for all three, and the Midas touch works (DEC-52). What they need is machinery Angband 4.2 does not have, and in most cases inventing it to carry one mutation would be the wrong way round:
+T	p0	 beside it rather than hidden, because your character sheet describes it and you would come looking. It would tell you which of your things are cursed before you know them, and Angband 4.2 took that kind of early warning away on purpose: a curse is a rune you learn by carrying the thing.
 T	p0	\n
-T	th0	Mutation      What it needs\n
-T	rule0	────────────────────────────────────────────────────────────────────────────────────────────────\n
-T	tr0	Sense curses  Something hidden to reveal. 4.2 has no pseudo-identification; curses are runes you\n
-T	tr0	              learn by carrying the thing.\n
-T	tr0 odd	Weigh magic   Reporting how long your effects have left. 4.2 puts that on the status line\n
-T	tr0 odd	              already.\n
-T	tr0	Launcher      A throwing multiplier. Throwing is a command in 4.2, not something a power can\n
-T	tr0	              invoke.\n
-T	tbllast0	\n
+T	p0	Every other power works, and several came off a list of powers that could not be used yet:
+T	p0	\n
+T	li1	•\t
+T	li1 strong	Weigh magic
+T	li1	 tells you how long each magic on you has left — the status line names them but does not say for how long — in Zangband’s words, from 
+T	li1 em	for a short time
+T	li1	 to 
+T	li1 em	for an incredibly long time
+T	li1	.
+T	li1	\n
+T	li1	•\t
+T	li1 strong	Launcher
+T	li1	 throws an object as hard as a sling would loose it: twice the damage of an ordinary throw, three times from level 30. It asks for the object and the direction, as throwing always does.
+T	li1	\n
+T	li1	•\t
+T	li1 strong	Swap position
+T	li1	 — you and the monster change places, unless it is one of the things that will not be teleported, in which case neither of you moves.
+T	li1	\n
+T	li1	•\t
+T	li1 strong	Sterility
+T	li1	 stops every breeder on the level and gives you a headache worth seventeen to thirty-four hit points. That is not permanent, and it was not in Zangband either — breeding starts again once enough breeders have died.
+T	li1	\n
+T	li1	•\t
+T	li1 strong	The Midas touch
+T	li1	 turns objects into gold. It was once marked 
+T	li1 em	dropped
+T	li1	, as needing a mechanic too big for one mutation; Sorcery’s 
+T	li1 em	Alchemy
+T	li1	 spell and a random-artifact power want the same thing, so it was built once for all three (DEC-52).
+T	li1	\n
 T	p0 strong	Random.
 T	p0	 Things that happen to you without being asked for. Berserker fits, a body that brews its own alcohol, attracting demons, occasionally becoming invulnerable, occasionally dropping your weapon. Twenty-seven, most of them rare — one turn in three thousand up to one in twelve thousand.
 T	p0	\n
-T	p0	Each is rolled separately, every turn, so three of these are three chances and not one. Almost all of them stop while you are under an anti-magic effect — cowardice is the exception, because being too frightened to act is not magic, and Zangband is specific about that. Three of the twenty-seven do not fire yet: being warned about what is nearby, and trading hit points for spell points and back. All three still show on your character sheet.
+T	p0	Each is rolled separately, every turn, so three of these are three chances and not one. Almost all of them stop while you are under an anti-magic effect — cowardice is the exception, because being too frightened to act is not magic, and Zangband is specific about that.
+T	p0	\n
+T	p0	Three of them came late. 
+T	p0 strong	Warning
+T	p0	 now and then tells you how dangerous the level is — every creature against you at your level or above adds to it, and you feel anything from 
+T	p0 em	lonely
+T	p0	 to 
+T	p0 em	utterly terrified
+T	p0	. Your own creatures do not count. 
+T	p0 strong	Magical healing
+T	p0	 turns spell points into hit points to close your wounds, and 
+T	p0 strong	painful clarity
+T	p0	 does the reverse, filling your mana from your hit points — all of them, if that is what it takes, which leaves you alive on none.
 T	p0	\n
 T	p0 strong	Occasional invulnerability is not free, twice over.
 T	p0	 Carrying it costs two points of wisdom permanently, in the same way wraith form costs constitution. And every time it fires — which it does unasked, by definition — the game charges it against your virtues as though you had chosen it: five points off Temperance, five off Honour, five off Sacrifice and ten off Valour, twenty-five points in all, which is the largest single virtue charge anywhere in the game. A character who happens to have this mutation will slide down four scales without ever having decided anything. See 

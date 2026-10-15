@@ -628,24 +628,22 @@ static int test_the_inert_continuous_mutations_are_inert(void *state) {
 /**
  * Every activatable mutation either has a power or has a reason.
  *
- * Twenty-eight of the thirty-two are expressible as 4.2 effect chains and four
- * are not, and the split is asserted as a count so that neither side can drift
- * quietly. A mutation that lost its effect chain to a converter change would
- * still parse, still appear in the power list, and do nothing when invoked --
- * which is exactly what the deferred ones look like, so counting is the only
- * way to tell them apart.
+ * Thirty-one of the thirty-two have a power, and the one that does not is
+ * refused for good: Detect Curses would bring back the pseudo-identification
+ * 4.2 removed (DEC-142). The split is asserted as a count so that neither side
+ * can drift quietly. A mutation that lost its effect chain to a converter
+ * change would still parse, still appear in the power list, and do nothing
+ * when invoked -- which is exactly what the refused one looks like, so
+ * counting is the only way to tell them apart.
  *
- * Swap position and Sterilize were two of the six and are now built: both were
- * marked "deferred to M9, not open-ended" and M9 is where they landed.
+ * Weigh Magic and Launcher left the list in 3.128.0 (DEC-142), Swap position
+ * and Sterilize in M9, and Grow Mold in 3.72.0 when pets arrived.
  *
- * The four are named here rather than counted, because "four are deferred" is
- * a fact about a decision and should fail if somebody implements one without
- * saying so.
+ * The one is named here rather than counted, because it is a fact about a
+ * decision and should fail if somebody implements it without saying so.
  */
 static int test_the_activatable_split_is_what_was_decided(void *state) {
-	static const char *const deferred[] = {
-		"DET_CURSE", "WEIGH_MAG", "LAUNCHER"
-	};
+	static const char *const deferred[] = { "DET_CURSE" };
 	const struct mutation *m;
 	int with = 0, without = 0;
 	size_t i;
@@ -656,9 +654,8 @@ static int test_the_activatable_split_is_what_was_decided(void *state) {
 		if (m->action) with++; else without++;
 	}
 
-	/* GROW_MOLD joined the built ones in 3.72.0, when pets arrived */
-	eq(with, 29);
-	eq(without, 3);
+	eq(with, 31);
+	eq(without, 1);
 
 	for (i = 0; i < N_ELEMENTS(deferred); i++) {
 		m = mutation_by_name(deferred[i]);
@@ -865,19 +862,18 @@ static int test_the_melee_dice_are_the_code_s(void *state) {
 /**
  * Every random mutation either fires or has a reason not to.
  *
- * Twenty-three of the twenty-seven are effect chains and four are not. The
- * count is the assertion, because a chain lost to a converter change leaves a
- * mutation that is gained, described, saved, rolled for every single turn, and
- * silently does nothing -- indistinguishable from the four that are meant to.
+ * Twenty-six of the twenty-seven are effect chains, and the one that is not
+ * needs none: the chaos gift acts when you gain a level, not on a turn
+ * passing. The count is the assertion, because a chain lost to a converter
+ * change leaves a mutation that is gained, described, saved, rolled for every
+ * single turn, and silently does nothing.
  *
- * Wraith form left this list in 3.122.0 (PLR-16). It was deferred because 4.2
- * had no incorporeal state; the Spectre work built one, and the mutation now
- * grants it as a timed effect.
+ * Warning and the two that trade hit points for spell points left this list
+ * in 3.128.0 (DEC-142), and wraith form in 3.122.0 (PLR-16), when the Spectre
+ * work built an incorporeal state for it to grant.
  */
 static int test_the_random_split_is_what_was_decided(void *state) {
-	static const char *const deferred[] = {
-		"CHAOS_GIFT", "WARNING", "SP_TO_HP", "HP_TO_SP"
-	};
+	static const char *const deferred[] = { "CHAOS_GIFT" };
 	const struct mutation *m;
 	int with = 0, without = 0;
 	size_t i;
@@ -888,8 +884,8 @@ static int test_the_random_split_is_what_was_decided(void *state) {
 		if (m->fires) with++; else without++;
 	}
 
-	eq(with, 23);
-	eq(without, 4);
+	eq(with, 26);
+	eq(without, 1);
 
 	for (i = 0; i < N_ELEMENTS(deferred); i++) {
 		m = mutation_by_name(deferred[i]);
@@ -1443,21 +1439,23 @@ static int test_a_beak_wastes_most_of_a_meal(void *state) {
 }
 
 /**
- * Nothing is dropped any more, and the machinery for it still works (DEC-52).
+ * What is dropped is what was decided, and nothing is left waiting (DEC-52,
+ * DEC-142).
  *
- * The Midas touch was the only rejection, and DEC-52 reversed it: DEC-48 refused
- * to build an object-to-gold mechanic because it "would have exactly one
- * consumer", and `alchemy()` turned out to have three. So the count of refused
- * mutations is now zero.
+ * The Midas touch was the first rejection, and DEC-52 reversed it: DEC-48
+ * refused to build an object-to-gold mechanic because it "would have exactly
+ * one consumer", and `alchemy()` turned out to have three. For a while the
+ * count of refused mutations was zero, and the `unavailable:rejected` field and
+ * the menu's "dropped" label were kept for the day a rejection came back,
+ * because the distinction they draw -- between a power waiting on a mechanism
+ * and one considered and turned down -- was one this game would need again.
  *
- * The `unavailable:rejected` field and the menu's "dropped" label are kept
- * rather than removed with their only user, because the distinction they draw
- * -- between a power waiting on a mechanism and one that was considered and
- * turned down -- is one this game will need again. Asserted as zero rather than
- * deleted, so that a rejection reappearing has to come through here and be
- * looked at.
+ * It did. In 3.128.0 the project owner turned down Detect Curses for good
+ * (DEC-142), and Weigh Magic, Launcher, Warning and the two pool-trading
+ * mutations were built, so nothing is waiting. Bad luck is rejected too, but
+ * it is continuous and this counts only what fires or is activated.
  */
-static int test_nothing_is_dropped_any_more(void *state) {
+static int test_the_dropped_are_the_ones_decided(void *state) {
 	const struct mutation *midas = mutation_by_name("MIDAS_TCH");
 	const struct mutation *m;
 	int refused = 0, waiting = 0;
@@ -1484,13 +1482,14 @@ static int test_nothing_is_dropped_any_more(void *state) {
 		if (m->refused) refused++; else waiting++;
 	}
 
-	eq(refused, 0);
+	eq(refused, 1);
+	require(mutation_by_name("DET_CURSE")->refused);
 	/*
-	 * Six since 3.122.0: WRAITH was waiting on an incorporeal player state,
-	 * which the Spectre work built.  Seven from 3.72.0, when GROW_MOLD was
+	 * None since 3.128.0.  Six from 3.122.0, when WRAITH stopped waiting on an
+	 * incorporeal player state, and seven from 3.72.0, when GROW_MOLD stopped
 	 * waiting on monster allegiance.
 	 */
-	eq(waiting, 6);
+	eq(waiting, 0);
 
 	ok;
 }
@@ -1909,7 +1908,8 @@ struct test tests[] = {
 	{ "rotting-flesh-beats-worn-regeneration",
 	  test_rotting_flesh_beats_worn_regeneration },
 	{ "a-beak-wastes-most-of-a-meal", test_a_beak_wastes_most_of_a_meal },
-	{ "nothing-is-dropped-any-more", test_nothing_is_dropped_any_more },
+	{ "the-dropped-are-the-ones-decided",
+	  test_the_dropped_are_the_ones_decided },
 	{ "alchemy-pays-a-third-of-the-real-value",
 	  test_alchemy_pays_a_third_of_the_real_value },
 	{ "the-gold-mechanic-serves-more-than-one-caller",

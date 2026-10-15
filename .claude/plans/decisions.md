@@ -7568,3 +7568,41 @@ side, the World's experience on 120 and not on 119, the Fool, Judgement,
 Death against you and the four pictures for you; a shifted boundary fails it.
 `player/realm` counts 22 inert spell copies -- the three refused in DEC-139,
 and nothing else -- and asks that every Trump spell works.
+
+**DEC-142 — Five mutations work, and four are refused for good
+(15 October 2026, the project owner).**
+
+Nine mutations did nothing. The project owner chose to build the five with a
+use and refused the rest: "we do not do [them] as they don't add anything to
+the gameplay, or just hard to do and not worth the effort."
+
+**Built (3.128.0).** Five effects:
+
+- `SENSE_DANGER` -- the WARNING mutation. 2.7.5's is a sum: every creature at
+  or above the player's level adds how far above, plus one, read off six
+  feelings from "lonely" to "utterly terrified". The deferral described a later
+  Zangband's, which named monsters within a radius and offered a scroll.
+  Creatures on the player's side are left out, which Zangband did not do.
+- `SP_TO_HP` and `HP_TO_SP` -- the two that trade one pool for the other,
+  point for point, as far as either goes. Painful clarity can take every hit
+  point, which leaves the character at none and alive, as in Zangband.
+- `REPORT_MAGICS` -- Weigh Magic, `report_magics()`. Its deferral said the
+  status line already shows timed effects; it shows their names and never their
+  durations, which is what this reports, in Zangband's seven bands. Effects with
+  grades -- hunger, cuts, stunning, bloodlust -- measure severity, not time, and
+  are left out.
+- `THROW` -- the Launcher, `do_cmd_throw_aux(2 + level / 30)`: the throw
+  command with a launcher's multiplier for that one throw, through
+  `player_throw_with_might()` and a `throw_might` that is one at all other times.
+
+**Refused.** Detect Curses and Bad Luck move from `defer` to `reject` in
+`mutmap.toml`, so the data says `unavailable:rejected` and the power menu
+*dropped*: the first would bring back pseudo-identification, as Detect
+Enchantment would, and the second needs an identification moment this game
+does not have. The two charisma mutations, Silly Voice and Illusory Normal
+Appearance, need no entry -- they are continuous and inert, with no stat to
+touch -- and stay as they are.
+
+Nothing among the mutations is now waiting: player/mutation's split tests
+count 31 activatable powers and one refused, 26 random mutations that fire and
+the chaos gift, which acts on level gain.

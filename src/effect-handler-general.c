@@ -45,6 +45,7 @@
 #include "obj-pile.h"
 #include "obj-tval.h"
 #include "obj-util.h"
+#include "player-attack.h"
 #include "player-calcs.h"
 #include "player-history.h"
 #include "player-quest.h"
@@ -3104,6 +3105,165 @@ bool effect_handler_SHUFFLE(effect_handler_context_t *context)
 		}
 	}
 
+	return true;
+}
+
+/**
+ * Tell the player how dangerous the level is (ZangbandTK, the WARNING
+ * mutation).
+ *
+ * Zangband's ([mutation.c:1669](../archive/zangband/src/mutation.c#L1669)):
+ * every creature on the level at the player's level or above adds how far
+ * above it is, plus one, and the sum is read off six feelings.  Creatures on
+ * the player's side are left out, which Zangband did not do: a pet is not a
+ * danger, and a warning that grows with your own stable is no warning.
+ */
+bool effect_handler_SENSE_DANGER(effect_handler_context_t *context)
+{
+	int i, danger = 0;
+
+	context->ident = true;
+
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		if (!mon->race || !monster_is_hostile(mon)) continue;
+		if (mon->race->level >= player->lev) {
+			danger += mon->race->level - player->lev + 1;
+		}
+	}
+
+	if (danger > 100) {
+		msg("You feel utterly terrified!");
+	} else if (danger > 50) {
+		msg("You feel terrified!");
+	} else if (danger > 20) {
+		msg("You feel very worried!");
+	} else if (danger > 10) {
+		msg("You feel paranoid!");
+	} else if (danger > 5) {
+		msg("You feel almost safe.");
+	} else {
+		msg("You feel lonely.");
+	}
+
+	return true;
+}
+
+/**
+ * Heal wounds with spell points, point for point (ZangbandTK, the SP_TO_HP
+ * mutation, [mutation.c:1711](../archive/zangband/src/mutation.c#L1711)).
+ */
+bool effect_handler_SP_TO_HP(effect_handler_context_t *context)
+{
+	int wounds = player->mhp - player->chp;
+	int healing = MIN(player->csp, wounds);
+
+	context->ident = true;
+
+	if (healing > 0) {
+		effect_simple(EF_HEAL_HP, source_player(), format("%d", healing), 0,
+			0, 0, 0, 0, NULL);
+		player->csp -= healing;
+		player->upkeep->redraw |= (PR_MANA);
+	}
+
+	return true;
+}
+
+/**
+ * Restore spell points from hit points, point for point (ZangbandTK, the
+ * HP_TO_SP mutation, [mutation.c:1729](../archive/zangband/src/mutation.c#L1729)).
+ *
+ * As much as is missing, or as much as the character has: Zangband takes up
+ * to every hit point, which leaves you at none and alive.
+ */
+bool effect_handler_HP_TO_SP(effect_handler_context_t *context)
+{
+	int wounds = player->msp - player->csp;
+	int healing = MIN(player->chp, wounds);
+
+	context->ident = true;
+
+	if (healing > 0) {
+		player->csp += healing;
+		player->upkeep->redraw |= (PR_MANA);
+		take_hit(player, healing, "blood rushing to the head");
+	}
+
+	return true;
+}
+
+/**
+ * Zangband's words for how long a timed effect has left
+ * ([spells2.c:781](../archive/zangband/src/spells2.c#L781)).
+ */
+static const char *magic_duration(int turns)
+{
+	if (turns <= 5) return "for a short time";
+	if (turns <= 10) return "for a little while";
+	if (turns <= 20) return "for a while";
+	if (turns <= 50) return "for a long while";
+	if (turns <= 100) return "for a long time";
+	if (turns <= 200) return "for a very long time";
+	return "for an incredibly long time";
+}
+
+/**
+ * Report how long each magic upon the player will last (ZangbandTK, the
+ * WEIGH_MAG mutation's Weigh Magic).
+ *
+ * Zangband's report_magics() ([spells2.c:829](../archive/zangband/src/spells2.c#L829)).
+ * The status line names each effect but not how long it has, which is what
+ * this tells you, in Zangband's words rather than turns.  Effects measured by
+ * how bad they are rather than how long -- hunger, cuts, stunning and
+ * bloodlust, the ones with grades -- are not durations, and are left out.
+ */
+bool effect_handler_REPORT_MAGICS(effect_handler_context_t *context)
+{
+	bool any = false;
+	int i;
+
+	context->ident = true;
+
+	for (i = 0; i < TMD_MAX; i++) {
+		const struct timed_effect_data *t = &timed_effects[i];
+		char what[80];
+
+		if (!player->timed[i] || !t->desc) continue;
+		if (t->grade && t->grade->next && t->grade->next->next) continue;
+
+		my_strcpy(what, t->desc, sizeof(what));
+		my_strcap(what);
+		msg("%s will last %s.", what, magic_duration(player->timed[i]));
+		any = true;
+	}
+
+	if (player->word_recall) {
+		msg("You are waiting to be recalled %s.",
+			magic_duration(player->word_recall));
+		any = true;
+	}
+	if (player->deep_descent) {
+		msg("The floor will open beneath you %s.",
+			magic_duration(player->deep_descent));
+		any = true;
+	}
+
+	if (!any) msg("You sense no magic upon you.");
+
+	return true;
+}
+
+/**
+ * Throw an object as hard as a launcher would (ZangbandTK, the LAUNCHER
+ * mutation's power): the effect's value is the launcher's might.
+ */
+bool effect_handler_THROW(effect_handler_context_t *context)
+{
+	context->ident = true;
+	player_throw_with_might(player, effect_calculate_value(context, false),
+		NULL);
 	return true;
 }
 

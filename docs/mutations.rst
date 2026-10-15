@@ -47,8 +47,9 @@ however you came by the resistance. Three more make ordinary food barely feed
 you: a beak, a mouth that eats rock, and a taste for blood all leave you a
 twentieth of what you swallow. Potions still work normally.
 
-Three of the thirty-two do nothing at all. A silly voice and an illusory normal
-appearance changed only your charisma, and there is no charisma in Angband
+Three of the thirty-two do nothing at all, and will stay that way. A silly
+voice and an illusory normal appearance changed only your charisma, and there
+is no charisma in Angband
 4.2 — the stat was removed in 4.2.0. **Bad luck** is the third: everything it
 did happened at the moment an object was identified, and 4.2 has no such
 moment — you learn what a thing is one rune at a time by carrying and using it,
@@ -74,41 +75,31 @@ when you are short of mana. Some grow with you: spitting acid throws a wider
 ball from level 30, breathing fire from level 40, and hardening yourself
 against the elements resists more of them the higher you go.
 
-**Three of the thirty-two cannot be used yet.** They are listed with *not yet*
-beside them rather than hidden, because your character sheet describes them and
-you would come looking.
+**One of the thirty-two cannot be used, and will not be.** *Detect curses* is
+listed with *dropped* beside it rather than hidden, because your character
+sheet describes it and you would come looking. It would tell you which of your
+things are cursed before you know them, and Angband 4.2 took that kind of
+early warning away on purpose: a curse is a rune you learn by carrying the
+thing.
 
-Two came off that list with the magic realms. **Swap position** works — you and
-the monster change places, unless it is one of the things that will not be
-teleported, in which case neither of you moves. **Sterility** works too: it
-stops every breeder on the level and gives you a headache worth seventeen to
-thirty-four hit points. That is not permanent, and it was not in Zangband
-either — breeding starts again once enough breeders have died.
+Every other power works, and several came off a list of powers that could not
+be used yet:
 
-The Midas touch was on that list too once, marked *dropped*: turning objects into
-gold needed a mechanic the game was not going to build for one mutation. It
-turned out not to be for one mutation — Sorcery's *Alchemy* spell and a
-random-artifact power want the same thing — so it was built once for all three,
-and the Midas touch works (DEC-52). What they need is machinery Angband 4.2 does not have,
-and in most cases inventing it to carry one mutation would be the wrong way
-round:
-
-.. list-table::
-   :header-rows: 1
-   :widths: 24 76
-
-   * - Mutation
-     - What it needs
-   * - Sense curses
-     - Something hidden to reveal. 4.2 has no pseudo-identification; curses are
-       runes you learn by carrying the thing.
-   * - Weigh magic
-     - Reporting how long your effects have left. 4.2 puts that on the status
-       line already.
-   * - Launcher
-     - A throwing multiplier. Throwing is a command in 4.2, not something a
-       power can invoke.
-
+- **Weigh magic** tells you how long each magic on you has left — the status
+  line names them but does not say for how long — in Zangband's words, from
+  *for a short time* to *for an incredibly long time*.
+- **Launcher** throws an object as hard as a sling would loose it: twice the
+  damage of an ordinary throw, three times from level 30. It asks for the
+  object and the direction, as throwing always does.
+- **Swap position** — you and the monster change places, unless it is one of
+  the things that will not be teleported, in which case neither of you moves.
+- **Sterility** stops every breeder on the level and gives you a headache worth
+  seventeen to thirty-four hit points. That is not permanent, and it was not in
+  Zangband either — breeding starts again once enough breeders have died.
+- **The Midas touch** turns objects into gold. It was once marked *dropped*, as
+  needing a mechanic too big for one mutation; Sorcery's *Alchemy* spell and a
+  random-artifact power want the same thing, so it was built once for all three
+  (DEC-52).
 
 **Random.** Things that happen to you without being asked for. Berserker fits,
 a body that brews its own alcohol, attracting demons, occasionally becoming
@@ -118,9 +109,15 @@ rare — one turn in three thousand up to one in twelve thousand.
 Each is rolled separately, every turn, so three of these are three chances and
 not one. Almost all of them stop while you are under an anti-magic effect —
 cowardice is the exception, because being too frightened to act is not magic,
-and Zangband is specific about that. Three of the twenty-seven do not fire yet:
-being warned about what is nearby, and trading hit points for spell points and
-back. All three still show on your character sheet.
+and Zangband is specific about that.
+
+Three of them came late. **Warning** now and then tells you how dangerous the
+level is — every creature against you at your level or above adds to it,
+and you feel anything from *lonely* to *utterly terrified*. Your own creatures
+do not count. **Magical healing** turns spell points into hit points to close
+your wounds, and **painful clarity** does the reverse, filling your mana from
+your hit points — all of them, if that is what it takes, which leaves you alive
+on none.
 
 **Occasional invulnerability is not free, twice over.** Carrying it costs two
 points of wisdom permanently, in the same way wraith form costs constitution.

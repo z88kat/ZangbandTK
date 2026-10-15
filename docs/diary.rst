@@ -31,6 +31,19 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+15 October 2026 — and the mutations
+===================================
+
+With the spells done, nine mutations still did nothing. Five were worth doing,
+and two of their notes were wrong the same way Shuffle's was: Weigh Magic was
+held back because the status line "already shows" your timed effects, but it
+shows their names, never how long they have left. Warning's note described a
+later Zangband than ours. The other four don't add anything to the game, or
+would be hard to build for no real gain, so they are dropped for good: Detect
+Curses, Bad Luck and the two charisma ones. Nothing is left waiting now, in the
+spells or the mutations.
+
+
 15 October 2026 — the other four
 ================================
 

@@ -218,3 +218,15 @@ EFFECT(OMNICIDE,					false,	NULL,		0,		EFINFO_NONE,	"removes every creature on t
  * Zangband's unequal bands, the value being the draw (DEC-141).
  */
 EFFECT(SHUFFLE,						false,	NULL,		0,		EFINFO_NONE,	"draws a card from the Trump deck: now and then a good one, more often a bad one",	"shuffle")
+
+/*
+ * ZangbandTK: five mutations' workings (DEC-142).  SENSE_DANGER is the
+ * WARNING mutation, SP_TO_HP and HP_TO_SP are the two that trade one pool for
+ * the other, REPORT_MAGICS is Weigh Magic, and THROW is the LAUNCHER power: a
+ * throw with the might of a launcher.
+ */
+EFFECT(SENSE_DANGER,				false,	NULL,		0,		EFINFO_NONE,	"tells you how dangerous the creatures on this level are, taken together",	"sense danger")
+EFFECT(SP_TO_HP,					false,	NULL,		0,		EFINFO_NONE,	"heals your wounds with your spell points",	"")
+EFFECT(HP_TO_SP,					false,	NULL,		0,		EFINFO_NONE,	"restores your spell points from your hit points",	"")
+EFFECT(REPORT_MAGICS,				false,	NULL,		0,		EFINFO_NONE,	"tells you how long each magic upon you will last",	"weigh magic")
+EFFECT(THROW,						false,	NULL,		1,		EFINFO_DICE,	"throws an object as hard as a launcher of might %s",	"throw")

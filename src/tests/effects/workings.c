@@ -18,6 +18,10 @@
  *   GLYPH:EXPLOSIVE Explosive Rune
  *   TIMED_INC:WRAITH  Wraithform, the WRAITH mutation's form
  *   SHUFFLE         Shuffle, Trump's deck
+ *
+ * And five mutations' workings (DEC-142): SENSE_DANGER for Warning, SP_TO_HP
+ * and HP_TO_SP for the two that trade pools, REPORT_MAGICS for Weigh Magic,
+ * and THROW for the Launcher.
  */
 
 #include "unit-test.h"
@@ -47,6 +51,9 @@
 #include "player-mutation.h"
 #include "player-timed.h"
 #include "player-util.h"
+#include "message.h"
+#include "player-attack.h"
+#include "target.h"
 #include "source.h"
 #include "trap.h"
 
@@ -435,11 +442,10 @@ static int test_joker_cards_four_groups_answer(void *state) {
 }
 
 
-/** A monster of a named race beside the player, on a side, awake. */
-static struct monster *beside(struct loc grid, const char *name,
+/** A monster of a race at a grid, on a side, awake. */
+static struct monster *placed(struct loc grid, struct monster_race *race,
 		enum monster_allegiance side) {
 	struct monster_group_info info = { 0, 0 };
-	struct monster_race *race = lookup_monster(name);
 	struct monster *mon;
 
 	if (!race) return NULL;
@@ -457,6 +463,27 @@ static struct monster *beside(struct loc grid, const char *name,
 	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 	update_stuff(player);
 	return square_monster(cave, grid);
+}
+
+/** The same, by the race's name. */
+static struct monster *beside(struct loc grid, const char *name,
+		enum monster_allegiance side) {
+	return placed(grid, lookup_monster(name), side);
+}
+
+/** The first ordinary creature at least this deep: no unique, no quest's. */
+static struct monster_race *a_race_at_least(int level) {
+	int i;
+
+	for (i = 1; i < z_info->r_max; i++) {
+		struct monster_race *race = &r_info[i];
+
+		if (!race->name || race->level < level) continue;
+		if (rf_has(race->flags, RF_UNIQUE)) continue;
+		if (rf_has(race->flags, RF_QUESTOR)) continue;
+		return race;
+	}
+	return NULL;
 }
 
 /** One monster processing pass, everything on the level ready to act. */
@@ -882,6 +909,187 @@ static int test_the_card_sharps_draw_higher(void *state) {
 	ok;
 }
 
+
+/* Whether one of the last few messages says this */
+static bool said(const char *text) {
+	uint16_t age;
+
+	for (age = 0; age < 8 && age < messages_num(); age++) {
+		if (strstr(message_str(age), text)) return true;
+	}
+	return false;
+}
+
+/* Warning: the sum of how far each hostile creature out-levels you */
+static int test_warning_weighs_the_level(void *state) {
+	struct monster *foe;
+
+	a_room_at(10);
+	player->lev = 1;
+	require(work(EF_SENSE_DANGER, 0, "0", NULL));
+	require(said("You feel lonely."));
+
+	/* Your own creatures are no danger, however deep */
+	foe = placed(loc(2, 2), a_race_at_least(30), MON_ALLEGIANCE_PET);
+	notnull(foe);
+	require(work(EF_SENSE_DANGER, 0, "0", NULL));
+	require(said("You feel lonely."));
+
+	/* A hostile one thirty levels above a beginner is a fright */
+	foe = placed(loc(4, 2), a_race_at_least(30), MON_ALLEGIANCE_HOSTILE);
+	notnull(foe);
+	require(work(EF_SENSE_DANGER, 0, "0", NULL));
+	require(said("You feel very worried!") || said("You feel terrified!")
+		|| said("You feel utterly terrified!"));
+	clear_the_level();
+	ok;
+}
+
+static int test_spell_points_heal_wounds(void *state) {
+	player->mhp = 100;
+	player->chp = 50;
+	player->msp = 40;
+	player->csp = 30;
+	require(work(EF_SP_TO_HP, 0, "0", NULL));
+	eq(player->chp, 80);
+	eq(player->csp, 0);
+
+	/* Only as much as the wounds need */
+	player->chp = 90;
+	player->csp = 30;
+	require(work(EF_SP_TO_HP, 0, "0", NULL));
+	eq(player->chp, 100);
+	eq(player->csp, 20);
+	ok;
+}
+
+static int test_hit_points_restore_mana(void *state) {
+	player->mhp = player->chp = 100;
+	player->msp = 50;
+	player->csp = 10;
+	require(work(EF_HP_TO_SP, 0, "0", NULL));
+	eq(player->csp, 50);
+	eq(player->chp, 60);
+
+	/* Every hit point, if that is what is missing: none left, and alive */
+	player->chp = 20;
+	player->csp = 0;
+	require(work(EF_HP_TO_SP, 0, "0", NULL));
+	eq(player->csp, 20);
+	eq(player->chp, 0);
+	require(!player->is_dead);
+	player->chp = player->mhp;
+	ok;
+}
+
+static int test_weigh_magic_says_how_long(void *state) {
+	int i;
+
+	for (i = 0; i < TMD_MAX; i++) {
+		if (i != TMD_FOOD) player->timed[i] = 0;
+	}
+	player->word_recall = 0;
+	player->deep_descent = 0;
+
+	/* Hunger is a grade, not a magic */
+	require(player->timed[TMD_FOOD] > 0);
+	require(work(EF_REPORT_MAGICS, 0, "0", NULL));
+	require(said("You sense no magic upon you."));
+
+	player->timed[TMD_FAST] = 15;
+	player->timed[TMD_BLESSED] = 300;
+	require(work(EF_REPORT_MAGICS, 0, "0", NULL));
+	require(said("Haste will last for a while."));
+	require(said("for an incredibly long time."));
+	require(!said("ourishment"));
+	player->timed[TMD_FAST] = 0;
+	player->timed[TMD_BLESSED] = 0;
+	ok;
+}
+
+/*
+ * The Launcher: a throw at a launcher's might does that many times the
+ * damage.  Thirty daggers at might one and thirty at might three, into a
+ * soldier with hit points to spare; the second lot has to do better than
+ * twice the first, which chance alone does not explain.
+ */
+static int thrown_into(struct monster *mon, struct object *stack, int might) {
+	int before = mon->hp, n;
+
+	for (n = 0; n < 30; n++) {
+		struct command cmd;
+
+		memset(&cmd, 0, sizeof(cmd));
+		cmd.code = CMD_THROW;
+		cmd_set_arg_item(&cmd, "item", stack);
+		cmd_set_arg_target(&cmd, "target", DIR_TARGET);
+		player_throw_with_might(player, might, &cmd);
+	}
+	return before - mon->hp;
+}
+
+static int test_the_launcher_throws_harder(void *state) {
+	struct object *stack = make(TV_SWORD, "Dagger");
+	struct monster *mon;
+	int plain, mighty;
+
+	a_room_at(10);
+	mon = beside(loc(player->grid.x + 3, player->grid.y), "soldier",
+		MON_ALLEGIANCE_HOSTILE);
+	notnull(mon);
+	mon->maxhp = mon->hp = 30000;
+	mon->m_timed[MON_TMD_SLEEP] = 30000;
+	require(target_set_monster(mon));
+
+	/* Ten a hit, every hit, so what varies is only whether and how well */
+	notnull(stack);
+	stack->number = 60;
+	stack->dd = 1;
+	stack->ds = 1;
+	stack->to_d = 9;
+	stack->to_h = 50;
+	inven_carry(player, stack, true, false);
+	player->upkeep->update |= (PU_BONUS | PU_INVEN);
+	update_stuff(player);
+
+	plain = thrown_into(mon, stack, 1);
+	mighty = thrown_into(mon, stack, 3);
+	require(plain > 0);
+	require(mighty > 2 * plain);
+	clear_the_level();
+	ok;
+}
+
+/* And the two powers and three random mutations carry them */
+static int test_the_mutations_carry_the_effects(void *state) {
+	static const struct { const char *name; int effect; } built[] = {
+		{ "WEIGH_MAG", EF_REPORT_MAGICS }, { "LAUNCHER", EF_THROW },
+	};
+	static const struct { const char *name; int effect; } fires[] = {
+		{ "WARNING", EF_SENSE_DANGER }, { "SP_TO_HP", EF_SP_TO_HP },
+		{ "HP_TO_SP", EF_HP_TO_SP },
+	};
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(built); i++) {
+		const struct mutation *m = mutation_by_name(built[i].name);
+
+		notnull(m);
+		notnull(m->action);
+		notnull(m->action->effects);
+		eq(m->action->effects->effect->index, built[i].effect);
+	}
+	for (i = 0; i < N_ELEMENTS(fires); i++) {
+		const struct mutation *m = mutation_by_name(fires[i].name);
+
+		notnull(m);
+		notnull(m->fires);
+		notnull(m->fires->effects);
+		eq(m->fires->effects->effect->index, fires[i].effect);
+	}
+	ok;
+}
+
 const char *suite_name = "effects/workings";
 struct test tests[] = {
 	{ "identify-fully-learns-every-rune",
@@ -931,5 +1139,12 @@ struct test tests[] = {
 	  test_the_pictures_are_the_four_groups },
 	{ "death-calls-against-you", test_death_calls_against_you },
 	{ "the-card-sharps-draw-higher", test_the_card_sharps_draw_higher },
+	{ "warning-weighs-the-level", test_warning_weighs_the_level },
+	{ "spell-points-heal-wounds", test_spell_points_heal_wounds },
+	{ "hit-points-restore-mana", test_hit_points_restore_mana },
+	{ "weigh-magic-says-how-long", test_weigh_magic_says_how_long },
+	{ "the-launcher-throws-harder", test_the_launcher_throws_harder },
+	{ "the-mutations-carry-the-effects",
+	  test_the_mutations_carry_the_effects },
 	{ NULL, NULL }
 };
