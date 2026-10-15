@@ -675,7 +675,7 @@ proc character_window {} {
     # Keys typed here still play the game.  Without this the window would have
     # to be dismissed before the next step could be taken, which would make it
     # something to put away rather than something to leave open.
-    bind .character <Key> { angband_key %N %s %A }
+    bind .character <Key> { angband_key [key_sym %N %k] %s %A }
     bind .character <Escape> { destroy .character ; break }
     bind .character <Control-s> { character_dump ; break }
     bind .character <F1> { character_help ; break }

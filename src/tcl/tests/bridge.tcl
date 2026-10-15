@@ -1903,6 +1903,14 @@ proc keymap_pass {} {
 				"{K}1"] 1]
 	} {{[F5]} {{K}1} {{SK}1} {{K}[Enter]} {;1}}
 
+	# Windows reports the keypad, with Num Lock on, as the characters it types;
+	# key_sym puts the keypad back from Windows' key code, and on the other two
+	# passes a keysym through untouched.  A keypad 1 and a keypad *, then the
+	# 1 above the letters.
+	check "the keypad is the keypad on Windows too" {
+		list [key_sym 49 0x61] [key_sym 42 0x6A] [key_sym 49 0x31]
+	} [expr {[tk windowingsystem] eq "win32" ? "65457 65450 49" : "49 42 49"}]
+
 	check "F1 is the manual's until the player binds it" {
 		set before [main_f1_bound [expr 0xFFBE] 0 ""]
 		angband_keymap set {[F1]} C

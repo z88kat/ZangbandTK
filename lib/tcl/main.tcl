@@ -86,8 +86,30 @@ option add *Menu.tearOff 0
 # let go, which is a key release, hence the second binding.  The Mac binds
 # none of these, so nothing changes there; in this window the menus are the
 # mouse's and the keys are the game's.
-bind . <Key> { angband_key %N %s %A ; break }
+bind . <Key> { angband_key [key_sym %N %k] %s %A ; break }
 bind . <KeyRelease> break
+
+# The keysym every binding hands the game, given Tk's keysym and key code.
+#
+# On Windows Tk reports the keypad's digits and operators, with Num Lock on, as
+# the characters they type -- its key table has no keypad -- so a keypad 1 was
+# a 1, and pref.prf's keymaps, which walk on the keypad, never matched.  The
+# key code there is Windows' own virtual-key code, which does tell them apart,
+# so the keypad's keysym is put back from it.  Elsewhere Tk already reports
+# the keypad as the keypad.
+proc key_sym {keysym keycode} {
+    if {[tk windowingsystem] ne "win32"} { return $keysym }
+    if {$keycode >= 0x60 && $keycode <= 0x69} {
+        # VK_NUMPAD0 to VK_NUMPAD9: KP_0 to KP_9.
+        return [expr {0xFFB0 + $keycode - 0x60}]
+    }
+    # VK_MULTIPLY, VK_ADD, VK_SUBTRACT, VK_DECIMAL and VK_DIVIDE.
+    set ops {0x6A 0xFFAA 0x6B 0xFFAB 0x6D 0xFFAD 0x6E 0xFFAE 0x6F 0xFFAF}
+    foreach {vk kp} $ops {
+        if {$keycode == $vk} { return [expr {$kp}] }
+    }
+    return $keysym
+}
 
 # Except F1, which opens the manual on playing, as F1 opens the manual where it
 # covers each of the other windows; the game's own ? opens it at the contents.

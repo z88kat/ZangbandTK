@@ -611,7 +611,7 @@ proc knowledge_window {} {
         set knowledge(msg) "Recalled: $knowledge(name)."
     }
 
-    bind .knowledge <Key> { knowledge_key %W %K %N %s %A }
+    bind .knowledge <Key> { knowledge_key %W %K [key_sym %N %k] %s %A }
     bind .knowledge <Escape> { destroy .knowledge ; break }
     bind .knowledge <Control-s> { knowledge_dump ; break }
     bind .knowledge <F1> { knowledge_help ; break }

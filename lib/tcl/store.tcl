@@ -371,7 +371,7 @@ proc store_window {} {
     grid columnconfigure $body {0 1} -weight 1 -uniform side
     grid rowconfigure $body 0 -weight 1
 
-    bind .store <Key> { store_key %W %K %N %s %A }
+    bind .store <Key> { store_key %W %K [key_sym %N %k] %s %A }
     bind .store <Escape> { store_leave ; break }
     bind .store <F1> { store_help ; break }
     accel_bind .store b { store_trade buy ; break }

@@ -1077,7 +1077,7 @@ proc items_window {} {
     # the letter commands keep working -- which is the design's requirement
     # that dragging be an addition to the keyboard and never a replacement.
     # w, t, d and i act on the selection when it allows them.
-    bind .items <Key> { angband_key %N %s %A }
+    bind .items <Key> { angband_key [key_sym %N %k] %s %A }
     bind .items <Escape> { destroy .items ; break }
     bind .items <F1> { items_help ; break }
     foreach {k action} {w wear t takeoff d drop i inspect} {

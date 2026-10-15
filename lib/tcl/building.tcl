@@ -274,7 +274,7 @@ proc building_window {} {
     }
     bind $tv <Return> { building_choose ; break }
 
-    bind .building <Key> { building_key %W %K %N %s %A }
+    bind .building <Key> { building_key %W %K [key_sym %N %k] %s %A }
     bind .building <Escape> { building_leave ; break }
     bind .building <F1> { building_help ; break }
     accel_bind .building c { building_choose ; break }

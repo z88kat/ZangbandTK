@@ -382,7 +382,7 @@ proc book_window {} {
     }
     bind $tv <Return> { book_use }
 
-    bind .book <Key> { book_key %W %K %N %s %A }
+    bind .book <Key> { book_key %W %K [key_sym %N %k] %s %A }
     bind .book <Escape> { destroy .book ; break }
     bind .book <F1> { book_help ; break }
     accel_bind .book c { book_cast ; break }

@@ -1172,10 +1172,21 @@ static bool tk_keypress(int keysym, int state, const char *ch,
 	keycode_t k = 0;
 	uint8_t mods = 0;
 
-	/* X11 modifier bits, which Tk reports on every platform. */
+	/*
+	 * X11 modifier bits, which Tk reports on every platform -- but not with
+	 * the same meaning.  Mod1 (0x08) is Alt on X11, and on Windows it is Num
+	 * Lock: Tk gives Windows' Alt a bit of its own, ALT_MASK.  Read as Alt
+	 * there, every key typed with Num Lock on reached the game as Alt and
+	 * the key, and Alt itself never did.
+	 */
 	if (state & 0x01) mods |= KC_MOD_SHIFT;
 	if (state & 0x04) mods |= KC_MOD_CONTROL;
+#ifdef _WIN32
+	/* ALT_MASK is AnyModifier << 2, in tkInt.h, which tk.h does not export. */
+	if (state & (AnyModifier << 2)) mods |= KC_MOD_ALT;
+#else
 	if (state & 0x08) mods |= KC_MOD_ALT;
+#endif
 
 	/*
 	 * The function keys, F1 to F15, which X11 numbers from 0xFFBE; and the
@@ -2759,7 +2770,7 @@ static int objcmd_player(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		Tcl_Obj *const objv[])
 {
 	const char *what;
-	int i;
+	int i = 0;	/* GCC at -O2 cannot see that objc is never 0 */
 
 	(void)dummy;
 

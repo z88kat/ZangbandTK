@@ -328,7 +328,7 @@ proc keymap_build {} {
     # Keys: chosen by pressing them, or recorded while recording.  Not in the
     # filter, where typing is typing.  Escape is a key to bind like any other,
     # so it does not close the window; the File menu and Option-C do.
-    bind .keymap <KeyPress> {keymap_key %W %N %s %A}
+    bind .keymap <KeyPress> {keymap_key %W [key_sym %N %k] %s %A}
     foreach mod {Shift_L Shift_R Control_L Control_R} {
         bind .keymap <KeyPress-$mod> {keymap_hold %K 1}
         bind .keymap <KeyRelease-$mod> {keymap_hold %K 0}

@@ -47,9 +47,19 @@
  * all the others use this file for their "main()" function.
  */
 
-#if defined(WIN32_CONSOLE_MODE) || !defined(WINDOWS) || defined(USE_SDL2)
+/*
+ * ZangbandTK: and the Tcl/Tk front end, which has no main() of its own on
+ * Windows any more than anywhere else.  Left out, this whole file compiled to
+ * nothing there, and the Tk build had no entry point to link.
+ */
+#if defined(WIN32_CONSOLE_MODE) || !defined(WINDOWS) || defined(USE_SDL2) \
+		|| defined(USE_TCL)
 
 #include "main.h"
+
+#if defined(WINDOWS) && defined(USE_TCL)
+#include <windows.h>
+#endif
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
@@ -441,6 +451,28 @@ int main(int argc, char *argv[])
 	/* Save the "program name" XXX XXX XXX */
 	argv0 = argv[0];
 
+#if defined(WINDOWS) && defined(USE_TCL)
+	/*
+	 * ZangbandTK: start where the game is.  The Tk build finds its data as
+	 * ./lib, as the self-contained builds do, and the folder a shortcut or a
+	 * command prompt starts it in need not be the one ZangbandTK.exe is in.
+	 * Its characters live there too, in lib\user\save, as Zangband.exe's do.
+	 */
+	{
+		wchar_t exe[MAX_PATH];
+		DWORD n = GetModuleFileNameW(NULL, exe, MAX_PATH);
+
+		if (n > 0 && n < MAX_PATH) {
+			wchar_t *slash = wcsrchr(exe, L'\\');
+
+			if (slash) {
+				*slash = L'\0';
+				SetCurrentDirectoryW(exe);
+			}
+		}
+	}
+#endif
+
 #ifdef UNIX
 
 	/* Default permissions on files */
@@ -648,6 +680,14 @@ int main(int argc, char *argv[])
 	 */
 	if (macos_bundle_resources() && !arg_name[0] && !new_game)
 		select_game = true;
+#elif defined(USE_TCL)
+	/*
+	 * The same for the Tk application elsewhere: started from a desktop
+	 * entry or from Explorer it has no command line either, and on Linux it
+	 * would load the save named after the account, as the bundle once did.
+	 */
+	if (!arg_name[0] && !new_game)
+		select_game = true;
 #endif
 
 #ifdef UNIX
@@ -661,6 +701,15 @@ int main(int argc, char *argv[])
 	}
 
 	/* Create any missing directories */
+	create_needed_dirs();
+
+#elif defined(USE_TCL)
+
+	/*
+	 * ZangbandTK: Windows has no user name to default to -- the Choose Game
+	 * window asks instead -- but the folders still have to exist.  The
+	 * Windows front end makes its own; this build has only these.
+	 */
 	create_needed_dirs();
 
 #endif /* UNIX */
