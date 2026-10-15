@@ -31,6 +31,19 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+15 October 2026 — and sound
+===========================
+
+Sound on Windows and Linux went through SDL, as decided back in the planning,
+and turned up something nobody had noticed: SDL had been playing every MP3 as
+music, one at a time, and every one of the game's sounds is an MP3. So in the
+SDL builds each sound cut off the one before it. They mix now. The music
+player is a second version of the Mac's, the same five functions on SDL's
+mixer; on Linux it cannot tell how long a track is, because Ubuntu 22.04's
+SDL is too old to say, so it shows only how far in you are. And no Intel Mac
+build of ZangbandTK: that one is my call, and it is made.
+
+
 15 October 2026 — ZangbandTK on Windows and Linux
 ===================================================
 
