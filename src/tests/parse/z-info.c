@@ -102,6 +102,7 @@ TEST_CONSTANT(monster_group_max, "group-max", "mon-gen")
 TEST_CONSTANT(monster_group_dist, "group-dist", "mon-gen")
 
 TEST_CONSTANT(glyph_hardness, "break-glyph", "mon-play")
+TEST_CONSTANT(minor_glyph_hardness, "break-minor-glyph", "mon-play")
 TEST_CONSTANT(repro_monster_rate, "mult-rate", "mon-play")
 TEST_CONSTANT(life_drain_percent, "life-drain", "mon-play")
 TEST_CONSTANT(flee_range, "flee-range", "mon-play")
@@ -454,6 +455,7 @@ struct test tests[] = {
 	{ "group_max", test_monster_group_max },
 	{ "group_dist", test_monster_group_dist },
 	{ "break_glyph", test_glyph_hardness },
+	{ "break_minor_glyph", test_minor_glyph_hardness },
 	{ "mult_rate", test_repro_monster_rate },
 	{ "life_drain", test_life_drain_percent },
 	{ "flee_range", test_flee_range },

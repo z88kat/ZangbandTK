@@ -2932,6 +2932,54 @@ bool effect_handler_MASS_BANISH(effect_handler_context_t *context)
 }
 
 /**
+ * Remove every creature on the level but the uniques and the quest monsters
+ * (ZangbandTK, Death's Omnicide).
+ *
+ * Zangband's ([cmd5.c:1689](../archive/zangband/src/cmd5.c#L1689)) is Mass
+ * Banishment with no radius: each creature costs 1d4 hit points and pays
+ * back a point of mana, up to twice the caster's maximum.  Creatures on your
+ * side go with the rest, as they did there.  Nothing is killed, so nothing is
+ * dropped and nothing is learned.
+ */
+bool effect_handler_OMNICIDE(effect_handler_context_t *context)
+{
+	int i;
+	unsigned dam = 0;
+
+	context->ident = true;
+
+	/* Don't allow in an arena. */
+	if (player->upkeep->arena_level) {
+		msg("Nothing happens.");
+		return true;
+	}
+
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		if (!mon->race) continue;
+		if (monster_is_unique(mon)) continue;
+		if (rf_has(mon->race->flags, RF_QUESTOR)) continue;
+
+		delete_monster_idx(cave, i);
+		dam += randint1(4);
+
+		/* The soul's power, up to twice your mana */
+		if (player->csp < player->msp * 2) player->csp++;
+	}
+
+	dam = player_apply_damage_reduction(player, dam);
+	if (dam > 0 && OPT(player, show_damage)) {
+		msg("You take %d damage.", dam);
+	}
+	take_hit(player, dam, "the strain of casting Omnicide");
+
+	player->upkeep->redraw |= (PR_MONLIST | PR_MANA);
+
+	return true;
+}
+
+/**
  * Probe nearby monsters
  */
 bool effect_handler_PROBE(effect_handler_context_t *context)

@@ -561,8 +561,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 15
 desc:Pulls a distant object to your feet, whether or not you can see it.
 spell:Explosive Rune:25:30:57:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:GLYPH:EXPLOSIVE
+desc:Draws a rune under you that monsters cannot cross until they break it,
+desc: which they do far more easily than a glyph of warding.  If one breaks it
+desc: while you stand on it, it bursts in a ball of mana around you.
 spell:Clairvoyance:30:40:65:80
 effect:LIGHT_LEVEL
 effect:TIMED_INC:TELEPATHY
@@ -1329,11 +1331,16 @@ dice:49+1d51
 effect-msg:the strain of casting Hellfire
 desc:Six hundred and sixty-six points of unresisted fire -- double against evil -- and fifty to a hundred of your own.
 spell:Omnicide:45:100:87:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:OMNICIDE
+desc:Removes every creature on the level but the uniques, your own among them.
+desc: Each costs you a little health and gives you a point of mana, up to twice
+desc: your maximum.
 spell:Wraithform:47:100:90:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:TIMED_INC:WRAITH
+dice:$B+d$S
+expr:B:PLAYER_LEVEL:/ 2 - 1
+expr:S:PLAYER_LEVEL:+ 1 / 2 + 1
+desc:Turns you into a wraith for a while: you pass through walls, take a tenth of the harm done to you, and are hard to hit.  Light ends it.
 
 book:deck:town:[Conjurings & Tricks]:8:trump
 book-graphics:?:w
@@ -2125,8 +2132,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 15
 desc:Pulls a distant object to your feet, whether or not you can see it.
 spell:Explosive Rune:27:30:60:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:GLYPH:EXPLOSIVE
+desc:Draws a rune under you that monsters cannot cross until they break it,
+desc: which they do far more easily than a glyph of warding.  If one breaks it
+desc: while you stand on it, it bursts in a ball of mana around you.
 spell:Clairvoyance:33:40:69:80
 effect:LIGHT_LEVEL
 effect:TIMED_INC:TELEPATHY
@@ -2680,11 +2689,16 @@ dice:49+1d51
 effect-msg:the strain of casting Hellfire
 desc:Six hundred and sixty-six points of unresisted fire -- double against evil -- and fifty to a hundred of your own.
 spell:Omnicide:49:100:93:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:OMNICIDE
+desc:Removes every creature on the level but the uniques, your own among them.
+desc: Each costs you a little health and gives you a point of mana, up to twice
+desc: your maximum.
 spell:Wraithform:50:111:95:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:TIMED_INC:WRAITH
+dice:$B+d$S
+expr:B:PLAYER_LEVEL:/ 2 - 1
+expr:S:PLAYER_LEVEL:+ 1 / 2 + 1
+desc:Turns you into a wraith for a while: you pass through walls, take a tenth of the harm done to you, and are hard to hit.  Light ends it.
 
 book:magic book:town:[Cantrips for Beginners]:8:arcane
 book-graphics:?:R
@@ -3239,11 +3253,16 @@ dice:49+1d51
 effect-msg:the strain of casting Hellfire
 desc:Six hundred and sixty-six points of unresisted fire -- double against evil -- and fifty to a hundred of your own.
 spell:Omnicide:45:100:87:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:OMNICIDE
+desc:Removes every creature on the level but the uniques, your own among them.
+desc: Each costs you a little health and gives you a point of mana, up to twice
+desc: your maximum.
 spell:Wraithform:47:100:90:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:TIMED_INC:WRAITH
+dice:$B+d$S
+expr:B:PLAYER_LEVEL:/ 2 - 1
+expr:S:PLAYER_LEVEL:+ 1 / 2 + 1
+desc:Turns you into a wraith for a while: you pass through walls, take a tenth of the harm done to you, and are hard to hit.  Light ends it.
 
 ############### PALADIN ###############
 name:Paladin
@@ -3684,11 +3703,16 @@ dice:49+1d51
 effect-msg:the strain of casting Hellfire
 desc:Six hundred and sixty-six points of unresisted fire -- double against evil -- and fifty to a hundred of your own.
 spell:Omnicide:50:100:95:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:OMNICIDE
+desc:Removes every creature on the level but the uniques, your own among them.
+desc: Each costs you a little health and gives you a point of mana, up to twice
+desc: your maximum.
 spell:Wraithform:50:111:95:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:TIMED_INC:WRAITH
+dice:$B+d$S
+expr:B:PLAYER_LEVEL:/ 2 - 1
+expr:S:PLAYER_LEVEL:+ 1 / 2 + 1
+desc:Turns you into a wraith for a while: you pass through walls, take a tenth of the harm done to you, and are hard to hit.  Light ends it.
 name:Rogue
 description:A Rogue is a character that prefers to live by their cunning, but is
 description: capable of fighting their way out of a tight spot. The master of traps
@@ -4057,8 +4081,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 15
 desc:Pulls a distant object to your feet, whether or not you can see it.
 spell:Explosive Rune:35:40:72:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:GLYPH:EXPLOSIVE
+desc:Draws a rune under you that monsters cannot cross until they break it,
+desc: which they do far more easily than a glyph of warding.  If one breaks it
+desc: while you stand on it, it bursts in a ball of mana around you.
 spell:Clairvoyance:37:40:75:80
 effect:LIGHT_LEVEL
 effect:TIMED_INC:TELEPATHY
@@ -4220,8 +4246,11 @@ spell:Esoteria:32:40:68:80
 effect:IDENTIFY
 desc:Identifies one unknown rune on an item.
 spell:Wraithform:50:125:95:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:TIMED_INC:WRAITH
+dice:$B+d$S
+expr:B:PLAYER_LEVEL:/ 2 - 1
+expr:S:PLAYER_LEVEL:+ 1 / 2 + 1
+desc:Turns you into a wraith for a while: you pass through walls, take a tenth of the harm done to you, and are hard to hit.  Light ends it.
 
 book:deck:town:[Conjurings & Tricks]:8:trump
 book-graphics:?:w
@@ -4736,8 +4765,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 15
 desc:Pulls a distant object to your feet, whether or not you can see it.
 spell:Explosive Rune:37:60:75:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:GLYPH:EXPLOSIVE
+desc:Draws a rune under you that monsters cannot cross until they break it,
+desc: which they do far more easily than a glyph of warding.  If one breaks it
+desc: while you stand on it, it bursts in a ball of mana around you.
 spell:Clairvoyance:40:40:80:80
 effect:LIGHT_LEVEL
 effect:TIMED_INC:TELEPATHY
@@ -5579,11 +5610,16 @@ dice:49+1d51
 effect-msg:the strain of casting Hellfire
 desc:Six hundred and sixty-six points of unresisted fire -- double against evil -- and fifty to a hundred of your own.
 spell:Omnicide:50:100:95:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:OMNICIDE
+desc:Removes every creature on the level but the uniques, your own among them.
+desc: Each costs you a little health and gives you a point of mana, up to twice
+desc: your maximum.
 spell:Wraithform:50:111:95:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:TIMED_INC:WRAITH
+dice:$B+d$S
+expr:B:PLAYER_LEVEL:/ 2 - 1
+expr:S:PLAYER_LEVEL:+ 1 / 2 + 1
+desc:Turns you into a wraith for a while: you pass through walls, take a tenth of the harm done to you, and are hard to hit.  Light ends it.
 
 
 ############### MONK ###############
@@ -6269,11 +6305,16 @@ dice:49+1d51
 effect-msg:the strain of casting Hellfire
 desc:Six hundred and sixty-six points of unresisted fire -- double against evil -- and fifty to a hundred of your own.
 spell:Omnicide:50:100:95:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:OMNICIDE
+desc:Removes every creature on the level but the uniques, your own among them.
+desc: Each costs you a little health and gives you a point of mana, up to twice
+desc: your maximum.
 spell:Wraithform:50:115:95:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:TIMED_INC:WRAITH
+dice:$B+d$S
+expr:B:PLAYER_LEVEL:/ 2 - 1
+expr:S:PLAYER_LEVEL:+ 1 / 2 + 1
+desc:Turns you into a wraith for a while: you pass through walls, take a tenth of the harm done to you, and are hard to hit.  Light ends it.
 
 # `power-when` bands are for: the level range a group of effects applies over.
 name:Mindcrafter
@@ -7220,8 +7261,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 15
 desc:Pulls a distant object to your feet, whether or not you can see it.
 spell:Explosive Rune:30:35:65:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:GLYPH:EXPLOSIVE
+desc:Draws a rune under you that monsters cannot cross until they break it,
+desc: which they do far more easily than a glyph of warding.  If one breaks it
+desc: while you stand on it, it bursts in a ball of mana around you.
 spell:Clairvoyance:35:45:72:80
 effect:LIGHT_LEVEL
 effect:TIMED_INC:TELEPATHY
@@ -7772,11 +7815,16 @@ dice:49+1d51
 effect-msg:the strain of casting Hellfire
 desc:Six hundred and sixty-six points of unresisted fire -- double against evil -- and fifty to a hundred of your own.
 spell:Omnicide:50:100:95:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:OMNICIDE
+desc:Removes every creature on the level but the uniques, your own among them.
+desc: Each costs you a little health and gives you a point of mana, up to twice
+desc: your maximum.
 spell:Wraithform:50:123:95:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:TIMED_INC:WRAITH
+dice:$B+d$S
+expr:B:PLAYER_LEVEL:/ 2 - 1
+expr:S:PLAYER_LEVEL:+ 1 / 2 + 1
+desc:Turns you into a wraith for a while: you pass through walls, take a tenth of the harm done to you, and are hard to hit.  Light ends it.
 book:magic book:town:[Cantrips for Beginners]:8:arcane
 book-graphics:?:R
 book-properties:100:40:1 to 100
@@ -8513,8 +8561,10 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 15
 desc:Pulls a distant object to your feet, whether or not you can see it.
 spell:Explosive Rune:20:25:50:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:GLYPH:EXPLOSIVE
+desc:Draws a rune under you that monsters cannot cross until they break it,
+desc: which they do far more easily than a glyph of warding.  If one breaks it
+desc: while you stand on it, it bursts in a ball of mana around you.
 spell:Clairvoyance:25:30:57:80
 effect:LIGHT_LEVEL
 effect:TIMED_INC:TELEPATHY
@@ -9065,11 +9115,16 @@ dice:49+1d51
 effect-msg:the strain of casting Hellfire
 desc:Six hundred and sixty-six points of unresisted fire -- double against evil -- and fifty to a hundred of your own.
 spell:Omnicide:41:85:81:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:OMNICIDE
+desc:Removes every creature on the level but the uniques, your own among them.
+desc: Each costs you a little health and gives you a point of mana, up to twice
+desc: your maximum.
 spell:Wraithform:44:75:86:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:TIMED_INC:WRAITH
+dice:$B+d$S
+expr:B:PLAYER_LEVEL:/ 2 - 1
+expr:S:PLAYER_LEVEL:+ 1 / 2 + 1
+desc:Turns you into a wraith for a while: you pass through walls, take a tenth of the harm done to you, and are hard to hit.  Light ends it.
 book:magic book:town:[Cantrips for Beginners]:8:arcane
 book-graphics:?:R
 book-properties:100:40:1 to 100

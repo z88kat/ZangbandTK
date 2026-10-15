@@ -906,6 +906,9 @@ trap:block fall trap:torch:0x82:0x85
 # as glyph of warding (nothing like it is drawn)
 trap:decoy:*:0x80:0x9A
 
+# as glyph of warding (nothing like it is drawn)
+trap:explosive rune:*:0x80:0x9A
+
 # as blinding flash trap (nothing like it is drawn)
 trap:web:dark:0x82:0x8D
 trap:web:lit:0x82:0x8C

@@ -374,6 +374,7 @@ bool square_isdamaging(struct chunk *c, struct loc grid);
 bool square_isnoflow(struct chunk *c, struct loc grid);
 bool square_isnoscent(struct chunk *c, struct loc grid);
 bool square_iswarded(struct chunk *c, struct loc grid);
+bool square_isexplosive(struct chunk *c, struct loc grid);
 bool square_isdecoyed(struct chunk *c, struct loc grid);
 bool square_iswebbed(struct chunk *c, struct loc grid);
 bool square_seemslikewall(struct chunk *c, struct loc grid);

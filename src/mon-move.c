@@ -1568,23 +1568,44 @@ static bool monster_turn_can_move(struct monster *mon, const char *m_name,
 
 /**
  * Try to break a glyph.
+ *
+ * ZangbandTK: or an explosive rune, Sorcery's weaker glyph (Zangband's
+ * t_info.txt), which breaks against break-minor-glyph rather than
+ * break-glyph.  Broken under the player who drew it, it bursts in a ball of
+ * mana around them -- and since the one breaking it is beside them, it is
+ * usually what the ball hits.  Broken anywhere else it is simply gone, as in
+ * Zangband since its runes were made to explode only under the caster.  The
+ * burst can kill the monster, which the caller checks for.
  */
 static bool monster_turn_attack_glyph(struct monster *mon, struct loc new)
 {
+	bool explosive = square_isexplosive(cave, new);
+	int hardness = explosive ? z_info->minor_glyph_hardness :
+		z_info->glyph_hardness;
+
 	assert(square_iswarded(cave, new));
 
 	/* Break the ward */
-	if (randint1(z_info->glyph_hardness) < mon->race->level) {
-		struct trap_kind *rune = lookup_trap("glyph of warding");
-
-		/* Describe observable breakage */
-		if (square_isseen(cave, new)) {
-			msg("The rune of protection is broken!");
-		}
+	if (randint1(hardness) < mon->race->level) {
+		struct trap_kind *rune = lookup_trap(explosive ? "explosive rune" :
+			"glyph of warding");
 
 		/* Break the rune */
 		assert(rune);
 		square_remove_all_traps_of_type(cave, new, rune->tidx);
+
+		if (explosive && loc_eq(new, player->grid)) {
+			int dam = 2 * (player->lev / 2 + damroll(7, 7));
+
+			msg("The rune explodes!");
+			project(source_player(), 2, new, dam, PROJ_MANA,
+				PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL | PROJECT_JUMP,
+				0, 0, NULL);
+		} else if (square_isseen(cave, new)) {
+			/* Describe observable breakage */
+			msg(explosive ? "An explosive rune was disarmed." :
+				"The rune of protection is broken!");
+		}
 
 		return true;
 	}
@@ -1940,8 +1961,23 @@ static void monster_turn(struct monster *mon)
 
 		/* Try to break the glyph if there is one.  This can happen multiple
 		 * times per turn because failure does not break the loop */
-		if (square_iswarded(cave, new) && !monster_turn_attack_glyph(mon, new))
-			continue;
+		if (square_iswarded(cave, new)) {
+			bool broken;
+
+			/*
+			 * ZangbandTK (PLR-23): a creature on your side leaves your
+			 * runes alone and goes round them.  Without this a pet
+			 * stepping toward you broke the glyph you stood on, and an
+			 * explosive rune went off in its face.
+			 */
+			if (!monster_is_hostile(mon)) continue;
+
+			broken = monster_turn_attack_glyph(mon, new);
+
+			/* ZangbandTK: an explosive rune can kill what breaks it */
+			if (!mon->race) return;
+			if (!broken) continue;
+		}
 
 		/* Break a decoy if there is one */
 		if (square_isdecoyed(cave, new)) {
@@ -2388,9 +2424,10 @@ void process_monsters(int minimum_energy)
 
 			/*
 			 * For symmetry with the player, monster can take
-			 * terrain damage after its turn.
+			 * terrain damage after its turn -- if it survived it:
+			 * an explosive rune can kill the monster breaking it.
 			 */
-			monster_take_terrain_damage(mon);
+			if (mon->race) monster_take_terrain_damage(mon);
 
 			/* Monster is no longer current */
 			cave->mon_current = -1;

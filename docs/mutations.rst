@@ -150,6 +150,8 @@ without ever having decided anything. See :doc:`virtues`.
    for standing inside rock, where a Spectre pays a point a turn.
 
    It arrives without being asked for, roughly one turn in three thousand.
+   Death's *Wraithform* spell gives the same form on purpose, for as long, and
+   everything below holds for it too (:doc:`realms`).
 
    **It also costs you three points of constitution for as long as you have
    it** — not while the form is running, but permanently, from the moment the

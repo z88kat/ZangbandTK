@@ -778,10 +778,26 @@ bool square_isnoscent(struct chunk *c, struct loc grid) {
 	return feat_is_no_scent(square(c, grid)->feat);
 }
 
+/**
+ * True if the square holds a rune monsters cannot simply walk over: a glyph of
+ * warding, or (ZangbandTK) an explosive rune, which wards the same way and
+ * breaks more easily.
+ */
 bool square_iswarded(struct chunk *c, struct loc grid)
 {
 	struct trap_kind *rune = lookup_trap("glyph of warding");
-	return square_trap_specific(c, grid, rune->tidx);
+	return square_trap_specific(c, grid, rune->tidx)
+		|| square_isexplosive(c, grid);
+}
+
+/**
+ * True if the square holds an explosive rune (ZangbandTK, Sorcery's
+ * Explosive Rune).
+ */
+bool square_isexplosive(struct chunk *c, struct loc grid)
+{
+	struct trap_kind *rune = lookup_trap("explosive rune");
+	return rune && square_trap_specific(c, grid, rune->tidx);
 }
 
 bool square_isdecoyed(struct chunk *c, struct loc grid)
@@ -1348,6 +1364,10 @@ void square_add_glyph(struct chunk *c, struct loc grid, int type)
 		case GLYPH_DECOY: {
 			glyph = lookup_trap("decoy");
 			c->decoy = grid;
+			break;
+		}
+		case GLYPH_EXPLOSIVE: {
+			glyph = lookup_trap("explosive rune");
 			break;
 		}
 		default: {

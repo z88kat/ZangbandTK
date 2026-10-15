@@ -84,8 +84,9 @@ TRAP_SKIP = ('no trap', 'door lock')
 
 # Trap codes with no drawn sibling, and the code to borrow from instead.
 TRAP_ALIAS = {
-    # Both are the player's own marks on the floor rather than hazards.
+    # The player's own marks on the floor rather than hazards.
     'decoy': ('glyph of warding',),
+    'explosive rune': ('glyph of warding',),
     # A web is a hazard with no relative in the shipped sets, so it takes the
     # generic hazard mark.
     'web': ('trap', 'strange rune'),

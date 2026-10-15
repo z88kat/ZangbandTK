@@ -286,16 +286,23 @@ table marks the last one unreachable for both. See :ref:`books-short`.
 
 .. note::
 
-   **Two of the thirty-two do nothing, and say so.** *Detect Enchantment*
+   **One of the thirty-two does nothing, and says so.** *Detect Enchantment*
    would sense which objects are magical before you know them, which Angband
    4.2 took away on purpose when an object's properties became runes, and it
-   will not be brought back. *Explosive Rune* wants a glyph that explodes
-   rather than wards. Both are in their books with their levels and costs,
+   will not be brought back. It is in its book with its level and cost,
    described as beyond what the game can express, rather than quietly missing:
    a book with a hole in it and a note saying so is honest, and a spell absent
    without explanation is not.
 
-   *Identify True* and *Self Knowledge* used to be beside them. *Identify True*
+   **Explosive Rune is a ward with a sting.** It draws a rune under you that
+   monsters cannot cross until they break it, as a glyph of warding is — but
+   it breaks far more easily, so a deep monster is through it about every
+   other try. If one breaks it while you stand on it, it bursts in a ball of
+   mana around you, which is where the monster that broke it is standing.
+   Broken anywhere else it is simply gone. Your own creatures leave your runes
+   alone.
+
+   *Identify True* and *Self Knowledge* used to be beside it. *Identify True*
    teaches you every rune on an object at once, where the first book's
    *Identify* teaches one. *Self Knowledge* teaches you every rune on the
    equipment you are wearing, which is the part of the old spell the character
@@ -608,16 +615,19 @@ sixty-six points that nothing resists and evil creatures take twice.
    game that can permanently cost a character a statistic, and it is why the
    fourth book is frightening rather than merely expensive.
 
-Three of the thirty-two do nothing. *Raise the Dead* animates the corpses and
+One of the thirty-two does nothing. *Raise the Dead* animates the corpses and
 skeletons actually lying on the floor near you, and 4.2 has no such object —
 there is nothing lying there to raise. Translating it as "summon undead as pets"
 would be a different spell wearing this one's name: this one is paid for by what
 you have already killed, and that is the whole character of it, so it will
 stay as it is: corpses are not something this game is going to have.
-*Wraithform* needs an incorporeal player, which
-this game has no notion of. And *Omnicide* kills every creature on the level, one
-at a time, taking mana until you run out — a sweep with a running cost that the
-realm's own *Mass Genocide* would otherwise duplicate.
+
+*Wraithform* and *Omnicide* used to be beside it. *Wraithform* is the wraith
+form of the Wraith mutation: you walk through walls, a tenth of every blow lands,
+and light ends it — and if it ends while you are inside rock, you die there (see
+:doc:`mutations`). *Omnicide* removes every creature on the level but the
+uniques, your own creatures among them. Each costs you a little health and
+gives you a point of mana, up to twice your maximum.
 
 *Enslave Undead* was on that list until pets arrived. It now does what it says,
 and binds one undead creature to you (:doc:`pets`).

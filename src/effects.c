@@ -249,6 +249,8 @@ int effect_subtype(int index, const char *type)
 				return GLYPH_WARDING;
 			} else if (streq(type, "DECOY")) {
 				return GLYPH_DECOY;
+			} else if (streq(type, "EXPLOSIVE")) {
+				return GLYPH_EXPLOSIVE;
 			}
 			break;
 

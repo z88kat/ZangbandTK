@@ -782,27 +782,25 @@ static int test_the_realm_filter_sorts_three_realms(void *state) {
  * which catches a spell quietly *gaining* the deferral wording to make the
  * first half pass.
  *
- * Fifty-one as the realms stand.  It was a hundred and seven until 3.125.0,
- * when nine spells left the list at once: five new effects and four summon
- * types gave them a way (DEC-139).  Eighty-three was the figure once, down
- * from a hundred and twenty when M10 began -- five of the seventeen deferred
- * spells were waiting on monster allegiance, and it arrived -- and it rose
- * again when Trump came in with deferrals of its own, which
- * trumps-deferral-is-shuffle names.  Reset Recall left the list once each
- * dungeon kept a recall depth that could be written.
+ * Twenty-eight as the realms stand.  It was a hundred and seven until
+ * 3.125.0, when nine spells left the list at once (DEC-139), and fifty-one
+ * until 3.126.0, when Wraithform, Omnicide and Explosive Rune followed
+ * (DEC-140).  Eighty-three was the figure once, down from a hundred and
+ * twenty when M10 began -- five of the seventeen deferred spells were waiting
+ * on monster allegiance, and it arrived -- and it rose again when Trump came
+ * in with deferrals of its own, which trumps-deferral-is-shuffle names.  Reset
+ * Recall left the list once each dungeon kept a recall depth that could be
+ * written.
  *
- * What is left is seven distinct spells across four realms, counted once per
+ * What is left is four distinct spells across four realms, counted once per
  * entitled class. Three are refused for good, by the project owner's ruling
  * rather than for want of a mechanism: Detect Enchantment, in both Sorcery and
  * Arcane, would bring back a sense of which objects are magical that 4.2
  * removed on purpose, and Death's Raise the Dead raises corpses this game does
- * not have and will not. Four wait for a mechanism: Sorcery's Explosive Rune,
- * a trap glyph that is not 4.2's warding glyph; Death's Wraithform, a player
- * who walks through rock, and Omnicide, a whole-level sweep with a running
- * cost; and Trump's Shuffle, a weighted deck.
+ * not have and will not. One waits: Trump's Shuffle, a weighted deck.
  *
- * The Mage, the Priest, the Warrior-Mage and the High-Mage carry seven each,
- * the most any class does.
+ * Six classes carry four each; the Paladin, the Necromancer, the Monk and
+ * the Blackguard carry one, Death's Raise the Dead.
  *
  * `scripts/check-build` also runs `zconv realms --check` now, which catches a
  * mis-keyed name itself rather than its symptom. This stays because it asks the
@@ -829,7 +827,7 @@ static int test_a_spell_without_an_effect_says_so(void *state) {
 		}
 	}
 
-	eq(effectless, 51);
+	eq(effectless, 28);
 
 	ok;
 }

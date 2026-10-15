@@ -258,17 +258,18 @@ T	p0	.
 T	p0	\n
 T	p0 note strong	Note
 T	p0 note	\n
-T	p0 note strong	Two of the thirty-two do nothing, and say so.
+T	p0 note strong	One of the thirty-two does nothing, and says so.
 T	p0 note	 
 T	p0 note em	Detect Enchantment
-T	p0 note	 would sense which objects are magical before you know them, which Angband 4.2 took away on purpose when an object’s properties became runes, and it will not be brought back. 
-T	p0 note em	Explosive Rune
-T	p0 note	 wants a glyph that explodes rather than wards. Both are in their books with their levels and costs, described as beyond what the game can express, rather than quietly missing: a book with a hole in it and a note saying so is honest, and a spell absent without explanation is not.
+T	p0 note	 would sense which objects are magical before you know them, which Angband 4.2 took away on purpose when an object’s properties became runes, and it will not be brought back. It is in its book with its level and cost, described as beyond what the game can express, rather than quietly missing: a book with a hole in it and a note saying so is honest, and a spell absent without explanation is not.
+T	p0 note	\n
+T	p0 note strong	Explosive Rune is a ward with a sting.
+T	p0 note	 It draws a rune under you that monsters cannot cross until they break it, as a glyph of warding is — but it breaks far more easily, so a deep monster is through it about every other try. If one breaks it while you stand on it, it bursts in a ball of mana around you, which is where the monster that broke it is standing. Broken anywhere else it is simply gone. Your own creatures leave your runes alone.
 T	p0 note	\n
 T	p0 note em	Identify True
 T	p0 note	 and 
 T	p0 note em	Self Knowledge
-T	p0 note	 used to be beside them. 
+T	p0 note	 used to be beside it. 
 T	p0 note em	Identify True
 T	p0 note	 teaches you every rune on an object at once, where the first book’s 
 T	p0 note em	Identify
@@ -713,19 +714,24 @@ T	p0 warn	 Half of its miscasts shake the reader instead: fail a saving throw an
 T	p0 warn em	and
 T	p0 warn	 a point of wisdom. It is the only spell failure in the game that can permanently cost a character a statistic, and it is why the fourth book is frightening rather than merely expensive.
 T	p0 warn	\n
-T	p0	Three of the thirty-two do nothing. 
+T	p0	One of the thirty-two does nothing. 
 T	p0 em	Raise the Dead
-T	p0	 animates the corpses and skeletons actually lying on the floor near you, and 4.2 has no such object — there is nothing lying there to raise. Translating it as “summon undead as pets” would be a different spell wearing this one’s name: this one is paid for by what you have already killed, and that is the whole character of it, so it will stay as it is: corpses are not something this game is going to have. 
+T	p0	 animates the corpses and skeletons actually lying on the floor near you, and 4.2 has no such object — there is nothing lying there to raise. Translating it as “summon undead as pets” would be a different spell wearing this one’s name: this one is paid for by what you have already killed, and that is the whole character of it, so it will stay as it is: corpses are not something this game is going to have.
+T	p0	\n
 T	p0 em	Wraithform
-T	p0	 needs an incorporeal player, which this game has no notion of. And 
+T	p0	 and 
 T	p0 em	Omnicide
-T	p0	 kills every creature on the level, one at a time, taking mana until you run out — a sweep with a running cost that the realm’s own 
-T	p0 em	Mass Genocide
-T	p0	 would otherwise duplicate.
+T	p0	 used to be beside it. 
+T	p0 em	Wraithform
+T	p0	 is the wraith form of the Wraith mutation: you walk through walls, a tenth of every blow lands, and light ends it — and if it ends while you are inside rock, you die there (see 
+L	p0 link	8	mutations	Mutations
+T	p0	). 
+T	p0 em	Omnicide
+T	p0	 removes every creature on the level but the uniques, your own creatures among them. Each costs you a little health and gives you a point of mana, up to twice your maximum.
 T	p0	\n
 T	p0 em	Enslave Undead
 T	p0	 was on that list until pets arrived. It now does what it says, and binds one undead creature to you (
-L	p0 link	8	pets	Pets and Allies
+L	p0 link	9	pets	Pets and Allies
 T	p0	).
 T	p0	\n
 T	p0	Three more do something wider than Zangband asked, and for one reason: 4.2’s projections were written for a game whose player is on the other side. There is no dispel-the-good, so 
@@ -740,7 +746,7 @@ T	p0 strong	A Rogue and a Ranger each lose seven of the thirty-two here
 T	p0	 — the Rogue’s worst realm, and level with Trump for the Ranger. A Rogue’s Necronomicon is the worst book in the game: four rituals of eight, no 
 T	p0 em	Hellfire
 T	p0	 among them, and two of the four inert. See 
-L	p0 link	9	#books-short	Books that come up short
+L	p0 link	10	#books-short	Books that come up short
 T	p0	.
 T	p0	\n
 T	p0	Both of Death’s classes cast on borrowed figures: Zangband had neither a Necromancer nor a Blackguard. The Necromancer takes Zangband’s Mage and the Blackguard its Paladin.

@@ -171,7 +171,13 @@ desc = "Pulls a distant object to your feet, whether or not you can see it."
 
 [sorcery.spells."Explosive Rune"]
 line = 891
-defer = "explosive_rune() lays a glyph that detonates when a monster steps on it. 4.2 has a warding glyph -- GLYPH with GLYPH_WARDING -- which monsters will not cross, and that is a different spell rather than a weaker one: warding turns a corridor into a wall, an explosive rune is a trap the player sets. Mapping one onto the other would give Sorcery a second Glyph of Warding under a name promising an explosion."
+effects = [ "GLYPH:EXPLOSIVE" ]
+note = "explosive_rune() lays FT_GLYPH_EXPLODE, whose script in Zangband's t_info.txt is the warding glyph's with BREAK_MINOR_GLYPH (99) for BREAK_GLYPH (550): it holds monsters back, breaks far more easily, and when broken under the caster bursts in a ball of mana, radius 2, for 2 * (plev / 2 + 7d7). Broken anywhere else it is disarmed and nothing more, which is what Zangband's own changelog fixed it to. Deferred until 3.126.0 as a glyph 4.2 did not have; it has one now, explosive rune in trap.txt, with break-minor-glyph in constants.txt. DEC-140."
+desc = [
+  "Draws a rune under you that monsters cannot cross until they break it,",
+  "which they do far more easily than a glyph of warding.  If one breaks it",
+  "while you stand on it, it bursts in a ball of mana around you.",
+]
 
 [sorcery.spells."Clairvoyance"]
 line = 894
@@ -1278,11 +1284,19 @@ desc = "Six hundred and sixty-six points of unresisted fire -- double against ev
 
 [death.spells."Omnicide"]
 line = 1689
-defer = "Kills every non-unique monster on the *level*, one at a time, taking mana for each until the caster runs out. 4.2's nearest are BANISH, which removes one kind, and MASS_BANISH, which removes what is nearby -- and both are already this realm's Genocide and Mass Genocide, so mapping Omnicide onto either would give Death two names for one spell at the very top of its last book. A whole-level sweep with a running cost is its own effect and is not built for one spell."
+effects = [ "OMNICIDE" ]
+note = "Deletes every monster on the level that is not a unique or a quest monster, each costing 1d4 hit points and paying back a point of mana up to twice the maximum. Deferred until 3.126.0 as a whole-level sweep with a running cost that no effect had, and because MASS_BANISH was already Mass Genocide; OMNICIDE is that sweep, which the radius and the mana keep apart from it. Creatures on your side go with the rest, as in Zangband. DEC-140."
+desc = [
+  "Removes every creature on the level but the uniques, your own among them.",
+  "Each costs you a little health and gives you a point of mana, up to twice",
+  "your maximum.",
+]
 
 [death.spells."Wraithform"]
 line = 1755
-defer = "inc_wraith_form() turns the caster incorporeal for a while: they pass through walls and take damage from doing it. The same wall the WRAITH mutation is deferred behind -- 4.2 has no incorporeal state for the player, and PASS_WALL is a monster flag with no player side."
+effects = [ "TIMED_INC:WRAITH", "dice:$B+d$S", "expr:B:PLAYER_LEVEL:/ 2 - 1", "expr:S:PLAYER_LEVEL:+ 1 / 2 + 1" ]
+note = "inc_wraith_form(rand_range(plev / 2, plev)) -- the same form and the same duration as the WRAITH mutation, which built it on 18 September (045cdb330): walls that are not permanent pass beneath you, a tenth of every blow lands, +100 armour and reflection, darkness heals and light ends it. This deferral was left behind when the mutation's was lifted, still saying 4.2 had no incorporeal state and that the form hurt to use, both of which that commit corrected. DEC-140."
+desc = "Turns you into a wraith for a while: you pass through walls, take a tenth of the harm done to you, and are hard to hit.  Light ends it."
 
 # ============================================================================
 # Trump (DEC-54, built in M10 phase 7)

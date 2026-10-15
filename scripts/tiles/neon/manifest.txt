@@ -177,6 +177,7 @@ trap:dart trap:trap_dart
 trap:decoy:trap_decoy
 trap:discolored spot:trap_spot
 trap:explosion:trap_explosion
+trap:explosive rune:trap_glyph
 trap:gas trap:trap_gas
 trap:glyph of warding:trap_glyph
 trap:mind blast trap:trap_mind

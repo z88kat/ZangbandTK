@@ -13,14 +13,14 @@ Shockbolt's and stay retired.
 What it covers
 --------------
 
-    105 silhouettes  ->  2092 preference lines
+    105 silhouettes  ->  2111 preference lines
 
     monsters      1013 lines    every monster in the game
     terrain        168 lines    all 42 features, four lighting variants each
     objects        157 lines    every object that carries its own colour
     flavours       302 lines    every flavour in flavor.txt
-    traps          152 lines    38 of 40 traps, four variants each
-    spell effects  300 lines    60 projections x 5 directions
+    traps          156 lines    39 of 41 traps, four variants each
+    spell effects  315 lines    63 projections x 5 directions
 
 Two traps are deliberately absent: 'no trap' and 'door lock', neither of which
 is a thing drawn on the floor.

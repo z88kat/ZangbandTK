@@ -833,3 +833,9 @@ trap:decoy:dark:0x96:0xB6
 trap:decoy:lit:0x96:0xB5
 trap:decoy:los:0x96:0xB4
 trap:decoy:torch:0x96:0xB4
+
+# as glyph of warding (nothing like it is drawn)
+trap:explosive rune:dark:0x96:0xB6
+trap:explosive rune:lit:0x96:0xB5
+trap:explosive rune:los:0x96:0xB4
+trap:explosive rune:torch:0x96:0xB4

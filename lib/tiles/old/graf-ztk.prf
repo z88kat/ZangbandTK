@@ -918,6 +918,12 @@ trap:decoy:lit:0x84:0xA4
 trap:decoy:los:0x84:0xA5
 trap:decoy:torch:0x84:0xA5
 
+# as glyph of warding (nothing like it is drawn)
+trap:explosive rune:dark:0x84:0xA3
+trap:explosive rune:lit:0x84:0xA4
+trap:explosive rune:los:0x84:0xA5
+trap:explosive rune:torch:0x84:0xA5
+
 # as blinding flash trap (nothing like it is drawn)
 trap:web:dark:0x83:0xAA
 trap:web:lit:0x83:0xA9

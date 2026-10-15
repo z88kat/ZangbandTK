@@ -206,3 +206,9 @@ EFFECT(SELF_KNOWLEDGE,				false,	NULL,		0,		EFINFO_NONE,	"teaches you every rune
 EFFECT(BLESS_WEAPON,				false,	NULL,		0,		EFINFO_NONE,	"blesses a melee weapon, driving out any curse that is not permanent",	"bless weapon")
 EFFECT(REFUEL_LIGHT,				false,	NULL,		0,		EFINFO_NONE,	"adds half a full load of fuel to the light you are holding",	"refuel light")
 EFFECT(RUSTPROOF,					false,	NULL,		0,		EFINFO_NONE,	"protects a piece of armour from acid for good",	"rustproof armour")
+
+/*
+ * ZangbandTK: Death's Omnicide -- MASS_BANISH with no radius, each creature
+ * costing a little health and paying back a point of mana (DEC-140).
+ */
+EFFECT(OMNICIDE,					false,	NULL,		0,		EFINFO_NONE,	"removes every creature on the level but the uniques, each costing you a little health and giving you a point of mana",	"omnicide")

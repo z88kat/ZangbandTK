@@ -707,6 +707,8 @@ static enum parser_error parse_constants_mon_play(struct parser *p) {
 
 	if (streq(label, "break-glyph"))
 		z->glyph_hardness = value;
+	else if (streq(label, "break-minor-glyph"))
+		z->minor_glyph_hardness = value;
 	else if (streq(label, "mult-rate"))
 		z->repro_monster_rate = value;
 	else if (streq(label, "life-drain"))

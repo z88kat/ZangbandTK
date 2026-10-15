@@ -169,6 +169,7 @@ struct angband_constants
 
 	/* Monster gameplay constants, read from constants.txt */
 	uint16_t glyph_hardness;	/**< How hard for a monster to break a glyph */
+	uint16_t minor_glyph_hardness;	/**< And an explosive rune (ZangbandTK) */
 	uint16_t repro_monster_rate;	/**< Monster reproduction rate-slower */
 	uint16_t life_drain_percent;	/**< Percent of player life drained */
 	uint16_t flee_range;		/**< Monsters run this many grids out of view */

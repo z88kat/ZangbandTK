@@ -1,8 +1,8 @@
 /*
  * effects/workings
  *
- * Nine realm spells that did nothing until 3.125.0 (DEC-139), and the five
- * effects and four summon types that gave them a way.  Each is exercised
+ * Twelve realm spells that did nothing until 3.125.0 and 3.126.0 (DEC-139,
+ * DEC-140), and the effects, summon types and glyph that gave them a way.  Each is exercised
  * rather than merely present: player/realm counts the spells that have an
  * effect, and an effect that is wired up and does the wrong thing passes that
  * count as easily as one that works.
@@ -13,6 +13,9 @@
  *   REFUEL_LIGHT    Phlogiston
  *   RUSTPROOF       Protect from Corrosion
  *   BIZARRE_*       Joker Card's four groups
+ *   OMNICIDE        Omnicide
+ *   GLYPH:EXPLOSIVE Explosive Rune
+ *   TIMED_INC:WRAITH  Wraithform, the WRAITH mutation's form
  */
 
 #include "unit-test.h"
@@ -25,6 +28,8 @@
 #include "generate.h"
 #include "init.h"
 #include "mon-make.h"
+#include "mon-move.h"
+#include "mon-util.h"
 #include "mon-predicate.h"
 #include "mon-summon.h"
 #include "obj-curse.h"
@@ -37,8 +42,10 @@
 #include "object.h"
 #include "player-birth.h"
 #include "player-calcs.h"
+#include "player-timed.h"
 #include "player-util.h"
 #include "source.h"
+#include "trap.h"
 
 int setup_tests(void **state) {
 	set_file_paths();
@@ -424,6 +431,315 @@ static int test_joker_cards_four_groups_answer(void *state) {
 	ok;
 }
 
+
+/** A monster of a named race beside the player, on a side, awake. */
+static struct monster *beside(struct loc grid, const char *name,
+		enum monster_allegiance side) {
+	struct monster_group_info info = { 0, 0 };
+	struct monster_race *race = lookup_monster(name);
+	struct monster *mon;
+
+	if (!race) return NULL;
+	if (!place_new_monster(cave, grid, race, false, false, info,
+			ORIGIN_DROP)) return NULL;
+	mon = square_monster(cave, grid);
+	monster_set_allegiance(mon, side);
+	mon->m_timed[MON_TMD_SLEEP] = 0;
+
+	/*
+	 * A unit test takes no player turns, so the view is stale until it is
+	 * brought up to date -- and a monster the view does not reach is not
+	 * active, and does not act (monster/ally-ai found this first).
+	 */
+	player->upkeep->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+	update_stuff(player);
+	return square_monster(cave, grid);
+}
+
+/** One monster processing pass, everything on the level ready to act. */
+static void a_monster_turn(void) {
+	int i;
+
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		if (!mon->race) continue;
+		mflag_off(mon->mflag, MFLAG_HANDLED);
+		mon->energy = z_info->move_energy;
+	}
+	process_monsters(0);
+}
+
+/** A class's spell by name, whatever book it is in. */
+static const struct class_spell *a_spell(const char *cls, const char *name) {
+	const struct player_class *c;
+	int b, k;
+
+	for (c = classes; c; c = c->next) {
+		if (!streq(c->name, cls)) continue;
+		for (b = 0; b < c->magic.num_books; b++) {
+			const struct class_book *book = &c->magic.books[b];
+
+			for (k = 0; k < book->num_spells; k++) {
+				if (streq(book->spells[k].name, name)) {
+					return &book->spells[k];
+				}
+			}
+		}
+	}
+	return NULL;
+}
+
+/*
+ * Explosive Rune.  Drawn, it is a ward: monsters must break it to pass, and
+ * it breaks against break-minor-glyph, so these lower that to one -- a break
+ * every time -- to ask what a break does rather than how often.
+ */
+static int test_the_rune_is_a_ward(void *state) {
+	a_room_at(10);
+	require(work(EF_GLYPH, GLYPH_EXPLOSIVE, "0", NULL));
+	require(square_isexplosive(cave, player->grid));
+	require(square_iswarded(cave, player->grid));
+
+	/* And it is not the glyph of warding, which is another rune */
+	require(lookup_trap("explosive rune"));
+	require(!square_trap_specific(cave, player->grid,
+		lookup_trap("glyph of warding")->tidx));
+	ok;
+}
+
+static int test_the_rune_bursts_under_you(void *state) {
+	uint16_t hardness = z_info->minor_glyph_hardness;
+	struct loc next;
+	struct monster *mon;
+	int hp;
+
+	a_room_at(10);
+	next = loc(player->grid.x + 1, player->grid.y);
+	require(work(EF_GLYPH, GLYPH_EXPLOSIVE, "0", NULL));
+	mon = beside(next, "soldier", MON_ALLEGIANCE_HOSTILE);
+	notnull(mon);
+	player->chp = player->mhp;
+	hp = player->chp;
+
+	z_info->minor_glyph_hardness = 1;
+	a_monster_turn();
+	z_info->minor_glyph_hardness = hardness;
+
+	/* Broken, and burst: the soldier beside you took the ball */
+	require(!square_isexplosive(cave, player->grid));
+	mon = square_monster(cave, next);
+	require(!mon || mon->hp < mon->maxhp);
+
+	/* Killed by it, the soldier never struck, and your own ball spares you */
+	if (!mon) eq(player->chp, hp);
+	clear_the_level();
+	ok;
+}
+
+static int test_a_rune_broken_elsewhere_is_only_broken(void *state) {
+	uint16_t hardness = z_info->minor_glyph_hardness;
+	struct loc rune, far;
+	struct monster *mon;
+
+	a_room_at(10);
+	rune = loc(player->grid.x - 1, player->grid.y);
+	far = loc(player->grid.x - 2, player->grid.y);
+	square_add_glyph(cave, rune, GLYPH_EXPLOSIVE);
+	require(square_isexplosive(cave, rune));
+	mon = beside(far, "soldier", MON_ALLEGIANCE_HOSTILE);
+	notnull(mon);
+
+	z_info->minor_glyph_hardness = 1;
+	a_monster_turn();
+	z_info->minor_glyph_hardness = hardness;
+
+	require(!square_isexplosive(cave, rune));
+	notnull(mon->race);
+	eq(mon->hp, mon->maxhp);
+	clear_the_level();
+	ok;
+}
+
+static int test_the_rune_breaks_more_easily_than_warding(void *state) {
+	uint16_t minor = z_info->minor_glyph_hardness;
+	uint16_t major = z_info->glyph_hardness;
+	struct loc next;
+	int i;
+
+	a_room_at(10);
+	next = loc(player->grid.x + 1, player->grid.y);
+	square_add_glyph(cave, player->grid, GLYPH_WARDING);
+	notnull(beside(next, "soldier", MON_ALLEGIANCE_HOSTILE));
+
+	/* The rune's strength does not reach the glyph of warding */
+	z_info->minor_glyph_hardness = 1;
+	z_info->glyph_hardness = 60000;
+	for (i = 0; i < 5; i++) a_monster_turn();
+	z_info->minor_glyph_hardness = minor;
+	z_info->glyph_hardness = major;
+
+	require(square_iswarded(cave, player->grid));
+	require(!square_isexplosive(cave, player->grid));
+	clear_the_level();
+	ok;
+}
+
+/*
+ * A pet steps onto your square when you are between it and what it is after:
+ * in a corridor, with an enemy beyond you.  That move reaches the ward before
+ * it reaches the rule that sends a pet round you, so without its own rule a
+ * pet broke the rune you stood on -- and an explosive one went off in its
+ * face.
+ */
+static int test_your_own_side_leaves_your_runes_alone(void *state) {
+	uint16_t hardness = z_info->minor_glyph_hardness;
+	struct monster *pet, *foe;
+	struct loc grid;
+	int i;
+
+	a_room_at(10);
+	for (grid.y = 1; grid.y < cave->height - 1; grid.y++) {
+		for (grid.x = 1; grid.x < cave->width - 1; grid.x++) {
+			if (grid.y != player->grid.y) {
+				square_set_feat(cave, grid, FEAT_GRANITE);
+			}
+		}
+	}
+	require(work(EF_GLYPH, GLYPH_EXPLOSIVE, "0", NULL));
+	pet = beside(loc(player->grid.x - 1, player->grid.y), "soldier",
+		MON_ALLEGIANCE_PET);
+	notnull(pet);
+	foe = beside(loc(player->grid.x + 2, player->grid.y), "soldier",
+		MON_ALLEGIANCE_HOSTILE);
+	notnull(foe);
+	foe->m_timed[MON_TMD_SLEEP] = 1000;
+
+	z_info->minor_glyph_hardness = 1;
+	for (i = 0; i < 5; i++) a_monster_turn();
+	z_info->minor_glyph_hardness = hardness;
+
+	require(square_isexplosive(cave, player->grid));
+	notnull(pet->race);
+	eq(pet->hp, pet->maxhp);
+	clear_the_level();
+	ok;
+}
+
+/** The first unique shallow enough to place, and not a quest's. */
+static struct monster_race *a_unique(void) {
+	int i;
+
+	for (i = 1; i < z_info->r_max; i++) {
+		struct monster_race *race = &r_info[i];
+
+		if (!race->name || !rf_has(race->flags, RF_UNIQUE)) continue;
+		if (rf_has(race->flags, RF_QUESTOR)) continue;
+		if (race->level < 1 || race->level > 15) continue;
+		if (race->cur_num >= race->max_num) continue;
+		return race;
+	}
+	return NULL;
+}
+
+static int test_omnicide_spares_only_the_uniques(void *state) {
+	struct monster_group_info info = { 0, 0 };
+	struct monster_race *unique = a_unique();
+	struct loc grid;
+	int hp, removed = 0, i, left = 0;
+
+	a_room_at(10);
+	notnull(unique);
+	for (i = 0; i < 4; i++) {
+		grid = loc(2 + 2 * i, 2);
+		notnull(beside(grid, "soldier", MON_ALLEGIANCE_HOSTILE));
+		removed++;
+	}
+	notnull(beside(loc(2, 8), "soldier", MON_ALLEGIANCE_PET));
+	removed++;
+	require(place_new_monster(cave, loc(12, 8), unique, false, false, info,
+		ORIGIN_DROP));
+
+	player->msp = 10;
+	player->csp = 0;
+	player->chp = player->mhp = 100;
+	hp = player->chp;
+
+	require(work(EF_OMNICIDE, 0, "0", NULL));
+
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		if (!mon->race) continue;
+		ptreq(mon->race, unique);
+		left++;
+	}
+	eq(left, 1);
+
+	/* A point of mana for each, and between one and four hit points */
+	eq(player->csp, removed);
+	require(player->chp <= hp - removed);
+	require(player->chp >= hp - 4 * removed);
+	clear_the_level();
+	ok;
+}
+
+static int test_omnicide_takes_mana_only_to_twice_the_maximum(void *state) {
+	int i;
+
+	a_room_at(10);
+	for (i = 0; i < 4; i++) {
+		notnull(beside(loc(2 + 2 * i, 2), "soldier",
+			MON_ALLEGIANCE_HOSTILE));
+	}
+	player->msp = 10;
+	player->csp = 18;
+	player->chp = player->mhp = 100;
+
+	require(work(EF_OMNICIDE, 0, "0", NULL));
+	eq(player->csp, 20);
+	ok;
+}
+
+/* The spell itself, cast as a caster at level 40 casts it */
+static int test_wraithform_is_the_wraiths_form(void *state) {
+	const struct class_spell *sp = a_spell("High-Mage", "Wraithform");
+	int lev = player->lev;
+	bool ident = false;
+
+	notnull(sp);
+	notnull(sp->effect);
+	eq(sp->effect->index, EF_TIMED_INC);
+	eq(sp->effect->subtype, TMD_WRAITH);
+
+	player->lev = 40;
+	player->timed[TMD_WRAITH] = 0;
+	require(effect_do(sp->effect, source_player(), NULL, &ident, true,
+		DIR_NONE, 0, 0, NULL));
+	player->lev = lev;
+
+	/* Zangband's rand_range(plev / 2, plev) */
+	require(player->timed[TMD_WRAITH] >= 20);
+	require(player->timed[TMD_WRAITH] <= 40);
+	(void) player_clear_timed(player, TMD_WRAITH, false, false);
+	ok;
+}
+
+/* And the other two spells are what they are tested as above */
+static int test_the_spells_carry_the_effects(void *state) {
+	const struct class_spell *rune = a_spell("Mage", "Explosive Rune");
+	const struct class_spell *omni = a_spell("High-Mage", "Omnicide");
+
+	notnull(rune);
+	notnull(rune->effect);
+	eq(rune->effect->index, EF_GLYPH);
+	eq(rune->effect->subtype, GLYPH_EXPLOSIVE);
+	notnull(omni);
+	notnull(omni->effect);
+	eq(omni->effect->index, EF_OMNICIDE);
+	ok;
+}
+
 const char *suite_name = "effects/workings";
 struct test tests[] = {
 	{ "identify-fully-learns-every-rune",
@@ -451,5 +767,19 @@ struct test tests[] = {
 	  test_rustproofing_leaves_cursed_damage },
 	{ "rustproofing-takes-only-armour", test_rustproofing_takes_only_armour },
 	{ "joker-cards-four-groups-answer", test_joker_cards_four_groups_answer },
+	{ "the-rune-is-a-ward", test_the_rune_is_a_ward },
+	{ "the-rune-bursts-under-you", test_the_rune_bursts_under_you },
+	{ "a-rune-broken-elsewhere-is-only-broken",
+	  test_a_rune_broken_elsewhere_is_only_broken },
+	{ "the-rune-breaks-more-easily-than-warding",
+	  test_the_rune_breaks_more_easily_than_warding },
+	{ "your-own-side-leaves-your-runes-alone",
+	  test_your_own_side_leaves_your_runes_alone },
+	{ "omnicide-spares-only-the-uniques",
+	  test_omnicide_spares_only_the_uniques },
+	{ "omnicide-takes-mana-only-to-twice-the-maximum",
+	  test_omnicide_takes_mana_only_to_twice_the_maximum },
+	{ "wraithform-is-the-wraiths-form", test_wraithform_is_the_wraiths_form },
+	{ "the-spells-carry-the-effects", test_the_spells_carry_the_effects },
 	{ NULL, NULL }
 };

@@ -75,6 +75,16 @@ appear:0:0:0
 flags:GLYPH | VISIBLE | FLOOR
 desc:A magical decoy which sounds and looks like the player.
 
+# ZangbandTK: Sorcery's Explosive Rune.  Wards like a glyph of warding but
+# breaks far more easily (break-minor-glyph in constants.txt), and explodes
+# when it breaks under the one who drew it.
+name:explosive rune:explosive rune
+graphics:;:R
+appear:0:0:0
+flags:GLYPH | VISIBLE | FLOOR
+desc:A magical rune which holds monsters back, and bursts when one breaks it
+desc: while you stand on it.
+
 name:door lock:door lock
 graphics: :w
 appear:0:0:0

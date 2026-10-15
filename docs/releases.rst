@@ -102,6 +102,27 @@ The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
 
+Three more spells, and pets that broke your runes — 15 October 2026
+--------------------------------------------------------------------
+
+- **3.126.0** — **Wraithform, Omnicide and Explosive Rune work** (DEC-140).
+
+  - *Wraithform* (Death) is the Wraith mutation's form, cast on purpose: you
+    walk through walls, a tenth of every blow lands, and light ends it. If it
+    ends inside rock, you die there.
+  - *Omnicide* (Death) removes every creature on the level but the uniques,
+    your own among them. Each costs you a little health and gives you a point
+    of mana, up to twice your maximum.
+  - *Explosive Rune* (Sorcery) draws a rune that monsters cannot cross until
+    they break it, which they do far more easily than a glyph of warding. If
+    one breaks it while you stand on it, it bursts in a ball of mana.
+
+  **Pets no longer break your runes.** A pet heading past you in a corridor
+  could break the glyph of warding you stood on; now your own creatures go
+  round a ward instead.
+
+  One spell is still waiting, *Shuffle*, and two will not be built.
+
 Nine spells that did nothing now work — 15 October 2026
 --------------------------------------------------------
 

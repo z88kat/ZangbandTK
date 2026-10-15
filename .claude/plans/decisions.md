@@ -7486,3 +7486,49 @@ and their notes say they will not be built.
 monster, a whole-level sweep with a running cost, a player who walks through
 rock, and a weighted deck whose cards include the Ancient Curse, which the
 missing patron reward also wants.
+
+**DEC-140 — Wraithform, Omnicide and Explosive Rune work (15 October 2026).**
+
+Three of the four DEC-139 left waiting, asked for by the project owner the
+same day ("lets do the other spells").
+
+**Wraithform was not waiting for anything.** Its deferral said 4.2 had no
+incorporeal state and that the form hurt to use. The WRAITH mutation built
+that state on 18 September (045cdb330, DEC-85) and found the second claim
+wrong, and the spell's note was simply never revisited. It is
+`TIMED_INC:WRAITH` for Zangband's `rand_range(plev / 2, plev)`, the
+mutation's own duration -- including the death in rock if it ends there.
+
+**Omnicide is a new effect, `OMNICIDE`.** Mass Banishment with no radius,
+sparing uniques and `QUESTOR` monsters, 1d4 hit points a creature and a point
+of mana each up to twice the maximum. Pets go too, as in Zangband. One
+difference in the arithmetic: Zangband took the spell's cost first and
+absorbed against that, and 4.2 takes it after the effect, so at the cap a
+caster here keeps up to the spell's cost less than Zangband's would.
+Nothing a player will meet.
+
+**Explosive Rune is a new glyph.** `explosive rune` in `trap.txt` and
+`GLYPH:EXPLOSIVE`, warding as the glyph of warding does
+(`square_iswarded()` counts both) but breaking against
+`mon-play:break-minor-glyph` (99, Zangband's `BREAK_MINOR_GLYPH`) rather than
+`break-glyph` (550). Broken under the caster it bursts: mana, radius 2,
+`2 * (plev / 2 + 7d7)`. Broken anywhere else it is disarmed, which is what
+Zangband's changelog fixed its runes to. Tiles: borrowed from the glyph of
+warding in the four older sets, and drawn with Neon's own glyph shape in red.
+
+**Found on the way: pets broke your runes.** `monster_turn_can_move()` lets
+any monster at the player's square, and the ward check comes before the
+PLR-23 rule that sends a pet round you, so a pet heading past you in a
+corridor broke the glyph of warding you stood on. Harmless enough until the
+rune explodes in its face. Now a creature on your side leaves a ward alone and
+goes round it. The test is the corridor, and it fails without the rule five
+times in five.
+
+**Also found: `borrow-tiles.py` no longer reproduces Adam Bolt's
+graf-ztk.prf.** A fresh run reshuffles about 120 borrowed monster tiles, many
+onto uniques' portraits ("as Bull Gates"). `--check` passes either way, since
+it checks names and coordinates rather than reproduction, so nothing caught
+the drift. Left as it was: only the explosive rune's lines were added, by
+hand in the script's own format. The cause is not investigated.
+
+**Shuffle** follows as DEC-141.

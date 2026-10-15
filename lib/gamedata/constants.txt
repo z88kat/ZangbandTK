@@ -48,6 +48,11 @@ mon-gen:group-dist:5
 # Rune of protection resistance to monster breaking
 mon-play:break-glyph:550
 
+# The same for an explosive rune, Sorcery's weaker glyph: Zangband's
+# BREAK_MINOR_GLYPH.  A monster breaks it when a roll of one to this is under
+# its level, so anything past level 50 gets through about half the time.
+mon-play:break-minor-glyph:99
+
 # High value slows multiplication
 mon-play:mult-rate:8
 

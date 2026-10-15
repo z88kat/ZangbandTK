@@ -92,7 +92,11 @@ T	p0 warn	, so you will know.
 T	p0 warn	\n
 T	p0	One of the twenty-seven turns you incorporeal, and it is the strongest thing on this page by a wide margin. You walk through walls. Nine tenths of every blow passes through you. You gain a hundred points of armour and bolts bounce off you. Darkness heals you instead of hurting you. You pay nothing for standing inside rock, where a Spectre pays a point a turn.
 T	p0	\n
-T	p0	It arrives without being asked for, roughly one turn in three thousand.
+T	p0	It arrives without being asked for, roughly one turn in three thousand. Death’s 
+T	p0 em	Wraithform
+T	p0	 spell gives the same form on purpose, for as long, and everything below holds for it too (
+L	p0 link	2	realms	The Realms of Magic
+T	p0	).
 T	p0	\n
 T	p0 strong	It also costs you three points of constitution for as long as you have it
 T	p0	 — not while the form is running, but permanently, from the moment the mutation arrives until something takes it away. You fade in and out of physical reality and your body is the thing that suffers for it. On a frail character that is a meaningful share of the hit points, and it is the reason this is not simply the best mutation in the game.
@@ -166,7 +170,7 @@ T	li1	 A failed Death spell hurts, but it does not change you.
 T	li1	\n
 T	p0 strong	However it arrives, gaining one moves you a point up the Chance virtue.
 T	p0	 The game counts a mutation as courting chaos whether or not you courted it, so a Beastman — which collects one every few levels for nothing it chose to do — drifts steadily up that scale over a career, and a character who has taken a few from bad luck with a chaos breath will find the scale has noticed. It is a single point each time, so it is slow; it is also the only thing on the list that accumulates. See 
-L	p0 link	2	virtues	Virtues
+L	p0 link	3	virtues	Virtues
 T	p0	.
 T	p0	\n
 T	p0	Everything on that list works. The two that go through a magic realm waited for the realms and arrived with Chaos: 
