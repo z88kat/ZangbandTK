@@ -423,10 +423,10 @@ too, so all three share them.
 
    **What differs from the Mac.** Sound and music come through SDL rather than
    the Mac's own audio, and the music player plays MP3, FLAC, Ogg, Opus, WAV and
-   AIFF but not AAC. The Keymaps window always draws a US keyboard, whatever the
-   layout. And while CI builds both on every push, plays a scripted session
-   through the real front end and starts the packaged game to check it runs on
-   what it carries, nobody has played either through yet.
+   AIFF but not AAC. The Keymaps window draws a PC keyboard, with your layout's
+   keycaps and a PC's keypad. And while CI builds both on every push, plays a
+   scripted session through the real front end and starts the packaged game to
+   check it runs on what it carries, nobody has played either through yet.
 
 Linux
 =====

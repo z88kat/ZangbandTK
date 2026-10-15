@@ -2605,6 +2605,21 @@ _What follows from it:_
 > music page names what each platform plays. CI runs both on SDL's dummy driver; the
 > bridge test plays a real track off the Mac, and the package check plays one of the
 > package's own MP3s, which proves the codecs travelled.
+>
+> **And the Keymaps window's keyboard**, the last thing the Mac had and these did not.
+> `src/tcl/keyboard-pc.c` is keyboard.c's counterpart: the picture still names keys by macOS
+> virtual key code, which says where a key is, and each is turned into the PC scan code in
+> the same place (the X11 keycode is that plus 8) and the system asked what it types --
+> `MapVirtualKeyExW` and `ToUnicodeEx` on Windows, `XkbKeycodeToKeysym` and
+> `XkbTranslateKeySym` on X11, which gives UTF-8 in the UTF-8 locale the game requires and a
+> dead key as its accent. ISO or ANSI is read from the layout: one that gives the key beside
+> the left Shift a character of its own, other than the backslash key's or XKB's US `<`, is
+> ISO. The keypad is drawn as a PC's off the Mac. CI has US layouts; Windows can read the
+> keys as any layout has them without switching to it, so the bridge test reads German
+> there (QWERTZ, ö, the dead ´, `<`, ISO). Xvfb would not take another layout by any means
+> tried, so X11 is checked on US, with the keysym-to-text step tried by hand on German,
+> Czech, Russian and Greek keysyms. Found on the way: Num Lock's keysym, 0xFF7F, had been
+> mapped to Delete since T1, and Delete's own, 0xFFFF, to nothing.
 
 **Settled — two macOS applications, permanently.** Confirmed by project owner: _"we want to
 keep the existing build because this is a different play experience. The TK is a separate

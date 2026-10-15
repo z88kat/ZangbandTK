@@ -14,8 +14,9 @@
 # other way round.  A keymap belongs to a keyset: the original keys have
 # their keymaps and the roguelike keys theirs.
 #
-# The keycaps are the keyboard's own, asked of macOS (src/tcl/keyboard.c), so
-# a German keyboard shows its umlauts and its < > key where they are.  A key
+# The keycaps are the keyboard's own, asked of the system -- macOS through
+# src/tcl/keyboard.c, Windows and X11 through src/tcl/keyboard-pc.c -- so a
+# German keyboard shows its umlauts and its < > key where they are.  A key
 # whose character the game cannot read -- ö, say -- is drawn but cannot be
 # bound.
 #
@@ -50,7 +51,7 @@ set keymap(rows,iso) {
     {Control:1.5 gap:2.5 space:6 gap:2.5 Control:1.5}
 }
 
-# What a US keyboard types, for when nobody can be asked (off the Mac).
+# What a US keyboard types, for a key the system says types nothing.
 set keymap(us) {
     0x32 {` ~} 0x12 {1 !} 0x13 {2 @} 0x14 {3 #} 0x15 {4 $} 0x17 {5 %}
     0x16 {6 ^} 0x1A {7 &} 0x1C {8 *} 0x19 {9 (} 0x1D {0 )} 0x1B {- _}
@@ -78,17 +79,35 @@ set keymap(special) {
     KP_8 {0xFFB8 8} KP_9 {0xFFB9 9} KP_Decimal {0xFFAE .}
     KP_Enter {0xFF8D enter} KP_Add {0xFFAB +} KP_Subtract {0xFFAD −}
     KP_Multiply {0xFFAA *} KP_Divide {0xFFAF /} KP_Equal {0xFFBD =}
-    Clear {0xFF0B clear}
+    Clear {0xFF0B clear} Num_Lock {0xFF7F num}
+}
+# A Mac's keycaps say delete and return; a PC's say Backspace and Enter.
+if {[tk windowingsystem] ne "aqua"} {
+    dict set keymap(special) BackSpace {0xFF08 backspace}
+    dict set keymap(special) Return {0xFF0D enter}
 }
 
-# The keypad, as the Mac's is laid out, beside the arrows: name, column and
-# row in keys from its top left, width and height.
-set keymap(keypad) {
-    Clear 0 0 1 1  KP_Equal 1 0 1 1  KP_Divide 2 0 1 1  KP_Multiply 3 0 1 1
-    KP_7 0 1 1 1  KP_8 1 1 1 1  KP_9 2 1 1 1  KP_Subtract 3 1 1 1
-    KP_4 0 2 1 1  KP_5 1 2 1 1  KP_6 2 2 1 1  KP_Add 3 2 1 1
-    KP_1 0 3 1 1  KP_2 1 3 1 1  KP_3 2 3 1 1  KP_Enter 3 3 1 2
-    KP_0 0 4 2 1  KP_Decimal 2 4 1 1
+# The keypad beside the arrows: name, column and row in keys from its top left,
+# width and height.  A Mac's has Clear and = where a PC's has Num Lock, and a
+# short + where a PC's is two keys tall.  Num Lock is drawn and cannot be
+# bound: the game never sees it.
+if {[tk windowingsystem] eq "aqua"} {
+    set keymap(keypad) {
+        Clear 0 0 1 1  KP_Equal 1 0 1 1  KP_Divide 2 0 1 1  KP_Multiply 3 0 1 1
+        KP_7 0 1 1 1  KP_8 1 1 1 1  KP_9 2 1 1 1  KP_Subtract 3 1 1 1
+        KP_4 0 2 1 1  KP_5 1 2 1 1  KP_6 2 2 1 1  KP_Add 3 2 1 1
+        KP_1 0 3 1 1  KP_2 1 3 1 1  KP_3 2 3 1 1  KP_Enter 3 3 1 2
+        KP_0 0 4 2 1  KP_Decimal 2 4 1 1
+    }
+} else {
+    set keymap(keypad) {
+        Num_Lock 0 0 1 1  KP_Divide 1 0 1 1  KP_Multiply 2 0 1 1
+        KP_Subtract 3 0 1 1
+        KP_7 0 1 1 1  KP_8 1 1 1 1  KP_9 2 1 1 1  KP_Add 3 1 1 2
+        KP_4 0 2 1 1  KP_5 1 2 1 1  KP_6 2 2 1 1
+        KP_1 0 3 1 1  KP_2 1 3 1 1  KP_3 2 3 1 1  KP_Enter 3 3 1 2
+        KP_0 0 4 2 1  KP_Decimal 2 4 1 1
+    }
 }
 
 proc keymap_window {} {

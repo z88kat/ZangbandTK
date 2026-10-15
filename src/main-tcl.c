@@ -95,9 +95,16 @@ extern const char *tcl_music_state(double *position, double *length);
 #ifdef __APPLE__
 /* In tcl/menukeys.c, which has to reach past Tk to AppKit. */
 extern void tcl_menu_keys_literal(void);
-/* In tcl/keyboard.c, which asks Carbon what the keyboard types. */
+#endif
+
+/*
+ * What the keyboard types: tcl/keyboard.c asks Carbon on the Mac, and
+ * tcl/keyboard-pc.c asks Windows or XKB elsewhere.
+ */
 extern void tcl_keyboard_char(int vk, int shifted, char *out, size_t len);
 extern const char *tcl_keyboard_type(void);
+#ifdef _WIN32
+extern int tcl_keyboard_layout(const char *klid);
 #endif
 
 /*
@@ -1212,7 +1219,12 @@ static bool tk_keypress(int keysym, int state, const char *ch,
 		case 0xFF0D: k = KC_ENTER; break;
 		case 0xFF09: k = KC_TAB; break;
 		case 0xFF08: k = KC_BACKSPACE; break;
-		case 0xFF7F: k = KC_DELETE; break;
+		/*
+		 * XK_Delete.  This was 0xFF7F, which in X11's numbering is Num
+		 * Lock: on Windows and Linux Num Lock reached the game as Delete,
+		 * and Delete did not reach it at all.  The Mac has no Num Lock key.
+		 */
+		case 0xFFFF: k = KC_DELETE; break;
 		case 0xFF51: k = ARROW_LEFT; break;
 		case 0xFF52: k = ARROW_UP; break;
 		case 0xFF53: k = ARROW_RIGHT; break;
@@ -8976,8 +8988,14 @@ static int objcmd_keymap(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
  *   angband_keyboard char VK SHIFTED    what the key with macOS virtual key
  *                                       code VK types on the layout in use
  *
- * Off the Mac there is no asking, and the window draws US keycaps: type is
- * ansi and char is "".
+ * Keys are named by macOS's codes everywhere, since they say where a key is;
+ * keyboard-pc.c finds the PC key in the same place on Windows and X11.  A
+ * char of "" is a key that types nothing, which the window draws with the
+ * US keycap.
+ *
+ *   angband_keyboard layout KLID        Windows only, for the bridge test:
+ *                                       read the keys as Windows layout KLID
+ *                                       has them, or "" for the one in use
  */
 static int objcmd_keyboard(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		Tcl_Obj *const objv[])
@@ -8987,11 +9005,7 @@ static int objcmd_keyboard(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 	(void)dummy;
 
 	if (objc == 2 && streq(what, "type")) {
-#ifdef __APPLE__
 		Tcl_SetObjResult(ip, Tcl_NewStringObj(tcl_keyboard_type(), -1));
-#else
-		Tcl_SetObjResult(ip, Tcl_NewStringObj("ansi", -1));
-#endif
 		return TCL_OK;
 	}
 	if (objc == 4 && streq(what, "char")) {
@@ -9003,16 +9017,22 @@ static int objcmd_keyboard(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		 * statement expression, which -pedantic refuses. */
 		if (Tcl_GetIntFromObj(ip, objv[3], &shifted) != TCL_OK)
 			return TCL_ERROR;
-#ifdef __APPLE__
 		tcl_keyboard_char(vk, shifted, buf, sizeof(buf));
-#else
-		(void)vk;
-#endif
 		Tcl_SetObjResult(ip, Tcl_NewStringObj(buf, -1));
 		return TCL_OK;
 	}
 
-	Tcl_WrongNumArgs(ip, 1, objv, "type | char VK SHIFTED");
+	if (objc == 3 && streq(what, "layout")) {
+#ifdef _WIN32
+		Tcl_SetObjResult(ip, Tcl_NewBooleanObj(
+				tcl_keyboard_layout(Tcl_GetString(objv[2]))));
+#else
+		Tcl_SetObjResult(ip, Tcl_NewBooleanObj(0));
+#endif
+		return TCL_OK;
+	}
+
+	Tcl_WrongNumArgs(ip, 1, objv, "type | char VK SHIFTED | layout KLID");
 	return TCL_ERROR;
 }
 

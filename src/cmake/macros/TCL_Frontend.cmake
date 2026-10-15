@@ -80,6 +80,17 @@ macro(configure_tcl_frontend _NAME_TARGET)
             "${CMAKE_SOURCE_DIR}/src/tcl/keyboard.c")
         # Carbon for keyboard.c's layout queries (TIS, UCKeyTranslate).
         target_link_libraries(${_NAME_TARGET} PRIVATE objc "-framework Carbon")
+    else()
+        # The same questions off the Mac, of Windows (user32, which every
+        # Windows program links) or of XKB, which is libX11's -- linked by
+        # name, since the game calls it itself and not only through Tk.
+        target_sources(${_NAME_TARGET} PRIVATE
+            "${CMAKE_SOURCE_DIR}/src/tcl/keyboard-pc.c")
+        if(NOT WIN32)
+            find_package(X11 REQUIRED)
+            target_include_directories(${_NAME_TARGET} PRIVATE ${X11_INCLUDE_DIR})
+            target_link_libraries(${_NAME_TARGET} PRIVATE ${X11_X11_LIB})
+        endif()
     endif()
 
     # Windows.  A window and no console: linked for the GUI subsystem, so the

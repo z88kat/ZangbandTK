@@ -335,8 +335,7 @@ Both read one folder of characters, so a character can be carried from one to
 the other. There is an irony in it: the original ZangbandTk ran on Windows and
 X11 and never on the Mac, so this is the *new* port, not the old one returning.
 It runs on Windows and Linux too now, from its own downloads, with sound and
-music through SDL, though with a US keyboard in the Keymaps window whatever
-the layout. See :doc:`download` and the Tcl/Tk section of :doc:`customize`.
+music through SDL and a Keymaps window that draws the keyboard you have. See :doc:`download` and the Tcl/Tk section of :doc:`customize`.
 
 Tunable without a rebuild
 -------------------------

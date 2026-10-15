@@ -124,6 +124,11 @@ ZangbandTK on Windows and Linux — 15 October 2026
     on Windows, DejaVu Sans Mono on Linux — rather than a proportional stand-in
     for the Mac's Menlo.
   - No menu has a dashed tear-off line at the top.
+  - The Keymaps window draws your own keyboard, as it does on the Mac: your
+    layout's keycaps, a German keyboard's umlauts and its < > key included,
+    and a PC's keypad, with Num Lock and a tall +.
+  - Num Lock no longer reaches the game as Delete, and Delete reaches it at
+    all: the two had been mixed up since the Tk front end began.
 
 - **On the Mac as well**, the music folder starts in your own Music folder. It
   was a folder called ``~`` wherever the game had been started.

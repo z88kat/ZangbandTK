@@ -1896,15 +1896,69 @@ proc sound_pass_done {} {
 # shared with angband_key -- and keeps what is bound in 4.2's own form, in the
 # user folder's user.prf, which every character loads.
 #
-# The keycaps come from the keyboard layout itself only on a Mac (keyboard.c,
-# through Carbon).  Elsewhere angband_keyboard has no layout to read, gives the
-# ANSI shape and no keycaps, and the window draws a US keyboard; reading the
-# real one there is a later stage's work.
+# The keycaps come from the keyboard layout itself: keyboard.c through Carbon on
+# the Mac, keyboard-pc.c through Windows or XKB elsewhere, by macOS's key codes
+# on all three.
 proc keymap_pass {} {
 	check "the keyboard's own keycaps, and its shape" {
 		list [expr {[angband_keyboard type] in {ansi iso jis}}] \
 			[expr {[string tolower [angband_keyboard char 0 0]] eq "a"}]
-	} [expr {[tk windowingsystem] eq "aqua" ? "1 1" : "1 0"}]
+	} "1 1"
+
+	# Every key of the main block, plain and shifted, read off the system.  A
+	# key that reads as nothing is a reader that does not work, whatever the
+	# layout.  The full comparison is made where the layout is a US one, as a
+	# CI runner's is, so that a player's German or French keyboard does not
+	# fail it; on any other it is skipped.  The section key, 0x0A, is ISO's.
+	check "every keycap is read, and on a US layout is a US keyboard's" {
+		set r {}
+		foreach {vk caps} $::keymap(us) {
+			if {$vk == 0x0A} continue
+			set got [list [angband_keyboard char $vk 0] [angband_keyboard char $vk 1]]
+			if {[lindex $got 0] eq ""} { lappend r "$vk: nothing" }
+			set us($vk) [expr {[lindex $got 0] eq [lindex $caps 0]
+				&& [lindex $got 1] eq [lindex $caps 1]}]
+		}
+		set layout_is_us [expr {$us(0x06) && $us(0x10) && $us(0x0C)
+			&& [angband_keyboard type] eq "ansi"}]
+		if {$r eq "" && $layout_is_us} {
+			foreach {vk caps} $::keymap(us) {
+				if {$vk != 0x0A && !$us($vk)} { lappend r "$vk: not US" }
+			}
+		}
+		set r
+	} ""
+
+	# And a layout that is not US, on Windows, which can read the keys as any
+	# of its layouts has them: German, a QWERTZ ISO keyboard with umlauts and
+	# a dead accent key.  Y and Z change places, ö is beside L, the key left
+	# of Backspace is the accent, and the key beside the left Shift is < --
+	# and the shape is ISO.  The Mac and X11 cannot be asked this way, so
+	# there it is skipped.
+	check "a German layout's keycaps, on Windows" {
+		if {[tk windowingsystem] ne "win32"} {
+			set r skipped
+		} elseif {![angband_keyboard layout 00000407]} {
+			set r "Windows would not load the German layout"
+		} else {
+			set type [angband_keyboard type]
+			set r [list $type]
+			foreach vk {0x10 0x06 0x29 0x18 0x32} {
+				lappend r [angband_keyboard char $vk 0]
+			}
+			angband_keyboard layout ""
+			angband_keyboard type
+		}
+		set r
+	} [expr {[tk windowingsystem] eq "win32" ? [list iso z y ö ´ <] : "skipped"}]
+
+	# Num Lock is drawn on a PC's keypad and is no key of the game's; Delete
+	# is.  The Tk front end had them the wrong way round, sending Delete for
+	# Num Lock, since T1.
+	check "Num Lock is not a game key, and Delete is Delete" {
+		list [angband_keymap trigger [expr 0xFF7F] 0 ""] \
+			[angband_keymap trigger [expr 0xFFFF] 0 ""]
+	} [list "" {[Delete]}]
 
 	check "a key is bound as typing it is read" {
 		list [angband_keymap trigger 113 0 q] [angband_keymap trigger 102 4 ""] \
