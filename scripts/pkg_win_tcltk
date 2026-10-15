@@ -1,0 +1,110 @@
+#!/bin/bash
+#
+# Package ZangbandTK for Windows from a cmake build of the Tcl/Tk front end.
+#
+# Use in the root directory of the game, from an MSYS2 MINGW64 shell:
+#    scripts/pkg_win_tcltk <build-directory> <name> [output.zip]
+#
+# For example `scripts/pkg_win_tcltk build ZangbandTK-3.128.1`, which writes
+# ZangbandTK-3.128.1-win64-tk.zip, holding a folder of that name.  The suffix
+# is -tk for DEC-143's reason: 3.121.0 shipped a ZangbandTK zip for Windows
+# that held the game without Tk.
+#
+# Expects a build configured with SUPPORT_TCL_FRONTEND=ON and with
+# USE_PRIVATE_PATHS, which puts the characters in lib\user\save as Zangband.exe
+# keeps them, and the folder is laid out as the Mac bundle and the AppImage
+# are, so that main-tcl.c finds Tcl's and Tk's script libraries by one rule:
+# tcltk\ beside lib\.
+#
+#   ZangbandTK.exe              the game
+#   tcl90.dll, tcl9tk90.dll     Tcl and Tk, and any DLL they need that Windows
+#                               does not have
+#   lib\                        the game's data, its scripts included
+#   lib\user\                   the player's folder: characters, scores
+#   tcltk\tcl9.0, tk9.0, tcl9   Tcl's and Tk's script libraries
+set -o errexit
+
+if [ $# -lt 2 ] || [ $# -gt 3 ]; then
+	sed -n -e '3,11p' "$0" | sed -e 's/^# \{0,1\}//'
+	exit 1
+fi
+
+BUILD=$1
+NAME=$2
+OUT=${3:-$NAME-win64-tk.zip}
+EXE=$BUILD/game/angband.exe
+
+if [ ! -f "$EXE" ] || [ ! -d "$BUILD/game/lib/tcl" ]; then
+	echo "No Tk build at $BUILD/game." >&2
+	echo "Configure with -DSUPPORT_TCL_FRONTEND=ON and build first." >&2
+	exit 1
+fi
+
+# The toolchain the build used, for its script libraries: the prefix the build
+# was configured with, or the default it falls back to.
+PREFIX=$(sed -n 's/^TCLTK_PREFIX:[A-Z]*=//p' "$BUILD/CMakeCache.txt")
+PREFIX=${PREFIX:-tcltk/local}
+for d in tcl9.0 tk9.0; do
+	if [ ! -d "$PREFIX/lib/$d" ]; then
+		echo "No $d script library under $PREFIX/lib." >&2
+		exit 1
+	fi
+done
+
+# Text for Notepad, as scripts/pkg_win converts it.
+cp_unix2dos() {
+	awk '{ sub("\r$", ""); sub("$", "\r"); print }' "$1" > "$2"
+}
+
+rm -rf "$NAME" "$OUT"
+mkdir -p "$NAME"
+cp "$EXE" "$NAME/ZangbandTK.exe"
+# The build put Tcl's and Tk's DLLs beside the executable; see
+# TCL_Frontend.cmake.
+cp "$BUILD"/game/*.dll "$NAME/"
+
+cp -R "$BUILD/game/lib" "$NAME/lib"
+for d in save scores archive panic; do
+	mkdir -p "$NAME/lib/user/$d"
+	# A zip keeps no empty folder.
+	touch "$NAME/lib/user/$d/delete.me"
+done
+cp_unix2dos src/borg/borg.txt "$NAME/lib/user/borg.txt"
+
+mkdir -p "$NAME/tcltk"
+cp -R "$PREFIX/lib/tcl9.0" "$PREFIX/lib/tk9.0" "$NAME/tcltk/"
+if [ -d "$PREFIX/lib/tcl9" ]; then
+	cp -R "$PREFIX/lib/tcl9" "$NAME/tcltk/"
+fi
+
+if [ -d docs/_build/html ]; then
+	cp -R docs/_build/html "$NAME/docs"
+fi
+cp_unix2dos src/tcl/win-readme.txt "$NAME/README.txt"
+cp_unix2dos LICENSE.md "$NAME/LICENSE.md"
+
+# Every DLL anything in the folder asks for is either in the folder or one of
+# Windows' own.  One that MinGW has and Windows does not -- the runtime's,
+# zlib's -- is fetched from MinGW's bin, and what it asks for in turn, until
+# nothing is missing; then a DLL found in neither is an error, not a guess.
+MINGW_BIN=${MINGW_PREFIX:-/mingw64}/bin
+for pass in 1 2 3 4 5; do
+	added=0
+	for f in "$NAME"/*.exe "$NAME"/*.dll; do
+		for dll in $(objdump -p "$f" | sed -n 's/^[[:space:]]*DLL Name: //p'); do
+			if ls "$NAME" | grep -qixF "$dll"; then continue; fi
+			if [ -f "$MINGW_BIN/$dll" ]; then
+				cp "$MINGW_BIN/$dll" "$NAME/"
+				echo "    bundled $dll, which $(basename "$f") needs"
+				added=1
+			fi
+		done
+	done
+	[ $added -eq 0 ] && break
+done
+for f in "$NAME"/*.exe "$NAME"/*.dll; do
+	echo "$(basename "$f"): $(objdump -p "$f" | sed -n 's/^[[:space:]]*DLL Name: //p' | tr '\n' ' ')"
+done
+
+zip -9 -q -r "$OUT" "$NAME"
+echo "Wrote $OUT"

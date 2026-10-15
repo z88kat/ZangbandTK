@@ -82,6 +82,21 @@ macro(configure_tcl_frontend _NAME_TARGET)
         target_link_libraries(${_NAME_TARGET} PRIVATE objc "-framework Carbon")
     endif()
 
+    # Windows.  A window and no console: linked for the GUI subsystem, so the
+    # game starts from Explorer without a console window behind it, and
+    # MinGW's runtime still calls main().  And Tcl's and Tk's DLLs beside the
+    # executable in the build tree, where the release's zip puts them too:
+    # Windows finds a DLL beside the program or on the PATH, and has no rpath.
+    if(WIN32)
+        set_target_properties(${_NAME_TARGET} PROPERTIES WIN32_EXECUTABLE TRUE)
+        file(GLOB _TCLTK_DLLS "${TCLTK_PREFIX}/bin/*.dll")
+        if(_TCLTK_DLLS)
+            add_custom_command(TARGET ${_NAME_TARGET} POST_BUILD
+                COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                    ${_TCLTK_DLLS} "$<TARGET_FILE_DIR:${_NAME_TARGET}>")
+        endif()
+    endif()
+
     target_compile_definitions(${_NAME_TARGET} PRIVATE
         USE_TCL
         # Where Tcl's and Tk's own script libraries live.  A dev build runs from

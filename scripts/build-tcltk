@@ -56,7 +56,7 @@ BUILD=$ROOT/tcltk/build
 TCL_SRC=$ROOT/tcltk/tcl9.0.4
 TK_SRC=$ROOT/tcltk/tk9.0.4
 
-if [ ! -d "$TCL_SRC/unix" ] || [ ! -d "$TK_SRC/unix" ]; then
+if [ ! -d "$TCL_SRC/generic" ] || [ ! -d "$TK_SRC/generic" ]; then
 	echo "No Tcl/Tk sources under $ROOT/tcltk." >&2
 	echo "Expected tcltk/tcl9.0.4 and tcltk/tk9.0.4." >&2
 	exit 1
@@ -93,6 +93,19 @@ Darwin)
 	MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET:-11.0}
 	export MACOSX_DEPLOYMENT_TARGET
 	;;
+MINGW*)
+	# Windows, from an MSYS2 MINGW64 shell, with win/ configure rather than
+	# unix/.  64-bit has to be asked for: win/configure does not take it from
+	# the compiler.  Tk's Windows makefile installs its public headers with
+	# its libraries and has no install-headers target, so it is not named.
+	JOBS=$(nproc 2>/dev/null || echo 4)
+	PLATFORM=win
+	TCL_CONFIG='--enable-64bit'
+	TK_CONFIG='--enable-64bit'
+	TK_HEADERS=''
+	INSTALL_NAME=''
+	RPATH_LDFLAGS=''
+	;;
 *)
 	JOBS=$(nproc 2>/dev/null || echo 4)
 	TK_CONFIG=''
@@ -101,6 +114,12 @@ Darwin)
 	;;
 esac
 
+# unix/ on the Mac and Linux, win/ on Windows; the Mac's Aqua build is still
+# unix/, with --enable-aqua.
+PLATFORM=${PLATFORM:-unix}
+TCL_CONFIG=${TCL_CONFIG:-}
+TK_HEADERS=${TK_HEADERS-install-headers}
+
 # Tcl first: Tk's configure needs its tclConfig.sh, and takes it from the
 # install tree rather than the build tree so that what Tk links against is
 # exactly what the game will link against.
@@ -108,7 +127,9 @@ echo "==> Tcl 9.0.4 -> $PREFIX"
 mkdir -p "$BUILD/tcl"
 cd "$BUILD/tcl"
 if [ ! -f config.status ]; then
-	"$TCL_SRC/unix/configure" --prefix="$PREFIX" LDFLAGS="$RPATH_LDFLAGS"
+	# shellcheck disable=SC2086
+	"$TCL_SRC/$PLATFORM/configure" --prefix="$PREFIX" \
+		LDFLAGS="$RPATH_LDFLAGS" $TCL_CONFIG
 fi
 make -j"$JOBS" binaries libraries $INSTALL_NAME
 make install-binaries install-libraries install-headers install-private-headers \
@@ -119,11 +140,12 @@ mkdir -p "$BUILD/tk"
 cd "$BUILD/tk"
 if [ ! -f config.status ]; then
 	# shellcheck disable=SC2086
-	"$TK_SRC/unix/configure" --prefix="$PREFIX" --with-tcl="$PREFIX/lib" \
+	"$TK_SRC/$PLATFORM/configure" --prefix="$PREFIX" --with-tcl="$PREFIX/lib" \
 		LDFLAGS="$RPATH_LDFLAGS" $TK_CONFIG
 fi
 make -j"$JOBS" binaries libraries $INSTALL_NAME
-make install-binaries install-libraries install-headers install-private-headers \
+# shellcheck disable=SC2086
+make install-binaries install-libraries $TK_HEADERS install-private-headers \
 	$INSTALL_NAME
 
 # Prove the things the front end actually depends on, rather than trusting
@@ -143,7 +165,10 @@ for f in include/tkInt.h include/tclInt.h lib/tclConfig.sh lib/tkConfig.sh; do
 		exit 1
 	}
 done
-"$PREFIX/bin/tclsh9.0" <<'EOF'
+# tclsh9.0 everywhere but Windows, where it is tclsh90.exe.
+TCLSH=$PREFIX/bin/tclsh9.0
+[ -x "$TCLSH" ] || TCLSH=$PREFIX/bin/tclsh90.exe
+"$TCLSH" <<'EOF'
 	puts "tcl  [info patchlevel]"
 	puts "zipfs [expr {[catch {zipfs root} r] ? {MISSING} : $r}]"
 	puts "tk   [lindex [glob -tails -directory [file join [file dirname [info nameofexecutable]] .. lib] tk9.*] 0]"

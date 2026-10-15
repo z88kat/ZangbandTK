@@ -31,12 +31,25 @@ RESULT=$(mktemp "$TMP/zangband-package.XXXXXX")
 SAVE=$(mktemp -d "$TMP/zangband-package-save.XXXXXX")
 trap 'rm -f "$RESULT"; rm -rf "$SAVE"' EXIT
 
+# A path for the game: on Windows, run from MSYS2, a Windows one, with the
+# forward slashes Tcl itself writes, so the two compare equal.  MSYS2
+# converts many POSIX paths on the way to a native program, but not reliably
+# inside an argument such as -dsave=..., so it is not left to guess.
+native() {
+	if command -v cygpath >/dev/null 2>&1; then
+		cygpath -m "$1"
+	else
+		printf '%s\n' "$1"
+	fi
+}
+
 # A save and user folder of its own, as the bridge test has, so that nothing
 # the player owns is read or written.
-ZANGBAND_TCL_SCRIPT=$ROOT/src/tcl/tests/package.tcl \
-ZANGBAND_TCL_RESULT=$RESULT \
-ZANGBAND_PACKAGE_ROOT=$PACKAGE \
-	"$@" -dsave="$SAVE" -duser="$SAVE/user" -c -uPackage &
+ZANGBAND_TCL_SCRIPT=$(native "$ROOT/src/tcl/tests/package.tcl") \
+ZANGBAND_TCL_RESULT=$(native "$RESULT") \
+ZANGBAND_PACKAGE_ROOT=$(native "$PACKAGE") \
+	"$@" -dsave="$(native "$SAVE")" -duser="$(native "$SAVE/user")" \
+	-c -uPackage &
 GAME_PID=$!
 
 # The same watchdog as the bridge test: a front end that cannot start waits.

@@ -22,6 +22,8 @@ set -o errexit
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 PREFIX=${1:-$ROOT/tcltk/local}
 TCLSH=$PREFIX/bin/tclsh9.0
+# Windows names it tclsh90.exe.
+[ -x "$TCLSH" ] || [ ! -x "$PREFIX/bin/tclsh90.exe" ] || TCLSH=$PREFIX/bin/tclsh90.exe
 
 if [ ! -x "$TCLSH" ]; then
 	echo "No tclsh at $TCLSH." >&2

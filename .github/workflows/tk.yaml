@@ -36,6 +36,8 @@ on:
       - 'scripts/run-tcl-bridge-test'
       - 'scripts/run-tcl-package-test'
       - 'scripts/pkg_linux_tcltk'
+      - 'scripts/pkg_win_tcltk'
+      - 'src/main.c'
       - 'lib/icons/zangbandtk.desktop'
       - 'scripts/portraits/**'
       - 'scripts/palettes/**'
@@ -342,4 +344,106 @@ jobs:
         with:
           name: ZangbandTK-AppImage
           path: ZangbandTK-*-linux64-tk.AppImage
+          retention-days: 7
+
+  # Windows, built with MinGW-w64 under MSYS2 as the release's 64-bit Windows
+  # download is, and not with MSVC: the front end needs the cleanup attribute,
+  # which MSVC does not have (see the #error in main-tcl.c).  64-bit only.
+  windows:
+    name: Windows and zip
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+            mingw-w64-x86_64-gcc
+            make
+            zip
+
+      - name: Clone Project
+        uses: actions/checkout@v6
+
+      - name: Cache the toolchain
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: tcltk/local
+          key: tcltk-9.0.4-${{ runner.os }}-mingw64-${{ hashFiles('scripts/build-tcltk') }}
+
+      - name: Build Tcl and Tk
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: scripts/build-tcltk
+
+      # The same headers as the other two, and Windows' own names for the
+      # interpreters.
+      - name: Check the prefix
+        run: |
+          ls tcltk/local/bin tcltk/local/lib
+          for f in include/tclInt.h include/tkInt.h \
+                   lib/tclConfig.sh lib/tkConfig.sh \
+                   bin/tclsh90.exe bin/wish90.exe ; do
+            if [ ! -f tcltk/local/$f ]; then
+              echo "tcltk/local/$f is missing." >&2
+              exit 1
+            fi
+          done
+
+      # USE_PRIVATE_PATHS puts the characters in lib\user\save, where
+      # Zangband.exe keeps its own.  The prefix as a Windows path, since it is
+      # compiled into the game and read by the game, not by MSYS2.
+      - name: Configure and build
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror -DUSE_PRIVATE_PATHS" \
+            -DSUPPORT_TCL_FRONTEND=ON \
+            -DTCLTK_PREFIX="$(cygpath -m "$PWD/tcltk/local")"
+          cmake --build build --parallel
+
+      # It links Tk, and it is a Windows program, not a console one: Explorer
+      # would otherwise open a console window behind the game's.
+      - name: Check the Tcl front end is the one that is in there
+        run: |
+          objdump -p build/game/angband.exe | grep -E 'DLL Name|Subsystem'
+          objdump -p build/game/angband.exe | grep -qi 'DLL Name: tcl9tk90.dll' || {
+            echo "The executable does not link Tk." >&2
+            exit 1
+          }
+          objdump -p build/game/angband.exe | grep -q 'Windows GUI' || {
+            echo "The executable is not a Windows GUI program." >&2
+            exit 1
+          }
+
+      - name: Tcl tests
+        run: scripts/run-tcl-tests
+
+      - name: Scripted session
+        run: scripts/run-tcl-bridge-test build
+
+      - name: Package the zip
+        run: |
+          version=$(sed -n 's/^#define VERSION_STRING[[:space:]]*"\(.*\)"/\1/p' src/buildid.h)
+          scripts/pkg_win_tcltk build "ZangbandTK-$version"
+
+      # The folder the zip holds, started as a player would start it: from
+      # its own ZangbandTK.exe, finding Tcl, Tk and its scripts beside it.
+      - name: The folder runs on what it carries
+        run: |
+          dir=$(ls -d ZangbandTK-*/ | head -1)
+          dir=${dir%/}
+          scripts/run-tcl-package-test "$dir" "$dir/ZangbandTK.exe"
+
+      - name: Upload the zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZangbandTK-zip
+          path: ZangbandTK-*-win64-tk.zip
           retention-days: 7

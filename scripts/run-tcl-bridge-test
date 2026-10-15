@@ -20,6 +20,7 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 BUILD=${1:-$ROOT/build}
 GAME=$BUILD/game/angband
 [ -x "$GAME" ] || GAME=$BUILD/angband
+[ -x "$GAME" ] || GAME=$BUILD/game/angband.exe
 
 if [ ! -x "$GAME" ]; then
 	echo "No game at $GAME." >&2
@@ -45,12 +46,25 @@ SAVE=$(mktemp -d "$TMP/zangband-bridge-save.XXXXXX")
 trap 'rm -f "$RESULT"; rm -rf "$SAVE"' EXIT
 : > "$RESULT"
 
+# A path for the game: on Windows, run from MSYS2, a Windows one, with the
+# forward slashes Tcl itself writes, so the two compare equal.  MSYS2
+# converts many POSIX paths on the way to a native program, but not reliably
+# inside an argument such as -dsave=..., so it is not left to guess.
+native() {
+	if command -v cygpath >/dev/null 2>&1; then
+		cygpath -m "$1"
+	else
+		printf '%s\n' "$1"
+	fi
+}
+
 # A watchdog, because a front end that fails to start does not fail: it sits
 # there with no window and waits.  macOS has no timeout(1), so this is the
 # shell doing it by hand.
-ZANGBAND_TCL_SCRIPT=$ROOT/src/tcl/tests/bridge.tcl \
-ZANGBAND_TCL_RESULT=$RESULT \
-	"$GAME" -mtcl -dsave="$SAVE" -duser="$SAVE/user" -c -uBridge &
+ZANGBAND_TCL_SCRIPT=$(native "$ROOT/src/tcl/tests/bridge.tcl") \
+ZANGBAND_TCL_RESULT=$(native "$RESULT") \
+	"$GAME" -mtcl -dsave="$(native "$SAVE")" -duser="$(native "$SAVE/user")" \
+	-c -uBridge &
 GAME_PID=$!
 
 WAITED=0
