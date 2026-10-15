@@ -78,17 +78,23 @@
 #include <tcl.h>
 #include <tk.h>
 
-#ifdef __APPLE__
-/* In tcl/menukeys.c, which has to reach past Tk to AppKit. */
-extern void tcl_menu_keys_literal(void);
-#ifdef SOUND_COCOA
-/* In tcl/music.m, which plays the player's own music through NSSound. */
+/*
+ * The player's own music: tcl/music.m beside the Cocoa sound module on the
+ * Mac, tcl/music-sdl.c beside SDL2's on Windows and Linux.  The same five
+ * functions either way.
+ */
+#if defined(SOUND_COCOA) || defined(SOUND_SDL2)
+#define TCL_MUSIC
 extern bool tcl_music_play(const char *path, double volume);
 extern void tcl_music_stop(void);
 extern void tcl_music_pause(bool pause);
 extern void tcl_music_volume(double volume);
 extern const char *tcl_music_state(double *position, double *length);
 #endif
+
+#ifdef __APPLE__
+/* In tcl/menukeys.c, which has to reach past Tk to AppKit. */
+extern void tcl_menu_keys_literal(void);
 /* In tcl/keyboard.c, which asks Carbon what the keyboard types. */
 extern void tcl_keyboard_char(int vk, int shifted, char *out, size_t len);
 extern const char *tcl_keyboard_type(void);
@@ -8645,9 +8651,9 @@ static int objcmd_palette(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 /*
  * Sound.  The game plays its own: message.c's sound() signals EVENT_SOUND when
  * the character's use_sound option is on, and sound-core.c plays what
- * sound.prf binds to the message through the module main.c started -- here,
- * on the Mac, the Cocoa front end's, snd-cocoa.m.  This is what the front
- * end needs around that:
+ * sound.prf binds to the message through the module main.c started -- on the
+ * Mac the Cocoa front end's, snd-cocoa.m, and on Windows and Linux SDL2's,
+ * snd-sdl.c.  This is what the front end needs around that:
  *
  *   angband_sound ready          1 if a module has the game's sounds loaded
  *   angband_sound volume ?0-100? how loud from now on; kept by sound-core.c
@@ -9020,8 +9026,9 @@ static int objcmd_keyboard(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
  *   angband_music state              {stopped|paused|playing|ended position
  *                                    length}, in seconds
  *
- * Only where the Cocoa sound module is (music.m); elsewhere play is always 0
- * and state stopped, and the Sound page says there is no music here.
+ * Only where there is a player for it: music.m on the Mac, music-sdl.c with
+ * SDL2's sound elsewhere.  Without one play is always 0 and state stopped, and
+ * the Sound page says there is no music here.
  */
 static int objcmd_music(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		Tcl_Obj *const objv[])
@@ -9040,7 +9047,7 @@ static int objcmd_music(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		}
 	}
 	if (objc == 4 && streq(what, "play")) {
-#ifdef SOUND_COCOA
+#ifdef TCL_MUSIC
 		Tcl_SetObjResult(ip, Tcl_NewIntObj(tcl_music_play(
 				Tcl_GetString(objv[2]), v / 100.0)));
 #else
@@ -9049,14 +9056,14 @@ static int objcmd_music(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		return TCL_OK;
 	}
 	if (objc == 3 && streq(what, "volume")) {
-#ifdef SOUND_COCOA
+#ifdef TCL_MUSIC
 		tcl_music_volume(v / 100.0);
 #endif
 		return TCL_OK;
 	}
 	if (objc == 2 && (streq(what, "stop") || streq(what, "pause")
 			|| streq(what, "resume"))) {
-#ifdef SOUND_COCOA
+#ifdef TCL_MUSIC
 		if (streq(what, "stop")) tcl_music_stop();
 		else tcl_music_pause(streq(what, "pause"));
 #endif
@@ -9067,7 +9074,7 @@ static int objcmd_music(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		const char *state = "stopped";
 		Tcl_Obj *list = Tcl_NewListObj(0, NULL);
 
-#ifdef SOUND_COCOA
+#ifdef TCL_MUSIC
 		state = tcl_music_state(&position, &length);
 #endif
 		Tcl_ListObjAppendElement(ip, list, Tcl_NewStringObj(state, -1));
@@ -9077,7 +9084,7 @@ static int objcmd_music(void *dummy, Tcl_Interp *ip, Tcl_Size objc,
 		return TCL_OK;
 	}
 	if (objc == 2 && streq(what, "here")) {
-#ifdef SOUND_COCOA
+#ifdef TCL_MUSIC
 		Tcl_SetObjResult(ip, Tcl_NewBooleanObj(1));
 #else
 		Tcl_SetObjResult(ip, Tcl_NewBooleanObj(0));

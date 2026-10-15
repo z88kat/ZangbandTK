@@ -1755,13 +1755,13 @@ proc display_pass {} {
 # shows the switch.  Whether anything is audible no check can say: what they
 # read is the message whose sound the game asked for.
 #
-# Only the Mac has a sound module yet (snd-cocoa.m).  Windows and Linux get
-# SDL2's in a later stage, and until then this asks them for none, so that a
-# Mac build which lost its sound still fails here.
+# On the Mac the module is snd-cocoa.m; on Windows and Linux it is SDL2's,
+# snd-sdl.c, which CI runs on SDL's dummy audio driver, since a runner has no
+# sound card -- the sounds load and play, silently.
 proc sound_pass {} {
-	check "the game's sounds are loaded where the platform has them" {
+	check "the game's sounds are loaded" {
 		angband_sound ready
-	} [expr {[tk windowingsystem] eq "aqua"}]
+	} 1
 
 	check "the volume is set, and runs from 0 to 100" {
 		set was [angband_sound volume]
@@ -1822,6 +1822,28 @@ proc sound_pass {} {
 		list $found [llength [lsort -unique $::probe_played]] \
 			[expr {"bad.mp3" in $::probe_played}] $advanced
 	} "{a.mp3 b.ogg bad.mp3 c.flac} 3 0 1"
+
+	# And the real player, where a runner can run it: SDL_mixer, on Windows
+	# and Linux, through SDL's dummy driver -- one of the game's own sounds
+	# as the track, at no volume, played, paused and stopped.  The Mac's
+	# AVAudioEngine wants an output a runner may not have, so there the
+	# stand-in above is the whole of it.
+	check "music plays a real track, pauses and stops, off the Mac" {
+		if {[tk windowingsystem] eq "aqua"} {
+			set r skipped
+		} else {
+			set sounds [file join [file dirname $::display(dir)] sounds]
+			set track [lindex [lsort [glob -directory $sounds *.mp3]] 0]
+			set played [angband_music play $track 0]
+			set a [lindex [angband_music state] 0]
+			angband_music pause
+			set b [lindex [angband_music state] 0]
+			angband_music resume
+			angband_music stop
+			set r [list $played $a $b [lindex [angband_music state] 0]]
+		}
+		set r
+	} [expr {[tk windowingsystem] eq "aqua" ? "skipped" : "1 playing paused stopped"}]
 
 	check "Try plays a sound with the game's sound off" {
 		angband_option use_sound 0

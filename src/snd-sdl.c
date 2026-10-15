@@ -51,7 +51,15 @@ enum {
 	SDL_MUSIC
 };
 
-static const struct sound_file_type supported_sound_files[] = { {".mp3", SDL_MUSIC},
+/*
+ * ZangbandTK: an MP3 is a chunk, mixed with whatever else is playing, as an
+ * Ogg always was.  It was music, which SDL_mixer plays one at a time, so each
+ * sound cut off the one before it -- every one of the game's sounds is an MP3
+ * -- and any music the player had playing too.  SDL_mixer has decoded an MP3
+ * into a chunk since 2.0.2 (2.0.4 is the oldest any build here meets, Ubuntu
+ * 22.04's); one that cannot is still played as music, as before.
+ */
+static const struct sound_file_type supported_sound_files[] = { {".mp3", SDL_CHUNK},
 								{".ogg", SDL_CHUNK},
 								{"", SDL_NULL} };
 
@@ -64,8 +72,12 @@ static bool print_sdl_details = false;
  */
 static bool open_audio_sdl(void)
 {
-	/* Initialize variables */
-	int audio_rate = 22050;
+	/*
+	 * Initialize variables.  ZangbandTK: 44.1kHz, the rate the game's sounds
+	 * and nearly all music are made at, rather than half of it; the Tk front
+	 * end plays the player's own music through this mixer too.
+	 */
+	int audio_rate = 44100;
 	Uint16 audio_format = AUDIO_S16;
 	int audio_channels = 2;
 
@@ -121,12 +133,26 @@ static bool open_audio_sdl(void)
  */
 static bool load_sample_sdl(const char *filename, int ft, sdl_sample *sample)
 {
+	sample->sample_type = ft;
+
 	switch (ft) {
 		case SDL_CHUNK:
 			sample->sample_data.chunk = Mix_LoadWAV(filename);
 
 			if (sample->sample_data.chunk)
 				return true;
+
+			/*
+			 * An SDL_mixer too old to decode an MP3 into a chunk can
+			 * still play it as music, one sound at a time.
+			 */
+			if (suffix_i(filename, ".mp3")) {
+				sample->sample_data.music = Mix_LoadMUS(filename);
+				if (sample->sample_data.music) {
+					sample->sample_type = SDL_MUSIC;
+					return true;
+				}
+			}
 
 			break;
 
@@ -160,7 +186,6 @@ static bool load_sound_sdl(const char *filename, int ft, struct sound_data *data
 	/* Try and load the sample file */
 	if (load_sample_sdl(filename, ft, sample)) {
 		data->status = SOUND_ST_LOADED;
-		sample->sample_type = ft;
 	} else {
 		mem_free(sample);
 		sample = NULL;
@@ -254,6 +279,17 @@ static const struct sound_file_type *supported_files_sdl(void)
 }
 
 /**
+ * ZangbandTK: how loud the game's sounds are, from 0 to 100 -- every channel's
+ * volume, which is what each sound starts on.  Not the music's: that is the
+ * player's own music, in the Tk front end, which keeps its own.
+ */
+static bool set_volume_sdl(int percent)
+{
+	Mix_Volume(-1, percent * MIX_MAX_VOLUME / 100);
+	return true;
+}
+
+/**
  * Init the SDL sound module.
  */
 errr init_sound_sdl(struct sound_hooks *hooks, int argc, char **argv)
@@ -264,6 +300,7 @@ errr init_sound_sdl(struct sound_hooks *hooks, int argc, char **argv)
 	hooks->load_sound_hook = load_sound_sdl;
 	hooks->unload_sound_hook = unload_sound_sdl;
 	hooks->play_sound_hook = play_sound_sdl;
+	hooks->set_volume_hook = set_volume_sdl;
 
 #ifdef SOUND_SDL2
 	{

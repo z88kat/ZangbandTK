@@ -25,6 +25,8 @@ on:
       - 'src/sound-core.c'
       - 'src/sound.h'
       - 'src/cocoa/snd-cocoa.m'
+      # And the sound the Windows and Linux builds compile in, SDL2's.
+      - 'src/snd-sdl.c'
       # The keymap list the Keymaps window reads.
       - 'src/ui-keymap.c'
       - 'src/ui-keymap.h'
@@ -239,6 +241,9 @@ jobs:
       # The game refuses to start in a locale that is not UTF-8.
       LANG: C.UTF-8
       LC_ALL: C.UTF-8
+      # A runner has no sound card; SDL's dummy driver plays to nowhere, so
+      # the sounds and the music are still loaded and played.
+      SDL_AUDIODRIVER: dummy
     steps:
       - name: Clone Project
         uses: actions/checkout@v6
@@ -250,7 +255,8 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ninja-build libx11-dev libxft-dev \
-            libfontconfig1-dev zip xvfb xauth libfuse2 file
+            libfontconfig1-dev zip xvfb xauth libfuse2 file \
+            libsdl2-dev libsdl2-mixer-dev
 
       # Keyed on the image, not on runner.os as the Mac's is: a toolchain built
       # on a newer Ubuntu and restored here would carry its newer glibc into
@@ -295,6 +301,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror -DUSE_PRIVATE_PATHS" \
             -DSUPPORT_TCL_FRONTEND=ON \
+            -DSUPPORT_SDL2_SOUND=ON \
             -DTCLTK_PREFIX="$PWD/tcltk/local"
           cmake --build build --parallel
 
@@ -352,6 +359,9 @@ jobs:
   windows:
     name: Windows and zip
     runs-on: windows-latest
+    env:
+      # A runner has no sound card; see the Linux job.
+      SDL_AUDIODRIVER: dummy
     defaults:
       run:
         shell: msys2 {0}
@@ -365,6 +375,9 @@ jobs:
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-ninja
             mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-pkgconf
+            mingw-w64-x86_64-SDL2
+            mingw-w64-x86_64-SDL2_mixer
             make
             zip
 
@@ -405,6 +418,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror -DUSE_PRIVATE_PATHS" \
             -DSUPPORT_TCL_FRONTEND=ON \
+            -DSUPPORT_SDL2_SOUND=ON \
             -DTCLTK_PREFIX="$(cygpath -m "$PWD/tcltk/local")"
           cmake --build build --parallel
 

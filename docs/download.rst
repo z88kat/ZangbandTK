@@ -35,8 +35,8 @@ build for each platform, and the source:
   and older Windows. It runs on 64-bit Windows too, and needs the two DLLs beside
   the executable.
 - ``ZangbandTK-<version>-win64-tk.zip`` — ``ZangbandTK.exe``, the Tk front end,
-  for 64-bit Windows, with Tcl and Tk beside it. No sound or music yet. See
-  `ZangbandTK on Windows and Linux`_.
+  for 64-bit Windows, with Tcl and Tk beside it. See `ZangbandTK on Windows
+  and Linux`_.
 - ``Zangband-<version>-linux64.AppImage`` — the Linux build, 64-bit. One file:
   make it executable and run it. Carries three front ends, chosen with ``-m``:
   ``-msdl2`` for tiles, ``-mx11`` for a plain window, and ``-mgcu`` to play in a
@@ -45,8 +45,8 @@ build for each platform, and the source:
   the curses front end on its own, with no FUSE and no graphics stack, for a
   server you reach over ssh. See `The Linux terminal build`_.
 - ``ZangbandTK-<version>-linux64-tk.AppImage`` — the Tk front end for 64-bit
-  Linux, one file as the other AppImage is. No sound or music yet. See
-  `ZangbandTK on Windows and Linux`_.
+  Linux, one file as the other AppImage is. See `ZangbandTK on Windows and
+  Linux`_.
 - ``Zangband-<version>-nintendo.zip`` — the Nintendo DS ROM and the 3DS build,
   with the data the card needs. Text mode, no tiles or sound.
 - ``Zangband-<version>-dos.zip`` — the DOS build, for a 386 or better with a
@@ -129,8 +129,9 @@ that comes with Angband 4.2, where the game draws everything itself in windows o
 text or tiles. ``ZangbandTK.app``, in ``-osx-tk.dmg``, is a front end modelled
 on ZangbandTk, the Zangband of the late 1990s: the map and its panes in the main
 window, the character, the inventory, the spell books and the shops in windows
-of their own, and the original's menus. It is the newer of the two, Apple
-Silicon only for now, and still being finished.
+of their own, and the original's menus. It is the newer of the two, for Apple
+Silicon only — there is no Intel Mac build of it, nor will be — and still being
+finished.
 
 They can be installed side by side, and they share one folder of characters and
 scores, ``Documents/ZangbandTK`` in your home folder, so a character made in one
@@ -420,13 +421,12 @@ too, so all three share them.
 
 .. note::
 
-   **Two things the Mac has and these do not, yet.** There is no sound or music:
-   the game's Use Sound switch does nothing, and the Options window greys out
-   the volume and music controls. And the Keymaps window always draws a US
-   keyboard, whatever the layout. Both are planned. Beyond that, CI builds both
-   on every push, plays a scripted session through the real front end and starts
-   the packaged game to check it runs on what it carries — but nobody has played
-   either through yet.
+   **What differs from the Mac.** Sound and music come through SDL rather than
+   the Mac's own audio, and the music player plays MP3, FLAC, Ogg, Opus, WAV and
+   AIFF but not AAC. The Keymaps window always draws a US keyboard, whatever the
+   layout. And while CI builds both on every push, plays a scripted session
+   through the real front end and starts the packaged game to check it runs on
+   what it carries, nobody has played either through yet.
 
 Linux
 =====

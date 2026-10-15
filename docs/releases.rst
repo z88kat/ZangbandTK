@@ -110,8 +110,10 @@ ZangbandTK on Windows and Linux — 15 October 2026
 - **ZangbandTK for Windows and Linux.** The Tk front end has two more
   downloads: ``ZangbandTK-<version>-win64-tk.zip`` and
   ``ZangbandTK-<version>-linux64-tk.AppImage``. Built, packaged and checked on
-  every push, as the Mac's is, but not yet played through, and with no sound or
-  music yet. See :doc:`download`. Fixed on the way, for those two:
+  every push, as the Mac's is, but not yet played through. The game's sounds and
+  your own music play through SDL there, where the Mac uses its own audio; the
+  music player takes MP3, FLAC, Ogg, Opus, WAV and AIFF, but not AAC. See
+  :doc:`download`. Fixed on the way, for those two:
 
   - F10, and Alt and a letter, go to the game, as every other key in the main
     window does, rather than opening the menu bar as well. On Windows, Alt is
@@ -125,6 +127,9 @@ ZangbandTK on Windows and Linux — 15 October 2026
 
 - **On the Mac as well**, the music folder starts in your own Music folder. It
   was a folder called ``~`` wherever the game had been started.
+- **Zangband's Linux AppImage** plays the game's sounds together, as they
+  happen, rather than each cutting off the one before: every sound is an MP3,
+  and SDL had been playing MP3s one at a time.
 
 Two applications, two names — 15 October 2026
 ---------------------------------------------

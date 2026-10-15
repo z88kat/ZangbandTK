@@ -467,6 +467,11 @@ possible; running it is the part that needs the matching machine.
 *Note:* this constrains **macOS only**. Linux and Windows portability under DEC-21 is
 architecture-agnostic; x86_64 remains entirely normal there.
 
+> **Not for ZangbandTK, 15 October 2026 (the project owner).** "We won't support Intel Mac
+> for the TK edition." Zangband -- the Cocoa application and the terminal build -- keeps
+> both architectures as above; ZangbandTK ships for Apple Silicon only, in
+> `ZangbandTK-<version>-osx-tk.dmg`, and no Intel image of it is planned.
+
 **DEC-13 — Tcl/Tk 9.0.4 is built from the in-tree sources** ([tcl9.0.4/](../../tcl9.0.4/),
 [tk9.0.4/](../../tk9.0.4/)), not linked from Homebrew. Reproducible, version-pinned and
 self-contained for distribution.

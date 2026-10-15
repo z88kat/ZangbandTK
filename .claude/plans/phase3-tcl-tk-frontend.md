@@ -2555,7 +2555,9 @@ _What follows from it:_
   arm64 since macos-14. The Intel Mac job, and then Linux and Windows, land when there is
   something worth keeping green on them — and they will find real breakage when they do,
   which is the point of adding them before release rather than at it. Four release jobs is
-  where this ends up: two Macs under the amended DEC-22, plus Linux and Windows.
+  where this ends up: two Macs under the amended DEC-22, plus Linux and Windows. _(Three,
+  since 15 October 2026: no Intel Mac build of ZangbandTK, by the owner's ruling, recorded
+  under DEC-22.)_
 - **Portability stays a coding discipline meanwhile**, per DEC-12's four rules. The `plat`
   layer gets its macOS backend written and its other two stubbed with `#error`, exactly as
   the original did — a stub that fails loudly at compile time is honest; a silently wrong
@@ -2591,6 +2593,18 @@ _What follows from it:_
 > `~/Music` (Tcl 9 does not expand `~`), Alt read as Num Lock on Windows, the keypad
 > arriving as digits on Windows. Not yet looked at: window sizes in fixed pixels, laid
 > out at a Mac's 72 dpi, on Windows' 96.
+>
+> **Sound and music on Windows and Linux, later the same day**, through SDL2 as DEC-12
+> rule 4 said: `snd-sdl.c` for the game's sounds, `-DSUPPORT_SDL2_SOUND=ON`, and
+> `src/tcl/music-sdl.c` for the player's own music, music.m's five functions on SDL_mixer's
+> music stream. `snd-sdl.c` had played every MP3 -- every one of the game's sounds -- as
+> music, one at a time; they are chunks now, mixed, with music the fallback for an
+> SDL_mixer too old to decode one, and it has a volume hook and runs at 44.1kHz. Ubuntu
+> 22.04's SDL_mixer is 2.0.4, which cannot tell a track's length or position, so the
+> Linux player counts the time played and the Sound page shows that alone. No AAC: the
+> music page names what each platform plays. CI runs both on SDL's dummy driver; the
+> bridge test plays a real track off the Mac, and the package check plays one of the
+> package's own MP3s, which proves the codecs travelled.
 
 **Settled — two macOS applications, permanently.** Confirmed by project owner: _"we want to
 keep the existing build because this is a different play experience. The TK is a separate

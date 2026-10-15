@@ -15,9 +15,10 @@ character, the inventory, the spell books and the shops in windows of their
 own, and the original's menus. It is the same game as Zangband.exe, the other
 Windows download, and it is newer: some of it is still being finished.
 
-This Windows build has no sound or music yet: the game's own Use Sound switch
-does nothing, and the volume and music controls in the Options window are
-greyed out.
+Sound and your own music are on the Sound page of the Options window, as on
+the Mac. The game's sounds are off until you turn on Use Sound; the music comes
+from a folder of your own, and MP3, FLAC, Ogg, Opus, WAV and AIFF play -- not
+AAC, which the Mac's player has and this one does not.
 
 
 Installing

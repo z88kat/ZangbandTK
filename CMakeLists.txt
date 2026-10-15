@@ -507,6 +507,12 @@ if(SUPPORT_TCL_FRONTEND)
     if(APPLE AND NOT SUPPORT_SDL2_SOUND)
         configure_tcl_sound(OurExecutable OurCoreLib ${SOUND_SUPPORT_LIB})
     endif()
+    # The player's own music on SDL2's mixer, where SDL2 plays the game's
+    # sounds: Windows and Linux.  On the Mac it is music.m, which
+    # configure_tcl_sound brings with the Cocoa module.
+    if(SUPPORT_SDL2_SOUND)
+        target_sources(OurExecutable PRIVATE src/tcl/music-sdl.c)
+    endif()
 endif()
 if(SUPPORT_WINDOWS_FRONTEND)
     include(src/cmake/modules/PNG_Detection.cmake)

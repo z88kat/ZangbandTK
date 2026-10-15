@@ -25,10 +25,18 @@ set music(paused) 0
 set music(tick) ""
 set music(save) ""
 
-# What Core Audio plays.  Not MIDI, and not the tracker modules the original's
-# player was for: those want a player of their own.
-set music(types) {.mp3 .m4a .m4b .aac .wav .aif .aiff .aifc .caf .flac .ogg
-    .oga .opus}
+# What the player plays: Core Audio's formats on the Mac (music.m), SDL_mixer's
+# on Windows and Linux (music-sdl.c), which has no AAC.  Not MIDI, and not the
+# tracker modules the original's player was for: those want a player of their
+# own.
+if {[tk windowingsystem] eq "aqua"} {
+    set music(types) {.mp3 .m4a .m4b .aac .wav .aif .aiff .aifc .caf .flac
+        .ogg .oga .opus}
+    set music(said) "MP3, AAC, FLAC, Ogg, Opus, WAV and AIFF"
+} else {
+    set music(types) {.mp3 .wav .aif .aiff .flac .ogg .oga .opus}
+    set music(said) "MP3, FLAC, Ogg, Opus, WAV and AIFF"
+}
 
 # The tracks in a folder and the folders in it, as far as three deep.
 proc music_files {dir {depth 0}} {
@@ -145,8 +153,14 @@ proc music_show {} {
     if {$music(at) < 0} return
     lassign [angband_music state] state position length
     set name [file rootname [file tail [lindex $music(list) $music(at)]]]
-    set position [expr {min($position, $length)}]
-    set music(now) "$name  —  [music_clock $position] of [music_clock $length]"
+    # A length of 0 is one the player cannot tell -- SDL_mixer before 2.6,
+    # which the Linux build has -- and then the time played stands alone.
+    if {$length > 0} {
+        set position [expr {min($position, $length)}]
+        set music(now) "$name  —  [music_clock $position] of [music_clock $length]"
+    } else {
+        set music(now) "$name  —  [music_clock $position]"
+    }
 }
 
 # --- the Sound page's lower half -------------------------------------------------
@@ -170,9 +184,9 @@ proc music_section {p} {
     pack $b.prev $b.pause $b.next -side left -padx {0 6}
     ttk::label $m.now -textvariable music(now) -font [uifont 11]
     ttk::label $m.note -wraplength 460 -justify left -font [uifont 11] \
-        -text "None comes with the game: choose a folder of your own.  MP3,\
-            AAC, FLAC, Ogg, Opus, WAV and AIFF play, from the folders inside\
-            it too, in a shuffled order.  Kept for every character."
+        -text "None comes with the game: choose a folder of your own.\
+            $music(said) play, from the folders inside it too, in a shuffled\
+            order.  Kept for every character."
 
     grid $m.on -row 0 -column 0 -columnspan 3 -sticky w
     grid $m.dir -row 1 -column 0 -columnspan 2 -sticky ew -pady {6 0}
