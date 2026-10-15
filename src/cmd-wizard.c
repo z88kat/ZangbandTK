@@ -2341,39 +2341,7 @@ void do_cmd_wiz_recall_monster(struct command *cmd)
  */
 void do_cmd_wiz_rerate(struct command *cmd)
 {
-	int min_value, max_value, percent;
-
-	min_value = (PY_MAX_LEVEL * 3 * (player->hitdie - 1)) / 8;
-	min_value += PY_MAX_LEVEL;
-
-	max_value = (PY_MAX_LEVEL * 5 * (player->hitdie - 1)) / 8;
-	max_value += PY_MAX_LEVEL;
-
-	player->player_hp[0] = player->hitdie;
-
-	/* Rerate */
-	while (1) {
-		int i;
-
-		/* Collect values */
-		for (i = 1; i < PY_MAX_LEVEL; i++) {
-			player->player_hp[i] = randint1(player->hitdie);
-			player->player_hp[i] += player->player_hp[i - 1];
-		}
-
-		/* Legal values */
-		if (player->player_hp[PY_MAX_LEVEL - 1] >= min_value &&
-			player->player_hp[PY_MAX_LEVEL - 1] <= max_value) break;
-	}
-
-	percent = (int)(((long)player->player_hp[PY_MAX_LEVEL - 1] * 200L) /
-		(player->hitdie + ((PY_MAX_LEVEL - 1) * player->hitdie)));
-
-	/* Update and redraw hitpoints */
-	player->upkeep->update |= PU_HP;
-	player->upkeep->redraw |= PR_HP;
-
-	msg("Current Life Rating is %d/100.", percent);
+	msg("Current Life Rating is %d/100.", player_rerate_hp(player));
 }
 
 

@@ -366,11 +366,20 @@ cards of eight. See :ref:`books-short`.
 
 .. note::
 
-   **One of the thirty-two does nothing, and says so.** *Shuffle* is the deck
-   itself — one roll read off twenty unequal outcomes, several of which need
-   mechanisms this game lacks.
+   **Every one of the thirty-two does something.** The last to arrive was
+   *Shuffle*, the deck itself: one draw against twenty-one cards, and the bad
+   ones are the common ones. Death calls a crowd of monsters against you, the
+   Devil a demon, and the Hanged Man lays the Ancient Curse; the Fool drains
+   your intelligence and wisdom, and the Wheel of Fortune is the wild magic of
+   a failed Chaos spell. Higher up are teleports, a blessing, the Tower that
+   breaks the walls around you or shakes the ground, Temperance that puts what
+   is next to you to sleep, a creature drawn as a friend, the Lovers' charm and
+   the Hermit's wall of granite behind you. At the top are Judgement, which rerolls your hit points
+   and cures every mutation you have; the Sun, which lights and maps the level;
+   and the World, which is experience. A Rogue or a High-Mage, card sharps both,
+   draws higher the more experienced they are.
 
-   *Joker Card* and *Trump Lore* used to be beside it. The Joker calls a mold,
+   *Joker Card* and *Trump Lore* used to do nothing as well. The Joker calls a mold,
    a bat, a vortex or creeping coins to serve you, and the card decides which.
    Like every Trump summon it calls at the depth you are on, so a vortex, the
    shallowest of which lives at 21, will not answer above that. *Trump Lore*
@@ -454,7 +463,9 @@ the realm produces a chaotic effect instead, and how bad it is depends on how
 deep the spell was. *Magic Missile* never backfires. *Call the Void* almost
 always does, and what you get ranges from a short teleport, through a room full
 of doors and traps, a mutation, a forgotten map and an earthquake, down to eight
-monsters landing on you and, at the very bottom, the Ancient and Foul Curse.
+creatures of one strange kind landing on you — molds, bats, vortices,
+quylthulgs, or things that are not what they seem — and, at the very bottom, the
+Ancient and Foul Curse.
 This is Zangband's own table and its own scaling — the spoiler warns that "Chaos
 spells are known to backfire easily" — and it is the price of the realm having
 no protective spells at all.

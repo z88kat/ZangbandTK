@@ -781,7 +781,8 @@ int spell_realm_index(const struct player *p,
 }
 
 /**
- * A Chaos spell that fails does something else instead (CNT-10, PLR-13).
+ * Wild magic: what a Chaos spell that fails does instead (CNT-10, PLR-13),
+ * and what Trump's Shuffle deals as the Wheel of Fortune.
  *
  * The spoiler promises this -- "Chaos spells are known to backfire easily and
  * produce undesired effects" -- and `wild_magic()`
@@ -791,25 +792,29 @@ int spell_realm_index(const struct player *p,
  * and Foul Curse at the bottom.
  *
  * The bands are Zangband's, boundary for boundary. What changed is what sits
- * in three of them, and only where 4.2 has no counterpart:
+ * in two of them, and only where 4.2 has no counterpart:
  *
- * - Zangband's six *bizarre* summon groups do not exist here, so the two
- *   summoning bands call for ordinary monsters. Eight of them, which is
- *   Zangband's count.
  * - `summon_cyber()` calls a Cyberdemon; the nearest here is a greater demon.
  * - `wall_breaker()` smashes walls near you, which is a KILL_WALL sphere.
+ *
+ * Zangband's six *bizarre* summon groups were a third until 3.127.0, and the
+ * first summoning band called eight ordinary monsters for want of them. They
+ * are in summon.txt now (DEC-139, DEC-141), so it calls eight of one group, as
+ * Zangband's did, a level and a half deep.
  *
  * Everything else -- the teleports, the light and dark, the doors and traps,
  * the earthquake, the mutation, the disenchantment, the forgetting, the chaos
  * ball, the granite, and the curse at the bottom -- is an effect 4.2 already
  * has, several of them because earlier milestones built them.
  */
-static void chaos_backfires(struct player *p, int idx)
+void wild_magic(struct player *p, int idx)
 {
+	static const char *const bizarre[] = {
+		"BIZARRE_MOLD", "BIZARRE_BAT", "BIZARRE_QUYLTHULG",
+		"BIZARRE_VORTEX", "BIZARRE_COINS", "BIZARRE_MIMIC",
+	};
 	int roll = (idx > 0 ? randint0(idx) : 0) + randint0(9);
-	int i;
-
-	msg("You produce a chaotic effect!");
+	int i, type;
 
 	switch (roll) {
 		case 1: case 2: case 3:
@@ -901,9 +906,10 @@ static void chaos_backfires(struct player *p, int idx)
 			break;
 
 		case 34: case 35:
+			type = summon_name_to_idx(bizarre[randint0(N_ELEMENTS(bizarre))]);
 			for (i = 0; i < 8; i++) {
-				effect_simple(EF_SUMMON, source_player(), "1", 0, 0, 0, 0, 0,
-							  NULL);
+				effect_simple(EF_SUMMON, source_player(), "1", type, 0,
+							  p->depth / 2, 0, 0, NULL);
 			}
 			break;
 
@@ -922,6 +928,16 @@ static void chaos_backfires(struct player *p, int idx)
 						  0, NULL);
 			break;
 	}
+}
+
+/**
+ * A Chaos spell gone wrong: wild magic, from as deep in the table as the
+ * spell sits in its realm.
+ */
+static void chaos_backfires(struct player *p, int idx)
+{
+	msg("You produce a chaotic effect!");
+	wild_magic(p, idx);
 }
 
 /**

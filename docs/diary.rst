@@ -31,6 +31,22 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+15 October 2026 — the other four
+================================
+
+The four spells left waiting turned out to be less work than their notes
+said. Wraithform's note said there was no wraith form in this game, but the
+Wraith mutation had built one a month ago, and nobody went back to the spell.
+Shuffle's note said some of its cards had nothing to deal, a wish and
+artifact creation among them. Zangband 2.7.5's deck has neither; the note was
+describing a later version. Omnicide and Explosive Rune did need new code, and
+the rune turned up a real bug on the way: a pet heading past you in a
+corridor would break the glyph of warding you were standing on. With an
+explosive rune that would have blown the pet up. Pets go round your runes
+now. Every spell that can work now does. The three that do nothing are the
+ones I ruled out.
+
+
 15 October 2026 — sixteen spells that did nothing
 =================================================
 

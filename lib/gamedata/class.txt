@@ -1355,8 +1355,10 @@ dice:$Dd3
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
 desc:Assaults a creature's mind.
 spell:Shuffle:5:5:27:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SHUFFLE
+dice:1d120
+desc:Draws one card from the Trump deck, from Death and the Devil to the Sun
+desc: and the World.  The bad cards are the common ones.
 spell:Reset Recall:6:6:29:5
 effect:RESET_RECALL
 desc:Sets the level Word of Recall brings you back to in this dungeon, from its first level to the deepest you have reached in it.
@@ -2888,8 +2890,10 @@ dice:$Dd3
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
 desc:Assaults a creature's mind.
 spell:Shuffle:6:5:29:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SHUFFLE
+dice:1d120
+desc:Draws one card from the Trump deck, from Death and the Devil to the Sun
+desc: and the World.  The bad cards are the common ones.
 spell:Reset Recall:7:7:30:5
 effect:RESET_RECALL
 desc:Sets the level Word of Recall brings you back to in this dungeon, from its first level to the deepest you have reached in it.
@@ -4265,8 +4269,11 @@ dice:$Dd3
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
 desc:Assaults a creature's mind.
 spell:Shuffle:9:7:33:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SHUFFLE
+dice:$B+1d110
+expr:B:PLAYER_LEVEL:/ 5
+desc:Draws one card from the Trump deck, from Death and the Devil to the Sun
+desc: and the World.  The bad cards are the common ones.
 spell:Reset Recall:11:9:36:5
 effect:RESET_RECALL
 desc:Sets the level Word of Recall brings you back to in this dungeon, from its first level to the deepest you have reached in it.
@@ -5273,8 +5280,10 @@ dice:$Dd3
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
 desc:Assaults a creature's mind.
 spell:Shuffle:9:7:33:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SHUFFLE
+dice:1d120
+desc:Draws one card from the Trump deck, from Death and the Devil to the Sun
+desc: and the World.  The bad cards are the common ones.
 spell:Reset Recall:10:8:35:5
 effect:RESET_RECALL
 desc:Sets the level Word of Recall brings you back to in this dungeon, from its first level to the deepest you have reached in it.
@@ -8013,8 +8022,10 @@ dice:$Dd3
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
 desc:Assaults a creature's mind.
 spell:Shuffle:7:7:30:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SHUFFLE
+dice:1d120
+desc:Draws one card from the Trump deck, from Death and the Devil to the Sun
+desc: and the World.  The bad cards are the common ones.
 spell:Reset Recall:8:7:32:5
 effect:RESET_RECALL
 desc:Sets the level Word of Recall brings you back to in this dungeon, from its first level to the deepest you have reached in it.
@@ -9313,8 +9324,11 @@ dice:$Dd3
 expr:D:PLAYER_LEVEL:- 1 / 5 + 3
 desc:Assaults a creature's mind.
 spell:Shuffle:4:4:26:5
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SHUFFLE
+dice:$B+1d110
+expr:B:PLAYER_LEVEL:/ 5
+desc:Draws one card from the Trump deck, from Death and the Devil to the Sun
+desc: and the World.  The bad cards are the common ones.
 spell:Reset Recall:5:5:27:5
 effect:RESET_RECALL
 desc:Sets the level Word of Recall brings you back to in this dungeon, from its first level to the deepest you have reached in it.

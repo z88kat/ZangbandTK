@@ -361,6 +361,48 @@ int player_apply_damage_reduction(struct player *p, int dam)
 
 
 /**
+ * Roll the player's hit points afresh, level by level, within the bounds the
+ * game allows; returns the new life rating, out of 100.
+ *
+ * The wizard's rerate command, and (ZangbandTK) the Judgement card in
+ * Trump's Shuffle, which Zangband dealt as do_cmd_rerate().
+ */
+int player_rerate_hp(struct player *p)
+{
+	int min_value, max_value;
+
+	min_value = (PY_MAX_LEVEL * 3 * (p->hitdie - 1)) / 8;
+	min_value += PY_MAX_LEVEL;
+
+	max_value = (PY_MAX_LEVEL * 5 * (p->hitdie - 1)) / 8;
+	max_value += PY_MAX_LEVEL;
+
+	p->player_hp[0] = p->hitdie;
+
+	/* Rerate */
+	while (1) {
+		int i;
+
+		/* Collect values */
+		for (i = 1; i < PY_MAX_LEVEL; i++) {
+			p->player_hp[i] = randint1(p->hitdie);
+			p->player_hp[i] += p->player_hp[i - 1];
+		}
+
+		/* Legal values */
+		if (p->player_hp[PY_MAX_LEVEL - 1] >= min_value &&
+			p->player_hp[PY_MAX_LEVEL - 1] <= max_value) break;
+	}
+
+	/* Update and redraw hitpoints */
+	p->upkeep->update |= PU_HP;
+	p->upkeep->redraw |= PR_HP;
+
+	return (int)(((long)p->player_hp[PY_MAX_LEVEL - 1] * 200L) /
+		(p->hitdie + ((PY_MAX_LEVEL - 1) * p->hitdie)));
+}
+
+/**
  * Decreases players hit points and sets death flag if necessary
  *
  * \param p is the player of interest.

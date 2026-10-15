@@ -1349,16 +1349,25 @@ desc = "Assaults a creature's mind."
 
 [trump.spells."Shuffle"]
 line = 1803
-defer = """A deck of many things: one draw against a d120, read off about \
-twenty unequal bands, from a summoning of everything nearby at the bottom to a \
-wish at the top. Two problems, and the second is the one that matters. Several \
-individual outcomes need mechanisms we lack -- the ty curse, a wish, \
-Zangband's own artifact creation (already deferred for its own reasons). And \
-4.2's RANDOM effect picks *uniformly* from its branches, so even the \
-expressible outcomes could not be given their weights: Shuffle's whole \
-character is that the bad results are common and the good ones are rare, and a \
-uniform draw over the same outcomes is a different card game. Deferred as a \
-shape, not as a list of missing parts."""
+effects = [ "SHUFFLE", "dice:1d120" ]
+class-effects.Rogue = [ "SHUFFLE", "dice:$B+1d110", "expr:B:PLAYER_LEVEL:/ 5" ]
+class-effects."High-Mage" = [ "SHUFFLE", "dice:$B+1d110",
+                              "expr:B:PLAYER_LEVEL:/ 5" ]
+note = """One draw against twenty-one cards on Zangband's unequal bands, the \
+bad ones low and common, the good ones high and rare -- d120, or d110 plus a \
+fifth of the level for the two card sharps, the Rogue and the High-Mage, \
+which is Zangband's own test by class and so a chain per class here. Deferred \
+until 3.127.0 as a shape RANDOM cannot draw, uniform as it is, and on the \
+grounds that some cards had nothing to deal: the Ancient Curse, a wish and \
+artifact creation. The curse was built for Chaos (CNT-15), and the deck in \
+2.7.5 holds no wish and no artifact -- this note had them from a later \
+Zangband. SHUFFLE is the deck; every card is an effect the game has, and the \
+Wheel of Fortune is the wild magic of a failed Chaos spell, as it was. \
+DEC-141."""
+desc = [
+  "Draws one card from the Trump deck, from Death and the Devil to the Sun",
+  "and the World.  The bad cards are the common ones.",
+]
 
 [trump.spells."Reset Recall"]
 line = 1980

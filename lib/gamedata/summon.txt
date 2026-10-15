@@ -185,3 +185,21 @@ msgt:SUM_MONSTER
 uniques:0
 base:creeping coins
 desc:creeping coins
+
+# ZangbandTK: the other two of Zangband's six bizarre groups, which wild
+# magic and Trump's Shuffle draw on: quylthulgs (SUMMON_BIZARRE3), and the
+# things that pass for items (SUMMON_BIZARRE6, whose letters are a potion's,
+# a scroll's, a ring's, a pile of coins and a weapon's) -- mimics and
+# creeping coins here.
+name:BIZARRE_QUYLTHULG
+msgt:SUM_MONSTER
+uniques:0
+base:quylthulg
+desc:quylthulgs
+
+name:BIZARRE_MIMIC
+msgt:SUM_MONSTER
+uniques:0
+base:mimic
+base:creeping coins
+desc:things that are not what they seem

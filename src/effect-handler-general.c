@@ -21,6 +21,7 @@
 #include "dun-type.h"
 #include "effect-handler.h"
 #include "player-mutation.h"
+#include "player-spell.h"
 #include "player-virtue.h"
 #include "game-input.h"
 #include "game-world.h"
@@ -2975,6 +2976,133 @@ bool effect_handler_OMNICIDE(effect_handler_context_t *context)
 	take_hit(player, dam, "the strain of casting Omnicide");
 
 	player->upkeep->redraw |= (PR_MONLIST | PR_MANA);
+
+	return true;
+}
+
+/**
+ * Draw a card from the Trump deck (ZangbandTK, Trump's Shuffle).
+ *
+ * Zangband's ([cmd5.c:1803](../archive/zangband/src/cmd5.c#L1803)) is a deck
+ * of twenty-one cards over unequal bands of one draw, the bad cards low and
+ * common and the good ones high and rare, which is why the spell waited for
+ * an effect of its own: RANDOM picks between its branches uniformly.  The
+ * draw is the effect's value -- a d120, or for a Rogue or a High-Mage, card
+ * sharps both, d110 plus a fifth of their level -- so the class difference
+ * lives in class.txt rather than here.
+ *
+ * Every card is something the game already does, and where it already does it
+ * for Zangband the same way it is done the same way here: the Wheel of
+ * Fortune is the wild magic of a failed Chaos spell, the Hanged Man is the
+ * Ancient Curse, the Tower's wall breaker is the wild magic's, and Death's
+ * high summons are the Ancient Curse's.  Monsters drawn as pictures come a
+ * level and a half deep, as Zangband's (depth * 3) / 2.
+ */
+bool effect_handler_SHUFFLE(effect_handler_context_t *context)
+{
+	static const char *const strange[] = {
+		"BIZARRE_MOLD", "BIZARRE_BAT", "BIZARRE_QUYLTHULG",
+		"BIZARRE_VORTEX", "BIZARRE_COINS", "BIZARRE_MIMIC",
+	};
+	static const char *const friendly[] = {
+		"BIZARRE_MOLD", "BIZARRE_BAT", "BIZARRE_VORTEX", "BIZARRE_COINS",
+	};
+	struct source me = source_player();
+	int die = effect_calculate_value(context, false);
+	int deeper = player->depth / 2;
+	int i;
+
+	context->ident = true;
+
+	msg("You shuffle the deck and draw a card...");
+	if (die < 30) virtue_change(player, V_CHANCE, 1);
+
+	if (die < 7) {
+		msg("Oh no! It's Death!");
+		for (i = randint1(3); i > 0; i--) {
+			effect_simple(EF_SUMMON, me, "3+1d3", 0, 0, 0, 0, 0, NULL);
+		}
+	} else if (die < 14) {
+		msg("Oh no! It's the Devil!");
+		effect_simple(EF_SUMMON, me, "1", summon_name_to_idx("DEMON"), 0, 0,
+			0, 0, NULL);
+	} else if (die < 18) {
+		msg("Oh no! It's the Hanged Man.");
+		effect_simple(EF_ANCIENT_CURSE, me, "0", 0, 0, 0, 0, 0, NULL);
+	} else if (die < 22) {
+		msg("It's the swords of discord.");
+		effect_simple(EF_WAKE, me, "0", 0, 0, 0, 0, 0, NULL);
+	} else if (die < 26) {
+		msg("It's the Fool.");
+		effect_simple(EF_DRAIN_STAT, me, "0", STAT_INT, 0, 0, 0, 0, NULL);
+		effect_simple(EF_DRAIN_STAT, me, "0", STAT_WIS, 0, 0, 0, 0, NULL);
+	} else if (die < 30) {
+		msg("It's the picture of a strange monster.");
+		effect_simple(EF_SUMMON, me, "1",
+			summon_name_to_idx(strange[randint0(N_ELEMENTS(strange))]), 0,
+			deeper, 0, 0, NULL);
+	} else if (die < 33) {
+		msg("It's the Moon.");
+		effect_simple(EF_DARKEN_AREA, me, "0", 0, 0, 0, 0, 0, NULL);
+		effect_simple(EF_SPHERE, me, "10", PROJ_DARK_WEAK, 3, 0, 0, 0, NULL);
+	} else if (die < 38) {
+		msg("It's the Wheel of Fortune.");
+		wild_magic(player, randint0(32));
+	} else if (die < 40) {
+		msg("It's a teleport trump card.");
+		effect_simple(EF_TELEPORT, me, "10", 0, 0, 0, 0, 0, NULL);
+	} else if (die < 42) {
+		msg("It's Justice.");
+		effect_simple(EF_TIMED_INC, me, format("%d", player->lev), TMD_BLESSED,
+			0, 0, 0, 0, NULL);
+	} else if (die < 47) {
+		msg("It's a teleport trump card.");
+		effect_simple(EF_TELEPORT, me, "100", 0, 0, 0, 0, 0, NULL);
+	} else if (die < 52) {
+		msg("It's a teleport trump card.");
+		effect_simple(EF_TELEPORT, me, "200", 0, 0, 0, 0, 0, NULL);
+	} else if (die < 60) {
+		msg("It's the Tower.");
+		effect_simple(EF_SPHERE, me, "0", PROJ_KILL_WALL, 1, 0, 0, 0, NULL);
+	} else if (die < 72) {
+		msg("It's Temperance.");
+		effect_simple(EF_TOUCH_AWARE, me, format("%d", player->lev),
+			PROJ_SLEEP_ALL, 0, 0, 0, 0, NULL);
+	} else if (die < 80) {
+		msg("It's the Tower.");
+		effect_simple(EF_EARTHQUAKE, me, "0", 0, 5, 0, 0, 0, NULL);
+	} else if (die < 88) {
+		msg("It's the picture of a friendly monster.");
+		effect_simple(EF_SUMMON_PET, me, "1",
+			summon_name_to_idx(friendly[(die - 80) / 2]), 0, deeper, 0, 0,
+			NULL);
+	} else if (die < 96) {
+		msg("It's the Lovers.");
+		effect_simple(EF_BOLT_AWARE, me, format("%d", MIN(player->lev, 20)),
+			PROJ_MON_CHARM, 0, 0, 0, 0, NULL);
+	} else if (die < 101) {
+		msg("It's the Hermit.");
+		effect_simple(EF_GRANITE, me, "0", 0, 0, 0, 0, 0, NULL);
+	} else if (die < 111) {
+		msg("It's the Judgement.");
+		(void) player_rerate_hp(player);
+		if (player_mutation_total(player) > 0) {
+			msg("You are cured of all mutations.");
+			effect_simple(EF_LOSE_MUTATION, me, "1000", 0, 0, 0, 0, 0, NULL);
+		}
+	} else if (die < 120) {
+		msg("It's the Sun.");
+		effect_simple(EF_LIGHT_LEVEL, me, "0", 0, 0, 0, 0, 0, NULL);
+	} else {
+		msg("It's the World.");
+		if (player->exp < PY_MAX_EXP) {
+			int32_t ee = player->exp / 25 + 1;
+
+			if (ee > 5000) ee = 5000;
+			msg("You feel more experienced.");
+			player_exp_gain(player, ee);
+		}
+	}
 
 	return true;
 }

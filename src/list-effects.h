@@ -212,3 +212,9 @@ EFFECT(RUSTPROOF,					false,	NULL,		0,		EFINFO_NONE,	"protects a piece of armour
  * costing a little health and paying back a point of mana (DEC-140).
  */
 EFFECT(OMNICIDE,					false,	NULL,		0,		EFINFO_NONE,	"removes every creature on the level but the uniques, each costing you a little health and giving you a point of mana",	"omnicide")
+
+/*
+ * ZangbandTK: Trump's Shuffle -- one card from a deck of twenty-one, on
+ * Zangband's unequal bands, the value being the draw (DEC-141).
+ */
+EFFECT(SHUFFLE,						false,	NULL,		0,		EFINFO_NONE,	"draws a card from the Trump deck: now and then a good one, more often a bad one",	"shuffle")

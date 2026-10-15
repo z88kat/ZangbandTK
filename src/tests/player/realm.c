@@ -782,25 +782,25 @@ static int test_the_realm_filter_sorts_three_realms(void *state) {
  * which catches a spell quietly *gaining* the deferral wording to make the
  * first half pass.
  *
- * Twenty-eight as the realms stand.  It was a hundred and seven until
- * 3.125.0, when nine spells left the list at once (DEC-139), and fifty-one
- * until 3.126.0, when Wraithform, Omnicide and Explosive Rune followed
- * (DEC-140).  Eighty-three was the figure once, down from a hundred and
- * twenty when M10 began -- five of the seventeen deferred spells were waiting
- * on monster allegiance, and it arrived -- and it rose again when Trump came
- * in with deferrals of its own, which trumps-deferral-is-shuffle names.  Reset
- * Recall left the list once each dungeon kept a recall depth that could be
- * written.
+ * Twenty-two as the realms stand: the three spells refused for good, and
+ * nothing waiting.  It was a hundred and seven until 3.125.0, when nine spells
+ * left the list at once (DEC-139); fifty-one until 3.126.0, when Wraithform,
+ * Omnicide and Explosive Rune followed (DEC-140); and twenty-eight until
+ * 3.127.0, when Shuffle did (DEC-141).  Eighty-three was the figure once, down
+ * from a hundred and twenty when M10 began -- five of the seventeen deferred
+ * spells were waiting on monster allegiance, and it arrived -- and it rose
+ * again when Trump came in with deferrals of its own.  Reset Recall left the
+ * list once each dungeon kept a recall depth that could be written.
  *
- * What is left is four distinct spells across four realms, counted once per
- * entitled class. Three are refused for good, by the project owner's ruling
- * rather than for want of a mechanism: Detect Enchantment, in both Sorcery and
- * Arcane, would bring back a sense of which objects are magical that 4.2
- * removed on purpose, and Death's Raise the Dead raises corpses this game does
- * not have and will not. One waits: Trump's Shuffle, a weighted deck.
+ * What is left is three distinct spells, counted once per entitled class, and
+ * all three are the project owner's ruling rather than a mechanism missing:
+ * Detect Enchantment, in both Sorcery and Arcane, would bring back a sense of
+ * which objects are magical that 4.2 removed on purpose, and Death's Raise the
+ * Dead raises corpses this game does not have and will not.
  *
- * Six classes carry four each; the Paladin, the Necromancer, the Monk and
- * the Blackguard carry one, Death's Raise the Dead.
+ * Six classes carry three each -- the Mage, the Priest, the Rogue, the
+ * Ranger, the Warrior-Mage and the High-Mage -- and the Paladin, the
+ * Necromancer, the Monk and the Blackguard one, Death's Raise the Dead.
  *
  * `scripts/check-build` also runs `zconv realms --check` now, which catches a
  * mis-keyed name itself rather than its symptom. This stays because it asks the
@@ -827,7 +827,7 @@ static int test_a_spell_without_an_effect_says_so(void *state) {
 		}
 	}
 
-	eq(effectless, 28);
+	eq(effectless, 22);
 
 	ok;
 }
@@ -1691,59 +1691,42 @@ static int test_trump_summons_serve_you(void *state) {
 }
 
 /**
- * And the realm's one deferral is the one that was argued for, not more.
+ * And no Trump spell does nothing.
  *
- * A count would let a second in silently, so it is named. Shuffle's weighted
- * deck cannot be expressed by a uniform RANDOM, and several of its cards --
- * the Ancient Curse, a wish, artifact creation -- have nothing here to draw.
+ * Asked of the High-Mage, who has all thirty-two.  A count of deferrals would
+ * let one in silently, and the realm has none to name: Shuffle was the last,
+ * until 3.127.0, its weighted deck a shape a uniform RANDOM cannot draw
+ * (DEC-141).  Joker Card and Trump Lore went in 3.125.0 -- Joker Card's groups
+ * are summon types now, and Trump Lore is IDENTIFY_FULLY (DEC-139).
  *
- * Joker Card and Trump Lore were the second and third until 3.125.0. Joker
- * Card's groups are four summon types in summon.txt now, molds, bats, vortices
- * and creeping coins, picked between as Zangband's randint1(4) did; Trump Lore
- * is IDENTIFY_FULLY, every rune on an object at once (DEC-139).
- *
- * Dimension Door was another until 3.72.1, deferred for wanting a
- * player-chosen destination "it has no interface for". TELEPORT_TO has exactly
- * that interface -- Sorcery's copy of the same Zangband spell had been using it
+ * Dimension Door was deferred until 3.72.1, for wanting a player-chosen
+ * destination "it has no interface for". TELEPORT_TO has exactly that
+ * interface -- Sorcery's copy of the same Zangband spell had been using it
  * since the realm went in -- so the spell works.
  *
- * Reset Recall was another, deferred because the recall depth it writes was
- * not one 4.2 kept.  This game keeps one for each dungeon (WLD-14), and fixing
- * the "Set recall depth?" question that never wrote it gave it a way to be
+ * Reset Recall was deferred because the recall depth it writes was not one
+ * 4.2 kept.  This game keeps one for each dungeon (WLD-14), and fixing the
+ * "Set recall depth?" question that never wrote it gave it a way to be
  * written; RESET_RECALL is the spell.
  */
-static int test_trumps_deferral_is_shuffle(void *state) {
-	static const char *const deferred[] = { "Shuffle" };
+static int test_every_trump_spell_works(void *state) {
 	const struct player_class *c = find_class("High-Mage");
-	int b, silent = 0;
-	size_t i;
+	int b, k, spells = 0;
 
 	notnull(c);
 
 	for (b = 0; b < c->magic.num_books; b++) {
 		const struct class_book *book = &c->magic.books[b];
-		int k;
 
 		if (!book->realm || !streq(book->realm->name, "trump")) continue;
 
 		for (k = 0; k < book->num_spells; k++) {
-			const struct class_spell *sp = &book->spells[k];
-			bool expected = false;
-
-			for (i = 0; i < N_ELEMENTS(deferred); i++) {
-				if (streq(sp->name, deferred[i])) expected = true;
-			}
-
-			if (sp->effect) {
-				require(!expected);
-			} else {
-				require(expected);
-				silent++;
-			}
+			notnull(book->spells[k].effect);
+			spells++;
 		}
 	}
 
-	eq(silent, (int) N_ELEMENTS(deferred));
+	eq(spells, 32);
 
 	ok;
 }
@@ -2088,7 +2071,7 @@ struct test tests[] = {
 	{ "the-realm-filter-sorts-three-realms",
 	  test_the_realm_filter_sorts_three_realms },
 	{ "trump-summons-serve-you", test_trump_summons_serve_you },
-	{ "trumps-deferral-is-shuffle", test_trumps_deferral_is_shuffle },
+	{ "every-trump-spell-works", test_every_trump_spell_works },
 	{ "every-class-charges-zangbands-price",
 	  test_every_class_charges_zangbands_price },
 	{ "a-high-mage-holds-more-magic",

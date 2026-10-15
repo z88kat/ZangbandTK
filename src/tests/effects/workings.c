@@ -1,8 +1,9 @@
 /*
  * effects/workings
  *
- * Twelve realm spells that did nothing until 3.125.0 and 3.126.0 (DEC-139,
- * DEC-140), and the effects, summon types and glyph that gave them a way.  Each is exercised
+ * Thirteen realm spells that did nothing until 3.125.0, 3.126.0 and 3.127.0
+ * (DEC-139 to DEC-141), and the effects, summon types and glyph that gave
+ * them a way.  Each is exercised
  * rather than merely present: player/realm counts the spells that have an
  * effect, and an effect that is wired up and does the wrong thing passes that
  * count as easily as one that works.
@@ -16,6 +17,7 @@
  *   OMNICIDE        Omnicide
  *   GLYPH:EXPLOSIVE Explosive Rune
  *   TIMED_INC:WRAITH  Wraithform, the WRAITH mutation's form
+ *   SHUFFLE         Shuffle, Trump's deck
  */
 
 #include "unit-test.h"
@@ -42,6 +44,7 @@
 #include "object.h"
 #include "player-birth.h"
 #include "player-calcs.h"
+#include "player-mutation.h"
 #include "player-timed.h"
 #include "player-util.h"
 #include "source.h"
@@ -740,6 +743,145 @@ static int test_the_spells_carry_the_effects(void *state) {
 	ok;
 }
 
+
+/*
+ * Shuffle.  The draw is the effect's value, so a test deals the card it
+ * wants.  Zangband's bands, boundary for boundary: these deal either side of
+ * a few of them.
+ */
+static bool deal(int die) {
+	char card[16];
+
+	strnfmt(card, sizeof(card), "%d", die);
+	return work(EF_SHUFFLE, 0, card, NULL);
+}
+
+static int test_justice_is_forty_and_forty_one(void *state) {
+	int die;
+
+	a_room_at(10);
+	for (die = 38; die <= 43; die++) {
+		bool justice = (die == 40 || die == 41);
+
+		(void) player_clear_timed(player, TMD_BLESSED, false, false);
+		require(deal(die));
+		eq(player->timed[TMD_BLESSED] > 0, justice);
+	}
+	(void) player_clear_timed(player, TMD_BLESSED, false, false);
+	clear_the_level();
+	ok;
+}
+
+static int test_the_world_is_the_last_card(void *state) {
+	int32_t exp;
+
+	a_room_at(10);
+	player_exp_gain(player, 1000);
+	exp = player->exp;
+	require(deal(120));
+	eq(player->exp, exp + exp / 25 + 1);
+
+	/* And the Sun, one short of it, gives none */
+	exp = player->exp;
+	require(deal(119));
+	eq(player->exp, exp);
+	clear_the_level();
+	ok;
+}
+
+static int test_the_fool_takes_a_mind(void *state) {
+	int intel, wis;
+
+	a_room_at(10);
+	intel = player->stat_cur[STAT_INT];
+	wis = player->stat_cur[STAT_WIS];
+	require(deal(24));
+	require(player->stat_cur[STAT_INT] < intel);
+	require(player->stat_cur[STAT_WIS] < wis);
+	clear_the_level();
+	ok;
+}
+
+static int test_judgement_cures_every_mutation(void *state) {
+	int i;
+
+	a_room_at(10);
+	for (i = 0; i < 3; i++) (void) player_mutate(player);
+	require(player_mutation_total(player) > 0);
+	require(deal(105));
+	eq(player_mutation_total(player), 0);
+	clear_the_level();
+	ok;
+}
+
+static int test_the_pictures_are_the_four_groups(void *state) {
+	static const struct { int die; const char *base; } cards[] = {
+		{ 80, "mold" }, { 83, "bat" }, { 84, "vortex" },
+		{ 87, "creeping coins" },
+	};
+	size_t c;
+
+	a_room_at(40);
+	for (c = 0; c < N_ELEMENTS(cards); c++) {
+		int tries, i, found = 0;
+
+		for (tries = 0; tries < 10 && !found; tries++) {
+			clear_the_level();
+			require(deal(cards[c].die));
+			for (i = 1; i < cave_monster_max(cave); i++) {
+				struct monster *mon = cave_monster(cave, i);
+
+				if (!mon->race) continue;
+				require(streq(mon->race->base->name, cards[c].base));
+				require(monster_is_pet(mon));
+				found++;
+			}
+		}
+		require(found > 0);
+	}
+	clear_the_level();
+	ok;
+}
+
+static int test_death_calls_against_you(void *state) {
+	int i, hostile = 0;
+
+	a_room_at(40);
+	require(deal(3));
+	for (i = 1; i < cave_monster_max(cave); i++) {
+		struct monster *mon = cave_monster(cave, i);
+
+		if (!mon->race) continue;
+		require(monster_is_hostile(mon));
+		hostile++;
+	}
+	require(hostile > 0);
+	clear_the_level();
+	ok;
+}
+
+/* The card sharps draw on a better deck */
+static int test_the_card_sharps_draw_higher(void *state) {
+	const struct class_spell *mage = a_spell("Mage", "Shuffle");
+	const struct class_spell *rogue = a_spell("Rogue", "Shuffle");
+	const struct class_spell *high = a_spell("High-Mage", "Shuffle");
+
+	notnull(mage);
+	notnull(rogue);
+	notnull(high);
+	eq(mage->effect->index, EF_SHUFFLE);
+	eq(rogue->effect->index, EF_SHUFFLE);
+	eq(high->effect->index, EF_SHUFFLE);
+
+	/* d120 for the Mage; d110 plus a fifth of the level for the other two */
+	require(dice_test_values(mage->effect->dice, 0, 1, 120, 0));
+	require(dice_test_values(rogue->effect->dice, 0, 1, 110, 0));
+	require(dice_test_variables(rogue->effect->dice, "B", NULL, NULL, NULL));
+	require(dice_test_values(high->effect->dice, 0, 1, 110, 0));
+	require(dice_test_variables(high->effect->dice, "B", NULL, NULL, NULL));
+	ok;
+}
+
 const char *suite_name = "effects/workings";
 struct test tests[] = {
 	{ "identify-fully-learns-every-rune",
@@ -781,5 +923,13 @@ struct test tests[] = {
 	  test_omnicide_takes_mana_only_to_twice_the_maximum },
 	{ "wraithform-is-the-wraiths-form", test_wraithform_is_the_wraiths_form },
 	{ "the-spells-carry-the-effects", test_the_spells_carry_the_effects },
+	{ "justice-is-forty-and-forty-one", test_justice_is_forty_and_forty_one },
+	{ "the-world-is-the-last-card", test_the_world_is_the_last_card },
+	{ "the-fool-takes-a-mind", test_the_fool_takes_a_mind },
+	{ "judgement-cures-every-mutation", test_judgement_cures_every_mutation },
+	{ "the-pictures-are-the-four-groups",
+	  test_the_pictures_are_the_four_groups },
+	{ "death-calls-against-you", test_death_calls_against_you },
+	{ "the-card-sharps-draw-higher", test_the_card_sharps_draw_higher },
 	{ NULL, NULL }
 };

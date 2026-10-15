@@ -102,6 +102,25 @@ The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
 
+Shuffle, and every spell that can work does — 15 October 2026
+--------------------------------------------------------------
+
+- **3.127.0** — **Shuffle works** (DEC-141). Trump's deck: one draw against
+  twenty-one cards, from Death and the Devil at the bottom to the Sun and the
+  World at the top, and the bad cards are the common ones. A Rogue or a
+  High-Mage draws higher as they rise in level. The note that kept it out said
+  some cards had nothing to deal; Zangband 2.7.5's deck turns out to have no
+  wish and no artifact at all, and the Ancient Curse was already built.
+
+  **A Chaos spell's wild magic calls strange creatures again.** Its worst
+  summoning band called eight ordinary monsters because Zangband's bizarre
+  groups did not exist; now it calls eight of one kind — molds, bats,
+  vortices, quylthulgs, or things that are not what they seem — as Zangband's
+  did.
+
+  Every realm spell that can work now does. Three do nothing, and will not:
+  *Detect Enchantment* in Sorcery and Arcane, and *Raise the Dead*.
+
 Three more spells, and pets that broke your runes — 15 October 2026
 --------------------------------------------------------------------
 

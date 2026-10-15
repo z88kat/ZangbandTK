@@ -56,6 +56,7 @@ void spell_learn(int spell_index);
 int spell_realm_index(const struct player *p,
 					  const struct class_spell *spell);
 void death_miscast(struct player *p, int idx, int book);
+void wild_magic(struct player *p, int idx);
 
 /** What a failed cast does beyond failing. */
 enum spell_backfire {

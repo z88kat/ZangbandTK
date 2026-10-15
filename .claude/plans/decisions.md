@@ -7532,3 +7532,39 @@ the drift. Left as it was: only the explosive rune's lines were added, by
 hand in the script's own format. The cause is not investigated.
 
 **Shuffle** follows as DEC-141.
+
+**DEC-141 — Shuffle works, and wild magic calls Zangband's bizarre groups
+(15 October 2026).**
+
+The last of the four DEC-139 left waiting. Its deferral was a shape -- a
+deck of unequal bands that 4.2's uniform `RANDOM` cannot draw -- and a list of
+cards with nothing to deal: the Ancient Curse, a wish, artifact creation.
+Read against `cmd5.c:1803`, the list was wrong. The curse was built for Chaos
+in CNT-15, and the 2.7.5 deck has no wish and no artifact at all; the note
+described a later Zangband.
+
+`SHUFFLE` is the deck: twenty-one cards on Zangband's bands, boundary for
+boundary, the draw being the effect's value -- `1d120`, or `$B+1d110` with
+`B` a fifth of the level for the Rogue and the High-Mage, which Zangband
+tests by class and so `class-effects` carries. Every card is an effect the
+game already has, and three reuse translations already made for Zangband's
+own code: the Wheel of Fortune is the Chaos miscast (now `wild_magic()`,
+public), the Hanged Man is `ANCIENT_CURSE`, Death's high summons are the
+curse's `3+1d3` of anything, and the Tower's `wall_breaker()` is the miscast's
+`KILL_WALL` sphere. Judgement rerolls hit points through
+`player_rerate_hp()`, lifted out of the wizard's rerate command, and cures
+every mutation through `LOSE_MUTATION`, as a potion of New Life does. The
+Hermit's `wall_stone()` is `GRANITE`, as Nature's *Wall of Stone* is.
+
+**Wild magic gains the bizarre groups.** The miscast's first summoning band
+called eight ordinary monsters because Zangband's six bizarre groups did not
+exist. Four arrived for *Joker Card* (DEC-139), and the other two --
+quylthulgs, and mimics with creeping coins for the group whose letters were
+items' -- are added here, so the band calls eight of one group a level and a
+half deep, as `wild_magic()` did.
+
+`effects/workings` deals chosen cards: Justice on 40 and 41 and not either
+side, the World's experience on 120 and not on 119, the Fool, Judgement,
+Death against you and the four pictures for you; a shifted boundary fails it.
+`player/realm` counts 22 inert spell copies -- the three refused in DEC-139,
+and nothing else -- and asks that every Trump spell works.
