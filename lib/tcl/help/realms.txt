@@ -182,20 +182,18 @@ T	p0	).
 T	p0	\n
 T	p0 note strong	Note
 T	p0 note	\n
-T	p0 note strong	Two of the thirty-two do nothing, and say so.
+T	p0 note strong	Two of the thirty-two used to do nothing, and no longer do.
 T	p0 note	 
 T	p0 note em	Bless Weapon
-T	p0 note	 sits in 
-T	p0 note em	Blessings of the Grail
-T	p0 note	 with its level and its cost, described as beyond what the game can express. 4.2 has a blessed-weapon property and no effect that confers it; chaos branding is the nearest thing the engine has and is a different spell wearing this one’s name. 
+T	p0 note	 blesses a melee weapon, giving it the same blessed property a Priest already fights better with, and drives out any curse on it that is not permanent. A permanent curse drives the blessing off instead, and an artifact takes the blessing only one time in three, losing a point of enchantment when it refuses. 
 T	p0 note em	Holy Vision
-T	p0 note	 is the fourth spell in the game to want whole-object identification, and meets the same wall as Sorcery’s 
+T	p0 note	 tells you everything about an object, which in this game means every rune on it, learned at once — as Sorcery’s 
 T	p0 note em	Identify True
 T	p0 note	, Trump’s 
 T	p0 note em	Trump Lore
 T	p0 note	 and Nature’s 
 T	p0 note em	Stone Tell
-T	p0 note	: 4.2 replaced it with runes learned one at a time, so there is no hidden description left for a prayer to reveal.
+T	p0 note	 do. A rune is yours rather than the object’s, so what the prayer teaches you is known on everything else that carries it too.
 T	p0 note	\n
 T	p0 note strong	Three more do something measurably different.
 T	p0 note	 Nothing here dispels demons by name — 4.2 dispels undead, evil, or everything — so 
@@ -260,16 +258,23 @@ T	p0	.
 T	p0	\n
 T	p0 note strong	Note
 T	p0 note	\n
-T	p0 note strong	Four of the thirty-two do nothing, and say so.
+T	p0 note strong	Two of the thirty-two do nothing, and say so.
 T	p0 note	 
-T	p0 note em	Identify True
-T	p0 note	, 
 T	p0 note em	Detect Enchantment
-T	p0 note	, 
-T	p0 note em	Self Knowledge
-T	p0 note	 and 
+T	p0 note	 would sense which objects are magical before you know them, which Angband 4.2 took away on purpose when an object’s properties became runes, and it will not be brought back. 
 T	p0 note em	Explosive Rune
-T	p0 note	 each need a mechanism Angband 4.2 removed or never had — whole-object identification, a separate is-this-magical bit, a self-knowledge readout the character sheet already carries, and a glyph that explodes rather than wards. They are in their books with their levels and costs, described as beyond what the game can express, rather than quietly missing: a book with a hole in it and a note saying so is honest, and a spell absent without explanation is not.
+T	p0 note	 wants a glyph that explodes rather than wards. Both are in their books with their levels and costs, described as beyond what the game can express, rather than quietly missing: a book with a hole in it and a note saying so is honest, and a spell absent without explanation is not.
+T	p0 note	\n
+T	p0 note em	Identify True
+T	p0 note	 and 
+T	p0 note em	Self Knowledge
+T	p0 note	 used to be beside them. 
+T	p0 note em	Identify True
+T	p0 note	 teaches you every rune on an object at once, where the first book’s 
+T	p0 note em	Identify
+T	p0 note	 teaches one. 
+T	p0 note em	Self Knowledge
+T	p0 note	 teaches you every rune on the equipment you are wearing, which is the part of the old spell the character sheet could not already do.
 T	p0 note	\n
 M	trump
 T	h2	Trump
@@ -351,24 +356,25 @@ T	p0	.
 T	p0	\n
 T	p0 note strong	Note
 T	p0 note	\n
-T	p0 note strong	Three of the thirty-two do nothing, and say so.
+T	p0 note strong	One of the thirty-two does nothing, and says so.
 T	p0 note	 
 T	p0 note em	Shuffle
-T	p0 note	 is the deck itself — one roll read off twenty unequal outcomes, several of which need mechanisms this game lacks. 
+T	p0 note	 is the deck itself — one roll read off twenty unequal outcomes, several of which need mechanisms this game lacks.
+T	p0 note	\n
 T	p0 note em	Joker Card
-T	p0 note	 summons the groups 4.2’s summon table has no equivalent of. And 
+T	p0 note	 and 
 T	p0 note em	Trump Lore
-T	p0 note	 is whole-object identification, the same wall as Sorcery’s 
+T	p0 note	 used to be beside it. The Joker calls a mold, a bat, a vortex or creeping coins to serve you, and the card decides which. Like every Trump summon it calls at the depth you are on, so a vortex, the shallowest of which lives at 21, will not answer above that. 
+T	p0 note em	Trump Lore
+T	p0 note	 teaches you every rune on an object at once, as Sorcery’s 
 T	p0 note em	Identify True
-T	p0 note	 and Nature’s 
-T	p0 note em	Stone Tell
-T	p0 note	.
+T	p0 note	 does.
 T	p0 note	\n
 T	p0 note em	Dimension Door
-T	p0 note	 was the fifth until recently, and should not have been. It lets you choose the square you arrive on, which this game can do and always could — Sorcery’s copy of the same spell had been doing it since that realm went in. Both now work.
+T	p0 note	 was another until recently, and should not have been. It lets you choose the square you arrive on, which this game can do and always could — Sorcery’s copy of the same spell had been doing it since that realm went in. Both now work.
 T	p0 note	\n
 T	p0 note em	Reset Recall
-T	p0 note	 was the fourth. Each dungeon remembers the level Word of Recall brings you back to, and now the spell can set it: cast in a dungeon, it asks which level, anywhere from the dungeon’s first to the deepest you have reached in it, and offers the deepest. Above ground there is no dungeon to set, and it is not cast.
+T	p0 note	 was another. Each dungeon remembers the level Word of Recall brings you back to, and now the spell can set it: cast in a dungeon, it asks which level, anywhere from the dungeon’s first to the deepest you have reached in it, and offers the deepest. Above ground there is no dungeon to set, and it is not cast.
 T	p0 note	\n
 T	p0	The guard that used to keep Trump off the birth menu still covers every realm: 
 T	p0 strong	if your class has no books in a realm, you are not offered it.
@@ -537,11 +543,11 @@ T	p0	 at 20 against Nature’s 5. Only
 T	p0 em	Cure Poison
 T	p0	 is genuinely better here. So Arcane is the realm that fills the gaps in another one, and a poor choice as the only realm you have — which is Zangband’s own advice, and it survives the port intact.
 T	p0	\n
-T	p0	Two of the thirty-two do nothing and say so. 
-T	p0 em	Phlogiston
-T	p0	 refuels a light source, which is a command in this game rather than a spell; and 
+T	p0	One of the thirty-two does nothing and says so. 
 T	p0 em	Detect Enchantment
-T	p0	 wants a single is-this-magical bit, which no longer exists now that an object’s properties are runes you learn one at a time.
+T	p0	 would sense which objects are magical before you know them, which went when an object’s properties became runes you learn one at a time, and it will not be brought back. 
+T	p0 em	Phlogiston
+T	p0	 used to be the other: it adds half a full load of fuel to the torch or lantern you are holding.
 T	p0	\n
 T	p0	One more does something else entirely. 
 T	p0 strong	Zangband’s Wizard Lock jammed a door shut and this one makes a door
@@ -613,14 +619,14 @@ T	p0	At the end,
 T	p0 em	Nature’s Wrath
 T	p0	 does three things in one casting: dispels every creature in sight, shakes the level apart with an earthquake, and detonates around you. Zangband’s third part was a disintegration ball, which this game has no projection for; it arrives as the walls coming down and the damage landing separately, which is the same event described twice rather than one effect.
 T	p0	\n
-T	p0 strong	Two of the thirty-two do nothing.
-T	p0	 
+T	p0 strong	Every one of the thirty-two does something.
+T	p0	 The last two to arrive were 
 T	p0 em	Stone Tell
-T	p0	 would tell you everything about an object in a game that replaced that with runes learned one at a time, and 
+T	p0	, which teaches you every rune on an object at once, and 
 T	p0 em	Protect from Corrosion
-T	p0	 is an object property here rather than anything a spell can reach.
+T	p0	, which makes a piece of armour ignore acid for good and undoes what acid has already done to it, unless it is cursed.
 T	p0	\n
-T	p0	Three more used to be inert and no longer are. 
+T	p0	Three others used to be inert and no longer are. 
 T	p0 em	Animal Taming
 T	p0	, 
 T	p0 em	Summon Animal
@@ -709,7 +715,7 @@ T	p0 warn	 a point of wisdom. It is the only spell failure in the game that can 
 T	p0 warn	\n
 T	p0	Three of the thirty-two do nothing. 
 T	p0 em	Raise the Dead
-T	p0	 animates the corpses and skeletons actually lying on the floor near you, and 4.2 has no such object — there is nothing lying there to raise. Translating it as “summon undead as pets” would be a different spell wearing this one’s name: this one is paid for by what you have already killed, and that is the whole character of it. 
+T	p0	 animates the corpses and skeletons actually lying on the floor near you, and 4.2 has no such object — there is nothing lying there to raise. Translating it as “summon undead as pets” would be a different spell wearing this one’s name: this one is paid for by what you have already killed, and that is the whole character of it, so it will stay as it is: corpses are not something this game is going to have. 
 T	p0 em	Wraithform
 T	p0	 needs an incorporeal player, which this game has no notion of. And 
 T	p0 em	Omnicide

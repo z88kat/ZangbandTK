@@ -190,3 +190,19 @@ EFFECT(FETCH,						true,	"weight",	1,		EFINFO_DICE,	"pulls an object weighing up
  * dungeon's own record, which is what recall back down reads (WLD-14).
  */
 EFFECT(RESET_RECALL,				false,	NULL,		0,		EFINFO_NONE,	"lets you choose the level word of recall brings you back to in this dungeon",	"reset recall")
+
+/*
+ * ZangbandTK: five workings Zangband's realms have and 4.2's effects did not.
+ * IDENTIFY_FULLY is identify_fully() in rune terms -- every rune on one object
+ * where IDENTIFY learns one -- for Sorcery's Identify True, Life's Holy Vision,
+ * Nature's Stone Tell and Trump's Trump Lore.  SELF_KNOWLEDGE is
+ * self_knowledge(), which read the true properties of everything worn: every
+ * rune on the equipment.  BLESS_WEAPON is Life's Bless Weapon, which sets the
+ * blessed flag 4.2 already rewards priests for; REFUEL_LIGHT is Arcane's
+ * Phlogiston; RUSTPROOF is Nature's Protect from Corrosion.
+ */
+EFFECT(IDENTIFY_FULLY,				false,	NULL,		0,		EFINFO_NONE,	"identifies every unknown rune on a selected item",	"identify fully")
+EFFECT(SELF_KNOWLEDGE,				false,	NULL,		0,		EFINFO_NONE,	"teaches you every rune on the equipment you are wearing",	"know yourself")
+EFFECT(BLESS_WEAPON,				false,	NULL,		0,		EFINFO_NONE,	"blesses a melee weapon, driving out any curse that is not permanent",	"bless weapon")
+EFFECT(REFUEL_LIGHT,				false,	NULL,		0,		EFINFO_NONE,	"adds half a full load of fuel to the light you are holding",	"refuel light")
+EFFECT(RUSTPROOF,					false,	NULL,		0,		EFINFO_NONE,	"protects a piece of armour from acid for good",	"rustproof armour")

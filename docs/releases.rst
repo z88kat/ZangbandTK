@@ -102,6 +102,38 @@ The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
 
+Nine spells that did nothing now work — 15 October 2026
+--------------------------------------------------------
+
+- **3.125.0** — **Nine realm spells that sat in their books doing nothing now
+  work**, and two more are ruled out for good (DEC-139).
+
+  - *Identify True* (Sorcery), *Holy Vision* (Life), *Stone Tell* (Nature) and
+    *Trump Lore* (Trump) teach you every rune on one object at once, where
+    *Identify* teaches one. That is what "everything about an object" means in a
+    game where knowledge is runes, and since a rune is yours it is then known on
+    everything that carries it.
+  - *Self Knowledge* (Sorcery) teaches you every rune on the equipment you are
+    wearing: the part of Zangband's spell the character sheet could not already
+    do.
+  - *Bless Weapon* (Life) gives a melee weapon the blessed property a Priest
+    fights better with, and drives out any curse on it that is not permanent.
+    An artifact takes the blessing one time in three, and loses a point of
+    enchantment when it refuses.
+  - *Phlogiston* (Arcane) adds half a full load of fuel to the torch or lantern
+    you are holding.
+  - *Protect from Corrosion* (Nature) makes a piece of armour ignore acid for
+    good, and undoes what acid has already done to it unless it is cursed.
+  - *Joker Card* (Trump) calls a mold, a bat, a vortex or creeping coins to
+    serve you, the card deciding which, as Zangband's did.
+
+  Five new effects and four new summon types; ``effects/workings`` tests each
+  one. *Detect Enchantment* (Sorcery and Arcane) and *Raise the Dead* (Death)
+  stay as they are, now as rulings rather than deferrals: the first would bring
+  back a sense of what is magical that 4.2 removed on purpose, and the second
+  needs corpses, which are out of scope. Seven spells still do nothing, down
+  from sixteen.
+
 The six-hundred-level crash was a depth — 14 October 2026
 ----------------------------------------------------------
 

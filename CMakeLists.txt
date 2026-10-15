@@ -897,6 +897,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     effects/chain.c
     effects/destruction.c
     effects/swap.c
+    effects/workings.c
     effects/earthquake.c
     effects/info.c
     game/basic.c

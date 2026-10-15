@@ -380,9 +380,12 @@ Zangband and 4.2 has no vocabulary for it.
   nearest thing that exists. Five spell radii that grew with the caster's level
   are frozen, because 4.2's radius is a constant in the data. Chaos still
   arrived whole — thirty-two spells, none dropped.
-- **Nothing blesses a weapon.** 4.2 has a ``BLESSED`` object flag and no effect
-  that confers it, so Life's *Bless Weapon* is listed and does nothing rather
-  than being quietly replaced by a random brand, which is a different spell.
+- **Blessing a weapon is an effect of its own.** 4.2 has a ``BLESSED`` object
+  flag, which a Priest fights better with, and no spell that conferred it, so
+  Life's *Bless Weapon* waited for one rather than being quietly replaced by a
+  random brand, which is a different spell. It drives out any curse that is not
+  permanent, as Zangband's did; there is no heavy curse here for it to fail on
+  one time in three.
 - **Nothing dispels demons by name.** 4.2 dispels undead, evil, or everything.
   *Exorcism* therefore hits undead by name and demons by being evil, which
   catches more than Zangband's version did.
@@ -393,12 +396,13 @@ Zangband and 4.2 has no vocabulary for it.
   line you aim instead of jamming one that is already there. Same purpose,
   different means — and it works in an empty corridor, where the original
   needed a door to work on.
-- **Nothing tells you everything about an object.** 4.2 replaced whole-object
-  identification with runes learned one at a time, so there is no hidden
-  description for a spell to reveal. That is one wall and four spells behind
-  it, one in each of four realms: Sorcery's *Identify True*, Nature's *Stone
-  Tell*, Trump's *Trump Lore* and Life's *Holy Vision*. It is the single
-  commonest reason a spell in this game does nothing.
+- **Telling you everything about an object means every rune on it.** 4.2
+  replaced whole-object identification with runes learned one at a time, so
+  Sorcery's *Identify True*, Nature's *Stone Tell*, Trump's *Trump Lore* and
+  Life's *Holy Vision* teach you every rune on one object at once, where
+  *Identify* teaches one. A rune is yours, not the object's, so each is then
+  known on everything that carries it — stronger than Zangband's, which knew
+  only that one object.
 - **Polymorph Self keeps the mutations and drops the race change.** Zangband
   rewrote your race permanently. 4.2 has shapechanges, which are better, and a
   character whose race is mangled mid-game breaks things a savefile has to

@@ -31,6 +31,23 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+15 October 2026 — sixteen spells that did nothing
+=================================================
+
+Sixteen realm spells have been sitting in their books saying they do nothing,
+each with its reason written beside it. Read again, a lot of the reasons were
+choices rather than walls. "4.2 has no effect that blesses a weapon" was true,
+but 4.2 has the blessed property, and a Priest already fights better with it.
+All that was missing was a spell to put it there. The four "tell you
+everything about an object" spells were blocked because 4.2 identifies by
+runes. But everything about an object is every rune on it, so they can teach
+all of them at once. Joker Card's note was simply wrong about which monsters
+the card calls. So nine of them work now. Two are ruled out for good. Detect
+Enchantment would mean adding back a game mechanic that was removed. Raise the
+Dead is out of scope: it needs corpses, and there is nothing in Angband for us
+to use. That leaves four that would each need a new mechanism.
+
+
 14 October 2026 — the pages that were not missing
 =================================================
 

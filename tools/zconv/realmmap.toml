@@ -106,7 +106,9 @@ desc = "Detects everything nearby: monsters seen and unseen, doors, traps, stair
 
 [sorcery.spells."Identify True"]
 line = 853
-defer = "identify_fully() tells the player everything about an object at once. 4.2 has no such thing and cannot have: it replaced whole-object identification with runes, learned one at a time by carrying and using the thing. There is no hidden complete description for a spell to reveal, so this would have to invent the very mechanic 4.2 removed."
+effects = [ "IDENTIFY_FULLY" ]
+note = "identify_fully(). Deferred until 3.125.0 on the grounds that 4.2 replaced whole-object identification with runes and left a spell nothing to reveal. Half right: there is no hidden description, but everything about an object is every rune on it, and IDENTIFY_FULLY learns them all at once where IDENTIFY learns one. Stronger than Zangband's in one way -- a rune is the player's, so it is known on every object that carries it from then on -- which is how 4.2 has treated knowledge all along. DEC-139."
+desc = "Identifies everything about an object: every rune on it, all at once."
 
 [sorcery.spells."Detect Objects and Treasure"]
 line = 858
@@ -115,7 +117,7 @@ desc = "Detects objects and treasure nearby."
 
 [sorcery.spells."Detect Enchantment"]
 line = 863
-defer = "detect_objects_magic() marks every nearby object carrying an enchantment, which in Zangband is a property the player may not know. 4.2 has no equivalent: an object's runes are either learned or not, and there is no separate is-this-magical bit to detect. Detecting objects at all is already DETECT_OBJECTS, two spells up this same book, so mapping it there would give the realm two spells doing one thing."
+defer = "detect_objects_magic() marks every nearby object carrying an enchantment, which in Zangband is a property the player may not know. 4.2 has no equivalent: an object's runes are either learned or not, and there is no separate is-this-magical bit to detect. Detecting objects at all is already DETECT_OBJECTS, two spells up this same book, so mapping it there would give the realm two spells doing one thing. Refused for good on 15 October 2026 (DEC-139): it would bring back a sense of which objects are magical, which 4.2 removed on purpose, and there is nothing in Angband to build it from."
 
 [sorcery.spells."Charm Monster"]
 line = 866
@@ -142,7 +144,9 @@ desc = "Grants telepathy for a while."
 
 [sorcery.spells."Self Knowledge"]
 line = 876
-defer = "self_knowledge() prints everything the character is -- every resistance, sustain and ability, from every source at once. 4.2 retired it because the character sheet carries the same information continuously, on the pages reached with 'h', so the spell would tell the player what is already on screen. The same reasoning retired the Weigh Magic mutation."
+effects = [ "SELF_KNOWLEDGE" ]
+note = "self_knowledge() listed every flag on the equipment worn, known or not, with the character's other abilities. Deferred until 3.125.0 because the character sheet lists the same things -- but only the known ones. Learning the unknown is the part the sheet cannot do, so that is what is kept: every rune on what you are wearing, learned at once, and the nudge to Knowledge and Enlightenment the original gave. DEC-139."
+desc = "Teaches you every rune on the equipment you are wearing."
 
 [sorcery.spells."Teleport Level"]
 line = 879
@@ -607,13 +611,17 @@ line = 712
 effects = [ "TIMED_INC:BLESSED", "dice:49+1d51" ]
 desc = "Blesses you for far longer than the lesser prayer does."
 
-# bless_weapon().  4.2 has a BLESSED object flag and no effect that confers it:
-# BRAND_WEAPON is chaos branding and a different thing entirely.  Deferred
-# rather than approximated, because a priest's blessed weapon is the point of
-# the spell and a random brand is not it.
+# bless_weapon().  4.2 has a BLESSED object flag, and BRAND_WEAPON is chaos
+# branding and a different thing entirely, so the spell waited for an effect of
+# its own rather than borrowing that one.
 [life.spells."Bless Weapon"]
 line = 715
-defer = "4.2 has no effect that blesses a weapon; BRAND_WEAPON is not it"
+effects = [ "BLESS_WEAPON" ]
+note = "bless_weapon() set TR_BLESSED, and 4.2 has the same flag, BLESSED, with the same reward: a priest fights better with a blessed weapon. Deferred until 3.125.0 for want of an effect to confer it; BLESS_WEAPON is that effect. A permanent curse disrupts the blessing and any other curse is driven out, which is Zangband's uncurse less its one-in-three for a heavy curse, there being no heavy curse here. An artifact is blessed one time in three and otherwise loses a point of enchantment. DEC-139."
+desc = [
+  "Blesses a melee weapon, which a priest fights better with, and drives out",
+  "any curse on it that is not permanent.",
+]
 
 [life.spells."Restoration"]
 line = 717
@@ -628,16 +636,9 @@ desc = "Heals 2000 hit points, and all stunning and bleeding."
 
 [life.spells."Holy Vision"]
 line = 731
-defer = """identify_fully(), and the fourth spell in the game to want it -- the \
-same wall as Sorcery's Identify True, Trump's Trump Lore and Nature's Stone \
-Tell. 4.2 replaced whole-object identification with runes learned one at a \
-time, so there is no complete hidden description for a spell to reveal. Until \
-3.72.1 this was mapped to IDENTIFY and described as telling you everything \
-about an object, which is the one thing it could not do: 4.2's IDENTIFY learns \
-a single rune, and Sorcery's low-level Identify is already that spell, at a \
-twentieth of the cost. Deferred rather than left claiming it, because the \
-realm chapter names this mechanism as impossible three times and Life may not \
-be the exception that sells it for fifty mana."""
+effects = [ "IDENTIFY_FULLY" ]
+note = "identify_fully(), the same as Sorcery's Identify True, Nature's Stone Tell and Trump's Trump Lore. Mapped to IDENTIFY until 3.72.1 and described as telling you everything, which IDENTIFY could not do; deferred from then until 3.125.0, when IDENTIFY_FULLY made it true. DEC-139."
+desc = "Identifies everything about an object: every rune on it, all at once."
 
 # The one spell in the realm that is a list rather than an effect.  Nine of the
 # ten things Zangband does here are expressible; the tenth, a *friendly* angel,
@@ -755,7 +756,9 @@ desc = "Detects doors, traps and staircases nearby."
 
 [arcane.spells."Phlogiston"]
 line = 2510
-defer = "Refuelling a light source is a command in 4.2 (CMD_REFILL), not an effect, and there is nothing for a spell to invoke. Torches and lanterns are refilled from flasks and other lights, which the player does by hand. Building a REFUEL effect to carry one Arcane spell would be the wrong way round; the spell is in its book saying so."
+effects = [ "REFUEL_LIGHT" ]
+note = "phlogiston(): half a full load of fuel, up to a full one, in the torch or lantern being held. Deferred until 3.125.0 because refuelling is a command in 4.2 (CMD_REFILL) and not an effect; REFUEL_LIGHT is the effect. A light that burns nothing takes none, and a torch that has burned out is gone, so neither costs the casting. DEC-139."
+desc = "Adds half a full load of fuel to the torch or lantern you are holding."
 
 [arcane.spells."Detect Treasure"]
 line = 2513
@@ -765,7 +768,7 @@ desc = "Detects gold nearby, in the rock and on the floor."
 
 [arcane.spells."Detect Enchantment"]
 line = 2517
-defer = "The same wall Sorcery's Detect Enchantment hit. detect_objects_magic() marks every nearby object that carries an enchantment, and 4.2 has no is-this-magical bit to read: an object's properties are runes the character learns one at a time. Mapping it to DETECT_OBJECTS would give Arcane two spells doing one thing, three entries apart."
+defer = "The same wall Sorcery's Detect Enchantment hit. detect_objects_magic() marks every nearby object that carries an enchantment, and 4.2 has no is-this-magical bit to read: an object's properties are runes the character learns one at a time. Mapping it to DETECT_OBJECTS would give Arcane two spells doing one thing, three entries apart. Refused for good on 15 October 2026 (DEC-139): it would bring back a sense of which objects are magical, which 4.2 removed on purpose, and there is nothing in Angband to build it from."
 
 [arcane.spells."Detect Objects"]
 line = 2520
@@ -1016,7 +1019,9 @@ desc = "Attempts to tame every animal in line of sight."
 
 [nature.spells."Stone Tell"]
 line = 1014
-defer = "identify_fully() tells you everything about an object, and 4.2 replaced whole-object identification with runes learned one at a time. The same call and the same reason as Sorcery's Identify True, which is deferred; mapping it to IDENTIFY would make it a duplicate of a spell Nature does not otherwise have."
+effects = [ "IDENTIFY_FULLY" ]
+note = "identify_fully(), as Sorcery's Identify True; deferred with it until 3.125.0. DEC-139."
+desc = "Identifies everything about an object: every rune on it, all at once."
 
 [nature.spells."Wall of Stone"]
 line = 1016
@@ -1025,7 +1030,12 @@ desc = "Raises a granite wall behind you."
 
 [nature.spells."Protect from Corrosion"]
 line = 1019
-defer = "rustproof() makes a suit of armour immune to acid damage for good. In 4.2 that is an object property -- the ignore-element flags -- set by an item's kind or its ego and reachable by no effect. Adding one to carry a single Nature spell is the wrong way round, and the spell says so instead."
+effects = [ "RUSTPROOF" ]
+note = "rustproof() set TR_IGNORE_ACID on a piece of armour, and 4.2 keeps the same thing as the object's ignore flag for acid -- set by kind or ego until 3.125.0, when RUSTPROOF gave a spell a way to it. Armour acid has already eaten into is restored if it is not cursed, as in the original, and the caster learns acid's rune so the armour shows what was done. DEC-139."
+desc = [
+  "Protects a piece of armour from acid for good, and undoes what acid has",
+  "already done to it if it is not cursed.",
+]
 
 [nature.spells."Earthquake"]
 line = 1021
@@ -1239,7 +1249,9 @@ lying there to raise. Translating it as "summon undead as pets" would be a \
 different spell wearing this one's name: this one is paid for by what you \
 have already killed, and that is the whole character of it. Re-deferred in \
 3.72.0 with the reason corrected, rather than left reading as blocked on pets \
-when pets have arrived."""
+when pets have arrived. Refused for good on 15 October 2026 \
+(DEC-139): corpses are out of scope, and Angband has nothing to raise them \
+from."""
 
 [death.spells."Esoteria"]
 line = 1669
@@ -1437,12 +1449,16 @@ desc = "Teleports away every creature in sight."
 
 [trump.spells."Joker Card"]
 line = 2146
-defer = """Summons one of five SUMMON_BIZARRE groups at random -- molds, \
-mimics, jellies, quylthulgs, and the like. 4.2 has none of those summon types \
-and no equivalent grouping; the summon table it has is built round threat \
-categories (animals, undead, dragons) rather than round the joke this spell is \
-making. A RANDOM chain over the types 4.2 does have would summon five ordinary \
-things and lose the point."""
+effects = [ "RANDOM", "dice:4", "SUMMON_PET:BIZARRE_MOLD", "dice:1", "SUMMON_PET:BIZARRE_BAT", "dice:1", "SUMMON_PET:BIZARRE_VORTEX", "dice:1", "SUMMON_PET:BIZARRE_COINS", "dice:1" ]
+note = """The card rolls randint1(4) over SUMMON_BIZARRE1, 2, 4 and 5 -- molds, \
+bats, vortices and creeping coins (monster2.c) -- and calls one of them, as a \
+pet when the casting succeeds, as every Trump summon does. Deferred until \
+3.125.0 on the grounds that 4.2 had no such summon types; the deferral also \
+named them as mimics, jellies and quylthulgs, which the card never draws. \
+Summon types are data in 4.2, and every one of \
+the four bases is in the game, so they are four entries in summon.txt and a \
+RANDOM over them, which is uniform exactly as randint1(4) is. DEC-139."""
+desc = "Calls a mold, a bat, a vortex or creeping coins to serve you.  The card decides which."
 
 [trump.spells."Trump Spiders"]
 line = 2179
@@ -1514,10 +1530,9 @@ desc = "Detects everything nearby."
 
 [trump.spells."Trump Lore"]
 line = 2299
-defer = """identify_fully(). The same wall as Sorcery's Identify True and \
-Nature's Stone Tell: 4.2 replaced whole-object identification with runes \
-learned one at a time, so there is no complete hidden description for a spell \
-to reveal."""
+effects = [ "IDENTIFY_FULLY" ]
+note = "identify_fully(), as Sorcery's Identify True; deferred with it until 3.125.0. DEC-139."
+desc = "Identifies everything about an object: every rune on it, all at once."
 
 [trump.spells."Trump Undead"]
 line = 2305

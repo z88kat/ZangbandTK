@@ -296,8 +296,8 @@ effect:DETECT_STAIRS
 effect-yx:22:40
 desc:Detects doors, traps and staircases nearby.
 spell:Phlogiston:8:8:28:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:REFUEL_LIGHT
+desc:Adds half a full load of fuel to the torch or lantern you are holding.
 spell:Detect Treasure:9:8:29:20
 effect:DETECT_ORE
 effect-yx:22:40
@@ -512,8 +512,8 @@ effect:DETECT_OBJECTS
 effect-yx:22:40
 desc:Detects everything nearby: monsters seen and unseen, doors, traps, stairs, treasure and objects.
 spell:Identify True:33:30:69:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 book:sorcery book:dungeon:[Pattern Sorcery]:8:sorcery
 book-graphics:?:B
 book-properties:30000:15:50 to 100
@@ -539,8 +539,8 @@ effect:TIMED_INC:TELEPATHY
 dice:24+1d31
 desc:Grants telepathy for a while.
 spell:Self Knowledge:20:18:50:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SELF_KNOWLEDGE
+desc:Teaches you every rune on the equipment you are wearing.
 spell:Teleport Level:20:18:50:45
 effect:TELEPORT_LEVEL
 desc:Teleports you one level up or down, without choosing which.
@@ -923,8 +923,9 @@ effect:TIMED_INC:BLESSED
 dice:49+1d51
 desc:Blesses you for far longer than the lesser prayer does.
 spell:Bless Weapon:35:85:72:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BLESS_WEAPON
+desc:Blesses a melee weapon, which a priest fights better with, and drives out
+desc: any curse on it that is not permanent.
 spell:Restoration:42:100:83:80
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:INT
@@ -940,8 +941,8 @@ effect:CURE:STUN
 effect:CURE:CUT
 desc:Heals 2000 hit points, and all stunning and bleeding.
 spell:Holy Vision:48:50:92:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Divine Intervention:49:100:93:80
 effect:SPHERE:HOLY_ORB:1
 dice:777
@@ -1100,14 +1101,15 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 2
 desc:Attempts to tame every animal in line of sight.
 spell:Stone Tell:37:40:75:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Wall of Stone:38:45:77:45
 effect:GRANITE
 desc:Raises a granite wall behind you.
 spell:Protect from Corrosion:40:90:80:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RUSTPROOF
+desc:Protects a piece of armour from acid for good, and undoes what acid has
+desc: already done to it if it is not cursed.
 book:nature book:dungeon:[Nature's Wrath]:8:nature
 book-graphics:?:y
 book-properties:50000:10:75 to 100
@@ -1407,8 +1409,17 @@ book:deck:dungeon:[Trumps of Doom]:8:trump
 book-graphics:?:w
 book-properties:30000:15:50 to 100
 spell:Joker Card:15:15:42:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RANDOM
+dice:4
+effect:SUMMON_PET:BIZARRE_MOLD
+dice:1
+effect:SUMMON_PET:BIZARRE_BAT
+dice:1
+effect:SUMMON_PET:BIZARRE_VORTEX
+dice:1
+effect:SUMMON_PET:BIZARRE_COINS
+dice:1
+desc:Calls a mold, a bat, a vortex or creeping coins to serve you.  The card decides which.
 spell:Trump Spiders:24:24:56:45
 effect:SUMMON_PET:SPIDER
 dice:1
@@ -1456,8 +1467,8 @@ effect:DETECT_INVISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects everything nearby.
 spell:Trump Lore:35:50:72:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Trump Undead:36:80:74:80
 effect:SUMMON_PET:UNDEAD
 dice:1
@@ -1654,14 +1665,15 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 2
 desc:Attempts to tame every animal in line of sight.
 spell:Stone Tell:39:40:78:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Wall of Stone:40:50:80:45
 effect:GRANITE
 desc:Raises a granite wall behind you.
 spell:Protect from Corrosion:42:90:83:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RUSTPROOF
+desc:Protects a piece of armour from acid for good, and undoes what acid has
+desc: already done to it if it is not cursed.
 book:nature book:dungeon:[Nature's Wrath]:8:nature
 book-graphics:?:y
 book-properties:50000:10:75 to 100
@@ -1920,8 +1932,9 @@ effect:TIMED_INC:BLESSED
 dice:49+1d51
 desc:Blesses you for far longer than the lesser prayer does.
 spell:Bless Weapon:30:50:65:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BLESS_WEAPON
+desc:Blesses a melee weapon, which a priest fights better with, and drives out
+desc: any curse on it that is not permanent.
 spell:Restoration:35:70:72:80
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:INT
@@ -1937,8 +1950,8 @@ effect:CURE:STUN
 effect:CURE:CUT
 desc:Heals 2000 hit points, and all stunning and bleeding.
 spell:Holy Vision:40:40:80:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Divine Intervention:42:90:83:80
 effect:SPHERE:HOLY_ORB:1
 dice:777
@@ -2063,8 +2076,8 @@ effect:DETECT_OBJECTS
 effect-yx:22:40
 desc:Detects everything nearby: monsters seen and unseen, doors, traps, stairs, treasure and objects.
 spell:Identify True:36:33:74:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 book:sorcery book:dungeon:[Pattern Sorcery]:8:sorcery
 book-graphics:?:B
 book-properties:30000:15:50 to 100
@@ -2090,8 +2103,8 @@ effect:TIMED_INC:TELEPATHY
 dice:24+1d31
 desc:Grants telepathy for a while.
 spell:Self Knowledge:20:20:50:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SELF_KNOWLEDGE
+desc:Teaches you every rune on the equipment you are wearing.
 spell:Teleport Level:22:22:53:45
 effect:TELEPORT_LEVEL
 desc:Teleports you one level up or down, without choosing which.
@@ -2439,14 +2452,15 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 2
 desc:Attempts to tame every animal in line of sight.
 spell:Stone Tell:39:40:78:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Wall of Stone:40:50:80:45
 effect:GRANITE
 desc:Raises a granite wall behind you.
 spell:Protect from Corrosion:42:90:83:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RUSTPROOF
+desc:Protects a piece of armour from acid for good, and undoes what acid has
+desc: already done to it if it is not cursed.
 book:nature book:dungeon:[Nature's Wrath]:8:nature
 book-graphics:?:y
 book-properties:50000:10:75 to 100
@@ -2723,8 +2737,8 @@ effect:DETECT_STAIRS
 effect-yx:22:40
 desc:Detects doors, traps and staircases nearby.
 spell:Phlogiston:9:8:29:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:REFUEL_LIGHT
+desc:Adds half a full load of fuel to the torch or lantern you are holding.
 spell:Detect Treasure:10:9:30:20
 effect:DETECT_ORE
 effect-yx:22:40
@@ -2921,8 +2935,17 @@ book:deck:dungeon:[Trumps of Doom]:8:trump
 book-graphics:?:w
 book-properties:30000:15:50 to 100
 spell:Joker Card:17:17:45:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RANDOM
+dice:4
+effect:SUMMON_PET:BIZARRE_MOLD
+dice:1
+effect:SUMMON_PET:BIZARRE_BAT
+dice:1
+effect:SUMMON_PET:BIZARRE_VORTEX
+dice:1
+effect:SUMMON_PET:BIZARRE_COINS
+dice:1
+desc:Calls a mold, a bat, a vortex or creeping coins to serve you.  The card decides which.
 spell:Trump Spiders:27:25:60:45
 effect:SUMMON_PET:SPIDER
 dice:1
@@ -2970,8 +2993,8 @@ effect:DETECT_INVISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects everything nearby.
 spell:Trump Lore:38:55:77:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Trump Undead:40:85:80:80
 effect:SUMMON_PET:UNDEAD
 dice:1
@@ -3435,8 +3458,9 @@ effect:TIMED_INC:BLESSED
 dice:49+1d51
 desc:Blesses you for far longer than the lesser prayer does.
 spell:Bless Weapon:35:65:72:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BLESS_WEAPON
+desc:Blesses a melee weapon, which a priest fights better with, and drives out
+desc: any curse on it that is not permanent.
 spell:Restoration:40:80:80:80
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:INT
@@ -3452,8 +3476,8 @@ effect:CURE:STUN
 effect:CURE:CUT
 desc:Heals 2000 hit points, and all stunning and bleeding.
 spell:Holy Vision:45:45:87:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Divine Intervention:48:100:92:80
 effect:SPHERE:HOLY_ORB:1
 dice:777
@@ -3768,8 +3792,8 @@ effect:DETECT_STAIRS
 effect-yx:22:40
 desc:Detects doors, traps and staircases nearby.
 spell:Phlogiston:9:9:29:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:REFUEL_LIGHT
+desc:Adds half a full load of fuel to the torch or lantern you are holding.
 spell:Detect Treasure:10:10:30:20
 effect:DETECT_ORE
 effect-yx:22:40
@@ -3984,8 +4008,8 @@ effect:DETECT_OBJECTS
 effect-yx:22:40
 desc:Detects everything nearby: monsters seen and unseen, doors, traps, stairs, treasure and objects.
 spell:Identify True:40:35:80:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 book:sorcery book:dungeon:[Pattern Sorcery]:8:sorcery
 book-graphics:?:B
 book-properties:30000:15:50 to 100
@@ -4011,8 +4035,8 @@ effect:TIMED_INC:TELEPATHY
 dice:24+1d31
 desc:Grants telepathy for a while.
 spell:Self Knowledge:17:20:45:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SELF_KNOWLEDGE
+desc:Teaches you every rune on the equipment you are wearing.
 spell:Teleport Level:18:17:47:45
 effect:TELEPORT_LEVEL
 desc:Teleports you one level up or down, without choosing which.
@@ -4273,8 +4297,17 @@ book:deck:dungeon:[Trumps of Doom]:7:trump
 book-graphics:?:w
 book-properties:30000:15:50 to 100
 spell:Joker Card:20:15:50:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RANDOM
+dice:4
+effect:SUMMON_PET:BIZARRE_MOLD
+dice:1
+effect:SUMMON_PET:BIZARRE_BAT
+dice:1
+effect:SUMMON_PET:BIZARRE_VORTEX
+dice:1
+effect:SUMMON_PET:BIZARRE_COINS
+dice:1
+desc:Calls a mold, a bat, a vortex or creeping coins to serve you.  The card decides which.
 spell:Trump Spiders:30:30:65:45
 effect:SUMMON_PET:SPIDER
 dice:1
@@ -4318,8 +4351,8 @@ effect:DETECT_INVISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects everything nearby.
 spell:Trump Lore:42:65:83:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Trump Undead:44:100:86:80
 effect:SUMMON_PET:UNDEAD
 dice:1
@@ -4505,14 +4538,15 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 2
 desc:Attempts to tame every animal in line of sight.
 spell:Stone Tell:38:40:77:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Wall of Stone:40:55:80:45
 effect:GRANITE
 desc:Raises a granite wall behind you.
 spell:Protect from Corrosion:42:80:83:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RUSTPROOF
+desc:Protects a piece of armour from acid for good, and undoes what acid has
+desc: already done to it if it is not cursed.
 book:nature book:dungeon:[Nature's Wrath]:8:nature
 book-graphics:?:y
 book-properties:50000:10:75 to 100
@@ -4653,8 +4687,8 @@ effect:DETECT_OBJECTS
 effect-yx:22:40
 desc:Detects everything nearby: monsters seen and unseen, doors, traps, stairs, treasure and objects.
 spell:Identify True:42:40:83:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 book:sorcery book:dungeon:[Pattern Sorcery]:8:sorcery
 book-graphics:?:B
 book-properties:30000:15:50 to 100
@@ -4680,8 +4714,8 @@ effect:TIMED_INC:TELEPATHY
 dice:24+1d31
 desc:Grants telepathy for a while.
 spell:Self Knowledge:23:25:54:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SELF_KNOWLEDGE
+desc:Teaches you every rune on the equipment you are wearing.
 spell:Teleport Level:27:27:60:45
 effect:TELEPORT_LEVEL
 desc:Teleports you one level up or down, without choosing which.
@@ -5076,8 +5110,8 @@ effect:DETECT_STAIRS
 effect-yx:22:40
 desc:Detects doors, traps and staircases nearby.
 spell:Phlogiston:10:10:30:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:REFUEL_LIGHT
+desc:Adds half a full load of fuel to the torch or lantern you are holding.
 spell:Detect Treasure:11:11:31:20
 effect:DETECT_ORE
 effect-yx:22:40
@@ -5264,8 +5298,17 @@ book:deck:dungeon:[Trumps of Doom]:6:trump
 book-graphics:?:w
 book-properties:30000:15:50 to 100
 spell:Joker Card:20:20:50:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RANDOM
+dice:4
+effect:SUMMON_PET:BIZARRE_MOLD
+dice:1
+effect:SUMMON_PET:BIZARRE_BAT
+dice:1
+effect:SUMMON_PET:BIZARRE_VORTEX
+dice:1
+effect:SUMMON_PET:BIZARRE_COINS
+dice:1
+desc:Calls a mold, a bat, a vortex or creeping coins to serve you.  The card decides which.
 spell:Trump Spiders:28:26:62:45
 effect:SUMMON_PET:SPIDER
 dice:1
@@ -5304,8 +5347,8 @@ effect:DETECT_INVISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects everything nearby.
 spell:Trump Lore:40:65:80:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Trump Dragon:47:95:90:80
 effect:SUMMON_PET:DRAGON
 dice:1
@@ -5822,8 +5865,9 @@ effect:TIMED_INC:BLESSED
 dice:49+1d51
 desc:Blesses you for far longer than the lesser prayer does.
 spell:Bless Weapon:40:65:80:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BLESS_WEAPON
+desc:Blesses a melee weapon, which a priest fights better with, and drives out
+desc: any curse on it that is not permanent.
 spell:Restoration:44:84:86:80
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:INT
@@ -5839,8 +5883,8 @@ effect:CURE:STUN
 effect:CURE:CUT
 desc:Heals 2000 hit points, and all stunning and bleeding.
 spell:Holy Vision:48:40:92:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Divine Intervention:49:100:93:80
 effect:SPHERE:HOLY_ORB:1
 dice:777
@@ -5998,14 +6042,15 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 2
 desc:Attempts to tame every animal in line of sight.
 spell:Stone Tell:40:40:80:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Wall of Stone:45:55:87:45
 effect:GRANITE
 desc:Raises a granite wall behind you.
 spell:Protect from Corrosion:50:80:95:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RUSTPROOF
+desc:Protects a piece of armour from acid for good, and undoes what acid has
+desc: already done to it if it is not cursed.
 book:nature book:dungeon:[Nature's Wrath]:8:nature
 book-graphics:?:y
 book-properties:50000:10:75 to 100
@@ -6983,8 +7028,9 @@ effect:TIMED_INC:BLESSED
 dice:49+1d51
 desc:Blesses you for far longer than the lesser prayer does.
 spell:Bless Weapon:38:85:77:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BLESS_WEAPON
+desc:Blesses a melee weapon, which a priest fights better with, and drives out
+desc: any curse on it that is not permanent.
 spell:Restoration:45:90:87:80
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:INT
@@ -7000,8 +7046,8 @@ effect:CURE:STUN
 effect:CURE:CUT
 desc:Heals 2000 hit points, and all stunning and bleeding.
 spell:Holy Vision:48:50:92:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Divine Intervention:49:100:93:80
 effect:SPHERE:HOLY_ORB:1
 dice:777
@@ -7125,8 +7171,8 @@ effect:DETECT_OBJECTS
 effect-yx:22:40
 desc:Detects everything nearby: monsters seen and unseen, doors, traps, stairs, treasure and objects.
 spell:Identify True:40:40:80:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 book:sorcery book:dungeon:[Pattern Sorcery]:8:sorcery
 book-graphics:?:B
 book-properties:30000:15:50 to 100
@@ -7152,8 +7198,8 @@ effect:TIMED_INC:TELEPATHY
 dice:24+1d31
 desc:Grants telepathy for a while.
 spell:Self Knowledge:19:19:48:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SELF_KNOWLEDGE
+desc:Teaches you every rune on the equipment you are wearing.
 spell:Teleport Level:24:22:56:45
 effect:TELEPORT_LEVEL
 desc:Teleports you one level up or down, without choosing which.
@@ -7322,14 +7368,15 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 2
 desc:Attempts to tame every animal in line of sight.
 spell:Stone Tell:40:42:80:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Wall of Stone:45:48:87:45
 effect:GRANITE
 desc:Raises a granite wall behind you.
 spell:Protect from Corrosion:49:95:93:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RUSTPROOF
+desc:Protects a piece of armour from acid for good, and undoes what acid has
+desc: already done to it if it is not cursed.
 book:nature book:dungeon:[Nature's Wrath]:8:nature
 book-graphics:?:y
 book-properties:50000:10:75 to 100
@@ -7781,8 +7828,8 @@ effect:DETECT_STAIRS
 effect-yx:22:40
 desc:Detects doors, traps and staircases nearby.
 spell:Phlogiston:9:9:29:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:REFUEL_LIGHT
+desc:Adds half a full load of fuel to the torch or lantern you are holding.
 spell:Detect Treasure:11:10:31:20
 effect:DETECT_ORE
 effect-yx:22:40
@@ -7979,8 +8026,17 @@ book:deck:dungeon:[Trumps of Doom]:8:trump
 book-graphics:?:w
 book-properties:30000:15:50 to 100
 spell:Joker Card:19:18:48:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RANDOM
+dice:4
+effect:SUMMON_PET:BIZARRE_MOLD
+dice:1
+effect:SUMMON_PET:BIZARRE_BAT
+dice:1
+effect:SUMMON_PET:BIZARRE_VORTEX
+dice:1
+effect:SUMMON_PET:BIZARRE_COINS
+dice:1
+desc:Calls a mold, a bat, a vortex or creeping coins to serve you.  The card decides which.
 spell:Trump Spiders:29:27:63:45
 effect:SUMMON_PET:SPIDER
 dice:1
@@ -8028,8 +8084,8 @@ effect:DETECT_INVISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects everything nearby.
 spell:Trump Lore:40:60:80:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Trump Undead:42:95:83:80
 effect:SUMMON_PET:UNDEAD
 dice:1
@@ -8265,8 +8321,9 @@ effect:TIMED_INC:BLESSED
 dice:49+1d51
 desc:Blesses you for far longer than the lesser prayer does.
 spell:Bless Weapon:30:70:65:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:BLESS_WEAPON
+desc:Blesses a melee weapon, which a priest fights better with, and drives out
+desc: any curse on it that is not permanent.
 spell:Restoration:40:80:80:80
 effect:RESTORE_STAT:STR
 effect:RESTORE_STAT:INT
@@ -8282,8 +8339,8 @@ effect:CURE:STUN
 effect:CURE:CUT
 desc:Heals 2000 hit points, and all stunning and bleeding.
 spell:Holy Vision:45:40:87:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Divine Intervention:47:90:90:80
 effect:SPHERE:HOLY_ORB:1
 dice:777
@@ -8407,8 +8464,8 @@ effect:DETECT_OBJECTS
 effect-yx:22:40
 desc:Detects everything nearby: monsters seen and unseen, doors, traps, stairs, treasure and objects.
 spell:Identify True:28:20:62:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 book:sorcery book:dungeon:[Pattern Sorcery]:8:sorcery
 book-graphics:?:B
 book-properties:30000:15:50 to 100
@@ -8434,8 +8491,8 @@ effect:TIMED_INC:TELEPATHY
 dice:24+1d31
 desc:Grants telepathy for a while.
 spell:Self Knowledge:15:12:42:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:SELF_KNOWLEDGE
+desc:Teaches you every rune on the equipment you are wearing.
 spell:Teleport Level:17:12:45:45
 effect:TELEPORT_LEVEL
 desc:Teleports you one level up or down, without choosing which.
@@ -8604,14 +8661,15 @@ dice:$B
 expr:B:PLAYER_LEVEL:* 2
 desc:Attempts to tame every animal in line of sight.
 spell:Stone Tell:33:35:69:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Wall of Stone:35:40:72:45
 effect:GRANITE
 desc:Raises a granite wall behind you.
 spell:Protect from Corrosion:37:65:75:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RUSTPROOF
+desc:Protects a piece of armour from acid for good, and undoes what acid has
+desc: already done to it if it is not cursed.
 book:nature book:dungeon:[Nature's Wrath]:8:nature
 book-graphics:?:y
 book-properties:50000:10:75 to 100
@@ -9063,8 +9121,8 @@ effect:DETECT_STAIRS
 effect-yx:22:40
 desc:Detects doors, traps and staircases nearby.
 spell:Phlogiston:7:7:27:20
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:REFUEL_LIGHT
+desc:Adds half a full load of fuel to the torch or lantern you are holding.
 spell:Detect Treasure:8:7:28:20
 effect:DETECT_ORE
 effect-yx:22:40
@@ -9261,8 +9319,17 @@ book:deck:dungeon:[Trumps of Doom]:8:trump
 book-graphics:?:w
 book-properties:30000:15:50 to 100
 spell:Joker Card:11:11:36:45
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:RANDOM
+dice:4
+effect:SUMMON_PET:BIZARRE_MOLD
+dice:1
+effect:SUMMON_PET:BIZARRE_BAT
+dice:1
+effect:SUMMON_PET:BIZARRE_VORTEX
+dice:1
+effect:SUMMON_PET:BIZARRE_COINS
+dice:1
+desc:Calls a mold, a bat, a vortex or creeping coins to serve you.  The card decides which.
 spell:Trump Spiders:21:21:51:45
 effect:SUMMON_PET:SPIDER
 dice:1
@@ -9310,8 +9377,8 @@ effect:DETECT_INVISIBLE_MONSTERS
 effect-yx:22:40
 desc:Detects everything nearby.
 spell:Trump Lore:32:45:68:80
-desc:This working is beyond what this game can yet
-desc: express, and does nothing.  See realmmap.toml.
+effect:IDENTIFY_FULLY
+desc:Identifies everything about an object: every rune on it, all at once.
 spell:Trump Undead:34:75:71:80
 effect:SUMMON_PET:UNDEAD
 dice:1

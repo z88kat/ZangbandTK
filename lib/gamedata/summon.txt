@@ -156,3 +156,32 @@ uniques:1
 race-flag:UNIQUE
 fallback:HI_UNDEAD
 desc:unique monsters
+
+# ZangbandTK: Trump's Joker Card, Zangband's SUMMON_BIZARRE groups
+# (archive/zangband/src/monster2.c).  The card rolls one of four and calls
+# from it -- molds, bats, vortices or creeping coins, never a unique -- so
+# each is a type of its own and the spell picks between them, as Zangband's
+# randint1(4) did.
+name:BIZARRE_MOLD
+msgt:SUM_MONSTER
+uniques:0
+base:mold
+desc:molds
+
+name:BIZARRE_BAT
+msgt:SUM_MONSTER
+uniques:0
+base:bat
+desc:bats
+
+name:BIZARRE_VORTEX
+msgt:SUM_MONSTER
+uniques:0
+base:vortex
+desc:vortices
+
+name:BIZARRE_COINS
+msgt:SUM_MONSTER
+uniques:0
+base:creeping coins
+desc:creeping coins

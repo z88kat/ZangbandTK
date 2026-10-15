@@ -767,7 +767,7 @@ static int test_the_realm_filter_sorts_three_realms(void *state) {
 }
 
 /**
- * A spell with no effect must say so, and there must be exactly sixteen.
+ * A spell with no effect must say so, and the count must be exact.
  *
  * The realms are emitted from realmmap.toml keyed by spell name, and a name
  * that does not match the table is silent: the spell is written out with its
@@ -782,31 +782,27 @@ static int test_the_realm_filter_sorts_three_realms(void *state) {
  * which catches a spell quietly *gaining* the deferral wording to make the
  * first half pass.
  *
- * A hundred and seven as the realms stand.  Eighty-three was the figure here
- * once, down from a hundred and twenty when M10 began -- five of the seventeen
- * deferred spells were waiting on monster allegiance, and it arrived -- and the
- * figure rose again when Trump came in with deferrals of its own, which
- * trumps-deferrals-are-the-three names.  Reset Recall left the list once each
- * dungeon kept a recall depth that could be written, one spell fewer in each of
- * the six classes that hold Trump.
+ * Fifty-one as the realms stand.  It was a hundred and seven until 3.125.0,
+ * when nine spells left the list at once: five new effects and four summon
+ * types gave them a way (DEC-139).  Eighty-three was the figure once, down
+ * from a hundred and twenty when M10 began -- five of the seventeen deferred
+ * spells were waiting on monster allegiance, and it arrived -- and it rose
+ * again when Trump came in with deferrals of its own, which
+ * trumps-deferral-is-shuffle names.  Reset Recall left the list once each
+ * dungeon kept a recall depth that could be written.
  *
- * What is left is twelve distinct spells across the six realms, counted once
- * per entitled class. Sorcery's four -- Identify True, Detect Enchantment,
- * Self Knowledge, Explosive Rune -- are whole-object identification, an
- * is-this-magical bit 4.2 does not keep, a character sheet that already says
- * everything, and a trap glyph that is not 4.2's warding glyph. Life keeps
- * Bless Weapon, because no 4.2 effect blesses a weapon. Arcane keeps
- * Phlogiston, refuelling being a command rather than an effect, and Detect
- * Enchantment again. Nature keeps Stone Tell and Protect from Corrosion, one
- * of them whole-object identification again and the other an object property
- * no spell can reach. Death keeps Wraithform, Omnicide, and Raise the Dead --
- * that last one re-deferred in 3.72.0 with its reason corrected: the pet half
- * of its wall came down, and the other half is that Zangband raises the
- * corpses actually lying on the floor and 4.2 has no corpses.
+ * What is left is seven distinct spells across four realms, counted once per
+ * entitled class. Three are refused for good, by the project owner's ruling
+ * rather than for want of a mechanism: Detect Enchantment, in both Sorcery and
+ * Arcane, would bring back a sense of which objects are magical that 4.2
+ * removed on purpose, and Death's Raise the Dead raises corpses this game does
+ * not have and will not. Four wait for a mechanism: Sorcery's Explosive Rune,
+ * a trap glyph that is not 4.2's warding glyph; Death's Wraithform, a player
+ * who walks through rock, and Omnicide, a whole-level sweep with a running
+ * cost; and Trump's Shuffle, a weighted deck.
  *
- * The count is high relative to the twelve because the classes with six realms
- * carry nearly all of them: the Warrior-Mage and the High-Mage take twelve
- * apiece.
+ * The Mage, the Priest, the Warrior-Mage and the High-Mage carry seven each,
+ * the most any class does.
  *
  * `scripts/check-build` also runs `zconv realms --check` now, which catches a
  * mis-keyed name itself rather than its symptom. This stays because it asks the
@@ -833,7 +829,7 @@ static int test_a_spell_without_an_effect_says_so(void *state) {
 		}
 	}
 
-	eq(effectless, 107);
+	eq(effectless, 51);
 
 	ok;
 }
@@ -1677,43 +1673,49 @@ static int test_trump_summons_serve_you(void *state) {
 	eq(books, 24);
 
 	/*
-	 * Fourteen of the realm's thirty-two spells summon, and every one of
-	 * them summons a pet.
+	 * Fifteen of the realm's thirty-two spells summon, and every one of
+	 * them summons a pet.  Counted in effects, not spells: fourteen call one
+	 * kind of creature each, and Joker Card carries four, one for each of
+	 * its groups, of which a casting calls one (3.125.0, DEC-139).  Eighteen
+	 * a class.
 	 *
-	 * Seventy-five rather than six times fourteen, because Zangband marks
+	 * Ninety-nine rather than six times eighteen, because Zangband marks
 	 * some class-realm cells unlearnable with a level of 99 and the emitter
 	 * drops those (DEC-61): the Rogue never reaches four of Trump's summons
-	 * and the Ranger never reaches five. Four full classes at fourteen, plus
-	 * the Rogue's ten and the Ranger's nine.
+	 * and the Ranger never reaches five. Joker Card both of them do reach.
+	 * Four full classes at eighteen, plus the Rogue's fourteen and the
+	 * Ranger's thirteen.
 	 */
-	eq(summons, 4 * 14 + 10 + 9);
+	eq(summons, 4 * 18 + 14 + 13);
 	eq(hostile_summons, 0);
 
 	ok;
 }
 
 /**
- * And the realm's deferrals are the three that were argued for, not more.
+ * And the realm's one deferral is the one that was argued for, not more.
  *
- * A count would let a fourth in silently. These three are named because each
- * was a separate judgement: Shuffle's weighted deck cannot be expressed by a
- * uniform RANDOM, Joker Card summons groups that do not exist here, and Trump
- * Lore is whole-object identification, which 4.2 replaced with runes.
+ * A count would let a second in silently, so it is named. Shuffle's weighted
+ * deck cannot be expressed by a uniform RANDOM, and several of its cards --
+ * the Ancient Curse, a wish, artifact creation -- have nothing here to draw.
  *
- * Dimension Door was the fifth until 3.72.1, deferred for wanting a
+ * Joker Card and Trump Lore were the second and third until 3.125.0. Joker
+ * Card's groups are four summon types in summon.txt now, molds, bats, vortices
+ * and creeping coins, picked between as Zangband's randint1(4) did; Trump Lore
+ * is IDENTIFY_FULLY, every rune on an object at once (DEC-139).
+ *
+ * Dimension Door was another until 3.72.1, deferred for wanting a
  * player-chosen destination "it has no interface for". TELEPORT_TO has exactly
  * that interface -- Sorcery's copy of the same Zangband spell had been using it
- * since the realm went in -- so the spell works and this list is one shorter.
+ * since the realm went in -- so the spell works.
  *
- * Reset Recall was the fourth, deferred because the recall depth it writes was
+ * Reset Recall was another, deferred because the recall depth it writes was
  * not one 4.2 kept.  This game keeps one for each dungeon (WLD-14), and fixing
  * the "Set recall depth?" question that never wrote it gave it a way to be
- * written; RESET_RECALL is the spell, and the list is shorter again.
+ * written; RESET_RECALL is the spell.
  */
-static int test_trumps_deferrals_are_the_three(void *state) {
-	static const char *const deferred[] = {
-		"Shuffle", "Joker Card", "Trump Lore"
-	};
+static int test_trumps_deferral_is_shuffle(void *state) {
+	static const char *const deferred[] = { "Shuffle" };
 	const struct player_class *c = find_class("High-Mage");
 	int b, silent = 0;
 	size_t i;
@@ -2088,7 +2090,7 @@ struct test tests[] = {
 	{ "the-realm-filter-sorts-three-realms",
 	  test_the_realm_filter_sorts_three_realms },
 	{ "trump-summons-serve-you", test_trump_summons_serve_you },
-	{ "trumps-deferrals-are-the-three", test_trumps_deferrals_are_the_three },
+	{ "trumps-deferral-is-shuffle", test_trumps_deferral_is_shuffle },
 	{ "every-class-charges-zangbands-price",
 	  test_every_class_charges_zangbands_price },
 	{ "a-high-mage-holds-more-magic",

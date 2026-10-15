@@ -1395,6 +1395,15 @@ void player_learn_flag(struct player *p, int flag)
 }
 
 /**
+ * Learn an element's rune: its resistance and whether an object ignores it.
+ */
+void player_learn_element(struct player *p, int element)
+{
+	player_learn_rune(p, rune_index(RUNE_VAR_RESIST, element), true);
+	update_player_object_knowledge(p);
+}
+
+/**
  * Learn a slay.
  */
 void player_learn_slay(struct player *p, int index)
@@ -1821,6 +1830,32 @@ void object_learn_unknown_rune(struct player *p, struct object *obj)
 
 	/* Learn the rune */
 	player_learn_rune(p, i, true);
+}
+
+/**
+ * Learn every unknown rune on an object at once.
+ *
+ * ZangbandTK: Zangband's identify_fully() in rune terms.  A rune is the
+ * player's knowledge rather than the object's, so each one learned here is
+ * known on every object that carries it, as any rune is.  Bounded by the
+ * number of runes, since each pass learns one the player did not know.
+ *
+ * \param p is the player
+ * \param obj is the object
+ */
+void object_learn_all_runes(struct player *p, struct object *obj)
+{
+	size_t n;
+	int i;
+
+	for (n = 0; n < rune_max; n++) {
+		i = object_find_unknown_rune(p, obj);
+		if (i < 0) break;
+		player_learn_rune(p, i, true);
+	}
+
+	/* Nothing left to learn: assessed, as IDENTIFY leaves it */
+	object_learn_unknown_rune(p, obj);
 }
 
 /**

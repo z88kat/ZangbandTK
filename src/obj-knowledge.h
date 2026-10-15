@@ -79,6 +79,7 @@ void player_know_object(struct player *p, struct object *obj);
 void update_player_object_knowledge(struct player *p);
 
 void player_learn_flag(struct player *p, int flag);
+void player_learn_element(struct player *p, int element);
 void player_learn_brand(struct player *p, int index);
 void player_learn_slay(struct player *p, int index);
 void player_learn_curse(struct player *p, struct curse *curse);
@@ -93,6 +94,7 @@ void equip_learn_element(struct player *p, int element);
 void equip_learn_after_time(struct player *p);
 
 void object_learn_unknown_rune(struct player *p, struct object *obj);
+void object_learn_all_runes(struct player *p, struct object *obj);
 void object_learn_on_wield(struct player *p, struct object *obj);
 void shape_learn_on_assume(struct player *p, const char *name);
 void object_learn_on_use(struct player *p, struct object *obj);

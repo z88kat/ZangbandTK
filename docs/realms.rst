@@ -219,15 +219,16 @@ recently there was no side for them to be on (:doc:`pets`).
 
 .. note::
 
-   **Two of the thirty-two do nothing, and say so.** *Bless Weapon* sits in
-   *Blessings of the Grail* with its level and its cost, described as beyond
-   what the game can express. 4.2 has a blessed-weapon property and no effect
-   that confers it; chaos branding is the nearest thing the engine has and is a
-   different spell wearing this one's name. *Holy Vision* is the fourth spell
-   in the game to want whole-object identification, and meets the same wall as
-   Sorcery's *Identify True*, Trump's *Trump Lore* and Nature's *Stone Tell*:
-   4.2 replaced it with runes learned one at a time, so there is no hidden
-   description left for a prayer to reveal.
+   **Two of the thirty-two used to do nothing, and no longer do.** *Bless
+   Weapon* blesses a melee weapon, giving it the same blessed property a
+   Priest already fights better with, and drives out any curse on it that is
+   not permanent. A permanent curse drives the blessing off instead, and an
+   artifact takes the blessing only one time in three, losing a point of
+   enchantment when it refuses. *Holy Vision* tells you everything about an
+   object, which in this game means every rune on it, learned at once — as
+   Sorcery's *Identify True*, Trump's *Trump Lore* and Nature's *Stone Tell*
+   do. A rune is yours rather than the object's, so what the prayer teaches
+   you is known on everything else that carries it too.
 
    **Three more do something measurably different.** Nothing here dispels
    demons by name — 4.2 dispels undead, evil, or everything — so *Exorcism* and
@@ -285,14 +286,20 @@ table marks the last one unreachable for both. See :ref:`books-short`.
 
 .. note::
 
-   **Four of the thirty-two do nothing, and say so.** *Identify True*, *Detect
-   Enchantment*, *Self Knowledge* and *Explosive Rune* each need a mechanism
-   Angband 4.2 removed or never had — whole-object identification, a
-   separate is-this-magical bit, a self-knowledge readout the character sheet
-   already carries, and a glyph that explodes rather than wards. They are in
-   their books with their levels and costs, described as beyond what the game
-   can express, rather than quietly missing: a book with a hole in it and a note
-   saying so is honest, and a spell absent without explanation is not.
+   **Two of the thirty-two do nothing, and say so.** *Detect Enchantment*
+   would sense which objects are magical before you know them, which Angband
+   4.2 took away on purpose when an object's properties became runes, and it
+   will not be brought back. *Explosive Rune* wants a glyph that explodes
+   rather than wards. Both are in their books with their levels and costs,
+   described as beyond what the game can express, rather than quietly missing:
+   a book with a hole in it and a note saying so is honest, and a spell absent
+   without explanation is not.
+
+   *Identify True* and *Self Knowledge* used to be beside them. *Identify True*
+   teaches you every rune on an object at once, where the first book's
+   *Identify* teaches one. *Self Knowledge* teaches you every rune on the
+   equipment you are wearing, which is the part of the old spell the character
+   sheet could not already do.
 
 Trump
 -----
@@ -352,18 +359,23 @@ cards of eight. See :ref:`books-short`.
 
 .. note::
 
-   **Three of the thirty-two do nothing, and say so.** *Shuffle* is the deck
+   **One of the thirty-two does nothing, and says so.** *Shuffle* is the deck
    itself — one roll read off twenty unequal outcomes, several of which need
-   mechanisms this game lacks. *Joker Card* summons the groups 4.2's summon
-   table has no equivalent of. And *Trump Lore* is whole-object identification,
-   the same wall as Sorcery's *Identify True* and Nature's *Stone Tell*.
+   mechanisms this game lacks.
 
-   *Dimension Door* was the fifth until recently, and should not have been. It
+   *Joker Card* and *Trump Lore* used to be beside it. The Joker calls a mold,
+   a bat, a vortex or creeping coins to serve you, and the card decides which.
+   Like every Trump summon it calls at the depth you are on, so a vortex, the
+   shallowest of which lives at 21, will not answer above that. *Trump Lore*
+   teaches you every rune on an object at once, as Sorcery's *Identify True*
+   does.
+
+   *Dimension Door* was another until recently, and should not have been. It
    lets you choose the square you arrive on, which this game can do and always
    could — Sorcery's copy of the same spell had been doing it since that realm
    went in. Both now work.
 
-   *Reset Recall* was the fourth. Each dungeon remembers the level Word of
+   *Reset Recall* was another. Each dungeon remembers the level Word of
    Recall brings you back to, and now the spell can set it: cast in a dungeon,
    it asks which level, anywhere from the dungeon's first to the deepest you
    have reached in it, and offers the deepest. Above ground there is no dungeon
@@ -486,10 +498,11 @@ against Sorcery's 30 for forty; *Stone to Mud* at 20 against Nature's 5. Only
 gaps in another one, and a poor choice as the only realm you have — which is
 Zangband's own advice, and it survives the port intact.
 
-Two of the thirty-two do nothing and say so. *Phlogiston* refuels a light
-source, which is a command in this game rather than a spell; and *Detect
-Enchantment* wants a single is-this-magical bit, which no longer exists now that
-an object's properties are runes you learn one at a time.
+One of the thirty-two does nothing and says so. *Detect Enchantment* would
+sense which objects are magical before you know them, which went when an
+object's properties became runes you learn one at a time, and it will not be
+brought back. *Phlogiston* used to be the other: it adds half a full load of
+fuel to the torch or lantern you are holding.
 
 One more does something else entirely. **Zangband's Wizard Lock jammed a door shut and this one makes a
 door**, because 4.2 has no jamming at all — a door is
@@ -537,12 +550,12 @@ around you. Zangband's third part was a disintegration ball, which this game has
 no projection for; it arrives as the walls coming down and the damage landing
 separately, which is the same event described twice rather than one effect.
 
-**Two of the thirty-two do nothing.** *Stone Tell* would tell you everything
-about an object in a game that replaced that with runes learned one at a time,
-and *Protect from Corrosion* is an object property here rather than anything a
-spell can reach.
+**Every one of the thirty-two does something.** The last two to arrive were
+*Stone Tell*, which teaches you every rune on an object at once, and *Protect
+from Corrosion*, which makes a piece of armour ignore acid for good and undoes
+what acid has already done to it, unless it is cursed.
 
-Three more used to be inert and no longer are. *Animal Taming*, *Summon Animal*
+Three others used to be inert and no longer are. *Animal Taming*, *Summon Animal*
 and *Animal Friendship* all needed a creature to be able to take your side; pets
 gave them that, and Nature is now the realm that walks into a fight with company
 (:doc:`pets`).
@@ -599,7 +612,9 @@ Three of the thirty-two do nothing. *Raise the Dead* animates the corpses and
 skeletons actually lying on the floor near you, and 4.2 has no such object —
 there is nothing lying there to raise. Translating it as "summon undead as pets"
 would be a different spell wearing this one's name: this one is paid for by what
-you have already killed, and that is the whole character of it. *Wraithform* needs an incorporeal player, which
+you have already killed, and that is the whole character of it, so it will
+stay as it is: corpses are not something this game is going to have.
+*Wraithform* needs an incorporeal player, which
 this game has no notion of. And *Omnicide* kills every creature on the level, one
 at a time, taking mana until you run out — a sweep with a running cost that the
 realm's own *Mass Genocide* would otherwise duplicate.

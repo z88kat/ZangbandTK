@@ -2135,6 +2135,261 @@ bool effect_handler_IDENTIFY(effect_handler_context_t *context)
 	return true;
 }
 
+/**
+ * Identify every unknown rune on an object (ZangbandTK).
+ *
+ * Zangband's identify_fully() ([spells3.c](../archive/zangband/src/spells3.c))
+ * told the player everything about one object.  4.2 keeps that knowledge as
+ * runes, so everything about an object is every rune on it -- and a rune is
+ * the player's, known on whatever else carries it from then on.
+ */
+bool effect_handler_IDENTIFY_FULLY(effect_handler_context_t *context)
+{
+	struct object *obj;
+	const char *q, *s;
+	int itemmode = (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR);
+
+	context->ident = true;
+
+	/* Get an item */
+	q = "Identify which item fully? ";
+	s = "You have nothing to identify.";
+	if (context->cmd) {
+		if (cmd_get_item(context->cmd, "tgtitem", &obj, q, s,
+				item_tester_unknown, itemmode)) {
+			return false;
+		}
+	} else if (!get_item(&obj, q, s, 0, item_tester_unknown, itemmode))
+		return false;
+
+	object_learn_all_runes(player, obj);
+
+	return true;
+}
+
+/**
+ * Learn every rune on the equipment being worn (ZangbandTK).
+ *
+ * Zangband's self_knowledge() ([spells2.c](../archive/zangband/src/spells2.c))
+ * read the true flags of everything worn, known or not, and listed them.  The
+ * character sheet already lists what is known, so what is left of the spell
+ * is the part it alone did: making the unknown known.
+ */
+bool effect_handler_SELF_KNOWLEDGE(effect_handler_context_t *context)
+{
+	bool learned = false;
+	int i;
+
+	context->ident = true;
+
+	virtue_change(player, V_KNOWLEDGE, 1);
+	virtue_change(player, V_ENLIGHTEN, 1);
+
+	for (i = 0; i < player->body.count; i++) {
+		struct object *obj = slot_object(player, i);
+
+		if (!obj || object_runes_known(obj)) continue;
+		object_learn_all_runes(player, obj);
+		learned = true;
+	}
+
+	if (!learned) {
+		msg("You already know everything about what you are wearing.");
+	}
+
+	return true;
+}
+
+/**
+ * Bless a melee weapon (ZangbandTK, Life's Bless Weapon).
+ *
+ * Zangband's bless_weapon() ([spells3.c](../archive/zangband/src/spells3.c))
+ * set TR_BLESSED, and 4.2 has the same flag, BLESSED, with the same reward:
+ * a priest fights better with a blessed weapon.  A permanent curse drives the
+ * blessing off; any other curse is driven off by it, which is Zangband's
+ * uncurse less its one-in-three for a heavy curse, there being no heavy
+ * curse here.  An artifact takes the blessing one time in three, and
+ * otherwise loses a little of its enchantment for the trying.
+ */
+bool effect_handler_BLESS_WEAPON(effect_handler_context_t *context)
+{
+	struct object *obj;
+	char o_name[80];
+	const char *q = "Bless which weapon? ";
+	const char *s = "You have no weapon to bless.";
+	int itemmode = (USE_EQUIP | USE_INVEN | USE_FLOOR);
+	bool many;
+	int i;
+
+	context->ident = true;
+
+	if (context->cmd) {
+		if (cmd_get_item(context->cmd, "tgtitem", &obj, q, s,
+				tval_is_melee_weapon, itemmode)) {
+			return false;
+		}
+	} else if (!get_item(&obj, q, s, 0, tval_is_melee_weapon, itemmode))
+		return false;
+
+	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE, player);
+	many = obj->number > 1;
+
+	if (obj->curses) {
+		for (i = 0; i < z_info->curse_max; i++) {
+			if (obj->curses[i].power >= 100) {
+				msg("The black aura on the %s disrupts the blessing!",
+					o_name);
+				return true;
+			}
+		}
+
+		/* The last curse removed frees the array */
+		for (i = 0; obj->curses && i < z_info->curse_max; i++) {
+			remove_object_curse(obj, i, false);
+		}
+		msg("A malignant aura leaves the %s.", o_name);
+		update_player_object_knowledge(player);
+	}
+
+	if (of_has(obj->flags, OF_BLESSED)) {
+		msg("The %s %s blessed already.", o_name, many ? "were" : "was");
+	} else if (!obj->artifact || one_in_(3)) {
+		msg("The %s shine%s!", o_name, many ? "" : "s");
+		of_on(obj->flags, OF_BLESSED);
+		player_learn_flag(player, OF_BLESSED);
+	} else {
+		bool lost = false;
+
+		msg("The artifact resists your blessing!");
+		if (obj->to_h > 0) {
+			obj->to_h--;
+			lost = true;
+		}
+		if (obj->to_h > 5 && randint0(100) < 33) obj->to_h--;
+		if (obj->to_d > 0) {
+			obj->to_d--;
+			lost = true;
+		}
+		if (obj->to_d > 5 && randint0(100) < 33) obj->to_d--;
+		if (obj->to_a > 0) {
+			obj->to_a--;
+			lost = true;
+		}
+		if (obj->to_a > 5 && randint0(100) < 33) obj->to_a--;
+		if (lost) {
+			msg("There is a static feeling in the air...");
+			msg("The %s %s disenchanted!", o_name, many ? "were" : "was");
+		}
+	}
+
+	player->upkeep->notice |= (PN_COMBINE);
+	player->upkeep->update |= (PU_BONUS);
+	player->upkeep->redraw |= (PR_EQUIP | PR_INVEN);
+
+	return true;
+}
+
+/**
+ * Add fuel to the light being held (ZangbandTK, Arcane's Phlogiston).
+ *
+ * Zangband's phlogiston() ([spells3.c](../archive/zangband/src/spells3.c)):
+ * half of a full load, up to a full one, in a torch or a lantern.  A light
+ * that burns nothing takes none, and a burnt-out torch is gone, so neither
+ * costs the casting.
+ */
+bool effect_handler_REFUEL_LIGHT(effect_handler_context_t *context)
+{
+	struct object *light = equipped_item_by_slot_name(player, "light");
+	char o_name[80];
+	int most;
+
+	context->ident = true;
+
+	if (light && of_has(light->flags, OF_TAKES_FUEL)) {
+		most = z_info->fuel_lamp;
+	} else if (light && of_has(light->flags, OF_BURNS_OUT)) {
+		most = z_info->fuel_torch;
+	} else {
+		msg("You are not wielding anything which uses phlogiston.");
+		return false;
+	}
+
+	object_desc(o_name, sizeof(o_name), light, ODESC_BASE, player);
+	if (light->timeout >= most) {
+		msg("No more phlogiston can be put in your %s.", o_name);
+		return false;
+	}
+
+	light->timeout += most / 2;
+	msg("You add phlogiston to your %s.", o_name);
+	if (light->timeout >= most) {
+		light->timeout = most;
+		msg("Your %s is full.", o_name);
+	}
+
+	player->upkeep->update |= (PU_TORCH);
+	player->upkeep->redraw |= (PR_EQUIP);
+
+	return true;
+}
+
+/**
+ * Armour not yet known to ignore acid.
+ */
+static bool item_tester_rustproof(const struct object *obj)
+{
+	return tval_is_armor(obj) && !(obj->known
+		&& (obj->known->el_info[ELEM_ACID].flags & EL_INFO_IGNORE));
+}
+
+/**
+ * Make a piece of armour ignore acid (ZangbandTK, Nature's Protect from
+ * Corrosion).
+ *
+ * Zangband's rustproof() ([spells3.c](../archive/zangband/src/spells3.c)) set
+ * TR_IGNORE_ACID, and 4.2 keeps the same thing as an object's ignore flag for
+ * the element.  Uncursed armour that acid had already eaten into is restored
+ * as well, as it was there.  The caster learns acid's rune, so the armour
+ * shows what was done to it.
+ */
+bool effect_handler_RUSTPROOF(effect_handler_context_t *context)
+{
+	struct object *obj;
+	char o_name[80];
+	const char *q = "Rustproof which piece of armour? ";
+	const char *s = "You have nothing to rustproof.";
+	int itemmode = (USE_EQUIP | USE_INVEN | USE_FLOOR);
+	bool many;
+
+	context->ident = true;
+
+	if (context->cmd) {
+		if (cmd_get_item(context->cmd, "tgtitem", &obj, q, s,
+				item_tester_rustproof, itemmode)) {
+			return false;
+		}
+	} else if (!get_item(&obj, q, s, 0, item_tester_rustproof, itemmode))
+		return false;
+
+	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE, player);
+	many = obj->number > 1;
+
+	obj->el_info[ELEM_ACID].flags |= EL_INFO_IGNORE;
+	if (obj->to_a < 0 && !obj->curses) {
+		msg("The %s look%s as good as new!", o_name, many ? "" : "s");
+		obj->to_a = 0;
+	}
+	msg("The %s %s now protected against corrosion.", o_name,
+		many ? "are" : "is");
+	player_learn_element(player, ELEM_ACID);
+
+	player->upkeep->notice |= (PN_COMBINE);
+	player->upkeep->update |= (PU_BONUS);
+	player->upkeep->redraw |= (PR_EQUIP | PR_INVEN);
+
+	return true;
+}
+
 
 /**
  * Create stairs at the player location

@@ -7438,3 +7438,51 @@ and the segfault reproduced and fixed. `check-build --tests`,
 at in a window: no screenshot, no human eye on a dialog. What that leaves
 unproven is appearance and focus -- that the sink's window is legible, that a
 Tomb left up by a refused answer looks right rather than merely existing.
+
+**DEC-139 — Nine deferred realm spells work, and three are refused for good
+(15 October 2026, the project owner).**
+
+Sixteen realm spells were in their books doing nothing, each with a reason in
+`tools/zconv/realmmap.toml`. Asked whether they could be made to work, the
+answer split three ways: nine needed only a small effect or some data, four
+needed more, and three a new mechanism. The project owner chose the nine, and
+ruled two of the rest out permanently.
+
+**Built (3.125.0).** Five effects and four summon types:
+
+- `IDENTIFY_FULLY` -- every unknown rune on one object, where `IDENTIFY` learns
+  one. Sorcery's *Identify True*, Life's *Holy Vision*, Nature's *Stone Tell*,
+  Trump's *Trump Lore*. The old reason, that 4.2 has no hidden description to
+  reveal, was half right: everything about an object *is* every rune on it.
+  Stronger than Zangband's, because a rune is the player's and is then known on
+  every object that carries it -- which is how 4.2 has always treated knowledge.
+- `SELF_KNOWLEDGE` -- every rune on the equipment worn. Zangband's
+  `self_knowledge()` read the true flags of what was worn, known or not; the
+  character sheet already lists the known ones, so learning the unknown is the
+  part kept, with the original's nudge to Knowledge and Enlightenment.
+- `BLESS_WEAPON` -- 4.2's own `BLESSED` flag, which already pays a Priest. A
+  permanent curse disrupts it and any other curse is driven out; an artifact is
+  blessed one time in three and otherwise loses a point of enchantment.
+  Zangband's one-in-three failure on a heavy curse has nothing to attach to.
+- `REFUEL_LIGHT` -- Arcane's *Phlogiston*: half a full load, up to a full one.
+- `RUSTPROOF` -- Nature's *Protect from Corrosion*: the object's ignore-acid
+  flag, with uncursed acid damage undone and acid's rune learned.
+- `BIZARRE_MOLD`, `BIZARRE_BAT`, `BIZARRE_VORTEX`, `BIZARRE_COINS` in
+  `summon.txt`, and *Joker Card* as a `RANDOM` over four `SUMMON_PET`s, which is
+  Zangband's `randint1(4)` exactly. The old deferral named the groups wrongly as
+  well: the card draws molds, bats, vortices and creeping coins.
+
+`effects/workings` exercises each effect; `player/realm` now counts 51 inert
+spell copies where it counted 107, and Trump's one deferral is *Shuffle*.
+
+**Refused for good.** *Detect Enchantment* (Sorcery and Arcane) would bring
+back a sense of which objects are magical, which 4.2 removed on purpose, and
+there is nothing in Angband to build it from. *Raise the Dead* raises corpses,
+and corpses are out of scope. Both stay in their books saying they do nothing,
+and their notes say they will not be built.
+
+**Still waiting, not refused.** *Explosive Rune*, *Omnicide*, *Wraithform* and
+*Shuffle* each need a mechanism of their own: a glyph that detonates under a
+monster, a whole-level sweep with a running cost, a player who walks through
+rock, and a weighted deck whose cards include the Ancient Curse, which the
+missing patron reward also wants.
