@@ -1754,10 +1754,14 @@ proc display_pass {} {
 # front end starts the module (on the Mac, snd-cocoa.m), keeps the volume and
 # shows the switch.  Whether anything is audible no check can say: what they
 # read is the message whose sound the game asked for.
+#
+# Only the Mac has a sound module yet (snd-cocoa.m).  Windows and Linux get
+# SDL2's in a later stage, and until then this asks them for none, so that a
+# Mac build which lost its sound still fails here.
 proc sound_pass {} {
-	check "the game's sounds are loaded" {
+	check "the game's sounds are loaded where the platform has them" {
 		angband_sound ready
-	} 1
+	} [expr {[tk windowingsystem] eq "aqua"}]
 
 	check "the volume is set, and runs from 0 to 100" {
 		set was [angband_sound volume]
@@ -1869,11 +1873,16 @@ proc sound_pass_done {} {
 # The Keymaps window binds a key the way typing it is read -- tk_keypress(),
 # shared with angband_key -- and keeps what is bound in 4.2's own form, in the
 # user folder's user.prf, which every character loads.
+#
+# The keycaps come from the keyboard layout itself only on a Mac (keyboard.c,
+# through Carbon).  Elsewhere angband_keyboard has no layout to read, gives the
+# ANSI shape and no keycaps, and the window draws a US keyboard; reading the
+# real one there is a later stage's work.
 proc keymap_pass {} {
 	check "the keyboard's own keycaps, and its shape" {
 		list [expr {[angband_keyboard type] in {ansi iso jis}}] \
 			[expr {[string tolower [angband_keyboard char 0 0]] eq "a"}]
-	} "1 1"
+	} [expr {[tk windowingsystem] eq "aqua" ? "1 1" : "1 0"}]
 
 	check "a key is bound as typing it is read" {
 		list [angband_keymap trigger 113 0 q] [angband_keymap trigger 102 4 ""] \

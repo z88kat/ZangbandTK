@@ -33,6 +33,10 @@ on:
       - 'scripts/dmg_macos_tcltk'
       - 'src/tcl/dmg-readme.txt'
       - 'scripts/run-tcl-tests'
+      - 'scripts/run-tcl-bridge-test'
+      - 'scripts/run-tcl-package-test'
+      - 'scripts/pkg_linux_tcltk'
+      - 'lib/icons/zangbandtk.desktop'
       - 'scripts/portraits/**'
       - 'scripts/palettes/**'
       - 'lib/gamedata/p_race.txt'
@@ -181,6 +185,15 @@ jobs:
       - name: Package the application bundle
         run: scripts/pkg_macos_tcltk build "$PWD/out"
 
+      # The bundle, not the build tree, started with a script that asks where
+      # Tcl, Tk and the front end's scripts came from: a bundle that reached
+      # back to the runner's toolchain would pass everything above and fail on
+      # every other Mac.
+      - name: The bundle runs on what it carries
+        run: |
+          scripts/run-tcl-package-test out/ZangbandTK.app \
+            out/ZangbandTK.app/Contents/MacOS/ZangbandTK
+
       # On a disk image, as a release ships it, so what is downloaded from
       # here is what a player would get: an .app uploaded as an artifact is
       # zipped and loses what its signature seals.  No manual inside -- the
@@ -211,3 +224,122 @@ jobs:
       # worse outcome than a red one.
       - name: Scripted session
         run: scripts/run-tcl-bridge-test build
+
+  # Linux, on X11.  Decision 13 of the Phase 3 plan: macOS through development,
+  # all three platforms before release.  ubuntu-22.04 rather than latest, as
+  # the release's Linux jobs are, because its glibc is the oldest the AppImage
+  # will run on.  One job where the Mac has two: on a cache hit the toolchain
+  # step has nothing to do.
+  linux:
+    name: Linux (X11) and AppImage
+    runs-on: ubuntu-22.04
+    env:
+      # The game refuses to start in a locale that is not UTF-8.
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+    steps:
+      - name: Clone Project
+        uses: actions/checkout@v6
+
+      # X11 and Xft for Tk; zip for Tk's own build (scripts/build-tcltk says
+      # why); Xvfb, a display for the game to open its window on; and libfuse2
+      # to run linuxdeploy.
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libx11-dev libxft-dev \
+            libfontconfig1-dev zip xvfb xauth libfuse2 file
+
+      # Keyed on the image, not on runner.os as the Mac's is: a toolchain built
+      # on a newer Ubuntu and restored here would carry its newer glibc into
+      # the AppImage.
+      - name: Cache the toolchain
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: tcltk/local
+          key: tcltk-9.0.4-ubuntu-22.04-${{ runner.arch }}-${{ hashFiles('scripts/build-tcltk') }}
+
+      - name: Build Tcl and Tk
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: scripts/build-tcltk
+
+      # The same headers the Mac job asks for, and an X11 Tk with Xft: without
+      # Xft, Tk draws with the X server's core fonts, a few fixed sizes of
+      # bitmap, and the panes' font sizes would mean nothing.
+      - name: Check the prefix
+        run: |
+          for f in include/tclInt.h include/tkInt.h \
+                   lib/tclConfig.sh lib/tkConfig.sh \
+                   bin/tclsh9.0 bin/wish9.0 ; do
+            if [ ! -f tcltk/local/$f ]; then
+              echo "tcltk/local/$f is missing." >&2
+              exit 1
+            fi
+          done
+          ldd tcltk/local/lib/libtcl9tk9.0.so
+          ldd tcltk/local/lib/libtcl9tk9.0.so | grep -q libXft || {
+            echo "Tk was built without Xft." >&2
+            exit 1
+          }
+
+      # -Werror, as the other Linux builds have: GCC warns where the Mac's
+      # clang does not, and this is the only GCC build of main-tcl.c.
+      # USE_PRIVATE_PATHS because the AppImage is read only, so the saves go
+      # to ~/.angband/ZangbandTK, as the other AppImage's do.
+      - name: Configure and build
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS_RELEASE="-O2 -DNDEBUG -Werror -DUSE_PRIVATE_PATHS" \
+            -DSUPPORT_TCL_FRONTEND=ON \
+            -DTCLTK_PREFIX="$PWD/tcltk/local"
+          cmake --build build --parallel
+
+      # The X11 front end coming back is the Mac job's worry too, and here it
+      # would be the first module tried; Tk links X11 itself, so ask the cache
+      # rather than the executable.
+      - name: Check the Tcl front end is the one that is in there
+        run: |
+          ldd build/game/angband | grep -q libtcl9tk || {
+            echo "The executable does not link Tk." >&2
+            exit 1
+          }
+          if grep -q '^SUPPORT_X11_FRONTEND:BOOL=ON' build/CMakeCache.txt; then
+            echo "The X11 front end came back." >&2
+            exit 1
+          fi
+
+      - name: Tcl tests
+        run: scripts/run-tcl-tests
+
+      - name: Scripted session
+        run: xvfb-run -a -s "-screen 0 1600x1200x24" scripts/run-tcl-bridge-test build
+
+      - name: Install linuxdeploy
+        run: |
+          curl -sSLo /usr/local/bin/linuxdeploy \
+            https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod a+x /usr/local/bin/linuxdeploy
+          linuxdeploy --version
+
+      - name: Package the AppImage
+        run: |
+          version=$(sed -n 's/^#define VERSION_STRING[[:space:]]*"\(.*\)"/\1/p' src/buildid.h)
+          scripts/pkg_linux_tcltk build "ZangbandTK-$version"
+
+      # The AppImage's own contents, started through its own AppRun, asked
+      # where Tcl, Tk and the front end's scripts came from -- the check the
+      # bridge session cannot make, since it runs the build tree.
+      - name: The AppImage runs on what it carries
+        run: |
+          ./ZangbandTK-*-linux64-tk.AppImage --appimage-extract >/dev/null
+          xvfb-run -a -s "-screen 0 1600x1200x24" \
+            scripts/run-tcl-package-test squashfs-root squashfs-root/AppRun
+
+      - name: Upload the AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZangbandTK-AppImage
+          path: ZangbandTK-*-linux64-tk.AppImage
+          retention-days: 7

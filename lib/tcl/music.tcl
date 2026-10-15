@@ -13,7 +13,9 @@
 # Built from Tk's own widgets in the classic theme (decision 18).
 
 set music(on) [settings_get music,on 0]
-set music(dir) [settings_get music,dir [file normalize ~/Music]]
+# file home, not ~: Tcl 9 no longer expands a tilde, so ~/Music was a folder
+# called "~" in the directory the game started in, on every platform.
+set music(dir) [settings_get music,dir [file join [file home] Music]]
 set music(volume) [settings_get music,volume 60]
 set music(list) {}
 set music(at) -1

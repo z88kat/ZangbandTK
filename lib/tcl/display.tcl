@@ -17,12 +17,26 @@
 
 set display(dir) [file dirname [info script]]
 
-# The panes' fonts: what each is called, what it is for, and its default.
-set display(fonts) {
-    map      termfont    "Map"           {Menlo 13}
-    panes    panefont    "Text panes"    {Menlo 13}
-    overhead minimapfont "Overhead map"  {Menlo 7}
+# The fixed-width face the panes start in: the first of these the machine has.
+# Menlo is the Mac's, Consolas Windows', DejaVu Sans Mono most Linux desktops'.
+# Named, because Tk hands a family it does not have to the platform to choose
+# for, and on Windows and X11 the platform chose a proportional one: the map in
+# letters of different widths.  TkFixedFont, last, is Tk's own and always there.
+proc display_face {} {
+    set have [font families]
+    foreach family {Menlo Consolas {DejaVu Sans Mono} {Liberation Mono}
+            {Noto Sans Mono}} {
+        if {$family in $have} { return $family }
+    }
+    return [font actual TkFixedFont -family]
 }
+set display(face) [display_face]
+
+# The panes' fonts: what each is called, what it is for, and its default.
+set display(fonts) [list \
+    map      termfont    "Map"           [list $display(face) 13] \
+    panes    panefont    "Text panes"    [list $display(face) 13] \
+    overhead minimapfont "Overhead map"  [list $display(face) 7]]
 set display(sizes) {
     map {8 32}  panes {8 32}  overhead {3 16}
 }
@@ -49,7 +63,9 @@ proc display_fonts_create {} {
         if {![string is integer -strict $size]} { set size $dsize }
         lassign [dict get $display(sizes) $key] lo hi
         set size [expr {max($lo, min($hi, $size))}]
-        if {$family eq ""} { set family $dfamily }
+        # A family this machine does not have -- Menlo, in settings carried
+        # over from a Mac -- is the default, for the reason display_face gives.
+        if {$family eq "" || $family ni [font families]} { set family $dfamily }
         if {$name in [font names]} {
             font configure $name -family $family -size $size
         } else {

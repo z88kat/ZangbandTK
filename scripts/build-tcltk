@@ -62,6 +62,17 @@ if [ ! -d "$TCL_SRC/unix" ] || [ ! -d "$TK_SRC/unix" ]; then
 	exit 1
 fi
 
+# Tk packs its script library into a zip with zip(1).  With none on the path,
+# Tk's configure falls back to building minizip, for which Tk's makefile has no
+# rule, and the build stops at "No rule to make target 'minizip'", long after
+# the cause.  A Mac always has zip; a fresh Linux machine or MSYS2 may not.
+if ! command -v zip >/dev/null 2>&1; then
+	echo "Tk's build needs zip, and there is none on the path." >&2
+	echo "Install it (apt-get install zip, or pacman -S zip) and run this again." >&2
+	echo "If Tk was configured without it, remove $BUILD/tk first." >&2
+	exit 1
+fi
+
 case $(uname -s) in
 Darwin)
 	JOBS=$(sysctl -n hw.activecpu)

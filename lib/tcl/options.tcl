@@ -388,5 +388,9 @@ proc options_page_buttons {p page} {
     pack $a.save $a.restore $a.reset -side left -padx {0 6}
 }
 
-# Preferences in the application menu, where a Mac keeps them.
-proc ::tk::mac::ShowPreferences {} { options_window }
+# Preferences in the application menu, where a Mac keeps them.  Elsewhere
+# there is no application menu, and no ::tk::mac namespace to define this in;
+# Window > Options opens the same window.
+if {[tk windowingsystem] eq "aqua"} {
+    proc ::tk::mac::ShowPreferences {} { options_window }
+}

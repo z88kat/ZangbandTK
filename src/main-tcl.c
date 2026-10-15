@@ -820,6 +820,36 @@ static void grid_clear(term_data *td)
 }
 
 /**
+ * Where a packaged game keeps Tcl's or Tk's script library `lib`: in tcltk/,
+ * beside the game's own lib directory, which is where scripts/pkg_macos_tcltk
+ * puts it in a Mac bundle (Contents/Resources) and the Linux and Windows
+ * packages put it too.  ANGBAND_DIR_TCL is <there>/lib/tcl, so it is found
+ * from that, and one rule serves every platform.
+ *
+ * Made absolute, because Tk reads its library long after this and a relative
+ * one would mean whatever the working directory was by then.  False when
+ * `probe` is not in it -- a build tree, whose repository-root tcltk/ holds
+ * sources and not a library.
+ */
+static bool packaged_script_library(const char *lib, const char *probe,
+		char *buf, size_t len)
+{
+	char path[1024];
+	Tcl_Obj *obj, *norm;
+
+	strnfmt(path, sizeof(path), "%s/../../tcltk/%s", ANGBAND_DIR_TCL, lib);
+	obj = Tcl_NewStringObj(path, -1);
+	Tcl_IncrRefCount(obj);
+	norm = Tcl_FSGetNormalizedPath(NULL, obj);
+	if (norm) my_strcpy(buf, Tcl_GetString(norm), len);
+	Tcl_DecrRefCount(obj);
+	if (!norm) return false;
+
+	strnfmt(path, sizeof(path), "%s/%s", buf, probe);
+	return file_exists(path);
+}
+
+/**
  * Point Tcl and Tk at their own script libraries.
  *
  * Tcl_Init finds init.tcl by walking up from the executable, which works for a
@@ -827,40 +857,33 @@ static void grid_clear(term_data *td)
  * executable sitting in a cmake build tree.  Rather than discover that as
  * "invalid command name" from the first script we source, say where they are.
  *
- * Inside a bundle they come from Contents/Resources/tcltk, which is the copy
- * scripts/pkg_macos_tcltk puts there; outside one they come from the build's
- * TCLTK_PREFIX.  Either way the environment wins if it is already set, so a
- * developer can point a build at a different toolchain without reconfiguring.
+ * A packaged game carries them in tcltk/, beside its own lib directory, and
+ * takes them from there; a build tree has no such directory and takes them
+ * from the build's TCLTK_PREFIX.  Either way the environment wins if it is
+ * already set, so a developer can point a build at a different toolchain
+ * without reconfiguring.
  */
 static void set_script_library_paths(void)
 {
 	static char tclbuf[1024];
 	static char tkbuf[1024];
-	const char *resources = NULL;
-
-#ifdef __APPLE__
-	resources = macos_bundle_resources();
-#endif
+	char dir[1024];
 
 	if (!getenv("TCL_LIBRARY")) {
-		if (resources) {
-			strnfmt(tclbuf, sizeof(tclbuf), "TCL_LIBRARY=%s/tcltk/tcl9.0",
-					resources);
-		} else {
+		if (packaged_script_library("tcl9.0", "init.tcl", dir, sizeof(dir)))
+			strnfmt(tclbuf, sizeof(tclbuf), "TCL_LIBRARY=%s", dir);
+		else
 			strnfmt(tclbuf, sizeof(tclbuf), "TCL_LIBRARY=%s/lib/tcl9.0",
 					TCLTK_PREFIX_PATH);
-		}
 		putenv(tclbuf);
 	}
 
 	if (!getenv("TK_LIBRARY")) {
-		if (resources) {
-			strnfmt(tkbuf, sizeof(tkbuf), "TK_LIBRARY=%s/tcltk/tk9.0",
-					resources);
-		} else {
+		if (packaged_script_library("tk9.0", "tk.tcl", dir, sizeof(dir)))
+			strnfmt(tkbuf, sizeof(tkbuf), "TK_LIBRARY=%s", dir);
+		else
 			strnfmt(tkbuf, sizeof(tkbuf), "TK_LIBRARY=%s/lib/tk9.0",
 					TCLTK_PREFIX_PATH);
-		}
 		putenv(tkbuf);
 	}
 }
@@ -1807,11 +1830,19 @@ enum hook_id {
 	HOOK_MAX
 };
 
+/*
+ * Any hook, held as a function pointer of no particular type and cast back to
+ * its own at the call.  Not void *: ISO C has no conversion between function
+ * and object pointers, and GCC says so under -pedantic -- which the Linux and
+ * Windows builds compile with -- where clang, on the Mac, never did.
+ */
+typedef void (*hook_fn)(void);
+
 static struct hook_slot {
 	const char *name;
-	void **pointer;		/* the game's variable */
-	void *trampoline;	/* ours, or NULL if not answerable yet */
-	void *original;		/* textui's, kept so it can be given back */
+	hook_fn *pointer;	/* the game's variable */
+	hook_fn trampoline;	/* ours, or NULL if not answerable yet */
+	hook_fn original;	/* textui's, kept so it can be given back */
 	Tcl_Obj *script;	/* the command prefix, or NULL */
 } hooks[HOOK_MAX];
 
@@ -2109,7 +2140,7 @@ static bool tcl_confirm_debug(void)
  * Fill in the table.
  *
  * Not a static initialiser: the hook variables are not compile-time constants
- * everywhere, and the casts through void * want to be in one place where they
+ * everywhere, and the casts through hook_fn want to be in one place where they
  * can be read against game-input.h line by line.
  */
 static void hooks_init(void)
@@ -2117,36 +2148,36 @@ static void hooks_init(void)
 	struct hook_slot *h = hooks;
 
 	h[HOOK_STRING].name = "string";
-	h[HOOK_STRING].pointer = (void **)&get_string_hook;
-	h[HOOK_STRING].trampoline = (void *)tcl_get_string;
+	h[HOOK_STRING].pointer = (hook_fn *)&get_string_hook;
+	h[HOOK_STRING].trampoline = (hook_fn)tcl_get_string;
 
 	h[HOOK_QUANTITY].name = "quantity";
-	h[HOOK_QUANTITY].pointer = (void **)&get_quantity_hook;
-	h[HOOK_QUANTITY].trampoline = (void *)tcl_get_quantity;
+	h[HOOK_QUANTITY].pointer = (hook_fn *)&get_quantity_hook;
+	h[HOOK_QUANTITY].trampoline = (hook_fn)tcl_get_quantity;
 
 	h[HOOK_CHECK].name = "check";
-	h[HOOK_CHECK].pointer = (void **)&get_check_hook;
-	h[HOOK_CHECK].trampoline = (void *)tcl_get_check;
+	h[HOOK_CHECK].pointer = (hook_fn *)&get_check_hook;
+	h[HOOK_CHECK].trampoline = (hook_fn)tcl_get_check;
 
 	h[HOOK_COM].name = "com";
-	h[HOOK_COM].pointer = (void **)&get_com_hook;
-	h[HOOK_COM].trampoline = (void *)tcl_get_com;
+	h[HOOK_COM].pointer = (hook_fn *)&get_com_hook;
+	h[HOOK_COM].trampoline = (hook_fn)tcl_get_com;
 
 	h[HOOK_REP_DIR].name = "rep_dir";
-	h[HOOK_REP_DIR].pointer = (void **)&get_rep_dir_hook;
-	h[HOOK_REP_DIR].trampoline = (void *)tcl_get_rep_dir;
+	h[HOOK_REP_DIR].pointer = (hook_fn *)&get_rep_dir_hook;
+	h[HOOK_REP_DIR].trampoline = (hook_fn)tcl_get_rep_dir;
 
 	h[HOOK_AIM_DIR].name = "aim_dir";
-	h[HOOK_AIM_DIR].pointer = (void **)&get_aim_dir_hook;
-	h[HOOK_AIM_DIR].trampoline = (void *)tcl_get_aim_dir;
+	h[HOOK_AIM_DIR].pointer = (hook_fn *)&get_aim_dir_hook;
+	h[HOOK_AIM_DIR].trampoline = (hook_fn)tcl_get_aim_dir;
 
 	h[HOOK_POINT].name = "point";
-	h[HOOK_POINT].pointer = (void **)&get_point_hook;
-	h[HOOK_POINT].trampoline = (void *)tcl_get_point;
+	h[HOOK_POINT].pointer = (hook_fn *)&get_point_hook;
+	h[HOOK_POINT].trampoline = (hook_fn)tcl_get_point;
 
 	h[HOOK_CONFIRM_DEBUG].name = "confirm_debug";
-	h[HOOK_CONFIRM_DEBUG].pointer = (void **)&confirm_debug_hook;
-	h[HOOK_CONFIRM_DEBUG].trampoline = (void *)tcl_confirm_debug;
+	h[HOOK_CONFIRM_DEBUG].pointer = (hook_fn *)&confirm_debug_hook;
+	h[HOOK_CONFIRM_DEBUG].trampoline = (hook_fn)tcl_confirm_debug;
 }
 
 /**

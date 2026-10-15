@@ -1,0 +1,68 @@
+#!/bin/sh
+#
+# Start a packaged ZangbandTK and check that it runs on what it carries.
+#
+# Use in the root directory of the game, like so:
+#    scripts/run-tcl-package-test <package-root> <executable> [arguments]
+#
+# For example, on the three platforms:
+#    scripts/run-tcl-package-test ZangbandTK.app ZangbandTK.app/Contents/MacOS/ZangbandTK
+#    scripts/run-tcl-package-test squashfs-root squashfs-root/AppRun
+#    scripts/run-tcl-package-test ZangbandTK ZangbandTK/ZangbandTK.exe
+#
+# src/tcl/tests/package.tcl does the asking -- see it for why.  Like the bridge
+# test this opens a window, so on Linux run it under xvfb-run.
+set -o errexit
+
+if [ $# -lt 2 ]; then
+	sed -n -e '3,10p' "$0" | sed -e 's/^# \{0,1\}//'
+	exit 1
+fi
+
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+# Absolute, because the game does not start where this does: an AppImage's
+# AppRun changes to its data directory first.
+PACKAGE=$(cd "$1" && pwd)
+shift
+
+TMP=${TMPDIR:-/tmp}
+TMP=${TMP%/}
+RESULT=$(mktemp "$TMP/zangband-package.XXXXXX")
+SAVE=$(mktemp -d "$TMP/zangband-package-save.XXXXXX")
+trap 'rm -f "$RESULT"; rm -rf "$SAVE"' EXIT
+
+# A save and user folder of its own, as the bridge test has, so that nothing
+# the player owns is read or written.
+ZANGBAND_TCL_SCRIPT=$ROOT/src/tcl/tests/package.tcl \
+ZANGBAND_TCL_RESULT=$RESULT \
+ZANGBAND_PACKAGE_ROOT=$PACKAGE \
+	"$@" -dsave="$SAVE" -duser="$SAVE/user" -c -uPackage &
+GAME_PID=$!
+
+# The same watchdog as the bridge test: a front end that cannot start waits.
+WAITED=0
+while kill -0 "$GAME_PID" 2>/dev/null; do
+	if [ "$WAITED" -ge 60 ]; then
+		echo "==> The game did not finish within a minute; killing it." >&2
+		kill -9 "$GAME_PID" 2>/dev/null || true
+		break
+	fi
+	sleep 1
+	WAITED=$((WAITED + 1))
+done
+wait "$GAME_PID" 2>/dev/null || true
+
+if [ ! -s "$RESULT" ]; then
+	echo "==> The packaged game did not run the check." >&2
+	echo "It failed before sourcing it -- most likely it could not find Tcl" >&2
+	echo "or Tk, or its own scripts." >&2
+	exit 1
+fi
+
+sed 1d "$RESULT"
+FAILED=$(head -1 "$RESULT")
+if [ "$FAILED" != "0" ]; then
+	echo "==> $FAILED package check(s) failed." >&2
+	exit 1
+fi
+echo "==> Package checks passed."

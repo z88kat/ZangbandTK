@@ -52,9 +52,12 @@ wm title . "ZangbandTK"
 # Closing the window, and Quit from the application menu, save the character
 # and end the game, from wherever the game is -- angband_quit in main-tcl.c.
 # Without ::tk::mac::Quit, Tk's own Quit ends the process outright and nothing
-# is saved.
+# is saved.  Only on a Mac: the ::tk::mac namespace exists nowhere else, and
+# defining a procedure in it stops this file on Windows and X11.
 wm protocol . WM_DELETE_WINDOW { angband_quit }
-proc ::tk::mac::Quit {} { angband_quit }
+if {[tk windowingsystem] eq "aqua"} {
+    proc ::tk::mac::Quit {} { angband_quit }
+}
 
 # Tk's classic look, in every window: decision 18 in the Phase 3 plan.
 #
@@ -67,10 +70,24 @@ proc ::tk::mac::Quit {} { angband_quit }
 ttk::style theme use classic
 ttk::style configure . -font [uifont 12 bold]
 
+# No menu tears off.  Tk gives every menu a dashed tear-off line on Windows and
+# X11 unless it is told not to, and the Mac, which ignores the option, never
+# showed that most of the windows' menus did not say so.
+option add *Menu.tearOff 0
+
 # Every keystroke goes to the game.  Bound on "." rather than on the canvas so
 # it works whatever has focus inside the window, which will matter more once
 # there are panes.
-bind . <Key> { angband_key %N %s %A }
+#
+# And only to the game: the break stops the bindings Tk puts on "all", which
+# come after this one.  On X11 and Windows those walk the menu bar on F10 and
+# on Alt and a key, so F10 went to the game and opened the menus too, and the
+# menus then took the keys after it.  Windows does the same when Alt alone is
+# let go, which is a key release, hence the second binding.  The Mac binds
+# none of these, so nothing changes there; in this window the menus are the
+# mouse's and the keys are the game's.
+bind . <Key> { angband_key %N %s %A ; break }
+bind . <KeyRelease> break
 
 # Except F1, which opens the manual on playing, as F1 opens the manual where it
 # covers each of the other windows; the game's own ? opens it at the contents.

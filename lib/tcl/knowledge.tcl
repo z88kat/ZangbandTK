@@ -393,6 +393,7 @@ proc knowledge_dump {} {
 
     if {[catch {
         set out [open $file w]
+        fconfigure $out -encoding utf-8
         foreach row $knowledge(rows) {
             set idx [lindex $row 0]
             puts $out [knowledge_title $key [lindex $row 1]]

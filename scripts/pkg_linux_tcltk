@@ -1,0 +1,147 @@
+#!/bin/bash
+#
+# Build ZangbandTK's Linux AppImage from a cmake build of the Tcl/Tk front end.
+#
+# Use in the root directory of the game, like so:
+#    scripts/pkg_linux_tcltk <build-directory> <name> [output.AppImage]
+#
+# For example `scripts/pkg_linux_tcltk build-tcl ZangbandTK-3.128.1`, which
+# writes ZangbandTK-3.128.1-linux64-tk.AppImage.  The suffix is -tk for the
+# reason the Mac image has it (DEC-143): up to 3.128.0 a ZangbandTK AppImage
+# held the game without Tk.
+#
+# Expects:
+#   - a self-contained build -- the default for a Tk build -- configured with
+#     SUPPORT_TCL_FRONTEND=ON, so build/game holds the executable beside its lib
+#     directory, and with USE_PRIVATE_PATHS, or saves would be written inside
+#     the image, which is read only.
+#   - linuxdeploy on PATH, which bundles the shared libraries and packs the
+#     result: https://github.com/linuxdeploy/linuxdeploy
+#
+# Laid out as the Mac bundle is, so that one rule in main-tcl.c finds Tcl's and
+# Tk's script libraries on both: tcltk/ beside the game's lib directory.
+#
+#   usr/bin/zangbandtk                      the game
+#   usr/lib/                                libtcl9.0.so, libtcl9tk9.0.so, and
+#                                           whatever else linuxdeploy brings
+#   usr/share/ZangbandTK/lib/               the game's data, scripts included
+#   usr/share/ZangbandTK/tcltk/tcl9.0, tk9.0, tcl9
+#                                           Tcl's and Tk's script libraries
+set -o errexit
+
+if [ $# -lt 2 ] || [ $# -gt 3 ]; then
+	sed -n -e '3,11p' "$0" | sed -e 's/^# \{0,1\}//'
+	exit 1
+fi
+
+BUILD=$1
+NAME=$2
+OUT=${3:-$NAME-linux64-tk.AppImage}
+EXE=$BUILD/game/angband
+
+if ! command -v linuxdeploy >/dev/null 2>&1 ; then
+	echo "linuxdeploy is not on PATH.  See the comment at the top of this script." >&2
+	exit 1
+fi
+
+if [ ! -x "$EXE" ] || [ ! -d "$BUILD/game/lib/tcl" ]; then
+	echo "No self-contained Tk build at $BUILD/game." >&2
+	echo "Configure with -DSUPPORT_TCL_FRONTEND=ON and build first." >&2
+	exit 1
+fi
+
+# Refuse a build without Tk in it rather than packing one that cannot start,
+# and find the toolchain it was built against from the library it links: the
+# build's rpath names it, and that is where the script libraries are too.
+TK_SO=$(ldd "$EXE" | awk '/libtcl9tk9\.0\.so/ { print $3 }')
+if [ -z "$TK_SO" ] || [ ! -f "$TK_SO" ]; then
+	echo "$EXE does not link Tk, or its libtcl9tk9.0.so cannot be found." >&2
+	exit 1
+fi
+TCLTK_LIB=$(dirname "$TK_SO")
+for d in tcl9.0 tk9.0; do
+	if [ ! -d "$TCLTK_LIB/$d" ]; then
+		echo "No $d script library beside $TK_SO." >&2
+		exit 1
+	fi
+done
+
+APPDIR=AppDir.tk
+rm -rf "$APPDIR" "$OUT"
+
+# The game's own data, out of usr/lib for the reason scripts/pkg_appimage gives:
+# that is where linuxdeploy puts the bundled libraries.
+DATA=$APPDIR/usr/share/ZangbandTK
+mkdir -p "$DATA"
+cp -R "$BUILD/game/lib" "$DATA/lib"
+
+# Tcl's and Tk's script libraries, and tcl9/, which holds the modules --
+# msgcat, tcltest and the rest -- that init.tcl puts on the module path.
+mkdir -p "$DATA/tcltk"
+cp -R "$TCLTK_LIB/tcl9.0" "$TCLTK_LIB/tk9.0" "$DATA/tcltk/"
+if [ -d "$TCLTK_LIB/tcl9" ]; then
+	cp -R "$TCLTK_LIB/tcl9" "$DATA/tcltk/"
+fi
+
+mkdir -p "$APPDIR/usr/share/doc/ZangbandTK"
+cp LICENSE.md "$APPDIR/usr/share/doc/ZangbandTK/"
+if [ -d docs/_build/html ]; then
+	cp -R docs/_build/html "$APPDIR/usr/share/doc/ZangbandTK/manual"
+fi
+
+cp "$EXE" "$APPDIR/zangbandtk-bin"
+
+# The game finds its data as ./lib, so AppRun starts it from the data
+# directory, as scripts/pkg_appimage's does.  Written outside the AppDir for
+# the reason given there.
+APPRUN_DIR=$(mktemp -d)
+trap 'rm -rf "$APPRUN_DIR"' EXIT
+cat > "$APPRUN_DIR/AppRun" <<'APPRUN'
+#!/bin/sh
+HERE="$(dirname "$(readlink -f "$0")")"
+cd "$HERE/usr/share/ZangbandTK"
+exec "$HERE/usr/bin/zangbandtk" "$@"
+APPRUN
+chmod a+x "$APPRUN_DIR/AppRun"
+
+linuxdeploy \
+	--appdir "$APPDIR" \
+	--executable "$APPDIR/zangbandtk-bin" \
+	--desktop-file lib/icons/zangbandtk.desktop \
+	--icon-file lib/icons/zangband.png \
+	--custom-apprun "$APPRUN_DIR/AppRun"
+
+mv "$APPDIR/usr/bin/zangbandtk-bin" "$APPDIR/usr/bin/zangbandtk"
+rm -f "$APPDIR/zangbandtk-bin"
+
+# Nothing may still point at the build machine: a library found through the
+# build's rpath works here and nowhere else.
+for f in "$APPDIR/usr/bin/zangbandtk" "$APPDIR"/usr/lib/libtcl*.so; do
+	if readelf -d "$f" | grep -E 'R(UN)?PATH' | grep -qv '\$ORIGIN'; then
+		echo "$f still has a build-machine rpath:" >&2
+		readelf -d "$f" | grep -E 'R(UN)?PATH' >&2
+		exit 1
+	fi
+done
+for f in libtcl9.0.so libtcl9tk9.0.so; do
+	test -f "$APPDIR/usr/lib/$f" || {
+		echo "linuxdeploy did not bundle $f." >&2
+		exit 1
+	}
+done
+
+# A second pass to pack it, as scripts/pkg_appimage does, naming the custom
+# AppRun again so the default does not replace it; and the output found by
+# what linuxdeploy wrote rather than guessed from the desktop file.
+OLD_IMAGES=$(ls -1 ./*.AppImage 2>/dev/null || true)
+linuxdeploy --appdir "$APPDIR" --custom-apprun "$APPRUN_DIR/AppRun" \
+	--output appimage
+built=$(ls -1t ./*.AppImage | grep -v -x -F "$OLD_IMAGES" | head -n 1 || true)
+if [ -z "$built" ]; then
+	echo "linuxdeploy reported success but produced no AppImage." >&2
+	exit 1
+fi
+test "$built" = "./$OUT" || mv "$built" "$OUT"
+
+rm -rf "$APPDIR"
+echo "Wrote $OUT"

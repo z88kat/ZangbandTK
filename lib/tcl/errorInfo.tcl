@@ -259,7 +259,7 @@ proc errorsink_window {} {
 # a Tcl value and both are read by their columns.  Created rather than named
 # inline so the console can share it.
 if {[lsearch -exact [font names] errorfont] < 0} {
-    font create errorfont -family Menlo -size 11
+    font create errorfont -family $::display(face) -size 11
 }
 
 # Install the handler.  This happens at source time rather than when the window

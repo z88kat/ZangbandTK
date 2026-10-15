@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=ZangbandTK
+GenericName=Roguelike game
+Comment=Zangband, through a Tcl/Tk interface modelled on the original ZangbandTk
+Exec=zangbandtk
+TryExec=zangbandtk
+Icon=zangband
+Terminal=false
+Type=Application
+Categories=Game;RolePlaying;
+Keywords=roguelike;dungeon;angband;zangband;amber;tk;
