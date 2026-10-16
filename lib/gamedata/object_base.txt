@@ -210,5 +210,14 @@ name:deck:Deck~
 graphics:white
 flags:HATES_FIRE | EASY_KNOW
 
+# ZangbandTK: Zangband's magical figurine, a monster in miniature that becomes
+# the monster when thrown.  It always breaks -- what is left where it lands is
+# the pet, not the figurine -- and the elements leave it alone, as they did in
+# Zangband, whose figurine carried no HATES flag.
+name:figurine:Figurine~
+graphics:green
+break:100
+flags:EASY_KNOW
+
 name:gold
 graphics:light yellow

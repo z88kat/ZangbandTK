@@ -117,7 +117,7 @@ _  A staff                       {  A shot, arrow, or bolt
 "  An amulet                     [  Hard armour
 $  Gold or gems                  ]  Misc. armour
 ~  Lights, Tools, Chests, etc    )  A shield
-&  Multiple items
+&  Multiple items                `  A magical figurine
 
 
 Monsters

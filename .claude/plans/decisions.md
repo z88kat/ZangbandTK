@@ -7674,3 +7674,115 @@ way. The download page and both disk images' READMEs say so.
 `scripts/pkg_macos_tcltk` now finds duplicate registrations by identifier rather
 than by name: after the rename, the name would have flagged the wrong bundles in
 both directions.
+
+
+**DEC-144 — The magical figurine is built, on an object that holds a monster
+race by name; and what a character knows of each kind is saved by name (16
+October 2026).**
+
+The last of Zangband's routes to a pet. Its record (k_info 567, `& Magical
+Figurine~ of #`) had been deferred since CNT-11 for two reasons, the pet and the
+monster in the name; PLR-22 answered the first in 3.67.0 and nothing answered
+the second, because a 4.2 object could not hold a monster. The project owner
+asked for it with one condition: "We have to be careful about the restoring of
+the old save file, thats tricky."
+
+**Built (3.129.0).**
+
+- A new object base, `figurine` (`TV_FIGURINE`, before `TV_GOLD`; an object
+  records its base by name, so the order is not a savefile matter), and one
+  kind, `& Magical Figurine~`, hand-built in object.txt as the Wand of Tame
+  Monster was. Zangband's numbers: level 50, 5 lb, A:26/6:52/3:90/1 read the way
+  zconv reads every A: line, so commonness 17 from 26. objmap.toml moves it
+  from `[defer]` to `[built]`, and zconv now skips `[built]` keys by name rather
+  than leaving the figurine to be counted as inherited.
+- `struct object` has a `race`: the monster a figurine holds, NULL for
+  everything else. It is chosen in `apply_magic()` by Zangband's own rule
+  (object2.c:3143) — any race generated at all, never a unique, a deeper one
+  kept one time in the difference — so the dungeon, monster drops, the black
+  market and wizard mode all get one. The known copy carries it too: the
+  monster is in plain sight.
+- The name is the monster's, Zangband's `& Magical Figurine~ of #` with the race
+  and its article for the `#` (flavor.c:796). The value is the race's level
+  squared, times five (object2.c:1278), so a figurine of a level 0 townsperson
+  is worthless and no shop takes it. Never stacks (object2.c:1471). The info
+  screen says "It will transform into a pet when thrown."
+- Thrown, it always breaks (`break:100` on the base), and `ranged_helper()`
+  lets its monster out as a pet near where it came down, through a new
+  `place_pet_near()`: the grid itself, or up to four grids away in sight of it,
+  as a summons lands — but on any ground the race can stand on and come to no
+  harm on, not only floor, so a fish comes down in water and nothing on lava it
+  cannot bear. None in single combat, where nothing may be summoned. Failure is
+  Zangband's message, "The figurine writhes and then shatters."
+- Not built: the Figurine Store, which DEC-33 declined with the other sixteen
+  shops and still would — the black market buys and sells them. And the ten
+  statues, which now have their mechanism and still lack a use; they stay in
+  `[defer]` with that reason, a decision to come back to.
+
+**The savefile, in three parts.**
+
+1. **The monster, by name.** `ITEM_VERSION` 6 appends the race's name to every
+   item record, after the inscription; `rd_item()` reads it only from a record
+   that says 6 or more. Looked up *exactly*, and asked after in rename.txt —
+   not with `lookup_monster()`, whose substring fallback would turn a renamed
+   "orc" into the first orc in the list. A figurine whose monster has gone is
+   lost, through the existing `lost` path: an empty one would be a different
+   object.
+2. **Kind knowledge, by name.** The "object memory" block wrote one byte per
+   kind — aware, tried, seen, ignored — and let the kind's *position* in k_info
+   say which kind it was. Every kind added moves the positions after it, and
+   the figurine had to go somewhere: wherever it went, every character's
+   knowledge of every kind after it would have shifted onto its neighbour,
+   ignore settings included. Version 2 names each kind by base and name, as an
+   item in the pack is named.
+3. **Version 1, read through a frozen list.** `src/list-kinds-v1.h` is the 506
+   kinds as version 1 last numbered them (3.73.0 to 3.128.x), dumped from the
+   game's own k_info rather than worked out from the data files. The version 1
+   reader looks a position up there and then the name up in the game as it is
+   now, so no kind added, moved or renamed later disturbs an old save.
+
+**How "careful" was checked.** Before any change, a scratch harness loaded every
+corpus save (the 24 the owner added for this among them; 55 load, 4 are
+refused as expected) and wrote down, by name, every kind's knowledge byte and
+inscriptions, every item in the pack and every shop's stock. After the change
+the same dump is identical, item for item and kind for kind, except two things:
+the figurine itself, at a new kind's default; and four old saves whose stray
+bits had landed on the empty kind between the object files and the class
+books, which is no kind at all. The corpus test now holds this permanently: each
+character's knowledge must survive the round trip from version 1 to version 2
+unchanged, Ardormor's Amulet of Anti-Teleportation and Tanto — two Zangband
+kinds after the figurine — must read 0x0b and 0x09, and every kind the frozen
+list names must still exist or have a rename. Each of those, and the exact
+monster lookup, and the Mundanity fix below, was falsified: put the old
+behaviour back and the test fails.
+
+**Found on the way, and left for its own decision.** The positions were never
+safe. The corpus holds saves that counted 410, 411, 501, 505 and 506 kinds, and
+the list changed shape thirteen times between them — books replaced, Tame
+Monster inserted among the wands, Zangband's objects added. Every save from
+before 3.73.0 has been loading with its kind knowledge partly on the wrong
+kinds: a 410-kind character comes back aware of Rings of Poison Immunity,
+Amulets of Brilliance and Scrolls of Logrus it never saw, because its old
+spellbooks' positions now hold them. This change keeps that behaviour exactly
+rather than altering it unasked. Repairing it means a frozen list per era, and
+the count alone does not identify the era: 501 matches three different lists
+and 502 two.
+
+**The Scroll of Mundanity was broken, and is fixed.** It ran `object_prep()`,
+which clears the whole object, and restored only the stack size — so the pile
+links went (the item and everything after it fell out of the pack, and the next
+pile check stopped the game), the pointer to the player's record of the item
+went (every description reads it), and the old runes' and curses' arrays leaked.
+It now keeps where the object is, its record, how it was found, a rod's
+charging and a figurine's monster, and lets `player_know_object()` work out
+afresh what the player knows of what is left.
+
+**Tiles.** Neon draws its own, a small green figure on a plinth — a monster in
+miniature, smaller than any monster's tile and standing on something, which no
+monster does. Adam Bolt drew one for Zangband, and import-zangband-tiles.py,
+which already brought his uniques into his Angband sheet, now brings objects
+too: one cell, appended after the uniques. The 8x8, Nomad and Gervais sets have
+no figurine and nothing honest to borrow — another object's picture says it is
+that object, a monster's puts a monster on the floor — so they show its letter,
+and audit-tiles.py lists that in `OBJECT_SKIP`, which fails the moment a set it
+excuses gains the tile.

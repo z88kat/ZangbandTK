@@ -156,6 +156,7 @@ tval:cloak:cloak
 tval:gloves:gloves
 tval:boots:boots
 tval:chest:chest
+tval:figurine:figurine
 tval:food:food
 tval:gold:gold
 tval:digger:digger

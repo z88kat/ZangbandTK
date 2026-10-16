@@ -4632,15 +4632,25 @@ static void ancient_curse_step(struct player *p, int step, bool *stop)
  * 4.2 keeps an object's power in more places than 2.8.1 did: runes and curses
  * as well as the numbers. `object_prep()` rebuilds all of it from the kind,
  * which is the same operation Zangband was performing field by field.
+ *
+ * It also clears everything else in the structure, and until 3.129.0 nothing
+ * but the stack size was put back.  The pile links went -- so the object was
+ * cut out of the pack, and everything after it with it -- and so did the
+ * pointer to the player's own record of it, which nearly every description of
+ * an object reads; and the arrays the old runes and curses lived in were
+ * leaked rather than freed.  What belongs to the object rather than its magic
+ * now comes through: where it is and which list it is on, the record, how it
+ * was found, a rod's charging, and the monster in a figurine, which is what
+ * the figurine was made as.  The inscription goes, as Zangband's did.
  */
 bool effect_handler_MUNDANE(effect_handler_context_t *context)
 {
 	struct object *obj;
-	char o_name[80];
+	struct object kept;
+	char o_name[80], plain[80];
 	const char *q = "Make what mundane? ";
 	const char *s = "You have nothing to strip.";
 	int itemmode = (USE_EQUIP | USE_INVEN | USE_QUIVER | USE_FLOOR);
-	int number;
 
 	context->ident = true;
 
@@ -4654,17 +4664,59 @@ bool effect_handler_MUNDANE(effect_handler_context_t *context)
 	}
 
 	object_desc(o_name, sizeof(o_name), obj, ODESC_BASE, player);
-	msg("There is a bright flash of light! Your %s is a %s once more.",
-		o_name, obj->kind->name);
 
 	/*
-	 * `object_prep()` clears the whole structure, so the stack size has to
-	 * survive it by hand -- a scroll read over five arrows must not leave one.
+	 * `object_prep()` clears the whole structure, so what is not the
+	 * object's magic has to survive it by hand -- a scroll read over five
+	 * arrows must not leave one.
 	 */
-	number = obj->number;
+	kept = *obj;
+	mem_free(obj->slays);
+	mem_free(obj->brands);
+	mem_free(obj->curses);
 	object_prep(obj, obj->kind, 0, MINIMISE);
-	obj->number = number;
-	obj->known = obj->known ? obj->known : NULL;
+	obj->prev = kept.prev;
+	obj->next = kept.next;
+	obj->known = kept.known;
+	obj->oidx = kept.oidx;
+	obj->grid = kept.grid;
+	obj->number = kept.number;
+	obj->held_m_idx = kept.held_m_idx;
+	obj->mimicking_m_idx = kept.mimicking_m_idx;
+	obj->origin = kept.origin;
+	obj->origin_depth = kept.origin_depth;
+	obj->origin_race = kept.origin_race;
+	obj->race = kept.race;
+	if (tval_is_rod(obj)) obj->timeout = kept.timeout;
+
+	/*
+	 * And what the player knew of the old one goes with it: no artifact, no
+	 * ego, no activation, and only what the runes they know say about the
+	 * rest -- which player_know_object() works out afresh from the object
+	 * as it now is.
+	 */
+	if (obj->known) {
+		obj->known->artifact = NULL;
+		obj->known->ego = NULL;
+		obj->known->activation = NULL;
+		obj->known->effect = NULL;
+		obj->known->race = obj->race;
+		/* Rebuilt below only if the object still has any */
+		mem_free(obj->known->brands);
+		obj->known->brands = NULL;
+		mem_free(obj->known->slays);
+		obj->known->slays = NULL;
+		player_know_object(player, obj);
+	}
+
+	/*
+	 * Named after the change, as it now is.  This used to print the kind's
+	 * raw name from object.txt, markers and all: "a & Dagger~ once more".
+	 */
+	object_desc(plain, sizeof(plain), obj,
+		ODESC_BASE | (obj->number == 1 ? ODESC_PREFIX : 0), player);
+	msg("There is a bright flash of light! Your %s %s %s once more.",
+		o_name, obj->number == 1 ? "is" : "are", plain);
 
 	player->upkeep->update |= (PU_BONUS | PU_INVEN);
 	player->upkeep->notice |= (PN_COMBINE);

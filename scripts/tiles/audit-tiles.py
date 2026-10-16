@@ -12,8 +12,11 @@ be.  Four categories of gap sat unnoticed for exactly that reason.
     scripts/tiles/audit-tiles.py --list     and what is in each gap
 
 Exit status is 0 when the only things left are the ones left on purpose:
-uniques, which render as text until they have art of their own, and the two
-traps that are not pictures.  Anything else is a gap and fails.
+uniques, which render as text until they have art of their own, the two traps
+that are not pictures, and the objects OBJECT_SKIP names for the sets that have
+no picture of them.  Anything else is a gap and fails -- and so does an
+OBJECT_SKIP entry for a set that has since been given the tile, because an
+excuse that has outlived its reason goes on excusing the next real gap.
 
 === Case ===
 
@@ -37,6 +40,19 @@ MONSTERS = ('monster.txt', 'monster.zangband.txt', 'monster.zangbandtk.txt')
 # Left out on purpose.  'no trap' is the absence of a trap and 'door lock' is a
 # property of a door rather than something drawn on the floor beside it.
 TRAP_SKIP = ('no trap', 'door lock')
+
+# Objects some sets leave as their letter on purpose, by tileset directory.
+#
+# The magical figurine (3.129.0) is a monster in miniature, and no Angband set
+# ever drew one.  Borrowing another object's picture would say it is that
+# object, which is the claim DEC-18 refuses for uniques; borrowing a monster's
+# would put a monster on the floor that is not there.  Adam Bolt drew one for
+# Zangband and import-zangband-tiles.py brings it into his set, and Neon draws
+# its own.  These three have nothing that is a figurine, and Gervais' sheet is
+# mapped only, so they show the green ` until someone draws one.
+OBJECT_SKIP = {
+    'figurine:magical figurine': ('old', 'nomad', 'gervais'),
+}
 
 # Flavoured kinds are covered by flavor: lines rather than object: lines,
 # because before it is identified a potion is its flavour and nothing else.
@@ -201,6 +217,9 @@ def main():
         miss_terr = [t for t in terrain if t.lower() not in got['feat']]
         miss_obj = [o for o in objects
                     if ('%s:%s' % o).lower() not in got['object']]
+        left_obj = [o for o in miss_obj
+                    if ts['dir'] not in OBJECT_SKIP.get(('%s:%s' % o).lower(),
+                                                        ())]
         miss_flav = sorted(flavours - {int(x) for x in got['flavor']
                                        if x.isdigit()})
         miss_trap = [t for t in traps if t.lower() not in got['trap']]
@@ -216,12 +235,16 @@ def main():
               % (ts['name'], len(miss_mon), len(miss_terr), len(miss_obj),
                  len(miss_flav), len(miss_trap), len(miss_gf)))
 
+        stale = [key for key, dirs in OBJECT_SKIP.items()
+                 if ts['dir'] in dirs and key in got['object']]
+
         gaps = (('monsters that are not unique', left_mon),
                 ('terrain', miss_terr),
-                ('objects', ['%s:%s' % o for o in miss_obj]),
+                ('objects', ['%s:%s' % o for o in left_obj]),
                 ('flavours', [str(f) for f in miss_flav]),
                 ('traps that are drawn', left_trap),
-                ('spell effects', miss_gf))
+                ('spell effects', miss_gf),
+                ('OBJECT_SKIP entries this set now draws', stale))
         for label, items in gaps:
             if items:
                 faults += len(items)
@@ -231,9 +254,15 @@ def main():
         if show and miss_mon:
             print('    (%d uniques, left as text on purpose)'
                   % len([n for n in miss_mon if n in uniques]))
+        if show and len(left_obj) < len(miss_obj):
+            print('    (%d objects, left as text on purpose: %s)'
+                  % (len(miss_obj) - len(left_obj),
+                     ', '.join('%s:%s' % o for o in miss_obj
+                               if o not in left_obj)))
 
-    print('\nCounts are things with no tile at all.  Uniques and the two traps'
-          '\nthat are not pictures are left out on purpose and do not fail.')
+    print('\nCounts are things with no tile at all.  Uniques, the two traps'
+          '\nthat are not pictures, and the objects in OBJECT_SKIP are left'
+          '\nout on purpose and do not fail.')
     print('\n%d gaps' % faults)
     return 1 if faults else 0
 

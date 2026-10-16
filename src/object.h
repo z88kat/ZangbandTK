@@ -469,6 +469,13 @@ struct object {
 	uint8_t origin_depth;		/**< What depth the item was found at */
 	const struct monster_race *origin_race;	/**< Monster race that dropped it */
 
+	/**
+	 * The monster a figurine holds, and becomes when thrown (ZangbandTK).
+	 * NULL for every other object.  Not `const`, because placing the monster
+	 * counts it against its race.
+	 */
+	struct monster_race *race;
+
 	quark_t note; 			/**< Inscription index */
 };
 
@@ -512,6 +519,7 @@ static struct object const OBJECT_NULL = {
 	.origin = 0,
 	.origin_depth = 0,
 	.origin_race = NULL,
+	.race = NULL,
 	.note = 0,
 };
 

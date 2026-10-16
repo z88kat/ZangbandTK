@@ -356,24 +356,21 @@ T	li2	\n
 T	li2	•\t
 L	li2 link	117	pets#getting-one	Getting one
 T	li2	\n
-T	li2	•\t
-L	li2 link	118	pets#still-to-come	Still to come
-T	li2	\n
 T	li1	•\t
-L	li1 link	119	nightmare	Nightmare Mode
+L	li1 link	118	nightmare	Nightmare Mode
 T	li1	\n
 T	li2	•\t
-L	li2 link	120	nightmare#choosing-it	Choosing it
+L	li2 link	119	nightmare#choosing-it	Choosing it
 T	li2	\n
 T	li2	•\t
-L	li2 link	121	nightmare#knowing-you-are-in-it	Knowing you are in it
+L	li2 link	120	nightmare#knowing-you-are-in-it	Knowing you are in it
 T	li2	\n
 T	li2	•\t
-L	li2 link	122	nightmare#what-it-changes	What it changes
+L	li2 link	121	nightmare#what-it-changes	What it changes
 T	li2	\n
 T	li2	•\t
-L	li2 link	123	nightmare#and-four-things-it-does-not-do	And four things it does not do
+L	li2 link	122	nightmare#and-four-things-it-does-not-do	And four things it does not do
 T	li2	\n
 T	li2	•\t
-L	li2 link	124	nightmare#a-note-on-the-spoiler	A note on the spoiler
+L	li2 link	123	nightmare#a-note-on-the-spoiler	A note on the spoiler
 T	li2	\n

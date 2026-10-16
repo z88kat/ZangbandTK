@@ -19,7 +19,12 @@
 #define INCLUDED_SAVEFILE_H
 
 #define FINISHED_CODE 255
-#define ITEM_VERSION	5
+/*
+ * The layout of one object as wr_item() writes it.  5 is Angband 4.2's; 6
+ * (ZangbandTK, 3.129.0) adds the name of the monster a figurine holds, at the
+ * end, and rd_item() reads it only from a record that says 6 or more.
+ */
+#define ITEM_VERSION	6
 #define EGO_ART_KNOWN 0xffffffff
 
 /**
@@ -87,6 +92,7 @@ int rd_randomizer(void);
 int rd_options(void);
 int rd_messages(void);
 int rd_monster_memory(void);
+int rd_object_memory_1(void);
 int rd_object_memory(void);
 int rd_quests(void);
 int rd_quests_1(void);

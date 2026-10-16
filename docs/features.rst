@@ -273,15 +273,12 @@ Pets and allies
   ally is not. A pet leaves you about one time in twenty at a level change.
 - **Ways to get one:** a realm spell that summons or charms, a Wand of Tame
   Monster, a Mindcrafter's *domination* (a mind attack until level 30, and
-  wholesale from 30), a Chaos Lord handing you a servant, and anything your own
-  pets summon. **Trump is the
-  realm of pets** — twelve of its spells call something that serves you.
+  wholesale from 30), a Chaos Lord handing you a servant, a **magical
+  figurine** thrown to let out the monster it holds, and anything your own pets
+  summon. **Trump is the realm of pets** — twelve of its spells call something
+  that serves you. That is all of Zangband's routes; see :doc:`pets`.
 - **Walking into one changes places with it**; hurting one turns it against you,
   rather than asking you to confirm.
-
-One of Zangband's routes is still missing, and it wants an object rather than a
-mechanism: a thrown magical figurine, which carries the monster it releases. See
-:doc:`pets`.
 
 Nightmare mode
 --------------

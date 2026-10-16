@@ -553,12 +553,19 @@ something living, somewhere in the generous half of their moods — a servant, a
 demonic servant, or an undead one, depending on the Lord. It arrives beside you
 and it is yours.
 
+**Or throw one.** A **Magical Figurine** is a monster in miniature, and its
+name says which: *a Magical Figurine of a cave spider*. Throw it and it breaks,
+and the monster is there where it came down — beside whatever you threw it at,
+or where it fell — and on your side. It is found from dungeon level 26, holds
+an ordinary monster and never a unique, and usually one no deeper than where it
+was found; now and then something a good deal worse. It is worth that monster's
+level squared, times five, and the black market will buy it.
 
-Still to come
--------------
+It has to have somewhere to stand, within a few paces of where the figurine
+lands. A fish needs water, and nothing comes down on lava or deep water unless
+it can bear it. With nowhere to stand, or in single combat, where nothing may
+be summoned at all, *the figurine writhes and then shatters*, and is gone.
+Figurines do not stack, even two of the same monster.
 
-One of Zangband's routes to a pet remains, and it wants an *object* rather than
-a mechanism: a thrown magical figurine, which carries the monster it releases.
-No object here can name a monster yet, so it is not a change to the pet
-machinery — which is finished. Zangband's wand of charm monster is not missing:
-it is the Wand of Tame Monster above, which is Zangband's own name for it.
+That is every one of Zangband's routes to a pet. Its wand of charm monster is
+the Wand of Tame Monster above, which is Zangband's own name for it.

@@ -950,6 +950,7 @@ set(ANGBAND_TEST_CASE_SOURCES
     monster/uniques.c
     object/alloc.c
     object/attack.c
+    object/figurine.c
     object/imported.c
     object/info.c
     object/pile.c

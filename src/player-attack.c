@@ -1714,6 +1714,30 @@ static void ranged_helper(struct player *p,	struct object *obj, int dir,
 	}
 
 	/*
+	 * ZangbandTK: a figurine becomes the monster it holds, as a pet, wherever
+	 * it comes down -- beside what it was thrown at, or where it fell -- and
+	 * is gone either way ([cmd2.c:2204](../archive/zangband/src/cmd2.c#L2204)).
+	 * Not in single combat, where nothing may be summoned, and not as a
+	 * monster that has nowhere to stand.
+	 */
+	if (missile && tval_is_figurine(missile)) {
+		char o_name[80];
+
+		object_desc(o_name, sizeof(o_name), missile, ODESC_BASE, p);
+		if (!p->upkeep->arena_level
+				&& place_pet_near(cave, grid, missile->race)) {
+			msg("The %s disappears.", o_name);
+		} else {
+			msg("The figurine writhes and then shatters.");
+		}
+		if (missile->known) {
+			object_delete(p->cave, NULL, &missile->known);
+		}
+		object_delete(cave, p->cave, &missile);
+		return;
+	}
+
+	/*
 	 * ZangbandTK (CNT-09): unless it comes back.  Nineteen throws in twenty,
 	 * which is the original's number -- the twentieth is what stops a returning
 	 * weapon being a weapon you never have to pick up

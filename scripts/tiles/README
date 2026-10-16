@@ -6,12 +6,15 @@ Tiles for the things Angband does not have
     make-terrain.py             draw the wilderness for sets that have none
     make-services.py            draw the six service buildings
     build-neon.py               build the Neon set, generated whole
-    import-zangband-tiles.py    bring Adam Bolt's Zangband uniques into his
-                                Angband sheet
+    import-zangband-tiles.py    bring Adam Bolt's Zangband uniques, and his
+                                magical figurine, into his Angband sheet
 
 Run the audit first.  It is the only one that answers the question that
 matters -- is anything in the game still without a tile -- and it exits
-non-zero if the answer is yes.  The other scripts each check what they wrote,
+non-zero if the answer is yes.  The things left as letters on purpose are
+uniques, two traps that are not pictures, and the objects its OBJECT_SKIP
+names for the sets with no picture of them: so far, the magical figurine in the
+8x8, Nomad and Gervais sets.  The other scripts each check what they wrote,
 which is a different and smaller claim.
 
 Where the gaps come from

@@ -85,9 +85,16 @@ Per tileset
   61 byte-identical -- and the script reclaims its own rows on a re-run.  It
   must be the last generator to run, after make-terrain and make-services.
 
+  And one object, the same way: the magical figurine (3.129.0), which Adam
+  Bolt drew for Zangband and Angband never had.  It is the cell after the last
+  unique, on the same rows.
+
   The other three sets get nothing: the 8x8 archive art has no usable
   name-to-cell map, Nomad's is a modern set with no 2001 counterpart, and
-  Gervais' is mapped-only and staying that way.
+  Gervais' is mapped-only and staying that way.  So the figurine is its letter
+  in those three, which `audit-tiles.py` lists as deliberate.  For objects the
+  8x8 archive *does* name its cells, and Zangband's 8x8 figurine could be
+  brought across as Adam Bolt's was; that has not been done.
 
   Each tileset's own `graf-*.prf` gains `%:` lines loading the above.  That is a
   modification of a text file, not of any art.
@@ -98,8 +105,8 @@ May we?
 
   * **Adam Bolt's** may be "redistributed and used for any purpose, with or
     without modification".  Explicit.  That covers both modifications above:
-    the generated wilderness row, and the sixty-five tiles imported from
-    Zangband's copy of the same tileset.  Those are his work too -- Zangband's
+    the generated wilderness row, and the sixty-five uniques and the figurine
+    imported from Zangband's copy of the same tileset.  Those are his work too -- Zangband's
     changelog records "Adam Bolt's tiles are now finished and every
     monster/object/spell effect has a tile" (`archive/zangband/z_update.txt`),
     so the Zangband rows are the same artist under the same terms, not a third
@@ -126,4 +133,5 @@ forgotten.  Gervais has no inn, magesmith, chaos tower or recharger; the three
 generated sets have none of those, nor a dungeon mouth or a secret door.  Those
 are buildings and openings rather than ground textures -- shapes, not rules --
 and a borrowed picture for one of them would be actively wrong rather than
-merely absent.  They render as ASCII until somebody draws them.
+merely absent.  They render as ASCII until somebody draws them.  So does the
+magical figurine in the 8x8, Nomad and Gervais sets, for the same reason.

@@ -81,7 +81,8 @@ as a beam, and is never twice the same rod. And a **Scroll of Mundanity**,
 which strips an item back to the plain thing it was made as — no artifact, no
 ego, base dice, base armour, and the identification forgotten with them. It is
 the only way to be rid of something that will not come off, and it is
-indiscriminate: nothing warns you what you are about to lose.
+indiscriminate: nothing warns you what you are about to lose. (A magical
+figurine keeps its monster, which is what it was made as.)
 
 Some care went into what *not* to import. Zangband renamed a good deal of what
 it inherited from Angband — its Ring of Skill is Angband's Ring of Accuracy,
@@ -235,15 +236,14 @@ how the wilderness plays rather than a conversion of a flag. One ego,
 importing it would have put a pair of boots in the game that granted nothing at
 all.
 
-Thirteen of Zangband's object kinds are likewise recorded but not imported,
-each for want of a mechanism rather than out of preference:
+Twelve of Zangband's object kinds are likewise recorded but not imported:
 
-- **Ten statues and a figurine.** A Zangband statue is a monster rendered in
-  a material — the name reads *Mithril Statue of a Balrog* — and the figurine
-  is thrown to break and release the creature as a pet. Angband's object names
-  are fixed text and an object cannot refer to a monster, so a statue here
-  would be a heavy lump with the interesting part missing. Pets are no longer
-  the obstacle; naming the monster is.
+- **Ten statues.** A Zangband statue is a monster rendered in a material — the
+  name reads *Mithril Statue of a Balrog*. An object here can hold a monster
+  now, since the magical figurine below, so what a statue needs exists; what it
+  lacks is a use. It does nothing with its monster but carry its name, two
+  hundred pounds of it, and the Statue Store that dealt in them was turned down
+  with Zangband's other shops (DEC-33).
 - **A Scroll of Artifact Creation**, which makes a new artifact out of an
   ordinary item during play. Angband generates its random artifacts once, at
   birth, and stores an artifact in the savefile by name — so one invented
@@ -251,10 +251,13 @@ each for want of a mechanism rather than out of preference:
 - **A Wand of Rockets**, whose damage is its own element — it stuns, and shard
   resistance halves it — and adding an element changes the savefile layout.
 
-Two that used to be on this list have since arrived. The **Wand of Tame
+Three that used to be on this list have since arrived. The **Wand of Tame
 Monster** waited on pets and now has them (:doc:`pets`). The **Potion of New
 Life** strips every mutation you carry (:doc:`mutations`); Zangband's version
-also re-rolled your hit points, and that half of it is still not built.
+also re-rolled your hit points, and that half of it is still not built. And
+the **Magical Figurine**, which waited on an object that could name a monster:
+*a Magical Figurine of a cave spider*, thrown, breaks and leaves the cave spider
+behind as your pet (:doc:`pets`).
 
 One more is not waiting at all. **The Scroll of Rumour is dropped**, not
 deferred. Zangband's 647 rumours are in the archive and Angband already has the

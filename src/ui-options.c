@@ -1740,6 +1740,7 @@ static tval_desc sval_dependent[] =
 	{ TV_DECK,		"Decks" },
 	{ TV_LIGHT,			"Lights" },
 	{ TV_FLASK,			"Flasks of oil" },
+	{ TV_FIGURINE,		"Figurines" },
 	{ TV_GOLD,			"Money" },
 };
 

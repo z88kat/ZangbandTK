@@ -86,6 +86,11 @@ bool tval_is_chest(const struct object *obj)
 	return obj->tval == TV_CHEST;
 }
 
+bool tval_is_figurine(const struct object *obj)
+{
+	return obj->tval == TV_FIGURINE;
+}
+
 bool tval_is_fuel(const struct object *obj)
 {
 	return obj->tval == TV_FLASK;

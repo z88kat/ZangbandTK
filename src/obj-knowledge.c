@@ -826,6 +826,9 @@ void object_set_base_known(struct player *p, struct object *obj)
 	obj->known->weight = obj->weight;
 	obj->known->number = obj->number;
 
+	/* A figurine's monster is in plain sight */
+	obj->known->race = obj->race;
+
 	/* Generic dice and ac, to_h for armor, and launcher multipliers */
 	if (!obj->known->dd) {
 		obj->known->dd = obj->kind->dd * p->obj_k->dd;

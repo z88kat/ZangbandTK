@@ -49,4 +49,10 @@ TV(OTHER_BOOK, "other book")
 TV(SORCERY_BOOK, "sorcery book")
 TV(CHAOS_BOOK, "chaos book")
 TV(DECK, "deck")
+/*
+ * ZangbandTK: a monster in miniature, which becomes the monster when thrown.
+ * Zangband's TV_FIGURINE, and the first kind of object that holds a monster
+ * race (`struct object`'s `race`).
+ */
+TV(FIGURINE, "figurine")
 TV(GOLD, "gold")

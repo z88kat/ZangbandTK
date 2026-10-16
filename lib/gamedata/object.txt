@@ -5039,6 +5039,29 @@ armor:0:0
 
 
 
+##### Figurines #####
+
+# ZangbandTK: Zangband's magical figurine (k_info 567), hand-built here like the
+# Wand of Tame Monster rather than converted, because what makes it a figurine
+# is not in its record.  The monster it holds is chosen when it is made
+# (apply_magic()), takes the place of the '#' in its name ("a Magical Figurine
+# of a cave spider"), sets its price -- the monster's level squared, times five,
+# in place of the 100 gold below -- and is let out as a pet when it is thrown.
+#
+# Zangband's own numbers otherwise: level 50, five pounds, and A:26/6:52/3:90/1,
+# found from 26 at rarity 6, which is a commonness of 17.  The 1d1 is its P:
+# line, and is what it does to whatever it hits on the way.
+name:& Magical Figurine~
+type:figurine
+graphics:`:g
+level:50
+weight:50
+cost:100
+alloc:17:26 to 100
+attack:1d1:0:0
+armor:0:0
+desc:This small statuette seems to move.
+
 ##### Dragon Scale Mail #####
 
 name:Black Dragon Scale Mail~

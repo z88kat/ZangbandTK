@@ -93,7 +93,7 @@ T	p0	Among the consumables: a
 T	p0 strong	Rod of Havoc
 T	p0	, which picks one of twenty-five damage types and throws it at whatever you aimed at, as a ball or occasionally as a beam, and is never twice the same rod. And a 
 T	p0 strong	Scroll of Mundanity
-T	p0	, which strips an item back to the plain thing it was made as — no artifact, no ego, base dice, base armour, and the identification forgotten with them. It is the only way to be rid of something that will not come off, and it is indiscriminate: nothing warns you what you are about to lose.
+T	p0	, which strips an item back to the plain thing it was made as — no artifact, no ego, base dice, base armour, and the identification forgotten with them. It is the only way to be rid of something that will not come off, and it is indiscriminate: nothing warns you what you are about to lose. (A magical figurine keeps its monster, which is what it was made as.)
 T	p0	\n
 T	p0	Some care went into what 
 T	p0 em	not
@@ -210,13 +210,13 @@ T	p0	, waits with them: every property it had was
 T	p0 code	WILD_WALK
 T	p0	, so importing it would have put a pair of boots in the game that granted nothing at all.
 T	p0	\n
-T	p0	Thirteen of Zangband’s object kinds are likewise recorded but not imported, each for want of a mechanism rather than out of preference:
+T	p0	Twelve of Zangband’s object kinds are likewise recorded but not imported:
 T	p0	\n
 T	li1	•\t
-T	li1 strong	Ten statues and a figurine.
+T	li1 strong	Ten statues.
 T	li1	 A Zangband statue is a monster rendered in a material — the name reads 
 T	li1 em	Mithril Statue of a Balrog
-T	li1	 — and the figurine is thrown to break and release the creature as a pet. Angband’s object names are fixed text and an object cannot refer to a monster, so a statue here would be a heavy lump with the interesting part missing. Pets are no longer the obstacle; naming the monster is.
+T	li1	. An object here can hold a monster now, since the magical figurine below, so what a statue needs exists; what it lacks is a use. It does nothing with its monster but carry its name, two hundred pounds of it, and the Statue Store that dealt in them was turned down with Zangband’s other shops (DEC-33).
 T	li1	\n
 T	li1	•\t
 T	li1 strong	A Scroll of Artifact Creation
@@ -226,7 +226,7 @@ T	li1	•\t
 T	li1 strong	A Wand of Rockets
 T	li1	, whose damage is its own element — it stuns, and shard resistance halves it — and adding an element changes the savefile layout.
 T	li1	\n
-T	p0	Two that used to be on this list have since arrived. The 
+T	p0	Three that used to be on this list have since arrived. The 
 T	p0 strong	Wand of Tame Monster
 T	p0	 waited on pets and now has them (
 L	p0 link	1	pets	Pets and Allies
@@ -234,7 +234,13 @@ T	p0	). The
 T	p0 strong	Potion of New Life
 T	p0	 strips every mutation you carry (
 L	p0 link	2	mutations	Mutations
-T	p0	); Zangband’s version also re-rolled your hit points, and that half of it is still not built.
+T	p0	); Zangband’s version also re-rolled your hit points, and that half of it is still not built. And the 
+T	p0 strong	Magical Figurine
+T	p0	, which waited on an object that could name a monster: 
+T	p0 em	a Magical Figurine of a cave spider
+T	p0	, thrown, breaks and leaves the cave spider behind as your pet (
+L	p0 link	3	pets	Pets and Allies
+T	p0	).
 T	p0	\n
 T	p0	One more is not waiting at all. 
 T	p0 strong	The Scroll of Rumour is dropped

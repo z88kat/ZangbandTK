@@ -1369,9 +1369,10 @@ _MAKE_TOA = [
 STATUE_NOTE = (
     "Zangband's statue is a monster rendered in a material: the `#` in the "
     "name is replaced by the monster's name and `pval` holds its race index "
-    "(object2.c:3179). 4.2 object names are fixed strings and `struct object` "
-    "has no monster reference, so the statue without its monster is a lump of "
-    "material with no content in it."
+    "(object2.c:3179). Since 3.129.0 an object can hold a monster race, which "
+    "the magical figurine brought, so the mechanism is there; what is not is "
+    "a use. A statue does nothing with its monster but carry its name, and "
+    "DEC-33 declined the Statue Store that dealt in them."
 )
 
 
@@ -1390,6 +1391,7 @@ def cmd_objects(args) -> int:
     renames = objmap.get("rename", {})
     rejects = objmap.get("reject", {})
     defers = objmap.get("defer", {})
+    builts = objmap.get("built", {})
     effects = objmap.get("effect", {})
     messages = objmap.get("message", {})
     overrides = load_overrides().get("object", {})
@@ -1446,7 +1448,7 @@ def cmd_objects(args) -> int:
     entries: list[aformat.Entry] = []
     mistranscribed: list[str] = []
     counts = {"spellbook": 0, "inherited": 0, "present": 0, "renamed": 0,
-              "rejected": 0, "deferred": 0}
+              "rejected": 0, "deferred": 0, "built": 0}
 
     for slot, rec in sorted(zang.items(), key=lambda kv: kv[1].index):
         key = "%d:%d" % slot
@@ -1495,6 +1497,15 @@ def cmd_objects(args) -> int:
             if note and any(note == n for _, _, n in report.deferred):
                 note = "As above."
             report.deferred.append((rec.name, spec["why"], note))
+            continue
+
+        # Built by hand in object.txt, where the converter must not write a
+        # second copy. The Wand of Tame Monster would be caught below as
+        # "present" anyway; the figurine's type is not in [type] and its
+        # object.txt name is not Zangband's, so without this it would be
+        # counted as inherited from 2.8.1, which it is not.
+        if key in builts:
+            counts["built"] += 1
             continue
 
         obj_type = types.get(tval)

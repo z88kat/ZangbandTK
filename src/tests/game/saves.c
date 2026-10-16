@@ -51,6 +51,7 @@
 #include "player.h"
 #include "mon-util.h"
 #include "monster.h"
+#include "obj-ignore.h"
 #include "obj-tval.h"
 #include "obj-util.h"
 #include "object.h"
@@ -206,6 +207,19 @@ static int test_the_corpus_is_present(void *state) {
 	ok;
 }
 
+/** The byte the object memory block records for a kind. */
+static uint8_t kind_knowledge_bits(const struct object_kind *kind)
+{
+	uint8_t bits = 0;
+
+	if (kind->aware) bits |= 0x01;
+	if (kind->tried) bits |= 0x02;
+	if (kind_is_ignored_aware(kind)) bits |= 0x04;
+	if (kind->everseen) bits |= 0x08;
+	if (kind_is_ignored_unaware(kind)) bits |= 0x10;
+	return bits;
+}
+
 /**
  * One savefile: it loads and survives a round trip, or it is refused and listed.
  *
@@ -231,6 +245,8 @@ static int test_one_saved_character(void *state) {
 	const char *name;
 	char path[1024];
 	bool listed;
+	uint8_t *known;
+	int k;
 
 	test_savefile_name(roundtrip, sizeof(roundtrip), "saves-roundtrip");
 
@@ -281,6 +297,11 @@ static int test_one_saved_character(void *state) {
 	notnull(player->race->name);
 	notnull(player->class->name);
 
+	/* What the character knows of each kind, to compare after the trip */
+	known = mem_zalloc(z_info->k_max);
+	for (k = 0; k < z_info->k_max; k++)
+		known[k] = kind_knowledge_bits(&k_info[k]);
+
 	/*
 	 * Loading is only half of compatibility. An old save can come back in a
 	 * state the writer cannot cope with -- a monster array with a hole in it
@@ -296,6 +317,21 @@ static int test_one_saved_character(void *state) {
 
 	require(savefile_load(roundtrip, false));
 	file_delete(roundtrip);
+
+	/*
+	 * And the trip kept it.  The corpus is all object memory version 1, read
+	 * by position; the copy is version 2, written and read by name -- so this
+	 * is the check that the two agree, kind for kind, on every character.
+	 */
+	for (k = 0; k < z_info->k_max; k++) {
+		if (known[k] == kind_knowledge_bits(&k_info[k])) continue;
+		printf("SAVE %-14s %s came back as %02x, went in as %02x\n", name,
+			   k_info[k].name ? k_info[k].name : "(no name)",
+			   kind_knowledge_bits(&k_info[k]), known[k]);
+		mem_free(known);
+		require(false);
+	}
+	mem_free(known);
 
 	printf("SAVE %-14s loaded, and survived a save and reload\n", name);
 
@@ -502,7 +538,93 @@ const char *suite_name = "game/saves";
  * Three invariant tests plus one per savefile, and the NULL the harness stops
  * on.
  */
-struct test tests[MAX_SAVES + 5];
+struct test tests[MAX_SAVES + 7];
+
+/** The kind of that object base and name, or NULL. */
+static struct object_kind *kind_called(const char *tval, const char *name)
+{
+	int sv = lookup_sval(tval_find_idx(tval), name);
+
+	return sv < 0 ? NULL : lookup_kind(tval_find_idx(tval), sv);
+}
+
+/**
+ * An old character's knowledge is read by name, not by position (3.129.0).
+ *
+ * Every save here wrote its object memory as version 1: a byte per kind, in
+ * k_info order.  The magical figurine went into that order part-way down, so
+ * read by position every kind after it would take its predecessor's byte.
+ * Ardormor is a Chaos-Warrior who identified an Amulet of Anti-Teleportation
+ * and owns a tanto -- both Zangband kinds, both after the figurine -- and
+ * whose neighbours in the list he never saw.  So the byte that lands on each
+ * says which way it was read.
+ */
+static int test_old_knowledge_is_read_by_name(void *state) {
+	char path[1024];
+	struct object_kind *amulet, *tanto, *figurine;
+
+	path_build(path, sizeof(path), SAVE_CORPUS, "Ardormor");
+	play_again = true;
+	reset_for_load();
+	play_again = false;
+	require(savefile_load(path, false));
+
+	amulet = kind_called("amulet", "Anti-Teleportation");
+	tanto = kind_called("sword", "Tanto");
+	figurine = kind_called("figurine", "Magical Figurine");
+	notnull(amulet);
+	notnull(tanto);
+	notnull(figurine);
+
+	/* Aware, tried and seen; and seen */
+	eq(kind_knowledge_bits(amulet), 0x0b);
+	eq(kind_knowledge_bits(tanto), 0x09);
+
+	/* And the kind he could not have known of is as new as it is */
+	require(!figurine->tried);
+	require(!figurine->everseen);
+	require(!kind_is_ignored_aware(figurine));
+	require(!kind_is_ignored_unaware(figurine));
+	ok;
+}
+
+/**
+ * Every kind list-kinds-v1.h names is still a kind, or has a rename or a
+ * removal recorded for it.
+ *
+ * That list is what a version 1 savefile's positions mean, and it is frozen.
+ * A kind in it that the game no longer has, with nothing in rename.txt to say
+ * so, takes every version 1 character's knowledge of it away in silence --
+ * which is the moment to write the rename, and this is what says so.
+ */
+static int test_the_old_kind_list_names_real_kinds(void *state) {
+	static const struct { const char *tval, *name; } v1[] = {
+		#define KIND_V1(t, n) { t, n },
+		#include "list-kinds-v1.h"
+		#undef KIND_V1
+	};
+	size_t i;
+	int missing = 0;
+
+	for (i = 0; i < N_ELEMENTS(v1); i++) {
+		const struct rename_entry *r;
+		bool renamed = false;
+
+		if (!v1[i].name || kind_called(v1[i].tval, v1[i].name)) continue;
+		for (r = renames; r; r = r->next) {
+			if (r->kind == RENAME_OBJECT && r->tval == tval_find_idx(v1[i].tval)
+					&& !my_stricmp(r->from, v1[i].name))
+				renamed = true;
+		}
+		if (renamed) continue;
+		printf("SAVES position %d, %s %s, is no kind any more\n", (int) i,
+			   v1[i].tval, v1[i].name);
+		missing++;
+	}
+	eq(missing, 0);
+	eq((int) N_ELEMENTS(v1), 506);
+	ok;
+}
 
 static void build_test_list(void) {
 	ang_dir *dir;
@@ -538,6 +660,12 @@ static void build_test_list(void) {
 	}
 	tests[i].name = "a-taken-quest-survives-a-save";
 	tests[i].func = test_a_taken_quest_survives_a_save;
+	i++;
+	tests[i].name = "old-knowledge-is-read-by-name";
+	tests[i].func = test_old_knowledge_is_read_by_name;
+	i++;
+	tests[i].name = "the-old-kind-list-names-real-kinds";
+	tests[i].func = test_the_old_kind_list_names_real_kinds;
 	i++;
 	tests[i].name = "the-manifest-has-no-dead-entries";
 	tests[i].func = test_the_manifest_has_no_dead_entries;

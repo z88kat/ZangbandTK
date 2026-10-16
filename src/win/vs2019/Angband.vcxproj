@@ -473,6 +473,7 @@ xcopy $(MSBuildProjectDirectory)\lib\* $(OutDir)lib\ /DESY /exclude:$(MSBuildPro
     <ClInclude Include="src\list-history-types.h" />
     <ClInclude Include="src\list-ignore-types.h" />
     <ClInclude Include="src\list-kind-flags.h" />
+    <ClInclude Include="src\list-kinds-v1.h" />
     <ClInclude Include="src\list-message.h" />
     <ClInclude Include="src\list-mon-message.h" />
     <ClInclude Include="src\list-mon-race-flags.h" />

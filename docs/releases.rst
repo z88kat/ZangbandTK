@@ -28,9 +28,9 @@ player-side safety, the sources, Trump, following you downstairs, and the stable
 that costs you one in twenty at each level change — and, in 3.92.0, the last two
 of PLR-28's five ways to acquire one: a Mindcrafter's domination and a Chaos
 Lord's gift. Both turned out to be data rather than the code hook they were
-recorded as needing. One of Zangband's routes remains, and wants an object that
-does not exist here: a thrown figurine. Its wand of charm monster has been here
-since 3.72.0, as the Wand of Tame Monster, Zangband's own name for it.
+recorded as needing. The last of Zangband's routes, the thrown magical
+figurine, arrived in 3.129.0; its wand of charm monster has been here since
+3.72.0, as the Wand of Tame Monster, Zangband's own name for it.
 
 **M11, nightmare mode, is done**, closed on 4 October. Stage 1 is every
 behaviour Zangband's own nightmare mode has: sixteen, twelve of them built and
@@ -104,6 +104,33 @@ number, so it is told here in one place rather than version by version.
 The new sounds and the colour-blind Neon are the game's, not only this front
 end's: they are in ``lib/customize/sound.prf`` and the tile sets, which every
 front end reads.
+
+The magical figurine — 16 October 2026
+--------------------------------------
+
+- **3.129.0** — **The magical figurine** (DEC-144), the last of Zangband's
+  ways to get a pet. A monster in miniature, found from dungeon level 26 and
+  named for what it holds: *a Magical Figurine of a cave spider*. Throw it and
+  it breaks, and the monster is there where it came down, on your side. It
+  holds an ordinary monster, never a unique, and usually one no deeper than
+  where it was found; it is worth that monster's level squared, times five,
+  and the black market buys them. A fish needs water to come down in, nothing
+  is let out on lava or deep water it cannot bear, and in single combat the
+  figurine only breaks. Figurines do not stack. In the Neon tiles it is a small
+  green figure on a plinth, and in Adam Bolt's it is the one he drew for
+  Zangband; the other three sets show its letter, a green backquote, because
+  none of them has a picture of one.
+- **What a character knows of each kind of object is saved by name.** What it
+  has seen, tried and identified, and what it ignores, was saved by position in
+  the game's list of objects, so every kind added moved that knowledge onto the
+  kind next to it. The figurine is the first kind added since, and it moved
+  nothing: all 55 characters in the test corpus load knowing exactly what they
+  knew. Characters saved before 3.73.0 still load with some of it out of place,
+  as they have since then; that is a separate repair.
+- **The Scroll of Mundanity no longer breaks your pack.** Stripping an item
+  dropped everything listed after it out of the pack, lost the game's record of
+  the item, and could stop the game outright the next time the pack was
+  checked.
 
 ZangbandTK on Windows and Linux — 15 October 2026
 -------------------------------------------------

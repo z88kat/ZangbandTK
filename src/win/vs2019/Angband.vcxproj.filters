@@ -974,6 +974,9 @@
     <ClInclude Include="src\list-kind-flags.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\list-kinds-v1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\list-message.h">
       <Filter>Header Files</Filter>
     </ClInclude>

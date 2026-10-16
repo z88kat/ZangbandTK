@@ -31,6 +31,7 @@
 #include "mon-util.h"
 #include "monster.h"
 #include "obj-curse.h"
+#include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-ignore.h"
 #include "obj-init.h"
@@ -167,6 +168,25 @@ void note_lost_objects(void)
 	}
 
 	boggyman_losses = 0;
+}
+
+/**
+ * The monster race of exactly this name, or NULL.
+ *
+ * lookup_monster() falls back to the first race whose name *contains* the one
+ * asked for, which is a fair guess for the monster that dropped something and
+ * the wrong answer for the monster a figurine holds: "orc" would come back as
+ * whichever orc is listed first.
+ */
+static struct monster_race *race_named(const char *name)
+{
+	int i;
+
+	for (i = 0; i < z_info->r_max; i++) {
+		if (r_info[i].name && my_stricmp(name, r_info[i].name) == 0)
+			return &r_info[i];
+	}
+	return NULL;
 }
 
 /**
@@ -363,6 +383,26 @@ static struct object *rd_item(bool *lost)
 	/* Save the inscription */
 	rd_string(buf, sizeof(buf));
 	if (buf[0]) obj->note = quark_add(buf);
+
+	/*
+	 * The monster in a figurine (ZangbandTK), which a record has only from
+	 * version 6.  By name, like the monster that dropped it, and asked after
+	 * under any later name; but a figurine whose monster has gone altogether
+	 * is lost rather than kept empty, since the monster is what it is.
+	 */
+	if (ver >= 6) {
+		rd_string(buf, sizeof(buf));
+		if (buf[0]) {
+			obj->race = race_named(buf);
+			if (!obj->race) {
+				const char *now = renamed_to(RENAME_MONSTER, -1, buf, NULL);
+
+				if (now) obj->race = race_named(now);
+			}
+			if (!obj->race && !lost_name[0])
+				my_strcpy(lost_name, buf, sizeof(lost_name));
+		}
+	}
 
 	/* Lookup item kind */
 	obj->kind = lookup_kind(obj->tval, obj->sval);
@@ -787,18 +827,60 @@ int rd_monster_memory(void)
 }
 
 
-int rd_object_memory(void)
+/**
+ * Set what the character knows of one kind, from the byte that records it.
+ */
+static void kind_knowledge_set(struct object_kind *kind, uint8_t bits)
 {
-	size_t i;
-	uint16_t tmp16u;
+	kind->aware = (bits & 0x01) ? true : false;
+	kind->tried = (bits & 0x02) ? true : false;
+	kind->everseen = (bits & 0x08) ? true : false;
 
-	/* Object Memory */
-	rd_u16b(&tmp16u);
-	if (tmp16u > z_info->k_max) {
-		note(format("Too many (%u) object kinds!", tmp16u));
-		return (-1);
+	if (bits & 0x04) kind_ignore_when_aware(kind);
+	if (bits & 0x10) kind_ignore_when_unaware(kind);
+}
+
+/**
+ * The kind this build has under an object base's name and a kind's name, as
+ * wr_item() and wr_object_memory() write them; NULL if there is none.
+ *
+ * `guess` is where it is most likely to be -- the position the savefile had
+ * it at -- which is right for almost every kind and saves a search of the
+ * whole list for each of them.  A kind renamed since is asked after under its
+ * new name, as an object in the pack is.
+ */
+static struct object_kind *kind_by_name(const char *tval_name,
+		const char *name, size_t guess)
+{
+	int tval = tval_find_idx(tval_name);
+	int sval;
+
+	if (tval < 0) return NULL;
+
+	if (guess < z_info->k_max && k_info[guess].name
+			&& k_info[guess].tval == tval) {
+		char here[1024];
+
+		obj_desc_name_format(here, sizeof here, 0, k_info[guess].name, 0,
+			false);
+		if (!my_stricmp(here, name)) return &k_info[guess];
 	}
 
+	sval = lookup_sval(tval, name);
+	if (sval < 0 || !lookup_kind(tval, sval)) {
+		const char *now = renamed_to(RENAME_OBJECT, tval, name, NULL);
+
+		sval = now ? lookup_sval(tval, now) : -1;
+	}
+	return sval < 0 ? NULL : lookup_kind(tval, sval);
+}
+
+/**
+ * The sizes at the head of the object memory block, which every later block
+ * that reads an object depends on.  Both versions write them alike.
+ */
+static int rd_object_memory_sizes(void)
+{
 	/* Object flags */
 	rd_byte(&of_size);
 	if (of_size > OF_SIZE) {
@@ -842,19 +924,86 @@ int rd_object_memory(void)
 		return (-1);
 	}
 
+	return 0;
+}
+
+/* The kinds as version 1 last numbered them; see list-kinds-v1.h. */
+static const struct {
+	const char *tval;
+	const char *name;
+} kinds_v1[] = {
+	#define KIND_V1(t, n) { t, n },
+	#include "list-kinds-v1.h"
+	#undef KIND_V1
+};
+
+/**
+ * Object memory, version 1: one byte per kind, the kind given only by its
+ * position.
+ *
+ * The position is read against list-kinds-v1.h, the list as it stood when
+ * version 2 replaced this one, and the kind then found by name -- so a kind
+ * added since, the magical figurine first, moves nothing.  Reading positions
+ * straight into k_info, as this did until 3.129.0, would have handed every
+ * kind after the figurine its predecessor's knowledge.
+ *
+ * Savefiles from before 3.73.0 counted against shorter lists than that one,
+ * and their positions have always been read against the newest list rather
+ * than their own.  That is unchanged here: it is a separate repair, and
+ * putting it right needs each older list, which the savefile does not name.
+ */
+int rd_object_memory_1(void)
+{
+	size_t i;
+	uint16_t tmp16u;
+
+	/* Object Memory */
+	rd_u16b(&tmp16u);
+	if (tmp16u > N_ELEMENTS(kinds_v1)) {
+		note(format("Too many (%u) object kinds!", tmp16u));
+		return (-1);
+	}
+
+	if (rd_object_memory_sizes()) return -1;
+
 	/* Read the kind knowledge */
 	for (i = 0; i < tmp16u; i++) {
 		uint8_t tmp8u;
-		struct object_kind *kind = &k_info[i];
+		struct object_kind *kind = NULL;
 
 		rd_byte(&tmp8u);
 
-		kind->aware = (tmp8u & 0x01) ? true : false;
-		kind->tried = (tmp8u & 0x02) ? true : false;
-		kind->everseen = (tmp8u & 0x08) ? true : false;
+		if (kinds_v1[i].name)
+			kind = kind_by_name(kinds_v1[i].tval, kinds_v1[i].name, i);
+		if (kind) kind_knowledge_set(kind, tmp8u);
+	}
 
-		if (tmp8u & 0x04) kind_ignore_when_aware(kind);
-		if (tmp8u & 0x10) kind_ignore_when_unaware(kind);
+	return 0;
+}
+
+/**
+ * Object memory, version 2: each kind by name.  See wr_object_memory().
+ */
+int rd_object_memory(void)
+{
+	size_t i;
+	uint16_t tmp16u;
+
+	rd_u16b(&tmp16u);
+	if (rd_object_memory_sizes()) return -1;
+
+	for (i = 0; i < tmp16u; i++) {
+		char tval_name[80], name[1024];
+		uint8_t tmp8u;
+		struct object_kind *kind;
+
+		rd_string(tval_name, sizeof(tval_name));
+		rd_string(name, sizeof(name));
+		rd_byte(&tmp8u);
+
+		/* A kind this build has not got takes its knowledge with it */
+		kind = kind_by_name(tval_name, name, i);
+		if (kind) kind_knowledge_set(kind, tmp8u);
 	}
 
 	return 0;

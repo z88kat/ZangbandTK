@@ -1580,6 +1580,73 @@ struct monster *place_pet_beside_player(struct monster_race *race)
 }
 
 
+/* The race place_pet_near() is looking for room for. */
+static struct monster_race *pet_arriving;
+
+static bool pet_can_arrive(struct chunk *c, struct loc grid)
+{
+	const struct monster_race *race = pet_arriving;
+
+	if (square_monster(c, grid) || loc_eq(player->grid, grid)) return false;
+	if (square_isshop(c, grid)) return false;
+	if (!monster_race_fits_grid(c, grid, race)) return false;
+
+	/*
+	 * Nor where it would burn or drown, unless it is proof against it or
+	 * flies or swims clear -- the rule a monster walks by (mon-move.c).
+	 */
+	if (square_isdamaging(c, grid)
+			&& !rf_has(race->flags, square_feat(c, grid)->resist_flag)
+			&& !rf_has(race->flags, RF_CAN_FLY)
+			&& !(square_iswater(c, grid) && rf_has(race->flags, RF_CAN_SWIM)))
+		return false;
+
+	return true;
+}
+
+/**
+ * Put a pet of this race as near the grid as it can stand, and return it.
+ *
+ * On the grid itself if there is room, and otherwise up to four grids away
+ * and in sight of it, which is how far a summons may land
+ * (`summon_specific()`).  Unlike a summons it may land on any ground the race
+ * can stand on and come to no harm on, not only bare floor: a fish let out
+ * over a lake belongs in the lake.  NULL if there is nowhere.
+ *
+ * For the magical figurine, which is thrown, and becomes its monster wherever
+ * it comes down.
+ */
+struct monster *place_pet_near(struct chunk *c, struct loc grid,
+		struct monster_race *race)
+{
+	struct monster_group_info info = { 0, 0 };
+	struct loc near;
+	struct monster *mon;
+	int d;
+
+	if (!race || !race->name || !square_in_bounds(c, grid)) return NULL;
+
+	pet_arriving = race;
+	for (d = 0; d < 5; d++) {
+		if (scatter_ext(c, &near, 1, grid, d, true, pet_can_arrive) > 0)
+			break;
+	}
+	pet_arriving = NULL;
+	if (d == 5) return NULL;
+
+	if (!place_new_monster(c, near, race, false, false, info,
+						   ORIGIN_DROP_SUMMON)) {
+		return NULL;
+	}
+
+	mon = square_monster(c, near);
+	if (!mon) return NULL;
+
+	monster_set_allegiance(mon, MON_ALLEGIANCE_PET);
+	return mon;
+}
+
+
 /**
  * Attempts to place a monster of the given race at the given location.
  *

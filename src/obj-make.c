@@ -22,6 +22,7 @@
 #include "effects.h"
 #include "dun-type.h"
 #include "init.h"
+#include "monster.h"
 #include "obj-chest.h"
 #include "obj-curse.h"
 #include "obj-gear.h"
@@ -932,6 +933,34 @@ static int apply_curse(struct object *obj, int lev)
 }
 
 /**
+ * The monster in a newly made figurine (ZangbandTK).
+ *
+ * Zangband's own choice ([object2.c:3143](../archive/zangband/src/object2.c#L3143)):
+ * any race that is generated at all and is not a unique, with one deeper than
+ * the figurine's level kept only one time in the difference.  So a figurine
+ * found at 30 usually holds something from 30 or shallower, and now and then
+ * something a good deal worse.  Zangband looped until it found one; the bound
+ * here is only so that a bestiary with no such race cannot hang the game.
+ */
+static struct monster_race *figurine_race(int level)
+{
+	int tries;
+
+	for (tries = 0; tries < 10000; tries++) {
+		struct monster_race *race = &r_info[randint1(z_info->r_max - 1)];
+
+		if (!race->name) continue;
+		if ((level < race->level) && !one_in_(race->level - level)) continue;
+		if (!race->rarity) continue;
+		if (rf_has(race->flags, RF_UNIQUE)) continue;
+
+		return race;
+	}
+
+	return NULL;
+}
+
+/**
  * Applying magic to an object, which includes creating ego-items, and applying
  * random bonuses,
  *
@@ -1016,6 +1045,9 @@ int apply_magic(struct object *obj, int lev, bool allow_artifacts, bool good,
 	} else if (tval_is_chest(obj)) {
 		/* Get a random, level-dependent set of chest traps */
 		obj->pval = pick_chest_traps(obj);
+	} else if (tval_is_figurine(obj)) {
+		/* And a figurine its monster */
+		obj->race = figurine_race(lev);
 	}
 
 	/* Apply minima from ego items if necessary */
@@ -1190,6 +1222,7 @@ int obj_theme_weight(const struct obj_theme *theme, int tval)
 		case TV_AMULET:
 		case TV_RING:
 		case TV_GOLD:
+		case TV_FIGURINE:
 			return theme->treasure;
 
 		/* Dragon scale mail is both, as it was in Zangband. */

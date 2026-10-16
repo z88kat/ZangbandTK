@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-Bring Adam Bolt's Zangband unique tiles into Adam Bolt's Angband sheet.
+Bring Adam Bolt's Zangband unique tiles into Adam Bolt's Angband sheet -- and
+the objects he drew for Zangband that this game has and Angband had not, which
+so far is one: the magical figurine (3.129.0).
 
 Sixty-five of the named characters this project imports were drawn, by the
 artist who drew the rest of the set, for the game they came from.  The art is
@@ -98,14 +100,14 @@ HEADER = """# %s -- Adam Bolt's Zangband tiles, brought into Adam Bolt's sheet.
 # of tiles it points at.  Do not edit either by hand: re-running the script
 # overwrites both, and reclaims its own rows rather than appending more.
 #
-# Every tile here was drawn by Adam Bolt for Zangband, for the character it is
-# used for.  Nothing is borrowed from another monster and nothing is generated.
-# The comment on each line gives the cell it came from in
-# archive/zangband/lib/xtra/graf/16x16.bmp.
+# Every tile here was drawn by Adam Bolt for Zangband, for the character -- or,
+# at the end, the object -- it is used for.  Nothing is borrowed from anything
+# else and nothing is generated.  The comment on each line gives the cell it
+# came from in archive/zangband/lib/xtra/graf/16x16.bmp.
 #
 # Replacing one with newer art means deleting its line here and adding a
 # mapping to graf-new.prf; re-running will not put it back, because a line is
-# only written for a monster that has no tile from any other file.
+# only written for a thing that has no tile from any other file.
 """
 
 
@@ -150,6 +152,43 @@ def archive_assignments(path):
         r'/0x([0-9A-Fa-f]{2})', text, re.M)
     return {name.strip().lower(): (int(r, 16) - 0x80, int(c, 16) - 0x80)
             for name, r, c in found}
+
+
+def archive_objects(path):
+    """name -> (row, col) for the object kinds a 2001 prf names.
+
+    `# Name` above each `K:index:0xRR/0xCC` -- graf-new.prf writes a slash
+    between the two, as it does for monsters.  Lowercased, and compared with
+    object.txt's names as lookup_sval() would see them.
+    """
+    text = open(path, encoding='utf-8', errors='replace').read()
+    found = re.findall(
+        r'^#\s*(.+?)\s*\nK:\d+:0x([0-9A-Fa-f]{2})[/:]0x([0-9A-Fa-f]{2})',
+        text, re.M)
+    return {name.strip().lower(): (int(r, 16) - 0x80, int(c, 16) - 0x80)
+            for name, r, c in found}
+
+
+def wanted_objects(directory, pref):
+    """The object kinds this set has no tile for, that the archive can supply.
+
+    Only kinds that carry their own colour: a flavoured kind is drawn as its
+    flavour.  Minus what we wrote last time, for the reason wanted() gives.
+    """
+    have = set(bt.read_prf_chain(directory, pref)['object'])
+    ours = os.path.join(TILES, directory, OUTPUT)
+    if os.path.exists(ours):
+        mine = re.findall(r'^object:(.+):0x[0-9A-Fa-f]{2}:0x[0-9A-Fa-f]{2}\s*$',
+                          open(ours, encoding='utf-8').read(), re.M)
+        have -= {n.lower() for n in mine}
+
+    archive = archive_objects(os.path.join(ARCHIVE, TARGETS[directory][4]))
+    pairs = [('%s:%s' % (tval, name), archive[name.lower()])
+             for tval, name in bt.read_objects()
+             if ('%s:%s' % (tval, name)).lower() not in have
+             and name.lower() in archive]
+    pairs.sort(key=lambda p: (p[1], p[0]))
+    return pairs
 
 
 def wanted(directory, pref):
@@ -201,6 +240,9 @@ def rows_of(directory, name):
 def emit(directory):
     sheet, tile, image, mask, _prf = TARGETS[directory]
     pairs, missing, named = wanted(directory, 'graf-new.prf')
+    things = ([('monster', n, at) for n, at in pairs]
+              + [('object', n, at)
+                 for n, at in wanted_objects(directory, 'graf-new.prf')])
 
     src = read_bmp(os.path.join(ARCHIVE, image))
     alpha = read_bmp(os.path.join(ARCHIVE, mask))
@@ -220,12 +262,12 @@ def emit(directory):
         start = min(previous)
         del pixels[start * tile:]
 
-    need = (len(pairs) + cols - 1) // cols
+    need = (len(things) + cols - 1) // cols
     for _ in range(need * tile):
         pixels.append([(0, 0, 0, 0)] * width)
 
     lines = [HEADER % OUTPUT]
-    for n, (name, (sr, sc)) in enumerate(pairs):
+    for n, (what, name, (sr, sc)) in enumerate(things):
         row, col = start + n // cols, n % cols
         for y in range(tile):
             for x in range(tile):
@@ -234,8 +276,8 @@ def emit(directory):
                 pixels[row * tile + y][col * tile + x] = \
                     (rgb[0], rgb[1], rgb[2], 255) if opaque else (0, 0, 0, 0)
         lines.append('# from the Zangband sheet at row %d, col %d' % (sr, sc))
-        lines.append('monster:%s:0x%02X:0x%02X'
-                     % (name, row + 0x80, col + 0x80))
+        lines.append('%s:%s:0x%02X:0x%02X'
+                     % (what, name, row + 0x80, col + 0x80))
 
     mt.write_png(os.path.join(TILES, directory, sheet), pixels)
     open(os.path.join(TILES, directory, OUTPUT), 'w',
@@ -281,15 +323,19 @@ def check():
         text = open(path, encoding='utf-8').read()
         lines = re.findall(r'^monster:(.+):0x([0-9A-Fa-f]{2}):'
                            r'0x([0-9A-Fa-f]{2})\s*$', text, re.M)
+        objects = re.findall(r'^object:(.+):0x([0-9A-Fa-f]{2}):'
+                             r'0x([0-9A-Fa-f]{2})\s*$', text, re.M)
+        kinds = {('%s:%s' % k).lower() for k in bt.read_objects()}
 
-        bad_name = [n for n, _, _ in lines if n.lower() not in known]
+        bad_name = ([n for n, _, _ in lines if n.lower() not in known]
+                    + [n for n, _, _ in objects if n.lower() not in kinds])
         not_unique = [n for n, _, _ in lines
                       if n.lower() in known and not known[n.lower()]['unique']]
         outside = [(n, int(r, 16) - 0x80, int(c, 16) - 0x80)
-                   for n, r, c in lines
+                   for n, r, c in lines + objects
                    if int(r, 16) - 0x80 >= rows or int(c, 16) - 0x80 >= cols]
         blank = []
-        for n, r, c in lines:
+        for n, r, c in lines + objects:
             row, col = int(r, 16) - 0x80, int(c, 16) - 0x80
             if row >= rows or col >= cols:
                 continue
@@ -307,7 +353,7 @@ def check():
                   + rows_of(directory, 'serv-ztk.prf'))
         below = [r for r in others if mine and r > max(mine)]
 
-        for label, items in (('names no monster has', bad_name),
+        for label, items in (('names nothing in the game has', bad_name),
                              ('names a monster that is not unique', not_unique),
                              ('coordinates outside the sheet',
                               ['%s (%d,%d)' % t for t in outside]),
@@ -322,8 +368,9 @@ def check():
                          ' ...' if len(items) > 4 else ''))
 
         if not (bad_name or not_unique or outside or blank or below):
-            print('  %-10s %d uniques on rows %s; sheet is %d rows x %d cols'
-                  % (directory, len(lines),
+            print('  %-10s %d uniques and %d objects on rows %s; sheet is %d '
+                  'rows x %d cols'
+                  % (directory, len(lines), len(objects),
                      '-'.join(str(r) for r in (min(mine), max(mine)))
                      if mine else '-', rows, cols))
 
@@ -353,8 +400,11 @@ def main():
         got, missing, named = emit(directory)[:3]
         linked = chain(directory)
         print('  %-10s %d of %d missing uniques imported, from %d named in'
-              ' the archive%s'
+              ' the archive, and %d objects%s'
               % (directory, got, missing, named,
+                 len(re.findall(r'^object:', open(os.path.join(
+                     TILES, directory, OUTPUT), encoding='utf-8').read(),
+                     re.M)),
                  '; prf chained' if linked else ''))
     print('\n  Run scripts/tiles/audit-tiles.py to see the gap count fall.')
     print('  A new prf also has to be added by hand to the set\'s Makefile'

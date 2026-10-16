@@ -51,6 +51,12 @@
 #include "player-spell.h"
 #include "player-util.h"
 #include "mon-util.h"
+#include "obj-gear.h"
+#include "obj-ignore.h"
+#include "obj-knowledge.h"
+#include "obj-make.h"
+#include "obj-pile.h"
+#include "obj-tval.h"
 #include "obj-util.h"
 #include "player-mutation.h"
 #include "player-timed.h"
@@ -808,6 +814,190 @@ static int test_a_mutated_character_survives_a_round_trip(void *state) {
 	ok;
 }
 
+/*
+ * The magical figurine and what the character knows of each kind of object,
+ * both of which arrived with ITEM_VERSION 6 and object memory version 2 in
+ * 3.129.0.
+ */
+
+/** The first non-unique race, which is all a figurine needs. */
+static struct monster_race *an_ordinary_race(void) {
+	int i;
+
+	for (i = 1; i < z_info->r_max; i++)
+		if (r_info[i].name && r_info[i].rarity
+				&& !rf_has(r_info[i].flags, RF_UNIQUE))
+			return &r_info[i];
+	return NULL;
+}
+
+/** Put a figurine of that race in the pack. */
+static void carry_a_figurine_of(struct monster_race *race) {
+	struct object_kind *kind = lookup_kind(TV_FIGURINE,
+		lookup_sval(TV_FIGURINE, "Magical Figurine"));
+	struct object *obj = object_new();
+
+	object_prep(obj, kind, 30, MINIMISE);
+	obj->race = race;
+	obj->known = object_new();
+	object_set_base_known(player, obj);
+	object_touch(player, obj);
+	inven_carry(player, obj, false, false);
+}
+
+/** The figurine in the pack, or NULL. */
+static struct object *carried_figurine(void) {
+	struct object *obj;
+
+	for (obj = player->gear; obj; obj = obj->next)
+		if (tval_is_figurine(obj)) return obj;
+	return NULL;
+}
+
+/** A figurine comes back holding the same monster, and knows it holds it. */
+static int test_a_figurine_keeps_its_monster(void *state) {
+	struct monster_race *race;
+	struct object *obj;
+	char was[80];
+
+	require(make_a_caster());
+	race = an_ordinary_race();
+	notnull(race);
+	my_strcpy(was, race->name, sizeof(was));
+	carry_a_figurine_of(race);
+	require(savefile_save(savename));
+
+	reset_before_load();
+	require(savefile_load(savename, false));
+
+	obj = carried_figurine();
+	notnull(obj);
+	notnull(obj->race);
+	require(streq(obj->race->name, was));
+	notnull(obj->known);
+	require(obj->known->race == obj->race);
+	ok;
+}
+
+/**
+ * One whose monster has left the game is lost, and only it: the monster is
+ * what a figurine is, so an empty one would be a different object.  Exactly,
+ * too -- a race renamed to something that merely contains the old name must
+ * not be taken for it, which lookup_monster() would do.
+ */
+static int test_a_figurine_whose_monster_has_gone_is_lost(void *state) {
+	struct monster_race *race;
+	char was[80], longer[120];
+	int i;
+
+	require(make_a_caster());
+	race = an_ordinary_race();
+	notnull(race);
+	my_strcpy(was, race->name, sizeof(was));
+	carry_a_figurine_of(race);
+	require(savefile_save(savename));
+
+	reset_before_load();
+	for (i = 1; i < z_info->r_max; i++) {
+		if (r_info[i].name && streq(r_info[i].name, was)) {
+			strnfmt(longer, sizeof(longer), "%s that is not there", was);
+			string_free(r_info[i].name);
+			r_info[i].name = string_make(longer);
+		}
+	}
+	require(savefile_load(savename, false));
+
+	notnull(player->class);
+	null(carried_figurine());
+	ok;
+}
+
+/** The object memory block says version 2, which names its kinds. */
+static int test_the_object_memory_says_version_two(void *state) {
+	ang_file *f;
+	uint8_t head[28];
+	int found = 0;
+
+	require(make_a_caster());
+	require(savefile_save(savename));
+
+	f = file_open(savename, MODE_READ, FTYPE_RAW);
+	notnull(f);
+	require(file_skip(f, 8));
+
+	while (file_read(f, (char *) head, sizeof(head)) == (int) sizeof(head)) {
+		char name[17];
+		uint32_t version, size;
+
+		memcpy(name, head, 16);
+		name[16] = 0;
+		version = head[16] | (head[17] << 8) | (head[18] << 16)
+			| ((uint32_t) head[19] << 24);
+		size = head[20] | (head[21] << 8) | (head[22] << 16)
+			| ((uint32_t) head[23] << 24);
+
+		if (streq(name, "object memory")) {
+			eq(version, 2);
+			found++;
+		}
+
+		if (!file_skip(f, (int) ((size + 3) & ~3U))) break;
+	}
+	file_close(f);
+
+	eq(found, 1);
+	ok;
+}
+
+/**
+ * What the character knows of a kind follows the kind's name, not its place.
+ *
+ * Two potions trade names between the save and the load, which is what moving
+ * a kind looks like to the loader: the knowledge has to go with the name.  A
+ * reader that went by position -- version 1 -- would leave it where it was.
+ */
+static int test_kind_knowledge_follows_the_name(void *state) {
+	struct object_kind *a, *b;
+	char a_name[80], b_name[80];
+	int a_idx, b_idx;
+
+	require(make_a_caster());
+	a = lookup_kind(TV_POTION, lookup_sval(TV_POTION, "Cure Light Wounds"));
+	b = lookup_kind(TV_POTION, lookup_sval(TV_POTION, "Cure Serious Wounds"));
+	notnull(a);
+	notnull(b);
+	a_idx = a->kidx;
+	b_idx = b->kidx;
+	my_strcpy(a_name, a->name, sizeof(a_name));
+	my_strcpy(b_name, b->name, sizeof(b_name));
+
+	a->aware = true;
+	a->tried = true;
+	a->everseen = true;
+	kind_ignore_when_aware(a);
+	b->aware = false;
+	b->tried = false;
+	b->everseen = false;
+	require(savefile_save(savename));
+
+	reset_before_load();
+	string_free(k_info[a_idx].name);
+	string_free(k_info[b_idx].name);
+	k_info[a_idx].name = string_make(b_name);
+	k_info[b_idx].name = string_make(a_name);
+	require(savefile_load(savename, false));
+
+	/* The kind now called Cure Light Wounds has what Cure Light Wounds had */
+	require(k_info[b_idx].aware);
+	require(k_info[b_idx].tried);
+	require(k_info[b_idx].everseen);
+	require(kind_is_ignored_aware(&k_info[b_idx]));
+	require(!k_info[a_idx].tried);
+	require(!k_info[a_idx].everseen);
+	require(!kind_is_ignored_aware(&k_info[a_idx]));
+	ok;
+}
+
 const char *suite_name = "game/roundtrip";
 struct test tests[] = {
 	{ "a-caster-survives-a-round-trip",
@@ -830,5 +1020,12 @@ struct test tests[] = {
 	{ "a-renamed-object-is-recovered", test_a_renamed_object_is_recovered },
 	{ "every-rename-points-somewhere-real",
 	  test_every_rename_points_somewhere_real },
+	{ "a-figurine-keeps-its-monster", test_a_figurine_keeps_its_monster },
+	{ "a-figurine-whose-monster-has-gone-is-lost",
+	  test_a_figurine_whose_monster_has_gone_is_lost },
+	{ "the-object-memory-says-version-two",
+	  test_the_object_memory_says_version_two },
+	{ "kind-knowledge-follows-the-name",
+	  test_kind_knowledge_follows_the_name },
 	{ NULL, NULL }
 };

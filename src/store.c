@@ -1692,6 +1692,14 @@ int find_inven(const struct object *obj)
 				return 0;
 			}
 
+			/* Figurines, of the same monster */
+			case TV_FIGURINE:
+			{
+				if (obj->race != gear_obj->race)
+					continue;
+				break;
+			}
+
 			/* Food and Potions and Scrolls */
 			case TV_FOOD:
 			case TV_MUSHROOM:

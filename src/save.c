@@ -200,6 +200,9 @@ static void wr_item(const struct object *obj)
 		wr_string(quark_str(obj->note));
 	else
 		wr_string("");
+
+	/* The monster in a figurine, by name (ITEM_VERSION 6) */
+	wr_string(obj->race ? obj->race->name : "");
 }
 
 
@@ -386,11 +389,23 @@ void wr_monster_memory(void)
 
 
 
+/**
+ * What the character knows of each kind of object (version 2).
+ *
+ * Version 1 wrote one byte per kind and let its position in k_info say which
+ * kind it was, so every kind added since moved the knowledge of the ones after
+ * it onto their neighbours.  Version 2 names each kind, by object base and
+ * name, as an object in the pack is named; a kind this build does not know is
+ * skipped on reading, and one added later starts out as a new character's.
+ */
 void wr_object_memory(void)
 {
-	int k_idx;
+	int k_idx, named = 0;
 
-	wr_u16b(z_info->k_max);
+	for (k_idx = 0; k_idx < z_info->k_max; k_idx++)
+		if (k_info[k_idx].name) named++;
+
+	wr_u16b(named);
 	wr_byte(OF_SIZE);
 	wr_byte(OBJ_MOD_MAX);
 	wr_byte(ELEM_MAX);
@@ -402,6 +417,9 @@ void wr_object_memory(void)
 	for (k_idx = 0; k_idx < z_info->k_max; k_idx++) {
 		uint8_t tmp8u = 0;
 		struct object_kind *kind = &k_info[k_idx];
+		char name[1024];
+
+		if (!kind->name) continue;
 
 		if (kind->aware) tmp8u |= 0x01;
 		if (kind->tried) tmp8u |= 0x02;
@@ -409,6 +427,9 @@ void wr_object_memory(void)
 		if (kind->everseen) tmp8u |= 0x08;
 		if (kind_is_ignored_unaware(kind)) tmp8u |= 0x10;
 
+		obj_desc_name_format(name, sizeof name, 0, kind->name, 0, false);
+		wr_string(tval_find_name(kind->tval));
+		wr_string(name);
 		wr_byte(tmp8u);
 	}
 }

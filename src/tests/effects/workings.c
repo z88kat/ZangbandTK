@@ -39,6 +39,7 @@
 #include "mon-predicate.h"
 #include "mon-summon.h"
 #include "obj-curse.h"
+#include "obj-desc.h"
 #include "obj-gear.h"
 #include "obj-knowledge.h"
 #include "obj-make.h"
@@ -1060,6 +1061,86 @@ static int test_the_launcher_throws_harder(void *state) {
 	ok;
 }
 
+/** How many things are in the pack, walking it as everything else does. */
+static int pack_count(void) {
+	struct object *obj;
+	int n = 0;
+
+	for (obj = player->gear; obj; obj = obj->next) n++;
+	return n;
+}
+
+static void drop_from_pack(struct object *obj) {
+	bool none_left = false;
+
+	unmake(gear_object_for_use(player, obj, obj->number, false, &none_left));
+}
+
+/*
+ * Mundanity strips the magic and leaves the object where it was.
+ *
+ * object_prep() clears the whole structure, and until 3.129.0 only the stack
+ * size was put back: the pile links went with the rest, so the object was cut
+ * out of the pack along with everything after it, and the pointer to the
+ * player's record of it went too, which nearly every description reads.  The
+ * dagger goes in first, so that two more things hang off its `next`.
+ */
+static int test_mundanity_leaves_the_pack_whole(void *state) {
+	struct object *dagger = make(TV_SWORD, "Dagger");
+	struct object *flask = make(TV_FLASK, "Flask of oil");
+	struct object *torch = make(TV_LIGHT, "Wooden Torch");
+	int before;
+	char name[80];
+
+	notnull(dagger);
+	notnull(flask);
+	notnull(torch);
+
+	/* Not absorbed into the kit's own flasks and torches: three objects */
+	inven_carry(player, dagger, false, false);
+	inven_carry(player, flask, false, false);
+	inven_carry(player, torch, false, false);
+	before = pack_count();
+	dagger->to_h = 9;
+
+	require(work(EF_MUNDANE, 0, "0", dagger));
+	eq(pack_count(), before);
+	eq(dagger->to_h, 0);
+	notnull(dagger->known);
+	object_desc(name, sizeof(name), dagger, ODESC_BASE, player);
+	require(!streq(name, "(nothing)"));
+
+	/* And it says so in words, not in object.txt's "& Dagger~" */
+	notnull(strstr(message_str(0), "is a Dagger once more."));
+
+	drop_from_pack(dagger);
+	drop_from_pack(flask);
+	drop_from_pack(torch);
+	ok;
+}
+
+/* And a figurine is a figurine of the same monster afterwards */
+static int test_mundanity_keeps_a_figurines_monster(void *state) {
+	struct object *fig = make(TV_FIGURINE, "Magical Figurine");
+	struct monster_race *race = NULL;
+	int i;
+
+	notnull(fig);
+	for (i = 1; i < z_info->r_max && !race; i++)
+		if (r_info[i].name && !rf_has(r_info[i].flags, RF_UNIQUE))
+			race = &r_info[i];
+	fig->race = race;
+	fig->known->race = race;
+	inven_carry(player, fig, false, false);
+
+	require(work(EF_MUNDANE, 0, "0", fig));
+	require(fig->race == race);
+	require(fig->known->race == race);
+
+	drop_from_pack(fig);
+	ok;
+}
+
 /* And the two powers and three random mutations carry them */
 static int test_the_mutations_carry_the_effects(void *state) {
 	static const struct { const char *name; int effect; } built[] = {
@@ -1144,6 +1225,10 @@ struct test tests[] = {
 	{ "hit-points-restore-mana", test_hit_points_restore_mana },
 	{ "weigh-magic-says-how-long", test_weigh_magic_says_how_long },
 	{ "the-launcher-throws-harder", test_the_launcher_throws_harder },
+	{ "mundanity-leaves-the-pack-whole",
+	  test_mundanity_leaves_the_pack_whole },
+	{ "mundanity-keeps-a-figurines-monster",
+	  test_mundanity_keeps_a_figurines_monster },
 	{ "the-mutations-carry-the-effects",
 	  test_the_mutations_carry_the_effects },
 	{ NULL, NULL }

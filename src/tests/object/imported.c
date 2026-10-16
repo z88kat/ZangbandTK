@@ -208,6 +208,12 @@ static int test_the_deferred_objects_are_absent(void *state) {
 	 */
 	notnull(kind_named(TV_WAND, "Tame Monster"));
 
+	/*
+	 * And the Magical Figurine, since 3.129.0, the day an object could hold a
+	 * monster.  Hand-built, like the wand, under its own type.
+	 */
+	notnull(kind_named(TV_FIGURINE, "& Magical Figurine~"));
+
 	ok;
 }
 

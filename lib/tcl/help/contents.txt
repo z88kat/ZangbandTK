@@ -227,7 +227,6 @@ page	What they cost	pets#what-they-cost
 page	What they earn you	pets#what-they-earn-you
 page	Losing one	pets#losing-one
 page	Getting one	pets#getting-one
-page	Still to come	pets#still-to-come
 stop
 book	Nightmare Mode	nightmare
 page	Choosing it	nightmare#choosing-it

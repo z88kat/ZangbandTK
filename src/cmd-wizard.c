@@ -2439,6 +2439,7 @@ void do_cmd_wiz_reroll_item(struct command *cmd)
 		obj->next = next;
 		obj->known = known_obj;
 		obj->known->ego = obj->ego;
+		obj->known->race = obj->race;
 		obj->oidx = oidx;
 		obj->grid = grid;
 		obj->notice = notice;

@@ -31,6 +31,32 @@ rather than a preference, and it applies to content already imported, not just t
 what comes next.
 
 
+16 October 2026 — the figurine, and what the old saves knew
+===========================================================
+
+The figurine was the last of Zangband's routes to a pet, and it had waited for
+one thing: an object that could hold a monster. Giving it one was the easy
+part. The part I was worried about was the savefiles, and the worry turned
+out to be right for a reason nobody had seen.
+
+What a character knows about each kind of object was saved by position in
+the game's list, so adding any kind shifts the knowledge of every kind after
+it. Before touching anything I dumped, by name, what every saved character in
+the corpus knew, and the dump showed the shift had already happened, quietly,
+more than once. A character from before the Zangband objects came in loads
+aware of Scrolls of Logrus it never saw, because its old spellbooks sat where
+the Logrus now does. That has been true for weeks and nothing complained.
+
+So the figurine went in with knowledge saved by name, and the old format read
+through a frozen copy of the list as it last stood. Run the dump again and every
+character knows exactly what it knew, kind for kind. The older shift is still
+there, and I left it alone on purpose: fixing it needs a list for each era, and
+two of the counts the saves record could each mean more than one list.
+
+The Scroll of Mundanity was the other find. It had been cutting things out of
+the pack since the day it was imported.
+
+
 15 October 2026 — and sound
 ===========================
 

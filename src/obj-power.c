@@ -1208,6 +1208,15 @@ int object_value_real(const struct object *obj, int qty)
 		/* Get the total value */
 		total_value = value * qty;
 		if (total_value < 0) total_value = 0;
+	} else if (tval_is_figurine(obj)) {
+		/*
+		 * A figurine is worth what it holds: the monster's level squared,
+		 * times five ([object2.c:1278](../archive/zangband/src/object2.c#L1278)),
+		 * and nothing for one that holds nothing.
+		 */
+		int level = obj->race ? obj->race->level : 0;
+
+		total_value = level * level * 5 * qty;
 	} else {
 
 		/* Worthless items */
@@ -1259,6 +1268,9 @@ int object_value(const struct object *obj, int qty)
 		value = object_value_real(obj->known, qty);
 	} else if (tval_can_have_flavor_k(obj->kind) &&
 			   object_flavor_is_aware(obj)) {
+		value = object_value_real(obj, qty);
+	} else if (tval_is_figurine(obj)) {
+		/* Priced by its monster, which is in its name for all to see */
 		value = object_value_real(obj, qty);
 	} else {
 		/* Unknown constant-price items just get a base value */

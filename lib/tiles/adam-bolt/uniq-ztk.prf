@@ -4,14 +4,14 @@
 # of tiles it points at.  Do not edit either by hand: re-running the script
 # overwrites both, and reclaims its own rows rather than appending more.
 #
-# Every tile here was drawn by Adam Bolt for Zangband, for the character it is
-# used for.  Nothing is borrowed from another monster and nothing is generated.
-# The comment on each line gives the cell it came from in
-# archive/zangband/lib/xtra/graf/16x16.bmp.
+# Every tile here was drawn by Adam Bolt for Zangband, for the character -- or,
+# at the end, the object -- it is used for.  Nothing is borrowed from anything
+# else and nothing is generated.  The comment on each line gives the cell it
+# came from in archive/zangband/lib/xtra/graf/16x16.bmp.
 #
 # Replacing one with newer art means deleting its line here and adding a
 # mapping to graf-new.prf; re-running will not put it back, because a line is
-# only written for a monster that has no tile from any other file.
+# only written for a thing that has no tile from any other file.
 
 # from the Zangband sheet at row 29, col 22
 monster:Raphael, the Messenger:0xBE:0x80
@@ -143,3 +143,5 @@ monster:Bokrug:0xBF:0x9E
 monster:Little Boy:0xBF:0x9F
 # from the Zangband sheet at row 58, col 29
 monster:The Greater hell magic mushroom were-quylthulg:0xC0:0x80
+# from the Zangband sheet at row 63, col 6
+object:figurine:Magical Figurine:0xC0:0x81

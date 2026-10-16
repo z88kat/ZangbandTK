@@ -1997,6 +1997,19 @@ static bool describe_book(textblock *tb, const struct object *obj,
 	return true;
 }
 
+/**
+ * What a figurine is for (ZangbandTK), in Zangband's own words
+ * ([object1.c:279](../archive/zangband/src/object1.c#L279)).
+ */
+static bool describe_figurine(textblock *tb, const struct object *obj)
+{
+	if (!tval_is_figurine(obj)) return false;
+
+	textblock_append(tb, "\nIt will transform into a pet when thrown.\n");
+
+	return true;
+}
+
 
 /**
  * Gives the known effects of using the given item.
@@ -2357,6 +2370,7 @@ static textblock *object_info_out(const struct object *obj, int mode)
 	if (describe_misc_magic(tb, flags)) something = true;
 	if (describe_light(tb, obj, mode)) something = true;
 	if (describe_book(tb, obj, mode)) something = true;
+	if (describe_figurine(tb, obj)) something = true;
 	if (ego && describe_ego(tb, obj->ego)) something = true;
 	if (something) textblock_append(tb, "\n");
 
