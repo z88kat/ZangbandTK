@@ -46,12 +46,13 @@ TRAP_SKIP = ('no trap', 'door lock')
 # The magical figurine (3.129.0) is a monster in miniature, and no Angband set
 # ever drew one.  Borrowing another object's picture would say it is that
 # object, which is the claim DEC-18 refuses for uniques; borrowing a monster's
-# would put a monster on the floor that is not there.  Adam Bolt drew one for
-# Zangband and import-zangband-tiles.py brings it into his set, and Neon draws
-# its own.  These three have nothing that is a figurine, and Gervais' sheet is
-# mapped only, so they show the green ` until someone draws one.
+# would put a monster on the floor that is not there.  Zangband drew one for
+# Adam Bolt's set and one for the 8x8, and import-zangband-tiles.py brings both
+# across; Neon draws its own.  These two have nothing that is a figurine, and
+# Gervais' sheet is mapped only, so they show the green ` until someone draws
+# one.
 OBJECT_SKIP = {
-    'figurine:magical figurine': ('old', 'nomad', 'gervais'),
+    'figurine:magical figurine': ('nomad', 'gervais'),
 }
 
 # Flavoured kinds are covered by flavor: lines rather than object: lines,

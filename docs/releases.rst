@@ -131,6 +131,9 @@ The magical figurine — 16 October 2026
   dropped everything listed after it out of the pack, lost the game's record of
   the item, and could stop the game outright the next time the pack was
   checked.
+- **3.129.1** — **The original 8x8 tiles have their figurine too**: the one
+  drawn for Zangband's copy of that set, a red statuette on a base, rather than
+  its letter. Only Nomad's and Gervais' sets still show the letter.
 
 ZangbandTK on Windows and Linux — 15 October 2026
 -------------------------------------------------

@@ -89,12 +89,21 @@ Per tileset
   Bolt drew for Zangband and Angband never had.  It is the cell after the last
   unique, on the same rows.
 
-  The other three sets get nothing: the 8x8 archive art has no usable
-  name-to-cell map, Nomad's is a modern set with no 2001 counterpart, and
-  Gervais' is mapped-only and staying that way.  So the figurine is its letter
-  in those three, which `audit-tiles.py` lists as deliberate.  For objects the
-  8x8 archive *does* name its cells, and Zangband's 8x8 figurine could be
-  brought across as Adam Bolt's was; that has not been done.
+**old -- also modified, with Zangband's own 8x8 figurine.**
+
+  Zangband's copy of the 8x8 tileset has a magical figurine too, and its
+  `graf-xxx.prf` says which cell -- `# Magical Figurine` above `K:567` -- where
+  for monsters it names almost none.  The same script copies that one cell
+  into **one new row** at the bottom of `8x8.png` and writes `zang-ztk.prf`
+  (3.129.1).  The archive's 8x8 tiles have no mask: they sit on a flat grey,
+  and the grey is what becomes transparent, which the script's own notes
+  calibrate against the cells both sheets share.  Rows 0 to 100 are
+  byte-identical.
+
+  Nomad's and Gervais' get nothing: Nomad's is a modern set with no 2001
+  counterpart, and Gervais' is mapped-only and staying that way.  So the
+  figurine is its letter in those two, which `audit-tiles.py` lists as
+  deliberate.
 
   Each tileset's own `graf-*.prf` gains `%:` lines loading the above.  That is a
   modification of a text file, not of any art.
@@ -106,18 +115,24 @@ May we?
   * **Adam Bolt's** may be "redistributed and used for any purpose, with or
     without modification".  Explicit.  That covers both modifications above:
     the generated wilderness row, and the sixty-five uniques and the figurine
-    imported from Zangband's copy of the same tileset.  Those are his work too -- Zangband's
-    changelog records "Adam Bolt's tiles are now finished and every
-    monster/object/spell effect has a tile" (`archive/zangband/z_update.txt`),
-    so the Zangband rows are the same artist under the same terms, not a third
-    party's art travelling under his licence.
+    imported from Zangband's copy of the same tileset.  Those are his work
+    too -- Zangband's changelog records "Adam Bolt's tiles are now finished
+    and every monster/object/spell effect has a tile"
+    (`archive/zangband/z_update.txt`), so the Zangband rows are the same artist
+    under the same terms, not a third party's art travelling under his licence.
   * **David Gervais'** is Creative Commons Attribution 3.0, which permits
     modification with attribution.  We have not modified it in any case.
   * **The original 8x8 and Nomad's** carry no licence statement, here or in
     Angband's own `copying.rst`.  They are not listed among the exceptions in
     LICENSE.md, so they stand on the project licence like the rest of the tree.
     That is a reading of a silence rather than a permission, and it is recorded
-    as such rather than assumed.
+    as such rather than assumed.  The figurine added to the 8x8 sheet is the
+    same silence one step back: it was drawn for Zangband's copy of the set,
+    whose changelog credits its 8x8 additions to Zangband's own contributors
+    ("279 new monsters and the corresponding 8x8 sized tiles designed and
+    drawed by Topi Ylinen", 2.2.0) and names nobody for this one.  It stands on
+    Zangband's licence, as everything else this project took from the archive
+    does.
   * **Shockbolt's** was removed in 3.95.0 and is not here.  Its licence grants
     use with Angband and withholds it for "other games or projects", which is
     what this is.
@@ -134,4 +149,4 @@ generated sets have none of those, nor a dungeon mouth or a secret door.  Those
 are buildings and openings rather than ground textures -- shapes, not rules --
 and a borrowed picture for one of them would be actively wrong rather than
 merely absent.  They render as ASCII until somebody draws them.  So does the
-magical figurine in the 8x8, Nomad and Gervais sets, for the same reason.
+magical figurine in the Nomad and Gervais sets, for the same reason.

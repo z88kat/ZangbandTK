@@ -7786,3 +7786,13 @@ no figurine and nothing honest to borrow — another object's picture says it is
 that object, a monster's puts a monster on the floor — so they show its letter,
 and audit-tiles.py lists that in `OBJECT_SKIP`, which fails the moment a set it
 excuses gains the tile.
+
+*Amended the same day (3.129.1):* the 8x8 set has one after all. Its archive
+prf cannot say which cell is which monster, which is why the importer had left
+it alone, but it does name its object cells, and Zangband's 8x8 figurine is at
+row 52. import-zangband-tiles.py now serves both sets, each with its own sheet,
+prf and output file (`zang-ztk.prf` for the 8x8, objects only), and the 8x8
+archive's flat grey background stands in for the mask it does not have —
+calibrated against the 34 object cells that are the same drawing in both
+sheets, where it matched our transparency on every pixel. `OBJECT_SKIP` now
+excuses only Nomad and Gervais.
